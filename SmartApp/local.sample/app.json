@@ -1,0 +1,64 @@
+{
+	"Q": {
+		"web": {
+			"appRootUrl": "THE ROOT OF YOUR APP HERE",
+			"controllerSuffix": "CAN BE BLANK OR index.php"
+		},
+		"exception": {
+			"showFileAndLine": true,
+			"showTrace": true
+		},
+		"firebug": false
+	},
+	"Db": {
+		"connections": {
+			"Users": {
+				"prefix": "PREFIX HERE",
+				"dsn": "mysql:host=localhost;dbname=DBNAME",
+				"username": "USERNAME",
+				"password": "PASSWORD",
+				"driver_options": {
+					"3": 2
+				},
+				"shards": {}
+			},
+			"Streams": {
+        "prefix": "PREFIX HERE",
+        "dsn": "mysql:host=localhost;dbname=DBNAME",
+        "username": "USERNAME",
+        "password": "PASSWORD",
+        "driver_options": {
+          "3": 2
+        }
+      }
+		}
+	},
+	"Users": {
+		"email": {
+			"smtp": {
+				"auth": "login",
+				"username": "USERNAME HERE",
+				"password": "PASSWORD HERE",
+				"ssl": "ssl",
+				"port": 465,
+				"host": "smtp.sendgrid.net"
+			}
+		},
+		"mobile": {
+			"twilio": {
+				"sid": "YOUR SID HERE",
+				"token": "YOUR TOKEN HERE"
+			},
+			"from": "+1234567890"
+		},
+		"facebookApps": {
+			"APP NAME HERE": {
+				"appId": "FACEBOOK APP ID HERE",
+				"name": "FACEBOOK APP NAME HERE",
+				"url": "http:\/\/apps.facebook.com\/YOURAPP",
+				"secret": "PUT SECRET HERE",
+				"subpath": "/facebook"
+			}
+		}
+	}
+}

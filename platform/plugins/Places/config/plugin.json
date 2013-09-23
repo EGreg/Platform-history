@@ -1,0 +1,13 @@
+{
+	"Q": {
+		"routes": {
+			"plugins/Places/:action": {"module": "Places"}
+		},
+		"pluginInfo": {
+			"Places": {
+				"version": "0.3",
+				"connections": ["Places"]
+			}
+		}
+	}
+}

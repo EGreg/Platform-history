@@ -1,0 +1,24 @@
++: mandatory step
+±: optional step
+
+-------------------------------------------------------
++ 1) Copy SmartApp folder to new location nad rename it to {App}
++ 2) copy {App}/config/app.json.sample to {App}/config/app.json and modify:
++ 	a) change SmartApp to {App} everywhere
++ 	b) set application version {ver}
++ 	c) set up Q/appInfo and Q/plugins config properly
++ 3) copy local.sample to local
++ 4) change local/app.json
++ 	a) set up databases
++ 	b) set up Facebook application
++ 	c) set up url and suffix for web
++ 5) change local/paths.* and set up path to Q platform
++ 6) rename views/SmartApp to views/{App}
++ 7) rename scripts/SmartApp to scripts/{App}
+± 8) rename scripts/{App}/SmartApp.js to scripts/{App}/{App}.js
+± 9) place database creation script in {App}/scripts/{App}/, name should be {ver}__{App}.mysql
++ 10) copy web/js/SmartAppNav.js to web/js/{App}Nav.js
++ 11) run `php scripts/Q/install.php --all -s Users -s Streams -s {App}`
+± 12) open page to see sample
+± 13) run `cd {App} && php scripts/Q/models.php` to generate models
++ 14) set up application dashboard, routing, handlers, views etc.

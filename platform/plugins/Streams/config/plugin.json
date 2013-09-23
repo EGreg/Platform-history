@@ -1,0 +1,156 @@
+{
+	"Q": {
+		"handlersBeforeEvent": {
+			"Q/objects": ["Streams/before/Q/objects"],
+			"Q/responseExtras": ["Streams/before/Q/responseExtras"],
+			"Db/Row/Users_Contact/saveExecute": ["Streams/before/Users/Contact/saveExecute"],
+			"Db/Row/Users_Contact/removeExecute": ["Streams/before/Users/Contact/removeExecute"],
+			"Users/User/displayName": ["Streams/before/Users/User/displayName"]
+		},
+		"handlersAfterEvent": {
+			"Q/objects": ["Streams/after/Q/objects"],
+			"Q/responseExtras": ["Streams/after/Q/responseExtras"],
+			"Db/Row/Users_User/saveExecute": ["Streams/after/Users/User/saveExecute"],
+			"Db/Row/Users_Contact/removeExecute": ["Streams/after/Users/Contact/removeExecute"],
+			"Users/insertUser": ["Streams/after/Users/insertUser"]
+		},
+		"routes": {
+			"plugins/Streams/invite/:token": {"module": "Streams", "action": "invite"},
+			"plugins/Streams/:action": {"module": "Streams"}
+		},
+		"pluginInfo": {
+			"Streams": {
+				"version": "0.8",
+				"compatible": "0.8",
+				"requires": {"Users": "0.8"},
+				"connections": ["Streams"]
+			}
+		}
+	},
+	"Users": {
+		"login": {
+			"userQueryUri": "Streams/user"
+		}
+	},
+	"Streams": {
+		"types": {
+			"Streams/text": {"create": true, "edit": true},
+			"Streams/text/small": {"create": true, "edit": true},
+			"Streams/text/medium": {"create": true, "edit": true},
+			"Streams/text/name": {"create": true, "edit": true},
+			"Streams/text/url": {"create": true, "edit": true},
+			"Streams/date": {"create": true, "edit": true},
+			"Streams/number": {"create": true, "edit": true},
+			"Streams/image": {
+				"create": true,
+				"edit": true,
+				"sizes": ["40", "50", "80", "400x", "x"] 
+			},
+			"Streams/category": {
+				"create": true,
+				"edit": true
+			},
+			"Streams/location": {
+				"create": true,
+				"edit": true,
+				"messages": {
+					"Streams/location/message": {"post": true}
+				}
+			},
+			"Streams/incoming": {
+				"create": true,
+				"messages": {
+					"Streams/incoming/message": {"post": true}
+				}
+			},
+			"Streams/chat": {
+				"create": true,
+				"messages": {
+					"Streams/chat/message": {"post": true},
+					"Streams/chat/edit": {"post": true},
+					"Streams/chat/remove": {"post": true},
+					"Streams/chat/reply": {"post": true}
+				}
+			}
+		},
+		"defaults": {
+			"private": [
+				"insertedTime",
+				"updatedTime",
+				"messageCount",
+				"participantCount"
+			],
+			"invite": {
+				"subject": "You got a {{& stream.title}} at {{& stream.content}}",
+				"dialog": {
+					"title": "You are invited to Stream",
+					"user": {
+						"text": "has invited you to"
+					},
+					"related": {
+						"FS_product": {
+							"text": ""
+						},
+						"FS_bar": {
+							"text": ""
+						}
+					},
+					"button": "Accept!"
+				}
+			}
+		},
+		"invites": {
+			"tokens": {
+				"length": 16,
+				"characters": "abcdefghijklmnopqrstuvwxyz"
+			}
+		},
+		"db": {
+			"limits": {
+				"stream": 100,
+				"participating": 1000
+			}
+		},
+		"readLevelOptions": {
+			"0": "nothing about it",
+			"10": "that something is there",
+			"20": "its current content",
+			"30": "who is participating in it",
+			"40": "the social activity inside"
+		},
+		"writeLevelOptions": {
+			"0": "do nothing to it",
+			"10": "participate in it",
+			"20": "post messages to it",
+			"30": "edit its content"
+		},
+		"adminLevelOptions": {
+			"0": "not do anything special",
+			"10": "share messages from the stream",
+			"30": "invite others to the stream",
+			"40": "manage the stream",
+			"50": "own it and appoint managers"
+		},
+		"socket": {
+			"disconnectTimeout": 1500
+		},
+		"onInsert": {
+			"Users_User": [
+				"Streams/participating",
+				"Streams/user/username",
+				"Streams/user/icon",
+				"Streams/user/firstName",
+				"Streams/user/lastName"
+			]
+		},
+		"onUpdate": {
+			"Users_User": {
+				"username": "Streams/user/username",
+				"icon": "Streams/user/icon"
+			}
+		},
+		"icon": {
+			"sizes": ["40", "50", "50x"]
+		}
+	}
+}

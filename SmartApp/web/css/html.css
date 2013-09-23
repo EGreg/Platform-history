@@ -1,0 +1,380 @@
+* {
+	font-family: Helvetica, Arial, sans-serif;
+}
+
+html, body {
+	margin: 0;
+	text-align: left;
+}
+
+body {
+	background-color: #f2f2f2;
+}
+
+img {
+	border: none;
+}
+
+#main {
+	height: 100%;
+  background-color: #f2f2f2;
+  opacity: 0;
+}
+
+#listing_slot, #people_slot {
+	display: none;
+}
+
+#notices_slot {
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 2000;
+	width: 100%;
+	padding: 0;
+	display: none;
+	background-color: #ffffe5;
+	box-shadow: #AAA 0px 0px 2px;
+  -webkit-box-shadow: #AAA 0px 0px 2px;
+  -moz-box-shadow: #AAA 0px 0px 2px;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+}
+
+#notices_slot button
+{
+	border: none;
+}
+
+#notices_slot ul {
+	margin: 0 5px 0 10px;
+	padding: 0;
+	list-style: none;
+	width: auto;
+  border: none; 
+  box-shadow: none;
+  -moz-box-shadow: none;
+  -webkit-box-shadow: none;
+}
+
+#notices_slot ul li {
+	font-size: 0;
+  line-height: 26px;
+  padding: 3px 0;
+  min-height: 0;
+  border-top: solid 1px #e7d5aa;
+  text-align: left;
+  background: none;
+  border: none;
+}
+
+#notices_slot ul li span {
+	font-size: 12px;
+	line-height: 26px;
+}
+
+#notices_slot ul li * {
+	vertical-align: middle;
+}
+
+#notices_slot ul li .Q_common_notice {
+	display: inline-block;
+}
+
+#notices_slot ul li .Q_error_notice {
+	color: #700;
+}
+
+#notices_slot ul .Q_hidden_notice {
+	display: none;
+}
+
+#notices_slot ul li .Q_more_notices {
+	margin-left: 5px;
+}
+
+#notices_slot ul li .Q_more_notices span {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	line-height: 14px;
+	text-align: center;
+	color: #FFFFE5;
+	font-weight: bold;
+	background: url('../plugins/Q/img/ui/circle_trans_small.png') no-repeat;
+}
+
+#notices_slot ul li .Q_close {
+	display: inline-block;
+	width: 26px;
+	height: 26px;
+	cursor: pointer;
+	background: url('../plugins/Q/img/icons/basic16.png') 5px -477px no-repeat;
+	-webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+}
+
+#dashboard_slot {
+	background: black;
+	z-index: 900;
+	left: 0;
+	margin-left: 0;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+.Q_listing li {
+	color: black !important;
+	height: 40px !important;
+	line-height: 40px !important;
+}
+
+.Q_landscape .Q_dashboard_item {
+	height: 30px !important;
+	line-height: 30px !important;
+}
+
+#column0_slot {
+	display: none;
+	text-align: center;
+}
+
+.Q_overlay {
+	background: url(../plugins/Q/img/ui/stripes_bg.png);
+	display: none;
+	width: 350px;
+	text-align: left;
+	padding: 0px;
+	border: 2px solid #444;
+	z-index: 1500;
+  box-shadow: 0 0 20px #333;
+  -moz-box-shadow: 0 0 20px #333;
+  -webkit-box-shadow: 0 0 50px #333;
+}
+
+.Q_dialog_title {
+	padding: 10px;
+	margin: 0px;
+	border-bottom: 1px solid #333;
+	font-size: 20px;
+	height: 20px;
+	font-weight: bold;
+	color: white;
+	cursor: default;
+  background: #444;
+  background: -webkit-gradient(linear, left top, left bottom, from(#444), to(#111));
+  background: -moz-linear-gradient(top,  #444,  #111);
+  background: -o-linear-gradient(top, #444 0%, #111 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#444444', endColorstr='#111111');
+}
+
+.Q_big_prompt {
+  padding: 10px;
+}
+
+.Q_big_prompt label {
+	font-weight: bold;
+}
+
+.Q_big_prompt label, .Q_big_prompt input, .Q_big_prompt button, .Q_big_prompt .button {
+	font-size: 18px;
+}
+
+.Q_big_prompt button, .Q_big_prompt .button {
+	padding: 2px 10px 2px 10px;
+}
+
+.Q_big_prompt button, .Q_big_prompt .button {
+  border-width: 1px;
+  padding: 0 5px;
+  color: #fff;
+  line-height: 28px;
+  cursor: pointer;
+  border-radius: 0.3em;
+  -moz-border-radius: 0.3em;
+  -webkit-border-radius: 0.3em;
+  border-color: rgba(200, 200, 200, 0.5);
+  border-bottom-color: rgba(0, 0, 200, 0.2);
+  border-right-color: rgba(0, 0, 200, 0.2);
+  box-shadow: 0px 0px 1px rgba(50, 50, 50, 0.5);
+  -moz-box-shadow: 0px 0px 1px rgba(50, 50, 50, 0.5);
+  -webkit-box-shadow: 0px 0px 1px rgba(50, 50, 50, 0.5);
+  background: #444;
+  background: -webkit-gradient(linear, left top, left bottom, from(#444), to(#111));
+  background: -moz-linear-gradient(top,  #444,  #111);
+  background: -o-linear-gradient(top, #444 0%, #111 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#444444', endColorstr='#111111');
+}
+
+.Q_big_prompt button:disabled, .Q_big_prompt .button:disabled {
+  cursor: default;
+}
+
+.Q_big_prompt button:focus, .Q_big_prompt button:hover, .Q_big_prompt button.focus, .Q_big_prompt .button:focus, .Q_big_prompt .button:hover {
+  box-shadow: 0px 0px 2px rgba(40, 40, 80, 0.8);
+  -moz-box-shadow: 0px 0px 2px rgba(40, 40, 80, 0.8);
+  -webkit-box-shadow: 0px 0px 2px rgba(40, 40, 80, 0.8);
+}
+
+.Q_big_prompt button:active, .Q_big_prompt button.active, .Q_big_prompt .button:active {
+	box-shadow: 0px 0px 0px rgba(40, 40, 80, 0.8);
+  -moz-box-shadow: 0px 0px 0px rgba(40, 40, 80, 0.8);
+  -webkit-box-shadow: 0px 0px 0px rgba(40, 40, 80, 0.8);
+  border-bottom-color: rgba(0, 0, 250, 0.2);
+  border-right-color: rgba(0, 0, 250, 0.2);
+  background: #222;
+  background: -webkit-gradient(linear, left top, left bottom, from(#333), to(#333) );
+  background: -moz-linear-gradient(top, #333, #333);
+  background: -o-linear-gradient(top, #333 0%, #333 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#333333', endColorstr='#333333' );
+}
+
+.Q_big_prompt input[type=text], .Q_big_prompt input[type=password], .Q_big_prompt input[type=email],
+.Q_big_prompt input.text, .Q_big_prompt input.password, .Q_big_prompt input.email {
+  width: 100%;
+	margin-bottom: 0.5em !important;
+  margin-top: 0.5em !important;
+  padding: 4px;
+  border: solid 1px #ccc;
+  border-bottom: 1px solid #aaa;
+  font-family: 18px "Trebuchet MS";
+	border-radius: 3px;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+}
+
+.Q_big_prompt select {
+	font-size: 18px !important;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+}
+
+.Q_big_prompt .Q_field_title {
+	vertical-align: middle; text-align: right; padding-right: 10px;
+}
+
+.Q_big_prompt select {
+	vertical-align: middle;
+}
+
+.Q_placeholder {
+	color: #999;
+	font-weight: normal;
+}
+
+.Q_focus .Q_placeholder {
+	color: #ccc;
+}
+
+.Q_overlay .close {
+  background-image: url('../plugins/Q/img/ui/close_big.png');
+  cursor: pointer;
+  height: 35px;
+  position: absolute;
+  width: 35px;
+}
+
+.Q_dialog_content.Q_throb {
+	padding: 20px;
+}
+
+.Q_dialog_content * {
+	vertical-align: middle;
+}
+
+.Q_error_message {
+  background-color: #AA0000;
+  max-width: 200px;
+  color: white;
+  font-size: 12px;
+  opacity: 0.8;
+  padding: 2px 5px 4px;
+  z-index: 21000;
+}
+
+.Q_error_message p {
+  display: inline;
+}
+
+.Q_error_message a {
+	color: yellow;
+}
+
+.Q_panel_tool_form, .Q_panel_tool_static {
+	clear: none;
+}
+
+.Q_admin_pane .Q_big_prompt {
+	padding: 0;
+}
+
+#Q_activation_form {
+	width: 60% !important;
+}
+
+#Q_user_table td:first-child {
+	padding: 0 10px 0 0 !important;
+}
+
+#Users_login_step1 button {
+	min-width: 40px !important;
+}
+
+.Q_column1_contents { padding: 0px; }
+
+.Q_mobile .Q_dashboard_item img { width: 20px; height: 20px; }
+
+#SmartApp-logo { cursor: pointer; width: 176px; height: 166px; }
+
+
+
+
+
+
+/************** guide ************/
+
+#column1_slot { overflow-x: none; }
+#column2_slot { overflow-x: none; }
+
+h1 { font-size: 30px !important; }
+h1, h2 { margin: 10px; text-align: center; }
+h2 { margin: 5px; font-weight: 200; font-size: 18px; }
+h3 { margin: 0px; padding: 5px 0px 5px 5px; font-weight: 600; font-size: 18px; border-bottom: 2px solid #bbb;
+	border-radius: 0.3em;
+	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
+	background: -moz-linear-gradient(top,  #fff,  #eee);
+	background: -o-linear-gradient(top, #fff 0%, #eee 100%);
+}
+
+img.screenshot {
+	width: 400px;
+}
+
+img.screenshot.small {
+	width: 200px;
+}
+
+dt { font-weight: bold; }
+.cli { font-family: "Courier New"; background: #eee; border: solid 1px #ccc; }
+span.literal { font-family: "Courier New"; color: #333; font-weight: bold; }
+span.code { font-family: "Courier New"; color: #353; font-weight: bold; }
+pre.code { font-family: "Courier New"; font-size: 12px; background: #333; color: white; padding: 10px; font-weight: normal; width: 100%; overflow: hidden; overflow-x: auto; }
+.SmartApp-column p, .SmartApp-column li { font-weight: 300; }
+
+.SmartApp-column { padding: 10px; overflow-x: hidden; }
+.SmartApp-column * { font-size: 18px; }
+.SmartApp-term { font-weight: 600; }
+.SmartApp-definition { padding: 10px; font-style: italic; border: 1px dashed #aaa; margin: 10px; }
+.SmartApp-items li { padding: 5px 0px 5px 0px; }
+.SmartApp-item-title { font-weight: 600 !important; }
+
+ul.SmartApp-nowrap * { white-space: nowrap; overflow: hidden; }
+
+a { color: #55c; }
+a:hover { text-decoration: underline;  }
+
+sup, sup * { font-size: 12px !important; }

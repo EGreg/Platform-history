@@ -1,0 +1,15 @@
+{
+	"Q": {
+		"routes": {
+			"plugins/Platform/:action": {"module": "Platform"}
+		},
+		"pluginInfo": {
+			"Platform": {
+				"version": "0.3",
+				"compatible": "0.3",
+				"requires": {"Q": "0.8", "Users": "0.8", "Streams": "0.8"},
+				"connections": ["Users"]
+			}
+		}
+	}
+}

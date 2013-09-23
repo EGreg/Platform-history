@@ -1,0 +1,34 @@
+{
+	"Q": {
+		"web": {
+			"appRootUrl": "http://MyApp.loc",
+			"controllerSuffix": "CAN BE BLANK OR index.php"
+		}
+	},
+	"Db": {
+		"connections": {
+			"Users": {
+				"prefix": "PREFIX HERE",
+				"dsn": "mysql:host=localhost;dbname=DBNAME",
+				"username": "USERNAME",
+				"password": "PASSWORD",
+				"driver_options": {
+				  "3": 2
+				},
+				"shards": {}
+			}
+		}
+	},
+	"Users": {
+		"facebookApps": {
+			"APP NAME HERE": {
+				"appId": "FACEBOOK APP ID HERE",
+				"name": "FACEBOOK APP NAME HERE",
+				"url": "http:\/\/apps.facebook.com\/YOURAPP",
+				"secret": "PUT SECRET HERE",
+				"subpath": "/facebook",
+				"domains": ["THE BASE DOMAINS YOU SET IN FACEBOOK, USED FOR AUTH COOKIE"]
+			}
+		}
+	}
+}

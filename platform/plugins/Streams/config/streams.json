@@ -1,0 +1,184 @@
+{
+	"Streams/participating": {
+		"type": "Streams/participating",
+		"title": "Messages about joining/leaving streams",
+		"icon": "",
+		"readLevel": "0",
+		"writeLevel": "0",
+		"adminLevel": "0"
+	},
+	"Streams/user/icon": {
+		"type": "Streams/image/icon",
+		"title": "Icon",
+		"icon": "",
+		"name_fb": "pic"
+	},
+	"Streams/user/username": {
+		"type": "Streams/text/name",
+		"title": "Username",
+		"icon": "",
+		"name_fb": "username"
+	},
+	"Streams/user/firstName": {
+		"type": "Streams/text/name",
+		"title": "First name",
+		"icon": ""
+	},
+	"Streams/user/middle_name": {
+		"type": "Streams/text/name",
+		"title": "Middle name",
+		"icon": ""
+	},	
+	"Streams/user/lastName": {
+		"type": "Streams/text/name",
+		"title": "Last name",
+		"icon": ""
+	},
+	"Streams/user/status": {
+		"type": "Streams/text/small",
+		"title": "Status",
+		"icon": ""
+	},	
+	"Streams/user/description": {
+		"type": "Streams/text/small",
+		"title": "Description",
+		"icon": "",
+		"name_fb": "profile_blurb"
+	},
+	"Streams/user/presence": {
+		"type": "Streams/enum/presence",
+		"title": "Presence",
+		"icon": ""
+	},
+	"Streams/user/website": {
+		"type": "Streams/text/url",
+		"title": "Website",
+		"icon": ""
+	},	
+	"Streams/user/fb_username": {
+		"type": "Streams/text/username",
+		"title": "Facebook Username",
+		"icon": ""
+	},	
+	"Streams/user/affiliations": {
+		"type": "Streams/array/affiliation",
+		"title": "Affiliations",
+		"icon": ""
+	},	
+	"Streams/user/religion": {
+		"type": "Streams/text/small",
+		"title": "Religion",
+		"icon": ""
+	},	
+	"Streams/user/sex": {
+		"type": "Streams/enum/sex",
+		"title": "Sex",
+		"icon": ""
+	},	
+	"Streams/user/meeting_sex": {
+		"type": "Streams/array/sex",
+		"title": "Interested in",
+		"icon": ""
+	},	
+	"Streams/user/meeting_for": {
+		"type": "Streams/array/meeting",
+		"title": "Meeting for",
+		"icon": ""
+	},	
+	"Streams/user/relationship_status": {
+		"type": "Streams/enum/relationship_status",
+		"title": "Relationship status",
+		"icon": ""
+	},	
+	"Streams/user/significant_other_fb_uid": {
+		"type": "Streams/uid/fb_uid",
+		"title": "With facebook user",
+		"icon": ""
+	},
+	"Streams/user/birthday": {
+		"type": "Streams/date/birthday",
+		"title": "Birthday",
+		"icon": "",
+		"name_fb": "birthday_date"
+	},
+	"Streams/user/age": {
+		"type": "Streams/number/age",
+		"title": "Age",
+		"icon": ""
+	},
+	"Streams/user/hometown_location": {
+		"type": "Streams/location/city",
+		"title": "Hometown Location",
+		"icon": ""
+	},	
+	"Streams/user/fb_uid": {
+		"type": "Streams/uid/fb_uid",
+		"title": "My facebook uid",
+		"icon": ""
+	},	
+	"Streams/user/political": {
+		"type": "Streams/text/small",
+		"title": "Political views",
+		"icon": ""
+	},	
+	"Streams/user/current_location": {
+		"type": "Streams/location/city",
+		"title": "Current location",
+		"icon": ""
+	},	
+	"Streams/user/hs_info": {
+		"type": "Streams/array/hs_info",
+		"title": "High school",
+		"icon": ""
+	},	
+	"Streams/user/education_history": {
+		"type": "Streams/array/education_history",
+		"title": "Education history",
+		"icon": ""
+	},	
+	"Streams/user/work_history": {
+		"type": "Streams/array/work_history",
+		"title": "Work history",
+		"icon": ""
+	},	
+	"Streams/user/about_me": {
+		"type": "Streams/text/multiline",
+		"title": "Bio",
+		"icon": ""
+	},	
+	"Streams/user/activities": {
+		"type": "Streams/list/activities",
+		"title": "Activities",
+		"icon": ""
+	},	
+	"Streams/user/interests": {
+		"type": "Streams/list/interests",
+		"title": "Interests",
+		"icon": ""
+	},	
+	"Streams/user/music": {
+		"type": "Streams/list/music",
+		"title": "Music",
+		"icon": ""
+	},	
+	"Streams/user/tv": {
+		"type": "Streams/list/tv",
+		"title": "TV Shows",
+		"icon": ""
+	},	
+	"Streams/user/movies": {
+		"type": "Streams/list/movies",
+		"title": "Movies",
+		"icon": ""
+	},	
+	"Streams/user/books": {
+		"type": "Streams/list/books",
+		"title": "Books",
+		"icon": ""
+	},	
+	"Streams/user/quotes": {
+		"type": "Streams/list/quotes",
+		"title": "Quotes",
+		"icon": ""
+	}
+}

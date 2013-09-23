@@ -1,0 +1,34 @@
+{
+	"Q": {
+		"handlersAfterEvent": {
+			"Users/insertUser": ["Awards/after/Users/insertUser"],
+			"Q/responseExtras": ["Awards/after/Q/responseExtras"]
+		},
+		"routes": {
+			"plugins/Awards/:action": {"module": "Awards"}
+		},
+		"pluginInfo": {
+			"Awards": {
+				"version": "0.8",
+				"compatible": "0.8",
+				"requires": {"Q": "0.8", "Streams": "0.8"},
+				"connections": ["Awards"]
+			}
+		}
+	},
+	"Awards": {
+		"credits": {
+			"amounts": {
+				"Users/insertUser": 20
+			}
+		},
+		"reasons": {
+			"Awards/purchased": {
+				"by": "purchasing credits"
+			},
+			"Awards/received": {
+				"by": "receiving credits"
+			}
+		}
+	}
+}

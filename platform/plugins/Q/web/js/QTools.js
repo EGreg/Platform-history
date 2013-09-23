@@ -1,0 +1,3602 @@
+/**
+ *
+ * @module Q
+ * Provides a set of tools mostly related to client side of the application.
+ * This includes tools for application layout management depending on different conditions, some convenient UI
+ * elements for interaction and navigation and other.
+ * @submodule Tools
+ */
+(function ($) {
+
+if (!('Tools' in Q)) {
+	Q.Tools = {};
+}
+if (!('utils' in Q.Tools)) {
+	Q.Tools.utils = {};
+}
+
+Q.onReady.set(function()
+{	
+	if (Q.Layout.use)
+	{
+		// we need separate 'cancel mask' because 'cancel' button cannot be contained in
+		// half-transparent mask - it becames transparent itself
+		var showCancelMask = function(callback)
+		{
+			var mask = Q.Mask.get('Q.cancelMask').element;
+			var button = mask.children('.Q_load_cancel_button');
+			if (button.length == 0)
+			{
+				button = $('<button class="Q_load_cancel_button">Cancel</button>');
+				mask.append(button);
+			}
+			button.off(Q.Pointer.end).on(Q.Pointer.end, callback);
+			Q.Mask.show('Q.cancelMask');
+		};
+		
+		Q.jsonRequest.options.onLoadStart.set(function(o)
+		{
+			if (!o.quiet) {
+				Q.Mask.show('Q.loadDataMask');
+			}
+		}, 'Q.jsonRequest.load.mask');
+		Q.jsonRequest.options.onShowCancel.set(function(callback, o)
+		{
+			if (!o.quiet) {
+				showCancelMask(callback);
+			}
+		}, 'Q.jsonRequest.load.mask');
+		Q.jsonRequest.options.onLoadEnd.set(function()
+		{
+			Q.Mask.hide('Q.loadDataMask');
+			Q.Mask.hide('Q.cancelMask');
+		}, 'Q.jsonRequest.load.mask');
+	}
+	
+	// we really need to remove column=<id> from hash on fresh load
+	if (location.hash.indexOf('column') != -1)
+	{
+		location.hash = location.hash.replace(/(&|#)column=[^&]+/, '');
+		if (location.hash.charAt(1) == '&') location.hash = location.hash.substr(2);
+	}
+}, 'QTools');
+
+Q.onActivate.set(function()
+{
+	Q.Layout.updateTools(false);
+}, 'QTools');
+
+/**
+ * Class which contains various functions to manage layout of the application.
+ * The application is supposed to look and work fine on the various platforms and screen resolutions,
+ * mainly it's 'desktop', 'tablet' and 'mobile' but it also varies to specific platforms like 'android' for example.
+ * Standard application consists of 'dashboard', 'notices', 'listing', 'column(0|1|2)' and maybe some other slots and this
+ * class is intended to make these blocks look and function similarly on different platforms and devices.
+ * @class Layout
+ * @namespace Q
+ * @static
+ */
+Q.Layout = {
+	/**
+	 * Main property which must be set to true if you want to use Q.Layout manager in your application.
+	 * This must be set before Q.Layout.init() is called.
+	 * @property use
+	 * @type Boolean
+	 * @default false
+	 */
+	use: false,
+	
+	/**
+	 * A property to set by other components if layout needs to be updated again when 'window.load' event fired.
+	 * Useful when some components inited after first orientationChange() calls already passed.
+	 * @property needUpdateOnLoad
+	 * @type Boolean
+	 * @default false
+	 */
+	needUpdateOnLoad: false,
+	
+	/**
+	 * Property which is dynamically calculated after address bar is hidden (for mobile) or just after page load is finished (for all other platforms).
+	 * Makes sense mostly on mobile platforms.
+	 * @property fullScreenHeight
+	 * @type Number
+	 * @readOnly
+	 */
+	fullScreenHeight: 0,
+	
+	/**
+	 * Property which is dynamically calculated when browser address bar is visible. Makes sense only on mobile platforms.
+	 * @property heightWithAddressBar
+	 * @type Number
+	 * @readOnly
+	 */
+	heightWithAddressBar: 0,
+	
+	/**
+	 * Property which is dynamically calculated and contains supposed height of address bar. Makes sense only on mobile platforms.
+	 * @property addressBarHeight
+	 * @type Number
+	 * @readOnly
+	 */
+	addressBarHeight: 0,
+	
+	/**
+	 * Property which is dynamically calculated and contains supposed height of the app viewport with on-screen-keyboard visible.
+	 * Makes sense only on mobile platforms.
+	 * @property heightWithKeyboard
+	 * @type Number
+	 * @readOnly
+	 */
+	heightWithKeyboard: 0,
+	
+  /**
+   * Property to represent if keyboard is presumably currently visible on screen. Makes sense only on mobile platforms.
+   * @property keyboardVisible
+   * @type Boolean
+   * @readOnly
+   */
+	keyboardVisible: false,
+	
+  /**
+   * Property to set to true when address bar appearing needs to be handled. Makes sense only on mobile platforms.
+   * @property handleAddressBarAppearing
+   * @type Boolean
+   * @default false
+   */
+	handleAddressBarAppearing: false,
+	
+	/**
+	 * Property which dynamically calculated and set to true when address bar is visible on screen. Makes sense only on mobile platforms.
+	 * @property addressBarVisible
+	 * @type Boolean
+	 * @readOnly
+	 */
+	addressBarVisible: false,
+	
+	/**
+	 * Property to be set to developer-defined 'listing' slot handler. It's called when some item in 'listing' slot is selected by user.
+	 * @property listingHandler
+	 * @type Q.Event
+	 */
+	listingHandler: new Q.Event(),
+	
+	/**
+	 * If the browser is Internet Explorer version 8 or less this property will be set to true.
+	 * @property isIE8orLess
+	 * @type Boolean
+	 * @default false
+	 */
+	isIE8orLess: false,
+	
+	/**
+	 * Property which indicates whether Q.Layout is initialized (init() processed).
+	 * @property inited
+	 * @type Boolean
+	 * @default false
+	 */
+	inited: false,
+	
+	/**
+	 * Property which holds current device orientation (for touchscreen devices).
+	 * Maybe either 'portrait' or 'landscape'. For desktop it's always 'landscape'.
+	 * @property orientation
+	 * @type String
+	 * @default 'landscape'
+	 */
+	orientation: 'landscape',
+	
+	/**
+	 * Similar to 'orientation' property but keeps that orientation which was on application load.
+	 * Maybe useful in some cases.
+	 * @property orientationOnLoad
+	 * @type String
+	 */
+	orientationOnLoad: null,
+	
+	/**
+	 * Configuration property determining that layout blocks must be powered with iScroll (on iOS devices)
+	 * and it will be automatically managed ('refresh', 'destroy' etc). The property itself is a hash with 'blockName' as key and boolean value
+	 * stating whether to apply iScroll or not.
+	 * @property
+	 * @type Object
+	 * @default { 'column1': true, 'column2': false }
+	 * @example
+		Q.Layout.iScrollBlocks = { 'column1': true, 'column2': true };
+		Q.Layout.iScrollBlocks.column1 = false;
+		Q.Layout.iScrollBlocks.column2 = true;
+	 */
+	iScrollBlocks: { 'column1': true, 'column2': true },
+	
+	/**
+	 * Configuration property determining that layout blocks to which 'Q/scrollbarsAutoHide' plugin applied will have preserved
+	 * padding. This means that initial column contents padding on the right or bottom (depending on scrolling direction)
+	 * will be added to scrollbar width. The property itself is a hash with 'blockName' as key and boolean value
+	 * stating whether to preserve padding or not. Setting 'false' to particular 'blockName' will result in that scrollbar width
+	 * will be subtracted from initial padding. This property makes sense only on 'desktop' platform, because only there 'Q/scrollbarsAutoHide' is applied.
+	 * @property
+	 * @type Object
+	 * @default { 'column1': true, 'column2': true }
+	 * @example
+		Q.Layout.scrollbarsPadding = { 'column1': true, 'column2': true };
+		Q.Layout.scrollbarsPadding.column1 = false;
+		Q.Layout.scrollbarsPadding.column2 = true;
+	 */
+	scrollbarsPadding: { 'column1': true, 'column2': true },
+	
+	// === below are private properties only ===
+	
+	/**
+	 * Just for storing timeout id of setTimeout in which fade-in of orientation-changed layout will appear.
+	 * This is needed to clearTimeout() if another orientationChange() called before previous fully executed.
+	 * @property orientationFadeTimeout
+	 * @type Number
+	 * @private
+	 */
+	orientationFadeTimeout: 0,
+	
+	/**
+	 * Property to represent if focus event occured on some focusable element, like text fields, text area, etc.
+	 * @property focusEventOccured
+	 * @type Boolean
+	 * @private
+	 */
+	focusEventOccured: false,
+	
+	/**
+	 * Property for setting document body height much larger then needed.
+	 * It's done to fix 'touchmove-sometimes-overshoot' problem on android.
+	 * Basically it should be considered constant, however you still can change it if you really need.
+	 * @property androidBodyHeight
+	 * @type Number
+	 * @final
+	 * @private
+	 */
+	androidBodyHeight: 10000,
+	
+	/**
+	 * Property to store top offset of columns on android.
+	 * It's also done to fix 'touchmove-sometimes-overshoot' problem on android.
+	 * @property androidInitialOffset
+	 * @type Number
+	 * @private
+	 * @default -1
+	 */
+	androidInitialOffset: -1,
+	
+	/**
+	 * Internal property to store current columns state on android - fixed or not.
+	 * @property androidFixed
+	 * @type Boolean
+	 * @private
+	 */
+	androidFixed: false,
+	
+	/**
+	 * Internal property - array of integers for saving scroll positions of different columns.
+	 * @property savedScrollPos
+	 * @type Array
+	 * @private
+	 */
+	savedScrollPos: [0, 0, 10000],
+	
+	/**
+	 * Property to store current column scroll position.
+	 * @property curScrollPos
+	 * @type Number
+	 * @private
+	 */
+	curScrollPos: 0,
+		
+	/**
+	 * Property to store event handler(s) called when init() is finished.
+	 * @property onInitEvent
+	 * @type Q.Event
+	 * @private
+	 */
+	onInitEvent: new Q.Event(),
+	
+	/**
+	 * Property to store event handler(s) called before reset() begins.
+	 * @property beforeResetEvent
+	 * @type Q.Event
+	 * @private
+	 */
+	beforeResetEvent: new Q.Event(),
+	
+	/**
+	 * Property to store event handler(s) called when reset() is finished.
+	 * @property onResetEvent
+	 * @type Q.Event
+	 * @private
+	 */
+	onResetEvent: new Q.Event(),
+	
+	/**
+	 * Property to store event handler called when orientationChange() is processed.
+	 * @property onOrientationChangeEvent
+	 * @type Q.Event
+	 * @private
+	 */
+	onOrientationChangeEvent: new Q.Event(),
+	
+	/**
+	 * Internal property to temporary set to true when 'hashchange' event occured (reset to false when properly handled).
+	 * @property wasHashChange
+	 * @type Boolean
+	 * @private
+	 */
+	wasHashChange: false,
+	
+  /**
+   * Internal property to temporary turn off hashchange handling.
+   * @property ignoreHashChange
+   * @type Boolean
+   * @private
+   */
+	ignoreHashChange: false,
+	
+	/**
+	 * Internal property to store current location.hash.
+	 * @property currentHash
+	 * @type String
+	 * @private
+	 */
+	currentHash: '',
+
+	/**
+	 * Initialization routine for Q.Layout.
+	 * Does huge amount of job in intial configuring, binding event handlers, setting intervals etc.
+	 * Performs different actions depending on the platform (desktop | tablet | mobile) and OS (ios | android).
+	 * @method init
+	 */
+	init: function()
+	{
+		if (!Q.Layout.inited) {
+			// some IE specific initialization
+			var browser = Q.Browser.detect();
+			if (browser.name == 'explorer' && parseInt(browser.mainVersion) <= 8)
+			{
+				Q.Layout.isIE8orLess = true;
+				if (window.innerWidth === undefined && window.innerHeight === undefined)
+				{
+					window.innerWidth = document.documentElement.clientWidth;
+					window.innerHeight = document.documentElement.clientHeight;
+				}
+				$('.Q_player:last').after('<div style="font-size: 1px">&nbsp;</div>');
+			}
+			
+			var body = $(document.body);
+			body.addClass('Q_' + 
+				(Q.info.isMobile ? 'mobile' : (Q.info.isTablet ? 'tablet' : 'desktop'))
+			);
+			
+			if (Q.info.platform) {
+				body.addClass('Q_' + Q.info.platform);
+			}
+		
+			Q.Layout.scrollToOffset = (Q.info.platform == 'android' ? 1 : 0);
+		
+			if (Q.info.isMobile)
+			{
+				if (Q.info.platform == 'android')
+				{
+					window.scrollTo(0, 0);
+					setTimeout(function()
+					{
+						Q.Layout.heightWithAddressBar = window.innerHeight;
+					}, 300);
+				}
+				else
+				{
+					Q.Layout.heightWithAddressBar = window.innerHeight;
+				}
+			}
+			else
+			{
+				Q.Layout.fullScreenHeight = window.innerHeight;
+			}
+
+			Q.Interval.set(Q.Layout.checkOrientation, Q.Layout.options.checkOrientationInterval, 'Q.Layout.checkOrientation');
+			
+			if (Q.info.isTouchscreen)
+			{
+				if (Q.info.platform == 'ios')
+				{
+					$(document.body).bind('touchmove', function(e)
+					{
+						e.preventDefault();
+					});
+				}
+			}
+			
+			if (Q.info.isMobile)
+			{
+				if (!Q.Interval.exists('Q.Layout.hideAddressBar'))
+				{
+					var tries = 0;
+					Q.Interval.set(function()
+					{
+						Q.Layout.hideAddressBar();
+						if (++tries >= 4)
+						{
+							Q.Layout.fullScreenHeight = window.innerHeight;
+							Q.Layout.addressBarHeight = Q.Layout.fullScreenHeight - Q.Layout.heightWithAddressBar;
+							if (Q.info.platform == 'android')
+							{
+								Q.Layout.orientationChange(false, true, true);
+							}
+							Q.Interval.clear('Q.Layout.hideAddressBar');
+							if (Q.info.isMobile && Q.info.platform != 'android')
+							{
+								Q.Layout.handleAddressBarAppearing = true;
+							}
+						}
+					}, 500, 'Q.Layout.hideAddressBar');
+				}
+				
+				if (Q.info.platform == 'android')
+				{
+					$(document.body).bind('touchstart', function(e)
+					{
+						Q.Layout.processAndroidFixedBlocks(e);
+					});
+				}
+				else
+				{
+					$(document.body).bind('touchstart', function(e)
+					{
+						if (!Q.Layout.focusEventOccured && !Q.Layout.keyboardVisible && Q.Layout.addressBarVisible)
+						{
+							Q.Layout.hideAddressBar(true);
+							Q.Mask.hide('Q.screenMask');
+							if ($('#main').height() != window.innerHeight)
+								Q.Layout.orientationChange(false, true);
+						}
+					});
+				}
+			}
+			
+			if (Q.info.isTouchscreen)
+			{
+				var focusableElements = $('input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="password"], textarea');
+				focusableElements.live('focus', function(event)
+				{
+					Q.Layout.focusEventOccured = true;
+					Q.Layout.keyboardVisible = true;
+				});
+				
+				focusableElements.live('blur', function()
+				{
+					if (Q.info.platform != 'android')
+						Q.Layout.hideAddressBar();
+					Q.Layout.focusEventOccured = false;
+					Q.Layout.keyboardVisible = false;
+				});
+			}
+			
+			$('.Q_highlighted').live(Q.Pointer.start, function(event)
+			{
+				$(this).addClass('Q_active');
+				event.preventDefault();
+			});
+			$('.Q_highlighted').live(Q.Pointer.end, function(event)
+			{
+				$(this).removeClass('Q_active');
+			});
+			
+			var chatButtons = $('.Q_player_button');
+			chatButtons.live(Q.Pointer.end, function()
+			{
+				chatButtons.removeClass('Q_selected');
+				$(this).addClass('Q_selected');
+				
+				var $this = $(this);
+				if ($this.hasClass('Q_player_button_chat'))
+				{
+					Q.Layout.flipColumns('column2');
+				}
+			});
+			
+			if (Q.info.isMobile)
+			{
+				Q.Layout.flipColumns.options = {
+					'column1': {
+						'onFlipBegin': new Q.Event(function()
+						{
+							$(':focus').blur();
+							if (Q.info.platform == 'android')
+							{
+								Q.Layout.savedScrollPos[2] = document.body.scrollTop;
+							}
+						}, 'Q_flip_begin'),
+						'onFlipFinish': new Q.Event(function()
+						{
+							if (Q.info.platform == 'android')
+							{
+								document.body.scrollTop = Q.Layout.savedScrollPos[1];
+								Q.Layout.adjustColumnsHeight();
+							}
+						}, 'Q_flip_finish'),
+						'onBackButtonSet': new Q.Event(function()
+						{
+							var appButton = $('#Q_dashboard_item_app');
+							appButton.off('touchstart.Q_flip touchend.Q_flip');
+						}, 'Q_back_button_set')
+					},
+					'column2': {
+						'onFlipBegin': new Q.Event(function()
+						{
+							$(':focus').blur();
+							var column2Slot = $('#column2_slot');
+							if (column2Slot.css('visibility') == 'hidden')
+							{
+								column2Slot.css({
+									'position': 'static',
+									'visibility': 'visible',
+									'display': 'none',
+									'top': 'auto',
+									'left': 'auto'
+								});
+							}
+							if (Q.info.platform == 'android')
+							{
+								Q.Layout.savedScrollPos[1] = document.body.scrollTop;
+							}
+						}, 'Q_flip_begin'),
+						'onFlipFinish': new Q.Event(function()
+						{
+							if (Q.info.platform == 'android')
+							{
+								document.body.scrollTop = Q.Layout.savedScrollPos[2];
+								Q.Layout.adjustColumnsHeight();
+								$('#column1_slot .Q_scroll_indicator, #column2_slot .Q_scroll_indicator').css({ 'left': '0' });
+								var topOffset = Q.Layout.orientation == 'portrait' ? $('#dashboard_slot').outerHeight() : 0;
+								$('#column2_slot .Q_scroll_indicator_top_small').css({ 'top': topOffset + 'px' });
+							}
+						}, 'Q_flip_finish'),
+						'onBackButtonSet': new Q.Event(function()
+						{
+							var appButton = $('#Q_dashboard_item_app');
+							appButton.on('touchstart.Q_flip', function()
+							{
+								return false;
+							});
+							appButton.on('touchend.Q_flip', function()
+							{
+								window.history.back();
+							});
+						}, 'Q_back_button_set')
+					}
+				};
+				
+				Q.Layout.flipColumns.options.column1 = Q.extend(Q.Layout.flipColumns.options.column1, {
+					'onFlipBegin': new Q.Event(function()
+					{
+						if (Q.info.platform == 'android')
+						{
+							var participants = $('.Streams_participant_tool_wrapper');
+							participants.css({
+								'position': '',
+								'z-index': '',
+								'width': ''
+							});
+						}
+					}, 'Q_flip_begin_common'),
+					'onFlipFinish': new Q.Event(function()
+					{
+						setTimeout(function()
+						{
+							Q.Layout.adjustScrolling();
+						}, 0);
+						$('.Q_player').each(function()
+						{
+							var $this = $(this);
+							$this.find('.Q_player_buttons li').css({ 'width': (Math.ceil($this.width() / 2) - 1) + 'px' });
+						});
+						Q.Contextual.updateLayout();
+					}, 'Q_flip_finish_common'),
+					'onBackButtonSet': new Q.Event(function()
+					{
+						var appButton = $('#Q_dashboard_item_app');
+						var buttonLabel = appButton.children('span');
+						appButton.prepend(appButton.data('Q_app_button_icon')).children('.Q_dashboard_back_icon_small').remove();
+						buttonLabel.text(appButton.data('Q_app_button_text'));
+					}, 'Q_back_button_set_common')
+				});
+				
+				Q.Layout.flipColumns.options.column2 = Q.extend(Q.Layout.flipColumns.options.column2, {
+					'onFlipFinish': new Q.Event(function()
+					{
+						setTimeout(function()
+						{
+							var participants = $('#Streams_participant_tool');
+							participants.participants('update');
+							var availableHeight = $('#column2_slot').outerHeight() - participants.outerHeight();
+							var chat = $('#Streams_chat_tool');
+							if (Q.info.platform == 'android')
+							{
+								var params = { 'type': 'native', 'scroller': document.body, 'orientation': 'v', 'topOffset': Q.Layout.scrollToOffset };
+								chat.plugins('Q/scrollIndicators', 'destroy')
+								.plugin('Q/scrollIndicators', params);
+							}
+							if (chat.chatTool)
+								chat.chatTool('update', availableHeight);
+						}, 0);
+						
+						if (Q.info.platform == 'android')
+						{
+							var participants = $('.Streams_participant_tool_wrapper');
+							var participantsWidth = window.innerWidth, participantsLeft = 0;
+							if (Q.info.isMobile)
+							{
+								if (Q.Layout.orientation == 'landscape')
+								{
+									participantsWidth = window.innerWidth * 0.75 - 2;
+									participantsLeft = window.innerWidth - participantsWidth;
+								}
+							}
+							participants.css({
+								'position': 'fixed',
+								'z-index': '1000',
+								'margin-top': '-1px',
+								'left': participantsLeft + 'px',
+								'width': participantsWidth + 'px'
+							});
+						}
+						Q.Layout.adjustScrolling();
+						Q.Contextual.updateLayout();
+					}, 'Q_flip_finish_common'),
+					'onBackButtonSet': new Q.Event(function()
+					{
+						var appButton = $('#Q_dashboard_item_app');
+						var buttonLabel = appButton.children('span');
+						appButton.data('Q_app_button_text', buttonLabel.text());
+						var icon = appButton.children('img').detach();
+						appButton.data('Q_app_button_icon', icon);
+						appButton.prepend('<div class="Q_dashboard_back_icon_small" />');
+						buttonLabel.text('Back');
+					}, 'Q_back_button_set_common')
+				});
+				
+				Q.onHashChange.set(function()
+				{
+					if (!Q.Layout.ignoreHashChange)
+					{
+						var h = location.hash;
+						if (h.indexOf('column=1') != -1
+						|| (h.indexOf('column=') == -1 && Q.Layout.currentHash))
+						{
+							Q.Layout.wasHashChange = true;
+							Q.Layout.flipColumns('column1');
+						}
+						if (h.indexOf('column=2') != -1)
+						{
+							Q.Layout.wasHashChange = true;
+							Q.Layout.flipColumns('column2');
+						}
+					}
+					Q.Layout.currentHash = location.hash;
+					setTimeout(function()
+					{
+						Q.Layout.wasHashChange = false;
+					}, 0);
+				}, 'flipColumns');
+			}
+		}
+		
+		$('.Q_dashboard_expandable ul.Q_listing').plugin('Q/listing', { 
+			handler: Q.Layout.listingHandler, 'blink': false
+		});
+		
+		Q.Layout.handleColumns();
+		
+		Q.Layout.checkOrientation();
+		
+		Q.Notices.processAdded();
+		
+		if (Q.Layout.needUpdateOnLoad)
+		{
+			Q.Layout.orientationChange();
+			Q.Layout.needUpdateOnLoad = false;
+		}
+		
+		Q.Layout.ignoreHashChange = false;
+		
+		Q.Layout.inited = true;
+		Q.handle(Q.Layout.onInitEvent);
+	},
+
+	/**
+	 * Cleans-up some stuff left from Q.Layout initialization but only that isn't persistent across whole app.
+	 * Called automatically by Q.handle() when loading page with ajax. Should be run manually with care.
+	 * @method reset
+	 */
+	reset: function()
+	{
+		Q.handle(Q.Layout.beforeResetEvent);
+		Q.Dashboard.destroy();
+		Q.Layout.ignoreHashChange = true;
+		Q.Layout.currentHash = '';
+		
+		$('.Q_dashboard_expandable ul.Q_listing').plugin('Q/listing', 'destroy');
+		
+		var column1Slot = $('#column1_slot'), column2Slot = $('#column2_slot');
+		if (Q.info.isTouchscreen && Q.info.platform != 'android')
+		{
+			column1Slot.plugin('Q/iScroll', 'destroy');
+			column2Slot.plugin('Q/iScroll', 'destroy');
+		}
+		// hack-fast-flipping columns back to column1 if column2 currently displayed
+		if (Q.info.isMobile && Q.Layout.flipColumns.current == 'column2')
+		{
+			column1Slot.show().attr({ 'data-side': 'front' });
+			column2Slot.css({ 'display': 'block', 'visibility': 'hidden', 'top': '-10000px' }).attr({ 'data-side': 'back' });
+			Q.Layout.flipColumns.current = 'column1';
+		}
+		
+		$('.Q_hautoscroll').plugin('Q/hautoscroll', 'destroy');
+		
+		if (Q.info.platform == 'android') {
+			window.scrollTo(0, Q.Layout.scrollToOffset);
+			$('#column2_slot').css({ 'position': 'absolute' });
+		}
+		
+		Q.handle(Q.Layout.onResetEvent);
+	},
+	
+	/**
+	 * Hides address bar on mobile devices.
+	 * This function doesn't have to be called manually most of the time.
+	 * On mobile devices it tries to hide address bar by scrolling document to specific position
+	 * thus having some more space for the app.
+	 * @method hideAddressBar
+	 * @param {Boolean} [doNotResize=false]. By default, document body size is set to
+	 * deliberately bigger value than viewport size just to make sure that the scrolling will actually occur.
+	 * In some cases this behavior needs to be cancelled.
+	 */
+	hideAddressBar: function(doNotResize)
+	{
+		if (Q.info.platform == 'android' && document.body.offsetHeight >= window.innerHeight)
+			doNotResize = true;
+		else if (doNotResize === undefined)
+			doNotResize = false;
+		
+		if (!doNotResize)
+			$(document.body).css({ 'height': '1000px' });
+		
+		window.scrollTo(0, Q.Layout.scrollToOffset);
+		if (window.innerHeight > Q.Layout.heightWithAddressBar)
+		{
+			Q.Layout.fullScreenHeight = window.innerHeight;
+			if (Q.Layout.addressBarHeight !== 0)
+				Q.Layout.heightWithAddressBar = Q.Layout.fullScreenHeight - Q.Layout.addressBarHeight;
+		}
+		
+		if (!doNotResize)
+		{
+			// if hideAddressBar hasn't been called for quite some time then it's probably already worked
+			// and body height can be restored back to normal
+			clearTimeout(Q.Layout.normalBodyHeightTimeout);
+			Q.Layout.normalBodyHeightTimeout = setTimeout(function()
+			{
+				$(document.body).css({ 'height': '' });
+				if (Q.info.platform == 'android')
+				{
+					var nativeBlocks = Q.Layout.android.options.nativelyScrolledBlocks;
+					for (var i = 0; i < nativeBlocks.length; i++)
+					{
+						$(nativeBlocks[i]).plugin('Q/scrollIndicators', 'update');
+					}
+				}
+			}, 1000);
+		}
+	},
+
+	/**
+	 * Periodically checks window.innerWidth or window.orientation properties to detect device orientation change.
+	 * Applicable mostly to mobile devices, on desktop will adjust layout if window size changes.
+	 * Doensn't have to be called manually.
+	 * @method checkOrientation
+	 * @private
+	 */
+	checkOrientation: function()
+	{
+		if (Q.Layout.lastWindowWidth === undefined)
+			Q.Layout.lastWindowWidth = 0;
+		if (Q.Layout.lastOrientation === undefined)
+			Q.Layout.lastOrientation = -1;
+		
+		var windowWidth = window.innerWidth, windowHeight = window.innerHeight, orientation = window.orientation;
+		if ((orientation !== undefined && orientation !== Q.Layout.lastOrientation && windowWidth !== Q.Layout.lastWindowWidth) ||
+				(orientation === undefined && windowWidth !== Q.Layout.lastWindowWidth))
+		{
+			var previousOrientation = Q.Layout.orientation;
+			if (orientation !== undefined)
+			{
+				Q.Layout.lastWindowWidth = windowWidth;
+				Q.Layout.lastOrientation = orientation;
+				Q.Layout.orientation = ((orientation === 0 || orientation === 180) ? 'portrait' : 'landscape');
+			}
+			else
+			{
+				Q.Layout.lastWindowWidth = windowWidth;
+				Q.Layout.orientation = (windowWidth > windowHeight ? 'landscape' : 'portrait');
+			}
+			if (!Q.Layout.orientationOnLoad)
+			{
+				Q.Layout.orientationOnLoad = Q.Layout.orientation;
+			}
+			
+			$(document.body).removeClass('Q_portrait Q_landscape').addClass('Q_' + Q.Layout.orientation);
+			if (Q.info.isMobile && Q.info.platform != 'android')
+				$(document.body).css({ 'height': '1000px' });
+			$('#main').css({ 'opacity': '0' });
+			var orientationMask = $('.Q_orientation_mask');
+			if (!orientationMask.length)
+			{
+				if (!Q.Layout.orientationMaskIcon)
+				{
+					Q.Layout.orientationMaskIcon = '/plugins/Q/img/ui/qbix_logo_small.png';
+				}
+				orientationMask = $('body').prepend(
+					'<div class="Q_orientation_mask">' +
+						'<img src="' + Q.url(Q.Layout.orientationMaskIcon) + '" alt="Loading...">' +
+					'</div>'
+				);
+			}
+			orientationMask.css({
+				'width': windowWidth + 'px',
+				'height': windowHeight + 'px',
+				'line-height': windowHeight + 'px',
+				'opacity': '1'
+			});
+			orientationMask.show();
+			
+			setTimeout(function()
+			{
+				if (Q.Layout.fullScreenHeight != 0 && Q.Layout.addressBarHeight != 0)
+				{
+					Q.Layout.fullScreenHeight = windowHeight;
+					Q.Layout.heightWithAddressBar = Q.Layout.fullScreenHeight - Q.Layout.addressBarHeight;
+				}
+				Q.Layout.orientationChange(previousOrientation != Q.Layout.orientation);
+			}, 0);
+		}
+		if (Q.Layout.fullScreenHeight && windowHeight < Q.Layout.fullScreenHeight &&
+				((Q.info.isMobile && (windowHeight != Q.Layout.heightWithAddressBar)) || !Q.info.isMobile))
+		{
+			Q.Layout.heightWithKeyboard = windowHeight;
+			Q.Layout.keyboardVisible = true;
+		}
+		else if (!Q.Layout.focusEventOccured)
+		{
+			Q.Layout.keyboardVisible = false;
+		}
+		var main = $('#main');
+		if (Q.info.platform != 'android' && main.length != 0 && main.height() != windowHeight)
+		{
+			// if it's 'height-only' orientation change and if keyboard appeared
+			// we shouldn't run orientationChange() in such case
+			// also there's no need to adjust height if it's address bar appeared
+			if (!Q.Layout.keyboardVisible && windowHeight != Q.Layout.heightWithAddressBar)
+				Q.Layout.orientationChange(false, true, true);
+		}
+		if (Q.Layout.handleAddressBarAppearing && Q.Layout.heightWithAddressBar < Q.Layout.fullScreenHeight &&
+				window.innerHeight == Q.Layout.heightWithAddressBar && !Q.Mask.isVisible('Q.screenMask'))
+		{
+			Q.Mask.show('Q.screenMask');
+			Q.Layout.addressBarVisible = true;
+		}
+	},
+	
+	/**
+	 * Does a huge job of adjusting various blocks of the application depending on current viewport (window) size.
+	 * Usually called automatically on any viewport size change, but in some rare cases may be called manually.
+	 * @method orientationChange
+	 * @param {Boolean} [switched=false] Will be true if screen orientation really changed before calling this method.
+	 * This happens when orientation just switched from 'landscape' to 'portrat' or in reverse.
+	 * @param {Boolean} [heightOnly=false] Indicates that only height of viewport has changed so many other adjustments
+	 *	 aren't needed this time.
+	 * @param {Boolean} [dontHideAddressBar=false]. May be set to true to not hide address bar while handle layout changes.
+	 *	 Useful together with heightOnly == true presuming that on height only change address bar is already hidden.
+	 */
+	orientationChange: function(switched, heightOnly, dontHideAddressBar)
+	{
+		if (Q.Layout.ignoreOrientationChange) return;
+		if (switched === undefined)
+			switched = false;
+		if (heightOnly === undefined)
+			heightOnly = false;
+		if (Q.info.platform == 'android')
+			dontHideAddressBar = true;
+		else if (dontHideAddressBar === undefined)
+			dontHideAddressBar = false;
+		
+		if (Q.info.isMobile && Q.info.platform != 'android')
+		{
+			Q.Layout.handleAddressBarAppearing = false;
+		}
+		
+		var main = $('#main');
+		var dashboard = $('#dashboard_slot');
+		var column0Slot = $('#column0_slot');
+		var column1Slot = $('#column1_slot');
+		var column2Slot = $('#column2_slot');
+		var noticesSlot = $('#notices_slot');
+		var topStub = $('#main > .Q_top_stub');
+		
+		var browser = Q.Browser.detect();
+		
+		if (!heightOnly)
+		{
+			clearTimeout(Q.Layout.orientationFadeTimeout);
+			
+			if (Q.Layout.isIE8orLess)
+			{
+				$('.Q_placeholder').css({ 'visibility': 'hidden' });
+			}
+			
+			if (Q.info.platform == 'android')
+			{
+				Q.Layout.androidInitialOffset = -1;
+				
+				if (Q.Layout.androidFixed)
+				{
+					document.body.scrollTop = Q.Layout.androidBodyHeight / 2;
+				}
+				
+				Q.Layout.processAndroidFixedBlocks();
+				if (Q.info.isMobile)
+				{
+					if (Q.Layout.orientation == 'landscape')
+				 	{
+						var dashboardWidth = window.innerWidth * 0.25;
+						dashboard.css({ 'width': dashboardWidth + 'px' });
+						dashboard.data('Q_dashboard_width', dashboardWidth);
+						var columnsWidth = window.innerWidth * 0.75 - 2;
+						dashboardWidth += 2;
+						var dashboardHeight = dashboard.outerHeight();
+						column0Slot.css({
+							'width': columnsWidth + 'px',
+							'margin-left': dashboardWidth + 'px',
+							'top': (parseInt(column0Slot.css('top')) - dashboardHeight) + 'px'
+						});
+						column0Slot.data('left', column0Slot.css('margin-left'));
+						column1Slot.css({
+							'width': columnsWidth + 'px',
+							'margin-left': dashboardWidth + 'px',
+							'top': (parseInt(column1Slot.css('top')) - dashboardHeight) + 'px'
+						});
+						column1Slot.data('left', column0Slot.css('margin-left'));
+						column2Slot.css({
+							'width': columnsWidth + 'px',
+							'margin-left': dashboardWidth + 'px',
+							'top': (parseInt(column2Slot.css('top')) - dashboardHeight) + 'px'
+						});
+						column2Slot.data('left', column0Slot.css('margin-left'));
+					}
+					else if (Q.Layout.orientation == 'portrait')
+					{
+						column0Slot.css({ 'width': '', 'left': 0, 'margin-left': '0' });
+						column0Slot.data('left', '0');
+						column1Slot.css({ 'width': '', 'left': 0, 'margin-left': '0' });
+						column1Slot.data('left', '0');
+						column2Slot.css({ 'width': '', 'left': 0, 'margin-left': '0' });
+						column2Slot.data('left', '0');
+					}
+				}
+			}
+		}
+		
+		if (Q.info.isMobile && Q.Layout.orientation == 'landscape') {
+			var w = parseInt(dashboard.css('width'));
+			dashboard.data('Q_dashboard_width', Math.min(window.innerWidth - column1Slot.width() - 2, column1Slot.width()));
+		}
+		
+		if (Q.info.platform == 'android')
+		{
+			Q.Layout.adjustColumnsHeight();
+		}
+		
+		if (Q.info.isMobile)
+		{
+			if (!dontHideAddressBar)
+				Q.Layout.hideAddressBar();
+			if (Q.Layout.scrollToOffset)
+				main.css({ 'margin-top': '1px' });
+		}
+		
+		if (!heightOnly)
+			Q.Contextual.hide(Q.Notices.expanded);
+		
+		if (Q.info.isTouchscreen)
+		{
+			// workaround of strange bug appearing only on iPad and only in start.html (cordova) version
+			// and only when initial orientation on app load was landscape: after orientation change landscape => portrait
+			// document body is offset to the left behind left border of the screen
+			var body = $(document.body);
+			body.css({ 'width': window.innerWidth + 'px' });
+			if (switched && Q.info.isLocalFile && Q.Layout.orientation == 'portrait' &&
+					Q.Layout.orientationOnLoad == 'landscape' && Q.info.isTablet && Q.info.platform == 'ios')
+			{
+				body.css({ 'margin-left': ((screen.height - screen.width) / 2) + 'px' });
+				body.on(Q.Pointer.start + '.Q_orientation', function()
+				{
+					// found that on focus on any text field, document body come to its initial position,
+					// so we need to add temporary text field, then immediately focus it, blur it and remove it
+					var input = $('<input type="text" />');
+					body.append(input);
+					input.trigger('focus').trigger('blur').remove();
+					body.css({ 'margin-left': '' }).off(Q.Pointer.start + '.Q_orientation');
+					Q.Contextual.updateLayout();
+				});
+			}
+			else
+			{
+				body.css({ 'margin-left': '' });
+			}
+			
+			if (Q.info.platform != 'android')
+			{
+				main.css({ 'height': window.innerHeight + 'px' });
+			}
+		}
+		
+		var orientationMask = $('.Q_orientation_mask');
+		orientationMask.css({
+			'width': window.innerWidth + 'px',
+			'height': window.innerHeight + 'px',
+			'line-height': window.innerHeight + 'px'
+		});
+		
+		if (!heightOnly)
+		{
+			Q.Dashboard.build();
+		}
+		Q.Dashboard.updateLayout();
+		Q.Notices.updateLayout();
+		
+		var columnsHeight = 0;
+		if (Q.info.isMobile)
+		{
+			if (Q.info.platform != 'android')
+			{
+				columnsHeight = main.height() - topStub.height()
+											- (Q.Layout.orientation == 'portrait' ? dashboard.outerHeight() : 0);
+				column0Slot.css({ 'height': columnsHeight + 'px' });
+				column1Slot.css({ 'height': columnsHeight + 'px' });
+				column2Slot.css({ 'height': columnsHeight + 'px' });
+			}
+		}
+		else if (Q.info.isTablet)
+		{
+			if (Q.Layout.orientation == 'portrait')
+			{
+				columnsHeight = window.innerHeight - topStub.height() - dashboard.outerHeight();
+			}
+			else
+			{
+				columnsHeight = main.height() - dashboard.offset().top - parseInt(column1Slot.css('margin-bottom'));
+			}
+			column0Slot.css({ 'height': columnsHeight + 'px' });
+			column1Slot.css({ 'height': columnsHeight + 'px' });
+			column2Slot.css({ 'height': columnsHeight + 'px' });
+		}
+		else
+		{
+			columnsHeight = main.height() - dashboard.offset().top - parseInt(column1Slot.css('margin-bottom'));
+			column0Slot.css({ 'height': columnsHeight + 'px' });
+			column1Slot.css({ 'height': columnsHeight + 'px' });
+			column2Slot.css({ 'height': columnsHeight + 'px' });
+			
+			var column1Contents = column1Slot.find('.Q_column1_contents');
+			var contentsHeight = column1Slot.height() - parseInt(column1Contents.css('padding-top'))
+			                   - parseInt(column1Contents.css('padding-bottom'));
+			column1Contents.css({ 'height': contentsHeight + 'px' });
+			
+			var column2Contents = column2Slot.find('.Q_column2_contents');
+			if (column2Contents.find('.Streams_chat_tool').length == 0 &&
+					column2Contents.find('#Streams_participant_tool').length == 0)
+			{
+				contentsHeight = column2Slot.height() - parseInt(column2Contents.css('padding-top'))
+                       - parseInt(column2Contents.css('padding-bottom'));
+				column2Contents.data('Q_scrollbars_auto_hide', true).css({ 'height': contentsHeight + 'px' });
+			}
+		}
+		
+		Q.Layout.adjustScrolling();
+		Q.Contextual.updateLayout();
+		Q.Mask.update();
+		
+		$('.Q_player').each(function()
+		{
+				var $this = $(this);
+				$this.find('.Q_player_buttons li').css({ 'width': (Math.ceil($this.width() / 2) - 1) + 'px' });
+		});
+		
+		Q.Layout.updateTools(heightOnly);
+		
+		if (!heightOnly)
+		{
+			Q.Layout.orientationFadeTimeout = setTimeout(function()
+			{
+				orientationMask.fadeTo(Q.Layout.options.orientationFadeTime, 0, function()
+				{
+					orientationMask.hide();
+				});
+				main.fadeTo(Q.Layout.options.orientationFadeTime, 1);
+				if (Q.Layout.isIE8orLess)
+				{
+					$('.Q_placeholder').css({ 'visibility': 'visible' });
+				}
+			}, 1000);
+		}
+		
+		if (Q.info.platform == 'android')
+		{
+			var params = { 'type': 'native', 'scroller': document.body, 'orientation': 'v', 'topOffset': Q.Layout.scrollToOffset };
+			var nativeBlocks = Q.Layout.android.options.nativelyScrolledBlocks;
+			for (var i = 0; i < nativeBlocks.length; i++)
+			{
+				$(nativeBlocks[i]).plugin('Q/scrollIndicators', 'destroy')
+				.plugin('Q/scrollIndicators', params);
+			}
+		}
+		
+		Q.Layout.browserSpecifics();
+
+		if (Q.info.isMobile && Q.info.platform != 'android') {
+			Q.Layout.handleAddressBarAppearing = true;
+		}
+		Q.handle(Q.Layout.onOrientationChangeEvent);
+	},
+	
+	/**
+	 * Adjust iScroll applied to various blocks of the application.
+	 * Applicable only on mobile devices. Usually called automatically but in rare cases may be
+	 * called manually (for example when column contents is loaded dynamically).
+	 * @method adjustScrolling
+	 */
+	adjustScrolling: function()
+	{
+		var dashboard = $('#dashboard_slot');
+		var column1Slot = $('#column1_slot'), column2Slot = $('#column2_slot');
+		var topStub = $('#main > .Q_top_stub');
+		if (Q.info.platform == 'android') // TODO (DT): android-specific scrolling adjustments, if any.
+		{
+			
+		}
+		else if (Q.info.isTouchscreen) // iOS scrolling
+		{
+			if (Q.Layout.iScrollBlocks.column1 && column1Slot.length > 0 && column1Slot.children().length > 0)
+			{
+				if (column1Slot.children('.Q_column1_contents').outerHeight() > column1Slot.height())
+				{
+					if (column1Slot.data('Q/iScroll'))
+					{
+						column1Slot.plugin('Q/iScroll', 'refresh');
+					}
+					else
+					{
+						column1Slot.plugin('Q/iScroll');
+					}
+					var column1Scrollbar = column1Slot.children('div:last:not(.Q_column1_contents)');
+					if (column1Scrollbar.length != 0)
+					{
+						column1Scrollbar.detach();
+						$(document.body).append(column1Scrollbar);
+						column1Slot.data('Q_iscroll_scrollbar', column1Scrollbar);
+					}
+					else
+					{
+						column1Scrollbar = column1Slot.data('Q_iscroll_scrollbar');
+					}
+					if (column1Scrollbar)
+					{
+						column1Scrollbar.css({
+							'top': (topStub.height() + (Q.Layout.orientation == 'portrait' ? dashboard.height() : 0)) + 'px',
+							'left': (column1Slot.offset().left + column1Slot.width() - column1Scrollbar.outerWidth()) + 'px',
+							'right': '',
+							'height': column1Slot.outerHeight() + 'px'
+						});
+						column1Slot.plugin('Q/iScroll', 'refresh');
+					}
+				}
+				else
+				{
+					column1Slot.plugin('Q/iScroll', 'destroy');
+				}
+			}
+			else
+			{
+				column1Slot.plugin('Q/iScroll', 'destroy');
+			}
+			if (Q.Layout.iScrollBlocks.column2 && column2Slot.length > 0 && column2Slot.children().length)
+			{
+				if (column2Slot.children('.Q_column2_contents').outerHeight() > column2Slot.height())
+				{
+					if (column2Slot.data('Q/iScroll'))
+					{
+						column2Slot.plugin('Q/iScroll', 'refresh');
+					}
+					else
+					{
+						column2Slot.plugin('Q/iScroll');
+					}
+					var column2Scrollbar = column2Slot.children('div:last:not(.Q_column2_contents)');
+					if (column2Scrollbar.length != 0)
+					{
+						column2Scrollbar.detach();
+						$(document.body).append(column2Scrollbar);
+						column2Slot.data('Q_iscroll_scrollbar', column2Scrollbar);
+					}
+					else
+					{
+						column2Scrollbar = column2Slot.data('Q_iscroll_scrollbar');
+					}
+					if (column2Scrollbar)
+					{
+						column2Scrollbar.css({
+							'top': (topStub.height() + (Q.Layout.orientation == 'portrait' ? dashboard.height() : 0)) + 'px',
+							'left': (column2Slot.offset().left + column2Slot.width() - column2Scrollbar.outerWidth()) + 'px',
+							'right': '',
+							'height': column2Slot.outerHeight() + 'px'
+						});
+						column2Slot.plugin('Q/iScroll', 'refresh');
+					}
+				}
+				else
+				{
+					column2Slot.plugin('Q/iScroll', 'destroy');
+				}
+			}
+			else
+			{
+				column2Slot.plugin('Q/iScroll', 'destroy');
+			}
+		}
+		else // desktop scrolling
+		{
+			var column1Contents = column1Slot.children('.Q_column1_contents');
+			column1Contents.plugin('Q/scrollbarsAutoHide', { 'scrollbarPadding': Q.Layout.scrollbarsPadding.column1 });
+			setTimeout(function()
+			{
+				column1Contents.trigger('mouseenter').trigger('mouseleave');
+			}, 100);
+			var column2Contents = column2Slot.children('.Q_column2_contents');
+			if (column2Contents.data('Q_scrollbars_auto_hide'))
+			{
+				column2Contents.plugin('Q/scrollbarsAutoHide', { 'scrollbarPadding': Q.Layout.scrollbarsPadding.column2 });
+				setTimeout(function()
+				{
+					column2Contents.trigger('mouseenter').trigger('mouseleave');
+				}, 100);
+
+			}
+		}
+	},
+	
+	/**
+	 * Adjust columns height depending on their current visible content.
+	 * Most usage currently related to android but maybe will be useful on other platforms somehow.
+	 * @method adjustColumnsHeight
+	 */
+	adjustColumnsHeight: function()
+	{
+		var column1Slot = $('#column1_slot'), column2Slot = $('#column2_slot'), dashboard = $('#dashboard_slot');
+		var columnsAvailableHeight = window.innerHeight - (Q.Layout.orientation == 'portrait' ? dashboard.outerHeight() : 0);
+		if (column1Slot.children('.Q_column1_contents').outerHeight() < columnsAvailableHeight)
+		{
+			column1Slot.css({ 'height': columnsAvailableHeight + 'px' });
+		}
+		else
+		{
+			column1Slot.css({ 'height': '' });
+		}
+		if (column2Slot.children('.Q_column2_contents').outerHeight() < columnsAvailableHeight)
+		{
+			column2Slot.css({ 'height': columnsAvailableHeight + 'px' });
+		}
+		else
+		{
+			column2Slot.css({ 'height': '' });
+		}
+	},
+	
+	/**
+	 * Handles 'postion: fixed / relative' switching of some blocks to make native scrolling possible.
+	 * This function is Android-specific.
+	 * @method processAndroidFixedBlocks
+	 * @private
+	 * @param {Object} e DOM event containing latest 'touchstart' event info.
+	 */
+	processAndroidFixedBlocks: function(e)
+	{
+		var body = $(document.body);
+		var columns = $('#column0_slot, #column1_slot, #column2_slot');
+		var target = e ? e.originalEvent.touches[0].target : null, $target = $(target);
+		if (target != null && target.id != 'column0_slot' && target.id != 'column1_slot' && target.id != 'Streams_chat_tool' &&
+				$target.parents(Q.Layout.android.options.nativelyScrolledBlocks.join(', ')).length == 0 &&
+				!$target.hasClass('Q_dialog_trigger') && $target.parents('.Q_dialog_trigger').length == 0 &&
+				!$target.hasClass('Q_fullscreen_dialog') && $target.parents('.Q_fullscreen_dialog').length == 0)
+		{
+			if (!Q.Layout.androidFixed)
+			{
+				body.css({ 'height': Q.Layout.androidBodyHeight + 'px' });
+				if (Q.Layout.androidInitialOffset == -1)
+				{
+					Q.Layout.androidInitialOffset = $('#notices_slot').outerHeight()
+																				+ (Q.Layout.orientation == 'portrait' ? $('#dashboard_slot').outerHeight(): 0);
+				}
+				Q.Layout.curScrollPos = document.body.scrollTop;
+				columns.css({
+					'position': 'fixed',
+					'left': columns.data('left'),
+					'margin-left': '0',
+					'top': (Q.Layout.androidInitialOffset + Q.Layout.scrollToOffset - Q.Layout.curScrollPos) + 'px'
+				});
+				body.scrollTop(Q.Layout.androidBodyHeight / 2);
+				Q.Layout.androidFixed = true;
+			}
+			e.preventDefault();
+		}
+		else if (Q.Layout.androidFixed)
+		{
+			document.body.scrollTop = Q.Layout.curScrollPos;
+			body.css({ 'height': 'auto' });
+			columns.css({
+				'position': 'static',
+				'left': '',
+				'margin-left': columns.data('left'),
+				'top': 'auto'
+			});
+			var column2Slot = $(columns[2]);
+			if (column2Slot.css('visibility') == 'hidden')
+			{
+				column2Slot.css({ 'position': '', 'top': '' });
+			}
+			Q.Layout.androidFixed = false;
+		}
+	},
+	
+	/**
+	 * Manages columns.
+	 * By default column1 and column2 are shown, but if we have column0 filled, then it's shown instead of column1 and column2.
+	 * @method handleColumns
+	 * @private
+	 */
+	handleColumns: function()
+	{
+		if ($('#column0_slot').children().not('.Q_scroll_indicator').length > 0)
+		{
+			$('#column0_slot').show();
+			$('#column1_slot').hide();
+			$('#column2_slot').hide();
+		}
+	},
+	
+	/**
+	 * Updates all tools contained in the app by triggering 'onLayout' on them.
+	 * Also calculates additional options for tools with some layout-related values
+	 * and passes them to 'onLayout' triggering.
+	 * @method updateTools
+	 * @param {Boolean} [heightOnly=false] Indicates that only height of viewport has changed so many other adjustments
+	 *	 aren't needed this time. Usually this argument is passed from Q.Layout.orientationChange().
+	 */
+	updateTools: function(heightOnly)
+	{
+		var column2Slot = $('#column2_slot'), participants = column2Slot.find('.Streams_participant_tool_wrapper');
+		
+		var layoutUpdateOptions = {};
+		layoutUpdateOptions.chatAvailableHeight = column2Slot.height() - participants.outerHeight();
+		layoutUpdateOptions.chatWidthOnly = false;
+		
+		if (!heightOnly)
+		{
+			if (Q.info.isMobile)
+			{
+				layoutUpdateOptions.participantsWidth = window.innerWidth, layoutUpdateOptions.participantsLeft = 0;
+				if (Q.Layout.orientation == 'landscape')
+				{
+					participantsWidth = window.innerWidth * 0.75 - 2;
+					participantsLeft = window.innerWidth - participantsWidth;
+				}
+				// TODO (DT): move this to participants tool 'onLayout' after refactoring
+				/*participants.css({
+					'left': participantsLeft + 'px',
+					'width': participantsWidth + 'px'
+				});*/
+			}
+			// participants.children('.Streams_participant_tool').participants('update');
+		}
+		
+		Q.trigger('onLayout', document.body, [layoutUpdateOptions]);
+	},
+	
+	/**
+	 * Flips columns (column1 to column2 and in reverse) of the application.
+	 * Makes sense only on mobile platforms because only there one column at a time is displayed.
+	 * Uses Q/flip custom jQuery plugin to provide visual 'flip' effect. 
+	 * @method flipColumns
+	 * @param {String} to Column name which to flip. Valid values only 'column0' | 'column1' | 'column2'.
+	 * @param {Object} options Additional options to override some behavior happened before and after columns flip.
+	 * @example
+	 *   Q.Layout.flipColumns('column2', {
+	       'onFlipBegin': new Q.Event(function()
+	       {
+	         // code executed before flip
+	       }, 'Q_flip_begin_common'),
+	       'onFlipFinish': new Q.Event(function()
+	       {
+	         // code executed right after flip finishes
+	       }, 'Q_flip_finish_common'),
+				 'onBackButtonSet': new Q.Event(function()
+	       {
+	         // specific code if you need to change default 'Back' button provided by Q.Dashboard
+	       }, 'Q_back_button_set_common')
+	     });
+	 */
+	flipColumns: function(to, options)
+	{
+		if (Q.info.isMobile)
+		{
+			var o = Q.extend({}, Q.Layout.flipColumns.options[to], options);
+			
+			if (!Q.Layout.flipColumns.fn) {
+				Q.Layout.flipColumns.fn = {};
+				
+				var updateHash = function(columnName) {
+					var h = location.hash;
+					var columnNumber = columnName.replace('column', '');
+					Q.Layout.ignoreHashChange = true;
+					location.hash = location.hash.queryField('column', columnNumber);
+					setTimeout(function() {
+						Q.Layout.ignoreHashChange = false;
+					}, 0);
+				};
+				
+				Q.Layout.flipColumns.current = 'column1';
+				
+				var columnsFlip = $('#columns_flip');
+				Q.each(['column1', 'column2'], function (i, columnName) {
+					Q.Layout.flipColumns.fn[columnName] = function(o) {
+						if (Q.Layout.flipColumns.current != columnName) {
+							Q.Layout.flipColumns.current = columnName;
+							if (!Q.Layout.wasHashChange) {
+								updateHash(columnName);
+							}
+							Q.handle(o.onFlipBegin);
+							columnsFlip.plugin('Q/flip', {
+								onFinish: {'Q_columns_flip_handler': function () {
+									Q.handle(o.onFlipFinish);
+									Q.handle(o.onBackButtonSet);
+									Q.Layout.adjustScrolling();
+								}}
+							});
+						}
+					};	
+				});
+			}
+			
+			Q.Layout.flipColumns.fn[to](o);
+		}
+	},
+	
+	/**
+	 * Makes minor browser specific adjustments to the layout.
+	 * @method browserSpecifics
+	 * @private
+	 */
+	browserSpecifics: function()
+	{
+		if ($.browser.msie)
+		{
+			
+		}
+	}
+};
+
+/**
+ * Layout configuration options.
+ * @property options
+ * @type Object
+ */
+Q.Layout.options = {
+	/**
+	 * An interval in which orientation is periodically checked.
+	 * @property options.checkOrientationInterval
+	 * @type Number
+	 * @default 200
+	 */
+	'checkOrientationInterval': 200,
+	
+	/**
+	 * When orientation changes all layout is hidden and this is fade-in time for it to appear after layout calculations finished
+	 * @property options.orientationFadeTime
+	 * @type Number
+	 * @default 300
+	 */
+	'orientationFadeTime': 300
+};
+
+/**
+ * Layout configuration options specifically for android.
+ * @property android.options
+ * @type Object 
+ */
+Q.Layout.android = {
+	'options': {
+		/**
+		 * Property determining which application blocks should be scrolled 'natively' on android, meaning
+		 * that no 'iScroll' or 'touchscroll' is applied to them.
+		 * This is array of jQuery selectors of the blocks.
+		 * @property android.options.nativelyScrolledBlocks
+		 * @default ['#column0_slot', '#column1_slot', '#Streams_chat_tool']
+		 */
+		'nativelyScrolledBlocks': ['#column0_slot', '#column1_slot', '#Streams_chat_tool']
+	}
+};
+
+/**
+ * Additional options for Q.Layout.flipColumns(). Should be set to a hash containing additional Q.Event handlers for different
+ * events fired by flipColumns(). You can completely substitute this options with yours but it's preferably to override / append one
+ * or few particular handlers
+ * @property flipColumns.options
+ * @type Object
+ * @example
+ *   Q.Layout.flipColumns.options = {
+       'column1': {
+         'onFlipBegin': new Q.Event(function()
+         {
+           // executed just before flip
+         }, 'Q_flip_begin'),
+         'onFlipFinish': new Q.Event(function()
+         {
+           // executed just after flip
+         }, 'Q_flip_finish'),
+         'onBackButtonSet': new Q.Event(function()
+         {
+           // some code to override default 'Back' button provided by Q.Dashboard
+         }, 'Q_back_button_set')
+       },
+       'column2': {} // same structure as for 'column1'
+     };
+ */
+Q.Layout.flipColumns.options = {};
+
+Q.onInit.set(function () {
+
+	if (Q.Layout.use) {
+		Q.onPageLoad('').set(function() {
+			Q.Layout.needUpdateOnLoad = true;
+			Q.Layout.init();
+		}, 'Q.Layout');
+
+		Q.beforePageUnload('').set(function() {
+			Q.Layout.reset();
+		}, 'Q.Layout');
+	}
+	
+	//jQuery Tools tooltip and validator plugins configuration
+	var tooltipConf = jQuery.tools.tooltip.conf;
+	tooltipConf.tipClass = 'Q_tooltip';
+	tooltipConf.effect = 'fade';
+	tooltipConf.opacity = 1;
+	tooltipConf.position = 'bottom center';
+	tooltipConf.offset = [0, 0];
+	var validatorConf = jQuery.tools.validator.conf;
+	validatorConf.errorClass = 'Q_errors';
+	validatorConf.messageClass = 'Q_error_message';
+	validatorConf.position = 'bottom left';
+	validatorConf.offset = [0, 0];
+	// end of jQuery Tools configuration
+	
+	Q.Dialogs.push.options = {
+		'dialog': null,
+		'url': null,
+		'title': 'Dialog',
+		'content': '',
+		'className': null,
+		'fullscreen': Q.info.platform == 'android' ? true : false,
+		'appendTo': document.body,
+		'alignByParent': false,
+		'beforeLoad': new Q.Event(),
+		'onActivate': new Q.Event(),
+		'beforeClose': new Q.Event(),
+		'onClose': null,
+		'closeOnEsc': true,
+		'destroyOnClose': false,
+		'hidePrevious': true
+	};
+	
+}, 'Q.Layout');
+
+/**
+ * TODO (DT): this class needs to be documented later if it's really needed, otherwise remove it.
+ * Class for managing content of the standard application slots.
+ */
+Q.Content = {
+	
+	/**
+	 * Sets contents of one or more slots of the app from given response object (usually obtained through Q.loadUrl())
+	 * @param Object response. Required. Should contain 'slots' object which in turn brings one or more content fields to the app.
+	 */
+	setSlots: function(response)
+	{
+		var slots = response.slots;
+		var name = null, setter = null, container = null;
+		var result = [];
+		for (name in slots)
+		{
+			if (setter = Q.Content.set[name])
+			{
+				result.push(setter(slots[name]));
+			}
+			else
+			{
+				container = $('#' + name + '_slot');
+				container.html(slots[name]);
+				if (container.length)
+				{
+					result.push(container[0]);
+				}
+			}
+		}
+		return result;		
+	},
+	
+	/**
+	 * Sub object containing particular 'setters' for each slot of the app.
+	 */
+	set:
+	{	
+		/**
+		 * Sets 'title' slot.
+		 * This is just a <title> tag of the app.
+		 * @param contents String. Required. New title string.
+		 */
+		title: function(contents)
+		{
+			var container = $('title');
+			container.html(contents);
+			return container[0];
+		},
+
+		/**
+		 * Sets 'column1' slot.
+		 * @param contents String. Required. New content for 'column1' slot.
+		 */
+		column1: function(contents)
+		{
+			var container = $('#column1_slot');
+			if (Q.info.isTouchscreen)
+				container.plugin('Q/iScroll', 'destroy');
+			container.html('<div class="Q_column1_contents">' + contents + '</div>');
+			if (Q.info.isTouchscreen)
+				container.plugin('Q/iScroll');
+			return container[0];
+		},
+
+		// TODO (DT): I guess listing setter need to be reworked
+		listing: function(contents)
+		{
+			var container = $('#listing_slot');
+			if (Q.typeOf(contents) == 'array')
+			{
+				var listItems = '';
+				for (var i in contents)
+				{
+					listItems += '<li>' + contents[i] + '</li>';
+				}
+				contents = listItems;
+			}
+			container.html('<div class="Q_listing">' + contents + '</div>');
+			container.plugin('Q/listing', { 'handler': Q.Layout.listingHandler, 'blink': false });
+			return container[0];
+		}
+		
+		// TODO (DT): need to add people handler similar to listing handler
+	}
+	
+};
+
+/**
+ * Class for managing dashboard in the application layout.
+ * Usually you don't have to interact with it direcly, it can be considered as partially extracted logic from Q.Layout.
+ * @class Dashboard
+ * @namespace Q
+ * @static
+ */
+Q.Dashboard = {
+	
+	/**
+	 * Property to set to be true if dashboard 'build' procedure is completed
+	 * @property isBuilt
+	 * @type Boolean
+	 */
+	isBuilt: false,
+	
+	// === private variables below ===
+	
+	/**
+	 * Property to store currently opened expandable.
+	 * @property currentExpandable
+	 * @type Object
+	 * @private
+	 */
+	currentExpandable: null,
+	
+	/**
+	 * Property to set to be true if expandable open / close animation is currently in progress.
+	 * @property animating
+	 * @type Boolean
+	 * @private
+	 */
+	animating: false,
+	
+	/**
+	 * Property to store current available height for dashboard.
+	 * @property availableHeight
+	 * @type Number
+	 * @private
+	 */
+	availableHeight: 0,
+
+	/**
+	 * Initially builds dashboard on application load or on orientation change.
+	 * Layout much depends on orientation, device type (desktop, touchscreen) and
+	 * its screen size, so this procedures considers all related conditions
+	 * while building layout and functionality.
+	 * @method build
+	 */
+	build: function()
+	{
+		if (Q.Dashboard.options.noRefresh) return;
+		
+		Q.Dashboard.isBuilt = false;
+		
+		var dashboard = $('#dashboard_slot');
+		var noticesSlot = $('#notices_slot');
+		var items = dashboard.find('.Q_dashboard_item');
+		var expandables = dashboard.find('.Q_dashboard_expandable');
+		expandables.css({ 'display': 'block', 'overflow': 'hidden', 'height': '0' });
+		var bottomEdge = $('#dashboard_slot .Q_dashboard_bottom_edge');
+		
+		var peopleButton = dashboard.find('#Q_dashboard_item_people');
+		var peopleSlot = dashboard.find('#people_slot');
+		if ('people' in Q.Dashboard.options.slots && Q.Users.loggedInUser)
+		{
+			Q.Users.login.options.onSuccess.set(function()
+			{
+				peopleButton.show();
+				peopleSlot.show();
+			}, 'Q_dashboard_login');
+		}
+		else
+		{
+			peopleButton.hide();
+			peopleSlot.hide();
+		}
+		
+		if (!Q.info.isTouchscreen || (Q.info.isTouchscreen && Q.Layout.orientation == 'landscape'))
+		{
+			var mainHeight = Q.info.isTouchscreen ? window.innerHeight : $('#main').height();
+			Q.Dashboard.availableHeight = Q.info.isTouchscreen
+					? mainHeight - noticesSlot.outerHeight()
+					: $('#column1_slot').outerHeight();
+			dashboard.removeClass('Q_dashboard_horizontal').addClass('Q_dashboard_vertical').css({
+				'width': dashboard.data('Q_dashboard_width') ? dashboard.data('Q_dashboard_width') + 'px' : '',
+				'top': '',
+				'height': 'auto'
+			});
+			if (Q.Dashboard.options.fullheight && dashboard.height() < window.innerHeight)
+			{
+				var dashboardHeight = window.innerHeight - parseInt(dashboard.css('margin-top')) - parseInt(dashboard.css('margin-top'));
+				dashboard.css({ 'min-height': dashboardHeight + 'px' });
+			}
+			dashboard.find('#Q_dashboard_item_app').plugin('Q/contextual', 'destroy');
+			dashboard.find('#Q_dashboard_item_people').plugin('Q/contextual', 'destroy');
+			items.removeClass('Q_dashboard_item_horizontal');
+			items.find('br').remove();
+			expandables.show();
+			Q.Dashboard.currentExpandable = null;
+			
+			items.off(Q.Pointer.start + '.Q_expandable').on(Q.Pointer.start + '.Q_expandable', function() {
+				if (!Q.Dashboard.animating) {
+					Q.Dashboard.openExpandable($(this).next());
+				}
+			});
+			
+			dashboard.find('.Q_listing li').each(function()
+			{
+				var listItem = $(this), text = listItem.children('.Q_listing_item_text');
+				text.css({
+					'max-width': (listItem.width() - text.prev().outerWidth(true) - parseInt(text.css('margin-left')) - parseInt(text.css('margin-right')) - 5) + 'px'
+				});
+			});
+		}
+		else
+		{
+			dashboard.addClass('Q_dashboard_horizontal');
+			dashboard.css({ 'width': window.innerWidth + 'px', 'height': '', 'min-height': '' });
+			items.off(Q.Pointer.start + '.Q_expandable').addClass('Q_dashboard_item_horizontal');
+			items.find('br').remove();
+			items.find('img, .Q_people_icon, .Q_dashboard_back_icon_small').after('<br />');
+			expandables.hide();
+			
+			$('.Q_dashboard_item_horizontal', dashboard).each(function () {
+				var items = [];
+				$('.Q_listing li', $(this).next()).each(function() {
+					var $this = $(this);
+					items.push({
+						'contents': $this.html(),
+						'attrs': {
+							'action': $this.attr('data-action')
+						}
+					});
+				});
+				if (items.length) {
+					$(this).plugin('Q/contextual', 'destroy')
+					.plugin('Q/contextual', {
+						'className': 'Q_dashboard_listing_contextual',
+						'defaultHandler': Q.Layout.listingHandler,
+						'items': items
+					}, function () {
+						// after contextual activated we might still have to select the current list item
+						selectListItem();
+					});
+				}
+			});
+		}
+		
+		if (!Q.Dashboard.openExpandable)
+		{
+			Q.Dashboard.openExpandable = function(expandable, options)
+			{
+				if ( expandable.hasClass('Q_dashboard_expandable')
+				&& expandable.children().length > 0
+				&& ( Q.Dashboard.currentExpandable == null
+					|| (
+						Q.Dashboard.currentExpandable != null
+						&& Q.Dashboard.currentExpandable[0] != expandable[0]
+					) 
+				)) {
+					var expandHeight = expandable.find('.Q_listing').height();
+					var itemsHeight = 0;
+					items.each(function() {
+						if ($(this).css('display') == 'block')
+							itemsHeight += items.outerHeight();
+					});
+					if (expandHeight + itemsHeight > Q.Dashboard.availableHeight) {
+						expandHeight = Q.Dashboard.availableHeight - itemsHeight - 1;
+					}
+					
+					var expandTime = Q.Dashboard.options.expandTime;
+					if (options && ('expandTime' in options)) {
+						expandTime = options.expandTime;
+					}
+					Q.Dashboard.animating = true;
+					expandable.clearQueue().animate(
+						{ 'height': expandHeight }, 
+						expandTime, 
+						function() {
+							Q.Dashboard.animating = false;
+							var listing = expandable.find('.Q_listing');
+							if (Q.info.isTouchscreen) {
+								if (listing.height() > expandHeight) {
+									if (Q.info.platform == 'android') {
+										expandable.plugin('Q/touchscroll', 'destroy')
+										.plugin('Q/touchscroll');
+									} else {
+										expandable.plugin('Q/iScroll', 'destroy')
+										.plugin('Q/iScroll')
+										// .children('div:last').css({
+										// 	'top': expandable.offset().top + 'px',
+										// 	'height': expandable.height() + 'px',
+										// 	'right': '0'
+										// })
+										//.plugin('Q/iScroll', 'refresh');
+									}
+								}
+							} else {
+								listing.css({ 'width': expandable.outerWidth() + 'px' });
+								expandable.css({ 'overflow': 'auto' }).plugin('Q/scrollbarsAutoHide', {
+									scrollbarPadding: false,
+									showHandler: {'Q_expandable_scrollbar_handler': function() {
+										listing.css({ 'width': '' });
+									}},
+									hideHandler: {'Q_expandable_scrollbar_handler': function() {
+										listing.css({ 'width': expandable.width() + 'px' });
+									}}
+								});
+							}
+						}
+					);
+					
+					if (expandable[0] == expandables[expandables.length - 1]) {
+						bottomEdge.show();
+					} else {
+						bottomEdge.hide();
+					}
+			
+					if (Q.Dashboard.currentExpandable != null) {
+						if (Q.info.platform == 'android') {
+							Q.Dashboard.currentExpandable.plugin('Q/touchscroll', 'destroy');
+						} else {
+							Q.Dashboard.currentExpandable.plugin('Q/iScroll', 'destroy');
+						}
+						Q.Dashboard.currentExpandable.clearQueue().animate(
+							{ 'height': 0 },
+							expandTime
+						);
+					}
+					
+					Q.Dashboard.currentExpandable = expandable;
+				}
+			}
+		}
+		
+		if (Q.Users.userStatus) {
+			Q.Users.userStatus.update();
+		}
+		selectListItem(); // one for now
+		Q.onPageActivate('').set(selectListItem, 'Q.Dashboard.build'); // one for later
+		
+		function selectListItem(elem) {
+			if (elem) return;
+			var lis = {}, li = null;
+			var containers = (Q.Layout.orientation == 'landscape')
+				? dashboard
+				: $('.Q_dashboard_listing_contextual');
+			containers.find('.Q_listing li').each(function () {
+				var action = $(this).attr('data-action');
+				if (!action) {
+					return;
+				}
+				var url = Q.url(action);
+				var u = Q.info.url.split('?')[0];
+				if (url == u.substr(0, action.length)
+				|| url == Q.info.uriString
+				|| url == Q.info.uriString.split(' ')[0]) {
+					lis[url] = this;
+				}
+				$(this).removeClass('Q_permanently_selected');
+			});
+			Q.each(lis, function () {
+				li = $(this).addClass('Q_permanently_selected');
+				return false;
+			}, {ascending: false});
+			if (expandables && Q.Dashboard.openExpandable) {
+				oe = li ? li.closest('.Q_dashboard_expandable') : $(expandables[0]);
+				Q.Dashboard.openExpandable(oe, { expandTime: 0 });
+			}
+		}
+		
+		setTimeout(function()
+		{
+			Q.Dashboard.isBuilt = true;
+			Q.Dashboard.updateLayout();
+		}, 500);
+	},
+	
+	/**
+	 * Updates dashboard layout if it's already built.
+	 * Acts differently for different device types (desktop, touchscreen), its screen size and orientation.
+	 * @method updateLayout
+	 */
+	updateLayout: function()
+	{
+		if (Q.Dashboard.options.noRefresh) return;
+		
+		if (Q.Dashboard.isBuilt)
+		{
+			var mainHeight = Q.info.isTouchscreen ? window.innerHeight : $('#main').height();
+			var dashboard = $('#dashboard_slot');
+			var noticesSlot = $('#notices_slot');
+			Q.Dashboard.availableHeight = mainHeight - noticesSlot.outerHeight() - parseInt($('#column1_slot').css('margin-top'))
+																	- parseInt($('#column1_slot').css('margin-bottom'));
+			var itemsHeight = 0;
+			dashboard.find('.Q_dashboard_item').each(function()
+			{
+				var $this = $(this);
+				if ($this.css('display') == 'block')
+					itemsHeight += $this.outerHeight();
+			});
+			$('.Q_landscape .Q_dashboard_item').plugin('Q/contextual', 'destroy');
+			var expandable = Q.Dashboard.currentExpandable ? Q.Dashboard.currentExpandable
+										 : dashboard.children('.Q_dashboard_expandable:eq(0)');
+			var listing = expandable.find('.Q_listing');
+			if (listing.height() + itemsHeight > Q.Dashboard.availableHeight)
+			{
+				if (Q.info.isTouchscreen)
+				{
+					expandable.css({ 'height': (Q.Dashboard.availableHeight - itemsHeight) + 'px' });
+					if (Q.info.platform == 'android')
+					{
+						expandable.plugin('Q/touchscroll', 'destroy').plugin('Q/touchscroll');
+					}
+					else
+					{
+						expandable.plugin('Q/iScroll', 'destroy')
+						.plugin('Q/iScroll');
+						/*
+						expandable.children('div:last').css({
+							'top': (expandable.offset().top - noticesSlot.outerHeight()) + 'px',
+							'height': expandable.height() + 'px',
+							'right': '0'
+						});
+						expandable.plugin('Q/iScroll', 'refresh');
+						*/
+					}
+				}
+				else
+				{
+					expandable.css({
+						height: (Q.Dashboard.availableHeight - itemsHeight) + 'px',
+						overflow: 'auto'
+					}).plugin('Q/scrollbarsAutoHide', {
+						scrollbarPadding: false,
+						showHandler: {'Q_expandable_scrollbar_handler': function() {
+							listing.css({ 'width': '' });
+						}},
+						hideHandler: {'Q_expandable_scrollbar_handler': function() {
+							listing.css({ 'width': expandable.width() + 'px' });
+						}}
+					});
+				}
+			}
+			else
+			{
+				if (Q.info.isTouchscreen)
+				{
+					if (Q.info.platform == 'android')
+					{
+						expandable.plugin('Q/touchscroll', 'destroy');
+					}
+					else
+					{
+						expandable.plugin('Q/iScroll', 'destroy');
+					}
+				}
+				else
+				{
+					expandable.css({ 'height': listing.height() + 'px' }).plugin('Q/scrollbarsAutoHide', 'destroy');
+				}
+			}
+		}
+	},
+	
+	/**
+	 * Destroys dashboard by clearing related functionality.
+	 * @method destroy
+	 */
+	destroy: function()
+	{
+		if (Q.Dashboard.options.noRefresh) return;
+		
+		Q.Dashboard.openExpandable = null;
+		var dashboard = $('#dashboard_slot');
+		var items = dashboard.find('.Q_dashboard_item');
+		items.off(Q.Pointer.start + '.Q_expandable');
+	}
+};
+
+/**
+ * Dashboard configuration options.
+ * @property options
+ * @type Object
+ */
+Q.Dashboard.options = {
+	/**
+	 * Property to temporary disable dashboard rebuilding / refreshing and also destroying.
+	 * @property options.noRefresh
+	 * @type Boolean
+	 * @default false
+	 */
+	'noRefresh': false,
+	/**
+	 * When set to true, this property will make dashboard will occupy full available height even if its default height is less.
+	 * This options makes sense only on desktop and in landscape mode on tablet / mobile.
+	 * @property options.fullheight
+	 * @type Boolean
+	 * @default false
+	 */
+	'fullheight': false,
+	/**
+	 * Property to change dashboard 'expandables' open / close time.
+	 * @property options.expandTime
+	 * @type Number
+	 * @default 300
+	 */ 
+	'expandTime': 300,
+	/**
+	 * Property determining which common dashboard slots to enable (show).
+	 * This is an array with strings identifying slots.
+	 * Note: currently only control over 'people' slot is supported.
+	 * @property options.slots 
+	 * @default ['listing', 'people', 'user']
+	 */
+	'slots': ['listing', 'people', 'user']
+};
+
+/**
+ * Operates contextuals: adding, event handling, showing, hiding.
+ */
+Q.Contextual = {
+	
+	// stores all contextuals in array of object, each object contains two jQuery objects inside: trigger and contextual,
+	// and optional 'info' field, which may contain arbitrary data assosiated with given contextual;
+	// so it's like [{ 'trigger': obj, 'contextual': obj, 'info': obj }]
+	collection: [],
+
+	// stores currently shown contextual id, it's '-1' when no contextual is shown at the moment
+	current: -1,
+	
+	// indicates if contextual show() has just been called, need to prevent contextual hiding in 'start' lifecycle handler
+	justShown: false,
+	
+	// contextual fade-in / fade-out time
+	fadeTime: 0,
+	
+	// timeout to dismiss contextual when trigger element tap & hold'ed too long
+	dismissTimeout: 1000,
+	
+	// indicates that the contextual is about to be dismissed because timeout passed
+	toDismiss: false,
+	
+	// option which indicates whether to allow contextual show when mouseover'ing trigger element (only for desktop version)
+	triggerOnHover: true,
+	
+	// settable value to temporary disable contextual showing
+	triggeringDisabled: false,
+	
+	/**
+	 * Adds a contextual to the collection for further managing it.
+	 * @param trigger Object or String. Required. DOM element, jQuery object or jQuery selector which triggers
+	 *				contextual showing on mousedown / touchstart event.
+	 * @param contextual Object or String. Required. DOM element, jQuery object or jQuery selector.
+	 *	 This is the element to be shown as contextual.
+	 *	 It must have such structure:
+	 *	 <div class="Q_contextual" data-handler="[javascript function name]">
+				 <ul class="Q_listing">
+					 <!-- data-action is only demonstrational here, you may make attribute of you choice, 'data-item' for example.
+								You also may provide 'data-handler' for each item separately -->
+					 <li data-action="[some-action]">...</li>
+					 ...
+				 </ul>
+			 </div>
+	 *	 For easier creation of such element it's recommended to use Q/contextual plugin.
+	 * @param coords Object. Optional. If provided, must be an object with such structure: { 'x': value, 'y': value }.
+	 *	 By default contextual is shown relatively to trigger element with auto positioning nearly to it
+	 *	 considering where it's located: at the top or at the bottom of screen.
+	 * @param size Object. Optional. If provided, must be an object with such structure: { 'width': value, 'height': value }.
+	 *	 Used to override predefined size of the contextual.
+	 */
+	add: function(trigger, contextual, coords, size)
+	{
+		var info = {
+			'inBottomHalf': false,
+			'coords': { 'x': 0, 'y': 0 },
+			'size': size,
+			'relativeToElement': false,
+			'startY': 0,
+			'moveY': 0,
+			'moveTarget': null,
+			'selectedAtStart': false,
+			'arrowHeight': 0,
+			'curScroll': '',
+			'inside': false,
+			'ellipsissed': false
+		};
+		
+		contextual = $(contextual);
+		trigger = $(trigger);
+		if (coords)
+		{
+			info.coords.x = coords.x;
+			info.coords.y = coords.y;
+			inBottomHalf = info.coords.y > $(window).height() / 2;
+		}
+		else
+		{
+			info.relativeToElement = true;
+			Q.Contextual.calcRelativeCoords(trigger, contextual, info);
+		}
+		Q.Contextual.collection.push({ 'trigger': trigger, 'contextual': contextual, 'info': info });
+		
+		Q.Contextual.makeShowHandler();
+		Q.Contextual.makeLifecycleHandlers();
+		
+		return Q.Contextual.collection.length - 1;
+	},
+	
+	/**
+	 * Removes a contextual from collection by given id and
+	 * returns collection object (it's contextual along with its trigger and associated data).
+	 */
+	remove: function(cid)
+	{
+		var col = Q.Contextual.collection;
+		var current = col.splice(cid, 1)[0];
+		current.trigger.unbind('mouseenter.Q_contextual');
+		for (var i = 0; i < col.length; i++)
+		{
+			col[i].trigger.data('Q_contextual_id', i);
+		}
+		return current;
+	},
+	
+	/**
+	 * Calculates contextual showing coordinates when it's relatively positioned to the trigger.
+	 * Parameters are the same as for Q.Contextual.add(), except for 'info', which is new.
+	 * @param info Object. Required. Object containing some data associated with contextual.
+	 *	 Particularly here it's used to store calculated coordinates in it.
+	 */
+	calcRelativeCoords: function(trigger, contextual, info)
+	{
+		info.coords.x = trigger.offset().left + ((trigger.outerWidth() - (info.size ? info.size.width : contextual.outerWidth())) / 2);
+		info.coords.y = trigger.offset().top + trigger.outerHeight() / 2;
+		if (Q.info.platform == 'android')
+		{
+			info.coords.y -= document.body.scrollTop;
+		}
+		info.inBottomHalf = info.coords.y > $(window).height() / 2;
+		info.coords.y = info.inBottomHalf ? info.coords.y - trigger.outerHeight() / 2 : info.coords.y + trigger.outerHeight() / 2;
+	},
+	
+	/**
+	 * Updates all contextuals layout.
+	 * Particularly it adjusts contextual coordinates if they're relatively positioned to the trigger.
+	 * Useful when trigger position changed, for example when screen orientation of mobile device is changed.
+	 */
+	updateLayout: function()
+	{
+		var col = Q.Contextual.collection;
+		var trigger = null, contextual = null, info = null;
+		for (var i = 0; i < col.length; i++)
+		{
+			if (col[i].info)
+			{
+				trigger = col[i].trigger;
+				contextual = col[i].contextual;
+				info = col[i].info;
+				if (info.relativeToElement)
+					Q.Contextual.calcRelativeCoords(trigger, contextual, info);
+			}
+		}
+	},
+	
+	/**
+	 * Creates 'show' handler for contextual which watches for trigger element and
+	 * calls Q.Contextual.show() when trigger receives an event.
+	 * This method makes required operations only once and one event handler watches all triggers and manages all contextuals using
+	 * contextuals collection. This is done to not overload document with many event handlers.
+	 */
+	makeShowHandler: function()
+	{
+		if (!Q.Contextual.showHandler)
+		{	
+			Q.Contextual.showHandler = function(e)
+			{
+				if (Q.Contextual.triggeringDisabled) {
+					return;
+				}
+				var col = Q.Contextual.collection;
+				var trigger = null, contextual = null, triggerTarget = null;
+				var event = (Q.info.isTouchscreen ? e.originalEvent.touches[0] : e);
+				var clientX = event.clientX, clientY = event.clientY, offset = null;
+				for (var i = 0; i < col.length; i++)
+				{
+					trigger = col[i].trigger;
+					if (trigger.length != 0)
+					{
+						triggerTarget = trigger[0];
+						offset = trigger.offset();
+						if (Q.info.platform == 'android')
+							offset.top -= window.scrollY;
+						contextual = col[i].contextual;
+						if (clientX >= offset.left && clientX <= offset.left + trigger.outerWidth() &&
+								clientY >= offset.top && clientY <= offset.top + trigger.outerHeight() &&
+								($(e.target).closest(triggerTarget).length))
+						{
+							var current = Q.Contextual.current;
+							if (current != -1)
+								Q.Contextual.hide();
+							
+							if (current == i) // if triggering same contextual that was shown before
+								return false;
+							
+							Q.Contextual.current = i;
+							if (Q.info.platform == 'android')
+							{
+								setTimeout(function()
+								{
+									Q.Contextual.show();
+								}, 0);
+							}
+							else
+							{
+								Q.Contextual.show();
+							}
+							Q.Contextual.justShown = true;
+							setTimeout(function()
+							{
+								Q.Contextual.justShown = false;
+							}, 0);
+							
+							Q.Contextual.toDismiss = false;
+							setTimeout(function()
+							{
+								Q.Contextual.toDismiss = true;
+							}, Q.Contextual.dismissTimeout);
+							
+							return false;
+						}
+					}
+				}
+			};
+			$(document.body).bind(Q.Pointer.start, Q.Contextual.showHandler);
+		}
+		
+		// if 'triggerOnHover' is on then we should create separate handler for latest added contextual
+		if (Q.Contextual.triggerOnHover && !Q.info.isTouchscreen)
+		{
+			(function()
+			{
+				var latestId = Q.Contextual.collection.length - 1;
+				var latest = Q.Contextual.collection[latestId];
+				latest.trigger.bind('mouseenter.Q_contextual', function()
+				{
+					if (Q.Contextual.current != -1)
+						Q.Contextual.hide();
+				 
+					if (!Q.Contextual.triggeringDisabled)
+					{
+						Q.Contextual.current = latestId;
+						Q.Contextual.show();
+					}
+				});
+			})();
+		}
+	},
+	
+	/**
+	 * Creates 'lifecycle' event handlers for contextuals.
+	 * This includes 'start', 'move' and 'end' event handlers.
+	 * These handlers used to operate with items selection, applying different scrolling algorithms etc.
+	 */
+	makeLifecycleHandlers: function()
+	{
+		if (!Q.Contextual.startEventHandler || !Q.Contextual.moveEventHandler || !Q.Contextual.endEventHandler)
+		{	
+			Q.Contextual.startEventHandler = function(e)
+			{
+				if (Q.Contextual.current != -1 && !Q.Contextual.justShown)
+				{
+					var contextual = Q.Contextual.collection[Q.Contextual.current].contextual;
+					var offset = contextual.offset();
+					if (Q.info.platform == 'android')
+						offset.top -= window.scrollY;
+					
+					var info = Q.Contextual.collection[Q.Contextual.current].info;
+					
+					var event = (Q.info.isTouchscreen ? e.originalEvent.touches[0] : e);
+					var clientX = event.clientX, clientY = event.clientY;
+					info.startY = info.moveY = event.clientY;
+					if (clientX >= offset.left && clientX <= offset.left + contextual.outerWidth() &&
+							clientY >= offset.top && clientY <= offset.top + contextual.outerHeight())
+					{
+						info.moveTarget = null;
+						if (event.target.tagName && event.target.tagName.toLowerCase() == 'li')
+							info.moveTarget = $(event.target);
+						else if (event.target.parentNode.tagName && event.target.parentNode.tagName.toLowerCase() == 'li')
+							info.moveTarget = $(event.target.parentNode);
+						if (info.moveTarget)
+						{
+							contextual.find('.Q_listing > li').removeClass('Q_selected');
+							info.moveTarget.addClass('Q_selected');
+							info.selectedAtStart = true;
+						}
+					}
+					else
+					{
+						Q.Contextual.hide();
+					}
+					return false;
+				}
+			};
+			$(document.body).bind(Q.Pointer.start, Q.Contextual.startEventHandler);
+			
+			Q.Contextual.moveEventHandler = function(e)
+			{
+				if (Q.Contextual.current != -1)
+				{
+					var current = Q.Contextual.collection[Q.Contextual.current];
+					var contextual = current.contextual;
+					var conOffset = contextual.offset();
+					var trigger = current.trigger;
+					var triggerOffset = (trigger.length != 0 ? trigger.offset() : { 'top': -1000, 'left': -1000 });
+					var info = current.info;
+					if (Q.info.platform == 'android')
+					{
+						conOffset.top -= window.scrollY;
+						triggerOffset.top -= window.scrollY;
+					}
+					
+					var event = (Q.info.isTouchscreen ? e.originalEvent.changedTouches[0] : e);
+					var clientX = event.clientX, clientY = event.clientY;
+					
+					var newMoveTarget = $(document.elementFromPoint(clientX, clientY));
+					if (info.moveTarget)
+					{
+						if (info.selectedAtStart)
+						{
+							if (info.startY != 0 && Math.abs(info.moveY - info.startY) >= 5)
+							{
+								info.moveTarget.removeClass('Q_selected');
+							}
+						}
+						else
+						{
+							if (clientX >= conOffset.left && clientX <= conOffset.left + contextual.outerWidth() &&
+									clientY >= conOffset.top && clientY <= conOffset.top + contextual.outerHeight())
+							{
+								info.inside = true;
+								if (newMoveTarget.length > 0 && newMoveTarget[0].tagName.toLowerCase() == 'li' &&
+										newMoveTarget[0] != info.moveTarget[0])
+								{
+									info.moveTarget.removeClass('Q_selected');
+									newMoveTarget.addClass('Q_selected');
+								}
+							}
+							else if (info.inside)
+							{
+								info.inside = false;
+								contextual.find('.Q_listing li').removeClass('Q_selected');
+							}
+							info.moveTarget = newMoveTarget;
+						}
+					}
+					else
+					{
+						info.moveTarget = newMoveTarget;
+					}
+					
+					if (info.startY === 0)
+						info.startY = clientY;
+					// this condition is again to fight against strange bug in Chrome (when touchmove coordinate is the same as on touchstart)
+					else if (clientY != info.startY)
+						info.moveY = clientY;
+					
+					// if 'triggerOnHover' is on here we should track (only for desktop) if mouse cursor
+					// is out of bounds of both contextual and its trigger element
+					// if so, we're hiding contextual, but before that we should wait some time
+					if (Q.Contextual.triggerOnHover && !Q.info.isTouchscreen)
+					{
+						if (!(
+									 (clientX >= conOffset.left && clientX <= conOffset.left + contextual.outerWidth() &&
+										clientY >= conOffset.top - (info.inBottomHalf ? 0 : info.arrowHeight) &&
+										clientY <= conOffset.top + contextual.outerHeight() + (info.inBottomHalf ? info.arrowHeight : 0)) ||
+									 (clientX >= triggerOffset.left && clientX <= triggerOffset.left + trigger.outerWidth() &&
+										clientY >= triggerOffset.top && clientY <= triggerOffset.top + trigger.outerHeight())
+									)
+								)
+						{
+							Q.Contextual.hide();
+						}
+					}
+				}
+			};
+			$(document.body).bind(Q.Pointer.move, Q.Contextual.moveEventHandler);
+			
+			Q.Contextual.endEventHandler = function(e)
+			{
+				if (Q.Contextual.current != -1)
+				{
+					var current = Q.Contextual.collection[Q.Contextual.current];
+					var contextual = current.contextual;
+					var trigger = current.trigger;
+					var info = current.info;
+					var offset = trigger.offset();
+					if (Q.info.platform == 'android')
+						offset.top -= window.scrollY;
+					
+					var listingWrapper = null;
+					if (contextual.find('.Q_scroller_wrapper').length != 0)
+						listingWrapper = contextual.find('.Q_scroller_wrapper');
+					else
+						listingWrapper = contextual.children('.Q_listing_wrapper');
+					
+					var event = (Q.info.isTouchscreen ? e.originalEvent.changedTouches[0] : e);
+					var target = (info.curScroll == 'iScroll' || info.curScroll == 'touchscroll'
+										 ? event.target : (info.moveTarget ? info.moveTarget[0] : event.target));
+					var clientX = event.clientX, clientY = event.clientY;
+					
+					// if it was mouseup / touchend on the triggering element, then use it to switch to iScroll instead of $.fn.scroller
+					if (info.curScroll != 'iScroll' && info.curScroll != 'touchscroll' &&
+							clientX >= offset.left && clientX <= offset.left + trigger.outerWidth() &&
+							clientY >= offset.top && clientY <= offset.top + trigger.outerHeight())
+					{
+						if (Q.Contextual.toDismiss)
+						{
+							Q.Contextual.hide();
+						}
+						else
+						{
+							Q.Contextual.applyScrolling();
+						}
+					}
+					else
+					{
+						if ((info.curScroll == 'iScroll' || info.curScroll == 'touchscroll' || listingWrapper.css('overflow') == 'auto') &&
+								 Math.abs(info.moveY - info.startY) >= 5)
+						{
+							return;
+						}
+						var element = target;
+						while (element)
+						{
+							if (element.tagName && element.tagName.toLowerCase() == 'li' && $(element).parents('.Q_contextual').length != 0)
+								break;
+							element = element.parentNode;
+						}
+						
+						if (element)
+						{
+							Q.Contextual.itemSelectHandler(element);
+						}
+						else
+						{
+							if (contextual[0] != event.target && $(event.target).parents('.Q_contextual').length == 0)
+							{
+								Q.Contextual.hide();
+							}
+						}
+					}
+				}
+			};
+			$(document.body).bind(Q.Pointer.end, Q.Contextual.endEventHandler);
+			
+			Q.Contextual.itemSelectHandler = function(element)
+			{
+				var contextual = Q.Contextual.collection[Q.Contextual.current].contextual;
+				var info = Q.Contextual.collection[Q.Contextual.current].info;
+				
+				var li = $(element);
+				li.removeClass('Q_selected');
+				setTimeout(function()
+				{
+					li.addClass('Q_selected');
+					setTimeout(function()
+					{
+						li.removeClass('Q_selected');
+						Q.Contextual.hide();
+						
+						var handler = li.attr('data-handler');
+						if (!handler)
+							handler = contextual.attr('data-handler');
+						if (handler)
+						{
+							try
+							{
+								handler = eval(handler);
+							}
+							catch (e)
+							{
+								return;
+							}
+							Q.handle(handler, contextual, [li]);
+						}
+						else
+						{
+							handler = contextual.data('defaultHandler');
+							if (handler)
+								Q.handle(handler, contextual, [li]);
+						}
+					}, 200);
+				}, 200);
+			};
+		}
+	},
+	
+	/**
+	 * Applies appropriate scrolling to contextual contents.
+	 * On mobile platforms iScroll is used and on desktop native scrolling with 'overflow: auto' is used.
+	 */
+	applyScrolling: function()
+	{
+		var contextual = Q.Contextual.collection[Q.Contextual.current].contextual;
+		var info = Q.Contextual.collection[Q.Contextual.current].info;
+		var listingWrapper = contextual.children('.Q_listing_wrapper');
+		var listingWrapperHeight = listingWrapper.height();
+		if (Q.info.isTouchscreen)
+		{
+			listingWrapper.plugin('Q/scroller', 'destroy', { 'restoreOverflow': false, 'restoreHeight': false, 'unwrap': false });
+			var scrollerWrapper = listingWrapper.hasClass('Q_scroller_wrapper')
+				? listingWrapper
+				: listingWrapper.children('.Q_scroller_wrapper');
+			if (scrollerWrapper.length != 0)
+			{
+				scrollerWrapper.css({ 'height': listingWrapperHeight + 'px' });
+				
+				var scrollTop = 0;
+				var listing = scrollerWrapper.children('.Q_listing');
+				if (info.inBottomHalf && listing.height() > listingWrapperHeight)
+					scrollTop = listingWrapperHeight - listing.height();
+				if (Q.info.platform == 'android')
+				{
+					scrollerWrapper.plugin('Q/touchscroll', { 'y': scrollTop });
+				}
+				else
+				{
+					scrollerWrapper.plugin('Q/iScroll', { 'y': scrollTop });
+				}
+			}
+			info.curScroll = scrollerWrapper.data('Q/iScroll') ? 'iScroll' : 'touchscroll';
+			
+			// adjusting scrollbar position
+			if (info.curScroll == 'iScroll')
+			{
+				scrollerWrapper.children('div').css({
+					'margin-right': contextual.css('padding-right'),
+					'margin-top': (parseInt(contextual.css('padding-top')) - 2) + 'px',
+					'height': listingWrapperHeight + 'px'
+				});
+				scrollerWrapper.plugin('Q/iScroll', 'refresh');
+			}
+		}
+		else
+		{
+			listingWrapper.plugin('Q/scroller', 'destroy', { 
+				restoreOverflow: false, 
+				restoreHeight: false
+			});
+			listingWrapper.css({ 'overflow': 'auto' });
+			if (info.inBottomHalf)
+			{
+				listingWrapper.scrollTop(1000);
+				setTimeout(function()
+				{
+					listingWrapper.scrollTop(1000);
+				}, 0);
+			}
+		}
+	},
+	
+	/**
+	 * Shows a contextual.
+	 * You don't have to call it manually since event handling routines do that.
+	 * However, if you manually handle contextuals workflow, you stil can.
+	 * @param id Number. Optional. If provided, contextual with given id will be shown.
+	 */
+	show: function(id)
+	{
+		if (id !== undefined)
+			Q.Contextual.current = id;
+		else if (Q.Contextual.current == -1)
+			return;
+		
+		var current = Q.Contextual.collection[Q.Contextual.current];
+		var trigger = current.trigger;
+		var contextual = current.contextual;
+		var info = current.info;
+		
+		var $body = $(document.body);
+		
+		if (trigger.length != 0)
+		{
+			var triggerLeft = trigger.offset().left;
+			if (triggerLeft < 0 || triggerLeft + trigger.outerWidth() > $body.width())
+				return;
+		}
+		
+		contextual.find('.Q_contextual_top_arrow, .Q_contextual_bottom_arrow').remove();
+		
+		if (info.size && info.size.width)
+		{
+			var width = info.size.width - parseInt(contextual.css('padding-left')) - parseInt(contextual.css('padding-right'));
+			contextual.css({ 'width': width + 'px' });
+		}
+		
+		var height = 0;
+		if (info.size && info.size.height)
+		{
+			height = info.size.height - (parseInt(contextual.css('padding-top'))
+						 + parseInt(contextual.css('padding-bottom'))) * (Q.info.isMobile ? 2.5 : 2);
+		}
+		else
+		{
+			height = Q.Contextual.options.height;
+			if (typeof(height) == 'string' && height.indexOf('%') != -1)
+			{
+				height = window.innerHeight * (parseInt(height) / 100);
+			}
+		}
+		
+		// temporary showing contextual but making it invisible, it's only needed for getting correct height of contextual
+		contextual.css({ 'visibility': 'hidden' });
+		contextual.show();
+		
+		var listingWrapper = contextual.children('.Q_listing_wrapper');
+		listingWrapper.children('.Q_scroller_wrapper').children().unwrap();
+		// applying Q/sroller by default
+		listingWrapper.plugin('Q/scroller', {
+			'height': height,
+			'startBottom': info.inBottomHalf,
+			'eventDelegate': Q.info.isTouchscreen ? document.body : null
+		});
+		info.curScroll = 'scroller';
+		
+		// hiding contextual and making it visible again
+		contextual.hide();
+		contextual.css({ 'visibility': 'visible' });
+		
+		if (info.inBottomHalf)
+			contextual.append('<div class="Q_contextual_bottom_arrow" />');
+		else
+			contextual.prepend('<div class="Q_contextual_top_arrow" />');
+		var arrow = contextual.find('.Q_contextual_bottom_arrow, .Q_contextual_top_arrow');
+		info.arrowHeight = contextual.find('.Q_contextual_top_arrow, .Q_contextual_bottom_arrow').height();
+		
+		var x = info.coords.x, y = info.coords.y;
+		if (info.size && info.size.width)
+		{
+			var arrowWidth = parseInt(arrow.css('width'));
+			arrow.css({ 'margin-left': ((info.size.width - arrowWidth) / 2 - 5) + 'px' });
+		}
+		if (info.relativeToElement)
+		{
+			var leftOffset = parseInt(arrow.css('margin-left'));
+			if (info.coords.x < 5)
+			{
+				x = 5;
+				arrow.css({ 'margin-left': (leftOffset + info.coords.x - 5) + 'px' });
+			}
+			else if (info.coords.x + contextual.outerWidth() + 5 > $body.width())
+			{
+				x = $body.width() - contextual.outerWidth() - 5;
+				arrow.css({ 'margin-left': (leftOffset + info.coords.x + contextual.outerWidth() - $body.width() + 5) + 'px' });
+			}
+		}
+		
+		contextual.css({
+			'top': (y + (info.inBottomHalf ? - (contextual.outerHeight() + 16) : 16)) + 'px',
+			'left': x + 'px'
+		});
+		if (Q.Contextual.fadeTime > 0)
+			contextual.fadeIn(Q.Contextual.fadeTime);
+		else
+			contextual.show();
+		
+		if (Q.info.isTouchscreen)
+		{
+			Q.Mask.show('Q.screenMask', { 'fadeTime': Q.Contextual.fadeTime });
+		}
+		
+		if (!info.ellipsissed)
+		{
+			contextual.find('.Q_listing li').each(function()
+			{
+				var listItem = $(this), text = listItem.children('.Q_listing_item_text');
+				text.css({ 'max-width': (listItem.width() - text.prev().outerWidth(true) - 5) + 'px' });
+			});
+			info.ellipsissed = true;
+		}
+	},
+
+	/**
+	 * Hide contextual. Because only one contextual can be shown at a time, these function has no parameters.
+	 * Also, usually you don't have to call this manually as contextuals hide automatically on appropriate events.
+	 * @param leaveMask Boolean. Defaults to false. If true, mask won't be hidden along with contextual.
+	 */
+	hide: function(leaveMask)
+	{
+		if (Q.Contextual.current != -1)
+		{
+			var contextual = Q.Contextual.collection[Q.Contextual.current].contextual;
+			var info = Q.Contextual.collection[Q.Contextual.current].info;
+			contextual.find('.Q_listing > li').removeClass('Q_selected');
+			info.moveTarget = null;
+			info.selectedAtStart = false;
+			
+			var listingWrapper = contextual.children('.Q_listing_wrapper');
+			listingWrapper.plugin('Q/scroller', 'destroy');
+			listingWrapper.plugin('Q/iScroll', 'destroy');
+			listingWrapper.children('.Q_scroller_wrapper').plugin('Q/iScroll', 'destroy');
+			listingWrapper.plugin('Q/touchscroll', 'destroy');
+			listingWrapper.children('.Q_scroller_wrapper').plugin('Q/touchscroll', 'destroy');
+			listingWrapper.css({ 'max-height': '' });
+			
+			if (Q.Contextual.fadeTime > 0)
+				contextual.fadeOut(Q.Contextual.fadeTime);
+			else
+				contextual.hide();
+			if (!leaveMask)
+			{
+				Q.Mask.hide('Q.screenMask');
+			}
+			
+			Q.Contextual.current = -1;
+			Q.Contextual.outOfBounds = false;
+		}
+	},
+	
+	/**
+	 * Temporary disables contextuals triggering.
+	 */
+	disable: function()
+	{
+		Q.Contextual.triggeringDisabled = true;
+	},
+	
+	/**
+	 * Enables contextuals triggering if it was previously disabled.
+	 */
+	enable: function()
+	{
+		Q.Contextual.triggeringDisabled = false;
+	}
+
+};
+
+// TODO: refactor all contextual options into this object
+Q.Contextual.options = {
+	'height': '80%'
+};
+
+/**
+ * Operates with notices.
+ */
+Q.Notices = {
+		
+	/**
+	 * Setting that changes notices slide down / slide up time.
+	 */
+	popUpTime: 500,
+		
+	/**
+	 * Adds a notice.
+	 * @param key String
+	 * Unique key for this notice.
+	 * @param contents String
+	 * HTML contents of this notice.
+	 * @param type String
+	 * Arbitrary type of notice. Can be used to apply different styles dependent on type,
+	 * because appropriate CSS class appended to the notice. May be 'error' for example.
+	 */
+	add: function(key, contents, type)
+	{
+		var noticesSlot = $('#notices_slot');
+		if (noticesSlot.find('ul li[data-key="' + key + '"]').length == 0)
+		{
+			var noticeClass = '';
+			if (typeof(type) !== 'undefined')
+				noticeClass = ' Q_' + type + '_notice';
+			var notice = $('<li data-key="' + key + '">' +
+											 '<span class="Q_common_notice' + noticeClass + '">' + contents + '</span>' +
+											 '<span class="Q_close"></span>' +
+										 '</li>');
+			var noticesList = noticesSlot.find('ul');
+			if (noticesList.length == 0)
+			{
+				noticesList = $('<ul />');
+				noticesSlot.append(noticesList);
+			};
+			var allNotices = noticesList.find('li');
+			allNotices.addClass('Q_hidden_notice');
+			noticesList.append(notice);
+			if (allNotices.length != 0)
+			{
+				Q.Notices.removeCounter();
+				Q.Notices.addCounter();
+			}
+			Q.Notices.processAdded();
+		}
+		else
+		{
+			throw new Error('A notice with key \'' + key + '\' already exists.');
+		}
+	},
+	
+	/**
+	 * Processes added notices, either using Q.Notices.add() or using 'notices' slot contents.
+	 */
+	processAdded: function()
+	{
+		var noticesSlot = $('#notices_slot');
+		var topStub = $('#main > .Q_top_stub');
+		var dashboard = $('#dashboard_slot');
+		var participants = $('.Streams_participant_tool_wrapper');
+		var column0Slot = $('#column0_slot'), column1Slot = $('#column1_slot'), column2Slot = $('#column2_slot');
+		
+		var noticesCount = noticesSlot.find('ul li').length;
+		if (noticesCount != 0)
+		{
+			setTimeout(function()
+			{
+				var lastNotice = noticesSlot.find('ul li:last');
+				var noticeWidth = lastNotice.parent().width() - (lastNotice.find('.Q_more_notices').length != 0 ?
+						lastNotice.find('.Q_more_notices').outerWidth(true) : lastNotice.find('.Q_close').outerWidth());
+				lastNotice.find('.Q_common_notice').css({ 'width': noticeWidth + 'px' });
+			}, 0);
+			
+			if (!Q.Notices.poppedUp)
+			{
+				if (noticesCount > 1)
+				{
+					setTimeout(function()
+					{
+						noticesSlot.find('ul li').hide();
+						noticesSlot.find('ul li:last').show();
+						Q.Notices.addCounter();
+					}, 0);
+				}
+				var noticesMarginTop = '-' + noticesSlot.outerHeight() + 'px';
+				noticesSlot.css({ 'margin-top': noticesMarginTop });
+				noticesSlot.show().clearQueue().animate({ 'margin-top': '0' }, Q.Notices.popUpTime);
+				setTimeout(function()
+				{
+					Q.Notices.animateTopOffsets();
+				}, 0);
+			}
+			
+			if (!Q.info.isTouchscreen)
+			{
+				noticesSlot.mousemove(function(e)
+				{
+					if (!Q.Notices.slidingInProgress)
+						Q.Notices.triggerCollapse = false;
+				});
+			}
+			
+			if (!Q.Notices.helpersCreated)
+			{
+				Q.Notices.eventHandlers = { 'expand': function() {}, 'collapse': function() {} };
+				
+				Q.Notices.eventHandlers.expand = function()
+				{
+					if ((Q.info.isMobile || Q.info.isTablet) && Q.Notices.expanded)
+						return true;
+					
+					noticesSlot.find('ul li').show();
+					noticesMarginTop = '-' + (noticesSlot.outerHeight() - noticesSlot.find('ul li:last').outerHeight()) + 'px';
+					noticesSlot.css({ 'margin-top': noticesMarginTop });
+					
+					Q.Notices.removeCounter();
+					
+					noticesSlot.clearQueue().animate({ 'margin-top': '0' }, 200, function()
+					{
+						Q.Notices.expanded = true;
+					});
+					
+					if (Q.info.isMobile || Q.info.isTablet)
+					{
+						Q.Mask.show('Q.screenMask', { 'fadeTime': 200, 'className': 'Q_screen_shadow_mask' });
+					}
+				};
+				
+				Q.Notices.eventHandlers.collapse = function(event)
+				{
+					noticesMarginTop = '-' + (noticesSlot.outerHeight() - noticesSlot.find('ul li:last').outerHeight()) + 'px';
+					noticesSlot.clearQueue().animate({ 'margin-top': noticesMarginTop }, 200, function()
+					{
+						noticesSlot.find('ul li').hide();
+						noticesSlot.find('ul li:last').show();
+						noticesSlot.css({ 'margin-top': '0' });
+						
+						Q.Notices.addCounter();
+						
+						Q.Notices.expanded = false;
+					});
+					
+					if (Q.info.isMobile || Q.info.isTablet)
+					{
+						Q.Mask.hide('Q.screenMask');
+					}
+				};
+				
+				Q.Notices.bindExpandEvents = function()
+				{
+					if (!Q.Notices.expandEventsBound)
+					{
+						if (Q.info.isMobile || Q.info.isTablet)
+						{
+							noticesSlot.bind(Q.Pointer.start, Q.Notices.eventHandlers.expand);
+							Q.Mask.get('Q.screenMask').element.bind(Q.Pointer.start, Q.Notices.eventHandlers.collapse);
+						}
+						else
+						{
+							noticesSlot.bind('mouseenter', Q.Notices.eventHandlers.expand);
+							noticesSlot.bind('mouseleave', Q.Notices.eventHandlers.collapse);
+						}
+						Q.Notices.expandEventsBound = true;
+					}
+				};
+				
+				Q.Notices.unbindExpandEvents = function()
+				{
+					if (Q.Notices.expandEventsBound)
+					{
+						if (Q.info.isTouchscreen)
+						{
+							noticesSlot.unbind(Q.Pointer.start, Q.Notices.eventHandlers.expand);
+							Q.Mask.get('Q.screenMask').element.unbind(Q.Pointer.start, Q.Notices.eventHandlers.collapse);
+						}
+						else
+						{
+							noticesSlot.unbind('mouseenter', Q.Notices.eventHandlers.expand);
+							noticesSlot.unbind('mouseleave', Q.Notices.eventHandlers.collapse);
+							Q.Notices.triggerCollapse = true;
+						}
+						Q.Notices.expandEventsBound = false;
+					}
+				};
+				
+				Q.Notices.addCounter = function()
+				{
+					var noticesCount = noticesSlot.find('ul li').length;
+					var lastNotice = noticesSlot.find('ul li:last');
+					lastNotice.find('.Q_close').hide();
+					lastNotice.find('.Q_common_notice').css({ 'width': '' });
+					var moreNotices = lastNotice.find('.Q_more_notices');
+					if (moreNotices.length == 0)
+					{
+						moreNotices = $('<span class="Q_more_notices"><span>' + (noticesCount - 1) + '</span> more notices</span>');
+						lastNotice.append(moreNotices);
+					}
+					noticeWidth = lastNotice.width() - moreNotices.outerWidth(true);
+					lastNotice.find('.Q_common_notice').css({
+						'width': noticeWidth + 'px',
+						'white-space': 'nowrap',
+						'overflow': 'hidden'
+					});
+					if (topStub.outerHeight() != noticesSlot.outerHeight())
+					{
+						Q.Notices.animateTopOffsets();
+					}
+				};
+				
+				Q.Notices.removeCounter = function()
+				{
+					noticesSlot.find('.Q_more_notices').remove();
+					closeCross = noticesSlot.find('.Q_close');
+					closeCross.show();
+					var lastNotice = noticesSlot.find('ul li:last');
+					noticeWidth = (lastNotice.width() - closeCross.outerWidth());
+					lastNotice.find('.Q_common_notice').css({
+						'width': noticeWidth + 'px',
+						'white-space': '',
+						'overflow': ''
+					});
+				};
+				
+				Q.Notices.animateTopOffsets = function(remove)
+				{
+					if (remove === undefined)
+						remove = false;
+					
+					// if we have fullscreen dialog on the screen, we must animate it too
+					var fullscreenDialog = $('.Q_fullscreen_dialog');
+					if (!remove)
+					{
+						var topStubHeight = noticesSlot.outerHeight();
+						if (Q.info.platform == 'android')
+						{
+							dashboard.clearQueue().animate({ 'top': topStubHeight + 'px' }, Q.Notices.popUpTime);
+							if (column1Slot.css('position') == 'fixed' && column1Slot.css('display') == 'block')
+							{
+								var newTop = parseInt(column1Slot.css('top')) + topStubHeight;
+								column1Slot.clearQueue().animate({ 'top': newTop + 'px' }, Q.Notices.popUpTime);
+							}
+							if (column2Slot.css('position') == 'fixed' && column2Slot.css('display') == 'block' &&
+									column2Slot.css('visibility') == 'visible')
+							{
+								var newTop = parseInt(column2Slot.css('top')) + topStubHeight;
+								column2Slot.clearQueue().animate({ 'top': newTop + 'px' }, Q.Notices.popUpTime);
+							}
+							if (Q.Layout.orientation == 'portrait')
+							{
+								topStubHeight += dashboard.outerHeight();
+								participants.clearQueue().animate({ 'top': topStubHeight + 'px' }, Q.Notices.popUpTime);
+							}
+							Q.Layout.androidInitialOffset = -1;
+						}
+						if (fullscreenDialog.length > 0)
+						{
+							fullscreenDialog.clearQueue().animate({ 'margin-top': topStubHeight + 'px' }, Q.Notices.popUpTime);
+							fullscreenDialog.find('a.close').animate({ 'margin-top': topStubHeight + 'px' }, Q.Notices.popUpTime);
+						}
+						topStub.clearQueue().animate({ 'height': topStubHeight + 'px' }, Q.Notices.popUpTime, function()
+						{
+							Q.Layout.orientationChange(false, true, true);
+							Q.Notices.poppedUp = true;
+						});
+					}
+					else
+					{
+						var noticesHeight = noticesSlot.outerHeight();
+						var dashboardHeight = dashboard.outerHeight();
+						if (Q.info.platform == 'android')
+						{
+							if ((column2Slot.css('visibility') == 'visible') &&
+									(document.body.scrollTop + window.innerHeight >= document.body.scrollHeight))
+							{
+								document.body.scrollTop = 10000;
+							}
+							dashboard.clearQueue().animate({ 'top': '0' }, Q.Notices.popUpTime);
+							participants.clearQueue().animate({ 'top': (dashboardHeight + 1) + 'px' }, Q.Notices.popUpTime);
+							if (column1Slot.css('position') == 'fixed' && column1Slot.css('display') == 'block')
+							{
+								var newTop = parseInt(column1Slot.css('top')) - noticesHeight;
+								column1Slot.clearQueue().animate({ 'top': newTop + 'px' }, Q.Notices.popUpTime);
+							}
+							if (column2Slot.css('position') == 'fixed' && column2Slot.css('display') == 'block' &&
+									column2Slot.css('visibility') == 'visible')
+							{
+								var newTop = parseInt(column2Slot.css('top')) - noticesHeight;
+								column2Slot.clearQueue().animate({ 'top': newTop + 'px' }, Q.Notices.popUpTime);
+							}
+							Q.Layout.androidInitialOffset = -1;
+						}
+						if (fullscreenDialog.length > 0)
+						{
+							fullscreenDialog.clearQueue().animate({ 'margin-top': '0' }, Q.Notices.popUpTime);
+							fullscreenDialog.find('a.close').animate({ 'margin-top': '0' }, Q.Notices.popUpTime);
+						}
+						topStub.clearQueue().animate({ 'height': (Q.info.platform == 'android' ? dashboardHeight : '0') }, Q.Notices.popUpTime);
+						noticesMarginTop = '-' + noticesHeight + 'px';
+						noticesSlot.clearQueue().animate({ 'margin-top': noticesMarginTop }, Q.Notices.popUpTime, function()
+						{
+							noticesSlot.find('ul li').remove();
+							Q.Layout.orientationChange(false, true, true);
+							Q.Notices.poppedUp = false;
+							Q.Notices.unbindExpandEvents();
+						});
+					}
+				};
+				
+				Q.Notices.helpersCreated = true;
+			}
+			
+			if (noticesCount > 1)
+			{
+				Q.Notices.removeCounter();
+				Q.Notices.addCounter();
+				Q.Notices.bindExpandEvents();
+			}
+			
+			Q.Notices.removeNotice = function(notice)
+			{
+				if (Q.Notices.slidingInProgress)
+					return false;
+				
+				if (noticesSlot.find('ul li').length > 1)
+				{
+					if (Q.Notices.expanded)
+					{
+						Q.Notices.unbindExpandEvents();
+						
+						Q.Notices.slidingInProgress = true;
+						notice.slideUp(Q.Notices.popUpTime, function()
+						{
+							Q.Notices.slidingInProgress = false;
+							
+							notice.remove();
+							if (noticesSlot.find('ul li').length == 1)
+							{
+								Q.Notices.removeCounter();
+								if (Q.info.isTouchscreen)
+								{
+									Q.Mask.hide('Q.screenMask');
+									Q.Notices.expanded = false;
+								}
+							}
+							else
+							{
+								Q.Notices.bindExpandEvents();
+								
+								if (!Q.info.isTouchscreen)
+								{
+									function bodyMouseMoveStub()
+									{
+										if (Q.Notices.triggerCollapse)
+											noticesSlot.trigger('mouseleave');
+										$(document.body).unbind('mousemove', bodyMouseMoveStub);
+									};
+									$(document.body).mousemove(bodyMouseMoveStub);
+								}
+							}
+						});
+					}
+					else
+					{
+						if (notice.index() == noticesSlot.find('ul li:last').index())
+							notice.prev().show();
+						notice.remove();
+						Q.Notices.removeCounter();
+						if (noticesSlot.find('ul li').length > 1)
+						{
+							Q.Notices.addCounter();
+						}
+						else
+						{
+							Q.Notices.unbindExpandEvents();
+						}
+					}
+				}
+				else
+				{
+					Q.Notices.animateTopOffsets(true);
+				}
+				
+				Q.req('Q/notice?key=' + encodeURIComponent(notice.attr('data-key')), 
+					'data',
+					function() {}, 
+					{ method: 'delete' }
+				);
+			};
+			
+			noticesSlot.find('ul li .Q_close').unbind(Q.Pointer.end).bind(Q.Pointer.end, function()
+			{
+				var notice = $(this).parent();
+				Q.Notices.removeNotice(notice);
+			});
+		}
+	},
+	
+	/**
+	 * Removes a notice.
+	 * @param key String
+	 * Unique key of this notice which has been provided when notice was added.
+	 */
+	remove: function(key)
+	{
+		var noticesSlot = $('#notices_slot');
+		notice = noticesSlot.find('ul li[data-key="' + key + '"]');
+		if (notice.length)
+			Q.Notices.removeNotice(notice);
+	},
+	
+	/**
+	 * Updates notices layout.
+	 */
+	updateLayout: function()
+	{
+		var noticesSlot = $('#notices_slot');
+		var dashboard = $('#dashboard_slot');
+		var topStub = $('#main > .Q_top_stub');
+		var participants = $('.Streams_participant_tool_wrapper');
+		var column0Slot = $('#column0_slot'), column1Slot = $('#column1_slot'), column2Slot = $('#column2_slot');
+		noticesSlot.find('ul li').each(function()
+		{
+			var $this = $(this);
+			var noticeWidth = $this.parent().width() - ($this.find('.Q_more_notices').length != 0 ?
+												$this.find('.Q_more_notices').outerWidth(true) : $this.find('.Q_close').outerWidth());
+			$this.find('.Q_common_notice').css({ 'width': noticeWidth + 'px' });
+		});
+		var topStubHeight = 0;
+		if (noticesSlot.find('ul > li').length > 0)
+		{
+			topStubHeight = noticesSlot.outerHeight();
+			if (Q.info.platform == 'android')
+			{
+				if (Q.Layout.orientation == 'portrait')
+					topStubHeight += dashboard.outerHeight();
+				participants.css({ 'top': (topStubHeight + 1) + 'px' });
+			}
+			topStub.css({ 'height': topStubHeight + 'px' });
+		}
+		else if (Q.info.platform == 'android' && Q.Layout.orientation == 'portrait')
+		{
+			topStubHeight = dashboard.outerHeight();
+			topStub.css({ 'height': topStubHeight + 'px' });
+			participants.css({ 'top': (topStubHeight + 1) + 'px' });
+		}
+		else
+		{
+			topStub.css({ 'height': '0' });
+			if (Q.info.platform == 'android')
+			{
+				participants.css({ 'top': '1px' });
+			}
+		}
+	},
+	
+	/**
+	 * Hides a notice.
+	 * @param key String
+	 * Key of the notice to be hidden.
+	 */
+	hide: function(key)
+	{
+		$('#notices_slot ul li[data-key="' + key + '"]').hide();
+	},
+	
+	/**
+	 * Shows a previously notice.
+	 * @param key String
+	 * Key of the notice to be shown.
+	 */
+	show: function(key)
+	{
+		$('#notices_slot ul li[data-key="' + key + '"]').show();
+	}
+
+};
+
+/**
+ * Makes a very simple infinite scroll.
+ * Basically may be applied to 'div' with 'overflow: auto|scroll'.
+ * Doesn't provide any way to dynamically get content using ajax,
+ * just simply hides elements which aren't visible yet (aren't scrolled to).
+ * @param options Object
+ *	 A hash of options, that can include:
+ *	 "itemSelector": Required. jQuery selector of the items that needs to be hidden and then shown.
+ *	 "elementsPerPage": Defaults to 10. Number of elements shown each time user scrolls to the end of container.
+ */
+$.fn.infiniteScroll = function(options)
+{
+	var o = {
+		'elementsPerPage': 10
+	};
+	Q.extend(o, options);
+	
+	if (!o.itemSelector)
+	{
+		alert("Please provide 'itemSelector' for infiniteScroll");
+	}
+	
+	return this.each(function(index)
+	{
+		var $this = $(this);
+		$this.find(o.itemSelector).slice(o.elementsPerPage).hide();
+		var start = o.elementsPerPage;
+		Q.Interval.set(function()
+		{
+			if ($this.scrollTop() > 0 && $this.scrollTop() + $this.outerHeight() >= $this[0].scrollHeight)
+			{
+				$this.find(o.itemSelector).slice(start, start + o.elementsPerPage).show();
+				start += o.elementsPerPage;
+			}
+		}, 100, 'jQuery.infiniteScroll');
+	});
+};
+
+
+/**
+ * Q/grammar tool.
+ */
+Q.Tool.define('Q/grammar', function(options) {
+	var toolDiv = this.element;
+	if (!toolDiv.data('constructed'))
+	{
+		var dialog = toolDiv.children('.Q_grammar_dialog');
+		var sendButton = dialog.find('#Q_grammar_send');
+		
+		$(document).on('keyup', function(e)
+		{
+			if (e.ctrlKey && e.which == 13)
+			{
+				var selection = window.getSelection();
+				if (!selection.toString())
+				{
+					alert('Please, select some text first');
+				}
+				else
+				{
+					var selectedText = selection.toString();
+					var wholeText = selection.anchorNode.wholeText.trim();
+					var startExcerptPos = wholeText.indexOf(selectedText);
+					var charsPassed = 0;
+					while (startExcerptPos > 0)
+					{
+						charsPassed++;
+						startExcerptPos--;
+						if (charsPassed >= 20 && wholeText.charAt(startExcerptPos) == ' ')
+						{
+							startExcerptPos++;
+							break;
+						}
+					}
+					var endExcerptPos = wholeText.indexOf(selectedText) + selectedText.length;
+					charsPassed = 0;
+					while (endExcerptPos < wholeText.length)
+					{
+						charsPassed++;
+						endExcerptPos++;
+						if (charsPassed >= 20 && wholeText.charAt(endExcerptPos) == ' ')
+						{
+							break;
+						}
+					}
+					var excerpt = (startExcerptPos > 0 ? '...' : '')
+											+ wholeText.substring(startExcerptPos, endExcerptPos).replace(selectedText, '<b>' + selectedText + '</b>')
+											+ (endExcerptPos < wholeText.length ? '...' : '');
+					
+					sendButton.html('Send');
+					sendButton.removeAttr('disabled');
+					sendButton.parent().find('span').remove();
+					dialog.find('#Q_grammar_text').val(excerpt);
+					dialog.find('#Q_grammar_comment').val('');
+					dialog.plugin('Q/dialog', { 'mask': true });
+				}
+			}
+		});
+		
+		sendButton.on('click', function()
+		{
+			sendButton.html('Sending...');
+			sendButton.attr('disabled', 'disabled');
+			sendButton.parent().find('span').remove();
+			sendButton.next().show();
+			
+			var params = {
+				'url': location.href,
+				'text': $('#Q_grammar_text').val(),
+				'comment': $('#Q_grammar_comment').val(),
+				'author': $('#Q_grammar_author').val()
+			};
+			
+			$.post(Q.ajaxExtend(Q.action('Q/grammar'), 'data', { 'method': 'post' }), params, function(response)
+			{
+				if (response && response.slots && response.slots.data.sent)
+				{
+					sendButton.next().hide();
+					sendButton.parent().append('<span>Done!</span>');
+				}
+				else
+				{
+					sendButton.next().hide();
+					sendButton.html('Send');
+					sendButton.removeAttr('disabled');
+					sendButton.parent().append('<span style="color: #CC0000">Error!</span>');
+				}
+			}, 'json');
+		});
+		
+		toolDiv.data('constructed', true);
+	}
+})
+
+/**
+ * @class Q
+ * @namespace Q
+ * Provides replacement for default javascript alert() using Q front-end features, specifically dialogs.
+ * Shows dialog with customizable title, message and button label.
+ * @method alert
+ * @param {String} message The only required parameter, this specifies text of the alert.
+ * @param {Object} [options] An optiopnal hash of options which can include:
+ *   "title": Optional parameter to override alert dialog title. Defaults to 'Alert'.
+ *   "onClose": Optional
+ */
+Q.alert = function(message, options)
+{
+	if (options === undefined) options = {};
+	if (options.title === undefined) options.title = 'Alert';
+	var dialog = Q.Dialogs.push({
+		'title': options.title,
+		'content': '<div class="Q_messagebox"><p>' + message + '</p></div>',
+		'onClose': options.onClose || undefined,
+		'fullscreen': false,
+		'hidePrevious': false
+	});
+};
+
+/**
+ * Provides replacement for default javascript confirm() using Q front-end features, specifically dialogs.
+ * Shows dialog with customizable title, conrirmation message and buttons.
+ * The only major difference from regular confirm is that this implementation doesn't stop JS execution
+ * and thus it's impossible to synchronously return true | false when user presses 'Ok' or 'Cancel' and
+ * thereby callback is used to pass the user decision result.
+ * @method confirm
+ * @param {String} message The only required parameter, this specifies confirmation text.
+ * @param {Function} callback: This will be called when dialog is closed,
+ *   passing true | false depending on whether user clicked (tapped) 'Ok' or 'Cancel' button, respectively
+ * @param {Object} [options] An optiopnal hash of options which can include:
+ *   "title": Optional string parameter to override confirm dialog title. Defaults to 'Confirm'.
+ *   "ok": Optional string parameter to override confirm dialog 'Ok' button label, e.g. 'Yes'. Defaults to 'Ok'.
+ *   "cancel": Optional string parameter to override confirm dialog 'Cancel' button label, e.g. 'No'. Defaults to 'Cancel'.
+ *   "noClose": Defaults to true. Set to false to show a close button
+ */
+Q.confirm = function(message, callback, options)
+{
+	var o = Q.extend({
+		title: 'Confirm',
+		ok: 'OK',
+		cancel: 'Cancel',
+		noClose: true
+	}, options);
+	var buttonClicked = false;
+	var dialog = Q.Dialogs.push({
+		'title': o.title,
+		'content': $('<div class="Q_messagebox" />').append(
+			$('<p />').html(message),
+			$('<button />').html(o.ok),
+			$('<button />').html(o.cancel)
+		),
+		'noClose': o.noClose,
+		'onClose': {'Q.confirm': function() {
+			if (!buttonClicked) Q.handle(callback, this, [null]);
+		}},
+		'fullscreen': false,
+		'hidePrevious': false
+	});
+	dialog.find('button:first').on(Q.Pointer.end, function()
+	{
+		buttonClicked = true;
+		Q.Dialogs.pop();
+		Q.handle(callback, window, [true]);
+	});
+	dialog.find('button:last').on(Q.Pointer.end, function()
+	{
+		buttonClicked = true;
+		Q.Dialogs.pop();
+		Q.handle(callback, window, [false]);
+	});
+};
+
+/**
+ * @class Q
+ * @namespace Q
+ * Provides replacement for default javascript prompt() using Q front-end features, specifically dialogs.
+ * Shows dialog with customizable title, message, input field placeholder and button label.
+ * This dialog is useful for inputting single values (number or string).
+ * Unlike regular JS prompt, entered value passed asynchronously using callback.
+ * @method prompt
+ * @param {String} [message='Enter value'] Optional, specifies text before input field useful to ask
+ *   user to enter something (e.g. 'Enter your name').
+ * @param {Function} callback: This will be called when dialog is closed,
+ *   passing true | false depending on whether user clicked (tapped) 'Ok' or 'Cancel' button, respectively
+ * @param {Object} [options] An optiopnal hash of options which can include:
+ *   "title": Optional parameter to override confirm dialog title. Defaults to 'Prompt'.
+ *   "placeholder": Optional, used as a placeholder text in the input field. Defaults to 'Enter value'.
+ *   "ok": Optional parameter to override confirm dialog 'Ok' button label, e.g. 'Yes'. Defaults to 'Done'.
+ *   "noClose": Defaults to true. Set to false to show a close button.
+ */
+Q.prompt = function(message, callback, options)
+{
+	if (options === undefined) options = {};
+	var o = Q.extend({
+		title: 'Prompt',
+		ok: 'Done',
+		message: message,
+		placeholder: '',
+		noClose: true
+	}, options);
+	if (!o.message) o.message = 'Enter value:';
+	var buttonClicked = false;
+	var dialog = Q.Dialogs.push({
+		'title': o.title,
+		'content': $('<div class="Q_messagebox" />').append(
+			$('<p />').html(o.message),
+			$('<input type="text" />').attr('placeholder', o.placeholder),
+			$('<button class="Q_messagebox_done" />').html(o.ok)
+		),
+		'onActivate': function(dialog) {
+			var field = dialog.find('input');
+			var fieldWidth = field.parent().width() - parseInt(field.css('padding-left')) - parseInt(field.css('padding-right'))
+			               - field.next().outerWidth(true) - 5;
+			field.css({ 'width': fieldWidth + 'px' })
+				.plugin('Q/placeholders')
+				.plugin('Q/clickfocus').on('keydown', function (event) {
+					if (event.keyCode === 13) {
+						_done();
+					}
+				});
+		},
+		'onClose': {'Q.prompt': function() {
+			if (!buttonClicked) Q.handle(callback, this, [null]);
+		}},
+		'fullscreen': false,
+		'hidePrevious': false
+	});
+	dialog.find('button').on(Q.Pointer.end, _done);
+	function _done() {
+		buttonClicked = true;
+		var value = dialog.find('input').val();
+		Q.Dialogs.pop();
+		Q.handle(callback, this, [value]);
+	}
+};
+
+})(jQuery);

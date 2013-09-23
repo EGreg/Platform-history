@@ -1,0 +1,8 @@
+#common ignores
+.DS_Store 
+.hg/
+.idea/
+local/*
+files/*
+web/plugins/*
+!*.dir

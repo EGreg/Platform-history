@@ -1,0 +1,18 @@
+syntax: regexp
+
+#Common ignores
+\.DS_Store$
+^\.idea/
+
+#Ignore symlinks
+^web/plugins/
+
+#Ignore local environment directories
+^files/
+^local/
+
+#Ignore stuff like wordpress
+^web/blog/
+
+#Ignore google and yahoo verification files
+

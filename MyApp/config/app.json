@@ -1,0 +1,39 @@
+{
+	"Q": {
+		"app": "MyApp",
+		"appInfo" : {
+			"version" : "0.1",
+			"compatible": "0.1",
+			"requires": {
+				"Q": "0.8",
+				"Users": "0.8",
+				"Streams": "0.8"
+			},
+			"connections": []
+		},
+		"plugins": ["Users", "Streams"],
+		"handlersBeforeEvent": {
+			"Q/responseExtras": ["MyApp/before/Q/responseExtras"]
+		},
+		"handlersAfterEvent": {
+			
+		},
+		"routes": {
+			"": {"module": "MyApp", "action": "welcome"},
+			"facebook/": {"module": "MyApp", "action": "welcome", "facebook": 1},
+			"facebook/:action.html": {"module": "MyApp", "facebook": 1},
+			":action": {"module": "MyApp"},
+			"e/:emailAddress": { "module": "Users", "action": "activate" },
+			"m/:mobileNumber": { "module": "Users", "action": "activate" }
+		},
+		"exception": {
+			"showTrace": true,
+			"showFileAndLine": true
+		},
+		"node": {
+			"headers": {
+				"Access-Control-Allow-Origin": "*"
+			}
+		}
+	}
+}

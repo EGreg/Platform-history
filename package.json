@@ -1,0 +1,20 @@
+{
+	"name": "Q",
+	"description": "Q Platform",
+	"author": "Qbix",
+	"version": "0.1.0",
+	"engines": {
+		"node": ">= 0.6.0"
+	},
+	"dependencies": {
+		"express": "3.x.x",
+		"socket.io": "0.9.x",
+		"mysql": "0.9.x",
+		"request": "2.x.x",
+		"mustache": "0.7.x",
+		"nodemailer": "0.3.x",
+		"twilio": "0.4.x",
+		"yuidocjs": "0.3.x",
+		"apnagent": "1.x.x"
+	}
+}
