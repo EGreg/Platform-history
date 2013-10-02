@@ -55,7 +55,7 @@ class Facebook extends BaseFacebook
   }
 
   protected static $kSupportedKeys =
-    array('state', 'code', 'access_token', 'userId');
+    array('state', 'code', 'access_token', 'user_id');
 
   protected function initSharedSession() {
     $cookie_name = $this->getSharedSessionCookieName();

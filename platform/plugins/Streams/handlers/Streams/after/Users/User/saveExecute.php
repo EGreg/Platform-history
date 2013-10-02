@@ -38,6 +38,7 @@ function Streams_after_Users_User_saveExecute($params)
 			$stream = new Streams_Stream();
 			$stream->publisherId = $user->id;
 			$stream->name = $name;
+			$stream->retrieve(); // try retrieving it
 			$stream->type = $p->expect($name, "type");
 			$stream->title = $p->expect($name, "title");
 			$stream->content = $p->get($name, "content", '');

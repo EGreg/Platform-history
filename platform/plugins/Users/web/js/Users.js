@@ -1178,12 +1178,12 @@ function login_setupDialog(usingProviders, perms, dialogContainer, identifierTyp
 							step1_form.data('used', 'facebook');
 							FB.api({
 								method: 'fql.query',
-								query: "SELECT username, firstName, lastName, email, pic_small, pic_big, pic_square, pic FROM user WHERE uid="+response.authResponse.userID
+								query: "SELECT username, first_name, last_name, email, pic_small, pic_big, pic_square, pic FROM user WHERE uid="+response.authResponse.userID
 							}, function(rows) {
 								priv.registerInfo = {
 									username: rows[0].username,
-									firstName: rows[0].firstName,
-									lastName: rows[0].lastName,
+									firstName: rows[0].first_name,
+									lastName: rows[0].last_name,
 									pic_square: rows[0].pic_square,
 									pic: rows[0].pic
 								};
@@ -1422,7 +1422,7 @@ Q.Tool.constructors['users_friendSelector'] = function(options) {
 					{
 						friends.unshift({
 							'id': response.id,
-							'name': (typeof(o.includeMe) == 'string' ? o.includeMe : response.firstName + ' ' + response.lastName)
+							'name': (typeof(o.includeMe) == 'string' ? o.includeMe : response.first_name + ' ' + response.last_name)
 						});
 						processFriends(friends);
 					});

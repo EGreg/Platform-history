@@ -527,14 +527,14 @@ abstract class BaseFacebook
     // who the user is.
     $signed_request = $this->getSignedRequest();
     if ($signed_request) {
-      if (array_key_exists('userId', $signed_request)) {
-        $user = $signed_request['userId'];
+      if (array_key_exists('user_id', $signed_request)) {
+        $user = $signed_request['user_id'];
 
-        if($user != $this->getPersistentData('userId')){
+        if($user != $this->getPersistentData('user_id')){
           $this->clearAllPersistentData();
         }
 
-        $this->setPersistentData('userId', $signed_request['userId']);
+        $this->setPersistentData('user_id', $signed_request['user_id']);
         return $user;
       }
 
@@ -544,7 +544,7 @@ abstract class BaseFacebook
       return 0;
     }
 
-    $user = $this->getPersistentData('userId', $default = 0);
+    $user = $this->getPersistentData('user_id', $default = 0);
     $persisted_access_token = $this->getPersistentData('access_token');
 
     // use access_token to fetch user id if we have a user access_token, or if
@@ -555,7 +555,7 @@ abstract class BaseFacebook
         !($user && $persisted_access_token == $access_token)) {
       $user = $this->getUserFromAccessToken();
       if ($user) {
-        $this->setPersistentData('userId', $user);
+        $this->setPersistentData('user_id', $user);
       } else {
         $this->clearAllPersistentData();
       }
@@ -899,6 +899,10 @@ abstract class BaseFacebook
       $params['access_token'] = $this->getAccessToken();
     }
 
+    if (isset($params['access_token'])) {
+      $params['appsecret_proof'] = $this->getAppSecretProof($params['access_token']);
+    }
+
     // json_encode all params values that are not strings
     foreach ($params as $key => $value) {
       if (!is_string($value)) {
@@ -907,6 +911,19 @@ abstract class BaseFacebook
     }
 
     return $this->makeRequest($url, $params);
+  }
+
+  /**
+   * Generate a proof of App Secret
+   * This is required for all API calls originating from a server
+   * It is a sha256 hash of the access_token made using the app secret
+   *
+   * @param string $access_token The access_token to be hashed (required)
+   *
+   * @return string The sha256 hash of the access_token
+   */
+  protected function getAppSecretProof($access_token) {
+    return hash_hmac('sha256', $access_token, $this->getAppSecret());
   }
 
   /**

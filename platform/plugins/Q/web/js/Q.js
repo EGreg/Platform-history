@@ -4856,14 +4856,11 @@ Q.Template.load = function _Q_Template_load(template, callback, options) {
 	if (!callback || typeof callback !== "function") {
 		return tpl && tpl[template];
 	}
-	function _success() {
-		var result = tpl && tpl[template];
-		callback(result);
-		return result;
-	}
 	// check if template is cached
 	if (tpl && tpl[template]) {
-		return _success();
+		var result = tpl[template];
+		callback(result);
+		return result;
 	}
 	// now try to load template from server
 	function _callback(data) {
