@@ -66,12 +66,13 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 				var url = params.url;
 				delete params.url;
 				$.post(Q.ajaxExtend(url, 'data'), params).always(function() {
-					if (o.showMask) {
+					if (o.showMask && Q.Mask) {
 						Q.Mask.hide('Q.imagepickerMask');
 					}
+					input.val('');
 				}).success(function(res) {
 					if (res.errors) {
-						$this.attr('src', $this.state('Q/imagepicker').Q_old_src).css({ 'opacity': '' });
+						$this.attr('src', $this.state('Q/imagepicker').oldSrc).css({ 'opacity': state.opacity });
 						Q.handle(o.onError, this, [res.errors[0].message]);
 					} else {
 						var key = o.showSize;
@@ -83,11 +84,10 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 							$this.attr('src', Q.url(res.slots.data[key]+"?"+Date.now()))
 								.css({ 'opacity': '' });
 						}
-						input.val('');
 						Q.handle(o.onSuccess, self, [res.slots.data, key]);
 					}
 				}).error(function() {
-					$this.attr('src', $this.state('Q/imagepicker').Q_old_src).css({ 'opacity': '' });
+					$this.attr('src', $this.state('Q/imagepicker').oldSrc).css({ 'opacity': state.opacity });
 					Q.handle(o.onError, self);
 				});
 			}
@@ -122,14 +122,22 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 				}
 			});
 			input.change(function (e) {
-				$this.state('Q/imagepicker').Q_old_src = $this.data('src');
-				$this.data('src', Q.url(o.throbber)).css({ 'opacity': '0.5' });
+				if (!this.value) {
+					return; // it was canceled
+				}
+				var state = $this.state('Q/imagepicker');
+				state.oldSrc = $this.attr('src');
+				state.opacity = $this.css('opacity');
+				if (o.throbber) {
+					$this.attr('src', Q.url(o.throbber));
+				}
+				$this.animate({ 'opacity': o.loadingOpacity }, 'fast');
 				var reader = new FileReader();
 				reader.onload = function() {
 					upload(reader.result);
 				};
 				reader.onerror = function () { setTimeout(function() { alert("Error reading file"); }, 0); };
-				reader.readAsDataURL(e.target.files[0]);
+				reader.readAsDataURL(this.files[0]);
 			});
 		}
 	});
@@ -142,7 +150,8 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 	showSize: null,
 	crop: null,
 	url: Q.action("Q/image"),
-	throbber: "plugins/Q/img/throbbers/spinner_sticky_gray.gif",
+	throbber: null,
+	loadingOpacity: 0.5,
 	preprocess: null,
 	onSuccess: new Q.Event(function() {}),
 	onError: new Q.Event(function(message) {

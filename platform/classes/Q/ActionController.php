@@ -11,7 +11,7 @@ class Q_ActionController
 {
 	/**
 	 * The standard action front controller
-	 * @method excecute
+	 * @method execute
 	 * @static
 	 * @throws {Q_Exception_BadUrl}
 	 * @throws {Q_Exception}

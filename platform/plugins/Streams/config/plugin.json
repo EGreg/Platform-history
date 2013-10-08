@@ -3,6 +3,7 @@
 		"handlersBeforeEvent": {
 			"Q/objects": ["Streams/before/Q/objects"],
 			"Q/responseExtras": ["Streams/before/Q/responseExtras"],
+			"Q/Utils/canWriteToPath": ["Streams/before/Q/Utils/canWriteToPath"],
 			"Db/Row/Users_Contact/saveExecute": ["Streams/before/Users/Contact/saveExecute"],
 			"Db/Row/Users_Contact/removeExecute": ["Streams/before/Users/Contact/removeExecute"],
 			"Users/User/displayName": ["Streams/before/Users/User/displayName"]
@@ -30,6 +31,11 @@
 	"Users": {
 		"login": {
 			"userQueryUri": "Streams/user"
+		},
+		"paths": {
+			"uploads": {
+				"files/$app/uploads/streams/": true
+			}
 		}
 	},
 	"Streams": {

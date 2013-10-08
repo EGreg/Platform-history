@@ -1,6 +1,6 @@
 <?php
 
-function Users_before_Q_Utils_canWriteToPath($params)
+function Users_before_Q_Utils_canWriteToPath($params, &$result)
 {
 	extract($params);
 	/**
@@ -56,12 +56,13 @@ function Users_before_Q_Utils_canWriteToPath($params)
 					}
 					umask($mask);
 				}
-				return true;
+				$result = true;
+				return;
 			}
 		}
 	}
 	if ($throw_if_not_writeable) {
 		throw new Q_Exception_CantWriteToPath();
 	}
-	return false;
+	$result = false;
 }

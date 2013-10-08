@@ -1,15 +1,17 @@
 <?php
 
-function Q_image_post() {
+function Q_image_post($options = array()) {
+
+	$r = array_merge($_REQUEST, $options);
 
 	set_time_limit(Q_Config::get('Q', 'uploads', 'limits', 'image', 'time', 5*60*60)); // 5 min
 	$user = Users::loggedInUser(true);
-	$imageData = isset($_REQUEST['data']) ? $_REQUEST['data'] : false;
-	$path = isset($_REQUEST['path']) ? $_REQUEST['path'] : 'uploads';
-	$subpath = isset($_REQUEST['subpath']) ? $_REQUEST['subpath'] : '';
+	$imageData = isset($r['data']) ? $r['data'] : false;
+	$path = isset($r['path']) ? $r['path'] : 'uploads';
+	$subpath = isset($r['subpath']) ? $r['subpath'] : '';
 
 	$merge = null;
-	$m = isset($_REQUEST['merge']) ? $_REQUEST['merge'] : null;
+	$m = isset($r['merge']) ? $r['merge'] : null;
 	if (isset($m) && strtolower(substr($m, -4)) === '.png') {
 		$mergePath = Q::realPath(APP_WEB_DIR.DS.implode(DS, explode('/', $m)));
 		if ($mergePath) {
@@ -19,8 +21,8 @@ function Q_image_post() {
 		}
 	}
 
-	$crop = isset($_REQUEST['crop']) ? $_REQUEST['crop'] : array();
-	$save = !empty($_REQUEST['save']) ? $_REQUEST['save'] : array('x' => '');
+	$crop = isset($r['crop']) ? $r['crop'] : array();
+	$save = !empty($r['save']) ? $r['save'] : array('x' => '');
 	if (!$imageData) {
 		throw new Q_Exception("No image to save");
 	}

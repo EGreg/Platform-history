@@ -451,8 +451,9 @@ class Streams_Stream extends Base_Streams_Stream
 	{		
 		$stream = $this->getUserStream($options, $userId);
 
-		if (!$stream->testWriteLevel('join'))
+		if (!$stream->testWriteLevel('join')) {
 			throw new Users_Exception_NotAuthorized();
+		}
 
 		#Add to participant list
 		$participant = new Streams_Participant();

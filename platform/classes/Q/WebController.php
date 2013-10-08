@@ -12,7 +12,7 @@ class Q_WebController
 {
 	/**
 	 * Excecute web request
-	 * @method excecute
+	 * @method execute
 	 * @static
 	 */
 	static function execute()

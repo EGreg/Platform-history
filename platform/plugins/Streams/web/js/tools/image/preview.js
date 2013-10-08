@@ -54,7 +54,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 								return console.warn(err);
 							}
 							tool.stream = this;
-							callback({subpath: 'Streams/' + this.fields.publisherId + '/' + this.fields.name});
+							callback({subpath: 'streams/' + this.fields.publisherId + '/' + this.fields.name});
 						});
 					}
 					Streams.create({
@@ -67,7 +67,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 						tool.state.publisherId = this.publisherId;
 						tool.state.streamName = this.name;
 						tool.stream = this;
-						callback({subpath: 'Streams/' + this.publisherId + '/' + this.name});
+						callback({subpath: 'streams/' + this.publisherId + '/' + this.name});
 					}, tool.state.related);
 				},
 				onSuccess: function (data, key) {

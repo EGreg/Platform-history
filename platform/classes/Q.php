@@ -649,10 +649,12 @@ class Q
 	 &$result = null)
 	{
 		// for now, handle only event names which are strings
-		if (!is_string($event_name))
+		if (!is_string($event_name)) {
 			return;
-		if (!is_array($params))
+		}
+		if (!is_array($params)) {
 			$params = array();
+		}
 
 		static $event_stack_limit = null;
 		if (!isset($event_stack_limit)) {
@@ -794,8 +796,9 @@ class Q
 			$params = array();
 		}
 		if (!function_exists($function_name)) {
-			if ($skip_include)
+			if ($skip_include) {
 				return null;
+			}
 			// try to load appropriate file using relative filename
 			// (may search multiple include paths)
 			$filename = 'handlers'.DS.implode(DS, $handler_name_parts).'.php';
@@ -809,118 +812,6 @@ class Q
 		// call_user_func doesn't work with references being passed
 		$args = array($params, &$result);
 		return call_user_func_array($function_name, $args);
-	}
-
-	/**
-	 * Fires a sequence of events. Each event in the sequence is tested if exists
-	 * and as soon as event exists it is fired. Calls all available handlers.
-	 * last event name in the sequence.
-	 * @method handleAll
-	 * @static
-	 * @deprecated Too time consuming
-	 * @param {array} $event_sequence
-	 *  The sequence of the events
-	 * @param {array} $params=array()
-	 *  Parameters to pass to the event
-	 * @param {boolean} $no_handler=false
-	 *  Defaults to false.
-	 *  If true, the handler of the same name is not invoked.
-	 *  Put true here if you just want to fire a pure event,
-	 *  without any default behavior.
-	 *  If 'before', only runs the "before" handlers, if any.
-	 *  If 'after', only runs the "after" handlers, if any.
-	 *  You'd want to signal events with 'before' and 'after'
-	 *  before and after some "default behavior" happens.
-	 *  Check for a non-null return value on "before",
-	 *  and cancel the default behavior if it is present.
-	 * @param {boolean} $skip_includes=false
-	 *  Defaults to false.
-	 *  If true, no new files are loaded. Only handlers which have
-	 *  already been defined as functions are run.
-	 * @param {&mixed} $result=null
-	 *  Defaults to null. You can pass here a reference to a variable.
-	 *  It will be returned by this function when event handling
-	 *  has finished, or has been aborted by an event handler.
-	 *  It is passed to all the event handlers, which can modify it.
-	 * @return {mixed}
-	 *  Whatever the default event handler returned, or the final
-	 *  value of $result if it is modified by any event handlers.
-	 */
-
-	static function handleAll(
-	 $event_sequence,
-	 $params = array(),
-	 $no_handler = false,
-	 $skip_includes = false,
-	 &$result = null)
-	{
-		if (!is_array($event_sequence))
-			$event_sequence = array($event_sequence);
-		// now loop trough event sequence and check if handler is defined
-		foreach ($event_sequence as $event_name) {
-			if (self::canHandle($event_name)) {
-				$result = self::event($event_name, $params, $no_handler, $skip_includes, $result);
-			}
-		}
-		return $result;
-	}
-
-	/**
-	 * Fires an event from sequence. Each event in the sequence is tested if exists
-	 * and as soon as event exists it is fired and result is returned. All other event
-	 * handlers are ignored. If no event handler is available logs notice and return $result.
-	 * Calls exactly one handler.
-	 * @method handleEvent
-	 * @static
-	 * @deprecated Too time consuming
-	 * @param {array} $event_sequence
-	 *  The sequence of the events
-	 * @param {array} $params=array()
-	 *  Parameters to pass to the event
-	 * @param {boolean} $no_handler=false
-	 *  Defaults to false.
-	 *  If true, the handler of the same name is not invoked.
-	 *  Put true here if you just want to fire a pure event,
-	 *  without any default behavior.
-	 *  If 'before', only runs the "before" handlers, if any.
-	 *  If 'after', only runs the "after" handlers, if any.
-	 *  You'd want to signal events with 'before' and 'after'
-	 *  before and after some "default behavior" happens.
-	 *  Check for a non-null return value on "before",
-	 *  and cancel the default behavior if it is present.
-	 * @param {boolean} $skip_includes=false
-	 *  Defaults to false.
-	 *  If true, no new files are loaded. Only handlers which have
-	 *  already been defined as functions are run.
-	 * @param {&mixed} $result=null
-	 *  Defaults to null. You can pass here a reference to a variable.
-	 *  It will be returned by this function when event handling
-	 *  has finished, or has been aborted by an event handler.
-	 *  It is passed to all the event handlers, which can modify it.
-	 * @return {mixed}
-	 *  Whatever the default event handler returned, or the final
-	 *  value of $result if it is modified by any event handlers.
-	 */
-
-	static function handleEvent(
-	 $event_sequence,
-	 $params = array(),
-	 $no_handler = false,
-	 $skip_includes = false,
-	 &$result = null)
-	{
-		if (!is_array($event_sequence))
-			$event_sequence = array($event_sequence);
-
-		// loop trough event sequence and check if handler is defined
-		foreach ($event_sequence as $event_name) {
-			if (self::canHandle($event_name)) {
-				return $result = self::event($event_name, $params, $no_handler, $skip_includes, $result);
-			}
-		}
-		// no handler found
-		Q::log("No event handler defined for ".print_r($event_sequence, true));
-		return $result;
 	}
 
 	/**
