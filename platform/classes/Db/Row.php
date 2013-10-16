@@ -1522,12 +1522,10 @@ class Db_Row implements Iterator
 			if (is_array($primaryKey)) {
 				foreach ($primaryKey as $field_name)
 					if (! array_key_exists($field_name, $primaryKeyValue))
-						throw new Exception(
-							"Primary key field $field_name was not specified for $class_name.");
+						throw new Exception("Primary key field $field_name was not specified for $class_name.");
 				foreach ($primaryKeyValue as $field_name => $value)
 					if (! in_array($field_name, $primaryKey))
-						throw new Exception(
-							"The field $field_name is not part of the primary key for $class_name.");
+						throw new Exception("The field $field_name is not part of the primary key for $class_name.");
 			}
 			$search_criteria = $primaryKeyValue;
 		}
@@ -1549,9 +1547,18 @@ class Db_Row implements Iterator
 			}
 		}
 		
+		if (class_exists('Q')) {
+			$row = $this;
+			if (false === Q::event(
+				"Db/Row/$class_name/remove",
+				compact('row', 'search_criteria', 'use_index'), 'before'
+			)) {
+				return false;
+			}
+		}
 		$callback = array($this, "beforeRemove");
 		if (is_callable($callback)) {
-			$continue_deleting = call_user_func($callback, $search_criteria);
+			$continue_deleting = call_user_func($callback, $search_criteria, $use_index);
 			if (! is_bool($continue_deleting)) {
 				throw new Exception(
 					get_class($this)."::beforeRemove() must return a boolean - whether to delete or not!", 
@@ -1662,9 +1669,18 @@ class Db_Row implements Iterator
 			}
 		}
 
+		if (class_exists('Q')) {
+			$row = $this;
+			if (false === Q::event(
+				"Db/Row/$this_class/save",
+				compact('row', 'modified_fields', 'on_duplicate_key_update', 'commit'), 'before'
+			)) {
+				return false;
+			}
+		}
 		$callback = array($this, "beforeSave");
 		if (is_callable($callback)) {
-			$modified_fields = call_user_func($callback, $modified_fields);
+			$modified_fields = call_user_func($callback, $modified_fields, $on_duplicate_key_update, $commit);
 		}
 		if (! isset($modified_fields) or $modified_fields === false)
 			return false;

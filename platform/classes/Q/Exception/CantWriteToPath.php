@@ -13,4 +13,4 @@ class Q_Exception_CantWriteToPath extends Q_Exception
 	 */
 };
 
-Q_Exception::add('Q_Exception_CantWriteToPath', "You can't save files to this location");
+Q_Exception::add('Q_Exception_CantWriteToPath', "Not authorized to write files here.");

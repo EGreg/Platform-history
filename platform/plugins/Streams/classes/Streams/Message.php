@@ -73,14 +73,13 @@ class Streams_Message extends Base_Streams_Message
 
 		if (isset($information['reOrdinal'])) {
 			$reOrdinal = $information['reOrdinal'];
-			$re_publisherId = $information['re_publisherId'];
 			$m = new Streams_Message();
-			$m->publisherId = $re_publisherId;
+			$m->publisherId = $publisherId;
 			$m->ordinal = $reOrdinal;
 			if (!$m->retrieve()) {
 				throw new Q_Exception_MissingRow(array(
 					'table' => 'message',
-					'criteria' => "publisherId = $re_publisherId, ordinal = $reOrdinal"
+					'criteria' => "publisherId = $publisherId, ordinal = $reOrdinal"
 				));
 			}
 		}

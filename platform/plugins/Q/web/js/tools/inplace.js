@@ -13,21 +13,27 @@ function _setSelRange(inputEl, selStart, selend) {
 	}
 }
 
-Q.Tool.define("Q/inplace", function (element, options) {
-	var me = this, 
-		$te = $(me.element), 
+Q.Tool.define("Q/inplace", function (options) {
+	var tool = this, 
+		$te = $(tool.element), 
 		container = $('.Q_inplace_tool_container', $te);
 	if (container.length) {
-		return _Q_inplace_tool_constructor.call(me, element, options);
+		return _Q_inplace_tool_constructor.call(tool, this.element, options);
 	}
 	
 	// if activated with JS should have following options:
-	//	- action: the form action to save tool value
+	//	- action: required. the form action to save tool value
+	//	- name: required. the name for input field
 	//	- method: request method, defaults to 'PUT'
 	//	- type: type of the input - 'text' or 'textarea', defaults to 'textarea'
-	//	- name: the name for input field
 
-	if (!o || !o.action || !o.name) return console.error("Bad options in Q.inplace tool:", o);
+	var o = options;
+	if (!o || !o.action) {
+		return console.error("Q/inplace tool: missing option 'action'", o);
+	}
+	if (!o.name) {
+		return console.error("Q/inplace tool: missing option 'name'", o);
+	}
 	Q.Template.render('Q/inplace/tool', {
 		classes: function () { return o.editing ? 'Q_editing Q_nocancel' : ''; },
 		staticClass: function () { return o.type === 'textarea' ? 'Q_inplace_tool_blockstatic' : 'Q_inplace_tool_static'; },
@@ -35,6 +41,7 @@ Q.Tool.define("Q/inplace", function (element, options) {
 		method: o.method || 'put',
 		action: o.action,
 		name: o.name,
+		textarea: (o.type === 'textarea'),
 		text: function (field) {
 			return $te.html().replaceAll({
 				'<br>': "\n",
@@ -42,11 +49,11 @@ Q.Tool.define("Q/inplace", function (element, options) {
 				'&nbsp;': ' '
 			});
 		},
-		type: o.type || 'textarea'
+		type: o.type || 'text'
 	}, function (html) {
 		if (!html) return;
 		$te.html(html);
-		return _Q_inplace_tool_constructor.call(me, element, options);
+		return _Q_inplace_tool_constructor.call(tool, this.element, options);
 	});
 },
 
@@ -54,7 +61,9 @@ Q.Tool.define("Q/inplace", function (element, options) {
 	method: 'put',
 	type: 'textarea',
 	editOnClick: true,
-	selectOnEdit: true
+	selectOnEdit: true,
+	onSave: new Q.Event(),
+	onCancel: new Q.Event()
 }
 
 );
@@ -62,13 +71,13 @@ Q.Tool.define("Q/inplace", function (element, options) {
 function _Q_inplace_tool_constructor(element, options) {
 
 	// constructor & private declarations
-	var me = this;
+	var tool = this;
 	var blurring = false;
 	var focusedOn = null;
 	var dialogMode = false;
 	var previousValue = null;
 	var noCancel = false;
-	var $te = $(me.element);
+	var $te = $(tool.element);
 
 	var container_span = $('.Q_inplace_tool_container', $te);
 	var static_span = $('.Q_inplace_tool_static', $te);
@@ -140,7 +149,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		focusedOn = 'fieldinput';
 		fieldinput.focus();
 		var selStart = 0;
-		if (me.options.selectOnEdit) {
+		if (tool.state.selectOnEdit) {
 			if (fieldinput.attr('type') == 'text' && fieldinput.select) {
 				fieldinput.select();
 			}
@@ -159,8 +168,8 @@ function _Q_inplace_tool_constructor(element, options) {
 	};
 	var onSave = function() {
 		var form = $('.Q_inplace_tool_form', $te);
-		if (me.options && me.options.beforeSave) {
-			if (false === Q.handle(me.options.beforeSave, this, [form])) {
+		if (tool.state && tool.state.beforeSave) {
+			if (false === Q.handle(tool.state.beforeSave, this, [form])) {
 				return false;
 			}
 		}
@@ -239,9 +248,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		undermessage.empty().css('display', 'none').addClass('Q_error');
 		container_span.removeClass('Q_editing').removeClass('Q_nocancel');
 		noCancel = false;
-        if (me.options) {
-            Q.handle(me.options.onSave, me, [response.slots.Q_inplace]);
-        }
+		Q.handle(tool.state.onSave, tool, [response.slots.Q_inplace]);
 	};
 	var onCancel = function(dontAsk) {
 		if (noCancel) {
@@ -262,9 +269,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		fieldinput.blur();
 		focusedOn = null;
 		container_span.removeClass('Q_editing');
-        if (me.options) {
-            Q.handle(me.options.onCancel, me);
-        }
+		Q.handle(tool.state.onCancel, tool);
 	};
 	var onBlur = function() {
 		setTimeout(function () {

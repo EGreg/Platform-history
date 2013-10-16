@@ -20,7 +20,7 @@ $prefix = Q_Html::getIdPrefix();
 					value="<?php echo Streams::my('Streams/user/firstName', 'readLevel') ?>">
 			<?php endif; ?>
 		</td>
-		<td class="Q_field_input">
+		<td class="Q_fieldInput">
 			<input type="text" name="firstName" class="text" id="<?php echo $prefix ?>firstName"
 				value="<?php echo Streams::my('Streams/user/firstName') ?>">
 		</td>
@@ -39,7 +39,7 @@ $prefix = Q_Html::getIdPrefix();
 					value="<?php echo Streams::my('Streams/user/lastName', 'readLevel') ?>">
 			<?php endif; ?>
 		</td>
-		<td class="Q_field_input">
+		<td class="Q_fieldInput">
 			<input type="text" name="lastName" class="text" id="<?php echo $prefix ?>lastName"
 				value="<?php echo Streams::my('Streams/user/lastName') ?>">
 		</td>
@@ -58,7 +58,7 @@ $prefix = Q_Html::getIdPrefix();
 					value="<?php echo Streams::my('Streams/user/sex', 'readLevel') ?>">
 			<?php endif; ?>
 		</td>
-		<td class="Q_field_input">
+		<td class="Q_fieldInput">
 			<select name="sex" class="select" id="<?php echo $prefix ?>sex">
 				<?php echo Q_Html::options(
 					array('male' => 'male', 'female' => 'female'),
@@ -81,7 +81,7 @@ $prefix = Q_Html::getIdPrefix();
 					value="<?php echo Streams::my('Streams/user/birthday', 'readLevel') ?>">
 			<?php endif; ?>
 		</td>
-		<td class="Q_field_input">
+		<td class="Q_fieldInput">
 			<?php echo Q_Html::date('birthday', Streams::my('Streams/user/birthday'),
 				array('year_from' => 1900, 'year_to' => '2001'),
 				array('id' => 'birthday')

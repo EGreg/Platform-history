@@ -71,8 +71,9 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 					}
 					input.val('');
 				}).success(function(res) {
+					var state = $this.state('Q/imagepicker');
 					if (res.errors) {
-						$this.attr('src', $this.state('Q/imagepicker').oldSrc).css({ 'opacity': state.opacity });
+						$this.attr('src', state.oldSrc).css({ 'opacity': state.opacity });
 						Q.handle(o.onError, this, [res.errors[0].message]);
 					} else {
 						var key = o.showSize;
@@ -87,7 +88,8 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 						Q.handle(o.onSuccess, self, [res.slots.data, key]);
 					}
 				}).error(function() {
-					$this.attr('src', $this.state('Q/imagepicker').oldSrc).css({ 'opacity': state.opacity });
+					var state = $this.state('Q/imagepicker');
+					$this.attr('src', state.oldSrc).css({ 'opacity': state.opacity });
 					Q.handle(o.onError, self);
 				});
 			}

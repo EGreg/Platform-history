@@ -22,14 +22,13 @@ Q.constructors = {};
 Q.plugins = {};
 Q.text = {
 	Q: {
-		"jsonRequest": {
+		"request": {
 			"error": "Error {{status}} during request",
 			"404": "Not found",
 			"0": "Request interrupted"
 		}
 	}
 }; // put all your text strings here e.g. Q.text.Users.foo
-Q.callbacks = []; // used by Q.jsonRequest
 
 /**
  * Extend some built-in prototypes
@@ -630,7 +629,7 @@ Q.copy = function _Q_copy(x, fields) {
 };
 
 /**
- * Extends an object with other objects. Similar to the jQuery method.
+ * Extends an object with properties from one or more other objects.
  * @param target {Object}
  *  This is the first object. It winds up being modified, and also returned
  *  as the return value of the function.
@@ -904,6 +903,7 @@ Q.normalize = function _Q_normalize(text, replacement, characters) {
 
 function _getProp (/*Array*/parts, /*Boolean*/create, /*Object*/context){
 	var p, i = 0;
+	if (context === null) return undefined;
 	context = context || window;
 	if(!parts.length) return context;
 	while(context && (p = parts[i++]) !== undefined){
@@ -1549,10 +1549,10 @@ Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotN
 		var data = JSON.stringify({args: args});
 		var fields = {};
 		fields[fieldName] = data;
-		Q.req(baseUrl+tail, slotName, function (response) {
-			if (response.errors) {
+		Q.req(baseUrl+tail, slotName, function (err, response) {
+			if (err) {
 				Q.each(callbacks, function (k, cb) {
-					cb[0].call(this, response.errors);
+					cb[0].call(this, err);
 				});
 				return;
 			}
@@ -1812,6 +1812,8 @@ Q.Page = function (uriString) {
 
 /**
  * The root mixin added to all tools.
+ * @param [element] the element to activate into a tool
+ * @param [options={}] an optional set of options that may contain ".Tool_name or #Some_exact_tool or #Some_child_tool"
  * @return {Q.Tool} if this tool is replacing an earlier one, returns existing tool that was removed.
  *	 Otherwise returns null, or false if the tool was already constructed.
  */
@@ -1857,7 +1859,7 @@ Q.Tool = function _Q_Tool(element, options) {
 	if ((partial = options['#' + this.element.id])) {
 		Q.extend(this.options, partial, 'Q.Tool');
 	}
-	// #parent_child_tool, child_tool
+	// #parent_child_tool, #child_tool
 	var _idcomps = this.element.id.split('_');
 	for (i = 0; i < _idcomps.length-1; ++i) {
 		if ((partial = options['#' + _idcomps.slice(i).join('_')])) {
@@ -1947,6 +1949,7 @@ Q.Tool.define = function (name, ctor, defaultOptions, stateKeys, methods) {
 	name = Q.normalize(name);
 	if (typeof ctor === 'string') {
 		if (typeof Q.Tool.constructors[name] !== 'function') {
+			_qtdo = _qtdo || {};
 		    return Q.Tool.constructors[name] = ctor;
 		}
 		return ctor;
@@ -1962,6 +1965,12 @@ Q.Tool.define = function (name, ctor, defaultOptions, stateKeys, methods) {
 	}
 	Q.extend(ctor.prototype, methods);
 	return Q.Tool.constructors[name] = ctor;
+};
+
+var _qtdo = {};
+Q.Tool.define.options = function (pluginName) {
+	pluginName = Q.normalize(pluginName);
+	return Q.Tool.constructors[name] ? Q.Tool.constructors[name].options : _qtdo[pluginName];
 };
 
 /**
@@ -1982,6 +1991,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 	name = Q.normalize(name);
 	if (typeof ctor === 'string') {
 		if (typeof window.jQuery.fn.plugin[name] !== 'function') {
+			_qtjo[name] = _qtjo[name] = {};
 		    return window.jQuery.fn.plugin[name] = ctor;
 		}
 		return ctor;
@@ -2003,7 +2013,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 			} else {
 				arguments[0] = Q.extend({}, 10, jQueryPluginConstructor.options, 10, arguments[0]);
 				var args = arguments;
-				window.jQuery(this).each(function () {
+				$(this).each(function () {
 					var key = name + ' state';
 					var $this = $(this);
 					if ($this.data(key)) {
@@ -2019,7 +2029,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 		};
 		jQueryPluginConstructor.options = defaultOptions || {};
 		jQueryPluginConstructor.methods = methods || {};
-		window.jQuery.fn[name] = jQueryPluginConstructor;
+		$.fn[name] = jQueryPluginConstructor;
 		var ToolConstructor = Q.Tool.define(name, function _Q_Tool_jQuery_toolConstructor(options) {
 			$(this.element).plugin(name, options, this);
 			this.beforeRemove.set(function () {
@@ -2034,6 +2044,12 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 	});
 };
 
+var _qtjo = {};
+Q.Tool.jQuery.options = function (pluginName) {
+	pluginName = Q.normalize(pluginName);
+	return window.jQuery.fn[pluginName] ? window.jQuery.fn[pluginName].options : _qtjo[pluginName];
+};
+
 Q.Tool.nextDefaultId = 1;
 Q.Tool.defaultIdPrefix = "Q_Tool_";
 var _qtc = Q.Tool.constructors = Q.constructors;
@@ -2041,19 +2057,39 @@ var _qtc = Q.Tool.constructors = Q.constructors;
 /**
  * Gets child tools contained in the tool, as determined by their prefixes
  * based on the prefix of the tool.
- * @return Tool|null
+ * @param append The string to append to the prefix to find the child tool
+ * @return Object A hash of {prefix: Tool} pairs
  */
 Q.Tool.prototype.children = function Q_Tool_prototype_children(append) {
 	var result = {};
-	var prefix2 = append ? this.prefix + append : this.prefix;
+	var prefix2 = Q.normalize(append ? this.prefix + append : this.prefix);
 	var key;
 	for (key in Q.tools) {
 		if (key.length > this.prefix.length
-		 && key.substr(0, prefix2.length) == prefix2) {
+		 && Q.normalize(key.substr(0, prefix2.length)) == prefix2) {
 			result[key] = Q.tools[key];
 		}
 	}
 	return result;
+};
+
+/**
+ * Gets the first child tool contained in the tool, which matches the prefix
+ * based on the prefix of the tool.
+ * @param append The string to append to the prefix to find the child tool
+ * @return Tool|null
+ */
+Q.Tool.prototype.child = function Q_Tool_prototype_child(append) {
+	var result = {};
+	var prefix2 = Q.normalize(append ? this.prefix + append : this.prefix);
+	var key;
+	for (key in Q.tools) {
+		if (key.length > this.prefix.length
+		 && Q.normalize(key.substr(0, prefix2.length)) == prefix2) {
+			return Q.tools[key];
+		}
+	}
+	return null;
 };
 
 /**
@@ -2142,7 +2178,7 @@ Q.Tool.prototype.getElementsByClassName = function _Q_Tool_prototype_getElements
  * @method Q.Tool.newElement
  * @param {String} tag
  *  The tag of the element, such as "div"
- * @param {String} type
+ * @param {String} toolName
  *  The type of the tool, such as "Q/tabs"
  * @param {Object} options
  *  The options for the tool
@@ -2151,13 +2187,13 @@ Q.Tool.prototype.getElementsByClassName = function _Q_Tool_prototype_getElements
  * @return DOMNode
  *  Returns an element you can append to things
  */
-Q.Tool.newElement = function _Q_tool(tag, type, options, id) {
+Q.Tool.newElement = function _Q_tool(tag, toolName, options, id) {
 	if (typeof options === 'string') {
 		id = options;
 		options = undefined;
 	}
 	var element = document.createElement('div');
-	element.setAttribute('class', 'Q_tool '+Q.normalize(type)+'_tool');
+	element.setAttribute('class', 'Q_tool '+Q.normalize(toolName)+'_tool');
 	if (id) element.setAttribute('id', id);
 	if (options) element.options = options;
 	return element;
@@ -2213,6 +2249,7 @@ function _loadToolScript(toolElement, callback, shared) {
 		if (typeof toolFunc === 'function') {
 			callback(toolElement, toolFunc, toolName);
 		} else if (typeof toolFunc === 'string') {
+			var existingOptions = _qtdo[toolName];
 			if (shared) {
 				var uniqueToolId = "tool " + (shared.waitingForTools.length+1);
 				shared.waitingForTools.push(uniqueToolId);
@@ -2226,6 +2263,7 @@ function _loadToolScript(toolElement, callback, shared) {
 						throw "Q.Tool.loadScript: Missing tool constructor for " + toolName;
 					}
 				}
+				toolFunc.options = Q.extend(toolFunc.options, existingOptions);
 				callback(toolElement, toolFunc, toolName, uniqueToolId);
 			});
 		} else if (typeof toolFunc !== 'undefined') {
@@ -2710,7 +2748,7 @@ Q.init = function _Q_init(options) {
 	if (window.jQuery) {
 		Q.jQueryPluginPlugin();
 		Q.onJQuery.handle(window.jQuery, [window.jQuery]);
-		jQuery(document).ready(_domReady);
+		window.jQuery(document).ready(_domReady);
 	} else {
 		var _timer=setInterval(function(){
 			if(/loaded|complete/.test(document.readyState)) {
@@ -2729,7 +2767,7 @@ Q.init.jsonLibraryUrl = "http://cdnjs.cloudflare.com/ajax/libs/json3/3.2.4/json3
  * @method ready
  */
 Q.ready = function _Q_ready() {
-	Q.loadNonce(function readyWithNonce() {
+	function readyWithNonce() {
 
 		m_isReady = true;
 
@@ -2819,7 +2857,8 @@ Q.ready = function _Q_ready() {
 			throw e;
 		}
 		
-	}, {noXHR: true});
+	}
+	Q.loadNonce(readyWithNonce);
 };
 
 /**
@@ -2835,7 +2874,7 @@ Q.loadNonce = function _Q_loadNonce(callback, context, args) {
 		Q.handle(callback, context, args);
 		return;
 	}
-	Q.req('Q/nonce', 'data', function _Q_loadNonce_nonceLoaded(res) {
+	Q.req('Q/nonce', 'data', function _Q_loadNonce_nonceLoaded(err, res) {
 		Q.nonce = Q.cookie('Q_nonce');
 		if (Q.nonce) {
 			Q.handle(callback, context, args);
@@ -3207,25 +3246,7 @@ Q.action = function _Q_action(uri, fields, options) {
  * @param Function callback
  *  The JSON will be passed to this callback function
  * @param Object options
- *  A hash of options, including:
- *  'baseUrl': A string to replace the default base url
- *  'callbackName': if set, the URL is not extended with Q fields
- *	and the value is used to name the callback field in the request.
- *  'method': if set, adds a &Q.method= that value to the querystring, default 'get'
- *  'fields': optional fields to pass with any method other than "get"
- *  'skipNonce': if true, skips loading of the nonce
- *  'query': if true simply return the query without requesting it
- *  'xhr': if false, avoids xhr. If true, tries to make xhr based on method option.
- *	If string, that's the method to use in xhr it tries to make.
- *  "duplicate": defaults to true, but you can set it to false in order not to fetch the same url again
- *  "timeout": timeout to wait for response defaults to 1.5 sec. Set to false to disable
- *  "onTimeout": handler to call when timeout is reached. Receives function as argument -
- *	the function might be called to cancel loading.
- *  "onLoad": handler to call when data is loaded but before it is processed -
- *	when called the argument of "onTimeout" does nothing
- *  "handleRedirects": if set and response data.redirect.url is not empty, automatically call this function. Defaults to Q.handle.
- *  "quiet": defaults to true. If true, allows visual indications that the request is going to take place.
- *	See Q.jsonRequest for more info.
+ *  A hash of options, to be passed to Q.request
  */
 Q.req = function _Q_req(uri, slotNames, callback, options) {
 	if (typeof options === 'string') {
@@ -3233,13 +3254,12 @@ Q.req = function _Q_req(uri, slotNames, callback, options) {
 	}
 	var args = arguments, index = (typeof arguments[0] === 'string') ? 0 : 1;
 	args[index] = Q.action(args[index]);
-	Q.jsonRequest.apply(this, args);
+	Q.request.apply(this, args);
 };
 
 /**
- * A way to get JSON that is cross-domain.
- * It uses script tags and JSONP callbacks.
- * But may also use XHR if we have CORS enabled.
+ * A way to make requests that is cross-domain. Typically used for requesting JSON or various templates.
+ * It uses script tags and JSONP callbacks for remote domains, and prefers XHR for the local domain.
  * @param Object fields
  *  Optional object of fields to pass
  * @param String url
@@ -3251,30 +3271,27 @@ Q.req = function _Q_req(uri, slotNames, callback, options) {
  *  The JSON will be passed to this callback function
  * @param Object options
  *  A hash of options, including:
- *  'callbackName': if set, the URL is not extended with Q fields
- *	and the value is used to name the callback field in the request.
- *  'post': if set, adds a &Q.method=post to the querystring
- *  'method': if set, adds a &Q.method= that value to the querystring, default 'get'
- *  'fields': optional fields to pass with any method other than "get"
- *  'skipNonce': if true, skips loading of the nonce
- *  'query': if true simply return the query without requesting it
- *  'xhr': if false, avoids xhr. If true, tries to make xhr based on method option.
- *	If string, that's the method to use in xhr it tries to make.
+ *  "post": if set, adds a &Q.method=post to the querystring
+ *  "method": if set, adds a &Q.method= that value to the querystring, default "get"
+ *  "fields": optional fields to pass with any method other than "get"
+ *  "skipNonce": if true, skips loading of the nonce
+ *  "query": if true simply return the query without requesting it
+ *  "xhr": if false, avoids XHR. If true, tries to make xhr based on "method" option.
+ *     Or pass an object with properties to merge onto the xhr object, including a special "sync" property to make the call synchronous.
+ *     Or pass a function which will be run before .send() is executed. First parameter is the xhr object, second is the options.
+ *  "preprocess": an optional function that takes the xhr object before the .send() is invoked on it
+ *  "parse": defaults to 'json'. If false, then just returns the requested string.
+ *  "extend": defaults to true. If false, the URL is not extended with Q fields.
+ *  "callbackName": if set, the URL is not extended with Q fields and the value is used to name the callback field in the request.
  *  "duplicate": defaults to true, but you can set it to false in order not to fetch the same url again
  *  "timeout": timeout to wait for response defaults to 1.5 sec. Set to false to disable
- *  "onTimeout": handler to call when timeout is reached. Receives function as argument -
- *	the function might be called to cancel loading.
- *  "onLoad": handler to call when data is loaded but before it is processed -
- *	when called the argument of "onTimeout" does nothing
+ *  "onTimeout": handler to call when timeout is reached. First argument is a function which can be called to cancel loading.
+ *  "onLoad": handler to call when data is loaded but before it is processed - when called the argument of "onTimeout" does nothing
  *  "handleRedirects": if set and response data.redirect.url is not empty, automatically call this function. Defaults to Q.handle.
- *  "quiet": defaults to true. If true, allows visual indications that the request is going to take place.
- *	This option doesn't have influence directly, just temporarily sets Q.jsonRequest.options.quiet = true
- *	for the time while request is processed, and if there are any
- *	Q.jsonRequest.options.onLoadStart / Q.jsonRequest.options.onLoadEnd event handlers defined, they can
- *	consider this option if they're making any visual indications of the request (such as spinners / throbbers).
- *	Of course, Q.jsonRequest.options.quiet can be set directly, this is just a shortcut.
+ *  "quiet": defaults to true. This option is just passed to your onLoadStart/onLoadEnd handlers in case they want to respect it.
  */
-Q.jsonRequest = function _Q_jsonRequest(url, slotNames, callback, options) {
+Q.request = function (url, slotNames, callback, options) {
+	
 	var fields, k, delim;
 	if (typeof url === 'object') {
 		fields = arguments[0];
@@ -3293,41 +3310,42 @@ Q.jsonRequest = function _Q_jsonRequest(url, slotNames, callback, options) {
 		callback = slotNames;
 		slotNames = [];
 	}
-	var o = Q.extend({}, Q.jsonRequest.options, options);
+	var o = Q.extend({}, Q.request.options, options);
 	if (o.skipNonce) {
-		return _Q_jsonRequest_makeRequest.call(this, o);
+		return _Q_request_makeRequest.call(this, url, slotNames, callback, o);
 	} else {
-		Q.loadNonce(_Q_jsonRequest_makeRequest, this, [o]);
+		Q.loadNonce(_Q_request_makeRequest, this, [url, slotNames, callback, o]);
 	}
-	function _Q_jsonRequest_makeRequest (o) {
+	function _Q_request_makeRequest (url, slotNames, callback, o) {
 
 		var tout = false, t = {};
 		if (o.timeout !== false) tout = o.timeout || 1500;
-
-		if (o.handleRedirects) {
+	
+		if (o.parse !== false && callback) {
 			var _callback = callback;
-			callback = function _Q_jsonRequest_callback(data) {
+			callback = function _Q_request_callback(err, content) {
+				if (err) {
+					return callback(err);
+				}
+				var data;
+				try {
+					data = JSON.parse(content);
+				} catch (e) {
+					console.warn('Q.request(' + url + ',['+slotNames+']):' + e);
+					return callback({"errors": [e]}, content);
+				}
 				if (data && data.redirect && data.redirect.url) {
-					o.handleRedirects.call(Q, data.redirect.url);
+					o.handleRedirects || o.handleRedirects.call(Q, data.redirect.url);
 				}
-				if (_callback) {
-				    _callback.apply(this, arguments);
-				}
+				_callback.call(this, err, data);
 			};
 		}
 
 		function _onStart () {
-			if (o.quiet) o.quiet = true;
 			Q.handle(o.onLoadStart, this, [o]);
-			if (tout !== false) t.timeout = setTimeout(_onTimeout, tout);
-		}
-
-		function _onCancel (msg) {
-			t.cancelled = true;
-			_onLoad();
-			Q.handle(callback, this, [{
-				errors: [{message: msg || "Request was canceled"}]
-			}]);
+			if (tout !== false) {
+				t.timeout = setTimeout(_onTimeout, tout);
+			}
 		}
 
 		function _onTimeout () {
@@ -3339,70 +3357,105 @@ Q.jsonRequest = function _Q_jsonRequest(url, slotNames, callback, options) {
 			}
 		}
 
-		function _onLoad (data, cb) {
+		function _onLoad (data) {
 			t.loaded = true;
-			if (t.timeout) clearTimeout(t.timeout);
-			Q.handle(o.onLoadEnd, this, [o]);
-			if (o.quiet) o.quiet = false;
-			if (!t.cancelled) {
-				if (o.onLoad) o.onLoad(data);
-				if (cb) cb(data);
+			if (t.timeout) {
+				clearTimeout(t.timeout);
 			}
+			Q.handle(o.onLoadEnd, this, [o]);
+			if (!t.cancelled) {
+				if (o.onLoad) {
+					o.onLoad(data);
+				}
+				Q.handle(callback, this, [null, data]);
+			}
+		}
+		
+		function _onCancel (status, msg) {
+			var msg = msg || Q.text.Q.request[status] || Q.text.Q.request.error.interpolate({'status': status});
+			t.cancelled = true;
+			_onLoad();
+			var errors = {
+				errors: [{message: msg || "Request was canceled", code: status}]
+			};
+			o.onCancel.handle.call(this, errors, o);
+			Q.handle(callback, this, [errors, errors]);
 		}
 
 		if (!o.query && o.xhr !== false
-		&& url.search(Q.info.baseUrl) === 0
-		&& typeof(jQuery) !== 'undefined') {
+		&& url.search(Q.info.baseUrl) === 0) {
 			
-			function xhr(url, slotNames, callback, options) {
-				var type = (options && options.method && options.method.toUpperCase() !== "GET")
-					? "POST"
-					: "GET";
-				jQuery.ajax({
-					type: type, // browsers don't always support other HTTP verbs.
-					url: Q.ajaxExtend(url, slotNames, {
+			function xhr(url, slotNames, onSuccess, onCancel, options) {					
+				var xmlhttp;
+			    if (window.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
+			        xmlhttp = new XMLHttpRequest();
+			    } else { // code for IE6, IE5
+			        xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+			    }
+			    xmlhttp.onreadystatechange = function() {
+			        if (xmlhttp.readyState == 4) {
+						if (xmlhttp.status == 200) {
+							onSuccess.call(xmlhttp, xmlhttp.responseText);
+						} else {
+							console.log("Q.request xhr: " + xmlhttp.status + ' ' + xmlhttp.responseText.substr(1000));
+							onCancel.call(xmlhttp, xmlhttp.status);
+						}
+			        }
+			    }
+				var method = options.method || 'GET';
+				var overrides = {
+					method: options.method,
+					loadExtras: !!options.loadExtras
+				};
+				if (method !== 'GET') {
+					method = 'POST'; // browsers don't always support other HTTP verbs
+					overrides = {
 						method: options.method,
 						loadExtras: !!options.loadExtras
-					}),
-					data: options.fields,
-					context: Q,
-					//dataType: "script",
-					//cache: true,
-					xhrFields: { withCredentials: true }
-				}).success(function _xhr_success(data, textStatus, jqXHR) {
-					callback(data);
-				}).error(function _xhr_error(jqXHR, textStatus, errorThrown) {
-					console.log("Q.jsonRequest xhr: " + status + ' ' + textStatus);
-					_onCancel(
-						Q.text.Q.jsonRequest[jqXHR.status]
-						|| Q.text.Q.jsonRequest.error.interpolate({'status': jqXHR.status})
-                    );
-				});
+					};
+				}
+				if (typeof options.xhr === 'function') {
+					options.xhr.call(xmlhttp, xmlhttp, options);
+				}
+				var sync = (options.xhr === 'sync');
+				if (Q.isPlainObject(options.xhr)) {
+					Q.extend(xmlhttp, options.xhr);
+					sync = sync || xmlhttp.sync;
+				}
+				if (o.extend !== false) {
+					url = Q.ajaxExtend(url, slotNames, overrides);
+				}
+			    xmlhttp.open(method.toUpperCase(), url, sync);
+				if (options.fields) {
+					xmlhttp.send(options.fields);
+				} else {
+					xmlhttp.send();
+				}
 			}
 
 			_onStart();
-			return xhr(url, slotNames, function Q_jsonRequest_xhrCallback(data) {
-				_onLoad(data, callback);
-			}, o);
+			return xhr(url, slotNames, _onLoad, _onCancel, o);
 		}
 
+		var i = Q.request.callbacks.length;
 		var url2 = url;
-		var i = Q.callbacks.length;
 		if (callback) {
-			Q.callbacks[i] = function _Q_jsonRequest_JSONP(data) {
-				delete Q.callbacks[i];
+			Q.request.callbacks[i] = function _Q_request_JSONP(data) {
+				delete Q.request.callbacks[i];
 				Q.removeElement(script);
 				_onLoad(data, callback);
 			};
 			if (o.callbackName) {
 				url2 = url + (url.indexOf('?') < 0 ? '?' : '&')
 					+ encodeURIComponent(o.callbackName) + '='
-					+ encodeURIComponent('Q.callbacks['+i+']');
+					+ encodeURIComponent('Q.request.callbacks['+i+']');
 			} else {
-				url2 = Q.ajaxExtend(url, slotNames, Q.extend(o, {callback: 'Q.callbacks['+i+']'}));
+				url2 = (o.extend === false)
+					? url
+					: Q.ajaxExtend(url, slotNames, Q.extend(o, {callback: 'Q.request.callbacks['+i+']'}));
 			}
 		} else {
-			url2 = Q.ajaxExtend(url, slotNames, o);
+			url2 = (o.extend === false) ? url : Q.ajaxExtend(url, slotNames, o);
 		}
 		if (o.query) {
 			return url2;
@@ -3412,6 +3465,50 @@ Q.jsonRequest = function _Q_jsonRequest(url, slotNames, callback, options) {
 		}
 	}
 };
+
+Q.request.callbacks = []; // used by Q.request
+
+/**
+ * Try to find an error message assuming typical error data structures for the arguments
+ * @param {Object} data an object where the errors may be found
+ * @return {String|null} The first error message found, or null
+ */
+Q.firstErrorMessage = function _Q_firstErrorMessage(data) {
+	var error = null;
+	if (!data) return;
+	if (data.errors && data.errors[0]) {
+		error = data.errors[0];
+	} else if (data.error) {
+		error = data.error;
+	} else {
+		error = data;
+	}
+	if (!error) {
+		return null;
+	}
+	return (typeof error === 'string')
+		? error
+		: (error.message ? error.message : JSON.stringify(error));
+};
+
+/**
+ * A way to get JSON that is cross-domain.
+ * It uses script tags and JSONP callbacks.
+ * But may also use XHR if we have CORS enabled.
+ * Now this function is just an alias for Q.request
+ * @param Object fields
+ *  Optional object of fields to pass
+ * @param String url
+ *  The URL you pass will normally be automatically extended through Q.ajaxExtend
+ * @param String|Object slotNames
+ *  If a string, expects a comma-separated list of slot names
+ *  If an object, converts it to a comma-separated list
+ * @param Function callback
+ *  The JSON will be passed to this callback function
+ * @param Object options
+ *  A hash of options, to be passed to Q.request
+ */
+Q.jsonRequest = Q.request;
 
 Q.parseUrl = function _Q_parseUrl (str, component) {
 	// http://kevin.vanzonneveld.net
@@ -3440,14 +3537,13 @@ Q.sameDomain = function _Q_sameDomain (url1, url2, options) {
 };
 
 /**
- * Serialize an array of form elements (requires jQuery) or an object
- * into a shallow object of key/value pairs
- * @param a
+ * Serialize an object of fields into a shallow object of key/value pairs
+ * @param fields
  *  The object to serialize
  * @return Object
  *  A shallow object of key/value pairs
  */
-Q.param = function _Q_param(a) {
+Q.serializeFields = function _Q_serializeFields(fields) {
     var parts = [];
 	function _params(prefix, obj) {
 		if (Q.typeOf(obj) === "array") {
@@ -3460,7 +3556,6 @@ Q.param = function _Q_param(a) {
 					_params(prefix + "[" + (Q.typeOf(value) === "object" || Q.typeOf(value) === "array" ? i : "") + "]", value, _add);
 				}
 			});
-
 		} else if (obj && Q.typeOf(obj) === "object") {
 			// Serialize object item.
 			for (var name in obj) {
@@ -3477,8 +3572,8 @@ Q.param = function _Q_param(a) {
 		parts.push(encodeURIComponent(key) + "=" + encodeURIComponent(value));
 	};
 
-	Q.each(a, function _Q_param_each(prefix) {
-		_params(prefix, a[prefix]);
+	Q.each(fields, function _Q_param_each(field) {
+		_params(field, fields[field]);
 	});
 
 	// Return the resulting serialization
@@ -4141,7 +4236,7 @@ Q.replace = function _Q_replace(existing, source, options) {
  * By default place slot content to DOM element with id "{slotName}_slot"
  * @param options Object Optional.
  * An hash of options to pass to the loader, that can also include:
- *   "loader": the actual function to load the URL, defaults to Q.jsonRequest. See Q.jsonRequest documentation for more options.
+ *   "loader": the actual function to load the URL, defaults to Q.request. See Q.request documentation for more options.
  *   "handler": the function to handle the returned data. Defaults to a function that fills the corresponding slot containers correctly.
  *   "ignoreHistory": if true, does not push the url onto the history stack
  *   "loadExtras": if true, asks the server to load the extra scripts, stylesheets, etc. that are loaded on first page load
@@ -4156,7 +4251,7 @@ Q.replace = function _Q_replace(existing, source, options) {
  *   "quiet": defaults to false. If true, allows visual indications that the request is going to take place.
  *   "slotNames": an array of slot names to request and process (default is all slots in Q.info.slotNames)
  *   "cacheSlots": an object of {slotName: whetherToCache} pairs
- * See Q.jsonRequest for more info.
+ * See Q.request for more info.
  * Also it is passed to loader function so any additional options can be passed
  */
 Q.loadUrl = function _Q_loadUrl(url, options)
@@ -4185,7 +4280,7 @@ Q.loadUrl = function _Q_loadUrl(url, options)
 	var hashUrl = parts[1] ? parts[1].queryField('url') : undefined;
 	url = (hashUrl !== undefined) ? hashUrl : parts[0];
 
-	var loader = Q.jsonRequest,
+	var loader = Q.request,
 		onError = window.alert,
 		onActivate;
 	if (o.loader) {
@@ -4199,7 +4294,7 @@ Q.loadUrl = function _Q_loadUrl(url, options)
 	}
 	loader(url, slotNames, loadResponse, o);
 
-	function loadResponse(response) {
+	function loadResponse(err, response) {
 		if (!response) {
 			onError("Response is empty", response);
 			return;
@@ -4486,7 +4581,7 @@ Q.loadUrl.defaultHandler = function _Q_loadUrl_fillSlots (res) {
  * @param args
  *  An array of arguments to pass to them
  * @param options
- *  If callables is a url, these are the options to pass to Q.jsonRequest, if any. Also can include:
+ *  If callables is a url, these are the options to pass to Q.request, if any. Also can include:
  *  "dontReload": defaults to false. If this is true and callback is a url matching current url, it is not reloaded
  *  "loadUsingAjax": defaults to false. If this is true and callback is a url, it is loaded using Q.loadUrl
  *  "externalLoader": when using loadUsingAjax, you can set this to a function to suppress loading of external websites with Q.handle
@@ -4813,9 +4908,7 @@ Q.Template.collection = {};
 /**
  * Load template from server and store to cache
  * @param template {String} The template name
- * @param callback {Function?} Optional callback.
- *   If omitted, then the template is returned synchronously if (and only if)
- *   it is already in the cache or the DOM.
+ * @param callback {Function} Receives two parameters: (err, templateText)
  * @param options {Object?} Options.
  *   "type" - the type and extension of the template, defaults to 'mustache'
  *   "dir" - the folder under project web folder where templates are located
@@ -4826,12 +4919,11 @@ Q.Template.load = function _Q_Template_load(template, callback, options) {
 		options = callback;
 		callback = undefined;
 	}
-	var template = Q.normalize(template);
+	if (!template) {
+		console.error('Q.Template.load: template is empty');
+	}
 	// defaults to mustache templates
-	var o = Q.extend({
-		type: "mustache",
-		dir: "views"
-	}, options);
+	var o = Q.extend(Q.Template.load.options, options);
 	if (!Q.Template.collection[o.type]) {
 		Q.Template.collection[o.type] = {};
 	}
@@ -4852,32 +4944,34 @@ Q.Template.load = function _Q_Template_load(template, callback, options) {
 	for (i = 0, l = trash.length; i < l; i++) {
 		Q.removeElement(trash[i]);
 	}
-	// Allow sync call to cache or DOM
-	if (!callback || typeof callback !== "function") {
-		return tpl && tpl[template];
-	}
 	// check if template is cached
 	if (tpl && tpl[template]) {
 		var result = tpl[template];
-		callback(result);
-		return result;
+		callback(null, result);
+		return true;
 	}
 	// now try to load template from server
-	function _callback(data) {
-		tpl[template] = data.trim();
-		callback(tpl[template]);
+	function _callback(err, content) {
+		if (err) {
+			return callback(err, null);
+		}
+		tpl[template] = content.trim();
+		callback(null, tpl[template]);
 	}
 	function _fail () {
-		console.warn('Failed to load template "'+o.dir+'/'+template+'.'+o.type+'"');
-		callback();
+		var err = 'Failed to load template "'+o.dir+'/'+template+'.'+o.type+'"';
+		console.warn(err);
+		callback(err);
 	}
-	$.get(Q.url(o.dir+'/'+template+'.'+ o.type), _callback, 'html').fail(function () {
-		var parts = template.split('/'), plugin = parts[0];
-		if (parts.length < 2) return _fail();
-		parts.splice(1, 0, o.dir, plugin);
-		$.get(Q.url("plugins/"+parts.join('/')+'.'+ o.type), _callback, 'html').fail(_fail);
-	});
+	var url = Q.url(o.dir+'/'+template+'.'+ o.type);
+
+	Q.request(url, _callback, {parse: false, extend: false});
 	return true;
+};
+
+Q.Template.load.options = {
+	type: "mustache",
+	dir: "views"
 };
 
 /**
@@ -4889,11 +4983,8 @@ Q.Template.load = function _Q_Template_load(template, callback, options) {
  * @param partials {array?} An array of partials to be used with template
  * @param callback {function} a callback - receives the rendering result or nothing
  * @param options {object?} Options.
- *		- type - the type of template, defaults to 'mustache'. Type is used as 'type' attribute for
- *			inline templates - i.e. use <script type="text/mustache"></script> for mustache templates
- *			or as file extension if template is loaded from server
- *		- dir - the directory under web folder where templates live
- * @returns {boolean} Some time returns false if template or partial cannot be loaded.
+ *   "type" - the type and extension of the template, defaults to 'mustache'
+ *   "dir" - the folder under project web folder where templates are located
  */
 Q.Template.render = function _Q_Template_render(template, fields, partials, callback, options) {
 	if (typeof fields === "function") {
@@ -4906,34 +4997,35 @@ Q.Template.render = function _Q_Template_render(template, fields, partials, call
 		callback = partials;
 		partials = undefined;
 	}
-	if (!callback) return false;
-	// load the template and partials
-	var p = Q.pipe(['template', 'partials'], function (params) {
-		callback($.mustache(params.template[0], fields, params.partials[0]));
-	});
-	if (!Q.Template.load(template, p.fill('template'), options)) {
-		return false;
+	if (!callback) {
+		throw "Q.Template.render: callback is missing";
 	}
-	// pipe for partials
-	if (partials && partials.length) {
-		var pp = Q.pipe(partials, function (params) {
-			var i, partial;
-			for (i=0; i<partials.length; i++) {
-				partial = partials[i];
-				params[partial] = params[partial][0];
+	Q.addScript(Q.url('plugins/Q/js/mustache.js'), function () {
+		// load the template and partials
+		var p = Q.pipe(['template', 'partials'], function (params) {
+			if (params.template[0]) {
+				return callback(null);
 			}
-			p.fill('partials')(params);
+			callback(Mustache.render(params.template[1], fields, params.partials[0]));
 		});
-		var i;
-		for (i=0; i<partials.length; i++) {
-			if (!Q.Template.load(partials[i], pp.fill(partials[i]), options)) {
-				return false;
+		Q.Template.load(template, p.fill('template'), options);
+		// pipe for partials
+		if (partials && partials.length) {
+			var pp = Q.pipe(partials, function (params) {
+				var i, partial, results = {};
+				for (i=0; i<partials.length; i++) {
+					partial = partials[i];
+					results[partial] = params[partial][0] ? null : params[partial][1];
+				}
+				p.fill('partials')(results);
+			});
+			for (var i=0; i<partials.length; i++) {
+				Q.Template.load(partials[i], pp.fill(partials[i]), options);
 			}
-		}
-	} else {
-		p.fill('partials')();
-	}
-	return true;
+		} else {
+			p.fill('partials')();
+		}	
+	});
 };
 
 /**
@@ -5300,22 +5392,26 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	 * @param {String|Array} pluginNames
 	 * @param {Function} callback
 	 * @param {Object} options
-	 *  Optional. A hash of options, including:
-	 *  'parallel': if this is true and src is an array, doesn't load the src sequentially
+	 *  Optional. A hash of options for Q.addScript
 	 */
 	$.fn.plugin.load = function _jQuery_fn_load(pluginNames, callback, options) {
 		var srcs = [];
 		if (typeof pluginNames === 'string') {
 			pluginNames = [pluginNames];
 		}
+		var existingOptions = {};
 		Q.each(pluginNames, function _jQuery_plugin_loaded(i, pluginName) {
 			pluginName = Q.normalize(pluginName);
+			existingOptions[pluginName] = _qtjo[pluginName];
 			var src = ($.fn.plugin[pluginName] || 'plugins/jQuery/'+pluginName+'.js');
 			if (typeof src === 'string') {
 				srcs.push(src);
 			}
 		});
 		Q.addScript(srcs, function _jQuery_plugin_script_loaded() {
+			for (var pluginName in existingOptions) {
+				$.fn[pluginName].options = Q.extend($.fn[pluginName].options, existingOptions[pluginName]);
+			}
 			Q.handle(callback);
 		}, options);
 	};
@@ -5990,7 +6086,7 @@ Q.Dialogs = {
 				$('<div class="dialog_slot Q_dialog_content" />').append(o.content)
 			);
 			if (o.className) dialog.addClass(o.className);
-			if (options.destroyOnClose !== false) o.destroyOnClose = true;
+			if (o.destroyOnClose !== false) o.destroyOnClose = true;
 		}
 		dialog.hide();
 		if (dialog.parent().length == 0)
@@ -6404,7 +6500,7 @@ Q.loadUrl.options = {
 	onActivate: new Q.Event()
 };
 
-Q.jsonRequest.options = {
+Q.request.options = {
 	duplicate: true,
 	quiet: true,
 	handleRedirects: function (url) {
@@ -6414,7 +6510,14 @@ Q.jsonRequest.options = {
 	},
 	onLoadStart: new Q.Event(),
 	onShowCancel: new Q.Event(),
-	onLoadEnd: new Q.Event()
+	onLoadEnd: new Q.Event(),
+	onCancel: new Q.Event(function (error, response) {
+		var msg;
+		if (msg = Q.firstErrorMessage(error, response)) {
+			console.warn(msg);
+			alert(msg);
+		}
+	}, 'Q')
 };
 
 Q.activate.onConstruct = new Q.Event(function () {

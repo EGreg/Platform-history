@@ -71,17 +71,14 @@ Q.Tool.define("Streams/image/preview", function(options) {
 					}, tool.state.related);
 				},
 				onSuccess: function (data, key) {
-					var icon = Q.url(data[""]);
-					if (tool.stream.fields.icon === icon) {
-						return;
-					}
-					tool.stream.pendingFields.icon = icon;
-					tool.stream.save(function (err) {
-						if (err) {
-							return console.warn(err);
+					Q.Streams.Message.wait(
+						tool.state.publisherId,
+						tool.state.streamName,
+						-1,
+						function () {
+							tool.state.onUpdate.handle.call(tool, data);
 						}
-						tool.state.onUpdate.handle(tool);
-					});
+					);
 				}
 			});
 			tool.$('img').plugin('Q/imagepicker', ipo);

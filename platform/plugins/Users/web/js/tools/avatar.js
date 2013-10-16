@@ -52,7 +52,7 @@ Q.Tool.constructors['users_avatar'] = function(options)
 					{
 						userNameInput.data('validator').reset();
 						var params = $.param({ 'fullname': fullname });
-						Q.jsonRequest(Q.url('action.php/Streams/basic?') + params, 'data', function(res)
+						Q.jsonRequest(Q.url('action.php/Streams/basic?') + params, 'data', function(err, res)
 						{
 							if (res.errors)
 							{

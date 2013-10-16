@@ -14,34 +14,12 @@
  *  "onSave" => Optional, reference to a callback or event to run after a successful save.
  *  "onCancel" => Optional, reference to a callback or event to run after cancel.
  */
-function Streams_inplace_tool($options)
+function Streams_smalltext_preview_tool($options)
 {
-	extract($options);
+	$stream = $options['stream'];
 	Q_Response::setToolOptions(array(
 		'publisherId' => $stream->publisherId,
 		'streamName' => $stream->name
 	));
-	$options['action'] = $stream->actionUrl();
-	$options['method'] = 'put';
-	if (!empty($attribute)) {
-		$field = 'attributes['.urlencode($attribute).']';
-	}
-	$field = 'content';
-	switch ($fieldType) {
-		case 'text':
-			$options['fieldInput'] = Q_Html::input($field, $stream->content);
-			$options['staticHtml'] = Q_Html::text($stream->content);
-			break;
-		case 'textarea':
-			$options['fieldInput'] = Q_Html::textarea($field, 5, 80, $stream->content);
-			$options['staticHtml'] = Q_Html::text($stream->content, array("\n"));
-			break;
-		default:
-			return "fieldType must be 'textarea' or 'text'";
-			break;
-	}
-	if (!$stream->testWriteLevel('editPending')) {
-		return $options['staticHtml'];
-	}
-	return Q::tool("Q/inplace", $options);
+	return Q::tool("Streams/inplace", $options);
 }

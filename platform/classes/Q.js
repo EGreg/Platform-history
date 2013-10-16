@@ -2494,6 +2494,7 @@ Q.Event.factory = function (collection, defaults, callback) {
 
 function _getProp (/*Array*/parts, /*Boolean*/create, /*Object*/context){
 	var p, i = 0;
+	if (context === null) return undefined;
 	context = context || window;
 	if(!parts.length) return context;
 	while(context && (p = parts[i++]) !== undefined){

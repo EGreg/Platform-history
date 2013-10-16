@@ -499,9 +499,9 @@ class Q
 	 * @param {string} $tool_name
 	 *  The name of the tool, of the form "$moduleName/$toolName"
 	 *  The handler is found in handlers/$moduleName/tool/$toolName
-	 * @param {array} $fields=array()
-	 *  The fields passed to the tool
-	 * @param {array} $Q_options=array()
+	 * @param {array} $options=array()
+	 *  The options passed to the tool
+	 * @param {array} $extra=array()
 	 *  Options used by Q when rendering the tool. Can include:<br/>
 	 *  "id" =>
 	 *    an additional ID to distinguish tools instantiated
@@ -516,16 +516,16 @@ class Q
 	 */
 	static function tool(
 	 $tool_name,
-	 $fields = array(),
-	 $Q_options = array())
+	 $options = array(),
+	 $extra = array())
 	{
 		if (!is_string($tool_name)) {
 			throw new Q_Exception_WrongType(array(
 				'field' => '$tool_name', 'type' => 'string'
 			));
 		}
-		if (!isset($fields)) {
-			$fields = array();
+		if (!isset($options)) {
+			$options = array();
 		}
 		$tool_handler = $tool_name.'/tool';
 		/**
@@ -533,9 +533,9 @@ class Q
 		 * @param {string} 'tool_name'
 		 *  The name of the tool, of the form "$moduleName/$toolName"
 		 *  The handler is found in handlers/$moduleName/tool/$toolName
-		 * @param {array} 'fields'
-		 *  The fields passed to the tool
-		 * @param {array} 'Q_options'
+		 * @param {array} 'options'
+		 *  The options passed to the tool
+		 * @param {array} 'extra'
 		 *  Options used by Q when rendering the tool. Can include:<br/>
 		 *  "id" =>
 		 *    an additional ID to distinguish tools instantiated
@@ -548,22 +548,22 @@ class Q
 		 */
 		$returned = Q::event(
 			'Q/tool/render',
-			array('tool_name' => $tool_name, 'fields' => $fields, 'Q_options' => &$Q_options),
+			array('tool_name' => $tool_name, 'options' => $options, 'extra' => &$extra),
 			'before'
 		);
 		if (is_array($returned)) {
-			$fields = array_merge($returned, $fields);
+			$options = array_merge($returned, $options);
 		}
 		try {
 			/**
 			 * Renders the tool
 			 * @event $tool_handler
-			 * @param {array} $fields
-			 *  The fields passed to the tool
+			 * @param {array} $options
+			 *  The options passed to the tool
 			 * @return {string}
 			 *	The rendered tool content
 			 */
-			$result = Q::event($tool_handler, $fields); // render the tool
+			$result = Q::event($tool_handler, $options); // render the tool
 		} catch (Q_Exception_MissingFile $e) {
 			/**
 			 * Renders the 'Missing Tool' content
@@ -573,7 +573,7 @@ class Q
 			 * @return {string}
 			 *	The rendered content
 			 */
-			$result = self::event('Q/missingTool', compact('tool_name', 'fields'));
+			$result = self::event('Q/missingTool', compact('tool_name', 'options'));
 		} catch (Exception $exception) {
 			$result = $exception->getMessage();
 		}
@@ -584,9 +584,9 @@ class Q
 		 * @param {string} 'tool_name'
 		 *  The name of the tool, of the form "$moduleName/$toolName"
 		 *  The handler is found in handlers/$moduleName/tool/$toolName
-		 * @param {array} 'fields'
-		 *  The fields passed to the tool
-		 * @param {array} 'Q_options'
+		 * @param {array} 'options'
+		 *  The options passed to the tool
+		 * @param {array} 'extra'
 		 *  Options used by Q when rendering the tool. Can include:<br/>
 		 *  "id" =>
 		 *    an additional ID to distinguish tools instantiated
@@ -597,7 +597,7 @@ class Q
 		 */
 		Q::event(
 		 'Q/tool/render',
-		 compact('tool_name', 'fields', 'Q_options'),
+		 compact('tool_name', 'options', 'extra'),
 		 'after',
 		 false,
 		 $result

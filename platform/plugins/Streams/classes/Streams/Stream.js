@@ -479,20 +479,22 @@ function Streams_Stream (fields) {
 	}
 	
 	this._getUserStream = function (options, callback) {
-		var self = this;
-		if (options['userId']) {
-			new Users.User({ id: options['userId'] }).retrieve(function (err, user) {
-				if (err) return callback.call(self, err);
-				if (!user.length) return callback.call(self, new Error("User not found"));
-				user = user[0];
-				if (user.fields.id === self.get(['asUserId'], null)) return callback.call(self, null, self, user.fields.id, user);
-				Streams.fetch(user.fields.id, self.fields.publisherId, self.fields.name, function(err, streams) {
-					if (err) return callback.call(self, err);
-					if (!streams[self.fields.name]) return callback.call(self, new Error("Stream not found"));
-					callback.call(self, null, streams[self.fields.name], user.fields.id, user);
-				});
+		var stream = this;
+		if (!options['userId']) {
+			return callback.call(stream, new Error("No user id provided"));
+		}
+		var user = new Users.User({ id: options['userId'] });
+		user.retrieve(function (err, users) {
+			if (err) return callback.call(stream, err);
+			if (!users.length) return callback.call(stream, new Error("User not found"));
+			var user = users[0];
+			if (user.fields.id === stream.get(['asUserId'], null)) return callback.call(stream, null, stream, user.fields.id, user);
+			Streams.fetch(user.fields.id, stream.fields.publisherId, stream.fields.name, function(err, streams) {
+				if (err) return callback.call(stream, err);
+				if (!streams[stream.fields.name]) return callback.call(stream, new Error("Stream not found"));
+				callback.call(stream, null, streams[stream.fields.name], user.fields.id, user);
 			});
-		} else callback.call(self, new Error("No user id provided"));
+		});
 	};
 
 	/**
@@ -511,20 +513,20 @@ function Streams_Stream (fields) {
 	 * @param callback {function} receives error if any and participant object as arguments
 	 */
 	this.join = function(options, callback) {
-		var self = this;
+		var stream = this;
 		if (typeof options === "function") {
 			callback = options;
 			options = {};
 		}
 		this._getUserStream(options, function(err, stream, userId) {
-			if (err) return callback.call(self, err);
-			if (!stream.testWriteLevel('join')) return callback.call(self, new Error("User is not authorized"));
+			if (err) return callback.call(stream, err);
+			if (!stream.testWriteLevel('join')) return callback.call(stream, new Error("User is not authorized"));
 			new Streams.Participant({
 				publisherId: stream.fields.publisherId,
 				streamName: stream.fields.name,
 				userId: userId
 			}).retrieve(function(err, sp) {
-				if (err) return callback.call(self, err);
+				if (err) return callback.call(stream, err);
 				if (sp.length) {
 					sp = sp[0];
 					var save = false;
@@ -538,10 +540,10 @@ function Streams_Stream (fields) {
 					}
 					if (save) {
 						sp.save(true, function(err) {
-							if (err) callback.call(self, err);
-							else callback.call(self, null, sp);
+							if (err) callback.call(stream, err);
+							else callback.call(stream, null, sp);
 						});
-					} else callback.call(self, null, sp);
+					} else callback.call(stream, null, sp);
 				} else {
 					sp = new Streams.Participant({
 						publisherId: stream.fields.publisherId,
@@ -556,7 +558,7 @@ function Streams_Stream (fields) {
 						enthusiasm: options['enthusiasm'] || 0
 					});
 					sp.save(function(err) {
-						if (err) return callback.call(self, err);
+						if (err) return callback.call(stream, err);
 						Streams.emitToUser(userId, 'join', Streams._fillMagicFields(sp.toArray()));
 						stream.incParticipants(/* empty callback*/);
 
@@ -564,12 +566,12 @@ function Streams_Stream (fields) {
 							byUserId: userId,
 							type: 'Streams/join'
 						}, function(err) {
-							if (err) return callback.call(self, err);
+							if (err) return callback.call(stream, err);
 							new Streams.Stream({
 								publisherId: userId,
 								name: 'Streams/participating'
 							}).retrieve(function (err, pstream) {
-								if (err || !pstream.length) return callback.call(self, err);
+								if (err || !pstream.length) return callback.call(stream, err);
 								pstream[0].post({
 									type: 'Streams/joined',
 									content: '',
@@ -578,8 +580,8 @@ function Streams_Stream (fields) {
 										streamName: stream.fields.name
 									})
 								}, function (err) {
-									if (err) return callback.call(self, err);
-									callback.call(self, null, sp);
+									if (err) return callback.call(stream, err);
+									callback.call(stream, null, sp);
 								});
 							});
 						});
@@ -673,24 +675,24 @@ function Streams_Stream (fields) {
 	 */
 	this.subscribe = function(options, callback) {
 
-		var self = this;
+		var stream = this;
 		if (typeof options === "function") {
 			callback = options;
 			options = {};
 		}
 		this._getUserStream(options, function(err, stream, userId, user) {
-			if (err) return callback.call(self, err);
-			self.join({
+			if (err) return callback.call(stream, err);
+			stream.join({
 				subscribed: true,
 				userId: userId
 			}, function (err) {
-				if (err) return callback.call(self, err);
+				if (err) return callback.call(stream, err);
 				new Streams.Subscription({
 					publisherId: stream.fields.publisherId,
 					streamName: stream.fields.name,
 					ofUserId: userId
 				}).retrieve(function(err, s) {
-					if (err) return callback.call(self, err);
+					if (err) return callback.call(stream, err);
 					if (s.length) s = s[0];
 					else s = new Streams.Subscription({
 						publisherId: stream.fields.publisherId,
@@ -698,7 +700,7 @@ function Streams_Stream (fields) {
 						ofUserId: userId
 					});
 					_getSubscriptionTemplate('Subscription', stream, userId, function (err, template) {
-						if (err) return callback.call(self, err);
+						if (err) return callback.call(stream, err);
 						var filter = template ? JSON.parse(template.fields.filter) : {types: [], notifications: 0};
 						if (options['types']) filter['types'] = options['types'];
 						if (options['notifications']) filter['notifications'] = options['notifications'];
@@ -712,11 +714,11 @@ function Streams_Stream (fields) {
 							}
 						}
 						s.save(true, function (err) {
-							if (err) return callback.call(self, err);
+							if (err) return callback.call(stream, err);
 							// Now let's handle rules
 							_getSubscriptionTemplate('Rule', stream, userId, function(err, template) {
 								var deliver;
-								if (err) return callback.call(self, err);
+								if (err) return callback.call(stream, err);
 								if (!template || template.template_type !== 0) {
 									if (template && template.fields.deliver) {
 										deliver = template.fields.deliver;
@@ -742,17 +744,17 @@ function Streams_Stream (fields) {
 										deliver: deliver,
 										relevance: 1
 									}).save(function(err) {
-										if (err) return callback.call(self, err);
+										if (err) return callback.call(stream, err);
 										stream.post({
 											byUserId: userId,
 											type: 'Streams/subscribe'
 										}, function(err) {
-											if (err) return callback.call(self, err);
+											if (err) return callback.call(stream, err);
 											new Streams.Stream({
 												publisherId: userId,
 												name: 'Streams/participating'
 											}).retrieve(function (err, pstream) {
-												if (err || !pstream.length) return callback.call(self, err);
+												if (err || !pstream.length) return callback.call(stream, err);
 												pstream[0].post({
 													type: 'Streams/subscribe',
 													content: JSON.stringify({
@@ -760,8 +762,8 @@ function Streams_Stream (fields) {
 														streamName: stream.fields.name
 													})
 												}, function (err) {
-													if (err) return callback.call(self, err);
-													callback.call(self, null, s);
+													if (err) return callback.call(stream, err);
+													callback.call(stream, null, s);
 												});
 											});
 										});
@@ -790,7 +792,7 @@ function Streams_Stream (fields) {
 	 * @param callback=noop {function}
 	 */
 	this.notify = function(participant, event, uid, message, callback) {
-		var userId = participant.fields.userId, self = this;
+		var userId = participant.fields.userId, stream = this;
 		function _notify(tokens, sessions) {
 			// 1) if session is associated to device and no socket is connected for device
 			//		we update 'fresh' field, update badge, issue alert to device
@@ -812,7 +814,7 @@ function Streams_Stream (fields) {
 			}
 			// 3) if user has no socket connected notify subscribed users
 			if (participant.fields.subscribed === 'yes') {
-				Streams.Subscription.test(userId, self.fields.publisherId, self.fields.name, message.type, function(err, deliveries) {
+				Streams.Subscription.test(userId, stream.fields.publisherId, stream.fields.name, message.type, function(err, deliveries) {
 					if (err || !deliveries.length) return callback && callback(err);
 					// actually notify according to the deliveriy rules
 					var p = new Q.Pipe(deliveries.map(function(d) { return JSON.stringify(d); }), function(params) {
@@ -855,7 +857,7 @@ function Streams_Stream (fields) {
 						});
 					} else {
 						deliveries.forEach(function(delivery) {
-							msg.deliver(self, delivery, p.fill(JSON.stringify(delivery)));
+							msg.deliver(stream, delivery, p.fill(JSON.stringify(delivery)));
 						});
 					}
 				});
@@ -897,9 +899,9 @@ function Streams_Stream (fields) {
 		if (!f.state) f.state = 'posted';
 		if (!f.weight) f.weight = 1;
 		f.sentTime = new Db.Expression("CURRENT_TIMESTAMP");
-		var msg = new Streams.Message(f), self = this;
+		var msg = new Streams.Message(f), stream = this;
 		msg.save(function (err) {
-			Streams_Stream.emit('post', self.toArray(), f.byUserId, msg.toArray());
+			Streams_Stream.emit('post', stream.toArray(), f.byUserId, msg.toArray());
 			callback && callback(err);
 		});
 	};

@@ -79,7 +79,7 @@
 	// later we can pay for BOSS to do this. But for now, here is what we do:
 	var url = 'http://query.yahooapis.com/v1/public/yql?format=json&diagnostics=false&q=select%20Rating.LastReviewIntro%20from%20local.search%20where%20zip%3D%2294085%22%20and%20query%3D%22$noun_ue%22';
 	
-	Q.jsonRequest(url, null, function(data) {
+	Q.jsonRequest(url, null, function(err, data) {
 		if (data.query && data.query.results && data.query.results.Result) {
 			// var r = data.query.results.result;
 			var r = data.query.results.Result;

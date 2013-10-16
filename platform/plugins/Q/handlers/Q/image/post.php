@@ -61,19 +61,19 @@ function Q_image_post($options = array()) {
 	$data = array();
 	// process requested thumbs
 	// create dirs for new images
-	$real_path = Q::realPath(APP_WEB_DIR.DS.$path);
-	$write_path = $real_path.($subpath ? DS.$subpath : '');
-	$last_char = substr($write_path, -1);
-	if ($last_char !== DS or $last_char !== '/') {
-		$write_path .= DS;
+	$realPath = Q::realPath(APP_WEB_DIR.DS.$path);
+	$writePath = $realPath.($subpath ? DS.$subpath : '');
+	$lastChar = substr($writePath, -1);
+	if ($lastChar !== DS or $lastChar !== '/') {
+		$writePath .= DS;
 	}
-	Q_Utils::canWriteToPath($write_path, true, true);
+	Q_Utils::canWriteToPath($writePath, true, true);
 	foreach ($save as $size => $name) {
 		if (empty($name)) {
 			// generate a filename
 			do {
 				$name = Q_Utils::unique(8).'.png';
-			} while (file_exists($write_path.DS.$name));
+			} while (file_exists($writePath.DS.$name));
 		}
 		if (strrpos($name, '.') === false) {
 			$name .= '.png';
@@ -151,13 +151,13 @@ function Q_image_post($options = array()) {
 		$res = false;
 		switch ($ext) {
 			case 'png':
-				$res = imagepng($thumb, $write_path.DS.$name);
+				$res = imagepng($thumb, $writePath.DS.$name);
 				break;
 			case 'jpg':
-				$res = imagejpeg($thumb, $write_path.DS.$name);
+				$res = imagejpeg($thumb, $writePath.DS.$name);
 				break;
 			case 'gif':
-				$res = imagegif($thumb, $write_path.DS.$name);
+				$res = imagegif($thumb, $writePath.DS.$name);
 				break;
 		}
 		if ($res) {
@@ -170,7 +170,10 @@ function Q_image_post($options = array()) {
 	 * @event Q/image {after}
 	 * @param {string} 'user'
 	 * @param {string} 'path'
+	 * @param {string} 'subpath'
+	 * @param {string} 'writePath'
+	 * @param {string} 'data'
 	 */
-	Q::event('Q/image', compact('user', 'path'), 'after');
+	Q::event('Q/image', compact('user', 'path', 'subpath', 'writePath', 'data'), 'after');
 	Q_Response::setSlot('data', $data);
 }

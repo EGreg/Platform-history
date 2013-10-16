@@ -3,18 +3,18 @@
 function Q_after_Q_tool_render($params, &$result)
 {	
 	$tool_name = $params['tool_name'];
-	$fields = $params['fields'];
+	// $options = $params['options'];
 	$options = Q_Response::getToolOptions();
-	$Q_options = $params['Q_options'];
-	if (!is_array($Q_options)) {
-		$Q_options = array();
+	$extra = $params['extra'];
+	if (!is_array($extra)) {
+		$extra = array();
 	}
 
-	$tag = !empty($Q_options['tag']) ? $Q_options['tag'] : 'div';
-	if (empty($Q_options['inner'])) {
+	$tag = !empty($extra['tag']) ? $extra['tag'] : 'div';
+	if (empty($extra['inner'])) {
 		$classes = implode('_', explode('/', $tool_name)) . '_tool';
-		if (isset($Q_options['classes'])) {
-			$classes .= ' ' . $Q_options['classes'];
+		if (isset($extra['classes'])) {
+			$classes .= ' ' . $extra['classes'];
 		}
 		if (isset($options)) {
 			$friendly_options = str_replace(
@@ -28,7 +28,7 @@ function Q_after_Q_tool_render($params, &$result)
 			$data_options = '';
 		}
 		$id_prefix = Q_Html::getIdPrefix();
-		$data_cache = isset($Q_options['cache']) || Q_Response::shouldCacheTool($id_prefix)
+		$data_cache = isset($extra['cache']) || Q_Response::shouldCacheTool($id_prefix)
 			? " data-Q-cache='document'"
 			: '';
 		$result = "<!--\n\nstart tool $tool_name\n\n-->"

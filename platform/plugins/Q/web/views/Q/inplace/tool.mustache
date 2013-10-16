@@ -1,13 +1,18 @@
 <div class='Q_inplace_tool_container {{classes}}' style="position: relative;">
+    <div class='Q_inplace_tool_editbuttons'>
+    	<button class='Q_inplace_tool_edit basic16 basic16_edit'>Edit</button>
+    </div>
 	<form class="Q_inplace_tool_form" method="{{method}}" action="{{action}}">
-		<input name="{{name}}" value="{{text}}" type="{{type}}">
+        {{#textarea}}
+    	    <input name="{{name}}" value="{{text}}" type="{{type}}">
+        {{/textarea}}
+        {{^textarea}}
+    	    <textarea name="{{name}}">{{text}}</textarea>
+        {{/textarea}}
 		<div class='Q_inplace_tool_buttons'>
 			<button class='Q_inplace_tool_save basic16 basic16_save'>Save</button>
 			<button class='Q_inplace_tool_cancel basic16 basic16_cancel'>Cancel</button>
 		</div>
 	</form>
 	<div class="{{staticClass}}">{{& staticHtml}}</div>
-	<div class='Q_inplace_tool_editbuttons'>
-		<button class='Q_inplace_tool_edit basic16 basic16_edit'>Edit</button>
-	</div>
 </div>

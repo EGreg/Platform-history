@@ -72,7 +72,7 @@
 			], function (i, field) {
 				fields[field] = location.search.queryField(field);
 			});
-			Q.req(Q.info.url, 'url', function (response) {
+			Q.req(Q.info.url, 'url', function (err, response) {
 				setTimeout(function () {
 					location = Q.info.baseUrl;
 				}, 1000);

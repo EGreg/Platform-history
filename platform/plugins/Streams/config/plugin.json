@@ -11,6 +11,7 @@
 		"handlersAfterEvent": {
 			"Q/objects": ["Streams/after/Q/objects"],
 			"Q/responseExtras": ["Streams/after/Q/responseExtras"],
+			"Q/image": ["Streams/after/Q/image"],
 			"Db/Row/Users_User/saveExecute": ["Streams/after/Users/User/saveExecute"],
 			"Db/Row/Users_Contact/removeExecute": ["Streams/after/Users/Contact/removeExecute"],
 			"Users/insertUser": ["Streams/after/Users/insertUser"]
@@ -50,7 +51,10 @@
 			"Streams/image": {
 				"create": true,
 				"edit": true,
-				"sizes": ["40", "50", "80", "400x", "x"] 
+				"sizes": ["40", "50", "80", "400x", "x"],
+				"defaults": {
+					"title": "Untitled Image"
+				}
 			},
 			"Streams/category": {
 				"create": true,

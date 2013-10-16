@@ -96,7 +96,7 @@ Q.onActivate.set(function () {
 					+encodeURIComponent(q.publisherId)+'&streamName='
 					+encodeURIComponent(q.streamName))+sessionQuerystring(),
 					'data',
-					function (response) {
+					function (err, response) {
 						$this.next().css({'background': 'none'});
 						if (response.errors) {
 							alert(response.errors[0].message);
@@ -181,8 +181,7 @@ Q.onActivate.set(function () {
 				'data',
 				function (response) {
 					if (response.errors) {
-						alert(response.errors[0].message);
-						return;
+						return alert(response.errors[0].message);
 					}
 					$('.Broadcast_manage').show('fast');
 					$('.Broadcast_initiate').hide('fast');

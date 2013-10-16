@@ -6,19 +6,19 @@ function Q_before_Q_tool_render($params, &$result)
 	static $temp_id = 0;
 	
 	$tool_name = $params['tool_name'];
-	$Q_options = $params['Q_options'];
+	$extra = $params['extra'];
 	$prefix = implode('_', explode('/', $tool_name)) . '_';
-	if (is_string($Q_options)) {
-		$id = $Q_options;
-		$Q_options = array();
+	if (is_string($extra)) {
+		$id = $extra;
+		$extra = array();
 	} else {
-		$id = isset($Q_options['id']) ? $Q_options['id'] : '';
+		$id = isset($extra['id']) ? $extra['id'] : '';
 	}
 	if (!empty($id)) {
 		$prefix = '_'.$id.'_'.$prefix;
 	}
 	
-	$cur_prefix = isset($Q_options['prefix']) ? $Q_options['prefix'] : Q_Html::getIdPrefix();
+	$cur_prefix = isset($extra['prefix']) ? $extra['prefix'] : Q_Html::getIdPrefix();
 	$tool_prefix = $cur_prefix . $prefix;
 
 	if (isset($prefix_was_rendered[$tool_prefix])) {

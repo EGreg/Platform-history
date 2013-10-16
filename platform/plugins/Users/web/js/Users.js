@@ -548,7 +548,7 @@ Users.login = function(options) {
 			_onComplete(user);
 			return;
 		}
-		Q.jsonRequest(o.accountStatusUrl, 'accountStatus', function(response2) {
+		Q.jsonRequest(o.accountStatusUrl, 'accountStatus', function(err, response2) {
 			// DEBUGGING: For debugging purposes
 			if (!response2.slots) {
 				if (response2.errors && response2.errors[0].message) {
@@ -804,7 +804,7 @@ function login_callback(response) {
 			'background-repeat': 'no-repeat'
 		});
 		var url = $this.attr('action')+'?'+$this.serialize();
-		Q.jsonRequest(url, 'data', function (response) {
+		Q.jsonRequest(url, 'data', function (err, response) {
 			$('input', $this).css('background-image', 'none');
 			if (response.errors) {
 				// there were errors
@@ -868,7 +868,7 @@ function login_callback(response) {
 						_resend();
 					}
 					function _resend() {
-						Q.req('Users/resend', 'data', function () {
+						Q.req('Users/resend', 'data', function (err) {
 							$('#Users_login_step1').hide();
 							$('#Users_login_step2').empty().append(
 								$('<div id="Users_login_resend_success" />').append(

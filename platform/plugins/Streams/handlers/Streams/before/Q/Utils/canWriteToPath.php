@@ -28,6 +28,7 @@ function Streams_before_Q_Utils_canWriteToPath($params, &$result)
 				$name = $parts[1] . '/' . $parts[2];
 				if ($stream = Streams::fetchOne($userId, $publisherId, $name)) {
 					$result = $stream->testWriteLevel('edit');
+					Streams::$cache['canWriteToStream'] = $stream;
 				}
 			}
 		}

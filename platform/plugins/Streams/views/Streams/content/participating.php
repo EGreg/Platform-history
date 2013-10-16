@@ -1,13 +1,13 @@
 <script type="text/javascript">
 	$(function(){
 		$('#partTest').click(function() {
-			Q.req('Streams/participating', 'streams,participating', function (response) {
+			Q.req('Streams/participating', 'streams,participating', function (err, response) {
 				console.log(response.slots);
 			});
 		});
 
 		$('#partTest2').click(function() {
-			Q.jsonRequest('Streams/participating', 'participating', function (response) {
+			Q.jsonRequest('Streams/participating', 'participating', function (err, response) {
 				console.log(response.slots);
 			});
 		});

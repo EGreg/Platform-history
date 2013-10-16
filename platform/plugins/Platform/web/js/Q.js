@@ -204,7 +204,7 @@ Q.handle = function(callables, context, args, post) {
 		if (callables.substr(0, 7) == 'http://' || callables.substr(0, 8) == 'https://') {
 			if (Q.typeOf(post) === 'object') {
 				var form = document.createElement('form');
-				var parts = Q.param(post).split('&');
+				var parts = Q.serializeFields(post).split('&');
 				form.setAttribute('action', callables);
 				form.setAttribute('method', 'POST');
 				for (var i = 0; i < parts.length; ++i) {

@@ -91,9 +91,9 @@ class Streams_Stream extends Base_Streams_Stream
 	 * @final
 	 */
 	public static $DEFAULTS = array(
-		'type' => 'chat',
-		'title' => '',
-		'icon' => '',
+		'type' => 'Streams/text',
+		'title' => 'Untitled',
+		'icon' => 'default',
 		'content' => '',
 		'attributes' => '',
 		'readLevel' => 40,
@@ -1316,7 +1316,6 @@ class Streams_Stream extends Base_Streams_Stream
 			'ordinal <=' => $options['max']
 		));
 		$q->limit($options['limit']);
-		Q::log($ascending);
 		$q->orderBy('ordinal', isset($options['ascending']) ? $options['ascending'] : $ascending);
 		return $q->fetchDbRows(null, '', 'ordinal');
 	}

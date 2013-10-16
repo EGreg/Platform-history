@@ -142,7 +142,7 @@ Streams.basic = function(options) {
 
 		}
 	});
-	Q.req('Streams/basic?prompt=', 'tool', function (response) {
+	Q.req('Streams/basic?prompt=', 'tool', function (err, response) {
 		var overlay = $('<div class="Streams_basic_overlay Q_overlay" id="Streams_basic_overlay" />');
 		Q.Dialogs.push({
 			'title': Q.text.Streams.basic.title,
@@ -266,9 +266,9 @@ Streams.socketSessionId = function (publisherId, streamName) {
 */
 Streams.getParticipating = Q.getter(function(callback) {
 	if(!callback) return;
-	Q.req('Streams/participating', 'participating', _nodeStyleCallback(function (err, data) {
-		callback(err, data && data.participating);
-	}));
+	Q.req('Streams/participating', 'participating', function (err, data) {
+		callback(err, data && data.slots && data.slots.participating);
+	});
 }, {cache: Q.Cache.document("Streams.getParticipating")});
 
 /**
@@ -290,7 +290,7 @@ Streams.getParticipating = Q.getter(function(callback) {
  */
 Streams.get = Q.getter(function (publisherId, streamName, callback, extra) {
 	var url = Q.action('Streams/stream?')+
-		Q.param({"publisherId": publisherId, "name": streamName});
+		Q.serializeFields({"publisherId": publisherId, "name": streamName});
 	var slotNames = ['stream'];
 	if (extra) {
 		if (extra.participants) {
@@ -342,17 +342,17 @@ Streams.create = function (fields, callback, related) {
 		publisherId: fields.publisherId,
 		streamName: "" // NOTE: the request is routed to wherever the "" stream would have been hosted
 	});
-	Q.req('Streams/stream', [slotName], _nodeStyleCallback(function Stream_create_response_handler(err, data) {
+	Q.req('Streams/stream', [slotName], function Stream_create_response_handler(err, data) {
 		if (err) {
 			return callback && callback(err);
 		}
-		_constructStream(data.stream, function Stream_create_construct_handler (err, stream) {
+		_constructStream(data.slots.stream, function Stream_create_construct_handler (err, stream) {
 			if (err) {
 				return callback && callback.call(stream, err, stream);
 			}
 			return callback && callback.call(stream, err, stream);
 		});
-	}), { method: 'post', fields: fields, baseUrl: baseUrl });
+	}, { method: 'post', fields: fields, baseUrl: baseUrl });
 };
 
 /**
@@ -475,6 +475,12 @@ Streams.Stream = function (fields) {
 		'adminLevel',
 		'inheritAccess'
 	]);
+	if (this.fields.messageCount) {
+		this.fields.messageCount = parseInt(this.fields.messageCount);
+	}
+	if (this.fields.participantCount) {
+		this.fields.participantCount = parseInt(this.fields.participantCount);
+	}
 	try {
 		this.pendingAttributes = this.attributes = fields.attributes
 			? JSON.parse(fields.attributes)
@@ -537,11 +543,11 @@ Streams.Stream.prototype.save = function (callback) {
 		publisherId: this.pendingFields.publisherId,
 		streamName: this.pendingFields.name
 	});
-	Q.req('Streams/stream', [slotName], _nodeStyleCallback(function (err, data) {
+	Q.req('Streams/stream', [slotName], function (err, data) {
 		if (err) return callback && callback.call(this, err);
 		// the rest will occur in the handler for the stream.onUpdated event coming from the socket
-		callback && callback.call(that, err, data[slotName] || null);
-	}), { method: 'put', fields: this.pendingFields, baseUrl: baseUrl });
+		callback && callback.call(that, err, data.slots.stream || null);
+	}, { method: 'put', fields: this.pendingFields, baseUrl: baseUrl });
 };
 Streams.Stream.prototype.remove = function (callback) {
 	return Streams.Stream.remove(this.fields.publisherId, this.fields.name, callback);
@@ -663,7 +669,7 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 		publisherId: publisherId,
 		streamName: streamName
 	});
-	Q.req('Streams/related', slotNames, _nodeStyleCallback(function (err, data) {
+	Q.req('Streams/related', slotNames, function (err, data) {
 		if (err) {
 			return callback && callback.call(this, err);
 		}
@@ -672,12 +678,12 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 		} else {
 			var extra = {};
 			if (options.messages) {
-				extra.messages = data.messages;
+				extra.messages = data.slots.messages;
 			}
 			if (options.participants) {
-				extra.participants = data.participants;
+				extra.participants = data.slots.participants;
 			}
-			_constructStream(data.stream, extra, _processResults);
+			_constructStream(data.slots.stream, extra, _processResults);
 		}
 
 		function _processResults(err, stream) {
@@ -688,7 +694,7 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 			// Construct related streams from data that has been returned
 			var streams = [];
 			var p = new Q.Pipe(), keys = [];
-			Q.each(data.streams, function (k, fields) {
+			Q.each(data.slots.streams, function (k, fields) {
 				var key = fields.publisherId + "\t" + fields.name;
 				keys.push(key);
 				_constructStream(fields, function () {
@@ -698,10 +704,10 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 			});
 			
 			// Now process all the relations
-			Q.each(data.relations, function (j, relation) {
+			Q.each(data.slots.relations, function (j, relation) {
 				relation[near] = stream;
 				var found = false;
-				Q.each(data.streams, function (k, fields) {
+				Q.each(data.slots.streams, function (k, fields) {
 					if (fields.publisherId === relation[far_publisherId]
 					&& fields.name === relation[far_streamName]) {
 						found = true;
@@ -733,10 +739,10 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 			}
 			function _callback() {
 				// all the streams have been constructed
-				callback && callback.call({streams: streams, relations: data.relations, stream: stream}, null);
+				callback && callback.call({streams: streams, relations: data.slots.relations, stream: stream}, null);
 			}
 		}
-	}), { fields: fields, baseUrl: baseUrl });
+	}, { fields: fields, baseUrl: baseUrl });
 });
 
 /**
@@ -788,12 +794,12 @@ Streams.relate = function(publisherId, streamName, relationType, fromPublisherId
 		publisherId: publisherId,
 		streamName: streamName
 	});
-	Q.req('Streams/related', [slotName], _nodeStyleCallback(function (err, data) {
-		var messageFrom = data && data.result.messageFrom;
-		var messageTo = data && data.result.messageTo;
+	Q.req('Streams/related', [slotName], function (err, data) {
+		var messageFrom = Q.getObject('slots.result.messageFrom', data);
+		var messageTo = Q.getObject('slots.result.messageTo', data);
 		// wait for messages from cached streams -- from, to or both!
-		callback && callback.call(this, err, (data && data[slotName]) || null);
-	}), { method: 'post', fields: fields, baseUrl: baseUrl });
+		callback && callback.call(this, err, Q.getObject('slots.result', data) || null);
+	}, { method: 'post', fields: fields, baseUrl: baseUrl });
 };
 
 Streams.unrelate = function(publisherId, streamName, relationType, fromPublisherId, fromStreamName, callback) {
@@ -816,9 +822,9 @@ Streams.unrelate = function(publisherId, streamName, relationType, fromPublisher
 		publisherId: publisherId,
 		streamName: streamName
 	});
-	Q.req('Streams/related', [slotName], _nodeStyleCallback(function (err, data) {
-		callback && callback.call(this, err, (data && data[slotName]) || null);
-	}), { method: 'delete', fields: fields, baseUrl: baseUrl });
+	Q.req('Streams/related', [slotName], function (err, data) {
+		callback && callback.call(this, err, Q.getObject('slots.result', data) || null);
+	}, { method: 'delete', fields: fields, baseUrl: baseUrl });
 };
 
 /**
@@ -899,10 +905,10 @@ Streams.updateRelation = function(
 		publisherId: toPublisherId,
 		streamName: toStreamName
 	});
-	Q.req('Streams/related', [slotName], _nodeStyleCallback(function (err, data) {
-		var message = data && data.result.message;
-		callback && callback.call(this, err, (data && data.result) || null);
-	}), { method: 'put', fields: fields, baseUrl: baseUrl });
+	Q.req('Streams/related', [slotName], function (err, data) {
+		var message = Q.getObject('slots.result.message', data);
+		callback && callback.call(this, err, Q.getObject('slots.result', data) || null);
+	}, { method: 'put', fields: fields, baseUrl: baseUrl });
 };
 
 /**
@@ -1011,17 +1017,17 @@ Streams.Stream.join = function (publisherId, streamName, callback) {
 		"streamName": streamName,
 		"socketSessionId": Streams.socketSessionId(publisherId, streamName)
 	});
-	Q.req('Streams/join', [slotName], _nodeStyleCallback(function (err, data) {
+	Q.req('Streams/join', [slotName], function (err, data) {
 		if (err) {
 			return callback && callback.call(this, err);
 		}
-		var participant = data.participant && new Streams.Participant(data.participant);
+		var participant = new Streams.Participant(data.slots.participant);
 		Streams.Participant.get.cache.set(
 			[participant.publisherId, participant.name, participant.userId],
 			0, participant, [err, participant]
 		);
 		callback && callback.call(participant, err, participant || null);
-	}), { method: 'post', fields: fields, baseUrl: baseUrl });
+	}, { method: 'post', fields: fields, baseUrl: baseUrl });
 };
 
 /**
@@ -1044,17 +1050,16 @@ Streams.Stream.leave = function (publisherId, streamName, callback) {
 		publisherId: publisherId,
 		streamName: streamName
 	});
-	Q.req('Streams/leave', [slotName], _nodeStyleCallback(function (err, data) {
+	Q.req('Streams/leave', [slotName], function (err, data) {
 		if (err) {
 			return callback && callback.call(this, err);
 		}
-		var participant = new Streams.Participant(data.participant);
+		var participant = new Streams.Participant(data.slots.participant);
 		Streams.Participant.get.cache.remove(
-			[data.participant.publisherId, data.participant.name, data.participant.userId],
-			0, this, [err, data.participant]
+			[data.slots.participant.publisherId, data.slots.participant.name, data.slots.participant.userId]
 		);
 		callback && callback.call(this, err, participant || null);
-	}), { method: 'post', fields: fields, baseUrl: baseUrl });
+	}, { method: 'post', fields: fields, baseUrl: baseUrl });
 };
 
 /**
@@ -1070,10 +1075,10 @@ Streams.Stream.remove = function(publisherId, streamName, callback) {
 		publisherId: publisherId,
 		streamName: streamName
 	});
-	Q.req('Streams/stream', [slotName], _nodeStyleCallback(function (err, data) {
+	Q.req('Streams/stream', [slotName], function (err, data) {
 		if (err) return callback && callback.call(this, err);
-		callback && callback.call(this, err, data[slotName] || null);
-	}), { method: 'delete', fields: fields, baseUrl: baseUrl });
+		callback && callback.call(this, err, data.slots.result || null);
+	}, { method: 'delete', fields: fields, baseUrl: baseUrl });
 };
 
 Streams.Message = function Streams_Message(obj) {
@@ -1138,14 +1143,14 @@ Streams.Message.get = Q.getter(function (publisherId, streamName, ordinal, callb
 			}
 			messages[ordinal] = message;
 			Streams.Message.get.cache.set(
-				[publisherId, streamName, ordinal],
+				[publisherId, streamName, parseInt(ordinal)],
 				0, message, [err, message]
 			);
 		});
 		if (Q.isPlainObject(ordinal)) {
 			callback && callback.call(this, err, messages || null);
 		} else {
-			var message = Q.first(messages);
+			var message = messages[Q.first(messages)];
 			callback && callback.call(message, err, message || null);
 		}
 	});
@@ -1163,17 +1168,17 @@ Streams.Message.post = function (msg, callback) {
 		streamName: msg.streamName
 	});
 	msg.socketSessionId = Streams.socketSessionId(msg.publisherId, msg.streamName);
-	Q.req('Streams/message', [slotName], _nodeStyleCallback(function (err, data) {
+	Q.req('Streams/message', [slotName], function (err, data) {
 		if (err) {
 			return callback && callback.call(this, err);
 		}
-		var message = data.message && new Streams.Message(data.message);
+		var message = data.slots.message && new Streams.Message(data.slots.message);
 		Streams.Message.get.cache.set(
 			[msg.publisherId, msg.streamName, msg.ordinal],
 			0, message, [err, message]
 		);
 		callback && callback.call(message, err, message || null);
-	}), { method: 'post', fields: msg, baseUrl: baseUrl });
+	}, { method: 'post', fields: msg, baseUrl: baseUrl });
 };
 
 /**
@@ -1198,7 +1203,7 @@ Streams.Message.latestOrdinal = function (publisherId, streamName) {
 			}
 		});
 	}
-	return latest;
+	return parseInt(latest);
 };
 
 /**
@@ -1206,7 +1211,7 @@ Streams.Message.latestOrdinal = function (publisherId, streamName) {
  * Used by Streams plugin to make sure messages arrive in order.
  * @param {String} publisherId
  * @param {String} streamName
- * @param {Number} ordinal
+ * @param {Number} ordinal The ordinal of the message to wait for, or -1 to load latest messages
  * @param {Function} callback This is called when the message has been posted.
  * @param {Object} options A hash of options which can include:
  *   "max": The maximum number of messages to wait and hope they will arrive via sockets. Any more and we just request them again.
@@ -1219,13 +1224,18 @@ Streams.Message.wait = function(publisherId, streamName, ordinal, callback, opti
 		callback(); // There is no cache for this stream, so we won't wait for previous messages.
 		return false;
 	}
-	if (ordinal <= latest) {
+	if (ordinal >= 0 && ordinal <= latest) {
 		callback(); // The cached stream already got this message
 		return true;
 	}
 	var o = Q.extend({}, Streams.Message.wait.options, options);
 	var waiting = {};
-	if (ordinal - o.max <= latest) {
+	var node = Q.nodeUrl({
+		publisherId: publisherId,
+		streamName: streamName
+	});
+	var socket = Q.Socket.get('Streams', node);
+	if (socket && ordinal >= 0 && ordinal - o.max <= latest) {
 		// ok, wait a little while
 		var t = setTimeout(_tryLoading, o.timeout);
 		var ordinals = [];
@@ -1329,7 +1339,7 @@ Streams.Participant.get = Q.getter(function (publisherId, streamName, userId, ca
 		if (Q.isPlainObject(userId)) {
 			callback && callback.call(this, err, participants || null);
 		} else {
-			var participant = Q.first(participants);
+			var participant = participants[Q.first(participants)];
 			callback && callback.call(participant, err, participant || null);
 		}
 	});
@@ -1421,16 +1431,6 @@ Streams.Avatar.prototype.displayName = function (options) {
 		return u ? u : null;
 	}
 };
-
-function _nodeStyleCallback(callback, before) {
-	return function (response) {
-		if (response.errors) {
-			callback && callback.call(this, response.errors, null);
-		} else {
-			callback && callback.call(this, null, response.slots || {});
-		}
-	};
-}
 
 Streams.setupRegisterForm = function(identifier, json, priv, overlay) {
 	var src = json.entry.thumbnailUrl;
@@ -1555,10 +1555,28 @@ Q.Tool.define({
 	"Streams/basic": "plugins/Streams/js/tools/basic.js",
 	"Streams/access": "plugins/Streams/js/tools/access.js",
 	"Streams/related": "plugins/Streams/js/tools/related.js",
+	"Streams/smalltext/preview": "plugins/Streams/js/tools/smalltext/preview.js",
 	"Streams/image/preview": "plugins/Streams/js/tools/image/preview.js"
 });
 
-Q.Tool.define("Streams/inplace", function () {});
+Q.Tool.define("Streams/inplace", function () {
+	this.Q_init = function () {
+		var tool = this;
+		var inplace = this.child('Q/inplace');
+		inplace.state.onSave.set(function () {
+			Q.Streams.Message.wait(
+				tool.state.publisherId,
+				tool.state.streamName,
+				-1,
+				function () {
+					tool.state.onUpdate.handle.call(tool);
+				}
+			);
+		}, 'Streams/inplace');
+	};
+}, {
+	onUpdate: new Q.Event()
+});
 
 Q.Tool.define("Streams/preview", function (options) {
 	console.warn('TODO: Generic preview should be implemented');
