@@ -108,7 +108,6 @@ function _Streams_related_tool (options)
     },
     newElementFromStream: function (stream) {
         var element = document.createElement(this.state.tag);
-        var toolType = this.state.toolType(stream.fields.type);
         var options = {
             publisherId: stream.fields.publisherId,
             streamName: stream.fields.name,
@@ -119,9 +118,7 @@ function _Streams_related_tool (options)
 			},
 			editable: this.state.editable
         };
-        element.setAttribute('class', 'Q_tool ' + Q.normalize(toolType)+"_tool");
-        element.setAttribute('data-'+Q.normalize(toolType, '-'), JSON.stringify(options));
-        return element;
+        return Q.Tool.element(this.state.tag, streams.fields.type, options);
     }
 }
 

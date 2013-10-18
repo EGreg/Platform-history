@@ -7,6 +7,7 @@
  *  "fieldType" => Required. The type of the fieldInput. Can be "textarea" or "text"
  *  "stream" => A Streams_Stream object
  *  "editing" => If true, then renders the inplace tool in editing mode.
+ *  "attribute" => Optional, name of an attribute to change instead of the content of the stream
  *  "editOnClick" => Defaults to true. If true, then edit mode starts only if "Edit" button is clicked.
  *  "selectOnEdit" => Defaults to true. If true, selects all the text when entering edit mode.
  *  "beforeSave" => Optional, reference to a callback to call after a successful save.
@@ -21,12 +22,12 @@ function Streams_inplace_tool($options)
 		'publisherId' => $stream->publisherId,
 		'streamName' => $stream->name
 	));
+	if (!$stream->testWriteLevel('editPending')) {
+		return $options['staticHtml'];
+	}
 	$options['action'] = $stream->actionUrl();
 	$options['method'] = 'put';
-	if (!empty($attribute)) {
-		$field = 'attributes['.urlencode($attribute).']';
-	}
-	$field = 'content';
+	$field = empty($attribute) ? 'content' : 'attributes['.urlencode($attribute).']';
 	switch ($fieldType) {
 		case 'text':
 			$options['fieldInput'] = Q_Html::input($field, $stream->content);
@@ -38,10 +39,6 @@ function Streams_inplace_tool($options)
 			break;
 		default:
 			return "fieldType must be 'textarea' or 'text'";
-			break;
-	}
-	if (!$stream->testWriteLevel('editPending')) {
-		return $options['staticHtml'];
 	}
 	return Q::tool("Q/inplace", $options);
 }

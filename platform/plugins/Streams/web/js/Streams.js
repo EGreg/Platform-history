@@ -598,6 +598,36 @@ Streams.Stream.prototype.join = function(callback) {
 Streams.Stream.prototype.leave = function(callback) {
 	return Streams.Stream.leave(this.fields.publisherId, this.fields.name, callback);
 };
+Streams.Stream.prototype.testReadLevel = function (level) {
+	if (typeof level === 'string') {
+		level = Streams.READ_LEVEL[level];
+	}
+	if (level === undefined) {
+		throw "Streams.Stream.prototype.testReadLevel: level is undefined";
+	}
+	return this.access.readLevel >= level;
+};
+Streams.Stream.prototype.testWriteLevel = function (level) {
+	if (typeof level === 'string') {
+		level = Streams.WRITE_LEVEL[level];
+	}
+	if (level === undefined) {
+		throw "Streams.Stream.prototype.testWriteLevel: level is undefined";
+	}
+	return this.access.writeLevel >= level;
+};
+Streams.Stream.prototype.testAdminLevel = function (level) {
+	if (typeof level === 'string') {
+		level = Streams.ADMIN_LEVEL[level];
+	}
+	if (level === undefined) {
+		throw "Streams.Stream.prototype.testAdminLevel: level is undefined";
+	}
+	return this.access.adminLevel >= level;
+};
+Streams.Stream.prototype.actionUrl = function (what) {
+	return Streams.actionUrl(this.fields.publisherId, this.fields.name, what);
+};
 
 /**
  * Get streams related to a particular stream.
@@ -1539,6 +1569,33 @@ Streams.setupRegisterForm = function(identifier, json, priv, overlay) {
 	return register_form;
 };
 
+/**
+ * A convenience method to get the URL of the streams-related action
+ * @method register
+ * @static
+ * @param {String} publisherId
+ *	The name of the publisher
+ * @param {String} streamName
+ *	The name of the stream
+ * @param {String} what
+ *	Defaults to 'stream'. Can also be 'message', 'relation', etc.
+ * @return {String} 
+ *	The corresponding URL
+ */
+Streams.actionUrl = function(publisherId, streamName, what)
+{
+	if (!what) {
+ 		what = 'stream';
+	}
+	switch (what) {
+		case 'stream':
+		case 'message':
+		case 'relation':
+			return Q.action("Streams/"+what+"?publisherId="+encodeURIComponent(publisherId)+"&name="+encodeURIComponent(streamName));
+	}
+	return null;
+};
+
 function submitClosestForm () {
 	$(this).closest('form').submit();
 	return false;
@@ -1555,27 +1612,9 @@ Q.Tool.define({
 	"Streams/basic": "plugins/Streams/js/tools/basic.js",
 	"Streams/access": "plugins/Streams/js/tools/access.js",
 	"Streams/related": "plugins/Streams/js/tools/related.js",
+	"Streams/inplace": "plugins/Streams/js/tools/inplace.js",
 	"Streams/smalltext/preview": "plugins/Streams/js/tools/smalltext/preview.js",
 	"Streams/image/preview": "plugins/Streams/js/tools/image/preview.js"
-});
-
-Q.Tool.define("Streams/inplace", function () {
-	this.Q_init = function () {
-		var tool = this;
-		var inplace = this.child('Q/inplace');
-		inplace.state.onSave.set(function () {
-			Q.Streams.Message.wait(
-				tool.state.publisherId,
-				tool.state.streamName,
-				-1,
-				function () {
-					tool.state.onUpdate.handle.call(tool);
-				}
-			);
-		}, 'Streams/inplace');
-	};
-}, {
-	onUpdate: new Q.Event()
 });
 
 Q.Tool.define("Streams/preview", function (options) {

@@ -1,71 +1,63 @@
 (function ($, window, document, undefined) {
 
-function _setSelRange(inputEl, selStart, selend) {
-	if ('setSelectionRange' in inputEl) {
-		inputEl.focus();
-		inputEl.setSelectionRange(selStart, selend);
-	} else if (inputEl.createTextRange) {
-		var range = inputEl.createTextRange();
-		range.collapse(true);
-		range.moveEnd('character', selend);
-		range.moveStart('character', selStart);
-		range.select();
-	}
-}
-
-Q.Tool.define("Q/inplace", function (options) {
+Q.Tool.define("Streams/inplace", function (options) {
 	var tool = this, 
 		$te = $(tool.element), 
 		container = $('.Q_inplace_tool_container', $te);
 	if (container.length) {
-		return _Q_inplace_tool_constructor.call(tool, this.element, options);
+		return;
 	}
 	
 	// if activated with JS should have following options:
-	//	- action: required. the form action to save tool value
-	//	- name: required. the name for input field
-	//	- method: request method, defaults to 'PUT'
-	//	- type: type of the input - 'text' or 'textarea', defaults to 'textarea'
+	//  - stream: a Streams.Stream object that was already constructed
+	//	- fieldType: type of the input - 'text' or 'textarea', defaults to 'textarea'
 
-	var o = options;
-	if (!o || !o.action) {
-		return console.error("Q/inplace tool: missing option 'action'", o);
+	var stream = options.stream;
+	if (!stream) {
+		throw "Streams/inplace tool: stream is undefined";
 	}
-	if (!o.fieldName) {
-		return console.error("Q/inplace tool: missing option 'fieldName'", o);
+	if (!stream.testWriteLevel('editPending')) {
+		return; // leave the html that is currently in the element
 	}
-	Q.Template.render('Q/inplace/tool', {
-		classes: function () { return o.editing ? 'Q_editing Q_nocancel' : ''; },
-		staticClass: function () { return o.type === 'textarea' ? 'Q_inplace_tool_blockstatic' : 'Q_inplace_tool_static'; },
-		staticHtml: $te.html(),
-		method: o.method || 'put',
-		action: o.action,
-		fieldName: o.fieldName,
-		textarea: (o.type === 'textarea'),
-		text: function (field) {
-			return $te.html().replaceAll({
-				'<br>': "\n",
-				'<br />': "\n",
-				'&nbsp;': ' '
-			});
-		},
-		type: o.type || 'text'
-	}, function (html) {
-		if (!html) return;
-		$te.html(html);
-		return _Q_inplace_tool_constructor.call(tool, this.element, options);
-	}, {
-		dir: 'plugins/Q/views'
+	
+	var ipo = this.state.inplace = Q.extend(this.state.inplace, {
+		action: stream.actionUrl(),
+		method: 'put',
+		fieldName: options.attribute ? 'attributes['+encodeURIComponent(options.attribute)+']' : 'content'
 	});
+	switch (options.fieldType) {
+		case 'text':
+			ipo.fieldInput = $('<input />').attr('name', ipo.fieldName).val(stream.fields.content);
+			ipo.staticHtml = stream.fields.content.htmlentities();
+			break;
+		case 'textarea':
+			ipo.fieldInput = $('<textarea rows="5" cols="80" />').attr('name', ipo.fieldName).val(stream.fields.content);
+			ipo.staticHtml = stream.fields.content.htmlentities().replace("\n", "<br>");
+			break;
+		default:
+			return "fieldType must be 'textarea' or 'text'";
+	}
+	this.element.appendChild(Q.Tool.element('div', 'Q/inplace', ipo));
+
+	this.Q_init = function () {
+		var tool = this;
+		var inplace = this.child('Q/inplace');
+		inplace.state.onSave.set(function () {
+			Q.Streams.Message.wait(
+				tool.state.publisherId,
+				tool.state.streamName,
+				-1,
+				function () {
+					tool.state.onUpdate.handle.call(tool);
+				}
+			);
+		}, 'Streams/inplace');
+	};
 },
 
 {
-	method: 'put',
-	type: 'textarea',
-	editOnClick: true,
-	selectOnEdit: true,
-	onSave: new Q.Event(),
-	onCancel: new Q.Event()
+	fieldType: 'textarea',
+	onUpdate: new Q.Event()
 }
 
 );

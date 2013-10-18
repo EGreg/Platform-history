@@ -86,6 +86,9 @@ String.prototype.isUrl = function () {
 };
 
 String.prototype.htmlentities = function _String_prototype_htmlentities() {
+	if (!this.length) {
+		return '';
+	}
 	var aStr = this.split(''),
 	i = aStr.length,
 	aRet = [];
@@ -524,7 +527,7 @@ Q.ifSet = function _Q_ifSet(parent, keys, defaultValue) {
 };
 
 /**
- * Tests whether a variable contains a false value,
+ * Tests whether a variable contains a falsy value,
  * or an empty object or array.
  * @param o
  *  The object to test.
@@ -535,6 +538,9 @@ Q.isEmpty = function _Q_isEmpty(o) {
 	}
 	var i, v, t;
 	t = Q.typeOf(o);
+	if (t === 'array') {
+		return (o.length === 0);
+	}
 	if (t === 'object') {
 		for (i in o) {
 			v = o[i];
@@ -543,8 +549,6 @@ Q.isEmpty = function _Q_isEmpty(o) {
 			}
 		}
 		return true;
-	} else if (t === 'array') {
-		return (o.length === 0);
 	}
 	return false;
 };
@@ -1062,9 +1066,6 @@ Q.Event.forTool = {};
 Q.Event.forPage = [];
 Q.Event.jQueryForTool = {};
 Q.Event.jQueryForPage = [];
-Q.Event.currentTool = undefined;
-Q.Event.loadingPage = false;
-Q.Event.activatingPage = false;
 
 Q.Event.prototype.occurred = false;
 
@@ -1088,9 +1089,9 @@ Q.Event.prototype.set = function _Q_Event_prototype_set(callable, key, prepend) 
 	// Only available in the front-end Q.js: {
 	var tool = undefined;
 	if (key === undefined) {
-		key = Q.Event.currentTool; // by default, use the current tool as the key, if any
+		key = Q.Tool.beingActivated; // by default, use the current tool as the key, if any
 	}
-	if ((key === undefined && Q.Event.activatingPage)
+	if ((key === undefined && Q.Page.beingActivated)
 	|| key === true) {
 		Q.Event.forPage.push(this);
 	}
@@ -1810,6 +1811,9 @@ Q.Page = function (uriString) {
 	this.uriString = uriString;
 };
 
+Q.Page.beingLoaded = false;
+Q.Page.beingActivated = false;
+
 /**
  * The root mixin added to all tools.
  * @param [element] the element to activate into a tool
@@ -1830,7 +1834,8 @@ Q.Tool = function _Q_Tool(element, options) {
 
 	// ID and prefix
 	if (!this.element.id) {
-		this.element.id = Q.Tool.defaultIdPrefix + (Q.Tool.nextDefaultId++) + "_tool";
+		var prefix = Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '_';
+		this.element.id = prefix + (Q.Tool.nextDefaultId++) + "_tool";
 	}
 	this.prefix = Q.Tool.prefixById(this.element.id);
 
@@ -1967,6 +1972,8 @@ Q.Tool.define = function (name, ctor, defaultOptions, stateKeys, methods) {
 	return Q.Tool.constructors[name] = ctor;
 };
 
+Q.Tool.beingActivated = undefined;
+
 var _qtdo = {};
 Q.Tool.define.options = function (pluginName) {
 	pluginName = Q.normalize(pluginName);
@@ -2051,7 +2058,6 @@ Q.Tool.jQuery.options = function (pluginName) {
 };
 
 Q.Tool.nextDefaultId = 1;
-Q.Tool.defaultIdPrefix = "Q_Tool_";
 var _qtc = Q.Tool.constructors = Q.constructors;
 
 /**
@@ -2175,27 +2181,40 @@ Q.Tool.prototype.getElementsByClassName = function _Q_Tool_prototype_getElements
 /**
  * Creates a div that can be used to activate a tool
  * For example: $('container').append(Q.Tool.make('Streams/chat')).activate(options);
- * @method Q.Tool.newElement
- * @param {String} tag
- *  The tag of the element, such as "div"
- * @param {String} toolName
+ * @method Q.Tool.element
+ * @param {String|DOMNode} element
+ *  The tag of the element, such as "div", or a reference to an existing DOMNode
+ * @param {String} toolType
  *  The type of the tool, such as "Q/tabs"
- * @param {Object} options
+ * @param {Object} toolOptions
  *  The options for the tool
  * @param {String} id
  *  Optional id of the tool, such as "_2_Q_tabs"
  * @return DOMNode
  *  Returns an element you can append to things
  */
-Q.Tool.newElement = function _Q_tool(tag, toolName, options, id) {
-	if (typeof options === 'string') {
-		id = options;
-		options = undefined;
+Q.Tool.element = function _Q_tool(element, toolType, toolOptions, id) {
+	if (typeof toolOptions === 'string') {
+		id = toolOptions;
+		toolOptions = undefined;
 	}
-	var element = document.createElement('div');
-	element.setAttribute('class', 'Q_tool '+Q.normalize(toolName)+'_tool');
-	if (id) element.setAttribute('id', id);
-	if (options) element.options = options;
+	if (typeof element === 'string') {
+		element = document.createElement(element);
+	}
+	element.setAttribute('class', 'Q_tool '+Q.normalize(toolType)+'_tool');
+	if (!id) {
+		var p1, ntt;
+		ntt = Q.normalize(toolType);
+		p1 = Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '';
+		id = p1 + ntt + "_tool"
+		while (Q.tools[id]) {
+			id = p1 + '_' + (Q.Tool.nextDefaultId++) + '_' + ntt + "_tool";
+		}
+	}
+	element.setAttribute('id', id);
+	if (toolOptions) {
+		element.options = toolOptions;
+	}
 	return element;
 };
 
@@ -2822,7 +2841,7 @@ Q.ready = function _Q_ready() {
 
 			// This is an HTML document loaded from our server
 			try {
-				Q.Event.activatingPage = true;
+				Q.Page.beingActivated = true;
 				Q.onPageActivate('').handle();
 				if (Q.info && Q.info.uri) {
 					var moduleSlashAction = Q.info.uri.module+"/"+Q.info.uri.action;
@@ -2831,9 +2850,9 @@ Q.ready = function _Q_ready() {
 						Q.onPageActivate(Q.info.uriString).handle();
 					}
 				}
-				Q.Event.activatingPage = false;
+				Q.Page.beingActivated = false;
 			} catch (e) {
-				Q.Event.activatingPage = false;
+				Q.Page.beingActivated = false;
 				throw e;
 			}
 			
@@ -2845,15 +2864,15 @@ Q.ready = function _Q_ready() {
 		// This is an HTML document loaded from our server
 		var moduleSlashAction = Q.info.uri.module+"/"+Q.info.uri.action;
 		try {
-			Q.Event.loadingPage = true;
+			Q.Page.beingLoaded = true;
 			Q.onPageLoad('').handle();
 			Q.onPageLoad(moduleSlashAction).handle();
 			if (Q.info.uriString !== moduleSlashAction) {
 				Q.onPageLoad(Q.info.uriString).handle();
 			}
-			Q.Event.loadingPage = false;
+			Q.Page.beingLoaded = false;
 		} catch (e) {
-			Q.Event.loadingPage = false;
+			Q.Page.beingLoaded = false;
 			throw e;
 		}
 		
@@ -3475,7 +3494,9 @@ Q.request.callbacks = []; // used by Q.request
  */
 Q.firstErrorMessage = function _Q_firstErrorMessage(data) {
 	var error = null;
-	if (!data) return;
+	if (Q.isEmpty(data)) {
+		return;
+	}
 	if (data.errors && data.errors[0]) {
 		error = data.errors[0];
 	} else if (data.error) {
@@ -4114,8 +4135,9 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 		if (childrenOptions === Q.find.skipSubtree) {
 			return;
 		}
-		if (typeof childrenOptions == 'undefined')
+		if (childrenOptions === undefined) {
 			childrenOptions = options;
+		}
 	}
 	var children;
 	if ('children' in elem) {
@@ -4354,7 +4376,7 @@ Q.loadUrl = function _Q_loadUrl(url, options)
 					});
 				});
 				try {
-					Q.Event.activatingPage = true;
+					Q.Page.beingActivated = true;
 					Q.onPageActivate('').handle();
 					if (Q.info && Q.info.uri) {
 						var moduleSlashAction = Q.info.uri.module+"/"+Q.info.uri.action;
@@ -4363,9 +4385,9 @@ Q.loadUrl = function _Q_loadUrl(url, options)
 							Q.onPageActivate(Q.info.uriString).handle();
 						}
 					}
-					Q.Event.activatingPage = false;
+					Q.Page.beingActivated = false;
 				} catch (e) {
-					Q.Event.activatingPage = false;
+					Q.Page.beingActivated = false;
 					throw e;
 				}
 				Q.handle(onActivate, this, arguments);
@@ -4400,7 +4422,7 @@ Q.loadUrl = function _Q_loadUrl(url, options)
 				}
 
 				try {
-					Q.Event.loadingPage = true;
+					Q.Page.beingLoaded = true;
 					Q.onPageLoad('').handle();
 					if (Q.info && Q.info.uri) {
 						moduleSlashAction = Q.info.uri.module+"/"+Q.info.uri.action; // new page coming in
@@ -4409,9 +4431,9 @@ Q.loadUrl = function _Q_loadUrl(url, options)
 							Q.onPageLoad(Q.info.uriString).handle();
 						}
 					}
-					Q.Event.loadingPage = false;
+					Q.Page.beingLoaded = false;
 				} catch (e) {
-					Q.Event.loadingPage = false;
+					Q.Page.beingLoaded = false;
 					throw e;
 				}
 			
@@ -4824,13 +4846,13 @@ function _constructTool(toolElement, options, shared) {
     				this.name = toolName;
     				var existingTool = Q.Tool.call(this, element, options);
     				this.state = Q.copy(this.options, toolFunc.stateKeys);
-					var prevTool = Q.Event.currentTool;
-					Q.Event.currentTool = this;
+					var prevTool = Q.Tool.beingActivated;
+					Q.Tool.beingActivated = this;
 					toolFunc.call(this, this.options, existingTool);
-					Q.Event.currentTool = prevTool;
+					Q.Tool.beingActivated = prevTool;
 				} catch (e) {
 					console.warn(e);
-					Q.Event.currentTool = prevTool;
+					Q.Tool.beingActivated = prevTool;
 				}
 				this.constructed = true;
 			};
@@ -6513,7 +6535,7 @@ Q.request.options = {
 	onLoadEnd: new Q.Event(),
 	onCancel: new Q.Event(function (error, response) {
 		var msg;
-		if (msg = Q.firstErrorMessage(error, response)) {
+		if (msg = Q.firstErrorMessage(error)) {
 			console.warn(msg);
 			alert(msg);
 		}

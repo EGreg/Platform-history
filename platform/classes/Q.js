@@ -1056,10 +1056,10 @@ Q.diff = function _Q_diff(container1, container2, /*, ... */ comparator) {
 };
 
 /**
- * Tests whether a variable contains a false value,
+ * Tests whether a variable contains a falsy value,
  * or an empty object or array.
- * @method isEmpty
- * @param o {object} The object to test.
+ * @param o
+ *  The object to test.
  */
 Q.isEmpty = function _Q_isEmpty(o) {
 	if (!o) {
@@ -1067,6 +1067,9 @@ Q.isEmpty = function _Q_isEmpty(o) {
 	}
 	var i, v, t;
 	t = Q.typeOf(o);
+	if (t === 'array') {
+		return (o.length === 0);
+	}
 	if (t === 'object') {
 		for (i in o) {
 			v = o[i];
@@ -1075,8 +1078,6 @@ Q.isEmpty = function _Q_isEmpty(o) {
 			}
 		}
 		return true;
-	} else if (t === 'array') {
-		return (o.length === 0);
 	}
 	return false;
 };
@@ -2598,6 +2599,9 @@ String.prototype.toCapitalized = function _String_prototype_toCapitalized() {
 };
 
 String.prototype.htmlentities = function _String_prototype_htmlentities() {
+	if (!this.length) {
+		return '';
+	}
 	var aStr = this.split(''),
 	i = aStr.length,
 	aRet = [];
