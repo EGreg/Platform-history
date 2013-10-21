@@ -357,50 +357,58 @@ Q.batcher = function _Q_batch(batch, options) {
 		ms: 50
 	}, options);
 	var result = function _Q_batch_result() {
-		var i, j;
-		var callbacks = [], args = [], argmax = 0, cbmax = 0;
+		var requestArguments = arguments;
+		function nextRequest() {
+			var i, j;
+			var callbacks = [], args = [], argmax = 0, cbmax = 0;
 
-		// separate fields and callbacks
-		for (i=0; i<arguments.length; ++i) {
-			if (typeof arguments[i] === 'function') {
-				callbacks.push(arguments[i]);
-			} else {
-				args.push(arguments[i]);
+			// separate fields and callbacks
+			for (i=0; i<requestArguments.length; ++i) {
+				if (typeof requestArguments[i] === 'function') {
+					callbacks.push(requestArguments[i]);
+				} else {
+					args.push(requestArguments[i]);
+				}
 			}
-		}
-		if (!batch.count) batch.count = 0;
-		if (!batch.argmax) batch.argmax = 0;
-		if (!batch.cbmax) batch.cbmax = 0;
+			if (!batch.count) batch.count = 0;
+			if (!batch.argmax) batch.argmax = 0;
+			if (!batch.cbmax) batch.cbmax = 0;
 
-		++batch.count;
-		if (callbacks.length > batch.cbmax) batch.cbmax = callbacks.length;
-		if (args.length > batch.argmax) batch.argmax = args.length;
+			++batch.count;
+			if (callbacks.length > batch.cbmax) batch.cbmax = callbacks.length;
+			if (args.length > batch.argmax) batch.argmax = args.length;
 
-		// collect various arrays for convenience of writing batch functions,
-		// at the expense of extra work and memory
-		if (!batch.subjects) batch.subjects = [];
-		if (!batch.args) batch.args = [];
-		if (!batch.callbacks) batch.callbacks = [];
+			// collect various arrays for convenience of writing batch functions,
+			// at the expense of extra work and memory
+			if (!batch.subjects) batch.subjects = [];
+			if (!batch.args) batch.args = [];
+			if (!batch.callbacks) batch.callbacks = [];
 
-		batch.subjects.push(this);
-		batch.args.push(args);
-		batch.callbacks.push(callbacks);
+			batch.subjects.push(this);
+			batch.args.push(args);
+			batch.callbacks.push(callbacks);
 
-		if (batch.timeout) {
-			clearTimeout(batch.timeout);
+			if (batch.timeout) {
+				clearTimeout(batch.timeout);
+			}
+			function runBatch() {
+				batch.call(this, batch.subjects, batch.args, batch.callbacks);
+				batch.subjects = batch.args = batch.callbacks = null;
+				batch.count = 0;
+				batch.argmax = 0;
+				batch.cbmax = 0;
+			}
+			if (batch.count == o.max) {
+				runBatch();
+			} else {
+				batch.timeout = setTimeout(runBatch, o.ms);
+			} 
 		}
-		function runBatch() {
-			batch.call(this, batch.subjects, batch.args, batch.callbacks);
-			batch.subjects = batch.args = batch.callbacks = null;
-			batch.count = 0;
-			batch.argmax = 0;
-			batch.cbmax = 0;
-		}
-		if (batch.count == o.max) {
-			runBatch();
-		} else {
-			batch.timeout = setTimeout(runBatch, o.ms);
-		}
+		// Make the batcher re-entrant. Without this technique, if 
+		// something is requested while runBatch is calling its callback,
+		// that request's information may be wiped out by runBatch.
+		// The following statement schedules such requests after runBatch has completed.
+		setTimeout(nextRequest, 0);
 	};
 	result.batch = batch;
 	result.cancel = function () {
@@ -460,35 +468,6 @@ function _getKey(args, functions) {
  */
 Q.getter = function _Q_getter(original, options) {
 	
-	Q.extend(result, Q.getter.options, options);
-	
-	var _waiting = {};
-	if (result.cache === false) {
-		// no cache
-		result.cache = null;
-	} else if (result.cache === true) {
-		// create our own Object that will cache locally in the page
-		result.cache = Q.Cache.document(++_Q_getter_i);
-	} else {
-		// assume we were passed an Object that supports the cache interface
-	}
-	
-	result.throttle = result.throttle || null;
-	if (result.throttle === true) {
-		result.throttle = '';
-	}
-	if (typeof result.throttle === 'string') {
-		// use our own objects
-		if (!Q.getter.throttles[result.throttle]) {
-			Q.getter.throttles[result.throttle] = {};
-		}
-		result.throttle = Q.getter.throttles[result.throttle];
-	}
-
-	if (typeof JSON === 'undefined' || !JSON.stringify) {
-		throw new Error("Need JSON.stringify to be defined");
-	}
-
 	function result() {
 		var i, j, key, that = this, arguments2 = Array.prototype.slice.call(arguments);
 		var callbacks = [];
@@ -507,8 +486,7 @@ Q.getter = function _Q_getter(original, options) {
 
 		// if caching required check the cache -- maybe the result is there
 		if (result.cache) {
-			cached = result.cache.get(key);
-			if (cached) {
+			if (cached = result.cache.get(key)) {
 				cbpos = cached.cbpos;
 				if (callbacks[cbpos]) {
 					callbacks[cbpos].apply(cached.subject, cached.params);
@@ -611,7 +589,36 @@ Q.getter = function _Q_getter(original, options) {
 		} else {
 			return 1;
 		}
-	};
+	}
+	
+	Q.extend(result, Q.getter.options, options);
+	
+	var _waiting = {};
+	if (result.cache === false) {
+		// no cache
+		result.cache = null;
+	} else if (result.cache === true) {
+		// create our own Object that will cache locally in the page
+		result.cache = Q.Cache.document(++_Q_getter_i);
+	} else {
+		// assume we were passed an Object that supports the cache interface
+	}
+	
+	result.throttle = result.throttle || null;
+	if (result.throttle === true) {
+		result.throttle = '';
+	}
+	if (typeof result.throttle === 'string') {
+		// use our own objects
+		if (!Q.getter.throttles[result.throttle]) {
+			Q.getter.throttles[result.throttle] = {};
+		}
+		result.throttle = Q.getter.throttles[result.throttle];
+	}
+
+	if (typeof JSON === 'undefined' || !JSON.stringify) {
+		throw new Error("Need JSON.stringify to be defined");
+	}
 
 	result.forget = function _forget() {
 		var key = _getKey(arguments);
@@ -2257,17 +2264,18 @@ Q.time = function _Q_time(handle) {
  * @return {string|null}
  */
 Q.timeEnd = function _Q_timeEnd(handle) {
-	if (timeHandles[handle]) {
-		var diff = (new Date()).getTime() - timeHandles[handle];
-		var days = Math.floor(diff / 1000 / 60 / 60 / 24);
-		var hours = Math.floor(diff / 1000 / 60 / 60 - (24 * days));
-		var minutes = Math.floor(diff / 1000 / 60 - (24 * 60 * days) - (60 * hours));
-		var seconds = Math.floor(diff / 1000 - (24 * 60 * 60 * days) - (60 * 60 * hours) - (60 * minutes));
-		return 	((days > 0) ? days+" days " : '') +
-				((days+hours > 0) ? hours+" hours " : '') +
-				((days+hours+minutes > 0) ? minutes+" minutes " : '') +
-				((days+hours+minutes+seconds > 0) ? seconds+" seconds" : diff+" milliseconds");
-	} else return null;
+	if (!timeHandles[handle]) {
+		return null;
+	}
+	var diff = (new Date()).getTime() - timeHandles[handle];
+	var days = Math.floor(diff / 1000 / 60 / 60 / 24);
+	var hours = Math.floor(diff / 1000 / 60 / 60 - (24 * days));
+	var minutes = Math.floor(diff / 1000 / 60 - (24 * 60 * days) - (60 * hours));
+	var seconds = Math.floor(diff / 1000 - (24 * 60 * 60 * days) - (60 * 60 * hours) - (60 * minutes));
+	return 	((days > 0) ? days+" days " : '') +
+			((days+hours > 0) ? hours+" hours " : '') +
+			((days+hours+minutes > 0) ? minutes+" minutes " : '') +
+			((days+hours+minutes+seconds > 0) ? seconds+" seconds" : diff+" milliseconds");
 };
 
 String.prototype.replaceAll = function _String_prototype_replaceAll(pairs) {
@@ -2599,22 +2607,7 @@ String.prototype.toCapitalized = function _String_prototype_toCapitalized() {
 };
 
 String.prototype.htmlentities = function _String_prototype_htmlentities() {
-	if (!this.length) {
-		return '';
-	}
-	var aStr = this.split(''),
-	i = aStr.length,
-	aRet = [];
-
-	while (--i) {
-		var iC = aStr[i].charCodeAt();
-		if (iC < 65 || iC > 127 || (iC>90 && iC<97)) {
-			aRet.push('&#'+iC+';');
-		} else {
-			aRet.push(aStr[i]);
-		}
-	}
-	return aRet.reverse().join('');
+	return this.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 };
 
 String.prototype.quote = function _String_prototype_quote() {

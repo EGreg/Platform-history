@@ -24,6 +24,7 @@ function Streams_stream_put($params) {
 	$stream->publisherId = $publisherId;
 	$stream->name = $name;
 	$retrieved = $stream->retrieve();
+	$original = $stream->toArray();
 	
 	if (!$retrieved) {
 		throw new Q_Exception_MissingRow(array(
@@ -70,11 +71,18 @@ function Streams_stream_put($params) {
 	$stream->save();
 	
 	$to_save = $stream->toArray();
-	unset($to_save['content']);
+	$instructions = array();
+	foreach ($to_save as $k => $v) {
+		if (json_encode($original[$k]) !== json_encode($v)) {
+			$instructions[$k] = $v;
+		}
+	}
+	unset($instructions['updatedTime']);
+	
 	$stream->post($user->id, array(
 		'type' => 'Streams/edited',
 		'content' => '',
-		'instructions' => json_encode($to_save)
+		'instructions' => json_encode($instructions)
 	), true);
 	
 	$stream->retrieve(); // for now we have to do fetch the stream again, because stream's messageCount has updated

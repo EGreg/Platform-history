@@ -31,19 +31,21 @@ Q.Tool.define("Q/inplace", function (options) {
 	if (!o || !o.action) {
 		return console.error("Q/inplace tool: missing option 'action'", o);
 	}
-	if (!o.fieldName) {
-		return console.error("Q/inplace tool: missing option 'fieldName'", o);
+	if (!o.field) {
+		return console.error("Q/inplace tool: missing option 'field'", o);
 	}
+	var staticHtml = o.staticHtml || $te.html();
+	var staticClass = o.type === 'textarea' ? 'Q_inplace_tool_blockstatic' : 'Q_inplace_tool_static';
 	Q.Template.render('Q/inplace/tool', {
 		classes: function () { return o.editing ? 'Q_editing Q_nocancel' : ''; },
-		staticClass: function () { return o.type === 'textarea' ? 'Q_inplace_tool_blockstatic' : 'Q_inplace_tool_static'; },
-		staticHtml: $te.html(),
+		staticClass: staticClass,
+		staticHtml: staticHtml,
 		method: o.method || 'put',
 		action: o.action,
-		fieldName: o.fieldName,
+		field: o.field,
 		textarea: (o.type === 'textarea'),
 		text: function (field) {
-			return $te.html().replaceAll({
+			return staticHtml.replaceAll({
 				'<br>': "\n",
 				'<br />': "\n",
 				'&nbsp;': ' '

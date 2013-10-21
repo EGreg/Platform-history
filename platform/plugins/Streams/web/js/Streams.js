@@ -223,20 +223,8 @@ function _connectSockets(fetchLatestMessages) {
 			
 			// If the stream was cached, fetch latest messages,
 			// and replay their being "posted" to trigger the right events
-			Q.Streams.get.cache.each([p.publisherId, p.streamName], function () {
-				Q.Streams.Message.get(p.publisherId, p.streamName, {
-					min: Q.Streams.Message.latestOrdinal(p.publisherId, p.streamName)+1,
-					max: -1
-				}, function (err, messages) {
-					// Go through the messages and simulate the posting
-					// NOTE: the messages will arrive a lot quicker than they were posted,
-					// and moreover without browser refresh cycles in between,
-					// which may cause confusion in some visual representations
-					// until things settle down on the screen
-					Q.each(messages, function (ordinal, message) {
-						Q.Streams.onEvent('post').handle(message);
-					}, {ascending: true, numeric: true});
-				});
+			Streams.get.cache.each([p.publisherId, p.streamName], function () {
+				Streams.Message.wait(p.publisherId, p.streamName, -1);
 			});
 		});
 	});
@@ -1251,11 +1239,11 @@ Streams.Message.wait = function(publisherId, streamName, ordinal, callback, opti
 	var alreadyCalled = false, handlerKey;
 	var latest = Streams.Message.latestOrdinal(publisherId, streamName);
 	if (!latest) {
-		callback(); // There is no cache for this stream, so we won't wait for previous messages.
+		Q.handle(callback); // There is no cache for this stream, so we won't wait for previous messages.
 		return false;
 	}
 	if (ordinal >= 0 && ordinal <= latest) {
-		callback(); // The cached stream already got this message
+		Q.handle(callback); // The cached stream already got this message
 		return true;
 	}
 	var o = Q.extend({}, Streams.Message.wait.options, options);
@@ -1282,7 +1270,7 @@ Streams.Message.wait = function(publisherId, streamName, ordinal, callback, opti
 		var p = new Q.Pipe(ordinals, function () {
 			// they all arrived
 			if (!alreadyCalled) {
-				callback();
+				Q.handle(callback);
 			}
 			alreadyCalled = true;
 			return true;
@@ -1297,14 +1285,24 @@ Streams.Message.wait = function(publisherId, streamName, ordinal, callback, opti
 		// var filled = Q.Object(pipe.subjects),
 		//	 remaining = Q.diff(ordinals, filled);
 		// but we are going to request the entire range.
+		
 		Streams.Message.get(publisherId, streamName, {min: latest+1, max: ordinal}, function (err, messages) {
+			// Go through the messages and simulate the posting
+			// NOTE: the messages will arrive a lot quicker than they were posted,
+			// and moreover without browser refresh cycles in between,
+			// which may cause confusion in some visual representations
+			// until things settle down on the screen
+			Q.each(messages, function (ordinal, message) {
+				Q.Streams.onEvent('post').handle(message);
+			}, {ascending: true, numeric: true});
+			
+			// remove any event handlers still waiting for the event to be posted
 			if (messages && messages[ordinal]) {
-				// remove any event handlers still waiting for the event to be posted
 				Q.each(waiting, function (i, w) {
 					w[0].remove(w[1]);
 				});
 				if (!alreadyCalled) {
-					callback();
+					Q.handle(callback);
 				}
 				alreadyCalled = true;
 			}
@@ -1851,11 +1849,10 @@ Q.onInit.add(function _Streams_onInit() {
 					}
 					break;
 				case 'Streams/edited':
+					var publisherId = stream.fields.publisherId,
+						streamName = stream.fields.name;
 					// events about updated fields
 					for (k in fields) {
-						if (JSON.stringify(fields[k]) == JSON.stringify(stream.fields[k])) {
-							continue;
-						}
 						Q.handle(
 							Q.getObject([publisherId, streamName, k], _streamFieldChangedHandlers),
 							stream,

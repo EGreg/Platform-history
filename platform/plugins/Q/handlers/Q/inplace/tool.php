@@ -5,7 +5,7 @@
  * @param array $options
  *  An associative array of parameters, containing:
  *  "fieldInput" => Required. HTML representing a text input, textarea, or select.
- *  "fieldType" => Required. The type of the fieldInput. Can be "textarea", "text" or "select"
+ *  "type" => Required. The type of the type. Can be "textarea", "text" or "select"
  *  "staticHtml" => Required. The static HTML to display when the input isn't showing.
  *  "action" => Defaults to "". The uri or url to submit to
  *  "method" => Defaults to "put". The method to use for submitting the form.
@@ -23,11 +23,11 @@ function Q_inplace_tool($options)
 	$method = 'put';
 	$fieldInput = '';
 	$staticHtml = '';
-	$fieldType = 'textarea';
+	$type = 'textarea';
 	$editOnClick = true;
 	$selectOnEdit = true;
 	extract($options);
-	$staticClass = ($fieldType === 'textarea')
+	$staticClass = ($type === 'textarea')
 		? 'Q_inplace_tool_blockstatic'
 		: 'Q_inplace_tool_static';
 	Q_Response::addScript('plugins/Q/js/tools/inplace.js');

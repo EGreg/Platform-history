@@ -85,23 +85,8 @@ String.prototype.isUrl = function () {
 	return this.match(new RegExp("^[A-Za-z]*:\/\/"));
 };
 
-String.prototype.htmlentities = function _String_prototype_htmlentities() {
-	if (!this.length) {
-		return '';
-	}
-	var aStr = this.split(''),
-	i = aStr.length,
-	aRet = [];
-
-	while (--i) {
-		var iC = aStr[i].charCodeAt();
-		if (iC < 65 || iC > 127 || (iC>90 && iC<97)) {
-			aRet.push('&#'+iC+';');
-		} else {
-			aRet.push(aStr[i]);
-		}
-	}
-	return aRet.reverse().join('');
+String.prototype.htmlentities = function _String_prototype_htmlentities(quote_style, charset, double_encode) {
+	return this.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 };
 
 String.prototype.quote = function _String_prototype_quote() {
@@ -1468,50 +1453,58 @@ Q.batcher = function _Q_batch(batch, options) {
 		ms: 50
 	}, options);
 	var result = function _Q_batch_result() {
-		var i, j;
-		var callbacks = [], args = [], argmax = 0, cbmax = 0;
+		var requestArguments = arguments;
+		function nextRequest() {
+			var i, j;
+			var callbacks = [], args = [], argmax = 0, cbmax = 0;
 
-		// separate fields and callbacks
-		for (i=0; i<arguments.length; ++i) {
-			if (typeof arguments[i] === 'function') {
-				callbacks.push(arguments[i]);
-			} else {
-				args.push(arguments[i]);
+			// separate fields and callbacks
+			for (i=0; i<requestArguments.length; ++i) {
+				if (typeof requestArguments[i] === 'function') {
+					callbacks.push(requestArguments[i]);
+				} else {
+					args.push(requestArguments[i]);
+				}
 			}
-		}
-		if (!batch.count) batch.count = 0;
-		if (!batch.argmax) batch.argmax = 0;
-		if (!batch.cbmax) batch.cbmax = 0;
+			if (!batch.count) batch.count = 0;
+			if (!batch.argmax) batch.argmax = 0;
+			if (!batch.cbmax) batch.cbmax = 0;
 
-		++batch.count;
-		if (callbacks.length > batch.cbmax) batch.cbmax = callbacks.length;
-		if (args.length > batch.argmax) batch.argmax = args.length;
+			++batch.count;
+			if (callbacks.length > batch.cbmax) batch.cbmax = callbacks.length;
+			if (args.length > batch.argmax) batch.argmax = args.length;
 
-		// collect various arrays for convenience of writing batch functions,
-		// at the expense of extra work and memory
-		if (!batch.subjects) batch.subjects = [];
-		if (!batch.args) batch.args = [];
-		if (!batch.callbacks) batch.callbacks = [];
+			// collect various arrays for convenience of writing batch functions,
+			// at the expense of extra work and memory
+			if (!batch.subjects) batch.subjects = [];
+			if (!batch.args) batch.args = [];
+			if (!batch.callbacks) batch.callbacks = [];
 
-		batch.subjects.push(this);
-		batch.args.push(args);
-		batch.callbacks.push(callbacks);
+			batch.subjects.push(this);
+			batch.args.push(args);
+			batch.callbacks.push(callbacks);
 
-		if (batch.timeout) {
-			clearTimeout(batch.timeout);
+			if (batch.timeout) {
+				clearTimeout(batch.timeout);
+			}
+			function runBatch() {
+				batch.call(this, batch.subjects, batch.args, batch.callbacks);
+				batch.subjects = batch.args = batch.callbacks = null;
+				batch.count = 0;
+				batch.argmax = 0;
+				batch.cbmax = 0;
+			}
+			if (batch.count == o.max) {
+				runBatch();
+			} else {
+				batch.timeout = setTimeout(runBatch, o.ms);
+			} 
 		}
-		function runBatch() {
-			batch.call(this, batch.subjects, batch.args, batch.callbacks);
-			batch.subjects = batch.args = batch.callbacks = null;
-			batch.count = 0;
-			batch.argmax = 0;
-			batch.cbmax = 0;
-		}
-		if (batch.count == o.max) {
-			runBatch();
-		} else {
-			batch.timeout = setTimeout(runBatch, o.ms);
-		}
+		// Make the batcher re-entrant. Without this technique, if 
+		// something is requested while runBatch is calling its callback,
+		// that request's information may be wiped out by runBatch.
+		// The following statement schedules such requests after runBatch has completed.
+		setTimeout(nextRequest, 0);
 	};
 	result.batch = batch;
 	result.cancel = function () {
@@ -1551,9 +1544,10 @@ Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotN
 		var fields = {};
 		fields[fieldName] = data;
 		Q.req(baseUrl+tail, slotName, function (err, response) {
-			if (err) {
+			var error = err || response.errors;
+			if (error) {
 				Q.each(callbacks, function (k, cb) {
-					cb[0].call(this, err);
+					cb[0].call(this, error);
 				});
 				return;
 			}
@@ -1620,30 +1614,6 @@ function _getKey(args, functions) {
  */
 Q.getter = function _Q_getter(original, options) {
 
-	Q.extend(result, Q.getter.options, options);
-
-	var _waiting = {};
-	if (result.cache === false) {
-		// no cache
-		result.cache = null;
-	} else if (result.cache === true) {
-		// create our own Object that will cache locally in the page
-		result.cache = Q.Cache.document(++_Q_getter_i);
-	} else {
-		// assume we were passed an Object that supports the cache interface
-	}
-
-	result.throttle = result.throttle || null;
-	if (result.throttle === true) {
-		result.throttle = '';
-	}
-	if (typeof result.throttle === 'string') {
-		// use our own objects
-		if (!Q.getter.throttles[result.throttle]) {
-			Q.getter.throttles[result.throttle] = {};
-		}
-		result.throttle = Q.getter.throttles[result.throttle];
-	}
 
 	function result() {
 		var i, j, key, that = this, arguments2 = Array.prototype.slice.call(arguments);
@@ -1663,8 +1633,7 @@ Q.getter = function _Q_getter(original, options) {
 
 		// if caching required check the cache -- maybe the result is there
 		if (result.cache) {
-			cached = result.cache.get(key);
-			if (cached) {
+			if (cached = result.cache.get(key)) {
 				cbpos = cached.cbpos;
 				if (callbacks[cbpos]) {
 					callbacks[cbpos].apply(cached.subject, cached.params);
@@ -1767,6 +1736,31 @@ Q.getter = function _Q_getter(original, options) {
 		} else {
 			return 1;
 		}
+	}
+
+	Q.extend(result, Q.getter.options, options);
+
+	var _waiting = {};
+	if (result.cache === false) {
+		// no cache
+		result.cache = null;
+	} else if (result.cache === true) {
+		// create our own Object that will cache locally in the page
+		result.cache = Q.Cache.document(++_Q_getter_i);
+	} else {
+		// assume we were passed an Object that supports the cache interface
+	}
+
+	result.throttle = result.throttle || null;
+	if (result.throttle === true) {
+		result.throttle = '';
+	}
+	if (typeof result.throttle === 'string') {
+		// use our own objects
+		if (!Q.getter.throttles[result.throttle]) {
+			Q.getter.throttles[result.throttle] = {};
+		}
+		result.throttle = Q.getter.throttles[result.throttle];
 	}
 
 	result.forget = function _forget() {
@@ -2201,15 +2195,16 @@ Q.Tool.element = function _Q_tool(element, toolType, toolOptions, id) {
 	if (typeof element === 'string') {
 		element = document.createElement(element);
 	}
-	element.setAttribute('class', 'Q_tool '+Q.normalize(toolType)+'_tool');
+	var ntt = toolType.replace('/', '_');
+	element.setAttribute('class', 'Q_tool '+ntt+'_tool');
 	if (!id) {
-		var p1, ntt;
-		ntt = Q.normalize(toolType);
+		var p1, p2;
 		p1 = Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '';
-		id = p1 + ntt + "_tool"
-		while (Q.tools[id]) {
-			id = p1 + '_' + (Q.Tool.nextDefaultId++) + '_' + ntt + "_tool";
+		p2 = p1 + ntt + '_';
+		while (Q.tools[p2]) {
+			p2 = p1 + '_' + (Q.Tool.nextDefaultId++) + '_' + ntt + '_';
 		}
+		id = p2 + 'tool';
 	}
 	element.setAttribute('id', id);
 	if (toolOptions) {
@@ -3423,15 +3418,11 @@ Q.request = function (url, slotNames, callback, options) {
 			    }
 				var method = options.method || 'GET';
 				var overrides = {
-					method: options.method,
 					loadExtras: !!options.loadExtras
 				};
-				if (method !== 'GET') {
-					method = 'POST'; // browsers don't always support other HTTP verbs
-					overrides = {
-						method: options.method,
-						loadExtras: !!options.loadExtras
-					};
+				if (method.toUpperCase() !== 'GET') {
+					method = 'POST'; // browsers don't always support other HTTP verbs;
+					overrides.method = options.method;
 				}
 				if (typeof options.xhr === 'function') {
 					options.xhr.call(xmlhttp, xmlhttp, options);
@@ -3446,7 +3437,11 @@ Q.request = function (url, slotNames, callback, options) {
 				}
 			    xmlhttp.open(method.toUpperCase(), url, sync);
 				if (options.fields) {
-					xmlhttp.send(options.fields);
+					var content = Q.serializeFields(options.fields);
+					xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+					//xmlhttp.setRequestHeader("Content-length", content.length);
+					//xmlhttp.setRequestHeader("Connection", "close");
+					xmlhttp.send(content);
 				} else {
 					xmlhttp.send();
 				}
