@@ -222,6 +222,7 @@ Q.Pipe = function _Q_Pipe(requires, maxTimes, callback) {
  * @param callback Function
  *  Once all required fields are filled (see previous parameter, if any)
  *  this function is called every time something is piped.
+ *  It is passed three arguments: (params, subjects, requires)
  *  If you return false from this function, it will no longer be called for future pipe runs.
  *  If you return true from this function, it will delete all the callbacks in the pipe.
  * @param requires2 Array

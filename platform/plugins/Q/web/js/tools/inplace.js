@@ -36,27 +36,32 @@ Q.Tool.define("Q/inplace", function (options) {
 	}
 	var staticHtml = o.staticHtml || $te.html();
 	var staticClass = o.type === 'textarea' ? 'Q_inplace_tool_blockstatic' : 'Q_inplace_tool_static';
-	Q.Template.render('Q/inplace/tool', {
-		classes: function () { return o.editing ? 'Q_editing Q_nocancel' : ''; },
-		staticClass: staticClass,
-		staticHtml: staticHtml,
-		method: o.method || 'put',
-		action: o.action,
-		field: o.field,
-		textarea: (o.type === 'textarea'),
-		text: function (field) {
-			return staticHtml.replaceAll({
-				'<br>': "\n",
-				'<br />': "\n",
-				'&nbsp;': ' '
-			});
+	Q.Template.render(
+		'Q/inplace/tool',
+		{
+			classes: function () { return o.editing ? 'Q_editing Q_nocancel' : ''; },
+			staticClass: staticClass,
+			staticHtml: staticHtml,
+			method: o.method || 'put',
+			action: o.action,
+			field: o.field,
+			textarea: (o.type === 'textarea'),
+			text: function (field) {
+				return staticHtml.replaceAll({
+					'<br>': "\n",
+					'<br />': "\n",
+					'&nbsp;': ' '
+				});
+			},
+			type: o.type || 'text'
 		},
-		type: o.type || 'text'
-	}, function (html) {
-		if (!html) return;
-		$te.html(html);
-		return _Q_inplace_tool_constructor.call(tool, this.element, options);
-	}, o.template);
+		function (err, html) {
+			if (!html) return;
+			$te.html(html);
+			return _Q_inplace_tool_constructor.call(tool, this.element, options);
+		}, 
+		o.template
+	);
 },
 
 {
@@ -64,11 +69,12 @@ Q.Tool.define("Q/inplace", function (options) {
 	type: 'textarea',
 	editOnClick: true,
 	selectOnEdit: true,
-	onSave: new Q.Event(),
-	onCancel: new Q.Event(),
 	template: {
-		dir: 'plugins/Q/views'
-	}
+		dir: 'plugins/Q/views',
+		name: 'Q/inplace/tool'
+	},
+	onSave: new Q.Event(),
+	onCancel: new Q.Event()
 }
 
 );

@@ -69,7 +69,7 @@ function _Streams_related_tool (options)
         
         function relatedResult(err) {
             if (err) {
-                console.log(err[0].message);
+                console.log(Q.firstErrorMessage(err));
                 return;
             }
             var result = this;

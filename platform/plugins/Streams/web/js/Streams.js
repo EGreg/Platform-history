@@ -688,8 +688,9 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 		streamName: streamName
 	});
 	Q.req('Streams/related', slotNames, function (err, data) {
-		if (err) {
-			return callback && callback.call(this, err);
+		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		if (msg) {
+			return callback && callback.call(this, msg);
 		}
 		if (cached && cached.subject) {
 			_processResults(null, cached.subject);
@@ -705,8 +706,9 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 		}
 
 		function _processResults(err, stream) {
-			if (err) {
-				return callback && callback.call(data, err);
+			var msg = Q.firstErrorMessage(err);
+			if (msg) {
+				return callback && callback.call(this, msg);
 			}
 			
 			// Construct related streams from data that has been returned
@@ -1779,7 +1781,7 @@ Q.onInit.add(function _Streams_onInit() {
 			Streams.get(msg.publisherId, msg.streamName, function (err) {
 
 				if (err) {
-					console.warn(err.message);
+					console.warn(Q.firstErrorMessage(err));
 					console.log(err);
 					return;
 				}

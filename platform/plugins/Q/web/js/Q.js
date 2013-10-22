@@ -24,7 +24,7 @@ Q.text = {
 	Q: {
 		"request": {
 			"error": "Error {{status}} during request",
-			"404": "Not found",
+			"404": "Not found: {{url}}",
 			"0": "Request interrupted"
 		}
 	}
@@ -1309,6 +1309,7 @@ Q.Pipe = function _Q_Pipe(requires, maxTimes, callback) {
  * @param callback Function
  *  Once all required fields are filled (see previous parameter, if any)
  *  this function is called every time something is piped.
+ *  It is passed three arguments: (params, subjects, requires)
  *  If you return false from this function, it will no longer be called for future pipe runs.
  *  If you return true from this function, it will delete all the callbacks in the pipe.
  * @param requires2 Array
@@ -3372,7 +3373,8 @@ Q.request = function (url, slotNames, callback, options) {
 		}
 		
 		function _onCancel (status, msg) {
-			var msg = msg || Q.text.Q.request[status] || Q.text.Q.request.error.interpolate({'status': status});
+			var msg = msg || Q.text.Q.request[status] || Q.text.Q.request.error;
+			msg = msg.interpolate({'status': status, 'url': url})
 			t.cancelled = true;
 			_onLoad();
 			var errors = {
@@ -3403,10 +3405,11 @@ Q.request = function (url, slotNames, callback, options) {
 			        }
 			    }
 				var method = options.method || 'GET';
+				var um = method.toUpperCase();
 				var overrides = {
 					loadExtras: !!options.loadExtras
 				};
-				if (method.toUpperCase() !== 'GET') {
+				if (um !== 'GET') {
 					method = 'POST'; // browsers don't always support other HTTP verbs;
 					overrides.method = options.method;
 				}
@@ -3421,15 +3424,16 @@ Q.request = function (url, slotNames, callback, options) {
 				if (o.extend !== false) {
 					url = Q.ajaxExtend(url, slotNames, overrides);
 				}
-			    xmlhttp.open(method.toUpperCase(), url, sync);
-				if (options.fields) {
-					var content = Q.serializeFields(options.fields);
+				var content = Q.serializeFields(options.fields);
+				if (um === 'GET') {
+					xmlhttp.open('GET', url + (content ? '&' + content : ''), sync);
+					xmlhttp.send();
+				} else {
+			    	xmlhttp.open(um, url, sync);
 					xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 					//xmlhttp.setRequestHeader("Content-length", content.length);
 					//xmlhttp.setRequestHeader("Connection", "close");
 					xmlhttp.send(content);
-				} else {
-					xmlhttp.send();
 				}
 			}
 
@@ -3546,6 +3550,9 @@ Q.sameDomain = function _Q_sameDomain (url1, url2, options) {
  *  A shallow object of key/value pairs
  */
 Q.serializeFields = function _Q_serializeFields(fields) {
+	if (Q.isEmpty(fields)) {
+		return '';
+	}
     var parts = [];
 	function _params(prefix, obj) {
 		if (Q.typeOf(obj) === "array") {
@@ -5023,7 +5030,7 @@ Q.Template.render = function _Q_Template_render(name, fields, partials, callback
 			if (params.template[0]) {
 				return callback(null);
 			}
-			callback(Mustache.render(params.template[1], fields, params.partials[0]));
+			callback(null, Mustache.render(params.template[1], fields, params.partials[0]));
 		});
 		Q.Template.load(name, p.fill('template'), options);
 		// pipe for partials

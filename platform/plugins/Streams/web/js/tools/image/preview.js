@@ -25,29 +25,26 @@ Q.Tool.define("Streams/image/preview", function(options) {
 		this.element.style.height = parts[1] + "px";
 	}
 	tool.element.innerHTML = '';
-	// load template here  dir: 'plugins/Streams/views' name: 'image/preview' by default
-	// and activate it
-	var img = document.createElement('img');
-	img.setAttribute('alt', 'loading');
-	img.setAttribute('src', Q.url(options.throbber));
-	img.style.opacity = 0.5;
-	tool.element.appendChild(img);
-	Q.Streams.get(tool.state.publisherId, tool.state.streamName, function (err) {
+	var p = Q.pipe(['html', 'stream'], function (params, subjects) {
+		var err = params.stream[0];
 		if (err) {
 			return console.warn(err);
 		}
+		var stream = subjects.stream;
+		var html = params.html[1];
+		
 		if (!options.imagepicker.saveSizeName) {
 			options.imagepicker.saveSizeName = {}
 			Q.each(Q.Streams.image.sizes, function (i, size) {
 				options.imagepicker.saveSizeName[size] = size;
 			});
 		}
-		tool.stream = this;
+		tool.stream = stream;
 		tool.refresh();
-		this.onFieldChanged('icon').set(function () {
+		stream.onFieldChanged('icon').set(function () {
 			tool.refresh();
 		});
-		if (this.access.writeLevel >= Q.Streams.WRITE_LEVEL.editPending) {
+		if (stream.access.writeLevel >= Q.Streams.WRITE_LEVEL.editPending) {
 			var ipo = Q.extend({}, options.imagepicker, {
 				preprocess: function (callback) {
 					if (tool.state.streamName) {
@@ -55,8 +52,8 @@ Q.Tool.define("Streams/image/preview", function(options) {
 							if (err) {
 								return console.warn(err);
 							}
-							tool.stream = this;
-							callback({subpath: 'streams/' + this.fields.publisherId + '/' + this.fields.name});
+							tool.stream = stream;
+							callback({subpath: 'streams/' + stream.fields.publisherId + '/' + stream.fields.name});
 						});
 					}
 					Streams.create({
@@ -66,10 +63,10 @@ Q.Tool.define("Streams/image/preview", function(options) {
 						if (err) {
 							return console.warn(err);
 						}
-						tool.state.publisherId = this.publisherId;
-						tool.state.streamName = this.name;
-						tool.stream = this;
-						callback({subpath: 'streams/' + this.publisherId + '/' + this.name});
+						tool.state.publisherId = stream.publisherId;
+						tool.state.streamName = stream.name;
+						tool.stream = stream;
+						callback({subpath: 'streams/' + stream.publisherId + '/' + stream.name});
 					}, tool.state.related);
 				},
 				onSuccess: function (data, key) {
@@ -86,6 +83,20 @@ Q.Tool.define("Streams/image/preview", function(options) {
 			tool.$('img').plugin('Q/imagepicker', ipo);
 		}
 	});
+	Q.Template.render(
+		'Streams/image/preview/tool',
+		{
+			
+		},
+		p.fill('html'),
+		options.template
+	);
+	var img = document.createElement('img');
+	img.setAttribute('alt', 'loading');
+	img.setAttribute('src', Q.url(options.throbber));
+	img.style.opacity = 0.5;
+	tool.element.appendChild(img);
+	Q.Streams.get(tool.state.publisherId, tool.state.streamName, p.fill('stream'));
 },
 
 {
@@ -93,8 +104,12 @@ Q.Tool.define("Streams/image/preview", function(options) {
 	editable: false,
 	imagepicker: {},
 	showFile: null,
+	template: {
+		dir: 'plugins/Streams/views',
+		name: 'Streams/image/preview/tool'
+	},
 	throbber: "plugins/Q/img/throbbers/spinner_sticky_gray.gif",
-	onUpdate: new Q.Event()
+	onUpdate: new Q.Event(),
 },
 
 {
