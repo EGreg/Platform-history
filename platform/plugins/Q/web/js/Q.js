@@ -2796,20 +2796,6 @@ Q.ready = function _Q_ready() {
 			return;
 		}
 
-        // Move a bunch of tags to their respective slots
-        Q.each(['link', 'style', 'script'], function (i, tag) {
-            var elements, len, j, e, slot, parent;
-            elements = document.getElementsByTagName(tag);
-            len = elements.length;
-            for (j=0; j<len; ++j) {
-                e = elements[j];
-                slot = elements[j].getAttribute('data-slot');
-                if (parent = document.getElementById(slot + '_slot')) {
-                    parent.appendChild(e);
-                }
-            }
-        });
-
 		// Try to add the plugin thing again
 		Q.jQueryPluginPlugin();
 
@@ -4366,7 +4352,8 @@ Q.loadUrl = function _Q_loadUrl(url, options)
 						if (!slotName) return;
 						Q.each(arr, function (i, element) {
 							if (!element) return;
-							domElements[slotName].appendChild(element);
+							// domElements[slotName].appendChild(element);
+							element.setAttribute('data-slot', slotName);
 						});
 					});
 				});
@@ -4481,6 +4468,16 @@ Q.loadUrl = function _Q_loadUrl(url, options)
 					}
 				}
 			}
+			
+			// Remove various tags belonging to the slots that are being reloaded
+	        Q.each(['link', 'style', 'script'], function (i, tag) {
+				Q.each(document.getElementsByTagName(tag), function (k, e) {
+			        var slot = e.getAttribute('data-slot');
+					if (slot && slotNames.indexOf(slot) >= 0) {
+						Q.removeElement(e);
+					}
+				});
+	        });
 			
 			Q.Event.jQueryForPage = [];
 			var domElements = handler(response); // this is where we fill all the slots
