@@ -25,6 +25,8 @@ Q.Tool.define("Streams/image/preview", function(options) {
 		this.element.style.height = parts[1] + "px";
 	}
 	tool.element.innerHTML = '';
+	// load template here  dir: 'plugins/Streams/views' name: 'image/preview' by default
+	// and activate it
 	var img = document.createElement('img');
 	img.setAttribute('alt', 'loading');
 	img.setAttribute('src', Q.url(options.throbber));

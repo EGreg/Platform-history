@@ -4921,23 +4921,26 @@ Q.Template.collection = {};
 
 /**
  * Load template from server and store to cache
- * @param template {String} The template name
+ * @param name {String} The template name
  * @param callback {Function} Receives two parameters: (err, templateText)
  * @param options {Object?} Options.
  *   "type" - the type and extension of the template, defaults to 'mustache'
  *   "dir" - the folder under project web folder where templates are located
  * @return {String|undefined}
  */
-Q.Template.load = function _Q_Template_load(template, callback, options) {
+Q.Template.load = function _Q_Template_load(name, callback, options) {
 	if (typeof callback === "object") {
 		options = callback;
 		callback = undefined;
 	}
-	if (!template) {
-		console.error('Q.Template.load: template is empty');
+	if (options.name) {
+		name = options.name;
+	}
+	if (!name) {
+		console.error('Q.Template.load: name is empty');
 	}
 	// defaults to mustache templates
-	var o = Q.extend(Q.Template.load.options, options);
+	var o = Q.extend({}, Q.Template.load.options, options);
 	if (!Q.Template.collection[o.type]) {
 		Q.Template.collection[o.type] = {};
 	}
@@ -4959,8 +4962,8 @@ Q.Template.load = function _Q_Template_load(template, callback, options) {
 		Q.removeElement(trash[i]);
 	}
 	// check if template is cached
-	if (tpl && tpl[template]) {
-		var result = tpl[template];
+	if (tpl && tpl[name]) {
+		var result = tpl[name];
 		callback(null, result);
 		return true;
 	}
@@ -4969,15 +4972,15 @@ Q.Template.load = function _Q_Template_load(template, callback, options) {
 		if (err) {
 			return callback(err, null);
 		}
-		tpl[template] = content.trim();
-		callback(null, tpl[template]);
+		tpl[name] = content.trim();
+		callback(null, tpl[name]);
 	}
 	function _fail () {
-		var err = 'Failed to load template "'+o.dir+'/'+template+'.'+o.type+'"';
+		var err = 'Failed to load template "'+o.dir+'/'+name+'.'+o.type+'"';
 		console.warn(err);
 		callback(err);
 	}
-	var url = Q.url(o.dir+'/'+template+'.'+ o.type);
+	var url = Q.url(o.dir+'/'+name+'.'+ o.type);
 
 	Q.request(url, _callback, {parse: false, extend: false});
 	return true;
@@ -4990,7 +4993,7 @@ Q.Template.load.options = {
 
 /**
  * Render template taken from DOM or from file on server with partials
- * @param template {string} The name of template. Either treated as ID of script tag containing the template
+ * @param name {string} The name of template. Either treated as ID of script tag containing the template
  *		or as name of the file on server. File on server is searched in web views dir first and then
  *		if name is namespaced - e.g. Plugin/viewname.type, it is also searched in 'plugins/Plugin/views/Plugin/viewname.type'.
  * @param fields {object?} Rendering params - to be substituted to template
@@ -5000,7 +5003,7 @@ Q.Template.load.options = {
  *   "type" - the type and extension of the template, defaults to 'mustache'
  *   "dir" - the folder under project web folder where templates are located
  */
-Q.Template.render = function _Q_Template_render(template, fields, partials, callback, options) {
+Q.Template.render = function _Q_Template_render(name, fields, partials, callback, options) {
 	if (typeof fields === "function") {
 		options = partials;
 		callback = fields;
@@ -5022,7 +5025,7 @@ Q.Template.render = function _Q_Template_render(template, fields, partials, call
 			}
 			callback(Mustache.render(params.template[1], fields, params.partials[0]));
 		});
-		Q.Template.load(template, p.fill('template'), options);
+		Q.Template.load(name, p.fill('template'), options);
 		// pipe for partials
 		if (partials && partials.length) {
 			var pp = Q.pipe(partials, function (params) {
@@ -5038,7 +5041,7 @@ Q.Template.render = function _Q_Template_render(template, fields, partials, call
 			}
 		} else {
 			p.fill('partials')();
-		}	
+		}
 	});
 };
 

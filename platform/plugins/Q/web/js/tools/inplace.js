@@ -56,9 +56,7 @@ Q.Tool.define("Q/inplace", function (options) {
 		if (!html) return;
 		$te.html(html);
 		return _Q_inplace_tool_constructor.call(tool, this.element, options);
-	}, {
-		dir: 'plugins/Q/views'
-	});
+	}, o.template);
 },
 
 {
@@ -67,7 +65,10 @@ Q.Tool.define("Q/inplace", function (options) {
 	editOnClick: true,
 	selectOnEdit: true,
 	onSave: new Q.Event(),
-	onCancel: new Q.Event()
+	onCancel: new Q.Event(),
+	template: {
+		dir: 'plugins/Q/views'
+	}
 }
 
 );
