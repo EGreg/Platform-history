@@ -77,8 +77,15 @@ Q.Tool.define("Streams/inplace", function (options) {
 			return "inplaceType must be 'textarea' or 'text'";
 	}
 	this.element.appendChild(Q.Tool.element('div', 'Q/inplace', ipo));
+},
 
-	this.Q_init = function () {
+{
+	inplaceType: 'textarea',
+	onUpdate: new Q.Event()
+},
+
+{
+	Q_init: function () {
 		var tool = this;
 		var inplace = this.child('Q/inplace');
 		inplace.state.onSave.set(function () {
@@ -91,12 +98,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 				}
 			);
 		}, 'Streams/inplace');
-	};
-},
-
-{
-	inplaceType: 'textarea',
-	onUpdate: new Q.Event()
+	}
 }
 
 );
