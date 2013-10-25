@@ -4,7 +4,7 @@
  * This tool generates an inline editor to edit the content or attribute of a stream.
  * @param array $options
  *  An associative array of parameters, containing:
- *  "fieldType" => Required. The type of the fieldInput. Can be "textarea" or "text"
+ *  "inplaceType" => Required. The type of the inplace editor. Can be "textarea" or "text"
  *  "stream" => A Streams_Stream object
  *  "editing" => If true, then renders the inplace tool in editing mode.
  *  "editOnClick" => Defaults to true. If true, then edit mode starts only if "Edit" button is clicked.

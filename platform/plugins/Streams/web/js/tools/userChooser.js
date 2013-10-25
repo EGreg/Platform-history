@@ -3,7 +3,7 @@
  */
 Q.Tool.define("Sterams/userChooser", function(o) {
 
-    Streams.cache.userChooser = Streams.cache.userChooser || {};
+    Q.plugins.Streams.cache.userChooser = Q.plugins.Streams.cache.userChooser || {};
 
 	var me = this;
 

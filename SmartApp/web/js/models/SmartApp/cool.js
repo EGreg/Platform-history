@@ -8,7 +8,7 @@ Q.Streams.define("SmartApp/cool", function () { // stream constructor
 
 // this is how you set an event handler to be triggered whenever
 // any "SmartApp/move" message is posted to any "SmartApp/cool" stream
-Streams.onMessage("SmartApp/cool", "SmartApp/move").set(function (err, message) {
+Q.Streams.onMessage("SmartApp/cool", "SmartApp/move").set(function (err, message) {
 	// trigger our event
 	this.onMove.handle(JSON.parse(message.instructions));
 }, "SmartApp");

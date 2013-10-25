@@ -50,7 +50,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 							callback({subpath: 'streams/' + stream.fields.publisherId + '/' + stream.fields.name});
 						});
 					}
-					Streams.create({
+					Q.Streams.create({
 						publisherId: options.publisherId,
 						type: 'Streams/image'
 					}, function (err) {

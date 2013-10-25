@@ -21,10 +21,12 @@ function Streams_inplace_tool($options)
 	$stream = $options['stream'];
 	Q_Response::setToolOptions(array(
 		'publisherId' => $stream->publisherId,
-		'streamName' => $stream->name
+		'streamName' => $stream->name,
+		'inplaceType' => $options['inplaceType']
 	));
 	$options['action'] = $stream->actionUrl();
 	$options['method'] = 'PUT';
+	$options['type'] = $options['inplaceType'];
 	$field = empty($attribute) ? 'content' : 'attributes['.urlencode($attribute).']';
 	switch ($options['inplaceType']) {
 		case 'text':

@@ -13,7 +13,7 @@ function Streams_message_response_messages()
 	$publisherId = Streams::requestedPublisherId(true);
 	$streamName = Streams::requestedName(true);
 	$type = Streams::requestedMessageType();
-	$limit = isset($_REQUEST['limit']) ? $_REQUEST['limit'] : 10;
+	$limit = isset($_REQUEST['limit']) ? $_REQUEST['limit'] : 100;
 	if (isset($_REQUEST['ordinal'])) {
 		$min = $_REQUEST['ordinal'];
 		$limit = 1;

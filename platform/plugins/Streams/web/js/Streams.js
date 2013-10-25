@@ -74,11 +74,11 @@ Streams.WRITE_LEVEL = {
  * @type object
  */
 Streams.ADMIN_LEVEL = {
-	'none':			0,		// cannot do anything related to admin / users
-	'tell':		10,		// can post on your stream about participating
+	'none':	 		0,		// cannot do anything related to admin / users
+	'tell':	 		10,		// can post on your stream about participating
 	'invite':		20,		// able to create invitations for others, granting access
 	'manage':		30,		// can approve posts and give people any adminLevel < 30
-	'own':			40		// can give people any adminLevel <= 40
+	'own':	 		40		// can give people any adminLevel <= 40
 };
 
 Streams.cache = {
@@ -1700,7 +1700,7 @@ Q.onInit.add(function _Streams_onInit() {
 	}
 	// handle socket connect/disconnect on resign/resume application
 	if (Q.info.isCordova) {
-		Q.addEventListener(document, 'resign', _disconnectSockets);
+		Q.addEventListener(document, ['resign', 'pause'], _disconnectSockets);
 		Q.addEventListener(document, 'resume', function () {
 			if (Q.Users.loggedInUser) {
 				Q.Cache.document("Streams.getParticipating").clear();
@@ -2056,5 +2056,6 @@ function _clearCaches() {
 Q.Users.onLogin.set(_clearCaches, 'Streams');
 Q.Users.onLogout.set(_clearCaches, 'Streams');
 
+Q.addEventListener(window, 'focus', Streams.updateParticipating);
 
 })(jQuery, Q.plugins.Streams);
