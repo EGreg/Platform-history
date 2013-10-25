@@ -24,7 +24,9 @@ function Streams_stream_response_data()
 	$streams = array();
 	foreach (Streams::fetch($userId, $publisherId, $name, $fields) as $key => $stream) {
 		$streams[$key] = $stream->exportArray(array('asUserId' => $userId));
-		if ($userId && !empty($fields['join'])) $stream->join();
+		if ($userId && !empty($_REQUEST['join'])) {
+			$stream->join(); // NOTE: one of the rare times we may change state in a response handler
+		}
 	}
 	return Streams::$cache['result'] = array(
 		'stream' => empty($streams) ? null : reset($streams)

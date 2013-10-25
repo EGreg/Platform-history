@@ -46,7 +46,7 @@ function Streams_stream_response()
 		}
 		return null;
 	}
-	if ($userId && !empty($fields['join'])) {
+	if ($userId && !empty($_REQUEST['join'])) {
 		$stream->join();
 	}
 	if (Q_Request::slotName('stream')) {

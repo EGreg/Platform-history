@@ -128,7 +128,9 @@ function Streams_stream_tool($options) {
 		)
 	);
 
-	if (empty($noJoin)) $hidden['join'] = true;
+	if (empty($noJoin)) {
+		$hidden['join'] = true;
+	}
 
 	return Q_Html::tag('h3', array(), !$stream ? 'Create a stream' : 'Update stream')
 		. Q_Html::form(Q_Request::baseUrl().'/action.php/Streams/stream', $stream ? 'put' : 'post', array(), 
