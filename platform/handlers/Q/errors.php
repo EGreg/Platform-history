@@ -22,7 +22,7 @@ function Q_errors($params) {
 		switch (strtolower($is_ajax)) {
 		case 'json':
 		default:
-			$errors_json = @json_encode($errors_array);
+			$errors_json = @Q::json_encode($errors_array);
 			$json = "{\"errors\": $errors_json}";
 			$callback = Q_Request::callback();
 			header("Content-type: " . ($callback ? "application/javascript" : "application/json"));

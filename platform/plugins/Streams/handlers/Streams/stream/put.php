@@ -82,7 +82,7 @@ function Streams_stream_put($params) {
 	$stream->post($user->id, array(
 		'type' => 'Streams/edited',
 		'content' => '',
-		'instructions' => json_encode($instructions)
+		'instructions' => Q::json_encode($instructions)
 	), true);
 	
 	$stream->retrieve(); // for now we have to do fetch the stream again, because stream's messageCount has updated

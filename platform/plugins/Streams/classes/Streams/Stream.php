@@ -288,7 +288,7 @@ class Streams_Stream extends Base_Streams_Stream
 			// The stream was just saved
 			Q_Utils::sendToNode(array(
 				"Q/method" => "Streams/Stream/create",
-				"stream" => json_encode($stream->toArray())
+				"stream" => Q::json_encode($stream->toArray())
 			));
 
 			/**
@@ -355,7 +355,7 @@ class Streams_Stream extends Base_Streams_Stream
 		// if the above call threw an exception, then we will not be doing the following.
 		Q_Utils::sendToNode(array(
 			"Q/method" => "Streams/Stream/remove",
-			"stream" => json_encode($stream->toArray())
+			"stream" => Q::json_encode($stream->toArray())
 		));
 
 		/**
@@ -419,14 +419,14 @@ class Streams_Stream extends Base_Streams_Stream
 	{
 		$attr = $this->getAllAttributes();
 		$attr[$attribute_name] = $value;
-		$this->attributes = json_encode($attr);
+		$this->attributes = Q::json_encode($attr);
 	}
 	
 	function clearAttribute($attribute_name)
 	{
 		$attr = $this->getAllAttributes();
 		unset($attr[$attribute_name]);
-		$this->attributes = json_encode($attr);
+		$this->attributes = Q::json_encode($attr);
 	}
 	
 	/**
@@ -473,8 +473,8 @@ class Streams_Stream extends Base_Streams_Stream
 				// Send a message to Node
 				Q_Utils::sendToNode(array(
 					"Q/method" => "Streams/Stream/$type", 
-					"participant" => json_encode($participant->toArray()),
-					"stream" => json_encode($stream->toArray())
+					"participant" => Q::json_encode($participant->toArray()),
+					"stream" => Q::json_encode($stream->toArray())
 				));
 				// Post a message
 				$stream->post($userId, array('type' => "Streams/$type"), true);
@@ -496,8 +496,8 @@ class Streams_Stream extends Base_Streams_Stream
 		// Send a message to Node
 		Q_Utils::sendToNode(array(
 			"Q/method" => "Streams/Stream/join", 
-			"participant" => json_encode($participant->toArray()),
-			"stream" => json_encode($stream->toArray())
+			"participant" => Q::json_encode($participant->toArray()),
+			"stream" => Q::json_encode($stream->toArray())
 		));
 		
 		// Post Streams/join message to the stream
@@ -506,7 +506,7 @@ class Streams_Stream extends Base_Streams_Stream
 		// Now post Streams/joined message to Streams/participating
 		Streams_Message::post($userId, $userId, 'Streams/participating', array(
 			'type' => 'Streams/joined',
-			'instructions' => json_encode(array(
+			'instructions' => Q::json_encode(array(
 				'publisherId' => $stream->publisherId,
 				'streamName' => $stream->name
 			))
@@ -549,8 +549,8 @@ class Streams_Stream extends Base_Streams_Stream
 		}
 		Q_Utils::sendToNode(array(
 			"Q/method" => "Streams/Stream/leave",
-			"participant" => json_encode($participant->toArray()),
-			"stream" => json_encode($stream->toArray())
+			"participant" => Q::json_encode($participant->toArray()),
+			"stream" => Q::json_encode($stream->toArray())
 		));
 		
 		// Post Streams/leave message to the stream
@@ -560,7 +560,7 @@ class Streams_Stream extends Base_Streams_Stream
 		Streams_Message::post($userId, $userId, 'Streams/participating', array(
 			'type' => 'Streams/left',
 			'content' => '',
-			'instructions' => json_encode(array(
+			'instructions' => Q::json_encode(array(
 				'publisherId' => $stream->publisherId,
 				'streamName' => $stream->name
 			))
@@ -630,7 +630,7 @@ class Streams_Stream extends Base_Streams_Stream
 			$filter['notifications'] =  $options['notifications'];
 		}
 
-		$s->filter = json_encode($filter);
+		$s->filter = Q::json_encode($filter);
 
 		if (isset($options['untilTime'])) {
 			$s->untilTime = $options['untilTime'];
@@ -674,7 +674,7 @@ class Streams_Stream extends Base_Streams_Stream
 					$deliver = array();
 					$rule_success = false;
 				}
-				$rule->deliver = json_encode($deliver);
+				$rule->deliver = Q::json_encode($deliver);
 			}
 			$rule_success = !!$rule->save();
 		}
@@ -682,9 +682,9 @@ class Streams_Stream extends Base_Streams_Stream
 		// skip error testing for rule save BUT inform node. Node can notify user to check the rules
 		Q_Utils::sendToNode(array(
 			"Q/method" => "Streams/Stream/subscribe",
-			"subscription" => json_encode($s->toArray()),
-			"stream" => json_encode($stream->toArray()),
-			"success" => json_encode($rule_success)
+			"subscription" => Q::json_encode($s->toArray()),
+			"stream" => Q::json_encode($stream->toArray()),
+			"success" => Q::json_encode($rule_success)
 		));
 		
 		// Post Streams/subscribe message to the stream
@@ -693,7 +693,7 @@ class Streams_Stream extends Base_Streams_Stream
 		// Now post Streams/subscribed message to Streams/participating
 		Streams_Message::post($userId, $userId, 'Streams/participating', array(
 			'type' => 'Streams/subscribed',
-			'instructions' => json_encode(array(
+			'instructions' => Q::json_encode(array(
 				'publisherId' => $stream->publisherId,
 				'streamName' => $stream->name
 			))
@@ -716,9 +716,9 @@ class Streams_Stream extends Base_Streams_Stream
 
 		Q_Utils::sendToNode(array(
 			"Q/method" => "Streams/Stream/unsubscribe",
-			"stream" => json_encode($stream->toArray()),
-			"participant" => json_encode($participant),
-			"success" => json_encode(!!$participant)
+			"stream" => Q::json_encode($stream->toArray()),
+			"participant" => Q::json_encode($participant),
+			"success" => Q::json_encode(!!$participant)
 		));
 		
 		// Post Streams/unsubscribe message to the stream
@@ -727,7 +727,7 @@ class Streams_Stream extends Base_Streams_Stream
 		// Now post Streams/unsubscribed message to Streams/participating
 		Streams_Message::post($userId, $userId, 'Streams/participating', array(
 			'type' => 'Streams/unsubscribed',
-			'instructions' => json_encode(array(
+			'instructions' => Q::json_encode(array(
 				'publisherId' => $stream->publisherId,
 				'streamName' => $stream->name
 			))
@@ -865,8 +865,8 @@ class Streams_Stream extends Base_Streams_Stream
 			"Q/method" => "Streams/Stream/invite",
 			"invitingUserId" => $user->id,
 			"username" => Streams::displayName($user->id),
-			"userIds" => json_encode($userIds),
-			"stream" => json_encode($stream->toArray()),
+			"userIds" => Q::json_encode($userIds),
+			"stream" => Q::json_encode($stream->toArray()),
 			"appUrl" => $appUrl,
 			"label" => isset($options['label']) ? $options['label'] : null, 
 			"readLevel" => $readLevel,

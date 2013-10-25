@@ -81,7 +81,7 @@ class Awards_Credits
 		$stream->setAttribute('amount', $stream->getAttribute('amount') - $amount);
 		$stream->save();
 		
-		$instructions_json = json_encode(array_merge(
+		$instructions_json = Q::json_encode(array_merge(
 			array('app' => Q_Config::expect('Q', 'app')),
 			$more
 		));
@@ -122,7 +122,7 @@ class Awards_Credits
 		Streams_Message::post($user->id, $user->id, array(
 			'type' => 'Awards/credits/earned',
 			'content' => $amount,
-			'instructions' => json_encode(compact('app', 'reason'))
+			'instructions' => Q::json_encode(compact('app', 'reason'))
 		));
 	}
 	
@@ -170,7 +170,7 @@ class Awards_Credits
 		$from_stream->setAttribute('amount', $from_stream->getAttribute('amount') - $amount);
 		$from_stream->save();
 		
-		$instructions_json = json_encode(array_merge(
+		$instructions_json = Q::json_encode(array_merge(
 			array('app' => Q_Config::expect('Q', 'app')),
 			$more
 		));

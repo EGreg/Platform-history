@@ -211,6 +211,9 @@ Streams.onActivate = new Q.Event();
  * Connects or reconnects sockets for all participating streams
  */
 function _connectSockets(fetchLatestMessages) {
+	if (!Q.Users.loggedInUser) {
+		return false;
+	}
 	Streams.getParticipating(function (err, participating) {
 		Q.each(participating, function (i, p) {
 			Q.Socket.connect('Streams', Q.nodeUrl({

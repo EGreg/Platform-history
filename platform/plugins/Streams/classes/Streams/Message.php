@@ -160,8 +160,8 @@ class Streams_Message extends Base_Streams_Message
 			if ($result && $send_to_node) {
 				Q_Utils::sendToNode(array(
 					"Q/method" => "Streams/Message/post",
-					"message" => json_encode($message->toArray()),
-					"stream" => json_encode($stream->toArray())
+					"message" => Q::json_encode($message->toArray()),
+					"stream" => Q::json_encode($stream->toArray())
 				));
 			}
 			
@@ -217,14 +217,14 @@ class Streams_Message extends Base_Streams_Message
 	{
 		$instr = $this->getAllInstructions();
 		$instr[$instruction_name] = $value;
-		$this->instructions = json_encode($instr);
+		$this->instructions = Q::json_encode($instr);
 	}
 	
 	function clearInstruction($instruction_name)
 	{
 		$instr = $this->getAllInstructions();
 		unset($instr[$instruction_name]);
-		$this->instructions = json_encode($instr);
+		$this->instructions = Q::json_encode($instr);
 	}
 
 	/**

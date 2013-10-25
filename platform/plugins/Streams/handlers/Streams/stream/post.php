@@ -68,7 +68,7 @@ function Streams_stream_post($params) {
 	$stream->post($user->id, array(
 		'type' => 'Streams/created',
 		'content' => '',
-		'instructions' => json_encode($stream->toArray())
+		'instructions' => Q::json_encode($stream->toArray())
 	), true);
 	
 	if (!empty($more_fields['join'])) {

@@ -30,7 +30,7 @@ function Q_response_notices()
 	
 	$removed_notices = Q_Response::getRemovedNotices();
 	if (!empty($removed_notices)) {
-		$json = json_encode($removed_notices);
+		$json = Q::json_encode($removed_notices);
 		Q_Response::addScriptLine("if (Q.Notices) Q.handle(Q.Notices.add($json));");
 	}
 

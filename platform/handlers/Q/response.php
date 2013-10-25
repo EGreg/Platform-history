@@ -114,7 +114,7 @@ function Q_response($params)
 		switch (strtolower($is_ajax)) {
 		case 'json':
 		default:
-			$json = json_encode(Q::cutoff($to_encode));
+			$json = Q::json_encode(Q::cutoff($to_encode));
 			$callback = Q_Request::callback();
 			if (!Q_Response::$batch) {
 				header("Content-type: " . ($callback ? "application/javascript" : "application/json"));

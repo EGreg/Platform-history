@@ -297,7 +297,7 @@ abstract class Streams extends Base_Streams
 		if (!isset($asUserId) or !isset($publisherId)) {
 			return null;
 		}
-		$key = is_string($name) ? $name : json_encode($name);
+		$key = is_string($name) ? $name : Q::json_encode($name);
 		if (empty($options['refetch'])
 		and isset(self::$fetch[$asUserId][$publisherId][$key][$fields])) {
 			return self::$fetch[$asUserId][$publisherId][$key][$fields];
@@ -1519,7 +1519,7 @@ abstract class Streams extends Base_Streams
 		// node server will be notified by Streams_Message::post
 		$relatedTo_message = Streams_Message::post($asUserId, $toPublisherId, $toStreamName, array(
 			'type' => 'Streams/relatedTo',
-			'instructions' => json_encode(compact('fromPublisherId', 'fromStreamName'))
+			'instructions' => Q::json_encode(compact('fromPublisherId', 'fromStreamName'))
 		), true);
 
 		try {
@@ -1532,7 +1532,7 @@ abstract class Streams extends Base_Streams
 		// node server will be notified by Streams_Message::post
 		$relatedFrom_message = Streams_Message::post($asUserId, $fromPublisherId, $fromStreamName, array(
 			'type' => 'Streams/relatedFrom',
-			'instructions' => json_encode(compact('toPublisherId', 'toStreamName'))
+			'instructions' => Q::json_encode(compact('toPublisherId', 'toStreamName'))
 		), true);
 
 		/**
@@ -1629,7 +1629,7 @@ abstract class Streams extends Base_Streams
 			// node server will be notified by Streams_Message::post
 			Streams_Message::post($asUserId, $toPublisherId, $toStreamName, array(
 				'type' => 'Streams/unrelatedTo',
-				'instructions' => json_encode(compact('fromPublisherId', 'fromStreamName'))
+				'instructions' => Q::json_encode(compact('fromPublisherId', 'fromStreamName'))
 			), true);
 		}
 
@@ -1638,7 +1638,7 @@ abstract class Streams extends Base_Streams
 			// node server will be notified by Streams_Message::post
 			Streams_Message::post($asUserId, $fromPublisherId, $fromStreamName, array(
 				'type' => 'Streams/unrelatedFrom',
-				'instructions' => json_encode(compact('toPublisherId', 'toStreamName'))
+				'instructions' => Q::json_encode(compact('toPublisherId', 'toStreamName'))
 			), true);
 		}
 
@@ -1886,7 +1886,7 @@ abstract class Streams extends Base_Streams
 		// node server will be notified by Streams_Message::post
 		$message = Streams_Message::post($asUserId, $toPublisherId, $toStreamName, array(
 			'type' => 'Stream/updatedRelateTo',
-			'instructions' => json_encode(compact('fromPublisherId', 'fromStreamName', 'weight', 'previous_weight', 'adjust_by'))
+			'instructions' => Q::json_encode(compact('fromPublisherId', 'fromStreamName', 'weight', 'previous_weight', 'adjust_by'))
 		), true);
 		
 		// TODO: We are not yet sending Streams/updatedRelateFrom message to the other stream

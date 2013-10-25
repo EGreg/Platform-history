@@ -156,7 +156,7 @@ class Q
 		$expression = str_replace('\\$', '\\REAL_DOLLAR_SIGN\\', $expression);
 		foreach ($keys as $key) {
 			$p = (is_array($params[$key]) or is_object($params[$key]))
-				? substr(json_encode($params[$key]), 0, 100)
+				? substr(Q::json_encode($params[$key]), 0, 100)
 				: (string)$params[$key];
 			$expression = str_replace('$'.$key, $p, $expression);
 		}
@@ -575,6 +575,7 @@ class Q
 			 */
 			$result = self::event('Q/missingTool', compact('tool_name', 'options'));
 		} catch (Exception $exception) {
+						Q::log($exception);
 			$result = $exception->getMessage();
 		}
 		// Even if the tool rendering throws an exception,
@@ -1012,6 +1013,15 @@ class Q
 			return ob_get_clean();
 		}
 		return null;
+	}
+	
+	/**
+	 * A wrapper for json_encode
+	 */
+	static function json_encode()
+	{
+		$result = call_user_func_array('json_encode', func_get_args());
+		return str_replace("\\/", '/', $result);
 	}
 
 	/**

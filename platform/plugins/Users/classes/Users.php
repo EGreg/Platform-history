@@ -223,7 +223,7 @@ abstract class Users extends Base_Users
 					array('method' => 'GET', 'relative_url' => '/me/permissions'),
 					array('method' => 'GET', 'relative_url' => '/me')
 				);
-				$batchResponse = $facebook->api('?batch='.json_encode($queries), 'POST');
+				$batchResponse = $facebook->api('?batch='.Q::json_encode($queries), 'POST');
 				$permissions = json_decode($batchResponse[0]['body'], true);
 				if (Q::ifset($permissions, 'data', 0, 'email', false)) {
 					$user_data = json_decode($batchResponse[1]['body'], true);
@@ -1548,7 +1548,7 @@ abstract class Users extends Base_Users
 		if ($link->retrieve()) {
 			return false;
 		}
-		$link->extraInfo = json_encode($extraInfo);
+		$link->extraInfo = Q::json_encode($extraInfo);
 		$link->save();
 		return true;
 	}

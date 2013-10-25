@@ -6,6 +6,7 @@
  *  An associative array of parameters, containing:
  *  "fieldType" => Required. The type of the fieldInput. Can be "textarea" or "text"
  *  "stream" => A Streams_Stream object
+ *  "staticHtml" => Optional. The static HTML to display when there is nothing to edit
  *  "editing" => If true, then renders the inplace tool in editing mode.
  *  "attribute" => Optional, name of an attribute to change instead of the content of the stream
  *  "editOnClick" => Defaults to true. If true, then edit mode starts only if "Edit" button is clicked.
@@ -17,18 +18,15 @@
  */
 function Streams_inplace_tool($options)
 {
-	extract($options);
+	$stream = $options['stream'];
 	Q_Response::setToolOptions(array(
 		'publisherId' => $stream->publisherId,
 		'streamName' => $stream->name
 	));
-	if (!$stream->testWriteLevel('editPending')) {
-		return $options['staticHtml'];
-	}
 	$options['action'] = $stream->actionUrl();
-	$options['method'] = 'put';
+	$options['method'] = 'PUT';
 	$field = empty($attribute) ? 'content' : 'attributes['.urlencode($attribute).']';
-	switch ($fieldType) {
+	switch ($options['fieldType']) {
 		case 'text':
 			$options['fieldInput'] = Q_Html::input($field, $stream->content);
 			$options['staticHtml'] = Q_Html::text($stream->content);
@@ -39,6 +37,12 @@ function Streams_inplace_tool($options)
 			break;
 		default:
 			return "fieldType must be 'textarea' or 'text'";
+	}
+	if (!$stream->testWriteLevel('editPending')) {
+		if (!isset($options['classes'])) {
+			$options['classes'] = '';
+		}
+		return "<span class='Q_inplace_tool_container $options[classes]' style='position: relative;'>$options[staticHtml]</span>";
 	}
 	return Q::tool("Q/inplace", $options);
 }

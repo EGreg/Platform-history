@@ -20,7 +20,7 @@ function Q_after_Q_tool_render($params, &$result)
 			$friendly_options = str_replace(
 				array('&quot;', '\/'),
 				array('"', '/'),
-				Q_Html::text(json_encode($options))
+				Q_Html::text(Q::json_encode($options))
 			);
 			$normalized = Q_Utils::normalize($tool_name, '-');
 			$data_options = " data-$normalized='$friendly_options'";

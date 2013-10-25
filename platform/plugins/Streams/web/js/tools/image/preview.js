@@ -1,3 +1,5 @@
+(function ($, window, undefined) {
+
 /*
  * Streams/image/preview tool.
  * Renders a tool to preview (and possibly replace) images
@@ -25,26 +27,12 @@ Q.Tool.define("Streams/image/preview", function(options) {
 		this.element.style.height = parts[1] + "px";
 	}
 	tool.element.innerHTML = '';
-	var p = Q.pipe(['html', 'stream'], function (params, subjects) {
-		var err = params.stream[0];
-		if (err) {
-			return console.warn(err);
-		}
-		var stream = subjects.stream;
-		var html = params.html[1];
+	Q.Streams.get(tool.state.publisherId, tool.state.streamName, function (err) {
 		
-		if (!options.imagepicker.saveSizeName) {
-			options.imagepicker.saveSizeName = {}
-			Q.each(Q.Streams.image.sizes, function (i, size) {
-				options.imagepicker.saveSizeName[size] = size;
-			});
-		}
-		tool.stream = stream;
-		tool.refresh();
-		stream.onFieldChanged('icon').set(function () {
-			tool.refresh();
-		});
-		if (stream.access.writeLevel >= Q.Streams.WRITE_LEVEL.editPending) {
+		function _afterRefresh () {
+			if (!stream.testWriteLevel('editPending')) {
+				return;
+			}
 			var ipo = Q.extend({}, options.imagepicker, {
 				preprocess: function (callback) {
 					if (tool.state.streamName) {
@@ -82,21 +70,30 @@ Q.Tool.define("Streams/image/preview", function(options) {
 			});
 			tool.$('img').plugin('Q/imagepicker', ipo);
 		}
+		
+		if (err) {
+			return console.warn(err);
+		}
+		var stream = this;
+		
+
+		if (!options.imagepicker.saveSizeName) {
+			options.imagepicker.saveSizeName = {}
+			Q.each(Q.Streams.image.sizes, function (i, size) {
+				options.imagepicker.saveSizeName[size] = size;
+			});
+		}
+		tool.stream = stream;
+		tool.refresh(_afterRefresh);
+		stream.onFieldChanged('icon').set(function () {
+			tool.refresh(_afterRefresh);
+		});
 	});
-	Q.Template.render(
-		'Streams/image/preview/tool',
-		{
-			
-		},
-		p.fill('html'),
-		options.template
-	);
 	var img = document.createElement('img');
 	img.setAttribute('alt', 'loading');
 	img.setAttribute('src', Q.url(options.throbber));
 	img.style.opacity = 0.5;
 	tool.element.appendChild(img);
-	Q.Streams.get(tool.state.publisherId, tool.state.streamName, p.fill('stream'));
 },
 
 {
@@ -106,25 +103,78 @@ Q.Tool.define("Streams/image/preview", function(options) {
 	showFile: null,
 	template: {
 		dir: 'plugins/Streams/views',
-		name: 'Streams/image/preview/tool'
+		name: 'Streams/image/preview/tool',
+		fields: {
+			alt: 'image',
+			titleClass: '',
+			titleTag: 'h2'
+		}
 	},
+	inplace: {},
 	throbber: "plugins/Q/img/throbbers/spinner_sticky_gray.gif",
-	onUpdate: new Q.Event(),
+	onUpdate: new Q.Event()
 },
 
 {
-	refresh: function () {
+	refresh: function (callback) {
 		var tool = this, state = tool.state, stream = this.stream;
 		var file = state.showFile
 			|| state.imagepicker.saveSizeName[state.imagepicker.showSize]
 			|| state.imagepicker.saveSizeName[Q.first(state.imagepicker.saveSizeName, {nonEmpty: true})];
 		var icon = stream && stream.fields.icon && stream.fields.icon !== 'default' ? stream.fields.icon : 'Streams/image';
-		var img = document.createElement('img');
-		img.setAttribute('src', Q.Streams.iconUrl(icon, file));
-		img.setAttribute('alt', stream.fields.title);
-		this.element.innerHTML = '';
-		tool.element.appendChild(img);
+		
+		var inplace = Q.extend({
+			publisherId: state.publisherId,
+			streamName: state.streamName,
+			field: 'title',
+			inplace: {
+				type: 'text'
+			}
+		}, state.inplace);
+		var fields = Q.extend({}, state.template.fields, {
+			src: Q.Streams.iconUrl(icon, file),
+			alt: stream.fields.title,
+			inplace: "<div class='Q_tool Streams_inplace_tool' data-streams-inplace='"+Q.Tool.encodeOptions(inplace)+"'></div>"
+		});
+		Q.Template.render(
+			'Streams/image/preview/tool',
+			fields,
+			function (err, html) {
+				if (err) {
+					return console.warn(err);
+				}
+				tool.element.innerHTML = html;
+				Q.activate(tool.element, callback);
+			},
+			state.template
+		);
 	}
 }
 
 );
+
+Q.Template.set(
+	'Streams/image/preview/tool',
+	'<img src="{{& src}}" alt="{{alt}}"><div class="{{titleClass}}"><{{titleTag}}>{{& inplace}}</{{titleTag}}></div>'
+);
+
+/*
+<div class="Golden-carousel sky-carousel">
+	<div class="sky-carousel-wrapper">
+		<ul class="sky-carousel-container">
+			<?php foreach ($images as $image): ?> 
+				<li>
+					<?php echo Q_Html::a(Q_Html::themedUrl($image['src']), array('class' => 'fancybox', 'rel' => 'group')) ?> 
+						<?php echo Q_Html::img($image['thumb_src'], $image['alt']) ?> 
+					</a>
+					<div class="sc-content">
+						<h2><?php echo $image['alt'] ?></h2>
+					</div>
+				</li>
+			<?php endforeach ?> 
+		</ul>
+	</div>
+</div>
+ */
+
+})(window.jQuery, window);

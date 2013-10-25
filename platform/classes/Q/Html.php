@@ -937,7 +937,7 @@ class Q_Html
 	static function json(
 	 $content)
 	{
-		self::text(json_encode($content));
+		self::text(Q::json_encode($content));
 	}	
 	
 	/**

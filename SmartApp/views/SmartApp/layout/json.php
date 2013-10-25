@@ -1,3 +1,3 @@
 <?php
 
-echo json_encode(compact(Q_Response::getRequestedSlots()));
+echo Q::json_encode(compact(Q_Response::getRequestedSlots()));

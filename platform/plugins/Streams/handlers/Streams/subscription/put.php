@@ -37,7 +37,7 @@ function Streams_subscription_put($params) {
 		$subscription->publisherId = $publisherId;
 		$subscription->streamName = $name;
 
-		$subscription->filter = json_encode(array(
+		$subscription->filter = Q::json_encode(array(
 			'types' => !empty($more_fields['types']) ? $more_fields['types'] : array(),
 			'notifications' => !empty($more_fields['notifications']) ? $more_fields['notifications'] : 0
 		));

@@ -20,7 +20,7 @@ function Q_exception_native($params)
 		switch (strtolower($is_ajax)) {
 		case 'json':
 		default:
-			$json = @json_encode(array(
+			$json = @Q::json_encode(array(
 				'errors' => Q_Exception::toArray(array($exception))
 			));
 			$callback = Q_Request::callback();

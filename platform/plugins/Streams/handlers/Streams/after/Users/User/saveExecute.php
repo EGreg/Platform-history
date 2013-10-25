@@ -64,7 +64,9 @@ function Streams_after_Users_User_saveExecute($params)
 			$stream->post($user->id, array(
 				'type' => 'Streams/edited',
 				'content' => '',
-				'instructions' => json_encode($stream->toArray())
+				'instructions' => array(
+					'content' => $value
+				)
 			), true);
 		}
 	}

@@ -93,7 +93,7 @@ function Q_scripts_combine()
 		if (!empty($filters)) {
 			foreach ($filters as $e => $filter) {
 				if ($ext !== $e) continue;
-				$p = !empty($filter['params']) ? json_encode($filter['params']) : '';
+				$p = !empty($filter['params']) ? Q::json_encode($filter['params']) : '';
 				echo "\t".$filter['handler']."$p\n";
 				foreach ($parts as $src => $part) {
 					echo "\t\t$src\n";

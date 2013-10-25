@@ -16,10 +16,10 @@ function Streams_after_Q_image($params)
 	$stream = Streams::$cache['canWriteToStream'];
 	$stream->icon = Q_Request::baseUrl().'/'.$data[''];
 	$stream->save();
-	$to_save = $stream->toArray();
+	$to_save = array('icon' => $stream->icon);
 	$stream->post($user->id, array(
 		'type' => 'Streams/edited',
 		'content' => '',
-		'instructions' => json_encode($to_save)
+		'instructions' => Q::json_encode($to_save)
 	));
 }

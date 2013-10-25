@@ -158,7 +158,7 @@ abstract class Metrics extends Base_Metrics
 							// Nope, looks like they have already followed this share.
 							$result = 'already_followed';
 							$visit_id = self::$last_visit['id'];
-							self::respond(json_encode(compact('result', 'sessionId', 'visit_id', 'min_wait')));
+							self::respond(Q::json_encode(compact('result', 'sessionId', 'visit_id', 'min_wait')));
 							return;
 						}
 						// If we are here, that means we were contacted for a reason.
@@ -174,7 +174,7 @@ abstract class Metrics extends Base_Metrics
 						// unless you see #from_share_id
 						$visit_id = self::$last_visit['id'];
 						$min_wait = $min_wait - $elapsed_seconds;
-						self::respond(json_encode(compact('result', 'sessionId', 'visit_id', 'min_wait')));
+						self::respond(Q::json_encode(compact('result', 'sessionId', 'visit_id', 'min_wait')));
 						return;
 					}
 				}
@@ -204,12 +204,12 @@ abstract class Metrics extends Base_Metrics
 					self::dbIncrement('visit', array('share_count'), compact('id'));
 				}
 				// Okay, you had a reason to contact us. We updated the share.
-				self::respond(json_encode(compact('result', 'sessionId', 'visit_id', 'min_wait')));
+				self::respond(Q::json_encode(compact('result', 'sessionId', 'visit_id', 'min_wait')));
 			} else {
-				self::respond(json_encode(compact('result', 'sessionId', 'visit_id', 'min_wait')));
+				self::respond(Q::json_encode(compact('result', 'sessionId', 'visit_id', 'min_wait')));
 			}
 		} catch (Exception $e) {
-			self::respond(json_encode(array('errors' => array($e->getMessage()))));
+			self::respond(Q::json_encode(array('errors' => array($e->getMessage()))));
 		}
 	}
 
@@ -221,7 +221,7 @@ abstract class Metrics extends Base_Metrics
 	static function validateRequest()
 	{
 		if (empty($_REQUEST['url'])) {
-			self::respond(json_encode(array('errors'=>'url is missing')));
+			self::respond(Q::json_encode(array('errors'=>'url is missing')));
 			exit;
 		}
 	}

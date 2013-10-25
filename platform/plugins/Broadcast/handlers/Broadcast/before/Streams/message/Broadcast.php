@@ -32,6 +32,6 @@ function Broadcast_before_Streams_message_Broadcast($params)
 	
 	// Manually adding a link for 'Manage or Remove'
 	$appUrl = Q_Config::get('Users', 'facebookApps', 'Broadcast', 'url', '');
-	$content['actions'] = json_encode(array(array('name' => 'Manage or Remove', 'link' => $appUrl)));
-	$message->broadcast_instructions = json_encode($content);
+	$content['actions'] = Q::json_encode(array(array('name' => 'Manage or Remove', 'link' => $appUrl)));
+	$message->broadcast_instructions = Q::json_encode($content);
 }

@@ -2607,8 +2607,14 @@ String.prototype.toCapitalized = function _String_prototype_toCapitalized() {
 	});
 };
 
-String.prototype.htmlentities = function _String_prototype_htmlentities() {
-	return this.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+String.prototype.htmlentities = function _String_prototype_htmlentities(quote_style, charset, double_encode) {
+	return this.replaceAll({
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;',
+		'"': '&quot;',
+		"'": '&apos;'
+	});
 };
 
 String.prototype.quote = function _String_prototype_quote() {

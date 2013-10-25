@@ -86,7 +86,13 @@ String.prototype.isUrl = function () {
 };
 
 String.prototype.htmlentities = function _String_prototype_htmlentities(quote_style, charset, double_encode) {
-	return this.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+	return this.replaceAll({
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;',
+		'"': '&quot;',
+		"'": '&apos;'
+	});
 };
 
 String.prototype.quote = function _String_prototype_quote() {
@@ -858,7 +864,7 @@ Q.Class = function _Q_Class(construct /* [, Base1, ...] [, properties, [classPro
 	}
 
 	if (typeof arguments[++j] === 'object') {
-		Q.extend(Q_ClassConstructor.prototype, arguments[j]);
+		Q.extend(Q_ClassConstructor.prototype, Q.Class.options.levels, arguments[j]);
 		if (typeof arguments[++j] === 'object') {
 			Q.extend(Q_ClassConstructor, arguments[j]);
 		}
@@ -866,6 +872,10 @@ Q.Class = function _Q_Class(construct /* [, Base1, ...] [, properties, [classPro
 
 	Q.mixin.apply(Q, constructors);
 	return Q_ClassConstructor;
+};
+
+Q.Class.options = {
+	levels: 10
 };
 
 /**
@@ -921,12 +931,16 @@ Q.extendObject = function _Q_extendObject(name, value, context, delimiter){
 	} else {
 		// not null && object (maybe array) && value is real object
 		if (obj[p] && typeof obj[p] === "object" && Q.typeOf(value) === "object") {
-			Q.extend(obj[p], value);
+			Q.extend(obj[p], Q.extendObject.options, value);
 		} else {
 			obj[p] = value;
 		}
 		return value;
 	}
+};
+
+Q.extendObject.options = {
+	levels: 10
 };
 
 /**
@@ -1817,8 +1831,9 @@ Q.Page.beingActivated = false;
  *	 Otherwise returns null, or false if the tool was already constructed.
  */
 Q.Tool = function _Q_Tool(element, options) {
-	if (this.constructed)
+	if (this.constructed) {
 		return false; // don't construct the same tool more than once
+	}
 	this.constructed = true;
 	this.element = element;
 	this.typename = 'Q.Tool';
@@ -1840,7 +1855,7 @@ Q.Tool = function _Q_Tool(element, options) {
 	// options
 	var dataOptions = element.getAttribute('data-' + Q.normalize(this.name, '-'));
 	if (dataOptions) {
-		Q.extend(this.options, JSON.parse(dataOptions), 'Q.Tool');
+		Q.extend(this.options, Q.Tool.options.levels, JSON.parse(dataOptions), 'Q.Tool');
 	}
 
 	// options cascade
@@ -1852,24 +1867,24 @@ Q.Tool = function _Q_Tool(element, options) {
 	for (i = 0, l = classes.length; i < l; i++) {
 		var className = classes[i];
 		if ((partial = options['.' + className])) {
-			Q.extend(this.options, partial, 'Q.Tool');
+			Q.extend(this.options, Q.Tool.options.levels, partial, 'Q.Tool');
 		}
 	}
 	// #Q_parent_child_tool
 	if ((partial = options['#' + this.element.id])) {
-		Q.extend(this.options, partial, 'Q.Tool');
+		Q.extend(this.options, Q.Tool.options.levels, partial, 'Q.Tool');
 	}
 	// #parent_child_tool, #child_tool
 	var _idcomps = this.element.id.split('_');
 	for (i = 0; i < _idcomps.length-1; ++i) {
 		if ((partial = options['#' + _idcomps.slice(i).join('_')])) {
-			Q.extend(this.options, partial, 'Q.Tool');
+			Q.extend(this.options, Q.Tool.options.levels, partial, 'Q.Tool');
 		}
 	}
 
 	// get options from options property on element
 	if (element.options) {
-		Q.extend(this.options, element.options, 'Q.Tool');
+		Q.extend(this.options, Q.Tool.options.levels, element.options, 'Q.Tool');
 	}
 	
 	if (!element.Q) element.Q = {};
@@ -1881,6 +1896,10 @@ Q.Tool = function _Q_Tool(element, options) {
 		Q.tools[this.prefix] = this;
 	}
 	return this;
+};
+
+Q.Tool.options = {
+	levels: 10
 };
 
 Q.Tool.prefixById = function _Q_Tool_prefixById(id) {
@@ -2229,6 +2248,16 @@ Q.Tool.from = function _Q_Tool_from(toolElement) {
 	var prefix = Q.Tool.prefixById(toolElement.id);
 	var Q_tool = Q.tools[prefix];
 	return (typeof(Q_tool) === 'object' ? Q_tool : null);
+};
+
+/**
+ * Returns a string that is already properly encoded and can be set as the value of an options attribute
+ * @param Object options
+ *   the options to pass to a tool
+ * @return String
+ */
+Q.Tool.encodeOptions = function _Q_Tool_stringFromOptions(options) {
+	return JSON.stringify(options).htmlentities().replaceAll({"&quot;": '"'});
 };
 
 /**
@@ -4541,7 +4570,9 @@ Q.loadUrl = function _Q_loadUrl(url, options)
 			}
 			var slotName, newTemplates = {};
 			for (slotName in response.templates) {
-				newTemplates[slotName] = Q.Template.add(response.templates[slotName]);
+				Q.each(response.templates, function (slotName) {
+					newTemplates[slotName] = Q.Template.set(this.name, this.content, this.type);
+				});
 			}
 			return newTemplates;
 		}
@@ -4839,7 +4870,14 @@ function _constructTool(toolElement, options, shared) {
 	_loadToolScript(toolElement, function _constructTool_doConstruct(toolElement, toolFunc, toolName, uniqueToolId) {
 		if (!toolFunc.toolConstructor) {
 			toolFunc.toolConstructor = function _toolConstructor (element, options) {
-				if (this.constructed) return;
+				if (!element.Q_tools) {
+					element.Q_tools = {};
+				}
+				if (this.constructed || element.Q_tools[toolName]) {
+					return; // support re-entrancy of Q.activate
+				}
+				element.Q_tools[toolName] = true;
+				this.constructed = false;
 				try {
     				this.options = Q.extend({}, toolFunc.options, options);
     				this.name = toolName;
@@ -4926,13 +4964,30 @@ Q.Template = function () {
 
 Q.Template.collection = {};
 
+
+/**
+ * Sets the content of a template in the document's collection.
+ * This is usually called by Q.loadUrl when the server sends over some templates,
+ * so they won't have to be requested later.
+ * @param {String} name The template's name under which it will be found
+ * @param {String} content The content of the template that will be processed by the template engine
+ * @param {String} type The type of template. Defaults to "mustache"
+ */
+Q.Template.set = function (name, content, type) {
+	type = type || 'mustache';
+	if (!Q.Template.collection[type]) {
+		Q.Template.collection[type] = {};
+	}
+	Q.Template.collection[type][Q.normalize(name)] = content;
+};
+
 /**
  * Load template from server and store to cache
  * @param name {String} The template name
  * @param callback {Function} Receives two parameters: (err, templateText)
  * @param options {Object?} Options.
  *   "type" - the type and extension of the template, defaults to 'mustache'
- *   "dir" - the folder under project web folder where templates are located
+ *   "dir" - the subpath of the app url under which to look for the template if it needs to be loaded
  * @return {String|undefined}
  */
 Q.Template.load = function _Q_Template_load(name, callback, options) {
@@ -4960,7 +5015,7 @@ Q.Template.load = function _Q_Template_load(name, callback, options) {
 		script = scripts[i];
 		if (script && script.id && script.innerHTML
 		&& script.getAttribute('type') === 'text/'+ o.type) {
-			tpl[script.id] = script.innerHTML.trim();
+			tpl[Q.normalize(script.id)] = script.innerHTML.trim();
 			trash.unshift(script);
 		}
 	}
@@ -4969,8 +5024,9 @@ Q.Template.load = function _Q_Template_load(name, callback, options) {
 		Q.removeElement(trash[i]);
 	}
 	// check if template is cached
-	if (tpl && tpl[name]) {
-		var result = tpl[name];
+	var n = Q.normalize(name);
+	if (tpl && tpl[n]) {
+		var result = tpl[n];
 		callback(null, result);
 		return true;
 	}
@@ -4979,8 +5035,8 @@ Q.Template.load = function _Q_Template_load(name, callback, options) {
 		if (err) {
 			return callback(err, null);
 		}
-		tpl[name] = content.trim();
-		callback(null, tpl[name]);
+		tpl[n] = content.trim();
+		callback(null, tpl[n]);
 	}
 	function _fail () {
 		var err = 'Failed to load template "'+o.dir+'/'+name+'.'+o.type+'"';
@@ -5051,24 +5107,6 @@ Q.Template.render = function _Q_Template_render(name, fields, partials, callback
 		}
 	});
 };
-
-/**
- * Adds a template to the collection in the document.
- * This is usually called by Q.loadUrl when the server sends over some templates,
- * so they won't have to be requested later.
- * @param {String|Array} template
- */
-Q.Template.add = function (template) {
-	if (Q.typeOf(template) === 'array') {
-		return Q.each(templates, function (i, template) {
-			Q.Template.add(template);
-		});
-	}
-	if (!Q.Template.collection[o.type]) {
-		Q.Template.collection[o.type] = {};
-	}
-	Q.Template.collection[template.type][template.src] = template.content;
-}
 
 var _sockets = {}, _ioSockets = {}, _eventHandlers = {}, _connectHandlers = {}, _ioCleanup = [];
 var _socketRegister = [];

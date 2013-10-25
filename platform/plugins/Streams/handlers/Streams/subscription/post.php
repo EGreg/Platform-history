@@ -47,7 +47,7 @@ function Streams_subscription_post($params) {
 	$rule->readyTime = $more_fields['readyTime'];
 
 	// filter
-	$rule->filter = json_encode(array(
+	$rule->filter = Q::json_encode(array(
 		'types' => !empty($more_fields['types']) ? $more_fields['types'] : array(),
 		'labels' => !empty($more_fields['labels']) ? $more_fields['labels'] : array()
 	));

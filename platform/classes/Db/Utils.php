@@ -594,7 +594,7 @@ class Db_Utils
 		$res = Q_Utils::queryInternal('Db/Shards', array(
 				'Q/method' => 'split',
 				'shard' => $shard_name,
-				'shards' => json_encode($new_shards),
+				'shards' => Q::json_encode($new_shards),
 				'part' => $shard,
 				'table' => $table,
 				'dbTable' => $shard_table,
@@ -602,7 +602,7 @@ class Db_Utils
 				'plugin' => $plugin,
 				'connection' => $connection,
 				'where' => $where,
-				'parts' => json_encode(array('partition' => $new_partition, 'fields' => $fields))
+				'parts' => Q::json_encode(array('partition' => $new_partition, 'fields' => $fields))
 			), $node);
 		if ($res) {
 			echo "Split process for shard '$shard_name' ($shard) has started\nPlease, monitor node.js console for important messages and process status\n";

@@ -56,7 +56,11 @@ function Streams_basic_post()
 		$stream->post($user->id, array(
 			'type' => $stream->wasRetrieved() ? 'Streams/edited' : 'Streams/created',
 			'content' => '',
-			'instructions' => json_encode($stream->toArray())
+			'instructions' => array(
+				'content' => $stream->content,
+				'type' => $stream->type,
+				'title' => $stream->title
+			)
 		), true);
 	}
 }

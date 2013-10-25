@@ -517,7 +517,7 @@ class Q_Response
 			self::$scriptLinesForSlot[$slot_name] = array();
 		}
 		foreach ($replace as $k => $v) {
-			$line = str_replace($k, json_encode($v), $line);
+			$line = str_replace($k, Q::json_encode($v), $line);
 		}
 		self::$scriptLinesForSlot[$slot_name][] = $line;
 		self::$scriptLines[] = $line;
@@ -574,10 +574,10 @@ class Q_Response
 		if (!$without_script_data) {
 			$tested = array();
 			if ($data = self::scriptData($slot_name)) {
-				$json = json_encode($data);
+				$json = Q::json_encode($data);
 				$parts = array();
 				foreach ($data as $k => $v) {
-					$parts[] = json_encode($k) . ": " . str_replace('\/', '/', json_encode($v, JSON_PRETTY_PRINT));
+					$parts[] = Q::json_encode($k) . ": " . str_replace('\/', '/', Q::json_encode($v, JSON_PRETTY_PRINT));
 				}
 				$corpus = implode(",\n\t", $parts);
 				$scriptDataLines = array("Q.setObject({\n\t$corpus\n});");
@@ -773,28 +773,32 @@ class Q_Response
 	 * Adds inline template to the response
 	 * @method addTemplate
 	 * @static
-	 * @param {string} $src The location of the template file
+	 * @param {string} $name The location of the template file
 	 * @param {string} [$type="mustache"]
 	 * @return {boolean} returns false if script was already added, else returns true
 	 */
-	static function addTemplate ($src, $type = 'mustache')
+	static function addTemplate ($name, $type = 'mustache')
 	{
-		self::$templates[] = compact('src', 'type');
+		self::$templates[] = compact('name', 'type');
 		// Now, for the slot
 		$slot_name = isset(self::$slotName) ? self::$slotName : '';
 		if (!isset(self::$inlineTemplates[$slot_name])) {
 			self::$inlineTemplates[$slot_name] = array();
 		}
 		foreach (self::$inlineTemplates[$slot_name] as $template) {
-			if ($template['src'] == $src && $template['type'] == $type) {
+			if ($template['name'] == $name && $template['type'] == $type) {
 				return false; // already added
 			}
 		}
-		$content = file_get_contents("views/$src.$type", true);
-		if (!$content) {
-			throw new Q_Exception("Failed to load template '$src'");
+		$filename = Q::realPath("views/$name.$type");
+		if (!$filename) {
+			throw new Q_Exception_MissingFile(array('filename' => "views/$name.$type"));
 		}
-		self::$inlineTemplates[$slot_name][] = compact('src', 'content', 'type');
+		$content = file_get_contents($filename, true);
+		if (!$content) {
+			throw new Q_Exception("Failed to load template '$name'");
+		}
+		self::$inlineTemplates[$slot_name][] = compact('name', 'content', 'type');
 
 		return true;
 	}
@@ -821,7 +825,7 @@ class Q_Response
 			foreach ($slot_name as $sn) {
 				foreach (self::templatesArray($sn) as $b)  {
 					foreach ($templates as $a) {
-						if ($a['src'] === $b['src']
+						if ($a['name'] === $b['name']
 						&& $a['type'] === $b['type']) {
 							break 2;
 						}
@@ -876,7 +880,7 @@ class Q_Response
 				array(
 					'cdata' => true,
 					'type' => 'text/'.$template['type'], 
-					'id' => Q_Utils::normalize($template['src']),
+					'id' => Q_Utils::normalize($template['name']),
 					'data-slot' => $template['slot']
 				)
 			);

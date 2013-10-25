@@ -264,7 +264,7 @@ class Q_Tree
 		$success = file_put_contents(
 			$filename2, 
 			!empty($to_save) 
-				? json_encode($to_save, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+				? Q::json_encode($to_save, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
 				: '{}',
 			LOCK_EX);
 
