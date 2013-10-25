@@ -4,7 +4,7 @@
  * This tool generates an inline editor to edit the content or attribute of a stream.
  * @param array $options
  *  An associative array of parameters, containing:
- *  "fieldType" => Required. The type of the fieldInput. Can be "textarea" or "text"
+ *  "inplaceType" => Required. The type of the fieldInput. Can be "textarea" or "text"
  *  "stream" => A Streams_Stream object
  *  "staticHtml" => Optional. The static HTML to display when there is nothing to edit
  *  "editing" => If true, then renders the inplace tool in editing mode.
@@ -26,7 +26,7 @@ function Streams_inplace_tool($options)
 	$options['action'] = $stream->actionUrl();
 	$options['method'] = 'PUT';
 	$field = empty($attribute) ? 'content' : 'attributes['.urlencode($attribute).']';
-	switch ($options['fieldType']) {
+	switch ($options['inplaceType']) {
 		case 'text':
 			$options['fieldInput'] = Q_Html::input($field, $stream->content);
 			$options['staticHtml'] = Q_Html::text($stream->content);
@@ -36,7 +36,7 @@ function Streams_inplace_tool($options)
 			$options['staticHtml'] = Q_Html::text($stream->content, array("\n"));
 			break;
 		default:
-			return "fieldType must be 'textarea' or 'text'";
+			return "inplaceType must be 'textarea' or 'text'";
 	}
 	if (!$stream->testWriteLevel('editPending')) {
 		if (!isset($options['classes'])) {

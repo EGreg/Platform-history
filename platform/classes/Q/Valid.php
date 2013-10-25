@@ -285,7 +285,7 @@ class Q_Valid
 				return false;
 			}
 			$message = Q_Config::get('Q', 'session', 'nonceMessage',
-			 	"Your session nonce doesn't match. Perhaps you logged in as a different user?"
+			 	"Your browser seems to be using a different session. Try refreshing the page."
 			);
 			throw new Q_Exception_FailedValidation(compact('message'));
 		}

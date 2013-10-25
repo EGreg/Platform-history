@@ -419,21 +419,6 @@ Q.batcher = function _Q_batch(batch, options) {
 };
 
 /**
- * Helper function for Q.Cache and Q.getter
- */
-function _getKey(args, functions) {
-	var i, keys = [];
-	for (i=0; i<args.length; ++i) {
-		if (typeof args[i] !== 'function') {
-			keys.push(args[i]);
-		} else if (functions && functions.push) {
-			functions.push(args[i]);
-		}
-	}
-	return JSON.stringify(keys);
-}
-
-/**
  * Wraps a getter function to provide support for re-entrancy, cache and throttling.
  *  It caches based on all non-function arguments which were passed to the function.
  *  If this object has methods called get(key) and set(key, cbpos, subject, params), then
@@ -474,7 +459,7 @@ Q.getter = function _Q_getter(original, options) {
 		var callbacks = [];
 
 		// separate fields and callbacks
-		key = _getKey(arguments2, callbacks);
+		key = Q.Cache.key(arguments2, callbacks);
 		if (callbacks.length === 0) {
 			// in case someone forgot to pass a callback
 			// pretend they added a callback at the end
@@ -491,6 +476,7 @@ Q.getter = function _Q_getter(original, options) {
 				cbpos = cached.cbpos;
 				if (callbacks[cbpos]) {
 					callbacks[cbpos].apply(cached.subject, cached.params);
+					result.onCalled.handle.call(this, arguments2, 0);
 					return 0; // result found in cache, callback and throttling have run
 				}
 			}
@@ -498,6 +484,7 @@ Q.getter = function _Q_getter(original, options) {
 		
 		if (_waiting[key]) {
 			_waiting[key].push(callbacks);
+			result.onCalled.handle.call(this, arguments2, 3);
 			return 3; // the request is already in process - let's wait
 		} else {
 			_waiting[key] = [];
@@ -545,6 +532,7 @@ Q.getter = function _Q_getter(original, options) {
 		if (!result.throttle) {
 			// no throttling, just run the function
 			original.apply(that, args);
+			result.onCalled.handle.call(this, arguments2, 2);
 			return 2;
 		}
 		
@@ -586,13 +574,16 @@ Q.getter = function _Q_getter(original, options) {
 		
 		// execute the throttle
 		if (result.throttle.throttleTry(this, original, args)) {
+			result.onCalled.handle.call(this, arguments2, 2);
 			return 2;
 		} else {
+			result.onCalled.handle.call(this, arguments2, 1);
 			return 1;
 		}
 	}
 	
 	Q.extend(result, Q.getter.options, options);
+	result.onCalled = new Q.Event();
 	
 	var _waiting = {};
 	if (result.cache === false) {
@@ -622,7 +613,7 @@ Q.getter = function _Q_getter(original, options) {
 	}
 
 	result.forget = function _forget() {
-		var key = _getKey(arguments);
+		var key = Q.Cache.key(arguments);
 		if (key && result.cache) {
 	        result.cache.remove(key);
 	    }
@@ -661,6 +652,23 @@ Q.Cache = function  _Q_Cache(options) {
 	this.count = 0;
 };
 /**
+ * Generates the key under which things will be stored in a cache
+ * @param args {Array} the arguments from which to generate the key
+ * @param functions {Array} optional array to which all the functions found in the arguments will be pushed
+ * @return String
+ */
+Q.Cache.key = function _Cache_key(args, functions) {
+	var i, keys = [];
+	for (i=0; i<args.length; ++i) {
+		if (typeof args[i] !== 'function') {
+			keys.push(args[i]);
+		} else if (functions && functions.push) {
+			functions.push(args[i]);
+		}
+	}
+	return JSON.stringify(keys);
+};
+/**
  * @method set
  * Accesses the cache and sets an entry in it
  * @param {String} key
@@ -673,7 +681,7 @@ Q.Cache = function  _Q_Cache(options) {
  */
 Q.Cache.prototype.set = function _Q_Cache_prototype_set(key, cbpos, subject, params, options) {
 	if (typeof key !== 'string') {
-		key = _getKey(key);
+		key = Q.Cache.key(key);
 	}
 	var existing = this.data[key], previous;
 	if (!options || !options.dontTouch) {
@@ -715,7 +723,7 @@ Q.Cache.prototype.set = function _Q_Cache_prototype_set(key, cbpos, subject, par
  */
 Q.Cache.prototype.get = function _Q_Cache_prototype_get(key, options) {
 	if (typeof key !== 'string') {
-		key = _getKey(key);
+		key = Q.Cache.key(key);
 	}
 	if (!(key in this.data)) {
 		return undefined;
@@ -742,7 +750,7 @@ Q.Cache.prototype.get = function _Q_Cache_prototype_get(key, options) {
  */
 Q.Cache.prototype.remove = function _Q_Cache_prototype_remove(key) {
 	if (typeof key !== 'string') {
-		key = _getKey(key);
+		key = Q.Cache.key(key);
 	}
 	if (!(key in this.data)) {
 		return false;
@@ -777,7 +785,7 @@ Q.Cache.prototype.each = function _Q_Cache_prototype_clear(args, callback) {
         callback = args;
         args = undefined;
     } else {
-        var json = _getKey(args);
+        var json = Q.Cache.key(args);
         prefix = json.substring(0, json.length-1);
     }
     return Q.each(this.data, function (key, item) {
@@ -2331,12 +2339,10 @@ Q.Event.prototype.occurred = false;
 /**
  * Adds a callable to a handler, or overwrites an existing one
  * @param callable Any kind of callable which Q.handle can invoke
- * @param key {String|Q.Tool} Optional key to associate with the callable.
+ * @param key {String} Optional key to associate with the callable.
  *  Used to replace handlers previously added under the same key.
  *  Also used for removing handlers with .remove(key).
  *  If the key is not provided, a unique one is computed.
- *  Pass a Q.Tool object here to associate the handler to the tool,
- *  and it will be automatically removed when the tool is removed.
  * @param prepend Boolean
  *  If true, then prepends the handler to the chain
  */
@@ -2556,7 +2562,7 @@ Q.extendObject = function _Q_extendObject(name, value, context, delimiter){
  */
 Q.setObject = function _Q_setObject(name, value, context, delimiter) {
     delimiter = delimiter || '.';
-	if (typeof name === 'object') {
+	if (Q.isPlainObject(name)) {
 		context = value;
 		var result = {};
 		for (var k in name) {

@@ -134,9 +134,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 			publisherId: state.publisherId,
 			streamName: state.streamName,
 			field: 'title',
-			inplace: {
-				type: 'text'
-			}
+			inplaceType: 'text'
 		}, state.inplace);
 		var fields = Q.extend({}, state.template.fields, {
 			src: Q.Streams.iconUrl(icon, file)+'?'+Date.now(),

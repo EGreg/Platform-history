@@ -210,7 +210,7 @@ Streams.onActivate = new Q.Event();
 /**
  * Connects or reconnects sockets for all participating streams
  */
-function _connectSockets(fetchLatestMessages) {
+function _connectSockets(updateParticipating) {
 	if (!Q.Users.loggedInUser) {
 		return false;
 	}
@@ -220,20 +220,11 @@ function _connectSockets(fetchLatestMessages) {
 				publisherId: p.publisherId,
 				streamName: p.streamName
 			}));
-			if (!fetchLatestMessages) {
-				return;
-			}
-			
-			// If the stream was cached, fetch latest messages,
-			// and replay their being "posted" to trigger the right events
-			Streams.get.cache.each([p.publisherId, p.streamName], function () {
-				Streams.Message.wait(p.publisherId, p.streamName, -1);
-			});
 		});
 	});
-	
-	// TODO: update the cached streams to latest state
-	
+	if (updateParticipating) {
+		Streams.updateParticipating();
+	}
 }
 
 function _disconnectSockets() {
@@ -261,6 +252,23 @@ Streams.getParticipating = Q.getter(function(callback) {
 		callback(err, data && data.slots && data.slots.participating);
 	});
 }, {cache: Q.Cache.document("Streams.getParticipating")});
+
+/**
+ * Updates all the streams you are participating in
+ */
+Streams.updateParticipating = function () {
+	Streams.getParticipating(function (err, participating) {
+		Q.each(participating, function (i, p) {
+			// If the stream was seen, fetch latest messages,
+			// and replay their being "posted" to trigger the right events
+			if (Q.getObject([p.publisherId, p.streamName], Streams.seen)) {
+				Streams.Message.wait(p.publisherId, p.streamName, -1);
+			}
+		});
+	});
+};
+
+Streams.seen = {};
 
 /**
  * Streams batch getter.
@@ -316,6 +324,12 @@ Streams.get = Q.getter(function (publisherId, streamName, callback, extra) {
 		);
 	}, extra);
 }, {cache: Q.Cache.document("Streams.get"), throttle: 'Streams.get'});
+
+Streams.get.onCalled.set(function (params) {
+	// Every time Streams.get is called on a stream, mark it as seen
+	var publisherId = params[0], streamName = params[1];
+	Q.setObject([publisherId, streamName], true, Streams.seen);
+}, 'Streams');
 
 Streams.batchFunction = function Streams_batchFunction(baseUrl) {
 	return Q.batcher.factory(Streams.batchFunction.functions, baseUrl, "/action.php/Streams/batch", "batch", "batch");
@@ -1291,6 +1305,9 @@ Streams.Message.wait = function(publisherId, streamName, ordinal, callback, opti
 		//	 remaining = Q.diff(ordinals, filled);
 		// but we are going to request the entire range.
 		
+		if (ordinal < 0) {
+			Streams.Message.get.forget(publisherId, streamName, {min: latest+1, max: ordinal});
+		}
 		Streams.Message.get(publisherId, streamName, {min: latest+1, max: ordinal}, function (err, messages) {
 			// Go through the messages and simulate the posting
 			// NOTE: the messages will arrive a lot quicker than they were posted,
@@ -1981,7 +1998,6 @@ Q.onInit.add(function _Streams_onInit() {
 					Streams.Message.get.cache.each([msg.publisherId, msg.streamName], function (k, v) {
 						var args = JSON.parse(k), ordinal = args[2];
 						if (ordinal && ordinal.max && ordinal.max < 0) {
-							// later, we can refactor this to insert the correct data into the cache
 							Streams.Message.get.cache.remove(k); 
 						}
 					});
@@ -2034,6 +2050,7 @@ function _clearCaches() {
 	Streams.Message.get.cache.clear();
 	Streams.Participant.get.cache.clear();
 	Streams.Avatar.get.cache.clear();
+	Streams.getParticipating.cache.clear();
 }
 
 Q.Users.onLogin.set(_clearCaches, 'Streams');

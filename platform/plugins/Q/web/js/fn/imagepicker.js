@@ -75,7 +75,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 				}).success(function(res) {
 					var state = $this.state('Q/imagepicker');
 					if (res.errors) {
-						$this.attr('src', state.oldSrc).css({ 'opacity': '' });
+						$this.attr('src', state.oldSrc).stop().css({ 'opacity': '' });
 						Q.handle(o.onError, this, [res.errors[0].message]);
 					} else {
 						var key = o.showSize;

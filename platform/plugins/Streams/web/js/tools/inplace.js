@@ -4,31 +4,27 @@ Q.Tool.define("Streams/inplace", function (options) {
 	var tool = this, 
 		$te = $(tool.element), 
 		container = $('.Q_inplace_tool_container', $te);
-	if (container.length) {
-		return;
-	}
 	
 	// if activated with JS should have following options:
 	//  - stream: a Streams.Stream object that was already constructed
 	//  - publisherId, streamName: alternative to stream
 	//  - field: the name of the field to bind to, defaults to "content"
 	//  - attribute: alternatively, the name of an attribute to bind to
-	//	- inplaceType: type of the input - 'text' or 'textarea', defaults to 'textarea'
 
 	function _construct() {
-		var stream = this;
-		tool.state.publisherId = stream.fields.publisherId;
-		tool.state.streamName = stream.fields.name;
+		var stream = this, state = tool.state;
+		state.publisherId = stream.fields.publisherId;
+		state.streamName = stream.fields.name;
 
 		function _setContent(content) {
-			switch (options.inplaceType) {
+			switch (state.inplaceType) {
 				case 'text':
 					tool.$('input').val(content);
-					tool.$('.Q_inplace_tool_static_container').html(content.htmlentities());
+					tool.$('.Q_inplace_tool_static').html(content.htmlentities());
 					break;
 				case 'textarea':
 					tool.$('textarea').val(content);
-					tool.$('.Q_inplace_tool_static_container').html(content.htmlentities().replaceAll({
+					tool.$('.Q_inplace_tool_blockstatic').html(content.htmlentities().replaceAll({
 						"\n": '<br>',
 					 	' ': '&nbsp;'
 					}));
@@ -39,24 +35,29 @@ Q.Tool.define("Streams/inplace", function (options) {
 		};
 
 		var field;
-		if (options.attribute) {
-			field = 'attributes['+encodeURIComponent(options.attribute)+']';
+		if (state.attribute) {
+			field = 'attributes['+encodeURIComponent(state.attribute)+']';
 			stream.onUpdated(o.attribute).set(function (fields, changed) {
 				_setContent(changed[o.attribute])
 			}, tool);
 		} else {
-			field = options.field || 'content';
+			field = state.field || 'content';
 			stream.onFieldChanged(field).set(function (fields, field) {
 				_setContent(fields[field]);
 			}, tool);
 		}
+		
+		if (container.length) {
+			return;
+		}
 
-		var ipo = tool.state.inplace = Q.extend(tool.state.inplace, {
+		var ipo = state.inplace = Q.extend(state.inplace, {
 			action: stream.actionUrl(),
 			method: 'put',
-			field: field
+			field: field,
+			type: state.inplaceType
 		});
-		switch (options.inplaceType) {
+		switch (state.inplaceType) {
 			case 'text':
 				ipo.fieldInput = $('<input />').attr('name', field).val(stream.fields[field]);
 				ipo.staticHtml = stream.fields[field].htmlentities();
@@ -86,24 +87,24 @@ Q.Tool.define("Streams/inplace", function (options) {
 			}
 			inplace.state.onSave.set(function () {
 				Q.Streams.Message.wait(
-					tool.state.publisherId,
-					tool.state.streamName,
+					state.publisherId,
+					state.streamName,
 					-1,
 					function () {
-						tool.state.onUpdate.handle.call(tool);
+						state.onUpdate.handle.call(tool);
 					}
 				);
 			}, 'Streams/inplace');
 		});
 	}
 
-	if (options.stream) {
-		_construct.apply(options.stream);
+	if (tool.state.stream) {
+		_construct.apply(tool.state.stream);
 	} else {
-		if (!options.publisherId || !options.streamName) {
+		if (!tool.state.publisherId || !tool.state.streamName) {
 			throw "Streams/inplace tool: stream is undefined";
 		}
-		Q.Streams.get(options.publisherId, options.streamName, _construct);
+		Q.Streams.get(tool.state.publisherId, tool.state.streamName, _construct);
 	}
 },
 
