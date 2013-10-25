@@ -2028,5 +2028,16 @@ Q.onInit.add(function _Streams_onInit() {
 
 }, 'Streams');
 
+function _clearCaches() {
+	// Clear caches so permissions can be recalculated as various objects are fetched
+	Streams.get.cache.clear();
+	Streams.Message.get.cache.clear();
+	Streams.Participant.get.cache.clear();
+	Streams.Avatar.get.cache.clear();
+}
+
+Q.Users.onLogin.set(_clearCaches, 'Streams');
+Q.Users.onLogout.set(_clearCaches, 'Streams');
+
 
 })(jQuery, Q.plugins.Streams);

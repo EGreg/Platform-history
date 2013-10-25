@@ -41,7 +41,9 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 		var input = $('<input type="file" accept="image/gif, image/jpeg, image/png" class="Q_imagepicker_file" />');
 		input.css({ 'visibility': 'hidden', 'height': '0', 'width': '0', 'position': 'absolute' });
 		var originalSrc = $this.attr('src');
-		$this.attr('src', originalSrc+"?"+Date.now());
+		if (originalSrc.indexOf('?') < 0) {
+			$this.attr('src', originalSrc+"?"+Date.now()); // cache busting
+		}
 		$this.after(input);
 		$this.addClass('Q-imagepicker');
 		
@@ -73,7 +75,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 				}).success(function(res) {
 					var state = $this.state('Q/imagepicker');
 					if (res.errors) {
-						$this.attr('src', state.oldSrc).css({ 'opacity': state.opacity });
+						$this.attr('src', state.oldSrc).css({ 'opacity': '' });
 						Q.handle(o.onError, this, [res.errors[0].message]);
 					} else {
 						var key = o.showSize;

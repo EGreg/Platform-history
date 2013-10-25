@@ -248,8 +248,8 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 				// TODO: check what to do if user has changed
 				Users.connected.facebook = true;
 				var changed = (!Users.loggedInUser || Users.loggedInUser.fb_uid != response.authResponse.UserID);
-				onSuccess && onSuccess(user);
 				Users.onLogin.handle(user);
+				Q.handle(o.onSuccess, this, [user]);
 			}
 			
 			function _doCancel(ignoreUid) {
@@ -587,6 +587,7 @@ Users.login = function(options) {
 			alert('Need an url in the onSuccess option');
 			return;
 		}
+		Users.onLogin.handle(user);
 		Q.handle(o.onSuccess, this, [user, o, priv.result, priv.used || 'native']);
 	}
 };
@@ -630,10 +631,11 @@ Users.logout = function(options) {
 					if (response.authResponse) {
 						FB.logout(function() {
 							delete Users.connected.facebook;
+							Users.onLogout.handle.call(this, o);
 							Q.handle(o.onSuccess, this, [o]);
-							Users.onLogout.handle(o);
 						});
 					} else {
+						Users.onLogout.handle.call(this, o);
 						Q.handle(o.onSuccess, this, [o]);
 					}
 				}, true);
@@ -645,6 +647,7 @@ Users.logout = function(options) {
 			if (Users.loggedInUser && Users.loggedInUser.fb_uid)
 			Q.cookie('Users_ignore_facebook_uid', Users.loggedInUser.fb_uid);
 			Users.loggedInUser = null;
+			Users.onLogout.handle.call(this, o);
 			Q.handle(o.onSuccess, this, [o]);
 		}
 	}

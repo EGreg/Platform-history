@@ -26,7 +26,13 @@ Q.Tool.define("Streams/image/preview", function(options) {
 	if (parts[1]) {
 		this.element.style.height = parts[1] + "px";
 	}
+	var img = document.createElement('img');
+	img.setAttribute('alt', 'loading');
+	img.setAttribute('src', Q.url(options.throbber));
+	img.style.opacity = 0.5;
 	tool.element.innerHTML = '';
+	tool.element.appendChild(img);
+	
 	Q.Streams.get(tool.state.publisherId, tool.state.streamName, function (err) {
 		
 		function _afterRefresh () {
@@ -89,11 +95,6 @@ Q.Tool.define("Streams/image/preview", function(options) {
 			tool.refresh(_afterRefresh);
 		});
 	});
-	var img = document.createElement('img');
-	img.setAttribute('alt', 'loading');
-	img.setAttribute('src', Q.url(options.throbber));
-	img.style.opacity = 0.5;
-	tool.element.appendChild(img);
 },
 
 {
@@ -123,6 +124,12 @@ Q.Tool.define("Streams/image/preview", function(options) {
 			|| state.imagepicker.saveSizeName[Q.first(state.imagepicker.saveSizeName, {nonEmpty: true})];
 		var icon = stream && stream.fields.icon && stream.fields.icon !== 'default' ? stream.fields.icon : 'Streams/image';
 		
+		var jq = this.$('img.Streams_image_preview_icon');
+		if (jq.length) {
+			jq.attr('src', Q.Streams.iconUrl(icon, file)+'?'+Date.now());
+			return true;
+		}
+		
 		var inplace = Q.extend({
 			publisherId: state.publisherId,
 			streamName: state.streamName,
@@ -132,7 +139,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 			}
 		}, state.inplace);
 		var fields = Q.extend({}, state.template.fields, {
-			src: Q.Streams.iconUrl(icon, file),
+			src: Q.Streams.iconUrl(icon, file)+'?'+Date.now(),
 			alt: stream.fields.title,
 			inplace: "<div class='Q_tool Streams_inplace_tool' data-streams-inplace='"+Q.Tool.encodeOptions(inplace)+"'></div>"
 		});
@@ -155,7 +162,8 @@ Q.Tool.define("Streams/image/preview", function(options) {
 
 Q.Template.set(
 	'Streams/image/preview/tool',
-	'<img src="{{& src}}" alt="{{alt}}"><div class="{{titleClass}}"><{{titleTag}}>{{& inplace}}</{{titleTag}}></div>'
+	'<img src="{{& src}}" alt="{{alt}}" class="Streams_image_preview_icon">'
+	+ '<div class="{{titleClass}}"><{{titleTag}}>{{& inplace}}</{{titleTag}}></div>'
 );
 
 /*

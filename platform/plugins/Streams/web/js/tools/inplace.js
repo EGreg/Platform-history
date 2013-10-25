@@ -33,6 +33,8 @@ Q.Tool.define("Streams/inplace", function (options) {
 					 	' ': '&nbsp;'
 					}));
 					break;
+				default:
+					throw "Streams/inplace tool: inplaceType must be 'textarea' or 'text'";
 			}
 		};
 
@@ -47,10 +49,6 @@ Q.Tool.define("Streams/inplace", function (options) {
 			stream.onFieldChanged(field).set(function (fields, field) {
 				_setContent(fields[field]);
 			}, tool);
-		}
-
-		if (!stream.testWriteLevel('editPending')) {
-			return; // leave the html that is currently in the element
 		}
 
 		var ipo = tool.state.inplace = Q.extend(tool.state.inplace, {
@@ -72,8 +70,14 @@ Q.Tool.define("Streams/inplace", function (options) {
 				});
 				break;
 			default:
-				return "inplaceType must be 'textarea' or 'text'";
+				throw "Streams/inplace tool: inplaceType must be 'textarea' or 'text'";
 		}
+		
+		if (!stream.testWriteLevel('editPending')) {
+			tool.element.innerHTML = ipo.staticHtml;
+			return; // leave the html that is currently in the element
+		}
+		
 		var inplace = Q.Tool.element('div', 'Q/inplace', ipo);
 		Q.activate(tool.element.appendChild(inplace), function () {
 			var inplace = tool.child('Q/inplace');
