@@ -4780,7 +4780,7 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 					}
 				}
 			}
-			Q.handle.options.onUrl.handle(callables, o);
+			Q.handle.onUrl.handle(callables, o);
 			return 1;
 		default:
 			return 0;
