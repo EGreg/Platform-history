@@ -120,7 +120,7 @@ Q.inherit = function _Q_inherit(Base, Constructor) {
  * @return {string} String description of the type
  */
 Q.typeOf = function _Q_typeOf(value) {
-	var s = typeof value;
+	var s = typeof value, x;
 	if (s === 'object') {
 		if (value === null) {
 			return 'null';
@@ -134,6 +134,8 @@ Q.typeOf = function _Q_typeOf(value) {
 				return 'object';
 			}
 			return value.constructor.name;
+		} else if ((x = Object.prototype.toString.apply(value).substr(0, 8)) === "[object ") {
+			return x.substring(8, x.length-1);
 		} else {
 			return 'object';
 		}

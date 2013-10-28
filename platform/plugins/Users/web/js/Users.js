@@ -249,7 +249,7 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 				Users.connected.facebook = true;
 				var changed = (!Users.loggedInUser || Users.loggedInUser.fb_uid != response.authResponse.UserID);
 				Users.onLogin.handle(user);
-				Q.handle(o.onSuccess, this, [user]);
+				Q.handle(options.onSuccess, this, [user]);
 			}
 			
 			function _doCancel(ignoreUid) {

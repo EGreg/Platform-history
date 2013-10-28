@@ -265,7 +265,7 @@ Q.objectWithPrototype = function _Q_objectWithPrototype(original) {
  * return
  */
 Q.typeOf = function _Q_typeOf(value) {
-	var s = typeof value;
+	var s = typeof value, x;
 	if (s === 'object') {
 		if (value === null) {
 			return 'null';
@@ -280,6 +280,8 @@ Q.typeOf = function _Q_typeOf(value) {
 				return 'object';
 			}
 			return value.constructor.name;
+		} else if ((x = Object.prototype.toString.apply(value).substr(0, 8)) === "[object ") {
+			return x.substring(8, x.length-1);
 		} else {
 			return 'object';
 		}
@@ -310,7 +312,14 @@ Q.each = function _Q_each(container, callback, options) {
 			if (!container) return;
 			// Assume it is an array-like structure.
 			// Make a copy in case it changes during iteration. Then iterate.
-			container = Array.prototype.slice.call(container, 0);
+			var c = Array.prototype.slice.call(container, 0);
+			if (('0' in container) && !('0' in c)) { // we are probably dealing with IE < 9
+				var c = [];
+				for (i=0; r = container[i]; ++i) {
+					c.push(r);
+				}
+			}
+			container = c;
 		case 'array':
 			length = container.length;
 			if (!container || !length || !callback) return;
@@ -3373,7 +3382,7 @@ Q.request = function (url, slotNames, callback, options) {
 					return callback({"errors": [e]}, content);
 				}
 				if (data && data.redirect && data.redirect.url) {
-					o.handleRedirects || o.handleRedirects.call(Q, data.redirect.url);
+					o.handleRedirects && o.handleRedirects.call(Q, data.redirect.url);
 				}
 				_callback.call(this, err, data);
 			};
@@ -4771,6 +4780,7 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 					}
 				}
 			}
+			Q.handle.options.onUrl.handle(callables, o);
 			return 1;
 		default:
 			return 0;
@@ -4779,8 +4789,9 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 Q.handle.options = {
 	loadUsingAjax: false,
 	externalLoader: null,
-	dontReload: false
+	dontReload: false,
 };
+Q.handle.onUrl = new Q.Event();
 
 /**
  * Parses a querystring
