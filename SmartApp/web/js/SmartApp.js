@@ -1,3 +1,8 @@
+if (!window.Q) { // You can remove this part after you've run install.php
+	document.getElementsByTagName('body')[0].innerHTML = "<h1>Please run SmartApp/scripts/Q/install.php --all</h1>";
+	return;
+}
+
 var SmartApp = Q.plugins.SmartApp = (function ($) {
 
 	var SmartApp = {

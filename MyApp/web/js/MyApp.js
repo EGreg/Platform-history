@@ -1,3 +1,8 @@
+if (!window.Q) { // You can remove this part after you've run install.php
+	document.getElementsByTagName('body')[0].innerHTML = "<h1>Please run MyApp/scripts/Q/install.php --all</h1>";
+	return;
+}
+
 var MyApp = Q.plugins.MyApp = (function ($) {
 	
 	// Here is some example code to get you started
