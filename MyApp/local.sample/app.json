@@ -1,5 +1,6 @@
 {
 	"Q": {
+		"localNotYetConfigured": "REMOVE THIS ENTRY WHEN YOU ARE DONE WITH THE LOCAL CONFIGURATION",
 		"web": {
 			"appRootUrl": "http://MyApp.loc",
 			"controllerSuffix": "CAN BE BLANK OR index.php"
@@ -8,6 +9,16 @@
 	"Db": {
 		"connections": {
 			"Users": {
+				"prefix": "PREFIX HERE",
+				"dsn": "mysql:host=localhost;dbname=DBNAME",
+				"username": "USERNAME",
+				"password": "PASSWORD",
+				"driver_options": {
+				  "3": 2
+				},
+				"shards": {}
+			},
+			"Streams": {
 				"prefix": "PREFIX HERE",
 				"dsn": "mysql:host=localhost;dbname=DBNAME",
 				"username": "USERNAME",

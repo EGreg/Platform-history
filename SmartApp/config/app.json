@@ -12,7 +12,7 @@
 		},
 		"plugins": ["Users", "Streams"],
 		"handlersBeforeEvent": {
-			"Q/responseExtras": ["SmartApp/after/Q/responseExtras"]
+			"Q/responseExtras": ["SmartApp/before/Q/responseExtras"]
 		},
 		"handlersAfterEvent": {
 			

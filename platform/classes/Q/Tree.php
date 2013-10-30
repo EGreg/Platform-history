@@ -237,7 +237,7 @@ class Q_Tree
 			$filename = $this->filename;
 		}
 		if (!($filename2 = Q::realPath($filename))) {
-			return false;
+			$filename2 = $filename;
 		}
 
 		if (empty($array_path)) {

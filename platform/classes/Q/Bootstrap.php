@@ -266,6 +266,18 @@ class Q_Bootstrap
 		self::setDefaultTimezone();
 	}
 	
+	static function alertAboutLocalConfiguration()
+	{
+		if (defined('CONFIGURE_ORIGINAL_APP_NAME')) {
+			return; // let the configurarion happen without the alert
+		}
+		$app = Q_Config::get('Q', 'app', null);
+		$prefix = $app ? "$app/" : '';
+		if (Q_Config::get('Q', 'localNotYetConfigured', null)) {
+			throw new Q_Exception("Please edit local config in {$prefix}local/app.json");
+		}
+	}
+	
 	/**
 	 * @method checkRequirements
 	 * @static

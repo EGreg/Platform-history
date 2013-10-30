@@ -14,16 +14,14 @@ if (!defined('APP_DIR')) {
 //
 // Include Q
 //
-$header = "This is a Q project...\n";
+$header = "This is a Q project...";
 if (!is_dir(APP_DIR)) {
-	die($header."Please edit scripts/Q.inc.php and change APP_DIR 
-to point to your app's directory.");
+	die("$header\nPlease edit scripts/Q.inc.php and change APP_DIR to point to your app's directory.\n");
 }
 $paths_filename = APP_DIR . '/local/paths.php';
 $basename = basename(APP_DIR);
 if (!file_exists($paths_filename)) {
-	die($header."Please rename $basename/local.sample to 
-$basename/local, and edit local/paths.php");
+	die("$header\nGo to $basename/scripts/Q directory and run php configure.php\n");
 }
 include($paths_filename);
 include(realpath(Q_DIR.'/Q.php'));

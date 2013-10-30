@@ -162,17 +162,6 @@ CREATE TABLE `{$prefix}participating` (
   PRIMARY KEY (`userId`,`publisherId`,`streamName`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='stored primarily on the participating user''s fm server';
 
-# Dump of table {$prefix}Q_plugin
-# ------------------------------------------------------------
-
-DROP TABLE IF EXISTS `{$prefix}Q_plugin`;
-
-CREATE TABLE `{$prefix}Q_plugin` (
-  `plugin` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  `version` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  PRIMARY KEY (`plugin`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
 # Dump of table {$prefix}related_from
 # ------------------------------------------------------------
 

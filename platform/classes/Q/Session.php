@@ -243,47 +243,52 @@ class Q_Session
 			: isset($_COOKIE[$name])
 				? $_COOKIE[$name]
 				: null;
-		if ($id) {
-			self::processDbInfo();
-			if (self::$session_db_connection) {
-				$id_field = self::$session_db_id_field;
-				$data_field = self::$session_db_data_field;
-				$updated_field = self::$session_db_updated_field;
-				$duration_field = self::$session_db_duration_field;
-				$class = self::$session_db_row_class;
-				$row = new $class();
-				$row->$id_field = $id;
-				if ($row->retrieve()) {
-					self::$session_db_row = $row;
-				} else {
-					// Start a new session with our own id
-					$row->$id_field = self::generateId();
-					$row->$data_field = "";
-					$row->$updated_field = date('Y-m-d H:i:s');
-					$row->$duration_field = Q_Config::get(
-						'Q', 'session', 'durations', Q_Request::formFactor(),
-						Q_Config::expect('Q', 'session', 'durations', 'session')
-					);
-					if (false !== Q::event(
-						'Q/session/save',
-						array(
-							'row' => $row,
-							'id_field' => $id_field,
-							'data_field' => $data_field,
-							'updated_field' => $updated_field,
-							'duration_field' => $duration_field
-						),
-						'before'
-					)) {
-						$row->save();
-						self::id($row->$id_field); // this sets the session cookie as well
+		try {
+			if ($id) {
+				self::processDbInfo();
+				if (self::$session_db_connection) {
+					$id_field = self::$session_db_id_field;
+					$data_field = self::$session_db_data_field;
+					$updated_field = self::$session_db_updated_field;
+					$duration_field = self::$session_db_duration_field;
+					$class = self::$session_db_row_class;
+					$row = new $class();
+					$row->$id_field = $id;
+					if ($row->retrieve()) {
 						self::$session_db_row = $row;
+					} else {
+						// Start a new session with our own id
+						$row->$id_field = self::generateId();
+						$row->$data_field = "";
+						$row->$updated_field = date('Y-m-d H:i:s');
+						$row->$duration_field = Q_Config::get(
+							'Q', 'session', 'durations', Q_Request::formFactor(),
+							Q_Config::expect('Q', 'session', 'durations', 'session')
+						);
+						if (false !== Q::event(
+							'Q/session/save',
+							array(
+								'row' => $row,
+								'id_field' => $id_field,
+								'data_field' => $data_field,
+								'updated_field' => $updated_field,
+								'duration_field' => $duration_field
+							),
+							'before'
+						)) {
+							$row->save();
+							self::id($row->$id_field); // this sets the session cookie as well
+							self::$session_db_row = $row;
+						}
 					}
 				}
 			}
-
+			session_start();
+		} catch (Exception $e) {
+			$app = Q_Config::get('Q', 'app', null);
+			$prefix = $app ? "$app/" : '';
+			throw new Q_Exception("Please run {$prefix}scripts/install.php --all");
 		}
-		session_start();
 		// merge in all the stuff that was added to $_SESSION
 		// before we started it.
 		if (isset($pre_SESSION)) {

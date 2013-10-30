@@ -107,6 +107,7 @@ Q_Bootstrap::registerExceptionHandler();
 Q_Bootstrap::registerErrorHandler();
 Q_Bootstrap::revertSlashes();
 Q_Bootstrap::configure();
+Q_Bootstrap::alertAboutLocalConfiguration();
 Q_Bootstrap::setDefaultTimezone();
 Q_Bootstrap::setResponseBuffered();
 Q_Bootstrap::setUrls();

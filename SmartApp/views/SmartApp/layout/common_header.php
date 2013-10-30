@@ -4,3 +4,9 @@
 	<?php echo Q_Response::stylesheets(true, "\n\t") ?> 
 	<?php echo Q_Response::styles(true, "\n\t") ?> 
 	<?php echo Q_Response::metas(true, "\n\t") ?>
+	<?php if (!empty($meta)) echo $meta ?>
+	<style type="text/css">
+		.Q_contextual {
+			filter: none !important;
+		}
+	</style>

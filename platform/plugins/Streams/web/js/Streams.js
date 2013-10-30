@@ -257,6 +257,9 @@ Streams.getParticipating = Q.getter(function(callback) {
  * Updates all the streams you are participating in
  */
 Streams.updateParticipating = function () {
+	if (!Q.Users.loggedInUser) {
+		return false;
+	}
 	Streams.getParticipating(function (err, participating) {
 		Q.each(participating, function (i, p) {
 			// If the stream was seen, fetch latest messages,
@@ -1480,6 +1483,15 @@ Streams.Avatar.prototype.displayName = function (options) {
 	} else {
 		return u ? u : null;
 	}
+};
+
+/**
+ * Extract a displayable title from a stream's type
+ * @param {String} type
+ * @return {String}
+ */
+Streams.displayType = function _Streams_typeName(type) {
+	return type.split('/').slice(1).join('/');
 };
 
 Streams.setupRegisterForm = function(identifier, json, priv, overlay) {

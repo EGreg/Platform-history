@@ -69,6 +69,9 @@ $uploads_dir = APP_FILES_DIR.DS.$desired.DS.'uploads';
 if (is_dir($uploads_dir)) {
 	$cwd = getcwd();
 	chdir(APP_WEB_DIR);
+	if (file_exists('uploads')) {
+		unlink('uploads');
+	}
 	symlink('..'.DS.'files'.DS.$desired.DS.'uploads', 'uploads');
 	chdir($cwd);
 }
@@ -80,11 +83,11 @@ try {
 		$file = file_put_contents($filename, <<<EOT
 <div id='content'>
 	<div style="padding: 50px;">
-		The app has been configured. Now you should:
+		After the app has been configured, the next steps are:
 		<ul>
 			<li>Edit database connections and other credentials in local/app.json</li>
-			<li>Switch to the $basename/scripts/Q folder</li>
-			<li><pre>php install.php --all</php></li>
+			<li><pre>Run php $basename/scripts/Q/install.php --all</php></li>
+			<li>Start working on your app!</li>
 		</ul>
 		Speed check: this rendered in <?php echo ceil(Q::microseconds()) ?> ms.
 	</div>
@@ -97,5 +100,7 @@ EOT
 	
 }
 
-echo "Application configured.
-Now edit the database connections in local/app.json and run the installer.\n";
+echo "Application configured. The next steps are:
+1) edit the config in local/app.json
+2) run php install.php --all
+";

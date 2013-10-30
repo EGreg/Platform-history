@@ -28,4 +28,5 @@ EOT;
 }
 ?>
 
-<?php echo Q_Html::script(Q_Response::scriptLines()) ?>
+<?php echo Q_Response::scripts(true, "\n\t\t") ?> 
+<?php echo Q_Response::scriptLines(true) ?>

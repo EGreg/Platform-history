@@ -181,7 +181,7 @@ class Q_Plugin
 					// Process each query
 					foreach ($queries as $q) {
 						$db->rawQuery($q)->execute();
-						echo '.';
+						echo ".";
 					}
 
 					// Update plugin db version
@@ -299,8 +299,9 @@ class Q_Plugin
 	static private function checkPermissions($files_dir, $options) {
 		#Check and fix permissions
 		echo "Checking permissions".PHP_EOL;
-		if(!file_exists($files_dir))
+		if(!file_exists($files_dir)) {
 			mkdir($files_dir, $options['dirmode']);
+		}
 
 		// if group is supplied, convert name to gid
 		if (isset($options['group'])) {
@@ -309,12 +310,15 @@ class Q_Plugin
 				$posix = posix_getgrnam($group);
 				$group = $posix['gid'];
 			}
-		} else $group = false;
+		} else {
+			$group = false;
+		}
 
-		if (isset($options['deep']))
+		if (isset($options['deep'])) {
 			self::checkTree($files_dir, $options['filemode'], $options['dirmode'], $group);
-		else
+		} else {
 			self::fixPermissions($files_dir, $options['dirmode'], $group);
+		}
 	}
 
 	/**
@@ -580,7 +584,7 @@ EOT;
 	{
 		#Make sure destination directory exists
 		if(!file_exists(dirname($link)))
-			mkdir(dirname($link), null, true);
+			mkdir(dirname($link), 0777, true);
 
 		$is_win = (substr(strtolower(PHP_OS), 0, 3) === 'win');
 
