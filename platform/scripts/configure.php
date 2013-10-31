@@ -101,6 +101,6 @@ EOT
 }
 
 echo "Application configured. The next steps are:
-1) edit the config in local/app.json
-2) run php install.php --all
+1) edit the config in $basename/local/app.json
+2) run $basename/scripts/Q/install.php --all
 ";
