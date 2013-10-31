@@ -4551,7 +4551,10 @@ Q.loadUrl = function _Q_loadUrl(url, options)
 				var stylesheets = [];
 				for (var j in response.stylesheets[slotName]) {
 					var stylesheet = response.stylesheets[slotName][j];
-					stylesheets.push(Q.addStylesheet(stylesheet.href, stylesheet.media, null, {returnAll: true}));
+					var elem = Q.addStylesheet(stylesheet.href, stylesheet.media, null, {returnAll: false});
+					if (elem) {
+						stylesheets.push(elem);
+					}
 				}
 				newStylesheets[slotName] = stylesheets;
 			}
@@ -4604,10 +4607,13 @@ Q.loadUrl = function _Q_loadUrl(url, options)
 			});
 			var slotName, newScripts = {};
 			for (slotName in response.scripts) {
-				newScripts[slotName] = Q.addScript(response.scripts[slotName], slotPipe.fill(slotName), {
+				var elem = Q.addScript(response.scripts[slotName], slotPipe.fill(slotName), {
 					ignoreLoadingErrors: (o.ignoreLoadingErrors !== undefined) ? o.ignoreLoadingErrors : undefined,
-					returnAll: true
+					returnAll: false
 				});
+				if (elem) {
+					newScripts[slotName] = elem;
+				}
 			};
 			return newScripts;
 		}
@@ -4659,6 +4665,7 @@ Q.loadUrl.defaultHandler = function _Q_loadUrl_fillSlots (res) {
  *  'callback': if set, adds a &Q.callback=$callback to the querystring
  *  'loadExtras': if true, asks the server to load the extra scripts, stylesheets, etc. that are loaded on first page load
  *  "target": the name of a window or iframe to use as the target. In this case callables is treated as a url.
+ *  "slotNames": a comma-separated list of slot names, or an array of slot names
  *  "quiet": defaults to false. If true, allows visual indications that the request is going to take place.
  * @return Number
  *  The number of handlers executed
@@ -4727,7 +4734,7 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 			if (typeof arguments[1] === 'function') {
 				callback = arguments[1];
 				o = Q.handle.options;
-			} else if (arguments[1] && arguments[3] === undefined) {
+			} else if (arguments[1] && (arguments[3] === undefined)) {
 				o = Q.extend({}, Q.handle.options, arguments[1]);
 				if (typeof arguments[2] === 'function') {
 					callback = arguments[2];
