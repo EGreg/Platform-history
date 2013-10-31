@@ -6478,7 +6478,9 @@ if (!window.console) {
 Q.onInit = new Q.Event();
 Q.onLoad = new Q.Event();
 Q.onUnload = new Q.Event(function _Q_onUnload_callback() {
-	console.log("Leaving page "+window.location.href); // To help Nazar with debugging.
+	// This helps the developer with debugging.
+	// It occurs when actual document is being unloaded, as opposed to AJAX-based page loading
+	console.log("Leaving page "+window.location.href);
 }, 'Q');
 var onPageLoad = {}, onPageUnload = {}, 
 	beforePageLoad = {}, beforePageUnload = {},
