@@ -1,6 +1,6 @@
-if (!window.Q) {  // You can remove this part after you've run install.php
+if (!window.Q) {
 	document.getElementsByTagName('body')[0].innerHTML = "<h1>Please run SmartApp/scripts/Q/install.php --all</h1>";
-	throw "Q is not defined";
+	throw "Q is not defined -- try running SmartApp/scripts/Q/install.php --all";
 }
 
 var SmartApp = Q.plugins.SmartApp = (function ($) {
@@ -74,10 +74,11 @@ var SmartApp = Q.plugins.SmartApp = (function ($) {
 	
 	// handle clicking on dashboard menu items
 	function loadPage (li) {
+		var url = $(li).attr('data-action');
 		if (url.substr(0, Q.info.baseUrl.length) !== Q.info.baseUrl) {
 			return window.open(url, "_blank");
 		}
-		Q.handle($(li).attr('data-action'), {quiet: true});
+		Q.handle(url, {quiet: true});
 	}
 	Q.Layout.listingHandler.set(loadPage);
 	SmartApp.userMenuHandler.set(loadPage);
