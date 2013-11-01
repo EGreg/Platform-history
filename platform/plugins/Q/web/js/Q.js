@@ -244,6 +244,55 @@ Date.now = Date.now || function _Date_now() {
 	return new Date().getTime();
 };
 
+HTMLElement.prototype.computedStyle = function(name) {
+    var computedStyle;
+    if ( this.currentStyle !== undefined ) {
+    	computedStyle = this.currentStyle;
+    } else {
+    	computedStyle = window.getComputedStyle(this, null);
+    }
+    return name ? computedStyle[name] : computedStyle;
+};
+
+HTMLElement.prototype.copyComputedStyle = function(src) {
+    var s = src.computedStyle();
+    for ( var i in s ) {
+    	// Do not use `hasOwnProperty`, nothing will get copied
+    	if ( typeof i == "string" && i != "cssText" && !/\d/.test(i) ) {
+    		// The try is for setter only properties
+    		try {
+    			this.style[i] = s[i];
+    			// `fontSize` comes before `font` If `font` is empty, `fontSize` gets
+    			// overwritten.  So make sure to reset this property. (hackyhackhack)
+    			// Other properties may need similar treatment
+    			if ( i == "font" ) {
+    				this.style.fontSize = s.fontSize;
+    			}
+    		} catch (e) {}
+    	}
+    }
+	return this;
+};
+
+HTMLElement.prototype.swap = function(element) {
+	var parent1, next1, parent2, next2;
+	parent1 = this.parentNode;
+	next1   = this.nextSibling;
+	parent2 = element.parentNode;
+	next2   = element.nextSibling;
+	parent1.insertBefore(element, next1);
+	parent2.insertBefore(this, next2);
+};
+
+HTMLElement.prototype.preventSelections = function () {
+	this.onselectstart = function() { return false; }; 
+    this.unselectable = 'on'; 
+	this.style['-moz-user-select']
+	= this.style['-webkit-user-select']
+	= this.style['-ms-user-select']
+	= this.style['user-select'] = 'none';
+};
+
 // public methods:
 
 /**
@@ -1918,7 +1967,7 @@ Q.Tool.byId = function _Q_Tool_byId(id) {
 
 /**
  * Traverses elements in a particular container, including the container, and removes + destroys all tools.
- * @param elem DOMNode
+ * @param elem HTMLElement
  *  The container to traverse
  * @param removeCached boolean
  *  Defaults to false. Whether the tools whose containing elements have the "data-Q-cache" attribute
@@ -1935,7 +1984,7 @@ Q.Tool.remove = function _Q_Tool_remove(elem, removeCached) {
 
 /**
  * Traverses children in a particular container and removes + destroys all tools.
- * @param elem DOMNode
+ * @param elem HTMLElement
  *  The container to traverse
  * @param removeCached boolean
  *  Defaults to false. Whether the tools whose containing elements have the "data-Q-cache" attribute
@@ -2185,7 +2234,7 @@ Q.Tool.prototype.$ = function _Q_Tool_prototype_$(selector) {
  *
  * @param className String
  *   the class name to look for
- * @return DOMNodeList
+ * @return NodeList
  *   a list of nodes with the given class name.
  */
 Q.Tool.prototype.getElementsByClassName = function _Q_Tool_prototype_getElementsByClasName(className) {
@@ -2196,15 +2245,15 @@ Q.Tool.prototype.getElementsByClassName = function _Q_Tool_prototype_getElements
  * Creates a div that can be used to activate a tool
  * For example: $('container').append(Q.Tool.make('Streams/chat')).activate(options);
  * @method Q.Tool.element
- * @param {String|DOMNode} element
- *  The tag of the element, such as "div", or a reference to an existing DOMNode
+ * @param {String|HTMLElement} element
+ *  The tag of the element, such as "div", or a reference to an existing HTMLElement
  * @param {String} toolType
  *  The type of the tool, such as "Q/tabs"
  * @param {Object} toolOptions
  *  The options for the tool
  * @param {String} id
  *  Optional id of the tool, such as "_2_Q_tabs"
- * @return DOMNode
+ * @return HTMLElement
  *  Returns an element you can append to things
  */
 Q.Tool.element = function _Q_tool(element, toolType, toolOptions, id) {
@@ -2236,7 +2285,7 @@ Q.Tool.element = function _Q_tool(element, toolType, toolOptions, id) {
 /**
  * Returns a tool corresponding to the given DOM element, if such tool has already been constructed.
  *
- * @param toolElement DOMNode
+ * @param toolElement HTMLElement
  *   the root element of the desired tool
  * @return Q.Tool|null
  *   the tool corresponding to the given element, otherwise null
@@ -2957,7 +3006,7 @@ Q.beforeUnload = function _Q_beforeUnload(notice) {
 
 /**
  * Remove an element from the DOM and try to clean up memory as much as possible
- * @param element DOMNode
+ * @param element HTMLElement
  */
 Q.removeElement = function _Q_removeElement(element) {
 	if (window.jQuery) {
@@ -2975,7 +3024,7 @@ Q.removeElement = function _Q_removeElement(element) {
 
 /**
  * Add an event listener to an element
- * @param element DOMNode
+ * @param element HTMLElement
  * @param eventName String
  * @param eventHandler Function
  */
@@ -3017,7 +3066,7 @@ Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandl
 
 /**
  * Remove an event listener from an element
- * @param element DOMNode
+ * @param element HTMLElement
  * @param eventName String
  * @param eventHandler Function
  */
@@ -3044,7 +3093,7 @@ Q.removeEventListener = function _Q_addEventListener(element, eventName, eventHa
 /**
  * Triggers a method or Q.Event on all the tools inside a particular element
  * @param eventName String Required, the name of the method or Q.Event to trigger
- * @param element DOMNode Optional element to traverse from (defaults to document.body).
+ * @param element HTMLElement Optional element to traverse from (defaults to document.body).
  * @param Array args Any additional arguments that would be passed to the triggered method or event
  */
 Q.trigger = function _Q_trigger(eventName, element, args) {
@@ -4107,7 +4156,7 @@ Q.cookie = function _Q_cookie(name, value, options) {
  * Finds all elements that contain a class matching the filter,
  * and calls the callback for each of them.
  *
- * @param DOMNode|Array elem
+ * @param HTMLElement|Array elem
  *  An element, or an array of elements, within which to search
  * @param String|RegExp|true filter
  *  The name of the class or attribute to match
@@ -4120,7 +4169,7 @@ Q.cookie = function _Q_cookie(name, value, options) {
  * @param shared
  *  An optional object that will be passed to each callbackBefore and callbackAfter
  */
-Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, shared) {
+Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, shared, parent, i) {
 	var i;
 	if (!elem) {
 		return;
@@ -4134,13 +4183,13 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 		(window.jQuery && (elem instanceof jQuery))) {
 
 		for (i=0; i<elem.length; ++i) {
-			Q.find(elem[i], filter, callbackBefore, callbackAfter, options, shared);
+			Q.find(elem[i], filter, callbackBefore, callbackAfter, options, shared, parent, i);
 		}
 		return;
 	}
 	// Do a depth-first search and call the constructors
-	var found = false;
-	if ('className' in elem && typeof elem.className === "string" && elem.className) {
+	var found = (filter === null);
+	if (!found && ('className' in elem) && typeof elem.className === "string" && elem.className) {
 		var classNames = elem.className.split(' ');
 		for (i=classNames.length-1; i>=0; --i) {
 			var className = Q.normalize(classNames[i]);
@@ -4165,7 +4214,7 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 	}
 	var childrenOptions = options;
 	if (found && typeof(callbackBefore) == 'function') {
-		childrenOptions = callbackBefore(elem, options, shared);
+		childrenOptions = callbackBefore(elem, options, shared, parent, i);
 		if (childrenOptions === Q.find.skipSubtree) {
 			return;
 		}
@@ -4185,9 +4234,9 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 			c[i] = children[i];
 		}
 	}
-	Q.find(c, filter, callbackBefore, callbackAfter, childrenOptions, shared);
+	Q.find(c, filter, callbackBefore, callbackAfter, childrenOptions, shared, elem);
 	if (found && typeof(callbackAfter) == 'function') {
-		callbackAfter(elem, options, shared);
+		callbackAfter(elem, options, shared, parent, i);
 	}
 };
 Q.find.skipSubtree = "Q:skipSubtree";
@@ -4195,7 +4244,7 @@ Q.find.skipSubtree = "Q:skipSubtree";
 /**
  * Unleash this on an element to activate all the tools within it.
  * If the element is itself an outer div of a tool, that tool is activated too.
- * @param {HTMLNode} elem
+ * @param {HTMLElement} elem
  * @param {Object} options
  *  Optional options to provide to tools and their children.
  * @param {Function} callback
@@ -4224,15 +4273,15 @@ Q.activate = function _Q_activate(elem, options, callback) {
 };
 
 /**
- * Replaces a particular DOMNode and does the right thing with all the tools in it
- * @param {DOMNode} existing
- *  A DOMNode representing the slot whose contents are to be replaced
- * @param {DOMNode|String} source
- *  An HTML string or a DOMNode which is not part of the DOM
+ * Replaces a particular HTMLElement and does the right thing with all the tools in it
+ * @param {HTMLElement} existing
+ *  A HTMLElement representing the slot whose contents are to be replaced
+ * @param {HTMLElement|String} source
+ *  An HTML string or a HTMLElement which is not part of the DOM
  * @param {Object} options
  *  Optional. A hash of options, including:
  *  "animation": To animate the transition, pass an object here with optional "duration", "ease" and "callback" properties.
- * @return DOMNode
+ * @return HTMLElement
  *  Returns the slot element if successful
  */
 Q.replace = function _Q_replace(existing, source, options) {
@@ -6031,6 +6080,9 @@ Q.Pointer = {
 	'start': (Q.info.isTouchscreen ? 'touchstart' : 'mousedown'),
 	'move': (Q.info.isTouchscreen ? 'touchmove' : 'mousemove'),
 	'end': (Q.info.isTouchscreen ? 'touchend' : 'mouseup'),
+	'event': (Q.info.isTouchscreen ? 'touchenter' : 'mouseleave'),
+	'leave': (Q.info.isTouchscreen ? 'touchleave' : 'mouseleave'),
+	'cancel': (Q.info.isTouchscreen ? 'touchcancel' : 'mousecancel'), // mousecancel can be a custom event
 	'click': (Q.info.isTouchscreen ? 'touchend' : 'click'),
 	'fastclick': function _Q_fastclick (params) {
 		params.eventName = Q.Pointer.end;
@@ -6045,20 +6097,28 @@ Q.Pointer = {
 	'canceledClick': false,
 	'window': true, // (true - clientX/Y, false - pageX/Y)
 	'getX': function(e) {
-		e = e.originalEvent.touches ? e.originalEvent.touches[0] : e;
+		var oe = e.originalEvent || e;
+		e = oe.touches ? oe.touches[0] : e;
 		return (window ? e.clientX : e.pageX);
 	},
 	'getY': function(e) {
-		e = e.originalEvent.touches ? e.originalEvent.touches[0] : e;
+		var oe = e.originalEvent || e;
+		e = oe.touches ? oe.touches[0] : e;
 		return (window ? e.clientY : e.pageY);
 	},
 	'getDX': function(e) {
-		e = e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0] : e;
+		var oe = e.originalEvent || e;
+		e = oe.changedTouches ? oe.changedTouches[0] : e;
 		return (window ? e.clientX : e.pageX);
 	},
 	'getDY': function(e) {
-		e = e.originalEvent.changedTouches ? e.originalEvent.changedTouches[0] : e;
+		var oe = e.originalEvent || e;
+		e = oe.changedTouches ? oe.changedTouches[0] : e;
 		return (window ? e.clientY : e.pageY);
+	},
+	'which': function (e) {
+		var button = e.which || e.button;
+		return button || -1; // -1 means non-button interaction
 	},
 	onCancelClick: new Q.Event(),
 	options: {
@@ -6561,7 +6621,8 @@ Q.onJQuery.add(function ($) {
 		"Q/iScroll": "plugins/Q/js/fn/iScroll.js",
 		"Q/scroller": "plugins/Q/js/fn/scroller.js",
 		"Q/touchscroll": "plugins/Q/js/fn/touchscroll.js",
-		"Q/scrollbarsAutoHide": "plugins/Q/js/fn/scrollbarsAutoHide.js"
+		"Q/scrollbarsAutoHide": "plugins/Q/js/fn/scrollbarsAutoHide.js",
+		"Q/sortable": "plugins/Q/js/fn/sortable.js"
 	});
 	
 	Q.onLoad.add(function () {

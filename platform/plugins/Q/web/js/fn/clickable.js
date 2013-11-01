@@ -21,8 +21,10 @@ function (o) {
         if (!o.selectable) {
 			this.onselectstart = function() { return false; }; 
 	        this.unselectable = "on"; 
-	        $(this).css('-moz-user-select', 'none'); 
-	        $(this).css('-webkit-user-select', 'none');
+	        $this.css('-moz-user-select', 'none'); 
+	        $this.css('-webkit-user-select', 'none');
+			$this.css('-ms-user-select', 'none');
+			$this.css('user-select', 'none');
 		}
 		var position = $this.css('position');
 		var display = $this.css('display');
@@ -189,7 +191,7 @@ function (o) {
 					stretcher.css({
 						left: width * (o.center.x - factor/2) * factor +'px',
 						top: height * (o.center.y - factor/2) * factor +'px',
-						zoom: scale
+						zoom: factor
 					});
 					scale.started = false;
 				}
