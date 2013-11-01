@@ -57,7 +57,7 @@ function (options) {
 			}
 		});
 		var $placeholder = $(this.cloned).css({
-			opacity: 0.1
+			opacity: options.placeholderOpacity
 		}).insertAfter($item); //.hide('slow');
 		
 		this.cloned = this.cloneNode(true).copyComputedStyle(this);
@@ -97,7 +97,7 @@ function (options) {
 			.addClass('Q-sortable-placeholder');
 		$dragged.prependTo('body')
 			.css({
-				opacity: 0.5,
+				opacity: options.draggedOpacity,
 				// filter: 'blur(3px)',
 				// '-webkit-filter': 'blur(3px)',
 				// '-moz-filter': 'blur(3px)',
@@ -340,7 +340,8 @@ function (options) {
 	draggable: '*', // which elements can be draggable
 	droppable: '*', // which elements can be moved
 	zIndex: 999999,
-	onSort: new Q.Event(),
+	draggedOpacity: 0.8,
+	placeholderOpacity: 0.1,
 	lift: {
 		delay: 300,
 		delayTouchscreen: 300,
