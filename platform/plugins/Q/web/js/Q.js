@@ -6098,22 +6098,12 @@ Q.Pointer = {
 	'window': true, // (true - clientX/Y, false - pageX/Y)
 	'getX': function(e) {
 		var oe = e.originalEvent || e;
-		e = oe.touches ? oe.touches[0] : e;
+		e = oe.changedTouches ? oe.changedTouches[0] : (oe.touches ? oe.touches[0] : e);
 		return (window ? e.clientX : e.pageX);
 	},
 	'getY': function(e) {
 		var oe = e.originalEvent || e;
-		e = oe.touches ? oe.touches[0] : e;
-		return (window ? e.clientY : e.pageY);
-	},
-	'getDX': function(e) {
-		var oe = e.originalEvent || e;
-		e = oe.changedTouches ? oe.changedTouches[0] : e;
-		return (window ? e.clientX : e.pageX);
-	},
-	'getDY': function(e) {
-		var oe = e.originalEvent || e;
-		e = oe.changedTouches ? oe.changedTouches[0] : e;
+		e = oe.changedTouches ? oe.changedTouches[0] : (oe.touches ? oe.touches[0] : e);
 		return (window ? e.clientY : e.pageY);
 	},
 	'touchCount': function (e) {
