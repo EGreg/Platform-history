@@ -6116,6 +6116,10 @@ Q.Pointer = {
 		e = oe.changedTouches ? oe.changedTouches[0] : e;
 		return (window ? e.clientY : e.pageY);
 	},
+	'touchCount': function (e) {
+		var oe = e.originalEvent || e;
+ 		return oe.touches ? oe.touches.length : 1;
+	},
 	'which': function (e) {
 		var button = e.which || e.button;
 		return button || -1; // -1 means non-button interaction

@@ -42,6 +42,11 @@ function (options) {
 	
 	function lift(event) {
 		if (tLift) clearTimeout(tLift);
+		
+		if (Q.Pointer.touchCount(event) !== 1) {
+			return;
+		}
+		
 		var $item = $(this);
 		this.preventSelections();
 		this.cloned = this.cloneNode(true).copyComputedStyle(this);
@@ -168,6 +173,10 @@ function (options) {
 	function moveHandler(event) {
 		var $item = $(document).data(dataLifted);
 		if (!$item) {
+			return;
+		}
+		if (Q.Pointer.touchCount(event) !== 1) {
+			complete(true);
 			return;
 		}
 		var x = Q.Pointer.getX(event), 
