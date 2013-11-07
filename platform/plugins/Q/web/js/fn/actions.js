@@ -3,7 +3,7 @@
 Q.Tool.jQuery('Q/actions',
 
 function (options) {
-	var container = $('<div class="Q-actions-container" />').css({
+	var container = $('<div class="Q_actions_container" />').css({
 		'position': 'absolute',
 		'zIndex': options.zIndex || 9999999
 	});
@@ -20,8 +20,8 @@ function (options) {
 	}
 	var buttons = {};
 	Q.each(options.actions, function (action, callback) {
-		var button = $("<div class='Q-actions-action basic"+size+"' />")
-			.addClass('Q-actions-'+action)
+		var button = $("<div class='Q_actions_action basic"+size+"' />")
+			.addClass('Q_actions_'+action)
 			.addClass('basic'+size+'_'+action)
 			.attr('action', action)
 			.on(Q.Pointer.fastclick, function () {
@@ -61,11 +61,11 @@ function (options) {
 		if (state.alwaysShow) {
 			_show($this, state, container);
 		} else {
-			$this.off('mouseenter.Q-actions mouseleave.Q-actions');
-			$this.on('mouseenter.Q-actions', function () {
+			$this.off('mouseenter.Q_actions mouseleave.Q_actions');
+			$this.on('mouseenter.Q_actions', function () {
 				_show($this, state, container);
 			});
-			$this.on('mouseleave.Q-actions', function () {
+			$this.on('mouseleave.Q_actions', function () {
 				_hide($this, state, container);
 			});
 		}
@@ -74,7 +74,7 @@ function (options) {
 	function _show($this, state, container) {
 		container.appendTo($this);
 		if (state.horizontal) {
-			$('.Q-actions-action', container).css({
+			$('.Q_actions_action', container).css({
 				'display': 'inline-block',
 				'zoom': 1
 			});
@@ -85,7 +85,7 @@ function (options) {
 			'line-height': ch+'px'
 		});
 		if (state.clickable) {
-			$('.Q-actions-action', container).plugin('Q/clickable', {}, function () {
+			$('.Q_actions_action', container).plugin('Q/clickable', {}, function () {
 				if (state.horizontal) {
 					$('.Q_clickable_container', container).css({'display': 'inline-block', 'zoom': 1});
 				}

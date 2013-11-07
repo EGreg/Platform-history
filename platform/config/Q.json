@@ -70,8 +70,8 @@
 			"responseExtras": {
 				"plugins/Q/js/jquery.tools.min.js": true,
 				"plugins/Q/js/jquery.mustache.min.js": true,
-				"plugins/Q/js/Q.js": true,
-				"plugins/Q/js/QTools.js": true
+				"plugins/Q/js/prefixfree.min.js": true,
+				"plugins/Q/js/Q.js": true
 			}
 		},
 		"stylesheets": {

@@ -45,7 +45,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 			$this.attr('src', originalSrc+"?"+Date.now()); // cache busting
 		}
 		$this.after(input);
-		$this.addClass('Q-imagepicker');
+		$this.addClass('Q_imagepicker');
 		
 		function upload(data) {
 			if (o.preprocess) {
@@ -75,7 +75,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 				}).success(function(res) {
 					var state = $this.state('Q/imagepicker');
 					if (res.errors) {
-						$this.attr('src', state.oldSrc).stop().css({ 'opacity': '' });
+						$this.attr('src', state.oldSrc).stop().removeClass('Q_imagepicker_uploading');
 						Q.handle(o.onError, this, [res.errors[0].message]);
 					} else {
 						var key = o.showSize;
@@ -85,13 +85,13 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 						}
 						if (key) {
 							$this.attr('src', Q.url(res.slots.data[key]+"?"+Date.now()))
-								.css({ 'opacity': '' });
+								.removeClass('Q_imagepicker_uploading');
 						}
 						Q.handle(o.onSuccess, self, [res.slots.data, key]);
 					}
 				}).error(function() {
 					var state = $this.state('Q/imagepicker');
-					$this.attr('src', state.oldSrc).css({ 'opacity': state.opacity });
+					$this.attr('src', state.oldSrc).removeClass('Q_imagepicker_uploading');
 					Q.handle(o.onError, self);
 				});
 			}
@@ -131,10 +131,10 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 				}
 				var state = $this.state('Q/imagepicker');
 				state.oldSrc = $this.attr('src');
-				state.opacity = $this.css('opacity');
 				if (o.throbber) {
 					$this.attr('src', Q.url(o.throbber));
 				}
+				$this.addClass('Q_imagepicker_uploading');
 				$this.animate({ 'opacity': o.loadingOpacity }, 'fast');
 				var reader = new FileReader();
 				reader.onload = function() {
@@ -155,7 +155,6 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 	crop: null,
 	url: Q.action("Q/image"),
 	throbber: null,
-	loadingOpacity: 0.5,
 	preprocess: null,
 	onSuccess: new Q.Event(function() {}),
 	onError: new Q.Event(function(message) {

@@ -4855,7 +4855,7 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 Q.handle.options = {
 	loadUsingAjax: false,
 	externalLoader: null,
-	dontReload: false,
+	dontReload: false
 };
 Q.handle.onUrl = new Q.Event();
 

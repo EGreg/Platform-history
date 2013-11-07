@@ -29,7 +29,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 	var img = document.createElement('img');
 	img.setAttribute('alt', 'loading');
 	img.setAttribute('src', Q.url(options.throbber));
-	img.style.opacity = 0.5;
+	img.setAttribute('class', 'Streams_image_preview_loading');
 	tool.element.innerHTML = '';
 	tool.element.appendChild(img);
 	

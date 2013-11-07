@@ -40,9 +40,9 @@ function _Streams_related_tool (options)
 {
     "isCategory": true,
     "publisherId": Q.info.app,
-	"newTypes": {}, // pairs of {streamType: title}, you can put custom title such as "New" or "New ..."
     "duration": 300,
 	"editable": false,
+	"addable": {}, // pairs of {streamType: title}, you can put custom title such as "New" or "New ..."
     "onUpdate": new Q.Event(function _Streams_related_onUpdate(result, entering, exiting, updating) {
         var tool = this;
         Q.Tool.clear(tool.element);

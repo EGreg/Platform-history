@@ -9,7 +9,7 @@ function SmartApp_before_Q_responseExtras()
 	}
 	
 	Q_Response::addScript('plugins/Q/js/iscroll.js');
-	Q_Response::addScript('js/jQuery.bbq.js');
+	Q_Response::addStylesheet('plugins/Q/js/QTools.js');
 	
 	Q_Response::addStylesheet('plugins/Q/css/Ui.css');
 	Q_Response::addStylesheet('css/html.css');
