@@ -5,7 +5,9 @@
  * @class Streams
  */
 Q.Streams = Q.plugins.Streams = {
-
+	options: {
+		updateParticipatingOnEvents: ['focus', 'pageshow']
+	}
 };
 
 (function($, Streams) {
@@ -2053,6 +2055,10 @@ Q.onInit.add(function _Streams_onInit() {
 		});
 		Streams.Stream.preloaded = null;
 	}, 'Streams');
+	
+	Q.Users.onLogin.set(_clearCaches, 'Streams');
+	Q.Users.onLogout.set(_clearCaches, 'Streams');
+	Q.addEventListener(window, Streams.options.updateParticipatingOnEvents, Streams.updateParticipating);
 
 }, 'Streams');
 
@@ -2064,10 +2070,5 @@ function _clearCaches() {
 	Streams.Avatar.get.cache.clear();
 	Streams.getParticipating.cache.clear();
 }
-
-Q.Users.onLogin.set(_clearCaches, 'Streams');
-Q.Users.onLogout.set(_clearCaches, 'Streams');
-
-Q.addEventListener(window, 'focus', Streams.updateParticipating);
 
 })(jQuery, Q.plugins.Streams);

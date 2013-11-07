@@ -5,39 +5,72 @@ Q.Tool.jQuery('Q/sortable',
 function (options) {
 
 	var $this = $(this);
-	var dataLifted = 'Q/sortable dragging', gx, gy, tLift, tScroll, iScroll, lifted;
+	var dataLifted = 'Q/sortable dragging', mx, my, gx, gy, tLift, tScroll, iScroll, lifted, pressed;
+	var $scrolling = null, ost = null, osl = null;
 	
-	$(document).keydown(function (e) {
+	$(document).on('keydown.Q_sortable', function (e) {
 		if (e.keyCode == 27) { // escape key
 			complete(true);
 		}
-	});
-	Q.addEventListener(document, [Q.Pointer.cancel, Q.Pointer.leave], function () {
-		complete(true);
+		return false;
 	});
 	
 	options.draggable = options.draggable || '*';
-	$this.on(Q.Pointer.start, options.draggable, function (event) {
-		if (options.draggable === '*' && event.target.parentNode !== $this[0]) {
+	$this.on(Q.Pointer.start+'.Q_sortable', options.draggable, liftHandler);
+	
+	$('*', $this).css('-webkit-touch-callout', 'none');
+	$this.on('dragstart.Q_sortable', options.draggable, function () {
+		var state = $this.state('Q/sortable');
+		if (state.draggable === '*' && event.target.parentNode !== $this[0]) {
+			return;
+		}
+		return false;
+	});
+
+	function liftHandler(event) {		
+		if (Q.Pointer.which(event) > 1) {
+			return; // only left mouse button or touches
+		}
+		pressed = true;
+		var state = $this.state('Q/sortable');
+		if (state.draggable === '*' && event.target.parentNode !== $this[0]) {
 			return;
 		}
 		var $item = $(this);
 		this.preventSelections();
-		liftHandler.call(this, event);
-	});
-
-	function liftHandler(event) {
-		if (Q.Pointer.which(event) > 1) {
-			return; // only left mouse button or touches
-		}
+		Q.addEventListener(document, [Q.Pointer.cancel, Q.Pointer.leave], function leaveHandler() {
+			Q.removeEventListener(document, [Q.Pointer.cancel, Q.Pointer.leave], leaveHandler);
+			complete(true);
+		});
+		mx = Q.Pointer.getX(event);
+		my = Q.Pointer.getY(event);
 		var element = this;
-		var state = $this.state('Q/sortable');
+		var sl = [], st = [];
+		$(document).data(dataLifted, $(this))
+			.on(Q.Pointer.move, moveHandler)
+			.on(Q.Pointer.end, dropHandler)
+			.on('click', clickHandler);
+		$item.on(Q.Pointer.move, moveHandler)
+			.on(Q.Pointer.end, dropHandler)
+			.on('click', clickHandler) // return false in this handler prevents firing a second time for document
+			.parents().each(function () {
+				sl.push(this.scrollLeft);
+				st.push(this.scrollTop);
+			});
 		tLift = setTimeout(function () {
+			var efp = document.elementFromPoint(mx, my), i=0, cancel = false;
+			$item.parents().each(function () {
+				if (this.scrollLeft !== sl[i] || this.scrollTop !== st[i]) {
+					cancel = true;
+					return false;
+				}
+				++i;
+			});
+			if (cancel || !pressed || !(element === efp || $.contains(element, efp))) {
+				return;
+			}
 			lift.call(element, event);
 		}, Q.info.isTouchscreen ? state.lift.delayTouchscreen : state.lift.delay);
-		$(document).data(dataLifted, $(this))
-			.on(Q.Pointer.move, moveHandler);
-		$(document).on(Q.Pointer.end, dropHandler);
 	}
 	
 	function lift(event) {
@@ -98,11 +131,6 @@ function (options) {
 		$dragged.prependTo('body')
 			.css({
 				opacity: options.draggedOpacity,
-				// filter: 'blur(3px)',
-				// '-webkit-filter': 'blur(3px)',
-				// '-moz-filter': 'blur(3px)',
-				// '-o-filter': 'blur(3px)',
-				// '-ms-filter': 'blur(3px)',
 				position: 'absolute', 
 				zIndex: $this.state('Q/sortable').zIndex,
 				pointerEvents: 'none'
@@ -126,13 +154,26 @@ function (options) {
 		lifted = true;
 		Q.handle(options.onLift, $this, [this, {
 			event: event,
-			dragged: $dragged[0], 
-			placeholder: $placeholder[0]
+			$dragged: $dragged, 
+			$placeholder: $placeholder
 		}]);
 	}
 
 	function dropHandler(event, target) {
-		complete();
+		pressed = false;
+		if (!lifted) {
+			return;
+		}
+		var x = Q.Pointer.getX(event),
+		    y = Q.Pointer.getY(event),
+			$target = getTarget(x, y),
+			state = $this.state('Q/sortable');
+		complete(!$target && state.requireInside);
+		return false;
+	}
+	
+	function clickHandler(event, target) {
+		return false;
 	}
 	
 	function complete(revert) {
@@ -145,7 +186,11 @@ function (options) {
 		var data = $item.data('Q/sortable');
 		$(document).removeData(dataLifted)
 			.off(Q.Pointer.move, moveHandler)
-			.off(Q.Pointer.end, dropHandler);
+			.off(Q.Pointer.end, dropHandler)
+			.off(Q.Pointer.click, clickHandler);
+		$item.off(Q.Pointer.move, moveHandler)
+			.off(Q.Pointer.end, dropHandler)
+			.off(Q.Pointer.click, clickHandler);
 		if (!data) return;
 		if (revert) {
 			$item.show();
@@ -153,8 +198,7 @@ function (options) {
 		} else {
 			$item.insertAfter(data.$placeholder).show();
 		}
-		data.$placeholder.remove();
-		data.$dragged.remove();
+		data.$placeholder.hide();
 		$item.css({
 			position: data.position, 
 			zIndex: data.zIndex
@@ -164,14 +208,31 @@ function (options) {
 		});
 		$item.removeData('Q/sortable');
 		lifted = false;
-		Q.handle(options.onDrop, $this, [$item[0], revert]);
-		if (!revert) {
-			Q.handle(options.onSuccess, $this, [$item[0]]);
+		var params = {
+			$placeholder: data.$placeholder,
+			$dragged: data.$dragged,
+			$scrolling: $scrolling
+		};
+		if (revert && $scrolling) {
+			$scrolling.scrollLeft(osl);
+			$scrolling.scrollTop(ost);
 		}
+		Q.handle(options.onDrop, $this, [$item, revert, params]);
+		if (!revert) {
+			Q.handle(options.onSuccess, $this, [$item, params]);
+		}
+		if (!data.$placeholder.retain) {
+			data.$placeholder.remove();
+		}
+		if (!data.$dragged.retain) {
+			data.$dragged.remove();
+		}
+		ost = osl = null;
+		$scrolling = null;
 	}
 	
 	function moveHandler(event) {
-		var $item = $(document).data(dataLifted);
+		var $item = $(document).data(dataLifted), x, y;
 		if (!$item) {
 			return;
 		}
@@ -179,8 +240,8 @@ function (options) {
 			complete(true);
 			return;
 		}
-		var x = Q.Pointer.getX(event), 
-		    y = Q.Pointer.getY(event);
+		mx = x = Q.Pointer.getX(event), 
+ 		my = y = Q.Pointer.getY(event);
 		if (!Q.info.isTouchscreen && !lifted) {
 			if ((moveHandler.x !== undefined && Math.abs(moveHandler.x - x) > options.lift.threshhold)
 			|| (moveHandler.y !== undefined && Math.abs(moveHandler.y - y) > options.lift.threshhold)) {
@@ -195,8 +256,8 @@ function (options) {
 		moveHandler.y = y;
 		if (lifted) {
 			move($item, x, y);
+			return false;
 		}
-		event.preventDefault();
 	}
 
 	function move($item, x, y) {
@@ -223,27 +284,40 @@ function (options) {
 		var state = $this.state('Q/sortable');
 		var dx = 0, dy = 0;
 		var speed = state.scroll.speed;
-		var container = null;
+		var beyond = false;
 		$item.parents().each(function () {
 			var $t = $(this);
-			if ($t.width() && $t.scrollLeft() > 0
-			&& x < $t.offset().left + $t.width() * options.scroll.distance) {
-				dx = -speed;
+			if ($t.css('overflow') === 'visible') {
+				return;
 			}
-			if ($t.width() && $t.scrollLeft() + $t.innerWidth() < this.scrollWidth
-			&& x > $t.offset().left + $t.width() * (1-options.scroll.distance)) {
-				dx = speed;
+			if ($t.width()) {
+				if ($t.scrollLeft() > 0
+				&& x < $t.offset().left + $t.width() * options.scroll.distance) {
+					dx = -speed;
+					beyond = (x < $t.offset().left);
+				}
+				if ($t.scrollLeft() + $t.innerWidth() < this.scrollWidth
+				&& x > $t.offset().left + $t.width() * (1-options.scroll.distance)) {
+					dx = speed;
+					beyond = (x > $t.offset().left + $t.width());
+				}
 			}
-			if ($t.height() && $t.scrollTop() > 0
-			&& y < $t.offset().top + $t.height() * options.scroll.distance) {
-				dy = -speed;
-			}
-			if ($t.height() && $t.scrollTop() + $t.innerHeight() < this.scrollHeight
-			&& y > $t.offset().top + $t.height() * (1-options.scroll.distance)) {
-				dy = speed;
+			if ($t.height()) {
+				if ($t.scrollTop() > 0
+				&& y < $t.offset().top + $t.height() * options.scroll.distance) {
+					dy = -speed;
+					beyond = (y < $t.offset().top);
+				}
+				if ($t.scrollTop() + $t.innerHeight() < this.scrollHeight
+				&& y > $t.offset().top + $t.height() * (1-options.scroll.distance)) {
+					dy = speed;
+					beyond = (y > $t.offset().top + $t.height());
+				}
 			}
 			if (dx || dy) {
-				container = $t;
+				$scrolling = $t;
+				osl = (osl === null) ? $scrolling.scrollLeft() : osl;
+				ost = (ost === null) ? $scrolling.scrollTop() : ost;
 				return false;
 			}
 		});
@@ -252,20 +326,26 @@ function (options) {
 			scrolling.accel = 0;
 			return;
 		}
+		var delay = Q.info.isTouchscreen ? state.scroll.delayTouchscreen : state.scroll.delay;
 		tScroll = setTimeout(function () {
+			var draggable;
 			if (iScroll) clearInterval(iScroll);
 			iScroll = setInterval(function () {
 				scrolling.accel = scrolling.accel || 0;
 				scrolling.accel += state.scroll.acceleration;
 				scrolling.accel = Math.min(scrolling.accel, 1);
-				if (dx) container.scrollLeft(container.scrollLeft()+dx*scrolling.accel);
-				if (dy) container.scrollTop(container.scrollTop()+dy*scrolling.accel);
+				if (dx) $scrolling.scrollLeft($scrolling.scrollLeft()+dx*scrolling.accel);
+				if (dy) $scrolling.scrollTop($scrolling.scrollTop()+dy*scrolling.accel);
+				move($item, x, y);
 			}, 50);
-		}, options.scroll.delay);
-		// if close to a boundary, set timeout, else clearit
+		}, beyond ? 0 : delay);
 	}
 	
-	function indicate($item, x, y) {
+	function getDraggable(state) {
+		return (state.draggable === '*') ? $this.children() : $(state.draggable, $this);
+	}
+	
+	function getTarget(x, y) {
 		var element = document.elementFromPoint(x, y);
 		var state = $this.state('Q/sortable');
 		var $target = null;
@@ -280,11 +360,35 @@ function (options) {
 				return false;
 			}
 		});
+		return $target;
+	}
+	
+	function indicate($item, x, y) {
+		var $target = getTarget(x, y);
+		var data = $item.data('Q/sortable')
+		
+		var element = document.elementFromPoint(x, y);
+		var pe = data.$dragged.css('pointer-events');
+		var offset = $this.offset();
+		if (x >= offset.left && x <= offset.left + $this.width()
+		 && y >= offset.top && y <= offset.top + $this.height()) {
+			if (pe !== 'none') {
+				data.$dragged.css('pointer-events', 'none');
+			}
+		} else {
+			if (pe !== 'auto') {
+				data.$dragged.css('pointer-events', 'auto');
+			}
+		}
+		
+		var $placeholder = data.$placeholder;
 		if (!$target) {
+			var state = $this.state('Q/sortable');
+			if (state.requireInside) {
+				$item.after($placeholder);
+			}
 			return;
 		}
-		var data = $item.data('Q/sortable')
-		var $placeholder = data.$placeholder;
 		if ($target.is($placeholder)) {
 			return;
 		}
@@ -327,11 +431,12 @@ function (options) {
 			$target.before($placeholder);
 			direction = 'after';
 		}
-		Q.handle(options.onIndicate, $this, [$item[0], {
-			target: $target[0],
+		Q.handle(options.onIndicate, $this, [$item, {
+			$target: $target,
 			direction: direction,
-			placeholder: $placeholder[0],
-			dragged: data.$dragged[0]
+			$placeholder: $placeholder,
+			$dragged: data.$dragged,
+			$scrolling: $scrolling
 		}]);
 	}
 },
@@ -357,15 +462,58 @@ function (options) {
 		speed: 20,
 		acceleration: 0.1
 	},
+	requireInside: true,
 	onLift: new Q.Event(),
 	onIndicate: new Q.Event(),
-	onDrop: new Q.Event(),
+	onDrop: new Q.Event(function ($item, revert, data) {
+		var offset = $item.offset();
+		var moreleft = 0, moretop = 0;
+		var $scrolling = data.$scrolling;
+		if ($scrolling) {
+			var so = $scrolling.offset();
+			var il = offset.left,
+				it = offset.top,
+				ir = il + $item.width(),
+				ib = it + $item.height(),
+				sl = so.left,
+				st = so.top,
+				sr = so.left + $scrolling.width(),
+				sb = so.top + $scrolling.height();
+			if (il < sl) {
+				$scrolling.animate({'scrollLeft': il - sl + $scrolling.scrollLeft()}, 300);
+				moreleft = sl - il;
+			}
+			if (it < st) {
+				$scrolling.animate({'scrollTop': it - st + $scrolling.scrollTop()}, 300);
+				moretop = st - it;
+			}
+			if (ir > sr) {
+				$scrolling.animate({'scrollLeft': ir - sr + $scrolling.scrollLeft()}, 300);
+				moreleft = sr - ir;
+			}
+			if (ib > sb) {
+				$scrolling.animate({'scrollTop': ib - sb + $scrolling.scrollTop()}, 300);
+				moretop = sb - ib;
+			}
+		}
+		$item.css('opacity', 0).animate({'opacity': 1}, 300);
+		data.$dragged.animate({
+			opacity: 0,
+			left: offset.left + moreleft,
+			top: offset.top + moretop
+		}, 300, function () {
+			data.$dragged.remove(); // we have to do it ourselves since we retained it
+		});
+		data.$dragged.retain = true;
+	}, 'Q/sortable'),
 	onSuccess: new Q.Event()
 },
 
 {
 	destroy: function () {
 		// TODO: implement cleanup
+		this.removeData('Q/sortable');
+		this.off('.Q_sortable');
 	}
 }
 

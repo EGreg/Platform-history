@@ -3032,7 +3032,12 @@ Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandl
 	var handler = (eventHandler.typename === "Q.Event"
 		? eventHandler.eventListener = function _Q_addEventListener_wrapper(e) { Q.handle(eventHandler, element, [e]); }
 		: eventHandler);
-
+	if (typeof eventName === 'string') {
+		var split = eventName.split(' ');
+		if (split.length > 1) {
+			eventName = split;
+		}
+	}
 	if (typeof eventName === 'function') {
 		var params = {
 			original: eventHandler
@@ -3074,7 +3079,12 @@ Q.removeEventListener = function _Q_addEventListener(element, eventName, eventHa
 	var handler = (eventHandler.typename === "Q.Event"
 		? eventHandler.eventListener
 		: eventHandler);
-
+	if (typeof eventName === 'string') {
+		var split = eventName.split(' ');
+		if (split.length > 1) {
+			eventName = split;
+		}
+	}
 	if (Q.typeOf(eventName) === 'array') {
 		for (var i=0, l=eventName.length; i<l; ++i) {
 			Q.removeEventListener(element, eventName[i], eventHandler);
@@ -6085,12 +6095,17 @@ Q.Pointer = {
 	'cancel': (Q.info.isTouchscreen ? 'touchcancel' : 'mousecancel'), // mousecancel can be a custom event
 	'click': (Q.info.isTouchscreen ? 'touchend' : 'click'),
 	'fastclick': function _Q_fastclick (params) {
-		params.eventName = Q.Pointer.end;
+		params.eventName = (Q.Pointer.start + ' ' + Q.Pointer.end);
 		return function _Q_fastclick_on_wrapper (e) {
-			if (Q.Pointer.canceledClick) {
+			if (e.type === Q.Pointer.start) {
+				Q.Pointer.started = this;
+				return;
+			}
+			if (Q.Pointer.canceledClick || Q.Pointer.started !== this) {
 				e.preventDefault ? e.preventDefault() : event.returnValue = false;
 				return;
 			}
+			Q.Pointer.started = null;
 			params.original.apply(this, arguments);
 		};
 	},
@@ -6099,12 +6114,12 @@ Q.Pointer = {
 	'getX': function(e) {
 		var oe = e.originalEvent || e;
 		e = oe.changedTouches ? oe.changedTouches[0] : (oe.touches ? oe.touches[0] : e);
-		return (window ? e.clientX : e.pageX);
+		return Math.max(0, ('pageX' in e) ? e.pageX : e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft);
 	},
 	'getY': function(e) {
 		var oe = e.originalEvent || e;
 		e = oe.changedTouches ? oe.changedTouches[0] : (oe.touches ? oe.touches[0] : e);
-		return (window ? e.clientY : e.pageY);
+		return Math.max(0, ('pageY' in e) ? e.pageY : e.clientY + document.body.scrollTop + document.documentElement.scrollTop);
 	},
 	'touchCount': function (e) {
 		var oe = e.originalEvent || e;
