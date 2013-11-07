@@ -1565,8 +1565,8 @@ input[type=radio] { margin-right: 5px; }
 
 
 /* Q tools */
-.Q-actions-action { cursor: pointer; }
-.Q-imagepicker { cursor: pointer; }
+div.Q-actions-action { cursor: pointer !important; }
+div.Q-imagepicker { cursor: pointer !important; }
 
 /* streams basic tool */
 

@@ -6,7 +6,8 @@
  */
 Q.Streams = Q.plugins.Streams = {
 	options: {
-		updateParticipatingOnEvents: ['focus', 'pageshow']
+		updateParticipatingOnEvents: ['focus', 'pageshow'],
+		updateParticipatingMinSeconds: 3
 	}
 };
 
@@ -258,10 +259,16 @@ Streams.getParticipating = Q.getter(function(callback) {
 /**
  * Updates all the streams you are participating in
  */
-Streams.updateParticipating = function () {
+Streams.updateParticipating = function (options) {
 	if (!Q.Users.loggedInUser) {
 		return false;
 	}
+	var now = Date.now();
+	if (now - Streams.updateParticipating.lastTime < Streams.updateParticipating.options.minSeconds * 1000) {
+		return false;
+	}
+	Streams.updateParticipating.lastTime = now;
+	var o = Q.extend({}, Streams.updateParticipating.options, options);
 	Streams.getParticipating(function (err, participating) {
 		Q.each(participating, function (i, p) {
 			// If the stream was seen, fetch latest messages,
@@ -271,7 +278,14 @@ Streams.updateParticipating = function () {
 			}
 		});
 	});
+	return true;
 };
+
+Streams.updateParticipating.options = {
+	onEvents: ['focus', 'pageshow'],
+	minSeconds: 3
+};
+Streams.updateParticipating.lastTime = 0;
 
 Streams.seen = {};
 
@@ -2058,7 +2072,8 @@ Q.onInit.add(function _Streams_onInit() {
 	
 	Q.Users.onLogin.set(_clearCaches, 'Streams');
 	Q.Users.onLogout.set(_clearCaches, 'Streams');
-	Q.addEventListener(window, Streams.options.updateParticipatingOnEvents, Streams.updateParticipating);
+	Q.addEventListener(window, Streams.updateParticipating.options.onEvents, Streams.updateParticipating);
+	_scheduleUpdate();
 
 }, 'Streams');
 
@@ -2069,6 +2084,23 @@ function _clearCaches() {
 	Streams.Participant.get.cache.clear();
 	Streams.Avatar.get.cache.clear();
 	Streams.getParticipating.cache.clear();
+}
+
+function _scheduleUpdate() {
+	var ms = 1000;
+	if (_scheduleUpdate.interval) {
+		clearInterval(_scheduleUpdate.interval);
+	}
+	_scheduleUpdate.interval = setInterval(function () {
+		var now = Date.now();
+		if (_scheduleUpdate.lastTime !== undefined
+		&& now - _scheduleUpdate.lastTime > ms + 1000) {
+			// The timer was delayed for a whole second. Something might have changed.
+			// Streams.updateParticipating.minSeconds should prevent the update happening too frequently
+			Streams.updateParticipating();
+		}
+		_scheduleUpdate.lastTime = now;
+	}, ms);
 }
 
 })(jQuery, Q.plugins.Streams);

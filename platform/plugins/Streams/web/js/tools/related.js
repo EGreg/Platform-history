@@ -40,6 +40,7 @@ function _Streams_related_tool (options)
 {
     "isCategory": true,
     "publisherId": Q.info.app,
+	"newTypes": {}, // pairs of {streamType: title}, you can put custom title such as "New" or "New ..."
     "duration": 300,
 	"editable": false,
     "onUpdate": new Q.Event(function _Streams_related_onUpdate(result, entering, exiting, updating) {
