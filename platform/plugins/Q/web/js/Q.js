@@ -4001,6 +4001,17 @@ Q.addScript.options = {
 	ignoreLoadingErrors: false
 };
 
+Q.findScript = function (src) {
+	var scripts = document.getElementsByTagName('script');
+	src = Q.url(src);
+	for (var i=0; i<scripts.length; ++i) {
+		if (scripts[i].getAttribute('src') === src) {
+			return scripts[i];
+		}
+	}
+	return null;
+};
+
 /**
  * Adds a reference to a stylesheet, if it's not already there
  * @param {String} href
@@ -4104,6 +4115,20 @@ Q.addStylesheet = function _Q_addStylesheet(href, media, onload, options) {
 Q.addStylesheet.onLoadCallbacks = {};
 Q.addStylesheet.added = {};
 Q.addStylesheet.loaded = {};
+
+Q.findStylesheet = function (href) {
+	var links = document.getElementsByTagName('link');
+	href = Q.url(href);
+	for (var i=0; i<links.length; ++i) {
+		if (links[i].getAttribute('rel').toLowerCase() !== 'stylesheet') {
+			continue;
+		}
+		if (links[i].getAttribute('href') === href) {
+			return links[i];
+		}
+	}
+	return null;
+};
 
 /**
  * Gets, sets or a deletes a cookie
@@ -4466,6 +4491,11 @@ Q.loadUrl = function _Q_loadUrl(url, options)
 							if (!element) return;
 							// domElements[slotName].appendChild(element);
 							element.setAttribute('data-slot', slotName);
+							
+							// save some info before prefix-free mangles stuff
+							if (element.tagName.toUpperCase() === 'LINK') {
+								processStylesheets.slots[element.getAttribute('href')] = slotName;
+							}
 						});
 					});
 				});
@@ -4483,6 +4513,10 @@ Q.loadUrl = function _Q_loadUrl(url, options)
 				} catch (e) {
 					Q.Page.beingActivated = false;
 					throw e;
+				}
+				// Invoke prefixfree again if it was loaded
+				if (window.StyleFix) {
+					StyleFix.process();
 				}
 				Q.handle(onActivate, this, arguments);
 			}
@@ -4584,9 +4618,22 @@ Q.loadUrl = function _Q_loadUrl(url, options)
 			// Remove various tags belonging to the slots that are being reloaded
 	        Q.each(['link', 'style', 'script'], function (i, tag) {
 				Q.each(document.getElementsByTagName(tag), function (k, e) {
+					if (tag === 'link' && e.getAttribute('rel').toLowerCase() != 'stylesheet') {
+						return;
+					}
+					
 			        var slot = e.getAttribute('data-slot');
 					if (slot && slotNames.indexOf(slot) >= 0) {
 						Q.removeElement(e);
+					}
+					
+					// now let's deal with style tags inserted by prefixfree
+					if (tag === 'style') {
+						var href = e.getAttribute('data-href');
+						if (slotNames.indexOf(processStylesheets.slots[href]) >= 0) {
+							Q.removeElement(e);
+							delete processStylesheets.slots[href];
+						}
 					}
 				});
 	        });
@@ -4610,6 +4657,9 @@ Q.loadUrl = function _Q_loadUrl(url, options)
 				var stylesheets = [];
 				for (var j in response.stylesheets[slotName]) {
 					var stylesheet = response.stylesheets[slotName][j];
+					if (window.StyleFix && (stylesheet.href in processStylesheets.slots)) {
+						continue; // if prefixfree is loaded, we will not even try to load these processed stylesheets
+					}
 					var elem = Q.addStylesheet(stylesheet.href, stylesheet.media, null, {returnAll: false});
 					if (elem) {
 						stylesheets.push(elem);
@@ -6543,6 +6593,26 @@ if (!window.console) {
 		warn: noop
 	};
 }
+
+function processStylesheets() {
+	// Complain about some other libraries if necessary
+	if (Q.findScript('plugins/Q/js/prefixfree.min.js')) {
+		var warning = "Q.js must be included before prefixfree in order to work properly";
+		alert(warning);
+		console.warn(warning);
+	}
+	var links = document.getElementsByTagName('link');
+	var slots = processStylesheets.slots;
+	for (var i=0; i<links.length; ++i) {
+		if (links[i].getAttribute('rel').toLowerCase() !== 'stylesheet') {
+			continue;
+		}
+		var href = links[i].getAttribute('href');
+		processStylesheets.slots[href] = links[i].getAttribute('data-slot') || null;
+	}
+}
+processStylesheets.slots = {};
+processStylesheets();
 
 Q.onInit = new Q.Event();
 Q.onLoad = new Q.Event();
