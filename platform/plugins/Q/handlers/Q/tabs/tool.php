@@ -24,7 +24,7 @@
 function Q_tabs_tool($options)
 {
 	$field = 'tab';
-	$slot = 'content';
+	$slot = 'content,title';
 	$selector = '#content_slot';
 	$urls = array();
 	$default_tab = null;

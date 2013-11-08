@@ -33,7 +33,7 @@ Q.Tool.define("Q/tabs", function(options) {
 {
 	loader: Q.req,
 	beforeSwitch: new Q.Event(),
-	slot: 'content',
+	slot: 'content,title',
 	selector: '#content_slot'
 },
 
@@ -49,7 +49,7 @@ Q.Tool.define("Q/tabs", function(options) {
 		}
 		
 		this.state.slots = typeof this.state.slot === "string" 
-			? [this.state.slot] 
+			? this.state.slot.split(',')
 			: this.state.slot;
 		this.state.selectors = typeof this.state.selector === "string"
 			? [this.state.selector]

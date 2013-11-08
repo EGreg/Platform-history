@@ -4492,7 +4492,7 @@ Q.loadUrl = function _Q_loadUrl(url, options)
 							// domElements[slotName].appendChild(element);
 							element.setAttribute('data-slot', slotName);
 							
-							// save some info before prefix-free mangles stuff
+							// save some info before prefixfree mangles stuff
 							if (element.tagName.toUpperCase() === 'LINK') {
 								processStylesheets.slots[element.getAttribute('href')] = slotName;
 							}

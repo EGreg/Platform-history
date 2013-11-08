@@ -724,6 +724,15 @@ class Q_Response
 		);
 		self::$cacheSlot[self::$slotName] = $to_cache;
 	}
+	
+	/**
+	 * The slot currently being rendered
+	 * @return {string}
+	 */
+	static function slotName()
+	{
+		return self::$slotName;
+	}
 
 	/**
 	 * Adds a script reference to the response
@@ -755,7 +764,9 @@ class Q_Response
 		self::$scripts[] = compact('src', 'type');
 		// Now, for the slot
 		if (!isset($slot_name)) {
-			$slot_name = isset(self::$slotName) ? self::$slotName : '';
+			// By default, scripts won't be added "to a slot"
+			// because it is more likely they should be executed only one time in the document.
+			$slot_name = ''; // isset(self::$slotName) ? self::$slotName : '';
 		}
 		if (!isset(self::$scriptsForSlot[$slot_name])) {
 			self::$scriptsForSlot[$slot_name] = array();
