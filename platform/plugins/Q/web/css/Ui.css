@@ -24,9 +24,7 @@ table { border-spacing:0; border-collapse:collapse; }
 .Q_required { border: solid 2px #AAC !important; }
 .Q_selected {}
 .Q_throb { background-image: url(../img/throbbers/bars.gif); background-repeat: no-repeat; background-position: center center; }
-.Q_clickable { cursor: pointer; }
-.Q_clickable:hover { background-color: #c6d9f7 !important; background-color: rgba(198, 208, 247, 0.8) !important; color: black !important; box-shadow: #aaa 0px 0px 2px; -webkit-box-shadow: #aaa 0px 0px 2px; -moz-box-shadow: #aaa 0px 0px 2px; }
-.Q_clickable:active { background-color: #c6d9f7 !important; background-color: rgba(198, 208, 247, 0.8) !important; color: black !important; box-shadow: #aaa 0px 0px 0px; -webkit-box-shadow: #aaa 0px 0px 0px; -moz-box-shadow: #aaa 0px 0px 0px; }
+.Q_clickable_container { cursor: pointer !important; }
 .Q_clickable_container .Q_clickable_shadow { display: none; }
 .Q_clickable_container:hover .Q_clickable_shadow { display: block; }
 .Q_placeholder { display: inline-block; color: #999 !important; font-style: italic !important; zoom: 1; *display: inline; }

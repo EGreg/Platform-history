@@ -769,10 +769,11 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 			throw new Exception("The fields to select need to be specified correctly.", -1);
 		}
 
-		if (empty($this->clauses['SELECT']))
+		if (empty($this->clauses['SELECT'])) {
 			$this->clauses['SELECT'] = $fields;
-		else
+		} else {
 			$this->clauses['SELECT'] .= ", $fields";
+		}
 
 		if ($repeat) {
 			$prev_tables_list = explode(',', $this->clauses['FROM']);
@@ -795,20 +796,20 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 				}
 				$tables = implode(', ', $tables_list);
 			} else if ($tables instanceof Db_Expression) {
-				if (isset($tables->parameters))
+				if (isset($tables->parameters)) {
 					$this->parameters = array_merge($this->parameters, $tables->parameters);
+				}
 				$tables = $tables->expression;
 			}
 			if (! is_string($tables)) {
-				throw new Exception(
-					"The tables to select from need to be specified correctly.",
-				-1);
+				throw new Exception("The tables to select from need to be specified correctly.", -1);
 			}
 
-			if (empty($this->clauses['FROM']))
+			if (empty($this->clauses['FROM'])) {
 				$this->clauses['FROM'] = $tables;
-			else
+			} else {
 				$this->clauses['FROM'] .= ", $tables";
+			}
 		}
 
 		return $this;

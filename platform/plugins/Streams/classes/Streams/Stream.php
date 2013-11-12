@@ -112,42 +112,49 @@ class Streams_Stream extends Base_Streams_Stream
 	protected $published_by_fetcher = false;
 
 	private static function sortTemplateTypes($templates, $user_field, &$type, $name_field = 'streamName') {
-		if (count($templates)) {
-			// let's sort templates out
-			// we'll check to find first match:
-			// 	1. exact stream name and exact publisher id - this is record for existing row
-			//	2. generic stream name and exact publisher id
-			//	3. exact stream name and generic publisher
-			//	4. generic stream name and generic publisher
-			$sts = array(array(), array(), array(), array());
-			foreach ($templates as $t) {
-				$pos = strlen($t->$name_field) - 1;
-				$name = $t->$name_field;
-				if ($t->$user_field === '') {
-					$key = $name[$pos] === '/' ? 3 : 2; // generic publisher;
-				} else {
-					$key = $name[$pos] === '/' ? 1 : 0; // $userId
-				}
-				if ($type) $sts[$key][] = $t;
-				else $sts[$key] = $t;
-			}
-
-			if ($type) {
-				// we are looking for all templates
-				foreach ($sts as $st) {
-					if (!empty($st)) return $sts;
-				}
+		$returnAll = ($type === true);
+		$ret = array(array(), array(), array(), array());
+		if (!$templates) {
+			$type = -1;
+			return $returnAll ? $ret : null;
+		}
+		// The order of the templates will be from most specific to most genetic:
+		// 	0. exact stream name and exact publisher id - this would be the row itself
+		//	1. generic stream name and exact publisher id
+		//	2. exact stream name and generic publisher
+		//	3. generic stream name and generic publisher
+		foreach ($templates as $t) {
+			$pos = strlen($t->$name_field) - 1;
+			$name = $t->$name_field;
+			if ($t->$user_field === '') {
+				$key = ($name[$pos] === '/' ? 3 : 2); // generic publisher;
 			} else {
-				// we are looking for exactly one template
-				for ($type=0; $type < 4; $type++) {
-					if (isset($sts[$type])) {
-						return $sts[$type];
-					}
+				$key = ($name[$pos] === '/' ? 1 : 0); // $userId
+			}
+			$ret[$key][] = $t;
+		}
+
+		if ($returnAll) {
+			// we are looking for all templates
+			for ($i=0; $i < 4; $i++) {
+				if (!empty($ret[$i][0])) {
+					$type = $i;
+					return $ret;
+				}
+			}
+		} else {
+			// we are looking for exactly one template
+			for ($i=0; $i < 4; $i++) {
+				if (!empty($ret[$i][0])) {
+					$type = $i;
+					return $ret[$i][0];
 				}
 			}
 		}
-		if (!$type) $type = -1;
-		return null;
+		if (!$templates) {
+			$type = -1;
+			return $returnAll ? $ret : null;
+		}
 	}
 
 	protected function getStreamTemplate($class_name, &$type = null) {
@@ -161,6 +168,17 @@ class Streams_Stream extends Base_Streams_Stream
 				$field => $this->type.'/'
 			))->fetchDbRows();
 		return self::sortTemplateTypes($rows, 'publisherId', $type, $field);
+	}
+	
+	protected function getSubscriptionTemplate($class_name, $userId, &$type = null) {
+		// fetch template for subscription's PK - publisher, name & user
+		$rows = call_user_func(array($class_name, 'select'), '*')
+			->where(array(
+				'publisherId' => $this->publisherId,
+				'streamName' => $this->type.'/', // generic or specific stream name
+				'ofUserId' => array('', $userId) // generic or specific subscriber user
+			))->fetchDbRows();
+		return self::sortTemplateTypes($rows , 'ofUserId', $type, 'streamName');
 	}
 
 	/**
@@ -199,55 +217,63 @@ class Streams_Stream extends Base_Streams_Stream
 			if (!isset($modified_fields['name'])) {
 				$this->name = $modified_fields['name'] = Streams::db()->uniqueId(Streams_Stream::table(), 'name',
 					array('publisherId' => $this->publisherId),
-					array('prefix' => $this->type.'/')
+					array('prefix' => $this->type.'/Q')
 				);
 			}
 			// we don't want user to update private fields but will set initial values to them
-			$private_fields = array_merge(
+			$privateFieldNames = array_merge(
 				Q_Config::get('Streams', 'types', $this->type, 'private', array()),
 				Q_Config::expect('Streams', 'defaults', 'private')
 			);
 			// magic fields are handled by parent method
-			$private_fields = array_diff($private_fields, array('insertedTime', 'updatedTime'));
+			$magicFieldNames = array('insertedTime', 'updatedTime');
+			$privateFieldNames = array_diff($privateFieldNames, $magicFieldNames);
 
-			$streamTpl = $this->getStreamTemplate('Streams_Stream');
+			$streamTemplate = $this->getStreamTemplate('Streams_Stream');
+			$fieldNames = Streams_Stream::fieldNames();
 
-			if (!empty($streamTpl)) {
+			if ($streamTemplate) {
 				// if template exists copy all non-PK and non-magic fields from template
-				// for $private_fields copy unconditionally
 				foreach (array_diff(
-					Streams_Stream::fieldNames(),
+					$fieldNames,
 					$this->getPrimaryKey(),
-					array('insertedTime', 'updatedTime')
+					$magicFieldNames
 				) as $field) {
-					if (in_array($field, $private_fields) || !isset($modified_fields[$field])) {
-						$this->fields[$field] = $modified_fields[$field] = $streamTpl->$field;
+					if (in_array($field, $privateFieldNames) || !array_key_exists($field, $modified_fields)) {
+						$this->fields[$field] = $modified_fields[$field] = $streamTemplate->$field;
 					}
 				}
 			} else {
 				// otherwise (no template) set all private fields to defaults
-				foreach ($private_fields as $field) {
+				foreach ($privateFieldNames as $field) {
 					$this->fields[$field] = $modified_fields[$field] = Q_Config::get(
 						'Streams', 'types', $this->type, 'defaults', $field,
-						Q::ifset(Streams_Stream::$DEFAULTS[$field])
+						isset(Streams_Stream::$DEFAULTS[$field]) ? Streams_Stream::$DEFAULTS[$field] : null
+					);
+				}
+			}
+			
+			// Assign default values to fields that haven't been set yet
+			foreach ($fieldNames as $f) {
+				if (!array_key_exists($f, $this->fields) and !array_key_exists($f, $modified_fields)) {
+					$this->fields[$field] = $modified_fields[$f] = Q_Config::get(
+						'Streams', 'types', $this->type, 'defaults', $f,
+						isset(Streams_Stream::$DEFAULTS[$f]) ? Streams_Stream::$DEFAULTS[$f] : null
 					);
 				}
 			}
 
-			// get all access templates
+			// Get all access templates and save corresponding access
 			$type = true;
-			$accessTpls = $this->getStreamTemplate('Streams_Access', $type);
-
-			if (!empty($accessTpls)) {
-				// reverse types to start from most generic and end up with most specific
-				foreach (array_reverse($accessTpls) as $tpls) {
-					// process and save templates in natural order
-					foreach ($tpls as $tpl) {
-						$access = new Streams_Access();
-						$access->copyFrom($tpl->toArray());
-						$access->publisherId = $this->publisherId;
-						$access->streamName = $this->name;
-						if (!$access->save(true)) return false;
+			$accessTemplates = $this->getStreamTemplate('Streams_Access', $type);
+			for ($i=1; $i<=3; ++$i) {
+				foreach ($accessTemplates[$i] as $template) {
+					$access = new Streams_Access();
+					$access->copyFrom($template->toArray());
+					$access->publisherId = $this->publisherId;
+					$access->streamName = $this->name;
+					if (!$access->save(true)) {
+						return false; // NOTE: this leaves junk in the database, but preserves consistency
 					}
 				}
 			}
@@ -442,6 +468,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 *  "reason" => string<br/>
 	 *  "enthusiasm" => decimal<br/>
 	 *  "userId" => The user who is joining the stream. Defaults to the logged-in user.
+	 *  "noVisit" => If user is already participating, don't post a "Streams/visited" message
 	 * @param $participant=null {reference}
 	 *  Optional reference to a participant object that will be filled
 	 *  to point to the participant object, if any.
@@ -463,23 +490,27 @@ class Streams_Stream extends Base_Streams_Stream
 
 		if($participant->retrieve()) {
 			if (isset($options['subscribed'])) {
-				if ($participant->subscribed !== ($subscribed = !empty($options['subscribed']) ? 'yes' : 'no')) {
+				$subscribed = empty($options['subscribed']) ? 'no' : 'yes';
+				if ($participant->subscribed !== $subscribed) {
 					$participant->subscribed = $subscribed;
 				}
 			}
-			$type = $participant->state === 'participating' ? 'visit' : 'join';
+			$type = ($participant->state === 'participating') ? 'visit' : 'join';
 			$participant->state = 'participating';
-			if ($participant->save()) {
-				// Send a message to Node
-				Q_Utils::sendToNode(array(
-					"Q/method" => "Streams/Stream/$type", 
-					"participant" => Q::json_encode($participant->toArray()),
-					"stream" => Q::json_encode($stream->toArray())
-				));
-				// Post a message
+			if (!$participant->save()) {
+				return false;
+			}
+			// Send a message to Node
+			Q_Utils::sendToNode(array(
+				"Q/method" => "Streams/Stream/$type",
+				"participant" => Q::json_encode($participant->toArray()),
+				"stream" => Q::json_encode($stream->toArray())
+			));
+			// Post a message
+			if (empty($options['noVisit']) or $type !== 'visit') {
 				$stream->post($userId, array('type' => "Streams/$type"), true);
-				return $participant;
-			} else return false;
+			}
+			return $participant;
 		}
 
 		$participant->streamType = $stream->type;
@@ -505,7 +536,7 @@ class Streams_Stream extends Base_Streams_Stream
 		
 		// Now post Streams/joined message to Streams/participating
 		Streams_Message::post($userId, $userId, 'Streams/participating', array(
-			'type' => 'Streams/joined',
+			'type' => "Streams/joined",
 			'instructions' => Q::json_encode(array(
 				'publisherId' => $stream->publisherId,
 				'streamName' => $stream->name
@@ -567,17 +598,6 @@ class Streams_Stream extends Base_Streams_Stream
 		), true);
 	}
 
-	protected function getSubscriptionTemplate($class_name, $userId, &$type = null) {
-		// fetch template for subscription's PK - publisher, name & user
-		$rows = call_user_func(array($class_name, 'select'), '*')
-			->where(array(
-				'publisherId' => $this->publisherId,
-				'streamName' => $this->type.'/', // generic or specific stream name
-				'ofUserId' => array('', $userId) // generic or specific subscriber user
-			))->fetchDbRows();
-		return self::sortTemplateTypes($rows , 'ofUserId', $type, 'streamName');
-	}
-
 	/**
 	 * Subscribe to the stream's messages<br/>
 	 *	If options are not given check the subscription templates:
@@ -634,21 +654,18 @@ class Streams_Stream extends Base_Streams_Stream
 
 		if (isset($options['untilTime'])) {
 			$s->untilTime = $options['untilTime'];
-		} else if ($type > 0) {
-			if ($template->duration > 0) {
-				$s->untilTime = date("c", time() + $template->duration);
-			}
+		} else if ($type > 0 and $template and $template->duration > 0) {
+			$s->untilTime = date("c", time() + $template->duration);
 		}
 		if (!$s->save(true)) {
 			return false;
 		}
 
 		// Now let's handle rules
-		$type = null;
-		$template = $stream->getSubscriptionTemplate('Streams_Rule', $userId, $type);
+		$template = $stream->getSubscriptionTemplate('Streams_Rule', $userId, $type2);
 
 		$rule_success = true;
-		if ($type !== 0) {
+		if ($type2 !== 0) {
 			$rule = new Streams_Rule();
 			$rule->ofUserId = $userId;
 			$rule->publisherId = $stream->publisherId;
@@ -656,8 +673,8 @@ class Streams_Stream extends Base_Streams_Stream
 
 			// defaults - use if no template or no template value. 
 			$rule->readyTime = isset($options['readyTime']) ? $options['readyTime'] : new Db_Expression('CURRENT_TIMESTAMP');
-			
 			$rule->filter = !empty($template->filter) ? $template->filter : '{"types":[],"labels":[]}';
+			$rule->relevance = !empty($template->relevance) ? $template->relevance : 1;
 			
 			if (!empty($template->deliver)) {
 				$rule->deliver = $template->deliver;

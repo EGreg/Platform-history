@@ -629,7 +629,7 @@ Q.isPlainObject = function (x) {
 	}
 	if (window.attachEvent && !window.addEventListener) {
 		// This is just for IE8
-		if (x && x.constructor && x.constructor.toString().indexOf('function Object()') < 0) {
+		if (x && x.constructor !== Object) {
 			return false;
 		}
 	}
@@ -1990,7 +1990,7 @@ Q.Tool.remove = function _Q_Tool_remove(elem, removeCached) {
  *  Defaults to false. Whether the tools whose containing elements have the "data-Q-cache" attribute
  *  should be removed.
  */
-Q.Tool.clear = function _Q_Tool_remove(elem, removeCached) {
+Q.Tool.clear = function _Q_Tool_clear(elem, removeCached) {
 	Q.find(elem.children || elem.childNodes, true, null, function _Q_Tool_remove_found(toolElement) {
 		var tool = Q.Tool.from(toolElement);
 		if (tool) {
@@ -3591,6 +3591,8 @@ Q.firstErrorMessage = function _Q_firstErrorMessage(data) {
 		error = data.errors[0];
 	} else if (data.error) {
 		error = data.error;
+	} else if (Q.typeOf(data) === 'array') {
+		error = data[0];
 	} else {
 		error = data;
 	}

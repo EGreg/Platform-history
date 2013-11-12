@@ -62,13 +62,6 @@ class Streams_Access extends Base_Streams_Access
 	function beforeSaveExecute($query, $modified_fields, $where)
 	{
 		$tainted_access = array($this);
-		if ($query->type === Db_Query::TYPE_UPDATE) {
-			// we are updating an existing access
-			// we should not be changing the ofUserId
-			// or ofContactLabel on it.
-			// If you want to do that, then remove the
-			// old access row and then save a new one.
-		}
 		if ($this->get('removed', false)) {
 			$this->set('removed', false);
 		}
@@ -132,8 +125,14 @@ class Streams_Access extends Base_Streams_Access
 	{
 		if (!$this->retrieved) {
 			$table = $this->getTable();
-			if (empty($value['ofUserId']) && empty($value['ofContactLabel']) || !empty($value['ofUserId']) && !empty($value['ofContactLabel'])) {
+			if (empty($value['ofUserId']) && empty($value['ofContactLabel'])
+			or !empty($value['ofUserId']) && !empty($value['ofContactLabel'])) {
 				throw new Exception("only one of fields 'ofUserId' and 'ofContactLabel' can be set in table $table.");
+			}
+		}
+		foreach (array('ofUserId', 'ofContactLabel') as $f) {
+			if (isset($value[$f]) and $value[$f] != $this->fields[$f]) {
+				throw new Q_Exception_WrongValue(array('field' => $f, 'range' => 'no change'));
 			}
 		}
 		return parent::beforeSave($value);			

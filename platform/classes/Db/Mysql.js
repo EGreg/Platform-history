@@ -175,7 +175,7 @@ function Db_Mysql(connName, dsn) {
 	dbm.SELECT = function(fields, tables) {
 		if (!fields)
 			throw new Q.Exception("fields not specified in call to 'select'.");
-		if (!tables)
+		if (tables === undefined)
 			throw new Q.Exception("tables not specified in call to 'select'.");
 		var query = new Db.Query.Mysql(this, Db.Query.TYPE_SELECT);
 		return query.SELECT(fields, tables);
@@ -304,9 +304,101 @@ function Db_Mysql(connName, dsn) {
 		}
 		attempt();
 	};
+	
+	/**
+	 * Returns a timestamp from a Date string
+	 * @method fromDate
+	 * @param {string} $datetime The Date string that comes from the db
+	 * @return {integer} The timestamp
+	 */
+	dbm.fromDate = function(date) {
+		var year = date.substr(0, 4),
+		    month = date.substr(5, 2),
+		    day = date.substr(8, 2);
+		return (new Date(year, month, day).getTime());
+	};
+    
+	/**
+	 * Returns a timestamp from a DateTime string
+	 * @method fromDateTime
+	 * @param {string} datetime The DateTime string that comes from the db
+	 * @return {integer} The timestamp
+	 */
+	dbm.fromDateTime = function(datetime) {
+		var year = datetime.substr(0, 4),
+		    month = datetime.substr(5, 2),
+		    day = datetime.substr(8, 2),
+		    hour = datetime.substr(11, 2),
+		    min = datetime.substr(14, 2),
+		    sec = datetime.substr(17, 2);
+		return (new Date(year, month, day, hour, min, sec, 0).getTime());
+	};
 
-	dbm.getCurrentTimestamp = function() {
-		return (new Date()).toISOString();
+	/**
+	 * Returns a Date string to store in the database
+	 * @method toDate
+	 * @param {string} $timestamp The UNIX timestamp, e.g. from a strtotime function
+	 * @return {string}
+	 */
+	dbm.toDate = function(timestamp) {
+		var date = new Date(timestamp * 1000),
+			year = date.getFullYear(),
+			month = date.getMonth(),
+			day = date.getDate();
+		month = month < 10 ? '0'+month : month;
+		day = day < 10 ? '0'+day : day;
+		return year + '-' + month + '-' + day;
+	};
+
+	/**
+	 * Returns a DateTime string to store in the database
+	 * @method toDateTime
+	 * @param {string} timestamp a standard UNIX timestamp
+	 * @return {string}
+	 */
+	dbm.toDateTime = function(timestamp) {
+		var date = new Date(timestamp * 1000),
+			year = date.getFullYear(),
+			month = date.getMonth(),
+			day = date.getDate(),
+			hours = date.getHours(),
+			minutes = date.getMinutes(),
+			seconds = date.getSeconds();
+		month = month < 10 ? '0'+month : month;
+		day = day < 10 ? '0'+day : day;
+		hours = hours < 10 ? '0'+hours : hours;
+		minutes = minutes < 10 ? '0'+minutes : minutes;
+		seconds = seconds < 10 ? '0'+seconds : seconds;
+		return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds;
+	};
+	
+	var _dbtime = null,
+	    _nodetime = null;
+	
+	/**
+	 * Returns the timestamp the db server would have, based on synchronization
+	 * @method timestamp
+	 * @param {Function} callback
+	 * @return {integer}
+	 */
+	dbm.getCurrentTimestamp = function (callback) {
+		if (!_dbtime) {
+			var time1 = Date.now();
+			dbm.SELECT('CURRENT_TIMESTAMP ct', '').execute(function (err, rows) {
+				if (err) {
+					return callback(err);
+				}
+				if (!rows || !rows[0]) {
+					return callback("No results returned");
+				}
+				_dbtime = dbm.fromDateTime(rows[0].fields.ct);
+				var time2 = Date.now();
+				_nodetime = (time1 + time2) / 2;
+				callback(null, _dbtime + Math.round((time2 - _nodetime)/1000));
+			});
+		} else {
+			callback(null, _dbtime + Math.round((Date.now() - _nodetime)/1000));
+		}
 	};
 
 }

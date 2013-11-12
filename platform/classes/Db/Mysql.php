@@ -273,7 +273,7 @@ class Db_Mysql implements iDb
 	 * Creates a query to select fields from a table. Needs to be used with Db_Query::from().
 	 * @method select
 	 * @param {string|array} $fields The fields as strings, or array of alias=>field
-	 * @param {string|array} $tablesThe tables as strings, or array of alias=>table
+	 * @param {string|array} $tables The tables as strings, or array of alias=>table
 	 * @return {Db_Query_Mysql} The resulting Db_Query object
 	 */
 	function select ($fields, $tables = '')
@@ -636,7 +636,6 @@ class Db_Mysql implements iDb
 	/**
 	 * Returns a timestamp from a DateTime string
 	 * @method fromDateTime
-	 * @param {string} $syntax The format of the date string, see `date()` function.
 	 * @param {string} $datetime The DateTime string that comes from the db
 	 * @return {integer} The timestamp
 	 */
@@ -672,6 +671,23 @@ class Db_Mysql implements iDb
 	function toDateTime ($timestamp)
 	{
 		return date('Y-m-d H:i:s', $timestamp);
+	}
+	
+	/**
+	 * Returns the timestamp the db server would have, based on synchronization
+	 * @method timestamp
+	 * @return {integer}
+	 */
+	function getCurrentTimestamp()
+	{
+		static $dbtime = null, $phptime = null;
+		if (!isset($dbtime)) {
+			$phptime1 = time();
+			$row = $this->select('CURRENT_TIMESTAMP', '')->execute()->fetch(PDO::FETCH_NUM);
+			$phptime2 = time();
+			$phptime = round(($phptime1 + $phptime2) / 2);
+		}
+		return $dbtime + (time() - $phptime);
 	}
 	
 	/**

@@ -2,6 +2,7 @@
 
 function Streams_stream_response_data()
 {
+	// happens only during non-GET requests
 	if (isset(Streams::$cache['removed_count'])) {
 		return array('removed_count' => Streams::$cache['removed_count']);
 	}

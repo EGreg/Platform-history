@@ -961,11 +961,13 @@ Utils.listen = function(callback) {
 		if (!parsed || !parsed['Q/method']) return next();
 		switch (parsed['Q/method']) {
 			case 'Db/Shards/log':	// loose logging with sendToNode
-				if (_logging) _log[_logging].write(JSON.stringify({
-					shards: parsed.shards,
-					sql: parsed.sql,
-					timestamp: (new Date()).getTime()}
-				)+'\n', 'utf-8');
+				if (_logging) {
+					_log[_logging].write(JSON.stringify({
+						shards: parsed.shards,
+						sql: parsed.sql,
+						timestamp: (new Date()).getTime()}
+					)+'\n', 'utf-8');
+				}
 				break;
 			default:
 				return next();

@@ -523,12 +523,22 @@ abstract class Db_Query extends Db_Expression
 	 * @param {string} [$hash=null] Hash is one of 'md5' or 'normalize' optionally followed by '%' and number
 	 * @return {string}
 	 */
-	static function hashed($value, $hash = null) {
+	static function hashed($value, $hash = null)
+	{
 		$hash = !isset($hash) ? $hash : 'md5';
 		$parts = explode('%', $hash);
 		$hash = $parts[0];
 		$len = isset($parts[1]) ? $parts[1] : self::HASH_LEN;
 		return self::applyHash($value, $hash, $len);
+	}
+	
+	/**
+	 * Returns an array of field names that are "magic" when used
+	 * @return {array}
+	 */
+	static function magicFieldNames()
+	{
+		return array('insertedTime', 'updatedTime', 'created_time', 'updated_time');
 	}
 
 	/**

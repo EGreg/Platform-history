@@ -2,6 +2,7 @@
 
 function Streams_stream_response()
 {
+	// this handler is only for GET requests
 	if (Q_Request::method() !== 'GET') {
 		return null;
 	}
@@ -47,7 +48,7 @@ function Streams_stream_response()
 		return null;
 	}
 	if ($userId && !empty($_REQUEST['join'])) {
-		$stream->join();
+		$stream->join(); // NOTE: one of the rare times we may change state in a response handler
 	}
 	if (Q_Request::slotName('stream')) {
 		Q_Response::setSlot('stream', $stream->exportArray());

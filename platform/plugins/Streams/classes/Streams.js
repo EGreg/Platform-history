@@ -657,15 +657,21 @@ Streams.listen = function (options) {
 	});
 
     Streams.fillMagicFields = function (obj) {
-		if (!obj.insertedTime || obj.insertedTime.expression === "CURRENT_TIMESTAMP") {
-			obj.insertedTime = Streams.db().getCurrentTimestamp();
+		var toFill = [];
+		for (var i=0, l=toFill.length; i<l; ++i) {
+			var f = toFill[i];
+			if (!obj[f] || obj[f].expression === "CURRENT_TIMESTAMP") {
+				toFill.push(f);
+			}
 		}
-		if (!obj.updatedTime || obj.updatedTime.expression === "CURRENT_TIMESTAMP") {
-			obj.updatedTime = Streams.db().getCurrentTimestamp();
+		if (!toFill.length) {
+			return obj;
 		}
-		if (obj.sentTime && obj.sentTime.expression === "CURRENT_TIMESTAMP") {
-			obj.sentTime = Streams.db().getCurrentTimestamp();
-		}
+		Streams.db().getCurrentTimestamp(function (err, timestamp) {
+			for (var i=0, l=toFill.length; i<l; ++i) {
+				obj[toFill[i]] = timestamp;
+			}
+		});
 		return obj;
 	};
 

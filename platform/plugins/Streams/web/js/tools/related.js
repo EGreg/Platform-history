@@ -9,10 +9,13 @@
  *   "relationType": The type of the relation. Defaults to ""
  *   "isCategory": Defaults to true. Whether to show the streams related TO this stream, or the ones it is related to.
  *   "relationOptions": Can include options like 'limit', 'offset', 'ascending', 'min', 'max' and 'prefix'
+ *   "editable": Defaults to false. Whether the entries should be editable
+ *   "creatable": Optional pairs of {streamType: params} to create new related streams.
+ *      The params typically include at least a "title" field which you can fill with values such as "New" or "New ..."
  *   "toolType": Function that takes streamType and returns the tag to render (and then activate) for that stream
  *   "realtime": Whether to refresh every time a relation is added, removed or updated
- *   "duration": The duration, in milliseconds, of animation to pass to onUpdate
  *   "onUpdate": Event that receives parameters "data", "entering", "exiting", "updating"
+ *   "updateOptions": Options for onUpdate such as duration of the animation, etc.
  */
 Q.Tool.define("Streams/related",
 
@@ -38,22 +41,30 @@ function _Streams_related_tool (options)
 },
 
 {
-    "isCategory": true,
     "publisherId": Q.info.app,
-    "duration": 300,
+    "isCategory": true,
+	"realtime": true,
 	"editable": false,
-	"addable": {}, // pairs of {streamType: title}, you can put custom title such as "New" or "New ..."
+	"creatable": {},
     "onUpdate": new Q.Event(function _Streams_related_onUpdate(result, entering, exiting, updating) {
         var tool = this;
         Q.Tool.clear(tool.element);
         tool.element.innerHTML = '';
+		Q.each(this.state.creatable, function (streamType, params) {
+			var element = tool.elementForStream(tool.state.publisherId, "", streamType, {
+				creatable: params
+			});
+			Q.activate(tool.element.appendChild(element));
+		});
         Q.each(result.streams, function () {
-            var element = tool.newElementFromStream(this);
-            tool.element.appendChild(element);
-            Q.activate(element);
+            var element = tool.elementForStream(this.publisherId, this.name, this.type);
+            Q.activate(tool.element.appendChild(element));
         });
         // The elements should animate to their respective positions, like in D3.
     }, "Streams/related"), 
+	"updateOptions": {
+		duration: 300
+	},
     "toolType": function (streamType) { return streamType+'/preview'; }
 },
 
@@ -107,19 +118,18 @@ function _Streams_related_tool (options)
             tool.refresh();
         }
     },
-    newElementFromStream: function (stream) {
-        var element = document.createElement(this.state.tag);
-        var options = {
-            publisherId: stream.fields.publisherId,
-            streamName: stream.fields.name,
-			relatedTo: {
+    elementForStream: function (publisherId, streamName, streamType, options) {
+        var o = Q.extend({
+            publisherId: publisherId,
+            streamName: streamName,
+			relatedFrom: {
 				publisherId: this.state.publisherId,
 				streamName: this.state.streamName,
 				type: this.state.relationType
 			},
 			editable: this.state.editable
-        };
-        return Q.Tool.element(this.state.tag, streams.fields.type, options);
+        }, options);
+        return Q.Tool.element(this.state.tag, this.state.toolType(streamType), o);
     }
 }
 

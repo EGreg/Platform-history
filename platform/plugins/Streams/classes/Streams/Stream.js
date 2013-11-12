@@ -872,6 +872,9 @@ function Streams_Stream (fields) {
 			    Q.plugins.Users.tokensForUser(userId, _notify);
 			}
 		}
+		if (userId === message.byUserId) {
+			return; // no need to notify the user of their own actions
+		}
 		// check access
 		if (this.get('asUserId') !== userId) {
 			this.calculateAccess(userId, function (err) {

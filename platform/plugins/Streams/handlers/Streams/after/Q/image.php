@@ -15,8 +15,8 @@ function Streams_after_Q_image($params)
 	}
 	$stream = Streams::$cache['canWriteToStream'];
 	$stream->icon = Q_Request::baseUrl().'/'.$data[''];
-	$stream->save();
 	$to_save = array('icon' => $stream->icon);
+	$stream->save();
 	$stream->post($user->id, array(
 		'type' => 'Streams/edited',
 		'content' => '',

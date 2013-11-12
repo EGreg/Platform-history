@@ -9,10 +9,10 @@ function (options) {
 	var $scrolling = null, ost = null, osl = null;
 	
 	$(document).on('keydown.Q_sortable', function (e) {
-		if (e.keyCode == 27) { // escape key
+		if (lifted && e.keyCode == 27) { // escape key
 			complete(true);
+			return false;
 		}
-		return false;
 	});
 	
 	options.draggable = options.draggable || '*';

@@ -325,8 +325,9 @@ Streams.get = Q.getter(function (publisherId, streamName, callback, extra) {
 		streamName: streamName
 	}));
 	func.call(this, 'stream', slotNames, publisherId, streamName, function Streams_get_response_handler (err, data) {
-		if (err) {
-			return callback && callback.call(this, err);
+		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		if (msg) {
+			return callback && callback.call(this, msg);
 		}
 		if (!data.stream) {
 			return callback && callback.call(this, "Streams.get: data.stream is missing");
@@ -358,23 +359,28 @@ Streams.batchFunction.functions = {};
 Streams.create = function (fields, callback, related) {
 	var slotName = "stream";
 	if (related) {
-		fields['Streams.related.publisherId'] = related.publisherId || related.publisherId;
-		fields['Streams.related.streamName'] = related.streamName || related.streamName || related.name;
-		fields['Streams.related.type'] = related.type;
+		fields['Q.Streams.related.publisherId'] = related.publisherId || related.publisherId;
+		fields['Q.Streams.related.streamName'] = related.streamName || related.streamName || related.name;
+		fields['Q.Streams.related.type'] = related.type;
+		if ('weight' in related) {
+			fields['Q.Streams.related.weight'] = related.weight;
+		}
 	}
 	var baseUrl = Q.baseUrl({
 		publisherId: fields.publisherId,
 		streamName: "" // NOTE: the request is routed to wherever the "" stream would have been hosted
 	});
 	Q.req('Streams/stream', [slotName], function Stream_create_response_handler(err, data) {
-		if (err) {
-			return callback && callback(err);
+		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		if (msg) {
+			return callback && callback.call(this, msg);
 		}
 		_constructStream(data.slots.stream, function Stream_create_construct_handler (err, stream) {
-			if (err) {
-				return callback && callback.call(stream, err, stream);
+			var msg = Q.firstErrorMessage(err);
+			if (msg) {
+				return callback && callback.call(stream, msg, stream);
 			}
-			return callback && callback.call(stream, err, stream);
+			return callback && callback.call(stream, null, stream);
 		});
 	}, { method: 'post', fields: fields, baseUrl: baseUrl });
 };
@@ -568,9 +574,12 @@ Streams.Stream.prototype.save = function (callback) {
 		streamName: this.pendingFields.name
 	});
 	Q.req('Streams/stream', [slotName], function (err, data) {
-		if (err) return callback && callback.call(this, err);
+		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		if (msg) {
+			return callback && callback.call(this, msg);
+		}
 		// the rest will occur in the handler for the stream.onUpdated event coming from the socket
-		callback && callback.call(that, err, data.slots.stream || null);
+		callback && callback.call(that, null, data.slots.stream || null);
 	}, { method: 'put', fields: this.pendingFields, baseUrl: baseUrl });
 };
 Streams.Stream.prototype.remove = function (callback) {
@@ -774,7 +783,8 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 					var key = relation[far_publisherId] + "\t" + relation[far_streamName];
 					keys.push(key);
 					Streams.get(relation[far_publisherId], relation[far_streamName], function (err, data) {
-						if (err) {
+						var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+						if (msg) {
 							p.fill(key)();
 							return;
 						}
@@ -802,27 +812,27 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 });
 
 /**
- * Returns all the streams related to this
+ * Returns all the streams this stream is related to
+ * @param relationType {String} the type of the relation
+ * @param options {Object} optional object that can include:
+ *  "limit": the maximum number of results to return
+ *  "offset": the page offset that goes with the limit
+ *  "ascending": whether to sort by ascending weight. Defaults to false.
+ * @param callback {Function} callback to call with the results
+ *  First parameter is the error, the second one is an object of Streams.RelatedFrom objects you can iterate over with Q.each
+ */
+Streams.Stream.prototype.relatedFrom = function (relationType, options, callback) {
+	return Streams.related(this.fields.publisherId, this.fields.name, relationType, true, options, callback);
+};
+
+/**
+ * Returns all the streams related to this stream
  * @param relationType {String} the type of the relation
  * @param options {Object} optional object that can include:
  *  "limit": the maximum number of results to return
  *  "offset": the page offset that goes with the limit
  *  "ascending": whether to sort by ascending weight. Defaults to false.
  *  "prefix": optional prefix to filter the streams by
- * @param callback {Function} callback to call with the results
- *  First parameter is the error, the second one is an object of Streams.RelatedTo objects you can iterate over with Q.each
- */
-Streams.Stream.prototype.related = function (relationType, options, callback) {
-	return Streams.related(this.fields.publisherId, this.fields.name, relationType, true, options, callback);
-};
-
-/**
- * Returns all the Streams.RelatedFrom objects
- * @param relationType {String} the type of the relation
- * @param options {Object} optional object that can include:
- *  "limit": the maximum number of results to return
- *  "offset": the page offset that goes with the limit
- *  "ascending": whether to sort by ascending weight. Defaults to false.
  * @param callback {Function} callback to call with the results
  *  First parameter is the error, the second one is an object of Streams.RelatedTo objects you can iterate over with Q.each
  */
@@ -1074,8 +1084,9 @@ Streams.Stream.join = function (publisherId, streamName, callback) {
 		"socketSessionId": Streams.socketSessionId(publisherId, streamName)
 	});
 	Q.req('Streams/join', [slotName], function (err, data) {
-		if (err) {
-			return callback && callback.call(this, err);
+		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		if (msg) {
+			return callback && callback.call(this, msg);
 		}
 		var participant = new Streams.Participant(data.slots.participant);
 		Streams.Participant.get.cache.set(
@@ -1107,8 +1118,9 @@ Streams.Stream.leave = function (publisherId, streamName, callback) {
 		streamName: streamName
 	});
 	Q.req('Streams/leave', [slotName], function (err, data) {
-		if (err) {
-			return callback && callback.call(this, err);
+		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		if (msg) {
+			return callback && callback.call(this, msg);
 		}
 		var participant = new Streams.Participant(data.slots.participant);
 		Streams.Participant.get.cache.remove(
@@ -1132,7 +1144,10 @@ Streams.Stream.remove = function(publisherId, streamName, callback) {
 		streamName: streamName
 	});
 	Q.req('Streams/stream', [slotName], function (err, data) {
-		if (err) return callback && callback.call(this, err);
+		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		if (msg) {
+			return callback && callback.call(this, msg);
+		}
 		callback && callback.call(this, err, data.slots.result || null);
 	}, { method: 'delete', fields: fields, baseUrl: baseUrl });
 };
@@ -1184,8 +1199,9 @@ Streams.Message.get = Q.getter(function (publisherId, streamName, ordinal, callb
 		streamName: streamName
 	}));
 	func.call(this, 'message', slotName, publisherId, streamName, criteria, function (err, data) {
-		if (err) {
-			return callback && callback.call(this, err);
+		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		if (msg) {
+			return callback && callback.call(this, msg);
 		}
 		var messages = {};
 		if ('messages' in data) {
@@ -1225,8 +1241,9 @@ Streams.Message.post = function (msg, callback) {
 	});
 	msg.socketSessionId = Streams.socketSessionId(msg.publisherId, msg.streamName);
 	Q.req('Streams/message', [slotName], function (err, data) {
-		if (err) {
-			return callback && callback.call(this, err);
+		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		if (msg) {
+			return callback && callback.call(this, msg);
 		}
 		var message = data.slots.message && new Streams.Message(data.slots.message);
 		Streams.Message.get.cache.set(
@@ -1390,8 +1407,9 @@ Streams.Participant.get = Q.getter(function (publisherId, streamName, userId, ca
 	}));
 	func.call(this, 'participant', slotName, publisherId, streamName, criteria, function (err, data) {
 		var participants = {};
-		if (err) {
-			return callback && callback.call(this, err);
+		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		if (msg) {
+			return callback && callback.call(this, msg);
 		}
 		if ('participants' in data) {
 			participants = data.participants;
@@ -1434,8 +1452,9 @@ Streams.Avatar = function (fields) {
 Streams.Avatar.get = Q.getter(function (userId, callback) {
 	var func = Streams.batchFunction(Q.baseUrl({userId: userId}));
 	func.call(this, 'avatar', 'avatars', userId, function (err, data) {
-		if (err) {
-			return callback && callback.call(this, err);
+		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		if (msg) {
+			return callback && callback.call(this, msg);
 		}
 		var avatar = data.avatars[userId]
 			? new Streams.Avatar(data.avatars[userId])
@@ -1463,8 +1482,9 @@ Streams.Avatar.byPrefix = Q.getter(function (prefix, callback) {
 		userId: userId // if userId is empty, then we query avatars on one of the public servers
 	}));
 	func.call(this, 'avatar', 'avatars', {prefix: prefix}, function (err, data) {
-		if (err) {
-			return callback && callback.call(this, err);
+		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		if (msg) {
+			return callback && callback.call(this, msg);
 		}
 		var avatars = {};
 		Q.each(data.avatars, function (userId, avatar) {

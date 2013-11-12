@@ -576,7 +576,8 @@ abstract class Streams extends Base_Streams
 	 *   "streamName" => The name of the stream to which the new stream would be related
 	 *   "publisherId" => The id of the user publishing that stream, defaults to $publisherId
 	 *   "type" => The type of relation, defaults to ""
-	 * @return boolean Whether the user can create
+	 * @return {Streams_Stream|boolean} Returns a stream template the user must use,
+	 *  otherwise a boolean true/false to indicate a yes or no regardless of template.
 	 */
 	static function isAuthorizedToCreate(
 		$userId,
@@ -593,7 +594,7 @@ abstract class Streams extends Base_Streams
 				$relate['type'] = '';
 			}
 		}
-		if ($publisherId != $userId) {
+		if ($publisherId == $userId) {
 			$authorized = true; // user can publish streams under their own name
 		}
 		if (!$authorized) {
@@ -608,9 +609,9 @@ abstract class Streams extends Base_Streams
 				$retrieved = $template->retrieve();
 			}
 			if ($retrieved) {
-				$template->calculateAccess($user->id);
+				$template->calculateAccess($userId);
 				if ($template->testAdminLevel('own')) {
-					$authorized = true;
+					$authorized = $template;
 				}
 			}
 		}
@@ -636,7 +637,7 @@ abstract class Streams extends Base_Streams
 					$related_to->fromPublisherId = $template->publisherId;
 					$related_to->fromStreamName = $template->name;
 					if ($retrieved = $related_to->retrieve()) {
-						$authorized = true;
+						$authorized = $template;
 					}
 				}
 			}

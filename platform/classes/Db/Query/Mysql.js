@@ -126,8 +126,11 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 			if (self.className) {
 				rowClass = Q.require( self.className.split('_').join('/') );
 				for (i=0; i<results.length; ++i) {
-					if (options.plain) results2.push(results[i]);
-					else results2.push(new rowClass(results[i], true));
+					if (options.plain) {
+						results2.push(results[i]);
+					} else {
+						results2.push(new rowClass(results[i], true));
+					}
 				}
 			} else {
 				for (i=0; i<results.length; ++i) {
@@ -306,6 +309,10 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 				table_string += as + alias;
 			}
 			return table_string;
+		}
+		
+		if (!tables) {
+			return this;
 		}
 		
 		tables_array = [];
@@ -846,8 +853,8 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 				}
 				// FROM
 				from = (this.clauses['FROM'] || []).join(', ');
-				if (!from)
-					throw new Q.Exception("missing FROM clause in DB query.");
+				// if (!from)
+				// 	throw new Q.Exception("missing FROM clause in DB query.");
 				if (this.after['FROM']) {
 					from += " " + this.after['FROM'];
 				}
@@ -857,7 +864,7 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 					join += " " + this.after['JOIN'];
 				}
 				// WHERE
-				where = this.clauses['WHERE'] ? 'WHERE ' + this.clauses['WHERE'] : 'WHERE 1';
+				where = this.clauses['WHERE'] ? 'WHERE ' + this.clauses['WHERE'] : '';
 				if (this.after['WHERE']) {
 					where += " " + this.after['WHERE'];
 				}
@@ -887,7 +894,7 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 					lock +=  " " + this.after['LOCK'];
 				}
 				sql = "SELECT " + select +
-					"\nFROM " + from +
+					(from ? "\nFROM " + from : '') +
 					"\n" + join +
 					"\n" + where +
 					"\n" + groupBy +

@@ -33,9 +33,6 @@
  */
 Q.Tool.jQuery('Q/imagepicker', function (o) {
 	var self = this;
-	if (o.showSize && o.saveSizeName && !o.saveSizeName[o.showSize]) {
-		throw "Q/imagepicker tool: options.saveSizeName[options.showSize] is missing";
-	}
 	return this.each(function() {
 		var $this = $(this);
 		var input = $('<input type="file" accept="image/gif, image/jpeg, image/png" class="Q_imagepicker_file" />');
@@ -65,6 +62,10 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 					params.crop = o.crop;
 				}
 				Q.extend(params, override);
+				var state = $this.state('Q/imagepicker');
+				if (params.save && params.save[state.showSize]) {
+					throw "Q/imagepicker tool: no size found corresponding to showSize";
+				}
 				var url = params.url;
 				delete params.url;
 				$.post(Q.ajaxExtend(url, 'data'), params).always(function() {
@@ -73,7 +74,6 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 					}
 					input.val('');
 				}).success(function(res) {
-					var state = $this.state('Q/imagepicker');
 					if (res.errors) {
 						$this.attr('src', state.oldSrc).stop().removeClass('Q_imagepicker_uploading');
 						Q.handle(o.onError, this, [res.errors[0].message]);
@@ -135,7 +135,6 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 					$this.attr('src', Q.url(o.throbber));
 				}
 				$this.addClass('Q_imagepicker_uploading');
-				$this.animate({ 'opacity': o.loadingOpacity }, 'fast');
 				var reader = new FileReader();
 				reader.onload = function() {
 					upload(reader.result);

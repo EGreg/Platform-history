@@ -5,7 +5,8 @@
  *
  * @param array $_REQUEST 
  *   publisherId, type
- *   relate_name, relate_type, relate_weight
+ *   Q.Streams.related.publisherId, Q.Streams.related.name, Q.Streams.related.weight
+ *   dontSubscribe (optional)
  * @return void
  */
 
@@ -32,6 +33,7 @@ function Streams_stream_post($params) {
 	if (isset($relate['streamName'])) {
 		$relate['publisherId'] = Q_Request::special("Streams.related.publisherId", $publisherId);
 		$relate['type'] = Q_Request::special("Streams.related.type", "");
+		$weight = Q_Request::special("Streams.related.weight", null);
 	}
 
 	// See whether user is authorized to create this stream
@@ -53,8 +55,7 @@ function Streams_stream_post($params) {
 			$stream->$f = $more_fields[$f];
 		} else {
 			try {
-				$default_f = Q_Config::expect('Streams', 'types', $type, 'defaults', $f);
-				$stream->$f = $default_f;
+				$stream->$f = Q_Config::expect('Streams', 'types', $type, 'defaults', $f);
 			} catch (Exception $e) {
 				continue;
 			}
@@ -63,6 +64,7 @@ function Streams_stream_post($params) {
 	if (empty($stream->attributes)) {
 		$stream->attributes = '{}';
 	}
+	
 	$stream->save();
 	
 	$stream->post($user->id, array(
@@ -71,12 +73,8 @@ function Streams_stream_post($params) {
 		'instructions' => Q::json_encode($stream->toArray())
 	), true);
 	
-	if (!empty($more_fields['join'])) {
-		$stream->join();
-	}
-	
-	if (!empty($more_fields['relate_weight'])) {
-		$weight = $more_fields['relate_weight'];
+	if (empty($more_fields['dontSubscribe'])) {
+		$stream->subscribe(); // autosubscribe to streams you yourself create, using templates
 	}
 
 	if ($relate['streamName']) {

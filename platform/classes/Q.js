@@ -478,7 +478,7 @@ Q.getter = function _Q_getter(original, options) {
 				cbpos = cached.cbpos;
 				if (callbacks[cbpos]) {
 					callbacks[cbpos].apply(cached.subject, cached.params);
-					result.onCalled.handle.call(this, arguments2, 0);
+					result.emit('called', this, arguments2, 0);
 					return 0; // result found in cache, callback and throttling have run
 				}
 			}
@@ -486,7 +486,7 @@ Q.getter = function _Q_getter(original, options) {
 		
 		if (_waiting[key]) {
 			_waiting[key].push(callbacks);
-			result.onCalled.handle.call(this, arguments2, 3);
+			result.emit('called', this, arguments2, 3);
 			return 3; // the request is already in process - let's wait
 		} else {
 			_waiting[key] = [];
@@ -534,7 +534,7 @@ Q.getter = function _Q_getter(original, options) {
 		if (!result.throttle) {
 			// no throttling, just run the function
 			original.apply(that, args);
-			result.onCalled.handle.call(this, arguments2, 2);
+			result.emit('called', this, arguments2, 2);
 			return 2;
 		}
 		
@@ -576,16 +576,15 @@ Q.getter = function _Q_getter(original, options) {
 		
 		// execute the throttle
 		if (result.throttle.throttleTry(this, original, args)) {
-			result.onCalled.handle.call(this, arguments2, 2);
+			result.emit('called', this, arguments2, 2);
 			return 2;
 		} else {
-			result.onCalled.handle.call(this, arguments2, 1);
+			result.emit('called', this, arguments2, 1);
 			return 1;
 		}
 	}
 	
 	Q.extend(result, Q.getter.options, options);
-	result.onCalled = new Q.Event();
 	
 	var _waiting = {};
 	if (result.cache === false) {
@@ -851,16 +850,6 @@ Q.handle = function _Q_handle(callables, context, args) {
 			if (result === false) return false;
 			count += result;
 		}
-		return count;
-	 case 'Q.Event':
-		for (i=0; i<callables.keys.length; ++i) {
-			result = Q.handle(callables.handlers[ callables.keys[i] ], context, args);
-			if (result === false) return false;
-			count += result;
-		}
-		callables.occurred = true;
-		callables.lastContext = context;
-		callables.lastArgs = args;
 		return count;
 	 default:
 		return 0;
@@ -1173,12 +1162,10 @@ Q.copy = function _Q_copy(x, fields) {
  *  that many additional levels inside the object.
  * @param anotherObject {Object}
  *  Put as many objects here as you want, and they will extend the original one.
- * @param namespace {String}
- *  At the end, you can specify namespace to add to handlers added to any Q.Event during this operation
  * @return
  *  The extended object.
  */
-Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespace] */ ) {
+Q.extend = function _Q_extend(target /* [[deep,] anotherObject] */ ) {
 	var length = arguments.length;
 	var namespace = undefined;
 	if (typeof arguments[length-1] === 'string') {
@@ -1213,16 +1200,7 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 				|| (!arg.hasOwnProperty && (k in arg)))
 			{
 				var a = arg[k];
-				if ((k in target) && Q.typeOf(target[k]) === 'Q.Event') {
-					if (a && a.constructor === Object) {
-						for (var m in a) {
-							target[k].set(a[m], m);
-						}
-					} else {
-						target[k].set(a, namespace);
-					}
-				} else if (!levels || !Q.isPlainObject(a)
-				|| Q.typeOf(arg[k]) === 'Q.Event'
+				if (!levels || !Q.isPlainObject(a)
 				|| (a.constructor == Object)) {
 					target[k] = Q.copy(a);
 				} else {
@@ -1248,8 +1226,6 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
  *  that many additional levels inside the object.
  * @param anotherObject {Object}
  *  Put as many objects here as you want, and they will extend the original one.
- * @param namespace {String}
- *  At the end, you can specify namespace to add to handlers added to any Q.Event during this operation
  * @return
  *  The extended object.
  */
@@ -1287,9 +1263,7 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 			if (deep === true || (arg.hasOwnProperty && arg.hasOwnProperty(k))
 				|| (!arg.hasOwnProperty && (k in arg)))
 			{
-				if ((k in target) && Q.typeOf(target[k]) === 'Q.Event') {
-					target[k].set(Q.copy(arguments[i][k]), namespace);
-				} else if (levels && Q.isPlainObject(arguments[i][k])) {
+				if (levels && Q.isPlainObject(arguments[i][k])) {
 					target[k] = Q.extend(target[k], deep, levels-1, arguments[i][k]);
 				} else {
 					target[k] = Q.copy(arguments[i][k]);
@@ -1452,7 +1426,7 @@ Q.microtime = function _Q_microtime(get_as_float) {
 	// +   original by: Paulo Freitas
 	// *     example 1: timeStamp = microtime(true);
 	// *     results 1: timeStamp > 1000000000 && timeStamp < 2000000000
-	var now = new Date().getTime() / 1000;
+	var now = Date.now() / 1000;
 	var s = parseInt(now, 10);
 
 	return (get_as_float) ? now : (Math.round((now - s) * 1000) / 1000) + ' ' + s;
@@ -2298,216 +2272,30 @@ String.prototype.replaceAll = function _String_prototype_replaceAll(pairs) {
 };
 
 /**
- * Wraps a callable in a Q.Event object
- * @class Event
- * @namespace Q
- * @constructor
- * @param callable {callable} Optional. If not provided, the chain of handlers will start out empty.
- *  Any kind of callable which Q.handle can invoke
- * @param [key=null] {string} Optional key under which to add this, so you can remove it later if needed
- * @param [prepend=false] {boolean} If true, then prepends the callable to the chain of handlers
+ * Try to find an error message assuming typical error data structures for the arguments
+ * @param {Object} data an object where the errors may be found
+ * @return {String|null} The first error message found, or null
  */
-Q.Event = function _Q_Event(callable, key, prepend) {
-	var event = this;
-	this.handlers = {};
-	this.keys = [];
-	this.typename = "Q.Event";
-	if (callable) {
-		this.set(callable, key, prepend);
+Q.firstErrorMessage = function _Q_firstErrorMessage(data) {
+	var error = null;
+	if (Q.isEmpty(data)) {
+		return;
 	}
-	/**
-	 * Shorthand closure for emitting events
-	 * Pass any arguments to the event here.
-	 * You can pass this closure anywhere a callback function is expected.
-	 * @method handle
-	 * @return {mixed}
-	 */
-	this.handle = function _Q_Event_instance_handle() {
-		var i, count = 0, result;
-		for (i=0; i<event.keys.length; ++i) {
-			result = Q.handle(event.handlers[ event.keys[i] ], this, arguments);
-			if (result === false) return false;
-			count += result;
-		}
-		event.occurred = true;
-		event.lastContext = this;
-		event.lastArgs = arguments;
-		return count;
-	};
-};
-
-Q.Event.prototype.occurred = false;
-
-/**
- * Adds a callable to a handler, or overwrites an existing one
- * @param callable Any kind of callable which Q.handle can invoke
- * @param key {String} Optional key to associate with the callable.
- *  Used to replace handlers previously added under the same key.
- *  Also used for removing handlers with .remove(key).
- *  If the key is not provided, a unique one is computed.
- * @param prepend Boolean
- *  If true, then prepends the handler to the chain
- */
-Q.Event.prototype.set = function _Q_Event_prototype_set(callable, key, prepend) {
-	var i;
-	if (key === undefined || key === null) {
-		i = this.keys.length;
-		key = 'unique_' + i;
-		while (this[key]) {
-			key = 'unique_' + (++i);
-		}
+	if (data.errors && data.errors[0]) {
+		error = data.errors[0];
+	} else if (data.error) {
+		error = data.error;
+	} else if (Q.typeOf(data) === 'array') {
+		error = data[0];
+	} else {
+		error = data;
 	}
-	
-	this.handlers[key] = callable; // can be a function, string, Q.Event, etc.
-	if (this.keys.indexOf(key) == -1) {
-		if (prepend) {
-			this.keys.unshift(key);
-		} else {
-			this.keys.push(key);
-		}
+	if (!error) {
+		return null;
 	}
-	
-    if (this.keys.length === 1 && this._onFirst) {
-        this._onFirst.handle(callable, key, prepend);
-    }
-	if (this._onSet) {
-	    this._onSet.handle(callable, key, prepend);
-	}
-	
-	return key;
-};
-
-/**
- * Like the "set" method, adds a callable to a handler, or overwrites an existing one.
- * But in addition, immediately handles the callable if the event has already occurred at least once,
- * passing it the same subject and arguments as were passed to the event the last time it occurred.
- * @param callable Any kind of callable which Q.handle can invoke
- * @param key {String|Q.Tool} Optional key to associate with the callable.
- *  Used to replace handlers previously added under the same key.
- *  Also used for removing handlers with .remove(key).
- *  If the key is not provided, a unique one is computed.
- *  Pass a Q.Tool object here to associate the handler to the tool,
- *  and it will be automatically removed when the tool is removed.
- * @param prepend Boolean
- *  If true, then prepends the handler to the chain
- */
-Q.Event.prototype.add = function _Q_Event_prototype_add(callable, key, prepend) {
-	this.set(callable, key, prepend);
-	if (this.occurred) {
-		Q.handle(callable, this.lastContext, this.lastArgs);
-	}
-};
-
-/**
- * Removes a callable
- * @param key String
- *  The key of the callable to remove.
- *  Pass a Q.Tool object here to remove the handler, if any, associated with this tool.
- */
-Q.Event.prototype.remove = function _Q_Event_prototype_remove(key) {
-	// Only available in the front-end Q.js: {
-	if (Q.typeOf(key) === 'Q.Tool')	{
-		var tool = key;
-		key = tool.prefix;
-	}
-	// }
-	delete this.handlers[key];
-	var i = this.keys.indexOf(key);
-	if (i < 0) {
-		return 0;
-	}
-	this.keys.splice(i, 1);
-	if (this._onRemove) {
-	    this._onRemove.handle(callable, key, prepend);
-	}
-    if (!this.keys.length && this._onEmpty) {
-        this._onEmpty.handle(callable, key, prepend);
-    }
-	return 1;
-};
-
-/**
- * Removes all handlers for this event
- * @param key String
- *  The key of the callable to remove.
- *  Pass a Q.Tool object here to remove the handler, if any, associated with this tool.
- */
-Q.Event.prototype.removeAllHandlers = function _Q_Event_prototype_removeAllHandlers() {
-	this.handlers = {};
-	this.keys = [];
-    if (this._onEmpty) {
-        this._onEmpty.handle(callable, key, prepend);
-    }
-};
-
-/**
- * Make a copy of this handler
- * @method copy
- */
-Q.Event.prototype.copy = function _Q_Event_prototype_copy() {
-	var result = new Q.Event();
-	for (var i=0; i<this.keys.length; ++i) {
-		result.handlers[this.keys[i]] = this.handlers[this.keys[i]];
-		result.keys.push(this.keys[i]);
-	}
-	return result;
-};
-
-Q.Event.prototype.onFirst = function () {
-   return this._onFirst || (this._onFirst = new Q.Event());
-};
-
-Q.Event.prototype.onSet = function () {
-   return this._onSet || (this._onSet = new Q.Event());
-};
-
-Q.Event.prototype.onRemove = function () {
-   return this._onRemove || (this._onRemove = new Q.Event());
-};
-
-Q.Event.prototype.onEmpty = function () {
-   return this._onEmpty || (this._onEmpty = new Q.Event());
-};
-
-/**
- * Make an event factory
- * @param {Object} collection
- *  The object that will store all the events. Pass null here to auto-create one.
- * @param {Array} defaults
- *  You can pass an array of defaults for the fields in the returned function
- *  The last element of this array can be a function that further processes the arguments,
- *  returning an array of the resulting arguments
- * @param {Function} callback
- *  An optional callback that gets called when a new event is created
- * @return {Function}
- *  Returns a function that can take one or more index fields and return a Q.Event
- *  that was either already stored under those index fields or newly created.
- */
-Q.Event.factory = function (collection, defaults, callback) {
-    if (!collection) {
-        collection = {};
-    }
-    defaults = defaults || [];
-    return function _Q_Event_factory () {
-        var args = Array.prototype.slice.call(arguments, 0), a;
-        var len = defaults.length;
-        var f = typeof(defaults[len-1] === 'function') ? defaults[defaults.length-1] : null;
-        for (var i=args.length; i<len-1; ++i) {
-            args[i] = defaults[i];
-        }
-        args = (f && f.apply(this, args)) || args;
-        var delimiter = "\t";
-        var name = args.join(delimiter);
-        var e = Q.getObject(name, collection, delimiter);
-        if (e) {
-            return e;
-        }
-        e = Q.setObject(name, new Q.Event(), collection, delimiter);
-        if (callback) {
-            callback.apply(e, args);
-        }
-        return e;
-    };
+	return (typeof error === 'string')
+		? error
+		: (error.message ? error.message : JSON.stringify(error));
 };
 
 function _getProp (/*Array*/parts, /*Boolean*/create, /*Object*/context){

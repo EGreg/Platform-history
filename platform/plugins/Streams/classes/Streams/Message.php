@@ -96,14 +96,14 @@ class Streams_Message extends Base_Streams_Message
 		if (empty($streams)) {
 			$streams = array();
 			foreach ($streamNames as $streamName) {
-				$rows = Streams::fetch($asUserId, $publisherId, $streamName);
-				if (empty($rows)) {
+				$s = Streams::fetchOne($asUserId, $publisherId, $streamName);
+				if (!$s) {
 					throw new Q_Exception_MissingRow(array(
 						'table' => 'stream',
 						'criteria' => "publisherId = $publisherId, name = $streamName"
 					));
 				}
-				$streams[] = reset($rows);
+				$streams[] = $s;
 			}
 		}
 		foreach ($streams as $stream) {
@@ -155,7 +155,8 @@ class Streams_Message extends Base_Streams_Message
 				continue;
 			}
 
-			$result = $message->save() ? $message : false;
+			$result = $message->save() ? $message : false; // also updates stream row
+			
 			// Send a message to Node
 			if ($result && $send_to_node) {
 				Q_Utils::sendToNode(array(
