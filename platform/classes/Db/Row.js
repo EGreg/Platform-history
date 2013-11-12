@@ -80,8 +80,12 @@ function Row(fields, retrieved /* false */) {
 		k = _fieldNames[i];
 		this.fields.__defineGetter__(k, (function (k, self) {
 			return function () {
-				if (self["beforeGet_" + k] && (typeof self["beforeGet_" + k] === "function"))
-					self["beforeGet_" + k].call(self, _fields); // NOTE: this is synchronous, we wouldn't be able to do any async, and since Node is a single thread, we shouldn't do I/O at all in them! This should be documented
+				if (self["beforeGet_" + k] && (typeof self["beforeGet_" + k] === "function")) {
+					// NOTE: this is synchronous, we wouldn't be able to do any async,
+					// and since Node is a single thread, we shouldn't do I/O at all in them!
+					// This should be documented.
+					self["beforeGet_" + k].call(self, _fields);
+				}
 				return _fields[k];
 			};
 		})(k, this));
@@ -89,8 +93,11 @@ function Row(fields, retrieved /* false */) {
 			return function (x) {
 				// we shall skip beforeSet_xxx during shards split process to get exact copy of the data
 				if (!_split && self["beforeSet_" + k] && (typeof self["beforeSet_" + k] === "function")) {
-					var result = self["beforeSet_" + k].call(self, x, _fields); // NOTE: this is synchronous, we wouldn't be able to do any async, and since Node is a single thread, we shouldn't do I/O at all in them! This should be documented
-					if (typeof result !== "undefined") {
+					// NOTE: this is synchronous, we wouldn't be able to do any async,
+					// and since Node is a single thread, we shouldn't do I/O at all in them!
+					// This should be documented.
+					var result = self["beforeSet_" + k].call(self, x, _fields);
+					if (result !== undefined) {
 						x = result;
 					}
 				}
@@ -99,7 +106,7 @@ function Row(fields, retrieved /* false */) {
 			};
 		})(k, this));
 		if (fields && (k in fields)) {
-				this.fields[k] = fields[k];
+			this.fields[k] = fields[k];
 		}
 	}
 	if ((_retrieved = !!retrieved)) _fields_modified = {};
@@ -557,8 +564,12 @@ function Row(fields, retrieved /* false */) {
 			throw new Error("If you're going to save, please extend Db.Row.");
 
 		var db, query, pk;
-		if (!(db = self.db())) throw new Error("The database was not specified!");
-		if (!(pk = calculatePKValue())) pk = _fields;
+		if (!(db = self.db())) {
+			throw new Error("The database was not specified!");
+		}
+		if (!(pk = calculatePKValue())) {
+			pk = _fields;
+		}
 		query = db.rollback(pk).execute(callback);
 	};
 
@@ -587,18 +598,39 @@ function Row(fields, retrieved /* false */) {
 		_split = index;
 		return this;
 	};
-
-	/**
-	 * Get plain object representing the row
-	 * @method toArray
-	 */
-	this.toArray = function () {
-		var res = {};
-		for (var field in this.fields) {
-			if (this.fields[field] !== undefined) res[field] = this.fields[field];
-		}
-		return res;
-	};
 }
+
+/**
+ * Get plain object representing the row
+ * @method toArray
+ */
+Row.prototype.toArray = function () {
+	var res = {};
+	for (var field in this.fields) {
+		if (this.fields[field] !== undefined) {
+			res[field] = this.fields[field];
+		}
+	}
+	return res;
+};
+
+Row.prototype.fillMagicFields = function () {
+	var toFill = [];
+	for (var i=0, l=toFill.length; i<l; ++i) {
+		var f = toFill[i];
+		if (!this.fields[f] || this.fields[f].expression === "CURRENT_TIMESTAMP") {
+			toFill.push(f);
+		}
+	}
+	if (!toFill.length) {
+		return this;
+	}
+	this.db().getCurrentTimestamp(function (err, timestamp) {
+		for (var i=0, l=toFill.length; i<l; ++i) {
+			this.fields[toFill[i]] = timestamp;
+		}
+	});
+	return this;
+};
 
 module.exports = Row;

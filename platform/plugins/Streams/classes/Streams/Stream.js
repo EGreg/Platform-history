@@ -559,7 +559,7 @@ function Streams_Stream (fields) {
 					});
 					sp.save(function(err) {
 						if (err) return callback.call(stream, err);
-						Streams.emitToUser(userId, 'join', Streams._fillMagicFields(sp.toArray()));
+						Streams.emitToUser(userId, 'join', sp.fillMagicFields().toArray());
 						stream.incParticipants(/* empty callback*/);
 
 						stream.post({
