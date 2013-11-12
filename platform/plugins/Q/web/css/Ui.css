@@ -1563,8 +1563,8 @@ input[type=radio] { margin-right: 5px; }
 
 
 /* Q tools */
-div.Q-actions-action { cursor: pointer !important; }
-div.Q-imagepicker { cursor: pointer !important; }
+.Q_actions_action { cursor: pointer !important; }
+.Q_imagepicker { cursor: pointer !important; }
 
 /* streams basic tool */
 
