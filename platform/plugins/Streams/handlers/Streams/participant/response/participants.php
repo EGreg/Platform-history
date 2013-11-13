@@ -19,7 +19,7 @@ function Streams_participant_response_participants()
 	if (empty($stream)) {
 		throw new Q_Exception_MissingRow(array(
 			'table' => 'Stream', 
-			'criteria' => "'publisherId' => $publisherId, 'name' => $streamName"
+			'criteria' => "{publisherId: '$publisherId', name: '$streamName'}"
 		));
 	}
 	$stream = reset($stream);

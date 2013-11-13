@@ -58,7 +58,7 @@ function Streams_subscription_tool($options) {
 			if (!$rule->retrieve()) {
 				throw new Q_Exception_MissingRow(array(
 					'table' => 'rule',
-					'criteria' => "ofUserId='{$user->id}', publisherId='$publisherId', name='$name', ordinal='$ordinal'"
+					'criteria' => "{ofUserId: '{$user->id}', publisherId: '$publisherId', name: '$name', ordinal: '$ordinal'}"
 				));
 			}
 			if (!empty($_REQUEST['delete'])) {

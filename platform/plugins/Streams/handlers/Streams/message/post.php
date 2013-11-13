@@ -25,7 +25,7 @@ function Streams_message_post () {
 	if (empty($streams)) {
 		throw new Q_Exception_MissingRow(array(
 			'table' => 'stream', 
-			'criteria' => "publisherId = '$publisherId' and streamName = '$streamName'"
+			'criteria' => "{publisherId: '$publisherId', name: '$streamName'}"
 		));
 	}
 	$stream = reset($streams);

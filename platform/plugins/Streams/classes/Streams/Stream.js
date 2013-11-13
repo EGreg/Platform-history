@@ -813,6 +813,9 @@ function Streams_Stream (fields) {
 				return callback && callback();
 			}
 			// 3) if user has no socket connected notify subscribed users
+			if (userId === message.byUserId) {
+				return; // no need to notify the user of their own actions
+			}
 			if (participant.fields.subscribed === 'yes') {
 				Streams.Subscription.test(userId, stream.fields.publisherId, stream.fields.name, message.type, function(err, deliveries) {
 					if (err || !deliveries.length) return callback && callback(err);
@@ -861,7 +864,9 @@ function Streams_Stream (fields) {
 						});
 					}
 				});
-			} else callback && callback(null, []);
+			} else {
+				callback && callback(null, []);
+			}
 		}
 		function _tokens(err, access) {
 			var userId = participant.fields.userId;
@@ -871,9 +876,6 @@ function Streams_Stream (fields) {
 			if (access) {
 			    Q.plugins.Users.tokensForUser(userId, _notify);
 			}
-		}
-		if (userId === message.byUserId) {
-			return; // no need to notify the user of their own actions
 		}
 		// check access
 		if (this.get('asUserId') !== userId) {

@@ -273,7 +273,7 @@ class Streams_Stream extends Base_Streams_Stream
 					$access->publisherId = $this->publisherId;
 					$access->streamName = $this->name;
 					if (!$access->save(true)) {
-						return false; // NOTE: this leaves junk in the database, but preserves consistency
+						return false; // JUNK: this leaves junk in the database, but preserves consistency
 					}
 				}
 			}

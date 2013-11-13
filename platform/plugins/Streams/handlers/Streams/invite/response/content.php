@@ -14,7 +14,7 @@ function Streams_invite_response_content()
 	if (!$stream->retrieve()) {
 		throw new Q_Exception_MissingRow(array(
 			'table' => 'stream',
-			'criteria' => "publisher '$publisherId' and name='$streamName'"
+			'criteria' => "{publisherId: '$publisherId', name: '$streamName'}"
 		));
 	}
 	return Q::tool('Streams/invite', compact('stream'));

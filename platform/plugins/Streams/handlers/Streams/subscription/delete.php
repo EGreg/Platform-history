@@ -19,7 +19,7 @@ function Streams_subscription_delete($params) {
 		if (!$rule->retrieve()) {
 			throw new Q_Exception_MissingRow(array(
 				'table' => 'rule',
-				'criteria' => "ofUserId='{$user->id}', publisherId='$publisherId', name='$name', ordinal='$ordinal'"
+				'criteria' => "{ofUserId: '{$user->id}', publisherId: '$publisherId', name: '$name', ordinal: '$ordinal'}"
 			));
 		}
 		if (!$rule->remove()) {

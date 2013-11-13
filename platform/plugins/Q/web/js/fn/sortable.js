@@ -58,7 +58,7 @@ function (options) {
 				st.push(this.scrollTop);
 			});
 		tLift = setTimeout(function () {
-			var efp = document.elementFromPoint(mx, my), i=0, cancel = false;
+			var efp = Q.elementFromPoint(mx, my), i=0, cancel = false;
 			$item.parents().each(function () {
 				if (this.scrollLeft !== sl[i] || this.scrollTop !== st[i]) {
 					cancel = true;
@@ -346,7 +346,7 @@ function (options) {
 	}
 	
 	function getTarget(x, y) {
-		var element = document.elementFromPoint(x, y);
+		var element = Q.elementFromPoint(x, y);
 		var state = $this.state('Q/sortable');
 		var $target = null;
 		state.droppable = state.droppable || '*';
@@ -367,7 +367,7 @@ function (options) {
 		var $target = getTarget(x, y);
 		var data = $item.data('Q/sortable')
 		
-		var element = document.elementFromPoint(x, y);
+		var element = Q.elementFromPoint(x, y);
 		var pe = data.$dragged.css('pointer-events');
 		var offset = $this.offset();
 		if (x >= offset.left && x <= offset.left + $this.width()

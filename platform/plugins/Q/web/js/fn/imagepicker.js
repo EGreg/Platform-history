@@ -63,7 +63,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 				}
 				Q.extend(params, override);
 				var state = $this.state('Q/imagepicker');
-				if (params.save && params.save[state.showSize]) {
+				if (params.save && !params.save[state.showSize]) {
 					throw "Q/imagepicker tool: no size found corresponding to showSize";
 				}
 				var url = params.url;

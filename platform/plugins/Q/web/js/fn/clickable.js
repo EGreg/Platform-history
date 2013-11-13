@@ -152,6 +152,7 @@ function (o) {
 								$this.css('opacity', 1 + y * (1 - o.release.opacity));
 								if (x === 1) {
 									Q.handle(o.afterRelease, $this, [evt, overElement]);
+									$this.trigger('afterRelease', $this, evt, overElement);
 									container.css('z-index', zindex);
 									// $this.unbind('click.clickable');
 									// $this.trigger('click');
@@ -169,6 +170,7 @@ function (o) {
 					}, o.release.duration, o.release.ease);
 					setTimeout(function () {
 						Q.handle(o.afterRelease, $this, [evt, overElement]);
+						$this.trigger('afterRelease', $this, evt, overElement);
 						container.css('z-index', zindex);
 					}, o.release.duration);
 				}

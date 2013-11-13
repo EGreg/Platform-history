@@ -57,7 +57,7 @@ function _Streams_related_tool (options)
 			Q.activate(tool.element.appendChild(element));
 		});
         Q.each(result.streams, function () {
-            var element = tool.elementForStream(this.publisherId, this.name, this.type);
+            var element = tool.elementForStream(this.fields.publisherId, this.fields.name, this.fields.type);
             Q.activate(tool.element.appendChild(element));
         });
         // The elements should animate to their respective positions, like in D3.
@@ -79,21 +79,18 @@ function _Streams_related_tool (options)
         });
         Q.Streams.related(publisherId, streamName, this.state.relationType, this.state.isCategory, this.state.relatedOptions, relatedResult);
         
-        function relatedResult(err) {
-            if (err) {
-                console.log(Q.firstErrorMessage(err));
-                return;
-            }
+        function relatedResult() {
             var result = this;
             var entering = exiting = updating = null;
             function comparator(s1, s2, i, j) {
-                return s1.fields.publisherId === s2.fields.publisherId
+                return s1 && s2 && s1.fields && s2.fields
+					&& s1.fields.publisherId === s2.fields.publisherId
                     && s1.fields.name === s2.fields.name;
             }
             if (tool.state.result) {
                 exiting = Q.diff(tool.state.result.streams, result.streams, comparator);
                 entering = Q.diff(result.streams, tool.state.result.streams, comparator);
-                updating = Q.diff(tool.state.result.streams, exiting, entering, comparator);
+                updating = Q.diff(result.streams, entering, entering, comparator);
             } else {
                 exiting = entering = updating = [];
             }

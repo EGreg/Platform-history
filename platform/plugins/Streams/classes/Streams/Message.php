@@ -79,7 +79,7 @@ class Streams_Message extends Base_Streams_Message
 			if (!$m->retrieve()) {
 				throw new Q_Exception_MissingRow(array(
 					'table' => 'message',
-					'criteria' => "publisherId = $publisherId, ordinal = $reOrdinal"
+					'criteria' => "{publisherId: '$publisherId', ordinal: '$reOrdinal'}"
 				));
 			}
 		}
@@ -100,7 +100,7 @@ class Streams_Message extends Base_Streams_Message
 				if (!$s) {
 					throw new Q_Exception_MissingRow(array(
 						'table' => 'stream',
-						'criteria' => "publisherId = $publisherId, name = $streamName"
+						'criteria' => "{publisherId: '$publisherId', name: '$streamName'}"
 					));
 				}
 				$streams[] = $s;

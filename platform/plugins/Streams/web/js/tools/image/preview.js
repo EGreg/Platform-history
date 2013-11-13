@@ -25,7 +25,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 	var parts = options.imagepicker.showSize.split('x');
 	
 	if (!options.imagepicker.saveSizeName) {
-		options.imagepicker.saveSizeName = {}
+		options.imagepicker.saveSizeName = {};
 		Q.each(Q.Streams.image.sizes, function (i, size) {
 			options.imagepicker.saveSizeName[size] = size;
 		});
@@ -33,10 +33,9 @@ Q.Tool.define("Streams/image/preview", function(options) {
 	
 	var ipo = Q.extend({}, options.imagepicker, {
 		onSuccess: {'Streams/image/preview': function (data, key) {
-			Q.Streams.Message.wait(
+			Q.Streams.refresh(
 				tool.state.publisherId,
 				tool.state.streamName,
-				-1,
 				function () {
 					tool.state.onUpdate.handle.call(tool, data);
 				}
@@ -83,10 +82,12 @@ Q.Tool.define("Streams/image/preview", function(options) {
 					}
 				});
 				
-				if (parts[0]) { tool.$('.Streams_image_preview_icon').width(parts[0]) }
-				if (parts[1]) { tool.$('.Streams_image_preview_icon').height(parts[0]) }
+				var w = h = Math.max(Math.min(parts[0], parts[1]), tool.state.creatable.addIconSize);
+				if (w && h) {
+					tool.$('.Streams_image_preview_add').width(w).height(h);
+				}
 				if (options.creatable.clickable) {
-					tool.$('.Streams_image_preview_icon')
+					tool.$('.Streams_image_preview_add')
 						.plugin('Q/clickable')
 						.plugin('Q/imagepicker', ipo2);
 				}
@@ -144,7 +145,8 @@ Q.Tool.define("Streams/image/preview", function(options) {
 	editable: false,
 	creatable: {
 		title: "New Image",
-		clickable: true
+		clickable: true,
+		addIconSize: 100
 	},
 	imagepicker: {
 		showSize: "80"
@@ -171,7 +173,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 		}
 	},
 	inplace: {},
-	throbber: "plugins/Q/img/throbbers/spinner_sticky_gray.gif",
+	throbber: "plugins/Q/img/throbbers/coolspinner_dark.gif",
 	onUpdate: new Q.Event()
 },
 
@@ -225,7 +227,7 @@ Q.Template.set(
 
 Q.Template.set(
 	'Streams/image/preview/create',
-	'<img src="{{& src}}" alt="{{alt}}" class="Streams_image_preview_icon">'
+	'<img src="{{& src}}" alt="{{alt}}" class="Streams_image_preview_add">'
 	+ '<div class="{{titleClass}}"><{{titleTag}}>{{& title}}</{{titleTag}}></div>'
 );
 

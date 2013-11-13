@@ -13,7 +13,9 @@ function Streams_message_response_messages()
 	$publisherId = Streams::requestedPublisherId(true);
 	$streamName = Streams::requestedName(true);
 	$type = Streams::requestedMessageType();
-	$limit = isset($_REQUEST['limit']) ? $_REQUEST['limit'] : 100;
+	$limit = isset($_REQUEST['limit'])
+		? $_REQUEST['limit']
+		: Q_Config::get('Streams', 'defaults', 'messageRequestLimit', 100);
 	if (isset($_REQUEST['ordinal'])) {
 		$min = $_REQUEST['ordinal'];
 		$limit = 1;
@@ -34,7 +36,7 @@ function Streams_message_response_messages()
 	if (!$stream) {
 		throw new Q_Exception_MissingRow(array(
 			'table' => 'Stream', 
-			'criteria' => "'publisherId' => $publisherId, 'name' => $streamName"
+			'criteria' => "{publisherId: '$publisherId', name: '$streamName'}"
 		));
 	}
 

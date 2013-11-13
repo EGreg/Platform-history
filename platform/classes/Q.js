@@ -873,8 +873,8 @@ Q.handle = function _Q_handle(callables, context, args) {
  * @throws {Q.Exception} If container is not array, object or string
  */
 Q.each = function _Q_each(container, callback, options) {
-	var i, k, length, r;
-	switch (Q.typeOf(container)) {
+	var i, k, length, r, t;
+	switch (t = Q.typeOf(container)) {
 		default:
 			// Assume it is an array-like structure.
 			// Make a copy in case it changes during iteration. Then iterate.
@@ -976,6 +976,11 @@ Q.each = function _Q_each(container, callback, options) {
 				}
 			}
 			break;
+		case 'function':
+		case 'boolean':
+			throw "Q.each: does not support iterating a " + t;
+		case 'null':
+			break;
 	}
 }
 
@@ -1027,21 +1032,22 @@ Q.first = function _Q_first(container, options) {
  * @param {Function} comparator accepts item1, item2, index1, index2) and returns whether two items are equal
  * @return {Array|Object} a container of the same type as container1, but without elements of container2
  */
-Q.diff = function _Q_diff(container1, container2, /*, ... */ comparator) {
+Q.diff = function _Q_diff(container1, container2 /*, ... comparator */) {
     if (!container1 || !container2) {
         return container1;
     }
     var len = arguments.length;
-    comparator = arguments[len-1];
+	var args = arguments;
+    var comparator = arguments[len-1];
     if (typeof comparator !== 'function') {
         throw new Q.Exception("Q.diff: comparator must be a function");
     }
     var isArr = (Q.typeOf(container1) === 'array');
     var result = isArr ? [] : {};
-    Q.each(container1, function (i, v1) {
+    Q.each(container1, function (k, v1) {
         var found = false;
         for (var i=1; i<len-1; ++i) {
-            Q.each(arguments[i], function (j, v2) {
+            Q.each(args[i], function (j, v2) {
                 if (comparator(v1, v2, i, j)) {
                     found = true;
                     return false;
@@ -1055,7 +1061,7 @@ Q.diff = function _Q_diff(container1, container2, /*, ... */ comparator) {
             if (isArr) {
                 result.push(v1);
             } else {
-                result[i] = v1;
+                result[k] = v1;
             }
         }
     });

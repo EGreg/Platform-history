@@ -21,7 +21,7 @@ function Streams_stream_delete() {
 	if (!$stream->retrieve()) {
 		throw new Q_Exception_MissingRow(array(
 			'table' => 'stream', 
-			'criteria' => "publisherId='$publisherId' and name='$name'"
+			'criteria' => "{publisherId: '$publisherId', name: '$streamName'}"
 		));
 	}
 	// Authorization check

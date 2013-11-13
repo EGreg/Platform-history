@@ -107,7 +107,8 @@
 					},
 					"button": "Accept!"
 				}
-			}
+			},
+			"messageRequestLimit": 100
 		},
 		"invites": {
 			"tokens": {

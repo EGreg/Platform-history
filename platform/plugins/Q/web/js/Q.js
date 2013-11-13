@@ -201,7 +201,6 @@ String.prototype.hashCode = function() {
 	return hash;
 };
 
-
 String.prototype.trim = String.prototype.trim || function _String_prototype_trim() {
 	return this.replace(/^\s+|\s+$/g, "");
 };
@@ -293,6 +292,13 @@ HTMLElement.prototype.preventSelections = function () {
 	= this.style['user-select'] = 'none';
 };
 
+Q.elementFromPoint = function (pageX, pageY) {
+	return document.elementFromPoint(
+		pageX - document.body.scrollLeft - document.documentElement.scrollLeft,
+		pageY - document.body.scrollTop - document.documentElement.scrollTop
+	);
+};
+
 // public methods:
 
 /**
@@ -355,8 +361,8 @@ Q.typeOf = function _Q_typeOf(value) {
  * @throws {Q.Exception} If container is not array, object or string
  */
 Q.each = function _Q_each(container, callback, options) {
-	var i, k, length, r;
-	switch (Q.typeOf(container)) {
+	var i, k, length, r, t;
+	switch (t = Q.typeOf(container)) {
 		default:
 			if (!container) return;
 			// Assume it is an array-like structure.
@@ -466,6 +472,11 @@ Q.each = function _Q_each(container, callback, options) {
 				}
 			}
 			break;
+		case 'function':
+		case 'boolean':
+			throw "Q.each: does not support iterating a " + t;
+		case 'null':
+			break;
 	}
 };
 
@@ -517,21 +528,22 @@ Q.first = function _Q_first(container, options) {
  * @param {Function} comparator accepts item1, item2, index1, index2) and returns whether two items are equal
  * @return {Array|Object} a container of the same type as container1, but without elements of container2
  */
-Q.diff = function _Q_diff(container1, container2, /*, ... */ comparator) {
+Q.diff = function _Q_diff(container1, container2 /*, ... comparator */) {
     if (!container1 || !container2) {
         return container1;
     }
+	var args = arguments;
     var len = arguments.length;
-    comparator = arguments[len-1];
+    var comparator = arguments[len-1];
     if (typeof comparator !== 'function') {
         throw new Q.Exception("Q.diff: comparator must be a function");
     }
     var isArr = (Q.typeOf(container1) === 'array');
     var result = isArr ? [] : {};
-    Q.each(container1, function (i, v1) {
+    Q.each(container1, function (k, v1) {
         var found = false;
         for (var i=1; i<len-1; ++i) {
-            Q.each(arguments[i], function (j, v2) {
+            Q.each(args[i], function (j, v2) {
                 if (comparator(v1, v2, i, j)) {
                     found = true;
                     return false;
@@ -545,7 +557,7 @@ Q.diff = function _Q_diff(container1, container2, /*, ... */ comparator) {
             if (isArr) {
                 result.push(v1);
             } else {
-                result[i] = v1;
+                result[k] = v1;
             }
         }
     });
@@ -2377,6 +2389,7 @@ Q.Session = function _Q_Session() {
  * @param options {Object} you can pass the following options:
  *  "localStorage": use local storage instead of page storage
  *  "sessionStorage": use session storage instead of page storage
+ *  "name": the name of the cache, not really used for now
  *  "max": the maximum number of items the cache should hold. Defaults to 100.
  */
 Q.Cache = function _Q_Cache(options) {
@@ -2713,21 +2726,21 @@ Q.Cache.prototype.each = function _Q_Cache_prototype_clear(args, callback) {
 		}
 	}
 };
-Q.Cache.document = function _Q_Cache_document(name) {
+Q.Cache.document = function _Q_Cache_document(name, max) {
 	if (!Q.Cache.document.caches[name]) {
-		Q.Cache.document.caches[name] = new Q.Cache({name: name});
+		Q.Cache.document.caches[name] = new Q.Cache({name: name, max: max});
 	}
 	return Q.Cache.document.caches[name];
 };
-Q.Cache.local = function _Q_Cache_local(name) {
+Q.Cache.local = function _Q_Cache_local(name, max) {
 	if (!Q.Cache.local.caches[name]) {
-		Q.Cache.local.caches[name] = new Q.Cache({name: name, localStorage: true});
+		Q.Cache.local.caches[name] = new Q.Cache({name: name, localStorage: true, max: max});
 	}
 	return Q.Cache.local.caches[name];
 };
-Q.Cache.session = function _Q_Cache_session(name) {
+Q.Cache.session = function _Q_Cache_session(name, max) {
 	if (!Q.Cache.session.caches[name]) {
-		Q.Cache.session.caches[name] = new Q.Cache({name: name, sessionStorage: true});
+		Q.Cache.session.caches[name] = new Q.Cache({name: name, sessionStorage: true, max: max});
 	}
 	return Q.Cache.session.caches[name];
 };
@@ -5249,6 +5262,8 @@ var _sockets = {}, _ioSockets = {}, _eventHandlers = {}, _connectHandlers = {}, 
 var _socketRegister = [];
 
 function _ioOn(obj, evt, callback) {
+	// don't worry, this function is idempotent
+	// so we're not being super careful about calling it only once with the same exact arguments
 	obj.on(evt, callback);
  	_ioCleanup.push(function () { 
  	    obj.removeListener(evt, callback);
@@ -5290,20 +5305,20 @@ function _connectSocketNS(ns, url, callback, force) {
 			    url: url,
 			    ns: ns
 			});
-            function _Q_Socket_register(socket, name) {
+            function _Q_Socket_register(socket) {
                 Q.each(_socketRegister, function (i, item) {
                     if (item[0] !== ns) return;
                     var name = item[1];
-        			_ioOn(socket.namespace, name, Q.Socket.onEvent(ns, url, name).handle);
+        			_ioOn(socket.namespace, name, Q.Socket.onEvent(ns, url, name).handle); // may overwrite again, but it's ok
         			_ioOn(socket.namespace, name, Q.Socket.onEvent(ns, '', name).handle);
                 });
             }
-            Q.Socket.onConnect(ns, url).add(_Q_Socket_register);
+            Q.Socket.onConnect(ns, url).add(_Q_Socket_register, 'Q');
 			// remember actual socket - for disconnecting
 			if (!_ioSockets[url]) {
 				_ioSockets[url] = socket.namespace.socket;
 				_ioOn(_ioSockets[url], 'connect', function () {
-					setTimeout(function () {
+					setTimeout(function () { // TODO: TAKE AWAY THIS ARTIFICIAL DELAY
 						socket.namespace.emit('session', Q.cookie(Q.info.sessionName || 'sessionId'));
         				Q.Socket.onConnect(ns).handle(socket);
                         Q.Socket.onConnect(ns, url).handle(socket);
@@ -5430,18 +5445,25 @@ Q.Socket.onEvent = Q.Event.factory(
             // The first handler was added to the event
             Q.each(Q.Socket.get(ns, url), function (url, socket) {
                 function _Q_Socket_register(socket) {
+					// this occurs when socket is connected
                     _ioOn(socket.namespace, name, event.handle);
                 }
-                Q.Socket.onConnect(ns, url, name).add(_Q_Socket_register);
+				if (socket) { // add listeners on sockets which are already constructed
+                	Q.Socket.onConnect(ns, url).add(_Q_Socket_register, 'Q');
+				}
             });
+			// add pending listeners on sockets that may constructed later
             _socketRegister.push([ns, name]);
         });
         event.onEmpty().set(function () {
             // Every handler was removed from the event
             Q.each(Q.Socket.get(ns, url), function (url, socket) {
-                socket.namespace.removeListener(name, event.handle);
+				if (socket) { // remove listeners on sockets which are already constructed
+                	socket.namespace.removeListener(name, event.handle);
+				}
             });
             Q.each(_socketRegister, function (i, item) {
+				// remove pending listeners on sockets that may be constructed later
                 if (item[0] === ns && item[1] === name) {
                     _socketRegister.splice(i, 1);
                 }
@@ -5452,9 +5474,9 @@ Q.Socket.onEvent = Q.Event.factory(
 
 Q.Socket.onConnect = Q.Event.factory(
     _connectHandlers, 
-    ["", "", function (ns, url) { 
+    ["", "", "", function (ns, url, name) { 
         if (ns[0] !== '/') {
-            return ['/'+ns, url];
+            return ['/'+ns, url, name];
         }
     }]
 );

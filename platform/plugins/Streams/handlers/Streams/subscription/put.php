@@ -16,7 +16,10 @@ function Streams_subscription_put($params) {
 	// get the stream
 	$stream = Streams::fetch($user->id, $publisherId, $name);
 	if (!count($stream)) {
-		throw new Q_Exception_MissingRow(array('table' => 'stream', 'criteria' => compact('publisherId', 'name')));
+		throw new Q_Exception_MissingRow(array(
+			'table' => 'stream', 
+			'criteria' => "{publisherId: '$publisherId', name: '$name'}"
+		));
 	}
 	$stream = reset($stream);
 

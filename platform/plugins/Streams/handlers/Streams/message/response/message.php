@@ -22,7 +22,7 @@ function Streams_message_response_message()
 	if (!$stream) {
 		throw new Q_Exception_MissingRow(array(
 			'table' => 'Stream', 
-			'criteria' => "'publisherId' => $publisherId, 'name' => $streamName"
+			'criteria' => "{publisherId: '$publisherId', name: '$streamName'}"
 		));
 	}
 	if (!$stream->testReadLevel('messages')) {

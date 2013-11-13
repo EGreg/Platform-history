@@ -1512,7 +1512,7 @@ abstract class Streams extends Base_Streams
 			$related_to->save();
 		} catch (Exception $e) {
 			// posting 'Streams/relation' failed. Relation is inconsistent.
-			// Notify user only - no recovery actions
+			// JUNK: this leaves junk in the database, but preserves consistency
 			throw new Streams_Exception_Relation();
 		}
 

@@ -33,7 +33,7 @@ function Streams_subscription_post($params) {
 		if (!$rule->retrieve()) {
 			throw new Q_Exception_MissingRow(array(
 				'table' => 'rule',
-				'criteria' => "ofUserId='{$user->id}', publisherId='$publisherId', name='$name', ordinal='$ordinal'"
+				'criteria' => "{ofUserId: '{$user->id}', publisherId: '$publisherId', name: '$name', ordinal: '$ordinal'}"
 			));
 		} else $retrieved = true;
 	}
