@@ -51,7 +51,7 @@
 			"Streams/image": {
 				"create": true,
 				"edit": true,
-				"sizes": ["40", "50", "80", "400x", "x"],
+				"sizes": ["40", "50", "80", "x200", "x"],
 				"defaults": {
 					"title": "Untitled Image"
 				}

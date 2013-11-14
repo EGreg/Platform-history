@@ -978,6 +978,7 @@ Q.each = function _Q_each(container, callback, options) {
 			break;
 		case 'function':
 		case 'boolean':
+			if (container === false) break;
 			throw "Q.each: does not support iterating a " + t;
 		case 'null':
 			break;

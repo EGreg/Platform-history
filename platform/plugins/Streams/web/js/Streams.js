@@ -245,6 +245,11 @@ Streams.socketSessionId = function (publisherId, streamName) {
 	return s ? s.namespace.socket.id : null;
 };
 
+/**
+ * Waits for the latest messages to be posted to a given stream.
+ * If your app is using socket.io, then calling this manually is largely unnecessary.
+ * @param {Function} callback This is called when the stream has been updated with the latest messages.
+ */
 Streams.refresh = function (publisherId, streamName, callback) {
 	// If the stream was seen, fetch latest messages,
 	// and replay their being "posted" to trigger the right events
@@ -267,8 +272,19 @@ Streams.getParticipating = Q.getter(function(callback) {
 }, {cache: Q.Cache.document("Streams.getParticipating", 10)});
 
 /**
- * Updates all the streams you are participating in
+ * Waits for the latest messages to be posted to a given stream.
+ * If your app is using socket.io, then calling this manually is largely unnecessary.
+ * @param {Function} callback This is called when the stream has been updated with the latest messages.
  */
+Streams.refresh = function (publisherId, streamName, callback) {
+	// If the stream was seen, fetch latest messages,
+	// and replay their being "posted" to trigger the right events
+	if (!Q.getObject([publisherId, streamName], Streams.seen)) {
+		return false;
+	}
+	Message.wait(publisherId, streamName, -1, callback);
+	return true;
+};
 Streams.refreshParticipating = function (options) {
 	if (!Q.Users.loggedInUser) {
 		return false;
@@ -667,6 +683,14 @@ Stream.prototype.testAdminLevel = function (level) {
 Stream.prototype.actionUrl = function (what) {
 	return Streams.actionUrl(this.fields.publisherId, this.fields.name, what);
 };
+/**
+ * Waits for the latest messages to be posted to a given stream.
+ * If your app is using socket.io, then calling this manually is largely unnecessary.
+ * @param {Function} callback This is called when the stream has been updated with the latest messages.
+ */
+Stream.prototype.refresh = function (callback) {
+	return Streams.refresh(this.fields.publisherId, this.fields.name, callback);
+};
 
 /**
  * Get streams related to a particular stream.
@@ -831,7 +855,7 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 			}
 		}
 	}, { fields: fields, baseUrl: baseUrl });
-});
+}, {cache: Q.Cache.document("Streams.related", 100), throttle: 'Streams.related'});
 
 /**
  * Returns all the streams this stream is related to
@@ -2100,7 +2124,7 @@ Q.onInit.add(function _Streams_onInit() {
 				}
 
 				function updateRelatedCache() {
-					Streams.related.cache.each([msg.publisherId, msg.streamName], function (k, v) {
+					Streams.related.cache.each([msg.publisherId, msg.streamName, fields.type], function (k, v) {
 						Streams.related.cache.remove(k);
 					});
 				}

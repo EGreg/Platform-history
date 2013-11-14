@@ -51,7 +51,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 			alt: options.creatable.title,
 			title: options.creatable.title
 		});
-		tool.element.setAttribute('class', 'Streams_image_preview_create');
+		$(tool.element).addClass('Streams_image_preview_create');
 		Q.Template.render(
 			'Streams/image/preview/edit',
 			fields,
@@ -82,7 +82,9 @@ Q.Tool.define("Streams/image/preview", function(options) {
 					}
 				});
 				
-				var w = h = Math.max(Math.min(parts[0], parts[1]), tool.state.creatable.addIconSize);
+				var w = parts[0] || tool.state.creatable.addIconSize,
+					h = parts[0] || tool.state.creatable.addIconSize;
+				w = h = Math.min(w, h);
 				if (w && h) {
 					tool.$('.Streams_image_preview_add').width(w).height(h);
 				}
@@ -149,13 +151,13 @@ Q.Tool.define("Streams/image/preview", function(options) {
 		addIconSize: 100
 	},
 	imagepicker: {
-		showSize: "80"
+		showSize: "x200"
 	},
 	showFile: null,
 	templates: {
 		edit: {
 			dir: 'plugins/Streams/views',
-			name: 'Streams/image/preview/create',
+			name: 'Streams/image/preview/edit',
 			fields: {
 				alt: 'image',
 				titleClass: '',
@@ -203,7 +205,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 			inplace: "<div class='Q_tool Streams_inplace_tool' data-streams-inplace='"+Q.Tool.encodeOptions(inplace)+"'></div>"
 		});
 		Q.Template.render(
-			'Streams/image/preview/tool',
+			'Streams/image/preview/edit',
 			fields,
 			function (err, html) {
 				if (err) {

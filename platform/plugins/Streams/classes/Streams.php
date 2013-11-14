@@ -1520,7 +1520,7 @@ abstract class Streams extends Base_Streams
 		// node server will be notified by Streams_Message::post
 		$relatedTo_message = Streams_Message::post($asUserId, $toPublisherId, $toStreamName, array(
 			'type' => 'Streams/relatedTo',
-			'instructions' => Q::json_encode(compact('fromPublisherId', 'fromStreamName'))
+			'instructions' => Q::json_encode(compact('fromPublisherId', 'fromStreamName', 'type', 'weight'))
 		), true);
 
 		try {
@@ -1533,7 +1533,7 @@ abstract class Streams extends Base_Streams
 		// node server will be notified by Streams_Message::post
 		$relatedFrom_message = Streams_Message::post($asUserId, $fromPublisherId, $fromStreamName, array(
 			'type' => 'Streams/relatedFrom',
-			'instructions' => Q::json_encode(compact('toPublisherId', 'toStreamName'))
+			'instructions' => Q::json_encode(compact('toPublisherId', 'toStreamName', 'type', 'weight'))
 		), true);
 
 		/**

@@ -364,7 +364,7 @@ Q.each = function _Q_each(container, callback, options) {
 	var i, k, length, r, t;
 	switch (t = Q.typeOf(container)) {
 		default:
-			if (!container) return;
+			if (!container) break;
 			// Assume it is an array-like structure.
 			// Make a copy in case it changes during iteration. Then iterate.
 			var c = Array.prototype.slice.call(container, 0);
@@ -474,6 +474,7 @@ Q.each = function _Q_each(container, callback, options) {
 			break;
 		case 'function':
 		case 'boolean':
+			if (container === false) break;
 			throw "Q.each: does not support iterating a " + t;
 		case 'null':
 			break;
@@ -2276,15 +2277,14 @@ Q.Tool.element = function _Q_tool(element, toolType, toolOptions, id) {
 	if (typeof element === 'string') {
 		element = document.createElement(element);
 	}
-	var ntt = toolType.replace('/', '_');
+	var ntt = toolType.replace(new RegExp('/', 'g'), '_');
 	element.setAttribute('class', 'Q_tool '+ntt+'_tool');
 	if (!id) {
 		var p1, p2;
 		p1 = Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '';
-		p2 = p1 + ntt + '_';
-		while (Q.tools[p2]) {
+		do {
 			p2 = p1 + '_' + (Q.Tool.nextDefaultId++) + '_' + ntt + '_';
-		}
+		} while (Q.tools[p2]);
 		id = p2 + 'tool';
 	}
 	element.setAttribute('id', id);
@@ -4665,7 +4665,7 @@ Q.loadUrl = function _Q_loadUrl(url, options)
 		
 		function loadStylesheets() {
 			if (!response.stylesheets) {
-				return false;
+				return null;
 			}
 			var newStylesheets = {};
 			for (var slotName in response.stylesheets) {
@@ -4687,7 +4687,7 @@ Q.loadUrl = function _Q_loadUrl(url, options)
 		
 		function loadStyles() {
 			if (!response.stylesInline) {
-				return false;
+				return null;
 			}
 			var newStyles = {},
 				head = document.head || document.getElementsByTagName('head')[0];
@@ -4710,7 +4710,7 @@ Q.loadUrl = function _Q_loadUrl(url, options)
 		
 		function loadTemplates() {
 			if (!response.templates) {
-				return false;
+				return null;
 			}
 			var slotName, newTemplates = {};
 			for (slotName in response.templates) {
@@ -4724,7 +4724,7 @@ Q.loadUrl = function _Q_loadUrl(url, options)
 		function loadScripts(callback) {
 			if (!response.scripts) {
 				callback();
-				return false;
+				return null;
 			}
 			var slotPipe = Q.pipe(Object.keys(response.scripts), function _Q_loadUrl_pipe_slotNames() {
 				callback();
@@ -5157,6 +5157,8 @@ Q.Template.load = function _Q_Template_load(name, callback, options) {
 		Q.Template.collection[o.type] = {};
 	}
 	var tpl = Q.Template.collection[o.type];
+
+	
 	// Now attempt to load the template.
 	// First, search the DOM for templates loaded inside script tag with type "text/theType",
 	// e.g. "text/mustache" and id matching the template name.
@@ -5173,6 +5175,9 @@ Q.Template.load = function _Q_Template_load(name, callback, options) {
 	for (i = 0, l = trash.length; i < l; i++) {
 		Q.removeElement(trash[i]);
 	}
+	
+	// TODO: REMOVE THE ABOVE BLOCK SO IT DOESNT EXECUTE EVERY TIME A TEMPLATE IS RENDERED
+	
 	// check if template is cached
 	var n = Q.normalize(name);
 	if (tpl && tpl[n]) {
@@ -6618,6 +6623,12 @@ if (!window.console) {
 	};
 }
 
+/**
+ * This function is just here in case prefixfree.js is included
+ * because that library removes the <link> elements and puts <style> instead of them.
+ * We don't know if prefixfree will be included but we have to save some information
+ * about the stylesheets before it arrives on the scene.
+ */
 function processStylesheets() {
 	// Complain about some other libraries if necessary
 	if (Q.findScript('plugins/Q/js/prefixfree.min.js')) {
@@ -6636,7 +6647,7 @@ function processStylesheets() {
 	}
 }
 processStylesheets.slots = {};
-processStylesheets();
+processStylesheets(); // NOTE: the above works only for stylesheets included before Q.js and prefixfree.js
 
 Q.onInit = new Q.Event();
 Q.onLoad = new Q.Event();

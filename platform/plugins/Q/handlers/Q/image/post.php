@@ -6,9 +6,13 @@ function Q_image_post($options = array()) {
 
 	set_time_limit(Q_Config::get('Q', 'uploads', 'limits', 'image', 'time', 5*60*60)); // 5 min
 	$user = Users::loggedInUser(true);
-	$imageData = isset($r['data']) ? $r['data'] : false;
+	$imageData = isset($r['data']) ? $r['data'] : null;
 	$path = isset($r['path']) ? $r['path'] : 'uploads';
 	$subpath = isset($r['subpath']) ? $r['subpath'] : '';
+	
+	if (!$imageData) {
+		throw new Q_Exception("No image to save");
+	}
 
 	$merge = null;
 	$m = isset($r['merge']) ? $r['merge'] : null;
@@ -23,9 +27,6 @@ function Q_image_post($options = array()) {
 
 	$crop = isset($r['crop']) ? $r['crop'] : array();
 	$save = !empty($r['save']) ? $r['save'] : array('x' => '');
-	if (!$imageData) {
-		throw new Q_Exception("No image to save");
-	}
 	$image = imagecreatefromstring(
 		base64_decode(chunk_split(substr($imageData, strpos($imageData, ',')+1)))
 	);
