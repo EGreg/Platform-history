@@ -19,38 +19,24 @@
 Q.Tool.define("Streams/image/preview", function(options) {
 	
 	var tool = this;
-	if (!options.imagepicker || !options.imagepicker.showSize) {
+	if (!tool.state.imagepicker || !tool.state.imagepicker.showSize) {
 		throw "Streams/image/preview tool: missing options.imagepicker.showSize";
 	}
-	var parts = options.imagepicker.showSize.split('x');
+	var state = tool.state, ip = state.imagepicker;
+	var parts = ip.showSize.split('x');
 	
-	if (!options.imagepicker.saveSizeName) {
-		options.imagepicker.saveSizeName = {};
+	if (!ip.saveSizeName) {
+		ip.saveSizeName = {};
 		Q.each(Q.Streams.image.sizes, function (i, size) {
-			options.imagepicker.saveSizeName[size] = size;
+			ip.saveSizeName[size] = size;
 		});
 	}
 	
-	var ipo = Q.extend({}, options.imagepicker, {
-		onSuccess: {'Streams/image/preview': function (data, key) {
-			Q.Streams.refresh(
-				tool.state.publisherId,
-				tool.state.streamName,
-				function () {
-					tool.state.onUpdate.handle.call(tool, data);
-				}
-			);
-			return tool.state.streamName ? true : false;
-		}}
-	});
-	
-	if (!options.streamName) {
-		// TODO FOR related.js: test whether the user can create streams of this type
-		// and otherwise do not append this element
-		var fields = Q.extend({}, this.state.templates.create.fields, {
+	function _composer () {
+		var fields = Q.extend({}, state.templates.create.fields, {
 			src: Q.url('plugins/Streams/img/actions/add.png'),
-			alt: options.creatable.title,
-			title: options.creatable.title
+			alt: state.creatable.title,
+			title: state.creatable.title
 		});
 		$(tool.element).addClass('Streams_image_preview_create');
 		Q.Template.render(
@@ -61,11 +47,10 @@ Q.Tool.define("Streams/image/preview", function(options) {
 					return console.warn(err);
 				}
 				tool.element.innerHTML = html;
-				
-				var ipo2 = Q.extend({}, ipo, {
+				var ipo = Q.extend({}, ip, {
 					preprocess: function (callback) {
 						Q.Streams.create({
-							publisherId: options.publisherId,
+							publisherId: state.publisherId,
 							type: 'Streams/image'
 						}, function (err) {
 							if (err) {
@@ -73,73 +58,104 @@ Q.Tool.define("Streams/image/preview", function(options) {
 								callback(false);
 								return console.warn(err);
 							}
-							tool.state.publisherId = this.fields.publisherId;
-							tool.state.streamName = this.fields.name;
+							state.publisherId = this.fields.publisherId;
+							state.streamName = this.fields.name;
 							tool.stream = this;
 							callback({subpath: 'streams/' + this.fields.publisherId + '/' + this.fields.name});
 //							this.refresh(); // TODO: change this to onCreate or something, in the case of related nothing needs to be done
-						}, tool.state.relatedFrom);
-					}
+						}, state.relatedFrom);
+					},
+					onSuccess: {'Streams/image/preview': function (data, key) {
+						Q.Streams.refresh(
+							state.publisherId,
+							state.streamName,
+							function () {
+								_render();
+							}
+						);
+						return state.streamName ? true : false;
+					}}
 				});
-				
-				var w = parts[0] || tool.state.creatable.addIconSize,
-					h = parts[0] || tool.state.creatable.addIconSize;
+
+				var w = parts[0] || state.creatable.addIconSize,
+					h = parts[0] || state.creatable.addIconSize;
 				w = h = Math.min(w, h);
 				if (w && h) {
 					tool.$('.Streams_image_preview_add').width(w).height(h);
 				}
-				if (options.creatable.clickable) {
+				if (state.creatable.clickable) {
 					tool.$('.Streams_image_preview_add')
 						.plugin('Q/clickable')
-						.plugin('Q/imagepicker', ipo2);
+						.plugin('Q/imagepicker', ipo);
 				}
 			},
-			tool.state.templates.create
+			state.templates.create
 		);
-		return;
 	}
 	
-	if (parts[0]) { tool.$('.Streams_image_preview_icon').width(parts[0]) }
-	if (parts[1]) { tool.$('.Streams_image_preview_icon').height(parts[0]) }
-	
-	var img = document.createElement('img');
-	img.setAttribute('alt', 'loading');
-	img.setAttribute('src', Q.url(options.throbber));
-	img.setAttribute('class', 'Streams_image_preview_loading');
-	tool.element.innerHTML = '';
-	tool.element.appendChild(img);
-	
-	Q.Streams.get(options.publisherId, options.streamName, function (err) {
-		
-		function _afterRefresh () {
-			if (!stream.testWriteLevel('editPending')) {
-				return;
-			}
-			var ipo2 = Q.extend({}, ipo, {
-				preprocess: function (callback) {
-					Q.Streams.get(tool.state.publisherId, tool.state.streamName, function (err) {
-						if (err) {
-							return console.warn(err);
-						}
-						tool.stream = stream;
-						callback({subpath: 'streams/' + stream.fields.publisherId + '/' + stream.fields.name});
-					});
+	function _preview() {
+		if (parts[0]) { tool.$('.Streams_image_preview_icon').width(parts[0]) }
+		if (parts[1]) { tool.$('.Streams_image_preview_icon').height(parts[0]) }
+
+		var img = document.createElement('img');
+		img.setAttribute('alt', 'loading');
+		img.setAttribute('src', Q.url(state.throbber));
+		img.setAttribute('class', 'Streams_image_preview_loading');
+		tool.element.innerHTML = '';
+		tool.element.appendChild(img);
+
+		Q.Streams.get(state.publisherId, state.streamName, function (err) {
+
+			function _afterRefresh () {
+				if (!stream.testWriteLevel('editPending')) {
+					return;
 				}
-			});
-			tool.$('img').plugin('Q/imagepicker', ipo2);
-		}
-		
-		if (err) {
-			return console.warn(err);
-		}
-		var stream = this;
-		
-		tool.stream = stream;
-		tool.refresh(_afterRefresh);
-		stream.onFieldChanged('icon').set(function () {
+				var ipo = Q.extend({}, ip, {
+					preprocess: function (callback) {
+						Q.Streams.get(state.publisherId, state.streamName, function (err) {
+							if (err) {
+								return console.warn(err);
+							}
+							tool.stream = stream;
+							callback({subpath: 'streams/' + stream.fields.publisherId + '/' + stream.fields.name});
+						});
+					},
+					onSuccess: {'Streams/image/preview': function (data, key) {
+						Q.Streams.refresh(
+							state.publisherId,
+							state.streamName,
+							function () {
+								state.onUpdate.handle.call(tool, data);
+							}
+						);
+						return state.streamName ? true : false;
+					}}
+				});
+				tool.$('img').plugin('Q/imagepicker', ipo);
+			}
+
+			if (err) {
+				return console.warn(err);
+			}
+			var stream = this;
+
+			tool.stream = stream;
 			tool.refresh(_afterRefresh);
-		}, tool);
-	});
+			stream.onFieldChanged('icon').set(function () {
+				tool.refresh(_afterRefresh);
+			}, tool);
+		});
+	}
+	
+	function _render() {
+		if (!state.streamName) {
+			_composer();
+		} else {
+			_preview();
+		}
+	}
+	
+	_render();
 },
 
 {

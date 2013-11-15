@@ -51,6 +51,8 @@ function _Streams_related_tool (options)
         Q.Tool.clear(tool.element);
         tool.element.innerHTML = '';
 		Q.each(this.state.creatable, function (streamType, params) {
+			// TODO: test whether the user can create streams of this type
+			// and otherwise do not append this element
 			var element = tool.elementForStream(tool.state.publisherId, "", streamType, {
 				creatable: params
 			});

@@ -1496,19 +1496,20 @@ abstract class Streams extends Base_Streams
 		$weight = isset($options['weight']) ? $options['weight'] : null;
 
 		if (!isset($related_to->weight) and isset($weight)) {
-			if (!is_numeric($weight)) {
-				$parts = explode('+', $weight);
-				if (count($parts) <= 1 or !is_numeric($parts[1])) {
-					throw new Q_Exception_WrongValue(array('field' => 'weight', 'range' => 'a numeric value'), 'weight');
-				}
+			$parts = explode('+', "$weight");
+			if (count($parts) > 1 and is_numeric($parts[1])) {
 				$row = Streams_RelatedTo::select('MAX(weight)')
 					->where(compact('toPublisherId', 'toStreamName', 'type'))
 					->ignoreCache()
+					->getSql("Q::log")
 					->fetchAll(PDO::FETCH_COLUMN);
 				$weight = reset($row);
 				$weight += $parts[1];
+			} else if (!is_numeric($weight)) {
+				throw new Q_Exception_WrongValue(array('field' => 'weight', 'range' => 'a numeric value'), 'weight');
 			}
 			$related_to->weight = $weight;
+			Q::log("WEIGHT BABY: ".$weight);
 		}
 
 		try {

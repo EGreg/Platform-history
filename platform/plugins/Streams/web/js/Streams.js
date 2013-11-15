@@ -375,9 +375,6 @@ Streams.create = function (fields, callback, related) {
 		fields['Q.Streams.related.publisherId'] = related.publisherId || related.publisherId;
 		fields['Q.Streams.related.streamName'] = related.streamName || related.streamName || related.name;
 		fields['Q.Streams.related.type'] = related.type;
-		if ('weight' in related) {
-			fields['Q.Streams.related.weight'] = related.weight;
-		}
 	}
 	var baseUrl = Q.baseUrl({
 		publisherId: fields.publisherId,
@@ -796,22 +793,20 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 			Q.each(data.slots.relations, function (j, relation) {
 				relation[near] = stream;
 				var key = relation[farPublisherId] + "\t" + relation[farStreamName];
-				if (!keys2[key]) {
-					if (relation[farPublisherId] != publisherId) {
-						// Fetch all the related streams from other publishers
-						keys.push(key);
-						Streams.get(relation[farPublisherId], relation[farStreamName], function (err, data) {
-							var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
-							if (msg) {
-								p.fill(key)(msg);
-								return;
-							}
-							relation[far] = this;
-							streams.push(this);
-							p.fill(key)();
+				if (!keys2[key] && relation[farPublisherId] != publisherId) {
+					// Fetch all the related streams from other publishers
+					keys.push(key);
+					Streams.get(relation[farPublisherId], relation[farStreamName], function (err, data) {
+						var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+						if (msg) {
+							p.fill(key)(msg);
 							return;
-						});
-					}
+						}
+						relation[far] = this;
+						streams.push(this);
+						p.fill(key)();
+						return;
+					});
 				}
 			});
 			
