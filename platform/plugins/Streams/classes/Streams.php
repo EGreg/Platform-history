@@ -326,17 +326,19 @@ abstract class Streams extends Base_Streams
 
 		if (is_array($name)) {
 			// put the streams back in the same internal PHP array order
+			// and in the process honor any duplicate names that might have been passed
 			$temp = $streams;
 			$streams = array();
 			foreach ($name as $n) {
-				if (!isset($temp[$n])) continue;
-				$streams[$n] = $temp[$n];
+				$streams[$n] = isset($temp[$n]) ? $temp[$n] : null;
 			}
 		}
 
 		$types = array();
 		foreach ($streams as $stream) {
-			$types[] = $stream->type;
+			if ($stream) {
+				$types[] = $stream->type;
+			}
 		}
 
 		foreach ($types as $type) {
@@ -361,7 +363,9 @@ abstract class Streams extends Base_Streams
 			), 'after');
 		}
 
-		if (empty($options)) self::$fetch[$asUserId][$publisherId][$key][$fields] = $streams;
+		if (empty($options)) {
+			self::$fetch[$asUserId][$publisherId][$key][$fields] = $streams;
+		}
 		return $streams;
 	}
 	
@@ -1706,11 +1710,10 @@ abstract class Streams extends Base_Streams
 		}
 
 		// Check access to stream
-		$streams = Streams::fetch($asUserId, $publisherId, $streamName);
-		if (empty($streams)) {
+		$stream = Streams::fetchOne($asUserId, $publisherId, $streamName);
+		if (!$stream) {
 			throw new Q_Exception("Stream $streamName not found", array('streamName', 'name', 'publisherId'));
 		}
-		$stream = reset($streams);
 		if (!$stream->testReadLevel('see')) {
 			throw new Users_Exception_NotAuthorized();
 		}

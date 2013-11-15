@@ -595,15 +595,19 @@ abstract class Db
 		$result = array();
 		if (empty($options['numeric'])) {
 			foreach ($arr as $k => $row) {
-				$result[$k] = method_exists($row, 'exportArray')
-					? $row->exportArray($options)
-					: $row->fields;
+				$result[$k] = $row
+					? (method_exists($row, 'exportArray')
+						? $row->exportArray($options)
+						: $row->fields)
+					: $row;
 			}
 		} else {
 			foreach ($arr as $k => $row) {
-				$result[] = method_exists($row, 'exportArray')
-					? $row->exportArray($options)
-					: $row->fields;
+				$result[] = $row
+					? (method_exists($row, 'exportArray')
+						? $row->exportArray($options)
+						: $row->fields)
+					: $row;
 			}
 		}
 		return $result;
