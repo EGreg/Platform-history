@@ -1789,7 +1789,9 @@ Q.getter = function _Q_getter(original, options) {
 				return false;
 			};
 			result.throttle.throttleNext = function _throttleNext(that) {
-				if (--p.count < 0) throw "Q.getter: Throttle count out of range!";
+				if (--p.count < 0) {
+					console.warn("Q.getter: throttle count is negative");
+				}
 				if (p.queue.length) {
 					p.queue.shift().apply(that, p.args.shift());
 				}
@@ -3267,7 +3269,7 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 				what2 += encodeURI('&Q.echo=') + encodeURIComponent(options.echo);
 			}
 			if (options.method) {
-				what2 += encodeURI('&Q.method=' + encodeURIComponent(options.method));
+				what2 += encodeURI('&Q.method=' + encodeURIComponent(options.method.toUpperCase()));
 			}
 		}
 		if (Q.nonce !== undefined) {
@@ -3444,7 +3446,7 @@ Q.request = function (url, slotNames, callback, options) {
 			var _callback = callback;
 			callback = function _Q_request_callback(err, content) {
 				if (err) {
-					return callback(err);
+					return _callback(err);
 				}
 				var data;
 				try {

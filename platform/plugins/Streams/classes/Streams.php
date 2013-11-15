@@ -571,8 +571,8 @@ abstract class Streams extends Base_Streams
 	 * @param {array} $relate The user would also be authorized if the stream would be related to
 	 *  an existing category stream, in which the user has a writeLevel of at least "relate",
 	 *  and the user that would be publishing this new stream has a template for this stream type
-	 *  that is related to a template matching the category stream. To test for this, pass an array
-	 *  with the following keys:
+	 *  that is related to the category stream or a template matching the category stream.
+	 *  To test for this, pass an array with the following keys:
 	 *   "streamName" => The name of the stream to which the new stream would be related
 	 *   "publisherId" => The id of the user publishing that stream, defaults to $publisherId
 	 *   "type" => The type of relation, defaults to ""
@@ -617,19 +617,18 @@ abstract class Streams extends Base_Streams
 		}
 		if (!$authorized and $retrieved and $relate['streamName']) {
 			// Check if user is perhaps authorized to create a related stream
-			$to_stream = new Streams_Stream();
-			$to_stream->publisherId = $relate['publisherId'];
-			$to_stream->name = $relate['streamName'].'/';
-			if ($retrieved = $to_stream->retrieve()) {
+			$to_stream = Streams::fetchOne($userId, $relate['publisherId'], $relate['streamName']);
+			if ($to_stream and $to_stream->testWriteLevel('relate')) {
 				$to_template = new Streams_Stream();
 				$to_template->publisherId = $to_stream->publisherId;
 				$to_template->name = $to_stream->type.'/';
 				$to_template->type = 'Streams/template';
+				$retrieved = $to_template->retrieve();
 				if (!$retrieved) {
 					$to_template->publisherId = '';
 					$retrieved = $to_template->retrieve();
 				}
-				if ($retrieved and $to_template->testWriteLevel('relate')) {
+				if ($retrieved) {
 					$related_to = new Streams_RelatedTo();
 					$related_to->toPublisherId = $to_template->publisherId;
 					$related_to->toStreamName = $to_template->name;

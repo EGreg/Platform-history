@@ -33,7 +33,7 @@ function Streams_stream_post($params) {
 	if (isset($relate['streamName'])) {
 		$relate['publisherId'] = Q_Request::special("Streams.related.publisherId", $publisherId);
 		$relate['type'] = Q_Request::special("Streams.related.type", "");
-		$weight = Q_Request::special("Streams.related.weight", null);
+		$weight = Q_Request::special("Streams.related.weight", 1);
 	}
 
 	// See whether user is authorized to create this stream

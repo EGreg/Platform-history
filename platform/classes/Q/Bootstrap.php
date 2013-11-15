@@ -110,8 +110,10 @@ class Q_Bootstrap
 	 */
 	static function shutdownFunction()
 	{
-		$error = error_get_last();
-		if ($error) Q::log($error, 'fatal');
+		if ($error = error_get_last()) {
+			Q::log($error, 'fatal');
+			header('PHP Fatal Error', true, 500); // do not expose the error contents
+		}
 		/**
 		 * @event Q/shutdown {before}
 		 */

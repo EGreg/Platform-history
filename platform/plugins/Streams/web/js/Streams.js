@@ -5,10 +5,7 @@
  * @class Streams
  */
 Q.Streams = Q.plugins.Streams = {
-	options: {
-		refreshParticipatingOnEvents: ['focus', 'pageshow'],
-		refreshParticipatingMinSeconds: 3
-	}
+
 };
 
 (function($, Streams) {
@@ -246,21 +243,6 @@ Streams.socketSessionId = function (publisherId, streamName) {
 };
 
 /**
- * Waits for the latest messages to be posted to a given stream.
- * If your app is using socket.io, then calling this manually is largely unnecessary.
- * @param {Function} callback This is called when the stream has been updated with the latest messages.
- */
-Streams.refresh = function (publisherId, streamName, callback) {
-	// If the stream was seen, fetch latest messages,
-	// and replay their being "posted" to trigger the right events
-	if (!Q.getObject([publisherId, streamName], Streams.seen)) {
-		return false;
-	}
-	Message.wait(publisherId, streamName, -1, callback);
-	return true;
-};
-
-/**
 * Returns streams for current user
 * @method getParticipating
 */
@@ -275,8 +257,12 @@ Streams.getParticipating = Q.getter(function(callback) {
  * Waits for the latest messages to be posted to a given stream.
  * If your app is using socket.io, then calling this manually is largely unnecessary.
  * @param {Function} callback This is called when the stream has been updated with the latest messages.
+ * @return {boolean} whether the refresh occurred
  */
 Streams.refresh = function (publisherId, streamName, callback) {
+	if (!Q.Users.loggedInUser || !Q.isOnline()) {
+		return false;
+	}
 	// If the stream was seen, fetch latest messages,
 	// and replay their being "posted" to trigger the right events
 	if (!Q.getObject([publisherId, streamName], Streams.seen)) {
@@ -285,8 +271,14 @@ Streams.refresh = function (publisherId, streamName, callback) {
 	Message.wait(publisherId, streamName, -1, callback);
 	return true;
 };
-Streams.refreshParticipating = function (options) {
-	if (!Q.Users.loggedInUser) {
+
+/**
+ * Refreshes all the streams the logged-in user is participating in
+ * If your app is using socket.io, then calling this manually is largely unnecessary.
+ * @return {boolean} whether the refresh occurred
+ */
+Streams.refreshParticipating = function () {
+	if (!Q.Users.loggedInUser || !Q.isOnline()) {
 		return false;
 	}
 	var now = Date.now();
@@ -294,7 +286,6 @@ Streams.refreshParticipating = function (options) {
 		return false;
 	}
 	Streams.refreshParticipating.lastTime = now;
-	var o = Q.extend({}, Streams.refreshParticipating.options, options);
 	Streams.getParticipating(function (err, participating) {
 		Q.each(participating, function (i, p) {
 			Streams.refresh(p.publisherId, p.streamName);
@@ -305,7 +296,7 @@ Streams.refreshParticipating = function (options) {
 
 Streams.refreshParticipating.options = {
 	onEvents: ['focus', 'pageshow'],
-	minSeconds: 3
+	minSeconds: 60
 };
 Streams.refreshParticipating.lastTime = 0;
 
@@ -402,6 +393,7 @@ Streams.create = function (fields, callback, related) {
 			if (msg) {
 				return callback && callback.call(stream, msg, stream);
 			}
+			Q.setObject([stream.fields.publisherId, stream.fields.name], true, Streams.seen);
 			return callback && callback.call(stream, null, stream);
 		});
 	}, { method: 'post', fields: fields, baseUrl: baseUrl });

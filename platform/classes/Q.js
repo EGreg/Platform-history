@@ -559,7 +559,9 @@ Q.getter = function _Q_getter(original, options) {
 				return false;
 			};
 			result.throttle.throttleNext = function _throttleNext(that) {
-				if (--p.count < 0) throw new Error("Throttle count out of range!");
+				if (--p.count < 0) {
+					console.warn("Q.getter: throttle count is negative");
+				}
 				if (p.queue.length) {
 					p.queue.shift().apply(that, p.args.shift());
 				}

@@ -40,6 +40,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 					tool.state.onUpdate.handle.call(tool, data);
 				}
 			);
+			return tool.state.streamName ? true : false;
 		}}
 	});
 	
@@ -68,9 +69,8 @@ Q.Tool.define("Streams/image/preview", function(options) {
 							type: 'Streams/image'
 						}, function (err) {
 							if (err) {
-								// TODO: cancel things for sure
-								tool.element.setAttribute('class', '');
 								alert(err);
+								callback(false);
 								return console.warn(err);
 							}
 							tool.state.publisherId = this.fields.publisherId;
@@ -138,7 +138,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 		tool.refresh(_afterRefresh);
 		stream.onFieldChanged('icon').set(function () {
 			tool.refresh(_afterRefresh);
-		});
+		}, tool);
 	});
 },
 

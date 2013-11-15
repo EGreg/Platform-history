@@ -36,7 +36,12 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 	return this.each(function() {
 		var $this = $(this);
 		var input = $('<input type="file" accept="image/gif, image/jpeg, image/png" class="Q_imagepicker_file" />');
-		input.css({ 'visibility': 'hidden', 'height': '0', 'width': '0', 'position': 'absolute' });
+		input.css({
+			'visibility': 'hidden',
+			'height': '0',
+			'width': '0',
+			'position': 'absolute'
+		});
 		var originalSrc = $this.attr('src');
 		if (originalSrc.indexOf('?') < 0) {
 			$this.attr('src', originalSrc+"?"+Date.now()); // cache busting
@@ -51,6 +56,11 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 				_doUpload();
 			}
 			function _doUpload(override) {
+				if (override === false || (override && override.cancel)) {
+					var state = $this.state('Q/imagepicker');
+					$this.attr('src', state.oldSrc).stop().removeClass('Q_imagepicker_uploading');
+					return;
+				}
 				var params = {
 					'data': data,
 					'path': $this.state('Q/imagepicker').path,
@@ -68,31 +78,26 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 				}
 				var url = params.url;
 				delete params.url;
-				$.post(Q.ajaxExtend(url, 'data'), params).always(function() {
-					if (o.showMask && Q.Mask) {
-						Q.Mask.hide('Q.imagepickerMask');
-					}
-					input.val('');
-				}).success(function(res) {
-					if (res.errors) {
-						$this.attr('src', state.oldSrc).stop().removeClass('Q_imagepicker_uploading');
-						Q.handle(o.onError, this, [res.errors[0].message]);
-					} else {
-						var key = o.showSize;
-						if (!key) {
-							// by default set src equal to first element of the response
-							key = Q.first(res.slots.data, {nonEmpty: true});
-						}
-						if (key) {
-							$this.attr('src', Q.url(res.slots.data[key]+"?"+Date.now()))
-								.removeClass('Q_imagepicker_uploading');
-						}
-						Q.handle(o.onSuccess, self, [res.slots.data, key]);
-					}
-				}).error(function() {
+				Q.request(url, 'data', function (err, res) {
 					var state = $this.state('Q/imagepicker');
-					$this.attr('src', state.oldSrc).removeClass('Q_imagepicker_uploading');
-					Q.handle(o.onError, self);
+					var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(res && res.errors);
+					if (msg) {
+						$this.attr('src', state.oldSrc).stop().removeClass('Q_imagepicker_uploading');
+						return Q.handle(o.onError, self, [msg]);
+					}
+					var key = o.showSize;
+					if (!key) {
+						// by default set src equal to first element of the response
+						key = Q.first(res.slots.data, {nonEmpty: true});
+					}
+					var c = Q.handle(o.onSuccess, self, [res.slots.data, key]);
+					if (c !== false && key) {
+						$this.attr('src', Q.url(res.slots.data[key]+"?"+Date.now()));
+					}
+					$this.removeClass('Q_imagepicker_uploading');
+				}, {
+					fields: params,
+					method: 'POST'
 				});
 			}
 		}
@@ -141,6 +146,10 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 				};
 				reader.onerror = function () { setTimeout(function() { alert("Error reading file"); }, 0); };
 				reader.readAsDataURL(this.files[0]);
+				
+				// clear the input, see http://stackoverflow.com/a/13351234/467460
+				input.wrap('<form>').closest('form').get(0).reset();
+				input.unwrap();
 			});
 		}
 	});
@@ -155,7 +164,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 	url: Q.action("Q/image"),
 	throbber: null,
 	preprocess: null,
-	onSuccess: new Q.Event(function() {}),
+	onSuccess: new Q.Event(function() {}, 'Q/imagepicker'),
 	onError: new Q.Event(function(message) {
 		alert('Image upload error' + (message ? ': ' + message : '') + '.');
 	}, 'Q/imagepicker')
