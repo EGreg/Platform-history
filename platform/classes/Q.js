@@ -355,10 +355,7 @@ Q.Pipe.prototype.run = function _Q_pipe_run() {
  * behind the scenes, queues up the calls and then runs a batch function that you write.
  */
 Q.batcher = function _Q_batch(batch, options) {
-	var o = Q.extend({
-		max: 10,
-		ms: 50
-	}, options);
+	var o = Q.extend({}, Q.batcher.options, options);
 	var result = function _Q_batch_result() {
 		var requestArguments = arguments;
 		function nextRequest() {
@@ -418,6 +415,11 @@ Q.batcher = function _Q_batch(batch, options) {
 		clearTimeout(batch.timeout);
 	};
 	return result;
+};
+
+Q.batcher.options = {
+	max: 10,
+	ms: 50
 };
 
 /**
