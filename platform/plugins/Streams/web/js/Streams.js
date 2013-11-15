@@ -782,6 +782,7 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 			var streams = [];
 			var p = new Q.Pipe(), keys = [], keys2 = {};
 			Q.each(data.slots.streams, function (k, fields) {
+				if (!fields) return;
 				var key = fields.publisherId + "\t" + fields.name;
 				keys.push(key);
 				keys2[key] = true;
@@ -796,19 +797,21 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 				relation[near] = stream;
 				var key = relation[farPublisherId] + "\t" + relation[farStreamName];
 				if (!keys2[key]) {
-					// Fetch all the related streams from other publishers
-					keys.push(key);
-					Streams.get(relation[farPublisherId], relation[farStreamName], function (err, data) {
-						var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
-						if (msg) {
-							p.fill(key)(msg);
+					if (relation[farPublisherId] != publisherId) {
+						// Fetch all the related streams from other publishers
+						keys.push(key);
+						Streams.get(relation[farPublisherId], relation[farStreamName], function (err, data) {
+							var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+							if (msg) {
+								p.fill(key)(msg);
+								return;
+							}
+							relation[far] = this;
+							streams.push(this);
+							p.fill(key)();
 							return;
-						}
-						relation[far] = this;
-						streams.push(this);
-						p.fill(key)();
-						return;
-					});
+						});
+					}
 				}
 			});
 			
