@@ -1596,7 +1596,7 @@ Q.batcher = function _Q_batch(batch, options) {
 	return result;
 };
 
-Q,batcher.options = {
+Q.batcher.options = {
 	max: 10,
 	ms: 50
 };
