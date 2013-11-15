@@ -780,10 +780,11 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 			
 			// Construct related streams from data that has been returned
 			var streams = [];
-			var p = new Q.Pipe(), keys = [];
+			var p = new Q.Pipe(), keys = [], keys2 = {};
 			Q.each(data.slots.streams, function (k, fields) {
 				var key = fields.publisherId + "\t" + fields.name;
 				keys.push(key);
+				keys2[key] = true;
 				_constructStream(fields, function () {
 					streams.push(this);
 					p.fill(key)();
@@ -793,19 +794,10 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 			// Now process all the relations
 			Q.each(data.slots.relations, function (j, relation) {
 				relation[near] = stream;
-				var found = false;
-				Q.each(data.slots.streams, function (k, fields) {
-					if (fields.publisherId === relation[farPublisherId]
-					&& fields.name === relation[farStreamName]) {
-						found = true;
-					}
-				});
-				if (!found) {
+				var key = relation[farPublisherId] + "\t" + relation[farStreamName];
+				if (!keys2[key]) {
 					// Fetch all the related streams from other publishers
-					var key = relation[farPublisherId] + "\t" + relation[farStreamName];
-					if (keys.indexOf(key) < 0) {
-						keys.push(key);
-					}
+					keys.push(key);
 					Streams.get(relation[farPublisherId], relation[farStreamName], function (err, data) {
 						var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
 						if (msg) {
