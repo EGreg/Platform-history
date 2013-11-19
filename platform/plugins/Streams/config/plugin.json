@@ -13,8 +13,7 @@
 			"Q/responseExtras": ["Streams/after/Q/responseExtras"],
 			"Q/image": ["Streams/after/Q/image"],
 			"Db/Row/Users_User/saveExecute": ["Streams/after/Users/User/saveExecute"],
-			"Db/Row/Users_Contact/removeExecute": ["Streams/after/Users/Contact/removeExecute"],
-			"Users/insertUser": ["Streams/after/Users/insertUser"]
+			"Db/Row/Users_Contact/removeExecute": ["Streams/after/Users/Contact/removeExecute"]
 		},
 		"routes": {
 			"plugins/Streams/invite/:token": {"module": "Streams", "action": "invite"},

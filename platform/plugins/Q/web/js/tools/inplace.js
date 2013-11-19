@@ -47,11 +47,7 @@ Q.Tool.define("Q/inplace", function (options) {
 			field: o.field,
 			textarea: (o.type === 'textarea'),
 			text: function (field) {
-				return staticHtml.replaceAll({
-					'<br>': "\n",
-					'<br />': "\n",
-					'&nbsp;': ' '
-				});
+				return staticHtml.decodeHTML();
 			},
 			type: o.type || 'text'
 		},

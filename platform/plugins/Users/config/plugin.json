@@ -19,10 +19,11 @@
 			"Q/session/write": ["Users/after/Q/session/write"],
 			"Q/session/destroy": ["Users/after/Q/session/destroy"],
 			"Q/reroute": ["Users/after/Q/reroute"],
+			"Q/image": ["Users/after/Q/image"],
+			"Users/insertUser": ["Streams/after/Users/insertUser"],
 			"Users/setEmailAddress": ["Users/after/Users/setEmailAddress"],
 			"Users/setMobileNumber": ["Users/after/Users/setMobileNumber"],
-			"Users/addIdentifier": ["Users/after/Users/addIdentifier"],
-			"Q/image": ["Users/after/Q/image"]
+			"Users/addIdentifier": ["Users/after/Users/addIdentifier"]
 		},
 		"routes": {
 			"plugins/Users/:action": {"module": "Users"},

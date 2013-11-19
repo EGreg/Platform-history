@@ -85,13 +85,23 @@ String.prototype.isUrl = function () {
 	return this.match(new RegExp("^[A-Za-z]*:\/\/"));
 };
 
-String.prototype.htmlentities = function _String_prototype_htmlentities(quote_style, charset, double_encode) {
+String.prototype.encodeHTML = function _String_prototype_encodHTML(quote_style, charset, double_encode) {
 	return this.replaceAll({
 		'&': '&amp;',
 		'<': '&lt;',
 		'>': '&gt;',
 		'"': '&quot;',
 		"'": '&apos;'
+	});
+};
+
+String.prototype.decodeHTML = function _String_prototype_encodHTML(quote_style, charset, double_encode) {
+	return this.replaceAll({
+		'&amp;': '&',
+		'&lt;': '<',
+		'&gt;': '>',
+		'&quot;': '"',
+		'&apos;': "'"
 	});
 };
 
@@ -1911,7 +1921,7 @@ Q.Tool = function _Q_Tool(element, options) {
 	// ID and prefix
 	if (!this.element.id) {
 		var prefix = Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '_';
-		this.element.id = prefix + (Q.Tool.nextDefaultId++) + "_tool";
+		this.element.id = (prefix + (Q.Tool.nextDefaultId++) + '_' + this.name + "_tool").toLowerCase();
 	}
 	this.prefix = Q.Tool.prefixById(this.element.id);
 
@@ -2322,7 +2332,7 @@ Q.Tool.from = function _Q_Tool_from(toolElement) {
  * @return String
  */
 Q.Tool.encodeOptions = function _Q_Tool_stringFromOptions(options) {
-	return JSON.stringify(options).htmlentities().replaceAll({"&quot;": '"'});
+	return JSON.stringify(options).encodeHTML().replaceAll({"&quot;": '"'});
 };
 
 /**
@@ -3759,7 +3769,7 @@ Q.formPost = function _Q_formPost(action, params, method, options) {
 		}
 		if (!options.iframe) {
 			try {
-				iframe = document.createElement('<iframe name="'+name.htmlentities()+'">');
+				iframe = document.createElement('<iframe name="'+name.encodeHTML()+'">');
 			} catch (ex) {
 				iframe = document.createElement('iframe');
 				iframe.width = iframe.height = iframe.marginWidth = iframe.marginHeight = 0;
@@ -4298,13 +4308,22 @@ Q.find.skipSubtree = "Q:skipSubtree";
 /**
  * Unleash this on an element to activate all the tools within it.
  * If the element is itself an outer div of a tool, that tool is activated too.
- * @param {HTMLElement} elem
+ * @param {HTMLElement|Q.Tool}
+ *  HTML element or existing tool to traverse and activate
  * @param {Object} options
  *  Optional options to provide to tools and their children.
  * @param {Function} callback
  *  Optional callback to call after the activation was complete
  */
 Q.activate = function _Q_activate(elem, options, callback) {
+	
+	var ba, tool;
+	if (Q.typeOf(elem) === 'Q.Tool') {
+		tool = elem;
+		ba = Q.Tool.beingActivated;
+		Q.Tool.beingActivated = tool;
+		elem = tool.element;
+	}
 	
 	Q.beforeActivate.handle.call(window, elem); // things to do before things are activated
 	
@@ -4318,6 +4337,10 @@ Q.activate = function _Q_activate(elem, options, callback) {
 	}
 	Q.find(elem, true, Q.activate.onConstruct.handle, Q.activate.onInit.handle, options, shared);
 	shared.pipe.add(shared.waitingForTools, _activated).run();
+	
+	if (ba) {
+		Q.Tool.beingActivated = ba;
+	}
 	
 	function _activated() {
 		Q.trigger('onLayout', elem, []);

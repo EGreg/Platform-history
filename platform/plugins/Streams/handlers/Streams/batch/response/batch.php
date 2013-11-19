@@ -96,7 +96,7 @@ function Streams_batch_response_batch()
 				if (empty($streams[$publisherId][$name])) {
 					throw new Q_Exception_MissingRow(array(
 						'table' => 'Stream', 
-						'criteria' => "{publisherId: '$publisherId', name: '$streamName'}"
+						'criteria' => "{publisherId: '$publisherId', name: '$name'}"
 					));
 				}
 				Streams::$cache['stream'] = $streams[$publisherId][$name];

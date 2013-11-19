@@ -99,7 +99,7 @@ Streams_Subscription.test = function(userId, publisherId, streamName, msgType, c
 							type: 'Streams/disconnected'
 						}).orderBy('sentTime', false).limit(1).execute(function(err, res) {
 							if (err) return p.fill(o)(err);
-							// we may have shards... Who know if limit is handled properly
+							// NOTE: all Streams/participating for a given stream must be on the same shard
 							var time_online = res.length ? res.reduce(function(pv, cv) {
 								var cvd = new Date(cv.sentTime);
 								return pv > cvd ? pv : cvd;
@@ -119,7 +119,9 @@ Streams_Subscription.test = function(userId, publisherId, streamName, msgType, c
 								} else p.fill(o)();
 							}, {plain: true});
 						}, { plain: true });
-					} else _checkDelivery();
+					} else {
+						_checkDelivery();
+					}
 				}
 				function _checkDelivery() {
 					var deliver;

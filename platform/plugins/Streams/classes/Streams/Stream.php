@@ -475,7 +475,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 * @return {Streams_Participant|false}
 	 */
 	function join($options = array(), &$participant = null)
-	{		
+	{
 		$stream = $this->getUserStream($options, $userId);
 
 		if (!$stream->testWriteLevel('join')) {
@@ -509,39 +509,46 @@ class Streams_Stream extends Base_Streams_Stream
 			// Post a message
 			if (empty($options['noVisit']) or $type !== 'visit') {
 				$stream->post($userId, array('type' => "Streams/$type"), true);
+				// Now post Streams/joined message to Streams/participating
+				Streams_Message::post($userId, $userId, 'Streams/participating', array(
+					'type' => "Streams/{$type}d",
+					'instructions' => Q::json_encode(array(
+						'publisherId' => $stream->publisherId,
+						'streamName' => $stream->name
+					))
+				), true);
 			}
-			return $participant;
-		}
+		} else {
+			$participant->streamType = $stream->type;
+			$participant->subscribed = !empty($options['subscribed']) ? 'yes' : 'no';
+			$participant->posted = !empty($options['posted']) ? 'yes' : 'no';
+			$participant->reputation = !empty($options['reputation']) ? $options['reputation'] : 0;
+			$participant->state = 'participating';
+			$participant->reason = !empty($options['reason']) ? $options['reason'] : "";
+			$participant->enthusiasm = !empty($options['enthusiasm']) ? $options['enthusiasm'] : 0;
 
-		$participant->streamType = $stream->type;
-		$participant->subscribed = !empty($options['subscribed']) ? 'yes' : 'no';
-		$participant->posted = !empty($options['posted']) ? 'yes' : 'no';
-		$participant->reputation = !empty($options['reputation']) ? $options['reputation'] : 0;
-		$participant->state = 'participating';
-		$participant->reason = !empty($options['reason']) ? $options['reason'] : "";
-		$participant->enthusiasm = !empty($options['enthusiasm']) ? $options['enthusiasm'] : 0;
-		
-		if (!$participant->save(true)) {
-			return false;
+			if (!$participant->save(true)) {
+				return false;
+			}
+			// Send a message to Node
+			Q_Utils::sendToNode(array(
+				"Q/method" => "Streams/Stream/join", 
+				"participant" => Q::json_encode($participant->toArray()),
+				"stream" => Q::json_encode($stream->toArray())
+			));
+
+			// Post Streams/join message to the stream
+			$stream->post($userId, array('type' => 'Streams/join'), true);
+
+			// Now post Streams/joined message to Streams/participating
+			Streams_Message::post($userId, $userId, 'Streams/participating', array(
+				'type' => "Streams/joined",
+				'instructions' => Q::json_encode(array(
+					'publisherId' => $stream->publisherId,
+					'streamName' => $stream->name
+				))
+			), true);	
 		}
-		// Send a message to Node
-		Q_Utils::sendToNode(array(
-			"Q/method" => "Streams/Stream/join", 
-			"participant" => Q::json_encode($participant->toArray()),
-			"stream" => Q::json_encode($stream->toArray())
-		));
-		
-		// Post Streams/join message to the stream
-		$stream->post($userId, array('type' => 'Streams/join'), true);
-		
-		// Now post Streams/joined message to Streams/participating
-		Streams_Message::post($userId, $userId, 'Streams/participating', array(
-			'type' => "Streams/joined",
-			'instructions' => Q::json_encode(array(
-				'publisherId' => $stream->publisherId,
-				'streamName' => $stream->name
-			))
-		), true);
 		return $participant;
 	} 
 	
@@ -574,6 +581,9 @@ class Streams_Stream extends Base_Streams_Stream
 		}
 
 		#Remove from participant list
+		if ($participant->state === 'left') {
+			return false;
+		}
 		$participant->state = 'left';
 		if (!$participant->save()) {
 			return false;
@@ -596,6 +606,7 @@ class Streams_Stream extends Base_Streams_Stream
 				'streamName' => $stream->name
 			))
 		), true);
+		return true;
 	}
 
 	/**

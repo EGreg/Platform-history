@@ -20,11 +20,11 @@ Q.Tool.define("Streams/inplace", function (options) {
 			switch (state.inplaceType) {
 				case 'text':
 					tool.$('input').val(content);
-					tool.$('.Q_inplace_tool_static').html(content.htmlentities());
+					tool.$('.Q_inplace_tool_static').html(content.encodeHTML());
 					break;
 				case 'textarea':
 					tool.$('textarea').val(content);
-					tool.$('.Q_inplace_tool_blockstatic').html(content.htmlentities().replaceAll({
+					tool.$('.Q_inplace_tool_blockstatic').html(content.encodeHTML().replaceAll({
 						"\n": '<br>',
 					 	' ': '&nbsp;'
 					}));
@@ -60,13 +60,13 @@ Q.Tool.define("Streams/inplace", function (options) {
 		switch (state.inplaceType) {
 			case 'text':
 				ipo.fieldInput = $('<input />').attr('name', field).val(stream.fields[field]);
-				ipo.staticHtml = stream.fields[field].htmlentities();
+				ipo.staticHtml = stream.fields[field].encodeHTML();
 				break;
 			case 'textarea':
 				ipo.fieldInput = $('<textarea rows="5" cols="80" />').attr('name', field).text(stream.fields[field]);
-				ipo.staticHtml = stream.fields[field].htmlentities().replaceAll({
-					'<br>': "\n",
-					'<br />': "\n",
+				ipo.staticHtml = stream.fields[field].encodeHTML().replaceAll({
+					'&lt;br&gt;': "\n",
+					'&lt;br /&gt;': "\n",
 					'&nbsp;': ' '
 				});
 				break;

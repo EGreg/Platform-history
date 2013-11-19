@@ -296,7 +296,7 @@ Streams.refreshParticipating = function () {
 
 Streams.refreshParticipating.options = {
 	onEvents: ['focus', 'pageshow'],
-	minSeconds: 60
+	minSeconds: 3
 };
 Streams.refreshParticipating.lastTime = 0;
 
@@ -774,6 +774,8 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 			if (msg) {
 				return callback && callback.call(this, msg);
 			}
+			
+			Q.setObject([stream.fields.publisherId, stream.fields.name], true, Streams.seen);
 			
 			// Construct related streams from data that has been returned
 			var streams = [];

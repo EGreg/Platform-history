@@ -2414,7 +2414,7 @@ String.prototype.toCapitalized = function _String_prototype_toCapitalized() {
 	});
 };
 
-String.prototype.htmlentities = function _String_prototype_htmlentities(quote_style, charset, double_encode) {
+String.prototype.encodeHTML = function _String_prototype_htmlentities(quote_style, charset, double_encode) {
 	return this.replaceAll({
 		'&': '&amp;',
 		'<': '&lt;',

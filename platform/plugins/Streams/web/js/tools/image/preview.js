@@ -73,7 +73,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 								_render();
 							}
 						);
-						return state.streamName ? true : false;
+						return false;
 					}}
 				});
 
@@ -128,7 +128,6 @@ Q.Tool.define("Streams/image/preview", function(options) {
 								state.onUpdate.handle.call(tool, data);
 							}
 						);
-						return state.streamName ? true : false;
 					}}
 				});
 				tool.$('img').plugin('Q/imagepicker', ipo);
@@ -228,7 +227,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 					return console.warn(err);
 				}
 				tool.element.innerHTML = html;
-				Q.activate(tool.element, callback);
+				Q.activate(tool, callback);
 			},
 			state.templates.edit
 		);

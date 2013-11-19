@@ -1145,7 +1145,7 @@ class Q_Html
 	}
 
 	/**
-	 * Pushes a new theme url  to the end of the cascade -- 
+	 * Pushes a new theme url to the end of the cascade -- 
 	 * if a theme file doesn't exist, we go backwards through the cascade
 	 * and if we locate it under a previous theme url, we use that one.
 	 * NOTE: If your webserver supports .htaccess files, you can implement

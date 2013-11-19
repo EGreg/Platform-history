@@ -745,7 +745,7 @@ Streams.on('connection', function(client) {
 				if (timeout[userId]) {
 					clearTimeout(timeout[userId]);
 				} else {
-					// post connected message to Streams/participating stream
+					// post "connected" message to Streams/participating stream
 					new Streams.Stream({
 						publisherId: userId,
 						name: 'Streams/participating'
@@ -772,7 +772,7 @@ Streams.on('connection', function(client) {
 		if (!Object.keys(clients).length) {
 			timeout[userId] = setTimeout(function () {
 				delete timeout[userId];
-				// post disconnected message to Streams/participating stream
+				// post "disconnected" message to Streams/participating stream
 				new Streams.Stream({
 					publisherId: userId,
 					name: 'Streams/participating'
