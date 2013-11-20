@@ -2173,7 +2173,7 @@ abstract class Streams extends Base_Streams
 			$stream->type = 'Streams/text/small';
 			$stream->title = 'First Name';
 			$stream->content = $first;
-			$stream->save();
+			$stream->save(true);
 		}
 		if (!empty($last)) {
 			$stream = new Streams_Stream();
@@ -2183,7 +2183,7 @@ abstract class Streams extends Base_Streams
 			$stream->type = 'Streams/text/small';
 			$stream->title = 'Last Name';
 			$stream->content = $last;
-			$stream->save();
+			$stream->save(true);
 		}
 
 		/**

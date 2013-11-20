@@ -20,6 +20,6 @@ function Streams_after_Q_image($params)
 	$stream->post($user->id, array(
 		'type' => 'Streams/edited',
 		'content' => '',
-		'instructions' => Q::json_encode($to_save)
+		'instructions' => $to_save
 	));
 }
