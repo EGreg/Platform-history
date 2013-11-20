@@ -360,10 +360,12 @@ Q.typeOf = function _Q_typeOf(value) {
  * @method each
  * @param {Array|Object|String|Number} container, which can be an array, object or string.
  *  You can also pass up to three numbers here: from, to and optional step
- * @param {function} callback
- *  A function with two parameters
- *  index: the index
- *  value: the value
+ * @param {Function|String} callback
+ *  A function which will receive two parameters
+ *    index: the index of the current item
+ *    value: the value of the current item
+ *  Also can be a string, which would be the name of a method to invoke on each item, if possible.
+ *  In this case the callback should be followed by an array of arguments to pass to the method calls.
  * @param {Object} options
  *  ascending: Optional. Pass true here to traverse in ascending key order, false in descending.
  *  numeric: Optional. Used together with ascending. Use numeric sort instead of string sort.
@@ -371,7 +373,11 @@ Q.typeOf = function _Q_typeOf(value) {
  * @throws {Q.Exception} If container is not array, object or string
  */
 Q.each = function _Q_each(container, callback, options) {
-	var i, k, length, r, t;
+	var i, k, length, r, t, args;
+	if (typeof callback === 'string' && Q.typeOf(arguments[2]) === 'array') {
+		args = arguments[2];
+		options = arguments[3];
+	}
 	switch (t = Q.typeOf(container)) {
 		default:
 			if (!container) break;
@@ -390,12 +396,12 @@ Q.each = function _Q_each(container, callback, options) {
 			if (!container || !length || !callback) return;
 			if (options && options.ascending === false) {
 				for (i=length-1; i>=0; --i) {
-					r = Q.handle(callback, container[i], [i, container[i]]);
+					r = Q.handle(callback, container[i], args || [i, container[i]]);
 					if (r === false) return false;
 				}
 			} else {
 				for (i=0; i<length; ++i) {
-					r = Q.handle(callback, container[i], [i, container[i]]);
+					r = Q.handle(callback, container[i], args || [i, container[i]]);
 					if (r === false) return false;
 				}
 			}
@@ -416,20 +422,20 @@ Q.each = function _Q_each(container, callback, options) {
 				if (options.ascending === false) {
 					for (i=keys.length-1; i>=0; --i) {
 						key = keys[i];
-						r = Q.handle(callback, container[key], [key, container[key]]);
+						r = Q.handle(callback, container[key], args || [key, container[key]]);
 						if (r === false) return false;
 					}
 				} else {
 					for (i=0; i<keys.length; ++i) {
 						key = keys[i];
-						r = Q.handle(callback, container[key], [key, container[key]]);
+						r = Q.handle(callback, container[key], args || [key, container[key]]);
 						if (r === false) return false;
 					}
 				}
 			} else {
 				for (k in container) {
 					if (container.hasOwnProperty && container.hasOwnProperty(k)) {
-						r = Q.handle(callback, container[k], [k, container[k]]);
+						r = Q.handle(callback, container[k], args || [k, container[k]]);
 						if (r === false) return false;
 					}
 				}
@@ -439,12 +445,12 @@ Q.each = function _Q_each(container, callback, options) {
 			if (!container || !callback) return;
 			if (options && options.ascending === false) {
 				for (i=0; i<container.length; ++i) {
-					r = Q.handle(callback, container, [i, container.charAt(i)]);
+					r = Q.handle(callback, container, args || [i, container.charAt(i)]);
 					if (r === false) return false;
 				}
 			} else {
 				for (i=container.length-1; i>=0; --i) {
-					r = Q.handle(callback, container, [i, container.charAt(i)]);
+					r = Q.handle(callback, container, args || [i, container.charAt(i)]);
 					if (r === false) return false;
 				}
 			}
@@ -472,12 +478,12 @@ Q.each = function _Q_each(container, callback, options) {
 			}
 			if (from <= to) {
 				for (i=from; i<=to; i+=step) {
-					r = Q.handle(callback, this, [i]);
+					r = Q.handle(callback, this, args || [i]);
 					if (r === false) return false;
 				}
 			} else {
 				for (i=from; i>=to; i+=step) {
-					r = Q.handle(callback, this, [i]);
+					r = Q.handle(callback, this, args || [i]);
 					if (r === false) return false;
 				}
 			}
@@ -987,7 +993,13 @@ function _getProp (/*Array*/parts, /*Boolean*/create, /*Object*/context){
 	context = context || window;
 	if(!parts.length) return context;
 	while(context && (p = parts[i++]) !== undefined){
-		context = (p in context ? context[p] : (create ? context[p] = {} : undefined));
+		try {
+			context = (p in context) ? context[p] : (create ? context[p] = {} : undefined);
+		} catch (e) {
+			if (create) {
+				throw "Q.setObject cannot set property of " + typeof(context) + " " + JSON.stringify(context);
+			}
+		}
 	}
 	return context; // mixed
 };
@@ -1150,23 +1162,14 @@ Q.Event.jQueryForPage = [];
 Q.Event.prototype.occurred = false;
 
 /**
- * Adds a callable to a handler, or overwrites an existing one
- * @param callable Any kind of callable which Q.handle can invoke
- * @param key {String|Boolean|Q.Tool} Optional key to associate with the callable.
- *  Used to replace handlers previously added under the same key.
- *  Also used for removing handlers with .remove(key).
- *  If the key is not provided, a unique one is computed.
- *  Pass true here to associate the handler to the current page,
- *  and it will be automatically removed when the current page is removed.
- *  Pass a Q.Tool object here to associate the handler to the tool,
- *  and it will be automatically removed when the tool is removed.
- * @param prepend Boolean
- *  If true, then prepends the handler to the chain
+ * Calculates a string key by considering the parameter that was passed,
+ * the tool being activated, and the page being activated
+ * @param {String|Q.Tool} key
+ * @param {Object} optional container in which the key will be used
+ * @param {Number} optional number at which to start the loop for the default key generation
+ * @return {String}
  */
-Q.Event.prototype.set = function _Q_Event_prototype_set(callable, key, prepend) {
-	var i;
-
-	// Only available in the front-end Q.js: {
+Q.Event.calculateKey = function _Q_Event_calculateKe(key, container, start) {
 	var tool = undefined;
 	if (key === undefined) {
 		key = Q.Tool.beingActivated; // by default, use the current tool as the key, if any
@@ -1182,16 +1185,34 @@ Q.Event.prototype.set = function _Q_Event_prototype_set(callable, key, prepend) 
 			Q.Event.forTool[key] = [];
 		}
 	}
-	// }
-	
-	if (key === undefined || key === null) {
-		i = this.keys.length;
-		key = 'unique_' + i;
-		while (this[key]) {
-			key = 'unique_' + (++i);
+	if (container && key == undefined) { // key is undefined or null
+		var i = (start === undefined) ? Q.Event.calculateKey.keys.length : start;
+		key = 'AUTOKEY_' + i;
+		while (container[key]) {
+			key = 'AUTOKEY_' + (++i);
 		}
 	}
+	return key;
+};
+Q.Event.calculateKey.keys = [];
 
+/**
+ * Adds a callable to a handler, or overwrites an existing one
+ * @param callable Any kind of callable which Q.handle can invoke
+ * @param key {String|Boolean|Q.Tool} Optional key to associate with the callable.
+ *  Used to replace handlers previously added under the same key.
+ *  Also used for removing handlers with .remove(key).
+ *  If the key is not provided, a unique one is computed.
+ *  Pass true here to associate the handler to the current page,
+ *  and it will be automatically removed when the current page is removed.
+ *  Pass a Q.Tool object here to associate the handler to the tool,
+ *  and it will be automatically removed when the tool is removed.
+ * @param prepend Boolean
+ *  If true, then prepends the handler to the chain
+ */
+Q.Event.prototype.set = function _Q_Event_prototype_set(callable, key, prepend) {
+	var i, isTool = (Q.typeOf(key) === 'Q.Tool');
+	key = Q.Event.calculateKey(key, this.handlers, this.keys.length);
 	this.handlers[key] = callable; // can be a function, string, Q.Event, etc.
 	if (this.keys.indexOf(key) < 0) {
 		if (prepend) {
@@ -1199,21 +1220,16 @@ Q.Event.prototype.set = function _Q_Event_prototype_set(callable, key, prepend) 
 		} else {
 			this.keys.push(key);
 		}
-		// Only available in the front-end Q.js: {
-		if (tool) {
+		if (isTool) {
 			Q.Event.forTool[key].push(this);
 		}
-		// }
 	}
-	
     if (this.keys.length === 1 && this._onFirst) {
         this._onFirst.handle(callable, key, prepend);
     }
 	if (this._onSet) {
 	    this._onSet.handle(callable, key, prepend);
 	}
-	
-	
 	return key;
 };
 
@@ -1725,18 +1741,21 @@ Q.getter = function _Q_getter(original, options) {
 					callbacks[cbpos].apply(cached.subject, cached.params);
 					ret.result = Q.getter.CACHED;
 					wrapper.onExecuted.handle.call(this, arguments2, ret);
+					wrapper.onResult.handle(cached.subject, cached.params, arguments2, ret, original);
 					return ret; // wrapper found in cache, callback and throttling have run
 				}
 			}
 		}
 
-		if (_waiting[key]) {
-			_waiting[key].push(callbacks);
+		_waiting[key] = _waiting[key] || [];
+		_waiting[key].push({
+			callbacks: callbacks,
+			ret: ret
+		});
+		if (_waiting[key].length > 1) {
 			wrapper.onExecuted.handle.call(this, arguments2, ret);
 			ret.result = Q.getter.WAITING;
 			return ret; // the request is already in process - let's wait
-		} else {
-			_waiting[key] = [];
 		}
 
 		// replace the callbacks with smarter functions
@@ -1749,7 +1768,7 @@ Q.getter = function _Q_getter(original, options) {
 				continue;
 			}
 
-			args.push((function _Q_getter_iterator(cb, cbpos) {
+			args.push((function(cb, cbpos) {
 				// make a function specifically to call the
 				// callbacks in position pos, and then decrement
 				// the throttle
@@ -1762,12 +1781,12 @@ Q.getter = function _Q_getter(original, options) {
 					cb.apply(this, arguments); // execute the waiting callback in position cbpos
 
 					// process waiting callbacks
-					if (_waiting[key]) {
-						for (i = 0; i < _waiting[key].length; i++) {
-							_waiting[key][i][cbpos].apply(this, arguments);
-						}
-						delete _waiting[key]; // check if need to delete item by item ***
+					var wk = _waiting[key];
+					for (i = 0; i < wk.length; i++) {
+						wk[i].callbacks[cbpos].apply(this, arguments);
+						wrapper.onResult.handle(this, arguments, arguments2, wk[i].ret, original);
 					}
+					delete _waiting[key]; // check if need to delete item by item ***
 
 					// tell throttle to execute the next function, if any
 					if (wrapper.throttle && wrapper.throttle.throttleNext) {
@@ -1825,11 +1844,9 @@ Q.getter = function _Q_getter(original, options) {
 		}
 
 		// execute the throttle
-		if (wrapper.throttle.throttleTry(this, original, args)) {
-			ret.result = Q.getter.REQUESTING;
-		} else {
-			ret.result = Q.getter.THROTTLING;
-		}
+		ret.result = wrapper.throttle.throttleTry(this, original, args)
+			? Q.getter.REQUESTING
+			: Q.getter.THROTTLING;
 		wrapper.onExecuted.handle.call(this, arguments2, ret);
 		return ret;
 	}
@@ -1837,6 +1854,7 @@ Q.getter = function _Q_getter(original, options) {
 	Q.extend(wrapper, Q.getter.options, options);
 	wrapper.onCalled = new Q.Event();
 	wrapper.onExecuted = new Q.Event();
+	wrapper.onResult = new Q.Event();
 
 	var _waiting = {};
 	if (wrapper.cache === false) {
@@ -4349,9 +4367,7 @@ Q.activate = function _Q_activate(elem, options, callback) {
 	Q.find(elem, true, Q.activate.onConstruct.handle, Q.activate.onInit.handle, options, shared);
 	shared.pipe.add(shared.waitingForTools, _activated).run();
 	
-	if (ba) {
-		Q.Tool.beingActivated = ba;
-	}
+	Q.Tool.beingActivated = ba;
 	
 	function _activated() {
 		Q.trigger('onLayout', elem, []);
@@ -4875,14 +4891,7 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 			if (!o.target && !callables.isUrl()) {
 				// Assume this is not a URL.
 				// Try to evaluate the expression, and execute the resulting function
-				var c;
-				try {
-					if (! (c = Q.getObject(callables))) {
-						eval('c = ' + callables);
-					}
-				} catch (ex) {
-					// absorb and do nothing, if possible
-				}
+				var c = Q.getObject(callables, context) || Q.getObject(callables);
 				return Q.handle(c, context, args);
 			}
 			// Assume callables is a URL
@@ -5072,6 +5081,7 @@ function _constructTool(toolElement, options, shared) {
     				var existingTool = Q.Tool.call(this, element, options);
     				this.state = Q.copy(this.options, toolFunc.stateKeys);
 					var prevTool = Q.Tool.beingActivated;
+					if (prevTool) debugger;
 					Q.Tool.beingActivated = this;
 					toolFunc.call(this, this.options, existingTool);
 					Q.Tool.beingActivated = prevTool;

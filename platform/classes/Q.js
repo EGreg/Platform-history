@@ -485,18 +485,21 @@ Q.getter = function _Q_getter(original, options) {
 					callbacks[cbpos].apply(cached.subject, cached.params);
 					ret.result = Q.getter.CACHED;
 					wrapper.emit('executed', this, arguments2, ret);
+					wrapper.emit('result', cached.subject, cached.params, arguments2, ret, original);
 					return ret; // wrapper found in cache, callback and throttling have run
 				}
 			}
 		}
 
-		if (_waiting[key]) {
-			_waiting[key].push(callbacks);
+		_waiting[key] = _waiting[key] || [];
+		_waiting[key].push({
+			callbacks: callbacks,
+			ret: ret
+		});
+		if (_waiting[key].length > 1) {
 			wrapper.emit('executed', this, arguments2, ret);
 			ret.result = Q.getter.WAITING;
 			return ret; // the request is already in process - let's wait
-		} else {
-			_waiting[key] = [];
 		}
 
 		// replace the callbacks with smarter functions
@@ -509,7 +512,7 @@ Q.getter = function _Q_getter(original, options) {
 				continue;
 			}
 
-			args.push((function _Q_getter_iterator(cb, cbpos) {
+			args.push((function(cb, cbpos) {
 				// make a function specifically to call the
 				// callbacks in position pos, and then decrement
 				// the throttle
@@ -519,15 +522,14 @@ Q.getter = function _Q_getter(original, options) {
 					if (wrapper.cache) {
 						wrapper.cache.set(key, cbpos, this, arguments);
 					}
-					cb.apply(this, arguments); // execute the waiting callback in position cbpos
 
 					// process waiting callbacks
-					if (_waiting[key]) {
-						for (i = 0; i < _waiting[key].length; i++) {
-							_waiting[key][i][cbpos].apply(this, arguments);
-						}
-						delete _waiting[key]; // check if need to delete item by item ***
+					var wk = _waiting[key];
+					for (i = 0; i < wk.length; i++) {
+						wk[i].callbacks[cbpos].apply(this, arguments);
+						wrapper.emit('result', this, arguments, arguments2, wk[i].ret, original);
 					}
+					delete _waiting[key]; // check if need to delete item by item ***
 
 					// tell throttle to execute the next function, if any
 					if (wrapper.throttle && wrapper.throttle.throttleNext) {
@@ -585,11 +587,9 @@ Q.getter = function _Q_getter(original, options) {
 		}
 
 		// execute the throttle
-		if (wrapper.throttle.throttleTry(this, original, args)) {
-			ret.result = Q.getter.REQUESTING;
-		} else {
-			ret.result = Q.getter.WAITING;
-		}
+		ret.result = wrapper.throttle.throttleTry(this, original, args)
+			? Q.getter.REQUESTING
+			: Q.getter.THROTTLING;
 		wrapper.emit('executed', this, arguments2, ret);
 		return ret;
 	}
@@ -861,6 +861,9 @@ Q.handle = function _Q_handle(callables, context, args) {
 			count += result;
 		}
 		return count;
+	 case 'string': 
+		var c = Q.getObject(callables, context) || Q.getObject(callables);
+		return Q.handle(c, context, args);
 	 default:
 		return 0;
 	}
@@ -870,12 +873,14 @@ Q.handle = function _Q_handle(callables, context, args) {
  * Iterates over elements in a container, and calls the callback.
  * Use this if you want to avoid problems with loops and closures.
  * @method each
- * @param {array|object|string|number} container, which can be an array, object or string.
+ * @param {Array|Object|String|Number} container, which can be an array, object or string.
  *  You can also pass up to three numbers here: from, to and optional step
- * @param {function} callback
- *  A function with two parameters
- *  index: the index
- *  value: the value
+ * @param {Function|String} callback
+ *  A function which will receive two parameters
+ *    index: the index of the current item
+ *    value: the value of the current item
+ *  Also can be a string, which would be the name of a method to invoke on each item, if possible.
+ *  In this case the callback should be followed by an array of arguments to pass to the method calls.
  * @param {Object} options
  *  ascending: Optional. Pass true here to traverse in ascending key order, false in descending.
  *  numeric: Optional. Used together with ascending. Use numeric sort instead of string sort.
@@ -883,7 +888,11 @@ Q.handle = function _Q_handle(callables, context, args) {
  * @throws {Q.Exception} If container is not array, object or string
  */
 Q.each = function _Q_each(container, callback, options) {
-	var i, k, length, r, t;
+	var i, k, length, r, t, args;
+	if (typeof callback === 'string' && Q.typeOf(arguments[2]) === 'array') {
+		args = arguments[2];
+		options = arguments[3];
+	}
 	switch (t = Q.typeOf(container)) {
 		default:
 			// Assume it is an array-like structure.
@@ -894,12 +903,12 @@ Q.each = function _Q_each(container, callback, options) {
 			if (!container || !length || !callback) return;
 			if (options && options.ascending === false) {
 				for (i=length-1; i>=0; --i) {
-					r = Q.handle(callback, container[i], [i, container[i]]);
+					r = Q.handle(callback, container[i], args || [i, container[i]]);
 					if (r === false) return false;
 				}
 			} else {
 				for (i=0; i<length; ++i) {
-					r = Q.handle(callback, container[i], [i, container[i]]);
+					r = Q.handle(callback, container[i], args || [i, container[i]]);
 					if (r === false) return false;
 				}
 			}
@@ -920,20 +929,20 @@ Q.each = function _Q_each(container, callback, options) {
 				if (options.ascending === false) {
 					for (i=keys.length-1; i>=0; --i) {
 						key = keys[i];
-						r = Q.handle(callback, container[key], [key, container[key]]);
+						r = Q.handle(callback, container[key], args || [key, container[key]]);
 						if (r === false) return false;
 					}
 				} else {
 					for (i=0; i<keys.length; ++i) {
 						key = keys[i];
-						r = Q.handle(callback, container[key], [key, container[key]]);
+						r = Q.handle(callback, container[key], args || [key, container[key]]);
 						if (r === false) return false;
 					}
 				}
 			} else {
 				for (k in container) {
 					if (container.hasOwnProperty && container.hasOwnProperty(k)) {
-						r = Q.handle(callback, container[k], [k, container[k]]);
+						r = Q.handle(callback, container[k], args || [k, container[k]]);
 						if (r === false) return false;
 					}
 				}
@@ -943,12 +952,12 @@ Q.each = function _Q_each(container, callback, options) {
 			if (!container || !callback) return;
 			if (options && options.ascending === false) {
 				for (i=0; i<container.length; ++i) {
-					r = Q.handle(callback, container, [i, container.charAt(i)]);
+					r = Q.handle(callback, container, args || [i, container.charAt(i)]);
 					if (r === false) return false;
 				}
 			} else {
 				for (i=container.length-1; i>=0; --i) {
-					r = Q.handle(callback, container, [i, container.charAt(i)]);
+					r = Q.handle(callback, container, args || [i, container.charAt(i)]);
 					if (r === false) return false;
 				}
 			}
@@ -976,12 +985,12 @@ Q.each = function _Q_each(container, callback, options) {
 			}
 			if (from <= to) {
 				for (i=from; i<=to; i+=step) {
-					r = Q.handle(callback, this, [i]);
+					r = Q.handle(callback, this, args || [i]);
 					if (r === false) return false;
 				}
 			} else {
 				for (i=from; i>=to; i+=step) {
-					r = Q.handle(callback, this, [i]);
+					r = Q.handle(callback, this, args || [i]);
 					if (r === false) return false;
 				}
 			}
@@ -2030,6 +2039,36 @@ Q.log = function _Q_log(message, key, timestamp, callback) {
 	} else util.log(message);
 };
 
+String.prototype.toCapitalized = function _String_prototype_toCapitalized() {
+	return (this + '').replace(/^([a-z])|\s+([a-z])/g, function (found) {
+		return found.toUpperCase();
+	});
+};
+
+String.prototype.isUrl = function () {
+	return this.match(new RegExp("^[A-Za-z]*:\/\/"));
+};
+
+String.prototype.encodeHTML = function _String_prototype_encodHTML(quote_style, charset, double_encode) {
+	return this.replaceAll({
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;',
+		'"': '&quot;',
+		"'": '&apos;'
+	});
+};
+
+String.prototype.decodeHTML = function _String_prototype_encodHTML(quote_style, charset, double_encode) {
+	return this.replaceAll({
+		'&amp;': '&',
+		'&lt;': '<',
+		'&gt;': '>',
+		'&quot;': '"',
+		'&apos;': "'"
+	});
+};
+
 /**
  * Returns date/time string formatted the same way as PHP date function does
  * @method date
@@ -2280,14 +2319,6 @@ Q.timeEnd = function _Q_timeEnd(handle) {
 			((days+hours+minutes+seconds > 0) ? seconds+" seconds" : diff+" milliseconds");
 };
 
-String.prototype.replaceAll = function _String_prototype_replaceAll(pairs) {
-	var result = this;
-	for (var k in pairs) {
-		result = result.replace(new RegExp(k, 'g'), pairs[k]);
-	}
-	return result;
-};
-
 /**
  * Try to find an error message assuming typical error data structures for the arguments
  * @param {Object} data an object where the errors may be found
@@ -2318,10 +2349,12 @@ Q.firstErrorMessage = function _Q_firstErrorMessage(data) {
 function _getProp (/*Array*/parts, /*Boolean*/create, /*Object*/context){
 	var p, i = 0;
 	if (context === null) return undefined;
-	context = context || window;
+	context = context || null;
 	if(!parts.length) return context;
 	while(context && (p = parts[i++]) !== undefined){
-		context = (p in context ? context[p] : (create ? context[p] = {} : undefined));
+		context = (typeof context === 'object') && (p in context) 
+			? context[p] 
+			: (create ? context[p] = {} : undefined);
 	}
 	return context; // mixed
 };

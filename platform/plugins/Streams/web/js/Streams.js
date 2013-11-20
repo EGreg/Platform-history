@@ -128,52 +128,26 @@ Streams.iconUrl = function(icon, size) {
 		: Q.url('plugins/Streams/img/icons/'+icon+'/'+size);
 };
 
-/**
- * Edits the user's basic Streams.
- * @method  basic
- */
-Streams.basic = function(options) {
+var _socket = null,
+    _messageHandlers = {},
+    _constructHandlers = {},
+    _streamMessageHandlers = {},
+    _streamFieldChangedHandlers = {},
+    _streamUpdatedHandlers = {},
+    _streamRelatedFromHandlers = {},
+    _streamRelatedToHandlers = {},
+    _streamUnrelatedFromHandlers = {},
+    _streamUnrelatedToHandlers = {},
+    _streamUpdatedRelateFromHandlers = {},
+    _streamUpdatedRelateToHandlers = {},
+    _streamConstructHandlers = {},
+    _retain = undefined,
+	_retainedByKey = {},
+	_retainedByStream = {};
 
-	// TODO: fix this later
-
-	Q.plugins.Users.login({
-		tryQuietly: true,
-		onSuccess: function () {
-
-		}
-	});
-	Q.req('Streams/basic?prompt=', 'tool', function (err, response) {
-		var overlay = $('<div class="Streams_basic_overlay Q_overlay" id="Streams_basic_overlay" />');
-		Q.Dialogs.push({
-			'title': Q.text.Streams.basic.title,
-			'content': $('<h3 class="Streams_dialog_prompt" />').html(
-				Q.text.Streams.basic.prompt
-			),
-			'onLoad': function (overlay) {
-				$('input', overlay).eq(0).focus();
-				if (('complete' in options) && !options.complete) {
-					$('.close', overlay).hide();
-				} else {
-					$('.close', overlay).show();
-				}
-			}
-		});
-	});
-};
-
-var _socket = null;
-var _messageHandlers = {};
-var _constructHandlers = {};
-var _streamMessageHandlers = {};
-var _streamFieldChangedHandlers = {};
-var _streamUpdatedHandlers = {};
-var _streamRelatedFromHandlers = {};
-var _streamRelatedToHandlers = {};
-var _streamUnrelatedFromHandlers = {};
-var _streamUnrelatedToHandlers = {};
-var _streamUpdatedRelateFromHandlers = {};
-var _streamUpdatedRelateToHandlers = {};
-var _streamConstructHandlers = {};
+function _key (publisherId, streamName) {
+	return publisherId + "\t" + streamName;
+}
 
 /**
  * Returns Q.Event that occurs on message post event coming from socket.io
@@ -243,64 +217,47 @@ Streams.socketSessionId = function (publisherId, streamName) {
 };
 
 /**
-* Returns streams for current user
-* @method getParticipating
-*/
-Streams.getParticipating = Q.getter(function(callback) {
-	if(!callback) return;
-	Q.req('Streams/participating', 'participating', function (err, data) {
-		callback(err, data && data.slots && data.slots.participating);
-	});
-}, {cache: Q.Cache.document("Streams.getParticipating", 10)});
-
-/**
- * Waits for the latest messages to be posted to a given stream.
- * If your app is using socket.io, then calling this manually is largely unnecessary.
- * @param {Function} callback This is called when the stream has been updated with the latest messages.
- * @return {boolean} whether the refresh occurred
+ * A convenience method to get the URL of the streams-related action
+ * @method register
+ * @static
+ * @param {String} publisherId
+ *	The name of the publisher
+ * @param {String} streamName
+ *	The name of the stream
+ * @param {String} what
+ *	Defaults to 'stream'. Can also be 'message', 'relation', etc.
+ * @return {String} 
+ *	The corresponding URL
  */
-Streams.refresh = function (publisherId, streamName, callback) {
-	if (!Q.Users.loggedInUser || !Q.isOnline()) {
-		return false;
+Streams.actionUrl = function(publisherId, streamName, what)
+{
+	if (!what) {
+ 		what = 'stream';
 	}
-	// If the stream was seen, fetch latest messages,
-	// and replay their being "posted" to trigger the right events
-	if (!Q.getObject([publisherId, streamName], Streams.seen)) {
-		return false;
+	switch (what) {
+		case 'stream':
+		case 'message':
+		case 'relation':
+			return Q.action("Streams/"+what+"?publisherId="+encodeURIComponent(publisherId)+"&name="+encodeURIComponent(streamName));
 	}
-	Message.wait(publisherId, streamName, -1, callback);
-	return true;
+	return null;
 };
 
-/**
- * Refreshes all the streams the logged-in user is participating in
- * If your app is using socket.io, then calling this manually is largely unnecessary.
- * @return {boolean} whether the refresh occurred
- */
-Streams.refreshParticipating = function () {
-	if (!Q.Users.loggedInUser || !Q.isOnline()) {
-		return false;
-	}
-	var now = Date.now();
-	if (now - Streams.refreshParticipating.lastTime < Streams.refreshParticipating.options.minSeconds * 1000) {
-		return false;
-	}
-	Streams.refreshParticipating.lastTime = now;
-	Streams.getParticipating(function (err, participating) {
-		Q.each(participating, function (i, p) {
-			Streams.refresh(p.publisherId, p.streamName);
-		});
-	});
-	return true;
-};
-
-Streams.refreshParticipating.options = {
-	onEvents: ['focus', 'pageshow'],
-	minSeconds: 3
-};
-Streams.refreshParticipating.lastTime = 0;
-
-Streams.seen = {};
+Q.Tool.define({
+	"Users/avatar": "plugins/Streams/js/tools/avatar.js", // override for Users/avatar tool
+	"Streams/chat": "plugins/Streams/js/tools/chat.js",
+	"Streams/comments": "plugins/Streams/js/tools/comments.js",
+	"Streams/photoSelector": "plugins/Streams/js/tools/photoSelector.js",
+	"Streams/userChooser": "plugins/Streams/js/tools/userChooser.js",
+	"Streams/participant": "plugins/Streams/js/tools/participant.js",
+	"Streams/publisher": "plugins/Streams/js/tools/publisher.js",
+	"Streams/basic": "plugins/Streams/js/tools/basic.js",
+	"Streams/access": "plugins/Streams/js/tools/access.js",
+	"Streams/related": "plugins/Streams/js/tools/related.js",
+	"Streams/inplace": "plugins/Streams/js/tools/inplace.js",
+	"Streams/smalltext/preview": "plugins/Streams/js/tools/smalltext/preview.js",
+	"Streams/image/preview": "plugins/Streams/js/tools/image/preview.js"
+});
 
 /**
  * Streams batch getter.
@@ -356,13 +313,8 @@ Streams.get = Q.getter(function (publisherId, streamName, callback, extra) {
 			}
 		);
 	}, extra);
+	_retain = undefined;
 }, {cache: Q.Cache.document("Streams.get", 100), throttle: 'Streams.get'});
-
-Streams.get.onCalled.set(function (params) {
-	// Every time Streams.get is called on a stream, mark it as seen
-	var publisherId = params[0], streamName = params[1];
-	Q.setObject([publisherId, streamName], true, Streams.seen);
-}, 'Streams');
 
 Streams.batchFunction = function Streams_batchFunction(baseUrl) {
 	return Q.batcher.factory(Streams.batchFunction.functions, baseUrl, "/action.php/Streams/batch", "batch", "batch");
@@ -380,6 +332,7 @@ Streams.create = function (fields, callback, related) {
 		publisherId: fields.publisherId,
 		streamName: "" // NOTE: the request is routed to wherever the "" stream would have been hosted
 	});
+	var _r = _retain;
 	Q.req('Streams/stream', [slotName], function Stream_create_response_handler(err, data) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
 		if (msg) {
@@ -390,10 +343,13 @@ Streams.create = function (fields, callback, related) {
 			if (msg) {
 				return callback && callback.call(stream, msg, stream);
 			}
-			Q.setObject([stream.fields.publisherId, stream.fields.name], true, Streams.seen);
+			if (_r) {
+				stream.retain(r);
+			}
 			return callback && callback.call(stream, null, stream);
 		});
 	}, { method: 'post', fields: fields, baseUrl: baseUrl });
+	_retain = undefined;
 };
 
 /**
@@ -490,6 +446,98 @@ function _constructStream (fields, extra, callback) {
 	}
 }
 
+
+/**
+* Returns streams for current user
+* @method getParticipating
+*/
+Streams.getParticipating = Q.getter(function(callback) {
+	if(!callback) return;
+	Q.req('Streams/participating', 'participating', function (err, data) {
+		callback(err, data && data.slots && data.slots.participating);
+	});
+	_retain = undefined;
+}, {cache: Q.Cache.document("Streams.getParticipating", 10)});
+
+/**
+ * Waits for the latest messages to be posted to a given stream.
+ * If your app is using socket.io, then calling this manually is largely unnecessary.
+ * @param {Function} callback This is called when the stream has been updated with the latest messages.
+ * @return {boolean} whether the refresh occurred
+ */
+Streams.refresh = function (publisherId, streamName, callback) {
+	if (!Q.Users.loggedInUser || !Q.isOnline()) {
+		return false;
+	}
+	// If the stream was seen, fetch latest messages,
+	// and replay their being "posted" to trigger the right events
+	var ps = _key(publisherId, streamName);
+	if (!_retainedByStream[ps]) {
+		return false;
+	}
+	Message.wait(publisherId, streamName, -1, callback);
+	_retain = undefined;
+	return true;
+};
+
+/**
+ * Refreshes all the streams the logged-in user is participating in
+ * If your app is using socket.io, then calling this manually is largely unnecessary.
+ * @return {boolean} whether the refresh occurred
+ */
+Streams.refreshParticipating = function () {
+	if (!Q.Users.loggedInUser || !Q.isOnline()) {
+		return false;
+	}
+	var now = Date.now();
+	if (now - Streams.refreshParticipating.lastTime < Streams.refreshParticipating.options.minSeconds * 1000) {
+		return false;
+	}
+	Streams.refreshParticipating.lastTime = now;
+	Streams.getParticipating(function (err, participating) {
+		Q.each(participating, function (i, p) {
+			Streams.refresh(p.publisherId, p.streamName);
+		});
+	});
+	_retain = undefined;
+	return true;
+};
+
+Streams.refreshParticipating.options = {
+	onEvents: ['focus', 'pageshow'],
+	minSeconds: 3
+};
+Streams.refreshParticipating.lastTime = 0;
+
+/**
+ * When a stream is retained, it is refreshed when Streams.refresh() or
+ * Streams.refreshParticipating() are called. You can release it with stream.release().
+ * Call this function in a chain before calling Streams.get, Streams.related, etc.
+ * in order to set the key for retaining the streams those functions obtain.
+ * @param {String} key
+ * @return {Object} returns Streams for chaining with .get(), .related() or .getParticipating()
+ */
+Streams.retain = function (key) {
+	_retain = Q.Event.calculateKey(key, _retainedByKey);
+	return Streams;
+};
+
+/**
+ * Releases all retained streams under a given key. See Streams.retain()
+ * @param {String} key
+ */
+Streams.release = function (key) {
+	Q.each(_retainedByKey[key], function (ps, v) {
+		if (_retainedByStream[ps]) {
+			delete _retainedByStream[ps][key];
+			if (Q.isEmpty(_retainedByStream[ps])) {
+				delete(_retainedByStream[ps]);
+			}
+		}
+	});
+	delete _retainedByKey[key];
+};
+
 /**
  * Constructs a stream from fields, which are typically returned from the server.
  * @param {String} fields
@@ -538,13 +586,49 @@ Stream.get = Streams.get;
 Stream.create = Streams.create;
 Stream.define = Streams.define;
 
+/**
+ * Call this function to retain a particular stream.
+ * When a stream is retained, it is refreshed when Streams.refresh() or
+ * Streams.refreshParticipating() are called. You can release it with stream.release().
+ * @param {String} publisherId
+ * @param {String} streamName
+ * @param {String} key
+ * @return {Object} returns Streams for chaining with .get(), .related() or .getParticipating()
+ */
+Stream.retain = function (publisherId, streamName, key) {
+	var ps = _key(publisherId, streamName);
+	key = Q.Event.calculateKey(key);
+	Q.setObject([ps, key], true, _retainedByStream);
+	Q.setObject([key, ps], true, _retainedByKey);
+};
+
+/**
+ * Releases a stream from being retained. See Streams.retain()
+ * @param {String} publisherId
+ * @param {String} streamName
+ */
+Stream.release = function (publisherId, streamName) {
+	var ps = _key(publisherId, streamName);
+	Q.each(_retainedByStream[ps], function (key, v) {
+		if (_retainedByKey[key]) {
+			delete _retainedByKey[key][ps];
+		}
+		if (Q.isEmpty(_retainedByKey[key])) {
+			delete _retainedByKey[key];
+		}
+	});
+	delete _retainedByStream[ps];
+};
+
 Stream.prototype.getAll = function (usePending) {
 	return usePending ? this.pendingAttributes : this.attributes;
 };
+
 Stream.prototype.get = function (attributeName, usePending) {
 	var attr = this.getAll(usePending);
 	return attr[attributeName];
 };
+
 Stream.prototype.set = function (attributeName, value) {
 	if (this.pendingAttributes === this.attributes) {
 		this.pendingAttributes = Q.copy(this.attributes); // copy on write
@@ -558,6 +642,7 @@ Stream.prototype.set = function (attributeName, value) {
 	}
 	this.pendingFields.attributes = JSON.stringify(this.pendingAttributes);
 };
+
 Stream.prototype.clear = function (attributeName) {
 	if (this.pendingAttributes === this.attributes) {
 		this.pendingAttributes = Q.copy(this.attributes); // copy on write
@@ -571,6 +656,7 @@ Stream.prototype.clear = function (attributeName) {
 	}
 	this.pendingFields.attributes = JSON.stringify(this.pendingAttributes);
 };
+
 Stream.prototype.save = function (callback) {
 	var that = this;
 	var slotName = "stream";
@@ -593,42 +679,63 @@ Stream.prototype.save = function (callback) {
 		callback && callback.call(that, null, data.slots.stream || null);
 	}, { method: 'put', fields: this.pendingFields, baseUrl: baseUrl });
 };
+
 Stream.prototype.remove = function (callback) {
 	return Stream.remove(this.fields.publisherId, this.fields.name, callback);
 };
+
+Stream.prototype.retain = function (key) {
+	Stream.retain(this.fields.publisherId, this.fields.name, key); return this;
+};
+
+Stream.prototype.release = function () {
+	Stream.release(this.fields.publisherId, this.fields.name); return this;
+};
+
 Stream.prototype.getMessage = function(ordinal, callback) {
 	return Message.get(this.fields.publisherId, this.fields.name, ordinal, callback);
 };
+
 Stream.prototype.getParticipant = function(userId, callback) {
 	return Participant.get(this.fields.publisherId, this.fields.name, userId, callback);
 };
+
 Stream.prototype.onMessage = function(messageType) {
 	return Stream.onMessage(this.fields.publisherId, this.fields.name, messageType);
 };
+
 Stream.prototype.onUpdated = function(attribute) {
 	return Stream.onUpdated(this.fields.publisherId, this.fields.name, attribute);
 };
+
 Stream.prototype.onFieldChanged = function(field) {
 	return Stream.onFieldChanged(this.fields.publisherId, this.fields.name, field);
 };
+
 Stream.prototype.onRelatedFrom = function() {
 	return Stream.onRelatedFrom(this.fields.publisherId, this.fields.name);
 };
+
 Stream.prototype.onRelatedTo = function() {
 	return Stream.onRelatedTo(this.fields.publisherId, this.fields.name);
 };
+
 Stream.prototype.onUnrelatedFrom = function() {
 	return Stream.onUnrelatedFrom(this.fields.publisherId, this.fields.name);
 };
+
 Stream.prototype.onUnrelatedTo = function() {
 	return Stream.onUnrelatedTo(this.fields.publisherId, this.fields.name);
 };
+
 Stream.prototype.onUpdatedRelateFrom = function() {
 	return Stream.onUpdatedRelateFrom(this.fields.publisherId, this.fields.name);
 };
+
 Stream.prototype.onUpdatedRelateTo = function() {
 	return Stream.onUpdatedRelateTo(this.fields.publisherId, this.fields.name);
 };
+
 Stream.prototype.post = function(data, callback) {
 	var message = Q.extend({
 		publisherId: this.fields.publisherId,
@@ -636,12 +743,15 @@ Stream.prototype.post = function(data, callback) {
 	}, data);
 	return Message.post(message, callback);
 };
+
 Stream.prototype.join = function(callback) {
 	return Stream.join(this.fields.publisherId, this.fields.name, callback);
 };
+
 Stream.prototype.leave = function(callback) {
 	return Stream.leave(this.fields.publisherId, this.fields.name, callback);
 };
+
 Stream.prototype.testReadLevel = function (level) {
 	if (typeof level === 'string') {
 		level = Streams.READ_LEVEL[level];
@@ -651,6 +761,7 @@ Stream.prototype.testReadLevel = function (level) {
 	}
 	return this.access.readLevel >= level;
 };
+
 Stream.prototype.testWriteLevel = function (level) {
 	if (typeof level === 'string') {
 		level = Streams.WRITE_LEVEL[level];
@@ -660,6 +771,7 @@ Stream.prototype.testWriteLevel = function (level) {
 	}
 	return this.access.writeLevel >= level;
 };
+
 Stream.prototype.testAdminLevel = function (level) {
 	if (typeof level === 'string') {
 		level = Streams.ADMIN_LEVEL[level];
@@ -669,9 +781,11 @@ Stream.prototype.testAdminLevel = function (level) {
 	}
 	return this.access.adminLevel >= level;
 };
+
 Stream.prototype.actionUrl = function (what) {
 	return Streams.actionUrl(this.fields.publisherId, this.fields.name, what);
 };
+
 /**
  * Waits for the latest messages to be posted to a given stream.
  * If your app is using socket.io, then calling this manually is largely unnecessary.
@@ -775,14 +889,12 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 				return callback && callback.call(this, msg);
 			}
 			
-			Q.setObject([stream.fields.publisherId, stream.fields.name], true, Streams.seen);
-			
 			// Construct related streams from data that has been returned
 			var streams = [];
 			var p = new Q.Pipe(), keys = [], keys2 = {};
 			Q.each(data.slots.streams, function (k, fields) {
 				if (!fields) return;
-				var key = fields.publisherId + "\t" + fields.name;
+				var key = _key(fields.publisherId, fields.name);
 				keys.push(key);
 				keys2[key] = true;
 				_constructStream(fields, function () {
@@ -794,7 +906,7 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 			// Now process all the relations
 			Q.each(data.slots.relations, function (j, relation) {
 				relation[near] = stream;
-				var key = relation[farPublisherId] + "\t" + relation[farStreamName];
+				var key = _key(relation[farPublisherId], relation[farStreamName]);
 				if (!keys2[key] && relation[farPublisherId] != publisherId) {
 					// Fetch all the related streams from other publishers
 					keys.push(key);
@@ -839,6 +951,7 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 			}
 		}
 	}, { fields: fields, baseUrl: baseUrl });
+	_retain = undefined;
 }, {cache: Q.Cache.document("Streams.related", 100), throttle: 'Streams.related'});
 
 /**
@@ -896,6 +1009,7 @@ Streams.relate = function(publisherId, streamName, relationType, fromPublisherId
 		// wait for messages from cached streams -- from, to or both!
 		callback && callback.call(this, err, Q.getObject('slots.result', data) || null);
 	}, { method: 'post', fields: fields, baseUrl: baseUrl });
+	_retain = undefined;
 };
 
 Streams.unrelate = function(publisherId, streamName, relationType, fromPublisherId, fromStreamName, callback) {
@@ -921,6 +1035,7 @@ Streams.unrelate = function(publisherId, streamName, relationType, fromPublisher
 	Q.req('Streams/related', [slotName], function (err, data) {
 		callback && callback.call(this, err, Q.getObject('slots.result', data) || null);
 	}, { method: 'delete', fields: fields, baseUrl: baseUrl });
+	_retain = undefined;
 };
 
 /**
@@ -1005,6 +1120,7 @@ Streams.updateRelation = function(
 		var message = Q.getObject('slots.result.message', data);
 		callback && callback.call(this, err, Q.getObject('slots.result', data) || null);
 	}, { method: 'put', fields: fields, baseUrl: baseUrl });
+	_retain = undefined;
 };
 
 /**
@@ -1672,53 +1788,31 @@ Streams.setupRegisterForm = function(identifier, json, priv, overlay) {
 	return register_form;
 };
 
-/**
- * A convenience method to get the URL of the streams-related action
- * @method register
- * @static
- * @param {String} publisherId
- *	The name of the publisher
- * @param {String} streamName
- *	The name of the stream
- * @param {String} what
- *	Defaults to 'stream'. Can also be 'message', 'relation', etc.
- * @return {String} 
- *	The corresponding URL
- */
-Streams.actionUrl = function(publisherId, streamName, what)
-{
-	if (!what) {
- 		what = 'stream';
+function _onCalledHandler(args, shared) {
+	shared.retainUnderKey = _retain;
+	_retain = undefined;
+}
+
+function _onResultHandler(subject, params, args, ret, original) {
+	var key = ret.retainUnderKey;
+	if (key == undefined || params[0]) {
+		return; // either retain was not called or an error occurred during the request
 	}
-	switch (what) {
-		case 'stream':
-		case 'message':
-		case 'relation':
-			return Q.action("Streams/"+what+"?publisherId="+encodeURIComponent(publisherId)+"&name="+encodeURIComponent(streamName));
-	}
-	return null;
-};
+	// TODO: switch between the various types of results from the various functions
+	if (!subject) return;
+	subject.retain(key);
+	// TODO: switch between the various types of results from the various functions
+}
+
+Q.each([Streams.get, Streams.getParticipating, Streams.related], function () {
+	this.onCalled.set(_onCalledHandler, 'Streams');
+	this.onResult.set(_onResultHandler, 'Streams');
+});
 
 function submitClosestForm () {
 	$(this).closest('form').submit();
 	return false;
 }
-
-Q.Tool.define({
-	"Users/avatar": "plugins/Streams/js/tools/avatar.js", // override for Users/avatar tool
-	"Streams/chat": "plugins/Streams/js/tools/chat.js",
-	"Streams/comments": "plugins/Streams/js/tools/comments.js",
-	"Streams/photoSelector": "plugins/Streams/js/tools/photoSelector.js",
-	"Streams/userChooser": "plugins/Streams/js/tools/userChooser.js",
-	"Streams/participant": "plugins/Streams/js/tools/participant.js",
-	"Streams/publisher": "plugins/Streams/js/tools/publisher.js",
-	"Streams/basic": "plugins/Streams/js/tools/basic.js",
-	"Streams/access": "plugins/Streams/js/tools/access.js",
-	"Streams/related": "plugins/Streams/js/tools/related.js",
-	"Streams/inplace": "plugins/Streams/js/tools/inplace.js",
-	"Streams/smalltext/preview": "plugins/Streams/js/tools/smalltext/preview.js",
-	"Streams/image/preview": "plugins/Streams/js/tools/image/preview.js"
-});
 
 Q.Tool.define("Streams/preview", function (options) {
 	console.warn('TODO: Generic preview should be implemented');
