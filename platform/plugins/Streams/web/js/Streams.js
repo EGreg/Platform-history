@@ -517,7 +517,7 @@ Streams.refreshParticipating.lastTime = 0;
  * @param {String} key
  * @return {Object} returns Streams for chaining with .get(), .related() or .getParticipating()
  */
-Streams.retain = function (key) {
+Streams.retainWith = function (key) {
 	_retain = Q.Event.calculateKey(key, _retainedByKey);
 	return Streams;	
 };
@@ -2232,6 +2232,10 @@ Q.onInit.add(function _Streams_onInit() {
 	Q.addEventListener(window, Streams.refreshParticipating.options.onEvents, Streams.refreshParticipating);
 	_scheduleUpdate();
 
+}, 'Streams');
+
+Q.Tool.beforeRemove.set(function (tool) {
+	Streams.release(tool);
 }, 'Streams');
 
 function _clearCaches() {

@@ -1174,16 +1174,8 @@ Q.Event.calculateKey = function _Q_Event_calculateKe(key, container, start) {
 	if (key === undefined) {
 		key = Q.Tool.beingActivated; // by default, use the current tool as the key, if any
 	}
-	if ((key === undefined && Q.Page.beingActivated)
-	|| key === true) {
-		Q.Event.forPage.push(this);
-	}
 	if (Q.typeOf(key) === 'Q.Tool')	{
-		tool = key;
-		key = tool.prefix;
-		if (!Q.Event.forTool[key]) {
-			Q.Event.forTool[key] = [];
-		}
+		key = key.prefix;
 	}
 	if (container && key == undefined) { // key is undefined or null
 		var i = (start === undefined) ? Q.Event.calculateKey.keys.length : start;
@@ -1212,6 +1204,9 @@ Q.Event.calculateKey.keys = [];
  */
 Q.Event.prototype.set = function _Q_Event_prototype_set(callable, key, prepend) {
 	var i, isTool = (Q.typeOf(key) === 'Q.Tool');
+	if (key === true || (key === undefined && Q.Page.beingActivated)) {
+		Q.Event.forPage.push(this);
+	}
 	key = Q.Event.calculateKey(key, this.handlers, this.keys.length);
 	this.handlers[key] = callable; // can be a function, string, Q.Event, etc.
 	if (this.keys.indexOf(key) < 0) {
@@ -1221,6 +1216,7 @@ Q.Event.prototype.set = function _Q_Event_prototype_set(callable, key, prepend) 
 			this.keys.push(key);
 		}
 		if (isTool) {
+			Q.Event.forTool[key] = Q.Event.forTool[key] || [];
 			Q.Event.forTool[key].push(this);
 		}
 	}
@@ -2006,6 +2002,8 @@ Q.Tool.options = {
 	levels: 10
 };
 
+Q.Tool.beforeRemove = new Q.Event();
+
 Q.Tool.prefixById = function _Q_Tool_prefixById(id) {
 	if (id.match(/_tool$/)) {
 		return id.substring(0, id.length-4);
@@ -2234,6 +2232,7 @@ Q.Tool.prototype.remove = function _Q_Tool_prototype_remove(removeCached) {
 
 	// give the tool a chance to clean up after itself
 	if (shouldRemove) {
+		Q.Tool.beforeRemove.handle(this);
 		Q.handle(this.beforeRemove);
 	}
 
