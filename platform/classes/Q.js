@@ -482,10 +482,10 @@ Q.getter = function _Q_getter(original, options) {
 			if (cached = wrapper.cache.get(key)) {
 				cbpos = cached.cbpos;
 				if (callbacks[cbpos]) {
+					wrapper.emit('result', cached.subject, cached.params, arguments2, ret, original);
 					callbacks[cbpos].apply(cached.subject, cached.params);
 					ret.result = Q.getter.CACHED;
 					wrapper.emit('executed', this, arguments2, ret);
-					wrapper.emit('result', cached.subject, cached.params, arguments2, ret, original);
 					return ret; // wrapper found in cache, callback and throttling have run
 				}
 			}
@@ -526,8 +526,8 @@ Q.getter = function _Q_getter(original, options) {
 					// process waiting callbacks
 					var wk = _waiting[key];
 					for (i = 0; i < wk.length; i++) {
-						wk[i].callbacks[cbpos].apply(this, arguments);
 						wrapper.emit('result', this, arguments, arguments2, wk[i].ret, original);
+						wk[i].callbacks[cbpos].apply(this, arguments);
 					}
 					delete _waiting[key]; // check if need to delete item by item ***
 

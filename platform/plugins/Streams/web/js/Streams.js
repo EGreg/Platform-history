@@ -519,7 +519,7 @@ Streams.refreshParticipating.lastTime = 0;
  */
 Streams.retain = function (key) {
 	_retain = Q.Event.calculateKey(key, _retainedByKey);
-	return Streams;
+	return Streams;	
 };
 
 /**
@@ -821,6 +821,11 @@ Stream.prototype.refresh = function (callback) {
  *  otherwise, first parameter is null and the "this" object is the data containing "stream", "relations" and "streams"
  */
 Streams.related = Q.getter(function _Streams_related(publisherId, streamName, relationType, isCategory, options, callback) {
+	if (typeof publisherId !== 'string'
+	|| typeof streamName !== 'string'
+	|| typeof relationType !== 'string') {
+		throw "Streams.related is expecting publisherId, streamName, relationType as strings";
+	}
 	if (typeof isCategory !== 'boolean') {
 		callback = options;
 		options = isCategory;
@@ -1795,13 +1800,16 @@ function _onCalledHandler(args, shared) {
 
 function _onResultHandler(subject, params, args, ret, original) {
 	var key = ret.retainUnderKey;
-	if (key == undefined || params[0]) {
+	if (key == undefined || params[0] || !subject) {
 		return; // either retain was not called or an error occurred during the request
 	}
-	// TODO: switch between the various types of results from the various functions
-	if (!subject) return;
-	subject.retain(key);
-	// TODO: switch between the various types of results from the various functions
+	if (subject.stream) {
+		subject.stream.retain(key);
+		Q.each(subject.streams, 'retain', [key]);
+	}
+	if (Q.typeOf(subject) === 'Q.Streams.Stream') {
+		subject.retain(key);
+	}
 }
 
 Q.each([Streams.get, Streams.getParticipating, Streams.related], function () {

@@ -1732,10 +1732,12 @@ abstract class Streams extends Base_Streams
 				'fromStreamName' => $streamName
 			));
 		}
-		if (empty($options['orderBy'])) {
-			$query = $query->orderBy('weight', false);
-		} else if ($options['orderBy'] === true) {
-			$query = $query->orderBy('weight', true);
+		if ($isCategory) {
+			if (empty($options['orderBy'])) {
+				$query = $query->orderBy('weight', false);
+			} else if ($options['orderBy'] === true) {
+				$query = $query->orderBy('weight', true);
+			}
 		}
 		if (isset($options['prefix'])) {
 			if (substr($options['prefix'], -1) !== '/') {
