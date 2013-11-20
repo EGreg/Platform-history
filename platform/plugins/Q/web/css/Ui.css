@@ -246,6 +246,7 @@ div.Q_placeholder { pointer-events: none; }
   -ms-user-select: none;
   -o-user-select: none;
   user-select: none;
+  filter: none !important;
 }
 
 .Q_ios .Q_contextual

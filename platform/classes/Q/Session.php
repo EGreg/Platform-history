@@ -287,7 +287,11 @@ class Q_Session
 		} catch (Exception $e) {
 			$app = Q_Config::get('Q', 'app', null);
 			$prefix = $app ? "$app/" : '';
-			throw new Q_Exception("Please run {$prefix}scripts/Q/install.php --all");
+			if (empty($_SERVER['HTTP_HOST'])) {
+				echo "Warning: Ignoring Q_Session::start() called before running {$prefix}scripts/Q/install.php --all".PHP_EOL;
+			} else {
+				throw new Q_Exception("Please run {$prefix}scripts/Q/install.php --all");
+			}
 		}
 		// merge in all the stuff that was added to $_SESSION
 		// before we started it.
@@ -765,6 +769,7 @@ class Q_Session
 	 */
 	static function setNonce($overwrite = false)
 	{
+
 		self::start();
 		if ($overwrite or !isset($_SESSION['Q']['nonce'])) {
 			$_SESSION['Q']['nonce'] = md5(mt_rand().microtime());

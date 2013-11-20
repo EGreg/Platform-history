@@ -577,7 +577,7 @@ class Q_Response
 				$json = Q::json_encode($data);
 				$parts = array();
 				foreach ($data as $k => $v) {
-					$parts[] = Q::json_encode($k) . ": " . str_replace('\/', '/', Q::json_encode($v, JSON_PRETTY_PRINT));
+					$parts[] = Q::json_encode($k) . ": " . str_replace('\/', '/', Q::json_encode($v));
 				}
 				$corpus = implode(",\n\t", $parts);
 				$scriptDataLines = array("Q.setObject({\n\t$corpus\n});");
@@ -1349,9 +1349,14 @@ class Q_Response
 	 * @param {string} $value
 	 * @param {string} [$expires=0]
 	 * @param {string} [$path=false]
+	 * @return {string}
 	 */
 	static function setCookie($name, $value, $expires = 0, $path = false)
 	{
+		if (empty($_SERVER['HTTP_HOST'])) {
+			echo 'Warning: Ignoring call to Q_Response::setCookie() without $_SERVER["HTTP_HOST"]'.PHP_EOL;
+			return false;
+		}
 		if (isset($_COOKIE[$name]) and $_COOKIE[$name] === $value) {
 			return;
 		}
