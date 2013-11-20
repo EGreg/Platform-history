@@ -287,7 +287,7 @@ class Q_Session
 		} catch (Exception $e) {
 			$app = Q_Config::get('Q', 'app', null);
 			$prefix = $app ? "$app/" : '';
-			throw new Q_Exception("Please run {$prefix}scripts/install.php --all");
+			throw new Q_Exception("Please run {$prefix}scripts/Q/install.php --all");
 		}
 		// merge in all the stuff that was added to $_SESSION
 		// before we started it.
