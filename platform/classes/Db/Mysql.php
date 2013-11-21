@@ -304,7 +304,7 @@ class Db_Mysql implements iDb
 		$columns_list = array();
 		$values_list = array();
 		foreach ($fields as $column => $value) {
-			$columns_list[] = "$column";
+			$columns_list[] = Db_Query_Mysql::column($column);
 			if ($value instanceof Db_Expression) {
 				$values_list[] = "$value";
 			} else {
@@ -354,7 +354,7 @@ class Db_Mysql implements iDb
 			
 		// Get the columns list
 		foreach ($records[0] as $column => $value) {
-			$columns_list[] = "$column";
+			$columns_list[] = Db_Query_Mysql::column($column);
 		}
 		$columns_string = implode(', ', $columns_list);
 		
@@ -1825,7 +1825,7 @@ EOT;
 		if (count($magic_field_names) > 0) {
 			$beforeSave_code = '';
 			$js_beforeSave_code = '';
-			foreach (array('insertedTime', 'created_time') as $cmf) {
+			foreach (array('created_time', 'insertedTime', ) as $cmf) {
 				if (in_array($cmf, $magic_field_names)) {
 					$beforeSave_code .= <<<EOT
 
@@ -1841,7 +1841,7 @@ EOT;
 					break;
 				}
 			}
-			foreach (array('updatedTime', 'updated_time') as $umf) {
+			foreach (array('updated_time', 'updatedTime') as $umf) {
 				if (in_array($umf, $magic_field_names)) {
 					$beforeSave_code .= <<<EOT
 		//if (\$this->retrieved and !isset(\$value['$umf']))

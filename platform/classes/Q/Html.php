@@ -261,16 +261,18 @@ class Q_Html
 	 * @param {string} $name The name of the input. Will be sanitized..
 	 * @param {array} [$attributes=array()] An array of additional attributes to render. 
 	 *  Consists of name => value pairs.
+	 * @param {string} $contents Defaults to null, but you can place the output of Q_Html::options here.
 	 * @return {string} The generated markup
 	 */
 	static function select (
 		$name,  
-		$attributes = array())
+		$attributes = array(),
+		$contents = null)
 	{
 		if (!isset($attributes))
 			$attributes = array();
 		$tag_params = array_merge(compact('name'), $attributes);
-		return self::tag('select', $tag_params);
+		return self::tag('select', $tag_params, $contents);
 	}
 	
 	/**
@@ -325,7 +327,7 @@ class Q_Html
 		if (isset($includeBlank) && $includeBlank !== false) {
 			$blankCaption = is_string($includeBlank) ? $includeBlank : '';
 			if (! isset($selectedKey) or $selectedKey === '') {
-				$blank_option_html = '<option value="" selected="selected">' 
+				$blank_option_html = '<option value="" selected="selected" disabled="disabled">' 
 				 . self::text($blankCaption) .
 				 '</option>';
 			} else {

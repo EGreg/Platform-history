@@ -758,10 +758,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		if (is_array($fields)) {
 			$fields_list = array();
 			foreach ($fields as $alias => $column) {
-				if (is_int($alias))
-					$fields_list[] = "$column";
-				else
-					$fields_list[] = "$column$as$alias";
+				$fields_list[] = self::column($column) . (is_int($alias) ? '' : "$as$alias");
 			}
 			$fields = implode(', ', $fields_list);
 		}
@@ -849,31 +846,30 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 							$value->parameters);
 					}
 				} else {
-					if (preg_match('/\W/', substr($expr, - 1)))
-						$condition_list[] = "$expr $value";
-					else
-						$condition_list[] = "$expr = $value";
+					$condition_list[] = preg_match('/\W/', substr($expr, - 1))
+						? "$expr $value"
+						: self::column($expr)." = $value";
 					++ $i;
 				}
 			}
 			$condition = implode(' AND ', $condition_list);
 		} else if ($condition instanceof Db_Expression) {
 			if (is_array($condition->parameters)) {
-				$this->parameters = array_merge(
-					$this->parameters,
-					$condition->parameters);
+				$this->parameters = array_merge($this->parameters, $condition->parameters);
 			}
 			$condition = (string) $condition;
 		}
-		if (! is_string($condition))
+		if (! is_string($condition)) {
 			throw new Exception("The JOIN condition needs to be specified correctly.", -1);
+		}
 
 		$join = "$join_type JOIN $table ON ($condition)";
 
-		if (empty($this->clauses['JOIN']))
+		if (empty($this->clauses['JOIN'])) {
 			$this->clauses['JOIN'] = $join;
-		else
+		} else {
 			$this->clauses['JOIN'] .= " \n$join";
+		}
 
 		return $this;
 	}
@@ -1149,30 +1145,28 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 			case Db_Query::TYPE_SELECT:
 				break;
 			default:
-				throw new Exception(
-					"The ORDER BY clause does not belong in this context.",
-				-1);
+				throw new Exception("The ORDER BY clause does not belong in this context.",-1);
 		}
 
 		if ($expression instanceof Db_Expression) {
 			if (is_array($expression->parameters)) {
-				$this->parameters = array_merge($this->parameters,
-					$expression->parameters);
+				$this->parameters = array_merge($this->parameters, $expression->parameters);
 			}
 			$expression = (string) $expression;
+		} else {
+			$expression = self::column($expression);
 		}
 		if (! is_string($expression))
-			throw new Exception(
-				"The ORDER BY expression has to be specified correctly.",
-			-1);
+			throw new Exception("The ORDER BY expression has to be specified correctly.",-1);
 
 		if (is_bool($ascending)) {
 			$expression .= $ascending ? ' ASC' : ' DESC';
 		} else if (is_string($ascending)) {
-			if (strtoupper($ascending) == 'ASC')
+			if (strtoupper($ascending) == 'ASC') {
 				$expression .= ' ASC';
-			else if (strtoupper($ascending) == 'DESC')
+			} else if (strtoupper($ascending) == 'DESC') {
 				$expression .= ' DESC';
+			}
 		}
 
 		if (empty($this->clauses['ORDER BY']) or $this->clauses['ORDER BY'] == 'NULL') {
@@ -1238,10 +1232,11 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	{
 		$updates = $this->set_internal($updates);
 
-		if (empty($this->clauses['SET']))
+		if (empty($this->clauses['SET'])) {
 			$this->clauses['SET'] = $updates;
-		else
+		} else {
 			$this->clauses['SET'] .= ", $updates";
+		}
 		return $this;
 	}
 
@@ -1507,6 +1502,15 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		$args[] = $this;
 		return call_user_func_array($callback, $args);
 	}
+	
+	static function column($column)
+	{
+		$pos = strrpos("$column", '.');
+		if ($pos === false) {
+			return "`$column`";
+		}
+		return substr($column, 0, $pos).".`".substr($column, $pos+1)."`";
+	}
 
 	/**
 	 * Calculates criteria
@@ -1528,13 +1532,11 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 							$value->parameters
 						);
 					}
-					if (preg_match('/\W/', substr($expr, - 1))) {
-						$criteria_list[] = "$expr ($value)";
-					} else {
-						$criteria_list[] = "$expr = ($value)";
-					}
+					$criteria_list[] = preg_match('/\W/', substr($expr, -1))
+						? "$expr ($value)"
+						: self::column($expr)." = ($value)";
 				} else {
-					if (preg_match('/\W/', substr($expr, - 1))) {
+					if (preg_match('/\W/', substr($expr, -1))) {
 						$criteria_list[] = "$expr :_where_$i";
 						$this->parameters["_where_$i"] = $value;
 						++ $i;
@@ -1554,15 +1556,15 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 						}
 					} else if ($value instanceof Db_Range) {
 						$c_min = $value->includeMin ? '>=' : '>';
-						$criteria_list[] = "$expr $c_min :_where_$i";
+						$criteria_list[] = self::column($expr) . " $c_min :_where_$i";
 						$this->parameters["_where_$i"] = $value->min;
 						++ $i;
 						$c_max = $value->includeMax ? '<=' : '<';
-						$criteria_list[] = "$expr $c_max :_where_$i";
+						$criteria_list[] = self::column($expr) . " $c_max :_where_$i";
 						$this->parameters["_where_$i"] = $value->max;
 						++ $i;
 					} else {
-						$criteria_list[] = "$expr = :_where_$i";
+						$criteria_list[] = self::column($expr) . " = :_where_$i";
 						$this->parameters["_where_$i"] = $value;
 						++ $i;
 					}
@@ -1604,12 +1606,11 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 			foreach ($updates as $field => $value) {
 				if ($value instanceof Db_Expression) {
 					if (is_array($value->parameters)) {
-						$this->parameters = array_merge($this->parameters,
-							$value->parameters);
+						$this->parameters = array_merge($this->parameters, $value->parameters);
 					}
-					$updates_list[] = "$field = $value";
+					$updates_list[] = self::column($field) . " = $value";
 				} else {
-					$updates_list[] = "$field = :_set_$i";
+					$updates_list[] = self::column($field) . " = :_set_$i";
 					$this->parameters["_set_$i"] = $value;
 					++ $i;
 				}
@@ -1649,9 +1650,9 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 						$this->parameters = array_merge($this->parameters,
 							$value->parameters);
 					}
-					$updates_list[] = "$field = $value";
+					$updates_list[] = self::column($field) . " = $value";
 				} else {
-					$updates_list[] = "$field = :_dupUpd_$i";
+					$updates_list[] = self::column($field) . " = :_dupUpd_$i";
 					$this->parameters["_dupUpd_$i"] = $value;
 					++ $i;
 				}
