@@ -79,7 +79,8 @@ function _Streams_related_tool (options)
         Q.Streams.related.cache.each([publisherId, streamName], function (k, v) {
             Q.Streams.related.forget(k);
         });
-        Q.Streams.related(publisherId, streamName, this.state.relationType, this.state.isCategory, this.state.relatedOptions, relatedResult);
+        Q.Streams.retainWith('Streams/related')
+			.related(publisherId, streamName, this.state.relationType, this.state.isCategory, this.state.relatedOptions, relatedResult);
         
         function relatedResult() {
             var result = this;
@@ -97,6 +98,8 @@ function _Streams_related_tool (options)
                 exiting = entering = updating = [];
             }
             tool.state.onUpdate.handle.apply(tool, [result, entering, exiting, updating]);
+
+			if (!result) return;
             
             // Now that we have the stream, we can update the event listeners again
             var dir = tool.state.isCategory ? 'To' : 'From';

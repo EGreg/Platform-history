@@ -5079,7 +5079,6 @@ function _constructTool(toolElement, options, shared) {
     				var existingTool = Q.Tool.call(this, element, options);
     				this.state = Q.copy(this.options, toolFunc.stateKeys);
 					var prevTool = Q.Tool.beingActivated;
-					if (prevTool) debugger;
 					Q.Tool.beingActivated = this;
 					toolFunc.call(this, this.options, existingTool);
 					Q.Tool.beingActivated = prevTool;

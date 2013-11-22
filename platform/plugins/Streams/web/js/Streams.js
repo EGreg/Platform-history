@@ -184,7 +184,7 @@ Streams.onActivate = new Q.Event();
 /**
  * Connects or reconnects sockets for all participating streams
  */
-function _connectSockets(refreshParticipating) {
+function _connectSockets(refresh) {
 	if (!Q.Users.loggedInUser) {
 		return false;
 	}
@@ -196,8 +196,8 @@ function _connectSockets(refreshParticipating) {
 			}));
 		});
 	});
-	if (refreshParticipating) {
-		Streams.refreshParticipating();
+	if (refresh) {
+		Streams.refresh();
 	}
 }
 
@@ -460,58 +460,36 @@ Streams.getParticipating = Q.getter(function(callback) {
 }, {cache: Q.Cache.document("Streams.getParticipating", 10)});
 
 /**
- * Waits for the latest messages to be posted to a given stream.
- * If your app is using socket.io, then calling this manually is largely unnecessary.
- * @param {Function} callback This is called when the stream has been updated with the latest messages.
- * @return {boolean} whether the refresh occurred
- */
-Streams.refresh = function (publisherId, streamName, callback) {
-	if (!Q.Users.loggedInUser || !Q.isOnline()) {
-		return false;
-	}
-	// If the stream was seen, fetch latest messages,
-	// and replay their being "posted" to trigger the right events
-	var ps = _key(publisherId, streamName);
-	if (!_retainedByStream[ps]) {
-		return false;
-	}
-	Message.wait(publisherId, streamName, -1, callback);
-	_retain = undefined;
-	return true;
-};
-
-/**
  * Refreshes all the streams the logged-in user is participating in
  * If your app is using socket.io, then calling this manually is largely unnecessary.
  * @return {boolean} whether the refresh occurred
  */
-Streams.refreshParticipating = function () {
+Streams.refresh = function () {
 	if (!Q.Users.loggedInUser || !Q.isOnline()) {
 		return false;
 	}
 	var now = Date.now();
-	if (now - Streams.refreshParticipating.lastTime < Streams.refreshParticipating.options.minSeconds * 1000) {
+	if (now - Streams.refresh.lastTime < Streams.refresh.options.minSeconds * 1000) {
 		return false;
 	}
-	Streams.refreshParticipating.lastTime = now;
-	Streams.getParticipating(function (err, participating) {
-		Q.each(participating, function (i, p) {
-			Streams.refresh(p.publisherId, p.streamName);
-		});
+	Streams.refresh.lastTime = now;
+	Q.each(_retainedByStream, function (ps) {
+		var parts = ps.split("\t");
+		Stream.refresh(parts[0], parts[1]);
 	});
 	_retain = undefined;
 	return true;
 };
 
-Streams.refreshParticipating.options = {
+Streams.refresh.options = {
 	onEvents: ['focus', 'pageshow'],
 	minSeconds: 3
 };
-Streams.refreshParticipating.lastTime = 0;
+Streams.refresh.lastTime = 0;
 
 /**
  * When a stream is retained, it is refreshed when Streams.refresh() or
- * Streams.refreshParticipating() are called. You can release it with stream.release().
+ * Streams.refresh() are called. You can release it with stream.release().
  * Call this function in a chain before calling Streams.get, Streams.related, etc.
  * in order to set the key for retaining the streams those functions obtain.
  * @param {String} key
@@ -519,7 +497,7 @@ Streams.refreshParticipating.lastTime = 0;
  */
 Streams.retainWith = function (key) {
 	_retain = Q.Event.calculateKey(key, _retainedByKey);
-	return Streams;	
+	return this;	
 };
 
 /**
@@ -589,7 +567,7 @@ Stream.define = Streams.define;
 /**
  * Call this function to retain a particular stream.
  * When a stream is retained, it is refreshed when Streams.refresh() or
- * Streams.refreshParticipating() are called. You can release it with stream.release().
+ * Streams.refresh() are called. You can release it with stream.release().
  * @param {String} publisherId
  * @param {String} streamName
  * @param {String} key
@@ -618,6 +596,38 @@ Stream.release = function (publisherId, streamName) {
 		}
 	});
 	delete _retainedByStream[ps];
+};
+
+/**
+ * When a stream is retained, it is refreshed when Streams.refresh() or
+ * Streams.refresh() are called. You can release it with stream.release().
+ * Call this function in a chain before calling Streams.get, Streams.related, etc.
+ * in order to set the key for retaining the streams those functions obtain.
+ * @param {String} key
+ * @return {Object} returns Streams for chaining with .get(), .related() or .getParticipating()
+ */
+Stream.retainWith = Streams.retainWith();
+
+
+/**
+ * Waits for the latest messages to be posted to a given stream.
+ * If your app is using socket.io, then calling this manually is largely unnecessary.
+ * @param {Function} callback This is called when the stream has been updated with the latest messages.
+ * @return {boolean} whether the refresh occurred
+ */
+Stream.refresh = function (publisherId, streamName, callback) {
+	if (!Q.Users.loggedInUser || !Q.isOnline()) {
+		return false;
+	}
+	// If the stream was seen, fetch latest messages,
+	// and replay their being "posted" to trigger the right events
+	var ps = _key(publisherId, streamName);
+	if (!_retainedByStream[ps]) {
+		return false;
+	}
+	Message.wait(publisherId, streamName, -1, callback);
+	_retain = undefined;
+	return true;
 };
 
 Stream.prototype.getAll = function (usePending) {
@@ -792,7 +802,7 @@ Stream.prototype.actionUrl = function (what) {
  * @param {Function} callback This is called when the stream has been updated with the latest messages.
  */
 Stream.prototype.refresh = function (callback) {
-	return Streams.refresh(this.fields.publisherId, this.fields.name, callback);
+	return Streams.Stream.refresh(this.fields.publisherId, this.fields.name, callback);
 };
 
 /**
@@ -2229,7 +2239,7 @@ Q.onInit.add(function _Streams_onInit() {
 	
 	Q.Users.onLogin.set(_clearCaches, 'Streams');
 	Q.Users.onLogout.set(_clearCaches, 'Streams');
-	Q.addEventListener(window, Streams.refreshParticipating.options.onEvents, Streams.refreshParticipating);
+	Q.addEventListener(window, Streams.refresh.options.onEvents, Streams.refresh);
 	_scheduleUpdate();
 
 }, 'Streams');
@@ -2257,8 +2267,8 @@ function _scheduleUpdate() {
 		if (_scheduleUpdate.lastTime !== undefined
 		&& now - _scheduleUpdate.lastTime > ms + 1000) {
 			// The timer was delayed for a whole second. Something might have changed.
-			// Streams.refreshParticipating.minSeconds should prevent the update happening too frequently
-			Streams.refreshParticipating();
+			// Streams.refresh.minSeconds should prevent the update happening too frequently
+			Streams.refresh();
 		}
 		_scheduleUpdate.lastTime = now;
 	}, ms);

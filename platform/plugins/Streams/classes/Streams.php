@@ -1788,6 +1788,7 @@ abstract class Streams extends Base_Streams
 		$extra = isset($options['extra']) ? $options['extra'] : null;
 		$streams = Streams::fetch($asUserId, $publisherId, array_keys($relations), $fields, $extra);
 		foreach ($streams as $name => $s) {
+			if (!$s) continue;
 			$s->weight = isset($relations[$name]) ? $relations[$name]->weight : null;
 		}
 		if (!empty($options['streamsOnly'])) {
