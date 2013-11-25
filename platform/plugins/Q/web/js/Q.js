@@ -1593,11 +1593,18 @@ Q.batcher = function _Q_batch(batch, options) {
 				clearTimeout(batch.timeout);
 			}
 			function runBatch() {
-				batch.call(this, batch.subjects, batch.args, batch.callbacks);
-				batch.subjects = batch.args = batch.callbacks = null;
-				batch.count = 0;
-				batch.argmax = 0;
-				batch.cbmax = 0;
+				try {
+					batch.call(this, batch.subjects, batch.args, batch.callbacks);
+					batch.subjects = batch.args = batch.callbacks = null;
+					batch.count = 0;
+					batch.argmax = 0;
+					batch.cbmax = 0;
+				} catch (e) {
+					batch.count = 0;
+					batch.argmax = 0;
+					batch.cbmax = 0;
+					throw e;
+				}
 			}
 			if (batch.count == o.max) {
 				runBatch();
@@ -1987,8 +1994,7 @@ Q.Tool = function _Q_Tool(element, options) {
 		Q.extend(this.options, Q.Tool.options.levels, element.options, 'Q.Tool');
 	}
 	
-	if (!element.Q) element.Q = {};
-	element.Q.tool = this;
+	Q.setObject(['Q', 'tool'], this, element);
 	
 	this.beforeRemove = new Q.Event();
 
@@ -2276,8 +2282,10 @@ Q.Tool.prototype.remove = function _Q_Tool_prototype_remove(removeCached) {
  *   jQuery object matched by the given selector
  */
 Q.Tool.prototype.$ = function _Q_Tool_prototype_$(selector) {
-	if (typeof jQuery !== 'undefined') {
-		return jQuery(selector, this.element);
+	if (window.jQuery) {
+		return selector === undefined
+			? window.jQuery(this.element)
+			: window.jQuery(selector, this.element);
 	} else {
 		throw "Q.Tool.prototype.$ requires jQuery";
 	}
@@ -3277,7 +3285,7 @@ Q.url.options = {
  *  Optional. A hash of options, including:
  *  "echo": A string to echo back. Used to keep track of responses
  *  'method': if set, adds a &Q.method=$method to the querystring
- *  'callback': if set, adds a &Q.callback=$callback to the querystring
+ *  'callback': if a string, adds a '&Q.callback='+encodeURIComponent(callback) to the querystring.
  *  'loadExtras': if true, asks the server to load the extra scripts, stylesheets, etc. that are loaded on first page load
  * @return String|Object
  *  Returns the extended string or object
@@ -3301,7 +3309,7 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 			encodeURI('&Q.timestamp=')+encodeURIComponent(timestamp);
 		if (slotNames2) what2 += encodeURI('&Q.slotNames=') + encodeURIComponent(slotNames2);
 		if (options) {
-			if (options.callback) {
+			if (typeof options.callback === 'string') {
 				what2 += encodeURI('&Q.callback=') + encodeURIComponent(options.callback);
 			}
 			if ('echo' in options) {
@@ -4838,7 +4846,7 @@ Q.loadUrl.defaultHandler = function _Q_loadUrl_fillSlots (res) {
  *  "externalLoader": when using loadUsingAjax, you can set this to a function to suppress loading of external websites with Q.handle
  *	Note: this will still not supress loading of external websites done with other means, such as window.location
  *  'fields': optional fields to pass with any method other than "get"
- *  'callback': if set, adds a &Q.callback=$callback to the querystring
+ *  'callback': if a string, adds a '&Q.callback='+encodeURIComponent(callback) to the querystring. If a function, this is the callback.
  *  'loadExtras': if true, asks the server to load the extra scripts, stylesheets, etc. that are loaded on first page load
  *  "target": the name of a window or iframe to use as the target. In this case callables is treated as a url.
  *  "slotNames": a comma-separated list of slot names, or an array of slot names
@@ -4898,15 +4906,21 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 					return 0;
 				}
 			}
-			// Some syntactic sugar
 			var callback = null;
 			if (typeof arguments[1] === 'function') {
+				// Some syntactic sugar
 				callback = arguments[1];
 				o = Q.handle.options;
 			} else if (arguments[1] && (arguments[3] === undefined)) {
+				// Some more syntactic sugar
 				o = Q.extend({}, Q.handle.options, arguments[1]);
 				if (typeof arguments[2] === 'function') {
 					callback = arguments[2];
+				}
+			} else {
+				o = Q.extend({}, Q.handle.options, options);
+				if (o.callback) {
+					callback = o.callback;
 				}
 			}
 			var handled = false;
@@ -5065,17 +5079,17 @@ function _constructTool(toolElement, options, shared) {
 	_loadToolScript(toolElement, function _constructTool_doConstruct(toolElement, toolFunc, toolName, uniqueToolId) {
 		if (!toolFunc.toolConstructor) {
 			toolFunc.toolConstructor = function _toolConstructor (element, options) {
-				if (!element.Q_tools) {
-					element.Q_tools = {};
-				}
-				if (this.constructed || element.Q_tools[toolName]) {
+				if (this.constructed) {
 					return; // support re-entrancy of Q.activate
 				}
-				element.Q_tools[toolName] = true;
 				this.constructed = false;
 				try {
     				this.options = Q.extend({}, toolFunc.options, options);
     				this.name = toolName;
+					if (Q.getObject(['Q', 'tools', toolName], element)) {
+						return; // support re-entrancy of Q.activate
+					}
+					Q.setObject(['Q', 'tools', toolName], true, element);
     				var existingTool = Q.Tool.call(this, element, options);
     				this.state = Q.copy(this.options, toolFunc.stateKeys);
 					var prevTool = Q.Tool.beingActivated;

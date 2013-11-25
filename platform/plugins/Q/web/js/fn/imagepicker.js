@@ -25,7 +25,7 @@
  *   'preprocess': You can specify a function here which will run before the upload.
  *           Its "this" object will be a jQuery of the imagepicker element
  *           The first parameter is a callback, which should be called with an optional 
- *           hash of overrides, which can include "data", "path", "subpath", "save", "url" and "crop"
+ *           hash of overrides, which can include "data", "path", "subpath", "save", "url", "loader" and "crop"
  *   'onClick': A function to execute during the click, which may cancel the click
  *   'onSuccess': Optional. Q.Event which is called on successful upload. First parameter will be the server response with
  *                hash in format similar to 'saveSizeName' field.
@@ -66,7 +66,8 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 					'path': $this.state('Q/imagepicker').path,
 					'subpath': $this.state('Q/imagepicker').subpath,
 					'save': o.saveSizeName,
-					'url': o.url
+					'url': o.url,
+					'loader': o.loader
 				};
 				if (o.crop) {
 					params.crop = o.crop;
@@ -76,9 +77,8 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 				if (params.save && !params.save[state.showSize]) {
 					throw "Q/imagepicker tool: no size found corresponding to showSize";
 				}
-				var url = params.url;
-				delete params.url;
-				Q.request(url, 'data', function (err, res) {
+				
+				function _callback (err, res) {
 					var state = $this.state('Q/imagepicker');
 					var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(res && res.errors);
 					if (msg) {
@@ -95,10 +95,20 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 						$this.attr('src', Q.url(res.slots.data[key]+"?"+Date.now()));
 					}
 					$this.removeClass('Q_imagepicker_uploading');
-				}, {
-					fields: params,
-					method: 'POST'
-				});
+				}
+				
+				if (params.loader) {
+					var callable = params.loader;
+					delete params.loader;
+					Q.handle(callable, null, [params, _callback]);
+				} else {
+					var url = params.url;
+					delete params.url;
+					Q.request(url, 'data', _callback, {
+						fields: params,
+						method: 'POST'
+					});
+				}
 			}
 		}
 

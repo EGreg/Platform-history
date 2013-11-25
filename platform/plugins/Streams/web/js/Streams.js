@@ -321,8 +321,25 @@ Streams.batchFunction = function Streams_batchFunction(baseUrl) {
 };
 Streams.batchFunction.functions = {};
 
+/**
+ * Create a new stream
+ * @method create
+ * @param fields {Object}
+ *  Should contain at least the publisherId and type of the stream
+ * @param callback {function}
+ *	if there were errors, first parameter is the error message
+ *  otherwise, first parameter is null and second parameter is a Streams.Stream object
+ * @param related {Object}
+ *	Optional information to add a relation from the newly created stream to another one. Can include:
+ *  "publisherId": the id of whoever is publishing the related stream
+ *  "streamName": the name of the related stream
+ *  "type": the type of the relation
+ */
 Streams.create = function (fields, callback, related) {
-	var slotName = "stream";
+	var slotNames = ['stream'];
+	if (fields.icon) {
+		slotNames.push('icon');
+	}
 	if (related) {
 		fields['Q.Streams.related.publisherId'] = related.publisherId || related.publisherId;
 		fields['Q.Streams.related.streamName'] = related.streamName || related.streamName || related.name;
@@ -333,7 +350,7 @@ Streams.create = function (fields, callback, related) {
 		streamName: "" // NOTE: the request is routed to wherever the "" stream would have been hosted
 	});
 	var _r = _retain;
-	Q.req('Streams/stream', [slotName], function Stream_create_response_handler(err, data) {
+	Q.req('Streams/stream', slotNames, function Stream_create_response_handler(err, data) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
 		if (msg) {
 			return callback && callback.call(this, msg);
@@ -341,12 +358,12 @@ Streams.create = function (fields, callback, related) {
 		_constructStream(data.slots.stream, function Stream_create_construct_handler (err, stream) {
 			var msg = Q.firstErrorMessage(err);
 			if (msg) {
-				return callback && callback.call(stream, msg, stream);
+				return callback && callback.call(stream, msg, stream, data.slots.icon);
 			}
 			if (_r) {
-				stream.retain(r);
+				stream.retain(_r);
 			}
-			return callback && callback.call(stream, null, stream);
+			return callback && callback.call(stream, null, stream, data.slots.icon);
 		});
 	}, { method: 'post', fields: fields, baseUrl: baseUrl });
 	_retain = undefined;
@@ -462,9 +479,10 @@ Streams.getParticipating = Q.getter(function(callback) {
 /**
  * Refreshes all the streams the logged-in user is participating in
  * If your app is using socket.io, then calling this manually is largely unnecessary.
+ * @param {Function} callback optional callback
  * @return {boolean} whether the refresh occurred
  */
-Streams.refresh = function () {
+Streams.refresh = function (callback) {
 	if (!Q.Users.loggedInUser || !Q.isOnline()) {
 		return false;
 	}
@@ -473,16 +491,17 @@ Streams.refresh = function () {
 		return false;
 	}
 	Streams.refresh.lastTime = now;
+	var p = new Q.Pipe(Object.keys(_retainedByStream), callback);
 	Q.each(_retainedByStream, function (ps) {
 		var parts = ps.split("\t");
-		Stream.refresh(parts[0], parts[1]);
+		Stream.refresh(parts[0], parts[1], p.fill(ps));
 	});
 	_retain = undefined;
 	return true;
 };
 
 Streams.refresh.options = {
-	onEvents: ['focus', 'pageshow'],
+	duringEvents: ['focus', 'pageshow'],
 	minSeconds: 3
 };
 Streams.refresh.lastTime = 0;
@@ -606,7 +625,7 @@ Stream.release = function (publisherId, streamName) {
  * @param {String} key
  * @return {Object} returns Streams for chaining with .get(), .related() or .getParticipating()
  */
-Stream.retainWith = Streams.retainWith();
+Stream.retainWith = Streams.retainWith;
 
 
 /**
@@ -2239,7 +2258,7 @@ Q.onInit.add(function _Streams_onInit() {
 	
 	Q.Users.onLogin.set(_clearCaches, 'Streams');
 	Q.Users.onLogout.set(_clearCaches, 'Streams');
-	Q.addEventListener(window, Streams.refresh.options.onEvents, Streams.refresh);
+	Q.addEventListener(window, Streams.refresh.options.duringEvents, Streams.refresh);
 	_scheduleUpdate();
 
 }, 'Streams');
@@ -2251,27 +2270,32 @@ Q.Tool.beforeRemove.set(function (tool) {
 function _clearCaches() {
 	// Clear caches so permissions can be recalculated as various objects are fetched
 	Streams.get.cache.clear();
+	Streams.related.cache.clear();
+	Streams.getParticipating.cache.clear();
 	Message.get.cache.clear();
 	Participant.get.cache.clear();
 	Avatar.get.cache.clear();
-	Streams.getParticipating.cache.clear();
 }
 
 function _scheduleUpdate() {
 	var ms = 1000;
-	if (_scheduleUpdate.interval) {
-		clearInterval(_scheduleUpdate.interval);
+	if (_scheduleUpdate.timeout) {
+		clearTimeout(_scheduleUpdate.timeout);
 	}
-	_scheduleUpdate.interval = setInterval(function () {
+	return null;
+	_scheduleUpdate.timeout = setTimeout(function () {
 		var now = Date.now();
 		if (_scheduleUpdate.lastTime !== undefined
-		&& now - _scheduleUpdate.lastTime > ms + 1000) {
+		&& now - _scheduleUpdate.lastTime - ms > _scheduleUpdate.delay) {
 			// The timer was delayed for a whole second. Something might have changed.
 			// Streams.refresh.minSeconds should prevent the update happening too frequently
 			Streams.refresh();
 		}
 		_scheduleUpdate.lastTime = now;
+		setTimeout(_scheduleUpdate, ms);
 	}, ms);
 }
+
+_scheduleUpdate.delay = 10000;
 
 })(jQuery, Q.plugins.Streams);

@@ -2,12 +2,16 @@
 
 function Q_image_response () {
 	$slots = Q_Response::slots(true);
-	if (isset($slots['data'])) return;
-	if (isset($_REQUEST['hash'])) $hash = $_REQUEST['hash'];
-	else throw new Q_Exception_WrongValue(array(
-        'field' => 'hash',
-        'range' => "identifier hash")
-    );
+	if (isset($slots['data'])) {
+		return;
+	}
+	if (!isset($_REQUEST['hash'])) {
+		throw new Q_Exception_WrongValue(array(
+	        'field' => 'hash',
+	        'range' => "identifier hash"
+		));
+	}
+	$hash = $_REQUEST['hash'];
 	header ("Content-type: image/png");
 	$gravatar = isset($_REQUEST['gravatar'])
 		? $_REQUEST['gravatar']

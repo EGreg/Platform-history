@@ -7,6 +7,7 @@
  *   publisherId, type
  *   Q.Streams.related.publisherId, Q.Streams.related.name, Q.Streams.related.weight
  *   dontSubscribe (optional)
+ *   icon (optional) see fields for Q/image/post
  * @return void
  */
 
@@ -41,6 +42,13 @@ function Streams_stream_post($params) {
 		throw new Users_Exception_NotAuthorized();
 	}
 	
+	// Process any icon that was posted
+	$icon = null;
+	if (!empty($more_fields['icon']) and is_array($more_fields['icon'])) {
+		$icon = $more_fields['icon'];
+		unset($more_fields['icon']);
+	}
+	
 	// OK we are good to go!
 	$stream = new Streams_Stream;
 	$stream->publisherId = $publisherId;
@@ -72,6 +80,12 @@ function Streams_stream_post($params) {
 		'content' => '',
 		'instructions' => Q::json_encode($stream->toArray())
 	), true);
+	
+	// Process any icon that was posted
+	if ($icon) {
+		$icon['subpath'] = "streams/{$stream->publisherId}/{$stream->name}";
+		Q_Response::setSlot('icon', Q::event("Q/image/post", $icon));
+	}
 	
 	if (empty($more_fields['dontSubscribe'])) {
 		$stream->subscribe(); // autosubscribe to streams you yourself create, using templates

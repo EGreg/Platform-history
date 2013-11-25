@@ -21,9 +21,11 @@ function (options) {
 	$('*', $this).css('-webkit-touch-callout', 'none');
 	$this.on('dragstart.Q_sortable', options.draggable, function () {
 		var state = $this.state('Q/sortable');
-		if (state.draggable === '*' && event.target.parentNode !== $this[0]) {
+		/*
+		if (state.draggable === '*' && !$(this).closest($this[0]).length) {
 			return;
 		}
+		*/
 		return false;
 	});
 
@@ -33,9 +35,12 @@ function (options) {
 		}
 		pressed = true;
 		var state = $this.state('Q/sortable');
-		if (state.draggable === '*' && event.target.parentNode !== $this[0]) {
+		var state = $this.state('Q/sortable');
+		/*
+		if (state.draggable === '*' && !$(this).closest($this[0]).length) {
 			return;
 		}
+		*/
 		var $item = $(this);
 		this.preventSelections();
 		Q.addEventListener(document, [Q.Pointer.cancel, Q.Pointer.leave], function leaveHandler() {

@@ -105,7 +105,8 @@ function Streams_batch_response_batch()
 				"Streams/$action/response", 
 				compact('streams', 'publisherId', 'name', 'extra', 'user', 'userId')
 			);
-			$slots = array_diff(Q_Response::slots(true), array('batch'));
+			$slots = Q_Response::slots(true);
+			unset($slots['batch']);
 			$result[] = compact('slots');
 		} catch (Exception $e) {
 			$result[] = array('errors' => Q_Exception::toArray(array($e)));

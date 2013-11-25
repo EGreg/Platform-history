@@ -392,11 +392,18 @@ Q.batcher = function _Q_batch(batch, options) {
 				clearTimeout(batch.timeout);
 			}
 			function runBatch() {
-				batch.call(this, batch.subjects, batch.args, batch.callbacks);
-				batch.subjects = batch.args = batch.callbacks = null;
-				batch.count = 0;
-				batch.argmax = 0;
-				batch.cbmax = 0;
+				try {
+					batch.call(this, batch.subjects, batch.args, batch.callbacks);
+					batch.subjects = batch.args = batch.callbacks = null;
+					batch.count = 0;
+					batch.argmax = 0;
+					batch.cbmax = 0;
+				} catch (e) {
+					batch.count = 0;
+					batch.argmax = 0;
+					batch.cbmax = 0;
+					throw e;
+				}
 			}
 			if (batch.count == o.max) {
 				runBatch();

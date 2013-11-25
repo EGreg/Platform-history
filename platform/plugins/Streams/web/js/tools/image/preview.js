@@ -40,7 +40,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 		});
 		$(tool.element).addClass('Streams_image_preview_create');
 		Q.Template.render(
-			'Streams/image/preview/edit',
+			'Streams/image/preview/create',
 			fields,
 			function (err, html) {
 				if (err) {
@@ -48,31 +48,37 @@ Q.Tool.define("Streams/image/preview", function(options) {
 				}
 				tool.element.innerHTML = html;
 				var ipo = Q.extend({}, ip, {
-					preprocess: function (callback) {
-						Q.Streams.create({
+					loader: function (icon, callback) {
+						Q.Streams.retainWith(tool).create({
 							publisherId: state.publisherId,
-							type: 'Streams/image'
-						}, function (err) {
+							type: 'Streams/image',
+							icon: icon
+						}, function (err, stream, icon) {
 							if (err) {
 								alert(err);
-								callback(false);
+								callback(err);
 								return console.warn(err);
 							}
 							state.publisherId = this.fields.publisherId;
 							state.streamName = this.fields.name;
 							tool.stream = this;
-							callback({subpath: 'streams/' + this.fields.publisherId + '/' + this.fields.name});
-//							this.refresh(); // TODO: change this to onCreate or something, in the case of related nothing needs to be done
+							callback(null, {
+								slots: {
+									data: icon
+								}
+							});
+							state.onCreate.handle.call(tool);
 						}, state.relatedFrom);
 					},
+					preprocess: function (callback) {
+						// TODO: have some kind of cropping interface
+						callback();
+					},
 					onSuccess: {'Streams/image/preview': function (data, key) {
-						Q.Streams.refresh(
-							state.publisherId,
-							state.streamName,
-							function () {
-								_render();
-							}
-						);
+						tool.stream.refresh(function () {
+							_render();
+							state.onUpdate.handle.call(tool, data);
+						});
 						return false;
 					}}
 				});
@@ -106,6 +112,13 @@ Q.Tool.define("Streams/image/preview", function(options) {
 
 		Q.Streams.get(state.publisherId, state.streamName, function (err) {
 
+			if (err) {
+				return console.warn(err);
+			}
+			var stream = this;
+			tool.stream = stream;
+			tool.refresh(_afterRefresh);
+
 			function _afterRefresh () {
 				if (!stream.testWriteLevel('editPending')) {
 					return;
@@ -121,27 +134,17 @@ Q.Tool.define("Streams/image/preview", function(options) {
 						});
 					},
 					onSuccess: {'Streams/image/preview': function (data, key) {
-						Q.Streams.refresh(
-							state.publisherId,
-							state.streamName,
-							function () {
-								state.onUpdate.handle.call(tool, data);
-							}
-						);
+						stream.refresh(function () {
+							state.onUpdate.handle.call(tool, data);
+						});
 					}}
 				});
 				tool.$('img').plugin('Q/imagepicker', ipo);
 			}
-
-			if (err) {
-				return console.warn(err);
-			}
-			var stream = this;
-
-			tool.stream = stream;
-			tool.refresh(_afterRefresh);
 			stream.onFieldChanged('icon').set(function () {
-				tool.refresh(_afterRefresh);
+				setTimeout(function () {
+					tool.refresh(_afterRefresh);
+				}, 0); // TODO: Standardize onFieldChanged, onUpdated, etc. to be after stream cache was updated
 			}, tool);
 		});
 	}
@@ -191,46 +194,51 @@ Q.Tool.define("Streams/image/preview", function(options) {
 	},
 	inplace: {},
 	throbber: "plugins/Q/img/throbbers/coolspinner_dark.gif",
+	onCreate: new Q.Event(),
 	onUpdate: new Q.Event()
 },
 
 {
 	refresh: function (callback) {
-		var tool = this, state = tool.state, stream = this.stream;
-		var file = state.showFile
-			|| state.imagepicker.saveSizeName[state.imagepicker.showSize]
-			|| state.imagepicker.saveSizeName[Q.first(state.imagepicker.saveSizeName, {nonEmpty: true})];
-		var icon = stream && stream.fields.icon && stream.fields.icon !== 'default' ? stream.fields.icon : 'Streams/image';
+		var tool = this, state = tool.state;
 		
-		var jq = this.$('img.Streams_image_preview_icon');
-		if (jq.length) {
-			jq.attr('src', Q.Streams.iconUrl(icon, file)+'?'+Date.now());
-			return true;
-		}
-		
-		var inplace = Q.extend({
-			publisherId: state.publisherId,
-			streamName: state.streamName,
-			field: 'title',
-			inplaceType: 'text'
-		}, state.inplace);
-		var fields = Q.extend({}, state.templates.edit.fields, {
-			src: Q.Streams.iconUrl(icon, file)+'?'+Date.now(),
-			alt: stream.fields.title,
-			inplace: "<div class='Q_tool Streams_inplace_tool' data-streams-inplace='"+Q.Tool.encodeOptions(inplace)+"'></div>"
+		Q.Streams.get(state.publisherId, state.streamName, function () {
+			var stream = tool.stream = this;
+			var file = state.showFile
+				|| state.imagepicker.saveSizeName[state.imagepicker.showSize]
+				|| state.imagepicker.saveSizeName[Q.first(state.imagepicker.saveSizeName, {nonEmpty: true})];
+			var icon = stream && stream.fields.icon && stream.fields.icon !== 'default' ? stream.fields.icon : 'Streams/image';
+
+			var jq = tool.$('img.Streams_image_preview_icon');
+			if (jq.length) {
+				jq.attr('src', Q.Streams.iconUrl(icon, file)+'?'+Date.now());
+				return true;
+			}
+
+			var inplace = Q.extend({
+				publisherId: state.publisherId,
+				streamName: state.streamName,
+				field: 'title',
+				inplaceType: 'text'
+			}, state.inplace);
+			var fields = Q.extend({}, state.templates.edit.fields, {
+				src: Q.Streams.iconUrl(icon, file)+'?'+Date.now(),
+				alt: stream.fields.title,
+				inplace: "<div class='Q_tool Streams_inplace_tool' data-streams-inplace='"+Q.Tool.encodeOptions(inplace)+"'></div>"
+			});
+			Q.Template.render(
+				'Streams/image/preview/edit',
+				fields,
+				function (err, html) {
+					if (err) {
+						return console.warn(err);
+					}
+					tool.element.innerHTML = html;
+					Q.activate(tool, callback);
+				},
+				state.templates.edit
+			);
 		});
-		Q.Template.render(
-			'Streams/image/preview/edit',
-			fields,
-			function (err, html) {
-				if (err) {
-					return console.warn(err);
-				}
-				tool.element.innerHTML = html;
-				Q.activate(tool, callback);
-			},
-			state.templates.edit
-		);
 	}
 }
 

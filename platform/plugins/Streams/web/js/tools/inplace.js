@@ -11,7 +11,11 @@ Q.Tool.define("Streams/inplace", function (options) {
 	//  - field: the name of the field to bind to, defaults to "content"
 	//  - attribute: alternatively, the name of an attribute to bind to
 
-	function _construct() {
+	function _construct(err) {
+		if (err) {
+			console.warn(err);
+			return;
+		}
 		var stream = this, state = tool.state;
 		state.publisherId = stream.fields.publisherId;
 		state.streamName = stream.fields.name;

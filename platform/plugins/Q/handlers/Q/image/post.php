@@ -1,8 +1,16 @@
 <?php
 
-function Q_image_post($options = array()) {
+/**
+ * Used to upload a new image to the server
+ *
+ * @param array $_REQUEST 
+ *   data, path, subpath, crop, save, merge
+ *   sets 'data' slot unless $params are passed
+ * @return array An array of $size => $subpath pairs corresponding to the files created.
+ */
+function Q_image_post($params = null) {
 
-	$r = array_merge($_REQUEST, $options);
+	$r = $params ? $params : $_REQUEST;
 
 	set_time_limit(Q_Config::get('Q', 'uploads', 'limits', 'image', 'time', 5*60*60)); // 5 min
 	$user = Users::loggedInUser(true);
@@ -176,5 +184,8 @@ function Q_image_post($options = array()) {
 	 * @param {string} 'data'
 	 */
 	Q::event('Q/image', compact('user', 'path', 'subpath', 'writePath', 'data'), 'after');
-	Q_Response::setSlot('data', $data);
+	if (empty($params)) {
+		Q_Response::setSlot('data', $data);
+	}
+	return $data;
 }

@@ -46,18 +46,32 @@ function _Streams_related_tool (options)
 	"realtime": true,
 	"editable": false,
 	"creatable": {},
+	"sortable": false,
     "onUpdate": new Q.Event(function _Streams_related_onUpdate(result, entering, exiting, updating) {
         var tool = this;
         Q.Tool.clear(tool.element);
         tool.element.innerHTML = '';
-		Q.each(this.state.creatable, function (streamType, params) {
+
+		function addComposer(streamType, params) {
 			// TODO: test whether the user can create streams of this type
 			// and otherwise do not append this element
 			var element = tool.elementForStream(tool.state.publisherId, "", streamType, {
 				creatable: params
 			});
-			Q.activate(tool.element.appendChild(element));
-		});
+			Q.activate(tool.element.insertBefore(element, tool.element.firstChild), function () {
+				element.Q.tool.state.onUpdate.set(function () {
+					addComposer(streamType, params);
+					element.Q.tool.state.onUpdate.remove(tool);
+				}, tool);
+			});
+		}
+
+		if (result.stream.testWriteLevel('relate')) {
+			Q.each(this.state.creatable, addComposer);
+			if (tool.state.sortable && result.stream.testWriteLevel('editPending')) {
+				tool.$().plugin('Q/sortable', tool.state.sortable);
+			}
+		}
         Q.each(result.streams, function () {
             var element = tool.elementForStream(this.fields.publisherId, this.fields.name, this.fields.type);
             Q.activate(tool.element.appendChild(element));
@@ -82,7 +96,11 @@ function _Streams_related_tool (options)
         Q.Streams.retainWith('Streams/related')
 			.related(publisherId, streamName, this.state.relationType, this.state.isCategory, this.state.relatedOptions, relatedResult);
         
-        function relatedResult() {
+        function relatedResult(errorMessage) {
+			if (errorMessage) {
+				console.warn("Streams/related refresh: " + errorMessage);
+				return;
+			}
             var result = this;
             var entering = exiting = updating = null;
             function comparator(s1, s2, i, j) {
@@ -117,7 +135,7 @@ function _Streams_related_tool (options)
         }
         function onChangedRelations(stream, fields) {
             var isCategory = tool.state.isCategory;
-            tool.refresh();
+            //tool.refresh(); // TODO: REMOVE THIS?
         }
     },
     elementForStream: function (publisherId, streamName, streamType, options) {
