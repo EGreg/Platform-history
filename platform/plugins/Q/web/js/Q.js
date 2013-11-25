@@ -302,6 +302,13 @@ HTMLElement.prototype.preventSelections = function () {
 	= this.style['user-select'] = 'none';
 };
 
+if(!document.getElementsByClassName) {
+    document.getElementsByClassName = function(className) {
+        return this.querySelectorAll("." + className);
+    };
+    Element.prototype.getElementsByClassName = document.getElementsByClassName;
+}
+
 Q.elementFromPoint = function (pageX, pageY) {
 	return document.elementFromPoint(
 		pageX - document.body.scrollLeft - document.documentElement.scrollLeft,
@@ -6261,7 +6268,7 @@ Q.Pointer = {
 	},
 	'touchCount': function (e) {
 		var oe = e.originalEvent || e;
- 		return oe.touches ? oe.touches.length : 1;
+ 		return oe.touches ? oe.touches.length : (Q.Pointer.which(e) > 0 ? 1 : 0);
 	},
 	'which': function (e) {
 		var button = e.which || e.button;

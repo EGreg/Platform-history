@@ -21,26 +21,21 @@ function (options) {
 	$('*', $this).css('-webkit-touch-callout', 'none');
 	$this.on('dragstart.Q_sortable', options.draggable, function () {
 		var state = $this.state('Q/sortable');
-		/*
-		if (state.draggable === '*' && !$(this).closest($this[0]).length) {
+		if (state.draggable === '*' && this.parentNode !== $this[0]) {
 			return;
 		}
-		*/
 		return false;
 	});
 
-	function liftHandler(event) {		
+	function liftHandler(event) {	
 		if (Q.Pointer.which(event) > 1) {
 			return; // only left mouse button or touches
 		}
 		pressed = true;
 		var state = $this.state('Q/sortable');
-		var state = $this.state('Q/sortable');
-		/*
-		if (state.draggable === '*' && !$(this).closest($this[0]).length) {
+		if (state.draggable === '*' && this.parentNode !== $this[0]) {
 			return;
 		}
-		*/
 		var $item = $(this);
 		this.preventSelections();
 		Q.addEventListener(document, [Q.Pointer.cancel, Q.Pointer.leave], function leaveHandler() {
@@ -105,7 +100,6 @@ function (options) {
 				element.cloned = children[i].copyComputedStyle(element);
 			}
 		});
-		var $dragged = $(this.cloned); //.hide('slow');
 		var state = $this.state('Q/sortable');
 		
 		var x = Q.Pointer.getX(event),
@@ -178,7 +172,7 @@ function (options) {
 	}
 	
 	function clickHandler(event, target) {
-		return false;
+		// return false;
 	}
 	
 	function complete(revert) {
@@ -250,6 +244,7 @@ function (options) {
 		if (!Q.info.isTouchscreen && !lifted) {
 			if ((moveHandler.x !== undefined && Math.abs(moveHandler.x - x) > options.lift.threshhold)
 			|| (moveHandler.y !== undefined && Math.abs(moveHandler.y - y) > options.lift.threshhold)) {
+						console.log(Q.Pointer.touchCount(event), event);
 				lift.call($item[0], event);
 			}
 		}

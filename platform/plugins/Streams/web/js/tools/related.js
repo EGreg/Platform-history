@@ -46,7 +46,10 @@ function _Streams_related_tool (options)
 	"realtime": true,
 	"editable": false,
 	"creatable": {},
-	"sortable": false,
+	"sortable": {
+		draggable: '.Streams_related_stream',
+		droppable: '.Streams_related_stream'
+	},
     "onUpdate": new Q.Event(function _Streams_related_onUpdate(result, entering, exiting, updating) {
         var tool = this;
         Q.Tool.clear(tool.element);
@@ -58,10 +61,14 @@ function _Streams_related_tool (options)
 			var element = tool.elementForStream(tool.state.publisherId, "", streamType, {
 				creatable: params
 			});
+			element.setAttribute('class', element.getAttribute('class') + ' Streams_related_composer');
 			Q.activate(tool.element.insertBefore(element, tool.element.firstChild), function () {
 				element.Q.tool.state.onUpdate.set(function () {
-					addComposer(streamType, params);
+					element.setAttribute('class', element.getAttribute('class').replace(
+						'Streams_related_composer', 'Streams_related_stream'
+					));
 					element.Q.tool.state.onUpdate.remove(tool);
+					addComposer(streamType, params);
 				}, tool);
 			});
 		}
@@ -74,6 +81,7 @@ function _Streams_related_tool (options)
 		}
         Q.each(result.streams, function () {
             var element = tool.elementForStream(this.fields.publisherId, this.fields.name, this.fields.type);
+			element.setAttribute('class', element.getAttribute('class') + ' Streams_related_stream');
             Q.activate(tool.element.appendChild(element));
         });
         // The elements should animate to their respective positions, like in D3.
@@ -149,7 +157,7 @@ function _Streams_related_tool (options)
 			},
 			editable: this.state.editable
         }, options);
-        return Q.Tool.element(this.state.tag, this.state.toolType(streamType), o);
+ 		return Q.Tool.element(this.state.tag, this.state.toolType(streamType), o);
     }
 }
 
