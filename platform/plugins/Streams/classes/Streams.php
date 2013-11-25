@@ -462,7 +462,6 @@ abstract class Streams extends Base_Streams
 
 		$streams3 = array();
 		$names = array();
-		$types = array();
 		foreach ($streams2 as $s) {
 			$s->set('asUserId', $asUserId);
 			if ($asUserId and $asUserId == $publisherId) {
@@ -481,7 +480,7 @@ abstract class Streams extends Base_Streams
 			}
 
 			$names[] = $s->name;
-			$types[] = $s->type."/";
+			$names[] = $s->type."/";
 			$streams3[] = $s;
 		}
 		

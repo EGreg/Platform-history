@@ -55,7 +55,6 @@ Q.Tool.define("Streams/image/preview", function(options) {
 							icon: icon
 						}, function (err, stream, icon) {
 							if (err) {
-								alert(err);
 								callback(err);
 								return console.warn(err);
 							}
