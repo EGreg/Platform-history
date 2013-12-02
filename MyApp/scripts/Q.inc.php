@@ -23,5 +23,11 @@ $basename = basename(APP_DIR);
 if (!file_exists($paths_filename)) {
 	die("$header\nGo to $basename/scripts/Q directory and run php configure.php\n");
 }
+
 include($paths_filename);
-include(realpath(Q_DIR.'/Q.php'));
+
+$realpath = realpath(Q_DIR.'/Q.php');
+if (!$realpath) {
+	die("Please edit $basename/local/paths.js and $basename/local/paths.php to indicate the location of the Q/platform directory, then run configure.php again\n");
+}
+include($realpath);

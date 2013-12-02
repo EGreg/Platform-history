@@ -7,6 +7,7 @@ function (options) {
 		'position': 'absolute',
 		'zIndex': options.zIndex || 9999999
 	});
+	var interval = null;
 	if (options.containerClass) {
 		container.addClass(options.containerClass);
 	}
@@ -92,10 +93,14 @@ function (options) {
 			}).width(0);
 		}
 		_position($this, state.position, container);
+		interval = setInterval(function () {
+			_position($this, state.position, container);
+		}, state.repositionMs);
 		state.onShow.handle.apply($this, [state, container]);
 	}
 	
 	function _hide($this, state, container) {
+		interval && clearInterval(interval);
 		if (false === state.beforeHide.handle.apply($this, [state, container])) {
 			return false;
 		}
@@ -108,13 +113,14 @@ function (options) {
 	actions: {}, // an array of name:function pairs
 	containerClass: '', // any class names to add to the actions container
 	zIndex: 9999999,
-	position: 'mr', // could be tm, tc, etc.
+	position: 'mr', // one of 't', 'm', 'b' followed by one of 'l', 'c', 'r'
 	size: 32, // could be 16
-	alwaysShow: false,
+	alwaysShow: Q.info.isTouchscreen,
 	horizontal: true, // if true, show actions horizontally
 	reverse: false, // if true, show in reverse order
 	clickable: true, // use clickable plugin
 	context: {}, // any context to pass to the actions
+	repositionMs: 200, // how many milliseconds between repositioning
 	onShow: new Q.Event(),
 	beforeHide: new Q.Event(),
 	onClick: new Q.Event()
@@ -124,35 +130,33 @@ function (options) {
 
 
 function _position($this, position, container) {
-	var cw = container.width(), ch = container.height();
+	var cw = container.width(), ch = container.height(), left, top;
 	switch (position[0]) {
 		case 'b':
-			container.css('top', (parseInt($this.css('margin-top'))+$this.innerHeight()-ch)+'px');
+			top = (parseInt($this.css('margin-top'))+$this.innerHeight()-ch)+'px';
 			break;
 		case 'm':
-			container.css('top', (parseInt($this.css('margin-top'))+$this.innerHeight()/2-ch/2)+'px');
+			top = (parseInt($this.css('margin-top'))+$this.innerHeight()/2-ch/2)+'px';
 			break;
 		case 't':
 		default:
-			container.css('top', $this.css('margin-left'));
+			top = $this.css('margin-left');
 			break;
 	}
 	switch (position[1]) {
 		case 'l':
-			container.css('left', $this.css('margin-left'));
+			left = $this.css('margin-left');
 			break;
 		case 'c':
-			container.css('left',
-				(parseInt($this.css('margin-left'))+$this.innerWidth()/2-cw/2)+'px'
-			);
+			left = (parseInt($this.css('margin-left'))+$this.innerWidth()/2-cw/2)+'px';
 			break;
 		case 'r':
 		default:
-			container.css('left',
-				(parseInt($this.css('margin-left'))+$this.innerWidth()-cw)+'px'
-			);
+			left = (parseInt($this.css('margin-left'))+$this.innerWidth()-cw)+'px';
 			break;
 	}
+	container.css('top', top);
+	container.css('left', left);
 }
 
 })(window.jQuery, window, document);

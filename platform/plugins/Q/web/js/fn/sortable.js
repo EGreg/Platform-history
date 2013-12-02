@@ -42,23 +42,21 @@ function (options) {
 			Q.removeEventListener(document, [Q.Pointer.cancel, Q.Pointer.leave], leaveHandler);
 			complete(true);
 		});
-		mx = Q.Pointer.getX(event);
-		my = Q.Pointer.getY(event);
+		moveHandler.xStart = mx = Q.Pointer.getX(event);
+		moveHandler.yStart = my = Q.Pointer.getY(event);
 		var element = this;
 		var sl = [], st = [];
 		$(document).data(dataLifted, $(this))
 			.on(Q.Pointer.move, moveHandler)
-			.on(Q.Pointer.end, dropHandler)
-			.on('click', clickHandler);
+			.on(Q.Pointer.end, dropHandler);
 		$item.on(Q.Pointer.move, moveHandler)
 			.on(Q.Pointer.end, dropHandler)
-			.on('click', clickHandler) // return false in this handler prevents firing a second time for document
 			.parents().each(function () {
 				sl.push(this.scrollLeft);
 				st.push(this.scrollTop);
 			});
 		tLift = setTimeout(function () {
-			var efp = Q.elementFromPoint(mx, my), i=0, cancel = false;
+			var efp = Q.elementFromPoint(moveHandler.xStart, moveHandler.yStart), i=0, cancel = false;
 			$item.parents().each(function () {
 				if (this.scrollLeft !== sl[i] || this.scrollTop !== st[i]) {
 					cancel = true;
@@ -75,6 +73,8 @@ function (options) {
 	
 	function lift(event) {
 		if (tLift) clearTimeout(tLift);
+		
+		Q.Pointer.cancelClick();
 		
 		if (Q.Pointer.touchCount(event) !== 1) {
 			return;
@@ -167,12 +167,9 @@ function (options) {
 		    y = Q.Pointer.getY(event),
 			$target = getTarget(x, y),
 			state = $this.state('Q/sortable');
+		moveHandler.xStart = moveHandler.yStart = null;
 		complete(!$target && state.requireInside);
 		return false;
-	}
-	
-	function clickHandler(event, target) {
-		// return false;
 	}
 	
 	function complete(revert) {
@@ -185,11 +182,9 @@ function (options) {
 		var data = $item.data('Q/sortable');
 		$(document).removeData(dataLifted)
 			.off(Q.Pointer.move, moveHandler)
-			.off(Q.Pointer.end, dropHandler)
-			.off(Q.Pointer.click, clickHandler);
+			.off(Q.Pointer.end, dropHandler);
 		$item.off(Q.Pointer.move, moveHandler)
-			.off(Q.Pointer.end, dropHandler)
-			.off(Q.Pointer.click, clickHandler);
+			.off(Q.Pointer.end, dropHandler);
 		if (!data) return;
 		if (revert) {
 			$item.show();
@@ -242,9 +237,8 @@ function (options) {
 		mx = x = Q.Pointer.getX(event), 
  		my = y = Q.Pointer.getY(event);
 		if (!Q.info.isTouchscreen && !lifted) {
-			if ((moveHandler.x !== undefined && Math.abs(moveHandler.x - x) > options.lift.threshhold)
-			|| (moveHandler.y !== undefined && Math.abs(moveHandler.y - y) > options.lift.threshhold)) {
-						console.log(Q.Pointer.touchCount(event), event);
+			if ((moveHandler.xStart !== undefined && Math.abs(moveHandler.xStart - x) > options.lift.threshhold)
+			|| (moveHandler.yStart !== undefined && Math.abs(moveHandler.yStart - y) > options.lift.threshhold)) {
 				lift.call($item[0], event);
 			}
 		}
@@ -450,7 +444,7 @@ function (options) {
 	lift: {
 		delay: 300,
 		delayTouchscreen: 300,
-		threshhold: 20,
+		threshhold: 10,
 		zoom: 1.1,
 		animate: 100
 	},

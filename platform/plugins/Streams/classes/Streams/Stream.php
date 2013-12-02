@@ -1256,6 +1256,9 @@ class Streams_Stream extends Base_Streams_Stream
 				$result[$key] = $this->$key;
 			}
 		}
+		if (!empty($result['icon']) and Q_Valid::url($result['icon'])) {
+			$result['icon'] = Q_Uri::url($result['icon']);
+		}
 		$result['access'] = array(
 			'readLevel' => $this->get('readLevel', $this->readLevel),
 			'writeLevel' => $this->get('writeLevel', $this->writeLevel),

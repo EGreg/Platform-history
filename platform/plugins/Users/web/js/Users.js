@@ -676,8 +676,8 @@ Users.batchFunction = function Users_batchFunction(baseUrl) {
 };
 Users.batchFunction.functions = {};
 
-Q.onActivate.set(function () {
-	$('a').live('click', function (e) {
+Q.onActivate.set(function (elem) {
+	$(elem || document).off('click.Users').on('click.Users', 'a', function (e) {
 		var href = $(this).attr('href');
 		if (Users.requireLogin && Users.requireLogin[href]) {
 			if (Users.requireLogin[href] === 'facebook') {

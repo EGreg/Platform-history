@@ -70,7 +70,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 						}, state.relatedFrom);
 					},
 					preprocess: function (callback) {
-						// TODO: have some kind of cropping interface
+						// TODO: have some kind of cropping interface for imagepicker
 						callback();
 					},
 					onSuccess: {'Streams/image/preview': function (data, key) {
@@ -89,8 +89,11 @@ Q.Tool.define("Streams/image/preview", function(options) {
 					tool.$('.Streams_image_preview_add').width(w).height(h);
 				}
 				if (state.creatable.clickable) {
+					var clo = (typeof state.creatable.clickable === 'object')
+						? state.creatable.clickable
+						: {};
 					tool.$('.Streams_image_preview_add')
-						.plugin('Q/clickable')
+						.plugin('Q/clickable', clo)
 						.plugin('Q/imagepicker', ipo);
 				}
 			},
@@ -139,6 +142,22 @@ Q.Tool.define("Streams/image/preview", function(options) {
 					}}
 				});
 				tool.$('img').plugin('Q/imagepicker', ipo);
+				if (tool.state.actions && stream.testWriteLevel('close')) {
+					var ao = Q.extend(tool.state.actions, {
+						actions: {
+							'delete': function () {
+								stream.remove(function (err) {
+									if (err) {
+										alert(err);
+										return;
+									}
+									tool.state.onRemove.handle.call(tool);
+								});
+							}
+						}
+					});
+					tool.$().plugin('Q/actions', ao);
+				}
 			}
 			stream.onFieldChanged('icon').set(function () {
 				setTimeout(function () {
@@ -192,9 +211,17 @@ Q.Tool.define("Streams/image/preview", function(options) {
 		}
 	},
 	inplace: {},
+	actions: {
+		position: 'tr'
+	},
 	throbber: "plugins/Q/img/throbbers/coolspinner_dark.gif",
 	onCreate: new Q.Event(),
-	onUpdate: new Q.Event()
+	onUpdate: new Q.Event(),
+	onRemove: new Q.Event(function () {
+		this.$().hide('slow', function () {
+			$(this).remove();
+		});
+	}, 'Streams/image/preview')
 },
 
 {
@@ -223,7 +250,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 			var fields = Q.extend({}, state.templates.edit.fields, {
 				src: Q.Streams.iconUrl(icon, file)+'?'+Date.now(),
 				alt: stream.fields.title,
-				inplace: "<div class='Q_tool Streams_inplace_tool' data-streams-inplace='"+Q.Tool.encodeOptions(inplace)+"'></div>"
+				inplace: Q.Tool.elementHTML('div', 'Streams/inplace', inplace)
 			});
 			Q.Template.render(
 				'Streams/image/preview/edit',

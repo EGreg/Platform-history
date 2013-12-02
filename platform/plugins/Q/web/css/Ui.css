@@ -24,7 +24,7 @@ table { border-spacing:0; border-collapse:collapse; }
 .Q_required { border: solid 2px #AAC !important; }
 .Q_selected {}
 .Q_throb { background-image: url(../img/throbbers/bars.gif); background-repeat: no-repeat; background-position: center center; }
-.Q_clickable_container { cursor: pointer !important; }
+.Q_clickable_container { cursor: pointer !important;  }
 .Q_clickable_container .Q_clickable_shadow { display: none; }
 .Q_clickable_container:hover .Q_clickable_shadow { display: block; }
 .Q_placeholder { display: inline-block; color: #999 !important; font-style: italic !important; zoom: 1; *display: inline; }
@@ -1176,11 +1176,11 @@ div.Q_placeholder { pointer-events: none; }
 .Q_form_tool .Q_form_textareamessage { text-align: center; padding-right: 5%; }
 form textarea { width: 250px; }
 
-.Q_inplace_tool { display: inline; position: relative; }
+.Q_inplace_tool, .Q_inplace_tool_container { display: inline; position: relative; }
 .Q_inplace_tool .Q_inplace_tool_nicewrap { display: inline; }
 .Q_inplace_tool .Q_inplace_tool_editbuttons { display: none; position: absolute; left: 0px; z-index: 9901; }
 .Q_inplace_tool .Q_inplace_tool_editbuttons button { display: inline; }
-.Q_inplace_tool .Q_inplace_tool_static { display: inline; border: solid 1px transparent; cursor: default; }
+.Q_inplace_tool .Q_inplace_tool_static { display: inline-block; border: solid 1px transparent; cursor: default; }
 .Q_inplace_tool .Q_inplace_tool_blockstatic { display: block; border: solid 1px transparent; cursor: default; }
 .Q_inplace_tool .Q_hover .Q_inplace_tool_static,
 .Q_inplace_tool .Q_hover .Q_inplace_tool_blockstatic { border: dashed 1px #AAE; cursor: pointer; }

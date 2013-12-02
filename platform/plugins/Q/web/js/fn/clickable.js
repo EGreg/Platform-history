@@ -7,7 +7,7 @@ Q.Tool.jQuery('Q/clickable',
 
 function (o) {
 	
-	$(this).on('invoke.clickable', function () {
+	$(this).on('invoke.Q_clickable', function () {
 		$(this).trigger('mousedown');
 		setTimeout(function () {
 			$(this).trigger('release')
@@ -117,17 +117,16 @@ function (o) {
 				scale(1 + y * (o.press.size-1));
 				$this.css('opacity', 1 + y * (o.press.opacity-1));
 			}, o.press.duration, o.press.ease);
-			//$this.bind('click.clickable', function () {
+			//$this.bind('click.Q_clickable', function () {
 			//	return false;
 			//});
 			var pos = null;
 			Q.Pointer.onCancelClick.set(function () {
-				if (anim) {
-					anim.pause();
-				}
+				anim && anim.pause();
+				scale(1);
 			}, 'Q/clickable');
-			$(window).bind(Q.Pointer.end+'.clickable', onRelease);
-			$(window).bind('release.clickable', onRelease);
+			$(window).on([Q.Pointer.end, '.Q_clickable'], onRelease);
+			$(window).on('release.Q_clickable', onRelease);
 			function onRelease (evt) {
 				var jq;
 				if (evt.type === 'release') {
@@ -154,7 +153,7 @@ function (o) {
 									Q.handle(o.afterRelease, $this, [evt, overElement]);
 									$this.trigger('afterRelease', $this, evt, overElement);
 									container.css('z-index', zindex);
-									// $this.unbind('click.clickable');
+									// $this.unbind('click.Q_clickable');
 									// $this.trigger('click');
 								}
 							}, o.snapback.duration, o.snapback.ease);
@@ -165,7 +164,7 @@ function (o) {
 						scale(o.press.size + y * (1-o.press.size));
 						$this.css('opacity', o.press.opacity + y * (1-o.press.opacity));
 						if (x === 1) {
-							$this.unbind('click.clickable');
+							$this.off('click.Q_clickable');
 						}
 					}, o.release.duration, o.release.ease);
 					setTimeout(function () {
@@ -174,8 +173,8 @@ function (o) {
 						container.css('z-index', zindex);
 					}, o.release.duration);
 				}
-				$(window).unbind(Q.Pointer.end+'.clickable');
-				$(window).unbind('release.clickable');
+				$(window).off([Q.Pointer.end, '.Q_clickable']);
+				$(window).off('release.Q_clickable');
 				Q.handle($this.state('Q/clickable').onRelease, $this, [evt, overElement]);
 			};
 			function scale(factor) {

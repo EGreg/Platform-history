@@ -22,7 +22,7 @@ Q.Tool.define("Q/tabs", function(options) {
 		return this;
 	}
 	
-	$('a.Q_tabs_tab', tool.element).on(Q.Pointer.fastclick, function () {
+	$('a.Q_tabs_tab', tool.element).on([Q.Pointer.fastclick, '.Q_tabs'], function () {
 		tool.switchTo(this.getAttribute('data-name'));
 	}).click(function () {
 		return false;

@@ -26,6 +26,7 @@
  *           Its "this" object will be a jQuery of the imagepicker element
  *           The first parameter is a callback, which should be called with an optional 
  *           hash of overrides, which can include "data", "path", "subpath", "save", "url", "loader" and "crop"
+ *   'cameraCommands': An array of titles for the commands that pop up to take a photo
  *   'onClick': A function to execute during the click, which may cancel the click
  *   'onSuccess': Optional. Q.Event which is called on successful upload. First parameter will be the server response with
  *                hash in format similar to 'saveSizeName' field.
@@ -114,7 +115,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 
 		if (navigator.camera) {
 			// "file" input type is not supported
-			$this.on(Q.Pointer.click + '.Q_imagepicker', function(e) {
+			$this.on([Q.Pointer.click, '.Q_imagepicker'], function(e) {
 				navigator.notification.confirm("", function(index) {
 					if (index === 3) return;
 					var source = Camera.PictureSourceType[index === 1 ? "CAMERA" : "PHOTOLIBRARY"];
@@ -126,16 +127,16 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 						sourceType: source,
 						destinationType: Camera.DestinationType.DATA_URL
 					});
-				}, "", "Take new photo,Select from library,Cancel");
+				}, "", o.cameraCommands.join(','));
 				e.preventDefault();
 			});
 		} else {
 			// natively support "file" input
-			$this.on(Q.Pointer.click + '.Q_imagepicker', function(e) {
+			$this.on([Q.Pointer.click, '.Q_imagepicker'], function(e) {
 				input.click();
 				e.preventDefault();
 			});
-			input.click(function () {
+			input.on(Q.Pointer.click, function () {
 				if (o.onClick && o.onClick() === false) {
 					return false;
 				}
@@ -174,6 +175,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 	url: Q.action("Q/image"),
 	throbber: null,
 	preprocess: null,
+	cameraCommands: ["Take new photo","Select from library","Cancel"],
 	onSuccess: new Q.Event(function() {}, 'Q/imagepicker'),
 	onError: new Q.Event(function(message) {
 		alert('Image upload error' + (message ? ': ' + message : '') + '.');
@@ -184,7 +186,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 	destroy: function () {
 		return this.each(function() {
 			var $this = $(this);
-			$this.off(Q.Pointer.click + '.Q_imagepicker');
+			$this.off([Q.Pointer.click, '.Q_imagepicker']);
 			if ($this.next().hasClass('Q_imagepicker_file')) {
 				$this.next().remove();
 			}

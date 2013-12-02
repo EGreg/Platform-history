@@ -253,6 +253,21 @@ Date.now = Date.now || function _Date_now() {
 	return new Date().getTime();
 };
 
+HTMLElement.prototype.contains = function (child) {
+    var node = child.parentNode;
+    while (node != null) {
+        if (node == this) {
+            return true;
+        }
+        node = node.parentNode;
+    }
+    return false;
+};
+
+HTMLElement.prototype.isOrContains = function (child) {
+	return this === child || this.contains(child);
+};
+
 HTMLElement.prototype.computedStyle = function(name) {
     var computedStyle;
     if ( this.currentStyle !== undefined ) {
@@ -304,7 +319,7 @@ HTMLElement.prototype.preventSelections = function () {
 
 if(!document.getElementsByClassName) {
     document.getElementsByClassName = function(className) {
-        return this.querySelectorAll("." + className);
+		return Array.prototype.slice.call(this.querySelectorAll("." + className));
     };
     Element.prototype.getElementsByClassName = document.getElementsByClassName;
 }
@@ -425,7 +440,7 @@ Q.each = function _Q_each(container, callback, options) {
 						keys.push(options.numeric ? Number(k) : k);
 					}
 				}
-				keys = options.numeric ? keys.sort(function (a,b) {return a-b;}) : keys.sort();
+				keys = options.numeric ? keys.sort(function (a,b) {return Number(a)-Number(b);}) : keys.sort();
 				if (options.ascending === false) {
 					for (i=keys.length-1; i>=0; --i) {
 						key = keys[i];
@@ -2104,9 +2119,17 @@ Q.Tool.define = function (name, ctor, defaultOptions, stateKeys, methods) {
 Q.Tool.beingActivated = undefined;
 
 var _qtdo = {};
-Q.Tool.define.options = function (pluginName) {
-	pluginName = Q.normalize(pluginName);
-	return Q.Tool.constructors[name] ? Q.Tool.constructors[name].options : _qtdo[pluginName];
+Q.Tool.define.options = function (toolName, setOptions) {
+	toolName = Q.normalize(toolName);
+	if (Q.Tool.constructors[name]) {
+		options = Q.Tool.constructors[name].options;
+	} else {
+		options = _qtdo[toolName] = _qtdo[toolName] || {};
+	}
+	if (setOptions) {
+		Q.extend(options, setOptions);
+	}
+	return options;
 };
 
 /**
@@ -2181,9 +2204,17 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 };
 
 var _qtjo = {};
-Q.Tool.jQuery.options = function (pluginName) {
+Q.Tool.jQuery.options = function (pluginName, setOptions) {
 	pluginName = Q.normalize(pluginName);
-	return window.jQuery.fn[pluginName] ? window.jQuery.fn[pluginName].options : _qtjo[pluginName];
+	if (Q.Tool.constructors[name]) {
+		options = window.jQuery.fn[pluginName].options;
+	} else {
+		options = _qtjo[pluginName] = _qtjo[pluginName] || {};
+	}
+	if (setOptions) {
+		Q.extend(options, setOptions, 10);
+	}
+	return options;
 };
 
 Q.Tool.nextDefaultId = 1;
@@ -2220,11 +2251,46 @@ Q.Tool.prototype.child = function Q_Tool_prototype_child(append) {
 	var key;
 	for (key in Q.tools) {
 		if (key.length > this.prefix.length
-		 && Q.normalize(key.substr(0, prefix2.length)) == prefix2) {
+		 && Q.normalize(key.substr(0, prefix2.length)) === prefix2) {
 			return Q.tools[key];
 		}
 	}
 	return null;
+};
+
+/**
+ * Gets parents tools containing the tool, as determined by their prefixes
+ * based on the prefix of the tool.
+ * @param append The string to append to the prefix to find the child tool
+ * @return Object A hash of {prefix: Tool} pairs
+ */
+Q.Tool.prototype.parents = function Q_Tool_prototype_children(append) {
+	var prefix2, key, keys = [], i;
+	prefix2 = Q.normalize(append ? this.prefix + append : this.prefix);
+	for (key in Q.tools) {
+		if (key.length < this.prefix.length
+		 && Q.normalize(key) === prefix2.substr(0, key.length)) {
+			keys.push(key);
+		}
+	}
+	keys.sort(function (a, b) { return String(a).length - String(b).length } );
+	var result = {};
+	for (i=keys.length-1; i >= 0; --i) {
+		key = keys[i];
+		result[key] = Q.tools[key];
+	}
+	return result;
+};
+
+/**
+ * Gets the first child tool contained in the tool, which matches the prefix
+ * based on the prefix of the tool.
+ * @param append The string to append to the prefix to find the child tool
+ * @return Tool|null
+ */
+Q.Tool.prototype.parent = function Q_Tool_prototype_child(append) {
+	var parents = this.parents();
+	return parents.length ? parents[0] : null;
 };
 
 /**
@@ -2311,6 +2377,16 @@ Q.Tool.prototype.getElementsByClassName = function _Q_Tool_prototype_getElements
 };
 
 /**
+ * Returns a string that is already properly encoded and can be set as the value of an options attribute
+ * @param Object options
+ *   the options to pass to a tool
+ * @return String
+ */
+Q.Tool.encodeOptions = function _Q_Tool_stringFromOptions(options) {
+	return JSON.stringify(options).encodeHTML().replaceAll({"&quot;": '"'});
+};
+
+/**
  * Creates a div that can be used to activate a tool
  * For example: $('container').append(Q.Tool.make('Streams/chat')).activate(options);
  * @method Q.Tool.element
@@ -2325,7 +2401,7 @@ Q.Tool.prototype.getElementsByClassName = function _Q_Tool_prototype_getElements
  * @return HTMLElement
  *  Returns an element you can append to things
  */
-Q.Tool.element = function _Q_tool(element, toolType, toolOptions, id) {
+Q.Tool.element = function _Q_Tool_element(element, toolType, toolOptions, id) {
 	if (typeof toolOptions === 'string') {
 		id = toolOptions;
 		toolOptions = undefined;
@@ -2350,6 +2426,13 @@ Q.Tool.element = function _Q_tool(element, toolType, toolOptions, id) {
 	return element;
 };
 
+Q.Tool.elementHTML = function _Q_Tool_elementHTML(element, toolType, toolOptions, id) {
+	var e = Q.Tool.element(element, toolType, null, id);
+	var ntt = toolType.replace(new RegExp('/', 'g'), '_');
+	e.setAttribute('data-'+ntt.replace(new RegExp('_', 'g'), '-'), Q.Tool.encodeOptions(toolOptions));
+	return e.outerHTML;
+};
+
 /**
  * Returns a tool corresponding to the given DOM element, if such tool has already been constructed.
  *
@@ -2362,19 +2445,7 @@ Q.Tool.from = function _Q_Tool_from(toolElement) {
 	if (typeof toolElement === 'string') {
 		toolElement = document.getElementById(toolElement);
 	}
-	var prefix = Q.Tool.prefixById(toolElement.id);
-	var Q_tool = Q.tools[prefix];
-	return (typeof(Q_tool) === 'object' ? Q_tool : null);
-};
-
-/**
- * Returns a string that is already properly encoded and can be set as the value of an options attribute
- * @param Object options
- *   the options to pass to a tool
- * @return String
- */
-Q.Tool.encodeOptions = function _Q_Tool_stringFromOptions(options) {
-	return JSON.stringify(options).encodeHTML().replaceAll({"&quot;": '"'});
+	return toolElement.Q ? toolElement.Q.tool : null;
 };
 
 /**
@@ -2424,7 +2495,7 @@ function _loadToolScript(toolElement, callback, shared) {
 						throw "Q.Tool.loadScript: Missing tool constructor for " + toolName;
 					}
 				}
-				toolFunc.options = Q.extend(toolFunc.options, existingOptions);
+				toolFunc.options = Q.extend(toolFunc.options, 10, existingOptions);
 				callback(toolElement, toolFunc, toolName, uniqueToolId);
 			});
 		} else if (typeof toolFunc !== 'undefined') {
@@ -3450,7 +3521,6 @@ Q.req = function _Q_req(uri, slotNames, callback, options) {
  *  "method": if set, adds a &Q.method= that value to the querystring, default "get"
  *  "fields": optional fields to pass with any method other than "get"
  *  "skipNonce": if true, skips loading of the nonce
- *  "query": if true simply return the query without requesting it
  *  "xhr": if false, avoids XHR. If true, tries to make xhr based on "method" option.
  *     Or pass an object with properties to merge onto the xhr object, including a special "sync" property to make the call synchronous.
  *     Or pass a function which will be run before .send() is executed. First parameter is the xhr object, second is the options.
@@ -3464,6 +3534,7 @@ Q.req = function _Q_req(uri, slotNames, callback, options) {
  *  "onLoad": handler to call when data is loaded but before it is processed - when called the argument of "onTimeout" does nothing
  *  "handleRedirects": if set and response data.redirect.url is not empty, automatically call this function. Defaults to Q.handle.
  *  "quiet": defaults to true. This option is just passed to your onLoadStart/onLoadEnd handlers in case they want to respect it.
+ *  "query": if true simply returns the query url without issuing the request
  */
 Q.request = function (url, slotNames, callback, options) {
 	
@@ -3475,10 +3546,7 @@ Q.request = function (url, slotNames, callback, options) {
 		callback = arguments[3];
 		options = arguments[4];
 		delim = (url.indexOf('?') < 0) ? '?' : '&';
-		for (k in fields) {
-			url += delim+encodeURIComponent(k)+'='+encodeURIComponent(fields[k]);
-			delim = '&';
-		}
+		url += delim + Q.serializeFields(fields);
 	}
 	if (typeof slotNames === 'function') {
 		options = callback;
@@ -3504,7 +3572,7 @@ Q.request = function (url, slotNames, callback, options) {
 				}
 				var data;
 				try {
-					data = JSON.parse(content);
+					data = (typeof content === 'string' ? JSON.parse(content) : content);
 				} catch (e) {
 					console.warn('Q.request(' + url + ',['+slotNames+']):' + e);
 					return callback({"errors": [e]}, content);
@@ -3579,12 +3647,12 @@ Q.request = function (url, slotNames, callback, options) {
 			        }
 			    }
 				var method = options.method || 'GET';
-				var um = method.toUpperCase();
+				var verb = method.toUpperCase();
 				var overrides = {
 					loadExtras: !!options.loadExtras
 				};
-				if (um !== 'GET') {
-					method = 'POST'; // browsers don't always support other HTTP verbs;
+				if (verb !== 'GET') {
+					verb = 'POST'; // browsers don't always support other HTTP verbs;
 					overrides.method = options.method;
 				}
 				if (typeof options.xhr === 'function') {
@@ -3599,11 +3667,11 @@ Q.request = function (url, slotNames, callback, options) {
 					url = Q.ajaxExtend(url, slotNames, overrides);
 				}
 				var content = Q.serializeFields(options.fields);
-				if (um === 'GET') {
+				if (verb === 'GET') {
 					xmlhttp.open('GET', url + (content ? '&' + content : ''), sync);
 					xmlhttp.send();
 				} else {
-			    	xmlhttp.open(um, url, sync);
+			    	xmlhttp.open(verb, url, sync);
 					xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 					//xmlhttp.setRequestHeader("Content-length", content.length);
 					//xmlhttp.setRequestHeader("Connection", "close");
@@ -3634,6 +3702,10 @@ Q.request = function (url, slotNames, callback, options) {
 			}
 		} else {
 			url2 = (o.extend === false) ? url : Q.ajaxExtend(url, slotNames, o);
+		}
+		if (options && options.fields) {
+			delim = (url.indexOf('?') < 0) ? '?' : '&';
+			url2 += delim + Q.serializeFields(options.fields);
 		}
 		if (o.query) {
 			return url2;
@@ -4318,14 +4390,10 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 			}
 		}
 	}
-	var childrenOptions = options;
 	if (found && typeof(callbackBefore) == 'function') {
-		childrenOptions = callbackBefore(elem, options, shared, parent, i);
-		if (childrenOptions === Q.find.skipSubtree) {
+		var ret = callbackBefore(elem, options, shared, parent, i);
+		if (ret === false) {
 			return;
-		}
-		if (childrenOptions === undefined) {
-			childrenOptions = options;
 		}
 	}
 	var children;
@@ -4340,7 +4408,7 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 			c[i] = children[i];
 		}
 	}
-	Q.find(c, filter, callbackBefore, callbackAfter, childrenOptions, shared, elem);
+	Q.find(c, filter, callbackBefore, callbackAfter, options, shared, elem);
 	if (found && typeof(callbackAfter) == 'function') {
 		callbackAfter(elem, options, shared, parent, i);
 	}
@@ -5105,6 +5173,7 @@ function _constructTool(toolElement, options, shared) {
 					Q.Tool.beingActivated = prevTool;
 				} catch (e) {
 					console.warn(e);
+					throw e;
 					Q.Tool.beingActivated = prevTool;
 				}
 				this.constructed = true;
@@ -5702,7 +5771,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 		});
 		Q.addScript(srcs, function _jQuery_plugin_script_loaded() {
 			for (var pluginName in existingOptions) {
-				$.fn[pluginName].options = Q.extend($.fn[pluginName].options, existingOptions[pluginName]);
+				$.fn[pluginName].options = Q.extend($.fn[pluginName].options, 10, existingOptions[pluginName]);
 			}
 			Q.handle(callback);
 		}, options);
@@ -5742,6 +5811,14 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 					break;
 				}
 			} // assume f >= 1
+			var namespace = '';
+			if (Q.typeOf(arguments[0]) === 'array') {
+				namespace = arguments[0][1] || '';
+				if (namespace && namespace[0] !== '.') {
+					namespace = '.' + namespace;
+				}
+				arguments[0] = arguments[0][0];
+			}
 			if (typeof arguments[0] === 'function') {
 				var params = {
 					original: arguments[f]
@@ -5751,6 +5828,13 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 					throw "Custom $.fn.on handler: need to set params.eventName";
 				}
 				arguments[0] = params.eventName;
+			}
+			if (namespace) {
+				var parts = arguments[0].split(' ');
+				for (var i=parts.length-1; i>=0; --i) {
+					parts[i] += namespace;
+				}
+				arguments[0] = parts.join(' ');
 			}
 			var added;
 			if (arguments[f-1] === true) {
@@ -5772,6 +5856,36 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 				return _jQuery_fn_on.apply(this, arguments);
 			}
 		};
+		
+		var _jQuery_fn_off = $.fn[off];
+		$.fn[off] = function () {
+			var namespace = '';
+			if (Q.typeOf(arguments[0]) === 'array') {
+				namespace = arguments[0][1] || '';
+				if (namespace && namespace[0] !== '.') {
+					namespace = '.' + namespace;
+				}
+				arguments[0] = arguments[0][0];
+			}
+			if (typeof arguments[0] === 'function') {
+				var params = {
+					original: arguments[f]
+				};
+				arguments[f] = arguments[0] ( params );
+				if (!('eventName' in params)) {
+					throw "Custom $.fn.on handler: need to set params.eventName";
+				}
+				arguments[0] = params.eventName;
+			}
+			if (namespace) {
+				var parts = arguments[0].split(' ');
+				for (var i=parts.length-1; i>=0; --i) {
+					parts[i] += namespace;
+				}
+				arguments[0] = parts.join(' ');
+			}
+			return _jQuery_fn_off.apply(this, arguments);
+		}
 	});
 };
 Q.jQueryPluginPlugin();
@@ -6218,9 +6332,7 @@ Q.Browser = {
 
 var detected = Q.Browser.detect();
 Q.info = {
-	isTouchscreen: navigator.userAgent.match(new RegExp('android|avantgo|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od|ad)|iris|kindle|lge |maemo|midp|mmp|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino', 'i'))
-   		|| navigator.userAgent.substr(0, 4).match('1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|e\-|e\/|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(di|rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|xda(\-|2|g)|yas\-|your|zeto|zte\-', 'i')
-		? true: false,
+	isTouchscreen: ('ontouchstart' in window || !!window.navigator.msMaxTouchPoints), // works on ie10
 	isTablet: navigator.userAgent.match(new RegExp('tablet|ipad', 'i'))
 		|| navigator.userAgent.match(new RegExp('android', 'i'))
 		&& !navigator.userAgent.match(new RegExp('mobile', 'i'))
@@ -6238,19 +6350,23 @@ Q.Pointer = {
 	'event': (Q.info.isTouchscreen ? 'touchenter' : 'mouseleave'),
 	'leave': (Q.info.isTouchscreen ? 'touchleave' : 'mouseleave'),
 	'cancel': (Q.info.isTouchscreen ? 'touchcancel' : 'mousecancel'), // mousecancel can be a custom event
-	'click': (Q.info.isTouchscreen ? 'touchend' : 'click'),
-	'fastclick': function _Q_fastclick (params) {
-		params.eventName = (Q.Pointer.start + ' ' + Q.Pointer.end);
-		return function _Q_fastclick_on_wrapper (e) {
-			if (e.type === Q.Pointer.start) {
-				Q.Pointer.started = this;
-				return;
-			}
-			if (Q.Pointer.canceledClick || Q.Pointer.started !== this) {
+	'click': function _Q_click(params) {
+		params.eventName = 'click';
+		return function _Q_click_on_wrapper (e) {
+			if (Q.Pointer.canceledClick) {
 				e.preventDefault ? e.preventDefault() : event.returnValue = false;
 				return;
 			}
-			Q.Pointer.started = null;
+			params.original.apply(this, arguments);
+		};
+	},
+	'fastclick': function _Q_fastclick (params) {
+		params.eventName = Q.Pointer.end;
+		return function _Q_fastclick_on_wrapper (e) {
+			if (Q.Pointer.canceledClick || !this.isOrContains(Q.Pointer.started)) {
+				e.preventDefault ? e.preventDefault() : event.returnValue = false;
+				return;
+			}
 			params.original.apply(this, arguments);
 		};
 	},
@@ -6274,15 +6390,28 @@ Q.Pointer = {
 		var button = e.which || e.button;
 		return button || -1; // -1 means non-button interaction
 	},
+	'target': function (e) {
+		var target = e.target || e.srcElement;
+	    if (target.nodeType === 3) { // Safari bug
+			target = target.parentNode;
+		}
+		return target;
+	},
+	'relatedTarget': function (e) {
+		e.relatedTarget = e.relatedTarget || (e.type == 'mouseover' ? e.fromElement : e.toElement);	
+	},
+	cancelClick: function (event, extraInfo) {
+		Q.Pointer.onCancelClick.handle(event, extraInfo);
+		Q.Pointer.canceledClick = true;	
+	},
 	onCancelClick: new Q.Event(),
 	options: {
 		cancelClickDistance: 10
 	}
 };
 
-
-
-function _Q_PointerStartHandler() {
+function _Q_PointerStartHandler(e) {
+	Q.Pointer.started = Q.Pointer.target(e);
 	Q.Pointer.canceledClick = false;
 	Q.addEventListener(window, Q.Pointer.move, _onPointerMove);
 	Q.addEventListener(window, Q.Pointer.end, _onPointerEnd);
@@ -6309,19 +6438,21 @@ function _Q_PointerStartHandler() {
 		} else if ((pos.x && Math.abs(pos.x - screenX) > Q.Pointer.options.cancelClickDistance)
 		|| (pos.y && Math.abs(pos.y - screenY) > Q.Pointer.options.cancelClickDistance)) {
 			// finger moved more than the threshhold
-			Q.Pointer.onCancelClick.handle(evt, {
+			Q.Pointer.cancelClick(evt, {
 				fromX: pos.x,
 				fromY: pos.y,
 				toX: screenX,
 				toY: screenY
 			});
-			Q.Pointer.canceledClick = true;
 			Q.removeEventListener(window, Q.Pointer.move, _onPointerMove);
 			pos = {};
 		}
 	}
 
 	function _onPointerEnd() {
+		setTimeout(function () {
+			Q.Pointer.started = null;
+		}, 0);
 		Q.removeEventListener(window, Q.Pointer.move, _onPointerMove);
 		Q.removeEventListener(window, Q.Pointer.end, _onPointerEnd);
 	}
@@ -6545,11 +6676,7 @@ Q.Mask = {
 				mask.fadeTime = options.fadeTime;
 			}
 			if (mask.fadeTime) {
-				if (Q.Layout.isIE8orLess) {
-					mask.element.fadeTo(mask.fadeTime, 0.3);
-				} else {
-					mask.element.fadeIn(mask.fadeTime);
-				}
+				mask.element.fadeIn(mask.fadeTime);
 			} else {
 				mask.element.show();
 			}
