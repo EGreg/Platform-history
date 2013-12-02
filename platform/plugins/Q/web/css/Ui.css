@@ -26,7 +26,7 @@ table { border-spacing:0; border-collapse:collapse; }
 .Q_throb { background-image: url(../img/throbbers/bars.gif); background-repeat: no-repeat; background-position: center center; }
 .Q_clickable_container { cursor: pointer !important;  }
 .Q_clickable_container .Q_clickable_shadow { display: none; }
-.Q_clickable_container:hover .Q_clickable_shadow { display: block; }
+.Q_notTouchscreen .Q_clickable_container:hover .Q_clickable_shadow { display: block; }
 .Q_placeholder { display: inline-block; color: #999 !important; font-style: italic !important; zoom: 1; *display: inline; }
 .Q_focus .Q_placeholder { color: #aaa !important; }
 div.Q_placeholder { pointer-events: none; }
@@ -676,7 +676,7 @@ div.Q_placeholder { pointer-events: none; }
 	margin: 5px;
 }
 
-.Q_messagebox button, .Q_messagebox button:active
+.Q_messagebox button
 {
 	margin-top: 5px;
 	padding-left: 10px;
@@ -1203,8 +1203,8 @@ form textarea { width: 250px; }
 
 .basic16 { background: url('../img/icons/basic16.png'); background-repeat: no-repeat; background-attachment: scroll; height: 16px; padding-left: 17px; text-align: left; font-size: 12px; }
 button.basic16 { height: 20px; border: solid 1px transparent; cursor: pointer; font-weight: bold; color: black; }
-button.basic16:hover { border: outset 1px #889; cursor: pointer;  }
-button.basic16:active { border: inset 1px #889; cursor: pointer; background-color: #CCC; }
+.Q_notTouchscreen button.basic16:hover { border: outset 1px #889; cursor: pointer;  }
+.Q_notTouchscreen button.basic16:active { border: inset 1px #889; cursor: pointer; background-color: #CCC; }
 
 .basic16_home { background-position: 0px -2px; }
 .basic16_zoom { background-position: 0px -22px; }
@@ -1250,8 +1250,8 @@ button.basic16:active { border: inset 1px #889; cursor: pointer; background-colo
 
 .basic32 { background: url('../img/icons/basic32.png'); background-repeat: no-repeat; background-attachment: scroll; height: 32px; padding-left: 34px; text-align: left; font-size: 18px; }
 button.basic32 { height: 40px; border: solid 1px transparent; cursor: pointer; font-weight: bold; }
-button.basic32:hover { border: outset 1px #889; cursor: pointer; }
-button.basic32:active { border: inset 1px #889; cursor: pointer; background-color: #CCC; }
+.Q_notTouchscreen button.basic32:hover { border: outset 1px #889; cursor: pointer; }
+.Q_notTouchscreen button.basic32:active { border: inset 1px #889; cursor: pointer; background-color: #CCC; }
 
 .basic32_home { background-position: 0px -4px; }
 .basic32_zoom { background-position: 0px -44px; }
@@ -1387,8 +1387,8 @@ body { text-align: center; height: 100%; }
 #dashboard .Q_tabs_tab,
 #dashboard .Q_tabs_tab * { cursor: pointer; vertical-align: middle; }
 #dashboard a.Q_tabs_tab { text-decoration: none; color: white; }
-#dashboard a.Q_tabs_tab:hover { text-decoration: none; color: black; }
-#dashboard a.Q_tabs_tab:hover * { color: black; }
+.Q_notTouchscreen #dashboard a.Q_tabs_tab:hover { text-decoration: none; color: black; }
+.Q_notTouchscreen #dashboard a.Q_tabs_tab:hover * { color: black; }
 #dashboard a.Q_tabs_tab img { margin-right: 10px; width: 24px; }
 #dashboard .Q_tabs_tab span { display: inline; text-align: left; }
 #dashboard a.Q_tabs_tab.Q_selected { background-image: url(../img/bg/stucco.png) !important; color: black !important; }
@@ -1419,7 +1419,7 @@ body { text-align: center; height: 100%; }
 .Q_sections .Q_tabs_tab,
 .Q_sections .Q_tabs_tab * { cursor: pointer; vertical-align: middle; }
 .Q_sections a.Q_tabs_tab { text-decoration: none; }
-.Q_sections a.Q_tabs_tab:hover { text-decoration: none; }
+.Q_notTouchscreen .Q_sections a.Q_tabs_tab:hover { text-decoration: none; }
 .Q_sections a.Q_tabs_tab img { margin-right: 10px; width: 24px; }
 
 /* buttons */
@@ -1437,8 +1437,8 @@ div.Q_buttons { text-align: center; }
 .Q_button img { vertical-align: middle; margin-right: 5px; }
 
 .Q_button:focus,
-.Q_button:hover
-.Q_button.focus {
+.Q_notTouchscreen .Q_button:hover
+.Q_notTouchscreen .Q_button.focus {
 	box-shadow: 0px 0px 2px rgba(40,40,80,0.8);
 	-moz-box-shadow: 0px 0px 2px rgba(40,40,80,0.8);
 	-webkit-box-shadow: 0px 0px 2px rgba(40,40,80,0.8); 
@@ -1448,8 +1448,8 @@ div.Q_buttons { text-align: center; }
 	background: -moz-linear-gradient(top,  #444,  #111); /* for firefox 3.6+ */
 	color: #fff;
 }
-.Q_button.active,
-.Q_button:active {
+.Q_notTouchscreen .Q_button.active,
+.Q_notTouchscreen .Q_button:active {
 	box-shadow: 0px 0px 0px rgba(40,40,80,0.8);
 	-moz-box-shadow: 0px 0px 0px rgba(40,40,80,0.8);
 	-webkit-box-shadow: 0px 0px 0px rgba(40,40,80,0.8);
@@ -1460,12 +1460,12 @@ div.Q_buttons { text-align: center; }
 	background: -moz-linear-gradient(top,  #333,  #333); /* for firefox 3.6+ */
 	color: #fff;
 }
-button:hover:disabled,
+.Q_notTouchscreen button:hover:disabled,
 .Q_button:hover:disabled { cursor: default; background: -moz-linear-gradient(top,  #AAA,  #888); }
 button:focus:disabled,
 .Q_button:focus:disabled { cursor: default; background: -moz-linear-gradient(top,  #AAA,  #888); }
 button.basic16 { background-color: #eee; color: black; }
-button.basic16:active { background-color: #ccc; color: black; }
+.Q_notTouchscreen button.basic16:active { background-color: #ccc; color: black; }
 #notices_slot button
 {
 	display: inline-block;
@@ -1476,7 +1476,7 @@ button.basic16:active { background-color: #ccc; color: black; }
 	background: #F1E2C6;
 	box-shadow: 1px 1px 1px 0 #CCC;
 }
-#notices_slot button:active
+.Q_notTouchscreen #notices_slot button:active
 {
 	background: #f0d298;
 	margin-left: 6px;
@@ -1539,7 +1539,7 @@ input[type=radio] { margin-right: 5px; }
 .Q_big_prompt button,
 .Q_big_prompt .Q_button { font-size: 18px; } 
 .Q_big_prompt button,
-.Q_big_prompt .Q_button, .Q_big_prompt .Q_button:active { padding: 5px 1em; }
+.Q_notTouchscreen .Q_big_prompt .Q_button, .Q_big_prompt .Q_button:active { padding: 5px 1em; }
 .Q_big_prompt .Q_button span { display: inline-block; line-height: 1em; margin-top: -2px; }
 .Q_big_prompt input[type=text],
 .Q_big_prompt input[type=email],

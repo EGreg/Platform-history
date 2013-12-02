@@ -6341,6 +6341,7 @@ Q.info = {
 };
 Q.info.isMobile = Q.info.isTouchscreen && !Q.info.isTablet;
 Q.info.formFactor = Q.info.isMobile ? 'mobile' : (Q.info.isTablet ? 'tablet' : 'desktop');
+document.documentElement.className += Q.info.isTouchscreen ? ' Q_touchscreen' : ' Q_notTouchscreen';
 
 // universal pointer events
 Q.Pointer = {

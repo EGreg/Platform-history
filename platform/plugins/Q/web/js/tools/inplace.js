@@ -291,13 +291,15 @@ function _Q_inplace_tool_constructor(element, options) {
 			onCancel();
 		}, 100);
 	};
-	container_span.mouseover(function() {
-		container_span.addClass('Q_hover');
-		$('.Q_inplace_tool_editbuttons', $te).css({ 
-			'margin-top': container_span.outerHeight() + 'px',
-			'line-height': '1px'
+	if (!Q.info.isTouchscreen) {
+		container_span.mouseover(function() {
+			container_span.addClass('Q_hover');
+			$('.Q_inplace_tool_editbuttons', $te).css({ 
+				'margin-top': container_span.outerHeight() + 'px',
+				'line-height': '1px'
+			});
 		});
-	});
+	}
 	container_span.mouseout(function() {
 		container_span.removeClass('Q_hover');
 	});
