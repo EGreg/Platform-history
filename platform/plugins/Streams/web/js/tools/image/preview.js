@@ -88,14 +88,14 @@ Q.Tool.define("Streams/image/preview", function(options) {
 				if (w && h) {
 					tool.$('.Streams_image_preview_add').width(w).height(h);
 				}
+				var add = tool.$('.Streams_image_preview_add');
 				if (state.creatable.clickable) {
 					var clo = (typeof state.creatable.clickable === 'object')
 						? state.creatable.clickable
 						: {};
-					tool.$('.Streams_image_preview_add')
-						.plugin('Q/clickable', clo)
-						.plugin('Q/imagepicker', ipo);
+					add.plugin('Q/clickable', clo);
 				}
+				add.plugin('Q/imagepicker', ipo);
 			},
 			state.templates.create
 		);

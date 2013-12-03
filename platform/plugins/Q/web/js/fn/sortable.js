@@ -16,7 +16,7 @@ function (options) {
 	});
 	
 	options.draggable = options.draggable || '*';
-	$this.on(Q.Pointer.start+'.Q_sortable', options.draggable, liftHandler);
+	$this.on([Q.Pointer.start, '.Q_sortable'], options.draggable, liftHandler);
 	
 	$('*', $this).css('-webkit-touch-callout', 'none');
 	$this.on('dragstart.Q_sortable', options.draggable, function () {

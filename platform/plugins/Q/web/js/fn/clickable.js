@@ -107,9 +107,9 @@ function (o) {
 		stretcher.on('dragstart', function () {
 			return false;
 		}).on(Q.Pointer.start, function (evt) {
-			if (Q.info.isTouchscreen) {
-				evt.preventDefault();
-			}
+			// if (Q.info.isTouchscreen) {
+			// 	evt.preventDefault();
+			// }
 			zindex = $this.css('z-index');
 			container.css('z-index', 1000000);
 			Q.handle(o.onPress, $this, [evt]);
@@ -163,9 +163,9 @@ function (o) {
 					anim = Q.Animation.play(function(x, y) {
 						scale(o.press.size + y * (1-o.press.size));
 						$this.css('opacity', o.press.opacity + y * (1-o.press.opacity));
-						if (x === 1) {
-							$this.off('click.Q_clickable');
-						}
+						// if (x === 1) {
+						// 	$this.off('click.Q_clickable');
+						// }
 					}, o.release.duration, o.release.ease);
 					setTimeout(function () {
 						Q.handle(o.afterRelease, $this, [evt, overElement]);
