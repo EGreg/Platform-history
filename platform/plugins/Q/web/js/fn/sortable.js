@@ -168,7 +168,7 @@ function (options) {
 			$target = getTarget(x, y),
 			state = $this.state('Q/sortable');
 		moveHandler.xStart = moveHandler.yStart = null;
-		complete(!$target && state.requireInside);
+		complete(!$target && state.requireDropTarget);
 		return false;
 	}
 	
@@ -378,7 +378,7 @@ function (options) {
 		var $placeholder = data.$placeholder;
 		if (!$target) {
 			var state = $this.state('Q/sortable');
-			if (state.requireInside) {
+			if (state.requireDropTarget) {
 				$item.after($placeholder);
 			}
 			return;
@@ -386,45 +386,49 @@ function (options) {
 		if ($target.is($placeholder)) {
 			return;
 		}
+		var direction;
 		function isTheSibling($target, direction, element){
 			var result = false;
 			var $siblings = (direction === 'before') ? $target.prevAll() : $target.nextAll();
 			$siblings.each(function () {
 				if (this === element) {
 					result = true;
-					return false;
+					return false; // exit the loop so we can return true result
 				}
 			});
 			return result;
 		}
-		function isThe ($target, direction, element) {
-		    function comparePosition(a, b) {
-		        return a.compareDocumentPosition ? 
-		          a.compareDocumentPosition(b) : 
-		          a.contains ? 
-		            (a != b && a.contains(b) && 16) + 
-		              (a != b && b.contains(a) && 8) + 
-		              (a.sourceIndex >= 0 && b.sourceIndex >= 0 ?
-		                (a.sourceIndex < b.sourceIndex && 4) + 
-		                  (a.sourceIndex > b.sourceIndex && 2) :
-		                1)
-		            + 0 : 0;
-		    }
-			element = element.jquery ? element[0] : element;
-		    var position = comparePosition($target[0], element);
-		    if ((position & 0x04) && direction === 'after') return true;
-		    if ((position & 0x02) && direction === 'before') return true;
-			return false;
-		};
-		data.$prevTarget = $target;
-		var direction;
-		if (isThe($target, 'before', $placeholder[0])) {
-			$target.after($placeholder);
-			direction = 'before';
-		} else if (isThe($target, 'after', $placeholder[0])) {
+		var $n = $target.next(), $p = $target.prev();
+		while ($n.length && !$n.is(':visible')) {
+			$n = $n.next();
+		}
+		while ($p.length && !$p.is(':visible')) {
+			$p = $p.prev();
+		}
+		var tw = $target.width(),
+		    th = $target.height(),
+		    toff = $target.offset(),
+			nh = $n.height(),
+		    noff = $n.offset(),
+			ph = $p.height(),
+			poff = $p.offset();
+		var condition = ((x < toff.left + tw/2) && !(poff && poff.top + ph <= toff.top))
+			|| ((y < toff.top + th/2) && (noff && toff.top + th <= noff.top));
+		if (condition) {
 			$target.before($placeholder);
+			direction = 'before';
+		} else {
+			$target.after($placeholder);
 			direction = 'after';
 		}
+		// if (isTheSibling($target, 'before', $item[0])) {
+		// 	$target.after($placeholder);
+		// 	direction = 'before';
+		// } else if (isTheSibling($target, 'after', $item[0])) {
+		// 	$target.before($placeholder);
+		// 	direction = 'after';
+		// }
+		data.$prevTarget = $target;
 		Q.handle(options.onIndicate, $this, [$item, {
 			$target: $target,
 			direction: direction,
@@ -453,10 +457,10 @@ function (options) {
 		delayTouchscreen: 300,
 		threshhold: 0,
 		distance: 0.15,
-		speed: 20,
+		speed: 30,
 		acceleration: 0.1
 	},
-	requireInside: true,
+	requireDropTarget: true,
 	onLift: new Q.Event(),
 	onIndicate: new Q.Event(),
 	onDrop: new Q.Event(function ($item, revert, data) {

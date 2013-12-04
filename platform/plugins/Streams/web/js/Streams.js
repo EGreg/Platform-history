@@ -484,6 +484,7 @@ Streams.getParticipating = Q.getter(function(callback) {
  */
 Streams.refresh = function (callback) {
 	if (!Q.Users.loggedInUser || !Q.isOnline()) {
+		callback && callback(false);
 		return false;
 	}
 	var now = Date.now();
@@ -636,6 +637,7 @@ Stream.retainWith = Streams.retainWith;
  */
 Stream.refresh = function (publisherId, streamName, callback) {
 	if (!Q.Users.loggedInUser || !Q.isOnline()) {
+		callback && callback(false);
 		return false;
 	}
 	// If the stream was seen, fetch latest messages,

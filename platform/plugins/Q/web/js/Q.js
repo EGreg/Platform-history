@@ -253,7 +253,8 @@ Date.now = Date.now || function _Date_now() {
 	return new Date().getTime();
 };
 
-HTMLElement.prototype.contains = function (child) {
+HTMLElement.prototype.contains = HTMLElement.prototype.contains || function (child) {
+	if (!child) return false;
     var node = child.parentNode;
     while (node != null) {
         if (node == this) {
