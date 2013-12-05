@@ -484,7 +484,7 @@ Streams.getParticipating = Q.getter(function(callback) {
  */
 Streams.refresh = function (callback) {
 	if (!Q.Users.loggedInUser || !Q.isOnline()) {
-		callback && callback(false);
+		Q.handle(callback, this, [false]);
 		return false;
 	}
 	var now = Date.now();
@@ -798,7 +798,6 @@ Stream.prototype.testWriteLevel = function (level) {
 		level = Streams.WRITE_LEVEL[level];
 	}
 	if (level === undefined) {
-		debugger;
 		throw "Streams.Stream.prototype.testWriteLevel: level is undefined";
 	}
 	return this.access.writeLevel >= level;
