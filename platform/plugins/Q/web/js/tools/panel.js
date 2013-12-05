@@ -13,15 +13,15 @@ Q.Tool.constructors['q_panel'] = function(prefix) {
 		var form_tool_prefix = prefix+'Q_form_';
 		var static_tool_prefix = prefix+'idstatic_Q_form_';
 		var container = $('.Q_panel_tool_container', $te);
-		if (form_tool_prefix in Q.tools) {
-			var form_tool = Q.tools[form_tool_prefix];
+		if (form_tool_id in Q.tools) {
+			var form_tool = Q.tools[form_tool_id];
 			form_tool.onSuccess[prefix] = function() {
 				form_val = form.serialize();
 				container.removeClass('Q_modified');
 				container.removeClass('Q_editing');
 			};
-			if (static_tool_prefix in Q.tools) {
-				var static_tool = Q.tools[static_tool_prefix];
+			if (static_tool_id in Q.tools) {
+				var static_tool = Q.tools[static_tool_id];
 			}
 			form_tool.onResponse[prefix] = function(response) {
 				var buttons = $('.Q_panel_tool_buttons', $te);

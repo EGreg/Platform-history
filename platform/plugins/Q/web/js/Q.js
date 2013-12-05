@@ -1198,7 +1198,7 @@ Q.Event.calculateKey = function _Q_Event_calculateKe(key, container, start) {
 		key = Q.Tool.beingActivated; // by default, use the current tool as the key, if any
 	}
 	if (Q.typeOf(key) === 'Q.Tool')	{
-		key = key.prefix;
+		key = key.id;
 	}
 	if (container && key == undefined) { // key is undefined or null
 		var i = (start === undefined) ? Q.Event.calculateKey.keys.length : start;
@@ -1282,7 +1282,7 @@ Q.Event.prototype.add = function _Q_Event_prototype_add(callable, key, prepend) 
 Q.Event.prototype.remove = function _Q_Event_prototype_remove(key) {
 	// Only available in the front-end Q.js: {
 	if (Q.typeOf(key) === 'Q.Tool')	{
-		key = key.prefix;
+		key = key.id;
 	}
 	if (key === true) {
 		l = Q.Event.forPage.length;
@@ -1978,6 +1978,7 @@ Q.Tool = function _Q_Tool(element, options) {
 		this.element.id = (prefix + (Q.Tool.nextDefaultId++) + '_' + this.name + "_tool").toLowerCase();
 	}
 	this.prefix = Q.Tool.prefixById(this.element.id);
+	this.id = this.prefix.substr(0, this.prefix.length-1);
 
 	// for later use
 	var classes = (this.element.className && this.element.className.split(/\s+/) || []);
@@ -1992,25 +1993,29 @@ Q.Tool = function _Q_Tool(element, options) {
 	var partial, i;
 	options = options || {};
 	this.options = this.options || {};
-
-	// .Q_something
-	for (i = 0, l = classes.length; i < l; i++) {
-		var className = classes[i];
-		if ((partial = options['.' + className])) {
+	
+	var parents = this.parents();
+//	do {
+		var o = options;
+		// .Q_something
+		for (i = 0, l = classes.length; i < l; i++) {
+			var className = classes[i];
+			if ((partial = o['.' + className])) {
+				Q.extend(this.options, Q.Tool.options.levels, partial, 'Q.Tool');
+			}
+		}
+		// #Q_parent_child_tool
+		if ((partial = o['#' + this.element.id])) {
 			Q.extend(this.options, Q.Tool.options.levels, partial, 'Q.Tool');
 		}
-	}
-	// #Q_parent_child_tool
-	if ((partial = options['#' + this.element.id])) {
-		Q.extend(this.options, Q.Tool.options.levels, partial, 'Q.Tool');
-	}
-	// #parent_child_tool, #child_tool
-	var _idcomps = this.element.id.split('_');
-	for (i = 0; i < _idcomps.length-1; ++i) {
-		if ((partial = options['#' + _idcomps.slice(i).join('_')])) {
-			Q.extend(this.options, Q.Tool.options.levels, partial, 'Q.Tool');
+		// #parent_child_tool, #child_tool
+		var _idcomps = this.element.id.split('_');
+		for (i = 0; i < _idcomps.length-1; ++i) {
+			if ((partial = o['#' + _idcomps.slice(i).join('_')])) {
+				Q.extend(this.options, Q.Tool.options.levels, partial, 'Q.Tool');
+			}
 		}
-	}
+//	} while ();
 
 	// get options from options property on element
 	if (element.options) {
@@ -2021,8 +2026,8 @@ Q.Tool = function _Q_Tool(element, options) {
 	
 	this.beforeRemove = new Q.Event();
 
-	if (!Q.tools[this.prefix]) {
-		Q.tools[this.prefix] = this;
+	if (!Q.tools[this.id]) {
+		Q.tools[this.id] = this;
 	}
 	return this;
 };
@@ -2043,8 +2048,11 @@ Q.Tool.prefixById = function _Q_Tool_prefixById(id) {
 	}
 };
 
+/**
+ * Reference a tool by its id
+ */
 Q.Tool.byId = function _Q_Tool_byId(id) {
-	return Q.tools[Q.Tool.prefixById(id)];
+	return Q.tools[id];
 };
 
 /**
@@ -2224,17 +2232,17 @@ var _qtc = Q.Tool.constructors = Q.constructors;
 /**
  * Gets child tools contained in the tool, as determined by their prefixes
  * based on the prefix of the tool.
- * @param append The string to append to the prefix to find the child tool
+ * @param append The string to append to the prefix to find the child tools
  * @return Object A hash of {prefix: Tool} pairs
  */
 Q.Tool.prototype.children = function Q_Tool_prototype_children(append) {
 	var result = {},
 	    prefix2 = Q.normalize(append ? this.prefix + append : this.prefix),
-		key, nk;
-	for (key in Q.tools) {
-		nk = Q.normalize(key);
-		if (key.length > prefix2.length && nk.substr(0, prefix2.length) == prefix2) {
-			result[key] = Q.tools[key];
+		id, ni;
+	for (id in Q.tools) {
+		ni = Q.normalize(id);
+		if (id.length > prefix2.length && ni.substr(0, prefix2.length) == prefix2) {
+			result[id] = Q.tools[id];
 		}
 	}
 	return result;
@@ -2249,36 +2257,45 @@ Q.Tool.prototype.children = function Q_Tool_prototype_children(append) {
 Q.Tool.prototype.child = function Q_Tool_prototype_child(append) {
 	var result = {};
 	var prefix2 = Q.normalize(append ? this.prefix + append : this.prefix);
-	var key;
-	for (key in Q.tools) {
-		if (key.length > this.prefix.length
-		 && Q.normalize(key.substr(0, prefix2.length)) === prefix2) {
-			return Q.tools[key];
+	var id;
+	for (id in Q.tools) {
+		if (id.length > this.prefix.length
+		 && Q.normalize(id.substr(0, prefix2.length)) === prefix2) {
+			return Q.tools[id];
 		}
 	}
 	return null;
 };
 
 /**
- * Gets parents tools containing the tool, as determined by their prefixes
+ * Gets the first child tool contained in the tool, which matches the prefix
  * based on the prefix of the tool.
- * @param append The string to append to the prefix to find the child tool
- * @return Object A hash of {prefix: Tool} pairs
+ * @return Tool|null
  */
-Q.Tool.prototype.parents = function Q_Tool_prototype_parents(append) {
-	var prefix2, key, keys = [], i, nk;
-	prefix2 = Q.normalize(append ? this.prefix + append : this.prefix);
-	for (key in Q.tools) {
-		nk = Q.normalize(key);
-		if (nk.length < prefix2.length && nk === prefix2.substr(0, nk.length)) {
-			keys.push(key);
+Q.Tool.prototype.parentIds = function Q_Tool_prototype_parentIds() {
+	var prefix2 = Q.normalize(this.prefix), ids = [], id, ni;
+	for (id in Q.tools) {
+		ni = Q.normalize(id);
+		if (ni.length < prefix2.length-1 && ni === prefix2.substr(0, ni.length)) {
+			ids.push(id);
 		}
 	}
-	keys.sort(function (a, b) { return String(a).length - String(b).length } );
+	ids.sort(function (a, b) { return String(a).length - String(b).length } );
+	return ids;
+};
+
+/**
+ * Gets parents tools containing the tool, as determined by their prefixes
+ * based on the prefix of the tool.
+ * @return Object A hash of {prefix: Tool} pairs
+ */
+Q.Tool.prototype.parents = function Q_Tool_prototype_parents() {
+	var ids = [], ids, i;
+	ids = this.parentIds();
 	var result = {};
-	for (i=keys.length-1; i >= 0; --i) {
-		key = keys[i];
-		result[key] = Q.tools[key];
+	for (i=ids.length-1; i >= 0; --i) {
+		id = ids[i];
+		result[id] = Q.tools[id];
 	}
 	return result;
 };
@@ -2286,20 +2303,12 @@ Q.Tool.prototype.parents = function Q_Tool_prototype_parents(append) {
 /**
  * Gets the first child tool contained in the tool, which matches the prefix
  * based on the prefix of the tool.
- * @param append The string to append to the prefix to find the child tool
  * @return Tool|null
  */
-Q.Tool.prototype.parent = function Q_Tool_prototype_parent(append) {
-	var prefix2, key, keys = [], i, nk;
-	prefix2 = Q.normalize(append ? this.prefix + append : this.prefix);
-	for (key in Q.tools) {
-		nk = Q.normalize(key);
-		if (nk.length < prefix2.length && nk === prefix2.substr(0, nk.length)) {
-			keys.push(key);
-		}
-	}
-	keys.sort(function (a, b) { return String(a).length - String(b).length } );
-	return keys.length ? keys[keys.length-1] : null;
+Q.Tool.prototype.parent = function Q_Tool_prototype_parent() {
+	var ids = [], ids, i;
+	ids = this.parentIds();
+	return ids.length ? Q.tools[ids[ids.length-1]] : null;
 };
 
 /**
@@ -2332,22 +2341,22 @@ Q.Tool.prototype.remove = function _Q_Tool_prototype_remove(removeCached) {
 	// remove all the tool's events automatically
 	if (shouldRemove) {
 		var tool = this;
-		while (Q.Event.forTool[this.prefix] && Q.Event.forTool[this.prefix].length) {
+		while (Q.Event.forTool[this.id] && Q.Event.forTool[this.id].length) {
 			// keep removing the first element of the array until it is empty
-			Q.Event.forTool[this.prefix][0].remove(tool);
+			Q.Event.forTool[this.id][0].remove(tool);
 		}
 		
 		var p;
-		if (p = Q.Event.jQueryForTool[this.prefix]) {
+		if (p = Q.Event.jQueryForTool[this.id]) {
 			for (i=p.length-1; i >= 0; --i) {
 				var off = p[i][0];
 				window.jQuery.fn[off].call(p[i][1], p[i][2]);
 			}
-			Q.Event.jQueryForTool[this.prefix] = [];
+			Q.Event.jQueryForTool[this.id] = [];
 		}
 
 		// finally, remove the tool from the array of tools on the page
-		delete Q.tools[this.prefix];
+		delete Q.tools[this.id];
 	}
 
 	return null;
@@ -2515,7 +2524,7 @@ Q.Tool.from = function _Q_Tool_from(toolElement) {
  * For debugging purposes only, allows to log tool names conveniently
  */
 Q.Tool.prototype.toString = function _Q_Tool_prototype_toString() {
-	return this.prefix.substr(0, this.prefix.length - 1);
+	return this.id.substr(0, this.id.length - 1);
 };
 
 /**
@@ -5216,7 +5225,7 @@ function Q_popStateHandler() {
 function _constructTool(toolElement, options, shared) {
 	_loadToolScript(toolElement, function _constructTool_doConstruct(toolElement, toolFunc, toolName, uniqueToolId) {
 		if (!toolFunc.toolConstructor) {
-			toolFunc.toolConstructor = function _toolConstructor (element, options) {
+			toolFunc.toolConstructor = function Q_Tool(element, options) {
 				if (this.constructed) {
 					return; // support re-entrancy of Q.activate
 				}
@@ -5904,7 +5913,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 				Q.Event.jQueryForPage.push([off, this, arguments[0]]);
 				added = 'page';
 			} else if (Q.typeOf(arguments[f-1]) === 'Q.Tool') {
-				var tool = arguments[f-1], key = tool.prefix;
+				var tool = arguments[f-1], key = tool.id;
 				if (!Q.Event.jQueryForTool[key]) {
 					Q.Event.jQueryForTool[key] = [];
 				}

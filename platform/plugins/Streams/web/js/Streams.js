@@ -407,7 +407,7 @@ function _constructStream (fields, extra, callback) {
 	}
 	function _doConstruct() {
 		if (!streamFunc.streamConstructor) {
-			streamFunc.streamConstructor = function (fields) {
+			streamFunc.streamConstructor = function Streams_Stream(fields) {
 				// run any constructors
 				this.constructors(fields);
 
