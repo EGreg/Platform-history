@@ -131,6 +131,7 @@ Streams.iconUrl = function(icon, size) {
 var _socket = null,
     _messageHandlers = {},
     _constructHandlers = {},
+    _refreshHandlers = {},
     _streamMessageHandlers = {},
     _streamFieldChangedHandlers = {},
     _streamUpdatedHandlers = {},
@@ -141,6 +142,7 @@ var _socket = null,
     _streamUpdatedRelateFromHandlers = {},
     _streamUpdatedRelateToHandlers = {},
     _streamConstructHandlers = {},
+    _streamRefreshHandlers = {},
     _retain = undefined,
 	_retainedByKey = {},
 	_retainedByStream = {};
@@ -165,6 +167,14 @@ Streams.onMessage = Q.Event.factory(_messageHandlers, ["", ""]);
  * @return {Q.Event}
  */
 Streams.onConstruct = Q.Event.factory(_constructHandlers, [""]);
+
+/**
+ * Returns Q.Event that occurs after fresh stream info has arrived on the client side
+ * @method Streams.onRefresh
+ * @param type {String} type of the stream being constructed on the client side
+ * @return {Q.Event}
+ */
+Streams.onRefresh = Q.Event.factory(_refreshHandlers, [""]);
 
 /**
  * Returns Q.Event that occurs on some socket event coming from socket.io
@@ -297,10 +307,13 @@ Streams.get = Q.getter(function (publisherId, streamName, callback, extra) {
 	func.call(this, 'stream', slotNames, publisherId, streamName, function Streams_get_response_handler (err, data) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
 		if (msg) {
+			Stream.onError.handle(msg, err, data);
 			return callback && callback.call(this, msg);
 		}
 		if (!data.stream) {
-			return callback && callback.call(this, "Streams.get: data.stream is missing");
+			var msg = "Streams.get: data.stream is missing";
+			Stream.onError.handle(msg, err, data);
+			return callback && callback.call(this, msg);
 		}
 		_constructStream(
 			data.stream,
@@ -309,8 +322,12 @@ Streams.get = Q.getter(function (publisherId, streamName, callback, extra) {
 				participants: data.participants 
 			}, 
 			function Streams_get_construct_handler(err, stream) {
-				return callback && callback.call(stream, err);
-			}
+				if (Q.firstErrorMessage(err)) {
+					Stream.onError.handle(msg, err, data);
+				}
+				return callback && callback.call(stream, err, stream);
+			},
+			true
 		);
 	}, extra);
 	_retain = undefined;
@@ -355,7 +372,7 @@ Streams.create = function (fields, callback, related) {
 		if (msg) {
 			return callback && callback.call(this, msg);
 		}
-		_constructStream(data.slots.stream, function Stream_create_construct_handler (err, stream) {
+		_constructStream(data.slots.stream, {}, function Stream_create_construct_handler (err, stream) {
 			var msg = Q.firstErrorMessage(err);
 			if (msg) {
 				return callback && callback.call(stream, msg, stream, data.slots.icon);
@@ -378,13 +395,9 @@ Streams.create = function (fields, callback, related) {
  * @param extra {Object} Can include "messages" and "participants"
  * @param callback {Function} The function to call when all constructors and event handlers have executed
  *  The first parameter is an error, in case something went wrong. The second one is the stream object.
+ * @param handleRefreshEvents {Boolean} whether to handle the stream refresh events
  */
-function _constructStream (fields, extra, callback) {
-
-	if (!Q.isPlainObject(extra)) {
-		callback = extra;
-		extra = {};
-	}
+function _constructStream (fields, extra, callback, handleRefreshEvents) {
 
 	var type = Q.normalize(fields.type);
 	var streamFunc = Streams.constructors[type];
@@ -458,6 +471,17 @@ function _constructStream (fields, extra, callback) {
 			});
 		}
 		
+		if (handleRefreshEvents) {
+			var f = stream.fields;
+			Stream.onRefresh(f.type).handle(stream);
+			Stream.onRefresh('').handle(stream);
+			if (f.publisherId && f.name) {
+				Stream.onRefresh(f.publisherId, f.name).handle(stream);
+				Stream.onRefresh(f.publisherId, '').handle(stream);
+				Stream.onRefresh('', f.name).handle(stream);
+				Stream.onRefresh('', '').handle(stream);
+			}
+		}
 		Q.handle(callback, stream, [null, stream]);
 		return stream;
 	}
@@ -480,9 +504,11 @@ Streams.getParticipating = Q.getter(function(callback) {
  * Refreshes all the streams the logged-in user is participating in
  * If your app is using socket.io, then calling this manually is largely unnecessary.
  * @param {Function} callback optional callback
+ * @param {Object} options A hash of options, including:
+ *  "messages": If set to true, then besides just reloading the stream, attempt to catch up on the latest messages
  * @return {boolean} whether the refresh occurred
  */
-Streams.refresh = function (callback) {
+Streams.refresh = function (callback, options) {
 	if (!Q.Users.loggedInUser || !Q.isOnline()) {
 		Q.handle(callback, this, [false]);
 		return false;
@@ -495,7 +521,7 @@ Streams.refresh = function (callback) {
 	var p = new Q.Pipe(Object.keys(_retainedByStream), callback);
 	Q.each(_retainedByStream, function (ps) {
 		var parts = ps.split("\t");
-		Stream.refresh(parts[0], parts[1], p.fill(ps));
+		Stream.refresh(parts[0], parts[1], p.fill(ps), options);
 	});
 	_retain = undefined;
 	return true;
@@ -525,6 +551,7 @@ Streams.retainWith = function (key) {
  * @param {String} key
  */
 Streams.release = function (key) {
+	key = Q.Event.calculateKey(key);
 	Q.each(_retainedByKey[key], function (ps, v) {
 		if (_retainedByStream[ps]) {
 			delete _retainedByStream[ps][key];
@@ -584,6 +611,10 @@ Stream.get = Streams.get;
 Stream.create = Streams.create;
 Stream.define = Streams.define;
 
+Stream.onError = new Q.Event(function (err) {
+	console.warn(Q.firstErrorMessage(err));
+}, 'Streams.onError');
+
 /**
  * Call this function to retain a particular stream.
  * When a stream is retained, it is refreshed when Streams.refresh() or
@@ -633,9 +664,11 @@ Stream.retainWith = Streams.retainWith;
  * Waits for the latest messages to be posted to a given stream.
  * If your app is using socket.io, then calling this manually is largely unnecessary.
  * @param {Function} callback This is called when the stream has been updated with the latest messages.
+ * @param {Object} options A hash of options, including:
+ *  "messages": If set to true, then besides just reloading the stream, attempt to catch up on the latest messages
  * @return {boolean} whether the refresh occurred
  */
-Stream.refresh = function (publisherId, streamName, callback) {
+Stream.refresh = function (publisherId, streamName, callback, options) {
 	if (!Q.Users.loggedInUser || !Q.isOnline()) {
 		callback && callback(false);
 		return false;
@@ -646,7 +679,16 @@ Stream.refresh = function (publisherId, streamName, callback) {
 	if (!_retainedByStream[ps]) {
 		return false;
 	}
-	Message.wait(publisherId, streamName, -1, callback);
+	if (options && options.messages) {
+		Message.wait(publisherId, streamName, -1, callback);
+	} else {
+		Streams.get.cache.each([publisherId, streamName], function (k, v) {
+			Streams.get.cache.remove(k);
+		});
+		Streams.get(publisherId, streamName, function () {
+			// just get the stream, and any listeners will be triggered
+		});
+	}
 	_retain = undefined;
 	return true;
 };
@@ -916,7 +958,7 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 			if (options.participants) {
 				extra.participants = data.slots.participants;
 			}
-			_constructStream(data.slots.stream, extra, _processResults);
+			_constructStream(data.slots.stream, extra, _processResults, true);
 		}
 
 		function _processResults(err, stream) {
@@ -933,10 +975,10 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 				var key = _key(fields.publisherId, fields.name);
 				keys.push(key);
 				keys2[key] = true;
-				_constructStream(fields, function () {
+				_constructStream(fields, {}, function () {
 					streams.push(this);
 					p.fill(key)();
-				});
+				}, true);
 			});
 			
 			// Now process all the relations
@@ -1253,6 +1295,15 @@ Stream.onUpdatedRelateFrom = Q.Event.factory(_streamUpdatedRelateFromHandlers, [
  * @return {Q.Event}
  */
 Stream.onConstruct = Q.Event.factory(_streamConstructHandlers, ["", ""]);
+
+/**
+ * Returns Q.Event that occurs after fresh stream info has arrived on the client side
+ * @method Streams.Stream.onRefresh
+ * @param publisherId {String} id of publisher which is publishing the stream
+ * @param name {String} name of stream which is being constructed on the client side
+ * @return {Q.Event}
+ */
+Stream.onRefresh = Q.Event.factory(_streamRefreshHandlers, ["", ""]);
 
 Stream.join = function (publisherId, streamName, callback) {
 	if (!Q.plugins.Users.loggedInUser) {
@@ -1832,7 +1883,7 @@ function _onCalledHandler(args, shared) {
 function _onResultHandler(subject, params, args, ret, original) {
 	var key = ret.retainUnderKey;
 	if (key == undefined || params[0] || !subject) {
-		return; // either retain was not called or an error occurred during the request
+		return; // either retainWith was not called or an error occurred during the request
 	}
 	if (subject.stream) {
 		subject.stream.retain(key);
@@ -2253,7 +2304,7 @@ Q.onInit.add(function _Streams_onInit() {
 		// Every time before anything is activated,
 		// process any preloaded streams data we find
 		Q.each(Stream.preloaded, function (i, fields) {
-			_constructStream(fields);
+			_constructStream(fields, {}, null, true);
 		});
 		Stream.preloaded = null;
 	}, 'Streams');

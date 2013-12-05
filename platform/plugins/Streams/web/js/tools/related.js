@@ -101,7 +101,7 @@ function _Streams_related_tool (options)
         Q.Streams.related.cache.each([publisherId, streamName], function (k, v) {
             Q.Streams.related.forget(k);
         });
-        Q.Streams.retainWith('Streams/related')
+        Q.Streams.retainWith(tool)
 			.related(publisherId, streamName, this.state.relationType, this.state.isCategory, this.state.relatedOptions, relatedResult);
         
         function relatedResult(errorMessage) {

@@ -1,7 +1,8 @@
 (function ($, window, document, undefined) {
 
 Q.Tool.define("Streams/inplace", function (options) {
-	var tool = this, 
+	var tool = this,
+		state = tool.state, 
 		$te = $(tool.element), 
 		container = $('.Q_inplace_tool_container', $te);
 	
@@ -12,11 +13,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 	//  - attribute: alternatively, the name of an attribute to bind to
 
 	function _construct(err) {
-		if (err) {
-			console.warn(err);
-			return;
-		}
-		var stream = this, state = tool.state;
+		var stream = this;
 		state.publisherId = stream.fields.publisherId;
 		state.streamName = stream.fields.name;
 
@@ -90,25 +87,18 @@ Q.Tool.define("Streams/inplace", function (options) {
 				return;
 			}
 			inplace.state.onSave.set(function () {
-				Q.Streams.Message.wait(
-					state.publisherId,
-					state.streamName,
-					-1,
-					function () {
-						state.onUpdate.handle.call(tool);
-					}
-				);
+				state.onUpdate.handle.call(tool);
 			}, 'Streams/inplace');
 		});
 	}
 
-	if (tool.state.stream) {
-		_construct.apply(tool.state.stream);
+	if (state.stream) {
+		_construct.apply(state.stream);
 	} else {
-		if (!tool.state.publisherId || !tool.state.streamName) {
+		if (!state.publisherId || !state.streamName) {
 			throw "Streams/inplace tool: stream is undefined";
 		}
-		Q.Streams.get(tool.state.publisherId, tool.state.streamName, _construct);
+		Q.Streams.retainWith(tool).get(state.publisherId, state.streamName, _construct);
 	}
 },
 

@@ -1193,6 +1193,9 @@ Q.Event.prototype.occurred = false;
  * @return {String}
  */
 Q.Event.calculateKey = function _Q_Event_calculateKe(key, container, start) {
+	if (key === true) {
+		return key;
+	}
 	var tool = undefined;
 	if (key === undefined) {
 		key = Q.Tool.beingActivated; // by default, use the current tool as the key, if any

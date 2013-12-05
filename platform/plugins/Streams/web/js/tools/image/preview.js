@@ -112,15 +112,11 @@ Q.Tool.define("Streams/image/preview", function(options) {
 		tool.element.innerHTML = '';
 		tool.element.appendChild(img);
 
-		Q.Streams.get(state.publisherId, state.streamName, function (err) {
-
-			if (err) {
-				return console.warn(err);
-			}
-			var stream = this;
+		Q.Streams.Stream.onRefresh(state.publisherId, state.streamName).add(function (stream) {
+			// only called on success
 			tool.stream = stream;
 			tool.refresh(_afterRefresh);
-
+			
 			function _afterRefresh () {
 				if (!stream.testWriteLevel('suggest')) {
 					return;
@@ -165,6 +161,8 @@ Q.Tool.define("Streams/image/preview", function(options) {
 				}, 0); // TODO: Standardize onFieldChanged, onUpdated, etc. to be after stream cache was updated
 			}, tool);
 		});
+
+		Q.Streams.retainWith(tool).get(state.publisherId, state.streamName);
 	}
 	
 	function _render() {
