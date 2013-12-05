@@ -132,7 +132,7 @@ Streams.READ_LEVEL = {
  */
 /**
  * Can post messages requesting edits of stream
- * @config WRITE_LEVEL['editPending']
+ * @config WRITE_LEVEL['suggest']
  * @type integer
  * @default 25
  * @final
@@ -166,7 +166,7 @@ Streams.WRITE_LEVEL = {
 	'postPending':	15,		// can post messages, but manager must approve
 	'post':			20,		// can post messages which appear immediately
 	'relate':       23,		// can post messages relating other streams to this one
-	'editPending':	25,		// can post messages requesting edits of stream
+	'suggest':	25,		// can post messages requesting edits of stream
 	'edit':			30,		// can post messages to edit stream content immediately
 	'closePending':	35,		// can post a message requesting to close the stream
 	'close':		40		// don't delete, just prevent any new changes to stream

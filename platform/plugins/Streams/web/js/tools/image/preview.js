@@ -122,7 +122,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 			tool.refresh(_afterRefresh);
 
 			function _afterRefresh () {
-				if (!stream.testWriteLevel('editPending')) {
+				if (!stream.testWriteLevel('suggest')) {
 					return;
 				}
 				var ipo = Q.extend({}, ip, {

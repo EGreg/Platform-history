@@ -40,7 +40,7 @@ function Streams_inplace_tool($options)
 		default:
 			return "inplaceType must be 'textarea' or 'text'";
 	}
-	if (!$stream->testWriteLevel('editPending')) {
+	if (!$stream->testWriteLevel('suggest')) {
 		if (!isset($options['classes'])) {
 			$options['classes'] = '';
 		}

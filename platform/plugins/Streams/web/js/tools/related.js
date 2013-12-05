@@ -75,7 +75,7 @@ function _Streams_related_tool (options)
 
 		if (result.stream.testWriteLevel('relate')) {
 			Q.each(this.state.creatable, addComposer);
-			if (tool.state.sortable && result.stream.testWriteLevel('editPending')) {
+			if (tool.state.sortable && result.stream.testWriteLevel('suggest')) {
 				tool.$().plugin('Q/sortable', tool.state.sortable);
 			}
 		}

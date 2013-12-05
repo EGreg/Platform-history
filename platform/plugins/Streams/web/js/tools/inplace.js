@@ -78,7 +78,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 				throw "Streams/inplace tool: inplaceType must be 'textarea' or 'text'";
 		}
 		
-		if (!stream.testWriteLevel('editPending')) {
+		if (!stream.testWriteLevel('suggest')) {
 			tool.element.innerHTML = ipo.staticHtml;
 			return; // leave the html that is currently in the element
 		}
