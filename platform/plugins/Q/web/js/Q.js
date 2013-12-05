@@ -2228,12 +2228,12 @@ var _qtc = Q.Tool.constructors = Q.constructors;
  * @return Object A hash of {prefix: Tool} pairs
  */
 Q.Tool.prototype.children = function Q_Tool_prototype_children(append) {
-	var result = {};
-	var prefix2 = Q.normalize(append ? this.prefix + append : this.prefix);
-	var key;
+	var result = {},
+	    prefix2 = Q.normalize(append ? this.prefix + append : this.prefix),
+		key, nk;
 	for (key in Q.tools) {
-		if (key.length > this.prefix.length
-		 && Q.normalize(key.substr(0, prefix2.length)) == prefix2) {
+		nk = Q.normalize(key);
+		if (key.length > prefix2.length && nk.substr(0, prefix2.length) == prefix2) {
 			result[key] = Q.tools[key];
 		}
 	}
@@ -2265,12 +2265,12 @@ Q.Tool.prototype.child = function Q_Tool_prototype_child(append) {
  * @param append The string to append to the prefix to find the child tool
  * @return Object A hash of {prefix: Tool} pairs
  */
-Q.Tool.prototype.parents = function Q_Tool_prototype_children(append) {
-	var prefix2, key, keys = [], i;
+Q.Tool.prototype.parents = function Q_Tool_prototype_parents(append) {
+	var prefix2, key, keys = [], i, nk;
 	prefix2 = Q.normalize(append ? this.prefix + append : this.prefix);
 	for (key in Q.tools) {
-		if (key.length < this.prefix.length
-		 && Q.normalize(key) === prefix2.substr(0, key.length)) {
+		nk = Q.normalize(key);
+		if (nk.length < prefix2.length && nk === prefix2.substr(0, nk.length)) {
 			keys.push(key);
 		}
 	}
@@ -2289,9 +2289,17 @@ Q.Tool.prototype.parents = function Q_Tool_prototype_children(append) {
  * @param append The string to append to the prefix to find the child tool
  * @return Tool|null
  */
-Q.Tool.prototype.parent = function Q_Tool_prototype_child(append) {
-	var parents = this.parents();
-	return parents.length ? parents[0] : null;
+Q.Tool.prototype.parent = function Q_Tool_prototype_parent(append) {
+	var prefix2, key, keys = [], i, nk;
+	prefix2 = Q.normalize(append ? this.prefix + append : this.prefix);
+	for (key in Q.tools) {
+		nk = Q.normalize(key);
+		if (nk.length < prefix2.length && nk === prefix2.substr(0, nk.length)) {
+			keys.push(key);
+		}
+	}
+	keys.sort(function (a, b) { return String(a).length - String(b).length } );
+	return keys.length ? keys[keys.length-1] : null;
 };
 
 /**
