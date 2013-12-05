@@ -44,10 +44,15 @@ function Streams_stream_put($params) {
 		throw new Q_Exception("This app doesn't support directly editing streams of type '{$stream->type}'");
 	}
 	
+	$suggest = false;
 	if ($stream->publisherId != $user->id) {
 		$stream->calculateAccess($user->id);
 		if (!$stream->testWriteLevel('edit')) {
-			throw new Users_Exception_NotAuthorized();
+			if ($stream->testWriteLevel('suggest')) {
+				$suggest = true;
+			} else {
+				throw new Users_Exception_NotAuthorized();
+			}
 		}
 	}
 	
@@ -68,22 +73,30 @@ function Streams_stream_put($params) {
 			$stream->$f = $more_fields[$f];
 		}
 	}
-	$stream->save();
 	
 	$to_save = $stream->toArray();
 	$instructions = array();
 	foreach ($to_save as $k => $v) {
 		if (json_encode($original[$k]) !== json_encode($v)) {
-			$instructions[$k] = $v;
+			$instructions[$k] = $v; // record different value for this attribute
 		}
 	}
 	unset($instructions['updatedTime']);
 	
-	$stream->post($user->id, array(
-		'type' => 'Streams/edited',
-		'content' => '',
-		'instructions' => Q::json_encode($instructions)
-	), true);
+	if ($suggest) {
+		$stream->post($user->id, array(
+			'type' => 'Streams/suggest',
+			'content' => '',
+			'instructions' => $instructions
+		), true);
+	} else {
+		$stream->save();
+		$stream->post($user->id, array(
+			'type' => 'Streams/edited',
+			'content' => '',
+			'instructions' => $instructions
+		), true);
+	}
 	
 	$stream->retrieve(); // for now we have to do fetch the stream again, because stream's messageCount has updated
 	

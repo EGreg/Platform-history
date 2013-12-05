@@ -2388,9 +2388,9 @@ Q.Tool.encodeOptions = function _Q_Tool_stringFromOptions(options) {
 };
 
 /**
- * Creates a div that can be used to activate a tool
- * For example: $('container').append(Q.Tool.make('Streams/chat')).activate(options);
- * @method Q.Tool.element
+ * Sets up element so that it can be used to activate a tool
+ * For example: $('container').append(Q.Tool.setUpElement('div', 'Streams/chat')).activate(options);
+ * @method Q.Tool.setUpElement
  * @param {String|HTMLElement} element
  *  The tag of the element, such as "div", or a reference to an existing HTMLElement
  * @param {String} toolType
@@ -2402,7 +2402,7 @@ Q.Tool.encodeOptions = function _Q_Tool_stringFromOptions(options) {
  * @return HTMLElement
  *  Returns an element you can append to things
  */
-Q.Tool.element = function _Q_Tool_element(element, toolType, toolOptions, id) {
+Q.Tool.setUpElement = function _Q_Tool_element(element, toolType, toolOptions, id, prefix) {
 	if (typeof toolOptions === 'string') {
 		id = toolOptions;
 		toolOptions = undefined;
@@ -2414,7 +2414,7 @@ Q.Tool.element = function _Q_Tool_element(element, toolType, toolOptions, id) {
 	element.setAttribute('class', 'Q_tool '+ntt+'_tool');
 	if (!id) {
 		var p1, p2;
-		p1 = Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '';
+		p1 = prefix ? prefix : (Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '');
 		do {
 			p2 = p1 + '_' + (Q.Tool.nextDefaultId++) + '_' + ntt + '_';
 		} while (Q.tools[p2]);
@@ -2427,11 +2427,65 @@ Q.Tool.element = function _Q_Tool_element(element, toolType, toolOptions, id) {
 	return element;
 };
 
-Q.Tool.elementHTML = function _Q_Tool_elementHTML(element, toolType, toolOptions, id) {
-	var e = Q.Tool.element(element, toolType, null, id);
+/**
+ * Returns HTML for an element that it can be used to activate a tool
+ * @method Q.Tool.setUpElementHTML
+ * @param {String|HTMLElement} element
+ *  The tag of the element, such as "div", or a reference to an existing HTMLElement
+ * @param {String} toolType
+ *  The type of the tool, such as "Q/tabs"
+ * @param {Object} toolOptions
+ *  The options for the tool
+ * @param {String} id
+ *  Optional id of the tool, such as "_2_Q_tabs"
+ * @return String
+ *  Returns HTML that you can include in templates, etc.
+ */
+Q.Tool.setUpElementHTML = function _Q_Tool_elementHTML(element, toolType, toolOptions, id) {
+	var e = Q.Tool.setUpElement(element, toolType, null, id);
 	var ntt = toolType.replace(new RegExp('/', 'g'), '_');
 	e.setAttribute('data-'+ntt.replace(new RegExp('_', 'g'), '-'), Q.Tool.encodeOptions(toolOptions));
 	return e.outerHTML;
+};
+
+/**
+ * Sets up element so that it can be used to activate a tool
+ * For example: $('container').append(Q.Tool.setUpElement('div', 'Streams/chat')).activate(options);
+ * The prefix and id of the element are derived from the tool on which this method is called.
+ * @method Q.Tool.setUpElement
+ * @param {String|HTMLElement} element
+ *  The tag of the element, such as "div", or a reference to an existing HTMLElement
+ * @param {String} toolType
+ *  The type of the tool, such as "Q/tabs"
+ * @param {Object} toolOptions
+ *  The options for the tool
+ * @param {String} id
+ *  Optional id of the tool, such as "_2_Q_tabs"
+ * @return HTMLElement
+ *  Returns an element you can append to things
+ */
+Q.Tool.prototype.setUpElement = function (element, toolType, toolOptions, id) {
+	return Q.Tool.setUpElement(element, toolType, toolOptions, id, this.prefix);
+};
+
+/**
+ * Returns HTML for an element that it can be used to activate a tool.
+ * The prefix and id of the element are derived from the tool on which this method is called.
+ * For example: $('container').append(Q.Tool.make('Streams/chat')).activate(options);
+ * @method Q.Tool.setUpElementHTML
+ * @param {String|HTMLElement} element
+ *  The tag of the element, such as "div", or a reference to an existing HTMLElement
+ * @param {String} toolType
+ *  The type of the tool, such as "Q/tabs"
+ * @param {Object} toolOptions
+ *  The options for the tool
+ * @param {String} id
+ *  Optional id of the tool, such as "_2_Q_tabs"
+ * @return String
+ *  Returns HTML that you can include in templates, etc.
+ */
+Q.Tool.prototype.setUpElementHTML = function (element, toolType, toolOptions, id) {
+	return Q.Tool.setUpElementHTML(element, toolType, toolOptions, id, this.prefix);
 };
 
 /**

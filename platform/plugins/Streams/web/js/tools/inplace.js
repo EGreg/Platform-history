@@ -83,7 +83,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 			return; // leave the html that is currently in the element
 		}
 		
-		var inplace = Q.Tool.element('div', 'Q/inplace', ipo);
+		var inplace = tool.setUpElement('div', 'Q/inplace', ipo);
 		Q.activate(tool.element.appendChild(inplace), function () {
 			var inplace = tool.child('Q/inplace');
 			if (!inplace) {

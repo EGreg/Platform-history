@@ -72,7 +72,7 @@ class Streams_Message extends Base_Streams_Message
 		$weight = Q::ifset($information, 'weight', 1);
 		
 		if (is_array($instructions)) {
-			$instructions = json_encode($instructions);
+			$instructions = Q::json_encode($instructions);
 		}
 
 		if (isset($information['reOrdinal'])) {

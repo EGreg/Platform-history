@@ -798,6 +798,7 @@ Stream.prototype.testWriteLevel = function (level) {
 		level = Streams.WRITE_LEVEL[level];
 	}
 	if (level === undefined) {
+		debugger;
 		throw "Streams.Stream.prototype.testWriteLevel: level is undefined";
 	}
 	return this.access.writeLevel >= level;

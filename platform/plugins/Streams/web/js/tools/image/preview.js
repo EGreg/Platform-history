@@ -250,7 +250,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 			var fields = Q.extend({}, state.templates.edit.fields, {
 				src: Q.Streams.iconUrl(icon, file)+'?'+Date.now(),
 				alt: stream.fields.title,
-				inplace: Q.Tool.elementHTML('div', 'Streams/inplace', inplace)
+				inplace: tool.setUpElementHTML('div', 'Streams/inplace', inplace)
 			});
 			Q.Template.render(
 				'Streams/image/preview/edit',

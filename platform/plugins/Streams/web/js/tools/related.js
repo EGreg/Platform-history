@@ -157,7 +157,7 @@ function _Streams_related_tool (options)
 			},
 			editable: this.state.editable
         }, options);
- 		return Q.Tool.element(this.state.tag, this.state.toolType(streamType), o);
+ 		return this.setUpElement(this.state.tag, this.state.toolType(streamType), o);
     }
 }
 
