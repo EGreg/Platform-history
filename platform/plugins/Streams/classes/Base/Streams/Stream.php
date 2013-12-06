@@ -29,6 +29,7 @@
  * @property string $inheritAccess
  * @property integer $messageCount
  * @property integer $participantCount
+ * @property string $closedTime
  */
 abstract class Base_Streams_Stream extends Db_Row
 {
@@ -91,6 +92,10 @@ abstract class Base_Streams_Stream extends Db_Row
 	/**
 	 * @property $participantCount
 	 * @type integer
+	 */
+	/**
+	 * @property $closedTime
+	 * @type string
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -517,7 +522,7 @@ abstract class Base_Streams_Stream extends Db_Row
 	 */
 	static function fieldNames($table_alias = null, $field_alias_prefix = null)
 	{
-		$field_names = array('publisherId', 'insertedTime', 'updatedTime', 'name', 'type', 'title', 'icon', 'content', 'attributes', 'readLevel', 'writeLevel', 'adminLevel', 'inheritAccess', 'messageCount', 'participantCount');
+		$field_names = array('publisherId', 'insertedTime', 'updatedTime', 'name', 'type', 'title', 'icon', 'content', 'attributes', 'readLevel', 'writeLevel', 'adminLevel', 'inheritAccess', 'messageCount', 'participantCount', 'closedTime');
 		$result = $field_names;
 		if (!empty($table_alias)) {
 			$temp = array();

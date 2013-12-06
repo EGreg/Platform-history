@@ -198,7 +198,7 @@ function Streams_Stream (fields) {
 
 		if (asUserId && asUserId === this.fields.publisherId) {
 			// The publisher should have full access to every one of their streams.
-			this.published_by_fetcher = true;
+			this.publishedByFetcher = true;
 			callback.call(subj);
 			return;
 		}
@@ -409,7 +409,7 @@ function Streams_Stream (fields) {
 	 * verification of inherited access or asyncronously to make ful check
 	 * @method testWriteLevel
 	 * @param {string|integer} level
-	 *	String describing the level (see Streams.RITE_LEVEL) or integer
+	 *	String describing the level (see Streams.WRITE_LEVEL) or integer
 	 * @param callback=null {function}
 	 *	Callback receives "error" and boolean as arguments - whether the access is granted.
 	 */
@@ -440,9 +440,12 @@ function Streams_Stream (fields) {
 	 *	Callback receives "error" and boolean as arguments - whether the access is granted.
 	 */
 	function testLevel (subj, type, level, callback) {
-		if (subj.published_by_fetcher) {
+		if (subj.publishedByFetcher) {
 			callback && callback.call(subj, null, true);
 			return true;
+		}
+		if (subj.closedTime && level !== 'close' && !subj.testWriteLevel('close')) {
+			return false;
 		}
 		var LEVEL = Streams[type.toUpperCase()];
 		if (typeof level === "string") {

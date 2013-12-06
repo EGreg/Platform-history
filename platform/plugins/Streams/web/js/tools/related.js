@@ -97,12 +97,14 @@ function _Streams_related_tool (options)
         var tool = this;
         var publisherId = this.state.publisherId;
         var streamName = this.state.streamName;
-        // Remove all the cache entries for this publisherId and streamName
-        Q.Streams.related.cache.each([publisherId, streamName], function (k, v) {
-            Q.Streams.related.forget(k);
-        });
-        Q.Streams.retainWith(tool)
-			.related(publisherId, streamName, this.state.relationType, this.state.isCategory, this.state.relatedOptions, relatedResult);
+        Q.Streams.retainWith(tool).related(
+			publisherId, 
+			streamName, 
+			this.state.relationType, 
+			this.state.isCategory, 
+			this.state.relatedOptions,
+			relatedResult
+		);
         
         function relatedResult(errorMessage) {
 			if (errorMessage) {
@@ -141,9 +143,9 @@ function _Streams_related_tool (options)
             }
             tool.state.result = result;
         }
-        function onChangedRelations(stream, fields) {
+        function onChangedRelations(msg, fields) {
             var isCategory = tool.state.isCategory;
-            //tool.refresh(); // TODO: REMOVE THIS?
+            tool.refresh(); // TODO: REMOVE THIS?
         }
     },
     elementForStream: function (publisherId, streamName, streamType, options) {

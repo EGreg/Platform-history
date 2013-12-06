@@ -91,6 +91,10 @@ Q.mixin(Base, Q.require('Db/Row'));
  * @property participantCount
  * @type integer
  */
+/**
+ * @property closedTime
+ * @type string
+ */
 
 /**
  * This method uses Db to establish a connection with the information stored in the configuration.
@@ -231,7 +235,8 @@ Base.prototype.fieldNames = function () {
 		"adminLevel",
 		"inheritAccess",
 		"messageCount",
-		"participantCount"
+		"participantCount",
+		"closedTime"
 	];
 };
 

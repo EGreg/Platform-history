@@ -1633,7 +1633,7 @@ abstract class Streams extends Base_Streams
 			// node server will be notified by Streams_Message::post
 			Streams_Message::post($asUserId, $toPublisherId, $toStreamName, array(
 				'type' => 'Streams/unrelatedTo',
-				'instructions' => Q::json_encode(compact('fromPublisherId', 'fromStreamName'))
+				'instructions' => Q::json_encode(compact('fromPublisherId', 'fromStreamName', 'type'))
 			), true);
 		}
 
@@ -1642,7 +1642,7 @@ abstract class Streams extends Base_Streams
 			// node server will be notified by Streams_Message::post
 			Streams_Message::post($asUserId, $fromPublisherId, $fromStreamName, array(
 				'type' => 'Streams/unrelatedFrom',
-				'instructions' => Q::json_encode(compact('toPublisherId', 'toStreamName'))
+				'instructions' => Q::json_encode(compact('toPublisherId', 'toStreamName', 'type'))
 			), true);
 		}
 
@@ -1788,7 +1788,7 @@ abstract class Streams extends Base_Streams
 		$streams = Streams::fetch($asUserId, $publisherId, array_keys($relations), $fields, $extra);
 		foreach ($streams as $name => $s) {
 			if (!$s) continue;
-			$s->weight = isset($relations[$name]) ? $relations[$name]->weight : null;
+			$s->weight = isset($relations[$name]->weight) ? $relations[$name]->weight : null;
 		}
 		if (!empty($options['streamsOnly'])) {
 			return $streams;

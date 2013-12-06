@@ -105,11 +105,11 @@ class Streams_Stream extends Base_Streams_Stream
 	
 	/**
 	 * Whether stream was published by fetcher
-	 * @property $published_by_fetcher
+	 * @property $publishedByFetcher
 	 * @type {boolean}
 	 * @protected
 	 */
-	protected $published_by_fetcher = false;
+	protected $publishedByFetcher = false;
 
 	private static function sortTemplateTypes($templates, $user_field, &$type, $name_field = 'streamName') {
 		$returnAll = ($type === true);
@@ -922,9 +922,9 @@ class Streams_Stream extends Base_Streams_Stream
 	function publishedByFetcher($new_value = null)
 	{
 		if (isset($new_value)) {
-			$this->published_by_fetcher = true;
+			$this->publishedByFetcher = true;
 		}
-		return $this->published_by_fetcher;
+		return $this->publishedByFetcher;
 	}
 	
 	/**
@@ -938,8 +938,11 @@ class Streams_Stream extends Base_Streams_Stream
 	 */
 	function testReadLevel($level)
 	{
-		if ($this->published_by_fetcher) {
+		if ($this->publishedByFetcher) {
 			return true;
+		}
+		if ($this->closedTime and !$this->testWriteLevel('close')) {
+			return false;
 		}
 		if (!is_numeric($level)) {
 			$level = isset(Streams::$READ_LEVEL[$level])
@@ -984,8 +987,11 @@ class Streams_Stream extends Base_Streams_Stream
 	 */
 	function testWriteLevel($level)
 	{
-		if ($this->published_by_fetcher) {
+		if ($this->publishedByFetcher) {
 			return true;
+		}
+		if ($this->closedTime and $level !== 'close' and !$this->testWriteLevel('close')) {
+			return false;
 		}
 		if (!is_numeric($level)) {
 			$level = isset(Streams::$WRITE_LEVEL[$level])
@@ -1030,8 +1036,11 @@ class Streams_Stream extends Base_Streams_Stream
 	 */
 	function testAdminLevel($level)
 	{
-		if ($this->published_by_fetcher) {
+		if ($this->publishedByFetcher) {
 			return true;
+		}
+		if ($this->closedTime and !$this->testWriteLevel('close')) {
+			return false;
 		}
 		if (!is_numeric($level)) {
 			$level = isset(Streams::$ADMIN_LEVEL[$level])

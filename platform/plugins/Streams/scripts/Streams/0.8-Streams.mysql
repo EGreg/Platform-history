@@ -273,6 +273,7 @@ CREATE TABLE `{$prefix}stream` (
   `inheritAccess` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'JSON format. Array of stream names to inherit access from.',
   `messageCount` int(11) NOT NULL DEFAULT '0',
   `participantCount` int(11) NOT NULL DEFAULT '0',
+  `closedTime` TIMESTAMP NULL DEFAULT NULL COMMENT 'this records the time, if any, that the stream was last closed for updates',
   PRIMARY KEY (`publisherId`,`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='stored primarily on publisherId''s fm server';
 

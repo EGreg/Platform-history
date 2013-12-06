@@ -145,7 +145,8 @@ var _socket = null,
     _streamRefreshHandlers = {},
     _retain = undefined,
 	_retainedByKey = {},
-	_retainedByStream = {};
+	_retainedByStream = {},
+	_retainedStreams = {};
 
 function _key (publisherId, streamName) {
 	return publisherId + "\t" + streamName;
@@ -557,6 +558,7 @@ Streams.release = function (key) {
 			delete _retainedByStream[ps][key];
 			if (Q.isEmpty(_retainedByStream[ps])) {
 				delete(_retainedByStream[ps]);
+				delete(_retainedStreams[ps]);
 			}
 		}
 	});
@@ -629,8 +631,9 @@ Stream.retain = function _Stream_retain (publisherId, streamName, key, callback)
 	var ps = _key(publisherId, streamName);
 	key = Q.Event.calculateKey(key);
 	Streams.get(publisherId, streamName, function (err) {
-		Q.setObject([ps, key], this, _retainedByStream);
-		Q.setObject([key, ps], this, _retainedByKey);
+		_retainedStreams[ps] = this;
+		Q.setObject([ps, key], true, _retainedByStream);
+		Q.setObject([key, ps], true, _retainedByKey);
 		Q.handle(callback, this, [err, this]);
 	});
 };
@@ -651,6 +654,7 @@ Stream.release = function _Stream_release (publisherId, streamName) {
 		}
 	});
 	delete _retainedByStream[ps];
+	delete _retainedStreams[ps];
 };
 
 /**
@@ -666,7 +670,7 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 		callback && callback(false);
 		return false;
 	}
-	// If the stream was seen, fetch latest messages,
+	// If the stream was retained, fetch latest messages,
 	// and replay their being "posted" to trigger the right events
 	var ps = _key(publisherId, streamName);
 	if (!_retainedByStream[ps]) {
@@ -680,6 +684,10 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 		});
 		Streams.get(publisherId, streamName, function () {
 			// just get the stream, and any listeners will be triggered
+			var ps = _key(publisherId, streamName);
+			updateStream(_retainedStreams[ps], this.fields);
+			_retainedStreams = this;
+			callback(true);
 		});
 	}
 	_retain = undefined;
@@ -763,8 +771,9 @@ Stream.prototype.remove = function _Stream_prototype_remove (callback) {
 Stream.prototype.retain = function _Stream_prototype_retain (key, callback) {
 	var ps = _key(this.fields.publisherId, this.fields.name);
 	key = Q.Event.calculateKey(key);
-	Q.setObject([ps, key], this, _retainedByStream);
-	Q.setObject([key, ps], this, _retainedByKey);
+	_retainedStreams[ps] = this;
+	Q.setObject([ps, key], true, _retainedByStream);
+	Q.setObject([key, ps], true, _retainedByKey);
 	Q.handle(callback, this, [null, this]);
 	return this;
 };
@@ -871,9 +880,12 @@ Stream.prototype.actionUrl = function _Stream_prototype_actionUrl (what) {
  * Waits for the latest messages to be posted to a given stream.
  * If your app is using socket.io, then calling this manually is largely unnecessary.
  * @param {Function} callback This is called when the stream has been updated with the latest messages.
+ * @param {Object} options A hash of options, including:
+ *  "messages": If set to true, then besides just reloading the stream, attempt to catch up on the latest messages
+ * @return {boolean} whether the refresh occurred
  */
-Stream.prototype.refresh = function _Stream_prototype_refresh (callback) {
-	return Streams.Stream.refresh(this.fields.publisherId, this.fields.name, callback);
+Stream.prototype.refresh = function _Stream_prototype_refresh (callback, options) {
+	return Streams.Stream.refresh(this.fields.publisherId, this.fields.name, callback, options);
 };
 
 /**
@@ -1535,11 +1547,11 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 	var alreadyCalled = false, handlerKey;
 	var latest = Message.latestOrdinal(publisherId, streamName);
 	if (!latest) {
-		Q.handle(callback); // There is no cache for this stream, so we won't wait for previous messages.
+		Q.handle(callback, this, [null]); // There is no cache for this stream, so we won't wait for previous messages.
 		return false;
 	}
 	if (ordinal >= 0 && ordinal <= latest) {
-		Q.handle(callback); // The cached stream already got this message
+		Q.handle(callback, this, [null]); // The cached stream already got this message
 		return true;
 	}
 	var o = Q.extend({}, Message.wait.options, options);
@@ -1566,7 +1578,7 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 		var p = new Q.Pipe(ordinals, function () {
 			// they all arrived
 			if (!alreadyCalled) {
-				Q.handle(callback);
+				Q.handle(callback, this, [ordinals]);
 			}
 			alreadyCalled = true;
 			return true;
@@ -1883,6 +1895,75 @@ Streams.setupRegisterForm = function _Streams_setupRegisterForm(identifier, json
 	return register_form;
 };
 
+function updateStream(stream, fields) {
+	if (!stream || !fields) {
+		return false;
+	}
+	var publisherId = stream.fields.publisherId,
+		streamName = stream.fields.name;
+	// events about updated fields
+	for (k in fields) {
+		Q.handle(
+			Q.getObject([publisherId, streamName, k], _streamFieldChangedHandlers),
+			stream,
+			[fields, k]
+		);
+	}
+	Q.handle(
+		Q.getObject([publisherId, streamName, ''], _streamFieldChangedHandlers),
+		stream,
+		[fields, k]
+	);
+	Q.handle(
+		Q.getObject([publisherId, '', ''], _streamFieldChangedHandlers),
+		stream,
+		[fields, k]
+	);
+	if ('attributes' in fields) {
+		var attributes = JSON.parse(fields.attributes);
+		var updated = {}, cleared = [];
+		var publisherId = fields.publisherId, streamName = fields.name, k;
+		// events about cleared attributes
+		for (k in stream.attributes) {
+			if (k in attributes) {
+				continue;
+			}
+			Q.handle(
+				Q.getObject([publisherId, streamName, k], _streamUpdatedHandlers),
+				stream,
+				[fields, {k: undefined}, [k]]
+			);
+			updated[k] = undefined;
+			cleared.push(k);
+		}
+		// events about updated attributes
+		for (k in attributes) {
+			if (JSON.stringify(attributes[k]) == JSON.stringify(stream.attributes[k])) {
+				continue;
+			}
+			Q.handle(
+				Q.getObject([publisherId, streamName, k], _streamUpdatedHandlers),
+				stream,
+				[fields, {k: attributes[k]}]
+			);
+			updated[k] = attributes[k];
+		}
+		Q.handle(
+			Q.getObject([publisherId, streamName, ''], _streamUpdatedHandlers),
+			stream,
+			[fields, updated, cleared]
+		);
+		Q.handle(
+			Q.getObject([publisherId, '', ''], _streamUpdatedHandlers),
+			stream,
+			[fields, updated, cleared]
+		);
+	}
+	Streams.get.cache.each([publisherId, streamName], function (k, v) {
+		Streams.get.cache.remove(k);
+	});
+}
+
 function _onCalledHandler(args, shared) {
 	shared.retainUnderKey = _retain;
 	_retain = undefined;
@@ -2146,90 +2227,30 @@ Q.onInit.add(function _Streams_onInit() {
 					}
 					break;
 				case 'Streams/edited':
-					var publisherId = stream.fields.publisherId,
-						streamName = stream.fields.name;
-					// events about updated fields
-					for (k in fields) {
-						Q.handle(
-							Q.getObject([publisherId, streamName, k], _streamFieldChangedHandlers),
-							stream,
-							[fields, k]
-						);
-					}
-					Q.handle(
-						Q.getObject([publisherId, streamName, ''], _streamFieldChangedHandlers),
-						stream,
-						[fields, k]
-					);
-					Q.handle(
-						Q.getObject([publisherId, '', ''], _streamFieldChangedHandlers),
-						stream,
-						[fields, k]
-					);
-					if ('attributes' in fields) {
-						var attributes = JSON.parse(fields.attributes);
-						var updated = {}, cleared = [];
-						var publisherId = fields.publisherId, streamName = fields.name, k;
-						// events about cleared attributes
-						for (k in stream.attributes) {
-							if (k in attributes) {
-								continue;
-							}
-							Q.handle(
-								Q.getObject([publisherId, streamName, k], _streamUpdatedHandlers),
-								stream,
-								[fields, {k: undefined}, [k]]
-							);
-							updated[k] = undefined;
-							cleared.push(k);
-						}
-						// events about updated attributes
-						for (k in attributes) {
-							if (JSON.stringify(attributes[k]) == JSON.stringify(stream.attributes[k])) {
-								continue;
-							}
-							Q.handle(
-								Q.getObject([publisherId, streamName, k], _streamUpdatedHandlers),
-								stream,
-								[fields, {k: attributes[k]}]
-							);
-							updated[k] = attributes[k];
-						}
-						Q.handle(
-							Q.getObject([publisherId, streamName, ''], _streamUpdatedHandlers),
-							stream,
-							[fields, updated, cleared]
-						);
-						Q.handle(
-							Q.getObject([publisherId, '', ''], _streamUpdatedHandlers),
-							stream,
-							[fields, updated, cleared]
-						);
-					}
-					updateStreamCache();
+					updateStream(stream, fields);
 					break;
 				case 'Streams/relatedFrom':
-					updateRelatedCache();
+					updateRelatedCache(fields);
 					_relationHandlers(_streamRelatedFromHandlers, msg, stream, fields);
 					break;
 				case 'Streams/relatedTo':
-					updateRelatedCache();
+					updateRelatedCache(fields);
 					_relationHandlers(_streamRelatedToHandlers, msg, stream, fields);
 					break;
 				case 'Streams/unrelatedFrom':
-					updateRelatedCache();
+					updateRelatedCache(fields);
 					_relationHandlers(_streamUnrelatedFromHandlers, msg, stream, fields);
 					break;
 				case 'Streams/unrelatedTo':
-					updateRelatedCache();
+					updateRelatedCache(fields);
 					_relationHandlers(_streamUnrelatedToHandlers, msg, stream, fields);
 					break;
 				case 'Stream/updatedRelateFrom':
-					updateRelatedCache();
+					updateRelatedCache(fields);
 					_relationHandlers(_streamUpdatedRelateFromHandlers, msg, stream, fields);
 					break;
 				case 'Stream/updatedRelateTo':
-					updateRelatedCache();
+					updateRelatedCache(fields);
 					_relationHandlers(_streamUpdatedRelateToHandlers, msg, stream, fields);
 					break;
 				default:
@@ -2243,7 +2264,7 @@ Q.onInit.add(function _Streams_onInit() {
 								Q.handle(
 									handlers[publisherId][streamName],
 									stream,
-									[fields]
+									[msg, fields]
 								);
 							}
 						});
@@ -2299,7 +2320,7 @@ Q.onInit.add(function _Streams_onInit() {
 					});
 				}
 
-				function updateRelatedCache() {
+				function updateRelatedCache(fields) {
 					Streams.related.cache.each([msg.publisherId, msg.streamName, fields.type], function (k, v) {
 						Streams.related.cache.remove(k);
 					});
