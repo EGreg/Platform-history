@@ -1351,6 +1351,10 @@ class Streams_Stream extends Base_Streams_Stream
 			$options['limit'] = 1000;
 		}
 		
+		if ($options['min'] > $options['max']) {
+			return array();
+		}
+		
 		$q->where(array(
 			'ordinal >=' => $options['min'],
 			'ordinal <=' => $options['max']

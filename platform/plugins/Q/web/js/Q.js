@@ -1742,7 +1742,6 @@ Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotN
  */
 Q.getter = function _Q_getter(original, options) {
 
-
 	function wrapper() {
 		var i, j, key, that = this, arguments2 = Array.prototype.slice.call(arguments);
 		var callbacks = [];

@@ -81,10 +81,6 @@ Streams.ADMIN_LEVEL = {
 	'own':	 		40		// can give people any adminLevel <= 40
 };
 
-Streams.cache = {
-
-};
-
 Streams.constructors = {};
 
 /**
@@ -427,7 +423,10 @@ function _constructStream (fields, extra, callback, handleRefreshEvents) {
 
 				var f = this.fields;
 
-				// set it in the Streams.get cache
+				// update the Streams.get cache
+				Streams.get.cache.each([f.publisherId, f.name], function (k, v) {
+					Streams.get.cache.remove(k);
+				});
 				if (f.publisherId && f.name) {
 					Streams.get.cache.set(
 						[f.publisherId, f.name],
@@ -520,6 +519,7 @@ Streams.refresh = function (callback, options) {
 	}
 	Streams.refresh.lastTime = now;
 	var p = new Q.Pipe(Object.keys(_retainedByStream), callback);
+	Streams.refresh.beforeRequest.handle(callback, options);
 	Q.each(_retainedByStream, function (ps) {
 		var parts = ps.split("\t");
 		Stream.refresh(parts[0], parts[1], p.fill(ps), options);
@@ -533,6 +533,7 @@ Streams.refresh.options = {
 	minSeconds: 3
 };
 Streams.refresh.lastTime = 0;
+Streams.refresh.beforeRequest = new Q.Event();
 
 /**
  * When a stream is retained, it is refreshed when Streams.refresh() or
@@ -605,7 +606,7 @@ var Stream = Streams.Stream = function (fields) {
 		this.pendingAttributes = this.attributes = {};
 	}
 	this.pendingFields = {};
-	this.access = Q.copy(fields.access);
+	this.access = Q.copy(fields.access) ;
 	this.typename = 'Q.Streams.Stream';
 };
 
@@ -682,12 +683,12 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 		Streams.get.cache.each([publisherId, streamName], function (k, v) {
 			Streams.get.cache.remove(k);
 		});
-		Streams.get(publisherId, streamName, function () {
+		Streams.get(publisherId, streamName, function (err, stream) {
 			// just get the stream, and any listeners will be triggered
 			var ps = _key(publisherId, streamName);
-			updateStream(_retainedStreams[ps], this.fields);
-			_retainedStreams = this;
-			callback(true);
+			updateStream(_retainedStreams[ps], this.fields, true);
+			_retainedStreams[ps] = this;
+			callback(err, stream);
 		});
 	}
 	_retain = undefined;
@@ -1546,10 +1547,10 @@ Message.latestOrdinal = function _Message_latestOrdinal (publisherId, streamName
 Message.wait = function _Message_wait (publisherId, streamName, ordinal, callback, options) {
 	var alreadyCalled = false, handlerKey;
 	var latest = Message.latestOrdinal(publisherId, streamName);
-	if (!latest) {
-		Q.handle(callback, this, [null]); // There is no cache for this stream, so we won't wait for previous messages.
-		return false;
-	}
+	// if (!latest) {
+	// 	Q.handle(callback, this, [null]); // There is no cache for this stream, so we won't wait for previous messages.
+	// 	return false;
+	// }
 	if (ordinal >= 0 && ordinal <= latest) {
 		Q.handle(callback, this, [null]); // The cached stream already got this message
 		return true;
@@ -1895,7 +1896,7 @@ Streams.setupRegisterForm = function _Streams_setupRegisterForm(identifier, json
 	return register_form;
 };
 
-function updateStream(stream, fields) {
+function updateStream(stream, fields, onlyChangedFields) {
 	if (!stream || !fields) {
 		return false;
 	}
@@ -1903,6 +1904,7 @@ function updateStream(stream, fields) {
 		streamName = stream.fields.name;
 	// events about updated fields
 	for (k in fields) {
+		if (onlyChangedFields && fields[k] === stream.fields[k]) continue;
 		Q.handle(
 			Q.getObject([publisherId, streamName, k], _streamFieldChangedHandlers),
 			stream,
@@ -1959,9 +1961,9 @@ function updateStream(stream, fields) {
 			[fields, updated, cleared]
 		);
 	}
-	Streams.get.cache.each([publisherId, streamName], function (k, v) {
-		Streams.get.cache.remove(k);
-	});
+	// var f = Q.extend({}, stream.fields, fields);
+	// f.access = stream.access;
+	// _constructStream(f, {}, null, true);
 }
 
 function _onCalledHandler(args, shared) {
@@ -2154,6 +2156,7 @@ Q.onInit.add(function _Streams_onInit() {
 				[msg.publisherId, msg.streamName, msg.ordinal],
 				0, message, [null, message]
 			);
+			var cached = Streams.get.cache.get([msg.publisherId, msg.streamName]);
 			Streams.get(msg.publisherId, msg.streamName, function (err) {
 
 				if (err) {
@@ -2164,6 +2167,10 @@ Q.onInit.add(function _Streams_onInit() {
 
 				var stream = this;
 				var params = [this, message];
+				
+				if (cached && ('messageCount' in stream.fields)) {
+					++stream.fields.messageCount; // increment message count
+				}
 
 				_messageHandlers[msg.streamType] &&
 				_messageHandlers[msg.streamType][msg.type] &&
@@ -2227,7 +2234,7 @@ Q.onInit.add(function _Streams_onInit() {
 					}
 					break;
 				case 'Streams/edited':
-					updateStream(stream, fields);
+					updateStream(stream, fields, false);
 					break;
 				case 'Streams/relatedFrom':
 					updateRelatedCache(fields);
@@ -2271,20 +2278,11 @@ Q.onInit.add(function _Streams_onInit() {
 					});
 				}
 
-				function updateStreamCache() {
-					Streams.get.cache.each([msg.publisherId, msg.streamName], function (k, v) {
-						Streams.get.cache.remove(k);
-					});
-				}
-
 				function updateMessageCache() {
 					Streams.get.cache.each([msg.publisherId, msg.streamName], function (k, v) {
 						var stream = (v && !v.params[0]) ? v.subject : null;
 						if (!stream) {
 							return;
-						}
-						if ('messageCount' in stream.fields) {
-							++stream.fields.messageCount; // increment message count
 						}
 						var args = JSON.parse(k), extra = args[2];
 						if (extra && extra.messages) {

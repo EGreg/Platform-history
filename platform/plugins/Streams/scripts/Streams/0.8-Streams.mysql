@@ -15,8 +15,8 @@ CREATE TABLE `{$prefix}access` (
   `writeLevel` int(11) NOT NULL DEFAULT '0' COMMENT '<0=ignored, 0=''none'', 10=''post'',20=''edit'',30=''delete''',
   `adminLevel` int(11) NOT NULL DEFAULT '0' COMMENT '<0=ignored, 0=''none'', 10=''tell'', 20=''invite'', 30=''manage'', 40=''own''',
   PRIMARY KEY (`publisherId`,`streamName`(20),`ofUserId`,`ofContactLabel`(20)),
-  KEY `SUBSCRIBER` (`ofUserId`),
-  KEY `CONTACTS` (`ofContactLabel`)
+  KEY `subscriber` (`ofUserId`),
+  KEY `contacts` (`ofContactLabel`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='stored primarily on publisherId''s fm server';
 
 # Dump of table {$prefix}avatar
@@ -93,11 +93,10 @@ CREATE TABLE `{$prefix}message` (
   `weight` decimal(10,4) NOT NULL DEFAULT '1.0000' COMMENT 'this may depend on the reputation of user_by relative to the stream',
   `ordinal` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Count messages posted to the stream',
   PRIMARY KEY (`publisherId`,`streamName`,`ordinal`),
-  KEY `STREAM` (`publisherId`,`streamName`),
-  KEY `AUTHOR` (`byUserId`),
+  KEY `author` (`byUserId`),
   KEY `insertedTime` (`insertedTime`),
   KEY `sentTime` (`sentTime`),
-  KEY `REGARDING` (`reOrdinal`)
+  KEY `regarding` (`reOrdinal`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='stored primarily on publisherId''s fm server';
 
 # Dump of table {$prefix}notification
@@ -116,9 +115,9 @@ CREATE TABLE `{$prefix}notification` (
   `comment` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'optional human-readable comment to display along with notification',
   PRIMARY KEY (`userId`,`insertedTime`),
   KEY `viewedTime` (`viewedTime`),
-  KEY `STREAM` (`publisherId`,`streamName`),
-  KEY `RECIPIENT` (`userId`),
-  KEY `COUNT` (`publisherId`,`streamName`,`type`)
+  KEY `stream` (`publisherId`,`streamName`),
+  KEY `recipient` (`userId`),
+  KEY `count` (`publisherId`,`streamName`,`type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='stored primarily on for_userId''s fm server';
 
 # Dump of table {$prefix}participant
@@ -140,10 +139,10 @@ CREATE TABLE `{$prefix}participant` (
   `enthusiasm` decimal(10,4) NOT NULL DEFAULT '0.0000' COMMENT 'how open they are to meeting someone',
   `reputation` int(11) NOT NULL DEFAULT '0' COMMENT 'participant''s reputation in the stream, usually used for topics',
   PRIMARY KEY (`publisherId`,`streamName`,`userId`),
-  KEY `SUBSCRIBED` (`publisherId`,`streamName`,`subscribed`),
-  KEY `POSTED` (`publisherId`,`streamName`,`posted`),
-  KEY `CREATED` (`publisherId`,`streamName`,`insertedTime`),
-  KEY `UPDATED` (`publisherId`,`streamName`,`updatedTime`)
+  KEY `subscribed` (`publisherId`,`streamName`,`subscribed`),
+  KEY `posted` (`publisherId`,`streamName`,`posted`),
+  KEY `inserted` (`publisherId`,`streamName`,`insertedTime`),
+  KEY `updated` (`publisherId`,`streamName`,`updatedTime`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='stored primarily on publisherId''s fm server';
 
 # Dump of table {$prefix}participating
@@ -175,7 +174,7 @@ CREATE TABLE `{$prefix}related_from` (
   `toStreamName` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'name of category',
   `insertedTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`fromPublisherId`,`fromStreamName`,`type`,`toPublisherId`,`toStreamName`),
-  KEY `SORTING` (`fromPublisherId`,`fromStreamName`,`type`)
+  KEY `sorting` (`fromPublisherId`,`fromStreamName`,`type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='This table is owned by publisher of the member stream';
 
 # Dump of table {$prefix}related_to
@@ -192,7 +191,7 @@ CREATE TABLE `{$prefix}related_to` (
   `weight` decimal(10,4) NOT NULL DEFAULT '1.0000' COMMENT 'used for sorting',
   `insertedTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`toPublisherId`,`toStreamName`,`type`,`fromPublisherId`,`fromStreamName`),
-  KEY `SORTING` (`toPublisherId`,`toStreamName`,`type`,`weight`)
+  KEY `sorting` (`toPublisherId`,`toStreamName`,`type`,`weight`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='This table is owned by publisher of the aggregator stream';
 
 # Dump of table {$prefix}request
@@ -209,7 +208,7 @@ CREATE TABLE `{$prefix}request` (
   `writeLevel` int(11) NOT NULL COMMENT '10=''post'',20=''edit'',30=''delete''',
   `adminLevel` int(11) NOT NULL DEFAULT '0' COMMENT '10=''publish'', 20=''invite'', 30=''manage'', 40=''own''',
   PRIMARY KEY (`publisherId`,`streamName`,`byUserId`),
-  KEY `SUBSCRIBER` (`byUserId`)
+  KEY `subscriber` (`byUserId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='stored primarily on publisherId''s fm server';
 
 # Dump of table {$prefix}rule
@@ -246,8 +245,8 @@ CREATE TABLE `{$prefix}sent` (
   `chatPublisherId` varchar(31) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'If not 0, id of user that publishes the chat stream',
   `chatStreamName` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'The name of the stream where people can chat about this message',
   `reOrdinal` int(11) DEFAULT NULL COMMENT 'The ordinal of the message being replied to',
-  KEY `STREAM` (`publisherId`,`streamName`),
-  KEY `AUTHOR` (`byUserId`),
+  KEY `stream` (`publisherId`,`streamName`),
+  KEY `author` (`byUserId`),
   KEY `insertedTime` (`insertedTime`),
   KEY `sentTime` (`sentTime`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='stored primarily on byUserId''s fm server';

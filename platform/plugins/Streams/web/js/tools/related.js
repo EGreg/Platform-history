@@ -72,7 +72,11 @@ function _Streams_related_tool (options)
 				}, tool);
 			});
 		}
-
+		
+		Q.Streams.refresh.beforeRequest.set(function () {
+			result.stream.refresh(null, {messages: true});
+		}, 'Streams/related');
+		
 		if (result.stream.testWriteLevel('relate')) {
 			Q.each(this.state.creatable, addComposer);
 			if (tool.state.sortable && result.stream.testWriteLevel('suggest')) {

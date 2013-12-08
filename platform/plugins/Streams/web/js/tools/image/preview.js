@@ -77,7 +77,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 						tool.stream.refresh(function () {
 							_render();
 							state.onUpdate.handle.call(tool, data);
-						});
+						}, {messages: true});
 						return false;
 					}}
 				});
@@ -111,11 +111,18 @@ Q.Tool.define("Streams/image/preview", function(options) {
 		img.setAttribute('class', 'Streams_image_preview_loading');
 		tool.element.innerHTML = '';
 		tool.element.appendChild(img);
+		
+		Q.Streams.Stream.onFieldChanged(state.publisherId, state.streamName, 'icon').set(_doRefresh, tool);
 
-		Q.Streams.Stream.onRefresh(state.publisherId, state.streamName).add(function (stream) {
-			// only called on success
+		Q.Streams.retainWith(tool).get(state.publisherId, state.streamName, _doRefresh);
+		
+		function _doRefresh (err) {
+			
+			var stream = this;
 			tool.stream = stream;
-			tool.refresh(_afterRefresh);
+			setTimeout(function () {
+				tool.refresh(_afterRefresh);
+			}, 0);
 			
 			function _afterRefresh () {
 				if (!stream.testWriteLevel('suggest')) {
@@ -134,7 +141,8 @@ Q.Tool.define("Streams/image/preview", function(options) {
 					onSuccess: {'Streams/image/preview': function (data, key) {
 						stream.refresh(function () {
 							state.onUpdate.handle.call(tool, data);
-						});
+						}, {messages: true});
+						return false;
 					}}
 				});
 				tool.$('img').plugin('Q/imagepicker', ipo);
@@ -155,14 +163,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 					tool.$().plugin('Q/actions', ao);
 				}
 			}
-			stream.onFieldChanged('icon').set(function () {
-				setTimeout(function () {
-					tool.refresh(_afterRefresh);
-				}, 0); // TODO: Standardize onFieldChanged, onUpdated, etc. to be after stream cache was updated
-			}, tool);
-		});
-
-		Q.Streams.retainWith(tool).get(state.publisherId, state.streamName);
+		}
 	}
 	
 	function _render() {
