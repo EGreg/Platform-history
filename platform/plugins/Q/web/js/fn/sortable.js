@@ -179,6 +179,7 @@ function (options) {
 		var $item = $(document).data(dataLifted);
 		if (!$item) return;
 		
+		
 		var data = $item.data('Q/sortable');
 		$(document).removeData(dataLifted)
 			.off(Q.Pointer.move, moveHandler)
@@ -186,13 +187,32 @@ function (options) {
 		$item.off(Q.Pointer.move, moveHandler)
 			.off(Q.Pointer.end, dropHandler);
 		if (!data) return;
+		
+		var params = {
+			$placeholder: data.$placeholder,
+			$dragged: data.$dragged,
+			$scrolling: $scrolling
+		};
+		
 		if (revert) {
 			$item.show();
-//			data.parentNode.insertBefore($item[0], data.nextSibling);
+			params.direction = 0;
 		} else {
-			$item.insertAfter(data.$placeholder).show();
+			if (data.$placeholder.next()[0] === $item[0]
+			|| data.$placeholder.prev()[0] === $item[0]) {
+				params.direction = 0;
+			} else if ($item[0].isBefore(data.$placeholder[0])) {
+				params.direction = 1;
+			} else {
+				params.direction = -1;
+			}
 		}
-		data.$placeholder.hide();
+		
+		lifted = false;
+		if (revert && $scrolling) {
+			$scrolling.scrollLeft(osl);
+			$scrolling.scrollTop(ost);
+		}
 		$item.css({
 			position: data.position, 
 			zIndex: data.zIndex
@@ -200,18 +220,17 @@ function (options) {
 			left: data.left,
 			top: data.top
 		});
-		$item.removeData('Q/sortable');
-		lifted = false;
-		var params = {
-			$placeholder: data.$placeholder,
-			$dragged: data.$dragged,
-			$scrolling: $scrolling
-		};
-		if (revert && $scrolling) {
-			$scrolling.scrollLeft(osl);
-			$scrolling.scrollTop(ost);
+		
+		Q.handle(options.beforeDrop, $this, [$item, revert, params]);
+		
+		if (!revert) {
+			$item.insertAfter(data.$placeholder).show();
 		}
+		data.$placeholder.hide();
+		$item.removeData('Q/sortable');
+		
 		Q.handle(options.onDrop, $this, [$item, revert, params]);
+		
 		if (!revert) {
 			Q.handle(options.onSuccess, $this, [$item, params]);
 		}
@@ -387,17 +406,6 @@ function (options) {
 			return;
 		}
 		var direction;
-		function isTheSibling($target, direction, element){
-			var result = false;
-			var $siblings = (direction === 'before') ? $target.prevAll() : $target.nextAll();
-			$siblings.each(function () {
-				if (this === element) {
-					result = true;
-					return false; // exit the loop so we can return true result
-				}
-			});
-			return result;
-		}
 		var $n = $target.next(), $p = $target.prev();
 		while ($n.length && !$n.is(':visible')) {
 			$n = $n.next();
@@ -421,13 +429,6 @@ function (options) {
 			$target.after($placeholder);
 			direction = 'after';
 		}
-		// if (isTheSibling($target, 'before', $item[0])) {
-		// 	$target.after($placeholder);
-		// 	direction = 'before';
-		// } else if (isTheSibling($target, 'after', $item[0])) {
-		// 	$target.before($placeholder);
-		// 	direction = 'after';
-		// }
 		data.$prevTarget = $target;
 		Q.handle(options.onIndicate, $this, [$item, {
 			$target: $target,
@@ -460,13 +461,18 @@ function (options) {
 		speed: 30,
 		acceleration: 0.1
 	},
+	drop: {
+		duration: 300
+	},
 	requireDropTarget: true,
 	onLift: new Q.Event(),
 	onIndicate: new Q.Event(),
+	beforeDrop: new Q.Event(),
 	onDrop: new Q.Event(function ($item, revert, data) {
 		var offset = $item.offset();
 		var moreleft = 0, moretop = 0;
 		var $scrolling = data.$scrolling;
+		var duration = this.state('Q/sortable').drop.duration;
 		if ($scrolling) {
 			var so = $scrolling.offset();
 			var il = offset.left,
@@ -478,28 +484,28 @@ function (options) {
 				sr = so.left + $scrolling.width(),
 				sb = so.top + $scrolling.height();
 			if (il < sl) {
-				$scrolling.animate({'scrollLeft': il - sl + $scrolling.scrollLeft()}, 300);
+				$scrolling.animate({'scrollLeft': il - sl + $scrolling.scrollLeft()}, duration);
 				moreleft = sl - il;
 			}
 			if (it < st) {
-				$scrolling.animate({'scrollTop': it - st + $scrolling.scrollTop()}, 300);
+				$scrolling.animate({'scrollTop': it - st + $scrolling.scrollTop()}, duration);
 				moretop = st - it;
 			}
 			if (ir > sr) {
-				$scrolling.animate({'scrollLeft': ir - sr + $scrolling.scrollLeft()}, 300);
+				$scrolling.animate({'scrollLeft': ir - sr + $scrolling.scrollLeft()}, duration);
 				moreleft = sr - ir;
 			}
 			if (ib > sb) {
-				$scrolling.animate({'scrollTop': ib - sb + $scrolling.scrollTop()}, 300);
+				$scrolling.animate({'scrollTop': ib - sb + $scrolling.scrollTop()}, duration);
 				moretop = sb - ib;
 			}
 		}
-		$item.css('opacity', 0).animate({'opacity': 1}, 300);
+		$item.css('opacity', 0).animate({'opacity': 1}, duration);
 		data.$dragged.animate({
 			opacity: 0,
 			left: offset.left + moreleft,
 			top: offset.top + moretop
-		}, 300, function () {
+		}, duration, function () {
 			data.$dragged.remove(); // we have to do it ourselves since we retained it
 		});
 		data.$dragged.retain = true;

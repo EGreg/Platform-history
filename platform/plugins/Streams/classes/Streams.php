@@ -632,13 +632,13 @@ abstract class Streams extends Base_Streams
 					$retrieved = $to_template->retrieve();
 				}
 				if ($retrieved) {
-					$related_to = new Streams_RelatedTo();
-					$related_to->toPublisherId = $to_template->publisherId;
-					$related_to->toStreamName = $to_template->name;
-					$related_to->type = $relate['type'];
-					$related_to->fromPublisherId = $template->publisherId;
-					$related_to->fromStreamName = $template->name;
-					if ($retrieved = $related_to->retrieve()) {
+					$relatedTo = new Streams_RelatedTo();
+					$relatedTo->toPublisherId = $to_template->publisherId;
+					$relatedTo->toStreamName = $to_template->name;
+					$relatedTo->type = $relate['type'];
+					$relatedTo->fromPublisherId = $template->publisherId;
+					$relatedTo->fromStreamName = $template->name;
+					if ($retrieved = $relatedTo->retrieve()) {
 						$authorized = $template;
 					}
 				}
@@ -1353,8 +1353,8 @@ abstract class Streams extends Base_Streams
 	 * @param {array} $options=array()
 	 *  An array of options that can include:
 	 *  "skip_access" => Defaults to false. If true, skips the access checks and just relates the stream to the category
-	 * @param {&Streams_RelatedTo} $related_to
-	 * @param {&Streams_RelatedFrom} $related_from
+	 * @param {&Streams_RelatedTo} $relatedTo
+	 * @param {&Streams_RelatedFrom} $relatedFrom
 	 */
 	private static function getRelation(
 		$asUserId,
@@ -1363,8 +1363,8 @@ abstract class Streams extends Base_Streams
 		$type,
 		$fromPublisherId,
 		$fromStreamName,
-		&$related_to,
-		&$related_from,
+		&$relatedTo,
+		&$relatedFrom,
 		&$category,
 		&$stream,
 		$options = array())
@@ -1391,19 +1391,19 @@ abstract class Streams extends Base_Streams
 			throw new Q_Exception("Stream $fromStreamName not found", array('fromStreamName', 'fromPublisherId'));
 		}
 
-		$related_to = new Streams_RelatedTo();
-		$related_to->toPublisherId = $toPublisherId;
-		$related_to->toStreamName = $toStreamName;
-		$related_to->type = $type;
-		$related_to->fromPublisherId = $fromPublisherId;
-		$related_to->fromStreamName = $fromStreamName;
+		$relatedTo = new Streams_RelatedTo();
+		$relatedTo->toPublisherId = $toPublisherId;
+		$relatedTo->toStreamName = $toStreamName;
+		$relatedTo->type = $type;
+		$relatedTo->fromPublisherId = $fromPublisherId;
+		$relatedTo->fromStreamName = $fromStreamName;
 
-		$related_from = new Streams_RelatedFrom();
-		$related_from->fromPublisherId = $fromPublisherId;
-		$related_from->fromStreamName = $fromStreamName;
-		$related_from->type = $type;
-		$related_from->toPublisherId = $toPublisherId;
-		$related_from->toStreamName = $toStreamName;
+		$relatedFrom = new Streams_RelatedFrom();
+		$relatedFrom->fromPublisherId = $fromPublisherId;
+		$relatedFrom->fromStreamName = $fromStreamName;
+		$relatedFrom->type = $type;
+		$relatedFrom->toPublisherId = $toPublisherId;
+		$relatedFrom->toStreamName = $toStreamName;
 	}
 
 	/**
@@ -1449,20 +1449,20 @@ abstract class Streams extends Base_Streams
 			$type,
 			$fromPublisherId,
 			$fromStreamName,
-			$related_to,
-			$related_from,
+			$relatedTo,
+			$relatedFrom,
 			$category,
 			$stream,
 			$options);
 
-		$to_exists = $related_to->retrieve();
-		$from_exists = $related_from->retrieve();
+		$to_exists = $relatedTo->retrieve();
+		$from_exists = $relatedFrom->retrieve();
 
 		// Recover from inconsistency:
 		// if one exists but not the other, clean up and start over
 		if (($to_exists && !$from_exists) || (!$to_exists && $from_exists)) {
-			if ($to_exists) $related_to->remove();
-			if ($from_exists) $related_from->remove();
+			if ($to_exists) $relatedTo->remove();
+			if ($from_exists) $relatedFrom->remove();
 			$to_exists = $from_exists = false;
 		}
 
@@ -1473,28 +1473,28 @@ abstract class Streams extends Base_Streams
 		// Now, set up the relation.
 		/**
 		 * @event Streams/relate/$streamType {before}
-		 * @param {string} 'related_to'
-		 * @param {string} 'related_from'
+		 * @param {string} 'relatedTo'
+		 * @param {string} 'relatedFrom'
 		 * @param {string} 'asUserId'
 		 * @return {false} To cancel further processing
 		 */
 		if (false === Q::event(
 			"Streams/relate/{$stream->type}",
-			compact('related_to', 'related_from', 'asUserId'),
+			compact('relatedTo', 'relatedFrom', 'asUserId'),
 			'before'
 		)) {
 			return false;
 		}
 
 		/*
-		 * save 'Streams/relation' to $related_to.
+		 * save 'Streams/relation' to $relatedTo.
 		 * we consider category stream as 'remote' i.e. more error prone.
 		 * If first save fails, 'Streams/related' saved
 		 */
 
 		$weight = isset($options['weight']) ? $options['weight'] : null;
 
-		if (!isset($related_to->weight) and isset($weight)) {
+		if (!isset($relatedTo->weight) and isset($weight)) {
 			$parts = explode('+', "$weight");
 			if (count($parts) > 1 and is_numeric($parts[1])) {
 				$row = Streams_RelatedTo::select('MAX(weight)')
@@ -1507,12 +1507,12 @@ abstract class Streams extends Base_Streams
 			} else if (!is_numeric($weight)) {
 				throw new Q_Exception_WrongValue(array('field' => 'weight', 'range' => 'a numeric value'), 'weight');
 			}
-			$related_to->weight = $weight;
+			$relatedTo->weight = $weight;
 			Q::log("WEIGHT BABY: ".$weight);
 		}
 
 		try {
-			$related_to->save();
+			$relatedTo->save();
 		} catch (Exception $e) {
 			// posting 'Streams/relation' failed. Relation is inconsistent.
 			// JUNK: this leaves junk in the database, but preserves consistency
@@ -1527,7 +1527,7 @@ abstract class Streams extends Base_Streams
 		), true);
 
 		try {
-			$related_from->save();
+			$relatedFrom->save();
 		} catch (Exception $e) {
 			throw new Streams_Exception_Relation();
 		}
@@ -1541,13 +1541,13 @@ abstract class Streams extends Base_Streams
 
 		/**
 		 * @event Streams/relate/$streamType {after}
-		 * @param {string} 'related_to'
-		 * @param {string} 'related_from'
+		 * @param {string} 'relatedTo'
+		 * @param {string} 'relatedFrom'
 		 * @param {string} 'asUserId'
 		 */
 		Q::event(
 			"Streams/relate/{$stream->type}",
-			compact('related_to', 'related_from', 'asUserId'),
+			compact('relatedTo', 'relatedFrom', 'asUserId'),
 			'after'
 		);
 
@@ -1594,14 +1594,14 @@ abstract class Streams extends Base_Streams
 			$type,
 			$fromPublisherId,
 			$fromStreamName,
-			$related_to,
-			$related_from,
+			$relatedTo,
+			$relatedFrom,
 			$category,
 			$stream,
 			$options);
 
-		$to = $related_to->retrieve();
-		$from = $related_from->retrieve();
+		$to = $relatedTo->retrieve();
+		$from = $relatedFrom->retrieve();
 
 		if (!$to && !$from) {
 			return false;
@@ -1610,25 +1610,25 @@ abstract class Streams extends Base_Streams
 		// Now, clean up the relation.
 		/**
 		 * @event Streams/unrelate/$streamType {before}
-		 * @param {string} 'related_to'
-		 * @param {string} 'related_from'
+		 * @param {string} 'relatedTo'
+		 * @param {string} 'relatedFrom'
 		 * @param {string} 'asUserId'
 		 * @return {false} To cancel further processing
 		 */
 		if (Q::event(
 			"Streams/unrelate/{$stream->type}",
-			compact('related_to', 'related_from', 'asUserId'), 
+			compact('relatedTo', 'relatedFrom', 'asUserId'), 
 			'before') === false
 		) {
 			return;
 		}
 
 		/*
-		 * remove 'Streams/relation' from $related_to.
+		 * remove 'Streams/relation' from $relatedTo.
 		 * we consider category stream as 'remote' i.e. more error prone.
 		 */
 
-		if ($to && $related_to->remove()) {
+		if ($to && $relatedTo->remove()) {
 			// Send Streams/unrelatedTo message to a stream
 			// node server will be notified by Streams_Message::post
 			Streams_Message::post($asUserId, $toPublisherId, $toStreamName, array(
@@ -1637,7 +1637,7 @@ abstract class Streams extends Base_Streams
 			), true);
 		}
 
-		if ($from && $related_from->remove()) {
+		if ($from && $relatedFrom->remove()) {
 			// Send Streams/unrelatedFrom message to a stream
 			// node server will be notified by Streams_Message::post
 			Streams_Message::post($asUserId, $fromPublisherId, $fromStreamName, array(
@@ -1648,13 +1648,13 @@ abstract class Streams extends Base_Streams
 
 		/**
 		 * @event Streams/unrelste/$streamType {after}
-		 * @param {string} 'related_to'
-		 * @param {string} 'related_from'
+		 * @param {string} 'relatedTo'
+		 * @param {string} 'relatedFrom'
 		 * @param {string} 'asUserId'
 		 */
 		Q::event(
 			"Streams/unrelate/{$stream->type}",
-			compact('related_to', 'related_from', 'asUserId'), 
+			compact('relatedTo', 'relatedFrom', 'asUserId'), 
 			'after'
 		);
 
@@ -1798,6 +1798,8 @@ abstract class Streams extends Base_Streams
 	
 	/**
 	 * Updates the weight on a relation
+	 * @param {string} $byUserId
+	 *  The id of the user on whose behalf the app will be updating the relation
 	 * @param {string} $toPublisherId
 	 *  The publisher of the stream on the 'to' end of the reltion
 	 * @param {string} $toStreamName
@@ -1810,7 +1812,7 @@ abstract class Streams extends Base_Streams
 	 *  The name of the stream on the 'from' end of the reltion
 	 * @param {double} $weight
 	 *  The new weight
-	 * @param {double} $adjust_weights=null
+	 * @param {double} $adjustWeights=null
 	 *  The amount to move the other weights by, to make room for this one
 	 * @param {array} $options=array()
 	 *  An array of options that can include:
@@ -1820,97 +1822,102 @@ abstract class Streams extends Base_Streams
 	 *  Otherwise returns array with key "to" and value of type Streams_Message
 	 */
 	static function updateRelation(
-		$asUserId,
+		$byUserId,
 		$toPublisherId,
 		$toStreamName,
 		$type,
 		$fromPublisherId,
 		$fromStreamName,
 		$weight,
-		$adjust_weights = null,
+		$adjustWeights = null,
 		$options = array())
 	{
 		self::getRelation(
-			$asUserId,
+			$byUserId,
 			$toPublisherId,
 			$toStreamName,
 			$type,
 			$fromPublisherId,
 			$fromStreamName,
-			$related_to,
-			$related_from,
+			$relatedTo,
+			$relatedFrom,
 			$category,
 			$stream,
 			$options);
 			
-		if (!$related_to->retrieve()) {
+		if (!$relatedTo->retrieve()) {
 			throw new Q_Exception_MissingRow(
 				array('table' => 'relatedTo', 'criteria' => 'those fields'),
 				array('publisherId', 'name', 'type', 'toPublisherId', 'to_name')
 			);			
 		}
-		if (!$related_from->retrieve()) {
-			throw new Q_Exception_MissingRow(
-				array('table' => 'relatedFrom', 'criteria' => 'those fields'),
-				array('publisherId', 'name', 'type', 'fromPublisherId', 'from_name')
-			);			
-		}
+//		if (!$relatedFrom->retrieve()) {
+//			throw new Q_Exception_MissingRow(
+//				array('table' => 'relatedFrom', 'criteria' => 'those fields'),
+//				array('publisherId', 'name', 'type', 'fromPublisherId', 'from_name')
+//			);
+//		}
 		
 		/**
 		 * @event Streams/updateRelation/$streamType {before}
-		 * @param {string} 'related_to'
-		 * @param {string} 'related_from'
-		 * @param {string} 'asUserId'
+		 * @param {string} 'relatedTo'
+		 * @param {string} 'relatedFrom'
+		 * @param {string} 'byUserId'
 		 * @param {double} 'weight'
-		 * @param {double} 'previous_weight'
+		 * @param {double} 'previousWeight'
 		 */
-		$previous_weight = $related_to->weight;
+		$previousWeight = $relatedTo->weight;
 		if (Q::event(
 			"Streams/updateRelation/{$stream->type}",
-			compact('related_to', 'related_from', 'asUserId', 'weight', 'previous_weight', 'adjust_by'), 
+			compact('relatedTo', 'relatedFrom', 'type', 'weight', 'previousWeight', 'adjustWeightsBy', 'byUserId'), 
 			'before') === false
 		) {
 			return false;
 		}
 		
-		if (!empty($adjust_weights) and is_numeric($adjust_weights) and $weight !== $previous_weight) {
+		if (!empty($adjustWeights) and is_numeric($adjustWeights) and $weight !== $previousWeight) {
 			$criteria = array(
 				'toPublisherId' => $toPublisherId,
 				'toStreamName' => $toStreamName,
 				'type' => $type,
-				'weight' => $weight < $previous_weight
-					? new Db_Range($weight, true, true, $previous_weight)
-					: new Db_Range($previous_weight, true, true, $weight)
+				'weight' => $weight < $previousWeight
+					? new Db_Range($weight, true, false, $previousWeight)
+					: new Db_Range($previousWeight, false, true, $weight)
 			);
-			$adjust_by = $weight < $previous_weight ? $adjust_weights : -$adjust_weights;
+			$adjustWeightsBy = $weight < $previousWeight ? $adjustWeights : -$adjustWeights;
 			Streams_RelatedTo::update()->set(array(
-				'weight' => new Db_Expression("weight + " . $adjust_by)
+				'weight' => new Db_Expression("weight + " . $adjustWeightsBy)
 			))->where($criteria)->execute();
 		}
 		
-		// Send Stream/updatedRelateTo message to the category stream
+		$relatedTo->weight = $weight;
+		$relatedTo->save();
+		
+		// Send Streams/updatedRelateTo message to the category stream
 		// node server will be notified by Streams_Message::post
-		$message = Streams_Message::post($asUserId, $toPublisherId, $toStreamName, array(
-			'type' => 'Stream/updatedRelateTo',
-			'instructions' => Q::json_encode(compact('fromPublisherId', 'fromStreamName', 'weight', 'previous_weight', 'adjust_by'))
+		$message = Streams_Message::post($byUserId, $toPublisherId, $toStreamName, array(
+			'type' => 'Streams/updatedRelateTo',
+			'instructions' => Q::json_encode(compact(
+				'fromPublisherId', 'fromStreamName', 'type', 'weight', 'previousWeight', 'adjustWeightsBy', 'byUserId'
+			))
 		), true);
 		
 		// TODO: We are not yet sending Streams/updatedRelateFrom message to the other stream
 		// because we might be changing a lot of weights, and we'd have to message a lot of streams.
 		// This is better done in the background using Node.js after selecting using $criteria
-		// When we implement this, we can introduce weight again in the related_from table.
+		// When we implement this, we can introduce weight again in the relatedFrom table.
 		
 		/**
 		 * @event Streams/updateRelation/$streamType {after}
-		 * @param {string} 'related_to'
-		 * @param {string} 'related_from'
-		 * @param {string} 'asUserId'
+		 * @param {string} 'relatedTo'
+		 * @param {string} 'relatedFrom'
+		 * @param {string} 'byUserId'
 		 * @param {double} 'weight'
-		 * @param {double} 'previous_weight'
+		 * @param {double} 'previousWeight'
 		 */
 		Q::event(
 			"Streams/updateRelation/{$stream->type}",
-			compact('related_to', 'related_from', 'asUserId', 'weight', 'previous_weight', 'adjust_by'),
+			compact('relatedTo', 'relatedFrom', 'type', 'weight', 'previousWeight', 'adjustWeightsBy', 'byUserId'),
 			'after'
 		);
 		

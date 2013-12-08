@@ -58,7 +58,7 @@ function _Streams_related_tool (options)
 		function addComposer(streamType, params) {
 			// TODO: test whether the user can create streams of this type
 			// and otherwise do not append this element
-			var element = tool.elementForStream(tool.state.publisherId, "", streamType, {
+			var element = tool.elementForStream(tool.state.publisherId, "", streamType, null, {
 				creatable: params
 			});
 			element.setAttribute('class', element.getAttribute('class') + ' Streams_related_composer');
@@ -78,13 +78,44 @@ function _Streams_related_tool (options)
 		}, 'Streams/related');
 		
 		if (result.stream.testWriteLevel('relate')) {
-			Q.each(this.state.creatable, addComposer);
+			Q.each(tool.state.creatable, addComposer);
 			if (tool.state.sortable && result.stream.testWriteLevel('suggest')) {
-				tool.$().plugin('Q/sortable', tool.state.sortable);
+				var sortableOptions = Q.extend({
+					beforeDrop: {"Streams/related": function ($item, revert, data) {
+						if (!data.direction) return;
+						var target = (data.direction > 0)
+							? data.$placeholder.prev()[0]
+							: data.$placeholder.next()[0];
+						if (!target) {
+							// target should not be empty because of the way direction is computed
+							console.warn("Streams/related onDrop: target is unexpectedly empty");
+							return;
+						}
+						var s = Q.Tool.from(target).state,
+							i = Q.Tool.from($item[0]).state,
+							r = i.related;
+						setTimeout(function () {
+							Q.Streams.updateRelation(
+								r.publisherId,
+								r.streamName,
+								r.type,
+								i.publisherId,
+								i.streamName,
+								s.related.weight,
+								1,
+								function () {
+
+								}
+							);
+						}, this.state('Q/sortable').drop.duration);
+					}}
+				}, tool.state.sortable);
+				tool.$().plugin('Q/sortable', sortableOptions);
 			}
 		}
-        Q.each(result.streams, function () {
-            var element = tool.elementForStream(this.fields.publisherId, this.fields.name, this.fields.type);
+        Q.each(result.relations, function () {
+			if (!this.from) return;
+            var element = tool.elementForStream(this.from.fields.publisherId, this.from.fields.name, this.from.fields.type, this.weight);
 			element.setAttribute('class', element.getAttribute('class') + ' Streams_related_stream');
             Q.activate(tool.element.appendChild(element));
         });
@@ -149,17 +180,18 @@ function _Streams_related_tool (options)
         }
         function onChangedRelations(msg, fields) {
             var isCategory = tool.state.isCategory;
-            tool.refresh(); // TODO: REMOVE THIS?
+            tool.refresh(); // TODO: REPLACE THIS WITH AN ANIMATED UPDATE BY LOOKING AT THE ARRAYS entering, exiting, updating
         }
     },
-    elementForStream: function (publisherId, streamName, streamType, options) {
+    elementForStream: function (publisherId, streamName, streamType, weight, options) {
         var o = Q.extend({
             publisherId: publisherId,
             streamName: streamName,
-			relatedFrom: {
+			related: {
 				publisherId: this.state.publisherId,
 				streamName: this.state.streamName,
-				type: this.state.relationType
+				type: this.state.relationType,
+				weight: weight
 			},
 			editable: this.state.editable
         }, options);

@@ -11,11 +11,11 @@ function Streams_related_validate()
 			break;
 		case 'PUT':
 			$required = array('toPublisherId', 'toStreamName', 'type', 'fromPublisherId', 'fromStreamName', 'weight');
-			if (isset($_REQUEST['adjust_weights'])) {
-				if (!is_numeric($_REQUEST['adjust_weights'])) {
+			if (isset($_REQUEST['adjustWeights'])) {
+				if (!is_numeric($_REQUEST['adjustWeights'])) {
 					Q_Response::addError(new Q_Exception_WrongValue(
-						array('field' => 'adjust_weights', 'range' => 'a numeric value'),
-						'adjust_weights'
+						array('field' => 'adjustWeights', 'range' => 'a numeric value'),
+						'adjustWeights'
 					));
 				}
 			}

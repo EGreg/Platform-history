@@ -67,7 +67,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 								}
 							});
 							state.onCreate.handle.call(tool);
-						}, state.relatedFrom);
+						}, state.related);
 					},
 					preprocess: function (callback) {
 						// TODO: have some kind of cropping interface for imagepicker
@@ -178,7 +178,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 },
 
 {
-	relatedFrom: null,
+	related: null,
 	editable: false,
 	creatable: {
 		title: "New Image",

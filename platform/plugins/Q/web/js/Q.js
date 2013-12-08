@@ -318,6 +318,21 @@ HTMLElement.prototype.preventSelections = function () {
 	= this.style['user-select'] = 'none';
 };
 
+HTMLElement.prototype.isBefore = function (element, context) {
+	var before = true, that = this;
+	context = context || document.documentElement; // TODO: can triangulate a parentNode instead
+	Q.find(context, null, function (elem) {
+		if (elem === element) {
+			before = false;
+			return false;
+		}
+		if (elem === that) {
+			return false;
+		}
+	});
+	return before;
+};
+
 if(!document.getElementsByClassName) {
     document.getElementsByClassName = function(className) {
 		return Array.prototype.slice.call(this.querySelectorAll("." + className));
@@ -4413,9 +4428,12 @@ Q.cookie = function _Q_cookie(name, value, options) {
  * @param String|RegExp|true filter
  *  The name of the class or attribute to match
  * @param Function callbackBefore
- *  A function to run when a match is found (before the children)
+ *  A function to run when a match is found (before the children).
+ *  If it returns 0, the Q.find function doesn't search further inside that element.
+ *  If it returns false, the Q.find function stops searching.
  * @param Function callbackAfter
  *  A function to run when a match is found (after the children)
+ *  If it returns false, the Q.find function stops searching.
  * @param options
  *  Any options to pass to the callbacks as the second argument
  * @param shared
@@ -4435,7 +4453,9 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 		(window.jQuery && (elem instanceof jQuery))) {
 
 		for (i=0; i<elem.length; ++i) {
-			Q.find(elem[i], filter, callbackBefore, callbackAfter, options, shared, parent, i);
+			if (false === Q.find(elem[i], filter, callbackBefore, callbackAfter, options, shared, parent, i)) {
+				return false;
+			}
 		}
 		return;
 	}
@@ -4466,8 +4486,11 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 	}
 	if (found && typeof(callbackBefore) == 'function') {
 		var ret = callbackBefore(elem, options, shared, parent, i);
-		if (ret === false) {
+		if (ret === 0) {
 			return;
+		}
+		if (ret === false) {
+			return false;
 		}
 	}
 	var children;
@@ -4482,9 +4505,14 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 			c[i] = children[i];
 		}
 	}
-	Q.find(c, filter, callbackBefore, callbackAfter, options, shared, elem);
+	var ret = Q.find(c, filter, callbackBefore, callbackAfter, options, shared, elem);
+	if (ret === false) {
+		return false;
+	}
 	if (found && typeof(callbackAfter) == 'function') {
-		callbackAfter(elem, options, shared, parent, i);
+		if (false ===  callbackAfter(elem, options, shared, parent, i)) {
+			return false;
+		}
 	}
 };
 Q.find.skipSubtree = "Q:skipSubtree";

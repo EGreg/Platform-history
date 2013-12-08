@@ -144,9 +144,9 @@ var _socket = null,
 	_retainedByStream = {},
 	_retainedStreams = {};
 
-function _key (publisherId, streamName) {
+Streams.key = function (publisherId, streamName) {
 	return publisherId + "\t" + streamName;
-}
+};
 
 /**
  * Returns Q.Event that occurs on message post event coming from socket.io
@@ -629,7 +629,7 @@ Stream.onError = new Q.Event(function (err) {
  * @return {Object} returns Streams for chaining with .get(), .related() or .getParticipating()
  */
 Stream.retain = function _Stream_retain (publisherId, streamName, key, callback) {
-	var ps = _key(publisherId, streamName);
+	var ps = Streams.key(publisherId, streamName);
 	key = Q.Event.calculateKey(key);
 	Streams.get(publisherId, streamName, function (err) {
 		_retainedStreams[ps] = this;
@@ -645,7 +645,7 @@ Stream.retain = function _Stream_retain (publisherId, streamName, key, callback)
  * @param {String} streamName
  */
 Stream.release = function _Stream_release (publisherId, streamName) {
-	var ps = _key(publisherId, streamName);
+	var ps = Streams.key(publisherId, streamName);
 	Q.each(_retainedByStream[ps], function (key, v) {
 		if (_retainedByKey[key]) {
 			delete _retainedByKey[key][ps];
@@ -673,7 +673,7 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 	}
 	// If the stream was retained, fetch latest messages,
 	// and replay their being "posted" to trigger the right events
-	var ps = _key(publisherId, streamName);
+	var ps = Streams.key(publisherId, streamName);
 	if (!_retainedByStream[ps]) {
 		return false;
 	}
@@ -685,7 +685,7 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 		});
 		Streams.get(publisherId, streamName, function (err, stream) {
 			// just get the stream, and any listeners will be triggered
-			var ps = _key(publisherId, streamName);
+			var ps = Streams.key(publisherId, streamName);
 			updateStream(_retainedStreams[ps], this.fields, true);
 			_retainedStreams[ps] = this;
 			callback(err, stream);
@@ -770,7 +770,7 @@ Stream.prototype.remove = function _Stream_prototype_remove (callback) {
 };
 
 Stream.prototype.retain = function _Stream_prototype_retain (key, callback) {
-	var ps = _key(this.fields.publisherId, this.fields.name);
+	var ps = Streams.key(this.fields.publisherId, this.fields.name);
 	key = Q.Event.calculateKey(key);
 	_retainedStreams[ps] = this;
 	Q.setObject([ps, key], true, _retainedByStream);
@@ -989,15 +989,14 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 			}
 			
 			// Construct related streams from data that has been returned
-			var streams = [];
-			var p = new Q.Pipe(), keys = [], keys2 = {};
+			var p = new Q.Pipe(), keys = [], keys2 = {}, streams = {};
 			Q.each(data.slots.streams, function (k, fields) {
 				if (!fields) return;
-				var key = _key(fields.publisherId, fields.name);
+				var key = Streams.key(fields.publisherId, fields.name);
 				keys.push(key);
 				keys2[key] = true;
 				_constructStream(fields, {}, function () {
-					streams.push(this);
+					streams[key] = this;
 					p.fill(key)();
 				}, true);
 			});
@@ -1005,7 +1004,7 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 			// Now process all the relations
 			Q.each(data.slots.relations, function (j, relation) {
 				relation[near] = stream;
-				var key = _key(relation[farPublisherId], relation[farStreamName]);
+				var key = Streams.key(relation[farPublisherId], relation[farStreamName]);
 				if (!keys2[key] && relation[farPublisherId] != publisherId) {
 					// Fetch all the related streams from other publishers
 					keys.push(key);
@@ -1016,10 +1015,12 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 							return;
 						}
 						relation[far] = this;
-						streams.push(this);
+						streams[key] = this;
 						p.fill(key)();
 						return;
 					});
+				} else {
+					relation[far] = streams[key];
 				}
 			});
 			
@@ -1200,6 +1201,7 @@ Streams.updateRelation = function(
 	if (!Q.plugins.Users.loggedInUser) {
 		throw new Error("Streams.relate: Not logged in.");
 	}
+	// We will send a request to wherever (toPublisherId, toStreamName) is hosted
 	var slotName = "result";
 	var fields = {
 		"toPublisherId": toPublisherId,
@@ -1208,8 +1210,8 @@ Streams.updateRelation = function(
 		"fromPublisherId": fromPublisherId,
 		"fromStreamName": fromStreamName,
 		"weight": weight,
-		"adjust_weights": adjustWeights,
-		"socketSessionId": Streams.socketSessionId(publisherId, streamName)
+		"adjustWeights": adjustWeights,
+		"socketSessionId": Streams.socketSessionId(toPublisherId, toStreamName)
 	};
 	var baseUrl = Q.baseUrl({
 		publisherId: toPublisherId,
@@ -2252,11 +2254,11 @@ Q.onInit.add(function _Streams_onInit() {
 					updateRelatedCache(fields);
 					_relationHandlers(_streamUnrelatedToHandlers, msg, stream, fields);
 					break;
-				case 'Stream/updatedRelateFrom':
+				case 'Streams/updatedRelateFrom':
 					updateRelatedCache(fields);
 					_relationHandlers(_streamUpdatedRelateFromHandlers, msg, stream, fields);
 					break;
-				case 'Stream/updatedRelateTo':
+				case 'Streams/updatedRelateTo':
 					updateRelatedCache(fields);
 					_relationHandlers(_streamUpdatedRelateToHandlers, msg, stream, fields);
 					break;

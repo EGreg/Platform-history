@@ -5,7 +5,7 @@
  *
  * @param array $_REQUEST
  *   toPublisherId, toStreamName, type, fromPublisherId, fromStreamName
- *   weight, adjust_weights
+ *   weight, adjustWeights
  * @return void
  */
 function Streams_related_put($params) {
@@ -17,7 +17,7 @@ function Streams_related_put($params) {
 	$fromPublisherId = $_REQUEST['fromPublisherId'];
 	$fromStreamName = $_REQUEST['fromStreamName'];
 	$weight = $_REQUEST['weight'];
-	$adjust_weights = isset($_REQUEST['adjust_weights']) ? $_REQUEST['adjust_weights'] : null;
+	$adjustWeights = isset($_REQUEST['adjustWeights']) ? $_REQUEST['adjustWeights'] : null;
 
 	$result = Streams::updateRelation(
 		$userId, 
@@ -27,7 +27,7 @@ function Streams_related_put($params) {
 		$fromPublisherId, 
 		$fromStreamName,
 		$weight, 
-		$adjust_weights
+		$adjustWeights
 	);
 
 	Q_Response::setSlot('result', $result);
