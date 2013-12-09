@@ -2006,33 +2006,39 @@ Q.Tool = function _Q_Tool(element, options) {
 		Q.extend(this.options, Q.Tool.options.levels, JSON.parse(dataOptions), 'Q.Tool');
 	}
 
-	// options cascade
+	// options cascade -- process option keys that start with '.' or '#'
 	var partial, i;
 	options = options || {};
 	this.options = this.options || {};
 	
-	var parents = this.parents();
-//	do {
-		var o = options;
-		// .Q_something
-		for (i = 0, l = classes.length; i < l; i++) {
-			var className = classes[i];
-			if ((partial = o['.' + className])) {
-				Q.extend(this.options, Q.Tool.options.levels, partial, 'Q.Tool');
-			}
-		}
-		// #Q_parent_child_tool
-		if ((partial = o['#' + this.element.id])) {
+	var pids = this.parentIds(),
+	    len = pids.length,
+	    o = options;
+	
+	for (i=len-1; i>=0; --i) {
+		var pid = pids[i];
+		if (Q.isEmpty(Q.tools[pid].options)) continue;
+		o = Q.extend({}, Q.Tool.options.levels, Q.tools[pid].options);
+	}
+	
+	// .Q_something
+	for (i = 0, l = classes.length; i < l; i++) {
+		var className = classes[i];
+		if ((partial = o['.' + className])) {
 			Q.extend(this.options, Q.Tool.options.levels, partial, 'Q.Tool');
 		}
-		// #parent_child_tool, #child_tool
-		var _idcomps = this.element.id.split('_');
-		for (i = 0; i < _idcomps.length-1; ++i) {
-			if ((partial = o['#' + _idcomps.slice(i).join('_')])) {
-				Q.extend(this.options, Q.Tool.options.levels, partial, 'Q.Tool');
-			}
+	}
+	// #Q_parent_child_tool
+	if ((partial = o['#' + this.element.id])) {
+		Q.extend(this.options, Q.Tool.options.levels, partial, 'Q.Tool');
+	}
+	// #parent_child_tool, #child_tool
+	var _idcomps = this.element.id.split('_');
+	for (i = 0; i < _idcomps.length-1; ++i) {
+		if ((partial = o['#' + _idcomps.slice(i).join('_')])) {
+			Q.extend(this.options, Q.Tool.options.levels, partial, 'Q.Tool');
 		}
-//	} while ();
+	}
 
 	// get options from options property on element
 	if (element.options) {
@@ -2297,7 +2303,8 @@ Q.Tool.prototype.parentIds = function Q_Tool_prototype_parentIds() {
 			ids.push(id);
 		}
 	}
-	ids.sort(function (a, b) { return String(a).length - String(b).length } );
+	// sort in reverse length order
+	ids.sort(function (a, b) { return String(b).length - String(a).length } );
 	return ids;
 };
 
@@ -2309,8 +2316,8 @@ Q.Tool.prototype.parentIds = function Q_Tool_prototype_parentIds() {
 Q.Tool.prototype.parents = function Q_Tool_prototype_parents() {
 	var ids = [], ids, i;
 	ids = this.parentIds();
-	var result = {};
-	for (i=ids.length-1; i >= 0; --i) {
+	var result = {}, len = ids.length;
+	for (i=0; i<len; ++i) {
 		id = ids[i];
 		result[id] = Q.tools[id];
 	}
@@ -2325,7 +2332,7 @@ Q.Tool.prototype.parents = function Q_Tool_prototype_parents() {
 Q.Tool.prototype.parent = function Q_Tool_prototype_parent() {
 	var ids = [], ids, i;
 	ids = this.parentIds();
-	return ids.length ? Q.tools[ids[ids.length-1]] : null;
+	return ids.length ? Q.tools[ids[0]] : null;
 };
 
 /**
@@ -2475,8 +2482,8 @@ Q.Tool.setUpElement = function _Q_Tool_element(element, toolType, toolOptions, i
  * @return String
  *  Returns HTML that you can include in templates, etc.
  */
-Q.Tool.setUpElementHTML = function _Q_Tool_elementHTML(element, toolType, toolOptions, id) {
-	var e = Q.Tool.setUpElement(element, toolType, null, id);
+Q.Tool.setUpElementHTML = function _Q_Tool_elementHTML(element, toolType, toolOptions, id, prefix) {
+	var e = Q.Tool.setUpElement(element, toolType, null, id, prefix);
 	var ntt = toolType.replace(new RegExp('/', 'g'), '_');
 	e.setAttribute('data-'+ntt.replace(new RegExp('_', 'g'), '-'), Q.Tool.encodeOptions(toolOptions));
 	return e.outerHTML;
@@ -2615,14 +2622,15 @@ Q.Cache = function _Q_Cache(options) {
 	this.name = options.name;
 	this.data = {};
 	this.special = {};
+	var _earliest, _latest, _count;
 	if (options.localStorage) {
 		this.localStorage = true;
 	} else if (options.sessionStorage) {
 		this.sessionStorage = true;
 	} else {
 		this.documentStorage = true;
-		var _earliest, _latest, _count = 0;
 		_earliest = _latest = null;
+		_count = 0;
 	}
 	this.max = options.max || 100;
 	/**
@@ -2740,6 +2748,7 @@ function Q_Cache_pluck(cache, existing) {
 	var value;
 	if (existing.prev) {
 		value = Q_Cache_get(cache, existing.prev);
+		if (!value) debugger;
 		value.next = existing.next;
 		Q_Cache_set(cache, existing.prev, value);
 	} else {
@@ -2899,6 +2908,9 @@ Q.Cache.prototype.clear = function _Q_Cache_prototype_clear() {
 			Q_Cache_remove(this, lastkey);
 		}
 	}
+	this.earliest(null);
+	this.latest(null);
+	this.count(0);
 };
 /**
  * Cycles through all the entries in the cache

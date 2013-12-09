@@ -7,14 +7,22 @@
  *   A hash of options, which include:
  *   "publisherId": Required.
  *   "streamName": If empty, and "editable" is true, then this can be used to add new related Streams/image streams.
- *   "related": A hash with properties "publisherId" and "streamName", and usually "type"
+ *   "related": A hash with properties "publisherId" and "streamName", and usually "type" and "weight"
  *   "editable": Whether the tool should allow authorized users to replace the image
  *   "creatable": Optional fields to override in case streamName = "", including:
  *     "title": Optional title for the case when streamName = "", i.e. the image composer
  *     "clickable": Whether the image composer image is clickable
- *   "imagepicker": Any options to pass to the imagepicker -- see its options.
- *   "onUpdate": A function to execute when the icon is updated
+ *     "addIconSize": The size in pixels of the square add icon
+ *   "imagepicker": Any options to pass to the Q/imagepicker jquery plugin -- see its options.
+ *   "inplace": Any options to pass to the Q/inplace tool -- see its options.
+ *   "actions": Any options to pass to the Q/actions jquery plugin -- see its options.
  *   "showFile": Optional. The image file to show, to override imagepicker.showSize option for some reason.
+ *   "throbber": The url of an image to use as an activity indicator when the image is loading
+ *   "templates": Under the keys "edit" and "create" you can override options for Q.Template.render .
+ *       The fields passed to the template include "alt", "titleTag" and "titleClass"
+ *   "onCreate": An event that occurs after a new stream is created by a creatable preview
+ *   "onUpdate": An event that occurs when the icon is updated
+ *   "onRemove": An event that occurs when the icon is removed via the 'remove' action
  */
 Q.Tool.define("Streams/image/preview", function(options) {
 	

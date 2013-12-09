@@ -1549,10 +1549,10 @@ Message.latestOrdinal = function _Message_latestOrdinal (publisherId, streamName
 Message.wait = function _Message_wait (publisherId, streamName, ordinal, callback, options) {
 	var alreadyCalled = false, handlerKey;
 	var latest = Message.latestOrdinal(publisherId, streamName);
-	// if (!latest) {
-	// 	Q.handle(callback, this, [null]); // There is no cache for this stream, so we won't wait for previous messages.
-	// 	return false;
-	// }
+	if (!latest) {
+		Q.handle(callback, this, [null]); // There is no cache for this stream, so we won't wait for previous messages.
+		return false;
+	}
 	if (ordinal >= 0 && ordinal <= latest) {
 		Q.handle(callback, this, [null]); // The cached stream already got this message
 		return true;
