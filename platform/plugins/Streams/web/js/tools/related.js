@@ -41,16 +41,17 @@ function _Streams_related_tool (options)
 },
 
 {
-    "publisherId": Q.info.app,
-    "isCategory": true,
-	"realtime": true,
-	"editable": false,
-	"creatable": {},
-	"sortable": {
+    publisherId: Q.info.app,
+    isCategory: true,
+	realtime: true,
+	editable: false,
+	creatable: {},
+	sortable: {
 		draggable: '.Streams_related_stream',
 		droppable: '.Streams_related_stream'
 	},
-    "onUpdate": new Q.Event(function _Streams_related_onUpdate(result, entering, exiting, updating) {
+	toolType: function (streamType) { return streamType+'/preview'; },
+    onUpdate: new Q.Event(function _Streams_related_onUpdate(result, entering, exiting, updating) {
         var tool = this;
         Q.Tool.clear(tool.element);
         tool.element.innerHTML = '';
@@ -113,18 +114,18 @@ function _Streams_related_tool (options)
 				tool.$().plugin('Q/sortable', sortableOptions);
 			}
 		}
-        Q.each(result.relations, function () {
+        Q.each(result.relations, function (i) {
 			if (!this.from) return;
             var element = tool.elementForStream(this.from.fields.publisherId, this.from.fields.name, this.from.fields.type, this.weight);
 			element.setAttribute('class', element.getAttribute('class') + ' Streams_related_stream');
-            Q.activate(tool.element.appendChild(element));
+			tool.element.appendChild(element);
         });
+		Q.activate(tool.element, function () {
+			tool.state.onRefresh.handle.call(tool)
+		});
         // The elements should animate to their respective positions, like in D3.
-    }, "Streams/related"), 
-	"updateOptions": {
-		duration: 300
-	},
-    "toolType": function (streamType) { return streamType+'/preview'; }
+    }, "Streams/related"),
+	onRefresh: new Q.Event()
 },
 
 {
@@ -161,8 +162,6 @@ function _Streams_related_tool (options)
                 exiting = entering = updating = [];
             }
             tool.state.onUpdate.handle.apply(tool, [result, entering, exiting, updating]);
-
-			if (!result) return;
             
             // Now that we have the stream, we can update the event listeners again
             var dir = tool.state.isCategory ? 'To' : 'From';

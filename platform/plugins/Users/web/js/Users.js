@@ -1975,7 +1975,14 @@ Q.onReady.set(function Users_Q_onReady_handler() {
 }, 'Q.Users');
 
 Users.onInitFacebook = new Q.Event();
-Users.onLogin = new Q.Event();
-Users.onLogout = new Q.Event();
+Users.onLogin = new Q.Event(function () {
+	document.documentElement.className.replace(' Users_loggedOut', '');
+	document.documentElement.className += ' Users_loggedIn';
+}, 'Users');
+Users.onLogout = new Q.Event(function () {
+	document.documentElement.className.replace(' Users_loggedIn', '');
+	document.documentElement.className += ' Users_loggedOut';
+});
+document.documentElement.className += Users.loggedInUser ? ' Users_loggedIn' : ' Users_loggedOut';
 
 })(jQuery, Q.plugins.Users);

@@ -2145,7 +2145,10 @@ Q.Tool.define = function (name, ctor, defaultOptions, stateKeys, methods) {
 		throw "Q.Tool.define requires ctor to be a string or a function";
 	}
 	Q.extend(ctor.prototype, methods);
-	return Q.Tool.constructors[name] = ctor;
+	Q.Tool.constructors[name] = ctor;
+	Q.Tool.onLoadedConstructor(name).handle(name, ctor);
+	Q.Tool.onLoadedConstructor("").handle(name, ctor);
+	return ctor;
 };
 
 Q.Tool.beingActivated = undefined;
@@ -2600,6 +2603,7 @@ function _loadToolScript(toolElement, callback, shared) {
 	});
 };
 
+Q.Tool.onLoadedConstructor = Q.Event.factory({}, [""]);
 Q.Tool.onMissingConstructor = new Q.Event();
 
 Q.Session = function _Q_Session() {
