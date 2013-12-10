@@ -402,7 +402,7 @@ function Streams_Stream (fields) {
 	 *	Callback receives "error" and boolean as arguments - whether the access is granted.
 	 */
 	this.testReadLevel = function(level, callback) {
-		return testLevel (this, 'readLevel', level, callback);
+		return testLevel (this, 'readLevel', 'READ_LEVEL', level, callback);
 	};
 	/**
 	 * Verifies wheather Stream can be written. Can be called syncronously and in such case skips
@@ -414,7 +414,7 @@ function Streams_Stream (fields) {
 	 *	Callback receives "error" and boolean as arguments - whether the access is granted.
 	 */
 	this.testWriteLevel = function(level, callback) {
-		return testLevel (this, 'writeLevel', level, callback);
+		return testLevel (this, 'writeLevel', 'WRITE_LEVEL', level, callback);
 	};
 	/**
 	 * Verifies wheather Stream can be administered. Can be called syncronously and in such case skips
@@ -426,7 +426,7 @@ function Streams_Stream (fields) {
 	 *	Callback receives "error" and boolean as arguments - whether the access is granted.
 	 */
 	this.testAdminLevel = function(level, callback) {
-		return testLevel (this, 'adminLevel', level, callback);
+		return testLevel (this, 'adminLevel', 'ADMIN_LEVEL', level, callback);
 	};
 
 	/**
@@ -435,11 +435,12 @@ function Streams_Stream (fields) {
 	 * @method testLevel
 	 * @private
 	 * @param {string} type
+	 * @param {string} values
 	 * @param {string|integer} level
 	 * @param callback=null {function}
 	 *	Callback receives "error" and boolean as arguments - whether the access is granted.
 	 */
-	function testLevel (subj, type, level, callback) {
+	function testLevel (subj, type, values, level, callback) {
 		if (subj.publishedByFetcher) {
 			callback && callback.call(subj, null, true);
 			return true;
@@ -447,7 +448,7 @@ function Streams_Stream (fields) {
 		if (subj.closedTime && level !== 'close' && !subj.testWriteLevel('close')) {
 			return false;
 		}
-		var LEVEL = Streams[type.toUpperCase()];
+		var LEVEL = Streams[values];
 		if (typeof level === "string") {
 			if (typeof LEVEL[level] === "undefined") return false;
 			level = LEVEL[level];

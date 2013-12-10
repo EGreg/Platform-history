@@ -877,6 +877,23 @@ Stream.prototype.actionUrl = function _Stream_prototype_actionUrl (what) {
 	return Streams.actionUrl(this.fields.publisherId, this.fields.name, what);
 };
 
+
+Stream.prototype.invite = function (identifier) {
+	// TODO: expand this implementation to be complete
+	var baseUrl = Q.baseUrl({
+		publisherId: this.pendingFields.publisherId,
+		streamName: this.pendingFields.name
+	});
+	Q.req('Streams/invite', ['data'], function (err, data) {
+		Q.alert("The invitation has been sent", {title: "Success"});
+	}, { method: 'post', fields: {
+		publisherId: this.fields.publisherId,
+		streamName: this.fields.name,
+		identifier: identifier,
+		displayName: "Albert Wenger"
+	}, baseUrl: baseUrl });
+};
+
 /**
  * Waits for the latest messages to be posted to a given stream.
  * If your app is using socket.io, then calling this manually is largely unnecessary.

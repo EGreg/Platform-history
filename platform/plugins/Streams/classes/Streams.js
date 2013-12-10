@@ -496,7 +496,7 @@ Streams.listen = function (options) {
 				    break;
 				}
 				
-				// Add the users to a label, if any
+				// Create a new label, if necessary
 				if (label) {
 				    new Users.Label({
 				        userId: userId,
@@ -504,152 +504,152 @@ Streams.listen = function (options) {
 				        title: title
 				    }).retrieve(function (err, labels) {
 				        if (!labels.length) {
-				            this.fields.title = label.substr(1);
+				            this.fields.title = label[0].toUpperCase() + label.substr(1);
 				            this.save(persist);
 				        } else {
 				            persist();
 				        }
 				    });
+				} else {
+					persist();
 				}
+				return;
 				
 				function persist () {
 				
-    				for (var i in userIds) {
+					Q.each(userIds, function (i, userId) {
     				    // TODO: Change this to a getter, so that we can do throttling in case there are too many userIds
-    					(function(userId) {
-    						(new Streams.Participant({
-    							"publisherId": stream.publisherId,
-    							"streamName": stream.name,
-    							"userId": userId,
-    							"state": "participating"
-    						})).retrieve(function (err, rows) {
-    							if (rows && rows.length) {
-    								// User is already a participant in the stream.
-    								return;
-    							}
-    							Streams.db().uniqueId(Streams.Invite.table(), 'token', function(token) {
-    								(new Streams.Invited({
-    									"userId": userId,
-    									"token": token,
-    									"state": 'pending'
-    								})).save(function(err) {
-    									if (err) {
-    										Q.log("ERROR: Failed to save Streams.Invited for user '"+userId+"' during invite");
-    										Q.log(err);
-    										return;
-    									}
-    									// now ready to save invite
-    									(new Streams.Invite({
-    										"token": token,
-    										"userId": userId,
-    										"publisherId": stream.publisherId,
-    										"streamName": stream.name,
-    										"invitingUserId": invitingUserId,
-    										"displayName": displayName,
-    										"appUrl": appUrl,
-    										"readLevel": readLevel,
-    										"writeLevel": writeLevel,
-    										"adminLevel": adminLevel,
-    										"state": 'pending',
-    										"expireTime": expiry
-    									})).save(function (err) {
-    										if (err) {
-    											Q.log("ERROR: Failed to save Streams.Invite for user '"+userId+"' during invite");
-    											Q.log(err);
-    											return;
-    										}
-    										(new Streams.Participant({
-    											"publisherId": stream.publisherId,
-    											"streamName": stream.name,
-    											"streamType": stream.type,
-    											"userId": userId,
-    											"state": "invited",
-    											"reason": ""
-    										})).save(true, function (err) {
-    											if (err) {
-    												Q.log("ERROR: Failed to save Streams.Participant for user '"+userId+"' during invite");
-    												Q.log(err);
-    												return;
-    											}
-    											
-        									    // Add the users to a label, if any
-                                				if (label) {
-                                				    new Users.Contact({
-                                				        userId: invitingUserId,
-                                                        label: label,
-                                                        contactUserId: userId
-                                				    }).save(true);
-                                				}
-                                				
-                                				// Add Streams/invited/$type label
-                                				(new Users.Contact({
+						(new Streams.Participant({
+							"publisherId": stream.publisherId,
+							"streamName": stream.name,
+							"userId": userId,
+							"state": "participating"
+						})).retrieve(function (err, rows) {
+							if (rows && rows.length) {
+								// User is already a participant in the stream.
+								return;
+							}
+							Streams.db().uniqueId(Streams.Invite.table(), 'token', function(token) {
+								(new Streams.Invited({
+									"userId": userId,
+									"token": token,
+									"state": 'pending'
+								})).save(function(err) {
+									if (err) {
+										Q.log("ERROR: Failed to save Streams.Invited for user '"+userId+"' during invite");
+										Q.log(err);
+										return;
+									}
+									// now ready to save invite
+									(new Streams.Invite({
+										"token": token,
+										"userId": userId,
+										"publisherId": stream.publisherId,
+										"streamName": stream.name,
+										"invitingUserId": invitingUserId,
+										"displayName": displayName,
+										"appUrl": appUrl,
+										"readLevel": readLevel,
+										"writeLevel": writeLevel,
+										"adminLevel": adminLevel,
+										"state": 'pending',
+										"expireTime": expiry
+									})).save(function (err) {
+										if (err) {
+											Q.log("ERROR: Failed to save Streams.Invite for user '"+userId+"' during invite");
+											Q.log(err);
+											return;
+										}
+										(new Streams.Participant({
+											"publisherId": stream.publisherId,
+											"streamName": stream.name,
+											"streamType": stream.type,
+											"userId": userId,
+											"state": "invited",
+											"reason": ""
+										})).save(true, function (err) {
+											if (err) {
+												Q.log("ERROR: Failed to save Streams.Participant for user '"+userId+"' during invite");
+												Q.log(err);
+												return;
+											}
+											
+    									    // Add the users to a label, if any
+                            				if (label) {
+                            				    new Users.Contact({
                             				        userId: invitingUserId,
-                                                    label: "Streams/invited/"+stream.type,
+                                                    label: label,
                                                     contactUserId: userId
-                            				    })).save(true);             
-                            				    
-                            				    // Add Streams/invitedBy/$type label
-                            				    // NOTE: In the future, we will have to send a distributed message to the new user's node                  				
-                                				(new Users.Contact({
-                            				        userId: userId,
-                                                    label: "Streams/invitedBy/"+stream.type,
-                                                    contactUserId: invitingUserId
-                            				    })).save(true);
-    											
-    											// Everything is saved, now post message and process it
-    											// Need user's Streams/invited stream to post message
-    											getInvitedStream(invitingUserId, userId, function (err, invited) {
-    												if (err) {
-    													Q.log("ERROR: Failed to get invited stream for user '"+userId+"' during invite");
-    													Q.log(err);
-    													return;
-    												}
-    												Streams.Stream.emit('invite', invited.toArray(), userId, stream);
-    												if (!invited.testWriteLevel('post')) {
-    													Q.log("ERROR: Not authorized to post to invited stream for user '"+userId+"' during invite");
-    													Q.log(err);
-    													return;
-    												}
-    												invited.post({
-    													publisherId: invited.fields.publisherId,
-    													streamName: invited.fields.name,
-    													byUserId: invitingUserId,
-    													type: 'Streams/invite',
-    													sentTime: new Db.Expression("CURRENT_TIMESTAMP"),
-    													state: 'posted',
-    													content: token,
-    													instructions: JSON.stringify({
-    														type: stream.type.split('/').join('_'),
-    														displayName: displayName,
-    														title: stream.title,
-    														content: stream.content,
-    														appUrl: appUrl
-    													})
-    												}, function (err) {
-    													if (err) {
-    														Q.log("ERROR: Failed to save message for user '"+userId+"' during invite");
-    														Q.log(err);
-    													}
-    												});
-    											});
-    										});
-    									});
-    								});
-    							}, 
-    							null, 
-    							{
-    								length: Q.Config.get(['Streams', 'invites', 'tokens', 'length'], 16),
-    								characters: Q.Config.get(
-    								    ['Streams', 'invites', 'tokens', 'characters'],
-    								    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-    								)
-    							});
-    						});
-    					})(userIds[i]);
-    				}
-				
+                            				    }).save(true);
+                            				}
+                            				
+                            				// Add Streams/invited/$type label
+                            				(new Users.Contact({
+                        				        userId: invitingUserId,
+                                                label: "Streams/invited/"+stream.type,
+                                                contactUserId: userId
+                        				    })).save(true);             
+                        				    
+                        				    // Add Streams/invitedBy/$type label
+                        				    // NOTE: In the future, we will have to send a distributed message to the new user's node                  				
+                            				(new Users.Contact({
+                        				        userId: userId,
+                                                label: "Streams/invitedBy/"+stream.type,
+                                                contactUserId: invitingUserId
+                        				    })).save(true);
+											
+											// Everything is saved, now post message and process it
+											// Need user's Streams/invited stream to post message
+											getInvitedStream(invitingUserId, userId, function (err, invited) {
+												if (err) {
+													Q.log("ERROR: Failed to get invited stream for user '"+userId+"' during invite");
+													Q.log(err);
+													return;
+												}
+												Streams.Stream.emit('invite', invited.toArray(), userId, stream);
+												if (!invited.testWriteLevel('post')) {
+													Q.log("ERROR: Not authorized to post to invited stream for user '"+userId+"' during invite");
+													Q.log(err);
+													return;
+												}
+												invited.post({
+													publisherId: invited.fields.publisherId,
+													streamName: invited.fields.name,
+													byUserId: invitingUserId,
+													type: 'Streams/invite',
+													sentTime: new Db.Expression("CURRENT_TIMESTAMP"),
+													state: 'posted',
+													content: token,
+													instructions: JSON.stringify({
+														type: stream.type.split('/').join('_'),
+														displayName: displayName,
+														title: stream.title,
+														content: stream.content,
+														appUrl: appUrl
+													})
+												}, function (err) {
+													if (err) {
+														Q.log("ERROR: Failed to save message for user '"+userId+"' during invite");
+														Q.log(err);
+													}
+												});
+											});
+										});
+									});
+								});
+							}, 
+							null, 
+							{
+								length: Q.Config.get(['Streams', 'invites', 'tokens', 'length'], 16),
+								characters: Q.Config.get(
+								    ['Streams', 'invites', 'tokens', 'characters'],
+								    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+								)
+							});
+						});
+					});
+
 			    }
-				return;
 			default:
 				break;
 		}

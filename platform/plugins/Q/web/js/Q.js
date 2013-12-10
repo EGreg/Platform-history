@@ -6722,8 +6722,7 @@ Q.Dialogs.push.options = {
  *   "title": Optional parameter to override alert dialog title. Defaults to 'Alert'.
  *   "onClose": Optional
  */
-Q.alert = function(message, options)
-{
+Q.alert = function(message, options) {
 	if (options === undefined) options = {};
 	if (options.title === undefined) options.title = 'Alert';
 	var dialog = Q.Dialogs.push({
@@ -6751,8 +6750,7 @@ Q.alert = function(message, options)
  *   "cancel": Optional string parameter to override confirm dialog 'Cancel' button label, e.g. 'No'. Defaults to 'Cancel'.
  *   "noClose": Defaults to true. Set to false to show a close button
  */
-Q.confirm = function(message, callback, options)
-{
+Q.confirm = function(message, callback, options) {
 	var o = Q.extend({
 		title: 'Confirm',
 		ok: 'OK',
@@ -6793,21 +6791,19 @@ Q.confirm = function(message, callback, options)
  * @namespace Q
  * Provides replacement for default javascript prompt() using Q front-end features, specifically dialogs.
  * Shows dialog with customizable title, message, input field placeholder and button label.
- * This dialog is useful for inputting single values (number or string).
- * Unlike regular JS prompt, entered value passed asynchronously using callback.
+ * Unlike a regular JS prompt, the entered value is passed asynchronously using callback.
  * @method prompt
- * @param {String} [message='Enter value'] Optional, specifies text before input field useful to ask
+ * @param {String} [message='Enter a value'] Optional, specifies text before input field useful to ask
  *   user to enter something (e.g. 'Enter your name').
  * @param {Function} callback: This will be called when dialog is closed,
- *   passing true | false depending on whether user clicked (tapped) 'Ok' or 'Cancel' button, respectively
- * @param {Object} [options] An optiopnal hash of options which can include:
+ *   passing the entered value as a string, or null if the dialog was dismissed with the close button
+ * @param {Object} [options] An optional hash of options which can include:
  *   "title": Optional parameter to override confirm dialog title. Defaults to 'Prompt'.
  *   "placeholder": Optional, used as a placeholder text in the input field. Defaults to 'Enter value'.
  *   "ok": Optional parameter to override confirm dialog 'Ok' button label, e.g. 'Yes'. Defaults to 'Done'.
  *   "noClose": Defaults to true. Set to false to show a close button.
  */
-Q.prompt = function(message, callback, options)
-{
+Q.prompt = function(message, callback, options) {
 	if (options === undefined) options = {};
 	var o = Q.extend({
 		title: 'Prompt',
@@ -6843,7 +6839,7 @@ Q.prompt = function(message, callback, options)
 		'fullscreen': false,
 		'hidePrevious': false
 	});
-	dialog.find('button').on(Q.Pointer.end, _done);
+	dialog.find('button').on(Q.Pointer.click, _done);
 	function _done() {
 		buttonClicked = true;
 		var value = dialog.find('input').val();
