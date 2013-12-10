@@ -533,8 +533,8 @@ function Streams_Stream (fields) {
 				if (err) return callback.call(stream, err);
 				if (sp.length) {
 					sp = sp[0];
-					var save = false;
-					if (options['subscribed'] && sp.fields.subscribed !== (subscribed = (subscribed ? 'yes' : 'no'))) {
+					var save = false, subscribed = options['subscribed'];
+					if (subscribed && sp.fields.subscribed !== (subscribed = (subscribed ? 'yes' : 'no'))) {
 						sp.fields.subscribed = subscribed;
 						save = true;
 					}
