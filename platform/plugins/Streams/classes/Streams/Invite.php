@@ -52,6 +52,7 @@ class Streams_Invite extends Base_Streams_Invite
 		$p->streamName = $this->streamName; // shouldn't change
 		$p->userId = $this->userId; // shouldn't change
 		$p->state = 'participating'; // since invite was accepted, user has begun participating in the stream
+		$p->reason = Q_Config::get('Streams', 'invites', 'participantReason', 'Was invited');
 		$p->save(true);
 		
 		/**

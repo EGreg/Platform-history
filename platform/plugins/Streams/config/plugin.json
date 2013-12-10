@@ -114,7 +114,8 @@
 				"length": 16,
 				"characters": "abcdefghijklmnopqrstuvwxyz"
 			},
-			"baseUrl": "http://invites.to"
+			"baseUrl": "http://invites.to",
+			"participantReason": "Was invited"
 		},
 		"db": {
 			"limits": {
