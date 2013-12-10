@@ -646,7 +646,7 @@ function Streams_Stream (fields) {
 		// fetch template for subscription's PK - publisher, name & user
 		Streams[className].SELECT('*').where({
 			publisherId: stream.fields.publisherId,
-			streamName: [stream.fields.name, this.fields.type+'/'],
+			streamName: [stream.fields.name, stream.fields.type+'/'],
 			ofUserId: ['', userId]
 		}).execute(function(err, res) {
 			if (err) return callback.call(stream, err);
