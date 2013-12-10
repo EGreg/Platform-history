@@ -1854,6 +1854,7 @@ Q.onInit.add(function () {
 	&& Q.typeOf(Q.Users.loggedInUser) !== 'Q.Users.User') {
 	    Q.Users.loggedInUser = new Users.User(Q.Users.loggedInUser);
 	}
+	document.documentElement.className += Users.loggedInUser ? ' Users_loggedIn' : ' Users_loggedOut';
     
 	if (Q.plugins.Users.facebookApps[Q.info.app]
 	&& Q.plugins.Users.facebookApps[Q.info.app].appId) {
@@ -1983,6 +1984,5 @@ Users.onLogout = new Q.Event(function () {
 	document.documentElement.className.replace(' Users_loggedIn', '');
 	document.documentElement.className += ' Users_loggedOut';
 });
-document.documentElement.className += Users.loggedInUser ? ' Users_loggedIn' : ' Users_loggedOut';
 
 })(jQuery, Q.plugins.Users);

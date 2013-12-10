@@ -6619,18 +6619,15 @@ Q.Dialogs = {
 	 * "onClose": Optional. Q.Event or function which is called when dialog is closed and hidden and probably removed from DOM (if 'destroyOnClose' is 'true').
 	 * @return Object. jQuery object resresenting DOM element of the dialog that was just pushed.
 	 */
-	push: function(options)
-	{
+	push: function(options) {
 		var maskDefault = true;
-		for (var i = 0; i < this.dialogs.length; i++)
-		{
+		for (var i = 0; i < this.dialogs.length; i++) {
 			if (!this.dialogs[i].isFullscreen) maskDefault = false;
 		}
 		var o = Q.extend({mask: maskDefault}, Q.Dialogs.push.options, options);
 		if (o.fullscreen) o.mask = false;
 		var dialog = $(o.dialog);
-		if (dialog.length == 0)
-		{
+		if (dialog.length == 0) {
 			// create this dialog element
 			dialog = $('<div />').append(
 				$('<div class="title_slot" />').append($('<h2 class="Q_dialog_title" />').append(o.title))
@@ -6641,13 +6638,11 @@ Q.Dialogs = {
 			if (o.destroyOnClose !== false) o.destroyOnClose = true;
 		}
 		dialog.hide();
-		if (dialog.parent().length == 0)
-		{
+		if (dialog.parent().length == 0) {
 			$(o.appendTo).append(dialog);
 		}
 		var _onClose = o.onClose;
-		o.onClose = new Q.Event(function()
-		{
+		o.onClose = new Q.Event(function() {
 			Q.handle(o.onClose.original, dialog, [dialog]);
 			if (!Q.Dialogs.dontPopOnClose)
 				Q.Dialogs.pop(true);
@@ -6673,35 +6668,188 @@ Q.Dialogs = {
 	 * Closes dialog and removes it from top of internal dialog stack.
 	 * @return Object. jQuery object resresenting DOM element of the dialog that was just popped.
 	 */
-	pop: function(dontTriggerClose)
-	{
-		if (dontTriggerClose === undefined)
+	pop: function(dontTriggerClose) {
+		if (dontTriggerClose === undefined) {
 			dontTriggerClose = false;
+		}
 		
 		dialog = this.dialogs.pop();
-		if (this.dialogs.length)
-		{
+		if (this.dialogs.length) {
 			this.dialogs[this.dialogs.length - 1].show();
 		}
-		if (!dontTriggerClose && dialog)
-		{
+		if (!dontTriggerClose && dialog) {
 			Q.Dialogs.dontPopOnClose = true;
-			if (dialog.data('Q/overlay'))
-			{
+			if (dialog.data('Q/overlay')) {
 				dialog.data('Q/overlay').close();
-			}
-			else if (dialog.data('Q/dialog'))
-			{
+			} else if (dialog.data('Q/dialog')) {
 				dialog.data('Q/dialog').close();
 			}
 		}
-		if (this.dialogs.length == 0)
-		{
+		if (this.dialogs.length == 0) {
 			Q.Mask.hide('Q.screenMask');
 		}
 		return dialog;
 	}
 
+};
+
+Q.Dialogs.push.options = {
+	'dialog': null,
+	'url': null,
+	'title': 'Dialog',
+	'content': '',
+	'className': null,
+	'fullscreen': Q.info.platform == 'android' ? true : false,
+	'appendTo': document.body,
+	'alignByParent': false,
+	'beforeLoad': new Q.Event(),
+	'onActivate': new Q.Event(),
+	'beforeClose': new Q.Event(),
+	'onClose': null,
+	'closeOnEsc': true,
+	'destroyOnClose': false,
+	'hidePrevious': true
+};
+
+/**
+ * @class Q
+ * @namespace Q
+ * Provides replacement for default javascript alert() using Q front-end features, specifically dialogs.
+ * Shows dialog with customizable title, message and button label.
+ * @method alert
+ * @param {String} message The only required parameter, this specifies text of the alert.
+ * @param {Object} [options] An optiopnal hash of options which can include:
+ *   "title": Optional parameter to override alert dialog title. Defaults to 'Alert'.
+ *   "onClose": Optional
+ */
+Q.alert = function(message, options)
+{
+	if (options === undefined) options = {};
+	if (options.title === undefined) options.title = 'Alert';
+	var dialog = Q.Dialogs.push({
+		'title': options.title,
+		'content': '<div class="Q_messagebox"><p>' + message + '</p></div>',
+		'onClose': options.onClose || undefined,
+		'fullscreen': false,
+		'hidePrevious': false
+	});
+};
+
+/**
+ * Provides replacement for default javascript confirm() using Q front-end features, specifically dialogs.
+ * Shows dialog with customizable title, conrirmation message and buttons.
+ * The only major difference from regular confirm is that this implementation doesn't stop JS execution
+ * and thus it's impossible to synchronously return true | false when user presses 'Ok' or 'Cancel' and
+ * thereby callback is used to pass the user decision result.
+ * @method confirm
+ * @param {String} message The only required parameter, this specifies confirmation text.
+ * @param {Function} callback: This will be called when dialog is closed,
+ *   passing true | false depending on whether user clicked (tapped) 'Ok' or 'Cancel' button, respectively
+ * @param {Object} [options] An optiopnal hash of options which can include:
+ *   "title": Optional string parameter to override confirm dialog title. Defaults to 'Confirm'.
+ *   "ok": Optional string parameter to override confirm dialog 'Ok' button label, e.g. 'Yes'. Defaults to 'Ok'.
+ *   "cancel": Optional string parameter to override confirm dialog 'Cancel' button label, e.g. 'No'. Defaults to 'Cancel'.
+ *   "noClose": Defaults to true. Set to false to show a close button
+ */
+Q.confirm = function(message, callback, options)
+{
+	var o = Q.extend({
+		title: 'Confirm',
+		ok: 'OK',
+		cancel: 'Cancel',
+		noClose: true
+	}, options);
+	var buttonClicked = false;
+	var dialog = Q.Dialogs.push({
+		'title': o.title,
+		'content': $('<div class="Q_messagebox" />').append(
+			$('<p />').html(message),
+			$('<button />').html(o.ok),
+			$('<button />').html(o.cancel)
+		),
+		'noClose': o.noClose,
+		'onClose': {'Q.confirm': function() {
+			if (!buttonClicked) Q.handle(callback, this, [null]);
+		}},
+		'fullscreen': false,
+		'hidePrevious': false
+	});
+	dialog.find('button:first').on(Q.Pointer.end, function()
+	{
+		buttonClicked = true;
+		Q.Dialogs.pop();
+		Q.handle(callback, window, [true]);
+	});
+	dialog.find('button:last').on(Q.Pointer.end, function()
+	{
+		buttonClicked = true;
+		Q.Dialogs.pop();
+		Q.handle(callback, window, [false]);
+	});
+};
+
+/**
+ * @class Q
+ * @namespace Q
+ * Provides replacement for default javascript prompt() using Q front-end features, specifically dialogs.
+ * Shows dialog with customizable title, message, input field placeholder and button label.
+ * This dialog is useful for inputting single values (number or string).
+ * Unlike regular JS prompt, entered value passed asynchronously using callback.
+ * @method prompt
+ * @param {String} [message='Enter value'] Optional, specifies text before input field useful to ask
+ *   user to enter something (e.g. 'Enter your name').
+ * @param {Function} callback: This will be called when dialog is closed,
+ *   passing true | false depending on whether user clicked (tapped) 'Ok' or 'Cancel' button, respectively
+ * @param {Object} [options] An optiopnal hash of options which can include:
+ *   "title": Optional parameter to override confirm dialog title. Defaults to 'Prompt'.
+ *   "placeholder": Optional, used as a placeholder text in the input field. Defaults to 'Enter value'.
+ *   "ok": Optional parameter to override confirm dialog 'Ok' button label, e.g. 'Yes'. Defaults to 'Done'.
+ *   "noClose": Defaults to true. Set to false to show a close button.
+ */
+Q.prompt = function(message, callback, options)
+{
+	if (options === undefined) options = {};
+	var o = Q.extend({
+		title: 'Prompt',
+		ok: 'Done',
+		message: message,
+		placeholder: '',
+		noClose: true
+	}, options);
+	if (!o.message) o.message = 'Enter value:';
+	var buttonClicked = false;
+	var dialog = Q.Dialogs.push({
+		'title': o.title,
+		'content': $('<div class="Q_messagebox" />').append(
+			$('<p />').html(o.message),
+			$('<input type="text" />').attr('placeholder', o.placeholder),
+			$('<button class="Q_messagebox_done" />').html(o.ok)
+		),
+		'onActivate': function(dialog) {
+			var field = dialog.find('input');
+			var fieldWidth = field.parent().width() - parseInt(field.css('padding-left')) - parseInt(field.css('padding-right'))
+			               - field.next().outerWidth(true) - 5;
+			field.css({ 'width': fieldWidth + 'px' })
+				.plugin('Q/placeholders')
+				.plugin('Q/clickfocus').on('keydown', function (event) {
+					if (event.keyCode === 13) {
+						_done();
+					}
+				});
+		},
+		'onClose': {'Q.prompt': function() {
+			if (!buttonClicked) Q.handle(callback, this, [null]);
+		}},
+		'fullscreen': false,
+		'hidePrevious': false
+	});
+	dialog.find('button').on(Q.Pointer.end, _done);
+	function _done() {
+		buttonClicked = true;
+		var value = dialog.find('input').val();
+		Q.Dialogs.pop();
+		Q.handle(callback, this, [value]);
+	}
 };
 
 /**
