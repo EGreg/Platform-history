@@ -513,6 +513,7 @@ Streams.listen = function (options) {
 				} else {
 					persist();
 				}
+				
 				return;
 				
 				function persist () {
@@ -612,6 +613,7 @@ Streams.listen = function (options) {
 													Q.log(err);
 													return;
 												}
+												var baseUrl = Q.Config.get(['Streams', 'invites', 'baseUrl'], "http://invites.to");
 												invited.post({
 													publisherId: invited.fields.publisherId,
 													streamName: invited.fields.name,
@@ -619,8 +621,9 @@ Streams.listen = function (options) {
 													type: 'Streams/invite',
 													sentTime: new Db.Expression("CURRENT_TIMESTAMP"),
 													state: 'posted',
-													content: token,
+													content: displayName + " invited you to "+baseUrl+"/"+token,
 													instructions: JSON.stringify({
+														token: token,
 														type: stream.type.split('/').join('_'),
 														displayName: displayName,
 														title: stream.title,

@@ -890,7 +890,7 @@ Stream.prototype.invite = function (identifier) {
 		publisherId: this.fields.publisherId,
 		streamName: this.fields.name,
 		identifier: identifier,
-		displayName: "Albert Wenger"
+		displayName: "Greg Magarshak"
 	}, baseUrl: baseUrl });
 };
 

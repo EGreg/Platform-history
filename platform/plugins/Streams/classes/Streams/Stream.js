@@ -839,8 +839,9 @@ function Streams_Stream (fields) {
 					});
 					var msg = new Streams.Message(message);
 					if (message.type === "Streams/invite") {
+						var instructions = JSON.parse(message.instructions);
 						new Streams.Invite({
-							token: message.content
+							token: instructions.token
 						}).retrieve(function(err, rows) {
 							if (err || !rows.length) return deliveries.forEach(function(delivery) { p.fill(JSON.stringify(delivery))(err); });
 							var invite = rows[0];
@@ -854,7 +855,7 @@ function Streams_Stream (fields) {
 								var instructions;
 								try { instructions = JSON.parse(message.instructions); } catch (e) {}
 								if (instructions.type) {
-									stream.fields.invite = { url: Q.Config.get(['Streams', 'invite', 'url'], "http://invites.to") };
+									stream.fields.invite = { url: Q.Config.get(['Streams', 'invites', 'baseUrl'], "http://invites.to") };
 									stream.fields.invite[instructions.type] = true;
 								}
 								deliveries.forEach(function(delivery) {

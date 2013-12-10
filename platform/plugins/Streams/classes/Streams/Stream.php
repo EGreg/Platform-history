@@ -892,7 +892,7 @@ class Streams_Stream extends Base_Streams_Stream
 		$result = Q_Utils::queryInternal('Q/node', array(
 			"Q/method" => "Streams/Stream/invite",
 			"invitingUserId" => $user->id,
-			"username" => Streams::displayName($user->id),
+			"username" => $user->username,
 			"userIds" => Q::json_encode($userIds),
 			"stream" => Q::json_encode($stream->toArray()),
 			"appUrl" => $appUrl,

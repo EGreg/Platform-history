@@ -113,7 +113,8 @@
 			"tokens": {
 				"length": 16,
 				"characters": "abcdefghijklmnopqrstuvwxyz"
-			}
+			},
+			"baseUrl": "http://invites.to"
 		},
 		"db": {
 			"limits": {
