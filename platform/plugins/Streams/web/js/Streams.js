@@ -578,7 +578,7 @@ Streams.release = function (key) {
  */
 Streams.invite = function (publisherId, streamName, fields, callback) {
 	// TODO: expand this implementation to be complete
-	if (!Q.Users.loggedInUser.displayName) {
+	if (!Q.Users.loggedInUser) {
 		Q.handle(callback, null, ["Streams.invite: not logged in"]);
 		return false; // not logged in
 	}
@@ -587,6 +587,8 @@ Streams.invite = function (publisherId, streamName, fields, callback) {
 		streamName: streamName
 	});
 	fields = Q.copy(fields);
+	fields.publisherId = publisherId,
+	fields.streamName = streamName;
 	fields.displayName = fields.displayName || Q.Users.loggedInUser.displayName;
 	Q.req('Streams/invite', ['data'], function (err, data) {
 		Q.handle(callback, null, [err, data]);
