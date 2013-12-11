@@ -567,6 +567,33 @@ Streams.release = function (key) {
 };
 
 /**
+ * Invite other users to a stream. Must be logged in first.
+ * @static
+ * @param {String} publisherId The user id of the publisher of the stream 
+ * @param {String} streamName The name of the stream you are inviting to
+ * @param {String} fields More fields that are passed to the API, which can include:
+ *  "identifier": Required for now. An email address or mobile number to invite. Might not belong to an existing user yet.
+ *  "appUrl": Can be used to override the URL to which the invited user will be redirected and receive "Q.Streams.token" in the querystring.
+ * @param {Callable} callback Called with (err, result)
+ */
+Streams.invite = function (publisherId, streamName, fields, callback) {
+	// TODO: expand this implementation to be complete
+	if (!Q.Users.loggedInUser.displayName) {
+		Q.handle(callback, null, ["Streams.invite: not logged in"]);
+		return false; // not logged in
+	}
+	var baseUrl = Q.baseUrl({
+		publisherId: publisherId,
+		streamName: streamName
+	});
+	fields = Q.copy(fields);
+	fields.displayName = fields.displayName || Q.Users.loggedInUser.displayName;
+	Q.req('Streams/invite', ['data'], function (err, data) {
+		Q.handle(callback, null, [err, data]);
+	}, { method: 'post', fields: fields, baseUrl: baseUrl });
+};
+
+/**
  * Constructs a stream from fields, which are typically returned from the server.
  * @param {String} fields
  */
@@ -827,6 +854,11 @@ Stream.prototype.onUpdatedRelateTo = function _Stream_prototype_onUpdatedRelateT
 	return Stream.onUpdatedRelateTo(this.fields.publisherId, this.fields.name);
 };
 
+/**
+ * Post a message to this stream.
+ * @param {Object} msg A Streams.Message object or a hash of fields to post. This stream's publisherId and streamName are added to it.
+ * @param {Function} callback Receives (err, message) as parameters
+ */
 Stream.prototype.post = function  _Stream_prototype_post (data, callback) {
 	var message = Q.extend({
 		publisherId: this.fields.publisherId,
@@ -835,14 +867,29 @@ Stream.prototype.post = function  _Stream_prototype_post (data, callback) {
 	return Message.post(message, callback);
 };
 
+/**
+ * Join a stream as a participant
+ * @param publisherId {String} id of publisher which is publishing the stream
+ * @param name {String} name of stream to join
+ * @param {Function} callback receives (err, participant) as parameters
+ */
 Stream.prototype.join = function _Stream_prototype_join (callback) {
 	return Stream.join(this.fields.publisherId, this.fields.name, callback);
 };
 
+/**
+ * Leave a stream that you previously joined, so that you don't get realtime messages anymore.
+ * @param {Function} callback Receives (err, participant) as parameters
+ */
 Stream.prototype.leave = function _Stream_prototype_leave (callback) {
 	return Stream.leave(this.fields.publisherId, this.fields.name, callback);
 };
 
+/**
+ * Test whether the user has enough access rights when it comes to reading from the stream
+ * @param {String} level One of the values in Streams.READ_LEVEL
+ * @return {Boolean} Returns true if the user has at least this level of access
+ */
 Stream.prototype.testReadLevel = function _Stream_prototype_testReadLevel (level) {
 	if (typeof level === 'string') {
 		level = Streams.READ_LEVEL[level];
@@ -853,6 +900,11 @@ Stream.prototype.testReadLevel = function _Stream_prototype_testReadLevel (level
 	return this.access.readLevel >= level;
 };
 
+/**
+ * Test whether the user has enough access rights when it comes to writing to the stream
+ * @param {String} level One of the values in Streams.WRITE_LEVEL
+ * @return {Boolean} Returns true if the user has at least this level of access
+ */
 Stream.prototype.testWriteLevel = function _Stream_prototype_testWriteLevel (level) {
 	if (typeof level === 'string') {
 		level = Streams.WRITE_LEVEL[level];
@@ -863,6 +915,11 @@ Stream.prototype.testWriteLevel = function _Stream_prototype_testWriteLevel (lev
 	return this.access.writeLevel >= level;
 };
 
+/**
+ * Test whether the user has enough access rights when it comes to administering the stream
+ * @param {String} level One of the values in Streams.ADMIN_LEVEL
+ * @return {Boolean} Returns true if the user has at least this level of access
+ */
 Stream.prototype.testAdminLevel = function _Stream_prototype_testAdminLevel (level) {
 	if (typeof level === 'string') {
 		level = Streams.ADMIN_LEVEL[level];
@@ -873,25 +930,27 @@ Stream.prototype.testAdminLevel = function _Stream_prototype_testAdminLevel (lev
 	return this.access.adminLevel >= level;
 };
 
+/**
+ * A convenience method to get the URL of the streams-related action
+ * @method register
+ * @param {String} what
+ *	Defaults to 'stream'. Can also be 'message', 'relation', etc.
+ * @return {String} 
+ *	The corresponding URL
+ */
 Stream.prototype.actionUrl = function _Stream_prototype_actionUrl (what) {
 	return Streams.actionUrl(this.fields.publisherId, this.fields.name, what);
 };
 
-
-Stream.prototype.invite = function (identifier) {
-	// TODO: expand this implementation to be complete
-	var baseUrl = Q.baseUrl({
-		publisherId: this.pendingFields.publisherId,
-		streamName: this.pendingFields.name
-	});
-	Q.req('Streams/invite', ['data'], function (err, data) {
-		Q.alert("The invitation has been sent", {title: "Success"});
-	}, { method: 'post', fields: {
-		publisherId: this.fields.publisherId,
-		streamName: this.fields.name,
-		identifier: identifier,
-		displayName: "Greg Magarshak"
-	}, baseUrl: baseUrl });
+/**
+ * Invite other users to this stream. Must be logged in first.
+ * @param {String} fields More fields that are passed to the API, which can include:
+ *  "identifier": Required for now. An email address or mobile number to invite. Might not belong to an existing user yet.
+ *  "appUrl": Can be used to override the URL to which the invited user will be redirected and receive "Q.Streams.token" in the querystring.
+ * @param {Callable} callback Called with (err, result)
+ */
+Stream.prototype.invite = function (fields, callback) {
+	Streams.invite(this.fields.publisherId, this.fields.name, fields, callback);
 };
 
 /**
@@ -1345,6 +1404,12 @@ Stream.onConstruct = Q.Event.factory(_streamConstructHandlers, ["", ""]);
  */
 Stream.onRefresh = Q.Event.factory(_streamRefreshHandlers, ["", ""]);
 
+/**
+ * Join a stream as a participant
+ * @param publisherId {String} id of publisher which is publishing the stream
+ * @param name {String} name of stream to join
+ * @param {Function} callback receives (err, participant) as parameters
+ */
 Stream.join = function _Stream_join (publisherId, streamName, callback) {
 	if (!Q.plugins.Users.loggedInUser) {
 		throw new Error("Streams.Stream.join: Not logged in.");
@@ -1504,7 +1569,7 @@ Message.get = Q.getter(function _Message_get (publisherId, streamName, ordinal, 
 /**
  * Post a message to a stream.
  * @param {Object} msg A Streams.Message object or a hash of fields to post. Must include publisherId and streamName.
- * @param {Function} callback This is called when the message has been posted.
+ * @param {Function} callback Receives (err, message) as parameters
  */
 Message.post = function _Message_post (msg, callback) {
 	var slotName = "message";
@@ -1558,7 +1623,7 @@ Message.latestOrdinal = function _Message_latestOrdinal (publisherId, streamName
  * @param {String} publisherId
  * @param {String} streamName
  * @param {Number} ordinal The ordinal of the message to wait for, or -1 to load latest messages
- * @param {Function} callback This is called when the message has been posted.
+ * @param {Function} callback Receives ([arrayOfOrdinals]) as parameters
  * @param {Object} options A hash of options which can include:
  *   "max": The maximum number of messages to wait and hope they will arrive via sockets. Any more and we just request them again.
  *   "timeout": The maximum amount of time to wait and hope the messages will arrive via sockets. After this we just request them again.

@@ -5025,7 +5025,7 @@ Q.loadUrl.defaultHandler = function _Q_loadUrl_fillSlots (res) {
  * @param callables
  *  The callables to call
  *  Can be a function, array of functions, object of functions, Q.Event or URL
- *  If it is a url, then you can ignore skip callback, context, and follow it with options, callback
+ *  If it is a url, simply follow it with options, callback
  * @param callback
  *  You can pass a function here if callables is a URL
  * @param context
@@ -5101,11 +5101,11 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 			}
 			var callback = null;
 			if (typeof arguments[1] === 'function') {
-				// Some syntactic sugar
+				// Some syntactic sugar: (url, callback) omitting context, args, options
 				callback = arguments[1];
 				o = Q.handle.options;
 			} else if (arguments[1] && (arguments[3] === undefined)) {
-				// Some more syntactic sugar
+				// Some more syntactic sugar: (url, options, callback) omitting context, args, options
 				o = Q.extend({}, Q.handle.options, arguments[1]);
 				if (typeof arguments[2] === 'function') {
 					callback = arguments[2];

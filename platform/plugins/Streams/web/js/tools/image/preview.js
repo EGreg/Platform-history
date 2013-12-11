@@ -6,7 +6,7 @@
  * @param options {Object}
  *   A hash of options, which include:
  *   "publisherId": Required.
- *   "streamName": If empty, and "editable" is true, then this can be used to add new related Streams/image streams.
+ *   "streamName": If empty, and "editableable" is true, then this can be used to add new related Streams/image streams.
  *   "related": A hash with properties "publisherId" and "streamName", and usually "type" and "weight"
  *   "editable": Whether the tool should allow authorized users to replace the image
  *   "creatable": Optional fields to override in case streamName = "", including:
@@ -18,7 +18,7 @@
  *   "actions": Any options to pass to the Q/actions jquery plugin -- see its options.
  *   "showFile": Optional. The image file to show, to override imagepicker.showSize option for some reason.
  *   "throbber": The url of an image to use as an activity indicator when the image is loading
- *   "templates": Under the keys "edit" and "create" you can override options for Q.Template.render .
+ *   "templates": Under the keys "views", "edit" and "create" you can override options for Q.Template.render .
  *       The fields passed to the template include "alt", "titleTag" and "titleClass"
  *   "onCreate": An event that occurs after a new stream is created by a creatable preview
  *   "onUpdate": An event that occurs when the icon is updated
@@ -194,27 +194,25 @@ Q.Tool.define("Streams/image/preview", function(options) {
 		addIconSize: 100
 	},
 	imagepicker: {
-		showSize: "x200"
+		showSize: "x200",
+		fullSize: "x"
 	},
 	showFile: null,
 	templates: {
+		view: {
+			dir: 'plugins/Streams/views',
+			name: 'Streams/image/preview/view',
+			fields: { alt: 'image', titleClass: '', titleTag: 'h2' }
+		},
 		edit: {
 			dir: 'plugins/Streams/views',
 			name: 'Streams/image/preview/edit',
-			fields: {
-				alt: 'image',
-				titleClass: '',
-				titleTag: 'h2'
-			}
+			fields: { alt: 'image', titleClass: '', titleTag: 'h2' }
 		},
 		create: {
 			dir: 'plugins/Streams/views',
 			name: 'Streams/image/preview/create',
-			fields: {
-				alt: 'image',
-				titleClass: '',
-				titleTag: 'h2'
-			}
+			fields: { alt: 'new', titleClass: '', titleTag: 'h2' }
 		}
 	},
 	inplace: {},
@@ -240,6 +238,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 			var file = state.showFile
 				|| state.imagepicker.saveSizeName[state.imagepicker.showSize]
 				|| state.imagepicker.saveSizeName[Q.first(state.imagepicker.saveSizeName, {nonEmpty: true})];
+			var full = state.imagepicker.saveSizeName[state.imagepicker.fullSize] || file;
 			var icon = stream && stream.fields.icon && stream.fields.icon !== 'default' ? stream.fields.icon : 'Streams/image';
 
 			var jq = tool.$('img.Streams_image_preview_icon');
@@ -256,11 +255,13 @@ Q.Tool.define("Streams/image/preview", function(options) {
 			}, state.inplace);
 			var fields = Q.extend({}, state.templates.edit.fields, {
 				src: Q.Streams.iconUrl(icon, file)+'?'+Date.now(),
+				srcFull: Q.Streams.iconUrl(icon, full)+'?'+Date.now(),
 				alt: stream.fields.title,
 				inplace: tool.setUpElementHTML('div', 'Streams/inplace', inplace)
 			});
+			var tpl = stream.testWriteLevel('suggest') ? 'edit' : 'view';
 			Q.Template.render(
-				'Streams/image/preview/edit',
+				'Streams/image/preview/'+tpl,
 				fields,
 				function (err, html) {
 					if (err) {
@@ -269,12 +270,18 @@ Q.Tool.define("Streams/image/preview", function(options) {
 					tool.element.innerHTML = html;
 					Q.activate(tool, callback);
 				},
-				state.templates.edit
+				state.templates[tpl]
 			);
 		});
 	}
 }
 
+);
+
+Q.Template.set(
+	'Streams/image/preview/view',
+	'<img src="{{& srcFull}}" alt="{{alt}}" class="Streams_image_preview_icon">'
+	+ '<div class="{{titleClass}}"><{{titleTag}}>{{& inplace}}</{{titleTag}}></div>'
 );
 
 Q.Template.set(
