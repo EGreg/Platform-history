@@ -814,6 +814,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 *  'writeLevel' => the write level to grant those who are invited
 	 *  'adminLevel' => the admin level to grant those who are invited
 	 *	'displayName' => the name of inviting user
+	 *  'appUrl' => Can be used to override the URL to which the invited user will be redirected and receive "Q.Streams.token" in the querystring.
 	 * @see Users::addLink()
 	 *  
 	 */
@@ -854,7 +855,9 @@ class Streams_Stream extends Base_Streams_Stream
 		$userIds = Streams_Participant::filter($raw_userIds, $stream);
 		$to_invite = count($userIds);
 
-		$appUrl = Q_Request::baseUrl().'/'.Q_Config::get("Streams", "types", $stream->type, "invite", "url", "plugins/Streams/stream");
+		$appUrl = !empty($options['appUrl'])
+			? $options['appUrl']
+			: Q_Request::baseUrl().'/'.Q_Config::get("Streams", "types", $stream->type, "invite", "url", "plugins/Streams/stream");
 
 		// now check and define levels for invited user
 		$readLevel = isset($options['readLevel']) ? $options['readLevel'] : null;
