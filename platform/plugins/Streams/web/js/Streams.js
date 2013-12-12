@@ -1069,7 +1069,7 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 			// Construct related streams from data that has been returned
 			var p = new Q.Pipe(), keys = [], keys2 = {}, streams = {};
 			Q.each(data.slots.streams, function (k, fields) {
-				if (!fields) return;
+				if (!Q.isPlainObject(fields)) return;
 				var key = Streams.key(fields.publisherId, fields.name);
 				keys.push(key);
 				keys2[key] = true;
