@@ -40,10 +40,15 @@
 				)) ?>
 				<div class='Q_big_prompt'>
 					<p>
-						In order to protect your account, you should set up a pass <strong>phrase</strong>.<br>
+					<?php if (empty($_REQUEST['p'])): ?>
+						Set up a pass <strong>phrase</strong> to protect your account.<br>
 						In case you're wondering, passphrases are harder to guess, and<br>
 						easier to type than passwords with weird characters.<br>
 						See the suggestions on the right for some ideas.
+					<?php else: ?>
+						Choose another pass <strong>phrase</strong> to protect your account.<br>
+						See the suggestions on the right for some ideas.
+					<?php endif; ?>
 					</p>
 					<?php echo Q_Html::form(Q_Dispatcher::uri(), 'post', array('id' => 'Q_activation_form')) ?>
 						<?php echo Q_Html::formInfo(null) ?>
@@ -53,6 +58,9 @@
 						<input type="hidden" id="activate_identifier" name="<?php echo $t ?>"
 							value="<?php echo Q_Html::text($identifier) ?>">
 						<input type="hidden" name="code" value="<?php echo Q_Html::text($code) ?>">
+						<?php if (!empty($_REQUEST['p'])): ?>
+							<input type="hidden" name="p" value="1">
+						<?php endif; ?>
 					</form>
 				</div>
 		</div>

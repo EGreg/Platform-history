@@ -170,6 +170,7 @@ class Users_Email extends Base_Users_Email
 				'Users', 'transactional', 'activation', 'body', 'Users/email/activation.php'
 			));
 		}
+		$link = 'Users/activate?p=1&code='.urlencode($this->activationCode) . '&e='.urlencode($this->address);
 		if (!isset($options['html'])) $options['html'] = true;
 		$user = $this->get('user', null);
 		if (!$user) {
@@ -199,7 +200,8 @@ class Users_Email extends Base_Users_Email
 			'user' => $user,
 			'email' => $this,
 			'app' => Q_Config::expect('Q', 'app'),
-			'baseUrl' => Q_Request::baseUrl()
+			'baseUrl' => Q_Request::baseUrl(),
+			'link' => $link,
 		));
 		$this->sendMessage(
 			$subject, 

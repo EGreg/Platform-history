@@ -164,6 +164,7 @@ class Users_Mobile extends Base_Users_Mobile
 				'Users', 'transactional', 'resend', 'sms', 'Users/sms/activation.php'
 			));
 		}
+		$link = 'Users/activate?p=1&code='.urlencode($this->activationCode) . '&m='.urlencode($this->number);
 		$user = $this->get('user', null);
 		if (!$user) {
 			$user = new Users_User();
@@ -192,7 +193,8 @@ class Users_Mobile extends Base_Users_Mobile
 			'user' => $user,
 			'mobile' => $this,
 			'app' => Q_Config::expect('Q', 'app'),
-			'baseUrl' => Q_Request::baseUrl()
+			'baseUrl' => Q_Request::baseUrl(),
+			'link' => $link
 		));
 		$this->sendMessage( 
 			$view, 
