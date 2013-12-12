@@ -47,7 +47,10 @@ function Users_activate_response_content()
 	$code = Q::ifset($_REQUEST['code']);
 
 	Q_Response::addScriptLine("Q.onReady.set(function () {
-		Q.Notices.hide('Users/email');
+		if (Q.Notices) {
+			Q.Notices.hide('Users/email');
+			Q.Notices.hide('Users/mobile');
+		}
 	});"); // shh! not while I'm activating! lol
 	
 	return Q::view($view, compact(
