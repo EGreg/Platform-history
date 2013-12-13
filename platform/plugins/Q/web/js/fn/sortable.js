@@ -179,7 +179,6 @@ function (options) {
 		var $item = $(document).data(dataLifted);
 		if (!$item) return;
 		
-		
 		var data = $item.data('Q/sortable');
 		$(document).removeData(dataLifted)
 			.off(Q.Pointer.move, moveHandler)
@@ -420,8 +419,9 @@ function (options) {
 		    noff = $n.offset(),
 			ph = $p.height(),
 			poff = $p.offset();
-		var condition = ((x < toff.left + tw/2) && !(poff && poff.top + ph <= toff.top))
-			|| ((y < toff.top + th/2) && (noff && toff.top + th <= noff.top));
+		var condition = ((poff && poff.top + ph <= toff.top) || (noff && toff.top + th <= noff.top))
+			? (y < toff.top + th/2)
+			: (x < toff.left + tw/2);
 		if (condition) {
 			$target.before($placeholder);
 			direction = 'before';
