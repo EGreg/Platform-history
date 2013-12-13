@@ -577,6 +577,7 @@ function Streams_Stream (fields) {
 							}).retrieve(function (err, pstream) {
 								if (err || !pstream.length) return callback.call(stream, err);
 								pstream[0].post({
+									byUserId: userId,
 									type: 'Streams/joined',
 									content: '',
 									instructions: JSON.stringify({
@@ -760,8 +761,9 @@ function Streams_Stream (fields) {
 											}).retrieve(function (err, pstream) {
 												if (err || !pstream.length) return callback.call(stream, err);
 												pstream[0].post({
-													type: 'Streams/subscribe',
-													content: JSON.stringify({
+													byUserId: userId,
+													type: 'Streams/subscribed',
+													instructions: JSON.stringify({
 														publisherId: stream.fields.publisherId,
 														streamName: stream.fields.name
 													})
