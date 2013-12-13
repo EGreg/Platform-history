@@ -294,15 +294,15 @@ function (options) {
 		if (tScroll) clearTimeout(tScroll);
 		if (!lifted) return;
 		var state = $this.state('Q/sortable');
-		var dx = 0, dy = 0;
+		var dx = 0, dy = 0, isWindow = false;
 		var speed = state.scroll.speed;
 		var beyond = false;
 		$item.parents().each(function () {
 			var $t = $(this);
-			if ($t.css('overflow') === 'visible') {
+			if ($t.css('overflow') === 'visible' && !$t.is('body')) {
 				return;
 			}
-			if ($t.width()) {
+			if (!$t.is('body') && $t.width()) {
 				if ($t.scrollLeft() > 0
 				&& x < $t.offset().left + $t.width() * options.scroll.distance) {
 					dx = -speed;
@@ -314,7 +314,7 @@ function (options) {
 					beyond = (x > $t.offset().left + $t.width());
 				}
 			}
-			if ($t.height()) {
+			if (!$t.is('body') && $t.height()) {
 				if ($t.scrollTop() > 0
 				&& y < $t.offset().top + $t.height() * options.scroll.distance) {
 					dy = -speed;
@@ -325,6 +325,19 @@ function (options) {
 					dy = speed;
 					beyond = (y > $t.offset().top + $t.height());
 				}
+			}
+			var $w = $(window);
+			if (x - document.body.scrollLeft < $w.innerWidth() * options.scroll.distanceWindow) {
+				dx = -speed; isWindow = true;
+			}
+			if (x - document.body.scrollLeft > $w.innerWidth() * (1 - options.scroll.distanceWindow)) {
+				dx = speed; isWindow = true;
+			}
+			if (y - document.body.scrollTop < $w.innerHeight() * options.scroll.distanceWindow) {
+				dy = -speed; isWindow = true;
+			}
+			if (y - document.body.scrollTop > $w.innerHeight() * (1 - options.scroll.distanceWindow)) {
+				dy = speed; isWindow = true;
 			}
 			if (dx || dy) {
 				$scrolling = $t;
@@ -346,8 +359,9 @@ function (options) {
 				scrolling.accel = scrolling.accel || 0;
 				scrolling.accel += state.scroll.acceleration;
 				scrolling.accel = Math.min(scrolling.accel, 1);
-				if (dx) $scrolling.scrollLeft($scrolling.scrollLeft()+dx*scrolling.accel);
-				if (dy) $scrolling.scrollTop($scrolling.scrollTop()+dy*scrolling.accel);
+				var $s = isWindow ? $(window) : $scrolling;
+				if (dx) $s.scrollLeft($s.scrollLeft()+dx*scrolling.accel);
+				if (dy) $s.scrollTop($s.scrollTop()+dy*scrolling.accel);
 				move($item, x, y);
 			}, 50);
 		}, beyond ? 0 : delay);
@@ -458,6 +472,7 @@ function (options) {
 		delayTouchscreen: 300,
 		threshhold: 0,
 		distance: 0.15,
+		distanceWindow: 0.1,
 		speed: 30,
 		acceleration: 0.1
 	},
@@ -474,29 +489,49 @@ function (options) {
 		var $scrolling = data.$scrolling;
 		var duration = this.state('Q/sortable').drop.duration;
 		if ($scrolling) {
-			var so = $scrolling.offset();
-			var il = offset.left,
-				it = offset.top,
-				ir = il + $item.width(),
-				ib = it + $item.height(),
-				sl = so.left,
-				st = so.top,
+			var so, il, it, ir, ib, sl, st, sr, sb, ssl, sst;
+			so = $scrolling.offset();
+			il = offset.left;
+			it = offset.top;
+			ir = il + $item.width();
+			ib = it + $item.height();
+			ssl = $scrolling.scrollLeft();
+			sst = $scrolling.scrollTop();
+			
+			var found = false;
+			$item.parents().each(function () {
+				var $t = $(this);
+				if ($t.css('overflow') !== 'visible' && !$t.is('body')) {
+					found = true;
+					return false;
+				}
+			});
+			
+			if (found) { // found a scrollable container
+				sl = so.left;
+				st = so.top;
 				sr = so.left + $scrolling.width(),
 				sb = so.top + $scrolling.height();
+			} else {
+				sl = ssl;
+				st = sst;
+				sr = ssl + $(window).innerWidth();
+				sb = sst + $(window).innerHeight();
+			}
 			if (il < sl) {
-				$scrolling.animate({'scrollLeft': il - sl + $scrolling.scrollLeft()}, duration);
+				$scrolling.animate({'scrollLeft': ssl + il - sl}, duration);
 				moreleft = sl - il;
 			}
 			if (it < st) {
-				$scrolling.animate({'scrollTop': it - st + $scrolling.scrollTop()}, duration);
+				$scrolling.animate({'scrollTop': sst + it - st}, duration);
 				moretop = st - it;
 			}
 			if (ir > sr) {
-				$scrolling.animate({'scrollLeft': ir - sr + $scrolling.scrollLeft()}, duration);
+				$scrolling.animate({'scrollLeft': ssl + ir - sr}, duration);
 				moreleft = sr - ir;
 			}
 			if (ib > sb) {
-				$scrolling.animate({'scrollTop': ib - sb + $scrolling.scrollTop()}, duration);
+				$scrolling.animate({'scrollTop': sst + ib - sb}, duration);
 				moretop = sb - ib;
 			}
 		}

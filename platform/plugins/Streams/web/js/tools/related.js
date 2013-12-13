@@ -176,10 +176,15 @@ function _Streams_related_tool (options)
                 });
             }
             tool.state.result = result;
+			tool.state.lastMessageOrdinal = result.stream.fields.messageCount;
         }
         function onChangedRelations(msg, fields) {
             var isCategory = tool.state.isCategory;
-            tool.refresh(); // TODO: REPLACE THIS WITH AN ANIMATED UPDATE BY LOOKING AT THE ARRAYS entering, exiting, updating
+			if (msg.ordinal !== tool.state.lastMessageOrdinal + 1) {
+				// TODO: REPLACE THIS WITH AN ANIMATED UPDATE BY LOOKING AT THE ARRAYS entering, exiting, updating
+            	tool.refresh();
+			}
+			tool.state.lastMessageOrdinal = msg.ordinal;
         }
     },
     elementForStream: function (publisherId, streamName, streamType, weight, options) {

@@ -219,7 +219,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 	actions: {
 		position: 'tr'
 	},
-	throbber: "plugins/Q/img/throbbers/coolspinner_dark.gif",
+	throbber: "plugins/Q/img/throbbers/bars32.gif",
 	onCreate: new Q.Event(),
 	onUpdate: new Q.Event(),
 	onRemove: new Q.Event(function () {
