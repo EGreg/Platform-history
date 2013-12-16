@@ -552,6 +552,9 @@ abstract class Db_Query extends Db_Expression
 	 */
 	private static function applyHash($value, $hash = 'normalize', $len = self::HASH_LEN)
 	{
+		if (!isset($value)) {
+			return $value;
+		}
 		switch ($hash) {
 			case 'normalize':
 				$hashed = substr(Db::normalize($value), 0, $len);
@@ -586,7 +589,7 @@ abstract class Db_Query extends Db_Expression
 		foreach (array_keys(self::$mapping) as $i => $point) {
 			$partition[$i] = explode('.', $point);
 			if (isset($last_point) and strcmp($point, $last_point) <= 0) {
-				throw new Exception("Db_Query: in {$this->className} partition, point $i is not greater than the previous point");
+				throw new Exception("Db_Query shard_internal: in {$this->className} partition, point $i is not greater than the previous point");
 			}
 			$last_point = $point;
 		}
@@ -631,6 +634,9 @@ abstract class Db_Query extends Db_Expression
 		if ($hj instanceof Db_Range) {
 			$min = $hj->min;
 			$max = $hj->max;
+			if (!isset($min)) {
+				throw new Exception("Db_Query_Mysql slice_partitions: The minimum of the range should be set.");
+			}
 			//$includeMax = $hj->includeMax;
 		}
 		// the first item to keep
@@ -647,7 +653,7 @@ abstract class Db_Query extends Db_Expression
 			// if $current is bigger than $max nothing to check anymore.
 			// but if we adjust for range, we shall look trough all partition again 
 			// to find upper bound at the end of partition array
-			if (!$adjust && ($includeMax ? strcmp($current, $max) > 0 : strcmp($current, $max) >= 0)) break;
+			if (!$adjust && isset($max) && ($includeMax ? strcmp($current, $max) > 0 : strcmp($current, $max) >= 0)) break;
 			// we shall wait till $current and $next are different
 			if (($next = isset($partition[$i+1][$j]) ? $partition[$i+1][$j] : null) === $current) continue;
 			// when adjusting $next may be less than $current but $lower is already found

@@ -10,10 +10,10 @@ class Db_Range
 	 * This class lets you use make range queries, in a structured way.
 	 * @class Db_Range
 	 * @constructor
-	 * @param {mixed} $min Minimal value of the range
-	 * @param {boolean} $include_min Wheather minimum value shall be included to the range
-	 * @param {boolean} $include_max Wheather maximum value shall be included to the range
-	 * @param {mixed} $max Maximal value of the range.
+	 * @param {mixed} $min Minimal value of the range. Pass null to skip the min.
+	 * @param {boolean} $include_min Whether the range extends to include the minimum value
+	 * @param {boolean} $include_max Whether the range extends to include the maximum value
+	 * @param {mixed} $max Maximal value of the range. Pass null to skip the max.
 	 *  If boolean true is passed here, then $max is set to $min with the last character
 	 *  incremented to the next ASCII value.
 	 */
@@ -30,7 +30,6 @@ class Db_Range
 			$max = substr($min, 0, -1).chr(ord($last_char)+1);
 		}
 		$this->max = $max;
-		// for query logging during shard split
 		$this->typename = "Db.Range";
 	}
 	/**

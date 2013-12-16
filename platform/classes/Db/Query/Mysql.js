@@ -1188,6 +1188,9 @@ function applyHash(value, hash, len)
 {
 	if (!hash) hash = 'normalize';
 	if (!len) len = _HASH_LEN;
+	if (value == null) {
+		return value;
+	}
 	switch (hash) {
 		case 'normalize':
 			hashed = Q.normalize(value).substr(0, len);
@@ -1231,6 +1234,9 @@ function slice_partitions(partition, j, hashed, adjust) {
 	if (hj instanceof Db.Range) {
 		min = hj.min;
 		max = hj.max;
+		if (min === null) {
+			throw new Q.Exception("Db.Query.Mysql slice_partitions: The minimum of the range should be set.");
+		}
 	}
 	var current, next = null;
 	var lower = 0, upper = partition.length-1;
@@ -1240,7 +1246,7 @@ function slice_partitions(partition, j, hashed, adjust) {
 		point = partition[i];
 		upper_found = upper_found && next;
 		current = point[j];
-		if (!adjust && current > max) break;
+		if (!adjust && max != null && current > max) break;
 		if ((next = Q.ifSet(partition, [i+1, j], null)) === current) continue;
 		if (adjust && current > next) lower_found = !(next = null);
 		if (!lower_found && next && min >= next) lower = i+1;
@@ -1297,14 +1303,18 @@ function criteria_internal (query, criteria) {
 						criteria_list.push("FALSE"); // since value array is empty
 					}
 				} else if (value && value.typename === 'Db.Range') {
-					var c_min = value.includeMin ? ' >= ' : ' > ';
-					criteria_list.push( "" + expr + c_min + ":_criteria_" + _valueCounter );
-					query.parameters["_criteria_" + _valueCounter] = value.min;
-					++ _valueCounter;
-					var c_max = value.includeMax ? ' <= ' : ' < ';
-					criteria_list.push( "" + expr + c_max + ":_criteria_" + _valueCounter );
-					query.parameters["_criteria_" + _valueCounter] = value.max;
-					++ _valueCounter;
+					if (value.min != null) {
+						var c_min = value.includeMin ? ' >= ' : ' > ';
+						criteria_list.push( "" + expr + c_min + ":_criteria_" + _valueCounter );
+						query.parameters["_criteria_" + _valueCounter] = value.min;
+						++ _valueCounter;
+					}
+					if (value.max != null) {
+						var c_max = value.includeMax ? ' <= ' : ' < ';
+						criteria_list.push( "" + expr + c_max + ":_criteria_" + _valueCounter );
+						query.parameters["_criteria_" + _valueCounter] = value.max;
+						++ _valueCounter;
+					}
 				} else {
 					criteria_list.push(expr + " = :_criteria_" + _valueCounter);
 					query.parameters["_criteria_" + _valueCounter] = value;
@@ -1326,7 +1336,7 @@ function set_internal (query, updates) {
 		case Db.Query.TYPE_UPDATE:
 			break;
 		default:
-			throw new Q.Exception("The SET clause does not belong in this context.");
+			throw new Q.Exception("Db.Query.Mysql set_internal: The SET clause does not belong in this context.");
 	}
 	if (typeof updates === 'object') {
 		var updates_list = [];
@@ -1344,7 +1354,7 @@ function set_internal (query, updates) {
 		updates = (updates_list.length) ? updates_list.join(", \n") : "";
 	}
 	if (typeof updates !== 'string') {
-		throw new Q.Exception("The SET updates need to be specified correctly.");
+		throw new Q.Exception("Db.Query.Mysql set_internal: The SET updates need to be specified correctly.");
 	}
 	return updates;
 }

@@ -1555,14 +1555,18 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 							$criteria_list[] = "FALSE"; // since $value list is empty
 						}
 					} else if ($value instanceof Db_Range) {
-						$c_min = $value->includeMin ? '>=' : '>';
-						$criteria_list[] = self::column($expr) . " $c_min :_where_$i";
-						$this->parameters["_where_$i"] = $value->min;
-						++ $i;
-						$c_max = $value->includeMax ? '<=' : '<';
-						$criteria_list[] = self::column($expr) . " $c_max :_where_$i";
-						$this->parameters["_where_$i"] = $value->max;
-						++ $i;
+						if (isset($value->min)) {
+							$c_min = $value->includeMin ? '>=' : '>';
+							$criteria_list[] = self::column($expr) . " $c_min :_where_$i";
+							$this->parameters["_where_$i"] = $value->min;
+							++ $i;
+						}
+						if (isset($value->max)) {
+							$c_max = $value->includeMax ? '<=' : '<';
+							$criteria_list[] = self::column($expr) . " $c_max :_where_$i";
+							$this->parameters["_where_$i"] = $value->max;
+							++ $i;
+						}
 					} else {
 						$criteria_list[] = self::column($expr) . " = :_where_$i";
 						$this->parameters["_where_$i"] = $value;
