@@ -9,7 +9,7 @@
 	"Db": {
 		"connections": {
 			"Users": {
-				"prefix": "PREFIX HERE",
+				"prefix": "users_",
 				"dsn": "mysql:host=localhost;dbname=DBNAME",
 				"username": "USERNAME",
 				"password": "PASSWORD",
@@ -19,7 +19,7 @@
 				"shards": {}
 			},
 			"Streams": {
-				"prefix": "PREFIX HERE",
+				"prefix": "streams_",
 				"dsn": "mysql:host=localhost;dbname=DBNAME",
 				"username": "USERNAME",
 				"password": "PASSWORD",

@@ -26,10 +26,12 @@ var MyApp = Q.plugins.MyApp = (function ($) {
 			return false;
 		});
 		
-		var avatar = $('#dashboard .Users_avatar_tool');
-		if (avatar.length) {
-			Q.Contextual.add(avatar, $('#dashboard_user_contextual'));	
-		}
+		Q.addScript("plugins/Q/js/QTools.js", function () {
+			var avatar = $('#dashboard .Users_avatar_tool');
+			if (avatar.length) {
+				Q.Contextual.add(avatar, $('#dashboard_user_contextual'));	
+			}
+		});
 		
 	});
 	
