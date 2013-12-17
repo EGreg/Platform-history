@@ -1,7 +1,9 @@
 var http = require('http');
 require('../Q.inc')(function(Q) {
-	var i = 0;
-
+	
 	Q.plugins.Users.listen();
 	Q.plugins.Streams.listen();
+	
+	// TODO: Make some classes in classes/MyApp and then require() them
+	
 });

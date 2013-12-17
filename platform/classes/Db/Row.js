@@ -109,15 +109,26 @@ function Row(fields, retrieved /* false */) {
 			this.fields[k] = fields[k];
 		}
 	}
-	if ((_retrieved = !!retrieved)) _fields_modified = {};
+	if ((_retrieved = !!retrieved)) {
+		_fields_modified = {};
+	}
 
 	/**
 	 * Whether this Db_Row was retrieved or not.
-	 * @property _retrieved
+	 * @property retrieved
 	 * @type boolean
 	 */
-	this.__defineGetter__('_retrieved', function () {
+	this.__defineGetter__('retrieved', function () {
 		return _retrieved;
+	});
+	
+	/**
+	 * Whether this Db_Row was retrieved or not.
+	 * @property retrieved
+	 * @type boolean
+	 */
+	this.__defineGetter__('pkValue', function () {
+		return _pkValue;
 	});
 
 	_pkValue = calculatePKValue() || {};
@@ -246,10 +257,14 @@ function Row(fields, retrieved /* false */) {
 					if (typeof self.afterSaveExecute === "function") {
 						// trigger Db/Row/this.className/saveExecute after event.// NOTE: this is synchronous
 						query.resume = _do_callbacks;
-						if (!self.afterSaveExecute(query, error, lastId))
-							_do_callbacks(error, lastId); 	// NOTE: this is synchronous
-												// to use it async way return *true* and use query.resume(error, result) to continue
-					} else _do_callbacks(error, lastId);
+						if (!self.afterSaveExecute(query, error, lastId)) {
+							_do_callbacks(error, lastId);
+							// NOTE: this is synchronous
+							// to use it the async way return *true* and use query.resume(error, result) to continue
+						}
+					} else {
+						_do_callbacks(error, lastId);
+					}
 				}, {indexes: _split});
 			}
 			// trigger Db/Row/this.className/saveExecute before event. // NOTE: this is synchronous
@@ -362,10 +377,15 @@ function Row(fields, retrieved /* false */) {
 			query = rowClass.SELECT(fields).where(search_criteria);
 
 			function _do_callbacks(error, result) {
+				var fetched = false;
+				if (result[0]) {
+					self.copyFromRow(result[0]);
+					fetched = true;
+				}
 				if (error) {
 					callback && callback.call(self, error);
 				} else {
-					callback && callback.call(self, null, result);
+					callback && callback.call(self, null, result, fetched);
 				}
 				query = null;
 			}
@@ -377,10 +397,14 @@ function Row(fields, retrieved /* false */) {
 					// trigger Db/Row/this.className/retrieveExecute after event.// NOTE: this is synchronous
 					if (typeof self.afterRetrieveExecute === "function") {
 						query.resume = _do_callbacks;
-						if (!self.afterRetrieveExecute(query, error, result))
-							_do_callbacks(error, result);	// NOTE: this is synchronous
-												// to use it async way return *true* and use query.resume(error, result) to continue
-					} else _do_callbacks(error, result);
+						if (!self.afterRetrieveExecute(query, error, result)) {
+							_do_callbacks(error, result);
+							// NOTE: This is synchronous.
+							// To use it the async way return *true* and use query.resume(error, result) to continue
+						}
+					} else {
+						_do_callbacks(error, result);
+					}
 				}, {indexes: _split});
 			}
 
@@ -391,26 +415,32 @@ function Row(fields, retrieved /* false */) {
 				// or obj.retrieve('*', false, true, callback).begin().resume()
 				// are both valid
 				if (modify_query && typeof callback !== "function") {
-					if (typeof cback === "function") callback = cback;
-					else throw new Error("At least one callback shall be defined for "+self.className+".retrieve()!");
+					if (typeof cback !== "function") {
+						throw new Error("At least one callback shall be defined for "+self.className+".retrieve()!");
+					}
+					callback = cback;
 				}
 				query = this;
 				// trigger Db/Row/this.className/retrieveExecute before event. // NOTE: this is synchronous
 				if (typeof self.beforeRetrieveExecute === "function") {
 					query.resume = _execute;
-					query = (_continue = !!self.beforeRetrieveExecute(query, search_criteria)) || query; // NOTE: this is synchronous
-															// to use it async way return *false* and use query.resume() to continue
-															// or handle callbacks in some creative way
+					query = (_continue = !!self.beforeRetrieveExecute(query, search_criteria)) || query;
+					// NOTE: this is synchronous.
+					// To use it the async way, return *false* and use query.resume() to continue
 				}
-				if (_continue && query) _execute.apply(query);
-				else console.log(self.className + ': query is empty!');
+				if (_continue && query) {
+					_execute.apply(query);
+				} else {
+					console.log(self.className + ': query is empty!');
+				}
 			}
 			// Modify the query if necessary
 			if (modify_query) {
 				query.resume = _resume;
 				return query;
-			} else
+			} else {
 				_resume.apply(query);
+			}
 		}
 	};
 
@@ -596,6 +626,22 @@ function Row(fields, retrieved /* false */) {
 	
 	this.split = function (index) {
 		_split = index;
+		return this;
+	};
+	
+	/**
+	 * This function copies the members of another row,
+	 * as well as the primary key, etc. and assigns it to this row.
+	 * @method copyFromRow
+	 * @param row {Db.Row} The source row. Be careful -- In this case, Db does not check 
+	 *  whether the class of the Db_Row matches. It leaves things up to you.
+	 * @return {Db_Row} returns this object, for chaining
+	 */
+	this.copyFromRow = function (row) {
+		this.retrieved = this.retrieved;
+		for (var key in row.fields) {
+			this.fields[key] = row.fields[key];
+		}
 		return this;
 	};
 }
