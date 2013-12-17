@@ -638,7 +638,7 @@ function Row(fields, retrieved /* false */) {
 	 * @return {Db_Row} returns this object, for chaining
 	 */
 	this.copyFromRow = function (row) {
-		this.retrieved = this.retrieved;
+		_retrieved = row.retrieved;
 		for (var key in row.fields) {
 			this.fields[key] = row.fields[key];
 		}
