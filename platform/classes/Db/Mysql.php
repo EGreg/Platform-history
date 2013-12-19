@@ -1102,7 +1102,7 @@ class $class_name extends Base_$class_name
 	}
 
 	/* 
-	 * Add static methods here.
+	 * Add any $class_name methods here, whether public or not
 	 * If file '$class_name_base.php.inc' exists, its content is included
 	 * * * */
 $class_extras
@@ -1158,7 +1158,8 @@ function $class_name (fields) {
 	this.constructors.call(this, arguments);
 
 	/*
-	 * Add any other methods to the model class by assigning them to this.
+	 * Add any privileged methods to the model class here.
+	 * Public methods should probably be added further below.
 	 * If file '$class_name_base.js.inc' exists, its content is included
 	 * * * */
 $js_class_extras
@@ -1166,6 +1167,10 @@ $js_class_extras
 }
 
 Q.mixin($class_name, Q.require('$js_base_class_require'));
+
+/*
+ * Add any public methods here by assigning them to $class_name.prototype
+ */
 
 module.exports = $class_name;
 EOT;
