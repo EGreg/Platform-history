@@ -308,7 +308,7 @@ function Db_Mysql(connName, dsn) {
 	/**
 	 * Returns a timestamp from a Date string
 	 * @method fromDate
-	 * @param {string} $datetime The Date string that comes from the db
+	 * @param {string} date The Date string that comes from the db
 	 * @return {integer} The timestamp
 	 */
 	dbm.fromDate = function(date) {
@@ -341,7 +341,7 @@ function Db_Mysql(connName, dsn) {
 	 * @return {string}
 	 */
 	dbm.toDate = function(timestamp) {
-		var date = new Date(timestamp * 1000),
+		var date = new Date(timestamp),
 			year = date.getFullYear(),
 			month = date.getMonth(),
 			day = date.getDate();
@@ -357,7 +357,7 @@ function Db_Mysql(connName, dsn) {
 	 * @return {string}
 	 */
 	dbm.toDateTime = function(timestamp) {
-		var date = new Date(timestamp * 1000),
+		var date = new Date(timestamp),
 			year = date.getFullYear(),
 			month = date.getMonth(),
 			day = date.getDate(),

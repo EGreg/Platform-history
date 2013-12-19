@@ -170,7 +170,8 @@ function Row(fields, retrieved /* false */) {
 		} else if (typeof callback !== 'function') {
 			callback = function (err) {
 				if (typeof err !== "undefined") {
-					console.log("ERROR while saving " + self.className + "!");
+					console.log("Db.Row: ERROR while saving " + self.className);
+					console.log(err);
 					console.log("Primary key: ", calculatePKValue());
 				}
 			};
@@ -199,7 +200,7 @@ function Row(fields, retrieved /* false */) {
 		 * @param [callback=null] {function} This function is called when hook completes. Returns `error` -
 		 *	error object if any and `modified_fields` as parameters.
 		 */
-		if (!_split && typeof this.beforeSave === "function") { // skip beforeSave on _split is defined
+		if (!_split && typeof this.beforeSave === "function") { // skip beforeSave when on _split is defined
 			try {
 				modified_fields = this.beforeSave(modified_fields, function (error, modified_fields) {
 					if (error) callback && callback.call(self, error);

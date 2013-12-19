@@ -659,6 +659,9 @@ class Db_Mysql implements iDb
 	 */
 	function toDate ($timestamp)
 	{
+		if ($timestamp > 10000000000) {
+			$timestamp = $timestamp / 1000;
+		}
 		return date('Y-m-d', $timestamp);
 	}
 
@@ -670,6 +673,9 @@ class Db_Mysql implements iDb
 	 */
 	function toDateTime ($timestamp)
 	{
+		if ($timestamp > 10000000000) {
+			$timestamp = $timestamp / 1000;
+		}
 		return date('Y-m-d H:i:s', $timestamp);
 	}
 	
