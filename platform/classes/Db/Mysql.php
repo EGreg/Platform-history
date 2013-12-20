@@ -1646,7 +1646,7 @@ EOT;
 	 */
 EOT;
 					$js_functions["beforeSet_$field_name"][] = <<<EOT
-		{$js_null_check}{$js_dbe_check}value = new Date(value);
+		{$js_null_check}{$js_dbe_check}value = (value instanceof Date) ? $conn_name.db().toDateTime(value) : value;
 EOT;
 					$js_functions["beforeSet_$field_name"]['comment'] = <<<EOT
 $dc
@@ -1682,7 +1682,7 @@ EOT;
 	 */
 EOT;
 					$js_functions["beforeSet_$field_name"][] = <<<EOT
-       {$js_null_check}{$js_dbe_check}value = new Date(value);
+       {$js_null_check}{$js_dbe_check}value = (value instanceof Date) ? $conn_name.db().toDateTime(value) : value;
 EOT;
 					$js_functions["beforeSet_$field_name"]['comment'] = <<<EOT
 $dc

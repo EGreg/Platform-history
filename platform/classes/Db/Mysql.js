@@ -341,6 +341,10 @@ function Db_Mysql(connName, dsn) {
 	 * @return {string}
 	 */
 	dbm.toDate = function(timestamp) {
+		if (!(timestamp instanceof Date)) {
+			timestamp = new Date(timestamp);
+		}
+		timestamp = timestamp.getTime();
 		var date = new Date(timestamp),
 			year = date.getFullYear(),
 			month = date.getMonth(),
@@ -353,10 +357,14 @@ function Db_Mysql(connName, dsn) {
 	/**
 	 * Returns a DateTime string to store in the database
 	 * @method toDateTime
-	 * @param {string} timestamp a standard UNIX timestamp
+	 * @param {Date|string} timestamp a standard UNIX timestamp
 	 * @return {string}
 	 */
 	dbm.toDateTime = function(timestamp) {
+		if (!(timestamp instanceof Date)) {
+			timestamp = new Date(timestamp);
+		}
+		timestamp = timestamp.getTime();
 		var date = new Date(timestamp),
 			year = date.getFullYear(),
 			month = date.getMonth()+1,
