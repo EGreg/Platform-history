@@ -359,7 +359,7 @@ function Db_Mysql(connName, dsn) {
 	dbm.toDateTime = function(timestamp) {
 		var date = new Date(timestamp),
 			year = date.getFullYear(),
-			month = date.getMonth(),
+			month = date.getMonth()+1,
 			day = date.getDate(),
 			hours = date.getHours(),
 			minutes = date.getMinutes(),
