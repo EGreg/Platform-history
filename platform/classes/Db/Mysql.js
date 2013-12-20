@@ -60,19 +60,19 @@ function Db_Mysql(connName, dsn) {
 	 */
 	var clients = {};
 
-	function mysqlClient(host, port, user, password, database, typeCast) {
+	function mysqlClient(host, port, user, password, database, options) {
 		var key = [host, port, user, password, database].join("\t");
 		if (clients[key]) {
 			return clients[key];
 		}
-		return clients[key] = require('mysql').createClient({
+		var o = Q.extend({
 			host: host,
 			port: port,
 			user: user,
 			password: password,
-			database: database,
-			typeCast: typeCast ? true : false
-		});
+			database: database
+		}, options);
+		return clients[key] = require('mysql').createClient(o);
 	}
 
 	/**
@@ -102,7 +102,7 @@ function Db_Mysql(connName, dsn) {
 			info.username,
 			info.password,
 			info.dbname,
-			info.typeCast);
+			info.options);
 		if (!callback) return client;
 		if (!dbm.connected && Q.Config.get(['Db', 'debug'], false)) {
 			client._original_query = client.query;
