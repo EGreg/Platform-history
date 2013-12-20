@@ -1147,6 +1147,8 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 					value2 = "NULL";
 				} else if (value && value.typename === "Db.Expression") {
 					value2 = value;
+				} else if (value instanceof Date) {
+					value2 = '"'+query.db.toDateTime(value.getTime())+'"';
 				} else {
 					value2 = client.escape(value);
 				}
