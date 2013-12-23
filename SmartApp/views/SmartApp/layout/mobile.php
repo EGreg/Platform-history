@@ -1,9 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"
-<?php if (Q_Config::get('Q', 'environment', '') == 'live'): ?>
-class="Q_mobile"
-<?php endif ?>
-xmlns:fb="http://www.facebook.com/2008/fbml">
+<html lang="en" xmlns:fb="http://www.facebook.com/2008/fbml">
 <head>
 	<?php include('common_mobile_header.php') ?> 
 	<?php include('common_header.php') ?>

@@ -26,6 +26,15 @@
 			"e/:emailAddress": { "module": "Users", "action": "activate" },
 			"m/:mobileNumber": { "module": "Users", "action": "activate" }
 		},
+		"response": {
+			"slotNames": ["title", "notices", "dashboard", "content"],
+			"ajax": [],
+			"layout": {
+				"desktop": "MyApp/layout/desktop.php",
+				"tablet": "MyApp/layout/tablet.php",
+				"mobile": "MyApp/layout/mobile.php"
+			}
+		},
 		"exception": {
 			"showTrace": true,
 			"showFileAndLine": true
