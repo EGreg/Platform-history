@@ -684,7 +684,7 @@ Q.Layout = {
 			}
 		}
 		
-		$('.Q_dashboard_expandable ul.Q_listing').plugin('Q/listing', { 
+		$('.Q_dashboard_expandable ul.Q_listing').not(".Users_userMenuListing").plugin('Q/listing', { 
 			handler: Q.Layout.listingHandler, 'blink': false
 		});
 		
@@ -1564,7 +1564,7 @@ Q.Layout.android = {
  */
 Q.Layout.flipColumns.options = {};
 
-Q.onInit.set(function () {
+Q.onInit.add(function () {
 
 	if (Q.Layout.use) {
 		Q.onPageLoad('').set(function() {

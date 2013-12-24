@@ -158,7 +158,7 @@ function (o) {
 		{
 			var close = $('<a class="close" />');
 			$this.prepend(close);
-			close.bind(Q.Pointer.start, $this.data('Q/overlay').close);
+			close.bind(Q.Pointer.click, $this.data('Q/overlay').close);
 		}
 	});
 },
@@ -168,6 +168,7 @@ function (o) {
 	'left': 'center',
 	'top': 'middle',
 	'alignParent': null,
+	'applyIScroll': false,
 	'mask': false,
 	'noClose': false,
 	'closeOnEsc': true,
@@ -251,6 +252,7 @@ Q.Tool.jQuery('Q/dialog', function (o) {
 				}
 			}
 	
+			$.fn.plugin.load('Q/iScroll');
 			$this.plugin('Q/overlay', {
 				top: topPos,
 				mask: o.mask,
@@ -435,7 +437,7 @@ function _handlePosAndScroll(o)
 		
 	var contentsWrapper = null, contentsLength = 0;
 	var iScrollBar = null;
-		
+	
 	function applyIScroll(maxContentsHeight)
 	{
 		contentsWrapper = ods.parent('.Q_iscroll_dialog_wrapper');
@@ -455,18 +457,19 @@ function _handlePosAndScroll(o)
 			ods.wrap('<div class="Q_iscroll_dialog_wrapper" />');
 			contentsWrapper = ods.parent();
 			contentsWrapper.css({ 'max-height': maxContentsHeight + 'px' });
-			contentsWrapper.plugin('Q/iScroll');
-			contentsLength = ods.html().length;
-			iScrollBar = contentsWrapper.children('div:last');
-			iScrollBar.detach().appendTo(document.body);
-			var topOffset = contentsWrapper.offset().top;
-			iScrollBar.css({
-				'top': topOffset + 'px',
-				'left': (contentsWrapper.offset().left + contentsWrapper.width() - iScrollBar.width()) + 'px',
-				'height': maxContentsHeight + 'px',
-				'z-index': '20100'
+			contentsWrapper.plugin('Q/iScroll', function () {
+				contentsLength = ods.html().length;
+				iScrollBar = contentsWrapper.children('div:last');
+				iScrollBar.detach().appendTo(document.body);
+				var topOffset = contentsWrapper.offset().top;
+				iScrollBar.css({
+					'top': topOffset + 'px',
+					'left': (contentsWrapper.offset().left + contentsWrapper.width() - iScrollBar.width()) + 'px',
+					'height': maxContentsHeight + 'px',
+					'z-index': '20100'
+				});
+				contentsWrapper.plugin('Q/iScroll', 'refresh');
 			});
-			contentsWrapper.plugin('Q/iScroll', 'refresh');
 		}
 	}
 	
@@ -503,7 +506,7 @@ function _handlePosAndScroll(o)
 				if (Q.Layout && Q.Layout.keyboardVisible) return;
 				
 				// correcting height
-				if ($this.outerHeight() > window.innerHeight)
+				if ($this.outerHeight() > window.innerHeight && o.applyIScroll)
 				{
 					$this.data('Q_dialog_default_height', $this.outerHeight());
 					$this.css({ 'top': '0' });
@@ -556,7 +559,7 @@ function _handlePosAndScroll(o)
 					maxContentsHeight = parentHeight - topMargin - bottomMargin - ots.outerHeight()
 						- parseInt($this.css('border-top-width')) * 2;
 					if (maxContentsHeight < 0) maxContentsHeight = 0;
-					if (Q.info.isTouchscreen && $.fn.iScroll)
+					if (Q.info.isTouchscreen && $.fn.iScroll && o.applyIScroll)
 					{
 						applyIScroll(maxContentsHeight);
 					}

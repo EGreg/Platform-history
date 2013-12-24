@@ -277,18 +277,20 @@
 
 /* user login */
 
-#Users_login_identifier { width: 240px !important; }
-#Users_setIdentifier_identifier { width: 310px !important; }
+#Users_login_step1_form { width: 100%; }
+#Users_login_identifier { width: 70%; padding: 2%; }
+#Users_setIdentifier_identifier { width: 96%; padding: 2%; }
+#Users_login_go { width: 10%; }
 #Users_login_noPassphrase { font-size: 14px; font-weight: bold; color: #a00; text-align: center; }
 #Users_login_notVerified { font-size: 14px; font-weight: bold; text-align: center; }
 #Users_login_identifierExists { font-size: 12px; color: #555; }
 #Users_login_explanation { font-size: 13px; color: #779; text-indent: 5px; }
 #Users_login_usingProviders { padding: 10px; font-size: 13px; color: #779; text-indent: 5px; text-align: left; }
-#Users_form_passphrase { width: 300px; }
+#Users_form_passphrase { width: 96%; padding: 2%; }
 #Users_login_username { width: 200px; }
 .Users_login_get_started { text-align: center; }
 
-#Users_login_passphrase_div{ position: relative; width: 308px; }
+#Users_login_passphrase_div { position: relative; }
 #Users_login_passphrase_forgot { display: block; position: absolute; right: 3px; bottom: 5px; color: #888; padding: 4px; }
 #Users_login_passphrase_forgot:hover { color: #000; background: #eee; -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px; }
 #Users_login_passphrase_forgot:active { color: #000; background: #ccc; -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px; }
@@ -302,7 +304,7 @@
 #Users_authorize_act { text-align: center; }
 #Users_authorize_terms,
 #Users_authorize_terms * { font-size: 14px; }
-#Users_register_terms,
-#Users_register_terms * { font-size: 14px; }
+#Users_login_dialog #Users_register_terms,
+#Users_login_dialog #Users_register_terms * { font-size: 14px; }
 #Users_authorize_buttons { padding: 10px; }
 #Users_authorize_buttons .Q_button { font-size: 36px; line-height: 80px; }

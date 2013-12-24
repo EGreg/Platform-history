@@ -393,7 +393,7 @@
 
 #Streams_login_username
 {
-	width: 225px;
+	width: 90%;
 }
 
 #Streams_login_password
@@ -436,10 +436,8 @@
 	width: 100%;
 }
 
-.Streams_login_username_block label
-{
-	font-size: 18px;
-	font-weight: bold;
+#Users_login_dialog label {
+	font-size: 17px;
 }
 
 .Streams_chat_textarea_posting

@@ -45,6 +45,7 @@
 		},
 		"login": {
 			"identifierType": "email,mobile",
+			"using": "native,facebook",
 			"userQueryUri": "Users/user",
 			"iconType": "wavatar",
 			"gravatar": false,
@@ -106,7 +107,7 @@
 			"terms": {
 				"uri": null,
 				"label": "I have read and agree<br>to the $link",
-				"title": "Terms of Service"
+				"title": "Terms"
 			},
 			"stateMinLength": 10
 		},
@@ -114,7 +115,7 @@
 			"terms": {
 				"uri": "$baseUrl/terms",
 				"label": "I accept the $link",
-				"title": "Terms of Service"
+				"title": "Terms"
 			},
 			"delaySMS": 30000
 		}

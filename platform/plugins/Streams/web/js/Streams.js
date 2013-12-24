@@ -1876,7 +1876,7 @@ Streams.displayType = function _Streams_displayType(type) {
 };
 
 Streams.setupRegisterForm = function _Streams_setupRegisterForm(identifier, json, priv, overlay) {
-	var src = json.entry.thumbnailUrl;
+	var src = json.entry[0].thumbnailUrl;
 	var src40 = src, src50 = src, src80w = src;
 	var firstName = '', lastName = '';
 	if (priv.registerInfo) {

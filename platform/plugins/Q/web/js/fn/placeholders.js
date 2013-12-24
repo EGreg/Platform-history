@@ -23,12 +23,21 @@ function () {
 		if(!(plch))
 			return;
 
-		var span = $('<span />').css('position', 'relative').addClass('Q_placeholder');
+		var span = $('<span />').css('position', 'relative').addClass('Q_placeholder')
+		$this.css({
+			'width': $this.width(),
+			'height': $this.height()
+		}); // because they might have been percentages
+		Q.each(['left', 'right', 'top', 'bottom'], function (i, pos) {
+			$this.css('padding-'+pos, $this.css('padding-'+pos))
+				.css('margin-'+pos, $this.css('margin-'+pos));
+		});
 		$this.wrap(span);
 		span = $this.parent();
-		span.on(Q.Pointer.end, function()
-		{
+		span.width($this.outerWidth(true)).height($this.outerHeight(true));
+		span.on(Q.Pointer.fastclick, function() {
 			$this.trigger('focus');
+			return false;
 		});
 		var placeholder = $('<div />').html(plch).css({
 			'position': 'absolute',

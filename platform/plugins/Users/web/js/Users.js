@@ -35,7 +35,7 @@ Q.text.Users = {
 		facebookSrc: null,
 		username: "Choose a username:",
 		placeholders: {
-			identifier: "enter your mobile # or email",
+			identifier: "your mobile # or email",
 			mobile: "enter your mobile number",
 			email: "enter your email address",
 			username: "username"
@@ -965,7 +965,7 @@ function login_callback(response) {
 		.append($('<input type="hidden" name="icon[80w.png]" />').val(src80w))
 		.append($('<div class="Users_login_get_started">&nbsp;</div>')
 		.append(
-			$('<a type="submit" class="Q_button Users_login_start Q_main_button" />')
+			$('<button type="submit" class="Q_button Users_login_start Q_main_button" />')
 			.html(Q.text.Users.login.registerButton)
 		)).submit(function () {
 			$(this).removeData('cancelSubmit');
@@ -1041,9 +1041,7 @@ function login_callback(response) {
 			$('input', step2_form).eq(0).plugin('Q/clickfocus').select();
 		} else {
 			step2.slideDown('fast', function () {
-				if (step2_form.placeholders) {
-					step2_form.plugin('Q/placeholders');
-				}
+				step2_form.plugin('Q/placeholders');
 				if (step2_form.data('form-type') === 'resend') {
 					$('.Q_main_button', step2_form).focus();
 				} else if (!Q.info.isTouchscreen) {
@@ -1268,11 +1266,15 @@ function login_setupDialog(usingProviders, perms, dialogContainer, identifierTyp
 	}
 }
 
-function setIdentifier_callback(response) {
+function setIdentifier_callback(err, response) {
 	var identifier_input = $('#Users_setIdentifier_identifier');
 	var form = $('#Users_setIdentifier_step1_form');
 	identifier_input.css('background-image', 'none');
 
+	var msg = Q.firstErrorMessage(err);
+	if (msg) {
+		return alert(msg);
+	}
 	if (response.errors) {
 		// There were errors
 		form.data('validator').invalidate(Q.ajaxErrors(response.errors, 'identifier'));
@@ -1599,8 +1601,8 @@ function submitClosestForm () {
  *   "onMenuSelect": Optional. Function, string function name or Q.Event.
  *                   Called when user selected some item from user selected some item from user menu except 'Log out'.
  */
-Q.Tool.constructors['users_status'] = function(options)
-{
+Q.Tool.define("Users/status", function(options) {
+	var tool = this;
 	var toolDiv = $(this.element);
 	var o = options;
 	
@@ -1639,14 +1641,6 @@ Q.Tool.constructors['users_status'] = function(options)
 	
 	};
 	
-	function login()
-	{
-		Q.plugins.Users.login({
-			onSuccess: fillUserArea
-		});
-		return false;
-	}
-	
 	function logout()
 	{
 		Q.plugins.Users.logout({
@@ -1662,7 +1656,7 @@ Q.Tool.constructors['users_status'] = function(options)
 						Q.Dashboard.build();
 						Users.userStatus.button.html('<img src="' + Q.url(o.icon) + '" />'+br+'<span>' + o.label +  '</span>');
 						Users.userStatus.button.addClass('.Q_dialog_trigger').plugin('Q/contextual', 'destroy');
-						Users.userStatus.button.unbind(Q.Pointer.end).bind(Q.Pointer.end, login);
+						Users.userStatus.button.unbind(Q.Pointer.end).bind(Q.Pointer.end, Users.login);
 						setTimeout(function()
 						{
 							Q.Contextual.updateLayout();
@@ -1740,7 +1734,7 @@ Q.Tool.constructors['users_status'] = function(options)
 		var expandable = toolDiv.find('.Q_dashboard_expandable');
 		if (expandable.children().length === 0)
 		{
-			var userMenuListing = $('<ul class="Q_listing Q_selectable_listing" />');
+			var userMenuListing = $('<ul class="Q_listing Q_selectable_listing Users_userMenuListing" />');
 			for (var i in o.menuItems)
 			{
 				userMenuListing.append('<li data-action="' + o.menuItems[i].action + '">' + o.menuItems[i].contents + '</li>');
@@ -1749,7 +1743,7 @@ Q.Tool.constructors['users_status'] = function(options)
 			userMenuListing.append('<li data-action="logout">' + logOutContents + '</li>');
 			expandable.append(userMenuListing);
 			userMenuListing.plugin('Q/listing', { 
-				'handler': { 'Users.userStatus': 'Q.Users.userStatus.menuHandler' },
+				'handler': { 'Users/status': 'Q.Users.userStatus.menuHandler' },
 				'blink': false
 			}, callback);
 		} else {
@@ -1757,10 +1751,11 @@ Q.Tool.constructors['users_status'] = function(options)
 		}
 	}
 	
+	Users.onLogin.set(fillUserArea, tool);
 	Users.userStatus.button = toolDiv.find('.Q_login');
-	Users.userStatus.button.unbind(Q.Pointer.end).bind(Q.Pointer.end, login);
+	Users.userStatus.button.unbind(Q.Pointer.end).bind(Q.Pointer.end, Users.login);
 	fillUserArea(Q.Users.loggedInUser);
-};
+});
 
 /**
  * Makes a dialog that looks closely to facebook standard.

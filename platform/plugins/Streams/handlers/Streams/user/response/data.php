@@ -5,6 +5,8 @@ function Streams_user_response_data($params)
 	$identifier = Users::requestedIdentifier($type);
 	$hash = md5(strtolower(trim($identifier)));
 
+	$icon = Q_Request::baseUrl()."/action.php/Q/image?hash=$hash&size=80&type=".Q_Config::get('Users', 'login', 'iconType', 'wavatar');
+
 	// check our db
 	if ($user = Users::userFromContactInfo($type, $identifier)) {
 		$displayname = Streams::displayName($user);
@@ -14,7 +16,7 @@ function Streams_user_response_data($params)
 			'verified' => $verified,
 			'username' => $user->username,
 			'displayName' => $displayname,
-			'icon' => $verified ? Q_Request::baseUrl()."/action.php/Q/image?hash=$hash&size=80&type=".Q_Config::get('Users', 'login', 'iconType', 'wavatar') : $user->icon,
+			'icon' => $verified ? $icon : $user->icon,
 			'passphrase_set' => !empty($user->passphraseHash),
 			'fb_uid' => $user->fb_uid ? $user->fb_uid : null
 		);
@@ -37,9 +39,9 @@ function Streams_user_response_data($params)
 	}
 
 	$result = array(
-		"entry" => array(
-			"thumbnailUrl" => Q_Request::baseUrl()."/action.php/Q/image?hash=$hash&size=80&type=".Q_Config::get('Users', 'login', 'iconType', 'wavatar')
-		)
+		"entry" => array(array(
+			"thumbnailUrl" => $icon
+		))
 	);
 	if ($type === 'email') {
 		$result['emailExists'] = !empty($exists);

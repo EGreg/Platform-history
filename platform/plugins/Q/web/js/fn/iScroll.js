@@ -15,7 +15,7 @@ Q.Tool.jQuery("Q/iScroll", function (o) {
 	Q.addScript('plugins/Q/js/iscroll.js', function () {
 		if (o.jScrollPane) {
 			$this.jScrollPane(o);	
-		} else {
+		} else if ($this[0].children.length) {
 			$this.data('Q/iScroll', new iScroll($this[0], o));
 		}
 		if (o.indicators)

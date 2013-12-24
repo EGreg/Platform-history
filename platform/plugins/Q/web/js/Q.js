@@ -3535,41 +3535,6 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 };
 
 /**
- * Turns AJAX errors returned by Q to a hash that might be
- * useful for validating a form.
- * @param Object errors
- *  A hash of errors
- * @params Array fields
- *  Optional. An array of field names to restrict ourselves to.
- *  For each error, if none of the fields apply, then the error
- *  is assigned to the field named first in this array.
- * @return Object
- */
-Q.ajaxErrors = function _Q_ajaxErrors(errors, fields) {
-	var result = {};
-	var f, e;
-	if (fields && typeof fields === 'string') {
-		fields = [fields];
-	}
-	for (i=0; i<errors.length; ++i) {
-		e = false;
-		if ((f = errors[i].fields)) {
-			for (j=0; j<f.length; ++j) {
-				if (fields && fields.indexOf(f[j]) < 0) {
-					continue;
-				}
-				result[f[j]] = errors[i].message;
-				e = true;
-			}
-		}
-		if (!e && fields) {
-			result[fields[0]] = errors[i].message;
-		}
-	}
-	return result;
-};
-
-/**
  * Get the URL for an action
  * @param String uri
  *  A string of the form "Module/action" or an absolute url, which is returned unmodified.
@@ -3849,6 +3814,42 @@ Q.firstErrorMessage = function _Q_firstErrorMessage(data) {
 		? error
 		: (error.message ? error.message : JSON.stringify(error));
 };
+
+/**
+ * Turns AJAX errors returned by Q to a hash that might be
+ * useful for validating a form.
+ * @param Object errors
+ *  A hash of errors
+ * @params Array fields
+ *  Optional. An array of field names to restrict ourselves to.
+ *  For each error, if none of the fields apply, then the error
+ *  is assigned to the field named first in this array.
+ * @return Object
+ */
+Q.ajaxErrors = function _Q_ajaxErrors(errors, fields) {
+	var result = {};
+	var f, e;
+	if (fields && typeof fields === 'string') {
+		fields = [fields];
+	}
+	for (i=0; i<errors.length; ++i) {
+		e = false;
+		if ((f = errors[i].fields)) {
+			for (j=0; j<f.length; ++j) {
+				if (fields && fields.indexOf(f[j]) < 0) {
+					continue;
+				}
+				result[f[j]] = errors[i].message;
+				e = true;
+			}
+		}
+		if (!e && fields) {
+			result[fields[0]] = errors[i].message;
+		}
+	}
+	return result;
+};
+
 
 /**
  * A way to get JSON that is cross-domain.

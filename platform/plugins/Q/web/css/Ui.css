@@ -1340,7 +1340,7 @@ body { text-align: center; height: 100%; }
 #content_slot { text-align: center; }
 #dashboard,
 #notices,
-#content { width: 990px;  margin: auto; text-align: left; }
+#content { margin: auto; text-align: left; }
 #column0_slot #content { width: 100%; }
 #content { position: relative; }
 #content_slot { position: relative; }
@@ -1364,7 +1364,7 @@ body { text-align: center; height: 100%; }
 /* dashboard slot */
 
 #dashboard_slot {
-	z-index: 9000; position: fixed; width: 100%; text-align: center; border: solid 0px #aaa; 
+	z-index: 900; position: fixed; width: 100%; text-align: center; border: solid 0px #aaa; 
 	box-shadow: #aaa 0px 0px 4px; -webkit-box-shadow: #aaa 0px 0px 4px; -moz-box-shadow: #aaa 0px 0px 4px;
 	background: #444; /* for non-css3 browsers */
 	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#444444', endColorstr='#111111'); /* for IE */
@@ -1376,7 +1376,7 @@ body { text-align: center; height: 100%; }
 #dashboard>* { margin: 10px; padding: 0px; }
 #dashboard_slot * { font-size: 16px; font-family: Arial, sans-serif; color: white; }
 #dashboard .Q_contextual * { color: black; }
-#dashboard { position: static; width: 990px; margin: auto; text-align: left; }
+#dashboard { position: static; margin: auto; text-align: left; }
 #dashboard td { vertical-align: middle; }
 #dashboard table { width: 100%; padding: 0px; margin: 0px; }
 #dashboard .Q_dashboard_logo { padding: 0px; }
@@ -1408,6 +1408,11 @@ body { text-align: center; height: 100%; }
 #dashboard .Q_tabs_tab span { display: inline; text-align: left; }
 #dashboard a.Q_tabs_tab.Q_selected { background-image: url(../img/bg/stucco.png) !important; color: black !important; }
 #dashboard a.Q_tabs_tab.Q_selected * { color: black; }
+
+.Q_notTouchscreen #dashboard,
+.Q_notTouchscreen #content { width: 990px; }
+
+.Q_mobile .Q_overlay { width: 90%; }
 
 /* dialogs */
 
