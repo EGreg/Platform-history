@@ -37,7 +37,7 @@ function Users_user_response_data($params)
 	// Get Gravatar info
 	// WARNING: INTERNET_REQUEST
 	$hash = md5(strtolower(trim($identifier)));
-	$icon = Q_Request::baseUrl()."/action.php/Q/image?hash=$hash&size=80&type=".Q_Config::get('Users', 'login', 'iconType', 'wavatar')
+	$icon = Q_Request::baseUrl()."/action.php/Q/image?hash=$hash&size=80&type=".Q_Config::get('Users', 'login', 'iconType', 'wavatar');
 	$json = @file_get_contents("http://www.gravatar.com/$hash.json");
 	$result = json_decode($json, true);
 	if ($result) {

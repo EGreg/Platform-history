@@ -187,7 +187,7 @@ class Users_Mobile extends Base_Users_Mobile
 		 * @param {string} 'user'
 		 * @param {string} 'mobile'
 		 */
-		Q::event('Users/resend', compact('user', 'mobile'), 'before');
+		Q::event('Users/resend', compact('user', 'mobile', 'link'), 'before');
 		$this->save();
 		$fields2 = array_merge($fields, array(
 			'user' => $user,

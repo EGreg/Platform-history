@@ -105,6 +105,7 @@ class Q
 		$errline,
 		$errcontext)
 	{
+		$output = ob_get_clean();
 	    if (!(error_reporting() & $errno)) {
 	        // This error code is not included in error_reporting
 			// just continue on with execution, if possible.
@@ -126,7 +127,7 @@ class Q
 				 * @param {array} 'errcontext'
 				 */
 				self::event('Q/error', compact(
-					'errno','errstr','errfile','errline','errcontext'
+					'errno','errstr','errfile','errline','errcontext','output'
 				));
 				break;
 		}

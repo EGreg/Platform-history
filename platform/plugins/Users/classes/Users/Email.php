@@ -193,7 +193,7 @@ class Users_Email extends Base_Users_Email
 		 * @param {string} 'user'
 		 * @param {string} 'email'
 		 */
-		Q::event('Users/resend', compact('user', 'email'), 'before');
+		Q::event('Users/resend', compact('user', 'email', 'link'), 'before');
 		$this->save();
 		$email = $this;
 		$fields2 = array_merge($fields, array(

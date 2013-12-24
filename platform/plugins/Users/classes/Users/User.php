@@ -321,6 +321,8 @@ class Users_User extends Base_Users_User
 		Q::event('Users/addIdentifier', compact('user', 'email'), 'before');
 		$email->save();
 		
+		$link = 'Users/activate?p=1&code='.urlencode($email->activationCode) . '&e='.urlencode($email->address);
+		
 		$this->emailAddressPending = $normalized;
 		$this->save();
 		
@@ -339,7 +341,8 @@ class Users_User extends Base_Users_User
 			'user' => $this,
 			'email' => $email,
 			'app' => Q_Config::expect('Q', 'app'),
-			'baseUrl' => Q_Request::baseUrl()
+			'baseUrl' => Q_Request::baseUrl(),
+			'link' => $link
 		));
 		$email->sendMessage(
 			$activation_emailSubject, 
@@ -353,7 +356,7 @@ class Users_User extends Base_Users_User
 		 * @param {string} 'user'
 		 * @param {string} 'email'
 		 */
-		Q::event('Users/addIdentifier', compact('user', 'email'), 'after');
+		Q::event('Users/addIdentifier', compact('user', 'email', 'link'), 'after');
 	}
 	
 	/**
@@ -502,6 +505,8 @@ class Users_User extends Base_Users_User
 		Q::event('Users/addIdentifier', compact('user', 'mobile'), 'before');
 		$mobile->save();
 		
+		$link = 'Users/activate?p=1&code='.urlencode($mobile->activationCode) . '&m='.urlencode($mobile->number);
+		
 		$this->mobileNumberPending = $normalized;
 		$this->save();
 		
@@ -515,7 +520,8 @@ class Users_User extends Base_Users_User
 			'user' => $this,
 			'mobile' => $mobile,
 			'app' => Q_Config::expect('Q', 'app'),
-			'baseUrl' => Q_Request::baseUrl()
+			'baseUrl' => Q_Request::baseUrl(),
+			'link' => $link
 		));
 		$mobile->sendMessage(
 			$activation_message_view, 
@@ -530,7 +536,7 @@ class Users_User extends Base_Users_User
 		 * @param {string} 'user'
 		 * @param {string} 'mobile'
 		 */
-		Q::event('Users/addIdentifier', compact('user', 'mobile'), 'after');
+		Q::event('Users/addIdentifier', compact('user', 'mobile', 'link'), 'after');
 	}
 	
 	/**
