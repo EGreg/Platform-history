@@ -1353,7 +1353,7 @@ body { text-align: center; height: 100%; }
 #notices_slot { position: relative; text-align: center; margin: auto; padding: 0px 0px 5px 0px; overflow: hidden; z-index: 5000; }
 #notices { margin: auto; }
 #notices_slot div.container { overflow: none; overflow-y: auto; }
-#notices_slot ul { list-style-type: none; padding: 0px; margin: auto; width: 700px; border: solid 1px #555; border-top: solid 1px #aaa; box-shadow: 0 0 5px #222; -moz-box-shadow: 0 0 5px #222; -webkit-box-shadow: 0 0 5px #222; }
+#notices_slot ul { list-style-type: none; padding: 0px; margin: auto; width: 700px; max-width: 100%; border: solid 1px #555; border-top: solid 1px #aaa; box-shadow: 0 0 5px #222; -moz-box-shadow: 0 0 5px #222; -webkit-box-shadow: 0 0 5px #222; }
 #notices_slot li { list-style-type: none; padding: 0px; margin: 0px; text-align: center; background: #ffd4aa; border: 0px; border-bottom: solid 1px #aaa; line-height: 30px; min-height: 30px; }
 
 #notices_slot ul.pie_errors * { background-color: #ebb; color: #500; }
@@ -1486,6 +1486,7 @@ button:focus:disabled,
 .Q_button:focus:disabled { cursor: default; background: -moz-linear-gradient(top,  #AAA,  #888); }
 button.basic16 { background-color: #eee; color: black; }
 .Q_notTouchscreen button.basic16:active { background-color: #ccc; color: black; }
+
 #notices_slot button
 {
 	display: inline-block;
@@ -1503,6 +1504,67 @@ button.basic16 { background-color: #eee; color: black; }
 	box-shadow: none;
 }
 .Q_button { padding: 0.4em 1em 0.4em 1em; }
+
+#notices_slot {
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 2000;
+	width: 100%;
+	padding: 0;
+	display: none;
+}
+
+#notices_slot button
+{
+	border: none;
+}
+
+#notices_slot ul li span {
+	font-size: 12px;
+	line-height: 26px;
+}
+
+#notices_slot ul li * {
+	vertical-align: middle;
+}
+
+#notices_slot ul li .Q_common_notice {
+	display: inline-block;
+}
+
+#notices_slot ul li .Q_error_notice {
+	color: #700;
+}
+
+#notices_slot ul .Q_hidden_notice {
+	display: none;
+}
+
+#notices_slot ul li .Q_more_notices {
+	margin-left: 5px;
+}
+
+#notices_slot ul li .Q_more_notices span {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	line-height: 14px;
+	text-align: center;
+	color: #FFFFE5;
+	font-weight: bold;
+	background: url('../img/ui/circle_trans_small.png') no-repeat;
+}
+
+#notices_slot ul li .Q_close {
+	display: inline-block;
+	width: 26px;
+	height: 26px;
+	cursor: pointer;
+	background: url('../img/icons/basic16.png') 5px -477px no-repeat;
+	-webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+	float: right;
+}
 
 /* tooltips */
 

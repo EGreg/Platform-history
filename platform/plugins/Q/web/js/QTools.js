@@ -2172,6 +2172,7 @@ Q.Contextual = {
 		};
 		
 		contextual = $(contextual);
+		contextual.appendTo('body');
 		trigger = $(trigger);
 		if (coords)
 		{
