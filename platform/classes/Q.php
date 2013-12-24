@@ -113,6 +113,9 @@ class Q
 	        return;
 	    }
 		switch ($errno) {
+			case E_WARNING:
+			case E_NOTICE:
+			case E_USER_WARNING:
 			case E_USER_NOTICE:
 				Q::log($errstr);
 				break;

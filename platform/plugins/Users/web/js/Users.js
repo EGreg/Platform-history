@@ -1162,9 +1162,15 @@ function login_setupDialog(usingProviders, perms, dialogContainer, identifierTyp
 
 	step1_form.validator();
 	var step1_usingProviders_div = $('<div id="Users_login_usingProviders" />');
+	var providerCount = 0;
 	for (var i = 0; i < usingProviders.length; ++i) {
 		switch (usingProviders[i]) {
 			case 'facebook':
+				if (!Q.plugins.Users.facebookApps[Q.info.app]
+				|| !Q.plugins.Users.facebookApps[Q.info.app].appId) {
+					break;
+				}
+				++providerCount;
 				var facebookLogin = $('<a href="#login_facebook" id="Users_login_with_facebook" />').append(
 					$('<img alt="login with facebook" />')
 					.attr('src', Q.text.Users.login.facebookSrc || Q.url('plugins/Users/img/facebook-login.png'))
@@ -1202,7 +1208,7 @@ function login_setupDialog(usingProviders, perms, dialogContainer, identifierTyp
 				break;
 		}
 	}
-	if (usingProviders.length > 0) {
+	if (providerCount) {
 		step1_div.append(step1_usingProviders_div);
 	}
 

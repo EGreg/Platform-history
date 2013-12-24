@@ -771,10 +771,6 @@ abstract class Users extends Base_Users
 		
 		$during = 'register';
 		
-		if (empty($username)) {
-			throw new Q_Exception("please enter a username", 'username');
-		}
-		
 		if (Q_Valid::email($identifier, $emailAddress)) {
 			$ui_identifier = $emailAddress; 
 			$key = 'email address';
