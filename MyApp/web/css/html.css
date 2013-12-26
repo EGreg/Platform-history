@@ -3,3 +3,6 @@
 #dashboard h1 { float: left; width: auto; border-right: 1px dotted #444; }
 #dashboard h2 { float: left; }
 #dashboard_user { float: right; }
+
+#Users_avatar_tool { position: relative; }
+#Users_avatar_tool .Users_avatar_icon { position: absolute; left: -50px; top: -5px; }

@@ -9,9 +9,9 @@
 			<a href="#login" class="MyApp_login">log in</a>
 		<?php endif; ?>
 		<div id="dashboard_user_contextual" class="Q_contextual" data-handler="MyApp.userContextual">
-			 <ul class="Q_listing">
+			<ul class="Q_listing">
 				 <li data-action="logout">log out</li>
-			 </ul>
+			</ul>
 		</div>
 	</div>
 </div>

@@ -2217,14 +2217,10 @@ Q.Contextual = {
 	 */
 	calcRelativeCoords: function(trigger, contextual, info)
 	{
-		info.coords.x = trigger.offset().left + ((trigger.outerWidth() - (info.size ? info.size.width : contextual.outerWidth())) / 2);
-		info.coords.y = trigger.offset().top + trigger.outerHeight() / 2;
-		if (Q.info.platform == 'android')
-		{
-			info.coords.y -= document.body.scrollTop;
-		}
-		info.inBottomHalf = info.coords.y > $(window).height() / 2;
-		info.coords.y = info.inBottomHalf ? info.coords.y - trigger.outerHeight() / 2 : info.coords.y + trigger.outerHeight() / 2;
+		info.coords.x = trigger.offset().left + ((trigger.outerWidth() - (info.size ? info.size.width : contextual.outerWidth())) / 2) - document.body.scrollLeft;
+		var y = trigger.offset().top + trigger.outerHeight() / 2 - document.body.scrollTop;
+		info.inBottomHalf = y > $(window).height() / 2;
+		info.coords.y = info.inBottomHalf ? y - trigger.outerHeight() / 2 : y + trigger.outerHeight() / 2;
 	},
 	
 	/**
@@ -2267,7 +2263,7 @@ Q.Contextual = {
 				var col = Q.Contextual.collection;
 				var trigger = null, contextual = null, triggerTarget = null;
 				var event = (Q.info.isTouchscreen ? e.originalEvent.touches[0] : e);
-				var clientX = event.clientX, clientY = event.clientY, offset = null;
+				var px = Q.Pointer.getX(e), py = Q.Pointer.getY(e), offset = null;
 				for (var i = 0; i < col.length; i++)
 				{
 					trigger = col[i].trigger;
@@ -2275,11 +2271,9 @@ Q.Contextual = {
 					{
 						triggerTarget = trigger[0];
 						offset = trigger.offset();
-						if (Q.info.platform == 'android')
-							offset.top -= window.scrollY;
 						contextual = col[i].contextual;
-						if (clientX >= offset.left && clientX <= offset.left + trigger.outerWidth() &&
-								clientY >= offset.top && clientY <= offset.top + trigger.outerHeight() &&
+						if (px >= offset.left && px <= offset.left + trigger.outerWidth() &&
+								py >= offset.top && py <= offset.top + trigger.outerHeight() &&
 								($(e.target).closest(triggerTarget).length))
 						{
 							var current = Q.Contextual.current;
@@ -2364,10 +2358,10 @@ Q.Contextual = {
 					var info = Q.Contextual.collection[Q.Contextual.current].info;
 					
 					var event = (Q.info.isTouchscreen ? e.originalEvent.touches[0] : e);
-					var clientX = event.clientX, clientY = event.clientY;
-					info.startY = info.moveY = event.clientY;
-					if (clientX >= offset.left && clientX <= offset.left + contextual.outerWidth() &&
-							clientY >= offset.top && clientY <= offset.top + contextual.outerHeight())
+					var px = Q.Pointer.getX(event), py = Q.Pointer.getY(event);
+					info.startY = info.moveY = py;
+					if (px >= offset.left && px <= offset.left + contextual.outerWidth() &&
+							py >= offset.top && py <= offset.top + contextual.outerHeight())
 					{
 						info.moveTarget = null;
 						if (event.target.tagName && event.target.tagName.toLowerCase() == 'li')
@@ -2407,9 +2401,9 @@ Q.Contextual = {
 					}
 					
 					var event = (Q.info.isTouchscreen ? e.originalEvent.changedTouches[0] : e);
-					var clientX = event.clientX, clientY = event.clientY;
+					var px = Q.Pointer.getX(event), py = Q.Pointer.getY(event);
 					
-					var newMoveTarget = $(document.elementFromPoint(clientX, clientY));
+					var newMoveTarget = $(document.elementFromPoint(px - document.body.scrollLeft, py - document.body.scrollTop));
 					if (info.moveTarget)
 					{
 						if (info.selectedAtStart)
@@ -2421,8 +2415,8 @@ Q.Contextual = {
 						}
 						else
 						{
-							if (clientX >= conOffset.left && clientX <= conOffset.left + contextual.outerWidth() &&
-									clientY >= conOffset.top && clientY <= conOffset.top + contextual.outerHeight())
+							if (px >= conOffset.left && px <= conOffset.left + contextual.outerWidth() &&
+									py >= conOffset.top && py <= conOffset.top + contextual.outerHeight())
 							{
 								info.inside = true;
 								if (newMoveTarget.length > 0 && newMoveTarget[0].tagName.toLowerCase() == 'li' &&
@@ -2446,10 +2440,10 @@ Q.Contextual = {
 					}
 					
 					if (info.startY === 0)
-						info.startY = clientY;
+						info.startY = py;
 					// this condition is again to fight against strange bug in Chrome (when touchmove coordinate is the same as on touchstart)
-					else if (clientY != info.startY)
-						info.moveY = clientY;
+					else if (py != info.startY)
+						info.moveY = py;
 					
 					// if 'triggerOnHover' is on here we should track (only for desktop) if mouse cursor
 					// is out of bounds of both contextual and its trigger element
@@ -2457,11 +2451,11 @@ Q.Contextual = {
 					if (Q.Contextual.triggerOnHover && !Q.info.isTouchscreen)
 					{
 						if (!(
-									 (clientX >= conOffset.left && clientX <= conOffset.left + contextual.outerWidth() &&
-										clientY >= conOffset.top - (info.inBottomHalf ? 0 : info.arrowHeight) &&
-										clientY <= conOffset.top + contextual.outerHeight() + (info.inBottomHalf ? info.arrowHeight : 0)) ||
-									 (clientX >= triggerOffset.left && clientX <= triggerOffset.left + trigger.outerWidth() &&
-										clientY >= triggerOffset.top && clientY <= triggerOffset.top + trigger.outerHeight())
+									 (px >= conOffset.left && px <= conOffset.left + contextual.outerWidth() &&
+										py >= conOffset.top - (info.inBottomHalf ? 0 : info.arrowHeight) &&
+										py <= conOffset.top + contextual.outerHeight() + (info.inBottomHalf ? info.arrowHeight : 0)) ||
+									 (px >= triggerOffset.left && px <= triggerOffset.left + trigger.outerWidth() &&
+										py >= triggerOffset.top && py <= triggerOffset.top + trigger.outerHeight())
 									)
 								)
 						{
@@ -2493,12 +2487,12 @@ Q.Contextual = {
 					var event = (Q.info.isTouchscreen ? e.originalEvent.changedTouches[0] : e);
 					var target = (info.curScroll == 'iScroll' || info.curScroll == 'touchscroll'
 										 ? event.target : (info.moveTarget ? info.moveTarget[0] : event.target));
-					var clientX = event.clientX, clientY = event.clientY;
+					var px = Q.Pointer.getX(event), py = Q.Pointer.getY(event);
 					
 					// if it was mouseup / touchend on the triggering element, then use it to switch to iScroll instead of $.fn.scroller
 					if (info.curScroll != 'iScroll' && info.curScroll != 'touchscroll' &&
-							clientX >= offset.left && clientX <= offset.left + trigger.outerWidth() &&
-							clientY >= offset.top && clientY <= offset.top + trigger.outerHeight())
+							px >= offset.left && px <= offset.left + trigger.outerWidth() &&
+							py >= offset.top && py <= offset.top + trigger.outerHeight())
 					{
 						if (Q.Contextual.toDismiss)
 						{
@@ -2720,6 +2714,8 @@ Q.Contextual = {
 			contextual.prepend('<div class="Q_contextual_top_arrow" />');
 		var arrow = contextual.find('.Q_contextual_bottom_arrow, .Q_contextual_top_arrow');
 		info.arrowHeight = contextual.find('.Q_contextual_top_arrow, .Q_contextual_bottom_arrow').height();
+		
+		Q.Contextual.calcRelativeCoords(trigger, contextual, info);
 		
 		var x = info.coords.x, y = info.coords.y;
 		if (info.size && info.size.width)
