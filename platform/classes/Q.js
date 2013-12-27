@@ -1657,7 +1657,8 @@ Q.listen = function _Q_listen(options, callback) {
 		return server;
 	}
 	var _express;
-	if (parseInt(express.version) >= 3) {
+	if (express.version === undefined
+	|| parseInt(express.version) >= 3) {
 		_express = express();
 		server = http.createServer(_express);
 	} else {
