@@ -821,7 +821,6 @@ Q.Cache.prototype.each = function _Q_Cache_prototype_clear(args, callback) {
  * @return {mixed}
  */
 Q.Cache.local = function _Q_Cache_local(name) {
-	console.log('a');
 	if (!Q.Cache.local.caches[name]) {
 		Q.Cache.local.caches[name] = new Q.Cache({name: name});
 	}
@@ -1344,8 +1343,7 @@ Q.mixin = function _Q_mixin(A, B) {
 
 	A.prototype.constructors = function _constructors(args) {
 		if (!this.constructor.__mixins) {
-			console.log(this);
-			console.log(this.constructor);
+
 			throw new Error("Q.mixin: mixinObject.constructors() called on something that does not have mixins info");
 		}
 		for (var mixins = this.constructor.__mixins, i = 0, l = mixins.length; i < l; ++i) {
