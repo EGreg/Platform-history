@@ -360,6 +360,7 @@ Streams.listen = function (options) {
 			return next();
 		}
 		var participant, stream, msg, token;
+		var ssid = parsed["Q.socketSessionId"];
 		switch (parsed['Q/method']) {
 			case 'Users/device':
 				if (!(token = parsed.deviceId)) break;
@@ -397,13 +398,13 @@ Streams.listen = function (options) {
 				// inform user's clients about change
 				Streams.emitToUser(uid, 'join', Streams.fillMagicFields(participant));
 				(new Streams.Stream(stream)).incParticipants(/* empty callback*/);
-				Streams.Stream.emit('join', stream, uid);
+				Streams.Stream.emit('join', stream, uid, ssid);
 				break;
 			case 'Streams/Stream/visit':
 				participant = JSON.parse(parsed.participant);
 				stream = JSON.parse(parsed.stream);
 				uid = participant.userId;
-				Streams.Stream.emit('visit', stream, uid);
+				Streams.Stream.emit('visit', stream, uid, ssid);
 				break;
 			case 'Streams/Stream/leave':
 				participant = JSON.parse(parsed.participant);
@@ -421,7 +422,7 @@ Streams.listen = function (options) {
 				// inform user's clients about change
 				Streams.emitToUser(uid, 'leave', Streams.fillMagicFields(participant));
 				(new Streams.Stream(stream)).decParticipants(/* empty callback*/);
-				Streams.Stream.emit('leave', stream, uid);
+				Streams.Stream.emit('leave', stream, uid, ssid);
 				break;
 			case 'Streams/Stream/remove':
 				stream = JSON.parse(parsed.stream);
@@ -434,7 +435,7 @@ Streams.listen = function (options) {
 				}
 				// invalidate cache
 				(new Streams.Stream(stream)).messageParticipants('remove', null, {publisherId: stream.publisherId, name: stream.name});
-				Streams.Stream.emit('remove', stream);
+				Streams.Stream.emit('remove', stream, ssid);
 				break;
 			case 'Streams/Stream/create':
 				stream = JSON.parse(parsed.stream);
@@ -445,7 +446,7 @@ Streams.listen = function (options) {
 						+ '"}'
 					);
 				}
-				Streams.Stream.emit('create', stream);
+				Streams.Stream.emit('create', stream, ssid);
 				// no need to notify anyone
 				break;
 			case 'Streams/Message/post':
@@ -459,7 +460,7 @@ Streams.listen = function (options) {
 						+ '"}'
 					);
 				}
-				Streams.Stream.emit('post', stream, msg.byUserId, msg);
+				Streams.Stream.emit('post', stream, msg.byUserId, msg, ssid);
 				break;
 			case 'Streams/Stream/invite':
 				var userIds, invitingUserId, username, appUrl, label,
@@ -678,12 +679,15 @@ Streams.listen = function (options) {
 		return obj;
 	};
 
-	Streams.Stream.on('post', function (stream, uid, msg) {
+	Streams.Stream.on('post', function (stream, uid, msg, ssid) {
 		msg = Streams.fillMagicFields(msg);
 		if (_messageHandlers[msg.type]) {
 			_messageHandlers[msg.type].call(this, msg);
 		}
 		Streams.Stream.emit('post/'+msg.type, stream, uid, msg);
+		if (ssid) {
+			msg.socketSessionId = ssid;
+		}
 		(new Streams.Stream(stream)).messageParticipants('post', msg.byUserId, msg);
 //		if (stream && !msg.type.match(/^Streams\//)) {// internal messages of Streams plugin
 //			(new Streams.Stream(stream)).incMessages(/* empty callback*/);

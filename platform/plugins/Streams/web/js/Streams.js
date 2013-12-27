@@ -220,7 +220,7 @@ Streams.socketSessionId = function (publisherId, streamName) {
 		publisherId: publisherId,
 		streamName: streamName
 	}));
-	return s ? s.namespace.socket.id : null;
+	return s ? s.namespace.socket.sessionid : null;
 };
 
 /**
@@ -363,6 +363,7 @@ Streams.create = function (fields, callback, related) {
 		publisherId: fields.publisherId,
 		streamName: "" // NOTE: the request is routed to wherever the "" stream would have been hosted
 	});
+ 	fields["Q.socketSessionId"] = Streams.socketSessionId(this.fields.publisherId, this.fields.name);
 	var _r = _retain;
 	Q.req('Streams/stream', slotNames, function Stream_create_response_handler(err, data) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
@@ -776,10 +777,7 @@ Stream.prototype.save = function _Stream_prototype_save (callback) {
 	var slotName = "stream";
 	this.pendingFields.publisherId = this.fields.publisherId;
 	this.pendingFields.streamName = this.fields.name;
-	var socketSessionId = Streams.socketSessionId(this.fields.publisherId, this.fields.name);
-	if (socketSessionId) {
-		this.pendingFields.socketSessionId = socketSessionId;
-	}
+	this.pendingFields["Q.socketSessionId"] = Streams.socketSessionId(this.fields.publisherId, this.fields.name);
 	var baseUrl = Q.baseUrl({
 		publisherId: this.pendingFields.publisherId,
 		streamName: this.pendingFields.name
@@ -1172,7 +1170,7 @@ Streams.relate = function _Streams_relate (publisherId, streamName, relationType
 		"type": relationType,
 		"fromPublisherId": fromPublisherId,
 		"fromStreamName": fromStreamName,
-		"socketSessionId": Streams.socketSessionId(publisherId, streamName)
+		"Q.socketSessionId": Streams.socketSessionId(publisherId, streamName)
 	};
 	// TODO: When we refactor Streams to support multiple hosts,
 	// the client will have to post this request to both hosts if they are different
@@ -1201,7 +1199,7 @@ Streams.unrelate = function _Stream_prototype_unrelate (publisherId, streamName,
 		"type": relationType,
 		"fromPublisherId": fromPublisherId,
 		"fromStreamName": fromStreamName,
-		"socketSessionId": Streams.socketSessionId(publisherId, streamName)
+		"Q.socketSessionId": Streams.socketSessionId(publisherId, streamName)
 	};
 	// TODO: When we refactor Streams to support multiple hosts,
 	// the client will have to post this request to both hosts if they are different
@@ -1289,7 +1287,7 @@ Streams.updateRelation = function(
 		"fromStreamName": fromStreamName,
 		"weight": weight,
 		"adjustWeights": adjustWeights,
-		"socketSessionId": Streams.socketSessionId(toPublisherId, toStreamName)
+		"Q.socketSessionId": Streams.socketSessionId(toPublisherId, toStreamName)
 	};
 	var baseUrl = Q.baseUrl({
 		publisherId: toPublisherId,
@@ -1421,7 +1419,7 @@ Stream.join = function _Stream_join (publisherId, streamName, callback) {
 	var baseUrl = Q.baseUrl({
 		"publisherId": publisherId,
 		"streamName": streamName,
-		"socketSessionId": Streams.socketSessionId(publisherId, streamName)
+		"Q.socketSessionId": Streams.socketSessionId(publisherId, streamName)
 	});
 	Q.req('Streams/join', [slotName], function (err, data) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
@@ -1451,7 +1449,7 @@ Stream.leave = function _Stream_leave (publisherId, streamName, callback) {
 	var fields = {
 		"publisherId": publisherId, 
 		"name": streamName,
-		"socketSessionId": Streams.socketSessionId(publisherId, streamName)
+		"Q.socketSessionId": Streams.socketSessionId(publisherId, streamName)
 	};
 	var baseUrl = Q.baseUrl({
 		publisherId: publisherId,
@@ -1579,7 +1577,7 @@ Message.post = function _Message_post (msg, callback) {
 		publisherId: msg.publisherId,
 		streamName: msg.streamName
 	});
-	msg.socketSessionId = Streams.socketSessionId(msg.publisherId, msg.streamName);
+	msg["Q.socketSessionId"] = Streams.socketSessionId(msg.publisherId, msg.streamName);
 	Q.req('Streams/message', [slotName], function (err, data) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
 		if (msg) {

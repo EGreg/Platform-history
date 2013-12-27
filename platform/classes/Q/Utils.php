@@ -578,6 +578,7 @@ class Q_Utils
 	
 	/**
 	 * Sends asynchronous internal message to Node.js
+	 *  If "Q.socketSessionId" is in $_REQUEST, adds it into the data
 	 * @method sendToNode
 	 * @static
 	 * @param {array} $data Associative array of data of the message to send.
@@ -591,6 +592,11 @@ class Q_Utils
 		}
 		if (empty($data['Q/method'])) {
 			throw new Q_Exception_RequiredField(array('field' => 'Q/method'));
+		}
+		
+		$ssid = Q_Request::special('socketSessionId', null);
+		if (isset($ssid)) {
+			$data['Q.socketSessionId'] = $ssid;
 		}
 
 		// The following hook may modify the url

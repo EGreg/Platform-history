@@ -3930,6 +3930,7 @@ Q.serializeFields = function _Q_serializeFields(fields) {
 		}
 	}
 	function _add(key, value) {
+		if (value === undefined) return;
 		// If value is a function, invoke it and return its value
 		value = Q.typeOf(value) === "function" ? value() : value;
 		parts.push(encodeURIComponent(key) + "=" + encodeURIComponent(value));

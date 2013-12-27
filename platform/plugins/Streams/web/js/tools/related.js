@@ -180,7 +180,7 @@ function _Streams_related_tool (options)
         }
         function onChangedRelations(msg, fields) {
             var isCategory = tool.state.isCategory;
-			if (msg.ordinal !== tool.state.lastMessageOrdinal + 1) {
+			if (msg.socketSessionId != Q.Streams.socketSessionId(msg.publisherId, msg.streamName)) {
 				// TODO: REPLACE THIS WITH AN ANIMATED UPDATE BY LOOKING AT THE ARRAYS entering, exiting, updating
             	tool.refresh();
 			}
