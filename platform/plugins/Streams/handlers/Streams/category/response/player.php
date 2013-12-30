@@ -45,7 +45,7 @@ function Streams_category_response_player () {
 		$publisherId, 
 		$name, 
 		true,
-		array('prefix' => $prefix, 'skip_access' => true)
+		array('prefix' => $prefix, 'skipAccess' => true)
 	);
 
 	Q::view("Stream/$type/category.php", compact('relations', 'streams', 'userId'));

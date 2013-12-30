@@ -179,10 +179,15 @@ function _Streams_related_tool (options)
 			tool.state.lastMessageOrdinal = result.stream.fields.messageCount;
         }
         function onChangedRelations(msg, fields) {
+			// TODO: REPLACE THIS WITH AN ANIMATED UPDATE BY LOOKING AT THE ARRAYS entering, exiting, updating
             var isCategory = tool.state.isCategory;
-			if (msg.socketSessionId != Q.Streams.socketSessionId(msg.publisherId, msg.streamName)) {
-				// TODO: REPLACE THIS WITH AN ANIMATED UPDATE BY LOOKING AT THE ARRAYS entering, exiting, updating
+			if (!Q.Users.loggedInUser
+			|| msg.byUserId != Q.Users.loggedInUser.id
+			|| msg.byClientId != Q.clientId()
+			|| msg.ordinal !== tool.state.lastMessageOrdinal + 1) {
             	tool.refresh();
+			} else {
+				tool.refresh(); // TODO: make the weights of the items in between update in the client
 			}
 			tool.state.lastMessageOrdinal = msg.ordinal;
         }

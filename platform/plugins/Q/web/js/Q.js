@@ -3371,6 +3371,29 @@ Q.layout = function _Q_layout(element) {
 	Q.trigger('onLayout', element || document.body, []);
 };
 
+Q.clientId = function () {
+	if (!Q.clientId.value) {
+		var info = Q.Browser.detect();
+		Q.clientId.value = (info.device || "desktop").substr(0, 4)
+			+ "\t" + info.OS.substr(0, 3)
+			+ "\t" + info.name.substr(0, 3)
+			+ "\t" + info.mainVersion + (info.isWebView ? "n" : "w")
+			+ "\t" + Math.floor(Date.now()/1000).toString(36)
+	}
+	return Q.clientId.value;
+};
+
+/**
+ * Call this function to get an rfc4122 version 4 compliant id for the current client
+ * TODO: consider replacing with https://github.com/broofa/node-uuid/blob/master/uuid.js
+ */
+Q.uuid = function () {
+	return Q.uuid.value = Q.uuid.value || 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+	    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+	    return v.toString(16);
+	});
+};
+
 /**
  * Returns whether Q.ready() has been called
  * @method isReady

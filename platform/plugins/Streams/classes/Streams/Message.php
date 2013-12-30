@@ -48,7 +48,7 @@ class Streams_Message extends Base_Streams_Message
 	 * @param {array} $information
 	 *  The fields of the message. Also may include 'streamNames' field which is an array of additional
 	 *  names of the streams to post message to.
-	 * @param {booleam} $skip_access=false
+	 * @param {booleam} $skipAccess=false
 	 *  If true, skips the access checks and just posts the message.
 	 * @param {array} $streams=null
 	 *  Pass an array of Streams_Stream objects here to skip having to fetch them again.
@@ -63,13 +63,17 @@ class Streams_Message extends Base_Streams_Message
 		$publisherId,
 		$streamName,
 		$information,
-		$skip_access=false,
+		$skipAccess=false,
 		$streams = null)
 	{
 		$type = Q::ifset($information, 'type', 'text/small');
 		$content = Q::ifset($information, 'content', '');
 		$instructions = Q::ifset($information, 'instructions', '');
 		$weight = Q::ifset($information, 'weight', 1);
+		
+		if (!isset($information['byClientId'])) {
+			$information['byClientId'] = Q_Request::special('clientId', '');
+		}
 		
 		if (is_array($instructions)) {
 			$instructions = Q::json_encode($instructions);
@@ -111,7 +115,7 @@ class Streams_Message extends Base_Streams_Message
 			}
 		}
 		foreach ($streams as $stream) {
-			if (!$skip_access
+			if (!$skipAccess
 			and $asUserId != $publisherId
 			and !$stream->testWriteLevel('post')) {
 				throw new Users_Exception_NotAuthorized();
@@ -122,6 +126,7 @@ class Streams_Message extends Base_Streams_Message
 			$message->streamName = $stream->name;
 			$message->sentTime = new Db_Expression("CURRENT_TIMESTAMP");
 			$message->byUserId = $asUserId;
+			$message->byClientId = $information['byClientId'];
 			$message->type = $type;
 			$message->content = $content;
 			$message->instructions = $instructions;

@@ -163,11 +163,12 @@ Streams.WRITE_LEVEL = {
 	'none':			0,		// cannot affect stream or participants list
 	'join':			10,		// can become a participant, chat, and leave
 	'vote':         13,		// can vote for a relation message posted to the stream
-	'postPending':	15,		// can post messages, but manager must approve
-	'post':			20,		// can post messages which appear immediately
-	'relate':       23,		// can post messages relating other streams to this one
-	'suggest':	25,		// can post messages requesting edits of stream
-	'edit':			30,		// can post messages to edit stream content immediately
+	'postPending':	18,		// can post messages which require manager's approval
+	'post':			20,		// can post messages which take effect immediately
+	'relate':       23,		// can relate other streams to this one
+	'relations':    25,		// can update properties of relations directly
+	'suggest':      28,		// can suggest edits of stream
+	'edit':			30,		// can edit stream content immediately
 	'closePending':	35,		// can post a message requesting to close the stream
 	'close':		40		// don't delete, just prevent any new changes to stream
 							// however, joining and leaving is still ok
@@ -360,7 +361,7 @@ Streams.listen = function (options) {
 			return next();
 		}
 		var participant, stream, msg, token;
-		var ssid = parsed["Q.socketSessionId"];
+		var ssid = parsed["Q.clientId"];
 		switch (parsed['Q/method']) {
 			case 'Users/device':
 				if (!(token = parsed.deviceId)) break;
@@ -685,9 +686,6 @@ Streams.listen = function (options) {
 			_messageHandlers[msg.type].call(this, msg);
 		}
 		Streams.Stream.emit('post/'+msg.type, stream, uid, msg);
-		if (ssid) {
-			msg.socketSessionId = ssid;
-		}
 		(new Streams.Stream(stream)).messageParticipants('post', msg.byUserId, msg);
 //		if (stream && !msg.type.match(/^Streams\//)) {// internal messages of Streams plugin
 //			(new Streams.Stream(stream)).incMessages(/* empty callback*/);

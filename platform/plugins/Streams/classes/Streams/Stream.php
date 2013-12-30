@@ -772,7 +772,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 * @param {array} $information
 	 *  The fields of the message. Also may include 'streamNames' field which is an array of additional
 	 *  names of the streams to post message to.
-	 * @param {booleam} $skip_access=false
+	 * @param {booleam} $skipAccess=false
 	 *  If true, skips the access checks and just posts the message.
 	 * @param $options=array() {array}
 	 * @return {array}
@@ -781,14 +781,14 @@ class Streams_Stream extends Base_Streams_Stream
 	function post(
 		$asUserId,
 		$information,
-		$skip_access=false)
+		$skipAccess=false)
 	{
 		return Streams_Message::post(
 			$asUserId,
 			$this->publisherId,
 			$this->name,
 			$information,
-			$skip_access,
+			$skipAccess,
 			array($this)
 		);
 	}

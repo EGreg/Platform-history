@@ -144,11 +144,12 @@ abstract class Streams extends Base_Streams
 		'none' => 0,						// cannot affect stream or participants list
 		'join' => 10,						// can become a participant, chat, and leave
 		'vote' => 13,						// can vote for a relation message posted to the stream
-		'postPending' => 15,				// can post messages, but manager must approve
-		'post' => 20,						// can post messages which appear immediately
-		'relate' => 23,						// can post messages relating other streams to this one
-		'suggest' => 25,				// can post messages requesting edits of stream
-		'edit' => 30,						// can post messages to edit stream content immediately
+		'postPending' => 18,				// can post messages which require manager's approval
+		'post' => 20,						// can post messages which take effect immediately
+		'relate' => 23,						// can relate other streams to this one and vote for weights
+		'relations' => 25,					// can update properties of relations directly
+		'suggest' => 28,					// can suggest edits of stream
+		'edit' => 30,						// can edit stream content immediately
 		'closePending' => 35,				// can post a message requesting to close the stream
 		'close' => 40						// don't delete, just prevent any new changes to stream
 											// however, joining and leaving is still ok
@@ -1352,7 +1353,7 @@ abstract class Streams extends Base_Streams
 	 *  The name of the member stream(s)
 	 * @param {array} $options=array()
 	 *  An array of options that can include:
-	 *  "skip_access" => Defaults to false. If true, skips the access checks and just relates the stream to the category
+	 *  "skipAccess" => Defaults to false. If true, skips the access checks and just relates the stream to the category
 	 * @param {&Streams_RelatedTo} $relatedTo
 	 * @param {&Streams_RelatedFrom} $relatedFrom
 	 */
@@ -1379,7 +1380,7 @@ abstract class Streams extends Base_Streams
 			throw new Q_Exception("Category not found", compact('toPublisherId', 'toStreamName'));
 		}
 
-		if (empty($options['skip_access'])) {
+		if (empty($options['skipAccess'])) {
 			if (!$category->testWriteLevel('relate')) {
 				throw new Users_Exception_NotAuthorized();
 			}
@@ -1426,7 +1427,7 @@ abstract class Streams extends Base_Streams
 	 *  The name of the member stream
 	 * @param {array} $options=array()
 	 *  An array of options that can include:
-	 *  "skip_access" => Defaults to false. If true, skips the access checks and just relates the stream to the category
+	 *  "skipAccess" => Defaults to false. If true, skips the access checks and just relates the stream to the category
 	 *  "weight" => Pass a numeric value here, or something like "max+1" to make the weight 1 greater than the current MAX(weight)
 	 * @return array|boolean
 	 *  Returns false if the operation was canceled by a hook
@@ -1574,7 +1575,7 @@ abstract class Streams extends Base_Streams
 	 *  The name of the member stream
 	 * @param {array} $options=array()
 	 *  An array of options that can include:
-	 *  "skip_access" => Defaults to false. If true, skips the access checks and just relates the stream to the category
+	 *  "skipAccess" => Defaults to false. If true, skips the access checks and just relates the stream to the category
 	 * @return boolean
 	 *  Whether the relation was removed
 	 */
@@ -1816,7 +1817,7 @@ abstract class Streams extends Base_Streams
 	 *  The amount to move the other weights by, to make room for this one
 	 * @param {array} $options=array()
 	 *  An array of options that can include:
-	 *  "skip_access" => Defaults to false. If true, skips the access checks and just updates the weight on the relation
+	 *  "skipAccess" => Defaults to false. If true, skips the access checks and just updates the weight on the relation
 	 * @return array|boolean
 	 *  Returns false if the operation was canceled by a hook
 	 *  Otherwise returns array with key "to" and value of type Streams_Message
@@ -1857,6 +1858,12 @@ abstract class Streams extends Base_Streams
 //				array('publisherId', 'name', 'type', 'fromPublisherId', 'from_name')
 //			);
 //		}
+		
+		if (empty($options['skipAccess'])) {
+			if (!$category->testWriteLevel('relations')) {
+				throw new Users_Exception_NotAuthorized();
+			}
+		}
 		
 		/**
 		 * @event Streams/updateRelation/$streamType {before}

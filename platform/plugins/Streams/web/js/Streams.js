@@ -58,11 +58,12 @@ Streams.WRITE_LEVEL = {
 	'none':			0,		// cannot affect stream or participants list
 	'join':			10,		// can become a participant, chat, and leave
 	'vote':         13,		// can vote for a relation message posted to the stream
-	'postPending':	15,		// can post messages, but manager must approve
-	'post':			20,		// can post messages which appear immediately
-	'relate':       23,		// can post messages relating other streams to this one
-	'suggest':	25,		// can post messages requesting edits of stream
-	'edit':			30,		// can post messages to edit stream content immediately
+	'postPending':	18,		// can post messages which require manager's approval
+	'post':			20,		// can post messages which take effect immediately
+	'relate':       23,		// can relate other streams to this one
+	'relations':    25,		// can update properties of relations directly
+	'suggest':      28,		// can suggest edits of stream
+	'edit':			30,		// can edit stream content immediately
 	'closePending':	35,		// can post a message requesting to close the stream
 	'close':		40		// don't delete, just prevent any new changes to stream
 							// however, joining and leaving is still ok
@@ -363,7 +364,7 @@ Streams.create = function (fields, callback, related) {
 		publisherId: fields.publisherId,
 		streamName: "" // NOTE: the request is routed to wherever the "" stream would have been hosted
 	});
- 	fields["Q.socketSessionId"] = Streams.socketSessionId(this.fields.publisherId, this.fields.name);
+ 	fields["Q.clientId"] = Q.clientId();
 	var _r = _retain;
 	Q.req('Streams/stream', slotNames, function Stream_create_response_handler(err, data) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
@@ -777,7 +778,7 @@ Stream.prototype.save = function _Stream_prototype_save (callback) {
 	var slotName = "stream";
 	this.pendingFields.publisherId = this.fields.publisherId;
 	this.pendingFields.streamName = this.fields.name;
-	this.pendingFields["Q.socketSessionId"] = Streams.socketSessionId(this.fields.publisherId, this.fields.name);
+	this.pendingFields["Q.clientId"] = Q.clientId();
 	var baseUrl = Q.baseUrl({
 		publisherId: this.pendingFields.publisherId,
 		streamName: this.pendingFields.name
@@ -1170,7 +1171,7 @@ Streams.relate = function _Streams_relate (publisherId, streamName, relationType
 		"type": relationType,
 		"fromPublisherId": fromPublisherId,
 		"fromStreamName": fromStreamName,
-		"Q.socketSessionId": Streams.socketSessionId(publisherId, streamName)
+		"Q.clientId": Q.clientId()
 	};
 	// TODO: When we refactor Streams to support multiple hosts,
 	// the client will have to post this request to both hosts if they are different
@@ -1199,7 +1200,7 @@ Streams.unrelate = function _Stream_prototype_unrelate (publisherId, streamName,
 		"type": relationType,
 		"fromPublisherId": fromPublisherId,
 		"fromStreamName": fromStreamName,
-		"Q.socketSessionId": Streams.socketSessionId(publisherId, streamName)
+		"Q.clientId": Q.clientId()
 	};
 	// TODO: When we refactor Streams to support multiple hosts,
 	// the client will have to post this request to both hosts if they are different
@@ -1287,7 +1288,7 @@ Streams.updateRelation = function(
 		"fromStreamName": fromStreamName,
 		"weight": weight,
 		"adjustWeights": adjustWeights,
-		"Q.socketSessionId": Streams.socketSessionId(toPublisherId, toStreamName)
+		"Q.clientId": Q.clientId()
 	};
 	var baseUrl = Q.baseUrl({
 		publisherId: toPublisherId,
@@ -1419,7 +1420,7 @@ Stream.join = function _Stream_join (publisherId, streamName, callback) {
 	var baseUrl = Q.baseUrl({
 		"publisherId": publisherId,
 		"streamName": streamName,
-		"Q.socketSessionId": Streams.socketSessionId(publisherId, streamName)
+		"Q.clientId": Q.clientId()
 	});
 	Q.req('Streams/join', [slotName], function (err, data) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
@@ -1449,7 +1450,7 @@ Stream.leave = function _Stream_leave (publisherId, streamName, callback) {
 	var fields = {
 		"publisherId": publisherId, 
 		"name": streamName,
-		"Q.socketSessionId": Streams.socketSessionId(publisherId, streamName)
+		"Q.clientId": Q.clientId()
 	};
 	var baseUrl = Q.baseUrl({
 		publisherId: publisherId,
@@ -1577,7 +1578,7 @@ Message.post = function _Message_post (msg, callback) {
 		publisherId: msg.publisherId,
 		streamName: msg.streamName
 	});
-	msg["Q.socketSessionId"] = Streams.socketSessionId(msg.publisherId, msg.streamName);
+	msg["Q.clientId"] = Q.clientId();
 	Q.req('Streams/message', [slotName], function (err, data) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
 		if (msg) {
