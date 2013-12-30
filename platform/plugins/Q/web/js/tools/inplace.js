@@ -93,7 +93,7 @@ function _Q_inplace_tool_constructor(element, options) {
 	}
 	var editButtons = $('.Q_inplace_tool_editbuttons', $te);
 	editButtons.css({ 
-		'margin-top': container_span.outerHeight() + 'px',
+		'margin-top': static_span.outerHeight() + 'px',
 		'line-height': '1px'
 	});
 	var edit_button = $('button.Q_inplace_tool_edit', $te);
@@ -295,7 +295,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		container_span.mouseover(function() {
 			container_span.addClass('Q_hover');
 			$('.Q_inplace_tool_editbuttons', $te).css({ 
-				'margin-top': container_span.outerHeight() + 'px',
+				'margin-top': static_span.outerHeight() + 'px',
 				'line-height': '1px'
 			});
 		});
