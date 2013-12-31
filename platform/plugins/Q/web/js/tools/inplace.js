@@ -91,8 +91,7 @@ function _Q_inplace_tool_constructor(element, options) {
 	if (!static_span.length) {
 		static_span = $('.Q_inplace_tool_blockstatic', $te);
 	}
-	var editButtons = $('.Q_inplace_tool_editbuttons', $te);
-	editButtons.css({ 
+	$('.Q_inplace_tool_editbuttons', $te).css({ 
 		'margin-top': static_span.outerHeight() + 'px',
 		'line-height': '1px'
 	});

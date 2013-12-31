@@ -576,6 +576,7 @@ Streams.release = function (key) {
  * @param {String} fields More fields that are passed to the API, which can include:
  *  "identifier": Required for now. An email address or mobile number to invite. Might not belong to an existing user yet.
  *  "appUrl": Can be used to override the URL to which the invited user will be redirected and receive "Q.Streams.token" in the querystring.
+ *  "displayName": Optionally override the name to display in the invitation for the inviting user
  * @param {Callable} callback Called with (err, result)
  */
 Streams.invite = function (publisherId, streamName, fields, callback) {

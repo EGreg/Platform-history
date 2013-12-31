@@ -19,6 +19,9 @@
 function Streams_inplace_tool($options)
 {
 	$stream = $options['stream'];
+	if (empty($stream)) {
+		throw new Q_Exception_RequiredField(array('field' => 'stream'));
+	}
 	Q_Response::setToolOptions(array(
 		'publisherId' => $stream->publisherId,
 		'streamName' => $stream->name,

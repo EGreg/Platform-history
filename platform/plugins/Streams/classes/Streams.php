@@ -295,7 +295,13 @@ abstract class Streams extends Base_Streams
 		$fields = '*',
 		$options = array())
 	{
-		if (!isset($asUserId) or !isset($publisherId)) {
+		if (!isset($asUserId)) {
+			$asUserId = "";
+		}
+		if ($asUserId instanceof Users_User) {
+			$asUserId = $asUserId->id;
+		}
+		if (empty($publisherId) or empty($name)) {
 			return null;
 		}
 		$key = is_string($name) ? $name : Q::json_encode($name);
@@ -443,6 +449,9 @@ abstract class Streams extends Base_Streams
 		$streams,
 		$recalculate = false)
 	{
+		if ($asUserId instanceof Users_User) {
+			$asUserId = $asUserId->id;
+		}
 		if ($recalculate) {
 			$streams2 = $streams;
 		} else {

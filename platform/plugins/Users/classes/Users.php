@@ -654,8 +654,8 @@ abstract class Users extends Base_Users
 	 * @method loggedInUser
 	 * @static
 	 * @param {boolean} [$throw_if_not_logged_in=false] Defaults to false.
-	 * Whether to throw a Users_Exception_NotLoggedIn if no user is logged in.
-	 * @return {Users_User}
+	 *   Whether to throw a Users_Exception_NotLoggedIn if no user is logged in.
+	 * @return {Users_User|null}
 	 */
 	static function loggedInUser(
 		$throw_if_not_logged_in = false)
