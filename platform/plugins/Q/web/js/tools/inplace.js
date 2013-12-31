@@ -253,6 +253,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		static_span.html(newval);
 		undermessage.empty().css('display', 'none').addClass('Q_error');
 		container_span.removeClass('Q_editing').removeClass('Q_nocancel');
+		$('.Q_inplace_tool_editbuttons', container_span).css('display', 'none');
 		noCancel = false;
 		Q.handle(tool.state.onSave, tool, [response.slots.Q_inplace]);
 	};
@@ -275,6 +276,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		fieldinput.blur();
 		focusedOn = null;
 		container_span.removeClass('Q_editing');
+		$('.Q_inplace_tool_editbuttons', container_span).css('display', 'none');
 		Q.handle(tool.state.onCancel, tool);
 	};
 	var onBlur = function() {
@@ -295,7 +297,12 @@ function _Q_inplace_tool_constructor(element, options) {
 			container_span.addClass('Q_hover');
 			$('.Q_inplace_tool_editbuttons', $te).css({ 
 				'margin-top': static_span.outerHeight() + 'px',
-				'line-height': '1px'
+				'line-height': '1px',
+				'display': 'inline'
+			});
+		}).mouseout(function () {
+			$('.Q_inplace_tool_editbuttons', $te).css({ 
+				'display': 'none'
 			});
 		});
 	}
