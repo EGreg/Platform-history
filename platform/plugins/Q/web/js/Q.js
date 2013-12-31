@@ -3139,6 +3139,8 @@ Q.ready = function _Q_ready() {
 
 		// Try to add the plugin thing again
 		Q.jQueryPluginPlugin();
+		
+		Q.onDOM.handle.call(window, window.jQuery);
 
 		var body = document.getElementsByTagName('body')[0];
 		Q.activate(body, undefined, function _onReadyActivate() {
@@ -7171,6 +7173,7 @@ Q.onOffline = new Q.Event(function () {
 }, 'Q');
 Q.beforeActivate = new Q.Event();
 Q.onActivate = new Q.Event();
+Q.onDOM = new Q.Event();
 Q.onReady = new Q.Event();
 Q.onJQuery = new Q.Event();
 
@@ -7200,6 +7203,7 @@ Q.onJQuery.add(function ($) {
 	
 	Q.Tool.jQuery({
 		"Q/placeholders": "plugins/Q/js/fn/placeholders.js",
+		"Q/textfill": "plugins/Q/js/fn/textfill.js",
 		"Q/autogrow": "plugins/Q/js/fn/autogrow.js",
 		"Q/columns": "plugins/Q/js/fn/columns.js",
 		"Q/dialog": "plugins/Q/js/fn/dialog.js",
