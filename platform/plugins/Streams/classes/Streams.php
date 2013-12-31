@@ -296,7 +296,7 @@ abstract class Streams extends Base_Streams
 		$options = array())
 	{
 		if (!isset($asUserId)) {
-			$asUserId = "";
+			$asUserId = Users::loggedInUser();
 		}
 		if ($asUserId instanceof Users_User) {
 			$asUserId = $asUserId->id;

@@ -17,7 +17,14 @@ Q.Tool.define("Streams/inplace", function (options) {
 		state.publisherId = stream.fields.publisherId;
 		state.streamName = stream.fields.name;
 
+		Q.Streams.get(state.publisherId, state.streamName, function () {
+			tool.stream = this;
+		});
+
 		function _setContent(content) {
+			Q.Streams.get(state.publisherId, state.streamName, function () {
+				tool.stream = this;
+			});
 			switch (state.inplaceType) {
 				case 'text':
 					tool.$('input').val(content);
@@ -48,46 +55,50 @@ Q.Tool.define("Streams/inplace", function (options) {
 			}, tool);
 		}
 		
-		if (container.length) {
-			return;
-		}
+		if (!container.length) {
+			// dynamically construct the tool
+			var ipo = state.inplace = Q.extend(state.inplace, {
+				action: stream.actionUrl(),
+				method: 'put',
+				field: field,
+				type: state.inplaceType
+			});
+			switch (state.inplaceType) {
+				case 'text':
+					ipo.fieldInput = $('<input />').attr('name', field).val(stream.fields[field]);
+					ipo.staticHtml = stream.fields[field].encodeHTML();
+					break;
+				case 'textarea':
+					ipo.fieldInput = $('<textarea rows="5" cols="80" />').attr('name', field).text(stream.fields[field]);
+					ipo.staticHtml = stream.fields[field].encodeHTML().replaceAll({
+						'&lt;br&gt;': "\n",
+						'&lt;br /&gt;': "\n",
+						'&nbsp;': ' '
+					});
+					break;
+				default:
+					throw "Streams/inplace tool: inplaceType must be 'textarea' or 'text'";
+			}
 
-		var ipo = state.inplace = Q.extend(state.inplace, {
-			action: stream.actionUrl(),
-			method: 'put',
-			field: field,
-			type: state.inplaceType
-		});
-		switch (state.inplaceType) {
-			case 'text':
-				ipo.fieldInput = $('<input />').attr('name', field).val(stream.fields[field]);
-				ipo.staticHtml = stream.fields[field].encodeHTML();
-				break;
-			case 'textarea':
-				ipo.fieldInput = $('<textarea rows="5" cols="80" />').attr('name', field).text(stream.fields[field]);
-				ipo.staticHtml = stream.fields[field].encodeHTML().replaceAll({
-					'&lt;br&gt;': "\n",
-					'&lt;br /&gt;': "\n",
-					'&nbsp;': ' '
-				});
-				break;
-			default:
-				throw "Streams/inplace tool: inplaceType must be 'textarea' or 'text'";
+			if (!stream.testWriteLevel('suggest')) {
+				tool.element.innerHTML = ipo.staticHtml;
+				return; // leave the html that is currently in the element
+			}
+
+			var inplace = tool.setUpElement('div', 'Q/inplace', ipo);
+			tool.element.appendChild(inplace);
 		}
 		
-		if (!stream.testWriteLevel('suggest')) {
-			tool.element.innerHTML = ipo.staticHtml;
-			return; // leave the html that is currently in the element
-		}
-		
-		var inplace = tool.setUpElement('div', 'Q/inplace', ipo);
-		Q.activate(tool.element.appendChild(inplace), function () {
+		// Wire up the events
+		Q.activate(tool.child('Q/inplace'), function () {
 			var inplace = tool.child('Q/inplace');
 			if (!inplace) {
 				return;
 			}
 			inplace.state.onSave.set(function () {
-				state.onUpdate.handle.call(tool);
+				tool.stream.refresh(function () {
+					state.onUpdate.handle.call(tool);
+				}, {messages: true});
 			}, 'Streams/inplace');
 		});
 	}

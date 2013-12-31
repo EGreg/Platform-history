@@ -41,7 +41,8 @@ Q.Tool.define("Streams/image/preview", function(options) {
 	}
 	
 	function _composer () {
-		var fields = Q.extend({}, state.templates.create.fields, {
+		var f = tool.state.template && tool.state.template.fields,
+		fields = Q.extend({}, state.templates.create.fields, f, {
 			src: Q.url('plugins/Streams/img/actions/add.png'),
 			alt: state.creatable.title,
 			title: state.creatable.title
@@ -222,6 +223,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 	throbber: "plugins/Q/img/throbbers/bars32.gif",
 	onCreate: new Q.Event(),
 	onUpdate: new Q.Event(),
+	onRefresh: new Q.Event(),
 	onRemove: new Q.Event(function () {
 		this.$().hide('slow', function () {
 			$(this).remove();
@@ -233,7 +235,11 @@ Q.Tool.define("Streams/image/preview", function(options) {
 	refresh: function (callback) {
 		var tool = this, state = tool.state;
 		
-		Q.Streams.get(state.publisherId, state.streamName, function () {
+		Q.Streams.get(state.publisherId, state.streamName, function (err) {
+			var fee = Q.firstErrorMessage(err);
+			if (fee) {
+				return console.warn("Streams/image/preview: " + fee);
+			}
 			var stream = tool.stream = this;
 			var file = state.showFile
 				|| state.imagepicker.saveSizeName[state.imagepicker.showSize]
@@ -243,6 +249,9 @@ Q.Tool.define("Streams/image/preview", function(options) {
 
 			var jq = tool.$('img.Streams_image_preview_icon');
 			if (jq.length) {
+				jq.off('load.Streams-image-preview').on('load.Streams-image-preview', function () {
+					tool.state.onRefresh.handle.apply(tool, []);
+				});
 				jq.attr('src', Q.Streams.iconUrl(icon, file)+'?'+Date.now());
 				return true;
 			}
@@ -253,7 +262,8 @@ Q.Tool.define("Streams/image/preview", function(options) {
 				field: 'title',
 				inplaceType: 'text'
 			}, state.inplace);
-			var fields = Q.extend({}, state.templates.edit.fields, {
+			var f = tool.state.template && tool.state.template.fields;
+			var fields = Q.extend({}, state.templates.edit.fields, f, {
 				src: Q.Streams.iconUrl(icon, file)+'?'+Date.now(),
 				srcFull: Q.Streams.iconUrl(icon, full)+'?'+Date.now(),
 				alt: stream.fields.title,
@@ -268,6 +278,9 @@ Q.Tool.define("Streams/image/preview", function(options) {
 						return console.warn(err);
 					}
 					tool.element.innerHTML = html;
+					$('img', tool.element).off('load.Streams-image-preview').on('load.Streams-image-preview', function () {
+						tool.state.onRefresh.handle.apply(tool, []);
+					});
 					Q.activate(tool, callback);
 				},
 				state.templates[tpl]

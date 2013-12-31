@@ -1402,7 +1402,8 @@ Q.Event.factory = function (collection, defaults, callback) {
         var args = Array.prototype.slice.call(arguments, 0), a;
         var len = defaults.length;
         var f = typeof(defaults[len-1] === 'function') ? defaults[defaults.length-1] : null;
-        for (var i=args.length; i<len-1; ++i) {
+		if (f) --len;
+        for (var i=args.length; i<len; ++i) {
             args[i] = defaults[i];
         }
         args = (f && f.apply(this, args)) || args;
