@@ -15,18 +15,11 @@
 
 <p>
 	We should remember to put a link so you can set a password and activate your account,
-	<?php echo Q_Html::a(
-		'Users/activate?code='.urlencode($email->activationCode)
-		 . '&e='.urlencode($email->address),
-		'like this'
-	) ?>
+	<?php echo Q_Html::a($link, 'like this') ?>
 </p>
 
 <p style="margin-top: 100px;">
 	And somewhere on the bottom, you'll probably want to place a link to:
-	<?php echo Q_Html::a(
-		'Users/unsubscribe?code='.urlencode($email->authCode)
-		 . '&e='.urlencode($email->address),
-		'unsubscribe'
-	) ?>
+	<?php echo Q_Html::a($unsubscribe, 'unsubscribe') ?>
 </p>
+

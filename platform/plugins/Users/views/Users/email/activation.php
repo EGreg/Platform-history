@@ -20,9 +20,5 @@
 
 <p style="margin-top: 100px;">
 	And somewhere on the bottom, you'll probably want to place a link to:
-	<?php echo Q_Html::a(
-		'Users/unsubscribe?code='.urlencode($email->authCode)
-		 . '&e='.urlencode($email->address),
-		'unsubscribe'
-	) ?>
+	<?php echo Q_Html::a($unsubscribe, 'unsubscribe') ?>
 </p>

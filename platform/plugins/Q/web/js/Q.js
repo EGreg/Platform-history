@@ -3673,10 +3673,12 @@ Q.request = function (url, slotNames, callback, options) {
 					console.warn('Q.request(' + url + ',['+slotNames+']):' + e);
 					return callback({"errors": [e]}, content);
 				}
+				var redirected = false;
 				if (data && data.redirect && data.redirect.url) {
 					o.handleRedirects && o.handleRedirects.call(Q, data.redirect.url);
+					redirected = true;
 				}
-				_callback.call(this, err, data);
+				_callback.call(this, err, data, redirected);
 			};
 		}
 
@@ -4690,8 +4692,7 @@ Q.replace = function _Q_replace(existing, source, options) {
  * See Q.request for more info.
  * Also it is passed to loader function so any additional options can be passed
  */
-Q.loadUrl = function _Q_loadUrl(url, options)
-{
+Q.loadUrl = function _Q_loadUrl(url, options) {
 	var o = Q.extend({}, Q.loadUrl.options, options);
 	Q.handle(o.onLoadStart, this, [o]);
 
@@ -4730,13 +4731,16 @@ Q.loadUrl = function _Q_loadUrl(url, options)
 	}
 	loader(url, slotNames, loadResponse, o);
 
-	function loadResponse(err, response) {
+	function loadResponse(err, response, redirected) {
 		if (!response) {
 			onError("Response is empty", response);
 			return;
 		}   
 		if (response.errors) {
 			onError(response.errors[0].message);
+			return;
+		}
+		if (redirected) {
 			return;
 		}
 		
