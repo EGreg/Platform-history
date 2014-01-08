@@ -5119,7 +5119,8 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 			return count;
 		case 'string':
 			var o = Q.extend({}, Q.handle.options, options);
-			if (!o.target && !callables.isUrl()) {
+			if (!callables.isUrl()
+			&& (!o.target || o.target.toLowerCase() === '_self')) {
 				// Assume this is not a URL.
 				// Try to evaluate the expression, and execute the resulting function
 				var c = Q.getObject(callables, context) || Q.getObject(callables);
@@ -5150,7 +5151,8 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 			}
 			var handled = false;
             var sameDomain = Q.sameDomain(callables, Q.info.baseUrl);
-			if (!o.target && o.loadUsingAjax && sameDomain) {
+			if (o.loadUsingAjax && sameDomain
+			&& (!o.target || o.target === true || o.target === '_self')) {
 				if (callables.search(Q.info.baseUrl) === 0) {
 					// Use AJAX to refresh the page whenever the request is for a local page
 					Q.loadUrl(callables, Q.extend({
