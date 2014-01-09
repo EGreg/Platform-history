@@ -24,16 +24,61 @@ module.exports = Q;
 Q.VERSION = 0.8;
 
 /**
+ * Returns the type of a value
+ * @method typeOf
+ * @param value {mixed} The value to test type
+ * @return {string} String description of the type
+ */
+Q.typeOf = function _Q_typeOf(value) {
+	var s = typeof value, x;
+	if (s === 'object') {
+		if (value === null) {
+			return 'null';
+		}
+		if (value instanceof Array || (value.constructor && value.constructor.name === 'Array')) {
+			s = 'array';
+		} else if (typeof(value.typename) != 'undefined' ) {
+			return value.typename;
+		} else if (typeof(value.constructor) != 'undefined' && typeof(value.constructor.name) != 'undefined') {
+			if (value.constructor.name == 'Object') {
+				return 'object';
+			}
+			return value.constructor.name;
+		} else if ((x = Object.prototype.toString.apply(value).substr(0, 8)) === "[object ") {
+			return x.substring(8, x.length-1);
+		} else {
+			return 'object';
+		}
+	}
+	return s;
+};
+
+/**
+ * Tests if the value is an integer
+ * @method isInteger
+ * @param value {mixed} The value to test
+ * @return {boolean} Whether it is an integer
+ */
+Q.isInteger = function _Q_isInteger(value) {
+	return (parseFloat(value) == parseInt(value)) && !isNaN(value);
+};
+
+/**
  * Walks the tree from the parent, and returns whether the path was defined
  * @method isSet
  * @param {object} parent
  * @param {array} keys
+ * @param delimiter {string} Optional
  * @return {boolean}
  */
-Q.isSet = function _Q_isSet(parent, keys) {
+Q.isSet = function _Q_isSet(parent, keys, delimiter) {
 	var p = parent;
 	if (!p) {
 		return false;
+	}
+	delimiter = delimiter || '.';
+	if (typeof keys === 'string') {
+		keys = keys.split(delimiter);
 	}
 	for (var i=0; i<keys.length; i++) {
 		if (!(keys[i] in p)) {
@@ -50,12 +95,17 @@ Q.isSet = function _Q_isSet(parent, keys) {
  * @param parent {object}
  * @param keys {array}
  * @param defaultValue {mixed}
+ * @param delimiter {string} Optional
  * @return {mixed} The resulting object
  */
-Q.ifSet = function _Q_ifSet(parent, keys, defaultValue) {
+Q.ifSet = function _Q_ifSet(parent, keys, defaultValue, delimiter) {
 	var p = parent;
 	if (!p) {
 		return defaultValue;
+	}
+	delimiter = delimiter || '.';
+	if (typeof keys === 'string') {
+		keys = keys.split(delimiter);
 	}
 	for (var i=0; i<keys.length; i++) {
 		if (!(keys[i] in p)) {
@@ -64,6 +114,95 @@ Q.ifSet = function _Q_ifSet(parent, keys, defaultValue) {
 		p = p[keys[i]];
 	}
 	return p;
+};
+
+function _getProp (/*Array*/parts, /*Boolean*/create, /*Object*/context){
+	var p, i = 0;
+	if (context === null) return undefined;
+	context = context || null;
+	if(!parts.length) return context;
+	while(context && (p = parts[i++]) !== undefined){
+		context = (typeof context === 'object') && (p in context) 
+			? context[p] 
+			: (create ? context[p] = {} : undefined);
+	}
+	return context; // mixed
+};
+
+/**
+ * Extend a property from a delimiter-separated string, such as "A.B.C"
+ * Useful for longer api chains where you have to test each object in
+ * the chain, or when you have an object reference in string format.
+ * Objects are created as needed along `path`.
+ * @param name {String} Path to a property, in the form "A.B.C".
+ * @param value {Object} value or object to place at location given by name
+ * @param [context=window] {Object} Optional. Object to use as root of path.
+ * @param [delimiter='.'] {String} The delimiter to use in the name
+ * @return {Object|undefined} Returns the passed value if setting is successful or `undefined` if not.
+ */
+Q.extendObject = function _Q_extendObject(name, value, context, delimiter){
+    delimiter = delimiter || '.';
+	var parts = name.split(delimiter), p = parts.pop(), obj = _getProp(parts, true, context);
+	if (obj === undefined) {
+		console.warn("Failed to set '"+name+"'");
+		return undefined;
+	} else {
+		// not null && object (maybe array) && value is real object
+		if (obj[p] && typeof obj[p] === "object" && Q.typeOf(value) === "object") {
+			Q.extend(obj[p], value);
+		} else {
+			obj[p] = value;
+		}
+		return value;
+	}
+};
+
+/**
+ * Set an object from a delimiter-separated string, such as "A.B.C"
+ * Useful for longer api chains where you have to test each object in
+ * the chain, or when you have an object reference in string format.
+ * Objects are created as needed along `path`.
+ * Another way to call this function is to pass an object of {name: value} pairs as the first parameter
+ * and context as an optional second parameter. Then the return value is an object of the usual return values.
+ * @param name {String|Array} Path to a property, in the form "A.B.C" or ["A", "B", "C"]
+ * @param value {anything} value or object to place at location given by name
+ * @param [context=window] {Object} Optional. Object to use as root of path.
+ * @param [delimiter='.'] {String} The delimiter to use in the name
+ * @return {Object|undefined} Returns the passed value if setting is successful or `undefined` if not.
+ */
+Q.setObject = function _Q_setObject(name, value, context, delimiter) {
+    delimiter = delimiter || '.';
+	if (Q.isPlainObject(name)) {
+		context = value;
+		var result = {};
+		for (var k in name) {
+			result[k] = Q.setObject(k, name[k], context);
+		}
+		return result;
+	}
+	if (typeof name === 'string') {
+		name = name.split(delimiter);
+	}
+	var p = name.pop(),
+	    obj = _getProp(name, true, context);
+	return obj && (p !== undefined) ? (obj[p] = value) : undefined;
+};
+
+/**
+ * Get a property from a delimiter-separated string, such as "A.B.C"
+ * Useful for longer api chains where you have to test each object in
+ * the chain, or when you have an object reference in string format.
+ * @param name {String|Array} Path to a property, in the form "A.B.C" or ["A", "B", "C"]
+ * @param [context=window] {Object} Optional. Object to use as root of path. Null may be passed.
+ * @param [delimiter='.'] {String} The delimiter to use in the name
+ * @return {Object|undefined} Returns the stored value or `undefined` if nothing is there
+ */
+Q.getObject = function _Q_getObject(name, context, delimiter) {
+    delimiter = delimiter || '.';
+	if (typeof name === 'string') {
+		name = name.split(delimiter);
+	}
+	return _getProp(name, false, context);
 };
 
 /**
@@ -111,46 +250,6 @@ Q.inherit = function _Q_inherit(Base, Constructor) {
 	InheritConstructor.prototype.constructor = InheritConstructor;
 	Q.mixin(InheritConstructor, Constructor);
 	return InheritConstructor;
-};
-
-/**
- * Returns the type of a value
- * @method typeOf
- * @param value {mixed} The value to test type
- * @return {string} String description of the type
- */
-Q.typeOf = function _Q_typeOf(value) {
-	var s = typeof value, x;
-	if (s === 'object') {
-		if (value === null) {
-			return 'null';
-		}
-		if (value instanceof Array || (value.constructor && value.constructor.name === 'Array')) {
-			s = 'array';
-		} else if (typeof(value.typename) != 'undefined' ) {
-			return value.typename;
-		} else if (typeof(value.constructor) != 'undefined' && typeof(value.constructor.name) != 'undefined') {
-			if (value.constructor.name == 'Object') {
-				return 'object';
-			}
-			return value.constructor.name;
-		} else if ((x = Object.prototype.toString.apply(value).substr(0, 8)) === "[object ") {
-			return x.substring(8, x.length-1);
-		} else {
-			return 'object';
-		}
-	}
-	return s;
-};
-
-/**
- * Tests if the value is an integer
- * @method isInteger
- * @param value {mixed} The value to test
- * @return {boolean} Whether it is an integer
- */
-Q.isInteger = function _Q_isInteger(value) {
-	return (parseFloat(value) == parseInt(value)) && !isNaN(value);
 };
 
 /**
@@ -873,6 +972,10 @@ Q.handle = function _Q_handle(callables, context, args) {
 	 default:
 		return 0;
 	}
+};
+
+Q.event = function _Q_event(name, context, args) {
+	return Q.handle(Q.getObject(name, Q.handlers, '/'), context, args);
 };
 
 /**
@@ -2350,95 +2453,6 @@ Q.firstErrorMessage = function _Q_firstErrorMessage(data) {
 	return (typeof error === 'string')
 		? error
 		: (error.message ? error.message : JSON.stringify(error));
-};
-
-function _getProp (/*Array*/parts, /*Boolean*/create, /*Object*/context){
-	var p, i = 0;
-	if (context === null) return undefined;
-	context = context || null;
-	if(!parts.length) return context;
-	while(context && (p = parts[i++]) !== undefined){
-		context = (typeof context === 'object') && (p in context) 
-			? context[p] 
-			: (create ? context[p] = {} : undefined);
-	}
-	return context; // mixed
-};
-
-/**
- * Extend a property from a delimiter-separated string, such as "A.B.C"
- * Useful for longer api chains where you have to test each object in
- * the chain, or when you have an object reference in string format.
- * Objects are created as needed along `path`.
- * @param name {String} Path to a property, in the form "A.B.C".
- * @param value {Object} value or object to place at location given by name
- * @param [context=window] {Object} Optional. Object to use as root of path.
- * @param [delimiter='.'] {String} The delimiter to use in the name
- * @return {Object|undefined} Returns the passed value if setting is successful or `undefined` if not.
- */
-Q.extendObject = function _Q_extendObject(name, value, context, delimiter){
-    delimiter = delimiter || '.';
-	var parts = name.split(delimiter), p = parts.pop(), obj = _getProp(parts, true, context);
-	if (obj === undefined) {
-		console.warn("Failed to set '"+name+"'");
-		return undefined;
-	} else {
-		// not null && object (maybe array) && value is real object
-		if (obj[p] && typeof obj[p] === "object" && Q.typeOf(value) === "object") {
-			Q.extend(obj[p], value);
-		} else {
-			obj[p] = value;
-		}
-		return value;
-	}
-};
-
-/**
- * Set an object from a delimiter-separated string, such as "A.B.C"
- * Useful for longer api chains where you have to test each object in
- * the chain, or when you have an object reference in string format.
- * Objects are created as needed along `path`.
- * Another way to call this function is to pass an object of {name: value} pairs as the first parameter
- * and context as an optional second parameter. Then the return value is an object of the usual return values.
- * @param name {String|Array} Path to a property, in the form "A.B.C" or ["A", "B", "C"]
- * @param value {anything} value or object to place at location given by name
- * @param [context=window] {Object} Optional. Object to use as root of path.
- * @param [delimiter='.'] {String} The delimiter to use in the name
- * @return {Object|undefined} Returns the passed value if setting is successful or `undefined` if not.
- */
-Q.setObject = function _Q_setObject(name, value, context, delimiter) {
-    delimiter = delimiter || '.';
-	if (Q.isPlainObject(name)) {
-		context = value;
-		var result = {};
-		for (var k in name) {
-			result[k] = Q.setObject(k, name[k], context);
-		}
-		return result;
-	}
-	if (typeof name === 'string') {
-		name = name.split(delimiter);
-	}
-	var p = name.pop(),
-	    obj = _getProp(name, true, context);
-	return obj && (p !== undefined) ? (obj[p] = value) : undefined;
-};
-
-/**
- * Get a property from a delimiter-separated string, such as "A.B.C"
- * Useful for longer api chains where you have to test each object in
- * the chain, or when you have an object reference in string format.
- * @param name {String|Array} Path to a property, in the form "A.B.C" or ["A", "B", "C"]
- * @param [context=window] {Object} Optional. Object to use as root of path. Null may be passed.
- * @param [delimiter='.'] {String} The delimiter to use in the name
- * @return {Object|undefined} Returns the stored value or `undefined` if nothing is there
- */
-Q.getObject = function _Q_getObject(name, context, delimiter) {
-    delimiter = delimiter || '.';
-	if (typeof name === 'string') {
-		name = name.split(delimiter);
-	}
-	return _getProp(name, false, context);
 };
 
 /**

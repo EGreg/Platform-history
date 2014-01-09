@@ -7263,7 +7263,8 @@ Q.request.options = {
 	quiet: true,
 	handleRedirects: function (url) {
 		Q.handle(url, {
-			target: '_self'
+			target: '_self',
+			quiet: true
 		});
 	},
 	onLoadStart: new Q.Event(),
