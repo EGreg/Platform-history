@@ -34,23 +34,23 @@ Q.onReady.set(function()
 			Q.Mask.show('Q.cancelMask');
 		};
 		
-		Q.jsonRequest.options.onLoadStart.set(function(o)
+		Q.request.options.onLoadStart.set(function(url, slotNames, o)
 		{
 			if (!o.quiet) {
 				Q.Mask.show('Q.loadDataMask');
 			}
-		}, 'Q.jsonRequest.load.mask');
-		Q.jsonRequest.options.onShowCancel.set(function(callback, o)
+		}, 'Q.request.load.mask');
+		Q.request.options.onShowCancel.set(function(callback, o)
 		{
 			if (!o.quiet) {
 				showCancelMask(callback);
 			}
-		}, 'Q.jsonRequest.load.mask');
-		Q.jsonRequest.options.onLoadEnd.set(function()
+		}, 'Q.request.load.mask');
+		Q.request.options.onLoadEnd.set(function()
 		{
 			Q.Mask.hide('Q.loadDataMask');
 			Q.Mask.hide('Q.cancelMask');
-		}, 'Q.jsonRequest.load.mask');
+		}, 'Q.request.load.mask');
 	}
 	
 	// we really need to remove column=<id> from hash on fresh load
