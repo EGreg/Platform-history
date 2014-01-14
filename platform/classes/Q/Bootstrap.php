@@ -117,7 +117,7 @@ class Q_Bootstrap
 		/**
 		 * @event Q/shutdown {before}
 		 */
-		Q::event('Q/shutdown', array(), 'before');
+		Q::event('Q/shutdown', compact('error'), 'before');
 		Q_Cache::shutdownFunction();
 		if (Q_Session::id()) {
 			session_write_close();

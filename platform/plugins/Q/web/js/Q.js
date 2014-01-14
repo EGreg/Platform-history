@@ -3032,7 +3032,8 @@ Q.init = function _Q_init(options) {
 	Q.addEventListener(window, 'unload', Q.onUnload);
 
 	var checks = ["ready"];
-	if (window.cordova) {
+	if (window.cordova && Q.typeOf(window.cordova).substr(0, 4) !== 'HTML'
+	&& window.device) {
 		checks.push("device");
 	}
 	var p = Q.pipe(checks, 1, function _Q_init_pipe_callback() {
@@ -3683,7 +3684,7 @@ Q.request = function (url, slotNames, callback, options) {
 		}
 
 		function _onStart () {
-			Q.handle(o.onLoadStart, this, [o]);
+			Q.handle(o.onLoadStart, this, [url, slotNames, o]);
 			if (tout !== false) {
 				t.timeout = setTimeout(_onTimeout, tout);
 			}
@@ -3703,7 +3704,7 @@ Q.request = function (url, slotNames, callback, options) {
 			if (t.timeout) {
 				clearTimeout(t.timeout);
 			}
-			Q.handle(o.onLoadEnd, this, [o]);
+			Q.handle(o.onLoadEnd, this, [url, slotNames, o]);
 			if (!t.cancelled) {
 				if (o.onLoad) {
 					o.onLoad(data);
@@ -4694,7 +4695,7 @@ Q.replace = function _Q_replace(existing, source, options) {
  */
 Q.loadUrl = function _Q_loadUrl(url, options) {
 	var o = Q.extend({}, Q.loadUrl.options, options);
-	Q.handle(o.onLoadStart, this, [o]);
+	Q.handle(o.onLoadStart, this, [url, o]);
 
 	var handler = o.handler || Q.loadUrl.defaultHandler;
 	var slotNames = o.slotNames || Q.info.slotNames;
@@ -4758,7 +4759,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 			
 			function _doEvents(prefix, moduleSlashAction) {
 				var event, f = Q[prefix+'PageUnload'];
-				Q.handle(o.onLoadEnd, this, [o]);
+				Q.handle(o.onLoadEnd, this, [url, o]);
 				if (Q.info && Q.info.uri) {
 					event = f("Q\t"+moduleSlashAction);
 					event.handle();
@@ -4939,7 +4940,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 	        });
 			
 			Q.Event.jQueryForPage = [];
-			var domElements = handler(response); // this is where we fill all the slots
+			var domElements = handler(response, url, options); // this is where we fill all the slots
 			_doEvents('on', moduleSlashAction);
 			
             var newStylesheets = loadStylesheets(),
@@ -5031,8 +5032,8 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 
 Q.loadUrl.cachedSlots = {};
 
-Q.loadUrl.defaultHandler = function _Q_loadUrl_fillSlots (res) {
-	var elements = {}, slot, name, elem;
+Q.loadUrl.defaultHandler = function _Q_loadUrl_fillSlots (res, url, options) {
+	var elements = {}, slot, name, elem, pos;
 	for (name in res.slots) {
 		// res.slots will simply not contain the slots that have
 		// already been "cached"
@@ -5041,6 +5042,10 @@ Q.loadUrl.defaultHandler = function _Q_loadUrl_fillSlots (res) {
 		} else if (elem = document.getElementById(name+"_slot")) {
 			try {
 				Q.replace(elem, res.slots[name]);
+				if (pos = Q.getObject(['Q', 'scroll', url], elem)) {
+					elem.scrollLeft = pos.left;
+					elem.scrollTop = pos.top;
+				}
 			} catch (e) {
 				console.warn('slot ' + name + ' could not be filled');
 				console.warn(e);
@@ -5049,6 +5054,23 @@ Q.loadUrl.defaultHandler = function _Q_loadUrl_fillSlots (res) {
 		}
 	}
 	return elements;
+};
+
+Q.loadUrl.saveScroll = function _Q_loadUrl_saveScroll (url, options) {
+	var slotNames = Q.info.slotNames, l, elem, i;
+	if (typeof slotNames === 'string') {
+		slotNames = slotNames.split(',');
+	}
+	l = slotNames.length;
+	for (i=0; i<l; ++i) {
+		if ((elem = document.getElementById(slotNames[i] + "_slot"))
+		&& ('scrollLeft' in elem)) {
+			Q.setObject(['Q', 'scroll', url], {
+				left: elem.scrollLeft,
+				top: elem.scrollTop
+			}, elem);
+		}
+	}
 };
 
 /**
@@ -7253,7 +7275,7 @@ Q.onJQuery.add(function ($) {
 
 Q.loadUrl.options = {
 	quiet: false,
-	onLoadStart: new Q.Event(),
+	onLoadStart: new Q.Event(Q.loadUrl.saveScroll, 'Q'),
 	onLoadEnd: new Q.Event(),
 	onActivate: new Q.Event()
 };
