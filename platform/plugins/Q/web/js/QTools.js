@@ -16,43 +16,7 @@ if (!('utils' in Q.Tools)) {
 }
 
 Q.onReady.set(function()
-{	
-	if (Q.Layout.use)
-	{
-		// we need separate 'cancel mask' because 'cancel' button cannot be contained in
-		// half-transparent mask - it becames transparent itself
-		var showCancelMask = function(callback)
-		{
-			var mask = Q.Mask.get('Q.cancelMask').element;
-			var button = mask.children('.Q_load_cancel_button');
-			if (button.length == 0)
-			{
-				button = $('<button class="Q_load_cancel_button">Cancel</button>');
-				mask.append(button);
-			}
-			button.off(Q.Pointer.end).on(Q.Pointer.end, callback);
-			Q.Mask.show('Q.cancelMask');
-		};
-		
-		Q.request.options.onLoadStart.set(function(url, slotNames, o)
-		{
-			if (!o.quiet) {
-				Q.Mask.show('Q.loadDataMask');
-			}
-		}, 'Q.request.load.mask');
-		Q.request.options.onShowCancel.set(function(callback, o)
-		{
-			if (!o.quiet) {
-				showCancelMask(callback);
-			}
-		}, 'Q.request.load.mask');
-		Q.request.options.onLoadEnd.set(function()
-		{
-			Q.Mask.hide('Q.loadDataMask');
-			Q.Mask.hide('Q.cancelMask');
-		}, 'Q.request.load.mask');
-	}
-	
+{		
 	// we really need to remove column=<id> from hash on fresh load
 	if (location.hash.indexOf('column') != -1)
 	{
@@ -65,6 +29,235 @@ Q.onActivate.set(function()
 {
 	Q.Layout.updateTools(false);
 }, 'QTools');
+
+/**
+ * Class (or namespace, more correct) for setting repeatedly called callbacks, which usually set by setInterval().
+ * Using this class has several benefits:
+ * you may assign memorable key to an interval instead of just integer id and later manage it using this key,
+ * you can pause and resume individual interval or all the intervals,
+ * you can access intervals collection to inspect it, particularly you may find which are currently running and which are not.
+ */
+Q.Interval = {
+
+	/**
+	 * An object for saving all the intervals. You may inspect it to find all the information about an interval.
+	 */
+	collection: {},
+
+	/**
+	 * Sets an interval.
+	 * Syntax is very same to original setInterval()
+	 * @param callback Function
+	 *   Required. Callback to provide to setInterval() which will be called every milliseconds equal to 'interval' parameter.
+	 * @param interval Number
+	 *   Required. A number of milliseconds after which next call of function provided by 'callback' parameter will occur.
+	 * @param key String
+	 *   Optional. A string key for later identifying this interval. May be omitted and then default key with incremented
+	 *   number will be generated.
+	 * @return Number
+	 *   An id of newly created interval which setInterval() returns.
+	 */
+	set: function(callback, interval, key)
+	{
+		if (typeof(callback) != 'function')
+		{
+			throw "Q.Interval.set: 'callback' must be a function";
+		}
+		if (typeof(interval) != 'number' || interval < 0)
+		{
+			throw "Q.Interval.set: 'interval' must be a positive number";
+		}
+		if (key === undefined)
+		{
+			if (!Q.Interval.increment)
+				Q.Interval.increment = 0;
+			key = 'interval_' + (Q.Interval.increment - 1);
+			Q.Interval.increment++;
+		}
+		else if (key in Q.Interval.collection)
+		{
+			return Q.Interval.collection[key].id;
+		}
+		var id = setInterval(callback, interval);
+		Q.Interval.collection[key] = { 'id': id, 'callback': callback, 'interval': interval, 'running': true };
+		return id;
+	},
+
+	/**
+	 * Checks if an interval with given key is already in the collection.
+	 * @param key Number
+	 *   Required. Key of the interval
+	 * @return boolean. True if an interval exists, false otherwise.
+	 */
+	exists: function(key)
+	{
+		return (key in Q.Interval.collection);
+	},
+
+	/**
+	 * Pauses and interval.
+	 * @param keyOrId String or Number
+	 *   A key or id of the interval to pause. Please note that id changes every time interval is resumed,
+	 *   that's why resume() returns new id. And actually using the key is better practice because of that.
+	 */
+	pause: function(keyOrId)
+	{
+		var col = Q.Interval.collection;
+		if (typeof(keyOrId) == 'string')
+		{
+			if (keyOrId in col)
+			{
+				clearInterval(col[keyOrId].id);
+				col[keyOrId].running = false;
+			}
+			else
+			{
+				throw "Q.Interval.set: Interval with key '" + keyOrId + "' doesn't exist";
+			}
+		}
+		else
+		{
+			for (var i in col)
+			{
+				if (keyOrId == col[i].id)
+				{
+					clearInterval(col[i].id);
+					col[keyOrId].running = false;
+					return;
+				}
+			}
+			throw "Q.Interval.set: Interval with id " + keyOrId + " doesn't exist";
+		}
+	},
+
+	/**
+	 * Resumes the paused interval.
+	 * @param keyOrId String or Number
+	 *   A key or id of the interval to resume. Please note that id changes every time interval is resumed,
+	 *   that's why resume() returns new id. And actually using the key is better practice because of that.
+	 *   Also note that it's safe to call resume() on the interval which is not
+	 *   paused - resume() simpy doesn't do anything in this case.
+	 * @return id Number
+	 *   A new id the resumed interval.
+	 */
+	resume: function(keyOrId)
+	{
+		var col = Q.Interval.collection, interval;
+		if (typeof(keyOrId) == 'string')
+		{
+			if (keyOrId in col)
+			{
+				interval = col[keyOrId];
+				if (!interval.running)
+				{
+					interval.id = setInterval(interval.callback, interval.interval);
+					interval.running = true;
+					return interval.id;
+				}
+			}
+			else
+			{
+				throw "Q.Interval.set: Interval with key '" + keyOrId + "' doesn't exist";
+			}
+		}
+		else
+		{
+			for (var i in col)
+			{
+				if (keyOrId == col[i].id)
+				{
+					interval = col[keyOrId];
+					if (!interval.running)
+					{
+						interval.id = setInterval(interval.callback, interval.interval);
+						interval.running = true;
+					}
+					return interval.id;
+				}
+			}
+			throw "Q.Interval.set: Interval with id " + keyOrId + " doesn't exist";
+		}
+	},
+
+	/**
+	 * Clears the interval.
+	 * @param keyOrId String or Number
+	 *   A key or id of the interval to clear.
+	 */
+	clear: function(keyOrId)
+	{
+		var col = Q.Interval.collection;
+		if (typeof(keyOrId) == 'string')
+		{
+			if (keyOrId in col)
+			{
+				clearInterval(col[keyOrId].id);
+				delete col[keyOrId];
+			}
+			else
+			{
+				throw "Q.Interval.set: Interval with key '" + keyOrId + "' doesn't exist";
+			}
+		}
+		else
+		{
+			for (var i in col)
+			{
+				if (keyOrId == col[i].id)
+				{
+					clearInterval(col[i].id);
+					delete col[i];
+					break;
+				}
+			}
+			throw "Q.Interval.set: Interval with id " + keyOrId + " doesn't exist";
+		}
+	},
+
+	/**
+	 * Pauses all the intervals.
+	 */
+	pauseAll: function()
+	{
+		var col = Q.Interval.collection;
+		for (var i in col)
+		{
+			clearInterval(col[i].id);
+			col[i].running = false;
+		}
+	},
+
+	/**
+	 * Resumes all the intervals.
+	 */
+	resumeAll: function()
+	{
+		var col = Q.Interval.collection;
+		for (var i in col)
+		{
+			var interval = col[i];
+			if (!interval.running)
+			{
+				interval.id = setInterval(interval.callback, interval.interval);
+				interval.running = true;
+			}
+		}
+	},
+
+	/**
+	 * Clears all the intervals.
+	 */
+	clearAll: function()
+	{
+		var col = Q.Interval.collection;
+		for (var i in col)
+		{
+			clearInterval(col[i].id);
+		}
+		Q.Interval.collection = {};
+	}
+
+};
 
 /**
  * Class which contains various functions to manage layout of the application.
@@ -448,7 +641,7 @@ Q.Layout = {
 						if (!Q.Layout.focusEventOccured && !Q.Layout.keyboardVisible && Q.Layout.addressBarVisible)
 						{
 							Q.Layout.hideAddressBar(true);
-							Q.Mask.hide('Q.screenMask');
+							Q.Mask.hide('Q.screen.mask');
 							if ($('#main').height() != window.innerHeight)
 								Q.Layout.orientationChange(false, true);
 						}
@@ -882,9 +1075,9 @@ Q.Layout = {
 				Q.Layout.orientationChange(false, true, true);
 		}
 		if (Q.Layout.handleAddressBarAppearing && Q.Layout.heightWithAddressBar < Q.Layout.fullScreenHeight &&
-				window.innerHeight == Q.Layout.heightWithAddressBar && !Q.Mask.isVisible('Q.screenMask'))
+				window.innerHeight == Q.Layout.heightWithAddressBar && !Q.Mask.isVisible('Q.screen.mask'))
 		{
-			Q.Mask.show('Q.screenMask');
+			Q.Mask.show('Q.screen.mask');
 			Q.Layout.addressBarVisible = true;
 		}
 	},
@@ -2749,7 +2942,7 @@ Q.Contextual = {
 		
 		if (Q.info.isTouchscreen)
 		{
-			Q.Mask.show('Q.screenMask', { 'fadeTime': Q.Contextual.fadeTime });
+			Q.Mask.show('Q.screen.mask', { 'fadeTime': Q.Contextual.fadeTime });
 		}
 		
 		if (!info.ellipsissed)
@@ -2792,7 +2985,7 @@ Q.Contextual = {
 				contextual.hide();
 			if (!leaveMask)
 			{
-				Q.Mask.hide('Q.screenMask');
+				Q.Mask.hide('Q.screen.mask');
 			}
 			
 			Q.Contextual.current = -1;
@@ -2950,7 +3143,7 @@ Q.Notices = {
 					
 					if (Q.info.isMobile || Q.info.isTablet)
 					{
-						Q.Mask.show('Q.screenMask', { 'fadeTime': 200, 'className': 'Q_screen_shadow_mask' });
+						Q.Mask.show('Q.screen.mask', { 'fadeTime': 200, 'className': 'Q_screen_shadow_mask' });
 					}
 				};
 				
@@ -2970,7 +3163,7 @@ Q.Notices = {
 					
 					if (Q.info.isMobile || Q.info.isTablet)
 					{
-						Q.Mask.hide('Q.screenMask');
+						Q.Mask.hide('Q.screen.mask');
 					}
 				};
 				
@@ -2981,7 +3174,7 @@ Q.Notices = {
 						if (Q.info.isMobile || Q.info.isTablet)
 						{
 							noticesSlot.bind(Q.Pointer.start, Q.Notices.eventHandlers.expand);
-							Q.Mask.get('Q.screenMask').element.bind(Q.Pointer.start, Q.Notices.eventHandlers.collapse);
+							Q.Mask.get('Q.screen.mask').element.bind(Q.Pointer.start, Q.Notices.eventHandlers.collapse);
 						}
 						else
 						{
@@ -2999,7 +3192,7 @@ Q.Notices = {
 						if (Q.info.isTouchscreen)
 						{
 							noticesSlot.unbind(Q.Pointer.start, Q.Notices.eventHandlers.expand);
-							Q.Mask.get('Q.screenMask').element.unbind(Q.Pointer.start, Q.Notices.eventHandlers.collapse);
+							Q.Mask.get('Q.screen.mask').element.unbind(Q.Pointer.start, Q.Notices.eventHandlers.collapse);
 						}
 						else
 						{
@@ -3166,7 +3359,7 @@ Q.Notices = {
 								Q.Notices.removeCounter();
 								if (Q.info.isTouchscreen)
 								{
-									Q.Mask.hide('Q.screenMask');
+									Q.Mask.hide('Q.screen.mask');
 									Q.Notices.expanded = false;
 								}
 							}

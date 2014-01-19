@@ -215,8 +215,55 @@ String.prototype.trim = String.prototype.trim || function _String_prototype_trim
 	return this.replace(/^\s+|\s+$/g, "");
 };
 
+String.prototype.parseUrl = function _String_prototype_parseUrl (component) {
+	// http://kevin.vanzonneveld.net
+	// modified by N.I for 'php' parse mode
+	var key = ['source', 'scheme', 'authority', 'userInfo', 'user', 'pass', 'host', 'port', 'relative', 'path', 'directory', 'file', 'query', 'fragment'],
+		parser = /^(?:([^:\/?#]+):)?(?:\/\/()(?:(?:()(?:([^:@]*):?([^:@]*))?@)?([^:\/?#]*)(?::(\d*))?))?()(?:(()(?:(?:[^?#\/]*\/)*)()(?:[^?#]*))(?:\?([^#]*))?(?:#(.*))?)/;
+	var m = parser.exec(this), uri = {}, i = 14;
+	while (i--) {
+		if (m[i]) uri[key[i]] = m[i];
+	}
+	if (component) return uri[component.replace('PHP_URL_', '').toLowerCase()];
+	delete uri.source;
+	return uri;
+};
+
+String.prototype.sameDomain = function _String_prototype_sameDomain (url2, options) {
+    var parsed1 = this.parseUrl(),
+        parsed2 = url2.parseUrl();
+    var same = (parsed1.host === parsed2.host)
+        && (parsed1.user === parsed2.user)
+        && (parsed1.pass === parsed2.pass)
+        && (parsed1.port === parsed2.port);
+    return options && options.compareScheme
+        ? same && (parsed1.scheme === parsed2.scheme)
+        : same;
+};
+
+/**
+ * Binds a method to an object, so "this" inside the method
+ * refers to that object when it is called.
+ * @param method
+ *  A reference to the function to call
+ * @param obj
+ *  The object to bind to
+ * @param options
+ *  Optional. If supplied, binds these options and passes
+ *  them during invocation.
+ */
 Function.prototype.bind = Function.prototype.bind || function _Function_prototype_bind(obj, options) {
-	return Q.bind(this, obj, options);
+	var method = this;
+	if (!options) {
+		return function _Q_bind_result() {
+			return method.apply(obj, arguments);
+		};
+	}
+	return function _Q_bind_result_withOptions() {
+		var args = Array.prototype.slice.call(arguments);
+		if (options) args.push(options);
+		return method.apply(obj, args);
+	};
 };
 
 Array.prototype.indexOf = Array.prototype.indexOf || function _Array_prototype_indexOf(searchElement /*, fromIndex */ ) {
@@ -339,13 +386,6 @@ if(!document.getElementsByClassName) {
     };
     Element.prototype.getElementsByClassName = document.getElementsByClassName;
 }
-
-Q.elementFromPoint = function (pageX, pageY) {
-	return document.elementFromPoint(
-		pageX - document.body.scrollLeft - document.documentElement.scrollLeft,
-		pageY - document.body.scrollTop - document.documentElement.scrollTop
-	);
-};
 
 // public methods:
 
@@ -620,29 +660,6 @@ Q.diff = function _Q_diff(container1, container2 /*, ... comparator */) {
 };
 
 /**
- * Walks the tree from the parent, returns the object at the end of the path, or the the defaultValue
- * @method ifSet
- * @param parent {object}
- * @param keys {array}
- * @param defaultValue {mixed}
- * @return {mixed}
- *	The resulting object
- */
-Q.ifSet = function _Q_ifSet(parent, keys, defaultValue) {
-	var p = parent;
-	if (!p) {
-		return defaultValue;
-	}
-	for (var i=0; i<keys.length; i++) {
-		if (!(keys[i] in p)) {
-			return defaultValue;
-		}
-		p = p[keys[i]];
-	}
-	return p;
-};
-
-/**
  * Tests whether a variable contains a falsy value,
  * or an empty object or array.
  * @param o
@@ -887,31 +904,6 @@ Q.microtime = function _Q_microtime(get_as_float) {
 };
 
 /**
- * Binds a method to an object, so "this" inside the method
- * refers to that object when it is called.
- * @param method
- *  A reference to the function to call
- * @param obj
- *  The object to bind to
- * @param options
- *  Optional. If supplied, binds these options and passes
- *  them during invocation.
- */
-Q.bind = function _Q_bind(method, obj, options) {
-	if (options) {
-		return function _Q_bind_result_withOptions() {
-			var args = Array.prototype.slice.call(arguments);
-			if (options) args.push(options);
-			return method.apply(obj, args);
-		};
-	} else {
-		return function _Q_bind_result() {
-			return method.apply(obj, arguments);
-		};
-	}
-};
-
-/**
  * Mixes in one or more classes. Useful for inheritance and multiple inheritance.
  * @param A Function
  *  The constructor corresponding to the "class" we are mixing functionality into
@@ -1120,6 +1112,29 @@ Q.getObject = function _Q_getObject(name, context, delimiter) {
 		name = name.split(delimiter);
 	}
 	return _getProp(name, false, context);
+};
+
+/**
+ * Walks the tree from the parent, returns the object at the end of the path, or the the defaultValue
+ * @method ifSet
+ * @param parent {object}
+ * @param keys {array}
+ * @param defaultValue {mixed}
+ * @return {mixed}
+ *	The resulting object
+ */
+Q.ifSet = function _Q_ifSet(parent, keys, defaultValue) {
+	var p = parent;
+	if (!p) {
+		return defaultValue;
+	}
+	for (var i=0; i<keys.length; i++) {
+		if (!(keys[i] in p)) {
+			return defaultValue;
+		}
+		p = p[keys[i]];
+	}
+	return p;
 };
 
 /**
@@ -3483,6 +3498,24 @@ Q.url.options = {
 };
 
 /**
+ * Get the URL for an action
+ * @param String uri
+ *  A string of the form "Module/action" or an absolute url, which is returned unmodified.
+ * @param {Object} fields
+ *  Optional fields to append to the querystring.
+ *  NOTE: only handles scalar values in the object.
+ * @param Object options
+ *  A hash of options, including:
+ *  'baseUrl': A string to replace the default base url
+ */
+Q.action = function _Q_action(uri, fields, options) {
+	if (uri.isUrl()) {
+		return Q.url(uri, fields);
+	}
+	return Q.url("action.php/"+uri, fields, options);
+};
+
+/**
  * Extends a string or object to be used with AJAX
  * @param what
  *  If a string, then treats it as a URL and
@@ -3559,24 +3592,6 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 		}
 	}
 	return what2;
-};
-
-/**
- * Get the URL for an action
- * @param String uri
- *  A string of the form "Module/action" or an absolute url, which is returned unmodified.
- * @param {Object} fields
- *  Optional fields to append to the querystring.
- *  NOTE: only handles scalar values in the object.
- * @param Object options
- *  A hash of options, including:
- *  'baseUrl': A string to replace the default base url
- */
-Q.action = function _Q_action(uri, fields, options) {
-	if (uri.isUrl()) {
-		return Q.url(uri, fields);
-	}
-	return Q.url("action.php/"+uri, fields, options);
 };
 
 /**
@@ -3815,6 +3830,7 @@ Q.request = function (url, slotNames, callback, options) {
 	}
 };
 
+
 Q.request.callbacks = []; // used by Q.request
 
 /**
@@ -3898,32 +3914,6 @@ Q.ajaxErrors = function _Q_ajaxErrors(errors, fields) {
  *  A hash of options, to be passed to Q.request
  */
 Q.jsonRequest = Q.request;
-
-Q.parseUrl = function _Q_parseUrl (str, component) {
-	// http://kevin.vanzonneveld.net
-	// modified by N.I for 'php' parse mode
-	var key = ['source', 'scheme', 'authority', 'userInfo', 'user', 'pass', 'host', 'port', 'relative', 'path', 'directory', 'file', 'query', 'fragment'],
-		parser = /^(?:([^:\/?#]+):)?(?:\/\/()(?:(?:()(?:([^:@]*):?([^:@]*))?@)?([^:\/?#]*)(?::(\d*))?))?()(?:(()(?:(?:[^?#\/]*\/)*)()(?:[^?#]*))(?:\?([^#]*))?(?:#(.*))?)/;
-	var m = parser.exec(str), uri = {}, i = 14;
-	while (i--) {
-		if (m[i]) uri[key[i]] = m[i];
-	}
-	if (component) return uri[component.replace('PHP_URL_', '').toLowerCase()];
-	delete uri.source;
-	return uri;
-};
-
-Q.sameDomain = function _Q_sameDomain (url1, url2, options) {
-    var parsed1 = Q.parseUrl(url1),
-        parsed2 = Q.parseUrl(url2);
-    var same = (parsed1.host === parsed2.host)
-        && (parsed1.user === parsed2.user)
-        && (parsed1.pass === parsed2.pass)
-        && (parsed1.port === parsed2.port);
-    return options && options.compareScheme
-        ? same && (parsed1.scheme === parsed2.scheme)
-        : same;
-};
 
 /**
  * Serialize an object of fields into a shallow object of key/value pairs
@@ -5172,7 +5162,7 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 				}
 			}
 			var handled = false;
-            var sameDomain = Q.sameDomain(callables, Q.info.baseUrl);
+            var sameDomain = callables.sameDomain(Q.info.baseUrl);
 			if (o.loadUsingAjax && sameDomain
 			&& (!o.target || o.target === true || o.target === '_self')) {
 				if (callables.search(Q.info.baseUrl) === 0) {
@@ -6065,235 +6055,6 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 Q.jQueryPluginPlugin();
 
 /**
- * Class (or namespace, more correct) for setting repeatedly called callbacks, which usually set by setInterval().
- * Using this class has several benefits:
- * you may assign memorable key to an interval instead of just integer id and later manage it using this key,
- * you can pause and resume individual interval or all the intervals,
- * you can access intervals collection to inspect it, particularly you may find which are currently running and which are not.
- */
-Q.Interval = {
-
-	/**
-	 * An object for saving all the intervals. You may inspect it to find all the information about an interval.
-	 */
-	collection: {},
-
-	/**
-	 * Sets an interval.
-	 * Syntax is very same to original setInterval()
-	 * @param callback Function
-	 *   Required. Callback to provide to setInterval() which will be called every milliseconds equal to 'interval' parameter.
-	 * @param interval Number
-	 *   Required. A number of milliseconds after which next call of function provided by 'callback' parameter will occur.
-	 * @param key String
-	 *   Optional. A string key for later identifying this interval. May be omitted and then default key with incremented
-	 *   number will be generated.
-	 * @return Number
-	 *   An id of newly created interval which setInterval() returns.
-	 */
-	set: function(callback, interval, key)
-	{
-		if (typeof(callback) != 'function')
-		{
-			throw "Q.Interval.set: 'callback' must be a function";
-		}
-		if (typeof(interval) != 'number' || interval < 0)
-		{
-			throw "Q.Interval.set: 'interval' must be a positive number";
-		}
-		if (key === undefined)
-		{
-			if (!Q.Interval.increment)
-				Q.Interval.increment = 0;
-			key = 'interval_' + (Q.Interval.increment - 1);
-			Q.Interval.increment++;
-		}
-		else if (key in Q.Interval.collection)
-		{
-			return Q.Interval.collection[key].id;
-		}
-		var id = setInterval(callback, interval);
-		Q.Interval.collection[key] = { 'id': id, 'callback': callback, 'interval': interval, 'running': true };
-		return id;
-	},
-
-	/**
-	 * Checks if an interval with given key is already in the collection.
-	 * @param key Number
-	 *   Required. Key of the interval
-	 * @return boolean. True if an interval exists, false otherwise.
-	 */
-	exists: function(key)
-	{
-		return (key in Q.Interval.collection);
-	},
-
-	/**
-	 * Pauses and interval.
-	 * @param keyOrId String or Number
-	 *   A key or id of the interval to pause. Please note that id changes every time interval is resumed,
-	 *   that's why resume() returns new id. And actually using the key is better practice because of that.
-	 */
-	pause: function(keyOrId)
-	{
-		var col = Q.Interval.collection;
-		if (typeof(keyOrId) == 'string')
-		{
-			if (keyOrId in col)
-			{
-				clearInterval(col[keyOrId].id);
-				col[keyOrId].running = false;
-			}
-			else
-			{
-				throw "Q.Interval.set: Interval with key '" + keyOrId + "' doesn't exist";
-			}
-		}
-		else
-		{
-			for (var i in col)
-			{
-				if (keyOrId == col[i].id)
-				{
-					clearInterval(col[i].id);
-					col[keyOrId].running = false;
-					return;
-				}
-			}
-			throw "Q.Interval.set: Interval with id " + keyOrId + " doesn't exist";
-		}
-	},
-
-	/**
-	 * Resumes the paused interval.
-	 * @param keyOrId String or Number
-	 *   A key or id of the interval to resume. Please note that id changes every time interval is resumed,
-	 *   that's why resume() returns new id. And actually using the key is better practice because of that.
-	 *   Also note that it's safe to call resume() on the interval which is not
-	 *   paused - resume() simpy doesn't do anything in this case.
-	 * @return id Number
-	 *   A new id the resumed interval.
-	 */
-	resume: function(keyOrId)
-	{
-		var col = Q.Interval.collection, interval;
-		if (typeof(keyOrId) == 'string')
-		{
-			if (keyOrId in col)
-			{
-				interval = col[keyOrId];
-				if (!interval.running)
-				{
-					interval.id = setInterval(interval.callback, interval.interval);
-					interval.running = true;
-					return interval.id;
-				}
-			}
-			else
-			{
-				throw "Q.Interval.set: Interval with key '" + keyOrId + "' doesn't exist";
-			}
-		}
-		else
-		{
-			for (var i in col)
-			{
-				if (keyOrId == col[i].id)
-				{
-					interval = col[keyOrId];
-					if (!interval.running)
-					{
-						interval.id = setInterval(interval.callback, interval.interval);
-						interval.running = true;
-					}
-					return interval.id;
-				}
-			}
-			throw "Q.Interval.set: Interval with id " + keyOrId + " doesn't exist";
-		}
-	},
-
-	/**
-	 * Clears the interval.
-	 * @param keyOrId String or Number
-	 *   A key or id of the interval to clear.
-	 */
-	clear: function(keyOrId)
-	{
-		var col = Q.Interval.collection;
-		if (typeof(keyOrId) == 'string')
-		{
-			if (keyOrId in col)
-			{
-				clearInterval(col[keyOrId].id);
-				delete col[keyOrId];
-			}
-			else
-			{
-				throw "Q.Interval.set: Interval with key '" + keyOrId + "' doesn't exist";
-			}
-		}
-		else
-		{
-			for (var i in col)
-			{
-				if (keyOrId == col[i].id)
-				{
-					clearInterval(col[i].id);
-					delete col[i];
-					break;
-				}
-			}
-			throw "Q.Interval.set: Interval with id " + keyOrId + " doesn't exist";
-		}
-	},
-
-	/**
-	 * Pauses all the intervals.
-	 */
-	pauseAll: function()
-	{
-		var col = Q.Interval.collection;
-		for (var i in col)
-		{
-			clearInterval(col[i].id);
-			col[i].running = false;
-		}
-	},
-
-	/**
-	 * Resumes all the intervals.
-	 */
-	resumeAll: function()
-	{
-		var col = Q.Interval.collection;
-		for (var i in col)
-		{
-			var interval = col[i];
-			if (!interval.running)
-			{
-				interval.id = setInterval(interval.callback, interval.interval);
-				interval.running = true;
-			}
-		}
-	},
-
-	/**
-	 * Clears all the intervals.
-	 */
-	clearAll: function()
-	{
-		var col = Q.Interval.collection;
-		for (var i in col)
-		{
-			clearInterval(col[i].id);
-		}
-		Q.Interval.collection = {};
-	}
-
-};
-
-/**
  * A tool for detecting user browser parameters.
  */
 Q.Browser = {
@@ -6580,6 +6341,12 @@ Q.Pointer = {
 		Q.Pointer.onCancelClick.handle(event, extraInfo);
 		Q.Pointer.canceledClick = true;	
 	},
+	elementFromPoint: function (pageX, pageY) {
+		return document.elementFromPoint(
+			pageX - document.body.scrollLeft - document.documentElement.scrollLeft,
+			pageY - document.body.scrollTop - document.documentElement.scrollTop
+		);
+	},
 	onCancelClick: new Q.Event(),
 	options: {
 		cancelClickDistance: 10
@@ -6743,7 +6510,7 @@ Q.Dialogs = {
 			}
 		}
 		if (this.dialogs.length == 0) {
-			Q.Mask.hide('Q.screenMask');
+			Q.Mask.hide('Q.screen.mask');
 		}
 		return dialog;
 	}
@@ -7110,9 +6877,9 @@ Q.Mask = {
 };
 
 Q.Mask.options = {
-    'Q.screenMask': { 'className': 'Q_screen_mask' },
-    'Q.loadDataMask': { 'className': 'Q_load_data_mask', 'fadeTime': 200 },
-    'Q.cancelMask': { 'className': 'Q_cancel_mask', 'fadeTime': 200 }
+    'Q.screen.mask': { 'className': 'Q_screen_mask' },
+    'Q.request.load.mask': { 'className': 'Q_load_data_mask', 'fadeTime': 200 },
+    'Q.request.cancel.mask': { 'className': 'Q_cancel_mask', 'fadeTime': 200 }
 };
 
 Q.addEventListener(window, Q.Pointer.start, _Q_PointerStartHandler);
@@ -7308,6 +7075,30 @@ Q.activate.onConstruct = new Q.Event(function () {
 Q.activate.onInit = new Q.Event(function () {
 	_initTool.apply(this, arguments);
 }, 'Q.Tool');
+
+Q.onReady.set(function _Q_masks() {	
+	Q.request.options.onLoadStart.set(function(url, slotNames, o) {
+		if (o.quiet) return;
+		Q.Mask.show('Q.request.load.mask');
+	}, 'Q.request.load.mask');
+	Q.request.options.onShowCancel.set(function(callback, o) {
+		if (o.quiet) return;
+		var mask = Q.Mask.get('Q.request.cancel.mask').element;
+		var button = mask.children('.Q_load_cancel_button');
+		if (button.length == 0) {
+			button = document.createElement('button');
+			button.setAttribute('class', 'Q_load_cancel_button');
+			button.innerHTML = 'Cancel';
+			mask.appendChild(button);
+		}
+		button.off(Q.Pointer.end).on(Q.Pointer.end, callback);
+		Q.Mask.show('Q.request.cancel.mask');
+	}, 'Q.request.load.mask');
+	Q.request.options.onLoadEnd.set(function() {
+		Q.Mask.hide('Q.request.load.mask');
+		Q.Mask.hide('Q.request.cancel.mask');
+	}, 'Q.request.load.mask');
+}, 'Q.masks');
 
 if (typeof module !== 'undefined') {
 	// Assume we are in a Node.js environment, e.g. running tests

@@ -89,33 +89,6 @@ Q.isSet = function _Q_isSet(parent, keys, delimiter) {
 	return true;
 };
 
-/**
- * Walks the tree from the parent, returns the object at the end of the path, or the the defaultValue
- * @method ifSet
- * @param parent {object}
- * @param keys {array}
- * @param defaultValue {mixed}
- * @param delimiter {string} Optional
- * @return {mixed} The resulting object
- */
-Q.ifSet = function _Q_ifSet(parent, keys, defaultValue, delimiter) {
-	var p = parent;
-	if (!p) {
-		return defaultValue;
-	}
-	delimiter = delimiter || '.';
-	if (typeof keys === 'string') {
-		keys = keys.split(delimiter);
-	}
-	for (var i=0; i<keys.length; i++) {
-		if (!(keys[i] in p)) {
-			return defaultValue;
-		}
-		p = p[keys[i]];
-	}
-	return p;
-};
-
 function _getProp (/*Array*/parts, /*Boolean*/create, /*Object*/context){
 	var p, i = 0;
 	if (context === null) return undefined;
@@ -206,6 +179,33 @@ Q.getObject = function _Q_getObject(name, context, delimiter) {
 };
 
 /**
+ * Walks the tree from the parent, returns the object at the end of the path, or the the defaultValue
+ * @method ifSet
+ * @param parent {object}
+ * @param keys {array}
+ * @param defaultValue {mixed}
+ * @param delimiter {string} Optional
+ * @return {mixed} The resulting object
+ */
+Q.ifSet = function _Q_ifSet(parent, keys, defaultValue, delimiter) {
+	var p = parent;
+	if (!p) {
+		return defaultValue;
+	}
+	delimiter = delimiter || '.';
+	if (typeof keys === 'string') {
+		keys = keys.split(delimiter);
+	}
+	for (var i=0; i<keys.length; i++) {
+		if (!(keys[i] in p)) {
+			return defaultValue;
+		}
+		p = p[keys[i]];
+	}
+	return p;
+};
+
+/**
  * Makes an object into an event emitter.
  * @method makeEventEmitter
  * @param what {object} Can be an object or a function
@@ -250,30 +250,6 @@ Q.inherit = function _Q_inherit(Base, Constructor) {
 	InheritConstructor.prototype.constructor = InheritConstructor;
 	Q.mixin(InheritConstructor, Constructor);
 	return InheritConstructor;
-};
-
-/**
- * Binds a method to an object, so "this" inside the method
- * refers to that object when it is called.
- * @method bind
- * @param method {function} A reference to the function to call
- * @param obj {object} The object to bind to
- * @param {object} [options={}] If supplied, binds these options and passes
- *  them during invocation.
- * @return {mixed} The result of calling "method" in the context of "obj"
- */
-Q.bind = function _Q_bind(method, obj, options) {
-	if (options) {
-		return function () {
-			var args = Array.prototype.slice.call(arguments);
-			if (options) args.push(options);
-			return method.apply(obj, args);
-		};
-	} else {
-		return function () {
-			return method.apply(obj, arguments);
-		};
-	}
 };
 
 /**
@@ -2583,11 +2559,30 @@ if (!String.prototype.trim) {
 	};
 }
 
-if (!Function.prototype.bind) {
-	Function.prototype.bind = function _String_prototype_bind(obj, options) {
-		return Q.bind(this, obj, options);
+/**
+ * Binds a method to an object, so "this" inside the method
+ * refers to that object when it is called.
+ * @param method
+ *  A reference to the function to call
+ * @param obj
+ *  The object to bind to
+ * @param options
+ *  Optional. If supplied, binds these options and passes
+ *  them during invocation.
+ */
+Function.prototype.bind = Function.prototype.bind || function _Function_prototype_bind(obj, options) {
+	var method = this;
+	if (!options) {
+		return function _Q_bind_result() {
+			return method.apply(obj, arguments);
+		};
+	}
+	return function _Q_bind_result_withOptions() {
+		var args = Array.prototype.slice.call(arguments);
+		if (options) args.push(options);
+		return method.apply(obj, args);
 	};
-}
+};
 
 if (!Array.prototype.indexOf) {
 	Array.prototype.indexOf = function _Array_prototype_indexOf(searchElement /*, fromIndex */ ) {

@@ -101,7 +101,7 @@ function (o) {
 						});
 						if ($overlay.options.mask)
 						{
-							Q.Mask.show('Q.screenMask', { 
+							Q.Mask.show('Q.screen.mask', { 
 								fadeTime: o.fadeTime,
 								className: 'Q_screen_shadow_mask'
 							});
@@ -112,7 +112,7 @@ function (o) {
 						$this.show();
 						if ($overlay.options.mask)
 						{
-							Q.Mask.show('Q.screenMask', { 'className': 'Q_screen_shadow_mask' });
+							Q.Mask.show('Q.screen.mask', { 'className': 'Q_screen_shadow_mask' });
 						}
 						if (!$overlay.options.noClose && $overlay.options.closeOnEsc)
 						{
@@ -139,7 +139,7 @@ function (o) {
 					});
 					if ($overlay.options.mask)
 					{
-						Q.Mask.hide('Q.screenMask');
+						Q.Mask.hide('Q.screen.mask');
 					}
 				}
 				else
@@ -147,7 +147,7 @@ function (o) {
 					$this.hide();
 					if ($overlay.options.mask)
 					{
-						Q.Mask.hide('Q.screenMask');
+						Q.Mask.hide('Q.screen.mask');
 					}
 					Q.handle($overlay.options.onClose, $this, [$this]);
 				}
