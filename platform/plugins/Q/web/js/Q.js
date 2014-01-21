@@ -3646,6 +3646,8 @@ Q.req = function _Q_req(uri, slotNames, callback, options) {
  *  "onLoad": handler to call when data is loaded but before it is processed - when called the argument of "onTimeout" does nothing
  *  "handleRedirects": if set and response data.redirect.url is not empty, automatically call this function. Defaults to Q.handle.
  *  "quiet": defaults to true. This option is just passed to your onLoadStart/onLoadEnd handlers in case they want to respect it.
+ *  "onLoadStart": if "quiet" option is false, anything here will be called after the request is initiated
+ *  "onLoadEnd": if "quiet" option is false, anything here will be called after the request is fully completed
  *  "query": if true simply returns the query url without issuing the request
  */
 Q.request = function (url, slotNames, callback, options) {
@@ -3919,10 +3921,12 @@ Q.jsonRequest = Q.request;
  * Serialize an object of fields into a shallow object of key/value pairs
  * @param fields
  *  The object to serialize
+ * @param keys
+ *  An optional array of keys into the object, in the order to serialize things
  * @return Object
  *  A shallow object of key/value pairs
  */
-Q.serializeFields = function _Q_serializeFields(fields) {
+Q.serializeFields = function _Q_serializeFields(fields, keys) {
 	if (Q.isEmpty(fields)) {
 		return '';
 	}
@@ -3955,7 +3959,7 @@ Q.serializeFields = function _Q_serializeFields(fields) {
 		parts.push(encodeURIComponent(key) + "=" + encodeURIComponent(value));
 	};
 
-	Q.each(fields, function _Q_param_each(field) {
+	Q.each(keys || fields, function _Q_param_each(field) {
 		_params(field, fields[field]);
 	});
 
@@ -4677,9 +4681,11 @@ Q.replace = function _Q_replace(existing, source, options) {
  *   "onLoad": handler to call when data is loaded but before it is processed -
  *		when called the argument of "onTimeout" does nothing
  *   "ignoreLoadingErrors": If true, ignores any errors in loading scripts.
- *   "quiet": defaults to false. If true, allows visual indications that the request is going to take place.
  *   "slotNames": an array of slot names to request and process (default is all slots in Q.info.slotNames)
  *   "cacheSlots": an object of {slotName: whetherToCache} pairs
+ *   "quiet": defaults to false. If true, allows visual indications that the request is going to take place.
+ *   "onLoadStart": if "quiet" option is false, anything here will be called after the request is initiated
+ *   "onLoadEnd": if "quiet" option is false, anything here will be called after the request is fully completed
  * See Q.request for more info.
  * Also it is passed to loader function so any additional options can be passed
  */
@@ -5251,14 +5257,7 @@ Q.parseQueryString = function Q_parseQueryString(queryString, keys) {
  * @param keys {Array} An array of keys in the object, in the order in which the querystring should be built
  * @return {String} the resulting querystring
  */
-Q.buildQueryString = function Q_buildQueryString(from, keys) {
-	var clauses = [];
-	for (var i=0; i<keys.length; ++i) {
-		if (!(keys[i] in from)) continue;
-		clauses.push(encodeURIComponent(keys[i]) + '=' + encodeURIComponent(from[ keys[i] ]));
-	}
-	return clauses.join('&');
-};
+Q.buildQueryString = Q.serializeFields;
 
 function Q_hashChangeHandler() {
 	var url = location.hash.queryField('url'), result = null;
