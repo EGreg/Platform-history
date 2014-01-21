@@ -121,7 +121,7 @@ Users.initFacebook = function(callback) {
 		_init,
 		{
 			onError: function () {
-				console.log(this, arguments);
+				console.log("Couldn't load script:", this, arguments);
 			}
 		}
 	);

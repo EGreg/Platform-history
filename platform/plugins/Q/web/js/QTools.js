@@ -803,7 +803,7 @@ Q.Layout = {
 						setTimeout(function()
 						{
 							var participants = $('#Streams_participant_tool');
-							participants.participants('update');
+							if (participants.participants) participants.participants('update');
 							var availableHeight = $('#column2_slot').outerHeight() - participants.outerHeight();
 							var chat = $('#Streams_chat_tool');
 							if (Q.info.platform == 'android')

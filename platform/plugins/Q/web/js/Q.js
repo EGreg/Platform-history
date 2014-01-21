@@ -4681,6 +4681,7 @@ Q.replace = function _Q_replace(existing, source, options) {
  *   "onLoad": handler to call when data is loaded but before it is processed -
  *		when called the argument of "onTimeout" does nothing
  *   "ignoreLoadingErrors": If true, ignores any errors in loading scripts.
+ *   "ignoreHash": if true, does not navigate to the hash part of the URL in browsers that can support it
  *   "slotNames": an array of slot names to request and process (default is all slots in Q.info.slotNames)
  *   "cacheSlots": an object of {slotName: whetherToCache} pairs
  *   "quiet": defaults to false. If true, allows visual indications that the request is going to take place.
@@ -4943,6 +4944,16 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
                 newStyles = loadStyles();
 			
 			afterStyles(); // Synchronous to allow additional scripts to change the styles before allowing the browser reflow.
+			
+			if (!o.ignoreHash && parts[1] && history.pushState) {
+				var e = document.getElementById(parts[1]);
+				if (e) {
+					location.hash = parts[1];
+					history.back();
+					// todo: modify history successfully somehow
+					// history.replaceState({}, null, url + '#' + parts[1]);
+				}
+			}
 		}
 		
 		function loadStylesheets() {
