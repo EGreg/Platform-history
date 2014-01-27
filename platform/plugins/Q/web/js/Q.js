@@ -1691,11 +1691,15 @@ Q.batcher.options = {
  * Used to create a basic batcher function, given only the url.
  * @param {Object} collection An object to contain all the batcher functions
  * @param {String} baseUrl The base url of the webservice built to support batch requests.
- * @param {String} baseUrl The rest of the url of the webservice built to support batch requests.
+ * @param {String} tail The rest of the url of the webservice built to support batch requests.
  * @param {String} slotName The name of the slot to request. Defaults to "batch".
  * @param {String} fieldName The name of the data field. Defaults to "batch".
+ * @param {Object} options Any additional options to pass to Q.batcher
+ * @return {Function} A function with any number of non-function arguments followed by
+ *  one function which is treated as a callback and passed (errors, content)
+ *  where content is whatever is returned in the slots.
  */
-Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotName, fieldName) {
+Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotName, fieldName, options) {
     if (!collection) {
         collection = {};
     }
@@ -1712,7 +1716,13 @@ Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotN
     var name = [baseUrl, tail, slotName, fieldName].join(delimiter);
     if (f = Q.getObject(name, collection, delimiter)) {
         return f;
-    }    
+    } 
+	var o = Q.extend({
+		method: 'post',
+		fields: {
+			batch: data
+		}
+	}, options);
     f = Q.batcher(function _Q_batcher_factory_function(subjects, args, callbacks) {
 		var data = JSON.stringify({args: args});
 		var fields = {};
@@ -1732,7 +1742,7 @@ Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotN
                     callbacks[k][0].call(subjects[k], null, (result && result.slots) || {});
 			    }
 			});
-		}, {method: 'post', fields: {batch: data}});
+		}, o);
 	});
 	Q.setObject(name, f, collection, delimiter);
 	return f;
@@ -2459,6 +2469,8 @@ Q.Tool.encodeOptions = function _Q_Tool_stringFromOptions(options) {
  *  The options for the tool
  * @param {String} id
  *  Optional id of the tool, such as "_2_Q_tabs"
+ * @param {String} prefix
+ *  Optional prefix to prepend to the tool's id
  * @return HTMLElement
  *  Returns an element you can append to things
  */

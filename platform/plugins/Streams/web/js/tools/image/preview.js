@@ -22,6 +22,7 @@
  *       The fields passed to the template include "alt", "titleTag" and "titleClass"
  *   "onCreate": An event that occurs after a new stream is created by a creatable preview
  *   "onUpdate": An event that occurs when the icon is updated
+ *   "onRefresh": An event that occurs when the icon is refreshed
  *   "onRemove": An event that occurs when the icon is removed via the 'remove' action
  */
 Q.Tool.define("Streams/image/preview", function(options) {
