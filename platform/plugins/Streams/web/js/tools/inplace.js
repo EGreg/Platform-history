@@ -90,7 +90,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 		}
 		
 		// Wire up the events
-		Q.activate(tool.child('Q/inplace'), function () {
+		Q.activate(tool.element, function () {
 			var inplace = tool.child('Q/inplace');
 			if (!inplace) {
 				return;

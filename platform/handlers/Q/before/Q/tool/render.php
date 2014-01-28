@@ -15,7 +15,7 @@ function Q_before_Q_tool_render($params, &$result)
 		$id = isset($extra['id']) ? $extra['id'] : '';
 	}
 	if (!empty($id)) {
-		$prefix = '_'.$id.'_'.$prefix;
+		$prefix = $prefix.'_'.$id;
 	}
 	
 	$cur_prefix = isset($extra['prefix']) ? $extra['prefix'] : Q_Html::getIdPrefix();

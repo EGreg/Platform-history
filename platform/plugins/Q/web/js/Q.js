@@ -1717,14 +1717,14 @@ Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotN
     if (f = Q.getObject(name, collection, delimiter)) {
         return f;
     } 
-	var o = Q.extend({
-		method: 'post',
-		fields: {
-			batch: data
-		}
-	}, options);
     f = Q.batcher(function _Q_batcher_factory_function(subjects, args, callbacks) {
 		var data = JSON.stringify({args: args});
+		var o = Q.extend({
+			method: 'post',
+			fields: {
+				batch: data
+			}
+		}, options);
 		var fields = {};
 		fields[fieldName] = data;
 		Q.req(baseUrl+tail, slotName, function (err, response) {
@@ -2289,11 +2289,12 @@ var _qtc = Q.Tool.constructors = Q.constructors;
  */
 Q.Tool.prototype.children = function Q_Tool_prototype_children(append) {
 	var result = {},
-	    prefix2 = Q.normalize(append ? this.prefix + append : this.prefix),
+	    prefix2 = Q.normalize(this.prefix + (append || "")),
 		id, ni;
 	for (id in Q.tools) {
 		ni = Q.normalize(id);
-		if (id.length > prefix2.length && ni.substr(0, prefix2.length) == prefix2) {
+		if (id.length >= prefix2.length + (append ? 0 : 1)
+		&& ni.substr(0, prefix2.length) == prefix2) {
 			result[id] = Q.tools[id];
 		}
 	}
@@ -2307,12 +2308,13 @@ Q.Tool.prototype.children = function Q_Tool_prototype_children(append) {
  * @return Tool|null
  */
 Q.Tool.prototype.child = function Q_Tool_prototype_child(append) {
-	var result = {};
-	var prefix2 = Q.normalize(append ? this.prefix + append : this.prefix);
-	var id;
+	var result = {},
+	    prefix2 = Q.normalize(this.prefix + (append || "")),
+		id, ni;
 	for (id in Q.tools) {
-		if (id.length > this.prefix.length
-		 && Q.normalize(id.substr(0, prefix2.length)) === prefix2) {
+		ni = Q.normalize(id);
+		if (id.length >= prefix2.length + (append ? 0 : 1)
+		&& ni.substr(0, prefix2.length) == prefix2) {
 			return Q.tools[id];
 		}
 	}
@@ -2488,7 +2490,7 @@ Q.Tool.setUpElement = function _Q_Tool_element(element, toolType, toolOptions, i
 		var p1, p2;
 		p1 = prefix ? prefix : (Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '');
 		do {
-			p2 = p1 + '_' + (Q.Tool.nextDefaultId++) + '_' + ntt + '_';
+			p2 = p1 + '_' + ntt + '_' + (Q.Tool.nextDefaultId++) + '_';
 		} while (Q.tools[p2]);
 		id = p2 + 'tool';
 	}
@@ -4573,14 +4575,19 @@ Q.find.skipSubtree = "Q:skipSubtree";
 /**
  * Unleash this on an element to activate all the tools within it.
  * If the element is itself an outer div of a tool, that tool is activated too.
- * @param {HTMLElement|Q.Tool}
+ * @param {HTMLElement|Q.Tool} elem
  *  HTML element or existing tool to traverse and activate
+ *  If this is empty, then Q.activate exits early
  * @param {Object} options
  *  Optional options to provide to tools and their children.
  * @param {Function} callback
  *  Optional callback to call after the activation was complete
  */
 Q.activate = function _Q_activate(elem, options, callback) {
+	
+	if (!elem) {
+		return;
+	}
 	
 	var ba, tool;
 	if (Q.typeOf(elem) === 'Q.Tool') {
