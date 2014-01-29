@@ -2047,6 +2047,8 @@ function updateStream(stream, fields, onlyChangedFields) {
 			[fields, updated, cleared]
 		);
 	}
+	// Now time to replace the fields in the stream with the incoming fields
+	Q.extend(stream.fields, fields);
 	// var f = Q.extend({}, stream.fields, fields);
 	// f.access = stream.access;
 	// _constructStream(f, {}, null, true);
