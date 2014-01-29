@@ -41,6 +41,8 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 			'visibility': 'hidden',
 			'height': '0',
 			'width': '0',
+			'top': '0',
+			'left': '0',
 			'position': 'absolute'
 		});
 		var originalSrc = $this.attr('src');

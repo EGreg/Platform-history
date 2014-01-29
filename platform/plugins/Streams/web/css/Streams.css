@@ -456,7 +456,7 @@
 	padding: 5px;
 }
 
-.Streams_inplace_tool { display: inline; position: relative; }
+.Streams_inplace_tool { display: inline; position: relative; text-align: center; }
 
 /* streams basic tool */
 

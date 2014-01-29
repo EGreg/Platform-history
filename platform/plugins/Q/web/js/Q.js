@@ -2179,7 +2179,13 @@ Q.Tool.define = function (name, ctor, defaultOptions, stateKeys, methods) {
 
 Q.Tool.beingActivated = undefined;
 
-var _qtdo = {};
+/**
+ * Call this function to define options for a tool constructor
+ * that may not have been loaded yet.
+ * @param {String} toolName the name of the tool
+ * @param {Object} setOptions the options to set
+ * @return {Object} the resulting pending options for the tool
+ */
 Q.Tool.define.options = function (toolName, setOptions) {
 	toolName = Q.normalize(toolName);
 	if (Q.Tool.constructors[name]) {
@@ -2192,6 +2198,7 @@ Q.Tool.define.options = function (toolName, setOptions) {
 	}
 	return options;
 };
+var _qtdo = {};
 
 /**
  * Call this function to define a jQuery plugin, and a tool with the same name that uses it.
@@ -2264,7 +2271,13 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 	});
 };
 
-var _qtjo = {};
+/**
+ * Call this function to define options for a jQuery tool constructor
+ * that may not have been loaded yet.
+ * @param {String} toolName the name of the tool
+ * @param {Object} setOptions the options to set
+ * @return {Object} the resulting pending options for the tool
+ */
 Q.Tool.jQuery.options = function (pluginName, setOptions) {
 	pluginName = Q.normalize(pluginName);
 	if (Q.Tool.constructors[name]) {
@@ -2277,6 +2290,7 @@ Q.Tool.jQuery.options = function (pluginName, setOptions) {
 	}
 	return options;
 };
+var _qtjo = {};
 
 Q.Tool.nextDefaultId = 1;
 var _qtc = Q.Tool.constructors = Q.constructors;

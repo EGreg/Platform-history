@@ -8,7 +8,7 @@
  *   "publisherId": Required.
  *   "streamName": If empty, and "editableable" is true, then this can be used to add new related Streams/image streams.
  *   "related": A hash with properties "publisherId" and "streamName", and usually "type" and "weight"
- *   "editable": Whether the tool should allow authorized users to replace the image
+ *   "editable": Set to false to avoid showing even authorized users an interface to replace the image or text
  *   "creatable": Optional fields to override in case streamName = "", including:
  *     "title": Optional title for the case when streamName = "", i.e. the image composer
  *     "clickable": Whether the image composer image is clickable
@@ -21,7 +21,7 @@
  *   "templates": Under the keys "views", "edit" and "create" you can override options for Q.Template.render .
  *       The fields passed to the template include "alt", "titleTag" and "titleClass"
  *   "onCreate": An event that occurs after a new stream is created by a creatable preview
- *   "onUpdate": An event that occurs when the icon is updated
+ *   "onUpdate": An event that occurs when the icon is updated via this tool
  *   "onRefresh": An event that occurs when the icon is refreshed
  *   "onRemove": An event that occurs when the icon is removed via the 'remove' action
  */
@@ -135,7 +135,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 			}, 0);
 			
 			function _afterRefresh () {
-				if (!stream.testWriteLevel('suggest')) {
+				if (state.editable === false || !stream.testWriteLevel('suggest')) {
 					return;
 				}
 				var ipo = Q.extend({}, ip, {
@@ -189,7 +189,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 
 {
 	related: null,
-	editable: false,
+	editable: true,
 	creatable: {
 		title: "New Image",
 		clickable: true,
@@ -204,17 +204,17 @@ Q.Tool.define("Streams/image/preview", function(options) {
 		view: {
 			dir: 'plugins/Streams/views',
 			name: 'Streams/image/preview/view',
-			fields: { alt: 'image', titleClass: '', titleTag: 'h2' }
+			fields: { alt: 'image', titleClass: '', titleTag: 'h3' }
 		},
 		edit: {
 			dir: 'plugins/Streams/views',
 			name: 'Streams/image/preview/edit',
-			fields: { alt: 'image', titleClass: '', titleTag: 'h2' }
+			fields: { alt: 'image', titleClass: '', titleTag: 'h3' }
 		},
 		create: {
 			dir: 'plugins/Streams/views',
 			name: 'Streams/image/preview/create',
-			fields: { alt: 'new', titleClass: '', titleTag: 'h2' }
+			fields: { alt: 'new', titleClass: '', titleTag: 'h3' }
 		}
 	},
 	inplace: {},
@@ -237,9 +237,9 @@ Q.Tool.define("Streams/image/preview", function(options) {
 		var tool = this, state = tool.state;
 		
 		Q.Streams.get(state.publisherId, state.streamName, function (err) {
-			var fee = Q.firstErrorMessage(err);
-			if (fee) {
-				return console.warn("Streams/image/preview: " + fee);
+			var fem = Q.firstErrorMessage(err);
+			if (fem) {
+				return console.warn("Streams/image/preview: " + fem);
 			}
 			var stream = tool.stream = this;
 			var file = state.showFile
@@ -263,6 +263,9 @@ Q.Tool.define("Streams/image/preview", function(options) {
 				field: 'title',
 				inplaceType: 'text'
 			}, state.inplace);
+			if (state.editable === false) {
+				inplace.editable = false;
+			}
 			var f = tool.state.template && tool.state.template.fields;
 			var fields = Q.extend({}, state.templates.edit.fields, f, {
 				src: Q.Streams.iconUrl(icon, file)+'?'+Date.now(),
@@ -270,7 +273,9 @@ Q.Tool.define("Streams/image/preview", function(options) {
 				alt: stream.fields.title,
 				inplace: tool.setUpElementHTML('div', 'Streams/inplace', inplace)
 			});
-			var tpl = stream.testWriteLevel('suggest') ? 'edit' : 'view';
+			var tpl = (state.editable !== false || stream.testWriteLevel('suggest'))
+				? 'edit' 
+				: 'view';
 			Q.Template.render(
 				'Streams/image/preview/'+tpl,
 				fields,
@@ -295,38 +300,19 @@ Q.Tool.define("Streams/image/preview", function(options) {
 Q.Template.set(
 	'Streams/image/preview/view',
 	'<img src="{{& srcFull}}" alt="{{alt}}" class="Streams_image_preview_icon">'
-	+ '<div class="{{titleClass}}"><{{titleTag}}>{{& inplace}}</{{titleTag}}></div>'
+	+ '<div class="Streams_smalltext_contents {{titleClass}}"><{{titleTag}}>{{& inplace}}</{{titleTag}}></div>'
 );
 
 Q.Template.set(
 	'Streams/image/preview/edit',
 	'<img src="{{& src}}" alt="{{alt}}" class="Streams_image_preview_icon">'
-	+ '<div class="{{titleClass}}"><{{titleTag}}>{{& inplace}}</{{titleTag}}></div>'
+	+ '<div class="Streams_smalltext_contents {{titleClass}}"><{{titleTag}}>{{& inplace}}</{{titleTag}}></div>'
 );
 
 Q.Template.set(
 	'Streams/image/preview/create',
 	'<img src="{{& src}}" alt="{{alt}}" class="Streams_image_preview_add">'
-	+ '<div class="{{titleClass}}"><{{titleTag}}>{{& title}}</{{titleTag}}></div>'
+	+ '<div class="Streams_smalltext_contents {{titleClass}}"><{{titleTag}}>{{& title}}</{{titleTag}}></div>'
 );
-
-/*
-<div class="Golden-carousel sky-carousel">
-	<div class="sky-carousel-wrapper">
-		<ul class="sky-carousel-container">
-			<?php foreach ($images as $image): ?> 
-				<li>
-					<?php echo Q_Html::a(Q_Html::themedUrl($image['src']), array('class' => 'fancybox', 'rel' => 'group')) ?> 
-						<?php echo Q_Html::img($image['thumb_src'], $image['alt']) ?> 
-					</a>
-					<div class="sc-content">
-						<h2><?php echo $image['alt'] ?></h2>
-					</div>
-				</li>
-			<?php endforeach ?> 
-		</ul>
-	</div>
-</div>
- */
 
 })(window.jQuery, window);

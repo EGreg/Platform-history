@@ -2086,8 +2086,9 @@ Q.Tool.define("Streams/preview", function (options) {
 });
 
 Q.Tool.onMissingConstructor.set(function (constructors, normalized) {
-	if (normalized.substr(-"_preview".length) === "_preview") {
-		constructors[normalized] = Q.Tool.constructors["streams_preview"];
+	var str = "_preview";
+	if (normalized.substr(-str.length) === str) {
+		constructors[normalized] = "Streams/smalltext/preview";
 	}
 }, 'Streams');
 

@@ -80,7 +80,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 					throw "Streams/inplace tool: inplaceType must be 'textarea' or 'text'";
 			}
 
-			if (!stream.testWriteLevel('suggest')) {
+			if (state.editable === false || !stream.testWriteLevel('suggest')) {
 				tool.element.innerHTML = ipo.staticHtml;
 				return; // leave the html that is currently in the element
 			}
@@ -115,6 +115,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 
 {
 	inplaceType: 'textarea',
+	editable: true,
 	onUpdate: new Q.Event()
 }
 
