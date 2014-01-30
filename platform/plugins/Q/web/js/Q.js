@@ -380,6 +380,37 @@ HTMLElement.prototype.isBefore = function (element, context) {
 	return before;
 };
 
+HTMLElement.prototype.hasClass = function (className) {
+	if (this.classList) {
+		return this.classList.contains(className)
+	} else {
+		return new RegExp('(^| )' + className + '( |$)', 'gi').test(this.className);
+	}
+};
+
+HTMLElement.prototype.removeClass = function (className) {
+	if (this.classList) {
+		this.classList.remove(className)
+	} else {
+		this.className = this.className.replace(new RegExp('(^| )' + className.split(' ').join('|') + '( |$)', 'gi'), ' ')	
+	}
+	return this;
+};
+
+HTMLElement.prototype.addClass = function (className) {
+	if (this.classList) {
+		this.classList.add(className)
+	} else {
+		this.removeClass(className);
+		this.className += ' ' + className;
+	}
+	return this;
+};
+
+HTMLElement.prototype.text = function() {
+	return el.textContent || el.innerText;
+};
+
 if(!document.getElementsByClassName) {
     document.getElementsByClassName = function(className) {
 		return Array.prototype.slice.call(this.querySelectorAll("." + className));
@@ -2071,7 +2102,7 @@ Q.Tool = function _Q_Tool(element, options) {
 		Q.extend(this.options, Q.Tool.options.levels, element.options, 'Q.Tool');
 	}
 	
-	Q.setObject(['Q', 'tool'], this, element);
+	Q.setObject(['Q', 'tool'], this, element); // TODO: refactor
 	
 	this.beforeRemove = new Q.Event();
 
@@ -3106,8 +3137,11 @@ Q.init = function _Q_init(options) {
 		}
 
 		function _getJSON() {
-				if (window.JSON) _ready();
-				else Q.addScript(Q.init.jsonLibraryUrl, _ready);
+			if (window.JSON) {
+				_ready();
+			} else {
+				Q.addScript(Q.init.jsonLibraryUrl, _ready);
+			}
 		}
 
 		if (options && options.isLocalFile) {

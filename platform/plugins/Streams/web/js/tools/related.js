@@ -33,6 +33,8 @@ function _Streams_related_tool (options)
 	this.state.publisherId = this.state.publisherId || this.state.stream.fields.publisherId;
 	this.state.streamName = this.state.streamName || this.state.stream.fields.streamName;
     
+	this.state.refreshCount = 0;
+
     // render the tool
     this.refresh();
 },
@@ -49,9 +51,6 @@ function _Streams_related_tool (options)
 	},
 	toolType: function (streamType) { return streamType+'/preview'; },
     onUpdate: new Q.Event(function _Streams_related_onUpdate(result, entering, exiting, updating) {
-        var tool = this;
-        Q.Tool.clear(tool.element);
-        tool.element.innerHTML = '';
 
 		function addComposer(streamType, params) {
 			// TODO: test whether the user can create streams of this type
@@ -62,7 +61,14 @@ function _Streams_related_tool (options)
 			});
 			element.setAttribute('class', element.getAttribute('class') + ' Streams_related_composer');
 			Q.activate(tool.element.insertBefore(element, tool.element.firstChild), function () {
+				var rc = tool.state.refreshCount;
 				element.Q.tool.state.onUpdate.set(function () {
+					
+					// workaround for now
+					if (tool.state.refreshCount > rc) {
+						return;
+					}
+					
 					element.setAttribute('class', element.getAttribute('class').replace(
 						'Streams_related_composer', 'Streams_related_stream'
 					));
@@ -71,6 +77,11 @@ function _Streams_related_tool (options)
 				}, tool);
 			});
 		}
+		
+        var tool = this;
+        Q.Tool.clear(tool.element);
+        tool.element.innerHTML = '';
+		++tool.state.refreshCount;
 		
 		Q.Streams.refresh.beforeRequest.set(function () {
 			result.stream.refresh(null, {messages: true});
