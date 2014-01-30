@@ -179,6 +179,9 @@ function _Streams_related_tool (options)
         function onChangedRelations(msg, fields) {
 			// TODO: REPLACE THIS WITH AN ANIMATED UPDATE BY LOOKING AT THE ARRAYS entering, exiting, updating
             var isCategory = tool.state.isCategory;
+			if (fields.type !== tool.state.relationType) {
+				return;
+			}
 			if (!Q.Users.loggedInUser
 			|| msg.byUserId != Q.Users.loggedInUser.id
 			|| msg.byClientId != Q.clientId()
