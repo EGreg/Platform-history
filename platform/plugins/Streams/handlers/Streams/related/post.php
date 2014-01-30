@@ -4,8 +4,8 @@
  * Used to create a new relation
  *
  * @param array $_REQUEST 
- *   publisherId, streamName, type
- *   relate_name, relate_type, relate_weight
+ *   toPublisherId, toStreamName, type
+ *   fromPublisherId, fromStreamName, weight
  * @return void
  */
 
@@ -17,9 +17,6 @@ function Streams_related_post($params) {
 	$type = $_REQUEST['type'];
 	$fromPublisherId = $_REQUEST['fromPublisherId'];
 	$fromStreamName = $_REQUEST['fromStreamName'];
-	if (isset($_REQUEST['weight'])) {
-		$weight = $_REQUEST['weight'];
-	}
 	
 	// TODO: When we start supporting multiple hosts, this will have to be rewritten
 	// to make servers communicate with one another when establishing relations between streams
@@ -35,6 +32,14 @@ function Streams_related_post($params) {
 			array('table' => 'stream', 'criteria' => 'those fields'),
 			array('fromPublisherId', 'from_name')
 		);
+	}
+	
+	$weight = "+1";
+	if (isset($_REQUEST['weight'])) {
+		if (!$stream->testWriteLevel('relations')) {
+			throw new Users_Exception_NotAuthorized();
+		}
+		$weight = $_REQUEST['weight'];
 	}
 
 	$result = Streams::relate(

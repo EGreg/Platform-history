@@ -1518,7 +1518,6 @@ abstract class Streams extends Base_Streams
 				throw new Q_Exception_WrongValue(array('field' => 'weight', 'range' => 'a numeric value'), 'weight');
 			}
 			$relatedTo->weight = $weight;
-			Q::log("WEIGHT BABY: ".$weight);
 		}
 
 		try {
