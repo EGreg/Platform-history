@@ -29,7 +29,6 @@ function _Streams_related_tool (options)
     if (options.relationType === undefined) {
         throw "Streams/related tool: missing options.relationType";
     }
-	options.tag = options.tag || 'div';
 
 	this.state.publisherId = this.state.publisherId || this.state.stream.fields.publisherId;
 	this.state.streamName = this.state.streamName || this.state.stream.fields.streamName;
@@ -202,7 +201,7 @@ function _Streams_related_tool (options)
 			},
 			editable: this.state.editable
         }, options);
- 		return this.setUpElement(this.state.tag, this.state.toolType(streamType), o);
+ 		return this.setUpElement(this.state.tag || 'div', this.state.toolType(streamType), o);
     }
 }
 
