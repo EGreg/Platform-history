@@ -2174,6 +2174,7 @@ Q.Tool.define = function (name, ctor, defaultOptions, stateKeys, methods) {
 	Q.Tool.constructors[name] = ctor;
 	Q.Tool.onLoadedConstructor(name).handle(name, ctor);
 	Q.Tool.onLoadedConstructor("").handle(name, ctor);
+	Q.Tool.define.latestName = name;
 	return ctor;
 };
 
@@ -2269,6 +2270,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 			};
 		});
 	});
+	Q.Tool.jQuery.latestName = name;
 };
 
 /**
@@ -2617,7 +2619,7 @@ function _loadToolScript(toolElement, callback, shared) {
 		if (typeof toolFunc === 'undefined') {
 			Q.Tool.onMissingConstructor.handle(_qtc, toolName);
 			toolFunc = _qtc[toolName];
-			if (typeof toolFunc !== 'function') {
+			if (typeof toolFunc !== 'function' && typeof toolFunc !== 'string') {
 				console.warn("Q.Tool.loadScript: Missing tool constructor for " + toolName);
 			}
 		}
@@ -2629,8 +2631,14 @@ function _loadToolScript(toolElement, callback, shared) {
 				var uniqueToolId = "tool " + (shared.waitingForTools.length+1);
 				shared.waitingForTools.push(uniqueToolId);
 			}
+			Q.Tool.define.latestName = Q.Tool.jQuery.latestName = null;
 			Q.addScript(toolFunc, function _loadToolScript_loaded() {
-				toolFunc = _qtc[toolName];
+				if (Q.Tool.define.latestName) {
+					_qtc[toolName] = _qtc[Q.Tool.define.latestName];
+				} else if (Q.Tool.jQuery.latestName) {
+					_qtc[toolName] = _qtc[Q.Tool.define.latestName];
+				}
+				toolFunc = _qtc[toolName] = _qtc[toolName];
 				if (typeof toolFunc !== 'function') {
 					Q.Tool.onMissingConstructor.handle(_qtc, toolName);
 					toolFunc = _qtc[toolName];

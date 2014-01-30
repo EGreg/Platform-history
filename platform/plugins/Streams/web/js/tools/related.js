@@ -4,12 +4,12 @@
  * A hash of options, which can include:
  *   "publisherId": Either this or "stream" is required. Publisher id of the stream to which the others are related
  *   "streamName": Either this or "stream" is required. Name of the stream to which the others are related
- *   "tag": Required. The type of tool element for each related stream, such as "div" or "li"
+ *   "tag": Defaults to "div". The type of element to contain the preview tool for each related stream.
  *   "stream": You can pass a Streams.Stream object here instead of "publisherId" and "streamName"
  *   "relationType": The type of the relation. Defaults to ""
  *   "isCategory": Defaults to true. Whether to show the streams related TO this stream, or the ones it is related to.
  *   "relationOptions": Can include options like 'limit', 'offset', 'ascending', 'min', 'max' and 'prefix'
- *   "editable": Defaults to false. Whether the entries should be editable
+ *   "editable": Set to false to avoid showing even authorized users an interface to replace the image or text
  *   "creatable": Optional pairs of {streamType: params} to create new related streams.
  *      The params typically include at least a "title" field which you can fill with values such as "New" or "New ..."
  *   "toolType": Function that takes streamType and returns the tag to render (and then activate) for that stream
@@ -29,9 +29,7 @@ function _Streams_related_tool (options)
     if (options.relationType === undefined) {
         throw "Streams/related tool: missing options.relationType";
     }
-    if (options.tag === undefined) {
-        throw "Streams/related tool: missing options.tag";
-    }
+	options.tag = options.tag || 'div';
 
 	this.state.publisherId = this.state.publisherId || this.state.stream.fields.publisherId;
 	this.state.streamName = this.state.streamName || this.state.stream.fields.streamName;
@@ -44,7 +42,7 @@ function _Streams_related_tool (options)
     publisherId: Q.info.app,
     isCategory: true,
 	realtime: true,
-	editable: false,
+	editable: true,
 	creatable: {},
 	sortable: {
 		draggable: '.Streams_related_stream',

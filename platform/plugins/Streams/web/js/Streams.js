@@ -150,6 +150,13 @@ Streams.key = function (publisherId, streamName) {
 };
 
 /**
+ * This event is fired if an error occurs in any Streams function
+ */
+Streams.onError = new Q.Event(function (err) {
+	console.warn(Q.firstErrorMessage(err));
+}, 'Streams.onError');
+
+/**
  * Returns Q.Event that occurs on message post event coming from socket.io
  * @method Streams.onMessage
  * @param type {String} type of the stream to which a message is posted
@@ -263,7 +270,7 @@ Q.Tool.define({
 	"Streams/access": "plugins/Streams/js/tools/access.js",
 	"Streams/related": "plugins/Streams/js/tools/related.js",
 	"Streams/inplace": "plugins/Streams/js/tools/inplace.js",
-	"Streams/smalltext/preview": "plugins/Streams/js/tools/smalltext/preview.js",
+	"Streams/preview": "plugins/Streams/js/tools/preview.js",
 	"Streams/image/preview": "plugins/Streams/js/tools/image/preview.js"
 });
 
@@ -305,12 +312,13 @@ Streams.get = Q.getter(function (publisherId, streamName, callback, extra) {
 	func.call(this, 'stream', slotNames, publisherId, streamName, function Streams_get_response_handler (err, data) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
 		if (msg) {
-			Stream.onError.handle(msg, err, data);
+			Streams.onError.handle.call(this, msg, err, data);
+			Streams.get.onError.handle.call(this, msg, err, data);
 			return callback && callback.call(this, msg);
 		}
 		if (!data.stream) {
 			var msg = "Streams.get: data.stream is missing";
-			Stream.onError.handle(msg, err, data);
+			Streams.onError.handle(msg, err, data);
 			return callback && callback.call(this, msg);
 		}
 		_constructStream(
@@ -321,7 +329,7 @@ Streams.get = Q.getter(function (publisherId, streamName, callback, extra) {
 			}, 
 			function Streams_get_construct_handler(err, stream) {
 				if (Q.firstErrorMessage(err)) {
-					Stream.onError.handle(msg, err, data);
+					Streams.onError.handle(msg, err, data);
 				}
 				return callback && callback.call(stream, err, stream);
 			},
@@ -330,6 +338,7 @@ Streams.get = Q.getter(function (publisherId, streamName, callback, extra) {
 	}, extra);
 	_retain = undefined;
 }, {cache: Q.Cache.document("Streams.get", 100), throttle: 'Streams.get'});
+Streams.get.onError = new Q.Event();
 
 Streams.batchFunction = function Streams_batchFunction(baseUrl) {
 	return Q.batcher.factory(Streams.batchFunction.functions, baseUrl, "/action.php/Streams/batch", "batch", "batch");
@@ -369,6 +378,8 @@ Streams.create = function (fields, callback, related) {
 	Q.req('Streams/stream', slotNames, function Stream_create_response_handler(err, data) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
 		if (msg) {
+			Streams.onError.handle.call(this, msg);
+			Streams.create.onError.handle.call(this, msg);
 			return callback && callback.call(this, msg);
 		}
 		_constructStream(data.slots.stream, {}, function Stream_create_construct_handler (err, stream) {
@@ -384,6 +395,7 @@ Streams.create = function (fields, callback, related) {
 	}, { method: 'post', fields: fields, baseUrl: baseUrl });
 	_retain = undefined;
 };
+Streams.create.onError = new Q.Event();
 
 /**
  * This function is similar to _constructTool in Q.js
@@ -646,10 +658,6 @@ Stream.get = Streams.get;
 Stream.create = Streams.create;
 Stream.define = Streams.define;
 
-Stream.onError = new Q.Event(function (err) {
-	console.warn(Q.firstErrorMessage(err));
-}, 'Streams.onError');
-
 /**
  * Call this function to retain a particular stream.
  * When a stream is retained, it is refreshed when Streams.refresh() or
@@ -787,6 +795,7 @@ Stream.prototype.save = function _Stream_prototype_save (callback) {
 	Q.req('Streams/stream', [slotName], function (err, data) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
 		if (msg) {
+			Streams.onError.handle.call(this, msg);
 			return callback && callback.call(this, msg);
 		}
 		// the rest will occur in the handler for the stream.onUpdated event coming from the socket
@@ -1045,6 +1054,8 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 	Q.req('Streams/related', slotNames, function (err, data) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
 		if (msg) {
+			Streams.onError.handle.call(this, msg);
+			Streams.related.onError.handle.call(this, msg);
 			return callback && callback.call(this, msg);
 		}
 		if (cached && cached.subject) {
@@ -1131,6 +1142,7 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 	}, { fields: fields, baseUrl: baseUrl });
 	_retain = undefined;
 }, {cache: Q.Cache.document("Streams.related", 100), throttle: 'Streams.related'});
+Streams.related.onError = new Q.Event();
 
 /**
  * Returns all the streams this stream is related to
@@ -1426,6 +1438,8 @@ Stream.join = function _Stream_join (publisherId, streamName, callback) {
 	Q.req('Streams/join', [slotName], function (err, data) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
 		if (msg) {
+			Streams.onError.handle.call(this, msg);
+			Streams.join.onError.handle.call(this, msg);
 			return callback && callback.call(this, msg);
 		}
 		var participant = new Participant(data.slots.participant);
@@ -1436,6 +1450,7 @@ Stream.join = function _Stream_join (publisherId, streamName, callback) {
 		callback && callback.call(participant, err, participant || null);
 	}, { method: 'post', fields: fields, baseUrl: baseUrl });
 };
+Stream.join.onError = new Q.Event();
 
 /**
  * Leave a stream that you previously joined, so that you don't get realtime messages anymore.
@@ -1460,6 +1475,8 @@ Stream.leave = function _Stream_leave (publisherId, streamName, callback) {
 	Q.req('Streams/leave', [slotName], function (err, data) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
 		if (msg) {
+			Streams.onError.handle.call(this, msg);
+			Streams.leave.onError.handle.call(this, msg);
 			return callback && callback.call(this, msg);
 		}
 		var participant = new Participant(data.slots.participant);
@@ -1469,6 +1486,7 @@ Stream.leave = function _Stream_leave (publisherId, streamName, callback) {
 		callback && callback.call(this, err, participant || null);
 	}, { method: 'post', fields: fields, baseUrl: baseUrl });
 };
+Stream.leave.onError = new Q.Event();
 
 /**
  * Remove a stream from the database.
@@ -1486,11 +1504,14 @@ Stream.remove = function _Stream_remove (publisherId, streamName, callback) {
 	Q.req('Streams/stream', [slotName], function (err, data) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
 		if (msg) {
+			Streams.onError.handle.call(this, msg);
+			Streams.remove.onError.handle.call(this, msg);
 			return callback && callback.call(this, msg);
 		}
 		callback && callback.call(this, err, data.slots.result || null);
 	}, { method: 'delete', fields: fields, baseUrl: baseUrl });
 };
+Stream.remove.onError = new Q.Event();
 
 var Message = Streams.Message = function Streams_Message(obj) {
 	Q.extend(this, obj);
@@ -1541,6 +1562,8 @@ Message.get = Q.getter(function _Message_get (publisherId, streamName, ordinal, 
 	func.call(this, 'message', slotName, publisherId, streamName, criteria, function (err, data) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
 		if (msg) {
+			Streams.onError.handle.call(this, msg);
+			Message.get.onError.handle.call(this, msg);
 			return callback && callback.call(this, msg);
 		}
 		var messages = {};
@@ -1567,6 +1590,7 @@ Message.get = Q.getter(function _Message_get (publisherId, streamName, ordinal, 
 		}
 	});
 }, {cache: Q.Cache.document("Streams.Message.get", 1000), throttle: 'Streams.Message.get'});
+Message.get.onError = new Q.Event();
 
 /**
  * Post a message to a stream.
@@ -1583,6 +1607,8 @@ Message.post = function _Message_post (msg, callback) {
 	Q.req('Streams/message', [slotName], function (err, data) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
 		if (msg) {
+			Streams.onError.handle.call(this, msg);
+			Message.post.onError.handle.call(this, msg);
 			return callback && callback.call(this, msg);
 		}
 		var message = data.slots.message && new Message(data.slots.message);
@@ -1593,6 +1619,7 @@ Message.post = function _Message_post (msg, callback) {
 		callback && callback.call(message, err, message || null);
 	}, { method: 'post', fields: msg, baseUrl: baseUrl });
 };
+Message.post.onError = new Q.Event();
 
 /**
  * Gets the latest ordinal as long as there is a cache for that stream or that stream's messages.
@@ -1754,6 +1781,8 @@ Participant.get = Q.getter(function _Participant_get(publisherId, streamName, us
 		var participants = {};
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
 		if (msg) {
+			Streams.onError.handle.call(this, msg);
+			Participant.get.onError.handle.call(this, msg);
 			return callback && callback.call(this, msg);
 		}
 		if ('participants' in data) {
@@ -1776,6 +1805,7 @@ Participant.get = Q.getter(function _Participant_get(publisherId, streamName, us
 		}
 	});
 }, {cache: Q.Cache.document("Streams.Participant.get", 1000), throttle: 'Streams.Participant.get'});
+Participant.get.onError = new Q.Event();
 
 /**
  * Constructs an avatar from fields, which are typically returned from the server.
@@ -1799,6 +1829,8 @@ Avatar.get = Q.getter(function _Avatar_get (userId, callback) {
 	func.call(this, 'avatar', 'avatars', userId, function (err, data) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
 		if (msg) {
+			Streams.onError.handle.call(this, msg);
+			Avatar.get.onError.handle.call(this, msg);
 			return callback && callback.call(this, msg);
 		}
 		var avatar = data.avatars[userId]
@@ -1811,6 +1843,7 @@ Avatar.get = Q.getter(function _Avatar_get (userId, callback) {
 		callback && callback.call(avatar, null, avatar);
 	});
 }, {cache: Q.Cache.document("Streams.Avatar.get", 1000), throttle: 'Streams.Avatar.get'});
+Avatar.get.onError = new Q.Event();
 
 /**
  * Get avatars by prefix
@@ -1829,6 +1862,8 @@ Avatar.byPrefix = Q.getter(function _Avatar_byPrefix (prefix, callback) {
 	func.call(this, 'avatar', 'avatars', {prefix: prefix}, function (err, data) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
 		if (msg) {
+			Streams.onError.handle.call(this, msg);
+			Avatar.byPrefix.onError.handle.call(this, msg);
 			return callback && callback.call(this, msg);
 		}
 		var avatars = {};
@@ -1840,6 +1875,7 @@ Avatar.byPrefix = Q.getter(function _Avatar_byPrefix (prefix, callback) {
 		callback && callback.call(this, null, avatars);
 	});
 }, {cache: Q.Cache.document("Streams.Avatar.byPrefix", 100), throttle: 'Streams.Avatar.byPrefix'});
+Avatar.byPrefix.onError = new Q.Event();
 
 /**
  * Get the display name from a Streams.Avatar
@@ -2083,14 +2119,10 @@ function submitClosestForm () {
 	return false;
 }
 
-Q.Tool.define("Streams/preview", function (options) {
-	console.warn('TODO: Generic preview should be implemented');
-});
-
 Q.Tool.onMissingConstructor.set(function (constructors, normalized) {
 	var str = "_preview";
 	if (normalized.substr(-str.length) === str) {
-		constructors[normalized] = "Streams/smalltext/preview";
+		constructors[normalized] = "plugins/Streams/js/tools/preview.js";
 	}
 }, 'Streams');
 

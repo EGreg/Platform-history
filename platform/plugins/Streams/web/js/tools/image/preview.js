@@ -6,7 +6,7 @@
  * @param options {Object}
  *   A hash of options, which include:
  *   "publisherId": Required.
- *   "streamName": If empty, and "editableable" is true, then this can be used to add new related Streams/image streams.
+ *   "streamName": If empty, and "creatable" is true, then this can be used to add new related Streams/image streams.
  *   "related": A hash with properties "publisherId" and "streamName", and usually "type" and "weight"
  *   "editable": Set to false to avoid showing even authorized users an interface to replace the image or text
  *   "creatable": Optional fields to override in case streamName = "", including:
@@ -36,6 +36,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 	
 	if (!ip.saveSizeName) {
 		ip.saveSizeName = {};
+		ip.saveSizeName[ip.showSize] = ip.showSize;
 		Q.each(Q.Streams.image.sizes, function (i, size) {
 			ip.saveSizeName[size] = size;
 		});
@@ -54,7 +55,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 			fields,
 			function (err, html) {
 				if (err) {
-					return console.warn(err);
+					return err;
 				}
 				tool.element.innerHTML = html;
 				var ipo = Q.extend({}, ip, {
@@ -300,19 +301,19 @@ Q.Tool.define("Streams/image/preview", function(options) {
 Q.Template.set(
 	'Streams/image/preview/view',
 	'<img src="{{& srcFull}}" alt="{{alt}}" class="Streams_image_preview_icon">'
-	+ '<div class="Streams_smalltext_contents {{titleClass}}"><{{titleTag}}>{{& inplace}}</{{titleTag}}></div>'
+	+ '<div class="Streams_image_contents {{titleClass}}"><{{titleTag}}>{{& inplace}}</{{titleTag}}></div>'
 );
 
 Q.Template.set(
 	'Streams/image/preview/edit',
 	'<img src="{{& src}}" alt="{{alt}}" class="Streams_image_preview_icon">'
-	+ '<div class="Streams_smalltext_contents {{titleClass}}"><{{titleTag}}>{{& inplace}}</{{titleTag}}></div>'
+	+ '<div class="Streams_image_contents {{titleClass}}"><{{titleTag}}>{{& inplace}}</{{titleTag}}></div>'
 );
 
 Q.Template.set(
 	'Streams/image/preview/create',
 	'<img src="{{& src}}" alt="{{alt}}" class="Streams_image_preview_add">'
-	+ '<div class="Streams_smalltext_contents {{titleClass}}"><{{titleTag}}>{{& title}}</{{titleTag}}></div>'
+	+ '<div class="Streams_image_contents {{titleClass}}"><{{titleTag}}>{{& title}}</{{titleTag}}></div>'
 );
 
 })(window.jQuery, window);
