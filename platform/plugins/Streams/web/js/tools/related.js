@@ -56,6 +56,7 @@ function _Streams_related_tool (options)
 		function addComposer(streamType, params) {
 			// TODO: test whether the user can create streams of this type
 			// and otherwise do not append this element
+			params.streamType = streamType;
 			var element = tool.elementForStream(tool.state.publisherId, "", streamType, null, {
 				creatable: params
 			});
