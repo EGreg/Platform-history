@@ -116,6 +116,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 {
 	inplaceType: 'textarea',
 	editable: true,
+	inplace: {},
 	onUpdate: new Q.Event()
 }
 

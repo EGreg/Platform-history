@@ -166,11 +166,11 @@ function _Streams_related_tool (options)
             var eventNames = ['onRelated'+dir, 'onUnrelated'+dir, 'onUpdatedRelate'+dir];
             if (tool.state.realtime) {
                 Q.each(eventNames, function (i, eventName) {
-                    result.stream[eventName]().set(onChangedRelations, 'Streams/related');
+                    result.stream[eventName]().set(onChangedRelations, tool);
                 });
             } else {
                 Q.each(eventNames, function (i, eventName) {
-                    result.stream[eventName]().remove('Streams/related');
+                    result.stream[eventName]().remove(tool);
                 });
             }
             tool.state.result = result;

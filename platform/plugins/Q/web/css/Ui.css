@@ -1654,3 +1654,5 @@ input[type=radio] { margin-right: 5px; }
 	100% { opacity: 0.25; }
 }
 .Q_imagepicker_uploading { opacity: 0.5; animation: Q_uploading 1s ease-in-out infinite alternate;  }
+
+.Streams_preview { height: auto; }
