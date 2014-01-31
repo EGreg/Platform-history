@@ -12,6 +12,7 @@
  *  "editing" => If true, then renders the inplace tool in editing mode.
  *  "editOnClick" => Defaults to true. If true, then edit mode starts only if "Edit" button is clicked.
  *  "selectOnEdit" => Defaults to true. If true, selects all the text when entering edit mode.
+ *  "maxWidth" => The maximum width for the Q/autogrow
  *  "beforeSave" => Optional, reference to a callback to call after a successful save.
  *     This callback can cancel the save by returning false.
  *  "onSave" => Optional, reference to a callback or event to run after a successful save.
@@ -27,6 +28,9 @@ function Q_inplace_tool($options)
 	$editOnClick = true;
 	$selectOnEdit = true;
 	extract($options);
+	if (isset($inplace)) {
+		extract($inplace);
+	}
 	$staticClass = ($type === 'textarea')
 		? 'Q_inplace_tool_blockstatic'
 		: 'Q_inplace_tool_static';
@@ -35,7 +39,7 @@ function Q_inplace_tool($options)
 	$formTag = Q_Html::form($action, $method, array('class' => 'Q_inplace_tool_form'));
 
 	$classes = !empty($editing) ? 'Q_editing Q_nocancel' : '';
-	$options = compact('editOnClick', 'selectOnEdit', 'beforeSave', 'onSave');
+	$options = compact('editOnClick', 'selectOnEdit', 'maxWidth', 'beforeSave', 'onSave');
 	Q_Response::setToolOptions($options);
 
 return <<<EOT

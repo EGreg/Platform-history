@@ -41,6 +41,7 @@ class Q
 		return $ref2;
 	}
 
+
 	/**
 	 * Returns the number of microseconds since the
 	 * first call to this function (i.e. since script started).
@@ -854,6 +855,86 @@ class Q
 			throw new Q_Exception_MissingFunction(compact('function_name'));
 		}
 		return call_user_func_array($callback, $params);
+	}
+	
+	/**
+	 * @method take
+	 * @param source {object} An Object from which to take things
+	 * @param fields {array|object} An array of fields to take or an object of fieldname: default pairs
+	 * @return {object} a new Object
+	 */
+	static function take($source, $fields, &$dest = null)
+	{
+		if (!is_array($fields)) {
+			$fields = array($fields);
+		}
+		if (!isset($dest)) {
+			$dest = array();
+		}
+		if (Q::isAssociative($fields)) {
+			if (is_array($source)) {
+				if (is_array($dest)) {
+					foreach ($fields as $k => $v) {
+						$dest[$k] = array_key_exists($k, $source) ? $source[$k] : $v;
+					}
+				} else {
+					foreach ($fields as $k => $v) {
+						$dest->k = array_key_exists($k, $source) ? $source[$k] : $v;
+					}
+				}
+			} else {
+				if (is_array($dest)) {
+					foreach ($fields as $k => $v) {
+						$dest[$k] = property_exists($source, $k) ? $source->$k : $v;
+				 	}
+				} else {
+					foreach ($fields as $k => $v) {
+						$dest->$k = property_exists($source, $k) ? $source->$k : $v;
+				 	}	
+				}
+			}
+		} else {
+			if (is_array($source)) {
+				if (is_array($dest)) {
+					foreach ($fields as $k) {
+						if (array_key_exists($k, $source)) {
+							$dest[$k] = $source[$k];
+						}
+					}
+				} else {
+					foreach ($fields as $k) {
+						if (array_key_exists($k, $source)) {
+							$dest->$k = $source[$k];
+						}
+					}
+				}
+			} else {
+				if (is_array($dest)) {
+					foreach ($fields as $k) {
+						if (property_exists($source, $k)) {
+							$dest->$k = $source->k;
+						}
+					}
+				} else {
+					foreach ($fields as $k) {
+						if (property_exists($source, $k)) {
+							$dest->$k = $source->k;
+						}
+					}
+				}
+			}
+		}
+		return $dest;
+	}
+	
+	/**
+	 * Determine whether a PHP array if associative or not
+	 * Might be slow as it has to iterate through the array
+	 * @param {array}
+	 */
+	static function isAssociative($array)
+	{
+		return (bool)count(array_filter(array_keys($array), 'is_string'));
 	}
 
 	/**

@@ -891,7 +891,9 @@ Q.take = function _Q_take(source, fields) {
 	var result = {};
 	if (Q.typeOf(fields) === 'array') {
 		for (var i = 0; i < fields.length; ++i) {
-			result [ fields[i] ] = source [ fields[i] ];
+			if (fields[i] in source) {
+				result [ fields[i] ] = source [ fields[i] ];
+			}
 		}
 	} else {
 		for (var k in fields) {

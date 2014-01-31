@@ -15,6 +15,7 @@
  *     This callback can cancel the save by returning false.
  *  "onSave" => Optional, reference to a callback or event to run after a successful save.
  *  "onCancel" => Optional, reference to a callback or event to run after cancel.
+ *  "inplace" => Additional fields to pass to the child Q/inplace tool, if any
  */
 function Streams_inplace_tool($options)
 {
@@ -22,11 +23,13 @@ function Streams_inplace_tool($options)
 	if (empty($stream)) {
 		throw new Q_Exception_RequiredField(array('field' => 'stream'));
 	}
-	Q_Response::setToolOptions(array(
+	$toolOptions = array(
 		'publisherId' => $stream->publisherId,
 		'streamName' => $stream->name,
 		'inplaceType' => $options['inplaceType']
-	));
+	);
+	Q::take($options, 'inplace', $toolOptions);
+	Q_Response::setToolOptions($toolOptions);
 	$options['action'] = $stream->actionUrl();
 	$options['method'] = 'PUT';
 	$options['type'] = $options['inplaceType'];
