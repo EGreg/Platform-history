@@ -222,7 +222,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 	actions: {
 		position: 'tr'
 	},
-	throbber: "plugins/Q/img/throbbers/bars32.gif",
+	throbber: "plugins/Q/img/throbbers/bars.gif",
 	onCreate: new Q.Event(),
 	onUpdate: new Q.Event(),
 	onRefresh: new Q.Event(),
