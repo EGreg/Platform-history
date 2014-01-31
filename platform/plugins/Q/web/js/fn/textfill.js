@@ -15,6 +15,7 @@ function (options) {
 
 {
 	refresh: function (options) {
+		options = options || {};
 		var ourElement, ourText = "";
 		$('*:visible', this).each(function () {
 			var $t = $(this);
