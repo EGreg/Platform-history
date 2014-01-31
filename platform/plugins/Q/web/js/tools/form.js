@@ -10,20 +10,24 @@ Q.Tool.define('Q/form', function(options) {
 	if (!form.length) return;
 	if (form.data('Q_form_tool')) return;
 	form.submit(function() {
-		var onResponse = function(response, status, xhr) {
+		var onResponse = function(err, data) {
+			var msg;
+			if (msg = Q.firstErrorMessage(err)) {
+				return alert(msg);
+			}
 			$('button', $te).closest('td').removeClass('Q_throb');
 			Q.handle(tool.state.onResponse, tool, arguments);
 			$('div.Q_form_undermessagebubble', $te).empty();
 			$('tr.Q_error', $te).removeClass('Q_error');
-			if ('errors' in response) {
-				tool.applyErrors(response.errors);
+			if ('errors' in data) {
+				tool.applyErrors(data.errors);
 				$('tr.Q_error').eq(0).prev().find(':input').eq(0).focus();
-				if (response.scriptLines && response.scriptLines['form']) {
-					eval(response.scriptLines.form);
+				if (data.scriptLines && data.scriptLines['form']) {
+					eval(data.scriptLines.form);
 				}
 			} else {
-				if (response.scriptLines && response.scriptLines['form']) {
-					eval(response.scriptLines.form);
+				if (data.scriptLines && data.scriptLines['form']) {
+					eval(data.scriptLines.form);
 				}
 				Q.handle(tool.state.onSuccess, tool, arguments);
 			}
