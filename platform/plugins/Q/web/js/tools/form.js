@@ -46,8 +46,8 @@ Q.Tool.define('Q/form', function(options) {
 		return false;
 	});
 	$('input', form).add('select', form).on('input', function () {
-		if (step1_form.data('validator')) {
-			step1_form.data('validator').reset($(this));
+		if (form.data('validator')) {
+			form.data('validator').reset($(this));
 		}
 	});
 	form.data('Q_form_tool', true);
