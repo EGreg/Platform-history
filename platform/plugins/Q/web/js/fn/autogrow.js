@@ -22,15 +22,15 @@ function (o) {
 		tVal = null;
 
 		++p.count;
-		$t.before('<div id="jQuery_fn_autogrow_'+p.count+'"></div>');
-
-		var $c = jQuery('#jQuery_fn_autogrow_'+p.count),
-			c = $c.get(0);
-
+		var $c = $t.parent();
+		if (!$c.hasClass('Q_autogrow_container')) {
+			$c = $('<div id="jQuery_fn_autogrow_'+p.count+'" class="Q_autogrow_container"></div>');
+			$t.before($c);
+			$t.appendTo($c);
+		}
+		var c = $c[0];
 		c.style.padding = '0px';
 		c.style.margin = '0px';
-
-		$t.appendTo($c);
 
 		$t.bind('focus', function(){
 			t.startUpdating()

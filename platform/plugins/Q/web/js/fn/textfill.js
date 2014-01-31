@@ -7,7 +7,7 @@ Q.Tool.jQuery('Q/textfill',
 
 function (options) {
 
-	return this.refresh(options);
+	return $(this).plugin("Q/textfill", 'refresh', options);
 
 }, 
 
