@@ -1255,18 +1255,23 @@ class Streams_Stream extends Base_Streams_Stream
 				return array();
 			}
 			$result = array();
-			foreach (Q_Config::get('Streams', 'Stream', 'see', array(	// the array of fields allowed to see
-						'publisherId',
-						'insertedTime',
-						'updatedTime',
-						'name',
-						'type',
-						'title',
-						'icon',
-						'messageCount',
-						'participantCount')) as $key) {
+			$default = array( // the array of fields allowed to see
+				'publisherId',
+				'insertedTime',
+				'updatedTime',
+				'name',
+				'type',
+				'title',
+				'icon',
+				'messageCount',
+				'participantCount'
+			);
+			foreach (Q_Config::get('Streams', 'Stream', 'see', $default) as $key) {
 				$result[$key] = $this->$key;
 			}
+		}
+		foreach (Q_Config::get('Streams', 'types', $this->type, 'see', array()) as $key) {
+			$result[$key] = isset($this->$key) ? $this->$key : null;
 		}
 		if (!empty($result['icon']) and Q_Valid::url($result['icon'])) {
 			$result['icon'] = Q_Uri::url($result['icon']);
