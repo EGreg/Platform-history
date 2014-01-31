@@ -249,7 +249,7 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 				Users.connected.facebook = true;
 				var changed = (!Users.loggedInUser || Users.loggedInUser.fb_uid != response.authResponse.UserID);
 				Users.onLogin.handle(user);
-				Q.handle(options.onSuccess, this, [user]);
+				Q.handle(onSuccess, this, [user]);
 			}
 			
 			function _doCancel(ignoreUid) {
@@ -1396,9 +1396,8 @@ function setIdentifier_setupDialog(identifierType) {
  *   "filter": Custom function to filter out the friends list.
  *   "ordering": Custom function to order the friends list. By default friends are ordered by name.
  */
-Q.Tool.constructors['users_friendSelector'] = function(options) {
+Q.Tool.define('Users/friendSelector', function(o) {
 	var toolDiv = $(this.element);
-	var o = Q.extend({}, Q.Tool.constructors['users_friendSelector'].options, options);
 	if (!o.onSelect)
 	{
 		alert("Please provide the onSelect option for the friendSelector");
@@ -1586,7 +1585,58 @@ Q.Tool.constructors['users_friendSelector'] = function(options) {
 			});
 		break;
 	}
-};
+}, 
+
+{
+	onSelect: null,
+	customList: null,
+	includeMe: false,
+	provider: 'facebook',
+	prompt: false,
+	promptTitle: 'Login required',
+	promptText: 'Please log into Facebook to to view your friends.',
+	filter: function(friends, filter)
+	{
+		if (typeof(filter) == 'undefined')
+		{
+			return friends;
+		}
+		else
+		{
+			var filteredFriends = [], i, j, k;
+			for (i in friends)
+			{
+				var filterWords = filter.toLowerCase().split(' ');
+				var nameWords = friends[i].name.toLowerCase().split(' ');
+				var passedChecks = [];
+				for (j in filterWords)
+				{
+					for (k in nameWords)
+					{
+						if (nameWords[k].indexOf(filterWords[j]) != -1)
+						{
+							passedChecks.push(true);
+							delete nameWords[k];
+							break;
+						}
+					}
+				}
+				var passed = passedChecks.length == filterWords.length;
+				for (j in passedChecks)
+				{
+					if (!passedChecks[j])
+						passed = false;
+				}
+				if (passed)
+					filteredFriends.push(friends[i]);
+			}
+			return filteredFriends;
+		}
+	},
+	ordering: function(friends) { return friends; }
+}
+
+);
 
 function submitClosestForm () {
 	$(this).closest('form').submit();
@@ -1761,7 +1811,18 @@ Q.Tool.define("Users/status", function(options) {
 	Users.userStatus.button = toolDiv.find('.Q_login');
 	Users.userStatus.button.unbind(Q.Pointer.end).bind(Q.Pointer.end, Users.login);
 	fillUserArea(Q.Users.loggedInUser);
-});
+},
+
+{
+	'icon': 'plugins/Q/img/ui/qbix_icon' + (Q.info.isMobile ? '_small' : '') + '.png',
+	'label': 'log in',
+	'fullname': false,
+	'logoutIcon': null,
+	'menuItems': [],
+	'onMenuSelect': new Q.Event()
+}
+
+);
 
 /**
  * Makes a dialog that looks closely to facebook standard.
@@ -1903,64 +1964,6 @@ Q.onInit.add(function () {
 	Q.Users.prompt.options = Q.extend({
 		'dialogContainer': document.body
 	}, Q.Users.prompt.options, Q.Users.prompt.serverOptions);
-	
-	Q.Tool.constructors['users_status'].options = Q.extend({
-		'icon': 'plugins/Q/img/ui/qbix_icon' + (Q.info.isMobile ? '_small' : '') + '.png',
-		'label': 'log in',
-		'fullname': false,
-		'logoutIcon': null,
-		'menuItems': [],
-		'onMenuSelect': new Q.Event()
-	}, Q.Tool.constructors['users_status'].options, Q.Tool.constructors['users_status'].serverOptions);
-	
-	Q.Tool.constructors['users_friendSelector'].options = Q.extend({
-		onSelect: null,
-		customList: null,
-		includeMe: false,
-		provider: 'facebook',
-		prompt: false,
-		promptTitle: 'Login required',
-		promptText: 'Please log into Facebook to to view your friends.',
-		filter: function(friends, filter)
-		{
-			if (typeof(filter) == 'undefined')
-			{
-				return friends;
-			}
-			else
-			{
-				var filteredFriends = [], i, j, k;
-				for (i in friends)
-				{
-					var filterWords = filter.toLowerCase().split(' ');
-					var nameWords = friends[i].name.toLowerCase().split(' ');
-					var passedChecks = [];
-					for (j in filterWords)
-					{
-						for (k in nameWords)
-						{
-							if (nameWords[k].indexOf(filterWords[j]) != -1)
-							{
-								passedChecks.push(true);
-								delete nameWords[k];
-								break;
-							}
-						}
-					}
-					var passed = passedChecks.length == filterWords.length;
-					for (j in passedChecks)
-					{
-						if (!passedChecks[j])
-							passed = false;
-					}
-					if (passed)
-						filteredFriends.push(friends[i]);
-				}
-				return filteredFriends;
-			}
-		},
-		ordering: function(friends) { return friends; }
-	}, Q.Tool.constructors['users_friendSelector'].options, Q.Tool.constructors['users_friendSelector'].serverOptions);
 }, 'Q.Users');
 
 Q.onJQuery.add(function ($) {
