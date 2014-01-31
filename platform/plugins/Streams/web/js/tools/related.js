@@ -42,7 +42,7 @@ function _Streams_related_tool (options)
 {
     publisherId: Q.info.app,
     isCategory: true,
-	realtime: true,
+	realtime: false,
 	editable: true,
 	creatable: {},
 	sortable: {
