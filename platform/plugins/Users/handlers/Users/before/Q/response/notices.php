@@ -2,7 +2,7 @@
 
 function Users_before_Q_response_notices()
 {
-	$from_parts = explode(' ', Q::ifset($_REQUEST, '_', 'fromSuccess', false));
+	$from_parts = explode(' ', Q_Request::special('fromSuccess', false));
 	$from = reset($from_parts);
 	if ($from === 'Users/activate') {
 		$user = Q_Session::id() ? Users::loggedInUser() : null;
