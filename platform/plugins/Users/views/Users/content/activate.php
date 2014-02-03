@@ -1,9 +1,6 @@
 <div id="content">
 <?php if ($user) : ?>
 	<?php if (empty($_REQUEST['p']) and !empty($user->passphraseHash)): ?>
-		<div class="Q_extra_pane">
-
-		</div>
 		<div class="Q_admin_pane">
 			<?php echo Q::tool('Users/avatar', array(
 				'icon' => true
@@ -24,15 +21,10 @@
 				</div>
 			</form>
 		</div>
-	<?php else: ?>
 		<div class="Q_extra_pane">
-			<h2>Suggestions</h2>
-			<ul id='suggestions'>
-				<?php foreach ($suggestions as $s): ?>
-					<li class="fromServer"><?php echo Q_Html::text($s) ?></li>
-				<?php endforeach ?>
-			</ul>
+
 		</div>
+	<?php else: ?>
 		<div class="Q_admin_pane">
 				<?php echo Q::tool('Users/avatar', array(
 					'icon' => true,
@@ -43,18 +35,17 @@
 					<?php if (empty($_REQUEST['p'])): ?>
 						Set up a pass <strong>phrase</strong> to protect your account.<br>
 						In case you're wondering, passphrases are harder to guess, and<br>
-						easier to type than passwords with weird characters.<br>
-						See the suggestions on the right for some ideas.
+						easier to type than passwords with weird characters.
+						See the suggestions for some ideas.
 					<?php else: ?>
-						Choose another pass <strong>phrase</strong> to protect your account.<br>
-						See the suggestions on the right for some ideas.
+						Choose a pass <strong>phrase</strong> to protect your account.
+						See the suggestions for some ideas.
 					<?php endif; ?>
 					</p>
 					<?php echo Q_Html::form(Q_Dispatcher::uri(), 'post', array('id' => 'Q_activation_form')) ?>
 						<?php echo Q_Html::formInfo(null) ?>
-						<label for='activate_passphrase'>Please type a pass phrase for your account:</label><br>
-						<input type="password" id='activate_passphrase' name="passphrase" class='password' /><br>
-						<button type="submit">Activate My Account</button>
+						<input type="password" id='activate_passphrase' name="passphrase" class='password' autofocus placeholder="Enter a passphrase" /><br>
+						<button type="submit" class="Q_button" style="width: 250px;">Activate My Account</button>
 						<input type="hidden" id="activate_identifier" name="<?php echo $t ?>"
 							value="<?php echo Q_Html::text($identifier) ?>">
 						<input type="hidden" name="code" value="<?php echo Q_Html::text($code) ?>">
@@ -63,6 +54,14 @@
 						<?php endif; ?>
 					</form>
 				</div>
+		</div>
+		<div class="Q_extra_pane">
+			<h2>Suggestions</h2>
+			<ul id='suggestions'>
+				<?php foreach ($suggestions as $s): ?>
+					<li class="fromServer"><?php echo Q_Html::text($s) ?></li>
+				<?php endforeach ?>
+			</ul>
 		</div>
 	<?php endif; ?>
 <?php elseif (Users::loggedInUser()): ?>
@@ -80,6 +79,8 @@
 	$('#activate_passphrase').val('').focus();
 	
 	// Get the suggestions from YAHOO, if possible
+	
+	$('#activate_passphrase').plugin('Q/placeholders').plugin('Q/clickfocus');
 	
 	// this used to work:
 	var url = 'http://query.yahooapis.com/v1/public/yql?format=json&diagnostics=false&q=select%20abstract%20from%20search.news%20where%20query%3D%22$noun_ue%22';
@@ -100,17 +101,14 @@
 					source += ' ' + text;
 				}
 			}
-			var source_words = source.toLowerCase().replace(/[^A-Za-z0-9-_\'. ]/g, '').split(' ');
+			var source_words = source.toLowerCase().replace(/[^A-Za-z0-9-_\' ]/g, '').split(' ');
 			for (var i=0; i<7; ++i) { // add seven quotes from here
 				rand = Math.floor(Math.random() * source_words.length);
-				$('li', ul).eq(0).remove();
-				ul.append($('<li />').addClass('fromYahoo').html(
-					// this used to work for YAHOO news search:
-					// text = r[i].abstract;
-					// now we do this:
-					source_words.slice(rand, rand+3).join(' ')
-				));
-
+				var text = source_words.slice(rand, rand+3).join(' ');
+				if (text) {
+					ul.prepend($('<li />').addClass('fromYahoo').html(text));
+					$('li:last', ul).eq(0).remove();
+				}
 			}
 		}
 

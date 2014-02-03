@@ -241,9 +241,16 @@
 	border-top: solid 1px #aaa;
 }
 
+.Q_admin_pane
+{
+	float: left;
+	padding: 10px;
+}
+
 .Q_extra_pane
 {
 	float: right;
+	padding: 10px 0px 10px 0px;
 }
 
 .Users_avatar_icon, .Users_avatar_name
