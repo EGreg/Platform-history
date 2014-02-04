@@ -356,13 +356,34 @@ HTMLElement.prototype.swap = function(element) {
 	parent2.insertBefore(this, next2);
 };
 
+function _returnFalse() { return false; }
 HTMLElement.prototype.preventSelections = function () {
-	this.onselectstart = function() { return false; }; 
+	Q.addEventListener(this, 'selectstart', _returnFalse);
+	this.preventSelectionsInfo = this.preventSelectionsInfo || {
+		style: this.style['-moz-user-select']
+			|| this.style['-webkit-user-select']
+			|| this.style['-ms-user-select']
+			|| this.style['user-select'],
+		unselectable: this.unselectable
+	};
     this.unselectable = 'on'; 
 	this.style['-moz-user-select']
 	= this.style['-webkit-user-select']
 	= this.style['-ms-user-select']
 	= this.style['user-select'] = 'none';
+};
+
+HTMLElement.prototype.restoreSelections = function () {
+	var p = this.preventSelectionsInfo;
+	if (p) {
+		this.style['-moz-user-select']
+		= this.style['-webkit-user-select']
+		= this.style['-ms-user-select']
+		= this.style['user-select'] = p.style || 'text';
+		this.unselectable = p.unselectable;
+		delete this.preventSelectionsInfo;
+	}
+	Q.removeEventListener(this, 'selectstart', _returnFalse);
 };
 
 HTMLElement.prototype.isBefore = function (element, context) {

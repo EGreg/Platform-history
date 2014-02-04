@@ -37,6 +37,7 @@ function (options) {
 			return;
 		}
 		var $item = $(this);
+		$('body')[0].preventSelections();
 		this.preventSelections();
 		Q.addEventListener(document, [Q.Pointer.cancel, Q.Pointer.leave], function leaveHandler() {
 			Q.removeEventListener(document, [Q.Pointer.cancel, Q.Pointer.leave], leaveHandler);
@@ -81,6 +82,7 @@ function (options) {
 		}
 		
 		var $item = $(this);
+		$('body')[0].preventSelections();
 		this.preventSelections();
 		this.cloned = this.cloneNode(true).copyComputedStyle(this);
 		Q.find(this, null, function (element, options, shared, parent, i) {
@@ -160,6 +162,7 @@ function (options) {
 
 	function dropHandler(event, target) {
 		pressed = false;
+		$('body')[0].restoreSelections();
 		if (!lifted) {
 			return;
 		}
@@ -173,6 +176,8 @@ function (options) {
 	}
 	
 	function complete(revert) {
+		$('body')[0].restoreSelections();
+		
 		if (tLift) clearTimeout(tLift);
 		if (tScroll) clearTimeout(tScroll);
 		if (iScroll) clearInterval(iScroll);
