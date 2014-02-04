@@ -1310,8 +1310,8 @@ button.basic32 { height: 40px; border: solid 1px transparent; cursor: pointer; f
 .basic32_exclaim { background-position: 0px -1524px; }
 .basic32_exclaim2 { background-position: 0px -1564px; }
 
-.basic16_cancel { background-position: 0px -482px; }
-.basic32_cancel { background-position: 0px -964px; }
+.basic16_cancel { background-position: 0px -522px; }
+.basic32_cancel { background-position: 0px -1044px; }
 
 /* Clear fix */
 
