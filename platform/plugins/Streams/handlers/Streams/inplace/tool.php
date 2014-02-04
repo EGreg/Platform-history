@@ -50,7 +50,7 @@ function Streams_inplace_tool($options)
 		if (!isset($options['classes'])) {
 			$options['classes'] = '';
 		}
-		$staticClass = ($type === 'textarea')
+		$staticClass = ($options['inplaceType'] === 'textarea')
 			? 'Q_inplace_tool_blockstatic'
 			: 'Q_inplace_tool_static';
 		return "<span class='Q_inplace_tool_container $options[classes]' style='position: relative;'>"

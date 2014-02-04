@@ -523,7 +523,7 @@ Streams.getParticipating = Q.getter(function(callback) {
  * @return {boolean} whether the refresh occurred
  */
 Streams.refresh = function (callback, options) {
-	if (!Q.Users.loggedInUser || !Q.isOnline()) {
+	if (!Q.isOnline()) {
 		Q.handle(callback, this, [false]);
 		return false;
 	}
@@ -707,7 +707,7 @@ Stream.release = function _Stream_release (publisherId, streamName) {
  * @return {boolean} whether the refresh occurred
  */
 Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, options) {
-	if (!Q.Users.loggedInUser || !Q.isOnline()) {
+	if (!Q.isOnline()) {
 		callback && callback(false);
 		return false;
 	}
