@@ -6368,13 +6368,13 @@ document.documentElement.className += Q.info.isMobile ? ' Q_mobile' : ' Q_notMob
 
 // universal pointer events
 Q.Pointer = {
-	'start': (Q.info.isTouchscreen ? 'touchstart' : 'mousedown'),
-	'move': (Q.info.isTouchscreen ? 'touchmove' : 'mousemove'),
-	'end': (Q.info.isTouchscreen ? 'touchend' : 'mouseup'),
+	start: (Q.info.isTouchscreen ? 'touchstart' : 'mousedown'),
+	move: (Q.info.isTouchscreen ? 'touchmove' : 'mousemove'),
+	end: (Q.info.isTouchscreen ? 'touchend' : 'mouseup'),
 	'event': (Q.info.isTouchscreen ? 'touchenter' : 'mouseleave'),
-	'leave': (Q.info.isTouchscreen ? 'touchleave' : 'mouseleave'),
-	'cancel': (Q.info.isTouchscreen ? 'touchcancel' : 'mousecancel'), // mousecancel can be a custom event
-	'click': function _Q_click(params) {
+	leave: (Q.info.isTouchscreen ? 'touchleave' : 'mouseleave'),
+	cancel: (Q.info.isTouchscreen ? 'touchcancel' : 'mousecancel'), // mousecancel can be a custom event
+	click: function _Q_click(params) {
 		params.eventName = 'click';
 		return function _Q_click_on_wrapper (e) {
 			if (Q.Pointer.canceledClick) {
@@ -6384,7 +6384,7 @@ Q.Pointer = {
 			params.original.apply(this, arguments);
 		};
 	},
-	'fastclick': function _Q_fastclick (params) {
+	fastclick: function _Q_fastclick (params) {
 		params.eventName = Q.Pointer.end;
 		return function _Q_fastclick_on_wrapper (e) {
 			if (Q.Pointer.canceledClick || !this.isOrContains(Q.Pointer.started)) {
@@ -6394,34 +6394,40 @@ Q.Pointer = {
 			params.original.apply(this, arguments);
 		};
 	},
-	'canceledClick': false,
-	'window': true, // (true - clientX/Y, false - pageX/Y)
-	'getX': function(e) {
+	canceledClick: false,
+	window: true, // (true - clientX/Y, false - pageX/Y),
+	scrollLeft: function () {
+		return window.pageXOffset || document.documentElement.scrollLeft || (document.body && document.body.scrollLeft);
+	},
+	scrollTop: function () {
+		return window.pageYOffset || document.documentElement.scrollTop || (document.body && document.body.scrollTop);
+	},
+	getX: function(e) {
 		var oe = e.originalEvent || e;
 		e = oe.changedTouches ? oe.changedTouches[0] : (oe.touches ? oe.touches[0] : e);
-		return Math.max(0, ('pageX' in e) ? e.pageX : e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft);
+		return Math.max(0, ('pageX' in e) ? e.pageX : e.clientX + Q.Pointer.scrollLeft());
 	},
-	'getY': function(e) {
+	getY: function(e) {
 		var oe = e.originalEvent || e;
 		e = oe.changedTouches ? oe.changedTouches[0] : (oe.touches ? oe.touches[0] : e);
-		return Math.max(0, ('pageY' in e) ? e.pageY : e.clientY + document.body.scrollTop + document.documentElement.scrollTop);
+		return Math.max(0, ('pageY' in e) ? e.pageY : e.clientY + Q.Pointer.scrollTop());
 	},
-	'touchCount': function (e) {
+	touchCount: function (e) {
 		var oe = e.originalEvent || e;
  		return oe.touches ? oe.touches.length : (Q.Pointer.which(e) > 0 ? 1 : 0);
 	},
-	'which': function (e) {
+	which: function (e) {
 		var button = e.which || e.button;
 		return button || -1; // -1 means non-button interaction
 	},
-	'target': function (e) {
+	target: function (e) {
 		var target = e.target || e.srcElement;
 	    if (target.nodeType === 3) { // Safari bug
 			target = target.parentNode;
 		}
 		return target;
 	},
-	'relatedTarget': function (e) {
+	relatedTarget: function (e) {
 		e.relatedTarget = e.relatedTarget || (e.type == 'mouseover' ? e.fromElement : e.toElement);	
 	},
 	cancelClick: function (event, extraInfo) {
@@ -6430,8 +6436,8 @@ Q.Pointer = {
 	},
 	elementFromPoint: function (pageX, pageY) {
 		return document.elementFromPoint(
-			pageX - document.body.scrollLeft - document.documentElement.scrollLeft,
-			pageY - document.body.scrollTop - document.documentElement.scrollTop
+			pageX - Q.Pointer.scrollLeft(),
+			pageY - Q.Pointer.scrollTop()
 		);
 	},
 	onCancelClick: new Q.Event(),
