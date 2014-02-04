@@ -62,7 +62,8 @@ abstract class Streams extends Base_Streams
 		'see' => 10,						// can see icon and title
 		'content' => 20,					// can preview stream and its content
 		'participants' => 30,				// can see participants in the stream
-		'messages' => 40					// can play stream in a player
+		'messages' => 40,					// can play stream in a player
+		'max' => 40
 	);
 	/**
 	 * Write levels
@@ -151,8 +152,9 @@ abstract class Streams extends Base_Streams
 		'suggest' => 28,					// can suggest edits of stream
 		'edit' => 30,						// can edit stream content immediately
 		'closePending' => 35,				// can post a message requesting to close the stream
-		'close' => 40						// don't delete, just prevent any new changes to stream
+		'close' => 40,						// don't delete, just prevent any new changes to stream
 											// however, joining and leaving is still ok
+		'max' => 40
 	);
 	/**
 	 * Admin levels
@@ -199,7 +201,8 @@ abstract class Streams extends Base_Streams
 		'tell' => 10,					// can post on your stream about participating
 		'invite' => 20,						// able to create invitations for others, granting access
 		'manage' => 30,						// can approve posts and give people any adminLevel < 30
-		'own' => 40							// can give people any adminLevel <= 40
+		'own' => 40,						// can give people any adminLevel <= 40
+		'max' => 40
 	);
 	/**
 	 * Access sources
@@ -476,6 +479,12 @@ abstract class Streams extends Base_Streams
 			$s->set('asUserId', $asUserId);
 			if ($asUserId and $asUserId == $publisherId) {
 				// The publisher should have full access to every one of their streams.
+				$s->set('readLevel', Streams::$READ_LEVEL['max']);
+				$s->set('writeLevel', Streams::$WRITE_LEVEL['max']);
+				$s->set('adminLevel', Streams::$ADMIN_LEVEL['max']);
+				$s->set('readLevel_source', $direct_source);
+				$s->set('writeLevel_source', $direct_source);
+				$s->set('adminLevel_source', $direct_source);
 				$s->publishedByFetcher(true);
 				continue;
 			}
