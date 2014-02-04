@@ -76,30 +76,6 @@ if (is_dir($uploads_dir)) {
 	chdir($cwd);
 }
 
-try {
-	$filename = APP_VIEWS_DIR . DS . $desired . DS . "content" . DS . "welcome.php";
-	if (file_exists($filename)) {
-		$basename = basename(APP_DIR);
-		$file = file_put_contents($filename, <<<EOT
-<div id='content'>
-	<div style="padding: 50px;">
-		After the app has been configured, the next steps are:
-		<ul>
-			<li>Edit database connections and other credentials in local/app.json</li>
-			<li><pre>Run php $basename/scripts/Q/install.php --all</php></li>
-			<li>Start working on your app!</li>
-		</ul>
-		Speed check: this rendered in <?php echo ceil(Q::microseconds()) ?> ms.
-	</div>
-</div>
-		
-EOT
-		);
-	}
-} catch (Exception $e) {
-	
-}
-
 echo "Application configured. The next steps are:
 1) edit the config in $basename/local/app.json
 2) run $basename/scripts/Q/install.php --all
