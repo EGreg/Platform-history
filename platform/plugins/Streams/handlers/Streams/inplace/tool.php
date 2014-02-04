@@ -50,7 +50,11 @@ function Streams_inplace_tool($options)
 		if (!isset($options['classes'])) {
 			$options['classes'] = '';
 		}
-		return "<span class='Q_inplace_tool_container $options[classes]' style='position: relative;'>$options[staticHtml]</span>";
+		$staticClass = ($type === 'textarea')
+			? 'Q_inplace_tool_blockstatic'
+			: 'Q_inplace_tool_static';
+		return "<span class='Q_inplace_tool_container $options[classes]' style='position: relative;'>"
+			. "<div class='$staticClass'>$options[staticHtml]</div></span>";
 	}
 	return Q::tool("Q/inplace", $options);
 }

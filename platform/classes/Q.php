@@ -1603,6 +1603,8 @@ class Q
 	 * @static
 	 */
 	public static $cache = array();
+	
+	public static $toolWasRendered = array();
 }
 
 /// { aggregate classes for production

@@ -1,10 +1,7 @@
 <?php
 
 function Q_before_Q_tool_render($params, &$result)
-{
-	static $prefix_was_rendered = array();
-	static $temp_id = 0;
-	
+{	
 	$tool_name = $params['tool_name'];
 	$extra = $params['extra'];
 	$prefix = implode('_', explode('/', $tool_name)) . '_';
@@ -24,7 +21,7 @@ function Q_before_Q_tool_render($params, &$result)
 	if (isset($prefix_was_rendered[$tool_prefix])) {
 		trigger_error("A tool with prefix \"$tool_prefix\" was already rendered.", E_USER_NOTICE);
 	}
-	$prefix_was_rendered[$tool_prefix] = true;
+	Q::$toolWasRendered[$tool_prefix] = true;
 	$prev_prefix = Q_Html::pushIdPrefix($tool_prefix);
 
 	$Q_prefix = $prefix;

@@ -2452,6 +2452,7 @@ Q.onInit.add(function _Streams_onInit() {
 		// Every time before anything is activated,
 		// process any preloaded streams data we find
 		Q.each(Stream.preloaded, function (i, fields) {
+			if (!fields) return;
 			_constructStream(fields, {}, null, true);
 		});
 		Stream.preloaded = null;

@@ -6,10 +6,8 @@ Q.Awards = Q.plugins.Awards = {};
 	
 	Streams.onMessage('Awards/credits', "").set(function (data) {
 		
-		// TODO: nazar, implement this and trigger the following event:
-		// Q.plugins.Awards.amount = amount;
-		// Awards.onCredits.handle(amount);
-		// Dima can then update the dashboard when the amount changes etc.
+		Awards.amount = amount;
+		Awards.onCredits.handle(amount);
 		
 	});
 	

@@ -81,7 +81,16 @@ Q.Tool.define("Streams/inplace", function (options) {
 			}
 
 			if (state.editable === false || !stream.testWriteLevel('suggest')) {
-				tool.element.innerHTML = ipo.staticHtml;
+				var span = document.createElement('span');
+				span.setAttribute('class', 'Q_inplace_tool_container');
+				var div = document.createElement('div');
+				var staticClass = options.inplaceType === 'textarea'
+					? 'Q_inplace_tool_blockstatic'
+					: 'Q_inplace_tool_static';
+				div.setAttribute('class', staticClass);
+				div.innerHTML = ipo.staticHtml;
+				span.appendChild(div);
+				tool.element.appendChild(span);
 				return; // leave the html that is currently in the element
 			}
 

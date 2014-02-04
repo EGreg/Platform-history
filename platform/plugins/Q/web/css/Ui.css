@@ -1652,9 +1652,17 @@ input[type=radio] { margin-right: 5px; }
 .streams_basic_overlay .Q_field_title { width: 150px; text-align: right; padding-right: 10px; }
 
 @keyframes Q_uploading {
-	0% { opacity: 0.75; }
-	100% { opacity: 0.25; }
+	from { opacity: 0.75; }
+	to { opacity: 0.25; }
 }
-.Q_imagepicker_uploading { opacity: 0.5; animation: Q_uploading 1s ease-in-out infinite alternate;  }
+@-webkit-keyframes Q_uploading {
+	from { opacity: 0.75; }
+	to { opacity: 0.25; }
+}
+.Q_imagepicker_uploading {
+	opacity: 0.5;
+	animation: Q_uploading 1s ease-in-out infinite alternate;
+	-webkit-animation: Q_uploading 1s ease-in-out infinite alternate;
+}
 
 .Streams_preview { height: auto; }

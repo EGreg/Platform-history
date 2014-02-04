@@ -404,6 +404,7 @@ class Q_Dispatcher
 		self::$errors_occurred = true;
 		$response_started = self::$response_started;
 		$errors = Q_Response::getErrors();
+		Q::$toolWasRendered = array();
 		try {
 			if (self::$handling_errors) {
 				// We need to handle errors, but we
