@@ -39,7 +39,7 @@
 <?php echo $dialogs; ?> 
 <!-- ----------------------------end dialogs slot-------------------------------- -->
 	</div>
-	<?php echo Q_Response::scripts(true, "\n\t\t") ?> 
+	<?php echo Q_Response::scripts(true, "\n\t") ?> 
 	<?php echo Q_Response::scriptLines(true) ?>
 	<?php echo Q_Response::templates(true, "\n\t") ?>
 </body>

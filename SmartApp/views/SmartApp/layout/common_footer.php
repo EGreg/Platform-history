@@ -1,4 +1,5 @@
 <?php echo Q_Response::scripts("\n\t") ?>
+<?php echo Q_Response::scriptLines(true) ?>
 
 <?php 
 if (Q_Config::get('Q', 'socketbug', 'on', false))
@@ -27,6 +28,3 @@ if (Q_Config::get('Q', 'socketbug', 'on', false))
 EOT;
 }
 ?>
-
-<?php echo Q_Response::scripts(true, "\n\t\t") ?> 
-<?php echo Q_Response::scriptLines(true) ?>
