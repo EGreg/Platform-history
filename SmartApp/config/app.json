@@ -25,7 +25,7 @@
 			":action/:page": { "module": "SmartApp" }
 		},
 		"response": {
-			"slotNames": ["title", "notices", "dashboard", "column0", "column1", "column2"],
+			"slotNames": ["title", "notices", "dashboard", "column0", "column1", "column2", "dialogs"],
 			"ajax": [],
 			"layout": {
 				"desktop": "SmartApp/layout/desktop.php",

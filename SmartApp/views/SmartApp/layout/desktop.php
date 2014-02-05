@@ -41,5 +41,10 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
 		</div>
 		<?php include(dirname(__FILE__).'/common_footer.php') ?> 
 	</div>
+	<div id="dialogs_slot">
+<!-- --------------------------begin dialogs slot-------------------------------- -->
+<?php echo $dialogs; ?> 
+<!-- ----------------------------end dialogs slot-------------------------------- -->
+	</div>
 </body>
 </html>

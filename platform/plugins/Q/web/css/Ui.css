@@ -1666,3 +1666,5 @@ input[type=radio] { margin-right: 5px; }
 }
 
 .Streams_preview { height: auto; }
+
+#dialogs_slot { display: none; }

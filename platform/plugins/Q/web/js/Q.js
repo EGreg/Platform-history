@@ -6531,7 +6531,7 @@ Q.Dialogs = {
 	 * @param options Object
 	 *	 A hash of options, that can include:
 	 * "dialog": Optional. If provided, may be DOM element or jQuery object containing already prepared dialog html
-	 *           structure with 'title_slot', 'dialog_slot' and appropriated content in them. If it's provided, then
+	 *           structure with 'title_slot', 'dialog_slot' and appropriate content in them. If it's provided, then
 	 *           'title' and 'content' options given below are ignored.
 	 *	 "url": Optional. If provided, this url will be used to fetch the "title" and "dialog" slots, to display in the dialog.
 	 *        Thus the default content provided by 'title' and 'content' options given below will be overridden.

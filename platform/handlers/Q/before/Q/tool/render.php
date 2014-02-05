@@ -18,7 +18,7 @@ function Q_before_Q_tool_render($params, &$result)
 	$cur_prefix = isset($extra['prefix']) ? $extra['prefix'] : Q_Html::getIdPrefix();
 	$tool_prefix = $cur_prefix . $prefix;
 
-	if (isset($prefix_was_rendered[$tool_prefix])) {
+	if (isset(Q::$toolWasRendered[$tool_prefix])) {
 		trigger_error("A tool with prefix \"$tool_prefix\" was already rendered.", E_USER_NOTICE);
 	}
 	Q::$toolWasRendered[$tool_prefix] = true;

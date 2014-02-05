@@ -27,7 +27,7 @@
 			"m/:mobileNumber": { "module": "Users", "action": "activate" }
 		},
 		"response": {
-			"slotNames": ["title", "notices", "dashboard", "content"],
+			"slotNames": ["title", "notices", "dashboard", "content", "dialogs"],
 			"ajax": [],
 			"layout": {
 				"desktop": "MyApp/layout/desktop.php",

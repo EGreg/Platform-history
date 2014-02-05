@@ -39,5 +39,10 @@
 		</div>
 		<?php include('common_footer.php') ?>
 	</div>
+	<div id="dialogs_slot">
+<!-- --------------------------begin dialogs slot-------------------------------- -->
+<?php echo $dialogs; ?> 
+<!-- ----------------------------end dialogs slot-------------------------------- -->
+	</div>
 </body>
 </html>
