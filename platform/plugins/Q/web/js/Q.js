@@ -3633,7 +3633,7 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 		}
 		return '';
 	}
-	var slotNames2 = (typeof slotNames === 'string') ? slotNames : slotNames.join(',');
+	var slotNames2 = (typeof slotNames === 'string') ? slotNames : (slotNames && slotNames.join(','));
 	var timestamp = Q.microtime(true);
 	if (typeof(what) == 'string') {
 		var what2 = what;
@@ -3666,9 +3666,11 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 		}
 		what2.Q = {
 			"ajax": "json",
-			"timestamp": timestamp,
-			"slotNames": slotNames2
+			"timestamp": timestamp
 		};
+		if (slotNames) {
+			what2.slotNames = slotNames2;
+		}
 		if (options) {
 			if (options.callback) {
 				what2.Q.callback = callback;
