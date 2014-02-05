@@ -5,7 +5,7 @@ Q.Tool.jQuery('Q/actions',
 function (options) {
 	var container = $('<div class="Q_actions_container" />').css({
 		'position': 'absolute',
-		'zIndex': options.zIndex || 9999999
+		'zIndex': options.zIndex
 	});
 	var interval = null;
 	if (options.containerClass) {
@@ -112,7 +112,7 @@ function (options) {
 {	// default options:
 	actions: {}, // an array of name:function pairs
 	containerClass: '', // any class names to add to the actions container
-	zIndex: 9999999,
+	zIndex: null,
 	position: 'mr', // one of 't', 'm', 'b' followed by one of 'l', 'c', 'r'
 	size: 32, // could be 16
 	alwaysShow: Q.info.isTouchscreen,
