@@ -133,10 +133,10 @@ function _position($this, position, container) {
 	var cw = container.width(), ch = container.height(), left, top;
 	switch (position[0]) {
 		case 'b':
-			top = (parseInt($this.css('margin-top'))+$this.innerHeight()-ch)+'px';
+			top = ($this.innerHeight()-ch)+'px';
 			break;
 		case 'm':
-			top = (parseInt($this.css('margin-top'))+$this.innerHeight()/2-ch/2)+'px';
+			top = ($this.innerHeight()/2-ch/2)+'px';
 			break;
 		case 't':
 		default:
@@ -145,14 +145,14 @@ function _position($this, position, container) {
 	}
 	switch (position[1]) {
 		case 'l':
-			left = $this.css('margin-left');
+			left = 0;
 			break;
 		case 'c':
-			left = (parseInt($this.css('margin-left'))+$this.innerWidth()/2-cw/2)+'px';
+			left = (+$this.innerWidth()/2-cw/2)+'px';
 			break;
 		case 'r':
 		default:
-			left = (parseInt($this.css('margin-left'))+$this.innerWidth()-cw)+'px';
+			left = ($this.innerWidth()-cw)+'px';
 			break;
 	}
 	container.css('top', top);
