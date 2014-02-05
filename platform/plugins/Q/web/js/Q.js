@@ -6576,9 +6576,9 @@ Q.Dialogs = {
 			if (o.destroyOnClose !== false) o.destroyOnClose = true;
 		}
 		dialog.hide();
-		if (dialog.parent().length == 0) {
-			$(o.appendTo).append(dialog);
-		}
+		//if (dialog.parent().length == 0) {
+			$(o.appendTo || $('body')[0]).append(dialog);
+		//}
 		var _onClose = o.onClose;
 		o.onClose = new Q.Event(function() {
 			Q.handle(o.onClose.original, dialog, [dialog]);
