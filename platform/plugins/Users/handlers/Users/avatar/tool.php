@@ -29,7 +29,8 @@ function Users_avatar_tool($options)
 	$icon = $options['icon'];
 	if ($icon) {
 		if ($icon === true) $icon = 40;
-		$result .= Q_Html::img("plugins/Users/img/icons/{$user->icon}/$icon.png", 'user icon', array(
+		$path = $user->iconPath();
+		$result .= Q_Html::img("$path/$icon.png", 'user icon', array(
 			'class' => 'Users_avatar_icon'
 		));
 	}

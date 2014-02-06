@@ -611,6 +611,15 @@ class Users_User extends Base_Users_User
 	}
 	
 	/**
+	 * Obtain the path of the user icon
+	 * @return {string}
+	 */
+	function iconPath()
+	{
+		return "plugins/Users/img/icons/".$this->icon;
+	}
+	
+	/**
 	 * get user id
 	 * @method get_id
 	 * @static
