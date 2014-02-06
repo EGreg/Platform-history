@@ -291,6 +291,13 @@ class Streams_Stream extends Base_Streams_Stream
 		'before') === false) {
 			return false;
 		}
+
+		foreach ($this->fields as $name => $value) {
+			if ($this->fields_modified[$name]) {
+				$modified_fields[$name] = $value;
+			}
+		}
+
 		return parent::beforeSave($modified_fields);
 	}
 	
