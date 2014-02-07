@@ -43,7 +43,38 @@ Q.Tool.define("Streams/preview", function(options) {
 		});
 	}
 	
-	$(tool.element).addClass('Streams_preview');
+	tool.element.addClass('Streams_preview');
+
+	function handleClick(evt) {
+		
+		function _proceed(overrides) {
+
+			var fields = Q.extend({
+				publisherId: state.publisherId,
+				type: state.creatable.streamType
+			}, overrides);
+			Q.Streams.retainWith(tool).create(fields, function (err, stream, icon) {
+				if (err) {
+					return err;
+				}
+				state.publisherId = this.fields.publisherId;
+				state.streamName = this.fields.name;
+				tool.stream = this;
+				state.onCreate.handle.call(tool);
+				tool.stream.refresh(function () {
+					_render();
+					state.onUpdate.handle.call(tool);
+				}, {messages: true});
+			}, state.related);
+		}
+		
+		if (state.creatable && state.creatable.preprocess) {
+			Q.handle(state.creatable.preprocess, this, [_proceed, tool, evt]);
+		} else {
+			_proceed();
+		}
+		return false;
+	}
 
 	function _composer () {
 		var f = tool.state.template && tool.state.template.fields,
@@ -52,44 +83,18 @@ Q.Tool.define("Streams/preview", function(options) {
 			alt: state.creatable.title,
 			title: state.creatable.title
 		});
-		$(tool.element).addClass('Streams_preview_create');
+		tool.element.addClass('Streams_preview_create');
 		Q.Template.render(
 			'Streams/preview/create',
 			fields,
 			function (err, html) {
 				
-				function handleClick(evt) {
-					if (state.creatable && state.creatable.preprocess) {
-						Q.handle(state.creatable.preprocess, this, [_proceed, tool, evt]);
-					} else {
-						_proceed();
-					}
-					function _proceed(overrides) {
-						var fields = Q.extend({
-							publisherId: state.publisherId,
-							type: state.creatable.streamType
-						}, overrides);
-						Q.Streams.retainWith(tool).create(fields, function (err, stream, icon) {
-							if (err) {
-								return err;
-							}
-							state.publisherId = this.fields.publisherId;
-							state.streamName = this.fields.name;
-							tool.stream = this;
-							state.onCreate.handle.call(tool);
-							tool.stream.refresh(function () {
-								_render();
-								state.onUpdate.handle.call(tool);
-							}, {messages: true});
-						}, state.related);
-					}
-					return false;
-				}
-				
 				if (err) {
 					return err;
 				}
 				tool.element.innerHTML = html;
+				
+				tool.element.removeClass('Streams_preview_create');
 
 				var w = parts[0] || state.creatable.addIconSize,
 					h = parts[0] || state.creatable.addIconSize;

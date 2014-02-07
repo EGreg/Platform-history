@@ -6142,10 +6142,8 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 				arguments[0] = arguments[0][0];
 			}
 			if (typeof arguments[0] === 'function') {
-				var params = {
-					original: arguments[f]
-				};
-				arguments[f] = arguments[0] ( params );
+				var params = {};
+				arguments[0] ( params );
 				if (!('eventName' in params)) {
 					throw "Custom $.fn.on handler: need to set params.eventName";
 				}
