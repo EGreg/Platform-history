@@ -71,8 +71,8 @@ Q.Tool.define("Streams/inplace", function (options) {
 				case 'textarea':
 					ipo.fieldInput = $('<textarea rows="5" cols="80" />').attr('name', field).text(stream.fields[field]);
 					ipo.staticHtml = stream.fields[field].encodeHTML().replaceAll({
-						'&lt;br&gt;': "\n",
-						'&lt;br /&gt;': "\n",
+						'&lt;br&gt;': "<br>",
+						'&lt;br /&gt;': "<br>",
 						'&nbsp;': ' '
 					});
 					break;

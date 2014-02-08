@@ -91,7 +91,8 @@ String.prototype.encodeHTML = function _String_prototype_encodHTML(quote_style, 
 		'<': '&lt;',
 		'>': '&gt;',
 		'"': '&quot;',
-		"'": '&apos;'
+		"'": '&apos;',
+		"\n": '<br>'
 	});
 };
 
@@ -101,7 +102,9 @@ String.prototype.decodeHTML = function _String_prototype_encodHTML(quote_style, 
 		'&lt;': '<',
 		'&gt;': '>',
 		'&quot;': '"',
-		'&apos;': "'"
+		'&apos;': "'",
+		"<br>": "\n",
+		"<br />": "\n"
 	});
 };
 
