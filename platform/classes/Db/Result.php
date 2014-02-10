@@ -167,6 +167,10 @@ class Db_Result
 			} else {
 				$rows[] = $row;
 			}
+			$callback = array($row, "afterFetch");
+			if (is_callable($callback)) {
+				$row->afterFetch($this);
+			}
 		}
 		
 		return $rows;

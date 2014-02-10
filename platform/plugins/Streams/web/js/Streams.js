@@ -270,6 +270,7 @@ Q.Tool.define({
 	"Streams/access": "plugins/Streams/js/tools/access.js",
 	"Streams/related": "plugins/Streams/js/tools/related.js",
 	"Streams/inplace": "plugins/Streams/js/tools/inplace.js",
+	"Streams/html": "plugins/Streams/js/tools/html.js",
 	"Streams/preview": "plugins/Streams/js/tools/preview.js",
 	"Streams/image/preview": "plugins/Streams/js/tools/image/preview.js"
 });

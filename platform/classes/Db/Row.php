@@ -33,6 +33,11 @@ class Db_Row implements Iterator
 	 *     calculatePKValue() to generate the key for the cache.
 	 *  </li>
 	 *  <li>
+	 *     <b>afterFetch($result)</b>
+	 *     Called by retrieveOrSave(), retrieve() and $result->fetchDbRows() methods after retrieving a row.
+	 *     $result is the Db_Result, and $this is the Db_Row which was fetched
+	 *  </li>
+	 *  <li>
 	 *     <b>beforeGetRelated($relation_name, $fields, $inputs, $options)</b>
 	 *     Called by getRelated method before trying to get related rows.
 	 *     $relation_name, $inputs and $fields are the parameters passed to getRelated.
@@ -1391,6 +1396,8 @@ class Db_Row implements Iterator
 				return $args[1];
 			case 'beforeRetrieve':
 				return $args[0];
+			case 'afterFetch':
+				return $args[0];
 			case 'beforeSave':
 				return $args[0];
 			case 'beforeSaveExecute':
@@ -1852,7 +1859,7 @@ class Db_Row implements Iterator
 	 * the Db_Query object (via the chainable interface).
 	 * You can also pass true in place of the $modify_query field to achieve
 	 * the same effect as array("query" => true)
-	 * @param {array} [$options=array()] Array of options to pass to beforeRetrieve and afterRetrieve functions.
+	 * @param {array} [$options=array()] Array of options to pass to beforeRetrieve and afterFetch functions.
 	 * @return {array|Db_Row} Returns the row fetched from the Db_Result (or returned by beforeRetrieve)
 	 *  If retrieve() is called with no arguments, may return false if nothing retrieved.
 	 */
@@ -2001,21 +2008,22 @@ class Db_Row implements Iterator
 		if (isset($rows[0])) {
 			$this->copyFromRow($rows[0], '', true);
 			if (class_exists('Q')) {
-				/**
-				 * @event {before} Db/Row/$class_name/retrieveExecute
-				 * @param {Db_Row} 'row'
-				 * @param {Db_Query} 'query'
-				 * @param {array} 'modified_fields'
-				 * @param {array} 'options'
-				 * @return {Db_Query|null}
-				 *	Modified query or NULL if no modifications are necessary
-				 */
-				Q::event("Db/Row/$class_name/retrieveExecute", array(
+				$params = array(
 					'row' => $this,
 					'query' => $query,
 					'search_criteria' => $preserved_vars['use_search_criteria'],
 					'options' => $options
-				), 'after');
+				);
+				/**
+				 * @event {before} Db/Row/$class_name/retrieveExecute
+				 * @param {Db_Row} 'row'
+				 * @param {Db_Query} 'query'
+				 * @param {array} 'search_criteria'
+				 * @param {array} 'options'
+				 * @return {Db_Query|null}
+				 *	Modified query or NULL if no modifications are necessary
+				 */
+				Q::event("Db/Row/$class_name/retrieveExecute", $params, 'after');
 			}
 			return $this;
 		} else {
@@ -2031,7 +2039,7 @@ class Db_Row implements Iterator
 	 * @method retrieveOrSave
 	 * @param {string} [$fields='*'] The fields to retrieve and set in the Db_Row.
 	 *  This gets used if we make a query to the database.
-	 * @param {array} [$options=array()] Array of options to pass to beforeRetrieve and afterRetrieve functions.
+	 * @param {array} [$options=array()] Array of options to pass to beforeRetrieve and afterFetch functions.
 	 * @return {boolean} returns whether the record was saved (i.e. false means retrieved)
 	 */
 	function retrieveOrSave (

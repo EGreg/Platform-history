@@ -180,6 +180,25 @@ class Streams_Stream extends Base_Streams_Stream
 			))->fetchDbRows();
 		return self::sortTemplateTypes($rows , 'ofUserId', $type, 'streamName');
 	}
+	
+	/**
+	 * Method is called after field is set and used to keep $fields_modified property up to date
+	 * @method afterSet
+	 * @param {string} $name The field name
+	 * @param {mixed} $value The value of the field
+	 * @return {mixed} Original value
+	 */
+	function afterSet($name, $value)
+	{
+		$fields = $this->fieldNames();
+		if (isset($this->type)) {
+			$fields = array_merge($fields, Q_Config::get('Streams', 'types', $this->type, 'fields', array()));
+		}
+		if (!in_array($name, $fields)) {
+			$this->notModified($name);
+		}
+		return $value;			
+	}
 
 	/**
 	 * Make necessary preparations to create new stream.
@@ -204,18 +223,18 @@ class Streams_Stream extends Base_Streams_Stream
 	 *	<li>generic stream name and generic publisher</li>
 	 * </ol>
 	 * @method beforeSave
-	 * @param {array} $modified_fields
+	 * @param {array} $modifiedFields
 	 *	The array of fields
 	 * @return {array}
 	 * @throws {Exception}
 	 *	If mandatory field is not set
 	 */
-	function beforeSave($modified_fields)
+	function beforeSave($modifiedFields)
 	{
 		if (!$this->retrieved) {
 			// Generate a unique name for the stream
-			if (!isset($modified_fields['name'])) {
-				$this->name = $modified_fields['name'] = Streams::db()->uniqueId(Streams_Stream::table(), 'name',
+			if (!isset($modifiedFields['name'])) {
+				$this->name = $modifiedFields['name'] = Streams::db()->uniqueId(Streams_Stream::table(), 'name',
 					array('publisherId' => $this->publisherId),
 					array('prefix' => $this->type.'/Q')
 				);
@@ -239,14 +258,14 @@ class Streams_Stream extends Base_Streams_Stream
 					$this->getPrimaryKey(),
 					$magicFieldNames
 				) as $field) {
-					if (in_array($field, $privateFieldNames) || !array_key_exists($field, $modified_fields)) {
-						$this->fields[$field] = $modified_fields[$field] = $streamTemplate->$field;
+					if (in_array($field, $privateFieldNames) || !array_key_exists($field, $modifiedFields)) {
+						$this->fields[$field] = $modifiedFields[$field] = $streamTemplate->$field;
 					}
 				}
 			} else {
 				// otherwise (no template) set all private fields to defaults
 				foreach ($privateFieldNames as $field) {
-					$this->fields[$field] = $modified_fields[$field] = Q_Config::get(
+					$this->fields[$field] = $modifiedFields[$field] = Q_Config::get(
 						'Streams', 'types', $this->type, 'defaults', $field,
 						isset(Streams_Stream::$DEFAULTS[$field]) ? Streams_Stream::$DEFAULTS[$field] : null
 					);
@@ -255,8 +274,8 @@ class Streams_Stream extends Base_Streams_Stream
 			
 			// Assign default values to fields that haven't been set yet
 			foreach ($fieldNames as $f) {
-				if (!array_key_exists($f, $this->fields) and !array_key_exists($f, $modified_fields)) {
-					$this->fields[$field] = $modified_fields[$f] = Q_Config::get(
+				if (!array_key_exists($f, $this->fields) and !array_key_exists($f, $modifiedFields)) {
+					$this->fields[$field] = $modifiedFields[$f] = Q_Config::get(
 						'Streams', 'types', $this->type, 'defaults', $f,
 						isset(Streams_Stream::$DEFAULTS[$f]) ? Streams_Stream::$DEFAULTS[$f] : null
 					);
@@ -282,23 +301,37 @@ class Streams_Stream extends Base_Streams_Stream
 		/**
 		 * @event Streams/Stream/save/$streamType {before}
 		 * @param {Streams_Stream} 'stream'
-		 * @param {string} 'asUserId'
 		 * @return {false} To cancel further processing
 		 */
 		if (Q::event(
 		"Streams/Stream/save/{$this->type}", 
-		array('stream' => $this),
+		array('stream' => $this, 'modifiedFields' => $modifiedFields),
 		'before') === false) {
 			return false;
 		}
 
 		foreach ($this->fields as $name => $value) {
 			if ($this->fields_modified[$name]) {
-				$modified_fields[$name] = $value;
+				$modifiedFields[$name] = $value;
 			}
 		}
 
-		return parent::beforeSave($modified_fields);
+		return parent::beforeSave($modifiedFields);
+	}
+	
+	function afterFetch($result)
+	{
+		/**
+		 * @event Streams/Stream/retrieve/$streamType {before}
+		 * @param {Streams_Stream} 'stream'
+		 * @return {false} To cancel further processing
+		 */
+		if (Q::event(
+		"Streams/Stream/fetch/{$this->type}", 
+		array('stream' => $this, 'result' => $result),
+		'after') === false) {
+			return false;
+		}
 	}
 	
 	/**
@@ -1273,8 +1306,11 @@ class Streams_Stream extends Base_Streams_Stream
 				'messageCount',
 				'participantCount'
 			);
-			foreach (Q_Config::get('Streams', 'Stream', 'see', $default) as $key) {
-				$result[$key] = $this->$key;
+			if (isset($this->type)) {
+				$fields = array_merge($fields, Q_Config::get('Streams', 'types', $this->type, 'see', array()));
+			}
+			foreach ($fields as $field) {
+				$result[$field] = $this->$field;
 			}
 		}
 		foreach (Q_Config::get('Streams', 'types', $this->type, 'see', array()) as $key) {

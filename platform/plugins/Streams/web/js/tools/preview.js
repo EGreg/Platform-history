@@ -3,10 +3,10 @@
  * Renders a default tool to preview streams
  * @param options {Object}
  *   A hash of options, which include:
- *   "publisherId": Required.
- *   "streamName": If empty, and "creatable" is true, then this can be used to add new related Streams/image streams.
+ *   "publisherId": Required. The publisher's user id.
+ *   "streamName": If empty, and "creatable" is true, then this can be used to add new related streams.
  *   "related": A hash with properties "publisherId" and "streamName", and usually "type" and "weight"
- *   "editable": Set to false to avoid showing even authorized users an interface to replace the image or text
+ *   "editable": Set to false to avoid showing even authorized users an interface to replace the icon or title
  *   "creatable": Optional fields to override in case streamName = "", including:
  *     "title": Optional title for the case when streamName = "", i.e. the image composer
  *     "clickable": Whether the image composer image is clickable
@@ -29,6 +29,9 @@
 Q.Tool.define("Streams/preview", function(options) {
 	
 	var tool = this;
+	if (!tool.state.publisherId) {
+		throw "Streams/image/preview tool: missing options.publisherId";
+	}
 	if (!tool.state.imagepicker || !tool.state.imagepicker.showSize) {
 		throw "Streams/image/preview tool: missing options.imagepicker.showSize";
 	}
