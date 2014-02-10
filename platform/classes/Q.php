@@ -418,12 +418,17 @@ class Q
 			}
 
 			// Now we can include the file
-			self::includeFile($filename);
-
-			if (!class_exists($class_name) && !interface_exists($class_name)) {
-				require_once(Q_CLASSES_DIR.DS.'Q'.DS.'Exception'.DS.'MissingClass.php');
-				throw new Q_Exception_MissingClass(compact('class_name'));
+			try {
+				self::includeFile($filename);
+			} catch (Q_Exception_MissingFile $e) {
+				// the file doesn't exist
+				// and you will get an error if you try to use the class
 			}
+
+			// if (!class_exists($class_name) && !interface_exists($class_name)) {
+			// 	require_once(Q_CLASSES_DIR.DS.'Q'.DS.'Exception'.DS.'MissingClass.php');
+			// 	throw new Q_Exception_MissingClass(compact('class_name'));
+			// }
 
 			/**
 			 * @event Q/autoload {after}
