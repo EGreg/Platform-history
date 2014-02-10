@@ -2411,19 +2411,25 @@ Q.timeEnd = function _Q_timeEnd(handle) {
  * @param {Object} data an object where the errors may be found
  * @return {String|null} The first error message found, or null
  */
-Q.firstErrorMessage = function _Q_firstErrorMessage(data) {
+Q.firstErrorMessage = function _Q_firstErrorMessage(data /*, data2, ... */) {
 	var error = null;
-	if (Q.isEmpty(data)) {
-		return;
-	}
-	if (data.errors && data.errors[0]) {
-		error = data.errors[0];
-	} else if (data.error) {
-		error = data.error;
-	} else if (Q.typeOf(data) === 'array') {
-		error = data[0];
-	} else {
-		error = data;
+	for (var i=0; i<arguments.length; ++i) {
+		var d = arguments[i];
+		if (Q.isEmpty(d)) {
+			return;
+		}
+		if (d.errors && d.errors[0]) {
+			error = d.errors[0];
+		} else if (d.error) {
+			error = d.error;
+		} else if (Q.typeOf(d) === 'array') {
+			error = d[0];
+		} else {
+			error = d;
+		}
+		if (error) {
+			break;
+		}
 	}
 	if (!error) {
 		return null;

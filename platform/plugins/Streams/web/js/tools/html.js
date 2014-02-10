@@ -25,7 +25,8 @@ Q.Tool.define("Streams/html", function (options) {
 	}
 
 	if (state.streamName) {
-		Q.Streams.get(state.publisherId, state.streamName, function () {
+		Q.Streams.get(state.publisherId, state.streamName, function (err1, err2) {
+			if (Q.firstErrorMessage(err1, err2)) return false;
 			state.stream = this;
 			tool.element.innerHTML = this.fields[state.field];
 			_proceed();

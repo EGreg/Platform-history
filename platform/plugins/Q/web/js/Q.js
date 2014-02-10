@@ -1067,6 +1067,9 @@ Q.Class.options = {
 Q.normalize = function _Q_normalize(text, replacement, characters) {
 	if (replacement === undefined) replacement = '_';
 	characters = characters || new RegExp("[^A-Za-z0-9]+", "g");
+	if (text === undefined) {
+		debugger; // report this error
+	}
 	var result = text.toLowerCase().replace(characters, replacement);
 	if (text.length > 233) {
 		result = text.substr(0, 200) + '_' + Math.abs(text.substr(200).hashCode());
@@ -3938,19 +3941,25 @@ Q.request.callbacks = []; // used by Q.request
  * @param {Object} data an object where the errors may be found
  * @return {String|null} The first error message found, or null
  */
-Q.firstErrorMessage = function _Q_firstErrorMessage(data) {
+Q.firstErrorMessage = function _Q_firstErrorMessage(data /*, data2, ... */) {
 	var error = null;
-	if (Q.isEmpty(data)) {
-		return;
-	}
-	if (data.errors && data.errors[0]) {
-		error = data.errors[0];
-	} else if (data.error) {
-		error = data.error;
-	} else if (Q.typeOf(data) === 'array') {
-		error = data[0];
-	} else {
-		error = data;
+	for (var i=0; i<arguments.length; ++i) {
+		var d = arguments[i];
+		if (Q.isEmpty(d)) {
+			return;
+		}
+		if (d.errors && d.errors[0]) {
+			error = d.errors[0];
+		} else if (d.error) {
+			error = d.error;
+		} else if (Q.typeOf(d) === 'array') {
+			error = d[0];
+		} else {
+			error = d;
+		}
+		if (error) {
+			break;
+		}
 	}
 	if (!error) {
 		return null;

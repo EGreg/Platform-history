@@ -152,8 +152,8 @@ Streams.key = function (publisherId, streamName) {
 /**
  * This event is fired if an error occurs in any Streams function
  */
-Streams.onError = new Q.Event(function (err) {
-	console.warn(Q.firstErrorMessage(err));
+Streams.onError = new Q.Event(function (err, err2) {
+	console.warn(Q.firstErrorMessage(err, err2));
 }, 'Streams.onError');
 
 /**
@@ -410,6 +410,11 @@ Streams.create.onError = new Q.Event();
  * @param handleRefreshEvents {Boolean} whether to handle the stream refresh events
  */
 function _constructStream (fields, extra, callback, handleRefreshEvents) {
+
+	if (Q.isEmpty(fields)) {
+		Q.handle(callback, this, ["Streams.Stream constructor: fields are missing"]);
+		return false;
+	}
 
 	var type = Q.normalize(fields.type);
 	var streamFunc = Streams.constructors[type];
@@ -2453,7 +2458,6 @@ Q.onInit.add(function _Streams_onInit() {
 		// Every time before anything is activated,
 		// process any preloaded streams data we find
 		Q.each(Stream.preloaded, function (i, fields) {
-			if (!fields) return;
 			_constructStream(fields, {}, null, true);
 		});
 		Stream.preloaded = null;
