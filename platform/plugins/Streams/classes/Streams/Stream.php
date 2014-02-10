@@ -180,25 +180,6 @@ class Streams_Stream extends Base_Streams_Stream
 			))->fetchDbRows();
 		return self::sortTemplateTypes($rows , 'ofUserId', $type, 'streamName');
 	}
-	
-	/**
-	 * Method is called after field is set and used to keep $fields_modified property up to date
-	 * @method afterSet
-	 * @param {string} $name The field name
-	 * @param {mixed} $value The value of the field
-	 * @return {mixed} Original value
-	 */
-	function afterSet($name, $value)
-	{
-		$fields = $this->fieldNames();
-		if (isset($this->type)) {
-			$fields = array_merge($fields, Q_Config::get('Streams', 'types', $this->type, 'fields', array()));
-		}
-		if (!in_array($name, $fields)) {
-			$this->notModified($name);
-		}
-		return $value;			
-	}
 
 	/**
 	 * Make necessary preparations to create new stream.

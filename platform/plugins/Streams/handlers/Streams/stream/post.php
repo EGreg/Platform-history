@@ -58,15 +58,12 @@ function Streams_stream_post($params) {
 		array('type', 'title', 'icon', 'content', 'attributes', 'readLevel', 'writeLevel', 'adminLevel'),
 		$xtype
 	);
+	$defaults = Q_Config::get('Streams', 'types', $type, 'defaults', array());
 	foreach ($fieldnames as $f) {
 		if (isset($more_fields[$f])) {
 			$stream->$f = $more_fields[$f];
-		} else {
-			try {
-				$stream->$f = Q_Config::expect('Streams', 'types', $type, 'defaults', $f);
-			} catch (Exception $e) {
-				continue;
-			}
+		} else if (array_key_exists($f, $defaults)) {
+			$stream->$f = $defaults[$f];
 		}
 	}
 	if (empty($stream->attributes)) {
