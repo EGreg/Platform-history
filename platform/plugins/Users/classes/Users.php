@@ -843,7 +843,8 @@ abstract class Users extends Base_Users
 		$url_parts = parse_url(Q_Request::baseUrl());
 		if (isset($url_parts['host'])) {
 			// By default, the user's url would be this:
-			$user->url = "http://$username.".$url_parts['host'];
+			$part = $username ? $username : $user->id;
+			$user->url = "http://$part.".$url_parts['host'];
 		}
 		/**
 		 * @event Users/insertUser {before}
