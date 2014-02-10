@@ -37,6 +37,9 @@ Q.Tool.define("Streams/html", function (options) {
 	}
 
 	function _proceed() {
+		if (state.editable === false || !state.stream.testWriteLevel('suggest')) {
+			return;
+		}
 		Q.addScript("plugins/Q/js/ckeditor/ckeditor.js", function () {
 			CKEDITOR.disableAutoInline = true;
 			tool.element.setAttribute('contenteditable', true);
