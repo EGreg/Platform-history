@@ -78,18 +78,18 @@ function _Streams_related_tool (options)
 			});
 		}
 		
-        var tool = this;
+        var tool = this, state = tool.state;
         Q.Tool.clear(tool.element);
         tool.element.innerHTML = '';
-		++tool.state.refreshCount;
+		++state.refreshCount;
 		
 		Q.Streams.refresh.beforeRequest.set(function () {
 			result.stream.refresh(null, {messages: true});
 		}, 'Streams/related');
 		
 		if (result.stream.testWriteLevel('relate')) {
-			Q.each(tool.state.creatable, addComposer);
-			if (tool.state.sortable && result.stream.testWriteLevel('suggest')) {
+			Q.each(state.creatable, addComposer);
+			if (state.sortable && result.stream.testWriteLevel('suggest')) {
 				var sortableOptions = Q.extend({
 					beforeDrop: {"Streams/related": function ($item, revert, data) {
 						if (!data.direction) return;
@@ -119,8 +119,18 @@ function _Streams_related_tool (options)
 							);
 						}, this.state('Q/sortable').drop.duration);
 					}}
-				}, tool.state.sortable);
-				tool.$().plugin('Q/sortable', sortableOptions);
+				}, state.sortable);
+				var $t = tool.$();
+				$t.plugin('Q/sortable', sortableOptions, function () {
+					if (!state.realtime) {
+						$t.state('Q/sortable').onSuccess.set(function () {
+							Q.Streams.related.cache.each([state.publisherId, state.streamName], function (k, v) {
+								Q.Streams.related.cache.remove(k);
+							});
+							tool.refresh();
+						}, tool);
+					}
+				});
 			}
 		}
         Q.each(result.relations, function (i) {

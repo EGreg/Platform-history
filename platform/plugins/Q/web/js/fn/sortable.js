@@ -5,6 +5,7 @@ Q.Tool.jQuery('Q/sortable',
 function (options) {
 
 	var $this = $(this);
+	var state = $this.state('Q/sortable');
 	var dataLifted = 'Q/sortable dragging', mx, my, gx, gy, tLift, tScroll, iScroll, lifted, pressed;
 	var $scrolling = null, ost = null, osl = null;
 	
@@ -15,12 +16,11 @@ function (options) {
 		}
 	});
 	
-	options.draggable = options.draggable || '*';
-	$this.on([Q.Pointer.start, '.Q_sortable'], options.draggable, liftHandler);
+	state.draggable = state.draggable || '*';
+	$this.on([Q.Pointer.start, '.Q_sortable'], state.draggable, liftHandler);
 	
 	$('*', $this).css('-webkit-touch-callout', 'none');
-	$this.on('dragstart.Q_sortable', options.draggable, function () {
-		var state = $this.state('Q/sortable');
+	$this.on('dragstart.Q_sortable', state.draggable, function () {
 		if (state.draggable === '*' && this.parentNode !== $this[0]) {
 			return;
 		}
@@ -32,7 +32,6 @@ function (options) {
 			return; // only left mouse button or touches
 		}
 		pressed = true;
-		var state = $this.state('Q/sortable');
 		if (state.draggable === '*' && this.parentNode !== $this[0]) {
 			return;
 		}
@@ -92,7 +91,7 @@ function (options) {
 			}
 		});
 		var $placeholder = $(this.cloned).css({
-			opacity: options.placeholderOpacity
+			opacity: state.placeholderOpacity
 		}).insertAfter($item); //.hide('slow');
 		
 		this.cloned = this.cloneNode(true).copyComputedStyle(this);
@@ -102,7 +101,6 @@ function (options) {
 				element.cloned = children[i].copyComputedStyle(element);
 			}
 		});
-		var state = $this.state('Q/sortable');
 		
 		var x = Q.Pointer.getX(event),
 			y = Q.Pointer.getY(event),
@@ -131,7 +129,7 @@ function (options) {
 			.addClass('Q-sortable-placeholder');
 		$dragged.prependTo('body')
 			.css({
-				opacity: options.draggedOpacity,
+				opacity: state.draggedOpacity,
 				position: 'absolute', 
 				zIndex: $this.state('Q/sortable').zIndex,
 				pointerEvents: 'none'
@@ -153,7 +151,7 @@ function (options) {
 			}, state.lift.animate);
 		}
 		lifted = true;
-		Q.handle(options.onLift, $this, [this, {
+		Q.handle(state.onLift, $this, [this, {
 			event: event,
 			$dragged: $dragged, 
 			$placeholder: $placeholder
@@ -168,8 +166,7 @@ function (options) {
 		}
 		var x = Q.Pointer.getX(event),
 		    y = Q.Pointer.getY(event),
-			$target = getTarget(x, y),
-			state = $this.state('Q/sortable');
+			$target = getTarget(x, y);
 		moveHandler.xStart = moveHandler.yStart = null;
 		complete(!$target && state.requireDropTarget);
 		return false;
@@ -225,7 +222,7 @@ function (options) {
 			top: data.top
 		});
 		
-		Q.handle(options.beforeDrop, $this, [$item, revert, params]);
+		Q.handle(state.beforeDrop, $this, [$item, revert, params]);
 		
 		if (!revert) {
 			$item.insertAfter(data.$placeholder).show();
@@ -233,10 +230,10 @@ function (options) {
 		data.$placeholder.hide();
 		$item.removeData('Q/sortable');
 		
-		Q.handle(options.onDrop, $this, [$item, revert, params]);
+		Q.handle(state.onDrop, $this, [$item, revert, params]);
 		
 		if (!revert) {
-			Q.handle(options.onSuccess, $this, [$item, params]);
+			Q.handle(state.onSuccess, $this, [$item, params]);
 		}
 		if (!data.$placeholder.retain) {
 			data.$placeholder.remove();
@@ -260,13 +257,13 @@ function (options) {
 		mx = x = Q.Pointer.getX(event), 
  		my = y = Q.Pointer.getY(event);
 		if (!Q.info.isTouchscreen && !lifted) {
-			if ((moveHandler.xStart !== undefined && Math.abs(moveHandler.xStart - x) > options.lift.threshhold)
-			|| (moveHandler.yStart !== undefined && Math.abs(moveHandler.yStart - y) > options.lift.threshhold)) {
+			if ((moveHandler.xStart !== undefined && Math.abs(moveHandler.xStart - x) > state.lift.threshhold)
+			|| (moveHandler.yStart !== undefined && Math.abs(moveHandler.yStart - y) > state.lift.threshhold)) {
 				lift.call($item[0], event);
 			}
 		}
-		if ((moveHandler.x !== undefined && Math.abs(moveHandler.x - x) > options.scroll.threshhold)
-		|| (moveHandler.y !== undefined && Math.abs(moveHandler.y - y) > options.scroll.threshhold)) {
+		if ((moveHandler.x !== undefined && Math.abs(moveHandler.x - x) > state.scroll.threshhold)
+		|| (moveHandler.y !== undefined && Math.abs(moveHandler.y - y) > state.scroll.threshhold)) {
 			scrolling($item, x, y);
 		}
 		moveHandler.x = x;
@@ -298,7 +295,6 @@ function (options) {
 	function scrolling($item, x, y) {
 		if (tScroll) clearTimeout(tScroll);
 		if (!lifted) return;
-		var state = $this.state('Q/sortable');
 		var dx = 0, dy = 0, isWindow = false;
 		var speed = state.scroll.speed;
 		var beyond = false;
@@ -309,39 +305,39 @@ function (options) {
 			}
 			if (!$t.is('body') && $t.width()) {
 				if ($t.scrollLeft() > 0
-				&& x < $t.offset().left + $t.width() * options.scroll.distance) {
+				&& x < $t.offset().left + $t.width() * state.scroll.distance) {
 					dx = -speed;
 					beyond = (x < $t.offset().left);
 				}
 				if ($t.scrollLeft() + $t.innerWidth() < this.scrollWidth
-				&& x > $t.offset().left + $t.width() * (1-options.scroll.distance)) {
+				&& x > $t.offset().left + $t.width() * (1-state.scroll.distance)) {
 					dx = speed;
 					beyond = (x > $t.offset().left + $t.width());
 				}
 			}
 			if (!$t.is('body') && $t.height()) {
 				if ($t.scrollTop() > 0
-				&& y < $t.offset().top + $t.height() * options.scroll.distance) {
+				&& y < $t.offset().top + $t.height() * state.scroll.distance) {
 					dy = -speed;
 					beyond = (y < $t.offset().top);
 				}
 				if ($t.scrollTop() + $t.innerHeight() < this.scrollHeight
-				&& y > $t.offset().top + $t.height() * (1-options.scroll.distance)) {
+				&& y > $t.offset().top + $t.height() * (1-state.scroll.distance)) {
 					dy = speed;
 					beyond = (y > $t.offset().top + $t.height());
 				}
 			}
 			var $w = $(window);
-			if (x - document.body.scrollLeft < $w.innerWidth() * options.scroll.distanceWindow) {
+			if (x - document.body.scrollLeft < $w.innerWidth() * state.scroll.distanceWindow) {
 				dx = -speed; isWindow = true;
 			}
-			if (x - document.body.scrollLeft > $w.innerWidth() * (1 - options.scroll.distanceWindow)) {
+			if (x - document.body.scrollLeft > $w.innerWidth() * (1 - state.scroll.distanceWindow)) {
 				dx = speed; isWindow = true;
 			}
-			if (y - document.body.scrollTop < $w.innerHeight() * options.scroll.distanceWindow) {
+			if (y - document.body.scrollTop < $w.innerHeight() * state.scroll.distanceWindow) {
 				dy = -speed; isWindow = true;
 			}
-			if (y - document.body.scrollTop > $w.innerHeight() * (1 - options.scroll.distanceWindow)) {
+			if (y - document.body.scrollTop > $w.innerHeight() * (1 - state.scroll.distanceWindow)) {
 				dy = speed; isWindow = true;
 			}
 			if (dx || dy) {
@@ -378,7 +374,6 @@ function (options) {
 	
 	function getTarget(x, y) {
 		var element = Q.Pointer.elementFromPoint(x, y);
-		var state = $this.state('Q/sortable');
 		var $target = null;
 		state.droppable = state.droppable || '*';
 		var $jq = (state.droppable === '*')
@@ -415,7 +410,6 @@ function (options) {
 		
 		var $placeholder = data.$placeholder;
 		if (!$target) {
-			var state = $this.state('Q/sortable');
 			if (state.requireDropTarget) {
 				$item.after($placeholder);
 			}
@@ -450,7 +444,7 @@ function (options) {
 			direction = 'after';
 		}
 		data.$prevTarget = $target;
-		Q.handle(options.onIndicate, $this, [$item, {
+		Q.handle(state.onIndicate, $this, [$item, {
 			$target: $target,
 			direction: direction,
 			$placeholder: $placeholder,
