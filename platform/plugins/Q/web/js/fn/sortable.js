@@ -401,8 +401,9 @@ function (options) {
 		var element = Q.Pointer.elementFromPoint(x, y);
 		var pe = data.$dragged.css('pointer-events');
 		var offset = $this.offset();
-		if (x >= offset.left && x <= offset.left + $this.width()
-		 && y >= offset.top && y <= offset.top + $this.height()) {
+		if ($(element).closest($this).length) {
+		// if (x >= offset.left && x <= offset.left + $this.width()
+		//  && y >= offset.top && y <= offset.top + $this.height()) {
 			if (pe !== 'none') {
 				data.$dragged.css('pointer-events', 'none');
 			}

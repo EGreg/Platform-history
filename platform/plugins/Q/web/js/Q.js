@@ -2715,7 +2715,9 @@ function _loadToolScript(toolElement, callback, shared) {
 	});
 };
 
-Q.Tool.onLoadedConstructor = Q.Event.factory({}, [""]);
+Q.Tool.onLoadedConstructor = Q.Event.factory({}, ["", function (name) { 
+	return [Q.normalize(name)];
+}]);
 Q.Tool.onMissingConstructor = new Q.Event();
 
 Q.Session = function _Q_Session() {
@@ -4784,6 +4786,7 @@ Q.replace = function _Q_replace(existing, source, options) {
  *   "loader": the actual function to load the URL, defaults to Q.request. See Q.request documentation for more options.
  *   "handler": the function to handle the returned data. Defaults to a function that fills the corresponding slot containers correctly.
  *   "ignoreHistory": if true, does not push the url onto the history stack
+ *   "fields": additional fields to pass via the querystring
  *   "loadExtras": if true, asks the server to load the extra scripts, stylesheets, etc. that are loaded on first page load
  *   "onError": custom error function, defaults to alert
  *   "onActivate": callback which is called when all Q.activate's processed and all script lines executed

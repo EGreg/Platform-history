@@ -6,7 +6,8 @@
  *   "publisherId": Required. The publisher's user id.
  *   "streamName": If empty, and "creatable" is true, then this can be used to add new related streams.
  *   "related": A hash with properties "publisherId" and "streamName", and usually "type" and "weight"
- *   "editable": Set to false to avoid showing even authorized users an interface to replace the icon or title
+ *   "editable": Set to false to avoid showing even authorized users an interface to replace the icon or title.
+ *     You can also pass "icon" to make only the icon editable, or "title" to make only the title editable.
  *   "creatable": Optional fields to override in case streamName = "", including:
  *     "title": Optional title for the case when streamName = "", i.e. the image composer
  *     "clickable": Whether the image composer image is clickable
@@ -163,7 +164,9 @@ Q.Tool.define("Streams/preview", function(options) {
 						return false;
 					}}
 				});
-				tool.$('img').plugin('Q/imagepicker', ipo);
+				if (state.editable !== 'title') {
+					tool.$('img').plugin('Q/imagepicker', ipo);
+				}
 				if (tool.state.actions && stream.testWriteLevel('close')) {
 					var ao = Q.extend(tool.state.actions, {
 						actions: {
@@ -213,17 +216,17 @@ Q.Tool.define("Streams/preview", function(options) {
 		view: {
 			dir: 'plugins/Streams/views',
 			name: 'Streams/preview/view',
-			fields: { alt: 'icon', titleClass: '', titleTag: 'h3' }
+			fields: { alt: 'icon', titleClass: '', titleTag: 'h2' }
 		},
 		edit: {
 			dir: 'plugins/Streams/views',
 			name: 'Streams/preview/edit',
-			fields: { alt: 'icon', titleClass: '', titleTag: 'h3' }
+			fields: { alt: 'icon', titleClass: '', titleTag: 'h2' }
 		},
 		create: {
 			dir: 'plugins/Streams/views',
 			name: 'Streams/preview/create',
-			fields: { alt: 'new', titleClass: '', titleTag: 'h3' }
+			fields: { alt: 'new', titleClass: '', titleTag: 'h2' }
 		}
 	},
 	inplace: {},
@@ -274,7 +277,7 @@ Q.Tool.define("Streams/preview", function(options) {
 				field: 'title',
 				inplaceType: 'text'
 			}, state.inplace);
-			if (state.editable === false) {
+			if (state.editable === false || state.editable === 'icon') {
 				inplace.editable = false;
 			}
 			var f = tool.state.template && tool.state.template.fields;

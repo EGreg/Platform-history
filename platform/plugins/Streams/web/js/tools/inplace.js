@@ -18,12 +18,12 @@ Q.Tool.define("Streams/inplace", function (options) {
 		state.streamName = stream.fields.name;
 
 		Q.Streams.get(state.publisherId, state.streamName, function () {
-			tool.stream = this;
+			state.stream = this;
 		});
 
 		function _setContent(content) {
 			Q.Streams.get(state.publisherId, state.streamName, function () {
-				tool.stream = this;
+				state.stream = this;
 			});
 			switch (state.inplaceType) {
 				case 'text':
@@ -57,7 +57,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 		
 		if (!container.length) {
 			// dynamically construct the tool
-			var ipo = state.inplace = Q.extend(state.inplace, {
+			var ipo = Q.extend(state.inplace, {
 				action: stream.actionUrl(),
 				method: 'put',
 				field: field,
@@ -105,7 +105,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 				return;
 			}
 			inplace.state.onSave.set(function () {
-				tool.stream.refresh(function () {
+				state.stream.refresh(function () {
 					state.onUpdate.handle.call(tool);
 				}, {messages: true});
 			}, 'Streams/inplace');

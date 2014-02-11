@@ -89,7 +89,7 @@ class Q_Bootstrap
 
 		if ( !function_exists('json_encode') ) {
 			function json_encode($content){
-				$json = new Services_JSON;
+				$json = new Q_Json;
 				return $json->encode($content);
 			}
 		}

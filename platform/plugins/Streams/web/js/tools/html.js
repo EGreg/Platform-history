@@ -28,7 +28,7 @@ Q.Tool.define("Streams/html", function (options) {
 		Q.Streams.get(state.publisherId, state.streamName, function (err1, err2) {
 			if (Q.firstErrorMessage(err1, err2)) return false;
 			state.stream = this;
-			tool.element.innerHTML = this.fields[state.field];
+			tool.element.innerHTML = this.fields[state.field] || state.placeholder;
 			_proceed();
 		});
 	} else if (state.placeholder) {
@@ -43,21 +43,26 @@ Q.Tool.define("Streams/html", function (options) {
 		Q.addScript("plugins/Q/js/ckeditor/ckeditor.js", function () {
 			CKEDITOR.disableAutoInline = true;
 			tool.element.setAttribute('contenteditable', true);
-			var editor = CKEDITOR.inline(tool.element, state.ckeditor || undefined);
-			editor.on('blur', function () {
+			state.editor = CKEDITOR.inline(tool.element, state.ckeditor || undefined);
+			state.editor.on('blur', function () {
 				state.editing = false;
-				if (state.stream) {
-					state.stream.pendingFields[state.field] = editor.getData();
-					state.stream.save(function (err) {
-						if (Q.firstErrorMessage(err)) {
-							return state.onCancel.handle(err);
-						}
+				var content = state.editor.getData();
+				if (state.startingContent === content) return;
+				state.startingContent = null;
+				if (!state.stream) return;
+				state.stream.pendingFields[state.field] = content;
+				state.stream.save(function (err) {
+					if (Q.firstErrorMessage(err)) {
+						return state.onCancel.handle(err);
+					}
+					state.stream.refresh(function () {
 						state.onSave.handle.call(this);
-					});
-				}
+					}, {messages: true});
+				});
 			});
-			editor.on('focus', function () {
+			state.editor.on('focus', function () {
 				state.editing = true;
+				state.startingContent = state.editor.getData();
 			});
 			if (state.stream) {
 				state.stream.onFieldChanged(state.field).set(function (fields, field) {

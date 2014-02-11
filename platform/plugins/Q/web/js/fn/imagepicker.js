@@ -49,7 +49,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 		if (originalSrc.indexOf('?') < 0) {
 			$this.attr('src', originalSrc+"?"+Date.now()); // cache busting
 		}
-		$this.after(input);
+		$this.before(input);
 		$this.addClass('Q_imagepicker');
 		
 		function upload(data) {
