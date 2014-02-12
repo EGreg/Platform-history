@@ -464,6 +464,10 @@ Q.objectWithPrototype = function _Q_objectWithPrototype(original) {
  */
 Q.typeOf = function _Q_typeOf(value) {
 	var s = typeof value, x;
+	if (s === 'function' && !(value instanceof Function)) {
+		// older webkit workaround https://bugs.webkit.org/show_bug.cgi?id=33716
+		s = 'object';
+	}
 	if (s === 'object') {
 		if (value === null) {
 			return 'null';
@@ -1529,7 +1533,7 @@ Q.Pipe = function _Q_Pipe(requires, maxTimes, callback) {
  * @param requires Array
  *  Optional. Pass an array of required field names here.
  * @param maxTimes Number
- *  Optional. The maximum number of times times the callback should be called.
+ *  Optional. The maximum number of times the callback should be called.
  * @param callback Function
  *  Once all required fields are filled (see previous parameter, if any)
  *  this function is called every time something is piped.
@@ -4703,7 +4707,7 @@ Q.activate = function _Q_activate(elem, options, callback) {
 		options = undefined;
 	}
 	Q.find(elem, true, Q.activate.onConstruct.handle, Q.activate.onInit.handle, options, shared);
-	shared.pipe.add(shared.waitingForTools, _activated).run();
+	shared.pipe.add(shared.waitingForTools, 1, _activated).run();
 	
 	Q.Tool.beingActivated = ba;
 	
@@ -4786,6 +4790,7 @@ Q.replace = function _Q_replace(existing, source, options) {
  *   "loader": the actual function to load the URL, defaults to Q.request. See Q.request documentation for more options.
  *   "handler": the function to handle the returned data. Defaults to a function that fills the corresponding slot containers correctly.
  *   "ignoreHistory": if true, does not push the url onto the history stack
+ *   "ignorePage": if true, does not process the deactivation of current page and activation of the new page
  *   "fields": additional fields to pass via the querystring
  *   "loadExtras": if true, asks the server to load the extra scripts, stylesheets, etc. that are loaded on first page load
  *   "onError": custom error function, defaults to alert
