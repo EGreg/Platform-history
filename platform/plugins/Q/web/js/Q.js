@@ -4791,6 +4791,8 @@ Q.replace = function _Q_replace(existing, source, options) {
  *   "handler": the function to handle the returned data. Defaults to a function that fills the corresponding slot containers correctly.
  *   "ignoreHistory": if true, does not push the url onto the history stack
  *   "ignorePage": if true, does not process the deactivation of current page and activation of the new page
+ *   "ignoreLoadingErrors": If true, ignores any errors in loading scripts.
+ *   "ignoreHash": if true, does not navigate to the hash part of the URL in browsers that can support it
  *   "fields": additional fields to pass via the querystring
  *   "loadExtras": if true, asks the server to load the extra scripts, stylesheets, etc. that are loaded on first page load
  *   "onError": custom error function, defaults to alert
@@ -4800,8 +4802,6 @@ Q.replace = function _Q_replace(existing, source, options) {
  *		the function might be called to cancel loading.
  *   "onLoad": handler to call when data is loaded but before it is processed -
  *		when called the argument of "onTimeout" does nothing
- *   "ignoreLoadingErrors": If true, ignores any errors in loading scripts.
- *   "ignoreHash": if true, does not navigate to the hash part of the URL in browsers that can support it
  *   "slotNames": an array of slot names to request and process (default is all slots in Q.info.slotNames)
  *   "cacheSlots": an object of {slotName: whetherToCache} pairs
  *   "quiet": defaults to false. If true, allows visual indications that the request is going to take place.
@@ -4872,7 +4872,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 			// but some of the new scripts will be added.
 
 			var moduleSlashAction = Q.info.uri.module+"/"+Q.info.uri.action; // old page going out
-			var i;
+			var i, newStylesheets, newStyles;
 			
 			function _doEvents(prefix, moduleSlashAction) {
 				var event, f = Q[prefix+'PageUnload'];
@@ -4917,20 +4917,22 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 						});
 					});
 				});
-				try {
-					Q.Page.beingActivated = true;
-					Q.onPageActivate('').handle();
-					if (Q.info && Q.info.uri) {
-						var moduleSlashAction = Q.info.uri.module+"/"+Q.info.uri.action;
-						Q.onPageActivate(moduleSlashAction).handle();
-						if (Q.info.uriString !== moduleSlashAction) {
-							Q.onPageActivate(Q.info.uriString).handle();
+				if (!o.ignorePage) {
+					try {
+						Q.Page.beingActivated = true;
+						Q.onPageActivate('').handle();
+						if (Q.info && Q.info.uri) {
+							var moduleSlashAction = Q.info.uri.module+"/"+Q.info.uri.action;
+							Q.onPageActivate(moduleSlashAction).handle();
+							if (Q.info.uriString !== moduleSlashAction) {
+								Q.onPageActivate(Q.info.uriString).handle();
+							}
 						}
+						Q.Page.beingActivated = false;
+					} catch (e) {
+						Q.Page.beingActivated = false;
+						throw e;
 					}
-					Q.Page.beingActivated = false;
-				} catch (e) {
-					Q.Page.beingActivated = false;
-					throw e;
 				}
 				// Invoke prefixfree again if it was loaded
 				if (window.StyleFix) {
@@ -4941,7 +4943,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 			
 			function afterStyles() {
 			
-				if (Q.info && Q.info.uri) {
+				if (!o.ignorePage && Q.info && Q.info.uri) {
 					Q.beforePageLoad(moduleSlashAction).occurred = false;
 					Q.onPageLoad(moduleSlashAction).occurred = false;
 					Q.onPageActivate(moduleSlashAction).occurred = false;
@@ -4967,20 +4969,22 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 					}
 				}
 
-				try {
-					Q.Page.beingLoaded = true;
-					Q.onPageLoad('').handle();
-					if (Q.info && Q.info.uri) {
-						moduleSlashAction = Q.info.uri.module+"/"+Q.info.uri.action; // new page coming in
-						Q.onPageLoad(moduleSlashAction).handle();
-						if (Q.info.uriString !== moduleSlashAction) {
-							Q.onPageLoad(Q.info.uriString).handle();
+				if (!o.ignorePage) {
+					try {
+						Q.Page.beingLoaded = true;
+						Q.onPageLoad('').handle();
+						if (Q.info && Q.info.uri) {
+							moduleSlashAction = Q.info.uri.module+"/"+Q.info.uri.action; // new page coming in
+							Q.onPageLoad(moduleSlashAction).handle();
+							if (Q.info.uriString !== moduleSlashAction) {
+								Q.onPageLoad(Q.info.uriString).handle();
+							}
 						}
+						Q.Page.beingLoaded = false;
+					} catch (e) {
+						Q.Page.beingLoaded = false;
+						throw e;
 					}
-					Q.Page.beingLoaded = false;
-				} catch (e) {
-					Q.Page.beingLoaded = false;
-					throw e;
 				}
 			
 				if (Q.isEmpty(domElements)) {
@@ -4995,15 +4999,18 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				}
 			}
 
-			_doEvents('before', moduleSlashAction);
-			while (Q.Event.forPage && Q.Event.forPage.length) {
-				// keep removing the first element of the array until it is empty
-				Q.Event.forPage[0].remove(true);
-			}
-			var p = Q.Event.jQueryForPage;
-			for (i=p.length-1; i >= 0; --i) {
-				var off = p[i][0];
-				window.jQuery.fn[off].call(p[i][1], p[i][2]);
+			if (!o.ignorePage) {
+				_doEvents('before', moduleSlashAction);
+				while (Q.Event.forPage && Q.Event.forPage.length) {
+					// keep removing the first element of the array until it is empty
+					Q.Event.forPage[0].remove(true);
+				}
+				var p = Q.Event.jQueryForPage;
+				for (i=p.length-1; i >= 0; --i) {
+					var off = p[i][0];
+					window.jQuery.fn[off].call(p[i][1], p[i][2]);
+				}
+				Q.Event.jQueryForPage = [];
 			}
 
 			if (!o.ignoreHistory) {
@@ -5056,12 +5063,13 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				});
 	        });
 			
-			Q.Event.jQueryForPage = [];
 			var domElements = handler(response, url, options); // this is where we fill all the slots
-			_doEvents('on', moduleSlashAction);
 			
-            var newStylesheets = loadStylesheets(),
-                newStyles = loadStyles();
+			if (!o.ignorePage) {
+				_doEvents('on', moduleSlashAction);
+	            newStylesheets = loadStylesheets(),
+	            newStyles = loadStyles();
+			}
 			
 			afterStyles(); // Synchronous to allow additional scripts to change the styles before allowing the browser reflow.
 			
