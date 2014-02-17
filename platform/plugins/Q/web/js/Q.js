@@ -2062,16 +2062,6 @@ Q.Exception = function (message, fields) {
 Q.Exception.prototype = Error;
 
 /**
- * A constructor to create Q.Page objects
- */
-Q.Page = function (uriString) {
-	this.uriString = uriString;
-};
-
-Q.Page.beingLoaded = false;
-Q.Page.beingActivated = false;
-
-/**
  * The root mixin added to all tools.
  * @param [element] the element to activate into a tool
  * @param [options={}] an optional set of options that may contain ".Tool_name or #Some_exact_tool or #Some_child_tool"
@@ -2161,10 +2151,9 @@ Q.Tool = function _Q_Tool(element, options) {
 		Q.tools[this.id] = this;
 	}
 	
-	var handler = Q.handle(Q.getObject([this.name], _constructToolHandlers), this, []);
-	if (handler) {
-		handler.handle.call(this, this.options);
-	}
+	Q.Tool.onConstruct(this.name).handle.call(this, this.options);
+	Q.Tool.onConstruct("").handle.call(this, this.options);
+	Q.Page.onTool(this.id).handle.call(this, this.options);
 	
 	return this;
 };
@@ -2173,11 +2162,13 @@ Q.Tool.options = {
 	levels: 10
 };
 
-var _constructToolHandlers = {}, _beforeRemoveToolHandlers = {};
+var _constructToolHandlers = {},
+	_beforeRemoveToolHandlers = {},
+	_pageToolHandlers = {};
 
 /**
  * Returns Q.Event which occurs when a tool has been constructed
- * Generic callbacks can be assigend by setting toolName to ""
+ * Generic callbacks can be assigned by setting toolName to ""
  * @method Q.Tool.onConstruct
  * @param toolName {String} the name of the tool, such as "Q/inplace"
  * @return {Q.Event}
@@ -2188,7 +2179,7 @@ Q.Tool.onConstruct = Q.Event.factory(_constructToolHandlers, ["", function (tool
 
 /**
  * Returns Q.Event which occurs when a tool is about to be removed
- * Generic callbacks can be assigend by setting toolName to ""
+ * Generic callbacks can be assigned by setting toolName to ""
  * @method Q.Tool.beforeRemove
  * @param toolName {String} the name of the tool, such as "Q/inplace"
  * @return {Q.Event}
@@ -2197,6 +2188,20 @@ Q.Tool.beforeRemove = Q.Event.factory(_beforeRemoveToolHandlers, ["", function (
 	return [Q.normalize(toolName)];
 }]);
 
+/**
+ * Reference a tool by its id
+ * @param {String} id
+ * @return {Q.Tool|null}
+ */
+Q.Tool.byId = function _Q_Tool_byId(id) {
+	return Q.tools[id] || null;
+};
+
+/**
+ * Computes and returns a tool's prefix
+ * @param {String} id
+ * @return {String}
+ */
 Q.Tool.prefixById = function _Q_Tool_prefixById(id) {
 	if (id.match(/_tool$/)) {
 		return id.substring(0, id.length-4);
@@ -2205,13 +2210,6 @@ Q.Tool.prefixById = function _Q_Tool_prefixById(id) {
 	} else {
 		return id + "_";
 	}
-};
-
-/**
- * Reference a tool by its id
- */
-Q.Tool.byId = function _Q_Tool_byId(id) {
-	return Q.tools[id];
 };
 
 /**
@@ -2370,7 +2368,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 		$.fn[name] = jQueryPluginConstructor;
 		var ToolConstructor = Q.Tool.define(name, function _Q_Tool_jQuery_toolConstructor(options) {
 			$(this.element).plugin(name, options, this);
-			this.beforeRemove("").set(function () {
+			this.beforeRemove.set(function () {
 				$(this.element).plugin(name, 'destroy', this);
 			}, 'Q');
 		});
@@ -2510,8 +2508,9 @@ Q.Tool.prototype.remove = function _Q_Tool_prototype_remove(removeCached) {
 
 	// give the tool a chance to clean up after itself
 	if (shouldRemove) {
-		Q.Tool.beforeRemove("").handle(this);
-		Q.handle(this.beforeRemove);
+		Q.Tool.beforeRemove("").handle.call(this, []);
+		Q.Tool.beforeRemove(this.name).handle.call(this, []);
+		Q.handle(this.beforeRemove, this, []);
 	}
 
 	// removes the nodes from the DOM
@@ -3143,6 +3142,25 @@ Q.Cache.session = function _Q_Cache_session(name, max) {
 Q.Cache.document.caches = {};
 Q.Cache.local.caches = {};
 Q.Cache.session.caches = {};
+
+/**
+ * A constructor to create Q.Page objects
+ */
+Q.Page = function (uriString) {
+	this.uriString = uriString;
+};
+
+Q.Page.beingLoaded = false;
+Q.Page.beingActivated = false;
+
+/**
+ * Returns Q.Event which occurs when a tool has been constructed
+ * Generic callbacks can be assigned by setting toolName to ""
+ * @method Q.Tool.onConstruct
+ * @param toolName {String} the name of the tool, such as "Q/inplace"
+ * @return {Q.Event}
+ */
+Q.Page.onTool = Q.Event.factory(_pageToolHandlers, [""]);
 
 /**
  * Use this function to set handlers for when the page is loaded or unloaded.
@@ -4918,7 +4936,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 			// but some of the new scripts will be added.
 
 			var moduleSlashAction = Q.info.uri.module+"/"+Q.info.uri.action; // old page going out
-			var i, newStylesheets, newStyles;
+			var i, k, newStylesheets, newStyles;
 			
 			function _doEvents(prefix, moduleSlashAction) {
 				var event, f = Q[prefix+'PageUnload'];
@@ -5047,6 +5065,10 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 
 			if (!o.ignorePage) {
 				_doEvents('before', moduleSlashAction);
+				for (k in _pageToolHandlers) {
+					_pageToolHandlers[k].remove(true);
+				}
+				_pageToolHandlers = {};
 				while (Q.Event.forPage && Q.Event.forPage.length) {
 					// keep removing the first element of the array until it is empty
 					Q.Event.forPage[0].remove(true);
