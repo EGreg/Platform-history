@@ -298,7 +298,7 @@
 .Users_login_get_started { text-align: center; }
 
 #Users_login_passphrase_div { position: relative; }
-#Users_login_passphrase_forgot { display: block; position: absolute; right: 3px; bottom: 5px; color: #888; padding: 4px; }
+#Users_login_passphrase_forgot { display: block; position: absolute; right: 5px; bottom: 10px; color: #888; padding: 4px; }
 #Users_login_passphrase_forgot:hover { color: #000; background: #eee; -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px; }
 #Users_login_passphrase_forgot:active { color: #000; background: #ccc; -moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px; }
 

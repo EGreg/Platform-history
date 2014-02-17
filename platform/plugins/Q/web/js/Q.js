@@ -2142,6 +2142,12 @@ Q.Tool = function _Q_Tool(element, options) {
 	if (!Q.tools[this.id]) {
 		Q.tools[this.id] = this;
 	}
+	
+	var handler = Q.handle(Q.getObject([this.id], _constructToolHandlers), this, []);
+	if (handler) {
+		handler.handle.call(this, this.options);
+	}
+	
 	return this;
 };
 
@@ -2149,7 +2155,29 @@ Q.Tool.options = {
 	levels: 10
 };
 
-Q.Tool.beforeRemove = new Q.Event();
+var _constructToolHandlers = {}, _beforeRemoveToolHandlers = {};
+
+/**
+ * Returns Q.Event which occurs when a tool has been constructed
+ * Generic callbacks can be assigend by setting toolName to ""
+ * @method Q.Tool.onConstruct
+ * @param toolName {String} the name of the tool, such as "Q/inplace"
+ * @return {Q.Event}
+ */
+Q.Tool.onConstruct = Q.Event.factory(_constructToolHandlers, ["", function (toolName) { 
+	return [Q.normalize(toolName)];
+}]);
+
+/**
+ * Returns Q.Event which occurs when a tool is about to be removed
+ * Generic callbacks can be assigend by setting toolName to ""
+ * @method Q.Tool.beforeRemove
+ * @param toolName {String} the name of the tool, such as "Q/inplace"
+ * @return {Q.Event}
+ */
+Q.Tool.beforeRemove = Q.Event.factory(_beforeRemoveToolHandlers, ["", function (toolName) { 
+	return [Q.normalize(toolName)];
+}]);
 
 Q.Tool.prefixById = function _Q_Tool_prefixById(id) {
 	if (id.match(/_tool$/)) {
@@ -2324,7 +2352,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 		$.fn[name] = jQueryPluginConstructor;
 		var ToolConstructor = Q.Tool.define(name, function _Q_Tool_jQuery_toolConstructor(options) {
 			$(this.element).plugin(name, options, this);
-			this.beforeRemove.set(function () {
+			this.beforeRemove("").set(function () {
 				$(this.element).plugin(name, 'destroy', this);
 			}, 'Q');
 		});
@@ -2464,7 +2492,7 @@ Q.Tool.prototype.remove = function _Q_Tool_prototype_remove(removeCached) {
 
 	// give the tool a chance to clean up after itself
 	if (shouldRemove) {
-		Q.Tool.beforeRemove.handle(this);
+		Q.Tool.beforeRemove("").handle(this);
 		Q.handle(this.beforeRemove);
 	}
 

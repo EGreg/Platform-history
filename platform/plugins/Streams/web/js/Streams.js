@@ -2470,7 +2470,7 @@ Q.onInit.add(function _Streams_onInit() {
 
 }, 'Streams');
 
-Q.Tool.beforeRemove.set(function (tool) {
+Q.Tool.beforeRemove("").set(function (tool) {
 	Streams.release(tool);
 }, 'Streams');
 

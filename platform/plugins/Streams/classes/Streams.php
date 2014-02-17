@@ -1294,7 +1294,7 @@ abstract class Streams extends Base_Streams
 		if (!isset($stream->readLevel)) {
 			$stream->readLevel = Streams_Stream::$DEFAULTS['readLevel'];
 		}
-		$show_toUserIds[0] = ($stream->readLevel >= $content_readLevel);
+		$show_toUserIds[""] = ($stream->readLevel >= $content_readLevel);
 
 		// Now, we update the avatars:
 		$field = ($streamName === 'Streams/user/firstName') ? 'firstName' : 'lastName';
@@ -1307,7 +1307,7 @@ abstract class Streams extends Base_Streams
 		foreach ($show_toUserIds as $userId => $show) {
 			if ($show === 'public') {
 				// If no show is explicitly specified, use the value used for the rest of the public
-				$show = $show_toUserIds[0];
+				$show = $show_toUserIds[""];
 			}
 			if ($show === true) {
 				$rows_that_show[] = array(
@@ -1345,7 +1345,7 @@ abstract class Streams extends Base_Streams
 		// We are now ready to make changes to the database.
 		if ($update_to_public_value) {
 			Streams_Avatar::update()
-				->set(array($field => $show_toUserIds[0] ? $stream->content : ''))
+				->set(array($field => $show_toUserIds[""] ? $stream->content : ''))
 				->where(compact('publisherId'))
 				->execute();
 		}
