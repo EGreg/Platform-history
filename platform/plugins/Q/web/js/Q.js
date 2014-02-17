@@ -303,6 +303,17 @@ Date.now = Date.now || function _Date_now() {
 	return new Date().getTime();
 };
 
+/**
+ * Call this on an element to access tools attached to it.
+ * The tools are like "view models".
+ * @param {String} toolName
+ * @return {Q.Tool|null}
+ */
+HTMLElement.prototype.Q = HTMLElement.prototype.Q || function (toolName) {
+	// this method is overridden by the tool constructor on specific elements
+	return null;
+};
+
 HTMLElement.prototype.contains = HTMLElement.prototype.contains || function (child) {
 	if (!child) return false;
     var node = child.parentNode;
@@ -2135,7 +2146,14 @@ Q.Tool = function _Q_Tool(element, options) {
 		Q.extend(this.options, Q.Tool.options.levels, element.options, 'Q.Tool');
 	}
 	
-	Q.setObject(['Q', 'tool'], this, element); // TODO: refactor
+	if (element.Q === HTMLElement.prototype.Q) {
+		element.Q = function (toolName) {
+			if (!toolName) return null;
+			return this.Q.tools[Q.normalize(toolName)] || null;
+		};
+	}
+	element.Q.tool = element;
+	Q.setObject(['Q', 'tools', this.name], this, element);
 	
 	this.beforeRemove = new Q.Event();
 
