@@ -2408,25 +2408,36 @@ var _qtc = Q.Tool.constructors = Q.constructors;
 /**
  * Gets child tools contained in the tool, as determined by their prefixes
  * based on the prefix of the tool.
- * @param append The string to append to the prefix to find the child tools
- * @return Object A hash of {prefix: Tool} pairs
+ * @param {String} append The string to append to the prefix to find the child tools
+ * @param {Number} levels Pass 1 here to get only the immediate children, 2 for immediate children and grandchildren, etc.
+ * @return {Object} A hash of {prefix: Tool} pairs
  */
-Q.Tool.prototype.children = function Q_Tool_prototype_children(append) {
+Q.Tool.prototype.children = function Q_Tool_prototype_children(append, levels) {
 	var result = {},
 	    prefix2 = Q.normalize(this.prefix + (append || "")),
-		id, ni;
+		id, ni, i, ids;
 	for (id in Q.tools) {
 		ni = Q.normalize(id);
 		if (id.length >= prefix2.length + (append ? 0 : 1)
 		&& ni.substr(0, prefix2.length) == prefix2) {
-			result[id] = Q.tools[id];
+			if (levels) {
+				ids = Q.tools[id].parentIds();
+				for (i=0; i<levels; ++i) {
+					if (ids[i] === this.id) {
+						result[id] = Q.tools[id];
+						break;
+					}
+				}
+			} else {
+				result[id] = Q.tools[id];
+			}
 		}
 	}
 	return result;
 };
 
 /**
- * Gets the first child tool contained in the tool, which matches the prefix
+ * Gets one child tool contained in the tool, which matches the prefix
  * based on the prefix of the tool.
  * @param append The string to append to the prefix to find the child tool
  * @return Tool|null
