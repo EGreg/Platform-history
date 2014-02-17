@@ -1394,7 +1394,7 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
  *  This function will get the following members set:
  *
  * * __mixins: an array of [B, C, ...]
- * * constructors(subject, params): a method to call the constructor of all mixing classes, in order. Pass this to it.
+ * * constructors(subject, params): a method to call the constructor of all mixin classes, in order. Pass "this" as the first argument.
  * * staticProperty(property): a method for getting a property name
  * @param B {function} One or more constructors representing "classes" to mix functionality from
  *  They will be tried in the order they are provided, meaning methods from earlier ones
