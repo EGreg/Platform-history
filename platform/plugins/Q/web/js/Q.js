@@ -2161,7 +2161,7 @@ Q.Tool = function _Q_Tool(element, options) {
 		Q.tools[this.id] = this;
 	}
 	
-	var handler = Q.handle(Q.getObject([this.id], _constructToolHandlers), this, []);
+	var handler = Q.handle(Q.getObject([this.name], _constructToolHandlers), this, []);
 	if (handler) {
 		handler.handle.call(this, this.options);
 	}
