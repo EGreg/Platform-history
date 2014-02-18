@@ -6545,7 +6545,7 @@ Q.Pointer = {
 	start: (Q.info.isTouchscreen ? 'touchstart' : 'mousedown'),
 	move: (Q.info.isTouchscreen ? 'touchmove' : 'mousemove'),
 	end: (Q.info.isTouchscreen ? 'touchend' : 'mouseup'),
-	'event': (Q.info.isTouchscreen ? 'touchenter' : 'mouseleave'),
+	enter: (Q.info.isTouchscreen ? 'touchenter' : 'mouseenter'),
 	leave: (Q.info.isTouchscreen ? 'touchleave' : 'mouseleave'),
 	cancel: (Q.info.isTouchscreen ? 'touchcancel' : 'mousecancel'), // mousecancel can be a custom event
 	click: function _Q_click(params) {
