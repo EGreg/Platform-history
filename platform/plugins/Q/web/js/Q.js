@@ -6689,31 +6689,32 @@ Q.Dialogs = {
 	 * Shows the dialog and pushes it on top of internal dialog stack.
 	 * @param options Object
 	 *	 A hash of options, that can include:
-	 * "dialog": Optional. If provided, may be DOM element or jQuery object containing already prepared dialog html
+	 *   "dialog": Optional. If provided, may be HTMLElement or jQuery object containing already prepared dialog html
 	 *           structure with 'title_slot', 'dialog_slot' and appropriate content in them. If it's provided, then
 	 *           'title' and 'content' options given below are ignored.
 	 *	 "url": Optional. If provided, this url will be used to fetch the "title" and "dialog" slots, to display in the dialog.
 	 *        Thus the default content provided by 'title' and 'content' options given below will be overridden.
 	 *	 "title": Optional. Dialog title, defaults to 'Dialog'.
 	 *	 "content": Optional. Dialog content, initially defaults to loading throbber.
-	 * "className": Optional. Maybe a CSS class name or space-separated list of classes to append to the dialog element.
-	 * "mask": Defaults to false. If true, adds a mask to cover the screen behind the dialog.
+	 *   "className": Optional. Maybe a CSS class name or space-separated list of classes to append to the dialog element.
+	 *   "mask": Default is true unless fullscreen. If true, adds a mask to cover the screen behind the dialog.
 	 *	 "fullscreen": Defaults to true only on Android and false on all other platforms. If true, dialog will be shown not as overlay
 	 *								 but instead will be prepended to document.body and all other child elements of the body will be hidden.
 	 *								 Thus dialog will occupy all window space, but still will behave like regular dialog, i.e. it can be closed
 	 *								 by clicking / tapping close icon.
 	 *	 "appendTo": Optional. Can be DOM element, jQuery object or jQuery selector matching element where dialog should be appended.
 	 *							 Moreover, dialog is centered relatively to this element. By default it's document body.
-	 * "alignByParent": Defaults to false. If true, the dialog will be aligned to the center of not the entire window,
-	 *                  but to the center of containing element instead.
-	 * "noClose": Defaults to false. If true, overlay close button will not appear and overlay won't be closed by pressing 'Esc' key.
-	 * "closeOnEsc": Defaults to true. Indicates whether to close overlay on 'Esc' key press. Has sense only if 'noClose' is false.
-	 * "destroyOnClose": Defaults to false. If true, dialog DOM element will be removed from the document on close.
-	 * "beforeLoad": Optional. Q.Event or function which is called before dialog is loaded.
-	 * "onActivate": Optional. Q.Event or function which is called when dialog is activated
-	 *               (all inner tools, if any, are activated and dialog is fully loaded and shown).
-	 * "beforeClose": Optional. Q.Event or function which is called when dialog closing initiated but it's still visible and exists in DOM.
-	 * "onClose": Optional. Q.Event or function which is called when dialog is closed and hidden and probably removed from DOM (if 'destroyOnClose' is 'true').
+	 *   "alignByParent": Defaults to false. If true, the dialog will be aligned to the center of not the entire window,
+	 *                    but to the center of containing element instead.
+	 *   "noClose": Defaults to false. If true, overlay close button will not appear and overlay won't be closed by pressing 'Esc' key.
+	 *   "closeOnEsc": Defaults to true. Indicates whether to close overlay on 'Esc' key press. Has sense only if 'noClose' is false.
+	 *   "destroyOnClose": Defaults to false if "dialog" is provided. If true, dialog DOM element will be removed from the document on close.
+	 *   "beforeLoad": Optional. Q.Event or function which is called before dialog is loaded.
+	 *   "onActivate": Optional. Q.Event or function which is called when dialog is activated
+	 *                 (all inner tools, if any, are activated and dialog is fully loaded and shown).
+	 *   "beforeClose": Optional. Q.Event or function which is called when dialog closing initiated but it's still visible and exists in DOM.
+	 *   "onClose": Optional. Q.Event or function which is called when dialog is closed and hidden and probably 
+	 *                 removed from DOM (if 'destroyOnClose' is 'true').
 	 * @return Object. jQuery object resresenting DOM element of the dialog that was just pushed.
 	 */
 	push: function(options) {
@@ -6763,6 +6764,7 @@ Q.Dialogs = {
 	
 	/**
 	 * Closes dialog and removes it from top of internal dialog stack.
+	 * @param {Boolean} dontTriggerClose is for internal use only
 	 * @return Object. jQuery object resresenting DOM element of the dialog that was just popped.
 	 */
 	pop: function(dontTriggerClose) {
@@ -6817,18 +6819,18 @@ Q.Dialogs.push.options = {
  * @param {String} message The only required parameter, this specifies text of the alert.
  * @param {Object} [options] An optiopnal hash of options which can include:
  *   "title": Optional parameter to override alert dialog title. Defaults to 'Alert'.
- *   "onClose": Optional
+ *   "onClose": Optional, occurs when dialog is closed
  */
 Q.alert = function(message, options) {
 	if (options === undefined) options = {};
 	if (options.title === undefined) options.title = 'Alert';
-	var dialog = Q.Dialogs.push({
+	var dialog = Q.Dialogs.push(Q.extend({
 		'title': options.title,
 		'content': '<div class="Q_messagebox"><p>' + message + '</p></div>',
 		'onClose': options.onClose || undefined,
 		'fullscreen': false,
 		'hidePrevious': false
-	});
+	}, options));
 };
 
 /**
@@ -6841,11 +6843,13 @@ Q.alert = function(message, options) {
  * @param {String} message The only required parameter, this specifies confirmation text.
  * @param {Function} callback: This will be called when dialog is closed,
  *   passing true | false depending on whether user clicked (tapped) 'Ok' or 'Cancel' button, respectively
+ *   or null if the user closed the dialog.
  * @param {Object} [options] An optiopnal hash of options which can include:
  *   "title": Optional string parameter to override confirm dialog title. Defaults to 'Confirm'.
  *   "ok": Optional string parameter to override confirm dialog 'Ok' button label, e.g. 'Yes'. Defaults to 'Ok'.
  *   "cancel": Optional string parameter to override confirm dialog 'Cancel' button label, e.g. 'No'. Defaults to 'Cancel'.
  *   "noClose": Defaults to true. Set to false to show a close button
+ *   "onClose": Optional, occurs when dialog is closed
  */
 Q.confirm = function(message, callback, options) {
 	var o = Q.extend({
@@ -6855,7 +6859,7 @@ Q.confirm = function(message, callback, options) {
 		noClose: true
 	}, options);
 	var buttonClicked = false;
-	var dialog = Q.Dialogs.push({
+	var dialog = Q.Dialogs.push(Q.extend({
 		'title': o.title,
 		'content': $('<div class="Q_messagebox" />').append(
 			$('<p />').html(message),
@@ -6868,15 +6872,13 @@ Q.confirm = function(message, callback, options) {
 		}},
 		'fullscreen': false,
 		'hidePrevious': false
-	});
-	dialog.find('button:first').on(Q.Pointer.end, function()
-	{
+	}, options));
+	dialog.find('button:first').on(Q.Pointer.end, function() {
 		buttonClicked = true;
 		Q.Dialogs.pop();
 		Q.handle(callback, window, [true]);
 	});
-	dialog.find('button:last').on(Q.Pointer.end, function()
-	{
+	dialog.find('button:last').on(Q.Pointer.end, function() {
 		buttonClicked = true;
 		Q.Dialogs.pop();
 		Q.handle(callback, window, [false]);
@@ -6899,6 +6901,7 @@ Q.confirm = function(message, callback, options) {
  *   "placeholder": Optional, used as a placeholder text in the input field. Defaults to 'Enter value'.
  *   "ok": Optional parameter to override confirm dialog 'Ok' button label, e.g. 'Yes'. Defaults to 'Done'.
  *   "noClose": Defaults to true. Set to false to show a close button.
+ *   "onClose": Optional, occurs when dialog is closed
  */
 Q.prompt = function(message, callback, options) {
 	if (options === undefined) options = {};
@@ -6911,7 +6914,7 @@ Q.prompt = function(message, callback, options) {
 	}, options);
 	if (!o.message) o.message = 'Enter value:';
 	var buttonClicked = false;
-	var dialog = Q.Dialogs.push({
+	var dialog = Q.Dialogs.push(Q.extend({
 		'title': o.title,
 		'content': $('<div class="Q_messagebox" />').append(
 			$('<p />').html(o.message),
@@ -6935,7 +6938,7 @@ Q.prompt = function(message, callback, options) {
 		}},
 		'fullscreen': false,
 		'hidePrevious': false
-	});
+	}, options));
 	dialog.find('button').on(Q.Pointer.click, _done);
 	function _done() {
 		buttonClicked = true;
