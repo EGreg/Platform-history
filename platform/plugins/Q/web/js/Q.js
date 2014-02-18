@@ -1321,8 +1321,8 @@ Q.Event.calculateKey.keys = [];
 
 /**
  * Adds a callable to a handler, or overwrites an existing one
- * @param callable Any kind of callable which Q.handle can invoke
- * @param key {String|Boolean|Q.Tool} Optional key to associate with the callable.
+ * @param {mixed} callable Any kind of callable which Q.handle can invoke
+ * @param {String|Boolean|Q.Tool} key Optional key to associate with the callable.
  *  Used to replace handlers previously added under the same key.
  *  Also used for removing handlers with .remove(key).
  *  If the key is not provided, a unique one is computed.
@@ -1330,8 +1330,8 @@ Q.Event.calculateKey.keys = [];
  *  and it will be automatically removed when the current page is removed.
  *  Pass a Q.Tool object here to associate the handler to the tool,
  *  and it will be automatically removed when the tool is removed.
- * @param prepend Boolean
- *  If true, then prepends the handler to the chain
+ * @param {Boolean} prepend If true, then prepends the handler to the chain
+ * @return {String} The key under which the event was set
  */
 Q.Event.prototype.set = function _Q_Event_prototype_set(callable, key, prepend) {
 	var i, isTool = (Q.typeOf(key) === 'Q.Tool');
@@ -1364,21 +1364,22 @@ Q.Event.prototype.set = function _Q_Event_prototype_set(callable, key, prepend) 
  * Like the "set" method, adds a callable to a handler, or overwrites an existing one.
  * But in addition, immediately handles the callable if the event has already occurred at least once,
  * passing it the same subject and arguments as were passed to the event the last time it occurred.
- * @param callable Any kind of callable which Q.handle can invoke
- * @param key {String|Q.Tool} Optional key to associate with the callable.
+ * @param {mixed} callable Any kind of callable which Q.handle can invoke
+ * @param {String|Boolean|Q.Tool} Optional key to associate with the callable.
  *  Used to replace handlers previously added under the same key.
  *  Also used for removing handlers with .remove(key).
  *  If the key is not provided, a unique one is computed.
  *  Pass a Q.Tool object here to associate the handler to the tool,
  *  and it will be automatically removed when the tool is removed.
- * @param prepend Boolean
- *  If true, then prepends the handler to the chain
+ * @param {Boolean} prepend If true, then prepends the handler to the chain
+ * @return {String} The key under which the handler was set
  */
 Q.Event.prototype.add = function _Q_Event_prototype_add(callable, key, prepend) {
-	this.set(callable, key, prepend);
+	var ret = this.set(callable, key, prepend);
 	if (this.occurred) {
 		Q.handle(callable, this.lastContext, this.lastArgs);
 	}
+	return ret;
 };
 
 /**
@@ -1543,6 +1544,8 @@ Q.Pipe = function _Q_Pipe(requires, maxTimes, callback) {
  * @method add
  * @param requires Array
  *  Optional. Pass an array of required field names here.
+ *  Alternatively, pass an array of objects, which should be followed by
+ *  the name of an event to wait for.
  * @param maxTimes Number
  *  Optional. The maximum number of times the callback should be called.
  * @param callback Function
@@ -1563,17 +1566,51 @@ Q.Pipe = function _Q_Pipe(requires, maxTimes, callback) {
  *  If you need getters, throttling, or batching, use Q.getter( ).
  */
 Q.Pipe.prototype.add = function _Q_pipe_add(requires, maxTimes, callback) {
-	var r = null, n = null;
+	var r = null, n = null, e = null, r2, events, keys;
 	for (var i=0; i<arguments.length; i++) {
 		if (typeof arguments[i] === 'function') {
+			if (e) {
+				r2 = [];
+				events = [];
+				keys = [];
+				var pipe = this;
+				Q.each(r, function (k, item) {
+					var event = Q.getObject(e, item);
+					if (Q.typeOf(event) === 'Q.Event') {
+						keys.push(event.add(pipe.fill(k)));
+						r2.push(k);
+						events.push(event);
+					}
+				});
+				arguments[i].pipeEvents = events;
+				arguments[i].pipeKeys = keys;
+				r = r2;
+			}
 			arguments[i].pipeRequires = r;
 			arguments[i].pipeRemaining = n;
+			r = n = e = null;
 			this.callbacks.push(arguments[i]);
-			r = n = null;
-		} else if (Q.typeOf(arguments[i]) === 'array') {
-			r = arguments[i];
-		} else if (Q.typeOf(arguments[i]) === 'number') {
-			n = arguments[i];
+		} else {
+			switch (Q.typeOf(arguments[i])) {
+			case 'array':
+				r = arguments[i];
+				if (arguments[i].length
+				&& typeof arguments[i][0] !== 'string') {
+					e = arguments[++i];
+				}
+				break;
+			case 'object':
+				r = arguments[i];
+				e = arguments[++i];
+				break;
+			case 'number':
+				n = arguments[i];
+				break;
+			}
+			if (e !== null && typeof e !== 'string') {
+				debugger;
+				throw "Q.Pipe.prototype.add requires event name after array of objects";
+			}
 		}
 	}
 	return this;
@@ -1616,9 +1653,10 @@ Q.Pipe.prototype.fill = function _Q_pipe_fill(field, ignore) {
  */
 Q.Pipe.prototype.run = function _Q_pipe_run() {
 	var cb, ret, callbacks = this.callbacks, params = Q.copy(this.params), count = 0;
+	var i, j;
 
 	cbloop:
-	for (var i=0; i<callbacks.length; i++) {
+	for (i=0; i<callbacks.length; i++) {
 		if (this.ignore[i]) {
 			continue;
 		}
@@ -1626,7 +1664,7 @@ Q.Pipe.prototype.run = function _Q_pipe_run() {
 		if (!(cb = callbacks[i]))
 			continue;
 		if (cb.pipeRequires) {
-			for (var j=0; j<cb.pipeRequires.length; j++) {
+			for (j=0; j<cb.pipeRequires.length; j++) {
 				if (this.ignore[cb.pipeRequires[j]]) {
 					continue;
 				}
@@ -1641,7 +1679,14 @@ Q.Pipe.prototype.run = function _Q_pipe_run() {
 			}
 		}
 		ret = cb.call(this, this.params, this.subjects, cb.pipeRequires);
+		if (cb.pipeEvents) {
+			for (j=0; j<cb.pipeEvents.length; j++) {
+				cb.pipeEvents[j].remove(cb.pipeKeys[j]);
+			}
+		}
 		++count;
+		delete cb.pipeEvents;
+		delete cb.pipeKeys;
 		if (ret === false) {
 			delete callbacks[i];
 		} else if (ret === true) {
@@ -1650,6 +1695,7 @@ Q.Pipe.prototype.run = function _Q_pipe_run() {
 			break;
 		}
 	}
+	return count;
 };
 
 /**
@@ -1658,8 +1704,8 @@ Q.Pipe.prototype.run = function _Q_pipe_run() {
  * @return {Q.Pipe}
  * @see Q.Pipe
  */
-Q.pipe = function _Q_pipe(requires, maxTimes, callback) {
-	return new Q.Pipe(requires, maxTimes, callback);
+Q.pipe = function _Q_pipe(a, b, c, d) {
+	return new Q.Pipe(a, b, c, d);
 };
 
 /**

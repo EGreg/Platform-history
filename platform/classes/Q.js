@@ -258,8 +258,8 @@ Q.inherit = function _Q_inherit(Base, Constructor) {
  * @return {Q.Pipe}
  * @see Q.Pipe
  */
-Q.pipe = function _Q_pipe(requires, maxTimes, callback) {
-	return new Q.Pipe(requires, maxTimes, callback);
+Q.pipe = function _Q_pipe(a, b, c, d) {
+	return new Q.Pipe(a, b, c, d);
 };
 
 /*
@@ -294,8 +294,10 @@ Q.Pipe = function _Q_Pipe(requires, maxTimes, callback) {
  * @method add
  * @param requires Array
  *  Optional. Pass an array of required field names here.
+ *  Alternatively, pass an array of objects, which should be followed by
+ *  the name of an event to wait for.
  * @param maxTimes Number
- *  Optional. The maximum number of times times the callback should be called.
+ *  Optional. The maximum number of times the callback should be called.
  * @param callback Function
  *  Once all required fields are filled (see previous parameter, if any)
  *  this function is called every time something is piped.
@@ -314,17 +316,51 @@ Q.Pipe = function _Q_Pipe(requires, maxTimes, callback) {
  *  If you need getters, throttling, or batching, use Q.getter( ).
  */
 Q.Pipe.prototype.add = function _Q_pipe_add(requires, maxTimes, callback) {
-	var r = null, n = null;
+	var r = null, n = null, e = null, r2, events, keys;
 	for (var i=0; i<arguments.length; i++) {
 		if (typeof arguments[i] === 'function') {
+			if (e) {
+				r2 = [];
+				events = [];
+				keys = [];
+				var pipe = this;
+				Q.each(r, function (k, item) {
+					var event = Q.getObject(e, item);
+					if (Q.typeOf(event) === 'Q.Event') {
+						keys.push(event.add(pipe.fill(k)));
+						r2.push(k);
+						events.push(event);
+					}
+				});
+				arguments[i].pipeEvents = events;
+				arguments[i].pipeKeys = keys;
+				r = r2;
+			}
 			arguments[i].pipeRequires = r;
 			arguments[i].pipeRemaining = n;
+			r = n = e = null;
 			this.callbacks.push(arguments[i]);
-			r = n = null;
-		} else if (Q.typeOf(arguments[i]) === 'array') {
-			r = arguments[i];
-		} else if (Q.typeOf(arguments[i]) === 'number') {
-			n = arguments[i];
+		} else {
+			switch (Q.typeOf(arguments[i])) {
+			case 'array':
+				r = arguments[i];
+				if (arguments[i].length
+				&& typeof arguments[i][0] !== 'string') {
+					e = arguments[++i];
+				}
+				break;
+			case 'object':
+				r = arguments[i];
+				e = arguments[++i];
+				break;
+			case 'number':
+				n = arguments[i];
+				break;
+			}
+			if (e !== null && typeof e !== 'string') {
+				debugger;
+				throw "Q.Pipe.prototype.add requires event name after array of objects";
+			}
 		}
 	}
 	return this;
@@ -392,6 +428,11 @@ Q.Pipe.prototype.run = function _Q_pipe_run() {
 			}
 		}
 		ret = cb.call(this, this.params, this.subjects, cb.pipeRequires);
+		if (cb.pipeEvents) {
+			for (j=0; j<cb.pipeEvents.length; j++) {
+				cb.pipeEvents[j].remove(cb.pipeKeys[j]);
+			}
+		}
 		++count;
 		if (ret === false) {
 			delete callbacks[i];
@@ -401,6 +442,7 @@ Q.Pipe.prototype.run = function _Q_pipe_run() {
 			break;
 		}
 	}
+	return count;
 };
 
 
