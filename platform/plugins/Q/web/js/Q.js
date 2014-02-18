@@ -6569,7 +6569,6 @@ Q.Pointer = {
 		};
 	},
 	canceledClick: false,
-	window: true, // (true - clientX/Y, false - pageX/Y),
 	scrollLeft: function () {
 		return window.pageXOffset || document.documentElement.scrollLeft || (document.body && document.body.scrollLeft);
 	},
@@ -6592,6 +6591,13 @@ Q.Pointer = {
 	},
 	which: function (e) {
 		var button = e.which || e.button;
+		if (detected.name === 'explorer' && detected.mainVersion < 9) {
+			// http://www.quirksmode.org/js/events_properties.html#button
+			switch (button) {
+				case 1: button = 0; break; // left button
+				case 4: button = 1; break; // middle button
+			}
+		}
 		return button || -1; // -1 means non-button interaction
 	},
 	target: function (e) {
