@@ -5593,8 +5593,8 @@ function _initTool(toolElement) {
  * @return {String} Something of the form "scheme://hostname:port" or "scheme://hostname:port/subpath"
  */
 Q.baseUrl = function _Q_host(where) {
-    var result, parts;
-	for (var i=0; i<Q.baseUrl.routers.length; ++i) {
+    var result, i;
+	for (i=0; i<Q.baseUrl.routers.length; ++i) {
 		if (result = Q.baseUrl.routers[i](where)) {
 		    return result;
 		}
@@ -5610,9 +5610,9 @@ Q.baseUrl.routers = []; // functions returning a custom url
  * @return {String} "scheme://hostname:port"
  */
 Q.nodeUrl = function _Q_node(where) {
-	for (var i=0; i<Q.nodeUrl.routers.length; ++i) {
-		var result = Q.nodeUrl.routers[i](where);
-		if (result) {
+    var result, i;
+	for (i=0; i<Q.nodeUrl.routers.length; ++i) {
+		if (result = Q.nodeUrl.routers[i](where)) {
 		    return result;
 		}
 	}
@@ -5858,7 +5858,7 @@ function _connectSocketNS(ns, url, callback, force) {
 			}
 		}
 		callback && callback(_sockets[ns][url]);
-		Q.Socket.reconnect();
+		Q.Socket.reconnectAll();
 	}
 	
 	if (ns[0] !== '/') {
@@ -5923,14 +5923,14 @@ Q.Socket.disconnectAll = function _Q_Socket_disconnectAll() {
 /**
  * Reconnect all sockets that have been connected
  */
-Q.Socket.reconnect = function _Q_Socket_reconnect() {
+Q.Socket.reconnectAll = function _Q_Socket_reconnectAll() {
 	var ns, url;
 	for (ns in _sockets) {
 		for (url in _sockets[ns]) {
 			if (!_sockets[ns][url]) {
 			    _connectSocketNS(ns, url);
 			} else if (!_sockets[ns][url].namespace.socket.connected) {
-			    _sockets[ns][url].namespace.socket.reconnect();
+			    _sockets[ns][url].namespace.socket.reconnectAll();
 			}
 		}
 	}
@@ -7202,7 +7202,7 @@ Q.onInit.add(function () {
 	} else {
 		Q.onHashChange.set(Q_hashChangeHandler, 'Q.loadUrl');
 	}
-	Q.onOnline.set(Q.Socket.reconnect, 'Q.Socket'); // renew sockets when reverting to online
+	Q.onOnline.set(Q.Socket.reconnectAll, 'Q.Socket'); // renew sockets when reverting to online
 	
 }, 'Q');
 
