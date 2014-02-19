@@ -28,8 +28,5 @@ function Streams_before_Q_responseExtras() {
 		);
 		Q_Response::setScriptData('Q.plugins.Streams.defaults', $defaults);
 	}
-	if ($preloaded = Streams_Stream::$preloaded) {
-		Q_Response::setScriptData('Streams.Stream.preloaded', Db::exportArray($preloaded));
-	}
 	Q_Response::addStylesheet("plugins/Streams/css/Streams.css");
 }

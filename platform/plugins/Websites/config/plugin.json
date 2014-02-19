@@ -9,6 +9,7 @@
 			}
 		},
 		"handlersBeforeEvent": {
+			"Q/responseExtras": ["Websites/before/Q_responseExtras"],
 			"Streams/Stream/save/Websites/bio": ["Websites/before/Streams_Stream_save_Websites_bio"]
 		},
 		"handlersAfterEvent": {
