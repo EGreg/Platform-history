@@ -2191,11 +2191,7 @@ Q.Tool = function _Q_Tool(element, options) {
 		};
 	}
 	element.Q.tool = this;
-<<<<<<< local
 	Q.setObject(['tools', Q.normalize(this.name)], this, element.Q);
-=======
-	Q.setObject(['Q', 'tools', this.name], this, element);
->>>>>>> other
 	
 	this.beforeRemove = new Q.Event();
 
