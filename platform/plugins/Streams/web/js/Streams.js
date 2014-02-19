@@ -1,5 +1,5 @@
 /**
- * Streams module
+ * Streams plugin's front end code
  *
  * @module Streams
  * @class Streams
@@ -419,7 +419,14 @@ function _constructStream (fields, extra, callback, handleRefreshEvents) {
 	var type = Q.normalize(fields.type);
 	var streamFunc = Streams.constructors[type];
 	if (!streamFunc) {
-		streamFunc = Streams.constructors[type] = function () {};
+		streamFunc = Streams.constructors[type] = function (fields) {
+			// Default constructor. Copy any additional fields.
+			if (!fields) return;
+			for (var k in fields) {
+				if ((k in this.fields) || k === 'access') continue;
+				this.fields[k] = Q.copy(fields[k]);
+			}
+		};
 	}
 	if (typeof streamFunc === 'function') {
 		return _doConstruct();
@@ -640,7 +647,8 @@ var Stream = Streams.Stream = function (fields) {
 		'readLevel',
 		'writeLevel',
 		'adminLevel',
-		'inheritAccess'
+		'inheritAccess',
+		'closedTime'
 	]);
 	if (this.fields.messageCount) {
 		this.fields.messageCount = parseInt(this.fields.messageCount);

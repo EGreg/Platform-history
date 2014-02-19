@@ -2184,12 +2184,18 @@ Q.Tool = function _Q_Tool(element, options) {
 	
 	if (element.Q === HTMLElement.prototype.Q) {
 		element.Q = function (toolName) {
-			if (!toolName) return null;
+			if (!toolName) {
+				return (this.Q.tool || null);
+			}
 			return this.Q.tools[Q.normalize(toolName)] || null;
 		};
 	}
-	element.Q.tool = element;
+	element.Q.tool = this;
+<<<<<<< local
+	Q.setObject(['tools', Q.normalize(this.name)], this, element.Q);
+=======
 	Q.setObject(['Q', 'tools', this.name], this, element);
+>>>>>>> other
 	
 	this.beforeRemove = new Q.Event();
 
@@ -2749,14 +2755,16 @@ Q.Tool.prototype.setUpElementHTML = function (element, toolType, toolOptions, id
  *
  * @param toolElement HTMLElement
  *   the root element of the desired tool
+ * @param {String} toolName
+ *   optional name of the tool attached to the element
  * @return Q.Tool|null
  *   the tool corresponding to the given element, otherwise null
  */
-Q.Tool.from = function _Q_Tool_from(toolElement) {
+Q.Tool.from = function _Q_Tool_from(toolElement, toolName) {
 	if (typeof toolElement === 'string') {
 		toolElement = document.getElementById(toolElement);
 	}
-	return toolElement.Q ? toolElement.Q.tool : null;
+	return toolElement.Q ? toolElement.Q(toolName) : null;
 };
 
 /**
@@ -4984,7 +4992,14 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 		}
 		
 		loadTemplates();
-		var newScripts = loadScripts(afterScripts);
+		var newScripts;
+		
+		if (o.ignorePage) {
+			newScripts = [];
+			afterScripts();
+		} else {
+			newScripts = loadScripts(afterScripts);
+		}
 		
 		function afterScripts () {
 			
@@ -5165,28 +5180,30 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				}
 			}
 			
-			// Remove various tags belonging to the slots that are being reloaded
-	        Q.each(['link', 'style', 'script'], function (i, tag) {
-				Q.each(document.getElementsByTagName(tag), function (k, e) {
-					if (tag === 'link' && e.getAttribute('rel').toLowerCase() != 'stylesheet') {
-						return;
-					}
-					
-			        var slot = e.getAttribute('data-slot');
-					if (slot && slotNames.indexOf(slot) >= 0) {
-						Q.removeElement(e);
-					}
-					
-					// now let's deal with style tags inserted by prefixfree
-					if (tag === 'style') {
-						var href = e.getAttribute('data-href');
-						if (slotNames.indexOf(processStylesheets.slots[href]) >= 0) {
-							Q.removeElement(e);
-							delete processStylesheets.slots[href];
+			if (!o.ignorePage) {
+				// Remove various elements belonging to the slots that are being reloaded
+		        Q.each(['link', 'style', 'script'], function (i, tag) {
+					Q.each(document.getElementsByTagName(tag), function (k, e) {
+						if (tag === 'link' && e.getAttribute('rel').toLowerCase() != 'stylesheet') {
+							return;
 						}
-					}
-				});
-	        });
+
+				        var slot = e.getAttribute('data-slot');
+						if (slot && slotNames.indexOf(slot) >= 0) {
+							Q.removeElement(e);
+						}
+
+						// now let's deal with style tags inserted by prefixfree
+						if (tag === 'style') {
+							var href = e.getAttribute('data-href');
+							if (slotNames.indexOf(processStylesheets.slots[href]) >= 0) {
+								Q.removeElement(e);
+								delete processStylesheets.slots[href];
+							}
+						}
+					});
+		        });
+			}
 			
 			var domElements = handler(response, url, options); // this is where we fill all the slots
 			
@@ -5591,7 +5608,6 @@ function _constructTool(toolElement, options, shared) {
 					if (Q.getObject(['Q', 'tools', toolName], element)) {
 						return; // support re-entrancy of Q.activate
 					}
-					Q.setObject(['Q', 'tools', toolName], true, element);
     				var existingTool = Q.Tool.call(this, element, options);
     				this.state = Q.copy(this.options, toolFunc.stateKeys);
 					var prevTool = Q.Tool.beingActivated;

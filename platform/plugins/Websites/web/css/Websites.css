@@ -1,0 +1,4 @@
+.Websites_side_column { float: right; width: 40%; }
+.Websites_bio_tool .Streams_html_tool { width: 60%; min-height: 100px; font-size: 24px; }
+.Websites_bio_tool .Streams_image_preview_tool img { width: 100%; }
+.Websites_bio_tool .Streams_image_preview_tool h2 { display: none; }

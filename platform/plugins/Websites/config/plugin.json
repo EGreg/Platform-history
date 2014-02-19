@@ -1,0 +1,33 @@
+{
+	"Q": {
+		"pluginInfo": {
+			"Websites": {
+				"version": "0.8",
+				"compatible": "0.8",
+				"requires": {"Streams": "0.8"},
+				"connections": ["Websites"]
+			}
+		},
+		"handlersBeforeEvent": {
+			"Streams/Stream/save/Websites/bio": ["Websites/before/Streams_Stream_save_Websites_bio"]
+		},
+		"handlersAfterEvent": {
+			"Streams/Stream/fetch/Websites/bio": ["Websites/after/Streams_Stream_fetch_Websites_bio"]
+		}
+	},
+	"Streams": {
+		"types": {
+			"Websites/bio": {
+				"create": true,
+				"edit": true,
+				"fields": ["userId", "bio"],
+				"see": ["bio"]
+			}
+		}
+	},
+	"Websites": {
+		"user": {
+			"id": "Websites"
+		}
+	}
+}

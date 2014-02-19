@@ -1,5 +1,6 @@
 /**
- * Placeholders for Users related information
+ * Users plugin's front end code
+ *
  * @module Users
  * @class Users
  */
