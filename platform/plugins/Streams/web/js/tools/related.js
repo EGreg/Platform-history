@@ -90,46 +90,34 @@ function _Streams_related_tool (options)
 		if (result.stream.testWriteLevel('relate')) {
 			Q.each(state.creatable, addComposer);
 			if (state.sortable && result.stream.testWriteLevel('suggest')) {
-				var sortableOptions = Q.extend({
-					beforeDrop: {"Streams/related": function ($item, revert, data) {
-						if (!data.direction) return;
-						var target = (data.direction > 0)
-							? data.$placeholder.prev()[0]
-							: data.$placeholder.next()[0];
-						if (!target) {
-							// target should not be empty because of the way direction is computed
-							console.warn("Streams/related onDrop: target is unexpectedly empty");
-							return;
-						}
-						var s = Q.Tool.from(target).state,
-							i = Q.Tool.from($item[0]).state,
-							r = i.related;
-						setTimeout(function () {
-							Q.Streams.updateRelation(
-								r.publisherId,
-								r.streamName,
-								r.type,
-								i.publisherId,
-								i.streamName,
-								s.related.weight,
-								1,
-								function () {
-
-								}
-							);
-						}, this.state('Q/sortable').drop.duration);
-					}}
-				}, state.sortable);
+				var sortableOptions = Q.extend({}, state.sortable);
 				var $t = tool.$();
 				$t.plugin('Q/sortable', sortableOptions, function () {
-					if (!state.realtime) {
-						$t.state('Q/sortable').onSuccess.set(function () {
+					if (state.realtime) return;
+					$t.state('Q/sortable').onSuccess.set(function ($item, data) {
+						if (!data.direction) return;
+						var p = new Q.Pipe(['timeout', 'updated'], function () {
+							if (state.realtime) return;
 							Q.Streams.related.cache.each([state.publisherId, state.streamName], function (k, v) {
 								Q.Streams.related.cache.remove(k);
 							});
 							tool.refresh();
-						}, tool);
-					}
+						});
+						var s = Q.Tool.from(data.target).state,
+							i = Q.Tool.from($item[0]).state,
+							r = i.related;
+						setTimeout(p.fill('timeout'), this.state('Q/sortable').drop.duration);
+						Q.Streams.updateRelation(
+							r.publisherId,
+							r.streamName,
+							r.type,
+							i.publisherId,
+							i.streamName,
+							s.related.weight,
+							1,
+							p.fill('updated')
+						);
+					}, tool);
 				});
 			}
 		}

@@ -198,14 +198,18 @@ function (options) {
 		if (revert) {
 			$item.show();
 			params.direction = 0;
+			params.target = null;
 		} else {
 			if (data.$placeholder.next()[0] === $item[0]
 			|| data.$placeholder.prev()[0] === $item[0]) {
 				params.direction = 0;
+				params.target = null;
 			} else if ($item[0].isBefore(data.$placeholder[0])) {
 				params.direction = 1;
+				params.target = params.$placeholder.prev()[0];
 			} else {
 				params.direction = -1;
+				params.target = params.$placeholder.next()[0];
 			}
 		}
 		
@@ -393,19 +397,15 @@ function (options) {
 		var $target = getTarget(x, y);
 		var data = $item.data('Q/sortable')
 		
+		data.$dragged.css('pointerEvents', 'none');
 		var element = Q.Pointer.elementFromPoint(x, y);
-		var pe = data.$dragged.css('pointer-events');
 		var offset = $this.offset();
-		if ($(element).closest($this).length) {
-		// if (x >= offset.left && x <= offset.left + $this.width()
-		//  && y >= offset.top && y <= offset.top + $this.height()) {
-			if (pe !== 'none') {
-				data.$dragged.css('pointer-events', 'none');
-			}
+		if ($(element).closest($this).length
+		|| ((x >= offset.left && x <= offset.left + $this.width()
+		&& y >= offset.top && y <= offset.top + $this.height()))) {
+			data.$dragged.css('pointerEvents', 'none');
 		} else {
-			if (pe !== 'auto') {
-				data.$dragged.css('pointer-events', 'auto');
-			}
+			data.$dragged.css('pointerEvents', 'auto');
 		}
 		
 		var $placeholder = data.$placeholder;
