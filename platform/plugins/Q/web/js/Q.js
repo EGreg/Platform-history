@@ -5227,7 +5227,12 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				return null;
 			}
 			var newStylesheets = {};
-			for (var slotName in response.stylesheets) {
+			var keys = Object.keys(response.stylesheets);
+			if (response.stylesheets[""]) {
+			    keys.splice(keys.indexOf(""), 1);
+			    keys.unshift("");
+			}
+			Q.each(keys, function (i, slotName) {
 				var stylesheets = [];
 				for (var j in response.stylesheets[slotName]) {
 					var stylesheet = response.stylesheets[slotName][j];
@@ -5240,7 +5245,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 					}
 				}
 				newStylesheets[slotName] = stylesheets;
-			}
+			});
 			return newStylesheets;
 		}
 		
@@ -5250,9 +5255,14 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 			}
 			var newStyles = {},
 				head = document.head || document.getElementsByTagName('head')[0];
-			for (var slotName in response.stylesInline) {
+			var keys = Object.keys(response.stylesInline);
+			if (response.stylesInline[""]) {
+			    keys.splice(keys.indexOf(""), 1);
+			    keys.unshift("");
+			}
+			Q.each(keys, function (i, slotName) {
 				var styles = response.stylesInline[slotName];
-				if (!styles) continue;
+				if (!styles) return;
 				var style = document.createElement('style');
 				style.setAttribute('type', 'text/css');
 				style.setAttribute('data-slot', slotName);
@@ -5263,7 +5273,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				}
 				head.appendChild(style);
 				newStyles[slotName] = [style];
-			}
+			});
 			return newStyles;
 		}
 		
@@ -5289,7 +5299,12 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				callback();
 			});
 			var slotName, newScripts = {};
-			for (slotName in response.scripts) {
+			var keys = Object.keys(response.scripts);
+			if (response.scripts[""]) {
+			    keys.splice(keys.indexOf(""), 1);
+			    keys.unshift("");
+			}
+			Q.each(keys, function (i, slotName) {
 				var elem = Q.addScript(response.scripts[slotName], slotPipe.fill(slotName), {
 					ignoreLoadingErrors: (o.ignoreLoadingErrors !== undefined) ? o.ignoreLoadingErrors : undefined,
 					returnAll: false
@@ -5297,7 +5312,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				if (elem) {
 					newScripts[slotName] = elem;
 				}
-			};
+			});
 			return newScripts;
 		}
 	}
