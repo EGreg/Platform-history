@@ -259,9 +259,9 @@ DROP TABLE IF EXISTS `{$prefix}stream`;
 
 CREATE TABLE `{$prefix}stream` (
   `publisherId` varchar(31) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'id of user that owns the stream',
+  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'the name of the stream by which others can subscribe to it. May contain prefixes like chat name, etc.',
   `insertedTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'saved on Q server of publisherId',
   `updatedTime` timestamp NULL DEFAULT NULL COMMENT 'the time that this stream row has last changed for whatever reason',
-  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'the name of the stream by which others can subscribe to it. May contain prefixes like chat name, etc.',
   `type` varchar(63) COLLATE utf8_unicode_ci NOT NULL COMMENT 'mimetypes plus more types of the form a/b and a/b/c . Can also be "group" or "chat"',
   `title` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'human-readable title of the stream',
   `icon` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'default' COMMENT 'relative path to stream''s icon folder, containing 48.png, 32.png and 16.png',
