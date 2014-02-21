@@ -8,6 +8,10 @@ Q.Websites = Q.plugins.Websites = {
 	
 };
 
+Q.Tool.define("Websites/bio", function (fields) {
+
+});
+
 Q.Streams.define("Websites/bio", function (fields) {
 	this.fields.bio = fields.bio;
 });
