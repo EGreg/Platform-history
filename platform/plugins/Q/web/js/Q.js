@@ -5202,7 +5202,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 		        });
 			}
 			
-			var domElements = handler(response, url, options); // this is where we fill all the slots
+			var domElements = handler(response, url, o); // this is where we fill all the slots
 			
 			if (!o.ignorePage) {
 				_doEvents('on', moduleSlashAction);
