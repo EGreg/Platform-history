@@ -533,6 +533,7 @@ abstract class Users extends Base_Users
 	 * @static
 	 * @param {string} $identifier Could be an email address, a mobile number, or a user id.
 	 * @param {string} $passphrase The passphrase to hash, etc.
+	 * @param {boolean} $isHashed Whether the first passphrase hash iteration occurred, e.g. on the client
 	 * @return {Users_User}
 	 * @throws {Q_Exception_RequiredField} If 'identifier' field is not defined
 	 * @throws {Q_Exception_WrongValue} If identifier is not e-mail or modile
@@ -541,7 +542,8 @@ abstract class Users extends Base_Users
 	 */
 	static function login(
 		$identifier,
-		$passphrase)
+		$passphrase,
+		$isHashed)
 	{	
 		$return = null;
 		/**
@@ -585,7 +587,7 @@ abstract class Users extends Base_Users
 		}
 
 		// User exists in database. Now check the passphrase.
-		$passphraseHash = self::hashPassphrase($passphrase, $user->passphraseHash);
+		$passphraseHash = $user->computePassphraseHash($passphrase, $isHashed);
 		if ($passphraseHash != $user->passphraseHash) {
 			// Passphrases don't match!
 			throw new Users_Exception_WrongPassphrase(compact('identifier'), 'passphrase');
@@ -661,14 +663,14 @@ abstract class Users extends Base_Users
 		$throw_if_not_logged_in = false)
 	{
 		Q_Session::start();
-		if (!isset($_SESSION['Users']['loggedInUser'])) {
+		if (!isset($_SESSION['Users']['loggedInUser']['id'])) {
 			if ($throw_if_not_logged_in) {
 				throw new Users_Exception_NotLoggedIn();
 			}
 			return null;
 		}
-		$pk = $_SESSION['Users']['loggedInUser'];	
-		$user = Users_User::select('*')->where($pk)->limit(1)->fetchDbRow();
+		$id = $_SESSION['Users']['loggedInUser']['id'];	
+		$user = Users_User::getUser($id);
 		if (!$user and $throw_if_not_logged_in) {
 			throw new Users_Exception_NotLoggedIn();
 		}
@@ -1240,9 +1242,7 @@ abstract class Users extends Base_Users
 		$passphraseHash_iterations = Q_Config::get(
 			'Users', 'passphrase', 'hashIterations', 1103
 		);
-		$salt_length = Q_Config::get(
-			'Users', 'passphrase', 'saltLength', 0
-		);
+		$salt_length = Q_Config::set('Users', 'passphrase', 'saltLength', 0);
 		
 		if ($salt_length > 0) {
 			if (empty($existing_hash)) {
@@ -1742,20 +1742,6 @@ abstract class Users extends Base_Users
 		return $us2->id;
 	}
 
-	/**
-	 * @method getTotalBalance
-	 * @static
-	 * @param {string} $userId User id
-	 * @return {float|false}
-	 */
-	static function getTotalBalance($userId)
-	{
-		$balance = Users_User::select('balance')
-				->where(array('id'=>$userId))
-				->fetchAll();
-		return $balance ? $balance[0]['balance'] : false;
-	}
-
 	static function termsLabel($for = 'register')
 	{
 		$terms_uri = Q_Config::get('Users', $for, 'terms', 'uri', null);
@@ -1770,16 +1756,6 @@ abstract class Users extends Base_Users
 			$terms_title
 		);
 		return Q::interpolate($terms_label, array('link' => $terms_link));
-	}
-	
-	/**
-	 * @method isAdmin
-	 * @static
-	 * @param {string} $userId User id
-	 * @return {boolean}
-	 */
-	static function isAdmin($userId) {
-		return in_array($userId, Q_config::get('Users', 'admins', array()));
 	}
 	
 	/**

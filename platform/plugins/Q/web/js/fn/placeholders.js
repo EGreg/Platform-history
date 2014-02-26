@@ -85,7 +85,7 @@ function () {
 		if (!placeholder) {
 			return;
 		}
-		if ($this.val() || event.type === 'keypress') {
+		if ($this.val()) { //  || event.type === 'keypress' || event.type === 'change'
 			placeholder.hide();
 		} else {
 			placeholder.show();

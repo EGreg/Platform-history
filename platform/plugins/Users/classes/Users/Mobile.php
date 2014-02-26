@@ -164,7 +164,6 @@ class Users_Mobile extends Base_Users_Mobile
 				'Users', 'transactional', 'resend', 'sms', 'Users/sms/activation.php'
 			));
 		}
-		$link = 'Users/activate?p=1&code='.urlencode($this->activationCode) . '&m='.urlencode($this->number);
 		$user = $this->get('user', null);
 		if (!$user) {
 			$user = new Users_User();
@@ -182,6 +181,7 @@ class Users_Mobile extends Base_Users_Mobile
 		);
 		$this->authCode = md5(microtime() + mt_rand());
 		$mobile = $this;
+		$link = 'Users/activate?p=1&code='.urlencode($this->activationCode) . ' mobileNumber='.urlencode($this->number);
 		/**
 		 * @event Users/resend {before}
 		 * @param {string} 'user'

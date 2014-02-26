@@ -1,76 +1,74 @@
+(function ($, window, undefined) {
+
 /**
  * Users/avatar tool
  * @param {String} prefix Prefix of the tool to be constructed.
  * @param {Object} options A hash of options, containing:
- *   "user": The user object. Defaults to the logged-in user, if any.
- *   "icon": Optional. Render icon before the username.
- *   "editable": Defaults to false. If true, the tool will allow editing of the user icon and name.
+ *   "userId": The id of the user object. Required.
+ *   "icon": Optional. Size of the icon to render before the display name.
  */
-Q.Tool.constructors['users_avatar'] = function(options)
-{
-	var toolDiv = $(this.element);
-	if (options.editable && Q.Users.loggedInUser.id == options.user.id)
-	{
-		toolDiv.find('.Users_avatar_icon').plugin('Q/imagepicker', {
-			'path': 'plugins/Users/img/icons',
-			'subpath': 'user-' + Q.Users.loggedInUser.id,
-			'saveSizeName': { '40': '40', '50': '50', '80': '80w' }
-		});
-		var userName = toolDiv.find('.Users_avatar_name');
-		var userNameInput = $('<input type="text" name="name_edit" class="Users_avatar_name_edit" />').val(userName.text()).hide();
-		userNameInput.css({
-			'font-size': userName.css('font-size'),
-			'font-familty': userName.css('font-family'),
-			'font-weight': userName.css('font-weight'),
-			'font-style': userName.css('font-style')
-		});
-		userName.after(userNameInput);
-		userNameInput.validator();
-		userName.on(Q.Pointer.end, function()
-		{
-			userName.hide();
-			userNameInput.show().focus();
-			userNameInput.on('blur.Users_avatar', function()
-			{
-				if (userNameInput.val() != userName.text() && confirm('Save changes?'))
-				{
-					$(this).trigger('keyup', 'save');
-				}
-				else
-				{
-					userNameInput.data('validator').reset();
-					userNameInput.off('blur.Users_avatar keyup.Users_avatar').val(userName.text()).hide();
-					userName.show();
-				}
-			});
-			userNameInput.on('keyup.Users_avatar', function(e, shouldSave)
-			{
-				if (shouldSave === 'save' || e.keyCode == 13)
-				{
-					var fullname = userNameInput.val();
-					if (fullname.length > 0)
-					{
-						userNameInput.data('validator').reset();
-						var params = $.param({ 'fullname': fullname });
-						Q.jsonRequest(Q.url('action.php/Streams/basic?') + params, 'data', function(err, res)
-						{
-							if (res.errors)
-							{
-								alert(res.errors[0].message);
-							}
-							else
-							{
-								userNameInput.off('blur.Users_avatar keyup.Users_avatar').trigger('blur').hide();
-								userName.html(userNameInput.val()).show();
-							}
-						}, { 'method': 'post' });
-					}
-					else
-					{
-						userNameInput.data('validator').invalidate({ 'name_edit': 'User name cannot be empty' });
-					}
-				}
-			});
-		});
+Q.Tool.define("Users/avatar", function(options) {
+	if (this.element.childNodes.length) {
+		return;
 	}
-};
+	var tool = this, state = this.state;
+	if (!state.userId) {
+		console.warn("Users/avatar: no userId provided");
+		return; // empty
+	}
+	if (state.icon === true) {
+		state.icon = 50;
+	}
+	
+	var p = new Q.Pipe(['icon', 'contents'], function (params) {
+		tool.element.innerHTML = params.icon + params.contents;	
+	});
+	
+	Q.Users.get(state.userId, function (err, user) {
+		var fields;
+		if (!user) return;
+		state.user = user;
+		if (state.icon) {
+			fields = Q.extend({}, state.templates.icon.fields, {
+				src: Q.Users.iconUrl(this.icon, state.icon)
+			});
+			Q.Template.render('Users/avatar/icon', fields, function (err, html) {
+				p.fill('icon')(html);
+			}, state.templates.icon);
+		} else {
+			p.fill('icon')('');
+		}
+
+		fields = Q.extend({}, state.templates.contents.fields, {
+			name: this.username
+		});
+		Q.Template.render('Users/avatar/contents', fields, function (err, html) {
+			p.fill('contents')(html);
+		}, state.templates.contents);
+	});
+},
+
+{
+	user: null,
+	icon: '40',
+	onName: new Q.Event(function() {}, 'Users'),
+	templates: {
+		icon: {
+			dir: 'plugins/Users/views',
+			name: 'Users/avatar/icon',
+			fields: { alt: "user icon" }
+		},
+		contents: {
+			dir: 'plugins/Users/views',
+			name: 'Users/avatar/contents',
+			fields: { tag: "span" }
+		}
+	}
+}
+
+);
+
+Q.Template.set('Users/avatar/icon', '<img src="{{& src}}" alt="{{alt}}" class="Users_avatar_icon">');
+Q.Template.set('Users/avatar/contents', '<{{tag}} class="Users_avatar_contents">{{name}}</{{tag}}>');
+
+})(window.jQuery, window);

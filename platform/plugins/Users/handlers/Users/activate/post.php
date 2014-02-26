@@ -11,10 +11,16 @@ function Users_activate_post()
 		if (empty($_REQUEST['passphrase'])) {
 			throw new Q_Exception("You can't set a blank passphrase.", 'passphrase');
 		}
+		
+		$isHashed = !empty($_REQUEST['isHashed']);
+		if ($isHashed and $isHashed !== 'true' and intval($_REQUEST['isHashed']) > 1) {
+			// this will let us introduce other values for isHashed in the future
+			throw new Q_Exception("Please set isHashed to 0 or 1", 'isHashed');
+		}
 
 		// Save the pass phrase even if there may be a problem adding an email later.
 		// At least the user will be able to log in.
-		$user->passphraseHash = Users::hashPassphrase($_REQUEST['passphrase']);
+		$user->passphraseHash = $user->computePassphraseHash($_REQUEST['passphrase'], $isHashed);
 		Q_Response::setNotice("Users/activate/passphrase", "Your pass phrase has been saved.", true);
 		// Log the user in, since they were able to set the passphrase
 		Users::setLoggedInUser($user); // This also saves the user.

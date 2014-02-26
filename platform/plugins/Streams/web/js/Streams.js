@@ -111,6 +111,12 @@ Streams.define = function (type, ctor, methods) {
 	return Q.Streams.constructors[type] = ctor;
 };
 
+/**
+ * Calculate the url of a stream's icon
+ * @param {String} icon the value of the stream's "icon" field
+ * @param {Number} [size=40] the size of the icon to render. Defaults to 40.
+ * @return {String} the url
+ */
 Streams.iconUrl = function(icon, size) {
 	if (!icon) {
 		console.warn("Streams.iconUrl: icon is empty");
@@ -312,14 +318,12 @@ Streams.get = Q.getter(function (publisherId, streamName, callback, extra) {
 	}));
 	func.call(this, 'stream', slotNames, publisherId, streamName, function Streams_get_response_handler (err, data) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		if (!msg && !data.stream) {
+			msg = "Streams.get: data.stream is missing";
+		}
 		if (msg) {
 			Streams.onError.handle.call(this, msg, err, data);
 			Streams.get.onError.handle.call(this, msg, err, data);
-			return callback && callback.call(this, msg);
-		}
-		if (!data.stream) {
-			var msg = "Streams.get: data.stream is missing";
-			Streams.onError.handle(msg, err, data);
 			return callback && callback.call(this, msg);
 		}
 		_constructStream(
@@ -341,10 +345,26 @@ Streams.get = Q.getter(function (publisherId, streamName, callback, extra) {
 }, {cache: Q.Cache.document("Streams.get", 100), throttle: 'Streams.get'});
 Streams.get.onError = new Q.Event();
 
-Streams.batchFunction = function Streams_batchFunction(baseUrl) {
-	return Q.batcher.factory(Streams.batchFunction.functions, baseUrl, "/action.php/Streams/batch", "batch", "batch");
+Streams.batchFunction = function Streams_batchFunction(baseUrl, action) {
+	action = action || 'batch';
+	return Q.batcher.factory(Streams.batchFunction.functions, baseUrl,
+		"/action.php/Streams/"+action, "batch", "batch",
+		_Streams_batchFunction_preprocess[action]
+	);
 };
 Streams.batchFunction.functions = {};
+
+var _Streams_batchFunction_preprocess = {
+	avatar: {
+		preprocess: function (args) {
+			var userIds = [], i;
+			for (i=0; i<args.length; ++i) {
+				userIds.push(args[i][0]);
+			}
+			return {userIds: userIds};
+		}
+	}
+};
 
 /**
  * Create a new stream
@@ -407,7 +427,7 @@ Streams.create.onError = new Q.Event();
  * @param extra {Object} Can include "messages" and "participants"
  * @param callback {Function} The function to call when all constructors and event handlers have executed
  *  The first parameter is an error, in case something went wrong. The second one is the stream object.
- * @param handleRefreshEvents {Boolean} whether to handle the stream refresh events
+ * @param handleRefreshEvents {Boolean} Defaults to false. Whether to also handle the stream refresh events.
  */
 function _constructStream (fields, extra, callback, handleRefreshEvents) {
 
@@ -451,13 +471,13 @@ function _constructStream (fields, extra, callback, handleRefreshEvents) {
 				var f = this.fields;
 
 				// update the Streams.get cache
-				Streams.get.cache.each([f.publisherId, f.name], function (k, v) {
-					Streams.get.cache.remove(k);
-				});
 				if (f.publisherId && f.name) {
+					Streams.get.cache.each([f.publisherId, f.name], function (k, v) {
+						Streams.get.cache.remove(k);
+					});
 					Streams.get.cache.set(
-						[f.publisherId, f.name],
-						0, this, [null, this]
+						[f.publisherId, f.name], 0,
+						this, [null, this]
 					);
 				}
 
@@ -481,8 +501,8 @@ function _constructStream (fields, extra, callback, handleRefreshEvents) {
 					message = new Message(message);
 				}
 				Message.get.cache.set(
-					[fields.publisherId, fields.name, message.ordinal],
-					0, message, [null, message]
+					[fields.publisherId, fields.name, message.ordinal], 0,
+					message, [null, message]
 				);
 			});
 		}
@@ -492,8 +512,8 @@ function _constructStream (fields, extra, callback, handleRefreshEvents) {
 					participant = new Participant(participant);
 				}
 				Participant.get.cache.set(
-					[fields.publisherId, fields.name, participant.userId],
-					0, participant, [null, participant]
+					[fields.publisherId, fields.name, participant.userId], 0,
+					participant, [null, participant]
 				);
 			});
 		}
@@ -1833,22 +1853,23 @@ var Avatar = Streams.Avatar = function Streams_Avatar (fields) {
 /**
  * Avatar batch getter.
  * @method get
- * @param userId {String} The id of the user whose avatar we are requesting
+ * @param userId {String|Object} The id of the user whose avatar we are requesting.
+ *  Alternatively, this can also be an object with keys "prefix", "limit", "offset"
  * @param callback {function}
  *	if there were errors, first parameter is an array of errors
  *  otherwise, first parameter is null and second parameter is a Streams.Avatar object
  */
 Avatar.get = Q.getter(function _Avatar_get (userId, callback) {
-	var func = Streams.batchFunction(Q.baseUrl({userId: userId}));
-	func.call(this, 'avatar', 'avatars', userId, function (err, data) {
+	var func = Streams.batchFunction(Q.baseUrl({userId: userId}), 'avatar');
+	func.call(this, userId, function (err, data) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
 		if (msg) {
 			Streams.onError.handle.call(this, msg);
 			Avatar.get.onError.handle.call(this, msg);
 			return callback && callback.call(this, msg);
 		}
-		var avatar = data.avatars[userId]
-			? new Avatar(data.avatars[userId])
+		var avatar = data.avatar
+			? new Avatar(data.avatar)
 			: null;
 		Avatar.get.cache.set(
 			[userId],
@@ -1902,7 +1923,7 @@ Avatar.prototype.displayName = function _Avatar_prototype_displayName (options) 
 	var fn = this.firstName, 
 		ln = this.lastName,
 		u = this.username;
-	if (options['short']) {
+	if (options && options['short']) {
 		return fn || u;
 	}
 	if (fn && ln) {
@@ -2462,7 +2483,7 @@ Q.onInit.add(function _Streams_onInit() {
 		});
 	}, 'Streams');
 	
-	Q.beforeActivate.set(function (elem) {
+	Q.beforeActivate.add(function (elem) {
 		// Every time before anything is activated,
 		// process any preloaded streams data we find
 		Q.each(Stream.preloaded, function (i, fields) {

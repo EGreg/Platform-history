@@ -3,7 +3,9 @@
 function Users_user_validate()
 {
 	Q_Valid::nonce(true);
-	$type = isset($_REQUEST['identifierType']) ? $_REQUEST['identifierType'] : Q_Config::get("Users", "login", "identifierType", "email,mobile");
+	$type = isset($_REQUEST['identifierType'])
+		? $_REQUEST['identifierType']
+		: Q_Config::get("Users", "login", "identifierType", "email,mobile");
 	$parts = explode(',', $type);
 	$accept_mobile = true;
 	$expected = 'email address or mobile number';

@@ -189,7 +189,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	 * @type boolean
 	 * @default false
 	 */
-	protected $noCache = false;
+	protected $noCache = null;
 
 	/**
 	 * Turn off automatic caching on fetchAll and fetchDbRows.
@@ -1313,7 +1313,8 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		$arguments = func_get_args();
 		$ret = call_user_func_array(array($result, 'fetchAll'), $arguments);
 
-		if (!$this->noCache) {
+		if ($this->noCache === null
+		or ($this->noCache === true and !empty($ret))) {
 			// cache the result of executing this particular SQL on this db connection
 			Db_Query::$cache[$conn_name][$sql]['fetchAll'] = $ret;
 		}
@@ -1348,7 +1349,8 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		$arguments = func_get_args();
 		$ret = call_user_func_array(array($result, 'fetchArray'), $arguments);
 
-		if (!$this->noCache) {
+		if ($this->noCache === null
+		or ($this->noCache === true and !empty($ret))) {
 			// cache the result of executing this particular SQL on this db connection
 			Db_Query::$cache[$conn_name][$sql]['fetchArray'] = $ret;
 		}
@@ -1388,7 +1390,8 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 			return Db_Query::$cache[$conn_name][$sql]['fetchDbRows'];
 		}
 		$ret = $this->execute()->fetchDbRows($class_name, $fields_prefix, $by_field);
-		if (!$this->noCache) {
+		if ($this->noCache === null
+		or ($this->noCache === true and !empty($ret))) {
 			// cache the result of executing this particular SQL on this db connection
 			Db_Query::$cache[$conn_name][$sql]['fetchDbRows'] = $ret;
 		}
@@ -1419,10 +1422,12 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	/**
 	 * Turn off automatic caching on fetchAll and fetchDbRows.
 	 * @method noCache
+	 * @param {boolean} [$onlyEmpty=false] Defaults to false. Pass true to suppress caching empty results only
+	 * @return Db_Query_Mysql
 	 */
-	function noCache()
+	function noCache($onlyEmpty = false)
 	{
-		$this->noCache = true;
+		$this->noCache = $onlyEmpty;
 		return $this;
 	}
 

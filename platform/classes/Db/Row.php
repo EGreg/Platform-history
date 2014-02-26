@@ -2173,9 +2173,10 @@ class Db_Row implements Iterator
 
 	/**
 	 * Returns a safe array to send to clients
+	 * @param {$array} [$options=null] accepts an array of options
 	 * @method exportArray
 	 */
-	function exportArray()
+	function exportArray($options = null)
 	{
 		return $this->toArray();
 	}

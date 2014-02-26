@@ -122,7 +122,7 @@ Q.Tool.define("Streams/chat", function _Streams_chat_constructor (options) {
 	
 	Q.Streams.Stream.onMessage(o.publisherId, o.streamName, 'Streams/chat/message').set(function(stream, msg)
 	{
-		Q.Tool.constructors['Users/avatar'].options.onNameResolve.set(function()
+		Q.Tool.constructors['Users/avatar'].options.onName.set(function()
 		{
 			tool.onLayout({ 'chatWidthOnly': true });
 		}, 'Users.avatar.onNameResolve');
@@ -366,7 +366,7 @@ Q.Tool.define("Streams/chat", function _Streams_chat_constructor (options) {
     		$('.Streams_chat_no_messages').hide();
 
     		var i = 0; c = o.amountToLoad;
-    		Q.Tool.constructors['Users/avatar'].options.onNameResolve.set(function()
+    		Q.Tool.constructors['Users/avatar'].options.onName.set(function()
     		{
     			i++;
     			if (i == c)

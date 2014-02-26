@@ -307,23 +307,30 @@ abstract class Streams extends Base_Streams
 		if (empty($publisherId) or empty($name)) {
 			return null;
 		}
-		$key = is_string($name) ? $name : Q::json_encode($name);
-		if (empty($options['refetch'])
-		and isset(self::$fetch[$asUserId][$publisherId][$key][$fields])) {
-			return self::$fetch[$asUserId][$publisherId][$key][$fields];
-		}
-
-		$criteria = array(
-			'publisherId' => $publisherId,
-			'name' => $name
-		);
-
 		if (is_string($name)) {
 			if (substr($name, -1) === '/') {
 				$includeTemplate = !empty($options['includeTemplate']);
-				$criteria['name'] = new Db_Range($name, $includeTemplate, false, true);
+				$name = new Db_Range($name, $includeTemplate, false, true);
+			} else {
+				$name = array($name);
 			}
 		}
+		$namesToFetch = $name;
+		$fetched = array();
+		if (is_array($name) and empty($options['refetch'])) {
+			foreach ($name as $n) {
+				if (isset(self::$fetch[$asUserId][$publisherId][$n][$fields])) {
+					$fetched[$n] = self::$fetch[$asUserId][$publisherId][$n][$fields];
+				} else {
+					$namesToFetch[] = $n;
+				}
+			}
+			$namesToFetch = array_unique($namesToFetch);
+		}
+		$criteria = array(
+			'publisherId' => $publisherId,
+			'name' => $namesToFetch
+		);
 
 		// Get streams and set their default access info
 		$streams = Streams_Stream::select($fields)
@@ -332,9 +339,13 @@ abstract class Streams extends Base_Streams
 			->options($options)
 			->fetchDbRows(null, '', 'name');
 
+		if ($fetched) {
+			$streams = array_merge($streams, $fetched);
+		}
+
 		Streams::calculateAccess($asUserId, $publisherId, $streams, false);
 
-		if (is_array($name)) {
+		if (is_array($name) and count($name) > 1) {
 			// put the streams back in the same internal PHP array order
 			// and in the process honor any duplicate names that might have been passed
 			$temp = $streams;
@@ -373,8 +384,8 @@ abstract class Streams extends Base_Streams
 			), 'after');
 		}
 
-		if (empty($options)) {
-			self::$fetch[$asUserId][$publisherId][$key][$fields] = $streams;
+		foreach ($streams as $n => $stream) {
+			self::$fetch[$asUserId][$publisherId][$n][$fields] = $stream;
 		}
 		return $streams;
 	}
@@ -979,7 +990,7 @@ abstract class Streams extends Base_Streams
 	 * Produce user's display name
 	 * @method displayName
 	 * @static
-	 * @param {string|Users_User} $user
+	 * @param {string|Users_User} $userId
 	 *  Can be Users_User object or a string containing a user id
 	 * @param {array} $streams=null
 	 *  An array of streams fetched for this user.
@@ -992,78 +1003,19 @@ abstract class Streams extends Base_Streams
 	 *  "escape" => If true, does HTML escaping of the retrieved fields
 	 * @return {string|null}
 	 */
-	static function displayName($user, $streams=null, $options = array())
+	static function displayName($userId, $options = array())
 	{
-		if (!$user) return null;
-		if (is_string($user)) {
-			$user = Users_User::getUser($user);
+		if ($userId instanceof Users_User) {
+			$userId = $userId->id;
 		}
-		if (!$user) return null;
-
-		$username = $user->username;
-		$test_access = 'content';
 		if (!empty($options['fullAccess'])) {
-			$test_access = 0;
-		}
-		if (!isset($streams)) {
-			$logged_in_user = Users::loggedInUser();
-			$streams = Streams::fetch(
-				$logged_in_user ? $logged_in_user->id : 0,
-				$user->id,
-				array('Streams/user/firstName', 'Streams/user/lastName')
-			);
-		}
-		$escape = !empty($options['escape']);
-		$fn = $firstName = Streams::take($streams, 'Streams/user/firstName', $test_access, 'content', $escape);
-		$ln = $lastName = Streams::take($streams, 'Streams/user/lastName', $test_access, 'content', $escape);
-
-		if (!empty($options['spans'])) {
-			$firstName = "<span class='Streams_firstName'>$firstName</span>";
-			$lastName = "<span class='Streams_lastName'>$lastName</span>";
-		}
-
-		if (!empty($options['short'])) {
-			return $firstName ? $firstName : $username;
-		}
-
-		$username = !empty($username) ? "\"$username\"" : '';
-
-		if ($fn and $ln) {
-			return "$firstName $lastName";
-		} else if ($fn and !$ln) {
-			return $username ? "$firstName $username" : $firstName;
-		} else if (!$fn and $ln) {
-			return "$username $lastName";
+			$asUserId = $userId;
 		} else {
-			return !empty($username) ? $username : null;
+			$asUser = Users::loggedInUser();
+			$asUserId = $asUser ? $asUser->id : "";
 		}
-	}
-
-	/**
-	 *
-	 * @method displayUsers
-	 * @static
-	 * @param {array} $userIds
-	 *  An array of user ids
-	 * @return {array}
-	 *  An array of Users_User objects, augmented with the requested streams.
-	 *  Get the stream objects using $user->get($streamName)
-	 */
-	static function displayUsers($userIds)
-	{
-		$user = Users::loggedInUser();
-		$users = Users_User::select('*')
-			->where(array('id' => $userIds))
-			->fetchDbRows(null, '', 'id');
-		foreach ($userIds as $id) {
-			$streams = self::forUser(
-				$user ? $user->id : 0,
-				$id
-			);
-			foreach ($streams as $stream) {
-				$users[$id]->set($stream->name, $stream);
-			}
-		}
+		$avatar = Streams_Avatar::fetch($asUserId, $userId);
+		return $avatar ? $avatar->displayName($options) : null;
 	}
 
 	/**
@@ -1282,13 +1234,16 @@ abstract class Streams extends Base_Streams
 			}
 		}
 
-		// Finally, resolve all the undertermined readLevels
+		// Resolve all the undetermined readLevels
 		foreach ($show_toUserIds as $userId => $v) {
 			if (!isset($v)) {
 				// if the readLevel hasn't been determined by now, it's the same as the public one
 				$show_toUserIds[$userId] = 'public';
 			}
 		}
+		
+		// Set up the self avatar:
+		$show_toUserIds[$publisherId] = true;
 
 		// Finally, set up the public avatar:
 		if (!isset($stream->readLevel)) {

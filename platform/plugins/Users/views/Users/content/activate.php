@@ -12,7 +12,7 @@
 					<input type="hidden" id="activate_identifier" name="<?php echo $t ?>"
 						value="<?php echo Q_Html::text($identifier) ?>">
 					<div class='Q_buttons'>
-						<button id="Users_activate_set_emailAddress" type="submit">
+						<button class="Q_button" id="Users_activate_set_emailAddress" type="submit">
 							Set
 							<?php echo Q_Html::text($identifier) ?>
 							as my primary <?php echo $type ?>
@@ -65,7 +65,7 @@
 		</div>
 	<?php endif; ?>
 <?php elseif (Users::loggedInUser()): ?>
-	<h1 class='Q_big_message'>If you feel something went wrong, <button id='activate_setEmail'>try again</button></h1>
+	<h1 class='Q_big_message'>If you feel something went wrong, <button id='activate_setIdentifier'>try again</button></h1>
 <?php else: ?>
 	<h1 class='Q_big_message'>Please <a href='#' id='activate_login'>log in</a> and get another email sent to you.</h1>
 <?php endif; ?>
@@ -74,7 +74,7 @@
 <?php Q_Response::addScript('plugins/Q/js/JSON.js'); ?>
 
 <?php Q_Response::addScriptLine("jQuery(function() {
-	$('#activate_setEmail').click(function() { Q.plugins.Users.setIdentifier(); });
+	$('#activate_setIdentifier').click(function() { Q.plugins.Users.setIdentifier(); });
 	$('#activate_login').click(function() { Q.plugins.Users.login(); });
 	$('#activate_passphrase').val('').focus();
 	

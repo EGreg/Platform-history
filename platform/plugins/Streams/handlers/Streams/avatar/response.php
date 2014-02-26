@@ -2,18 +2,44 @@
 
 function Streams_avatar_response()
 {
+	$prefix = $limit = $offset = $userIds = $batch = null;
+	extract($_REQUEST, EXTR_IF_EXISTS);
+
 	$user = Users::loggedInUser();
 	$asUserId = $user ? $user->id : "";
-	if (isset($_REQUEST['prefix'])) {
-		$prefix = $_REQUEST['prefix'];
-		$limit = isset($_REQUEST['limit']) ? $_REQUEST['limit'] : null;
-		$offset = isset($_REQUEST['offset']) ? $_REQUEST['offset'] : null;
+
+	if (isset($prefix)) {
 		$avatars = Streams_Avatar::fetchByPrefix($asUserId, $prefix, compact('limit', 'offset'));
 	} else {
-		$uids = is_array($_REQUEST['userIds'])
-			? $_REQUEST['userIds']
-			: explode(",", $_REQUEST['userIds']);
-		$avatars = Streams_Avatar::fetch($asUserId, $uids);
+		if (!empty($batch)) {
+			$batch = json_decode($batch, true);
+			if (!isset($batch)) {
+				throw new Q_Exception_WrongValue(array('field' => 'batch', 'range' => '{userIds: [userId1, userId2, ...]}'));
+			}
+			if (!isset($batch['userIds'])) {
+				throw new Q_Exception_RequiredField(array('field' => 'userIds'));
+			}
+			$userIds = $batch['userIds'];
+		}
+		if (!isset($userIds)) {
+			throw new Q_Exception_RequiredField(array('field' => 'userIds'));
+		}
+		if (is_string($userIds)) {
+			$userIds = explode(",", $userIds);
+		}
+		$avatars = Streams_Avatar::fetch($asUserId, $userIds);
 	}
-	Q_Response::setSlot('avatars', Db::exportArray($avatars));
+	$avatars = Db::exportArray($avatars);
+	if (!isset($batch)) {
+		Q_Response::setSlot('avatars', $avatars);
+		return $avatars;
+	}
+	$result = array();
+	foreach ($userIds as $userId) {
+		$result[] = array('slots' => 
+			array('avatar' => isset($avatars[$userId]) ? $avatars[$userId] : null)
+		);
+	}
+	Q_Response::setSlot('batch', $result);
+	return $avatars;
 }

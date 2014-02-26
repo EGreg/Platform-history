@@ -51,6 +51,10 @@ function Users_activate_objects_email($emailAddress, &$email)
 	if ($email->activationCode != $_REQUEST['code']) {
 		throw new Q_Exception("The activation code does not match. Did you get a newer email?", 'code');
 	}
+	$timestamp = Users_Email::db()->getCurrentTimestamp();
+	if ($timestamp > Users_Email::db()->fromDateTime($email->activationCodeExpires)) {
+		throw new Q_Exception("Activation code expired");
+	}
 	if (Q_Request::method() !== 'POST'
 	and empty($_REQUEST['p'])
 	and isset($user->emailAddress)
@@ -93,6 +97,10 @@ function Users_activate_objects_mobile($mobileNumber, &$mobile)
 	}
 	if ($mobile->activationCode != $_REQUEST['code']) {
 		throw new Q_Exception("The activation code does not match. Did you get a newer message?", 'code');
+	}
+	$timestamp = Users_Mobile::db()->getCurrentTimestamp();
+	if ($timestamp > Users_Mobile::db()->fromDateTime($mobile->activationCodeExpires)) {
+		throw new Q_Exception("Activation code expired");
 	}
 	if (Q_Request::method() !== 'POST'
 	and empty($_REQUEST['p'])

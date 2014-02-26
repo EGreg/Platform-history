@@ -79,6 +79,13 @@ Q.text.Users = {
 var priv = {};
 
 /**
+ * This event is fired if an error occurs in any Users function
+ */
+Users.onError = new Q.Event(function (err, err2) {
+	console.warn(Q.firstErrorMessage(err, err2));
+}, 'Streams.onError');
+
+/**
  * Initialize facebook by adding FB script and running FB.init().
  * Ensures that this is done only once
  */
@@ -549,7 +556,7 @@ Users.login = function(options) {
 			_onComplete(user);
 			return;
 		}
-		Q.jsonRequest(o.accountStatusUrl, 'accountStatus', function(err, response2) {
+		Q.request(o.accountStatusUrl, 'accountStatus', function(err, response2) {
 			// DEBUGGING: For debugging purposes
 			if (!response2.slots) {
 				if (response2.errors && response2.errors[0].message) {
@@ -659,9 +666,39 @@ Users.logout = function(options) {
 	}
 	
 	var url = o.url + (o.url.indexOf('?') < 0 ? '?' : '') + '&logout=1';
-	Q.jsonRequest(url, 'script', callback, {"method": "post"});
+	Q.request(url, 'script', callback, {"method": "post"});
 	return true;
 };
+
+/**
+ * Streams batch getter.
+ * @method get
+ * @param userId {string}
+ *  The user's id
+ * @param callback {function}
+ *	if there were errors, first parameter is an array of errors
+ *  otherwise, first parameter is null and second parameter is a Users.User object
+ */
+Users.get = Q.getter(function (userId, callback) {
+	var url = Q.action('Users/avatar');
+	var func = Users.batchFunction(Q.baseUrl({
+		userIds: userId
+	}), 'avatar');
+	func.call(this, userId, function Users_get_response_handler (err, data) {
+		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		if (!msg && !data.avatar) {
+			msg = "Users.get: data.avatar is missing";
+		}
+		if (msg) {
+			Users.onError.handle.call(this, msg, err, data.avatar);
+			Users.get.onError.handle.call(this, msg, err, data.avatar);
+			return callback && callback.call(this, msg);
+		}
+		var user = new Users.User(data.avatar);
+		callback.call(user, err, user);
+	});
+});
+Users.get.onError = new Q.Event();
 
 /**
  * Constructs a user from fields, which are typically returned from the server.
@@ -672,8 +709,57 @@ Users.User = function (fields) {
     this.typename = 'Q.Users.User';
 };
 
-Users.batchFunction = function Users_batchFunction(baseUrl) {
-    return Q.batcher.factory(Users.batchFunction.functions, baseUrl, "/action.php/Users/batch", "batch", "batch");
+Users.User.get = Users.get;
+
+/**
+ * Calculate the url of a stream's icon
+ * @param {String} icon the value of the stream's "icon" field
+ * @param {Number} [size=40] the size of the icon to render. Defaults to 40.
+ * @return {String} the url
+ */
+Users.iconUrl = function(icon, size) {
+	if (!icon) {
+		console.warn("Users.iconUrl: icon is empty");
+		return '';
+	}
+	if (!size) {
+		size = '40';
+	}
+	size = (String(size).indexOf('.') >= 0) ? size : size+'.png';
+	return icon.isUrl()
+		? icon + '/' + size
+		: Q.url('plugins/Users/img/icons/'+icon+'/'+size);
+};
+
+function _constructUser (fields) {
+	var user = new Users.User(fields);
+
+	// update the Users.get cache
+	Users.get.cache.each([fields.id], function (k, v) {
+		Users.get.cache.remove(k);
+	});
+	if (fields.id) {
+		Users.get.cache.set(
+			[fields.id], 0,
+			user, [null, user]
+		);
+	}
+}
+
+Users.batchFunction = function Users_batchFunction(baseUrl, action) {
+    return Q.batcher.factory(
+		Users.batchFunction.functions, baseUrl, 
+		"/action.php/Users/"+action, "batch", "batch",
+		{
+			preprocess: function (args) {
+				var userIds = [], i;
+				for (i=0; i<args.length; ++i) {
+					userIds.push(args[i][0]);
+				}
+				return {userIds: userIds};
+			}
+		}
+	);
 };
 Users.batchFunction.functions = {};
 
@@ -700,7 +786,7 @@ Q.onActivate.set(function (elem) {
 			}
 		}
 	});
-}, 'Q.Users');
+}, 'Users');
 
 Users.importContacts = function(provider)
 {
@@ -792,6 +878,8 @@ function login_callback(response) {
 		// remind to activate -- this is probably a futureUser created using an invite
 		step2_form = setupResendForm(false);
 	}
+	
+	var userId = response.slots.data.exists;
 
 	function onFormSubmit(event) {
 		var $this = $(this);
@@ -807,12 +895,30 @@ function login_callback(response) {
 			'background-image': 'url(' + Q.url('plugins/Q/img/throbbers/bars.gif') + ')',
 			'background-repeat': 'no-repeat'
 		});
+		if (window.CryptoJS) {
+			var p = $('#Users_form_passphrase');
+			if (p.val()) {
+				p.val(CryptoJS.SHA1(p.val() + "\t" + userId));
+				$('#Users_login_isHashed').attr('value', 1);
+			} else {
+				$('#Users_login_isHashed').attr('value', 0);
+			}
+		}
 		var url = $this.attr('action')+'?'+$this.serialize();
-		Q.jsonRequest(url, 'data', function (err, response) {
+		Q.request(url, 'data', function (err, response) {
+			
+			$('#Users_form_passphrase').attr('value', '');
+			
 			$('input', $this).css('background-image', 'none');
-			if (response.errors) {
+			if (err) {
+				var msg = Q.firstErrorMessage(err);
+				return;
+			}
+			if (err || response.errors) {
 				// there were errors
-				$this.data('validator').invalidate(Q.ajaxErrors(response.errors, [first_input.attr('name')]));
+				if (response.errors) {
+					$this.data('validator').invalidate(Q.ajaxErrors(response.errors, [first_input.attr('name')]));
+				}
 				$('#Users_login_identifier').blur();
 				first_input.plugin('Q/clickfocus');
 				return;
@@ -892,12 +998,12 @@ function login_callback(response) {
 					return false;
 				})
 			)
-		).append($('<input type="hidden" name="identifier" autocomplete="on" />').val(identifier_input.val()))
+		).append($('<input type="hidden" name="identifier" />').val(identifier_input.val()))
 		.append($('<div class="Q_buttons"></div>').append(
 			$('<a class="Q_button Users_login_start Q_main_button" />')
 			.html(Q.text.Users.login.loginButton)
 			.click(submitClosestForm)
-		));
+		)).append($('<input type="hidden" name="isHashed" id="Users_login_isHashed" value="0" />'));
 		setTimeout(function () {
 			$('#Users_login_passphrase_div').width(passphrase_input.outerWidth());
 		}, 10);
@@ -1077,7 +1183,7 @@ function login_setupDialog(usingProviders, perms, dialogContainer, identifierTyp
 	if (login_setupDialog.dialog) {
 		return;
 	}
-	var step1_form = $('<form id="Users_login_step1_form" />');
+	var step1_form = $('<form id="Users_login_step1_form" method="post" autocomplete="on" />');
 	var step1_div = $('<div id="Users_login_step1" class="Q_big_prompt" />').html(step1_form);
 	var step2_div = $('<div id="Users_login_step2" class="Q_big_prompt" />');
 	// step1_form request identifier
@@ -1094,11 +1200,18 @@ function login_setupDialog(usingProviders, perms, dialogContainer, identifierTyp
 		}
 	}
 	
-	var identifierInput = $('<input id="Users_login_identifier" type="'+type
-		+'" name="identifier" class="text" />')
+	Q.addScript("plugins/Q/js/sha1.js");
+	
+	var identifierInput = $('<input id="Users_login_identifier" autocomplete="email" type="'+type+'" class="text" />')
 	.attr('maxlength', Q.text.Users.login.maxlengths.identifier)
 	.attr('placeholder', placeholder)
 	.focus(hideForm2);
+
+	if (type === 'email') {
+		identifierInput.attr('name', 'email');
+	} else if (type === 'mobile') {
+		identifierInput.attr('name', 'phone');
+	}
 
 	step1_form.html(
 		$('<label for="Users_login_identifier" />').html(Q.text.Users.login.directions)
@@ -1119,6 +1232,7 @@ function login_setupDialog(usingProviders, perms, dialogContainer, identifierTyp
 	).append(
 		$('<div id="Users_login_explanation" />').html(Q.text.Users.login.explanation)
 	).submit(function(event) {
+		$('#Users_login_identifier').attr('name', 'identifier');
 		if (!$(this).is(':visible')) {
 			event.preventDefault();
 			return;
@@ -1334,7 +1448,7 @@ function setIdentifier_setupDialog(identifierType) {
 			'background-repeat': 'no-repeat'
 		});
 		var url = Q.action('Users/identifier') + '?' + $(this).serialize();
-		Q.jsonRequest(url, 'data', setIdentifier_callback, {"method": "post"});
+		Q.request(url, 'data', setIdentifier_callback, {"method": "post"});
 		event.preventDefault();
 		return;
 	});
@@ -1965,7 +2079,7 @@ Q.onInit.add(function () {
 	Q.Users.prompt.options = Q.extend({
 		'dialogContainer': document.body
 	}, Q.Users.prompt.options, Q.Users.prompt.serverOptions);
-}, 'Q.Users');
+}, 'Users');
 
 Q.onJQuery.add(function ($) {
 	
@@ -1978,7 +2092,16 @@ Q.onJQuery.add(function ($) {
 Q.onReady.set(function Users_Q_onReady_handler() {
 	$.fn.plugin.load('Q/dialog');
 	$.fn.plugin.load('Q/placeholders');
-}, 'Q.Users');
+}, 'Users');
+
+Q.beforeActivate.add(function (elem) {
+	// Every time before anything is activated,
+	// process any preloaded users data we find
+	Q.each(Users.User.preloaded, function (i, fields) {
+		_constructUser(fields);
+	});
+	Users.preloaded = null;
+}, 'Users');
 
 Users.onInitFacebook = new Q.Event();
 Users.onLogin = new Q.Event(function () {

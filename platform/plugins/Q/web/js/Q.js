@@ -24,6 +24,7 @@ Q.text = {
 	Q: {
 		"request": {
 			"error": "Error {{status}} during request",
+			"500": "Internal server error",
 			"404": "Not found: {{url}}",
 			"0": "Request interrupted"
 		}
@@ -1815,7 +1816,10 @@ Q.batcher.options = {
  * @param {String} tail The rest of the url of the webservice built to support batch requests.
  * @param {String} slotName The name of the slot to request. Defaults to "batch".
  * @param {String} fieldName The name of the data field. Defaults to "batch".
- * @param {Object} options Any additional options to pass to Q.batcher
+ * @param {Object} options Any additional options to pass to Q.req, as well as:
+ *  "max": Passed as option to Q.batcher
+ *  "ms": Passed as option to Q.batcher
+ *  "preprocess": Optional function calculating a data structure to JSON stringify into the data field
  * @return {Function} A function with any number of non-function arguments followed by
  *  one function which is treated as a callback and passed (errors, content)
  *  where content is whatever is returned in the slots.
@@ -1839,15 +1843,12 @@ Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotN
         return f;
     } 
     f = Q.batcher(function _Q_batcher_factory_function(subjects, args, callbacks) {
-		var data = JSON.stringify({args: args});
 		var o = Q.extend({
 			method: 'post',
-			fields: {
-				batch: data
-			}
+			fields: {}
 		}, options);
-		var fields = {};
-		fields[fieldName] = data;
+		var result = options && options.preprocess ? options.preprocess(args) : {args: args};
+		o.fields[fieldName] = JSON.stringify(result);
 		Q.req(baseUrl+tail, slotName, function (err, response) {
 			var error = err || response.errors;
 			if (error) {
@@ -1857,14 +1858,14 @@ Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotN
 				return;
 			}
 			Q.each(response.slots.batch, function (k, result) {
-			    if (result.errors) {
+			    if (result && result.errors) {
                     callbacks[k][0].call(subjects[k], result.errors);
 			    } else {
                     callbacks[k][0].call(subjects[k], null, (result && result.slots) || {});
 			    }
 			});
 		}, o);
-	});
+	}, options);
 	Q.setObject(name, f, collection, delimiter);
 	return f;
 };

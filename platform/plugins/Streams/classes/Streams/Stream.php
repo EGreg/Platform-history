@@ -359,9 +359,6 @@ class Streams_Stream extends Base_Streams_Stream
 		if ($this->name !== 'Streams/user/firstName' and $this->name !== 'Streams/user/lastName') {
 			return $result;
 		}
-		if (!isset($modified_fields['readLevel'])) {
-			return $result;
-		}
 		if ($this->retrieved) {
 			// Update all avatars corresponding to access rows for this stream
 			$tainted_access = Streams_Access::select('*')
@@ -1261,7 +1258,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 *	If access is not set for the stream it will be calculated for <code>$asUserId</code>
 	 * @return {array}
 	 */
-	function exportArray($options = array())
+	function exportArray($options = null)
 	{
 		$asUserId = isset($options['asUserId']) ? $options['asUserId'] : null;
 		if (!isset($asUserId)) {
@@ -1460,12 +1457,22 @@ class Streams_Stream extends Base_Streams_Stream
 		return Streams::actionUrl($this->publisherId, $this->name, $what);
 	}
 	
+	/**
+	 * Add this stream to the list of streams to be preloaded onto the client with the rest of the page
+	 * @method addPreloaded
+	 * @param {string} $asUserId
+	 *	Required. The id of the user from whose point of view the access is calculated.
+	 */
 	function addPreloaded($asUserId)
 	{
 		$this->calculateAccess($asUserId);
 		self::$preloaded["{$this->publisherId}, {$this->name}"] = $this;
 	}
 	
+	/**
+	 * Remove this stream from the list of streams to be preloaded onto the client with the rest of the page
+	 * @method addPreloaded
+	 */
 	function removePreloaded()
 	{
 		unset(self::$preloaded["{$this->publisherId}, {$this->name}"]);

@@ -12,7 +12,7 @@ function Streams_user_response_data($params)
 		$displayname = Streams::displayName($user);
 		$verified = !!Users::identify($type, $identifier);
 		return array(
-			'exists' => true,
+			'exists' => $user->id,
 			'verified' => $verified,
 			'username' => $user->username,
 			'displayName' => $displayname,

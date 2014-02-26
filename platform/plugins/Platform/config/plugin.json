@@ -1,5 +1,8 @@
 {
 	"Q": {
+		"handlersBeforeEvent": {
+			"Users/computePassphraseHash": ["Platform/before/Users_computePassphraseHash"]
+		},
 		"routes": {
 			"plugins/Platform/:action": {"module": "Platform"}
 		},
@@ -8,7 +11,7 @@
 				"version": "0.3",
 				"compatible": "0.3",
 				"requires": {"Q": "0.8", "Users": "0.8", "Streams": "0.8"},
-				"connections": ["Users"]
+				"connections": ["Users", "Streams"]
 			}
 		}
 	}

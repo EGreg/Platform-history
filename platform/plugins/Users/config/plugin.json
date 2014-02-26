@@ -20,11 +20,14 @@
 			"Q/session/destroy": ["Users/after/Q/session/destroy"],
 			"Q/reroute": ["Users/after/Q/reroute"],
 			"Q/image": ["Users/after/Q/image"],
+			"Q/responseExtras": ["Users/after/Q/responseExtras"],
 			"Users/setEmailAddress": ["Users/after/Users/setEmailAddress"],
 			"Users/setMobileNumber": ["Users/after/Users/setMobileNumber"],
 			"Users/addIdentifier": ["Users/after/Users/addIdentifier"]
 		},
 		"routes": {
+			"e/:emailAddress": { "module": "Users", "action": "activate" },
+			"m/:mobileNumber": { "module": "Users", "action": "activate" },
 			"plugins/Users/:action": {"module": "Users"},
 			"plugins/Users/img/icons/:folder/:size.png": {"mobile": "Users", "action": "missingIcon"}
 		},
@@ -97,10 +100,12 @@
 				"t-mobile": "tmomail.net"
 			}
 		},
-		"safeFields": [
-			"id", "fb_uid", "tw_uid", "g_uid", "y_uid",
-			"username", "signedUpWith", "icon", 
-			"url", "presence"
+		"exportFields": [
+			"id", "username", "signedUpWith", "icon", "url",
+			"fb_uid", "tw_uid", "g_uid", "y_uid"
+		],
+		"avatarFields": [
+			"id", "username", "icon", "url"
 		],
 		"authorize": {
 			"duration": "year",
@@ -118,6 +123,11 @@
 				"title": "Terms"
 			},
 			"delaySMS": 30000
+		},
+		"passphrase": {
+			"hashFunction": "sha1",
+			"hashIterations": 1103,
+			"saltLength": 10
 		}
 	}
 }

@@ -55,28 +55,68 @@ class Users_User extends Base_Users_User
 
 	/**
 	 * @method exportArray
+	 * @param {$array} [$options=null] can include the following:
+	 *  "asAvatar": set to true if only the avatar fields should be exported
 	 * @return {array}
 	 */
-	function exportArray()
+	function exportArray($options = null)
 	{
-		$safe = Q_Config::expect('Users', 'safeFields');
+		$fields = empty($options['asAvatar'])
+			? Q_Config::expect('Users', 'exportFields')
+			: Q_Config::expect('Users', 'avatarFields');
 		$u = array();
-		foreach ($this->fields as $field => $value) {
-			if (in_array($field, $safe)) {
-				$u[$field] = $value;
+		foreach ($fields as $field) {
+			if (isset($this->$field)) {
+				$u[$field] = $this->$field;
 			}
 		}
 		return $u;
 	}
 	
 	/**
+	 * Add this user to the list of user objects to be preloaded onto the client with the rest of the page
+	 * @method addPreloaded
+	 */
+	function addPreloaded()
+	{
+		self::$preloaded[$this->id] = $this;
+	}
+	
+	/**
+	 * Remove this user from the list of user objects to be preloaded onto the client with the rest of the page
+	 * @method addPreloaded
+	 */
+	function removePreloaded()
+	{
+		unset(self::$preloaded[$this->id]);
+	}
+	
+	/**
 	 * Use this function to display the name of a user object
+	 * @param {array} $options to pass to any hooks
 	 */
 	function displayName($options = array())
 	{
 		$user = $this;
  		$name = Q::event('Users/User/displayName', compact('user', 'options'), 'before');
 		return isset($name) ? $name : $this->username;
+	}
+	
+	/**
+	 * Use this function to display the name of a user object
+	 * @param {array} $options to pass to any hooks
+	 * @param {boolean} $isHashed Whether the first passphrase hash iteration occurred, e.g. on the client
+	 */
+	function computePassphraseHash($passphrase, $isHashed)
+	{
+		$user = $this;
+		if ($result = Q::event("Users/computePassphraseHash", compact('passphrase', 'isHashed', 'user'), 'before')) {
+			return $result;
+		}
+		if (!$isHashed) {
+			$passphrase = sha1($passphrase . "\t" . $this->id);
+		}
+		return Users::hashPassphrase($passphrase, $this->passphraseHash);
 	}
 	
 	/**
@@ -313,15 +353,14 @@ class Users_User extends Base_Users_User
 			"CURRENT_TIMESTAMP + INTERVAL $minutes MINUTE"
 		);
 		$email->authCode = md5(microtime() + mt_rand());
+		$link = 'Users/activate?code='.urlencode($email->activationCode) . ' emailAddress='.urlencode($email->address);
 		/**
 		 * @event Users/addIdentifier {before}
 		 * @param {string} 'user'
 		 * @param {string} 'email'
 		 */
-		Q::event('Users/addIdentifier', compact('user', 'email'), 'before');
+		Q::event('Users/addIdentifier', compact('user', 'email', 'link'), 'before');
 		$email->save();
-		
-		$link = 'Users/activate?p=1&code='.urlencode($email->activationCode) . '&e='.urlencode($email->address);
 		
 		$this->emailAddressPending = $normalized;
 		$this->save();
@@ -497,15 +536,14 @@ class Users_User extends Base_Users_User
 			"CURRENT_TIMESTAMP + INTERVAL $minutes MINUTE"
 		);
 		$mobile->authCode = md5(microtime() + mt_rand());
+		$link = 'Users/activate?code='.urlencode($mobile->activationCode) . ' mobileNumber'.urlencode($mobile->number);
 		/**
 		 * @event Users/addIdentifier {before}
 		 * @param {string} 'user'
 		 * @param {string} 'mobile'
 		 */
-		Q::event('Users/addIdentifier', compact('user', 'mobile'), 'before');
+		Q::event('Users/addIdentifier', compact('user', 'mobile', 'link'), 'before');
 		$mobile->save();
-		
-		$link = 'Users/activate?p=1&code='.urlencode($mobile->activationCode) . '&m='.urlencode($mobile->number);
 		
 		$this->mobileNumberPending = $normalized;
 		$this->save();
@@ -748,20 +786,6 @@ class Users_User extends Base_Users_User
 		}
 		return $users;
 	}
-	
-	/**
-	 * @property $fetch_cache
-	 * @type array
-	 * @protected
-	 */
-	protected $fetch_cache = array();
-	/**
-	 * @property $cache
-	 * @type array
-	 * @protected
-	 * @static
-	 */
-	protected static $cache = array();
 
 	/* * * */
 	/**
@@ -777,4 +801,25 @@ class Users_User extends Base_Users_User
 			$result->$k = $v;
 		return $result;
 	}
+	
+	/**
+	 * @property $fetch_cache
+	 * @type array
+	 * @protected
+	 */
+	protected $fetch_cache = array();
+	/**
+	 * @property $cache
+	 * @type array
+	 * @protected
+	 * @static
+	 */
+	protected static $cache = array();
+	
+	/**
+	 * @property $preloaded
+	 * @static
+	 * @type array
+	 */
+	static $preloaded = array();
 };

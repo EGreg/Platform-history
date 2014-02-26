@@ -10,7 +10,6 @@ function Streams_invite_tool($options)
 				'type' => 'text',
 				'value' => Streams::displayName(
 					Users::loggedInUser(),
-					null, 
 					array('fullAccess' => true)
 				)
 			),

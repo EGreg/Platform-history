@@ -229,7 +229,6 @@ CREATE TABLE `{$prefix}user` (
   `username` varchar(63) COLLATE utf8_unicode_ci NOT NULL,
   `icon` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'relative path to user''s icon folder, containing 48.png, 32.png and 16.png',
   `url` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'the url of this user''s fm server',
-  `balance` decimal(10,2) NOT NULL DEFAULT '0.00',
   `pincodeHash` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'a smaller security code for when user is already logged in',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;

@@ -22,6 +22,7 @@ class Streams_Avatar extends Base_Streams_Avatar
 	{
 		parent::setUp();
 	}
+
 	/**
 	 * Retrieve avatars for one or more publishers as displayed to a particular user.
 	 * 
@@ -40,7 +41,7 @@ class Streams_Avatar extends Base_Streams_Avatar
 			$publisherId = array($publisherId);
 			$return_one = true;
 		}
-		$rows = self::select('*')->where(array(
+		$rows = Streams_Avatar::select('*')->where(array(
 			'toUserId' => array($toUserId, ''),
 			'publisherId' => $publisherId
 		))->fetchDbRows();
@@ -55,6 +56,7 @@ class Streams_Avatar extends Base_Streams_Avatar
 			? ($avatars ? reset($avatars) : null)
 			: $avatars;
 	}
+
 	/**
 	 * Retrieve avatars for one or more publishers as displayed to a particular user.
 	 * 
@@ -74,7 +76,8 @@ class Streams_Avatar extends Base_Streams_Avatar
 			? $options['fields']
 			: array('username', 'firstName', 'lastName');
 		foreach ($fields as $field) {
-			$rows = self::select('*')->where(array(
+			$rows = Streams_Avatar::select('*')
+			->where(array(
 				'toUserId' => array($toUserId, ''),
 				$field => new Db_Range($prefix, true, false, true)
 			))->fetchDbRows();
@@ -86,6 +89,46 @@ class Streams_Avatar extends Base_Streams_Avatar
 			}
 		}
 		return $avatars;
+	}
+	
+	/**
+	 * Calculate diplay name from avatar
+	 * @method displayName
+	 * @param {array} $options=array()
+	 *  Associative array of options, which can include:<br/>
+	 *  "fullAccess" => Ignore the access restrictions for the name<br/>
+	 *  "short" => Only display the first name<br/>
+	 *  "spans" => If true, encloses the first and last name in span tags<br/>
+	 *  "escape" => If true, does HTML escaping of the retrieved fields
+	 * @return {string|null}
+	 */
+	function displayName($options = array())
+	{
+		$escape = !empty($options['escape']);
+		$fn = $escape ? Q_Html::text($this->firstName) : $this->firstName;
+		$ln = $escape ? Q_Html::text($this->lastName) : $this->lastName;
+		$u = $escape ? Q_Html::text($this->username) : $this->username;
+
+		if (!empty($options['spans'])) {
+			$fn = $fn ? "<span class='Streams_firstName'>$fn</span>" : "";
+			$ln = $ln ? "<span class='Streams_lastName'>$ln</span>" : "";
+		}
+
+		if (!empty($options['short'])) {
+			return $fn ? $fn : $u;
+		}
+
+		// $u = $u ? "\"$username\"" : '';
+
+		if ($fn and $ln) {
+			return "$fn $ln";
+		} else if ($fn and !$ln) {
+			return $u ? "$fn $u" : $fn;
+		} else if (!$fn and $ln) {
+			return "$u $ln";
+		} else {
+			return $u ? $u : null;
+		}
 	}
 
 	protected static $cache;

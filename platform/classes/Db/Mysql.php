@@ -690,6 +690,7 @@ class Db_Mysql implements iDb
 		if (!isset($dbtime)) {
 			$phptime1 = time();
 			$row = $this->select('CURRENT_TIMESTAMP', '')->execute()->fetch(PDO::FETCH_NUM);
+			$dbtime = self::fromDateTime($row[0]);
 			$phptime2 = time();
 			$phptime = round(($phptime1 + $phptime2) / 2);
 		}

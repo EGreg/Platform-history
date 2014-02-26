@@ -26,6 +26,17 @@ function Streams_after_Users_User_saveExecute($params)
 		$avatar->lastName = '';
 		$avatar->save();
 		
+		// we are inserting a new user.
+		// make a full-access avatar for themselves
+		$avatar = new Streams_Avatar();
+		$avatar->publisherId = $user->id;
+		$avatar->toUserId = $user->id;
+		$avatar->username = Q::ifset($modified_fields, 'username', $user->username);
+		$avatar->icon = Q::ifset($modified_fields, 'icon', $user->icon);
+		$avatar->firstName = '';
+		$avatar->lastName = '';
+		$avatar->save();
+		
 		// create some standard streams for them
 		$onInsert = Q_Config::get('Streams', 'onInsert', 'Users_User', array());
 		if (!$onInsert) {
@@ -38,7 +49,9 @@ function Streams_after_Users_User_saveExecute($params)
 			$stream = new Streams_Stream();
 			$stream->publisherId = $user->id;
 			$stream->name = $name;
-			$stream->retrieve(); // try retrieving it
+			$stream->retrieve('*', false, true)
+				->noCache(true)
+				->resume(); // try retrieving it
 			$stream->type = $p->expect($name, "type");
 			$stream->title = $p->expect($name, "title");
 			$stream->content = $p->get($name, "content", '');
@@ -57,6 +70,7 @@ function Streams_after_Users_User_saveExecute($params)
 			$name = Q_Config::get('Streams', 'onUpdate', 'Users_User', $field, null);
 			if (!$name) continue;
 			$stream = new Streams_Stream();
+			$stream->publisherId = $user->id;
 			$stream->name = $name;
 			$stream->retrieve(); // it should probably already exist
 			$stream->content = $value;

@@ -19,7 +19,7 @@
  * @property string $insertedTime
  * @property string $sentTime
  * @property string $byUserId
- * @property string $byClientId
+ * @property string $byClientid
  * @property string $type
  * @property string $content
  * @property string $instructions
@@ -50,7 +50,7 @@ abstract class Base_Streams_Message extends Db_Row
 	 * @type string
 	 */
 	/**
-	 * @property $byClientId
+	 * @property $byClientid
 	 * @type string
 	 */
 	/**
@@ -280,19 +280,20 @@ abstract class Base_Streams_Message extends Db_Row
 	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
-	 * @method beforeSet_byClientId
+	 * @method beforeSet_byClientid
 	 * @param {string} $value
 	 * @return {array} An array of field name and value
 	 * @throws {Exception} An exception is thrown if $value is not string or is exceedingly long
 	 */
-	function beforeSet_byClientId($value)
+	function beforeSet_byClientid($value)
 	{
-		if ($value instanceof Db_Expression) return array('byClientId', $value);
+		if (!isset($value)) return array('byClientid', $value);
+		if ($value instanceof Db_Expression) return array('byClientid', $value);
 		if (!is_string($value) and !is_numeric($value))
-			throw new Exception('Must pass a string to '.$this->getTable().".byClientId");
+			throw new Exception('Must pass a string to '.$this->getTable().".byClientid");
 		if (strlen($value) > 31)
-			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".byClientId");
-		return array('byClientId', $value);			
+			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".byClientid");
+		return array('byClientid', $value);			
 	}
 
 	/**
@@ -431,7 +432,7 @@ abstract class Base_Streams_Message extends Db_Row
 	 */
 	static function fieldNames($table_alias = null, $field_alias_prefix = null)
 	{
-		$field_names = array('publisherId', 'streamName', 'insertedTime', 'sentTime', 'byUserId', 'byClientId', 'type', 'content', 'instructions', 'reOrdinal', 'weight', 'ordinal');
+		$field_names = array('publisherId', 'streamName', 'insertedTime', 'sentTime', 'byUserId', 'byClientid', 'type', 'content', 'instructions', 'reOrdinal', 'weight', 'ordinal');
 		$result = $field_names;
 		if (!empty($table_alias)) {
 			$temp = array();

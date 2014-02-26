@@ -8,7 +8,7 @@ function Users_user_response_data($params)
 	if ($user = Users::userFromContactInfo($type, $identifier)) {
 		$verified = !!Users::identify($type, $identifier);
 		return array(
-			'exists' => true,
+			'exists' => $user->id,
 			'verified' => $verified,
 			'username' => $user->username,
 			'icon' => $user->icon,

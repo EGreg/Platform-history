@@ -20,8 +20,6 @@
 		"routes": {
 			"": { "module": "SmartApp", "action": "welcome" },
 			":action": { "module": "SmartApp" },
-			"e/:emailAddress": { "module": "Users", "action": "activate" },
-			"m/:mobileNumber": { "module": "Users", "action": "activate" },
 			":action/:page": { "module": "SmartApp" }
 		},
 		"response": {

@@ -23,8 +23,6 @@
 			"facebook/": {"module": "MyApp", "action": "welcome", "facebook": 1},
 			"facebook/:action.html": {"module": "MyApp", "facebook": 1},
 			":action": {"module": "MyApp"},
-			"e/:emailAddress": { "module": "Users", "action": "activate" },
-			"m/:mobileNumber": { "module": "Users", "action": "activate" }
 		},
 		"response": {
 			"slotNames": ["title", "notices", "dashboard", "content", "dialogs"],

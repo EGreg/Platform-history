@@ -52,7 +52,7 @@ Q.mixin(Base, Q.require('Db/Row'));
  * @type string
  */
 /**
- * @property byClientId
+ * @property byClientid
  * @type string
  */
 /**
@@ -211,7 +211,7 @@ Base.prototype.fieldNames = function () {
 		"insertedTime",
 		"sentTime",
 		"byUserId",
-		"byClientId",
+		"byClientid",
 		"type",
 		"content",
 		"instructions",
@@ -275,17 +275,18 @@ Base.prototype.beforeSet_byUserId = function (value) {
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
- * @method beforeSet_byClientId
+ * @method beforeSet_byClientid
  * @param {string} value
  * @return {string} The value
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
-Base.prototype.beforeSet_byClientId = function (value) {
+Base.prototype.beforeSet_byClientid = function (value) {
+		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
-			throw new Error('Must pass a string to '+this.table()+".byClientId");
+			throw new Error('Must pass a string to '+this.table()+".byClientid");
 		if (typeof value === "string" && value.length > 31)
-			throw new Error('Exceedingly long value being assigned to '+this.table()+".byClientId");
+			throw new Error('Exceedingly long value being assigned to '+this.table()+".byClientid");
 		return value;
 };
 

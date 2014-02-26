@@ -5,9 +5,8 @@
  *
  * @param array $options
  * An associative array of parameters, containing:
- *   "user" => The user object. Defaults to the logged-in user, if any.
+ *   "userId" => The user's id. Defaults to id of the logged-in user, if any.
  *   "icon" => Optional. Render icon before the username.
- *   "editable" => Defaults to false. If true, the tool will allow editing of the user icon and name.
  */
 function Users_avatar_tool($options)
 {
@@ -18,12 +17,15 @@ function Users_avatar_tool($options)
 	$options = array_merge($defaults, $options);
 	Q_Response::addStylesheet('plugins/Q/css/Ui.css');
 	Q_Response::setToolOptions($options);
-	$user = isset($options['user']) ? $options['user'] : Users::loggedInUser();
+	$user = !empty($options['userId'])
+		? Users_User::getUser($options['userId'])
+		: Users::loggedInUser();
 	if (!$user) {
 		return '';
 	}
+	$user->addPreloaded();
 	$p = $options;
-	$p['user'] = $user->fields; // just to not have 'fields' in encoded json
+	$p['userId'] = $user->id;
 	Q_Response::setToolOptions($p);
 	$result = '';
 	$icon = $options['icon'];

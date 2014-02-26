@@ -170,7 +170,6 @@ class Users_Email extends Base_Users_Email
 				'Users', 'transactional', 'activation', 'body', 'Users/email/activation.php'
 			));
 		}
-		$link = 'Users/activate?p=1&code='.urlencode($this->activationCode) . '&e='.urlencode($this->address);
 		if (!isset($options['html'])) $options['html'] = true;
 		$user = $this->get('user', null);
 		if (!$user) {
@@ -188,6 +187,7 @@ class Users_Email extends Base_Users_Email
 			"CURRENT_TIMESTAMP + INTERVAL $minutes MINUTE"
 		);
 		$this->authCode = md5(microtime() + mt_rand());
+		$link = 'Users/activate?p=1&code='.urlencode($this->activationCode) . ' emailAddress='.urlencode($this->address);
 		/**
 		 * @event Users/resend {before}
 		 * @param {string} 'user'

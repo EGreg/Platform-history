@@ -207,6 +207,13 @@ interface iDb
 	function toDateTime ($timestamp);
 	
 	/**
+	 * Returns the timestamp the db server would have, based on synchronization
+	 * @method timestamp
+	 * @return {integer}
+	 */
+	function getCurrentTimestamp();
+	
+	/**
 	 * Takes a SQL script and returns an array of queries.
 	 * When DELIMITER is changed, respects that too.
 	 * @method scriptToQueries

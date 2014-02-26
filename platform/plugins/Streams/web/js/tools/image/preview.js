@@ -203,17 +203,14 @@ Q.Tool.define("Streams/image/preview", function(options) {
 	showFile: null,
 	templates: {
 		view: {
-			dir: 'plugins/Streams/views',
 			name: 'Streams/image/preview/view',
 			fields: { alt: 'image', titleClass: '', titleTag: 'h2' }
 		},
 		edit: {
-			dir: 'plugins/Streams/views',
 			name: 'Streams/image/preview/edit',
 			fields: { alt: 'image', titleClass: '', titleTag: 'h2' }
 		},
 		create: {
-			dir: 'plugins/Streams/views',
 			name: 'Streams/image/preview/create',
 			fields: { alt: 'new', titleClass: '', titleTag: 'h2' }
 		}

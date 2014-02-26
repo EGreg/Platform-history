@@ -15,7 +15,7 @@ function Websites_before_Streams_Stream_save_Websites_bio($params)
 		if (!$user->retrieve()) {
 			throw new Users_Exception_NoSuchUser();
 		}
-		$stream->title = Streams::displayName($user, null, array('fullAccess' => true));
+		$stream->title = Streams::displayName($user, array('fullAccess' => true));
 		$stream->icon = Q_Html::themedUrl($user->iconPath());
 	}
 	$changed = false;
