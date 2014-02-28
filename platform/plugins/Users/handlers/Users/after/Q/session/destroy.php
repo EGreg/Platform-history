@@ -26,7 +26,7 @@ function Users_after_Q_session_destroy($params)
 	Q_Utils::sendToNode(array(
 		"Q/method" => "Users/session", 
 		"sessionId" => $id, 
-		"session_content"=>null, 
+		"content"=>null, 
 		"updatedTime"=>null,
 		"destroyed"=>true
 	));

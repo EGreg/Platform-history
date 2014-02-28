@@ -32,8 +32,7 @@ function Users_after_Q_session_write($params)
 		Q_Utils::sendToNode(array(
 			"Q/method" => "Users/session", 
 			"sessionId" => $id, 
-			"session_content"=>null, 
-			"updatedTime"=>null,
+			"content" => null, 
 			"duration" => $duration
 		));
 	} else if (Q_Session::id() and !empty($_SERVER['HTTP_HOST'])) {
@@ -41,8 +40,7 @@ function Users_after_Q_session_write($params)
 			Q_Utils::sendToNode(array(
 				"Q/method" => "Users/session",
 				"sessionId" => $id,
-				"session_content" => $content,
-				"updatedTime"=>$updatedTime,
+				"content" => $content,
 				"duration"=>$duration
 			));
 		} catch (Exception $e) {

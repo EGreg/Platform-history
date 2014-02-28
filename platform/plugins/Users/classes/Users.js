@@ -124,10 +124,7 @@ function internalServerHandler(req, res, next) {
     switch (parsed['Q/method']) {
 		case 'Users/session':
             var sid = parsed.sessionId;
-            var content = parsed.session_content ?
-                	JSON.parse(parsed.session_content) :
-					null;
-
+            var content = parsed.content ? JSON.parse(parsed.content) : null;
 			if (content !== null) {
 				util.log((Users.sessions[sid] ? "Update" : "New") + " session from PHP: " + sid);
 				Users.sessions[sid] = content;

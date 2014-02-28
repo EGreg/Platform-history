@@ -50,7 +50,7 @@ Broadcast.listen = function (options) {
 		switch (parsed['Q/method']) {
 			case 'Users/session':
 				var sid = parsed.sessionId;
-				var content = parsed.session_content ? JSON.parse(parsed.session_content) : null;
+				var content = parsed.content ? JSON.parse(parsed.content) : null;
 				if (content !== null) {
 					var appId = Q.Config.get(["Users", "facebookApps", "Broadcast", "appId"], null);
 					var token = Q.ifSet(content, ['fb_'+appId+'_access_token'], null);
