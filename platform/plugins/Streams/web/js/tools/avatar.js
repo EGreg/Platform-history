@@ -42,7 +42,7 @@ Q.Tool.define("Users/avatar", function(options) {
 
 		fields = Q.extend({}, state.templates.contents.fields, {
 			name: this.displayName({
-				"short": state.short
+				"short": state["short"]
 			})
 		});
 		Q.Template.render('Users/avatar/contents', fields, function (err, html) {
