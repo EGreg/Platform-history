@@ -29,15 +29,15 @@
  */
 Q.Tool.define("Streams/preview", function(options) {
 	
-	var tool = this;
-	if (!tool.state.publisherId) {
+	var tool = this, state = tool.state;
+	if (!state.publisherId) {
 		throw "Streams/image/preview tool: missing options.publisherId";
 	}
-	if (!tool.state.imagepicker || !tool.state.imagepicker.showSize) {
+	if (!state.imagepicker || !state.imagepicker.showSize) {
 		throw "Streams/image/preview tool: missing options.imagepicker.showSize";
 	}
-	var state = tool.state, ip = state.imagepicker;
-	var parts = ip.showSize.split('x');
+	var ip = state.imagepicker,
+	    parts = ip.showSize.split('x');
 
 	if (!ip.saveSizeName) {
 		ip.saveSizeName = {};
@@ -81,7 +81,7 @@ Q.Tool.define("Streams/preview", function(options) {
 	}
 
 	function _composer () {
-		var f = tool.state.template && tool.state.template.fields,
+		var f = state.template && state.template.fields,
 		fields = Q.extend({}, state.templates.create.fields, f, {
 			src: Q.url('plugins/Streams/img/actions/add.png'),
 			alt: state.creatable.title,
@@ -167,8 +167,8 @@ Q.Tool.define("Streams/preview", function(options) {
 				if (state.editable !== 'title') {
 					tool.$('img').plugin('Q/imagepicker', ipo);
 				}
-				if (tool.state.actions && stream.testWriteLevel('close')) {
-					var ao = Q.extend(tool.state.actions, {
+				if (state.actions && stream.testWriteLevel('close')) {
+					var ao = Q.extend(state.actions, {
 						actions: {
 							'delete': function () {
 								stream.remove(function (err) {
@@ -176,7 +176,7 @@ Q.Tool.define("Streams/preview", function(options) {
 										alert(err);
 										return;
 									}
-									tool.state.onRemove.handle.call(tool);
+									state.onRemove.handle.call(tool);
 								});
 							}
 						}
@@ -262,7 +262,7 @@ Q.Tool.define("Streams/preview", function(options) {
 			var jq = tool.$('img.Streams_preview_icon');
 			if (jq.length) {
 				jq.off('load.Streams-preview').on('load.Streams-preview', function () {
-					tool.state.onRefresh.handle.apply(tool, []);
+					state.onRefresh.handle.apply(tool, []);
 				});
 				jq.attr('src', Q.Streams.iconUrl(icon, file)+'?'+Date.now());
 				return true;
@@ -277,7 +277,7 @@ Q.Tool.define("Streams/preview", function(options) {
 			if (state.editable === false || state.editable === 'icon') {
 				inplace.editable = false;
 			}
-			var f = tool.state.template && tool.state.template.fields;
+			var f = state.template && state.template.fields;
 			var fields = Q.extend({}, state.templates.edit.fields, f, {
 				src: Q.Streams.iconUrl(icon, file)+'?'+Date.now(),
 				srcFull: Q.Streams.iconUrl(icon, full)+'?'+Date.now(),
@@ -296,7 +296,7 @@ Q.Tool.define("Streams/preview", function(options) {
 					}
 					tool.element.innerHTML = html;
 					$('img', tool.element).off('load.Streams-preview').on('load.Streams-preview', function () {
-						tool.state.onRefresh.handle.apply(tool, []);
+						state.onRefresh.handle.apply(tool, []);
 					});
 					Q.activate(tool, callback);
 				},

@@ -2151,12 +2151,12 @@ Q.Tool = function _Q_Tool(element, options) {
 	
 	var pids = this.parentIds(),
 	    len = pids.length,
-	    o = options;
+		o = len ? Q.extend({}, Q.Tool.options.levels, options) : options;
 	
 	for (i=len-1; i>=0; --i) {
 		var pid = pids[i];
-		if (Q.isEmpty(Q.tools[pid].options)) continue;
-		o = Q.extend({}, Q.Tool.options.levels, Q.tools[pid].options);
+		if (Q.isEmpty(Q.tools[pid].state)) continue;
+		o = Q.extend(o, Q.Tool.options.levels, Q.tools[pid].state);
 	}
 	
 	// .Q_something
