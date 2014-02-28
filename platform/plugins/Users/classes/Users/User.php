@@ -536,7 +536,7 @@ class Users_User extends Base_Users_User
 			"CURRENT_TIMESTAMP + INTERVAL $minutes MINUTE"
 		);
 		$mobile->authCode = md5(microtime() + mt_rand());
-		$link = 'Users/activate?code='.urlencode($mobile->activationCode) . ' mobileNumber'.urlencode($mobile->number);
+		$link = 'Users/activate?code='.urlencode($mobile->activationCode) . ' mobileNumber='.urlencode($mobile->number);
 		/**
 		 * @event Users/addIdentifier {before}
 		 * @param {string} 'user'
