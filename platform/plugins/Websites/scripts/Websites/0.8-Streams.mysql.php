@@ -23,8 +23,8 @@ function Websites_0_8_Streams_mysql()
 		"Websites/title" => array('type' => "Streams/text/small", "title" => "Website title", "icon" => "default", "content" => "Website Title"),
 		"Websites/bios" => array('type' => "Streams/category", "title" => "Biographies", "icon" => "default", "content" => "Biographies", "deletable" => true),
 		"Websites/gallery" =>  array('type' => "Streams/images", "title" => "Gallery", "icon" => "default", "content" => "Gallery", "deletable" => true),
-		"Websites/images/" =>  array('type' => "Streams/template", "title" => "", "icon" => "default", "content" => "", "deletable" => true),
-		"Websites/image/" =>  array('type' => "Streams/template", "title" => "", "icon" => "default", "content" => "", "deletable" => true),
+		"Streams/images/" =>  array('type' => "Streams/template", "title" => "", "icon" => "default", "content" => "", "deletable" => true),
+		"Streams/image/" =>  array('type' => "Streams/template", "title" => "", "icon" => "default", "content" => "", "deletable" => true),
 		"Websites/bio/" =>  array('type' => "Streams/template", "title" => "", "icon" => "default", "content" => "", "deletable" => true),
 	);
 	
@@ -59,10 +59,10 @@ function Websites_0_8_Streams_mysql()
 	
 	Streams_RelatedTo::insert(array(
 		'toPublisherId' => $publisherId,
-		'toStreamName' => 'Streams/images',
+		'toStreamName' => 'Streams/images/',
 		'type' => 'image',
 		'fromPublisherId' => $publisherId,
-		'fromStreamName' => 'Streams/image'
+		'fromStreamName' => 'Streams/image/'
 	));
 }
 

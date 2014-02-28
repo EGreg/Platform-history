@@ -66,8 +66,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 							icon: icon
 						}, function (err, stream, icon) {
 							if (err) {
-								callback(err);
-								return console.warn(err);
+								return callback(err);
 							}
 							state.publisherId = this.fields.publisherId;
 							state.streamName = this.fields.name;
