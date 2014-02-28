@@ -15,8 +15,6 @@
  * @extends Db_Row
  *
  * @property string $publisherId
- * @property string $insertedTime
- * @property string $updatedTime
  * @property string $name
  * @property string $type
  * @property string $title
@@ -29,20 +27,14 @@
  * @property string $inheritAccess
  * @property integer $messageCount
  * @property integer $participantCount
+ * @property string $insertedTime
+ * @property string $updatedTime
  * @property string $closedTime
  */
 abstract class Base_Streams_Stream extends Db_Row
 {
 	/**
 	 * @property $publisherId
-	 * @type string
-	 */
-	/**
-	 * @property $insertedTime
-	 * @type string
-	 */
-	/**
-	 * @property $updatedTime
 	 * @type string
 	 */
 	/**
@@ -92,6 +84,14 @@ abstract class Base_Streams_Stream extends Db_Row
 	/**
 	 * @property $participantCount
 	 * @type integer
+	 */
+	/**
+	 * @property $insertedTime
+	 * @type string
+	 */
+	/**
+	 * @property $updatedTime
+	 * @type string
 	 */
 	/**
 	 * @property $closedTime
@@ -522,7 +522,7 @@ abstract class Base_Streams_Stream extends Db_Row
 	 */
 	static function fieldNames($table_alias = null, $field_alias_prefix = null)
 	{
-		$field_names = array('publisherId', 'insertedTime', 'updatedTime', 'name', 'type', 'title', 'icon', 'content', 'attributes', 'readLevel', 'writeLevel', 'adminLevel', 'inheritAccess', 'messageCount', 'participantCount', 'closedTime');
+		$field_names = array('publisherId', 'name', 'type', 'title', 'icon', 'content', 'attributes', 'readLevel', 'writeLevel', 'adminLevel', 'inheritAccess', 'messageCount', 'participantCount', 'insertedTime', 'updatedTime', 'closedTime');
 		$result = $field_names;
 		if (!empty($table_alias)) {
 			$temp = array();

@@ -19,7 +19,7 @@ class Q_Plugin
 	 * 	or APP_WEB_DIR, APP_LOCAL_DIR not defined
 	 */
 	static private function prepare() {
-		#Connect Q platform if it's not already connected
+		// Connect Q platform if it's not already connected
 		if (!class_exists('Q', false))
 			if (!file_exists($Q_file = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'Q.php'))
 				throw new Exception("$Q_file not found");
@@ -29,7 +29,7 @@ class Q_Plugin
 		if (!class_exists('Q', false))
 			throw new Exception("Could not load Q Platform");
 
-		#Is APP_DIR defined and does it exist?
+		// Is APP_DIR defined and does it exist?
 		if (!defined('APP_DIR'))
 			throw new Exception("APP_DIR is not defined");
 		if (!is_dir(APP_DIR))
@@ -157,8 +157,9 @@ class Q_Plugin
 			// Sort scripts according to version
 			uksort($scripts, array('Q', 'compare_version'));
 
-			if (!empty($scripts))
+			if (!empty($scripts)) {
 				echo "Running SQL scripts for $type $name on $conn_name ($dbms)".PHP_EOL;
+			}
 
 			//echo "Begin transaction".PHP_EOL;
 			//$pdo->beginTransaction();
@@ -168,7 +169,11 @@ class Q_Plugin
 
 				if (substr($script, -4) === '.php') {
 					echo "Processing PHP file: $script \n";
-					Q::includeFile($scriptsdir.DS.$script);
+					try {
+						Q::includeFile($scriptsdir.DS.$script);
+					} catch (Exception $e) {
+						die($e->getMessage()."\n"."(Then run the installer again.)\n");
+					}
 					continue;
 				}
 
@@ -297,7 +302,7 @@ class Q_Plugin
 	 * @param {array} $options
 	 */
 	static private function checkPermissions($files_dir, $options) {
-		#Check and fix permissions
+		// Check and fix permissions
 		echo "Checking permissions".PHP_EOL;
 		if(!file_exists($files_dir)) {
 			mkdir($files_dir, $options['dirmode']);
@@ -342,7 +347,7 @@ class Q_Plugin
 
 		echo "Installing app '$APP_NAME' (version: $APP_VERSION) into '$app_dir'" . PHP_EOL;
 
-		#Ensure that the app has config/app.json
+		// Ensure that the app has config/app.json
 		if (!file_exists($app_conf_file = $app_dir . DS . 'config' . DS . 'app.json'))
 			throw new Exception("Could not load apps's config. Check $app_conf_file");
 
@@ -352,13 +357,13 @@ class Q_Plugin
 		if (file_exists($app_plugins_file)) {
 			Q_Config::load($app_plugins_file);
 		}
-		#Check requirements for app (will throw exceptions if they aren't met)
+		// Check requirements for app (will throw exceptions if they aren't met)
 		if(!isset($options['noreq']) || !$options['noreq']) {
 			echo "Checking requirements".PHP_EOL;
 			Q_Bootstrap::checkRequirementsApp();
 		}
 
-		#Check access to $app_installed_file
+		// Check access to $app_installed_file
 		if(file_exists($app_installed_file) && !is_writable($app_installed_file))
 			throw new Exception("Can not write to $app_installed_file");
 		elseif(!file_exists($app_installed_file) && !is_writable(dirname($app_installed_file)))
@@ -368,35 +373,40 @@ class Q_Plugin
 		  Q_Config::load($app_installed_file);
 		}
 
-		#Check access to $files_dir
-		if(!file_exists($files_dir))
-			if(!@mkdir($files_dir, $options['dirmode'], true))
+		// Check access to $files_dir
+		if(!file_exists($files_dir)) {
+			if(!@mkdir($files_dir, $options['dirmode'], true)) {
 				throw new Exception("Could not create $files_dir");
+			}
+		}
 
-		#Do we now have app's config?
-		if (Q_Config::get('Q', 'app', null) == null)
+		// Do we now have app's config?
+		if (Q_Config::get('Q', 'app', null) == null) {
 			throw new Exception("Could not identify app name. Check $app_conf_file");
+		}
 
-		#Do we now have app's config?
-		if (Q_Config::get('Q', 'appInfo', 'version', null) == null)
+		// Do we now have app's config?
+		if (Q_Config::get('Q', 'appInfo', 'version', null) == null) {
 			throw new Exception("Could not identify app version. Check $app_conf_file");
+		}
 
 		// install or update application schema
 		$connections = Q_Config::get('Q', 'appInfo', 'connections', array());
-		foreach ($connections as $connection)
+		foreach ($connections as $connection) {
 			self::installSchema($app_dir, $APP_NAME, 'app', $connection, $options);
+		}
 
-		#Save info about app
+		// Save info about app
 		echo 'Registering app'.PHP_EOL;
 		Q_Config::set('Q', 'appLocal', $APP_CONF);
 		Q_Config::save($app_installed_file, array('Q', 'appLocal'));
 
 		self::checkPermissions(Q_FILES_DIR, $options);
 
-		#Check and fix permissions
+		// Check and fix permissions
 		self::checkPermissions($files_dir, $options);
 
-		#Create .htaccess file if not exist
+		// Create .htaccess file if it doesn't exist
 		if (!file_exists(APP_WEB_DIR.DS.'.htaccess')) {
 			$htaccess = <<<EOT
 RewriteEngine on
@@ -441,18 +451,18 @@ EOT;
 
 		echo "Installing plugin '$plugin_name' into '$app_dir'" . PHP_EOL;
 
-		#Do we even have such a plugin?
+		// Do we even have such a plugin?
 		if (!is_dir($plugin_dir))
 			throw new Exception("Plugin '$plugin_name' not found in " . Q_PLUGINS_DIR);
 
-		#Ensure that the plugin has config.json
+		// Ensure that the plugin has config.json
 		if (!file_exists($plugin_conf_file = $plugin_dir . DS . 'config' . DS . 'plugin.json'))
 			throw new Exception("Could not load plugin's config. Check $plugin_conf_file");
 
 		$files_dir = $plugin_dir.DS.'files';
 		$app_plugins_file = APP_LOCAL_DIR.DS.'plugins.json';
 
-		#Check access to $app_web_plugins_dir
+		// Check access to $app_web_plugins_dir
 		if(!file_exists($app_web_plugins_dir))
 			if(!@mkdir($app_web_plugins_dir, 0755, true))
 				throw new Exception("Could not create $app_web_plugins_dir");
@@ -461,18 +471,18 @@ EOT;
 		elseif(!is_writable($app_web_plugins_dir))
 			throw new Exception("Can not write to $app_web_plugins_dir");
 
-		#Check access to $app_plugins_file
+		// Check access to $app_plugins_file
 		if(file_exists($app_plugins_file) && !is_writable($app_plugins_file))
 			throw new Exception("Can not write to $app_plugins_file");
 		elseif(!file_exists($app_plugins_file) && !is_writable(dirname($app_plugins_file)))
 			throw new Exception("Can not write to ".dirname($app_plugins_file));
 
-		#Check access to $files_dir
+		// Check access to $files_dir
 		if(!file_exists($files_dir))
 			if(!@mkdir($files_dir, $options['dirmode'], true))
 				throw new Exception("Could not create $files_dir");
 
-		#Do we now have plugin's config?
+		// Do we now have plugin's config?
 		if (Q_Config::get('Q', 'pluginInfo', $plugin_name, 'version', null) == null)
 			throw new Exception("Could not identify plugin version. Check $plugin_conf_file");
 
@@ -482,14 +492,14 @@ EOT;
 		if (file_exists($app_plugins_file)) {
 			Q_Config::load($app_plugins_file);
 		}
-		# Do we already have this plugin installed for this app?
-		#Check requirements for plugin (will throw exceptions if they aren't met)
+		//  Do we already have this plugin installed for this app?
+		// Check requirements for plugin (will throw exceptions if they aren't met)
 		if(!isset($options['noreq']) || !$options['noreq']) {
 			echo "Checking requirements".PHP_EOL;
 			Q_Bootstrap::checkRequirements(array($plugin_name));
 		}
 
-		# Checking LOCAL plugin version in plugins.json file
+		//  Checking LOCAL plugin version in plugins.json file
 		if (($version_installed = Q_Config::get('Q', 'pluginLocal', $plugin_name, 'version', null)) != null) {
 			//We have this plugin installed
 			echo "Plugin '$plugin_name' (version: $version_installed) is already installed" . PHP_EOL;
@@ -497,27 +507,28 @@ EOT;
 				echo "Upgrading '$plugin_name' to version: $PLUGIN_VERSION" . PHP_EOL;
 		}
 
-		# Checking if schema update is requested and updating database version
+		//  Checking if schema update is requested and updating database version
 		$connections = Q_Config::get('Q', 'pluginInfo', $plugin_name, 'connections', array());
-		foreach ($connections as $connection)
+		foreach ($connections as $connection) {
 			self::installSchema(Q_PLUGINS_DIR.DS.$plugin_name, $plugin_name, 'plugin', $connection, $options);
+		}
 
-		#Push plugin name into Q/plugins array
+		// Push plugin name into Q/plugins array
 		if (!in_array($plugin_name, $current_plugins = Q_Config::get('Q', 'plugins', array()))) {
 			$current_plugins[] = $plugin_name;
 			Q_Config::set('Q', 'plugins', $current_plugins); //TODO: When do we save Q/plugins to disk?
 		}
 
-		#Symbolic links
+		// Symbolic links
 		echo 'Creating symbolic links'.PHP_EOL;
 		self::symlink($plugin_dir.DS.'web', $app_web_plugins_dir.DS.$plugin_name);
 
-		#Save info about plugin
+		// Save info about plugin
 		echo 'Registering plugin'.PHP_EOL;
 		Q_Config::set('Q', 'pluginLocal', $plugin_name, $PLUGIN_CONF);
 		Q_Config::save($app_plugins_file, array('Q', 'pluginLocal'));
 
-		#Check and fix permissions
+		// Check and fix permissions
 		self::checkPermissions($files_dir, $options);
 
 		echo Q_Utils::colored("Plugin '$plugin_name' successfully installed".PHP_EOL, 'green');
@@ -582,7 +593,7 @@ EOT;
 	 */
 	private static function symlink($target, $link)
 	{
-		#Make sure destination directory exists
+		// Make sure destination directory exists
 		if(!file_exists(dirname($link)))
 			mkdir(dirname($link), 0777, true);
 

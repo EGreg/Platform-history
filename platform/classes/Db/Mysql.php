@@ -357,7 +357,7 @@ class Db_Mysql implements iDb
 			$columns_list[] = Db_Query_Mysql::column($column);
 		}
 		$columns_string = implode(', ', $columns_list);
-		
+
 		$into = "$table_into ($columns_string)";
 		$index = 1;
 		$first_chunk = true;
@@ -395,9 +395,9 @@ class Db_Mysql implements iDb
 				}
 				$values_string = implode(', ', $values_list);
 				if ($index == 1) {
-					$q = "INSERT INTO $into VALUES ($values_string) ";
+					$q = "INSERT INTO $into\nVALUES ($values_string) ";
 				} else {
-					$q .= ",\n\t ($values_string) ";
+					$q .= ",\n       ($values_string) ";
 				}
 			}
 			

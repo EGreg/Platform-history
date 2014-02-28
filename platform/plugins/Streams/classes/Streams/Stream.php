@@ -1275,14 +1275,14 @@ class Streams_Stream extends Base_Streams_Stream
 			$result = array();
 			$default = array( // the array of fields allowed to see
 				'publisherId',
-				'insertedTime',
-				'updatedTime',
 				'name',
 				'type',
 				'title',
 				'icon',
 				'messageCount',
-				'participantCount'
+				'participantCount',
+				'insertedTime',
+				'updatedTime'
 			);
 			if (isset($this->type)) {
 				$fields = array_merge($fields, Q_Config::get('Streams', 'types', $this->type, 'see', array()));

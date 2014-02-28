@@ -23,7 +23,7 @@ module.exports = function () {
 	 * @type array
 	 */
 	this.tableClasses = [
-		"Websites_Bio"
+		
 	];
 	
 	/**
@@ -45,12 +45,6 @@ module.exports = function () {
 		return 'Websites';
 	};
 
-	/**
-	 * Link to Websites.Bio model
-	 * @property Bio
-	 * @type Websites.Bio
-	 */
-	this.Bio = Q.require('Websites/Bio');
 	
 	return this;
 	

@@ -5,7 +5,7 @@
 				"version": "0.8",
 				"compatible": "0.8",
 				"requires": {"Streams": "0.8"},
-				"connections": ["Websites"]
+				"connections": ["Streams", "Websites"]
 			}
 		},
 		"handlersBeforeEvent": {
@@ -28,7 +28,7 @@
 	},
 	"Websites": {
 		"user": {
-			"id": "Websites"
+			"id": null
 		}
 	}
 }
