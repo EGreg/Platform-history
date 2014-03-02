@@ -1,6 +1,6 @@
 <?php
 
-function MyApp_home_response_content($params)
+function MyApp_welcome_response_content($params)
 {
 	// Implement a home page for the user
 	$user = Users::loggedInUser();
