@@ -14,6 +14,8 @@
  *      The params typically include at least a "title" field which you can fill with values such as "New" or "New ..."
  *   "toolType": Function that takes streamType and returns the tag to render (and then activate) for that stream
  *   "realtime": Whether to refresh every time a relation is added, removed or updated
+ *   "sortable": Options for "Q/sortable" jQuery plugin. Pass false here to disable sorting interface.
+ *   "tabs": Function for interacting with any parent "Q/tabs" tool. Format is function (previewTool, tabsTool) { return name; }
  *   "onUpdate": Event that receives parameters "data", "entering", "exiting", "updating"
  *   "updateOptions": Options for onUpdate such as duration of the animation, etc.
  */
@@ -48,6 +50,12 @@ function _Streams_related_tool (options)
 	sortable: {
 		draggable: '.Streams_related_stream',
 		droppable: '.Streams_related_stream'
+	},
+	tabs: function (previewTool, tabsTool) {
+		return Q.Streams.key(
+			Q.tools.Streams_image_preview.state.publisherId,
+			Q.tools.Streams_image_preview.state.streamName
+		);
 	},
 	toolType: function (streamType) { return streamType+'/preview'; },
     onUpdate: new Q.Event(function _Streams_related_onUpdate(result, entering, exiting, updating) {
@@ -121,16 +129,35 @@ function _Streams_related_tool (options)
 				});
 			}
 		}
+		
+		var elements = [];
         Q.each(result.relations, function (i) {
 			if (!this.from) return;
             var element = tool.elementForStream(this.from.fields.publisherId, this.from.fields.name, this.from.fields.type, this.weight);
 			element.setAttribute('class', element.getAttribute('class') + ' Streams_related_stream');
+			elements.push(element);
 			tool.element.appendChild(element);
         });
 		Q.activate(tool.element, function () {
 			tool.state.onRefresh.handle.call(tool)
 		});
         // The elements should animate to their respective positions, like in D3.
+
+		if (typeof state.tabs === 'function') {
+			var id, parents, tabs, i;
+			parents = Q.extend(tool.parents());
+			parents[tool.id] = tool;
+			for (id in parents) {
+				if (tabs = parents[id].element.Q("Q/tabs")) {
+					for (i=0; i<elements.length; ++i) {
+						elements[i].addClass("Q_tabs_tab")
+						.setAttribute('data-name', state.tabs(tool, tabs));
+					}
+					break;
+				}
+			}
+		}
+
     }, "Streams/related"),
 	onRefresh: new Q.Event()
 },

@@ -2240,10 +2240,12 @@ Q.Tool.beforeRemove = Q.Event.factory(_beforeRemoveToolHandlers, ["", function (
 /**
  * Reference a tool by its id
  * @param {String} id
+ * @param {String} name optional name of the tool, useful if more than one tool was activated on the same element
  * @return {Q.Tool|null}
  */
-Q.Tool.byId = function _Q_Tool_byId(id) {
-	return Q.tools[id] || null;
+Q.Tool.byId = function _Q_Tool_byId(id, name) {
+	var tool = Q.tools[id];
+	return name ? tool.element.Q(name) : tool || null;
 };
 
 /**
@@ -2794,6 +2796,8 @@ function _loadToolScript(toolElement, callback, shared) {
 				console.warn("Q.Tool.loadScript: Missing tool constructor for " + toolName);
 			}
 		}
+		// TODO: load all the scripts then make sure the constructors
+		// execute in the same order as they appear in the classNames
 		if (typeof toolFunc === 'function') {
 			callback(toolElement, toolFunc, toolName);
 		} else if (typeof toolFunc === 'string') {
@@ -2807,7 +2811,7 @@ function _loadToolScript(toolElement, callback, shared) {
 				if (Q.Tool.define.latestName) {
 					_qtc[toolName] = _qtc[Q.Tool.define.latestName];
 				} else if (Q.Tool.jQuery.latestName) {
-					_qtc[toolName] = _qtc[Q.Tool.define.latestName];
+					_qtc[toolName] = _qtc[Q.Tool.jQuery.latestName];
 				}
 				toolFunc = _qtc[toolName] = _qtc[toolName];
 				if (typeof toolFunc !== 'function') {

@@ -6,13 +6,13 @@
  *  "tabs" => An associative array of name => title pairs.
  *  "urls" => An associative array of name => url pairs to override the default urls.
  *  "classes" => An associative array of the form name => classes, for adding classes to tabs
- *  "title_classes" => An associative array for adding classes to tab titles
+ *  "titleClasses" => An associative array for adding classes to tab titles
  *  "field" => Defaults to "tab". Uses this field in the absence of javascript.
  *  "selector" => CSS style selector indicating the element to update with javascript. Can be a parent of the tabs. Set to null to reload the page.
  *    (if multiple slots defined parameter is required and shall be array of the same length as slot)
  *  "slot" => The name of the slot to request when changing tabs with javascript.
  *    (may be array to update multiple slots)
- *  "default_tab" => Here you can specify the name of the tab to show by default
+ *  "defaultTab" => Here you can specify the name of the tab to show by default
  *  "loader" => Optional. Name of function which takes url, slot, callback. It should call the callback and 
  *    pass it an object with the response info. Can be used to implement caching, etc. instead of the default 
  *    HTTP request.
@@ -27,12 +27,12 @@ function Q_tabs_tool($options)
 	$slot = 'content,title,notices';
 	$selector = '#content_slot';
 	$urls = array();
-	$default_tab = null;
+	$defaultTab = null;
 	$beforeSwitch = null; 
 	$beforeScripts = null;
 	$onActivate = null;
 	extract($options);
-	$sel = isset($_REQUEST[$field]) ? $_REQUEST[$field] : $default_tab;
+	$sel = isset($_REQUEST[$field]) ? $_REQUEST[$field] : $defaultTab;
 	$result = '';
 	$i = 0;
 	foreach ($tabs as $name => $title) {
@@ -57,18 +57,18 @@ function Q_tabs_tool($options)
 				$classes_string = implode(' ', $classes[$name]);
 			}
 		}
-		$title_classes_string = '';
-		if (isset($title_classes[$name])) {
-			if (is_string($title_classes[$name])) {
-				$title_classes_string = $title_classes[$name];
-			} else if (is_array($title_classes[$name])) {
-				$title_classes_string = implode(' ', $title_classes[$name]);
+		$titleClasses_string = '';
+		if (isset($titleClasses[$name])) {
+			if (is_string($titleClasses[$name])) {
+				$titleClasses_string = $titleClasses[$name];
+			} else if (is_array($titleClasses[$name])) {
+				$titleClasses_string = implode(' ', $titleClasses[$name]);
 			}
 		}
 		$title_container = Q_Html::div(
 			null, 
 			'Q_tabs_title', 
-			array('class' => $title_classes_string), 
+			array('class' => $titleClasses_string), 
 			isset($title) ? $title : $name
 		);
 		$result .= Q_Html::a(

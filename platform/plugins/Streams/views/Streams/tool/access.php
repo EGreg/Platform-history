@@ -1,13 +1,13 @@
 <?php echo Q::tool('Q/tabs', array(
 	'tabs' => $tabs,
-	'title_classes' => array(
+	'titleClasses' => array(
 		'read' => 'basic32 basic32_view Streams_access_read_tab',
 		'write' => 'basic32 basic32_edit Streams_access_read_write',
 		'admin' => 'basic32 basic32_group Streams_access_read_admin'
 	),
 	'selector' => '#dialog .dialog_slot, #content_slot',
 	'slot' => 'dialog',
-	'default_tab' => 'read'
+	'defaultTab' => 'read'
 )) ?>
 <div style="background: white; border: solid 0px white;">
 	<div class="Streams_access_controls">

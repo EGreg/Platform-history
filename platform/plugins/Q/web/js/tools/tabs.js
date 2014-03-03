@@ -18,11 +18,8 @@
 Q.Tool.define("Q/tabs", function(options) {
 
 	var tool = this;
-	if (!options.slot || !options.urls) {
-		return this;
-	}
 	
-	$('a.Q_tabs_tab', tool.element).on([Q.Pointer.fastclick, '.Q_tabs'], function () {
+	$(tool.element).on([Q.Pointer.fastclick, '.Q_tabs'], '.Q_tabs_tab', function () {
 		tool.switchTo(this.getAttribute('data-name'));
 	}).click(function () {
 		return false;
@@ -39,28 +36,38 @@ Q.Tool.define("Q/tabs", function(options) {
 
 {
 	switchTo: function (name, tab) {
-		if (!tab) {
-			$('a.Q_tabs_tab', this.element).each(function () {
+		if (tab === undefined) {
+			$('.Q_tabs_tab', this.element).each(function () {
 				if (this.getAttribute('data-name') === name) {
 					tab = this;
 					return false;
 				}
 			});
+			if (tab === undefined) {
+				console.warn('Q/tabs: no tab with name "' + name + '"');
+				return false;
+			}
 		}
-		
-		this.state.slots = typeof this.state.slot === "string" 
-			? this.state.slot.split(',')
-			: this.state.slot;
-		this.state.selectors = typeof this.state.selector === "string"
-			? [this.state.selector]
-			: this.state.selector
 
-		Q.handle(this.state.beforeSwitch, this, [tab, this.state]);
-		var slots = this.state.slots;
-		var selectors = this.state.selectors;
+		var state = this.state;
+
+		state.slots = typeof state.slot === "string" 
+			? state.slot.split(',')
+			: state.slot;
+		state.selectors = typeof state.selector === "string"
+			? [state.selector]
+			: state.selector
+
+		Q.handle(state.beforeSwitch, this, [tab, state]);
+		var slots = state.slots;
+		var selectors = state.selectors;
 		var href = tab.getAttribute('href');
+		
+		if (!href) {
+			href = state.urls && state.urls[tab.getAttribute("data-name")];
+		}
 
-		if (href && this.state.selector === null) {
+		if (href && state.selector === null) {
 		    Q.handle(href);
 			return;
 		}
@@ -80,7 +87,7 @@ Q.Tool.define("Q/tabs", function(options) {
 				$(tab).addClass('Q_selected');
 			},
 			loadExtras: true,
-			loader: this.state.loader
+			loader: state.loader
 		});
 	}
 }
