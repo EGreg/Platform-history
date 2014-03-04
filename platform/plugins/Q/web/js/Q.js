@@ -2793,7 +2793,23 @@ Q.Tool.prototype.toString = function _Q_Tool_prototype_toString() {
 function _loadToolScript(toolElement, callback, shared) {
 	var id = toolElement.id;
 	var classNames = toolElement.className.split(' ');
-	Q.each(classNames, function (i, className) {
+	var toolNames = [];
+	for (var i=0, nl = classNames.length; i<nl; ++i) {
+		var className = classNames[i];
+		if (className === 'Q_tool'
+		|| className.slice(-5) !== '_tool') {
+			continue;
+		}
+		toolNames.push(Q.normalize(className.substr(0, className.length-5)));
+	}
+	var p = new Q.Pipe(toolNames, function (params, subjects) {
+		// now that all the tool scripts are loaded, activate the tools in the right order
+		for (var i=0, nl = toolNames.length; i<nl; ++i) {
+			var toolName = toolNames[i];
+			callback.apply(null, params[toolName]);
+		};
+	});
+	Q.each(toolNames, function (i, toolName) {
 		function _loadToolScript_loaded() {
 			// in this function, toolFunc starts as a string
 			if (Q.Tool.latestName) {
@@ -2809,13 +2825,8 @@ function _loadToolScript(toolElement, callback, shared) {
 				}
 			}
 			toolFunc.options = Q.extend(toolFunc.options, Q.Tool.options.levels, existingOptions);
-			callback(toolElement, toolFunc, toolName, uniqueToolId);
+			p.fill(toolName)(toolElement, toolFunc, toolName, uniqueToolId);
 		}
-		
-		if (className === 'Q_tool' || className.slice(-5) !== '_tool') {
-			return;
-		}
-		var toolName = Q.normalize(className.substr(0, className.length-5));
 		var toolFunc = _qtc[toolName];
 		if (typeof toolFunc === 'undefined') {
 			Q.Tool.onMissingConstructor.handle(_qtc, toolName);
