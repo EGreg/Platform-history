@@ -2141,11 +2141,22 @@ Q.Tool = function _Q_Tool(element, options) {
 	// options
 	var dataOptions = element.getAttribute('data-' + Q.normalize(this.name, '-'));
 	if (dataOptions) {
-		Q.extend(this.options, Q.Tool.options.levels, JSON.parse(dataOptions), 'Q.Tool');
+		var parsed = null;
+		if (dataOptions[0] === '{') {
+			parsed = JSON.parse(dataOptions);
+		} else {
+			var ios = dataOptions.indexOf(' ');
+			this.id = dataOptions.substr(0, ios);
+			var tail = dataOptions.substr(ios+1);
+			parsed = tail && JSON.parse(tail);
+		}
+		if (parsed) {
+			Q.extend(this.options, Q.Tool.options.levels, parsed, 'Q.Tool');
+		}
 	}
 
 	// options cascade -- process option keys that start with '.' or '#'
-	var partial, i;
+	var partial, i, n;
 	options = options || {};
 	this.options = this.options || {};
 	
@@ -2192,13 +2203,13 @@ Q.Tool = function _Q_Tool(element, options) {
 		};
 	}
 	element.Q.tool = this;
-	Q.setObject(['tools', Q.normalize(this.name)], this, element.Q);
+	var normalized = Q.normalize(this.name);
+	
+	Q.setObject(['tools', normalized], this, element.Q);
 	
 	this.beforeRemove = new Q.Event();
 
-	if (!Q.tools[this.id]) {
-		Q.tools[this.id] = this;
-	}
+	Q.setObject([this.id], this, Q.tools);
 	
 	Q.Tool.onConstruct(this.name).handle.call(this, this.options);
 	Q.Tool.onConstruct("").handle.call(this, this.options);
@@ -2245,7 +2256,7 @@ Q.Tool.beforeRemove = Q.Event.factory(_beforeRemoveToolHandlers, ["", function (
  */
 Q.Tool.byId = function _Q_Tool_byId(id, name) {
 	var tool = Q.tools[id];
-	return name ? tool.element.Q(name) : tool || null;
+	return tool && name ? tool.element.Q(name) : tool || null;
 };
 
 /**
@@ -2567,39 +2578,36 @@ Q.Tool.prototype.parent = function Q_Tool_prototype_parent() {
 Q.Tool.prototype.remove = function _Q_Tool_prototype_remove(removeCached) {
 
 	var shouldRemove = removeCached || !this.element.getAttribute('data-Q-cache');
+	if (!shouldRemove) return;
 
 	// give the tool a chance to clean up after itself
-	if (shouldRemove) {
-		Q.Tool.beforeRemove("").handle.call(this, []);
-		Q.Tool.beforeRemove(this.name).handle.call(this, []);
-		Q.handle(this.beforeRemove, this, []);
-	}
-
-	// removes the nodes from the DOM
-	if (this.element.parentNode) {
+	Q.Tool.beforeRemove("").handle.call(this, []);
+	Q.Tool.beforeRemove(this.name).handle.call(this, []);
+	Q.handle(this.beforeRemove, this, []);
+	
+	delete this.element.Q.tools[Q.normalize(this.name)];
+	if (Q.isEmpty(this.element.Q.tools)) {
 		Q.removeElement(this.element);
 	}
 
 	// remove all the tool's events automatically
-	if (shouldRemove) {
-		var tool = this;
-		while (Q.Event.forTool[this.id] && Q.Event.forTool[this.id].length) {
-			// keep removing the first element of the array until it is empty
-			Q.Event.forTool[this.id][0].remove(tool);
-		}
-		
-		var p;
-		if (p = Q.Event.jQueryForTool[this.id]) {
-			for (i=p.length-1; i >= 0; --i) {
-				var off = p[i][0];
-				window.jQuery.fn[off].call(p[i][1], p[i][2]);
-			}
-			Q.Event.jQueryForTool[this.id] = [];
-		}
-
-		// finally, remove the tool from the array of tools on the page
-		delete Q.tools[this.id];
+	var tool = this;
+	while (Q.Event.forTool[this.id] && Q.Event.forTool[this.id].length) {
+		// keep removing the first element of the array until it is empty
+		Q.Event.forTool[this.id][0].remove(tool);
 	}
+	
+	var p;
+	if (p = Q.Event.jQueryForTool[this.id]) {
+		for (i=p.length-1; i >= 0; --i) {
+			var off = p[i][0];
+			window.jQuery.fn[off].call(p[i][1], p[i][2]);
+		}
+		Q.Event.jQueryForTool[this.id] = [];
+	}
+
+	// finally, remove the tool from the array of tools on the page
+	delete Q.tools[this.id];
 
 	return null;
 };
@@ -3511,6 +3519,7 @@ Q.removeElement = function _Q_removeElement(element) {
 	if (window.jQuery) {
 		return window.jQuery(element).remove();
 	}
+	if (!element.parentNode) return false;
 	element.parentNode.removeChild(element);
 	try {
 		for (var prop in element) {

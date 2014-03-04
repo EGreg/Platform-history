@@ -2,40 +2,56 @@
 
 function Q_after_Q_tool_render($params, &$result)
 {	
-	$tool_name = $params['tool_name'];
-	// $options = $params['options'];
-	$options = Q_Response::getToolOptions();
+	$info = $params['info'];
 	$extra = $params['extra'];
 	if (!is_array($extra)) {
 		$extra = array();
 	}
 
+	$id_prefix = Q_Html::getIdPrefix();
+	$tool_ids = Q_Html::getToolIds();
+
+	if (!empty($extra['inner'])) {
+		Q_Html::popIdPrefix();
+		return;
+	}
+	
 	$tag = !empty($extra['tag']) ? $extra['tag'] : 'div';
-	if (empty($extra['inner'])) {
-		$classes = implode('_', explode('/', $tool_name)) . '_tool';
-		if (isset($extra['classes'])) {
-			$classes .= ' ' . $extra['classes'];
-		}
+	$classes = '';
+	$data_options = '';
+	$count = count($info);
+	foreach ($info as $name => $opt) {
+		$classes = ($classes ? "$classes " : $classes)
+				. implode('_', explode('/', $name)) . '_tool';
+		$options = Q_Response::getToolOptions($name);
 		if (isset($options)) {
 			$friendly_options = str_replace(
 				array('&quot;', '\/'),
 				array('"', '/'),
 				Q_Html::text(Q::json_encode($options))
 			);
-			$normalized = Q_Utils::normalize($tool_name, '-');
-			$data_options = " data-$normalized='$friendly_options'";
 		} else {
-			$data_options = '';
+			$friendly_options = '';
 		}
-		$id_prefix = Q_Html::getIdPrefix();
-		$data_cache = isset($extra['cache']) || Q_Response::shouldCacheTool($id_prefix)
-			? " data-Q-cache='document'"
-			: '';
-		$result = "<!--\n\nstart tool $tool_name\n\n-->"
-		 . "<$tag id='{$id_prefix}tool' class='Q_tool $classes'$data_options$data_cache>"
-		 . $result 
-		 . "</div><!--\n\nend tool $tool_name \n\n-->";
+		$normalized = Q_Utils::normalize($name, '-');
+		if (isset($options) or $count > 1) {
+			$id = $tool_ids[$name];
+			$id_string = ($count > 1) ? "$id " : '';
+			$data_options .= " data-$normalized='$id_string$friendly_options'";
+		}
+		$names[] = $name;
 	}
+	if (isset($extra['classes'])) {
+		$classes .= ' ' . $extra['classes'];
+	}
+	$data_cache = isset($extra['cache']) || Q_Response::shouldCacheTool($id_prefix)
+		? " data-Q-cache='document'"
+		: '';
+	$names = ($count === 1) ? ' '.key($info) : 's '.implode(" ", $names);
+	$result = "<!--\n\nbegin tool$names\n\n-->"
+	 . "<$tag id='{$id_prefix}tool' class='Q_tool $classes'$data_options$data_cache>"
+	 . $result 
+	 . "</div><!--\n\nend tool$names \n\n-->";
 	
-	$prefix = Q_Html::popIdPrefix();
+	Q_Html::popIdPrefix();
 }

@@ -31,7 +31,8 @@ Q.Tool.define("Q/tabs", function(options) {
 	loader: Q.req,
 	beforeSwitch: new Q.Event(),
 	slot: 'content,title',
-	selector: '#content_slot'
+	selector: '#content_slot',
+	loadUrlOptions: {},
 },
 
 {
@@ -77,18 +78,18 @@ Q.Tool.define("Q/tabs", function(options) {
 		}
 
 		var te = this.element;
-		Q.loadUrl(href, {
+		Q.loadUrl(href, Q.extend({
 			slotNames: slots,
-			onError: function (msg) {
+			onError: {"Q/tabs": function (msg) {
 				alert(msg);
-			},
-			onActivate: function () {
+			}},
+			onActivate: {"Q/tabs": function () {
 				$('.Q_tabs_tab', te).removeClass('Q_selected');
 				$(tab).addClass('Q_selected');
-			},
+			}},
 			loadExtras: true,
 			loader: state.loader
-		});
+		}, state.loadUrlOptions));
 	}
 }
 );

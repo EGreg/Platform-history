@@ -32,6 +32,9 @@ function Q_tabs_tool($options)
 	$beforeScripts = null;
 	$onActivate = null;
 	extract($options);
+	/**
+	 * @var array $tabs
+	 */
 	$sel = isset($_REQUEST[$field]) ? $_REQUEST[$field] : $defaultTab;
 	$result = '';
 	$i = 0;

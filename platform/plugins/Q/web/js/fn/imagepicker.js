@@ -33,139 +33,136 @@
  *   'onError': Optional. Q.Event which is called if upload failed.
  */
 Q.Tool.jQuery('Q/imagepicker', function (o) {
-	var self = this;
-	return this.each(function() {
-		var $this = $(this);
-		var input = $('<input type="file" accept="image/gif, image/jpeg, image/png" class="Q_imagepicker_file" />');
-		input.css({
-			'visibility': 'hidden',
-			'height': '0',
-			'width': '0',
-			'top': '0',
-			'left': '0',
-			'position': 'absolute'
-		});
-		var originalSrc = $this.attr('src');
-		if (originalSrc.indexOf('?') < 0) {
-			$this.attr('src', originalSrc+"?"+Date.now()); // cache busting
-		}
-		$this.before(input);
-		$this.addClass('Q_imagepicker');
-		
-		function upload(data) {
-			if (o.preprocess) {
-				o.preprocess.call($this, _doUpload);
-			} else {
-				_doUpload();
-			}
-			function _doUpload(override) {
-				if (override === false || (override && override.cancel)) {
-					var state = $this.state('Q/imagepicker');
-					$this.attr('src', state.oldSrc).stop().removeClass('Q_imagepicker_uploading');
-					return;
-				}
-				var params = {
-					'data': data,
-					'path': $this.state('Q/imagepicker').path,
-					'subpath': $this.state('Q/imagepicker').subpath,
-					'save': o.saveSizeName,
-					'url': o.url,
-					'loader': o.loader
-				};
-				if (o.crop) {
-					params.crop = o.crop;
-				}
-				Q.extend(params, override);
-				var state = $this.state('Q/imagepicker');
-				if (params.save && !params.save[state.showSize]) {
-					throw "Q/imagepicker tool: no size found corresponding to showSize";
-				}
-				
-				function _callback (err, res) {
-					var state = $this.state('Q/imagepicker');
-					var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(res && res.errors);
-					if (msg) {
-						$this.attr('src', state.oldSrc).stop().removeClass('Q_imagepicker_uploading');
-						return Q.handle(o.onError, self, [msg]);
-					}
-					var key = o.showSize;
-					if (!key) {
-						// by default set src equal to first element of the response
-						key = Q.first(res.slots.data, {nonEmpty: true});
-					}
-					var c = Q.handle(o.onSuccess, self, [res.slots.data, key]);
-					if (c !== false && key) {
-						$this.attr('src', Q.url(res.slots.data[key]+"?"+Date.now()));
-					}
-					$this.removeClass('Q_imagepicker_uploading');
-				}
-				
-				if (params.loader) {
-					var callable = params.loader;
-					delete params.loader;
-					Q.handle(callable, null, [params, _callback]);
-				} else {
-					var url = params.url;
-					delete params.url;
-					Q.request(url, 'data', _callback, {
-						fields: params,
-						method: 'POST'
-					});
-				}
-			}
-		}
-
-		if (navigator.camera) {
-			// "file" input type is not supported
-			$this.on([Q.Pointer.click, '.Q_imagepicker'], function(e) {
-				navigator.notification.confirm("", function(index) {
-					if (index === 3) return;
-					var source = Camera.PictureSourceType[index === 1 ? "CAMERA" : "PHOTOLIBRARY"];
-					navigator.camera.getPicture(function(data){
-						upload("data:image/jpeg;base64," + data);
-					}, function(msg){
-						alert(msg);
-					}, { quality: 50,
-						sourceType: source,
-						destinationType: Camera.DestinationType.DATA_URL
-					});
-				}, "", o.cameraCommands.join(','));
-				e.preventDefault();
-			});
-		} else {
-			// natively support "file" input
-			$this.on([Q.Pointer.click, '.Q_imagepicker'], function(e) {
-				input.click();
-				e.preventDefault();
-			});
-			input.on(Q.Pointer.click, function () {
-				if (o.onClick && o.onClick() === false) {
-					return false;
-				}
-			});
-			input.change(function (e) {
-				if (!this.value) {
-					return; // it was canceled
-				}
-				var state = $this.state('Q/imagepicker');
-				state.oldSrc = $this.attr('src');
-				if (o.throbber) {
-					$this.attr('src', Q.url(o.throbber));
-				}
-				$this.addClass('Q_imagepicker_uploading');
-				var reader = new FileReader();
-				reader.onload = function() {
-					upload(reader.result);
-				};
-				reader.onerror = function () { setTimeout(function() { alert("Error reading file"); }, 0); };
-				reader.readAsDataURL(this.files[0]);
-				
-				// clear the input, see http://stackoverflow.com/a/13351234/467460
-				input.wrap('<form>').closest('form').get(0).reset();
-				input.unwrap();
-			});
-		}
+	var $this = this;
+	var input = $('<input type="file" accept="image/gif, image/jpeg, image/png" class="Q_imagepicker_file" />');
+	input.css({
+		'visibility': 'hidden',
+		'height': '0',
+		'width': '0',
+		'top': '0',
+		'left': '0',
+		'position': 'absolute'
 	});
+	var originalSrc = $this.attr('src');
+	if (originalSrc.indexOf('?') < 0) {
+		$this.attr('src', originalSrc+"?"+Date.now()); // cache busting
+	}
+	$this.before(input);
+	$this.addClass('Q_imagepicker');
+	
+	function upload(data) {
+		if (o.preprocess) {
+			o.preprocess.call($this, _doUpload);
+		} else {
+			_doUpload();
+		}
+		function _doUpload(override) {
+			if (override === false || (override && override.cancel)) {
+				var state = $this.state('Q/imagepicker');
+				$this.attr('src', state.oldSrc).stop().removeClass('Q_imagepicker_uploading');
+				return;
+			}
+			var params = {
+				'data': data,
+				'path': $this.state('Q/imagepicker').path,
+				'subpath': $this.state('Q/imagepicker').subpath,
+				'save': o.saveSizeName,
+				'url': o.url,
+				'loader': o.loader
+			};
+			if (o.crop) {
+				params.crop = o.crop;
+			}
+			Q.extend(params, override);
+			var state = $this.state('Q/imagepicker');
+			if (params.save && !params.save[state.showSize]) {
+				throw "Q/imagepicker tool: no size found corresponding to showSize";
+			}
+			
+			function _callback (err, res) {
+				var state = $this.state('Q/imagepicker');
+				var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(res && res.errors);
+				if (msg) {
+					$this.attr('src', state.oldSrc).stop().removeClass('Q_imagepicker_uploading');
+					return Q.handle(o.onError, $this, [msg]);
+				}
+				var key = o.showSize;
+				if (!key) {
+					// by default set src equal to first element of the response
+					key = Q.first(res.slots.data, {nonEmpty: true});
+				}
+				var c = Q.handle(o.onSuccess, $this, [res.slots.data, key]);
+				if (c !== false && key) {
+					$this.attr('src', Q.url(res.slots.data[key]+"?"+Date.now()));
+				}
+				$this.removeClass('Q_imagepicker_uploading');
+			}
+			
+			if (params.loader) {
+				var callable = params.loader;
+				delete params.loader;
+				Q.handle(callable, null, [params, _callback]);
+			} else {
+				var url = params.url;
+				delete params.url;
+				Q.request(url, 'data', _callback, {
+					fields: params,
+					method: 'POST'
+				});
+			}
+		}
+	}
+
+	if (navigator.camera) {
+		// "file" input type is not supported
+		$this.on([Q.Pointer.click, '.Q_imagepicker'], function(e) {
+			navigator.notification.confirm("", function(index) {
+				if (index === 3) return;
+				var source = Camera.PictureSourceType[index === 1 ? "CAMERA" : "PHOTOLIBRARY"];
+				navigator.camera.getPicture(function(data){
+					upload("data:image/jpeg;base64," + data);
+				}, function(msg){
+					alert(msg);
+				}, { quality: 50,
+					sourceType: source,
+					destinationType: Camera.DestinationType.DATA_URL
+				});
+			}, "", o.cameraCommands.join(','));
+			e.preventDefault();
+		});
+	} else {
+		// natively support "file" input
+		$this.on([Q.Pointer.click, '.Q_imagepicker'], function(e) {
+			input.click();
+			e.preventDefault();
+		});
+		input.click(function () {
+			if (o.onClick && o.onClick() === false) {
+				return false;
+			}
+		});
+		input.change(function (e) {
+			if (!this.value) {
+				return; // it was canceled
+			}
+			var state = $this.state('Q/imagepicker');
+			state.oldSrc = $this.attr('src');
+			if (o.throbber) {
+				$this.attr('src', Q.url(o.throbber));
+			}
+			$this.addClass('Q_imagepicker_uploading');
+			var reader = new FileReader();
+			reader.onload = function() {
+				upload(reader.result);
+			};
+			reader.onerror = function () { setTimeout(function() { alert("Error reading file"); }, 0); };
+			reader.readAsDataURL(this.files[0]);
+			
+			// clear the input, see http://stackoverflow.com/a/13351234/467460
+			input.wrap('<form>').closest('form').get(0).reset();
+			input.unwrap();
+		});
+	}
 },
 
 {

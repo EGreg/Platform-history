@@ -657,28 +657,33 @@ class Q_Response
 	 */
 	static function setToolOptions($key, $value = null)
 	{
-		if (is_array($key)) {
-			foreach ($key as $k => $v) {
-				self::setToolOptions($k, $v);
+		$tool_name = Q::$toolName;
+		$id_prefix = Q_Html::getIdPrefix($tool_name);
+		$to_set = is_array($key) ? $key : array($key => $value);
+		foreach ($to_set as $k => $v) {
+			if (substr($k, 0, 2) == 'Q_') {
+				continue;
 			}
-			return;
+			self::$toolOptions[$id_prefix][$tool_name][$k] = $v;
 		}
-		if (substr($key, 0, 2) == 'Q_') {
-			return;
-		}
-		$id_prefix = Q_Html::getIdPrefix();
-		self::$toolOptions[$id_prefix][$key] = $value;
+		
 	}
 
 	/**
-	 * @method setToolOptions
+	 * @method getToolOptions
 	 * @static
+	 * @param {string} toolName Optional name of the tool that is being rendered
 	 * @return {array} The options for the tool currently being rendered
 	 */
-	static function getToolOptions()
+	static function getToolOptions($tool_name = null)
 	{
-		$id_prefix = Q_Html::getIdPrefix();
-		return isset(self::$toolOptions[$id_prefix]) ? self::$toolOptions[$id_prefix] : null;
+		if (!isset($tool_name)) {
+			$tool_name = Q::$toolName;
+		}
+		$id_prefix = Q_Html::getIdPrefix($tool_name);
+		return isset(self::$toolOptions[$id_prefix][$tool_name])
+			? self::$toolOptions[$id_prefix][$tool_name]
+			: null;
 	}
 	
 	/**

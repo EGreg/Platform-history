@@ -23,6 +23,7 @@
  *   "onCreate": An event that occurs after a new stream is created by a creatable preview
  *   "onUpdate": An event that occurs when the icon is updated via this tool
  *   "onRefresh": An event that occurs when the icon is refreshed
+ *   "onLoad": An event that occurs when the icon is loaded
  *   "onRemove": An event that occurs when the icon is removed via the 'remove' action
  */
 Q.Tool.define("Streams/image/preview", function(options) {
@@ -222,6 +223,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 	onCreate: new Q.Event(),
 	onUpdate: new Q.Event(),
 	onRefresh: new Q.Event(),
+	onLoad: new Q.Event(),
 	onRemove: new Q.Event(function () {
 		this.$().hide('slow', function () {
 			$(this).remove();
@@ -247,8 +249,9 @@ Q.Tool.define("Streams/image/preview", function(options) {
 
 			var jq = tool.$('img.Streams_image_preview_icon');
 			if (jq.length) {
+				tool.state.onRefresh.handle.apply(tool, []);
 				jq.off('load.Streams-image-preview').on('load.Streams-image-preview', function () {
-					tool.state.onRefresh.handle.apply(tool, []);
+					tool.state.onLoad.handle.apply(tool, []);
 				});
 				jq.attr('src', Q.Streams.iconUrl(icon, file)+'?'+Date.now());
 				return true;
@@ -270,9 +273,9 @@ Q.Tool.define("Streams/image/preview", function(options) {
 				alt: stream.fields.title,
 				inplace: tool.setUpElementHTML('div', 'Streams/inplace', inplace)
 			});
-			var tpl = (state.editable !== false || stream.testWriteLevel('suggest'))
-				? 'edit' 
-				: 'view';
+			var tpl = (state.editable === false || !stream.testWriteLevel('suggest'))
+				? 'view' 
+				: 'edit';
 			Q.Template.render(
 				'Streams/image/preview/'+tpl,
 				fields,
@@ -281,8 +284,9 @@ Q.Tool.define("Streams/image/preview", function(options) {
 						return console.warn(err);
 					}
 					tool.element.innerHTML = html;
+					tool.state.onRefresh.handle.apply(tool, []);
 					$('img', tool.element).off('load.Streams-image-preview').on('load.Streams-image-preview', function () {
-						tool.state.onRefresh.handle.apply(tool, []);
+						tool.state.onLoad.handle.apply(tool, []);
 					});
 					Q.activate(tool, callback);
 				},
@@ -296,7 +300,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 
 Q.Template.set(
 	'Streams/image/preview/view',
-	'<img src="{{& srcFull}}" alt="{{alt}}" class="Streams_image_preview_icon">'
+	'<img src="{{& src}}" alt="{{alt}}" class="Streams_image_preview_icon">'
 	+ '<div class="Streams_image_contents {{titleClass}}"><{{titleTag}}>{{& inplace}}</{{titleTag}}></div>'
 );
 

@@ -953,10 +953,8 @@ class Q_Html
 	static function id($id)
 	{
 		$id = preg_replace('/[^A-Za-z0-9]/', '_', $id);
-		if (empty(self::$id_prefix)) {
-			return $id;
-		}
-		return self::$id_prefix . $id;
+		$prefix = self::getIdPrefix();
+		return $prefix ? $prefix.$id : $id;
 	}
 	
 	/**
@@ -1060,8 +1058,8 @@ class Q_Html
 					break;
 				case 'id': // Automatic prefixing of this attribute
 				case 'for': // For labels, too
-					if (! empty(self::$id_prefix)) {
-						$value = self::$id_prefix . $value;
+					if ($prefix = self::getIdPrefix()) {
+						$value = $prefix . $value;
 					}
 					break;
 			}
@@ -1106,12 +1104,14 @@ class Q_Html
 	 * It gets pushed on top of the stack and can be pieped later.
 	 * @method pushIdPrefix
 	 * @static
-	 * @param {string} $id_prefix The prefix to apply to all ids rendered by Markup after this
+	 * @param {string} $id_prefix The prefix to apply to all ids rendered by Html after this
+	 * @param {array} $tool_ids The ids of tools rendered on this element
 	 * @return {string|null} The prefix previously on top of the stack, if any
 	 */
-	static function pushIdPrefix ($id_prefix)
+	static function pushIdPrefix ($id_prefix, $tool_ids)
 	{
 		$prev_prefix = self::$id_prefix;
+		array_push(self::$tool_ids, $tool_ids);
 		array_push(self::$id_prefixes, $id_prefix);
 		self::$id_prefix = $id_prefix;
 		return $prev_prefix;
@@ -1127,8 +1127,10 @@ class Q_Html
 	 */
 	static function popIdPrefix ()
 	{
-		if (count(self::$id_prefixes) <= 1)
+		if (count(self::$id_prefixes) <= 1) {
 			throw new Exception("Nothing to Q from prefix stack");
+		}
+		array_pop(self::$tool_ids);
 		$popped_prefix = array_pop(self::$id_prefixes);
 		self::$id_prefix = end(self::$id_prefixes);
 		return $popped_prefix;
@@ -1138,12 +1140,30 @@ class Q_Html
 	 * The current prefix that will be applied to all ids
 	 * rendered by Q_Html.
 	 * @method getIdPrefix
+	 * @param {string} toolName Optional name of the tool that is being rendered
 	 * @static
 	 * @return {string|null} The prefix that is currently at the top of the prefix stack.
 	 */
-	static function getIdPrefix ()
+	static function getIdPrefix ($tool_name = null)
 	{
-		return self::$id_prefix;
+		if (!isset($tool_name)) {
+			$tool_name = Q::$toolName;
+		}
+		$tool_name = $tool_name ? $tool_name : Q::$toolName;
+		return is_string(self::$id_prefix)
+			? self::$id_prefix
+			: (isset(self::$id_prefix[$tool_name]) ? self::$id_prefix[$tool_name] : null);
+	}
+	
+	/**
+	 * The ids of tools rendered on this element
+	 * @method getToolIds
+	 * @static
+	 * @return {array} The tool ids array that is currently at the top of the prefix stack.
+	 */
+	static function getToolIds ()
+	{
+		return end(self::$tool_ids);
 	}
 
 	/**
@@ -1360,12 +1380,12 @@ class Q_Html
 	protected static $id_prefixes = array(null);
 	
 	/**
-	 * Information about the id prefixes
-	 * @property $id_prefixes_extra
+	 * The stack of tool id arrays
+	 * @property $id_prefixes
 	 * @type array
 	 * @static
 	 * @protected
 	 */
-	protected static $id_prefixes_extra = array(null);
+	protected static $tool_ids = array(null);
 
 }

@@ -118,23 +118,33 @@ class Q
 			case E_NOTICE:
 			case E_USER_WARNING:
 			case E_USER_NOTICE:
-				Q::log($errstr);
+				$context = var_export($errcontext, true);
+				$log = <<<EOT
+PHP ($errno): $errstr
+FILE: $errfile
+LINE: $errline
+CONTEXT: $context
+EOT;
+
+				Q::log($log);
+				$type = 'warning';
 				break;
 			default:
-				/**
-				 * @event Q/error
-				 * @param {integer} 'errno'
-				 * @param {string} 'errstr'
-				 * @param {string} 'errfile'
-				 * @param {integer} 'errline'
-				 * @param {array} 'errcontext'
-				 */
-				$output = ob_get_clean();
-				self::event('Q/error', compact(
-					'errno','errstr','errfile','errline','errcontext','output'
-				));
+				$type = 'error';
 				break;
 		}
+		/**
+		 * @event Q/error
+		 * @param {integer} 'errno'
+		 * @param {string} 'errstr'
+		 * @param {string} 'errfile'
+		 * @param {integer} 'errline'
+		 * @param {array} 'errcontext'
+		 */
+		$output = ob_get_clean();
+		self::event("Q/error", compact(
+			'type','errno','errstr','errfile','errline','errcontext','output'
+		));
 	}
 
 	/**
@@ -506,11 +516,13 @@ class Q
 	 * Also generates javascript around it.
 	 * @method tool
 	 * @static
-	 * @param {string} $tool_name
+	 * @param {string} $name
 	 *  The name of the tool, of the form "$moduleName/$toolName"
 	 *  The handler is found in handlers/$moduleName/tool/$toolName
+	 *  Also can be an array of $toolName => $toolOptions, in which case the
+	 *  following parameter, $options, is skipped.
 	 * @param {array} $options=array()
-	 *  The options passed to the tool
+	 *  The options passed to the tool (or array of options arrays passed to the tools).
 	 * @param {array} $extra=array()
 	 *  Options used by Q when rendering the tool. Can include:<br/>
 	 *  "id" =>
@@ -525,26 +537,21 @@ class Q
 	 * @throws {Q_Exception_MissingFile}
 	 */
 	static function tool(
-	 $tool_name,
+	 $name,
 	 $options = array(),
 	 $extra = array())
 	{
-		if (!is_string($tool_name)) {
-			throw new Q_Exception_WrongType(array(
-				'field' => '$tool_name', 'type' => 'string'
-			));
+		if (is_string($name)) {
+			$info = array($name => $options);
+		} else {
+			$info = $name;
+			$extra = $options;
 		}
-		if (!isset($options)) {
-			$options = array();
-		}
-		$tool_handler = $tool_name.'/tool';
+		
 		/**
 		 * @event Q/tool/render {before}
-		 * @param {string} 'tool_name'
-		 *  The name of the tool, of the form "$moduleName/$toolName"
-		 *  The handler is found in handlers/$moduleName/tool/$toolName
-		 * @param {array} 'options'
-		 *  The options passed to the tool
+		 * @param {string} 'info'
+		 *  An array of $toolName => $options pairs
 		 * @param {array} 'extra'
 		 *  Options used by Q when rendering the tool. Can include:<br/>
 		 *  "id" =>
@@ -558,45 +565,48 @@ class Q
 		 */
 		$returned = Q::event(
 			'Q/tool/render',
-			array('tool_name' => $tool_name, 'options' => $options, 'extra' => &$extra),
+			array('info' => $info, 'extra' => &$extra),
 			'before'
 		);
-		if (is_array($returned)) {
-			$options = array_merge($returned, $options);
-		}
-		try {
-			/**
-			 * Renders the tool
-			 * @event $tool_handler
-			 * @param {array} $options
-			 *  The options passed to the tool
-			 * @return {string}
-			 *	The rendered tool content
-			 */
-			$result = Q::event($tool_handler, $options); // render the tool
-		} catch (Q_Exception_MissingFile $e) {
-			/**
-			 * Renders the 'Missing Tool' content
-			 * @event Q/missingTool
-			 * @param {array} 'tool_name'
-			 *  The name of the tool
-			 * @return {string}
-			 *	The rendered content
-			 */
-			$result = self::event('Q/missingTool', compact('tool_name', 'options'));
-		} catch (Exception $exception) {
-						Q::log($exception);
-			$result = $exception->getMessage();
+		$result = '';
+		foreach ($info as $name => $options) {
+			Q::$toolName = $name;
+			$toolHandler = "$name/tool";
+			$options = is_array($options) ? $options : array();
+			if (is_array($returned)) {
+				$options = array_merge($returned, $options);
+			}
+			try {
+				/**
+				 * Renders the tool
+				 * @event $toolHandler
+				 * @param {array} $options
+				 *  The options passed to the tool
+				 * @return {string}
+				 *	The rendered tool content
+				 */
+				$result .= Q::event($toolHandler, $options); // render the tool
+			} catch (Q_Exception_MissingFile $e) {
+				/**
+				 * Renders the 'Missing Tool' content
+				 * @event Q/missingTool
+				 * @param {array} 'name'
+				 *  The name of the tool
+				 * @return {string}
+				 *	The rendered content
+				 */
+				$result .= self::event('Q/missingTool', compact('name', 'options'));
+			} catch (Exception $exception) {
+				Q::log($exception);
+				$result .= $exception->getMessage();
+			}
 		}
 		// Even if the tool rendering throws an exception,
 		// it is important to run the "after" handlers
 		/**
 		 * @event Q/tool/render {after}
-		 * @param {string} 'tool_name'
-		 *  The name of the tool, of the form "$moduleName/$toolName"
-		 *  The handler is found in handlers/$moduleName/tool/$toolName
-		 * @param {array} 'options'
-		 *  The options passed to the tool
+		 * @param {string} 'info'
+		 *  An array of $toolName => $options pairs
 		 * @param {array} 'extra'
 		 *  Options used by Q when rendering the tool. Can include:<br/>
 		 *  "id" =>
@@ -607,12 +617,13 @@ class Q
 		 *    during Q.loadUrl when this tool appears in the rendered HTML
 		 */
 		Q::event(
-		 'Q/tool/render',
-		 compact('tool_name', 'options', 'extra'),
-		 'after',
-		 false,
-		 $result
+			'Q/tool/render',
+			compact('info', 'extra'),
+			'after',
+			false,
+			$result
 		);
+		Q::$toolName = null;
 		return $result;
 	}
 
@@ -1609,6 +1620,18 @@ class Q
 	 */
 	public static $cache = array();
 	
+	/**
+	 * @property $toolName
+	 * @type string
+	 * @static
+	 */
+	public static $toolName = null;
+	
+	/**
+	 * @property $toolWasRendered
+	 * @type array
+	 * @static
+	 */
 	public static $toolWasRendered = array();
 }
 
