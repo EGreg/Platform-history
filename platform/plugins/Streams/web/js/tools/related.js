@@ -74,6 +74,8 @@ function _Streams_related_tool (options)
 						return;
 					}
 					
+					tool.integrateWithTabs([element]);
+					
 					element.setAttribute('class', element.getAttribute('class').replace(
 						'Streams_related_composer', 'Streams_related_stream'
 					));
@@ -136,23 +138,7 @@ function _Streams_related_tool (options)
 			tool.element.appendChild(element);
         });
 		Q.activate(tool.element, function () {
-			if (typeof state.tabs === 'function') {
-				var id, parents, tabs, i;
-				parents = Q.extend(tool.parents());
-				parents[tool.id] = tool;
-				for (id in parents) {
-					if (tabs = parents[id].element.Q("Q/tabs")) {
-						for (i=0; i<elements.length; ++i) {
-							var value = state.tabs.call(tool, elements[i].Q(), tabs),
-							    attr = value.isUrl() ? 'href' : 'data-name';
-							elements[i].addClass("Q_tabs_tab")
-								.setAttribute(attr, value);
-						}
-						break;
-					}
-				}
-			}
-			
+			tool.integrateWithTabs(elements);
 			tool.state.onRefresh.handle.call(tool);
 		});
         // The elements should animate to their respective positions, like in D3.
@@ -241,7 +227,26 @@ function _Streams_related_tool (options)
 			editable: this.state.editable
         }, options);
  		return this.setUpElement(this.state.tag || 'div', this.state.toolType(streamType), o);
-    }
+    },
+	integrateWithTabs: function (elements) {
+		var id, parents, tabs, i, tool = this, state = tool.state;
+		if (typeof state.tabs !== 'function') {
+			return;
+		}
+		parents = Q.extend(tool.parents());
+		parents[tool.id] = tool;
+		for (id in parents) {
+			if (tabs = parents[id].element.Q("Q/tabs")) {
+				for (i=0; i<elements.length; ++i) {
+					var value = state.tabs.call(tool, elements[i].Q(), tabs),
+					    attr = value.isUrl() ? 'href' : 'data-name';
+					elements[i].addClass("Q_tabs_tab")
+						.setAttribute(attr, value);
+				}
+				break;
+			}
+		}
+	}
 }
 
 );
