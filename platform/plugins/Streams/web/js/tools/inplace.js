@@ -11,6 +11,8 @@
  *  "field" => Optional, name of an field to change instead of the content of the stream
  *  "attribute" => Optional, name of an attribute to change instead of any field.
  *  "inplace" => Additional fields to pass to the child Q/inplace tool, if any
+ *  "create" => Optional. Fields to auto-create a stream if we discover that it doesn't exist.
+ *     Should contain at least the publisherId and type of the stream
  */
 Q.Tool.define("Streams/inplace", function (options) {
 	var tool = this,
@@ -25,13 +27,12 @@ Q.Tool.define("Streams/inplace", function (options) {
 	//  - attribute: alternatively, the name of an attribute to bind to
 
 	function _construct(err) {
+		if (err) {
+			return;
+		}
 		var stream = this;
 		state.publisherId = stream.fields.publisherId;
 		state.streamName = stream.fields.name;
-
-		Q.Streams.get(state.publisherId, state.streamName, function () {
-			state.stream = this;
-		});
 
 		function _setContent(content) {
 			Q.Streams.get(state.publisherId, state.streamName, function () {
@@ -125,18 +126,19 @@ Q.Tool.define("Streams/inplace", function (options) {
 	}
 
 	if (state.stream) {
-		_construct.apply(state.stream);
-	} else {
-		if (!state.publisherId || !state.streamName) {
-			throw "Streams/inplace tool: stream is undefined";
-		}
-		Q.Streams.retainWith(tool).get(state.publisherId, state.streamName, _construct);
+		state.publisherId = state.stream.publisherId;
+		state.streamName = state.stream.name;
 	}
+	if (!state.publisherId || !state.streamName) {
+		throw "Streams/inplace tool: stream is undefined";
+	}
+	Q.Streams.retainWith(tool).get(state.publisherId, state.streamName, _construct);
 },
 
 {
 	inplaceType: 'textarea',
 	editable: true,
+	create: {},
 	inplace: {},
 	onUpdate: new Q.Event()
 }

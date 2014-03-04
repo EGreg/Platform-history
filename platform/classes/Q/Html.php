@@ -1108,7 +1108,7 @@ class Q_Html
 	 * @param {array} $tool_ids The ids of tools rendered on this element
 	 * @return {string|null} The prefix previously on top of the stack, if any
 	 */
-	static function pushIdPrefix ($id_prefix, $tool_ids)
+	static function pushIdPrefix ($id_prefix, $tool_ids = null)
 	{
 		$prev_prefix = self::$id_prefix;
 		array_push(self::$tool_ids, $tool_ids);

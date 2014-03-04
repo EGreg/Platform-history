@@ -2835,12 +2835,13 @@ function _loadToolScript(toolElement, callback, shared) {
 				console.warn("Q.Tool.loadScript: Missing tool constructor for " + toolName);
 			}
 		}
-		// TODO: load all the scripts then make sure the constructors
-		// execute in the same order as they appear in the classNames
 		if (typeof toolFunc === 'function') {
 			return callback(toolElement, toolFunc, toolName);
 		}
-		if (typeof toolFunc !== 'string' && typeof toolFunc !== 'undefined') {
+		if (toolFunc === undefined) {
+			return;
+		}
+		if (typeof toolFunc !== 'string') {
 			throw "Q.Tool.loadScript: toolFunc cannot be " + typeof(toolFunc);
 		}
 		var existingOptions = _qtdo[toolName];
