@@ -22,7 +22,10 @@
 				"create": true,
 				"edit": true,
 				"fields": ["userId", "bio"],
-				"see": ["bio"]
+				"see": ["bio"],
+				"defaults": {
+					"title": "User Bio"
+				}
 			}
 		}
 	},

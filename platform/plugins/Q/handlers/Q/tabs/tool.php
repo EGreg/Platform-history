@@ -7,7 +7,7 @@
  *  "urls" => An associative array of name => url pairs to override the default urls.
  *  "classes" => An associative array of the form name => classes, for adding classes to tabs
  *  "titleClasses" => An associative array for adding classes to tab titles
- *  "field" => Defaults to "tab". Uses this field in the absence of javascript.
+ *  "field" => Defaults to "tab". Uses this field when urls doesn't contain the tab name.
  *  "selector" => CSS style selector indicating the element to update with javascript. Can be a parent of the tabs. Set to null to reload the page.
  *    (if multiple slots defined parameter is required and shall be array of the same length as slot)
  *  "slot" => The name of the slot to request when changing tabs with javascript.
@@ -32,6 +32,9 @@ function Q_tabs_tool($options)
 	$beforeScripts = null;
 	$onActivate = null;
 	extract($options);
+	if (!isset($tabs)) {
+		return '';
+	}
 	/**
 	 * @var array $tabs
 	 */
@@ -85,7 +88,7 @@ function Q_tabs_tool($options)
 		);
 	}
 	Q_Response::setToolOptions(compact(
-		'selector', 'slot', 'tabs', 'urls', 'loader', 'beforeSwitch', 'beforeScripts', 'onActivate'
+		'selector', 'slot', 'tabs', 'urls', 'field', 'loader', 'beforeSwitch', 'beforeScripts', 'onActivate'
 	));
 	Q_Response::addScript('plugins/Q/js/tools/tabs.js');
 	return "<div class='Q_tabs_tabs Q_clearfix'>$result</div>";

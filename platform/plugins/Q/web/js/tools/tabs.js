@@ -5,6 +5,7 @@
  *  The options to pass to the tool. They include:
  *  "tabs": An associative array of name: title pairs.
  *  "urls": An associative array of name: url pairs to override the default urls.
+ *  "field" => Defaults to "tab". Uses this field when urls doesn't contain the tab name.
  *  "selector": CSS style selector indicating the element to update with javascript. Can be a parent of the tabs. Set to null to reload the page.
  *  "slot": The name of the slot to request when changing tabs with javascript.
  *  "loader": Optional. Name of a function which takes url, slot, callback. It should call the callback and pass it an object with the response info. Can be used to implement caching, etc. instead of the default HTTP request. This function shall be Q.batcher getter
@@ -22,17 +23,18 @@ Q.Tool.define("Q/tabs", function(options) {
 	$(tool.element).on([Q.Pointer.fastclick, '.Q_tabs'], '.Q_tabs_tab', function () {
 		tool.switchTo(this.getAttribute('data-name'));
 	}).click(function () {
-		return false;
+		// return false;
 	});
 	
 },
 
 {
-	loader: Q.req,
-	beforeSwitch: new Q.Event(),
+	field: 'tab',
 	slot: 'content,title',
 	selector: '#content_slot',
 	loadUrlOptions: {},
+	loader: Q.req,
+	beforeSwitch: new Q.Event()
 },
 
 {
@@ -64,8 +66,13 @@ Q.Tool.define("Q/tabs", function(options) {
 		var selectors = state.selectors;
 		var href = tab.getAttribute('href');
 		
+		var name = tab.getAttribute("data-name");
 		if (!href) {
-			href = state.urls && state.urls[tab.getAttribute("data-name")];
+			href = state.urls && state.urls[name];
+		}
+		if (!href) {
+			href = window.location.href.split('?')[0]
+				+ '?' + window.location.search.queryField(state.field, name);
 		}
 
 		if (href && state.selector === null) {

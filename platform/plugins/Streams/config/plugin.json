@@ -55,6 +55,13 @@
 					"title": "Untitled Image"
 				}
 			},
+			"Streams/images": {
+				"create": true,
+				"edit": true,
+				"defaults": {
+					"title": "Untitled Gallery"
+				}
+			},
 			"Streams/category": {
 				"create": true,
 				"edit": true

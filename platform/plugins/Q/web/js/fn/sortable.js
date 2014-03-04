@@ -74,13 +74,15 @@ function (options) {
 	function lift(event) {
 		if (tLift) clearTimeout(tLift);
 		
-		Q.Pointer.cancelClick();
-		
-		if (Q.Pointer.touchCount(event) !== 1) {
+		var $item = $(this);
+		if ($('.Q_preventDrag', $item).length) {
 			return;
 		}
 		
-		var $item = $(this);
+		Q.Pointer.cancelClick();
+		
+		if (Q.Pointer.touchCount(event) !== 1) return;
+		
 		$('body')[0].preventSelections();
 		this.preventSelections();
 		this.cloned = this.cloneNode(true).copyComputedStyle(this);

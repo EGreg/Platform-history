@@ -166,7 +166,7 @@ String.prototype.replaceAll = function _String_prototype_replaceAll(pairs) {
  * Gets a param from a string, which is usually the location.search or location.hash
  * @param name {String} The name of the field
  * @param value {String} Optional, provide a value to set in the querystring, or null to delete the field
- * @return {String} the value of the field in the source, or if value was not undefined, the resulting querystring
+ * @return {String} the value of the field in the string, or if value was not undefined, the resulting querystring
  */
 String.prototype.queryField = function Q_queryField(name, value) {
 	var what = this;
@@ -2138,7 +2138,7 @@ Q.Tool = function _Q_Tool(element, options) {
 	// for later use
 	var classes = (this.element.className && this.element.className.split(/\s+/) || []);
 
-	// options
+	// options from data attribute
 	var dataOptions = element.getAttribute('data-' + Q.normalize(this.name, '-'));
 	if (dataOptions) {
 		var parsed = null;
@@ -4211,9 +4211,15 @@ Q.serializeFields = function _Q_serializeFields(fields, keys) {
 		parts.push(encodeURIComponent(key) + "=" + encodeURIComponent(value));
 	};
 
-	Q.each(keys || fields, function _Q_param_each(field) {
-		_params(field, fields[field]);
-	});
+	if (keys) {
+		Q.each(keys, function _Q_param_each(i, field) {
+			_params(field, fields[field]);
+		});
+	} else {
+		Q.each(fields, function _Q_param_each(field, value) {
+			_params(field, value);
+		});
+	}
 
 	// Return the resulting serialization
 	return parts.join("&").replace(/%20/g, "+");
@@ -6596,7 +6602,7 @@ Q.Pointer = {
 				e.preventDefault ? e.preventDefault() : event.returnValue = false;
 				return;
 			}
-			params.original.apply(this, arguments);
+			return params.original.apply(this, arguments);
 		};
 	},
 	fastclick: function _Q_fastclick (params) {
@@ -6606,7 +6612,7 @@ Q.Pointer = {
 				e.preventDefault ? e.preventDefault() : event.returnValue = false;
 				return;
 			}
-			params.original.apply(this, arguments);
+			return params.original.apply(this, arguments);
 		};
 	},
 	canceledClick: false,

@@ -15,7 +15,7 @@
  *   "toolType": Function that takes streamType and returns the tag to render (and then activate) for that stream
  *   "realtime": Whether to refresh every time a relation is added, removed or updated
  *   "sortable": Options for "Q/sortable" jQuery plugin. Pass false here to disable sorting interface.
- *   "tabs": Function for interacting with any parent "Q/tabs" tool. Format is function (previewTool, tabsTool) { return name; }
+ *   "tabs": Function for interacting with any parent "Q/tabs" tool. Format is function (previewTool, tabsTool) { return urlOrTabKey; }
  *   "onUpdate": Event that receives parameters "data", "entering", "exiting", "updating"
  *   "updateOptions": Options for onUpdate such as duration of the animation, etc.
  */
@@ -45,17 +45,14 @@ function _Streams_related_tool (options)
     publisherId: Q.info.app,
     isCategory: true,
 	realtime: false,
-	editable: true,
+	editable: {},
 	creatable: {},
 	sortable: {
 		draggable: '.Streams_related_stream',
 		droppable: '.Streams_related_stream'
 	},
 	tabs: function (previewTool, tabsTool) {
-		return Q.Streams.key(
-			Q.tools.Streams_image_preview.state.publisherId,
-			Q.tools.Streams_image_preview.state.streamName
-		);
+		return Q.Streams.key(previewTool.state.publisherId, previewTool.state.streamName);
 	},
 	toolType: function (streamType) { return streamType+'/preview'; },
     onUpdate: new Q.Event(function _Streams_related_onUpdate(result, entering, exiting, updating) {
@@ -139,24 +136,26 @@ function _Streams_related_tool (options)
 			tool.element.appendChild(element);
         });
 		Q.activate(tool.element, function () {
-			tool.state.onRefresh.handle.call(tool)
-		});
-        // The elements should animate to their respective positions, like in D3.
-
-		if (typeof state.tabs === 'function') {
-			var id, parents, tabs, i;
-			parents = Q.extend(tool.parents());
-			parents[tool.id] = tool;
-			for (id in parents) {
-				if (tabs = parents[id].element.Q("Q/tabs")) {
-					for (i=0; i<elements.length; ++i) {
-						elements[i].addClass("Q_tabs_tab")
-						.setAttribute('data-name', state.tabs(tool, tabs));
+			if (typeof state.tabs === 'function') {
+				var id, parents, tabs, i;
+				parents = Q.extend(tool.parents());
+				parents[tool.id] = tool;
+				for (id in parents) {
+					if (tabs = parents[id].element.Q("Q/tabs")) {
+						for (i=0; i<elements.length; ++i) {
+							var value = state.tabs.call(tool, elements[i].Q(), tabs),
+							    attr = value.isUrl() ? 'href' : 'data-name';
+							elements[i].addClass("Q_tabs_tab")
+								.setAttribute(attr, value);
+						}
+						break;
 					}
-					break;
 				}
 			}
-		}
+			
+			tool.state.onRefresh.handle.call(tool);
+		});
+        // The elements should animate to their respective positions, like in D3.
 
     }, "Streams/related"),
 	onRefresh: new Q.Event()

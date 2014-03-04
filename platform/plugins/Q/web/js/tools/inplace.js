@@ -146,6 +146,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		});
 		previousValue = fieldinput.val();
 		container_span.addClass('Q_editing');
+		container_span.addClass('Q_preventDrag');
 		if (!fieldinput.is('select')) {
 			fieldinput.data('inplace').widthWasAdjusted = true;
 			try {
@@ -256,7 +257,9 @@ function _Q_inplace_tool_constructor(element, options) {
 		}
 		static_span.html(newval);
 		undermessage.empty().css('display', 'none').addClass('Q_error');
-		container_span.removeClass('Q_editing').removeClass('Q_nocancel');
+		container_span.removeClass('Q_editing')
+			.removeClass('Q_nocancel')
+			.removeClass('Q_preventDrag');
 		$('.Q_inplace_tool_editbuttons', container_span).css('display', 'none');
 		noCancel = false;
 		Q.handle(tool.state.onSave, tool, [response.slots.Q_inplace]);
@@ -279,7 +282,8 @@ function _Q_inplace_tool_constructor(element, options) {
 		fieldinput.val(previousValue);
 		fieldinput.blur();
 		focusedOn = null;
-		container_span.removeClass('Q_editing');
+		container_span.removeClass('Q_editing')
+			.removeClass('Q_preventDrag');;
 		$('.Q_inplace_tool_editbuttons', container_span).css('display', 'none');
 		Q.handle(tool.state.onCancel, tool);
 	};
@@ -313,7 +317,14 @@ function _Q_inplace_tool_constructor(element, options) {
 	container_span.mouseout(function() {
 		container_span.removeClass('Q_hover');
 	});
-	if (this.options.editOnClick) static_span.click(onClick);
+	container_span.on([Q.Pointer.end, '.Q_inplace'], function (event) {
+		if (tool.state.editOnClick || event.target !== static_span[0]) {
+			Q.Pointer.cancelClick();
+		}
+	});
+	if (this.state.editOnClick) {
+		static_span.click(onClick);
+	}
 	edit_button.click(onClick);
 	cancel_button.click(function() { onCancel(true); return false; });
 	cancel_button.bind('focus mousedown', function() { setTimeout(function() {

@@ -8,7 +8,7 @@
 		"adminLevel": "0"
 	},
 	"Streams/user/icon": {
-		"type": "Streams/image/icon",
+		"type": "Streams/image",
 		"title": "Icon",
 		"icon": "",
 		"name_fb": "pic"
