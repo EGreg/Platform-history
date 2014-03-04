@@ -17,8 +17,6 @@ function Q () {
 };
 
 // public properties:
-Q.tools = {};
-Q.constructors = {};
 Q.plugins = {};
 Q.text = {
 	Q: {
@@ -2166,8 +2164,8 @@ Q.Tool = function _Q_Tool(element, options) {
 	
 	for (i=len-1; i>=0; --i) {
 		var pid = pids[i];
-		if (Q.isEmpty(Q.tools[pid].state)) continue;
-		o = Q.extend(o, Q.Tool.options.levels, Q.tools[pid].state);
+		if (Q.isEmpty(Q.Tool.active[pid].state)) continue;
+		o = Q.extend(o, Q.Tool.options.levels, Q.Tool.active[pid].state);
 	}
 	
 	// .Q_something
@@ -2209,7 +2207,7 @@ Q.Tool = function _Q_Tool(element, options) {
 	
 	this.beforeRemove = new Q.Event();
 
-	Q.setObject([this.id], this, Q.tools);
+	Q.setObject([this.id], this, Q.Tool.active);
 	
 	Q.Tool.onConstruct(this.name).handle.call(this, this.options);
 	Q.Tool.onConstruct("").handle.call(this, this.options);
@@ -2221,6 +2219,10 @@ Q.Tool = function _Q_Tool(element, options) {
 Q.Tool.options = {
 	levels: 10
 };
+
+Q.Tool.active = {};
+Q.Tool.latestName = null;
+Q.Tool.latestNames = {};
 
 var _constructToolHandlers = {},
 	_beforeRemoveToolHandlers = {},
@@ -2255,7 +2257,7 @@ Q.Tool.beforeRemove = Q.Event.factory(_beforeRemoveToolHandlers, ["", function (
  * @return {Q.Tool|null}
  */
 Q.Tool.byId = function _Q_Tool_byId(id, name) {
-	var tool = Q.tools[id];
+	var tool = Q.Tool.active[id];
 	return tool && name ? tool.element.Q(name) : tool || null;
 };
 
@@ -2344,7 +2346,7 @@ Q.Tool.define = function (name, ctor, defaultOptions, stateKeys, methods) {
 	Q.Tool.constructors[name] = ctor;
 	Q.Tool.onLoadedConstructor(name).handle(name, ctor);
 	Q.Tool.onLoadedConstructor("").handle(name, ctor);
-	Q.Tool.define.latestName = name;
+	Q.Tool.latestName = name;
 	return ctor;
 };
 
@@ -2440,7 +2442,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 			};
 		});
 	});
-	Q.Tool.jQuery.latestName = name;
+	Q.Tool.latestName = name;
 };
 
 /**
@@ -2465,7 +2467,7 @@ Q.Tool.jQuery.options = function (pluginName, setOptions) {
 var _qtjo = {};
 
 Q.Tool.nextDefaultId = 1;
-var _qtc = Q.Tool.constructors = Q.constructors;
+var _qtc = Q.Tool.constructors = {};
 
 /**
  * Gets child tools contained in the tool, as determined by their prefixes
@@ -2478,20 +2480,20 @@ Q.Tool.prototype.children = function Q_Tool_prototype_children(append, levels) {
 	var result = {},
 	    prefix2 = Q.normalize(this.prefix + (append || "")),
 		id, ni, i, ids;
-	for (id in Q.tools) {
+	for (id in Q.Tool.active) {
 		ni = Q.normalize(id);
 		if (id.length >= prefix2.length + (append ? 0 : 1)
 		&& ni.substr(0, prefix2.length) == prefix2) {
 			if (levels) {
-				ids = Q.tools[id].parentIds();
+				ids = Q.Tool.active[id].parentIds();
 				for (i=0; i<levels; ++i) {
 					if (ids[i] === this.id) {
-						result[id] = Q.tools[id];
+						result[id] = Q.Tool.active[id];
 						break;
 					}
 				}
 			} else {
-				result[id] = Q.tools[id];
+				result[id] = Q.Tool.active[id];
 			}
 		}
 	}
@@ -2508,11 +2510,11 @@ Q.Tool.prototype.child = function Q_Tool_prototype_child(append) {
 	var result = {},
 	    prefix2 = Q.normalize(this.prefix + (append || "")),
 		id, ni;
-	for (id in Q.tools) {
+	for (id in Q.Tool.active) {
 		ni = Q.normalize(id);
 		if (id.length >= prefix2.length + (append ? 0 : 1)
 		&& ni.substr(0, prefix2.length) == prefix2) {
-			return Q.tools[id];
+			return Q.Tool.active[id];
 		}
 	}
 	return null;
@@ -2525,7 +2527,7 @@ Q.Tool.prototype.child = function Q_Tool_prototype_child(append) {
  */
 Q.Tool.prototype.parentIds = function Q_Tool_prototype_parentIds() {
 	var prefix2 = Q.normalize(this.prefix), ids = [], id, ni;
-	for (id in Q.tools) {
+	for (id in Q.Tool.active) {
 		ni = Q.normalize(id);
 		if (ni.length < prefix2.length-1 && ni === prefix2.substr(0, ni.length)) {
 			ids.push(id);
@@ -2547,7 +2549,7 @@ Q.Tool.prototype.parents = function Q_Tool_prototype_parents() {
 	var result = {}, len = ids.length;
 	for (i=0; i<len; ++i) {
 		id = ids[i];
-		result[id] = Q.tools[id];
+		result[id] = Q.Tool.active[id];
 	}
 	return result;
 };
@@ -2560,7 +2562,7 @@ Q.Tool.prototype.parents = function Q_Tool_prototype_parents() {
 Q.Tool.prototype.parent = function Q_Tool_prototype_parent() {
 	var ids = [], ids, i;
 	ids = this.parentIds();
-	return ids.length ? Q.tools[ids[0]] : null;
+	return ids.length ? Q.Tool.active[ids[0]] : null;
 };
 
 /**
@@ -2607,7 +2609,7 @@ Q.Tool.prototype.remove = function _Q_Tool_prototype_remove(removeCached) {
 	}
 
 	// finally, remove the tool from the array of tools on the page
-	delete Q.tools[this.id];
+	delete Q.Tool.active[this.id];
 
 	return null;
 };
@@ -2686,7 +2688,7 @@ Q.Tool.setUpElement = function _Q_Tool_element(element, toolType, toolOptions, i
 		p1 = prefix ? prefix : (Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '');
 		do {
 			p2 = p1 + '_' + ntt + '_' + (Q.Tool.nextDefaultId++) + '_';
-		} while (Q.tools[p2]);
+		} while (Q.Tool.active[p2]);
 		id = p2 + 'tool';
 	}
 	element.setAttribute('id', id);
@@ -2792,6 +2794,24 @@ function _loadToolScript(toolElement, callback, shared) {
 	var id = toolElement.id;
 	var classNames = toolElement.className.split(' ');
 	Q.each(classNames, function (i, className) {
+		function _loadToolScript_loaded() {
+			// in this function, toolFunc starts as a string
+			if (Q.Tool.latestName) {
+				_qtc[toolName] = _qtc[Q.Tool.latestName];
+				Q.Tool.latestNames[toolFunc] = Q.Tool.latestName;
+			}
+			toolFunc = _qtc[toolName];
+			if (typeof toolFunc !== 'function') {
+				Q.Tool.onMissingConstructor.handle(_qtc, toolName);
+				toolFunc = _qtc[toolName];
+				if (typeof toolFunc !== 'function') {
+					throw "Q.Tool.loadScript: Missing tool constructor for " + toolName;
+				}
+			}
+			toolFunc.options = Q.extend(toolFunc.options, Q.Tool.options.levels, existingOptions);
+			callback(toolElement, toolFunc, toolName, uniqueToolId);
+		}
+		
 		if (className === 'Q_tool' || className.slice(-5) !== '_tool') {
 			return;
 		}
@@ -2807,33 +2827,22 @@ function _loadToolScript(toolElement, callback, shared) {
 		// TODO: load all the scripts then make sure the constructors
 		// execute in the same order as they appear in the classNames
 		if (typeof toolFunc === 'function') {
-			callback(toolElement, toolFunc, toolName);
-		} else if (typeof toolFunc === 'string') {
-			var existingOptions = _qtdo[toolName];
-			if (shared) {
-				var uniqueToolId = "tool " + (shared.waitingForTools.length+1);
-				shared.waitingForTools.push(uniqueToolId);
-			}
-			Q.Tool.define.latestName = Q.Tool.jQuery.latestName = null;
-			Q.addScript(toolFunc, function _loadToolScript_loaded() {
-				if (Q.Tool.define.latestName) {
-					_qtc[toolName] = _qtc[Q.Tool.define.latestName];
-				} else if (Q.Tool.jQuery.latestName) {
-					_qtc[toolName] = _qtc[Q.Tool.jQuery.latestName];
-				}
-				toolFunc = _qtc[toolName] = _qtc[toolName];
-				if (typeof toolFunc !== 'function') {
-					Q.Tool.onMissingConstructor.handle(_qtc, toolName);
-					toolFunc = _qtc[toolName];
-					if (typeof toolFunc !== 'function') {
-						throw "Q.Tool.loadScript: Missing tool constructor for " + toolName;
-					}
-				}
-				toolFunc.options = Q.extend(toolFunc.options, Q.Tool.options.levels, existingOptions);
-				callback(toolElement, toolFunc, toolName, uniqueToolId);
-			});
-		} else if (typeof toolFunc !== 'undefined') {
+			return callback(toolElement, toolFunc, toolName);
+		}
+		if (typeof toolFunc !== 'string' && typeof toolFunc !== 'undefined') {
 			throw "Q.Tool.loadScript: toolFunc cannot be " + typeof(toolFunc);
+		}
+		var existingOptions = _qtdo[toolName];
+		if (shared) {
+			var uniqueToolId = "tool " + (shared.waitingForTools.length+1);
+			shared.waitingForTools.push(uniqueToolId);
+		}
+		if (Q.Tool.latestNames[toolFunc]) {
+			Q.Tool.latestName = Q.Tool.latestNames[toolFunc];
+			_loadToolScript_loaded();
+		} else {
+			Q.Tool.latestName = null;
+			Q.addScript(toolFunc, _loadToolScript_loaded);
 		}
 	});
 };
@@ -5742,7 +5751,9 @@ Q.Template.set = function (name, content, type) {
 
 /**
  * Load template from server and store to cache
- * @param name {String} The template name
+ * @param name {String} The template name. Here is how templates are found:
+ *   First, load any new templates from the DOM if found inside script tag with type "text/"+type
+ *   Then, check the cache. If not there, we try to load the template from dir+'/'+name+'.'+type
  * @param callback {Function} Receives two parameters: (err, templateText)
  * @param options {Object?} Options.
  *   "type" - the type and extension of the template, defaults to 'mustache'
@@ -5759,6 +5770,7 @@ Q.Template.load = function _Q_Template_load(name, callback, options) {
 	}
 	if (!name) {
 		console.error('Q.Template.load: name is empty');
+		return;
 	}
 	// defaults to mustache templates
 	var o = Q.extend({}, Q.Template.load.options, options);
@@ -5797,6 +5809,7 @@ Q.Template.load = function _Q_Template_load(name, callback, options) {
 	// now try to load template from server
 	function _callback(err, content) {
 		if (err) {
+			Q.Template.onError.handle(err);
 			return callback(err, null);
 		}
 		tpl[n] = content.trim();
@@ -5804,7 +5817,7 @@ Q.Template.load = function _Q_Template_load(name, callback, options) {
 	}
 	function _fail () {
 		var err = 'Failed to load template "'+o.dir+'/'+name+'.'+o.type+'"';
-		console.warn(err);
+		Q.Template.onError.handle(err);
 		callback(err);
 	}
 	var url = Q.url(o.dir+'/'+name+'.'+ o.type);
@@ -5818,11 +5831,13 @@ Q.Template.load.options = {
 	dir: "views"
 };
 
+Q.Template.onError = new Q.Event(function () {
+	console.warn("Q.Template: " + err);
+}, 'Q.Template');
+
 /**
  * Render template taken from DOM or from file on server with partials
- * @param name {string} The name of template. Either treated as ID of script tag containing the template
- *		or as name of the file on server. File on server is searched in web views dir first and then
- *		if name is namespaced - e.g. Plugin/viewname.type, it is also searched in 'plugins/Plugin/views/Plugin/viewname.type'.
+ * @param name {string} The name of template. See Q.Template.load
  * @param fields {object?} Rendering params - to be substituted to template
  * @param partials {array?} An array of partials to be used with template
  * @param callback {function} a callback - receives the rendering result or nothing

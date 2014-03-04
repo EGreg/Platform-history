@@ -21,6 +21,7 @@ function Websites_0_8_Streams_mysql()
 		"Streams/images/" => array('type' => "Streams/template", "title" => "", "icon" => "default", "content" => ""),
 		"Streams/image/" => array('type' => "Streams/template", "title" => "", "icon" => "default", "content" => ""),
 		"Websites/bio/" => array('type' => "Streams/template", "title" => "", "icon" => "default", "content" => ""),
+		"Websites/seo/" => array('type' => "Websites/template", "title" => "Website SEO", "icon" => Q_Html::themedUrl("plugins/Websites/img/seo"), "content" => ""),
 		"Websites/header" => array('type' => "Streams/image/icon", "title" => "Header image", "icon" => "default", "content" => ""),
 		"Websites/slogan" => array('type' => "Streams/text/small", "title" => "Website slogan", "icon" => "default", "content" => "The coolest website"),
 		"Websites/title" => array('type' => "Streams/text/small", "title" => "Website title", "icon" => "default", "content" => "Website Title"),

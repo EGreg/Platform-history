@@ -18,6 +18,13 @@
 	},
 	"Streams": {
 		"types": {
+			"Websites/seo": {
+				"create": true,
+				"edit": true,
+				"defaults": {
+					"title": "Website SEO"
+				}
+			},
 			"Websites/bio": {
 				"create": true,
 				"edit": true,

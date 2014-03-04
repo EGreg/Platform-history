@@ -1212,7 +1212,7 @@ form textarea { width: 250px; }
 .Q_inplace_tool .Q_editing .Q_inplace_tool_blockstatic { display: none; }
 .Q_inplace_tool .Q_editing .Q_inplace_tool_edit { display: none; }
 .Q_inplace_tool .Q_editing .Q_inplace_tool_invisible { display: block; visibility: hidden; position: absolute; top: -20px; z-index: 1; }
-.Q_inplace_tool .Q_inplace_tool_buttons { position: absolute; bottom: -20px; left: 0px; z-index: 9900; min-width: 200px; line-height: 1px; text-align: left !important; color: black !important; }
+.Q_inplace_tool .Q_inplace_tool_buttons { position: absolute; left: 0px; z-index: 9900; min-width: 200px; line-height: 1px; text-align: left !important; color: black !important; }
 .Q_inplace_tool .Q_inplace_tool_buttons button { background-color: #EEE; display: inline; color: black !important; }
 .Q_inplace_tool .Q_nocancel button.Q_inplace_tool_cancel { display: none; }
 

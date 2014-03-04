@@ -8,6 +8,8 @@ Q.Websites = Q.plugins.Websites = {
 	
 };
 
+(function($, Websites) {
+
 Q.Tool.define("Websites/bio", function (fields) {
 
 });
@@ -21,3 +23,9 @@ Q.onInit.set(function () {
 		document.title = fields[k];
 	}, "Websites");
 }, "Websites");
+
+Q.Tool.define({
+	"Websites/seo": "plugins/Websites/js/tools/seo.js"
+});
+
+})(window.jQuery, Q.plugins.Websites);

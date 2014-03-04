@@ -2238,7 +2238,7 @@ Q.onInit.add(function _Streams_onInit() {
 		if (!params) {
 			return;
 		}
-		Q.Template.render('Streams/invite/redeem', params, function(html) {
+		Q.Template.render('Streams/invite/redeem', params, function(err, html) {
 			var dialog = $(html);
 			Q.Dialogs.push({
 				dialog: dialog,
@@ -2534,4 +2534,4 @@ function _scheduleUpdate() {
 
 _scheduleUpdate.delay = 10000;
 
-})(jQuery, Q.plugins.Streams);
+})(window.jQuery, Q.plugins.Streams);

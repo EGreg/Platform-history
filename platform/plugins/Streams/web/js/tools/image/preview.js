@@ -55,9 +55,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 			'Streams/image/preview/create',
 			fields,
 			function (err, html) {
-				if (err) {
-					return err;
-				}
+				if (err) return;
 				tool.element.innerHTML = html;
 				var ipo = Q.extend({}, ip, {
 					loader: function (icon, callback) {
@@ -280,9 +278,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 				'Streams/image/preview/'+tpl,
 				fields,
 				function (err, html) {
-					if (err) {
-						return console.warn(err);
-					}
+					if (err) return;
 					tool.element.innerHTML = html;
 					tool.state.onRefresh.handle.apply(tool, []);
 					$('img', tool.element).off('load.Streams-image-preview').on('load.Streams-image-preview', function () {
@@ -298,20 +294,17 @@ Q.Tool.define("Streams/image/preview", function(options) {
 
 );
 
-Q.Template.set(
-	'Streams/image/preview/view',
+Q.Template.set('Streams/image/preview/view',
 	'<img src="{{& src}}" alt="{{alt}}" class="Streams_image_preview_icon">'
 	+ '<div class="Streams_image_contents {{titleClass}}"><{{titleTag}}>{{& inplace}}</{{titleTag}}></div>'
 );
 
-Q.Template.set(
-	'Streams/image/preview/edit',
+Q.Template.set('Streams/image/preview/edit',
 	'<img src="{{& src}}" alt="{{alt}}" class="Streams_image_preview_icon">'
 	+ '<div class="Streams_image_contents {{titleClass}}"><{{titleTag}}>{{& inplace}}</{{titleTag}}></div>'
 );
 
-Q.Template.set(
-	'Streams/image/preview/create',
+Q.Template.set('Streams/image/preview/create',
 	'<img src="{{& src}}" alt="{{alt}}" class="Streams_image_preview_add">'
 	+ '<div class="Streams_image_contents {{titleClass}}"><{{titleTag}}>{{& title}}</{{titleTag}}></div>'
 );

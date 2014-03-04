@@ -2113,4 +2113,4 @@ Users.onLogout = new Q.Event(function () {
 	document.documentElement.className += ' Users_loggedOut';
 });
 
-})(jQuery, Q.plugins.Users);
+})(window.jQuery, Q.plugins.Users);

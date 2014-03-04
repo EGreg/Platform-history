@@ -8,7 +8,8 @@
  *  "stream" => A Streams_Stream object
  *  "staticHtml" => Optional. The static HTML to display when there is nothing to edit
  *  "editing" => If true, then renders the inplace tool in editing mode.
- *  "attribute" => Optional, name of an attribute to change instead of the content of the stream
+ *  "field" => Optional, name of an field to change instead of the content of the stream
+ *  "attribute" => Optional, name of an attribute to change instead of any field.
  *  "editOnClick" => Defaults to true. If true, then edit mode starts only if "Edit" button is clicked.
  *  "selectOnEdit" => Defaults to true. If true, selects all the text when entering edit mode.
  *  "beforeSave" => Optional, reference to a callback to call after a successful save.
@@ -28,12 +29,16 @@ function Streams_inplace_tool($options)
 		'streamName' => $stream->name,
 		'inplaceType' => $options['inplaceType']
 	);
-	Q::take($options, 'inplace', $toolOptions);
+	Q::take($options, array('inplace', 'attribute', 'field'), $toolOptions);
 	Q_Response::setToolOptions($toolOptions);
 	$options['action'] = $stream->actionUrl();
 	$options['method'] = 'PUT';
 	$options['type'] = $options['inplaceType'];
-	$field = empty($attribute) ? 'content' : 'attributes['.urlencode($attribute).']';
+	if (!empty($options['attribute'])) {
+		$field = 'attributes['.urlencode($options['attribute']).']';
+	} else {
+		$field = !empty($options['field']) ? $options['field'] : 'content';
+	}
 	switch ($options['inplaceType']) {
 		case 'text':
 			$options['fieldInput'] = Q_Html::input($field, $stream->content);

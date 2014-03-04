@@ -655,23 +655,29 @@ abstract class Users extends Base_Users
 	 * Get the logged-in user's information
 	 * @method loggedInUser
 	 * @static
-	 * @param {boolean} [$throw_if_not_logged_in=false] Defaults to false.
+	 * @param {boolean} [$throwIfNotLoggedIn=false] Defaults to false.
 	 *   Whether to throw a Users_Exception_NotLoggedIn if no user is logged in.
+	 * @param {boolean} [$startSession=true] Defaults to true.
+	 *   Whether to start a PHP session if one doesn't already exist.
 	 * @return {Users_User|null}
 	 */
 	static function loggedInUser(
-		$throw_if_not_logged_in = false)
+		$throwIfNotLoggedIn = false,
+		$startSession = true)
 	{
+		if ($startSession === false and !Q_Session::id()) {
+			return null;
+		}
 		Q_Session::start();
 		if (!isset($_SESSION['Users']['loggedInUser']['id'])) {
-			if ($throw_if_not_logged_in) {
+			if ($throwIfNotLoggedIn) {
 				throw new Users_Exception_NotLoggedIn();
 			}
 			return null;
 		}
 		$id = $_SESSION['Users']['loggedInUser']['id'];	
 		$user = Users_User::getUser($id);
-		if (!$user and $throw_if_not_logged_in) {
+		if (!$user and $throwIfNotLoggedIn) {
 			throw new Users_Exception_NotLoggedIn();
 		}
 		return $user;

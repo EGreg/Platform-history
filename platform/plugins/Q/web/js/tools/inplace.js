@@ -323,6 +323,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		}
 	});
 	if (this.state.editOnClick) {
+		static_span.addClass('Q_preventDrag');
 		static_span.click(onClick);
 	}
 	edit_button.click(onClick);

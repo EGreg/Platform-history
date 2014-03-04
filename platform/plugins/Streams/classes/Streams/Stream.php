@@ -327,7 +327,7 @@ class Streams_Stream extends Base_Streams_Stream
 		
 		$asUserId = $stream->get('asUserId', null);
 		if (!$asUserId) {
-			$user = Q_Session::id() ? Users::loggedInUser() : null;
+			$user = Users::loggedInUser(false, false);
 			$asUserId = $user ? $user->id : '';
 		}
 		

@@ -1,5 +1,17 @@
 (function ($, window, document, undefined) {
 
+/**
+ * This tool generates an inline editor to edit the content or attribute of a stream.
+ * @param array $options
+ *  An associative array of parameters, containing:
+ *  "inplaceType" => Required. The type of the fieldInput. Can be "textarea" or "text"
+ *  "publisherId": Required if stream option is empty. The publisher's user id.
+ *  "streamName": Required if stream option is empty. The name of the stream.
+ *  "stream" => Optionally pass a Streams.Stream object here if you have it already
+ *  "field" => Optional, name of an field to change instead of the content of the stream
+ *  "attribute" => Optional, name of an attribute to change instead of any field.
+ *  "inplace" => Additional fields to pass to the child Q/inplace tool, if any
+ */
 Q.Tool.define("Streams/inplace", function (options) {
 	var tool = this,
 		state = tool.state, 

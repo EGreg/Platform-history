@@ -28,6 +28,10 @@ function (options) {
 	});
 
 	function liftHandler(event) {	
+		if ($('.Q_preventDrag', event.target).length
+		|| $(event.target).is('.Q_preventDrag')) {
+			return;
+		}
 		if (Q.Pointer.which(event) > 1) {
 			return; // only left mouse button or touches
 		}

@@ -92,12 +92,8 @@ Q.Tool.define("Streams/preview", function(options) {
 			'Streams/preview/create',
 			fields,
 			function (err, html) {
-				
-				if (err) {
-					return err;
-				}
+				if (err) return;
 				tool.element.innerHTML = html;
-				
 				tool.element.removeClass('Streams_preview_create');
 
 				var w = parts[0] || state.creatable.addIconSize,
@@ -291,9 +287,7 @@ Q.Tool.define("Streams/preview", function(options) {
 				'Streams/preview/'+tpl,
 				fields,
 				function (err, html) {
-					if (err) {
-						return console.warn(err);
-					}
+					if (err) return;
 					tool.element.innerHTML = html;
 					$('img', tool.element).off('load.Streams-preview').on('load.Streams-preview', function () {
 						state.onRefresh.handle.apply(tool, []);
@@ -308,24 +302,21 @@ Q.Tool.define("Streams/preview", function(options) {
 
 );
 
-Q.Template.set(
-	'Streams/preview/view',
+Q.Template.set('Streams/preview/view',
 	'<div class="Streams_preview_container Q_clearfix">'
 	+ '<img src="{{& srcFull}}" alt="{{alt}}" class="Streams_preview_icon">'
 	+ '<div class="Streams_preview_contents {{titleClass}}"><{{titleTag}}>{{& inplace}}</{{titleTag}}></div>'
 	+ '</div>'
 );
 
-Q.Template.set(
-	'Streams/preview/edit',
+Q.Template.set('Streams/preview/edit',
 	'<div class="Streams_preview_container Q_clearfix">'
 	+ '<img src="{{& src}}" alt="{{alt}}" class="Streams_preview_icon">'
 	+ '<div class="Streams_preview_contents {{titleClass}}"><{{titleTag}}>{{& inplace}}</{{titleTag}}></div>'
 	+ '</div>'
 );
 
-Q.Template.set(
-	'Streams/preview/create',
+Q.Template.set('Streams/preview/create',
 	'<div class="Streams_preview_container Q_clearfix">'
 	+ '<img src="{{& src}}" alt="{{alt}}" class="Streams_preview_add">'
 	+ '<div class="Streams_preview_contents {{titleClass}}"><{{titleTag}}>{{& title}}</{{titleTag}}></div>'

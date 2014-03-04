@@ -14,14 +14,14 @@ Q.Tool.define("Q/panel", function() {
 		var form_tool_prefix = prefix+'Q_form_';
 		var static_tool_prefix = prefix+'idstatic_Q_form_';
 		var container = $('.Q_panel_tool_container', $te);
-		if (form_tool_id in Q.tools) {
+		if (form_tool_id in Q.Tool.active) {
 			var form_tool = Q.Tool.byId(form_tool_id);
 			form_tool.onSuccess[prefix] = function() {
 				form_val = form.serialize();
 				container.removeClass('Q_modified');
 				container.removeClass('Q_editing');
 			};
-			if (static_tool_id in Q.tools) {
+			if (static_tool_id in Q.Tool.active) {
 				var static_tool = Q.Tool.byId(static_tool_id);
 			}
 			form_tool.onResponse[prefix] = function(response) {
