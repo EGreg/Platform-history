@@ -2829,7 +2829,7 @@ function _loadToolScript(toolElement, callback, shared) {
 						throw "Q.Tool.loadScript: Missing tool constructor for " + toolName;
 					}
 				}
-				toolFunc.options = Q.extend(toolFunc.options, 10, existingOptions);
+				toolFunc.options = Q.extend(toolFunc.options, Q.Tool.options.levels, existingOptions);
 				callback(toolElement, toolFunc, toolName, uniqueToolId);
 			});
 		} else if (typeof toolFunc !== 'undefined') {
@@ -5634,7 +5634,7 @@ function _constructTool(toolElement, options, shared) {
 				}
 				this.constructed = false;
 				try {
-    				this.options = Q.extend({}, toolFunc.options, options);
+    				this.options = Q.extend({}, Q.Tool.options.levels, toolFunc.options, Q.Tool.options.levels, options);
     				this.name = toolName;
 					if (Q.getObject(['Q', 'tools', toolName], element)) {
 						return; // support re-entrancy of Q.activate
