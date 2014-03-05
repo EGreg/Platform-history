@@ -5843,8 +5843,8 @@ Q.Template.load.options = {
 	dir: "views"
 };
 
-Q.Template.onError = new Q.Event(function () {
-	console.warn("Q.Template: " + err);
+Q.Template.onError = new Q.Event(function (err) {
+	console.warn("Q.Template: " + Q.firstErrorMessage(err));
 }, 'Q.Template');
 
 /**

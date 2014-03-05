@@ -214,6 +214,7 @@ function _Streams_related_tool (options)
 			tool.state.lastMessageOrdinal = msg.ordinal;
         }
     },
+
     elementForStream: function (publisherId, streamName, streamType, weight, options) {
         var o = Q.extend({
             publisherId: publisherId,
@@ -228,6 +229,7 @@ function _Streams_related_tool (options)
         }, options);
  		return this.setUpElement(this.state.tag || 'div', this.state.toolType(streamType), o);
     },
+
 	integrateWithTabs: function (elements) {
 		var id, parents, tabs, i, tool = this, state = tool.state;
 		if (typeof state.tabs !== 'function') {
@@ -243,6 +245,7 @@ function _Streams_related_tool (options)
 					elements[i].addClass("Q_tabs_tab")
 						.setAttribute(attr, value);
 				}
+				tabs.indicateSelected();
 				break;
 			}
 		}

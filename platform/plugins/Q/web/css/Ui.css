@@ -1159,7 +1159,7 @@ div.Q_placeholder { pointer-events: none; }
 .Q_tabs_tabs { border-bottom: solid 1px #aaa; width: 100%; }
 .Q_tabs_tab { display: block; float: left; padding: 3px 10px 3px 10px; line-height: 30px; border: solid 1px #aaa; border-bottom: 0px; border-left: 0px; margin-bottom: -1px; background-color: #eef; font-weight: bold; }
 .Q_tabs_tab:first-child { border-left: solid 1px #aaa; }
-.Q_tabs_tabs .Q_selected { background-color: white; border-bottom: solid 1px white; }
+.Q_tabs_tab.Q_selected { background-color: white; border-bottom: solid 1px white; }
 
 .Q_panel_tool { text-align: left; }
 .Q_panel_tool_header { padding: 2px 0px 2px 0px; font-weight: bold; height: 20px; font-size: 14px; background-color: #EEE; }
@@ -1391,17 +1391,17 @@ body { text-align: center; height: 100%; }
 }
 
 #dashboard .Q_tabs_tabs { border: 0px; }
-#dashboard .Q_tabs_tab { cursor: pointer; float: left; width: 100px; margin: 0px 10px 0px 10px; border: 0px !important; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; background-color: #f8f8f8; background: none; font-size: 14px; line-height: 30px !important; margin-top: 5px; text-align: center; }
+#dashboard .Q_tabs_tab { cursor: pointer; float: left; width: 100px; margin: 5px 10px 0px 10px; border: 0px !important; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; background-color: #f8f8f8; background: none; font-size: 14px; line-height: 30px !important; text-align: center; }
 #dashboard .Q_tabs_tab:first-child { border-top: 0px solid #e5e5e5; border-left: 0px; }
 #dashboard .Q_tabs_tab,
-#dashboard .Q_tabs_tab * { cursor: pointer; vertical-align: middle; }
-#dashboard a.Q_tabs_tab { text-decoration: none; color: white; }
-.Q_notTouchscreen #dashboard a.Q_tabs_tab:hover { text-decoration: none; color: black; }
-.Q_notTouchscreen #dashboard a.Q_tabs_tab:hover * { color: black; }
-#dashboard a.Q_tabs_tab img { margin-right: 10px; width: 24px; }
+#dashboard .Q_tabs_tab>* { cursor: pointer; vertical-align: middle; }
+#dashboard .Q_tabs_tab { text-decoration: none; color: white; }
+.Q_notTouchscreen #dashboard .Q_tabs_tab:hover { text-decoration: none; color: black; }
+.Q_notTouchscreen #dashboard .Q_tabs_tab:hover * { color: black; }
+#dashboard .Q_tabs_tab img { margin-right: 10px; width: 24px; }
 #dashboard .Q_tabs_tab span { display: inline; text-align: left; }
-#dashboard a.Q_tabs_tab.Q_selected { background-image: url(../img/bg/stucco.png) !important; color: black !important; }
-#dashboard a.Q_tabs_tab.Q_selected * { color: black; }
+#dashboard .Q_tabs_tab.Q_selected { background-image: url(../img/bg/stucco.png) !important; color: black !important; }
+#dashboard .Q_tabs_tab.Q_selected * { color: black; }
 
 .Q_notTouchscreen #dashboard,
 .Q_notTouchscreen #content { width: 990px; }

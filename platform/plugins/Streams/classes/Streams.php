@@ -269,6 +269,7 @@ abstract class Streams extends Base_Streams
 	 *  If this matches the publisherId, just returns the streams.
 	 *  If this is '', only returns the streams anybody can see.
 	 *  Otherwise, return the streams joined with the calculated access settings.
+	 *  If you pass null here, then either the logged-in user's id or '' will be used.
 	 * @param {string} $publisherId
 	 *  The id of the user publishing these streams
 	 * @param {string|array|Db_Range} $name='Streams/user/'
@@ -399,6 +400,7 @@ abstract class Streams extends Base_Streams
 	 *  If this matches the publisherId, just returns the streams.
 	 *  If this is '', only returns the streams anybody can see.
 	 *  Otherwise, return the streams joined with the calculated access settings.
+	 *  If you pass null here, then either the logged-in user's id or '' will be used.
 	 * @param {string} $publisherId
 	 *  The id of the user publishing these streams
 	 * @param {string|array|Db_Range} $name='Streams/user/'

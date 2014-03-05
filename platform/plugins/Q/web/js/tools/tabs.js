@@ -26,6 +26,8 @@ Q.Tool.define("Q/tabs", function(options) {
 		// return false;
 	});
 	
+	tool.indicateSelected();
+	
 },
 
 {
@@ -64,16 +66,8 @@ Q.Tool.define("Q/tabs", function(options) {
 		Q.handle(state.beforeSwitch, this, [tab, state]);
 		var slots = state.slots;
 		var selectors = state.selectors;
-		var href = tab.getAttribute('href');
-		
-		var name = tab.getAttribute("data-name");
-		if (!href) {
-			href = state.urls && state.urls[name];
-		}
-		if (!href) {
-			href = window.location.href.split('?')[0]
-				+ '?' + window.location.search.queryField(state.field, name);
-		}
+
+		href = this.getUrl(tab);
 
 		if (href && state.selector === null) {
 		    Q.handle(href);
@@ -84,19 +78,49 @@ Q.Tool.define("Q/tabs", function(options) {
 			return;
 		}
 
-		var te = this.element;
+		var tool = this;
 		Q.loadUrl(href, Q.extend({
 			slotNames: slots,
 			onError: {"Q/tabs": function (msg) {
 				alert(msg);
 			}},
 			onActivate: {"Q/tabs": function () {
-				$('.Q_tabs_tab', te).removeClass('Q_selected');
-				$(tab).addClass('Q_selected');
+				tool.indicateSelected(tab);
 			}},
 			loadExtras: true,
 			loader: state.loader
 		}, state.loadUrlOptions));
+	},
+	
+	indicateSelected: function (tab) {
+		var $tabs = this.$('.Q_tabs_tab');
+		var url = window.location.href.split('#')[0];
+		var tool = this;
+		$tabs.removeClass('Q_selected');
+		if (!tab) {
+			$tabs.each(function (k, t) {
+				if (tool.getUrl(t) === url) {
+					tab = t;
+					return false;
+				}
+			});
+		}
+		$(tab).addClass('Q_selected');
+	},
+	
+	getUrl: function (tab) {
+		var $tab = $(tab);
+		var state = this.state;
+		var href = tab.getAttribute('href');
+		var name = tab.getAttribute("data-name");
+		if (!href) {
+			href = state.urls && state.urls[name];
+		}
+		if (!href) {
+			href = window.location.href.split('?')[0]
+				+ '?' + window.location.search.queryField(state.field, name);
+		}
+		return href;
 	}
 }
 );
