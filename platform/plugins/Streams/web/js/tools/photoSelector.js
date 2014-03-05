@@ -316,7 +316,7 @@ Q.Tool.define("Streams/photoSelector", function _Streams_chat_constructor (o) {
                 $element.removeClass('Streams_photoSelector_by_album Streams_photoSelector_by_tags')
                          .addClass('Streams_photoSelector_by_' + o.fetchBy);
                 $element.append('<div class="Streams_tools_throbber"><img src="' + Q.info.proxyBaseUrl +
-                                         '/plugins/Q/img/throbbers/bars.gif" alt="" /></div>');
+                                         '/plugins/Q/img/throbbers/loading.gif" alt="" /></div>');
                 Q.plugins.Users.login({
                     tryQuietly: true,
                     using: 'facebook',

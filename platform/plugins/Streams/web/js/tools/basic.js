@@ -51,7 +51,7 @@ Q.Tool.define("Streams/basic", function(options) {
 	}).submit(function() {
 		var $this = $(this);
 		$('input', $this).css({
-			'background-image': 'url(' +Q.url('/plugins/Q/img/throbbers/bars.gif') + ')',
+			'background-image': 'url(' +Q.url('/plugins/Q/img/throbbers/loading.gif') + ')',
 			'background-repeat': 'no-repeat'
 		});
 		var url = Q.ajaxExtend($this.attr('action'), 'data');

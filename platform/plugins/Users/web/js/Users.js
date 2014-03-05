@@ -892,7 +892,7 @@ function login_callback(response) {
 		}
 		var first_input = $('input:not([type=hidden])', $this).add('button', $this).eq(0);
 		$('input', $this).css({
-			'background-image': 'url(' + Q.url('plugins/Q/img/throbbers/bars.gif') + ')',
+			'background-image': 'url(' + Q.url('plugins/Q/img/throbbers/loading.gif') + ')',
 			'background-repeat': 'no-repeat'
 		});
 		if (window.CryptoJS) {
@@ -1239,7 +1239,7 @@ function login_setupDialog(usingProviders, perms, dialogContainer, identifierTyp
 		}
 		$('.Q_button', $(this)).focus();
 		$('#Users_login_identifier').css({
-			'background-image': 'url(' + Q.url('plugins/Q/img/throbbers/bars.gif') + ')',
+			'background-image': 'url(' + Q.url('plugins/Q/img/throbbers/loading.gif') + ')',
 			'background-repeat': 'no-repeat'
 		}).trigger('Q_refresh');
 		var url = Q.action(Users.login.options.userQueryUri) + '?' + $(this).serialize();
@@ -1444,7 +1444,7 @@ function setIdentifier_setupDialog(identifierType) {
 		)
 	).submit(function(event) {
 		$('#Users_setIdentifier_identifier').css({
-			'background-image': 'url(' + Q.url('plugins/Q/img/throbbers/bars.gif') + ')',
+			'background-image': 'url(' + Q.url('plugins/Q/img/throbbers/loading.gif') + ')',
 			'background-repeat': 'no-repeat'
 		});
 		var url = Q.action('Users/identifier') + '?' + $(this).serialize();
@@ -1617,7 +1617,7 @@ Q.Tool.define('Users/friendSelector', function(o) {
 	
 	switch (o.provider) {
 		case 'facebook':
-			toolDiv.empty().append('<div class="Users_tools_throbber"><img src="' + Q.url('/plugins/Q/img/throbbers/bars.gif') + '" alt="" /></div>');
+			toolDiv.empty().append('<div class="Users_tools_throbber"><img src="' + Q.url('/plugins/Q/img/throbbers/loading.gif') + '" alt="" /></div>');
 			
 			Users.login({
 				tryQuietly: true,

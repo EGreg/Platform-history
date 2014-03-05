@@ -442,7 +442,7 @@
 
 .Streams_chat_textarea_posting
 {
-	background: url('../../Q/img/throbbers/bars.gif') center no-repeat;
+	background: url('../../Q/img/throbbers/loading.gif') center no-repeat;
 }
 
 .Streams_chat_no_messages

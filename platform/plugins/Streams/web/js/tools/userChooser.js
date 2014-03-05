@@ -102,7 +102,7 @@ Q.Tool.define("Sterams/userChooser", function(o) {
 							'data'
 						);
 						input.css({
-							'background-image': 'url(' +Q.url('/plugins/Q/img/throbbers/bars.gif') + ')',
+							'background-image': 'url(' +Q.url('/plugins/Q/img/throbbers/loading.gif') + ')',
 							'background-repeat': 'no-repeat'
 						});
 						$.getJSON(url, onResponse);

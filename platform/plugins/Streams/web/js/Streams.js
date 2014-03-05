@@ -327,7 +327,7 @@ Streams.get = Q.getter(function (publisherId, streamName, callback, extra) {
 			Streams.get.onError.handle.call(this, msg, args);
 			return callback && callback.call(this, msg, args);
 		}
-		_constructStream(
+		Streams.construct(
 			data.stream,
 			{ 
 				messages: data.messages, 
@@ -407,7 +407,7 @@ Streams.create = function (fields, callback, related) {
 			Streams.create.onError.handle.call(this, msg, args);
 			return callback && callback.call(this, msg, args);
 		}
-		_constructStream(data.slots.stream, {}, function Stream_create_construct_handler (err, stream) {
+		Streams.construct(data.slots.stream, {}, function Stream_create_construct_handler (err, stream) {
 			var msg = Q.firstErrorMessage(err);
 			if (msg) {
 				return callback && callback.call(stream, msg, stream, data.slots.icon);
@@ -433,7 +433,7 @@ Streams.create.onError = new Q.Event();
  *  The first parameter is an error, in case something went wrong. The second one is the stream object.
  * @param handleRefreshEvents {Boolean} Defaults to false. Whether to also handle the stream refresh events.
  */
-function _constructStream (fields, extra, callback, handleRefreshEvents) {
+Streams.construct = function _Streams_construct(fields, extra, callback, handleRefreshEvents) {
 
 	if (Q.isEmpty(fields)) {
 		Q.handle(callback, this, ["Streams.Stream constructor: fields are missing"]);
@@ -458,13 +458,13 @@ function _constructStream (fields, extra, callback, handleRefreshEvents) {
 		Q.addScript(streamFunc, function () {
 			streamFunc = Q.Tool.constructors[streamName] || Q.Tool.constructors[streamName2];
 			if (typeof streamFunc !== 'function') {
-				throw new Error("_constructStream: streamFunc cannot be " + typeof(streamFunc));
+				throw new Error("Streams.construct: streamFunc cannot be " + typeof(streamFunc));
 			}
 			return _doConstruct();
 		});
 		return true;
 	} else if (typeof streamFunc !== 'undefined') {
-		throw new Error("_constructStream: streamFunc cannot be " + typeof(streamFunc));
+		throw new Error("Streams.construct: streamFunc cannot be " + typeof(streamFunc));
 	}
 	function _doConstruct() {
 		if (!streamFunc.streamConstructor) {
@@ -694,6 +694,7 @@ var Stream = Streams.Stream = function (fields) {
 
 Stream.get = Streams.get;
 Stream.create = Streams.create;
+Stream.construct = Streams.construct;
 Stream.define = Streams.define;
 
 /**
@@ -1108,7 +1109,7 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 			if (options.participants) {
 				extra.participants = data.slots.participants;
 			}
-			_constructStream(data.slots.stream, extra, _processResults, true);
+			Streams.construct(data.slots.stream, extra, _processResults, true);
 		}
 
 		function _processResults(err, stream) {
@@ -1125,7 +1126,7 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 				var key = Streams.key(fields.publisherId, fields.name);
 				keys.push(key);
 				keys2[key] = true;
-				_constructStream(fields, {}, function () {
+				Streams.construct(fields, {}, function () {
 					streams[key] = this;
 					p.fill(key)();
 				}, true);
@@ -2094,7 +2095,7 @@ function updateStream(stream, fields, onlyChangedFields) {
 		[fields, k]
 	);
 	if ('attributes' in fields) {
-		var attributes = JSON.parse(fields.attributes);
+		var attributes = JSON.parse(fields.attributes || "{}");
 		var updated = {}, cleared = [];
 		var publisherId = fields.publisherId, streamName = fields.name, k;
 		// events about cleared attributes
@@ -2137,7 +2138,7 @@ function updateStream(stream, fields, onlyChangedFields) {
 	Q.extend(stream.fields, fields);
 	// var f = Q.extend({}, stream.fields, fields);
 	// f.access = stream.access;
-	// _constructStream(f, {}, null, true);
+	// Streams.construct(f, {}, null, true);
 }
 
 function _onCalledHandler(args, shared) {
@@ -2502,7 +2503,7 @@ Q.onInit.add(function _Streams_onInit() {
 		// Every time before anything is activated,
 		// process any preloaded streams data we find
 		Q.each(Stream.preloaded, function (i, fields) {
-			_constructStream(fields, {}, null, true);
+			Streams.construct(fields, {}, null, true);
 		});
 		Stream.preloaded = null;
 	}, 'Streams');

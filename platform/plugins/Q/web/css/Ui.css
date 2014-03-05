@@ -23,7 +23,7 @@ table { border-spacing:0; border-collapse:collapse; }
 .Q_success { background: #e2ffee !important; }
 .Q_required { border: solid 2px #AAC !important; }
 .Q_selected {}
-.Q_throb { background-image: url(../img/throbbers/bars.gif); background-repeat: no-repeat; background-position: center center; }
+.Q_throb { background-image: url(../img/throbbers/loading.gif); background-repeat: no-repeat; background-position: center center; }
 .Q_clickable_container { cursor: pointer !important;  }
 .Q_clickable_container .Q_clickable_shadow { display: none; }
 .Q_notTouchscreen .Q_clickable_container:hover .Q_clickable_shadow { display: block; }

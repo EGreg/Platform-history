@@ -29,11 +29,6 @@ Q.Tool.define("Streams/inplace", function (options) {
 
 	function _construct(err) {
 		if (err) {
-			if (Q.getObject([1, 0, 0, 'classname'], arguments) === "Q_Exception_MissingRow") {
-				if (state.create) {
-					return state.create.call(tool, _construct);
-				}
-			}
 			return tool.state.onError.handle(err);
 		}
 		var stream = this;
@@ -64,8 +59,8 @@ Q.Tool.define("Streams/inplace", function (options) {
 		var field;
 		if (state.attribute) {
 			field = 'attributes['+encodeURIComponent(state.attribute)+']';
-			stream.onUpdated(o.attribute).set(function (fields, changed) {
-				_setContent(changed[o.attribute])
+			stream.onUpdated(state.attribute).set(function (fields, changed) {
+				_setContent(changed[state.attribute])
 			}, tool);
 		} else {
 			field = state.field || 'content';
@@ -82,14 +77,15 @@ Q.Tool.define("Streams/inplace", function (options) {
 				field: field,
 				type: state.inplaceType
 			});
+			var value = (state.attribute ? stream.get(state.attribute) : stream.fields[field]) || "";
 			switch (state.inplaceType) {
 				case 'text':
-					ipo.fieldInput = $('<input />').attr('name', field).val(stream.fields[field]);
-					ipo.staticHtml = stream.fields[field].encodeHTML();
+					ipo.fieldInput = $('<input />').attr('name', field).val(value);
+					ipo.staticHtml = value.encodeHTML();
 					break;
 				case 'textarea':
-					ipo.fieldInput = $('<textarea rows="5" cols="80" />').attr('name', field).text(stream.fields[field]);
-					ipo.staticHtml = stream.fields[field].encodeHTML().replaceAll({
+					ipo.fieldInput = $('<textarea rows="5" cols="80" />').attr('name', field).text(value);
+					ipo.staticHtml = value.encodeHTML().replaceAll({
 						'&lt;br&gt;': "<br>",
 						'&lt;br /&gt;': "<br>",
 						'&nbsp;': ' '
@@ -147,7 +143,10 @@ Q.Tool.define("Streams/inplace", function (options) {
 	create: null,
 	inplace: {},
 	onUpdate: new Q.Event(),
-	onError: new Q.Event()
+	onError: new Q.Event(function (err) {
+		var msg = Q.firstErrorMessage(err);
+		console.warn("Streams/inplace: ", msg);
+	}, "Streams/inplace")
 }
 
 );
