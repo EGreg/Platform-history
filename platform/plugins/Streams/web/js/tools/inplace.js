@@ -11,8 +11,9 @@
  *  "field" => Optional, name of an field to change instead of the content of the stream
  *  "attribute" => Optional, name of an attribute to change instead of any field.
  *  "inplace" => Additional fields to pass to the child Q/inplace tool, if any
- *  "create" => Optional. Fields to auto-create a stream if we discover that it doesn't exist.
- *     Should contain at least the publisherId and type of the stream
+ *  "create" => Optional. You can pass a function here, which takes the tool as "this"
+ *     and a callback as the first parameter, is supposed to create a stream and
+ *     call the callback with (err, stream). If omitted, then the tool doesn't render.
  */
 Q.Tool.define("Streams/inplace", function (options) {
 	var tool = this,
@@ -28,7 +29,12 @@ Q.Tool.define("Streams/inplace", function (options) {
 
 	function _construct(err) {
 		if (err) {
-			return;
+			if (Q.getObject([1, 0, 0, 'classname'], arguments) === "Q_Exception_MissingRow") {
+				if (state.create) {
+					return state.create.call(tool, _construct);
+				}
+			}
+			return tool.state.onError.handle(err);
 		}
 		var stream = this;
 		state.publisherId = stream.fields.publisherId;
@@ -138,9 +144,10 @@ Q.Tool.define("Streams/inplace", function (options) {
 {
 	inplaceType: 'textarea',
 	editable: true,
-	create: {},
+	create: null,
 	inplace: {},
-	onUpdate: new Q.Event()
+	onUpdate: new Q.Event(),
+	onError: new Q.Event()
 }
 
 );
