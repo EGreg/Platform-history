@@ -138,7 +138,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		fieldinput.data('inplace').widthWasAdjusted = true;
 		fieldinput.data('inplace').heightWasAdjusted = true;
 	}
-	var onClick = function() {
+	function onClick() {
 		fieldinput.plugin('Q/autogrow', {
 			maxWidth: tool.state.maxWidth || $te.parent().innerWidth()
 		});
@@ -195,7 +195,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		$('.Q_inplace_tool_buttons', $te).css({ 'width': container_span.outerWidth() + 'px' });
 		return false;
 	};
-	var onSave = function() {
+	function onSave () {
 		var form = $('.Q_inplace_tool_form', $te);
 		if (tool.state && tool.state.beforeSave) {
 			if (false === Q.handle(tool.state.beforeSave, this, [form])) {
@@ -256,7 +256,7 @@ function _Q_inplace_tool_constructor(element, options) {
 			fieldinput.val(fieldinput.attr('placeholder'));
 		}
 	};
-	var onSaveErrors = function(message) {
+	function onSaveErrors (message) {
 		alert(message);
 		fieldinput.focus();
 		undermessage.css('display', 'none');
@@ -266,7 +266,7 @@ function _Q_inplace_tool_constructor(element, options) {
 			.css('bottom', (-undermessage.height()-3)+'px');
 		*/
 	};
-	var onSaveSuccess = function(response) {
+	function onSaveSuccess (response) {
 		var newval = fieldinput.val();
 		if ('slots' in response) {
 			if ('Q_inplace' in response.slots) {
@@ -279,11 +279,11 @@ function _Q_inplace_tool_constructor(element, options) {
 		container_span.removeClass('Q_editing')
 			.removeClass('Q_nocancel')
 			.removeClass('Q_discouragePointerEvents');
-		$('.Q_inplace_tool_editbuttons', container_span).css('display', 'none');
+		_hideEditButtons();
 		noCancel = false;
 		Q.handle(tool.state.onSave, tool, [response.slots.Q_inplace]);
 	};
-	var onCancel = function(dontAsk) {
+	function onCancel (dontAsk) {
 		if (noCancel) {
 			return;
 		}
@@ -304,10 +304,10 @@ function _Q_inplace_tool_constructor(element, options) {
 		tool.restoreActions();
 		container_span.removeClass('Q_editing')
 			.removeClass('Q_discouragePointerEvents');;
-		$('.Q_inplace_tool_editbuttons', container_span).css('display', 'none');
+		_hideEditButtons();
 		Q.handle(tool.state.onCancel, tool);
 	};
-	var onBlur = function() {
+	function onBlur() {
 		setTimeout(function () {
 			if (focusedOn
 			 || dialogMode
@@ -320,26 +320,43 @@ function _Q_inplace_tool_constructor(element, options) {
 			onCancel();
 		}, 100);
 	};
-	if (!Q.info.isTouchscreen) {
-		container_span.mouseover(function() {
-			container_span.addClass('Q_hover');
-			$('.Q_inplace_tool_editbuttons', $te).css({ 
-				'margin-top': static_span.outerHeight() + 'px',
-				'line-height': '1px',
-				'display': 'inline'
+	function _editButtons() {
+		if (Q.info.isTouchscreen) {
+			if (!tool.state.editOnClick) {
+				$('.Q_inplace_tool_editbuttons', $te).css({ 
+					'margin-top': static_span.outerHeight() + 'px',
+					'line-height': '1px',
+					'display': 'inline'
+				});
+			}
+		} else {
+			container_span.mouseover(function() {
+				container_span.addClass('Q_hover');
+				$('.Q_inplace_tool_editbuttons', $te).css({ 
+					'margin-top': static_span.outerHeight() + 'px',
+					'line-height': '1px',
+					'display': 'inline'
+				});
+			}).mouseout(function () {
+				$('.Q_inplace_tool_editbuttons', $te).css({ 
+					'display': 'none'
+				});
 			});
-		}).mouseout(function () {
-			$('.Q_inplace_tool_editbuttons', $te).css({ 
-				'display': 'none'
-			});
-		});
+		}
 	}
+	function _hideEditButtons() {
+		if (!Q.info.isTouchscreen) {
+			$('.Q_inplace_tool_editbuttons', container_span).css('display', 'none');
+		}
+	}
+	_editButtons();
 	container_span.mouseout(function() {
 		container_span.removeClass('Q_hover');
 	});
 	container_span.on([Q.Pointer.end, '.Q_inplace'], function (event) {
 		if (tool.state.editOnClick || event.target !== static_span[0]) {
 			Q.Pointer.cancelClick();
+			event.stopPropagation();
 		}
 	});
 	if (this.state.editOnClick) {
@@ -348,7 +365,7 @@ function _Q_inplace_tool_constructor(element, options) {
 	edit_button.on(Q.Pointer.start, function (event) {
 		Q.Pointer.cancelClick(event);
 	});
-	edit_button.on('click', onClick); // happens despite canceled click
+	edit_button.click(onClick); // happens despite canceled click
 	cancel_button.click(function() { onCancel(true); return false; });
 	cancel_button.on('focus mousedown', function() { setTimeout(function() {
 		focusedOn = 'cancel_button'; }, 50);
@@ -385,8 +402,8 @@ function _Q_inplace_tool_constructor(element, options) {
 	fieldinput.closest('form').submit(function () {
 		onSave();
 	});
-	fieldinput.click(function () {
-		return false;
+	fieldinput.click(function (event) {
+		event.stopPropagation();
 	});
 
 }
