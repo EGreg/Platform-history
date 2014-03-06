@@ -187,6 +187,7 @@ function (options) {
 		
 		_restoreActions();
 		
+		Q.Pointer.ended(); // because mouseleave occurrs instead on some browsers
 		$('body')[0].restoreSelections();
 		
 		if (tLift) clearTimeout(tLift);

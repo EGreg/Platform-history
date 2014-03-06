@@ -6705,52 +6705,52 @@ Q.Pointer = {
 function _Q_PointerStartHandler(e) {
 	Q.Pointer.started = Q.Pointer.target(e);
 	Q.Pointer.canceledClick = false;
-	Q.addEventListener(window, Q.Pointer.move, _onPointerMove);
-	Q.addEventListener(window, Q.Pointer.end, _onPointerEnd);
+	Q.addEventListener(document, Q.Pointer.move, _onPointerMoveHandler);
+	Q.addEventListener(document, Q.Pointer.end, _onPointerEndHandler);
+}
 
-	var pos;
-	function _onPointerMove(evt) { // see http://stackoverflow.com/a/2553717/467460
-		var screenX, screenY;
-		if (evt.changedTouches) {
-			screenX = evt.changedTouches[0].screenX;
-			screenY = evt.changedTouches[0].screenY;
-		} else {
-			screenX = evt.screenX,
-			screenY = evt.screenY;
-			if (!screenX || !screenY) {
-				return;
-			}
-		}
-		if (!pos) {
-			// first movement
-			pos = {
-				x: screenX,
-				y: screenY
-			};
-		} else if ((pos.x && Math.abs(pos.x - screenX) > Q.Pointer.options.cancelClickDistance)
-		|| (pos.y && Math.abs(pos.y - screenY) > Q.Pointer.options.cancelClickDistance)) {
-			// finger moved more than the threshhold
-			Q.Pointer.cancelClick(evt, {
-				fromX: pos.x,
-				fromY: pos.y,
-				toX: screenX,
-				toY: screenY
-			});
-			Q.removeEventListener(window, Q.Pointer.move, _onPointerMove);
-			pos = {};
+var _pos;
+function _onPointerMoveHandler(evt) { // see http://stackoverflow.com/a/2553717/467460
+	var screenX, screenY;
+	if (evt.changedTouches) {
+		screenX = evt.changedTouches[0].screenX;
+		screenY = evt.changedTouches[0].screenY;
+	} else {
+		screenX = evt.screenX,
+		screenY = evt.screenY;
+		if (!screenX || !screenY) {
+			return;
 		}
 	}
-
-	function _onPointerEnd() {
-		setTimeout(function () {
-			Q.Pointer.started = null;
-		}, 0);
-		Q.removeEventListener(window, Q.Pointer.move, _onPointerMove);
-		Q.removeEventListener(window, Q.Pointer.end, _onPointerEnd);
-		setTimeout(function () {
-			Q.Pointer.canceledClick = false;
-		}, 100);
+	if (!_pos) {
+		// first movement
+		_pos = {
+			x: screenX,
+			y: screenY
+		};
+	} else if ((_pos.x && Math.abs(_pos.x - screenX) > Q.Pointer.options.cancelClickDistance)
+	|| (_pos.y && Math.abs(_pos.y - screenY) > Q.Pointer.options.cancelClickDistance)) {
+		// finger moved more than the threshhold
+		Q.Pointer.cancelClick(evt, {
+			fromX: _pos.x,
+			fromY: _pos.y,
+			toX: screenX,
+			toY: screenY
+		});
+		Q.removeEventListener(window, Q.Pointer.move, _onPointerMoveHandler);
+		_pos = {};
 	}
+}
+
+var _onPointerEndHandler = Q.Pointer.ended = function _onPointerEndHandler() {
+	setTimeout(function () {
+		Q.Pointer.started = null;
+	}, 0);
+	Q.removeEventListener(document, Q.Pointer.move, _onPointerMoveHandler);
+	Q.removeEventListener(document, Q.Pointer.end, _onPointerEndHandler);
+	setTimeout(function () {
+		Q.Pointer.canceledClick = false;
+	}, 100);
 }
 
 /**
