@@ -600,6 +600,7 @@ EOT;
 				Q::log($exception);
 				$result .= $exception->getMessage();
 			}
+			Q::$toolName = $name; // restore the current tool name
 		}
 		// Even if the tool rendering throws an exception,
 		// it is important to run the "after" handlers

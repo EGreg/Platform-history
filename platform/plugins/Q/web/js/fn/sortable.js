@@ -41,6 +41,7 @@ function (options) {
 			return;
 		}
 		var $item = $(this);
+		this.style.webkitTouchCallout = 'none';
 		$('body')[0].preventSelections();
 		this.preventSelections();
 		Q.addEventListener(document, [Q.Pointer.cancel, Q.Pointer.leave], function leaveHandler() {
@@ -53,9 +54,11 @@ function (options) {
 		var sl = [], st = [];
 		$(document).data(dataLifted, $(this))
 			.on(Q.Pointer.move, moveHandler)
-			.on(Q.Pointer.end, dropHandler);
+			.on(Q.Pointer.end, dropHandler)
+			.on(Q.Pointer.cancel, dropHandler);
 		$item.on(Q.Pointer.move, moveHandler)
 			.on(Q.Pointer.end, dropHandler)
+			.on(Q.Pointer.cancel, dropHandler)
 			.parents().each(function () {
 				sl.push(this.scrollLeft);
 				st.push(this.scrollTop);
@@ -104,11 +107,8 @@ function (options) {
 		var $placeholder = $(this.cloned).css({
 			opacity: state.placeholderOpacity
 		}).insertAfter($item); //.hide('slow');
-		
-		// Temporarily hide Q/actions if any
-		tool.actionsContainer = $('.Q_actions_container', $item);
-		tool.actionsContainerVisibility = tool.actionsContainer.css('visibility');
-		tool.actionsContainer.css('visibility', 'hidden');
+
+		_hideActions();
 		
 		this.cloned = this.cloneNode(true).copyComputedStyle(this);
 		Q.find(this, null, function (element, options, shared, parent, i) {
@@ -185,12 +185,7 @@ function (options) {
 	
 	function complete(revert) {
 		
-		// Restore Q/actions if any
-		if (tool.actionsContainer) {
-			tool.actionsContainer.css('visibility', tool.actionsContainerVisibility);
-			delete tool.actionsContainer;
-			delete tool.actionsContainerVisibility;
-		}
+		_restoreActions();
 		
 		$('body')[0].restoreSelections();
 		
@@ -203,9 +198,11 @@ function (options) {
 		var data = $item.data('Q/sortable');
 		$(document).removeData(dataLifted)
 			.off(Q.Pointer.move, moveHandler)
-			.off(Q.Pointer.end, dropHandler);
+			.off(Q.Pointer.end, dropHandler)
+			.off(Q.Pointer.cancel, dropHandler);
 		$item.off(Q.Pointer.move, moveHandler)
-			.off(Q.Pointer.end, dropHandler);
+			.off(Q.Pointer.end, dropHandler)
+			.on(Q.Pointer.cancel, dropHandler);
 		if (!data) return;
 		
 		var params = {
@@ -470,6 +467,19 @@ function (options) {
 			$dragged: data.$dragged,
 			$scrolling: $scrolling
 		}]);
+	}
+	
+	function _hideActions() { // Temporarily hide Q/actions if any
+		state.actionsContainer = $('.Q_actions_container');
+		state.actionsContainerVisibility = state.actionsContainer.css('visibility');
+		state.actionsContainer.css('visibility', 'hidden');
+	}
+	
+	function _restoreActions() { // Restore Q/actions if any
+		if (!state.actionsContainer) return;
+		state.actionsContainer.css('visibility', state.actionsContainerVisibility);
+		delete state.actionsContainer;
+		delete state.actionsContainerVisibility;
 	}
 },
 

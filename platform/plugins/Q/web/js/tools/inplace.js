@@ -72,6 +72,21 @@ Q.Tool.define("Q/inplace", function (options) {
 	},
 	onSave: new Q.Event(),
 	onCancel: new Q.Event()
+},
+
+{
+	hideActions: function () { // Temporarily hide Q/actions if any
+		this.actionsContainer = $('.Q_actions_container');
+		this.actionsContainerVisibility = this.actionsContainer.css('visibility');
+		this.actionsContainer.css('visibility', 'hidden');
+	},
+	
+	restoreActions: function () { // Restore Q/actions if any
+		if (!this.actionsContainer) return;
+		this.actionsContainer.css('visibility', this.actionsContainerVisibility);
+		delete this.actionsContainer;
+		delete this.actionsContainerVisibility;
+	}
 }
 
 );
@@ -144,6 +159,9 @@ function _Q_inplace_tool_constructor(element, options) {
 			letterSpacing: static_span.css('letterSpacing'),
 			width: field_width + 'px'
 		});
+
+		tool.hideActions();
+		
 		previousValue = fieldinput.val();
 		container_span.addClass('Q_editing');
 		container_span.addClass('Q_discouragePointerEvents');
@@ -257,6 +275,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		}
 		static_span.html(newval);
 		undermessage.empty().css('display', 'none').addClass('Q_error');
+		tool.restoreActions();
 		container_span.removeClass('Q_editing')
 			.removeClass('Q_nocancel')
 			.removeClass('Q_discouragePointerEvents');
@@ -282,6 +301,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		fieldinput.val(previousValue);
 		fieldinput.blur();
 		focusedOn = null;
+		tool.restoreActions();
 		container_span.removeClass('Q_editing')
 			.removeClass('Q_discouragePointerEvents');;
 		$('.Q_inplace_tool_editbuttons', container_span).css('display', 'none');
