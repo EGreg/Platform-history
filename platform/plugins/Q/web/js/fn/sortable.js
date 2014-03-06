@@ -41,7 +41,7 @@ function (options) {
 			return;
 		}
 		var $item = $(this);
-		this.style.webkitTouchCallout = 'none';
+		_setStyles(this);
 		$('body')[0].preventSelections();
 		this.preventSelections();
 		Q.addEventListener(document, [Q.Pointer.cancel, Q.Pointer.leave], function leaveHandler() {
@@ -186,6 +186,7 @@ function (options) {
 	function complete(revert) {
 		
 		_restoreActions();
+		_restoreStyles();
 		
 		Q.Pointer.ended(); // because mouseleave occurrs instead on some browsers
 		$('body')[0].restoreSelections();
@@ -481,6 +482,20 @@ function (options) {
 		state.actionsContainer.css('visibility', state.actionsContainerVisibility);
 		delete state.actionsContainer;
 		delete state.actionsContainerVisibility;
+	}
+	
+	function _setStyles(elem) {
+		state.prevWebkitUserSelect = elem.style.webkitUserSelect;
+		state.prevWebkitTouchCallout = elem.style.webkitTouchCallout;
+		state.elem = elem;
+		elem.style.webkitUserSelect = 'none';
+		elem.style.webkitTouchCallout = 'none';
+	}
+	
+	function _restoreStyles() {
+		state.elem.style.webkitUserSelect = state.prevWebkitUserSelect;
+		state.elem.style.webkitTouchCallout = state.prevWebkitTouchCallout;
+		state.prevWebkitUserSelect = state.prevWebkitTouchCallout = state.elem = null;
 	}
 },
 
