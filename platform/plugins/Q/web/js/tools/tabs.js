@@ -79,17 +79,19 @@ Q.Tool.define("Q/tabs", function(options) {
 		}
 
 		var tool = this;
-		Q.loadUrl(href, Q.extend({
+		var o = Q.extend({
 			slotNames: slots,
 			onError: {"Q/tabs": function (msg) {
 				alert(msg);
 			}},
 			onActivate: {"Q/tabs": function () {
 				tool.indicateSelected(tab);
+				tool.onActivate.handle(tab);
 			}},
 			loadExtras: true,
 			loader: state.loader
-		}, state.loadUrlOptions));
+		}, state.loadUrlOptions);
+		Q.handle(href, o);
 	},
 	
 	indicateSelected: function (tab) {
