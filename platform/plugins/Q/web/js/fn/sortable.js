@@ -186,9 +186,11 @@ function (options) {
 	function complete(revert) {
 		
 		// Restore Q/actions if any
-		tool.actionsContainer.css('visibility', tool.actionsContainerVisibility);
-		delete tool.actionsContainer;
-		delete tool.actionsContainerVisibility;
+		if (tool.actionsContainer) {
+			tool.actionsContainer.css('visibility', tool.actionsContainerVisibility);
+			delete tool.actionsContainer;
+			delete tool.actionsContainerVisibility;
+		}
 		
 		$('body')[0].restoreSelections();
 		
