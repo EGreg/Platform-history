@@ -105,7 +105,7 @@ Streams.define = function (type, ctor, methods) {
 		return ctor;
 	}
 	if (typeof ctor !== 'function') {
-		throw "Q.Streams.define requires ctor to be a string or a function";
+		throw new Q.Error("Q.Streams.define requires ctor to be a string or a function");
 	}
 	Q.extend(ctor.prototype, methods);	
 	return Q.Streams.constructors[type] = ctor;
@@ -946,7 +946,7 @@ Stream.prototype.testReadLevel = function _Stream_prototype_testReadLevel (level
 		level = Streams.READ_LEVEL[level];
 	}
 	if (level === undefined) {
-		throw "Streams.Stream.prototype.testReadLevel: level is undefined";
+		throw new Q.Error("Streams.Stream.prototype.testReadLevel: level is undefined");
 	}
 	return this.access.readLevel >= level;
 };
@@ -961,7 +961,7 @@ Stream.prototype.testWriteLevel = function _Stream_prototype_testWriteLevel (lev
 		level = Streams.WRITE_LEVEL[level];
 	}
 	if (level === undefined) {
-		throw "Streams.Stream.prototype.testWriteLevel: level is undefined";
+		throw new Q.Error("Streams.Stream.prototype.testWriteLevel: level is undefined");
 	}
 	return this.access.writeLevel >= level;
 };
@@ -976,7 +976,7 @@ Stream.prototype.testAdminLevel = function _Stream_prototype_testAdminLevel (lev
 		level = Streams.ADMIN_LEVEL[level];
 	}
 	if (level === undefined) {
-		throw "Streams.Stream.prototype.testAdminLevel: level is undefined";
+		throw new Q.Error("Streams.Stream.prototype.testAdminLevel: level is undefined");
 	}
 	return this.access.adminLevel >= level;
 };
@@ -1045,7 +1045,7 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 	if (typeof publisherId !== 'string'
 	|| typeof streamName !== 'string'
 	|| typeof relationType !== 'string') {
-		throw "Streams.related is expecting publisherId, streamName, relationType as strings";
+		throw new Q.Error("Streams.related is expecting publisherId, streamName, relationType as strings");
 	}
 	if (typeof isCategory !== 'boolean') {
 		callback = options;

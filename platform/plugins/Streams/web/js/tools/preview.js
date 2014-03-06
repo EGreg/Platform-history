@@ -31,10 +31,10 @@ Q.Tool.define("Streams/preview", function(options) {
 	
 	var tool = this, state = tool.state;
 	if (!state.publisherId) {
-		throw "Streams/image/preview tool: missing options.publisherId";
+		throw new Q.Error("Streams/image/preview tool: missing options.publisherId");
 	}
 	if (!state.imagepicker || !state.imagepicker.showSize) {
-		throw "Streams/image/preview tool: missing options.imagepicker.showSize";
+		throw new Q.Error("Streams/image/preview tool: missing options.imagepicker.showSize");
 	}
 	var ip = state.imagepicker,
 	    parts = ip.showSize.split('x');

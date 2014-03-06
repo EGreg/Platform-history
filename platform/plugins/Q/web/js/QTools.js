@@ -61,11 +61,11 @@ Q.Interval = {
 	{
 		if (typeof(callback) != 'function')
 		{
-			throw "Q.Interval.set: 'callback' must be a function";
+			throw new Q.Error("Q.Interval.set: 'callback' must be a function");
 		}
 		if (typeof(interval) != 'number' || interval < 0)
 		{
-			throw "Q.Interval.set: 'interval' must be a positive number";
+			throw new Q.Error("Q.Interval.set: 'interval' must be a positive number");
 		}
 		if (key === undefined)
 		{
@@ -112,7 +112,7 @@ Q.Interval = {
 			}
 			else
 			{
-				throw "Q.Interval.set: Interval with key '" + keyOrId + "' doesn't exist";
+				throw new Q.Error("Q.Interval.set: Interval with key '" + keyOrId + "' doesn't exist");
 			}
 		}
 		else
@@ -126,7 +126,7 @@ Q.Interval = {
 					return;
 				}
 			}
-			throw "Q.Interval.set: Interval with id " + keyOrId + " doesn't exist";
+			throw new Q.Error("Q.Interval.set: Interval with id " + keyOrId + " doesn't exist");
 		}
 	},
 
@@ -157,7 +157,7 @@ Q.Interval = {
 			}
 			else
 			{
-				throw "Q.Interval.set: Interval with key '" + keyOrId + "' doesn't exist";
+				throw new Q.Error("Q.Interval.set: Interval with key '" + keyOrId + "' doesn't exist");
 			}
 		}
 		else
@@ -175,7 +175,7 @@ Q.Interval = {
 					return interval.id;
 				}
 			}
-			throw "Q.Interval.set: Interval with id " + keyOrId + " doesn't exist";
+			throw new Q.Error("Q.Interval.set: Interval with id " + keyOrId + " doesn't exist");
 		}
 	},
 
@@ -196,7 +196,7 @@ Q.Interval = {
 			}
 			else
 			{
-				throw "Q.Interval.set: Interval with key '" + keyOrId + "' doesn't exist";
+				throw new Q.Error("Q.Interval.set: Interval with key '" + keyOrId + "' doesn't exist");
 			}
 		}
 		else
@@ -210,7 +210,7 @@ Q.Interval = {
 					break;
 				}
 			}
-			throw "Q.Interval.set: Interval with id " + keyOrId + " doesn't exist";
+			throw new Q.Error("Q.Interval.set: Interval with id " + keyOrId + " doesn't exist");
 		}
 	},
 

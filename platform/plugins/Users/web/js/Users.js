@@ -93,7 +93,7 @@ Users.initFacebook = function(callback) {
 	
 	if (!Q.plugins.Users.facebookApps[Q.info.app]
 	|| !Q.plugins.Users.facebookApps[Q.info.app].appId) {
-		throw "Users.initFacebook: missing facebook app info for '" + Q.info.app + "'";
+		throw new Q.Error("Users.initFacebook: missing facebook app info for '" + Q.info.app + "'");
 	}
 	
 	// should be only called once per app
@@ -202,7 +202,7 @@ Users.initFacebook.ready = function (app, callback) {
  */
 Users.authenticate = function(provider, onSuccess, onCancel, options) {
 	if (provider !== 'facebook') {
-		throw "Users.authenticate: The only supported provider for now is facebook";
+		throw new Q.Error("Users.authenticate: The only supported provider for now is facebook");
 	}
 	options = options || {};
 	var fields = {};
@@ -242,7 +242,7 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 					// custom prompt
 					options.prompt('facebook', fb_uid, _doAuthenticate, _doCancel);
 				} else {
-					throw "Users.authenticate: options.prompt is the wrong type";
+					throw new Q.Error("Users.authenticate: options.prompt is the wrong type");
 				}
 			} else {
 				// let's delete any stale facebook cookies there might be
@@ -322,7 +322,7 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
  */
 Users.prompt = function(provider, uid, authCallback, cancelCallback, options) {
 	if (provider !== 'facebook') {
-		throw "Users.authenticate prompt: The only supported provider for now is facebook";
+		throw new Q.Error("Users.authenticate prompt: The only supported provider for now is facebook");
 	}
 
 	if (!Users.prompt.overlay) {
@@ -415,7 +415,7 @@ Users.prompt = function(provider, uid, authCallback, cancelCallback, options) {
  */
 Users.perms = function (provider, callback) {
 	if (provider !== 'facebook') {
-		throw "Users.perms: The only supported provider for now is facebook";
+		throw new Q.Error("Users.perms: The only supported provider for now is facebook");
 	}
 	Users.initFacebook(function () {
 		if (!FB.getAuthResponse()) {

@@ -18,10 +18,10 @@ Q.Tool.define("Streams/html", function (options) {
 		state = tool.state;
 
 	if (!tool.state.publisherId) {
-		throw "Streams/html tool: missing options.publisherId";
+		throw new Q.Error("Streams/html tool: missing options.publisherId");
 	}
 	if (!tool.state.field) {
-		throw "Streams/html tool: missing options.field";
+		throw new Q.Error("Streams/html tool: missing options.field");
 	}
 
 	if (state.streamName) {

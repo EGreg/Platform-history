@@ -29,6 +29,8 @@ Q.text = {
 	}
 }; // put all your text strings here e.g. Q.text.Users.foo
 
+Q.Error = Error;
+
 /**
  * Extend some built-in prototypes
  */
@@ -610,7 +612,7 @@ Q.each = function _Q_each(container, callback, options) {
 				if (typeof arguments[2] === 'number') {
 					step = arguments[2];
 					if (!step || (to-from)*step<0) {
-						throw "Q.each: step="+step+" leads to infinite loop";
+						throw new Q.Error("Q.each: step="+step+" leads to infinite loop");
 					}
 					callback = arguments[3];
 					options = arguments[4];
@@ -638,7 +640,7 @@ Q.each = function _Q_each(container, callback, options) {
 		case 'function':
 		case 'boolean':
 			if (container === false) break;
-			throw "Q.each: does not support iterating a " + t;
+			throw new Q.Error("Q.each: does not support iterating a " + t);
 		case 'null':
 			break;
 	}
@@ -992,7 +994,7 @@ Q.mixin = function _Q_mixin(A, B) {
 	for (var i = 1, l = arguments.length; i < l; ++i) {
 		var mixin = arguments[i];
 		if (typeof mixin !== 'function') {
-			throw "Q.mixin: argument " + i + " is not a function";
+			throw new Q.Error("Q.mixin: argument " + i + " is not a function");
 		}
 		Q.extend(A.prototype, mixin.prototype);
 		for (var k in mixin) {
@@ -1008,7 +1010,7 @@ Q.mixin = function _Q_mixin(A, B) {
 
 	A.prototype.constructors = function _constructors() {
 		if (!this.constructor.__mixins) {
-			throw "Q.mixin: mixinObject.constructors() called on something that does not have mixins info";
+			throw new Q.Error("Q.mixin: mixinObject.constructors() called on something that does not have mixins info");
 		}
 		for (var mixins = this.constructor.__mixins, i = 0, l = mixins.length; i < l; ++i) {
 			mixins[i].apply(this, arguments);
@@ -1101,7 +1103,7 @@ function _getProp (/*Array*/parts, /*Boolean*/create, /*Object*/context){
 			context = (p in context) ? context[p] : (create ? context[p] = {} : undefined);
 		} catch (e) {
 			if (create) {
-				throw "Q.setObject cannot set property of " + typeof(context) + " " + JSON.stringify(context);
+				throw new Q.Error("Q.setObject cannot set property of " + typeof(context) + " " + JSON.stringify(context));
 			}
 		}
 	}
@@ -1251,7 +1253,7 @@ Q.ensure = function _Q_ensure(property, loader, callback) {
  */
 Q.Event = function _Q_Event(callable, key, prepend) {
 	if (this === Q) {
-		throw "Q.Event: Missing new keyword";
+		throw new Q.Error("Q.Event: Missing new keyword");
 	}
 	var event = this;
 	this.handlers = {};
@@ -1608,7 +1610,7 @@ Q.Pipe.prototype.add = function _Q_pipe_add(requires, maxTimes, callback) {
 			}
 			if (e !== null && typeof e !== 'string') {
 				debugger;
-				throw "Q.Pipe.prototype.add requires event name after array of objects";
+				throw new Q.Error("Q.Pipe.prototype.add requires event name after array of objects");
 			}
 		}
 	}
@@ -2340,7 +2342,7 @@ Q.Tool.define = function (name, ctor, defaultOptions, stateKeys, methods) {
 	ctor.options = defaultOptions || {};
 	ctor.stateKeys = stateKeys;
 	if (typeof ctor !== 'function') {
-		throw "Q.Tool.define requires ctor to be a string or a function";
+		throw new Q.Error("Q.Tool.define requires ctor to be a string or a function");
 	}
 	Q.extend(ctor.prototype, methods);
 	Q.Tool.constructors[name] = ctor;
@@ -2630,7 +2632,7 @@ Q.Tool.prototype.$ = function _Q_Tool_prototype_$(selector) {
 			? window.jQuery(this.element)
 			: window.jQuery(selector, this.element);
 	} else {
-		throw "Q.Tool.prototype.$ requires jQuery";
+		throw new Q.Error("Q.Tool.prototype.$ requires jQuery");
 	}
 };
 
@@ -2821,7 +2823,7 @@ function _loadToolScript(toolElement, callback, shared) {
 				Q.Tool.onMissingConstructor.handle(_qtc, toolName);
 				toolFunc = _qtc[toolName];
 				if (typeof toolFunc !== 'function') {
-					throw "Q.Tool.loadScript: Missing tool constructor for " + toolName;
+					throw new Q.Error("Q.Tool.loadScript: Missing tool constructor for " + toolName);
 				}
 			}
 			toolFunc.options = Q.extend(toolFunc.options, Q.Tool.options.levels, existingOptions);
@@ -2842,7 +2844,7 @@ function _loadToolScript(toolElement, callback, shared) {
 			return;
 		}
 		if (typeof toolFunc !== 'string') {
-			throw "Q.Tool.loadScript: toolFunc cannot be " + typeof(toolFunc);
+			throw new Q.Error("Q.Tool.loadScript: toolFunc cannot be " + typeof(toolFunc));
 		}
 		var existingOptions = _qtdo[toolName];
 		if (shared) {
@@ -3573,7 +3575,7 @@ Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandl
 		};
 		eventHandler = eventName ( params );
 		if (!('eventName' in params)) {
-			throw "Custom $.fn.on handler: need to set params.eventName";
+			throw new Q.Error("Custom $.fn.on handler: need to set params.eventName");
 		}
 		eventName = params.eventName;
 	}
@@ -5869,7 +5871,7 @@ Q.Template.render = function _Q_Template_render(name, fields, partials, callback
 		partials = undefined;
 	}
 	if (!callback) {
-		throw "Q.Template.render: callback is missing";
+		throw new Q.Error("Q.Template.render: callback is missing");
 	}
 	Q.addScript(Q.url('plugins/Q/js/mustache.js'), function () {
 		// load the template and partials
@@ -6241,7 +6243,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 			$.fn.plugin.load(pluginName, function _jQuery_plugin_load_completed() {
 				var result = $.fn[name];
 				if (!result) {
-					throw "jQuery.fn.plugin: "+pluginName+" not defined";
+					throw new Q.Error("jQuery.fn.plugin: "+pluginName+" not defined");
 				}
 				result.apply(that, args);
 				Q.handle(callback, that, args);
@@ -6294,7 +6296,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	$.fn.activate = function _jQuery_fn_activate(options) {
 		jQuery(this).each(function _jQuery_fn_activate_each(index, element) {
 			if (!jQuery(element).closest('html').length) {
-				throw "jQuery.fn.activate: element to activate must be in the DOM";
+				throw new Q.Error("jQuery.fn.activate: element to activate must be in the DOM");
 			}
 			Q.activate(element, options, options && options.callback);
 		});
@@ -6326,7 +6328,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 				};
 				arguments[f] = arguments[0] ( params );
 				if (!('eventName' in params)) {
-					throw "Custom $.fn.on handler: need to set params.eventName";
+					throw new Q.Error("Custom $.fn.on handler: need to set params.eventName");
 				}
 				arguments[0] = params.eventName;
 			}
@@ -6372,7 +6374,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 				var params = {};
 				arguments[0] ( params );
 				if (!('eventName' in params)) {
-					throw "Custom $.fn.on handler: need to set params.eventName";
+					throw new Q.Error("Custom $.fn.on handler: need to set params.eventName");
 				}
 				arguments[0] = params.eventName;
 			}

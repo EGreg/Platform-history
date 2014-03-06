@@ -23,6 +23,8 @@ module.exports = Q;
 
 Q.VERSION = 0.8;
 
+Q.Error = Error;
+
 /**
  * Returns the type of a value
  * @method typeOf
@@ -358,8 +360,7 @@ Q.Pipe.prototype.add = function _Q_pipe_add(requires, maxTimes, callback) {
 				break;
 			}
 			if (e !== null && typeof e !== 'string') {
-				debugger;
-				throw "Q.Pipe.prototype.add requires event name after array of objects";
+				throw new Q.Error("Q.Pipe.prototype.add requires event name after array of objects");
 			}
 		}
 	}
@@ -1125,7 +1126,7 @@ Q.each = function _Q_each(container, callback, options) {
 		case 'function':
 		case 'boolean':
 			if (container === false) break;
-			throw "Q.each: does not support iterating a " + t;
+			throw new Q.Error("Q.each: does not support iterating a " + t);
 		case 'null':
 			break;
 	}
@@ -2339,7 +2340,7 @@ Q.date = function (format, timestamp) {
 			// timezone_abbreviations_list() function.
 /*              return this.date_default_timezone_get();
 */
-			throw 'Not supported (see source code of date() for timezone on how to add support)';
+			throw new Q.Error("Not supported (see source code of date() for timezone on how to add support)");
 		},
 		I: function () { // DST observed?; 0 or 1
 			// Compares Jan 1 minus Jan 1 UTC to Jul 1 minus Jul 1 UTC.

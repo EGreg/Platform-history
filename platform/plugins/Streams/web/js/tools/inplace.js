@@ -52,7 +52,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 					}));
 					break;
 				default:
-					throw "Streams/inplace tool: inplaceType must be 'textarea' or 'text'";
+					throw new Q.Error("Streams/inplace tool: inplaceType must be 'textarea' or 'text'");
 			}
 		};
 
@@ -92,7 +92,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 					});
 					break;
 				default:
-					throw "Streams/inplace tool: inplaceType must be 'textarea' or 'text'";
+					throw new Q.Error("Streams/inplace tool: inplaceType must be 'textarea' or 'text'");
 			}
 
 			if (state.editable === false || !stream.testWriteLevel('suggest')) {
@@ -132,7 +132,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 		state.streamName = state.stream.name;
 	}
 	if (!state.publisherId || !state.streamName) {
-		throw "Streams/inplace tool: stream is undefined";
+		throw new Q.Error("Streams/inplace tool: stream is undefined");
 	}
 	Q.Streams.retainWith(tool).get(state.publisherId, state.streamName, _construct);
 },

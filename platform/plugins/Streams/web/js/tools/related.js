@@ -26,10 +26,10 @@ function _Streams_related_tool (options)
     // check for required options
     if ((!options.publisherId || !options.streamName)
     && (!options.stream || Q.typeOf(options.stream) !== 'Streams.Stream')) {
-        throw "Streams/related tool: missing options.stream";
+        throw new Q.Error("Streams/related tool: missing options.stream");
     }
     if (options.relationType === undefined) {
-        throw "Streams/related tool: missing options.relationType";
+        throw new Q.Error("Streams/related tool: missing options.relationType");
     }
 
 	this.state.publisherId = this.state.publisherId || this.state.stream.fields.publisherId;
