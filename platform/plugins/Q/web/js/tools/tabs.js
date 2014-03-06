@@ -21,7 +21,7 @@ Q.Tool.define("Q/tabs", function(options) {
 	var tool = this;
 	
 	$(tool.element).on([Q.Pointer.fastclick, '.Q_tabs'], '.Q_tabs_tab', function () {
-		tool.switchTo(this.getAttribute('data-name'));
+		tool.switchTo(this.getAttribute('data-name'), this);
 	}).click(function () {
 		// return false;
 	});
