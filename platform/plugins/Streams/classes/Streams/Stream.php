@@ -448,27 +448,46 @@ class Streams_Stream extends Base_Streams_Stream
 		}
 	}
 	
-	function getAllAttributes()
+	/**
+	 * @method getAttributes
+	 * @return {array} The array of all attributes set in the stream
+	 */
+	function getAttributes()
 	{
 		return empty($this->attributes) ? array() : json_decode($this->attributes, true);
 	}
 	
+	/**
+	 * @method getAttribute
+	 * @param {string} $attribute_name The name of the attribute to get
+	 * @param {mixed} $default The value to return if the attribute is missing
+	 * @return {mixed} The value of the attribute, or the default value, or null
+	 */
 	function getAttribute($attribute_name, $default = null)
 	{
-		$attr = $this->getAllAttributes();
+		$attr = $this->getAttributes();
 		return isset($attr[$attribute_name]) ? $attr[$attribute_name] : $default;
 	}
 	
+	/**
+	 * @method setAttribute
+	 * @param {string} $attribute_name The name of the attribute to set
+	 * @param {mixed} $value The value to set the attribute to
+	 */
 	function setAttribute($attribute_name, $value)
 	{
-		$attr = $this->getAllAttributes();
+		$attr = $this->getAttributes();
 		$attr[$attribute_name] = $value;
 		$this->attributes = Q::json_encode($attr);
 	}
 	
+	/**
+	 * @method clearAttribute
+	 * @param {string} $attribute_name The name of the attribute to remove
+	 */
 	function clearAttribute($attribute_name)
 	{
-		$attr = $this->getAllAttributes();
+		$attr = $this->getAttributes();
 		unset($attr[$attribute_name]);
 		$this->attributes = Q::json_encode($attr);
 	}

@@ -146,7 +146,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		});
 		previousValue = fieldinput.val();
 		container_span.addClass('Q_editing');
-		container_span.addClass('Q_preventDrag');
+		container_span.addClass('Q_discouragePointerEvents');
 		if (!fieldinput.is('select')) {
 			fieldinput.data('inplace').widthWasAdjusted = true;
 			try {
@@ -259,7 +259,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		undermessage.empty().css('display', 'none').addClass('Q_error');
 		container_span.removeClass('Q_editing')
 			.removeClass('Q_nocancel')
-			.removeClass('Q_preventDrag');
+			.removeClass('Q_discouragePointerEvents');
 		$('.Q_inplace_tool_editbuttons', container_span).css('display', 'none');
 		noCancel = false;
 		Q.handle(tool.state.onSave, tool, [response.slots.Q_inplace]);
@@ -283,7 +283,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		fieldinput.blur();
 		focusedOn = null;
 		container_span.removeClass('Q_editing')
-			.removeClass('Q_preventDrag');;
+			.removeClass('Q_discouragePointerEvents');;
 		$('.Q_inplace_tool_editbuttons', container_span).css('display', 'none');
 		Q.handle(tool.state.onCancel, tool);
 	};
@@ -323,17 +323,20 @@ function _Q_inplace_tool_constructor(element, options) {
 		}
 	});
 	if (this.state.editOnClick) {
-		static_span.addClass('Q_preventDrag');
+		static_span.addClass('Q_discouragePointerEvents');
 		static_span.click(onClick);
 	}
-	edit_button.click(onClick);
+	edit_button.on(Q.Pointer.start, function (event) {
+		Q.Pointer.cancelClick(event);
+	});
+	edit_button.on('click', onClick); // happens despite canceled click
 	cancel_button.click(function() { onCancel(true); return false; });
-	cancel_button.bind('focus mousedown', function() { setTimeout(function() {
+	cancel_button.on('focus mousedown', function() { setTimeout(function() {
 		focusedOn = 'cancel_button'; }, 50);
 	});
 	cancel_button.blur(function() { focusedOn = null; setTimeout(onBlur, 100); });
 	save_button.click(function() { onSave(); return false; });
-	save_button.bind('focus mousedown', function() { setTimeout(function() {
+	save_button.on('focus mousedown', function() { setTimeout(function() {
 		focusedOn = 'save_button'; }, 50);
 	});
 	save_button.blur(function() { focusedOn = null; setTimeout(onBlur, 100); });

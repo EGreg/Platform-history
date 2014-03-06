@@ -28,8 +28,9 @@ function (options) {
 	});
 
 	function liftHandler(event) {	
-		if ($('.Q_preventDrag', event.target).length
-		|| $(event.target).is('.Q_preventDrag')) {
+		if (Q.Pointer.canceledClick
+		|| $(event.target).parents('.Q_discouragePointerEvents').length
+		|| $(event.target).is('.Q_discouragePointerEvents')) {
 			return;
 		}
 		if (Q.Pointer.which(event) > 1) {
@@ -79,13 +80,17 @@ function (options) {
 		if (tLift) clearTimeout(tLift);
 		
 		var $item = $(this);
-		if ($('.Q_preventDrag', $item).length) {
+		if ($item.parents('.Q_discouragePointerEvents').length) {
 			return;
 		}
 		
 		Q.Pointer.cancelClick();
 		
 		if (Q.Pointer.touchCount(event) !== 1) return;
+		
+		var x = Q.Pointer.getX(event),
+			y = Q.Pointer.getY(event),
+			offset = $item.offset();
 		
 		$('body')[0].preventSelections();
 		this.preventSelections();
@@ -100,6 +105,11 @@ function (options) {
 			opacity: state.placeholderOpacity
 		}).insertAfter($item); //.hide('slow');
 		
+		// Temporarily hide Q/actions if any
+		tool.actionsContainer = $('.Q_actions_container', $item);
+		tool.actionsContainerVisibility = tool.actionsContainer.css('visibility');
+		tool.actionsContainer.css('visibility', 'hidden');
+		
 		this.cloned = this.cloneNode(true).copyComputedStyle(this);
 		Q.find(this, null, function (element, options, shared, parent, i) {
 			if (parent) {
@@ -107,10 +117,6 @@ function (options) {
 				element.cloned = children[i].copyComputedStyle(element);
 			}
 		});
-		
-		var x = Q.Pointer.getX(event),
-			y = Q.Pointer.getY(event),
-			offset = $item.offset();
 		
 		gx = x - offset.left;
 		gy = y - offset.top;
@@ -175,10 +181,15 @@ function (options) {
 			$target = getTarget(x, y);
 		moveHandler.xStart = moveHandler.yStart = null;
 		complete(!$target && state.requireDropTarget);
-		return false;
 	}
 	
 	function complete(revert) {
+		
+		// Restore Q/actions if any
+		tool.actionsContainer.css('visibility', tool.actionsContainerVisibility);
+		delete tool.actionsContainer;
+		delete tool.actionsContainerVisibility;
+		
 		$('body')[0].restoreSelections();
 		
 		if (tLift) clearTimeout(tLift);

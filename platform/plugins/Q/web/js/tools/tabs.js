@@ -9,7 +9,8 @@
  *  "selector": CSS style selector indicating the element to update with javascript. Can be a parent of the tabs. Set to null to reload the page.
  *  "slot": The name of the slot to request when changing tabs with javascript.
  *  "loader": Optional. Name of a function which takes url, slot, callback. It should call the callback and pass it an object with the response info. Can be used to implement caching, etc. instead of the default HTTP request. This function shall be Q.batcher getter
- *  "beforeSwitch": Optional. Name of the function to execute before tab switching begins.
+ *  "onClick": Optional. Event when a tab was clicked, with arguments (name, element). Returning false cancels the tab switching.
+ *  "beforeSwitch": Optional. Event when tab switching begins. Returning false cancels the switching.
  *  "beforeScripts": Optional. Name of the function to execute after tab is loaded but before its javascript is executed.
  *  "onActivate": Optional. Name of the function to execute after a tab is activated.
  * @return Q.Tool
@@ -21,7 +22,13 @@ Q.Tool.define("Q/tabs", function(options) {
 	var tool = this;
 	
 	$(tool.element).on([Q.Pointer.fastclick, '.Q_tabs'], '.Q_tabs_tab', function () {
-		tool.switchTo(this.getAttribute('data-name'), this);
+		if (false === tool.state.onClick.handle.call(tool, this.getAttribute('data-name'), this)) {
+			return;
+		}
+		var element = this;
+		setTimeout(function () {
+			tool.switchTo(element.getAttribute('data-name'), element);	
+		}, 0);
 	}).click(function () {
 		// return false;
 	});
@@ -36,11 +43,13 @@ Q.Tool.define("Q/tabs", function(options) {
 	selector: '#content_slot',
 	loadUrlOptions: {},
 	loader: Q.req,
-	beforeSwitch: new Q.Event()
+	onClick: new Q.Event(),
+	beforeSwitch: new Q.Event(),
+	onActivate: new Q.Event()
 },
 
 {
-	switchTo: function (name, tab) {
+	switchTo: function (name, tab, extra) {
 		if (tab === undefined) {
 			$('.Q_tabs_tab', this.element).each(function () {
 				if (this.getAttribute('data-name') === name) {
@@ -63,11 +72,14 @@ Q.Tool.define("Q/tabs", function(options) {
 			? [state.selector]
 			: state.selector
 
-		Q.handle(state.beforeSwitch, this, [tab, state]);
 		var slots = state.slots;
 		var selectors = state.selectors;
 
 		href = this.getUrl(tab);
+
+		if (false === Q.handle(state.beforeSwitch, this, [tab, href, extra])) {
+			return false;
+		}
 
 		if (href && state.selector === null) {
 		    Q.handle(href);
@@ -86,7 +98,7 @@ Q.Tool.define("Q/tabs", function(options) {
 			}},
 			onActivate: {"Q/tabs": function () {
 				tool.indicateSelected(tab);
-				tool.onActivate.handle(tab);
+				state.onActivate.handle(tab);
 			}},
 			loadExtras: true,
 			loader: state.loader

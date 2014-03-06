@@ -875,9 +875,10 @@ EOT;
 	
 	/**
 	 * @method take
-	 * @param source {object} An Object from which to take things
-	 * @param fields {array|object} An array of fields to take or an object of fieldname: default pairs
-	 * @return {object} a new Object
+	 * @param {array|object} $source An array or object from which to take things
+	 * @param {array} $fields An array of fields to take or an object of fieldname: default pairs
+	 * @param {array|object} &$dest Optional reference to an array or object in which we will set values. Otherwise an empty array is used.
+	 * @return {array|object} The $dest array or object, otherwise an array that has been filled with values.
 	 */
 	static function take($source, $fields, &$dest = null)
 	{

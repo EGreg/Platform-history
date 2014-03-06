@@ -32,6 +32,12 @@ function (options) {
 						context: options.context
 					}
 				});
+			}).on(Q.Pointer.start, function () {
+				$(this).addClass('Q_discouragePointerEvents');
+				$(window).on([Q.Pointer.end, '.Q_actions'], function () {
+					$(this).removeClass('Q_discouragePointerEvents');
+					$(window).off([Q.Pointer.end, '.Q_actions']);
+				});
 			});
 		buttons[action] = button;
 		if (options.reverse) {

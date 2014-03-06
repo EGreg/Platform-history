@@ -230,6 +230,7 @@ Q.Tool.define("Streams/preview", function(options) {
 	onCreate: new Q.Event(),
 	onUpdate: new Q.Event(),
 	onRefresh: new Q.Event(),
+	onLoad: new Q.Event(),
 	onRemove: new Q.Event(function () {
 		this.$().hide('slow', function () {
 			$(this).remove();
@@ -257,8 +258,9 @@ Q.Tool.define("Streams/preview", function(options) {
 
 			var jq = tool.$('img.Streams_preview_icon');
 			if (jq.length) {
+				tool.state.onRefresh.handle.apply(tool, []);
 				jq.off('load.Streams-preview').on('load.Streams-preview', function () {
-					state.onRefresh.handle.apply(tool, []);
+					tool.state.onLoad.handle.apply(tool, []);
 				});
 				jq.attr('src', Q.Streams.iconUrl(icon, file)+'?'+Date.now());
 				return true;
@@ -289,10 +291,13 @@ Q.Tool.define("Streams/preview", function(options) {
 				function (err, html) {
 					if (err) return;
 					tool.element.innerHTML = html;
-					$('img', tool.element).off('load.Streams-preview').on('load.Streams-preview', function () {
-						state.onRefresh.handle.apply(tool, []);
+					Q.activate(tool, function () {
+						tool.state.onRefresh.handle.apply(tool, []);
+						$('img', tool.element).off('load.Streams-preview').on('load.Streams-preview', function () {
+							tool.state.onLoad.handle.apply(tool, []);
+						});
+						callback.apply(tool);
 					});
-					Q.activate(tool, callback);
 				},
 				state.templates[tpl]
 			);

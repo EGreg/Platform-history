@@ -2330,7 +2330,7 @@ Q.Tool.define = function (name, ctor, defaultOptions, stateKeys, methods) {
 	name = Q.normalize(name);
 	if (typeof ctor === 'string') {
 		if (typeof Q.Tool.constructors[name] !== 'function') {
-			_qtdo = _qtdo || {};
+			_qtdo[name] = _qtdo[name] || {};
 		    return Q.Tool.constructors[name] = ctor;
 		}
 		return ctor;
@@ -2393,7 +2393,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 	name = Q.normalize(name);
 	if (typeof ctor === 'string') {
 		if (typeof window.jQuery.fn.plugin[name] !== 'function') {
-			_qtjo[name] = _qtjo[name] = {};
+			_qtjo[name] = _qtjo[name] || {};
 		    return window.jQuery.fn.plugin[name] = ctor;
 		}
 		return ctor;
@@ -6747,6 +6747,9 @@ function _Q_PointerStartHandler(e) {
 		}, 0);
 		Q.removeEventListener(window, Q.Pointer.move, _onPointerMove);
 		Q.removeEventListener(window, Q.Pointer.end, _onPointerEnd);
+		setTimeout(function () {
+			Q.Pointer.canceledClick = false;
+		}, 100);
 	}
 }
 

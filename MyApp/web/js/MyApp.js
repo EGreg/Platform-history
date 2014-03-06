@@ -19,9 +19,9 @@ var MyApp = Q.plugins.MyApp = (function ($) {
 		}
 	};
 	
-	Q.onReady.set(function () {
+	Q.page('', function () {
 		
-		$('.MyApp_login').click(function () {
+		$('.MyApp_login').on(Q.Pointer.click, function () {
 			Q.Users.login();
 			return false;
 		});

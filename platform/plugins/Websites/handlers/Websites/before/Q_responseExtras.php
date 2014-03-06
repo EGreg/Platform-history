@@ -10,6 +10,16 @@ function Websites_before_Q_responseExtras()
 	$streams = Streams::fetch($userId, $websitesUserId, array(
 		"Websites/header", "Websites/title", "Websites/slogan", $seoStreamName
 	));
+	if (!empty($streams[$seoStreamName])) {
+		$fields = Q::take(
+			$streams[$seoStreamName]->getAttributes(),
+			array('keywords', 'description')
+		);
+		foreach ($fields as $k => $v) {
+			Q_Response::setMeta($k, $v);
+		}
+		Q_Response::setSlot('title', $streams[$seoStreamName]->getAttribute('title'));
+	}
 	foreach ($streams as $name => $s) {
 		if ($s) {
 			$s->addPreloaded($userId);

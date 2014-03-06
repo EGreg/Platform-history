@@ -16,8 +16,9 @@
  *   "realtime": Whether to refresh every time a relation is added, removed or updated
  *   "sortable": Options for "Q/sortable" jQuery plugin. Pass false here to disable sorting interface.
  *   "tabs": Function for interacting with any parent "Q/tabs" tool. Format is function (previewTool, tabsTool) { return urlOrTabKey; }
- *   "onUpdate": Event that receives parameters "data", "entering", "exiting", "updating"
  *   "updateOptions": Options for onUpdate such as duration of the animation, etc.
+ *   "onUpdate": Event that receives parameters "data", "entering", "exiting", "updating"
+ *   "onRefresh": Event that occurs when the tool is completely refreshed, the "this" is the tool
  */
 Q.Tool.define("Streams/related",
 

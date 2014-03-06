@@ -280,11 +280,13 @@ Q.Tool.define("Streams/image/preview", function(options) {
 				function (err, html) {
 					if (err) return;
 					tool.element.innerHTML = html;
-					tool.state.onRefresh.handle.apply(tool, []);
-					$('img', tool.element).off('load.Streams-image-preview').on('load.Streams-image-preview', function () {
-						tool.state.onLoad.handle.apply(tool, []);
+					Q.activate(tool, function () {
+						tool.state.onRefresh.handle.apply(tool, []);
+						$('img', tool.element).off('load.Streams-image-preview').on('load.Streams-image-preview', function () {
+							tool.state.onLoad.handle.apply(tool, []);
+						});
+						callback.apply(tool);
 					});
-					Q.activate(tool, callback);
 				},
 				state.templates[tpl]
 			);

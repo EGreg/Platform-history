@@ -31,7 +31,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 		if (err) {
 			return tool.state.onError.handle(err);
 		}
-		var stream = this;
+		var stream = state.stream = this;
 		state.publisherId = stream.fields.publisherId;
 		state.streamName = stream.fields.name;
 

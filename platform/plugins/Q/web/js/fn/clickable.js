@@ -110,6 +110,10 @@ function (o) {
 			// if (Q.info.isTouchscreen) {
 			// 	evt.preventDefault();
 			// }
+			if (Q.Pointer.canceledClick
+			|| $('.Q_discouragePointerEvents', evt.target).length) {
+				return;
+			}
 			stretcher[0].preventSelections();
 			$('body')[0].preventSelections();
 			zindex = $this.css('z-index');
