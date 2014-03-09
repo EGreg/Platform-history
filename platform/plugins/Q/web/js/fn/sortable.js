@@ -26,6 +26,10 @@ function (options) {
 		}
 		return false;
 	});
+	
+	state.onCancelClickEventKey = Q.Pointer.onCancelClick.set(function () {
+		if (tLift) clearTimeout(tLift);
+	});
 
 	function liftHandler(event) {	
 		if (Q.Pointer.canceledClick
@@ -598,6 +602,8 @@ function (options) {
 		// TODO: implement cleanup
 		this.removeData('Q/sortable');
 		this.off('.Q_sortable');
+		
+		Q.Pointer.onCancelClick.remove(this.state('Q/sortable').onCancelClickEventKey);
 	}
 }
 

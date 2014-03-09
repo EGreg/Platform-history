@@ -354,17 +354,23 @@ function _Q_inplace_tool_constructor(element, options) {
 		container_span.removeClass('Q_hover');
 	});
 	container_span.on([Q.Pointer.end, '.Q_inplace'], function (event) {
-		if (tool.state.editOnClick || event.target !== static_span[0]) {
-			Q.Pointer.cancelClick();
+		if (Q.Pointer.canceledClick) {
+			// could have been canceled by Q/sortable for instance
+			return;
+		}
+		if ((tool.state.editOnClick && event.target === static_span[0])
+		|| $(event.target).is('button')) {
+			Q.Pointer.cancelClick(event);
+			Q.Pointer.ended();
 			event.stopPropagation();
 		}
-	});
-	if (this.state.editOnClick) {
-		static_span.click(onClick);
-	}
+	})
 	edit_button.on(Q.Pointer.start, function (event) {
 		Q.Pointer.cancelClick(event);
 	});
+	if (this.state.editOnClick) {
+		static_span.click(onClick); // happens despite canceled click
+	}
 	edit_button.click(onClick); // happens despite canceled click
 	cancel_button.click(function() { onCancel(true); return false; });
 	cancel_button.on('focus mousedown', function() { setTimeout(function() {
