@@ -11,11 +11,20 @@
  */
 abstract class Websites extends Base_Websites
 {
-	/*
-	 * This is where you would place all the static methods for the models,
-	 * the ones that don't strongly pertain to a particular row or table.
-	 * If file 'Websites.php.inc' exists, its content is included
-	 * * * */
-
-	/* * * */
+	static function permalinksFilename()
+	{
+		return WEBSITES_PLUGIN_FILES_DIR.DS.'Websites'.DS.'permalinks.json';
+	}
+	
+	static function fetchSeoStream($url = null)
+	{
+		if (!isset($url)) {
+			$url = Q_Request::url();
+			if (!isset($url)) {
+				return null;
+			}
+		}
+		$tail = Q_Request::tail($url);
+		
+	}
 };

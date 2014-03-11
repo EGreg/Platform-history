@@ -32,7 +32,6 @@
  * @property string $username
  * @property string $icon
  * @property string $url
- * @property float $balance
  * @property string $pincodeHash
  */
 abstract class Base_Users_User extends Db_Row
@@ -108,10 +107,6 @@ abstract class Base_Users_User extends Db_Row
 	/**
 	 * @property $url
 	 * @type string
-	 */
-	/**
-	 * @property $balance
-	 * @type float
 	 */
 	/**
 	 * @property $pincodeHash
@@ -620,7 +615,7 @@ abstract class Base_Users_User extends Db_Row
 	 */
 	static function fieldNames($table_alias = null, $field_alias_prefix = null)
 	{
-		$field_names = array('id', 'insertedTime', 'updatedTime', 'sessionId', 'mobileToken', 'fb_uid', 'tw_uid', 'g_uid', 'y_uid', 'passphraseHash', 'emailAddress', 'mobileNumber', 'emailAddressPending', 'mobileNumberPending', 'signedUpWith', 'username', 'icon', 'url', 'balance', 'pincodeHash');
+		$field_names = array('id', 'insertedTime', 'updatedTime', 'sessionId', 'mobileToken', 'fb_uid', 'tw_uid', 'g_uid', 'y_uid', 'passphraseHash', 'emailAddress', 'mobileNumber', 'emailAddressPending', 'mobileNumberPending', 'signedUpWith', 'username', 'icon', 'url', 'pincodeHash');
 		$result = $field_names;
 		if (!empty($table_alias)) {
 			$temp = array();

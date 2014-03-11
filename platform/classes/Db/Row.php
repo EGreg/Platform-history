@@ -690,6 +690,20 @@ class Db_Row implements Iterator
 	}
 
 	/**
+	 * Returns array of all the fields which were modified, and their new value
+	 * @method modifiedFields
+	 * @return {array} Associative array consisting of $fieldname => $value pairs.
+	 */
+	function modifiedFields ()
+	{
+		$result = array();
+		foreach ($this->fields_modified as $field => $modified) {
+			if ($modified) $result[$field] = $this->fields[$field];
+		}
+		return $result;
+	}
+
+	/**
 	 * Gets the primary key of the table
 	 * @method getPrimaryKey
 	 * @return {array} An array naming all the fields that comprise the
@@ -1710,6 +1724,9 @@ class Db_Row implements Iterator
 			// Do an update of an existing row
 			//if (count($modified_fields) > 0) {
 			$where = $this->getPkValue();
+			if (!$where) {
+				throw new Exception("The primary key is not specified for $table");
+			}
 			// If pkValue cantains more or less fields than
 			// the primary key should, it is only through tinkering.
 			// We'll let it pass, since the person was most likely

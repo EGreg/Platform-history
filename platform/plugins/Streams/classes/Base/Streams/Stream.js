@@ -40,6 +40,14 @@ Q.mixin(Base, Q.require('Db/Row'));
  * @type string
  */
 /**
+ * @property insertedTime
+ * @type string
+ */
+/**
+ * @property updatedTime
+ * @type string
+ */
+/**
  * @property type
  * @type string
  */
@@ -82,14 +90,6 @@ Q.mixin(Base, Q.require('Db/Row'));
 /**
  * @property participantCount
  * @type integer
- */
-/**
- * @property insertedTime
- * @type string
- */
-/**
- * @property updatedTime
- * @type string
  */
 /**
  * @property closedTime
@@ -223,6 +223,8 @@ Base.prototype.fieldNames = function () {
 	return [
 		"publisherId",
 		"name",
+		"insertedTime",
+		"updatedTime",
 		"type",
 		"title",
 		"icon",
@@ -234,8 +236,6 @@ Base.prototype.fieldNames = function () {
 		"inheritAccess",
 		"messageCount",
 		"participantCount",
-		"insertedTime",
-		"updatedTime",
 		"closedTime"
 	];
 };

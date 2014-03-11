@@ -5,7 +5,7 @@ function Websites_before_Q_responseExtras()
 	$user = Users::loggedInUser(false, false);
 	$userId = $user ? $user->id : "";
 	$websitesUserId = Q_Config::expect("Websites", "user", "id");
-	$sha1 = sha1(Q_Dispatcher::uri());
+	$sha1 = sha1(Q_Request::url());
 	$seoStreamName = "Websites/seo/$sha1";
 	$streams = Streams::fetch($userId, $websitesUserId, array(
 		"Websites/header", "Websites/title", "Websites/slogan", $seoStreamName

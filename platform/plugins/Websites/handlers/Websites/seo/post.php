@@ -22,9 +22,18 @@ function Websites_seo_post()
 	$stream->publisherId = $publisherId;
 	$stream->name = $_REQUEST['streamName'];
 	$stream->type = $type;
+	if (isset($_REQUEST['uri'])) {
+		$stream->setAttribute('uri', $_REQUEST['uri']);
+	}
 	$stream->save();
 	
-	// should we subscribe to this stream?
+	$stream->post($user->id, array(
+		'type' => 'Streams/created',
+		'content' => '',
+		'instructions' => Q::json_encode($stream->toArray())
+	), true);
+	
+	$stream->subscribe(); // autosubscribe to streams you yourself create, using templates
 	
 	Q_Response::setSlot('stream', $stream->exportArray());
 }

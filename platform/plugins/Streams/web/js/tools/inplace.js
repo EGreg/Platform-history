@@ -60,11 +60,13 @@ Q.Tool.define("Streams/inplace", function (options) {
 		if (state.attribute) {
 			field = 'attributes['+encodeURIComponent(state.attribute)+']';
 			stream.onUpdated(state.attribute).set(function (fields, changed) {
+				if (!(state.attribute in changed)) return;
 				_setContent(changed[state.attribute])
 			}, tool);
 		} else {
 			field = state.field || 'content';
 			stream.onFieldChanged(field).set(function (fields, field) {
+				if (!(field in fields)) return;
 				_setContent(fields[field]);
 			}, tool);
 		}

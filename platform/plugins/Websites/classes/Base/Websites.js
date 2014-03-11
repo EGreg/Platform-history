@@ -23,7 +23,8 @@ module.exports = function () {
 	 * @type array
 	 */
 	this.tableClasses = [
-		
+		"Websites_Bio",
+		"Websites_Permalink"
 	];
 	
 	/**
@@ -45,6 +46,18 @@ module.exports = function () {
 		return 'Websites';
 	};
 
+	/**
+	 * Link to Websites.Bio model
+	 * @property Bio
+	 * @type Websites.Bio
+	 */
+	this.Bio = Q.require('Websites/Bio');
+	/**
+	 * Link to Websites.Permalink model
+	 * @property Permalink
+	 * @type Websites.Permalink
+	 */
+	this.Permalink = Q.require('Websites/Permalink');
 	
 	return this;
 	

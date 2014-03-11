@@ -2,15 +2,18 @@
 	"Q": {
 		"pluginInfo": {
 			"Websites": {
-				"version": "0.8",
+				"version": "0.8.1",
 				"compatible": "0.8",
 				"requires": {"Streams": "0.8"},
 				"connections": ["Streams", "Websites"]
 			}
 		},
 		"handlersBeforeEvent": {
+			"Q/url": ["Websites/before/Q_url"],
+			"Q/uriFromUrl": ["Websites/before/Q_uriFromUrl"],
 			"Q/responseExtras": ["Websites/before/Q_responseExtras"],
-			"Streams/Stream/save/Websites/bio": ["Websites/before/Streams_Stream_save_Websites_bio"]
+			"Streams/Stream/save/Websites/bio": ["Websites/before/Streams_Stream_save_Websites_bio"],
+			"Streams/Stream/save/Websites/seo": ["Websites/before/Streams_Stream_save_Websites_seo"]
 		},
 		"handlersAfterEvent": {
 			"Streams/Stream/fetch/Websites/bio": ["Websites/after/Streams_Stream_fetch_Websites_bio"]

@@ -43,10 +43,13 @@ if (!isset($argv[1]) or $argv[1] != '--all')
 	$connections = array_diff($connections, $plugins);
 
 foreach($connections as $c) {
-	echo "\nMaking models for ".(in_array($c, $plugins) ? "plugin" : "connection")." $c\n\n";
+	echo "\nMaking models for ".(in_array($c, $plugins) ? "plugin" : "connection")." $c\n";
 	
 	$path = (in_array($c, $plugins) ? Q_DIR.DS.'plugins'.DS.$c : APP_DIR).DS.'classes';
-	Db::connect($c)->generateModels($path);
+	if ($filenames = Db::connect($c)->generateModels($path)) {
+		echo "Files saved:\n\t".implode("\n\t", $filenames);
+	}
+	echo "\n";
 }
 echo "\nSuccess\n";
 

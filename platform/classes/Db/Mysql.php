@@ -1007,6 +1007,7 @@ class Db_Mysql implements iDb
 	 *  If the "Base" subdirectory does not exist, it is created.
 	 * @param {string} [$classname_prefix=null] The prefix to prepend to the Base class names.
 	 *  If not specified, prefix becomes "Conn_Name_",  where conn_name is the name of the connection.
+	 * @return {array} $filenames The array of filenames for files that were saved.
 	 * @throws {Exception} If the $connection is not registered, or the $directory
 	 *  does not exist, this function throws an exception.
 	 */
@@ -1039,6 +1040,8 @@ class Db_Mysql implements iDb
 		$table_classnames = array();
 		$js_table_classes_string = '';
 		$class_name_prefix = rtrim(ucfirst($classname_prefix), "._");
+		
+		$filenames = array();
 
 		foreach ($rows as $row) {
 			$table_name = $row[0];
@@ -1178,12 +1181,16 @@ EOT;
 
 			// overwrite base class file if necessary, but not the class file
 			Db_Utils::saveTextFile($base_class_filename, $base_class_string);
-			Db_Utils::saveTextFile($js_base_class_filename, $js_base_class_string);			
+			$filenames[] = $base_class_filename;
+			Db_Utils::saveTextFile($js_base_class_filename, $js_base_class_string);
+			$filenames[] = $js_base_class_filename;
 			if (! file_exists($class_filename)) {
 				Db_Utils::saveTextFile($class_filename, $class_string);
+				$filenames[] = $class_filename;
 			}
 			if (! file_exists($js_class_filename)) {
 				Db_Utils::saveTextFile($js_class_filename, $js_class_string);
+				$filenames[] = $js_class_filename;
 			}
 			
 			$table_classnames[] = $class_name;
@@ -1377,14 +1384,23 @@ EOT;
 
 			// overwrite base class file if necessary, but not the class file
 			Db_Utils::saveTextFile($base_class_filename, $base_class_string);
+			$filenames[] = $base_class_filename;
 			Db_Utils::saveTextFile($js_base_class_filename, $js_base_class_string);
+			$filenames[] = $js_base_class_filename;
 			if (! file_exists($class_filename)) {
+				$filenames[] = $class_filename;
 				Db_Utils::saveTextFile($class_filename, $class_string);
 			}
 			if (! file_exists($js_class_filename)) {
+				$filenames[] = $js_class_filename;
 				Db_Utils::saveTextFile($js_class_filename, $js_class_string);
 			}
 		}
+		$directoryLen = strlen($directory.DS);
+		foreach ($filenames as $i => $filename) {
+			$filenames[$i] = substr($filename, $directoryLen);
+		}
+		return $filenames;
 	}
 
 	/**

@@ -2097,16 +2097,18 @@ function updateStream(stream, fields, onlyChangedFields) {
 	if ('attributes' in fields) {
 		var attributes = JSON.parse(fields.attributes || "{}");
 		var updated = {}, cleared = [];
-		var publisherId = fields.publisherId, streamName = fields.name, k;
+		var publisherId = fields.publisherId, streamName = fields.name, obj, k;
 		// events about cleared attributes
 		for (k in stream.attributes) {
 			if (k in attributes) {
 				continue;
 			}
+			obj = {};
+			obj[k] = undefined;
 			Q.handle(
 				Q.getObject([publisherId, streamName, k], _streamUpdatedHandlers),
 				stream,
-				[fields, {k: undefined}, [k]]
+				[fields, obj, [k]]
 			);
 			updated[k] = undefined;
 			cleared.push(k);
@@ -2116,10 +2118,12 @@ function updateStream(stream, fields, onlyChangedFields) {
 			if (JSON.stringify(attributes[k]) == JSON.stringify(stream.attributes[k])) {
 				continue;
 			}
+			obj = {};
+			obj[k] = attributes[k];
 			Q.handle(
 				Q.getObject([publisherId, streamName, k], _streamUpdatedHandlers),
 				stream,
-				[fields, {k: attributes[k]}]
+				[fields, obj]
 			);
 			updated[k] = attributes[k];
 		}

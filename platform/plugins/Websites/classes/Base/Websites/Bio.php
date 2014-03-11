@@ -259,12 +259,9 @@ abstract class Base_Websites_Bio extends Db_Row
 	 */
 	function beforeSave($value)
 	{
-		if (!$value['bio']) {
-			$this->bio = $value['bio'] = '';
-		}
 		if (!$this->retrieved) {
 			$table = $this->getTable();
-			foreach (array('publisherId','streamName','bio') as $name) {
+			foreach (array('publisherId','streamName','userId','bio') as $name) {
 				if (!isset($value[$name])) {
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}

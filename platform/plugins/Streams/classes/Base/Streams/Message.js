@@ -281,7 +281,6 @@ Base.prototype.beforeSet_byUserId = function (value) {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_byClientId = function (value) {
-		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".byClientId");

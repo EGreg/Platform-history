@@ -11,7 +11,8 @@ Q.Tool.define("Websites/seo", function () {
 				inplaceType: 'text'
 			}, state.inplace);
 		
-		var fields = {
+		var templateFields = {
+			url: tool.setUpElementHTML('div', 'Streams/inplace', Q.extend({attribute: 'url'}, ipo)),
 			title: tool.setUpElementHTML('div', 'Streams/inplace', Q.extend({attribute: 'title'}, ipo)),
 			keywords: tool.setUpElementHTML('div', 'Streams/inplace', Q.extend({attribute: 'keywords'}, ipo)),
 			description: tool.setUpElementHTML('div', 'Streams/inplace', Q.extend({attribute: 'description'}, ipo))
@@ -33,12 +34,12 @@ Q.Tool.define("Websites/seo", function () {
 					});
 				}, {
 					method: 'post',
-					fields: {streamName: streamName}
+					fields: {streamName: streamName, uri: Q.info.uriString}
 				});
 			}
 			Q.Template.render(
 				'Websites/seo',
-				fields,
+				templateFields,
 				function (err, html) {
 					if (err) return;
 					tool.element.innerHTML = html;
@@ -52,13 +53,12 @@ Q.Tool.define("Websites/seo", function () {
 
 {
 	template: {
-		name: 'Websites/seo',
-		fields: { }
+		name: 'Websites/seo'
 	}
 }
 
 );
 
 Q.Template.set("Websites/seo",
-	"{{& title}}{{& keywords}}{{& description}}"
+	"{{& url}}{{& title}}{{& keywords}}{{& description}}"
 );

@@ -104,10 +104,6 @@ Q.mixin(Base, Q.require('Db/Row'));
  * @type string
  */
 /**
- * @property balance
- * @type number
- */
-/**
  * @property pincodeHash
  * @type string
  */
@@ -254,7 +250,6 @@ Base.prototype.fieldNames = function () {
 		"username",
 		"icon",
 		"url",
-		"balance",
 		"pincodeHash"
 	];
 };
@@ -533,21 +528,6 @@ Base.prototype.beforeSet_url = function (value) {
 			throw new Error('Must pass a string to '+this.table()+".url");
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".url");
-		return value;
-};
-
-/**
- * Method is called before setting the field to verify if value is a number
- * @method beforeSet_balance
- * @param {integer} value
- * @return {integer} The value
- * @throws {Error} If 'value' is not number
- */
-Base.prototype.beforeSet_balance = function (value) {
-		if (value instanceof Db.Expression) return value;
-		value = Number(value);
-		if (isNaN(value))
-			throw new Error('Non-number value being assigned to '+this.table()+".balance");
 		return value;
 };
 

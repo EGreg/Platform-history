@@ -266,7 +266,7 @@ class Q_Dispatcher
 					/**
 					 * @event Q/reroute
 					 * @param {array} $routed_uri_array
-					 * @return {boolean}
+					 * @return {boolean} whether to stop the dispatch
 					 */
 					$stop_dispatch = Q::event('Q/reroute', $routed_uri_array, true);
 					if ($stop_dispatch) {

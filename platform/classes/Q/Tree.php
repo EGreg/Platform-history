@@ -211,14 +211,14 @@ class Q_Tree
 		if (!isset($arr)) {
 			throw new Q_Exception_InvalidInput(array('source' => $filename));
 		}
-		if (is_array($arr)) {
-			// $arr was loaded from $filename2 or by Q/tree/load before event
-			$this->merge($arr);
-			self::$cache[$filename2] = $arr;
-			Q_Cache::set("Q_Tree\t$filename2", $arr); // no need to check result - on failure Q_Cache is disabled
-			return true;
-		} else
+		if (!is_array($arr)) {
 			return false;
+		}
+		// $arr was loaded from $filename2 or by Q/tree/load before event
+		$this->merge($arr);
+		self::$cache[$filename2] = $arr;
+		Q_Cache::set("Q_Tree\t$filename2", $arr); // no need to check result - on failure Q_Cache is disabled
+		return true;
 	}
 	
 	/**

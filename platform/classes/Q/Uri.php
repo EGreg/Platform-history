@@ -20,7 +20,7 @@ class Q_Uri
 	 * @method from
 	 * @static
 	 * @param {string} $source An absolute URL, or an array, or a URI in string form.
-	 * @param {string} [$route_pattern=null] The pattern of the route in the routes config
+	 * @param {string} [$routePattern=null] The pattern of the route in the routes config
 	 *  If not specified, then Q searches all the route patterns in order, until it finds one that fits.
 	 *  If you set this to false, then $source is treated as an absolute URL, regardless of its format.
 	 * @return {Q_Uri|false} Returns false if no route patterns match.
@@ -28,14 +28,14 @@ class Q_Uri
 	 */
 	static function from(
 	 $source,
-	 $route_pattern = null)
+	 $routePattern = null)
 	{
 		
 		if (empty($source)) {
 			return null;
 		}
 		
-		if ($route_pattern === false) {
+		if ($routePattern === false) {
 			$u = new Q_Uri();
 			$u->Q_url = $source;
 			return $u;
@@ -47,7 +47,7 @@ class Q_Uri
 		
 		if (is_string($source)) {
 			if (Q_Valid::url($source)) {
-				return self::fromUrl($source, $route_pattern);
+				return self::fromUrl($source, $routePattern);
 			} else {
 				return self::fromString($source);
 			}
@@ -117,15 +117,15 @@ class Q_Uri
 	 * @static
 	 * @param {string|boolean|array|Q_Uri} $source This can be a Q_Uri, an array or string representing a uri,
 	 *  an absolute url, or "true". If you pass "true", then the Q_Request::baseUrl(true) is used as input.
-	 * @param {string|null} [$route_pattern=null] If you know which route pattern to use, then specify it here. Otherwise, leave it null.
-	 * @param {boolean} [$no_proxy=false] If set to true, Q_Uri::proxySource($url) is not called before returning the result.
+	 * @param {string|null} [$routePattern=null] If you know which route pattern to use, then specify it here. Otherwise, leave it null.
+	 * @param {boolean} [$noProxy=false] If set to true, Q_Uri::proxySource($url) is not called before returning the result.
 	 * @param {string} [$controller=true] The controller to pass to `Q_Request::baseUrl($controller)` when forming the URL.
 	 * @return {string}
 	 */
 	static function url(
 	 $source,
-	 $route_pattern = null,
-	 $no_proxy = false,
+	 $routePattern = null,
+	 $noProxy = false,
 	 $controller = true)
 	{
 		if (empty($source)) {
@@ -140,7 +140,7 @@ class Q_Uri
 		}
 		
 		static $cache = array();
-		$cache_key = $no_proxy ? $source . ' noproxy=1' : $source;
+		$cache_key = $noProxy ? $source . ' noproxy=1' : $source;
 		if (is_string($source) and isset($cache[$cache_key])) {
 			return $cache[$cache_key];
 		}
@@ -163,11 +163,11 @@ class Q_Uri
 		 * @event Q/url {before}
 		 * @param {string|boolean|array|Q_Uri} 'source' This can be a Q_Uri, an array or string representing a uri,
 		 *  an absolute url, or "true". If you pass "true", then the Q_Request::baseUrl(true) is used as input.
-		 * @param {string|null} 'route_pattern' If you know which route pattern to use, then specify it here. Otherwise, leave it null.
-		 * @param {boolean} 'no_proxy' If set to true, Q_Uri::proxySource($url) is not called before returning the result.
+		 * @param {string|null} 'routePattern' If you know which route pattern to use, then specify it here. Otherwise, leave it null.
+		 * @param {boolean} 'noProxy' If set to true, Q_Uri::proxySource($url) is not called before returning the result.
 		 * @return {string}
 		 */
-		$url = Q::event('Q/url', compact('source', 'route_pattern', 'no_proxy'), 'before');
+		$url = Q::event('Q/url', compact('source', 'routePattern', 'noProxy'), 'before');
 		if (!isset($url)) {
 			$uri = self::from($source);
 			if (!$uri) {
@@ -180,7 +180,7 @@ class Q_Uri
 						$controller = $cs;
 					}
 				}
-				$url = $uri->toUrl($route_pattern, $controller);
+				$url = $uri->toUrl($routePattern, $controller);
 			}
 		}
 		if (!isset($url)) {
@@ -193,7 +193,7 @@ class Q_Uri
 				return $result;
 			}
 		}
-		if ($no_proxy) {
+		if ($noProxy) {
 			$result = $url;
 			if (is_string($source)) {
 				$cache[$source] = $result;
@@ -296,14 +296,14 @@ class Q_Uri
 	 * @static
 	 * @protected
 	 * @param {string} $url
-	 * @param {string} [$route_pattern=null]
+	 * @param {string} [$routePattern=null]
 	 * @return {Q_Uri}
 	 * @throws {Q_Exception_BadUrl}
 	 * @throws {Q_Exception_MissingRoute}
 	 */
 	protected static function fromUrl(
 	 $url,
-	 $route_pattern = null)
+	 $routePattern = null)
 	{
 		if (empty($url)) {
 			return null;
@@ -343,7 +343,7 @@ class Q_Uri
 				// even the proxy destination doesn't match.
 				throw new Q_Exception_BadUrl(compact('base_url', 'url'));
 			}
-			$result = self::fromUrl($dest_url, $route_pattern);
+			$result = self::fromUrl($dest_url, $routePattern);
 			if (!empty($result)) {
 				return $result;
 			} else {
@@ -361,10 +361,10 @@ class Q_Uri
 		$segments = $path ? explode('/', $path) : array();
 		$uri_fields = null;
 
-		if ($route_pattern) {
-			if (! array_key_exists($route_pattern, $routes))
-				throw new Q_Exception_MissingRoute(compact('route_pattern'));
-			$uri_fields = self::matchSegments($route_pattern, $segments);
+		if ($routePattern) {
+			if (! array_key_exists($routePattern, $routes))
+				throw new Q_Exception_MissingRoute(compact('routePattern'));
+			$uri_fields = self::matchSegments($routePattern, $segments);
 		} else {
 			foreach ($routes as $pattern => $fields) {
 				if (!isset($fields))
@@ -393,7 +393,7 @@ class Q_Uri
 					}
 					if ($matched) {
 						// If we are here, then the route has matched!
-						$route_pattern = $pattern;
+						$routePattern = $pattern;
 						break;
 					}
 				}
@@ -406,13 +406,13 @@ class Q_Uri
 		}
 		
 		// Now, fill in any extra fields, if present
-		if (is_array($routes[$route_pattern])) {
-			$uri_fields = array_merge($routes[$route_pattern], $uri_fields);
+		if (is_array($routes[$routePattern])) {
+			$uri_fields = array_merge($routes[$routePattern], $uri_fields);
 		}
 
 		$uri = self::fromArray($uri_fields);
-		if (isset($route_pattern)) {
-			$uri->route_pattern = $route_pattern;
+		if (isset($routePattern)) {
+			$uri->routePattern = $routePattern;
 		}
 		$routed_cache[$url] = $uri;
 		return $uri;
@@ -421,23 +421,23 @@ class Q_Uri
 	/**
 	 * Maps this URI into an external URL.
 	 * @method toUrl
-	 * @param {string} [$route_pattern=null] If you name the route to use for unrouting,
-	 *  it wil be used as much as possible.
+	 * @param {string} [$routePattern=null] If you name the route to use for unrouting,
+	 *  it will be used as much as possible.
 	 *  Otherwise, Q will go through the routes one by one in order,
 	 *  until it finds one that can route a URL to the full URI
 	 *  contained in this object.
 	 * @param {string} [$controller=true] You can supply a different controller name, like 'tool.php'
-	 * @return {string} If a $route_pattern is specified, the router uses this route 
+	 * @return {string} If a $routePattern is specified, the router uses this route 
 	 *  and replaces as many variables as it can to match the $internal_destination. 
 	 *  If not, the router tries to find a route and use it to 
 	 *  make an external URL that maps to the internal destination
 	 *  exactly, but if none of the routes can do this, it returns 
 	 *  an empty string.
-	 *  You may want to use Uri::proxySource() on the returned url to get
+	 *  You may want to use Q_Uri::proxySource() on the returned url to get
 	 *  the proxy url corresponding to it.
 	 */
 	function toUrl(
-	 $route_pattern = null,
+	 $routePattern = null,
 	 $controller = true)
 	{
 		if (!empty($this->Q_url)) {
@@ -453,11 +453,11 @@ class Q_Uri
 			return Q_Request::baseUrl($controller);
 		}
 
-		if ($route_pattern) {
-			if (!isset($routes[$route_pattern])) {
+		if ($routePattern) {
+			if (!isset($routes[$routePattern])) {
 				return null;
 			}
-			return self::matchRoute($route_pattern, $routes[$route_pattern], $controller);
+			return self::matchRoute($routePattern, $routes[$routePattern], $controller);
 		}
 		foreach ($routes as $pattern => $fields) {
 			if (!isset($fields))
@@ -495,7 +495,7 @@ class Q_Uri
 	 */
 	function routePattern()
 	{
-		return $this->route_pattern;
+		return $this->routePattern;
 	}
 	
 	/**
@@ -944,11 +944,11 @@ class Q_Uri
 	 */
 	protected $fields = array();
 	/**
-	 * @property $route_pattern
+	 * @property $routePattern
 	 * @protected
 	 * @type string
 	 */
-	protected $route_pattern = null;
+	protected $routePattern = null;
 	/**
 	 * @property $querystring
 	 * @protected

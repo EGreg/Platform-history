@@ -287,7 +287,6 @@ abstract class Base_Streams_Message extends Db_Row
 	 */
 	function beforeSet_byClientId($value)
 	{
-		if (!isset($value)) return array('byClientId', $value);
 		if ($value instanceof Db_Expression) return array('byClientId', $value);
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".byClientId");
