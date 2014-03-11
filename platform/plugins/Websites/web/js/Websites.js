@@ -28,4 +28,18 @@ Q.Tool.define({
 	"Websites/seo": "plugins/Websites/js/tools/seo.js"
 });
 
+Q.page('', function () {
+	Q.addScript("plugins/Q/js/sha1.js", function () {
+		var streamName = "Websites/seo/"+CryptoJS.SHA1(Q.info.uriString);
+		Q.Streams.Stream.onUpdated(Q.plugins.Websites.userId, streamName, "title").set(function (attributes, k) {
+			document.title = attributes[k];
+		}, "Websites");
+	});
+	return function () {
+		if (!window.CryptoJS) return;
+		var streamName = "Websites/seo/"+CryptoJS.SHA1(Q.info.uriString);
+		Q.Streams.Stream.onUpdated(Q.plugins.Websites.userId, streamName, "title").remove("Websites");
+	}
+}, 'Websites');
+
 })(window.jQuery, Q.plugins.Websites);

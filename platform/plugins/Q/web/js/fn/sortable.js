@@ -489,6 +489,7 @@ function (options) {
 	}
 	
 	function _setStyles(elem) {
+		if (!elem) return;
 		state.prevWebkitUserSelect = elem.style.webkitUserSelect;
 		state.prevWebkitTouchCallout = elem.style.webkitTouchCallout;
 		state.elem = elem;
@@ -497,6 +498,7 @@ function (options) {
 	}
 	
 	function _restoreStyles() {
+		if (!state.elem) return;
 		state.elem.style.webkitUserSelect = state.prevWebkitUserSelect;
 		state.elem.style.webkitTouchCallout = state.prevWebkitTouchCallout;
 		state.prevWebkitUserSelect = state.prevWebkitTouchCallout = state.elem = null;

@@ -2074,7 +2074,9 @@ function updateStream(stream, fields, onlyChangedFields) {
 		return false;
 	}
 	var publisherId = stream.fields.publisherId,
-		streamName = stream.fields.name;
+		streamName = stream.fields.name,
+		updated = {}, cleared = [], k;
+		
 	// events about updated fields
 	for (k in fields) {
 		if (onlyChangedFields && fields[k] === stream.fields[k]) continue;
@@ -2083,21 +2085,23 @@ function updateStream(stream, fields, onlyChangedFields) {
 			stream,
 			[fields, k]
 		);
+		updated[k] = fields[k];
 	}
 	Q.handle(
 		Q.getObject([publisherId, streamName, ''], _streamFieldChangedHandlers),
 		stream,
-		[fields, k]
+		[fields, updated]
 	);
 	Q.handle(
 		Q.getObject([publisherId, '', ''], _streamFieldChangedHandlers),
 		stream,
-		[fields, k]
+		[fields, updated]
 	);
 	if ('attributes' in fields) {
 		var attributes = JSON.parse(fields.attributes || "{}");
-		var updated = {}, cleared = [];
-		var publisherId = fields.publisherId, streamName = fields.name, obj, k;
+		var publisherId = fields.publisherId, streamName = fields.name, obj;
+		updated = {}, cleared = [];
+		
 		// events about cleared attributes
 		for (k in stream.attributes) {
 			if (k in attributes) {
@@ -2113,6 +2117,7 @@ function updateStream(stream, fields, onlyChangedFields) {
 			updated[k] = undefined;
 			cleared.push(k);
 		}
+		
 		// events about updated attributes
 		for (k in attributes) {
 			if (JSON.stringify(attributes[k]) == JSON.stringify(stream.attributes[k])) {
@@ -2123,19 +2128,19 @@ function updateStream(stream, fields, onlyChangedFields) {
 			Q.handle(
 				Q.getObject([publisherId, streamName, k], _streamUpdatedHandlers),
 				stream,
-				[fields, obj]
+				[attributes, k]
 			);
 			updated[k] = attributes[k];
 		}
 		Q.handle(
 			Q.getObject([publisherId, streamName, ''], _streamUpdatedHandlers),
 			stream,
-			[fields, updated, cleared]
+			[attributes, updated, cleared]
 		);
 		Q.handle(
 			Q.getObject([publisherId, '', ''], _streamUpdatedHandlers),
 			stream,
-			[fields, updated, cleared]
+			[attributes, updated, cleared]
 		);
 	}
 	// Now time to replace the fields in the stream with the incoming fields
