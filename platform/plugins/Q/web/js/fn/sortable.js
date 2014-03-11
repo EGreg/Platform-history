@@ -46,8 +46,8 @@ function (options) {
 		}
 		var $item = $(this);
 		_setStyles(this);
-		$('body')[0].preventSelections();
-		this.preventSelections();
+		$('body')[0].preventSelections(true);
+		this.preventSelections(true);
 		Q.addEventListener(document, [Q.Pointer.cancel, Q.Pointer.leave], function leaveHandler() {
 			Q.removeEventListener(document, [Q.Pointer.cancel, Q.Pointer.leave], leaveHandler);
 			complete(true);
@@ -99,8 +99,8 @@ function (options) {
 			y = Q.Pointer.getY(event),
 			offset = $item.offset();
 		
-		$('body')[0].preventSelections();
-		this.preventSelections();
+		$('body')[0].preventSelections(true);
+		this.preventSelections(true);
 		this.cloned = this.cloneNode(true).copyComputedStyle(this);
 		Q.find(this, null, function (element, options, shared, parent, i) {
 			if (parent) {
@@ -176,7 +176,7 @@ function (options) {
 
 	function dropHandler(event, target) {
 		pressed = false;
-		$('body')[0].restoreSelections();
+		$('body')[0].restoreSelections(true);
 		if (!lifted) {
 			return;
 		}
@@ -193,7 +193,7 @@ function (options) {
 		_restoreStyles();
 		
 		Q.Pointer.ended(); // because mouseleave occurrs instead on some browsers
-		$('body')[0].restoreSelections();
+		$('body')[0].restoreSelections(true);
 		
 		if (tLift) clearTimeout(tLift);
 		if (tScroll) clearTimeout(tScroll);

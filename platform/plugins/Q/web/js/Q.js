@@ -372,7 +372,7 @@ HTMLElement.prototype.swap = function(element) {
 };
 
 function _returnFalse() { return false; }
-HTMLElement.prototype.preventSelections = function () {
+HTMLElement.prototype.preventSelections = function (deep) {
 	Q.addEventListener(this, 'selectstart', _returnFalse);
 	this.preventSelectionsInfo = this.preventSelectionsInfo || {
 		style: this.style['-moz-user-select']
@@ -386,9 +386,13 @@ HTMLElement.prototype.preventSelections = function () {
 	= this.style['-webkit-user-select']
 	= this.style['-ms-user-select']
 	= this.style['user-select'] = 'none';
+	if (!deep) return;
+	Q.each(this.children || this.childNodes, function () {
+		this.preventSelections && this.preventSelections(deep);
+	});
 };
 
-HTMLElement.prototype.restoreSelections = function () {
+HTMLElement.prototype.restoreSelections = function (deep) {
 	var p = this.preventSelectionsInfo;
 	if (p) {
 		this.style['-moz-user-select']
@@ -399,6 +403,10 @@ HTMLElement.prototype.restoreSelections = function () {
 		delete this.preventSelectionsInfo;
 	}
 	Q.removeEventListener(this, 'selectstart', _returnFalse);
+	if (!deep) return;
+	Q.each(this.children || this.childNodes, function () {
+		this.restoreSelections && this.restoreSelections(deep);
+	});
 };
 
 HTMLElement.prototype.isBefore = function (element, context) {
