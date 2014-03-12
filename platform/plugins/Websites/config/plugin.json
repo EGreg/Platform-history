@@ -16,7 +16,7 @@
 			"Streams/Stream/save/Websites/seo": ["Websites/before/Streams_Stream_save_Websites_seo"]
 		},
 		"handlersAfterEvent": {
-			"Streams/Stream/fetch/Websites/bio": ["Websites/after/Streams_Stream_fetch_Websites_bio"]
+			"Streams/fetch/Websites/bio": ["Websites/after/Streams_fetch_Websites_bio"]
 		}
 	},
 	"Streams": {

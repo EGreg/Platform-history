@@ -317,11 +317,11 @@ abstract class Streams extends Base_Streams
 			}
 		}
 		$namesToFetch = $name;
-		$fetched = array();
+		$allCached = array();
 		if (is_array($name) and empty($options['refetch'])) {
 			foreach ($name as $n) {
 				if (isset(self::$fetch[$asUserId][$publisherId][$n][$fields])) {
-					$fetched[$n] = self::$fetch[$asUserId][$publisherId][$n][$fields];
+					$allCached[$n] = self::$fetch[$asUserId][$publisherId][$n][$fields];
 				} else {
 					$namesToFetch[] = $n;
 				}
@@ -334,15 +334,13 @@ abstract class Streams extends Base_Streams
 		);
 
 		// Get streams and set their default access info
-		$streams = Streams_Stream::select($fields)
+		$allRetrieved = Streams_Stream::select($fields)
 			->where($criteria)
 			->ignoreCache()
 			->options($options)
 			->fetchDbRows(null, '', 'name');
 
-		if ($fetched) {
-			$streams = array_merge($streams, $fetched);
-		}
+		$streams = $allCached ? array_merge($allCached, $allRetrieved) : $allRetrieved;
 
 		Streams::calculateAccess($asUserId, $publisherId, $streams, false);
 
@@ -359,11 +357,24 @@ abstract class Streams extends Base_Streams
 		$types = array();
 		foreach ($streams as $stream) {
 			if ($stream) {
-				$types[] = $stream->type;
+				$types[$stream->type] = true;
 			}
 		}
+		$types = array_keys($types);
 
 		foreach ($types as $type) {
+			$cached = array();
+			$retrieved = array();
+			foreach ($allCached as $n => $s) {
+				if ($s->type === $type) {
+					$cached[$n] = $s;
+				}
+			}
+			foreach ($allRetrieved as $n => $s) {
+				if ($s->type === $type) {
+					$retrieved[$n] = $s;
+				}
+			}
 			/**
 			 * @event Streams/fetch/$streamType {after}
 			 * @param {&array} 'streams'
@@ -376,13 +387,18 @@ abstract class Streams extends Base_Streams
 			 */
 			Q::event("Streams/fetch/$type", array(
 				'streams' => &$streams,
+				'cached' => $cached,
+				'retrieved' => $retrieved,
+				'allCached' => $allCached,
+				'allRetrieved' => $allRetrieved,
 				'asUserId' => $asUserId,
 				'publisherId' => $publisherId,
 				'name' => $name,
 				'criteria' => $criteria,
 				'fields' => $fields,
-				'options' => $options
-			), 'after');
+				'options' => $options,
+				'type' => $type
+			), 'after', false, $streams);
 		}
 
 		foreach ($streams as $n => $stream) {
