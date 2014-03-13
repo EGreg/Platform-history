@@ -4778,15 +4778,15 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 		filter = 'q_tool';
 	}
 	// Arrays are accepted
-	if (Q.typeOf(elem) === 'array' ||
-		(typeof(HTMLCollection) !== 'undefined' && (elem instanceof HTMLCollection)) ||
-		(window.jQuery && (elem instanceof jQuery))) {
+	if (Q.typeOf(elem) === 'array'
+	|| (typeof(HTMLCollection) !== 'undefined' && (elem instanceof HTMLCollection))
+	|| (window.jQuery && (elem instanceof jQuery))) {
 
-		for (i=0; i<elem.length; ++i) {
-			if (false === Q.find(elem[i], filter, callbackBefore, callbackAfter, options, shared, parent, i)) {
+		Q.each(elem, function (i) {
+			if (false === Q.find(this, filter, callbackBefore, callbackAfter, options, shared, parent, i)) {
 				return false;
 			}
-		}
+		});
 		return;
 	}
 	// Do a depth-first search and call the constructors
