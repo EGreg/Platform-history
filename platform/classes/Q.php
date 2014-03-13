@@ -141,9 +141,8 @@ EOT;
 		 * @param {integer} 'errline'
 		 * @param {array} 'errcontext'
 		 */
-		$output = ob_get_clean();
 		self::event("Q/error", compact(
-			'type','errno','errstr','errfile','errline','errcontext','output'
+			'type','errno','errstr','errfile','errline','errcontext'
 		));
 	}
 
