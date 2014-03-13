@@ -180,14 +180,6 @@ Streams.onMessage = Q.Event.factory(_messageHandlers, ["", ""]);
 Streams.onConstruct = Q.Event.factory(_constructHandlers, [""]);
 
 /**
- * Returns Q.Event that occurs after fresh stream info has arrived on the client side
- * @method Streams.onRefresh
- * @param type {String} type of the stream being constructed on the client side
- * @return {Q.Event}
- */
-Streams.onRefresh = Q.Event.factory(_refreshHandlers, [""]);
-
-/**
  * Returns Q.Event that occurs on some socket event coming from socket.io
  * @method onEvent
  */
@@ -340,8 +332,7 @@ Streams.get = Q.getter(function (publisherId, streamName, callback, extra) {
 					Streams.onError.handle(msg, args);
 				}
 				return callback && callback.call(stream, err, stream);
-			},
-			true
+			}
 		);
 	}, extra);
 	_retain = undefined;
@@ -431,9 +422,8 @@ Streams.create.onError = new Q.Event();
  * @param extra {Object} Can include "messages" and "participants"
  * @param callback {Function} The function to call when all constructors and event handlers have executed
  *  The first parameter is an error, in case something went wrong. The second one is the stream object.
- * @param handleRefreshEvents {Boolean} Defaults to false. Whether to also handle the stream refresh events.
  */
-Streams.construct = function _Streams_construct(fields, extra, callback, handleRefreshEvents) {
+Streams.construct = function _Streams_construct(fields, extra, callback) {
 
 	if (Q.isEmpty(fields)) {
 		Q.handle(callback, this, ["Streams.Stream constructor: fields are missing"]);
@@ -522,17 +512,6 @@ Streams.construct = function _Streams_construct(fields, extra, callback, handleR
 			});
 		}
 		
-		if (handleRefreshEvents) {
-			var f = stream.fields;
-			Stream.onRefresh(f.type).handle(stream);
-			Stream.onRefresh('').handle(stream);
-			if (f.publisherId && f.name) {
-				Stream.onRefresh(f.publisherId, f.name).handle(stream);
-				Stream.onRefresh(f.publisherId, '').handle(stream);
-				Stream.onRefresh('', f.name).handle(stream);
-				Stream.onRefresh('', '').handle(stream);
-			}
-		}
 		Q.handle(callback, stream, [null, stream]);
 		return stream;
 	}
@@ -672,24 +651,11 @@ var Stream = Streams.Stream = function (fields) {
 		'writeLevel',
 		'adminLevel',
 		'inheritAccess',
-		'closedTime'
+		'closedTime',
+		'access'
 	]);
-	if (this.fields.messageCount) {
-		this.fields.messageCount = parseInt(this.fields.messageCount);
-	}
-	if (this.fields.participantCount) {
-		this.fields.participantCount = parseInt(this.fields.participantCount);
-	}
-	try {
-		this.pendingAttributes = this.attributes = fields.attributes
-			? JSON.parse(fields.attributes)
-			: {};
-	} catch (e) {
-		this.pendingAttributes = this.attributes = {};
-	}
-	this.pendingFields = {};
-	this.access = Q.copy(fields.access) ;
 	this.typename = 'Q.Streams.Stream';
+	prepareStream(this, fields);
 };
 
 Stream.get = Streams.get;
@@ -1109,7 +1075,7 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 			if (options.participants) {
 				extra.participants = data.slots.participants;
 			}
-			Streams.construct(data.slots.stream, extra, _processResults, true);
+			Streams.construct(data.slots.stream, extra, _processResults);
 		}
 
 		function _processResults(err, stream) {
@@ -1129,7 +1095,7 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 				Streams.construct(fields, {}, function () {
 					streams[key] = this;
 					p.fill(key)();
-				}, true);
+				});
 			});
 			
 			// Now process all the relations
@@ -1450,15 +1416,6 @@ Stream.onUpdatedRelateFrom = Q.Event.factory(_streamUpdatedRelateFromHandlers, [
  * @return {Q.Event}
  */
 Stream.onConstruct = Q.Event.factory(_streamConstructHandlers, ["", ""]);
-
-/**
- * Returns Q.Event that occurs after fresh stream info has arrived on the client side
- * @method Streams.Stream.onRefresh
- * @param publisherId {String} id of publisher which is publishing the stream
- * @param name {String} name of stream which is being constructed on the client side
- * @return {Q.Event}
- */
-Stream.onRefresh = Q.Event.factory(_streamRefreshHandlers, ["", ""]);
 
 /**
  * Join a stream as a participant
@@ -2103,7 +2060,8 @@ function updateStream(stream, fields, onlyChangedFields) {
 		updated = {}, cleared = [];
 		
 		// events about cleared attributes
-		for (k in stream.attributes) {
+		var streamAttributes = stream.getAll();
+		for (k in streamAttributes) {
 			if (k in attributes) {
 				continue;
 			}
@@ -2120,7 +2078,7 @@ function updateStream(stream, fields, onlyChangedFields) {
 		
 		// events about updated attributes
 		for (k in attributes) {
-			if (JSON.stringify(attributes[k]) == JSON.stringify(stream.attributes[k])) {
+			if (JSON.stringify(attributes[k]) == JSON.stringify(stream.get(k))) {
 				continue;
 			}
 			obj = {};
@@ -2145,9 +2103,27 @@ function updateStream(stream, fields, onlyChangedFields) {
 	}
 	// Now time to replace the fields in the stream with the incoming fields
 	Q.extend(stream.fields, fields);
-	// var f = Q.extend({}, stream.fields, fields);
-	// f.access = stream.access;
-	// Streams.construct(f, {}, null, true);
+	prepareStream(stream);
+}
+
+function prepareStream(stream) {
+	if (stream.fields.messageCount) {
+		stream.fields.messageCount = parseInt(stream.fields.messageCount);
+	}
+	if (stream.fields.participantCount) {
+		stream.fields.participantCount = parseInt(stream.fields.participantCount);
+	}
+	if (stream.fields.access) {
+		stream.access = Q.copy(stream.fields.access);
+		delete stream.fields.access;
+	}
+	try {
+		stream.pendingAttributes = stream.attributes
+		= stream.fields.attributes ? JSON.parse(stream.fields.attributes) : {};
+	} catch (e) {
+		stream.pendingAttributes = stream.attributes = {};
+	}
+	stream.pendingFields = {};
 }
 
 function _onCalledHandler(args, shared) {
@@ -2512,7 +2488,7 @@ Q.onInit.add(function _Streams_onInit() {
 		// Every time before anything is activated,
 		// process any preloaded streams data we find
 		Q.each(Stream.preloaded, function (i, fields) {
-			Streams.construct(fields, {}, null, true);
+			Streams.construct(fields, {}, null);
 		});
 		Stream.preloaded = null;
 	}, 'Streams');
