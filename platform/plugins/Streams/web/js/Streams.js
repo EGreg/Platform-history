@@ -2099,7 +2099,7 @@ function updateStream(stream, fields, onlyChangedFields) {
 	);
 	if ('attributes' in fields) {
 		var attributes = JSON.parse(fields.attributes || "{}");
-		var publisherId = fields.publisherId, streamName = fields.name, obj;
+		var publisherId = stream.fields.publisherId, streamName = stream.fields.name, obj;
 		updated = {}, cleared = [];
 		
 		// events about cleared attributes
