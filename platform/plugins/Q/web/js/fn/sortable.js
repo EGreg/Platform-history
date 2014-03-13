@@ -101,23 +101,21 @@ function (options) {
 		
 		$('body')[0].preventSelections(true);
 		this.preventSelections(true);
-		
-		var cloned;
-		cloned = this.cloneNode(true).copyComputedStyle(this);
-		cloned.preventSelections(true);
+		this.cloned = this.cloneNode(true).copyComputedStyle(this);
+		this.cloned.preventSelections(true);
 		Q.find(this, null, function (element, options, shared, parent, i) {
 			if (parent) {
 				var children = parent.cloned.children || parent.cloned.childNodes;
 				element.cloned = children[i].copyComputedStyle(element);
 			}
 		});
-		var $placeholder = $(cloned).css({
+		var $placeholder = $(this.cloned).css({
 			opacity: state.placeholderOpacity
 		}).insertAfter($item); //.hide('slow');
 
 		_hideActions();
 		
-		cloned = this.cloneNode(true).copyComputedStyle(this);
+		this.cloned = this.cloneNode(true).copyComputedStyle(this);
 		Q.find(this, null, function (element, options, shared, parent, i) {
 			if (parent) {
 				var children = parent.cloned.children || parent.cloned.childNodes;
@@ -128,7 +126,10 @@ function (options) {
 		gx = x - offset.left;
 		gy = y - offset.top;
 	
-		var $dragged = $(cloned);
+		var $dragged = $(this.cloned);
+		delete this.cloned;
+		
+		
 		$('*', $dragged).each(function () {
 			$(this).css('pointerEvents', 'none');
 		});
