@@ -66,6 +66,8 @@ Q.Tool.define("Q/inplace", function (options) {
 	editOnClick: true,
 	selectOnEdit: true,
 	maxWidth: null,
+	minWidth: 100,
+	placeholder: '',
 	template: {
 		dir: 'plugins/Q/views',
 		name: 'Q/inplace/tool'
@@ -129,7 +131,8 @@ function _Q_inplace_tool_constructor(element, options) {
 		letterSpacing: static_span.css('letterSpacing')
 	});
 	fieldinput.plugin('Q/autogrow', {
-		maxWidth: tool.state.maxWidth || $te.parent().innerWidth()
+		maxWidth: tool.state.maxWidth || $te.parent().innerWidth(),
+		minWidth: tool.state.minWidth || 0
 	});
 	if (!fieldinput.data('inplace')) {
 		fieldinput.data('inplace', {});
@@ -140,7 +143,8 @@ function _Q_inplace_tool_constructor(element, options) {
 	}
 	function onClick() {
 		fieldinput.plugin('Q/autogrow', {
-			maxWidth: tool.state.maxWidth || $te.parent().innerWidth()
+			maxWidth: tool.state.maxWidth || $te.parent().innerWidth(),
+			minWidth: tool.state.minWidth || 0
 		});
 		var field_width = static_span.outerWidth();
 		var field_height = static_span.outerHeight();

@@ -25,6 +25,9 @@ Q.Tool.define("Q/tabs", function(options) {
 		if (false === tool.state.onClick.handle.call(tool, this.getAttribute('data-name'), this)) {
 			return;
 		}
+		if (Q.Pointer.canceledClick || $('.Q_discouragePointerEvents', tool.element).length) {
+			return;
+		}
 		var element = this;
 		setTimeout(function () {
 			tool.switchTo(element.getAttribute('data-name'), element);	
