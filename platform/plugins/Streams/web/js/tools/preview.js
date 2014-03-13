@@ -57,10 +57,11 @@ Q.Tool.define("Streams/preview", function(options) {
 				publisherId: state.publisherId,
 				type: state.creatable.streamType
 			}, overrides);
-			Q.Streams.retainWith(tool).create(fields, function (err, stream, icon) {
+			Q.Streams.retainWith(tool).create(fields, function (err, stream, extra) {
 				if (err) {
 					return err;
 				}
+				state.related.weight = Q.getObject(['related', 'weight'], extra);
 				state.publisherId = this.fields.publisherId;
 				state.streamName = this.fields.name;
 				tool.stream = this;

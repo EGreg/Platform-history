@@ -89,7 +89,7 @@ function Streams_stream_post($params) {
 	}
 
 	if ($relate['streamName']) {
-		Streams::relate(
+		$result = Streams::relate(
 			$user->id, 
 			$relate['publisherId'], 
 			$relate['streamName'], 
@@ -98,6 +98,7 @@ function Streams_stream_post($params) {
 			$stream->name,
 			compact('weight')
 		);
+		Q_Response::setSlot('messageTo', $result['messageTo']->exportArray());
 	}
 	
 	// we have to set the access levels on the stream

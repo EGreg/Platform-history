@@ -383,6 +383,7 @@ Streams.create = function (fields, callback, related) {
 		fields['Q.Streams.related.publisherId'] = related.publisherId || related.publisherId;
 		fields['Q.Streams.related.streamName'] = related.streamName || related.streamName || related.name;
 		fields['Q.Streams.related.type'] = related.type;
+		slotNames.push('messageTo');
 	}
 	var baseUrl = Q.baseUrl({
 		publisherId: fields.publisherId,
@@ -406,7 +407,18 @@ Streams.create = function (fields, callback, related) {
 			if (_r) {
 				stream.retain(_r);
 			}
-			return callback && callback.call(stream, null, stream, data.slots.icon);
+			var extra = {};
+			extra.icon = data.slots.icon;
+			if (related && data.slots.messageTo) {
+				var m = extra.messageTo = new Streams.Message(data.slots.messageTo);
+				extra.related = {
+					publisherId: related.publisherId,
+					streamName: related.streamName,
+					type: related.type,
+					weight: m.get('weight')
+				};
+			}
+			return callback && callback.call(stream, null, stream, extra, data.slots);
 		});
 	}, { method: 'post', fields: fields, baseUrl: baseUrl });
 	_retain = undefined;
@@ -1518,17 +1530,19 @@ Stream.remove.onError = new Q.Event();
 var Message = Streams.Message = function Streams_Message(obj) {
 	Q.extend(this, obj);
 	this.typename = 'Q.Streams.Message';
-	this.getAll = function () {
-		try {
-			return JSON.parse(this.instructions);
-		} catch (e) {
-			return undefined;
-		}
-	};
-	this.get = function (instructionName) {
-		var instr = this.getAll();
-		return instr[instructionName];
-	};
+};
+
+Message.prototype.getAll = function _Message_prototype_getAll () {
+	try {
+		return JSON.parse(this.instructions);
+	} catch (e) {
+		return undefined;
+	}
+};
+
+Message.prototype.get = function _Message_prototype_get (instructionName) {
+	var instr = this.getAll();
+	return instr[instructionName];
 };
 
 /**

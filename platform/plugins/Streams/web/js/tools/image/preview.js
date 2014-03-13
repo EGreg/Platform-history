@@ -63,16 +63,17 @@ Q.Tool.define("Streams/image/preview", function(options) {
 							publisherId: state.publisherId,
 							type: 'Streams/image',
 							icon: icon
-						}, function (err, stream, icon) {
+						}, function (err, stream, extra) {
 							if (err) {
 								return callback(err);
 							}
+							state.related.weight = Q.getObject(['related', 'weight'], extra);
 							state.publisherId = this.fields.publisherId;
 							state.streamName = this.fields.name;
 							tool.stream = this;
 							callback(null, {
 								slots: {
-									data: icon
+									data: extra.icon
 								}
 							});
 							state.onCreate.handle.call(tool);
