@@ -2846,7 +2846,7 @@ function _loadToolScript(toolElement, callback, shared) {
 			}
 		}
 		if (typeof toolFunc === 'function') {
-			return callback(toolElement, toolFunc, toolName);
+			return p.fill(toolName)(toolElement, toolFunc, toolName);
 		}
 		if (toolFunc === undefined) {
 			return;
