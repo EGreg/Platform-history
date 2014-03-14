@@ -4061,10 +4061,10 @@ Q.request = function (url, slotNames, callback, options) {
 				}
 				var content = Q.serializeFields(options.fields);
 				if (verb === 'GET') {
-					xmlhttp.open('GET', url + (content ? '&' + content : ''), sync);
+					xmlhttp.open('GET', url + (content ? '&' + content : ''), !sync);
 					xmlhttp.send();
 				} else {
-			    	xmlhttp.open(verb, url, sync);
+			    	xmlhttp.open(verb, url, !sync);
 					xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 					//xmlhttp.setRequestHeader("Content-length", content.length);
 					//xmlhttp.setRequestHeader("Connection", "close");
@@ -5510,7 +5510,6 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 					callback = o.callback;
 				}
 			}
-			var handled = false;
             var sameDomain = callables.sameDomain(Q.info.baseUrl);
 			if (o.loadUsingAjax && sameDomain
 			&& (!o.target || o.target === true || o.target === '_self')) {
@@ -5523,10 +5522,10 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 							if (callback) callback();
 						}
 					}, o));
-					handled = true;
 				} else if (o.externalLoader) {
 					o.externalLoader.apply(this, arguments);
-					handled = true;
+				} else {
+//					window.location = callables;
 				}
 			} else {
 				if (Q.typeOf(o.fields) === 'object') {
@@ -5551,10 +5550,10 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 						if (window.location.href == callables) {
 							window.location.reload(true);
 						} else {
-							window.location = callables;
+//							window.location = callables;
 						}
 					} else {
-						window.open(callables, o.target);
+//						window.open(callables, o.target);
 					}
 				}
 			}

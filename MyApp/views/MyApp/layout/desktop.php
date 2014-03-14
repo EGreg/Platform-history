@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:fb="http://www.facebook.com/2008/fbml">
+<html lang="en" xmlns:og="http://ogp.me/ns#" xmlns:fb="http://www.facebook.com/2008/fbml">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title id="title_slot"><?php echo $title ?></title>
@@ -13,28 +13,28 @@
 </head>
 <body>
 	<div id="dashboard_slot">
-<!-- ------------------------begin dashboard slot-------------------------------- -->
+<!-- - - - - - - - - - - - - begin dashboard slot- - - - - - - - - - - - - - - - -->
 <?php echo $dashboard ?> 
-<!-- --------------------------end dashboard slot-------------------------------- -->
+<!-- - - - - - - - - - - - - - end dashboard slot- - - - - - - - - - - - - - - - -->
 	</div>
 	<div id="page">
 		<?php if ($notices): ?>
 			<div id="notices_slot">
-<!-- --------------------------begin notices slot-------------------------------- -->
+<!-- - - - - - - - - - - - - - begin notices slot- - - - - - - - - - - - - - - - -->
 <?php echo $notices ?> 
-<!-- --------------------------end dashboard_slot-------------------------------- -->
+<!-- - - - - - - - - - - - - - end dashboard_slot- - - - - - - - - - - - - - - - -->
 			</div>
 		<?php endif; ?>
 		<div id="content_slot">
-<!-- --------------------------begin content slot-------------------------------- -->
+<!-- - - - - - - - - - - - - - begin content slot- - - - - - - - - - - - - - - - -->
 <?php echo $content; ?> 
-<!-- ----------------------------end content slot-------------------------------- -->
+<!-- - - - - - - - - - - - - - - end content slot- - - - - - - - - - - - - - - - -->
 		</div>
-	<div id="dialogs_slot">
-<!-- --------------------------begin dialogs slot-------------------------------- -->
+		<div id="dialogs_slot">
+<!-- - - - - - - - - - - - - - begin dialogs slot- - - - - - - - - - - - - - - - -->
 <?php echo $dialogs; ?> 
-<!-- ----------------------------end dialogs slot-------------------------------- -->
-	</div>
+<!-- - - - - - - - - - - - - - - end dialogs slot- - - - - - - - - - - - - - - - -->
+		</div>
 	</div>
 	<?php echo Q_Response::scripts(true, "\n\t") ?> 
 	<?php echo Q_Response::scriptLines(true) ?>

@@ -568,6 +568,7 @@ EOT;
 			'before'
 		);
 		$result = '';
+		$exception = null;
 		foreach ($info as $name => $options) {
 			Q::$toolName = $name;
 			$toolHandler = "$name/tool";
@@ -594,8 +595,16 @@ EOT;
 				 * @return {string}
 				 *	The rendered content
 				 */
-				$result .= self::event('Q/missingTool', compact('name', 'options'));
-			} catch (Exception $exception) {
+				$params = $e->params();
+				if ($params['filename'] === "handlers/$toolHandler.php") {
+					$result .= self::event('Q/missingTool', compact('name', 'options'));
+				} else {
+					$exception = $e;
+				}
+			} catch (Exception $e) {
+				$exception = $e;
+			}
+			if ($exception) {
 				Q::log($exception);
 				$result .= $exception->getMessage();
 			}

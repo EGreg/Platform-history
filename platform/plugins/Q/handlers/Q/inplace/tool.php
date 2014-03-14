@@ -36,7 +36,7 @@ function Q_inplace_tool($options)
 		: 'Q_inplace_tool_static';
 	Q_Response::addScript('plugins/Q/js/tools/inplace.js');
 
-	$formTag = Q_Html::form($action, $method, array('class' => 'Q_inplace_tool_form'));
+	$formTag = Q_Html::form("$action?Q.method=$method", 'post', array('class' => 'Q_inplace_tool_form'));
 
 	$classes = !empty($editing) ? 'Q_editing Q_nocancel' : '';
 	$options = compact('editOnClick', 'selectOnEdit', 'maxWidth', 'beforeSave', 'onSave');

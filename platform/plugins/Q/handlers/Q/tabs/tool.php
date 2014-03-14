@@ -13,6 +13,7 @@
  *  "slot" => The name of the slot to request when changing tabs with javascript.
  *    (may be array to update multiple slots)
  *  "defaultTab" => Here you can specify the name of the tab to show by default
+ *  "after" => Name of an event that will return HTML to place after the generated HTML in the tabs tool element
  *  "loader" => Optional. Name of function which takes url, slot, callback. It should call the callback and 
  *    pass it an object with the response info. Can be used to implement caching, etc. instead of the default 
  *    HTTP request.
@@ -91,5 +92,6 @@ function Q_tabs_tool($options)
 		'selector', 'slot', 'tabs', 'urls', 'field', 'loader', 'beforeSwitch', 'beforeScripts', 'onActivate'
 	));
 	Q_Response::addScript('plugins/Q/js/tools/tabs.js');
-	return "<div class='Q_tabs_tabs Q_clearfix'>$result</div>";
+	$after = isset($options['after']) ? Q::event($options['after'], $options) : '';
+	return "<div class='Q_tabs_tabs Q_clearfix'>$result$after</div>";
 }

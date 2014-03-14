@@ -1391,7 +1391,7 @@ body { text-align: center; height: 100%; }
 }
 
 #dashboard .Q_tabs_tabs { border: 0px; }
-#dashboard .Q_tabs_tab { cursor: pointer; float: left; width: 100px; margin: 5px 10px 0px 10px; border: 0px !important; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; background-color: #f8f8f8; background: none; font-size: 14px; line-height: 30px !important; text-align: center; }
+#dashboard .Q_tabs_tab { cursor: pointer; float: left; width: auto; margin: 5px 10px 0px 10px; border: 0px !important; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; background-color: #f8f8f8; background: none; font-size: 14px; line-height: 30px !important; text-align: center; }
 #dashboard .Q_tabs_tab:first-child { border-top: 0px solid #e5e5e5; border-left: 0px; }
 #dashboard .Q_tabs_tab,
 #dashboard .Q_tabs_tab>* { cursor: pointer; vertical-align: middle; }

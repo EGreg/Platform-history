@@ -32,7 +32,8 @@ Q.Tool.define("Q/tabs", function(options) {
 		setTimeout(function () {
 			tool.switchTo(element.getAttribute('data-name'), element);	
 		}, 0);
-	}).click(function () {
+	}).click(function (event) {
+		event.preventDefault();
 		// return false;
 	});
 	

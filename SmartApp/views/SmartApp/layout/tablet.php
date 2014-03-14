@@ -2,7 +2,7 @@
 <html lang="en"
 <?php if (Q_Config::get('Q', 'environment', '') == 'live'): ?>
 <?php endif ?>
-xmlns:fb="http://www.facebook.com/2008/fbml">
+xmlns:og="http://ogp.me/ns#" xmlns:fb="http://www.facebook.com/2008/fbml">
 <head>
 	<?php include('common_mobile_header.php') ?>
 	<?php include('common_header.php') ?>
@@ -14,29 +14,31 @@ xmlns:fb="http://www.facebook.com/2008/fbml">
 	<div id="main">
 		<div class="Q_top_stub">&nbsp;</div>
 		<div id="dashboard_slot">
-<!-- ------------------------begin dashboard slot-------------------------------- -->
+<!-- - - - - - - - - - - - - begin dashboard slot- - - - - - - - - - - - - - - - -->
 <?php echo $dashboard ?> 
-<!-- --------------------------end dashboard slot-------------------------------- -->
+<!-- - - - - - - - - - - - - - end dashboard slot- - - - - - - - - - - - - - - - -->
 		</div>
 		<div id="notices_slot">
-<!-- --------------------------begin notices slot-------------------------------- -->
-<?php echo $notices ?> 
-<!-- ----------------------------end notices slot-------------------------------- -->
+<!-- - - - - - - - - - - - - - begin notices slot- - - - - - - - - - - - - - - - -->
+<?php echo $notices ?>
+<!-- - - - - - - - - - - - - - - end notices slot- - - - - - - - - - - - - - - - -->
 		</div>
 		<div id="column0_slot">
-<!-- ---------------------------------------------------------------------------- -->
-<?php echo $column0 ?> 
-<!-- ---------------------------------------------------------------------------- -->
+<!-- - - - - - - - - - - - - - begin column0 slot- - - - - - - - - - - - - - - - -->
+<?php echo $column0 ?>
+<!-- - - - - - - - - - - - - - - end column0 slot- - - - - - - - - - - - - - - - -->
 		</div>
-		<div id="column1_slot">
-<!-- ---------------------------------------------------------------------------- -->
-<?php echo $column1 ?> 
-<!-- ---------------------------------------------------------------------------- -->
-		</div>
-		<div id="column2_slot">
-<!-- ---------------------------------------------------------------------------- -->
-<?php echo $column2 ?> 
-<!-- ---------------------------------------------------------------------------- -->
+		<div id="columns_flip">
+			<div id="column1_slot">
+<!-- - - - - - - - - - - - - - begin column1 slot- - - - - - - - - - - - - - - - -->
+<?php echo $column1 ?>
+<!-- - - - - - - - - - - - - - - end column1 slot- - - - - - - - - - - - - - - - -->
+			</div>
+			<div id="column2_slot">
+<!-- - - - - - - - - - - - - - begin column2 slot- - - - - - - - - - - - - - - - -->
+<?php echo $column2 ?>
+<!-- - - - - - - - - - - - - - - end column2 slot- - - - - - - - - - - - - - - - -->
+			</div>
 		</div>
 		<?php include('common_footer.php') ?>
 	</div>
