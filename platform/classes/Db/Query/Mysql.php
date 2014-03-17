@@ -1583,8 +1583,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		} else if ($criteria instanceof Db_Expression) {
 			/* @var $criteria Db_Expression */
 			if (is_array($criteria->parameters)) {
-				$this->parameters = array_merge($this->parameters,
-					$criteria->parameters);
+				$this->parameters = array_merge($this->parameters, $criteria->parameters);
 			}
 			$criteria = (string) $criteria;
 		}
