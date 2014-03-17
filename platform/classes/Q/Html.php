@@ -82,7 +82,7 @@ class Q_Html
 	 $attributes = array(),
 	 $contents = null)
 	{
-		if (!is_string($method)) {
+		if (isset($method) and !is_string($method)) {
 			throw new Exception("form method is not a string");
 		}
 		if (!is_array($attributes)) {
@@ -90,6 +90,9 @@ class Q_Html
 				$contents = $attributes;
 			}
 			$attributes = array();
+		}
+		if (!isset($method)) {
+			unset($method);
 		}
 		$tag_params = array_merge(
 			compact('action', 'method'),

@@ -210,7 +210,7 @@ function _Q_inplace_tool_constructor(element, options) {
 			.css('display', 'block')
 			.removeClass('Q_error');
 		focusedOn = 'fieldinput';
-		var method = (form.length) ? form.attr('method') : 'post';
+		var method = options.method || (form.length && form.attr('method')) || 'post';
 		var url = form.attr('action');
 
 		var used_placeholder = false;
