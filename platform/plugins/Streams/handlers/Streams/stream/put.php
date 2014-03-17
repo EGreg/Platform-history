@@ -56,6 +56,14 @@ function Streams_stream_put($params) {
 		}
 	}
 	
+	$restricted = array('readLevel', 'writeLevel', 'adminLevel');
+	$owned = $stream->testAdminLevel('own');
+	foreach ($restricted as $r) {
+		if (isset($more_fields[$r]) and !$owned) {
+			throw new Users_Exception_NotAuthorized();
+		}
+	}
+	
 	// handle setting of attributes
 	if (isset($more_fields['attributes']) and is_array($more_fields['attributes'])) {
 		foreach ($more_fields['attributes'] as $k => $v) {
