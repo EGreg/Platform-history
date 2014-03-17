@@ -65,12 +65,11 @@ function Streams_batch_response_batch()
 			}
 			switch ($action) {
 			case 'message':
-			case 'participant':
 				if (!is_array($extra)) {
 					$_REQUEST['ordinal'] = $extra;
 				}
 				break;
-			case 'message':
+			case 'participant':
 				if (!is_array($extra)) {
 					$_REQUEST['userId'] = $extra;
 				}
