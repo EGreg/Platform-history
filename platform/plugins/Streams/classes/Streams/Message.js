@@ -95,7 +95,6 @@ function Streams_Message (fields) {
 		var subject = Q.Config.get(['Streams', 'types', stream.fields.type, 'invite', 'subject'], 'Message "{{& message.type}}" to "{{& stream.title}}"');
 		var viewPath;
 
-debugger;
 		if (delivery.email) {
 			viewPath = Q.Mustache.template(this.fields.type+'/email.mustache') ? this.fields.type : 'Streams/message';
 			Q.Utils.sendMessage(delivery.email, subject, viewPath+'/email.mustache', fields, {html: true}, callback);

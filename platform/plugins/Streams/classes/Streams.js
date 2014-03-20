@@ -623,7 +623,7 @@ Streams.listen = function (options) {
 													type: 'Streams/invite',
 													sentTime: new Db.Expression("CURRENT_TIMESTAMP"),
 													state: 'posted',
-													content: displayName + " invited you to "+baseUrl+"/"+token,
+													content: (displayName || "Someone") + " invited you to "+baseUrl+"/"+token,
 													instructions: JSON.stringify({
 														token: token,
 														type: stream.type.split('/').join('_'),
