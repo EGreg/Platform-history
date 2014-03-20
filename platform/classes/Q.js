@@ -347,7 +347,8 @@ Q.Pipe.prototype.add = function _Q_pipe_add(requires, maxTimes, callback) {
 			case 'array':
 				r = arguments[i];
 				if (arguments[i].length
-				&& typeof arguments[i][0] !== 'string') {
+				&& typeof arguments[i][0] !== 'string'
+				&& typeof arguments[i][0] !== 'number') {
 					e = arguments[++i];
 				}
 				break;
@@ -360,6 +361,7 @@ Q.Pipe.prototype.add = function _Q_pipe_add(requires, maxTimes, callback) {
 				break;
 			}
 			if (e !== null && typeof e !== 'string') {
+				debugger;
 				throw new Q.Error("Q.Pipe.prototype.add requires event name after array of objects");
 			}
 		}
