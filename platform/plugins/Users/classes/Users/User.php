@@ -649,6 +649,54 @@ class Users_User extends Base_Users_User
 	}
 	
 	/**
+	 * Sets the user as verified without any further ado.
+	 * Can be used e.g. after following an invitation link
+	 * May download the gravatar icon for the user.
+	 * To log in using another session, the user would be asked to set up
+	 * a passphrase.
+	 * @return {boolean} whether the user was successfully set as verified
+	 */
+	function setVerified()
+	{
+		$identifier = null;
+		if ($this->signedUpWith === 'none') {
+			if (empty($this->emailAddressPending)) {
+				$identifier = $this->mobileNumberPending;
+				$this->mobileNumberPending = '';
+				$this->signedUpWith = 'mobile';
+			} else {
+				$identifier = $this->emailAddressPending;
+				$this->emailAddressPending = '';
+				$this->signedUpWith = 'email';
+			}
+		}
+		if (empty($identifier)) return false;
+		if (Q_Valid::email($identifier, $emailAddress)) {
+			$this->setEmailAddress($emailAddress, true);
+		} else if (Q_Valid::phone($identifier, $mobileNumber)) {
+			$this->setMobileNumber($mobileNumber, true);
+		} else {
+			throw new Q_Exception_WrongType(array(
+				'field' => 'identifier',
+				'type' => 'email address or mobile number'
+			), array('emailAddress', 'mobileNumber'));
+		}
+		// Import the user's icon and save it
+		if (empty($this->icon)
+		|| substr($this->icon, 0, 7) === 'default'
+		|| substr($this->icon, 0, 6) === 'future') {
+			$hash = md5(strtolower(trim($identifier)));
+			$icon = array(
+				'40.png' => array('hash' => $hash, 'size' => 40),
+				'50.png' => array('hash' => $hash, 'size' => 50),
+				'80w.png' => array('hash' => $hash, 'size' => 80)
+			);
+			$this->icon = Users::downloadIcon($this, $icon);
+		}
+		return $true;
+	}
+	
+	/**
 	 * Obtain the path of the user icon
 	 * @return {string}
 	 */
