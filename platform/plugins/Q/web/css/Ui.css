@@ -1328,17 +1328,17 @@ html[xmlns] .Q_clearfix { display: block; }
 /* basic layout  */
 
 html { background: #f2f2f2;  /* background: #f3f3f3; */ }
-body { text-align: center; height: 100%; }
-#dashboard_slot,
-#notices_slot,
-#content_slot { text-align: center; }
-#dashboard,
-#notices,
-#content { margin: auto; text-align: left; }
-#column0_slot #content { width: 100%; }
-#content { position: relative; }
-#content_slot { position: relative; }
-#page { position: absolute; top: 50px; bottom: 0px; width: 100%; /* top: 54px; */ /* padding-top: 10px; */
+divbody { text-align: center; height: 100%; }
+div#dashboard_slot,
+div#notices_slot,
+div#content_slot { text-align: center; }
+div#dashboard,
+div#notices,
+div#content { margin: auto; text-align: left; }
+div#column0_slot #content { width: 100%; }
+div#content { position: relative; }
+div#content_slot { position: relative; }
+div#page { position: absolute; top: 50px; bottom: 0px; width: 100%; /* top: 54px; */ /* padding-top: 10px; */
     left:50%; margin-left:-50%; /* reset position for ie7, ff4+ */
 }
 
