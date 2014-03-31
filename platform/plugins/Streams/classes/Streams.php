@@ -2077,16 +2077,16 @@ abstract class Streams extends Base_Streams
 	 * Get first and last name out of full name
 	 * @method splitFullName
 	 * @static
-	 * @param {string} $fullname The string representing full name
+	 * @param {string} $fullName The string representing full name
 	 * @return {array} array containing 'first' and 'last' properties
 	 */
-	static function splitFullName ($fullname) {
-		$capitalize = Q_Config::get('Streams', 'inputs', 'fullname', 'capitalize', true);
+	static function splitFullName ($fullName) {
+		$capitalize = Q_Config::get('Streams', 'inputs', 'fullName', 'capitalize', true);
 		$last = null;
-		if (strpos($fullname, ',') !== false) {
-			list($last, $first) = explode(',', $fullname);
-		} else if (strpos($fullname, ' ') !== false) {
-			$parts = explode(' ', $fullname);
+		if (strpos($fullName, ',') !== false) {
+			list($last, $first) = explode(',', $fullName);
+		} else if (strpos($fullName, ' ') !== false) {
+			$parts = explode(' ', $fullName);
 			if ($capitalize) {
 				foreach ($parts as $k => $v) {
 					$parts[$k] = ucfirst($v);
@@ -2094,7 +2094,9 @@ abstract class Streams extends Base_Streams
 			}
 			$last = count($parts) > 1 ? array_pop($parts) : '';
 			$first = join(' ', $parts);
-		} else $first = $fullname;
+		} else {
+			$first = $fullName;
+		}
 		$first = trim($first);
 		$last = trim($last);
 
@@ -2108,23 +2110,19 @@ abstract class Streams extends Base_Streams
 	 * invited user
 	 * @method register
 	 * @static
-	 * @param {string} $fullname The full name of the user in the format 'First Last' or 'Last, First'
+	 * @param {string} $fullName The full name of the user in the format 'First Last' or 'Last, First'
 	 * @param {string} $identifier User identifier
 	 * @param {array} $icon=array() User icon
 	 * @param {string} $provider=null Provider
 	 * @param {array} $options=array() An array of options that could include:
 	 *  "activation": The key under "Users"/"transactional" config to use for sending an activation message.
 	 * @return {Users_User}
-	 * @throws {Q_Exception_WrongType}
-	 * 	If identifier is not e-mail or modile
-	 * @throws {Q_Exception}
-	 *	If user was already verified for someone else
-	 * @throws {Users_Exception_AlreadyVerified}
-	 * 	If user was already verified
-	 * @throws {Users_Exception_UsernameExists}
-	 *	If username exists
+	 * @throws {Q_Exception_WrongType} If identifier is not e-mail or modile
+	 * @throws {Q_Exception} If user was already verified for someone else
+	 * @throws {Users_Exception_AlreadyVerified} If user was already verified
+	 * @throws {Users_Exception_UsernameExists} If username exists
 	 */
-	static function register($fullname, $identifier, $icon = array(), $provider = null, $options = array())
+	static function register($fullName, $identifier, $icon = array(), $provider = null, $options = array())
 	{
 		if (is_array($provider)) {
 			$options = $provider;
@@ -2138,17 +2136,17 @@ abstract class Streams extends Base_Streams
 		 * @param {string} 'icon'
 		 * @return {Users_User}
 		 */
-		$return = Q::event('Streams/register', compact('name', 'fullname', 'identifier', 'icon', 'provider', 'options'), 'before');
+		$return = Q::event('Streams/register', compact('name', 'fullName', 'identifier', 'icon', 'provider', 'options'), 'before');
 		if (isset($return)) {
 			return $return;
 		}
 
 		// calculate first and last name out of name
-		if (empty($fullname)) {
+		if (empty($fullName)) {
 			throw new Q_Exception("Please enter your name", 'name');
 		}
 
-		$name = self::splitFullName($fullname);
+		$name = self::splitFullName($fullName);
 		extract($name);
 
 		if (empty($first) && empty($last)) {

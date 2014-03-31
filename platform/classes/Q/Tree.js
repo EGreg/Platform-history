@@ -59,8 +59,9 @@ module.exports = function (linked) {
 		for (var i=0; i<filenames.length; ++i) {
 			(function (i) {
 				fs.readFile(filenames[i].replace('/', Q.DS), 'utf-8', function (err, data) {
-					if (err) callback && callback.call(that, err);
-					else {
+					if (err) {
+						callback && callback.call(that, err);
+					} else {
 						try {
 							data = JSON.parse(data);
 						} catch (e) {

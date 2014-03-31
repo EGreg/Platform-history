@@ -10,8 +10,8 @@ function Streams_invite_put () {
 		));
 	}
 
-	if (isset($_REQUEST['fullname'])) {
-		$user = Streams::register($_REQUEST['fullname'], null, array(), 'invite');
+	if (isset($_REQUEST['fullName'])) {
+		$user = Streams::register($_REQUEST['fullName'], null, array(), 'invite');
 		Users::setLoggedInUser($user);
 	}
 

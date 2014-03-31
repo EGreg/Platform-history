@@ -1765,7 +1765,7 @@ function submitClosestForm () {
  *	 A hash of options, that can include:
  *	 "icon": Optional. Icon for the login button. Defaults to Qbix icon.
  *	 "label": Optional. Text for the login button. Defaults to 'log in'.
- *	 "fullname": Optional. If set to true, then full name of the user will be displayed, otherwise only the first name. Defaults to false.
+ *	 "fullName": Optional. If set to true, then full name of the user will be displayed, otherwise only the first name. Defaults to false.
  *   "logoutIcon": Optional. Icon for 'Log out' item in the tool menu.
  *   "menuItems": Optional. Additional menu items besides 'Log out' which will be shown in the user menu.
  *                Should be an array of hashes like { 'contents': 'value', 'action': 'value' }.
@@ -1855,7 +1855,7 @@ Q.Tool.define("Users/status", function(options) {
 				iconUrl = Q.url('/plugins/Users/img/icons/' + user.icon + '/40.png?' + Date.now());
 			Users.userStatus.button.addClass('Q_logged_in').removeClass('Q_dialog_trigger');
 			var username = user.displayName || user.username || 'User';
-			if (!o.fullname)
+			if (!o.fullName)
 					username = username.split(' ')[0];
 			Users.userStatus.button.html('<img class="Users_profile_image" src="' + iconUrl + '" alt="User profile image" />' +
 										br +
@@ -1931,7 +1931,7 @@ Q.Tool.define("Users/status", function(options) {
 {
 	'icon': 'plugins/Q/img/ui/qbix_icon' + (Q.info.isMobile ? '_small' : '') + '.png',
 	'label': 'log in',
-	'fullname': false,
+	'fullName': false,
 	'logoutIcon': null,
 	'menuItems': [],
 	'onMenuSelect': new Q.Event()

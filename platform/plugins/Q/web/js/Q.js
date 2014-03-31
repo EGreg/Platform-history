@@ -3754,7 +3754,7 @@ Q.url = function _Q_url(what, fields, options) {
 	} else if (what.isUrl()) {
 		result = what;
 	} else {
-		result = (what.substr(0, 1) == '/') ? baseUrl+what : baseUrl+'/'+what;
+		result = baseUrl + ((what.substr(0, 1) == '/') ? '' : '/') + what;
 	}
 	if (Q.url.options.beforeResult) {
 		var params = {

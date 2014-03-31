@@ -15,14 +15,14 @@ function Streams_invite_validate()
 			}
 		}
 	}
-	if (isset($_REQUEST['fullname'])) {
-		$length_min = Q_Config::get('Streams', 'inputs', 'fullname', 'lengthMin', 5);
-		$length_max = Q_Config::get('Streams', 'inputs', 'fullname', 'lengthMax', 30);
-		if (strlen($_REQUEST['fullname']) < $length_min) {
-			throw new Q_Exception("A user's full name can't be that short.", 'fullname');
+	if (isset($_REQUEST['fullName'])) {
+		$length_min = Q_Config::get('Streams', 'inputs', 'fullName', 'lengthMin', 5);
+		$length_max = Q_Config::get('Streams', 'inputs', 'fullName', 'lengthMax', 30);
+		if (strlen($_REQUEST['fullName']) < $length_min) {
+			throw new Q_Exception("A user's full name can't be that short.", 'fullName');
 		}
-		if (strlen($_REQUEST['fullname']) > $length_max) {
-			throw new Q_Exception("A user's full name can't be that long.", 'fullname');
+		if (strlen($_REQUEST['fullName']) > $length_max) {
+			throw new Q_Exception("A user's full name can't be that long.", 'fullName');
 		}		
 	}
 }

@@ -6,7 +6,7 @@
 function Streams_register_post()
 {
 	$provider = null;
-	$fullname = null;
+	$fullName = null;
 	$activation = null;
 	extract($_REQUEST, EXTR_IF_EXISTS);
 	
@@ -14,7 +14,7 @@ function Streams_register_post()
 		throw new Users_Exception_NoRegister(array(), array('identifier', 'emailAddress', 'mobileNumber'));
 	}
 	$user = Streams::register(
-		$fullname, 
+		$fullName, 
 		Users::requestedIdentifier(), 
 		true,
 		$provider,

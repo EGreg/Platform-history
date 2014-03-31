@@ -11,10 +11,8 @@
 		},
 		"plugins": ["Users", "Streams"],
 		"handlersBeforeEvent": {
-
 		},
 		"handlersAfterEvent": {
-			"Q/responseExtras": ["Invites/after/responseExtras"]
 		},
 		"routes": {
 			"": {"module": "Invites", "action": "welcome"},

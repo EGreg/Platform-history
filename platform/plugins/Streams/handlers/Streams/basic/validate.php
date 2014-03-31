@@ -14,14 +14,14 @@ function Streams_basic_validate()
 		'birthday_day' => 'Day', 
 		'birthday_year' => 'Year'
 	);
-	if (isset($_REQUEST['fullname'])) {
-		$length_min = Q_Config::get('Streams', 'inputs', 'fullname', 'lengthMin', 5);
-		$length_max = Q_Config::get('Streams', 'inputs', 'fullname', 'lengthMax', 30);
-		if (strlen($_REQUEST['fullname']) < $length_min) {
-			Q_Response::addError(new Q_Exception("Your full name can't be that short.", 'fullname'));
+	if (isset($_REQUEST['fullName'])) {
+		$length_min = Q_Config::get('Streams', 'inputs', 'fullName', 'lengthMin', 5);
+		$length_max = Q_Config::get('Streams', 'inputs', 'fullName', 'lengthMax', 30);
+		if (strlen($_REQUEST['fullName']) < $length_min) {
+			Q_Response::addError(new Q_Exception("Your full name can't be that short.", 'fullName'));
 		}
-		if (strlen($_REQUEST['fullname']) > $length_max) {
-			Q_Response::addError(new Q_Exception("Your full name can't be that long.", 'fullname'));
+		if (strlen($_REQUEST['fullName']) > $length_max) {
+			Q_Response::addError(new Q_Exception("Your full name can't be that long.", 'fullName'));
 		}		
 	}
 	if (Q_Response::getErrors()) {

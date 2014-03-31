@@ -2208,7 +2208,6 @@ String.prototype.decodeHTML = function _String_prototype_encodHTML(quote_style, 
  * @param timestamp {number} The date to format
  * @return {string}
  */
-
 Q.date = function (format, timestamp) {
 	// http://kevin.vanzonneveld.net
 	var that = this,
@@ -2421,7 +2420,7 @@ var timeHandles = {};
 /**
  * Start time counter
  * @method time
- * @param handle {string} A handle to reffer to time counter. Shall be namespaced to avoid overlap with
+ * @param handle {string} A handle to refer to time counter. Shall be namespaced to avoid overlap with
  *	other possible counters - Q/PROCESS/NAME
  */
 Q.time = function _Q_time(handle) {
@@ -2431,7 +2430,7 @@ Q.time = function _Q_time(handle) {
 /**
  * Retrieves time difference between start by Q.time() and current time.
  * Time is formatted string <code>"XX days XX hours XX minutes XX seconds"</code>
- * If time is less than a second returns <code>"XXX miliseconds"</code>
+ * If time is less than a second returns <code>"XXX milliseconds"</code>
  * @method timeEnd
  * @param handle {string} The handle started with Q.time(). If not started returns null
  * @return {string|null}
@@ -2482,6 +2481,45 @@ Q.firstErrorMessage = function _Q_firstErrorMessage(data /*, data2, ... */) {
 	return (typeof error === 'string')
 		? error
 		: (error.message ? error.message : JSON.stringify(error));
+};
+
+/**
+ * Obtain a URL
+ * @param {Object} what
+ *  Usually the stuff that comes after the base URL
+ * @param {Object} fields
+ *  Optional fields to append to the querystring.
+ *  NOTE: only handles scalar values in the object.
+ * @param Object options
+ *  A hash of options, including:
+ *  'baseUrl': A string to replace the default base url
+ */
+Q.url = function _Q_url(what, fields, options) {
+	if (fields) {
+		what += '?';
+		for (var k in fields) {
+			what += '&'+encodeURIComponent(k)+'='+encodeURIComponent(fields[k]);
+		}
+	}
+	var parts = what.split('?');
+	if (parts.length > 2) {
+		what = parts.slice(0, 2).join('?') + '&' + parts.slice(2).join('&');
+	}
+	var result = '';
+	var baseUrl = (options && options.baseUrl);
+	if (!baseUrl) {
+		var cs = Q.Config.get(['Q', 'web', 'controllerSuffix']);
+		baseUrl = Q.Config.get(['Q', 'web', 'appRootUrl']);
+			+ (cs ? '/' + cs : '');
+	}
+	if (!what) {
+		result = baseUrl;
+	} else if (what.isUrl()) {
+		result = what;
+	} else {
+		result = baseUrl + ((what.substr(0, 1) == '/') ? '' : '/') + what;
+	}
+	return result;
 };
 
 /**

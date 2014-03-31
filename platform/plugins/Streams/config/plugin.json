@@ -16,8 +16,9 @@
 			"Db/Row/Users_Contact/removeExecute": ["Streams/after/Users/Contact/removeExecute"]
 		},
 		"routes": {
+			"plugins/Streams/:action": {"module": "Streams"},
 			"plugins/Streams/invite/:token": {"module": "Streams", "action": "invite"},
-			"plugins/Streams/:action": {"module": "Streams"}
+			"i/:token": {"module": "Streams", "action": "invited"}
 		},
 		"pluginInfo": {
 			"Streams": {
@@ -121,7 +122,7 @@
 				"length": 16,
 				"characters": "abcdefghijklmnopqrstuvwxyz"
 			},
-			"baseUrl": "http://invites.to",
+			"baseUrl": "i/",
 			"participantReason": "Was invited"
 		},
 		"db": {

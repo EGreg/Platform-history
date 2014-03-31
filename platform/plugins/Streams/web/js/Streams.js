@@ -25,7 +25,7 @@ Q.text.Streams = {
 
 	login: {
 
-		fullname: "Let friends recognize you:",
+		fullName: "Let friends recognize you:",
 		picTooltip: "You can change this picture later"
 
 	},
@@ -1960,13 +1960,13 @@ Streams.setupRegisterForm = function _Streams_setupRegisterForm(identifier, json
 			$('<td class="Streams_login_picture" />').append(img)
 		).append(
 			td = $('<td class="Streams_login_username_block" />').append(
-				$('<label for="Streams_login_username" />').html(Q.text.Streams.login.fullname)
+				$('<label for="Streams_login_username" />').html(Q.text.Streams.login.fullName)
 			).append(
 				'<br>'
 			).append(
-				$('<input id="Streams_login_username" name="fullname" type="text" class="text" />')
-				.attr('maxlength', Q.text.Users.login.maxlengths.fullname)
-				.attr('placeholder', Q.text.Users.login.placeholders.fullname)
+				$('<input id="Streams_login_username" name="fullName" type="text" class="text" />')
+				.attr('maxlength', Q.text.Users.login.maxlengths.fullName)
+				.attr('placeholder', Q.text.Users.login.placeholders.fullName)
 				.val(firstName+(lastName ? ' ' : '')+lastName)
 			)
 		)
@@ -2179,8 +2179,8 @@ Q.Tool.onMissingConstructor.set(function (constructors, normalized) {
 Q.onInit.add(function _Streams_onInit() {
 	var Users = Q.plugins.Users;
 	Users.login.options.setupRegisterForm = Streams.setupRegisterForm;
-	Q.text.Users.login.placeholders.fullname = 'Enter your full name';
-	Q.text.Users.login.maxlengths.fullname = 50;
+	Q.text.Users.login.placeholders.fullName = 'Enter your full name';
+	Q.text.Users.login.maxlengths.fullName = 50;
 
 	Users.login.options.onSuccess.set(_connectSockets, "Streams");
 	Users.logout.options.onSuccess.set(Q.Socket.destroyAll, "Streams");
@@ -2261,8 +2261,8 @@ Q.onInit.add(function _Streams_onInit() {
 				closeOnEsc: false,
 				onActivate: {'Streams.redeemInvited': function() {
 					dialog.find('#Streams_login_username')
-						  .attr('maxlength', Q.text.Users.login.maxlengths.fullname)
-						  .attr('placeholder', Q.text.Users.login.placeholders.fullname)
+						  .attr('maxlength', Q.text.Users.login.maxlengths.fullName)
+						  .attr('placeholder', Q.text.Users.login.placeholders.fullName)
 						  .plugin('Q/placeholders');
 					var redeem_form = dialog.find('form').validator().submit(function(e) {
 						e.preventDefault();
@@ -2272,7 +2272,7 @@ Q.onInit.add(function _Streams_onInit() {
 						});
 						Q.req('Streams/basic?' + $(this).serialize(), ['data'], function (response) {
 							if (response.errors) {
-								redeem_form.data('validator').invalidate(Q.ajaxErrors(response.errors, ['fullname']));
+								redeem_form.data('validator').invalidate(Q.ajaxErrors(response.errors, ['fullName']));
 								$('input', redeem_form).plugin('Q/clickfocus');
 								return;
 							}
