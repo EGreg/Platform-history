@@ -5786,7 +5786,7 @@ Q.Template.load = function _Q_Template_load(name, callback, options) {
 		options = callback;
 		callback = undefined;
 	}
-	if (options.name) {
+	if (options && options.name) {
 		name = options.name;
 	}
 	if (!name) {
