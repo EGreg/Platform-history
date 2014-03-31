@@ -894,7 +894,8 @@ class Q_Response
 			$tags[] = Q_Html::script(
 				$template['content'],
 				array(
-					'cdata' => true,
+					'cdata' => false,
+					'raw' => true,
 					'type' => 'text/'.$template['type'], 
 					'id' => Q_Utils::normalize($template['name']),
 					'data-slot' => $template['slot']

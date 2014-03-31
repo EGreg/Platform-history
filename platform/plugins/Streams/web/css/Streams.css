@@ -406,17 +406,17 @@
 }
 
 .Streams_login_picture img {
-	width: 60px;
-	height: 60px;
+	width: 50px;
+	height: 50px;
 	margin-right: 7px;
 }
 
-.Streams_redeem_user td:first-child
+.Streams_complete_user td:first-child
 {
 	width: 1%;
 }
 
-.Streams_redeem_item td:first-child
+.Streams_complete_stream td:first-child
 {
 	width: 1%;
 }

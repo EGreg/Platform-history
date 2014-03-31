@@ -62,20 +62,20 @@ function Streams_before_Q_objects()
 	$stream->calculateAccess($userId);
 	
 	$byUserId = Users_User::getUser($invite->invitingUserId, true);
-	$by_stream = new Streams_Stream();
-	$by_stream->publisherId = $invite->publisherId;
-	$by_stream->name = $invite->streamName;
-	if (!$by_stream->retrieve()) {
+	$byStream = new Streams_Stream();
+	$byStream->publisherId = $invite->publisherId;
+	$byStream->name = $invite->streamName;
+	if (!$byStream->retrieve()) {
 		throw new Q_Exception_MissingRow(array(
 			'table' => 'stream',
 			'criteria' => "publisherId = '{$invite->publisherId}', name = '{$invite->streamName}'"
 		));
 	}
-	$by_stream->calculateAccess($byUserId);
+	$byStream->calculateAccess($byUserId);
 	
 	$access = new Streams_Access();
-	$access->publisherId = $by_stream->publisherId;
-	$access->streamName = $by_stream->name;
+	$access->publisherId = $byStream->publisherId;
+	$access->streamName = $byStream->name;
 	$access->ofUserId = $invite->userId;
 
 	$specified_access = false;
@@ -88,7 +88,7 @@ function Streams_before_Q_objects()
 		// However, if inviting user has a lower access level now,
 		// then give that level instead, unless it is lower than
 		// what the invited user would have had otherwise.
-		$min = min($invite->$level_type, $by_stream->get($level_type, 0));
+		$min = min($invite->$level_type, $byStream->get($level_type, 0));
 		if ($min > $stream->get($level_type, 0)) {
 			$access->$level_type = $min;
 			$specified_access = true;
@@ -115,6 +115,6 @@ function Streams_before_Q_objects()
 	// accept invite
 	$invite->accept();
 	
-	// set stream PK for further processing
+	// retain the invite object for further processing
 	Streams::$followedInvite = $invite;
 }

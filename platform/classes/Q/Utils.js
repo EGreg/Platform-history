@@ -175,7 +175,7 @@ function parse_url (str, component) {
  * @param {function} callback Receives error and response objects after complete
  */
 var smtpTransport = null;
-Utils.sendMessage = function (to, subject, view, fields, options, callback) {
+Utils.sendEmail = function (to, subject, view, fields, options, callback) {
 	var mailer = require('nodemailer');
 	var mustache = require('mustache');
 
@@ -297,7 +297,7 @@ Utils.sendSMS = function (to, view, fields, options, callback) {
 		address.push(number.substr(2)+'@'+gateways[provider]);
 	}
 
-	Q.Utils.sendMessage(address.join(','), null, view, fields, options, function(err, res) {
+	Q.Utils.sendEmail(address.join(','), null, view, fields, options, function(err, res) {
 		if (debug) {
 			Q.log('smtp: '+number+' "'+content+'"', key);
 			Q.log('status: '+(err ? 'ERROR: '+err.message : 'Ok'));

@@ -808,8 +808,9 @@ class Q_Html
 	 * @static
 	 * @param {string} $script The actual script, as text
 	 * @param {array} [$attributes=null] Any additional attributes. Also can include:
-	 *  "cdata" => Defaults to true. Whether to enclose in &lt;![CDATA[ tags.
+	 *  "cdata" => Defaults to true. Whether to enclose in CDATA tags.
 	 *  "comment" => Whether to enclose in HTML comments
+	 *  "raw" => Set to true to skip HTML encoding even if cdata and comment are false
 	 * @return {string} The generated markup.
 	 */
 	static function script (
@@ -833,7 +834,9 @@ class Q_Html
 			$return .= "<!-- \n"; 
 		} else {
 			$return .= "\n";
-			$script = self::text($script);
+			if (empty($attributes['raw'])) {
+				$script = self::text($script);
+			}
 		}
 		$return .= $script;
 		if ($cdata) {

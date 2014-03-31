@@ -141,7 +141,7 @@ function internalServerHandler(req, res, next) {
 			function _send() {
 				var options = Q.extend({isSource: true}, parsed.options);
 				if (parsed.emailAddress) {
-					Q.Utils.sendMessage(
+					Q.Utils.sendEmail(
 						parsed.emailAddress,
 						parsed.subject,
 						parsed.body,

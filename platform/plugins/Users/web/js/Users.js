@@ -572,9 +572,9 @@ Users.login = function(options) {
 				Q.handle(window.location);
 				return;
 			} else {
-				// take the user to the profile page
-				// which will show the account process,
-				// until completed -- and then the profile!
+				// take the user to the profile page which will ask
+				// the user to complete their registration process
+				// by entering additional information
 				if (typeof(o.onRequireComplete) !== 'function' && typeof(o.onRequireComplete) !== 'string') {
 					alert('Need an url in the onRequireComplete option');
 					return;

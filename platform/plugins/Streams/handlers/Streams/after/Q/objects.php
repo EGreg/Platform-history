@@ -18,47 +18,39 @@ function Streams_after_Q_objects () {
 		), 'streamName');
 	}
 
-	// Prepare the redeem invite dialog
-	$defaults = new Q_Tree(
-		Q_Config::get("Streams", "types", $stream->type, "invite", "dialog",
-			Q_Config::get("Streams", "defaults", "invite", "dialog", array())
-		)
+	// Prepare the complete invite dialog
+	$defaults = Q_Config::get("Streams", "types", $stream->type, "invite", "dialog",
+		Q_Config::get("Streams", "defaults", "invite", "dialog", array())
 	);
 
-	$by_user = Users_User::getUser($invite->invitingUserId);
-	$relations = Streams::related(
+	$invitingUser = Users_User::getUser($invite->invitingUserId);
+	list($relations, $related) = Streams::related(
 		$user->id,
 		$stream->publisherId,
 		$stream->name,
-		false,
-		array('relationsOnly' => true)
+		false
 	);
-	$related = array();
-	foreach ($relations as $name => $relation) {
-		$stream = new Streams_Stream();
-		$stream->publisherId = $relation->toPublisherId;
-		$stream->name = $relation->toStreamName;
-		if (!$stream->retrieve()) continue;
-		$related[str_replace("/", "_", $stream->type)] = $stream->exportArray();
-	}
 	
 	$params = array(
 		'displayName' => $displayName,
 		'action' => 'Streams/basic',
-		'icon' => "plugins/Users/img/icons/{$user->icon}/80w.png",
+		'icon' => Q_Html::themedUrl("plugins/Users/img/icons/{$user->icon}"),
 		'token' => $invite->token,
 		'user' => array(
-			'icon' => "plugins/Users/img/icons/{$by_user->icon}/80w.png",
-			'name' => $by_user->displayName()
+			'icon' => Q_Html::themedUrl("plugins/Users/img/icons/{$invitingUser->icon}"),
+			'name' => $invitingUser->displayName()
 		),
 		'stream' => $stream->exportArray(),
-		'related' => $related
+		'relations' => Db::exportArray($relations),
+		'related' => Db::exportArray($related)
 	);
 
-	if ($defaults->merge($params)) {
-		$dialog_data = $defaults->getAll();
-		if ($dialog_data) {
-			Q_Response::setScriptData("Q.plugins.Streams.invite.dialog", $dialog_data);
+	$tree = new Q_Tree($defaults);
+	if ($tree->merge($params)) {
+		$dialogData = $tree->getAll();
+		if ($dialogData) {
+			Q_Response::setScriptData('Q.plugins.Streams.invite.dialog', $dialogData);
+			Q_Response::addTemplate('Streams/invite/complete');
 		}
 	}
 }

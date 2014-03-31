@@ -67,7 +67,7 @@ function Users_Mobile (fields) {
 			address.push(number+'@'+gateways[provider]);
 		}
 
-		Q.Utils.sendMessage(address.join(','), null, view, fields, options, callback);
+		Q.Utils.sendEmail(address.join(','), null, view, fields, options, callback);
 	};
 
 	/* * * */

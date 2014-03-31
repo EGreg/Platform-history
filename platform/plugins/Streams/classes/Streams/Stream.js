@@ -857,7 +857,7 @@ function Streams_Stream (fields) {
 								var instructions;
 								try { instructions = JSON.parse(message.instructions); } catch (e) {}
 								if (instructions.type) {
-									stream.fields.invite = { url: Q.Config.get(['Streams', 'invites', 'baseUrl'], "http://invites.to") };
+									stream.fields.invite = { url: Q.url(Q.Config.get(['Streams', 'invites', 'baseUrl'], "i")) };
 									stream.fields.invite[instructions.type] = true;
 								}
 								deliveries.forEach(function(delivery) {

@@ -60,7 +60,7 @@ function Users_Email (fields) {
 			callback = options;
 			options = {};
 		}
-		Q.Utils.sendMessage(this.address, subject, view, fields, options, callback);
+		Q.Utils.sendEmail(this.address, subject, view, fields, options, callback);
 	};
 
 	/* * * */

@@ -1287,6 +1287,7 @@ class Streams_Stream extends Base_Streams_Stream
 		$this->calculateAccess($asUserId);
 		if ($this->testReadLevel('content')) {
 			$result = $this->toArray();
+			$result['icon'] = $this->iconUrl();
 		} else {
 			if (!$this->testReadLevel('see')) {
 				return array();
@@ -1307,14 +1308,13 @@ class Streams_Stream extends Base_Streams_Stream
 				$fields = array_merge($fields, Q_Config::get('Streams', 'types', $this->type, 'see', array()));
 			}
 			foreach ($fields as $field) {
-				$result[$field] = $this->$field;
+				$result[$field] = ($field === 'icon')
+					? $this->iconUrl()
+					: $this->$field;
 			}
 		}
 		foreach (Q_Config::get('Streams', 'types', $this->type, 'see', array()) as $key) {
 			$result[$key] = isset($this->$key) ? $this->$key : null;
-		}
-		if (!empty($result['icon']) and Q_Valid::url($result['icon'])) {
-			$result['icon'] = Q_Uri::url($result['icon']);
 		}
 		$result['access'] = array(
 			'readLevel' => $this->get('readLevel', $this->readLevel),
@@ -1455,11 +1455,20 @@ class Streams_Stream extends Base_Streams_Stream
 		return $q->fetchDbRows(null, '', 'userId');
 	}
 	
-	function iconUrl($basename)
+	/**
+	 * Get the url of the stream's icon
+	 * @param {string} [$basename=""] The last part after the slash, such as "50.png"
+	 * @return {string} The stream's icon url
+	 */
+	function iconUrl($basename = null)
 	{
 		if (empty($this->icon)) return null;
-		
-		return Q_Html::themedUrl("plugins/Streams/img/icons/{$this->icon}/$basename");
+		if (Q_Valid::url($this->icon)) return $this->icon;
+		$url = "plugins/Streams/img/icons/{$this->icon}";
+		if ($basename) {
+			$url .= "/$basename";
+		}
+		return Q_Html::themedUrl($url);
 	}
 	
 	/**

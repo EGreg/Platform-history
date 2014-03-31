@@ -616,7 +616,7 @@ Streams.listen = function (options) {
 													return;
 												}
 												var baseUrl = Q.url(Q.Config.get(['Streams', 'invites', 'baseUrl'], "i"));
-												invited.post({
+												var msg = {
 													publisherId: invited.fields.publisherId,
 													streamName: invited.fields.name,
 													byUserId: invitingUserId,
@@ -626,13 +626,14 @@ Streams.listen = function (options) {
 													content: (displayName || "Someone") + " invited you to "+baseUrl+"/"+token,
 													instructions: JSON.stringify({
 														token: token,
-														type: stream.type.split('/').join('_'),
 														displayName: displayName,
+														appUrl: appUrl,
+														type: stream.type,
 														title: stream.title,
-														content: stream.content,
-														appUrl: appUrl
+														content: stream.content
 													})
-												}, function (err) {
+												};
+												invited.post(msg, function (err) {
 													if (err) {
 														Q.log("ERROR: Failed to save message for user '"+userId+"' during invite");
 														Q.log(err);

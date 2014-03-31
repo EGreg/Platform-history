@@ -92,12 +92,21 @@ function Streams_Message (fields) {
 			stream: stream.toArray(),
 			message: this.toArray()
 		};
-		var subject = Q.Config.get(['Streams', 'types', stream.fields.type, 'invite', 'subject'], 'Message "{{& message.type}}" to "{{& stream.title}}"');
+		var subject = Q.Config.get(
+			['Streams', 'types', stream.fields.type, 'messages', this.fields.type, 'subject'], 
+			Q.Config.get(
+				['Streams', 'defaults', 'messages', this.fields.type, 'subject'],
+				Q.Config.get(
+					['Streams', 'defaults', 'messages', '', 'subject'],
+					'Please set config "Streams"/"defaults"/"messages"/""/"subject"'
+				)
+			)
+		);
 		var viewPath;
 
 		if (delivery.email) {
 			viewPath = Q.Mustache.template(this.fields.type+'/email.mustache') ? this.fields.type : 'Streams/message';
-			Q.Utils.sendMessage(delivery.email, subject, viewPath+'/email.mustache', fields, {html: true}, callback);
+			Q.Utils.sendEmail(delivery.email, subject, viewPath+'/email.mustache', fields, {html: true}, callback);
 		} else {
 			viewPath = Q.Mustache.template(this.fields.type+'/mobile.mustache') ? this.fields.type : 'Streams/message';
 			Q.Utils.sendSMS(delivery.mobile, viewPath+'/mobile.mustache', fields, {}, callback);

@@ -2253,18 +2253,18 @@ Q.onInit.add(function _Streams_onInit() {
 		if (!params) {
 			return;
 		}
-		Q.Template.render('Streams/invite/redeem', params, function(err, html) {
+		Q.Template.render('Streams/invite/complete', params, function(err, html) {
 			var dialog = $(html);
 			Q.Dialogs.push({
 				dialog: dialog,
 				mask: true,
 				closeOnEsc: false,
-				onActivate: {'Streams.redeemInvited': function() {
+				onActivate: {'Streams.completeInvited': function() {
 					dialog.find('#Streams_login_username')
 						  .attr('maxlength', Q.text.Users.login.maxlengths.fullName)
 						  .attr('placeholder', Q.text.Users.login.placeholders.fullName)
 						  .plugin('Q/placeholders');
-					var redeem_form = dialog.find('form').validator().submit(function(e) {
+					var complete_form = dialog.find('form').validator().submit(function(e) {
 						e.preventDefault();
 						var baseUrl = Q.baseUrl({
 							publisherId: Q.plugins.Users.loggedInUser.id,
@@ -2272,11 +2272,11 @@ Q.onInit.add(function _Streams_onInit() {
 						});
 						Q.req('Streams/basic?' + $(this).serialize(), ['data'], function (response) {
 							if (response.errors) {
-								redeem_form.data('validator').invalidate(Q.ajaxErrors(response.errors, ['fullName']));
-								$('input', redeem_form).plugin('Q/clickfocus');
+								complete_form.data('validator').invalidate(Q.ajaxErrors(response.errors, ['fullName']));
+								$('input', complete_form).plugin('Q/clickfocus');
 								return;
 							}
-							redeem_form.data('validator').reset();
+							complete_form.data('validator').reset();
 							dialog.data('Q/dialog').close();
 						}, {method: "post", quietly: true, baseUrl: baseUrl});
 					});

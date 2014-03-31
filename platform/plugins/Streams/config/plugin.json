@@ -98,24 +98,25 @@
 				"participantCount"
 			],
 			"invite": {
-				"subject": "You got a {{& stream.title}} at {{& stream.content}}",
 				"dialog": {
-					"title": "You are invited to Stream",
+					"title": "You are invited",
 					"user": {
 						"text": "has invited you to"
 					},
 					"related": {
-						"FS_product": {
-							"text": ""
-						},
-						"FS_bar": {
-							"text": ""
-						}
 					},
-					"button": "Accept!"
+					"button": "Accept"
 				}
 			},
-			"messageRequestLimit": 100
+			"messageRequestLimit": 100,
+			"messages": {
+				"": {
+					"subject": "Message \"{{& message.type}}\" to \"{{& stream.title}}\""
+				},
+				"Streams/invite": {
+					"subject": "You were invited to {{& stream.title}}"
+				}
+			}
 		},
 		"invites": {
 			"tokens": {
