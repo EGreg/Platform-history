@@ -19,7 +19,8 @@ function Users_avatar_tool($options)
 	Q_Response::addStylesheet('plugins/Users/css/Users.css');
 	$loggedInUser = Users::loggedInUser();
 	$loggedInUserId = $loggedInUser ? $loggedInUser->id : "";
-	$avatar = Streams_Avatar::fetch($loggedInUserId, $options['userId']);
+	$userId = isset($options['userId']) ? $options['userId'] : "";
+	$avatar = Streams_Avatar::fetch($loggedInUserId, $userId);
 	if (!$avatar) {
 		return '';
 	}
