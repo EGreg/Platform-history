@@ -615,7 +615,7 @@ Streams.listen = function (options) {
 													Q.log(err);
 													return;
 												}
-												var baseUrl = Q.url(Q.Config.get(['Streams', 'invites', 'baseUrl'], "i/"));
+												var baseUrl = Q.url(Q.Config.get(['Streams', 'invites', 'baseUrl'], "i"));
 												invited.post({
 													publisherId: invited.fields.publisherId,
 													streamName: invited.fields.name,

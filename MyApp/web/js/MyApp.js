@@ -42,6 +42,15 @@ var MyApp = Q.plugins.MyApp = (function ($) {
 		};
 	});
 	
+	// example stream
+	Q.Streams.define("MyApp/cool", "js/models/MyApp/cool.js");
+	
+	// example tool
+	Q.Tool.define("MyApp/cool", "js/tools/MyApp/cool.js");
+
+	// tell Q.handle to load pages using AJAX
+	Q.handle.options.loadUsingAjax = true;
+	
 	return MyApp;
 	
 })(jQuery);
