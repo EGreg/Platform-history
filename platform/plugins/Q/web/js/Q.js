@@ -6059,7 +6059,7 @@ Q.Socket.reconnectAll = function _Q_Socket_reconnectAll() {
 			if (!_sockets[ns][url]) {
 			    _connectSocketNS(ns, url);
 			} else if (!_sockets[ns][url].namespace.socket.connected) {
-			    _sockets[ns][url].namespace.socket.reconnectAll();
+			    _sockets[ns][url].namespace.socket.reconnect();
 			}
 		}
 	}
