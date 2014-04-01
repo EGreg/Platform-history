@@ -3503,7 +3503,7 @@ Q.ready = function _Q_ready() {
  * @param {Array} args The arguments to pass to the callback
  */
 Q.loadNonce = function _Q_loadNonce(callback, context, args) {
-	Q.nonce = Q.cookie('Q_nonce');
+	// Q.nonce = Q.cookie('Q_nonce');
 	if (Q.nonce) {
 		Q.handle(callback, context, args);
 		return;

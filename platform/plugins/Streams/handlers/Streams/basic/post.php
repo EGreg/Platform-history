@@ -12,6 +12,7 @@
  */
 function Streams_basic_post()
 {
+	Q_Valid::nonce(true);
 	$user = Users::loggedInUser(true);
 	$request = $_REQUEST;
 	$fields = array();

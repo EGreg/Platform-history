@@ -401,7 +401,7 @@
 	width: 210px;
 }
 
-#Users_login_step2 td {
+.Users_register_form td {
 	vertical-align: top;
 }
 
@@ -436,7 +436,7 @@
 	width: 100%;
 }
 
-#Users_login_dialog label {
+.Streams_login_username_block label {
 	font-size: 17px;
 }
 

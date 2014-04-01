@@ -669,7 +669,10 @@ abstract class Users extends Base_Users
 			return null;
 		}
 		Q_Session::start();
-		if (!isset($_SESSION['Users']['loggedInUser']['id'])) {
+		
+		$nonce = Q_Session::$nonceWasSet or Q_Valid::nonce($throwIfNotLoggedIn, true);
+		
+		if (!$nonce or !isset($_SESSION['Users']['loggedInUser']['id'])) {
 			if ($throwIfNotLoggedIn) {
 				throw new Users_Exception_NotLoggedIn();
 			}
@@ -693,7 +696,7 @@ abstract class Users extends Base_Users
 	static function setLoggedInUser(Users_User $user = null)
 	{
 		if (!$user) {
-			Users::logout();
+			return Users::logout();
 		}
 		if (isset($_SESSION['Users']['loggedInUser']['id'])) {
 			if ($user->id == $_SESSION['Users']['loggedInUser']['id']) {

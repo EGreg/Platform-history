@@ -305,6 +305,7 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 							user.result = user.authenticated;
 							user.used = 'facebook';
 							Users.loggedInUser = new Users.User(user);
+							Q.nonce = Q.cookie('Q_nonce');
 							_doSuccess(user);
 						}
 					}, 'json');
@@ -551,6 +552,7 @@ Users.login = function(options) {
 			user.result = priv.result;
 			user.used = priv.used;
 			Users.loggedInUser = new Users.User(user);
+			Q.nonce = Q.cookie('Q_nonce');
 		}
 		if (!o.accountStatusUrl) {
 			_onComplete(user);
@@ -633,6 +635,7 @@ Users.logout = function(options) {
 			Q.cookie('fbsr_' + Q.plugins.Users.facebookApps[Q.info.app].appId, null, {path: '/'});
 			if ((o.using[0] === 'native' || o.using[1] === 'native')) {
 				Users.loggedInUser = null;
+				Q.nonce = Q.cookie('Q_nonce');
 			}
 			Users.initFacebook(function logoutCallback () {
 				FB_getLoginStatus(function (response) {
@@ -655,6 +658,7 @@ Users.logout = function(options) {
 			if (Users.loggedInUser && Users.loggedInUser.fb_uid)
 			Q.cookie('Users_ignore_facebook_uid', Users.loggedInUser.fb_uid);
 			Users.loggedInUser = null;
+			Q.nonce = Q.cookie('Q_nonce');
 			Users.onLogout.handle.call(this, o);
 			Q.handle(o.onSuccess, this, [o]);
 		}
@@ -1064,7 +1068,7 @@ function login_callback(response) {
 		var register_form = $('<form method="post" class="Users_register_form" />')
 		.attr('action', Q.action("Users/register"))
 		.data('form-type', 'register')
-		.append($('<div class="Users_login_appear" />'))
+		//.append($('<div class="Users_login_appear" />'))
 		.append(table)
 		.append($('<input type="hidden" name="identifier" />').val(identifier))
 		.append($('<input type="hidden" name="icon[40.png]" />').val(src40))
@@ -2030,6 +2034,7 @@ Q.onInit.add(function () {
 	if (Q.Users.loggedInUser
 	&& Q.typeOf(Q.Users.loggedInUser) !== 'Q.Users.User') {
 	    Q.Users.loggedInUser = new Users.User(Q.Users.loggedInUser);
+		Q.nonce = Q.cookie('Q_nonce');
 	}
 	document.documentElement.className += Users.loggedInUser ? ' Users_loggedIn' : ' Users_loggedOut';
     

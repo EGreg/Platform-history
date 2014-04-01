@@ -769,12 +769,12 @@ class Q_Session
 	 */
 	static function setNonce($overwrite = false)
 	{
-
 		self::start();
 		if ($overwrite or !isset($_SESSION['Q']['nonce'])) {
 			$_SESSION['Q']['nonce'] = md5(mt_rand().microtime());
 		}
 		Q_Response::setCookie('Q_nonce', $_SESSION['Q']['nonce']);
+		Q_Session::$nonceWasSet = true;
 	}
 	
 	/**
@@ -877,4 +877,12 @@ class Q_Session
 	 * @protected
 	 */
 	protected static $inited = false;
+	
+	/**
+	 * @property $nonceWasSet
+	 * @type boolean
+	 * @static
+	 * @public
+	 */
+	public static $nonceWasSet = false;
 }

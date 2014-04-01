@@ -1971,7 +1971,7 @@ Streams.setupRegisterForm = function _Streams_setupRegisterForm(identifier, json
 			)
 		)
 	);
-	var register_form = $('<form method="post" class=class="Streams_register_form" />')
+	var register_form = $('<form method="post" class="Users_register_form" />')
 	.attr('action', Q.action("Streams/register"))
 	.data('form-type', 'register')
 	.append($('<div class="Streams_login_appear" />'));
@@ -2264,17 +2264,21 @@ Q.onInit.add(function _Streams_onInit() {
 						  .attr('maxlength', Q.text.Users.login.maxlengths.fullName)
 						  .attr('placeholder', Q.text.Users.login.placeholders.fullName)
 						  .plugin('Q/placeholders');
+					$('input', dialog).eq(0).plugin('Q/clickfocus');
 					var complete_form = dialog.find('form').validator().submit(function(e) {
 						e.preventDefault();
 						var baseUrl = Q.baseUrl({
 							publisherId: Q.plugins.Users.loggedInUser.id,
 							streamName: ""  // NOTE: the request is routed to wherever the "" stream would have been hosted
 						});
-						Q.req('Streams/basic?' + $(this).serialize(), ['data'], function (response) {
-							if (response.errors) {
-								complete_form.data('validator').invalidate(Q.ajaxErrors(response.errors, ['fullName']));
-								$('input', complete_form).plugin('Q/clickfocus');
+						Q.req('Streams/basic?' + $(this).serialize(), ['data'], function (err, data) {
+							var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+							if (data.errors) {
+								complete_form.data('validator').invalidate(Q.ajaxErrors(data.errors, ['fullName']));
+								$('input', complete_form).eq(0).plugin('Q/clickfocus');
 								return;
+							} else if (msg) {
+								return alert(msg);
 							}
 							complete_form.data('validator').reset();
 							dialog.data('Q/dialog').close();

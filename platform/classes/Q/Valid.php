@@ -269,25 +269,31 @@ class Q_Valid
 	 * Use this for validating the nonce
 	 * @method nonce
 	 * @static
-	 * @param {boolean} [$throw_if_invalid=false] If true, throws an exception if the nonce is invalid.
+	 * @param {boolean} [$throwIfInvalid=false] If true, throws an exception if the nonce is invalid.
+	 * @param {boolean} [$missingIsValid=false] If true, returns true if request body is missing nonce.
 	 * @throws {Q_Exception_FailedValidation}
 	 */
 	static function nonce(
-	 $throw_if_invalid = false)
+	 $throwIfInvalid = false,
+	 $missingIsValid = false)
 	{
 		if (!isset($_SESSION['Q']['nonce'])) {
 			return true;
 		}
 		$snf = Q_Config::get('Q', 'session', 'nonceField', 'nonce');
 		$sn = Q_Request::special($snf, null);
+		if ($missingIsValid and !isset($sn)) {
+			return true;
+		}
 		if (!isset($sn) or $_SESSION['Q']['nonce'] != Q_Request::special($snf, null)) {
-			if (!$throw_if_invalid) {
+			if (!$throwIfInvalid) {
 				return false;
 			}
 			$message = Q_Config::get('Q', 'session', 'nonceMessage',
-			 	"Your browser seems to be using a different session. Try refreshing the page."
+			 	"Session expired. Refresh the page and try again."
 			);
-			throw new Q_Exception_FailedValidation(compact('message'));
+			$field = 'nonce';
+			throw new Q_Exception_FailedValidation(compact('message', 'field'), 'Q.nonce');
 		}
 		return true;
 	}
@@ -296,11 +302,11 @@ class Q_Valid
 	 * Validates the signature of the request (from Q_Request::special('sig', null))
 	 * @method signature
 	 * @static
-	 * @param {boolean} [$throw_if_invalid=false] If true, throws an exception if the nonce is invalid.
+	 * @param {boolean} [$throwIfInvalid=false] If true, throws an exception if the nonce is invalid.
 	 * @return {boolean} Whether the phone number seems like it could be valid
 	 * @throws {Q_Exception_FailedValidation}
 	 */
-	static function signature ($throw_if_invalid = false)
+	static function signature ($throwIfInvalid = false)
 	{
 		$secret = Q_Config::get('Q', 'internal', 'secret', null);
 		if (!isset($secret)) {
@@ -321,7 +327,7 @@ class Q_Valid
 		if (!$invalid) {
 			return true;
 		}
-		if ($throw_if_invalid) {
+		if ($throwIfInvalid) {
 			header("HTTP/1.0 403 Forbidden");
 			$message = Q_Config::get('Q', 'internal', 'sigMessage', "The signature did not match.");
 			throw new Q_Exception_FailedValidation(compact('message'), array("Q.$sgf", "_[$sgf]"));
