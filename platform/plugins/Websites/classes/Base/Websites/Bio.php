@@ -18,6 +18,7 @@
  * @property string $streamName
  * @property string $userId
  * @property mixed $bio
+ * @property string $getintouch
  */
 abstract class Base_Websites_Bio extends Db_Row
 {
@@ -36,6 +37,10 @@ abstract class Base_Websites_Bio extends Db_Row
 	/**
 	 * @property $bio
 	 * @type mixed
+	 */
+	/**
+	 * @property $getintouch
+	 * @type string
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -237,6 +242,24 @@ abstract class Base_Websites_Bio extends Db_Row
 	}
 
 	/**
+	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
+	 * Optionally accept numeric value which is converted to string
+	 * @method beforeSet_getintouch
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value is not string or is exceedingly long
+	 */
+	function beforeSet_getintouch($value)
+	{
+		if ($value instanceof Db_Expression) return array('getintouch', $value);
+		if (!is_string($value) and !is_numeric($value))
+			throw new Exception('Must pass a string to '.$this->getTable().".getintouch");
+		if (strlen($value) > 255)
+			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".getintouch");
+		return array('getintouch', $value);			
+	}
+
+	/**
 	 * Check if mandatory fields are set and updates 'magic fields' with appropriate values
 	 * @method beforeSave
 	 * @param {array} $value The array of fields
@@ -266,7 +289,7 @@ abstract class Base_Websites_Bio extends Db_Row
 	 */
 	static function fieldNames($table_alias = null, $field_alias_prefix = null)
 	{
-		$field_names = array('publisherId', 'streamName', 'userId', 'bio');
+		$field_names = array('publisherId', 'streamName', 'userId', 'bio', 'getintouch');
 		$result = $field_names;
 		if (!empty($table_alias)) {
 			$temp = array();

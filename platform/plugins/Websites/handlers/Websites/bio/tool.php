@@ -5,7 +5,7 @@ function Websites_bio_tool($params)
 	$git = isset($params['getintouch']) ? $params['getintouch'] : 'getintouch';
 	$getintouch = Q::take(Q::ifset($params['getintouch']), array(
 		'emailSubject' => 'Reaching out from your website',
-		'classes' => 'Q_button clickable'
+		'classes' => 'Q_button Q_clickable'
 	));
 	Q_Response::addStylesheet('plugins/Websites/css/Websites.css');
 	Q_Response::addScript("plugins/Websites/js/Websites.js");

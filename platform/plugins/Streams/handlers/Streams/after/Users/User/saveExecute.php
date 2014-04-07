@@ -4,14 +4,14 @@ function Streams_after_Users_User_saveExecute($params)
 {
 	// If the username or icon was somehow modified,
 	// update all the avatars for this publisher
-	$modified_fields = $params['modified_fields'];
+	$modifiedFields = $params['modifiedFields'];
 	$user = $params['row'];
 	$updates = array();
-	if (isset($modified_fields['username'])) {
-		$updates['username'] = $modified_fields['username'];
+	if (isset($modifiedFields['username'])) {
+		$updates['username'] = $modifiedFields['username'];
 	}
-	if (isset($modified_fields['icon'])) {
-		$updates['icon'] = $modified_fields['icon'];
+	if (isset($modifiedFields['icon'])) {
+		$updates['icon'] = $modifiedFields['icon'];
 	}
 	$query = $params['query'];
 	if ($query->type === Db_Query::TYPE_INSERT) {
@@ -20,8 +20,8 @@ function Streams_after_Users_User_saveExecute($params)
 		$avatar = new Streams_Avatar();
 		$avatar->publisherId = $user->id;
 		$avatar->toUserId = '';
-		$avatar->username = Q::ifset($modified_fields, 'username', $user->username);
-		$avatar->icon = Q::ifset($modified_fields, 'icon', $user->icon);
+		$avatar->username = Q::ifset($modifiedFields, 'username', $user->username);
+		$avatar->icon = Q::ifset($modifiedFields, 'icon', $user->icon);
 		$avatar->firstName = '';
 		$avatar->lastName = '';
 		$avatar->save();
@@ -31,8 +31,8 @@ function Streams_after_Users_User_saveExecute($params)
 		$avatar = new Streams_Avatar();
 		$avatar->publisherId = $user->id;
 		$avatar->toUserId = $user->id;
-		$avatar->username = Q::ifset($modified_fields, 'username', $user->username);
-		$avatar->icon = Q::ifset($modified_fields, 'icon', $user->icon);
+		$avatar->username = Q::ifset($modifiedFields, 'username', $user->username);
+		$avatar->icon = Q::ifset($modifiedFields, 'icon', $user->icon);
 		$avatar->firstName = '';
 		$avatar->lastName = '';
 		$avatar->save();

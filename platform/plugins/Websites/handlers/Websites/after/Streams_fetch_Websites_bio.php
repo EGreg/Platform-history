@@ -11,5 +11,6 @@ function Websites_after_Streams_fetch_Websites_bio($params, &$streams)
 	foreach ($bios as $name => $bio) {
 		$streams[$name]->bio = $bio->bio;
 		$streams[$name]->userId = $bio->userId;
+		$streams[$name]->getintouch = $bio->getintouch;
 	}
 }

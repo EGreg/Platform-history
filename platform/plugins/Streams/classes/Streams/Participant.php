@@ -70,21 +70,21 @@ class Streams_Participant extends Base_Streams_Participant
 	/**
 	 * Also saves counterpart row in Streams_Participating table
 	 * @method beforeSave
-	 * @param {array} $modified_fields
+	 * @param {array} $modifiedFields
 	 *	The fields that were modified
 	 * @return {array}
 	 */
-	function beforeSave($modified_fields)
+	function beforeSave($modifiedFields)
 	{
-		if (isset($modified_fields['state'])) {
+		if (isset($modifiedFields['state'])) {
 			$p = new Streams_Participating();
 			$p->userId = $this->userId; // shouldn't change
 			$p->publisherId = $this->publisherId; // shouldn't change
 			$p->streamName = $this->streamName; // shouldn't change
-			$p->state = $modified_fields['state'];
+			$p->state = $modifiedFields['state'];
 			$p->save(true);
 		}
-		return parent::beforeSave($modified_fields);
+		return parent::beforeSave($modifiedFields);
 	}
 	
 	/**

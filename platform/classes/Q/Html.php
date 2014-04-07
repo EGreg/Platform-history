@@ -1064,6 +1064,7 @@ class Q_Html
 					break;
 				case 'id': // Automatic prefixing of this attribute
 				case 'for': // For labels, too
+					echo  "prefix: " . Q_Html::getIdPrefix();
 					if ($prefix = self::getIdPrefix()) {
 						$value = $prefix . $value;
 					}

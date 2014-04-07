@@ -25,10 +25,10 @@ class Users_Vote extends Base_Users_Vote
 	/**
 	 * Calculates total votes
 	 * @method beforeSave
-	 * @param {array} $modified_fields
+	 * @param {array} $modifiedFields
 	 * @return {array}
 	 */
-	function beforeSave($modified_fields)
+	function beforeSave($modifiedFields)
 	{
 		$total = new Users_Total();
 		$total->forType = $this->forType;
@@ -41,33 +41,33 @@ class Users_Vote extends Base_Users_Vote
 		$total->set('transaction', true);
 		
 		$vote = new Users_Vote();
-		$vote->userId = $modified_fields['userId'];
-		$vote->forType = $modified_fields['forType'];
-		$vote->forId = $modified_fields['forId'];
+		$vote->userId = $modifiedFields['userId'];
+		$vote->forType = $modifiedFields['forType'];
+		$vote->forId = $modifiedFields['forId'];
 		$weightTotal = $total->weightTotal;
 		if ($vote->retrieve()) {
 			if (!$total->voteCount) {
 				// something is wrong
 				$total->voteCount = 1;
 			}
-			$total->weightTotal += ($modified_fields['weight'] - $vote->weight);
+			$total->weightTotal += ($modifiedFields['weight'] - $vote->weight);
 			if (!$total->weightTotal) {
 				throw new Q_Exception_BadValue(array('internal' => 'Users_Vote_Total table', 'problem' => 'weight is 0'));
 			}
 			$total->value = 
 				($total->value * $weightTotal 
 					- $vote->value * $vote->weight 
-					+ $modified_fields['value'] * $modified_fields['weight'])
+					+ $modifiedFields['value'] * $modifiedFields['weight'])
 				/ ($total->weightTotal);
 		} else {
-			$total->weightTotal += $modified_fields['weight'];
+			$total->weightTotal += $modifiedFields['weight'];
 			$total->voteCount += 1;
-			$total->value = ($total->value * $weightTotal + $modified_fields['value'] * $modified_fields['weight'])
+			$total->value = ($total->value * $weightTotal + $modifiedFields['value'] * $modifiedFields['weight'])
 				/ ($total->weightTotal);
 		}
 	
 		$this->set('total', $total);
-		return parent::beforeSave($modified_fields);
+		return parent::beforeSave($modifiedFields);
 	}
 	
 	/**
@@ -75,11 +75,11 @@ class Users_Vote extends Base_Users_Vote
 	 * @method afterSaveExecute
 	 * @param {Db_Result} $result
 	 * @param {Db_Query} $query
-	 * @param {array} $modified_fields
+	 * @param {array} $modifiedFields
 	 * @param {array} $where
 	 * @return {Db_Result}
 	 */
-	function afterSaveExecute($result, $query, $modified_fields, $where)
+	function afterSaveExecute($result, $query, $modifiedFields, $where)
 	{
 		$total = $this->get('total', false);
 		if (!$total) return;

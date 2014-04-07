@@ -25,7 +25,7 @@ class Users_Link extends Base_Users_Link
 	/**
 	 * Assigns 'secret' and 'token' if empty
 	 * @method beforeSave
-	 * @param {array} $modified_fields
+	 * @param {array} $modifiedFields
 	 * @return {array}
 	 */
 	function beforeSave($value)

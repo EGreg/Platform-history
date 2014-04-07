@@ -6,8 +6,9 @@ function Websites_before_Streams_Stream_save_Websites_bio($params)
 	$retrieved = $stream->wasRetrieved();
 
 	if ($retrieved
+	and !$stream->wasModified('userId')
 	and !$stream->wasModified('bio')
-	and !$stream->wasModified('userId')) {
+	and !$stream->wasModified('getintouch')) {
 		return;
 	}
 
@@ -27,13 +28,16 @@ function Websites_before_Streams_Stream_save_Websites_bio($params)
 	$bio->streamName = $stream->name;
 	$bio->retrieve();
 
-	foreach (array('bio', 'userId') as $f) {
+	foreach (array('userId', 'bio', 'getintouch') as $f) {
 		if (!isset($stream->$f)) continue;
 		if (isset($bio->$f) and $bio->$f === $stream->$f) continue;
 		$bio->$f = $stream->$f;
 	}
 	if (!isset($bio->bio)) {
 		$bio->bio = '';
+	}
+	if (!isset($bio->getintouch)) {
+		$bio->getintouch = 'true';
 	}
 	Q::event("Websites/bio/save", compact('user', 'stream', 'bio'), "before");
 	$bio->save();

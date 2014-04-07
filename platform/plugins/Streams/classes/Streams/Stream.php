@@ -321,7 +321,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 * @param {Db_Query} $query
 	 * @return {Db_Result}
 	 */
-	function afterSaveExecute($result, $query, $modified_fields, $where)
+	function afterSaveExecute($result, $query, $modifiedFields, $where)
 	{
 		$stream = $this;
 		

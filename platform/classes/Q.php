@@ -890,16 +890,13 @@ EOT;
 	 *  Otherwise an empty array is used.
 	 * @return {array|object} The $dest array or object, otherwise an array that has been filled with values.
 	 */
-	static function take($source, $fields, &$dest = null)
+	static function take($source, $fields, &$dest = null, $keys = array())
 	{
 		if (!is_array($fields)) {
 			$fields = array($fields);
 		}
 		if (!isset($dest)) {
 			$dest = array();
-		}
-		if (!$source) {
-			return $dest;
 		}
 		if (Q::isAssociative($fields)) {
 			if (is_array($source)) {
@@ -912,7 +909,7 @@ EOT;
 						$dest->k = array_key_exists($k, $source) ? $source[$k] : $v;
 					}
 				}
-			} else {
+			} else if (is_object($source)) {
 				if (is_array($dest)) {
 					foreach ($fields as $k => $v) {
 						$dest[$k] = property_exists($source, $k) ? $source->$k : $v;
@@ -921,6 +918,16 @@ EOT;
 					foreach ($fields as $k => $v) {
 						$dest->$k = property_exists($source, $k) ? $source->$k : $v;
 				 	}	
+				}
+			} else {
+				if (is_array($dest)) {
+					foreach ($fields as $k => $v) {
+						$dest[$k] = $v;
+					}
+				} else {
+					foreach ($fields as $k => $v) {
+						$dest->k = $v;
+					}
 				}
 			}
 		} else {
@@ -938,7 +945,7 @@ EOT;
 						}
 					}
 				}
-			} else {
+			} else if (is_object($source)) {
 				if (is_array($dest)) {
 					foreach ($fields as $k) {
 						if (property_exists($source, $k)) {

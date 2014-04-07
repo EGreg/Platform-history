@@ -29,7 +29,7 @@ function Streams_stream_put($params) {
 	if (!$retrieved) {
 		throw new Q_Exception_MissingRow(array(
 			'table' => 'stream',
-			'criteria' => "{publisherId: '$publisherId', name: '$streamName'}"
+			'criteria' => "{publisherId: '$publisherId', name: '$name'}"
 		));
 	}
 	

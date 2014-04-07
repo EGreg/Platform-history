@@ -147,7 +147,7 @@ function Row(fields, retrieved /* false */) {
 	 * If object has methods beforeSave, beforeSaveExecute or afterSaveExecute they are triggered in
 	 * appropriate time.
 	 * @method save
-	 * @param [on_duplicate_key_update=false] {boolean} If MySQL is being used, you can set this to TRUE
+	 * @param [onDuplicateKeyUpdate=false] {boolean} If MySQL is being used, you can set this to TRUE
 	 *  to add an ON DUPLICATE KEY UPDATE clause to the INSERT statement
 	 * @param [commit=false] {boolean} If this is TRUE, then the current transaction is committed right after the save.
 	 *  Use this only if you started a transaction before.
@@ -156,14 +156,14 @@ function Row(fields, retrieved /* false */) {
 	 *  errors: an Object. If there were any errors, it will be passed error object as returned from query.execute
 	 *  If successful, it will be passed nothing.
 	 */
-	this.save = function (on_duplicate_key_update /* = false */, commit /* = false */, callback) {
+	this.save = function (onDuplicateKeyUpdate /* = false */, commit /* = false */, callback) {
 
 		var self = this, _continue = true;
 		var rowClass = Q.require( this.className.split('_').join('/') );
 
-		if (typeof on_duplicate_key_update === 'function') {
-			callback = on_duplicate_key_update;
-			on_duplicate_key_update = commit = false;
+		if (typeof onDuplicateKeyUpdate === 'function') {
+			callback = onDuplicateKeyUpdate;
+			onDuplicateKeyUpdate = commit = false;
 		} else if (typeof commit === 'function') {
 			callback = commit;
 			commit = false;
@@ -180,45 +180,45 @@ function Row(fields, retrieved /* false */) {
 		if (this.className === "Row")
 			throw new Error("If you're going to save, please extend Db.Row.");
 
-		var modified_fields = {}, key;
+		var modifiedFields = {}, key;
 		for (key in _fields) {
 			if (_fieldsModified[key]) {
-				modified_fields[key] = _fields[key];
+				modifiedFields[key] = _fields[key];
 			}
 		}
 
 		/**
 		 * Optional. If defined the method is called before taking actions to save row.
 		 * It can be used synchronously and can ignore callback but must return
-		 * `modified_fields` object. If used asyncronously shall pass this object
+		 * `modifiedFields` object. If used asyncronously shall pass this object
 		 * to callback
 		 *
 		 * **NOTE:** *if this method is defined but do not return result and do not call callback,
 		 * the `save()` method fails silently without making any changes in the database!!!*
 		 * @method beforeSave
-		 * @param modified_fields {object}
+		 * @param modifiedFields {object}
 		 * @param [callback=null] {function} This function is called when hook completes. Returns `error` -
-		 *	error object if any and `modified_fields` as parameters.
+		 *	error object if any and `modifiedFields` as parameters.
 		 */
 		if (!_split && typeof this.beforeSave === "function") { // skip beforeSave when on _split is defined
 			try {
-				modified_fields = this.beforeSave(modified_fields, function (error, modified_fields) {
+				modifiedFields = this.beforeSave(modifiedFields, function (error, modifiedFields) {
 					if (error) callback && callback.call(self, error);
-					else _do_save(modified_fields);
+					else _do_save(modifiedFields);
 				});
 			} catch (error) {
 				callback && callback.call(self, error);
 				return;
 			}
 		}
-		if (modified_fields) _do_save(modified_fields);
+		if (modifiedFields) _do_save(modifiedFields);
 
-		function _do_save(modified_fields) {
-			if (!modified_fields) {
+		function _do_save(modifiedFields) {
+			if (!modifiedFields) {
 				callback && callback.call(self, new Error(this.className+".beforeSave callback cancelled save")); // nothing saved
 				return;
 			}
-			if (typeof modified_fields !== "object")
+			if (typeof modifiedFields !== "object")
 				throw new Error(this.className + ".beforeSave() must return the array of (modified) fields to save!");
 
 			var db, query, _inserting;
@@ -227,13 +227,13 @@ function Row(fields, retrieved /* false */) {
 
 			if (_retrieved) {
 				// update the table
-				query = rowClass.UPDATE().set(modified_fields).where(_pkValue);
+				query = rowClass.UPDATE().set(modifiedFields).where(_pkValue);
 				_inserting = false;
 			} else {
 				// insert new row
-				query = rowClass.INSERT(modified_fields);
-				if (on_duplicate_key_update) 
-					query.onDuplicateKeyUpdate(modified_fields);
+				query = rowClass.INSERT(modifiedFields);
+				if (onDuplicateKeyUpdate) 
+					query.onDuplicateKeyUpdate(modifiedFields);
 				_inserting = true;
 			}
 
@@ -271,7 +271,7 @@ function Row(fields, retrieved /* false */) {
 			// trigger Db/Row/this.className/saveExecute before event. // NOTE: this is synchronous
 			if (typeof this.beforeSaveExecute === "function") {
 				query.resume = _execute;
-				query = (_continue = !!this.beforeSaveExecute(query, modified_fields)) || query; // NOTE: this is synchronous
+				query = (_continue = !!this.beforeSaveExecute(query, modifiedFields)) || query; // NOTE: this is synchronous
 												// to use it async way return *false* and use query.resume() to continue
 												// or handle callbacks in some creative way
 			}

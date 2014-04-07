@@ -47,6 +47,10 @@ Q.mixin(Base, Q.require('Db/Row'));
  * @property bio
  * @type mixed
  */
+/**
+ * @property getintouch
+ * @type string
+ */
 
 /**
  * This method uses Db to establish a connection with the information stored in the configuration.
@@ -176,7 +180,8 @@ Base.prototype.fieldNames = function () {
 		"publisherId",
 		"streamName",
 		"userId",
-		"bio"
+		"bio",
+		"getintouch"
 	];
 };
 
@@ -228,6 +233,23 @@ Base.prototype.beforeSet_userId = function (value) {
 			throw new Error('Must pass a string to '+this.table()+".userId");
 		if (typeof value === "string" && value.length > 31)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".userId");
+		return value;
+};
+
+/**
+ * Method is called before setting the field and verifies if value is string of length within acceptable limit.
+ * Optionally accept numeric value which is converted to string
+ * @method beforeSet_getintouch
+ * @param {string} value
+ * @return {string} The value
+ * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
+ */
+Base.prototype.beforeSet_getintouch = function (value) {
+		if (value instanceof Db.Expression) return value;
+		if (typeof value !== "string" && typeof value !== "number")
+			throw new Error('Must pass a string to '+this.table()+".getintouch");
+		if (typeof value === "string" && value.length > 255)
+			throw new Error('Exceedingly long value being assigned to '+this.table()+".getintouch");
 		return value;
 };
 

@@ -7425,7 +7425,6 @@ Q.request.options = {
 		var msg;
 		if (msg = Q.firstErrorMessage(error)) {
 			console.warn(msg);
-			alert(msg);
 		}
 	}, 'Q')
 };

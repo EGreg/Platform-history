@@ -25,21 +25,21 @@ class Users_ExternalFrom extends Base_Users_ExternalFrom
 	/**
 	 * Assign 'xid' field if not set
 	 * @method beforeSave
-	 * @param {array} $modified_fields
+	 * @param {array} $modifiedFields
 	 * @return {array}
 	 */
-	function beforeSave($updated_fields)
+	function beforeSave($updatedFields)
 	{
 		if (!$this->retrieved) {
-			if (!isset($updated_fields['xid'])) {
-				$this->xid = $updated_fields['xid'] = 
+			if (!isset($updatedFields['xid'])) {
+				$this->xid = $updatedFields['xid'] = 
 				self::db()->uniqueId(self::table(), 'xid', null, array(
 					'characters' => '0123456789abcdefghijklmnopqrstuvwxyz',
 					'length' => 7
 				));
 			}
 		}
-		return parent::beforeSave($updated_fields);
+		return parent::beforeSave($updatedFields);
 	}
 
 	/* * * */

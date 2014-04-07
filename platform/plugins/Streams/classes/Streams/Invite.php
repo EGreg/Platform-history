@@ -100,15 +100,15 @@ class Streams_Invite extends Base_Streams_Invite
 	 * Saves corresponding row in Streams_Invited table
 	 * Inserting a new invite affects corresponding row in Streams_Participant table
 	 * @method beforeSave
-	 * @param {array} $modified_fields
+	 * @param {array} $modifiedFields
 	 *	The fields that have been modified
 	 * @return {array}
 	 */
-	function beforeSave($modified_fields)
+	function beforeSave($modifiedFields)
 	{
 		if (!$this->retrieved) {
-			if (!isset($modified_fields['token'])) {
-				$this->token = $modified_fields['token'] = self::db()->uniqueId(
+			if (!isset($modifiedFields['token'])) {
+				$this->token = $modifiedFields['token'] = self::db()->uniqueId(
 					self::table(),
 					'token',
 					array(
@@ -118,9 +118,9 @@ class Streams_Invite extends Base_Streams_Invite
 				);
 			}
 			$p = new Streams_Participant();
-			$p->publisherId = $modified_fields['publisherId'];
-			$p->streamName = $modified_fields['streamName'];
-			$p->userId = $modified_fields['userId'];
+			$p->publisherId = $modifiedFields['publisherId'];
+			$p->streamName = $modifiedFields['streamName'];
+			$p->userId = $modifiedFields['userId'];
 			if (!$p->retrieve()) {
 				$p->state = 'invited';
 				$p->reason = '';
@@ -128,20 +128,20 @@ class Streams_Invite extends Base_Streams_Invite
 			}
 		}
 
-		if (array_key_exists('state', $modified_fields) or array_key_exists('expireTime', $modified_fields)) {
+		if (array_key_exists('state', $modifiedFields) or array_key_exists('expireTime', $modifiedFields)) {
 			$invited = new Streams_Invited();
 			$invited->userId = $this->userId; // shouldn't change
 			$invited->token = $this->token; // shouldn't change
-			if (array_key_exists('state', $modified_fields)) {
-				$invited->state = $modified_fields['state'];
+			if (array_key_exists('state', $modifiedFields)) {
+				$invited->state = $modifiedFields['state'];
 			}
-			if (array_key_exists('expireTime', $modified_fields)) {
-				$invited->expireTime = $modified_fields['expireTime'];
+			if (array_key_exists('expireTime', $modifiedFields)) {
+				$invited->expireTime = $modifiedFields['expireTime'];
 			}
 			$invited->save(true);
 		}
 		
-		return parent::beforeSave($modified_fields);
+		return parent::beforeSave($modifiedFields);
 	}
 	
 	/**

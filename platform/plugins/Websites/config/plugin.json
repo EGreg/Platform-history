@@ -31,8 +31,8 @@
 			"Websites/bio": {
 				"create": true,
 				"edit": true,
-				"fields": ["userId", "bio"],
-				"see": ["bio"],
+				"fields": ["userId", "bio", "getintouch"],
+				"see": ["bio", "getintouch"],
 				"defaults": {
 					"title": "User Bio"
 				}

@@ -181,32 +181,32 @@ class Users_User extends Base_Users_User
 	/**
 	 * Assigns 'id' and verifies 'username' fields
 	 * @method beforeSave
-	 * @param {array} $modified_fields
+	 * @param {array} $modifiedFields
 	 * @return {array}
 	 * @throws {Users_Exception_UsernameExists}
 	 *	If username already exists
 	 */
-	function beforeSave($updated_fields)
+	function beforeSave($updatedFields)
 	{
 		if (!$this->retrieved) {
-			if (!isset($updated_fields['id'])) {
-				$this->id = $updated_fields['id'] = 
+			if (!isset($updatedFields['id'])) {
+				$this->id = $updatedFields['id'] = 
 				self::db()->uniqueId(self::table(), 'id', null, array(
 					'characters' => 'abcdefghijklmnopqrstuvwxyz',
 					'length' => 8,
 					'filter' => array('Users_User', 'idFilter')
 				));
 			}
-			if (!isset($updated_fields['username'])) {
+			if (!isset($updatedFields['username'])) {
 				// put an empty username for now
-				$this->username = $updated_fields['username'] = '';
+				$this->username = $updatedFields['username'] = '';
 			}
 		}
-		if (!empty($updated_fields['username'])) {
+		if (!empty($updatedFields['username'])) {
 			$app = Q_Config::expect('Q', 'app');
 			$unique = Q_Config::get('Users', 'model', $app, 'username_unique', true);
 			if ($unique) {
-				$username = $updated_fields['username'];
+				$username = $updatedFields['username'];
 				$criteria = compact('username');
 				if (isset($this->id)) {
 					$criteria['id != '] = $this->id;
@@ -223,18 +223,18 @@ class Users_User extends Base_Users_User
 		$user = $this;
 		Q::event(
 			'Users/User/save', 
-			compact('user', 'updated_fields'),
+			compact('user', 'updatedFields'),
 			'before'
 		);
-		return parent::beforeSave($updated_fields);
+		return parent::beforeSave($updatedFields);
 	}
 	
-	function afterSaveExecute($result, $query, $modified_fields, $where)
+	function afterSaveExecute($result, $query, $modifiedFields, $where)
 	{
 		$user = $this;
 		Q::event(
 			'Users/User/save', 
-			compact('user', 'result', 'query', 'modified_fields', 'where'),
+			compact('user', 'result', 'query', 'modifiedFields', 'where'),
 			'after'
 		);
 		return $result;

@@ -74,10 +74,10 @@ function Users_Vote (fields) {
 	 * @method beforeSaveExecute
 	 * @param query {Db.Query.Mysql}
 	 *	The query being excecuted
-	 * @param modified_fields {object}
+	 * @param modifiedFields {object}
 	 *	The fields which are modified by query
 	 */
-	this.beforeSaveExecute = function (query, modified_fields) {
+	this.beforeSaveExecute = function (query, modifiedFields) {
 		var self = this;
 		var total = new Users.Total({forId: this.forId});
 		total.retrieve('*', true, true, function(err, total_res) {
@@ -90,27 +90,27 @@ function Users_Vote (fields) {
 					total = total_res[0];
 				}
 				var weightTotal = total.weightTotal;
-				var vote = new Users.Vote({userId: modified_fields.userId, forId: modified_fields.forId});
+				var vote = new Users.Vote({userId: modifiedFields.userId, forId: modifiedFields.forId});
 				vote.retrieve('*', true, function (err, vote_res) {
 					if (!err) {
 						if (!vote_res.length) {
-							total.weightTotal += modified_fields.weight;
+							total.weightTotal += modifiedFields.weight;
 							total.voteCount += 1;
-							total.value = (total.value * weightTotal + modified_fields.value * modified_fields.weight) / (total.weightTotal);
+							total.value = (total.value * weightTotal + modifiedFields.value * modifiedFields.weight) / (total.weightTotal);
 						} else {
 							vote = vote_res[0];
 							if (!total.voteCount) {
 								// something is wrong
 								total.voteCount = 1;
 							}
-							total.weightTotal += (modified_fields.weight - vote.weight);
+							total.weightTotal += (modifiedFields.weight - vote.weight);
 							if (!total.weightTotal) {
 								_rollback(total, self.className + ".beforeSaveExecute(): total.weight = 0!");
 							}
 							total.value =
 								(total.value * weightTotal 
 									- vote.value * vote.weight 
-									+ modified_fields.value * modified_fields.weight) / (total.weightTotal);
+									+ modifiedFields.value * modifiedFields.weight) / (total.weightTotal);
 						}
 						_cache = total;
 						query.resume();
@@ -119,7 +119,7 @@ function Users_Vote (fields) {
 			} else console.log(err);
 		}).begin().lock().resume();
 		if (this.prototype.beforeSaveExecute) {
-			return this.prototype.beforeSaveExecute(query, modified_fields);
+			return this.prototype.beforeSaveExecute(query, modifiedFields);
 		}
 	};
 	

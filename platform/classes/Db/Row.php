@@ -52,7 +52,7 @@ class Db_Row implements Iterator
 	 *     This function should return the Db_Query to execute.
 	 *  </li>
 	 *  <li>
-	 *     <b>beforeSave($modified_fields)</b>
+	 *     <b>beforeSave($modifiedFields)</b>
 	 *     Called by save() method before saving the row.
 	 *     $modified_values is an associative array of modified fields and their values.
 	 *     Return the fields that should still be saved after beforeSave returns.
@@ -67,7 +67,7 @@ class Db_Row implements Iterator
 	 *     $where is an array if this is an update query, otherwise it is null.
 	 *  </li>
 	 *  <li>
-	 *     <b>afterSaveExecute($result, $query, $modified_fields, $where)</b>
+	 *     <b>afterSaveExecute($result, $query, $modifiedFields, $where)</b>
 	 *     Called by save() method after executing the Db_Query to save.
 	 *     It is passed the $result. This function can analyze the result & take further action.
 	 *     It should return the $result back to the caller.
@@ -1558,13 +1558,13 @@ class Db_Row implements Iterator
 				$search_criteria = $this->getPkValue();
 			} else {
 				// use modified fields
-				$modified_fields = array();
+				$modifiedFields = array();
 				foreach ($this->fields as $name => $value) {
 					if ($this->fieldsModified[$name]) {
-						$modified_fields[$name] = $value;
+						$modifiedFields[$name] = $value;
 					}
 				}
-				$search_criteria = $modified_fields;
+				$search_criteria = $modifiedFields;
 			}
 		}
 		
@@ -1668,7 +1668,7 @@ class Db_Row implements Iterator
 	 * If the row was retrieved from the database, issues an UPDATE.
 	 * If the row was created from scratch, then issue an INSERT.
 	 * @method save
-	 * @param {boolean} [$on_duplicate_key_update=false] If MySQL is being used, you can set this to TRUE
+	 * @param {boolean} [$onDuplicateKeyUpdate=false] If MySQL is being used, you can set this to TRUE
 	 *  to add an ON DUPLICATE KEY UPDATE clause to the INSERT statement,
 	 *  or set it to an array to override specific fields with your own Db_Expressions
 	 * @param {boolean} [$commit=false] If this is TRUE, then the current transaction is committed right after the save.
@@ -1676,7 +1676,7 @@ class Db_Row implements Iterator
 	 * @return {boolean|Db_Query} If successful, returns the Db_Query that was executed.
 	 *  Otherwise, returns false.
 	 */
-	function save ($on_duplicate_key_update = false, $commit = false)
+	function save ($onDuplicateKeyUpdate = false, $commit = false)
 	{
 		$this_class = get_class($this);
 		if ($this_class == 'Db_Row') {
@@ -1687,18 +1687,10 @@ class Db_Row implements Iterator
 			? $this->fieldNames()
 			: null;
 
-		$modified_fields = array();
-		if (is_array($fieldNames)) {
-			foreach ($fieldNames as $name) {
-				if ($this->fieldsModified[$name]) {
-					$modified_fields[$name] = $this->fields[$name];
-				}
-			}
-		} else {
-			foreach ($this->fields as $name => $value) {
-				if ($this->fieldsModified[$name]) {
-					$modified_fields[$name] = $value;
-				}
+		$modifiedFields = array();
+		foreach ($this->fields as $name => $value) {
+			if ($this->fieldsModified[$name]) {
+				$modifiedFields[$name] = $value;
 			}
 		}
 
@@ -1706,25 +1698,41 @@ class Db_Row implements Iterator
 			$row = $this;
 			if (false === Q::event(
 				"Db/Row/$this_class/save",
-				compact('row', 'modified_fields', 'on_duplicate_key_update', 'commit'), 'before'
+				compact('row', 'modifiedFields', 'onDuplicateKeyUpdate', 'commit'), 'before'
 			)) {
 				return false;
 			}
 		}
 		$callback = array($this, "beforeSave");
 		if (is_callable($callback)) {
-			$modified_fields = call_user_func($callback, $modified_fields, $on_duplicate_key_update, $commit);
+			$modifiedFields = call_user_func($callback, $modifiedFields, $onDuplicateKeyUpdate, $commit);
 		}
-		if (! isset($modified_fields) or $modified_fields === false)
+		if (! isset($modifiedFields) or $modifiedFields === false) {
 			return false;
-		if (! is_array($modified_fields)) {
+		}
+		if (! is_array($modifiedFields)) {
 			throw new Exception(
 				"$this_class::beforeSave() must return the array of (modified) fields to save!", 
 				-1000
 			);
 		}
 
-		foreach ($modified_fields as $k=>$v) {
+		$fieldsToSave = array();
+		if (is_array($fieldNames)) {
+			foreach ($fieldNames as $name) {
+				if ($this->fieldsModified[$name]) {
+					$fieldsToSave[$name] = $this->fields[$name];
+				}
+			}
+		} else {
+			foreach ($this->fields as $name => $value) {
+				if ($this->fieldsModified[$name]) {
+					$fieldsToSave[$name] = $value;
+				}
+			}
+		}
+
+		foreach ($fieldsToSave as $k=>$v) {
 			$this->$k = $v;
 		}
 
@@ -1734,7 +1742,7 @@ class Db_Row implements Iterator
 		$table = $this->getTable();
 		if ($this->retrieved) {
 			// Do an update of an existing row
-			//if (count($modified_fields) > 0) {
+			//if (count($fieldsToSave) > 0) {
 			$where = $this->getPkValue();
 			if (!$where) {
 				throw new Exception("The primary key is not specified for $table");
@@ -1743,35 +1751,35 @@ class Db_Row implements Iterator
 			// the primary key should, it is only through tinkering.
 			// We'll let it pass, since the person was most likely
 			// trying to do something clever.
-			if (empty($modified_fields))
+			if (empty($fieldsToSave))
 				return false;
 			$query = $db->update($table)
-				->set($modified_fields)
+				->set($fieldsToSave)
 				->where($where);
 			//}
 			$inserting = false;
 		} else {
 			// Do an insert
-			//if (count($modified_fields) == 0)
+			//if (count($fieldsToSave) == 0)
 			//    throw new Exception("No fields have been set. Nothing to save!");
-			$query = $db->insert($table, $modified_fields);
-			if ($on_duplicate_key_update) {
-				$on_duplicate_key_update_fields = $modified_fields;
+			$query = $db->insert($table, $fieldsToSave);
+			if ($onDuplicateKeyUpdate) {
+				$onDuplicateKeyUpdate_fields = $fieldsToSave;
 				$pk = $this->getPrimaryKey();
 				if (count($pk) === 1) {
 					$field_name = reset($pk);
-					$on_duplicate_key_update_fields = array_merge(
+					$onDuplicateKeyUpdate_fields = array_merge(
 						array($field_name => new Db_Expression("LAST_INSERT_ID($field_name)")),
-						$on_duplicate_key_update_fields
+						$onDuplicateKeyUpdate_fields
 					);
 				}
-				if (is_array($on_duplicate_key_update)) {
-					$on_duplicate_key_update_fields = array_merge(
-						$on_duplicate_key_update_fields,
-						$on_duplicate_key_update
+				if (is_array($onDuplicateKeyUpdate)) {
+					$onDuplicateKeyUpdate_fields = array_merge(
+						$onDuplicateKeyUpdate_fields,
+						$onDuplicateKeyUpdate
 					);
 				}
-				$query->onDuplicateKeyUpdate($on_duplicate_key_update_fields);
+				$query->onDuplicateKeyUpdate($onDuplicateKeyUpdate_fields);
 			}
 			$where = null;
 			$inserting = true;
@@ -1783,7 +1791,7 @@ class Db_Row implements Iterator
 			 * @event {before} Db/Row/$class_name/saveExecute
 			 * @param {Db_Row} 'row'
 			 * @param {Db_Query} 'query'
-			 * @param {array} 'modified_fields'
+			 * @param {array} 'modifiedFields'
 			 * @param {array} 'where'
 			 * @return {Db_Query|null}
 			 *	Modified query or NULL if no midifications are necessary
@@ -1791,7 +1799,7 @@ class Db_Row implements Iterator
 			$temp = Q::event("Db/Row/$this_class/saveExecute", array(
 				'row' => $this,
 				'query' => $query,
-				'modified_fields' => $modified_fields,
+				'modifiedFields' => $fieldsToSave,
 				'where' => $where
 			), 'before');
 			if (isset($temp)) {
@@ -1801,7 +1809,7 @@ class Db_Row implements Iterator
 
 		$callback = array($this, "beforeSaveExecute");
 		if (is_callable($callback)) {
-			$query = call_user_func($callback, $query, $modified_fields, $where);
+			$query = call_user_func($callback, $query, $fieldsToSave, $where);
 		}
 
 		// Now, execute the query!
@@ -1835,7 +1843,7 @@ class Db_Row implements Iterator
 
 		$callback = array($this, "afterSaveExecute");
 		if (is_callable($callback)) {
-			call_user_func($callback, $result, $query, $modified_fields, $where);
+			call_user_func($callback, $result, $query, $fieldsToSave, $where);
 		}
 	
 		if (class_exists('Q')) {
@@ -1843,13 +1851,13 @@ class Db_Row implements Iterator
 			 * @event {after} Db/Row/$class_name/saveExecute
 			 * @param {Db_Row} 'row'
 			 * @param {Db_Query} 'query'
-			 * @param {array} 'modified_fields'
+			 * @param {array} 'modifiedFields'
 			 * @param {Db_Result} 'result'
 			 */
 			Q::event("Db/Row/$this_class/saveExecute", array(
 				'row' => $this,
 				'query' => $query,
-				'modified_fields' => $modified_fields,
+				'modifiedFields' => $fieldsToSave,
 				'result' => $result
 			), 'after');
 		}
@@ -1923,14 +1931,14 @@ class Db_Row implements Iterator
 			// Use the primary key value as the search criteria
 			$use_search_criteria = $primaryKeyValue;
 		} else {
-			$modified_fields = array();
+			$modifiedFields = array();
 			foreach ($this->fields as $name => $value)
 				if ($this->fieldsModified[$name])
-					$modified_fields[$name] = $value;
+					$modifiedFields[$name] = $value;
 			
 			// Use the modified fields as the search criteria
 			$use_search_criteria = array();
-			foreach ($modified_fields as $key => $value) {
+			foreach ($modifiedFields as $key => $value) {
 				$use_search_criteria[$key] = $value;
 			}
 				
@@ -2015,7 +2023,7 @@ class Db_Row implements Iterator
 			 * @event {before} Db/Row/$class_name/retrieveExecute
 			 * @param {Db_Row} 'row'
 			 * @param {Db_Query} 'query'
-			 * @param {array} 'modified_fields'
+			 * @param {array} 'modifiedFields'
 			 * @param {array} 'options'
 			 * @return {Db_Query|null}
 			 *	Modified query or NULL if no modifications are necessary

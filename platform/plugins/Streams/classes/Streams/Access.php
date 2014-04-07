@@ -53,13 +53,13 @@ class Streams_Access extends Base_Streams_Access
 	 * @method beforeSaveExecute
 	 * @param {Db_Query} $query
 	 *	The query being excecuted
-	 * @param {array} $modified_fields
+	 * @param {array} $modifiedFields
 	 *	Modified fields
 	 * @param {array|null} $where
 	 *	Primary key value for existing row
 	 * @return {Db_Query}
 	 */
-	function beforeSaveExecute($query, $modified_fields, $where)
+	function beforeSaveExecute($query, $modifiedFields, $where)
 	{
 		$tainted_access = array($this);
 		if ($this->get('removed', false)) {

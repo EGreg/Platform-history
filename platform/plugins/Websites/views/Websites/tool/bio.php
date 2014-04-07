@@ -15,15 +15,27 @@
 		),
 		'actions' => null
 	), 'bio') ?>
-	<?php if ($getintouch) echo Q::tool('Users/getintouch', array(
-		'user' => $bio->userId,
-		'email' => true,
-		'emailSubject' => $getintouch['emailSubject'],
-		'sms' => true,
-		'call' => true,
-		'class' => $getintouch['classes'],
-		'between' => ""
-	)) ?>
+	<?php if ($getintouch and $bio->getintouch): ?>
+		<?php echo Q::tool('Users/getintouch', array(
+			'user' => $bio->userId,
+			'email' => true,
+			'emailSubject' => $getintouch['emailSubject'],
+			'sms' => true,
+			'call' => true,
+			'class' => $getintouch['classes'],
+			'between' => ""
+		)) ?>
+		<?php echo Q_Html::form('Streams/put', 'put') ?>
+			<?php echo Q_Html::input('getintouch', 'getintouch', array(
+				'type' => 'checkbox',
+				'checked' => 'checked',
+				'id' => 'foo'
+			)) ?>
+			<?php echo Q_Html::tag('label', array(
+				'id' => 4
+			))?>
+		</form>
+	<?php endif; ?>
 </div>
 <?php echo Q::tool("Streams/html", array(
 	'publisherId' => $bio->publisherId,

@@ -43,8 +43,9 @@ Q.Tool.define("Streams/html", function (options) {
 		Q.addScript("plugins/Q/js/ckeditor/ckeditor.js", function () {
 			CKEDITOR.disableAutoInline = true;
 			tool.element.setAttribute('contenteditable', true);
-			state.editor = CKEDITOR.inline(tool.element, state.ckeditor || undefined);
-			state.editor.on('blur', function () {
+			var editor = CKEDITOR.inline(tool.element, state.ckeditor || undefined);
+			state.editor = editor;
+			editor.on('blur', function () {
 				state.editing = false;
 				var content = state.editor.getData();
 				if (state.startingContent === content) return;
@@ -60,9 +61,15 @@ Q.Tool.define("Streams/html", function (options) {
 					}, {messages: true});
 				});
 			});
-			state.editor.on('focus', function () {
+			editor.on('focus', function () {
 				state.editing = true;
 				state.startingContent = state.editor.getData();
+			});
+			editor.on('key', function(e){
+				if(e.data.keyCode==27){
+					document.body.focus();
+					editor.focusManager.blur();
+				}
 			});
 			if (state.stream) {
 				state.stream.onFieldChanged(state.field).set(function (fields, field) {
