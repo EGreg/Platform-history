@@ -1772,27 +1772,7 @@ EOT;
 		);
 		
 		
-		$functions['afterSet'] = array();
 		$field_names_exported = "\$this->fieldNames()";
-		$afterSet_code = <<<EOT
-		if (!in_array(\$name, $field_names_exported))
-			\$this->notModified(\$name);
-EOT;
-		$return_statement = <<<EOT
-		return \$value;
-EOT;
-		$functions["afterSet"][] = $afterSet_code;
-		$functions['afterSet']['return_statement'] = $return_statement;
-		$functions['afterSet']['args'] = '$name, $value';
-		$functions['afterSet']['comment'] = <<<EOT
-	$dc
-	 * Method is called after field is set and used to keep \$fields_modified property up to date
-	 * @method afterSet
-	 * @param {string} \$name The field name
-	 * @param {mixed} \$value The value of the field
-	 * @return {mixed} Original value
-	 */
-EOT;
 		
 		$functions['beforeSave'] = array();
 		$js_functions['beforeSave'] = array();

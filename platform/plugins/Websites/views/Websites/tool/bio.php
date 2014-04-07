@@ -15,13 +15,13 @@
 		),
 		'actions' => null
 	), 'bio') ?>
-	<?php echo Q::tool('Users/getintouch', array(
+	<?php if ($getintouch) echo Q::tool('Users/getintouch', array(
 		'user' => $bio->userId,
 		'email' => true,
-		'emailSubject' => "Reaching out from your website",
+		'emailSubject' => $getintouch['emailSubject'],
 		'sms' => true,
 		'call' => true,
-		'class' => 'Q_button clickable',
+		'class' => $getintouch['classes'],
 		'between' => ""
 	)) ?>
 </div>

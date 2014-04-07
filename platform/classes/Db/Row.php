@@ -181,11 +181,11 @@ class Db_Row implements Iterator
 	
 	/**
 	 * Stores whether the fields were modified
-	 * @property $fields_modified
+	 * @property $fieldsModified
 	 * @type array
 	 * @protected
 	 */
-	protected $fields_modified = array();
+	protected $fieldsModified = array();
 	
 	/**
 	 * Used for setting and getting parameters on this Db_Row object
@@ -280,7 +280,7 @@ class Db_Row implements Iterator
 		// mark all fields as not modified.
 		if (is_array($this->fields))
 			foreach ($this->fields as $name => $value)
-				$this->fields_modified[$name] = false;
+				$this->fieldsModified[$name] = false;
 	}
 	
 	/**
@@ -664,9 +664,9 @@ class Db_Row implements Iterator
 	 */
 	function notModified ($field_name)
 	{
-		if (empty($this->fields_modified[$field_name]))
+		if (empty($this->fieldsModified[$field_name]))
 			return false;
-		$this->fields_modified[$field_name] = false;
+		$this->fieldsModified[$field_name] = false;
 		return true;
 	}
 
@@ -679,12 +679,12 @@ class Db_Row implements Iterator
 	function wasModified ($field_name = null)
 	{
 		if (! isset($field_name)) {
-			foreach ($this->fields_modified as $key => $value)
+			foreach ($this->fieldsModified as $key => $value)
 				if (! empty($value))
 					return true;
 			return false;
 		}
-		if (empty($this->fields_modified[$field_name]))
+		if (empty($this->fieldsModified[$field_name]))
 			return false;
 		return true;
 	}
@@ -697,7 +697,7 @@ class Db_Row implements Iterator
 	function modifiedFields ()
 	{
 		$result = array();
-		foreach ($this->fields_modified as $field => $modified) {
+		foreach ($this->fieldsModified as $field => $modified) {
 			if ($modified) $result[$field] = $this->fields[$field];
 		}
 		return $result;
@@ -882,7 +882,7 @@ class Db_Row implements Iterator
 			list ($name_internal, $value) = call_user_func($callback, $value);
 		
 		$this->fields[$name_internal] = $value;
-		$this->fields_modified[$name_internal] = true;
+		$this->fieldsModified[$name_internal] = true;
 		
 		$callback = array($this, "afterSet_$name");
 		if (is_callable($callback))
@@ -1220,8 +1220,8 @@ class Db_Row implements Iterator
 				$row = new $class_name();
 				$row->retrieved = true;
 				$row->copyFrom($row_array, $root_table_fields_prefix);
-				foreach ($row->fields_modified as $key => $value)
-					$row->fields_modified[$key] = false;
+				foreach ($row->fieldsModified as $key => $value)
+					$row->fieldsModified[$key] = false;
 				$pk = array();
 				foreach ($row->getPrimaryKey() as $field) {
 					$pk[$field] = $row->$field;
@@ -1560,7 +1560,7 @@ class Db_Row implements Iterator
 				// use modified fields
 				$modified_fields = array();
 				foreach ($this->fields as $name => $value) {
-					if ($this->fields_modified[$name]) {
+					if ($this->fieldsModified[$name]) {
 						$modified_fields[$name] = $value;
 					}
 				}
@@ -1656,7 +1656,7 @@ class Db_Row implements Iterator
 		
 		$this->retrieved = false;
 		foreach ($this->fields as $k => $v) {
-			$this->fields_modified[$k] = true;
+			$this->fieldsModified[$k] = true;
 		}
 
 		return $result->rowCount();
@@ -1682,11 +1682,23 @@ class Db_Row implements Iterator
 		if ($this_class == 'Db_Row') {
 			throw new Exception("If you're going to save, please extend Db_Row.");
 		}
-		
+
+		$fieldNames = method_exists($this, 'fieldNames')
+			? $this->fieldNames()
+			: null;
+
 		$modified_fields = array();
-		foreach ($this->fields as $name => $value) {
-			if ($this->fields_modified[$name]) {
-				$modified_fields[$name] = $value;
+		if (is_array($fieldNames)) {
+			foreach ($fieldNames as $name) {
+				if ($this->fieldsModified[$name]) {
+					$modified_fields[$name] = $this->fields[$name];
+				}
+			}
+		} else {
+			foreach ($this->fields as $name => $value) {
+				if ($this->fieldsModified[$name]) {
+					$modified_fields[$name] = $value;
+				}
 			}
 		}
 
@@ -1845,7 +1857,7 @@ class Db_Row implements Iterator
 		// Finally, set all fields as unmodified again
 		if (is_array($this->fields)) {
 			foreach ($this->fields as $name => $value) {
-				$this->fields_modified[$name] = false;
+				$this->fieldsModified[$name] = false;
 			}
 		}
 		
@@ -1913,7 +1925,7 @@ class Db_Row implements Iterator
 		} else {
 			$modified_fields = array();
 			foreach ($this->fields as $name => $value)
-				if ($this->fields_modified[$name])
+				if ($this->fieldsModified[$name])
 					$modified_fields[$name] = $value;
 			
 			// Use the modified fields as the search criteria
@@ -2126,9 +2138,9 @@ class Db_Row implements Iterator
 			} else {
 				$this->$stripped_key = $value;
 			}
-			$this->fields_modified[$stripped_key] = isset($mark_modified)
+			$this->fieldsModified[$stripped_key] = isset($mark_modified)
 				? $mark_modified
-				: (isset($row->fields_modified[$key]) ? $row->fields_modified[$key] : false);
+				: (isset($row->fieldsModified[$key]) ? $row->fieldsModified[$key] : false);
 		}
 		return $this;
 	}
@@ -2171,9 +2183,9 @@ class Db_Row implements Iterator
 				$this->$stripped_key = $value;
 			}
 			if ($mark_modified) {
-				$this->fields_modified[$stripped_key] = true;
+				$this->fieldsModified[$stripped_key] = true;
 			} else {
-				$this->fields_modified[$stripped_key] = false;
+				$this->fieldsModified[$stripped_key] = false;
 			}
 		}
 		return $this;

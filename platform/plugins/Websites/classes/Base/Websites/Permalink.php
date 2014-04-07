@@ -237,20 +237,6 @@ abstract class Base_Websites_Permalink extends Db_Row
 		return array('updatedTime', $value);			
 	}
 
-	/**
-	 * Method is called after field is set and used to keep $fields_modified property up to date
-	 * @method afterSet
-	 * @param {string} $name The field name
-	 * @param {mixed} $value The value of the field
-	 * @return {mixed} Original value
-	 */
-	function afterSet($name, $value)
-	{
-		if (!in_array($name, $this->fieldNames()))
-			$this->notModified($name);
-		return $value;			
-	}
-
 	function beforeSave($value)
 	{
 

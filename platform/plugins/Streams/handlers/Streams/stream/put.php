@@ -85,8 +85,9 @@ function Streams_stream_put($params) {
 	$to_save = $stream->toArray();
 	$instructions = array();
 	foreach ($to_save as $k => $v) {
-		if (json_encode($original[$k]) !== json_encode($v)) {
-			$instructions[$k] = $v; // record different value for this attribute
+		if (!isset($original[$k]) or json_encode($original[$k]) !== json_encode($v)) {
+			$stream->$k = $v; // record a different value for this field
+			$instructions[$k] = $v; // record the change in the message
 		}
 	}
 	unset($instructions['updatedTime']);

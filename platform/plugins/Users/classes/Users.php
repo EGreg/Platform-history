@@ -14,7 +14,7 @@ abstract class Users extends Base_Users
 	/*
 	 * This is where you would place all the static methods for the models,
 	 * the ones that don't strongly pertain to a particular row or table.
-	 
+
 	 * * * */
 
 	/**
@@ -26,7 +26,7 @@ abstract class Users extends Base_Users
 	 * @static
 	 */
 	static $facebook = null;
-	
+
 	/**
 	 * Facebook objects that would be instantiated
 	 * from cookies during the "Q/objects" event,
@@ -36,7 +36,7 @@ abstract class Users extends Base_Users
 	 * @static
 	 */
 	static $facebooks = array();
-	
+
 	/**
 	 * Just a convenience method for getting a user from an id
 	 * @method fromId
@@ -53,7 +53,7 @@ abstract class Users extends Base_Users
 		$user->id = $userId;
 		return self::$users[$userId] = $user->retrieve();
 	}
-	
+
 	/**
 	 * @method oAuth
 	 * @static
@@ -161,7 +161,7 @@ abstract class Users extends Base_Users
 	 * @return {Users_User}
 	 */
 	static function authenticate(
-		$provider, 
+		$provider,
 		$appId = null,
 		&$authenticated = null,
 		$import_emailAddress = false)
@@ -171,9 +171,9 @@ abstract class Users extends Base_Users
 			$appId = Q_Config::expect('Users', 'facebookApps', $app, 'appId');
 		}
 		$authenticated = null;
-		
+
 		$during = 'authenticate';
-		
+
 		$return = null;
 		/**
 		 * @event Users/authenticate {before}
@@ -185,17 +185,17 @@ abstract class Users extends Base_Users
 		if (isset($return)) {
 			return $return;
 		}
-		
+
 		if (!isset($provider) or $provider != 'facebook') {
 			throw new Q_Exception_WrongType(array('field' => 'provider', 'type' => '"facebook"'));
 		}
-		
+
 		if (!isset($appId)) {
 			throw new Q_Exception_WrongType(array('field' => 'appId', 'type' => 'a valid facebook app id'));
 		}
-		
+
 		Q_Session::start();
-		
+
 		// First, see if we've already logged in somehow
 		if ($user = self::loggedInUser()) {
 			// Get logged in user from session
@@ -254,11 +254,11 @@ abstract class Users extends Base_Users
 						))->where(array('id' => $ui->userId))->execute();
 						$ui->remove();
 					}
-					
+
 					// Now, let's associate their account with this facebook uid.
 					$user->fb_uid = $fb_uid;
 					$user->save();
-					
+
 					// Save the identifier in the quick lookup table
 					$ui = new Users_Identify();
 					$ui->identifier = "facebook:$fb_uid";
@@ -286,7 +286,7 @@ abstract class Users extends Base_Users
 					$user->retrieve();
 					if ($ui->state === 'future') {
 						$authenticated = 'adopted';
-						
+
 						$user->fb_uid = $fb_uid;
 						$user->signedUpWith = 'facebook'; // should have been "none" before this
 						/**
@@ -319,9 +319,9 @@ abstract class Users extends Base_Users
 					}
 				} else {
 					// user is logged out and no user corresponding to $fb_uid yet
-					
+
 					$authenticated = 'registered';
-					
+
 					// If we can import email address from facebook,
 					// try retrieving it quietly
 					if ($import_emailAddress) {
@@ -333,7 +333,7 @@ abstract class Users extends Base_Users
 							$emailAddress = $user_data['email'];
 						}
 					}
-					
+
 					if (!empty($emailAddress)) {
 						$ui = Users::identify('email', $emailAddress, 'verified');
 						if ($ui) {
@@ -344,7 +344,7 @@ abstract class Users extends Base_Users
 							$user->retrieve();
 						}
 					}
-					
+
 					$user->fb_uid = $fb_uid;
 					/**
 					 * @event Users/insertUser {before}
@@ -362,14 +362,14 @@ abstract class Users extends Base_Users
 						$user->icon = 'default';
 						$user->signedUpWith = 'facebook';
 						$user->save();
-						
+
 						// Save the identifier in the quick lookup table
 						$ui = new Users_Identify();
 						$ui->identifier = "facebook:$fb_uid";
 						$ui->state = 'verified';
 						$ui->userId = $user->id;
 						$ui->save(true);
-						
+
 						// Download and save facebook icon for the user
 						$icon = array(
 							'40.png' => "http://graph.facebook.com/$fb_uid/picture?type=square",
@@ -407,7 +407,7 @@ abstract class Users extends Base_Users
 		if (!$user_was_logged_in) {
 			self::setLoggedInUser($user);
 		}
-		
+
 		if ($retrieved) {
 			/**
 			 * @event Users/updateUser {after}
@@ -423,14 +423,14 @@ abstract class Users extends Base_Users
 			 */
 			Q::event('Users/insertUser', compact('user', 'during'), 'after');
 		}
-		
+
 		// Now make sure our master session contains the
 		// session info for the provider app.
 		if ($provider == 'facebook') {
 			$fb_prefix = 'fb_sig_';
-			
+
 			$access_token = $facebook->getAccessToken();
-			
+
 			if (isset($_SESSION['Users']['appUsers']['facebook_'.$appId])) {
 				// Facebook app user exists. Do we need to update it? (Probably not!)
 				$pk = $_SESSION['Users']['appUsers']['facebook_'.$appId];
@@ -445,7 +445,7 @@ abstract class Users extends Base_Users
 				if (empty($app_user->state) or $app_user->state !== 'added') {
 					$app_user->state = 'added';
 				}
-				
+
 				if (!isset($app_user->access_token)
 				 or $access_token != $app_user->access_token) {
 					/**
@@ -510,7 +510,7 @@ abstract class Users extends Base_Users
 					$authenticated = 'authorized';
 				}
 			}
-			
+
 			$_SESSION['Users']['appUsers']['facebook_'.$appId] = $app_user->getPkValue();
 		}
 
@@ -522,11 +522,11 @@ abstract class Users extends Base_Users
 		 * @param {string} 'appId'
 		 */
 		Q::event('Users/authenticate', compact('provider', 'appId'), 'after');
-		
+
 		// At this point, $user is set.
 		return $user;
 	}
-	
+
 	/**
 	 * Logs a user in using a login identifier and a pasword
 	 * @method login
@@ -544,7 +544,7 @@ abstract class Users extends Base_Users
 		$identifier,
 		$passphrase,
 		$isHashed)
-	{	
+	{
 		$return = null;
 		/**
 		 * @event Users/login {before}
@@ -556,11 +556,11 @@ abstract class Users extends Base_Users
 		if (isset($return)) {
 			return $return;
 		}
-		
+
 		if (!isset($identifier)) {
 			throw new Q_Exception_RequiredField(array('field' => 'identifier'), 'identifier');
 		}
-		
+
 		Q_Session::start();
 		$sessionId = Q_Session::id();
 
@@ -577,7 +577,7 @@ abstract class Users extends Base_Users
 		if (!$user) {
 			throw new Users_Exception_NoSuchUser(compact('identifier'));
 		}
-		
+
 		// First, see if we've already logged in somehow
 		if ($logged_in_user = self::loggedInUser()) {
 			// Get logged in user from session
@@ -592,7 +592,7 @@ abstract class Users extends Base_Users
 			// Passphrases don't match!
 			throw new Users_Exception_WrongPassphrase(compact('identifier'), 'passphrase');
 		}
-		
+
 		/**
 		 * @event Users/login {after}
 		 * @param {string} 'identifier'
@@ -605,9 +605,9 @@ abstract class Users extends Base_Users
 		// Now save this user in the session as the logged-in user
 		self::setLoggedInUser($user);
 		return $user;
-		
+
 	}
-	
+
 	/**
 	 * Logs a user out
 	 * @method logout
@@ -650,7 +650,7 @@ abstract class Users extends Base_Users
 		// Destroy the current session, which clears the $_SESSION and all notices, etc.
 		Q_Session::destroy();
 	}
-	
+
 	/**
 	 * Get the logged-in user's information
 	 * @method loggedInUser
@@ -669,23 +669,23 @@ abstract class Users extends Base_Users
 			return null;
 		}
 		Q_Session::start();
-		
+
 		$nonce = Q_Session::$nonceWasSet or Q_Valid::nonce($throwIfNotLoggedIn, true);
-		
+
 		if (!$nonce or !isset($_SESSION['Users']['loggedInUser']['id'])) {
 			if ($throwIfNotLoggedIn) {
 				throw new Users_Exception_NotLoggedIn();
 			}
 			return null;
 		}
-		$id = $_SESSION['Users']['loggedInUser']['id'];	
+		$id = $_SESSION['Users']['loggedInUser']['id'];
 		$user = Users_User::getUser($id);
 		if (!$user and $throwIfNotLoggedIn) {
 			throw new Users_Exception_NotLoggedIn();
 		}
 		return $user;
 	}
-	
+
 	/**
 	 * Use with caution! This bypasses authentication.
 	 * This functionality should not be exposed externally.
@@ -704,22 +704,22 @@ abstract class Users extends Base_Users
 				return;
 			}
 		}
-		
+
 		Users_Session::delete()
 			->where(array('id' => Q_Session::id()))
 			->limit(1)
 			->execute();
-		
+
 		if ($sessionId = Q_Session::id()) {
 			// Change the session id to prevent session fixation attacks
 			$sessionId = Q_Session::regenerate_id(true);
 		}
-		
+
 		// Store the new information in the session
 		$snf = Q_Config::get('Q', 'session', 'nonceField', 'nonce');
 		$_SESSION['Users']['loggedInUser']['id'] = $user->id;
 		Q_Session::setNonce(true);
-		
+
 		// Do we need to update it?
 		if (Q_Config::get('Users', 'setLoggedInUser', 'updateSessionKey', true)) {
 			/**
@@ -735,7 +735,7 @@ abstract class Users extends Base_Users
 			 */
 			Q::event('Users/setLoggedInUser/updateSessionKey', compact('user'), 'after');
 		}
-		
+
 		/**
 		 * @event Users/setLoggedInUser {after}
 		 * @param {Users_User} 'user'
@@ -743,7 +743,7 @@ abstract class Users extends Base_Users
 		Q::event('Users/setLoggedInUser', compact('user'), 'after');
 		self::$loggedOut = false;
 	}
-	
+
 	/**
 	 * Registers a user
 	 * @method register
@@ -766,7 +766,7 @@ abstract class Users extends Base_Users
 			$options = $provider;
 			$provider = null;
 		}
-		
+
 		/**
 		 * @event Users/register {before}
 		 * @param {string} 'username'
@@ -779,11 +779,11 @@ abstract class Users extends Base_Users
 		if (isset($return)) {
 			return $return;
 		}
-		
+
 		$during = 'register';
-		
+
 		if (Q_Valid::email($identifier, $emailAddress)) {
-			$ui_identifier = $emailAddress; 
+			$ui_identifier = $emailAddress;
 			$key = 'email address';
 			$type = 'email';
 		} else if (Q_Valid::phone($identifier, $mobileNumber)) {
@@ -796,7 +796,7 @@ abstract class Users extends Base_Users
 				'type' => 'email address or mobile number'
 			), array('emailAddress', 'mobileNumber'));
 		}
-		
+
 		$user = false;
 		if ($provider) {
 			if ($provider != 'facebook') {
@@ -843,7 +843,7 @@ abstract class Users extends Base_Users
 				));
 			}
 		}
-		
+
 		// Insert a new user into the database, or simply modify an existing (adopted) user
 		$user->username = $username;
 		if (!isset($user->signedUpWith) or $user->signedUpWith == 'none') {
@@ -863,7 +863,7 @@ abstract class Users extends Base_Users
 		 */
 		Q::event('Users/insertUser', compact('user', 'during'), 'before');
 		$user->save(); // sets the user's id
-		
+
 		/**
 		 * @event Users/insertUser {after}
 		 * @param {string} 'during'
@@ -906,7 +906,7 @@ abstract class Users extends Base_Users
 			$user->icon = self::downloadIcon($user, $icon);
 			$user->save();
 		}
-		
+
 		if (empty($user->emailAddress) and empty($user->mobileNumber)){
 			// Add an email address or mobile number to the user, that they'll have to verify
 			try {
@@ -931,7 +931,7 @@ abstract class Users extends Base_Users
 				throw $e;
 			}
 		}
-		
+
 		/**
 		 * @event Users/register {after}
 		 * @param {string} 'username'
@@ -944,10 +944,10 @@ abstract class Users extends Base_Users
 		$return = Q::event('Users/register', compact(
 			'username', 'identifier', 'icon', 'user', 'provider', 'options'
 		), 'after');
-		
+
 		return $user;
 	}
-	
+
 	/**
 	 * Returns a user in the database that corresponds to the contact info, if any.
 	 * @method userFromContactInfo
@@ -979,7 +979,7 @@ abstract class Users extends Base_Users
 		$user->set('identify', $ui);
 		return $user;
 	}
-	
+
 	/**
 	 * Returns Users_Identifier rows that correspond to the identifier in the database, if any.
 	 * @method identify
@@ -1045,16 +1045,16 @@ abstract class Users extends Base_Users
 		}
 		return !empty($uis) ? reset($uis) : null;
 	}
-	
+
 	/**
 	 * Returns a user in the database that will correspond to a new user in the future
 	 * once they authenticate or follow an invite.
 	 * Inserts a new user if one doesn't already exist.
-	 *  
+	 *
 	 * **Note:** *if they register and then later add an email, mobile or authenticate with a provider,
 	 * which happens to match a "future" mapping in users\_identify table, ththen this user will not be converted, since they already registered a different user.
 	 * Later on, we may have some sort function to merge users together.*
-	 * 
+	 *
 	 * @method futureUser
 	 * @param {string} $type Could be one of "email", "mobile", "email\_hashed", "mobile\_hashed", "facebook" or "twitter"
 	 * @param {string} $value The value corresponding to the type. If $type is:
@@ -1074,7 +1074,7 @@ abstract class Users extends Base_Users
 		if (!isset(self::$types[$type])) {
 			throw new Q_Exception_WrongType(array('field' => 'type', 'type' => 'one of the supported types'));
 		}
-		
+
 		$ui = Users::identify($type, $value, null);
 		if ($ui && !empty($ui->userId)) {
 			$user = new Users_User();
@@ -1090,7 +1090,7 @@ abstract class Users extends Base_Users
 				), 'userId');
 			}
 		}
-		
+
 		$field = self::$types[$type];
 
 		// Make a very generic user and give them a random unique username
@@ -1115,7 +1115,7 @@ abstract class Users extends Base_Users
 			 */
 			Q::event('Users/insertUser', compact('user', 'during'), 'after');
 		}
-		
+
 		if ($type != 'email' and $type != 'mobile') {
 			// Save an identifier => user pair for this future user
 			$ui = new Users_Identify();
@@ -1136,7 +1136,7 @@ abstract class Users extends Base_Users
 				$ui->save();
 			}
 		}
-		
+
 		$status = $ui->state;
 		return $user;
 	}
@@ -1158,7 +1158,7 @@ abstract class Users extends Base_Users
 		}
 		return $ue;
 	}
-	
+
 	/**
 	 * @method downloadIcon
 	 * @static
@@ -1194,17 +1194,17 @@ abstract class Users extends Base_Users
 				fclose($fp);
 			} else {
 				Q_Icon::put(
-					$dir2.DS.$basename, 
-					$url['hash'], 
-					$url['size'], 
-					$type, 
+					$dir2.DS.$basename,
+					$url['hash'],
+					$url['size'],
+					$type,
 					Q_Config::get('Users', 'login', 'gravatar', false)
 				);
 			}
 		}
 		return $folder;
 	}
-	
+
 	/**
 	 * If the user is using an app with a provider, this returns the row
 	 * @method providerAppUser
@@ -1219,7 +1219,7 @@ abstract class Users extends Base_Users
 		if (!isset($provider)) {
 			throw new Q_Exception_WrongType(array('field' => 'provider', 'type' => 'one of the supported providers'));
 		}
-		
+
 		if (!isset($appId)) {
 			throw new Q_Exception_WrongType(array('field' => 'appId', 'type' => 'integer'));
 		}
@@ -1229,7 +1229,7 @@ abstract class Users extends Base_Users
 		}
 		return $_SESSION['Users']['appUsers'][$provider.'_'.$appId];
 	}
-	
+
 	/**
 	 * Hashes a passphrase
 	 * @method hashPassphrase
@@ -1244,7 +1244,7 @@ abstract class Users extends Base_Users
 		if ($passphrase === '') {
 			return '';
 		}
-		
+
 		$hash_function = Q_Config::get(
 			'Users', 'passphrase', 'hashFunction', 'sha1'
 		);
@@ -1252,19 +1252,19 @@ abstract class Users extends Base_Users
 			'Users', 'passphrase', 'hashIterations', 1103
 		);
 		$salt_length = Q_Config::set('Users', 'passphrase', 'saltLength', 0);
-		
+
 		if ($salt_length > 0) {
 			if (empty($existing_hash)) {
-				$salt = substr(sha1(uniqid(mt_rand(), true)), 0, 
+				$salt = substr(sha1(uniqid(mt_rand(), true)), 0,
 					$salt_length);
 			} else {
 				$salt = substr($existing_hash, - $salt_length);
 			}
 		}
-		
+
 		$salt2 = isset($salt) ? '_'.$salt : '';
 		$result = $passphrase;
-	
+
 		// custom hash function
 		if (!is_callable($hash_function)) {
 			throw new Q_Exception_MissingFunction(array(
@@ -1275,15 +1275,15 @@ abstract class Users extends Base_Users
 		$confounder_len = strlen($confounder);
 		for ($i = 0; $i < $passphraseHash_iterations; ++$i) {
 			$result = call_user_func(
-				$hash_function, 
+				$hash_function,
 				$result . $confounder[$i % $confounder_len]
 			);
 		}
 		$result .= $salt2;
-			
+
 		return $result;
 	}
-	
+
 	/**
 	 * Gets the facebook object constructed from request and/or cookies
 	 * @method facebook
@@ -1299,14 +1299,14 @@ abstract class Users extends Base_Users
 		if (isset(self::$facebooks[$key])) {
 			return self::$facebooks[$key];
 		}
-		
+
 		// Get the facebook object from POST, if any
 		if (isset($_POST['signed_request'])) {
 			$fb_info = Q_Config::get('Users', 'facebookApps', $key, null);
 			if (isset($fb_info['appId']) && isset($fb_info['secret'])) {
 				try {
 					$facebook = new Facebook(array(
-						'appId' => $fb_info['appId'], 
+						'appId' => $fb_info['appId'],
 						'secret' => $fb_info['secret'],
 						'cookie' => true,
 						'fileUpload' => true
@@ -1319,13 +1319,13 @@ abstract class Users extends Base_Users
 			}
 		}
 
-		// And now, the new facebook js can set fbsr_$appId	
+		// And now, the new facebook js can set fbsr_$appId
 		$fb_apps = Q_Config::get('Users', 'facebookApps', array());
 		foreach ($fb_apps as $key => $fb_info) {
 			if (isset($_COOKIE['fbsr_'.$fb_info['appId']])) {
 				try {
 					$facebook = new Facebook(array(
-						'appId' => $fb_info['appId'], 
+						'appId' => $fb_info['appId'],
 						'secret' => $fb_info['secret'],
 						'cookie' => true,
 						'fileUpload' => true
@@ -1338,11 +1338,11 @@ abstract class Users extends Base_Users
 				}
 			}
 		}
-		
+
 		// Otherwise, this facebook object isn't there
 		return null;
 	}
-	
+
 	/**
 	 * @method fql
 	 * @static
@@ -1387,7 +1387,7 @@ abstract class Users extends Base_Users
 		Q::event('Users/fql', compact('facebook', 'fql_query', 'results'), 'after');
 		return $results;
 	}
-	
+
 	/**
 	 * @method facebookFriends
 	 * @static
@@ -1398,8 +1398,8 @@ abstract class Users extends Base_Users
 	 * @throws {Users_Exception_NotLoggedIn} If user is not logged in
 	 */
 	static function facebookFriends(
-		$facebook, 
-		$uid = null, 
+		$facebook,
+		$uid = null,
 		$fields = "uid, firstName, lastName, pic_small, pic_big, pic_square, pic, birthday_date, sex, meeting_sex, religion")
 	{
 		if (!$uid) $uid = $facebook->getUser();
@@ -1409,7 +1409,7 @@ abstract class Users extends Base_Users
 			. "OR uid = $uid";
 		return self::fql($facebook, $q);
 	}
-	
+
 	/**
 	 * @method facebookAlbums
 	 * @static
@@ -1420,7 +1420,7 @@ abstract class Users extends Base_Users
 	 * @throws {Users_Exception_NotLoggedIn} If user is not logged in
 	 */
 	static function facebookAlbums(
-		$facebook, 
+		$facebook,
 		$uid = null,
 		$fields = "aid, name, description, location, size, link, edit_link, visible, modified_major, object_id")
 	{
@@ -1429,7 +1429,7 @@ abstract class Users extends Base_Users
 		$q = "SELECT $fields FROM album WHERE owner = $uid";
 		return Users::fql($facebook, $q);
 	}
-	
+
 	/**
 	 * @method facebookPhotos
 	 * @static
@@ -1446,7 +1446,7 @@ abstract class Users extends Base_Users
 		$q = "SELECT $fields FROM photo WHERE aid = \"$aid\"";
 		return Users::fql($facebook, $q);
 	}
-	
+
 	/**
 	 * Adds a link to someone who is not yet a user
 	 * @method addLink
@@ -1467,7 +1467,7 @@ abstract class Users extends Base_Users
 	 * @throws {Users_Exception_NotLoggedIn} If user is not logged in
 	 */
 	static function addLink(
-		$address, 
+		$address,
 		$type = null,
 		$extraInfo = array())
 	{
@@ -1535,9 +1535,9 @@ abstract class Users extends Base_Users
 				}
 				break;
 		}
-		
+
 		$user = Users::loggedInUser(true);
-		
+
 		// Check if the contact user already exists, and if so, add a contact instead of a link
 		$ui = Users::identify($ui_type, $ui_value);
 		if ($ui) {
@@ -1545,7 +1545,7 @@ abstract class Users extends Base_Users
 			$user->addContact($ui->userId, Q::ifset($extraInfo, 'labels', null));
 			return $user->id;
 		}
-		
+
 		// Add a link if one isn't already there
 		$link = new Users_Link();
 		$link->identifier = $ui_value;
@@ -1557,7 +1557,7 @@ abstract class Users extends Base_Users
 		$link->save();
 		return true;
 	}
-	
+
 	/**
 	 * @method links
 	 * @static
@@ -1601,7 +1601,7 @@ abstract class Users extends Base_Users
 			'identifier' => $identifiers
 		))->fetchDbRows();
 	}
-	
+
 	/**
 	 * Inserts some Users_Contact rows for the locally registered users
 	 * who have added links to this particular contact information.
@@ -1637,7 +1637,7 @@ abstract class Users extends Base_Users
 		$links = $contact_info
 			? Users::links($contact_info)
 			: array();
-		
+
 		$contacts = array();
 		foreach ($links as $link) {
 			$extraInfo = json_decode($link->extraInfo, true);
@@ -1650,9 +1650,9 @@ abstract class Users extends Base_Users
 					$contact->contactUserId = $user->id;
 					$contact->label = $label;
 					$contact->save(true);
-					
+
 					$link->remove(); // we don't need this link anymore
-					
+
 					// TODO: Think about porting this to Node
 					// and setting a flag when done.
 					// Perhaps we should send a custom message through socket.io
@@ -1665,13 +1665,13 @@ abstract class Users extends Base_Users
 		 * @param {array} 'contacts'
 		 */
 		Q::event('Users/saveContactsFromLinks', compact('contacts'), 'after');
-		
+
 		// TODO: Add a handler to this event in the Streams plugin, so that
 		// we post this information to a stream on the hub, which will
 		// update all its subscribers, who will also run saveContactsFromLinks
 		// for their local users.
 	}
-	
+
 	/**
 	 * Get the email address or mobile number from the request, if it can be deduced
 	 * @method requestedIdentifier
@@ -1766,7 +1766,7 @@ abstract class Users extends Base_Users
 		);
 		return Q::interpolate($terms_label, array('link' => $terms_link));
 	}
-	
+
 	/**
 	 * @property $fql_results
 	 * @type array
@@ -1818,12 +1818,12 @@ abstract class Users extends Base_Users
 	 * @default 'tw_uid'
 	 */
 	protected static $types = array(
-		'email' => 'emailAddressPending', 
-		'mobile' => 'mobileNumberPending', 
-		'facebook' => 'fb_uid', 
+		'email' => 'emailAddressPending',
+		'mobile' => 'mobileNumberPending',
+		'facebook' => 'fb_uid',
 		'twitter' => 'tw_uid'
 	);
-	
+
 	/**
 	 * @property $loggedOut
 	 * @type boolean

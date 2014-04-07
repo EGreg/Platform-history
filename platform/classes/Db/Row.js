@@ -60,11 +60,11 @@ function Row(fields, retrieved /* false */) {
 	
 	/**
 	 * The fields of the row
-	 * @property _fields_modified
+	 * @property _fieldsModified
 	 * @type object
 	 * @private
 	 */
-	var _fields_modified = {};
+	var _fieldsModified = {};
 	
 	/**
 	 * The temporary config to make shards split
@@ -101,7 +101,7 @@ function Row(fields, retrieved /* false */) {
 						x = result;
 					}
 				}
-				_fields_modified[k] = true;
+				_fieldsModified[k] = true;
 				_fields[k] = x;
 			};
 		})(k, this));
@@ -110,7 +110,7 @@ function Row(fields, retrieved /* false */) {
 		}
 	}
 	if ((_retrieved = !!retrieved)) {
-		_fields_modified = {};
+		_fieldsModified = {};
 	}
 
 	/**
@@ -182,7 +182,7 @@ function Row(fields, retrieved /* false */) {
 
 		var modified_fields = {}, key;
 		for (key in _fields) {
-			if (_fields_modified[key]) {
+			if (_fieldsModified[key]) {
 				modified_fields[key] = _fields[key];
 			}
 		}
@@ -244,7 +244,7 @@ function Row(fields, retrieved /* false */) {
 					if (_inserting && _primaryKey.length === 1 && lastId)
 						_fields[pk[0]] = lastId;
 					_pkValue = calculatePKValue() || {};
-					_fields_modified = {};
+					_fieldsModified = {};
 					_retrieved = true;
 					callback && callback.call(self);
 				}
@@ -547,7 +547,7 @@ function Row(fields, retrieved /* false */) {
 					_fields = {};
 					_retrieved = false;
 					_pkValue = {};
-					_fields_modified = {};
+					_fieldsModified = {};
 					callback && callback.call(self, null, result);
 				}
 				query = null;

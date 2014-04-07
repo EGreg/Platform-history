@@ -217,7 +217,7 @@ abstract class Base_Places_Nearby extends Db_Row
 	}
 
 	/**
-	 * Method is called after field is set and used to keep $fields_modified property up to date
+	 * Method is called after field is set and used to keep $fieldsModified property up to date
 	 * @method afterSet
 	 * @param {string} $name The field name
 	 * @param {mixed} $value The value of the field

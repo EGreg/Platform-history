@@ -303,20 +303,6 @@ abstract class Base_Users_Session extends Db_Row
 	}
 
 	/**
-	 * Method is called after field is set and used to keep $fields_modified property up to date
-	 * @method afterSet
-	 * @param {string} $name The field name
-	 * @param {mixed} $value The value of the field
-	 * @return {mixed} Original value
-	 */
-	function afterSet($name, $value)
-	{
-		if (!in_array($name, $this->fieldNames()))
-			$this->notModified($name);
-		return $value;			
-	}
-
-	/**
 	 * Check if mandatory fields are set and updates 'magic fields' with appropriate values
 	 * @method beforeSave
 	 * @param {array} $value The array of fields
