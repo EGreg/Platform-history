@@ -11,7 +11,19 @@ Q.Websites = Q.plugins.Websites = {
 (function($, Websites) {
 
 Q.Tool.define("Websites/bio", function (fields) {
-
+	var gittool = this.$('.Users_getintouch_tool');
+	var form = this.$('form.Websites_getintouch');
+	function _refresh() {
+		var checkbox = $('input[type=checkbox]', form);
+		var opacity = (!checkbox.length || checkbox.attr('checked')) ? 1 : 0.5;
+		gittool.css('opacity', opacity);
+	}
+	this.state['.Q_form_tool'] = {
+		onSuccess: _refresh
+	};
+	_refresh();
+	$('button', form).hide();
+	$('input[type=checkbox]', form).click(function () { $(this).submit() });
 });
 
 Q.Streams.define("Websites/bio", function (fields) {

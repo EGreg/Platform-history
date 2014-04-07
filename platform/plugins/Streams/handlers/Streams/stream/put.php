@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Used to update EXISITNG stream
+ * Used to update an existing stream
  *
  * @param string $params 
- *   publisher id and stream name of existing stream shall be supplied
+ *   Must include "publisherId" as well as "name" or "streamName"
  * @return void
  */
 
@@ -20,20 +20,16 @@ function Streams_stream_put($params) {
 	$more_fields = array_merge($_REQUEST, $params);
 
 	// do not set stream name
-	$stream = new Streams_Stream();
-	$stream->publisherId = $publisherId;
-	$stream->name = $name;
-	$retrieved = $stream->retrieve();
-	$original = $stream->toArray();
-	
-	if (!$retrieved) {
+	$stream = Streams::fetchOne($user->id, $publisherId, $name);	
+	if (!$stream) {
 		throw new Q_Exception_MissingRow(array(
 			'table' => 'stream',
 			'criteria' => "{publisherId: '$publisherId', name: '$name'}"
 		));
 	}
+	$original = $stream->toArray();
 	
-	// valid stream types shall be defined in config by 'Streams/type' array
+	// valid stream types should be defined in config by 'Streams/type' array
 	$range = Q_Config::expect('Streams', 'types');
 	if (!array_key_exists($stream->type, $range)) {
 		throw new Q_Exception("This app doesn't support streams of type ".$stream->type);
@@ -106,8 +102,6 @@ function Streams_stream_put($params) {
 			'instructions' => $instructions
 		), true);
 	}
-	
-	$stream->retrieve(); // for now we have to do fetch the stream again, because stream's messageCount has updated
 	
 	if (!empty($more_fields['join'])) {
 		$stream->join();

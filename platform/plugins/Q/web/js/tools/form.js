@@ -9,8 +9,8 @@ Q.Tool.define('Q/form', function(options) {
 	var form = $te.closest('form');
 	if (!form.length) return;
 	if (form.data('Q_form_tool')) return;
-	form.submit(function() {
-		var onResponse = function(err, data) {
+	form.submit(function(event) {
+		function onResponse(err, data) {
 			var msg;
 			if (msg = Q.firstErrorMessage(err)) {
 				return alert(msg);
@@ -19,14 +19,17 @@ Q.Tool.define('Q/form', function(options) {
 			Q.handle(tool.state.onResponse, tool, arguments);
 			$('div.Q_form_undermessagebubble', $te).empty();
 			$('tr.Q_error', $te).removeClass('Q_error');
+			if (data.slots.form) {
+				form.html(data.slots.form);
+			}
 			if ('errors' in data) {
 				tool.applyErrors(data.errors);
 				$('tr.Q_error').eq(0).prev().find(':input').eq(0).focus();
-				if (data.scriptLines && data.scriptLines['form']) {
+				if (data.scriptLines && data.scriptLines.form) {
 					eval(data.scriptLines.form);
 				}
 			} else {
-				if (data.scriptLines && data.scriptLines['form']) {
+				if (data.scriptLines && data.scriptLines.form) {
 					eval(data.scriptLines.form);
 				}
 				Q.handle(tool.state.onSuccess, tool, arguments);
@@ -42,12 +45,14 @@ Q.Tool.define('Q/form', function(options) {
 		if (result.cancel) {
 			return false;
 		}
+		var input = $('input[name="Q.method"]', form);
+		method = (input.val() || form.attr('method')).toUpperCase();
 		if (tool.state.noCache && typeof tool.state.loader.forget === "function") {
 			tool.state.noCache = false;
-			tool.state.loader.forget(action, form.attr('method'), form.serialize(), tool.state.slotsToRequest);
+			tool.state.loader.forget(action, method, form.serialize(), tool.state.slotsToRequest);
 		}
-		tool.state.loader(action, form.attr('method'), form.serialize(), tool.state.slotsToRequest, onResponse);
-		return false;
+		tool.state.loader(action, method, form.serialize(), tool.state.slotsToRequest, onResponse);
+		event.preventDefault();
 	});
 	$('input', form).add('select', form).on('input', function () {
 		if (form.data('validator')) {

@@ -91,6 +91,11 @@ class Q_Html
 			}
 			$attributes = array();
 		}
+		$input = null;
+		if ($method != 'GET' and $method != 'POST') {
+			$input = Q_Html::hidden(array('Q.method' => $method));
+			$method = 'POST';
+		}
 		if (!isset($method)) {
 			unset($method);
 		}
@@ -98,52 +103,56 @@ class Q_Html
 			compact('action', 'method'),
 			$attributes
 		);
-		return self::tag('form', $tag_params, $contents);
+		if (isset($contents)) {
+			$contents = $input . $contents;
+		}
+		$form = self::tag('form', $tag_params, $contents);
+		return isset($contents) ? $form : $form.$input;
 	}
 	
 	/**
 	 * Renders Q-specific information for a form
 	 * @method formInfo
 	 * @static
-	 * @param {string} $on_success The URI or URL to redirect to in case of success
+	 * @param {string} $onSuccess The URI or URL to redirect to in case of success
 	 *  If you put "true" here, it uses Q_Request::special('onSuccess', $uri),
 	 *  or if it's not there, then `Q_Dispatcher::uri()`
-	 * @param {string} [$on_errors=null] The URI or URL to redirect to in case of errors
+	 * @param {string} [$onErrors=null] The URI or URL to redirect to in case of errors
 	 *  If you put "true" here, it uses Q_Request::special('onErrors', $uri),
 	 *  or if it's not there, then `Q_Dispatcher::uri()`
-	 * @param {string} [$session_nonce_field=null] The name of the nonce field to use in the session.
+	 * @param {string} [$sessionNonceField=null] The name of the nonce field to use in the session.
 	 *  If the config parameter "Q"/"session"/"nonceField" is set, uses that.
 	 * @return {string} The generated markup
 	 */
 	static function formInfo(
-	 $on_success,
-	 $on_errors = null,
-	 $session_nonce_field = null)
+	 $onSuccess,
+	 $onErrors = null,
+	 $sessionNonceField = null)
 	{
 		$uri = Q_Dispatcher::uri();
-		if ($on_success === true) {
-			$on_success = Q_Request::special('onSuccess', $uri);
+		if ($onSuccess === true) {
+			$onSuccess = Q_Request::special('onSuccess', $uri);
 		}
-		if ($on_errors === true) {
-			$on_errors = Q_Request::special('onErrors', $uri);
+		if ($onErrors === true) {
+			$onErrors = Q_Request::special('onErrors', $uri);
 		}
-		$hidden_fields = array();
-		if (isset($on_success)) {
-			$hidden_fields['Q.onSuccess'] = Q_Uri::url($on_success);
+		$hiddenFields = array();
+		if (isset($onSuccess)) {
+			$hiddenFields['Q.onSuccess'] = Q_Uri::url($onSuccess);
 		}
-		if (isset($on_errors)) {
-			$hidden_fields['Q.onErrors'] = Q_Uri::url($on_errors);
+		if (isset($onErrors)) {
+			$hiddenFields['Q.onErrors'] = Q_Uri::url($onErrors);
 		}
-		if (!isset($session_nonce_field)) {
-			$session_nonce_field = Q_Config::get('Q', 'session', 'nonceField', 'nonce');
+		if (!isset($sessionNonceField)) {
+			$sessionNonceField = Q_Config::get('Q', 'session', 'nonceField', 'nonce');
 		}
-		if (isset($session_nonce_field)) {
-			if (!isset($_SESSION['Q'][$session_nonce_field])) {
-				$_SESSION['Q'][$session_nonce_field] = uniqid();
+		if (isset($sessionNonceField)) {
+			if (!isset($_SESSION['Q'][$sessionNonceField])) {
+				$_SESSION['Q'][$sessionNonceField] = uniqid();
 			}
-			$hidden_fields['Q.nonce'] = $_SESSION['Q'][$session_nonce_field];
+			$hiddenFields['Q.nonce'] = $_SESSION['Q'][$sessionNonceField];
 		}
-		return self::hidden($hidden_fields);
+		return self::hidden($hiddenFields);
 	}
 	
 	/**
@@ -168,7 +177,7 @@ class Q_Html
 			$keys = array($keys);
 		}
 	
-		$hidden_fields = array();
+		$hiddenFields = array();
 
 		$name = '';
 		foreach ($keys as $key) {
@@ -185,7 +194,7 @@ class Q_Html
 				? preg_replace('/[^A-Za-z0-9]/', '_', $name2)
 				: null;
 			if (!is_array($value)) {
-				$hidden_fields[] = self::tag('input', array(
+				$hiddenFields[] = self::tag('input', array(
 					'type' => 'hidden', 
 					'name' => $name2, 
 					'value' => $value,
@@ -193,7 +202,7 @@ class Q_Html
 				));
 			}
 		}
-		$html = implode('', $hidden_fields);
+		$html = implode('', $hiddenFields);
 		foreach ($list as $key => $value) {
 			if (is_array($value)) {
 				$keys2 = $keys;
@@ -1064,7 +1073,6 @@ class Q_Html
 					break;
 				case 'id': // Automatic prefixing of this attribute
 				case 'for': // For labels, too
-					echo  "prefix: " . Q_Html::getIdPrefix();
 					if ($prefix = self::getIdPrefix()) {
 						$value = $prefix . $value;
 					}

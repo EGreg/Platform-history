@@ -12,7 +12,8 @@ function Websites_bio_tool($params)
 	$publisherId = $params['publisherId'];
 	$streamName = $params['streamName'];
 	$bio = Streams::fetchOne(null, $publisherId, $streamName);
+	$edit = $bio->testWriteLevel('edit');
 	return Q::view("Websites/tool/bio.php", 
-		compact('bio', 'getintouch')
+		compact('bio', 'getintouch', 'edit')
 	);
 }

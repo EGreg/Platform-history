@@ -15,7 +15,7 @@
 		),
 		'actions' => null
 	), 'bio') ?>
-	<?php if ($getintouch and $bio->getintouch): ?>
+	<?php if ($getintouch and ($edit or $bio->getintouch)): ?>
 		<?php echo Q::tool('Users/getintouch', array(
 			'user' => $bio->userId,
 			'email' => true,
@@ -25,15 +25,12 @@
 			'class' => $getintouch['classes'],
 			'between' => ""
 		)) ?>
-		<?php echo Q_Html::form('Streams/put', 'put') ?>
-			<?php echo Q_Html::input('getintouch', 'getintouch', array(
-				'type' => 'checkbox',
-				'checked' => 'checked',
-				'id' => 'foo'
-			)) ?>
-			<?php echo Q_Html::tag('label', array(
-				'id' => 4
-			))?>
+	<?php endif; ?>
+	<?php if ($edit): ?>
+		<?php echo Q_Html::form(Q_Request::baseUrl('action.php').'/Websites/bio', 'put',
+			array('class' => 'Websites_getintouch')
+		) ?>
+			<?php echo Q::view('Websites/tool/getintouch.php', compact('bio')) ?>
 		</form>
 	<?php endif; ?>
 </div>

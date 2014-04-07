@@ -547,6 +547,8 @@ EOT;
 			$extra = $options;
 		}
 		
+		$oldToolName = self::$toolName;
+		
 		/**
 		 * @event Q/tool/render {before}
 		 * @param {string} 'info'
@@ -632,7 +634,7 @@ EOT;
 			false,
 			$result
 		);
-		Q::$toolName = null;
+		Q::$toolName = $oldToolName;
 		return $result;
 	}
 

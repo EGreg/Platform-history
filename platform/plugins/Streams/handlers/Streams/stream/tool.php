@@ -60,8 +60,12 @@ function Streams_stream_tool($options) {
 			);
 		} else {
 			// check if type is allowed
-			if (!in_array($type, $range))
-				throw new Q_Exception("Provided stream type ($type) is not valid valid types are: ".join(', ', $range));
+			if (!in_array($type, $range)) {
+				throw new Q_Exception_WrongValue(array(
+					'field' => 'stream type',
+					'range' => join(', ', $range)
+				));
+			}
 			$hidden['type'] = $type;
 		}
 	}
