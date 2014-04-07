@@ -334,7 +334,7 @@ class Users_User extends Base_Users_User
 			// Otherwise, say it's verified for another user,
 			// even if it unsubscribed or was suspended.
 			throw new Users_Exception_AlreadyVerified(array(
-				'key' => $email->address,
+				'key' => 'email address',
 				'userId' => $email->userId
 			), 'emailAddress');
 		}
@@ -434,7 +434,7 @@ class Users_User extends Base_Users_User
 				// even though it may not have been verified yet.
 				// In the future, might throw a more accurate exception.
 				throw new Users_Exception_AlreadyVerified(array(
-					'key' => $email->address,
+					'key' => 'email address',
 					'userId' => $email->userId
 				));
 			}
@@ -517,7 +517,7 @@ class Users_User extends Base_Users_User
 			// Otherwise, say it's verified for another user,
 			// even if it unsubscribed or was suspended.
 			throw new Users_Exception_AlreadyVerified(array(
-				'key' => $mobile->number,
+				'key' => 'mobile number',
 				'userId' => $mobile->userId
 			), 'mobileNumber');
 		}
@@ -613,7 +613,7 @@ class Users_User extends Base_Users_User
 				// even though it may not have been verified yet.
 				// In the future, might throw a more accurate exception.
 				throw new Users_Exception_AlreadyVerified(array(
-					'key' => $mobile->number,
+					'key' => 'mobile number',
 					'userId' => $mobile->userId
 				));
 			}
