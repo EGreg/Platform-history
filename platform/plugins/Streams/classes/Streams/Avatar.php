@@ -100,9 +100,11 @@ class Streams_Avatar extends Base_Streams_Avatar
 	 *  "short" => Only display the first name<br/>
 	 *  "spans" => If true, encloses the first and last name in span tags<br/>
 	 *  "escape" => If true, does HTML escaping of the retrieved fields
+	 * @param {string|null} $default
+	 *  What to return if there is no info to get displayName from.
 	 * @return {string|null}
 	 */
-	function displayName($options = array())
+	function displayName($options = array(), $default = null)
 	{
 		$escape = !empty($options['escape']);
 		$fn = $escape ? Q_Html::text($this->firstName) : $this->firstName;
@@ -127,7 +129,7 @@ class Streams_Avatar extends Base_Streams_Avatar
 		} else if (!$fn and $ln) {
 			return "$u $ln";
 		} else {
-			return $u ? $u : null;
+			return $u ? $u : $default;
 		}
 	}
 

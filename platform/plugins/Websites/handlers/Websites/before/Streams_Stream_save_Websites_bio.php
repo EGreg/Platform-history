@@ -19,7 +19,10 @@ function Websites_before_Streams_Stream_save_Websites_bio($params)
 			throw new Users_Exception_NoSuchUser();
 		}
 
-		$stream->title = Streams::displayName($user, array('fullAccess' => true));
+		$title = Streams::displayName($user, array('fullAccess' => true));
+		if (isset($title)) {
+			$stream->title = $title;
+		}
 		$stream->icon = Q_Html::themedUrl($user->iconPath());
 	}
 

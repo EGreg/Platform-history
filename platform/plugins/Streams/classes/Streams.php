@@ -1020,9 +1020,11 @@ abstract class Streams extends Base_Streams
 	 *  "short" => Only display the first name<br/>
 	 *  "spans" => If true, encloses the first and last name in span tags<br/>
 	 *  "escape" => If true, does HTML escaping of the retrieved fields
+	 * @param {string|null} $default
+	 *  What to return if there is no info to get displayName from.
 	 * @return {string|null}
 	 */
-	static function displayName($userId, $options = array())
+	static function displayName($userId, $options = array(), $default = null)
 	{
 		if ($userId instanceof Users_User) {
 			$userId = $userId->id;
@@ -1034,7 +1036,7 @@ abstract class Streams extends Base_Streams
 			$asUserId = $asUser ? $asUser->id : "";
 		}
 		$avatar = Streams_Avatar::fetch($asUserId, $userId);
-		return $avatar ? $avatar->displayName($options) : null;
+		return $avatar ? $avatar->displayName($options, $default) : $default;
 	}
 
 	/**
