@@ -50,7 +50,26 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 	$this.before(input);
 	$this.addClass('Q_imagepicker');
 	
-	function upload(data) {
+	function _callback (err, res) {
+		var state = $this.state('Q/imagepicker');
+		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(res && res.errors);
+		if (msg) {
+			$this.attr('src', state.oldSrc).stop().removeClass('Q_imagepicker_uploading');
+			return Q.handle(o.onError, $this, [msg]);
+		}
+		var key = o.showSize;
+		if (!key) {
+			// by default set src equal to first element of the response
+			key = Q.first(res.slots.data, {nonEmpty: true});
+		}
+		var c = Q.handle(o.onSuccess, $this, [res.slots.data, key]);
+		if (c !== false && key) {
+			$this.attr('src', Q.url(res.slots.data[key]+"?"+Date.now()));
+		}
+		$this.removeClass('Q_imagepicker_uploading');
+	}
+	
+	function _upload(data) {
 		if (o.preprocess) {
 			o.preprocess.call($this, _doUpload);
 		} else {
@@ -79,25 +98,6 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 				throw new Q.Error("Q/imagepicker tool: no size found corresponding to showSize");
 			}
 			
-			function _callback (err, res) {
-				var state = $this.state('Q/imagepicker');
-				var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(res && res.errors);
-				if (msg) {
-					$this.attr('src', state.oldSrc).stop().removeClass('Q_imagepicker_uploading');
-					return Q.handle(o.onError, $this, [msg]);
-				}
-				var key = o.showSize;
-				if (!key) {
-					// by default set src equal to first element of the response
-					key = Q.first(res.slots.data, {nonEmpty: true});
-				}
-				var c = Q.handle(o.onSuccess, $this, [res.slots.data, key]);
-				if (c !== false && key) {
-					$this.attr('src', Q.url(res.slots.data[key]+"?"+Date.now()));
-				}
-				$this.removeClass('Q_imagepicker_uploading');
-			}
-			
 			if (params.loader) {
 				var callable = params.loader;
 				delete params.loader;
@@ -112,6 +112,29 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 			}
 		}
 	}
+	
+	function _process() {
+		var state = $this.state('Q/imagepicker');
+		state.oldSrc = $this.attr('src');
+		if (o.throbber) {
+			$this.attr('src', Q.url(o.throbber));
+		}
+		$this.addClass('Q_imagepicker_uploading');
+		var reader = new FileReader();
+		reader.onload = function() {
+			_upload(reader.result);
+		};
+		reader.onerror = function () { 
+			setTimeout(function() { 
+				callback("Error reading file", res);
+			}, 0);
+		};
+		reader.readAsDataURL(this.files[0]);
+
+		// clear the input, see http://stackoverflow.com/a/13351234/467460
+		input.wrap('<form>').closest('form').get(0).reset();
+		input.unwrap();
+	}
 
 	if (navigator.camera) {
 		// "file" input type is not supported
@@ -120,7 +143,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 				if (index === 3) return;
 				var source = Camera.PictureSourceType[index === 1 ? "CAMERA" : "PHOTOLIBRARY"];
 				navigator.camera.getPicture(function(data){
-					upload("data:image/jpeg;base64," + data);
+					_upload("data:image/jpeg;base64," + data);
 				}, function(msg){
 					alert(msg);
 				}, { quality: 50,
@@ -141,26 +164,22 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 				return false;
 			}
 		});
-		input.change(function (e) {
+		input.change(function () {
 			if (!this.value) {
 				return; // it was canceled
 			}
-			var state = $this.state('Q/imagepicker');
-			state.oldSrc = $this.attr('src');
-			if (o.throbber) {
-				$this.attr('src', Q.url(o.throbber));
-			}
-			$this.addClass('Q_imagepicker_uploading');
-			var reader = new FileReader();
-			reader.onload = function() {
-				upload(reader.result);
-			};
-			reader.onerror = function () { setTimeout(function() { alert("Error reading file"); }, 0); };
-			reader.readAsDataURL(this.files[0]);
-			
-			// clear the input, see http://stackoverflow.com/a/13351234/467460
-			input.wrap('<form>').closest('form').get(0).reset();
-			input.unwrap();
+			_process.call(this);
+		});
+		function _cancel(e) {
+			e.preventDefault();
+		}
+		$this.on({
+			 dragover: _cancel,
+			 dragenter: _cancel,
+			 drop: function (e) {
+				 _process.call(e.originalEvent.dataTransfer);
+				 e.preventDefault();
+			 }
 		});
 	}
 },

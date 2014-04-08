@@ -7275,7 +7275,6 @@ function processStylesheets() {
 	// Complain about some other libraries if necessary
 	if (Q.findScript('plugins/Q/js/prefixfree.min.js')) {
 		var warning = "Q.js must be included before prefixfree in order to work properly";
-		alert(warning);
 		console.warn(warning);
 	}
 	var links = document.getElementsByTagName('link');
