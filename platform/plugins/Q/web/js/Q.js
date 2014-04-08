@@ -6644,7 +6644,10 @@ Q.Pointer = {
 	fastclick: function _Q_fastclick (params) {
 		params.eventName = Q.Pointer.end;
 		return function _Q_fastclick_on_wrapper (e) {
-			if (Q.Pointer.canceledClick || !this.isOrContains(Q.Pointer.started)) {
+			var elem = Q.Pointer.elementFromPoint(Q.Pointer.getX(e), Q.Pointer.getY(e));
+			if (Q.Pointer.canceledClick
+			|| !this.isOrContains(Q.Pointer.started)
+			|| !this.isOrContains(elem)) {
 				e.preventDefault ? e.preventDefault() : event.returnValue = false;
 				return;
 			}
