@@ -116,7 +116,7 @@ function _Q_inplace_tool_constructor(element, options) {
 	var edit_button = $('button.Q_inplace_tool_edit', $te);
 	var save_button = $('button.Q_inplace_tool_save', $te);
 	var cancel_button = $('button.Q_inplace_tool_cancel', $te);
-	var fieldinput = $(':input', $te).not('button').eq(0)
+	var fieldinput = $(':input[type!=hidden]', $te).not('button').eq(0)
 		.addClass('Q_inplace_tool_fieldinput');
 	var undermessage = $('.Q_inplace_tool_undermessage', $te);
 	var throbber_img = $('<img />')

@@ -41,7 +41,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 			});
 			switch (state.inplaceType) {
 				case 'text':
-					tool.$('input').val(content);
+					tool.$('input[type!=hidden]').val(content);
 					tool.$('.Q_inplace_tool_static').html(content.encodeHTML());
 					break;
 				case 'textarea':
