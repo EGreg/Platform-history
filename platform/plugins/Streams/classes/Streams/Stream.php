@@ -884,7 +884,9 @@ class Streams_Stream extends Base_Streams_Stream
 			$raw_userIds = array_merge($raw_userIds, $identifier_ids);
 		}
 		// merge fb uids if any
-		$raw_userIds = isset($who['fb_uid']) ? array_merge($raw_userIds, Users_User::idsFromFacebook($who['fb_uid'])) : $raw_userIds;
+		$raw_userIds = isset($who['fb_uid'])
+			? array_merge($raw_userIds, Users_User::idsFromFacebook($who['fb_uid']))
+			: $raw_userIds;
 		// ensure that each userId is included only once and remove already participating users
 		$raw_userIds = array_unique($raw_userIds);
 		$total = count($raw_userIds);

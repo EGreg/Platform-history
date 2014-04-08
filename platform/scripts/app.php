@@ -19,27 +19,27 @@ Options:
 --all Will install plugins listed in Q/app/plugins in \$APP_DIR/config/app.json
   All connections/schemas listed in Q/pluginInfo and Q/appInfo will be installed also.
 
---noapp Will skip installation or the app. Can be used to install/update plugins only
+--noapp Will skip installation of the app. Can be used to install/update plugins.
 
 -p \$PLUGIN_NAME Install/update plugin
 
 -s \$CONN_NAME
   This will execute app's install/upgrade sql scripts for connections \$CONN_NAME.
-  If plugin is not installed, first install it using \$CONN_NAME as \$PLUGIN_NAME.
-  Note: running SQL statements may reqire elevated privileges.
+  Note: running SQL statements may require elevated privileges.
 
 -su \$CONN_NAME \$USER_NAME
   This will execute apps's install/upgrade sql scripts for connections \$CONN_NAME,
-  using indicated username and will prompt for a password.
-  Note: running SQL statements may reqire elevated privileges.
+  using the provided username and will prompt for a password.
+  Note: running SQL statements may require elevated privileges.
 
---group \$GROUP set filesystem group (by name or id) to the \$GROUP,
-  accesible by http server and file permisions to 0664/0775
-  Note: may reqire elevated privileges.
-
+--group \$GROUP
+  Set filesystem group (by name or id) to the \$GROUP,
+  accessible by http server and file permisions to 0664/0775
   If no --group parameter specified file permisions are set to 0666/0777
+  Note: may require elevated privileges.
 
---deep Make recursive check of filemode and group. Can be used when 'files' folder is not empty
+--deep
+  Make recursive check of filemode and group. Can be used when 'files' folder is not empty
 
 --noreq
   Skip requirements checking (useful when installing 2 interdependent plugins)

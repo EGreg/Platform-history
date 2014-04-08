@@ -752,13 +752,10 @@ class Users_User extends Base_Users_User
 	 */
 	static function idsFromIdentifiers ($identifiers)
 	{
-
 		if (empty($identifiers)) return array();
-
 		if (!is_array($identifiers)) {
 			$identifiers = array_map('trim', explode(',', $identifiers));
 		}
-
 		$users = array();
 		foreach ($identifiers as $identifier) {
 			if (Q_Valid::email($identifier, $emailAddress)) {
@@ -788,13 +785,10 @@ class Users_User extends Base_Users_User
 	 */
 	static function idsFromFacebook ($identifiers)
 	{
-
 		if (empty($identifiers)) return array();
-
 		if (!is_array($identifiers)) {
 			$identifiers = array_map('trim', explode(',', $identifiers));
 		}
-
 		$users = array();
 		foreach ($identifiers as $identifier) {
 			$users[] = Users::futureUser('facebook', $identifier);
