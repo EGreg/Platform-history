@@ -576,11 +576,9 @@ Q.batcher.options = {
  *	"throttle.throttleNext" => function (subject) - applies next getter with subject
  *	"throttleSize" => defaults to 100. Integer representing the size of the throttle, if it is enabled
  *	"cache" => pass false here to prevent caching, or an object which supports the cache interface
- * @return Number
- *  0 if found in cache,
- *  1 if throttled,
- *  2 if run,
- *  3 if waiting for other request to deliver data
+ * @return Function
+ *  The wrapper function, which returns an object with a property called "result"
+ *  which could be one of Q.getter.CACHED, Q.getter.WAITING, Q.getter.REQUESTING or Q.getter.THROTTLING
  */
 Q.getter = function _Q_getter(original, options) {
 

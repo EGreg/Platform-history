@@ -724,19 +724,18 @@ Stream.release = function _Stream_release (publisherId, streamName) {
  * @return {boolean} whether the refresh occurred
  */
 Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, options) {
-	if (!Q.isOnline()) {
-		callback && callback(false);
+	if (!Q.isOnline()
+	|| !_retainedByStream[Streams.key(publisherId, streamName)]) {
+		callback && callback(null);
 		return false;
 	}
+	var result = false;
 	// If the stream was retained, fetch latest messages,
 	// and replay their being "posted" to trigger the right events
-	var ps = Streams.key(publisherId, streamName);
-	if (!_retainedByStream[ps]) {
-		return false;
-	}
 	if (options && options.messages) {
-		Message.wait(publisherId, streamName, -1, callback);
-	} else {
+		result = !!Message.wait(publisherId, streamName, -1, callback);
+	}
+	if (!result) {
 		Streams.get.cache.each([publisherId, streamName], function (k, v) {
 			Streams.get.cache.remove(k);
 		});
@@ -747,9 +746,10 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 			_retainedStreams[ps] = this;
 			callback(err, stream);
 		});
+		result = true;
 	}
 	_retain = undefined;
-	return true;
+	return result;
 };
 
 /**
@@ -1674,12 +1674,18 @@ Message.latestOrdinal = function _Message_latestOrdinal (publisherId, streamName
  * @param {Object} options A hash of options which can include:
  *   "max": The maximum number of messages to wait and hope they will arrive via sockets. Any more and we just request them again.
  *   "timeout": The maximum amount of time to wait and hope the messages will arrive via sockets. After this we just request them again.
+ * @return {Boolean|Number|Q.Pipe}
+ *   Returns false if no attempt was made because stream wasn't cached,
+ *   true if the cached stream already got this message,
+ *   a Q.Pipe if we decided to wait for messages to arrive via socket
+ *   or return value of Q.Message.get, if we decided to send a request for the messages.
  */
 Message.wait = function _Message_wait (publisherId, streamName, ordinal, callback, options) {
 	var alreadyCalled = false, handlerKey;
 	var latest = Message.latestOrdinal(publisherId, streamName);
 	if (!latest) {
-		Q.handle(callback, this, [null]); // There is no cache for this stream, so we won't wait for previous messages.
+		// There is no cache for this stream, so we won't wait for previous messages.
+		Q.handle(callback, this, [null]);
 		return false;
 	}
 	if (ordinal >= 0 && ordinal <= latest) {
@@ -1707,7 +1713,7 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 			});
 			waiting[ord] = [event, handlerKey];
 		});
-		var p = new Q.Pipe(ordinals, function () {
+		return new Q.Pipe(ordinals, function () {
 			// they all arrived
 			if (!alreadyCalled) {
 				Q.handle(callback, this, [ordinals]);
@@ -1716,7 +1722,7 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 			return true;
 		});
 	} else {
-		_tryLoading();
+		return _tryLoading();
 	}	
 	function _tryLoading() {
 		// forget waiting, we'll request them again
@@ -1729,7 +1735,7 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 		if (ordinal < 0) {
 			Message.get.forget(publisherId, streamName, {min: latest+1, max: ordinal});
 		}
-		Message.get(publisherId, streamName, {min: latest+1, max: ordinal}, function (err, messages) {
+		return Message.get(publisherId, streamName, {min: latest+1, max: ordinal}, function (err, messages) {
 			// Go through the messages and simulate the posting
 			// NOTE: the messages will arrive a lot quicker than they were posted,
 			// and moreover without browser refresh cycles in between,
@@ -1750,7 +1756,7 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 					w[0].remove(w[1]);
 				});
 				if (!alreadyCalled) {
-					Q.handle(callback);
+					Q.handle(callback, this, [Object.keys(messages)]);
 				}
 				alreadyCalled = true;
 			}

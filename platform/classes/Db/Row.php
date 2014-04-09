@@ -1720,13 +1720,13 @@ class Db_Row implements Iterator
 		$fieldsToSave = array();
 		if (is_array($fieldNames)) {
 			foreach ($fieldNames as $name) {
-				if ($this->fieldsModified[$name]) {
+				if (!empty($this->fieldsModified[$name])) {
 					$fieldsToSave[$name] = $this->fields[$name];
 				}
 			}
 		} else {
 			foreach ($this->fields as $name => $value) {
-				if ($this->fieldsModified[$name]) {
+				if (!empty($this->fieldsModified[$name])) {
 					$fieldsToSave[$name] = $value;
 				}
 			}
