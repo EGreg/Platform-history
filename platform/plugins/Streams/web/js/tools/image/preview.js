@@ -151,7 +151,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 					onSuccess: {'Streams/image/preview': function (data, key) {
 						stream.refresh(function () {
 							state.onUpdate.handle.call(tool, data);
-						}, {messages: true});
+						}, {messages: true, changed: {'icon': true}});
 						return false;
 					}}
 				});

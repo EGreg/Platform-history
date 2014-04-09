@@ -716,12 +716,13 @@ Stream.release = function _Stream_release (publisherId, streamName) {
 };
 
 /**
- * Waits for the latest messages to be posted to a given stream.
- * If your app is using socket.io, then calling this manually is largely unnecessary.
- * @param {Function} callback This is called when the stream has been updated with the latest messages.
+ * Refreshes a stream, to show the latest content and possibly process the latest messages posted to the stream.
+ * If your app uses socket.io, then calling this manually is largely unnecessary because messages arrive via push.
+ * @param {Function} callback This is called when the stream has been refreshed.
  * @param {Object} options A hash of options, including:
- *  "messages": If set to true, then besides just reloading the stream, attempt to catch up on the latest messages
- * @return {boolean} whether the refresh occurred
+ *  "messages": If set to true, then besides just reloading the fields, attempt to catch up on the latest messages
+ *  "changed": An array of {fieldName: true} pairs naming fields to trigger change events for, even if their values stayed the same
+ * @return {boolean} whether the refresh is occurring, or whether it has been canceled
  */
 Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, options) {
 	if (!Q.isOnline()
@@ -742,7 +743,8 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 		Streams.get(publisherId, streamName, function (err, stream) {
 			// just get the stream, and any listeners will be triggered
 			var ps = Streams.key(publisherId, streamName);
-			updateStream(_retainedStreams[ps], this.fields, true);
+			var changed = (options && options.changed) || {};
+			updateStream(_retainedStreams[ps], this.fields, changed);
 			_retainedStreams[ps] = this;
 			callback(err, stream);
 		});
@@ -2056,7 +2058,11 @@ function updateStream(stream, fields, onlyChangedFields) {
 		
 	// events about updated fields
 	for (k in fields) {
-		if (onlyChangedFields && fields[k] === stream.fields[k]) continue;
+		if (onlyChangedFields
+		&& fields[k] === stream.fields[k]
+		&& !(k in onlyChangedFields)) {
+			continue;
+		}
 		Q.handle(
 			Q.getObject([publisherId, streamName, k], _streamFieldChangedHandlers),
 			stream,
@@ -2412,7 +2418,7 @@ Q.onInit.add(function _Streams_onInit() {
 					}
 					break;
 				case 'Streams/edited':
-					updateStream(stream, fields, false);
+					updateStream(stream, fields, null);
 					break;
 				case 'Streams/relatedFrom':
 					updateRelatedCache(fields);
