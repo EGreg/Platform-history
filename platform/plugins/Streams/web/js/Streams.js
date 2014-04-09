@@ -749,7 +749,7 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 		result = true;
 	}
 	_retain = undefined;
-	return result;
+	return true;
 };
 
 /**
@@ -2233,22 +2233,19 @@ Q.onInit.add(function _Streams_onInit() {
 		Q.Users.logout.options.onSuccess.set(function() { pushNotification.setApplicationIconBadgeNumber(0); }, 'Streams.PushNotifications');
 		if (Q.Users.loggedInUser) _registerPushNotifications();
 	}
-	// handle socket connect/disconnect on resign/resume application
+	
+	// handle resign/resume application in Cordova
 	if (Q.info.isCordova) {
 		Q.addEventListener(document, ['resign', 'pause'], _disconnectSockets);
 		Q.addEventListener(document, 'resume', function () {
-			if (Q.Users.loggedInUser) {
-				Q.Cache.document("Streams.getParticipating").clear();
-				_connectSockets();
-				if (Q.isOnline()) {
-					Q.handle(location); // reload the entire page
-				}
-			}
+			_connectSockets(true);
 		});
 	}
+	
+	// handle going online after being offline
 	Q.onOnline.set(function () {
 		_connectSockets(true);
-	}, 'Streams'); // perhaps something happened offline
+	}, 'Streams');
 
 	// set up full name request dialog
 	Q.onPageLoad('').add(function _Streams_onPageLoad() {
