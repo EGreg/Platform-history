@@ -272,12 +272,11 @@ class Q_Plugin
 			|| ($groupfix = $gid !== false && filegroup($file) !== $gid)) {
 
 			if ($ask) {
-				echo("Fix permissions for '$file' [Y/n/a]? ");
+				echo("Fix permissions for '$file' [y/n/all]? ");
 				$line = trim(fgets(STDIN));
 			}
 			switch ($line) {
-				case 'a':
-				case 'A':
+				case 'all':
 					$ask = false;
 				case '':
 				case 'y':
