@@ -83,7 +83,7 @@ var priv = {};
  */
 Users.onError = new Q.Event(function (err, err2) {
 	console.warn(Q.firstErrorMessage(err, err2));
-}, 'Streams.onError');
+}, 'Users.onError');
 
 /**
  * Initialize facebook by adding FB script and running FB.init().
@@ -675,7 +675,7 @@ Users.logout = function(options) {
 };
 
 /**
- * Streams batch getter.
+ * Users batch getter.
  * @method get
  * @param userId {string}
  *  The user's id
@@ -716,8 +716,8 @@ Users.User = function (fields) {
 Users.User.get = Users.get;
 
 /**
- * Calculate the url of a stream's icon
- * @param {String} icon the value of the stream's "icon" field
+ * Calculate the url of a user's icon
+ * @param {String} icon the value of the user's "icon" field
  * @param {Number} [size=40] the size of the icon to render. Defaults to 40.
  * @return {String} the url
  */
@@ -876,7 +876,7 @@ function login_callback(response) {
 		// check password
 		step2_form = setupLoginForm();
 	} else if (json.verified) {
-		// ask for display name and password - only with Streams and after invite
+		// let the user gain access by resending an activation message
 		step2_form = setupResendForm(true);
 	} else {
 		// remind to activate -- this is probably a futureUser created using an invite
