@@ -3274,12 +3274,12 @@ Q.Page.onTool = Q.Event.factory(_pageToolHandlers, [""]);
  *  then the handler is run right away.
  *  The handler can optionally returns another function, which will be run when the page is unloaded.
  *  After a page is unloaded, all the "unloading" handlers added in this way are removed, so that
- *  the next time the "loading" handlers run, they don't create duplicate "unlodaing" handlers.
+ *  the next time the "loading" handlers run, they don't create duplicate "unloading" handlers.
  * @param key {String} Use this to identify the entity setting the handler, e.g. "Users/authorize".
  *  If the key is undefined, it will be automatically set to "Q". To force no key, pass null here.
  *  Since "loading" handlers are not automatically removed, they can accumulate if the key was null.
- *  For example, if an AJAX call returns Javascript such as Q.page(uri, handler), omitting the key can
- *  lead to frustrating bugs as event handlers are registered multiple times, etc.
+ *  For example, if an AJAX call would execute Javascript such as Q.page(uri, handler, null),
+ *  this could lead to frustrating bugs as event handlers are registered multiple times, etc.
  */
 Q.page = function _Q_page(page, handler, key) {
 	if (key === undefined) {
@@ -7298,29 +7298,13 @@ Q.onUnload = new Q.Event(function _Q_onUnload_callback() {
 	// It occurs when actual document is being unloaded, as opposed to AJAX-based page loading
 	console.log("Leaving page "+window.location.href);
 }, 'Q');
-var onPageLoad = {}, onPageUnload = {}, 
-	beforePageLoad = {}, beforePageUnload = {},
-	onPageActivate = {};
-Q.onPageLoad = function _Q_onPageLoad(page) {
-	if (!onPageLoad[page]) onPageLoad[page] = new Q.Event();
-	return onPageLoad[page];
-};
-Q.onPageActivate = function _Q_onPageActivate(page) {
-	if (!onPageActivate[page]) onPageActivate[page] = new Q.Event();
-	return onPageActivate[page];
-};
-Q.onPageUnload = function _Q_onPageUnload(page) {
-	if (!onPageUnload[page]) onPageUnload[page] = new Q.Event();
-	return onPageUnload[page];
-};
-Q.beforePageLoad = function _Q_beforePageLoad(page) {
-	if (!beforePageLoad[page]) beforePageLoad[page] = new Q.Event();
-	return beforePageLoad[page];
-};
-Q.beforePageUnload = function _Q_beforePageUnload(page) {
-	if (!beforePageUnload[page]) beforePageUnload[page] = new Q.Event();
-	return beforePageUnload[page];
-};
+
+Q.onPageLoad = Q.Event.factory(null, [""]);
+Q.onPageActivate = Q.Event.factory(null, [""]);
+Q.onPageUnload = Q.Event.factory(null, [""]);
+Q.beforePageLoad = Q.Event.factory(null, [""]);
+Q.beforePageUnload = Q.Event.factory(null, [""]);
+
 Q.onHashChange = new Q.Event();
 Q.onPopState = new Q.Event();
 Q.onOnline = new Q.Event(function () {
