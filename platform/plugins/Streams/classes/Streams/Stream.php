@@ -212,6 +212,10 @@ class Streams_Stream extends Base_Streams_Stream
 	 */
 	function beforeSave($modifiedFields)
 	{
+		if (empty($this->attributes)) {
+			$this->attributes = '{}';
+		}
+		
 		if (!$this->retrieved) {
 			// Generate a unique name for the stream
 			if (!isset($modifiedFields['name'])) {

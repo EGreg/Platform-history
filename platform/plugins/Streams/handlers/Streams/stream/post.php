@@ -53,6 +53,15 @@ function Streams_stream_post($params) {
 	$stream = new Streams_Stream;
 	$stream->publisherId = $publisherId;
 	$stream->type = $type;
+	
+	// handle setting of attributes
+	if (isset($more_fields['attributes']) and is_array($more_fields['attributes'])) {
+		foreach ($more_fields['attributes'] as $k => $v) {
+			$stream->setAttribute($k, $v);
+		}
+		unset($more_fields['attributes']);
+	}
+	
 	$xtype = Q_Config::get('Streams', 'types', $type, 'fields', array());
 	$fieldnames = array_merge(
 		array('type', 'title', 'icon', 'content', 'attributes', 'readLevel', 'writeLevel', 'adminLevel'),
@@ -65,9 +74,6 @@ function Streams_stream_post($params) {
 		} else if (array_key_exists($f, $defaults)) {
 			$stream->$f = $defaults[$f];
 		}
-	}
-	if (empty($stream->attributes)) {
-		$stream->attributes = '{}';
 	}
 	
 	$stream->save();
