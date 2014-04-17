@@ -802,14 +802,15 @@ function Streams_Stream (fields) {
 		function _notify(tokens, sessions) {
 			// 1) if session is associated to device and no socket is connected for device
 			//		we update 'fresh' field, update badge, issue alert to device
-			//		User can cancel all subscriptions to receive only push notifications managed via device settings
+			//		User can cancel all subscriptions to receive only push notifications   
+			//      managed via device settings
 			var i, online = false;
 			for (i=0; i<sessions.length; i++) {
 				if ((online = Streams.isDeviceOnline(userId, sessions[i]))) {
 				    break;
 				}
 			}
-			// check if message generate some significant event
+			// check if the message generated some significant event
 			// and proceed only if no device is online
 			if (Streams.Participating.freshEvent(online, event, message, uid)) {
 				Streams.pushNotification(userId, tokens, event, message);

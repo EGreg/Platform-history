@@ -68,7 +68,7 @@ function _freshHandler (event) {
  * @return {boolean}
  */
 Streams_Participating.freshEvent = function (online, event, stream, uid) {
-	var e = event === 'post' ? event+'/'+stream.type : event;
+	var e = (event === 'post') ? event+'/'+stream.type : event;
 	return e in _freshEvents && (!_freshEvents[e].validate || _freshEvents[e].validate(stream, uid));
 };
 

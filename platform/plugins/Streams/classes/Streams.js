@@ -821,7 +821,7 @@ Streams.clients = {};
 Streams.isDeviceOnline = function(userId, sessionId) {
 	var clients = Streams.clients[userId];
 	if (!sessionId) {
-	    return !!(clients && Object.keys(clients).length);
+	    return !Q.isEmpty(clients);
 	}
 	return !!(clients && clients[sessionId]);
 };

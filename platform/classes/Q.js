@@ -170,14 +170,19 @@ Q.setObject = function _Q_setObject(name, value, context, delimiter) {
  * @param name {String|Array} Path to a property, in the form "A.B.C" or ["A", "B", "C"]
  * @param [context=window] {Object} Optional. Object to use as root of path. Null may be passed.
  * @param [delimiter='.'] {String} The delimiter to use in the name
- * @return {Object|undefined} Returns the stored value or `undefined` if nothing is there
+ * @param [create=undefined] {mixed} Pass a value here to set with Q.setObject if nothing was there
+ * @return {Object|undefined} Returns the originally stored value, or `undefined` if nothing is there
  */
-Q.getObject = function _Q_getObject(name, context, delimiter) {
+Q.getObject = function _Q_getObject(name, context, delimiter, create) {
     delimiter = delimiter || '.';
 	if (typeof name === 'string') {
 		name = name.split(delimiter);
 	}
-	return _getProp(name, false, context);
+	var result = _getProp(name, false, context);
+	if (create !== undefined) {
+		Q.setObject(name, create, context, delimiter);
+	}
+	return result;
 };
 
 /**
