@@ -30,7 +30,11 @@ class Streams_Message extends Base_Streams_Message
 	 * @return {array}
 	 */
 	function exportArray($options = null) {
-		return $this->toArray();
+		$result = $this->toArray();
+		$result['clientId'] = !empty($result['clientId'])
+			? sha1($result['clientId'])
+			: '';
+		return $result;
 	}
 	
 	/**

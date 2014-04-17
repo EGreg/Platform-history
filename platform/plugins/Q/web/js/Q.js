@@ -1079,24 +1079,29 @@ Q.Class.options = {
 /**
  * Normalizes text by converting it to lower case, and
  * replacing all non-accepted characters with underscores.
- * @param text String
+ * @param text {String}
  *  The text to normalize
- * @param replacement String
+ * @param replacement {String}
  *  Defaults to '_'. A string to replace one or more unacceptable characters.
  *  You can also change this default using the config Db/normalize/replacement
- * @param characters String
+ * @param characters {String}
  *  Defaults to '/[^A-Za-z0-9]+/'. A regexp characters that are not acceptable.
  *  You can also change this default using the config Db/normalize/characters
+ * @param numChars {Number}
+ *  The maximum length of a normalized string. Default is 200.
+ * @return {String} the normalized string
  */
-Q.normalize = function _Q_normalize(text, replacement, characters) {
+Q.normalize = function _Q_normalize(text, replacement, characters, numChars) {
+	if (!numChars) numChars = 200;
 	if (replacement === undefined) replacement = '_';
 	characters = characters || new RegExp("[^A-Za-z0-9]+", "g");
 	if (text === undefined) {
 		debugger; // report this error
 	}
 	var result = text.toLowerCase().replace(characters, replacement);
-	if (text.length > 233) {
-		result = text.substr(0, 200) + '_' + Math.abs(text.substr(200).hashCode());
+	if (text.length > numChars) {
+		result = text.substr(0, numChars-11) + '_' 
+		         + Math.abs(text.substr(numChars-11).hashCode());
 	}
 	return result;
 };

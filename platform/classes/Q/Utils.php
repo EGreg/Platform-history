@@ -166,7 +166,7 @@ class Q_Utils
 	 *  You can also change this default using the config Db/normalize/replacement
 	 * @param {string} [$characters=null] Defaults to '/[^A-Za-z0-9]+/'. A regexp characters that are not acceptable.
 	 *  You can also change this default using the config Db/normalize/characters
-	 * @param {integer} [$numChars=233] Defaults to 233, maximum length of normalized string
+	 * @param {integer} [$numChars=200] Defaults to 200, maximum length of normalized string
 	 */
 	static function normalize(
 		$text,
@@ -188,7 +188,8 @@ class Q_Utils
 		}
 		$result = preg_replace($characters, $replacement, strtolower($text));
 		if (strlen($text) > $numChars) {
-			$result = substr($result, 0, $numChars - 33) . '_' . self::hashCode(substr($result, $numChars - 33));
+			$result = substr($result, 0, $numChars - 11) . '_' 
+			          . self::hashCode(substr($result, $numChars - 11));
 		}
 		return $result;
 	}
