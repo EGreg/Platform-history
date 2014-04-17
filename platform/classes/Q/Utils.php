@@ -172,7 +172,7 @@ class Q_Utils
 		$text,
 		$replacement = '_',
 		$characters = null,
-		$numChars = 233)
+		$numChars = 200)
 	{
 		if (!isset($characters)) {
 			$characters = '/[^A-Za-z0-9]+/';

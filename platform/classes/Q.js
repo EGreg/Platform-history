@@ -1713,22 +1713,31 @@ Q.md5_hmac_b64 = function _Q_md5_hmac_b64(a,b){return rstr2b64(rstr_hmac_md5(str
 /**
  * Normalizes text by converting it to lower case, and
  * replacing all non-accepted characters with underscores.
- * @method normalize
- * @param text {string} The text to normalize
- * @param [replacement='_'] {string} A string to replace one or more unacceptable characters.
+ * @param text {String}
+ *  The text to normalize
+ * @param replacement {String}
+ *  Defaults to '_'. A string to replace one or more unacceptable characters.
  *  You can also change this default using the config Db/normalize/replacement
- * @param [characters='/[^A-Za-z0-9]+/'] {string} A regexp of characters that are not acceptable.
+ * @param characters {String}
+ *  Defaults to '/[^A-Za-z0-9]+/'. A regexp characters that are not acceptable.
  *  You can also change this default using the config Db/normalize/characters
- * @return {string} The normalized string
+ * @param numChars {Number}
+ *  The maximum length of a normalized string. Default is 200.
+ * @return {String} the normalized string
  */
-Q.normalize = function _Q_normalize(text, replacement, characters) {
-	if (replacement === undefined) replacement = '_';
-	characters = characters || new RegExp("[^A-Za-z0-9]+");
-	result = text.toLowerCase().replace(characters, replacement);
-	if (text.length > 233) {
-		result = text.substr(0, 200) + '_' + Q.md5(result.substr(200));
-	}	
-	return result;
+Q.normalize = function _Q_normalize(text, replacement, characters, numChars) {
+    if (!numChars) numChars = 200;
+    if (replacement === undefined) replacement = '_';
+    characters = characters || new RegExp("[^A-Za-z0-9]+", "g");
+    if (text === undefined) {
+        debugger; // report this error
+    }
+    var result = text.toLowerCase().replace(characters, replacement);
+    if (text.length > numChars) {
+        result = text.substr(0, numChars-11) + '_'
+            + Math.abs(text.substr(numChars-11).hashCode());
+    }
+    return result;
 };
 
 /*
@@ -2197,6 +2206,18 @@ String.prototype.decodeHTML = function _String_prototype_encodHTML(quote_style, 
 		'&quot;': '"',
 		'&apos;': "'"
 	});
+};
+
+String.prototype.hashCode = function() {
+    var hash = 0;
+    if (this.length == 0) return hash;
+    for (i = 0; i < this.length; i++) {
+        var c = this.charCodeAt(i);
+        hash = hash % 16777216;
+        hash = ((hash<<5)-hash)+c;
+        hash = hash & 0xffffffff; // Convert to 32bit integer
+    }
+    return hash;
 };
 
 /**
