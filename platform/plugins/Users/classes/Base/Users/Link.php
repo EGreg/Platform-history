@@ -49,6 +49,7 @@ abstract class Base_Users_Link extends Db_Row
 		$this->setPrimaryKey(
 			array (
 			  0 => 'identifier',
+			  1 => 'userId',
 			)
 		);
 	}

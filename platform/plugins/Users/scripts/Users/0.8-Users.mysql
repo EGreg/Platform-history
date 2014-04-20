@@ -131,7 +131,7 @@ CREATE TABLE `{$prefix}link` (
   `userId` varchar(31) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `extraInfo` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'json possibly including "labels" array, "firstName", "lastName"',
   `insertedTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`identifier`)
+  PRIMARY KEY (`identifier`, `userId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 # Dump of table {$prefix}mobile
