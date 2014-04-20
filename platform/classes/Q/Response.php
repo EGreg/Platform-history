@@ -272,7 +272,7 @@ class Q_Response
 	 */
 	static function getRemovedNotices()
 	{
-		return self::$notices;
+		return self::$removedNotices;
 	}
 
 	/**
