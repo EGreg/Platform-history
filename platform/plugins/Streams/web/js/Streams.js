@@ -1880,10 +1880,14 @@ Avatar.get.onError = new Q.Event();
  * @param prefix {string}
  *  For example something the user started typing in an autocomplete field
  * @param callback {function}
- *	if there were errors, first parameter is an array of errors
+ *	If there were errors, first parameter is an array of errors
  *  otherwise, first parameter is null and second parameter is a hash of {userId: Streams.Avatar} pairs
+ * @param options {Object}
+ *  Options can include:
+ *  "limit" and "offset" - for paging
+ *  "public" - defaults to false. If false, only gets names people show you.
  */
-Avatar.byPrefix = Q.getter(function _Avatar_byPrefix (prefix, callback) {
+Avatar.byPrefix = Q.getter(function _Avatar_byPrefix (prefix, callback, options) {
 	var userId = Q.plugins.Users.loggedInUser ? Q.Users.loggedInUser.id : "";
    	var func = Streams.batchFunction(Q.baseUrl({
 		userId: userId // if userId is empty, then we query avatars on one of the public servers

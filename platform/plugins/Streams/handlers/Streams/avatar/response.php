@@ -2,14 +2,14 @@
 
 function Streams_avatar_response()
 {
-	$prefix = $limit = $offset = $userIds = $batch = null;
+	$prefix = $limit = $offset = $userIds = $batch = $public = null;
 	extract($_REQUEST, EXTR_IF_EXISTS);
 
 	$user = Users::loggedInUser();
 	$asUserId = $user ? $user->id : "";
 
 	if (isset($prefix)) {
-		$avatars = Streams_Avatar::fetchByPrefix($asUserId, $prefix, compact('limit', 'offset'));
+		$avatars = Streams_Avatar::fetchByPrefix($asUserId, $prefix, compact('limit', 'offset', 'public'));
 	} else {
 		if (!empty($batch)) {
 			$batch = json_decode($batch, true);
