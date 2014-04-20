@@ -16,6 +16,6 @@ function Streams_before_Users_Contact_saveExecute($params)
 	
 	// Update avatar as viewed by everyone who was in that contacts list
 	foreach ($contacts as $contact) {
-		Streams::updateAvatar($contact->userId, $contact->contactUserId);
+		Streams::updateAvatar($contact->contactUserId, $contact->userId);
 	}
 }

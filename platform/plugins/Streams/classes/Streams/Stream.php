@@ -365,12 +365,12 @@ class Streams_Stream extends Base_Streams_Stream
 		}
 		if ($this->retrieved) {
 			// Update all avatars corresponding to access rows for this stream
-			$tainted_access = Streams_Access::select('*')
+			$taintedAccess = Streams_Access::select('*')
 				->where(array(
 					'publisherId' => $this->publisherId,
 					'streamName' => $this->name
 				))->fetchDbRows();
-			Streams::updateAvatars($this->publisherId, $tainted_access, $this, true);
+			Streams::updateAvatars($this->publisherId, $taintedAccess, $this, true);
 		}
 		
 		return $result;
@@ -418,12 +418,12 @@ class Streams_Stream extends Base_Streams_Stream
 		}
 		
 		// Update all avatars corresponding to access rows for this stream
-		$tainted_access = Streams_Access::select('*')
+		$taintedAccess = Streams_Access::select('*')
 			->where(array(
 				'publisherId' => $this->publisherId,
 				'streamName' => $this->name
 			))->fetchDbRows();
-		Streams::updateAvatars($this->publisherId, $tainted_access, $this, true);
+		Streams::updateAvatars($this->publisherId, $taintedAccess, $this, true);
 
 		return $result;
 	}

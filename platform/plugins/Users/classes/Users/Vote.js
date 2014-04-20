@@ -20,15 +20,6 @@ var Db = Q.require('Db');
  */
 function Users_Vote (fields) {
 
-	/**
-	 * The setUp() method is called the first time
-	 * an object of this class is constructed.
-	 * @method setUp
-	 */
-	this.setUp = function () {
-		// put any code here
-	};
-
 	// Run constructors of mixed in objects
 	this.constructors.call(this, arguments);
 
@@ -193,5 +184,15 @@ function Users_Vote (fields) {
 }
 
 Q.mixin(Users_Vote, Q.require('Base/Users/Vote'));
+
+/**
+ * The setUp() method is called the first time
+ * an object of this class is constructed.
+ * @method setUp
+ */
+Users_Vote.prototype.setUp = function () {
+	// put any code here
+	// overrides the Base class
+};
 
 module.exports = Users_Vote;

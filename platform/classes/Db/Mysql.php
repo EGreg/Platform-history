@@ -1149,15 +1149,6 @@ $table_comment * @namespace $class_name_prefix
  */
 function $class_name (fields) {
 
-	$dc
-	 * The setUp() method is called the first time
-	 * an object of this class is constructed.
-	 * @method setUp
-	 */
-	this.setUp = function () {
-		// put any code here
-	};
-
 	// Run constructors of mixed in objects
 	this.constructors.call(this, arguments);
 
@@ -1175,6 +1166,16 @@ Q.mixin($class_name, Q.require('$js_base_class_require'));
 /*
  * Add any public methods here by assigning them to $class_name.prototype
  */
+
+$dc
+ * The setUp() method is called the first time
+ * an object of this class is constructed.
+ * @method setUp
+ */
+$class_name.prototype.setUp = function () {
+	// put any code here
+	// overrides the Base class
+};
 
 module.exports = $class_name;
 EOT;

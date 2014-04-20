@@ -7,6 +7,7 @@
  */
 var Q = require('Q');
 var Db = Q.require('Db');
+var Streams = Q.require('Streams');
 
 /**
  * Class representing 'Subscription' rows in the 'Streams' database
@@ -20,15 +21,6 @@ var Db = Q.require('Db');
  */
 function Streams_Subscription (fields) {
 
-	/**
-	 * The setUp() method is called the first time
-	 * an object of this class is constructed.
-	 * @method setUp
-	 */
-	this.setUp = function () {
-		// put any code here
-	};
-
 	// Run constructors of mixed in objects
 	this.constructors.call(this, arguments);
 
@@ -38,7 +30,8 @@ function Streams_Subscription (fields) {
 	 * * * */
 }
 
-var Streams = Q.require('Streams');
+Q.mixin(Streams_Subscription, Q.require('Base/Streams/Subscription'));
+
 /**
  * Test message according to filters set up for the user and generate array of subscription rules
  * @method test
@@ -155,6 +148,13 @@ Streams_Subscription.test = function(userId, publisherId, streamName, msgType, c
 	/* * * */
 }
 
-Q.mixin(Streams_Subscription, Q.require('Base/Streams/Subscription'));
+/**
+ * The setUp() method is called the first time
+ * an object of this class is constructed.
+ * @method setUp
+ */
+Streams_Subscription.prototype.setUp = function () {
+	// put any code here
+};
 
 module.exports = Streams_Subscription;

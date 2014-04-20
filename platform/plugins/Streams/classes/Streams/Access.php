@@ -82,7 +82,7 @@ class Streams_Access extends Base_Streams_Access
 	{
 		if (!empty($this->ofUserId)) {
 			// Removed an access for a specific user
-			Streams::updateAvatar($this->publisherId, $this->ofUserId);
+			Streams::updateAvatar($this->ofUserId, $this->publisherId);
 			return $result;
 		}
 		

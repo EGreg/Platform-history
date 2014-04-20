@@ -68,6 +68,7 @@ class Streams_Avatar extends Base_Streams_Avatar
 	 *	'limit' => number of records to fetch
 	 *	'offset' => offset to start
 	 *  'fields' => defaults to array('username', 'firstName', 'lastName') 
+	 *  'public' => defaults to false. If false, only gets names people show you.
 	 * @return {array}
 	 */
 	static function fetchByPrefix($toUserId, $prefix, $options = array()) {
@@ -78,7 +79,9 @@ class Streams_Avatar extends Base_Streams_Avatar
 		foreach ($fields as $field) {
 			$rows = Streams_Avatar::select('*')
 			->where(array(
-				'toUserId' => array($toUserId, ''),
+				'toUserId' => empty($options['public'])
+					? $toUserId
+					: array($toUserId, ''),
 				$field => new Db_Range($prefix, true, false, true)
 			))->fetchDbRows();
 			foreach ($rows as $r) {

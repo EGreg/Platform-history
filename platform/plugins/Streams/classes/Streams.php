@@ -1047,13 +1047,13 @@ abstract class Streams extends Base_Streams
 	 *   adding, removing or modifying a contact
 	 * @method updateAvatar
 	 * @static
-	 * @param {string} $publisherId
-	 *  id of the publisher whose avatar to update
 	 * @param {integer} $toUserId
 	 *  id of the user who will be viewing this avatar
+	 * @param {string} $publisherId
+	 *  id of the publisher whose avatar to update
 	 * @return {boolean}
 	 */
-	static function updateAvatar($publisherId, $toUserId)
+	static function updateAvatar($toUserId, $publisherId)
 	{
 		if (isset(self::$users[$publisherId])) {
 			$user = self::$users[$publisherId];
@@ -1067,10 +1067,11 @@ abstract class Streams extends Base_Streams
 		}
 
 		// Fetch some streams as the contact user
-		$fn_streams = Streams::fetch($toUserId, $publisherId, 'Streams/user/firstName');
-		$ln_streams = Streams::fetch($toUserId, $publisherId, 'Streams/user/lastName');
-		$firstName = Streams::take($fn_streams, 'Streams/user/firstName', 'content');
-		$lastName = Streams::take($ln_streams, 'Streams/user/lastName', 'content');
+		$streams = Streams::fetch($toUserId, $publisherId, array(
+			'Streams/user/firstName', 'Streams/user/lastName'
+		));
+		$firstName = Streams::take($streams, 'Streams/user/firstName', 'content');
+		$lastName = Streams::take($streams, 'Streams/user/lastName', 'content');
 
 		// Update the Streams_avatar table
 		Streams_Avatar::update()->set(array(
@@ -1079,16 +1080,15 @@ abstract class Streams extends Base_Streams
 			'username' => $user->username,
 			'icon' => $user->icon
 		))->where(array(
-			'publisherId' => $publisherId,
-			'toUserId' => $toUserId
+			'toUserId' => $toUserId,
+			'publisherId' => $publisherId
 		))->execute();
 
 		return true;
 	}
 
 	/**
-	 * Updates the publisher's avatars, which may have changed
-	 * with the tainted_access_array.
+	 * Updates the publisher's avatars, which may have changed with the taintedAccess.
 	 * This function should be called during rare events that may cause the
 	 * publisher's avatar to change appearance for certain users viewing it.<br/>
 	 *
@@ -1110,25 +1110,25 @@ abstract class Streams extends Base_Streams
 	 * @static
 	 * @param {string} $publisherId
 	 *  id of the publisher whose avatar to update
-	 * @param {array} $access_array
+	 * @param {array} $taintedAccess
 	 *  array of Streams_Access objects representing access information that is either
 	 *  about to be saved, are about to be overwritten, or will be deleted
 	 * @param {string|Streams_Stream} $streamName
 	 *  pass the stream name here. You can also pass a Stream_Stream object here,
 	 *  in which case it will be used, instead of selecting that stream from the database.
-	 * @param {boolean} $update_to_public_value=false
+	 * @param {boolean} $updateToPublicValue=false
 	 *  if you want to first update all the avatars for this stream
 	 *  to the what the public would see, to avoid the situation described in 2).
 	 */
-	static function updateAvatars($publisherId, $access_array, $streamName, $update_to_public_value = false)
+	static function updateAvatars($publisherId, $taintedAccess, $streamName, $updateToPublicValue = false)
 	{
 		if (!isset($streamName)) {
-			$stream_accesses = array();
-			foreach ($access_array as $access) {
-				$stream_accesses[$access->streamName][] = $access;
+			$streamAccesses = array();
+			foreach ($taintedAccess as $access) {
+				$streamAccesses[$access->streamName][] = $access;
 			}
-			if (count($stream_accesses) > 1) {
-				foreach ($stream_accesses as $k => $v) {
+			if (count($streamAccesses) > 1) {
+				foreach ($streamAccesses as $k => $v) {
 					self::updateAvatars($publisherId, $v, $k);
 				}
 				return false;
@@ -1140,11 +1140,12 @@ abstract class Streams extends Base_Streams
 		}
 
 		// If we are here, all the Stream_Access objects have the same streamName
-		if ($streamName !== 'Streams/user/firstName' and $streamName !== 'Streams/user/lastName') {
+		if ($streamName !== 'Streams/user/firstName'
+		and $streamName !== 'Streams/user/lastName') {
 			// we don't care about access to other streams being updated
 			return false;
 		}
-		$show_toUserIds = array();
+		$showToUserIds = array();
 
 		// Select the user corresponding to this publisher
 		$user = new Users_User();
@@ -1182,16 +1183,16 @@ abstract class Streams extends Base_Streams
 
 		// First, assign all the readLevels that are directly set for specific users,
 		// and aggregate the contact_labels from the other accesses, for an upcoming select.
-		foreach ($access_array as $access) {
+		foreach ($taintedAccess as $access) {
 			if ($userId = $access->ofUserId) {
 				$readLevel = $access->readLevel;
 				$readLevels[$userId] = $readLevel;
 				if ($readLevel < 0) {
-					$show_toUserIds[$userId] = null; // not determined yet
+					$showToUserIds[$userId] = null; // not determined yet
 				} else if ($readLevel >= $content_readLevel) {
-					$show_toUserIds[$userId] = true;
+					$showToUserIds[$userId] = true;
 				} else {
-					$show_toUserIds[$userId] = false;
+					$showToUserIds[$userId] = false;
 				}
 			} else if ($access->ofContactLabel) {
 				$ofContactLabel = $access->ofContactLabel;
@@ -1215,7 +1216,7 @@ abstract class Streams extends Base_Streams
 				))->fetchDbRows(null, '', 'contactUserId');
 			foreach ($contacts as $contact) {
 				$contactUserId = $contact->contactUserId;
-				if (isset($show_toUserIds[$contactUserId])) {
+				if (isset($showToUserIds[$contactUserId])) {
 					// this user had their read level set directly by the access,
 					// which overrides read levels set by access using ofContactLabel
 					continue;
@@ -1223,7 +1224,7 @@ abstract class Streams extends Base_Streams
 				if (isset($removed_labels[$ofContactLabel])) {
 					// this label doesn't affect readLevels anymore, since it was deleted
 					// but put this contact's id on a list whose readLevels need to be determined
-					$show_toUserIds[$contactUserId] = null;
+					$showToUserIds[$contactUserId] = null;
 					continue;
 				}
 				if (!isset($label_readLevels[$contact->label])) {
@@ -1245,32 +1246,32 @@ abstract class Streams extends Base_Streams
 		// and make sure we update the avatar rows that were meant for them.
 		foreach ($readLevels2 as $userId => $rl) {
 			if ($rl >= $content_readLevel) {
-				$show_toUserIds[$userId] = true;
+				$showToUserIds[$userId] = true;
 			} else {
 				// in order for this to happen, two things had to be true:
 				// 1) there was no access that directly set a readLevel >= $content_readLevel
 				// 2) there was no access that set a readLevel >= $content_readLevel for any label containing this user
 				// therefore, their view should be the public view
-				$show_toUserIds[$userId] = 'public';
+				$showToUserIds[$userId] = 'public';
 			}
 		}
 
 		// Resolve all the undetermined readLevels
-		foreach ($show_toUserIds as $userId => $v) {
+		foreach ($showToUserIds as $userId => $v) {
 			if (!isset($v)) {
 				// if the readLevel hasn't been determined by now, it's the same as the public one
-				$show_toUserIds[$userId] = 'public';
+				$showToUserIds[$userId] = 'public';
 			}
 		}
 		
 		// Set up the self avatar:
-		$show_toUserIds[$publisherId] = true;
+		$showToUserIds[$publisherId] = true;
 
 		// Finally, set up the public avatar:
 		if (!isset($stream->readLevel)) {
 			$stream->readLevel = Streams_Stream::$DEFAULTS['readLevel'];
 		}
-		$show_toUserIds[""] = ($stream->readLevel >= $content_readLevel);
+		$showToUserIds[""] = ($stream->readLevel >= $content_readLevel);
 
 		// Now, we update the avatars:
 		$field = ($streamName === 'Streams/user/firstName') ? 'firstName' : 'lastName';
@@ -1280,10 +1281,10 @@ abstract class Streams extends Base_Streams
 		$rows_that_hide = array();
 		$updates_that_show = array();
 		$updates_that_hide = array();
-		foreach ($show_toUserIds as $userId => $show) {
+		foreach ($showToUserIds as $userId => $show) {
 			if ($show === 'public') {
 				// If no show is explicitly specified, use the value used for the rest of the public
-				$show = $show_toUserIds[""];
+				$show = $showToUserIds[""];
 			}
 			if ($show === true) {
 				$rows_that_show[] = array(
@@ -1319,9 +1320,9 @@ abstract class Streams extends Base_Streams
 		);
 
 		// We are now ready to make changes to the database.
-		if ($update_to_public_value) {
+		if ($updateToPublicValue) {
 			Streams_Avatar::update()
-				->set(array($field => $show_toUserIds[""] ? $stream->content : ''))
+				->set(array($field => $showToUserIds[""] ? $stream->content : ''))
 				->where(compact('publisherId'))
 				->execute();
 		}

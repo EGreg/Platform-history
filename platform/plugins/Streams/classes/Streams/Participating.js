@@ -20,15 +20,6 @@ var Db = Q.require('Db');
  */
 function Streams_Participating (fields) {
 
-	/**
-	 * The setUp() method is called the first time
-	 * an object of this class is constructed.
-	 * @method setUp
-	 */
-	this.setUp = function () {
-		// put any code here
-	};
-
 	// Run constructors of mixed in objects
 	this.constructors.call(this, arguments);
 
@@ -107,5 +98,15 @@ Streams_Participating.unregisterFreshEvent = function (event) {
 };
 
 Q.mixin(Streams_Participating, Q.require('Base/Streams/Participating'));
+
+
+/**
+ * The setUp() method is called the first time
+ * an object of this class is constructed.
+ * @method setUp
+ */
+Streams_Participating.prototype.setUp = function () {
+	// put any code here
+};
 
 module.exports = Streams_Participating;
