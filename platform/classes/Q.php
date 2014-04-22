@@ -20,8 +20,8 @@ class Q
 	 * @method ifset
 	 * @param {&mixed} $ref
 	 *  The reference to test. Only lvalues can be passed.
-	 *  If $ref is an array, it can be followed by one or more strings or numbers
-	 *  which will be used to index deeper into the array.
+	 *  If $ref is an array or object, it can be followed by one or more strings or numbers
+	 *  which will be used to index deeper into the contained arrays or objects.
 	 * @param {mixed} $def=null
 	 *  The default, if the reference isn't set
 	 * @return {mixed}
@@ -34,11 +34,22 @@ class Q
 		}
 		$args = func_get_args();
 		$ref2 = $ref;
+		$def = end($args);
 		for ($i=1; $i<$count-1; ++$i) {
-			if (!is_array($ref2) or !array_key_exists($args[$i], $ref2)) {
-				return end($args);
+			$key = $args[$i];
+			if (is_array($ref2)) {
+				if (!array_key_exists($key, $ref2)) {
+					return $def;
+				}
+				$ref2 = $ref2[$key];
+			} else if (is_object($ref2)) {
+				if (!isset($ref2->$key)) {
+					return $def;
+				}
+				$ref2 = $ref2->$key;
+			} else {
+				return $def;
 			}
-			$ref2 = $ref2[$args[$i]];
 		}
 		return $ref2;
 	}
