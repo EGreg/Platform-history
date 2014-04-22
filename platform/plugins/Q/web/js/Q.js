@@ -655,16 +655,30 @@ Q.each = function _Q_each(container, callback, options) {
 };
 
 /**
- * Returns the first index in a container with a value that's not undefined
+ * Returns the first non-undefined value found in a container
  * @method first
  * @param {Array|Object|String} container
  * @param {Object} options
- *  "nonEmpty": return the first nonempty key
+ *  "nonEmptyKey": return the first non-empty key
+ * @return {mixed} the value in the container, or undefined
+ * @throws {Q.Exception} If container is not array, object or string
+ */
+Q.first = function _Q_first(container, options) {
+	var fk = Q.firstKey(container, options);
+	return fk != null ? container[fk] : undefined;
+};
+
+/**
+ * Returns the first key or index in a container with a value that's not undefined
+ * @method firstKey
+ * @param {Array|Object|String} container
+ * @param {Object} options
+ *  "nonEmptyKey": return the first non-empty key
  * @return {Number|String}
  *  the index in the container, or null
  * @throws {Q.Exception} If container is not array, object or string
  */
-Q.first = function _Q_first(container, options) {
+Q.firstKey = function _Q_firstKey(container, options) {
 	if (!container) {
 		return null;
 	}
@@ -680,7 +694,7 @@ Q.first = function _Q_first(container, options) {
 			for (var k in container) {
 				if (container.hasOwnProperty(k)
 				&& container[k] !== undefined) {
-					if (k || !options || !options.nonEmpty) {
+					if (k || !options || !options.nonEmptyKey) {
 						return k;
 					}
 				}

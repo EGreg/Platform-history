@@ -242,7 +242,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 			var stream = tool.stream = this;
 			var file = state.showFile
 				|| state.imagepicker.saveSizeName[state.imagepicker.showSize]
-				|| state.imagepicker.saveSizeName[Q.first(state.imagepicker.saveSizeName, {nonEmpty: true})];
+				|| Q.first(state.imagepicker.saveSizeName, {nonEmptyKey: true});
 			var full = state.imagepicker.saveSizeName[state.imagepicker.fullSize] || file;
 			var icon = stream && stream.fields.icon && stream.fields.icon !== 'default' ? stream.fields.icon : 'Streams/image';
 

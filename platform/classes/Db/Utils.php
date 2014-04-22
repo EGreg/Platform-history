@@ -58,7 +58,7 @@ class Db_Utils
 	 * @param {array} $parameters An associative array of paramName => defaultValue pairs.
 	 *  If the parameter was not found in the $from array, 
 	 *  the default value is used.
-	 * @param {string} [$prefix=''] If nonempty, then parameter names are
+	 * @param {string} [$prefix=''] If non-empty, then parameter names are
 	 * prepended with this prefix before searching in $from is done.
 	 * The prefix is stripped out in the resulting array.
 	 * Typically used for database rows. 

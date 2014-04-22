@@ -60,7 +60,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 		var key = o.showSize;
 		if (!key) {
 			// by default set src equal to first element of the response
-			key = Q.first(res.slots.data, {nonEmpty: true});
+			key = Q.firstKey(res.slots.data, {nonEmpty: true});
 		}
 		var c = Q.handle(o.onSuccess, $this, [res.slots.data, key]);
 		if (c !== false && key) {

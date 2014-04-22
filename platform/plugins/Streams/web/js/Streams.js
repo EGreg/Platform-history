@@ -1604,7 +1604,7 @@ Message.get = Q.getter(function _Message_get (publisherId, streamName, ordinal, 
 		if (Q.isPlainObject(ordinal)) {
 			callback && callback.call(this, err, messages || null);
 		} else {
-			var message = messages[Q.first(messages)];
+			var message = Q.first(messages);
 			callback && callback.call(message, err, message || null);
 		}
 	});
@@ -1827,7 +1827,7 @@ Participant.get = Q.getter(function _Participant_get(publisherId, streamName, us
 		if (Q.isPlainObject(userId)) {
 			callback && callback.call(this, err, participants || null);
 		} else {
-			var participant = participants[Q.first(participants)];
+			var participant = Q.first(participants);;
 			callback && callback.call(participant, err, participant || null);
 		}
 	});
