@@ -6772,7 +6772,7 @@ function _onPointerMoveHandler(evt) { // see http://stackoverflow.com/a/2553717/
 			toY: screenY
 		});
 		Q.removeEventListener(window, Q.Pointer.move, _onPointerMoveHandler);
-		_pos = {};
+		_pos = null;
 	}
 }
 
