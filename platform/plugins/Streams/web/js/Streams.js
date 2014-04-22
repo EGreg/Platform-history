@@ -1891,8 +1891,10 @@ Avatar.byPrefix = Q.getter(function _Avatar_byPrefix (prefix, callback, options)
 	var userId = Q.plugins.Users.loggedInUser ? Q.Users.loggedInUser.id : "";
    	var func = Streams.batchFunction(Q.baseUrl({
 		userId: userId // if userId is empty, then we query avatars on one of the public servers
-	}));
-	func.call(this, 'avatar', 'avatars', {prefix: prefix}, function (err, data) {
+	}), 'avatar');
+	var fields = Q.take(options, ['limit', 'offset', 'public']);
+	Q.extend(fields, {prefix: prefix});
+	Q.req('Streams/avatar', ['avatars'], function (err, data) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
 		if (msg) {
 			var args = [err, data];
@@ -1901,13 +1903,13 @@ Avatar.byPrefix = Q.getter(function _Avatar_byPrefix (prefix, callback, options)
 			return callback && callback.call(this, msg, args);
 		}
 		var avatars = {};
-		Q.each(data.avatars, function (userId, avatar) {
+		Q.each(data.slots.avatars, function (userId, avatar) {
 			avatars[userId] = avatar = new Avatar(avatar);
 			Avatar.get.cache.set([userId], 0, avatar, [null, avatar]);
 		});
 		Avatar.byPrefix.cache.set([prefix], 0, this, [null, avatars]);
 		callback && callback.call(this, null, avatars);
-	});
+	}, { fields: fields });
 }, {cache: Q.Cache.document("Streams.Avatar.byPrefix", 100), throttle: 'Streams.Avatar.byPrefix'});
 Avatar.byPrefix.onError = new Q.Event();
 
@@ -2331,6 +2333,9 @@ Q.onInit.add(function _Streams_onInit() {
 	});
 
 	Streams.onEvent('post').set(function _Streams_post_handler (msg) {
+		if (!msg) {
+			throw new Q.Error("Q.Streams.onEvent msg is empty");
+		}
 		// Wait until the previous message has been posted, then process this one.
 		// Will return immediately if previous message is already cached
 		// (e.g. from a post or retrieving a stream, or because there was no cache yet)

@@ -1,7 +1,7 @@
 /*
  * Streams/userChooser tool
  */
-Q.Tool.define("Sterams/userChooser", function(o) {
+Q.Tool.define("Streams/userChooser", function(o) {
 
     Q.plugins.Streams.cache.userChooser = Q.plugins.Streams.cache.userChooser || {};
 

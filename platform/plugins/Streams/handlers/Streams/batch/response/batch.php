@@ -64,6 +64,8 @@ function Streams_batch_response_batch()
 				}
 			}
 			switch ($action) {
+			case 'stream':
+				break;
 			case 'message':
 				if (!is_array($extra)) {
 					$_REQUEST['ordinal'] = $extra;
@@ -74,18 +76,11 @@ function Streams_batch_response_batch()
 					$_REQUEST['userId'] = $extra;
 				}
 				break;
-			case 'avatar':
-				if (!empty($args[2]) and is_array($args[2]) and isset($args[2]['prefix'])) {
-					$_REQUEST['prefix'] = $args[2]['prefix'];
-					if (!empty($args[2]['limit'])) {
-						$_REQUEST['limit'] = $args[2]['limit'];
-					}
-					if (!empty($args[2]['offset'])) {
-						$_REQUEST['offset'] = $args[2]['offset'];
-					}
-				} else {
-					$_REQUEST['userIds'] = $args[2];
-				}
+			default:
+				throw new Q_Exception_WrongValue(array(
+					'field' => 'action',
+					'range' => "'stream', 'message' or 'participant'"
+				));
 			}
 			Q_Request::$slotNames_override = is_array($args[1]) ? $args[1] : explode(',', $args[1]);
 			Q_Request::$method_override = 'GET';

@@ -1641,6 +1641,11 @@ abstract class Users extends Base_Users
 		$contacts = array();
 		foreach ($links as $link) {
 			$extraInfo = json_decode($link->extraInfo, true);
+			$firstName = Q::ifset($extraInfo, 'firstName', '');
+			$lastName = Q::ifset($extraInfo, 'lastName', '');
+			$fullName = $firstName
+				? ($lastName ? "$firstName $lastName" : $firstName)
+				: ($lastName ? $lastName : "");
 			if (!empty($extraInfo['labels']) and is_array($extraInfo['labels'])) {
 				foreach ($extraInfo['labels'] as $label) {
 					// Insert the contacts one by one, so if an error occurs
@@ -1649,8 +1654,8 @@ abstract class Users extends Base_Users
 					$contact->userId = $link->userId;
 					$contact->contactUserId = $user->id;
 					$contact->label = $label;
+					$contact->nickname = $fullName;
 					$contact->save(true);
-
 					$link->remove(); // we don't need this link anymore
 
 					// TODO: Think about porting this to Node

@@ -20,6 +20,8 @@ class Q
 	 * @method ifset
 	 * @param {&mixed} $ref
 	 *  The reference to test. Only lvalues can be passed.
+	 *  If $ref is an array, it can be followed by one or more strings or numbers
+	 *  which will be used to index deeper into the array.
 	 * @param {mixed} $def=null
 	 *  The default, if the reference isn't set
 	 * @return {mixed}

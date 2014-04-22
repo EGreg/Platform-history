@@ -1865,7 +1865,9 @@ Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotN
 			method: 'post',
 			fields: {}
 		}, options);
-		var result = options && options.preprocess ? options.preprocess(args) : {args: args};
+		var result = options && options.preprocess
+			? options.preprocess(args)
+			: {args: args};
 		o.fields[fieldName] = JSON.stringify(result);
 		Q.req(baseUrl+tail, slotName, function (err, response) {
 			var error = err || response.errors;

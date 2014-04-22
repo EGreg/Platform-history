@@ -5,7 +5,7 @@ function Users_avatar_response($params)
 	$userIds = $batch = null;
 	extract($_REQUEST, EXTR_IF_EXISTS);
 	
-	if (!empty($batch)) {
+	if ($batch) {
 		$batch = json_decode($batch, true);
 		if (!isset($batch)) {
 			throw new Q_Exception_WrongValue(array('field' => 'batch', 'range' => '{userIds: [userId1, userId2, ...]}'));
@@ -29,12 +29,14 @@ function Users_avatar_response($params)
 		Q_Response::setSlot('avatars', $avatars);
 		return $avatars;
 	}
-	$result = array();
-	foreach ($userIds as $userId) {
-		$result[] = array('slots' => 
-			array('avatar' => isset($avatars[$userId]) ? $avatars[$userId] : null)
-		);
+	if ($batch) {
+		$result = array();
+		foreach ($userIds as $userId) {
+			$result[] = array('slots' => 
+				array('avatar' => isset($avatars[$userId]) ? $avatars[$userId] : null)
+			);
+		}
+		Q_Response::setSlot('batch', $result);
 	}
-	Q_Response::setSlot('batch', $result);
 	return $avatars;
 }

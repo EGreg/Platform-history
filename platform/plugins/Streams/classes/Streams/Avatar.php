@@ -66,29 +66,42 @@ class Streams_Avatar extends Base_Streams_Avatar
 	 * @param $prefix {string} The prefix for the firstName
 	 * @param {array} $options=array()
 	 *	'limit' => number of records to fetch
-	 *	'offset' => offset to start
 	 *  'fields' => defaults to array('username', 'firstName', 'lastName') 
 	 *  'public' => defaults to false. If false, only gets names people show you.
 	 * @return {array}
 	 */
 	static function fetchByPrefix($toUserId, $prefix, $options = array()) {
-		$avatars = array();
+		if ($toUserId instanceof Users_User) {
+			$toUserId = $toUserId->id;
+		}
 		$fields = isset($options['fields'])
 			? $options['fields']
-			: array('username', 'firstName', 'lastName');
+			: array('firstName', 'lastName', 'username');
+		$limit = isset($options['limit'])
+			? $options['limit']
+			: Q_Config::get('Users', 'Avatar', 'fetchByPrefix', 'limit', 100);
+		$max = $limit;
+		$avatars = array();
 		foreach ($fields as $field) {
+			// NOTE: sharding should be done on toUserId only, not publisherId
 			$rows = Streams_Avatar::select('*')
 			->where(array(
 				'toUserId' => empty($options['public'])
 					? $toUserId
 					: array($toUserId, ''),
 				$field => new Db_Range($prefix, true, false, true)
-			))->fetchDbRows();
+			))->orderBy($field)
+			->limit($max)
+			->fetchDbRows();
 			foreach ($rows as $r) {
 				if (!isset($avatars[$r->publisherId])
 				or $r->toUserId !== '') {
 					$avatars[$r->publisherId] = $r;
 				}
+			}
+			$max = $limit - count($avatars);
+			if ($max <= 0) {
+				break;
 			}
 		}
 		return $avatars;
