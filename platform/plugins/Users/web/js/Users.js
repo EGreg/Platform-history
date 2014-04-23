@@ -773,7 +773,7 @@ Q.onActivate.set(function (elem) {
 		if (Users.requireLogin && Users.requireLogin[href]) {
 			if (Users.requireLogin[href] === 'facebook') {
 				if (!Users.connected.facebook) {
-					// note: this may automatically log you in
+					// note: the following may automatically log you in
 					// if you authorized this app with facebook
 					// and you are already logged in with facebook.
 					Users.login({
