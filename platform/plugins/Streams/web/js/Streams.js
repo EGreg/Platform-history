@@ -4,13 +4,12 @@
  * @module Streams
  * @class Streams
  */
-Q.Streams = Q.plugins.Streams = {
+
+(function($, Q) {
+
+var Streams = Q.Streams = Q.plugins.Streams = {
 
 };
-
-(function($, Streams) {
-
-var priv = {};
 
 Q.text.Streams = {
 
@@ -2571,4 +2570,4 @@ function _scheduleUpdate() {
 
 _scheduleUpdate.delay = 10000;
 
-})(window.jQuery, Q.plugins.Streams);
+})(window.jQuery, Q);

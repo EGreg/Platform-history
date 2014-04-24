@@ -1,4 +1,11 @@
 /**
+ * Q Promises implementation
+ * @module Q
+ * @class Q.Promise
+ */
+(function (Q) {
+
+/**
  * Q.Promise constructor.
  * Call the .fulfill(...) or .reject(...) method to
  * signal that the promise is fulfilled or rejected.
@@ -188,3 +195,5 @@ Q.Promise.states = {
 	FULFILLED: 2,
 	REJECTED: 3
 };
+
+})(Q);

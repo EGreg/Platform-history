@@ -4,7 +4,10 @@
  * @module Users
  * @class Users
  */
-Q.Users = Q.plugins.Users = {
+
+(function($, Q) {
+
+var Users = Q.Users = Q.plugins.Users = {
 	info: {}, // this gets filled when a user logs in
 	facebookApps: {}, // this info gets added by the server, on the page
 	connected: {} // check this to see if you are connected to a provider
@@ -73,8 +76,6 @@ Q.text.Users = {
 	}
 
 };
-
-(function($, Users) {
 
 var priv = {};
 
@@ -2118,4 +2119,4 @@ Users.onLogout = new Q.Event(function () {
 	document.documentElement.className += ' Users_loggedOut';
 });
 
-})(window.jQuery, Q.plugins.Users);
+})(window.jQuery, Q);

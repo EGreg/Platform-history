@@ -1,12 +1,11 @@
 /**
- *
- * @module Q
  * Provides a set of tools mostly related to client side of the application.
  * This includes tools for application layout management depending on different conditions, some convenient UI
  * elements for interaction and navigation and other.
+ * @module Q
  * @submodule Tools
  */
-(function ($) {
+(function ($, Q) {
 
 if (!('Tools' in Q)) {
 	Q.Tools = {};
@@ -3630,4 +3629,4 @@ Q.Tool.define('Q/grammar', function(options) {
 	}
 });
 
-})(jQuery);
+})(jQuery, Q);
