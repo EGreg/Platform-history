@@ -6,7 +6,7 @@
  * @module Q
  * @class Q
  */
-if (!window.Q) (function () {
+(function () {
 
 // private properties
 var m_isReady = false;
@@ -7513,11 +7513,25 @@ Q.onReady.set(function _Q_masks() {
 	}, 'Q.request.load.mask');
 }, 'Q.masks');
 
-if (typeof module !== 'undefined') {
+if (typeof module !== 'undefined' && typeof process !== 'undefined') {
 	// Assume we are in a Node.js environment, e.g. running tests
 	module.exports = Q;
 } else {
 	// We are in a browser environment
+	/**
+	 * This method restores the old window.Q and returns an instance of itself.
+	 * @param callback Function
+	 *  Optional. If true, then simply calls Q(callback) passing the Q instance
+	 *  on which this callback was called.
+	 * @return {Function}
+	 *  Returns the Q instance on which this method was called
+	 */
+	Q.noConflict = function (callback) {
+		window.Q = oldQ;
+		Q(callback);
+		return Q;
+	};
+	var oldQ = window.Q;
 	window.Q = Q;
 }
 
