@@ -184,7 +184,7 @@ Q.Promise.prototype.isRejected = function () {
 };
 
 Q.Promise.states = {
-	PENDING: 'pending',
-	FULFILLED: 'fulfilled',
-	REJECTED: 'rejected'
+	PENDING: 1,
+	FULFILLED: 2,
+	REJECTED: 3
 };
