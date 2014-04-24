@@ -1,3 +1,5 @@
+(function (Q, $) {
+
 /*
  * Streams/related tool.
  * @param options Object
@@ -254,3 +256,5 @@ function _Streams_related_tool (options)
 }
 
 );
+
+})(Q, jQuery);

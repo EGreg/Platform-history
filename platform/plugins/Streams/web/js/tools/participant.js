@@ -1,3 +1,5 @@
+(function (Q, $) {
+
 /*
  * Streams/participant tool.
  * Display participants of certain stream using horizontally scrolled list.
@@ -205,3 +207,5 @@ function(o) {
 }
 
 );
+
+})(Q, jQuery);

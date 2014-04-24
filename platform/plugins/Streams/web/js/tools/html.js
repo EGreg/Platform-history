@@ -1,3 +1,5 @@
+(function (Q, $, window, document, undefined) {
+
 /*
  * Streams/html tool.
  * @param options Object
@@ -10,9 +12,6 @@
  *   "placeholder": The placeholder HTML
  *   "preprocess": Optional function which takes [callback, tool] and calls callback(objectToExtendAnyStreamFields) 
  */
-
-(function (Q, $, window, document, undefined) {
-
 Q.Tool.define("Streams/html", function (options) {
 	var tool = this,
 		state = tool.state;

@@ -1,3 +1,5 @@
+(function (Q, $) {
+
 /*
  * Streams/userChooser tool
  */
@@ -178,3 +180,5 @@ Q.Tool.define("Streams/userChooser", function(o) {
 }
 
 );
+
+})(Q, jQuery);

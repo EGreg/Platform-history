@@ -75,4 +75,4 @@ Q.Tool.define("Users/avatar", function(options) {
 Q.Template.set('Users/avatar/icon', '<img src="{{& src}}" alt="{{alt}}" class="Users_avatar_icon">');
 Q.Template.set('Users/avatar/contents', '<{{tag}} class="Users_avatar_contents">{{name}}</{{tag}}>');
 
-})(window.jQuery, window);
+})(Q, jQuery, window);

@@ -1,3 +1,5 @@
+(function (Q, $) {
+
 /*
  * Streams/comments tool.
  * Renders a comment form and comments feed which is looking like standard Facebook.
@@ -256,3 +258,5 @@ Q.Tool.define("Streams/comments", function(o) {
 }
 
 );
+
+})(Q, jQuery, window);

@@ -1,3 +1,5 @@
+(function (Q, $) {
+
 /*
  * Streams/publisher tool
  */
@@ -25,3 +27,5 @@ Q.Tool.define("Streams/publisher", function (options) {
 		"activate": "activate"
 	}
 });
+
+})(Q, jQuery);

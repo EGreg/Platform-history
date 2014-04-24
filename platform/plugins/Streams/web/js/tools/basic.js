@@ -1,3 +1,5 @@
+(function (Q, $) {
+
 /*
  * Streams/basic tool
  */
@@ -82,3 +84,5 @@ Q.Tool.define("Streams/basic", function(options) {
 	});
 }
 );
+
+})(Q, jQuery, window);

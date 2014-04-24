@@ -1,3 +1,5 @@
+(function (Q, $, window, undefined) {
+
 /*
  * Streams/preview tool.
  * Renders a default tool to preview streams
@@ -328,3 +330,5 @@ Q.Template.set('Streams/preview/create',
 	+ '<div class="Streams_preview_contents {{titleClass}}"><{{titleTag}}>{{& title}}</{{titleTag}}></div>'
 	+ '</div>'
 );
+
+})(Q, jQuery, window);

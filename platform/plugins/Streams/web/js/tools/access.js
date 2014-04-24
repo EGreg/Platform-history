@@ -1,3 +1,5 @@
+(function (Q, $) {
+	
 /*
  * Streams/access tool
  */
@@ -204,3 +206,5 @@ Q.Tool.define("Streams/access", function(options) {
 	};
 
 });
+
+})(Q, jQuery);

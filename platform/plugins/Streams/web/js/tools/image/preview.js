@@ -312,4 +312,4 @@ Q.Template.set('Streams/image/preview/create',
 	+ '<div class="Streams_image_contents {{titleClass}}"><{{titleTag}}>{{& title}}</{{titleTag}}></div>'
 );
 
-})(window.jQuery, window);
+})(Q, jQuery, window);

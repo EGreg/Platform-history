@@ -1,3 +1,5 @@
+(function (Q, $) {
+
 /*
  * Streams/chat tool.
  * @param options Object
@@ -470,3 +472,5 @@ Q.Tool.define("Streams/chat", function _Streams_chat_constructor (options) {
     }
 }
 );
+
+})(Q, jQuery, window);

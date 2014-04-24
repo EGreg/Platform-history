@@ -1,3 +1,5 @@
+(function (Q, $) {
+
 /*
  * Streams/photoSelector tool. Makes a tool which provides possibility to select photos from user albums.
  * @param options Object
@@ -417,3 +419,5 @@ Q.Tool.define("Streams/photoSelector", function _Streams_chat_constructor (o) {
 }
 
 );
+
+})(Q, jQuery);
