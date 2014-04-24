@@ -1,8 +1,16 @@
-Q.Broadcast = Q.plugins.Broadcast = {
+/**
+ * Broadcast plugin's front end code
+ *
+ * @module Broadcast
+ * @class Broadcast
+ */
+
+
+(function (Q) {
+
+var Broadcast = Q.Broadcast = Q.plugins.Broadcast = {
 
 };
-
-(function (Broadcast) {
 
 Q.onActivate.set(function () {
 	
@@ -216,4 +224,4 @@ Q.onActivate.set(function () {
 });
 
 
-})(Q.Broadcast);
+})(Q);

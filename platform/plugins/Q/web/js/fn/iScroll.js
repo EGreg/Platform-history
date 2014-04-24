@@ -1,4 +1,4 @@
-(function ($, window, document, undefined) {
+(function (Q, $, window, document, undefined) {
 
 /**
  * Just a helper for iScroll plugin.
@@ -97,4 +97,4 @@ Q.Tool.jQuery("Q/iScroll", function (o) {
 
 );
 
-})(jQuery, window, document);
+})(Q, jQuery, window, document);

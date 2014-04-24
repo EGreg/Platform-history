@@ -1,4 +1,4 @@
-(function ($, window, document, undefined) {
+(function (Q, $, window, document, undefined) {
 
 function _setSelRange(inputEl, selStart, selend) {
 	if ('setSelectionRange' in inputEl) {
@@ -418,4 +418,4 @@ function _Q_inplace_tool_constructor(element, options) {
 
 }
 
-})(jQuery, window, document);
+})(Q, jQuery, window, document);

@@ -1,4 +1,4 @@
-(function ($, window, document, undefined) {
+(function (Q, $, window, document, undefined) {
 
 /**
  * Makes an overlay to show some content above the page.
@@ -596,4 +596,4 @@ function _handlePosAndScroll(o)
 	}, 100, 'Q_dialog_correction');
 };
 
-})(jQuery, window, document);
+})(Q, jQuery, window, document);

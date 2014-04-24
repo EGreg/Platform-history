@@ -11,7 +11,7 @@
  *   "preprocess": Optional function which takes [callback, tool] and calls callback(objectToExtendAnyStreamFields) 
  */
 
-(function ($, window, document, undefined) {
+(function (Q, $, window, document, undefined) {
 
 Q.Tool.define("Streams/html", function (options) {
 	var tool = this,
@@ -121,4 +121,4 @@ Q.Tool.define("Streams/html", function (options) {
 
 );
 
-})(jQuery, window, document);
+})(Q, jQuery, window, document);

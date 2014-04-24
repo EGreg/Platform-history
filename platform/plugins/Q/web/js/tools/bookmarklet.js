@@ -1,4 +1,4 @@
-(function ($) {
+(function (Q, $) {
 
 /**
  * Q/bookmarklet tool.
@@ -276,4 +276,4 @@ Q.Tool.define('Q/bookmarklet', function(options) {
   toolDiv.bookmarklet(options);
 });
 
-})(jQuery);
+})(Q, jQuery);

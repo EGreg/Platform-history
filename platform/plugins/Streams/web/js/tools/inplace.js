@@ -1,4 +1,4 @@
-(function ($, window, document, undefined) {
+(function (Q, $, window, document, undefined) {
 
 /**
  * This tool generates an inline editor to edit the content or attribute of a stream.
@@ -151,4 +151,4 @@ Q.Tool.define("Streams/inplace", function (options) {
 
 );
 
-})(jQuery, window, document);
+})(Q, jQuery, window, document);

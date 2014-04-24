@@ -1,4 +1,4 @@
-(function ($, window, document, undefined) {
+(function (Q, $, window, document, undefined) {
 
 Q.Tool.jQuery("Q/clickfocus",
 
@@ -19,4 +19,4 @@ function (o) {
 
 );
 
-})(jQuery, window, document);
+})(Q, jQuery, window, document);

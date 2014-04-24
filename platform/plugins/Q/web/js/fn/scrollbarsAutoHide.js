@@ -1,4 +1,4 @@
-(function ($, window, document, undefined) {
+(function (Q, $, window, document, undefined) {
 
 /**
  * Plugin which automatically hides scrollbars on 'overflow: scroll' or 'overflow: auto' elements when
@@ -131,4 +131,4 @@ function (o) {
 
 );
 
-})(jQuery, window, document);
+})(Q, jQuery, window, document);

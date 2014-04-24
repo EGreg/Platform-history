@@ -1,4 +1,4 @@
-(function ($, window, document, undefined) {
+(function (Q, $, window, document, undefined) {
 
 /**
  * @module Q
@@ -212,4 +212,4 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 	}
 });
 
-})(jQuery, window, document);
+})(Q, jQuery, window, document);

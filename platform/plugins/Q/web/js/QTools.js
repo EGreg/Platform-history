@@ -5,7 +5,7 @@
  * @module Q
  * @submodule Tools
  */
-(function ($, Q) {
+(function (Q, $) {
 
 if (!('Tools' in Q)) {
 	Q.Tools = {};
@@ -3629,4 +3629,4 @@ Q.Tool.define('Q/grammar', function(options) {
 	}
 });
 
-})(jQuery, Q);
+})(Q, jQuery);

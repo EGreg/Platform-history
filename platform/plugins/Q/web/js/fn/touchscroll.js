@@ -1,4 +1,4 @@
-(function ($, window, document, undefined) {
+(function (Q, $, window, document, undefined) {
 
 /**
  * Plugin for scrolling 'overflow: hidden' containers on touch devices.
@@ -369,4 +369,4 @@ var p = {
 	inertiaAccel: 0.0007
 }
 
-})(window.jQuery, window, document);
+})(Q, jQuery, window, document);

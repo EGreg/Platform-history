@@ -1,4 +1,4 @@
-(function ($, window, document, undefined) {
+(function (Q, $, window, document, undefined) {
 
 /**
  * Makes shadows at the top and bottom of the scrollable area which indicates that scrolling is possible in these directions.
@@ -444,4 +444,4 @@ function (o) {
 
 );
 
-})(jQuery, window, document);
+})(Q, jQuery, window, document);

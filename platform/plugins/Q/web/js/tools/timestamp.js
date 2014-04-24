@@ -1,4 +1,4 @@
-(function ($) {
+(function (Q, $) {
 
 /**
  * Q/timestamp tool.
@@ -145,4 +145,4 @@ Q.Tool.constructors['q_timestamp'] = function(options)
   toolDiv.timestamp(options);
 };
 
-})(jQuery);
+})(Q, jQuery);

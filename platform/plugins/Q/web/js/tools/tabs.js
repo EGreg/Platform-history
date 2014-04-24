@@ -1,4 +1,4 @@
-(function ($) {
+(function (Q, $) {
 
 /**
  * @param options Object
@@ -143,4 +143,4 @@ Q.Tool.define("Q/tabs", function(options) {
 }
 );
 
-})(jQuery);
+})(Q, jQuery);

@@ -1,4 +1,4 @@
-(function ($) {
+(function (Q, $) {
 
 Q.Tool.define('Q/form', function(options) {
 
@@ -127,4 +127,4 @@ Q.Tool.define('Q/form', function(options) {
 
 );
 
-})(jQuery);
+})(Q, jQuery);

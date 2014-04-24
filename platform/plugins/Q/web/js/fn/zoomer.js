@@ -1,4 +1,4 @@
-(function ($, window, document, undefined) {
+(function (Q, $, window, document, undefined) {
 
 /**
  * Zoomer tool
@@ -162,4 +162,4 @@ function (o) {
 
 );
 
-})(jQuery, window, document);
+})(Q, jQuery, window, document);

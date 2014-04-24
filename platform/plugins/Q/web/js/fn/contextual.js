@@ -1,4 +1,4 @@
-(function ($, window, document, undefined) {
+(function (Q, $, window, document, undefined) {
 
 /**
  * Makes a contextual menu from given options and handles its showing / hiding.
@@ -117,4 +117,4 @@ Q.Tool.jQuery('Q/contextual', function (o) {
 
 );
 
-})(jQuery, window, document);
+})(Q, jQuery, window, document);

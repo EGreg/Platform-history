@@ -1,4 +1,4 @@
-(function ($, window, document, undefined) {
+(function (Q, $, window, document, undefined) {
 
 /**
  * Builds two columns of content from given html structure.
@@ -76,4 +76,4 @@ function (o) {
 
 );
 
-})(jQuery, window, document);
+})(Q, jQuery, window, document);

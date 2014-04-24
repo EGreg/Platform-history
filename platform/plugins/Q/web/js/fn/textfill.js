@@ -1,4 +1,4 @@
-(function ($, window, document, undefined) {
+(function (Q, $, window, document, undefined) {
 
 /*
  * Activates placeholder effect on any input and textarea elements contained within this jquery
@@ -41,4 +41,4 @@ function (options) {
 
 );
 
-})(window.jQuery, window, document);
+})(Q, jQuery, window, document);

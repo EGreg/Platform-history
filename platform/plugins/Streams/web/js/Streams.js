@@ -5,7 +5,7 @@
  * @class Streams
  */
 
-(function($, Q) {
+(function(Q, $) {
 
 var Streams = Q.Streams = Q.plugins.Streams = {
 
@@ -2570,4 +2570,4 @@ function _scheduleUpdate() {
 
 _scheduleUpdate.delay = 10000;
 
-})(window.jQuery, Q);
+})(Q, jQuery);

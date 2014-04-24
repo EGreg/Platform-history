@@ -1,4 +1,4 @@
-(function ($, window, document, undefined) {
+(function (Q, $, window, document, undefined) {
 
 /*
  * Makes the Q clickable effect (which I first came up with at Intermagix)
@@ -246,4 +246,4 @@ function (o) {
 	cancelDistance: 15
 });
 
-})(jQuery, window, document);
+})(Q, jQuery, window, document);

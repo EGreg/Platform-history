@@ -1,4 +1,4 @@
-(function ($, window, document, undefined) {
+(function (Q, $, window, document, undefined) {
 
 /**
  * @param options Object
@@ -204,4 +204,4 @@ Q.Tool.jQuery('Q/gallery', function (options) {
 	
 });
 
-})(jQuery, window, document);
+})(Q, jQuery, window, document);

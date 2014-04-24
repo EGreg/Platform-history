@@ -1,4 +1,4 @@
-(function ($, window, document, undefined) {
+(function (Q, $, window, document, undefined) {
 
 Q.Tool.jQuery('Q/sortable',
 
@@ -615,4 +615,4 @@ function (options) {
 
 );
 
-})(window.jQuery, window, document);
+})(Q, jQuery, window, document);

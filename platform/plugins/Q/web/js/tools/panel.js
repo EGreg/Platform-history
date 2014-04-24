@@ -1,4 +1,4 @@
-(function ($) {
+(function (Q, $) {
 
 Q.Tool.define("Q/panel", function() {
 
@@ -92,4 +92,4 @@ Q.Tool.define("Q/panel", function() {
 	});
 });
 
-})(jQuery);
+})(Q, jQuery);

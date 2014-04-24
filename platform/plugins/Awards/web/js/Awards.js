@@ -1,6 +1,6 @@
 Q.Awards = Q.plugins.Awards = {};
 
-(function($, Awards, Streams) {
+(function(Q, Awards, Streams, $) {
 
 	Awards.onCredits = new Q.Event();
 	
@@ -15,4 +15,4 @@ Q.Awards = Q.plugins.Awards = {};
 		Awards.onCredits.handle(Q.plugins.Awards.credits.amount);
 	}, 'Awards');
 
-})(jQuery, Q.plugins.Awards, Q.plugins.Streams);
+})(Q, Q.plugins.Awards, Q.plugins.Streams, jQuery);

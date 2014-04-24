@@ -5,7 +5,7 @@
  * @class Users
  */
 
-(function($, Q) {
+(function(Q, $) {
 
 var Users = Q.Users = Q.plugins.Users = {
 	info: {}, // this gets filled when a user logs in
@@ -2119,4 +2119,4 @@ Users.onLogout = new Q.Event(function () {
 	document.documentElement.className += ' Users_loggedOut';
 });
 
-})(window.jQuery, Q);
+})(Q, jQuery);

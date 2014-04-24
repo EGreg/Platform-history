@@ -1,4 +1,4 @@
-(function ($, window, undefined) {
+(function (Q, $, window, undefined) {
 
 /*
  * Streams/image/preview tool.

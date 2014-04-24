@@ -1,4 +1,4 @@
-(function ($, window, document, undefined) {
+(function (Q, $, window, document, undefined) {
 
 Q.Tool.jQuery('Q/actions',
 
@@ -165,4 +165,4 @@ function _position($this, position, container) {
 	container.css('left', left);
 }
 
-})(window.jQuery, window, document);
+})(Q, jQuery, window, document);

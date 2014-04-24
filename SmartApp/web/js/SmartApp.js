@@ -1,3 +1,5 @@
+(function (Q) {
+
 if (!window.Q) {
 	document.getElementsByTagName('body')[0].innerHTML = "<h1>Please run SmartApp/scripts/Q/install.php --all</h1>";
 	throw new Q.Error("Q is not defined -- try running SmartApp/scripts/Q/install.php --all");
@@ -85,3 +87,5 @@ var SmartApp = Q.plugins.SmartApp = (function ($) {
 	
 	return SmartApp;
 })(jQuery);
+
+})(Q);

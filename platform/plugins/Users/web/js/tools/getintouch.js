@@ -1,4 +1,4 @@
-(function ($) {
+(function (Q, $) {
 
 /**
  * @param options Object
@@ -39,4 +39,4 @@ Q.Tool.define("Users/getintouch", function(options) {
 	});
 });
 
-})(jQuery);
+})(Q, jQuery);

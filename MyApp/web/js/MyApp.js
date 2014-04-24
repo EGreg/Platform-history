@@ -1,3 +1,5 @@
+(function (Q) {
+
 if (!window.Q) { // You can remove this part after you've run install.php
 	document.getElementsByTagName('body')[0].innerHTML = "<h1>Please run MyApp/scripts/Q/install.php --all</h1>";
 	throw "Q is not defined";
@@ -54,3 +56,5 @@ var MyApp = Q.plugins.MyApp = (function ($) {
 	return MyApp;
 	
 })(jQuery);
+
+})(Q);

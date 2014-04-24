@@ -4,11 +4,12 @@
  * @module Websites
  * @class Websites
  */
-Q.Websites = Q.plugins.Websites = {
-	
-};
 
-(function($, Websites) {
+(function(Q, $) {
+	
+var Websites = Q.Websites = Q.plugins.Websites = {
+
+};
 
 Q.Tool.define("Websites/bio", function (fields) {
 	var gittool = this.$('.Users_getintouch_tool');
@@ -54,4 +55,4 @@ Q.page('', function () {
 	}
 }, 'Websites');
 
-})(window.jQuery, Q.plugins.Websites);
+})(Q, jQuery);

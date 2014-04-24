@@ -1,4 +1,4 @@
-(function ($, window, document, undefined) {
+(function (Q, $, window, document, undefined) {
 
 /**
  * Applies 'mousemove' scrolling functionality for some block element container.
@@ -249,4 +249,4 @@ function _initScroller(o) {
 	};
 }
 
-})(jQuery, window, document);
+})(Q, jQuery, window, document);

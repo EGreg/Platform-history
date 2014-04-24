@@ -1,4 +1,4 @@
-(function ($) {
+(function (Q, $) {
 
 Q.Tool.define("Q/ticker", function(options) {
 	// private variables:
@@ -335,4 +335,4 @@ Q.Tool.define("Q/ticker", function(options) {
 
 );
 
-})(jQuery);
+})(Q, jQuery);
