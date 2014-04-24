@@ -213,6 +213,48 @@ Q.ifSet = function _Q_ifSet(parent, keys, defaultValue, delimiter) {
 };
 
 /**
+ * Used to prevent overwriting the latest results on the client with older ones.
+ * Typically, you would call this function before making some sort of request,
+ * save the ordinal in a variable, and then pass it to the function again inside
+ * a closure. For example:
+ * var ordinal = Q.latest(tool);
+ * requestSomeResults(function (err, results) {
+ *   if (!Q.latest(tool, ordinal)) return;
+ *   // otherwise, show the latest results on the client
+ * });
+ * @param key {String|Q.Tool}
+ *  Requests under the same key share the same incrementing ordinal
+ * @param ordinal {Number|Boolean}
+ *  Pass an ordinal that you obtained from a previous call to the function
+ *  Pass true here to get the latest ordinal that has been passed so far
+ *  to the method under this key, corresponding to the latest results seen.
+ * @return {Number|Boolean}
+ *  If only key is provided, returns an ordinal to use.
+ *  If ordinal is provided, then returns whether this was the latest ordinal.
+ */
+Q.latest = function (key, ordinal) {
+	if (Q.typeOf(key) === 'Q.Tool')	{
+		key = key.id;
+	}
+	if (ordinal === undefined) {
+		return Q.latest.issued[key]
+			= ((Q.latest.issued[key] || 0) % Q.latest.max) + 1;
+	}
+	var seen = Q.latest.seen[key] || 0;
+	if (ordinal === true) {
+		return seen;
+	}
+	if (ordinal > seen || ordinal < seen - Q.latest.max * 9/10) {
+		Q.latest.seen[key] = ordinal;
+		return true;
+	}
+	return false;
+};
+Q.latest.issued = {};
+Q.latest.seen = {};
+Q.latest.max = 10000;
+
+/**
  * Makes an object into an event emitter.
  * @method makeEventEmitter
  * @param what {object} Can be an object or a function
