@@ -123,7 +123,7 @@
 .Users_facebookDialog
 {
   position: absolute;
-  z-index: 200;
+  z-index: 9100;
   width: 465px;
   background-color: rgba(82, 82, 82, 0.7);
   border-radius: 8px;

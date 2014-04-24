@@ -5,7 +5,7 @@ table { border-spacing:0; border-collapse:collapse; }
 
 .Q_error { color: #C22 !important; font-style: italic !important; }
 .Q_errors { color: #a00; }
-.Q_error_message { z-index: 21000; font-size: 12px; background-color: #a00; color: white; padding: 2px 5px 4px 5px; opacity: 0.8; }
+.Q_error_message { z-index: 11000; font-size: 12px; background-color: #a00; color: white; padding: 2px 5px 4px 5px; opacity: 0.8; }
 .Q_error_message p { margin: 0px; }
 .Q_placeholder { color: #999; font-weight: normal; }
 .Q_field_name { color: #222; opacity:0.5; filter:alpha(opacity=50) }
@@ -388,7 +388,7 @@ div.Q_placeholder { pointer-events: none; }
 
 .Q_contextual .Q_scroll_indicator
 {
-	z-index: 2100;
+	z-index: 10001;
 }
 
 .Q_scroll_indicator_top
@@ -624,7 +624,7 @@ div.Q_placeholder { pointer-events: none; }
 .Q_touch_scrollbar_v
 {
 	position: absolute;
-	z-index: 1000;
+	z-index: 20000;
 	width: 5px;
 	background-color: rgba(0, 0, 0, 0.5);
 	border-radius: 3px;
@@ -633,7 +633,7 @@ div.Q_placeholder { pointer-events: none; }
 .Q_touch_scrollbar_h
 {
 	position: absolute;
-	z-index: 1000;
+	z-index: 20000;
 	height: 5px;
 	background-color: rgba(0, 0, 0, 0.5);
 	border-radius: 3px;
@@ -1412,7 +1412,7 @@ divbody { text-align: center; height: 100%; }
 
 #dialog { width: 500px; }
 /* the overlayed element */
-.Q_overlay { background: url(../img/bg/overlay.png); display:none; width: 350px; text-align:left; padding: 0px; border: 2px solid #444; z-index: 20000;
+.Q_overlay { background: url(../img/bg/overlay.png); display:none; width: 350px; text-align:left; padding: 0px; border: 2px solid #444; z-index: 9000;
  opacity: 1; border-radius: 7px; -moz-border-radius: 7px; -webkit-border-radius: 7px; -moz-box-shadow: 0 0 20px #333; -webkit-box-shadow: 0 0 50px #333; }
 
 .Q_dialog_title { padding: 10px; margin:0px; border-bottom: 1px solid #333; font-size: 20px; height: 20px; font-weight: bold; color: white; cursor: default;
@@ -1564,7 +1564,7 @@ button.basic16 { background-color: #eee; color: black; }
 
 /* tooltips */
 
-.Q_tooltip { background-color: #555; /* #005; */ border:1px solid #fff; padding:10px 15px; width:200px; display:none; color:#fff; text-align:center; font-size:12px; z-index: 22000;
+.Q_tooltip { background-color: #555; /* #005; */ border:1px solid #fff; padding:10px 15px; width:200px; display:none; color:#fff; text-align:center; font-size:12px; z-index: 12000;
  /* outline radius for mozilla/firefox only */ box-shadow:0 0 10px #000; -moz-box-shadow:0 0 10px #000; -webkit-box-shadow:0 0 10px #000; }
 
 /* inputs */

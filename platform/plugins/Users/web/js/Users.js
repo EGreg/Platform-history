@@ -1505,11 +1505,13 @@ function submitClosestForm () {
  *   A hash of options, that can include:
  *   "title": Required. Dialog title.
  *   "content": Required. Dialog content, can be plain text or some html.
- *   "buttons": Required. Array of object containing fields: 'label' is a label of the button,
-     'handler' is a click handler for the button, 'default' is a boolen which makes this button styled as default.
+ *   "buttons": Required. Array of object containing fields:
+ *      'label' is the label of the button,
+ *      'handler' is a click handler for the button, and
+ *      'default' is a boolean which makes this button styled as default.
  *   "position": Optional. Hash of x/y coordinates. By default (or if null) dialog is centered on the screen.
  *   "shadow": Optional. Whether to make a full screen shadow behind the dialog, making other elements on the page inaccessible.
-     Default is false.
+ *   Default is false.
  */
 Users.facebookDialog = function(options)
 {
@@ -1518,26 +1520,16 @@ Users.facebookDialog = function(options)
 
 	var o = $.extend({
 		'position': null,
-		'shadow': false
+		'shadow': false,
+		'title': 'Needs a title',
+		'content': 'Needs content',
+		'buttons': {}
 	}, options);
-	if (!o.title)
-	{
-		alert("Please provide a title for the dialog");
-		return false;
+	
+	if (!Q.isPlainObject(o.buttons)) {
+		return alert("Please provide a plain object for Users.facebookDialog buttons");
 	}
-	if (!o.content)
-	{
-		alert("Please provide a content for the dialog");
-		return false;
-	}
-	if (!o.buttons)
-	{
-		alert("Please provide a buttons for the dialog");
-		return false;
-	}
-
-	if (o.shadow)
-	{
+	if (o.shadow) {
 		var shadow = $('<div class="Users_facebookDialog_shadow" />');
 		$('body').append(shadow);
 	}
@@ -1546,31 +1538,45 @@ Users.facebookDialog = function(options)
 		'<div class="Users_facebookDialog_content">' + o.content + '</div>' +
 		'</div>');
 	var buttonsBlock = $('<div class="Users_facebookDialog_buttons" />');
-	for (var i in o.buttons)
-	{
-		var button = $('<button' + (o.buttons[i]['default'] ? ' class="Q_button Users_facebookDialog_default_button"' : '') + '>' + o.buttons[i].label + '</button>');
-		button.click(function(handler)
-		{
-			return function()
-			{
-				handler(dialog);
+	Q.each(o.buttons, function (k, b) {
+		function _buttonHandler(handler) {
+			return function() {
+				if (handler) {
+					handler(dialog);
+				} else {
+					alert("Users.facebookDialog has no click handler for this button");
+					dialog.close();
+				}
 			};
-		}(o.buttons[i].handler));
-		buttonsBlock.append(button);
-	}
+		}
+		var button = $('<button />')
+			.html(b.label || 'Needs a label')
+			.click(_buttonHandler(b.handler))
+			.appendTo(buttonsBlock);
+		if (b.default) {
+			button.addClass('Q_button Users_facebookDialog_default_button');
+		}
+	});
 	dialog.append(buttonsBlock);
 	$('body').append(dialog);
-	if (o.position)
-		dialog.css({ 'left': o.position.x + 'px', 'top': o.position.y + 'px' });
-	else
-		dialog.css({ 'left': (($(window).width() - dialog.width()) / 2) + 'px', 'top': (($(window).height() - dialog.height()) / 2) + 'px' });
+	if (o.position) {
+		dialog.css({ 
+			left: o.position.x + 'px', 
+			top: o.position.y + 'px'
+		});
+	} else {
+		dialog.css({ 
+			left: (($(window).width() - dialog.width()) / 2) + 'px',
+			top: (($(window).height() - dialog.height()) / 2) + 'px'
+		});
+	}
 	dialog.show();
 
-	dialog.close = function()
-	{
+	dialog.close = function() {
 		dialog.remove();
-		if (typeof(shadow) != 'undefined')
+		if (typeof(shadow) != 'undefined') {
 			shadow.remove();
+		}
 	};
 };
 
