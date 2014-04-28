@@ -1949,10 +1949,6 @@ Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotN
 /**
  * Wraps a getter function to provide support for re-entrancy, cache and throttling.
  *  It caches based on all non-function arguments which were passed to the function.
- *  If this object has methods called get(key) and set(key, cbpos, subject, params), then
- *  they are called instead of simply getting and setting key-value pairs in the object.
- *  get retuns object {cbpos, subject, params}, set - nothing.
- *  If it has the method remove(args), it is called when a cache entry needs to be unset.
  *  All functions passed in as arguments are considered as callbacks. Getter execution is
  *  considered complete when one of the callbacks is fired. If any other callback is fired,
  *  throttling may be influenced - i.e. throttleSize will increase by number of callbacks fired.
@@ -1972,7 +1968,7 @@ Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotN
  *	"throttle.throttleTry" => function(subject, getter, args) - applies or throttles getter with subject, args
  *	"throttle.throttleNext" => function (subject) - applies next getter with subject
  *	"throttleSize" => defaults to 100. Integer representing the size of the throttle, if it is enabled
- *	"cache" => pass false here to prevent caching, or an object which supports the cache interface
+ *	"cache" => pass false here to prevent caching, or an object which supports the Q.Cache interface
  * @return Function
  *  The wrapper function, which returns an object with a property called "result"
  *  which could be one of Q.getter.CACHED, Q.getter.WAITING, Q.getter.REQUESTING or Q.getter.THROTTLING

@@ -536,7 +536,7 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 Streams.getParticipating = Q.getter(function(callback) {
 	if(!callback) return;
 	Q.req('Streams/participating', 'participating', function (err, data) {
-		callback(err, data && data.slots && data.slots.participating);
+		callback && callback(err, data && data.slots && data.slots.participating);
 	});
 	_retain = undefined;
 }, {cache: Q.Cache.document("Streams.getParticipating", 10)});
@@ -745,7 +745,7 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 			var changed = (options && options.changed) || {};
 			updateStream(_retainedStreams[ps], this.fields, changed);
 			_retainedStreams[ps] = this;
-			callback(err, stream);
+			callback && callback(err, stream);
 		});
 		result = true;
 	}

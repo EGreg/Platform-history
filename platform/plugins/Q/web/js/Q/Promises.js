@@ -24,31 +24,31 @@ Q.Promise = function () {
 	
 	var p = this;
 	p.fulfill = function () {
-		if (p.state !== Q.Promise.states.PENDING) {
+		if (p._args) {
 			return p;
 		}
-		p.state = Q.Promise.states.FULFILLED;
 		p._args = Array.prototype.slice.call(arguments, 0);
 		p._context = this;
 		setTimeout(function () {
+			p.state = Q.Promise.states.FULFILLED;
 			for (var i=0, l=p._done.length; i<l; ++i) {
 				var r = p._done[i];
 				x = r.handler.apply(p._context, p._args);
 				_Q_Promise_resolve(r.promise, x);
 			}
 			p._done = null;
-		});
+		}, 0);
 		return p;
 	};
 
 	p.reject = function () {
-		if (p.state !== Q.Promise.states.PENDING) {
+		if (p._args) {
 			return p;
 		}
-		p.state = Q.Promise.states.REJECTED;
 		p._args = Array.prototype.slice.call(arguments, 0);
 		p._context = this;
 		setTimeout(function () {
+			p.state = Q.Promise.states.REJECTED;
 			for (var i=0, l=p._fail.length; i<l; ++i) {
 				var r = p._fail[i];
 				x = r.handler.apply(p._context, p._args);
@@ -57,7 +57,7 @@ Q.Promise = function () {
 				}
 			}
 			p._fail = null;
-		});
+		}, 0);
 		return p;
 	};
 
@@ -71,7 +71,7 @@ Q.Promise = function () {
 			for (var i=0, l=p._progress.length; i<l; ++i) {
 				p._progress[i].handler.apply(context, args);
 			}
-		});
+		}, 0);
 		return p;
 	};
 };
@@ -82,12 +82,42 @@ Q.Promise.resolve = function (x) {
 	return result;
 };
 
-Q.Promise.all = function () {
-	var args = Array.prototype.slice.call(arguments, 0);
+Q.Promise.when = function (valueOrPromise, doneHandler, failHandler, progressHandler) {
+	var result = new Q.Promise();
+	result.then(doneHandler, failHandler, progressHandler);
+	_Q_Promise_resolve(result, valueOrPromise);
+	return result;
 };
 
-Q.Promise.first = function () {
-	var args = Array.prototype.slice.call(arguments, 0);
+Q.Promise.all = function (promises) {
+	var result = new Q.Promise();
+	var i, l, p, c, canceled = false;
+	for (i=0, c=l=promises.length; i<l; ++i) {
+		p = new Q.Promise();
+		_Q_Promise_resolve(p, promises[i]);
+		p.done(function () {
+			if (!canceled && --c === 0) {
+				// we can do this because promises only get fulfilled once
+				result.fulfill.apply(this, arguments);
+			}
+		});
+		p.fail(function () {
+			canceled = true;
+		});
+	}
+	return result;
+};
+
+Q.Promise.first = function (promises) {
+	var result = new Q.Promise();
+	var i, l;
+	for (i=0, l=promises.length; i<l; ++i) {
+		_Q_Promise_resolve(result, promises[i]);
+		if (result.isFulfilled()) {
+			break;
+		}
+	}
+	return result;
 };
 
 Q.Promise.prototype.then = function (doneHandler, failHandler, progressHandler) {
@@ -145,17 +175,28 @@ function _Q_Promise_resolve(promise, x) {
 	if (!promise) {
 		return;
 	}
+	if (promise === x) {
+		throw new TypeError("Q.Promise resolving to itself"); // recursion;
+	}
 	if (x && (x instanceof Q.Promise)) {
 		x.done(promise.fulfill); // 2.3.2.2
 		x.fail(promise.reject); // 2.3.2.3
 	} else {
-		var t = x && x.then; // 2.3.3.1
+		try {
+			var t = x && x.then; // 2.3.3.1
+		} catch (e) {
+			return promise.reject.call(null, e); // 2.3.3.2
+		}
 		if (typeof t === 'function') { // 2.3.3.3
 			// NOTE: the following does not support the spec completely
 			// in that fulfilling and rejecting promises
 			// does not handle a special case where a Q.Promise
 			// or other thenable is passed to the first argument of t
-			t.call(x, promise.fulfill, promise.reject);
+			t.call(x, function (value) {
+				_Q_Promise_resolve(promise, value);
+			}, function (reason) {
+				promise.reject.call(null, reason);
+			});
 		} else {
 			promise.fulfill.call(null, x); // 2.3.3.4
 		}
