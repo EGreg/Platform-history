@@ -2189,8 +2189,17 @@ Q.log = function _Q_log(message, key, timestamp, callback) {
 	}
 	if (typeof key === "undefined" || key === true) key = Q.Config.get(['Q', 'app'], false);
 
-	if (typeof message !== "string")
-		message = 'inspecting "'+Q.typeOf(message)+'":\n'+util.inspect(message, false, Q.Config.get('Q', 'var_dump_max_levels', 5));
+	if (typeof message !== "string") {
+		if (message instanceof Error) {
+			var error = message;
+			message = error.name + ": " + error.message
+				+ "\n" + "in " + error.fileName
+					+ " at (" + error.lineNumber + ":" + error.columnNumber + ")"
+				+ "\n" + error.stack;
+		} else {
+			message = 'inspecting "'+Q.typeOf(message)+'":\n'+util.inspect(message, false, Q.Config.get('Q', 'var_dump_max_levels', 5));
+		}
+	}
 
 	message = (timestamp ? '['+Q.date('Y-m-d h:i:s')+'] ' : '')+(key ? key : 'Q')+': ' + message + "\n";
 
