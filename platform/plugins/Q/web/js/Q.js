@@ -7520,15 +7520,17 @@ if (typeof module !== 'undefined' && typeof process !== 'undefined') {
 	// We are in a browser environment
 	/**
 	 * This method restores the old window.Q and returns an instance of itself.
-	 * @param callback Function
-	 *  Optional. If true, then simply calls Q(callback) passing the Q instance
-	 *  on which this callback was called.
+	 * @param extend
+	 *  If true, extends the old Q with methods and properties from the Q Platform.
+	 *  Otherwise, the old Q is untouched.
 	 * @return {Function}
 	 *  Returns the Q instance on which this method was called
 	 */
-	Q.noConflict = function (callback) {
+	Q.noConflict = function (extend) {
+		if (extend) {
+			Q.extend(oldQ, Q);
+		}
 		window.Q = oldQ;
-		Q(callback);
 		return Q;
 	};
 	var oldQ = window.Q;

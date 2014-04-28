@@ -1553,7 +1553,7 @@ Users.facebookDialog = function(options)
 			.html(b.label || 'Needs a label')
 			.click(_buttonHandler(b.handler))
 			.appendTo(buttonsBlock);
-		if (b.default) {
+		if (b['default']) {
 			button.addClass('Q_button Users_facebookDialog_default_button');
 		}
 	});
