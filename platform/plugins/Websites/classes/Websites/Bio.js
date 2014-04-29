@@ -30,7 +30,7 @@ function Websites_Bio (fields) {
 	};
 
 	// Run constructors of mixed in objects
-	this.constructors.call(this, arguments);
+	this.constructors.apply(this, arguments);
 
 	/*
 	 * Add any privileged methods to the model class here.

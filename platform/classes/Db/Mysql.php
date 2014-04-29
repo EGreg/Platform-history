@@ -1137,6 +1137,7 @@ $dc
  */
 var Q = require('Q');
 var Db = Q.require('Db');
+var $class_name_base = Q.require('$js_base_class_require');
 
 $dc
  * Class representing '$class_name_base' rows in the '$conn_name' database
@@ -1149,8 +1150,8 @@ $table_comment * @namespace $class_name_prefix
  */
 function $class_name (fields) {
 
-	// Run constructors of mixed in objects
-	this.constructors.call(this, arguments);
+	// Run mixed-in constructors
+	this.constructors.apply(this, arguments);
 
 	/*
 	 * Add any privileged methods to the model class here.
@@ -1161,7 +1162,7 @@ $js_class_extras
 	/* * * */
 }
 
-Q.mixin($class_name, Q.require('$js_base_class_require'));
+Q.mixin($class_name, $class_name_base);
 
 /*
  * Add any public methods here by assigning them to $class_name.prototype
@@ -1197,12 +1198,13 @@ EOT;
 			$table_classnames[] = $class_name;
 			$js_table_classes_string .= <<<EOT
 
-	$dc
-	 * Link to $conn_name.$class_name_base model
-	 * @property $class_name_base
-	 * @type $conn_name.$class_name_base
-	 */
-	this.$class_name_base = Q.require('$conn_name/$class_name_base');
+$dc
+ * Link to $conn_name.$class_name_base model
+ * @property $class_name_base
+ * @type $conn_name.$class_name_base
+ */
+Base.$class_name_base = Q.require('$conn_name/$class_name_base');
+
 EOT;
 		}
 		
@@ -1258,8 +1260,8 @@ abstract class Base_$class_name
 	static \$table_classnames = $table_classnames_exported;
 
 	$dc
-	 * This method uses Db::connect() to establish a connection to database using information stored in the configuration.
-	 * If the connection to Db object has already been made, it returns this Db object.
+     * This method calls Db.connect() using information stored in the configuration.
+     * If this has already been called, then the same db object is returned.
 	 * @method db
 	 * @return {iDb} The database object
 	 */
@@ -1298,38 +1300,38 @@ $dc
  * @class $class_name
  * @static
  */
-module.exports = function () {
-	
-	$dc
-	 * The list of model classes
-	 * @property tableClasses
-	 * @type array
-	 */
-	this.tableClasses = $table_classnames_json;
-	
-	$dc
-	 * This method uses Db.connect() to establish a connection to database using information stored in the configuration.
-	 * If the connection to Db object has already been made, it returns this Db object.
-	 * @method db
-	 * @return {Db} The database connection
-	 */
-	this.db = function () {
-		return Db.connect('$conn_name');
-	};
-	
-	$dc
-	 * The connection name for the class
-	 * @method connectionName
-	 * @return {string} The name of the connection
-	 */
-	this.connectionName = function() {
-		return '$conn_name';
-	};
-$js_table_classes_string
-	
+function Base () {
 	return this;
-	
+}
+ 
+module.exports = Base;
+
+$dc
+ * The list of model classes
+ * @property tableClasses
+ * @type array
+ */
+Base.tableClasses = $table_classnames_json;
+
+$dc
+ * This method calls Db.connect() using information stored in the configuration.
+ * If this has already been called, then the same db object is returned.
+ * @method db
+ * @return {Db} The database connection
+ */
+Base.db = function () {
+	return Db.connect('$conn_name');
 };
+
+$dc
+ * The connection name for the class
+ * @method connectionName
+ * @return {string} The name of the connection
+ */
+Base.connectionName = function() {
+	return '$conn_name';
+};
+$js_table_classes_string
 EOT;
 
 		$class_string = <<<EOT
@@ -1370,8 +1372,11 @@ $dc
  * @extends Base.$class_name_prefix
  * @static
  */
-var $conn_name = module.exports;
-Q.require('$js_base_class_require').apply($conn_name);
+function $conn_name() { };
+module.exports = $conn_name;
+
+var Base_$conn_name = Q.require('$js_base_class_require');
+Q.mixin($conn_name, Base_$conn_name);
 
 /*
  * This is where you would place all the static methods for the models,
@@ -2056,7 +2061,7 @@ $field_hints
 	 * Retrieve the table name to use in SQL statement
 	 * @method table
 	 * @static
-	 * @param {boolean} [\$with_db_name=true] Indicates wheather table name shall contain the database name
+	 * @param {boolean} [\$with_db_name=true] Indicates wheather table name should contain the database name
  	 * @return {string|Db_Expression} The table name as string optionally without database name if no table sharding
 	 * was started or Db_Expression class with prefix and database name templates is table was sharded
 	 */
@@ -2188,6 +2193,8 @@ $dc
 var Q = require('Q');
 var Db = Q.require('Db');
 var $conn_name = Q.require('$conn_name');
+var Row = Q.require('Db/Row');
+
 $dc
  * Base class representing '$class_name_base' rows in the '$conn_name' database
  * @namespace Base.$class_name_prefix
@@ -2198,21 +2205,16 @@ $dc
  * an associative array of `{column: value}` pairs
  */
 function Base (fields) {
-	$dc
-	 * The name of the class
-	 * @property className
-	 * @type string
-	 */
-	this.className = "$class_name";
+	
 }
 
-Q.mixin(Base, Q.require('Db/Row'));
+Q.mixin(Base, Row);
 
 $js_field_hints
 
 $dc
- * This method uses Db to establish a connection with the information stored in the configuration.
- * If the this Db object has already been made, it returns this Db object.
+ * This method calls Db.connect() using information stored in the configuration.
+ * If this has already been called, then the same db object is returned.
  * @method db
  * @return {Db} The database connection
  */
@@ -2221,9 +2223,9 @@ Base.db = function () {
 };
 
 $dc
- * Retrieve the table name to use in SQL statement
+ * Retrieve the table name to use in SQL statements
  * @method table
- * @param [withoutDbName=false] {boolean} Indicates wheather table name shall contain the database name
+ * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
  * @return {string|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
@@ -2303,15 +2305,44 @@ Base.INSERT = function(fields, alias) {
 	return q;
 };
 
+$dc
+ * The name of the class
+ * @property className
+ * @type string
+ */
+Base.prototype.className = "$class_name";
+
 // Instance methods
+
+$dc
+ * Create INSERT query to the class table
+ * @method INSERT
+ * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
+ * @param [alias=null] {string} Table alias
+ * @return {Db.Query.Mysql} The generated query
+ */
 Base.prototype.setUp = function() {
 	// does nothing for now
 };
 
+$dc
+ * Create INSERT query to the class table
+ * @method INSERT
+ * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
+ * @param [alias=null] {string} Table alias
+ * @return {Db.Query.Mysql} The generated query
+ */
 Base.prototype.db = function () {
 	return Base.db();
 };
 
+$dc
+ * Retrieve the table name to use in SQL statements
+ * @method table
+ * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
+ * @return {string|Db.Expression} The table name as string optionally without database name if no table sharding was started
+ * or Db.Expression object with prefix and database name templates is table was sharded
+ */
 Base.prototype.table = function () {
 	return Base.table();
 };

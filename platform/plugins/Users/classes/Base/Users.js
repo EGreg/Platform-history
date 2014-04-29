@@ -15,14 +15,18 @@ var Db = Q.require('Db');
  * @class Users
  * @static
  */
-module.exports = function () {
-	
-	/**
-	 * The list of model classes
-	 * @property tableClasses
-	 * @type array
-	 */
-	this.tableClasses = [
+function Base () {
+	return this;
+}
+ 
+module.exports = Base;
+
+/**
+ * The list of model classes
+ * @property tableClasses
+ * @type array
+ */
+Base.tableClasses = [
 		"Users_AppUser",
 		"Users_Contact",
 		"Users_Device",
@@ -39,117 +43,127 @@ module.exports = function () {
 		"Users_User",
 		"Users_Vote"
 	];
-	
-	/**
-	 * This method uses Db.connect() to establish a connection to database using information stored in the configuration.
-	 * If the connection to Db object has already been made, it returns this Db object.
-	 * @method db
-	 * @return {Db} The database connection
-	 */
-	this.db = function () {
-		return Db.connect('Users');
-	};
-	
-	/**
-	 * The connection name for the class
-	 * @method connectionName
-	 * @return {string} The name of the connection
-	 */
-	this.connectionName = function() {
-		return 'Users';
-	};
 
-	/**
-	 * Link to Users.AppUser model
-	 * @property AppUser
-	 * @type Users.AppUser
-	 */
-	this.AppUser = Q.require('Users/AppUser');
-	/**
-	 * Link to Users.Contact model
-	 * @property Contact
-	 * @type Users.Contact
-	 */
-	this.Contact = Q.require('Users/Contact');
-	/**
-	 * Link to Users.Device model
-	 * @property Device
-	 * @type Users.Device
-	 */
-	this.Device = Q.require('Users/Device');
-	/**
-	 * Link to Users.Email model
-	 * @property Email
-	 * @type Users.Email
-	 */
-	this.Email = Q.require('Users/Email');
-	/**
-	 * Link to Users.ExternalFrom model
-	 * @property ExternalFrom
-	 * @type Users.ExternalFrom
-	 */
-	this.ExternalFrom = Q.require('Users/ExternalFrom');
-	/**
-	 * Link to Users.ExternalTo model
-	 * @property ExternalTo
-	 * @type Users.ExternalTo
-	 */
-	this.ExternalTo = Q.require('Users/ExternalTo');
-	/**
-	 * Link to Users.Identify model
-	 * @property Identify
-	 * @type Users.Identify
-	 */
-	this.Identify = Q.require('Users/Identify');
-	/**
-	 * Link to Users.Label model
-	 * @property Label
-	 * @type Users.Label
-	 */
-	this.Label = Q.require('Users/Label');
-	/**
-	 * Link to Users.Link model
-	 * @property Link
-	 * @type Users.Link
-	 */
-	this.Link = Q.require('Users/Link');
-	/**
-	 * Link to Users.Mobile model
-	 * @property Mobile
-	 * @type Users.Mobile
-	 */
-	this.Mobile = Q.require('Users/Mobile');
-	/**
-	 * Link to Users.OAuth model
-	 * @property OAuth
-	 * @type Users.OAuth
-	 */
-	this.OAuth = Q.require('Users/OAuth');
-	/**
-	 * Link to Users.Session model
-	 * @property Session
-	 * @type Users.Session
-	 */
-	this.Session = Q.require('Users/Session');
-	/**
-	 * Link to Users.Total model
-	 * @property Total
-	 * @type Users.Total
-	 */
-	this.Total = Q.require('Users/Total');
-	/**
-	 * Link to Users.User model
-	 * @property User
-	 * @type Users.User
-	 */
-	this.User = Q.require('Users/User');
-	/**
-	 * Link to Users.Vote model
-	 * @property Vote
-	 * @type Users.Vote
-	 */
-	this.Vote = Q.require('Users/Vote');
-	
-	return this;
-	
+/**
+ * This method calls Db.connect() using information stored in the configuration.
+ * If this has already been called, then the same db object is returned.
+ * @method db
+ * @return {Db} The database connection
+ */
+Base.db = function () {
+	return Db.connect('Users');
 };
+
+/**
+ * The connection name for the class
+ * @method connectionName
+ * @return {string} The name of the connection
+ */
+Base.connectionName = function() {
+	return 'Users';
+};
+
+/**
+ * Link to Users.AppUser model
+ * @property AppUser
+ * @type Users.AppUser
+ */
+Base.AppUser = Q.require('Users/AppUser');
+
+/**
+ * Link to Users.Contact model
+ * @property Contact
+ * @type Users.Contact
+ */
+Base.Contact = Q.require('Users/Contact');
+
+/**
+ * Link to Users.Device model
+ * @property Device
+ * @type Users.Device
+ */
+Base.Device = Q.require('Users/Device');
+
+/**
+ * Link to Users.Email model
+ * @property Email
+ * @type Users.Email
+ */
+Base.Email = Q.require('Users/Email');
+
+/**
+ * Link to Users.ExternalFrom model
+ * @property ExternalFrom
+ * @type Users.ExternalFrom
+ */
+Base.ExternalFrom = Q.require('Users/ExternalFrom');
+
+/**
+ * Link to Users.ExternalTo model
+ * @property ExternalTo
+ * @type Users.ExternalTo
+ */
+Base.ExternalTo = Q.require('Users/ExternalTo');
+
+/**
+ * Link to Users.Identify model
+ * @property Identify
+ * @type Users.Identify
+ */
+Base.Identify = Q.require('Users/Identify');
+
+/**
+ * Link to Users.Label model
+ * @property Label
+ * @type Users.Label
+ */
+Base.Label = Q.require('Users/Label');
+
+/**
+ * Link to Users.Link model
+ * @property Link
+ * @type Users.Link
+ */
+Base.Link = Q.require('Users/Link');
+
+/**
+ * Link to Users.Mobile model
+ * @property Mobile
+ * @type Users.Mobile
+ */
+Base.Mobile = Q.require('Users/Mobile');
+
+/**
+ * Link to Users.OAuth model
+ * @property OAuth
+ * @type Users.OAuth
+ */
+Base.OAuth = Q.require('Users/OAuth');
+
+/**
+ * Link to Users.Session model
+ * @property Session
+ * @type Users.Session
+ */
+Base.Session = Q.require('Users/Session');
+
+/**
+ * Link to Users.Total model
+ * @property Total
+ * @type Users.Total
+ */
+Base.Total = Q.require('Users/Total');
+
+/**
+ * Link to Users.User model
+ * @property User
+ * @type Users.User
+ */
+Base.User = Q.require('Users/User');
+
+/**
+ * Link to Users.Vote model
+ * @property Vote
+ * @type Users.Vote
+ */
+Base.Vote = Q.require('Users/Vote');

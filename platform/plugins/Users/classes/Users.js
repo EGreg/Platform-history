@@ -1,3 +1,4 @@
+/*jshint node:true */
 /**
  * Users model
  * @module Users
@@ -11,8 +12,11 @@ var Q = require('Q');
  * @extends Base.Users
  * @static
  */
-var Users = module.exports;
-Q.require('Base/Users').apply(Users);
+function Users() { }
+module.exports = Users;
+
+var Base_Users = require('Base/Users');
+Q.mixin(Users, Base_Users);
 
 /*
  * This is where you would place all the static methods for the models,
@@ -57,6 +61,10 @@ Users.userFromSession = function (sessionId, callback) {
 			if (!results || results.length === 0) {
 				callback(null);
 			} else {
+				if (results[0].fields.content === undefined) {
+					Q.log(err, results);
+					throw new Q.Error("Users.userFromSession session.fields.content is undefined");
+				}
 				var sess = JSON.parse(results[0].fields.content);
 				
 				if (!Q.isSet(sess, ['Users', 'loggedInUser'])) {

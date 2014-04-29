@@ -1,3 +1,4 @@
+/*jshint node:true */
 /**
  * Metrics model
  * @module Metrics
@@ -11,14 +12,9 @@ var Q = require('Q');
  * @extends Base.Metrics
  * @static
  */
-var Metrics = module.exports;
-Q.require('Base/Metrics').apply(Metrics);
+function Metrics() { return this; }
 
-/*
- * This is where you would place all the static methods for the models,
- * the ones that don't strongly pertain to a particular row or table.
- * Just assign them as methods of the Metrics object.
- 
- * * * */
+var Base_Metrics = require('Base/Metrics');
+Q.mixin(Metrics, Base_Metrics);
 
-/* * * */
+module.exports = Metrics;

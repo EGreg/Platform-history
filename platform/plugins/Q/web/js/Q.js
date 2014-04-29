@@ -37,7 +37,9 @@ Q.Error = Error;
 
 Object.getPrototypeOf = Object.getPrototypeOf || function (obj) {
 	if (obj.__proto__) return obj.__proto__;
-	if (obj.constructor && obj.constructor.prototype) return obj.constructor.prototype;
+	if (obj.constructor && obj.constructor.prototype) {
+		return obj.constructor.prototype;
+	}
 	return null;
 };
 
@@ -1013,31 +1015,25 @@ Q.microtime = function _Q_microtime(get_as_float) {
  */
 Q.mixin = function _Q_mixin(A, B) {
 	var __mixins = (A.__mixins || (A.__mixins = []));
-	for (var i = 1, l = arguments.length; i < l; ++i) {
-		var mixin = arguments[i];
+	var mixin, i, k, l;
+	for (i = 1, l = arguments.length; i < l; ++i) {
+		mixin = arguments[i];
 		if (typeof mixin !== 'function') {
 			throw new Q.Error("Q.mixin: argument " + i + " is not a function");
 		}
-		Q.extend(A.prototype, mixin.prototype);
-		for (var k in mixin) {
-			if (!(k in A) && typeof mixin[k] === 'function') {
+		var p = mixin.prototype, Ap = A.prototype;
+		for (k in p) {
+			if (!(k in Ap)) {
+				Ap[k] = p[k];
+			}
+		}
+		for (k in mixin) {
+			if (!(k in A)) {
 				A[k] = mixin[k];
 			}
 		}
-		if (mixin.__mixins) {
-			Array.prototype.splice.apply(__mixins, [__mixins.length, 0].concat(mixin.__mixins));
-		}
 		__mixins.push(arguments[i]);
 	}
-
-	A.prototype.constructors = function _constructors() {
-		if (!this.constructor.__mixins) {
-			throw new Q.Error("Q.mixin: mixinObject.constructors() called on something that does not have mixins info");
-		}
-		for (var mixins = this.constructor.__mixins, i = 0, l = mixins.length; i < l; ++i) {
-			mixins[i].apply(this, arguments);
-		}
-	};
 
 	A.staticProperty = function _staticProperty(propName) {
 		for (var i=0; i<A.__mixins.length; ++i) {
@@ -1046,6 +1042,21 @@ Q.mixin = function _Q_mixin(A, B) {
 			}
 		}
 		return undefined;
+	};
+	
+	A.constructors = function _constructors() {
+		var mixins = A.__mixins;
+		var i;
+		for (i = mixins.length - 1; i >= 0; --i) {
+			if (typeof mixins[i].constructors === 'function') {
+				mixins[i].constructors.apply(this, arguments);
+			}
+			mixins[i].apply(this, arguments);
+		}
+	};
+
+	A.prototype.constructors = function _prototype_constructors() {
+		A.constructors.apply(this, arguments);
 	};
 };
 
@@ -1110,7 +1121,7 @@ Q.normalize = function _Q_normalize(text, replacement, characters, numChars) {
 	if (replacement === undefined) replacement = '_';
 	characters = characters || new RegExp("[^A-Za-z0-9]+", "g");
 	if (text === undefined) {
-		debugger; // report this error
+		debugger; // pause here if debugging
 	}
 	var result = text.toLowerCase().replace(characters, replacement);
 	if (text.length > numChars) {
@@ -3082,7 +3093,9 @@ function Q_Cache_pluck(cache, existing) {
 	var value;
 	if (existing.prev) {
 		value = Q_Cache_get(cache, existing.prev);
-		if (!value) debugger;
+		if (!value) {
+			debugger; // pause here if debugging
+		}
 		value.next = existing.next;
 		Q_Cache_set(cache, existing.prev, value);
 	} else {
@@ -5744,7 +5757,7 @@ function _constructTool(toolElement, options, shared) {
 				}
 				this.constructed = true;
 			};
-			Q.mixin(toolFunc.toolConstructor, Q.Tool, toolFunc);
+			Q.mixin(toolFunc.toolConstructor, toolFunc, Q.Tool);
 		}
 		var result = new toolFunc.toolConstructor(toolElement, options);
 		if (uniqueToolId) {

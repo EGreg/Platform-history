@@ -14,7 +14,8 @@
 		},
 		"exception": {
 			"showTrace": false,
-			"showFileAndLine": false
+			"showFileAndLine": false,
+			"nodeLogName": null
 		},
 		"web": {
 			"ignoreUserAbort": true,

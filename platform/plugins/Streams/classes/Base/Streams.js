@@ -15,14 +15,18 @@ var Db = Q.require('Db');
  * @class Streams
  * @static
  */
-module.exports = function () {
-	
-	/**
-	 * The list of model classes
-	 * @property tableClasses
-	 * @type array
-	 */
-	this.tableClasses = [
+function Base () {
+	return this;
+}
+ 
+module.exports = Base;
+
+/**
+ * The list of model classes
+ * @property tableClasses
+ * @type array
+ */
+Base.tableClasses = [
 		"Streams_Access",
 		"Streams_Avatar",
 		"Streams_Invite",
@@ -40,123 +44,134 @@ module.exports = function () {
 		"Streams_Subscription",
 		"Streams_Total"
 	];
-	
-	/**
-	 * This method uses Db.connect() to establish a connection to database using information stored in the configuration.
-	 * If the connection to Db object has already been made, it returns this Db object.
-	 * @method db
-	 * @return {Db} The database connection
-	 */
-	this.db = function () {
-		return Db.connect('Streams');
-	};
-	
-	/**
-	 * The connection name for the class
-	 * @method connectionName
-	 * @return {string} The name of the connection
-	 */
-	this.connectionName = function() {
-		return 'Streams';
-	};
 
-	/**
-	 * Link to Streams.Access model
-	 * @property Access
-	 * @type Streams.Access
-	 */
-	this.Access = Q.require('Streams/Access');
-	/**
-	 * Link to Streams.Avatar model
-	 * @property Avatar
-	 * @type Streams.Avatar
-	 */
-	this.Avatar = Q.require('Streams/Avatar');
-	/**
-	 * Link to Streams.Invite model
-	 * @property Invite
-	 * @type Streams.Invite
-	 */
-	this.Invite = Q.require('Streams/Invite');
-	/**
-	 * Link to Streams.Invited model
-	 * @property Invited
-	 * @type Streams.Invited
-	 */
-	this.Invited = Q.require('Streams/Invited');
-	/**
-	 * Link to Streams.Message model
-	 * @property Message
-	 * @type Streams.Message
-	 */
-	this.Message = Q.require('Streams/Message');
-	/**
-	 * Link to Streams.Notification model
-	 * @property Notification
-	 * @type Streams.Notification
-	 */
-	this.Notification = Q.require('Streams/Notification');
-	/**
-	 * Link to Streams.Participant model
-	 * @property Participant
-	 * @type Streams.Participant
-	 */
-	this.Participant = Q.require('Streams/Participant');
-	/**
-	 * Link to Streams.Participating model
-	 * @property Participating
-	 * @type Streams.Participating
-	 */
-	this.Participating = Q.require('Streams/Participating');
-	/**
-	 * Link to Streams.RelatedFrom model
-	 * @property RelatedFrom
-	 * @type Streams.RelatedFrom
-	 */
-	this.RelatedFrom = Q.require('Streams/RelatedFrom');
-	/**
-	 * Link to Streams.RelatedTo model
-	 * @property RelatedTo
-	 * @type Streams.RelatedTo
-	 */
-	this.RelatedTo = Q.require('Streams/RelatedTo');
-	/**
-	 * Link to Streams.Request model
-	 * @property Request
-	 * @type Streams.Request
-	 */
-	this.Request = Q.require('Streams/Request');
-	/**
-	 * Link to Streams.Rule model
-	 * @property Rule
-	 * @type Streams.Rule
-	 */
-	this.Rule = Q.require('Streams/Rule');
-	/**
-	 * Link to Streams.Sent model
-	 * @property Sent
-	 * @type Streams.Sent
-	 */
-	this.Sent = Q.require('Streams/Sent');
-	/**
-	 * Link to Streams.Stream model
-	 * @property Stream
-	 * @type Streams.Stream
-	 */
-	this.Stream = Q.require('Streams/Stream');
-	/**
-	 * Link to Streams.Subscription model
-	 * @property Subscription
-	 * @type Streams.Subscription
-	 */
-	this.Subscription = Q.require('Streams/Subscription');
-	/**
-	 * Link to Streams.Total model
-	 * @property Total
-	 * @type Streams.Total
-	 */
-	this.Total = Q.require('Streams/Total');
-	
-	return this;
-	
+/**
+ * This method calls Db.connect() using information stored in the configuration.
+ * If this has already been called, then the same db object is returned.
+ * @method db
+ * @return {Db} The database connection
+ */
+Base.db = function () {
+	return Db.connect('Streams');
 };
+
+/**
+ * The connection name for the class
+ * @method connectionName
+ * @return {string} The name of the connection
+ */
+Base.connectionName = function() {
+	return 'Streams';
+};
+
+/**
+ * Link to Streams.Access model
+ * @property Access
+ * @type Streams.Access
+ */
+Base.Access = Q.require('Streams/Access');
+
+/**
+ * Link to Streams.Avatar model
+ * @property Avatar
+ * @type Streams.Avatar
+ */
+Base.Avatar = Q.require('Streams/Avatar');
+
+/**
+ * Link to Streams.Invite model
+ * @property Invite
+ * @type Streams.Invite
+ */
+Base.Invite = Q.require('Streams/Invite');
+
+/**
+ * Link to Streams.Invited model
+ * @property Invited
+ * @type Streams.Invited
+ */
+Base.Invited = Q.require('Streams/Invited');
+
+/**
+ * Link to Streams.Message model
+ * @property Message
+ * @type Streams.Message
+ */
+Base.Message = Q.require('Streams/Message');
+
+/**
+ * Link to Streams.Notification model
+ * @property Notification
+ * @type Streams.Notification
+ */
+Base.Notification = Q.require('Streams/Notification');
+
+/**
+ * Link to Streams.Participant model
+ * @property Participant
+ * @type Streams.Participant
+ */
+Base.Participant = Q.require('Streams/Participant');
+
+/**
+ * Link to Streams.Participating model
+ * @property Participating
+ * @type Streams.Participating
+ */
+Base.Participating = Q.require('Streams/Participating');
+
+/**
+ * Link to Streams.RelatedFrom model
+ * @property RelatedFrom
+ * @type Streams.RelatedFrom
+ */
+Base.RelatedFrom = Q.require('Streams/RelatedFrom');
+
+/**
+ * Link to Streams.RelatedTo model
+ * @property RelatedTo
+ * @type Streams.RelatedTo
+ */
+Base.RelatedTo = Q.require('Streams/RelatedTo');
+
+/**
+ * Link to Streams.Request model
+ * @property Request
+ * @type Streams.Request
+ */
+Base.Request = Q.require('Streams/Request');
+
+/**
+ * Link to Streams.Rule model
+ * @property Rule
+ * @type Streams.Rule
+ */
+Base.Rule = Q.require('Streams/Rule');
+
+/**
+ * Link to Streams.Sent model
+ * @property Sent
+ * @type Streams.Sent
+ */
+Base.Sent = Q.require('Streams/Sent');
+
+/**
+ * Link to Streams.Stream model
+ * @property Stream
+ * @type Streams.Stream
+ */
+Base.Stream = Q.require('Streams/Stream');
+
+/**
+ * Link to Streams.Subscription model
+ * @property Subscription
+ * @type Streams.Subscription
+ */
+Base.Subscription = Q.require('Streams/Subscription');
+
+/**
+ * Link to Streams.Total model
+ * @property Total
+ * @type Streams.Total
+ */
+Base.Total = Q.require('Streams/Total');

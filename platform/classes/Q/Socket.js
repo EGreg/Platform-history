@@ -4,6 +4,7 @@
 
 var Q = require('../Q');
 var events = require('events');
+var util = require('util');
 
 /**
  * Attach socket to server
@@ -31,12 +32,12 @@ Socket.listen = function (options) {
 		host: options.host
 	});
 	if (!server.attached.socket) {
-		console.log("Starting socket server on http://"+server.host+":"+server.port);
+		util.log("Starting socket server on http://"+server.host+":"+server.port);
 		try {
 			server.attached.socket = require('socket.io').listen(server);
 			server.attached.socket.set('log level', 2);
 		} catch (e) {
-			console.log("Socket was not attached.", e);
+			util.log("Socket was not attached.", e);
 		}
 	}
 	return server.attached.socket;

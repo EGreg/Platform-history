@@ -3,6 +3,7 @@
  */
 var Q = require('Q');
 var Db = Q.require('Db');
+var util = require('util');
 	
 /**
  * MySQL connection class
@@ -107,7 +108,7 @@ function Db_Mysql(connName, dsn) {
 		if (!dbm.connected && Q.Config.get(['Db', 'debug'], false)) {
 			client._original_query = client.query;
 			client.query = function (sql) {
-				console.log("--> db="+client.database+": ", sql.replace(/\n+/g, " "));
+				util.log("--> db="+client.database+": ", sql.replace(/\n+/g, " "));
 				return client._original_query.apply(client, arguments);
 			};
 		}
@@ -116,9 +117,9 @@ function Db_Mysql(connName, dsn) {
 			// add an error listener to handle mysql errors,
 			// so the client won't crash
 			dbm.on('error', function(err, mq) {
-				console.log("Db.Mysql error: " + err);
+				util.log("Db.Mysql error: " + err);
 				mq.getSQL(function (repres) {
-					console.log("Query was: " + repres);
+					util.log("Query was: " + repres);
 				});
 			});
 			client.query('SET NAMES UTF8');

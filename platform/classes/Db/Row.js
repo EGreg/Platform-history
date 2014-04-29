@@ -2,7 +2,8 @@
  * @module Db
  */
 
-Q = require('Q');
+var Q = require('Q');
+var util = require('util');
 
 /**
  * The class representing database row
@@ -13,8 +14,6 @@ Q = require('Q');
  * @param [retrieved=false] {boolean} Optional if object was retrieved from database or created
  */
 function Row(fields, retrieved /* false */) {
-
-	this.className = "Row";
 
 	/**
 	 * The fields names
@@ -134,9 +133,12 @@ function Row(fields, retrieved /* false */) {
 	_pkValue = calculatePKValue() || {};
 
 	(function runSetUp(self) {
-		if (self.__proto__) runSetUp(self.__proto__);
-		if (self.setUp && (typeof self.setUp === "function"))
+		if (self.__proto__) {
+			runSetUp(self.__proto__);
+		}
+		if (self.setUp && (typeof self.setUp === "function")) {
 			self.setUp.call(self);
+		}
 	})(this);
 	
 	/**
@@ -170,9 +172,9 @@ function Row(fields, retrieved /* false */) {
 		} else if (typeof callback !== 'function') {
 			callback = function (err) {
 				if (typeof err !== "undefined") {
-					console.log("Db.Row: ERROR while saving " + self.className);
-					console.log(err);
-					console.log("Primary key: ", calculatePKValue());
+					util.log("Db.Row: ERROR while saving " + self.className);
+					util.log(err);
+					util.log("Primary key: ", calculatePKValue());
 				}
 			};
 		}
@@ -432,7 +434,7 @@ function Row(fields, retrieved /* false */) {
 				if (_continue && query) {
 					_execute.apply(query);
 				} else {
-					console.log(self.className + ': query is empty!');
+					util.log(self.className + ': query is empty!');
 				}
 			}
 			// Modify the query if necessary
@@ -478,8 +480,8 @@ function Row(fields, retrieved /* false */) {
 		} else if (typeof callback !== 'function') {
 			callback = function (res, err) {
 				if (typeof err !== "undefined") {
-					console.log("ERROR while removing " + self.className + "!");
-					console.log("Primary key: ", primaryKeyValue);
+					util.log("ERROR while removing " + self.className + "!");
+					util.log("Primary key: ", primaryKeyValue);
 				}
 			};
 		}
@@ -679,5 +681,7 @@ Row.prototype.fillMagicFields = function () {
 	});
 	return this;
 };
+
+Row.prototype.className = "Db_Row";
 
 module.exports = Row;

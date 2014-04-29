@@ -11,6 +11,8 @@
 var Q = require('Q');
 var Db = Q.require('Db');
 var Streams = Q.require('Streams');
+var Row = Q.require('Db/Row');
+
 /**
  * Base class representing 'RelatedTo' rows in the 'Streams' database
  * @namespace Base.Streams
@@ -21,15 +23,10 @@ var Streams = Q.require('Streams');
  * an associative array of `{column: value}` pairs
  */
 function Base (fields) {
-	/**
-	 * The name of the class
-	 * @property className
-	 * @type string
-	 */
-	this.className = "Streams_RelatedTo";
+	
 }
 
-Q.mixin(Base, Q.require('Db/Row'));
+Q.mixin(Base, Row);
 
 /**
  * @property toPublisherId
@@ -61,8 +58,8 @@ Q.mixin(Base, Q.require('Db/Row'));
  */
 
 /**
- * This method uses Db to establish a connection with the information stored in the configuration.
- * If the this Db object has already been made, it returns this Db object.
+ * This method calls Db.connect() using information stored in the configuration.
+ * If this has already been called, then the same db object is returned.
  * @method db
  * @return {Db} The database connection
  */
@@ -71,9 +68,9 @@ Base.db = function () {
 };
 
 /**
- * Retrieve the table name to use in SQL statement
+ * Retrieve the table name to use in SQL statements
  * @method table
- * @param [withoutDbName=false] {boolean} Indicates wheather table name shall contain the database name
+ * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
  * @return {string|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
@@ -153,15 +150,44 @@ Base.INSERT = function(fields, alias) {
 	return q;
 };
 
+/**
+ * The name of the class
+ * @property className
+ * @type string
+ */
+Base.prototype.className = "Streams_RelatedTo";
+
 // Instance methods
+
+/**
+ * Create INSERT query to the class table
+ * @method INSERT
+ * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
+ * @param [alias=null] {string} Table alias
+ * @return {Db.Query.Mysql} The generated query
+ */
 Base.prototype.setUp = function() {
 	// does nothing for now
 };
 
+/**
+ * Create INSERT query to the class table
+ * @method INSERT
+ * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
+ * @param [alias=null] {string} Table alias
+ * @return {Db.Query.Mysql} The generated query
+ */
 Base.prototype.db = function () {
 	return Base.db();
 };
 
+/**
+ * Retrieve the table name to use in SQL statements
+ * @method table
+ * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
+ * @return {string|Db.Expression} The table name as string optionally without database name if no table sharding was started
+ * or Db.Expression object with prefix and database name templates is table was sharded
+ */
 Base.prototype.table = function () {
 	return Base.table();
 };

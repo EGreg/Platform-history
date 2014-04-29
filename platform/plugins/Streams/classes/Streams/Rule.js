@@ -8,6 +8,7 @@
 var Q = require('Q');
 var Db = Q.require('Db');
 var Streams = Q.require('Streams');
+var Base_Streams_Rule = Q.require('Base/Streams/Rule');
 
 /**
  * Class representing 'Rule' rows in the 'Streams' database
@@ -22,11 +23,11 @@ var Streams = Q.require('Streams');
 function Streams_Rule (fields) {
 
 	// Run constructors of mixed in objects
-	this.constructors.call(this, arguments);
+	this.constructors.apply(this, arguments);
 
 }
 
-Q.mixin(Streams_Rule, Q.require('Base/Streams/Rule'));
+Q.mixin(Streams_Rule, Base_Streams_Rule);
 
 /**
  * Calculate ordinal for the rule
@@ -46,7 +47,7 @@ Streams_Rule.prototype.beforeSave = function (value, callback) {
 		q.execute(function(err, rows) {
 			if (err) return callback.call(self, err);
 			value['ordinal'] = self.fields.ordinal = rows[0] && rows[0].fields && rows[0].fields.max !== null ? rows[0].fields.max + 1 : 0;
-			callback.call(self, null, self.__proto__.beforeSave.call(self, value));
+			callback.call(self, null, Base_Streams_Rule.prototype.beforeSave.call(self, value));
 		});
 	}
 };

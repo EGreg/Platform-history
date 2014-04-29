@@ -25,8 +25,8 @@ abstract class Base_Websites
 );
 
 	/**
-	 * This method uses Db::connect() to establish a connection to database using information stored in the configuration.
-	 * If the connection to Db object has already been made, it returns this Db object.
+     * This method calls Db.connect() using information stored in the configuration.
+     * If this has already been called, then the same db object is returned.
 	 * @method db
 	 * @return {iDb} The database object
 	 */

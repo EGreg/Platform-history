@@ -22,7 +22,7 @@ var Streams = Q.require('Streams');
 function Streams_Subscription (fields) {
 
 	// Run constructors of mixed in objects
-	this.constructors.call(this, arguments);
+	this.constructors.apply(this, arguments);
 
 	/*
 	 * Add any other methods to the model class by assigning them to this.

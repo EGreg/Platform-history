@@ -25,7 +25,7 @@ Q.makeEventEmitter(Streams_Stream);
 function Streams_Stream (fields) {
 
 	// Run constructors of mixed in objects
-	this.constructors.call(this, arguments);
+	this.constructors.apply(this, arguments);
 
 
 	var p = {};

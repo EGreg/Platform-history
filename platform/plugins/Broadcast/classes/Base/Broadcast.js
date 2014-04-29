@@ -15,78 +15,78 @@ var Db = Q.require('Db');
  * @class Broadcast
  * @static
  */
-module.exports = function () {
-	
-	/**
-	 * The list of model classes
-	 * @property tableClasses
-	 * @type array
-	 */
-	this.tableClasses = [
-		"Broadcast_Agreement",
-		"Broadcast_Message",
-		"Broadcast_Page",
-		"Broadcast_Publisher",
-		"Broadcast_Syndicated",
-		"Broadcast_User"
-	];
-	
-	/**
-	 * This method uses Db.connect() to establish a connection to database using information stored in the configuration.
-	 * If the connection to Db object has already been made, it returns this Db object.
-	 * @method db
-	 * @return {Db} The database connection
-	 */
-	this.db = function () {
-		return Db.connect('Broadcast');
-	};
-	
-	/**
-	 * The connection name for the class
-	 * @method connectionName
-	 * @return {string} The name of the connection
-	 */
-	this.connectionName = function() {
-		return 'Broadcast';
-	};
-
-	/**
-	 * Link to Broadcast.Agreement model
-	 * @property Agreement
-	 * @type Broadcast.Agreement
-	 */
-	this.Agreement = Q.require('Broadcast/Agreement');
-	/**
-	 * Link to Broadcast.Message model
-	 * @property Message
-	 * @type Broadcast.Message
-	 */
-	this.Message = Q.require('Broadcast/Message');
-	/**
-	 * Link to Broadcast.Page model
-	 * @property Page
-	 * @type Broadcast.Page
-	 */
-	this.Page = Q.require('Broadcast/Page');
-	/**
-	 * Link to Broadcast.Publisher model
-	 * @property Publisher
-	 * @type Broadcast.Publisher
-	 */
-	this.Publisher = Q.require('Broadcast/Publisher');
-	/**
-	 * Link to Broadcast.Syndicated model
-	 * @property Syndicated
-	 * @type Broadcast.Syndicated
-	 */
-	this.Syndicated = Q.require('Broadcast/Syndicated');
-	/**
-	 * Link to Broadcast.User model
-	 * @property User
-	 * @type Broadcast.User
-	 */
-	this.User = Q.require('Broadcast/User');
-	
+function Base () {
 	return this;
+}
+ 
+module.exports = Base;
 	
+/**
+ * The list of model classes
+ * @property tableClasses
+ * @type array
+ */
+Base.tableClasses = [
+	"Broadcast_Agreement",
+	"Broadcast_Message",
+	"Broadcast_Page",
+	"Broadcast_Publisher",
+	"Broadcast_Syndicated",
+	"Broadcast_User"
+];
+
+/**
+ * This method uses Db.connect() to establish a connection to database using information stored in the configuration.
+ * If the connection to Db object has already been made, it returns this Db object.
+ * @method db
+ * @return {Db} The database connection
+ */
+Base.db = function () {
+	return Db.connect('Broadcast');
 };
+
+/**
+ * The connection name for the class
+ * @method connectionName
+ * @return {string} The name of the connection
+ */
+Base.connectionName = function() {
+	return 'Broadcast';
+};
+
+/**
+ * Link to Broadcast.Agreement model
+ * @property Agreement
+ * @type Broadcast.Agreement
+ */
+Base.Agreement = Q.require('Broadcast/Agreement');
+/**
+ * Link to Broadcast.Message model
+ * @property Message
+ * @type Broadcast.Message
+ */
+Base.Message = Q.require('Broadcast/Message');
+/**
+ * Link to Broadcast.Page model
+ * @property Page
+ * @type Broadcast.Page
+ */
+Base.Page = Q.require('Broadcast/Page');
+/**
+ * Link to Broadcast.Publisher model
+ * @property Publisher
+ * @type Broadcast.Publisher
+ */
+Base.Publisher = Q.require('Broadcast/Publisher');
+/**
+ * Link to Broadcast.Syndicated model
+ * @property Syndicated
+ * @type Broadcast.Syndicated
+ */
+Base.Syndicated = Q.require('Broadcast/Syndicated');
+/**
+ * Link to Broadcast.User model
+ * @property User
+ * @type Broadcast.User
+ */
+Base.User = Q.require('Broadcast/User');

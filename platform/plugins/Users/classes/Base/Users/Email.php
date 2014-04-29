@@ -88,7 +88,7 @@ abstract class Base_Users_Email extends Db_Row
 	 * Retrieve the table name to use in SQL statement
 	 * @method table
 	 * @static
-	 * @param {boolean} [$with_db_name=true] Indicates wheather table name shall contain the database name
+	 * @param {boolean} [$with_db_name=true] Indicates wheather table name should contain the database name
  	 * @return {string|Db_Expression} The table name as string optionally without database name if no table sharding
 	 * was started or Db_Expression class with prefix and database name templates is table was sharded
 	 */

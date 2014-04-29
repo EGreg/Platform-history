@@ -1489,46 +1489,39 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 
 /**
  * Mixes in one or more classes. Useful for inheritance and multiple inheritance.
- * @method mixin
- * @param A {function} The constructor corresponding to the "class" we are mixing functionality into
+ * @param A Function
+ *  The constructor corresponding to the "class" we are mixing functionality into
  *  This function will get the following members set:
- * * __mixins: an array of [B, C, ...]
- * * constructors(subject, params): a method to call the constructor of all mixin classes, in order. Pass "this" as the first argument.
- * * staticProperty(property): a method for getting a property name
- * @param B {function} One or more constructors representing "classes" to mix functionality from
+ *  __mixins: an array of [B, C, ...]
+ *  constructors(subject, params): a method to call the constructor of all mixin classes, in order. Pass "this" as the first argument.
+ *  staticProperty(property): a method for getting a property name
+ * @param B Function
+ *  One or more constructors representing "classes" to mix functionality from
  *  They will be tried in the order they are provided, meaning methods from earlier ones
  *  override methods from later ones.
- * @throws {Error} if argument is not a function
  */
 Q.mixin = function _Q_mixin(A, B) {
 	var __mixins = (A.__mixins || (A.__mixins = []));
-	for (var i = 1, l = arguments.length; i < l; ++i) {
-		var mixin = arguments[i];
+	var mixin, i, k, l;
+	for (i = 1, l = arguments.length; i < l; ++i) {
+		mixin = arguments[i];
 		if (typeof mixin !== 'function') {
-			throw new Error("Q.mixin: argument " + i + " is not a function");
+			throw new Q.Error("Q.mixin: argument " + i + " is not a function");
 		}
-		Q.extend(A.prototype, mixin.prototype);
-		for (var k in mixin) {
-			if (!(k in A) && typeof mixin[k] === 'function') {
-				A[k] = mixin[k];
+		var p = mixin.prototype, Ap = A.prototype;
+		for (k in p) {
+			if (!(k in Ap)) {
+				Ap[k] = p[k];
 			}
 		}
-		if (mixin.__mixins) {
-			Array.prototype.splice.apply(__mixins, [__mixins.length, 0].concat(mixin.__mixins));
+		for (k in mixin) {
+			if (!(k in A)) {
+				A[k] = mixin[k];
+			}
 		}
 		__mixins.push(arguments[i]);
 	}
 
-	A.prototype.constructors = function _constructors(args) {
-		if (!this.constructor.__mixins) {
-
-			throw new Error("Q.mixin: mixinObject.constructors() called on something that does not have mixins info");
-		}
-		for (var mixins = this.constructor.__mixins, i = 0, l = mixins.length; i < l; ++i) {
-			mixins[i].apply(this, args);
-		}
-	};
-	
 	A.staticProperty = function _staticProperty(propName) {
 		for (var i=0; i<A.__mixins.length; ++i) {
 			if (propName in A.__mixins[i]) {
@@ -1536,6 +1529,21 @@ Q.mixin = function _Q_mixin(A, B) {
 			}
 		}
 		return undefined;
+	};
+	
+	A.constructors = function _constructors() {
+		var mixins = A.__mixins;
+		var i;
+		for (i = mixins.length - 1; i >= 0; --i) {
+			if (typeof mixins[i].constructors === 'function') {
+				mixins[i].constructors.apply(this, arguments);
+			}
+			mixins[i].apply(this, arguments);
+		}
+	};
+
+	A.prototype.constructors = function _prototype_constructors() {
+		A.constructors.apply(this, arguments);
 	};
 };
 
@@ -1649,10 +1657,11 @@ Q.microtime = function _Q_microtime(get_as_float) {
  * @param exception {exception}
  **/
 Q.exceptionHandler = function _Q_exceptionHandler(exception) {
-	// print the exception on the console and keep going
-	console.log("UNCAUGHT EXCEPTION: " + exception.message);
-	console.log("STACK TRACE:");
-	console.log(exception.stack);
+	debugger; // pause here if debugging
+	// print the exception in the log and keep going
+	var name = Q.Config.get(['Q', 'exception', 'nodeLogName'], null);
+	Q.log("UNCAUGHT EXCEPTION:", name);
+	Q.log(exception, name);
 };
 process.on('uncaughtException', Q.exceptionHandler);
 
@@ -1786,7 +1795,7 @@ Q.normalize = function _Q_normalize(text, replacement, characters, numChars) {
     if (replacement === undefined) replacement = '_';
     characters = characters || new RegExp("[^A-Za-z0-9]+", "g");
     if (text === undefined) {
-        debugger; // report this error
+        debugger; // pause here if debugging
     }
     var result = text.toLowerCase().replace(characters, replacement);
     if (text.length > numChars) {
@@ -1863,7 +1872,7 @@ Q.listen = function _Q_listen(options, callback) {
 	
 	var use = app.use;
 	app.use = function _app_use() {
-		console.log("Adding request handler under " + server.host + ":" + server.port + " :", arguments[0].name);
+		util.log("Adding request handler under " + server.host + ":" + server.port + " :", arguments[0].name);
 		use.apply(this, Array.prototype.slice.call(arguments));
 	};
 	var methods = {
@@ -1892,7 +1901,7 @@ Q.listen = function _Q_listen(options, callback) {
 			} else if (typeof h !== 'string') {
 				h = h.toString();
 			}
-			console.log("Adding " + methods[k] + " handler under "
+			util.log("Adding " + methods[k] + " handler under "
 				+ server.host + ":" + server.port
 				+ w + " :", h);
 			f.apply(this, Array.prototype.slice.call(arguments));
@@ -1927,7 +1936,7 @@ Q.listen = function _Q_listen(options, callback) {
 	});
 	server.listen(port, host, function () {
 		var internalString = (internalHost == host && internalPort == port) ? ' (internal requests)' : '';
-		console.log('Q: listening at ' + host + ':' + port + internalString);
+		util.log('Q: listening at ' + host + ':' + port + internalString);
 		callback && callback(server.address());
 	});
 
@@ -2112,7 +2121,7 @@ Q.init = function _Q_init(app, notListen) {
 		if (err) process.exit(2); // if run as child Q.Bootstrap.configure returns errors in callback
 		Q.Bootstrap.loadPlugins(function () {
 			Q.Bootstrap.loadHandlers(function () {
-				console.log(typeof notListen === "string" ? notListen : 'Q platform initialized!');
+				util.log(typeof notListen === "string" ? notListen : 'Q platform initialized!');
 				/**
 				 * Q platform initialized
 				 * @event init
@@ -2171,26 +2180,29 @@ var logStream = {};
  * @method log
  * @param message {mixed} The data to write to log file. If data is string it is written to log, if it has other type
  *	it is converted to string using util.format with depth defined by Q/var_dump_max_levels config key
- * @param [key='Q/app'] {string} If set log file will be named key+'_node.log', otherwise 'Q/app' config value + '_node.log'
+ * @param [name='Q/app'] {string} If set log file will be named name+'_node.log', otherwise 'Q/app' config value + '_node.log'
  * @param [timestamp=true] {boolean} Whether to prepend the current timestamp
  * @param [callback=null] {function} The callback to call after log file is written
  * @return {boolean} false if failed to parse arguments
  */
 
-Q.log = function _Q_log(message, key, timestamp, callback) {
+Q.log = function _Q_log(message, name, timestamp, callback) {
 	if (typeof timestamp === "undefined") timestamp = true;
-	if (typeof key === "function") {
-		callback = key;
+	if (typeof name === "function") {
+		callback = name;
 		timestamp = true;
-		key = Q.Config.get(['Q', 'app'], false);
+		name = Q.Config.get(['Q', 'app'], false);
 	} else if (typeof timestamp === "function") {
 		callback = timestamp;
 		timestamp = true;
 	}
-	if (typeof key === "undefined" || key === true) key = Q.Config.get(['Q', 'app'], false);
+	if (typeof name === "undefined" || name === true) {
+		name = Q.Config.get(['Q', 'app'], false);
+	}
 
 	if (typeof message !== "string") {
-		if (message instanceof Error) {
+		if (message instanceof Error
+		|| (message.fileName && message.stack)) {
 			var error = message;
 			message = error.name + ": " + error.message
 				+ "\n" + "in " + error.fileName
@@ -2201,46 +2213,47 @@ Q.log = function _Q_log(message, key, timestamp, callback) {
 		}
 	}
 
-	message = (timestamp ? '['+Q.date('Y-m-d h:i:s')+'] ' : '')+(key ? key : 'Q')+': ' + message + "\n";
+	message = (timestamp ? '['+Q.date('Y-m-d h:i:s')+'] ' : '')+(name ? name : 'Q')+': ' + message + "\n";
 
-	if (key) {
-		if (typeof logStream[key] === "undefined") {
-			logStream[key] = [];
-			var path = ((Q.app && Q.app.FILES_DIR) ? Q.app.FILES_DIR : Q.FILES_DIR)+Q.DS+'Q'+Q.DS+Q.Config.get(['Q', 'internal', 'logDir'], 'logs');
-			var filename = path+Q.DS+key+'_node.log';
-			Q.Utils.preparePath(filename, function (err) {
-				if (err) {
-					console.error("Failed to create directory '"+path+"', Error:", err.message);
-					callback && callback(err);
-				} else {
-					fs.stat(filename, function (err, stats) {
-						if (err && err.code !=='ENOENT') {
-							console.error("Could not stat '"+filename+"', Error:", err.message);
-							callback && callback(err);
-							return;
-						} else if (err && err.code ==='ENOENT') {
-							logStream[key].unshift(message);
-							data = "# begin log for '"+key+"' on "+Q.date('Y-m-d h:i:s')+"\n";
-						} else if (!stats.isFile()) {
-							console.error("'"+filename+"' exists but is not a file");
-							callback && callback(new Error("'"+filename+"' exists but is not a file"));
-							return;
-						}
-						var log = logStream[key];
-						logStream[key] = fs.createWriteStream(filename, {flags: 'a', encoding: 'utf-8'});
-						logStream[key].write(message);
-						while (log.length) logStream[key].write(log.shift());
-					});
-				}
-			});
-		} else if (!logStream[key].path) {
-			logStream[key].push(message);
-			callback && callback();
-		} else {
-			logStream[key].write(message);
-			callback && callback();
-		}
-	} else util.log(message);
+	if (!name) {
+		return util.log(message);
+	}
+	if (typeof logStream[name] === "undefined") {
+		logStream[name] = [];
+		var path = ((Q.app && Q.app.FILES_DIR) ? Q.app.FILES_DIR : Q.FILES_DIR)+Q.DS+'Q'+Q.DS+Q.Config.get(['Q', 'internal', 'logDir'], 'logs');
+		var filename = path+Q.DS+name+'_node.log';
+		Q.Utils.preparePath(filename, function (err) {
+			if (err) {
+				console.error("Failed to create directory '"+path+"', Error:", err.message);
+				callback && callback(err);
+			} else {
+				fs.stat(filename, function (err, stats) {
+					if (err && err.code !=='ENOENT') {
+						console.error("Could not stat '"+filename+"', Error:", err.message);
+						callback && callback(err);
+						return;
+					} else if (err && err.code ==='ENOENT') {
+						logStream[name].unshift(message);
+						data = "# begin log for '"+name+"' on "+Q.date('Y-m-d h:i:s')+"\n";
+					} else if (!stats.isFile()) {
+						console.error("'"+filename+"' exists but is not a file");
+						callback && callback(new Error("'"+filename+"' exists but is not a file"));
+						return;
+					}
+					var log = logStream[name];
+					logStream[name] = fs.createWriteStream(filename, {flags: 'a', encoding: 'utf-8'});
+					logStream[name].write(message);
+					while (log.length) logStream[name].write(log.shift());
+				});
+			}
+		});
+	} else if (!logStream[name].path) {
+		logStream[name].push(message);
+		callback && callback();
+	} else {
+		logStream[name].write(message);
+		callback && callback();
+	}
 };
 
 String.prototype.toCapitalized = function _String_prototype_toCapitalized() {
@@ -2613,7 +2626,9 @@ Q.url = function _Q_url(what, fields, options) {
 if (!Object.getPrototypeOf) {
 	Object.getPrototypeOf = function (obj) {
 		if (obj.__proto__) return obj.__proto__;
-		if (obj.constructor && obj.constructor.prototype) return obj.constructor.prototype;
+		if (obj.constructor && obj.constructor.prototype) {
+			return obj.constructor.prototype;
+		}
 		return null;
 	};
 }

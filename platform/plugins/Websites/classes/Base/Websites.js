@@ -15,50 +15,51 @@ var Db = Q.require('Db');
  * @class Websites
  * @static
  */
-module.exports = function () {
-	
-	/**
-	 * The list of model classes
-	 * @property tableClasses
-	 * @type array
-	 */
-	this.tableClasses = [
+function Base () {
+	return this;
+}
+ 
+module.exports = Base;
+
+/**
+ * The list of model classes
+ * @property tableClasses
+ * @type array
+ */
+Base.tableClasses = [
 		"Websites_Bio",
 		"Websites_Permalink"
 	];
-	
-	/**
-	 * This method uses Db.connect() to establish a connection to database using information stored in the configuration.
-	 * If the connection to Db object has already been made, it returns this Db object.
-	 * @method db
-	 * @return {Db} The database connection
-	 */
-	this.db = function () {
-		return Db.connect('Websites');
-	};
-	
-	/**
-	 * The connection name for the class
-	 * @method connectionName
-	 * @return {string} The name of the connection
-	 */
-	this.connectionName = function() {
-		return 'Websites';
-	};
 
-	/**
-	 * Link to Websites.Bio model
-	 * @property Bio
-	 * @type Websites.Bio
-	 */
-	this.Bio = Q.require('Websites/Bio');
-	/**
-	 * Link to Websites.Permalink model
-	 * @property Permalink
-	 * @type Websites.Permalink
-	 */
-	this.Permalink = Q.require('Websites/Permalink');
-	
-	return this;
-	
+/**
+ * This method calls Db.connect() using information stored in the configuration.
+ * If this has already been called, then the same db object is returned.
+ * @method db
+ * @return {Db} The database connection
+ */
+Base.db = function () {
+	return Db.connect('Websites');
 };
+
+/**
+ * The connection name for the class
+ * @method connectionName
+ * @return {string} The name of the connection
+ */
+Base.connectionName = function() {
+	return 'Websites';
+};
+
+/**
+ * Link to Websites.Bio model
+ * @property Bio
+ * @type Websites.Bio
+ */
+Base.Bio = Q.require('Websites/Bio');
+
+/**
+ * Link to Websites.Permalink model
+ * @property Permalink
+ * @type Websites.Permalink
+ */
+Base.Permalink = Q.require('Websites/Permalink');

@@ -8,6 +8,7 @@
 var Q = require('Q');
 var Db = Q.require('Db');
 var Streams = Q.require('Streams');
+var Base_Streams_Message = Q.require('Base/Streams/Message');
 
 /**
  * Class representing 'Message' rows in the 'Streams' database
@@ -22,7 +23,7 @@ var Streams = Q.require('Streams');
 function Streams_Message (fields) {
 
 	// Run constructors of mixed in objects
-	this.constructors.call(this, arguments);
+	this.constructors.apply(this, arguments);
 
 	/*
 	 * Add any other methods to the model class by assigning them to this.
@@ -32,7 +33,7 @@ function Streams_Message (fields) {
 	/* * * */
 }
 
-Q.mixin(Streams_Message, Q.require('Base/Streams/Message'));
+Q.mixin(Streams_Message, Base_Streams_Message);
 
 /**
  * The setUp() method is called the first time
@@ -53,7 +54,8 @@ Streams_Message.prototype.setUp = function () {
  */
 Streams_Message.prototype.beforeSave = function (value, callback)
 {
-	value = this.__proto__.beforeSave.call(this, value);
+	console.log(Streams_Message.__mixins);
+	value = Base_Streams_Message.prototype.beforeSave.call(this, value);
 	if (!this._retrieved) {
 		var self = this;
 		(new Streams.Stream({

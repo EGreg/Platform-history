@@ -21,7 +21,7 @@ var Db = Q.require('Db');
 function Users_Session (fields) {
 
 	// Run constructors of mixed in objects
-	this.constructors.call(this, arguments);
+	this.constructors.apply(this, arguments);
 
 	/*
 	 * Add any privileged methods to the model class here.
@@ -38,14 +38,14 @@ Q.mixin(Users_Session, Q.require('Base/Users/Session'));
  * Add any public methods here by assigning them to Users_Session.prototype
  */
 
- /**
-  * The setUp() method is called the first time
-  * an object of this class is constructed.
-  * @method setUp
-  */
- Users_Session.prototype.setUp = function () {
- 	// put any code here
- 	// overrides the Base class
- };
+/**
+ * The setUp() method is called the first time
+ * an object of this class is constructed.
+ * @method setUp
+ */
+Users_Session.prototype.setUp = function () {
+	// put any code here
+	// overrides the Base class
+};
 
 module.exports = Users_Session;

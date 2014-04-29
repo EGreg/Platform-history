@@ -5,6 +5,7 @@
 var Q = require('Q');
 var fs = require('fs');
 var path = require('path');
+var util = require('util');
 var Db = Q.require('Db');
 var Db_Mysql = Q.require('Db/Mysql');
 
@@ -84,7 +85,7 @@ Utils.validate = function (req, res, next) {
 	if (signature === Q.Utils.signature(data, secret)) {
 		next();
 	} else {
-		console.log("Request validation failed");
+		util.log("Request validation failed");
 		res.send(JSON.stringify({errors: "Invalid signature"}), 403); // forbidden
 	}
 };
@@ -666,7 +667,7 @@ function _reset_split() {
 
 function _split_log() {
 	// may be modified to write log to file
-	console.log.apply(this, arguments);
+	util.log.apply(this, arguments);
 }
 
 var _logServer = null;

@@ -12,8 +12,12 @@ var Q = require('Q');
  * @extends Base.Streams
  * @static
  */
-var Streams = module.exports;
-Q.require('Base/Streams').apply(Streams);
+function Streams() { }
+module.exports = Streams;
+
+var Base_Streams = require('Base/Streams');
+Q.mixin(Streams, Base_Streams);
+
 
 /*
  * This is where you would place all the static methods for the models,

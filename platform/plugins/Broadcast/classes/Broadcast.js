@@ -1,3 +1,4 @@
+/*jshint node:true */
 /**
  * Broadcast model
  * @module Broadcast
@@ -11,8 +12,20 @@ var Q = require('Q');
  * @extends Base.Broadcast
  * @static
  */
-var Broadcast = module.exports;
-Q.require('Base/Broadcast').apply(Broadcast);
+function Broadcast() { }
+module.exports = Broadcast;
+
+var Base_Broadcast = require('Base/Broadcast');
+Q.mixin(Broadcast, Base_Broadcast);
+
+/*
+ * This is where you would place all the static methods for the models,
+ * the ones that don't strongly pertain to a particular row or table.
+ * Just assign them as methods of the Broadcast object.
+ * If file 'Broadcast.js.inc' exists, its content is included
+ * * * */
+
+/* * * */
 
 /*
  * This is where you would place all the static methods for the models,

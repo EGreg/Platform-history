@@ -1,3 +1,4 @@
+/*jshint node:true */
 /**
  * Websites model
  * @module Websites
@@ -11,8 +12,11 @@ var Q = require('Q');
  * @extends Base.Websites
  * @static
  */
-var Websites = module.exports;
-Q.require('Base/Websites').apply(Websites);
+function Websites() { }
+module.exports = Websites;
+
+var Base_Websites = require('Base/Websites');
+Q.mixin(Websites, Base_Websites);
 
 /*
  * This is where you would place all the static methods for the models,

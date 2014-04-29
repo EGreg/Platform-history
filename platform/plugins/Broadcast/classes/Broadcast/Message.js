@@ -29,7 +29,7 @@ function Broadcast_Message (fields) {
 	};
 
 	// Run constructors of mixed in objects
-	this.constructors.call(this, arguments);
+	this.constructors.apply(this, arguments);
 
 }
 
