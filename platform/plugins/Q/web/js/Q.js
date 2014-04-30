@@ -1077,23 +1077,23 @@ Q.Class = function _Q_Class(construct /* [, Base1, ...] [, properties, [classPro
 	for (i=1, j=1; i<l; ++i) {
 		if (typeof arguments[i] !== 'function') break;
 		j = i;
-	}
+	};
 	var constructors = Array.prototype.slice.call(arguments, 1, j+1);
 	constructors.unshift(Q_ClassConstructor);
-
+	
 	function Q_ClassConstructor() {
 		this.constructors.apply(this, arguments);
 		construct && construct.apply(this, arguments);
 	}
-
+	
 	if (typeof arguments[++j] === 'object') {
-		Q.extend(Q_ClassConstructor.prototype, Q.Class.options.levels, arguments[j]);
+		Q.extend(Q_ClassConstructor.prototype, arguments[j]);
 		if (typeof arguments[++j] === 'object') {
 			Q.extend(Q_ClassConstructor, arguments[j]);
 		}
 	}
-
-	Q.mixin.apply(Q, constructors);
+	
+	Q.mixin.apply(Q_ClassConstructor, constructors);
 	return Q_ClassConstructor;
 };
 
@@ -5757,7 +5757,8 @@ function _constructTool(toolElement, options, shared) {
 				}
 				this.constructed = true;
 			};
-			Q.mixin(toolFunc.toolConstructor, toolFunc, Q.Tool);
+			Q.mixin(toolFunc, Q.Tool);
+			Q.mixin(toolFunc.toolConstructor, toolFunc);
 		}
 		var result = new toolFunc.toolConstructor(toolElement, options);
 		if (uniqueToolId) {

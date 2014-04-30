@@ -496,7 +496,8 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 					Q.handle(Q.getObject(['', ''], _streamConstructHandlers), this, []);
 				}
 			};
-			Q.mixin(streamFunc.streamConstructor, streamFunc, Streams.Stream);
+			Q.mixin(streamFunc, Streams.Stream);
+			Q.mixin(streamFunc.streamConstructor, streamFunc);
 		}
 		var stream = new streamFunc.streamConstructor(fields);
 		

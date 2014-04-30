@@ -1580,7 +1580,7 @@ Q.Class = function _Q_Class(construct /* [, Base1, ...] [, properties, [classPro
 		}
 	}
 	
-	Q.mixin.apply(Q, constructors);
+	Q.mixin.apply(Q_ClassConstructor, constructors);
 	return Q_ClassConstructor;
 };
 
