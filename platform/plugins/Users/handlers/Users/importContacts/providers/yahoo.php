@@ -8,8 +8,8 @@ function Users_importContacts_providers_yahoo($params) {
 		$client->setUri($url);
 		$client->setParameterGet('format', 'json');
 		$response = $client->request(Zend_Http_Client::GET);
-		if($response->getStatus()!=200) #TODO: Should we only throw Users_Exception_OauthTokenInvalid on error 401? 
-			throw new Users_Exception_OauthTokenInvalid();
+		if($response->getStatus()!=200) #TODO: Should we only throw Users_Exception_OAuthTokenInvalid on error 401? 
+			throw new Users_Exception_OAuthTokenInvalid();
 		return $response->getBody();
 	};
 

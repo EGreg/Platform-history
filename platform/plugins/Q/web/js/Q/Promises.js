@@ -10,9 +10,8 @@
  * Call the .fulfill(...) or .reject(...) method to
  * signal that the promise is fulfilled or rejected.
  * Implemented according to http://promises-aplus.github.io/promises-spec/
- * with two exceptions:
+ * with one exception:
  * 2.2.5) fulfill and reject can in fact accept "this", and pass it on
- * 2.3.3.3.1) the first callback to .then() doesn't treat its arguments specially
  */
 Q.Promise = function () {
 	this.state = Q.Promise.states.PENDING;

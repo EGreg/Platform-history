@@ -43,7 +43,7 @@ function Users_authorize_post()
 	$oa->save();
 	
 	Q::event('Users/authorize/success', array(
-		'oauth' => $oa,
+		'oAuth' => $oa,
 		'duration' => $duration
 	), 'after');
 

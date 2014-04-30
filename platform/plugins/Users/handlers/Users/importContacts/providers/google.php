@@ -9,8 +9,8 @@ function Users_importContacts_providers_google($params) {
 		$client->setParameterGet('alt', 'json');
 		$client->setHeaders('GData-Version', '3.0');
 		$response = $client->request(Zend_Http_Client::GET);
-		if($response->getStatus()!=200) #TODO: Should we only throw Users_Exception_OauthTokenInvalid on error 401?
-			throw new Users_Exception_OauthTokenInvalid();
+		if($response->getStatus()!=200) #TODO: Should we only throw Users_Exception_OAuthTokenInvalid on error 401?
+			throw new Users_Exception_OAuthTokenInvalid();
 		return $response->getBody();
 	};
 

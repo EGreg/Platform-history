@@ -3,14 +3,14 @@
 /**
  * @module Users
  */
-class Users_Exception_OauthTokenInvalid extends Q_Exception
+class Users_Exception_OAuthTokenInvalid extends Q_Exception
 {
 	/**
 	 * An exception is raised if oAuth token is invalid
-	 * @class Users_Exception_OauthTokenInvalid
+	 * @class Users_Exception_OAuthTokenInvalid
 	 * @constructor
 	 * @extends Q_Exception
 	 */
 };
 
-Q_Exception::add('Users_Exception_OauthTokenInvalid', 'Oauth token invalid');
+Q_Exception::add('Users_Exception_OAuthTokenInvalid', 'OAuth token invalid');

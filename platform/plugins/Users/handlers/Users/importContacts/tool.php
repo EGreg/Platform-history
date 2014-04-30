@@ -19,7 +19,7 @@ function Users_importContacts_tool($options)
 
 		Q::event('Users/importContacts/providers/'.$provider, array('client'=>$client));
 	}
-	catch(Users_Exception_OauthTokenInvalid $ex) //Expired token
+	catch(Users_Exception_OAuthTokenInvalid $ex) //Expired token
 	{
 		#TODO: Log something to error log?
 		Users::oAuthClear($provider);
