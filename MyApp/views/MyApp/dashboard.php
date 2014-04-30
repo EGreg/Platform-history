@@ -4,7 +4,7 @@
 
 	<div id="dashboard_user">
 		<?php if ($user): ?>
-			<?php echo Q::tool("Users/avatar", array('user' => $user, 'icon' => true, 'short' => true)) ?>
+			<?php echo Q::tool("Users/avatar", array('userId' => $user->id, 'icon' => true, 'short' => true)) ?>
 		<?php else: ?>
 			<a href="#login" class="MyApp_login">log in</a>
 		<?php endif; ?>

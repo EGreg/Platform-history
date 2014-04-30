@@ -18,7 +18,7 @@
 		<li class="Streams_chat_message Q_clearfix" data-ordinal="<?php echo $message->ordinal ?>">
 			<div class="Streams_chat_date"><?php echo date('m/d/y', strtotime($message->sentTime)) ?></div>
 			<?php $u = Users_User::getUser($message->byUserId) ?>
-			<?php echo Q::tool('Users/avatar', array('user' => $u, 'icon' => '40'), array('id' => $message->ordinal)) ?>
+			<?php echo Q::tool('Users/avatar', array('userId' => $u->id, 'icon' => '40'), array('id' => $message->ordinal)) ?>
 			<div class="Streams_chat_post">
 				<p><?php echo $message->content ?></p>
 			</div>
