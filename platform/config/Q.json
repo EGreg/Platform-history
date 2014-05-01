@@ -29,7 +29,7 @@
 			"port": "10500"
 		},
 		"nodeInternal": {
-			"host": "localhost",
+			"host": "127.0.0.1",
 			"port": "10501"
 		},
 		"internal": {

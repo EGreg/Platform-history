@@ -4,7 +4,15 @@
 		"web": {
 			"appRootUrl": "http://MyApp.loc",
 			"controllerSuffix": "CAN BE BLANK OR index.php"
-		}
+		},
+		"node" : {
+			"host": "MyApp.loc",
+			"port": "10500"
+		},
+		"nodeInternal": {
+			"host": "127.0.0.1",
+			"port": "10501"
+		},
 	},
 	"Db": {
 		"connections": {

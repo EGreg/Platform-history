@@ -9,7 +9,15 @@
 			"showFileAndLine": true,
 			"showTrace": true
 		},
-		"firebug": false
+		"firebug": false,
+		"node" : {
+			"host": "localhost",
+			"port": "10500"
+		},
+		"nodeInternal": {
+			"host": "127.0.0.1",
+			"port": "10501"
+		},
 	},
 	"Db": {
 		"connections": {
