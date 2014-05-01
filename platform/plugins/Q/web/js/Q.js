@@ -7407,6 +7407,24 @@ Q.onInit.add(function () {
 	}
 	Q.onOnline.set(Q.Socket.reconnectAll, 'Q.Socket'); // renew sockets when reverting to online
 	
+	//jQuery Tools tooltip and validator plugins configuration
+	var tooltipConf = Q.getObject("jQuery.tools.tooltip.conf", window);
+	if (tooltipConf) {
+		tooltipConf.tipClass = 'Q_tooltip';
+		tooltipConf.effect = 'fade';
+		tooltipConf.opacity = 1;
+		tooltipConf.position = 'bottom center';
+		tooltipConf.offset = [0, 0];
+	}
+	var validatorConf = Q.getObject("jQuery.tools.validator.conf", window);
+	if (validatorConf) {
+		validatorConf.errorClass = 'Q_errors';
+		validatorConf.messageClass = 'Q_error_message';
+		validatorConf.position = 'bottom left';
+		validatorConf.offset = [0, 0];
+	}
+	// end of jQuery Tools configuration
+	
 }, 'Q');
 
 Q.onJQuery.add(function ($) {

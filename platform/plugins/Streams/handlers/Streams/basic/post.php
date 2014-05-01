@@ -37,19 +37,26 @@ function Streams_basic_post()
 	$p = new Q_Tree();
 	$p->load(STREAMS_PLUGIN_CONFIG_DIR.DS.'streams.json');
 	$p->load(APP_CONFIG_DIR.DS.'streams.json');
+	$names = array();
 	foreach ($fields as $field) {
-		$type = $p->get("Streams/user/$field", "type", null);
+		$names[] = "Streams/user/$field";
+	}
+	$streams = Streams::fetch($user, $user->id, $names);
+	foreach ($fields as $field) {
+		$name = "Streams/user/$field";
+		$type = $p->get($name, "type", null);
 		if (!$type) {
-			throw new Q_Exception("Missing Streams/user/$field type", $field);
+			throw new Q_Exception("Missing $name type", $field);
 		}
-		$title = $p->get("Streams/user/$field", "title", null);
+		$title = $p->get($name, "title", null);
 		if (!$title) {
-			throw new Q_Exception("Missing Streams/user/$field title", $field);
+			throw new Q_Exception("Missing $name title", $field);
 		}
-		$stream = new Streams_Stream();
-		$stream->publisherId = $user->id;
-		$stream->name = "Streams/user/$field";
-		$stream->retrieve();
+		$stream = $streams[$name];
+		if (!isset($stream)
+		or $stream->content === (string)$request[$field]) {
+			continue;
+		}
 		$stream->content = (string)$request[$field];
 		$stream->type = $type;
 		$stream->title = $title;

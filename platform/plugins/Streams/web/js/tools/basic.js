@@ -7,44 +7,46 @@ Q.Tool.define("Streams/basic", function(options) {
 	var me = this;
 	var tool = this.element;
 
-	Q.plugins.Users.login({
-		tryQuietly: true,
-		using: 'facebook',
-		onSuccess: function (user) {
+	if (Q.plugins.Users.facebookApps[Q.info.app]) {
+		Q.plugins.Users.login({
+			tryQuietly: true,
+			using: 'facebook',
+			onSuccess: function (user) {
 
-			FB.api({
-				method: 'fql.query',
-				query:'SELECT user_birthday FROM permissions WHERE uid=me()'
-			}, function (response) {
-				var also_birthday = '';
-				if (response && response[0] && response[0].user_birthday) {
-					also_birthday = ', birthday_date';
-				}
 				FB.api({
 					method: 'fql.query',
-					query:'SELECT firstName, lastName, sex'+also_birthday+' FROM user WHERE uid=me()'
+					query:'SELECT user_birthday FROM permissions WHERE uid=me()'
 				}, function (response) {
-					if (!response || !response[0]) return;
-					for (var k in {firstName:1,lastName:1,sex:1}) {
-						var tag = $('#'+this.prefix+k);
-						if (!tag.val()) {
-							tag.val(response[0][k]);
-						}
+					var also_birthday = '';
+					if (response && response[0] && response[0].user_birthday) {
+						also_birthday = ', birthday_date';
 					}
-					if (response[0].birthday_date) {
-						var parts = response[0].birthday_date.split('/');
-						$('#'+this.prefix+'birthday_day').val(parts[1]);
-						if (parts[2]) {
-							$('#'+this.prefix+'birthday_year').val(parts[2]);
+					FB.api({
+						method: 'fql.query',
+						query:'SELECT firstName, lastName, sex'+also_birthday+' FROM user WHERE uid=me()'
+					}, function (response) {
+						if (!response || !response[0]) return;
+						for (var k in {firstName:1,lastName:1,sex:1}) {
+							var tag = $('#'+this.prefix+k);
+							if (!tag.val()) {
+								tag.val(response[0][k]);
+							}
 						}
-						$('#'+this.prefix+'birthday_month').val(parts[0]);
-					} else {
-						$('#'+this.prefix+'birthday_month').focus();
-					}
+						if (response[0].birthday_date) {
+							var parts = response[0].birthday_date.split('/');
+							$('#'+this.prefix+'birthday_day').val(parts[1]);
+							if (parts[2]) {
+								$('#'+this.prefix+'birthday_year').val(parts[2]);
+							}
+							$('#'+this.prefix+'birthday_month').val(parts[0]);
+						} else {
+							$('#'+this.prefix+'birthday_month').focus();
+						}
+					});
 				});
-			});
-		}
-	});
+			}
+		});
+	}
 
 	$('form', tool).validator({
 		onFail: function(a, b) {
@@ -61,15 +63,17 @@ Q.Tool.define("Streams/basic", function(options) {
 			$('input', $this).css('background-image', 'none');
 			if (response.errors) {
 				// there were errors
-				$this.data("validator").invalidate(Q.ajaxErrors(
+				$this.data("validator").reset().invalidate(Q.ajaxErrors(
 					response.errors,
 					['firstName', 'lastName', 'sex', 'birthday_year', 'birthday_month', 'birthday_day']
 				));
-				var first_input = $('input.Q_errors:not([type=hidden])', $this)
-					.add('select.Q_errors', $this)
-					.add('textarea.Q_errors', $this)
-					.add('button', $this).eq(0);
-				first_input.focus();
+				$('input.Q_errors:not([type=hidden])', $this)
+				.add('select.Q_errors', $this)
+				.add('textarea.Q_errors', $this)
+				.add('button', $this)
+				.on('input change', function () {
+					$this.data("validator").reset($(this));
+				}).eq(0).focus();
 				return;
 			}
 			// success!
