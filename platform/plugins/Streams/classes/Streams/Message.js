@@ -54,7 +54,6 @@ Streams_Message.prototype.setUp = function () {
  */
 Streams_Message.prototype.beforeSave = function (value, callback)
 {
-	console.log(Streams_Message.__mixins);
 	value = Base_Streams_Message.prototype.beforeSave.call(this, value);
 	if (!this._retrieved) {
 		var self = this;
