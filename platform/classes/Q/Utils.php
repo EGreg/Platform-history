@@ -677,7 +677,8 @@ class Q_Utils
 		if (!isset($host)) throw new Q_Exception_MissingConfig(array('fieldpath' => 'Q/node/host'));
 		$port = Q_Config::get('Q', 'node', 'port', null);
 		if (!isset($port)) throw new Q_Exception_MissingConfig(array('fieldpath' => 'Q/node/port'));
-		return "http://$host:$port";
+		$path = parse_url(Q_Request::baseUrl(), PHP_URL_PATH);
+		return "http://$host:$port$path";
 	}
 
 	/**
