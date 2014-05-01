@@ -16,7 +16,7 @@ var MyApp = (function (Q, $) {
 		},
 		actions: {
 			logout: Q.Users.logout,
-			setIdentifier: Q.Users.setIdentifier,
+			setIdentifier: Q.Users.setIdentifier
 		}
 	};
 	
