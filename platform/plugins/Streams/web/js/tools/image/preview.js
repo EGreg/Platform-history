@@ -256,21 +256,25 @@ Q.Tool.define("Streams/image/preview", function(options) {
 				return true;
 			}
 
-			var inplace = Q.extend({
-				publisherId: state.publisherId,
-				streamName: state.streamName,
-				field: 'title',
-				inplaceType: 'text'
-			}, state.inplace);
-			if (state.editable === false) {
-				inplace.editable = false;
+			var inplace = null;
+			if (state.inplace) {
+				var inplaceOptions = Q.extend({
+					publisherId: state.publisherId,
+					streamName: state.streamName,
+					field: 'title',
+					inplaceType: 'text'
+				}, state.inplace);
+				if (state.editable === false) {
+					inplaceOptions.editable = false;
+				}
+				inplace = tool.setUpElementHTML('div', 'Streams/inplace', inplaceOptions);
 			}
 			var f = tool.state.template && tool.state.template.fields;
 			var fields = Q.extend({}, state.templates.edit.fields, f, {
 				src: Q.Streams.iconUrl(icon, file)+'?'+Date.now(),
 				srcFull: Q.Streams.iconUrl(icon, full)+'?'+Date.now(),
 				alt: stream.fields.title,
-				inplace: tool.setUpElementHTML('div', 'Streams/inplace', inplace)
+				inplace: inplace
 			});
 			var tpl = (state.editable === false || !stream.testWriteLevel('suggest'))
 				? 'view' 
