@@ -5,7 +5,7 @@ if (!window.Q) {
 	throw new Q.Error("Q is not defined -- try running SmartApp/scripts/Q/install.php --all");
 }
 
-var SmartApp = Q.plugins.SmartApp = (function ($) {
+var SmartApp = (function ($) {
 
 	var SmartApp = {
 		// add module functions and events here

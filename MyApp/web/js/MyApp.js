@@ -5,7 +5,7 @@ if (!window.Q) { // You can remove this part after you've run install.php
 	throw "Q is not defined";
 }
 
-var MyApp = Q.plugins.MyApp = (function ($) {
+var MyApp = (function ($) {
 	
 	// Here is some example code to get you started
 	
