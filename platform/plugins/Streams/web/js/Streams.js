@@ -2288,7 +2288,7 @@ Q.onInit.add(function _Streams_onInit() {
 						});
 						Q.req('Streams/basic?' + $(this).serialize(), ['data'], function (err, data) {
 							var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
-							if (data.errors) {
+							if (data && data.errors) {
 								complete_form.data('validator').invalidate(Q.ajaxErrors(data.errors, ['fullName']));
 								$('input', complete_form).eq(0).plugin('Q/clickfocus');
 								return;

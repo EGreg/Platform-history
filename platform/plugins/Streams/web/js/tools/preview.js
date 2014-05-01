@@ -16,9 +16,9 @@
  *     "addIconSize": The size in pixels of the square add icon
  *     "type": The type of stream to create, defaults to "Streams/text/small"
  *     "preprocess": Optional function which takes [callback, tool] and calls callback(objectToExtendAnyStreamFields) 
- *   "imagepicker": Any options to pass to the Q/imagepicker jquery plugin -- see its options.
- *   "inplace": Any options to pass to the Q/inplace tool -- see its options.
- *   "actions": Any options to pass to the Q/actions jquery plugin -- see its options.
+ *   "imagepicker": Any options to pass to the Q/imagepicker jquery plugin -- see its options. Pass null to disable this functionality.
+ *   "inplace": Any options to pass to the Q/inplace tool -- see its options. Pass null to disable this functionality.
+ *   "actions": Any options to pass to the Q/actions jquery plugin -- see its options. Pass null to disable this functionality.
  *   "showFile": Optional. The image file to show, to override imagepicker.showSize option for some reason.
  *   "throbber": The url of an image to use as an activity indicator when the image is loading
  *   "templates": Under the keys "views", "edit" and "create" you can override options for Q.Template.render .
