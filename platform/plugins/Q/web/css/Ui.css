@@ -1341,6 +1341,7 @@ divbody { text-align: center; height: 100%; }
 #page { position: absolute; top: 50px; bottom: 0px; width: 100%; /* top: 54px; */ /* padding-top: 10px; */
     left:50%; margin-left:-50%; /* reset position for ie7, ff4+ */
 }
+.Q_touchscreen #page { width: 100%; overflow-x: hidden; }
 
 /* notices slot */
 
