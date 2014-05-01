@@ -15,7 +15,8 @@ var MyApp = (function (Q, $) {
 			}
 		},
 		actions: {
-			logout: Q.Users.logout
+			logout: Q.Users.logout,
+			setIdentifier: Q.Users.setIdentifier,
 		}
 	};
 	
