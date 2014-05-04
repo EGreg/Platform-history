@@ -13,8 +13,8 @@
  * with one exception:
  * 2.2.5) fulfill and reject can in fact accept "this", and pass it on
  */
-Q.Promise = function () {
-	this.state = Q.Promise.states.PENDING;
+var P = function () {
+	this.state = P.states.PENDING;
 	this._done = [];
 	this._fail = [];
 	this._progress = [];
@@ -29,7 +29,7 @@ Q.Promise = function () {
 		p._args = Array.prototype.slice.call(arguments, 0);
 		p._context = this;
 		setTimeout(function () {
-			p.state = Q.Promise.states.FULFILLED;
+			p.state = P.states.FULFILLED;
 			for (var i=0, l=p._done.length; i<l; ++i) {
 				var r = p._done[i];
 				x = r.handler.apply(p._context, p._args);
@@ -47,7 +47,7 @@ Q.Promise = function () {
 		p._args = Array.prototype.slice.call(arguments, 0);
 		p._context = this;
 		setTimeout(function () {
-			p.state = Q.Promise.states.REJECTED;
+			p.state = P.states.REJECTED;
 			for (var i=0, l=p._fail.length; i<l; ++i) {
 				var r = p._fail[i];
 				x = r.handler.apply(p._context, p._args);
@@ -61,7 +61,7 @@ Q.Promise = function () {
 	};
 
 	p.notify = function () {
-		if (p.state !== Q.Promise.states.PENDING) {
+		if (p.state !== P.states.PENDING) {
 			return p;
 		}
 		var context = this;
@@ -75,20 +75,20 @@ Q.Promise = function () {
 	};
 };
 
-Q.Promise.resolve = function (x) {
+P.resolve = function (x) {
 	var result = new Q.Promise();
 	_Q_Promise_resolve(result, x);
 	return result;
 };
 
-Q.Promise.when = function (valueOrPromise, doneHandler, failHandler, progressHandler) {
+P.when = function (valueOrPromise, doneHandler, failHandler, progressHandler) {
 	var result = new Q.Promise();
 	result.then(doneHandler, failHandler, progressHandler);
 	_Q_Promise_resolve(result, valueOrPromise);
 	return result;
 };
 
-Q.Promise.all = function (promises) {
+P.all = function (promises) {
 	var result = new Q.Promise();
 	var i, l, p, c, canceled = false;
 	for (i=0, c=l=promises.length; i<l; ++i) {
@@ -107,7 +107,7 @@ Q.Promise.all = function (promises) {
 	return result;
 };
 
-Q.Promise.first = function (promises) {
+P.first = function (promises) {
 	var result = new Q.Promise();
 	var i, l;
 	for (i=0, l=promises.length; i<l; ++i) {
@@ -119,18 +119,18 @@ Q.Promise.first = function (promises) {
 	return result;
 };
 
-Q.Promise.prototype.then = function (doneHandler, failHandler, progressHandler) {
+P.prototype.then = function (doneHandler, failHandler, progressHandler) {
 	var result = new Q.Promise();
 	var x;
 	try {
 		switch (this.state) {
-		case Q.Promise.states.FULFILLED:
+		case P.states.FULFILLED:
 			if (typeof doneHandler === 'function')  { // 2.2.1.1
 				x = doneHandler.apply(this._context, this._args); // 2.2.2.1
 			}
 			_Q_Promise_resolve(result, x);
 			break;
-		case Q.Promise.states.REJECTED:
+		case P.states.REJECTED:
 			if (typeof failHandler === 'function') { // 2.2.1.2
 				x = failHandler.apply(this._context, this._args); // 2.2.3.1
 			}
@@ -202,38 +202,40 @@ function _Q_Promise_resolve(promise, x) {
 	}
 }
 
-Q.Promise.prototype.done = function (doneHandler) {
+P.prototype.done = function (doneHandler) {
 	return this.then(doneHandler, null, null);
 };
 
-Q.Promise.prototype.fail = function (failHandler) {
+P.prototype.fail = function (failHandler) {
 	return this.then(null, failHandler, null);
 };
 
-Q.Promise.prototype.progress = function (progressHandler) {
+P.prototype.progress = function (progressHandler) {
 	return this.then(null, null, progressHandler);
 };
 
-Q.Promise.prototype.always = function (handler) {
+P.prototype.always = function (handler) {
 	return this.then(handler, handler, null);
 };
 
-Q.Promise.prototype.isPending = function () {
-	return this.state === Q.Promise.states.PENDING;
+P.prototype.isPending = function () {
+	return this.state === P.states.PENDING;
 };
 
-Q.Promise.prototype.isFulfilled = function () {
-	return this.state === Q.Promise.states.FULFILLED;
+P.prototype.isFulfilled = function () {
+	return this.state === P.states.FULFILLED;
 };
 
-Q.Promise.prototype.isRejected = function () {
-	return this.state === Q.Promise.states.REJECTED;
+P.prototype.isRejected = function () {
+	return this.state === P.states.REJECTED;
 };
 
-Q.Promise.states = {
+P.states = {
 	PENDING: 1,
 	FULFILLED: 2,
 	REJECTED: 3
 };
+
+Q.Promise = P;
 
 })(Q);

@@ -253,10 +253,11 @@ class Streams_Message extends Base_Streams_Message
 		if ($this->retrieved) {
 			return parent::beforeSave($value);
 		}
-		$stream = new Streams_Stream();
-		$stream->publisherId = $value['publisherId'];
-		$stream->name = $value['streamName'];
-		if (!$stream->retrieve('*', true, array('begin'=>true))) {
+		$asUserId = isset($this->asUserId) ? $this->asUserId : $value['asUserId'];
+		$publisherId = isset($this->publisherId) ? $this->publisherId : $value['publisherId'];
+		$streamName = isset($this->streamName) ? $this->streamName : $value['streamName'];
+		$stream = Streams::fetchOne($asUserId, $publisherId, $streamName, '*', array('begin' => true));
+		if (!$stream) {
 			// no one should post messages to nonexistent streams
 			throw new Q_Exception("Cannot post message to nonexistent stream");
 		}

@@ -581,7 +581,7 @@ class Q_Html
 	}
 	
 	/**
-	 * Renders a series of buttons from an associative array we already have
+	 * Renders a date selector
 	 * @method date
 	 * @static
 	 * @param {string} $name The name of the input
@@ -628,9 +628,9 @@ class Q_Html
 			$year = $month = $day = null;
 		} else {
 			$dp = getdate(strtotime($value));
-			$year = (isset($dp['year'])) ? $dp['year'] : null;
-			$month = (isset($dp['mon'])) ? $dp['mon'] : null;
-			$day = (isset($dp['mday'])) ? $dp['mday'] : null;
+			$year = (isset($dp['year'])) ? sprintf("%02d", $dp['year']) : null;
+			$month = (isset($dp['mon'])) ? sprintf("%02d", $dp['mon']) : null;
+			$day = (isset($dp['mday'])) ? sprintf("%02d", $dp['mday']) : null;
 		}
 		$attributes['name'] = $name . '_year';
 		if ($id) $attributes['id'] = $id . '_year';

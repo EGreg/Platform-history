@@ -16,7 +16,9 @@ function Streams_basic_post()
 	$user = Users::loggedInUser(true);
 	$request = $_REQUEST;
 	$fields = array();
-	if (isset($request['birthday_year']) && isset($request['birthday_month']) && isset($request['birthday_day'])) {
+	if (!empty($request['birthday_year'])
+	&& !empty($request['birthday_month'])
+	&& !empty($request['birthday_day'])) {
 		$request['birthday'] = sprintf("%04d-%02d-%02d",
 			$_REQUEST['birthday_year'],
 			$_REQUEST['birthday_month'],
@@ -53,9 +55,13 @@ function Streams_basic_post()
 			throw new Q_Exception("Missing $name title", $field);
 		}
 		$stream = $streams[$name];
-		if (!isset($stream)
-		or $stream->content === (string)$request[$field]) {
+		if (isset($stream) and $stream->content === (string)$request[$field]) {
 			continue;
+		}
+		if (!isset($stream)) {
+			$stream = new Streams_Stream();
+			$stream->publisherId = $user->id;
+			$stream->name = $name;
 		}
 		$stream->content = (string)$request[$field];
 		$stream->type = $type;
