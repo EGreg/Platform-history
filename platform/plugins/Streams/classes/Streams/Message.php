@@ -106,16 +106,15 @@ class Streams_Message extends Base_Streams_Message
 		// Post the message to the streams:
 		$results = array();
 		if (empty($streams)) {
-			$streams = array();
-			foreach ($streamNames as $streamName) {
-				$s = Streams::fetchOne($asUserId, $publisherId, $streamName);
+			$streams = Streams::fetch($asUserId, $publisherId, $streamNames);
+			foreach ($streams as $s) {
 				if (!$s) {
+					$streamName = $s->name;
 					throw new Q_Exception_MissingRow(array(
 						'table' => 'stream',
 						'criteria' => "{publisherId: '$publisherId', name: '$streamName'}"
 					));
 				}
-				$streams[] = $s;
 			}
 		}
 		foreach ($streams as $stream) {
@@ -253,7 +252,7 @@ class Streams_Message extends Base_Streams_Message
 		if ($this->retrieved) {
 			return parent::beforeSave($value);
 		}
-		$asUserId = isset($this->asUserId) ? $this->asUserId : $value['asUserId'];
+		$asUserId = isset($this->byUserId) ? $this->byUserId : $value['byUserId'];
 		$publisherId = isset($this->publisherId) ? $this->publisherId : $value['publisherId'];
 		$streamName = isset($this->streamName) ? $this->streamName : $value['streamName'];
 		$stream = Streams::fetchOne($asUserId, $publisherId, $streamName, '*', array('begin' => true));
