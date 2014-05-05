@@ -245,7 +245,7 @@ Utils.sendEmail = function (to, subject, view, fields, options, callback) {
  *
  * @param {function} callback Receives error, method used and and response objects after complete
  */
-var twilioTransport = null;
+var twilioClient = null;
 Utils.sendSMS = function (to, view, fields, options, callback) {
 	// some mobile number normalization
 	var number, provider, address = [],
@@ -260,28 +260,28 @@ Utils.sendSMS = function (to, view, fields, options, callback) {
 	} else {
 		number = to;
 	}
-	if (!twilioTransport) {
+	if (!twilioClient) {
+		var twilio = require('twilio');
 		// try twilio config
 		var sid, token;
 		if ((sid = Q.Config.get(['Users', 'mobile', 'twilio', 'sid'], null)) &&
 			(token = Q.Config.get(['Users', 'mobile', 'twilio', 'token'], null))) {
 			// twilio config is given. Let's create transport to use it
-			var TwilioClient = require('twilio').Client,
-				host = parse_url(Q.Config.get(['Q', 'web', 'appRootUrl'], 'qbix.com'), 'host');
-			twilioTransport = new TwilioClient(sid, token, host);
+			twilioClient = new twilio.RestClient(sid, token);
 		}
 	}
 	var content = options.isSource
 		? Q.Mustache.renderSource(view, fields)
 		: Q.Mustache.render(view, fields);
-	if (twilioTransport && (from = options.from || Q.Config.get(['Users', 'mobile', 'from'], null))) {
-		var phone = twilioTransport.getPhoneNumber(from);
-		phone.sendSms('+'+number, content, {}, function (res) {
+	if (twilioClient && (from = options.from || Q.Config.get(['Users', 'mobile', 'from'], null))) {
+		twilioClient.sendSms(from, '+'+number, content, {}, function (res) {
 			if (debug) {
 				Q.log('twilio: '+number+' "'+content+'"', key);
-				Q.log('status: '+(res.smsDetails && res.smsDetails.code ? 'ERROR: '+res.smsDetails.code+' '+res.smsDetails.message : 'Ok'), key);
+				Q.log('dateCreated: '+res.dateCreated, key);
 			}
-			callback(res.smsDetails && res.smsDetails.code ? new Error(res.smsDetails.code+' '+res.smsDetails.message) : null, 'twilio', res);
+			callback(null, 'twilio', res);
+		}, function (err) {
+			callback(err, 'twilio');
 		});
 		// we are done! Skip smtp method
 		return;
