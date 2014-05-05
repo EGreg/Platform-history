@@ -14,7 +14,7 @@ function Users_facebookChannel_response()
     <title>Cross-Domain Receiver Page</title>
 </head>
 <body>
-    <script src="//connect.facebook.net/en_US/all.js"></script>
+    <script src="//connect.facebook.net/en_US/sdk.js"></script>
 </body>
 </html>
 EOT;

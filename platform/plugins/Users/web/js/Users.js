@@ -89,8 +89,9 @@ Users.onError = new Q.Event(function (err, err2) {
 /**
  * Initialize facebook by adding FB script and running FB.init().
  * Ensures that this is done only once
+ * @param options {Object} for overriding the options passed to FB.init
  */
-Users.initFacebook = function(callback) {
+Users.initFacebook = function(callback, options) {
 	
 	if (!Q.plugins.Users.facebookApps[Q.info.app]
 	|| !Q.plugins.Users.facebookApps[Q.info.app].appId) {
@@ -107,13 +108,14 @@ Users.initFacebook = function(callback) {
 		if (!Users.initFacebook.completed[Q.info.app]) {
 			FB.init(Q.extend({
 				appId: Q.plugins.Users.facebookApps[Q.info.app].appId,
+				version: 'v2.0',
 				status: true,
 				cookie: true,
 				oauth: true,
 				xfbml: true,
 				frictionlessRequests: Users.initFacebook.options.frictionlessRequests,
 				channelUrl: Q.action('Users/facebookChannel')
-			}));
+			}, options));
 			Users.onInitFacebook.handle(Users, window.FB, [Q.info.app]);
 		}
 		Users.initFacebook.completed[Q.info.app] = true;
@@ -126,7 +128,7 @@ Users.initFacebook = function(callback) {
 	Q.addScript(
 		(window.location.protocol || window.location.protocol === 'file:'
 			? 'http:'
-			: window.location.protocol) + '//connect.facebook.net/en_US/all.js',
+			: window.location.protocol) + '//connect.facebook.net/en_US/sdk.js',
 		_init,
 		{
 			onError: function () {
@@ -1324,7 +1326,7 @@ function login_setupDialog(usingProviders, perms, dialogContainer, identifierTyp
 				step1_usingProviders_div.append(Q.text.Users.login.usingOther).append(facebookLogin);
 				// Load the facebook script now, so clicking on the facebook button
 				// can trigger a popup directly, otherwise popup blockers may complain:
-				Q.addScript('http://connect.facebook.net/en_US/all.js');
+				Q.addScript('http://connect.facebook.net/en_US/sdk.js');
 				break;
 		}
 	}
