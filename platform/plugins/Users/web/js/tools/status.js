@@ -1,4 +1,6 @@
 (function (Q, $) {
+	
+var Users = Q.plugins.Users;
 
 /**
  * Users/status tool.
