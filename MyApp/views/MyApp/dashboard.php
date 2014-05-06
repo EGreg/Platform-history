@@ -17,7 +17,7 @@
 						<li data-action="setIdentifier">set email address</li>
 					<?php endif ?>
 				<?php endif ?>
-				 <li data-action="logout">log out</li>
+				<li data-action="logout">log out</li>
 			</ul>
 		</div>
 	</div>

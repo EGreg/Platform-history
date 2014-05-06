@@ -27,15 +27,15 @@ class Users_Contact extends Base_Users_Contact
 	 * @method addContact
 	 * @param {string} $userId
 	 * @param {string} $label
-	 * @param {string} $contact_id
+	 * @param {string} $contactId
 	 * @param {string} [$nickname='']
 	 * @return {boolean}
 	 */
-	static function addContact($userId, $label, $contact_id, $nickname = '') {
+	static function addContact($userId, $label, $contactId, $nickname = '') {
 		$contact = new Users_Contact();
 		$contact->userId = $userId;
 		$contact->label = $label;
-		$contact->contactUserId = $contact_id;
+		$contact->contactUserId = $contactId;
 		$contact->nickname = !empty($nickname) ? $nickname : '';
 		return !!$contact->save(true);
 	}
@@ -45,14 +45,23 @@ class Users_Contact extends Base_Users_Contact
 	 * @method checkContact
 	 * @param {string} $userId
 	 * @param {string} $label
-	 * @param {string} $contact_id
+	 * @param {string} $contactId
 	 * @return {boolean}
 	 */
-	static function checkContact($userId, $label, $contact_id) {
+	static function checkContact($userId, $label, $contactId) {
+		if (!$userId or !$contactId) {
+			return null;
+		}
+		if ($userId instanceof Users_User) {
+			$userId = $userId->id;
+		}
+		if ($contactId instanceof Users_User) {
+			$contactId = $contactId->id;
+		}
 		$contact = new Users_Contact();
 		$contact->userId = $userId;
 		$contact->label = $label;
-		$contact->contactUserId = $contact_id;
+		$contact->contactUserId = $contactId;
 		return !!$contact->retrieve();
 	}
 
@@ -86,14 +95,14 @@ class Users_Contact extends Base_Users_Contact
 	 * @method removeContact
 	 * @param {string} $userId
 	 * @param {string} $label
-	 * @param {string} $contact_id
+	 * @param {string} $contactId
 	 * @return {boolean}
 	 */
-	static function removeContact($userId, $label, $contact_id) {
+	static function removeContact($userId, $label, $contactId) {
 		$contact = new Users_Contact();
 		$contact->userId = $userId;
 		$contact->label = $label;
-		$contact->contactUserId = $contact_id;
+		$contact->contactUserId = $contactId;
 		return !!$contact->remove();
 	}
 
