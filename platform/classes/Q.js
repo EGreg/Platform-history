@@ -330,6 +330,9 @@ Q.pipe = function _Q_pipe(a, b, c, d) {
  * @see {Q.Pipe.prototype.add} for more info on the parameters
  */
 Q.Pipe = function _Q_Pipe(requires, maxTimes, callback) {
+	if (this === Q) {
+		throw new Q.Error("Q.Pipe: omitted keyword new");
+	}
 	this.callbacks = [];
 	this.params = {};
 	this.subjects = {};
@@ -341,28 +344,36 @@ Q.Pipe = function _Q_Pipe(requires, maxTimes, callback) {
 /**
  * Adds a callback to the pipe
  * @method add
- * @param requires Array
+ * @param field {String}
+ *  Pass the name of a field to wait for, until it is filled, before calling the callback.
+ * @param callback {Function}
+ *  This function is called as soon as the field is filled, i.e. when the callback
+ *  produced by pipe.fill(field) is finally called by someone.
+ *  The "this" and arguments from that call are also passed to the callback.
+ *  The callback receives the same "this" and arguments that the original call was made with.
+ *  It is passed the "this" and arguments which are passed to the callback.
+ *  If you return true from this function, it will delete all the callbacks in the pipe.
+ */
+Q.Pipe.prototype.on = function _Q_pipe_on(field, callback) {
+	return this.add([field], 1, function _Q_pipe_on_callback (params, subjects) {
+		return callback.apply(subjects[field], params[field]);
+	});
+};
+
+/**
+ * Adds a callback to the pipe with more flexibility
+ * @method add
+ * @param requires {Array}
  *  Optional. Pass an array of required field names here.
  *  Alternatively, pass an array of objects, which should be followed by
- *  the name of an event to wait for.
- * @param maxTimes Number
+ *  the name of a Q.Event to wait for.
+ * @param maxTimes {Number}
  *  Optional. The maximum number of times the callback should be called.
- * @param callback Function
- *  Once all required fields are filled (see previous parameter, if any)
- *  this function is called every time something is piped.
+ * @param callback {Function}
+ *  Once all required fields are filled, this function is called every time something is piped.
  *  It is passed three arguments: (params, subjects, requires)
  *  If you return false from this function, it will no longer be called for future pipe runs.
  *  If you return true from this function, it will delete all the callbacks in the pipe.
- * @param requires2 Array
- * @param maxTimes2 Number
- * @param callback2 Function
- *  Keep passing as many functions (preceded by arrays of required fields)
- *  as you want and they will be processed in order every time something is
- *  piped in. You would typically do this to set up some functions
- *  that depend on some fields, and other functions that depend on other fields
- *  and have functions execute once all the data is available.
- *  Thus you can mix and match sequential and parallel processing.
- *  If you need getters, throttling, or batching, use Q.getter( ).
  */
 Q.Pipe.prototype.add = function _Q_pipe_add(requires, maxTimes, callback) {
 	var r = null, n = null, e = null, r2, events, keys;
@@ -823,6 +834,9 @@ Q.getter.THROTTLING = 3;
  *  "max": the maximum number of items the cache should hold. Defaults to 100.
  */
 Q.Cache = function  _Q_Cache(options) {
+	if (this === Q) {
+		throw new Q.Error("Q.Pipe: omitted keyword new");
+	}
 	options = options || {};
 	this.name = options.name;
 	this.data = {};
