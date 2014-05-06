@@ -16,7 +16,7 @@
  *   "imagepicker": Any options to pass to the Q/imagepicker jquery plugin -- see its options.
  *   "inplace": Any options to pass to the Q/inplace tool -- see its options.
  *   "actions": Any options to pass to the Q/actions jquery plugin -- see its options.
- *   "showFile": Optional. The image file to show, to override imagepicker.showSize option for some reason.
+ *   "overrideSize": Optional. A hash of {icon: size} pairs to override imagepicker.showSize when the icon is a certain string. The empty string matches all icons.
  *   "throbber": The url of an image to use as an activity indicator when the image is loading
  *   "templates": Under the keys "views", "edit" and "create" you can override options for Q.Template.render .
  *       The fields passed to the template include "alt", "titleTag" and "titleClass"
@@ -199,7 +199,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 		showSize: "x200",
 		fullSize: "x"
 	},
-	showFile: null,
+	overrideSize: {},
 	templates: {
 		view: {
 			name: 'Streams/image/preview/view',
@@ -240,7 +240,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 				return console.warn("Streams/image/preview: " + fem);
 			}
 			var stream = tool.stream = this;
-			var file = state.showFile
+			var file = (state.overrideSize && state.overrideSize[this.fields.icon])
 				|| state.imagepicker.saveSizeName[state.imagepicker.showSize]
 				|| Q.first(state.imagepicker.saveSizeName, {nonEmptyKey: true});
 			var full = state.imagepicker.saveSizeName[state.imagepicker.fullSize] || file;
@@ -287,8 +287,13 @@ Q.Tool.define("Streams/image/preview", function(options) {
 					tool.element.innerHTML = html;
 					Q.activate(tool, function () {
 						tool.state.onRefresh.handle.apply(tool, []);
-						$('img', tool.element).off('load.Streams-image-preview').on('load.Streams-image-preview', function () {
+						$('img', tool.element)
+						.off('load.Streams-image-preview')
+						 .on('load.Streams-image-preview', function () {
 							tool.state.onLoad.handle.apply(tool, []);
+						}).off('error.Streams-image-preview')
+						  .on('error.Streams-image-preview', function () {
+						  	tool.state.onError.handle.apply(tool, []);
 						});
 						callback.apply(tool);
 					});

@@ -52,6 +52,22 @@ class Users_User extends Base_Users_User
 		}
 		return $result;
 	}
+	
+	/**
+	 * Get the url of the user's icon
+	 * @param {string} [$basename=""] The last part after the slash, such as "50.png"
+	 * @return {string} The stream's icon url
+	 */
+	function iconUrl($basename = null)
+	{
+		if (empty($this->icon)) return null;
+		if (Q_Valid::url($this->icon)) return $this->icon;
+		$url = "plugins/Users/img/icons/{$this->icon}";
+		if ($basename) {
+			$url .= "/$basename";
+		}
+		return Q_Html::themedUrl($url);
+	}
 
 	/**
 	 * @method exportArray

@@ -46,18 +46,21 @@ function Streams_after_Users_User_saveExecute($params)
 		$p->load(STREAMS_PLUGIN_CONFIG_DIR.DS.'streams.json');
 		$p->load(APP_CONFIG_DIR.DS.'streams.json');
 		foreach ($onInsert as $name) {
-			$stream = new Streams_Stream();
-			$stream->publisherId = $user->id;
-			$stream->name = $name;
-			$stream->retrieve('*', false, true)
-				->noCache(true)
-				->resume(); // try retrieving it
+			$stream = Streams::fetchOne($user->id, $user->id, $name);
+			if (!$stream) { // it shouldn't really be in the db yet
+				$stream = new Streams_Stream();
+				$stream->publisherId = $user->id;
+				$stream->name = $name;
+			}
 			$stream->type = $p->expect($name, "type");
 			$stream->title = $p->expect($name, "title");
 			$stream->content = $p->get($name, "content", '');
 			$stream->readLevel = $p->get($name, 'readLevel', Streams_Stream::$DEFAULTS['readLevel']);
 			$stream->writeLevel = $p->get($name, 'writeLevel', Streams_Stream::$DEFAULTS['writeLevel']);
 			$stream->adminLevel = $p->get($name, 'adminLevel', Streams_Stream::$DEFAULTS['adminLevel']);
+			if ($name = "Streams/user/icon") {
+				$stream->icon = $user->iconUrl();
+			}
 			$stream->save();
 			$stream->join(array('userId' => $user->id));
 		}
@@ -69,11 +72,16 @@ function Streams_after_Users_User_saveExecute($params)
 		foreach ($updates as $field => $value) {
 			$name = Q_Config::get('Streams', 'onUpdate', 'Users_User', $field, null);
 			if (!$name) continue;
-			$stream = new Streams_Stream();
-			$stream->publisherId = $user->id;
-			$stream->name = $name;
-			$stream->retrieve(); // it should probably already exist
+			$stream = Streams::fetchOne($user->id, $user->id, $name);
+			if (!$stream) { // it should probably already be in the db
+				$stream = new Streams_Stream();
+				$stream->publisherId = $user->id;
+				$stream->name = $name;
+			}
 			$stream->content = $value;
+			if ($name = "Streams/user/icon") {
+				$stream->icon = $user->iconUrl();
+			}
 			$stream->save();
 			$stream->post($user->id, array(
 				'type' => 'Streams/edited',

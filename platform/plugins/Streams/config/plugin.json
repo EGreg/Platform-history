@@ -51,7 +51,7 @@
 			"Streams/image": {
 				"create": true,
 				"edit": true,
-				"sizes": ["40", "50", "80", "x200", "x"],
+				"sizes": ["40", "50", "80", "x200", "200x", "x"],
 				"defaults": {
 					"title": "Untitled Image"
 				}
@@ -169,9 +169,6 @@
 				"username": "Streams/user/username",
 				"icon": "Streams/user/icon"
 			}
-		},
-		"icon": {
-			"sizes": ["40", "50", "50x"]
 		}
 	}
 }

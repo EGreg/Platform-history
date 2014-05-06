@@ -4,7 +4,7 @@
  * Streams/preview tool.
  * Renders a default tool to preview streams
  * @param options {Object}
- *   A hash of options, which include:
+ *   A hash of options, which include:
  *   "publisherId": Required. The publisher's user id.
  *   "streamName": If empty, and "creatable" is true, then this can be used to add new related streams.
  *   "related": A hash with properties "publisherId" and "streamName", and usually "type" and "weight"
@@ -19,7 +19,7 @@
  *   "imagepicker": Any options to pass to the Q/imagepicker jquery plugin -- see its options. Pass null to disable this functionality.
  *   "inplace": Any options to pass to the Q/inplace tool -- see its options. Pass null to disable this functionality.
  *   "actions": Any options to pass to the Q/actions jquery plugin -- see its options. Pass null to disable this functionality.
- *   "showFile": Optional. The image file to show, to override imagepicker.showSize option for some reason.
+ *   "overrideSize": Optional. A hash of {icon: size} pairs to override imagepicker.showSize when the icon is a certain string. The empty string matches all icons.
  *   "throbber": The url of an image to use as an activity indicator when the image is loading
  *   "templates": Under the keys "views", "edit" and "create" you can override options for Q.Template.render .
  *       The fields passed to the template include "alt", "titleTag" and "titleClass"
@@ -210,7 +210,7 @@ Q.Tool.define("Streams/preview", function(options) {
 		showSize: "50",
 		fullSize: "50"
 	},
-	showFile: null,
+	overrideSize: {},
 	templates: {
 		view: {
 			name: 'Streams/preview/view',
@@ -251,7 +251,7 @@ Q.Tool.define("Streams/preview", function(options) {
 				return console.warn("Streams/preview: " + fem);
 			}
 			var stream = tool.stream = this;
-			var file = state.showFile
+			var file = (state.overrideSize && state.overrideSize[this.fields.icon])
 				|| state.imagepicker.saveSizeName[state.imagepicker.showSize]
 				|| Q.first(state.imagepicker.saveSizeName, {nonEmptyKey: true});
 			var full = state.imagepicker.saveSizeName[state.imagepicker.fullSize] || file;

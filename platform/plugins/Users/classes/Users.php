@@ -879,9 +879,9 @@ abstract class Users extends Base_Users
 					break;
 				}
 				$icon = array(
-					'40.png' => "http://graph.facebook.com/$uid/picture?type=square",
+					'40.png' => "http://graph.facebook.com/$uid/picture?width=40&height=40",
 					'50.png' => "http://graph.facebook.com/$uid/picture?type=square",
-					'80w.png' => "http://graph.facebook.com/$uid/picture?type=normal"
+					'80.png' => "http://graph.facebook.com/$uid/picture?width=80&height=80"
 				);
 				break;
 			}
@@ -892,7 +892,7 @@ abstract class Users extends Base_Users
 				$icon = array(
 					'40.png' => $icon.'&s=40',
 					'50.png' => $icon.'&s=50',
-					'80w.png' => $icon.'&s=80'
+					'80.png' => $icon.'&s=80'
 				);
 			} else {
 				// locally generated icons
@@ -900,7 +900,7 @@ abstract class Users extends Base_Users
 				$icon = array(
 					'40.png' => array('hash' => $hash, 'size' => 40),
 					'50.png' => array('hash' => $hash, 'size' => 50),
-					'80w.png' => array('hash' => $hash, 'size' => 80)
+					'80.png' => array('hash' => $hash, 'size' => 80)
 				);
 			}
 			$user->icon = self::downloadIcon($user, $icon);
@@ -1178,7 +1178,6 @@ abstract class Users extends Base_Users
 		$dir = Q_Config::get('Users', 'paths', 'icons', 'files/Users/icons');
 		$dir2 = Q::realPath($dir).DS.$folder;
 		if (!file_exists($dir2)) {
-			Q::log($dir2);
 			mkdir($dir2, 0777, true);
 			chmod($dir2, 0777);
 		}
