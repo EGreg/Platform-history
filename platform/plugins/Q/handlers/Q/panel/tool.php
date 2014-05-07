@@ -21,8 +21,8 @@
  *  "cancel_button" => optional, to override the cancel button
  *  "panel_classes" => optional, additional classes for the panel
  *  "snf" => optional. The name of the nonce field in the session
- *  "on_success" => optional. The URI to redirect to on success
- *  "on_errors" => optional. The URI to display if errors occur
+ *  "onSuccess" => optional. The URI to redirect to on success
+ *  "onErrors" => optional. The URI to display if errors occur
  *  "inProcess" => optional. Causes the panel to appear as if it's a step in a process.
  */
 function Q_panel_tool($options)
@@ -43,8 +43,8 @@ function Q_panel_tool($options)
 		'collapsed' => false,
 		'toggle' => false,
 		'inProcess' => false,
-		'on_success' => null,
-		'on_errors' => null,
+		'onSuccess' => null,
+		'onErrors' => null,
 		'snf' => null,
 	);
 	extract(array_merge($defaults, $options));
@@ -111,8 +111,8 @@ function Q_panel_tool($options)
 	// Build the panel
 	$panel = "<div class='Q_panel_tool_header'>$header</div>"
 		. "<div class='Q_panel_tool_form'>$form</div>";
-	if (isset($snf) or isset($on_success) or isset($on_errors)) {
-		$panel .= "<div>".Q_Html::formInfo($on_success, $on_errors, $snf)."</div>";
+	if (isset($snf) or isset($onSuccess) or isset($onErrors)) {
+		$panel .= "<div>".Q_Html::formInfo($onSuccess, $onErrors, $snf)."</div>";
 	}
 	if ($uri) {
 		$panel = Q_Html::form(

@@ -19,9 +19,6 @@ Q.Tool.define('Q/form', function(options) {
 			Q.handle(tool.state.onResponse, tool, arguments);
 			$('div.Q_form_undermessagebubble', $te).empty();
 			$('tr.Q_error', $te).removeClass('Q_error');
-			if (data.slots.form) {
-				form.html(data.slots.form);
-			}
 			if ('errors' in data) {
 				tool.applyErrors(data.errors);
 				$('tr.Q_error').eq(0).prev().find(':input').eq(0).focus();
@@ -29,6 +26,9 @@ Q.Tool.define('Q/form', function(options) {
 					eval(data.scriptLines.form);
 				}
 			} else {
+				if (data.slots.form) {
+					form.html(data.slots.form);
+				}
 				if (data.scriptLines && data.scriptLines.form) {
 					eval(data.scriptLines.form);
 				}

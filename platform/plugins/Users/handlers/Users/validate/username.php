@@ -6,7 +6,7 @@
  */
 function Users_validate_username($params)
 {
-	// override this to validate username
+	// override this to change the rules for validating the username
 	
 	extract($params);
 	if (empty($username)) {

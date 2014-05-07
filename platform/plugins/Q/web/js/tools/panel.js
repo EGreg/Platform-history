@@ -3,45 +3,42 @@
 Q.Tool.define("Q/panel", function() {
 
 	// constructor & private declarations
-	var me = this;
+	var tool = this;
 	var form_val = null;
 	var container;
-	var $te = $(me.element);
+	var $te = $(tool.element);
 	var prefix = this.prefix;
 
-	me.Q_init = function() {
+	tool.Q_init = function() {
 		var form = $('form', $te);
-		var form_tool_prefix = prefix+'Q_form_';
-		var static_tool_prefix = prefix+'idstatic_Q_form_';
+		var form_tool = tool.child('Q_form');
+		var static_tool = tool.child('Q_form_static');
 		var container = $('.Q_panel_tool_container', $te);
-		if (form_tool_id in Q.Tool.active) {
-			var form_tool = Q.Tool.byId(form_tool_id);
-			form_tool.onSuccess[prefix] = function() {
-				form_val = form.serialize();
-				container.removeClass('Q_modified');
-				container.removeClass('Q_editing');
-			};
-			if (static_tool_id in Q.Tool.active) {
-				var static_tool = Q.Tool.byId(static_tool_id);
-			}
-			form_tool.onResponse[prefix] = function(response) {
-				var buttons = $('.Q_panel_tool_buttons', $te);
-				buttons.removeClass('Q_throb');
-				if ('slots' in response) {
-					if ('form' in response.slots) {
-						form_tool.updateValues(response.slots.form);
-					}
-					if (('static' in response.slots) && static_tool) {
-						static_tool.updateValues(response.slots['static']);
-					}
+		if (!form_tool) {
+			return;
+		}
+		form_tool.state.onSubmit.set(function() {
+			var buttons = $('.Q_panel_tool_buttons', $te);
+			buttons.addClass('Q_throb');
+		}, tool);
+		form_tool.state.onResponse.set(function(err, response) {
+			var buttons = $('.Q_panel_tool_buttons', $te);
+			buttons.removeClass('Q_throb');
+			if ('slots' in response) {
+				if ('form' in response.slots) {
+					form_tool.updateValues(response.slots.form);
+				}
+				if (('static' in response.slots) && static_tool) {
+					static_tool.updateValues(response.slots['static']);
 				}
 			}
-			form_tool.onSubmit[prefix] = function() {
-				var buttons = $('.Q_panel_tool_buttons', $te);
-				buttons.addClass('Q_throb');
-			}
-			form_tool.slotsToRequest = 'form,static';
-		}
+		}, tool);
+		form_tool.state.onSuccess.set(function() {
+			form_val = form.serialize();
+			container.removeClass('Q_modified');
+			container.removeClass('Q_editing');
+		}, tool);
+		form_tool.slotsToRequest = 'form,static';
 	};
 
 	container = $('.Q_panel_tool_container', $te);

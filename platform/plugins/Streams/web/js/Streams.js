@@ -2273,7 +2273,7 @@ Q.onInit.add(function _Streams_onInit() {
 			Q.Dialogs.push({
 				dialog: dialog,
 				mask: true,
-				closeOnEsc: false,
+				closeOnEsc: false, 
 				onActivate: {'Streams.completeInvited': function() {
 					dialog.find('#Streams_login_username')
 						  .attr('maxlength', Q.text.Users.login.maxlengths.fullName)
