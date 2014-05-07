@@ -27,7 +27,17 @@ Q.Tool.define('Q/form', function(options) {
 				}
 			} else {
 				if (data.slots.form) {
-					form.html(data.slots.form);
+					var e;
+					switch (typeof tool.state.contentElement) {
+					case 'HTMLElement':
+					case 'jQuery':
+						e = $(tool.state.contentElement); break;
+					case 'string':
+						e = $('#' + tool.state.contentElement, form); break;
+					default:
+						e = $(tool.element);
+					}
+					e.html(data.slots.form);
 				}
 				if (data.scriptLines && data.scriptLines.form) {
 					eval(data.scriptLines.form);
@@ -68,6 +78,7 @@ Q.Tool.define('Q/form', function(options) {
 	onResponse: new Q.Event(),
 	onSuccess: new Q.Event(),
 	slotsToRequest: 'form',
+	contentElement: null,
 	loader: function (action, method, params, slots, callback) {
 		Q.jsonRequest(action+"?"+params, slots, callback, {method: method});
 	}

@@ -45,6 +45,9 @@ Q.typeOf = function _Q_typeOf(value) {
 			if (value.constructor.name == 'Object') {
 				return 'object';
 			}
+			if (value.constructor === window.jQuery) {
+				return 'jQuery';
+			}
 			return value.constructor.name;
 		} else if ((x = Object.prototype.toString.apply(value).substr(0, 8)) === "[object ") {
 			return x.substring(8, x.length-1);

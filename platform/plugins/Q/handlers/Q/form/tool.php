@@ -24,7 +24,8 @@
  *    It should call the callback and pass it an object with the response info. Can be used to implement caching, etc.
  *    instead of the default HTTP request.
  *    If "loader" is Q.getter and request shall be done bypasing cache, assign true to .noCache property of the tool
- *  "slots" => Optional. A string or array of slot names to request in response. By default slot 'form' is requested
+ *  "slots" => Optional. A string or array of slot names to request in response. Should include "form".
+ *  "contentElement" => Optional. Selector of a child element of the form to fill with HTML from the returned 'form' slot.
  */
 function Q_form_tool($options)
 {
@@ -33,6 +34,9 @@ function Q_form_tool($options)
 	}
 	if (!array_key_exists('fill_from_request', $options)) {
 		$options['fill_from_request'] = true;
+	}
+	if (!empty($options['contentElement'])) {
+		$options['contentElement'] = Q_Html::getIdPrefix() . $options['contentElement'];
 	}
 	
 	$field_defaults = array(
