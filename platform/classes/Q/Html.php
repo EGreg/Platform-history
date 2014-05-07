@@ -688,7 +688,9 @@ class Q_Html
 				if (empty($options['date'])) {
 					$display = isset($options[$value]) ? $options[$value] : $value;
 				} else {
-					$display = date($options['date'], strtotime($value));
+					$display = (!empty($value) and substr($value, 0, 4) !== '0000')
+						? date($options['date'], strtotime($value))
+						: '';
 				}
 			 	return self::tag('span', $attributes, $display);
 			
