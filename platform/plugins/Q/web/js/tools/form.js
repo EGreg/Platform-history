@@ -8,7 +8,7 @@ Q.Tool.define('Q/form', function(options) {
 	var $te = $(tool.element);
 	var form = $te.closest('form');
 	if (!form.length) return;
-	if (form.data('Q_form_tool')) return;
+	if (form.data('Q/form tool')) return;
 	form.submit(function(event) {
 		function onResponse(err, data) {
 			var msg;
@@ -26,21 +26,21 @@ Q.Tool.define('Q/form', function(options) {
 					eval(data.scriptLines.form);
 				}
 			} else {
-				if (data.slots.form) {
+				for (var slot in data.slots) {
 					var e;
-					switch (typeof tool.state.contentElement) {
+					switch (typeof tool.state.contentElements[slot]) {
 					case 'HTMLElement':
 					case 'jQuery':
-						e = $(tool.state.contentElement); break;
+						e = $(tool.state.contentElements[slot]); break;
 					case 'string':
-						e = $('#' + tool.state.contentElement, form); break;
+						e = $(tool.state.contentElements[slot], form); break;
 					default:
 						e = $(tool.element);
 					}
-					e.html(data.slots.form);
-				}
-				if (data.scriptLines && data.scriptLines.form) {
-					eval(data.scriptLines.form);
+					Q.replace(e[0], data.slots[slot]);
+					if (data.scriptLines && data.scriptLines[slot]) {
+						eval(data.scriptLines[slot]);
+					}
 				}
 				Q.handle(tool.state.onSuccess, tool, arguments);
 			}
@@ -69,7 +69,7 @@ Q.Tool.define('Q/form', function(options) {
 			form.data('validator').reset($(this));
 		}
 	});
-	form.data('Q_form_tool', true);
+	form.data('Q/form tool', tool);
 
 },
 
@@ -78,13 +78,20 @@ Q.Tool.define('Q/form', function(options) {
 	onResponse: new Q.Event(),
 	onSuccess: new Q.Event(),
 	slotsToRequest: 'form',
-	contentElement: null,
-	loader: function (action, method, params, slots, callback) {
-		Q.jsonRequest(action+"?"+params, slots, callback, {method: method});
+	contentElements: {},
+	loader: function (url, method, params, slots, callback) {
+		Q.request(url+"?"+params, slots, callback, {method: method});
 	}
 },
 
 {
+	beforeRemove: {"Q/form": function () {
+		var form = $(this.element).closest('form');
+		if (form.data('Q/form tool') === this) {
+			form.removeData('Q/form tool');
+		}
+	}},
+	
 	applyErrors: function(errors) {
 		var err = null;
 		for (var i=0; i<errors.length; ++i) {

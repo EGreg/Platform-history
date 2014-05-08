@@ -892,6 +892,8 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 	}
 	target = target || {};
 	var deep = false, levels = 0;
+	var targetIsEvent = (Q.typeOf(target) === 'Q.Event');
+	var k, a, m;
 	for (var i=1; i<length; ++i) {
 		var arg = arguments[i];
 		if (!arg) {
@@ -908,14 +910,24 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 			levels = arg;
 			continue;
 		}
-		for (var k in arg) {
+		if (targetIsEvent) {
+			if (arg && arg.constructor === Object) {
+				for (m in arg) {
+					target.set(arg[m], m);
+				}
+			} else {
+				target.set(arg, namespace);
+			}
+			continue;
+		}
+		for (k in arg) {
 			if (deep === true || (arg.hasOwnProperty && arg.hasOwnProperty(k))
 				|| (!arg.hasOwnProperty && (k in arg)))
 			{
-				var a = arg[k];
+				a = arg[k];
 				if ((k in target) && Q.typeOf(target[k]) === 'Q.Event') {
 					if (a && a.constructor === Object) {
-						for (var m in a) {
+						for (m in a) {
 							target[k].set(a[m], m);
 						}
 					} else {
@@ -2302,8 +2314,7 @@ Q.Tool = function _Q_Tool(element, options) {
 	
 	Q.setObject(['tools', normalized], this, element.Q);
 	
-	this.beforeRemove = new Q.Event();
-
+	this.beforeRemove = Q.extend(new Q.Event(), this.beforeRemove);
 	Q.setObject([this.id], this, Q.Tool.active);
 	
 	Q.Tool.onConstruct(this.name).handle.call(this, this.options);
@@ -2383,9 +2394,8 @@ Q.Tool.prefixById = function _Q_Tool_prefixById(id) {
  */
 Q.Tool.remove = function _Q_Tool_remove(elem, removeCached) {
 	Q.find(elem, true, null, function _Q_Tool_remove_found(toolElement) {
-		var tool = Q.Tool.from(toolElement);
-		if (tool) {
-			tool.remove(removeCached);
+		for (var name in toolElement.Q.tools) {
+			toolElement.Q.tools[name].remove(removeCached);
 		}
 	});
 };
@@ -5035,7 +5045,7 @@ Q.replace = function _Q_replace(existing, source, options) {
 		}
 	});
 	
-	Q.Tool.remove(existing); // Remove all the tools remaining in the container, with their events etc.
+	Q.Tool.clear(existing); // Remove all the tools remaining in the container, with their events etc.
 	existing.innerHTML = ''; // Clear the container
 	
 	// Move the actual nodes from the source to existing container

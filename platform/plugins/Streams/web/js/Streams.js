@@ -95,7 +95,7 @@ Streams.define = function (type, ctor, methods) {
 			Q.Tool.define(t, type[t]);
 		}
 		return;
-	}
+	};
 	type = Q.normalize(type);
 	if (typeof ctor === 'string') {
 		if (typeof Q.Streams.constructors[type] !== 'function') {

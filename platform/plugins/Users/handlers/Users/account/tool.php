@@ -1,19 +1,19 @@
 <?php
 
 function Users_account_tool($options)
-{	
-	$defaults = array(
-		'uri' => 'Users/account',
-		'omit' => array(),
-		'fields' => array(),
-		'title' => "Basic Info",
-		'editing' => true,
-		'complete' => true,
-		'inProcess' => false,
-		'collapsed' => false,
-		'toggle' => false
-	);
-	extract(array_merge($defaults, $options));
+{
+	$uri = 'Users/account';
+	$omit = array();
+	$fields = array();
+	$title = "Basic Info";
+	$editing = true;
+	$complete = true;
+	$inProcess = false;
+	$collapsed = false;
+	$toggle = false;
+	$omit = array();
+	$_form_static = null;
+	extract($options, EXTR_OVERWRITE);
 	$default_fields = array(
 		'username' => array('type' => 'text', 'label' => 'Choose Username'),
 		'gender' => array(
@@ -90,6 +90,6 @@ function Users_account_tool($options)
 	return Q::tool('Q/panel', compact(
 		'uri', 'title', 'form', 'static', 'on_success',
 		'complete', 'collapsed', 'toggle', 'editing', 'inProcess',
-		'_form_static'
+		'static', '_form_static'
 	));
 }

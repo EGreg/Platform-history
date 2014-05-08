@@ -14,9 +14,9 @@
  *     "label" => the label for the field
  *     "extra" => if set, this is html to replace the first cell, displacing the label
  *     "placeholder" => if set, this is the placeholder text for the input
- *  "fill_from_request" => Defaults to true. 
- *     If true, uses $_REQUEST to fill any fields with same name.
- *     Currently doesn't work for names which specify arrays, such as a[b].
+ *     "fillFromRequest" => Defaults to true. 
+ *       If true, uses $_REQUEST to fill any fields with same name.
+ *       Currently doesn't work for names which specify arrays, such as a[b].
  *  "onSubmit" => Optional. A string identifying the javascript function or url to pass to Q.handle on submit
  *  "onResponse" => Optional. A string identifying the javascript function or url to pass to Q.handle on response
  *  "onSuccess" => Optional. A string identifying the javascript function or url to pass to Q.handle on success
@@ -24,19 +24,19 @@
  *    It should call the callback and pass it an object with the response info. Can be used to implement caching, etc.
  *    instead of the default HTTP request.
  *    If "loader" is Q.getter and request shall be done bypasing cache, assign true to .noCache property of the tool
- *  "slots" => Optional. A string or array of slot names to request in response. Should include "form".
- *  "contentElement" => Optional. Selector of a child element of the form to fill with HTML from the returned 'form' slot.
+ *  "slotsToRequest" => Optional. A string or array of slot names to request in response. Should include "form".
+ *  "contentElements" => Optional. Array of $slotName => $cssSelector pairs for child element of the form to fill with HTML returned from the slot.
  */
 function Q_form_tool($options)
 {
 	if (empty($options['fields'])) {
 		$options['fields'] = array();
 	}
-	if (!array_key_exists('fill_from_request', $options)) {
-		$options['fill_from_request'] = true;
+	if (!array_key_exists('fillFromRequest', $options)) {
+		$options['fillFromRequest'] = true;
 	}
-	if (!empty($options['contentElement'])) {
-		$options['contentElement'] = Q_Html::getIdPrefix() . $options['contentElement'];
+	if (empty($options['contentElements'])) {
+		$options['contentElements'] = array();
 	}
 	
 	$field_defaults = array(
@@ -74,9 +74,9 @@ function Q_form_tool($options)
 			'id' => $name
 		);
 		$value = $field2['value'];
-		$options = $field2['options'];
+		$o = $field2['options'];
 		$message = $field2['message'];
-		if (!empty($options['fill_from_request']) and !in_array($type, array('button', 'submit'))) {
+		if (!empty($options['fillFromRequest']) and !in_array($type, array('button', 'submit'))) {
 			if (isset($_REQUEST[$name])) {
 				$value = $_REQUEST[$name];
 			}
@@ -108,7 +108,7 @@ function Q_form_tool($options)
 			case 'textarea':
 				$tr_rest = "<td class='Q_form_fieldinput' data-fieldname=\"$name_text\" $colspan>"
 					. ($extra ? "<div class='Q_form_label'>$label</div>" : '')
-					. Q_Html::smartTag($type, $attributes, $value, $options)
+					. Q_Html::smartTag($type, $attributes, $value, $o)
 					. "</td></tr><tr><td class='Q_form_placeholder'>"
 					. "</td><td class='Q_form_undermessage Q_form_textarea_undermessage' $colspan>"
 					. "<div class='Q_form_undermessagebubble'>$message</div></td>";
@@ -116,7 +116,7 @@ function Q_form_tool($options)
 			default:
 				$tr_rest = "<td class='Q_form_fieldinput' data-fieldname=\"$name_text\">"
 					. ($extra ? "<div class='Q_form_label'>$label</div>" : '')
- 					. Q_Html::smartTag($type, $attributes, $value, $options)
+ 					. Q_Html::smartTag($type, $attributes, $value, $o)
  					. "</td>"
 					. ($messages_td
 						? "<td class='Q_form_fieldmessage Q_form_{$type}_message'>$message</td>"
@@ -137,13 +137,8 @@ function Q_form_tool($options)
 			$result .= Q_Html::hidden($field['value'], $name);
 		}
 	}
-	$options = array();
-	foreach (array('onSubmit', 'onResponse', 'onSuccess', 'slots', 'loader') as $k) {
-		if (isset($options[$k])) {
-			$options[$k] = $options[$k];
-		}
-	}
-	Q_Response::setToolOptions($options);
+	$fields = array('onSubmit', 'onResponse', 'onSuccess', 'slotsToRequest', 'loader', 'contentElements');
+	Q_Response::setToolOptions(Q::take($options, $fields));
 	Q_Response::addScript('plugins/Q/js/tools/form.js');
 	return $result;
 }

@@ -27,27 +27,30 @@
  */
 function Q_panel_tool($options)
 {
-	foreach (array('title', 'complete', 'editing', 'static', 'form') as $f) {
+	foreach (array('title', 'static', 'form') as $f) {
 		if (!array_key_exists($f, $options)) {
 			throw new Q_Exception_RequiredField(array('field' => '$'.$f));
 		}
 	}
 
-	$defaults = array(
-		'edit_button' => "<button type='submit' class='basic16 basic16_edit Q_panel_tool_edit'>edit</button>",
-		'save_button' => "<button type='submit' class='basic16 basic16_check Q_panel_tool_save'>save</button>",
-		'cancel_button' => "<button type='reset' class='basic16 basic16_cancel Q_panel_tool_cancel'>cancel</button>",
-		'panel_classes' => '',
-		'uri' => null,
-		'method' => 'post',
-		'collapsed' => false,
-		'toggle' => false,
-		'inProcess' => false,
-		'onSuccess' => null,
-		'onErrors' => null,
-		'snf' => null,
-	);
-	extract(array_merge($defaults, $options));
+	$edit_button = "<button type='submit' class='basic16 basic16_edit Q_panel_tool_edit'>edit</button>";
+	$save_button = "<button type='submit' class='basic16 basic16_check Q_panel_tool_save'>save</button>";
+	$cancel_button = "<button type='reset' class='basic16 basic16_cancel Q_panel_tool_cancel'>cancel</button>";
+	$panel_classes = '';
+	$uri = null;
+	$method = 'post';
+	$collapsed = false;
+	$toggle = false;
+	$inProcess = false;
+	$onSuccess = null;
+	$onErrors = null;
+	$snf = null;
+	$static = null;
+	$form = null;
+	$editing = false;
+	$complete = false;
+	$_form_static = null;
+	extract($options, EXTR_OVERWRITE);
 	
 	$more_class = ($options['complete']) 
 		? 'Q_panel_tool_complete' 
@@ -78,13 +81,9 @@ function Q_panel_tool($options)
 		}
 	}
 	
-	// Turn the static into a string, if it's an array
-	// This currently doesn't work well, because it causes
-	// a bug where the outer form is submitted twice.
-	
 	if (is_array($static)) {
 		foreach ($static['fields'] as $k => $f) {
-			if (Q::ifset($static['fields'][$k]['type'])) {
+			if (Q::ifset($static, 'fields', $k, 'type', null)) {
 				switch ($static['fields'][$k]['type']) {
 				 case 'textarea':
 					$static['fields'][$k]['value'] = str_replace("\n", "<br>", $static['fields'][$k]['value']);
@@ -105,6 +104,11 @@ function Q_panel_tool($options)
 	
 	// Turn the form into a form
 	if (is_array($form)) {
+		$form['slotsToRequest'] = array('form', 'static');
+		$form['contentElements'] = array(
+			'form' => '.Q_panel_tool_form',
+			'static' => '.Q_panel_tool_static'
+		);
 		$form = Q::tool('Q/form', $form);
 	}
 	
