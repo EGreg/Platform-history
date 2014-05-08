@@ -698,12 +698,12 @@ class Q_Response
 	}
 	
 	/**
-	 * @method shouldCacheTool
+	 * @method shouldRetainTool
 	 * @static
  	 * @param {string} The id prefix of the tool
 	 * @return {boolean} Whether to cache the tool with this id_prefix
 	 */
-	static function shouldCacheTool($id_prefix)
+	static function shouldRetainTool($id_prefix)
 	{
 		return !empty(self::$cacheTool[$id_prefix]);
 	}

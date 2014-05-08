@@ -99,7 +99,7 @@ function Q_panel_tool($options)
 			}
 			$static['fields'][$k]['type'] = 'static';
 		}
-		$static = Q::tool('Q/form', $static, array('id' => 'static'));
+		$static = Q::tool('Q/form', $static, array('id' => 'static', 'retain' => true));
 	}
 	
 	// Turn the form into a form
@@ -109,7 +109,7 @@ function Q_panel_tool($options)
 			'form' => '.Q_panel_tool_form',
 			'static' => '.Q_panel_tool_static'
 		);
-		$form = Q::tool('Q/form', $form);
+		$form = Q::tool('Q/form', $form, array('retain' => true));
 	}
 	
 	// Build the panel
@@ -118,6 +118,7 @@ function Q_panel_tool($options)
 	if (isset($snf) or isset($onSuccess) or isset($onErrors)) {
 		$panel .= "<div>".Q_Html::formInfo($onSuccess, $onErrors, $snf)."</div>";
 	}
+	$panel .= "<div class='Q_panel_tool_static'>$static</div>";
 	if ($uri) {
 		$panel = Q_Html::form(
 			$uri, 
@@ -126,7 +127,6 @@ function Q_panel_tool($options)
 			$panel
 		);
 	}
- 	$panel .= "<div class='Q_panel_tool_static'>$static</div>";
 	
 	if ($editing) $panel_classes .= ' Q_editing';
 	if ($complete) $panel_classes .= ' Q_complete';

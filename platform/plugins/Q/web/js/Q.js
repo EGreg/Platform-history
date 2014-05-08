@@ -2389,7 +2389,7 @@ Q.Tool.prefixById = function _Q_Tool_prefixById(id) {
  * @param elem HTMLElement
  *  The container to traverse
  * @param removeCached boolean
- *  Defaults to false. Whether the tools whose containing elements have the "data-Q-cache" attribute
+ *  Defaults to false. Whether the tools whose containing elements have the "data-Q-retain" attribute
  *  should be removed.
  */
 Q.Tool.remove = function _Q_Tool_remove(elem, removeCached) {
@@ -2405,7 +2405,7 @@ Q.Tool.remove = function _Q_Tool_remove(elem, removeCached) {
  * @param elem HTMLElement
  *  The container to traverse
  * @param removeCached boolean
- *  Defaults to false. Whether the tools whose containing elements have the "data-Q-cache" attribute
+ *  Defaults to false. Whether the tools whose containing elements have the "data-Q-retain" attribute
  *  should be removed.
  */
 Q.Tool.clear = function _Q_Tool_clear(elem, removeCached) {
@@ -2681,12 +2681,12 @@ Q.Tool.prototype.parent = function Q_Tool_prototype_parent() {
  * and all of its children.
  * @param removeCached boolean
  *  Defaults to false. Whether or not to remove the actual tool if its containing element
- *  has a "data-Q-cache" attribute.
+ *  has a "data-Q-retain" attribute.
  * @return {Q.Tool|null} Returns existing tool if it's being replaced, otherwise returns null.
  */
 Q.Tool.prototype.remove = function _Q_Tool_prototype_remove(removeCached) {
 
-	var shouldRemove = removeCached || !this.element.getAttribute('data-Q-cache');
+	var shouldRemove = removeCached || !this.element.getAttribute('data-Q-retain');
 	if (!shouldRemove) return;
 
 	// give the tool a chance to clean up after itself
@@ -4999,9 +4999,14 @@ Q.activate = function _Q_activate(elem, options, callback) {
 };
 
 /**
- * Replaces a particular HTMLElement and does the right thing with all the tools in it
+ * Replaces the contents of an element and does the right thing with all the tools in it
  * @param {HTMLElement} existing
  *  A HTMLElement representing the slot whose contents are to be replaced
+ *  Tools found in the existing DOM which have data-Q-retain="document" attribute
+ *  are actually retained unless the tool replacing them has data-Q-replace="document".
+ *  You can update the tool by implementing a handler for
+ *  tool.onRetained, which receives the old Q.Tool object and the new options.
+ *  It's up to your onRetained handler to update the state of the tool.
  * @param {HTMLElement|String} source
  *  An HTML string or a HTMLElement which is not part of the DOM
  * @param {Object} options
@@ -5012,7 +5017,7 @@ Q.activate = function _Q_activate(elem, options, callback) {
  */
 Q.replace = function _Q_replace(existing, source, options) {
 	if (!source) {
-		Q.Tool.remove(existing); // Remove all the tools remaining in the container, with their events etc.
+		Q.Tool.clear(existing); // Remove all the tools remaining in the container, with their events etc.
 		existing.innerHTML = '';
 		return existing;
 	}
@@ -5024,24 +5029,29 @@ Q.replace = function _Q_replace(existing, source, options) {
 	}
 	
 	Q.find(source, true, function (toolElement, options, shared) {
-		var tool = Q.Tool.byId(toolElement.id);
-		if (tool && tool.element.getAttribute('data-Q-cache')
+		var tool = Q.Tool.byId(toolElement.id.substr(0, toolElement.id.length-'_tool'.length))
+		if (tool && tool.element.getAttribute('data-Q-retain')
 		&& !toolElement.getAttribute('data-Q-replace')) {
-			// If a tool exists with this exact id and has "data-Q-cache",
+			// If a tool exists with this exact id and has "data-Q-retain",
 			// then re-use it and all its HTML elements, unless
 			// the new tool HTML has data-Q-replace.
 			// This way tools can avoid doing expensive operations each time
 			// they are replaced and reactivated.
 			var attrName = 'data-' + Q.normalize(tool.name, '-'),
-				newOptions = toolElement.getAttribute(attrName);
+				newOptionsString = toolElement.getAttribute(attrName);
 			toolElement.parentNode.replaceChild(tool.element, toolElement);
-			toolElement.setAttribute(attrName, newOptions);
+			toolElement.setAttribute(attrName, newOptionsString);
 			
-			// The tool's constructor will be called again with the new options.
-			// However, from the tool we decided to cache, we still have
-			// all the DOM elements, attached jQuery data and events,
-			// as well as the Q.Tool object with its properties, such as options or state.
-			Q.handle(tool.onUseCached);
+			// The tool's constructor not will be called again with the new options.
+			// Instead, implement onRetained, from the tool we decided to retain.
+			// The Q.Tool object still contains all its old properties, options, state.
+			// Its element still contains DOM elements, 
+			// attached jQuery data and events, and more.
+			// However, the element's data-TOOL-NAME attribute now contains
+			// the new options, and you should probably update its state when handling
+			// the following event.
+			var newOptions = JSON.parse(newOptionsString);
+			Q.handle(tool.onRetained, tool, [newOptions]);
 		}
 	});
 	

@@ -44,8 +44,8 @@ function Q_after_Q_tool_render($params, &$result)
 	if (isset($extra['classes'])) {
 		$classes .= ' ' . $extra['classes'];
 	}
-	$data_cache = isset($extra['cache']) || Q_Response::shouldCacheTool($id_prefix)
-		? " data-Q-cache='document'"
+	$data_cache = isset($extra['retain']) || Q_Response::shouldRetainTool($id_prefix)
+		? " data-Q-retain='document'"
 		: '';
 	$names = ($count === 1) ? ' '.key($info) : 's '.implode(" ", $names);
 	$result = "<!--\n\nbegin tool$names\n\n-->"

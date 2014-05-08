@@ -9,7 +9,7 @@ Q.Tool.define('Q/form', function(options) {
 	var form = $te.closest('form');
 	if (!form.length) return;
 	if (form.data('Q/form tool')) return;
-	form.submit(function(event) {
+	form.on('submit.Q_form', function(event) {
 		function onResponse(err, data) {
 			var msg;
 			if (msg = Q.firstErrorMessage(err)) {
@@ -26,6 +26,10 @@ Q.Tool.define('Q/form', function(options) {
 					eval(data.scriptLines.form);
 				}
 			} else {
+				var slots = Object.keys(data.slots);
+				var pipe = new Q.pipe(slots, function () {
+					Q.handle(tool.state.onSuccess, tool, arguments);
+				});
 				for (var slot in data.slots) {
 					var e;
 					switch (typeof tool.state.contentElements[slot]) {
@@ -37,12 +41,12 @@ Q.Tool.define('Q/form', function(options) {
 					default:
 						e = $(tool.element);
 					}
-					Q.replace(e[0], data.slots[slot]);
+					var replaced = Q.replace(e[0], data.slots[slot]);
+					Q.activate(replaced, pipe.fill(slot));
 					if (data.scriptLines && data.scriptLines[slot]) {
 						eval(data.scriptLines[slot]);
 					}
 				}
-				Q.handle(tool.state.onSuccess, tool, arguments);
 			}
 		};
 		$('button', $te).closest('td').addClass('Q_throb');
@@ -89,7 +93,12 @@ Q.Tool.define('Q/form', function(options) {
 		var form = $(this.element).closest('form');
 		if (form.data('Q/form tool') === this) {
 			form.removeData('Q/form tool');
+			form.off('submit.Q_form');
 		}
+	}},
+	
+	onRetained: {"Q/form": function () {
+		debugger;
 	}},
 	
 	applyErrors: function(errors) {
