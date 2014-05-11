@@ -658,13 +658,13 @@ class Q_Response
 	static function setToolOptions($key, $value = null)
 	{
 		$tool_name = Q::$toolName;
-		$id_prefix = Q_Html::getIdPrefix($tool_name);
+		$idPrefix = Q_Html::getIdPrefix($tool_name);
 		$to_set = is_array($key) ? $key : array($key => $value);
 		foreach ($to_set as $k => $v) {
 			if (substr($k, 0, 2) == 'Q_') {
 				continue;
 			}
-			self::$toolOptions[$id_prefix][$tool_name][$k] = $v;
+			self::$toolOptions[$idPrefix][$tool_name][$k] = $v;
 		}
 		
 	}
@@ -680,54 +680,76 @@ class Q_Response
 		if (!isset($tool_name)) {
 			$tool_name = Q::$toolName;
 		}
-		$id_prefix = Q_Html::getIdPrefix($tool_name);
-		return isset(self::$toolOptions[$id_prefix][$tool_name])
-			? self::$toolOptions[$id_prefix][$tool_name]
+		$idPrefix = Q_Html::getIdPrefix($tool_name);
+		return isset(self::$toolOptions[$idPrefix][$tool_name])
+			? self::$toolOptions[$idPrefix][$tool_name]
 			: null;
 	}
 	
 	/**
-	 * @method cacheTool
+	 * @method toolRetain
 	 * @static
-	 * @param {boolean} [$to_cache=true] Defaults to true. Whether to cache the tool being rendered.
+	 * @param {boolean} [$toRetain=true] Defaults to true. Whether to cache the tool being rendered.
 	 */
-	static function cacheTool($to_cache = true)
+	static function toolRetain($toRetain = true)
 	{
-		$id_prefix = Q_Html::getIdPrefix();
-		self::$cacheTool[$id_prefix] = $to_cache;
+		$idPrefix = Q_Html::getIdPrefix();
+		self::$toolRetain[$idPrefix] = $toRetain;
+	}
+	
+	/**
+	 * @method toolReplace
+	 * @static
+	 * @param {boolean} [$toReplaceWith=true] Defaults to true. Whether to cache the tool being rendered.
+	 */
+	static function toolReplace($toRetain = true)
+	{
+		$idPrefix = Q_Html::getIdPrefix();
+		self::$toolReplace[$idPrefix] = $toRetain;
 	}
 	
 	/**
 	 * @method shouldRetainTool
 	 * @static
  	 * @param {string} The id prefix of the tool
-	 * @return {boolean} Whether to cache the tool with this id_prefix
+	 * @return {boolean} Whether to cache the tool with this idPrefix
 	 */
-	static function shouldRetainTool($id_prefix)
+	static function shouldRetainTool($idPrefix)
 	{
-		return !empty(self::$cacheTool[$id_prefix]);
+		return !empty(self::$toolRetain[$idPrefix]);
 	}
 	
 	/**
-	 * @method cacheSlot
+	 * @method shouldReplaceWithTool
 	 * @static
-	 * @param {boolean} [$to_cache=true] Defaults to true. Whether to cache the slot being rendered.
+ 	 * @param {string} The id prefix of the tool
+	 * @return {boolean} Whether to cache the tool with this idPrefix
 	 */
-	static function cacheSlot($to_cache = true)
+	static function shouldReplaceWithTool($idPrefix)
+	{
+		return !empty(self::$toolReplace[$idPrefix]);
+	}
+	
+	/**
+	 * @method retainSlot
+	 * @static
+	 * @param {boolean} [$toRetain=true] Defaults to true. Whether to cache the slot being rendered.
+	 */
+	static function retainSlot($toRetain = true)
 	{
 		if (!isset(self::$slotName)) {
-			throw new Q_Exception("Q_Response::cacheSlot can only be called while rendering a slot");
+			throw new Q_Exception("Q_Response::retainSlot can only be called while rendering a slot");
 		}
 		self::setScriptData(
-			'Q.loadUrl.options.cacheSlots.'.self::$slotName,
-			$to_cache,
+			'Q.loadUrl.options.retainSlots.'.self::$slotName,
+			$toRetain,
 			''
 		);
 		$slot_name = self::$slotName;
 		self::addScriptLine(
-			"Q.loadUrl.cachedSlots.$slot_name = document.getElementById('{$slot_name}_slot');"
+			"Q.loadUrl.retainedSlots.$slot_name = document.getElementById('{$slot_name}_slot');"
 		);
-		self::$cacheSlot[self::$slotName] = $to_cache;
+		self::$retainSlot[self::$slotName] = $toRetain;
 	}
 	
 	/**
@@ -1536,17 +1558,23 @@ class Q_Response
 	 */
 	protected static $toolOptions = array();
 	/**
-	 * @property $cacheTool
+	 * @property $toolRetain
 	 * @static
 	 * @type array
 	 */
-	protected static $cacheTool = array();
+	protected static $toolRetain = array();
 	/**
-	 * @property $cacheSlot
+	 * @property $toolRetain
 	 * @static
 	 * @type array
 	 */
-	protected static $cacheSlot = array();
+	protected static $toolReplace = array();
+	/**
+	 * @property $retainSlot
+	 * @static
+	 * @type array
+	 */
+	protected static $retainSlot = array();
 	/**
 	 * @property $favicon_url
 	 * @static

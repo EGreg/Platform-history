@@ -2224,7 +2224,7 @@ Q.Exception.prototype = Error;
  */
 Q.Tool = function _Q_Tool(element, options) {
 	if (this.constructed) {
-		return false; // don't construct the same tool more than once
+		return this; // don't construct the same tool more than once
 	}
 	this.constructed = true;
 	this.element = element;
@@ -5006,7 +5006,7 @@ Q.activate = function _Q_activate(elem, options, callback) {
  *  are actually retained unless the tool replacing them has data-Q-replace="document".
  *  You can update the tool by implementing a handler for
  *  tool.onRetained, which receives the old Q.Tool object and the new options.
- *  It's up to your onRetained handler to update the state of the tool.
+ *  After the event is handled, the tool's state will be extended with these new options.
  * @param {HTMLElement|String} source
  *  An HTML string or a HTMLElement which is not part of the DOM
  * @param {Object} options
@@ -5028,30 +5028,28 @@ Q.replace = function _Q_replace(existing, source, options) {
 		source = s;
 	}
 	
-	Q.find(source, true, function (toolElement, options, shared) {
-		var tool = Q.Tool.byId(toolElement.id.substr(0, toolElement.id.length-'_tool'.length))
-		if (tool && tool.element.getAttribute('data-Q-retain')
-		&& !toolElement.getAttribute('data-Q-replace')) {
+	var retainedToolsArray = [];
+	var newOptionsArray = [];
+	Q.find(source, true, function (toolElement, options) {
+		var element = document.getElementById(toolElement.id);
+		if (element && element.getAttribute('data-Q-retain') !== null
+		&& !toolElement.getAttribute('data-Q-replace') !== null) {
 			// If a tool exists with this exact id and has "data-Q-retain",
 			// then re-use it and all its HTML elements, unless
 			// the new tool HTML has data-Q-replace.
 			// This way tools can avoid doing expensive operations each time
 			// they are replaced and reactivated.
-			var attrName = 'data-' + Q.normalize(tool.name, '-'),
-				newOptionsString = toolElement.getAttribute(attrName);
-			toolElement.parentNode.replaceChild(tool.element, toolElement);
-			toolElement.setAttribute(attrName, newOptionsString);
-			
-			// The tool's constructor not will be called again with the new options.
-			// Instead, implement onRetained, from the tool we decided to retain.
-			// The Q.Tool object still contains all its old properties, options, state.
-			// Its element still contains DOM elements, 
-			// attached jQuery data and events, and more.
-			// However, the element's data-TOOL-NAME attribute now contains
-			// the new options, and you should probably update its state when handling
-			// the following event.
-			var newOptions = JSON.parse(newOptionsString);
-			Q.handle(tool.onRetained, tool, [newOptions]);
+			toolElement.parentNode.replaceChild(element, toolElement);
+			element.Q.newOptions = {};
+			for (var name in element.Q.tools) {
+				var tool = Q.Tool.from(element, name);
+				var attrName = 'data-' + Q.normalize(tool.name, '-');
+				var newOptionsString = toolElement.getAttribute(attrName);
+				var newOptions = JSON.parse(newOptionsString);
+				element.setAttribute(attrName, newOptionsString);
+				retainedToolsArray.push(tool);
+				newOptionsArray.push(newOptions);
+			}
 		}
 	});
 	
@@ -5062,6 +5060,20 @@ Q.replace = function _Q_replace(existing, source, options) {
 	var c;
 	while (c = source.childNodes[0]) {
 		existing.appendChild(c);
+	}
+	
+	for (var i=0, l=retainedToolsArray.length; i<l; ++i) {
+		var tool = retainedToolsArray[i];
+		var newOptions = newOptionsArray[i];
+		// The tool's constructor not will be called again with the new options.
+		// Instead, implement onRetained, from the tool we decided to retain.
+		// The Q.Tool object still contains all its old properties, options, state.
+		// Its element still contains DOM elements, 
+		// attached jQuery data and events, and more.
+		// However, the element's data-TOOL-NAME attribute now contains
+		// the new options.
+		Q.handle(tool.onRetained, tool, [newOptions]);
+		Q.extend(tool.state, 10, newOptions);
 	}
 	
 	return existing;
@@ -5093,7 +5105,7 @@ Q.replace = function _Q_replace(existing, source, options) {
  *   "onLoad": handler to call when data is loaded but before it is processed -
  *		when called the argument of "onTimeout" does nothing
  *   "slotNames": an array of slot names to request and process (default is all slots in Q.info.slotNames)
- *   "cacheSlots": an object of {slotName: whetherToCache} pairs
+ *   "retainSlots": an object of {slotName: whetherToRetain} pairs, retained slots aren't reloaded
  *   "quiet": defaults to false. If true, allows visual indications that the request is going to take place.
  *   "onLoadStart": if "quiet" option is false, anything here will be called after the request is initiated
  *   "onLoadEnd": if "quiet" option is false, anything here will be called after the request is fully completed
@@ -5109,12 +5121,12 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 	if (typeof(slotNames) === 'string') {
 		slotNames = slotNames.split(',');
 	}
-	if (o.cacheSlots) {
+	if (o.retainSlots) {
 		var arr = [], i, l = slotNames.length;
 		for (i=0; i<l; ++i) {
 			var slotName = slotNames[i];
-			if (!o.cacheSlots[slotName]
-			|| !Q.loadUrl.cachedSlots[slotName]) {
+			if (!o.retainSlots[slotName]
+			|| !Q.loadUrl.retainedSlots[slotName]) {
 				arr.push(slotName);
 			}
 		}
@@ -5485,7 +5497,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 	}
 };
 
-Q.loadUrl.cachedSlots = {};
+Q.loadUrl.retainedSlots = {};
 
 Q.loadUrl.defaultHandler = function _Q_loadUrl_fillSlots (res, url, options) {
 	var elements = {}, slot, name, elem, pos;
@@ -5786,11 +5798,11 @@ function _constructTool(toolElement, options, shared) {
 					if (Q.getObject(['Q', 'tools', toolName], element)) {
 						return; // support re-entrancy of Q.activate
 					}
-    				var existingTool = Q.Tool.call(this, element, options);
+    				Q.Tool.call(this, element, options);
     				this.state = Q.copy(this.options, toolFunc.stateKeys);
 					var prevTool = Q.Tool.beingActivated;
 					Q.Tool.beingActivated = this;
-					toolFunc.call(this, this.options, existingTool);
+					toolFunc.call(this, this.options);
 					Q.Tool.beingActivated = prevTool;
 				} catch (e) {
 					debugger; // pause here if debugging

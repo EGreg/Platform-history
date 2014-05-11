@@ -11,12 +11,12 @@ function Q_after_Q_tool_render($params, &$result)
 	$id_prefix = Q_Html::getIdPrefix();
 	$tool_ids = Q_Html::getToolIds();
 
-	if (!empty($extra['inner'])) {
+	$tag = !empty($extra['tag']) ? $extra['tag'] : 'div';
+	if (empty($tag)) {
 		Q_Html::popIdPrefix();
 		return;
 	}
 	
-	$tag = !empty($extra['tag']) ? $extra['tag'] : 'div';
 	$classes = '';
 	$data_options = '';
 	$count = count($info);
@@ -44,12 +44,15 @@ function Q_after_Q_tool_render($params, &$result)
 	if (isset($extra['classes'])) {
 		$classes .= ' ' . $extra['classes'];
 	}
-	$data_cache = isset($extra['retain']) || Q_Response::shouldRetainTool($id_prefix)
-		? " data-Q-retain='document'"
+	$data_retain = !empty($extra['retain']) || Q_Response::shouldRetainTool($id_prefix)
+		? " data-Q-retain=''"
+		: '';
+	$data_replace = !empty($extra['replace']) || Q_Response::shouldReplaceWithTool($id_prefix)
+		? " data-Q-replace=''"
 		: '';
 	$names = ($count === 1) ? ' '.key($info) : 's '.implode(" ", $names);
 	$result = "<!--\n\nbegin tool$names\n\n-->"
-	 . "<$tag id='{$id_prefix}tool' class='Q_tool $classes'$data_options$data_cache>"
+	 . "<$tag id='{$id_prefix}tool' class='Q_tool $classes'$data_options$data_retain$data_replace>"
 	 . $result 
 	 . "</div><!--\n\nend tool$names \n\n-->";
 	
