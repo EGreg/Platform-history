@@ -37,16 +37,25 @@ class Q
 		$def = end($args);
 		for ($i=1; $i<$count-1; ++$i) {
 			$key = $args[$i];
+			if (!is_array($key)) {
+				$key = array($key);
+			}
 			if (is_array($ref2)) {
-				if (!array_key_exists($key, $ref2)) {
-					return $def;
+				foreach ($key as $k) {
+					if (array_key_exists($k, $ref2)) {
+						$ref2 = $ref2[$k];
+						continue 2;
+					}
 				}
-				$ref2 = $ref2[$key];
+				return $def;
 			} else if (is_object($ref2)) {
-				if (!isset($ref2->$key)) {
-					return $def;
+				foreach ($key as $k) {
+					if (isset($ref2->$k)) {
+						$ref2 = $ref2->$k;
+						continue 2;
+					}
 				}
-				$ref2 = $ref2->$key;
+				return $def;
 			} else {
 				return $def;
 			}

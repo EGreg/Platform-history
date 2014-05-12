@@ -627,7 +627,8 @@ class Q_Html
 		if (!isset($value)) {
 			$year = $month = $day = null;
 		} else {
-			$dp = getdate(strtotime($value));
+			$v = is_numeric($value) ? $value : strtotime($value);
+			$dp = getdate($v);
 			$year = (isset($dp['year'])) ? sprintf("%02d", $dp['year']) : null;
 			$month = (isset($dp['mon'])) ? sprintf("%02d", $dp['mon']) : null;
 			$day = (isset($dp['mday'])) ? sprintf("%02d", $dp['mday']) : null;
@@ -688,9 +689,11 @@ class Q_Html
 				if (empty($options['date'])) {
 					$display = isset($options[$value]) ? $options[$value] : $value;
 				} else {
-					$display = (!empty($value) and substr($value, 0, 4) !== '0000')
-						? date($options['date'], strtotime($value))
+					$v = is_numeric($value) ? $value : strtotime($value);
+					$display = (!empty($v) and substr($v, 0, 4) !== '0000')
+						? date($options['date'], $v)
 						: '';
+					Q::log("\n\n$v\n$display\n\n");
 				}
 			 	return self::tag('span', $attributes, $display);
 			
@@ -1306,7 +1309,7 @@ class Q_Html
 	 */
 	static function themedFilename($file_path, $ignore_environment = false)
 	{
-		list($url, $filename) = self::themedUrlAndFilename($file_path, $iframes);
+		list($url, $filename) = self::themedUrlAndFilename($file_path, $ignore_environment);
 		return $filename;
 	}
 	

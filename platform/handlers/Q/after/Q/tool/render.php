@@ -11,7 +11,7 @@ function Q_after_Q_tool_render($params, &$result)
 	$id_prefix = Q_Html::getIdPrefix();
 	$tool_ids = Q_Html::getToolIds();
 
-	$tag = !empty($extra['tag']) ? $extra['tag'] : 'div';
+	$tag = Q::ifset($extra, 'tag', 'div');
 	if (empty($tag)) {
 		Q_Html::popIdPrefix();
 		return;

@@ -5,55 +5,42 @@ Q.Tool.define("Q/panel", function() {
 	// constructor & private declarations
 	var tool = this;
 	var form_val = null;
-	var container;
 	var $te = $(tool.element);
-	var prefix = this.prefix;
+	var form = $('form', $te);
+	var container = $('.Q_panel_tool_container', $te);
 
-	tool.Q_init = function() {
-		var form = $('form', $te);
-		var form_tool = tool.child('Q_form');
-		var static_tool = tool.child('Q_form_static');
-		var container = $('.Q_panel_tool_container', $te);
-		if (!form_tool) {
-			return;
-		}
-		form_tool.state.onSubmit.set(function() {
+	Q.Tool.onConstruct('id:'+this.prefix+'Q_form').add(function (options) {
+		this.state.onSubmit.set(function() {
 			var buttons = $('.Q_panel_tool_buttons', $te);
 			buttons.addClass('Q_throb');
 		}, tool);
-		form_tool.state.onResponse.set(function(err, response) {
+		this.state.onResponse.set(function(err, response) {
 			var buttons = $('.Q_panel_tool_buttons', $te);
 			buttons.removeClass('Q_throb');
-			if ('slots' in response) {
-				if ('form' in response.slots) {
-					form_tool.updateValues(response.slots.form);
-				}
-				if (('static' in response.slots) && static_tool) {
-					static_tool.updateValues(response.slots['static']);
-				}
-			}
 		}, tool);
-		form_tool.state.onSuccess.set(function() {
+		this.state.onSuccess.set(function() {
+			var container = $('.Q_panel_tool_container', $te);
 			form_val = form.serialize();
 			container.removeClass('Q_modified');
 			container.removeClass('Q_editing');
 		}, tool);
-		form_tool.slotsToRequest = 'form,static';
-	};
+		this.slotsToRequest = 'form,static';
+	}, 'Q/panel');
 
-	container = $('.Q_panel_tool_container', $te);
-	var form = $('form', $te);
 	var edit_button = $('.Q_panel_tool_edit', $te);
 	var cancel_button = $('button.Q_panel_tool_cancel', $te);
 	form_val = form.serialize();
-	form.bind('change keyup keydown blur', function() {
+	form.on('change keyup keydown blur', function(e) {
 		var new_val = form.serialize();
 		if (form_val !== new_val) {
 			container.addClass('Q_modified');
 		} else {
 			container.removeClass('Q_modified');
 		}
-	});	
+		if (e.keyCode === 27) {
+			cancel_button.click();
+		}
+	});
 	if (container.hasClass('Q_panel_tool_toggle_onclick')) {
 		var header = $('.Q_panel_tool_header', container);
 		header.click(function() {

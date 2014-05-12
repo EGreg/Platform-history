@@ -99,7 +99,7 @@ function Q_panel_tool($options)
 			}
 			$static['fields'][$k]['type'] = 'static';
 		}
-		$static = Q::tool('Q/form', $static, array('id' => 'static', 'retain' => true));
+		$static = Q::tool('Q/form', $static, array('id' => 'static'));
 	}
 	
 	// Turn the form into a form
@@ -109,7 +109,7 @@ function Q_panel_tool($options)
 			'form' => '.Q_panel_tool_form',
 			'static' => '.Q_panel_tool_static'
 		);
-		$form = Q::tool('Q/form', $form, array('retain' => true));
+		$form = Q::tool('Q/form', $form);
 	}
 	
 	// Build the panel

@@ -18,6 +18,20 @@ Q.Tool.define('Q/form', function(options) {
 },
 
 {
+	Q: {
+		beforeRemove: {"Q/form": function () {
+			var form = $(this.element).closest('form');
+			if (form.data('Q/form tool') === this) {
+				form.removeData('Q/form tool');
+				form.off('submit.Q_form');
+			}
+		}},
+	
+		onRetain: {"Q/form": function (options) {
+			this.refresh(options);
+		}}
+	},
+	
 	refresh: function (options) {
 		// constructor & private declarations
 		var tool = this;
@@ -92,18 +106,6 @@ Q.Tool.define('Q/form', function(options) {
 		});
 		form.data('Q/form tool', tool);
 	},
-		
-	beforeRemove: {"Q/form": function () {
-		var form = $(this.element).closest('form');
-		if (form.data('Q/form tool') === this) {
-			form.removeData('Q/form tool');
-			form.off('submit.Q_form');
-		}
-	}},
-	
-	onRetained: {"Q/form": function (options) {
-		this.refresh(options);
-	}},
 	
 	applyErrors: function(errors) {
 		var err = null;
@@ -128,30 +130,6 @@ Q.Tool.define('Q/form', function(options) {
 		}
 		if (err) {
 			alert(err.message);
-		}
-	},
-	
-	updateValues: function(newContent) {
-		if (Q.typeOf(newContent) == 'string') {
-			this.element.innerHTML = newContent;
-			Q.activate(this.element);
-		} else if ('fields' in newContent) {
-			// enumerate the fields
-			alert("An array was returned. Need to implement that.");
-			for (var k in newContent.fields) {
-				switch (newContent.fields[k].type) {
-				 case 'date':
-					break;
-				 case 'select':
-					break;
-				 case 'checkboxes':
-					break;
-				 case 'radios':
-				 	break;
-				 default:
-					break;
-				}
-			}
 		}
 	}
 }

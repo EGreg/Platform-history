@@ -1410,7 +1410,7 @@ Q.Event.calculateKey = function _Q_Event_calculateKe(key, container, start) {
 		key = key.id;
 	}
 	if (container && key == undefined) { // key is undefined or null
-		var i = (start === undefined) ? Q.Event.calculateKey.keys.length : start;
+		var i = (start === undefined) ? 1 : start;
 		key = 'AUTOKEY_' + i;
 		while (container[key]) {
 			key = 'AUTOKEY_' + (++i);
@@ -2310,16 +2310,19 @@ Q.Tool = function _Q_Tool(element, options) {
 		};
 	}
 	element.Q.tool = this;
-	var normalized = Q.normalize(this.name);
+	var normalizedName = Q.normalize(this.name);
 	
-	Q.setObject(['tools', normalized], this, element.Q);
+	Q.setObject(['tools', normalizedName], this, element.Q);
 	
-	this.beforeRemove = Q.extend(new Q.Event(), this.beforeRemove);
+	// Add a Q property on the object and extend it with the prototype.Q if any
+	this.Q = Q.extend({
+		onConstruct: new Q.Event(),
+		onInit: new Q.Event(),
+		beforeRemove: new Q.Event(),
+		onRetain: new Q.Event()
+	}, this.Q);
+		
 	Q.setObject([this.id], this, Q.Tool.active);
-	
-	Q.Tool.onConstruct(this.name).handle.call(this, this.options);
-	Q.Tool.onConstruct("").handle.call(this, this.options);
-	Q.Page.onTool(this.id).handle.call(this, this.options);
 	
 	return this;
 };
@@ -2333,30 +2336,41 @@ Q.Tool.latestName = null;
 Q.Tool.latestNames = {};
 
 var _constructToolHandlers = {},
-	_beforeRemoveToolHandlers = {},
-	_pageToolHandlers = {};
+	_initToolHandlers = {},
+	_beforeRemoveToolHandlers = {};
+
+function _toolEventFactoryNormalizeKey(key) {
+	var parts = key.split(':', 2);
+	parts[parts.length-1] = Q.normalize(parts[parts.length-1]);
+	return [parts.join(':')];
+}
 
 /**
  * Returns Q.Event which occurs when a tool has been constructed
  * Generic callbacks can be assigned by setting toolName to ""
  * @method Q.Tool.onConstruct
- * @param toolName {String} the name of the tool, such as "Q/inplace"
+ * @param nameOrId {String} the name of the tool, such as "Q/inplace", or "id:" followed by tool's id
  * @return {Q.Event}
  */
-Q.Tool.onConstruct = Q.Event.factory(_constructToolHandlers, ["", function (toolName) { 
-	return [Q.normalize(toolName)];
-}]);
+Q.Tool.onConstruct = Q.Event.factory(_constructToolHandlers, ["", _toolEventFactoryNormalizeKey]);
+
+/**
+ * Returns Q.Event which occurs when a tool has been initialized
+ * Generic callbacks can be assigned by setting toolName to ""
+ * @method Q.Tool.onInit
+ * @param nameOrId {String} the name of the tool, such as "Q/inplace", or "id:" followed by tool's id
+ * @return {Q.Event}
+ */
+Q.Tool.onInit = Q.Event.factory(_initToolHandlers, ["", _toolEventFactoryNormalizeKey]);
 
 /**
  * Returns Q.Event which occurs when a tool is about to be removed
  * Generic callbacks can be assigned by setting toolName to ""
  * @method Q.Tool.beforeRemove
- * @param toolName {String} the name of the tool, such as "Q/inplace"
+ * @param nameOrId {String} the name of the tool, such as "Q/inplace", or "id:" followed by tool's id
  * @return {Q.Event}
  */
-Q.Tool.beforeRemove = Q.Event.factory(_beforeRemoveToolHandlers, ["", function (toolName) { 
-	return [Q.normalize(toolName)];
-}]);
+Q.Tool.beforeRemove = Q.Event.factory(_beforeRemoveToolHandlers, ["", _toolEventFactoryNormalizeKey]);
 
 /**
  * Reference a tool by its id
@@ -2449,7 +2463,7 @@ Q.Tool.define = function (name, ctor, defaultOptions, stateKeys, methods) {
 	if (typeof ctor !== 'function') {
 		throw new Q.Error("Q.Tool.define requires ctor to be a string or a function");
 	}
-	Q.extend(ctor.prototype, methods);
+	Q.extend(ctor.prototype, 10, methods);
 	Q.Tool.constructors[name] = ctor;
 	Q.Tool.onLoadedConstructor(name).handle(name, ctor);
 	Q.Tool.onLoadedConstructor("").handle(name, ctor);
@@ -2539,7 +2553,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 		$.fn[name] = jQueryPluginConstructor;
 		var ToolConstructor = Q.Tool.define(name, function _Q_Tool_jQuery_toolConstructor(options) {
 			$(this.element).plugin(name, options, this);
-			this.beforeRemove.set(function () {
+			this.Q.beforeRemove.set(function () {
 				$(this.element).plugin(name, 'destroy', this);
 			}, 'Q');
 		});
@@ -2690,9 +2704,15 @@ Q.Tool.prototype.remove = function _Q_Tool_prototype_remove(removeCached) {
 	if (!shouldRemove) return;
 
 	// give the tool a chance to clean up after itself
-	Q.Tool.beforeRemove("").handle.call(this, []);
-	Q.Tool.beforeRemove(this.name).handle.call(this, []);
-	Q.handle(this.beforeRemove, this, []);
+	var normalizedName = Q.normalize(this.name);
+	var normalizedId = Q.normalize(this.id);
+	_beforeRemoveToolHandlers["id:"+normalizedId] &&
+	_beforeRemoveToolHandlers["id:"+normalizedId].handle.call(this);
+	_beforeRemoveToolHandlers[normalizedName] &&
+	_beforeRemoveToolHandlers[normalizedName].handle.call(this);
+	_beforeRemoveToolHandlers[""] &&
+	_beforeRemoveToolHandlers[""].handle.call(this);
+	Q.handle(this.Q.beforeRemove, this, []);
 	
 	delete this.element.Q.tools[Q.normalize(this.name)];
 	if (Q.isEmpty(this.element.Q.tools)) {
@@ -3359,15 +3379,6 @@ Q.Page = function (uriString) {
 
 Q.Page.beingLoaded = false;
 Q.Page.beingActivated = false;
-
-/**
- * Returns Q.Event which occurs when a tool has been constructed
- * Generic callbacks can be assigned by setting toolName to ""
- * @method Q.Tool.onConstruct
- * @param toolName {String} the name of the tool, such as "Q/inplace"
- * @return {Q.Event}
- */
-Q.Page.onTool = Q.Event.factory(_pageToolHandlers, [""]);
 
 /**
  * Use this function to set handlers for when the page is loaded or unloaded.
@@ -5005,7 +5016,7 @@ Q.activate = function _Q_activate(elem, options, callback) {
  *  Tools found in the existing DOM which have data-Q-retain="document" attribute
  *  are actually retained unless the tool replacing them has data-Q-replace="document".
  *  You can update the tool by implementing a handler for
- *  tool.onRetained, which receives the old Q.Tool object and the new options.
+ *  tool.Q.onRetain, which receives the old Q.Tool object and the new options.
  *  After the event is handled, the tool's state will be extended with these new options.
  * @param {HTMLElement|String} source
  *  An HTML string or a HTMLElement which is not part of the DOM
@@ -5066,13 +5077,13 @@ Q.replace = function _Q_replace(existing, source, options) {
 		var tool = retainedToolsArray[i];
 		var newOptions = newOptionsArray[i];
 		// The tool's constructor not will be called again with the new options.
-		// Instead, implement onRetained, from the tool we decided to retain.
+		// Instead, implement Q.onRetain, from the tool we decided to retain.
 		// The Q.Tool object still contains all its old properties, options, state.
 		// Its element still contains DOM elements, 
 		// attached jQuery data and events, and more.
 		// However, the element's data-TOOL-NAME attribute now contains
 		// the new options.
-		Q.handle(tool.onRetained, tool, [newOptions]);
+		Q.handle(tool.Q.onRetain, tool, [newOptions]);
 		Q.extend(tool.state, 10, newOptions);
 	}
 	
@@ -5312,10 +5323,6 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 
 			if (!o.ignorePage) {
 				_doEvents('before', moduleSlashAction);
-				for (k in _pageToolHandlers) {
-					_pageToolHandlers[k].remove(true);
-				}
-				_pageToolHandlers = {};
 				while (Q.Event.forPage && Q.Event.forPage.length) {
 					// keep removing the first element of the array until it is empty
 					Q.Event.forPage[0].remove(true);
@@ -5803,6 +5810,15 @@ function _constructTool(toolElement, options, shared) {
 					var prevTool = Q.Tool.beingActivated;
 					Q.Tool.beingActivated = this;
 					toolFunc.call(this, this.options);
+					// Trigger events in some global event factories
+					var normalizedName = Q.normalize(this.name);
+					var normalizedId = Q.normalize(this.id);
+					_constructToolHandlers[""] &&
+					_constructToolHandlers[""].handle.call(this, this.options);
+					_constructToolHandlers[normalizedName] &&
+					_constructToolHandlers[normalizedName].handle.call(this, this.options);
+					_constructToolHandlers["id:"+normalizedId] &&
+					_constructToolHandlers["id:"+normalizedId].handle.call(this, this.options);
 					Q.Tool.beingActivated = prevTool;
 				} catch (e) {
 					debugger; // pause here if debugging
@@ -5830,13 +5846,25 @@ function _constructTool(toolElement, options, shared) {
  */
 function _initTool(toolElement) {
 	_loadToolScript(toolElement, function _initTool_doConstruct() {
+		function _handleInit() {
+			Q.handle(tool.Q.onInit, tool, tool.options);
+			
+			var normalizedName = Q.normalize(tool.name);
+			var normalizedId = Q.normalize(tool.id);
+			_initToolHandlers[""] &&
+			_initToolHandlers[""].handle.call(tool, tool.options);
+			_initToolHandlers[normalizedName] &&
+			_initToolHandlers[normalizedName].handlecall(tool, tool.options);
+			_initToolHandlers["id:"+normalizedId] &&
+			_initToolHandlers["id:"+normalizedId].handlecall(tool, tool.options);
+		}
+		
 		var tool = Q.Tool.from(toolElement);
-		if (!tool) {
+		if (!tool || !tool.Q.onInit) {
 			return;
 		}
-		// WARNING: the order in which Q_init fires is not guaranteed
-		if (tool.Q_init) Q.handle(tool.Q_init, tool);
-		if (tool.Q_ready) Q.handle(tool.Q_ready, tool);
+		Q.pipe(tool.children(), 'Q.onInit', _handleInit)
+		.run();
 	});
 }
 

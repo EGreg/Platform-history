@@ -14,7 +14,7 @@
  *     "label" => the label for the field
  *     "extra" => if set, this is html to replace the first cell, displacing the label
  *     "placeholder" => if set, this is the placeholder text for the input
- *     "fillFromRequest" => Defaults to true. 
+ *     "fillFromRequest" => Defaults to true.
  *       If true, uses $_REQUEST to fill any fields with same name.
  *       Currently doesn't work for names which specify arrays, such as a[b].
  *  "onSubmit" => Optional. A string identifying the javascript function or url to pass to Q.handle on submit
@@ -38,7 +38,7 @@ function Q_form_tool($options)
 	if (empty($options['contentElements'])) {
 		$options['contentElements'] = array();
 	}
-	
+
 	$field_defaults = array(
 		'type' => 'text',
 		'attributes' => array(),
@@ -79,6 +79,20 @@ function Q_form_tool($options)
 		if (!empty($options['fillFromRequest']) and !in_array($type, array('button', 'submit'))) {
 			if (isset($_REQUEST[$name])) {
 				$value = $_REQUEST[$name];
+			} else if ($type === 'static' or $type === 'date') {
+				$parts = array(
+					$name.'_hour' => 0,
+					$name.'_minute' => 0,
+					$name.'_second' => 0,
+					$name.'_month' => date('m'),
+					$name.'_day' => date('d'),
+					$name.'_year' => date('Y')
+				);
+				$provided = Q::ifset($_REQUEST, array_keys($parts), null);
+				if (isset($provided)) {
+					$mktime = Q::take($_REQUEST, $parts);
+					$value = call_user_func_array('mktime', $mktime);
+				}
 			}
 		}
 		if (isset($field2['placeholder'])) {

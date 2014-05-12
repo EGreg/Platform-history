@@ -153,7 +153,7 @@ Q.Tool.define("Streams/access", function(options) {
 		}
 	}
 
-	this.Q_init = function () {
+	this.Q.onInit.set(function () {
 
 		var i, userId, access;
 		prepareSelect(level_for_everyone, '', options.stream.fields[field_name], 'stream');
@@ -203,7 +203,7 @@ Q.Tool.define("Streams/access", function(options) {
 				}
 			);
 		});
-	};
+	}, 'Streams/access');
 
 });
 
