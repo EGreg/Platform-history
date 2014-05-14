@@ -38,17 +38,17 @@ class Db_Row implements Iterator
 	 *     $result is the Db_Result, and $this is the Db_Row which was fetched
 	 *  </li>
 	 *  <li>
-	 *     <b>beforeGetRelated($relation_name, $fields, $inputs, $options)</b>
+	 *     <b>beforeGetRelated($relationName, $fields, $inputs, $options)</b>
 	 *     Called by getRelated method before trying to get related rows.
-	 *     $relation_name, $inputs and $fields are the parameters passed to getRelated.
+	 *     $relationName, $inputs and $fields are the parameters passed to getRelated.
 	 *     If return value is set, then that is what getRelated returns immediately
 	 *     after beforeGetRelated returns.
 	 *     Typically, you would use this function to retrieve from a cache.
 	 *  </li>
 	 *  <li>
-	 *     <b>beforeGetRelatedExecute($relation_name, $query, $options)</b>
+	 *     <b>beforeGetRelatedExecute($relationName, $query, $options)</b>
 	 *     Called by getRelated() method before executing the Db_Query to get related rows.
-	 *     It is passed the $relation_name, the $query, and any options passed to getRelated().
+	 *     It is passed the $relationName, the $query, and any options passed to getRelated().
 	 *     This function should return the Db_Query to execute.
 	 *  </li>
 	 *  <li>
@@ -361,7 +361,7 @@ class Db_Row implements Iterator
 	 * Set up a relation where at most one object is returned.
 	 * For a more complex version, see hasOneEx.
 	 * @method hasOne
-	 * @param {string} $relation_name The name of the relation. For example, "mother" or "primary_email"
+	 * @param {string} $relationName The name of the relation. For example, "mother" or "primary_email"
 	 * @param {array} $aliases, An associative array mapping aliases to class names.
 	 *  Once set up, the aliases can be used in the join arrays instead of
 	 *  the class names. 
@@ -377,7 +377,7 @@ class Db_Row implements Iterator
 	 *  built that will build a tree of these for you.
 	 */
 	function hasOne(
-		$relation_name,
+		$relationName,
 		$aliases,
 		$join1,
 		$join2 = null)
@@ -392,7 +392,7 @@ class Db_Row implements Iterator
 	 * For a more complex version, see hasOneFromClassEx.
 	 * @method hasOneFromClass
 	 * @param {string} $from_class_name The name of the ORM class on which to set the relation
-	 * @param {string} $relation_name The name of the relation. For example, "mother" or "primary_email"
+	 * @param {string} $relationName The name of the relation. For example, "mother" or "primary_email"
 	 * @param {array} $aliases, An associative array mapping aliases to class names.
 	 *  Once set up, the aliases can be used in the join arrays instead of
 	 *  the class names. 
@@ -415,7 +415,7 @@ class Db_Row implements Iterator
 	 */
 	static function hasOneFromClass(
 		$class_name,
-		$relation_name,
+		$relationName,
 		$aliases,
 		$join1,
 		$join2 = null)
@@ -426,7 +426,7 @@ class Db_Row implements Iterator
 
 		$params = array(
 			$class_name,
-			$relation_name,
+			$relationName,
 			$to_class_name,
 			'__this_table',
 		);
@@ -437,7 +437,7 @@ class Db_Row implements Iterator
 	/**
 	 * Set up a relation where at most one object is returned.
 	 * @method hasOneEx
-	 * @param {string} $relation_name The name of the relation. For example, "mother" or "primary_email"
+	 * @param {string} $relationName The name of the relation. For example, "mother" or "primary_email"
 	 * @param {string} $to_class_name The name of the ORM class which extends Db_Row, to load the result into.
 	 * @param {string} $alias The table name or alias that will refer to the table in the query
 	 *  corresponding to $this object.
@@ -450,7 +450,7 @@ class Db_Row implements Iterator
 	 *  which have a single root foreign_table.
 	 */
 	function hasOneEx (
-		$relation_name, 
+		$relationName, 
 		$to_class_name, 
 		$alias, 
 		Db_Relation $relation, 
@@ -466,7 +466,7 @@ class Db_Row implements Iterator
 	 * Sets up a relation where an array is returned.
 	 * For a more complex version, see hasManyEx.
 	 * @method hasMany
-	 * @param {string} $relation_name The name of the relation. For example, "tags" or  "reviews"
+	 * @param {string} $relationName The name of the relation. For example, "tags" or  "reviews"
 	 * @param {array} $aliases An associative array mapping aliases to class names.
 	 *  Once set up, the aliases can be used in the join arrays instead of
 	 *  the class names. 
@@ -488,7 +488,7 @@ class Db_Row implements Iterator
 	 *  built that will build a tree of these for you.
 	 */
 	function hasMany(
-		$relation_name,
+		$relationName,
 		$aliases,
 		$join1,
 		$join2 = null)
@@ -503,7 +503,7 @@ class Db_Row implements Iterator
 	 * For a more complex version, see hasManyFromClassEx.
 	 * @method hasManyFromClass
 	 * @param {string} $from_class_name The name of the ORM class on which to set the relation
-	 * @param {string} $relation_name The name of the relation. For example, "tags" or  "reviews"
+	 * @param {string} $relationName The name of the relation. For example, "tags" or  "reviews"
 	 * @param {array} $aliases, An associative array mapping aliases to class names.
 	 *  Once set up, the aliases can be used in the join arrays instead of
 	 *  the class names. 
@@ -520,7 +520,7 @@ class Db_Row implements Iterator
 	 */
 	static function hasManyFromClass(
 		$class_name,
-		$relation_name,
+		$relationName,
 		$aliases,
 		$join1,
 		$join2 = null)
@@ -531,7 +531,7 @@ class Db_Row implements Iterator
 
 		$params = array(
 			$class_name,
-			$relation_name,
+			$relationName,
 			$to_class_name,
 			'__this_table',
 		);
@@ -542,7 +542,7 @@ class Db_Row implements Iterator
 	/**
 	 * Set up a relation where an array is returned.
 	 * @method hasManyEx
-	 * @param {string} $relation_name The name of the relation. For example, "tags" or  "reviews"
+	 * @param {string} $relationName The name of the relation. For example, "tags" or  "reviews"
 	 * @param {string} $to_class_name The name of the ORM class which extends Db_Row, to load the result into.
 	 * @param {string} $alias The table name or alias that will refer to the table in the query
 	 *  corresponding to $this object.
@@ -553,7 +553,7 @@ class Db_Row implements Iterator
 	 * The only valid relations are the ones which have a single root foreign_table.
 	 */
 	function hasManyEx (
-		$relation_name, 
+		$relationName, 
 		$to_class_name, 
 		$alias, 
 		Db_Relation $relation, 
@@ -568,7 +568,7 @@ class Db_Row implements Iterator
 	 * Set up a relation where at most one object is returned.
 	 * @method hasOneFromClassEx
 	 * @param {string} $from_class_name The name of the ORM class on which to set the relation
-	 * @param {string} $relation_name The name of the relation. For example, "Mother" or  "Primary Email"
+	 * @param {string} $relationName The name of the relation. For example, "Mother" or  "Primary Email"
 	 * @param {string} $to_class_name The name of the ORM class which extends Db_Row, to load the result into.
 	 * @param {string} $alias The table name or alias that will refer to the table in the query
 	 *  corresponding to $this object.
@@ -580,7 +580,7 @@ class Db_Row implements Iterator
 	 */
 	static function hasOneFromClassEx (
 		$from_class_name,
-		$relation_name, 
+		$relationName, 
 		$to_class_name, 
 		$alias, 
 		Db_Relation $relation, 
@@ -595,17 +595,17 @@ class Db_Row implements Iterator
 
 		// Add the relations
 		$mySetUp = & self::getSetUpFromClass($from_class_name);
-		$mySetUp['relations'][$relation_name] = $relation;
-		$mySetUp['relations_many'][$relation_name] = false;
-		$mySetUp['relations_class_name'][$relation_name] = $to_class_name;
-		$mySetUp['relations_alias'][$relation_name] = $alias;
+		$mySetUp['relations'][$relationName] = $relation;
+		$mySetUp['relations_many'][$relationName] = false;
+		$mySetUp['relations_class_name'][$relationName] = $to_class_name;
+		$mySetUp['relations_alias'][$relationName] = $alias;
 	}
 
 	/**
 	 * Set up a relation for another table, where an array is returned.
 	 * @method hasManyFromClassEx
 	 * @param {string} $from_class_name The name of the ORM class on which to set the relation
-	 * @param {string} $relation_name The name of the relation. For example, "Tags" or  "Reviews"
+	 * @param {string} $relationName The name of the relation. For example, "Tags" or  "Reviews"
 	 * @param {string} $to_class_name The name of the ORM class which extends Db_Row, to load the result into.
 	 * @param {string} $alias The table name or alias that will refer to the table in the query corresponding to the other object.
 	 * @param {Db_Relation} $relation The relation between two or more tables, or the table with itself.
@@ -619,7 +619,7 @@ class Db_Row implements Iterator
 	 */
 	static function hasManyFromClassEx (
 		$from_class_name,
-		$relation_name, 
+		$relationName, 
 		$to_class_name,
 		$from_alias, 
 		Db_Relation $relation, 
@@ -636,10 +636,10 @@ class Db_Row implements Iterator
 		if (! isset(self::$setUp[$from_class_name]))
 			self::$setUp[$from_class_name] = array();
 		$mySetUp =& self::$setUp[$from_class_name];
-		$mySetUp['relations'][$relation_name] = $relation;
-		$mySetUp['relations_many'][$relation_name] = true;
-		$mySetUp['relations_class_name'][$relation_name] = $to_class_name;
-		$mySetUp['relations_alias'][$relation_name] = $from_alias;
+		$mySetUp['relations'][$relationName] = $relation;
+		$mySetUp['relations_many'][$relationName] = true;
+		$mySetUp['relations_class_name'][$relationName] = $to_class_name;
+		$mySetUp['relations_alias'][$relationName] = $from_alias;
 	}
 
 	/**
@@ -963,7 +963,7 @@ class Db_Row implements Iterator
 	/**
 	 * Get some records in a related table using foreign keys
 	 * @method getRelated
-	 * @param {string} $relation_name The name of the relation, or the name of 
+	 * @param {string} $relationName The name of the relation, or the name of 
 	 *  a class, which extends Db_Row, representing the foreign table.
 	 *  We use the relations set up, in $this->getSetUp(),
 	 *  through the use of Db_Row::hasOne() and Db_Row::hasMeny().
@@ -989,7 +989,7 @@ class Db_Row implements Iterator
 	 * 	 // even though the Items table is still joined onto it.
 	 * 	  $user->getRelated('tags');
 	 *
-	 * @param {boolean} [$modify_query=false] If true, returns a Db_Query object that can be modified, rather than
+	 * @param {boolean} [$modifyQuery=false] If true, returns a Db_Query object that can be modified, rather than
 	 *  the result. You can call more methods, like limit, offset, where, orderBy,
 	 *  and so forth, on that Db_Query. After you have modified it sufficiently,
 	 *  get the ultimate result of this function, by calling the resume() method on 
@@ -999,10 +999,10 @@ class Db_Row implements Iterator
 	 *  If the relation was defined with hasOne, returns a db row or false. 
 	 */
 	function getRelated (
-		$relation_name, 
+		$relationName, 
 		$fields = array(),
 		$inputs = array(),
-		$modify_query = false,
+		$modifyQuery = false,
 		$options = array())
 	{
 		if (empty($inputs))
@@ -1012,18 +1012,18 @@ class Db_Row implements Iterator
 			$fields = array();
 		
 		$mySetUp = & $this->getSetUp();
-		if (! isset($mySetUp['relations'][$relation_name])) {
-			throw new Exception("Relation $relation_name not found.");
+		if (! isset($mySetUp['relations'][$relationName])) {
+			throw new Exception("Relation $relationName not found.");
 		}
-		if (! isset($mySetUp['relations_many'][$relation_name])) {
+		if (! isset($mySetUp['relations_many'][$relationName])) {
 			throw new Exception(
-				"Information on relation $relation_name not found."
+				"Information on relation $relationName not found."
 			);
 		}
 		
 		$callback = array($this, "beforeGetRelated");
 		if (is_callable($callback)) {
-			$result = call_user_func($callback, $relation_name, $fields, $inputs);
+			$result = call_user_func($callback, $relationName, $fields, $inputs);
 		}
 		if (isset($result))
 			return $result;
@@ -1036,10 +1036,10 @@ class Db_Row implements Iterator
 //		}
 		
 		$mySetUp = & $this->getSetUp();
-		$relation = $mySetUp['relations'][$relation_name];
-		$many = $mySetUp['relations_many'][$relation_name];
-		$class_name = $mySetUp['relations_class_name'][$relation_name];
-		$alias = $mySetUp['relations_alias'][$relation_name];
+		$relation = $mySetUp['relations'][$relationName];
+		$many = $mySetUp['relations_many'][$relationName];
+		$class_name = $mySetUp['relations_class_name'][$relationName];
+		$alias = $mySetUp['relations_alias'][$relationName];
 		$root_table = $relation->getRootTable();
 
 		$inputs[$alias] = $this; // This object should always be one of the inputs
@@ -1157,20 +1157,20 @@ class Db_Row implements Iterator
 		}
 		
 		// Set the class to be returned
-		$query->className = $mySetUp['relations_class_name'][$relation_name];
+		$query->className = $mySetUp['relations_class_name'][$relationName];
 		
 		// Perhaps the extending class wants to do something else with this query
 		// before it is executed
 		$callback = array($this, "beforeGetRelatedExecute", $options);
 		if (is_callable($callback))
-			$query = call_user_func($callback, $relation_name, $query);
+			$query = call_user_func($callback, $relationName, $query);
 		if (empty($query))
 			return false;
 			
 		// Gather all the arguments together for getRelated_resume() method
 		$resume_args = array(
-			$relation_name, $fields, $inputs,
-			$modify_query, $options
+			$relationName, $fields, $inputs,
+			$modifyQuery, $options
 		);
 		$resume_args[] = compact(
 			'many', 'options',
@@ -1178,7 +1178,7 @@ class Db_Row implements Iterator
 		);
 		
 		// Modify the query if necessary
-		if ($modify_query) {
+		if ($modifyQuery) {
 			$query->setContext(array($this, 'getRelated'), $resume_args);
 			return $query;
 		}
@@ -1189,10 +1189,10 @@ class Db_Row implements Iterator
 	}
 	
 	function getRelated_resume (
-		$relation_name, 
+		$relationName, 
 		$fields = array(),
 		$inputs = array(),
-		$modify_query = false,
+		$modifyQuery = false,
 		$options = array(),
 		$preserved_vars = array(),
 		$query = null)
@@ -1464,27 +1464,27 @@ class Db_Row implements Iterator
 			unset($this->fields[$pieces[1]]);
 			return;
 		} else if ($pieces[0] == 'get') {
-			$relation_name = $pieces[1];
+			$relationName = $pieces[1];
 
 			if (isset($args[4])) {
-				return $this->getRelated($relation_name, $args[0], $args[1], 
+				return $this->getRelated($relationName, $args[0], $args[1], 
 					$args[2], $args[3], $args[4]);			
 			}
 			if (isset($args[3])) {
-				return $this->getRelated($relation_name, $args[0], $args[1], 
+				return $this->getRelated($relationName, $args[0], $args[1], 
 					$args[2], $args[3]);			
 			}
 			if (isset($args[2])) {
-				return $this->getRelated($relation_name, $args[0], $args[1], 
+				return $this->getRelated($relationName, $args[0], $args[1], 
 					$args[2]);
 			}
 			if (isset($args[1])) {
-				return $this->getRelated($relation_name, $args[0], $args[1]);
+				return $this->getRelated($relationName, $args[0], $args[1]);
 			}
 			if (isset($args[0])) {
-				return $this->getRelated($relation_name, $args[0]);
+				return $this->getRelated($relationName, $args[0]);
 			}
-			return $this->getRelated($relation_name, array());
+			return $this->getRelated($relationName, array());
 		}
 
 		$class_name = get_class($this);
@@ -1503,7 +1503,7 @@ class Db_Row implements Iterator
 	 * @method from
 	 * @param {DbRow|array} $source Can be a object extending Db_Row, 
 	 *  or it can be an array of such objects, which must all be of the same class.
-	 * @param {string} $relation_name The name of the relation to use in getRelated.
+	 * @param {string} $relationName The name of the relation to use in getRelated.
 	 * @return {DbRow|array} If $source is a single row and the relation was declared with hasOne,
 	 *  then a single row is returned. Otherwise, an associative array is returned.
 	 *  The keys of the associative array are the serialized keys of the
@@ -1512,7 +1512,7 @@ class Db_Row implements Iterator
 	 */
 	static function from(
 	 $source,
-	 $relation_name)
+	 $relationName)
 	{
 		// TODO: implement
 	}
@@ -1879,7 +1879,7 @@ class Db_Row implements Iterator
 	 *  This gets used if we make a query to the database.
 	 * @param {boolean} [$use_index=false] If true, the primary key is used in searching. 
 	 *  An exception is thrown when some fields of the primary key are not specified
-	 * @param {array|boolean} [$modify_query=false] If an array, the following keys are options for modifying the query:
+	 * @param {array|boolean} [$modifyQuery=false] If an array, the following keys are options for modifying the query:
 	 * 
 	 * * "begin" => this will cause the query to have `->begin()` a transaction
 	 *       which locks the row for update. You should call `->save(..., true)`
@@ -1890,14 +1890,14 @@ class Db_Row implements Iterator
 	 *       Defaults to false.
 	 * * "ignoreCache" => if true, then call ignoreCache on the query
 	 * * "noCache" => if true, then call noCache on the query
-	 * * Any other keys will be sent to $query->options($modify_query);
+	 * * Any other keys will be sent to $query->options($modifyQuery);
 	 * * "query" => if true, it will return a Db_Query that can be modified, rather than the result. 
 	 *   You can call more methods, like limit, offset, where, orderBy,
 	 *   and so forth, on that Db_Query. After you have modified it sufficiently,
 	 *   get the ultimate result of this function, by calling the resume() method on 
 	 *   the Db_Query object (via the chainable interface).
 	 * 
-	 *  You can also pass true in place of the $modify_query field to achieve
+	 *  You can also pass true in place of the $modifyQuery field to achieve
 	 *  the same effect as array("query" => true)
 	 * @param {array} [$options=array()] Array of options to pass to beforeRetrieve and afterFetch functions.
 	 * @return {array|Db_Row} Returns the row fetched from the Db_Result (or returned by beforeRetrieve)
@@ -1906,7 +1906,7 @@ class Db_Row implements Iterator
 	function retrieve (
 		$fields = '*', 
 		$use_index = false, 
-		$modify_query = false,
+		$modifyQuery = false,
 		$options = array())
 	{
 		if (!isset($fields)) $fields = '*';
@@ -1973,20 +1973,20 @@ class Db_Row implements Iterator
 			// Gather all the arguments together for retrieve_resume() method
 			$resume_args = array(
 				$fields, $use_index,
-				$modify_query, $options
+				$modifyQuery, $options
 			);
 			$resume_args[] = compact(
 				'use_search_criteria', 'options'
 			);
 
 			// Modify the query if necessary
-			if ($modify_query) {
-				if ($modify_query === true) {
-					$modify_query = array('query' => true);
+			if ($modifyQuery) {
+				if ($modifyQuery === true) {
+					$modifyQuery = array('query' => true);
 				} else {
-					$query->options($modify_query);
+					$query->options($modifyQuery);
 				}
-				if (!empty($modify_query['query'])) {
+				if (!empty($modifyQuery['query'])) {
 					$query->setContext(array($this, 'retrieve'), $resume_args);
 					return $query;
 				}
@@ -2006,8 +2006,8 @@ class Db_Row implements Iterator
 			$this->copyFromRow($rows[0], '', true);
 			return $this;
 		} else {
-			if (!empty($modify_query['begin'])
-			and !empty($modify_query['rollbackIfMissing'])) {
+			if (!empty($modifyQuery['begin'])
+			and !empty($modifyQuery['rollbackIfMissing'])) {
 				$this->rollback();
 			}
 			return false;
@@ -2017,7 +2017,7 @@ class Db_Row implements Iterator
 	function retrieve_resume (
 		$fields = '*', 
 		$use_index = false, 
-		$modify_query = false,
+		$modifyQuery = false,
 		$options = array(),
 		$preserved_vars = array(),
 		$query = null)
@@ -2069,7 +2069,7 @@ class Db_Row implements Iterator
 			}
 			return $this;
 		} else {
-			if (!empty($modify_query['begin']) and !empty($modify_query['rollbackIfMissing'])) {
+			if (!empty($modifyQuery['begin']) and !empty($modifyQuery['rollbackIfMissing'])) {
 				$this->rollback();
 			}
 			return false;

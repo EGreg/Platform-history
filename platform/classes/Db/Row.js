@@ -290,7 +290,7 @@ function Row(fields, retrieved /* false */) {
 	 *  This gets used if we make a query to the database.
 	 * @param [use_index=false] {boolean} If true, the primary key is used in searching.
 	 *  An exception is thrown when some fields of the primary key are not specified
-	 * @param [modify_query=false] {boolean} If true, returns a Db.Query object that can be modified, rather than
+	 * @param [modifyQuery=false] {boolean} If true, returns a Db.Query object that can be modified, rather than
 	 *  the result. You can call more methods, like limit, offset, where, orderBy,
 	 *  and so forth, on that Db.Query. After you have modified it sufficiently,
 	 *  get the ultimate result of this function, by calling the resume() method on
@@ -302,7 +302,7 @@ function Row(fields, retrieved /* false */) {
 	 *  If there were no errors, it will be passed null
 	 * * result: an array of rows retrieved. If error occured it will be passed nothing
 	 */
-	this.retrieve = function (fields /* '*' */, use_index /* false */, modify_query /* false */, callback) {
+	this.retrieve = function (fields /* '*' */, use_index /* false */, modifyQuery /* false */, callback) {
 
 		var self = this, _continue = true;
 		var rowClass = Q.require( this.className.split('_').join('/') );
@@ -311,15 +311,15 @@ function Row(fields, retrieved /* false */) {
 			callback = fields;
 			fields = '*';
 			use_index = false;
-			modify_query = false;
+			modifyQuery = false;
 		} else if (typeof use_index === 'function') {
 			callback = use_index;
 			use_index = false;
-			modify_query = false;
-		} else if (typeof modify_query === 'function') {
-			callback = modify_query;
-			modify_query = false;
-		} else if (typeof callback !== 'function' && !modify_query)
+			modifyQuery = false;
+		} else if (typeof modifyQuery === 'function') {
+			callback = modifyQuery;
+			modifyQuery = false;
+		} else if (typeof callback !== 'function' && !modifyQuery)
 			throw new Error("Callback for retrieve method was not specified for " + this.className + ".");
 
 		if (this.className === "Row")
@@ -417,7 +417,7 @@ function Row(fields, retrieved /* false */) {
 				// so syntax obj.retrieve('*', false, true).begin().resume(callback)
 				// or obj.retrieve('*', false, true, callback).begin().resume()
 				// are both valid
-				if (modify_query && typeof callback !== "function") {
+				if (modifyQuery && typeof callback !== "function") {
 					if (typeof cback !== "function") {
 						throw new Error("At least one callback shall be defined for "+self.className+".retrieve()!");
 					}
@@ -438,7 +438,7 @@ function Row(fields, retrieved /* false */) {
 				}
 			}
 			// Modify the query if necessary
-			if (modify_query) {
+			if (modifyQuery) {
 				query.resume = _resume;
 				return query;
 			} else {
