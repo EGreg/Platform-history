@@ -1888,14 +1888,17 @@ class Db_Row implements Iterator
 	 * * "rollbackIfMissing" => if begin is true, this option determines whether to
 	 *       rollback the transaction if the row we're trying to retrieve is missing.
 	 *       Defaults to false.
+	 * * "ignoreCache" => if true, then call ignoreCache on the query
+	 * * "noCache" => if true, then call noCache on the query
+	 * * Any other keys will be sent to $query->options($modify_query);
 	 * * "query" => if true, it will return a Db_Query that can be modified, rather than the result. 
-	 *  
-	 * You can call more methods, like limit, offset, where, orderBy,
-	 * and so forth, on that Db_Query. After you have modified it sufficiently,
-	 * get the ultimate result of this function, by calling the resume() method on 
-	 * the Db_Query object (via the chainable interface).
-	 * You can also pass true in place of the $modify_query field to achieve
-	 * the same effect as array("query" => true)
+	 *   You can call more methods, like limit, offset, where, orderBy,
+	 *   and so forth, on that Db_Query. After you have modified it sufficiently,
+	 *   get the ultimate result of this function, by calling the resume() method on 
+	 *   the Db_Query object (via the chainable interface).
+	 * 
+	 *  You can also pass true in place of the $modify_query field to achieve
+	 *  the same effect as array("query" => true)
 	 * @param {array} [$options=array()] Array of options to pass to beforeRetrieve and afterFetch functions.
 	 * @return {array|Db_Row} Returns the row fetched from the Db_Result (or returned by beforeRetrieve)
 	 *  If retrieve() is called with no arguments, may return false if nothing retrieved.
@@ -1980,9 +1983,8 @@ class Db_Row implements Iterator
 			if ($modify_query) {
 				if ($modify_query === true) {
 					$modify_query = array('query' => true);
-				}
-				if (isset($modify_query['begin'])) {
-					$query->begin($modify_query['begin']);
+				} else {
+					$query->options($modify_query);
 				}
 				if (!empty($modify_query['query'])) {
 					$query->setContext(array($this, 'retrieve'), $resume_args);
@@ -1995,14 +1997,17 @@ class Db_Row implements Iterator
 			return call_user_func_array(array($this, 'retrieve_resume'), $resume_args);
 		}
 		
-		if (isset($search_criteria))
+		if (isset($search_criteria)) {
 			return $rows;
+		}
+		
 		// Return one db row, as per function description
 		if (isset($rows[0])) {
 			$this->copyFromRow($rows[0], '', true);
 			return $this;
 		} else {
-			if (!empty($modify_query['begin']) and !empty($modify_query['rollbackIfMissing'])) {
+			if (!empty($modify_query['begin'])
+			and !empty($modify_query['rollbackIfMissing'])) {
 				$this->rollback();
 			}
 			return false;

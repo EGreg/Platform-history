@@ -29,7 +29,7 @@ function Websites_before_Streams_Stream_save_Websites_bio($params)
 	$bio = new Websites_Bio();
 	$bio->publisherId = $stream->publisherId;
 	$bio->streamName = $stream->name;
-	$bio->retrieve();
+	$bio->retrieve(null, null, array('ignoreCache' => true));
 
 	foreach (array('userId', 'bio', 'getintouch') as $f) {
 		if (!isset($stream->$f)) continue;
