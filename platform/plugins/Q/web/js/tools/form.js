@@ -52,7 +52,7 @@ Q.Tool.define('Q/form', function(options) {
 				$('tr.Q_error', $te).removeClass('Q_error');
 				if ('errors' in data) {
 					tool.applyErrors(data.errors);
-					$('tr.Q_error').eq(0).prev().find(':input').eq(0).focus();
+					$('tr.Q_error').eq(0).prev().find(':input:visible').eq(0).focus();
 					if (data.scriptLines && data.scriptLines.form) {
 						eval(data.scriptLines.form);
 					}

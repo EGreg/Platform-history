@@ -67,6 +67,7 @@ Q.Tool.define("Q/panel", function() {
 		container.addClass('Q_editing');
 		container.removeClass('Q_collapsed');
 		container.addClass('Q_expanded');
+		container.find('.Q_panel_tool_form :input:visible').eq(0).focus();
 		return false;
 	});
 	cancel_button.click(function() {
