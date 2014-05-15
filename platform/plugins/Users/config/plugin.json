@@ -131,6 +131,9 @@
 		},
 		"displayName": {
 			"default": "Someone"
+		},
+		"icon": {
+			"sizes": ["40", "50", "80w"]
 		}
 	}
 }

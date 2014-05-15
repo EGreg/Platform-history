@@ -240,8 +240,16 @@ Q.Tool.define("Streams/image/preview", function(options) {
 				return console.warn("Streams/image/preview: " + fem);
 			}
 			var stream = tool.stream = this;
+			var size, attributes;
+			if (this.fields.attributes
+			&& (attributes = JSON.parse(this.fields.attributes))
+			&& attributes.sizes) {
+				size = (attributes.sizes.indexOf(state.imagepicker.showSize) < 0)
+					? attributes.sizes[attributes.sizes.length-1]
+					: state.imagepicker.saveSizeName[state.imagepicker.showSize];
+			}
 			var file = (state.overrideSize && state.overrideSize[this.fields.icon])
-				|| state.imagepicker.saveSizeName[state.imagepicker.showSize]
+				|| size
 				|| Q.first(state.imagepicker.saveSizeName, {nonEmptyKey: true});
 			var full = state.imagepicker.saveSizeName[state.imagepicker.fullSize] || file;
 			var icon = stream && stream.fields.icon && stream.fields.icon !== 'default' ? stream.fields.icon : 'Streams/image';
