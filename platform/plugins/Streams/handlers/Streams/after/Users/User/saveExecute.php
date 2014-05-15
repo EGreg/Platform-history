@@ -60,9 +60,7 @@ function Streams_after_Users_User_saveExecute($params)
 			$stream->adminLevel = $p->get($name, 'adminLevel', Streams_Stream::$DEFAULTS['adminLevel']);
 			if ($name = "Streams/user/icon") {
 				$sizes = Q_Config::expect('Users', 'icon', 'sizes');
-				$stream->attributes = json_encode(array(
-					"sizes" => $sizes
-				));
+				$stream->setAttribute('sizes', $sizes);
 				$stream->icon = $user->iconUrl();
 			}
 			$stream->save();
