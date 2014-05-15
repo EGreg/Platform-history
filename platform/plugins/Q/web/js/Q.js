@@ -2764,13 +2764,35 @@ Q.Tool.prototype.$ = function _Q_Tool_prototype_$(selector) {
 /**
  * Returns all subelements with the given class name.
  *
- * @param className String
+ * @param className {String}
  *   the class name to look for
- * @return NodeList
+ * @return {NodeList}
  *   a list of nodes with the given class name.
  */
 Q.Tool.prototype.getElementsByClassName = function _Q_Tool_prototype_getElementsByClasName(className) {
 	return this.element.getElementsByClassName(className);
+};
+
+/**
+ * Be notified whenever a child tool is constructed, repeatedly if it is
+ * removed and then constructed again.
+ *
+ * @return {Q.Event}
+ *  An event that is triggered whenever a child tool is constructed
+ */
+Q.Tool.prototype.onChildConstruct = function _Q_Tool_prototype_onChildConstruct(append) {
+	return Q.Tool.onConstruct('id:'+this.prefix+append);
+};
+
+/**
+ * Be notified whenever a child tool is initialized, repeatedly if it is
+ * removed and then constructed again.
+ *
+ * @return {Q.Event}
+ *  An event that is triggered whenever a child tool is initialized
+ */
+Q.Tool.prototype.onChildInit = function _Q_Tool_prototype_onChildInit(append) {
+	return Q.Tool.onInit('id:'+this.prefix+append);
 };
 
 /**
