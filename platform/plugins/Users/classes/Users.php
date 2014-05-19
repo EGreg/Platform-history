@@ -388,9 +388,9 @@ abstract class Users extends Base_Users
 			// try retrieving it from facebook and verifying the email for the user
 			if (!empty($emailAddress)) {
 				$emailSubject = Q_Config::get('Users', 'transactional', 'authenticated', 'subject', false);
-				$email_view = Q_Config::get('Users', 'transactional', 'authenticated', 'body', false);
-				if ($emailSubject !== false and $email_view) {
-					$user->addEmail($emailAddress, $emailSubject, $email_view);
+				$emailView = Q_Config::get('Users', 'transactional', 'authenticated', 'body', false);
+				if ($emailSubject !== false and $emailView) {
+					$user->addEmail($emailAddress, $emailSubject, $emailView);
 				}
 
 				// After this, we automatically verify their email,
