@@ -3700,11 +3700,12 @@ Q.removeElement = function _Q_removeElement(element) {
 
 /**
  * Add an event listener to an element
- * @param element HTMLElement
- * @param eventName String
- * @param eventHandler Function
+ * @param element {HTMLElement}
+ * @param eventName {String}
+ * @param eventHandler {Function}
+ * @param useCapture {Boolean} ignored in IE8 and below
  */
-Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandler) {
+Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandler, useCapture) {
 	var handler = (eventHandler.typename === "Q.Event"
 		? eventHandler.eventListener = function _Q_addEventListener_wrapper(e) { Q.handle(eventHandler, element, [e]); }
 		: eventHandler);
@@ -3727,12 +3728,12 @@ Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandl
 
 	if (Q.typeOf(eventName) === 'array') {
 		for (var i=0, l=eventName.length; i<l; ++i) {
-			Q.addEventListener(element, eventName[i], eventHandler);
+			Q.addEventListener(element, eventName[i], eventHandler, useCapture);
 		}
 		return;
 	}
 	if (element.addEventListener) {
-		element.addEventListener(eventName, handler, false);
+		element.addEventListener(eventName, handler, useCapture || false);
 	} else if (element.attachEvent) {
 		element.attachEvent('on'+eventName, handler);
 	} else {
@@ -6518,7 +6519,9 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 				if (!('eventName' in params)) {
 					throw new Q.Error("Custom $.fn.on handler: need to set params.eventName");
 				}
-				arguments[0] = params.eventName;
+				arguments[0] = Q.typeOf(params.eventName) === 'array'
+					? params.eventName.join(' ')
+					: params.eventName;
 			}
 			if (namespace) {
 				var parts = arguments[0].split(' ');
@@ -6564,7 +6567,9 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 				if (!('eventName' in params)) {
 					throw new Q.Error("Custom $.fn.on handler: need to set params.eventName");
 				}
-				arguments[0] = params.eventName;
+				arguments[0] = Q.typeOf(params.eventName) === 'array'
+					? params.eventName.join(' ')
+					: params.eventName;
 			}
 			if (namespace) {
 				var parts = arguments[0].split(' ');
@@ -6816,8 +6821,7 @@ Q.Pointer = {
 		params.eventName = 'click';
 		return function _Q_click_on_wrapper (e) {
 			if (Q.Pointer.canceledClick) {
-				e.preventDefault ? e.preventDefault() : event.returnValue = false;
-				return;
+				return Q.Pointer.preventDefault(e);
 			}
 			return params.original.apply(this, arguments);
 		};
@@ -6829,8 +6833,37 @@ Q.Pointer = {
 			if (Q.Pointer.canceledClick
 			|| !this.isOrContains(Q.Pointer.started)
 			|| !this.isOrContains(elem)) {
-				e.preventDefault ? e.preventDefault() : event.returnValue = false;
-				return;
+				return Q.Pointer.preventDefault(e);
+			}
+			return params.original.apply(this, arguments);
+		};
+	},
+	wheel: function _Q_wheel (params) {
+		// Modern browsers support "wheel",
+		// Webkit and IE support at least "mousewheel",
+		// and let's assume that remaining browsers are older Firefox
+		params.eventName = ("onwheel" in document.createElement("div")) ? "wheel" :
+			(document.onmousewheel !== undefined) ? "mousewheel" : 
+			["DOMMouseScroll", "MozMousePixelScroll"];
+		return function _Q_wheel_on_wrapper (e) {
+			var oe = e.originalEvent || e;
+			e.type = 'wheel';
+			e.deltaMode = (oe.type == "MozMousePixelScroll") ? 0 : 1;
+			e.deltaX = oe.deltaX || 0;
+			e.deltaY = oe.deltaY || 0;
+			e.deltaZ = oe.deltaZ || 0;
+			
+			// calculate deltaY (and deltaX) according to the event
+			switch (params.eventName) {
+			case 'mousewheel':
+                oe.deltaY = - 1/40 * originalEvent.wheelDelta;
+				// Webkit also supports wheelDeltaX
+                oe.wheelDeltaX && ( oe.deltaX = - 1/40 * oe.wheelDeltaX );
+				break;
+			case 'wheel':
+				break;
+			default:
+				e.deltaY = -oe.detail;
 			}
 			return params.original.apply(this, arguments);
 		};
@@ -6873,6 +6906,9 @@ Q.Pointer = {
 			target = target.parentNode;
 		}
 		return target;
+	},
+	preventDefault: function (e) {
+		e.preventDefault ? e.preventDefault() : e.returnValue = false;
 	},
 	relatedTarget: function (e) {
 		e.relatedTarget = e.relatedTarget || (e.type == 'mouseover' ? e.fromElement : e.toElement);	
