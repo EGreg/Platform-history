@@ -1646,11 +1646,13 @@ input[type=radio] { margin-right: 5px; }
 .Q_actions_action { cursor: pointer !important; }
 .Q_imagepicker { cursor: pointer !important; }
 
-/* streams basic tool */
-
-.streams_basic_overlay { font-size: 14px; width: 500px; }
-.streams_basic_overlay td { vertical-align: middle; }
-.streams_basic_overlay .Q_field_title { width: 150px; text-align: right; padding-right: 10px; }
+.Q_zoomer { z-index: 9000; border-radius: 1px;
+  -moz-border-radius: 1px;
+  -webkit-border-radius: 1px;
+  box-shadow: black 3px 3px 10px;
+  -webkit-box-shadow: black 3px 3px 10px;
+  -moz-box-shadow: black 3px 3px 10px;
+}
 
 @keyframes Q_uploading {
 	from { opacity: 0.75; }

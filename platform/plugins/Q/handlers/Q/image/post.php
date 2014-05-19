@@ -183,7 +183,11 @@ function Q_image_post($params = null) {
 	 * @param {string} 'writePath'
 	 * @param {string} 'data'
 	 */
-	Q::event('Q/image', compact('user', 'path', 'subpath', 'writePath', 'data'), 'after');
+	Q::event(
+		'Q/image', 
+		compact('user', 'path', 'subpath', 'writePath', 'data', 'save', 'crop'), 
+		'after'
+	);
 	if (empty($params)) {
 		Q_Response::setSlot('data', $data);
 	}

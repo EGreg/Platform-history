@@ -19,7 +19,7 @@
  *   'path': Defaults to 'uploads'. Can be a URL path or a function returning a URL path. It must exist on the server.
  *   'subpath': Defaults to ''. The subpath which may be created on the server.
  *   'showSize': Optional. The key in saveSizeName to show on success.
- *   'crop': Optional. If provided, must be and object with such structure: { 'x': x, 'y': y, 'w': width, 'y': height }.
+ *   'crop': Optional. If provided, must be an object with structure: { 'x': left, 'y': top, 'w': width, 'h': height }.
  *           The image saved on the server will be cropped according to given parameters.
  *   'url': The url to post to. Defaults to Q.action('Q/image')
  *   'preprocess': You can specify a function here which will run before the upload.
