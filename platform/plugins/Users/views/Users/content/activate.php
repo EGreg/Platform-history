@@ -3,6 +3,7 @@
 	<?php if (empty($_REQUEST['p']) and !empty($user->passphraseHash)): ?>
 		<div class="Q_admin_pane">
 			<?php echo Q::tool('Users/avatar', array(
+				'userId' => $user->id,
 				'icon' => true
 			)) ?>
 			<?php echo Q_Html::form(Q_Dispatcher::uri(), 'post', array('id' => 'Q_activation_form')) ?>
@@ -28,7 +29,7 @@
 		<div class="Q_admin_pane">
 				<?php echo Q::tool('Users/avatar', array(
 					'icon' => true,
-					'user' => $user
+					'userId' => $user->id
 				)) ?>
 				<div class='Q_big_prompt'>
 					<p>

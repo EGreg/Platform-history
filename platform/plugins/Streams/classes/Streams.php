@@ -433,7 +433,7 @@ abstract class Streams extends Base_Streams
 	 *  Also can have the following options:
 	 *  "includeTemplate" => Set to true if you want to include the template when $name ends in a slash
 	 *  See Query/Mysql::options().
-	 * @return {array}
+	 * @return {array|null}
 	 *  Returns an array of Streams_Stream objects with access info calculated
 	 *  specifically for $asUserId .
 	 *  Make sure to call the methods testReadLevel(), testWriteLevel() and testAdminLevel()
@@ -449,7 +449,7 @@ abstract class Streams extends Base_Streams
 		$options['limit'] = 1;
 		$streams = Streams::fetch($asUserId, $publisherId, $name, $fields, $options);
 		if (empty($streams)) {
-			return false;
+			return null;
 		}
 		return reset($streams);
 	}
