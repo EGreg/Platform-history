@@ -296,7 +296,7 @@ class Streams_Stream extends Base_Streams_Stream
 		}
 
 		foreach ($this->fields as $name => $value) {
-			if ($this->fieldsModified[$name]) {
+			if (!empty($this->fieldsModified[$name])) {
 				$modifiedFields[$name] = $value;
 			}
 		}

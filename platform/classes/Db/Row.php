@@ -278,9 +278,11 @@ class Db_Row implements Iterator
 		
 		// This record was just instantiated, so 
 		// mark all fields as not modified.
-		if (is_array($this->fields))
-			foreach ($this->fields as $name => $value)
+		if (is_array($this->fields)) {
+			foreach ($this->fields as $name => $value) {
 				$this->fieldsModified[$name] = false;
+			}
+		}
 	}
 	
 	/**

@@ -300,9 +300,9 @@ class Users_User extends Base_Users_User
 	 * @method addEmail
 	 * @param {string} $emailAddress
 	 *  The email address to add.
-	 * @param {string} [$activation_emailSubject=null]
+	 * @param {string} [$activationEmailSubject=null]
 	 *  The subject of the activation email to send.
-	 * @param {string} [$activation_email_view=null]
+	 * @param {string} [$activationEmailView=null]
 	 *  The view to use for the body of the activation email to send.
 	 * @param {boolean} [$html=true]
 	 *  Defaults to true. Whether to send as HTML email.
@@ -325,8 +325,8 @@ class Users_User extends Base_Users_User
 	 */
 	function addEmail(
 		$emailAddress,
-		$activation_emailSubject = null,
-		$activation_email_view = null,
+		$activationEmailSubject = null,
+		$activationEmailView = null,
 		$fields = array(),
 		$options = array())
 	{
@@ -381,13 +381,13 @@ class Users_User extends Base_Users_User
 		$this->emailAddressPending = $normalized;
 		$this->save();
 		
-		if (!isset($activation_email_view)) {
-			$activation_email_view = Q_Config::get(
+		if (!isset($activationEmailView)) {
+			$activationEmailView = Q_Config::get(
 				'Users', 'transactional', 'activation', 'body', 'Users/email/activation.php'
 			);
 		}
-		if (!isset($activation_emailSubject)) {
-			$activation_emailSubject = Q_Config::get(
+		if (!isset($activationEmailSubject)) {
+			$activationEmailSubject = Q_Config::get(
 				'Users', 'transactional', 'activation', 'subject', "Welcome! Please confirm your email address." 
 			);
 		}
@@ -400,8 +400,8 @@ class Users_User extends Base_Users_User
 			'link' => $link
 		));
 		$email->sendMessage(
-			$activation_emailSubject, 
-			$activation_email_view, 
+			$activationEmailSubject, 
+			$activationEmailView, 
 			$fields2,
 			$options
 		); // may throw exception if badly configured
