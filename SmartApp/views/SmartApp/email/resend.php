@@ -16,3 +16,16 @@
 <p>
 	See you on <a href="<?php echo Q_Request::baseUrl() ?>"><?php echo $app ?></a>!
 </p>
+
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "EmailMessage",
+  "action": {
+    "@type": "ViewAction",
+    "url": "<?php echo $link ?>",
+    "name": "Set up passphrase"
+  },
+  "description": "Set up passphrase"
+}
+</script>

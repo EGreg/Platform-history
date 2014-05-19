@@ -30,3 +30,16 @@
 		'unsubscribe'
 	) ?>
 </p>
+
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "EmailMessage",
+  "action": {
+    "@type": "ViewAction",
+    "url": "<?php echo $link ?>",
+    "name": "Verify this address"
+  },
+  "description": "Verify this address"
+}
+</script>

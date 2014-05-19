@@ -23,3 +23,15 @@
 	<?php echo Q_Html::a($unsubscribe, 'unsubscribe') ?>
 </p>
 
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "EmailMessage",
+  "action": {
+    "@type": "ViewAction",
+    "url": "<?php echo $link ?>",
+    "name": "Set up passphrase"
+  },
+  "description": "Set up passphrase"
+}
+</script>
