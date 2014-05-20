@@ -4893,7 +4893,7 @@ Q.cookie = function _Q_cookie(name, value, options) {
  *
  * @param HTMLElement|Array elem
  *  An element, or an array of elements, within which to search
- * @param String|RegExp|true filter
+ * @param String|RegExp|true|null filter
  *  The name of the class or attribute to match
  * @param Function callbackBefore
  *  A function to run when a match is found (before the children).
@@ -6600,8 +6600,9 @@ Q.Browser = {
 		var data = this.searchData(this.dataBrowser);
 		var browser = data.identity || "An unknown browser";
 		
-		var version = (this.searchVersion(navigator.userAgent) || this.searchVersion(navigator.appVersion)
-				|| "an unknown version").toString();
+		var version = (this.searchVersion(navigator.userAgent)
+			|| this.searchVersion(navigator.appVersion)
+			|| "an unknown version").toString();
 		var dotIndex = version.indexOf('.');
 		mainVersion = version.substring(0, dotIndex != -1 ? dotIndex : version.length);
 		
@@ -6802,7 +6803,19 @@ Q.info = {
 		|| navigator.userAgent.match(new RegExp('android', 'i'))
 		&& !navigator.userAgent.match(new RegExp('mobile', 'i'))
 		? true : false,
-	platform: detected.OS
+	platform: detected.OS,
+	device: detected.device,
+	isWebView: detected.isWebView,
+	browser: {
+		name: detected.name,
+		version: detected.mainVersion,
+		engine: detected.engine
+	},
+	isIE: function (minVersion, maxVersion) {
+		return Q.info.browser.name === 'explorer'
+			&& (minVersion === undefined || minVersion <= Q.info.browser.version)
+			&& (maxVersion === undefined || maxVersion >= Q.info.browser.version);
+	}
 };
 Q.info.isMobile = Q.info.isTouchscreen && !Q.info.isTablet;
 Q.info.formFactor = Q.info.isMobile ? 'mobile' : (Q.info.isTablet ? 'tablet' : 'desktop');
@@ -7592,6 +7605,7 @@ Q.onJQuery.add(function ($) {
 		"Q/listing": "plugins/Q/js/fn/listing.js",
 		"Q/hautoscroll": "plugins/Q/js/fn/hautoscroll.js",
 		"Q/imagepicker": "plugins/Q/js/fn/imagepicker.js",
+		"Q/viewport": "plugins/Q/js/fn/viewport.js",
 		"Q/actions": "plugins/Q/js/fn/actions.js",
 		"Q/clickable": "plugins/Q/js/fn/clickable.js",
 		"Q/clickfocus": "plugins/Q/js/fn/clickfocus.js",

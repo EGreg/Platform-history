@@ -189,7 +189,7 @@ function (o) {
 			};
 			function scale(factor) {
 				scale.factor = factor;
-				if (!$.browser.msie) {
+				if (!Q.info.isIE(0, 8)) {
 					stretcher.css({
 						'-moz-transform': 'scale('+factor+')',
 						'-webkit-transform': 'scale('+factor+')',
