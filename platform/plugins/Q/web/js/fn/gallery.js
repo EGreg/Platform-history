@@ -40,10 +40,37 @@ Q.Tool.jQuery('Q/gallery', function (o) {
 			var z = y;
 			var widthFactor = from.width + z*(to.width - from.width);
 			var heightFactor = from.height + z*(to.height - from.height);
-			var width = $this.width() / widthFactor;
-			var height = $this.height() / heightFactor;
-			var left = -(from.left + z*(to.left - from.left))*width;
-			var top = -(from.top + z*(to.top - from.top))*height; 
+			var leftFactor = (from.left + z*(to.left - from.left));
+			var topFactor = (from.top + z*(to.top - from.top));
+			
+			// crop to fit aspect ratio of the gallery
+			var iw = img.width();
+			var ih = img.height();
+			var w = iw * widthFactor;
+			var h = ih * heightFactor;
+			var l = iw * leftFactor;
+			var t = ih * topFactor;
+			var r = w/h;
+			var $w = $this.width();
+			var $h = $this.height();
+			var $r = $w/$h;
+			if ($r < r) {
+				var smallerW = h * $r;
+				l += (w - smallerW) / 2;
+				widthFactor = smallerW / iw;
+				leftFactor = l / iw;
+			} else {
+				var smallerH = w / $r;
+				t += (h - smallerH) / 2;
+				heightFactor = smallerH / ih;
+				topFactor = t / ih;
+			}
+			
+			// scale and place the image to expose the clipped area
+			var width = $w / widthFactor;
+			var height = $h / heightFactor;
+			var left = -leftFactor * width;
+			var top = -topFactor * height; 
 			img.css({
 				left: left+'px',
 				top: top+'px',

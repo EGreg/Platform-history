@@ -70,9 +70,9 @@ class Q_Cache
 		if (self::$ignore) {
 			return null;
 		}
-		$loaded = self::fetchStore();
-		if (!$loaded or !array_key_exists($key, self::$store)) {
-			return null; // cache not loaded, or no such $key is stored in cache
+		self::fetchStore();
+		if (!array_key_exists($key, self::$store)) {
+			return null; // no such $key is stored in cache
 		}
 		$success = true;
 		return self::$store[$key];
@@ -84,7 +84,7 @@ class Q_Cache
 	 * @static
 	 * @param {string} $key The key of cache entry
 	 * @param {boolean} [$prefix=false] Whether to clear all keys for which $key is a prefix
-	 * @return {boolean} Whether the cache was fetched.
+	 * @return {boolean} Whether an apc cache was fetched.
 	 */
 	static function clear($key, $prefix = false)
 	{
@@ -128,10 +128,11 @@ class Q_Cache
 			$fetched = false;
 			self::$store = array();
 			return false;
-		}
-		$store = apc_fetch(self::$namespace, $fetched);
-		self::$store = $fetched ? $store : array();
-		return $fetched;
+		} else {
+            $store = apc_fetch(self::$namespace, $fetched);
+            self::$store = $fetched ? $store : array();
+            return $fetched;
+        }
 	}
 	
 	/**

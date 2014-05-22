@@ -253,7 +253,7 @@ EOT;
 	 * @static
 	 * @param {string} $filename
 	 *  Name of the file to look for
-	 * @param {boolean} $ignore_cache=false
+	 * @param {boolean} $ignoreCache=false
 	 *  Defaults to false. If true, then this function ignores
 	 *  the cached value, if any, and always attempts to search
 	 *  for the file. It will cache the new value.
@@ -262,10 +262,10 @@ EOT;
 	 */
 	static function realPath (
 		$filename,
-		$ignore_cache = false)
+		$ignoreCache = false)
 	{
 		$filename = str_replace('/', DS, $filename);
-		if (!$ignore_cache) {
+		if (!$ignoreCache) {
 			// Try the extended cache mechanism, if any
 			$result = Q::event('Q/realPath', array(), 'before');
 			if (isset($result)) {

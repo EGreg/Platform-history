@@ -6621,9 +6621,21 @@ Q.Browser = {
 		var isWebView = (new RegExp("(.*)QWebView(.*)").test(navigator.userAgent))
 			|| (new RegExp("(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)", "i").test(navigator.userAgent));
 		
+		var name = browser.toLowerCase();
+		var prefix = '';
+		
+		switch (engine) {
+		case 'webkit': prefix = '-webkit-'; break;
+		case 'gecko': prefix = '-moz-'; break;
+		case 'presto': prefix = '-o-'; break;
+		}
+		
+		prefix = (name === 'explorer') ? '-ms-' : prefix;
+		
 		return {
-			'name': browser.toLowerCase(),
+			'name': name,
 			'mainVersion': mainVersion,
+			'prefix': prefix,
 			'OS': OS.toLowerCase(),
 			'engine': engine,
 			'device': OSdata.device,
@@ -6809,7 +6821,8 @@ Q.info = {
 	browser: {
 		name: detected.name,
 		version: detected.mainVersion,
-		engine: detected.engine
+		engine: detected.engine,
+		prefix: detected.prefix
 	},
 	isIE: function (minVersion, maxVersion) {
 		return Q.info.browser.name === 'explorer'
@@ -6874,9 +6887,10 @@ Q.Pointer = {
                 oe.wheelDeltaX && ( oe.deltaX = - 1/40 * oe.wheelDeltaX );
 				break;
 			case 'wheel':
+				e.deltaY = ('deltaY' in oe) ? oe.deltaY : oe.detail;
 				break;
 			default:
-				e.deltaY = -oe.detail;
+				e.deltaY = ('deltaY' in oe) ? oe.deltaY : oe.detail;
 			}
 			return params.original.apply(this, arguments);
 		};
@@ -6903,15 +6917,11 @@ Q.Pointer = {
  		return oe.touches ? oe.touches.length : (Q.Pointer.which(e) > 0 ? 1 : 0);
 	},
 	which: function (e) {
-		var button = e.which || e.button;
-		if (detected.name === 'explorer' && detected.mainVersion < 9) {
-			// http://www.quirksmode.org/js/events_properties.html#button
-			switch (button) {
-				case 1: button = 0; break; // left button
-				case 4: button = 1; break; // middle button
-			}
+		var button = e.button, which = e.which;
+		if (!which && button !== undefined ) {
+			which = (button & 1 ? 1 : (button & 2 ? 3 : (button & 4 ? 2 : 0)));
 		}
-		return button || -1; // -1 means non-button interaction
+		return which;
 	},
 	target: function (e) {
 		var target = e.target || e.srcElement;
@@ -6941,6 +6951,10 @@ Q.Pointer = {
 		cancelClickDistance: 10
 	}
 };
+
+Q.Pointer.which.LEFT = 1;
+Q.Pointer.which.MIDDLE = 2;
+Q.Pointer.which.RIGHT = 3;
 
 function _Q_PointerStartHandler(e) {
 	Q.Pointer.started = Q.Pointer.target(e);
