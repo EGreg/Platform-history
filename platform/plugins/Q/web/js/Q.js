@@ -2513,7 +2513,8 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 	if (typeof ctor === 'string') {
 		if (typeof window.jQuery.fn.plugin[name] !== 'function') {
 			_qtjo[name] = _qtjo[name] || {};
-		    return window.jQuery.fn.plugin[name] = ctor;
+		    return window.jQuery.fn.plugin[name]
+				= Q.Tool.constructors[name] = ctor;
 		}
 		return ctor;
 	}
@@ -3801,6 +3802,7 @@ Q.trigger = function _Q_trigger(eventName, element, args) {
 
 Q.layout = function _Q_layout(element) {
 	Q.trigger('onLayout', element || document.body, []);
+	Q.onLayout.handle(element);
 };
 
 Q.clientId = function () {
@@ -7564,6 +7566,7 @@ Q.onActivate = new Q.Event();
 Q.onDOM = new Q.Event();
 Q.onReady = new Q.Event();
 Q.onJQuery = new Q.Event();
+Q.onLayout = new Q.Event();
 
 Q.addEventListener(window, 'load', Q.onLoad.handle);
 Q.onInit.add(function () {
@@ -7708,6 +7711,7 @@ Q.onReady.set(function _Q_masks() {
 		Q.Mask.hide('Q.request.load.mask');
 		Q.Mask.hide('Q.request.cancel.mask');
 	}, 'Q.request.load.mask');
+	Q.layout();
 }, 'Q.masks');
 
 if (typeof module !== 'undefined' && typeof process !== 'undefined') {

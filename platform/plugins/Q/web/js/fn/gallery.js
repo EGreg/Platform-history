@@ -82,12 +82,20 @@ Q.Tool.jQuery('Q/gallery', function (o) {
 	};
 	var transitions = {
 		crossfade: function (x, y, params) {
-			imgs[params.current].css({'visibility': 'visible', 'opacity': y});
+			imgs[params.current].css({
+				display: 'block',
+				visibility: 'visible',
+				opacity: y
+			});
 			if (params.previous < 0) return;
 			if (y !== 1) {
-				imgs[params.previous].css({'visibility': 'visible', 'opacity': 1-y});
+				imgs[params.previous].css({
+					opacity: 1-y
+				});
 			} else {
-				imgs[params.previous].css({'visibility': 'hidden'});
+				imgs[params.previous].css({
+					display: 'none'
+				});
 			}
 		}
 	};
@@ -101,7 +109,13 @@ Q.Tool.jQuery('Q/gallery', function (o) {
 	}
 	
 	current = -1;
-	$this.css({'overflow': 'hidden'});
+	var css = {
+		overflow: 'hidden'
+	};
+	if ($this.css('position') === 'static') {
+		css.position = 'relative';
+	}
+	$this.css(css);
 	
 	function loadImage(index, callback) {
 		if (imgs[index]) {
