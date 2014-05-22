@@ -204,7 +204,7 @@ try {
 		}
 	}
 
-	Q_Plugin::checkPermissions(APP_FILES_DIR, $options);
+	Q_Plugin::checkPermissions(APP_FILES_DIR, array_merge($options, array('deep' => true)));
 	
 	foreach ($plugins as $plugin) {
 		Q_Plugin::installPlugin($plugin, $options);

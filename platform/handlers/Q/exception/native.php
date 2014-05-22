@@ -33,6 +33,7 @@ function Q_exception_native($params)
 			 . "in $file ($line)\n" 
 			 . $trace_string;
 			echo $content;
+			echo "\n";
 		} else {
 			if (($exception instanceof Q_Exception_PhpError) or !empty($exception->messageIsHtml)) {
 				// do not sanitize $message
