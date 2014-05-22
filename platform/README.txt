@@ -1,4 +1,4 @@
-This document is about the Q Framework, by Gregory Magarshak
+This document is about the Q Platform, by Gregory Magarshak
 
 DESIGN GOALS
 ------------

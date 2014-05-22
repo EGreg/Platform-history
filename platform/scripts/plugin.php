@@ -58,7 +58,7 @@ $PLUGIN_NAME = $argv[1];
 $LOCAL_DIR = $FROM_APP ? PLUGIN_INSTALL_INTO_APP : $argv[2];
 
 #Check paths
-if (!file_exists($Q_filename = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Q.inc.php')) #Q framework
+if (!file_exists($Q_filename = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Q.inc.php')) #Q Platform
 	die("[ERROR] $Q_filename not found" . PHP_EOL);
 
 if (!is_dir($LOCAL_DIR)) #App dir
@@ -132,7 +132,7 @@ $options['sql'] = $sql_array;
 //print_r($options);
 
 try {
-	echo 'Q Framework plugin installer'.PHP_EOL;
+	echo 'Q Platform plugin installer'.PHP_EOL;
 	if($PLUGIN_NAME=='--all')
 	{
 		if(!$all = Q_Config::get('Q', 'plugins', null))

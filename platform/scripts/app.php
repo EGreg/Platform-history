@@ -72,7 +72,7 @@ if ($count < 2)
 $LOCAL_DIR = $FROM_APP ? APP_DIR : $argv[1];
 
 #Check paths
-if (!file_exists($Q_filename = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Q.inc.php')) #Q framework
+if (!file_exists($Q_filename = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Q.inc.php')) #Q Platform
 	die("[ERROR] $Q_filename not found" . PHP_EOL);
 
 if (!is_dir($LOCAL_DIR)) #App dir
@@ -189,21 +189,26 @@ $options['sql'] = $sql_array;
 
 try {
 
-	echo 'Q Framework app installer'.PHP_EOL;
+	echo 'Q Platform app installer'.PHP_EOL;
 
 	if ($auto_plugins) {
 		$plugins = Q_Config::get('Q', 'plugins', array());
 		if (!in_array("Q", $plugins)) array_unshift($plugins, "Q");
 		foreach ($plugins as $plugin) {
 			$cons = Q_Config::get('Q', 'pluginInfo', $plugin, 'connections', array());
-			foreach ($cons as $con)
-				if (empty($options['sql'][$con]))
+			foreach ($cons as $con) {
+				if (empty($options['sql'][$con])) {
 					$options['sql'][$con] = array('enabled' => true);
+				}
+			}
 		}
 	}
 
-	foreach ($plugins as $plugin)
+	Q_Plugin::checkPermissions(APP_FILES_DIR, $options);
+	
+	foreach ($plugins as $plugin) {
 		Q_Plugin::installPlugin($plugin, $options);
+	}
 
 	if (!$noapp) {
 		// if application is installed/updated, it's schema is always installed/updated

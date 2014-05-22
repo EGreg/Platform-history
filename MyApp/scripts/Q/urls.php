@@ -8,7 +8,7 @@ define ('APP_DIR', realpath(dirname(dirname(dirname(__FILE__)))));
 //
 // Include Q
 //
-$header = "This is a Q Framework project..." . PHP_EOL;
+$header = "This is a Q Platform project..." . PHP_EOL;
 
 if (!is_dir(APP_DIR)) {
 	die($header . '[ERROR] ' . APP_DIR . " doesn't exist or is not a directory." . PHP_EOL . "Please edit install.php and change APP_DIR to point to your app's directory." . PHP_EOL);
@@ -18,7 +18,7 @@ $paths_filename = realpath(APP_DIR . '/local/paths.php');
 if (!file_exists($paths_filename)) {
 	$basename = basename(APP_DIR);
 
-	die($header . '[ERROR] ' . "Could not locate Q Framework" . PHP_EOL . "Please copy $basename/local.sample to $basename/local, and edit $basename/local/paths.php" . PHP_EOL);
+	die($header . '[ERROR] ' . "Could not locate Q Platform" . PHP_EOL . "Please copy $basename/local.sample to $basename/local, and edit $basename/local/paths.php" . PHP_EOL);
 }
 
 include($paths_filename);
@@ -27,7 +27,7 @@ $Q_script = realpath(Q_DIR . '/scripts/urls.php');
 
 if (!file_exists($Q_script)) {
 	$basename = basename(APP_DIR);
-	die($header . '[ERROR] ' . "Could not locate $Q_script" . PHP_EOL . "Please have the correct path to Q framework in $basename/local/paths.php");
+	die($header . '[ERROR] ' . "Could not locate $Q_script" . PHP_EOL . "Please have the correct path to Q Platform in $basename/local/paths.php");
 }
 
 define("RUNNING_FROM_APP", APP_DIR);

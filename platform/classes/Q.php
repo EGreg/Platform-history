@@ -1038,7 +1038,8 @@ EOT;
 			.DS.'Q'.DS.Q_Config::get('Q', 'internal', 'logDir', 'logs');
 
 		$mask = umask(0000);
-		if (!($realPath = Q::realPath($path))) {
+		if (!($realPath = Q::realPath($path))
+		and !($realPath = Q::realPath($path, true))) {
 			if (!@mkdir($path, 0777, true)) {
 				throw new Q_Exception_FilePermissions(array('action' => 'create', 'filename' => $path, 'recommendation' => ' Please set the app files directory to be writable.'));
 			}

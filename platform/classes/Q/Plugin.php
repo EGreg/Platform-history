@@ -300,7 +300,7 @@ class Q_Plugin
 	 * @param {string} $files_dir
 	 * @param {array} $options
 	 */
-	static private function checkPermissions($files_dir, $options) {
+	static function checkPermissions($files_dir, $options) {
 		// Check and fix permissions
 		echo "Checking permissions".PHP_EOL;
 		if(!file_exists($files_dir)) {
@@ -350,7 +350,7 @@ class Q_Plugin
 		if (!file_exists($app_conf_file = $app_dir . DS . 'config' . DS . 'app.json'))
 			throw new Exception("Could not load apps's config. Check $app_conf_file");
 
-		$files_dir = $app_dir.DS.'files';
+		$files_dir = APP_FILES_DIR;
 		$app_installed_file = APP_LOCAL_DIR.DS.'installed.json';
 		$app_plugins_file = APP_LOCAL_DIR.DS.'plugins.json';
 		if (file_exists($app_plugins_file)) {
@@ -389,6 +389,10 @@ class Q_Plugin
 			throw new Exception("Could not identify app version. Check $app_conf_file");
 		}
 
+		// Check and fix permissions
+		self::checkPermissions(Q_FILES_DIR, $options);
+		self::checkPermissions(APP_FILES_DIR, $options);
+
 		// install or update application schema
 		$connections = Q_Config::get('Q', 'appInfo', 'connections', array());
 		foreach ($connections as $connection) {
@@ -399,11 +403,6 @@ class Q_Plugin
 		echo 'Registering app'.PHP_EOL;
 		Q_Config::set('Q', 'appLocal', $APP_CONF);
 		Q_Config::save($app_installed_file, array('Q', 'appLocal'));
-
-		self::checkPermissions(Q_FILES_DIR, $options);
-
-		// Check and fix permissions
-		self::checkPermissions($files_dir, $options);
 
 		// Create .htaccess file if it doesn't exist
 		if (!file_exists(APP_WEB_DIR.DS.'.htaccess')) {
@@ -505,6 +504,13 @@ EOT;
 			if (Q::compare_version($version_installed, $PLUGIN_VERSION) < 0)
 				echo "Upgrading '$plugin_name' to version: $PLUGIN_VERSION" . PHP_EOL;
 		}
+		
+		// Check and fix permissions
+		self::checkPermissions($files_dir, $options);
+
+		// Symbolic links
+		echo 'Creating symbolic links'.PHP_EOL;
+		self::symlink($plugin_dir.DS.'web', $app_web_plugins_dir.DS.$plugin_name);
 
 		//  Checking if schema update is requested and updating database version
 		$connections = Q_Config::get('Q', 'pluginInfo', $plugin_name, 'connections', array());
@@ -518,17 +524,10 @@ EOT;
 			Q_Config::set('Q', 'plugins', $current_plugins); //TODO: When do we save Q/plugins to disk?
 		}
 
-		// Symbolic links
-		echo 'Creating symbolic links'.PHP_EOL;
-		self::symlink($plugin_dir.DS.'web', $app_web_plugins_dir.DS.$plugin_name);
-
 		// Save info about plugin
 		echo 'Registering plugin'.PHP_EOL;
 		Q_Config::set('Q', 'pluginLocal', $plugin_name, $PLUGIN_CONF);
 		Q_Config::save($app_plugins_file, array('Q', 'pluginLocal'));
-
-		// Check and fix permissions
-		self::checkPermissions($files_dir, $options);
 
 		echo Q_Utils::colored("Plugin '$plugin_name' successfully installed".PHP_EOL, 'green');
 	}

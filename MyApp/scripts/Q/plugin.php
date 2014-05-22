@@ -20,7 +20,7 @@ switch ($script_name['filename']) {
 
 if (!file_exists($Q_script)) {
 	$basename = basename(APP_DIR);
-	die($header . '[ERROR] ' . "Could not locate $Q_script" . PHP_EOL . "Please have the correct path to Q framework in $basename/local/paths.php");
+	die($header . '[ERROR] ' . "Could not locate $Q_script" . PHP_EOL . "Please have the correct path to Q Platform in $basename/local/paths.php");
 }
 
 define("RUNNING_FROM_APP", APP_DIR);

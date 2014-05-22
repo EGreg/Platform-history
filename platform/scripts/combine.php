@@ -38,7 +38,7 @@ if ($count < 1 or !$FROM_APP)
 $LOCAL_DIR = $FROM_APP ? APP_DIR : $argv[1];
 
 #Check paths
-if (!file_exists($Q_filename = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Q.inc.php')) #Q framework
+if (!file_exists($Q_filename = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'Q.inc.php')) #Q Platform
 	die("[ERROR] $Q_filename not found" . PHP_EOL);
 
 if (!is_dir($LOCAL_DIR)) #App dir
