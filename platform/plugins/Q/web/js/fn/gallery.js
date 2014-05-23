@@ -87,15 +87,18 @@ Q.Tool.jQuery('Q/gallery', function (o) {
 				visibility: 'visible',
 				opacity: y
 			});
-			if (params.previous < 0) return;
+			if (params.previous < 0) return;				
 			if (y !== 1) {
 				imgs[params.previous].css({
 					opacity: 1-y
 				});
 			} else {
-				imgs[params.previous].css({
-					display: 'none'
-				});
+				for (var i=0; i<imgs.length; ++i) {
+					if (i === params.current) continue;
+					imgs[i].css({
+						display: 'none'
+					});
+				}
 			}
 		}
 	};
