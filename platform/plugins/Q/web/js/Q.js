@@ -5189,11 +5189,11 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 
 	function loadResponse(err, response, redirected) {
 		if (!response) {
-			onError("Response is empty", response);
+			Q.handle(onError, this, ["Response is empty", response]);
 			return;
 		}   
 		if (response.errors) {
-			onError(response.errors[0].message);
+			Q.handle(onError, this, [response.errors[0].message]);
 			return;
 		}
 		if (redirected) {
