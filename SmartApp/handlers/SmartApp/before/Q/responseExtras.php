@@ -16,6 +16,8 @@ function SmartApp_before_Q_responseExtras()
 	Q_Response::addStylesheet('css/iphone.css');
 	
 	Q_Response::addScript('js/SmartApp.js');
+	
+	header('Vary: User-Agent');
 
 	if (Q_Request::isTablet()) {
 		Q_Response::addStylesheet('plugins/Q/css/tablet.css');

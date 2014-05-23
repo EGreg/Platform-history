@@ -1396,8 +1396,7 @@ divbody { text-align: center; height: 100%; }
 #dashboard .Q_tabs_tab,
 #dashboard .Q_tabs_tab>* { cursor: pointer; vertical-align: middle; }
 #dashboard .Q_tabs_tab { text-decoration: none; color: white; }
-.Q_notTouchscreen #dashboard .Q_tabs_tab:hover { text-decoration: none; color: black; }
-.Q_notTouchscreen #dashboard .Q_tabs_tab:hover * { color: black; }
+.Q_notTouchscreen #dashboard .Q_tabs_tab:hover { text-decoration: underline;}
 #dashboard .Q_tabs_tab img { margin-right: 10px; width: 24px; }
 #dashboard .Q_tabs_tab span { display: inline; text-align: left; }
 #dashboard .Q_tabs_tab.Q_selected { background-image: url(../img/bg/stucco.png) !important; color: black !important; }
