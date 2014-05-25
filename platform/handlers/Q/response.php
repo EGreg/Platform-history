@@ -60,7 +60,7 @@ function Q_response($params)
 
 	// What to do if this is an AJAX request
 	if ($is_ajax) {
-		$slot_names = Q_Request::slotNames(true);
+		$slotNames = Q_Request::slotNames(true);
 		$to_encode = array();
 		if (Q_Response::$redirected) {
 			// We already called Q_Response::redirect
@@ -70,13 +70,13 @@ function Q_response($params)
 			} catch (Exception $e) {
 				// couldn't get internal URI
 			}
-		} else if (is_array($slot_names)) {
-			foreach ($slot_names as $slot_name) {
-				Q_Response::fillSlot($slot_name, 'default');
+		} else if (is_array($slotNames)) {
+			foreach ($slotNames as $slotName) {
+				Q_Response::fillSlot($slotName, 'default');
 			}
 			// Go through the slots again, because other handlers may have overwritten
 			// their contents using Q_Response::setSlot()
-			foreach ($slot_names as $sn) {
+			foreach ($slotNames as $sn) {
 				Q_Response::fillSlot($sn, 'default');
 			}
 			if (Q_Response::$redirected) {
@@ -89,19 +89,19 @@ function Q_response($params)
 				}
 			} else {
 				$to_encode['slots'] = Q_Response::slots(true);
-				foreach (array_merge(array(''), $slot_names) as $slot_name) {
-					$temp = Q_Response::stylesheetsArray($slot_name);
-					if ($temp) $to_encode['stylesheets'][$slot_name] = $temp;
-					$temp = Q_Response::stylesInline($slot_name);
-					if ($temp) $to_encode['stylesInline'][$slot_name] = $temp;
-					$temp = Q_Response::scriptsArray($slot_name);
-					if ($temp) $to_encode['scripts'][$slot_name] = $temp;
-					$temp = Q_Response::scriptLines($slot_name, true, "\n", false);
-					if ($temp) $to_encode['scriptLines'][$slot_name] = $temp;
-					$temp = Q_Response::scriptData($slot_name);
-					if ($temp) $to_encode['scriptData'][$slot_name] = $temp;
-					$temp = Q_Response::templateData($slot_name);
-					if ($temp) $to_encode['templates'][$slot_name] = $temp;
+				foreach (array_merge(array(''), $slotNames) as $slotName) {
+					$temp = Q_Response::stylesheetsArray($slotName);
+					if ($temp) $to_encode['stylesheets'][$slotName] = $temp;
+					$temp = Q_Response::stylesInline($slotName);
+					if ($temp) $to_encode['stylesInline'][$slotName] = $temp;
+					$temp = Q_Response::scriptsArray($slotName);
+					if ($temp) $to_encode['scripts'][$slotName] = $temp;
+					$temp = Q_Response::scriptLines($slotName, true, "\n", false);
+					if ($temp) $to_encode['scriptLines'][$slotName] = $temp;
+					$temp = Q_Response::scriptData($slotName);
+					if ($temp) $to_encode['scriptData'][$slotName] = $temp;
+					$temp = Q_Response::templateData($slotName);
+					if ($temp) $to_encode['templates'][$slotName] = $temp;
 				}
 			}
 		}
@@ -143,15 +143,15 @@ Q.init();
 	
 
 	// Get all the usual slots for a webpage
-	$slot_names = Q_Request::slotNames(true);
+	$slotNames = Q_Request::slotNames(true);
 	$slots = array();
-	foreach ($slot_names as $sn) {
+	foreach ($slotNames as $sn) {
 		Q_Response::fillSlot($sn, 'default');
 	}
 
 	// Go through the slots again, because other handlers may have overwritten
 	// their contents using Q_Response::setSlot()
-	foreach ($slot_names as $sn) {
+	foreach ($slotNames as $sn) {
 		Q_Response::fillSlot($sn, 'default');
 	}
 

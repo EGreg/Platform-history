@@ -11,8 +11,8 @@ function Streams_related_response()
 	$publisherId = Streams::requestedPublisherId(true);
 	$streamName = Streams::requestedName(true);
 	$isCategory = !empty($_REQUEST['isCategory']);
-	$slot_names = Q_Request::slotNames();
-	$streams_requested = in_array('streams', $slot_names);
+	$slotNames = Q_Request::slotNames();
+	$streams_requested = in_array('streams', $slotNames);
 	$options = array(
 		'relationsOnly' => !$streams_requested,
 		'orderBy' => !empty($_REQUEST['ascending'])

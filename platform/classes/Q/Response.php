@@ -13,14 +13,14 @@ class Q_Response
 	 * Sets the content of a slot
 	 * @method setSlot
 	 * @static
-	 * @param {string} $slot_name The name of the slot.
+	 * @param {string} $slotName The name of the slot.
 	 * @param {string} $content The content to set
 	 */
 	static function setSlot(
-	 $slot_name,
+	 $slotName,
 	 $content)
 	{
-		self::$slots[$slot_name] = $content;
+		self::$slots[$slotName] = $content;
 	}
 
 	/**
@@ -30,88 +30,88 @@ class Q_Response
 	 * returns the content. Otherwise, returns null.
 	 * @method fillSlot
 	 * @static
-	 * @param {string|array} $slot_name The name of the slot.
-	 * @param {boolean} [$default_slot_name=null] If the slot named in $slot_name returns null,
+	 * @param {string|array} $slotName The name of the slot.
+	 * @param {boolean} [$default_slotName=null] If the slot named in $slotName returns null,
 	 *  the handler corresponding to the default slot will be called,
-	 *  passing it the requested slot's name in the 'slot_name' parameter,
+	 *  passing it the requested slot's name in the 'slotName' parameter,
 	 *  and its value will be returned instead.
-	 *  Note: this does not fill the slot named $default_slot_name!
+	 *  Note: this does not fill the slot named $default_slotName!
 	 *  That is to say, the computed value is not saved, so that
 	 *  the slot's handler is called again if it is ever consulted again.
 	 * @param {string} [$prefix=null] Sets a prefix for the HTML ids of all the elements in the slot.
 	 * @return {string|null}
 	 */
 	static function fillSlot(
-	 $slot_name,
-	 $default_slot_name = null,
+	 $slotName,
+	 $default_slotName = null,
 	 $prefix = null)
 	{
-		if (isset(self::$slots[$slot_name])) {
-			return self::$slots[$slot_name];
+		if (isset(self::$slots[$slotName])) {
+			return self::$slots[$slotName];
 		}
-		$prev_slot_name = self::$slotName;
-		self::$slotName = $slot_name;
+		$prev_slotName = self::$slotName;
+		self::$slotName = $slotName;
 		if (isset($prefix)) {
 			Q_Html::pushIdPrefix($prefix);
 		}
 		try {
-			if (isset($default_slot_name)) {
-				if (!Q::canHandle("Q/response/$slot_name")) {
+			if (isset($default_slotName)) {
+				if (!Q::canHandle("Q/response/$slotName")) {
 					/**
-					 * @event Q/response/$default_slot_name
-					 * @param {string} 'slot_name'
+					 * @event Q/response/$default_slotName
+					 * @param {string} 'slotName'
 					 * @return {string}
 					 */
 					$result = Q::event(
-						"Q/response/$default_slot_name",
-						compact('slot_name')
+						"Q/response/$default_slotName",
+						compact('slotName')
 					);
-					if (isset(self::$slots[$slot_name])) {
+					if (isset(self::$slots[$slotName])) {
 						// The slot was already filled, while we were rendering it
 						// so discard the $result and return the slot's contents
-						return self::$slots[$slot_name];
+						return self::$slots[$slotName];
 					}
-					return self::$slots[$slot_name] = $result;
+					return self::$slots[$slotName] = $result;
 				}
 			}
 			/**
-			 * @event Q/response/$slot_name
+			 * @event Q/response/$slotName
 			 * @return {string}
 			 */
-			$result = Q::event("Q/response/$slot_name");
+			$result = Q::event("Q/response/$slotName");
 		} catch (Exception $e) {
-			self::$slotName = $prev_slot_name;
+			self::$slotName = $prev_slotName;
 			if (isset($prefix)) {
 				Q_Html::popIdPrefix();
 			}
 			throw $e;
 		}
-		self::$slotName = $prev_slot_name;
+		self::$slotName = $prev_slotName;
 		if (isset($prefix)) {
 			Q_Html::popIdPrefix();
 		}
-		if (isset(self::$slots[$slot_name])) {
+		if (isset(self::$slots[$slotName])) {
 			// The slot was already filled, while we were rendering it
 			// so discard the $result and return the slot's contents
-			return self::$slots[$slot_name];
+			return self::$slots[$slotName];
 		}
 		if (isset($result)) {
-			self::setSlot($slot_name, $result);
+			self::setSlot($slotName, $result);
 			return $result;
 		}
 
 		// Otherwise, render default slot
-		if (!isset($default_slot_name)) {
+		if (!isset($default_slotName)) {
 			return null;
 		}
 		/**
-		 * @event Q/response/$default_slot_name
-		 * @param {string} 'slot_name'
+		 * @event Q/response/$default_slotName
+		 * @param {string} 'slotName'
 		 * @return {string}
 		 */
 		return Q::event(
-			"Q/response/$default_slot_name",
-			compact('slot_name')
+			"Q/response/$default_slotName",
+			compact('slotName')
 		);
 	}
 
@@ -120,12 +120,12 @@ class Q_Response
 	 * Clears a slot, so the next call to Q_Response::fillSlot would fill it again
 	 * @method clearSlot
 	 * @static
-	 * @param {string} $slot_name The name of the slot.
+	 * @param {string} $slotName The name of the slot.
 	 */
 	static function clearSlot(
-		$slot_name)
+		$slotName)
 	{
-		self::$slots[$slot_name] = null;
+		self::$slots[$slotName] = null;
 	}
 
 	/**
@@ -149,11 +149,11 @@ class Q_Response
 	static function getRequestedSlots()
 	{
 		$return = array();
-		$slot_names = Q_Request::slotNames(true);
-		foreach ($slot_names as $sn) {
+		$slotNames = Q_Request::slotNames(true);
+		foreach ($slotNames as $sn) {
 			$sn_parts = explode('.', $sn);
-			$slot_name = end($sn_parts);
-			$return[$slot_name] = self::fillSlot($slot_name);
+			$slotName = end($sn_parts);
+			$return[$slotName] = self::fillSlot($slotName);
 		}
 		return $return;
 	}
@@ -281,22 +281,22 @@ class Q_Response
 	 * @static
 	 * @param {string} $list_of_keys Can be multiple keys - see Q_Tree::set()
 	 * @param {mixed} [$value=null]
-	 * @param {string} [$slot_name=null]
+	 * @param {string} [$slotName=null]
 	 */
-	static function setStyle($list_of_keys, $value = null, $slot_name = null)
+	static function setStyle($list_of_keys, $value = null, $slotName = null)
 	{
 		$args = func_get_args();
 		$p = new Q_Tree(self::$styles);
 		call_user_func_array(array($p, 'set'), $args);
 
 		// Now, for the slot
-		if (!$slot_name) {
-			$slot_name = isset(self::$slotName) ? self::$slotName : '';
+		if (!$slotName) {
+			$slotName = isset(self::$slotName) ? self::$slotName : '';
 		}
-		if (!isset(self::$stylesForSlot[$slot_name])) {
-			self::$stylesForSlot[$slot_name] = array();
+		if (!isset(self::$stylesForSlot[$slotName])) {
+			self::$stylesForSlot[$slotName] = array();
 		}
-		$p = new Q_Tree(self::$stylesForSlot[$slot_name]);
+		$p = new Q_Tree(self::$stylesForSlot[$slotName]);
 		call_user_func_array(array($p, 'set'), $args);
 	}
 
@@ -304,31 +304,31 @@ class Q_Response
 	 * Return the array of styles added so far
 	 * @method stylesArray
 	 * @static
-	 * @param {string} [$slot_name=null] If provided, returns only the styles set while filling this slot.
+	 * @param {string} [$slotName=null] If provided, returns only the styles set while filling this slot.
 	 *  If you leave this empty, you get styles information for the "right" slots.
 	 *  If you pass false here, you will just get the entire $styles array without any processing.
 	 * @param {string} [$urls=true] If true, transforms all the 'src' values into URLs before returning.
-	 * @return {array} if $slot_name is an array or empty, returns array of $slot_name => $styles, otherwise returns $styles
+	 * @return {array} if $slotName is an array or empty, returns array of $slotName => $styles, otherwise returns $styles
 	 */
-	static function stylesArray ($slot_name = null, $urls = true)
+	static function stylesArray ($slotName = null, $urls = true)
 	{
-		if ($slot_name === false) {
+		if ($slotName === false) {
 			return is_array(self::$styles) ? self::$styles : array();
 		}
-		if (!isset($slot_name) or $slot_name === true) {
-			$slot_name = array_merge(array(''), Q_Request::slotNames(true));
+		if (!isset($slotName) or $slotName === true) {
+			$slotName = array_merge(array(''), Q_Request::slotNames(true));
 		}
-		if (is_array($slot_name)) {
+		if (is_array($slotName)) {
 			$styles = array();
-			foreach ($slot_name as $sn) {
+			foreach ($slotName as $sn) {
 				$styles[$sn] = self::stylesArray($sn, $urls);
 			}
 			return $styles;
 		}
-		if (!isset(self::$stylesForSlot[$slot_name])) {
+		if (!isset(self::$stylesForSlot[$slotName])) {
 			return array();
 		}
-		$styles = self::$stylesForSlot[$slot_name];
+		$styles = self::$stylesForSlot[$slotName];
 		return is_array($styles) ? $styles : array();
 	}
 	
@@ -336,21 +336,21 @@ class Q_Response
 	 * Returns text describing all the styles inline which have been added with setStyle()
 	 * @method styles
 	 * @static
-	 * @param {string} [$slot_name=null] If provided, returns only the styles set while filling this slot.
+	 * @param {string} [$slotName=null] If provided, returns only the styles set while filling this slot.
 	 * @param {string} [$between=''] Optional text to insert between the &lt;style&gt; tags or blocks of text.
 	 * @param {boolean} [$tags=true] Whether to return the text already wrapped in <style> tags. Defaults to true.
 	 * @return {string}
 	 */
-	static function styles($slot_name = null, $between = '', $tags = true)
+	static function styles($slotName = null, $between = '', $tags = true)
 	{
-		$styles = self::stylesArray($slot_name);
+		$styles = self::stylesArray($slotName);
 		if (!is_array($styles)) {
 			return '';
 		}
 
 		$texts = array();
-		if (is_string($slot_name)) {
-			$styles = array($slot_name => $styles);
+		if (is_string($slotName)) {
+			$styles = array($slotName => $styles);
 		}
 		foreach ($styles as $sn => $s) {
 			$result = '';
@@ -389,13 +389,13 @@ class Q_Response
 	 * to be included between &lt;style&gt;&lt;/style&gt; tags.
 	 * @method stylesInline
 	 * @static
-	 * @param {string} [$slot_name=null] If provided, returns only the styles set while filling this slot.
+	 * @param {string} [$slotName=null] If provided, returns only the styles set while filling this slot.
 	* @param {string} [$between=''] Optional text to insert between the blocks of style text
 	 * @return {string}
 	 */
-	static function stylesInline($slot_name = null, $between = "\n")
+	static function stylesInline($slotName = null, $between = "\n")
 	{
-		return self::styles($slot_name, $between, false);
+		return self::styles($slotName, $between, false);
 	}
 	
 	/**
@@ -404,48 +404,48 @@ class Q_Response
 	 * @static
 	 * @param {string} $name The name of the meta tag
 	 * @param {mixed} $content The content of the meta tag
-	 * @param {string} [$slot_name=null]
+	 * @param {string} [$slotName=null]
 	 */
-	static function setMeta($name, $content, $slot_name = null)
+	static function setMeta($name, $content, $slotName = null)
 	{
 		self::$metas[$name] = $content;
 
 		// Now, for the slot
-		if (!$slot_name) {
-			$slot_name = isset(self::$slotName) ? self::$slotName : '';
+		if (!$slotName) {
+			$slotName = isset(self::$slotName) ? self::$slotName : '';
 		}
-		self::$metasForSlot[$slot_name][$name] = $content;
+		self::$metasForSlot[$slotName][$name] = $content;
 	}
 
 	/**
 	 * Return the array of metas added so far
 	 * @method metasArray
 	 * @static
-	 * @param {string} [$slot_name=null] If provided, returns only the metas set while filling this slot.
+	 * @param {string} [$slotName=null] If provided, returns only the metas set while filling this slot.
 	 *  If you leave this empty, you get metas information for the "right" slots.
 	 *  If you pass false here, you will just get the entire $metas array without any processing.
 	 * @param {string} [$urls=true] If true, transforms all the 'src' values into URLs before returning.
-	 * @return {array} if $slot_name is an array or true, returns array of $slot_name => $metas, otherwise returns $metas
+	 * @return {array} if $slotName is an array or true, returns array of $slotName => $metas, otherwise returns $metas
 	 */
-	static function metasArray ($slot_name = null, $urls = true)
+	static function metasArray ($slotName = null, $urls = true)
 	{
-		if ($slot_name === false) {
+		if ($slotName === false) {
 			return is_array(self::$metas) ? self::$metas : array();
 		}
-		if (!isset($slot_name) or $slot_name === true) {
-			$slot_name = array_merge(array(''), Q_Request::slotNames(true));
+		if (!isset($slotName) or $slotName === true) {
+			$slotName = array_merge(array(''), Q_Request::slotNames(true));
 		}
-		if (is_array($slot_name)) {
+		if (is_array($slotName)) {
 			$metas = array();
-			foreach ($slot_name as $sn) {
+			foreach ($slotName as $sn) {
 				$metas[$sn] = self::metasArray($sn, $urls);
 			}
 			return $metas;
 		}
-		if (!isset(self::$metasForSlot[$slot_name])) {
+		if (!isset(self::$metasForSlot[$slotName])) {
 			return array();
 		}
-		$metas = self::$metasForSlot[$slot_name];
+		$metas = self::$metasForSlot[$slotName];
 		return is_array($metas) ? $metas : array();
 	}
 	
@@ -453,13 +453,13 @@ class Q_Response
 	 * Returns text describing all the metas inline which have been added with setMeta()
 	 * @method metasInline
 	 * @static
-	 * @param {string} [$slot_name=null] If provided, returns only the metas set while filling this slot.
+	 * @param {string} [$slotName=null] If provided, returns only the metas set while filling this slot.
 	 * @param {string} [$between=''] Optional text to insert between the &lt;meta&gt; tags or blocks of text.
 	 * @return {string}
 	 */
-	static function metas($slot_name = null, $between = "\n")
+	static function metas($slotName = null, $between = "\n")
 	{
-		$metas = self::metasArray($slot_name);
+		$metas = self::metasArray($slotName);
 		if (!is_array($metas)) {
 			return '';
 		}
@@ -482,13 +482,13 @@ class Q_Response
 	 * to be included between &lt;meta&gt;&lt;/meta&gt; tags.
 	 * @method metasInline
 	 * @static
-	 * @param {string} [$slot_name=null] If provided, returns only the metas set while filling this slot.
+	 * @param {string} [$slotName=null] If provided, returns only the metas set while filling this slot.
 	* @param {string} [$between=''] Optional text to insert between the blocks of meta text
 	 * @return {string}
 	 */
-	static function metasInline($slot_name = null, $between = "\n")
+	static function metasInline($slotName = null, $between = "\n")
 	{
-		return self::metas($slot_name, $between, false);
+		return self::metas($slotName, $between, false);
 	}
 
 	/**
@@ -498,28 +498,28 @@ class Q_Response
 	 * @param {string} $line The line of script
 	 * @param {array} [$replace=array()] Keys in this array are globally replaced in the $line
 	 *  with the json_encoded values, before the line is added.
-	 * @param {array} [$slot_name=null] A way to override the slot name. Pass "" here to
+	 * @param {array} [$slotName=null] A way to override the slot name. Pass "" here to
 	 *  have the script lines be returned first by Q_Response::scriptLines.
 	 *  The other special value, "Q", is intended for internal use.
 	 */
-	static function addScriptLine($line, $replace = array(), $slot_name = null)
+	static function addScriptLine($line, $replace = array(), $slotName = null)
 	{
 		if (is_string($replace)) {
-			$slot_name = $replace;
+			$slotName = $replace;
 			$replace = array();
 		} else if (empty($replace)) {
 			$replace = array();
 		}
-		if (!isset($slot_name)) {
-			$slot_name = isset(self::$slotName) ? self::$slotName : '';
+		if (!isset($slotName)) {
+			$slotName = isset(self::$slotName) ? self::$slotName : '';
 		}
-		if (!isset(self::$scriptLinesForSlot[$slot_name])) {
-			self::$scriptLinesForSlot[$slot_name] = array();
+		if (!isset(self::$scriptLinesForSlot[$slotName])) {
+			self::$scriptLinesForSlot[$slotName] = array();
 		}
 		foreach ($replace as $k => $v) {
 			$line = str_replace($k, Q::json_encode($v), $line);
 		}
-		self::$scriptLinesForSlot[$slot_name][] = $line;
+		self::$scriptLinesForSlot[$slotName][] = $line;
 		self::$scriptLines[] = $line;
 	}
 
@@ -528,52 +528,52 @@ class Q_Response
 	 * @method setScriptData
 	 * @param {string} $path The path to the variable where the data will be saved, such as "Q.info" or "MyApp.foo.bar".
 	 * @param {array} $data The data to set. It will be JSON-encoded and stored in the specified variable.
-	 * @param {array} [$slot_name=null] A way to override the slot name. Pass "" here to
+	 * @param {array} [$slotName=null] A way to override the slot name. Pass "" here to
 	 *  have the script lines be returned first by Q_Response::scriptLines.
 	 *  The other special value, "Q", is intended for internal use.
 	 */
-	static function setScriptData($path, $data, $slot_name = null)
+	static function setScriptData($path, $data, $slotName = null)
 	{
-		if (!isset($slot_name)) {
-			$slot_name = isset(self::$slotName) ? self::$slotName : '';
+		if (!isset($slotName)) {
+			$slotName = isset(self::$slotName) ? self::$slotName : '';
 		}
-		self::$scriptDataForSlot[$slot_name][$path] = $data;
+		self::$scriptDataForSlot[$slotName][$path] = $data;
 	}
 
 	/**
 	 * Return the array of script lines added so far
 	 * @method scriptLinesArray
 	 * @static
-	 * @param {string} [$slot_name=null] Pass a slot name here to return only the script lines added while filling this slot.
+	 * @param {string} [$slotName=null] Pass a slot name here to return only the script lines added while filling this slot.
 	 *  You can also pass an array of slot names here.
 	 *  Pass false here to return the script lines in the order they were added.
 	 * @param {boolean} [$without_script_data=false] By default, a few script lines are prepended
 	 *  to insert the script data, for backward compatibility with apps that were built before
 	 *  scriptData was introduced. Pass true here if you don't want to include them in the result.
-	 * @return {array} if $slot_name is an array or true, returns array of $slot_name => $lines, otherwise returns $lines
+	 * @return {array} if $slotName is an array or true, returns array of $slotName => $lines, otherwise returns $lines
 	 */
-	static function scriptLinesArray ($slot_name = null, $without_script_data = false)
+	static function scriptLinesArray ($slotName = null, $without_script_data = false)
 	{
-		if ($slot_name === false) {
+		if ($slotName === false) {
 			return is_array(self::$scriptLines) ? self::$scriptLines : array();
 		}
-		if (!isset($slot_name) or $slot_name === true) {
-			$slot_name = array_merge(array('', 'Q'), Q_Request::slotNames(true));
+		if (!isset($slotName) or $slotName === true) {
+			$slotName = array_merge(array('', 'Q'), Q_Request::slotNames(true));
 		}
-		if (is_array($slot_name)) {
+		if (is_array($slotName)) {
 			$scriptLines = array();
-			foreach ($slot_name as $sn) {
+			foreach ($slotName as $sn) {
 				$scriptLines[$sn] = self::scriptLinesArray($sn, $without_script_data);
 			}
 			return $scriptLines;
 		}
-		$scriptLines = isset(self::$scriptLinesForSlot[$slot_name])
-			? self::$scriptLinesForSlot[$slot_name]
+		$scriptLines = isset(self::$scriptLinesForSlot[$slotName])
+			? self::$scriptLinesForSlot[$slotName]
 			: array();
 		$scriptDataLines = array();
 		if (!$without_script_data) {
 			$tested = array();
-			if ($data = self::scriptData($slot_name)) {
+			if ($data = self::scriptData($slotName)) {
 				$json = Q::json_encode($data);
 				$parts = array();
 				foreach ($data as $k => $v) {
@@ -592,7 +592,7 @@ class Q_Response
 	 * to be included between &lt;script&gt;&lt;/script&gt; tags.
 	 * @method scriptLines
 	 * @static
-	 * @param {string} [$slot_name=null] By default, returns all the lines in their intended order.
+	 * @param {string} [$slotName=null] By default, returns all the lines in their intended order.
 	 *  Pass a slot name here to return only the script lines added while filling this slot.
 	 *  Pass false here to return the script lines in the order they were added.
 	 * @param {boolean} [$without_script_data=false] By default, a few script lines are prepended
@@ -602,13 +602,13 @@ class Q_Response
 	 * @param {boolean} [$tags=true] Whether to return the text already wrapped in <style> tags. Defaults to true.
 	 * @return {string}
 	 */
-	static function scriptLines($slot_name = null, $without_script_data = false, $between = "\n", $tags = true)
+	static function scriptLines($slotName = null, $without_script_data = false, $between = "\n", $tags = true)
 	{
-		if ($slot_name === true) {
-			$slot_name = null; // for backward compatibility
+		if ($slotName === true) {
+			$slotName = null; // for backward compatibility
 		}
 
-		$lines = self::scriptLinesArray($slot_name, $without_script_data);
+		$lines = self::scriptLinesArray($slotName, $without_script_data);
 		if (!$lines or !is_array($lines)) {
 			return '';
 		}
@@ -634,16 +634,16 @@ class Q_Response
 	 * Returns json describing all the script data that has been added to various slots
 	 * @method scriptData
 	 * @static
-	 * @param {string} [$slot_name=null] By default, returns all the lines in their intended order.
+	 * @param {string} [$slotName=null] By default, returns all the lines in their intended order.
 	 *  Pass a slot name here to return only the script lines added while filling this slot.
 	 *  Pass false here to return the script lines in the order they were added.
 	 * @return {string}
 	 */
-	static function scriptData($slot_name = null)
+	static function scriptData($slotName = null)
 	{
-		if (is_string($slot_name)) {
-			return isset(self::$scriptDataForSlot[$slot_name])
-				? self::$scriptDataForSlot[$slot_name]
+		if (is_string($slotName)) {
+			return isset(self::$scriptDataForSlot[$slotName])
+				? self::$scriptDataForSlot[$slotName]
 				: null;
 		}
 		return self::$scriptDataForSlot;
@@ -745,9 +745,9 @@ class Q_Response
 			$toRetain,
 			''
 		);
-		$slot_name = self::$slotName;
+		$slotName = self::$slotName;
 		self::addScriptLine(
-			"Q.loadUrl.retainedSlots.$slot_name = document.getElementById('{$slot_name}_slot');"
+			"Q.loadUrl.retainedSlots.$slotName = document.getElementById('{$slotName}_slot');"
 		);
 		self::$retainSlot[self::$slotName] = $toRetain;
 	}
@@ -766,11 +766,11 @@ class Q_Response
 	 * @method addScript
 	 * @static
 	 * @param {string} $src
-	 * @param {string} [$slot_name=null]
+	 * @param {string} [$slotName=null]
 	 * @param {string} [$type='text/javascript']
 	 * @return {boolean} returns false if script was already added, else returns true
 	 */
-	static function addScript ($src, $slot_name = null, $type = 'text/javascript')
+	static function addScript ($src, $slotName = null, $type = 'text/javascript')
 	{
 		/**
 		 * @event Q/response/addScript {before}
@@ -790,19 +790,19 @@ class Q_Response
 		}
 		self::$scripts[] = compact('src', 'type');
 		// Now, for the slot
-		if (!isset($slot_name)) {
+		if (!isset($slotName)) {
 			// By default, scripts won't be added "to a slot"
 			// because it is more likely they should be executed only one time in the document.
-			$slot_name = ''; // isset(self::$slotName) ? self::$slotName : '';
+			$slotName = ''; // isset(self::$slotName) ? self::$slotName : '';
 		}
-		if (!isset(self::$scriptsForSlot[$slot_name])) {
-			self::$scriptsForSlot[$slot_name] = array();
+		if (!isset(self::$scriptsForSlot[$slotName])) {
+			self::$scriptsForSlot[$slotName] = array();
 		}
-		foreach (self::$scriptsForSlot[$slot_name] as $script) {
+		foreach (self::$scriptsForSlot[$slotName] as $script) {
 			if ($script['src'] == $src && $script['type'] == $type)
 				return false; // already added
 		}
-		self::$scriptsForSlot[$slot_name][] = compact('src', 'type');
+		self::$scriptsForSlot[$slotName][] = compact('src', 'type');
 
 		return true;
 	}
@@ -819,11 +819,11 @@ class Q_Response
 	{
 		self::$templates[] = compact('name', 'type');
 		// Now, for the slot
-		$slot_name = isset(self::$slotName) ? self::$slotName : '';
-		if (!isset(self::$inlineTemplates[$slot_name])) {
-			self::$inlineTemplates[$slot_name] = array();
+		$slotName = isset(self::$slotName) ? self::$slotName : '';
+		if (!isset(self::$inlineTemplates[$slotName])) {
+			self::$inlineTemplates[$slotName] = array();
 		}
-		foreach (self::$inlineTemplates[$slot_name] as $template) {
+		foreach (self::$inlineTemplates[$slotName] as $template) {
 			if ($template['name'] == $name && $template['type'] == $type) {
 				return false; // already added
 			}
@@ -836,7 +836,7 @@ class Q_Response
 		if (!$content) {
 			throw new Q_Exception("Failed to load template '$name'");
 		}
-		self::$inlineTemplates[$slot_name][] = compact('name', 'content', 'type');
+		self::$inlineTemplates[$slotName][] = compact('name', 'content', 'type');
 
 		return true;
 	}
@@ -845,22 +845,22 @@ class Q_Response
 	 * Return the array of templates added so far
 	 * @method templatesArray
 	 * @static
-	 * @param {string} [$slot_name=null] If provided, returns only the templates added while filling this slot.
+	 * @param {string} [$slotName=null] If provided, returns only the templates added while filling this slot.
 	 *  If you leave this empty, you get templates information for the "right" slots.
 	 *  If you pass false here, you will just get the entire $inlineTemplates array
 	 * @return {array} the array of templates added so far
 	 */
-	static function templatesArray ($slot_name = null)
+	static function templatesArray ($slotName = null)
 	{
-		if ($slot_name === false) {
-			$slot_name = array_keys(self::$inlineTemplates);
+		if ($slotName === false) {
+			$slotName = array_keys(self::$inlineTemplates);
 		}
-		if (!isset($slot_name) or $slot_name === true) {
-			$slot_name = array_merge(array(''), Q_Request::slotNames(true));
+		if (!isset($slotName) or $slotName === true) {
+			$slotName = array_merge(array(''), Q_Request::slotNames(true));
 		}
-		if (is_array($slot_name)) {
+		if (is_array($slotName)) {
 			$templates = array();
-			foreach ($slot_name as $sn) {
+			foreach ($slotName as $sn) {
 				foreach (self::templatesArray($sn) as $b)  {
 					foreach ($templates as $a) {
 						if ($a['name'] === $b['name']
@@ -873,10 +873,10 @@ class Q_Response
 				}
 			}
 		} else {
-			if (!isset(self::$inlineTemplates[$slot_name])) {
+			if (!isset(self::$inlineTemplates[$slotName])) {
 				return array();
 			}
-			$templates = self::$inlineTemplates[$slot_name];
+			$templates = self::$inlineTemplates[$slotName];
 		}
 
 		if (!is_array($templates))
@@ -889,26 +889,26 @@ class Q_Response
 	 * Returns json describing all the templates that has been added to various slots
 	 * @method scriptData
 	 * @static
-	 * @param {string} [$slot_name=null] By default, returns all the lines in their intended order.
+	 * @param {string} [$slotName=null] By default, returns all the lines in their intended order.
 	 *  Pass a slot name here to return only the templates added while filling this slot.
 	 *  Pass false here to return the templates in the order they were added.
 	 * @return {string}
 	 */
-	static function templateData($slot_name = null) {
-		return self::templatesArray($slot_name);
+	static function templateData($slotName = null) {
+		return self::templatesArray($slotName);
 	}
 
 	/**
 	 * Returns the HTML markup for referencing all the templates added so far
 	 * @method templates
 	 * @static
-	 * @param {string} [$slot_name=null] If provided, returns only the templates added while filling this slot.
+	 * @param {string} [$slotName=null] If provided, returns only the templates added while filling this slot.
 	 * @param {string} [$between=''] Optional text to insert between the &lt;link&gt; tags.
 	 * @return {string} the HTML markup for referencing all the templates added so far
 	 */
-	static function templates ($slot_name = null, $between = "\n")
+	static function templates ($slotName = null, $between = "\n")
 	{
-		$templates = self::templatesArray($slot_name);
+		$templates = self::templatesArray($slotName);
 		if (empty($templates)) return '';
 
 		$tags = array();
@@ -931,22 +931,22 @@ class Q_Response
 	 * Return the array of scripts added so far
 	 * @method scriptsArray
 	 * @static
-	 * @param {string} [$slot_name=null] If provided, returns only the scripts added while filling this slot.
+	 * @param {string} [$slotName=null] If provided, returns only the scripts added while filling this slot.
 	 *  You can also pass an array of slot names here.
-	 *  If you pass the boolean constant true here, slot_name is set to Q_Request::slotNames(true)
+	 *  If you pass the boolean constant true here, slotName is set to Q_Request::slotNames(true)
 	 * @param {string} [$urls=true] If true, transforms all the 'src' values into URLs before returning.
 	 * @return {array} the array of scripts added so far
 	 */
-	static function scriptsArray ($slot_name = null, $urls = true)
+	static function scriptsArray ($slotName = null, $urls = true)
 	{
-		if (isset($slot_name)) {
-			if ($slot_name === true) {
-				$slot_name = array_merge(array(''), Q_Request::slotNames(true));
+		if (isset($slotName)) {
+			if ($slotName === true) {
+				$slotName = array_merge(array(''), Q_Request::slotNames(true));
 			}
-			if (is_array($slot_name)) {
+			if (is_array($slotName)) {
 				$scripts = array();
 				$srcs = array();
-				foreach ($slot_name as $sn) {
+				foreach ($slotName as $sn) {
 					foreach (self::scriptsArray($sn, $urls) as $b)  {
 						if ($urls) {
 							$b['src'] = Q_Html::themedUrl($b['src']);
@@ -962,10 +962,10 @@ class Q_Response
 				}
 				return $scripts;
 			} else {
-				if (!isset(self::$scriptsForSlot[$slot_name])) {
+				if (!isset(self::$scriptsForSlot[$slotName])) {
 					return array();
 				}
-				$scripts = self::$scriptsForSlot[$slot_name];
+				$scripts = self::$scriptsForSlot[$slotName];
 			}
 		} else {
 			$scripts = self::$scripts;
@@ -991,12 +991,12 @@ class Q_Response
 	 * Returns markup for referencing all the scripts added so far
 	 * @method scriptsInline
 	 * @static
-	 * @param {string} [$slot_name=null] If provided, returns only the scripts added while filling this slot.
+	 * @param {string} [$slotName=null] If provided, returns only the scripts added while filling this slot.
 	 * @return {string} the script tags and their contents inline
 	 */
-	static function scriptsInline ($slot_name = null)
+	static function scriptsInline ($slotName = null)
 	{
-		$scripts = self::scriptsArray($slot_name, false);
+		$scripts = self::scriptsArray($slotName, false);
 		if (empty($scripts))
 			return '';
 
@@ -1031,12 +1031,12 @@ class Q_Response
 	 * @method scripts
 	 * @static
 	 * @param {string} [$between=''] Optional text to insert between the &lt;link&gt; tags.
-	 * @param {string} [$slot_name=null] If provided, returns only the scripts added while filling this slot.
+	 * @param {string} [$slotName=null] If provided, returns only the scripts added while filling this slot.
 	 * @return {string} the HTML markup for referencing all the scripts added so far
 	 */
-	static function scripts ($slot_name = null, $between = "\n")
+	static function scripts ($slotName = null, $between = "\n")
 	{
-		$scripts = self::scriptsArray($slot_name);
+		$scripts = self::scriptsArray($slotName);
 		if (empty($scripts))
 			return '';
 
@@ -1059,12 +1059,12 @@ class Q_Response
 	 * @method addStylesheet
 	 * @static
 	 * @param {string} $href
-	 * @param {string} [$slot_name=null]
+	 * @param {string} [$slotName=null]
 	 * @param {string} [$media='screen, print']
 	 * @param {string} [$type='text/css']
 	 * @return {boolean} returns false if a stylesheet with exactly the same parameters has already been added, else true.
 	 */
-	static function addStylesheet ($href, $slot_name = null, $media = 'screen, print', $type = 'text/css')
+	static function addStylesheet ($href, $slotName = null, $media = 'screen, print', $type = 'text/css')
 	{
 		/**
 		 * @event Q/response/addStylesheet {before}
@@ -1089,13 +1089,13 @@ class Q_Response
 		self::$stylesheets[] = compact('href', 'media', 'type');
 
 		// Now, for the slot
-		if (!isset($slot_name)) {
-			$slot_name = isset(self::$slotName) ? self::$slotName : '';
+		if (!isset($slotName)) {
+			$slotName = isset(self::$slotName) ? self::$slotName : '';
 		}
-		if (!isset(self::$stylesheetsForSlot[$slot_name])) {
-			self::$stylesheetsForSlot[$slot_name] = array();
+		if (!isset(self::$stylesheetsForSlot[$slotName])) {
+			self::$stylesheetsForSlot[$slotName] = array();
 		}
-		foreach (self::$stylesheetsForSlot[$slot_name] as $stylesheet) {
+		foreach (self::$stylesheetsForSlot[$slotName] as $stylesheet) {
 			if ($stylesheet['href'] == $href
 			&& $stylesheet['media'] == $media
 			&& $stylesheet['type'] == $type) {
@@ -1103,7 +1103,7 @@ class Q_Response
 				return false;
 			}
 		}
-		self::$stylesheetsForSlot[$slot_name][] = compact('href', 'media', 'type');
+		self::$stylesheetsForSlot[$slotName][] = compact('href', 'media', 'type');
 
 		return true;
 	}
@@ -1112,24 +1112,24 @@ class Q_Response
 	 * Returns array of stylesheets that have been added so far
 	 * @method stylesheetsArray
 	 * @static
-	 * @param {string} [$slot_name=null] If provided, returns only the stylesheets added while filling this slot.
+	 * @param {string} [$slotName=null] If provided, returns only the stylesheets added while filling this slot.
 	 *  If you leave this empty, you get stylesheets information for the "right" slots.
 	 *  If you pass false here, you will just get the entire $stylesheets array without any processing.
 	 * @param {string} [$urls=true] If true, transforms all the 'src' values into URLs before returning.
 	 * @return {array} the array of stylesheets that have been added so far
 	 */
-	static function stylesheetsArray ($slot_name = null, $urls = true)
+	static function stylesheetsArray ($slotName = null, $urls = true)
 	{
-		if ($slot_name === false) {
+		if ($slotName === false) {
 			return $sheets = self::$stylesheets;
 		}
-		if (!isset($slot_name) or $slot_name === true) {
-			$slot_name = array_merge(array(''), Q_Request::slotNames(true));
+		if (!isset($slotName) or $slotName === true) {
+			$slotName = array_merge(array(''), Q_Request::slotNames(true));
 		}
-		if (is_array($slot_name)) {
+		if (is_array($slotName)) {
 			$sheets = array();
 			$saw = array();
-			foreach ($slot_name as $sn) {
+			foreach ($slotName as $sn) {
 				foreach (self::stylesheetsArray($sn, $urls) as $b)  {
 					if ($urls) {
 						$b['href'] = Q_Html::themedUrl($b['href']);
@@ -1145,10 +1145,10 @@ class Q_Response
 			}
 			return $sheets;
 		} else {
-			if (!isset(self::$stylesheetsForSlot[$slot_name])) {
+			if (!isset(self::$stylesheetsForSlot[$slotName])) {
 				return array();
 			}
-			$sheets = self::$stylesheetsForSlot[$slot_name];
+			$sheets = self::$stylesheetsForSlot[$slotName];
 		}
 		if (!is_array($sheets)) {
 			return array();
@@ -1175,15 +1175,15 @@ class Q_Response
 	 * @static
 	 * @param {array} [$styles=array()] If not empty, this associative array contains styles which will be
 	 * included at the end of the generated &lt;style&gt; tag.
-	 * @param {string} [$slot_name=null] If provided, returns only the stylesheets added while filling this slot.
+	 * @param {string} [$slotName=null] If provided, returns only the stylesheets added while filling this slot.
 	 * @return {string} the style tags and their contents inline
 	 */
-	static function stylesheetsInline ($styles = array(), $slot_name = null)
+	static function stylesheetsInline ($styles = array(), $slotName = null)
 	{
 		if (empty(self::$stylesheets))
 			return '';
 
-		$sheets = self::stylesheetsArray($slot_name);
+		$sheets = self::stylesheetsArray($slotName, false);
 		$sheets_for_slots = array();
 		if (!empty($sheets)) {
 			foreach ($sheets as $stylesheet) {
@@ -1218,13 +1218,13 @@ class Q_Response
 	 * Returns the HTML markup for referencing all the stylesheets added so far
 	 * @method stylesheets
 	 * @static.
-	 * @param {string} [$slot_name=null] If provided, returns only the stylesheets added while filling this slot.
+	 * @param {string} [$slotName=null] If provided, returns only the stylesheets added while filling this slot.
 	 * @param {string} [$between=''] Optional text to insert between the &lt;link&gt; tags
 	 * @return {string} the HTML markup for referencing all the stylesheets added so far
 	 */
-	static function stylesheets ($slot_name = null, $between = "\n")
+	static function stylesheets ($slotName = null, $between = "\n")
 	{
-		$stylesheets = self::stylesheetsArray($slot_name);
+		$stylesheets = self::stylesheetsArray($slotName);
 		if (empty($stylesheets))
 			return '';
 		$tags = array();
@@ -1290,8 +1290,8 @@ class Q_Response
 			return self::$slots;
 		}
 		$result = array();
-		$slot_names = Q_Request::slotNames(true);
-		foreach ($slot_names as $sn) {
+		$slotNames = Q_Request::slotNames(true);
+		foreach ($slotNames as $sn) {
 			$result[$sn] = isset(self::$slots[$sn])
 				? self::$slots[$sn]
 				: null;

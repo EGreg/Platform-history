@@ -54,7 +54,7 @@ function Q_exception_native($params)
 		}
 	}
 	$app = Q_Config::get('Q', 'app', null);
-	Q::log("$app: Exception in " . ceil(Q::microseconds()) . "ms\n" );
+	Q::log("$app: Exception in " . ceil(Q::milliseconds()) . "ms\n" );
 	Q::log("$message\n  in $file ($line)");
 	Q::log("$trace_string\n");
 }

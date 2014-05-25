@@ -276,45 +276,45 @@ class Q_Request
 			if ($return_defaults !== true) {
 				return null;
 			}
-			$slot_names = Q_Config::get(
+			$slotNames = Q_Config::get(
 				'Q', 'response', 'slotNames',
 				array('content', 'dashboard', 'title', 'notices') // notices should be last
 			);
 			if (Q_Request::isMobile()) {
-				$mobile_slot_names = Q_Config::get(
+				$mobile_slotNames = Q_Config::get(
 					'Q', 'response', 'mobileSlotNames',
 					false
 				);
-				if ($mobile_slot_names) {
-					$slot_names = $mobile_slot_names;
+				if ($mobile_slotNames) {
+					$slotNames = $mobile_slotNames;
 				}
 			}
-			return $slot_names;
+			return $slotNames;
 		}
-		$slot_names = Q_Request::special('slotNames', null);
-		if (empty($slot_names)) {
+		$slotNames = Q_Request::special('slotNames', null);
+		if (empty($slotNames)) {
 			return array();
 		}
-		if (is_string($slot_names)) {
+		if (is_string($slotNames)) {
 			$arr = array();
-			foreach (explode(',', $slot_names) as $sn) {
+			foreach (explode(',', $slotNames) as $sn) {
 				$arr[] = $sn;
 			}
-			$slot_names = $arr;
+			$slotNames = $arr;
 		}
-		return $slot_names;
+		return $slotNames;
 	}
 	
 	/**
 	 * Returns whether a given slot name was requested.
 	 * @method slotNames
 	 * @static
-	 * @param {string} $slot_name The name of the slot
+	 * @param {string} $slotName The name of the slot
 	 * @return {boolean}
 	 */
-	static function slotName($slot_name)
+	static function slotName($slotName)
 	{
-		return in_array($slot_name, Q_Request::slotNames(true));
+		return in_array($slotName, Q_Request::slotNames(true));
 	}
 	
 	/**

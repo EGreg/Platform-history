@@ -1225,10 +1225,10 @@ class Q_Html
 	 * @method themedUrlAndFilename
 	 * @static
 	 * @param {string} $file_path  Basically the subpath of the file underneath the web or theme directory
-	 * @param {boolean} [$ignore_environment=false] If true, doesn't apply environment transformations
+	 * @param {boolean} [$ignoreEnvironment=false] If true, doesn't apply environment transformations
 	 * @return {array} A two-element array containing the url and filename
 	 */
-	static function themedUrlAndFilename ($file_path, $ignore_environment = false)
+	static function themedUrlAndFilename ($file_path, $ignoreEnvironment = false)
 	{
 		/**
 		 * @event Q/themedUrlAndFilename {before}
@@ -1240,7 +1240,8 @@ class Q_Html
 			return $result;
 		}
 		
-		if (!$ignore_environment and $environment = Q_Config::get('Q', 'environment', false)) {
+		if (!$ignoreEnvironment
+		and $environment = Q_Config::get('Q', 'environment', false)) {
 			if ($info = Q_Config::get('Q', 'environments', $environment, false)) {
 				if (!empty($info['files'][$file_path])) {
 					$file_path = $info['files'][$file_path];
@@ -1291,12 +1292,12 @@ class Q_Html
 	 * @method themedUrl
 	 * @static
 	 * @param {string} $file_path Basically the subpath of the file underneath the web or theme directory
-	 * @param {boolean} [$ignore_environment=false] If true, doesn't apply environment transformations
+	 * @param {boolean} [$ignoreEnvironment=false] If true, doesn't apply environment transformations
 	 * @return {string} The themed url.
 	 */
-	static function themedUrl($file_path, $ignore_environment = false)
+	static function themedUrl($file_path, $ignoreEnvironment = false)
 	{
-		list($url, $filename) = self::themedUrlAndFilename($file_path, $ignore_environment);
+		list($url, $filename) = self::themedUrlAndFilename($file_path, $ignoreEnvironment);
 		return $url;
 	}
 	
@@ -1305,11 +1306,11 @@ class Q_Html
 	 * @method themedFilename
 	 * @static
 	 * @param {string} $file_path Basically the subpath of the file underneath the web or theme directory
-	 * @param {boolean} [$ignore_environment=false] If true, doesn't apply environment transformations
+	 * @param {boolean} [$ignoreEnvironment=false] If true, doesn't apply environment transformations
 	 */
-	static function themedFilename($file_path, $ignore_environment = false)
+	static function themedFilename($file_path, $ignoreEnvironment = false)
 	{
-		list($url, $filename) = self::themedUrlAndFilename($file_path, $ignore_environment);
+		list($url, $filename) = self::themedUrlAndFilename($file_path, $ignoreEnvironment);
 		return $filename;
 	}
 	
