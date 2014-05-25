@@ -6,7 +6,7 @@
  * @module Q
  * @class Q
  */
-(function () {
+(function (window) {
 
 // private properties
 var m_isReady = false;
@@ -457,6 +457,19 @@ HTMLElement.prototype.text = function() {
 	return el.textContent || el.innerText;
 };
 
+if (!window.requestAnimationFrame) {
+	window.requestAnimationFrame =
+		window.webkitRequestAnimationFrame || 
+        window.mozRequestAnimationFrame    || 
+        window.oRequestAnimationFrame      || 
+        window.msRequestAnimationFrame     || 
+        function( callback ) {
+			window.setTimeout(function _shim_requestAnimationFrame() {
+				callback(Q.milliseconds());
+			}, 1000 / Q.Animation.fps);
+        };
+}
+
 if(!document.getElementsByClassName) {
     document.getElementsByClassName = function(className) {
 		return Array.prototype.slice.call(this.querySelectorAll("." + className));
@@ -465,6 +478,35 @@ if(!document.getElementsByClassName) {
 }
 
 // public methods:
+
+/**
+ * Returns microtime like PHP
+ * @method microtime
+ * @param getAsFloat {Boolean}
+ * @return {String}
+ */
+Q.microtime = function _Q_microtime(getAsFloat) {
+	var now = Date.now() / 1000;
+	if (getAsFloat) return now;
+	var s = parseInt(now, 10);
+	return (Math.round((now - s) * 1000) / 1000) + ' ' + s;
+};
+
+/**
+ * Returns the number of milliseconds since the
+ * first call to this function (i.e. since script started).
+ * @method milliseconds
+ * @param {Boolean} sinceEpoch
+ *  Defaults to false. If true, just returns the number of milliseconds in the UNIX timestamp.
+ * @return {float}
+ *  The number of milliseconds, with fractional part
+ */
+Q.milliseconds = function (sinceEpoch) {
+	var result = Date.now();
+	if (sinceEpoch) return result;
+	return result - Q.milliseconds.start;
+};
+Q.milliseconds.start = Date.now();
 
 /**
  * Creates a derived object which you can extend, inheriting from an existing object
@@ -6330,7 +6372,7 @@ Q.Socket.prototype.onEvent = function(name) {
  * Repeatedly calls a function in order to animate something
  * @param callback Function
  *  The function to call. It is passed the following parameters:
- *  x = the fraction of the time that has elapsed
+ *  x = the position in the animation, between 0 and 1
  *  y = the output of the ease function after plugging in x
  *  params = the fourth parameter passed to the run function
  * @param duration Number
@@ -6350,40 +6392,55 @@ Q.Animation = function _Q_Animation(callback, duration, ease, params) {
 	if (typeof ease !== 'function') {
 		ease = Q.Animation.ease.smooth;
 	}
-	var f = (1000/Q.Animation.fps);
-	var max = duration / f;
-	var ival;
 	var anim = this;
-	anim.fraction = 0;
-	this.play = function _Q_Animation_instance_play() {
-		ival = setInterval(function _Q_Animation_intervalCallback() {
-			if (anim.fraction >= max) {
-				clearInterval(ival);
-				callback(1, ease(1), params);
-				return;
-			}
-			callback(anim.fraction/max, ease(anim.fraction/max), params);
-			++anim.fraction;
-		}, f);
-		return this;
-	};
-	this.pause = function _Q_Animation_instance_pause() {
-		if (ival) {
-			clearInterval(ival);
+	anim.position = 0;
+	anim.milliseconds = 0;
+	this.id = ++_Q_Animation_index;
+	this.duration = duration;
+	this.ease = ease;
+	this.callback = callback;
+	this.params = params;
+	this.onRewind = new Q.Event();
+};
+Q.Animation.prototype.pause = function _Q_Animation_prototype_pause() {
+	this.playing = false;
+	delete Q.Animation.playing[this.id];
+	return this;
+};
+Q.Animation.prototype.rewind = function _Q_Animation_prototype_rewind() {
+	this.pause();
+	this.position = this.milliseconds = 0;
+	this.onRewind.handle.call(this);
+	return this;
+};
+Q.Animation.prototype.render = function _Q_Animation_prototype_rewind() {
+	var anim = this;
+	var ms = Q.milliseconds();
+	window.requestAnimationFrame(function () {
+		anim.milliseconds += Q.milliseconds() - ms;
+		var x = anim.position = anim.milliseconds / anim.duration;
+		if (x >= 1) {
+			Q.handle(anim.callback, anim, [1, anim.ease(1), anim.params]);
+			anim.rewind();
+			return;
 		}
-		return this;
-	};
-	this.rewind = function _Q_Animation_instance_rewind() {
-		this.pause();
-		this.fraction = 0;
-		return this;
-	};
+		Q.handle(anim.callback, anim, [x, anim.ease(x), anim.params]);
+		if (anim.playing) {
+			anim.render();
+		}
+	});
+};
+Q.Animation.prototype.play = function _Q_Animation_instance_play() {
+	Q.Animation.playing[this.id] = this;
+	this.playing = true;
+	this.render();
+	return this;
 };
 Q.Animation.play = function _Q_Animation_play(callback, duration, ease, params) {
 	var result = new Q.Animation(callback, duration, ease, params);
 	return result.play();
 };
-Q.Animation.fps = 50;
+Q.Animation.fps = 60;
 Q.Animation.ease = {
 	linear: function(fraction) {
 		return fraction;
@@ -6400,6 +6457,8 @@ Q.Animation.ease = {
 		return 6 * tc * ts + -15 * ts * ts + 10 * tc;
 	}
 };
+Q.Animation.playing = {};
+_Q_Animation_index = 0;
 
 Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	var $ = window.jQuery;
@@ -7738,4 +7797,4 @@ if (typeof module !== 'undefined' && typeof process !== 'undefined') {
 	window.Q = Q;
 }
 
-})();
+})(window);

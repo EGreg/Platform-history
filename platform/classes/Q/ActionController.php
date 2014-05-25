@@ -67,22 +67,22 @@ class Q_ActionController
 			// Dispatch the request
 			$uri = Q_Uri::from(compact('module', 'action'));
 			Q_Dispatcher::dispatch($uri);
-			$dispatch_result = Q_Dispatcher::result();
-			if (!isset($dispatch_result)) {
-				$dispatch_result = 'Ran dispatcher';
+			$dispatchResult = Q_Dispatcher::result();
+			if (!isset($dispatchResult)) {
+				$dispatchResult = 'Ran dispatcher';
 			}
 			if ($module and $action) {
-				$slot_names = Q_Request::slotNames();
-				$requested_slots = empty($slot_names) 
+				$slotNames = Q_Request::slotNames();
+				$requestedSlots = empty($slotNames) 
 					? '' 
-					: implode(',', $slot_names);
-				Q::log("~" . ceil(Q::microseconds()) . 'ms+'
+					: implode(',', $slotNames);
+				Q::log("~" . ceil(Q::milliseconds()) . 'ms+'
 					. ceil(memory_get_peak_usage()/1000) . 'kb.'
-					. " $dispatch_result for $module/$action"
-					. " ($requested_slots)"
+					. " $dispatchResult for $module/$action"
+					. " ($requestedSlots)"
 				);
 			} else {
-				Q::log("~" . ceil(Q::microseconds()) . 'ms+'
+				Q::log("~" . ceil(Q::milliseconds()) . 'ms+'
 					. ceil(memory_get_peak_usage()/1000) . 'kb.'
 					. " No route for " . $_SERVER['REQUEST_URI']);
 			}

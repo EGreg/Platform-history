@@ -65,18 +65,18 @@ class Q
 
 
 	/**
-	 * Returns the number of microseconds since the
+	 * Returns the number of milliseconds since the
 	 * first call to this function (i.e. since script started).
-	 * @method microtime
-	 * @param {Boolean} $since_epoch
-	 *  Defaults to false. If true, just returns the number of microseconds in the UNIX timestamp.
+	 * @method milliseconds
+	 * @param {Boolean} $sinceEpoch
+	 *  Defaults to false. If true, just returns the number of milliseconds in the UNIX timestamp.
 	 * @return {float}
-	 *  The number of microseconds, with fractional part
+	 *  The number of milliseconds, with fractional part
 	 */
-	static function microseconds ($since_epoch = false)
+	static function milliseconds ($sinceEpoch = false)
 	{
 		$result = microtime(true)*1000;
-		if ($since_epoch) {
+		if ($sinceEpoch) {
 			return $result;
 		}
 

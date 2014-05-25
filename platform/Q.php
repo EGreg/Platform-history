@@ -97,7 +97,7 @@ require(Q_CLASSES_DIR.DS.'Db'.DS.'Query.php');
 // Set things up
 //
 
-Q::microseconds();
+Q::milliseconds();
 Q_Bootstrap::registerShutdownFunction();
 Q_Bootstrap::setDefaultTimezone();
 Q_Bootstrap::setIncludePath();

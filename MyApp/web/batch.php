@@ -30,4 +30,4 @@ foreach ($urls as $i => $url) {
 
 $_REQUEST = $original_request;
 echo "]";
-Q::log("~" . ceil(Q::microseconds()) . 'ms+'.ceil(memory_get_peak_usage()/1000).'kb.'." batch complete.");
+Q::log("~" . ceil(Q::milliseconds()) . 'ms+'.ceil(memory_get_peak_usage()/1000).'kb.'." batch complete.");

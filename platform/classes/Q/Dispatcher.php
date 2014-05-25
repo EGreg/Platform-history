@@ -444,9 +444,9 @@ class Q_Dispatcher
 
 	protected static function handleForwardException($e)
 	{
-		$slot_names = Q_Request::slotNames(true);
-		foreach ($slot_names as $slot_name) {
-			Q_Response::clearSlot($slot_name);
+		$slotNames = Q_Request::slotNames(true);
+		foreach ($slotNames as $slotName) {
+			Q_Response::clearSlot($slotName);
 		}
 		// Go again, this time with a different URI.
 		self::$uri = Q_Uri::from($e->uri);

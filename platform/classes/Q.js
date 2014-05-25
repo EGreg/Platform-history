@@ -1654,19 +1654,31 @@ Q.shuffle = function _Q_shuffle( arr ) {
 /**
  * Returns microtime like PHP
  * @method microtime
- * @param get_as_float {Boolean}
+ * @param getAsFloat {Boolean}
  * @return {String}
  */
-Q.microtime = function _Q_microtime(get_as_float) {
-	// http://kevin.vanzonneveld.net
-	// +   original by: Paulo Freitas
-	// *     example 1: timeStamp = microtime(true);
-	// *     results 1: timeStamp > 1000000000 && timeStamp < 2000000000
+Q.microtime = function _Q_microtime(getAsFloat) {
 	var now = Date.now() / 1000;
+	if (getAsFloat) return now;
 	var s = parseInt(now, 10);
-
-	return (get_as_float) ? now : (Math.round((now - s) * 1000) / 1000) + ' ' + s;
+	return (Math.round((now - s) * 1000) / 1000) + ' ' + s;
 };
+
+/**
+ * Returns the number of milliseconds since the
+ * first call to this function (i.e. since script started).
+ * @method milliseconds
+ * @param {Boolean} sinceEpoch
+ *  Defaults to false. If true, just returns the number of milliseconds in the UNIX timestamp.
+ * @return {float}
+ *  The number of milliseconds, with fractional part
+ */
+Q.milliseconds = function (sinceEpoch) {
+	var result = Date.now();
+	if (sinceEpoch) return result;
+	return result - Q.milliseconds.start;
+};
+Q.milliseconds.start = Date.now();
 
 /**
  * Default exception handler for Q
@@ -2445,7 +2457,7 @@ Q.date = function (format, timestamp) {
 		s: function () { // Seconds w/leading 0; 00..59
 			return _pad(jsdate.getSeconds(), 2);
 		},
-		u: function () { // Microseconds; 000000-999000
+		u: function () { // milliseconds; 000000-999000
 			return _pad(jsdate.getMilliseconds() * 1000, 6);
 		},
 

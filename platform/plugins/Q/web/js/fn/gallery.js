@@ -4,8 +4,7 @@
  * @param options Object
  *  "images": an array of objects containing
  *    "src": required, url of the image, will be fed through Q.url()
- *    "alt": optional alt text
- *    "start": optional object indicating 
+ *    "caption": optional caption for the image
  *    "interval": optional number overriding default interval
  *    "transition": optional object overriding default transition
  *  "transition": optional object containing
@@ -26,7 +25,8 @@
  */
 Q.Tool.jQuery('Q/gallery', function (o) {
 	
-	var $this = this, i, image, img, imgs=[], current, tm, anim, gallery;
+	var $this = this, i, image, img, imgs=[], current, tm, gallery;
+	var animTransition, animInterval, animPreviousInterval;
 	var intervals = {
 		"": function (x, y, params) {
 
@@ -35,8 +35,8 @@ Q.Tool.jQuery('Q/gallery', function (o) {
 			var image = o.images[params.current];
 			var img = imgs[params.current];
 			var interval = image.interval || {};
-			var from = $.extend({}, o.interval.from, interval.from);
-			var to = $.extend({}, o.interval.to, interval.to);
+			var from = Q.extend({}, 2, o.interval.from, 2, interval.from);
+			var to = Q.extend({}, 2, o.interval.to, 2, interval.to);
 			var z = y;
 			var widthFactor = from.width + z*(to.width - from.width);
 			var heightFactor = from.height + z*(to.height - from.height);
@@ -78,6 +78,8 @@ Q.Tool.jQuery('Q/gallery', function (o) {
 				height: height+'px',
 				visibility: 'visible'
 			});
+			
+			
 		}
 	};
 	var transitions = {
@@ -100,6 +102,9 @@ Q.Tool.jQuery('Q/gallery', function (o) {
 					});
 				}
 			}
+			if (y === 1) {
+				animPreviousInterval && animPreviousInterval.pause();
+			}
 		}
 	};
 	
@@ -120,6 +125,10 @@ Q.Tool.jQuery('Q/gallery', function (o) {
 	}
 	$this.css(css);
 	
+	var caption = $('<div class="Q_gallery_caption" />')
+		.css('z-index', 9999)
+		.appendTo($this);
+	
 	function loadImage(index, callback) {
 		if (imgs[index]) {
 			if (callback) callback(index, imgs);
@@ -127,10 +136,14 @@ Q.Tool.jQuery('Q/gallery', function (o) {
 		}
 		var image = o.images[index];
 		img = $('<img />').attr({
-			'alt': image.alt ? image.alt : 'image ' + index,
+			'alt': image.caption ? image.caption : 'image ' + index,
 			'src': Q.url(image.src)
-		}).css({'visibility': 'hidden', 'position': 'absolute', 'top': '0px', 'left': '0px'})
-		.appendTo($this)
+		}).css({
+			visibility: 'hidden',
+			position: 'absolute',
+			top: '0px', 
+			left: '0px'
+		}).appendTo($this)
 		.load(onLoad);
 		imgs[index] = img;
 		img.each(function () {
@@ -139,6 +152,7 @@ Q.Tool.jQuery('Q/gallery', function (o) {
 				onLoad();
 			}
 		});
+		caption.html(image.caption).css('color', image.color || "000000");
 		function onLoad() {
 			imgs[index] = img;
 			Q.handle(o.onLoad, $this, [$(this), imgs, o]);
@@ -163,7 +177,7 @@ Q.Tool.jQuery('Q/gallery', function (o) {
 				beginTransition();
 			});
 			function beginTransition() {
-				var t = $.extend(true, {}, o.transition, o.images[current].transition);
+				var t = Q.extend({}, 2, o.transition, 2, o.images[current].transition);
 				var transition = transitions[o.transition.type || ""];
 				Q.handle(o.onTransition, $this, [current, imgs, o]);
 				if (!o.transitionToFirst && previous === -1) {
@@ -171,7 +185,8 @@ Q.Tool.jQuery('Q/gallery', function (o) {
 					beginInterval();
 					return;
 				}
-				anim = Q.Animation.play(
+				// animTransition && animTransition.pause();
+				animTransition = Q.Animation.play(
 					transition,
 					t.duration,
 					t.ease,
@@ -180,13 +195,14 @@ Q.Tool.jQuery('Q/gallery', function (o) {
 				beginInterval();
 			}
 			function beginInterval() {
-				var transition = $.extend(true, {}, o.transition, o.images[current].transition);
-				var interval = $.extend(true, {}, o.interval, o.images[current].interval);
-				anim = Q.Animation.play(
+				var transition = Q.extend({}, 2, o.transition, 2, o.images[current].transition);
+				var interval = Q.extend({}, 2, o.interval, 2, o.images[current].interval);
+				animPreviousInterval = animInterval;
+				animInterval = Q.Animation.play(
 					intervals[interval.type || ""],
 					interval.duration,
 					interval.ease,
-					{ current: current }
+					{ current: current, previous: previous }
 				);
 				loadImage((current+1) % o.images.length, null); // preload next image
 				if (keepGoing) {
@@ -197,19 +213,19 @@ Q.Tool.jQuery('Q/gallery', function (o) {
 			}
 		},
 		pause: function () {
-			if (anim) {
-				anim.pause();
-			}
+			animTransition && animTransition.pause();
+			animInterval && animInterval.pause();
 			clearTimeout(tm);
 		},
 		resume: function () {
-			if (anim) {
-				anim.resume();
-			}
+			animTransition && animTransition.play();
+			animInterval && animInterval.play();
 		},
 		rewind: function () {
+			this.pause();
 			current = -1;
-			anim = null;
+			animTransition = null;
+			animInterval = null;
 		}
 	};
 	
@@ -228,7 +244,7 @@ Q.Tool.jQuery('Q/gallery', function (o) {
 {
 	images: [],
 	transition: {
-		duration: 500,
+		duration: 1000,
 		ease: "smooth",
 		type: "crossfade"
 	},
