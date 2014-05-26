@@ -1666,6 +1666,6 @@ input[type=radio] { margin-right: 5px; }
 	-webkit-animation: Q_uploading 1s ease-in-out infinite alternate;
 }
 
-.Streams_preview { height: auto; }
+.Q_gallery_caption { z-index: 201;}
 
 #dialogs_slot { display: none; }

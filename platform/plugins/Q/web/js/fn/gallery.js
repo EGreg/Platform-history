@@ -154,7 +154,6 @@ Q.Tool.jQuery('Q/gallery', function (o) {
 		});
 		if (image.caption) {
 			var css = image.style ? image.style : {};
-			css['z-index'] = 9999;
 			css['visibility'] = 'hidden';
 			var cap = $('<div class="Q_gallery_caption" />')
 				.css(css)

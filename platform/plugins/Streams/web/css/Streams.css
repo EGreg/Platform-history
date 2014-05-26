@@ -464,7 +464,7 @@
 .streams_basic_overlay td { vertical-align: middle; }
 .streams_basic_overlay .q_field_title { width: 150px; text-align: right; padding-right: 10px; }
 
-
+.Streams_preview { height: auto; }
 .Streams_preview_create { cursor: pointer; }
 .Streams_preview_add,
 .Streams_preview_icon { float: left; }
