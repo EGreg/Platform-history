@@ -25,7 +25,7 @@
  */
 Q.Tool.jQuery('Q/gallery', function (o) {
 	
-	var $this = this, i, image, img, imgs=[], current, tm, gallery;
+	var $this = this, i, image, imgs=[], caps=[], current, tm, gallery;
 	var animTransition, animInterval, animPreviousInterval;
 	var intervals = {
 		"": function (x, y, params) {
@@ -84,20 +84,24 @@ Q.Tool.jQuery('Q/gallery', function (o) {
 	};
 	var transitions = {
 		crossfade: function (x, y, params) {
-			imgs[params.current].css({
+			imgs[params.current]
+			.add(caps[params.current])
+			.css({
 				display: 'block',
 				visibility: 'visible',
 				opacity: y
 			});
 			if (params.previous < 0) return;				
 			if (y !== 1) {
-				imgs[params.previous].css({
+				imgs[params.previous]
+				.add(caps[params.previous])
+				.css({
 					opacity: 1-y
 				});
 			} else {
 				for (var i=0; i<imgs.length; ++i) {
 					if (i === params.current) continue;
-					imgs[i].css({
+					imgs[i].add(caps[i]).css({
 						display: 'none'
 					});
 				}
@@ -125,19 +129,15 @@ Q.Tool.jQuery('Q/gallery', function (o) {
 	}
 	$this.css(css);
 	
-	var caption = $('<div class="Q_gallery_caption" />')
-		.css('z-index', 9999)
-		.appendTo($this);
-	
 	function loadImage(index, callback) {
 		if (imgs[index]) {
 			if (callback) callback(index, imgs);
 			return;
 		}
 		var image = o.images[index];
-		img = $('<img />').attr({
-			'alt': image.caption ? image.caption : 'image ' + index,
-			'src': Q.url(image.src)
+		var img = $('<img />').attr({
+			alt: image.caption ? image.caption : 'image ' + index,
+			src: Q.url(image.src)
 		}).css({
 			visibility: 'hidden',
 			position: 'absolute',
@@ -152,7 +152,18 @@ Q.Tool.jQuery('Q/gallery', function (o) {
 				onLoad();
 			}
 		});
-		caption.html(image.caption).css('color', image.color || "000000");
+		if (image.caption) {
+			var css = image.style ? image.style : {};
+			css['z-index'] = 9999;
+			css['visibility'] = 'hidden';
+			var cap = $('<div class="Q_gallery_caption" />')
+				.css(css)
+				.html(image.caption)
+				.appendTo($this);
+			caps[index] = cap;
+		} else {
+			caps[index] = $([]);
+		}
 		function onLoad() {
 			imgs[index] = img;
 			Q.handle(o.onLoad, $this, [$(this), imgs, o]);
