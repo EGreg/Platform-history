@@ -71,6 +71,7 @@ function (o) {
 		options: o,
 		load: function()
 		{
+			$this.data('Q/overlay').documentScrollTop = $(window).scrollTop();
 			var $overlay = $this.data('Q/overlay');
 			if ($this.css('display') != 'block')
 			{
@@ -111,6 +112,7 @@ function (o) {
 		},
 		close: function()
 		{
+			$('html,body').scrollTop($this.data('Q/overlay').documentScrollTop);
 			var $overlay = $this.data('Q/overlay');
 			if (!$overlay.options.noClose)
 			{
