@@ -705,7 +705,7 @@ class Users_User extends Base_Users_User
 			$icon = array(
 				'40.png' => array('hash' => $hash, 'size' => 40),
 				'50.png' => array('hash' => $hash, 'size' => 50),
-				'80w.png' => array('hash' => $hash, 'size' => 80)
+				'80.png' => array('hash' => $hash, 'size' => 80)
 			);
 			$this->icon = Users::downloadIcon($this, $icon);
 		}

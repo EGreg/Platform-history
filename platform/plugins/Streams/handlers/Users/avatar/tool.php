@@ -6,7 +6,7 @@
  * @param array $options
  * An associative array of parameters, containing:
  *   "userId" => The user's id. Defaults to id of the logged-in user, if any.
- *   "icon" => Optional. Render icon before the display name. Can be true or a valid icon size: 40, 50 or 80w.
+ *   "icon" => Optional. Render icon before the display name. Can be true or a valid icon size: 40, 50 or 80.
  *   "short" => Optional. Renders the short version of the display name.
  */
 function Users_avatar_tool($options)

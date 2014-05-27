@@ -1036,7 +1036,7 @@ function login_callback(response) {
 
 	function defaultSetupRegisterForm(identifier, json, priv, dialog) {
 		var src = json.entry[0].photos && json.entry[0].photos.length ? json.entry[0].photos[0].value : json.entry[0].thumbnailUrl;
-		var src40 = src, src50 = src, src80w = src;
+		var src40 = src, src50 = src, src80 = src;
 		var username = json.entry[0].preferredUsername || json.entry[0].displayName;
 		if (priv.registerInfo) {
 			if (priv.registerInfo.username){
@@ -1046,7 +1046,7 @@ function login_callback(response) {
 				src40 = src50 = src = priv.registerInfo.pic_square;
 			}
 			if (priv.registerInfo.pic) {
-				src80w = priv.registerInfo.pic;
+				src80 = priv.registerInfo.pic;
 			}
 		}
 		var img = $('<img />').attr('src', src).attr('title', 'You can change this picture later');
@@ -1076,7 +1076,7 @@ function login_callback(response) {
 		.append($('<input type="hidden" name="identifier" />').val(identifier))
 		.append($('<input type="hidden" name="icon[40.png]" />').val(src40))
 		.append($('<input type="hidden" name="icon[50.png]" />').val(src50))
-		.append($('<input type="hidden" name="icon[80w.png]" />').val(src80w))
+		.append($('<input type="hidden" name="icon[80.png]" />').val(src80))
 		.append($('<div class="Users_login_get_started">&nbsp;</div>')
 		.append(
 			$('<button type="submit" class="Q_button Users_login_start Q_main_button" />')

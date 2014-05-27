@@ -374,7 +374,7 @@ abstract class Users extends Base_Users
 						$icon = array(
 							'40.png' => "http://graph.facebook.com/$fb_uid/picture?type=square",
 							'50.png' => "http://graph.facebook.com/$fb_uid/picture?type=square",
-							'80w.png' => "http://graph.facebook.com/$fb_uid/picture?type=normal"
+							'80.png' => "http://graph.facebook.com/$fb_uid/picture?type=normal"
 						);
 						$user->icon = self::downloadIcon($user, $icon);
 						$user->save();

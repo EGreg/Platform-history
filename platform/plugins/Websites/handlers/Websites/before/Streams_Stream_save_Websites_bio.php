@@ -24,6 +24,11 @@ function Websites_before_Streams_Stream_save_Websites_bio($params)
 			$stream->title = $title;
 		}
 		$stream->icon = Q_Html::themedUrl($user->iconPath());
+		$s = Streams::fetchOne($user->id, $user->id, "Streams/user/icon");
+		if (!$s or !$sizes = $s->getAttribute('sizes', null)) {
+			$sizes = Q_Config::expect('Users', 'icon', 'sizes');
+		}
+		$stream->setAttribute('sizes', $sizes);
 	}
 
 	$bio = new Websites_Bio();

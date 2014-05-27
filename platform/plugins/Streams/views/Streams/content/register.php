@@ -4,7 +4,7 @@
 			<tr>
 				<td>
 					<?php echo Q_Html::img(
-						"plugins/Users/img/icons/user-{$by_user->id}/80w.png",
+						"plugins/Users/img/icons/user-{$by_user->id}/80.png",
 						$by_display_name,
 						array('class' => 'item_icon')
 					) ?>

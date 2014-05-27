@@ -1949,7 +1949,7 @@ Streams.displayType = function _Streams_displayType(type) {
 
 Streams.setupRegisterForm = function _Streams_setupRegisterForm(identifier, json, priv, overlay) {
 	var src = json.entry[0].thumbnailUrl;
-	var src40 = src, src50 = src, src80w = src;
+	var src40 = src, src50 = src, src80 = src;
 	var firstName = '', lastName = '';
 	if (priv.registerInfo) {
 		if (priv.registerInfo.firstName){
@@ -1962,7 +1962,7 @@ Streams.setupRegisterForm = function _Streams_setupRegisterForm(identifier, json
 			src40 = src50 = src = priv.registerInfo.pic_square;
 		}
 		if (priv.registerInfo.pic) {
-			src80w = priv.registerInfo.pic;
+			src80 = priv.registerInfo.pic;
 		}
 	}
 	var img = $('<img />').attr('src', src).attr('title', Q.text.Streams.login.picTooltip);

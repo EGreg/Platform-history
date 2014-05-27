@@ -4,7 +4,7 @@
 			Welcome to
 		</div>
 		<div>
-			<?php echo Q_Html::img("plugins/Users/img/icons/{$client->icon}/80w.png", 'user icon', array(
+			<?php echo Q_Html::img("plugins/Users/img/icons/{$client->icon}/80.png", 'user icon', array(
 				'class' => 'Users_app_icon'
 			)); ?>
 			<span class="Users_app_name"><?php echo $client->username ?></span>

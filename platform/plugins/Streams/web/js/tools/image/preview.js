@@ -241,6 +241,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 			}
 			var stream = tool.stream = this;
 			var size, attributes;
+			size = state.imagepicker.saveSizeName[state.imagepicker.showSize];
 			if (this.fields.attributes
 			&& (attributes = JSON.parse(this.fields.attributes))
 			&& attributes.sizes) {
