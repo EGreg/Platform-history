@@ -9,8 +9,8 @@
 (function (window) {
 
 // private properties
-var m_isReady = false;
-var m_isOnline = null;
+var _isReady = false;
+var _isOnline = null;
 
 function Q () {
 	// not called right now
@@ -1654,6 +1654,36 @@ Q.Event.factory = function (collection, defaults, callback) {
         return e;
     };
 };
+
+Q.onInit = new Q.Event();
+Q.onLoad = new Q.Event();
+Q.onUnload = new Q.Event(function _Q_onUnload_callback() {
+	// This helps the developer with debugging.
+	// It occurs when actual document is being unloaded, as opposed to AJAX-based page loading
+	console.log("Leaving page "+window.location.href);
+}, 'Q');
+
+Q.onPageLoad = Q.Event.factory(null, [""]);
+Q.onPageActivate = Q.Event.factory(null, [""]);
+Q.onPageUnload = Q.Event.factory(null, [""]);
+Q.beforePageLoad = Q.Event.factory(null, [""]);
+Q.beforePageUnload = Q.Event.factory(null, [""]);
+
+Q.onHashChange = new Q.Event();
+Q.onPopState = new Q.Event();
+Q.onOnline = new Q.Event(function () {
+	_isOnline = true;
+}, 'Q');
+Q.onOffline = new Q.Event(function () {
+	_isOnline = false;
+}, 'Q');
+Q.beforeActivate = new Q.Event();
+Q.onActivate = new Q.Event();
+Q.onDOM = new Q.Event();
+Q.onReady = new Q.Event();
+Q.onJQuery = new Q.Event();
+Q.onLayout = new Q.Event();
+Q.onVisibilityChange = new Q.Event();
 
 /**
  * Sets up control flows involving multiple callbacks and dependencies
@@ -3593,7 +3623,7 @@ Q.init.jsonLibraryUrl = "http://cdnjs.cloudflare.com/ajax/libs/json3/3.2.4/json3
 Q.ready = function _Q_ready() {
 	function readyWithNonce() {
 
-		m_isReady = true;
+		_isReady = true;
 
 		if (Q.info.isLocalFile) {
 			// This is an HTML file loaded from the local filesystem
@@ -3875,7 +3905,7 @@ Q.uuid = function () {
  * @method isReady
  */
 Q.isReady = function _Q_isReady() {
-	return m_isReady;
+	return _isReady;
 };
 
 /**
@@ -3883,7 +3913,7 @@ Q.isReady = function _Q_isReady() {
  * @method isOnline
  */
 Q.isOnline = function _Q_isOnline() {
-	return m_isOnline;
+	return _isOnline;
 };
 
 /**
@@ -6457,6 +6487,45 @@ Q.Animation.ease = {
 		return 6 * tc * ts + -15 * ts * ts + 10 * tc;
 	}
 };
+
+function _listenForVisibilityChange() {
+	var hidden, visibilityChange; 
+	if ('hidden' in document) { // Opera 12.10 and Firefox 18 and later support 
+		hidden = 'hidden';
+		visibilityChange = 'visibilitychange';
+	} else if ('mozHidden' in document) {
+		hidden = 'mozHidden';
+		visibilityChange = 'mozvisibilitychange';
+	} else if ('msHidden' in document) {
+		hidden = 'msHidden';
+		visibilityChange = 'msvisibilitychange';
+	} else if ('webkitHidden' in document) {
+		hidden = 'webkitHidden';
+		visibilityChange = 'webkitvisibilitychange';
+	} else if ('oHidden' in document) {
+		hidden = 'oHidden';
+		visibilityChange = 'ovisibilitychange';
+	}
+	document.addEventListener(visibilityChange, function () {
+		Q.onVisibilityChange.handle(document, [document[hidden]]);
+	}, false);
+	Q.isDocumentHidden = function () {
+		return document[hidden];
+	};
+}
+_listenForVisibilityChange();
+
+function _handleVisibilityChange() {
+	if (document.hidden || document.msHidden 
+	|| document.webkitHidden || document.oHidden) {
+		return;
+    }
+	for (var k in Q.Animation.playing) {
+		Q.Animation.playing[k].play();
+	}
+}
+Q.onVisibilityChange.set(_handleVisibilityChange, 'Q.Animation');
+
 Q.Animation.playing = {};
 _Q_Animation_index = 0;
 
@@ -7597,35 +7666,6 @@ function processStylesheets() {
 }
 processStylesheets.slots = {};
 processStylesheets(); // NOTE: the above works only for stylesheets included before Q.js and prefixfree.js
-
-Q.onInit = new Q.Event();
-Q.onLoad = new Q.Event();
-Q.onUnload = new Q.Event(function _Q_onUnload_callback() {
-	// This helps the developer with debugging.
-	// It occurs when actual document is being unloaded, as opposed to AJAX-based page loading
-	console.log("Leaving page "+window.location.href);
-}, 'Q');
-
-Q.onPageLoad = Q.Event.factory(null, [""]);
-Q.onPageActivate = Q.Event.factory(null, [""]);
-Q.onPageUnload = Q.Event.factory(null, [""]);
-Q.beforePageLoad = Q.Event.factory(null, [""]);
-Q.beforePageUnload = Q.Event.factory(null, [""]);
-
-Q.onHashChange = new Q.Event();
-Q.onPopState = new Q.Event();
-Q.onOnline = new Q.Event(function () {
-	m_isOnline = true;
-}, 'Q');
-Q.onOffline = new Q.Event(function () {
-	m_isOnline = false;
-}, 'Q');
-Q.beforeActivate = new Q.Event();
-Q.onActivate = new Q.Event();
-Q.onDOM = new Q.Event();
-Q.onReady = new Q.Event();
-Q.onJQuery = new Q.Event();
-Q.onLayout = new Q.Event();
 
 Q.addEventListener(window, 'load', Q.onLoad.handle);
 Q.onInit.add(function () {
