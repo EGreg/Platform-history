@@ -78,8 +78,7 @@ Q.Tool.jQuery('Q/gallery', function (o) {
 				height: height+'px',
 				visibility: 'visible'
 			});
-			
-			
+			caps[params.current].css('visibility', 'visible');
 		}
 	};
 	var transitions = {
