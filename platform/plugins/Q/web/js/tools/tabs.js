@@ -145,8 +145,8 @@ Q.Tool.define("Q/tabs", function(options) {
 	},
 	
 	refresh: function (options) {
+		var tool = this;
 		var $te = $(this.element);
-				$te.width(300);
 		var w = $te.width(), w2 = 0, w3 = 0, index = -10;
 		var $tabs = $('.Q_tabs_tab', $te);
 		var $overflow, $lastVisibleTab;
@@ -181,14 +181,14 @@ Q.Tool.define("Q/tabs", function(options) {
 					items.push({
 						content: $tab,
 						attributes: {
-							action: $tab.attr('data-name')
+							name: $tab.attr('data-name')
 						}
 					});
 				}
 				$overflow.plugin("Q/contextual", {
 					items: items,
-					defaultHandler: function () {
-						debugger;
+					defaultHandler: function ($tab) {
+						tool.switchTo($tab.attr('data-name'), $tab[0]);
 					}
 				});
 			});
