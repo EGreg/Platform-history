@@ -163,7 +163,7 @@ function (o) {
 },
 
 {
-	destroy: function () {
+	remove: function () {
 		return this.each(function(index) {
 			var $this = $(this);
 			var data = $this.data('Q/listing objects');

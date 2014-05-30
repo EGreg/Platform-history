@@ -175,7 +175,7 @@ function (o) {
 	close: function () {
 		this.data('Q/overlay').close();
 	},
-	destroy: function () {
+	remove: function () {
 		this.each(function() {
 			var $this = $(this);
 			$this.find('a.close').remove();
@@ -204,12 +204,12 @@ function (o) {
  *              If false, dialog will appear immediately and 'onLoad' will be called at the same time.
  * "noClose": Defaults to false. If true, overlay close button will not appear and overlay won't be closed by pressing 'Esc' key.
  * "closeOnEsc": Defaults to true. Indicates whether to close dialog on 'Esc' key press. Has sense only if 'noClose' is false.
- * "destroyOnClose": Defaults to false. If true, dialog DOM element will be removed from the document on close.
+ * "removeOnClose": Defaults to false. If true, dialog DOM element will be removed from the document on close.
  * "beforeLoad": Optional. Q.Event or function which is called before dialog is loaded.
  * "onActivate": Optional. Q.Event or function which is called when dialog is activated
  *               (all inner tools, if any, are activated and dialog is fully loaded and shown).
  * "beforeClose": Optional. Q.Event or function which is called when dialog closing initiated but it's still visible and exists in DOM.
- * "onClose": Optional. Q.Event or function which is called when dialog is closed and hidden and probably removed from DOM (if 'destroyOnClose' is 'true').
+ * "onClose": Optional. Q.Event or function which is called when dialog is closed and hidden and probably removed from DOM (if 'removeOnClose' is 'true').
  */
 Q.Tool.jQuery('Q/dialog', function (o) {
 	
@@ -260,7 +260,7 @@ Q.Tool.jQuery('Q/dialog', function (o) {
 				}},
 				beforeClose: o.beforeClose,
 				onClose: { "Q/dialog": function () {
-					if (o.destroyOnClose) {
+					if (o.removeOnClose) {
 						$this.remove();
 					}
 					Q.handle(o.onClose, $this, [$this]);
@@ -323,7 +323,7 @@ Q.Tool.jQuery('Q/dialog', function (o) {
 						hiddenChildren[i].show();
 					}
 					
-					if (o.destroyOnClose) {
+					if (o.removeOnClose) {
 						$this.remove();
 					} else {
 						$this.hide();
@@ -355,7 +355,7 @@ Q.Tool.jQuery('Q/dialog', function (o) {
 	'asyncLoad': !Q.info.isTouchscreen,
 	'noClose': false,
 	'closeOnEsc': true,
-	'destroyOnClose': false,
+	'removeOnClose': false,
 	'beforeLoad': new Q.Event(function() {}),
 	'onActivate': new Q.Event(function() {}),
 	'beforeClose': new Q.Event(function() {}),
@@ -494,7 +494,7 @@ function _handlePosAndScroll(o)
 				         $this.data('Q_dialog_default_height') <= window.innerHeight)
 				{
 					$this.removeData('Q_dialog_default_height');
-					contentsWrapper.plugin('Q/iScroll', 'destroy');
+					contentsWrapper.plugin('Q/iScroll', 'remove');
 					ods.unwrap();
 					$this.css({ 'top': topMargin + 'px' });
 				}
@@ -550,7 +550,7 @@ function _handlePosAndScroll(o)
 					$this.removeData('Q_dialog_default_height');
 					if (Q.info.isTouchscreen && $.fn.iScroll)
 					{
-						contentsWrapper.plugin('Q/iScroll', 'destroy');
+						contentsWrapper.plugin('Q/iScroll', 'remove');
 						ods.unwrap();
 					}
 					else

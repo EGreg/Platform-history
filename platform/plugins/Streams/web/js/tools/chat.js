@@ -194,7 +194,7 @@ Q.Tool.define("Streams/chat", function _Streams_chat_constructor (options) {
     							var pullDownOffset = $this.find('.Streams_chat_pull_down').outerHeight(true);
     							var pullDownIcon = $('.Streams_chat_pull_down_icon');
     							var pullDownLabel = $('.Streams_chat_pull_down_label');
-    							$this.plugin('Q/iScroll', 'destroy').plugin('Q/iScroll', {
+    							$this.plugin('Q/iScroll', 'remove').plugin('Q/iScroll', {
     								y: -10000,
     								useTransition: true,
     								topOffset: pullDownOffset,
@@ -461,7 +461,7 @@ Q.Tool.define("Streams/chat", function _Streams_chat_constructor (options) {
     	else if (o.loadMore == 'pull')
     	{
     		$this.find('.Streams_chat_pull_down').hide();
-    		$this.plugin('Q/iScroll', 'destroy').plugin('Q/iScroll', { 'useTransition': true });
+    		$this.plugin('Q/iScroll', 'remove').plugin('Q/iScroll', { 'useTransition': true });
     		$this.children('div:last:not(.Streams_chat_listing_wrapper)').css({
     			'top': $this.offset().top + 'px',
     			'height': $this.height() + 'px',

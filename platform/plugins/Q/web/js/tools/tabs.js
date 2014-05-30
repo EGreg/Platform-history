@@ -20,8 +20,9 @@
 Q.Tool.define("Q/tabs", function(options) {
 
 	var tool = this;
+	var $te = $(tool.element);
 	
-	$(tool.element).on([Q.Pointer.fastclick, '.Q_tabs'], '.Q_tabs_tab', function () {
+	$te.on([Q.Pointer.fastclick, '.Q_tabs'], '.Q_tabs_tab', function () {
 		if (false === tool.state.onClick.handle.call(tool, this.getAttribute('data-name'), this)) {
 			return;
 		}
@@ -37,6 +38,7 @@ Q.Tool.define("Q/tabs", function(options) {
 		// return false;
 	});
 	
+	tool.refresh();
 	tool.indicateSelected();
 	
 },
@@ -45,6 +47,7 @@ Q.Tool.define("Q/tabs", function(options) {
 	field: 'tab',
 	slot: 'content,title',
 	selector: '#content_slot',
+	overflow: '{{count}} more &#9660;',
 	loadUrlOptions: {},
 	loader: Q.req,
 	onClick: new Q.Event(),
@@ -139,8 +142,63 @@ Q.Tool.define("Q/tabs", function(options) {
 				+ '?' + window.location.search.queryField(state.field, name);
 		}
 		return href;
+	},
+	
+	refresh: function (options) {
+		var $te = $(this.element);
+				$te.width(300);
+		var w = $te.width(), w2 = 0, w3 = 0, index = -10;
+		var $tabs = $('.Q_tabs_tab', $te);
+		var $overflow, $lastVisibleTab;
+		$tabs.each(function (i) {
+			var $t = $(this);
+			w3 = w2;
+			w2 += $t.outerWidth(true);
+			if (w2 > w) {
+				index = i-1;
+				return false;
+			}
+		});
+		if (index >= 0) {
+			$lastVisibleTab = $tabs.eq(index);
+			$overflow = $('<a class="Q_tabs_tab Q_tabs_overflow" />')
+			.html(this.state.overflow.interpolate({
+				count: $tabs.length - index
+			}));
+			$overflow.insertAfter($lastVisibleTab);
+			if ($overflow.outerWidth(true) > w - w3) {
+				--index;
+				$lastVisibleTab = $tabs.eq(index);
+				$overflow.insertAfter($lastVisibleTab);
+			}
+		}
+		
+		if ($tabs.length - index > 0) {
+			Q.addScript("plugins/Q/js/QTools.js", function () {
+				var items = [], $tab;
+				for (var i=index+1; i<$tabs.length; ++i) {
+					$tab = $tabs.eq(i);
+					items.push({
+						content: $tab,
+						attributes: {
+							action: $tab.attr('data-name')
+						}
+					});
+				}
+				$overflow.plugin("Q/contextual", {
+					items: items,
+					defaultHandler: function () {
+						debugger;
+					}
+				});
+			});
+		}
 	}
 }
+);
+
+Q.Template.set('Q/tabs/contextual',
+	'<div class="Q_contextual"><ul class="Q_listing"></ul></div>'
 );
 
 })(Q, jQuery);

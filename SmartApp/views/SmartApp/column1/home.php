@@ -2,11 +2,11 @@
 	<?php foreach ($players as $player): ?>
 	<div class="Q_player">
 		<ul class="Q_player_buttons Q_clearfix">
-			<li class="Q_player_button Q_player_button_share Q_highlighted">
+			<li class="Q_player_button Q_player_button_share Q_selected">
 				<div class=""></div>
 				Share
 			</li>
-			<li class="Q_player_button Q_player_button_chat Q_highlighted">
+			<li class="Q_player_button Q_player_button_chat Q_selected">
 				<div class=""></div>
 				99+
 			</li>

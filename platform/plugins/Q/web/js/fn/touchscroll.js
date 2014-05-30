@@ -325,13 +325,13 @@ function(o)
 			var $this = $(this);
 			var o = $this.data('Q_touchscroll_options');
 			if (o) {
-				$this.plugin('Q/touchscroll', 'destroy')
+				$this.plugin('Q/touchscroll', 'remove')
 				.plugin('Q/touchscroll', o);
 			}
 		});
 	},
 	
-	destroy: function (reserved1, reserved2) {
+	remove: function (reserved1, reserved2) {
 		return this.each(function(index) {
 			var $this = $(this);
 			if ($this.data('Q_touchscroll_previous_overflow')) {
@@ -357,7 +357,7 @@ function(o)
 				'Q_touchscroll_options Q_touchscroll_previous_overflow Q_touchscroll_scrollbar_h ' +
 				'Q_touchscroll_scrollbar_v Q_touchscroll_end_handler Q_touchscroll_cleaning_func'
 			);
-			$this.plugin('Q/scrollIndicators', 'destroy');
+			$this.plugin('Q/scrollIndicators', 'remove');
 		});
 	}
 }

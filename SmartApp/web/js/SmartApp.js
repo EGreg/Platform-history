@@ -66,7 +66,7 @@ var SmartApp = (function (Q, $) {
 		
 		return function () {
 			// code to run before unloading any page
-			$('.clickable').plugin('Q/clickable', 'destroy');
+			$('.clickable').plugin('Q/clickable', 'remove');
 		}
 	});
 	

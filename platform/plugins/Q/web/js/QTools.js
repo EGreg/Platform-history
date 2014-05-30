@@ -387,7 +387,7 @@ Q.Layout = {
 	
 	/**
 	 * Configuration property determining that layout blocks must be powered with iScroll (on iOS devices)
-	 * and it will be automatically managed ('refresh', 'destroy' etc). The property itself is a hash with 'blockName' as key and boolean value
+	 * and it will be automatically managed ('refresh', 'remove' etc). The property itself is a hash with 'blockName' as key and boolean value
 	 * stating whether to apply iScroll or not.
 	 * @property
 	 * @type Object
@@ -666,12 +666,12 @@ Q.Layout = {
 				});
 			}
 			
-			$('.Q_highlighted').live(Q.Pointer.start, function(event)
+			$('.Q_selected').live(Q.Pointer.start, function(event)
 			{
 				$(this).addClass('Q_active');
 				event.preventDefault();
 			});
-			$('.Q_highlighted').live(Q.Pointer.end, function(event)
+			$('.Q_selected').live(Q.Pointer.end, function(event)
 			{
 				$(this).removeClass('Q_active');
 			});
@@ -808,7 +808,7 @@ Q.Layout = {
 							if (Q.info.platform == 'android')
 							{
 								var params = { 'type': 'native', 'scroller': document.body, 'orientation': 'v', 'topOffset': Q.Layout.scrollToOffset };
-								chat.plugins('Q/scrollIndicators', 'destroy')
+								chat.plugins('Q/scrollIndicators', 'remove')
 								.plugin('Q/scrollIndicators', params);
 							}
 							if (chat.chatTool)
@@ -910,13 +910,13 @@ Q.Layout = {
 		Q.Layout.ignoreHashChange = true;
 		Q.Layout.currentHash = '';
 		
-		$('.Q_dashboard_expandable ul.Q_listing').plugin('Q/listing', 'destroy');
+		$('.Q_dashboard_expandable ul.Q_listing').plugin('Q/listing', 'remove');
 		
 		var column1Slot = $('#column1_slot'), column2Slot = $('#column2_slot');
 		if (Q.info.isTouchscreen && Q.info.platform != 'android')
 		{
-			column1Slot.plugin('Q/iScroll', 'destroy');
-			column2Slot.plugin('Q/iScroll', 'destroy');
+			column1Slot.plugin('Q/iScroll', 'remove');
+			column2Slot.plugin('Q/iScroll', 'remove');
 		}
 		// hack-fast-flipping columns back to column1 if column2 currently displayed
 		if (Q.info.isMobile && Q.Layout.flipColumns.current == 'column2')
@@ -926,7 +926,7 @@ Q.Layout = {
 			Q.Layout.flipColumns.current = 'column1';
 		}
 		
-		$('.Q_hautoscroll').plugin('Q/hautoscroll', 'destroy');
+		$('.Q_hautoscroll').plugin('Q/hautoscroll', 'remove');
 		
 		if (Q.info.platform == 'android') {
 			window.scrollTo(0, Q.Layout.scrollToOffset);
@@ -1330,7 +1330,7 @@ Q.Layout = {
 			var nativeBlocks = Q.Layout.android.options.nativelyScrolledBlocks;
 			for (var i = 0; i < nativeBlocks.length; i++)
 			{
-				$(nativeBlocks[i]).plugin('Q/scrollIndicators', 'destroy')
+				$(nativeBlocks[i]).plugin('Q/scrollIndicators', 'remove')
 				.plugin('Q/scrollIndicators', params);
 			}
 		}
@@ -1396,12 +1396,12 @@ Q.Layout = {
 				}
 				else
 				{
-					column1Slot.plugin('Q/iScroll', 'destroy');
+					column1Slot.plugin('Q/iScroll', 'remove');
 				}
 			}
 			else
 			{
-				column1Slot.plugin('Q/iScroll', 'destroy');
+				column1Slot.plugin('Q/iScroll', 'remove');
 			}
 			if (Q.Layout.iScrollBlocks.column2 && column2Slot.length > 0 && column2Slot.children().length)
 			{
@@ -1439,12 +1439,12 @@ Q.Layout = {
 				}
 				else
 				{
-					column2Slot.plugin('Q/iScroll', 'destroy');
+					column2Slot.plugin('Q/iScroll', 'remove');
 				}
 			}
 			else
 			{
-				column2Slot.plugin('Q/iScroll', 'destroy');
+				column2Slot.plugin('Q/iScroll', 'remove');
 			}
 		}
 		else // desktop scrolling
@@ -1844,7 +1844,7 @@ Q.Content = {
 		{
 			var container = $('#column1_slot');
 			if (Q.info.isTouchscreen)
-				container.plugin('Q/iScroll', 'destroy');
+				container.plugin('Q/iScroll', 'remove');
 			container.html('<div class="Q_column1_contents">' + contents + '</div>');
 			if (Q.info.isTouchscreen)
 				container.plugin('Q/iScroll');
@@ -1968,8 +1968,8 @@ Q.Dashboard = {
 				var dashboardHeight = window.innerHeight - parseInt(dashboard.css('margin-top')) - parseInt(dashboard.css('margin-top'));
 				dashboard.css({ 'min-height': dashboardHeight + 'px' });
 			}
-			dashboard.find('#Q_dashboard_item_app').plugin('Q/contextual', 'destroy');
-			dashboard.find('#Q_dashboard_item_people').plugin('Q/contextual', 'destroy');
+			dashboard.find('#Q_dashboard_item_app').plugin('Q/contextual', 'remove');
+			dashboard.find('#Q_dashboard_item_people').plugin('Q/contextual', 'remove');
 			items.removeClass('Q_dashboard_item_horizontal');
 			items.find('br').remove();
 			expandables.show();
@@ -2010,7 +2010,7 @@ Q.Dashboard = {
 					});
 				});
 				if (items.length) {
-					$(this).plugin('Q/contextual', 'destroy')
+					$(this).plugin('Q/contextual', 'remove')
 					.plugin('Q/contextual', {
 						'className': 'Q_dashboard_listing_contextual',
 						'defaultHandler': Q.Layout.listingHandler,
@@ -2059,10 +2059,10 @@ Q.Dashboard = {
 							if (Q.info.isTouchscreen) {
 								if (listing.height() > expandHeight) {
 									if (Q.info.platform == 'android') {
-										expandable.plugin('Q/touchscroll', 'destroy')
+										expandable.plugin('Q/touchscroll', 'remove')
 										.plugin('Q/touchscroll');
 									} else {
-										expandable.plugin('Q/iScroll', 'destroy')
+										expandable.plugin('Q/iScroll', 'remove')
 										.plugin('Q/iScroll')
 										// .children('div:last').css({
 										// 	'top': expandable.offset().top + 'px',
@@ -2095,9 +2095,9 @@ Q.Dashboard = {
 			
 					if (Q.Dashboard.currentExpandable != null) {
 						if (Q.info.platform == 'android') {
-							Q.Dashboard.currentExpandable.plugin('Q/touchscroll', 'destroy');
+							Q.Dashboard.currentExpandable.plugin('Q/touchscroll', 'remove');
 						} else {
-							Q.Dashboard.currentExpandable.plugin('Q/iScroll', 'destroy');
+							Q.Dashboard.currentExpandable.plugin('Q/iScroll', 'remove');
 						}
 						Q.Dashboard.currentExpandable.clearQueue().animate(
 							{ 'height': 0 },
@@ -2176,7 +2176,7 @@ Q.Dashboard = {
 				if ($this.css('display') == 'block')
 					itemsHeight += $this.outerHeight();
 			});
-			$('.Q_landscape .Q_dashboard_item').plugin('Q/contextual', 'destroy');
+			$('.Q_landscape .Q_dashboard_item').plugin('Q/contextual', 'remove');
 			var expandable = Q.Dashboard.currentExpandable ? Q.Dashboard.currentExpandable
 										 : dashboard.children('.Q_dashboard_expandable:eq(0)');
 			var listing = expandable.find('.Q_listing');
@@ -2187,11 +2187,11 @@ Q.Dashboard = {
 					expandable.css({ 'height': (Q.Dashboard.availableHeight - itemsHeight) + 'px' });
 					if (Q.info.platform == 'android')
 					{
-						expandable.plugin('Q/touchscroll', 'destroy').plugin('Q/touchscroll');
+						expandable.plugin('Q/touchscroll', 'remove').plugin('Q/touchscroll');
 					}
 					else
 					{
-						expandable.plugin('Q/iScroll', 'destroy')
+						expandable.plugin('Q/iScroll', 'remove')
 						.plugin('Q/iScroll');
 						/*
 						expandable.children('div:last').css({
@@ -2225,16 +2225,16 @@ Q.Dashboard = {
 				{
 					if (Q.info.platform == 'android')
 					{
-						expandable.plugin('Q/touchscroll', 'destroy');
+						expandable.plugin('Q/touchscroll', 'remove');
 					}
 					else
 					{
-						expandable.plugin('Q/iScroll', 'destroy');
+						expandable.plugin('Q/iScroll', 'remove');
 					}
 				}
 				else
 				{
-					expandable.css({ 'height': listing.height() + 'px' }).plugin('Q/scrollbarsAutoHide', 'destroy');
+					expandable.css({ 'height': listing.height() + 'px' }).plugin('Q/scrollbarsAutoHide', 'remove');
 				}
 			}
 		}
@@ -2244,7 +2244,7 @@ Q.Dashboard = {
 	 * Destroys dashboard by clearing related functionality.
 	 * @method destroy
 	 */
-	destroy: function()
+	remove: function()
 	{
 		if (Q.Dashboard.options.noRefresh) return;
 		
@@ -2759,8 +2759,7 @@ Q.Contextual = {
 						else
 						{
 							handler = contextual.data('defaultHandler');
-							if (handler)
-								Q.handle(handler, contextual, [li]);
+							Q.handle(handler, contextual, [li]);
 						}
 					}, 200);
 				}, 200);
@@ -2780,7 +2779,7 @@ Q.Contextual = {
 		var listingWrapperHeight = listingWrapper.height();
 		if (Q.info.isTouchscreen)
 		{
-			listingWrapper.plugin('Q/scroller', 'destroy', { 'restoreOverflow': false, 'restoreHeight': false, 'unwrap': false });
+			listingWrapper.plugin('Q/scroller', 'remove', { 'restoreOverflow': false, 'restoreHeight': false, 'unwrap': false });
 			var scrollerWrapper = listingWrapper.hasClass('Q_scroller_wrapper')
 				? listingWrapper
 				: listingWrapper.children('.Q_scroller_wrapper');
@@ -2816,7 +2815,7 @@ Q.Contextual = {
 		}
 		else
 		{
-			listingWrapper.plugin('Q/scroller', 'destroy', { 
+			listingWrapper.plugin('Q/scroller', 'remove', { 
 				restoreOverflow: false, 
 				restoreHeight: false
 			});
@@ -2971,11 +2970,11 @@ Q.Contextual = {
 			info.selectedAtStart = false;
 			
 			var listingWrapper = contextual.children('.Q_listing_wrapper');
-			listingWrapper.plugin('Q/scroller', 'destroy');
-			listingWrapper.plugin('Q/iScroll', 'destroy');
-			listingWrapper.children('.Q_scroller_wrapper').plugin('Q/iScroll', 'destroy');
-			listingWrapper.plugin('Q/touchscroll', 'destroy');
-			listingWrapper.children('.Q_scroller_wrapper').plugin('Q/touchscroll', 'destroy');
+			listingWrapper.plugin('Q/scroller', 'remove');
+			listingWrapper.plugin('Q/iScroll', 'remove');
+			listingWrapper.children('.Q_scroller_wrapper').plugin('Q/iScroll', 'remove');
+			listingWrapper.plugin('Q/touchscroll', 'remove');
+			listingWrapper.children('.Q_scroller_wrapper').plugin('Q/touchscroll', 'remove');
 			listingWrapper.css({ 'max-height': '' });
 			
 			if (Q.Contextual.fadeTime > 0)

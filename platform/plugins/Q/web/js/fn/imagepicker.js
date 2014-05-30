@@ -201,7 +201,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 },
 
 {
-	destroy: function () {
+	remove: function () {
 		return this.each(function() {
 			var $this = $(this);
 			$this.off([Q.Pointer.click, '.Q_imagepicker']);

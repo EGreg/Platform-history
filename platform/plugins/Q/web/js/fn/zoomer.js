@@ -144,7 +144,7 @@ function (o) {
 },
 
 {
-	destroy: function () {
+	remove: function () {
 		var data = this.data('Q/zoomer');
 		if (data) {
 			this.unbind('mousemove', data.onMouseMove);

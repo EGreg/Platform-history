@@ -59,7 +59,7 @@ html, body
 	margin-right: 0;
 }
 
-.Q_highlighted:hover, .Q_highlighted.Q_hover
+.Q_selected:hover, .Q_selected.Q_hover
 {
   color: black;
   background-color: #91C2F2;

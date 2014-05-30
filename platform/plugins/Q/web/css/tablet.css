@@ -52,7 +52,7 @@ html
 	margin-right: 0;
 }
 
-.Q_highlighted.Q_active
+.Q_selected.Q_active
 {
   color: black !important;
   background-color: #91C2F2;

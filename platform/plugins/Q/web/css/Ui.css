@@ -1,4 +1,4 @@
-* { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
+* { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: rgba(0,0,0,0); -webkit-tap-highlight-color: transparent; }
 body { margin: 0px; }
 a { text-decoration: none; }
 table { border-spacing:0; border-collapse:collapse; }
@@ -167,8 +167,8 @@ div.Q_placeholder { pointer-events: none; }
 
 .Q_listing, .Q_listing li
 {
-  margin: 0;
-  padding: 0;
+	margin: 0;
+	padding: 0;
 }
 
 .Q_listing
@@ -179,11 +179,11 @@ div.Q_placeholder { pointer-events: none; }
 .Q_listing li
 {
 	padding: 0 10px;
-  line-height: 40px;
-  text-align: left;
-  border-top: solid 1px white;
-  border-bottom: solid 1px #CCC;
-  background: #ffffff;
+	line-height: 40px;
+	text-align: left;
+	border-top: solid 1px white;
+	border-bottom: solid 1px #CCC;
+	background: #ffffff;
 	background: -moz-linear-gradient(top, #ffffff 0%, #eeeeee 100%);
 	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(100%,#eeeeee));
 	background: -webkit-linear-gradient(top, #ffffff 0%,#eeeeee 100%);
@@ -194,10 +194,10 @@ div.Q_placeholder { pointer-events: none; }
 	-webkit-touch-callout: none;
 	-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 	-webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  -o-user-select: none;
-  user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	-o-user-select: none;
+	user-select: none;
 	white-space: nowrap;
 	overflow: hidden;
 }
@@ -274,8 +274,8 @@ div.Q_placeholder { pointer-events: none; }
 	pointer-events: none;
 }
 
-.Q_contextual .Q_listing li.Q_permanently_selected,
-.Q_selectable_listing li.Q_permanently_selected
+.Q_contextual .Q_listing .Q_permanently_selected,
+.Q_selectable_listing .Q_permanently_selected
 {
     background: #eee;
 	background: -moz-linear-gradient(top,  #eee 0%, #ccc 100%);
@@ -288,8 +288,8 @@ div.Q_placeholder { pointer-events: none; }
 	border-top: solid 1px #ccc;
 }
 
-.Q_contextual .Q_listing li.Q_selected,
-.Q_selectable_listing li.Q_selected
+.Q_contextual .Q_listing .Q_selected,
+.Q_selectable_listing .Q_selected
 {
 	background: #98bede;
 	background: -moz-linear-gradient(top,  #eaf5ff 0%, #98bede 100%);
@@ -1160,6 +1160,8 @@ div.Q_placeholder { pointer-events: none; }
 .Q_tabs_tab { display: block; float: left; padding: 3px 10px 3px 10px; line-height: 30px; border: solid 1px #aaa; border-bottom: 0px; border-left: 0px; margin-bottom: -1px; background-color: #eef; font-weight: bold; }
 .Q_tabs_tab:first-child { border-left: solid 1px #aaa; }
 .Q_tabs_tab.Q_selected { background-color: white; border-bottom: solid 1px white; }
+
+.Q_contextual .Q_tabs_tab { display: block; float: none; line-height:30px; border: 0px; background: transparent; } 
 
 .Q_panel_tool { text-align: left; }
 .Q_panel_tool_header { padding: 2px 0px 2px 0px; font-weight: bold; height: 20px; font-size: 14px; background-color: #EEE; }

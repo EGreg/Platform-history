@@ -435,7 +435,7 @@ function (o) {
 		});
 	},
 	
-	destroy: function () {
+	remove: function () {
 		return this.each(function() {
 			$(this).find('.Q_scroll_indicator').remove();
 		});

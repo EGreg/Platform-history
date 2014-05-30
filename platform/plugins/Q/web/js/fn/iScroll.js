@@ -25,7 +25,7 @@ Q.Tool.jQuery("Q/iScroll", function (o) {
 				$('.jspContainer').css('top', '0px');
 				if ($this.data('Q/iScroll'))
 				{
-					$this.plugin('Q/scrollIndicators', 'destroy')
+					$this.plugin('Q/scrollIndicators', 'remove')
 					.plugin('Q/scrollIndicators', {
 						'type': 'iScroll',
 						'scroller': $this.data('Q/iScroll'),
@@ -72,7 +72,7 @@ Q.Tool.jQuery("Q/iScroll", function (o) {
 			if ($this.state('Q/iScroll'))
 			{
 				//$this.data('Q/iScroll').refresh();
-				$this.plugin('Q/scrollIndicators', 'destroy')
+				$this.plugin('Q/scrollIndicators', 'remove')
 				.plugin('Q/scrollIndicators', {
 					'type': 'iScroll',
 					'scroller': $this.data('Q/iScroll'),
@@ -82,10 +82,10 @@ Q.Tool.jQuery("Q/iScroll", function (o) {
 		});
 	},
 
-	destroy: function () {
+	remove: function () {
 		return this.each(function() {
 			var $this = $(this);
-			$this.plugin('Q/scrollIndicators', 'destroy');
+			$this.plugin('Q/scrollIndicators', 'remove');
 			var iScroll = $this.data('Q/iScroll');
 			if (iScroll)
 				$this.data('Q/iScroll').destroy();

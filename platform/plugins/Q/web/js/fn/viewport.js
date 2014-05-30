@@ -127,7 +127,7 @@ function (options) {
 },
 
 {
-	destroy: function () {
+	remove: function () {
 		this.css('cursor', this.state('Q/viewport').oldCursor);
 	}
 }

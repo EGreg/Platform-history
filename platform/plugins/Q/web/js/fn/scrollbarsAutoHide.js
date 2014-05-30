@@ -112,7 +112,7 @@ function (o) {
 },
 
 {
-	destroy: function () {
+	remove: function () {
 		this.each(function(index) {
 			var $this = $(this);
 			if ($this.data('Q_old_overflow') !== undefined)

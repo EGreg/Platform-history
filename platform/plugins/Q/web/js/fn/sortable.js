@@ -604,7 +604,7 @@ function (options) {
 },
 
 {
-	destroy: function () {
+	remove: function () {
 		// TODO: implement cleanup
 		this.removeData('Q/sortable');
 		this.off('.Q_sortable');

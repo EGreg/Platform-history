@@ -2613,7 +2613,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 					if ($this.data(key)) {
 						// plugin was constructed, so call destroy method if it's defined,
 						// before calling constructor again
-						$this.plugin(name, 'destroy');
+						$this.plugin(name, 'remove');
 					}
 					$this.data(key, Q.copy(options, stateKeys));
 					ctor.apply($this, args);
@@ -2627,7 +2627,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 		var ToolConstructor = Q.Tool.define(name, function _Q_Tool_jQuery_toolConstructor(options) {
 			$(this.element).plugin(name, options, this);
 			this.Q.beforeRemove.set(function () {
-				$(this.element).plugin(name, 'destroy', this);
+				$(this.element).plugin(name, 'remove', this);
 			}, 'Q');
 		});
 		Q.each(methods, function (method, handler) {
@@ -4587,6 +4587,10 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 			if (!src) return;
 			srcs.push((src && src.src) ? src.src : src);
 		});
+		if (Q.isEmpty(srcs)) {
+			onload();
+			return [];
+		}
 		var p = new Q.Pipe(srcs, onload);
 		Q.each(srcs, function (i, src) {
 			ret.push(Q.addScript(src, p.fill(src), options));
@@ -6035,6 +6039,7 @@ Q.Template.set = function (name, content, type) {
  * @param options {Object?} Options.
  *   "type" - the type and extension of the template, defaults to 'mustache'
  *   "dir" - the subpath of the app url under which to look for the template if it needs to be loaded
+ *   "name" - option to override the name of the template
  * @return {String|undefined}
  */
 Q.Template.load = function _Q_Template_load(name, callback, options) {
@@ -6121,6 +6126,7 @@ Q.Template.onError = new Q.Event(function (err) {
  * @param options {object?} Options.
  *   "type" - the type and extension of the template, defaults to 'mustache'
  *   "dir" - the folder under project web folder where templates are located
+ *   "name" - option to override the name of the template
  */
 Q.Template.render = function _Q_Template_render(name, fields, partials, callback, options) {
 	if (typeof fields === "function") {
@@ -6552,22 +6558,17 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 			default:
 				args = [options]; // assume there is one option and we will pass it as the first parameter
 		}
-		var name = Q.normalize(pluginName);
-		var result = $.fn[name];
-		if (typeof result === 'function') {
-			result.apply(this, args);
-			Q.handle(callback, this, args);
-		} else {
-			var that = this;
-			$.fn.plugin.load(pluginName, function _jQuery_plugin_load_completed() {
-				var result = $.fn[name];
-				if (!result) {
+		var that = this;
+		$.fn.plugin.load(pluginName, function _jQuery_plugin_load_completed(results) {
+			for (var k in results) {
+				if (!results[k]) {
 					throw new Q.Error("jQuery.fn.plugin: "+pluginName+" not defined");
 				}
-				result.apply(that, args);
+				results[k].apply(that, args);
 				Q.handle(callback, that, args);
-			});
-		}
+				break;
+			}
+		});
 		return this;
 	};
 	/**
@@ -6578,36 +6579,40 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	 *  Optional. A hash of options for Q.addScript
 	 */
 	$.fn.plugin.load = function _jQuery_fn_load(pluginNames, callback, options) {
-		var srcs = [];
+		var srcs = [], result, name;
 		if (typeof pluginNames === 'string') {
 			pluginNames = [pluginNames];
 		}
 		var existingOptions = {};
+		var results = {};
 		Q.each(pluginNames, function _jQuery_plugin_loaded(i, pluginName) {
 			pluginName = Q.normalize(pluginName);
+			results[pluginName] = true;
 			existingOptions[pluginName] = _qtjo[pluginName];
+			if ($.fn[pluginName]) return;
 			var src = ($.fn.plugin[pluginName] || 'plugins/jQuery/'+pluginName+'.js');
 			if (typeof src === 'string') {
 				srcs.push(src);
 			}
 		});
 		Q.addScript(srcs, function _jQuery_plugin_script_loaded() {
-			for (var pluginName in existingOptions) {
+			var pluginName;
+			for (pluginName in existingOptions) {
 				$.fn[pluginName].options = Q.extend($.fn[pluginName].options, 10, existingOptions[pluginName]);
 			}
-			Q.handle(callback);
+			for (pluginName in results) {
+				results[pluginName] = $.fn[pluginName]
+			}
+			Q.handle(callback, window, [results]);
 		}, options);
+		return false;
 	};
 	/**
 	 * Used to access the state of a plugin, e.g. $('#foo').state('Q/something').foo
 	 */
 	$.fn.state = function _jQuery_fn_state(pluginName) {
 		var key = Q.normalize(pluginName) + ' state';
-		var state = jQuery(this).data(key);
-		if (!state) {
-			jQuery(this).data(key + ' state', state = {});
-		}
-		return state;
+		return jQuery(this).data(key);
 	};
 	/**
 	 * Calls Q.activate on all the elements in the jQuery
@@ -6649,9 +6654,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 				if (!('eventName' in params)) {
 					throw new Q.Error("Custom $.fn.on handler: need to set params.eventName");
 				}
-				arguments[0] = Q.typeOf(params.eventName) === 'array'
-					? params.eventName.join(' ')
-					: params.eventName;
+				arguments[0] = params.eventName;
 			}
 			if (namespace) {
 				var parts = arguments[0].split(' ');
@@ -6697,9 +6700,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 				if (!('eventName' in params)) {
 					throw new Q.Error("Custom $.fn.on handler: need to set params.eventName");
 				}
-				arguments[0] = Q.typeOf(params.eventName) === 'array'
-					? params.eventName.join(' ')
-					: params.eventName;
+				arguments[0] = params.eventName;
 			}
 			if (namespace) {
 				var parts = arguments[0].split(' ');
@@ -7000,7 +7001,7 @@ Q.Pointer = {
 		// and let's assume that remaining browsers are older Firefox
 		params.eventName = ("onwheel" in document.createElement("div")) ? "wheel" :
 			(document.onmousewheel !== undefined) ? "mousewheel" : 
-			["DOMMouseScroll", "MozMousePixelScroll"];
+			"DOMMouseScroll MozMousePixelScroll";
 		return function _Q_wheel_on_wrapper (e) {
 			var oe = e.originalEvent || e;
 			e.type = 'wheel';

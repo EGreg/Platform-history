@@ -120,7 +120,7 @@ Q.Tool.jQuery("Q/scroller", function (o) {
 		}
 	},
 	
-	destroy: function (reserved1, reserved2) {
+	remove: function (reserved1, reserved2) {
 		var $this = $(this);
 		var destroyOptions = Q.extend({
 			'restoreOverflow': true,
@@ -139,7 +139,7 @@ Q.Tool.jQuery("Q/scroller", function (o) {
 			if (destroyOptions.unwrap) {
 				scroller.wrapper.children().unwrap();
 			}
-			$this.plugin('Q/scrollIndicators', 'destroy');
+			$this.plugin('Q/scrollIndicators', 'remove');
 			$this.removeData('Q_scroller_id');
 		}
 	}

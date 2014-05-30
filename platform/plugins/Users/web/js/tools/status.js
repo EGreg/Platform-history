@@ -46,7 +46,7 @@ Q.Tool.define("Users/status", function(options) {
 				}
 				else
 				{
-					Users.userStatus.button.plugin('Q/contextual', 'destroy');
+					Users.userStatus.button.plugin('Q/contextual', 'remove');
 					makeExpandable(callback);
 				}
 			} else {
@@ -70,7 +70,7 @@ Q.Tool.define("Users/status", function(options) {
 					{
 						Q.Dashboard.build();
 						Users.userStatus.button.html('<img src="' + Q.url(o.icon) + '" />'+br+'<span>' + o.label +  '</span>');
-						Users.userStatus.button.addClass('.Q_dialog_trigger').plugin('Q/contextual', 'destroy');
+						Users.userStatus.button.addClass('.Q_dialog_trigger').plugin('Q/contextual', 'remove');
 						Users.userStatus.button.unbind(Q.Pointer.end).bind(Q.Pointer.end, Users.login);
 						setTimeout(function()
 						{
@@ -132,12 +132,12 @@ Q.Tool.define("Users/status", function(options) {
 		{
 			contextualItems.push({
 				'contents': o.menuItems[i].contents,
-				'attrs': { 'action': o.menuItems[i].action }
+				'attributes': { 'action': o.menuItems[i].action }
 			});
 		}
 		var logOutContents = (o.logoutIcon ? '<img src="' + o.logoutIcon + '" alt="" /> ' : '') + 'Log out';
 		contextualItems.push({ 'contents': logOutContents, 'attrs': { 'action': 'logout' } });
-		Users.userStatus.button.plugin('Q/contextual', 'destroy')
+		Users.userStatus.button.plugin('Q/contextual', 'remove')
 		.plugin('Q/contextual', {
 			'defaultHandler': 'Q.Users.userStatus.menuHandler',
 			'items': contextualItems

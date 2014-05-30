@@ -32,7 +32,7 @@ function () {
 },
 
 {
-	destroy: function () {
+	remove: function () {
 		return this.each(function() {
 			var $this = $(this);
 			$this.removeClass('Q_hautoscroll');
