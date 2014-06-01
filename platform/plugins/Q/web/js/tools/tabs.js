@@ -38,6 +38,10 @@ Q.Tool.define("Q/tabs", function(options) {
 		// return false;
 	});
 	
+	Q.onLayout.set(function () {
+		tool.refresh();
+	}, tool);
+	
 	tool.refresh();
 	tool.indicateSelected();
 	
@@ -148,6 +152,14 @@ Q.Tool.define("Q/tabs", function(options) {
 		var tool = this;
 		var $te = $(this.element);
 		var w = $te.width(), w2 = 0, w3 = 0, index = -10;
+		var $o = $('.Q_tabs_overflow', $te);
+		if ($o.length) {
+			if ($o.data('Q_contextual')) {
+				$('.Q_tabs_tab', $o.data('Q_contextual')).insertAfter($o);	
+			}
+			$o.plugin("Q/contextual", "remove");
+			$o.remove();
+		}
 		var $tabs = $('.Q_tabs_tab', $te);
 		var $overflow, $lastVisibleTab;
 		$tabs.each(function (i) {
@@ -163,17 +175,20 @@ Q.Tool.define("Q/tabs", function(options) {
 			$lastVisibleTab = $tabs.eq(index);
 			$overflow = $('<a class="Q_tabs_tab Q_tabs_overflow" />')
 			.html(this.state.overflow.interpolate({
-				count: $tabs.length - index
+				count: $tabs.length - index - 1
 			}));
 			$overflow.insertAfter($lastVisibleTab);
 			if ($overflow.outerWidth(true) > w - w3) {
 				--index;
 				$lastVisibleTab = $tabs.eq(index);
-				$overflow.insertAfter($lastVisibleTab);
+				$overflow.insertAfter($lastVisibleTab)
+				.html(this.state.overflow.interpolate({
+					count: $tabs.length - index - 1
+				}));
 			}
 		}
 		
-		if ($tabs.length - index > 0) {
+		if ($overflow) {
 			Q.addScript("plugins/Q/js/QTools.js", function () {
 				var items = [], $tab;
 				for (var i=index+1; i<$tabs.length; ++i) {

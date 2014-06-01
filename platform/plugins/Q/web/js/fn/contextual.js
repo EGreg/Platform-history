@@ -72,6 +72,7 @@ Q.Tool.jQuery('Q/contextual', function (o) {
 
 	var cid = Q.Contextual.add($this, contextual, null, o.size);
 	$this.data('Q_contextual_id', cid);
+	$this.data('Q_contextual', contextual);
 },
 
 {
@@ -93,6 +94,7 @@ Q.Tool.jQuery('Q/contextual', function (o) {
 			$this.data('Q_restore_selected');
 		}
 		$this.removeData('Q_contextual_id');
+		$this.removeData('Q_contextual');
 	}
 }
 
