@@ -22,6 +22,7 @@ Q.Tool.define("Q/tabs", function(options) {
 	var tool = this;
 	var $te = $(tool.element);
 	
+	// catches events that bubble up from any child elements
 	$te.on([Q.Pointer.fastclick, '.Q_tabs'], '.Q_tabs_tab', function () {
 		if (false === tool.state.onClick.handle.call(tool, this.getAttribute('data-name'), this)) {
 			return;
@@ -155,7 +156,7 @@ Q.Tool.define("Q/tabs", function(options) {
 		var $o = $('.Q_tabs_overflow', $te);
 		if ($o.length) {
 			if ($o.data('Q_contextual')) {
-				$('.Q_tabs_tab', $o.data('Q_contextual')).insertAfter($o);	
+				$('.Q_tabs_tab', $o.data('Q_contextual')).insertAfter($o);
 			}
 			$o.plugin("Q/contextual", "remove");
 			$o.remove();
@@ -190,21 +191,16 @@ Q.Tool.define("Q/tabs", function(options) {
 		
 		if ($overflow) {
 			Q.addScript("plugins/Q/js/QTools.js", function () {
-				var items = [], $tab;
+				var elements = [];
 				for (var i=index+1; i<$tabs.length; ++i) {
-					$tab = $tabs.eq(i);
-					items.push({
-						content: $tab,
-						attributes: {
-							name: $tab.attr('data-name')
-						}
-					});
+					elements.push($tabs.eq(i));
 				}
 				$overflow.plugin("Q/contextual", {
-					items: items,
+					elements: elements,
 					defaultHandler: function ($tab) {
 						tool.switchTo($tab.attr('data-name'), $tab[0]);
-					}
+					},
+					className: "Q_tabs_contextual"
 				});
 			});
 		}

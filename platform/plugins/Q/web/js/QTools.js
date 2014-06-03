@@ -1999,22 +1999,21 @@ Q.Dashboard = {
 			expandables.hide();
 			
 			$('.Q_dashboard_item_horizontal', dashboard).each(function () {
-				var items = [];
+				var elements = [];
 				$('.Q_listing li', $(this).next()).each(function() {
 					var $this = $(this);
-					items.push({
-						'contents': $this.html(),
-						'attrs': {
-							'action': $this.attr('data-action')
-						}
-					});
+					elements.push(
+						$('<li />').html($this.html()).attr({
+							'data-action': $this.attr('data-action')
+						})
+					);
 				});
-				if (items.length) {
+				if (elements.length) {
 					$(this).plugin('Q/contextual', 'remove')
 					.plugin('Q/contextual', {
 						'className': 'Q_dashboard_listing_contextual',
 						'defaultHandler': Q.Layout.listingHandler,
-						'items': items
+						'elements': elements
 					}, function () {
 						// after contextual activated we might still have to select the current list item
 						selectListItem();
@@ -2382,6 +2381,10 @@ Q.Contextual = {
 		Q.Contextual.makeShowHandler();
 		Q.Contextual.makeLifecycleHandlers();
 		
+		contextual.on('click', function (e) {
+			e.preventDefault();
+		});
+		
 		return Q.Contextual.collection.length - 1;
 	},
 	
@@ -2595,7 +2598,7 @@ Q.Contextual = {
 					var event = (Q.info.isTouchscreen ? e.originalEvent.changedTouches[0] : e);
 					var px = Q.Pointer.getX(event), py = Q.Pointer.getY(event);
 					
-					var newMoveTarget = $(document.elementFromPoint(px - document.body.scrollLeft, py - document.body.scrollTop));
+					var newMoveTarget = $(Q.Pointer.elementFromPoint(px, py)).closest('.Q_listing li');
 					if (info.moveTarget)
 					{
 						if (info.selectedAtStart)
@@ -2611,8 +2614,7 @@ Q.Contextual = {
 									py >= conOffset.top && py <= conOffset.top + contextual.outerHeight())
 							{
 								info.inside = true;
-								if (newMoveTarget.length > 0 && newMoveTarget[0].tagName.toLowerCase() == 'li' &&
-										newMoveTarget[0] != info.moveTarget[0])
+								if (newMoveTarget.length > 0 && newMoveTarget[0] != info.moveTarget[0])
 								{
 									info.moveTarget.removeClass('Q_selected');
 									newMoveTarget.addClass('Q_selected');

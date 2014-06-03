@@ -78,15 +78,14 @@ function Q_tabs_tool($options)
 			array('class' => $titleClasses_string), 
 			isset($title) ? $title : $name
 		);
-		$result .= Q_Html::a(
-			$urls[$name],
-			array(
+		$result .= Q_Html::tag('li', array(
 				'id' => 'tab_'.++$i,
 				'class' => 'Q_tabs_tab '.$classes_string.$selected_class, 
 				'data-name' => $name
-			),
+			), Q_Html::a(
+			$urls[$name],
 			$title_container
-		);
+		));
 	}
 	Q_Response::setToolOptions(compact(
 		'selector', 'slot', 'tabs', 'urls', 'field', 'loader', 'beforeSwitch', 'beforeScripts', 'onActivate'

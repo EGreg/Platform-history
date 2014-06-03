@@ -5264,13 +5264,14 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 	loader(url, slotNames, loadResponse, o);
 
 	function loadResponse(err, response, redirected) {
+		if (err) {
+			return Q.handle(onError, this, [Q.firstErrorMessage(err)]);
+		}
 		if (!response) {
-			Q.handle(onError, this, ["Response is empty", response]);
-			return;
+			return Q.handle(onError, this, ["Response is empty", response]);
 		}   
 		if (response.errors) {
-			Q.handle(onError, this, [response.errors[0].message]);
-			return;
+			return Q.handle(onError, this, [response.errors[0].message]);
 		}
 		if (redirected) {
 			return;
@@ -7035,12 +7036,12 @@ Q.Pointer = {
 	},
 	getX: function(e) {
 		var oe = e.originalEvent || e;
-		e = oe.changedTouches ? oe.changedTouches[0] : (oe.touches ? oe.touches[0] : e);
+		e = oe.changedTouches ? oe.changedTouches[0] : (oe.touches ? oe.touches[0] : oe);
 		return Math.max(0, ('pageX' in e) ? e.pageX : e.clientX + Q.Pointer.scrollLeft());
 	},
 	getY: function(e) {
 		var oe = e.originalEvent || e;
-		e = oe.changedTouches ? oe.changedTouches[0] : (oe.touches ? oe.touches[0] : e);
+		e = oe.changedTouches ? oe.changedTouches[0] : (oe.touches ? oe.touches[0] : oe);
 		return Math.max(0, ('pageY' in e) ? e.pageY : e.clientY + Q.Pointer.scrollTop());
 	},
 	touchCount: function (e) {

@@ -1161,7 +1161,7 @@ div.Q_placeholder { pointer-events: none; }
 .Q_tabs_tab:first-child { border-left: solid 1px #aaa; }
 .Q_tabs_tab.Q_selected { background-color: white; border-bottom: solid 1px white; }
 
-.Q_contextual .Q_tabs_tab { display: block; float: none; line-height:30px; border: 0px; background: transparent; } 
+.Q_tabs_contextual .Q_tabs_tab { display: block; float: none; line-height:30px; border: 0px; } 
 
 .Q_panel_tool { text-align: left; }
 .Q_panel_tool_header { padding: 2px 0px 2px 0px; font-weight: bold; height: 20px; font-size: 14px; background-color: #EEE; }
