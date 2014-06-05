@@ -6,6 +6,7 @@ CACHE MANIFEST
 ../../../plugins/Users/css/Users.css
 
 # js
+../../../plugins/Q/js/jquery-1.11.1.min.js
 ../../../plugins/Q/js/jquery.tools.min.js
 ../../../plugins/Q/js/Q.js
 ../../../plugins/Users/js/Users.js

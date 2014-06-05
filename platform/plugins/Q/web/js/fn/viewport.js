@@ -51,7 +51,11 @@ function (options) {
 	scale.factor = 1;
 	container.on(Q.Pointer.wheel, function (e) {
 		if (typeof e.deltaY === 'number' && !isNaN(e.deltaY)) {
-			scale(Math.max(1, scale.factor - e.deltaY * 0.01));
+			scale(
+				Math.max(1, scale.factor - e.deltaY * 0.01,
+				Q.Pointer.getX(e),
+				Q.Pointer.getY(e)
+			));
 		}
 		return false;
 	});
