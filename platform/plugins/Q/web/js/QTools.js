@@ -2243,7 +2243,7 @@ Q.Dashboard = {
 	 * Destroys dashboard by clearing related functionality.
 	 * @method destroy
 	 */
-	remove: function()
+	destroy: function()
 	{
 		if (Q.Dashboard.options.noRefresh) return;
 		
