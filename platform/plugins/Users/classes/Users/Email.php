@@ -68,11 +68,27 @@ class Users_Email extends Base_Users_Email
 				'emailAddress' => $this->address
 			));
 		}
-		
+
 		$app = Q_Config::expect('Q', 'app');
 		$subject = Q_Mustache::renderSource($subject, $fields);
 		$body = Q::view($view, $fields);
-		
+
+		if(is_null(Q_Config::get('Users', 'email', 'smtp', null))){
+			$isOverrideLog = Q::event(
+				'Users/email/log', 
+				compact('emailAddress', 'subject', 'body'),
+				'before'
+			);
+
+			if(is_null($isOverrideLog)){
+				Q::log("\nSent email message to $emailAddress:\n$subject\n$body");
+			}
+
+			Q_Response::setNotice("Q/email", "Please set up SMTP in Users/email/smtp as in docs.", true);
+
+			return true;
+		}
+
 		$from = Q::ifset($options, 'from', Q_Config::get('Users', 'email', 'from', null));
 		if (!isset($from)) {
 			// deduce from base url

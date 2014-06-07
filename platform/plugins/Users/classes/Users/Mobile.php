@@ -62,6 +62,22 @@ class Users_Mobile extends Base_Users_Mobile
 		$app = Q_Config::expect('Q', 'app');
 		$body = Q::view($view, $fields);
 
+		if(is_null(Q_Config::get('Users', 'email', 'smtp', null))){
+			$isOverrideLog = Q::event(
+				'Users/mobile/log', 
+				compact('mobileNumber', 'body'), 
+				'before'
+			);
+
+			if(is_null($isOverrideLog)){
+				Q::log("\nSent mobile message to $mobileNumber:\n$body");
+			}
+
+			Q_Response::setNotice("Q/mobile", "Please set up transport in Users/mobile/twilio as in docs", true);
+
+			return true;
+		}
+
 		$sent = false;
 		if (!empty($options['delay'])) {
 			// Try to use Node.js to send the message
