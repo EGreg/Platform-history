@@ -7036,13 +7036,13 @@ Q.Pointer = {
 	},
 	getX: function(e) {
 		var oe = e.originalEvent || e;
-		e = oe.changedTouches ? oe.changedTouches[0] : (oe.touches ? oe.touches[0] : oe);
-		return Math.max(0, ('pageX' in e) ? e.pageX : e.clientX + Q.Pointer.scrollLeft());
+		oe = oe.touches ? oe.touches[0] : (oe.changedTouches ? oe.changedTouches[0] : oe);
+		return Math.max(0, ('pageX' in oe) ? oe.pageX : oe.clientX + Q.Pointer.scrollLeft());
 	},
 	getY: function(e) {
 		var oe = e.originalEvent || e;
-		e = oe.changedTouches ? oe.changedTouches[0] : (oe.touches ? oe.touches[0] : oe);
-		return Math.max(0, ('pageY' in e) ? e.pageY : e.clientY + Q.Pointer.scrollTop());
+		oe = oe.touches ? oe.touches[0] : (oe.changedTouches ? oe.changedTouches[0] : oe);
+		return Math.max(0, ('pageY' in oe) ? oe.pageY : oe.clientY + Q.Pointer.scrollTop());
 	},
 	touchCount: function (e) {
 		var oe = e.originalEvent || e;
