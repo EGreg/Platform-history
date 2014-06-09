@@ -105,6 +105,7 @@ function (options) {
 			start = pos = null;
 			container.off(Q.Pointer.move);
 			$(window).off(Q.Pointer.end, _endHandler);
+			e.preventDefault();
 		}
 		
 		if (Q.Pointer.canceledClick) return;

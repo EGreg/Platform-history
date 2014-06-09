@@ -223,6 +223,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 	onUpdate: new Q.Event(),
 	onRefresh: new Q.Event(),
 	onLoad: new Q.Event(),
+	onError: new Q.Event(),
 	onRemove: new Q.Event(function () {
 		this.$().hide('slow', function () {
 			$(this).remove();
