@@ -170,8 +170,8 @@ function (options) {
 		var f = useZoom ? scale.factor : 1;
 		var w = -(stretcher.width()*scale.factor - container.width())/f;
 		var h = -(stretcher.height()*scale.factor - container.height())/f;
-		pos.left = Math.min(0, Math.max(pos.left, w)) + 'px';
-		pos.top = Math.min(0, Math.max(pos.top, h)) + 'px';
+		pos.left = Math.min(0, Math.max(pos.left, w+1)) + 'px';
+		pos.top = Math.min(0, Math.max(pos.top, h+1)) + 'px';
 	}
 },
 
