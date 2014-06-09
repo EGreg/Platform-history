@@ -63,9 +63,9 @@ Users_Mobile.prototype.sendMessage = function (view, fields, options, callback) 
 		address.push(number+'@'+gateways[provider]);
 	}
 
-	if(!Q.Config.get(['Users', 'email', 'smtp'])){
+	if (!Q.Config.get(['Users', 'email', 'smtp'])) {
 		Q.log("\nSent mobile message to ".address.join(',').":\n".view);
-	}else{
+	} else {
 		Q.Utils.sendEmail(address.join(','), null, view, fields, options, callback);
 	}
 };
