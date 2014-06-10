@@ -4,10 +4,10 @@
     </div>
 	<form class="Q_inplace_tool_form" method="{{method}}" action="{{action}}">
         {{#textarea}}
-            <textarea name="{{field}}" rows="5" cols="80">{{text}}</textarea>
+            <textarea name="{{field}}" placeholder="{{placeholder}}" rows="5" cols="80">{{text}}</textarea>
         {{/textarea}}
         {{^textarea}}
-    	    <input name="{{field}}" value="{{text}}" type="{{type}}">
+    	    <input name="{{field}}" placeholder="{{placeholder}}" value="{{text}}" type="{{type}}">
         {{/textarea}}
 		<div class='Q_inplace_tool_buttons'>
 			<button class='Q_inplace_tool_save basic16 basic16_save'>Save</button>

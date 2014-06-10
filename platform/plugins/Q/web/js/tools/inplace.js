@@ -41,11 +41,12 @@ Q.Tool.define("Q/inplace", function (options) {
 		{
 			classes: function () { return o.editing ? 'Q_editing Q_nocancel' : ''; },
 			staticClass: staticClass,
-			staticHtml: staticHtml,
+			staticHtml: staticHtml || '<span class="Q_placeholder">'+tool.state.placeholder+'</div>',
 			method: o.method || 'put',
 			action: o.action,
 			field: o.field,
 			textarea: (o.type === 'textarea'),
+			placeholder: tool.state.placeholder,
 			text: function (field) {
 				return staticHtml.decodeHTML();
 			},
@@ -67,7 +68,7 @@ Q.Tool.define("Q/inplace", function (options) {
 	selectOnEdit: true,
 	maxWidth: null,
 	minWidth: 100,
-	placeholder: '',
+	placeholder: null,
 	template: {
 		dir: 'plugins/Q/views',
 		name: 'Q/inplace/tool'

@@ -2,7 +2,7 @@
 
 /**
  * This tool generates an inline editor to edit the content or attribute of a stream.
- * @param array $options
+ * @param {Array} options
  *  An associative array of parameters, containing:
  *  "inplaceType" => Required. The type of the fieldInput. Can be "textarea" or "text"
  *  "publisherId": Required if stream option is empty. The publisher's user id.
