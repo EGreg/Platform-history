@@ -1,18 +1,17 @@
 (function (Q, $, window, document, undefined) {
 
-function _setSelRange(inputEl, selStart, selend) {
-	if ('setSelectionRange' in inputEl) {
-		inputEl.focus();
-		inputEl.setSelectionRange(selStart, selend);
-	} else if (inputEl.createTextRange) {
-		var range = inputEl.createTextRange();
-		range.collapse(true);
-		range.moveEnd('character', selend);
-		range.moveStart('character', selStart);
-		range.select();
-	}
-}
-
+/**
+ * Inline text editor tool.
+ * @param {Array} options An associative array, containing:
+ *  "method": Defaults to "put". The HTTP verb to use.
+ *  "type": The type of the input field. Can be "textarea" or "text"
+ *  "editOnClick": Defaults to true. Whether to enter editing mode when clicking on the text.
+ *  "selectOnEdit": Defaults to true. Whether to select everything in the input field when entering edit mode.
+ *  "maxWidth": Defaults to null. The maximum width that the field can grow to
+ *  "minWidth": Defaults to 100. The minimum width that the field can shrink to
+ *  "placeholder": Text to show in the staticHtml or input field when the editor is empty
+ *  "template": Can be used to override info for the tool's view template.
+ */
 Q.Tool.define("Q/inplace", function (options) {
 	var tool = this, 
 		$te = $(tool.element), 
@@ -41,7 +40,9 @@ Q.Tool.define("Q/inplace", function (options) {
 		{
 			classes: function () { return o.editing ? 'Q_editing Q_nocancel' : ''; },
 			staticClass: staticClass,
-			staticHtml: staticHtml || '<span class="Q_placeholder">'+tool.state.placeholder+'</div>',
+			staticHtml: staticHtml
+				|| '<span class="Q_placeholder">'+tool.state.placeholder.encodeHTML()+'</div>'
+				|| '',
 			method: o.method || 'put',
 			action: o.action,
 			field: o.field,
@@ -93,6 +94,19 @@ Q.Tool.define("Q/inplace", function (options) {
 }
 
 );
+
+function _setSelRange(inputEl, selStart, selend) {
+	if ('setSelectionRange' in inputEl) {
+		inputEl.focus();
+		inputEl.setSelectionRange(selStart, selend);
+	} else if (inputEl.createTextRange) {
+		var range = inputEl.createTextRange();
+		range.collapse(true);
+		range.moveEnd('character', selend);
+		range.moveStart('character', selStart);
+		range.select();
+	}
+}
 
 function _Q_inplace_tool_constructor(element, options) {
 
@@ -278,7 +292,10 @@ function _Q_inplace_tool_constructor(element, options) {
 				newval = response.slots.Q_inplace;
 			}
 		}
-		static_span.html(newval);
+		static_span.html(newval
+			|| '<span class="Q_placeholder">'+tool.state.placeholder.encodeHTML()+'</div>'
+			|| ''
+		);
 		undermessage.empty().css('display', 'none').addClass('Q_error');
 		tool.restoreActions();
 		container_span.removeClass('Q_editing')
