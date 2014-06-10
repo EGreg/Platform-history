@@ -223,6 +223,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 	onUpdate: new Q.Event(),
 	onRefresh: new Q.Event(),
 	onLoad: new Q.Event(),
+	onError: new Q.Event(),
 	onRemove: new Q.Event(function () {
 		this.$().hide('slow', function () {
 			$(this).remove();
@@ -244,10 +245,19 @@ Q.Tool.define("Streams/image/preview", function(options) {
 			size = state.imagepicker.saveSizeName[state.imagepicker.showSize];
 			if (this.fields.attributes
 			&& (attributes = JSON.parse(this.fields.attributes))
-			&& attributes.sizes) {
-				size = (attributes.sizes.indexOf(state.imagepicker.showSize) < 0)
-					? attributes.sizes[attributes.sizes.length-1]
-					: state.imagepicker.saveSizeName[state.imagepicker.showSize];
+			&& attributes.sizes
+			&& attributes.sizes.indexOf(state.imagepicker.showSize) < 0) {
+				for (var i=0; i<attributes.sizes.length; ++i) {
+					size = attributes.sizes[i];
+					var parts1 = attributes.sizes[i].toString().split('x');
+					var parts2 = state.imagepicker.showSize.toString().split('x');
+					if (parts1.length === 1) parts1[1] = parts1[0];
+					if (parts2.length === 2) parts2[1] = parts2[0];
+					if (parseInt(parts1[0]||0) >= parseInt(parts2[0]||0)
+					 && parseInt(parts1[1]||0) >= parseInt(parts2[1]||0)) {
+						break;
+					}
+				}
 			}
 			var file = (state.overrideSize && state.overrideSize[this.fields.icon])
 				|| size

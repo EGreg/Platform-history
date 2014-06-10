@@ -43,6 +43,7 @@
 		"environments": {
 			"live": {
 				"files": {
+					"plugins/Q/js/jquery-1.11.1.min.js": "js/all.js",
 					"plugins/Q/js/jquery.tools.min.js": "js/all.js",
 					"plugins/Q/js/jquery.mustache.min.js": "js/all.js",
 					"plugins/Q/js/iscroll.js": "js/all.js",

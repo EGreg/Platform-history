@@ -22,6 +22,7 @@ Q.Tool.define("Q/tabs", function(options) {
 	var tool = this;
 	var $te = $(tool.element);
 	
+	// catches events that bubble up from any child elements
 	$te.on([Q.Pointer.fastclick, '.Q_tabs'], '.Q_tabs_tab', function () {
 		if (false === tool.state.onClick.handle.call(tool, this.getAttribute('data-name'), this)) {
 			return;
@@ -37,6 +38,10 @@ Q.Tool.define("Q/tabs", function(options) {
 		event.preventDefault();
 		// return false;
 	});
+	
+	Q.onLayout.set(function () {
+		tool.refresh();
+	}, tool);
 	
 	tool.refresh();
 	tool.indicateSelected();
@@ -148,6 +153,14 @@ Q.Tool.define("Q/tabs", function(options) {
 		var tool = this;
 		var $te = $(this.element);
 		var w = $te.width(), w2 = 0, w3 = 0, index = -10;
+		var $o = $('.Q_tabs_overflow', $te);
+		if ($o.length) {
+			if ($o.data('Q_contextual')) {
+				$('.Q_tabs_tab', $o.data('Q_contextual')).insertAfter($o);
+			}
+			$o.plugin("Q/contextual", "remove");
+			$o.remove();
+		}
 		var $tabs = $('.Q_tabs_tab', $te);
 		var $overflow, $lastVisibleTab;
 		$tabs.each(function (i) {
@@ -163,33 +176,31 @@ Q.Tool.define("Q/tabs", function(options) {
 			$lastVisibleTab = $tabs.eq(index);
 			$overflow = $('<a class="Q_tabs_tab Q_tabs_overflow" />')
 			.html(this.state.overflow.interpolate({
-				count: $tabs.length - index
+				count: $tabs.length - index - 1
 			}));
 			$overflow.insertAfter($lastVisibleTab);
 			if ($overflow.outerWidth(true) > w - w3) {
 				--index;
 				$lastVisibleTab = $tabs.eq(index);
-				$overflow.insertAfter($lastVisibleTab);
+				$overflow.insertAfter($lastVisibleTab)
+				.html(this.state.overflow.interpolate({
+					count: $tabs.length - index - 1
+				}));
 			}
 		}
 		
-		if ($tabs.length - index > 0) {
+		if ($overflow) {
 			Q.addScript("plugins/Q/js/QTools.js", function () {
-				var items = [], $tab;
+				var elements = [];
 				for (var i=index+1; i<$tabs.length; ++i) {
-					$tab = $tabs.eq(i);
-					items.push({
-						content: $tab,
-						attributes: {
-							name: $tab.attr('data-name')
-						}
-					});
+					elements.push($tabs.eq(i));
 				}
 				$overflow.plugin("Q/contextual", {
-					items: items,
+					elements: elements,
 					defaultHandler: function ($tab) {
 						tool.switchTo($tab.attr('data-name'), $tab[0]);
-					}
+					},
+					className: "Q_tabs_contextual"
 				});
 			});
 		}

@@ -3,15 +3,7 @@
 /**
  * Makes a contextual menu from given options and handles its showing / hiding.
  * @param options Object A hash of options that can include
- *	 "items": Array of objects each of which must have the structure:
- *	 {
- *	   "content": html content or element or jQuery,
- *	   "attributes": {
- *	     // Item attributes which actually a "data" attributes,
- * 	     // so action will become "data-action" for this item.
- *	     "action": "[some-action]"
- *	   }
- *	 }
+ *	 "elements": Array of LI elements to add
  *   "className": Optional. CSS class name for additional styling.
  *	 "defaultHandler": Optional. Q.Event, function or 
  *     function name which is called when personal handler for selected item is not defined.
@@ -22,8 +14,8 @@
 Q.Tool.jQuery('Q/contextual', function (o) {
 
 	var $this = $(this);
-	if ($this.state('Q/contextual')) {
-		$this.remove('Q/contextual');
+	if ($this.data('Q_contextual')) {
+		return;
 	}
 
 	// the first time when any contextual is added we need to preload its graphics,
@@ -53,18 +45,10 @@ Q.Tool.jQuery('Q/contextual', function (o) {
 			contextual.data('defaultHandler', o.defaultHandler);
 		}
 	}
-	var listing = $('<ul class="Q_listing" />');
-	var item = null, listItem = null;
-	if (o.items) {
-		for (var i = 0; i < o.items.length; i++) {
-			item = o.items[i];
-			listItem = $('<li />').append(item.content);
-			if (item.attributes) {
-				for (var name in item.attributes) {
-					listItem.attr('data-' + name, item.attributes[name]);
-				}
-			}
-			listing.append(listItem);
+	var listing = $('<ul class="Q_listing" />'), i;
+	if (o.elements) {
+		for (i = 0; i < o.elements.length; ++i) {
+			listing.append(o.elements[i]);
 		}
 	}
 	contextual.append(listingWrapper.append(listing));
@@ -72,6 +56,7 @@ Q.Tool.jQuery('Q/contextual', function (o) {
 
 	var cid = Q.Contextual.add($this, contextual, null, o.size);
 	$this.data('Q_contextual_id', cid);
+	$this.data('Q_contextual', contextual);
 },
 
 {
@@ -93,6 +78,7 @@ Q.Tool.jQuery('Q/contextual', function (o) {
 			$this.data('Q_restore_selected');
 		}
 		$this.removeData('Q_contextual_id');
+		$this.removeData('Q_contextual');
 	}
 }
 
