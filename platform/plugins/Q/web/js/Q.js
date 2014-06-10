@@ -7014,7 +7014,7 @@ Q.Pointer = {
 			// calculate deltaY (and deltaX) according to the event
 			switch (params.eventName) {
 			case 'mousewheel':
-                oe.deltaY = - 1/40 * originalEvent.wheelDelta;
+                oe.deltaY = - 1/40 * oe.wheelDelta;
 				// Webkit also supports wheelDeltaX
                 oe.wheelDeltaX && ( oe.deltaX = - 1/40 * oe.wheelDeltaX );
 				break;
