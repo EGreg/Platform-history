@@ -7000,7 +7000,8 @@ Q.Pointer = {
 		// Modern browsers support "wheel",
 		// Webkit and IE support at least "mousewheel",
 		// and let's assume that remaining browsers are older Firefox
-		params.eventName = ("onwheel" in document.createElement("div")) ? "wheel" :
+		_Q_wheel.div = document.createElement("div");
+		params.eventName = ("onwheel" in _Q_wheel.div) ? "wheel" :
 			(document.onmousewheel !== undefined) ? "mousewheel" : 
 			"DOMMouseScroll MozMousePixelScroll";
 		return function _Q_wheel_on_wrapper (e) {
@@ -7014,13 +7015,11 @@ Q.Pointer = {
 			// calculate deltaY (and deltaX) according to the event
 			switch (params.eventName) {
 			case 'mousewheel':
-                oe.deltaY = - 1/40 * originalEvent.wheelDelta;
 				// Webkit also supports wheelDeltaX
-                oe.wheelDeltaX && ( oe.deltaX = - 1/40 * oe.wheelDeltaX );
+				oe.wheelDelta && ( e.deltaY = -Math.ceil(1/3 * oe.wheelDelta) );
+                oe.wheelDeltaX && ( e.deltaX = -Math.ceil(1/3 * oe.wheelDeltaX) );
 				break;
 			case 'wheel':
-				e.deltaY = ('deltaY' in oe) ? oe.deltaY : oe.detail;
-				break;
 			default:
 				e.deltaY = ('deltaY' in oe) ? oe.deltaY : oe.detail;
 			}
@@ -7036,13 +7035,23 @@ Q.Pointer = {
 	},
 	getX: function(e) {
 		var oe = e.originalEvent || e;
-		e = oe.changedTouches ? oe.changedTouches[0] : (oe.touches ? oe.touches[0] : oe);
-		return Math.max(0, ('pageX' in e) ? e.pageX : e.clientX + Q.Pointer.scrollLeft());
+		oe = (oe.touches && oe.touches.length)
+			? oe.touches[0]
+			: (oe.changedTouches && oe.changedTouches.length
+				? oe.changedTouches[0]
+				: oe
+			);
+		return Math.max(0, ('pageX' in oe) ? oe.pageX : oe.clientX + Q.Pointer.scrollLeft());
 	},
 	getY: function(e) {
 		var oe = e.originalEvent || e;
-		e = oe.changedTouches ? oe.changedTouches[0] : (oe.touches ? oe.touches[0] : oe);
-		return Math.max(0, ('pageY' in e) ? e.pageY : e.clientY + Q.Pointer.scrollTop());
+		oe = (oe.touches && oe.touches.length)
+			? oe.touches[0]
+			: (oe.changedTouches && oe.changedTouches.length
+				? oe.changedTouches[0]
+				: oe
+			);
+		return Math.max(0, ('pageY' in oe) ? oe.pageY : oe.clientY + Q.Pointer.scrollTop());
 	},
 	touchCount: function (e) {
 		var oe = e.originalEvent || e;

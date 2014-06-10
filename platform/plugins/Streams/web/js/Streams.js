@@ -2310,7 +2310,9 @@ Q.onInit.add(function _Streams_onInit() {
 
 	// if stream was edited or removed - invalidate cache
 	Streams.onEvent('remove').set(function _Streams_remove_handler (stream) {
-		Streams.get.forget(stream.publisherId, stream.name);
+		Streams.get.cache.each([msg.publisherId, msg.streamName], function (k, v) {
+			Streams.get.cache.remove(k);
+		});
 	}, 'Streams');
 
 	Streams.onEvent('join').set(function _Streams_join_handler (p) {
