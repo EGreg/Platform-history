@@ -108,6 +108,11 @@ function (options) {
 			e.preventDefault();
 		}
 		
+		function _clickHandler (e) {
+			$(window).off(Q.Pointer.clickHandler, _clickHandler);
+			e.preventDefault();
+		}
+		
 		if (Q.Pointer.canceledClick) return;
 		grab = cur = {
 			x: Q.Pointer.getX(e),
@@ -119,6 +124,7 @@ function (options) {
 		};
 		container.on(Q.Pointer.move, _moveHandler);
 		$(window).on(Q.Pointer.end, _endHandler);
+		$(window).on(Q.Pointer.click, _clickHandler);
 	});
 	
 	scale.factor = 1;

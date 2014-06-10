@@ -7000,7 +7000,8 @@ Q.Pointer = {
 		// Modern browsers support "wheel",
 		// Webkit and IE support at least "mousewheel",
 		// and let's assume that remaining browsers are older Firefox
-		params.eventName = ("onwheel" in document.createElement("div")) ? "wheel" :
+		_Q_wheel.div = document.createElement("div");
+		params.eventName = ("onwheel" in _Q_wheel.div) ? "wheel" :
 			(document.onmousewheel !== undefined) ? "mousewheel" : 
 			"DOMMouseScroll MozMousePixelScroll";
 		return function _Q_wheel_on_wrapper (e) {
@@ -7014,13 +7015,11 @@ Q.Pointer = {
 			// calculate deltaY (and deltaX) according to the event
 			switch (params.eventName) {
 			case 'mousewheel':
-                oe.deltaY = - 1/40 * oe.wheelDelta;
 				// Webkit also supports wheelDeltaX
-                oe.wheelDeltaX && ( oe.deltaX = - 1/40 * oe.wheelDeltaX );
+				oe.wheelDelta && ( e.deltaY = -Math.ceil(1/3 * oe.wheelDelta) );
+                oe.wheelDeltaX && ( e.deltaX = -Math.ceil(1/3 * oe.wheelDeltaX) );
 				break;
 			case 'wheel':
-				e.deltaY = ('deltaY' in oe) ? oe.deltaY : oe.detail;
-				break;
 			default:
 				e.deltaY = ('deltaY' in oe) ? oe.deltaY : oe.detail;
 			}
