@@ -1,5 +1,16 @@
 (function (Q, $, window, document, undefined) {
 
+/**
+ * Plugin for Animated moving Element content inside it from let to right
+ * @method hautoscroll
+ * @param {Object} [options] options object containing parameters for function
+ * @param {Number} [options.scrollTime] scrollTime number of interval for content right movement in milliseconds
+ * @default 2000
+ * @param {Number} [options.pauseBefore] pauseBefore is a number for interval before animation starts in milliseconds
+ * @default 1000
+ * @param {Number} [options.pauseAfter] pauseAfter number of interval for content left movement to margin-left: 0 in milliseconds
+ * @default 1000
+*/
 Q.Tool.jQuery('Q/hautoscroll',
 
 function () {

@@ -1,7 +1,7 @@
 (function (Q, $, window, document, undefined) {
 
 /**
- * Builds two columns of content from given html structure.
+ * This plugin builds two columns of content from given html structure.
  * It has to be so:
  * <div>
  *	 <div>
@@ -15,10 +15,10 @@
  * </div>
  * Result depends on the platform. On the dekstop and tablet it simply makes two columns vertically by float:left'n them.
  * On the mobile it shows only one column at a time and makes segmented control for switching between columns.
- * @param options Object
- *	 A hash of options, that can include:
- *	 "onSwitch": Optional. Callback or Q.Event to call when user switches to another column.
- *							 Also Called immediately after initialization (considered as first time switch).
+ * @method columns
+ * @param {Object} [options] options, an object of options
+ * @param {Event} [options.onSwitch] onSwitch Optional. Callback or Q.Event to call when user switches to another column. Also Called immediately after initialization (considered as first time switch).
+ * @default new Q.Event(function() {})
  */
 Q.Tool.jQuery('Q/columns',
 

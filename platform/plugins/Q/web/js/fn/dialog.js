@@ -1,27 +1,34 @@
 (function (Q, $, window, document, undefined) {
 
 /**
- * Makes an overlay to show some content above the page.
+ * This plugin Makes an overlay to show some content above the page.
  * Suitable for showing dialogs, for example.
  * This is replacement for jQuery Tools overlay, it has similar behavoir and API.
- * @param options Object
- * A hash of options, that can include:
- * "left": Optional. Defaults to 'center'. Horizontal position of the overlay. May have 'center' value to be centered horizontally
- *         or have a percentage or absolute (pixels) value of offset from the left border of 'alignParent' (see below).
- * "top": Optional. Defaults to 'middle'. Vertical position of the overlay. May have 'middel' value to be centered vertically
- *        or have a percentage or absolute (pixels) value of offset from the top border of 'alignParent' (see below).
- * "alignParent": Optional. Can be DOM element, jQuery object or jQuery selector. If provided overlay will be positioned relatively
- * to that element. If null, overlay will be positioned considering window dimensions.
- * "mask": Defaults to false. If true, mask behind the overlay will be shown, making it modal-like.
- * "noClose": Defaults to false. If true, overlay close button will not appear and overlay won't be closed by pressing 'Esc' key. 
- * "closeOnEsc": Defaults to true. Indicates whether to close overlay on 'Esc' key press. Has sense only if 'noClose' is false.
- * "fadeInOut": Defaults to true. Indicates whether to use fadeIn() / fadeOut() animations when loading dialog.
- *              Note: if set to false, 'onLoad' callback will be called synchronously with dialog load,
- *              otherwise it will be called on fadeIn() animation completion.
- * "beforeLoad": Optional. Q.Event or function which is called before overlay is loaded (shown).
- *	 "onLoad": Optional. Q.Event or function which is called when overlay is loaded (shown).
- * "beforeClose": Optional. Q.Event or function which is called when overlay closing initiated and it's still visible.
- * "onClose": Optional. Q.Event or function which is called when overlay is closed and hidden.
+ * @method overlay
+ * @param {Object} [options] options is an object of parameters
+ * @param {String} [options.left] left is a Horizontal position of the overlay, May have 'center' value to be centered horizontally
+ * or have a percentage or absolute (pixels) value of offset from the left border of 'alignParent'.
+ * Optional
+ * @default  'center'
+ * @param {String} [options.top] top is a Vertical position of the overlay. May have 'middel' value to be centered vertically
+ * or have a percentage or absolute (pixels) value of offset from the top border of 'alignParent'. Optional
+ * @default 'middel'
+ * @param {DOMElement} [options.alignParent] alignParent Can be DOM element, jQuery object or jQuery selector.
+ * If provided overlay will be positioned relatively to that element. If null, overlay will be positioned considering window dimensions. Optional.
+ * @param {Boolean} [options.mask] mask If true, mask behind the overlay will be shown, making it modal-like.
+ * @default false
+ * @param {Boolean} [options.noClose] noClose  If true, overlay close button will not appear and overlay won't be closed by pressing 'Esc' key.
+ * @default false
+ * @param {Boolean} [options.closeOnEsc] closeOnEsc Indicates whether to close overlay on 'Esc' key press. Has sense only if 'noClose' is false.
+ * @default true
+ * @param {Boolean} [options.fadeInOut] fadeInOut Indicates whether to use fadeIn() / fadeOut() animations when loading dialog.
+ * Note: if set to false, 'onLoad' callback will be called synchronously with dialog load,
+ * otherwise it will be called on fadeIn() animation completion.
+ * @default  true
+ * @param {Event} [options.beforeLoad] beforeLoad Q.Event or function which is called before overlay is loaded (shown). Optional.
+ * @param {Event} [options.onLoad] onLoad  Q.Event or function which is called when overlay is loaded (shown). Optiona.
+ * @param {Event} [options.beforeClose] beforeClose Q.Event or function which is called when overlay closing initiated and it's still visible. Optional.
+ * @param {Event} [options.onClose] onClose Q.Event or function which is called when overlay is closed and hidden. Optional.
  */
 Q.Tool.jQuery('Q/overlay',
 

@@ -3,6 +3,60 @@
 /*
  * Makes the Q clickable effect (which I first came up with at Intermagix)
  */
+
+/**
+ *  Plugin that produces a signature "popping" effect that Qbix products are known for, and is customizable for desktop and touchscreens
+ *  @method clickable
+ *  @param {Object} [options] options for function configuration
+ *  @param {Object} [options.shadow] shadow effect configuration
+ *  @param {String} [options.shadow.src] src , path to image for shadow
+ *  @default "plugins/Q/img/shadow3d.png"
+ *  @param {Number} [options.shadow.stretch] stretch
+ *  @default 1.5
+ *  @param {Number} [options.shadow.dip] dip
+ *  @default 0.25
+ *  @param {Number} [options.shadow.opacity] opacity
+ *  @default 0.5
+ *  @param {Object} [options.press] press
+ *  @param {Number} [options.press.duration] duration
+ *  @default 100
+ *  @param {Number} [options.press.size] size
+ *  @default 0.85
+ *  @param {Number} [options.press.opacity] opacity
+ *  @default 1
+ *  @param {Q.Animation.ease} [option.press.ease] ease
+ *  @default Q.Animation.ease.linear
+ *  @param {Object} [options.release] release
+ *  @param {Number} [options.release.duration] duration
+ *  @default 75
+ *  @param {Number} [options.release.size] size
+ *  @default 1.3
+ *  @param {Number} [options.release.opacity] opacity
+ *  @default 0.5
+ *  @param {Q.Animation.ease} [options.release.ease] ease
+ *  @default Q.Animation.ease.smooth
+ *  @param {Object} [options.snapback] snapback
+ *  @param {Number} [options.snapback.duration] duration
+ *  @default 75
+ *  @param {Q.Animation.ease} [options.snapback.ease]
+ *  @default Q.Animation.ease.smooth
+ *  @param {Object} [options.center] center
+ *  @param {Number} [options.center.x] x
+ *  @default 0.5
+ *  @param {Number} [options.center.y] y
+ *  @default 0.5
+ *  @param {Boolean} [options.selectable]
+ *  @default false
+ *  @param {Event} [options.onPress] onPress
+ *  @default new Q.Event()
+ *  @param {Event} [options.onRelease] onRelease
+ *  @default new Q.Event()
+ *  @param {Event} [options.afterRelease] afterRelease
+ *  @default new Q.Event()
+ *  @param {Number} [options.cancelDistance] cancelDistance
+ *  @default 15
+ *
+*/
 Q.Tool.jQuery('Q/clickable',
 
 function (o) {

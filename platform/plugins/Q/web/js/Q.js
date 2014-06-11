@@ -306,18 +306,20 @@ Date.now = Date.now || function _Date_now() {
 	return new Date().getTime();
 };
 
+if (window.Element) { // only IE7 and lower, which we don't support, wouldn't have this
+
 /**
  * Call this on an element to access tools attached to it.
  * The tools are like "view models".
  * @param {String} toolName
  * @return {Q.Tool|null}
  */
-HTMLElement.prototype.Q = HTMLElement.prototype.Q || function (toolName) {
+Element.prototype.Q = Element.prototype.Q || function (toolName) {
 	// this method is overridden by the tool constructor on specific elements
 	return null;
 };
 
-HTMLElement.prototype.contains = HTMLElement.prototype.contains || function (child) {
+Element.prototype.contains = Element.prototype.contains || function (child) {
 	if (!child) return false;
     var node = child.parentNode;
     while (node != null) {
@@ -329,11 +331,11 @@ HTMLElement.prototype.contains = HTMLElement.prototype.contains || function (chi
     return false;
 };
 
-HTMLElement.prototype.isOrContains = function (child) {
+Element.prototype.isOrContains = function (child) {
 	return this === child || this.contains(child);
 };
 
-HTMLElement.prototype.computedStyle = function(name) {
+Element.prototype.computedStyle = function(name) {
     var computedStyle;
     if ( this.currentStyle !== undefined ) {
     	computedStyle = this.currentStyle;
@@ -343,7 +345,7 @@ HTMLElement.prototype.computedStyle = function(name) {
     return name ? computedStyle[name] : computedStyle;
 };
 
-HTMLElement.prototype.copyComputedStyle = function(src) {
+Element.prototype.copyComputedStyle = function(src) {
     var s = src.computedStyle();
     for ( var i in s ) {
     	// Do not use `hasOwnProperty`, nothing will get copied
@@ -363,7 +365,7 @@ HTMLElement.prototype.copyComputedStyle = function(src) {
 	return this;
 };
 
-HTMLElement.prototype.swap = function(element) {
+Element.prototype.swap = function(element) {
 	var parent1, next1, parent2, next2;
 	parent1 = this.parentNode;
 	next1   = this.nextSibling;
@@ -374,7 +376,7 @@ HTMLElement.prototype.swap = function(element) {
 };
 
 function _returnFalse() { return false; }
-HTMLElement.prototype.preventSelections = function (deep) {
+Element.prototype.preventSelections = function (deep) {
 	Q.addEventListener(this, 'selectstart', _returnFalse);
 	this.preventSelectionsInfo = this.preventSelectionsInfo || {
 		style: this.style['-moz-user-select']
@@ -394,7 +396,7 @@ HTMLElement.prototype.preventSelections = function (deep) {
 	});
 };
 
-HTMLElement.prototype.restoreSelections = function (deep) {
+Element.prototype.restoreSelections = function (deep) {
 	var p = this.preventSelectionsInfo;
 	if (p) {
 		this.style['-moz-user-select']
@@ -411,7 +413,7 @@ HTMLElement.prototype.restoreSelections = function (deep) {
 	});
 };
 
-HTMLElement.prototype.isBefore = function (element, context) {
+Element.prototype.isBefore = function (element, context) {
 	var before = true, that = this;
 	context = context || document.documentElement; // TODO: can triangulate a parentNode instead
 	Q.find(context, null, function (elem) {
@@ -426,7 +428,7 @@ HTMLElement.prototype.isBefore = function (element, context) {
 	return before;
 };
 
-HTMLElement.prototype.hasClass = function (className) {
+Element.prototype.hasClass = function (className) {
 	if (this.classList) {
 		return this.classList.contains(className)
 	} else {
@@ -434,7 +436,7 @@ HTMLElement.prototype.hasClass = function (className) {
 	}
 };
 
-HTMLElement.prototype.removeClass = function (className) {
+Element.prototype.removeClass = function (className) {
 	if (this.classList) {
 		this.classList.remove(className)
 	} else {
@@ -443,7 +445,7 @@ HTMLElement.prototype.removeClass = function (className) {
 	return this;
 };
 
-HTMLElement.prototype.addClass = function (className) {
+Element.prototype.addClass = function (className) {
 	if (this.classList) {
 		this.classList.add(className)
 	} else {
@@ -453,9 +455,11 @@ HTMLElement.prototype.addClass = function (className) {
 	return this;
 };
 
-HTMLElement.prototype.text = function() {
+Element.prototype.text = function() {
 	return el.textContent || el.innerText;
 };
+
+}
 
 if (!window.requestAnimationFrame) {
 	window.requestAnimationFrame =
@@ -474,7 +478,9 @@ if(!document.getElementsByClassName) {
     document.getElementsByClassName = function(className) {
 		return Array.prototype.slice.call(this.querySelectorAll("." + className));
     };
-    Element.prototype.getElementsByClassName = document.getElementsByClassName;
+	if (window.Element) {
+		Element.prototype.getElementsByClassName = document.getElementsByClassName;
+	}
 }
 
 // public methods:
@@ -2367,7 +2373,7 @@ Q.Tool = function _Q_Tool(element, options) {
 		Q.extend(this.options, Q.Tool.options.levels, element.options, 'Q.Tool');
 	}
 	
-	if (element.Q === HTMLElement.prototype.Q) {
+	if (element.Q === Element.prototype.Q) {
 		element.Q = function (toolName) {
 			if (!toolName) {
 				return (this.Q.tool || null);
@@ -2466,7 +2472,7 @@ Q.Tool.prefixById = function _Q_Tool_prefixById(id) {
 
 /**
  * Traverses elements in a particular container, including the container, and removes + destroys all tools.
- * @param elem HTMLElement
+ * @param elem Element
  *  The container to traverse
  * @param removeCached boolean
  *  Defaults to false. Whether the tools whose containing elements have the "data-Q-retain" attribute
@@ -2482,7 +2488,7 @@ Q.Tool.remove = function _Q_Tool_remove(elem, removeCached) {
 
 /**
  * Traverses children in a particular container and removes + destroys all tools.
- * @param elem HTMLElement
+ * @param elem Element
  *  The container to traverse
  * @param removeCached boolean
  *  Defaults to false. Whether the tools whose containing elements have the "data-Q-retain" attribute
@@ -2875,8 +2881,8 @@ Q.Tool.encodeOptions = function _Q_Tool_stringFromOptions(options) {
  * Sets up element so that it can be used to activate a tool
  * For example: $('container').append(Q.Tool.setUpElement('div', 'Streams/chat')).activate(options);
  * @method Q.Tool.setUpElement
- * @param {String|HTMLElement} element
- *  The tag of the element, such as "div", or a reference to an existing HTMLElement
+ * @param {String|Element} element
+ *  The tag of the element, such as "div", or a reference to an existing Element
  * @param {String} toolType
  *  The type of the tool, such as "Q/tabs"
  * @param {Object} toolOptions
@@ -2885,7 +2891,7 @@ Q.Tool.encodeOptions = function _Q_Tool_stringFromOptions(options) {
  *  Optional id of the tool, such as "_2_Q_tabs"
  * @param {String} prefix
  *  Optional prefix to prepend to the tool's id
- * @return HTMLElement
+ * @return Element
  *  Returns an element you can append to things
  */
 Q.Tool.setUpElement = function _Q_Tool_element(element, toolType, toolOptions, id, prefix) {
@@ -2916,8 +2922,8 @@ Q.Tool.setUpElement = function _Q_Tool_element(element, toolType, toolOptions, i
 /**
  * Returns HTML for an element that it can be used to activate a tool
  * @method Q.Tool.setUpElementHTML
- * @param {String|HTMLElement} element
- *  The tag of the element, such as "div", or a reference to an existing HTMLElement
+ * @param {String|Element} element
+ *  The tag of the element, such as "div", or a reference to an existing Element
  * @param {String} toolType
  *  The type of the tool, such as "Q/tabs"
  * @param {Object} toolOptions
@@ -2939,15 +2945,15 @@ Q.Tool.setUpElementHTML = function _Q_Tool_elementHTML(element, toolType, toolOp
  * For example: $('container').append(Q.Tool.setUpElement('div', 'Streams/chat')).activate(options);
  * The prefix and id of the element are derived from the tool on which this method is called.
  * @method Q.Tool.setUpElement
- * @param {String|HTMLElement} element
- *  The tag of the element, such as "div", or a reference to an existing HTMLElement
+ * @param {String|Element} element
+ *  The tag of the element, such as "div", or a reference to an existing Element
  * @param {String} toolType
  *  The type of the tool, such as "Q/tabs"
  * @param {Object} toolOptions
  *  The options for the tool
  * @param {String} id
  *  Optional id of the tool, such as "_2_Q_tabs"
- * @return HTMLElement
+ * @return Element
  *  Returns an element you can append to things
  */
 Q.Tool.prototype.setUpElement = function (element, toolType, toolOptions, id) {
@@ -2959,8 +2965,8 @@ Q.Tool.prototype.setUpElement = function (element, toolType, toolOptions, id) {
  * The prefix and id of the element are derived from the tool on which this method is called.
  * For example: $('container').append(Q.Tool.make('Streams/chat')).activate(options);
  * @method Q.Tool.setUpElementHTML
- * @param {String|HTMLElement} element
- *  The tag of the element, such as "div", or a reference to an existing HTMLElement
+ * @param {String|Element} element
+ *  The tag of the element, such as "div", or a reference to an existing Element
  * @param {String} toolType
  *  The type of the tool, such as "Q/tabs"
  * @param {Object} toolOptions
@@ -2977,7 +2983,7 @@ Q.Tool.prototype.setUpElementHTML = function (element, toolType, toolOptions, id
 /**
  * Returns a tool corresponding to the given DOM element, if such tool has already been constructed.
  *
- * @param toolElement HTMLElement
+ * @param toolElement Element
  *   the root element of the desired tool
  * @param {String} toolName
  *   optional name of the tool attached to the element
@@ -3752,7 +3758,7 @@ Q.beforeUnload = function _Q_beforeUnload(notice) {
 
 /**
  * Remove an element from the DOM and try to clean up memory as much as possible
- * @param element HTMLElement
+ * @param element Element
  */
 Q.removeElement = function _Q_removeElement(element) {
 	if (window.jQuery) {
@@ -3771,7 +3777,7 @@ Q.removeElement = function _Q_removeElement(element) {
 
 /**
  * Add an event listener to an element
- * @param element {HTMLElement}
+ * @param element {Element}
  * @param eventName {String}
  * @param eventHandler {Function}
  * @param useCapture {Boolean} ignored in IE8 and below
@@ -3819,7 +3825,7 @@ Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandl
 
 /**
  * Remove an event listener from an element
- * @param element HTMLElement
+ * @param element Element
  * @param eventName String
  * @param eventHandler Function
  */
@@ -3851,7 +3857,7 @@ Q.removeEventListener = function _Q_addEventListener(element, eventName, eventHa
 /**
  * Triggers a method or Q.Event on all the tools inside a particular element
  * @param eventName String Required, the name of the method or Q.Event to trigger
- * @param element HTMLElement Optional element to traverse from (defaults to document.body).
+ * @param element Element Optional element to traverse from (defaults to document.body).
  * @param Array args Any additional arguments that would be passed to the triggered method or event
  */
 Q.trigger = function _Q_trigger(eventName, element, args) {
@@ -4967,7 +4973,7 @@ Q.cookie = function _Q_cookie(name, value, options) {
  * Finds all elements that contain a class matching the filter,
  * and calls the callback for each of them.
  *
- * @param HTMLElement|Array elem
+ * @param Element|Array elem
  *  An element, or an array of elements, within which to search
  * @param String|RegExp|true|null filter
  *  The name of the class or attribute to match
@@ -5064,7 +5070,7 @@ Q.find.skipSubtree = "Q:skipSubtree";
 /**
  * Unleash this on an element to activate all the tools within it.
  * If the element is itself an outer div of a tool, that tool is activated too.
- * @param {HTMLElement|Q.Tool} elem
+ * @param {Element|Q.Tool} elem
  *  HTML element or existing tool to traverse and activate
  *  If this is empty, then Q.activate exits early
  * @param {Object} options
@@ -5110,19 +5116,19 @@ Q.activate = function _Q_activate(elem, options, callback) {
 
 /**
  * Replaces the contents of an element and does the right thing with all the tools in it
- * @param {HTMLElement} existing
- *  A HTMLElement representing the slot whose contents are to be replaced
+ * @param {Element} existing
+ *  A Element representing the slot whose contents are to be replaced
  *  Tools found in the existing DOM which have data-Q-retain="document" attribute
  *  are actually retained unless the tool replacing them has data-Q-replace="document".
  *  You can update the tool by implementing a handler for
  *  tool.Q.onRetain, which receives the old Q.Tool object and the new options.
  *  After the event is handled, the tool's state will be extended with these new options.
- * @param {HTMLElement|String} source
- *  An HTML string or a HTMLElement which is not part of the DOM
+ * @param {Element|String} source
+ *  An HTML string or a Element which is not part of the DOM
  * @param {Object} options
  *  Optional. A hash of options, including:
  *  "animation": To animate the transition, pass an object here with optional "duration", "ease" and "callback" properties.
- * @return HTMLElement
+ * @return Element
  *  Returns the slot element if successful
  */
 Q.replace = function _Q_replace(existing, source, options) {
@@ -7161,7 +7167,7 @@ Q.Dialogs = {
 	 * Shows the dialog and pushes it on top of internal dialog stack.
 	 * @param options Object
 	 *	 A hash of options, that can include:
-	 *   "dialog": Optional. If provided, may be HTMLElement or jQuery object containing already prepared dialog html
+	 *   "dialog": Optional. If provided, may be Element or jQuery object containing already prepared dialog html
 	 *           structure with 'title_slot', 'dialog_slot' and appropriate content in them. If it's provided, then
 	 *           'title' and 'content' options given below are ignored.
 	 *	 "url": Optional. If provided, this url will be used to fetch the "title" and "dialog" slots, to display in the dialog.

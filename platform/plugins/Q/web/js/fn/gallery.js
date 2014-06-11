@@ -1,27 +1,44 @@
 (function (Q, $, window, document, undefined) {
 
 /**
- * @param options Object
- *  "images": an array of objects containing
- *    "src": required, url of the image, will be fed through Q.url()
- *    "caption": optional caption for the image
- *    "interval": optional number overriding default interval
- *    "transition": optional object overriding default transition
- *  "transition": optional object containing
- *    "duration": the number of milliseconds the transition should take (where the intervals overlap)
- *    "ease": the type of easing function to apply from Q.Animation.ease object. Defaults to 'smooth'
- *    "type": the type of transition. Can only be 'crossfade'
- *  "interval": optional object containing
- *    "duration": number of milliseconds between beginning times of consecutive transitions
- *    "ease": the type of easing function to apply from Q.Animation.ease object. Defaults to 'smooth'
- *    "type": what to do during this interval. Can be empty or 'kenburns'. Defaults to empty.
- *    "from": for "kenburns", an object containing "left", "top", "width" and "height"
- *    "to": for "kenburns", an object containing "left", "top", "width" and "height"
- *  "autoplay": whether to start playing the gallery when it loads. Defaults to true.
- *  "transitionToFirst": whether to use a transition to show the first image. Defaults to false.
- *  "loop": whether to show first image after last image is done. Defaults to true.
- *  "onLoad": fires when an image loads, also passes all loaded images
- *  "onTransition": fires when an image loads, also passes all loaded images
+ * Plugin Creates gallery of of images
+ * @method gallery
+ * @param {Object} [options] options is an Object with function parameters
+ * @param {Array} [options.images] images an array of objects containing object <code> { src: String , caption: String , interval: Number, transition: Object} </code>
+ *   @param {String} [options.images.src] src url of the image, will be fed through Q.url(). Required.
+ *   @param {String} [options.images.caption] caption for the image. Optional
+ *   @param {Number} [options.images.interval] interval number overriding default interval. Optional.
+ *   @param {Object} [options.images.transition] transition object overriding default transition. Optional.
+ * @param {Object} [options.transition] transition object that contains properties for making transitions
+ *   @param {Number} [options.transition.duration] duration the number of milliseconds the transition should take (where the intervals overlap)
+ *   @param {String} [options.transition.ease] ease the type of easing function to apply from Q.Animation.ease object
+ *   @default 'smooth'
+ *   @param {String} [options.transition.type] type the type of transition. Can only be 'crossfade'
+ *   @default 'crossfade'
+ * @param {Object} [options.interval] interval object that contains properties for intervals
+ *   @param {Number} [options.interval.duration] duration number of milliseconds between beginning times of consecutive transitions
+ *   @param {String} [options.interval.ease] ease the type of easing function to apply from Q.Animation.ease object.
+ *   @default 'smooth'
+ *   @param {String} [options.interval.type] type is a what to do during this interval. Can be empty or 'kenburns'.
+ *   @default ''
+ *   @param {Object} [options.interval.from] from is for "kenburns", an object containing "left", "top", "width" and "height"
+ *     @param {Number} [options.interval.from.left] left number for "from" object
+ *     @param {Number} [options.interval.from.top] top number for "from" object
+ *     @param {Number} [options.interval.from.width] width number for "from" object
+ *     @param {Number} [options.interval.from.height] height number for "from" object
+ *   @param {Object} [options.interval.to] to is for "kenburns", an object containing "left", "top", "width" and "height"
+ *     @param {Number} [options.interval.to.left] left number for "to" object
+ *     @param {Number} [options.interval.to.top] top number for "to" object
+ *     @param {Number} [options.interval.to.width] width number for "to" object
+ *     @param {Number} [options.interval.to.height] height number for "to" object
+ * @param {Boolean} [options.autoplay] autoplay for  whether to start playing the gallery when it loads.
+ * @default true
+ * @param {Boolean} [options.transitionToFirst] transitionToFirst for whether to use a transition to show the first image.
+ * @default false
+ * @param {Boolean} [options.loop] loop for whether to show first image after last image is done.
+ * @default true
+ * @param {Event} [options.onLoad] onLoad event fires when an image loads, also passes all loaded images
+ * @param {Event} [options.onTransition] onTransition event fires when an image loads, also passes all loaded images
  */
 Q.Tool.jQuery('Q/gallery', function (o) {
 	
