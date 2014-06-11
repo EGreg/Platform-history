@@ -1,21 +1,23 @@
 (function (Q, $) {
 
 /**
- * @param options Object
- *  The options to pass to the tool. They include:
- *  "tabs": An associative array of name: title pairs.
- *  "urls": An associative array of name: url pairs to override the default urls.
- *  "field" => Defaults to "tab". Uses this field when urls doesn't contain the tab name.
- *  "selector": CSS style selector indicating the element to update with javascript. Can be a parent of the tabs. Set to null to reload the page.
- *  "slot": The name of the slot to request when changing tabs with javascript.
- *  "loader": Optional. Name of a function which takes url, slot, callback. It should call the callback and pass it an object with the response info. Can be used to implement caching, etc. instead of the default HTTP request. This function shall be Q.batcher getter
- *  "onClick": Optional. Event when a tab was clicked, with arguments (name, element). Returning false cancels the tab switching.
- *  "beforeSwitch": Optional. Event when tab switching begins. Returning false cancels the switching.
- *  "beforeScripts": Optional. Name of the function to execute after tab is loaded but before its javascript is executed.
- *  "onActivate": Optional. Name of the function to execute after a tab is activated.
- * @return Q.Tool
- *  A tool that has the following methods:
+ * This method crates tabbed panel from given element
+ * Returns  A tool (Q.Tool) that has the following methods:
  *  switchTo(name) : Given the name of a tab, switches to that tab as if it was clicked.
+ * @method tabs
+ * @param {Object} [options] This object contains properties for this function
+ *  @param {Array} [options.tabs] An associative array of name: title pairs.
+ *  @param {Array} [options.urls] An associative array of name: url pairs to override the default urls.
+ *  @param {String} [options.field] Uses this field when urls doesn't contain the tab name.
+ *  @default 'tab'
+ *  @param {String} [options.selector] CSS style selector indicating the element to update with javascript. Can be a parent of the tabs. Set to null to reload the page.
+ *  @param {String} [options.slot] The name of the slot to request when changing tabs with javascript.
+ *  @param {Function} [options.loader] Name of a function which takes url, slot, callback. It should call the callback and pass it an object with the response info. Can be used to implement caching, etc. instead of the default HTTP request. This function shall be Q.batcher getter
+ *  @param {Event} [options.onClick] Event when a tab was clicked, with arguments (name, element). Returning false cancels the tab switching. Optional.
+ *  @param {Event} [options.beforeSwitch] Event when tab switching begins. Returning false cancels the switching. Optional.
+ *  @param {Function} [options.beforeScripts] Name of the function to execute after tab is loaded but before its javascript is executed. Optional.
+ *  @param {Function} [options.onActivate] Name of the function to execute after a tab is activated. Optional.
+ * @return Q.Tool
  */
 Q.Tool.define("Q/tabs", function(options) {
 

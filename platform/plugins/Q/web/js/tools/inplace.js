@@ -2,15 +2,31 @@
 
 /**
  * Inline text editor tool.
- * @param {Array} options An associative array, containing:
- *  "method": Defaults to "put". The HTTP verb to use.
- *  "type": The type of the input field. Can be "textarea" or "text"
- *  "editOnClick": Defaults to true. Whether to enter editing mode when clicking on the text.
- *  "selectOnEdit": Defaults to true. Whether to select everything in the input field when entering edit mode.
- *  "maxWidth": Defaults to null. The maximum width that the field can grow to
- *  "minWidth": Defaults to 100. The minimum width that the field can shrink to
- *  "placeholder": Text to show in the staticHtml or input field when the editor is empty
- *  "template": Can be used to override info for the tool's view template.
+ * @method inplace
+ * @param {Object} [options] This is an object of parameters for this function
+ *  @param {String} [options.method] The HTTP verb to use.
+ *  @default 'put'
+ *  @param {String} [options.type] The type of the input field. Can be "textarea" or "text"
+ *  @default 'textarea'
+ *  @param {Boolean} [options.editOnClick] Whether to enter editing mode when clicking on the text.
+ *  @default true
+ *  @param {Boolean} [options.selectOnEdit] Whether to select everything in the input field when entering edit mode.
+ *  @default true
+ *  @param {Number} [options.maxWidth] The maximum width that the field can grow to
+ *  @default null
+ *  @param {Number} [options.minWidth] The minimum width that the field can shrink to
+ *  @default 100
+ *  @param {String} [options.placeholder] Text to show in the staticHtml or input field when the editor is empty
+ *  @default null
+ *  @param {Object} [options.template]  Can be used to override info for the tool's view template.
+ *    @param {String} [options.template.dir]
+ *    @default 'plugins/Q/views'
+ *    @param {String} [options.template.name]
+ *    @default 'Q/inplace/tool'
+ *  @param {Event} [options.onSave] This event triggers after save
+ *  @default Q.Event()
+ *  @param {Event} [options.onCancel] This event triggers after canceling
+ *  @default Q.Event()
  */
 Q.Tool.define("Q/inplace", function (options) {
 	var tool = this, 

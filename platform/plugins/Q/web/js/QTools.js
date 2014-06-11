@@ -35,25 +35,30 @@ Q.onActivate.set(function()
  * you may assign memorable key to an interval instead of just integer id and later manage it using this key,
  * you can pause and resume individual interval or all the intervals,
  * you can access intervals collection to inspect it, particularly you may find which are currently running and which are not.
+ * @class Q.Interval
  */
 Q.Interval = {
 
 	/**
 	 * An object for saving all the intervals. You may inspect it to find all the information about an interval.
+     * @property
+     * @type {Object}
+     * @default {}
 	 */
 	collection: {},
 
 	/**
 	 * Sets an interval.
 	 * Syntax is very same to original setInterval()
-	 * @param callback Function
+     * @method set
+	 * @param {Function} callback
 	 *   Required. Callback to provide to setInterval() which will be called every milliseconds equal to 'interval' parameter.
-	 * @param interval Number
+	 * @param {Number} interval
 	 *   Required. A number of milliseconds after which next call of function provided by 'callback' parameter will occur.
-	 * @param key String
+	 * @param {String} key
 	 *   Optional. A string key for later identifying this interval. May be omitted and then default key with incremented
 	 *   number will be generated.
-	 * @return Number
+	 * @return {Number}
 	 *   An id of newly created interval which setInterval() returns.
 	 */
 	set: function(callback, interval, key)
@@ -84,9 +89,10 @@ Q.Interval = {
 
 	/**
 	 * Checks if an interval with given key is already in the collection.
-	 * @param key Number
+     * @method exists
+	 * @param {Number} key
 	 *   Required. Key of the interval
-	 * @return boolean. True if an interval exists, false otherwise.
+	 * @return {Boolean} . True if an interval exists, false otherwise.
 	 */
 	exists: function(key)
 	{
@@ -95,7 +101,8 @@ Q.Interval = {
 
 	/**
 	 * Pauses and interval.
-	 * @param keyOrId String or Number
+     * @method pause
+	 * @param {String|Number} keyOrId
 	 *   A key or id of the interval to pause. Please note that id changes every time interval is resumed,
 	 *   that's why resume() returns new id. And actually using the key is better practice because of that.
 	 */
@@ -131,12 +138,13 @@ Q.Interval = {
 
 	/**
 	 * Resumes the paused interval.
-	 * @param keyOrId String or Number
+     * @method resume
+	 * @param {String|Number} keyOrId
 	 *   A key or id of the interval to resume. Please note that id changes every time interval is resumed,
 	 *   that's why resume() returns new id. And actually using the key is better practice because of that.
 	 *   Also note that it's safe to call resume() on the interval which is not
 	 *   paused - resume() simpy doesn't do anything in this case.
-	 * @return id Number
+	 * @return {Number} id
 	 *   A new id the resumed interval.
 	 */
 	resume: function(keyOrId)
@@ -180,7 +188,8 @@ Q.Interval = {
 
 	/**
 	 * Clears the interval.
-	 * @param keyOrId String or Number
+     * @method clear
+	 * @param {String|Number} keyOrId
 	 *   A key or id of the interval to clear.
 	 */
 	clear: function(keyOrId)
@@ -215,6 +224,7 @@ Q.Interval = {
 
 	/**
 	 * Pauses all the intervals.
+     * @method pauseAll
 	 */
 	pauseAll: function()
 	{
@@ -228,6 +238,7 @@ Q.Interval = {
 
 	/**
 	 * Resumes all the intervals.
+     * @method resumeAll
 	 */
 	resumeAll: function()
 	{
@@ -245,6 +256,7 @@ Q.Interval = {
 
 	/**
 	 * Clears all the intervals.
+     * @method clearAll
 	 */
 	clearAll: function()
 	{
@@ -1788,12 +1800,14 @@ Q.onInit.add(function () {
 /**
  * TODO (DT): this class needs to be documented later if it's really needed, otherwise remove it.
  * Class for managing content of the standard application slots.
+ * @class Q.Content
  */
 Q.Content = {
 	
 	/**
 	 * Sets contents of one or more slots of the app from given response object (usually obtained through Q.loadUrl())
-	 * @param Object response. Required. Should contain 'slots' object which in turn brings one or more content fields to the app.
+	 * @method setSlots
+     * @param {Object} response. Required. Should contain 'slots' object which in turn brings one or more content fields to the app.
 	 */
 	setSlots: function(response)
 	{
@@ -1821,6 +1835,8 @@ Q.Content = {
 	
 	/**
 	 * Sub object containing particular 'setters' for each slot of the app.
+     * @property set
+     * @type {Object}
 	 */
 	set:
 	{	
@@ -2294,6 +2310,7 @@ Q.Dashboard.options = {
 
 /**
  * Operates contextuals: adding, event handling, showing, hiding.
+ * @class Q.Contextual
  */
 Q.Contextual = {
 	
@@ -2325,9 +2342,10 @@ Q.Contextual = {
 	
 	/**
 	 * Adds a contextual to the collection for further managing it.
-	 * @param trigger Object or String. Required. DOM element, jQuery object or jQuery selector which triggers
+     * @method add
+	 * @param {Object|String} trigger . Required. DOM element, jQuery object or jQuery selector which triggers
 	 *				contextual showing on mousedown / touchstart event.
-	 * @param contextual Object or String. Required. DOM element, jQuery object or jQuery selector.
+	 * @param {Object|String}  contextual . Required. DOM element, jQuery object or jQuery selector.
 	 *	 This is the element to be shown as contextual.
 	 *	 It must have such structure:
 	 *	 <div class="Q_contextual" data-handler="[javascript function name]">
@@ -2339,10 +2357,10 @@ Q.Contextual = {
 				 </ul>
 			 </div>
 	 *	 For easier creation of such element it's recommended to use Q/contextual plugin.
-	 * @param coords Object. Optional. If provided, must be an object with such structure: { 'x': value, 'y': value }.
+	 * @param {Object} coords . Optional. If provided, must be an object with such structure: { 'x': value, 'y': value }.
 	 *	 By default contextual is shown relatively to trigger element with auto positioning nearly to it
 	 *	 considering where it's located: at the top or at the bottom of screen.
-	 * @param size Object. Optional. If provided, must be an object with such structure: { 'width': value, 'height': value }.
+	 * @param {Object} size . Optional. If provided, must be an object with such structure: { 'width': value, 'height': value }.
 	 *	 Used to override predefined size of the contextual.
 	 */
 	add: function(trigger, contextual, coords, size)
@@ -2391,6 +2409,7 @@ Q.Contextual = {
 	/**
 	 * Removes a contextual from collection by given id and
 	 * returns collection object (it's contextual along with its trigger and associated data).
+     * @method remove
 	 */
 	remove: function(cid)
 	{
@@ -2407,7 +2426,8 @@ Q.Contextual = {
 	/**
 	 * Calculates contextual showing coordinates when it's relatively positioned to the trigger.
 	 * Parameters are the same as for Q.Contextual.add(), except for 'info', which is new.
-	 * @param info Object. Required. Object containing some data associated with contextual.
+     * @method calcRelativeCoords
+	 * @param {Object} info . Required. Object containing some data associated with contextual.
 	 *	 Particularly here it's used to store calculated coordinates in it.
 	 */
 	calcRelativeCoords: function(trigger, contextual, info)
@@ -2422,6 +2442,7 @@ Q.Contextual = {
 	 * Updates all contextuals layout.
 	 * Particularly it adjusts contextual coordinates if they're relatively positioned to the trigger.
 	 * Useful when trigger position changed, for example when screen orientation of mobile device is changed.
+     * @method updateLayout
 	 */
 	updateLayout: function()
 	{
@@ -2445,6 +2466,7 @@ Q.Contextual = {
 	 * calls Q.Contextual.show() when trigger receives an event.
 	 * This method makes required operations only once and one event handler watches all triggers and manages all contextuals using
 	 * contextuals collection. This is done to not overload document with many event handlers.
+     * @method makeShowHandler
 	 */
 	makeShowHandler: function()
 	{
@@ -2536,6 +2558,7 @@ Q.Contextual = {
 	 * Creates 'lifecycle' event handlers for contextuals.
 	 * This includes 'start', 'move' and 'end' event handlers.
 	 * These handlers used to operate with items selection, applying different scrolling algorithms etc.
+     * @method makeLifecycleHandlers
 	 */
 	makeLifecycleHandlers: function()
 	{
@@ -2772,6 +2795,7 @@ Q.Contextual = {
 	/**
 	 * Applies appropriate scrolling to contextual contents.
 	 * On mobile platforms iScroll is used and on desktop native scrolling with 'overflow: auto' is used.
+     * @method applyScrolling
 	 */
 	applyScrolling: function()
 	{
@@ -2837,6 +2861,7 @@ Q.Contextual = {
 	 * Shows a contextual.
 	 * You don't have to call it manually since event handling routines do that.
 	 * However, if you manually handle contextuals workflow, you stil can.
+     * @method show
 	 * @param id Number. Optional. If provided, contextual with given id will be shown.
 	 */
 	show: function(id)
@@ -2959,6 +2984,7 @@ Q.Contextual = {
 	/**
 	 * Hide contextual. Because only one contextual can be shown at a time, these function has no parameters.
 	 * Also, usually you don't have to call this manually as contextuals hide automatically on appropriate events.
+     * @method hide
 	 * @param leaveMask Boolean. Defaults to false. If true, mask won't be hidden along with contextual.
 	 */
 	hide: function(leaveMask)
@@ -2995,6 +3021,7 @@ Q.Contextual = {
 	
 	/**
 	 * Temporary disables contextuals triggering.
+     * @method disable
 	 */
 	disable: function()
 	{
@@ -3003,6 +3030,7 @@ Q.Contextual = {
 	
 	/**
 	 * Enables contextuals triggering if it was previously disabled.
+     * @method enable
 	 */
 	enable: function()
 	{
@@ -3018,16 +3046,21 @@ Q.Contextual.options = {
 
 /**
  * Operates with notices.
+ * @class Q.Notices
  */
 Q.Notices = {
 		
 	/**
 	 * Setting that changes notices slide down / slide up time.
+     * @property popUpTime
+     * @trype {Number}
+     * @default 500
 	 */
 	popUpTime: 500,
 		
 	/**
 	 * Adds a notice.
+     * @method add
 	 * @param key String
 	 * Unique key for this notice.
 	 * @param contents String
@@ -3072,6 +3105,7 @@ Q.Notices = {
 	
 	/**
 	 * Processes added notices, either using Q.Notices.add() or using 'notices' slot contents.
+     * @method processAdded
 	 */
 	processAdded: function()
 	{
@@ -3418,6 +3452,7 @@ Q.Notices = {
 	
 	/**
 	 * Removes a notice.
+     * @method remove
 	 * @param key String
 	 * Unique key of this notice which has been provided when notice was added.
 	 */
@@ -3431,6 +3466,7 @@ Q.Notices = {
 	
 	/**
 	 * Updates notices layout.
+     * @method updateLayout
 	 */
 	updateLayout: function()
 	{
@@ -3476,6 +3512,7 @@ Q.Notices = {
 	
 	/**
 	 * Hides a notice.
+     * @method hide
 	 * @param key String
 	 * Key of the notice to be hidden.
 	 */
@@ -3486,6 +3523,7 @@ Q.Notices = {
 	
 	/**
 	 * Shows a previously notice.
+     * @method show
 	 * @param key String
 	 * Key of the notice to be shown.
 	 */
@@ -3501,6 +3539,7 @@ Q.Notices = {
  * Basically may be applied to 'div' with 'overflow: auto|scroll'.
  * Doesn't provide any way to dynamically get content using ajax,
  * just simply hides elements which aren't visible yet (aren't scrolled to).
+ * @method infiniteScroll
  * @param options Object
  *	 A hash of options, that can include:
  *	 "itemSelector": Required. jQuery selector of the items that needs to be hidden and then shown.
@@ -3537,6 +3576,7 @@ $.fn.infiniteScroll = function(options)
 
 /**
  * Q/grammar tool.
+ * @method grammar
  */
 Q.Tool.define('Q/grammar', function(options) {
 	var toolDiv = this.element;

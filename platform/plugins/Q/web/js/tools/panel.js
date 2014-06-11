@@ -1,5 +1,11 @@
 (function (Q, $) {
 
+    /**
+     * This method generates panel from given element.
+     * It don't have any options
+     * @method panel
+    */
+
 Q.Tool.define("Q/panel", function() {
 
 	// constructor & private declarations
