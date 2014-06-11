@@ -120,7 +120,7 @@ function _getProp (/*Array*/parts, /*Boolean*/create, /*Object*/context){
  * @return {Object|undefined} Returns the passed value if setting is successful or `undefined` if not.
  */
 Q.extendObject = function _Q_extendObject(name, value, context, delimiter){
-    delimiter = delimiter || '.';
+	delimiter = delimiter || '.';
 	var parts = name.split(delimiter), p = parts.pop(), obj = _getProp(parts, true, context);
 	if (obj === undefined) {
 		console.warn("Failed to set '"+name+"'");
@@ -151,7 +151,7 @@ Q.extendObject = function _Q_extendObject(name, value, context, delimiter){
  * @return {Object|undefined} Returns the passed value if setting is successful or `undefined` if not.
  */
 Q.setObject = function _Q_setObject(name, value, context, delimiter) {
-    delimiter = delimiter || '.';
+	delimiter = delimiter || '.';
 	if (Q.isPlainObject(name)) {
 		context = value;
 		var result = {};
@@ -164,7 +164,7 @@ Q.setObject = function _Q_setObject(name, value, context, delimiter) {
 		name = name.split(delimiter);
 	}
 	var p = name.pop(),
-	    obj = _getProp(name, true, context);
+		obj = _getProp(name, true, context);
 	return obj && (p !== undefined) ? (obj[p] = value) : undefined;
 };
 
@@ -180,7 +180,7 @@ Q.setObject = function _Q_setObject(name, value, context, delimiter) {
  * @return {Object|undefined} Returns the originally stored value, or `undefined` if nothing is there
  */
 Q.getObject = function _Q_getObject(name, context, delimiter, create) {
-    delimiter = delimiter || '.';
+	delimiter = delimiter || '.';
 	if (typeof name === 'string') {
 		name = name.split(delimiter);
 	}
@@ -814,8 +814,8 @@ Q.getter = function _Q_getter(original, options) {
 	wrapper.forget = function _forget() {
 		var key = Q.Cache.key(arguments);
 		if (key && wrapper.cache) {
-	        wrapper.cache.remove(key);
-	    }
+			wrapper.cache.remove(key);
+		}
 	};
 
 	if (original.batch) {
@@ -987,23 +987,23 @@ Q.Cache.prototype.clear = function _Q_Cache_prototype_clear(key) {
  * @param callback {Function} Is passed two parameters: key, value, with this = the cache
  */
 Q.Cache.prototype.each = function _Q_Cache_prototype_clear(args, callback) {
-    var cache = this;
-    var prefix = null;
-    if (typeof args === 'function') {
-        callback = args;
-        args = undefined;
-    } else {
-        var json = Q.Cache.key(args);
-        prefix = json.substring(0, json.length-1);
-    }
-    return Q.each(this.data, function (key, item) {
-        if (prefix && k.substring(0, prefix.length) !== prefix) {
-            return;
-        }
-        if (callback.call(cache, key, item) === false) {
-            return false;
-        }
-    });
+	var cache = this;
+	var prefix = null;
+	if (typeof args === 'function') {
+		callback = args;
+		args = undefined;
+	} else {
+		var json = Q.Cache.key(args);
+		prefix = json.substring(0, json.length-1);
+	}
+	return Q.each(this.data, function (key, item) {
+		if (prefix && k.substring(0, prefix.length) !== prefix) {
+			return;
+		}
+		if (callback.call(cache, key, item) === false) {
+			return false;
+		}
+	});
 };
 /**
  * @method local
@@ -1077,8 +1077,8 @@ Q.event = function _Q_event(name, context, args) {
  *  You can also pass up to three numbers here: from, to and optional step
  * @param {Function|String} callback
  *  A function which will receive two parameters
- *    index: the index of the current item
- *    value: the value of the current item
+ *	index: the index of the current item
+ *	value: the value of the current item
  *  Also can be a string, which would be the name of a method to invoke on each item, if possible.
  *  In this case the callback should be followed by an array of arguments to pass to the method calls.
  * @param {Object} options
@@ -1267,38 +1267,38 @@ Q.firstKey = function _Q_firstKey(container, options) {
  * @return {Array|Object} a container of the same type as container1, but without elements of container2
  */
 Q.diff = function _Q_diff(container1, container2 /*, ... comparator */) {
-    if (!container1 || !container2) {
-        return container1;
-    }
-    var len = arguments.length;
+	if (!container1 || !container2) {
+		return container1;
+	}
+	var len = arguments.length;
 	var args = arguments;
-    var comparator = arguments[len-1];
-    if (typeof comparator !== 'function') {
-        throw new Q.Exception("Q.diff: comparator must be a function");
-    }
-    var isArr = (Q.typeOf(container1) === 'array');
-    var result = isArr ? [] : {};
-    Q.each(container1, function (k, v1) {
-        var found = false;
-        for (var i=1; i<len-1; ++i) {
-            Q.each(args[i], function (j, v2) {
-                if (comparator(v1, v2, i, j)) {
-                    found = true;
-                    return false;
-                }
-            });
-            if (found) {
-                break;
-            }
-        }
-        if (!found) {
-            if (isArr) {
-                result.push(v1);
-            } else {
-                result[k] = v1;
-            }
-        }
-    });
+	var comparator = arguments[len-1];
+	if (typeof comparator !== 'function') {
+		throw new Q.Exception("Q.diff: comparator must be a function");
+	}
+	var isArr = (Q.typeOf(container1) === 'array');
+	var result = isArr ? [] : {};
+	Q.each(container1, function (k, v1) {
+		var found = false;
+		for (var i=1; i<len-1; ++i) {
+			Q.each(args[i], function (j, v2) {
+				if (comparator(v1, v2, i, j)) {
+					found = true;
+					return false;
+				}
+			});
+			if (found) {
+				break;
+			}
+		}
+		if (!found) {
+			if (isArr) {
+				result.push(v1);
+			} else {
+				result[k] = v1;
+			}
+		}
+	});
 	return result;
 };
 
@@ -1757,7 +1757,7 @@ Q.dir = function _Q_dir(start, callback) {
 					total = files.length;
 					for(var x=0, l=files.length; x<l; x++) {
 						isDir(path.join(start, files[x]));
-					}            		
+					}					
 				} else {
 					callback && callback(null, {dirs: [], files: []});
 				}
@@ -1840,18 +1840,18 @@ Q.md5_hmac_b64 = function _Q_md5_hmac_b64(a,b){return rstr2b64(rstr_hmac_md5(str
  * @return {String} the normalized string
  */
 Q.normalize = function _Q_normalize(text, replacement, characters, numChars) {
-    if (!numChars) numChars = 200;
-    if (replacement === undefined) replacement = '_';
-    characters = characters || new RegExp("[^A-Za-z0-9]+", "g");
-    if (text === undefined) {
-        debugger; // pause here if debugging
-    }
-    var result = text.toLowerCase().replace(characters, replacement);
-    if (text.length > numChars) {
-        result = text.substr(0, numChars-11) + '_'
-            + Math.abs(text.substr(numChars-11).hashCode());
-    }
-    return result;
+	if (!numChars) numChars = 200;
+	if (replacement === undefined) replacement = '_';
+	characters = characters || new RegExp("[^A-Za-z0-9]+", "g");
+	if (text === undefined) {
+		debugger; // pause here if debugging
+	}
+	var result = text.toLowerCase().replace(characters, replacement);
+	if (text.length > numChars) {
+		result = text.substr(0, numChars-11) + '_'
+			+ Math.abs(text.substr(numChars-11).hashCode());
+	}
+	return result;
 };
 
 /*
@@ -1872,8 +1872,8 @@ Q.servers = {};
  * * "port": the port to listen on<br/>
  * * "host": the hostname to listen for<br/>
  * * "attach": an array of additional listeners to attach.<br/>
- *    Each member is a name of a class (e.g. "Q.Socket", "Q.Dispatcher" and "Db")
- *    which has the listen(options) method.
+ *	Each member is a name of a class (e.g. "Q.Socket", "Q.Dispatcher" and "Db")
+ *	which has the listen(options) method.
  * * "https": https options. Not supported for now.
  * @param [callback=null] {function} callback is fired when server is actually listening.
  *	callback receives server address as argument
@@ -2336,15 +2336,15 @@ String.prototype.decodeHTML = function _String_prototype_encodHTML(quote_style, 
 };
 
 String.prototype.hashCode = function() {
-    var hash = 0;
-    if (this.length == 0) return hash;
-    for (i = 0; i < this.length; i++) {
-        var c = this.charCodeAt(i);
-        hash = hash % 16777216;
-        hash = ((hash<<5)-hash)+c;
-        hash = hash & 0xffffffff; // Convert to 32bit integer
-    }
-    return hash;
+	var hash = 0;
+	if (this.length == 0) return hash;
+	for (i = 0; i < this.length; i++) {
+		var c = this.charCodeAt(i);
+		hash = hash % 16777216;
+		hash = ((hash<<5)-hash)+c;
+		hash = hash & 0xffffffff; // Convert to 32bit integer
+	}
+	return hash;
 };
 
 /**

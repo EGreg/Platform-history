@@ -236,15 +236,15 @@ String.prototype.parseUrl = function _String_prototype_parseUrl (component) {
 };
 
 String.prototype.sameDomain = function _String_prototype_sameDomain (url2, options) {
-    var parsed1 = this.parseUrl(),
-        parsed2 = url2.parseUrl();
-    var same = (parsed1.host === parsed2.host)
-        && (parsed1.user === parsed2.user)
-        && (parsed1.pass === parsed2.pass)
-        && (parsed1.port === parsed2.port);
-    return options && options.compareScheme
-        ? same && (parsed1.scheme === parsed2.scheme)
-        : same;
+	var parsed1 = this.parseUrl(),
+		parsed2 = url2.parseUrl();
+	var same = (parsed1.host === parsed2.host)
+		&& (parsed1.user === parsed2.user)
+		&& (parsed1.pass === parsed2.pass)
+		&& (parsed1.port === parsed2.port);
+	return options && options.compareScheme
+		? same && (parsed1.scheme === parsed2.scheme)
+		: same;
 };
 
 /**
@@ -321,14 +321,14 @@ Element.prototype.Q = Element.prototype.Q || function (toolName) {
 
 Element.prototype.contains = Element.prototype.contains || function (child) {
 	if (!child) return false;
-    var node = child.parentNode;
-    while (node != null) {
-        if (node == this) {
-            return true;
-        }
-        node = node.parentNode;
-    }
-    return false;
+	var node = child.parentNode;
+	while (node != null) {
+		if (node == this) {
+			return true;
+		}
+		node = node.parentNode;
+	}
+	return false;
 };
 
 Element.prototype.isOrContains = function (child) {
@@ -336,32 +336,32 @@ Element.prototype.isOrContains = function (child) {
 };
 
 Element.prototype.computedStyle = function(name) {
-    var computedStyle;
-    if ( this.currentStyle !== undefined ) {
-    	computedStyle = this.currentStyle;
-    } else {
-    	computedStyle = window.getComputedStyle(this, null);
-    }
-    return name ? computedStyle[name] : computedStyle;
+	var computedStyle;
+	if ( this.currentStyle !== undefined ) {
+		computedStyle = this.currentStyle;
+	} else {
+		computedStyle = window.getComputedStyle(this, null);
+	}
+	return name ? computedStyle[name] : computedStyle;
 };
 
 Element.prototype.copyComputedStyle = function(src) {
-    var s = src.computedStyle();
-    for ( var i in s ) {
-    	// Do not use `hasOwnProperty`, nothing will get copied
-    	if ( typeof i == "string" && i != "cssText" && !/\d/.test(i) ) {
-    		// The try is for setter only properties
-    		try {
-    			this.style[i] = s[i];
-    			// `fontSize` comes before `font` If `font` is empty, `fontSize` gets
-    			// overwritten.  So make sure to reset this property. (hackyhackhack)
-    			// Other properties may need similar treatment
-    			if ( i == "font" ) {
-    				this.style.fontSize = s.fontSize;
-    			}
-    		} catch (e) {}
-    	}
-    }
+	var s = src.computedStyle();
+	for ( var i in s ) {
+		// Do not use `hasOwnProperty`, nothing will get copied
+		if ( typeof i == "string" && i != "cssText" && !/\d/.test(i) ) {
+			// The try is for setter only properties
+			try {
+				this.style[i] = s[i];
+				// `fontSize` comes before `font` If `font` is empty, `fontSize` gets
+				// overwritten.  So make sure to reset this property. (hackyhackhack)
+				// Other properties may need similar treatment
+				if ( i == "font" ) {
+					this.style.fontSize = s.fontSize;
+				}
+			} catch (e) {}
+		}
+	}
 	return this;
 };
 
@@ -385,7 +385,7 @@ Element.prototype.preventSelections = function (deep) {
 			|| this.style['user-select'],
 		unselectable: this.unselectable
 	};
-    this.unselectable = 'on'; 
+	this.unselectable = 'on'; 
 	this.style['-moz-user-select']
 	= this.style['-webkit-user-select']
 	= this.style['-ms-user-select']
@@ -464,20 +464,20 @@ Element.prototype.text = function() {
 if (!window.requestAnimationFrame) {
 	window.requestAnimationFrame =
 		window.webkitRequestAnimationFrame || 
-        window.mozRequestAnimationFrame    || 
-        window.oRequestAnimationFrame      || 
-        window.msRequestAnimationFrame     || 
-        function( callback ) {
+		window.mozRequestAnimationFrame    || 
+		window.oRequestAnimationFrame      || 
+		window.msRequestAnimationFrame     || 
+		function( callback ) {
 			window.setTimeout(function _shim_requestAnimationFrame() {
 				callback(Q.milliseconds());
 			}, 1000 / Q.Animation.fps);
-        };
+		};
 }
 
 if(!document.getElementsByClassName) {
-    document.getElementsByClassName = function(className) {
+	document.getElementsByClassName = function(className) {
 		return Array.prototype.slice.call(this.querySelectorAll("." + className));
-    };
+	};
 	if (window.Element) {
 		Element.prototype.getElementsByClassName = document.getElementsByClassName;
 	}
@@ -572,8 +572,8 @@ Q.typeOf = function _Q_typeOf(value) {
  *  You can also pass up to three numbers here: from, to and optional step
  * @param {Function|String} callback
  *  A function which will receive two parameters
- *    index: the index of the current item
- *    value: the value of the current item
+ *	index: the index of the current item
+ *	value: the value of the current item
  *  Also can be a string, which would be the name of a method to invoke on each item, if possible.
  *  In this case the callback should be followed by an array of arguments to pass to the method calls.
  * @param {Object} options
@@ -770,38 +770,38 @@ Q.firstKey = function _Q_firstKey(container, options) {
  * @return {Array|Object} a container of the same type as container1, but without elements of container2
  */
 Q.diff = function _Q_diff(container1, container2 /*, ... comparator */) {
-    if (!container1 || !container2) {
-        return container1;
-    }
+	if (!container1 || !container2) {
+		return container1;
+	}
 	var args = arguments;
-    var len = arguments.length;
-    var comparator = arguments[len-1];
-    if (typeof comparator !== 'function') {
-        throw new Q.Exception("Q.diff: comparator must be a function");
-    }
-    var isArr = (Q.typeOf(container1) === 'array');
-    var result = isArr ? [] : {};
-    Q.each(container1, function (k, v1) {
-        var found = false;
-        for (var i=1; i<len-1; ++i) {
-            Q.each(args[i], function (j, v2) {
-                if (comparator(v1, v2, i, j)) {
-                    found = true;
-                    return false;
-                }
-            });
-            if (found) {
-                break;
-            }
-        }
-        if (!found) {
-            if (isArr) {
-                result.push(v1);
-            } else {
-                result[k] = v1;
-            }
-        }
-    });
+	var len = arguments.length;
+	var comparator = arguments[len-1];
+	if (typeof comparator !== 'function') {
+		throw new Q.Exception("Q.diff: comparator must be a function");
+	}
+	var isArr = (Q.typeOf(container1) === 'array');
+	var result = isArr ? [] : {};
+	Q.each(container1, function (k, v1) {
+		var found = false;
+		for (var i=1; i<len-1; ++i) {
+			Q.each(args[i], function (j, v2) {
+				if (comparator(v1, v2, i, j)) {
+					found = true;
+					return false;
+				}
+			});
+			if (found) {
+				break;
+			}
+		}
+		if (!found) {
+			if (isArr) {
+				result.push(v1);
+			} else {
+				result[k] = v1;
+			}
+		}
+	});
 	return result;
 };
 
@@ -1189,7 +1189,7 @@ Q.normalize = function _Q_normalize(text, replacement, characters, numChars) {
 	var result = text.toLowerCase().replace(characters, replacement);
 	if (text.length > numChars) {
 		result = text.substr(0, numChars-11) + '_' 
-		         + Math.abs(text.substr(numChars-11).hashCode());
+				 + Math.abs(text.substr(numChars-11).hashCode());
 	}
 	return result;
 };
@@ -1223,7 +1223,7 @@ function _getProp (/*Array*/parts, /*Boolean*/create, /*Object*/context){
  * @return {Object|undefined} Returns the passed value if setting is successful or `undefined` if not.
  */
 Q.extendObject = function _Q_extendObject(name, value, context, delimiter){
-    delimiter = delimiter || '.';
+	delimiter = delimiter || '.';
 	var parts = name.split(delimiter), p = parts.pop(), obj = _getProp(parts, true, context);
 	if (obj === undefined) {
 		console.warn("Failed to set '"+name+"'");
@@ -1257,7 +1257,7 @@ Q.extendObject.options = {
  * @return {Object|undefined} Returns the passed value if setting is successful or `undefined` if not.
  */
 Q.setObject = function _Q_setObject(name, value, context, delimiter) {
-    delimiter = delimiter || '.';
+	delimiter = delimiter || '.';
 	if (Q.isPlainObject(name)) {
 		context = value;
 		var result = {};
@@ -1270,7 +1270,7 @@ Q.setObject = function _Q_setObject(name, value, context, delimiter) {
 		name = name.split(delimiter);
 	}
 	var p = name.pop(),
-	    obj = _getProp(name, true, context);
+		obj = _getProp(name, true, context);
 	return obj && (p !== undefined) ? (obj[p] = value) : undefined;
 };
 
@@ -1285,7 +1285,7 @@ Q.setObject = function _Q_setObject(name, value, context, delimiter) {
  * @return {Object|undefined} Returns the originally stored value, or `undefined` if nothing is there
  */
 Q.getObject = function _Q_getObject(name, context, delimiter, create) {
-    delimiter = delimiter || '.';
+	delimiter = delimiter || '.';
 	if (typeof name === 'string') {
 		name = name.split(delimiter);
 	}
@@ -1500,11 +1500,11 @@ Q.Event.prototype.set = function _Q_Event_prototype_set(callable, key, prepend) 
 			Q.Event.forTool[key].push(this);
 		}
 	}
-    if (this.keys.length === 1 && this._onFirst) {
-        this._onFirst.handle(callable, key, prepend);
-    }
+	if (this.keys.length === 1 && this._onFirst) {
+		this._onFirst.handle(callable, key, prepend);
+	}
 	if (this._onSet) {
-	    this._onSet.handle(callable, key, prepend);
+		this._onSet.handle(callable, key, prepend);
 	}
 	return key;
 };
@@ -1567,11 +1567,11 @@ Q.Event.prototype.remove = function _Q_Event_prototype_remove(key) {
 	}
 	this.keys.splice(i, 1);
 	if (this._onRemove) {
-	    this._onRemove.handle(callable, key, prepend);
+		this._onRemove.handle(callable, key, prepend);
 	}
-    if (!this.keys.length && this._onEmpty) {
-        this._onEmpty.handle(callable, key, prepend);
-    }
+	if (!this.keys.length && this._onEmpty) {
+		this._onEmpty.handle(callable, key, prepend);
+	}
 	return 1;
 };
 
@@ -1585,8 +1585,8 @@ Q.Event.prototype.removeAllHandlers = function _Q_Event_prototype_removeAllHandl
 	this.handlers = {};
 	this.keys = [];
 	if (this._onEmpty) {
-        this._onEmpty.handle(callable, key, prepend);
-    }
+		this._onEmpty.handle(callable, key, prepend);
+	}
 };
 
 /**
@@ -1634,31 +1634,31 @@ Q.Event.prototype.onEmpty = function () {
  *  that was either already stored under those index fields or newly created.
  */
 Q.Event.factory = function (collection, defaults, callback) {
-    if (!collection) {
-        collection = {};
-    }
-    defaults = defaults || [];
-    return function _Q_Event_factory () {
-        var args = Array.prototype.slice.call(arguments, 0), a;
-        var len = defaults.length;
-        var f = typeof(defaults[len-1] === 'function') ? defaults[defaults.length-1] : null;
+	if (!collection) {
+		collection = {};
+	}
+	defaults = defaults || [];
+	return function _Q_Event_factory () {
+		var args = Array.prototype.slice.call(arguments, 0), a;
+		var len = defaults.length;
+		var f = typeof(defaults[len-1] === 'function') ? defaults[defaults.length-1] : null;
 		if (f) --len;
-        for (var i=args.length; i<len; ++i) {
-            args[i] = defaults[i];
-        }
-        args = (f && f.apply(this, args)) || args;
-        var delimiter = "\t";
-        var name = args.join(delimiter);
-        var e = Q.getObject(name, collection, delimiter);
-        if (e) {
-            return e;
-        }
-        e = Q.setObject(name, new Q.Event(), collection, delimiter);
-        if (callback) {
-            callback.apply(e, args);
-        }
-        return e;
-    };
+		for (var i=args.length; i<len; ++i) {
+			args[i] = defaults[i];
+		}
+		args = (f && f.apply(this, args)) || args;
+		var delimiter = "\t";
+		var name = args.join(delimiter);
+		var e = Q.getObject(name, collection, delimiter);
+		if (e) {
+			return e;
+		}
+		e = Q.setObject(name, new Q.Event(), collection, delimiter);
+		if (callback) {
+			callback.apply(e, args);
+		}
+		return e;
+	};
 };
 
 Q.onInit = new Q.Event();
@@ -2008,24 +2008,24 @@ Q.batcher.options = {
  *  where content is whatever is returned in the slots.
  */
 Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotName, fieldName, options) {
-    if (!collection) {
-        collection = {};
-    }
-    if (slotName === undefined) {
-        slotName = 'batch';
-    }
-    if (fieldName === undefined) {
-        fieldName = 'batch';
-    }
-    if (tail && tail[0] !== '/') {
-        tail = '/' + tail;
-    }
-    var delimiter = "\t", f;
-    var name = [baseUrl, tail, slotName, fieldName].join(delimiter);
-    if (f = Q.getObject(name, collection, delimiter)) {
-        return f;
-    } 
-    f = Q.batcher(function _Q_batcher_factory_function(subjects, args, callbacks) {
+	if (!collection) {
+		collection = {};
+	}
+	if (slotName === undefined) {
+		slotName = 'batch';
+	}
+	if (fieldName === undefined) {
+		fieldName = 'batch';
+	}
+	if (tail && tail[0] !== '/') {
+		tail = '/' + tail;
+	}
+	var delimiter = "\t", f;
+	var name = [baseUrl, tail, slotName, fieldName].join(delimiter);
+	if (f = Q.getObject(name, collection, delimiter)) {
+		return f;
+	} 
+	f = Q.batcher(function _Q_batcher_factory_function(subjects, args, callbacks) {
 		var o = Q.extend({
 			method: 'post',
 			fields: {}
@@ -2043,11 +2043,11 @@ Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotN
 				return;
 			}
 			Q.each(response.slots.batch, function (k, result) {
-			    if (result && result.errors) {
-                    callbacks[k][0].call(subjects[k], result.errors);
-			    } else {
-                    callbacks[k][0].call(subjects[k], null, (result && result.slots) || {});
-			    }
+				if (result && result.errors) {
+					callbacks[k][0].call(subjects[k], result.errors);
+				} else {
+					callbacks[k][0].call(subjects[k], null, (result && result.slots) || {});
+				}
 			});
 		}, o);
 	}, options);
@@ -2251,8 +2251,8 @@ Q.getter = function _Q_getter(original, options) {
 	wrapper.forget = function _forget() {
 		var key = Q.Cache.key(arguments);
 		if (key && wrapper.cache) {
-	        wrapper.cache.remove(key);
-	    }
+			wrapper.cache.remove(key);
+		}
 	};
 
 	if (original.batch) {
@@ -2340,7 +2340,7 @@ Q.Tool = function _Q_Tool(element, options) {
 	this.options = this.options || {};
 	
 	var pids = this.parentIds(),
-	    len = pids.length,
+		len = pids.length,
 		o = len ? Q.extend({}, Q.Tool.options.levels, options) : options;
 	
 	for (i=len-1; i>=0; --i) {
@@ -2522,7 +2522,7 @@ Q.Tool.define = function (name, ctor, defaultOptions, stateKeys, methods) {
 	if (typeof ctor === 'string') {
 		if (typeof Q.Tool.constructors[name] !== 'function') {
 			_qtdo[name] = _qtdo[name] || {};
-		    return Q.Tool.constructors[name] = ctor;
+			return Q.Tool.constructors[name] = ctor;
 		}
 		return ctor;
 	}
@@ -2585,7 +2585,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 	if (typeof ctor === 'string') {
 		if (typeof window.jQuery.fn.plugin[name] !== 'function') {
 			_qtjo[name] = _qtjo[name] || {};
-		    window.jQuery.fn.plugin[name] = Q.Tool.constructors[name] = ctor;
+			window.jQuery.fn.plugin[name] = Q.Tool.constructors[name] = ctor;
 		}
 		return ctor;
 	}
@@ -2671,7 +2671,7 @@ var _qtc = Q.Tool.constructors = {};
  */
 Q.Tool.prototype.children = function Q_Tool_prototype_children(append, levels) {
 	var result = {},
-	    prefix2 = Q.normalize(this.prefix + (append || "")),
+		prefix2 = Q.normalize(this.prefix + (append || "")),
 		id, ni, i, ids;
 	for (id in Q.Tool.active) {
 		ni = Q.normalize(id);
@@ -2701,7 +2701,7 @@ Q.Tool.prototype.children = function Q_Tool_prototype_children(append, levels) {
  */
 Q.Tool.prototype.child = function Q_Tool_prototype_child(append) {
 	var result = {},
-	    prefix2 = Q.normalize(this.prefix + (append || "")),
+		prefix2 = Q.normalize(this.prefix + (append || "")),
 		id, ni;
 	for (id in Q.Tool.active) {
 		ni = Q.normalize(id);
@@ -3406,38 +3406,38 @@ Q.Cache.prototype.clear = function _Q_Cache_prototype_clear() {
  * @param callback {Function} Is passed two parameters: key, value, with this = the cache
  */
 Q.Cache.prototype.each = function _Q_Cache_prototype_clear(args, callback) {
-    var prefix = null;
-    if (typeof args === 'function') {
-        callback = args;
-        args = undefined;
-    } else {
-        var json = Q.Cache.key(args);
-        prefix = json.substring(0, json.length-1);
-    }
+	var prefix = null;
+	if (typeof args === 'function') {
+		callback = args;
+		args = undefined;
+	} else {
+		var json = Q.Cache.key(args);
+		prefix = json.substring(0, json.length-1);
+	}
 	if (this.documentStorage) {
-	    var cache = this;
-	    return Q.each(this.data, function (k, v) {
-	        if (prefix && k.substring(0, prefix.length) !== prefix) {
-	            return;
-	        }
-	        if (callback.call(cache, k, v) === false) {
-	            return false;
-	        }
-	    });
+		var cache = this;
+		return Q.each(this.data, function (k, v) {
+			if (prefix && k.substring(0, prefix.length) !== prefix) {
+				return;
+			}
+			if (callback.call(cache, k, v) === false) {
+				return false;
+			}
+		});
 	} else {
 		var key = cache.earliest(), lastkey, item;
 		while (key) {
 			item = Q_Cache_get(this, key);
 			if (item === undefined) {
-			    break;
+				break;
 			}
 			lastkey = key;
 			key = item.next;
 			if (prefix && key.substring(0, prefix.length) !== prefix) {
-	            return;
-	        }
+				return;
+			}
 			if (callback.call(this, lastkey, item) === false) {
-			    return false;
+				return false;
 			}
 		}
 	}
@@ -3899,8 +3899,8 @@ Q.clientId = function () {
  */
 Q.uuid = function () {
 	return Q.uuid.value = Q.uuid.value || 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-	    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
-	    return v.toString(16);
+		var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+		return v.toString(16);
 	});
 };
 
@@ -4127,8 +4127,8 @@ Q.req = function _Q_req(uri, slotNames, callback, options) {
  *  "fields": optional fields to pass with any method other than "get"
  *  "skipNonce": if true, skips loading of the nonce
  *  "xhr": if false, avoids XHR. If true, tries to make xhr based on "method" option.
- *     Or pass an object with properties to merge onto the xhr object, including a special "sync" property to make the call synchronous.
- *     Or pass a function which will be run before .send() is executed. First parameter is the xhr object, second is the options.
+ *	 Or pass an object with properties to merge onto the xhr object, including a special "sync" property to make the call synchronous.
+ *	 Or pass a function which will be run before .send() is executed. First parameter is the xhr object, second is the options.
  *  "preprocess": an optional function that takes the xhr object before the .send() is invoked on it
  *  "parse": defaults to 'json'. If false, then just returns the requested string.
  *  "extend": defaults to true. If false, the URL is not extended with Q fields.
@@ -4240,21 +4240,21 @@ Q.request = function (url, slotNames, callback, options) {
 			
 			function xhr(url, slotNames, onSuccess, onCancel, options) {					
 				var xmlhttp;
-			    if (window.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
-			        xmlhttp = new XMLHttpRequest();
-			    } else { // code for IE6, IE5
-			        xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-			    }
-			    xmlhttp.onreadystatechange = function() {
-			        if (xmlhttp.readyState == 4) {
+				if (window.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
+					xmlhttp = new XMLHttpRequest();
+				} else { // code for IE6, IE5
+					xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+				}
+				xmlhttp.onreadystatechange = function() {
+					if (xmlhttp.readyState == 4) {
 						if (xmlhttp.status == 200) {
 							onSuccess.call(xmlhttp, xmlhttp.responseText);
 						} else {
 							console.log("Q.request xhr: " + xmlhttp.status + ' ' + xmlhttp.responseText.substr(1000));
 							onCancel.call(xmlhttp, xmlhttp.status);
 						}
-			        }
-			    }
+					}
+				}
 				var method = options.method || 'GET';
 				var verb = method.toUpperCase();
 				var overrides = {
@@ -4280,7 +4280,7 @@ Q.request = function (url, slotNames, callback, options) {
 					xmlhttp.open('GET', url + (content ? '&' + content : ''), !sync);
 					xmlhttp.send();
 				} else {
-			    	xmlhttp.open(verb, url, !sync);
+					xmlhttp.open(verb, url, !sync);
 					xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 					//xmlhttp.setRequestHeader("Content-length", content.length);
 					//xmlhttp.setRequestHeader("Connection", "close");
@@ -4429,7 +4429,7 @@ Q.serializeFields = function _Q_serializeFields(fields, keys) {
 	if (Q.isEmpty(fields)) {
 		return '';
 	}
-    var parts = [];
+	var parts = [];
 	function _params(prefix, obj) {
 		if (Q.typeOf(obj) === "array") {
 			// Serialize array item.
@@ -4606,7 +4606,7 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 		ret = [],
 		arr = src,
 		firstScript = document.scripts[0],
-        container = o.container || document.head  || document.getElementsByTagName('head')[0];
+		container = o.container || document.head  || document.getElementsByTagName('head')[0];
 		
 	if (!onload) {
 		onload = function() { };
@@ -4627,18 +4627,18 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 			if (script.getAttribute('src') !== src) {
 				continue;
 			}
-            // move the element to the right container if necessary
-            // hopefully, moving the script element won't change the order of execution
-            var p = scripts[i], outside = true;
-            while (p = p.parentNode) {
-                if (p === container) {
-                    outside = false;
-                    break;
-                }
-            }
-            if (outside) {
-                container.appendChild(scripts[i]);
-            }
+			// move the element to the right container if necessary
+			// hopefully, moving the script element won't change the order of execution
+			var p = scripts[i], outside = true;
+	    	while (p = p.parentNode) {
+				if (p === container) {
+					outside = false;
+    				break;
+				}
+			}
+			if (outside) {
+				container.appendChild(scripts[i]);
+			}
 			// the script already exists in the document
 			if (Q.addScript.loaded[src]) {
 				// the script was already loaded successfully
@@ -4733,11 +4733,11 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 			return;	
 		}
 		if (s) {
-		    script = s;
-		    src = u;
+			script = s;
+			src = u;
 		} else if (onload2.executed) {
-            return;
-    	}
+			return;
+		}
 		Q.addScript.loaded[src] = true;
 		while ((cb = Q.addScript.onLoadCallbacks[src].shift())) {
 			Q.nonce = Q.nonce || Q.cookie('Q_nonce');
@@ -4832,18 +4832,18 @@ Q.addStylesheet = function _Q_addStylesheet(href, media, onload, options) {
 	var links = document.getElementsByTagName('link');
 	for (i=0; i<links.length; ++i) {
 		if (links[i].getAttribute('href') !== href) continue;
-        // move the element to the right container if necessary
-        // hopefully, moving the link element won't change the order of applying the styles
-	    var p = links[i], outside = true;
-        while (p = p.parentNode) {
-            if (p === container) {
-                outside = false;
-                break;
-            }
-        }
-        if (outside) {
-            container.appendChild(links[i]);
-        }
+		// move the element to the right container if necessary
+		// hopefully, moving the link element won't change the order of applying the styles
+		var p = links[i], outside = true;
+		while (p = p.parentNode) {
+			if (p === container) {
+				outside = false;
+				break;
+			}
+		}
+		if (outside) {
+			container.appendChild(links[i]);
+		}
 		if (Q.addStylesheet.loaded[href] || !Q.addStylesheet.added[href]) {
 			onload();
 			return options.returnAll ? links[i] : false;
@@ -5470,13 +5470,13 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 			
 			if (!o.ignorePage) {
 				// Remove various elements belonging to the slots that are being reloaded
-		        Q.each(['link', 'style', 'script'], function (i, tag) {
+				Q.each(['link', 'style', 'script'], function (i, tag) {
 					Q.each(document.getElementsByTagName(tag), function (k, e) {
 						if (tag === 'link' && e.getAttribute('rel').toLowerCase() != 'stylesheet') {
 							return;
 						}
 
-				        var slot = e.getAttribute('data-slot');
+						var slot = e.getAttribute('data-slot');
 						if (slot && slotNames.indexOf(slot) >= 0) {
 							Q.removeElement(e);
 						}
@@ -5490,15 +5490,15 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 							}
 						}
 					});
-		        });
+				});
 			}
 			
 			var domElements = handler(response, url, o); // this is where we fill all the slots
 			
 			if (!o.ignorePage) {
 				_doEvents('on', moduleSlashAction);
-	            newStylesheets = loadStylesheets(),
-	            newStyles = loadStyles();
+				newStylesheets = loadStylesheets(),
+				newStyles = loadStyles();
 			}
 			
 			afterStyles(); // Synchronous to allow additional scripts to change the styles before allowing the browser reflow.
@@ -5521,8 +5521,8 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 			var newStylesheets = {};
 			var keys = Object.keys(response.stylesheets);
 			if (response.stylesheets[""]) {
-			    keys.splice(keys.indexOf(""), 1);
-			    keys.unshift("");
+				keys.splice(keys.indexOf(""), 1);
+				keys.unshift("");
 			}
 			Q.each(keys, function (i, slotName) {
 				var stylesheets = [];
@@ -5549,8 +5549,8 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				head = document.head || document.getElementsByTagName('head')[0];
 			var keys = Object.keys(response.stylesInline);
 			if (response.stylesInline[""]) {
-			    keys.splice(keys.indexOf(""), 1);
-			    keys.unshift("");
+				keys.splice(keys.indexOf(""), 1);
+				keys.unshift("");
 			}
 			Q.each(keys, function (i, slotName) {
 				var styles = response.stylesInline[slotName];
@@ -5593,8 +5593,8 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 			var slotName, newScripts = {};
 			var keys = Object.keys(response.scripts);
 			if (response.scripts[""]) {
-			    keys.splice(keys.indexOf(""), 1);
-			    keys.unshift("");
+				keys.splice(keys.indexOf(""), 1);
+				keys.unshift("");
 			}
 			Q.each(keys, function (i, slotName) {
 				var elem = Q.addScript(response.scripts[slotName], slotPipe.fill(slotName), {
@@ -5752,7 +5752,7 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 					callback = o.callback;
 				}
 			}
-            var sameDomain = callables.sameDomain(Q.info.baseUrl);
+			var sameDomain = callables.sameDomain(Q.info.baseUrl);
 			if (o.loadUsingAjax && sameDomain
 			&& (!o.target || o.target === true || o.target === '_self')) {
 				if (callables.search(Q.info.baseUrl) === 0) {
@@ -5906,13 +5906,13 @@ function _constructTool(toolElement, options, shared) {
 				}
 				this.constructed = false;
 				try {
-    				this.options = Q.extend({}, Q.Tool.options.levels, toolFunc.options, Q.Tool.options.levels, options);
-    				this.name = toolName;
+					this.options = Q.extend({}, Q.Tool.options.levels, toolFunc.options, Q.Tool.options.levels, options);
+					this.name = toolName;
 					if (Q.getObject(['Q', 'tools', toolName], element)) {
 						return; // support re-entrancy of Q.activate
 					}
-    				Q.Tool.call(this, element, options);
-    				this.state = Q.copy(this.options, toolFunc.stateKeys);
+					Q.Tool.call(this, element, options);
+					this.state = Q.copy(this.options, toolFunc.stateKeys);
 					var prevTool = Q.Tool.beingActivated;
 					Q.Tool.beingActivated = this;
 					toolFunc.call(this, this.options);
@@ -5981,10 +5981,10 @@ function _initTool(toolElement) {
  * @return {String} Something of the form "scheme://hostname:port" or "scheme://hostname:port/subpath"
  */
 Q.baseUrl = function _Q_host(where) {
-    var result, i;
+	var result, i;
 	for (i=0; i<Q.baseUrl.routers.length; ++i) {
 		if (result = Q.baseUrl.routers[i](where)) {
-		    return result;
+			return result;
 		}
 	}
 	return Q.info.baseUrl; // By default, return the base url of the app
@@ -5998,10 +5998,10 @@ Q.baseUrl.routers = []; // functions returning a custom url
  * @return {String} "scheme://hostname:port"
  */
 Q.nodeUrl = function _Q_node(where) {
-    var result, i;
+	var result, i;
 	for (i=0; i<Q.nodeUrl.routers.length; ++i) {
 		if (result = Q.nodeUrl.routers[i](where)) {
-		    return result;
+			return result;
 		}
 	}
 	return Q.info.socketUrl;
@@ -6183,14 +6183,14 @@ function _ioOn(obj, evt, callback) {
 	// so we're not being super careful about calling it only once with the same exact arguments
 	obj.on(evt, callback);
  	_ioCleanup.push(function () { 
- 	    obj.removeListener(evt, callback);
+ 		obj.removeListener(evt, callback);
  	});
 }
 
 Q.Socket = function (params) {
-    this.namespace = params.namespace;
-    this.url = params.url;
-    this.ns = params.ns;
+	this.namespace = params.namespace;
+	this.url = params.url;
+	this.ns = params.ns;
 };
 
 /**
@@ -6200,45 +6200,45 @@ Q.Socket = function (params) {
  * @return Q.Socket
  */
 Q.Socket.get = function _Q_Socket_get(ns, url) {
-    ns = ns || "";
+	ns = ns || "";
 	if (ns[0] !== '/') {
 		ns = '/' + ns;
 	}
 	if (!url) {
-	    return _sockets[ns];
+		return _sockets[ns];
 	}
 	return _sockets[ns] && _sockets[ns][url];
 };
 
 function _connectSocketNS(ns, url, callback, force) {
-    // load socket.io script and connect socket
+	// load socket.io script and connect socket
 	function _connectNS(ns, url, callback) {
-    	// connect to (ns, url)
+		// connect to (ns, url)
 		if (!window.io) return;
 		var socket = _sockets[ns][url];
 		if (!socket || !socket.namespace) {
 			_sockets[ns][url] = socket = new Q.Socket({
-			    namespace: io.connect(url+ns, force ? { 'force new connection': true } : {}),
-			    url: url,
-			    ns: ns
+				namespace: io.connect(url+ns, force ? { 'force new connection': true } : {}),
+				url: url,
+				ns: ns
 			});
-            function _Q_Socket_register(socket) {
-                Q.each(_socketRegister, function (i, item) {
-                    if (item[0] !== ns) return;
-                    var name = item[1];
-        			_ioOn(socket.namespace, name, Q.Socket.onEvent(ns, url, name).handle); // may overwrite again, but it's ok
-        			_ioOn(socket.namespace, name, Q.Socket.onEvent(ns, '', name).handle);
-                });
-            }
-            Q.Socket.onConnect(ns, url).add(_Q_Socket_register, 'Q');
+			function _Q_Socket_register(socket) {
+				Q.each(_socketRegister, function (i, item) {
+					if (item[0] !== ns) return;
+					var name = item[1];
+					_ioOn(socket.namespace, name, Q.Socket.onEvent(ns, url, name).handle); // may overwrite again, but it's ok
+					_ioOn(socket.namespace, name, Q.Socket.onEvent(ns, '', name).handle);
+				});
+			}
+			Q.Socket.onConnect(ns, url).add(_Q_Socket_register, 'Q');
 			// remember actual socket - for disconnecting
 			if (!_ioSockets[url]) {
 				_ioSockets[url] = socket.namespace.socket;
 				_ioOn(_ioSockets[url], 'connect', function () {
 					setTimeout(function () { // TODO: TAKE AWAY THIS ARTIFICIAL DELAY
 						socket.namespace.emit('session', Q.cookie(Q.info.sessionName || 'sessionId'));
-        				Q.Socket.onConnect(ns).handle(socket);
-                        Q.Socket.onConnect(ns, url).handle(socket);
+						Q.Socket.onConnect(ns).handle(socket);
+						Q.Socket.onConnect(ns, url).handle(socket);
 						console.log('Socket connected to '+url);
 					}, 500);
 				});
@@ -6249,7 +6249,7 @@ function _connectSocketNS(ns, url, callback, force) {
 					console.log('Socket disconnected from '+url);
 				});
 				_ioOn(_ioSockets[url], 'error', function () {
-				    console.log('Error on connection '+url);
+					console.log('Error on connection '+url);
 				});
 			}
 		}
@@ -6262,7 +6262,7 @@ function _connectSocketNS(ns, url, callback, force) {
 	}
 	
 	if (window.io && io.Socket) {
-	    _connectNS(ns, url, callback);
+		_connectNS(ns, url, callback);
 	} else {
 		Q.addScript(url+'/socket.io/socket.io.js', function () {
 			_connectNS(ns, url, callback);
@@ -6287,7 +6287,7 @@ Q.Socket.connect = function _Q_Socket_prototype_connect(ns, url, callback) {
 	}
 	if (!_sockets[ns]) _sockets[ns] = {};
 	if (!_sockets[ns][url]) {
-	    _sockets[ns][url] = null; // pending
+		_sockets[ns][url] = null; // pending
 	}
 	_connectSocketNS(ns, url, callback); // check if socket already connected and try to restore it
 };
@@ -6324,9 +6324,9 @@ Q.Socket.reconnectAll = function _Q_Socket_reconnectAll() {
 	for (ns in _sockets) {
 		for (url in _sockets[ns]) {
 			if (!_sockets[ns][url]) {
-			    _connectSocketNS(ns, url);
+				_connectSocketNS(ns, url);
 			} else if (!_sockets[ns][url].namespace.socket.connected) {
-			    _sockets[ns][url].namespace.socket.reconnect();
+				_sockets[ns][url].namespace.socket.reconnect();
 			}
 		}
 	}
@@ -6339,7 +6339,7 @@ Q.Socket.destroyAll = function _Q_Socket_destroyAll() {
 	Q.Socket.disconnectAll();
 	setTimeout(function () {
 		for (var i=0; i<_ioCleanup.length; i++) {
-		    _ioCleanup[i]();
+			_ioCleanup[i]();
 		}
 		_ioCleanup = [];
 		_ioSockets = {};
@@ -6349,53 +6349,53 @@ Q.Socket.destroyAll = function _Q_Socket_destroyAll() {
 };
 
 Q.Socket.onEvent = Q.Event.factory(
-    _eventHandlers, 
-    ["", "", "", function (ns, url, name) { 
-        if (ns[0] !== '/') {
-            return ['/'+ns, url, name];
-        }
-    }],
-    function _Q_Socket_SetupEvent(ns, url, name) {
-        // url may be empty, in which case we'll affect multiple sockets
-        var event = this;
-        event.onFirst().set(function () {
-            // The first handler was added to the event
-            Q.each(Q.Socket.get(ns, url), function (url, socket) {
-                function _Q_Socket_register(socket) {
+	_eventHandlers, 
+	["", "", "", function (ns, url, name) { 
+		if (ns[0] !== '/') {
+			return ['/'+ns, url, name];
+		}
+	}],
+	function _Q_Socket_SetupEvent(ns, url, name) {
+		// url may be empty, in which case we'll affect multiple sockets
+		var event = this;
+    	event.onFirst().set(function () {
+			// The first handler was added to the event
+			Q.each(Q.Socket.get(ns, url), function (url, socket) {
+				function _Q_Socket_register(socket) {
 					// this occurs when socket is connected
-                    _ioOn(socket.namespace, name, event.handle);
-                }
+					_ioOn(socket.namespace, name, event.handle);
+		    	}
 				if (socket) { // add listeners on sockets which are already constructed
-                	Q.Socket.onConnect(ns, url).add(_Q_Socket_register, 'Q');
+					Q.Socket.onConnect(ns, url).add(_Q_Socket_register, 'Q');
 				}
-            });
+			});
 			// add pending listeners on sockets that may constructed later
-            _socketRegister.push([ns, name]);
-        });
-        event.onEmpty().set(function () {
-            // Every handler was removed from the event
-            Q.each(Q.Socket.get(ns, url), function (url, socket) {
+	    	_socketRegister.push([ns, name]);
+		});
+		event.onEmpty().set(function () {
+			// Every handler was removed from the event
+			Q.each(Q.Socket.get(ns, url), function (url, socket) {
 				if (socket) { // remove listeners on sockets which are already constructed
-                	socket.namespace.removeListener(name, event.handle);
+					socket.namespace.removeListener(name, event.handle);
 				}
-            });
-            Q.each(_socketRegister, function (i, item) {
+			});
+	    	Q.each(_socketRegister, function (i, item) {
 				// remove pending listeners on sockets that may be constructed later
-                if (item[0] === ns && item[1] === name) {
-                    _socketRegister.splice(i, 1);
-                }
-            });
-        });
-    }
+				if (item[0] === ns && item[1] === name) {
+					_socketRegister.splice(i, 1);
+				}
+			});
+		});
+	}
 );
 
 Q.Socket.onConnect = Q.Event.factory(
-    _connectHandlers, 
-    ["", "", function (ns, url) { 
-        if (ns[0] !== '/') {
-            return ['/'+ns, url];
-        }
-    }]
+	_connectHandlers, 
+	["", "", function (ns, url) { 
+		if (ns[0] !== '/') {
+			return ['/'+ns, url];
+		}
+	}]
 );
 
 /**
@@ -6530,7 +6530,7 @@ function _handleVisibilityChange() {
 	if (document.hidden || document.msHidden 
 	|| document.webkitHidden || document.oHidden) {
 		return;
-    }
+	}
 	for (var k in Q.Animation.playing) {
 		Q.Animation.playing[k].play();
 	}
@@ -7021,7 +7021,7 @@ Q.Pointer = {
 			case 'mousewheel':
 				// Webkit also supports wheelDeltaX
 				oe.wheelDelta && ( e.deltaY = -Math.ceil(1/3 * oe.wheelDelta) );
-                oe.wheelDeltaX && ( e.deltaX = -Math.ceil(1/3 * oe.wheelDeltaX) );
+				oe.wheelDeltaX && ( e.deltaX = -Math.ceil(1/3 * oe.wheelDeltaX) );
 				break;
 			case 'wheel':
 			default:
@@ -7070,7 +7070,7 @@ Q.Pointer = {
 	},
 	target: function (e) {
 		var target = e.target || e.srcElement;
-	    if (target.nodeType === 3) { // Safari bug
+		if (target.nodeType === 3) { // Safari bug
 			target = target.parentNode;
 		}
 		return target;
@@ -7157,10 +7157,10 @@ var _onPointerEndHandler = Q.Pointer.ended = function _onPointerEndHandler() {
  */
 Q.Dialogs = {
 
-    options: {
-    	topMargin: '10%', // in percentage	
-    	bottomMargin: '10%' // or in absolute pixel values
-    },
+	options: {
+		topMargin: '10%', // in percentage	
+		bottomMargin: '10%' // or in absolute pixel values
+	},
 	dialogs: [], // internal dialogs collection
 	
 	/**
@@ -7168,7 +7168,7 @@ Q.Dialogs = {
 	 * @param options Object
 	 *	 A hash of options, that can include:
 	 *   "dialog": Optional. If provided, may be Element or jQuery object containing already prepared dialog html
-	 *           structure with 'title_slot', 'dialog_slot' and appropriate content in them. If it's provided, then
+	 *	       structure with 'title_slot', 'dialog_slot' and appropriate content in them. If it's provided, then
 	 *           'title' and 'content' options given below are ignored.
 	 *	 "url": Optional. If provided, this url will be used to fetch the "title" and "dialog" slots, to display in the dialog.
 	 *        Thus the default content provided by 'title' and 'content' options given below will be overridden.
@@ -7402,7 +7402,7 @@ Q.prompt = function(message, callback, options) {
 		'onActivate': function(dialog) {
 			var field = dialog.find('input');
 			var fieldWidth = field.parent().width() - parseInt(field.css('padding-left')) - parseInt(field.css('padding-right'))
-			               - field.next().outerWidth(true) - 5;
+						   - field.next().outerWidth(true) - 5;
 			field.css({ 'width': fieldWidth + 'px' })
 				.plugin('Q/placeholders')
 				.plugin('Q/clickfocus').on('keydown', function (event) {
@@ -7631,9 +7631,9 @@ Q.Mask = {
 };
 
 Q.Mask.options = {
-    'Q.screen.mask': { 'className': 'Q_screen_mask' },
-    'Q.request.load.mask': { 'className': 'Q_load_data_mask', 'fadeTime': 200 },
-    'Q.request.cancel.mask': { 'className': 'Q_cancel_mask', 'fadeTime': 200 }
+	'Q.screen.mask': { 'className': 'Q_screen_mask' },
+	'Q.request.load.mask': { 'className': 'Q_load_data_mask', 'fadeTime': 200 },
+	'Q.request.cancel.mask': { 'className': 'Q_cancel_mask', 'fadeTime': 200 }
 };
 
 Q.addEventListener(window, Q.Pointer.start, _Q_PointerStartHandler);
