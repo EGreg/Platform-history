@@ -51,7 +51,7 @@ function (options) {
 	scale.factor = 1;
 	container.on(Q.Pointer.wheel, function (e) {
 		if (typeof e.deltaY === 'number' && !isNaN(e.deltaY)) {
-			scale(Math.max(1, scale.factor - e.deltaY * 0.01), Q.Pointer.getX(e), Q.Pointer.getY(e));
+			scale(Math.max(1, scale.factor - e.deltaY * 0.01));
 		}
 		return false;
 	});
@@ -89,39 +89,29 @@ function (options) {
 		start = pos = null;
 	});
 	
-	function scale(zoom, mouseX, mouseY) {
-        console.log(zoom, mouseX, mouseY);
-        var zoomObj = stretcher.children();
-        var Z = zoom/scale.factor;
-
-        if (!Q.info.isIE(0, 8)) {
-            var containerOffset = zoomObj.offset();
-            var mouseRel = {
-                x: mouseX - containerOffset.left,
-                y: mouseY - containerOffset.top
-            };
-            var dimension = {
-                width: zoomObj.width() * Z,
-                height: zoomObj.height() * Z
-            };
-
-            var translate = {
-                left: containerOffset.left + (mouseRel.x - dimension.width * mouseRel.x/zoomObj.width() ),
-                top: containerOffset.top + (mouseRel.y - dimension.height * mouseRel.y/zoomObj.height() )
-            };
-            var css = {
-                'transform-origin': '0% 0%'
-            };
-            for (var k in css) {
-                css[Q.info.browser.prefix+k] = css[k];
-            }
-            zoomObj.css(css);
-            zoomObj.width(dimension.width);
-            zoomObj.height(dimension.height);
-            zoomObj.offset({top: translate.top,  left: translate.left });
-
-            scale.factor = zoom;
-
+	function scale(factor, x, y) {
+		scale.factor = factor;
+		var center = {
+			x: 0.5,
+			y: 0.5
+		}
+		if (!Q.info.isIE(0, 8)) {
+			var css = { 
+				transform: 'scale('+factor+')',
+				'transform-origin': '0% 0%'
+			};
+			for (var k in css) {
+				css[Q.info.browser.prefix+k] = css[k];
+			}
+			stretcher.css(css);
+		} else if (!scale.started) {
+			scale.started = true;
+			stretcher.css({
+				left: container.width() * (center.x - factor/2) * factor +'px',
+				top: container.height() * (center.y - factor/2) * factor +'px',
+				zoom: factor
+			});
+			scale.started = false;
 		}
 	}
 },
