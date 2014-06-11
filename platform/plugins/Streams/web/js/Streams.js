@@ -2547,7 +2547,9 @@ Q.Tool.beforeRemove("").set(function (tool) {
 	Streams.release(tool);
 }, 'Streams');
 
-Q.Page.beforeUnload
+Q.Page.beforeUnload('', function () {
+	Streams.release(true);
+}, 'Stream');
 
 function _clearCaches() {
 	// Clear caches so permissions can be recalculated as various objects are fetched
