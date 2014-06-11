@@ -1759,12 +1759,12 @@ Q.Layout.flipColumns.options = {};
 Q.onInit.add(function () {
 
 	if (Q.Layout.use) {
-		Q.onPageLoad('').set(function() {
+		Q.Page.onLoad('').set(function() {
 			Q.Layout.needUpdateOnLoad = true;
 			Q.Layout.init();
 		}, 'Q.Layout');
 
-		Q.beforePageUnload('').set(function() {
+		Q.Page.beforeUnload('').set(function() {
 			Q.Layout.reset();
 		}, 'Q.Layout');
 	}
@@ -2113,7 +2113,7 @@ Q.Dashboard = {
 			Q.Users.userStatus.update();
 		}
 		selectListItem(); // one for now
-		Q.onPageActivate('').set(selectListItem, 'Q.Dashboard.build'); // one for later
+		Q.Page.onActivate('').set(selectListItem, 'Q.Dashboard.build'); // one for later
 		
 		function selectListItem(elem) {
 			if (elem) return;
