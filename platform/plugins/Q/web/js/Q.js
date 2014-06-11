@@ -591,7 +591,7 @@ Q.typeOf = function _Q_typeOf(value) {
 				return 'jQuery';
 			}
 			return value.constructor.name;
-		} else if ((x = Object.prototype.toString.apply(value).substr(0, 8)) === "[object ") {
+		} else if ((x = Object.prototype.toString.apply(value)).substr(0, 8) === "[object ") {
 			return x.substring(8, x.length-1);
 		} else {
 			return 'object';
