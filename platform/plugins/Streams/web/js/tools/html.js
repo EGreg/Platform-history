@@ -31,6 +31,9 @@ Q.Tool.define("Streams/html", function (options) {
 			_proceed();
 		});
 	} else if (state.placeholder) {
+		if (!state.stream) {
+			throw new Q.Error("Streams/html tool: missing streamName and stream is not set");
+		}
 		tool.element.innerHTML = state.placeholder;
 		_proceed();
 	}

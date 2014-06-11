@@ -87,9 +87,13 @@
 
 Q_Response::addScriptLine('
 	$(function() { $("#Q_form_username").focus(); })
-	Q.addScript(Q.url("plugins/Q/js/jquery.tools.min.js"), function () {
-		$("*[title]").tooltip();
-	});
+	Q.addScript(
+		[ "plugins/Q/js/jquery-1.11.1.min.js", 
+		  "plugins/Q/js/jquery.tools.min.js"], 
+		function () {
+			$("*[title]").tooltip();
+		}
+	);
 ');
 
 ?>

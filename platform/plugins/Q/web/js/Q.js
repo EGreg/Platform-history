@@ -1663,12 +1663,6 @@ Q.onUnload = new Q.Event(function _Q_onUnload_callback() {
 	console.log("Leaving page "+window.location.href);
 }, 'Q');
 
-Q.onPageLoad = Q.Event.factory(null, [""]);
-Q.onPageActivate = Q.Event.factory(null, [""]);
-Q.onPageUnload = Q.Event.factory(null, [""]);
-Q.beforePageLoad = Q.Event.factory(null, [""]);
-Q.beforePageUnload = Q.Event.factory(null, [""]);
-
 Q.onHashChange = new Q.Event();
 Q.onPopState = new Q.Event();
 Q.onOnline = new Q.Event(function () {
@@ -2585,8 +2579,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 	if (typeof ctor === 'string') {
 		if (typeof window.jQuery.fn.plugin[name] !== 'function') {
 			_qtjo[name] = _qtjo[name] || {};
-		    return window.jQuery.fn.plugin[name]
-				= Q.Tool.constructors[name] = ctor;
+		    window.jQuery.fn.plugin[name] = Q.Tool.constructors[name] = ctor;
 		}
 		return ctor;
 	}
@@ -3474,6 +3467,11 @@ Q.Page = function (uriString) {
 
 Q.Page.beingLoaded = false;
 Q.Page.beingActivated = false;
+Q.Page.onLoad = Q.Event.factory(null, [""]);
+Q.Page.onActivate = Q.Event.factory(null, [""]);
+Q.Page.onUnload = Q.Event.factory(null, [""]);
+Q.Page.beforeLoad = Q.Event.factory(null, [""]);
+Q.Page.beforeUnload = Q.Event.factory(null, [""]);
 
 /**
  * Use this function to set handlers for when the page is loaded or unloaded.
@@ -3504,10 +3502,10 @@ Q.page = function _Q_page(page, handler, key) {
 	if (typeof handler !== 'function') {
 		return;
 	}
-	Q.onPageActivate(page).add(function Q_onPageActivate_handler() {
-		var unload = handler.call(Q, Q.beforePageUnload("Q\t"+page));
+	Q.Page.onActivate(page).add(function Q_onPageActivate_handler() {
+		var unload = handler.call(Q, Q.Page.beforeUnload("Q\t"+page));
 		if (unload && typeof unload === "function") {
-			Q.beforePageUnload("Q\t"+page).set(unload, key);
+			Q.Page.beforeUnload("Q\t"+page).set(unload, key);
 		}
 	}, key);
 };
@@ -3665,12 +3663,12 @@ Q.ready = function _Q_ready() {
 			// This is an HTML document loaded from our server
 			try {
 				Q.Page.beingActivated = true;
-				Q.onPageActivate('').handle();
+				Q.Page.onActivate('').handle();
 				if (Q.info && Q.info.uri) {
 					var moduleSlashAction = Q.info.uri.module+"/"+Q.info.uri.action;
-					Q.onPageActivate(moduleSlashAction).handle();
+					Q.Page.onActivate(moduleSlashAction).handle();
 					if (Q.info.uriString !== moduleSlashAction) {
-						Q.onPageActivate(Q.info.uriString).handle();
+						Q.Page.onActivate(Q.info.uriString).handle();
 					}
 				}
 				Q.Page.beingActivated = false;
@@ -3689,10 +3687,10 @@ Q.ready = function _Q_ready() {
 		var moduleSlashAction = Q.info.uri.module+"/"+Q.info.uri.action;
 		try {
 			Q.Page.beingLoaded = true;
-			Q.onPageLoad('').handle();
-			Q.onPageLoad(moduleSlashAction).handle();
+			Q.Page.onLoad('').handle();
+			Q.Page.onLoad(moduleSlashAction).handle();
 			if (Q.info.uriString !== moduleSlashAction) {
-				Q.onPageLoad(Q.info.uriString).handle();
+				Q.Page.onLoad(Q.info.uriString).handle();
 			}
 			Q.Page.beingLoaded = false;
 		} catch (e) {
@@ -5297,7 +5295,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 			var i, k, newStylesheets, newStyles;
 			
 			function _doEvents(prefix, moduleSlashAction) {
-				var event, f = Q[prefix+'PageUnload'];
+				var event, f = Q.Page[prefix+'Unload'];
 				Q.handle(o.onLoadEnd, this, [url, o]);
 				if (Q.info && Q.info.uri) {
 					event = f("Q\t"+moduleSlashAction);
@@ -5342,12 +5340,12 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				if (!o.ignorePage) {
 					try {
 						Q.Page.beingActivated = true;
-						Q.onPageActivate('').handle();
+						Q.Page.onActivate('').handle();
 						if (Q.info && Q.info.uri) {
 							var moduleSlashAction = Q.info.uri.module+"/"+Q.info.uri.action;
-							Q.onPageActivate(moduleSlashAction).handle();
+							Q.Page.onActivate(moduleSlashAction).handle();
 							if (Q.info.uriString !== moduleSlashAction) {
-								Q.onPageActivate(Q.info.uriString).handle();
+								Q.Page.onActivate(Q.info.uriString).handle();
 							}
 						}
 						Q.Page.beingActivated = false;
@@ -5367,13 +5365,13 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 			function afterStyles() {
 			
 				if (!o.ignorePage && Q.info && Q.info.uri) {
-					Q.beforePageLoad(moduleSlashAction).occurred = false;
-					Q.onPageLoad(moduleSlashAction).occurred = false;
-					Q.onPageActivate(moduleSlashAction).occurred = false;
+					Q.Page.beforeLoad(moduleSlashAction).occurred = false;
+					Q.Page.onLoad(moduleSlashAction).occurred = false;
+					Q.Page.onActivate(moduleSlashAction).occurred = false;
 					if (Q.info.uriString !== Q.moduleSlashAction) {
-						Q.beforePageLoad(Q.info.uriString).occurred = false;
-						Q.onPageLoad(Q.info.uriString).occurred = false;
-						Q.onPageActivate(Q.info.uriString).occurred = false;
+						Q.Page.beforeLoad(Q.info.uriString).occurred = false;
+						Q.Page.onLoad(Q.info.uriString).occurred = false;
+						Q.Page.onActivate(Q.info.uriString).occurred = false;
 					}
 				}
 
@@ -5395,12 +5393,12 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				if (!o.ignorePage) {
 					try {
 						Q.Page.beingLoaded = true;
-						Q.onPageLoad('').handle();
+						Q.Page.onLoad('').handle();
 						if (Q.info && Q.info.uri) {
 							moduleSlashAction = Q.info.uri.module+"/"+Q.info.uri.action; // new page coming in
-							Q.onPageLoad(moduleSlashAction).handle();
+							Q.Page.onLoad(moduleSlashAction).handle();
 							if (Q.info.uriString !== moduleSlashAction) {
-								Q.onPageLoad(Q.info.uriString).handle();
+								Q.Page.onLoad(Q.info.uriString).handle();
 							}
 						}
 						Q.Page.beingLoaded = false;
@@ -7000,7 +6998,8 @@ Q.Pointer = {
 		// Modern browsers support "wheel",
 		// Webkit and IE support at least "mousewheel",
 		// and let's assume that remaining browsers are older Firefox
-		params.eventName = ("onwheel" in document.createElement("div")) ? "wheel" :
+		_Q_wheel.div = document.createElement("div");
+		params.eventName = ("onwheel" in _Q_wheel.div) ? "wheel" :
 			(document.onmousewheel !== undefined) ? "mousewheel" : 
 			"DOMMouseScroll MozMousePixelScroll";
 		return function _Q_wheel_on_wrapper (e) {
@@ -7014,13 +7013,11 @@ Q.Pointer = {
 			// calculate deltaY (and deltaX) according to the event
 			switch (params.eventName) {
 			case 'mousewheel':
-                oe.deltaY = - 1/40 * originalEvent.wheelDelta;
 				// Webkit also supports wheelDeltaX
-                oe.wheelDeltaX && ( oe.deltaX = - 1/40 * oe.wheelDeltaX );
+				oe.wheelDelta && ( e.deltaY = -Math.ceil(1/3 * oe.wheelDelta) );
+                oe.wheelDeltaX && ( e.deltaX = -Math.ceil(1/3 * oe.wheelDeltaX) );
 				break;
 			case 'wheel':
-				e.deltaY = ('deltaY' in oe) ? oe.deltaY : oe.detail;
-				break;
 			default:
 				e.deltaY = ('deltaY' in oe) ? oe.deltaY : oe.detail;
 			}
@@ -7036,13 +7033,23 @@ Q.Pointer = {
 	},
 	getX: function(e) {
 		var oe = e.originalEvent || e;
-		e = oe.changedTouches ? oe.changedTouches[0] : (oe.touches ? oe.touches[0] : oe);
-		return Math.max(0, ('pageX' in e) ? e.pageX : e.clientX + Q.Pointer.scrollLeft());
+		oe = (oe.touches && oe.touches.length)
+			? oe.touches[0]
+			: (oe.changedTouches && oe.changedTouches.length
+				? oe.changedTouches[0]
+				: oe
+			);
+		return Math.max(0, ('pageX' in oe) ? oe.pageX : oe.clientX + Q.Pointer.scrollLeft());
 	},
 	getY: function(e) {
 		var oe = e.originalEvent || e;
-		e = oe.changedTouches ? oe.changedTouches[0] : (oe.touches ? oe.touches[0] : oe);
-		return Math.max(0, ('pageY' in e) ? e.pageY : e.clientY + Q.Pointer.scrollTop());
+		oe = (oe.touches && oe.touches.length)
+			? oe.touches[0]
+			: (oe.changedTouches && oe.changedTouches.length
+				? oe.changedTouches[0]
+				: oe
+			);
+		return Math.max(0, ('pageY' in oe) ? oe.pageY : oe.clientY + Q.Pointer.scrollTop());
 	},
 	touchCount: function (e) {
 		var oe = e.originalEvent || e;

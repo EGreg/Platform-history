@@ -14,8 +14,8 @@
 Q.Tool.jQuery('Q/contextual', function (o) {
 
 	var $this = $(this);
-	if ($this.state('Q/contextual')) {
-		$this.remove('Q/contextual');
+	if ($this.data('Q_contextual')) {
+		return;
 	}
 
 	// the first time when any contextual is added we need to preload its graphics,
