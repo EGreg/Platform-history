@@ -3585,7 +3585,7 @@ Q.init = function _Q_init(options) {
 			if (!Q.info) Q.info = {};
 			if ((Q.info.isCordova = window.device && window.device.available)) {
 				// avoid opening external urls in app window
-				document.addEventListener("click", function (e) {
+				Q.addEventListener(document, "click", function (e) {
 					var t = e.target, s, i;
 					do {
 						if (t && t.nodeName === "A" && t.href && !t.outerHTML.match(/\Whref=[',"]#[',"]\W/) && t.href.match(/^https?:\/\//)) {
@@ -3599,7 +3599,7 @@ Q.init = function _Q_init(options) {
 			p.fill("device")();
 		}
 		if (window.device) _Q_init_deviceready_handler();
-		else document.addEventListener('deviceready', _Q_init_deviceready_handler, false);
+		else Q.addEventListener(document, 'deviceready', _Q_init_deviceready_handler, false);
 	}
 
 	// Bind document ready event
@@ -6517,7 +6517,7 @@ function _listenForVisibilityChange() {
 		hidden = 'oHidden';
 		visibilityChange = 'ovisibilitychange';
 	}
-	document.addEventListener(visibilityChange, function () {
+	Q.addEventListener(document, visibilityChange, function () {
 		Q.onVisibilityChange.handle(document, [document[hidden]]);
 	}, false);
 	Q.isDocumentHidden = function () {
