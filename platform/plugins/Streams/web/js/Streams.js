@@ -2547,7 +2547,7 @@ Q.Tool.beforeRemove("").set(function (tool) {
 	Streams.release(tool);
 }, 'Streams');
 
-Q.Page.beforeUnload('', function () {
+Q.Page.beforeUnload("").set(function () {
 	Streams.release(true);
 }, 'Stream');
 
