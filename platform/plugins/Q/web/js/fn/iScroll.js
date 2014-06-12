@@ -3,9 +3,58 @@
 /**
  * Just a helper for iScroll plugin.
  * Needed to simplify applying iScroll and Q/scrollIndicators plugins.
- * @param options Object or string
- *	 If an Object, then it's a hash of options, similar to these passed to iScroll plus additional parameters:
+ * @method iScroll
+ * @param {Mixed} [object_or_string]
+ * @param {Object} [object_or_string.Object]
+ * If an Object, then it's a hash of options, similar to these passed to iScroll plus additional parameters:
  *		 "indicators": Defaults to true. Whether to show scroll indicators (apply Q/scrollIndicators plugin).
+ * @param {Number} [object_or_string.Object.x] x
+ * @default 0
+ * @param {Number} [object_or_string.Object.y] y
+ * @default 0
+ * @param {Boolean} [object_or_string.Object.hScrollbar] hScrollbar
+ * @default false
+ * @param {Boolean} [object_or_string.Object.vScrollbar] vScrollbar
+ * @default false
+ * @param {Boolean} [object_or_string.Object.hScroll] hScroll
+ * @default false
+ * @param {Boolean} [object_or_string.Object.hideScrollbar] hideScrollbar
+ * @default true
+ * @param {Boolean} [object_or_string.Object.fadeScrollbar] fadeScrollbar
+ * @default true
+ * @param {Boolean} [object_or_string.Object.useTransition] useTransition
+ * @default false
+ * @param {Number} [object_or_string.Object.topOffset] topOffset
+ * @default 0
+ * @param {Event} [object_or_string.Object.onRefresh] onRefresh
+ * @default null
+ * @param {Event} [object_or_string.Object.onBeforeScrollStart] onBeforeScrollStart
+ * @default null
+ * @param {Event} [object_or_string.Object.onScrollStart] onScrollStart
+ * @default null
+ * @param {Event} [object_or_string.Object.onScrollMove] onScrollMove
+ * @default null
+ * @param {Event} [object_or_string.Object.onScrollEnd] onScrollEnd
+ * @default null
+ * @param {Event} [object_or_string.Object.onTouchEnd] onTouchEnd
+ * @default null
+ * @param {Boolean} [object_or_string.Object.showArrows] showArrows
+ * @default true
+ * @param {Number} [object_or_string.Object.horizontalGutter] horizontalGutter
+ * @default 1
+ * @param {Number} [object_or_string.Object.verticalGutter] verticalGutter
+ * @default 1
+ * @param {Boolean} [object_or_string.Object.maintainPosition] maintainPosition
+ * @default true
+ * @param {Boolean} [object_or_string.Object.autoReinitialize] autoReinitialize
+ * @default true
+ * @param {Boolean} [object_or_string.Object.animateScroll] animateScroll
+ * @default true
+ * @param {Boolean} [object_or_string.Object.hijackInternalLinks] hijackInternalLinks
+ * @default true
+ * @param {Boolean} [object_or_string.Object.indicators] indicators
+ * @default true
+ * @param {String} [object_or_string.String]
  *	 If a string, then it's a command which may be:
  *		 "destroy": Destroys iScroll together with Q/scrollIndicators.
  */

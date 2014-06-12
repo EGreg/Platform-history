@@ -1,7 +1,10 @@
 (function (Q, $, window, document, undefined) {
 
-/*
- * Activates placeholder effect on any input and textarea elements contained within this jquery
+/**
+ * Activates placeholder effect on any input and textarea elements contained within this jquery.
+ * Attribute placeholder must be set for element
+ * @method placeholders
+ * @param {Object} [options]
  */
 Q.Tool.jQuery('Q/placeholders',
 

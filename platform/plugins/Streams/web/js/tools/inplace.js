@@ -2,16 +2,15 @@
 
 /**
  * This tool generates an inline editor to edit the content or attribute of a stream.
- * @param array $options
- *  An associative array of parameters, containing:
- *  "inplaceType" => Required. The type of the fieldInput. Can be "textarea" or "text"
+ * @param {Array} options An associative array, containing:
+ *  "inplaceType": Required. The type of the fieldInput. Can be "textarea" or "text"
  *  "publisherId": Required if stream option is empty. The publisher's user id.
  *  "streamName": Required if stream option is empty. The name of the stream.
- *  "stream" => Optionally pass a Streams.Stream object here if you have it already
- *  "field" => Optional, name of an field to change instead of the content of the stream
- *  "attribute" => Optional, name of an attribute to change instead of any field.
- *  "inplace" => Additional fields to pass to the child Q/inplace tool, if any
- *  "create" => Optional. You can pass a function here, which takes the tool as "this"
+ *  "stream": Optionally pass a Streams.Stream object here if you have it already
+ *  "field": Optional, name of an field to change instead of the content of the stream
+ *  "attribute": Optional, name of an attribute to change instead of any field.
+ *  "inplace": Additional fields to pass to the child Q/inplace tool, if any
+ *  "create": Optional. You can pass a function here, which takes the tool as "this"
  *     and a callback as the first parameter, is supposed to create a stream and
  *     call the callback with (err, stream). If omitted, then the tool doesn't render.
  */
@@ -39,14 +38,17 @@ Q.Tool.define("Streams/inplace", function (options) {
 			Q.Streams.get(state.publisherId, state.streamName, function () {
 				state.stream = this;
 			});
+			var html = content.encodeHTML()
+				|| '<span class="Q_placeholder">'+tool.child('Q/inplace').state.placeholder.encodeHTML()+'</div>'
+				|| '';
 			switch (state.inplaceType) {
 				case 'text':
 					tool.$('input[type!=hidden]').val(content);
-					tool.$('.Q_inplace_tool_static').html(content.encodeHTML());
+					tool.$('.Q_inplace_tool_static').html(html);
 					break;
 				case 'textarea':
 					tool.$('textarea').val(content);
-					tool.$('.Q_inplace_tool_blockstatic').html(content.encodeHTML().replaceAll({
+					tool.$('.Q_inplace_tool_blockstatic').html(html.replaceAll({
 						"\n": '<br>',
 					 	' ': '&nbsp;'
 					}));

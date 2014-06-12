@@ -1,17 +1,19 @@
 (function (Q, $, window, document, undefined) {
 
 /**
- * Makes a flip animation using two block elements. The html structure must be a container with two nested block elements.
- * Example:
+ * This plugin Makes a flip animation using two block elements. The html structure must be a container with two nested block elements.
+ * @example
  * <div>
  *	 <div>Front side</div>
  *	 <div>Back side</div>
  * </div>
- * @param options Object
- *	A hash of options, that can include:
- *	"direction": Optional. May be 'h' (horizontal) or 'v' (vertical), defaults to 'h'.
- *	"duration": Optional. Duration of animation, defaults to 500ms.
- *	"onFinish": Optional. Q.Event to call when flipping is finished.
+ * @method flip
+ * @param {Object} [options] options is an Object with function parameters
+ * @param {String} [options.direction] direction May be 'h' (horizontal) or 'v' (vertical) . Optional.
+ * @default 'h'
+ * @param {Number} [options.duration] duration is a Duration of animation in milliseconds
+ * @default 500
+ * @param {Event} [options.onFinish] onFinish  Q.Event to call when flipping is finished. Optional.
  */
 Q.Tool.jQuery('Q/flip',
 

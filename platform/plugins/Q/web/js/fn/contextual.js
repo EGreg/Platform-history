@@ -1,15 +1,20 @@
 (function (Q, $, window, document, undefined) {
 
 /**
- * Makes a contextual menu from given options and handles its showing / hiding.
- * @param options Object A hash of options that can include
- *	 "elements": Array of LI elements to add
- *   "className": Optional. CSS class name for additional styling.
- *	 "defaultHandler": Optional. Q.Event, function or 
- *     function name which is called when personal handler for selected item is not defined.
- *	 "size": Options. Hash of { width: Number, height: Number }
- * 	   values to override default contextual size.
- *	   So you can use just one handler for whole contextual or provide separate handlers for each item.
+ * This plugin Makes a contextual menu from given options and handles its showing / hiding.
+ * @method contextual
+ * @param {Object} [options] options an object of options that can include
+ * @param {Array} [options.elements] elements is an array of LI elements to add
+ * @param {String} [options.className] className is a CSS class name for additional styling. Optional
+ * @default ''
+ * @param {Event} [options.defaultHandler] defaultHandler is a  Q.Event, function or
+ *     function name which is called when personal handler for selected item is not defined. Optional
+ * @default null
+ * @param {Object} [options.size] size is an object with values for override default contextual size.
+ * So you can use just one handler for whole contextual or provide separate handlers for each item.
+ * @default null
+ * @param {Number} [options.size.width] width
+ * @param {Number} [options.size.height] height
  */
 Q.Tool.jQuery('Q/contextual', function (o) {
 

@@ -1,22 +1,34 @@
+(function (Q, $, window, document, undefined) {
+
+/**
+ * Tool for admins to edit the meta tags on a page, for SEO purposes.
+ * @param {Array} options
+ *  An associative array of parameters, containing:
+ *  "template" => Optional fields to override info for seo tool template
+ *  "inplace" => Hash of {attributeName: options} for Streams/inplace tools
+ */
+
 Q.Tool.define("Websites/seo", function () {
 	var Websites = Q.plugins.Websites;
 	var tool = this, state = tool.state;
 	
 	Q.addScript("plugins/Q/js/sha1.js", function () {
 		var publisherId = Websites.userId,
-			streamName = "Websites/seo/"+CryptoJS.SHA1(Q.info.uriString),
+			streamName = "Websites/seo/"+CryptoJS.SHA1(Q.info.uriString);
+		
+		var templateFields = {};
+		var ipo, i;
+		for (a in state.inplace) {
+			if (!state.inplace[a]) continue;
 			ipo = Q.extend({
+				inplaceType: 'text',
 				publisherId: publisherId,
 				streamName: streamName,
-				inplaceType: 'text'
-			}, state.inplace);
-		
-		var templateFields = {
-			url: tool.setUpElementHTML('div', 'Streams/inplace', Q.extend({attribute: 'url'}, ipo)),
-			title: tool.setUpElementHTML('div', 'Streams/inplace', Q.extend({attribute: 'title'}, ipo)),
-			keywords: tool.setUpElementHTML('div', 'Streams/inplace', Q.extend({attribute: 'keywords'}, ipo)),
-			description: tool.setUpElementHTML('div', 'Streams/inplace', Q.extend({attribute: 'description'}, ipo))
-		};
+				attribute: a, 
+				inplace: { placeholder: a.toCapitalized() }
+			}, state.inplace[a]);
+			templateFields[a] = tool.setUpElementHTML('div', 'Streams/inplace', ipo);
+		}
 		
 		Q.Streams.get(publisherId, streamName, function _proceed(err) {
 			if (err) {
@@ -53,7 +65,13 @@ Q.Tool.define("Websites/seo", function () {
 
 {
 	template: {
-		name: 'Websites/seo'
+		name: "Websites/seo"
+	},
+	inplace: {
+		url: { inplace: { placeholder: "Url" } },
+		title: { inplace: { placeholder: "Title" } },
+		keywords: { inplace: { placeholder: "Keywords" } },
+		description: { inplace: { placeholder: "Description" } }
 	}
 }
 
@@ -62,3 +80,5 @@ Q.Tool.define("Websites/seo", function () {
 Q.Template.set("Websites/seo",
 	"{{& url}}{{& title}}{{& keywords}}{{& description}}"
 );
+
+})(Q, jQuery, window, document);

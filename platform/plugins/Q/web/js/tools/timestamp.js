@@ -1,15 +1,15 @@
 (function (Q, $) {
 
 /**
- * Q/timestamp tool.
- * Makes a timestamp which is periodically updated.
+ * This function Makes a timestamp which is periodically updated.
  * Initially shows time offsets in '<some_time> ago' manner. Later represents time depending on format,
  * wisely excluding unnecessary detais (i.e. 'year' if timestamp has been made this year, 'year' and 'month if in this month etc).
- * @param options Object
- *   A hash of options, which can include:
- *   "time": Unix timestamp (in seconds), defaults to value of 'new Date().getTime() / 1000'.
- *   "format": formatting string which makes specific timestamp representation.
- *   Can contain placeholders supported by strftime() and also few special placeholders with specific functionality.
+ * @method timestamp
+ * @param {Object} [options] This is an object of parameters for this function
+ *  @param {Number} [options.time] Unix timestamp (in seconds).
+ *  @default 'new Date().getTime() / 1000'
+ *  @param {String} [options.format] formatting string which makes specific timestamp representation. Can contain placeholders supported by strftime() and also few special placeholders with specific functionality.
+ *  @default '%a %b %#d %Y at %H:%M:%S'
  */
 $.fn.timestamp = function(options)
 {

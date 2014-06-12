@@ -2,16 +2,22 @@
 
 /**
  * Makes a selectable listing which acts like a menu.
- * @param options Object or string
+ * @method listing
+ * @param {Mixed} [Object_or_String] mixed parameter , could be an Object of parameters or String
+ * @param {Object} [Object_or_String.Object]
  *	 If an object then it's a hash of options, that can include:
- *		 "handler": Required. Callback or Q.Event which will be called when item from the listing selected.
- *		 "blink": Defaults to true. This defines list item blinking on selection.
- *		 If false, the selected item just stays highlighted and doesn't blink.
- *		 "ignoreStartEvent": Defaults to false. If true, ignores initial 'touchstart' / 'mousedown' events.
- *		 Usually tracking initial event is needed to detect if it's scroll drag event and prevent item selection in this case.
+ *   @param {Function} [Object_or_String.Object.handler] Callback or Q.Event which will be called when item from the listing selected.
+ *   @required
+ *   @param {Boolean} [Object_or_String.Object.blink] blink This defines list item blinking on selection.
+ *   @default true
+ *   If false, the selected item just stays highlighted and doesn't blink.
+ *   @param {Boolean} [Object_or_String.Object.ignoreStartEvent] ignoreStartEvent If true, ignores initial 'touchstart' / 'mousedown' events.
+ *   @default false
+ *   Usually tracking initial event is needed to detect if it's scroll drag event and prevent item selection in this case.
  *		 If true, then initial event won't be tracked and only 'touchend' / 'mouseup' will be considered as
  *		 item selection.
- *		 "eventDelegate": Optional. If provided, then touch / mouse events will be handled using this element.
+ *   @param {Event} [Object_or_String.Object.eventDelegate] eventDelegate If provided, then touch / mouse events will be handled using this element.
+ *	 @param {String} [Object_or_String.String]
  *	 If a string, then it's a command which may be:
  *		 "destroy": Destroys selectable listing functionality.
  */

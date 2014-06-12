@@ -1,5 +1,4 @@
 /**
- * easyXDM
  * http://easyxdm.net/
  * Copyright(c) 2009-2011, Øyvind Sean Kinsey, oyvind@kinsey.no.
  *
@@ -20,10 +19,11 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
+ * @module easyXDM.Widgets
  */
 /*jslint browser: true, immed: true, passfail: true, undef: true, newcap: true*/
 /*global easyXDM, window */
-/**
+/*
  * easyXDM
  * http://easyxdm.net/
  * Copyright(c) 2009-2011, Øyvind Sean Kinsey, oyvind@kinsey.no.
@@ -47,23 +47,23 @@
  * THE SOFTWARE.
  */
 /**
- * @class easyXDM.WidgetManager
  * A class for managing widgets.<br/>
  * Handles initializing widgets, and does all of the message distribution.
- <pre><code>
- _widgetManager = new easyXDM.WidgetManager({
- local: "../hash.html",
- container: document.getElementById("defaultcontainer")
- },function(){
- _widgetManager.addWidget("http://provider.easyxdm.net/example/widget.html",{});
- });
- </code></pre>
+ *<pre><code>
+ *_widgetManager = new easyXDM.WidgetManager({
+ *local: "../hash.html",
+ *container: document.getElementById("defaultcontainer")
+ *},function(){
+ *_widgetManager.addWidget("http://provider.easyxdm.net/example/widget.html",{});
+ *});
+ *</code></pre>
  * Widgets can by dynamically added using the addWidget method
- <pre><code>
- _widgetManager.addWidget("http://provider.easyxdm.net/example/widget.html",{
- container document.getElementById("widgetcontainer")
- });
- </code></pre>
+ *<pre><code>
+ *_widgetManager.addWidget("http://provider.easyxdm.net/example/widget.html",{
+ *container document.getElementById("widgetcontainer")
+ *});
+ *</code></pre>
+ * @class easyXDM.WidgetManager
  * @constructor
  * @param {Object} config The WidgetManagers configuration
  * @namespace easyXDM
@@ -82,8 +82,9 @@ easyXDM.WidgetManager = function(config){
     var _container = config.container || document.body;
     
     /**
-     * @private
      * Raises the specified event
+     * @private
+     * @method _raiseEvent
      * @param {String} event The raised event
      * @param {Object} arg
      */
@@ -94,8 +95,9 @@ easyXDM.WidgetManager = function(config){
     }
     
     /**
-     * @private
      * Adds the widghet to the list of subscribers for the given topic
+     * @private
+     * @method _subscribe
      * @param {String} url The widgets url
      * @param {String} topic The topic to subscribe to
      */
@@ -107,9 +109,10 @@ easyXDM.WidgetManager = function(config){
     }
     
     /**
-     * @private
      * Initialized the widget.<br/>
      * This is called after the widget has notified that it is ready.
+     * @private
+     * @method _initializeWidget
      * @param {Object} widget The widget
      * @param {String} url The widgets url
      * @param {Object} widgetConfig The widgets configuration
@@ -136,8 +139,9 @@ easyXDM.WidgetManager = function(config){
     }
     
     /**
-     * @private
      * Publishes the data to the topics subscribers
+     * @private
+     * @method _publish
      * @param {String} url The senders url
      * @param {String} topic The datas topic
      * @param {Object} data The data to publish
@@ -156,8 +160,9 @@ easyXDM.WidgetManager = function(config){
     }
     
     /**
-     * @private
      * Sets up a new widget
+     * @private
+     * @method _setUpWidget
      * @param {String} url The widgets url
      * @param {Object} widgetConfig The widgets configuration
      */
@@ -197,6 +202,7 @@ easyXDM.WidgetManager = function(config){
     
     /**
      * Adds a widget to the collection
+     * @method addWidget
      * @param {String} url The url to load the widget from
      * @param {Object} widgetConfig The widgets url
      */
@@ -209,6 +215,7 @@ easyXDM.WidgetManager = function(config){
     
     /**
      * Removes the widget
+     * @method removeWidget
      * @param {Object} url
      */
     this.removeWidget = function(url){
@@ -231,6 +238,7 @@ easyXDM.WidgetManager = function(config){
     
     /**
      * Publish data to a topics subscribers
+     * @method publish
      * @param {String} topic The topic to publish to
      * @param {Object} data The data to publish
      */
@@ -240,6 +248,7 @@ easyXDM.WidgetManager = function(config){
     
     /**
      * Broadcasts data to all the widgets
+     * @method broadcast
      * @param {Object} data The data to broadcast
      */
     this.broadcast = function(data){
@@ -256,8 +265,8 @@ easyXDM.WidgetManager = function(config){
 };
 
 /**
- * @class easyXDM.Widget
  * The base framework for creating widgets
+ * @class easyXDM.Widget
  * @constructor
  * @param {Object} config The widgets configuration
  * @param {Function} onReady A method to run after the widget has been initialized.
@@ -297,8 +306,9 @@ easyXDM.Widget = function(config){
     });
     
     /**
-     * @private
      * Destroy the interface on unload
+     * @private
+     * @method window.onunload
      */
     window.onunload = function(){
         _widgetHost.destroy();
@@ -306,6 +316,7 @@ easyXDM.Widget = function(config){
     
     /**
      * Publish data to subscribers to a topic
+     * @method publish
      * @param {String} topic The topic to publish to
      * @param {Object} data The data to publish
      */
@@ -315,6 +326,7 @@ easyXDM.Widget = function(config){
     
     /**
      * Subscribe to a topic
+     * @method subscribe
      * @param {String} topic The topic to subscribe to
      */
     this.subscribe = function(topic){
@@ -323,6 +335,7 @@ easyXDM.Widget = function(config){
     
     /**
      * Register the method that will handle incoming messages
+     * @method registerMessageHandler
      * @param {Function} fn The handler
      */
     this.registerMessageHandler = function(fn){

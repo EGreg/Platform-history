@@ -440,6 +440,11 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 		Q.handle(callback, this, ["Streams.Stream constructor: fields are missing"]);
 		return false;
 	}
+	
+	if (typeof extra === 'function') {
+		callback = extra;
+		extra = null;
+	}
 
 	var type = Q.normalize(fields.type);
 	var streamFunc = Streams.constructors[type];
@@ -501,7 +506,7 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 		}
 		var stream = new streamFunc.streamConstructor(fields);
 		
-		if (extra.messages) {
+		if (extra && extra.messages) {
 			Q.each(extra.messages, function (ordinal, message) {
 				if (Q.typeOf(message) !== 'Q.Streams.Message') {
 					message = new Message(message);
@@ -512,7 +517,7 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 				);
 			});
 		}
-		if (extra.participants) {
+		if (extra && extra.participants) {
 			Q.each(extra.participants, function (userId, participant) {
 				if (Q.typeOf(participant) !== 'Q.Streams.Participant') {
 					participant = new Participant(participant);
@@ -2260,7 +2265,7 @@ Q.onInit.add(function _Streams_onInit() {
 	}, 'Streams');
 
 	// set up full name request dialog
-	Q.onPageLoad('').add(function _Streams_onPageLoad() {
+	Q.Page.onLoad('').add(function _Streams_onPageLoad() {
 		if (Q.getObject("Q.plugins.Users.loggedInUser.displayName")) {
 			return;
 		}
@@ -2541,6 +2546,10 @@ Q.onInit.add(function _Streams_onInit() {
 Q.Tool.beforeRemove("").set(function (tool) {
 	Streams.release(tool);
 }, 'Streams');
+
+Q.Page.beforeUnload("").set(function () {
+	Streams.release(true);
+}, 'Stream');
 
 function _clearCaches() {
 	// Clear caches so permissions can be recalculated as various objects are fetched
