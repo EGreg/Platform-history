@@ -4,3 +4,6 @@
 
 .Q_notMobile .Websites_side_column { float: right; width: 40%; }
 .Q_notMobile .Websites_bio_tool .Streams_html_tool { width: 60%; font-size: 24px; }
+
+.Websites_seo_tool .Q_inplace_tool .Q_editing .Q_inplace_tool_form  input.Q_inplace_tool_fieldinput{width: 100% !important;}
+.Websites_seo_tool .Q_inplace_tool, .Q_inplace_tool_container { display: block; text-align: left; }
