@@ -1,4 +1,4 @@
-if(!Function.prototype.name){
+if (!Function.prototype.name) {
     Object.defineProperty(Function.prototype, 'name', {
         get: function() {
             var name = this.toString().match(/^\s*function\s*(\S*)\s*\(/)[1];
@@ -6,4 +6,11 @@ if(!Function.prototype.name){
             return name;
         }
     });
+}
+
+if (!window.URL) {
+    window.URL = function(url) {
+        this.href     = url;
+        this.pathname = '/' + (url || '').split('/').slice(3).join('/').trim();
+    }
 }
