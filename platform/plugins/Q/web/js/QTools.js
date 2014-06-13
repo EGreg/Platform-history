@@ -663,13 +663,13 @@ Q.Layout = {
 			if (Q.info.isTouchscreen)
 			{
 				var focusableElements = $('input[type="text"], input[type="email"], input[type="tel"], input[type="number"], input[type="password"], textarea');
-				focusableElements.live('focus', function(event)
+				focusableElements.on('focus', function(event)
 				{
 					Q.Layout.focusEventOccured = true;
 					Q.Layout.keyboardVisible = true;
 				});
 				
-				focusableElements.live('blur', function()
+				focusableElements.on('blur', function()
 				{
 					if (Q.info.platform != 'android')
 						Q.Layout.hideAddressBar();
@@ -678,18 +678,18 @@ Q.Layout = {
 				});
 			}
 			
-			$('.Q_selected').live(Q.Pointer.start, function(event)
+			$('.Q_selected').on(Q.Pointer.start, function(event)
 			{
 				$(this).addClass('Q_active');
 				event.preventDefault();
 			});
-			$('.Q_selected').live(Q.Pointer.end, function(event)
+			$('.Q_selected').on(Q.Pointer.end, function(event)
 			{
 				$(this).removeClass('Q_active');
 			});
 			
 			var chatButtons = $('.Q_player_button');
-			chatButtons.live(Q.Pointer.end, function()
+			chatButtons.on(Q.Pointer.end, function()
 			{
 				chatButtons.removeClass('Q_selected');
 				$(this).addClass('Q_selected');

@@ -105,7 +105,8 @@ Users.initFacebook = function(callback, options) {
 	}
 
 	function _init () {
-		if (!Users.initFacebook.completed[Q.info.app]) {
+		if (!Users.initFacebook.completed[Q.info.app]
+		&& Q.plugins.Users.facebookApps[Q.info.app]) {
 			FB.init(Q.extend({
 				appId: Q.plugins.Users.facebookApps[Q.info.app].appId,
 				version: 'v2.0',
@@ -247,7 +248,7 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 				} else {
 					throw new Q.Error("Users.authenticate: options.prompt is the wrong type");
 				}
-			} else {
+			} else if (Q.plugins.Users.facebookApps[Q.info.app]) {
 				// let's delete any stale facebook cookies there might be
 				// otherwise they might confuse our server-side authentication.
 				Q.cookie('fbs_' + Q.plugins.Users.facebookApps[Q.info.app].appId, null, {path: '/'});

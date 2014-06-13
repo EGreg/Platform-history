@@ -76,8 +76,8 @@ function () {
 		$this.data('Q-placeholder', placeholder);
 	});
 	if (!p.attachedLive) {
-		$('input').live('keypress keyup change input focus blur Q_refresh', manage);
-		$('textarea').live('keypress keyup change input focus blur Q_refresh', manage);
+		$('input').on('keypress keyup change input focus blur Q_refresh', manage);
+		$('textarea').on('keypress keyup change input focus blur Q_refresh', manage);
 		p.attachedLive = true;
 	}
 	return this;

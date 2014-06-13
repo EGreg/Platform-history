@@ -35,7 +35,8 @@ Q.Error = Error;
  * Extend some built-in prototypes
  */
 
-Object.getPrototypeOf = Object.getPrototypeOf || function (obj) {
+if (!Object.getPrototypeOf)
+Object.getPrototypeOf = function (obj) {
 	if (obj.__proto__) return obj.__proto__;
 	if (obj.constructor && obj.constructor.prototype) {
 		return obj.constructor.prototype;
@@ -43,7 +44,8 @@ Object.getPrototypeOf = Object.getPrototypeOf || function (obj) {
 	return null;
 };
 
-Object.keys = Object.keys || (function () {
+if (!Object.keys)
+Object.keys = (function () {
 	var hasOwnProperty = Object.prototype.hasOwnProperty,
 		hasDontEnumBug = !{toString:null}.propertyIsEnumerable("toString"),
 		DontEnums = [
@@ -84,7 +86,7 @@ String.prototype.toCapitalized = function _String_prototype_toCapitalized() {
 	});
 };
 
-String.prototype.isUrl = function () {
+String.prototype.isUrl = function _String_prototype_isUrl () {
 	return this.match(new RegExp("^[A-Za-z]*:\/\/"));
 };
 
@@ -279,7 +281,8 @@ String.prototype.sameDomain = function _String_prototype_sameDomain (url2, optio
  * @param {Object} obj The object to bind to
  * @param {object} options If supplied, binds these options and passes them during invocation. Optional.
  */
-Function.prototype.bind = Function.prototype.bind || function _Function_prototype_bind(obj, options) {
+if (!Function.prototype.bind)
+Function.prototype.bind = function _Function_prototype_bind(obj, options) {
 	var method = this;
 	if (!options) {
 		return function _Q_bind_result() {
@@ -293,13 +296,14 @@ Function.prototype.bind = Function.prototype.bind || function _Function_prototyp
 	};
 };
 
-    /**
-     * @method Array.indexOf
-     * @param {Mixed} searchElement
-     * @return {Number}
-     */
+/**
+ * @method Array.indexOf
+ * @param {Mixed} searchElement
+ * @return {Number}
+ */
 
-Array.prototype.indexOf = Array.prototype.indexOf || function _Array_prototype_indexOf(searchElement /*, fromIndex */ ) {
+if (!Array.prototype.indexOf)
+Array.prototype.indexOf = function _Array_prototype_indexOf(searchElement /*, fromIndex */ ) {
 	if (this === 0 || this === null) {
 		throw new TypeError();
 	}
@@ -329,13 +333,14 @@ Array.prototype.indexOf = Array.prototype.indexOf || function _Array_prototype_i
 	return -1;
 };
 
-    /**
-     * @property Date.now
-     * @type {DateTime}
-     *
-    */
+/**
+ * @property Date.now
+ * @type {DateTime}
+ *
+ */
 
-Date.now = Date.now || function _Date_now() {
+if (!Date.now)
+Date.now = function _Date_now() {
 	return new Date().getTime();
 };
 
@@ -352,7 +357,8 @@ Element.prototype.Q = Element.prototype.Q || function (toolName) {
 	return null;
 };
 
-Element.prototype.contains = Element.prototype.contains || function (child) {
+if (!Element.prototype.contains)
+Element.prototype.contains = function (child) {
 	if (!child) return false;
 	var node = child.parentNode;
 	while (node != null) {
@@ -365,6 +371,7 @@ Element.prototype.contains = Element.prototype.contains || function (child) {
 };
 
 Element.prototype.isOrContains = function (child) {
+	if (!child) return false;
 	return this === child || this.contains(child);
 };
 
@@ -592,7 +599,7 @@ Q.typeOf = function _Q_typeOf(value) {
 			}
 			return value.constructor.name;
 		} else if ((x = Object.prototype.toString.apply(value)).substr(0, 8) === "[object ") {
-			return x.substring(8, x.length-1);
+			return x.substring(8, x.length-1).toLowerCase();
 		} else {
 			return 'object';
 		}
@@ -1857,7 +1864,7 @@ Q.Pipe.prototype.add = function _Q_pipe_add(requires, maxTimes, callback) {
 				n = arguments[i];
 				break;
 			}
-			if (e !== null && typeof e !== 'string') {
+			if (e != null && typeof e !== 'string') {
 				throw new Q.Error("Q.Pipe.prototype.add requires event name after array of objects");
 			}
 		}

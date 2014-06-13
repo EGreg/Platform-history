@@ -49,7 +49,7 @@ Q.onActivate.set(function () {
 
 	
 	$(function() {
-	  $('.Broadcast_login').live('click', function() { 
+	  $('.Broadcast_login').on('click', function() { 
 			if (Broadcast.widget) {
 				Broadcast.login({
 					onSuccess: onWidgetLoginSuccess
@@ -58,12 +58,12 @@ Q.onActivate.set(function () {
 				Broadcast.login(); return false; 
 			}
 		});
-		$('.Broadcast_logout').live('click', function()
+		$('.Broadcast_logout').on('click', function()
 		{
 		  Broadcast.logout();
 			return false;
 		});
-		$('.Broadcast_addtab').live('click', function () {
+		$('.Broadcast_addtab').on('click', function () {
 			FB.ui({method: 'pagetab'}, function (response) {
 	            if (response != null && response.tabs_added != null) {
 					var page_ids = [];

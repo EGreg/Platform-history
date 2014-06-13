@@ -181,7 +181,7 @@ Q.Tool.define("Streams/comments", function(o) {
                             }
                         });
 
-                        $('.Streams_comments_tool_feed_post_comment_delete a').live('click', function(event)
+                        $('.Streams_comments_tool_feed_post_comment_delete a').on('click', function(event)
                         {
                             var link = this;
 
