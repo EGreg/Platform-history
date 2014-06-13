@@ -1,5 +1,4 @@
 /**
- * easyXDM
  * http://easyxdm.net/
  * Copyright(c) 2009-2011, Øyvind Sean Kinsey, oyvind@kinsey.no.
  *
@@ -20,6 +19,7 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
+ * @module easyXDM
  */
 (function (window, document, location, setTimeout, decodeURIComponent, encodeURIComponent) {
 /*jslint evil: true, browser: true, immed: true, passfail: true, undef: true, newcap: true*/
@@ -207,6 +207,7 @@ if (!domIsReady) {
 /**
  * This will add a function to the queue of functions to be run once the DOM reaches a ready state.
  * If functions are added after this event then they will be executed immediately.
+ * @method whenReady
  * @param {function} fn The function to add
  * @param {Object} scope An optional scope for the function to be called with.
  */
@@ -223,7 +224,7 @@ function whenReady(fn, scope){
 /**
  * Returns an instance of easyXDM from the parent window with
  * respect to the namespace.
- *
+ * @method getParentObject
  * @return An instance of easyXDM (in the parent window)
  */
 function getParentObject(){
@@ -245,9 +246,8 @@ function getParentObject(){
 /**
  * Removes easyXDM variable from the global scope. It also returns control
  * of the easyXDM variable to whatever code used it before.
- *
- * @param {String} ns A string representation of an object that will hold
- *                    an instance of easyXDM.
+ * @method noConflict
+ * @param {String} ns A string representation of an object that will hold an instance of easyXDM.
  * @return An instance of easyXDM
  */
 function noConflict(ns){
@@ -269,6 +269,7 @@ function noConflict(ns){
  */
 /**
  * Get the domain name from a url.
+ * @method getDomainName
  * @param {String} url The url to extract the domain from.
  * @return The domain part of the url.
  * @type {String}
@@ -282,6 +283,7 @@ function getDomainName(url){
 
 /**
  * Get the port for a given URL, or "" if none
+ * @method getPort
  * @param {String} url The url to extract the port from.
  * @return The port part of the url.
  * @type {String}
@@ -295,6 +297,7 @@ function getPort(url){
 
 /**
  * Returns  a string containing the schema, domain and if present the port
+ * @method getLocation
  * @param {String} url The url to extract the location from
  * @return {String} The location part of the url
  */
@@ -315,6 +318,7 @@ function getLocation(url){
 
 /**
  * Resolves a relative url into an absolute one.
+ * @method resolveUrl
  * @param {String} url The path to resolve.
  * @return {String} The resolved url.
  */
@@ -349,6 +353,7 @@ function resolveUrl(url){
 /**
  * Appends the parameters to the given url.<br/>
  * The base url can contain existing query parameters.
+ * @method appendQueryParameters
  * @param {String} url The base url.
  * @param {Object} parameters The parameters to add.
  * @return {String} A new valid url with the parameters appended.
@@ -389,6 +394,7 @@ var query = (function(input){
  */
 /**
  * Helper for checking if a variable/property is undefined
+ * @method undef
  * @param {Object} v The variable to test
  * @return {Boolean} True if the passed variable is undefined
  */
@@ -398,6 +404,7 @@ function undef(v){
 
 /**
  * A safe implementation of HTML5 JSON. Feature testing is used to make sure the implementation works.
+ * @method getJSON
  * @return {JSON} A valid JSON conforming object, or null if not found.
  */
 var getJSON = function(){
@@ -439,6 +446,7 @@ var getJSON = function(){
 
 /**
  * Applies properties from the source object to the target object.<br/>
+ * @method apply
  * @param {Object} target The target of the properties.
  * @param {Object} source The source of the properties.
  * @param {Boolean} noOverwrite Set to True to only set non-existing properties.
@@ -475,6 +483,7 @@ function testForNamePropertyBug(){
 
 /**
  * Creates a frame and appends it to the DOM.
+ * @method createFrame
  * @param config {object} This object can have the following properties
  * <ul>
  * <li> {object} prop The properties that should be set on the frame. This should include the 'src' property.</li>
@@ -574,6 +583,7 @@ function createFrame(config){
  * Check whether a domain is allowed using an Access Control List.
  * The ACL can contain * and ? as wildcards, or can be regular expressions.
  * If regular expressions they need to begin with ^ and end with $.
+ * @method checkAcl
  * @param {Array/String} acl The list of allowed domains
  * @param {String} domain The domain to test.
  * @return {Boolean} True if the domain is allowed, false if not.
@@ -599,6 +609,7 @@ function checkAcl(acl, domain){
  */
 /**
  * Prepares an array of stack-elements suitable for the current configuration
+ * @method prepareTransportStack
  * @param {Object} config The Transports configuration. See easyXDM.Socket for more.
  * @return {Array} An array of stack-elements with the TransportElement at index 0.
  */
@@ -779,6 +790,7 @@ function prepareTransportStack(config){
 /**
  * Chains all the separate stack elements into a single usable stack.<br/>
  * If an element is missing a necessary method then it will have a pass-through method applied.
+ * @method chainStack
  * @param {Array} stackElements An array of stack elements to be linked.
  * @return {easyXDM.stack.StackElement} The last element in the chain.
  */
@@ -815,6 +827,7 @@ function chainStack(stackElements){
 
 /**
  * This will remove a stackelement from its stack while leaving the stack functional.
+ * @method removeFromStack
  * @param {Object} element The elment to remove from the stack.
  */
 function removeFromStack(element){
@@ -823,33 +836,37 @@ function removeFromStack(element){
     element.up = element.down = null;
 }
 
-/*
+
+/**
  * Export the main object and any other methods applicable
- */
-/** 
- * @class easyXDM
  * A javascript library providing cross-browser, cross-domain messaging/RPC.
- * @version 2.4.15.0
- * @singleton
+ * version 2.4.15.0
+ * singleton
+ * @class easyXDM
  */
 apply(easyXDM, {
     /**
      * The version of the library
+     * @property version
      * @type {string}
      */
     version: "2.4.15.0",
     /**
      * This is a map containing all the query parameters passed to the document.
      * All the values has been decoded using decodeURIComponent.
+     * @property query
      * @type {object}
      */
     query: query,
     /**
+     * @property stack
+     * @type {object}
      * @private
      */
     stack: {},
     /**
      * Applies properties from the source object to the target object.<br/>
+     * @method apply
      * @param {object} target The target of the properties.
      * @param {object} source The source of the properties.
      * @param {boolean} noOverwrite Set to True to only set non-existing properties.
@@ -858,12 +875,14 @@ apply(easyXDM, {
     
     /**
      * A safe implementation of HTML5 JSON. Feature testing is used to make sure the implementation works.
+     * @method getJSONObject
      * @return {JSON} A valid JSON conforming object, or null if not found.
      */
     getJSONObject: getJSON,
     /**
      * This will add a function to the queue of functions to be run once the DOM reaches a ready state.
      * If functions are added after this event then they will be executed immediately.
+     * @method whenReady
      * @param {function} fn The function to add
      * @param {object} scope An optional scope for the function to be called with.
      */
@@ -871,9 +890,9 @@ apply(easyXDM, {
     /**
      * Removes easyXDM variable from the global scope. It also returns control
      * of the easyXDM variable to whatever code used it before.
-     *
-     * @param {String} ns A string representation of an object that will hold
-     *                    an instance of easyXDM.
+     * @method noConflict
+     * @param {String} ns
+     * A string representation of an object that will hold an instance of easyXDM.
      * @return An instance of easyXDM
      */
     noConflict: noConflict
@@ -938,19 +957,20 @@ var debug = {
     },
     /**
      * Logs the message to console.log if available
+     * @method log
      * @param {String} msg The message to log
      */
     log: function(msg){
         // Uses memoizing to cache the implementation
         if (!isHostObject(window, "console") || undef(console.log)) {
-            /**
+            /*
              * Sets log to be an empty function since we have no output available
              * @ignore
              */
             this.log = emptyFn;
         }
         else {
-            /**
+            /*
              * Sets log to be a wrapper around console.log
              * @ignore
              * @param {String} msg
@@ -964,6 +984,7 @@ var debug = {
     /**
      * Will try to trace the given message either to a DOMElement with the id "log",
      * or by using console.info.
+     * @method trace
      * @param {String} msg The message to trace
      */
     trace: function(msg){
@@ -979,7 +1000,7 @@ var debug = {
             var el = document.getElementById("log");
             // is there a log element present?
             if (el) {
-                /**
+                /*
                  * Sets trace to be a function that outputs the messages to the DOMElement with id "log"
                  * @ignore
                  * @param {String} msg
@@ -995,7 +1016,7 @@ var debug = {
                 };
             }
             else if (isHostObject(window, "console") && !undef(console.info)) {
-                /**
+                /*
                  * Sets trace to be a wrapper around console.info
                  * @ignore
                  * @param {String} msg
@@ -1005,7 +1026,7 @@ var debug = {
                 };
             }
             else {
-                /**
+                /*
                  * Create log window
                  * @ignore
                  */
@@ -1046,6 +1067,7 @@ var debug = {
     },
     /**
      * Creates a method usable for tracing.
+     * @method getTracer
      * @param {String} name The name the messages should be marked with
      * @return {Function} A function that accepts a single string as argument.
      */
@@ -1084,14 +1106,15 @@ _trace = debug.getTracer("{Private}");
 // THE SOFTWARE.
 //
 
-/** 
- * @class easyXDM.DomHelper
+/**
  * Contains methods for dealing with the DOM
- * @singleton
+ * singleton
+ * @class easyXDM.DomHelper
  */
 easyXDM.DomHelper = {
     /**
      * Provides a consistent interface for adding eventhandlers
+     * @method on
      * @param {Object} target The target to add the event to
      * @param {String} type The name of the event
      * @param {Function} listener The listener
@@ -1099,6 +1122,7 @@ easyXDM.DomHelper = {
     on: on,
     /**
      * Provides a consistent interface for removing eventhandlers
+     * @method un
      * @param {Object} target The target to remove the event from
      * @param {String} type The name of the event
      * @param {Function} listener The listener
@@ -1109,6 +1133,7 @@ easyXDM.DomHelper = {
      * If it is not present it will use the supplied path to load the JSON2 library.
      * This should be called in the documents head right after the easyXDM script tag.
      * http://json.org/json2.js
+     * @method requiresJSON
      * @param {String} path A valid path to json2.js
      */
     requiresJSON: function(path){
@@ -1154,14 +1179,15 @@ easyXDM.DomHelper = {
     var _map = {};
     
     /**
-     * @class easyXDM.Fn
      * This contains methods related to function handling, such as storing callbacks.
-     * @singleton
+     * singleton
+     * @class easyXDM.Fn
      * @namespace easyXDM
      */
     easyXDM.Fn = {
         /**
          * Stores a function using the given name for reference
+         * @method set
          * @param {String} name The name that the function should be referred by
          * @param {Function} fn The function to store
          * @namespace easyXDM.fn
@@ -1172,6 +1198,7 @@ easyXDM.DomHelper = {
         },
         /**
          * Retrieves the function referred to by the given name
+         * @method get
          * @param {String} name The name of the function to retrieve
          * @param {Boolean} del If the function should be deleted after retrieval
          * @return {Function} The stored function
@@ -1220,7 +1247,6 @@ easyXDM.DomHelper = {
 //
 
 /**
- * @class easyXDM.Socket
  * This class creates a transport channel between two domains that is usable for sending and receiving string-based messages.<br/>
  * The channel is reliable, supports queueing, and ensures that the message originates from the expected domain.<br/>
  * Internally different stacks will be used depending on the browsers features and the available parameters.
@@ -1254,22 +1280,24 @@ easyXDM.DomHelper = {
  * </code></pre>
  * If you are unable to upload the <code>name.html</code> file to the consumers domain then remove the <code>remoteHelper</code> property
  * and easyXDM will fall back to using the HashTransport instead of the NameTransport when not able to use any of the primary transports.
+ * @class easyXDM.Socket
  * @namespace easyXDM
  * @constructor
- * @cfg {String/Window} local The url to the local name.html document, a local static file, or a reference to the local window.
- * @cfg {Boolean} lazy (Consumer only) Set this to true if you want easyXDM to defer creating the transport until really needed. 
- * @cfg {String} remote (Consumer only) The url to the providers document.
- * @cfg {String} remoteHelper (Consumer only) The url to the remote name.html file. This is to support NameTransport as a fallback. Optional.
- * @cfg {Number} delay The number of milliseconds easyXDM should try to get a reference to the local window.  Optional, defaults to 2000.
- * @cfg {Number} interval The interval used when polling for messages. Optional, defaults to 300.
- * @cfg {String} channel (Consumer only) The name of the channel to use. Can be used to set consistent iframe names. Must be unique. Optional.
- * @cfg {Function} onMessage The method that should handle incoming messages.<br/> This method should accept two arguments, the message as a string, and the origin as a string. Optional.
- * @cfg {Function} onReady A method that should be called when the transport is ready. Optional.
- * @cfg {DOMElement|String} container (Consumer only) The element, or the id of the element that the primary iframe should be inserted into. If not set then the iframe will be positioned off-screen. Optional.
- * @cfg {Array/String} acl (Provider only) Here you can specify which '[protocol]://[domain]' patterns that should be allowed to act as the consumer towards this provider.<br/>
+ * @param {mixed} [options] config
+ * @param {String/Window} [options.local] local The url to the local name.html document, a local static file, or a reference to the local window.
+ * @param {Boolean} [options.lazy] lazy (Consumer only) Set this to true if you want easyXDM to defer creating the transport until really needed.
+ * @param {String} [options.remote] remote (Consumer only) The url to the providers document.
+ * @param {String} [options.remoteHelper] remoteHelper (Consumer only) The url to the remote name.html file. This is to support NameTransport as a fallback. Optional.
+ * @param {Number} [options.delay] delay The number of milliseconds easyXDM should try to get a reference to the local window.  Optional, defaults to 2000.
+ * @param {Number} [options.interval] interval The interval used when polling for messages. Optional, defaults to 300.
+ * @param {String} [options.channel] channel (Consumer only) The name of the channel to use. Can be used to set consistent iframe names. Must be unique. Optional.
+ * @param {Function} [options.onMessage] onMessage The method that should handle incoming messages.<br/> This method should accept two arguments, the message as a string, and the origin as a string. Optional.
+ * @param {Function} [options.onReady] onReady A method that should be called when the transport is ready. Optional.
+ * @param {DOMElement|String} [options.container] container (Consumer only) The element, or the id of the element that the primary iframe should be inserted into. If not set then the iframe will be positioned off-screen. Optional.
+ * @param {Array/String} [options.acl] acl (Provider only) Here you can specify which '[protocol]://[domain]' patterns that should be allowed to act as the consumer towards this provider.<br/>
  * This can contain the wildcards ? and *.  Examples are 'http://example.com', '*.foo.com' and '*dom?.com'. If you want to use reqular expressions then you pattern needs to start with ^ and end with $.
  * If none of the patterns match an Error will be thrown.  
- * @cfg {Object} props (Consumer only) Additional properties that should be applied to the iframe. This can also contain nested objects e.g: <code>{style:{width:"100px", height:"100px"}}</code>. 
+ * @param {Object} [options.props] props (Consumer only) Additional properties that should be applied to the iframe. This can also contain nested objects e.g: <code>{style:{width:"100px", height:"100px"}}</code>.
  * Properties such as 'name' and 'src' will be overrided. Optional.
  */
 easyXDM.Socket = function(config){
@@ -1293,6 +1321,7 @@ easyXDM.Socket = function(config){
 	
     /**
      * Initiates the destruction of the stack.
+     * @method destroy
      */
     this.destroy = function(){
         stack.destroy();
@@ -1300,6 +1329,7 @@ easyXDM.Socket = function(config){
     
     /**
      * Posts a message to the remote end of the channel
+     * @method postMessage
      * @param {String} message The message to send
      */
     this.postMessage = function(message){
@@ -1334,8 +1364,7 @@ easyXDM.Socket = function(config){
 // THE SOFTWARE.
 //
 
-/** 
- * @class easyXDM.Rpc
+/**
  * Creates a proxy object that can be used to call methods implemented on the remote end of the channel, and also to provide the implementation
  * of methods to be called from the remote end.<br/>
  * The instantiated object will have methods matching those specified in <code>config.remote</code>.<br/>
@@ -1354,7 +1383,7 @@ easyXDM.Socket = function(config){
  * &nbsp; remote: {..}
  * });
  * </code></pre>
- * 
+ *
  * <h2>Exposing functions (procedures)</h2>
  * <pre><code>
  * var rpc = new easyXDM.Rpc({
@@ -1366,7 +1395,7 @@ easyXDM.Socket = function(config){
  * &nbsp; &nbsp; &nbsp; &nbsp; ...
  * &nbsp; &nbsp; &nbsp; }
  * &nbsp; &nbsp; },
- * &nbsp; &nbsp; &#47;&#47; with shorthand notation 
+ * &nbsp; &nbsp; &#47;&#47; with shorthand notation
  * &nbsp; &nbsp; nameOfAnotherMethod:  function(arg1, arg2, success, error){
  * &nbsp; &nbsp; }
  * &nbsp; },
@@ -1432,6 +1461,7 @@ easyXDM.Socket = function(config){
  * });
  * </code></pre>
  * If <code>serializer</code> is set then the class will not attempt to use the native implementation.
+ * @class easyXDM.Rpc
  * @namespace easyXDM
  * @constructor
  * @param {Object} config The underlying transports configuration. See easyXDM.Socket for available parameters.
@@ -1470,6 +1500,7 @@ easyXDM.Rpc = function(config, jsonRpcConfig){
     
     /**
      * Initiates the destruction of the stack.
+     * @method destroy
      */
     this.destroy = function(){
         stack.destroy();
@@ -1504,13 +1535,15 @@ easyXDM.Rpc = function(config, jsonRpcConfig){
 //
 
 /**
- * @class easyXDM.stack.SameOriginTransport
  * SameOriginTransport is a transport class that can be used when both domains have the same origin.<br/>
  * This can be useful for testing and for when the main application supports both internal and external sources.
+ * @class easyXDM.stack.SameOriginTransport
  * @namespace easyXDM.stack
  * @constructor
- * @param {Object} config The transports configuration.
- * @cfg {String} remote The remote document to communicate with.
+ * @param {Object} [options] config
+ * The transports configuration.
+ * @param {String} [options.remote] remote
+ * The remote document to communicate with.
  */
 easyXDM.stack.SameOriginTransport = function(config){
     var trace = debug.getTracer("easyXDM.stack.SameOriginTransport");
@@ -1601,12 +1634,12 @@ easyXDM.stack.SameOriginTransport = function(config){
  * FlashTransport is a transport class that uses an SWF with LocalConnection to pass messages back and forth.
  * @namespace easyXDM.stack
  * @constructor
- * @param {Object} config The transports configuration.
- * @cfg {String} remote The remote domain to communicate with.
- * @cfg {String} secret the pre-shared secret used to secure the communication.
- * @cfg {String} swf The path to the swf file
- * @cfg {Boolean} swfNoThrottle Set this to true if you want to take steps to avoid beeing throttled when hidden.
- * @cfg {String || DOMElement} swfContainer Set this if you want to control where the swf is placed
+ * @param {Object} [options] config The transports configuration.
+ * @param {String} [options.remote] remote The remote domain to communicate with.
+ * @param {String} [options.secret] secret the pre-shared secret used to secure the communication.
+ * @param {String} [options.swf] swf The path to the swf file
+ * @param {Boolean} [options.swfNoThrottle] swfNoThrottle Set this to true if you want to take steps to avoid beeing throttled when hidden.
+ * @param {String || DOMElement} [options.swfContainer] swfContainer Set this if you want to control where the swf is placed
  */
 easyXDM.stack.FlashTransport = function(config){
     var trace = debug.getTracer("easyXDM.stack.FlashTransport");
@@ -1626,6 +1659,8 @@ easyXDM.stack.FlashTransport = function(config){
     
     /**
      * This method adds the SWF to the DOM and prepares the initialization of the channel
+     * @method addSwf
+     * @param {String} domain
      */
     function addSwf(domain){
         trace("creating factory with SWF from " + domain);
@@ -1810,14 +1845,14 @@ easyXDM.stack.FlashTransport = function(config){
 //
 
 /**
- * @class easyXDM.stack.PostMessageTransport
  * PostMessageTransport is a transport class that uses HTML5 postMessage for communication.<br/>
  * <a href="http://msdn.microsoft.com/en-us/library/ms644944(VS.85).aspx">http://msdn.microsoft.com/en-us/library/ms644944(VS.85).aspx</a><br/>
  * <a href="https://developer.mozilla.org/en/DOM/window.postMessage">https://developer.mozilla.org/en/DOM/window.postMessage</a>
+ * @class easyXDM.stack.PostMessageTransport
  * @namespace easyXDM.stack
  * @constructor
- * @param {Object} config The transports configuration.
- * @cfg {String} remote The remote domain to communicate with.
+ * @param {Object} [options] config The transports configuration.
+ * @param {String} [options.remote] remote The remote domain to communicate with.
  */
 easyXDM.stack.PostMessageTransport = function(config){
     var trace = debug.getTracer("easyXDM.stack.PostMessageTransport");
@@ -1829,6 +1864,7 @@ easyXDM.stack.PostMessageTransport = function(config){
     /**
      * Resolves the origin from the event object
      * @private
+     * @method _getOrigin
      * @param {Object} event The messageevent
      * @return {String} The scheme, host and port of the origin
      */
@@ -1853,6 +1889,7 @@ easyXDM.stack.PostMessageTransport = function(config){
      * This is the main implementation for the onMessage event.<br/>
      * It checks the validity of the origin and passes the message on if appropriate.
      * @private
+     * @method _window_onMessage
      * @param {Object} event The messageevent
      */
     function _window_onMessage(event){
@@ -1952,13 +1989,13 @@ easyXDM.stack.PostMessageTransport = function(config){
 //
 
 /**
- * @class easyXDM.stack.FrameElementTransport
  * FrameElementTransport is a transport class that can be used with Gecko-browser as these allow passing variables using the frameElement property.<br/>
  * Security is maintained as Gecho uses Lexical Authorization to determine under which scope a function is running.
+ * @class easyXDM.stack.FrameElementTransport
  * @namespace easyXDM.stack
  * @constructor
- * @param {Object} config The transports configuration.
- * @cfg {String} remote The remote document to communicate with.
+ * @param {Object} [options] config The transports configuration.
+ * @param {String} [options.remote] remote The remote document to communicate with.
  */
 easyXDM.stack.FrameElementTransport = function(config){
     var trace = debug.getTracer("easyXDM.stack.FrameElementTransport");
@@ -2049,13 +2086,13 @@ easyXDM.stack.FrameElementTransport = function(config){
 //
 
 /**
- * @class easyXDM.stack.NameTransport
  * NameTransport uses the window.name property to relay data.
  * The <code>local</code> parameter needs to be set on both the consumer and provider,<br/>
  * and the <code>remoteHelper</code> parameter needs to be set on the consumer.
+ * @class easyXDM.stack.NameTransport
  * @constructor
- * @param {Object} config The transports configuration.
- * @cfg {String} remoteHelper The url to the remote instance of hash.html - this is only needed for the host.
+ * @param {Object} [options] config The transports configuration.
+ * @param {String} [options.remoteHelper] remoteHelper The url to the remote instance of hash.html - this is only needed for the host.
  * @namespace easyXDM.stack
  */
 easyXDM.stack.NameTransport = function(config){
@@ -2211,10 +2248,10 @@ easyXDM.stack.NameTransport = function(config){
  * <a href="http://msdn.microsoft.com/en-us/library/bb735305.aspx">http://msdn.microsoft.com/en-us/library/bb735305.aspx</a><br/>
  * @namespace easyXDM.stack
  * @constructor
- * @param {Object} config The transports configuration.
- * @cfg {String/Window} local The url to the local file used for proxying messages, or the local window.
- * @cfg {Number} delay The number of milliseconds easyXDM should try to get a reference to the local window.
- * @cfg {Number} interval The interval used when polling for messages.
+ * @param {Object} [options] config The transports configuration.
+ * @param {String/Window} [options.local] local The url to the local file used for proxying messages, or the local window.
+ * @param {Number} [options.delay] delay The number of milliseconds easyXDM should try to get a reference to the local window.
+ * @param {Number} [options.interval] interval The interval used when polling for messages.
  */
 easyXDM.stack.HashTransport = function(config){
     var trace = debug.getTracer("easyXDM.stack.HashTransport");
@@ -2242,6 +2279,7 @@ easyXDM.stack.HashTransport = function(config){
     /**
      * Checks location.hash for a new message and relays this to the receiver.
      * @private
+     * @method _pollHash
      */
     function _pollHash(){
         if (!_listenerWindow) {
@@ -2256,7 +2294,11 @@ easyXDM.stack.HashTransport = function(config){
             _handleHash(hash);
         }
     }
-    
+
+    /**
+     * @private
+     * @method _attachListeners
+     */
     function _attachListeners(){
         trace("starting polling");
         _timer = setInterval(_pollHash, pollInterval);
@@ -2369,8 +2411,8 @@ easyXDM.stack.HashTransport = function(config){
 //
 
 /**
- * @class easyXDM.stack.ReliableBehavior
  * This is a behavior that tries to make the underlying transport reliable by using acknowledgements.
+ * @class easyXDM.stack.ReliableBehavior
  * @namespace easyXDM.stack
  * @constructor
  * @param {Object} config The behaviors configuration.
@@ -2440,15 +2482,15 @@ easyXDM.stack.ReliableBehavior = function(config){
 //
 
 /**
- * @class easyXDM.stack.QueueBehavior
  * This is a behavior that enables queueing of messages. <br/>
  * It will buffer incoming messages and dispach these as fast as the underlying transport allows.
  * This will also fragment/defragment messages so that the outgoing message is never bigger than the
  * set length.
+ * @class easyXDM.stack.QueueBehavior
  * @namespace easyXDM.stack
  * @constructor
- * @param {Object} config The behaviors configuration. Optional.
- * @cfg {Number} maxLength The maximum length of each outgoing message. Set this to enable fragmentation.
+ * @param {Object} [options] config The behaviors configuration. Optional.
+ * @param {Number} [options.maxLength] maxLength The maximum length of each outgoing message. Set this to enable fragmentation.
  */
 easyXDM.stack.QueueBehavior = function(config){
     var trace = debug.getTracer("easyXDM.stack.QueueBehavior");
@@ -2590,13 +2632,13 @@ easyXDM.stack.QueueBehavior = function(config){
 //
 
 /**
- * @class easyXDM.stack.VerifyBehavior
  * This behavior will verify that communication with the remote end is possible, and will also sign all outgoing,
  * and verify all incoming messages. This removes the risk of someone hijacking the iframe to send malicious messages.
+ * @class easyXDM.stack.VerifyBehavior
  * @namespace easyXDM.stack
  * @constructor
- * @param {Object} config The behaviors configuration.
- * @cfg {Boolean} initiate If the verification should be initiated from this end.
+ * @param {Object} [options] config The behaviors configuration.
+ * @param {Boolean} [options.initiate] initiate If the verification should be initiated from this end.
  */
 easyXDM.stack.VerifyBehavior = function(config){
     var trace = debug.getTracer("easyXDM.stack.VerifyBehavior");
@@ -2672,16 +2714,16 @@ easyXDM.stack.VerifyBehavior = function(config){
 //
 
 /**
- * @class easyXDM.stack.RpcBehavior
  * This uses JSON-RPC 2.0 to expose local methods and to invoke remote methods and have responses returned over the the string based transport stack.<br/>
  * Exposed methods can return values synchronous, asyncronous, or bet set up to not return anything.
+ * @class easyXDM.stack.RpcBehavior
  * @namespace easyXDM.stack
  * @constructor
  * @param {Object} proxy The object to apply the methods to.
- * @param {Object} config The definition of the local and remote interface to implement.
- * @cfg {Object} local The local interface to expose.
- * @cfg {Object} remote The remote methods to expose through the proxy.
- * @cfg {Object} serializer The serializer to use for serializing and deserializing the JSON. Should be compatible with the HTML5 JSON object. Optional, will default to JSON.
+ * @param {Object} [options] config The definition of the local and remote interface to implement.
+ * @param {Object} [options.local] local The local interface to expose.
+ * @param {Object} [options.remote] remote The remote methods to expose through the proxy.
+ * @param {Object} [options.serializer] serializer The serializer to use for serializing and deserializing the JSON. Should be compatible with the HTML5 JSON object. Optional, will default to JSON.
  */
 easyXDM.stack.RpcBehavior = function(proxy, config){
     var trace = debug.getTracer("easyXDM.stack.RpcBehavior");
@@ -2691,6 +2733,7 @@ easyXDM.stack.RpcBehavior = function(proxy, config){
     /**
      * Serializes and sends the message
      * @private
+     * @method _send
      * @param {Object} data The JSON-RPC message to be sent. The jsonrpc property will be added.
      */
     function _send(data){
@@ -2701,6 +2744,7 @@ easyXDM.stack.RpcBehavior = function(proxy, config){
     /**
      * Creates a method that implements the given definition
      * @private
+     * @method _createMethod
      * @param {Object} The method configuration
      * @param {String} method The name of the method
      * @return {Function} A stub capable of proxying the requested method call
@@ -2750,6 +2794,7 @@ easyXDM.stack.RpcBehavior = function(proxy, config){
     /**
      * Executes the exposed method
      * @private
+     * @method _executeMethod
      * @param {String} method The name of the method
      * @param {Number} id The callback id to use
      * @param {Function} method The exposed implementation

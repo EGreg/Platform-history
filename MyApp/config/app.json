@@ -13,7 +13,7 @@
 		},
 		"plugins": ["Users", "Streams"],
 		"handlersBeforeEvent": {
-			"Q/responseExtras": ["MyApp/before/Q/responseExtras"]
+			"Q/responseExtras": ["MyApp/before/Q_responseExtras"]
 		},
 		"handlersAfterEvent": {
 			

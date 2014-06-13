@@ -1,5 +1,22 @@
 (function (Q, $) {
 
+    /**
+     * @method ticker
+     * @param {Object} [options] This is an object of parameters for this function
+     *  @param {Boolean} [options.vertical]
+     *  @default true
+     *  @param {Number} [options.speed]
+     *  @default 1
+     *  @param {Number} [options.pause_ms]
+     *  @default 2000
+     *  @param {Boolean} [options.scrollbars]
+     *  @default true
+     *  @param {Number} [options.scrollbars_pause_ms]
+     *  @default 500
+     *  @param {Number} [options.anim_ms]
+     *  @default 100
+     */
+
 Q.Tool.define("Q/ticker", function(options) {
 	// private variables:
 	var threshold = 5; // how many pixels until manual scrolling kicks in

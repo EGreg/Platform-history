@@ -1,17 +1,23 @@
 (function (Q, $) {
 
 /**
- * Q/bookmarklet tool.
  * Makes an infomation block for adding a bookmarklet on the browser's bookmarks bar
  * the way similar to how facebook does: http://www.facebook.com/share_options.php .
  * Main purpose of the tool is to present in cross-browser way how bookmarklet button will look, how bookmarklet will
  * look on browser panel and instructions how to add bookmarklet to that panel.
- * @param options Object
- *   A hash of options, which can include:
- *   "content": Required. Javascript code or url of the script.
- *   "title": Required. Title for the button which will be added to user's browser bar.
- *   "usage": Required. Text which is appended to instructions, identifying purpose and usage of this bookmarklet.
- *   "icon": Optional. Icon for the button which will be added to user's browser bar.
+ * @module Q
+ * @submodule Plugins
+ * @class jQuery
+ * @namespace Q
+ * @method bookmarklet
+ * @param {Object} [options] This is an object with properties for this function
+ *   @param {String} [options.content] Javascript code or url of the script.
+ *   @required
+ *   @param {String} [options.title] Title for the button which will be added to user's browser bar.
+ *   @required
+ *   @param {String} [options.usage] Text which is appended to instructions, identifying purpose and usage of this bookmarklet.
+ *   @required
+ *   @param {String} [options.icon] Icon for the button which will be added to user's browser bar.
  */
 $.fn.bookmarklet = function(options)
 {

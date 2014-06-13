@@ -1,4 +1,4 @@
-﻿/**
+﻿/*
  * Copyright (c) 2003-2014, CKSource - Frederico Knabben. All rights reserved.
  * For licensing, see LICENSE.md or http://ckeditor.com/license
  */
@@ -12,6 +12,14 @@
 // If you don't have plugins that depend on this file, you can simply ignore it.
 // Otherwise it is strongly recommended to customize this file to match your
 // website requirements and design properly.
+
+/**
+ * Add Theme for CKEditor
+ * @method stylesSet.add
+ * @param {String} default , Theme Name
+ * @param {Array} language ,
+ * Array of Style objects Example: <code> { name: 'Italic Title',		element: 'h2', styles: { 'font-style': 'italic' } } </code>
+*/
 
 CKEDITOR.stylesSet.add( 'default', [
 	/* Block Styles */

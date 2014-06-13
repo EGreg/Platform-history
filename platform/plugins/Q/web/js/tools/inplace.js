@@ -1,18 +1,33 @@
 (function (Q, $, window, document, undefined) {
 
-function _setSelRange(inputEl, selStart, selend) {
-	if ('setSelectionRange' in inputEl) {
-		inputEl.focus();
-		inputEl.setSelectionRange(selStart, selend);
-	} else if (inputEl.createTextRange) {
-		var range = inputEl.createTextRange();
-		range.collapse(true);
-		range.moveEnd('character', selend);
-		range.moveStart('character', selStart);
-		range.select();
-	}
-}
-
+/**
+ * Inline text editor tool.
+ * @method inplace
+ * @param {Object} [options] This is an object of parameters for this function
+ *  @param {String} [options.method] The HTTP verb to use.
+ *  @default 'put'
+ *  @param {String} [options.type] The type of the input field. Can be "textarea" or "text"
+ *  @default 'textarea'
+ *  @param {Boolean} [options.editOnClick] Whether to enter editing mode when clicking on the text.
+ *  @default true
+ *  @param {Boolean} [options.selectOnEdit] Whether to select everything in the input field when entering edit mode.
+ *  @default true
+ *  @param {Number} [options.maxWidth] The maximum width that the field can grow to
+ *  @default null
+ *  @param {Number} [options.minWidth] The minimum width that the field can shrink to
+ *  @default 100
+ *  @param {String} [options.placeholder] Text to show in the staticHtml or input field when the editor is empty
+ *  @default null
+ *  @param {Object} [options.template]  Can be used to override info for the tool's view template.
+ *    @param {String} [options.template.dir]
+ *    @default 'plugins/Q/views'
+ *    @param {String} [options.template.name]
+ *    @default 'Q/inplace/tool'
+ *  @param {Event} [options.onSave] This event triggers after save
+ *  @default Q.Event()
+ *  @param {Event} [options.onCancel] This event triggers after canceling
+ *  @default Q.Event()
+ */
 Q.Tool.define("Q/inplace", function (options) {
 	var tool = this, 
 		$te = $(tool.element), 
@@ -41,11 +56,14 @@ Q.Tool.define("Q/inplace", function (options) {
 		{
 			classes: function () { return o.editing ? 'Q_editing Q_nocancel' : ''; },
 			staticClass: staticClass,
-			staticHtml: staticHtml,
+			staticHtml: staticHtml
+				|| '<span class="Q_placeholder">'+tool.state.placeholder.encodeHTML()+'</div>'
+				|| '',
 			method: o.method || 'put',
 			action: o.action,
 			field: o.field,
 			textarea: (o.type === 'textarea'),
+			placeholder: tool.state.placeholder,
 			text: function (field) {
 				return staticHtml.decodeHTML();
 			},
@@ -67,7 +85,7 @@ Q.Tool.define("Q/inplace", function (options) {
 	selectOnEdit: true,
 	maxWidth: null,
 	minWidth: 100,
-	placeholder: '',
+	placeholder: null,
 	template: {
 		dir: 'plugins/Q/views',
 		name: 'Q/inplace/tool'
@@ -92,6 +110,19 @@ Q.Tool.define("Q/inplace", function (options) {
 }
 
 );
+
+function _setSelRange(inputEl, selStart, selend) {
+	if ('setSelectionRange' in inputEl) {
+		inputEl.focus();
+		inputEl.setSelectionRange(selStart, selend);
+	} else if (inputEl.createTextRange) {
+		var range = inputEl.createTextRange();
+		range.collapse(true);
+		range.moveEnd('character', selend);
+		range.moveStart('character', selStart);
+		range.select();
+	}
+}
 
 function _Q_inplace_tool_constructor(element, options) {
 
@@ -277,7 +308,10 @@ function _Q_inplace_tool_constructor(element, options) {
 				newval = response.slots.Q_inplace;
 			}
 		}
-		static_span.html(newval);
+		static_span.html(newval
+			|| '<span class="Q_placeholder">'+tool.state.placeholder.encodeHTML()+'</div>'
+			|| ''
+		);
 		undermessage.empty().css('display', 'none').addClass('Q_error');
 		tool.restoreActions();
 		container_span.removeClass('Q_editing')

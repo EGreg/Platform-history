@@ -1,5 +1,31 @@
 (function (Q, $, window, document, undefined) {
 
+    /**
+     * This plugin creates scalable and draggable element content or wraps that element.
+     * Using this plugin you can move content of element inside element and make a zoom of element content with mouse whell
+     * @method viewport
+     * @param {Object} [options] this object contains function parameters
+     *   @param {String} [options.containerClass] any class names to add to the actions container
+     *   @default ''
+     *   @param {Boolean} [options.wrap] Make element wrap or not
+     *   @default false
+     *   @param {Object} [options.initial] start position of content inside element
+     *     @param {Number} [options.initial.left] left position
+     *     @default 0
+     *     @param {Number} [options.initial.top] top position
+     *     @default 0
+     *     @param {Number} [options.initial.width]
+     *     @default 0
+     *     @param {Number} [options.initial.height]
+     *     @default 0
+     *   @param {Object} [options.result]
+     *   @param {Event} [options.onRelease] This event triggering after viewport creation
+     *   @default Q.Event()
+     *   @param {Event} [options.onZoom] This event triggering after zooming
+     *   @default Q.Event()
+     *   @param {Event} [options.onMove] This event triggering after element move
+     *   @default Q.Event()
+     */
 Q.Tool.jQuery('Q/viewport',
 
 function (options) {
