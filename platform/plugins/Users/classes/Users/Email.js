@@ -66,7 +66,11 @@ Users_Email.prototype.sendMessage = function(subject, view, fields, options, cal
 		callback = options;
 		options = {};
 	}
-	Q.Utils.sendEmail(this.address, subject, view, fields, options, callback);
+	if (!Q.Config.get(['Users', 'email', 'smtp'])) {
+		Q.log("\nSent email message to ".this.address.":\n".subject."\n".view);
+	} else {
+		Q.Utils.sendEmail(this.address, subject, view, fields, options, callback);
+	}
 };
 
 module.exports = Users_Email;
