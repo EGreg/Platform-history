@@ -67,7 +67,8 @@ Users_Email.prototype.sendMessage = function(subject, view, fields, options, cal
 		options = {};
 	}
 	if (!Q.Config.get(['Users', 'email', 'smtp'])) {
-		Q.log("\nSent email message to ".this.address.":\n".subject."\n".view);
+		var toLog = Q.Config.get(['Users', 'email', 'log', 'key', 'email']);
+		Q.log("\nSent email message to ".this.address.":\n".subject."\n".view, toLog);
 	} else {
 		Q.Utils.sendEmail(this.address, subject, view, fields, options, callback);
 	}
