@@ -1,5 +1,5 @@
 <?php
 
 if (!defined('Q_DIR')) {
-	define ('Q_DIR', '/projects/qbix/Q/platform');
+	define ('Q_DIR', '/home/nodes/Q/platform');
 }

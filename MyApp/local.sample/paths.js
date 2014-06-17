@@ -1,1 +1,1 @@
-exports.Q_DIR = '/projects/qbix/Q/platform';
+exports.Q_DIR = '/home/nodes/Q/platform';
