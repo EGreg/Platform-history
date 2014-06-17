@@ -73,20 +73,18 @@ class Users_Email extends Base_Users_Email
 		$subject = Q_Mustache::renderSource($subject, $fields);
 		$body = Q::view($view, $fields);
 		
-		if(is_null(Q_Config::get('Users', 'email', 'smtp', null))){
-			$isOverrideLog = Q::event(
-				'Users/email/log', 
-				compact('emailAddress', 'subject', 'body'),
-				'before'
-			);
-
-			if(is_null($isOverrideLog)){
-				Q::log("\nSent email message to $emailAddress:\n$subject\n$body");
-			}
-
+		if(is_null(Q_Config::get('Users', 'email', 'smtp', null))) {
 			Q_Response::setNotice("Q/email", "Please set up SMTP in Users/email/smtp as in docs.", true);
-
 			return true;
+		}
+		$overrideLog = Q::event(
+			'Users/email/log', 
+			compact('emailAddress', 'subject', 'body'),
+			'before'
+		);
+		if(is_null($overrideLog)
+		and $key = Q_Config::get('Users', 'email', 'log', 'key', null)) {
+			Q::log("\nSent email message to $emailAddress:\n$subject\n$body", $key);
 		}
 
 		$from = Q::ifset($options, 'from', Q_Config::get('Users', 'email', 'from', null));

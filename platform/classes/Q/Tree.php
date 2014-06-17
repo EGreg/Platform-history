@@ -203,7 +203,10 @@ class Q_Tree
 		$arr = Q::event('Q/tree/load', compact('filename'), 'before');
 		if (!isset($arr)) {
 			try {
-				$arr = json_decode(file_get_contents($filename2), true);
+				// get file contents, remove comments and parse
+				$json = file_get_contents($filename2);
+				$json = preg_replace('/\s*(?!<\")\/\*[^\*]+\*\/(?!\")\s*/', '', $json);
+				$arr = json_decode($json, true);
 			} catch (Exception $e) {
 				$arr = null;
 			}

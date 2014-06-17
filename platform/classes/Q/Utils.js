@@ -179,7 +179,7 @@ var smtpTransport = null;
 Utils.sendEmail = function (to, subject, view, fields, options, callback) {
 	var mailer = require('nodemailer'),
 		mustache = require('mustache'),
-		toLog = Q.Config.get(['Users', 'mobile', 'logKey'], 'email');
+		key = Q.Config.get(['Users', 'mobile', 'log', 'key'], 'email');
 
 	if (!smtpTransport) {
 		// Set up the default mail transport
@@ -229,11 +229,14 @@ Utils.sendEmail = function (to, subject, view, fields, options, callback) {
 	mailOptions[options.html ? 'html' : 'text'] = options.isSource
 		? Q.Mustache.renderSource(view, fields)
 		: Q.Mustache.render(view, fields);
-	smtpTransport.sendMail(mailOptions, function(){
-		Q.log('from: ' + mailOptions.from + ' to: ' + to + ' subject: ' + mailOptions.subject, toLog);
-
-		callback.apply(this, arguments);
-	});
+	if (key) {
+		Q.log('Sent email message to ' + to
+			+ ":\n" + mailOptions.subject
+			+ "\n" + mailOptions.html || mailOptions.text,
+			key
+		);
+	}
+	smtpTransport.sendMail(mailOptions, callback);
 };
 
 /**
@@ -254,7 +257,7 @@ var twilioClient = null;
 Utils.sendSMS = function (to, view, fields, options, callback) {
 	// some mobile number normalization
 	var number, provider, address = [],
-		toLog = Q.Config.get(['Users', 'mobile', 'logKey'], 'SMS');
+		key = Q.Config.get(['Users', 'mobile', 'log', 'key'], null);
 	if (to.slice(0, 2) === "00") {
 		// convert 00 to + in international numbers
 		number = '+'+to.slice(2);
@@ -279,9 +282,9 @@ Utils.sendSMS = function (to, view, fields, options, callback) {
 		: Q.Mustache.render(view, fields);
 	if (twilioClient && (from = options.from || Q.Config.get(['Users', 'mobile', 'from'], null))) {
 		twilioClient.sendSms(from, '+'+number, content, {}, function (res) {
-			Q.log('twilio: '+number+' "'+content+'"', toLog);
-			Q.log('dateCreated: '+res.dateCreated, toLog);
-
+			if (key) {
+				Q.log('sent mobile message (via twilio) to '+number+":\n"+content, key);
+			}
 			callback(null, 'twilio', res);
 		}, function (err) {
 			callback(err, 'twilio');
@@ -300,11 +303,14 @@ Utils.sendSMS = function (to, view, fields, options, callback) {
 	for (provider in gateways) {
 		address.push(number.substr(2)+'@'+gateways[provider]);
 	}
-
+	options.html = false;
 	Q.Utils.sendEmail(address.join(','), null, view, fields, options, function(err, res) {
-		Q.log('smtp: '+number+' "'+content+'"', toLog);
-		Q.log('status: '+(err ? 'ERROR: '+err.message : 'Ok'));
-
+		if (key) {
+			Q.log("\nSent mobile message (via smtp gateway) to : "+number+":\n"+content, key);
+			if (err) {
+				Q.log("ERROR: " + err.message, key);
+			}
+		}
 		callback(err, 'smtp', res);
 	});
 };

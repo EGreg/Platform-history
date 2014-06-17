@@ -50,25 +50,7 @@ Users_Mobile.prototype.sendMessage = function (view, fields, options, callback) 
 		callback = options;
 		options = {};
 	}
-	options.html = false; // just to be sure ;)
-
-	var gateways = Q.Config.get(['Users', 'mobile', 'gateways'], {
-		'at&t': 'txt.att.net',
-		'sprint': 'messaging.sprintpcs.com',
-		'verizon': 'vtext.com',
-		't-mobile': 'tmomail.net'
-	});
-	var number = this.number.substr(1), provider, address = [];
-	for (provider in gateways) {
-		address.push(number+'@'+gateways[provider]);
-	}
-
-	if (!Q.Config.get(['Users', 'email', 'smtp'])) {
-		var toLog = Q.Config.get(['Users', 'email', 'log', 'key', 'mobile']);
-		Q.log("\nSent mobile message to ".address.join(',').":\n".view, toLog);
-	} else {
-		Q.Utils.sendEmail(address.join(','), null, view, fields, options, callback);
-	}
+	Q.Utils.sendSMS(this.number, view, fields, options, callback);
 };
 
 /**

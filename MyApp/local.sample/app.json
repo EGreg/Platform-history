@@ -50,13 +50,22 @@
 			}
 		},
 		"email": {
-            "from": ["qp@qbix.com", "Q Platform"],
-            "log": {
-                "key": {
-                    "email": "Q.email.log",
-                    "mobile": "Q.mobile.log"
-                }
-            }
-        }
+			"smtp": null, /* {
+				"auth": "login",
+				"username": "USERNAME HERE",
+				"password": "PASSWORD HERE",
+				"ssl": "ssl",
+				"port": 465,
+				"host": "smtp.sendgrid.net"
+			}, */
+			"from": ["notifications@MyApp.com", "MyApp"]
+		},
+		"mobile": {
+			"twilio": null, /* {
+				"sid": "YOUR SID HERE",
+				"token": "YOUR TOKEN HERE"
+			}, */
+			"from": "+1234567890"
+		}
 	}
 }

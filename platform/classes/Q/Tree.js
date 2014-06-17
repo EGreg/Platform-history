@@ -63,6 +63,7 @@ module.exports = function (linked) {
 						callback && callback.call(that, err);
 					} else {
 						try {
+							data.replace(new RegExp("\\s*(?!<\")\\/\\*[^\\*]+\\*\\/(?!\")\\s*", 'gi'), '');
 							data = JSON.parse(data);
 						} catch (e) {
 							callback && callback.call(that, e);

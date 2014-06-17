@@ -45,20 +45,21 @@
 	},
 	"Users": {
 		"email": {
-			"smtp": {
+			"smtp": null, /* {
 				"auth": "login",
 				"username": "USERNAME HERE",
 				"password": "PASSWORD HERE",
 				"ssl": "ssl",
 				"port": 465,
 				"host": "smtp.sendgrid.net"
-			}
+			}, */
+			"from": ["notifications@SmartApp.com", "SmartApp"]
 		},
 		"mobile": {
-			"twilio": {
+			"twilio": null, /* {
 				"sid": "YOUR SID HERE",
 				"token": "YOUR TOKEN HERE"
-			},
+			}, */
 			"from": "+1234567890"
 		},
 		"facebookApps": {

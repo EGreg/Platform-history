@@ -63,19 +63,17 @@ class Users_Mobile extends Base_Users_Mobile
 		$body = Q::view($view, $fields);
 
 		if(is_null(Q_Config::get('Users', 'email', 'smtp', null))){
-			$isOverrideLog = Q::event(
-				'Users/mobile/log', 
-				compact('mobileNumber', 'body'), 
-				'before'
-			);
-
-			if(is_null($isOverrideLog)){
-				Q::log("\nSent mobile message to $mobileNumber:\n$body");
-			}
-
 			Q_Response::setNotice("Q/mobile", "Please set up transport in Users/mobile/twilio as in docs", true);
-
 			return true;
+		}
+		$overrideLog = Q::event(
+			'Users/mobile/log', 
+			compact('mobileNumber', 'body'), 
+			'before'
+		);
+		if(is_null($overrideLog)
+		and $key = Q_Config::get('Users', 'mobile', 'log', 'key', null)) {
+			Q::log("\nSent mobile message to $mobileNumber:\n$body", $key);
 		}
 
 		$sent = false;
