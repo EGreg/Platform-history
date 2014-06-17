@@ -124,7 +124,7 @@ function (options) {
 			}
 			fixPosition(newPos);
 			stretcher.css(newPos);
-			return false;
+			Q.Pointer.cancelClick(); // on even the slightest move
 		}
 		
 		function _endHandler (e) {

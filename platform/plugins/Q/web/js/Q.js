@@ -7277,6 +7277,7 @@ function _Q_PointerStartHandler(e) {
 	Q.Pointer.canceledClick = false;
 	Q.addEventListener(document, Q.Pointer.move, _onPointerMoveHandler);
 	Q.addEventListener(document, Q.Pointer.end, _onPointerEndHandler);
+	Q.addEventListener(document, Q.Pointer.cancel, _onPointerEndHandler);
 }
 
 var _pos;
@@ -7307,7 +7308,7 @@ function _onPointerMoveHandler(evt) { // see http://stackoverflow.com/a/2553717/
 			toX: screenX,
 			toY: screenY
 		});
-		Q.removeEventListener(window, Q.Pointer.move, _onPointerMoveHandler);
+		Q.removeEventListener(document, Q.Pointer.move, _onPointerMoveHandler);
 		_pos = null;
 	}
 }
@@ -7318,6 +7319,7 @@ var _onPointerEndHandler = Q.Pointer.ended = function _onPointerEndHandler() {
 	}, 0);
 	Q.removeEventListener(document, Q.Pointer.move, _onPointerMoveHandler);
 	Q.removeEventListener(document, Q.Pointer.end, _onPointerEndHandler);
+	Q.removeEventListener(document, Q.Pointer.cancel, _onPointerEndHandler);
 	setTimeout(function () {
 		Q.Pointer.canceledClick = false;
 	}, 100);
