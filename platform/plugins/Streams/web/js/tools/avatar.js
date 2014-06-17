@@ -2,11 +2,34 @@
 
 /**
  * Users/avatar tool
+ * @method avatar
  * @param {String} prefix Prefix of the tool to be constructed.
- * @param {Object} options A hash of options, containing:
- *   "userId": The id of the user object. Required.
- *   "icon": Optional. Size of the icon to render before the display name.
- *   "short": Defaults to false. If true, renders the short version of the display name.
+ * @param {Object} [options] A hash of options, containing:
+ *   @param {String} [options.userId] The id of the user object.
+ *   @required
+ *   @param {Number} [options.icon] Size of the icon to render before the display name.
+ *   @default 40
+ *   @param {Boolean} [options.icon] If true, renders the short version of the display name.
+ *   @default false
+ *   @param {Event} [options.onName]
+ *   @default  new Q.Event(function() {}, 'Users')
+ *   @param {Object} [options.templates]
+ *     @param {Object} [options.templates.icon]
+ *       @param {String} [options.templates.icon.dir]
+ *       @default 'plugins/Users/views'
+ *       @param {String} [options.templates.icon.name]
+ *       @default 'Users/avatar/icon'
+ *       @param {Object} [options.templates.icon.fields]
+ *         @param {String} [options.templates.icon.fields.alt]
+ *         @default "user icon"
+ *     @param {Object} [options.templates.contents]
+ *       @param {String} [options.templates.contents.dir]
+ *       @default 'plugins/Users/views'
+ *       @param {String} [options.templates.contents.name]
+ *       @default 'Users/avatar/contents'
+ *       @param {Object} [options.templates.contents.fields]
+ *         @param {String} [options.templates.contents.fields.tag]
+ *         @default "span"
  */
 Q.Tool.define("Users/avatar", function(options) {
 	if (this.element.childNodes.length) {

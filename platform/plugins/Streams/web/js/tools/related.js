@@ -1,26 +1,30 @@
 (function (Q, $) {
 
-/*
+/**
  * Streams/related tool.
- * @param options Object
- * A hash of options, which can include:
- *   "publisherId": Either this or "stream" is required. Publisher id of the stream to which the others are related
- *   "streamName": Either this or "stream" is required. Name of the stream to which the others are related
- *   "tag": Defaults to "div". The type of element to contain the preview tool for each related stream.
- *   "stream": You can pass a Streams.Stream object here instead of "publisherId" and "streamName"
- *   "relationType": The type of the relation. Defaults to ""
- *   "isCategory": Defaults to true. Whether to show the streams related TO this stream, or the ones it is related to.
- *   "relationOptions": Can include options like 'limit', 'offset', 'ascending', 'min', 'max' and 'prefix'
- *   "editable": Set to false to avoid showing even authorized users an interface to replace the image or text
- *   "creatable": Optional pairs of {streamType: params} to create new related streams.
- *      The params typically include at least a "title" field which you can fill with values such as "New" or "New ..."
- *   "toolType": Function that takes streamType and returns the tag to render (and then activate) for that stream
- *   "realtime": Whether to refresh every time a relation is added, removed or updated
- *   "sortable": Options for "Q/sortable" jQuery plugin. Pass false here to disable sorting interface.
- *   "tabs": Function for interacting with any parent "Q/tabs" tool. Format is function (previewTool, tabsTool) { return urlOrTabKey; }
- *   "updateOptions": Options for onUpdate such as duration of the animation, etc.
- *   "onUpdate": Event that receives parameters "data", "entering", "exiting", "updating"
- *   "onRefresh": Event that occurs when the tool is completely refreshed, the "this" is the tool
+ * @method related
+ * @param {Object} [options] this object contains function parameters
+ *   @param {String} [options.publisherId] Either this or "stream" is required. Publisher id of the stream to which the others are related
+ *   @param {String} [options.streamName] Either this or "stream" is required. Name of the stream to which the others are related
+ *   @param {String} [options.tag] The type of element to contain the preview tool for each related stream.
+ *   @default "div"
+ *   @param {Stream} [options.stream] You can pass a Streams.Stream object here instead of "publisherId" and "streamName"
+ *   @param {Stream} [options.relationType] The type of the relation.
+ *   @default ""
+ *   @param {Boolean} [options.isCategory] Whether to show the streams related TO this stream, or the ones it is related to.
+ *   @default true
+ *   @param {Object} [options.relationOptions] Can include options like 'limit', 'offset', 'ascending', 'min', 'max' and 'prefix'
+ *   @param {Boolean} [options.editable] Set to false to avoid showing even authorized users an interface to replace the image or text
+ *   @param {Boolean} [options.creatable]  Optional pairs of {streamType: params} to create new related streams.
+ *   The params typically include at least a "title" field which you can fill with values such as "New" or "New ..."
+ *   @param {Function} [options.toolType] Function that takes streamType and returns the tag to render (and then activate) for that stream
+ *   @param {Boolean} [options.realtime] Whether to refresh every time a relation is added, removed or updated
+ *   @default false
+ *   @param {Object} [options.sortable] Options for "Q/sortable" jQuery plugin. Pass false here to disable sorting interface.
+ *   @param {Function} [options.tabs] Function for interacting with any parent "Q/tabs" tool. Format is function (previewTool, tabsTool) { return urlOrTabKey; }
+ *   @param {Object} [options.updateOptions] Options for onUpdate such as duration of the animation, etc.
+ *   @param {Event} [options.onUpdate] Event that receives parameters "data", "entering", "exiting", "updating"
+ *   @param {Event} [options.onRefresh] Event that occurs when the tool is completely refreshed, the "this" is the tool
  */
 Q.Tool.define("Streams/related",
 

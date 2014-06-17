@@ -1,16 +1,18 @@
 (function (Q, $, window, document, undefined) {
 
-/*
+/**
  * Streams/html tool.
- * @param options Object
- * A hash of options, which can include:
- *   "editable": Set to false to avoid showing even authorized users an interface to replace the contents
- *   "ckeditor": The config, if any, to pass to ckeditor
- *   "publisherId": Required. The publisher's user id.
- *   "streamName": If empty, and "creatable" is true, then this can be used to add new related streams.
- *   "field": Required. The name of the stream field used to save the html.
- *   "placeholder": The placeholder HTML
- *   "preprocess": Optional function which takes [callback, tool] and calls callback(objectToExtendAnyStreamFields) 
+ * @method html
+ * @param {Object} [options] this object contains function parameters
+ *   @param {Boolean} [options.editable] Set to false to avoid showing even authorized users an interface to replace the contents
+ *   @param {Object} [options.ckeditor]  The config, if any, to pass to ckeditor
+ *   @param {String} [options.publisherId]  The publisher's user id.
+ *
+ *   @param {String} [options.streamName] If empty, and "creatable" is true, then this can be used to add new related streams.
+ *   @param {String} [options.field] The name of the stream field used to save the html.
+ *   @required
+ *   @param {String} [options.placeholder] The placeholder HTML
+ *   @param {Function} [options.preprocess]  Optional function which takes [callback, tool] and calls callback(objectToExtendAnyStreamFields)
  */
 Q.Tool.define("Streams/html", function (options) {
 	var tool = this,

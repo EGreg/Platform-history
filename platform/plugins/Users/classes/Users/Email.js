@@ -67,9 +67,6 @@ Users_Email.prototype.sendMessage = function(subject, view, fields, options, cal
 		options = {};
 	}
 	Q.Utils.sendEmail(this.address, subject, view, fields, options, callback);
-	if (key = Q.Config.get(['Users', 'email', 'log', 'key', null])) {
-		Q.log("\nSent email message to ".this.address.":\n".subject."\n".view, key);
-	}
 };
 
 module.exports = Users_Email;

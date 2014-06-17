@@ -11,6 +11,11 @@ var Websites = Q.Websites = Q.plugins.Websites = {
 
 };
 
+    /**
+     * @method Websites/bio
+     * @param {Object} fields
+     */
+
 Q.Tool.define("Websites/bio", function (fields) {
 	var gittool = this.$('.Users_getintouch_tool');
 	var form = this.$('form.Websites_getintouch');

@@ -2,17 +2,21 @@
 
 /**
  * This tool generates an inline editor to edit the content or attribute of a stream.
- * @param {Array} options An associative array, containing:
- *  "inplaceType": Required. The type of the fieldInput. Can be "textarea" or "text"
- *  "publisherId": Required if stream option is empty. The publisher's user id.
- *  "streamName": Required if stream option is empty. The name of the stream.
- *  "stream": Optionally pass a Streams.Stream object here if you have it already
- *  "field": Optional, name of an field to change instead of the content of the stream
- *  "attribute": Optional, name of an attribute to change instead of any field.
- *  "inplace": Additional fields to pass to the child Q/inplace tool, if any
- *  "create": Optional. You can pass a function here, which takes the tool as "this"
+ * @method inplace
+ * @param {Object} [options] this object contains function parameters
+ *   @param {String} [options.inplaceType] The type of the fieldInput. Can be "textarea" or "text"
+ *   @required
+ *   @param {String} [options.publisherId] Required if stream option is empty. The publisher's user id.
+ *   @param {String} [options.publisherId] Required if stream option is empty. The publisher's user id.
+ *   @param {Stream} [options.stream] Optionally pass a Streams.Stream object here if you have it already
+ *   @param {String} [options.field] Optional, name of an field to change instead of the content of the stream
+ *   @param {String} [options.attribute] Optional, name of an attribute to change instead of any field.
+ *   @param {Object} [options.inplace] Additional fields to pass to the child Q/inplace tool, if any
+ *   @param {Function} [options.create] Optional. You can pass a function here, which takes the tool as "this"
  *     and a callback as the first parameter, is supposed to create a stream and
  *     call the callback with (err, stream). If omitted, then the tool doesn't render.
+ *   @param {Event} [options.onUpdate]
+ *   @param {Event} [options.onError]
  */
 Q.Tool.define("Streams/inplace", function (options) {
 	var tool = this,

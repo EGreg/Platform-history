@@ -87,6 +87,7 @@ Streams_Participating.registerFreshEvent = function (event, set, user, validate)
 
 /**
  * Unregister fresh event
+ * @method unregisterFreshEvent
  * @param event {string}
  */
 Streams_Participating.unregisterFreshEvent = function (event) {

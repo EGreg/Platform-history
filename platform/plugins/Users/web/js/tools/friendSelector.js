@@ -2,25 +2,38 @@
 
 /**
  * Users/friendSelector tool. Makes a tool which allows selecting a friend from the logged-in user's friends list.
- * @param options Object
- *   A hash of options, which can include:
- *   "onSelect": Required. This callback is called when the user selects a friend.
- *   "customList": Optional. By default friends list is fetched from facebook, but here you can provide an array of friends or
- *                 callback which in turn will call friendSelector callback passing it such array as first agrument.
- *                 Callback may be a function or string name of the function.
- *                 Array should contain objects like { id: 'id', name: 'name' }. 'includeMe' option is ignored if 'customList' provided.
- *   "includeMe": Optional. Whether or not to include user himself. Can be just boolean true or a string,
-                  which is used instead of user real name. Ignored if 'customList' option is provided.
- *   "provider": Optional. Has to be "facebook" for now.
- *   "prompt": Optional. Specifies type of prompt if user is not logged in or didn't give required permission for the tool.
- *             Can be either 'button', 'dialog' or null|false. In first case just shows simple button which opens facebook login popup.
- *             In second case shows Users.facebookDialog prompting user to login.
- *             In third case will not show any prompt and will just hide the tool.
- *   "promptTitle": Optional. Used only when 'prompt' equals 'dialog' - will be title of the dialog.
- *   "promptText": Optional. Used either for button caption when 'prompt' equals 'button' or
+ * @method friendSelector
+ * @param {Object} [options] this object contains function parameters
+ *   @param {Function} [options.onSelect] This callback is called when the user selects a friend.
+ *   @required
+ *   @param {Array|Object|Function} [options.customList]
+ *   Optional. By default friends list is fetched from facebook, but here you can provide an array of friends or
+ *   callback which in turn will call friendSelector callback passing it such array as first agrument.
+ *   Callback may be a function or string name of the function.
+ *   Array should contain objects like <code> { id: 'id', name: 'name' } </code>.
+ *   <b>'includeMe' option is ignored if 'customList' provided </b>
+ *   @param {String|Boolean} [options.includeMe]
+ *   Whether or not to include user himself. Can be just boolean true or a string,
+ *    which is used instead of user real name.
+ *    <b>Ignored if 'customList' option is provided.</b>
+ *    @param {String} [options.provider]
+ *    Has to be "facebook" for now.
+ *    @default 'facebook'
+ *    @param {String|Boolean} [options.prompt]
+ *    Specifies type of prompt if user is not logged in or didn't give required permission for the tool.
+ *    Can be either 'button', 'dialog' or null|false. In first case just shows simple button which opens facebook login popup.
+ *    In second case shows Users.facebookDialog prompting user to login.
+ *    In third case will not show any prompt and will just hide the tool.
+ *    @optional
+ *    @param {String} [options.promptTitle]
+ *    Used only when 'prompt' equals 'dialog' - will be title of the dialog.
+ *    @optional
+ *    @param {String} [options.promptText]
+ *    Used either for button caption when 'prompt' equals 'button' or
  *                 dialog text when 'prompt' equals 'dialog'.
- *   "filter": Custom function to filter out the friends list.
- *   "ordering": Custom function to order the friends list. By default friends are ordered by name.
+ *    @optional
+ *    @param {Function} [options.filter] Custom function to filter out the friends list.
+ *    @param {Function} [options.ordering] Custom function to order the friends list. By default friends are ordered by name.
  */
 Q.Tool.define('Users/friendSelector', function(o) {
 	var toolDiv = $(this.element);

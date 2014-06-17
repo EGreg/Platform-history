@@ -1,26 +1,29 @@
 (function (Q, $) {
 
-/*
+/**
  * Streams/photoSelector tool. Makes a tool which provides possibility to select photos from user albums.
- * @param options Object
- *    A hash of options, which can include:
- *     "onSelect": Required. This callback is called when the user selects a photo.
- *     "uid": Optional. The uid of the user on the provider whose photos are shown. Defaults to 'me()' which is current logged in user.
- *     "fetchBy": Optional, defaults to 'album'. The tool supports different algoriths for fetching photos,
- *     "onLoad": Optional. Q.Event, callback or callback string name which is called when bunch of photos has been loaded.
- *     "onError": Optional. Q.Event, callback or callback string which will be called for each image that is unable to load.
- *                            Image DOM element will be passed as first argument.
- *     "provider": Optional. Has to be "facebook" for now.
- *     so currently there are two variants: by 'album' and by 'tags'. Maybe more will be added later.
- *     "prompt": Optional. Specifies type of prompt if user is not logged in or didn't give required permission for the tool.
+ * @method photoSelector
+ * @param {Object} [options] this object contains function parameters
+ *   @param {Event} [options.onSelect] This callback is called when the user selects a photo.
+ *   @required
+ *   @param {String} [options.uid] Optional. The uid of the user on the provider whose photos are shown. Defaults to 'me()' which is current logged in user.
+ *   @param {String} [options.fetchBy] The tool supports different algoriths for fetching photos
+ *   @default 'album'
+ *   @param {Event} [options.onLoad] Q.Event, callback or callback string name which is called when bunch of photos has been loaded.
+ *   @param {Event} [options.onError] Q.Event, callback or callback string which will be called for each image that is unable to load. Image DOM element will be passed as first argument.
+ *   @param {String} [options.provider]  Has to be "facebook" for now. so currently there are two variants: by 'album' and by 'tags'. Maybe more will be added later.
+ *   @default 'facebook'
+ *   @param {String} [options.prompt]  Has to be "facebook" for now.
+ *   Specifies type of prompt if user is not logged in or didn't give required permission for the tool.
  *                         Can be either 'button', 'dialog' or null|false. In first case just shows simple button which opens facebook login popup.
  *                         In second case shows Users.facebookDialog prompting user to login.
  *                         In third case will not show any prompt and will just hide the tool.
- *     "promptTitle": Optional. Used only when 'prompt' equals 'dialog' - will be title of the dialog.
- *     "promptText": Optional. Used either for button caption when 'prompt' equals 'button' or
- *                                 dialog text when 'prompt' equals 'dialog'.
- *     "oneLine": Defaults to false. If true, all the images are shown in a large horizontally scrolling line.
- *     "cache": Defaults to false. If true, photos will be cached using localStorage (if available).
+ *   @param {String} [options.promptTitle]  Used only when 'prompt' equals 'dialog' - will be title of the dialog.
+ *   @param {String} [options.promptText]  Used either for button caption when 'prompt' equals 'button' or dialog text when 'prompt' equals 'dialog'.
+ *   @param {Boolean} [options.oneLine]  If true, all the images are shown in a large horizontally scrolling line.
+ *   @default false
+ *   @param {Boolean} [options.cache]  If true, photos will be cached using localStorage (if available).
+ *   @default false
  */
 Q.Tool.define("Streams/photoSelector", function _Streams_chat_constructor (o) {
 

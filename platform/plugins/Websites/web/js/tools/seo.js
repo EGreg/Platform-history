@@ -2,10 +2,20 @@
 
 /**
  * Tool for admins to edit the meta tags on a page, for SEO purposes.
- * @param {Array} options
- *  An associative array of parameters, containing:
- *  "template" => Optional fields to override info for seo tool template
- *  "inplace" => Hash of {attributeName: options} for Streams/inplace tools
+ * @method Websites/seo
+ * @param {Object} [options]
+ *   @param {Object} [options.template] Optional fields to override info for seo tool template
+ *   @optional
+ *     @param {String} [options.template.name] name of template
+ *     @default "Websites/seo"
+ *   @optional {Object} [options.inplace] Hash of {attributeName: options} for Streams/inplace tools
+ *   @example
+ *   <code>
+ *        url: { inplace: { placeholder: "Url" } },
+ *        title: { inplace: { placeholder: "Title" } },
+ *        keywords: { inplace: { placeholder: "Keywords" } },
+ *        description: { inplace: { placeholder: "Description" } }
+ *   </code>
  */
 
 Q.Tool.define("Websites/seo", function () {

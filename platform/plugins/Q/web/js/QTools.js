@@ -1843,7 +1843,9 @@ Q.Content = {
 		/**
 		 * Sets 'title' slot.
 		 * This is just a <title> tag of the app.
-		 * @param contents String. Required. New title string.
+         * @method set.title
+		 * @param {String} contents New title string.
+         * @required
 		 */
 		title: function(contents)
 		{
@@ -1854,7 +1856,9 @@ Q.Content = {
 
 		/**
 		 * Sets 'column1' slot.
-		 * @param contents String. Required. New content for 'column1' slot.
+         * @method set.column1
+		 * @param {String} contents  New content for 'column1' slot.
+         * @required
 		 */
 		column1: function(contents)
 		{
@@ -3053,7 +3057,7 @@ Q.Notices = {
 	/**
 	 * Setting that changes notices slide down / slide up time.
      * @property popUpTime
-     * @trype {Number}
+     * @type {Number}
      * @default 500
 	 */
 	popUpTime: 500,

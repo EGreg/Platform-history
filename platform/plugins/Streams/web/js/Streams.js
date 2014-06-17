@@ -38,20 +38,52 @@ Q.text.Streams = {
 /**
  * Read levels
  * @property READ_LEVEL
- * @type object
+ * @type {Object}
+ * @param {Number} none , Can't see the stream
+ * @default 0
+ * @param {Number} see , can see icon and title
+ * @default 10
+ * @param {Number} content ,  can preview stream and its content
+ * @default 20
+ * @param {Number} participants , can see participants in the stream
+ * @default 30
+ * @param {Number} messages , can play stream in a player
  */
 Streams.READ_LEVEL = {
-	'none':			0,		// can't see the stream
-	'see':			10,		// can see icon and title
-	'content':		20,		// can preview stream and its content
-	'participants':	30,		// can see participants in the stream
-	'messages':		40		// can play stream in a player
+	'none':			0, //Can't see the stream
+	'see':			10, //can see icon and title
+	'content':		20, //can preview stream and its content
+	'participants':	30, // can see participants in the stream
+	'messages':		40 //can play stream in a player
 };
 
 /**
  * Write levels
  * @property WRITE_LEVEL
- * @type object
+ * @type {Object}
+ * @param {Number} none , cannot affect stream or participants list
+ * @default 0
+ * @param {Number} join , can become a participant, chat, and leave
+ * @default 10
+ * @param {Number} vote , can vote for a relation message posted to the stream
+ * @default 13
+ * @param {Number} postPending , can post messages which require manager's approval
+ * @default 18
+ * @param {Number} post , can post messages which take effect immediately
+ * @default 20
+ * @param {Number} relate , can relate other streams to this one
+ * @default 23
+ * @param {Number} relations , can update properties of relations directly
+ * @default 25
+ * @param {Number} suggest , can suggest edits of stream
+ * @default 28
+ * @param {Number} edit , can edit stream content immediately
+ * @default 30
+ * @param {Number} closePending , can post a message requesting to close the stream
+ * @default 35
+ * @param {Number} close , don't delete, just prevent any new changes to stream , however, joining and leaving is still ok
+ * @default 40
+
  */
 Streams.WRITE_LEVEL = {
 	'none':			0,		// cannot affect stream or participants list
@@ -71,7 +103,17 @@ Streams.WRITE_LEVEL = {
 /**
  * Admin levels
  * @property ADMIN_LEVEL
- * @type object
+ * @type {Object}
+ * @param {Number} none , cannot do anything related to admin / users
+ * @default 0
+ * @param {Number} tell , can post on your stream about participating
+ * @default 10
+ * @param {Number} invite , able to create invitations for others, granting access
+ * @default 20
+ * @param {Number} manage , can approve posts and give people any adminLevel < 30
+ * @default 30
+ * @param {Number} own , can give people any adminLevel <= 40
+ * @default 40
  */
 Streams.ADMIN_LEVEL = {
 	'none':	 		0,		// cannot do anything related to admin / users
@@ -85,6 +127,7 @@ Streams.constructors = {};
 
 /**
  * Call this function to define a stream type
+ * @method define
  * @param {String} type The type of the stream, e.g. "Streams/smalltext"
  * @param {String|Function} ctor Your tool's constructor, or path to a javascript file which will define it
  * @param {Object} methods An optional hash of methods
@@ -112,6 +155,7 @@ Streams.define = function (type, ctor, methods) {
 
 /**
  * Calculate the url of a stream's icon
+ * @method iconUrl
  * @param {String} icon the value of the stream's "icon" field
  * @param {Number} [size=40] the size of the icon to render. Defaults to 40.
  * @return {String} the url
@@ -156,6 +200,7 @@ Streams.key = function (publisherId, streamName) {
 
 /**
  * This event is fired if an error occurs in any Streams function
+ * @event onError
  */
 Streams.onError = new Q.Event(function (err, err2) {
 	console.warn(Q.firstErrorMessage(err, err2));
@@ -180,7 +225,9 @@ Streams.onConstruct = Q.Event.factory(_constructHandlers, [""]);
 
 /**
  * Returns Q.Event that occurs on some socket event coming from socket.io
- * @method onEvent
+ * @event onEvent
+ * @param {String} name
+ * @return {Q.Event}
  */
 Streams.onEvent = function (name) {
 	return Q.Socket.onEvent('Streams', null, name);
@@ -189,12 +236,14 @@ Streams.onEvent = function (name) {
 /**
  * Event occurs if native app is activated from background by click on native notification
  * @property onActivate
- * @param data {mixed} any user data sent along with notification
+ * @param data {Mixed} any user data sent along with notification
  */
 Streams.onActivate = new Q.Event();
 
 /**
  * Connects or reconnects sockets for all participating streams
+ * @method _connectSockets
+ * @param {Boolean} refresh
  */
 function _connectSockets(refresh) {
 	if (!Q.Users.loggedInUser) {
@@ -212,14 +261,22 @@ function _connectSockets(refresh) {
 		Streams.refresh();
 	}
 }
-
+    /**
+     * disconnects all Streams sockets which have been connected
+     * note that this also affects other plugins that might be listening on the sockets
+     * maybe we should have another thing, I don't know, but for now it's ok
+     * @method _disconnectSockets
+     */
 function _disconnectSockets() {
-	// disconnects all Streams sockets which have been connected
-	// note that this also affects other plugins that might be listening on the sockets
-	// maybe we should have another thing, I don't know, but for now it's ok
 	Q.Socket.disconnectAll();
 }
-
+    /**
+     * Get Socket Session Id
+     * @method socketSessionId
+     * @param {String} publisherId
+     * @param {String} streamName
+     * @return {String}
+     */
 Streams.socketSessionId = function (publisherId, streamName) {
 	var s = Q.Socket.get('Streams', Q.nodeUrl({
 		publisherId: publisherId,
@@ -232,14 +289,10 @@ Streams.socketSessionId = function (publisherId, streamName) {
  * A convenience method to get the URL of the streams-related action
  * @method register
  * @static
- * @param {String} publisherId
- *	The name of the publisher
- * @param {String} streamName
- *	The name of the stream
- * @param {String} what
- *	Defaults to 'stream'. Can also be 'message', 'relation', etc.
- * @return {String} 
- *	The corresponding URL
+ * @param {String} publisherId , The name of the publisher
+ * @param {String} streamName , The name of the stream
+ * @param {String} what , Defaults to 'stream'. Can also be 'message', 'relation', etc.
+ * @return {String} The corresponding URL
  */
 Streams.actionUrl = function(publisherId, streamName, what)
 {
@@ -282,12 +335,11 @@ Q.Tool.define({
  * @param callback {function}
  *	if there were errors, first parameter is an array of errors
  *  otherwise, first parameter is null and second parameter is a Streams.Stream object
- * @param extra {object}
- *  Optional object which can include the following keys:
- *	"participants": limit1,
- *	"messages": limit2
- *	"messageType": optional String specifying the type of messages to fetch
- *	"$Module/$fieldname": any other fields you would like can be added, to be passed to your hooks on the back end
+ * @param {object} [extra] , Optional object which can include the following keys:
+ *   @param {Mixed} [extra.participants]
+ *   @param {Mixed} [extra.messages]
+ *   @param {String} [extra.messageType] , optional String specifying the type of messages to fetch
+ *   @param {Mixed} [extra."$Module/$fieldname"] , any other fields you would like can be added, to be passed to your hooks on the back end
  */
 Streams.get = Q.getter(function (publisherId, streamName, callback, extra) {
 	var url = Q.action('Streams/stream?')+
@@ -338,6 +390,13 @@ Streams.get = Q.getter(function (publisherId, streamName, callback, extra) {
 }, {cache: Q.Cache.document("Streams.get", 100), throttle: 'Streams.get'});
 Streams.get.onError = new Q.Event();
 
+    /**
+     * @method batchFunction
+     * @param {String} baseUrl
+     * @param {String} action
+     * @return {Function}
+     */
+
 Streams.batchFunction = function Streams_batchFunction(baseUrl, action) {
 	action = action || 'batch';
 	return Q.batcher.factory(Streams.batchFunction.functions, baseUrl,
@@ -367,11 +426,10 @@ var _Streams_batchFunction_preprocess = {
  * @param callback {function}
  *	if there were errors, first parameter is the error message
  *  otherwise, first parameter is null and second parameter is a Streams.Stream object
- * @param related {Object}
- *	Optional information to add a relation from the newly created stream to another one. Can include:
- *  "publisherId": the id of whoever is publishing the related stream
- *  "streamName": the name of the related stream
- *  "type": the type of the relation
+ * @param {Object} [related] , Optional information to add a relation from the newly created stream to another one. Can include:
+ *   @param {String} [related.publisherId] the id of whoever is publishing the related stream
+ *   @param {String} [related.streamName] the name of the related stream
+ *   @param {Mixed} [related.type] the type of the relation
  */
 Streams.create = function (fields, callback, related) {
 	var slotNames = ['stream'];
@@ -429,10 +487,12 @@ Streams.create.onError = new Q.Event();
  * That one is to create "controllers" on the front end,
  * and this one is to create "models" on the front end.
  * They have very similar conventions.
+ * @method construct
  * @param fields {Object} Provide any stream fields here. Requires at least the "type" of the stream.
  * @param extra {Object} Can include "messages" and "participants"
  * @param callback {Function} The function to call when all constructors and event handlers have executed
  *  The first parameter is an error, in case something went wrong. The second one is the stream object.
+ * @return {Q.Stream}
  */
 Streams.construct = function _Streams_construct(fields, extra, callback) {
 
@@ -550,9 +610,10 @@ Streams.getParticipating = Q.getter(function(callback) {
 /**
  * Refreshes all the streams the logged-in user is participating in
  * If your app is using socket.io, then calling this manually is largely unnecessary.
+ * @method refresh
  * @param {Function} callback optional callback
- * @param {Object} options A hash of options, including:
- *  "messages": If set to true, then besides just reloading the stream, attempt to catch up on the latest messages
+ * @param {Object} [options] A hash of options, including:
+ *   @param {Boolean} [options.messages] If set to true, then besides just reloading the stream, attempt to catch up on the latest messages
  * @return {boolean} whether the refresh occurred
  */
 Streams.refresh = function (callback, options) {
@@ -587,6 +648,7 @@ Streams.refresh.beforeRequest = new Q.Event();
  * Streams.refresh() are called. You can release it with stream.release().
  * Call this function in a chain before calling Streams.get, Streams.related, etc.
  * in order to set the key for retaining the streams those functions obtain.
+ * @method retainWith
  * @param {String} key
  * @return {Object} returns Streams for chaining with .get(), .related() or .getParticipating()
  */
@@ -597,6 +659,7 @@ Streams.retainWith = function (key) {
 
 /**
  * Releases all retained streams under a given key. See Streams.retain()
+ * @method release
  * @param {String} key
  */
 Streams.release = function (key) {
@@ -616,13 +679,15 @@ Streams.release = function (key) {
 /**
  * Invite other users to a stream. Must be logged in first.
  * @static
+ * @method invite
  * @param {String} publisherId The user id of the publisher of the stream 
  * @param {String} streamName The name of the stream you are inviting to
- * @param {String} fields More fields that are passed to the API, which can include:
- *  "identifier": Required for now. An email address or mobile number to invite. Might not belong to an existing user yet.
- *  "appUrl": Can be used to override the URL to which the invited user will be redirected and receive "Q.Streams.token" in the querystring.
- *  "displayName": Optionally override the name to display in the invitation for the inviting user
- * @param {Callable} callback Called with (err, result)
+ * @param {String} [fields] More fields that are passed to the API, which can include:
+ *   @param {String} [fields.identifier] Required for now. An email address or mobile number to invite. Might not belong to an existing user yet.
+ *   @required
+ *   @param {String} [fields.appUrl] Can be used to override the URL to which the invited user will be redirected and receive "Q.Streams.token" in the querystring.
+ *   @param {String} [fields.displayName] Optionally override the name to display in the invitation for the inviting user
+ * @param {Function} callback Called with (err, result)
  */
 Streams.invite = function (publisherId, streamName, fields, callback) {
 	// TODO: expand this implementation to be complete
@@ -645,6 +710,7 @@ Streams.invite = function (publisherId, streamName, fields, callback) {
 
 /**
  * Constructs a stream from fields, which are typically returned from the server.
+ * @method Stream
  * @param {String} fields
  */
 var Stream = Streams.Stream = function (fields) {
@@ -684,6 +750,7 @@ Stream.define = Streams.define;
  * Call this function to retain a particular stream.
  * When a stream is retained, it is refreshed when Streams.refresh() or
  * Streams.refresh() are called. You can release it with stream.release().
+ * @method retain
  * @param {String} publisherId
  * @param {String} streamName
  * @param {String} key
@@ -703,6 +770,7 @@ Stream.retain = function _Stream_retain (publisherId, streamName, key, callback)
 
 /**
  * Releases a stream from being retained. See Streams.retain()
+ * @method release
  * @param {String} publisherId
  * @param {String} streamName
  */
@@ -723,10 +791,11 @@ Stream.release = function _Stream_release (publisherId, streamName) {
 /**
  * Refreshes a stream, to show the latest content and possibly process the latest messages posted to the stream.
  * If your app uses socket.io, then calling this manually is largely unnecessary because messages arrive via push.
+ * @method refresh
  * @param {Function} callback This is called when the stream has been refreshed.
- * @param {Object} options A hash of options, including:
- *  "messages": If set to true, then besides just reloading the fields, attempt to catch up on the latest messages
- *  "changed": An array of {fieldName: true} pairs naming fields to trigger change events for, even if their values stayed the same
+ * @param {Object} [options] A hash of options, including:
+ *   @param {Boolean} [options.messages] If set to true, then besides just reloading the fields, attempt to catch up on the latest messages
+ *   @param {Array} [options.changed] An array of {fieldName: true} pairs naming fields to trigger change events for, even if their values stayed the same
  * @return {boolean} whether the refresh is occurring, or whether it has been canceled
  */
 Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, options) {
@@ -764,19 +833,39 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
  * Streams.refresh() are called. You can release it with stream.release().
  * Call this function in a chain before calling Streams.get, Streams.related, etc.
  * in order to set the key for retaining the streams those functions obtain.
+ * @method retainWith
  * @param {String} key
  * @return {Object} returns Streams for chaining with .get(), .related() or .getParticipating()
  */
 Stream.prototype.retainWith = Streams.retainWith;
 
+    /**
+     * Get All Stream Attributes
+     * @method getAll
+     * @param {Boolean} usePending
+     * @return {Array}
+     */
+
 Stream.prototype.getAll = function _Stream_prototype_getAll (usePending) {
 	return usePending ? this.pendingAttributes : this.attributes;
 };
 
+    /**
+     * @method get
+     * @param {String} attributeName
+     * @param {Boolean} usePending
+     * @return {Mixed}
+     */
 Stream.prototype.get = function _Stream_prototype_get (attributeName, usePending) {
 	var attr = this.getAll(usePending);
 	return attr[attributeName];
 };
+
+    /**
+     * @method set
+     * @param {String} attributeName
+     * @param {Mixed} value
+     */
 
 Stream.prototype.set = function _Stream_prototype_set (attributeName, value) {
 	if (this.pendingAttributes === this.attributes) {
@@ -792,6 +881,11 @@ Stream.prototype.set = function _Stream_prototype_set (attributeName, value) {
 	this.pendingFields.attributes = JSON.stringify(this.pendingAttributes);
 };
 
+    /**
+     * @method clear
+     * @param {String} attributeName
+     */
+
 Stream.prototype.clear = function _Stream_prototype_clear (attributeName) {
 	if (this.pendingAttributes === this.attributes) {
 		this.pendingAttributes = Q.copy(this.attributes); // copy on write
@@ -805,6 +899,11 @@ Stream.prototype.clear = function _Stream_prototype_clear (attributeName) {
 	}
 	this.pendingFields.attributes = JSON.stringify(this.pendingAttributes);
 };
+
+    /**
+     * @method save
+     * @param {Function} callback
+     */
 
 Stream.prototype.save = function _Stream_prototype_save (callback) {
 	var that = this;
@@ -828,9 +927,21 @@ Stream.prototype.save = function _Stream_prototype_save (callback) {
 	}, { method: 'put', fields: this.pendingFields, baseUrl: baseUrl });
 };
 
+    /**
+     * @method remove
+     * @param {Function} callback
+     */
+
 Stream.prototype.remove = function _Stream_prototype_remove (callback) {
 	return Stream.remove(this.fields.publisherId, this.fields.name, callback);
 };
+
+    /**
+     * @method retain
+     * @param {String} key
+     * @param {Function} callback
+     * @return {Q.Streams.Stream}
+     */
 
 Stream.prototype.retain = function _Stream_prototype_retain (key, callback) {
 	var ps = Streams.key(this.fields.publisherId, this.fields.name);
@@ -892,7 +1003,10 @@ Stream.prototype.onUpdatedRelateTo = function _Stream_prototype_onUpdatedRelateT
 
 /**
  * Post a message to this stream.
- * @param {Object} msg A Streams.Message object or a hash of fields to post. This stream's publisherId and streamName are added to it.
+ * @method post
+ * @param {Object} [data] A Streams.Message object or a hash of fields to post. This stream's publisherId and streamName are added to it.
+ *   @param {String} [data.publisherId]
+ *   @param {String} [data.streamName]
  * @param {Function} callback Receives (err, message) as parameters
  */
 Stream.prototype.post = function  _Stream_prototype_post (data, callback) {
@@ -905,8 +1019,8 @@ Stream.prototype.post = function  _Stream_prototype_post (data, callback) {
 
 /**
  * Join a stream as a participant
- * @param publisherId {String} id of publisher which is publishing the stream
- * @param name {String} name of stream to join
+ * Using fields.publisherId and fields.name parameters from Stream object
+ * @method join
  * @param {Function} callback receives (err, participant) as parameters
  */
 Stream.prototype.join = function _Stream_prototype_join (callback) {
@@ -915,6 +1029,7 @@ Stream.prototype.join = function _Stream_prototype_join (callback) {
 
 /**
  * Leave a stream that you previously joined, so that you don't get realtime messages anymore.
+ * @method leave
  * @param {Function} callback Receives (err, participant) as parameters
  */
 Stream.prototype.leave = function _Stream_prototype_leave (callback) {
@@ -923,6 +1038,7 @@ Stream.prototype.leave = function _Stream_prototype_leave (callback) {
 
 /**
  * Test whether the user has enough access rights when it comes to reading from the stream
+ * @method testReadLevel
  * @param {String} level One of the values in Streams.READ_LEVEL
  * @return {Boolean} Returns true if the user has at least this level of access
  */
@@ -938,6 +1054,7 @@ Stream.prototype.testReadLevel = function _Stream_prototype_testReadLevel (level
 
 /**
  * Test whether the user has enough access rights when it comes to writing to the stream
+ * @method testWriteLevel
  * @param {String} level One of the values in Streams.WRITE_LEVEL
  * @return {Boolean} Returns true if the user has at least this level of access
  */
@@ -953,6 +1070,7 @@ Stream.prototype.testWriteLevel = function _Stream_prototype_testWriteLevel (lev
 
 /**
  * Test whether the user has enough access rights when it comes to administering the stream
+ * @method testAdminLevel
  * @param {String} level One of the values in Streams.ADMIN_LEVEL
  * @return {Boolean} Returns true if the user has at least this level of access
  */
@@ -980,10 +1098,12 @@ Stream.prototype.actionUrl = function _Stream_prototype_actionUrl (what) {
 
 /**
  * Invite other users to this stream. Must be logged in first.
- * @param {String} fields More fields that are passed to the API, which can include:
- *  "identifier": Required for now. An email address or mobile number to invite. Might not belong to an existing user yet.
- *  "appUrl": Can be used to override the URL to which the invited user will be redirected and receive "Q.Streams.token" in the querystring.
- * @param {Callable} callback Called with (err, result)
+ * @method invite
+ * @param {Object} [fields] More fields that are passed to the API, which can include:
+ *   @param {String} [fields.identifier] Required for now. An email address or mobile number to invite. Might not belong to an existing user yet.
+ *   @required
+ *   @param {String} [fields.appUrl] Can be used to override the URL to which the invited user will be redirected and receive "Q.Streams.token" in the querystring.
+ * @param {Function} callback Called with (err, result)
  */
 Stream.prototype.invite = function (fields, callback) {
 	Streams.invite(this.fields.publisherId, this.fields.name, fields, callback);
@@ -992,9 +1112,10 @@ Stream.prototype.invite = function (fields, callback) {
 /**
  * Waits for the latest messages to be posted to a given stream.
  * If your app is using socket.io, then calling this manually is largely unnecessary.
+ * @method refresh
  * @param {Function} callback This is called when the stream has been updated with the latest messages.
- * @param {Object} options A hash of options, including:
- *  "messages": If set to true, then besides just reloading the stream, attempt to catch up on the latest messages
+ * @param {Object} [options] A hash of options, including:
+ *   @param {Boolean} [options.messages] If set to true, then besides just reloading the stream, attempt to catch up on the latest messages
  * @return {boolean} whether the refresh occurred
  */
 Stream.prototype.refresh = function _Stream_prototype_refresh (callback, options) {
@@ -1010,18 +1131,19 @@ Stream.prototype.refresh = function _Stream_prototype_refresh (callback, options
  *	Name of the stream to/from which the others are related
  * @param relationType {String} the type of the relation
  * @param isCategory {boolean} defaults to false. If true, then gets streams related TO this stream.
- * @param options {Object} optional object that can include:
- *  "limit": the maximum number of results to return
- *  "offset": the page offset that goes with the limit
- *  "ascending": whether to sort by ascending weight. Defaults to false.
- *  'min' => the minimum weight (inclusive) to filter by, if any
- *  'max' => the maximum weight (inclusive) to filter by, if any
- *  "prefix": optional prefix to filter the streams by
- *  "stream": pass true here to fetch the latest version of the stream (ignores cache)
- *  "participants": optional. Pass a limit here to fetch that many participants (ignores cache)
- *  "messages": optional. Pass a limit here to fetch that many messages (ignores cache)
- *  "messageType": optional String specifying the type of messages to fetch
- *  "$Module/$fieldname": any other fields you would like can be added, to be passed to your hooks on the back end
+ * @param {Object} [options] optional object that can include:
+ *   @param {Number} [options.limit] the maximum number of results to return
+ *   @param {Number} [options.offset] the page offset that goes with the limit
+ *   @param {Boolean} [options.ascending] whether to sort by ascending weight.
+ *   @default false
+ *   @param {Number} [options.min] the minimum weight (inclusive) to filter by, if any
+ *   @param {Number} [options.max] the maximum weight (inclusive) to filter by, if any
+ *   @param {String} [options.prefix] optional prefix to filter the streams by
+ *   @param {Boolean} [options.stream] pass true here to fetch the latest version of the stream (ignores cache)
+ *   @param {Mixed} [options.participants]  optional. Pass a limit here to fetch that many participants (ignores cache)
+ *   @param {Boolean} [options.messages]
+ *   @param {String} [options.messageType] optional String specifying the type of messages to fetch
+ *   @param {Object} [options."$Module/$fieldname"] any other fields you would like can be added, to be passed to your hooks on the back end
  * @param callback {function}
  *	if there were errors, first parameter is an array of errors
  *  otherwise, first parameter is null and the "this" object is the data containing "stream", "relations" and "streams"
@@ -1173,11 +1295,13 @@ Streams.related.onError = new Q.Event();
 
 /**
  * Returns all the streams this stream is related to
+ * @method relatedFrom
  * @param relationType {String} the type of the relation
- * @param options {Object} optional object that can include:
- *  "limit": the maximum number of results to return
- *  "offset": the page offset that goes with the limit
- *  "ascending": whether to sort by ascending weight. Defaults to false.
+ * @param {Object} [options] optional object that can include:
+ *   @param {Number} [options.limit] the maximum number of results to return
+ *   @param {Number} [options.offset] the page offset that goes with the limit
+ *   @param {Boolean} [options.ascending] whether to sort by ascending weight.
+ *   @default false
  * @param callback {Function} callback to call with the results
  *  First parameter is the error, the second one is an object of Streams.RelatedFrom objects you can iterate over with Q.each
  */
@@ -1187,18 +1311,21 @@ Stream.prototype.relatedFrom = function _Stream_prototype_relatedFrom (relationT
 
 /**
  * Returns all the streams related to this stream
+ * @method relatedTo
  * @param relationType {String} the type of the relation
- * @param options {Object} optional object that can include:
- *  "limit": the maximum number of results to return
- *  "offset": the page offset that goes with the limit
- *  "ascending": whether to sort by ascending weight. Defaults to false.
- *  "prefix": optional prefix to filter the streams by
+ * @param {Object} [options] optional object that can include:
+ *   @param {Number} [options.limit] the maximum number of results to return
+ *   @param {Number} [options.offset] the page offset that goes with the limit
+ *   @param {Boolean} [options.ascending] whether to sort by ascending weight.
+ *   @default false
+ *   @param {String} [options.prefix] optional prefix to filter the streams by
  * @param callback {Function} callback to call with the results
  *  First parameter is the error, the second one is an object of Streams.RelatedTo objects you can iterate over with Q.each
  */
 Stream.prototype.relatedTo = function _Stream_prototype_relatedTo (relationType, options, callback) {
 	return Streams.related(this.fields.publisherId, this.fields.name, relationType, false, options, callback);
 };
+
 
 Streams.relate = function _Streams_relate (publisherId, streamName, relationType, fromPublisherId, fromStreamName, callback) {
 	if (!Q.plugins.Users.loggedInUser) {
@@ -1257,7 +1384,8 @@ Streams.unrelate = function _Stream_prototype_unrelate (publisherId, streamName,
 
 /**
  * Relates this stream to another stream
- * @param relationType {String} the type of the relation
+ * @method relateTo
+ * @param type {String} the type of the relation
  * @param toPublisherId {String} id of publisher of the stream
  * @param toStreamName {String} name of stream to which this stream is being related
  * @param callback {Function} callback to call with the results
@@ -1269,9 +1397,10 @@ Stream.prototype.relateTo = function _Stream_prototype_relateTo (type, toPublish
 
 /**
  * Relates another stream to this stream
- * @param relationType {String} the type of the relation
- * @param toPublisherId {String} id of publisher of the stream
- * @param toStreamName {String} name of stream which is being related to this stream
+ * @method relate
+ * @param type {String} the type of the relation
+ * @param fromPublisherId {String} id of publisher of the stream
+ * @param fromStreamName {String} name of stream which is being related to this stream
  * @param callback {Function} callback to call with the results
  *  First parameter is the error, the second one is an object of Streams.RelatedTo objects you can iterate over with Q.each
  */
@@ -1281,6 +1410,7 @@ Stream.prototype.relate = function _Stream_prototype_relate (type, fromPublisher
 
 /**
  * Removes a relation from this stream to another stream
+ * @method unrelateTo
  * @param toPublisherId {String} id of publisher which is publishing the stream
  * @param toStreamName {String} name of stream which the being unrelated
  * @param callback {Function} callback to call with the results
@@ -1292,6 +1422,7 @@ Stream.prototype.unrelateTo = function _Stream_prototype_unrelateTo (toPublisher
 
 /**
  * Removes a relation from another stream to this stream
+ * @method unrelateFrom
  * @param fromPublisherId {String} id of publisher which is publishing the stream
  * @param fromStreamName {String} name of stream which is being unrelated
  * @param callback {Function} callback to call with the results
@@ -1304,6 +1435,15 @@ Stream.prototype.unrelateFrom = function _Stream_prototype_unrelateFrom (fromPub
 /**
  * Later we will probably make Streams.Relation objects which will provide easier access to this functionality.
  * For now, use this to update weights of relations, etc.
+ * @method updateRelation
+ * @param {String} toPublisherId
+ * @param {String} toStreamName
+ * @param {String} relationType
+ * @param {String} fromPublisherId
+ * @param {String} fromStreamName
+ * @param {Number} weight
+ * @param {Boolean} adjustWeights
+ * @param {Function} callback
  */
 Streams.updateRelation = function(
 	toPublisherId,
@@ -1438,8 +1578,9 @@ Stream.onConstruct = Q.Event.factory(_streamConstructHandlers, ["", ""]);
 
 /**
  * Join a stream as a participant
+ * @method join
  * @param publisherId {String} id of publisher which is publishing the stream
- * @param name {String} name of stream to join
+ * @param streamName {String} name of stream to join
  * @param {Function} callback receives (err, participant) as parameters
  */
 Stream.join = function _Stream_join (publisherId, streamName, callback) {
@@ -1473,6 +1614,7 @@ Stream.join.onError = new Q.Event();
 
 /**
  * Leave a stream that you previously joined, so that you don't get realtime messages anymore.
+ * @method leave
  * @param {String} publisherId
  * @param {String} streamName
  * @param {Function} callback Receives (err, participant) as parameters
@@ -1510,6 +1652,7 @@ Stream.leave.onError = new Q.Event();
 
 /**
  * Remove a stream from the database.
+ * @method remove
  * @param {String} publisherId
  * @param {String} streamName
  * @param {Function} callback Receives (err, result) as parameters
@@ -1534,6 +1677,12 @@ Stream.remove = function _Stream_remove (publisherId, streamName, callback) {
 };
 Stream.remove.onError = new Q.Event();
 
+    /**
+     * @class Streams.Message
+     * @constructor
+     * @param {Object} obj
+     */
+
 var Message = Streams.Message = function Streams_Message(obj) {
 	Q.extend(this, obj);
 	this.typename = 'Q.Streams.Message';
@@ -1554,6 +1703,7 @@ Message.prototype.get = function _Message_prototype_get (instructionName) {
 
 /**
  * Get one or more messages
+ * @method Message.get
  * @param {String} publisherId
  * @param {String} streamName
  * @param {Number|Object} ordinal Can be the ordinal, or an object containing one or more of:
@@ -1618,6 +1768,7 @@ Message.get.onError = new Q.Event();
 
 /**
  * Post a message to a stream.
+ * @method Message.post
  * @param {Object} msg A Streams.Message object or a hash of fields to post. Must include publisherId and streamName.
  * @param {Function} callback Receives (err, message) as parameters
  */
@@ -1649,6 +1800,7 @@ Message.post.onError = new Q.Event();
 /**
  * Gets the latest ordinal as long as there is a cache for that stream or that stream's messages.
  * Otherwise it returns 0.
+ * @method Message.latestOrdinal
  * @param {String} publisherId
  * @param {String} streamName
  * @return {Number}
@@ -1674,13 +1826,14 @@ Message.latestOrdinal = function _Message_latestOrdinal (publisherId, streamName
 /**
  * Wait until a particular message is posted.
  * Used by Streams plugin to make sure messages arrive in order.
+ * @method Message.wait
  * @param {String} publisherId
  * @param {String} streamName
  * @param {Number} ordinal The ordinal of the message to wait for, or -1 to load latest messages
  * @param {Function} callback Receives ([arrayOfOrdinals]) as parameters
- * @param {Object} options A hash of options which can include:
- *   "max": The maximum number of messages to wait and hope they will arrive via sockets. Any more and we just request them again.
- *   "timeout": The maximum amount of time to wait and hope the messages will arrive via sockets. After this we just request them again.
+ * @param {Object} [options] A hash of options which can include:
+ *   @param {Number} [options.max] The maximum number of messages to wait and hope they will arrive via sockets. Any more and we just request them again.
+ *   @param {Number} [options.timeout] The maximum amount of time to wait and hope the messages will arrive via sockets. After this we just request them again.
  * @return {Boolean|Number|Q.Pipe}
  *   Returns false if no attempt was made because stream wasn't cached,
  *   true if the cached stream already got this message,
@@ -1782,6 +1935,7 @@ var Participant = Participant = function Streams_Participant(obj) {
 
 /**
  * Get one or more participants, sorted by insertedTime
+ * @method Participant.get
  * @param {String} publisherId
  * @param {String} streamName
  * @param {String|Object} userId Can be the id of the participant user, or an object containing one or more of:
@@ -1841,7 +1995,9 @@ Participant.get.onError = new Q.Event();
 
 /**
  * Constructs an avatar from fields, which are typically returned from the server.
- * @param {String} fields
+ * @class  Streams.Avatar
+ * @constructs
+ * @param {Array} fields
  */
 var Avatar = Streams.Avatar = function Streams_Avatar (fields) {
 	Q.extend(this, fields);
@@ -1850,7 +2006,7 @@ var Avatar = Streams.Avatar = function Streams_Avatar (fields) {
 
 /**
  * Avatar batch getter.
- * @method get
+ * @method Avatar.get
  * @param userId {String|Object} The id of the user whose avatar we are requesting.
  *  Alternatively, this can also be an object with keys "prefix", "limit", "offset"
  * @param callback {function}
@@ -1881,16 +2037,17 @@ Avatar.get.onError = new Q.Event();
 
 /**
  * Get avatars by prefix
- * @method get
+ * @method Avatar.byPrefix
  * @param prefix {string}
  *  For example something the user started typing in an autocomplete field
  * @param callback {function}
  *	If there were errors, first parameter is an array of errors
  *  otherwise, first parameter is null and second parameter is a hash of {userId: Streams.Avatar} pairs
- * @param options {Object}
- *  Options can include:
- *  "limit" and "offset" - for paging
- *  "public" - defaults to false. If false, only gets names people show you.
+ * @param {Object} [options]
+ *   @param {Number} [options.limit] for paging
+ *   @param {Number} [options.offset] for paging
+ *   @param {Boolean} [options.public] If false, only gets names people show you.
+ *   @default false
  */
 Avatar.byPrefix = Q.getter(function _Avatar_byPrefix (prefix, callback, options) {
 	var userId = Q.plugins.Users.loggedInUser ? Q.Users.loggedInUser.id : "";
@@ -1920,9 +2077,9 @@ Avatar.byPrefix.onError = new Q.Event();
 
 /**
  * Get the display name from a Streams.Avatar
- * @param {Object} options
- *  A bunch of options which can include:
- *  "short": "Try to show the first name only"
+ * @method Avatar.displayName
+ * @param {Object} [options] A bunch of options which can include:
+ *   @param {String} [options.short] Try to show the first name only
  * @return {String}
  */
 Avatar.prototype.displayName = function _Avatar_prototype_displayName (options) {
@@ -1945,6 +2102,7 @@ Avatar.prototype.displayName = function _Avatar_prototype_displayName (options) 
 
 /**
  * Extract a displayable title from a stream's type
+ * @method displayType
  * @param {String} type
  * @return {String}
  */

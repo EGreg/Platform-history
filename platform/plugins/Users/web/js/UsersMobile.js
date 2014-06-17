@@ -6,11 +6,24 @@ Q.Users.GroupsMock = {
 
 Q.Users.Groups = Q.Users.GroupsMock;
 
+/**
+ * @class Users.Contact
+ * @constructor
+ * @param {String} firstName
+ * @param {String} lastName
+ */
+
 Q.Users.Contact = function(firstName, lastName) {
     this.firstName = firstName;
     this.lastName = lastName;
     return this;
 };
+
+/**
+ * Returns last name first letter for writing Jon Smith => Jons S.
+ * @method letter
+ * @return {string}
+ */
 
 Q.Users.Contact.prototype.letter = function() {
 	if (this.lastName.length == 0)
@@ -22,13 +35,31 @@ Q.Users.Contact.prototype.letter = function() {
 		return '#';
 };
 
+/**
+ * Returns Full name of contact
+ * @method fullName
+ * @return {string}
+ */
+
 Q.Users.Contact.prototype.fullName = function() {
 	return [this.firstName, this.lastName].join(" ");
 };
 
+/**
+ * Returns LastName + FirstName combination as a reverse of fullName function
+ * @method sortKey
+ * @return {string}
+ */
+
 Q.Users.Contact.prototype.sortKey = function() {
 	return this.lastName + " " + this.firstName;
 };
+
+/**
+ * Possible First names array
+ * @property firstNames
+ * @type {string[]}
+ */
 
 Q.Users.Contact.firstNames = ['Andrey', 'Gregory', 'Sergey', 'Anton', 'Alexey', 'Vladimir', 'Oleg', 'Pavel', 'Yury',
     'Aaron', 'Abdul', 'Abe', 'Abel', 'Abraham', 'Abram', 'Adalberto', 'Adam', 'Adan', 'Adolfo', 'Adolph',
@@ -143,6 +174,12 @@ Q.Users.Contact.firstNames = ['Andrey', 'Gregory', 'Sergey', 'Anton', 'Alexey', 
     'William', 'Williams', 'Willian', 'Willie', 'Willis', 'Willy', 'Wilmer', 'Wilson', 'Wilton', 'Winford',
     'Winfred', 'Winston', 'Wm', 'Woodrow', 'Wyatt', 'Xavier', 'Yong', 'Young', 'Zachariah', 'Zachary', 'Zachery',
     'Zack', 'Zackary', 'Zane'];
+
+/**
+ * Array of possible last names
+ * @property lastNames
+ * @type {string[]}
+ */
 
 Q.Users.Contact.lastNames = ['Tarantsov', 'Magarshak', 'Kuzmin', 'Bredykhin', 'Garvardt', 'Appleseed',
     'Smith', 'Johnson', 'Williams', 'Jones', 'Brown', 'Davis', 'Miller', 'Wilson',
@@ -285,6 +322,12 @@ Q.Users.Contact.lastNames = ['Tarantsov', 'Magarshak', 'Kuzmin', 'Bredykhin', 'G
     'Velazquez', 'Whitley', 'Noel', 'Vang'];
 
 Q.Users.Contact._usedNames = {};
+
+/**
+ * Returns randomly generated contact from list of first names and last names
+ * @method random
+ * @return {Users.Contact}
+ */
 Q.Users.Contact.random = function() {
 	while (1) {
 	    var f = this.firstNames[Math.floor(Math.random() * this.firstNames.length)];

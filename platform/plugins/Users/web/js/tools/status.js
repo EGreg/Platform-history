@@ -5,16 +5,21 @@ var Users = Q.plugins.Users;
 /**
  * Users/status tool.
  * Renders a user status area which displays logged in status and provides various user-related operations.
- * @param options Object
- *	 A hash of options, that can include:
- *	 "icon": Optional. Icon for the login button. Defaults to Qbix icon.
- *	 "label": Optional. Text for the login button. Defaults to 'log in'.
- *	 "fullName": Optional. If set to true, then full name of the user will be displayed, otherwise only the first name. Defaults to false.
- *   "logoutIcon": Optional. Icon for 'Log out' item in the tool menu.
- *   "menuItems": Optional. Additional menu items besides 'Log out' which will be shown in the user menu.
- *                Should be an array of hashes like { 'contents': 'value', 'action': 'value' }.
- *   "onMenuSelect": Optional. Function, string function name or Q.Event.
- *                   Called when user selected some item from user selected some item from user menu except 'Log out'.
+ * @method status
+ * @param {Object} [options] this object contains function parameters
+ *	 @param {String} [options.icom] Icon for the login button. Defaults to Qbix icon.
+ *	 @optional
+ *	 @param {String} [options.label] Text for the login button. Defaults to 'log in'.
+ *	 @default 'log in'
+ *	 @param {Boolean} [options.fullName] If set to true, then full name of the user will be displayed, otherwise only the first name.
+ *	 @default false
+ *	 @param {String} [options.logoutIcon] Url to and Icon for 'Log out' item in the tool menu.
+ *   @default null
+ *   @param {Array} [options.menuItems] Additional menu items besides 'Log out' which will be shown in the user menu.
+ *   Should be an array of hashes like <code> { 'contents': 'value', 'action': 'value' }</code>
+ *   @param {Function|String|Q.Event} [options.onMenuSelect] Function, string function name or Q.Event.
+ *   Called when user selected some item from user selected some item from user menu except 'Log out'.
+ *   @optional
  */
 Q.Tool.define("Users/status", function(options) {
 	var tool = this;

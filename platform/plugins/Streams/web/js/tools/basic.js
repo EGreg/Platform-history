@@ -1,8 +1,11 @@
 (function (Q, $) {
 
-/*
+/**
  * Streams/basic tool
- */
+ * @method basic
+ * @param {Object} [options] this object contains function parameters
+ *   @param {Event} [options.onSuccess]
+*/
 Q.Tool.define("Streams/basic", function(options) {
 	var me = this;
 	var tool = this.element;

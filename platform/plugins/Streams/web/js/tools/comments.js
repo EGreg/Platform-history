@@ -1,13 +1,16 @@
 (function (Q, $) {
 
-/*
+/**
  * Streams/comments tool.
  * Renders a comment form and comments feed which is looking like standard Facebook.
- * @param options Object
- *   A hash of options, which can include:
- *   "objectId": Required. A Graph object id which is used to load comments from it and post comments to it.
- *     "provider": Optional. Has to be "facebook" for now.
- *     "canDelete": Defaults to false. Identifies if deletion of comments is possible.
+ * @method comments
+ * @param {Object} [options] this object contains function parameters
+ *   @param {String} [options.objectId] A Graph object id which is used to load comments from it and post comments to it.
+ *   @required
+ *   @param {String} [options.provider]  Has to be "facebook" for now.
+ *   @default "facebook"
+ *   @param {Boolean} [options.canDelete] Identifies if deletion of comments is possible.
+ *   @default false
  */
 Q.Tool.define("Streams/comments", function(o) {
     if (o.provider !== 'facebook') {

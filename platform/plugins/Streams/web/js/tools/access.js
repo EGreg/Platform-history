@@ -1,7 +1,13 @@
 (function (Q, $) {
 	
-/*
+/**
  * Streams/access tool
+ * @method access
+ * @param {Object} [options] this object contains function parameters
+ *   @param {String} [options.tab]
+ *   @param {Stream} [options.stream]
+ *   @param {Array} [options.avatar_array]
+ *   @param {Array} [options.access_array]
  */
 Q.Tool.define("Streams/access", function(options) {
 

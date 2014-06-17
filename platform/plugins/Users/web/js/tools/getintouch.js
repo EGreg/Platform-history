@@ -1,12 +1,12 @@
 (function (Q, $) {
 
 /**
- * @param options Object
- *  The options to pass to the tool. They can include:
- *   "emailSubject" => The default subject of the email, if any
- *   "emailAddress" => The email address.
- *   "emailBody" => The default body of the email, if any
- *   "mobileNumber" => The mobile number.
+ * @method getintouch
+ * @param {Object} [options] this object contains function parameters
+ *   @param {String} [options.emailSubject] The default subject of the email, if any
+ *   @param {String} [options.emailAddress] The email address.
+ *   @param {String} [options.emailBody] The default body of the email, if any
+ *   @param {String} [options.mobileNumber] The mobile number.
  */
 Q.Tool.define("Users/getintouch", function(options) {
 

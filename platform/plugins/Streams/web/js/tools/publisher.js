@@ -1,7 +1,20 @@
 (function (Q, $) {
 
-/*
+/**
  * Streams/publisher tool
+ * @method publisher
+ * @param {Object} [options] this object contains function parameters
+ *   @param {String} [options.label]
+ *   @default ""
+ *   @param {String} [options.placeholder]
+ *   @default "Leave a message for {user}"
+ *   @param {String} [options.field_type]
+ *   @default "textarea"
+ *   @param {Event} [options.submit]
+ *   @default null
+ *   @param {Object} [options.login_options]
+ *    @param {String} [options.login_options.activate]
+ *    @default  "activate"
  */
 Q.Tool.define("Streams/publisher", function (options) {
 

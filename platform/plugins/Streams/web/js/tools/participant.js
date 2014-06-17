@@ -1,13 +1,15 @@
 (function (Q, $) {
 
-/*
+/**
  * Streams/participant tool.
  * Display participants of certain stream using horizontally scrolled list.
  * Each item in the list is presented with avatar and username and also can have a contextual associated with it.
- * @param options Object
- *   A hash of options, which can include:
- *   "hideContextualOnMovePixels": Optional. Amount of pixels the user have to scroll the list before shown contextual
- *                                 (if there's one) will be hidden. Defaults to 10.
+ * @method participant
+ * @param {Object} [options] this object contains function parameters
+ *   @param {Number} [options.hideContextualOnMovePixels]
+ *   Optional. Amount of pixels the user have to scroll the list before shown contextual
+ *                                 (if there's one) will be hidden.
+ *   @default 10
  */
 Q.Tool.define("Streams/participant",
 

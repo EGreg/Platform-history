@@ -1,30 +1,67 @@
 (function (Q, $, window, undefined) {
 
-/*
+/**
  * Streams/image/preview tool.
  * Renders a tool to preview (and possibly replace) images
- * @param options {Object}
- *   A hash of options, which include:
- *   "publisherId": Required.
- *   "streamName": If empty, and "creatable" is true, then this can be used to add new related Streams/image streams.
- *   "related": A hash with properties "publisherId" and "streamName", and usually "type" and "weight"
- *   "editable": Set to false to avoid showing even authorized users an interface to replace the image or text
- *   "creatable": Optional fields to override in case streamName = "", including:
- *     "title": Optional title for the case when streamName = "", i.e. the image composer
- *     "clickable": Whether the image composer image is clickable
- *     "addIconSize": The size in pixels of the square add icon
- *   "imagepicker": Any options to pass to the Q/imagepicker jquery plugin -- see its options.
- *   "inplace": Any options to pass to the Q/inplace tool -- see its options.
- *   "actions": Any options to pass to the Q/actions jquery plugin -- see its options.
- *   "overrideSize": Optional. A hash of {icon: size} pairs to override imagepicker.showSize when the icon is a certain string. The empty string matches all icons.
- *   "throbber": The url of an image to use as an activity indicator when the image is loading
- *   "templates": Under the keys "views", "edit" and "create" you can override options for Q.Template.render .
- *       The fields passed to the template include "alt", "titleTag" and "titleClass"
- *   "onCreate": An event that occurs after a new stream is created by a creatable preview
- *   "onUpdate": An event that occurs when the icon is updated via this tool
- *   "onRefresh": An event that occurs when the icon is refreshed
- *   "onLoad": An event that occurs when the icon is loaded
- *   "onRemove": An event that occurs when the icon is removed via the 'remove' action
+ * @method image/preview
+ * @param {Object} [options] this is an object that contains parameters for this function
+ *   @param {String} [options.publisherId] Publisher ID
+ *   @required
+ *   @param {String} [options.streamName]  If empty, and <code>creatable<code> is true, then this can be used to add new related Streams/image streams.
+ *   @optional
+ *   @param {Object} [options.related] A hash with properties "publisherId" and "streamName", and usually "type" and "weight"
+ *     @param {String} [options.related.publisherId]
+ *     @param {String} [options.related.streamName]
+ *     @param {String} [options.related.type]
+ *     @optional
+ *     @param {Number} [options.related.weight]
+ *     @optional
+ *   @param {Boolean} [options.editable] Set to false to avoid showing even authorized users an interface to replace the image or text
+ *   @default true
+ *   @param {Object} [options.creatable] Optional fields to override in case if streamName = ""
+ *     @param {String} [options.creatable.title]
+ *     @default "New Image"
+ *     @param {Boolean} [options.creatable.clickable]
+ *     @default true
+ *     @param {Number} [options.creatable.addIconSize]
+ *     @default 100
+ *   @param {Object} [options.imagepicker] Any options to pass to the Q/imagepicker jquery plugin -- see its options.
+ *   @see Q.jQuery.imagepicker
+ *   @param {Object} [options.inplace] Any options to pass to the Q/inplace tool -- see its options.
+ *   @see Q.jQuery.inplace
+ *   @param {Object} [options.actions] Any options to pass to the Q/actions jquery plugin -- see its options.
+ *   @see Q.jQuery.actions
+ *   @param {Object} [options.overrideSize] A hash of {icon: size} pairs to override imagepicker.showSize when the icon is a certain string. The empty string matches all icons.
+ *   @default {}
+ *   @param {String} [options.throbber] The url of an image to use as an activity indicator when the image is loading
+ *   @default "plugins/Q/img/throbbers/loading.gif"
+ *   @param {Object} [options.templates] Under the keys "views", "edit" and "create" you can override options for Q.Template.render .
+ *   The fields passed to the template include "alt", "titleTag" and "titleClass"
+ *     @param {Object} [options.templates.view]
+ *       @param {String} [options.templates.view.name]
+ *       @default 'Streams/image/preview/view'
+ *       @param {Object} [options.templates.view.fields]
+ *         @param {String} [options.templates.view.fields.alt]
+ *         @param {String} [options.templates.view.fields.titleClass]
+ *         @param {String} [options.templates.view.fields.titleTag]
+ *     @param {Object} [options.templates.edit]
+ *       @param {String} [options.templates.edit.name]
+ *       @default 'Streams/image/preview/edit'
+ *       @param {Object} [options.templates.edit.fields]
+ *         @param {String} [options.templates.edit.fields.alt]
+ *         @param {String} [options.templates.edit.fields.titleClass]
+ *         @param {String} [options.templates.edit.fields.titleTag]
+ *     @param {Object} [options.templates.create]
+ *       @param {String} [options.templates.create.name]
+ *       @default 'Streams/image/preview/create'
+ *       @param {Object} [options.templates.create.fields]
+ *         @param {String} [options.templates.create.fields.alt]
+ *         @param {String} [options.templates.create.fields.titleClass]
+ *         @param {String} [options.templates.create.fields.titleTag]
+ *   @param {Event} [options.onCreate] An event that occurs after a new stream is created by a creatable preview
+ *   @param {Event} [options.onUpdate] An event that occurs when the icon is updated via this tool
+ *   @param {Event} [options.onRefresh] An event that occurs when the icon is refreshed
+ *   @param {Event} [options.onRemove] An event that occurs when the icon is removed via the 'remove' action
  */
 Q.Tool.define("Streams/image/preview", function(options) {
 	

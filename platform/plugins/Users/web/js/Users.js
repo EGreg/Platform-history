@@ -13,8 +13,10 @@ var Users = Q.Users = Q.plugins.Users = {
 	connected: {} // check this to see if you are connected to a provider
 };
 
-/*
+/**
  * Text messages used in dialogs
+ * @property Q.text.Users
+ * @type {Object}
  */
 Q.text.Users = {
 
@@ -81,6 +83,9 @@ var priv = {};
 
 /**
  * This event is fired if an error occurs in any Users function
+ * @event onError
+ * @param {Mixed} err
+ * @param {Mixed} err2
  */
 Users.onError = new Q.Event(function (err, err2) {
 	console.warn(Q.firstErrorMessage(err, err2));
@@ -89,6 +94,8 @@ Users.onError = new Q.Event(function (err, err2) {
 /**
  * Initialize facebook by adding FB script and running FB.init().
  * Ensures that this is done only once
+ * @method initFacebook
+ * @param {Function} callback , This function called after Facebook init completed
  * @param options {Object} for overriding the options passed to FB.init
  */
 Users.initFacebook = function(callback, options) {
@@ -165,6 +172,10 @@ function FB_getLoginStatus(cb, force) {
 
 /**
  * You can wrap all uses of FB object with this
+ * @method  initFacebook.ready
+ * @param {Object} app , an object of completed FB application
+ * @optional
+ * @param {Function} callback , this function called after Facebook application access token or user status response
  */
 Users.initFacebook.ready = function (app, callback) {
 	if (typeof app === 'function') {
@@ -189,20 +200,19 @@ Users.initFacebook.ready = function (app, callback) {
 
 /**
  * Authenticates this session with a given provider
- * @param provider String
- *  For now, only "facebook" is supported
- * @param onSuccess Function
- *  Called if the user successfully authenticates with the provider, or was already authenticated.
+ * @method authenticate
+ * @param {String} provider For now, only "facebook" is supported
+ * @required
+ * @param {Function} onSuccess Called if the user successfully authenticates with the provider, or was already authenticated.
  *  It is passed the user information if the user changed.
- * @param onCancel Function
- *  Called if the authentication was canceled.
- * @param options Object
- *  Can specify the following options:
- *  "prompt": defaults to null, which shows the usual prompt unless it was already rejected once.
+ * @param {Function} onCancel Called if the authentication was canceled.
+ * @param {Object} [options] object of parameters for authentication function
+ *   @param {Function|Boolean} [options.prompt] which shows the usual prompt unless it was already rejected once.
  *     Can be false, in which case the user is never prompted and the authentication just happens.
  *     Can be true, in which case the usual prompt is shown even if it was rejected before.
  *     Can be a function with an onSuccess and onCancel callback, in which case it's used as a prompt.
- *  "force": forces the getLoginStatus to refresh its status
+ *   @default null
+ *   @param {Boolean} [options.force] forces the getLoginStatus to refresh its status
  */
 Users.authenticate = function(provider, onSuccess, onCancel, options) {
 	if (provider !== 'facebook') {
@@ -321,9 +331,15 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 /**
  * Used when provider user is logged in to provider but not to app.
  * Shows prompt asking if user wants to log in to the app as provider user.
+ * @method prompt
+ * @param {String} provider For now, only "facebook" is supported
+ * @required
+ * @param {String} uid , provider user id
+ * @param {Function} authCallback , this function will be called after user authentication
+ * @param {Function} cancelCallback , this function will be called if user closed social provider login window
  * @param {object} options
- *	may contain 'dialogContainer' param with jQuery identifier of dialog container,
- *	defaults to document.body
+ *	 @param {DOMElement} [options.dialogContainer] param with jQuery identifier of dialog container,
+ *	 @default document.body
  */
 Users.prompt = function(provider, uid, authCallback, cancelCallback, options) {
 	if (provider !== 'facebook') {
@@ -417,6 +433,11 @@ Users.prompt = function(provider, uid, authCallback, cancelCallback, options) {
 /**
  * Check permissions granted by provider.
  * Currently only facebook supported.
+ * @method perms
+ * @param {String} provider For now, only "facebook" is supported
+ * @required
+ * @param {Function} callback , this function will be called after getting permissions from social provider
+ * Callback parameter could be null or response object from social provider
  */
 Users.perms = function (provider, callback) {
 	if (provider !== 'facebook') {
@@ -438,20 +459,21 @@ Users.perms = function (provider, callback) {
 
 /**
  * Log the user in
- * @param options Object
- *  You can pass several options here, including:
- *  "onSuccess": function to call when login or authentication "using" a provider is successful.
+ * @method login
+ * @param {Object} [options] You can pass several options here
+ *  @param {Function} [options.onSuccess] function to call when login or authentication "using" a provider is successful.
  *     It is passed the user information if the user changed.
- *  "onCancel": function to call if login or authentication "using" a provider was canceled.
- *  "homeUrl": defaults to Q.uris[Q.info.app+'/home'].
- *     If the default onSuccess implementation is used, the browser is redirected here
- *  "accountStatusUrl": if passed, this URL is hit to determine if the account is complete
- *  "onRequireComplete": function to call if the user logged in but account is incomplete.
- *     It is passed the user information as well as the response from hitting accountStatusUrl
- *  "using": can be "native", "facebook" or "native,facebook"
- *  "tryQuietly": if true, this is same as Users.authenticate, with provider = "using" option
- *  "perms": permissions to request from the authentication provider. Defaults to "email,publish_stream"
- *  "identifierType": the type of the identifier, which could be "mobile" or "email" or "email,mobile"
+ *  @param {Function} [options.onCancel] function to call if login or authentication "using" a provider was canceled.
+ *  @param {String} [options.homeUrl] If the default onSuccess implementation is used, the browser is redirected here
+ *  @default Q.uris[Q.info.app+'/home']
+ *  @param  {String} [options.accountStatusUrl] if passed, this URL is hit to determine if the account is complete
+ *  @param {Function} [options.onRequireComplete] function to call if the user logged in but account is incomplete.
+ *  It is passed the user information as well as the response from hitting accountStatusUrl
+ *  @param {String} [options.using] can be "native", "facebook" or "native,facebook"
+ *  @param {Boolean} [options.tryQuietly] if true, this is same as Users.authenticate, with provider = "using" option
+ *  @param {String} [options.perms] permissions to request from the authentication provider
+ *  @default "email,publish_stream"
+ *  @param {String} [options.identifierType] the type of the identifier, which could be "mobile" or "email" or "email,mobile"
  */
 Users.login = function(options) {
 
@@ -608,12 +630,12 @@ Users.login = function(options) {
 
 /**
  * Log the user out
- * @param options Object
- *  You can pass several options here, including:
- *  "onSuccess": function to call when login is successful.
- *     It is passed the user information if the user changed.
- *  "url": the URL to hit to log out. You should usually not change this.
- *  "using": can be "native" or "native,facebook" to log out of both
+ * @method logout
+ * @param {Object} [options] You can pass several options here
+ *  @param {Function} [options.onSuccess] function to call when login is successful.
+ *  It is passed the user information if the user changed.
+ *  @param {String} [options.url] the URL to hit to log out. You should usually not change this.
+ *  @param {String} [options.using] can be "native" or "native,facebook" to log out of both
  */
 Users.logout = function(options) {
 	if (typeof options === 'function') {
@@ -710,6 +732,7 @@ Users.get.onError = new Q.Event();
 
 /**
  * Constructs a user from fields, which are typically returned from the server.
+ * @method User
  * @param {String} fields
  */
 Users.User = function (fields) {
@@ -721,8 +744,10 @@ Users.User.get = Users.get;
 
 /**
  * Calculate the url of a user's icon
+ * @method
  * @param {String} icon the value of the user's "icon" field
- * @param {Number} [size=40] the size of the icon to render. Defaults to 40.
+ * @param {Number} size the size of the icon to render.
+ * @default 40
  * @return {String} the url
  */
 Users.iconUrl = function(icon, size) {
@@ -825,7 +850,7 @@ Users.setIdentifier = function(options) {
 	});
 };
 
-/**
+/*
  * Private functions
  */
 function login_callback(response) {
@@ -1504,17 +1529,22 @@ function submitClosestForm () {
 
 /**
  * Makes a dialog that looks closely to facebook standard.
- * @param options Object
- *   A hash of options, that can include:
- *   "title": Required. Dialog title.
- *   "content": Required. Dialog content, can be plain text or some html.
- *   "buttons": Required. Array of object containing fields:
- *      'label' is the label of the button,
- *      'handler' is a click handler for the button, and
- *      'default' is a boolean which makes this button styled as default.
- *   "position": Optional. Hash of x/y coordinates. By default (or if null) dialog is centered on the screen.
- *   "shadow": Optional. Whether to make a full screen shadow behind the dialog, making other elements on the page inaccessible.
- *   Default is false.
+ * @method facebookDialog
+ * @param {Object} [options] A hash of options, that can include:
+ *  @param {String} [options.title] Dialog title.
+ *  @required
+ *  @param {String} [options.content] Dialog content, can be plain text or some html.
+ *  @required
+ *  @param {Array} [options.buttons] Array of object containing fields:
+ *  @required
+ *    @param {String} [options.buttons.label] is the label of the button
+ *    @param {Function} [options.buttons.handler] is a click handler for the button
+ *    @param {Boolean} [options.buttons.default] is a boolean which makes this button styled as default.
+ *  @param {Object} [options.position] Hash of x/y coordinates. By default (or if null) dialog is centered on the screen.
+ *  @optional
+ *  @param {Boolean} [options.shadow]
+ *  Whether to make a full screen shadow behind the dialog, making other elements on the page inaccessible.
+ *  @default false
  */
 Users.facebookDialog = function(options)
 {

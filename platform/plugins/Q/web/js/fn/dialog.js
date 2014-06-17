@@ -196,27 +196,40 @@ function (o) {
 
 /**
  * Opens a dialog
- * @param options Object
- * A hash of options, that can include:
- * "url": Optional. If provided, this url will be used to fetch the "title" and "dialog" slots, to display in the dialog.
- * "alignByParent": Defaults to false. If true, the dialog will be aligned to the center of not the entire window,
- *                  but to the center of containing element instead.
- * "mask": Defaults to false. If true, adds a mask to cover the screen behind the dialog.
- * "fullscreen": Defaults to true only on Android and false on all other platforms. If true, dialog will be shown not as overlay
+ * @method Q/dialog
+ * @param {Object} [options] A hash of options, that can include:
+ *   @param {String} [options.url]  If provided, this url will be used to fetch the "title" and "dialog" slots, to display in the dialog.
+ *   @optional
+ *   @param {Boolean} [options.alignByParent] If true, the dialog will be aligned to the center of not the entire window, but to the center of containing element instead.
+ *   @default false
+ *   @param {Boolean} [options.mask] If true, adds a mask to cover the screen behind the dialog.
+ *   @default false
+ *   @param {Boolean} [options.fullscreen]
+ *   Only on Android and false on all other platforms. If true, dialog will be shown not as overlay
  *               but instead will be prepended to document.body and all other child elements of the body will be hidden.
  *               Thus dialog will occupy all window space, but still will behave like regular dialog, i.e. it can be closed
  *               by clicking / tapping close icon.
- * "asyncLoad": Defaults to true for desktop and false for touch devices. If true, dialog will load asynchronously
+ *   @default true
+ *   @param {Boolean} [options.asyncLoad]
+ *   For desktop and false for touch devices. If true, dialog will load asynchronously
  *              with fade animation and 'onLoad' will be called when fade animation is completed.
  *              If false, dialog will appear immediately and 'onLoad' will be called at the same time.
- * "noClose": Defaults to false. If true, overlay close button will not appear and overlay won't be closed by pressing 'Esc' key.
- * "closeOnEsc": Defaults to true. Indicates whether to close dialog on 'Esc' key press. Has sense only if 'noClose' is false.
- * "removeOnClose": Defaults to false. If true, dialog DOM element will be removed from the document on close.
- * "beforeLoad": Optional. Q.Event or function which is called before dialog is loaded.
- * "onActivate": Optional. Q.Event or function which is called when dialog is activated
- *               (all inner tools, if any, are activated and dialog is fully loaded and shown).
- * "beforeClose": Optional. Q.Event or function which is called when dialog closing initiated but it's still visible and exists in DOM.
- * "onClose": Optional. Q.Event or function which is called when dialog is closed and hidden and probably removed from DOM (if 'removeOnClose' is 'true').
+ *   @default true
+ *   @param {Boolean} [options.noClose]
+ *   If true, overlay close button will not appear and overlay won't be closed by pressing 'Esc' key.
+ *   @default false
+ *   @param {Boolean} [options.closeOnEsc]
+ *   Indicates whether to close dialog on 'Esc' key press. Has sense only if 'noClose' is false.
+ *   @default true
+ *   @param {Boolean} [options.removeOnClose] If true, dialog DOM element will be removed from the document on close.
+ *   @default false
+ *   @param {Q.Event} [options.beforeLoad]  Q.Event or function which is called before dialog is loaded.
+ *   @param {Q.Event} [options.onActivate]  Q.Event or function which is called when dialog is activated (all inner tools, if any, are activated and dialog is fully loaded and shown).
+ *   @optional
+ *   @param {Q.Event} [options.beforeClose]  Q.Event or function which is called when dialog closing initiated but it's still visible and exists in DOM.
+ *   @optional
+ *   @param {Q.Event} [options.onClose]  Q.Event or function which is called when dialog is closed and hidden and probably removed from DOM (if 'removeOnClose' is 'true').
+ *   @optional
  */
 Q.Tool.jQuery('Q/dialog', function (o) {
 	

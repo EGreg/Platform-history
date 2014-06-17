@@ -349,6 +349,8 @@ if (window.Element) { // only IE7 and lower, which we don't support, wouldn't ha
 /**
  * Call this on an element to access tools attached to it.
  * The tools are like "view models".
+ * this method is overridden by the tool constructor on specific elements
+ * @method Element.Q
  * @param {String} toolName
  * @return {Q.Tool|null}
  */
@@ -1773,7 +1775,7 @@ Q.onVisibilityChange = new Q.Event();
  * true - in this case, the current function is ignored during the next times through the pipe
  * a string - in this case, this name is considered unfilled the next times through this pipe
  * an array of strings - in this case, these names are considered unfilled the next times through the pipe
- *
+ * @method Pipe
  * @see {Q.Pipe.prototype.add} for more info on the parameters
  */
 Q.Pipe = function _Q_Pipe(requires, maxTimes, callback) {
@@ -2525,6 +2527,7 @@ Q.Tool.beforeRemove = Q.Event.factory(_beforeRemoveToolHandlers, ["", _toolEvent
 
 /**
  * Reference a tool by its id
+ * @method Q.Tool.byId
  * @param {String} id
  * @param {String} name optional name of the tool, useful if more than one tool was activated on the same element
  * @return {Q.Tool|null}
@@ -2536,6 +2539,7 @@ Q.Tool.byId = function _Q_Tool_byId(id, name) {
 
 /**
  * Computes and returns a tool's prefix
+ * @method Q.Tool.prefixById
  * @param {String} id
  * @return {String}
  */
@@ -3074,8 +3078,8 @@ Q.Tool.prototype.setUpElementHTML = function (element, toolType, toolOptions, id
 
 /**
  * Returns a tool corresponding to the given DOM element, if such tool has already been constructed.
- *
- * @param toolElement Element
+ * @method Q.Tool.from
+ * @param toolElement {Element}
  *   the root element of the desired tool
  * @param {String} toolName
  *   optional name of the tool attached to the element
@@ -4492,7 +4496,7 @@ Q.firstErrorMessage = function _Q_firstErrorMessage(data /*, data2, ... */) {
  * @method ajaxErrors
  * @param {Object} errors
  *  A hash of errors
- * @params {Array} fields
+ * @param {Array} fields
  *  Optional. An array of field names to restrict ourselves to.
  *  For each error, if none of the fields apply, then the error
  *  is assigned to the field named first in this array.
@@ -6700,7 +6704,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	/**
 	 * Loads a jQuery plugin if it is not there, then calls the callback
      * @method plugin
-	 * @params {String} pluginName
+	 * @param {String} pluginName
 	 * @param {Array|Mixed} options
 	 * @param {Function} callback
 	 */
@@ -8008,7 +8012,8 @@ if (typeof module !== 'undefined' && typeof process !== 'undefined') {
 	// We are in a browser environment
 	/**
 	 * This method restores the old window.Q and returns an instance of itself.
-	 * @param extend
+     * @method Q.noConflict
+	 * @param {Boolean} extend
 	 *  If true, extends the old Q with methods and properties from the Q Platform.
 	 *  Otherwise, the old Q is untouched.
 	 * @return {Function}

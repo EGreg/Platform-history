@@ -1,7 +1,14 @@
 (function (Q, $) {
 
-/*
+/**
  * Streams/userChooser tool
+ * @method userChooser
+ * @param {Object} [options] this object contains function parameters
+ *   @param {Function} [options.onChoose] callback function with (userId, current)  parameters
+ *   @param {Number} [options.delay]
+ *   @default 500
+ *   @param {Object} [options.exclude]
+ *   @default {}
  */
 Q.Tool.define("Streams/userChooser", function(o) {
 
