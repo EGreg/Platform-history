@@ -131,7 +131,13 @@ function (options) {
 			start = pos = null;
 			container.off(Q.Pointer.move);
 			$(window).off(Q.Pointer.end, _endHandler);
+			$(window).off(Q.Pointer.clickHandler, _clickHandler);
 			e.preventDefault();
+		}
+		
+		function _cancelHandler (e) {
+			$(window).off(Q.Pointer.end, _endHandler);
+			$(window).off(Q.Pointer.clickHandler, _clickHandler);
 		}
 		
 		function _clickHandler (e) {
@@ -150,6 +156,7 @@ function (options) {
 		};
 		container.on(Q.Pointer.move, _moveHandler);
 		$(window).on(Q.Pointer.end, _endHandler);
+		$(window).on(Q.Pointer.cancel, _cancelHandler);
 		$(window).on(Q.Pointer.click, _clickHandler);
 	});
 	

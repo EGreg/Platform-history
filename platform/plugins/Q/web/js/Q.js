@@ -352,7 +352,8 @@ if (window.Element) { // only IE7 and lower, which we don't support, wouldn't ha
  * @param {String} toolName
  * @return {Q.Tool|null}
  */
-Element.prototype.Q = Element.prototype.Q || function (toolName) {
+if (!Element.prototype.Q)
+Element.prototype.Q = function (toolName) {
 	// this method is overridden by the tool constructor on specific elements
 	return null;
 };
@@ -2892,7 +2893,7 @@ Q.Tool.prototype.remove = function _Q_Tool_prototype_remove(removeCached) {
 	if (p = Q.Event.jQueryForTool[this.id]) {
 		for (i=p.length-1; i >= 0; --i) {
 			var off = p[i][0];
-			window.jQuery.fn[off].call(p[i][1], p[i][2]);
+			window.jQuery.fn[off].call(p[i][1], p[i][2], p[i][3]);
 		}
 		Q.Event.jQueryForTool[this.id] = [];
 	}
@@ -5569,7 +5570,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				var p = Q.Event.jQueryForPage;
 				for (i=p.length-1; i >= 0; --i) {
 					var off = p[i][0];
-					window.jQuery.fn[off].call(p[i][1], p[i][2]);
+					window.jQuery.fn[off].call(p[i][1], p[i][2], p[i][3]);
 				}
 				Q.Event.jQueryForPage = [];
 			}
@@ -6798,6 +6799,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 					break;
 				}
 			} // assume f >= 1
+			var af1 = af2 = arguments[f];
 			var namespace = '';
 			if (Q.typeOf(arguments[0]) === 'array') {
 				namespace = arguments[0][1] || '';
@@ -6810,7 +6812,8 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 				var params = {
 					original: arguments[f]
 				};
-				arguments[f] = arguments[0] ( params );
+				af2 = arguments[f] = arguments[0] ( params );
+				af1.Q_wrapper = af2;
 				if (!('eventName' in params)) {
 					throw new Q.Error("Custom $.fn.on handler: need to set params.eventName");
 				}
@@ -6825,14 +6828,14 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 			}
 			var added;
 			if (arguments[f-1] === true) {
-				Q.Event.jQueryForPage.push([off, this, arguments[0]]);
+				Q.Event.jQueryForPage.push([off, this, arguments[0], af2]);
 				added = 'page';
 			} else if (Q.typeOf(arguments[f-1]) === 'Q.Tool') {
 				var tool = arguments[f-1], key = tool.id;
 				if (!Q.Event.jQueryForTool[key]) {
 					Q.Event.jQueryForTool[key] = [];
 				}
-				Q.Event.jQueryForTool[key].push([off, this, arguments[0]]);
+				Q.Event.jQueryForTool[key].push([off, this, arguments[0], af2]);
 				added = 'tool';
 			}
 			if (added) {
@@ -6868,6 +6871,16 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 					parts[i] += namespace;
 				}
 				arguments[0] = parts.join(' ');
+			}
+			var f, af = null;
+			for (f = arguments.length-1; f >= 0; --f) {
+				if (typeof arguments[f] === 'function') {
+					af = arguments[f];
+					break;
+				}
+			}
+			if (af && af.Q_wrapper) {
+				arguments[f] = af.Q_wrapper;
 			}
 			return _jQuery_fn_off.apply(this, arguments);
 		}
