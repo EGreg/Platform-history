@@ -48,6 +48,13 @@
 				"subpath": "/facebook",
 				"domains": ["THE BASE DOMAINS YOU SET IN FACEBOOK, USED FOR AUTH COOKIE"]
 			}
-		}
+		},
+		"email": {
+            "from": ["qp@qbix.com", "Q Platform"],
+            "log": "email"
+        },
+        "mobile": {
+        	"log": "mobile"
+        }
 	}
 }
