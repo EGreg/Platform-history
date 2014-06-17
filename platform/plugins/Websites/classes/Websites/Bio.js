@@ -1,8 +1,6 @@
 /**
  * Class representing bio rows.
  *
- * This description should be revised and expanded.
- *
  * @module Websites
  */
 var Q = require('Q');

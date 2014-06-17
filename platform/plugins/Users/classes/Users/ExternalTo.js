@@ -1,8 +1,6 @@
 /**
  * Class representing external_to rows.
  *
- * This description should be revised and expanded.
- *
  * @module Users
  */
 var Q = require('Q');

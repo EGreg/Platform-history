@@ -1,8 +1,6 @@
 /**
  * Class representing request rows.
  *
- * This description should be revised and expanded.
- *
  * @module Streams
  */
 var Q = require('Q');

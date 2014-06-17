@@ -1,8 +1,6 @@
 /**
  * Class representing zipcode rows.
  *
- * This description should be revised and expanded.
- *
  * @module Places
  */
 var Q = require('Q');

@@ -1,8 +1,6 @@
 /**
  * Class representing access rows.
  *
- * This description should be revised and expanded.
- *
  * @module Streams
  */
 var Q = require('Q');

@@ -1,8 +1,6 @@
 /**
  * Class representing agreement rows.
  *
- * This description should be revised and expanded.
- *
  * @module Broadcast
  */
 var Q = require('Q');

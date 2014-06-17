@@ -1,8 +1,6 @@
 /**
  * Class representing participant rows.
  *
- * This description should be revised and expanded.
- *
  * @module Streams
  */
 var Q = require('Q');

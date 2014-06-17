@@ -8,6 +8,7 @@
  * Static methods for the Users models.
  * @class Users
  * @extends Base_Users
+ * @abstract
  */
 abstract class Users extends Base_Users
 {

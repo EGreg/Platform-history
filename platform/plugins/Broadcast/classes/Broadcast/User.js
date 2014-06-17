@@ -1,8 +1,6 @@
 /**
  * Class representing user rows.
  *
- * This description should be revised and expanded.
- *
  * @module Broadcast
  */
 var Q = require('Q');

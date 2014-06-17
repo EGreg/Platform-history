@@ -1,8 +1,6 @@
 /**
  * Class representing related_from rows.
  *
- * This description should be revised and expanded.
- *
  * @module Streams
  */
 var Q = require('Q');

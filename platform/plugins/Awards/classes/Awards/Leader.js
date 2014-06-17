@@ -1,8 +1,6 @@
 /**
  * Class representing leader rows.
  *
- * This description should be revised and expanded.
- *
  * @module Awards
  */
 var Q = require('Q');

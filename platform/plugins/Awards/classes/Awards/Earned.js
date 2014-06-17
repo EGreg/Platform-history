@@ -1,8 +1,6 @@
 /**
  * Class representing earned rows.
  *
- * This description should be revised and expanded.
- *
  * @module Awards
  */
 var Q = require('Q');

@@ -1,8 +1,6 @@
 /**
  * Class representing identify rows.
  *
- * This description should be revised and expanded.
- *
  * @module Users
  */
 var Q = require('Q');

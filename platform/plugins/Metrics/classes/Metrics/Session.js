@@ -1,8 +1,6 @@
 /**
  * Class representing session rows.
  *
- * This description should be revised and expanded.
- *
  * @module Metrics
  */
 var Q = require('Q');
