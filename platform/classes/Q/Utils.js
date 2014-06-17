@@ -179,7 +179,7 @@ var smtpTransport = null;
 Utils.sendEmail = function (to, subject, view, fields, options, callback) {
 	var mailer = require('nodemailer'),
 		mustache = require('mustache'),
-		toLog = Q.Config.get(['Users', 'mobile', 'logKey'], 'email');
+		toLog = Q.Config.get(['Users', 'mobile', 'log'], 'email');
 
 	if (!smtpTransport) {
 		// Set up the default mail transport
@@ -254,7 +254,7 @@ var twilioClient = null;
 Utils.sendSMS = function (to, view, fields, options, callback) {
 	// some mobile number normalization
 	var number, provider, address = [],
-		toLog = Q.Config.get(['Users', 'mobile', 'logKey'], 'SMS');
+		toLog = Q.Config.get(['Users', 'mobile', 'log'], 'SMS');
 	if (to.slice(0, 2) === "00") {
 		// convert 00 to + in international numbers
 		number = '+'+to.slice(2);
@@ -303,7 +303,7 @@ Utils.sendSMS = function (to, view, fields, options, callback) {
 
 	Q.Utils.sendEmail(address.join(','), null, view, fields, options, function(err, res) {
 		Q.log('smtp: '+number+' "'+content+'"', toLog);
-		Q.log('status: '+(err ? 'ERROR: '+err.message : 'Ok'));
+		Q.log('status: '+(err ? 'ERROR: '+err.message : 'Ok'), toLog);
 
 		callback(err, 'smtp', res);
 	});

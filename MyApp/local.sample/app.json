@@ -51,12 +51,10 @@
 		},
 		"email": {
             "from": ["qp@qbix.com", "Q Platform"],
-            "log": {
-                "key": {
-                    "email": "Q.email.log",
-                    "mobile": "Q.mobile.log"
-                }
-            }
+            "log": "email"
+        },
+        "mobile": {
+        	"log": "mobile"
         }
 	}
 }
