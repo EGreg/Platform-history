@@ -591,9 +591,9 @@ Q.typeOf = function _Q_typeOf(value) {
 		if (value instanceof Array || (value.constructor && value.constructor.name === 'Array')
 		|| Object.prototype.toString.apply(value) === '[object Array]') {
 			s = 'array';
-		} else if (typeof(value.typename) != 'undefined' ) {
+		} else if (typeof value.typename != 'undefined' ) {
 			return value.typename;
-		} else if (typeof(value.constructor) != 'undefined' && typeof(value.constructor.name) != 'undefined') {
+		} else if (typeof value.constructor != 'undefined' && typeof value.constructor.name != 'undefined') {
 			if (value.constructor.name == 'Object') {
 				return 'object';
 			}
@@ -1006,7 +1006,7 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 		if (arg === false) {
 			continue;
 		}
-		if (typeof(arg) === 'number' && arg) {
+		if (typeof arg === 'number' && arg) {
 			levels = arg;
 			continue;
 		}
@@ -1715,7 +1715,7 @@ Q.Event.factory = function (collection, defaults, callback) {
 	return function _Q_Event_factory () {
 		var args = Array.prototype.slice.call(arguments, 0), a;
 		var len = defaults.length;
-		var f = typeof(defaults[len-1] === 'function') ? defaults[defaults.length-1] : null;
+		var f = (typeof(defaults[len-1]) === 'function') ? defaults[defaults.length-1] : null;
 		if (f) --len;
 		for (var i=args.length; i<len; ++i) {
 			args[i] = defaults[i];
@@ -2284,7 +2284,7 @@ Q.getter = function _Q_getter(original, options) {
 		}
 		if (!wrapper.throttleSize) {
 			wrapper.throttle.throttleSize = function _throttleSize(newSize) {
-				if (typeof(newSize) === 'undefined') {
+				if (typeof newSize === 'undefined') {
 					return p.size;
 				}
 				p.size = newSize;
@@ -2612,7 +2612,7 @@ Q.Tool.define = function (name, ctor, defaultOptions, stateKeys, methods) {
 		}
 		return ctor;
 	}
-	if (typeof(stateKeys) === 'object') {
+	if (typeof stateKeys === 'object') {
 		methods = stateKeys;
 		stateKeys = undefined;
 	}
@@ -2677,7 +2677,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 		}
 		return ctor;
 	}
-	if (typeof(stateKeys) === 'object') {
+	if (typeof stateKeys === 'object') {
 		methods = stateKeys;
 		stateKeys = undefined;
 	}
@@ -4159,7 +4159,7 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 	}
 	var slotNames2 = (typeof slotNames === 'string') ? slotNames : (slotNames && slotNames.join(','));
 	var timestamp = Q.microtime(true);
-	if (typeof(what) == 'string') {
+	if (typeof what == 'string') {
 		var what2 = what;
 		if (Q.info && Q.info.baseUrl === what2) {
 			what2 += '/'; // otherwise we will have 301 redirect with trailing slash on most servers
@@ -4287,6 +4287,8 @@ Q.request = function (url, slotNames, callback, options) {
 		options = callback;
 		callback = slotNames;
 		slotNames = [];
+	} else if (typeof slotNames === 'string') {
+		slotNames = slotNames.split(',');
 	}
 	var o = Q.extend({}, Q.request.options, options);
 	if (o.skipNonce) {
@@ -4941,7 +4943,7 @@ Q.findScript = function (src) {
 Q.addStylesheet = function _Q_addStylesheet(href, media, onload, options) {
 	var i;
 	options = options || {};
-	if (typeof(media) === 'function') {
+	if (typeof media === 'function') {
 		onload = media; media = undefined;
 	}
 	if (!onload) {
@@ -5134,7 +5136,7 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 	}
 	// Arrays are accepted
 	if (Q.typeOf(elem) === 'array'
-	|| (typeof(HTMLCollection) !== 'undefined' && (elem instanceof HTMLCollection))
+	|| (typeof HTMLCollection !== 'undefined' && (elem instanceof HTMLCollection))
 	|| (window.jQuery && (elem instanceof jQuery))) {
 
 		Q.each(elem, function (i) {
@@ -5150,9 +5152,9 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 		var classNames = elem.className.split(' ');
 		for (i=classNames.length-1; i>=0; --i) {
 			var className = Q.normalize(classNames[i]);
-			if (((typeof(filter) === 'string') && (filter === className))
+			if (((typeof filter === 'string') && (filter === className))
 			|| ((filter instanceof RegExp) && filter.test(className))
-			|| ((typeof(filter) === 'function' && filter(className)))) {
+			|| ((typeof filter === 'function' && filter(className)))) {
 				found = true;
 				break;
 			}
@@ -5161,15 +5163,15 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 	if (!found && elem.attributes) {
 		for (i=elem.attributes.length-1; i>=0; --i) {
 			var attribute = elem.attributes[i].name;
-			if (((typeof(filter) === 'string') && (filter === attribute))
+			if (((typeof filter === 'string') && (filter === attribute))
 			|| ((filter instanceof RegExp) && filter.test(attribute))
-			|| ((typeof(filter) === 'function' && filter(attribute)))) {
+			|| ((typeof filter === 'function' && filter(attribute)))) {
 				found = true;
 				break;
 			}
 		}
 	}
-	if (found && typeof(callbackBefore) == 'function') {
+	if (found && typeof callbackBefore == 'function') {
 		var ret = callbackBefore(elem, options, shared, parent, i);
 		if (ret === 0) {
 			return;
@@ -5194,7 +5196,7 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 	if (ret === false) {
 		return false;
 	}
-	if (found && typeof(callbackAfter) == 'function') {
+	if (found && typeof callbackAfter  == 'function') {
 		if (false ===  callbackAfter(elem, options, shared, parent, i)) {
 			return false;
 		}
@@ -5372,7 +5374,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 
 	var handler = o.handler || Q.loadUrl.defaultHandler;
 	var slotNames = o.slotNames || Q.info.slotNames;
-	if (typeof(slotNames) === 'string') {
+	if (typeof slotNames === 'string') {
 		slotNames = slotNames.split(',');
 	}
 	if (o.retainSlots) {

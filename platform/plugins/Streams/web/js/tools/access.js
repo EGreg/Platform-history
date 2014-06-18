@@ -63,36 +63,34 @@ Q.Tool.define("Streams/access", function(options) {
 	function newRemoveLink(criteria) {
 		var link = $('<a href="#remove" />').click(function () {
 			var $this = $(this);
-			var url = Q.action(
-				'Streams/access'
-				+ '?publisherId='+options.stream.fields.publisherId
-				+ '&name='+options.stream.fields.name
-				+ '&' + field_name + '=-1'
-				+ '&Q.method=put'
-			);
+			var fields = {
+				publisherId: options.stream.fields.publisherId,
+				name: options.stream.fields.name,
+				'Q.method': 'put'
+			};
+			fields[field_name] = '-1';
 			for (var k in criteria) {
-				url += '&' + k + '=' + encodeURIComponent(criteria[k]);
+				fields[k] = criteria[k];
 			}
-			$.getJSON(
-				Q.ajaxExtend(url, 'data'),
-				function (response) {
-					if (response.errors) {
-						alert(response.errors[0].message);
-						return;
-					}
-					$this.closest('tr').remove();
-					if (criteria.ofUserId) {
-						delete me.child('Streams_userChooser_').exclude[criteria.ofUserId];
-					} else if (criteria.ofContactLabel) {
-						$('option', temp_select).each(function () {
-							if ($(this).val() === criteria.ofContactLabel) {
-								$(this).appendTo($('.Streams_access_level_add_label', tool));
-								return false;
-							}
-						});
-					}
+			var url = Q.action('Streams/action') + Q.buildQueryString(fields);
+			Q.request(url, ['data'], function (err, response) {
+				var msg = Q.firstErrorMessage(err)
+				|| Q.firstErrorMessage(response && response.errors);
+				if (msg) {
+					return alert(msg);
 				}
-			);
+				$this.closest('tr').remove();
+				if (criteria.ofUserId) {
+					delete me.child('Streams_userChooser_').exclude[criteria.ofUserId];
+				} else if (criteria.ofContactLabel) {
+					$('option', temp_select).each(function () {
+						if ($(this).val() === criteria.ofContactLabel) {
+							$(this).appendTo($('.Streams_access_level_add_label', tool));
+							return false;
+						}
+					});
+				}
+			});
 			return false;
 		}).html('x');
 		for (var k in criteria) {
@@ -111,7 +109,7 @@ Q.Tool.define("Streams/access", function(options) {
 
 		var cloned_select = level_for_everyone.clone();
 		var criteria;
-		if (userId && userId !== "0") {
+		if (userId && userId !== "") {
 			if (!avatar) {
 				avatar = options.avatar_array[userId];
 			}
@@ -131,7 +129,7 @@ Q.Tool.define("Streams/access", function(options) {
 		}
 		prepareSelect(cloned_select, criteria, access.fields[field_name]);
 		var tr = $('<tr />');
-		if (userId && userId !== "0") {
+		if (userId && userId !== "") {
 			tr.append(
 				$('<td style="vertical-align: middle;" />').append(
 					$('<img />').attr('src', Q.plugins.Streams.iconUrl(avatar.fields.icon, 40))
