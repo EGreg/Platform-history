@@ -7389,7 +7389,9 @@ Q.Dialogs = {
 			).append(
 				$('<div class="dialog_slot Q_dialog_content" />').append(o.content)
 			);
-			if (o.className) dialog.addClass(o.className);
+
+            if (o.className)
+                dialog.addClass(o.className || 'Q_Dialog');
 			if (o.destroyOnClose !== false) o.destroyOnClose = true;
 		}
 		dialog.hide();
@@ -7402,8 +7404,12 @@ Q.Dialogs = {
 			if (!Q.Dialogs.dontPopOnClose)
 				Q.Dialogs.pop(true);
 			Q.Dialogs.dontPopOnClose = false;
+            if (o.destroyOnClose === true)
+                $('.' + o.className || 'Q_Dialog').remove();
+
 		}, 'Q.Dialogs');
 		o.onClose.original = _onClose;
+
 		dialog.plugin('Q/dialog', o);
 		topDialog = null;
 		dialog.isFullscreen = o.fullscreen;
@@ -7455,7 +7461,7 @@ Q.Dialogs.push.options = {
 	'url': null,
 	'title': 'Dialog',
 	'content': '',
-	'className': null,
+	'className': 'Q_Dialog',
 	'fullscreen': Q.info.platform == 'android' ? true : false,
 	'appendTo': document.body,
 	'alignByParent': false,
@@ -7923,7 +7929,8 @@ Q.onJQuery.add(function ($) {
 		"Q/scroller": "plugins/Q/js/fn/scroller.js",
 		"Q/touchscroll": "plugins/Q/js/fn/touchscroll.js",
 		"Q/scrollbarsAutoHide": "plugins/Q/js/fn/scrollbarsAutoHide.js",
-		"Q/sortable": "plugins/Q/js/fn/sortable.js"
+		"Q/sortable": "plugins/Q/js/fn/sortable.js",
+		"Q/jcrop": "plugins/Q/js/fn/jcrop.js"
 	});
 	
 	Q.onLoad.add(function () {

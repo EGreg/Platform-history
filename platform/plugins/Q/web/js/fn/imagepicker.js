@@ -17,6 +17,10 @@
  *                   You can have one of <width> or <height> be empty, and then it will automatically keep the proportions.
  *                   Or you can pass 'x' and then it will keep the original width and height of the image.
  * @default {}
+ * @param {Object} [options.cropping]
+ * @param {Boolean} [options.cropping.dialog]
+ * @param {Boolean} [options.cropping.jCrop]
+ *
  * @param {String} [options.path] path Can be a URL path or a function returning a URL path. It must exist on the server.
  * @default 'uploads'
  * @param {String} [options.subpath] subpath is a subpath which may be created on the server.
@@ -77,8 +81,76 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 		}
 		$this.removeClass('Q_imagepicker_uploading');
 	}
+
+    function _doCropping(data) {
+
+//      get size of available place
+        var mandatory_margin = 100; //the space for margins of Q.Dialog window
+        var page = { 
+            width:  $('#page').width() - mandatory_margin,  
+            height: $('#page').height() - mandatory_margin
+        };
+        page.ratio = page.width > page.height ? page.height/page.width : page.width/page.height;
+
+        var img = new Image,
+            imgEl = {};
+
+        img.onload = function() {
+            imgEl.height = img.height;
+            imgEl.width = img.width;
+//          if image size is more then page size, image sshould be reduced
+            if ( img.width > page.width || img.height > page.height ) {
+                imgEl.ratio = img.width > img.height ? img.height/img.width : img.width/img.height;
+
+//              find max side of image and check if it's higher then the same page side
+                if ( img.width > img.height && img.width > page.width ) {
+//                  additionaly reduce image if ratio of image is not equal to ration of page
+                    imgEl.width = imgEl.ratio > page.ratio ? page.width * page.ratio : page.width;
+                    imgEl.height = Math.ceil(imgEl.width * imgEl.ratio);
+                }
+
+                if ( img.height > img.width && img.height > page.height ) {
+                    imgEl.height = imgEl.ratio > page.ratio ? page.height * page.ratio : page.height;
+                    imgEl.width = Math.ceil(imgEl.height * imgEl.ratio)
+                }
+            }
+            imgEl.content = ['<img src="',
+                img.src,
+                '" id="Q_imagepicker_cropping"',
+                ' width="'+imgEl.width,
+                '" height="'+imgEl.height,
+                '" />'].join('');
+
+            if (o.cropping.dialog === true ) {
+                Q.Dialogs.push({
+                    className: 'Q_Dialog_imagepicker',
+                    title: 'Edit the image',
+                    content: imgEl.content,
+                    destroyOnClose: true
+                });
+                $('#Q_imagepicker_cropping').css({width:imgEl.width, height:imgEl.height});
+                $('.Q_Dialog_imagepicker').css({
+                    width: imgEl.width,
+                    height:imgEl.height+$('.Q_Dialog_imagepicker .title_slot').slice(0,1).height()
+                });
+            }
+            if (o.cropping.jCrop === true ) {
+                $('#Q_imagepicker_cropping').plugin('Q/jcrop');
+
+            }
+
+        };
+        img.src = data;
+
+
+
+
+    }
 	
 	function _upload(data) {
+        if ( o.hasOwnProperty('cropping') ) {
+            _doCropping(data);
+        }
 		if (o.preprocess) {
 			o.preprocess.call($this, _doUpload);
 		} else {
