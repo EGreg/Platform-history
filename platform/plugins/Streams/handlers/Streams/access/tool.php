@@ -3,6 +3,7 @@
 /**
  * Access tool
  * @param array $options
+ *  "publisherId" => the id of the user who is publishing the stream
  *  "streamName" => the name of the stream for which to edit access levels
  *  "tabs" => optional array of tab name => title. Defaults to read, write, admin tabs.
  *  "ranges" => optional. Associative array with keys "read", "write", "admin"
@@ -16,20 +17,29 @@ function Streams_access_tool($options)
 		'admin' => 'members'
 	);
 	extract($options);
+	$user = Users::loggedInUser(true);
 	/**
 	 * @var string $streamName
 	 */
 	if (empty($streamName)) {
-		throw new Q_Exception("no streamName", "streamName");
+		$streamName = Streams::requestedName(true);
 	}
-	$user = Users::loggedInUser(true);
+	if (empty($publisherId)) {
+		$publisherId = Streams::requestedPublisherId();
+		if (empty($publisherId)) {
+			$publisherId = $user->id;
+		}
+	}
 
-	$streamName = Streams::requestedName(true);
-	$stream = new Streams_Stream();
-	$stream->publisherId = $user->id;
-	$stream->name = $streamName;
-	if (!$stream->retrieve()) {
-		throw new Q_Exception_MissingRow(array('table' => 'stream', 'criteria' => 'that name'));
+	$stream = Streams::fetchOne($user->id, $publisherId, $streamName);
+    if (!$stream) {
+        throw new Q_Exception_MissingRow(array(
+            'table' => 'stream',
+            'criteria' => 'that name'
+        ));
+    }
+	if (!$stream->testAdminLevel('own')) {
+		throw new Users_Exception_NotAuthorized();
 	}
 
 	$access_array = Streams_Access::select('*')
@@ -55,16 +65,10 @@ function Streams_access_tool($options)
 			$userId_list[] = $a->ofUserId;
 		}
 	}
-	if (empty($userId_list)) {
-		$avatar_array = array();
-	} else {
-		$avatar_array = Streams_Avatar::select('*')
-			->where(array(
-				'publisherId' => $userId_list,
-				'toUserId' => $user->id
-			))->fetchDbRows(null, '', 'publisherId');
-	}
-		
+	$avatar_array = empty($userId_list)
+		? array()
+		: Streams_Avatar::fetch($user->id, $userId_list);
+	
 	$labels = array();
 	$icons = array();
 	foreach ($contact_array as $contact) {
@@ -77,8 +81,9 @@ function Streams_access_tool($options)
 			$icons[$label->label] = 'label_'.$user->id.'_'.$label->label;
 		}
 	}
-		
-	$tab = Q::ifset($_REQUEST, 'tab', reset($tabs));
+
+    reset($tabs);
+	$tab = Q::ifset($_REQUEST, 'tab', key($tabs));
 	
 	switch ($tab) {
 		case 'read':

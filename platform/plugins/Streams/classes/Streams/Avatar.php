@@ -30,9 +30,10 @@ class Streams_Avatar extends Base_Streams_Avatar
 	 * @static
 	 * @param $toUserId {User_User|string} The id of the user to which this would be displayed
 	 * @param $publisherIds {string|array} Array of various users whose avatars are being fetched
+	 * @param $indexField {string} Optional name of the field by which to index the resulting array
 	 * @return {Streams_Avatar|array}
 	 */
-	static function fetch($toUserId, $publisherId) {
+	static function fetch($toUserId, $publisherId, $indexField = null) {
 		if (!isset($toUserIs)) {
 			$toUserId = Users::loggedInUser();
 			if (!$toUserId) $toUserId = "";
@@ -48,7 +49,7 @@ class Streams_Avatar extends Base_Streams_Avatar
 		$rows = Streams_Avatar::select('*')->where(array(
 			'toUserId' => array($toUserId, ''),
 			'publisherId' => $publisherId
-		))->fetchDbRows();
+		))->fetchDbRows(null, '', $indexField);
 		$avatars = array();
 		foreach ($rows as $r) {
 			if (!isset($avatars[$r->publisherId])

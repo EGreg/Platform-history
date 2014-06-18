@@ -8,12 +8,12 @@ function Streams_access_put($params)
 	
 	$stream = new Streams_Stream();
 	$stream->publisherId = Streams::requestedPublisherId(true);
-	if ($stream->publisherId != $user->id) {
-		throw new Users_Exception_NotAuthorized();
-	}
 	$stream->name = Streams::requestedName(true);
 	if (!$stream->retrieve()) {
 		throw new Q_Exception_MissingRow(array('table' => 'stream', 'criteria' => 'that name'));
+	}
+	if (!$stream->testAdminLevel('own')) {
+		throw new Users_Exception_NotAuthorized();
 	}
 	
 	$p = array_merge($_REQUEST, $params);

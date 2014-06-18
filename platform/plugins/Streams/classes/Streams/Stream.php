@@ -987,7 +987,7 @@ class Streams_Stream extends Base_Streams_Stream
 		if ($this->publishedByFetcher) {
 			return true;
 		}
-		if ($this->closedTime and !$this->testWriteLevel('close')) {
+		if (!empty($this->closedTime) and !$this->testWriteLevel('close')) {
 			return false;
 		}
 		if (!is_numeric($level)) {
@@ -1036,7 +1036,7 @@ class Streams_Stream extends Base_Streams_Stream
 		if ($this->publishedByFetcher) {
 			return true;
 		}
-		if ($this->closedTime and $level !== 'close' and !$this->testWriteLevel('close')) {
+		if (!empty($this->closedTime) and $level !== 'close' and !$this->testWriteLevel('close')) {
 			return false;
 		}
 		if (!is_numeric($level)) {
@@ -1085,7 +1085,7 @@ class Streams_Stream extends Base_Streams_Stream
 		if ($this->publishedByFetcher) {
 			return true;
 		}
-		if ($this->closedTime and !$this->testWriteLevel('close')) {
+		if (!empty($this->closedTime) and !$this->testWriteLevel('close')) {
 			return false;
 		}
 		if (!is_numeric($level)) {
