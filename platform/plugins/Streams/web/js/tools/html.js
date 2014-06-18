@@ -44,43 +44,54 @@ Q.Tool.define("Streams/html", function (options) {
 		if (state.editable === false || !state.stream.testWriteLevel('suggest')) {
 			return;
 		}
-		Q.addScript("plugins/Q/js/ckeditor/ckeditor.js", function () {
-			CKEDITOR.disableAutoInline = true;
-			tool.element.setAttribute('contenteditable', true);
-			var editor = CKEDITOR.inline(tool.element, state.ckeditor || undefined);
-			state.editor = editor;
-			editor.on('blur', function () {
-				state.editing = false;
-				var content = state.editor.getData();
-				if (state.startingContent === content) return;
-				state.startingContent = null;
-				if (!state.stream) return;
-				state.stream.pendingFields[state.field] = content;
-				state.stream.save(function (err) {
-					if (Q.firstErrorMessage(err)) {
-						return state.onCancel.handle(err);
-					}
-					state.stream.refresh(function () {
-						state.onSave.handle.call(this);
-					}, {messages: true});
-				});
-			});
-			editor.on('focus', function () {
-				state.editing = true;
-				state.startingContent = state.editor.getData();
-			});
-			editor.on('key', function(e){
-				if(e.data.keyCode==27){
-					document.body.focus();
-					editor.focusManager.blur();
-				}
-			});
-			if (state.stream) {
-				state.stream.onFieldChanged(state.field).set(function (fields, field) {
-					tool.element.innerHTML = fields[field];
-				}, tool);
-			}
-		});
+
+        if(!('editor' in state) || state.editor.toLowerCase() == "froala")
+        {
+            Q.addScript("plugins/Q/js/froala/froala_editor.min.js", function(){
+                jQuery('<link rel="stylesheet" type="text/css" href="/plugins/Q/js/froala/css/froala_editor.css" >').appendTo("head");
+                jQuery(tool.element).editable();
+            });
+        }
+        else if(('editor' in state) && state.editor.toLowerCase() == 'ckeditor')
+        {
+            Q.addScript("plugins/Q/js/ckeditor/ckeditor.js", function () {
+                CKEDITOR.disableAutoInline = true;
+                tool.element.setAttribute('contenteditable', true);
+                var editor = CKEDITOR.inline(tool.element, state.ckeditor || undefined);
+                state.editor = editor;
+                editor.on('blur', function () {
+                    state.editing = false;
+                    var content = state.editor.getData();
+                    if (state.startingContent === content) return;
+                    state.startingContent = null;
+                    if (!state.stream) return;
+                    state.stream.pendingFields[state.field] = content;
+                    state.stream.save(function (err) {
+                        if (Q.firstErrorMessage(err)) {
+                            return state.onCancel.handle(err);
+                        }
+                        state.stream.refresh(function () {
+                            state.onSave.handle.call(this);
+                        }, {messages: true});
+                    });
+                });
+                editor.on('focus', function () {
+                    state.editing = true;
+                    state.startingContent = state.editor.getData();
+                });
+                editor.on('key', function(e){
+                    if(e.data.keyCode==27){
+                        document.body.focus();
+                        editor.focusManager.blur();
+                    }
+                });
+                if (state.stream) {
+                    state.stream.onFieldChanged(state.field).set(function (fields, field) {
+                        tool.element.innerHTML = fields[field];
+                    }, tool);
+                }
+            });
+        }
 	}
 	
 	function _create(overrides) {
