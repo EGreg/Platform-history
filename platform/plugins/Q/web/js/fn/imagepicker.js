@@ -82,80 +82,138 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 		$this.removeClass('Q_imagepicker_uploading');
 	}
 
-    function _doCropping(data) {
 
-//      get size of available place
-        var mandatory_margin = 100; //the space for margins of Q.Dialog window
-        var page = { 
-            width:  $('#page').width() - mandatory_margin,  
-            height: $('#page').height() - mandatory_margin
-        };
-        page.ratio = page.width > page.height ? page.height/page.width : page.width/page.height;
-
-        var img = new Image,
-            imgEl = {};
-
-        img.onload = function() {
-            imgEl.height = img.height;
-            imgEl.width = img.width;
-//          if image size is more then page size, image sshould be reduced
-            if ( img.width > page.width || img.height > page.height ) {
-                imgEl.ratio = img.width > img.height ? img.height/img.width : img.width/img.height;
-
-//              find max side of image and check if it's higher then the same page side
-                if ( img.width > img.height && img.width > page.width ) {
-//                  additionaly reduce image if ratio of image is not equal to ration of page
-                    imgEl.width = imgEl.ratio > page.ratio ? page.width * page.ratio : page.width;
-                    imgEl.height = Math.ceil(imgEl.width * imgEl.ratio);
-                }
-
-                if ( img.height > img.width && img.height > page.height ) {
-                    imgEl.height = imgEl.ratio > page.ratio ? page.height * page.ratio : page.height;
-                    imgEl.width = Math.ceil(imgEl.height * imgEl.ratio)
-                }
-            }
-            imgEl.content = ['<img src="',
-                img.src,
-                '" id="Q_imagepicker_cropping"',
-                ' width="'+imgEl.width,
-                '" height="'+imgEl.height,
-                '" />'].join('');
-
-            if (o.cropping.dialog === true ) {
-                Q.Dialogs.push({
-                    className: 'Q_Dialog_imagepicker',
-                    title: 'Edit the image',
-                    content: imgEl.content,
-                    destroyOnClose: true
-                });
-                $('#Q_imagepicker_cropping').css({width:imgEl.width, height:imgEl.height});
-                $('.Q_Dialog_imagepicker').css({
-                    width: imgEl.width,
-                    height:imgEl.height+$('.Q_Dialog_imagepicker .title_slot').slice(0,1).height()
-                });
-            }
-            if (o.cropping.jCrop === true ) {
-                $('#Q_imagepicker_cropping').plugin('Q/jcrop');
-
-            }
-
-        };
-        img.src = data;
-
-
-
-
-    }
 	
 	function _upload(data) {
-        if ( o.hasOwnProperty('cropping') ) {
-            _doCropping(data);
-        }
+
 		if (o.preprocess) {
-			o.preprocess.call($this, _doUpload);
+			o.preprocess.call($this, _doCropping);
 		} else {
-			_doUpload();
+            _doCropping();
 		}
+
+        function _doCropping(override) {
+            if ( ! o.hasOwnProperty('cropping') ) {
+                _doUpload(override);
+            }
+
+            var params = {
+                'data': data,
+            };
+            Q.extend(params, override);
+
+//      get size of available place
+            var mandatory_margin = 100; //the space for margins of Q.Dialog window
+            var page = {
+                width:  $('#page').width() - mandatory_margin,
+                height: $('#page').height() - mandatory_margin
+            };
+            page.ratio = page.width > page.height ? page.height/page.width : page.width/page.height;
+
+            var img = new Image,
+                imgEl = {};
+
+            img.onload = function() {
+                imgEl.height = img.height;
+                imgEl.width = img.width;
+//          if image size is more then page size, image sshould be reduced
+                if ( img.width > page.width || img.height > page.height ) {
+                    imgEl.ratio = img.width > img.height ? img.height/img.width : img.width/img.height;
+
+//              find max side of image and check if it's higher then the same page side
+                    if ( img.width > img.height && img.width > page.width ) {
+//                  additionaly reduce image if ratio of image is not equal to ration of page
+                        imgEl.width = imgEl.ratio > page.ratio ? page.width * page.ratio : page.width;
+                        imgEl.height = Math.ceil(imgEl.width * imgEl.ratio);
+                    }
+
+                    if ( img.height > img.width && img.height > page.height ) {
+                        imgEl.height = imgEl.ratio > page.ratio ? page.height * page.ratio : page.height;
+                        imgEl.width = Math.ceil(imgEl.height * imgEl.ratio)
+                    }
+                }
+                imgEl.content = ['<img src="',
+                    img.src,
+                    '" id="Q_imagepicker_cropping"',
+                    ' width="'+imgEl.width,
+                    '" height="'+imgEl.height,
+                    '" /><canvas id="Q_cropCanvas"></canvas> '].join('');
+
+                if (o.cropping.dialog === true ) {
+                    Q.Dialogs.push({
+                        className: 'Q_Dialog_imagepicker',
+                        title: 'Edit the image',
+                        content: imgEl.content,
+                        destroyOnClose: true,
+                        onClose: _doCanvasCrop
+                    });
+                    $('#Q_imagepicker_cropping').css({width:imgEl.width, height:imgEl.height});
+                    $('.Q_Dialog_imagepicker').css({
+                        width: imgEl.width,
+                        height:imgEl.height+$('.Q_Dialog_imagepicker .title_slot').slice(0,1).height()
+                    });
+                    $('#Q_imagepicker_cropping').plugin('Q/viewport');
+                }
+                if (o.cropping.jCrop === true ) {
+                    Q.addScript('/plugins/Q/js/jcrop/jquery.Jcrop.js', function() {
+                        Q.addStylesheet('/plugins/Q/js/jcrop/jquery.Jcrop.css', function() {
+                            $('#Q_imagepicker_cropping').Jcrop({
+                                onChange: function(c) {
+                                    // c.x, c.y, c.x2, c.y2, c.w, c.h
+                                    imgEl.crop = c;
+                                }
+                            });
+                        });
+                    });
+
+
+                }
+
+            };
+            img.src = params.data;
+
+            _doCanvasCrop = function(e) {
+//              nothing to crop
+                if ( ! imgEl.crop ) {
+                    _doUpload(params);
+                    return;
+                }
+//      create new cropped image and upload it
+                var canvas = document.getElementById('Q_cropCanvas');
+                if (!!!(canvas && canvas.getContext('2d') )) {
+                    _doUpload(params);
+                    return; // canvas not supported
+                }
+
+//              canvas should be equal to cropped image
+                canvas.width = imgEl.crop.w;
+                canvas.height = imgEl.crop.h;
+                var context = canvas.getContext('2d');
+                var imageObj = new Image();
+
+                imageObj.onload = function() {
+                    // draw cropped image
+                    var sourceX = imgEl.crop.x;
+                    var sourceY = imgEl.crop.y;
+                    var sourceWidth = imgEl.crop.w;
+                    var sourceHeight = imgEl.crop.h;
+                    var destWidth = sourceWidth;
+                    var destHeight = sourceHeight;
+                    var destX = 0;
+                    var destY = 0;
+
+                    context.drawImage(imageObj, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight);
+                    var imageData = canvas.toDataURL();
+//              pass to _doUpload or preprocessor new image
+                    params.data = imageData;
+                    _doUpload(params);
+
+                };
+                imageObj.src = img.src;
+            };
+        }
+
+
 		function _doUpload(override) {
 			if (override === false || (override && override.cancel)) {
 				var state = $this.state('Q/imagepicker');

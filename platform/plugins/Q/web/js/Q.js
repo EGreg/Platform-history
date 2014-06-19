@@ -7930,7 +7930,6 @@ Q.onJQuery.add(function ($) {
 		"Q/touchscroll": "plugins/Q/js/fn/touchscroll.js",
 		"Q/scrollbarsAutoHide": "plugins/Q/js/fn/scrollbarsAutoHide.js",
 		"Q/sortable": "plugins/Q/js/fn/sortable.js",
-		"Q/jcrop": "plugins/Q/js/fn/jcrop.js"
 	});
 	
 	Q.onLoad.add(function () {
