@@ -1576,6 +1576,10 @@ Q.Layout = {
 			$('#column0_slot').show();
 			$('#column1_slot').hide();
 			$('#column2_slot').hide();
+		} else {
+			$('#column0_slot').hide();
+			$('#column1_slot').show();
+			$('#column2_slot').show();
 		}
 	},
 	
