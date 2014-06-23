@@ -7363,6 +7363,9 @@ Q.Dialogs = {
 	 *							 Moreover, dialog is centered relatively to this element. By default it's document body.
 	 *   "alignByParent": Defaults to false. If true, the dialog will be aligned to the center of not the entire window,
 	 *                    but to the center of containing element instead.
+     *   "size": {Object} Optional. Size of internal(without title) part of window
+     *      "width" Optional.
+     *      "height" Optional.
 	 *   "noClose": Defaults to false. If true, overlay close button will not appear and overlay won't be closed by pressing 'Esc' key.
 	 *   "closeOnEsc": Defaults to true. Indicates whether to close overlay on 'Esc' key press. Has sense only if 'noClose' is false.
 	 *   "destroyOnClose": Defaults to false if "dialog" is provided. If true, dialog DOM element will be removed from the document on close.
@@ -7396,8 +7399,17 @@ Q.Dialogs = {
 		}
 		dialog.hide();
 		//if (dialog.parent().length == 0) {
-			$(o.appendTo || $('body')[0]).append(dialog);
+			var attached_dialog = $(o.appendTo || $('body')[0]).append(dialog);
 		//}
+
+
+        if (o.size) {
+//          titleSize - is height of dialog's title, at the moment the height is unknown TODO should be setted programmatically
+            var titleSize = 41;
+            dialog.css({width: o.size.width, height: o.size.height+titleSize});
+        }
+
+
 		var _onClose = o.onClose;
 		o.onClose = new Q.Event(function() {
 			Q.handle(o.onClose.original, dialog, [dialog]);
