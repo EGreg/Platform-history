@@ -5421,7 +5421,9 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 	url = (hashUrl !== undefined) ? hashUrl : parts[0];
 
 	var loader = Q.request,
-		onError = window.alert,
+		onError = function (msg) {
+			window.alert(msg);
+		},
 		onActivate;
 	if (o.loader) {
 		loader = o.loader;
