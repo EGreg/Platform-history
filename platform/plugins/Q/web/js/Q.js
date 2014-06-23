@@ -6148,8 +6148,13 @@ function _initTool(toolElement) {
 		: null;
 	
 	_loadToolScript(toolElement, function (toolElement, toolFunc, toolName, uniqueToolId) {
-		currentPipe.add(currentPipe.waitForIdNames, 1, _handleInit)
-		.run();
+		var wfin = currentPipe.waitForIdNames;
+		if (wfin) {
+			currentPipe.add(wfin, 1, _handleInit).run();
+		} else {
+			_handleInit(); // just a slight optimization
+		}
+		
 	}, null, parentPipe);
 }
 
