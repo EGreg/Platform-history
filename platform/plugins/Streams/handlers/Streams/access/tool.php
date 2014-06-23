@@ -5,6 +5,7 @@
  * @param array $options
  *  "publisherId" => the id of the user who is publishing the stream
  *  "streamName" => the name of the stream for which to edit access levels
+ *  "publisherId" => id of publisher
  *  "tabs" => optional array of tab name => title. Defaults to read, write, admin tabs.
  *  "ranges" => optional. Associative array with keys "read", "write", "admin"
  *    and values as associative arrays of ($min, $max) for the displayed levels.
@@ -12,11 +13,12 @@
 function Streams_access_tool($options)
 {
 	$tabs = array(
-		'read' => 'visible to', 
+		'read'  => 'visible to', 
 		'write' => 'editable by', 
 		'admin' => 'members'
 	);
 	extract($options);
+
 	$user = Users::loggedInUser(true);
 	/**
 	 * @var string $streamName
@@ -24,6 +26,7 @@ function Streams_access_tool($options)
 	if (empty($streamName)) {
 		$streamName = Streams::requestedName(true);
 	}
+
 	if (empty($publisherId)) {
 		$publisherId = Streams::requestedPublisherId();
 		if (empty($publisherId)) {
@@ -37,7 +40,16 @@ function Streams_access_tool($options)
             'table' => 'stream',
             'criteria' => 'that name'
         ));
-    }
+	}
+
+	$stream = Streams::fetchOne($user->id, $publisherId, $streamName);
+	if (!$stream) {
+		throw new Q_Exception_MissingRow(array(
+			'table' => 'stream',
+			'criteria' => 'that name'
+		));
+	}
+
 	if (!$stream->testAdminLevel('own')) {
 		throw new Users_Exception_NotAuthorized();
 	}
@@ -46,7 +58,9 @@ function Streams_access_tool($options)
 		->where(array(
 			'publisherId' => $stream->publisherId,
 			'streamName' => $stream->name
-		))->fetchDbRows();
+		))->andWhere(
+			'readLevel != -1 or writeLevel != -1 or adminLevel != -1'
+		)->fetchDbRows();
 		
 	$contact_array = Users_Contact::select('*')
 		->where(array(
@@ -68,7 +82,7 @@ function Streams_access_tool($options)
 	$avatar_array = empty($userId_list)
 		? array()
 		: Streams_Avatar::fetch($user->id, $userId_list);
-	
+
 	$labels = array();
 	$icons = array();
 	foreach ($contact_array as $contact) {
@@ -82,9 +96,9 @@ function Streams_access_tool($options)
 		}
 	}
 
-    reset($tabs);
+	reset($tabs);
 	$tab = Q::ifset($_REQUEST, 'tab', key($tabs));
-	
+
 	switch ($tab) {
 		case 'read':
 			$levels = Q_Config::get('Streams', 'readLevelOptions', array());
@@ -114,7 +128,7 @@ function Streams_access_tool($options)
 	Q_Response::addScript("plugins/Streams/js/tools/access.js");
 	Q_Response::addScript("plugins/Streams/js/Streams.js");
 	Q_Response::setToolOptions(compact('stream', 'access_array', 'avatar_array', 'labels', 'icons', 'tab'));
-	
+
 	return Q::view('Streams/tool/access.php', compact(
 		'stream', 'access_array', 'contact_array', 'label_array', 'tabs', 'tab', 'labels', 'icons', 'levels', 'dir'
 	));

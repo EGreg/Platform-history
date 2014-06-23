@@ -11,7 +11,6 @@
  *   @default {}
  */
 Q.Tool.define("Streams/userChooser", function(o) {
-
 	Q.plugins.Streams.cache = Q.plugins.Streams.cache || {};
     Q.plugins.Streams.cache.userChooser = Q.plugins.Streams.cache.userChooser || {};
 
@@ -130,11 +129,12 @@ Q.Tool.define("Streams/userChooser", function(o) {
 				if (k in me.exclude && me.exclude[k]) {
 					continue;
 				}
+
 				var result = $('<a class="Q_selectable" style="display: block;" />').append(
 					$('<img style="vertical-align: middle; width: 40px; height: 40px;" />')
 					.attr('src', Q.plugins.Users.iconUrl(avatars[k].icon, 40))
 				).append(
-					$('<span />').html(avatars[k].displayName())
+					$('<span />').html(Q.plugins.Streams.displayName(avatars[k]))
 				).hover(
 					function () {
 						$('*', results).removeClass('Q_selected');
@@ -146,6 +146,7 @@ Q.Tool.define("Streams/userChooser", function(o) {
 				).mouseup(function () {
 					onChoose($(this));
 				}).data('userId', k)
+				.data('avatar', avatars[k])
 				.data('avatar', avatars[k])
 				.on('mousedown focusin', function () {
 					focusedResults = true;
