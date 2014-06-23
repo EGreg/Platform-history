@@ -72,7 +72,7 @@ class Streams_Avatar extends Base_Streams_Avatar
 	 * @param {array} $options=array()
 	 *	'limit' => number of records to fetch
 	 *  'fields' => defaults to array('username', 'firstName', 'lastName') 
-	 *  'public' => defaults to false. If false, only gets names people show you.
+	 *  'public' => defaults to false. If true, also gets publicly accessible names.
 	 * @return {array}
 	 */
 	static function fetchByPrefix($toUserId, $prefix, $options = array()) {

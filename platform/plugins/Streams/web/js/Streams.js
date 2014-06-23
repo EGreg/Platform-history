@@ -2046,7 +2046,7 @@ Avatar.get.onError = new Q.Event();
  * @param {Object} [options]
  *   @param {Number} [options.limit] for paging
  *   @param {Number} [options.offset] for paging
- *   @param {Boolean} [options.public] If false, only gets names people show you.
+ *   @param {Boolean} [options.public] If true, also gets publicly accessible names.
  *   @default false
  */
 Avatar.byPrefix = Q.getter(function _Avatar_byPrefix (prefix, callback, options) {

@@ -1070,6 +1070,7 @@ Q.has = function _Q_has(obj, key) {
  */
 Q.take = function _Q_take(source, fields) {
 	var result = {};
+	if (!source) return result;
 	if (Q.typeOf(fields) === 'array') {
 		for (var i = 0; i < fields.length; ++i) {
 			if (fields[i] in source) {
@@ -1804,8 +1805,8 @@ Q.Pipe = function _Q_Pipe(requires, maxTimes, callback) {
  *  If you return true from this function, it will delete all the callbacks in the pipe.
  */
 Q.Pipe.prototype.on = function _Q_pipe_on(field, callback) {
-	return this.add([field], 1, function _Q_pipe_on_callback (params, subjects) {
-		return callback.apply(subjects[field], params[field]);
+	return this.add([field], 1, function _Q_pipe_on_callback (params, subjects, field) {
+		return callback.apply(subjects[field], params[field], field);
 	});
 };
 
@@ -1820,7 +1821,7 @@ Q.Pipe.prototype.on = function _Q_pipe_on(field, callback) {
  *  Optional. The maximum number of times the callback should be called.
  * @param callback {Function}
  *  Once all required fields are filled, this function is called every time something is piped.
- *  It is passed three arguments: (params, subjects, requires)
+ *  It is passed four arguments: (params, subjects, field, requires)
  *  If you return false from this function, it will no longer be called for future pipe runs.
  *  If you return true from this function, it will delete all the callbacks in the pipe.
  */
@@ -1853,9 +1854,9 @@ Q.Pipe.prototype.add = function _Q_pipe_add(requires, maxTimes, callback) {
 			switch (Q.typeOf(arguments[i])) {
 			case 'array':
 				r = arguments[i];
-				if (arguments[i].length
-				&& typeof arguments[i][0] !== 'string'
-				&& typeof arguments[i][0] !== 'number') {
+				if (r.length
+				&& typeof r[0] !== 'string'
+				&& typeof r[0] !== 'number') {
 					e = arguments[++i];
 				}
 				break;
@@ -1878,7 +1879,7 @@ Q.Pipe.prototype.add = function _Q_pipe_add(requires, maxTimes, callback) {
 /**
  * Makes a function that fills a particular field in the pipe and can be used as a callback
  * @method fill
- * @param field
+ * @param field {String}
  *   For error callbacks, you can use field="error" or field="users.error" for example.
  * @param ignore
  *   Optional. If true, then ignores the current field in subsequent pipe runs.
@@ -1901,16 +1902,17 @@ Q.Pipe.prototype.fill = function _Q_pipe_fill(field, ignore) {
 	return function _Q_pipe_fill() {
 		pipe.params[field] = Array.prototype.slice.call(arguments);
 		pipe.subjects[field] = this;
-		pipe.run();
+		pipe.run(field);
 	};
 };
 
 /**
  * Runs the pipe
  * @method run
+ * @param field {String} optionally indicate name of the field that was just filled
  * @return {Number} the number of pipe callbacks that wound up running
  */
-Q.Pipe.prototype.run = function _Q_pipe_run() {
+Q.Pipe.prototype.run = function _Q_pipe_run(field) {
 	var cb, ret, callbacks = this.callbacks, params = Q.copy(this.params), count = 0;
 	var i, j;
 
@@ -1937,7 +1939,7 @@ Q.Pipe.prototype.run = function _Q_pipe_run() {
 				delete callbacks[i];
 			}
 		}
-		ret = cb.call(this, this.params, this.subjects, cb.pipeRequires);
+		ret = cb.call(this, this.params, this.subjects, field, cb.pipeRequires);
 		if (cb.pipeEvents) {
 			for (j=0; j<cb.pipeEvents.length; j++) {
 				cb.pipeEvents[j].remove(cb.pipeKeys[j]);
@@ -2376,10 +2378,10 @@ Q.Exception.prototype = Error;
  *	 Otherwise returns null, or false if the tool was already constructed.
  */
 Q.Tool = function _Q_Tool(element, options) {
-	if (this.constructed) {
+	if (this.activated) {
 		return this; // don't construct the same tool more than once
 	}
-	this.constructed = true;
+	this.activated = true;
 	this.element = element;
 	this.typename = 'Q.Tool';
 
@@ -2390,9 +2392,9 @@ Q.Tool = function _Q_Tool(element, options) {
 	// ID and prefix
 	if (!this.element.id) {
 		var prefix = Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '_';
-		this.element.id = (prefix + (Q.Tool.nextDefaultId++) + '_' + this.name + "_tool").toLowerCase();
+		this.element.id = (prefix + this.name + '_' (Q.Tool.nextDefaultId++) + "_tool").toLowerCase();
 	}
-	this.prefix = Q.Tool.prefixById(this.element.id);
+	this.prefix = Q.Tool.calculatePrefix(this.element.id);
 	this.id = this.prefix.substr(0, this.prefix.length-1);
 
 	// for later use
@@ -2462,10 +2464,12 @@ Q.Tool = function _Q_Tool(element, options) {
 			return this.Q.tools[Q.normalize(toolName)] || null;
 		};
 	}
-	element.Q.tool = this;
-	var normalizedName = Q.normalize(this.name);
 	
-	Q.setObject(['tools', normalizedName], this, element.Q);
+	var normalizedName = Q.normalize(this.name);
+	if (!element.Q.tools) element.Q.tools = {};
+	element.Q.tools[normalizedName] = this;
+	element.Q.tool = this;
+	Q.Tool.active[this.id] = this;
 	
 	// Add a Q property on the object and extend it with the prototype.Q if any
 	this.Q = Q.extend({
@@ -2474,8 +2478,6 @@ Q.Tool = function _Q_Tool(element, options) {
 		beforeRemove: new Q.Event(),
 		onRetain: new Q.Event()
 	}, this.Q);
-		
-	Q.setObject([this.id], this, Q.Tool.active);
 	
 	return this;
 };
@@ -2488,9 +2490,10 @@ Q.Tool.active = {};
 Q.Tool.latestName = null;
 Q.Tool.latestNames = {};
 
-var _constructToolHandlers = {},
-	_initToolHandlers = {},
-	_beforeRemoveToolHandlers = {};
+var _activateToolHandlers = {};
+var _initToolHandlers = {};
+var _beforeRemoveToolHandlers = {};
+var _waitingPipeStack = [];
 
 function _toolEventFactoryNormalizeKey(key) {
 	var parts = key.split(':', 2);
@@ -2499,13 +2502,13 @@ function _toolEventFactoryNormalizeKey(key) {
 }
 
 /**
- * Returns Q.Event which occurs when a tool has been constructed
+ * Returns Q.Event which occurs when a tool has been activated
  * Generic callbacks can be assigned by setting toolName to ""
  * @method Q.Tool.onConstruct
  * @param nameOrId {String} the name of the tool, such as "Q/inplace", or "id:" followed by tool's id
  * @return {Q.Event}
  */
-Q.Tool.onConstruct = Q.Event.factory(_constructToolHandlers, ["", _toolEventFactoryNormalizeKey]);
+Q.Tool.onActivate = Q.Event.factory(_activateToolHandlers, ["", _toolEventFactoryNormalizeKey]);
 
 /**
  * Returns Q.Event which occurs when a tool has been initialized
@@ -2524,34 +2527,6 @@ Q.Tool.onInit = Q.Event.factory(_initToolHandlers, ["", _toolEventFactoryNormali
  * @return {Q.Event}
  */
 Q.Tool.beforeRemove = Q.Event.factory(_beforeRemoveToolHandlers, ["", _toolEventFactoryNormalizeKey]);
-
-/**
- * Reference a tool by its id
- * @method Q.Tool.byId
- * @param {String} id
- * @param {String} name optional name of the tool, useful if more than one tool was activated on the same element
- * @return {Q.Tool|null}
- */
-Q.Tool.byId = function _Q_Tool_byId(id, name) {
-	var tool = Q.Tool.active[id];
-	return tool && name ? tool.element.Q(name) : tool || null;
-};
-
-/**
- * Computes and returns a tool's prefix
- * @method Q.Tool.prefixById
- * @param {String} id
- * @return {String}
- */
-Q.Tool.prefixById = function _Q_Tool_prefixById(id) {
-	if (id.match(/_tool$/)) {
-		return id.substring(0, id.length-4);
-	} else if (id.substr(-1) === '_') {
-		return id;
-	} else {
-		return id + "_";
-	}
-};
 
 /**
  * Traverses elements in a particular container, including the container, and removes + destroys all tools.
@@ -2884,6 +2859,7 @@ Q.Tool.prototype.remove = function _Q_Tool_prototype_remove(removeCached) {
 	delete this.element.Q.tools[Q.normalize(this.name)];
 	if (Q.isEmpty(this.element.Q.tools)) {
 		Q.removeElement(this.element);
+		delete Q.Tool.active[this.id];
 	}
 
 	// remove all the tool's events automatically
@@ -2901,9 +2877,6 @@ Q.Tool.prototype.remove = function _Q_Tool_prototype_remove(removeCached) {
 		}
 		Q.Event.jQueryForTool[this.id] = [];
 	}
-
-	// finally, remove the tool from the array of tools on the page
-	delete Q.Tool.active[this.id];
 
 	return null;
 };
@@ -2941,19 +2914,19 @@ Q.Tool.prototype.getElementsByClassName = function _Q_Tool_prototype_getElements
 };
 
 /**
- * Be notified whenever a child tool is constructed, repeatedly if it is
- * removed and then constructed again.
+ * Be notified whenever a child tool is activated, repeatedly if it is
+ * removed and then activated again.
  * @method Tool.onChildConstruct
  * @return {Q.Event}
- *  An event that is triggered whenever a child tool is constructed
+ *  An event that is triggered whenever a child tool is activated
  */
-Q.Tool.prototype.onChildConstruct = function _Q_Tool_prototype_onChildConstruct(append) {
-	return Q.Tool.onConstruct('id:'+this.prefix+append);
+Q.Tool.prototype.onChildActivate = function _Q_Tool_prototype_onChildActivate(append) {
+	return Q.Tool.onActivate('id:'+this.prefix+append);
 };
 
 /**
  * Be notified whenever a child tool is initialized, repeatedly if it is
- * removed and then constructed again.
+ * removed and then activated again.
  * @method Tool.onChildInit
  * @return {Q.Event}
  *  An event that is triggered whenever a child tool is initialized
@@ -3094,6 +3067,50 @@ Q.Tool.from = function _Q_Tool_from(toolElement, toolName) {
 };
 
 /**
+ * Reference a tool by its id
+ * @method Q.Tool.byId
+ * @param {String} id
+ * @param {String} name optional name of the tool, useful if more than one tool was activated on the same element
+ * @return {Q.Tool|null}
+ */
+Q.Tool.byId = function _Q_Tool_byId(id, name) {
+	var tool = Q.Tool.active[id];
+	return tool && name ? tool.element.Q(name) : tool || null;
+};
+
+/**
+ * Computes and returns a tool's prefix
+ * @method Q.Tool.calculatePrefix
+ * @param {String} id the id or prefix of an existing tool or its element
+ * @return {String}
+ */
+Q.Tool.calculatePrefix = function _Q_Tool_calculatePrefix(id) {
+	if (id.match(/_tool$/)) {
+		return id.substring(0, id.length-4);
+	} else if (id.substr(-1) === '_') {
+		return id;
+	} else {
+		return id + "_";
+	}
+};
+
+/**
+ * Computes and returns a tool's id
+ * @method Q.Tool.calculateId
+ * @param {String} id the id or prefix of an existing tool or its element
+ * @return {String}
+ */
+Q.Tool.calculateId = function _Q_Tool_calculatePrefix(id) {
+	if (id.match(/_tool$/)) {
+		return id.substring(0, id.length-5);
+	} else if (id.substr(-1) === '_') {
+		return id.substring(0, id.length-1);
+	} else {
+		return id;
+	}
+};
+
+/**
  * For debugging purposes only, allows to log tool names conveniently
  * @method Tool.toString
  * @return {String}
@@ -3108,12 +3125,19 @@ Q.Tool.prototype.toString = function _Q_Tool_prototype_toString() {
  * @param {DOMElement} toolElement
  * @param {Function} callback  The callback to call when the corresponding script has been loaded and executed
  * @param {Mixed} shared pass this only when constructing a tool
- * @return {boolean} whether the script needed to be loaded
+ * @param {Q.Pipe} you can pass a parent pipe which will be filled later
+ * @return {Boolean} whether the script needed to be loaded
  */
-function _loadToolScript(toolElement, callback, shared) {
+function _loadToolScript(toolElement, callback, shared, parentPipe) {
 	var id = toolElement.id;
 	var classNames = toolElement.className.split(' ');
 	var toolNames = [];
+	var normalizedId = Q.normalize(Q.Tool.calculateId(id));
+	if (parentPipe) {
+		if (!parentPipe.waitForIdNames) {
+			parentPipe.waitForIdNames = [];
+		}
+	}
 	for (var i=0, nl = classNames.length; i<nl; ++i) {
 		var className = classNames[i];
 		if (className === 'Q_tool'
@@ -3154,6 +3178,10 @@ function _loadToolScript(toolElement, callback, shared) {
 			if (typeof toolFunc !== 'function' && typeof toolFunc !== 'string') {
 				console.warn("Q.Tool.loadScript: Missing tool constructor for " + toolName);
 			}
+		}
+		if (parentPipe) {
+			var normalizedName = Q.normalize(toolName);
+			parentPipe.waitForIdNames.push(normalizedId+"\t"+normalizedName);
 		}
 		if (typeof toolFunc === 'function') {
 			return p.fill(toolName)(toolElement, toolFunc, toolName);
@@ -5139,7 +5167,7 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 	|| (typeof HTMLCollection !== 'undefined' && (elem instanceof HTMLCollection))
 	|| (window.jQuery && (elem instanceof jQuery))) {
 
-		Q.each(elem, function (i) {
+		Q.each(elem, function _Q_find_array(i) {
 			if (false === Q.find(this, filter, callbackBefore, callbackAfter, options, shared, parent, i)) {
 				return false;
 			}
@@ -5295,7 +5323,6 @@ Q.replace = function _Q_replace(existing, source, options) {
 			// This way tools can avoid doing expensive operations each time
 			// they are replaced and reactivated.
 			toolElement.parentNode.replaceChild(element, toolElement);
-			element.Q.newOptions = {};
 			for (var name in element.Q.tools) {
 				var tool = Q.Tool.from(element, name);
 				var attrName = 'data-' + Q.normalize(tool.name, '-');
@@ -6044,10 +6071,8 @@ function _constructTool(toolElement, options, shared) {
 	_loadToolScript(toolElement, function _constructTool_doConstruct(toolElement, toolFunc, toolName, uniqueToolId) {
 		if (!toolFunc.toolConstructor) {
 			toolFunc.toolConstructor = function Q_Tool(element, options) {
-				if (this.constructed) {
-					return; // support re-entrancy of Q.activate
-				}
-				this.constructed = false;
+				if (this.activated) return; // support re-entrancy of Q.activate
+				this.activated = false;
 				try {
 					this.options = Q.extend({}, Q.Tool.options.levels, toolFunc.options, Q.Tool.options.levels, options);
 					this.name = toolName;
@@ -6062,12 +6087,12 @@ function _constructTool(toolElement, options, shared) {
 					// Trigger events in some global event factories
 					var normalizedName = Q.normalize(this.name);
 					var normalizedId = Q.normalize(this.id);
-					_constructToolHandlers[""] &&
-					_constructToolHandlers[""].handle.call(this, this.options);
-					_constructToolHandlers[normalizedName] &&
-					_constructToolHandlers[normalizedName].handle.call(this, this.options);
-					_constructToolHandlers["id:"+normalizedId] &&
-					_constructToolHandlers["id:"+normalizedId].handle.call(this, this.options);
+					_activateToolHandlers[""] &&
+					_activateToolHandlers[""].handle.call(this, this.options);
+					_activateToolHandlers[normalizedName] &&
+					_activateToolHandlers[normalizedName].handle.call(this, this.options);
+					_activateToolHandlers["id:"+normalizedId] &&
+					_activateToolHandlers["id:"+normalizedId].handle.call(this, this.options);
 					Q.Tool.beingActivated = prevTool;
 				} catch (e) {
 					debugger; // pause here if debugging
@@ -6075,7 +6100,7 @@ function _constructTool(toolElement, options, shared) {
 					throw e;
 					Q.Tool.beingActivated = prevTool;
 				}
-				this.constructed = true;
+				this.activated = true;
 			};
 			Q.mixin(toolFunc, Q.Tool);
 			Q.mixin(toolFunc.toolConstructor, toolFunc);
@@ -6086,6 +6111,7 @@ function _constructTool(toolElement, options, shared) {
 		}
 		return result;
 	}, shared);
+	_waitingPipeStack.push(new Q.Pipe());
 }
 
 /**
@@ -6095,27 +6121,36 @@ function _constructTool(toolElement, options, shared) {
  *  A tool's generated container div
  */
 function _initTool(toolElement) {
-	_loadToolScript(toolElement, function _initTool_doConstruct() {
-		function _handleInit() {
-			Q.handle(tool.Q.onInit, tool, tool.options);
-			
-			var normalizedName = Q.normalize(tool.name);
-			var normalizedId = Q.normalize(tool.id);
+	
+	function _handleInit() {
+		var tn, tn, tool, normalizedName, normalizedId;
+		var tools = toolElement.Q.tools;
+		for (tn in tools) {
+			tool = tools[tn];
+			Q.handle(tool.Q && tool.Q.onInit, tool, tool.options);
+			normalizedName = Q.normalize(tn);
+			normalizedId = Q.normalize(tool.id);
 			_initToolHandlers[""] &&
 			_initToolHandlers[""].handle.call(tool, tool.options);
 			_initToolHandlers[normalizedName] &&
-			_initToolHandlers[normalizedName].handlecall(tool, tool.options);
+			_initToolHandlers[normalizedName].handle.call(tool, tool.options);
 			_initToolHandlers["id:"+normalizedId] &&
-			_initToolHandlers["id:"+normalizedId].handlecall(tool, tool.options);
+			_initToolHandlers["id:"+normalizedId].handle.call(tool, tool.options);
+			if (parentPipe) {
+				parentPipe.fill(normalizedId+"\t"+normalizedName).call(tool, tool.options);
+			}
 		}
-		
-		var tool = Q.Tool.from(toolElement);
-		if (!tool || !tool.Q.onInit) {
-			return;
-		}
-		Q.pipe(tool.children(), 'Q.onInit', _handleInit)
+	}
+	
+	var currentPipe = _waitingPipeStack.pop();
+	var parentPipe = _waitingPipeStack.length
+		? _waitingPipeStack[_waitingPipeStack.length-1]
+		: null;
+	
+	_loadToolScript(toolElement, function (toolElement, toolFunc, toolName, uniqueToolId) {
+		currentPipe.add(currentPipe.waitForIdNames, 1, _handleInit)
 		.run();
-	});
+	}, null, parentPipe);
 }
 
 /**

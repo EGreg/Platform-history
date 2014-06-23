@@ -81,7 +81,7 @@ Q.Tool.define("Streams/access", function(options) {
 				}
 				$this.closest('tr').remove();
 				if (criteria.ofUserId) {
-					delete me.child('Streams_userChooser_').exclude[criteria.ofUserId];
+					delete me.child('Streams_userChooser').exclude[criteria.ofUserId];
 				} else if (criteria.ofContactLabel) {
 					$('option', temp_select).each(function () {
 						if ($(this).val() === criteria.ofContactLabel) {
@@ -114,7 +114,7 @@ Q.Tool.define("Streams/access", function(options) {
 				avatar = options.avatar_array[userId];
 			}
 			criteria = {ofUserId: userId};
-			me.child('Streams_userChooser_').exclude[userId] = true;
+			me.child('Streams_userChooser').exclude[userId] = true;
 		} else if (contact_label) {
 			criteria = {ofContactLabel: contact_label};
 			$('.Streams_access_level_add_label option', tool).each(function () {
@@ -132,7 +132,7 @@ Q.Tool.define("Streams/access", function(options) {
 		if (userId && userId !== "") {
 			tr.append(
 				$('<td style="vertical-align: middle;" />').append(
-					$('<img />').attr('src', Q.plugins.Streams.iconUrl(avatar.fields.icon, 40))
+					$('<img />').attr('src', Q.plugins.Streams.iconUrl(avatar.icon, 40))
 						.css('width', 20)
 				)
 			).append(
@@ -159,6 +159,9 @@ Q.Tool.define("Streams/access", function(options) {
 
 	this.Q.onInit.set(function () {
 
+		if (!options.stream) {
+			return;
+		}
 		var i, userId, access;
 		prepareSelect(level_for_everyone, '', options.stream.fields[field_name], 'stream');
 
@@ -167,7 +170,7 @@ Q.Tool.define("Streams/access", function(options) {
 			addAccessRow(access);
 		}
 
-		me.child('Streams_userChooser_').onChoose = function (userId, avatar) {
+		me.child('Streams_userChooser').onChoose = function (userId, avatar) {
 			var url = Q.action(
 				'Streams/access'
 				+ '?publisherId='+options.stream.fields.publisherId
