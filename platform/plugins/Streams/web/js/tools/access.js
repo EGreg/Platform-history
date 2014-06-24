@@ -3,12 +3,30 @@
 	 * Streams/access tool
 	 */
 	Q.Tool.define("Streams/access", function(options) {
+		if (!options.ajax) {
+			return addToolHandler(options.publisherId, options.streamName);
+		}
+
 		var me                 = this,
 			tool               = this.element,
 			level_for_everyone = $('.Streams_access_level_for_everyone'),
 			field_name         = options.tab+'Level',
 			action_text        = (options.tab === 'read') ? 'can see' : 'can',
 			temp_select        = $('<select />');
+
+		function addToolHandler(publisherId, streamName) {
+			Q.findToolNodesByName(streamName).click(function(){
+				Q.Dialogs.push({
+					url: Q.action("Streams/access", {
+						'publisherId': publisherId,
+						'streamName': streamName
+					}),
+					onClose: function(){
+						$(this).remove();
+					}
+				}).width(430);
+			});
+		}
 
 		function prepareSelect($select, criteria, value, action) {
 			if (!action) {
@@ -120,6 +138,7 @@
 			} else {
 				return;
 			}
+
 			prepareSelect(cloned_select, criteria, access.fields[field_name]);
 			var tr = $('<tr />');
 			if (userId && userId !== "0") {

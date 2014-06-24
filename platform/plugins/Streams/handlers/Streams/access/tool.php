@@ -12,6 +12,7 @@
  */
 function Streams_access_tool($options)
 {
+	$ajax = false;
 	$tabs = array(
 		'read'  => 'visible to', 
 		'write' => 'editable by', 
@@ -32,6 +33,11 @@ function Streams_access_tool($options)
 		if (empty($publisherId)) {
 			$publisherId = $user->id;
 		}
+	}
+
+	if (!$ajax) {
+		Q_Response::setToolOptions(compact('streamName', 'publisherId', 'ajax'));
+		return;
 	}
 
 	$stream = Streams::fetchOne($user->id, $publisherId, $streamName);
@@ -127,7 +133,7 @@ function Streams_access_tool($options)
 
 	Q_Response::addScript("plugins/Streams/js/tools/access.js");
 	Q_Response::addScript("plugins/Streams/js/Streams.js");
-	Q_Response::setToolOptions(compact('stream', 'access_array', 'avatar_array', 'labels', 'icons', 'tab'));
+	Q_Response::setToolOptions(compact('stream', 'access_array', 'avatar_array', 'labels', 'icons', 'tab', 'ajax'));
 
 	return Q::view('Streams/tool/access.php', compact(
 		'stream', 'access_array', 'contact_array', 'label_array', 'tabs', 'tab', 'labels', 'icons', 'levels', 'dir'

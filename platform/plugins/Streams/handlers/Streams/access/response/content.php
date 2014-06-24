@@ -2,6 +2,7 @@
 
 function Streams_access_response_content()
 {
+	$ajax = true;
 	$user = Users::loggedInUser(true);
 	$streamName = Streams::requestedName(true);
 	$publisherId = Streams::requestedPublisherId();
@@ -18,6 +19,7 @@ function Streams_access_response_content()
 	Q_Response::setSlot('title', "Access to: " . $stream->title);
 	return Q::tool('Streams/access', compact(
 		'publisherId',
-		'streamName'
+		'streamName',
+		'ajax'
 	));
 }

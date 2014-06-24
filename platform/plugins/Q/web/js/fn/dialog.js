@@ -267,7 +267,7 @@ Q.Tool.jQuery('Q/dialog', function (o) {
 				beforeLoad: o.beforeLoad,
 				onLoad: { "Q/dialog": function() {
 					function _onLoadUrl() {
-						Q.activate(this, {}, function() {
+						Q.activate([ots, ods], {}, function() {
 							_handlePosAndScroll.call($this, o);
 							Q.handle(o.onActivate, $this, [$this]);
 						});
@@ -402,6 +402,7 @@ function _loadUrl(o, cb) {
 
 	Q.loadUrl(o.url, { 
 		ignoreHistory: true,
+		ignorePage: true,
 		onActivate: cb,
 		slotNames: 'title,dialog',
 		handler: function(response) {
