@@ -160,6 +160,7 @@ Q.Tool.define("Streams/access", function(options) {
 	this.Q.onInit.set(function () {
 
 		var i, userId, access;
+		if (!options.stream) return;
 		prepareSelect(level_for_everyone, '', options.stream.fields[field_name], 'stream');
 
 		for (i=0; i<options.access_array.length; ++i) {

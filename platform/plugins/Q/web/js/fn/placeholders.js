@@ -75,11 +75,8 @@ function () {
 		});
 		$this.data('Q-placeholder', placeholder);
 	});
-	if (!p.attachedLive) {
-		$('input').on('keypress keyup change input focus blur Q_refresh', manage);
-		$('textarea').on('keypress keyup change input focus blur Q_refresh', manage);
-		p.attachedLive = true;
-	}
+	$('input', this).on('keypress keyup change input focus blur Q_refresh', manage);
+	$('textarea', this).on('keypress keyup change input focus blur Q_refresh', manage);
 	return this;
 
 	function manage(event) {
@@ -95,7 +92,5 @@ function () {
 		}
 	}
 });
-
-var p = {};
 
 })(Q, jQuery, window, document);
