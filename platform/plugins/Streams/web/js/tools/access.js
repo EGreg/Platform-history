@@ -3,7 +3,7 @@
 	 * Streams/access tool
 	 */
 	Q.Tool.define("Streams/access", function(options) {
-		if (!options.ajax) {
+		if (options.ajax === false) {
 			return addToolHandler(options.publisherId, options.streamName);
 		}
 
@@ -15,7 +15,7 @@
 			temp_select        = $('<select />');
 
 		function addToolHandler(publisherId, streamName) {
-			Q.findToolNodesByName(streamName).click(function(){
+			Q.findToolNodesByName(streamName).on('click touchstart', function(){
 				Q.Dialogs.push({
 					url: Q.action("Streams/access", {
 						'publisherId': publisherId,
@@ -24,7 +24,7 @@
 					onClose: function(){
 						$(this).remove();
 					}
-				}).width(430);
+				}).addClass('Streams_access_tool_dialog_container');
 			});
 		}
 
@@ -144,27 +144,22 @@
 			if (userId && userId !== "0") {
 				tr.append(
 					$('<td style="vertical-align: middle;" />').append(
-						$('<img />').attr('src', Q.plugins.Streams.iconUrl(avatar.fields.icon, 40))
-							.css('width', 20)
+						$('<img />').attr('src', Q.plugins.Streams.iconUrl(avatar.fields.icon, 40)).css('width', 20)
 					)
 				).append(
 					$('<td style="vertical-align: middle;" />').append(
-						Q.plugins.Streams.displayName(avatar.fields) + ' ' + action_text
-					).append(cloned_select)
+						$('<span class="access-tool-username">')
+							.text(Q.plugins.Streams.displayName(avatar.fields) + ' ' + action_text)
+					).append(cloned_select).append($('<div class="clear">'))
 				).append(
-					$('<td style="vertical-align: middle;" />').append(
-						newRemoveLink(criteria)
-					)
+					$('<td style="vertical-align: middle;" />').append(newRemoveLink(criteria))
 				).appendTo($('.Streams_access_user_array', tool));
 			} else {
 				tr.append(
-					$('<td style="vertical-align: middle;" />').text(contact_label).append(
-						' ' + action_text
-					).append(cloned_select)
+					$('<td style="vertical-align: middle;" />')
+						.text(contact_label).append(' ' + action_text).append(cloned_select)
 				).append(
-					$('<td style="vertical-align: middle;" />').append(
-						newRemoveLink(criteria)
-					)
+					$('<td style="vertical-align: middle;" />').append(newRemoveLink(criteria))
 				).appendTo($('.Streams_access_label_array', tool));
 			}
 		}

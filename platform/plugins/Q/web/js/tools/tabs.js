@@ -123,9 +123,7 @@ Q.Tool.define("Q/tabs", function(options) {
 	},
 	
 	isInDialog: function() {
-		$element = $('#'+this.element.getAttribute('id'));
-
-		return !!$element.parents('#dialog_slot').size();
+		return !!$(this.element).parents('.Q_overlay').length;
 	},
 
 	indicateSelected: function (tab) {

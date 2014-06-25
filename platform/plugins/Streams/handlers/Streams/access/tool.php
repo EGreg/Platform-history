@@ -40,6 +40,9 @@ function Streams_access_tool($options)
 		return;
 	}
 
+	reset($tabs);
+	$tab = Q::ifset($_REQUEST, 'tab', key($tabs));
+
 	$stream = Streams::fetchOne($user->id, $publisherId, $streamName);
     if (!$stream) {
         throw new Q_Exception_MissingRow(array(
@@ -63,10 +66,8 @@ function Streams_access_tool($options)
 	$access_array = Streams_Access::select('*')
 		->where(array(
 			'publisherId' => $stream->publisherId,
-			'streamName' => $stream->name
-		))->andWhere(
-			'readLevel != -1 or writeLevel != -1 or adminLevel != -1'
-		)->fetchDbRows();
+			'streamName' => $stream->name,
+		))->andWhere("{$tab}Level != -1")->fetchDbRows();
 		
 	$contact_array = Users_Contact::select('*')
 		->where(array(
@@ -101,9 +102,6 @@ function Streams_access_tool($options)
 			$icons[$label->label] = 'label_'.$user->id.'_'.$label->label;
 		}
 	}
-
-	reset($tabs);
-	$tab = Q::ifset($_REQUEST, 'tab', key($tabs));
 
 	switch ($tab) {
 		case 'read':
