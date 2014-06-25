@@ -595,6 +595,10 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 }
 
 
+Streams.displayName = function(options) {
+	return options.firstName + ' ' + options.lastName;
+};
+
 /**
 * Returns streams for current user
 * @method getParticipating

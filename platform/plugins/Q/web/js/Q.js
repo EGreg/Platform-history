@@ -1254,6 +1254,17 @@ Q.normalize = function _Q_normalize(text, replacement, characters, numChars) {
 	return result;
 };
 
+/**
+* Find tool container node by name of tool
+* @method findToolNodesByName
+* @param {String} toolName
+* @return {jQuery} nodes
+*/
+Q.findToolNodesByName = function(toolName) {
+	toolName = Q.normalize(toolName);
+	return $('.' + (toolName.charAt(0).toUpperCase() + toolName.slice(1)) + '_tool');
+}
+
 function _getProp (/*Array*/parts, /*Boolean*/create, /*Object*/context){
 	var p, i = 0;
 	if (context === null) return undefined;
@@ -5421,9 +5432,9 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 	url = (hashUrl !== undefined) ? hashUrl : parts[0];
 
 	var loader = Q.request,
-		onError = function (msg) {
-			window.alert(msg);
-		},
+		onError = onError = function (msg) {
+ 			window.alert(msg);
+ 		},
 		onActivate;
 	if (o.loader) {
 		loader = o.loader;
@@ -5534,6 +5545,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				if (window.StyleFix) {
 					StyleFix.process();
 				}
+
 				Q.handle(onActivate, this, arguments);
 			}
 			
@@ -5663,7 +5675,6 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 			}
 			
 			var domElements = handler(response, url, o); // this is where we fill all the slots
-			
 			if (!o.ignorePage) {
 				_doEvents('on', moduleSlashAction);
 				newStylesheets = loadStylesheets(),
@@ -5786,9 +5797,10 @@ Q.loadUrl.defaultHandler = function _Q_loadUrl_fillSlots (res, url, options) {
 	for (name in res.slots) {
 		// res.slots will simply not contain the slots that have
 		// already been "cached"
+
 		if (name.toUpperCase() === 'TITLE') {
 			window.document.title = res.slots[name];
-		} else if (elem = document.getElementById(name+"_slot")) {
+		} else if (elem = document.getElementById(name+"_slot")) { 
 			try {
 				Q.replace(elem, res.slots[name]);
 				if (pos = Q.getObject(['Q', 'scroll', url], elem)) {
@@ -7431,7 +7443,7 @@ Q.Dialogs = {
 			dialog = $('<div />').append(
 				$('<div class="title_slot" />').append($('<h2 class="Q_dialog_title" />').append(o.title))
 			).append(
-				$('<div class="dialog_slot Q_dialog_content" />').append(o.content)
+				$('<div class="dialog_slot Q_dialog_content" id="dialog_slot" />').append(o.content)
 			);
 			if (o.className) dialog.addClass(o.className);
 			if (o.destroyOnClose !== false) o.destroyOnClose = true;

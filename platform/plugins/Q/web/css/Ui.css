@@ -1671,3 +1671,5 @@ input[type=radio] { margin-right: 5px; }
 .Q_gallery_caption { z-index: 201;}
 
 #dialogs_slot { display: none; }
+
+.clear{ clear: both; }

@@ -2,10 +2,15 @@
 
 function Streams_access_response_content()
 {
+	$ajax = true;
 	$user = Users::loggedInUser(true);
 	$streamName = Streams::requestedName(true);
+	$publisherId = Streams::requestedPublisherId();
+	if (empty($publisherId)) {
+		$publisherId = $user->id;
+	}
 	$stream = new Streams_Stream();
-	$stream->publisherId = $user->id;
+	$stream->publisherId = $publisherId;
 	$stream->name = $streamName;
 	if (!$stream->retrieve()) {
 		throw new Q_Exception_MissingRow(array('table' => 'stream', 'criteria' => 'that name'), 'name');
@@ -13,6 +18,8 @@ function Streams_access_response_content()
 	
 	Q_Response::setSlot('title', "Access to: " . $stream->title);
 	return Q::tool('Streams/access', compact(
-		'streamName'
+		'publisherId',
+		'streamName',
+		'ajax'
 	));
 }

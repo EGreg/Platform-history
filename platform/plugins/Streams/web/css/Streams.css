@@ -470,3 +470,18 @@
 .Streams_preview_icon { float: left; }
 .Streams_preview_contents { float: left; }
 .Streams_preview h3 { margin: 0px; padding: 0px 0px 0px 10px; line-height: 50px; font-size: 30px; }
+
+
+/* Streams access tool */
+.Streams_access_tool_dialog_container { width: 450px; }
+.Streams_access_tool_dialog_container .Streams_access_controls { padding: 5px; }
+.Streams_access_tool_dialog_container input { width: 97%; }
+.Streams_access_tool_dialog_container .Streams_access_user_array td select{ float: right; }
+
+/* phones */
+@media (min-width: 320px) and (max-width: 580px) {
+	.Streams_access_tool_dialog_container, .Streams_access_tool_dialog_container select { width: 100%; }
+	.Streams_access_tool_dialog_container input { width: 96%; }
+	.Streams_access_tool_dialog_container .Streams_access_user_array tr td:first-child { vertical-align: top !important; }
+	.Streams_access_tool_dialog_container .Streams_access_user_array tr td:first-child+td select{ width: 98%; float: none; }
+}
