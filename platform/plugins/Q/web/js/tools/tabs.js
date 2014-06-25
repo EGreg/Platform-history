@@ -115,11 +115,19 @@ Q.Tool.define("Q/tabs", function(options) {
 				state.onActivate.handle(tab);
 			}},
 			loadExtras: true,
+			ignoreHistory: this.isInDialog(),
 			loader: state.loader
 		}, state.loadUrlOptions);
+
 		Q.handle(href, o);
 	},
 	
+	isInDialog: function() {
+		$element = $('#'+this.element.getAttribute('id'));
+
+		return !!$element.parents('#dialog_slot').size();
+	},
+
 	indicateSelected: function (tab) {
 		var $tabs = this.$('.Q_tabs_tab');
 		var url = window.location.href.split('#')[0];
