@@ -3,8 +3,12 @@
 	 * Streams/access tool
 	 */
 	Q.Tool.define("Streams/access", function(options) {
-		if (options.ajax === false) {
-			return addToolHandler(options.publisherId, options.streamName);
+		if ($.isEmptyObject(options)) {
+			return false;
+		} else if (options.ajax === false) {
+			return Q.findToolNodesByName(options.streamName).on('click touchstart', function(){
+				Q.Streams.accessDialog(options.streamName, options.publisherId);
+			});
 		}
 
 		var me                 = this,
@@ -13,20 +17,6 @@
 			field_name         = options.tab+'Level',
 			action_text        = (options.tab === 'read') ? 'can see' : 'can',
 			temp_select        = $('<select />');
-
-		function addToolHandler(publisherId, streamName) {
-			Q.findToolNodesByName(streamName).on('click touchstart', function(){
-				Q.Dialogs.push({
-					url: Q.action("Streams/access", {
-						'publisherId': publisherId,
-						'streamName': streamName
-					}),
-					onClose: function(){
-						$(this).remove();
-					}
-				}).addClass('Streams_access_tool_dialog_container');
-			});
-		}
 
 		function prepareSelect($select, criteria, value, action) {
 			if (!action) {

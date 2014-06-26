@@ -594,6 +594,28 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 	}
 }
 
+/**
+* this function run access tool in dialog
+* @method accessDialog
+* @param streamName {String} Name of stream
+* @param publisherId {String} ID user with publich that stream
+* @param callback {Function} The function to call after access tool dialog is render
+* @param context {Object} context with called callback function
+*/
+Streams.accessDialog = function(streamName, publisherId, callback, context) {
+	Q.Dialogs.push({
+		url: Q.action("Streams/access", {
+			'publisherId': publisherId,
+			'streamName': streamName
+		}),
+		onClose: function(){
+			$(this).remove();
+		},
+		onActivate: function(){
+			callback && callback.apply(context || this, arguments);
+		}
+	}).addClass('Streams_access_tool_dialog_container');
+};
 
 Streams.displayName = function(options) {
 	return options.firstName + ' ' + options.lastName;
