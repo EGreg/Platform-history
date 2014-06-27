@@ -360,7 +360,7 @@ Streams.get = Q.getter(function (publisherId, streamName, callback, extra) {
 		streamName: streamName
 	}));
 	func.call(this, 'stream', slotNames, publisherId, streamName, function Streams_get_response_handler (err, data) {
-		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		var msg = Q.firstErrorMessage(err, data && data.errors);
 		if (!msg && !data.stream) {
 			msg = "Streams.get: data.stream is missing";
 		}
@@ -449,7 +449,7 @@ Streams.create = function (fields, callback, related) {
  	fields["Q.clientId"] = Q.clientId();
 	var _r = _retain;
 	Q.req('Streams/stream', slotNames, function Stream_create_response_handler(err, data) {
-		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		var msg = Q.firstErrorMessage(err, data && data.errors);
 		if (msg) {
 			var args = [err, data];
 			Streams.onError.handle.call(this, msg, args);
@@ -594,6 +594,29 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 	}
 }
 
+/**
+* this function run access tool in dialog
+* @method accessDialog
+* @param streamName {String} Name of stream
+* @param publisherId {String} ID user with publich that stream
+* @param callback {Function} The function to call after access tool dialog is render
+*/
+Streams.accessDialog = function(streamName, publisherId, callback) {
+	Q.Dialogs.push({
+		url: Q.action("Streams/access", {
+			'publisherId': publisherId,
+			'streamName': streamName
+		}),
+		removeOnClose: true,
+		onActivate: function(){
+			callback && callback.apply(context || this, arguments);
+		}
+	}).addClass('Streams_access_tool_dialog_container');
+};
+
+Streams.displayName = function(options) {
+	return options.firstName + ' ' + options.lastName;
+};
 
 /**
 * Returns streams for current user
@@ -916,7 +939,7 @@ Stream.prototype.save = function _Stream_prototype_save (callback) {
 		streamName: this.pendingFields.name
 	});
 	Q.req('Streams/stream', [slotName], function (err, data) {
-		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		var msg = Q.firstErrorMessage(err, data && data.errors);
 		if (msg) {
 			var args = [err, data];
 			Streams.onError.handle.call(this, msg, args);
@@ -1199,7 +1222,7 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 		streamName: streamName
 	});
 	Q.req('Streams/related', slotNames, function (err, data) {
-		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		var msg = Q.firstErrorMessage(err, data && data.errors);
 		if (msg) {
 			var args = [err, data];
 			Streams.onError.handle.call(this, msg, args);
@@ -1247,7 +1270,7 @@ Streams.related = Q.getter(function _Streams_related(publisherId, streamName, re
 					// Fetch all the related streams from other publishers
 					keys.push(key);
 					Streams.get(relation[farPublisherId], relation[farStreamName], function (err, data) {
-						var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+						var msg = Q.firstErrorMessage(err, data && data.errors);
 						if (msg) {
 							p.fill(key)(msg);
 							return;
@@ -1595,7 +1618,7 @@ Stream.join = function _Stream_join (publisherId, streamName, callback) {
 		"Q.clientId": Q.clientId()
 	});
 	Q.req('Streams/join', [slotName], function (err, data) {
-		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		var msg = Q.firstErrorMessage(err, data && data.errors);
 		if (msg) {
 			var args = [err, data];
 			Streams.onError.handle.call(this, msg, args);
@@ -1634,7 +1657,7 @@ Stream.leave = function _Stream_leave (publisherId, streamName, callback) {
 		streamName: streamName
 	});
 	Q.req('Streams/leave', [slotName], function (err, data) {
-		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		var msg = Q.firstErrorMessage(err, data && data.errors);
 		if (msg) {
 			var args = [err, data];
 			Streams.onError.handle.call(this, msg, args);
@@ -1665,7 +1688,7 @@ Stream.remove = function _Stream_remove (publisherId, streamName, callback) {
 		streamName: streamName
 	});
 	Q.req('Streams/stream', [slotName], function (err, data) {
-		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		var msg = Q.firstErrorMessage(err, data && data.errors);
 		if (msg) {
 			var args = [err, data];
 			Streams.onError.handle.call(this, msg, args);
@@ -1733,7 +1756,7 @@ Message.get = Q.getter(function _Message_get (publisherId, streamName, ordinal, 
 		streamName: streamName
 	}));
 	func.call(this, 'message', slotName, publisherId, streamName, criteria, function (err, data) {
-		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		var msg = Q.firstErrorMessage(err, data && data.errors);
 		if (msg) {
 			var args = [err, data];
 			Streams.onError.handle.call(this, msg, args);
@@ -1780,7 +1803,7 @@ Message.post = function _Message_post (msg, callback) {
 	});
 	msg["Q.clientId"] = Q.clientId();
 	Q.req('Streams/message', [slotName], function (err, data) {
-		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		var msg = Q.firstErrorMessage(err, data && data.errors);
 		if (msg) {
 			var args = [err, data];
 			Streams.onError.handle.call(this, msg, args);
@@ -1964,7 +1987,7 @@ Participant.get = Q.getter(function _Participant_get(publisherId, streamName, us
 	}));
 	func.call(this, 'participant', slotName, publisherId, streamName, criteria, function (err, data) {
 		var participants = {};
-		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		var msg = Q.firstErrorMessage(err, data && data.errors);
 		if (msg) {
 			var args = [err, data];
 			Streams.onError.handle.call(this, msg, args);
@@ -2016,7 +2039,7 @@ var Avatar = Streams.Avatar = function Streams_Avatar (fields) {
 Avatar.get = Q.getter(function _Avatar_get (userId, callback) {
 	var func = Streams.batchFunction(Q.baseUrl({userId: userId}), 'avatar');
 	func.call(this, userId, function (err, data) {
-		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		var msg = Q.firstErrorMessage(err, data && data.errors);
 		if (msg) {
 			var args = [err, data];
 			Streams.onError.handle.call(this, msg, args);
@@ -2046,7 +2069,7 @@ Avatar.get.onError = new Q.Event();
  * @param {Object} [options]
  *   @param {Number} [options.limit] for paging
  *   @param {Number} [options.offset] for paging
- *   @param {Boolean} [options.public] If false, only gets names people show you.
+ *   @param {Boolean} [options.public] If true, also gets publicly accessible names.
  *   @default false
  */
 Avatar.byPrefix = Q.getter(function _Avatar_byPrefix (prefix, callback, options) {
@@ -2057,7 +2080,7 @@ Avatar.byPrefix = Q.getter(function _Avatar_byPrefix (prefix, callback, options)
 	var fields = Q.take(options, ['limit', 'offset', 'public']);
 	Q.extend(fields, {prefix: prefix});
 	Q.req('Streams/avatar', ['avatars'], function (err, data) {
-		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+		var msg = Q.firstErrorMessage(err, data && data.errors);
 		if (msg) {
 			var args = [err, data];
 			Streams.onError.handle.call(this, msg, args);
@@ -2450,7 +2473,7 @@ Q.onInit.add(function _Streams_onInit() {
 							streamName: ""  // NOTE: the request is routed to wherever the "" stream would have been hosted
 						});
 						Q.req('Streams/basic?' + $(this).serialize(), ['data'], function (err, data) {
-							var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(data && data.errors);
+							var msg = Q.firstErrorMessage(err, data && data.errors);
 							if (data && data.errors) {
 								complete_form.data('validator').invalidate(Q.ajaxErrors(data.errors, ['fullName']));
 								$('input', complete_form).eq(0).plugin('Q/clickfocus');

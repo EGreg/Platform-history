@@ -483,6 +483,10 @@ abstract class Streams extends Base_Streams
 		$streams,
 		$recalculate = false)
 	{
+		if (!isset($asUserId)) {
+			$asUserId = Users::loggedInUser();
+			if (!$asUserId) $asUserId = "";
+		}
 		if ($asUserId instanceof Users_User) {
 			$asUserId = $asUserId->id;
 		}
@@ -507,6 +511,9 @@ abstract class Streams extends Base_Streams
 		$streams3 = array();
 		$names = array();
 		foreach ($streams2 as $s) {
+			if ($s->get('asUserId', null) === $asUserId) {
+				continue;
+			}
 			$s->set('asUserId', $asUserId);
 			if ($asUserId and $asUserId == $publisherId) {
 				// The publisher should have full access to every one of their streams.

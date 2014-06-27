@@ -987,7 +987,7 @@ class Streams_Stream extends Base_Streams_Stream
 		if ($this->publishedByFetcher) {
 			return true;
 		}
-		if ($this->closedTime and !$this->testWriteLevel('close')) {
+		if (!empty($this->closedTime) and !$this->testWriteLevel('close')) {
 			return false;
 		}
 		if (!is_numeric($level)) {
@@ -1036,7 +1036,7 @@ class Streams_Stream extends Base_Streams_Stream
 		if ($this->publishedByFetcher) {
 			return true;
 		}
-		if ($this->closedTime and $level !== 'close' and !$this->testWriteLevel('close')) {
+		if (!empty($this->closedTime) and $level !== 'close' and !$this->testWriteLevel('close')) {
 			return false;
 		}
 		if (!is_numeric($level)) {
@@ -1085,9 +1085,10 @@ class Streams_Stream extends Base_Streams_Stream
 		if ($this->publishedByFetcher) {
 			return true;
 		}
-		if ($this->closedTime and !$this->testWriteLevel('close')) {
+		if (!empty($this->closedTime) and !$this->testWriteLevel('close')) {
 			return false;
 		}
+
 		if (!is_numeric($level)) {
 			$level = isset(Streams::$ADMIN_LEVEL[$level])
 				? Streams::$ADMIN_LEVEL[$level]
@@ -1101,6 +1102,7 @@ class Streams_Stream extends Base_Streams_Stream
 				);
 			}
 		}
+
 		$adminLevel = $this->get('adminLevel', 0);
 		if ($adminLevel >= 0 and $adminLevel >= $level) {
 			return true;
@@ -1382,8 +1384,8 @@ class Streams_Stream extends Base_Streams_Stream
 		
 		// getting $min and $max
 		$result = Streams_Message::select("MIN(ordinal) AS min, MAX(ordinal) AS max")
-		        ->where($criteria)
-		        ->fetchAll(PDO::FETCH_ASSOC);
+				->where($criteria)
+				->fetchAll(PDO::FETCH_ASSOC);
 		if (!$result[0]) return array();
 		$min = (integer) $result[0]['min'];
 		$max = (integer) $result[0]['max'];

@@ -365,8 +365,8 @@ Q.Pipe = function _Q_Pipe(requires, maxTimes, callback) {
  *  If you return true from this function, it will delete all the callbacks in the pipe.
  */
 Q.Pipe.prototype.on = function _Q_pipe_on(field, callback) {
-	return this.add([field], 1, function _Q_pipe_on_callback (params, subjects) {
-		return callback.apply(subjects[field], params[field]);
+	return this.add([field], 1, function _Q_pipe_on_callback (params, subjects, field) {
+		return callback.apply(subjects[field], params[field], field);
 	});
 };
 
@@ -381,7 +381,7 @@ Q.Pipe.prototype.on = function _Q_pipe_on(field, callback) {
  *  Optional. The maximum number of times the callback should be called.
  * @param callback {Function}
  *  Once all required fields are filled, this function is called every time something is piped.
- *  It is passed three arguments: (params, subjects, requires)
+ *  It is passed four arguments: (params, subjects, field, requires)
  *  If you return false from this function, it will no longer be called for future pipe runs.
  *  If you return true from this function, it will delete all the callbacks in the pipe.
  */
@@ -414,9 +414,9 @@ Q.Pipe.prototype.add = function _Q_pipe_add(requires, maxTimes, callback) {
 			switch (Q.typeOf(arguments[i])) {
 			case 'array':
 				r = arguments[i];
-				if (arguments[i].length
-				&& typeof arguments[i][0] !== 'string'
-				&& typeof arguments[i][0] !== 'number') {
+				if (r.length
+				&& typeof r[0] !== 'string'
+				&& typeof r[0] !== 'number') {
 					e = arguments[++i];
 				}
 				break;
@@ -440,7 +440,7 @@ Q.Pipe.prototype.add = function _Q_pipe_add(requires, maxTimes, callback) {
 /**
  * Makes a function that fills a particular field in the pipe and can be used as a callback
  * @method fill
- * @param field
+ * @param field {String}
  *   For error callbacks, you can use field="error" or field="users.error" for example.
  * @param ignore
  *   Optional. If true, then ignores the current field in subsequent pipe runs.
@@ -463,16 +463,17 @@ Q.Pipe.prototype.fill = function _Q_pipe_fill(field, ignore) {
 	return function _Q_pipe_fill() {
 		pipe.params[field] = Array.prototype.slice.call(arguments);
 		pipe.subjects[field] = this;
-		pipe.run();
+		pipe.run(field);
 	};
 };
 
 /**
  * Runs the pipe
  * @method run
+ * @param field {String} optionally indicate name of the field that was just filled
  * @return {Number} the number of pipe callbacks that wound up running
  */
-Q.Pipe.prototype.run = function _Q_pipe_run() {
+Q.Pipe.prototype.run = function _Q_pipe_run(field) {
 	var cb, ret, callbacks = this.callbacks, params = Q.copy(this.params), count = 0;
 
 	cbloop:
@@ -498,7 +499,7 @@ Q.Pipe.prototype.run = function _Q_pipe_run() {
 				delete callbacks[i];
 			}
 		}
-		ret = cb.call(this, this.params, this.subjects, cb.pipeRequires);
+		ret = cb.call(this, this.params, this.subjects, field, cb.pipeRequires);
 		if (cb.pipeEvents) {
 			for (j=0; j<cb.pipeEvents.length; j++) {
 				cb.pipeEvents[j].remove(cb.pipeKeys[j]);
@@ -1628,6 +1629,7 @@ Q.Class = function _Q_Class(construct /* [, Base1, ...] [, properties, [classPro
  */
 Q.take = function _Q_take(source, fields) {
 	var result = {};
+	if (!source) return result;
 	if (Q.typeOf(fields) === 'array') {
 		for (var i = 0; i < fields.length; ++i) {
 			if (fields[i] in source) {
