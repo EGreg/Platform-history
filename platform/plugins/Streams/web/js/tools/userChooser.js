@@ -134,7 +134,7 @@ Q.Tool.define("Streams/userChooser", function(o) {
 					$('<img style="vertical-align: middle; width: 40px; height: 40px;" />')
 					.attr('src', Q.plugins.Users.iconUrl(avatars[k].icon, 40))
 				).append(
-					$('<span />').html(Q.plugins.Streams.displayName(avatars[k]))
+					$('<span />').html(avatars[k].displayName())
 				).hover(
 					function () {
 						$('*', results).removeClass('Q_selected');

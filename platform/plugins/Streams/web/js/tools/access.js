@@ -3,22 +3,22 @@
 	 * Streams/access tool
 	 */
 	Q.Tool.define("Streams/access", function(options) {
-		if ($.isEmptyObject(options)) {
-			return false;
-		} else if (options.ajax === false) {
-			return Q.findToolNodesByName(options.streamName).on('click touchstart', function(){
-				Q.Streams.accessDialog(options.streamName, options.publisherId);
-			});
+		if (!options) {
+			throw new Q.Exception("options required");
 		}
-
-		var me                 = this,
-			tool               = this.element,
+		if (!options.tab) {
+			options.tab = 'read';
+		}
+		var tool               = this,
+			state              = this.state,
+			element            = tool.element,
 			level_for_everyone = $('.Streams_access_level_for_everyone'),
 			field_name         = options.tab+'Level',
 			action_text        = (options.tab === 'read') ? 'can see' : 'can',
 			temp_select        = $('<select />');
 
 		function prepareSelect($select, criteria, value, action) {
+			if (!state.stream) return;
 			if (!action) {
 				action = 'access';
 			}
@@ -33,8 +33,8 @@
 				$select.change(function () {
 					var url = Q.action(
 						'Streams/' + action
-						+ '?publisherId='+options.stream.fields.publisherId
-						+ '&name='+options.stream.fields.name
+						+ '?publisherId='+state.stream.fields.publisherId
+						+ '&name='+state.stream.fields.name
 						+ '&' + field_name + '='+$(this).val()
 						+ '&Q.method=put'
 					);
@@ -45,52 +45,48 @@
 					} else {
 						url += '&' + criteria;
 					}
-					$.getJSON(
-						Q.ajaxExtend(url, 'data'),
-						function (response) {
-							if (response.errors) {
-								alert(response.errors[0].message);
-							}
+					Q.request(url, ['data'], function (err, data) {
+						var msg;
+						if (msg = Q.firstErrorMessage(err, data && data.errors)) {
+							alert(msg);
 						}
-					);
+					});
 				});
 			}
 			return $select;
 		}
 
 		function newRemoveLink(criteria) {
+			if (!state.stream) return;
 			var link = $('<a href="#remove" />').click(function () {
 				var $this = $(this);
 				var url = Q.action(
 					'Streams/access'
-					+ '?publisherId='+options.stream.fields.publisherId
-					+ '&name='+options.stream.fields.name
+					+ '?publisherId='+state.stream.fields.publisherId
+					+ '&name='+state.stream.fields.name
 					+ '&' + field_name + '=-1'
 					+ '&Q.method=put'
 				);
 				for (var k in criteria) {
 					url += '&' + k + '=' + encodeURIComponent(criteria[k]);
 				}
-				$.getJSON(
-					Q.ajaxExtend(url, 'data'),
-					function (response) {
-						if (response.errors) {
-							alert(response.errors[0].message);
-							return;
-						}
-						$this.closest('tr').remove();
-						if (criteria.ofUserId) {
-							delete me.child('Streams_userChooser').exclude[criteria.ofUserId];
-						} else if (criteria.ofContactLabel) {
-							$('option', temp_select).each(function () {
-								if ($(this).val() === criteria.ofContactLabel) {
-									$(this).appendTo($('.Streams_access_level_add_label', tool));
-									return false;
-								}
-							});
-						}
+				Q.request(url, ['data'], function (err, data) {
+					var msg;
+					if (msg = Q.firstErrorMessage(err, data && data.errors)) {
+						alert(msg);
 					}
-				);
+					$this.closest('tr').remove();
+					if (criteria.ofUserId) {
+						delete tool.child('Streams_userChooser').exclude[criteria.ofUserId];
+					} else if (criteria.ofContactLabel) {
+						$('option', temp_select).each(function () {
+							if ($(this).val() === criteria.ofContactLabel) {
+								$(this).appendTo($('.Streams_access_level_add_label', element));
+								return false;
+							}
+						});
+					}
+				});
 				return false;
 			}).html('x');
 			for (var k in criteria) {
@@ -115,10 +111,10 @@
 				}
 				criteria = {ofUserId: userId};
 
-				me.child('Streams_userChooser').exclude[userId] = true;
+				tool.child('Streams_userChooser').exclude[userId] = true;
 			} else if (contact_label) {
 				criteria = {ofContactLabel: contact_label};
-				$('.Streams_access_level_add_label option', tool).each(function () {
+				$('.Streams_access_level_add_label option', element).each(function () {
 					if ($(this).val() == contact_label) {
 						$(this).closest('select').val('');
 						$(this).appendTo(temp_select);
@@ -143,71 +139,72 @@
 					).append(cloned_select).append($('<div class="clear">'))
 				).append(
 					$('<td style="vertical-align: middle;" />').append(newRemoveLink(criteria))
-				).appendTo($('.Streams_access_user_array', tool));
+				).appendTo($('.Streams_access_user_array', element));
 			} else {
 				tr.append(
 					$('<td style="vertical-align: middle;" />')
 						.text(contact_label).append(' ' + action_text).append(cloned_select)
 				).append(
 					$('<td style="vertical-align: middle;" />').append(newRemoveLink(criteria))
-				).appendTo($('.Streams_access_label_array', tool));
+				).appendTo($('.Streams_access_label_array', element));
 			}
 		}
 
+		if (!tool.state.publisherId) return;
 		this.Q.onInit.set(function () {
-			var i, userId, access;
+			Q.Streams.get(tool.state.publisherId, tool.state.streamName, function (err, data) {
+				var msg;
+				if (msg = Q.firstErrorMessage(err, data && data.errors)) {
+					alert(msg);
+				}
+				state.stream = this;
+				
+				var i, userId, access;
 
-			prepareSelect(level_for_everyone, '', options.stream.fields[field_name], 'stream');
+				prepareSelect(level_for_everyone, '', state.stream.fields[field_name], 'stream');
 
-			for (i=0; i<options.access_array.length; ++i) {
-				access = options.access_array[i];
-				addAccessRow(access);
-			}
+				for (i=0; i<options.access_array.length; ++i) {
+					access = options.access_array[i];
+					addAccessRow(access);
+				}
 
-			me.child('Streams_userChooser').onChoose = function (userId, avatar) {
-				var url = Q.action(
-					'Streams/access'
-					+ '?publisherId='+options.stream.fields.publisherId
-					+ '&streamName='+options.stream.fields.name
-					+ '&' + field_name + '=' + level_for_everyone.val()
-					+ '&ofUserId='  + userId
-					+ '&Q.method=put'
-				);
+				tool.child('Streams_userChooser').onChoose = function (userId, avatar) {
+					var url = Q.action(
+						'Streams/access'
+						+ '?publisherId='+state.stream.fields.publisherId
+						+ '&streamName='+state.stream.fields.name
+						+ '&' + field_name + '=' + level_for_everyone.val()
+						+ '&ofUserId='  + userId
+						+ '&Q.method=put'
+					);
 
-				$.getJSON(
-					Q.ajaxExtend(url, 'data'),
-					function (response) {
-						if (response.errors) {
-							alert(response.errors[0].message);
-							return;
+					Q.request(url, ['data'], function (err, data) {
+						var msg;
+						if (msg = Q.firstErrorMessage(err, data && data.errors)) {
+							alert(msg);
 						}
+						addAccessRow({ fields: data.slots.data.access }, { fields: avatar });
+					});
+				};
 
-						addAccessRow({ fields: response.slots.data.access }, { fields: avatar });
-					}
-				);
-			};
+				$('.Streams_access_level_add_label', element).change(function () {
+					var url = Q.action(
+						'Streams/access'
+						+ '?publisherId='+state.stream.fields.publisherId
+						+ '&streamName='+state.stream.fields.name
+						+ '&' + field_name + '=' + level_for_everyone.val()
+						+ '&ofContactLabel='  + encodeURIComponent($(this).val())
+						+ '&Q.method=put'
+					);
 
-			$('.Streams_access_level_add_label', tool).change(function () {
-				var url = Q.action(
-					'Streams/access'
-					+ '?publisherId='+options.stream.fields.publisherId
-					+ '&streamName='+options.stream.fields.name
-					+ '&' + field_name + '=' + level_for_everyone.val()
-					+ '&ofContactLabel='  + encodeURIComponent($(this).val())
-					+ '&Q.method=put'
-				);
-
-				$.getJSON(
-					Q.ajaxExtend(url, 'data'),
-					function (response) {
-						if (response.errors) {
-							alert(response.errors[0].message);
-							return;
+					Q.request(url, ['data'], function (err, data) {
+						var msg;
+						if (msg = Q.firstErrorMessage(err, data && data.errors)) {
+							alert(msg);
 						}
-
-						addAccessRow(response.slots.data.access);
-					}
-				);
+						addAccessRow(data.slots.data.access);
+					});
+				});
 			});
 		}, 'Streams/access');
 	});

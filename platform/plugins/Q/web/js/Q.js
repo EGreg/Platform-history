@@ -1254,17 +1254,6 @@ Q.normalize = function _Q_normalize(text, replacement, characters, numChars) {
 	return result;
 };
 
-/**
-* Find tool container node by name of tool
-* @method findToolNodesByName
-* @param {String} toolName
-* @return {jQuery} nodes
-*/
-Q.findToolNodesByName = function(toolName) {
-	toolName = Q.normalize(toolName);
-	return $('.' + (toolName.charAt(0).toUpperCase() + toolName.slice(1)) + '_tool');
-}
-
 function _getProp (/*Array*/parts, /*Boolean*/create, /*Object*/context){
 	var p, i = 0;
 	if (context === null) return undefined;
@@ -4286,7 +4275,9 @@ Q.req = function _Q_req(uri, slotNames, callback, options) {
  *  If a string, expects a comma-separated list of slot names
  *  If an object, converts it to a comma-separated list
  * @param {Function} callback
- *  The JSON will be passed to this callback function
+ *  The err and parsed content will be passed to this callback function,
+ *  (unless parse is false, in which case the raw content is passed as a String),
+ *  followed by a Boolean indicating whether a redirect was performed.
  * @param {Object} options
  *  A hash of options, including:
  *  "post": if set, adds a &Q.method=post to the querystring
@@ -4297,7 +4288,7 @@ Q.req = function _Q_req(uri, slotNames, callback, options) {
  *	 Or pass an object with properties to merge onto the xhr object, including a special "sync" property to make the call synchronous.
  *	 Or pass a function which will be run before .send() is executed. First parameter is the xhr object, second is the options.
  *  "preprocess": an optional function that takes the xhr object before the .send() is invoked on it
- *  "parse": defaults to 'json'. If false, then just returns the requested string.
+ *  "parse": set to false to pass the unparsed string to the callback
  *  "extend": defaults to true. If false, the URL is not extended with Q fields.
  *  "callbackName": if set, the URL is not extended with Q fields and the value is used to name the callback field in the request.
  *  "duplicate": defaults to true, but you can set it to false in order not to fetch the same url again
@@ -8011,6 +8002,7 @@ Q.loadUrl.options = {
 Q.request.options = {
 	duplicate: true,
 	quiet: true,
+	parse: 'json',
 	handleRedirects: function (url) {
 		Q.handle(url, {
 			target: '_self',

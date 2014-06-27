@@ -5,14 +5,12 @@
  * @param array $options
  *  "publisherId" => the id of the user who is publishing the stream
  *  "streamName" => the name of the stream for which to edit access levels
- *  "publisherId" => id of publisher
  *  "tabs" => optional array of tab name => title. Defaults to read, write, admin tabs.
  *  "ranges" => optional. Associative array with keys "read", "write", "admin"
  *    and values as associative arrays of ($min, $max) for the displayed levels.
  */
 function Streams_access_tool($options)
 {
-	$ajax = false;
 	$tabs = array(
 		'read'  => 'visible to', 
 		'write' => 'editable by', 
@@ -35,11 +33,6 @@ function Streams_access_tool($options)
 		}
 	}
 
-	if (!$ajax) {
-		Q_Response::setToolOptions(compact('streamName', 'publisherId', 'ajax'));
-		return;
-	}
-
 	reset($tabs);
 	$tab = Q::ifset($_REQUEST, 'tab', key($tabs));
 
@@ -50,6 +43,7 @@ function Streams_access_tool($options)
             'criteria' => 'that name'
         ));
 	}
+	$stream->addPreloaded($user->id);
 
 	$stream = Streams::fetchOne($user->id, $publisherId, $streamName);
 	if (!$stream) {
@@ -131,7 +125,7 @@ function Streams_access_tool($options)
 
 	Q_Response::addScript("plugins/Streams/js/tools/access.js");
 	Q_Response::addScript("plugins/Streams/js/Streams.js");
-	Q_Response::setToolOptions(compact('stream', 'access_array', 'avatar_array', 'labels', 'icons', 'tab', 'ajax', 'streamName', 'publisherId'));
+	Q_Response::setToolOptions(compact('access_array', 'avatar_array', 'labels', 'icons', 'tab', 'streamName', 'publisherId'));
 
 	return Q::view('Streams/tool/access.php', compact(
 		'stream', 'access_array', 'contact_array', 'label_array', 'tabs', 'tab', 'labels', 'icons', 'levels', 'dir', 'streamName', 'publisherId'
