@@ -12,10 +12,10 @@
 		var tool               = this,
 			state              = this.state,
 			element            = tool.element,
-			level_for_everyone = $('.Streams_access_level_for_everyone'),
-			field_name         = options.tab+'Level',
-			action_text        = (options.tab === 'read') ? 'can see' : 'can',
-			temp_select        = $('<select />');
+			levelForEveryone   = $('.Streams_access_levelForEveryone'),
+			fieldName          = options.tab+'Level',
+			actionText         = (options.tab === 'read') ? 'can see' : 'can',
+			tempSelect         = $('<select />');
 
 		function prepareSelect($select, criteria, value, action) {
 			if (!state.stream) return;
@@ -35,7 +35,7 @@
 						'Streams/' + action
 						+ '?publisherId='+state.stream.fields.publisherId
 						+ '&name='+state.stream.fields.name
-						+ '&' + field_name + '='+$(this).val()
+						+ '&' + fieldName + '='+$(this).val()
 						+ '&Q.method=put'
 					);
 					if (typeof criteria === 'object') {
@@ -64,7 +64,7 @@
 					'Streams/access'
 					+ '?publisherId='+state.stream.fields.publisherId
 					+ '&name='+state.stream.fields.name
-					+ '&' + field_name + '=-1'
+					+ '&' + fieldName + '=-1'
 					+ '&Q.method=put'
 				);
 				for (var k in criteria) {
@@ -79,9 +79,9 @@
 					if (criteria.ofUserId) {
 						delete tool.child('Streams_userChooser').exclude[criteria.ofUserId];
 					} else if (criteria.ofContactLabel) {
-						$('option', temp_select).each(function () {
+						$('option', tempSelect).each(function () {
 							if ($(this).val() === criteria.ofContactLabel) {
-								$(this).appendTo($('.Streams_access_level_add_label', element));
+								$(this).appendTo($('.Streams_access_levelAddLabel', element));
 								return false;
 							}
 						});
@@ -96,28 +96,28 @@
 		}
 
 		function addAccessRow(access, avatar) {
-			var userId = access.fields.ofUserId;
-			var contact_label = access.fields.ofContactLabel;
+			var userId = access.ofUserId;
+			var contactLabel = access.ofContactLabel;
 
-			if ((!contact_label && !userId) || access[field_name] < 0) {
+			if ((!contactLabel && !userId) || access[fieldName] < 0) {
 				return;
 			}
 
-			var cloned_select = level_for_everyone.clone();
+			var clonedSelect = levelForEveryone.clone();
 			var criteria;
-			if (userId && userId !== "0") {
+			if (userId !== "") {
 				if (!avatar) {
 					avatar = options.avatar_array[userId];
 				}
 				criteria = {ofUserId: userId};
 
 				tool.child('Streams_userChooser').exclude[userId] = true;
-			} else if (contact_label) {
-				criteria = {ofContactLabel: contact_label};
-				$('.Streams_access_level_add_label option', element).each(function () {
-					if ($(this).val() == contact_label) {
+			} else if (contactLabel) {
+				criteria = {ofContactLabel: contactLabel};
+				$('.Streams_access_levelAddLabel option', element).each(function () {
+					if ($(this).val() == contactLabel) {
 						$(this).closest('select').val('');
-						$(this).appendTo(temp_select);
+						$(this).appendTo(tempSelect);
 						return false;
 					}
 				});
@@ -125,25 +125,25 @@
 				return;
 			}
 
-			prepareSelect(cloned_select, criteria, access.fields[field_name]);
+			prepareSelect(clonedSelect, criteria, access[fieldName]);
 			var tr = $('<tr />');
-			if (userId && userId !== "0") {
+			if (userId !== "") {
 				tr.append(
 					$('<td style="vertical-align: middle;" />').append(
-						$('<img />').attr('src', Q.plugins.Streams.iconUrl(avatar.fields.icon, 40)).css('width', 20)
+						$('<img />').attr('src', Q.plugins.Streams.iconUrl(avatar.icon, 40)).css('width', 20)
 					)
 				).append(
 					$('<td style="vertical-align: middle;" />').append(
 						$('<span class="access-tool-username">')
-							.text(Q.plugins.Streams.displayName(avatar.fields) + ' ' + action_text)
-					).append(cloned_select).append($('<div class="clear">'))
+							.text(Q.plugins.Streams.displayName(avatar) + ' ' + actionText)
+					).append(clonedSelect).append($('<div class="clear">'))
 				).append(
 					$('<td style="vertical-align: middle;" />').append(newRemoveLink(criteria))
 				).appendTo($('.Streams_access_user_array', element));
 			} else {
 				tr.append(
 					$('<td style="vertical-align: middle;" />')
-						.text(contact_label).append(' ' + action_text).append(cloned_select)
+						.text(contactLabel).append(' ' + actionText).append(clonedSelect)
 				).append(
 					$('<td style="vertical-align: middle;" />').append(newRemoveLink(criteria))
 				).appendTo($('.Streams_access_label_array', element));
@@ -161,7 +161,7 @@
 				
 				var i, userId, access;
 
-				prepareSelect(level_for_everyone, '', state.stream.fields[field_name], 'stream');
+				prepareSelect(levelForEveryone, '', state.stream.fields[fieldName], 'stream');
 
 				for (i=0; i<options.access_array.length; ++i) {
 					access = options.access_array[i];
@@ -173,7 +173,7 @@
 						'Streams/access'
 						+ '?publisherId='+state.stream.fields.publisherId
 						+ '&streamName='+state.stream.fields.name
-						+ '&' + field_name + '=' + level_for_everyone.val()
+						+ '&' + fieldName + '=' + levelForEveryone.val()
 						+ '&ofUserId='  + userId
 						+ '&Q.method=put'
 					);
@@ -183,16 +183,16 @@
 						if (msg = Q.firstErrorMessage(err, data && data.errors)) {
 							alert(msg);
 						}
-						addAccessRow({ fields: data.slots.data.access }, { fields: avatar });
+						addAccessRow(data.slots.data.access, avatar);
 					});
 				};
 
-				$('.Streams_access_level_add_label', element).change(function () {
+				$('.Streams_access_levelAddLabel', element).change(function () {
 					var url = Q.action(
 						'Streams/access'
 						+ '?publisherId='+state.stream.fields.publisherId
 						+ '&streamName='+state.stream.fields.name
-						+ '&' + field_name + '=' + level_for_everyone.val()
+						+ '&' + fieldName + '=' + levelForEveryone.val()
 						+ '&ofContactLabel='  + encodeURIComponent($(this).val())
 						+ '&Q.method=put'
 					);

@@ -170,7 +170,7 @@ String.prototype.replaceAll = function _String_prototype_replaceAll(pairs) {
  * Gets a param from a string, which is usually the location.search or location.hash
  * @method String.queryField
  * @param {String} name The name of the field
- * @param {String} value Optional, provide a value to set in the querystring, or null to delete the field
+ * @param value {String} Optional, provide a value to set in the querystring, or null to delete any fields that match name as a RegExp
  * @return {String} the value of the field in the string, or if value was not undefined, the resulting querystring
  */
 String.prototype.queryField = function Q_queryField(name, value) {
@@ -195,7 +195,12 @@ String.prototype.queryField = function Q_queryField(name, value) {
 	} else if (value === null) {
 		keys = [];
 		parsed = Q.parseQueryString(what, keys);
-		delete parsed[name];
+		var reg = new RegExp(name);
+		for (var k in parsed) {
+			if (reg.test(k)) {
+				delete parsed[k];
+			}
+		}
 		return prefix + Q.buildQueryString(parsed, keys);
 	} else {
 		keys = [];
@@ -4491,7 +4496,7 @@ Q.request.callbacks = []; // used by Q.request
 /**
  * Try to find an error message assuming typical error data structures for the arguments
  * @method firstErrorMessage
- * @param {Object} data an object where the errors may be found
+ * @param {Object} data an object where the errors may be found, you can pass as many of these as you want
  * @return {String|null} The first error message found, or null
  */
 Q.firstErrorMessage = function _Q_firstErrorMessage(data /*, data2, ... */) {
@@ -4499,7 +4504,7 @@ Q.firstErrorMessage = function _Q_firstErrorMessage(data /*, data2, ... */) {
 	for (var i=0; i<arguments.length; ++i) {
 		var d = arguments[i];
 		if (Q.isEmpty(d)) {
-			return;
+			continue;
 		}
 		if (d.errors && d.errors[0]) {
 			error = d.errors[0];

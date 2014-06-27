@@ -5,7 +5,6 @@
 		'write'  => 'basic32 basic32_edit Streams_access_read_write',
 		'admin'  => 'basic32 basic32_group Streams_access_read_admin'
 	),
-	'slot'       => 'dialog',
 	'defaultTab' => 'read'
 )) ?>
 <div style="background: white; border: solid 0px white;">
@@ -17,7 +16,7 @@
 				The general public can
 			<?php endif; ?>
 
-			<select name="level_for_everyone" class="Streams_access_level_for_everyone">
+			<select name="levelForEveryone" class="Streams_access_levelForEveryone">
 				<?php echo Q_Html::options($levels, '') ?> 
 			</select>
 		</div>
@@ -25,7 +24,7 @@
 		<?php if ($access_array and count($labels) != 0): ?>
 			<div>
 				Grant additional access to
-				<select name="level_add_label" class="Streams_access_level_add_label">
+				<select name="levelAddLabel" class="Streams_access_levelAddLabel">
 					<?php echo Q_Html::options($labels, '', null, true) ?>
 				</select>
 			</div>

@@ -147,7 +147,6 @@ Q.Tool.define("Streams/userChooser", function(o) {
 					onChoose($(this));
 				}).data('userId', k)
 				.data('avatar', avatars[k])
-				.data('avatar', avatars[k])
 				.on('mousedown focusin', function () {
 					focusedResults = true;
 				}).appendTo(results);

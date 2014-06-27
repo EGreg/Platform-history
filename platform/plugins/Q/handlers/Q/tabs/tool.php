@@ -46,7 +46,10 @@ function Q_tabs_tool($options)
 		if (isset($urls[$name])) {
 			$urls[$name] = Q_Uri::url($urls[$name]);
 		} else {
-			$urls[$name] = Q_Uri::url(Q_Request::url(array($field => $name)));
+			$urls[$name] = Q_Uri::url(Q_Request::url(array(
+				$field => $name, 
+				"/Q\.(.*)/" => null
+			)));
 		}
 		$selected_class = '';
 		$uri_string = (string)Q_Dispatcher::uri();
@@ -79,10 +82,10 @@ function Q_tabs_tool($options)
 			isset($title) ? $title : $name
 		);
 		$result .= Q_Html::tag('li', array(
-				'id' => 'tab_'.++$i,
-				'class' => 'Q_tabs_tab '.$classes_string.$selected_class, 
-				'data-name' => $name
-			), Q_Html::a(
+			'id' => 'tab_'.++$i,
+			'class' => 'Q_tabs_tab '.$classes_string.$selected_class, 
+			'data-name' => $name
+		), Q_Html::a(
 			$urls[$name],
 			$title_container
 		));

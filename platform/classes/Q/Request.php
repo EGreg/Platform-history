@@ -126,8 +126,10 @@ class Q_Request
 	 *  If a string, appends the querystring correctly to the current URL.
 	 *  If an associative array, adds these fields, with their values
 	 *  to the existing querystring, while subtracting the fields corresponding
-	 *  to null values in $query. Then generates a querystring and
-	 *  includes it with the URL.
+	 *  to null values in $query.
+	 *  (For null values, the key is used as a regular expression
+	 *  that matches all the fields to subtract.)
+	 *  Then generates a querystring and includes it with the URL.
 	 * @return {string} Returns the URL that was requested, possibly with a querystring.
 	 */
 	static function url(
@@ -178,7 +180,11 @@ class Q_Request
 				if (isset($value)) {
 					$query[$key] = $value;
 				} else {
-					unset($query[$key]);
+					foreach (array_keys($query) as $k) {
+						if (preg_match($key, $k)) {
+							unset($query[$k]);
+						}
+					}
 				}
 			}
 		}
