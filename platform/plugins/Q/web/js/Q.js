@@ -5406,7 +5406,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 	var o = Q.extend({}, Q.loadUrl.options, options);
 	Q.handle(o.onLoadStart, this, [url, o]);
 
-	var handler = o.handler || Q.loadUrl.defaultHandler;
+	var handler = o.handler;
 	var slotNames = o.slotNames || Q.info.slotNames;
 	if (typeof slotNames === 'string') {
 		slotNames = slotNames.split(',');
@@ -5787,32 +5787,6 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 };
 
 Q.loadUrl.retainedSlots = {};
-
-Q.loadUrl.defaultHandler = function _Q_loadUrl_fillSlots (res, url, options) {
-	var elements = {}, slot, name, elem, pos;
-	for (name in res.slots) {
-		// res.slots will simply not contain the slots that have
-		// already been "cached"
-
-		if (name.toUpperCase() === 'TITLE') {
-			window.document.title = res.slots[name];
-		} else if (elem = document.getElementById(name+"_slot")) { 
-			try {
-				Q.replace(elem, res.slots[name]);
-				if (pos = Q.getObject(['Q', 'scroll', url], elem)) {
-					elem.scrollLeft = pos.left;
-					elem.scrollTop = pos.top;
-				}
-			} catch (e) {
-				debugger; // pause here if debugging
-				console.warn('slot ' + name + ' could not be filled');
-				console.warn(e);
-			}
-			elements[name] = elem;
-		}
-	}
-	return elements;
-};
 
 Q.loadUrl.saveScroll = function _Q_loadUrl_saveScroll (url, options) {
 	var slotNames = Q.info.slotNames, l, elem, i;
@@ -8001,7 +7975,35 @@ Q.loadUrl.options = {
 	quiet: false,
 	onLoadStart: new Q.Event(Q.loadUrl.saveScroll, 'Q'),
 	onLoadEnd: new Q.Event(),
-	onActivate: new Q.Event()
+	onActivate: new Q.Event(),
+	slotContainer: function (slotName) {
+		return document.getElementById(name+"_slot");
+	},
+	handler: function _Q_loadUrl_fillSlots (res, url, options) {
+		var elements = {}, slot, name, elem, pos;
+		for (name in res.slots) {
+			// res.slots will simply not contain the slots that have
+			// already been "cached"
+
+			if (name.toUpperCase() === 'TITLE') {
+				window.document.title = res.slots[name];
+			} else if (elem = options.slotContainer(name)) { 
+				try {
+					Q.replace(elem, res.slots[name]);
+					if (pos = Q.getObject(['Q', 'scroll', url], elem)) {
+						elem.scrollLeft = pos.left;
+						elem.scrollTop = pos.top;
+					}
+				} catch (e) {
+					debugger; // pause here if debugging
+					console.warn('slot ' + name + ' could not be filled');
+					console.warn(e);
+				}
+				elements[name] = elem;
+			}
+		}
+		return elements;
+	}
 };
 
 Q.request.options = {

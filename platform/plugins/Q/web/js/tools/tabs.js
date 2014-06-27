@@ -55,7 +55,7 @@ Q.Tool.define("Q/tabs", function(options) {
 	slot: 'content,title',
 	selector: '#content_slot',
 	overflow: '{{count}} more &#9660;',
-	loadUrlOptions: {},
+	loaderOptions: {},
 	loader: Q.req,
 	onClick: new Q.Event(),
 	beforeSwitch: new Q.Event(),
@@ -116,8 +116,12 @@ Q.Tool.define("Q/tabs", function(options) {
 			}},
 			loadExtras: true,
 			ignoreHistory: this.isInDialog(),
-			loader: state.loader
-		}, state.loadUrlOptions);
+			loader: state.loader,
+			slotContainer: function () {
+				return $(tool.element).parents(tool.state.selector)[0]
+					|| document.getElementById(name+"_slot");
+			}
+		}, state.loaderOptions);
 
 		Q.handle(href, o);
 	},

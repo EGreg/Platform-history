@@ -11,7 +11,7 @@
  *  "selector" => CSS style selector indicating the element to update with javascript. Can be a parent of the tabs. Set to null to reload the page.
  *    (if multiple slots defined parameter is required and shall be array of the same length as slot)
  *  "slot" => The name of the slot to request when changing tabs with javascript.
- *    (may be array to update multiple slots)
+ *    (may be array or comma-delimited string to update multiple slots)
  *  "defaultTab" => Here you can specify the name of the tab to show by default
  *  "after" => Name of an event that will return HTML to place after the generated HTML in the tabs tool element
  *  "loader" => Optional. Name of function which takes url, slot, callback. It should call the callback and 

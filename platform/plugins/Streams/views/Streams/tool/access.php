@@ -5,6 +5,7 @@
 		'write'  => 'basic32 basic32_edit Streams_access_read_write',
 		'admin'  => 'basic32 basic32_group Streams_access_read_admin'
 	),
+	'slot'      => array('dialog'),
 	'defaultTab' => 'read'
 )) ?>
 <div style="background: white; border: solid 0px white;">
