@@ -91,7 +91,7 @@ function Q_tabs_tool($options)
 		));
 	}
 	Q_Response::setToolOptions(compact(
-		'selector', 'slot', 'tabs', 'urls', 'field', 'loader', 'beforeSwitch', 'beforeScripts', 'onActivate'
+		'selector', 'slot', 'tabs', 'urls', 'defaultTab', 'field', 'loader', 'beforeSwitch', 'beforeScripts', 'onActivate'
 	));
 	Q_Response::addScript('plugins/Q/js/tools/tabs.js');
 	$after = isset($options['after']) ? Q::event($options['after'], $options) : '';

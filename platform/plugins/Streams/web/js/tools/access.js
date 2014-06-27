@@ -16,6 +16,12 @@
 			fieldName          = options.tab+'Level',
 			actionText         = (options.tab === 'read') ? 'can see' : 'can',
 			tempSelect         = $('<select />');
+			
+		Q.setObject(
+			['#Q_tabs_tool', 'loaderOptions', 'slotContainer'],
+			function () { return tool.element; },
+			this.state
+		);
 
 		function prepareSelect($select, criteria, value, action) {
 			if (!state.stream) return;

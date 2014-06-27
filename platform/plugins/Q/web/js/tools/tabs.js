@@ -121,6 +121,7 @@ Q.Tool.define("Q/tabs", function(options) {
 				return $(tool.element).parents(tool.state.selector)[0]
 					|| document.getElementById(name+"_slot");
 			}
+			
 		}, state.loaderOptions);
 
 		Q.handle(href, o);
@@ -134,6 +135,7 @@ Q.Tool.define("Q/tabs", function(options) {
 		var $tabs = this.$('.Q_tabs_tab');
 		var url = window.location.href.split('#')[0];
 		var tool = this;
+		var defaultTab = null;
 		$tabs.removeClass('Q_selected');
 		if (!tab) {
 			$tabs.each(function (k, t) {
@@ -141,7 +143,14 @@ Q.Tool.define("Q/tabs", function(options) {
 					tab = t;
 					return false;
 				}
+				var name = t.getAttribute("data-name");
+				if (tool.state.defaultTab === name) {
+					defaultTab = t;
+				}
 			});
+		}
+		if (!tab) {
+			tab = defaultTab;
 		}
 		$(tab).addClass('Q_selected');
 	},

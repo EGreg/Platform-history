@@ -121,13 +121,15 @@ function Streams_access_tool($options)
 		}
 	}
 	
+	$accessActionUrl = Q_Uri::url("Streams/access?publisherId=$publisherId&streamName=$streamName");
+	
 	$dir = Q_Config::get('Users', 'paths', 'icons', 'files/Users/icons');
 
 	Q_Response::addScript("plugins/Streams/js/tools/access.js");
 	Q_Response::addScript("plugins/Streams/js/Streams.js");
-	Q_Response::setToolOptions(compact('access_array', 'avatar_array', 'labels', 'icons', 'tab', 'streamName', 'publisherId'));
+	Q_Response::setToolOptions(compact('access_array', 'avatar_array', 'labels', 'icons', 'tab', 'publisherId', 'streamName'));
 
 	return Q::view('Streams/tool/access.php', compact(
-		'stream', 'access_array', 'contact_array', 'label_array', 'tabs', 'tab', 'labels', 'icons', 'levels', 'dir', 'streamName', 'publisherId'
+		'stream', 'access_array', 'contact_array', 'label_array', 'tabs', 'tab', 'labels', 'icons', 'levels', 'dir', 'publisherId', 'streamName', 'accessActionUrl'
 	));
 }

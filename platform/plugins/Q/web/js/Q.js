@@ -7977,7 +7977,7 @@ Q.loadUrl.options = {
 	onLoadEnd: new Q.Event(),
 	onActivate: new Q.Event(),
 	slotContainer: function (slotName) {
-		return document.getElementById(name+"_slot");
+		return document.getElementById(slotName+"_slot");
 	},
 	handler: function _Q_loadUrl_fillSlots (res, url, options) {
 		var elements = {}, slot, name, elem, pos;

@@ -1,5 +1,10 @@
 <?php echo Q::tool('Q/tabs', array(
 	'tabs' => $tabs,
+	'urls' => array(
+		'read' => "$accessActionUrl&tab=read",
+		'write' => "$accessActionUrl&tab=write",
+		'admin' => "$accessActionUrl&tab=admin",
+	),
 	'titleClasses' => array(
 		'read'   => 'basic32 basic32_view Streams_access_read_tab',
 		'write'  => 'basic32 basic32_edit Streams_access_read_write',
