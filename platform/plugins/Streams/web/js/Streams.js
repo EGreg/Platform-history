@@ -2747,13 +2747,13 @@ function _scheduleUpdate() {
 	if (_scheduleUpdate.timeout) {
 		clearTimeout(_scheduleUpdate.timeout);
 	}
-	return null;
 	_scheduleUpdate.timeout = setTimeout(function () {
 		var now = Date.now();
 		if (_scheduleUpdate.lastTime !== undefined
 		&& now - _scheduleUpdate.lastTime - ms > _scheduleUpdate.delay) {
-			// The timer was delayed for a whole second. Something might have changed.
-			// Streams.refresh.minSeconds should prevent the update happening too frequently
+			// The timer was delayed for too long. Something might have changed.
+			// Streams.refresh.options.minSeconds should prevent the update
+			// from happening too frequently
 			Streams.refresh();
 		}
 		_scheduleUpdate.lastTime = now;
@@ -2761,6 +2761,6 @@ function _scheduleUpdate() {
 	}, ms);
 }
 
-_scheduleUpdate.delay = 10000;
+_scheduleUpdate.delay = 2000;
 
 })(Q, jQuery);
