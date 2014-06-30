@@ -7389,6 +7389,9 @@ Q.Dialogs = {
 	 *							 Moreover, dialog is centered relatively to this element. By default it's document body.
 	 *   "alignByParent": Defaults to false. If true, the dialog will be aligned to the center of not the entire window,
 	 *                    but to the center of containing element instead.
+     *   "size": {Object} Optional. Size of internal(without title) part of window
+     *      "width" Optional.
+     *      "height" Optional.
 	 *   "noClose": Defaults to false. If true, overlay close button will not appear and overlay won't be closed by pressing 'Esc' key.
 	 *   "closeOnEsc": Defaults to true. Indicates whether to close overlay on 'Esc' key press. Has sense only if 'noClose' is false.
 	 *   "destroyOnClose": Defaults to false if "dialog" is provided. If true, dialog DOM element will be removed from the document on close.
@@ -7415,21 +7418,36 @@ Q.Dialogs = {
 			).append(
 				$('<div class="dialog_slot Q_dialog_content" id="dialog_slot" />').append(o.content)
 			);
-			if (o.className) dialog.addClass(o.className);
+
+            if (o.className)
+                dialog.addClass(o.className || 'Q_Dialog');
 			if (o.destroyOnClose !== false) o.destroyOnClose = true;
 		}
 		dialog.hide();
 		//if (dialog.parent().length == 0) {
-			$(o.appendTo || $('body')[0]).append(dialog);
+			var attached_dialog = $(o.appendTo || $('body')[0]).append(dialog);
 		//}
+
+
+        if (o.size) {
+//          titleSize - is height of dialog's title, at the moment the height is unknown TODO should be setted programmatically
+            var titleSize = 41;
+            dialog.css({width: o.size.width, height: o.size.height+titleSize});
+        }
+
+
 		var _onClose = o.onClose;
 		o.onClose = new Q.Event(function() {
 			Q.handle(o.onClose.original, dialog, [dialog]);
 			if (!Q.Dialogs.dontPopOnClose)
 				Q.Dialogs.pop(true);
 			Q.Dialogs.dontPopOnClose = false;
+            if (o.destroyOnClose === true)
+                $('.' + o.className || 'Q_Dialog').remove();
+
 		}, 'Q.Dialogs');
 		o.onClose.original = _onClose;
+
 		dialog.plugin('Q/dialog', o);
 		topDialog = null;
 		dialog.isFullscreen = o.fullscreen;
@@ -7481,7 +7499,7 @@ Q.Dialogs.push.options = {
 	'url': null,
 	'title': 'Dialog',
 	'content': '',
-	'className': null,
+	'className': 'Q_Dialog',
 	'fullscreen': Q.info.platform == 'android' ? true : false,
 	'appendTo': document.body,
 	'alignByParent': false,
@@ -7949,7 +7967,7 @@ Q.onJQuery.add(function ($) {
 		"Q/scroller": "plugins/Q/js/fn/scroller.js",
 		"Q/touchscroll": "plugins/Q/js/fn/touchscroll.js",
 		"Q/scrollbarsAutoHide": "plugins/Q/js/fn/scrollbarsAutoHide.js",
-		"Q/sortable": "plugins/Q/js/fn/sortable.js"
+		"Q/sortable": "plugins/Q/js/fn/sortable.js",
 	});
 	
 	Q.onLoad.add(function () {
