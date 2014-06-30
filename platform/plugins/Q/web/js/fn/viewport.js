@@ -163,9 +163,8 @@ function (options) {
 	scale.factor = 1;
 	container.on(Q.Pointer.wheel, function (e) {
 		if (typeof e.deltaY === 'number' && !isNaN(e.deltaY)) {
-//            Math.max(1, scale.factor - e.deltaY * 0.01)
 			scale(
-                scale.factor - e.deltaY * 0.01,
+				Math.max(1, scale.factor - e.deltaY * 0.01),
 				Q.Pointer.getX(e),
 				Q.Pointer.getY(e)
 			);
@@ -179,8 +178,8 @@ function (options) {
 		var f = useZoom ? scale.factor : 1;
 		left1 = parseInt(stretcher.css('left')) * f;
 		top1 = parseInt(stretcher.css('top')) * f;
-		left1 -= (x - offset.left) * (factor / scale.factor ); //- 1
-		top1 -= (y - offset.top) * (factor / scale.factor );//- 1
+		left1 -= (x - offset.left) * (factor / scale.factor - 1);
+		top1 -= (y - offset.top) * (factor / scale.factor - 1);
 		if (!useZoom) {
 			css = { 
 				left: left1,
