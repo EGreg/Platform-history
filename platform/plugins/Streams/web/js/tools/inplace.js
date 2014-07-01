@@ -66,12 +66,24 @@ Q.Tool.define("Streams/inplace", function (options) {
 		if (state.attribute) {
 			field = 'attributes['+encodeURIComponent(state.attribute)+']';
 			stream.onUpdated(state.attribute).set(function (attributes, k) {
-				_setContent(attributes[k]);
+				if (attributes[k] !== null) {
+					_setContent(attributes[k]);
+				} else {
+					state.stream.refresh(function () {
+						_setContent(this.get(k));
+					});
+				}
 			}, tool);
 		} else {
 			field = state.field || 'content';
 			stream.onFieldChanged(field).set(function (fields, k) {
-				_setContent(fields[k]);
+				if (fields[k] !== null) {
+					_setContent(fields[k]);
+				} else {
+					state.stream.refresh(function () {
+						_setContent(this.fields[k]);
+					});
+				}
 			}, tool);
 		}
 		

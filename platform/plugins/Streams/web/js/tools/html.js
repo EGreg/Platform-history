@@ -26,8 +26,8 @@ Q.Tool.define("Streams/html", function (options) {
 	}
 
 	if (state.streamName) {
-		Q.Streams.get(state.publisherId, state.streamName, function (err1, err2) {
-			if (Q.firstErrorMessage(err1, err2)) return false;
+		Q.Streams.get(state.publisherId, state.streamName, function (err) {
+			if (Q.firstErrorMessage(err)) return false;
 			state.stream = this;
 			tool.element.innerHTML = this.fields[state.field] || state.placeholder;
 			_proceed();
@@ -77,7 +77,16 @@ Q.Tool.define("Streams/html", function (options) {
 			});
 			if (state.stream) {
 				state.stream.onFieldChanged(state.field).set(function (fields, field) {
-					tool.element.innerHTML = fields[field];
+					function _proceed(html) {
+						tool.element.innerHTML = html;
+					}
+					if (fields[field] !== null) {
+						_proceed(fields[field]);
+					} else {
+						state.stream.refresh(function () {
+							_proceed(this.fields[field]);
+						});
+					}
 				}, tool);
 			}
 		});

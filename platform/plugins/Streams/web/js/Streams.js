@@ -202,8 +202,8 @@ Streams.key = function (publisherId, streamName) {
  * This event is fired if an error occurs in any Streams function
  * @event onError
  */
-Streams.onError = new Q.Event(function (err, err2) {
-	console.warn(Q.firstErrorMessage(err, err2));
+Streams.onError = new Q.Event(function (err, data) {
+	console.warn(Q.firstErrorMessage(err, data && data.errors));
 }, 'Streams.onError');
 
 /**
@@ -843,7 +843,7 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 			var changed = (options && options.changed) || {};
 			updateStream(_retainedStreams[ps], this.fields, changed);
 			_retainedStreams[ps] = this;
-			callback && callback(err, stream);
+			callback && callback.apply(this, err, stream);
 		});
 		result = true;
 	}
@@ -2615,7 +2615,7 @@ Q.onInit.add(function _Streams_onInit() {
 					}
 					break;
 				case 'Streams/edited':
-					updateStream(stream, fields, null);
+					updateStream(stream, fields.changed, null);
 					break;
 				case 'Streams/relatedFrom':
 					updateRelatedCache(fields);
