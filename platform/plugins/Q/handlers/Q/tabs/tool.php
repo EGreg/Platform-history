@@ -8,7 +8,7 @@
  *  "classes" => An associative array of the form name => classes, for adding classes to tabs
  *  "titleClasses" => An associative array for adding classes to tab titles
  *  "field" => Defaults to "tab". Uses this field when urls doesn't contain the tab name.
- *  "selector" => CSS style selector indicating the element to update with javascript. Can be a parent of the tabs. Set to null to reload the page.
+ *  "selectors" => Array of (slotName => selector) pairs, where the values are CSS style selectors indicating the element to update with javascript, and can be a parent of the tabs. Set to null to reload the page.
  *    (if multiple slots defined parameter is required and shall be array of the same length as slot)
  *  "slot" => The name of the slot to request when changing tabs with javascript.
  *    (may be array or comma-delimited string to update multiple slots)
@@ -25,8 +25,8 @@
 function Q_tabs_tool($options)
 {
 	$field = 'tab';
-	$slot = 'content,title,notices';
-	$selector = '#content_slot';
+	$slot = 'content,title';
+	$selectors = array('content' => '#content_slot');
 	$urls = array();
 	$defaultTab = null;
 	$beforeSwitch = null; 
@@ -91,7 +91,7 @@ function Q_tabs_tool($options)
 		));
 	}
 	Q_Response::setToolOptions(compact(
-		'selector', 'slot', 'tabs', 'urls', 'defaultTab', 'field', 'loader', 'beforeSwitch', 'beforeScripts', 'onActivate'
+		'selectors', 'slot', 'tabs', 'urls', 'defaultTab', 'field', 'loader', 'beforeSwitch', 'beforeScripts', 'onActivate'
 	));
 	Q_Response::addScript('plugins/Q/js/tools/tabs.js');
 	$after = isset($options['after']) ? Q::event($options['after'], $options) : '';

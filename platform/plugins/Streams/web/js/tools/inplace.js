@@ -42,20 +42,25 @@ Q.Tool.define("Streams/inplace", function (options) {
 			Q.Streams.get(state.publisherId, state.streamName, function () {
 				state.stream = this;
 			});
-			var html = content.encodeHTML()
+			var $e, html = content.encodeHTML()
 				|| '<span class="Q_placeholder">'+tool.child('Q/inplace').state.placeholder.encodeHTML()+'</div>'
 				|| '';
 			switch (state.inplaceType) {
 				case 'text':
-					tool.$('input[type!=hidden]').val(content);
-					tool.$('.Q_inplace_tool_static').html(html);
+					$e = tool.$('input[type!=hidden]');
+					if ($e.val() !== content) $e.val(content);
+					$e = tool.$('.Q_inplace_tool_static');
+					if ($e.html() !== html) $e.html(html);
 					break;
 				case 'textarea':
-					tool.$('textarea').val(content);
-					tool.$('.Q_inplace_tool_blockstatic').html(html.replaceAll({
+					var toSet = html.replaceAll({
 						"\n": '<br>',
 					 	' ': '&nbsp;'
-					}));
+					});
+					$e = tool.$('textarea');
+					if ($e.val() !== content) $e.val(content);
+					$e = tool.$('.Q_inplace_tool_blockstatic');
+					if ($e.html !== toSet) $e.html(toSet);
 					break;
 				default:
 					throw new Q.Error("Streams/inplace tool: inplaceType must be 'textarea' or 'text'");
@@ -121,7 +126,9 @@ Q.Tool.define("Streams/inplace", function (options) {
 					? 'Q_inplace_tool_blockstatic'
 					: 'Q_inplace_tool_static';
 				div.setAttribute('class', staticClass);
-				div.innerHTML = ipo.staticHtml;
+				if (div.innerHTML !== ipo.staticHtml) {
+					div.innerHTML = ipo.staticHtml;
+				}
 				span.appendChild(div);
 				tool.element.appendChild(span);
 				return; // leave the html that is currently in the element

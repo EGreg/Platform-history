@@ -78,7 +78,9 @@ Q.Tool.define("Streams/html", function (options) {
 			if (state.stream) {
 				state.stream.onFieldChanged(state.field).set(function (fields, field) {
 					function _proceed(html) {
-						tool.element.innerHTML = html;
+						if (tool.element.innerHTML !== html) {
+							tool.element.innerHTML = html;
+						}
 					}
 					if (fields[field] !== null) {
 						_proceed(fields[field]);

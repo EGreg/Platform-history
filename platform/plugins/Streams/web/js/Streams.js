@@ -595,7 +595,7 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 }
 
 /**
-* this function run access tool in dialog
+* This function displays a Streams/access tool in a dialog
 * @method accessDialog
 * @param streamName {String} Name of stream
 * @param publisherId {String} ID user with publich that stream

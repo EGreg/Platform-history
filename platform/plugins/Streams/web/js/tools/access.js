@@ -19,7 +19,7 @@
 			
 		Q.setObject(
 			['#Q_tabs_tool', 'loaderOptions', 'slotContainer'],
-			function () { return tool.element; },
+			function (name) { return tool.element; },
 			this.state
 		);
 
