@@ -7981,6 +7981,12 @@ Q.loadUrl.options = {
 	},
 	handler: function _Q_loadUrl_fillSlots (res, url, options) {
 		var elements = {}, slot, name, elem, pos;
+		var osc = options.slotContainer;
+		if (Q.isPlainObject(osc)) {
+			options.slotContainer = function (slotName) {
+				return osc[slotName] || document.getElementById(slotName+"_slot");
+			};
+		}
 		for (name in res.slots) {
 			// res.slots will simply not contain the slots that have
 			// already been "cached"

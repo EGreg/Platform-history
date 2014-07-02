@@ -318,9 +318,9 @@ abstract class Streams extends Base_Streams
 				$name = array($name);
 			}
 		}
-		$namesToFetch = $name;
 		$allCached = array();
 		if (is_array($name) and empty($options['refetch'])) {
+            $namesToFetch = array();
 			foreach ($name as $n) {
 				if (isset(self::$fetch[$asUserId][$publisherId][$n][$fields])) {
 					$allCached[$n] = self::$fetch[$asUserId][$publisherId][$n][$fields];
@@ -329,18 +329,22 @@ abstract class Streams extends Base_Streams
 				}
 			}
 			$namesToFetch = array_unique($namesToFetch);
-		}
+		} else {
+            $namesToFetch = $name;
+        }
 		$criteria = array(
 			'publisherId' => $publisherId,
 			'name' => $namesToFetch
 		);
 
 		// Get streams and set their default access info
-		$allRetrieved = Streams_Stream::select($fields)
-			->where($criteria)
-			->ignoreCache()
-			->options($options)
-			->fetchDbRows(null, '', 'name');
+		$allRetrieved = $namesToFetch
+            ? Streams_Stream::select($fields)
+                ->where($criteria)
+                ->ignoreCache()
+                ->options($options)
+                ->fetchDbRows(null, '', 'name')
+            : array();
 
 		$streams = $allCached ? array_merge($allCached, $allRetrieved) : $allRetrieved;
 
@@ -467,7 +471,7 @@ abstract class Streams extends Base_Streams
 	 *  Set this to the user relative to whom access is calculated.
 	 *  If this matches the publisherId, just sets full access and calls publishedByFetcher(true).
 	 *  If this is '', only returns the streams anybody can see.
-	 *  Otherwise, return the streams joined with the calculated access settings.
+     *  If this is null, the logged-in user's id is used, or '' if no one is logged in
 	 * @param {string} $publisherId
 	 *  The id of the user publishing these streams
 	 * @param {array} $streams

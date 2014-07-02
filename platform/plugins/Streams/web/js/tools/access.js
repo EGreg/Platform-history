@@ -9,17 +9,19 @@
 		if (!options.tab) {
 			options.tab = 'read';
 		}
-		var tool			 = this,
-			state			 = this.state,
-			element			 = tool.element,
-			levelForEveryone = $('.Streams_access_levelForEveryone'),
-			fieldName		 = options.tab+'Level',
-			actionText		 = (options.tab === 'read') ? 'can see' : 'can',
-			tempSelect		 = $('<select />');
-
-		Q.setObject(['#Q_tabs_tool', 'loaderOptions', 'slotContainer'], function () {
-			return tool.element;
-		}, this.state);
+		var tool               = this,
+			state              = this.state,
+			element            = tool.element,
+			levelForEveryone   = $('.Streams_access_levelForEveryone'),
+			fieldName          = options.tab+'Level',
+			actionText         = (options.tab === 'read') ? 'can see' : 'can',
+			tempSelect         = $('<select />');
+			
+		Q.setObject(
+			['#Q_tabs_tool', 'loaderOptions', 'slotContainer'],
+			{ dialog: tool.element.parentNode },
+			this.state
+		);
 
 		function prepareSelect($select, criteria, value, action) {
 			if (!state.stream) return;

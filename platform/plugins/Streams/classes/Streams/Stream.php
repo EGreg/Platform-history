@@ -1333,7 +1333,7 @@ class Streams_Stream extends Base_Streams_Stream
 	}
 
 	/**
-	 * Set access data for the stream. Acces data is calculated:
+	 * Set access data for the stream. Access data is calculated:
 	 *	<ol>
 	 * 		<li>from read/write/admin level fields of the stream</li>
 	 *		<li>from labels. Streams_Access record may contain &lt;publisherId&gt;, &lt;streamName&gt;
@@ -1346,11 +1346,14 @@ class Streams_Stream extends Base_Streams_Stream
 	 *			&lt;ofUserId&gt;. Such record is considered in access calculation.</li>
 	 *	</ol>
 	 * @method calculateAccess
-	 * @param {string} $asUserId='' The user relative to whom the access is calculated
+	 * @param {string} $asUserId=null The user relative to whom the access is calculated
+     *  If this matches the publisherId, just sets full access and calls publishedByFetcher(true).
+     *  If this is '', only returns the streams anybody can see.
+     *  If this is null, the logged-in user's id is used, or '' if no one is logged in
 	 * @param {boolean} $recalculate=false Pass true here to force recalculating even if access was already calculated
 	 * @chainable
 	 */
-	function calculateAccess($asUserId = '', $recalculate = false)
+	function calculateAccess($asUserId = null, $recalculate = false)
 	{
 		Streams::calculateAccess($asUserId, $this->publisherId, array($this), $recalculate);
 		return $this;
@@ -1496,10 +1499,13 @@ class Streams_Stream extends Base_Streams_Stream
 	/**
 	 * Add this stream to the list of streams to be preloaded onto the client with the rest of the page
 	 * @method addPreloaded
-	 * @param {string} $asUserId
-	 *	Required. The id of the user from whose point of view the access is calculated.
+	 * @param {string} $asUserId=null
+	 *	The id of the user from whose point of view the access should be calculated.
+     *  If this matches the publisherId, just sets full access and calls publishedByFetcher(true).
+     *  If this is '', only returns the streams anybody can see.
+     *  If this is null, the logged-in user's id is used, or '' if no one is logged in
 	 */
-	function addPreloaded($asUserId)
+	function addPreloaded($asUserId=null)
 	{
 		$this->calculateAccess($asUserId);
 		self::$preloaded["{$this->publisherId}, {$this->name}"] = $this;
