@@ -9,19 +9,17 @@
 		if (!options.tab) {
 			options.tab = 'read';
 		}
-		var tool               = this,
-			state              = this.state,
-			element            = tool.element,
-			levelForEveryone   = $('.Streams_access_levelForEveryone'),
-			fieldName          = options.tab+'Level',
-			actionText         = (options.tab === 'read') ? 'can see' : 'can',
-			tempSelect         = $('<select />');
-			
-		Q.setObject(
-			['#Q_tabs_tool', 'loaderOptions', 'slotContainer'],
-			function () { return tool.element; },
-			this.state
-		);
+		var tool			 = this,
+			state			 = this.state,
+			element			 = tool.element,
+			levelForEveryone = $('.Streams_access_levelForEveryone'),
+			fieldName		 = options.tab+'Level',
+			actionText		 = (options.tab === 'read') ? 'can see' : 'can',
+			tempSelect		 = $('<select />');
+
+		Q.setObject(['#Q_tabs_tool', 'loaderOptions', 'slotContainer'], function () {
+			return tool.element;
+		}, this.state);
 
 		function prepareSelect($select, criteria, value, action) {
 			if (!state.stream) return;
@@ -95,6 +93,7 @@
 				});
 				return false;
 			}).html('x');
+
 			for (var k in criteria) {
 				link.data(k, criteria[k]);
 			}
@@ -102,6 +101,14 @@
 		}
 
 		function addAccessRow(access, avatar) {
+			if (access.fields) {
+				access = access.fields;
+			}
+
+			if (avatar && avatar.fields) {
+				avatar = avatar.fields;
+			}
+
 			var userId = access.ofUserId;
 			var contactLabel = access.ofContactLabel;
 
@@ -113,9 +120,9 @@
 			var criteria;
 			if (userId !== "") {
 				if (!avatar) {
-					avatar = options.avatar_array[userId];
+					avatar = options.avatar_array[userId].fields;
 				}
-				criteria = {ofUserId: userId};
+				criteria = { ofUserId: userId };
 
 				tool.child('Streams_userChooser').exclude[userId] = true;
 			} else if (contactLabel) {
@@ -156,7 +163,10 @@
 			}
 		}
 
-		if (!tool.state.publisherId) return;
+		if (!tool.state.publisherId) {
+			return;
+		}
+
 		this.Q.onInit.set(function () {
 			Q.Streams.get(tool.state.publisherId, tool.state.streamName, function (err, data) {
 				var msg;
@@ -164,7 +174,7 @@
 					alert(msg);
 				}
 				state.stream = this;
-				
+
 				var i, userId, access;
 
 				prepareSelect(levelForEveryone, '', state.stream.fields[fieldName], 'stream');
