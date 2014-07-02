@@ -101,14 +101,6 @@
 		}
 
 		function addAccessRow(access, avatar) {
-			if (access.fields) {
-				access = access.fields;
-			}
-
-			if (avatar && avatar.fields) {
-				avatar = avatar.fields;
-			}
-
 			var userId = access.ofUserId;
 			var contactLabel = access.ofContactLabel;
 
@@ -120,10 +112,13 @@
 			var criteria;
 			if (userId !== "") {
 				if (!avatar) {
-					avatar = options.avatar_array[userId].fields;
+					avatar = options.avatarArray[userId];
+					if (!avatar) {
+						console.warn("Streams/access tool: avatar missing for user with id " + userId);
+						return;
+					}
 				}
 				criteria = { ofUserId: userId };
-
 				tool.child('Streams_userChooser').exclude[userId] = true;
 			} else if (contactLabel) {
 				criteria = {ofContactLabel: contactLabel};
@@ -179,8 +174,8 @@
 
 				prepareSelect(levelForEveryone, '', state.stream.fields[fieldName], 'stream');
 
-				for (i=0; i<options.access_array.length; ++i) {
-					access = options.access_array[i];
+				for (i=0; i<options.accessArray.length; ++i) {
+					access = options.accessArray[i];
 					addAccessRow(access);
 				}
 
