@@ -107,7 +107,7 @@ Q.Tool.define("Q/tabs", function(options) {
 				alert(msg);
 			}},
 			onActivate: {"Q/tabs": function () {
-				tool.indicateSelected(tab);
+				tool.indicateSelected(tool.getName(tab));
 				state.onActivate.handle(tab);
 			}},
 			loadExtras: true,
@@ -128,19 +128,29 @@ Q.Tool.define("Q/tabs", function(options) {
 	},
 
 	indicateSelected: function (tab) {
+		var name;
+		if (typeof tab === 'string') {
+			name = tab;
+			tab = null;
+		}
 		var $tabs = this.$('.Q_tabs_tab');
+		if (!$tabs.closest('body').length) {
+			// the replaced html probably included the tool's own element,
+			// so let's find something with the same id on the page
+			$tabs = $('.Q_tabs_tab', $(document.getElementById(this.element.id)));
+		}
 		var url = window.location.href.split('#')[0];
 		var tool = this;
 		var defaultTab = null;
 		$tabs.removeClass('Q_selected');
 		if (!tab) {
 			$tabs.each(function (k, t) {
-				if (tool.getUrl(t) === url) {
+				var tdn = tool.getName(t);
+				if (tdn === name || (!name && tool.getUrl(t) === url)) {
 					tab = t;
 					return false;
 				}
-				var name = t.getAttribute("data-name");
-				if (tool.state.defaultTab === name) {
+				if (tool.state.defaultTab === tdn) {
 					defaultTab = t;
 				}
 			});
@@ -149,6 +159,10 @@ Q.Tool.define("Q/tabs", function(options) {
 			tab = defaultTab;
 		}
 		$(tab).addClass('Q_selected');
+	},
+	
+	getName: function (tab) {
+		return tab.getAttribute("data-name");
 	},
 	
 	getUrl: function (tab) {

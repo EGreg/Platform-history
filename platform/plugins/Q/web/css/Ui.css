@@ -22,7 +22,7 @@ table { border-spacing:0; border-collapse:collapse; }
 .Q_notice a { font-weight: bold; }
 .Q_success { background: #e2ffee !important; }
 .Q_required { border: solid 2px #AAC !important; }
-.Q_selected {}
+.Q_selected { background: #98bede; }
 .Q_throb { background-image: url(../img/throbbers/loading.gif); background-repeat: no-repeat; background-position: center center; }
 .Q_clickable_container { cursor: pointer !important;  }
 .Q_clickable_container .Q_clickable_shadow { display: none; }
@@ -1155,9 +1155,12 @@ div.Q_placeholder { pointer-events: none; }
 .Q_overlay { background: #EEEEF3; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; }
 .Q_overlay .Q_title { background-color: #55A; color: white; margin: 0px; padding: 5px 10px 5px 10px; font-size: 18px; font-weight: bold; -moz-border-radius: 5px 5px 0px 0px; border-radius: 5px 5px 0px 0px; -webkit-border-top-left-radius:5px; -webkit-border-top-right-radius:5px; }
 .Q_loading { opacity:0.9; filter:alpha(opacity=90) }
+.Q_document_surface { background: white; }
+.Q_overlay .Q_document_surface { padding: 10px; border: 1px solid #aaa; border-top: 1px solid #eee; }
+.Q_chrome_surface { background: gray; }
 
 .Q_tabs_tabs { border-bottom: solid 1px #aaa; width: 100%; }
-.Q_tabs_tab { display: block; float: left; padding: 3px 10px 3px 10px; line-height: 30px; border: solid 1px #aaa; border-bottom: 0px; border-left: 0px; margin-bottom: -1px; background-color: #eef; font-weight: bold; }
+.Q_tabs_tab { display: block; float: left; padding: 3px 10px 3px 10px; line-height: 30px; border: solid 1px #aaa; border-bottom: 0px; border-left: 0px; margin-bottom: -1px; background-color: #eee; font-weight: bold; }
 .Q_tabs_tab:first-child { border-left: solid 1px #aaa; }
 .Q_tabs_tab.Q_selected { background-color: white; border-bottom: solid 1px white; }
 

@@ -24,14 +24,14 @@ Q.Tool.define("Streams/userChooser", function(o) {
 	var input = $('input', element);
 	var cached = {};
 	var focusedResults = false;
-	var results = $('<div style="text-align: left;" />')
+	var results = $('<div style="text-align: left;" class="Streams_userChooser_results" />')
 		.css({
 			display: 'none',
 			position: 'absolute',
 			left: input.offset().left + 'px',
 			top: input.offset().top + input.outerHeight() + 'px',
-			'z-index': 80000,
 			width: input.outerWidth(),
+			'z-index': 80000,
 			background: 'white',
 			border: 'solid 1px #99a',
 			'tab-index': 9000
@@ -111,8 +111,10 @@ Q.Tool.define("Streams/userChooser", function(o) {
 		}
 
 		function onChoose (cur) {
+			var userId = cur.data('userId');
+			var avatar = cur.data('avatar');
 			input.blur().val('');
-			Q.handle(me.onChoose, this, [cur.data('userId'), cur.data('avatar'), cur.get(0)]);
+			Q.handle(me.onChoose, this, [userId, avatar]);
 		}
 
 		function onResponse (err, avatars) {
@@ -156,7 +158,11 @@ Q.Tool.define("Streams/userChooser", function(o) {
 				++show;
 			}
 			if (show) {
-				results.appendTo('body').show();
+				results.css({
+					left: input.offset().left + 'px',
+					top: input.offset().top + input.outerHeight() + 'px',
+					width: input.outerWidth()
+				}).appendTo('body').show();
 			} else {
 				results.remove();
 			}

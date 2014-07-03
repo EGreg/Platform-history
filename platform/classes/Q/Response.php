@@ -811,7 +811,7 @@ class Q_Response
 	 * Adds inline template to the response
 	 * @method addTemplate
 	 * @static
-	 * @param {string} $name The location of the template file
+	 * @param {string} $name The location of the template file relative to the "views" folder
 	 * @param {string} [$type="mustache"]
 	 * @return {boolean} returns false if script was already added, else returns true
 	 */

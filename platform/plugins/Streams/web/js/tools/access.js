@@ -12,14 +12,14 @@
 		var tool               = this,
 			state              = this.state,
 			element            = tool.element,
-			levelForEveryone   = $('.Streams_access_levelForEveryone'),
+			levelForEveryone   = $('.Streams_access_levelForEveryone', element),
 			fieldName          = options.tab+'Level',
 			actionText         = (options.tab === 'read') ? 'can see' : 'can',
 			tempSelect         = $('<select />');
 			
 		Q.setObject(
 			['#Q_tabs_tool', 'loaderOptions', 'slotContainer'],
-			{ dialog: tool.element.parentNode },
+			{ dialog: element.parentNode },
 			this.state
 		);
 
@@ -114,7 +114,7 @@
 			var criteria;
 			if (userId !== "") {
 				if (!avatar) {
-					avatar = options.avatarArray[userId];
+					avatar = new Q.Streams.Avatar(options.avatarArray[userId]);
 					if (!avatar) {
 						console.warn("Streams/access tool: avatar missing for user with id " + userId);
 						return;
@@ -140,7 +140,7 @@
 			if (userId !== "") {
 				tr.append(
 					$('<td style="vertical-align: middle;" />').append(
-						$('<img />').attr('src', Q.plugins.Streams.iconUrl(avatar.icon, 40)).css('width', 20)
+						$('<img />').attr('src', avatar.iconUrl()).css('width', 20)
 					)
 				).append(
 					$('<td style="vertical-align: middle;" />').append(
@@ -158,6 +158,7 @@
 					$('<td style="vertical-align: middle;" />').append(newRemoveLink(criteria))
 				).appendTo($('.Streams_access_label_array', element));
 			}
+			clonedSelect.focus();
 		}
 
 		if (!tool.state.publisherId) {

@@ -595,23 +595,20 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 }
 
 /**
-* This function displays a Streams/access tool in a dialog
-* @method accessDialog
-* @param streamName {String} Name of stream
-* @param publisherId {String} ID user with publich that stream
-* @param callback {Function} The function to call after access tool dialog is render
-*/
-Streams.accessDialog = function(streamName, publisherId, callback) {
-	Q.Dialogs.push({
+ * This function displays a Streams/access tool in a dialog
+ * @method accessDialog
+ * @param publisherId {String} id of publisher which is publishing the stream
+ * @param streamName {String} name of stream
+ * @param options {Object} Additional options to pass to Q.Dialogs.push
+ */
+Streams.accessDialog = function(publisherId, streamName, options) {
+	Q.Dialogs.push(Q.extend({
 		url: Q.action("Streams/access", {
 			'publisherId': publisherId,
 			'streamName': streamName
 		}),
-		removeOnClose: true,
-		onActivate: function(){
-			callback && callback.apply(context || this, arguments);
-		}
-	}).addClass('Streams_access_tool_dialog_container');
+		removeOnClose: true
+	}, options)).addClass('Streams_access_tool_dialog_container');
 };
 
 Streams.displayName = function(options) {
@@ -843,7 +840,7 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 			var changed = (options && options.changed) || {};
 			updateStream(_retainedStreams[ps], this.fields, changed);
 			_retainedStreams[ps] = this;
-			callback && callback.apply(this, err, stream);
+			callback && callback.call(this, err, stream);
 		});
 		result = true;
 	}
@@ -1105,6 +1102,15 @@ Stream.prototype.testAdminLevel = function _Stream_prototype_testAdminLevel (lev
 		throw new Q.Error("Streams.Stream.prototype.testAdminLevel: level is undefined");
 	}
 	return this.access.adminLevel >= level;
+};
+
+/**
+ * This function displays a Streams/access tool in a dialog
+ * @method accessDialog
+ * @param options {Object} Additional options to pass to Q.Dialogs.push
+ */
+Stream.prototype.accessDialog = function(options) {
+	return Streams.accessDialog(this.fields.publisherId, this.fields.name, options);
 };
 
 /**
@@ -2121,6 +2127,15 @@ Avatar.prototype.displayName = function _Avatar_prototype_displayName (options) 
 	} else {
 		return u ? u : null;
 	}
+};
+
+/**
+ * Get the url of the user icon from a Streams.Avatar
+ * @method Avatar.iconUrl
+ * @return {String}
+ */
+Avatar.prototype.iconUrl = function _Avatar_prototype_iconUrl () {
+	return Q.plugins.Users.iconUrl(this.icon, 40);
 };
 
 /**
