@@ -1155,9 +1155,9 @@ div.Q_placeholder { pointer-events: none; }
 .Q_overlay { background: #EEEEF3; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; }
 .Q_overlay .Q_title { background-color: #55A; color: white; margin: 0px; padding: 5px 10px 5px 10px; font-size: 18px; font-weight: bold; -moz-border-radius: 5px 5px 0px 0px; border-radius: 5px 5px 0px 0px; -webkit-border-top-left-radius:5px; -webkit-border-top-right-radius:5px; }
 .Q_loading { opacity:0.9; filter:alpha(opacity=90) }
-.Q_document_surface { background: white; }
-.Q_overlay .Q_document_surface { padding: 10px; border: 1px solid #aaa; border-top: 1px solid #eee; }
+.Q_document_surface { background: white; padding: 10px; }
 .Q_chrome_surface { background: gray; }
+.Q_tabbed { border: 1px solid #aaa; border-top: 1px solid #eee; background: white; }
 
 .Q_tabs_tabs { border-bottom: solid 1px #aaa; width: 100%; }
 .Q_tabs_tab { display: block; float: left; padding: 3px 10px 3px 10px; line-height: 30px; border: solid 1px #aaa; border-bottom: 0px; border-left: 0px; margin-bottom: -1px; background-color: #eee; font-weight: bold; }

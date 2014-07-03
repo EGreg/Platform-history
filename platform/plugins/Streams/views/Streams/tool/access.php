@@ -13,7 +13,7 @@
 	'slot'      => array('dialog'),
 	'defaultTab' => 'read'
 )) ?>
-	<div class="Streams_access_controls Q_document_surface">
+	<div class="Streams_access_controls Q_tabbed Q_document_surface">
 		<div>
 			<?php if ($tab === 'read'): ?>
 				The general public can see
