@@ -78,7 +78,7 @@ function Streams_subscription2_tool($options) {
 	$rule->ofUserId    = $user->id;
 	if ($rule->retrieve()) {
 		$device = json_decode($rule->deliver);
-		$filter  = json_decode($rule->filter);
+		$filter = json_decode($rule->filter);
 	}
 
 	Q_Response::setToolOptions(compact(
@@ -90,5 +90,7 @@ function Streams_subscription2_tool($options) {
 		'publisherId',
 		'streamName'
 	));
+
+	Q_Response::addScript("plugins/Streams/js/Streams.js");
 	Q_Response::addScript("plugins/Streams/js/tools/subscription2.js");
 }

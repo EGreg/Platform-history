@@ -80,10 +80,10 @@
 
 	Q.Template.set('Streams/subscription2/view',
 		'<div class="streams_subscription2_container">'+
-			'<div class="left">'+
+			'<div class="left w10">'+
 				'<input type="checkbox" name="subscribed" {{#subscribed}} checked {{/subscribed}} />'+
 			'</div>'+
-			'<div class="right">'+
+			'<div class="right w90">'+
 				'<b>Participaties</b>'+
 				'<br />'+
 				'<small>'+

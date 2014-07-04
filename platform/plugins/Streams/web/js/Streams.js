@@ -594,6 +594,30 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 	}
 }
 
+_toolInDialog = function(toolName, toolParams, callback, classContainer){
+	Q.Dialogs.push({
+		url: Q.action(toolName, toolParams),
+		removeOnClose: true,
+		onActivate: function(){
+			callback && callback.apply(this, arguments);
+		}
+	}).addClass(classContainer || '');
+}
+
+/**
+* this function run subscription tool in dialog
+* @method subscriptionDialog
+* @param streamName {String} name of stream
+* @param publisherid {String} ID user with publicj that stream
+* @param callback {Function} The function to call after subscription tool dialog is render
+*/
+Streams.subscriptionDialog = function(streamName, publisherId, callback) {
+	_toolInDialog('Streams/subscription2', {
+		publisherId: publisherId,
+		streamName : streamName
+	}, callback, 'Streams_subscription_tool_dialog_container');
+};
+
 /**
 * this function run access tool in dialog
 * @method accessDialog
@@ -602,17 +626,12 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 * @param callback {Function} The function to call after access tool dialog is render
 */
 Streams.accessDialog = function(streamName, publisherId, callback) {
-	Q.Dialogs.push({
-		url: Q.action("Streams/access", {
-			'publisherId': publisherId,
-			'streamName': streamName
-		}),
-		removeOnClose: true,
-		onActivate: function(){
-			callback && callback.apply(context || this, arguments);
-		}
-	}).addClass('Streams_access_tool_dialog_container');
+	_toolInDialog('Streams/access', {
+		'publisherId': publisherId,
+		'streamName': streamName
+	}, callback, 'Streams_access_tool_dialog_container');
 };
+
 
 Streams.displayName = function(options) {
 	return options.firstName + ' ' + options.lastName;

@@ -490,3 +490,12 @@
 .streams_subscription2_container{
 	width: 347px;
 }
+
+.Q_overlay .streams_subscription2_container{
+	width: 96%;
+	margin: 0 auto;
+	padding: 5px;
+}
+.Streams_subscription_tool_dialog_container{
+	width: 300px;
+}
