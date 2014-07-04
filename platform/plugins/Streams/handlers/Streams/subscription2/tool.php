@@ -26,6 +26,7 @@ function Streams_subscription2_tool($options) {
 
 	// if user is not participant, join the stream
 	$participant = $stream->join();
+	$subscribed  = $participant->subscribed;
 
 	/*
 	* TODO - resolve this
@@ -61,7 +62,6 @@ function Streams_subscription2_tool($options) {
 		$devices[] = array( 'value' => '{"mobile":"'.$mobile.'"}', 'name' => 'my mobile' );
 	}
 
-
 	/*
 	* User not activated self account
 	*/
@@ -69,6 +69,26 @@ function Streams_subscription2_tool($options) {
 		throw new Users_Exception_NotVerified('Your account not verificated');
 	}
 
-	Q_Response::setToolOptions(compact('participant', 'messageTypes', 'devices', 'publisherId', 'streamName'));
+	$device = array();
+	$filter = array();
+
+	$rule 			   = new Streams_Rule();
+	$rule->streamName  = $streamName;
+	$rule->publisherId = $publisherId;
+	$rule->ofUserId    = $user->id;
+	if ($rule->retrieve()) {
+		$device = json_decode($rule->deliver);
+		$filter  = json_decode($rule->filter);
+	}
+
+	Q_Response::setToolOptions(compact(
+		'device',
+		'filter',
+		'subscribed',
+		'messageTypes',
+		'devices',
+		'publisherId',
+		'streamName'
+	));
 	Q_Response::addScript("plugins/Streams/js/tools/subscription2.js");
 }

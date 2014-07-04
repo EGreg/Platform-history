@@ -18,16 +18,24 @@
 		};
 
 		var prettyData = function(){
-			if (options.participant.fields.subscribed == 'no') {
-				options.participant.fields.subscribed = false;
+			if (options.subscribed == 'no') {
+				options.subscribed = false;
 			} else {
-				options.participant.fields.subscribed = true;
+				options.subscribed = true;
 			}
 
 			for(var i in options.messageTypes){
 				options.messageTypes[i].name = options.messageTypes[i].name.replace(/\//g, ' ').replace('Streams ', '');
 			}
 		}
+
+		var selectOption = function(listName, value) {
+			$el.find('[name='+listName+'] option').each(function(){
+				if($(this).val() == value){
+					$(this).attr('selected', 'selected');
+				}
+			});
+		};
 
 		var render = function() {
 			prettyData();
@@ -40,6 +48,10 @@
 				$el.html(html);
 				attachEvents();
 				$el.find('input, select').each(updateData);
+
+				selectOption('devices', JSON.stringify(options.device));
+				options.filter.types 		 && selectOption('messageTypes',  options.filter.types);
+				options.filter.notifications && selectOption('stoppingAfter', options.filter.notifications);
 			});
 		};
 
@@ -69,7 +81,7 @@
 	Q.Template.set('Streams/subscription2/view',
 		'<div class="streams_subscription2_container">'+
 			'<div class="left">'+
-				'<input type="checkbox" name="subscribed" {{#participant.fields.subscribed}} checked {{/participant.fields.subscribed}} />'+
+				'<input type="checkbox" name="subscribed" {{#subscribed}} checked {{/subscribed}} />'+
 			'</div>'+
 			'<div class="right">'+
 				'<b>Participaties</b>'+
