@@ -485,3 +485,8 @@
 	.Streams_access_tool_dialog_container .Streams_access_user_array tr td:first-child { vertical-align: top !important; }
 	.Streams_access_tool_dialog_container .Streams_access_user_array tr td:first-child+td select{ width: 98%; float: none; }
 }
+
+/* streams subscription2 tool */
+.streams_subscription2_container{
+	width: 347px;
+}
