@@ -10,7 +10,7 @@
  *  @param {Array} [options.urls] An associative array of name: url pairs to override the default urls.
  *  @param {String} [options.field] Uses this field when urls doesn't contain the tab name.
  *  @default 'tab'
- *  @param {String} [options.selector] CSS style selector indicating the element to update with javascript. Can be a parent of the tabs. Set to null to reload the page.
+ *  @param {String} [options.selectors] Array of (slotName => selector) pairs, where the values are CSS style selectors indicating the element to update with javascript, and can be a parent of the tabs. Set to null to reload the page.
  *  @param {String} [options.slot] The name of the slot to request when changing tabs with javascript.
  *  @param {Function} [options.loader] Name of a function which takes url, slot, callback. It should call the callback and pass it an object with the response info. Can be used to implement caching, etc. instead of the default HTTP request. This function shall be Q.batcher getter
  *  @param {Event} [options.onClick] Event when a tab was clicked, with arguments (name, element). Returning false cancels the tab switching. Optional.
@@ -53,7 +53,7 @@ Q.Tool.define("Q/tabs", function(options) {
 {
 	field: 'tab',
 	slot: 'content,title',
-	selector: '#content_slot',
+	selectors: { content: '#content_slot' },
 	overflow: '{{count}} more &#9660;',
 	loaderOptions: {},
 	loader: Q.req,
@@ -82,12 +82,8 @@ Q.Tool.define("Q/tabs", function(options) {
 		state.slots = typeof state.slot === "string" 
 			? state.slot.split(',')
 			: state.slot;
-		state.selectors = typeof state.selector === "string"
-			? [state.selector]
-			: state.selector
 
 		var slots = state.slots;
-		var selectors = state.selectors;
 
 		href = this.getUrl(tab);
 
@@ -95,12 +91,12 @@ Q.Tool.define("Q/tabs", function(options) {
 			return false;
 		}
 
-		if (href && state.selector === null) {
+		if (href && !state.selectors) {
 		    Q.handle(href);
 			return;
 		}
 
-		if (!slots || !selectors || !href) {
+		if (!slots || !state.selectors || !href) {
 			return;
 		}
 
@@ -111,15 +107,15 @@ Q.Tool.define("Q/tabs", function(options) {
 				alert(msg);
 			}},
 			onActivate: {"Q/tabs": function () {
-				tool.indicateSelected(tab);
+				tool.indicateSelected(tool.getName(tab));
 				state.onActivate.handle(tab);
 			}},
 			loadExtras: true,
 			ignoreHistory: this.isInDialog(),
 			loader: state.loader,
-			slotContainer: function () {
-				return $(tool.element).parents(tool.state.selector)[0]
-					|| document.getElementById(name+"_slot");
+			slotContainer: function (slotName) {
+				return $(state.selectors[slotName])[0]
+					|| document.getElementById(slotName+"_slot");
 			}
 			
 		}, state.loaderOptions);
@@ -132,19 +128,29 @@ Q.Tool.define("Q/tabs", function(options) {
 	},
 
 	indicateSelected: function (tab) {
+		var name;
+		if (typeof tab === 'string') {
+			name = tab;
+			tab = null;
+		}
 		var $tabs = this.$('.Q_tabs_tab');
+		if (!$tabs.closest('body').length) {
+			// the replaced html probably included the tool's own element,
+			// so let's find something with the same id on the page
+			$tabs = $('.Q_tabs_tab', $(document.getElementById(this.element.id)));
+		}
 		var url = window.location.href.split('#')[0];
 		var tool = this;
 		var defaultTab = null;
 		$tabs.removeClass('Q_selected');
 		if (!tab) {
 			$tabs.each(function (k, t) {
-				if (tool.getUrl(t) === url) {
+				var tdn = tool.getName(t);
+				if (tdn === name || (!name && tool.getUrl(t) === url)) {
 					tab = t;
 					return false;
 				}
-				var name = t.getAttribute("data-name");
-				if (tool.state.defaultTab === name) {
+				if (tool.state.defaultTab === tdn) {
 					defaultTab = t;
 				}
 			});
@@ -153,6 +159,10 @@ Q.Tool.define("Q/tabs", function(options) {
 			tab = defaultTab;
 		}
 		$(tab).addClass('Q_selected');
+	},
+	
+	getName: function (tab) {
+		return tab.getAttribute("data-name");
 	},
 	
 	getUrl: function (tab) {

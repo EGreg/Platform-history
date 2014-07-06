@@ -474,7 +474,7 @@
 
 /* Streams access tool */
 .Streams_access_tool_dialog_container { width: 450px; }
-.Streams_access_tool_dialog_container .Streams_access_controls { padding: 5px; }
+.Streams_access_tool_dialog_container .Streams_access_controls { padding: 10px; }
 .Streams_access_tool_dialog_container input { width: 97%; }
 .Streams_access_tool_dialog_container .Streams_access_user_array td select{ float: right; }
 
@@ -486,21 +486,11 @@
 	.Streams_access_tool_dialog_container .Streams_access_user_array tr td:first-child+td select{ width: 98%; float: none; }
 }
 
-<<<<<<< Updated upstream
-/* streams subscription2 tool */
-.streams_subscription2_container{
-	width: 347px;
-}
-
-.Q_overlay .streams_subscription2_container{
-=======
-/* streams subscription tool */
 .streams_subscription_container{
 	width: 347px;
 }
 
 .Q_overlay .streams_subscription_container{
->>>>>>> Stashed changes
 	width: 96%;
 	margin: 0 auto;
 	padding: 5px;

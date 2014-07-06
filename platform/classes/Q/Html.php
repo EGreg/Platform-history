@@ -1120,7 +1120,7 @@ class Q_Html
 	}
 
 	/**
-	 * Sets a new id prefix to prefix all ids rendered by Markup.
+	 * Sets a new id prefix to prefix all ids rendered by Html.
 	 * It gets pushed on top of the stack and can be pieped later.
 	 * @method pushIdPrefix
 	 * @static

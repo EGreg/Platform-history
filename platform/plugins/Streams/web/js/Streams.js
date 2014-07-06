@@ -202,8 +202,8 @@ Streams.key = function (publisherId, streamName) {
  * This event is fired if an error occurs in any Streams function
  * @event onError
  */
-Streams.onError = new Q.Event(function (err, err2) {
-	console.warn(Q.firstErrorMessage(err, err2));
+Streams.onError = new Q.Event(function (err, data) {
+	console.warn(Q.firstErrorMessage(err, data && data.errors));
 }, 'Streams.onError');
 
 /**
@@ -862,7 +862,7 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 			var changed = (options && options.changed) || {};
 			updateStream(_retainedStreams[ps], this.fields, changed);
 			_retainedStreams[ps] = this;
-			callback && callback(err, stream);
+			callback && callback.call(this, err, stream);
 		});
 		result = true;
 	}
@@ -1124,6 +1124,15 @@ Stream.prototype.testAdminLevel = function _Stream_prototype_testAdminLevel (lev
 		throw new Q.Error("Streams.Stream.prototype.testAdminLevel: level is undefined");
 	}
 	return this.access.adminLevel >= level;
+};
+
+/**
+ * This function displays a Streams/access tool in a dialog
+ * @method accessDialog
+ * @param options {Object} Additional options to pass to Q.Dialogs.push
+ */
+Stream.prototype.accessDialog = function(options) {
+	return Streams.accessDialog(this.fields.publisherId, this.fields.name, options);
 };
 
 /**
@@ -2143,6 +2152,15 @@ Avatar.prototype.displayName = function _Avatar_prototype_displayName (options) 
 };
 
 /**
+ * Get the url of the user icon from a Streams.Avatar
+ * @method Avatar.iconUrl
+ * @return {String}
+ */
+Avatar.prototype.iconUrl = function _Avatar_prototype_iconUrl () {
+	return Q.plugins.Users.iconUrl(this.icon, 40);
+};
+
+/**
  * Extract a displayable title from a stream's type
  * @method displayType
  * @param {String} type
@@ -2634,7 +2652,7 @@ Q.onInit.add(function _Streams_onInit() {
 					}
 					break;
 				case 'Streams/edited':
-					updateStream(stream, fields, null);
+					updateStream(stream, fields.changed, null);
 					break;
 				case 'Streams/relatedFrom':
 					updateRelatedCache(fields);

@@ -125,9 +125,12 @@ function Streams_access_tool($options)
 	
 	$dir = Q_Config::get('Users', 'paths', 'icons', 'files/Users/icons');
 
+	$accessArray = Db::exportArray($access_array);
+	$avatarArray = Db::exportArray($avatar_array);
+
 	Q_Response::addScript("plugins/Streams/js/tools/access.js");
 	Q_Response::addScript("plugins/Streams/js/Streams.js");
-	Q_Response::setToolOptions(compact('access_array', 'avatar_array', 'labels', 'icons', 'tab', 'publisherId', 'streamName'));
+	Q_Response::setToolOptions(compact('accessArray', 'avatarArray', 'labels', 'icons', 'tab', 'publisherId', 'streamName'));
 
 	return Q::view('Streams/tool/access.php', compact(
 		'stream', 'access_array', 'contact_array', 'label_array', 'tabs', 'tab', 'labels', 'icons', 'levels', 'dir', 'publisherId', 'streamName', 'accessActionUrl'

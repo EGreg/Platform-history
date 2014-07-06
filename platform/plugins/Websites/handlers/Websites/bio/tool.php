@@ -13,6 +13,8 @@ function Websites_bio_tool($params)
 	$streamName = $params['streamName'];
 	$bio = Streams::fetchOne(null, $publisherId, $streamName);
 	$edit = $bio->testWriteLevel('edit');
+	$bio->addPreloaded();
+	Q_Response::setToolOptions(compact('publisherId', 'streamName'));
 	return Q::view("Websites/tool/bio.php", 
 		compact('bio', 'getintouch', 'edit')
 	);

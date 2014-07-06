@@ -68,25 +68,28 @@ function Streams_stream_put($params) {
 		unset($more_fields['attributes']);
 	}
 	
-	$xtype = Q_Config::get('Streams', 'types', $stream->type, 'fields', array());
-	foreach (array_merge(
-		array('type', 'title', 'icon', 'content', 'attributes', 'readLevel', 'writeLevel', 'adminLevel'), 
-		$xtype
-	) as $f ) {
+	$coreFields = array('type', 'title', 'icon', 'content', 'attributes', 'readLevel', 'writeLevel', 'adminLevel');
+	$exFields = Q_Config::get('Streams', 'types', $stream->type, 'fields', array());
+	$mergedFields = array_merge($coreFields, $exFields);
+	foreach ($mergedFields as $f) {
 		if (isset($more_fields[$f])) {
 			$stream->$f = $more_fields[$f];
 		}
 	}
 	
 	$to_save = $stream->toArray();
-	$instructions = array();
-	foreach ($to_save as $k => $v) {
-		if (!isset($original[$k]) or json_encode($original[$k]) !== json_encode($v)) {
-			$stream->$k = $v; // record a different value for this field
-			$instructions[$k] = $v; // record the change in the message
+	$instructions = array('changed' => array());
+	foreach ($mergedFields as $k) {
+		$v = $stream->$k;
+		if (isset($original[$k])
+		and json_encode($original[$k]) === json_encode($v)) {
+			continue;
 		}
+		$instructions['changed'][$k] = in_array($k, $coreFields)
+			? $v // record the changed value in the instructions
+			: null; // record a change but the value may be too big, etc.
 	}
-	unset($instructions['updatedTime']);
+	unset($instructions['changed']['updatedTime']);
 	
 	if ($suggest) {
 		$stream->post($user->id, array(

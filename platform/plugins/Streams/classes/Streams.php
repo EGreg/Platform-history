@@ -114,10 +114,17 @@ abstract class Streams extends Base_Streams
 	 * @final
 	 */
 	/**
+	 * Can update properties of relations directly
+	 * @config WRITE_LEVEL['relations']
+	 * @type integer
+	 * @default 25
+	 * @final
+	 */
+	/**
 	 * Can post messages requesting edits of stream
 	 * @config $WRITE_LEVEL['suggest']
 	 * @type integer
-	 * @default 25
+	 * @default 28
 	 * @final
 	 */
 	/**
@@ -143,18 +150,17 @@ abstract class Streams extends Base_Streams
 	 * @final
 	 */
 	public static $WRITE_LEVEL = array(
-		'none' => 0,						// cannot affect stream or participants list
-		'join' => 10,						// can become a participant, chat, and leave
-		'vote' => 13,						// can vote for a relation message posted to the stream
-		'postPending' => 18,				// can post messages which require manager's approval
-		'post' => 20,						// can post messages which take effect immediately
-		'relate' => 23,						// can relate other streams to this one and vote for weights
-		'relations' => 25,					// can update properties of relations directly
-		'suggest' => 28,					// can suggest edits of stream
-		'edit' => 30,						// can edit stream content immediately
-		'closePending' => 35,				// can post a message requesting to close the stream
-		'close' => 40,						// don't delete, just prevent any new changes to stream
-											// however, joining and leaving is still ok
+		'none' => 0,
+		'join' => 10,
+		'vote' => 13,
+		'postPending' => 18,
+		'post' => 20,
+		'relate' => 23,
+		'relations' => 25,
+		'suggest' => 28,
+		'edit' => 30,
+		'closePending' => 35,
+		'close' => 40,
 		'max' => 40
 	);
 	/**
@@ -198,11 +204,11 @@ abstract class Streams extends Base_Streams
 	 * @final
 	 */
 	public static $ADMIN_LEVEL = array(
-		'none' => 0,						// cannot do anything related to admin / users
-		'tell' => 10,					// can post on your stream about participating
-		'invite' => 20,						// able to create invitations for others, granting access
-		'manage' => 30,						// can approve posts and give people any adminLevel < 30
-		'own' => 40,						// can give people any adminLevel <= 40
+		'none' => 0,
+		'tell' => 10,
+		'invite' => 20,
+		'manage' => 30,
+		'own' => 40,
 		'max' => 40
 	);
 	/**
@@ -318,9 +324,9 @@ abstract class Streams extends Base_Streams
 				$name = array($name);
 			}
 		}
-		$namesToFetch = $name;
 		$allCached = array();
 		if (is_array($name) and empty($options['refetch'])) {
+            $namesToFetch = array();
 			foreach ($name as $n) {
 				if (isset(self::$fetch[$asUserId][$publisherId][$n][$fields])) {
 					$allCached[$n] = self::$fetch[$asUserId][$publisherId][$n][$fields];
@@ -329,18 +335,22 @@ abstract class Streams extends Base_Streams
 				}
 			}
 			$namesToFetch = array_unique($namesToFetch);
-		}
+		} else {
+            $namesToFetch = $name;
+        }
 		$criteria = array(
 			'publisherId' => $publisherId,
 			'name' => $namesToFetch
 		);
 
 		// Get streams and set their default access info
-		$allRetrieved = Streams_Stream::select($fields)
-			->where($criteria)
-			->ignoreCache()
-			->options($options)
-			->fetchDbRows(null, '', 'name');
+		$allRetrieved = $namesToFetch
+            ? Streams_Stream::select($fields)
+                ->where($criteria)
+                ->ignoreCache()
+                ->options($options)
+                ->fetchDbRows(null, '', 'name')
+            : array();
 
 		$streams = $allCached ? array_merge($allCached, $allRetrieved) : $allRetrieved;
 
@@ -467,7 +477,7 @@ abstract class Streams extends Base_Streams
 	 *  Set this to the user relative to whom access is calculated.
 	 *  If this matches the publisherId, just sets full access and calls publishedByFetcher(true).
 	 *  If this is '', only returns the streams anybody can see.
-	 *  Otherwise, return the streams joined with the calculated access settings.
+     *  If this is null, the logged-in user's id is used, or '' if no one is logged in
 	 * @param {string} $publisherId
 	 *  The id of the user publishing these streams
 	 * @param {array} $streams

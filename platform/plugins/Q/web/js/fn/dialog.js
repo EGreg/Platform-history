@@ -24,7 +24,9 @@
  * @param {Boolean} [options.fadeInOut] fadeInOut Indicates whether to use fadeIn() / fadeOut() animations when loading dialog.
  * Note: if set to false, 'onLoad' callback will be called synchronously with dialog load,
  * otherwise it will be called on fadeIn() animation completion.
- * @default  true
+ * @default true
+ * @param {Event} [options.loadUrl] options to override for the call to Q.loadUrl
+ * @default {}
  * @param {Event} [options.beforeLoad] beforeLoad Q.Event or function which is called before overlay is loaded (shown). Optional.
  * @param {Event} [options.onLoad] onLoad  Q.Event or function which is called when overlay is loaded (shown). Optiona.
  * @param {Event} [options.beforeClose] beforeClose Q.Event or function which is called when overlay closing initiated and it's still visible. Optional.
@@ -376,6 +378,7 @@ Q.Tool.jQuery('Q/dialog', function (o) {
 	'noClose': false,
 	'closeOnEsc': true,
 	'removeOnClose': false,
+	'loadUrl': {},
 	'beforeLoad': new Q.Event(function() {}),
 	'onActivate': new Q.Event(function() {}),
 	'beforeClose': new Q.Event(function() {}),
@@ -400,9 +403,9 @@ function _loadUrl(o, cb) {
 	$this.addClass('Q_loading');
 	ods.empty().addClass('Q_throb');
 
-	Q.loadUrl(o.url, { 
+	Q.loadUrl(o.url, Q.extend({ 
 		ignoreHistory: true,
-		ignorePage: true,
+		quiet: true,
 		onActivate: cb,
 		slotNames: 'title,dialog',
 		handler: function(response) {
@@ -419,7 +422,7 @@ function _loadUrl(o, cb) {
 
 			return elementsToActivate;
 		}
-	});
+	}, o.loadUrl));
 }
 
 function _handlePosAndScroll(o)

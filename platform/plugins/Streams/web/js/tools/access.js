@@ -12,14 +12,14 @@
 		var tool               = this,
 			state              = this.state,
 			element            = tool.element,
-			levelForEveryone   = $('.Streams_access_levelForEveryone'),
+			levelForEveryone   = $('.Streams_access_levelForEveryone', element),
 			fieldName          = options.tab+'Level',
 			actionText         = (options.tab === 'read') ? 'can see' : 'can',
 			tempSelect         = $('<select />');
 			
 		Q.setObject(
 			['#Q_tabs_tool', 'loaderOptions', 'slotContainer'],
-			function () { return tool.element; },
+			{ dialog: element.parentNode },
 			this.state
 		);
 
@@ -95,6 +95,7 @@
 				});
 				return false;
 			}).html('x');
+
 			for (var k in criteria) {
 				link.data(k, criteria[k]);
 			}
@@ -113,10 +114,13 @@
 			var criteria;
 			if (userId !== "") {
 				if (!avatar) {
-					avatar = options.avatar_array[userId];
+					avatar = new Q.Streams.Avatar(options.avatarArray[userId]);
+					if (!avatar) {
+						console.warn("Streams/access tool: avatar missing for user with id " + userId);
+						return;
+					}
 				}
-				criteria = {ofUserId: userId};
-
+				criteria = { ofUserId: userId };
 				tool.child('Streams_userChooser').exclude[userId] = true;
 			} else if (contactLabel) {
 				criteria = {ofContactLabel: contactLabel};
@@ -136,7 +140,7 @@
 			if (userId !== "") {
 				tr.append(
 					$('<td style="vertical-align: middle;" />').append(
-						$('<img />').attr('src', Q.plugins.Streams.iconUrl(avatar.icon, 40)).css('width', 20)
+						$('<img />').attr('src', avatar.iconUrl()).css('width', 20)
 					)
 				).append(
 					$('<td style="vertical-align: middle;" />').append(
@@ -154,9 +158,13 @@
 					$('<td style="vertical-align: middle;" />').append(newRemoveLink(criteria))
 				).appendTo($('.Streams_access_label_array', element));
 			}
+			clonedSelect.focus();
 		}
 
-		if (!tool.state.publisherId) return;
+		if (!tool.state.publisherId) {
+			return;
+		}
+
 		this.Q.onInit.set(function () {
 			Q.Streams.get(tool.state.publisherId, tool.state.streamName, function (err, data) {
 				var msg;
@@ -164,13 +172,13 @@
 					alert(msg);
 				}
 				state.stream = this;
-				
+
 				var i, userId, access;
 
 				prepareSelect(levelForEveryone, '', state.stream.fields[fieldName], 'stream');
 
-				for (i=0; i<options.access_array.length; ++i) {
-					access = options.access_array[i];
+				for (i=0; i<options.accessArray.length; ++i) {
+					access = options.accessArray[i];
 					addAccessRow(access);
 				}
 

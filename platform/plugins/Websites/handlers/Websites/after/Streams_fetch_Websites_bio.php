@@ -2,6 +2,9 @@
 
 function Websites_after_Streams_fetch_Websites_bio($params, &$streams)
 {
+	if (!$params['retrieved']) {
+		return;
+	}
 	$bios = Websites_Bio::select('*')
 		->where(array(
 			'publisherId' => $params['publisherId'],

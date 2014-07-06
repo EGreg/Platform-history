@@ -13,8 +13,7 @@
 	'slot'      => array('dialog'),
 	'defaultTab' => 'read'
 )) ?>
-<div style="background: white; border: solid 0px white;">
-	<div class="Streams_access_controls">
+	<div class="Streams_access_controls Q_tabbed Q_document_surface">
 		<div>
 			<?php if ($tab === 'read'): ?>
 				The general public can see
@@ -27,7 +26,7 @@
 			</select>
 		</div>
 
-		<?php if ($access_array and count($labels) != 0): ?>
+		<?php if (count($labels) != 0): ?>
 			<div>
 				Grant additional access to
 				<select name="levelAddLabel" class="Streams_access_levelAddLabel">
@@ -38,9 +37,8 @@
 		<?php endif ?>
 
 		<div>Custom access for individual users:</div>
-		<div>
+		<div class="Q_big_prompt">
 			<?php echo Q::tool('Streams/userChooser') ?>
 		</div>
 		<table class="Streams_access_user_array"></table>
 	</div>
-</div>

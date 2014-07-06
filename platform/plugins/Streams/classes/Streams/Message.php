@@ -244,7 +244,7 @@ class Streams_Message extends Base_Streams_Message
 	 * Assigns ordinal
 	 * @method beforeSave
 	 * @param {array} $value
-	 *	The row beind saved
+	 *	The row being saved
 	 * @return {array}
 	 */
 	function beforeSave($value)

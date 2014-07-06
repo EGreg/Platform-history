@@ -2843,12 +2843,12 @@ Q.Tool.prototype.parent = function Q_Tool_prototype_parent() {
  * @param {Boolean} removeCached
  *  Defaults to false. Whether or not to remove the actual tool if its containing element
  *  has a "data-Q-retain" attribute.
- * @return {Q.Tool|null} Returns existing tool if it's being replaced, otherwise returns null.
+ * @return {Boolean} Returns whether the tool was removed.
  */
 Q.Tool.prototype.remove = function _Q_Tool_prototype_remove(removeCached) {
 
 	var shouldRemove = removeCached || !this.element.getAttribute('data-Q-retain');
-	if (!shouldRemove) return;
+	if (!shouldRemove) return false;
 
 	// give the tool a chance to clean up after itself
 	var normalizedName = Q.normalize(this.name);
@@ -2883,7 +2883,7 @@ Q.Tool.prototype.remove = function _Q_Tool_prototype_remove(removeCached) {
 		Q.Event.jQueryForTool[this.id] = [];
 	}
 
-	return null;
+	return true;
 };
 
 /**
@@ -5290,8 +5290,8 @@ Q.activate = function _Q_activate(elem, options, callback) {
 /**
  * Replaces the contents of an element and does the right thing with all the tools in it
  * @method replace
- * @param {HTMLElement} existing
- *  A HTMLElement representing the slot whose contents are to be replaced
+ * @param {HTMLElement} container
+ *  A existing HTMLElement whose contents are to be replaced with the source
  *  Tools found in the existing DOM which have data-Q-retain="document" attribute
  *  are actually retained unless the tool replacing them has data-Q-replace="document".
  *  You can update the tool by implementing a handler for
@@ -5303,13 +5303,13 @@ Q.activate = function _Q_activate(elem, options, callback) {
  *  Optional. A hash of options, including:
  *  "animation": To animate the transition, pass an object here with optional "duration", "ease" and "callback" properties.
  * @return {HTMLElement}
- *  Returns the slot element if successful
+ *  Returns the container element if successful
  */
-Q.replace = function _Q_replace(existing, source, options) {
+Q.replace = function _Q_replace(container, source, options) {
 	if (!source) {
-		Q.Tool.clear(existing); // Remove all the tools remaining in the container, with their events etc.
-		existing.innerHTML = '';
-		return existing;
+		Q.Tool.clear(container); // Remove all the tools remaining in the container, with their events etc.
+		container.innerHTML = '';
+		return container;
 	}
 	var options = Q.extend({}, Q.replace.options, options);
 	if (Q.typeOf(source) === 'string') {
@@ -5342,13 +5342,13 @@ Q.replace = function _Q_replace(existing, source, options) {
 		}
 	});
 	
-	Q.Tool.clear(existing); // Remove all the tools remaining in the container, with their events etc.
-	existing.innerHTML = ''; // Clear the container
+	Q.Tool.clear(container); // Remove all the tools remaining in the container, with their events etc.
+	container.innerHTML = ''; // Clear the container
 	
 	// Move the actual nodes from the source to existing container
 	var c;
 	while (c = source.childNodes[0]) {
-		existing.appendChild(c);
+		container.appendChild(c);
 	}
 	
 	for (var i=0, l=retainedToolsArray.length; i<l; ++i) {
@@ -5365,7 +5365,7 @@ Q.replace = function _Q_replace(existing, source, options) {
 		Q.extend(tool.state, 10, newOptions);
 	}
 	
-	return existing;
+	return container;
 }
 
 
@@ -7981,6 +7981,12 @@ Q.loadUrl.options = {
 	},
 	handler: function _Q_loadUrl_fillSlots (res, url, options) {
 		var elements = {}, slot, name, elem, pos;
+		var osc = options.slotContainer;
+		if (Q.isPlainObject(osc)) {
+			options.slotContainer = function (slotName) {
+				return osc[slotName] || document.getElementById(slotName+"_slot");
+			};
+		}
 		for (name in res.slots) {
 			// res.slots will simply not contain the slots that have
 			// already been "cached"
