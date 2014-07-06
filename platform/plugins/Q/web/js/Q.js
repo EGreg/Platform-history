@@ -5378,11 +5378,12 @@ Q.replace = function _Q_replace(container, source, options) {
  * Receives response as its first agrument. May return DOM element or array of them which need to be Q.activate'ed.
  * By default place slot content to DOM element with id "{slotName}_slot"
  * @param {Object} options Optional.
- * An hash of options to pass to the loader, that can also include:
+ * An hash of options to pass to the loader, and can also include options for loadUrl itself:
  *   "loader": the actual function to load the URL, defaults to Q.request. See Q.request documentation for more options.
  *   "handler": the function to handle the returned data. Defaults to a function that fills the corresponding slot containers correctly.
  *   "ignoreHistory": if true, does not push the url onto the history stack
  *   "ignorePage": if true, does not process the deactivation of current page and activation of the new page
+ *   "ignoreExtras": if true, does not process adding of scripts and stylesheets returned in the response
  *   "ignoreLoadingErrors": If true, ignores any errors in loading scripts.
  *   "ignoreHash": if true, does not navigate to the hash part of the URL in browsers that can support it
  *   "fields": additional fields to pass via the querystring
@@ -5460,7 +5461,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 		loadTemplates();
 		var newScripts;
 		
-		if (o.ignorePage) {
+		if (o.ignoreExtras) {
 			newScripts = [];
 			afterScripts();
 		} else {
@@ -5645,7 +5646,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				}
 			}
 			
-			if (!o.ignorePage) {
+			if (!o.ignoreExtras) {
 				// Remove various elements belonging to the slots that are being reloaded
 				Q.each(['link', 'style', 'script'], function (i, tag) {
 					Q.each(document.getElementsByTagName(tag), function (k, e) {
@@ -5671,7 +5672,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 			}
 			
 			var domElements = handler(response, url, o); // this is where we fill all the slots
-			if (!o.ignorePage) {
+			if (!o.ignoreExtras) {
 				_doEvents('on', moduleSlashAction);
 				newStylesheets = loadStylesheets(),
 				newStyles = loadStyles();
@@ -5820,7 +5821,7 @@ Q.loadUrl.saveScroll = function _Q_loadUrl_saveScroll (url, options) {
  * @param {Array} args
  *  An array of arguments to pass to them
  * @param {Object} options
- *  If callables is a url, these are the options to pass to Q.request, if any. Also can include:
+ *  If callables is a url, these are the options to pass to Q.loadUrl, if any. Also can include:
  *  "dontReload": defaults to false. If this is true and callback is a url matching current url, it is not reloaded
  *  "loadUsingAjax": defaults to false. If this is true and callback is a url, it is loaded using Q.loadUrl
  *  "externalLoader": when using loadUsingAjax, you can set this to a function to suppress loading of external websites with Q.handle

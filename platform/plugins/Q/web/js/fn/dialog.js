@@ -405,6 +405,7 @@ function _loadUrl(o, cb) {
 
 	Q.loadUrl(o.url, Q.extend({ 
 		ignoreHistory: true,
+		ignorePage: true,
 		quiet: true,
 		onActivate: cb,
 		slotNames: 'title,dialog',
@@ -415,7 +416,7 @@ function _loadUrl(o, cb) {
 			var elementsToActivate = [];
 			if ('title' in response.slots) {
 				ots.html($('<h2 class="Q_dialog_title" />').html(response.slots.title));
-				elementsToActivate.push(ots[0]);
+				elementsToActivate['title'] = ots[0];
 			}
 			ods.html(response.slots.dialog);
 			elementsToActivate['dialog'] = ods[0];
