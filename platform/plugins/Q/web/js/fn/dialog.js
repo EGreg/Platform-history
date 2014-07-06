@@ -376,6 +376,7 @@ Q.Tool.jQuery('Q/dialog', function (o) {
 	'noClose': false,
 	'closeOnEsc': true,
 	'removeOnClose': false,
+	'loadUrl': {},
 	'beforeLoad': new Q.Event(function() {}),
 	'onActivate': new Q.Event(function() {}),
 	'beforeClose': new Q.Event(function() {}),
@@ -400,9 +401,9 @@ function _loadUrl(o, cb) {
 	$this.addClass('Q_loading');
 	ods.empty().addClass('Q_throb');
 
-	Q.loadUrl(o.url, { 
+	Q.loadUrl(o.url, Q.extend({ 
 		ignoreHistory: true,
-		ignorePage: true,
+		quiet: true,
 		onActivate: cb,
 		slotNames: 'title,dialog',
 		handler: function(response) {
@@ -419,7 +420,7 @@ function _loadUrl(o, cb) {
 
 			return elementsToActivate;
 		}
-	});
+	}, o.loadUrl));
 }
 
 function _handlePosAndScroll(o)
