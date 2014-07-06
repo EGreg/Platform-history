@@ -65,7 +65,7 @@ function (o) {
 		}
 
 		this.startUpdating = function(){
-			$(this).bind('keyup keydown blur update autogrowCheck', t.heightUpdate);
+			$(this).bind('keyup blur update paste autogrowCheck', t.heightUpdate);
 			t.timeout1 = setTimeout(t.heightUpdate, 0);
 			t.timeout2 = setTimeout(t.heightUpdate, 100);
 		}
@@ -96,10 +96,7 @@ function (o) {
 			}
 
 			// Enter new content into testSubject
-			var escaped = val.replace(/&/g, '&amp;')
-				//.replace(/\s/g,'&nbsp;')
-				.replace(/</g, '&lt;')
-				.replace(/>/g, '&gt;');
+			var escaped = val.encodeHTML();
 			testSubject.css({
 				position: 'absolute',
 				top: -9999,
@@ -121,12 +118,14 @@ function (o) {
 			var newWidth = Math.max(testerWidth + o.comfortZone, minWidth);
 			var currentWidth = input.outerWidth();
 			var isValidWidthChange = (((newWidth < currentWidth && newWidth >= minWidth)
-				|| (newWidth > minWidth)) && newWidth <= o.maxWidth);
+				|| (newWidth > minWidth)) && (!o.maxWidth || newWidth <= o.maxWidth));
 
 			// Animate width
 			if (isValidWidthChange) {
 				input.width(newWidth);
 				Q.handle(o.onResize, this, [newWidth]);
+			} else if (input.width() < minWidth) {
+				input.width(minWidth);
 			}
 
 		};
