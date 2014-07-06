@@ -24,7 +24,9 @@
  * @param {Boolean} [options.fadeInOut] fadeInOut Indicates whether to use fadeIn() / fadeOut() animations when loading dialog.
  * Note: if set to false, 'onLoad' callback will be called synchronously with dialog load,
  * otherwise it will be called on fadeIn() animation completion.
- * @default  true
+ * @default true
+ * @param {Event} [options.loadUrl] options to override for the call to Q.loadUrl
+ * @default {}
  * @param {Event} [options.beforeLoad] beforeLoad Q.Event or function which is called before overlay is loaded (shown). Optional.
  * @param {Event} [options.onLoad] onLoad  Q.Event or function which is called when overlay is loaded (shown). Optiona.
  * @param {Event} [options.beforeClose] beforeClose Q.Event or function which is called when overlay closing initiated and it's still visible. Optional.
