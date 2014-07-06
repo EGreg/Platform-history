@@ -87,6 +87,9 @@ function Streams_subscription_tool($options) {
 		$filter = json_decode($rule->filter);
 	}
 
+	//Q_Response::addScript("plugins/Streams/js/Streams.js");
+	//Q_Response::addScript("plugins/Streams/js/tools/subscription.js");
+
 	Q_Response::setToolOptions(compact(
 		'device',
 		'filter',
@@ -96,7 +99,4 @@ function Streams_subscription_tool($options) {
 		'publisherId',
 		'streamName'
 	));
-
-	Q_Response::addScript("plugins/Streams/js/Streams.js");
-	Q_Response::addScript("plugins/Streams/js/tools/subscription.js");
 }

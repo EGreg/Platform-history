@@ -627,8 +627,8 @@ Streams.subscriptionDialog = function(streamName, publisherId, callback) {
 */
 Streams.accessDialog = function(streamName, publisherId, callback) {
 	_toolInDialog('Streams/access', {
-		'publisherId': publisherId,
-		'streamName': streamName
+		publisherId: publisherId,
+		streamName: streamName
 	}, callback, 'Streams_access_tool_dialog_container');
 };
 
