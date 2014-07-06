@@ -3,58 +3,59 @@
 /**
  * Create or update subscription
  */
-
 function Streams_subscription_put($params) {
+	$messageTypes  = array();
+	$stoppingAfter = array();
+	$devices 	   = array();
+	$subscribed    = 'no';
 
-	$more_fields = array_merge($_REQUEST, $params);
-	$user = Users::loggedInUser(true);
-	$publisherId = Streams::requestedPublisherId();
-	if (empty($publisherId)) {
-		$publisherId = $_REQUEST['publisherId'] = $user->id;
+	$streamName    = Streams::requestedName();
+	$publisherId   = Streams::requestedPublisherId(true);
+
+	extract($_REQUEST);
+
+	$user = Users::loggedInUser();
+	if (!$user) {
+		throw new Users_Exception_NotLoggedIn();
 	}
-	$name = Streams::requestedName(true);
-	// get the stream
-	$stream = Streams::fetch($user->id, $publisherId, $name);
-	if (!count($stream)) {
+
+	$stream = Streams::fetchOne($user->id, $publisherId, $streamName);
+	if (!$stream) {
 		throw new Q_Exception_MissingRow(array(
-			'table' => 'stream', 
-			'criteria' => "{publisherId: '$publisherId', name: '$name'}"
+			'table'    => 'stream',
+			'criteria' => compact('publisherId', 'streamName')
 		));
 	}
-	$stream = reset($stream);
 
-	if (empty($_REQUEST['template'])) {
-		if (checkdate($more_fields['untilTime_month'], $more_fields['untilTime_day'], $more_fields['untilTime_year'])) {
-			$untilTime =  date('c', mktime(0, 0, 0, $more_fields['untilTime_month'], $more_fields['untilTime_day'], $more_fields['untilTime_year']));
-		} else $untilTime = null;
+	$deliver  = json_encode(json_decode($devices));
+	$filter   = json_encode(array(
+		'types' 	 	=> $messageTypes,
+		'notifications' => $stoppingAfter
+	));
 
-		return Streams::$cache['subscription'] = $stream->subscribe(array(
-			'types' => !empty($more_fields['types']) ? $more_fields['types'] : array(),
-			'notifications' => !empty($more_fields['notifications']) ? $more_fields['notifications'] : 0,
-			'untilTime' => $untilTime
-		));
-	} else {
-		$subscription = new Streams_Subscription();
-		// skip userId setting
-		$subscription->ofUserId = $user->id;
-		$subscription->publisherId = $publisherId;
-		$subscription->streamName = $name;
+	$streams_subscription 			   = new Streams_Subscription();
+	$streams_subscription->streamName  = $streamName;
+	$streams_subscription->publisherId = $publisherId;
+	$streams_subscription->ofUserId    = $user->id;
+	$streams_subscription->retrieve();
+	$streams_subscription->filter      = $filter;
+	$streams_subscription->save();
 
-		$subscription->filter = Q::json_encode(array(
-			'types' => !empty($more_fields['types']) ? $more_fields['types'] : array(),
-			'notifications' => !empty($more_fields['notifications']) ? $more_fields['notifications'] : 0
-		));
+	$streams_rule 					   = new Streams_Rule();
+	$streams_rule->streamName  		   = $streamName;
+	$streams_rule->publisherId 		   = $publisherId;
+	$streams_rule->ofUserId    		   = $user->id;
+	$streams_rule->retrieve();
+	$streams_rule->filter  	   		   = $filter;
+	$streams_rule->deliver     		   = $deliver;
+	$streams_rule->relevance   		   = 1;
+	$streams_rule->save();
 
-		$duration = !empty($_REQUEST['duration']) ? strtotime($_REQUEST['duration']) : false;
-		if ($duration) {
-			$duration = $duration - time();
-		} else {
-			$duration = 0;
-		}
-		$subscription->duration = $duration;
-
-		if (!$subscription->save(true)) throw new Q_Exception("Error saving subscription template");
-		Streams::$cache['subscription'] = $subscription;
-		return true;
-	}
+	$streams_participant 			   = new Streams_Participant();
+	$streams_participant->publisherId  = $publisherId;
+	$streams_participant->streamName   = $streamName;
+	$streams_participant->userId  	   = $user->id;
+	$streams_participant->retrieve();
+	$streams_participant->subscribed   = $subscribed;
+	$streams_participant->save();
 }
