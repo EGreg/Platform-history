@@ -612,11 +612,7 @@ _toolInDialog = function(toolName, toolParams, callback, classContainer){
 * @param callback {Function} The function to call after subscription tool dialog is render
 */
 Streams.subscriptionDialog = function(streamName, publisherId, callback) {
-<<<<<<< Updated upstream
-	_toolInDialog('Streams/subscription2', {
-=======
 	_toolInDialog('Streams/subscription', {
->>>>>>> Stashed changes
 		publisherId: publisherId,
 		streamName : streamName
 	}, callback, 'Streams_subscription_tool_dialog_container');
