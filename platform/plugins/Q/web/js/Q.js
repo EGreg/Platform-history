@@ -201,7 +201,7 @@ String.prototype.queryField = function Q_queryField(name, value) {
 				delete parsed[k];
 			}
 		}
-		return prefix + Q.buildQueryString(parsed, keys);
+		return prefix + Q.serializeFields(parsed, keys);
 	} else {
 		keys = [];
 		parsed = Q.parseQueryString(what, keys);
@@ -209,7 +209,7 @@ String.prototype.queryField = function Q_queryField(name, value) {
 			keys.push(name);
 		}
 		parsed[name] = value;
-		return prefix + Q.buildQueryString(parsed, keys);
+		return prefix + Q.serializeFields(parsed, keys);
 	}
 };
 
@@ -5883,10 +5883,8 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 				return Q.handle(c, context, args);
 			}
 			// Assume callables is a URL
-			if (o.dontReload) {
-				if (Q.info && Q.info.url === callables) {
-					return 0;
-				}
+			if (o.dontReload && Q.info && Q.info.url === callables) {
+				return 0;
 			}
 			var callback = null;
 			if (typeof arguments[1] === 'function') {

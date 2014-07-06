@@ -120,7 +120,7 @@ Q.Tool.define("Q/tabs", function(options) {
 			
 		}, state.loaderOptions);
 
-		Q.handle(href, o);
+		Q.loadUrl(href, o);
 	},
 	
 	isInDialog: function() {

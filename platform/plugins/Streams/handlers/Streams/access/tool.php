@@ -124,7 +124,7 @@ function Streams_access_tool($options)
 	$accessActionUrl = Q_Uri::url("Streams/access?publisherId=$publisherId&streamName=$streamName");
 	
 	$dir = Q_Config::get('Users', 'paths', 'icons', 'files/Users/icons');
-
+	
 	$accessArray = Db::exportArray($access_array);
 	$avatarArray = Db::exportArray($avatar_array);
 

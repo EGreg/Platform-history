@@ -87,7 +87,7 @@ function Q_response($params)
 				} catch (Exception $e) {
 					// couldn't get internal URI
 				}
-			} else {
+			} else if (Q_Request::isLoadExtras()) {
 				$to_encode['slots'] = Q_Response::slots(true);
 				foreach (array_merge(array(''), $slotNames) as $slotName) {
 					$temp = Q_Response::stylesheetsArray($slotName);
@@ -103,6 +103,8 @@ function Q_response($params)
 					$temp = Q_Response::templateData($slotName);
 					if ($temp) $to_encode['templates'][$slotName] = $temp;
 				}
+			} else {
+				$to_encode['slots'] = Q_Response::slots(true);
 			}
 		}
 		$to_encode['timestamp'] = microtime(true);

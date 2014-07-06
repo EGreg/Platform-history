@@ -2776,6 +2776,6 @@ function _scheduleUpdate() {
 	}, ms);
 }
 
-_scheduleUpdate.delay = 2000;
+_scheduleUpdate.delay = 5000;
 
 })(Q, jQuery);
