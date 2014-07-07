@@ -5,8 +5,10 @@
      * to element Width or Height
      * @method textfill
      * @param {Object} [options] options object that contains function parameters
-     *   @param {Number} [options.maxFontPixels] Maximum size of text font , set this if your text container is large
-     *   and you don't want to have extra large text on page
+     *   @param {Number} [options.maxFontPixels] Maximum size of text font,
+	 *   set this if your text container is large and you don't want to have extra large text on page
+	 *   @param {Number} [options.maxLines] Maximum number of lines,
+	 *   set this if you'd like to have a maximum number of lines.
      *   @default null
      */
     Q.Tool.jQuery('Q/textfill',
@@ -21,7 +23,7 @@
 
         {
             refresh: function (options) {
-                options = options || {};
+				var o = Q.extend({}, this.state('Q/textfill'), options);
                 var ourElement, ourText = "";
                 $('*:visible', this).each(function () {
                     var $t = $(this);
@@ -30,17 +32,25 @@
                         ourText = $t.text();
                     }
                 });
-                var fontSize = options.maxFontPixels || (ourElement.height() + 10);
+                var fontSize = o.maxFontPixels || (ourElement.height() + 10);
                 var maxHeight = $(this).innerHeight();
                 var maxWidth = $(this).innerWidth();
                 var textHeight;
                 var textWidth;
+				var lines;
                 do {
                     ourElement.css('font-size', fontSize);
                     textHeight = ourElement.outerHeight(true);
                     textWidth = ourElement.outerWidth(true);
-                    fontSize = fontSize - 1;
-                } while ((textHeight > maxHeight || textWidth > maxWidth) && fontSize > 3);
+					if (o.maxLines) {
+						lines = textHeight / Math.floor(parseInt(fontSize.toString().replace('px','')) * 1.5);
+					}
+                } while (--fontSize > 3
+					&& (
+						textHeight > maxHeight || textWidth > maxWidth
+						|| (o.maxLines && lines > o.maxLines)
+					)
+				);
                 return this;
             }
         }

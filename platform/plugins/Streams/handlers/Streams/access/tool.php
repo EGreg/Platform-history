@@ -8,6 +8,7 @@
  *  "tabs" => optional array of tab name => title. Defaults to read, write, admin tabs.
  *  "ranges" => optional. Associative array with keys "read", "write", "admin"
  *    and values as associative arrays of ($min, $max) for the displayed levels.
+ *  "controls" => optionally set this to true to render only the controls
  */
 function Streams_access_tool($options)
 {
@@ -130,9 +131,14 @@ function Streams_access_tool($options)
 
 	Q_Response::addScript("plugins/Streams/js/tools/access.js");
 	Q_Response::addScript("plugins/Streams/js/Streams.js");
-	Q_Response::setToolOptions(compact('accessArray', 'avatarArray', 'labels', 'icons', 'tab', 'publisherId', 'streamName'));
+	Q_Response::setToolOptions(compact(
+		'accessArray', 'avatarArray', 'labels', 
+		'icons', 'tab', 'publisherId', 
+		'streamName'
+	));
 
 	return Q::view('Streams/tool/access.php', compact(
-		'stream', 'access_array', 'contact_array', 'label_array', 'tabs', 'tab', 'labels', 'icons', 'levels', 'dir', 'publisherId', 'streamName', 'accessActionUrl'
+		'stream', 'access_array', 'contact_array', 'label_array', 'tabs', 'tab', 'labels', 'icons', 'levels', 'dir', 'publisherId', 'streamName', 'accessActionUrl',
+		'controls'
 	));
 }

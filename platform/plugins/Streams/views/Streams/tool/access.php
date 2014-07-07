@@ -1,4 +1,4 @@
-<?php echo Q::tool('Q/tabs', array(
+<?php if (!$controls) echo Q::tool('Q/tabs', array(
 	'tabs' => $tabs,
 	'urls' => array(
 		'read' => "$accessActionUrl&tab=read",
@@ -10,7 +10,7 @@
 		'write'  => 'basic32 basic32_edit Streams_access_read_write',
 		'admin'  => 'basic32 basic32_group Streams_access_read_admin'
 	),
-	'slot'      => array('dialog'),
+	'slot'      => array('controls'),
 	'defaultTab' => 'read'
 )) ?>
 	<div class="Streams_access_controls Q_tabbed Q_document_surface">

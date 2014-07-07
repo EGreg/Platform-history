@@ -16,10 +16,15 @@
 			fieldName          = options.tab+'Level',
 			actionText         = (options.tab === 'read') ? 'can see' : 'can',
 			tempSelect         = $('<select />');
-			
+		
 		Q.setObject(
 			['#Q_tabs_tool', 'loaderOptions', 'slotContainer'],
-			{ dialog: element.parentNode },
+			{ controls: tool.$('.Streams_access_controls')[0] },
+			this.state
+		);
+		Q.setObject(
+			['#Q_tabs_tool', 'loaderOptions', 'quiet'],
+			true,
 			this.state
 		);
 
@@ -164,8 +169,8 @@
 		if (!tool.state.publisherId) {
 			return;
 		}
-
-		this.Q.onInit.set(function () {
+		
+		function _initialize() {
 			Q.Streams.get(tool.state.publisherId, tool.state.streamName, function (err, data) {
 				var msg;
 				if (msg = Q.firstErrorMessage(err, data && data.errors)) {
@@ -220,6 +225,11 @@
 					});
 				});
 			});
-		}, 'Streams/access');
+		}
+
+		this.Q.onInit.set(function () {
+			_initialize();
+			this.child('Q_tabs').state.onActivate.set(_initialize, this);
+		}, this);
 	});
 })(Q, jQuery);

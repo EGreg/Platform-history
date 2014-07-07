@@ -4177,9 +4177,10 @@ Q.action = function _Q_action(uri, fields, options) {
  * @param {Object} options
  *  Optional. A hash of options, including:
  *  "echo": A string to echo back. Used to keep track of responses
- *  'method': if set, adds a &Q.method=$method to the querystring
- *  'callback': if a string, adds a '&Q.callback='+encodeURIComponent(callback) to the querystring.
- *  'loadExtras': if true, asks the server to load the extra scripts, stylesheets, etc. that are loaded on first page load
+ *  "method": if set, adds a &Q.method=$method to the querystring
+ *  "callback": if a string, adds a "&Q.callback="+encodeURIComponent(callback) to the querystring.
+ *  "loadExtras": if true, asks the server to load the extra scripts, stylesheets, etc. that are loaded on first page load
+ *  "idPrefixes": optional array of Q_Html::pushIdPrefix values for each slotName
  * @return {String|Object}
  *  Returns the extended string or object
  */
@@ -4190,7 +4191,14 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 		}
 		return '';
 	}
-	var slotNames2 = (typeof slotNames === 'string') ? slotNames : (slotNames && slotNames.join(','));
+	var slotNames2 = (typeof slotNames === 'string')
+		? slotNames 
+		: (slotNames && slotNames.join(','));
+	var idPrefixes = options
+		? ((typeof options.idPrefixes === 'string')
+			? options.idPrefixes 
+			: (options.idPrefixes && options.idPrefixes.join(',')))
+		: '';
 	var timestamp = Q.microtime(true);
 	if (typeof what == 'string') {
 		var what2 = what;
@@ -4200,7 +4208,12 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 		what2 += (what.indexOf('?') < 0) ? '?' : '&';
 		what2 += encodeURI('Q.ajax='+(options && options.loadExtras ? 'loadExtras' : 'json'))+
 			encodeURI('&Q.timestamp=')+encodeURIComponent(timestamp);
-		if (slotNames2) what2 += encodeURI('&Q.slotNames=') + encodeURIComponent(slotNames2);
+		if (slotNames2) {
+			what2 += encodeURI('&Q.slotNames=') + encodeURIComponent(slotNames2);
+		}
+		if (idPrefixes) {
+			what2 += encodeURI('&Q.idPrefixes=') + encodeURIComponent(idPrefixes);
+		}
 		if (options) {
 			if (typeof options.callback === 'string') {
 				what2 += encodeURI('&Q.callback=') + encodeURIComponent(options.callback);
@@ -4288,6 +4301,7 @@ Q.req = function _Q_req(uri, slotNames, callback, options) {
  *  "post": if set, adds a &Q.method=post to the querystring
  *  "method": if set, adds a &Q.method= that value to the querystring, default "get"
  *  "fields": optional fields to pass with any method other than "get"
+ *  "idPrefixes": optional array of Q_Html::pushIdPrefix values for each slotName
  *  "skipNonce": if true, skips loading of the nonce
  *  "xhr": if false, avoids XHR. If true, tries to make xhr based on "method" option.
  *	 Or pass an object with properties to merge onto the xhr object, including a special "sync" property to make the call synchronous.
@@ -5396,6 +5410,7 @@ Q.replace = function _Q_replace(container, source, options) {
  *   "onLoad": handler to call when data is loaded but before it is processed -
  *		when called the argument of "onTimeout" does nothing
  *   "slotNames": an array of slot names to request and process (default is all slots in Q.info.slotNames)
+ *   "idPrefixes": optional array of Q_Html::pushIdPrefix values for each slotName
  *   "retainSlots": an object of {slotName: whetherToRetain} pairs, retained slots aren't reloaded
  *   "quiet": defaults to false. If true, allows visual indications that the request is going to take place.
  *   "onLoadStart": if "quiet" option is false, anything here will be called after the request is initiated

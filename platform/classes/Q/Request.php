@@ -268,18 +268,18 @@ class Q_Request
 	 * The names of slots that were requested, if any
 	 * @method slotNames
 	 * @static
-	 * @param {boolean} [$return_defaults=false] If set to true, returns the array of slot names set in config field 
+	 * @param {boolean} [$returnDefaults=false] If set to true, returns the array of slot names set in config field 
 	 *  named Q/response/$app/slotNames
 	 *  in the event that slotNames was not specified at all in the request.
 	 * @return {array}
 	 */
-	static function slotNames($return_defaults = false)
+	static function slotNames($returnDefaults = false)
 	{
 		if (isset(self::$slotNames_override)) {
 			return self::$slotNames_override;
 		}
 		if (null === Q_Request::special('slotNames', null)) {
-			if ($return_defaults !== true) {
+			if ($returnDefaults !== true) {
 				return null;
 			}
 			$slotNames = Q_Config::get(

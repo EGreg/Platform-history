@@ -22,9 +22,9 @@ function Q_response($params)
 	}
 
 	// Redirect to success page, if requested.
-	$is_ajax = Q_Request::isAjax();
+	$isAjax = Q_Request::isAjax();
 	if (empty($errors) and empty($exception)) {
-		if (!$is_ajax and null !== Q_Request::special('onSuccess', null)) {
+		if (!$isAjax and null !== Q_Request::special('onSuccess', null)) {
 			$on_success = Q_Request::special('onSuccess', null);
 			if (Q_Config::get('Q', 'response', 'onSuccessShowFrom', true)) {
 				$on_success = Q_Uri::url($on_success.'?Q.fromSuccess='.Q_Dispatcher::uri());
@@ -44,7 +44,7 @@ function Q_response($params)
 		}
 	}
 
-	if (!$is_ajax || Q_Request::isLoadExtras()) {
+	if (!$isAjax || Q_Request::isLoadExtras()) {
 		Q::event('Q/responseExtras', array(), 'before');
 	}
 
@@ -53,14 +53,24 @@ function Q_response($params)
 
 	$action = $uri->action;
 	if (Q::canHandle("$module/$action/response")) {
-		if (false === Q::event("$module/$action/response") and !$is_ajax) {
+		if (false === Q::event("$module/$action/response") and !$isAjax) {
 			return;
+		}
+	}
+	
+	$slotNames = Q_Request::slotNames(true);
+	$idPrefixes = array();
+	if ($temp = Q_Request::special('idPrefixes', null)) {
+		foreach (explode(',', $temp) as $i => $prefix) {
+			if (!isset($slotNames[$i])) {
+				throw new Q_Exception("More id prefixes than slot names", "Q.idPrefixes");
+			}
+			$idPrefixes[$slotNames[$i]] = $prefix;
 		}
 	}
 
 	// What to do if this is an AJAX request
-	if ($is_ajax) {
-		$slotNames = Q_Request::slotNames(true);
+	if ($isAjax) {
 		$to_encode = array();
 		if (Q_Response::$redirected) {
 			// We already called Q_Response::redirect
@@ -72,12 +82,16 @@ function Q_response($params)
 			}
 		} else if (is_array($slotNames)) {
 			foreach ($slotNames as $slotName) {
-				Q_Response::fillSlot($slotName, 'default');
+				Q_Response::fillSlot($slotName, 'default',
+					Q::ifset($idPrefixes, $slotName, null)
+				);
 			}
 			// Go through the slots again, because other handlers may have overwritten
 			// their contents using Q_Response::setSlot()
 			foreach ($slotNames as $sn) {
-				Q_Response::fillSlot($sn, 'default');
+				Q_Response::fillSlot($sn, 'default',
+					Q::ifset($idPrefixes, $slotName, null)
+				);
 			}
 			if (Q_Response::$redirected) {
 				// While rendering the slots we called Q_Redirect
@@ -113,7 +127,7 @@ function Q_response($params)
 			$to_encode['echo'] = $echo;
 		}
 
-		switch (strtolower($is_ajax)) {
+		switch (strtolower($isAjax)) {
 		case 'json':
 		default:
 			$json = Q::json_encode(Q::cutoff($to_encode));
@@ -145,16 +159,19 @@ Q.init();
 	
 
 	// Get all the usual slots for a webpage
-	$slotNames = Q_Request::slotNames(true);
 	$slots = array();
 	foreach ($slotNames as $sn) {
-		Q_Response::fillSlot($sn, 'default');
+		Q_Response::fillSlot($sn, 'default',
+			Q::ifset($idPrefixes, $slotName, null)
+		);
 	}
 
 	// Go through the slots again, because other handlers may have overwritten
 	// their contents using Q_Response::setSlot()
 	foreach ($slotNames as $sn) {
-		Q_Response::fillSlot($sn, 'default');
+		Q_Response::fillSlot($sn, 'default',
+			Q::ifset($idPrefixes, $slotName, null)
+		);
 	}
 
 	$output = Q_Response::output();
@@ -168,7 +185,7 @@ Q.init();
 		return;
 	}
 	
-	if (!$is_ajax or Q_Request::isLoadExtras()) {
+	if (!$isAjax or Q_Request::isLoadExtras()) {
 		Q::event('Q/responseExtras', array(), 'after');
 	}
 

@@ -1,6 +1,6 @@
 <?php
 
-function Streams_access_response_content()
+function Streams_access_response_content($options)
 {
 	$ajax = true;
 	$user = Users::loggedInUser(true);
@@ -16,10 +16,13 @@ function Streams_access_response_content()
 		throw new Q_Exception_MissingRow(array('table' => 'stream', 'criteria' => 'that name'), 'name');
 	}
 	
+	$controls = !empty($options['controls']);
+	
 	Q_Response::setSlot('title', "Access to: " . $stream->title);
 	return Q::tool('Streams/access', compact(
 		'publisherId',
 		'streamName',
-		'ajax'
-	));
+		'ajax',
+		'controls'
+	), $controls ? array('tag' => null) : array());
 }
