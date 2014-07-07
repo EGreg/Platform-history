@@ -611,7 +611,7 @@ _toolInDialog = function(toolName, toolParams, callback, classContainer){
 * @param publisherid {String} ID user with publicj that stream
 * @param callback {Function} The function to call after subscription tool dialog is render
 */
-Streams.subscriptionDialog = function(streamName, publisherId, callback) {
+Streams.subscriptionDialog = function(publisherId, streamName, callback) {
 	_toolInDialog('Streams/subscription', {
 		publisherId: publisherId,
 		streamName : streamName
