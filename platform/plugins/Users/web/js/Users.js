@@ -988,6 +988,7 @@ function login_callback(response) {
 		var passphrase_input = $('<input type="password" name="passphrase" id="Users_form_passphrase" class="Q_password" />')
 			.attr('maxlength', Q.text.Users.login.maxlengths.passphrase)
 			.attr('maxlength', Q.text.Users.login.maxlengths.passphrase)
+			.attr('autocomplete', 'current-password')
 			.on('change keyup input', function () {
 				$('#Users_login_passphrase_forgot')
 					.css('display', $(this).val() ? 'none' : 'inline');
@@ -1238,6 +1239,7 @@ function login_setupDialog(usingProviders, perms, dialogContainer, identifierTyp
 	var identifierInput = $('<input id="Users_login_identifier" autocomplete="email" type="'+type+'" class="text" />')
 	.attr('maxlength', Q.text.Users.login.maxlengths.identifier)
 	.attr('placeholder', placeholder)
+	.attr('autocomplete', 'username')
 	.focus(hideForm2);
 
 	if (type === 'email') {
