@@ -12,21 +12,6 @@
 		var tool = this, state = this.state,
 			element, levelForEveryone, fieldName,
 			actionText, tempSelect;
-		
-		var temp = state['#Q_tabs_tool'] = state['#Q_tabs_tool'] || {};
-		temp = temp.loaderOptions = temp.loaderOptions || {};
-		temp.slotContainer = function (name, response) {
-			if (name === 'controls') {
-				return tool.$('.Streams_access_controls')[0];
-			}
-			var extra = response.slots.extra;
-			Q.Streams.construct(extra.stream, {}, null);
-			state.avatarArray = extra.avatarArray;
-			state.accessArray = extra.accessArray;
-		};
-		temp.quiet = true;
-		temp.loadExtras = false;
-		temp.ignorePage = true;
 
 		function prepareSelect($select, criteria, value, action) {
 			if (!state.stream) return;
@@ -162,12 +147,30 @@
 		}
 		
 		function _initialize() {
-			var tabName = tool.child('Q_tabs').state.tabName;
+			
+			var ts = tool.child("Q_tabs").state;
+			ts.loaderOptions = Q.extend(ts.loaderOptions, {
+				quiet: true,
+				loadExtras: false,
+				ignorePage: true,
+				slotContainer: function (name, response) {
+					if (name === 'controls') {
+						return tool.$('.Streams_access_controls')[0];
+					}
+					var extra = response.slots.extra;
+					Q.Streams.construct(extra.stream, {}, null);
+					state.avatarArray = extra.avatarArray;
+					state.accessArray = extra.accessArray;
+				}
+			});
+			
+			var tabName = ts.tabName;
 			element            = tool.element,
 			levelForEveryone   = $('.Streams_access_levelForEveryone', element),
 			fieldName          = tabName+'Level',
 			actionText         = (tabName === 'read') ? 'can see' : 'can',
 			tempSelect         = $('<select />');
+			tool.child('Streams_userChooser').exclude = state.avatarArray;
 			Q.Streams.Stream.get(tool.state.publisherId, tool.state.streamName, function (err, data) {
 				var msg;
 				if (msg = Q.firstErrorMessage(err, data && data.errors)) {
