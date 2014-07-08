@@ -111,7 +111,7 @@ Q.Tool.define("Q/tabs", function(options) {
 				state.onActivate.handle(tab);
 			}},
 			loadExtras: true,
-			ignoreHistory: this.isInDialog(),
+			ignorePage: this.isInDialog(),
 			loader: state.loader,
 			slotContainer: function (slotName) {
 				return $(state.selectors[slotName])[0]
@@ -159,6 +159,8 @@ Q.Tool.define("Q/tabs", function(options) {
 			tab = defaultTab;
 		}
 		$(tab).addClass('Q_selected');
+		this.state.tabName = name || tool.getName(tab);
+		this.state.tab = tab;
 	},
 	
 	getName: function (tab) {

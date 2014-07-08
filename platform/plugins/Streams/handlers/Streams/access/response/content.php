@@ -13,7 +13,10 @@ function Streams_access_response_content($options)
 	$stream->publisherId = $publisherId;
 	$stream->name = $streamName;
 	if (!$stream->retrieve()) {
-		throw new Q_Exception_MissingRow(array('table' => 'stream', 'criteria' => 'that name'), 'name');
+		throw new Q_Exception_MissingRow(array(
+			'table' => 'stream', 
+			'criteria' => 'that name'
+		), 'name');
 	}
 	
 	$controls = !empty($options['controls']);

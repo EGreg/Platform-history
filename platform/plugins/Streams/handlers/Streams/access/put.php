@@ -24,7 +24,14 @@ function Streams_access_put($params)
 	$access->ofUserId = Q::ifset($_REQUEST, 'ofUserId', '');
 	$access->ofContactLabel = Q::ifset($_REQUEST, 'ofContactLabel', '');
 	if (empty($access->ofUserId) and empty($access->ofContactLabel)) {
-		throw new Q_Exception("Specify a user id or contact label", array('ofUserId', 'ofContactLabel'));
+		$fields = array('grantedByUserId', 'filter', 'readLevel', 'writeLevel', 'adminLevel');
+		foreach ($fields as $field) {
+			if (isset($p[$field])) {
+				$stream->$field = $p[$field];
+			}
+		}
+		$stream->save();
+		return;
 	}
 	$access->retrieve();
 	$fields = array('grantedByUserId', 'filter', 'readLevel', 'writeLevel', 'adminLevel');

@@ -129,13 +129,18 @@ function Streams_access_tool($options)
 	$accessArray = Db::exportArray($access_array);
 	$avatarArray = Db::exportArray($avatar_array);
 
-	Q_Response::addScript("plugins/Streams/js/tools/access.js");
-	Q_Response::addScript("plugins/Streams/js/Streams.js");
-	Q_Response::setToolOptions(compact(
-		'accessArray', 'avatarArray', 'labels', 
-		'icons', 'tab', 'publisherId', 
-		'streamName'
-	));
+	if (empty($controls)) {
+		Q_Response::addScript("plugins/Streams/js/Streams.js");
+		Q_Response::addScript("plugins/Streams/js/tools/access.js");
+		Q_Response::setToolOptions(compact(
+			'accessArray', 'avatarArray', 'labels', 
+			'icons', 'tab', 'publisherId', 
+			'streamName'
+		));
+	} else {
+		$extra = compact('stream', 'accessArray', 'avatarArray');
+		Q_Response::setSlot('extra', $extra);
+	}
 
 	return Q::view('Streams/tool/access.php', compact(
 		'stream', 'access_array', 'contact_array', 'label_array', 'tabs', 'tab', 'labels', 'icons', 'levels', 'dir', 'publisherId', 'streamName', 'accessActionUrl',

@@ -821,7 +821,7 @@ Stream.release = function _Stream_release (publisherId, streamName) {
 Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, options) {
 	if (!Q.isOnline()
 	|| !_retainedByStream[Streams.key(publisherId, streamName)]) {
-		callback && callback(null);
+		callback && callback(null, null);
 		return false;
 	}
 	var result = false;
@@ -2723,14 +2723,17 @@ Q.onInit.add(function _Streams_onInit() {
 		});
 	}, 'Streams');
 	
-	Q.beforeActivate.add(function (elem) {
+	function _preloadedStreams(elem) {
 		// Every time before anything is activated,
 		// process any preloaded streams data we find
 		Q.each(Stream.preloaded, function (i, fields) {
 			Streams.construct(fields, {}, null);
 		});
 		Stream.preloaded = null;
-	}, 'Streams');
+	}
+		
+	Q.beforeActivate.add(_preloadedStreams, 'Streams');
+	Q.loadUrl.options.onLoad.add(_preloadedStreams, 'Streams');
 	
 	Q.Users.onLogin.set(_clearCaches, 'Streams');
 	Q.Users.onLogout.set(_clearCaches, 'Streams');

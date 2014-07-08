@@ -10,7 +10,7 @@
 		'write'  => 'basic32 basic32_edit Streams_access_read_write',
 		'admin'  => 'basic32 basic32_group Streams_access_read_admin'
 	),
-	'slot'      => array('controls'),
+	'slot'      => array('controls', 'extra'),
 	'defaultTab' => 'read'
 )) ?>
 	<div class="Streams_access_controls Q_tabbed Q_document_surface">

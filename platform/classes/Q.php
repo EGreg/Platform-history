@@ -20,8 +20,13 @@ class Q
 	 * @method ifset
 	 * @param {&mixed} $ref
 	 *  The reference to test. Only lvalues can be passed.
-	 *  If $ref is an array or object, it can be followed by one or more strings or numbers
-	 *  which will be used to index deeper into the contained arrays or objects.
+	 *  If $ref is an array or object, it can be followed by one or more
+	 *  strings or numbers, which will be used to index deeper into
+	 *  the contained arrays or objects.
+	 *  You can also pass arrays instead of the strings and numbers,
+	 *  which will then widen the search to try all combinations
+	 *  of the strings and numbers in all the arrays, before returning
+	 *  the default.
 	 * @param {mixed} $def=null
 	 *  The default, if the reference isn't set
 	 * @return {mixed}

@@ -9,24 +9,24 @@
 		if (!options.tab) {
 			options.tab = 'read';
 		}
-		var tool               = this,
-			state              = this.state,
-			element            = tool.element,
-			levelForEveryone   = $('.Streams_access_levelForEveryone', element),
-			fieldName          = options.tab+'Level',
-			actionText         = (options.tab === 'read') ? 'can see' : 'can',
-			tempSelect         = $('<select />');
+		var tool = this, state = this.state,
+			element, levelForEveryone, fieldName,
+			actionText, tempSelect;
 		
-		Q.setObject(
-			['#Q_tabs_tool', 'loaderOptions', 'slotContainer'],
-			{ controls: tool.$('.Streams_access_controls')[0] },
-			this.state
-		);
-		Q.setObject(
-			['#Q_tabs_tool', 'loaderOptions', 'quiet'],
-			true,
-			this.state
-		);
+		var temp = state['#Q_tabs_tool'] = state['#Q_tabs_tool'] || {};
+		temp = temp.loaderOptions = temp.loaderOptions || {};
+		temp.slotContainer = function (name, response) {
+			if (name === 'controls') {
+				return tool.$('.Streams_access_controls')[0];
+			}
+			var extra = response.slots.extra;
+			Q.Streams.construct(extra.stream, {}, null);
+			state.avatarArray = extra.avatarArray;
+			state.accessArray = extra.accessArray;
+		};
+		temp.quiet = true;
+		temp.loadExtras = false;
+		temp.ignorePage = true;
 
 		function prepareSelect($select, criteria, value, action) {
 			if (!state.stream) return;
@@ -40,23 +40,17 @@
 					'selectedIndex',
 					$select.find('option[value='+value+']').attr('selected', 'selected').index()
 				);
+				$select.attr('name', 'cloned');
 
 				$select.change(function () {
-					var url = Q.action(
-						'Streams/' + action
-						+ '?publisherId='+state.stream.fields.publisherId
-						+ '&name='+state.stream.fields.name
-						+ '&' + fieldName + '='+$(this).val()
-						+ '&Q.method=put'
-					);
-					if (typeof criteria === 'object') {
-						for (var k in criteria) {
-							url += '&' + k + '=' + encodeURIComponent(criteria[k]);
-						}
-					} else {
-						url += '&' + criteria;
-					}
-					Q.request(url, ['data'], function (err, data) {
+					var fields = {
+						publisherId: state.stream.fields.publisherId,
+						streamName: state.stream.fields.name,
+						'Q.method': 'put'
+					};
+					fields[fieldName] = $(this).val();
+					Q.extend(fields, criteria);
+					Q.req(fields, "Streams/access", ['data'], function (err, data) {
 						var msg;
 						if (msg = Q.firstErrorMessage(err, data && data.errors)) {
 							alert(msg);
@@ -71,17 +65,14 @@
 			if (!state.stream) return;
 			var link = $('<a href="#remove" />').click(function () {
 				var $this = $(this);
-				var url = Q.action(
-					'Streams/access'
-					+ '?publisherId='+state.stream.fields.publisherId
-					+ '&name='+state.stream.fields.name
-					+ '&' + fieldName + '=-1'
-					+ '&Q.method=put'
-				);
-				for (var k in criteria) {
-					url += '&' + k + '=' + encodeURIComponent(criteria[k]);
-				}
-				Q.request(url, ['data'], function (err, data) {
+				var fields = {
+					publisherId: state.stream.fields.publisherId,
+					streamName: state.stream.fields.name,
+					'Q.method': 'put'
+				};
+				fields[fieldName] = -1;
+				Q.extend(fields, criteria);
+				Q.req(fields, "Streams/access", ['data'], function (err, data) {
 					var msg;
 					if (msg = Q.firstErrorMessage(err, data && data.errors)) {
 						alert(msg);
@@ -119,7 +110,7 @@
 			var criteria;
 			if (userId !== "") {
 				if (!avatar) {
-					avatar = new Q.Streams.Avatar(options.avatarArray[userId]);
+					avatar = new Q.Streams.Avatar(state.avatarArray[userId]);
 					if (!avatar) {
 						console.warn("Streams/access tool: avatar missing for user with id " + userId);
 						return;
@@ -166,38 +157,43 @@
 			clonedSelect.focus();
 		}
 
-		if (!tool.state.publisherId) {
+		if (!state.publisherId) {
 			return;
 		}
 		
 		function _initialize() {
-			Q.Streams.get(tool.state.publisherId, tool.state.streamName, function (err, data) {
+			var tabName = tool.child('Q_tabs').state.tabName;
+			element            = tool.element,
+			levelForEveryone   = $('.Streams_access_levelForEveryone', element),
+			fieldName          = tabName+'Level',
+			actionText         = (tabName === 'read') ? 'can see' : 'can',
+			tempSelect         = $('<select />');
+			Q.Streams.Stream.get(tool.state.publisherId, tool.state.streamName, function (err, data) {
 				var msg;
 				if (msg = Q.firstErrorMessage(err, data && data.errors)) {
 					alert(msg);
 				}
+				if (!data) return;
 				state.stream = this;
 
 				var i, userId, access;
 
-				prepareSelect(levelForEveryone, '', state.stream.fields[fieldName], 'stream');
+				prepareSelect(levelForEveryone, {ofUserId: ''}, state.stream.fields[fieldName], 'stream');
 
-				for (i=0; i<options.accessArray.length; ++i) {
-					access = options.accessArray[i];
+				for (i=0; i<state.accessArray.length; ++i) {
+					access = state.accessArray[i];
 					addAccessRow(access);
 				}
 
 				tool.child('Streams_userChooser').onChoose = function (userId, avatar) {
-					var url = Q.action(
-						'Streams/access'
-						+ '?publisherId='+state.stream.fields.publisherId
-						+ '&streamName='+state.stream.fields.name
-						+ '&' + fieldName + '=' + levelForEveryone.val()
-						+ '&ofUserId='  + userId
-						+ '&Q.method=put'
-					);
-
-					Q.request(url, ['data'], function (err, data) {
+					var fields = {
+						publisherId: state.stream.fields.publisherId,
+						streamName: state.stream.fields.name,
+						ofUserId: userId,
+						'Q.method': 'put'
+					};
+					fields[fieldName] = levelForEveryone.val();
+					Q.req(fields, "Streams/access", ['data'], function (err, data) {
 						var msg;
 						if (msg = Q.firstErrorMessage(err, data && data.errors)) {
 							alert(msg);
@@ -207,16 +203,14 @@
 				};
 
 				$('.Streams_access_levelAddLabel', element).change(function () {
-					var url = Q.action(
-						'Streams/access'
-						+ '?publisherId='+state.stream.fields.publisherId
-						+ '&streamName='+state.stream.fields.name
-						+ '&' + fieldName + '=' + levelForEveryone.val()
-						+ '&ofContactLabel='  + encodeURIComponent($(this).val())
-						+ '&Q.method=put'
-					);
-
-					Q.request(url, ['data'], function (err, data) {
+					var fields = {
+						publisherId: state.stream.fields.publisherId,
+						streamName: state.stream.fields.name,
+						ofContactLabel: $(this).val(),
+						'Q.method': 'put'
+					};
+					fields[fieldName] = levelForEveryone.val();
+					Q.req(fields, "Streams/access", function (err, data) {
 						var msg;
 						if (msg = Q.firstErrorMessage(err, data && data.errors)) {
 							alert(msg);

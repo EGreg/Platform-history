@@ -4309,16 +4309,16 @@ Q.req = function _Q_req(uri, slotNames, callback, options) {
  *  "preprocess": an optional function that takes the xhr object before the .send() is invoked on it
  *  "parse": set to false to pass the unparsed string to the callback
  *  "extend": defaults to true. If false, the URL is not extended with Q fields.
+ *  "query": if true simply returns the query url without issuing the request
  *  "callbackName": if set, the URL is not extended with Q fields and the value is used to name the callback field in the request.
  *  "duplicate": defaults to true, but you can set it to false in order not to fetch the same url again
+ *  "quiet": defaults to true. This option is just passed to your onLoadStart/onLoadEnd handlers in case they want to respect it.
+ *  "handleRedirects": if set and response data.redirect.url is not empty, automatically call this function. Defaults to Q.handle.
  *  "timeout": timeout to wait for response defaults to 1.5 sec. Set to false to disable
  *  "onTimeout": handler to call when timeout is reached. First argument is a function which can be called to cancel loading.
- *  "onLoad": handler to call when data is loaded but before it is processed - when called the argument of "onTimeout" does nothing
- *  "handleRedirects": if set and response data.redirect.url is not empty, automatically call this function. Defaults to Q.handle.
- *  "quiet": defaults to true. This option is just passed to your onLoadStart/onLoadEnd handlers in case they want to respect it.
+ *  "onResponse": handler to call when the response comes back but before it is processed - when called the argument of "onTimeout" does nothing
  *  "onLoadStart": if "quiet" option is false, anything here will be called after the request is initiated
  *  "onLoadEnd": if "quiet" option is false, anything here will be called after the request is fully completed
- *  "query": if true simply returns the query url without issuing the request
  */
 Q.request = function (url, slotNames, callback, options) {
 	
@@ -4388,15 +4388,15 @@ Q.request = function (url, slotNames, callback, options) {
 			}
 		}
 
-		function _onLoad (data) {
+		function _onResponse (data) {
 			t.loaded = true;
 			if (t.timeout) {
 				clearTimeout(t.timeout);
 			}
 			Q.handle(o.onLoadEnd, this, [url, slotNames, o]);
 			if (!t.cancelled) {
-				if (o.onLoad) {
-					o.onLoad(data);
+				if (o.onResponse) {
+					o.onResponse(data);
 				}
 				Q.handle(callback, this, [null, data]);
 			}
@@ -4406,7 +4406,7 @@ Q.request = function (url, slotNames, callback, options) {
 			var msg = msg || Q.text.Q.request[status] || Q.text.Q.request.error;
 			msg = msg.interpolate({'status': status, 'url': url})
 			t.cancelled = true;
-			_onLoad();
+			_onResponse();
 			var errors = {
 				errors: [{message: msg || "Request was canceled", code: status}]
 			};
@@ -4468,7 +4468,7 @@ Q.request = function (url, slotNames, callback, options) {
 			}
 
 			_onStart();
-			return xhr(url, slotNames, _onLoad, _onCancel, o);
+			return xhr(url, slotNames, _onResponse, _onCancel, o);
 		}
 
 		var i = Q.request.callbacks.length;
@@ -4477,7 +4477,7 @@ Q.request = function (url, slotNames, callback, options) {
 			Q.request.callbacks[i] = function _Q_request_JSONP(data) {
 				delete Q.request.callbacks[i];
 				Q.removeElement(script);
-				_onLoad(data, callback);
+				_onResponse(data, callback);
 			};
 			if (o.callbackName) {
 				url2 = url + (url.indexOf('?') < 0 ? '?' : '&')
@@ -5396,23 +5396,25 @@ Q.replace = function _Q_replace(container, source, options) {
  *   "loader": the actual function to load the URL, defaults to Q.request. See Q.request documentation for more options.
  *   "handler": the function to handle the returned data. Defaults to a function that fills the corresponding slot containers correctly.
  *   "ignoreHistory": if true, does not push the url onto the history stack
- *   "ignorePage": if true, does not process the deactivation of current page and activation of the new page
- *   "ignoreExtras": if true, does not process adding of scripts and stylesheets returned in the response
+ *   "ignorePage": if true, does not process the links / stylesheets / script data in the response,
+ *      and doesn't trigger deactivation of current page and activation of the new page
  *   "ignoreLoadingErrors": If true, ignores any errors in loading scripts.
  *   "ignoreHash": if true, does not navigate to the hash part of the URL in browsers that can support it
  *   "fields": additional fields to pass via the querystring
  *   "loadExtras": if true, asks the server to load the extra scripts, stylesheets, etc. that are loaded on first page load
- *   "onError": custom error function, defaults to alert
- *   "onActivate": callback which is called when all Q.activate's processed and all script lines executed
  *   "timeout": timeout to wait for response defaults to 1.5 sec. Set to false to disable
- *   "onTimeout": handler to call when timeout is reached. Receives function as argument -
- *		the function might be called to cancel loading.
- *   "onLoad": handler to call when data is loaded but before it is processed -
- *		when called the argument of "onTimeout" does nothing
  *   "slotNames": an array of slot names to request and process (default is all slots in Q.info.slotNames)
  *   "idPrefixes": optional array of Q_Html::pushIdPrefix values for each slotName
  *   "retainSlots": an object of {slotName: whetherToRetain} pairs, retained slots aren't reloaded
+ *   "slotContainer": optional function taking (slotName, response) and returning the element, if any, to fill for that slot
  *   "quiet": defaults to false. If true, allows visual indications that the request is going to take place.
+ *   "onTimeout": handler to call when timeout is reached. Receives function as argument -
+ *		the function might be called to cancel loading.
+ *   "onResponse": handler to call when the response comes back but before it is processed -
+ *		when called the argument of "onTimeout" does nothing
+ *   "onError": custom error function, defaults to alert
+ *   "onLoad": callback which is called when the parsed data comes back from the server
+ *   "onActivate": callback which is called when all Q.activate's processed and all script lines executed
  *   "onLoadStart": if "quiet" option is false, anything here will be called after the request is initiated
  *   "onLoadEnd": if "quiet" option is false, anything here will be called after the request is fully completed
  * See Q.request for more info.
@@ -5444,7 +5446,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 	url = (hashUrl !== undefined) ? hashUrl : parts[0];
 
 	var loader = Q.request,
-		onError = onError = function (msg) {
+		onError = function (msg) {
  			window.alert(msg);
  		},
 		onActivate;
@@ -5465,10 +5467,12 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 		}
 		if (!response) {
 			return Q.handle(onError, this, ["Response is empty", response]);
-		}   
+		}
 		if (response.errors) {
 			return Q.handle(onError, this, [response.errors[0].message]);
 		}
+		Q.handle(o.onLoad, this, [response]);
+		
 		if (redirected) {
 			return;
 		}
@@ -5476,7 +5480,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 		loadTemplates();
 		var newScripts;
 		
-		if (o.ignoreExtras) {
+		if (o.ignorePage) {
 			newScripts = [];
 			afterScripts();
 		} else {
@@ -5661,7 +5665,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				}
 			}
 			
-			if (!o.ignoreExtras) {
+			if (!o.ignorePage) {
 				// Remove various elements belonging to the slots that are being reloaded
 				Q.each(['link', 'style', 'script'], function (i, tag) {
 					Q.each(document.getElementsByTagName(tag), function (k, e) {
@@ -5687,7 +5691,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 			}
 			
 			var domElements = handler(response, url, o); // this is where we fill all the slots
-			if (!o.ignoreExtras) {
+			if (!o.ignorePage) {
 				_doEvents('on', moduleSlashAction);
 				newStylesheets = loadStylesheets(),
 				newStyles = loadStyles();
@@ -5843,7 +5847,7 @@ Q.loadUrl.saveScroll = function _Q_loadUrl_saveScroll (url, options) {
  *	Note: this will still not supress loading of external websites done with other means, such as window.location
  *  'fields': optional fields to pass with any method other than "get"
  *  'callback': if a string, adds a '&Q.callback='+encodeURIComponent(callback) to the querystring. If a function, this is the callback.
- *  'loadExtras': if true, asks the server to load the extra scripts, stylesheets, etc. that are loaded on first page load
+ *  'loadExtras': defaults to true. If true, asks the server to load the extra scripts, stylesheets, etc. that are loaded on first page load
  *  "target": the name of a window or iframe to use as the target. In this case callables is treated as a url.
  *  "slotNames": a comma-separated list of slot names, or an array of slot names
  *  "quiet": defaults to false. If true, allows visual indications that the request is going to take place.
@@ -7987,6 +7991,7 @@ Q.onJQuery.add(function ($) {
 
 Q.loadUrl.options = {
 	quiet: false,
+	onLoad: new Q.Event(),
 	onLoadStart: new Q.Event(Q.loadUrl.saveScroll, 'Q'),
 	onLoadEnd: new Q.Event(),
 	onActivate: new Q.Event(),
@@ -8007,7 +8012,7 @@ Q.loadUrl.options = {
 
 			if (name.toUpperCase() === 'TITLE') {
 				window.document.title = res.slots[name];
-			} else if (elem = options.slotContainer(name)) { 
+			} else if (elem = options.slotContainer(name, res)) { 
 				try {
 					Q.replace(elem, res.slots[name]);
 					if (pos = Q.getObject(['Q', 'scroll', url], elem)) {
