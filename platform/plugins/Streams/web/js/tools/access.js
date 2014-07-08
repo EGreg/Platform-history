@@ -210,7 +210,7 @@
 						'Q.method': 'put'
 					};
 					fields[fieldName] = levelForEveryone.val();
-					Q.req(fields, "Streams/access", function (err, data) {
+					Q.req(fields, "Streams/access", ['data'], function (err, data) {
 						var msg;
 						if (msg = Q.firstErrorMessage(err, data && data.errors)) {
 							alert(msg);
