@@ -112,6 +112,7 @@ Q.Tool.define("Q/tabs", function(options) {
 			}},
 			loadExtras: true,
 			ignorePage: this.isInDialog(),
+			ignoreHistory: this.isInDialog(),
 			loader: state.loader,
 			slotContainer: function (slotName) {
 				return $(state.selectors[slotName])[0]
