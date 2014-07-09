@@ -17,6 +17,10 @@
  *                   You can have one of <width> or <height> be empty, and then it will automatically keep the proportions.
  *                   Or you can pass 'x' and then it will keep the original width and height of the image.
  * @default {}
+ * @param {Object} [options.cropping]
+ * @param {Boolean} [options.cropping.dialog]
+ * @param {Boolean} [options.cropping.jCrop]
+ *
  * @param {String} [options.path] path Can be a URL path or a function returning a URL path. It must exist on the server.
  * @default 'uploads'
  * @param {String} [options.subpath] subpath is a subpath which may be created on the server.
@@ -77,13 +81,219 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 		}
 		$this.removeClass('Q_imagepicker_uploading');
 	}
-	
+
+         function _doCanvasCrop (data, coord, callback) {
+//              nothing to crop
+            if ( ! data || ! coord ) {
+                return;
+            }
+
+            $($('body')[0]).append('<canvas id="Q_cropCanvas" style="display:none"></canvas>');
+
+            var canvas = document.getElementById('Q_cropCanvas');
+            if (!!!(canvas && canvas.getContext('2d') )) {
+                return; // canvas not supported
+            }
+
+//          canvas should be equal to cropped image
+            canvas.width = coord.width;
+            canvas.height = coord.height;
+            var context = canvas.getContext('2d');
+            var imageObj = new Image();
+
+            imageObj.onload = function() {
+                // draw cropped image
+                var sourceX = coord.x;
+                var sourceY = coord.y;
+                var sourceWidth = coord.width;
+                var sourceHeight = coord.height;
+                var destWidth = coord.width;
+                var destHeight = coord.height;
+                var destX = 0;
+                var destY = 0;
+
+                context.drawImage(imageObj, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight);
+                var imageData = canvas.toDataURL();
+//              pass to _doUpload or preprocessor new image
+                callback.call(this, canvas.toDataURL() );
+                $('#Q_cropCanvas').remove();
+
+            };
+            imageObj.src = data;
+
+
+        };
+
+        function _calculateImageSize(requiredSize, imageSize) {
+            var calcSize = {};
+            if ( requiredSize.width && requiredSize.height ) {
+//              if specified two dimensions - we should remove small size to avoid double reductions
+                if ( requiredSize.width > requiredSize.height ) {
+                    requiredSize.height = null;
+                } else {
+                    requiredSize.width = null;
+                }
+
+            }
+            if ( requiredSize.width ) {
+                if ( requiredSize.width > imageSize.width ) {
+                    throw new Q.Error("Q/imagepicker tool: the image is too small");
+                }
+                calcSize.width = requiredSize.width;
+                var ratio = requiredSize.width/imageSize.width;
+                calcSize.height = Math.ceil(imageSize.height * ratio);
+            }
+            if ( requiredSize.height ) {
+                if ( requiredSize.height > imageSize.height ) {
+                    throw new Q.Error("Q/imagepicker tool: the image is too small");
+                }
+                calcSize.height = requiredSize.height;
+                var ratio = requiredSize.height/imageSize.height;
+                calcSize.width = Math.ceil(imageSize.width * ratio);
+            }
+
+            return calcSize;
+        };
+
+        function _calcSizeQDialog(img) {
+            //      get size of available place
+            var mandatory_margin = 100; //the space for margins of Q.Dialog window
+            var page = {
+                width:  $('#page').width() ,
+                height: $('#page').height()
+            };
+            page.ratio = page.width > page.height ? page.height/page.width : page.width/page.height;
+            var ratio = img.width > img.height ? img.height/img.width : img.width/img.height;
+            var dialog = {width: img.width, height: img.height};
+            page.width -= mandatory_margin; page.height -= mandatory_margin;
+
+
+//          if image size is more then page size, image should be reduced
+//          there can be two loops if first loop reduces a first side but other side is higher then page
+            while ( dialog.width > page.width || dialog.height > page.height ) {
+
+//              find max side of image and check if it's higher then the same page side
+                if ( dialog.width > page.width ) {
+                    dialog.width = page.width;
+                    dialog.height = page.width * ratio;
+                } else {
+
+                }
+                if ( dialog.height > page.height ) {
+                    dialog.height = page.height;
+                    dialog.width = dialog.height * ratio;
+                }
+            }
+            
+            return dialog;
+        };
+
+        function _calculateRequiredSize (saveSizeName) {
+//          http://ejohn.org/blog/fast-javascript-maxmin/
+            Array.prototype.max = function(){
+                return Math.max.apply( Math, this );
+            };
+
+            var widths = [], heights = [];
+            Q.each(saveSizeName, function(key, size) {
+                var requiredSize = {
+                    width: size.split('x')[0],
+                    height: size.split('x')[1]
+                };
+
+                if (requiredSize.width)
+                    widths.push(requiredSize.width);
+
+                if (requiredSize.height)
+                    heights.push(requiredSize.height);
+            });
+
+            return {width: widths.max(), height:heights.max()};
+        };
+        
 	function _upload(data) {
+
 		if (o.preprocess) {
-			o.preprocess.call($this, _doUpload);
+			o.preprocess.call($this, _doCropping);
 		} else {
-			_doUpload();
+            _doCropping();
 		}
+
+        function _doCropping(override) {
+            var params = {
+                'data': data,
+            };
+            Q.extend(params, override);
+
+            if (! o.saveSizeName && ! o.hasOwnProperty('cropping') ) {
+                _doUpload(params);
+                return;
+            }
+
+            var img = new Image,
+                imgEl = {};
+
+
+            img.onload = function() {
+                if (o.saveSizeName  && ! o.hasOwnProperty('cropping') ) {
+//                  do reduce image to showSize by default
+                    var requiredSize  = _calculateRequiredSize(o.saveSizeName);
+
+                    var neededImgSize = _calculateImageSize(requiredSize, img);
+                    var coord = neededImgSize;
+                    coord.x = 0; coord.y = 0;
+
+                    _doCanvasCrop(params.data, coord, function(cropImg) {
+                        if ( cropImg ) {
+                            params.data = cropImg;
+                            _doUpload(params);
+                        } else {
+//                           exception?
+                        }
+
+                    });
+                }
+                if (o.saveSizeName  && o.hasOwnProperty('cropping') ) {
+                    function _cropAndUpload() {
+
+//                      1) TODO calc if crop area is not 1:1 to real
+//                      2) get coord from Q/viewport
+                        _doCanvasCrop(img.src, coord, function(data) {
+                            _doUpload({data:data});
+                        });
+                    };
+                    imgEl.height = img.height;
+                    imgEl.width = img.width;
+                    imgEl.ratio = img.width > img.height ? img.height/img.width : img.width/img.height;
+
+                    var dialogSize = _calcSizeQDialog(img);
+
+
+                    imgEl.content = ['<img src="',
+                        img.src,
+                        '" id="Q_imagepicker_cropping"',
+//                        ' width="'+imgEl.width,
+//                        '" height="'+imgEl.height,
+                        '" />'].join('');
+
+                    Q.Dialogs.push({
+                        className: 'Q_Dialog_imagepicker',
+                        title: 'Edit the image',
+                        content: imgEl.content,
+                        destroyOnClose: true,
+                        size: {width:dialogSize.width, height: dialogSize.height},
+                        onClose: _cropAndUpload,
+                    });
+
+                    $('#Q_imagepicker_cropping').css({width:dialogSize.width, height:dialogSize.height});
+                    $('#Q_imagepicker_cropping').plugin('Q/viewport');
+                }
+            };
+            img.src = params.data;
+
+        }
+
+
 		function _doUpload(override) {
 			if (override === false || (override && override.cancel)) {
 				var state = $this.state('Q/imagepicker');

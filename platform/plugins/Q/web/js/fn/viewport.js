@@ -60,8 +60,8 @@ function (options) {
 	
 	stretcher = $('<div class="Q_viewport_stretcher" />').css({
 		'position': 'absolute',
-		'left': '0px',
-		'top': '0px',
+		'left': (options.initial.left ? -options.initial.left : 0)+'px',
+		'top': (options.initial.top ? -options.initial.top : 0)+'px',
 		'width': container.width()+0.5+'px',
 		'height': container.height()+0.5+'px',
 		'overflow': 'visible',
@@ -95,7 +95,8 @@ function (options) {
 		
 		function _moveHandler (e) {
 			var offset, touches;
-			offset = stretcher.offset();
+            offset = stretcher.offset();
+            console.log('_moveHandler offset'+offset);
 			cur = {
 				x: Q.Pointer.getX(e),
 				y: Q.Pointer.getY(e)
@@ -171,6 +172,7 @@ function (options) {
 		}
 		return false;
 	});
+<<<<<<< HEAD
 	
 	function scale(factor, x, y) {
 		var left1, left2, left3, top1, top2, top3, offset, css;
@@ -206,10 +208,100 @@ function (options) {
 		scale.factor = factor;
 	}
 	
+=======
+
+    function scale_bak(zoom, mouseX, mouseY) {
+        console.log(zoom, mouseX, mouseY);
+        var zoomObj = stretcher.children();
+        var Z = zoom / scale.factor;
+
+        if (!Q.info.isIE(0, 8)) {
+            var containerOffset = zoomObj.offset();
+            var mouseRel = {
+                x: mouseX - containerOffset.left,
+                y: mouseY - containerOffset.top
+            };
+            var dimension = {
+                width: zoomObj.width() * Z,
+                height: zoomObj.height() * Z
+            };
+
+            var translate = {
+                left: containerOffset.left + (mouseRel.x - dimension.width * mouseRel.x / zoomObj.width() ),
+                top: containerOffset.top + (mouseRel.y - dimension.height * mouseRel.y / zoomObj.height() )
+            };
+            var css = {
+                'transform-origin': '0% 0%',
+                'width': dimension.width,
+                'height': dimension.height,
+                'top': translate.top,
+                'left': translate.left
+            };
+            for (var k in css) {
+                css[Q.info.browser.prefix + k] = css[k];
+            }
+            zoomObj.css(css);
+            scale.factor = zoom;
+
+        }
+	};
+
+
+    function scale(factor, x, y) {
+        console.log(' scale.factor ', scale.factor, 'factor ', factor);
+        var left1, left2, left3, top1, top2, top3, offset, css;
+        var offset = stretcher.position();
+        var abs_offset = container.offset();
+//        x -=  abs_offset.left; y -= abs_offset.top;
+
+        console.log('scale offset'+offset);
+        var f = useZoom ? scale.factor : 1;
+
+        left1 = parseInt(stretcher.css('left')) * f;
+        top1 = parseInt(stretcher.css('top')) * f;
+        left1 -= (x - offset.left) * (factor / scale.factor ); //- 1
+        top1 -= (y - offset.top) * (factor / scale.factor );//- 1
+
+        if (!useZoom) {
+            if ( stretcher.width()*factor <= container.parent().width() || stretcher.height()*factor <=  container.parent().height() ) {
+                console.log(stretcher.width()*factor, container.parent().width());
+                console.log('Block zoom out');
+                return;
+            }
+            css = {
+                left: left1,
+                top: top1,
+                transform: 'scale('+factor+')',
+                transformOrigin: '0% 0%'
+            };
+            fixPosition(css);
+            for (var k in css) {
+                css[Q.info.browser.prefix+k] = css[k];
+            }
+            stretcher.css(css);
+
+
+        } else if (!scale.inProgress) {
+            scale.inProgress = true;
+            css = {
+                left: left1 / factor,
+                top: top1 / factor,
+                zoom: factor
+            };
+
+            fixPosition(css);
+            stretcher.css(css);
+            scale.inProgress = false;
+        }
+        scale.factor = factor;
+    }
+
+>>>>>>> temp_imgcrop
 	function fixPosition(pos) {
-		var f = useZoom ? scale.factor : 1;
+		var f = useZoom ? 1: scale.factor;
 		var w = -(stretcher.width()*scale.factor - container.width())/f;
 		var h = -(stretcher.height()*scale.factor - container.height())/f;
+        console.log('w ',w, 'h ', h);
 		pos.left = Math.min(0, Math.max(pos.left, w+1)) + 'px';
 		pos.top = Math.min(0, Math.max(pos.top, h+1)) + 'px';
 	}
