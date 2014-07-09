@@ -172,43 +172,6 @@ function (options) {
 		}
 		return false;
 	});
-<<<<<<< HEAD
-	
-	function scale(factor, x, y) {
-		var left1, left2, left3, top1, top2, top3, offset, css;
-		var offset = stretcher.offset();
-		var f = useZoom ? scale.factor : 1;
-		left1 = parseInt(stretcher.css('left')) * f;
-		top1 = parseInt(stretcher.css('top')) * f;
-		left1 -= (x - offset.left) * (factor / scale.factor - 1);
-		top1 -= (y - offset.top) * (factor / scale.factor - 1);
-		if (!useZoom) {
-			css = { 
-				left: left1,
-				top: top1,
-				transform: 'scale('+factor+')',
-				transformOrigin: '0% 0%'
-			};
-			fixPosition(css);
-			for (var k in css) {
-				css[Q.info.browser.prefix+k] = css[k];
-			}
-			stretcher.css(css);
-		} else if (!scale.inProgress) {
-			scale.inProgress = true;
-			css = {
-				left: left1 / factor,
-				top: top1 / factor,
-				zoom: factor
-			};
-			fixPosition(css);
-			stretcher.css(css);
-			scale.inProgress = false;
-		}
-		scale.factor = factor;
-	}
-	
-=======
 
     function scale_bak(zoom, mouseX, mouseY) {
         console.log(zoom, mouseX, mouseY);
@@ -296,7 +259,6 @@ function (options) {
         scale.factor = factor;
     }
 
->>>>>>> temp_imgcrop
 	function fixPosition(pos) {
 		var f = useZoom ? 1: scale.factor;
 		var w = -(stretcher.width()*scale.factor - container.width())/f;
