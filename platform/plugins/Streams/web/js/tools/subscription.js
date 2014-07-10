@@ -7,6 +7,10 @@
 			self  = this,
 			types = options.messageTypes.slice(0);
 
+		window.types 		= types;
+		window.messageTypes = options.messageTypes;
+		window.items 	    = options.items;
+
 		var render = function(params) {
 			prettyData();
 
@@ -133,11 +137,14 @@
 
 			$el.find('.remove').live('click', function(){
 				var $container = $(this).parents('.notification-item'),
-					type       = $container.data('types');
+					typeName   = $container.data('types');
 
-				// add deleted "type" to initial array
-				options.messageTypes.push(popType(type, types, false));
-				popItem(type);
+				var typeItem = popType(typeName, types, false);
+				if (typeItem) {
+					// add deleted "type" to initial array
+					options.messageTypes.push(typeItem);					
+				}
+				popItem(typeName);
 				render({ isSaved: true });
 			});
 
