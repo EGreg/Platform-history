@@ -7,6 +7,8 @@
  *  "streamName" => the name of the stream for which to edit access levels
  */
 function Streams_subscription_tool($options) {
+	$subscribed = 'no';
+
 	extract($options);
 
 	$user = Users::loggedInUser(true);
@@ -14,6 +16,7 @@ function Streams_subscription_tool($options) {
 	if (!isset($publisherId)) {
 		$publisherId = Streams::requestedPublisherId(true);
 	}
+
 	if (!isset($streamName)) {
 		$streamName = Streams::requestedName();
 	}
@@ -26,26 +29,39 @@ function Streams_subscription_tool($options) {
 		));
 	}
 
-	// if user is not participant, join the stream
-	$participant = $stream->join();
-	$stream->subscribe();
-	$stream->leave();
-	$subscribed  = $participant->subscribed;
+	$streams_participant 			   = new Streams_Participant();
+	$streams_participant->publisherId  = $publisherId;
+	$streams_participant->streamName   = $streamName;
+	$streams_participant->userId  	   = $user->id;
+	if ($streams_participant->retrieve()) {
+		$subscribed = $streams_participant->subscribed;
+	}
 
 	/*
 	* TODO - resolve this
 	*/
-	$types = Q_Config::get('Streams', 'types', $stream->type, 'messages', null);
+	$types = Q_Config::get('Streams', 'types', 'types');
+	$types = $types[$stream->type]['messages'];
 	if (!$types) {
-		throw new Q_Exception_NoSubscriptions(array(
-			'type' => $stream->type
-		));
+		throw new Q_Exception("Stream of type '{$stream->type}' does not support subscription");
 	}
+
 	$messageTypes = array();
 	foreach($types as $type => $msg) {
+		$name = Q::ifset($msg, 'title', $type);
+
+		/*
+		* group by name
+		*/
+		foreach ($messageTypes as $msgType) {
+			if ($msgType['name'] == $name) {
+				continue 2;
+			}
+		}
+
 		$messageTypes[] = array(
 			'value' => $type,
-			'name'  => Q::ifset($msg, 'title', $type)
+			'name'  => $name
 		);
 	}
 
@@ -55,50 +71,57 @@ function Streams_subscription_tool($options) {
 	);
 
 	$devices = array();
-	$emails  = Users_Email::select('address')
-		->where($usersFetch)
-		->fetchAll(PDO::FETCH_COLUMN);
-	$mobiles = Users_Mobile::select('number')
-		->where($usersFetch)
-		->fetchAll(PDO::FETCH_COLUMN);
+	$emails  = Users_Email::select('address')->where($usersFetch)->fetchAll(PDO::FETCH_COLUMN);
+	$mobiles = Users_Mobile::select('number')->where($usersFetch)->fetchAll(PDO::FETCH_COLUMN);
 	if (!$emails and !$mobiles) {
-		throw new Users_Exception_NotVerified(array(
-			'type' => 'account'
-		));
+		throw new Users_Exception_NotVerified('Your account not verificate');
 	}
 
 	foreach ($emails as $email) {
-		$devices[] = array( 
-			'value' => json_encode(compact('email')), 
-			'name' => 'my email' 
+		$devices[] = array(
+			'value' => json_encode(array( 'email' => $email )),
+			'name'  => 'my email'
 		);
 	}
 
 	foreach ($mobiles as $mobile) {
 		$devices[] = array(
-			'value' => json_encode(compact('mobile')),
-			'name' => 'my mobile'
+			'value' => json_encode(array( 'mobile' => $mobile )),
+			'name'  => 'my mobile'
 		);
 	}
 
-	$device = array();
-	$filter = array();
+	$items = array();
 
-	$rule 			   = new Streams_Rule();
-	$rule->streamName  = $streamName;
-	$rule->publisherId = $publisherId;
-	$rule->ofUserId    = $user->id;
-	if ($rule->retrieve()) {
-		$device = json_decode($rule->deliver);
-		$filter = json_decode($rule->filter);
+	$rules = Streams_Rule::select('deliver, filter')->where(array(
+		'ofUserId'    => $user->id,
+		'publisherId' => $publisherId,
+		'streamName'  => $streamName
+	))->fetchAll(PDO::FETCH_ASSOC);
+
+	while ($rule = array_pop($rules)) {
+		$filter = json_decode($rule['filter']);
+
+		/*
+		* group by name
+		*/
+		foreach ($rules as $val) {
+			if (json_decode($val['filter'])->labels == $filter->labels) {
+				continue 2;
+			}
+		}
+
+		$items[] = array(
+			'deliver' => json_decode($rule['deliver']),
+			'filter'  => $filter
+		);
 	}
 
 	Q_Response::addScript("plugins/Streams/js/Streams.js");
 	Q_Response::addScript("plugins/Streams/js/tools/subscription.js");
 
 	Q_Response::setToolOptions(compact(
-		'device',
-		'filter',
+		'items',
 		'subscribed',
 		'messageTypes',
 		'devices',

@@ -36,7 +36,7 @@ class Streams_Rule extends Base_Streams_Rule
 				'ofUserId' => $this->ofUserId,
 				'publisherId' => $this->publisherId,
 				'streamName' => $this->streamName
-			))->fetchAll(PDO::FETCH_COLUMN);
+			))->ignoreCache()->fetchAll(PDO::FETCH_COLUMN);
 			$value['ordinal'] = $this->ordinal = isset($max[0]) ? $max[0]+1 : 1; 
 			if (!isset($this->readyTime)) {
 				$value['readyTime'] = $this->readyTime = new Db_Expression('CURRENT_TIMESTAMP');

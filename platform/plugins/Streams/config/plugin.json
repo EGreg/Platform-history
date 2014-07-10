@@ -83,10 +83,22 @@
 			"Streams/chat": {
 				"create": true,
 				"messages": {
-					"Streams/chat/message": {"post": true},
-					"Streams/chat/edit": {"post": true},
-					"Streams/chat/remove": {"post": true},
-					"Streams/chat/reply": {"post": true}
+					"Streams/chat/message": {
+						"post": true,
+						"title": "Chat message"
+					},
+					"Streams/chat/edit": {
+						"post": true,
+						"title": "Chat change"
+					},
+					"Streams/chat/remove": {
+						"post": true,
+						"title": "Chat change"
+					},
+					"Streams/chat/reply": {
+						"post": true,
+						"title": "Chat message"
+					}
 				}
 			}
 		},
