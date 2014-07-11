@@ -4789,7 +4789,7 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 	var o = Q.extend({}, Q.addScript.options, options),
 		ret = [],
 		arr = src,
-		firstScript = document.scripts[0],
+		firstScript = document.scripts ? document.scripts[0] : document.getElementsByTagName('script')[0],
 		container = o.container || document.head  || document.getElementsByTagName('head')[0];
 		
 	if (!onload) {
