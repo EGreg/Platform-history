@@ -1511,6 +1511,20 @@ Q.Event.jQueryForPage = [];
 Q.Event.prototype.occurred = false;
 
 /**
+ * Returns a Q.Event that will fire given an DOM object and an event name
+ * @method Event.from
+ * @param {String|Q.Tool} key
+ * @param {Object} source
+ * @param {String} eventName
+ * @return {Q.Event}
+ */
+Q.Event.from = function _Q_Event_from(source, eventName) {
+	var event = new Q.Event();
+	Q.addEventListener(source, eventName, event.handle);
+	return event;
+};
+
+/**
  * Calculates a string key by considering the parameter that was passed,
  * the tool being activated, and the page being activated
  * @method Event.calculateKey
@@ -1664,6 +1678,25 @@ Q.Event.prototype.removeAllHandlers = function _Q_Event_prototype_removeAllHandl
 	if (this._onEmpty) {
 		this._onEmpty.handle(callable, key, prepend);
 	}
+};
+
+/**
+ * Return a new Q.Event object that is handled whenever this event is handled,
+ * until anotherEvent occurs, in which case this event occurs one final time.
+ * @method Event.until
+ * @param {Q.Event} anotherEvent
+ *  An event whose occurrence will stop the returned event
+ * @param {Boolean} prepend If true, then prepends the handler to the chain
+ * @return {Q.Event} A new Q.Event object
+ */
+Q.Event.prototype.until = function _Q_Event_prototype_until(anotherEvent) {
+	var newEvent = new Q.Event();
+	var key = this.add(newEvent.handle);
+	var event = this;
+	anotherEvent.add(function () {
+		event.remove(key);
+	});
+	return newEvent;
 };
 
 /**
@@ -3928,9 +3961,13 @@ Q.removeElement = function _Q_removeElement(element) {
  * Add an event listener to an element
  * @method  addEventListener
  * @param {HTMLElement} element
- * @param {String} eventName
+ *  An HTML element, window or other element that supports listening to events
+ * @param {String|Array} eventName
+ *  A space-delimited string of event names
  * @param {Function} eventHandler
- * @param {Boolean} useCapture ignored in IE8 and below
+ *  A function to call when the event fires
+ * @param {Boolean} useCapture
+ *  Whether to use the capture instead of bubble phase. Ignored in IE8 and below.
  */
 Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandler, useCapture) {
 	var handler = (eventHandler.typename === "Q.Event"
@@ -5876,15 +5913,7 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 			}
 			return count;
 		case 'Q.Event':
-			for (i=0; i<callables.keys.length; ++i) {
-				result = Q.handle(callables.handlers[ callables.keys[i] ], context, args);
-				if (result === false) return false;
-				count += result;
-			}
-			callables.occurred = true;
-			callables.lastContext = context;
-			callables.lastArgs = args;
-			return count;
+			return callables.handle.apply(this, args);
 		case 'object':
 			for (k in callables) {
 				result = Q.handle(callables[k], context, args);
