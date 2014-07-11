@@ -7,10 +7,6 @@
 			self  = this,
 			types = options.messageTypes.slice(0);
 
-		window.types 		= types;
-		window.messageTypes = options.messageTypes;
-		window.items 	    = options.items;
-
 		var render = function(params) {
 			prettyData();
 
@@ -68,11 +64,12 @@
 
 		var update = function(){
 			Q.request(Q.action('Streams/subscription', {
-				'Q.method'   : 'put',
-				'subscribed' : $el.find('[name=subscribed]').is(':checked') ? 'yes' : 'no',
-				'streamName' : options.streamName,
-				'publisherId': options.publisherId,
-				'items'      : JSON.stringify(options.items.slice(0))
+				'Q.method'       : 'put',
+				'updateTemplate' : true,
+				'subscribed'     : $el.find('[name=subscribed]').is(':checked') ? 'yes' : 'no',
+				'streamName'     : options.streamName,
+				'publisherId'    : options.publisherId,
+				'items'          : JSON.stringify(options.items.slice(0))
 			}), ['content'], function(){});
 		};
 
