@@ -309,7 +309,7 @@ class Streams_Stream extends Base_Streams_Stream
 	*/
 	public function isTemplate()
 	{
-		return substr($this->name, strlen($this->name)-1) == '/';
+		return $this->type === 'Streams/template';
 	}
 
 	function afterFetch($result)
