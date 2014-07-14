@@ -172,10 +172,10 @@
 
 	Q.Template.set('Streams/subscription/view',
 		'<div class="streams_subscription_container">'+
-			'<div class="left w10">'+
+			'<div class="Q_left w10">'+
 				'<input type="checkbox" name="subscribed" {{#subscribed}} checked {{/subscribed}} />'+
 			'</div>'+
-			'<div class="right w90">'+
+			'<div class="Q_right w90">'+
 				'<b>Participaties</b>'+
 				'<br />'+
 				'<small>'+
@@ -183,7 +183,7 @@
 					'you are online.'+
 				'</small>'+
 			'</div>'+
-			'<div class="clear"></div>'+
+			'<div class="Q_clear"></div>'+
 			'{{#isSetTypes}}'+
 				'{{#subscribed}}'+
 					'<hr />'+
@@ -202,13 +202,13 @@
 					'<hr />'+
 					'{{#items}}'+
 						'<div class="notification-item" data-types="{{filter.types}}">'+
-							'<b class="left w90 messageType" data-value="{{filter.types}}">'+
+							'<b class="Q_left w90 messageType" data-value="{{filter.types}}">'+
 								'{{filter.labels}}'+
 							'</b>'+
-							'<div class="right w10 remove">'+
+							'<div class="Q_right w10 remove">'+
 								'x'+
 							'</div>'+
-							'<div class="clear"></div>'+
+							'<div class="Q_clear"></div>'+
 							'stopping after&nbsp;'+
 							'<select name="stoppingAfter">'+
 								'<option value="1">1</option>'+

@@ -1675,16 +1675,16 @@ input[type=radio] { margin-right: 5px; }
 
 #dialogs_slot { display: none; }
 
-.clear{ clear: both; }
-.left{ float: left; }
-.right{ float: right; }
-.w10{ width: 10%; }
-.w20{ width: 20%; }
-.w30{ width: 30%; }
-.w40{ width: 40%; }
-.w50{ width: 50%; }
-.w60{ width: 60%; }
-.w70{ width: 70%; }
-.w80{ width: 80%; }
-.w90{ width: 90%; }
-.w100{ width: 100%; }
+.Q_clear{ clear: both; }
+.Q_left{ float: left; }
+.Q_right{ float: right; }
+.Q_w10{ width: 10%; }
+.Q_w20{ width: 20%; }
+.Q_w30{ width: 30%; }
+.Q_w40{ width: 40%; }
+.Q_w50{ width: 50%; }
+.Q_w60{ width: 60%; }
+.Q_w70{ width: 70%; }
+.Q_w80{ width: 80%; }
+.Q_w90{ width: 90%; }
+.Q_w100{ width: 100%; }
