@@ -37,41 +37,43 @@ function Streams_subscription_put($params) {
 
 	$types = Q_Config::get('Streams', 'types', $stream->type, 'messages', array());
 
-	/*
-	* update rules
-	*/
-	while ($item = array_pop($items)) {
-		/*
-		* join "grouped" message types to $items
-		*/
-		foreach ($types as $type => $msg) {
-			if ($msg['title'] == $item->filter->labels and $type != $item->filter->types) {
-				$items[] = (object) array(
-					'deliver' => $item->deliver,
-					'filter'  => array(
-						'types'  		=> $type,
-						'labels' 		=> $msg['title'],
-						'notifycations' => $item->filter->notifycations
-					)
-				);
+	if ($stream->isTemplate() and $updateTemplate or !$stream->isTemplate()) {
+			/*
+			* update rules
+			*/
+			while ($item = array_pop($items)) {
+				/*
+				* join "grouped" message types to $items
+				*/
+				foreach ($types as $type => $msg) {
+					if ($msg['title'] == $item->filter->labels and $type != $item->filter->types) {
+						$items[] = (object) array(
+							'deliver' => $item->deliver,
+							'filter'  => array(
+								'types'  		=> $type,
+								'labels' 		=> $msg['title'],
+								'notifycations' => $item->filter->notifycations
+							)
+						);
+					}
+				}
+
+				if (!$rule = array_pop($rules)) {
+					$rule 			   = new Streams_Rule();
+					$rule->ofUserId    = $user->id;
+					$rule->publisherId = $publisherId;
+					$rule->streamName  = $streamName;
+					$rule->relevance   = 1;
+				}
+
+				$rule->filter		   = json_encode($item->filter);
+				$rule->deliver		   = json_encode($item->deliver);
+				$rule->save();
 			}
-		}
 
-		if (!$rule = array_pop($rules)) {
-			$rule 			   = new Streams_Rule();
-			$rule->ofUserId    = $user->id;
-			$rule->publisherId = $publisherId;
-			$rule->streamName  = $streamName;
-			$rule->relevance   = 1;
-		}
-
-		$rule->filter		   = json_encode($item->filter);
-		$rule->deliver		   = json_encode($item->deliver);
-		$rule->save();
-	}
-
-	foreach ($rules as $rule) {
-		$rule->remove();
+			foreach ($rules as $rule) {
+				$rule->remove();
+			}
 	}
 
 	$streams_subscription 			   = new Streams_Subscription();

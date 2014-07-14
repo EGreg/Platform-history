@@ -304,6 +304,14 @@ class Streams_Stream extends Base_Streams_Stream
 		return parent::beforeSave($modifiedFields);
 	}
 	
+	/**
+	* detect is stream name template  
+	*/
+	public function isTemplate()
+	{
+		return substr($this->name, strlen($this->name)-1) == '/';
+	}
+
 	function afterFetch($result)
 	{
 		/**
