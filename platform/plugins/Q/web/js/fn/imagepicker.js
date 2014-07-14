@@ -62,20 +62,20 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 	}
 	$this.before(input);
 	$this.addClass('Q_imagepicker');
-	
+	var state = $this.state('Q/imagepicker');
+
 	function _callback (err, res) {
-		var state = $this.state('Q/imagepicker');
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(res && res.errors);
 		if (msg) {
 			$this.attr('src', state.oldSrc).stop().removeClass('Q_imagepicker_uploading');
-			return Q.handle(o.onError, $this, [msg]);
+			return Q.handle(state.onError, $this, [msg]);
 		}
-		var key = o.showSize;
+		var key = state.showSize;
 		if (!key) {
 			// by default set src equal to first element of the response
 			key = Q.firstKey(res.slots.data, {nonEmpty: true});
 		}
-		var c = Q.handle(o.onSuccess, $this, [res.slots.data, key]);
+		var c = Q.handle(state.onSuccess, $this, [res.slots.data, key]);
 		if (c !== false && key) {
 			$this.attr('src', Q.url(res.slots.data[key]+"?"+Date.now()));
 		}
@@ -88,11 +88,10 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
                 return;
             }
 
-            $($('body')[0]).append('<canvas id="Q_cropCanvas" style="display:none"></canvas>');
+            var canvas = $('<canvas style="display:none"></canvas>').appendTo('body')[0];
 
-            var canvas = document.getElementById('Q_cropCanvas');
-            if (!!!(canvas && canvas.getContext('2d') )) {
-                return; // canvas not supported
+            if (!( canvas && canvas.getContext('2d') )) {
+                throw new Q.Exception('Q/imagepicker: Canvas is not supported!');
             }
 
 //          canvas should be equal to cropped image
@@ -114,9 +113,8 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 
                 context.drawImage(imageObj, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight);
                 var imageData = canvas.toDataURL();
-//              pass to _doUpload or preprocessor new image
                 callback.call(this, canvas.toDataURL() );
-                $('#Q_cropCanvas').remove();
+                $(canvas).remove();
 
             };
             imageObj.src = data;
@@ -155,44 +153,44 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
             return calcSize;
         };
 
-        function _calcSizeQDialog(img) {
-            //      get size of available place
-            var mandatory_margin = 100; //the space for margins of Q.Dialog window
-            var page = {
-                width:  $('#page').width() ,
-                height: $('#page').height()
-            };
-            page.ratio = page.width > page.height ? page.height/page.width : page.width/page.height;
-            var ratio = img.width > img.height ? img.height/img.width : img.width/img.height;
-            var dialog = {width: img.width, height: img.height};
-            page.width -= mandatory_margin; page.height -= mandatory_margin;
-
-
-//          if image size is more then page size, image should be reduced
-//          there can be two loops if first loop reduces a first side but other side is higher then page
-            while ( dialog.width > page.width || dialog.height > page.height ) {
-
-//              find max side of image and check if it's higher then the same page side
-                if ( dialog.width > page.width ) {
-                    dialog.width = page.width;
-                    dialog.height = page.width * ratio;
-                } else {
-
-                }
-                if ( dialog.height > page.height ) {
-                    dialog.height = page.height;
-                    dialog.width = dialog.height * ratio;
-                }
-            }
-            
-            return dialog;
-        };
+//        function _calcSizeQDialog(img) {
+//            //      get size of available place
+//            var mandatory_margin = 100; //the space for margins of Q.Dialog window
+//            var page = {
+//                width:  $(window).width(),
+//                height: $(window).height()
+//            };
+//            page.ratio = page.width > page.height ? page.height/page.width : page.width/page.height;
+//            var ratio = img.width/img.height;
+////            ? img.height/img.width : img.width/img.height;
+//            var dialog = {width: img.width, height: img.height};
+//            page.width -= mandatory_margin; page.height -= mandatory_margin;
+//
+//
+////          if image size is more then page size, image should be reduced
+////          there can be two loops if first loop reduces a first side but other side is higher then page
+//            while ( dialog.width > page.width || dialog.height > page.height ) {
+//
+////              find max side of image and check if it's higher then the same page side
+//                if ( dialog.width > page.width ) {
+//                    dialog.width = page.width;
+//                    dialog.height = page.width/ratio;
+//                }
+//                if ( dialog.height > page.height ) {
+//                    dialog.height = page.height;
+//                    dialog.width = dialog.height * ratio;
+//                }
+//            }
+//
+//            return dialog;
+//        };
 
         function _calculateRequiredSize (saveSizeName) {
+//          TODO: should be refactored
 //          http://ejohn.org/blog/fast-javascript-maxmin/
-            Array.prototype.max = function(){
-                return Math.max.apply( Math, this );
-            };
+//            Array.prototype.max = function(){
+//                return Math.max.apply( Math, this );
+//            };
 
             var widths = [], heights = [];
             Q.each(saveSizeName, function(key, size) {
@@ -208,13 +206,16 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
                     heights.push(requiredSize.height);
             });
 
-            return {width: widths.max(), height:heights.max()};
+            return {
+                width: Math.max.apply( Math, widths ),
+                heights: Math.max.apply( Math, heights )
+            };
         };
         
 	function _upload(data) {
 
-		if (o.preprocess) {
-			o.preprocess.call($this, _doCropping);
+		if (state.preprocess) {
+			state.preprocess.call($this, _doCropping);
 		} else {
             _doCropping();
 		}
@@ -225,36 +226,32 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
             };
             Q.extend(params, override);
 
-            if (! o.saveSizeName && ! o.hasOwnProperty('cropping') ) {
+            if (! state.saveSizeName && ! state.hasOwnProperty('cropping') ) {
                 _doUpload(params);
                 return;
             }
 
             var img = new Image,
-                imgEl = {};
+                imgInfo = {};
 
 
             img.onload = function() {
-                if (o.saveSizeName  && ! o.hasOwnProperty('cropping') ) {
+//              TODO add option useAnySize
+                if (state.saveSizeName  && ! state.hasOwnProperty('cropping') ) {
 //                  do reduce image to showSize by default
-                    var requiredSize  = _calculateRequiredSize(o.saveSizeName);
+                    var requiredSize  = _calculateRequiredSize(state.saveSizeName);
 
                     var neededImgSize = _calculateImageSize(requiredSize, img);
                     var coord = neededImgSize;
                     coord.x = 0; coord.y = 0;
 
                     _doCanvasCrop(params.data, coord, function(cropImg) {
-                        if ( cropImg ) {
-                            params.data = cropImg;
-                            _doUpload(params);
-                        } else {
-//                           exception?
-                        }
-
+                        params.data = cropImg;
+                        _doUpload(params);
                     });
                 }
-                if (o.saveSizeName  && o.hasOwnProperty('cropping') ) {
-                    function _cropAndUpload() {
+                if (state.saveSizeName  && state.hasOwnProperty('cropping') ) {
+                    function _cropAndUpload(coord) {
 
 //                      1) TODO calc if crop area is not 1:1 to real
 //                      2) get coord from Q/viewport
@@ -262,31 +259,43 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
                             _doUpload({data:data});
                         });
                     };
-                    imgEl.height = img.height;
-                    imgEl.width = img.width;
-                    imgEl.ratio = img.width > img.height ? img.height/img.width : img.width/img.height;
+                    imgInfo.height = img.height;
+                    imgInfo.width = img.width;
+//                    imgInfo.ratio = img.width > img.height ? img.height/img.width : img.width/img.height;
 
-                    var dialogSize = _calcSizeQDialog(img);
+//                    var dialogSize = _calcSizeQDialog(img);
 
 
-                    imgEl.content = ['<img src="',
-                        img.src,
-                        '" id="Q_imagepicker_cropping"',
-//                        ' width="'+imgEl.width,
-//                        '" height="'+imgEl.height,
-                        '" />'].join('');
+                    var croppingElement = imgInfo.content = $('<img />').attr({src: img.src});
+//                        = ['<img src="',
+//                        img.src,
+//                        '" id="Q_imagepicker_cropping"',
+////                        ' width="'+imgInfo.width,
+////                        '" height="'+imgInfo.height,
+//                        '" />'].join('');
 
                     Q.Dialogs.push({
                         className: 'Q_Dialog_imagepicker',
                         title: 'Edit the image',
-                        content: imgEl.content,
+                        content: imgInfo.content,
                         destroyOnClose: true,
-                        size: {width:dialogSize.width, height: dialogSize.height},
-                        onClose: _cropAndUpload,
+//                        size: {width:dialogSize.width, height: dialogSize.height},
+                        fullscreen: true,
+                        beforeClose: function() {
+                            var result = $('.Q_viewport_tool', this)
+                                .state('Q/viewport')
+                                .result;
+                               _cropAndUpload(result);
+                        },
+                        onActivate
+                        : {"Q/imagepicker": function () {
+                            croppingElement.css({width:500, height:500})
+                                .plugin('Q/viewport',{
+                                    initial:{left: 0, top: 0, width: 200, height: 200 }
+                                })
+                            }
+                        }
                     });
-
-                    $('#Q_imagepicker_cropping').css({width:dialogSize.width, height:dialogSize.height});
-                    $('#Q_imagepicker_cropping').plugin('Q/viewport');
                 }
             };
             img.src = params.data;
@@ -304,12 +313,12 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 				'data': data,
 				'path': $this.state('Q/imagepicker').path,
 				'subpath': $this.state('Q/imagepicker').subpath,
-				'save': o.saveSizeName,
-				'url': o.url,
-				'loader': o.loader
+				'save': state.saveSizeName,
+				'url': state.url,
+				'loader': state.loader
 			};
-			if (o.crop) {
-				params.crop = o.crop;
+			if (state.crop) {
+				params.crop = state.crop;
 			}
 			Q.extend(params, override);
 			var state = $this.state('Q/imagepicker');
@@ -335,8 +344,8 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 	function _process() {
 		var state = $this.state('Q/imagepicker');
 		state.oldSrc = $this.attr('src');
-		if (o.throbber) {
-			$this.attr('src', Q.url(o.throbber));
+		if (state.throbber) {
+			$this.attr('src', Q.url(state.throbber));
 		}
 		$this.addClass('Q_imagepicker_uploading');
 		var reader = new FileReader();
@@ -369,7 +378,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 					sourceType: source,
 					destinationType: Camera.DestinationType.DATA_URL
 				});
-			}, "", o.cameraCommands.join(','));
+			}, "", state.cameraCommands.join(','));
 			e.preventDefault();
 		});
 	} else {
@@ -379,7 +388,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 			e.preventDefault();
 		});
 		input.click(function () {
-			if (o.onClick && o.onClick() === false) {
+			if (state.onClick && state.onClick() === false) {
 				return false;
 			}
 		});
@@ -409,6 +418,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 	saveSizeName: {},
 	showSize: null,
 	crop: null,
+    cropping: false,
 	url: Q.action("Q/image"),
 	throbber: null,
 	preprocess: null,

@@ -32,50 +32,63 @@ function (options) {
 	var container, stretcher;
 	var position = this.css('position');
 	var display = this.css('display');
-	
-	this.state('Q/viewport').oldCursor = this.css('cursor');
+
+    var state  = this.state('Q/viewport');
+
+    state.oldCursor = this.css('cursor');
 	this.css('cursor', 'move');
-	
-	container = $('<span class="Q_viewport_container" />').css({
-		'display': (display === 'inline' || display === 'inline-block') ? 'inline-block' : display,
-		'zoom': 1,
-		'position': position === 'static' ? 'relative' : position,
-		'left': position === 'static' ? 0 : this.position().left,
-		'top': position === 'static' ? 0 : this.position().top,
-		'margin': '0px',
-		'padding': '0px',
-		'border': '0px solid transparent',
-		'float': this.css('float'),
-		'z-index': this.css('z-index'),
-		'overflow': 'hidden',
-		'width': this.outerWidth(true),
-		'height': this.outerHeight(true),
-		'text-align': 'left',
-		'overflow': 'hidden',
-		'line-height': this.css('line-height'),
-		'vertical-align': this.css('vertical-align'),
-		'text-align': this.css('text-align')
-	}).addClass('Q_viewport_container')
-	.insertAfter(this);
-	
-	stretcher = $('<div class="Q_viewport_stretcher" />').css({
-		'position': 'absolute',
-		'left': (options.initial.left ? -options.initial.left : 0)+'px',
-		'top': (options.initial.top ? -options.initial.top : 0)+'px',
-		'width': container.width()+0.5+'px',
-		'height': container.height()+0.5+'px',
-		'overflow': 'visible',
-		'padding': '0px',
-		'margin': '0px'
-	}).appendTo(container)
-	.append(this);
-	
+
+    if ( this.parent('.Q_viewport_stretcher').length ) {
+        stretcher = this.parent();
+        container = stretcher.parent();
+    } else {
+        container = $('<span class="Q_viewport_container" />').css({
+            'display': (display === 'inline' || display === 'inline-block') ? 'inline-block' : display,
+            'zoom': 1,
+            'position': position === 'static' ? 'relative' : position,
+            'left': position === 'static' ? 0 : this.position().left,
+            'top': position === 'static' ? 0 : this.position().top,
+            'margin': '0px',
+            'padding': '0px',
+            'border': '0px solid transparent',
+            'float': this.css('float'),
+            'z-index': this.css('z-index'),
+            'overflow': 'hidden',
+            'width': this.outerWidth(true),
+            'height': this.outerHeight(true),
+            'text-align': 'left',
+            'overflow': 'hidden',
+            'line-height': this.css('line-height'),
+            'vertical-align': this.css('vertical-align'),
+            'text-align': this.css('text-align')
+        }).addClass('Q_viewport_container')
+            .insertAfter(this);
+
+        stretcher = $('<div class="Q_viewport_stretcher" />')
+            .appendTo(container)
+            .append(this);
+
+        if (options.containerClass) {
+            container.addClass(options.containerClass);
+        }
+    }
+
+    var widthFactor = options.initial.width ? (container.width() / options.initial.width) : 1;
+    var heightFactor = options.initial.height ? (container.height() / options.initial.height) : 1;
+    stretcher.css({
+        'position': 'absolute',
+        'left': Math.max(-options.initial.left, 0) * widthFactor + 'px',
+        'top': Math.max(-options.initial.top, 0) * heightFactor + 'px',
+        'width': container.width() * widthFactor + 0.5 + 'px',
+        'height': container.height() * heightFactor + 0.5 + 'px',
+        'overflow': 'visible',
+        'padding': '0px',
+        'margin': '0px'
+    });
+
+
 	var useZoom = Q.info.isIE(0, 8);
-	
-	if (options.containerClass) {
-		container.addClass(options.containerClass);
-	}
-	
+
 	var grab = null;
 	var cur = null;
 	var pos = null;
@@ -165,7 +178,7 @@ function (options) {
 	container.on(Q.Pointer.wheel, function (e) {
 		if (typeof e.deltaY === 'number' && !isNaN(e.deltaY)) {
 			scale(
-				Math.max(1, scale.factor - e.deltaY * 0.01),
+				Math.max(0, scale.factor - e.deltaY * 0.01),
 				Q.Pointer.getX(e),
 				Q.Pointer.getY(e)
 			);
@@ -220,16 +233,26 @@ function (options) {
         console.log('scale offset'+offset);
         var f = useZoom ? scale.factor : 1;
 
+        if (options.minimumResultSize
+        && options.minimumResultSize.width > container.width() / f) {
+            f = Math.min(f, container.width() / options.minimumResultSize.width);
+        }
+        if (options.minimumResultSize
+        && options.minimumResultSize.height > container.height() / f) {
+            f = Math.min(f, container.height() / options.minimumResultSize.height);
+        }
+
         left1 = parseInt(stretcher.css('left')) * f;
         top1 = parseInt(stretcher.css('top')) * f;
         left1 -= (x - offset.left) * (factor / scale.factor ); //- 1
         top1 -= (y - offset.top) * (factor / scale.factor );//- 1
 
         if (!useZoom) {
-            if ( stretcher.width()*factor <= container.parent().width() || stretcher.height()*factor <=  container.parent().height() ) {
-                console.log(stretcher.width()*factor, container.parent().width());
+            var parent = container.parent();
+            if ( stretcher.width()*factor <= parent.width() || stretcher.height()*factor <=  parent.height() ) {
+                console.log(stretcher.width()*factor, parent.width());
                 console.log('Block zoom out');
-                return;
+                return false;
             }
             css = {
                 left: left1,
@@ -253,6 +276,7 @@ function (options) {
             };
 
             fixPosition(css);
+
             stretcher.css(css);
             scale.inProgress = false;
         }
@@ -266,13 +290,21 @@ function (options) {
         console.log('w ',w, 'h ', h);
 		pos.left = Math.min(0, Math.max(pos.left, w+1)) + 'px';
 		pos.top = Math.min(0, Math.max(pos.top, h+1)) + 'px';
-	}
+
+        state.result = {
+            left: -pos.left,
+            top: -pos.top,
+            width: w,
+            height: h
+        };
+    };
+
 },
 
 {	// default options:
 	containerClass: '', // any class names to add to the actions container
-	wrap: false,
 	initial: { left: 0, top: 0, width: 0, height: 0 },
+    minimumResultSize: {},
 	result: {},
 	onRelease: new Q.Event(),
 	onZoom: new Q.Event(),
