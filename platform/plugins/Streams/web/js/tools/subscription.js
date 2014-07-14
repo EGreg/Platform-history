@@ -7,6 +7,8 @@
 			self  = this,
 			types = options.messageTypes.slice(0);
 
+		options.isSetTypes = !!types.length;
+
 		var render = function(params) {
 			prettyData();
 
@@ -182,48 +184,50 @@
 				'</small>'+
 			'</div>'+
 			'<div class="clear"></div>'+
-			'{{#subscribed}}'+
-				'<hr />'+
-				'<b>'+
-					'When I\'m offline</br />'+
-					'notify me about'+
-				'</b>'+
-				'<br />'+
-				'send to&nbsp;'+
-				'<select name="devices">'+
-					'{{#devices}}'+
-						'<option value="{{value}}">{{name}}</option>'+
-					'{{/devices}}'+
-				'</select>'+
-				'<div class="notifycations"></div>'+
-				'<hr />'+
-				'{{#items}}'+
-					'<div class="notification-item" data-types="{{filter.types}}">'+
-						'<b class="left w90 messageType" data-value="{{filter.types}}">'+
-							'{{filter.labels}}'+
-						'</b>'+
-						'<div class="right w10 remove">'+
-							'x'+
+			'{{#isSetTypes}}'+
+				'{{#subscribed}}'+
+					'<hr />'+
+					'<b>'+
+						'When I\'m offline</br />'+
+						'notify me about'+
+					'</b>'+
+					'<br />'+
+					'send to&nbsp;'+
+					'<select name="devices">'+
+						'{{#devices}}'+
+							'<option value="{{value}}">{{name}}</option>'+
+						'{{/devices}}'+
+					'</select>'+
+					'<div class="notifycations"></div>'+
+					'<hr />'+
+					'{{#items}}'+
+						'<div class="notification-item" data-types="{{filter.types}}">'+
+							'<b class="left w90 messageType" data-value="{{filter.types}}">'+
+								'{{filter.labels}}'+
+							'</b>'+
+							'<div class="right w10 remove">'+
+								'x'+
+							'</div>'+
+							'<div class="clear"></div>'+
+							'stopping after&nbsp;'+
+							'<select name="stoppingAfter">'+
+								'<option value="1">1</option>'+
+								'<option value="3">3</option>'+
+								'<option value="5">5</option>'+
+								'<option value="10">10</option>'+
+							'</select>'+
+							'&nbsp;alerts'+
+							'<hr />'+
 						'</div>'+
-						'<div class="clear"></div>'+
-						'stopping after&nbsp;'+
-						'<select name="stoppingAfter">'+
-							'<option value="1">1</option>'+
-							'<option value="3">3</option>'+
-							'<option value="5">5</option>'+
-							'<option value="10">10</option>'+
-						'</select>'+
-						'&nbsp;alerts'+
-						'<hr />'+
-					'</div>'+
-				'{{/items}}'+
-				'<select class="add">'+
-					'<option selected>add message type</option>'+
-					'{{#messageTypes}}'+
-						'<option value="{{value}}" data-name="{{name}}">{{name}}</option>'+
-					'{{/messageTypes}}'+
-				'</select>'+
-			'{{/subscribed}}'+
+					'{{/items}}'+
+					'<select class="add">'+
+						'<option selected>add message type</option>'+
+						'{{#messageTypes}}'+
+							'<option value="{{value}}" data-name="{{name}}">{{name}}</option>'+
+						'{{/messageTypes}}'+
+					'</select>'+
+				'{{/subscribed}}'+
+			'{{/isSetTypes}}'+
 		'</div>'
 	);
 })(Q, jQuery);

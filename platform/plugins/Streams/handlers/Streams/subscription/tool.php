@@ -7,7 +7,8 @@
  *  "streamName" => the name of the stream for which to edit access levels
  */
 function Streams_subscription_tool($options) {
-	$subscribed = 'no';
+	$updateTemplate = true;
+	$subscribed     = 'no';
 
 	extract($options);
 
@@ -21,7 +22,14 @@ function Streams_subscription_tool($options) {
 		$streamName = Streams::requestedName();
 	}
 
-	$stream = Streams::fetchOne($user->id, $publisherId, $streamName);
+	$stream = Streams::fetchOne(
+		$user->id,
+		$publisherId,
+		$streamName,
+		'*',
+		array('includeTemplate' => $updateTemplate )
+	);
+
 	if (!$stream) {
 		throw new Q_Exception_MissingRow(array(
 			'table'    => 'stream',
@@ -29,22 +37,15 @@ function Streams_subscription_tool($options) {
 		));
 	}
 
-	$streams_participant 			   = new Streams_Participant();
-	$streams_participant->publisherId  = $publisherId;
-	$streams_participant->streamName   = $streamName;
-	$streams_participant->userId  	   = $user->id;
+	$streams_participant 			  = new Streams_Participant();
+	$streams_participant->publisherId = $publisherId;
+	$streams_participant->streamName  = $streamName;
+	$streams_participant->userId  	  = $user->id;
 	if ($streams_participant->retrieve()) {
 		$subscribed = $streams_participant->subscribed;
 	}
 
-	/*
-	* TODO - resolve this
-	*/
-	$types = Q_Config::get('Streams', 'types', 'types');
-	$types = $types[$stream->type]['messages'];
-	if (!$types) {
-		throw new Q_Exception("Stream of type '{$stream->type}' does not support subscription");
-	}
+	$types = Q_Config::get('Streams', 'types', $stream->type, 'messages', array());
 
 	$messageTypes = array();
 	foreach($types as $type => $msg) {
@@ -73,9 +74,6 @@ function Streams_subscription_tool($options) {
 	$devices = array();
 	$emails  = Users_Email::select('address')->where($usersFetch)->fetchAll(PDO::FETCH_COLUMN);
 	$mobiles = Users_Mobile::select('number')->where($usersFetch)->fetchAll(PDO::FETCH_COLUMN);
-	if (!$emails and !$mobiles) {
-		throw new Users_Exception_NotVerified('Your account not verificate');
-	}
 
 	foreach ($emails as $email) {
 		$devices[] = array(

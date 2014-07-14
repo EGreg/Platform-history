@@ -33,9 +33,9 @@ class Streams_Rule extends Base_Streams_Rule
 	{
 		if (!$this->retrieved) {
 			$max = Streams_Rule::select("MAX(ordinal) + 1")->where(array(
-				'ofUserId' => $this->ofUserId,
+				'ofUserId'    => $this->ofUserId,
 				'publisherId' => $this->publisherId,
-				'streamName' => $this->streamName
+				'streamName'  => $this->streamName
 			))->ignoreCache()->fetchAll(PDO::FETCH_COLUMN);
 
 			$value['ordinal'] = $this->ordinal = isset($max[0]) ? $max[0] : 1; 

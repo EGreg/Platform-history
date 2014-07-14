@@ -4,17 +4,25 @@
  * Create or update subscription
  */
 function Streams_subscription_put($params) {
-	$items		   = array();
-	$subscribed    = 'no';
-	$streamName    = Streams::requestedName();
-	$publisherId   = Streams::requestedPublisherId(true);
-	$user  		   = Users::loggedInUser(true);
+	$items		    = array();
+	$subscribed     = 'no';
+	$updateTemplate = true;
+	$streamName     = Streams::requestedName();
+	$publisherId    = Streams::requestedPublisherId(true);
+	$user  		    = Users::loggedInUser(true);
 
 	extract($_REQUEST);
 
-	$items = json_decode($items);
+	$items  = json_decode($items);
+	$stream = Streams::fetchOne(
+		$user->id,
+		$publisherId,
+		$streamName,
+		'*',
+		array('includeTemplate' => $updateTemplate )
+	);
 
-	if (!$stream = Streams::fetchOne($user->id, $publisherId, $streamName)) {
+	if (!$stream) {
 		throw new Q_Exception_MissingRow(array(
 			'table'    => 'stream',
 			'criteria' => compact('publisherId', 'streamName')
@@ -27,14 +35,7 @@ function Streams_subscription_put($params) {
 		'streamName'  => $streamName
 	))->fetchDbRows(null, '', 'name');
 
-	/*
-	* TODO - resolve this
-	*/
-	$types = Q_Config::get('Streams', 'types', 'types');
-	$types = $types[$stream->type]['messages'];
-	if (!$types) {
-		throw new Q_Exception("Stream of type '{$stream->type}' does not support subscription");
-	}
+	$types = Q_Config::get('Streams', 'types', $stream->type, 'messages', array());
 
 	/*
 	* update rules
@@ -77,6 +78,7 @@ function Streams_subscription_put($params) {
 	$streams_subscription->streamName  = $streamName;
 	$streams_subscription->publisherId = $publisherId;
 	$streams_subscription->ofUserId    = $user->id;
+	$streams_subscription->filter      = json_encode(array());
 	$streams_subscription->retrieve();
 	$streams_subscription->save();
 
@@ -84,6 +86,8 @@ function Streams_subscription_put($params) {
 	$streams_participant->publisherId  = $publisherId;
 	$streams_participant->streamName   = $streamName;
 	$streams_participant->userId  	   = $user->id;
+	$streams_participant->state        = 'participating';
+	$streams_participant->reason       = '';
 	$streams_participant->retrieve();
 	$streams_participant->subscribed   = $subscribed;
 	$streams_participant->save();
