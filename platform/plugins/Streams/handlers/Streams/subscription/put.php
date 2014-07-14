@@ -73,18 +73,5 @@ function Streams_subscription_put($params) {
 		$rule->remove();
 	}
 
-	$streams_subscription 			   = new Streams_Subscription();
-	$streams_subscription->streamName  = $streamName;
-	$streams_subscription->publisherId = $publisherId;
-	$streams_subscription->ofUserId    = $user->id;
-	$streams_subscription->retrieve();
-	$streams_subscription->save();
-
-	$streams_participant 			   = new Streams_Participant();
-	$streams_participant->publisherId  = $publisherId;
-	$streams_participant->streamName   = $streamName;
-	$streams_participant->userId  	   = $user->id;
-	$streams_participant->retrieve();
-	$streams_participant->subscribed   = $subscribed;
-	$streams_participant->save();
+	$stream->subscribe();
 }
