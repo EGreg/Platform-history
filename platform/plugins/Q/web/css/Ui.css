@@ -1428,6 +1428,7 @@ divbody { text-align: center; height: 100%; }
 	text-overflow: ellipsis;
 }
 .Q_overlay .close { background-image:url(../img/close.png); position:absolute; right:-15px; top:-15px; cursor:pointer; height:35px; width:35px; }
+.Q_overlay.Q_overlay_apply .close { background-image:url(../img/apply.png); }
 
 /* tabs */
 
@@ -1676,3 +1677,15 @@ input[type=radio] { margin-right: 5px; }
 #dialogs_slot { display: none; }
 
 .clear{ clear: both; }
+.left{ float: left; }
+.right{ float: right; }
+.w10{ width: 10%; }
+.w20{ width: 20%; }
+.w30{ width: 30%; }
+.w40{ width: 40%; }
+.w50{ width: 50%; }
+.w60{ width: 60%; }
+.w70{ width: 70%; }
+.w80{ width: 80%; }
+.w90{ width: 90%; }
+.w100{ width: 100%; }

@@ -3,58 +3,88 @@
 /**
  * Create or update subscription
  */
-
 function Streams_subscription_put($params) {
+	$items		   = array();
+	$subscribed    = 'no';
+	$streamName    = Streams::requestedName();
+	$publisherId   = Streams::requestedPublisherId(true);
+	$user  		   = Users::loggedInUser(true);
 
-	$more_fields = array_merge($_REQUEST, $params);
-	$user = Users::loggedInUser(true);
-	$publisherId = Streams::requestedPublisherId();
-	if (empty($publisherId)) {
-		$publisherId = $_REQUEST['publisherId'] = $user->id;
-	}
-	$name = Streams::requestedName(true);
-	// get the stream
-	$stream = Streams::fetch($user->id, $publisherId, $name);
-	if (!count($stream)) {
+	extract($_REQUEST);
+
+	$items = json_decode($items);
+
+	if (!$stream = Streams::fetchOne($user->id, $publisherId, $streamName)) {
 		throw new Q_Exception_MissingRow(array(
-			'table' => 'stream', 
-			'criteria' => "{publisherId: '$publisherId', name: '$name'}"
+			'table'    => 'stream',
+			'criteria' => compact('publisherId', 'streamName')
 		));
 	}
-	$stream = reset($stream);
 
-	if (empty($_REQUEST['template'])) {
-		if (checkdate($more_fields['untilTime_month'], $more_fields['untilTime_day'], $more_fields['untilTime_year'])) {
-			$untilTime =  date('c', mktime(0, 0, 0, $more_fields['untilTime_month'], $more_fields['untilTime_day'], $more_fields['untilTime_year']));
-		} else $untilTime = null;
+	$rules = Streams_Rule::select('*')->where(array(
+		'ofUserId'    => $user->id,
+		'publisherId' => $publisherId,
+		'streamName'  => $streamName
+	))->fetchDbRows(null, '', 'name');
 
-		return Streams::$cache['subscription'] = $stream->subscribe(array(
-			'types' => !empty($more_fields['types']) ? $more_fields['types'] : array(),
-			'notifications' => !empty($more_fields['notifications']) ? $more_fields['notifications'] : 0,
-			'untilTime' => $untilTime
-		));
-	} else {
-		$subscription = new Streams_Subscription();
-		// skip userId setting
-		$subscription->ofUserId = $user->id;
-		$subscription->publisherId = $publisherId;
-		$subscription->streamName = $name;
+	/*
+	* TODO - resolve this
+	*/
+	$types = Q_Config::get('Streams', 'types', 'types');
+	$types = $types[$stream->type]['messages'];
+	if (!$types) {
+		throw new Q_Exception("Stream of type '{$stream->type}' does not support subscription");
+	}
 
-		$subscription->filter = Q::json_encode(array(
-			'types' => !empty($more_fields['types']) ? $more_fields['types'] : array(),
-			'notifications' => !empty($more_fields['notifications']) ? $more_fields['notifications'] : 0
-		));
-
-		$duration = !empty($_REQUEST['duration']) ? strtotime($_REQUEST['duration']) : false;
-		if ($duration) {
-			$duration = $duration - time();
-		} else {
-			$duration = 0;
+	/*
+	* update rules
+	*/
+	while ($item = array_pop($items)) {
+		/*
+		* join "grouped" message types to $items
+		*/
+		foreach ($types as $type => $msg) {
+			if ($msg['title'] == $item->filter->labels and $type != $item->filter->types) {
+				$items[] = (object) array(
+					'deliver' => $item->deliver,
+					'filter'  => array(
+						'types'  		=> $type,
+						'labels' 		=> $msg['title'],
+						'notifycations' => $item->filter->notifycations
+					)
+				);
+			}
 		}
-		$subscription->duration = $duration;
 
-		if (!$subscription->save(true)) throw new Q_Exception("Error saving subscription template");
-		Streams::$cache['subscription'] = $subscription;
-		return true;
+		if (!$rule = array_pop($rules)) {
+			$rule 			   = new Streams_Rule();
+			$rule->ofUserId    = $user->id;
+			$rule->publisherId = $publisherId;
+			$rule->streamName  = $streamName;
+			$rule->relevance   = 1;
+		}
+
+		$rule->filter		   = json_encode($item->filter);
+		$rule->deliver		   = json_encode($item->deliver);
+		$rule->save();
 	}
+
+	foreach ($rules as $rule) {
+		$rule->remove();
+	}
+
+	$streams_subscription 			   = new Streams_Subscription();
+	$streams_subscription->streamName  = $streamName;
+	$streams_subscription->publisherId = $publisherId;
+	$streams_subscription->ofUserId    = $user->id;
+	$streams_subscription->retrieve();
+	$streams_subscription->save();
+
+	$streams_participant 			   = new Streams_Participant();
+	$streams_participant->publisherId  = $publisherId;
+	$streams_participant->streamName   = $streamName;
+	$streams_participant->userId  	   = $user->id;
+	$streams_participant->retrieve();
+	$streams_participant->subscribed   = $subscribed;
+	$streams_participant->save();
 }

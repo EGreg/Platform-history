@@ -27,6 +27,7 @@
  * @default true
  * @param {Event} [options.loadUrl] options to override for the call to Q.loadUrl
  * @default {}
+ * @param {Boolean} apply Whether the dialog should show the "apply" style button to close dialog
  * @param {Event} [options.beforeLoad] beforeLoad Q.Event or function which is called before overlay is loaded (shown). Optional.
  * @param {Event} [options.onLoad] onLoad  Q.Event or function which is called when overlay is loaded (shown). Optiona.
  * @param {Event} [options.beforeClose] beforeClose Q.Event or function which is called when overlay closing initiated and it's still visible. Optional.
@@ -171,6 +172,7 @@ function (o) {
 	'closeOnEsc': true,
 	'fadeInOut': true,
 	'fadeTime': 300,
+	'apply': false,
 	'beforeLoad': new Q.Event(),
 	'onLoad': new Q.Event(),
 	'beforeClose': new Q.Event(),

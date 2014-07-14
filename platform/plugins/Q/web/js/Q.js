@@ -2843,7 +2843,7 @@ Q.Tool.prototype.parentIds = function Q_Tool_prototype_parentIds() {
  * @return {Object} A hash of {prefix: Tool} pairs
  */
 Q.Tool.prototype.parents = function Q_Tool_prototype_parents() {
-	var ids = [], ids, i;
+	var ids = [], ids, i, id;
 	ids = this.parentIds();
 	var result = {}, len = ids.length;
 	for (i=0; i<len; ++i) {
@@ -5913,7 +5913,7 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 			}
 			return count;
 		case 'Q.Event':
-			return callables.handle.apply(this, args);
+			return callables.handle.apply(context, args);
 		case 'object':
 			for (k in callables) {
 				result = Q.handle(callables[k], context, args);
@@ -7427,6 +7427,7 @@ Q.Dialogs = {
 	 *	 "title": Optional. Dialog title, defaults to 'Dialog'.
 	 *	 "content": Optional. Dialog content, initially defaults to loading throbber.
 	 *   "className": Optional. Maybe a CSS class name or space-separated list of classes to append to the dialog element.
+     *   "apply": Whether the dialog should show the "apply" style button to close dialog
 	 *   "mask": Default is true unless fullscreen. If true, adds a mask to cover the screen behind the dialog.
 	 *	 "fullscreen": Defaults to true only on Android and false on all other platforms. If true, dialog will be shown not as overlay
 	 *								 but instead will be prepended to document.body and all other child elements of the body will be hidden.
@@ -7463,6 +7464,7 @@ Q.Dialogs = {
 				$('<div class="dialog_slot Q_dialog_content" id="dialog_slot" />').append(o.content)
 			);
 			if (o.className) dialog.addClass(o.className);
+			if (o.apply) dialog.addClass('Q_overlay_apply');
 			if (o.destroyOnClose !== false) o.destroyOnClose = true;
 		}
 		dialog.hide();

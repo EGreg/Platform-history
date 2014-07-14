@@ -318,6 +318,7 @@ Q.Tool.define({
 	"Streams/publisher": "plugins/Streams/js/tools/publisher.js",
 	"Streams/basic": "plugins/Streams/js/tools/basic.js",
 	"Streams/access": "plugins/Streams/js/tools/access.js",
+	"Streams/subscription": "plugins/Streams/js/tools/subscription.js",
 	"Streams/related": "plugins/Streams/js/tools/related.js",
 	"Streams/inplace": "plugins/Streams/js/tools/inplace.js",
 	"Streams/html": "plugins/Streams/js/tools/html.js",
@@ -594,21 +595,43 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 	}
 }
 
+_toolInDialog = function(toolName, toolParams, callback, classContainer){
+	Q.Dialogs.push({
+		url: Q.action(toolName, toolParams),
+		removeOnClose: true,
+		onActivate: function(){
+			callback && callback.apply(this, arguments);
+		},
+		apply: true
+	}).addClass(classContainer || '');
+}
+
 /**
- * This function displays a Streams/access tool in a dialog
- * @method accessDialog
- * @param publisherId {String} id of publisher which is publishing the stream
- * @param streamName {String} name of stream
- * @param options {Object} Additional options to pass to Q.Dialogs.push
- */
-Streams.accessDialog = function(publisherId, streamName, options) {
-	Q.Dialogs.push(Q.extend({
-		url: Q.action("Streams/access", {
-			'publisherId': publisherId,
-			'streamName': streamName
-		}),
-		removeOnClose: true
-	}, options)).addClass('Streams_access_tool_dialog_container');
+* this function run subscription tool in dialog
+* @method subscriptionDialog
+* @param publisherId {String} id of publisher which is publishing the stream
+* @param streamName {String} the stream's name
+* @param callback {Function} The function to call after subscription tool dialog is render
+*/
+Streams.subscriptionDialog = function(publisherId, streamName, callback) {
+	_toolInDialog('Streams/subscription', {
+		publisherId: publisherId,
+		streamName : streamName
+	}, callback, 'Streams_subscription_tool_dialog_container');
+};
+
+/**
+* This function displays a Streams/access tool in a dialog
+* @method accessDialog
+* @param publisherId {String} id of publisher which is publishing the stream
+* @param streamName {String} the stream's name
+* @param callback {Function} The function to call after access tool dialog is render
+*/
+Streams.accessDialog = function(publisherId, streamName, callback) {
+	_toolInDialog('Streams/access', {
+		publisherId: publisherId,
+		streamName: streamName
+	}, callback, 'Streams_access_tool_dialog_container');
 };
 
 Streams.displayName = function(options) {

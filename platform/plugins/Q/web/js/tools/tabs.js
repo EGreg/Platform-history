@@ -168,6 +168,10 @@ Q.Tool.define("Q/tabs", function(options) {
 		return tab.getAttribute("data-name");
 	},
 	
+	getName: function (tab) {
+		return tab.getAttribute("data-name");
+	},
+	
 	getUrl: function (tab) {
 		var $tab = $(tab);
 		var state = this.state;

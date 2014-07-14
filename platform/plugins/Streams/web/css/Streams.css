@@ -486,6 +486,11 @@
 	.Streams_access_tool_dialog_container .Streams_access_user_array tr td:first-child+td select{ width: 98%; float: none; }
 }
 
-.Streams_userChooser_results a {
-	cursor: pointer;
-}
+/* User Chooser tool  */
+.Streams_userChooser_results a { cursor: pointer; }
+
+/* Streams subcription tool */
+.streams_subscription_container { width: 347px; }
+.streams_subscription_container .remove { cursor: pointer; }
+.Q_overlay .streams_subscription_container { width: 96%; margin: 0 auto; padding: 5px; }
+.Streams_subscription_tool_dialog_container { width: 300px; }
