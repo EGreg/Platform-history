@@ -4,17 +4,18 @@
  * Create or update subscription
  */
 function Streams_subscription_put($params) {
-	$items		   = array();
-	$subscribed    = 'no';
-	$streamName    = Streams::requestedName();
-	$publisherId   = Streams::requestedPublisherId(true);
-	$user  		   = Users::loggedInUser(true);
+	$items          = array();
+	$subscribed     = 'no';
+	$updateTemplate = true;
+	$streamName     = Streams::requestedName();
+	$publisherId    = Streams::requestedPublisherId(true);
+	$user           = Users::loggedInUser(true);
 
 	extract($_REQUEST);
 
-	$items = json_decode($items);
-
-	if (!$stream = Streams::fetchOne($user->id, $publisherId, $streamName)) {
+	$items  = json_decode($items);
+	$stream = Streams::fetchOne($user->id, $publisherId, $streamName);
+	if (!$stream) {
 		throw new Q_Exception_MissingRow(array(
 			'table'    => 'stream',
 			'criteria' => compact('publisherId', 'streamName')
@@ -27,51 +28,63 @@ function Streams_subscription_put($params) {
 		'streamName'  => $streamName
 	))->fetchDbRows(null, '', 'name');
 
-	/*
-	* TODO - resolve this
-	*/
-	$types = Q_Config::get('Streams', 'types', 'types');
-	$types = $types[$stream->type]['messages'];
-	if (!$types) {
-		throw new Q_Exception("Stream of type '{$stream->type}' does not support subscription");
-	}
+	$types = Q_Config::get('Streams', 'types', $stream->type, 'messages', array());
 
-	/*
-	* update rules
-	*/
-	while ($item = array_pop($items)) {
-		/*
-		* join "grouped" message types to $items
-		*/
-		foreach ($types as $type => $msg) {
-			if ($msg['title'] == $item->filter->labels and $type != $item->filter->types) {
-				$items[] = (object) array(
-					'deliver' => $item->deliver,
-					'filter'  => array(
-						'types'  		=> $type,
-						'labels' 		=> $msg['title'],
-						'notifycations' => $item->filter->notifycations
-					)
-				);
+	if ($subscribed !== 'no') {
+		// update rules
+		while ($item = array_pop($items)) {
+			// join "grouped" message types to $items
+			foreach ($types as $type => $msg) {
+				if ($msg['title'] == $item->filter->labels and $type != $item->filter->types) {
+					$items[] = (object) array(
+						'deliver' => $item->deliver,
+						'filter'  => array(
+							'types'         => $type,
+							'labels'        => $msg['title'],
+							'notifycations' => $item->filter->notifycations
+						)
+					);
+				}
 			}
-		}
 
-		if (!$rule = array_pop($rules)) {
-			$rule 			   = new Streams_Rule();
-			$rule->ofUserId    = $user->id;
-			$rule->publisherId = $publisherId;
-			$rule->streamName  = $streamName;
-			$rule->relevance   = 1;
-		}
+			if (!$rule = array_pop($rules)) {
+				$rule              = new Streams_Rule();
+				$rule->ofUserId    = $user->id;
+				$rule->publisherId = $publisherId;
+				$rule->streamName  = $streamName;
+				$rule->relevance   = 1;
+			}
 
-		$rule->filter		   = json_encode($item->filter);
-		$rule->deliver		   = json_encode($item->deliver);
-		$rule->save();
+			$rule->filter          = json_encode($item->filter);
+			$rule->deliver         = json_encode($item->deliver);
+			$rule->save();
+		}
 	}
 
 	foreach ($rules as $rule) {
 		$rule->remove();
 	}
 
-	$stream->subscribe();
+	$streams_subscription              = new Streams_Subscription();
+	$streams_subscription->streamName  = $streamName;
+	$streams_subscription->publisherId = $publisherId;
+	$streams_subscription->ofUserId    = $user->id;
+	$streams_subscription->filter      = json_encode(array());
+	$streams_subscription->retrieve();
+
+	$streams_participant               = new Streams_Participant();
+	$streams_participant->publisherId  = $publisherId;
+	$streams_participant->streamName   = $streamName;
+	$streams_participant->userId       = $user->id;
+	$streams_participant->state        = 'participating';
+	$streams_participant->reason       = '';
+	$streams_participant->retrieve();
+	$streams_participant->subscribed   = $subscribed;
+	$streams_participant->save();
+
+	if ($subscribed === 'yes') {
+		$stream->subscribe();
+	} else {
+		$stream->unsubscribe();
+	}
 }

@@ -175,21 +175,21 @@ Streams.iconUrl = function(icon, size) {
 };
 
 var _socket = null,
-    _messageHandlers = {},
-    _constructHandlers = {},
-    _refreshHandlers = {},
-    _streamMessageHandlers = {},
-    _streamFieldChangedHandlers = {},
-    _streamUpdatedHandlers = {},
-    _streamRelatedFromHandlers = {},
-    _streamRelatedToHandlers = {},
-    _streamUnrelatedFromHandlers = {},
-    _streamUnrelatedToHandlers = {},
-    _streamUpdatedRelateFromHandlers = {},
-    _streamUpdatedRelateToHandlers = {},
-    _streamConstructHandlers = {},
-    _streamRefreshHandlers = {},
-    _retain = undefined,
+	_messageHandlers = {},
+	_constructHandlers = {},
+	_refreshHandlers = {},
+	_streamMessageHandlers = {},
+	_streamFieldChangedHandlers = {},
+	_streamUpdatedHandlers = {},
+	_streamRelatedFromHandlers = {},
+	_streamRelatedToHandlers = {},
+	_streamUnrelatedFromHandlers = {},
+	_streamUnrelatedToHandlers = {},
+	_streamUpdatedRelateFromHandlers = {},
+	_streamUpdatedRelateToHandlers = {},
+	_streamConstructHandlers = {},
+	_streamRefreshHandlers = {},
+	_retain = undefined,
 	_retainedByKey = {},
 	_retainedByStream = {},
 	_retainedStreams = {};
@@ -261,22 +261,22 @@ function _connectSockets(refresh) {
 		Streams.refresh();
 	}
 }
-    /**
-     * disconnects all Streams sockets which have been connected
-     * note that this also affects other plugins that might be listening on the sockets
-     * maybe we should have another thing, I don't know, but for now it's ok
-     * @method _disconnectSockets
-     */
+	/**
+	 * disconnects all Streams sockets which have been connected
+	 * note that this also affects other plugins that might be listening on the sockets
+	 * maybe we should have another thing, I don't know, but for now it's ok
+	 * @method _disconnectSockets
+	 */
 function _disconnectSockets() {
 	Q.Socket.disconnectAll();
 }
-    /**
-     * Get Socket Session Id
-     * @method socketSessionId
-     * @param {String} publisherId
-     * @param {String} streamName
-     * @return {String}
-     */
+	/**
+	 * Get Socket Session Id
+	 * @method socketSessionId
+	 * @param {String} publisherId
+	 * @param {String} streamName
+	 * @return {String}
+	 */
 Streams.socketSessionId = function (publisherId, streamName) {
 	var s = Q.Socket.get('Streams', Q.nodeUrl({
 		publisherId: publisherId,
@@ -297,7 +297,7 @@ Streams.socketSessionId = function (publisherId, streamName) {
 Streams.actionUrl = function(publisherId, streamName, what)
 {
 	if (!what) {
- 		what = 'stream';
+		what = 'stream';
 	}
 	switch (what) {
 		case 'stream':
@@ -309,20 +309,20 @@ Streams.actionUrl = function(publisherId, streamName, what)
 };
 
 Q.Tool.define({
-	"Users/avatar": "plugins/Streams/js/tools/avatar.js", // override for Users/avatar tool
-	"Streams/chat": "plugins/Streams/js/tools/chat.js",
-	"Streams/comments": "plugins/Streams/js/tools/comments.js",
+	"Users/avatar"         : "plugins/Streams/js/tools/avatar.js", // override for Users/avatar tool
+	"Streams/chat"         : "plugins/Streams/js/tools/chat.js",
+	"Streams/comments"     : "plugins/Streams/js/tools/comments.js",
 	"Streams/photoSelector": "plugins/Streams/js/tools/photoSelector.js",
-	"Streams/userChooser": "plugins/Streams/js/tools/userChooser.js",
-	"Streams/participant": "plugins/Streams/js/tools/participant.js",
-	"Streams/publisher": "plugins/Streams/js/tools/publisher.js",
-	"Streams/basic": "plugins/Streams/js/tools/basic.js",
-	"Streams/access": "plugins/Streams/js/tools/access.js",
-	"Streams/subscription": "plugins/Streams/js/tools/subscription.js",
-	"Streams/related": "plugins/Streams/js/tools/related.js",
-	"Streams/inplace": "plugins/Streams/js/tools/inplace.js",
-	"Streams/html": "plugins/Streams/js/tools/html.js",
-	"Streams/preview": "plugins/Streams/js/tools/preview.js",
+	"Streams/userChooser"  : "plugins/Streams/js/tools/userChooser.js",
+	"Streams/participant"  : "plugins/Streams/js/tools/participant.js",
+	"Streams/publisher"    : "plugins/Streams/js/tools/publisher.js",
+	"Streams/basic"        : "plugins/Streams/js/tools/basic.js",
+	"Streams/access"       : "plugins/Streams/js/tools/access.js",
+	"Streams/subscription" : "plugins/Streams/js/tools/subscription.js",
+	"Streams/related"      : "plugins/Streams/js/tools/related.js",
+	"Streams/inplace"      : "plugins/Streams/js/tools/inplace.js",
+	"Streams/html"         : "plugins/Streams/js/tools/html.js",
+	"Streams/preview"  	   : "plugins/Streams/js/tools/preview.js",
 	"Streams/image/preview": "plugins/Streams/js/tools/image/preview.js"
 });
 
@@ -391,12 +391,12 @@ Streams.get = Q.getter(function (publisherId, streamName, callback, extra) {
 }, {cache: Q.Cache.document("Streams.get", 100), throttle: 'Streams.get'});
 Streams.get.onError = new Q.Event();
 
-    /**
-     * @method batchFunction
-     * @param {String} baseUrl
-     * @param {String} action
-     * @return {Function}
-     */
+	/**
+	 * @method batchFunction
+	 * @param {String} baseUrl
+	 * @param {String} action
+	 * @return {Function}
+	 */
 
 Streams.batchFunction = function Streams_batchFunction(baseUrl, action) {
 	action = action || 'batch';
@@ -447,7 +447,7 @@ Streams.create = function (fields, callback, related) {
 		publisherId: fields.publisherId,
 		streamName: "" // NOTE: the request is routed to wherever the "" stream would have been hosted
 	});
- 	fields["Q.clientId"] = Q.clientId();
+	fields["Q.clientId"] = Q.clientId();
 	var _r = _retain;
 	Q.req('Streams/stream', slotNames, function Stream_create_response_handler(err, data) {
 		var msg = Q.firstErrorMessage(err, data && data.errors);
@@ -882,33 +882,33 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
  */
 Stream.prototype.retainWith = Streams.retainWith;
 
-    /**
-     * Get All Stream Attributes
-     * @method getAll
-     * @param {Boolean} usePending
-     * @return {Array}
-     */
+	/**
+	 * Get All Stream Attributes
+	 * @method getAll
+	 * @param {Boolean} usePending
+	 * @return {Array}
+	 */
 
 Stream.prototype.getAll = function _Stream_prototype_getAll (usePending) {
 	return usePending ? this.pendingAttributes : this.attributes;
 };
 
-    /**
-     * @method get
-     * @param {String} attributeName
-     * @param {Boolean} usePending
-     * @return {Mixed}
-     */
+	/**
+	 * @method get
+	 * @param {String} attributeName
+	 * @param {Boolean} usePending
+	 * @return {Mixed}
+	 */
 Stream.prototype.get = function _Stream_prototype_get (attributeName, usePending) {
 	var attr = this.getAll(usePending);
 	return attr[attributeName];
 };
 
-    /**
-     * @method set
-     * @param {String} attributeName
-     * @param {Mixed} value
-     */
+	/**
+	 * @method set
+	 * @param {String} attributeName
+	 * @param {Mixed} value
+	 */
 
 Stream.prototype.set = function _Stream_prototype_set (attributeName, value) {
 	if (this.pendingAttributes === this.attributes) {
@@ -924,10 +924,10 @@ Stream.prototype.set = function _Stream_prototype_set (attributeName, value) {
 	this.pendingFields.attributes = JSON.stringify(this.pendingAttributes);
 };
 
-    /**
-     * @method clear
-     * @param {String} attributeName
-     */
+	/**
+	 * @method clear
+	 * @param {String} attributeName
+	 */
 
 Stream.prototype.clear = function _Stream_prototype_clear (attributeName) {
 	if (this.pendingAttributes === this.attributes) {
@@ -943,10 +943,10 @@ Stream.prototype.clear = function _Stream_prototype_clear (attributeName) {
 	this.pendingFields.attributes = JSON.stringify(this.pendingAttributes);
 };
 
-    /**
-     * @method save
-     * @param {Function} callback
-     */
+	/**
+	 * @method save
+	 * @param {Function} callback
+	 */
 
 Stream.prototype.save = function _Stream_prototype_save (callback) {
 	var that = this;
@@ -970,21 +970,21 @@ Stream.prototype.save = function _Stream_prototype_save (callback) {
 	}, { method: 'put', fields: this.pendingFields, baseUrl: baseUrl });
 };
 
-    /**
-     * @method remove
-     * @param {Function} callback
-     */
+	/**
+	 * @method remove
+	 * @param {Function} callback
+	 */
 
 Stream.prototype.remove = function _Stream_prototype_remove (callback) {
 	return Stream.remove(this.fields.publisherId, this.fields.name, callback);
 };
 
-    /**
-     * @method retain
-     * @param {String} key
-     * @param {Function} callback
-     * @return {Q.Streams.Stream}
-     */
+	/**
+	 * @method retain
+	 * @param {String} key
+	 * @param {Function} callback
+	 * @return {Q.Streams.Stream}
+	 */
 
 Stream.prototype.retain = function _Stream_prototype_retain (key, callback) {
 	var ps = Streams.key(this.fields.publisherId, this.fields.name);
@@ -1729,11 +1729,11 @@ Stream.remove = function _Stream_remove (publisherId, streamName, callback) {
 };
 Stream.remove.onError = new Q.Event();
 
-    /**
-     * @class Streams.Message
-     * @constructor
-     * @param {Object} obj
-     */
+	/**
+	 * @class Streams.Message
+	 * @constructor
+	 * @param {Object} obj
+	 */
 
 var Message = Streams.Message = function Streams_Message(obj) {
 	Q.extend(this, obj);
@@ -2103,7 +2103,7 @@ Avatar.get.onError = new Q.Event();
  */
 Avatar.byPrefix = Q.getter(function _Avatar_byPrefix (prefix, callback, options) {
 	var userId = Q.plugins.Users.loggedInUser ? Q.Users.loggedInUser.id : "";
-   	var func = Streams.batchFunction(Q.baseUrl({
+	var func = Streams.batchFunction(Q.baseUrl({
 		userId: userId // if userId is empty, then we query avatars on one of the public servers
 	}), 'avatar');
 	var fields = Q.take(options, ['limit', 'offset', 'public']);
