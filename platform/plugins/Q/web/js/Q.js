@@ -80,17 +80,18 @@ Object.keys = (function () {
 	};
 })();
 
-String.prototype.toCapitalized = function _String_prototype_toCapitalized() {
+var Sp = String.prototype;
+Sp.toCapitalized = function _String_prototype_toCapitalized() {
 	return (this + '').replace(/^([a-z])|\s+([a-z])/g, function (found) {
 		return found.toUpperCase();
 	});
 };
 
-String.prototype.isUrl = function _String_prototype_isUrl () {
+Sp.isUrl = function _String_prototype_isUrl () {
 	return this.match(new RegExp("^[A-Za-z]*:\/\/"));
 };
 
-String.prototype.encodeHTML = function _String_prototype_encodHTML(quote_style, charset, double_encode) {
+Sp.encodeHTML = function _String_prototype_encodHTML(quote_style, charset, double_encode) {
 	return this.replaceAll({
 		'&': '&amp;',
 		'<': '&lt;',
@@ -101,7 +102,7 @@ String.prototype.encodeHTML = function _String_prototype_encodHTML(quote_style, 
 	});
 };
 
-String.prototype.decodeHTML = function _String_prototype_encodHTML(quote_style, charset, double_encode) {
+Sp.decodeHTML = function _String_prototype_encodHTML(quote_style, charset, double_encode) {
 	return this.replaceAll({
 		'&amp;': '&',
 		'&lt;': '<',
@@ -113,7 +114,7 @@ String.prototype.decodeHTML = function _String_prototype_encodHTML(quote_style, 
 	});
 };
 
-String.prototype.quote = function _String_prototype_quote() {
+Sp.quote = function _String_prototype_quote() {
 	var c, i, l = this.length, o = '"';
 	for (i = 0; i < l; i += 1) {
 		c = this.charAt(i);
@@ -149,7 +150,7 @@ String.prototype.quote = function _String_prototype_quote() {
 	return o + '"';
 };
 
-String.prototype.interpolate = function _String_prototype_interpolate(o) {
+Sp.interpolate = function _String_prototype_interpolate(o) {
 	return this.replace(/\{\{([^{}]*)\}\}/g,
 		function (a, b) {
 			var r = o[b];
@@ -158,7 +159,7 @@ String.prototype.interpolate = function _String_prototype_interpolate(o) {
 	);
 };
 
-String.prototype.replaceAll = function _String_prototype_replaceAll(pairs) {
+Sp.replaceAll = function _String_prototype_replaceAll(pairs) {
 	var result = this;
 	for (var k in pairs) {
 		result = result.replace(new RegExp(k, 'g'), pairs[k]);
@@ -173,7 +174,7 @@ String.prototype.replaceAll = function _String_prototype_replaceAll(pairs) {
  * @param value {String} Optional, provide a value to set in the querystring, or null to delete any fields that match name as a RegExp
  * @return {String} the value of the field in the string, or if value was not undefined, the resulting querystring
  */
-String.prototype.queryField = function Q_queryField(name, value) {
+Sp.queryField = function Q_queryField(name, value) {
 	var what = this;
 	var prefixes = ['#!', '#', '?', '!'], count = prefixes.length, prefix = '', i, l, p, keys, parsed;
 	for (var i=0; i<count; ++i) {
@@ -213,12 +214,12 @@ String.prototype.queryField = function Q_queryField(name, value) {
 	}
 };
 
-    /**
-     * @method String.hashCode
-     * @return {number}
-     */
-
-String.prototype.hashCode = function() {
+/**
+ * Obtain some unique hash from a string, analogous to Q_Utils::hashCode
+ * @method String.hashCode
+ * @return {number}
+ */
+Sp.hashCode = function() {
 	var hash = 0;
 	if (this.length == 0) return hash;
 	for (i = 0; i < this.length; i++) {
@@ -230,21 +231,21 @@ String.prototype.hashCode = function() {
 	return hash;
 };
 
-    /**
-     * @method String.trim
-     * @return {String}
-     */
-String.prototype.trim = String.prototype.trim || function _String_prototype_trim() {
+/**
+ * @method String.trim
+ * @return {String}
+ */
+Sp.trim = String.prototype.trim || function _String_prototype_trim() {
 	return this.replace(/^\s+|\s+$/g, "");
 };
 
-    /**
-     * @method String.parseUrl
-     * @param {String} component
-     * @return {String}
-     */
-
-String.prototype.parseUrl = function _String_prototype_parseUrl (component) {
+/**
+ * Analogous to PHP's parse_url function
+ * @method String.parseUrl
+ * @param {String} component Optional name of component to return
+ * @return {String}
+ */
+Sp.parseUrl = function _String_prototype_parseUrl (component) {
 	// http://kevin.vanzonneveld.net
 	// modified by N.I for 'php' parse mode
 	var key = ['source', 'scheme', 'authority', 'userInfo', 'user', 'pass', 'host', 'port', 'relative', 'path', 'directory', 'file', 'query', 'fragment'],
@@ -253,20 +254,22 @@ String.prototype.parseUrl = function _String_prototype_parseUrl (component) {
 	while (i--) {
 		if (m[i]) uri[key[i]] = m[i];
 	}
-	if (component) return uri[component.replace('PHP_URL_', '').toLowerCase()];
+	if (component) {
+		return uri[component.replace('PHP_URL_', '').toLowerCase()];
+	}
 	delete uri.source;
 	return uri;
 };
 
-    /**
-     * @method String.sameDomain
-     * @param {String} url2
-     * @param {Object} options
-     * @return {boolean}
-     * @private
-     */
-
-String.prototype.sameDomain = function _String_prototype_sameDomain (url2, options) {
+/**
+ * @method String.sameDomain
+ * @param {String} url2 The url to compare against
+ * @param {Object} options can include the following:
+ *  "compareScheme": boolean for whether the url scheme should be compared also
+ * @return {boolean}
+ * @private
+ */
+Sp.sameDomain = function _String_prototype_sameDomain (url2, options) {
 	var parsed1 = this.parseUrl(),
 		parsed2 = url2.parseUrl();
 	var same = (parsed1.host === parsed2.host)
@@ -351,6 +354,8 @@ Date.now = function _Date_now() {
 
 if (window.Element) { // only IE7 and lower, which we don't support, wouldn't have this
 
+var Elp = Element.prototype;
+
 /**
  * Call this on an element to access tools attached to it.
  * The tools are like "view models".
@@ -359,14 +364,14 @@ if (window.Element) { // only IE7 and lower, which we don't support, wouldn't ha
  * @param {String} toolName
  * @return {Q.Tool|null}
  */
-if (!Element.prototype.Q)
-Element.prototype.Q = function (toolName) {
+if (!Elp.Q)
+Elp.Q = function (toolName) {
 	// this method is overridden by the tool constructor on specific elements
 	return null;
 };
 
-if (!Element.prototype.contains)
-Element.prototype.contains = function (child) {
+if (!Elp.contains)
+Elp.contains = function (child) {
 	if (!child) return false;
 	var node = child.parentNode;
 	while (node != null) {
@@ -378,12 +383,12 @@ Element.prototype.contains = function (child) {
 	return false;
 };
 
-Element.prototype.isOrContains = function (child) {
+Elp.isOrContains = function (child) {
 	if (!child) return false;
 	return this === child || this.contains(child);
 };
 
-Element.prototype.computedStyle = function(name) {
+Elp.computedStyle = function(name) {
 	var computedStyle;
 	if ( this.currentStyle !== undefined ) {
 		computedStyle = this.currentStyle;
@@ -393,7 +398,7 @@ Element.prototype.computedStyle = function(name) {
 	return name ? computedStyle[name] : computedStyle;
 };
 
-Element.prototype.copyComputedStyle = function(src) {
+Elp.copyComputedStyle = function(src) {
 	var s = src.computedStyle();
 	for ( var i in s ) {
 		// Do not use `hasOwnProperty`, nothing will get copied
@@ -413,7 +418,7 @@ Element.prototype.copyComputedStyle = function(src) {
 	return this;
 };
 
-Element.prototype.swap = function(element) {
+Elp.swap = function(element) {
 	var parent1, next1, parent2, next2;
 	parent1 = this.parentNode;
 	next1   = this.nextSibling;
@@ -424,7 +429,7 @@ Element.prototype.swap = function(element) {
 };
 
 function _returnFalse() { return false; }
-Element.prototype.preventSelections = function (deep) {
+Elp.preventSelections = function (deep) {
 	Q.addEventListener(this, 'selectstart', _returnFalse);
 	this.preventSelectionsInfo = this.preventSelectionsInfo || {
 		style: this.style['-moz-user-select']
@@ -444,7 +449,7 @@ Element.prototype.preventSelections = function (deep) {
 	});
 };
 
-Element.prototype.restoreSelections = function (deep) {
+Elp.restoreSelections = function (deep) {
 	var p = this.preventSelectionsInfo;
 	if (p) {
 		this.style['-moz-user-select']
@@ -461,7 +466,7 @@ Element.prototype.restoreSelections = function (deep) {
 	});
 };
 
-Element.prototype.isBefore = function (element, context) {
+Elp.isBefore = function (element, context) {
 	var before = true, that = this;
 	context = context || document.documentElement; // TODO: can triangulate a parentNode instead
 	Q.find(context, null, function (elem) {
@@ -476,7 +481,7 @@ Element.prototype.isBefore = function (element, context) {
 	return before;
 };
 
-Element.prototype.hasClass = function (className) {
+Elp.hasClass = function (className) {
 	if (this.classList) {
 		return this.classList.contains(className)
 	} else {
@@ -484,7 +489,7 @@ Element.prototype.hasClass = function (className) {
 	}
 };
 
-Element.prototype.removeClass = function (className) {
+Elp.removeClass = function (className) {
 	if (this.classList) {
 		this.classList.remove(className)
 	} else {
@@ -493,7 +498,7 @@ Element.prototype.removeClass = function (className) {
 	return this;
 };
 
-Element.prototype.addClass = function (className) {
+Elp.addClass = function (className) {
 	if (this.classList) {
 		this.classList.add(className)
 	} else {
@@ -503,7 +508,7 @@ Element.prototype.addClass = function (className) {
 	return this;
 };
 
-Element.prototype.text = function() {
+Elp.text = function() {
 	return el.textContent || el.innerText;
 };
 
@@ -527,7 +532,7 @@ if(!document.getElementsByClassName) {
 		return Array.prototype.slice.call(this.querySelectorAll("." + className));
 	};
 	if (window.Element) {
-		Element.prototype.getElementsByClassName = document.getElementsByClassName;
+		Elp.getElementsByClassName = document.getElementsByClassName;
 	}
 }
 
@@ -1508,8 +1513,6 @@ Q.Event.forPage = [];
 Q.Event.jQueryForTool = {};
 Q.Event.jQueryForPage = [];
 
-Q.Event.prototype.occurred = false;
-
 /**
  * Returns a Q.Event that will fire given an DOM object and an event name
  * @method Event.from
@@ -1555,6 +1558,9 @@ Q.Event.calculateKey = function _Q_Event_calculateKe(key, container, start) {
 };
 Q.Event.calculateKey.keys = [];
 
+var Evp = Q.Event.prototype;
+Evp.occurred = false;
+
 /**
  * Adds a callable to a handler, or overwrites an existing one
  * @method Event.set
@@ -1570,7 +1576,7 @@ Q.Event.calculateKey.keys = [];
  * @param {Boolean} prepend If true, then prepends the handler to the chain
  * @return {String} The key under which the event was set
  */
-Q.Event.prototype.set = function _Q_Event_prototype_set(callable, key, prepend) {
+Evp.set = function _Q_Event_prototype_set(callable, key, prepend) {
 	var i, isTool = (Q.typeOf(key) === 'Q.Tool');
 	if (key === true || (key === undefined && Q.Page.beingActivated)) {
 		Q.Event.forPage.push(this);
@@ -1612,7 +1618,7 @@ Q.Event.prototype.set = function _Q_Event_prototype_set(callable, key, prepend) 
  * @param {Boolean} prepend If true, then prepends the handler to the chain
  * @return {String} The key under which the handler was set
  */
-Q.Event.prototype.add = function _Q_Event_prototype_add(callable, key, prepend) {
+Evp.add = function _Q_Event_prototype_add(callable, key, prepend) {
 	var ret = this.set(callable, key, prepend);
 	if (this.occurred) {
 		Q.handle(callable, this.lastContext, this.lastArgs);
@@ -1627,7 +1633,7 @@ Q.Event.prototype.add = function _Q_Event_prototype_add(callable, key, prepend) 
  *  The key of the callable to remove.
  *  Pass a Q.Tool object here to remove the handler, if any, associated with this tool.
  */
-Q.Event.prototype.remove = function _Q_Event_prototype_remove(key) {
+Evp.remove = function _Q_Event_prototype_remove(key) {
 	// Only available in the front-end Q.js: {
 	if (Q.typeOf(key) === 'Q.Tool')	{
 		key = key.id;
@@ -1672,7 +1678,7 @@ Q.Event.prototype.remove = function _Q_Event_prototype_remove(key) {
  *  The key of the callable to remove.
  *  Pass a Q.Tool object here to remove the handler, if any, associated with this tool.
  */
-Q.Event.prototype.removeAllHandlers = function _Q_Event_prototype_removeAllHandlers() {
+Evp.removeAllHandlers = function _Q_Event_prototype_removeAllHandlers() {
 	this.handlers = {};
 	this.keys = [];
 	if (this._onEmpty) {
@@ -1689,7 +1695,7 @@ Q.Event.prototype.removeAllHandlers = function _Q_Event_prototype_removeAllHandl
  * @param {Boolean} prepend If true, then prepends the handler to the chain
  * @return {Q.Event} A new Q.Event object
  */
-Q.Event.prototype.until = function _Q_Event_prototype_until(anotherEvent) {
+Evp.until = function _Q_Event_prototype_until(anotherEvent) {
 	var newEvent = new Q.Event();
 	var key = this.add(newEvent.handle);
 	var event = this;
@@ -1704,7 +1710,7 @@ Q.Event.prototype.until = function _Q_Event_prototype_until(anotherEvent) {
  * @method Event.copy
  * @return {Q.Event}
  */
-Q.Event.prototype.copy = function _Q_Event_prototype_copy() {
+Evp.copy = function _Q_Event_prototype_copy() {
 	var result = new Q.Event();
 	for (var i=0; i<this.keys.length; ++i) {
 		result.handlers[this.keys[i]] = this.handlers[this.keys[i]];
@@ -1713,19 +1719,19 @@ Q.Event.prototype.copy = function _Q_Event_prototype_copy() {
 	return result;
 };
 
-Q.Event.prototype.onFirst = function () {
+Evp.onFirst = function () {
    return this._onFirst || (this._onFirst = new Q.Event());
 };
 
-Q.Event.prototype.onSet = function () {
+Evp.onSet = function () {
    return this._onSet || (this._onSet = new Q.Event());
 };
 
-Q.Event.prototype.onRemove = function () {
+Evp.onRemove = function () {
    return this._onRemove || (this._onRemove = new Q.Event());
 };
 
-Q.Event.prototype.onEmpty = function () {
+Evp.onEmpty = function () {
    return this._onEmpty || (this._onEmpty = new Q.Event());
 };
 

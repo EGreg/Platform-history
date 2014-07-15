@@ -50,7 +50,7 @@ function Streams_subscription_put($params) {
 					'filter'  => array(
 						'types'  		=> $type,
 						'labels' 		=> $msg['title'],
-						'notifycations' => $item->filter->notifycations
+						'notifications' => $item->filter->notifications
 					)
 				);
 			}
