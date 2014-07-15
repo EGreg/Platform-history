@@ -247,8 +247,10 @@ function (options) {
 
         if (!useZoom) {
             var parent = container.parent();
-            if ( stretcher.width()*factor <= parent.width() || stretcher.height()*factor <=  parent.height() ) {
-                console.log(stretcher.width()*factor, parent.width());
+            var image = stretcher.children();
+            if ( image.width()*factor <= parent.width() || image.height()*factor <=  parent.height() ) {
+                console.log('image width '+ image.width()*factor + ' parent '+ parent.width());
+                console.log('image height '+ image.height()*factor + ' parent '+ parent.height());
                 console.log('Block zoom out');
                 return false;
             }
