@@ -227,8 +227,6 @@ function (options) {
         console.log(' scale.factor ', scale.factor, 'factor ', factor);
         var left1, left2, left3, top1, top2, top3, offset, css;
         var offset = stretcher.position();
-        var abs_offset = container.offset();
-//        x -=  abs_offset.left; y -= abs_offset.top;
 
         console.log('scale offset'+offset);
         var f = useZoom ? scale.factor : 1;
@@ -244,8 +242,8 @@ function (options) {
 
         left1 = parseInt(stretcher.css('left')) * f;
         top1 = parseInt(stretcher.css('top')) * f;
-        left1 -= (x - offset.left) * (factor / scale.factor ); //- 1
-        top1 -= (y - offset.top) * (factor / scale.factor );//- 1
+        left1 -= (x - offset.left) * (factor / scale.factor - 1); //- 1
+        top1 -= (y - offset.top) * (factor / scale.factor - 1);//- 1
 
         if (!useZoom) {
             var parent = container.parent();
