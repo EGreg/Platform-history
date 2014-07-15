@@ -85,7 +85,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
          function _doCanvasCrop (data, coord, callback) {
 //              nothing to crop
             if ( ! data || ! coord ) {
-                return;
+                throw new Q.Exception('Q/imagepicker: Not specified neccessary data!');
             }
 
             var canvas = $('<canvas style="display:none"></canvas>').appendTo('body')[0];
@@ -113,8 +113,9 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 
                 context.drawImage(imageObj, sourceX, sourceY, sourceWidth, sourceHeight, destX, destY, destWidth, destHeight);
                 var imageData = canvas.toDataURL();
-                callback.call(this, canvas.toDataURL() );
                 $(canvas).remove();
+                callback.call(this, imageData );
+
 
             };
             imageObj.src = data;
@@ -208,7 +209,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 
             return {
                 width: Math.max.apply( Math, widths ),
-                heights: Math.max.apply( Math, heights )
+                height: Math.max.apply( Math, heights )
             };
         };
         
@@ -226,7 +227,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
             };
             Q.extend(params, override);
 
-            if (! state.saveSizeName && ! state.hasOwnProperty('cropping') ) {
+            if (! state.saveSizeName && ! state.cropping  ) {
                 _doUpload(params);
                 return;
             }
@@ -237,7 +238,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 
             img.onload = function() {
 //              TODO add option useAnySize
-                if (state.saveSizeName  && ! state.hasOwnProperty('cropping') ) {
+                if (state.saveSizeName  && ! state.cropping ) {
 //                  do reduce image to showSize by default
                     var requiredSize  = _calculateRequiredSize(state.saveSizeName);
 
@@ -250,7 +251,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
                         _doUpload(params);
                     });
                 }
-                if (state.saveSizeName  && state.hasOwnProperty('cropping') ) {
+                if (state.saveSizeName  && state.cropping ) {
                     function _cropAndUpload(coord) {
 
 //                      1) TODO calc if crop area is not 1:1 to real
@@ -289,7 +290,8 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
                         },
                         onActivate
                         : {"Q/imagepicker": function () {
-                            croppingElement.css({width:500, height:500})
+//                          TODO: width and height should be proportial to orginal file
+                            croppingElement.css({width:1000, height:750})
                                 .plugin('Q/viewport',{
                                     initial:{left: 0, top: 0, width: 200, height: 200 }
                                 })
@@ -305,14 +307,13 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 
 		function _doUpload(override) {
 			if (override === false || (override && override.cancel)) {
-				var state = $this.state('Q/imagepicker');
 				$this.attr('src', state.oldSrc).stop().removeClass('Q_imagepicker_uploading');
 				return;
 			}
 			var params = {
 				'data': data,
-				'path': $this.state('Q/imagepicker').path,
-				'subpath': $this.state('Q/imagepicker').subpath,
+				'path': state.path,
+				'subpath': state.subpath,
 				'save': state.saveSizeName,
 				'url': state.url,
 				'loader': state.loader
@@ -321,7 +322,6 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 				params.crop = state.crop;
 			}
 			Q.extend(params, override);
-			var state = $this.state('Q/imagepicker');
 			if (params.save && !params.save[state.showSize]) {
 				throw new Q.Error("Q/imagepicker tool: no size found corresponding to showSize");
 			}
