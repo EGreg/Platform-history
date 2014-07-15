@@ -3,11 +3,15 @@
 	 * Streams/subscription tool
 	 */
 	Q.Tool.define('Streams/subscription', function(options) {
+		if ($.isEmptyObject(options)) {
+			return false;
+		}
+
 		var $el   = $(this.element),
 			self  = this,
 			types = options.messageTypes.slice(0);
 
-		options.isSetTypes = !!types.length;
+		options.isRenderItems = (options.messageTypes.length && options.devices.length);
 
 		var render = function(params) {
 			prettyData();
@@ -31,6 +35,15 @@
 						'[name=stoppingAfter] '+
 						'option[value='+options.items[i].filter.notifycations+']').attr('selected', 'selected');
 				
+					$el.find(
+						'.notification-item[data-types="'+options.items[i].filter.types+'"] '+
+						'[name=devices] '+
+						'option').each(function(){
+							if ($(this).attr('value') == options.items[i].deliver) {
+								$(this).attr('selected', 'selected');
+							}
+						});
+
 					/*
 					* remove selected types in list "add message type"
 					*/
@@ -75,18 +88,6 @@
 			}), ['content'], function(){});
 		};
 
-		var selectOption = function(listName, value, $node) {
-			if (!$node) {
-				$node = $el;
-			}
-
-			$node.find('[name='+listName+'] option').each(function(){
-				if($(this).val() == value){
-					$(this).attr('selected', 'selected');
-				}
-			});
-		};
-
 		var popType = function(type, data, isDel) {
 			if (isDel === undefined) {
 				isDel = true;
@@ -124,6 +125,12 @@
 
 			$el.find('[name=subscribed]').live('change', function(){
 				options.subscribed = $(this).is(':checked') ? 'yes' : 'no';
+
+				if (options.subscribed == 'no') {
+					options.items = [];
+					options.messageTypes = types;
+				}
+
 				render({ isSaved: true });
 			});
 
@@ -131,6 +138,13 @@
 				var types = $(this).parents('.notification-item').data('types');
 
 				popItem(types, false).filter.notifycations = $(this).val();
+				update();
+			});
+
+			$el.find('[name=devices]').live('change', function(){
+				var types = $(this).parents('.notification-item').data('types');				
+
+				popItem(types, false).deliver = $(this).val();
 				update();
 			});
 
@@ -155,7 +169,7 @@
 				}
 
 				options.items.push({
-					deliver: $el.find('[name=devices]').val(),
+					deliver: options.devices[0].value,
 					filter : {
 						types 		 : item.value,
 						labels		 : item.name,
@@ -172,11 +186,11 @@
 
 	Q.Template.set('Streams/subscription/view',
 		'<div class="streams_subscription_container">'+
-			'<div class="Q_left w10">'+
-				'<input type="checkbox" name="subscribed" {{#subscribed}} checked {{/subscribed}} />'+
+			'<div class="Q_left Q_w10">'+
+				'<input type="checkbox" name="subscribed" id="Streams_subscription_subscribed" {{#subscribed}} checked {{/subscribed}} />'+
 			'</div>'+
-			'<div class="Q_right w90">'+
-				'<b>Participaties</b>'+
+			'<div class="Q_right Q_w90">'+
+				'<label for="Streams_subscription_subscribed"><b>Participaties</b></label>'+
 				'<br />'+
 				'<small>'+
 					'Get, real-time updates when<br />'+
@@ -184,31 +198,26 @@
 				'</small>'+
 			'</div>'+
 			'<div class="Q_clear"></div>'+
-			'{{#isSetTypes}}'+
+			'{{#isRenderItems}}'+
 				'{{#subscribed}}'+
-					'<hr />'+
-					'<b>'+
-						'When I\'m offline</br />'+
-						'notify me about'+
-					'</b>'+
-					'<br />'+
-					'send to&nbsp;'+
-					'<select name="devices">'+
-						'{{#devices}}'+
-							'<option value="{{value}}">{{name}}</option>'+
-						'{{/devices}}'+
-					'</select>'+
-					'<div class="notifycations"></div>'+
-					'<hr />'+
 					'{{#items}}'+
 						'<div class="notification-item" data-types="{{filter.types}}">'+
-							'<b class="Q_left w90 messageType" data-value="{{filter.types}}">'+
-								'{{filter.labels}}'+
-							'</b>'+
-							'<div class="Q_right w10 remove">'+
-								'x'+
-							'</div>'+
+							'<hr />'+
+							'<b class="Q_left Q_w90">When I\'m offline</br />notify me about</b>'+
+							'<div class="Q_right Q_w10 remove">x</div>'+
 							'<div class="Q_clear"></div>'+
+							'<span class="messageType" data-value="{{filter.types}}">'+
+								'{{filter.labels}}'+
+							'</span>'+
+							'<br />'+
+							'send to&nbsp;'+
+							'<select name="devices">'+
+								'{{#devices}}'+
+									'<option value="{{value}}">{{name}}</option>'+
+								'{{/devices}}'+
+							'</select>'+
+							'<div class="notifycations"></div>'+
+							'<br />'+
 							'stopping after&nbsp;'+
 							'<select name="stoppingAfter">'+
 								'<option value="1">1</option>'+
@@ -217,7 +226,6 @@
 								'<option value="10">10</option>'+
 							'</select>'+
 							'&nbsp;alerts'+
-							'<hr />'+
 						'</div>'+
 					'{{/items}}'+
 					'<select class="add">'+
@@ -227,7 +235,7 @@
 						'{{/messageTypes}}'+
 					'</select>'+
 				'{{/subscribed}}'+
-			'{{/isSetTypes}}'+
+			'{{/isRenderItems}}'+
 		'</div>'
 	);
 })(Q, jQuery);

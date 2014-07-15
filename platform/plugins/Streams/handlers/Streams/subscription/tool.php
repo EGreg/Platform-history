@@ -7,8 +7,7 @@
  *  "streamName" => the name of the stream for which to edit access levels
  */
 function Streams_subscription_tool($options) {
-	$updateTemplate = true;
-	$subscribed     = 'no';
+	$subscribed = 'no';
 
 	extract($options);
 
@@ -22,14 +21,7 @@ function Streams_subscription_tool($options) {
 		$streamName = Streams::requestedName();
 	}
 
-	$stream = Streams::fetchOne(
-		$user->id,
-		$publisherId,
-		$streamName,
-		'*',
-		array('includeTemplate' => $updateTemplate )
-	);
-
+	$stream = Streams::fetchOne($user->id, $publisherId, $streamName);
 	if (!$stream) {
 		throw new Q_Exception_MissingRow(array(
 			'table'    => 'stream',
