@@ -3,13 +3,15 @@
 	 * Streams/subscription tool
 	 */
 	Q.Tool.define('Streams/subscription', function(options) {
+		if ($.isEmptyObject(options)) {
+			return false;
+		}
+
 		var $el   = $(this.element),
 			self  = this,
 			types = options.messageTypes.slice(0);
 
-		window.types 		= types;
-		window.messageTypes = options.messageTypes;
-		window.items 	    = options.items;
+		options.isRenderItems = (options.messageTypes.length && options.devices.length);
 
 		var render = function(params) {
 			prettyData();
@@ -31,8 +33,17 @@
 					$el.find(
 						'.notification-item[data-types="'+options.items[i].filter.types+'"] '+
 						'[name=stoppingAfter] '+
-						'option[value='+options.items[i].filter.notifycations+']').attr('selected', 'selected');
+						'option[value='+options.items[i].filter.notifications+']').attr('selected', 'selected');
 				
+					$el.find(
+						'.notification-item[data-types="'+options.items[i].filter.types+'"] '+
+						'[name=devices] '+
+						'option').each(function(){
+							if ($(this).attr('value') == options.items[i].deliver) {
+								$(this).attr('selected', 'selected');
+							}
+						});
+
 					/*
 					* remove selected types in list "add message type"
 					*/
@@ -68,24 +79,13 @@
 
 		var update = function(){
 			Q.request(Q.action('Streams/subscription', {
-				'Q.method'   : 'put',
-				'subscribed' : $el.find('[name=subscribed]').is(':checked') ? 'yes' : 'no',
-				'streamName' : options.streamName,
-				'publisherId': options.publisherId,
-				'items'      : JSON.stringify(options.items.slice(0))
+				'Q.method'       : 'put',
+				'updateTemplate' : true,
+				'subscribed'     : $el.find('[name=subscribed]').is(':checked') ? 'yes' : 'no',
+				'streamName'     : options.streamName,
+				'publisherId'    : options.publisherId,
+				'items'          : JSON.stringify(options.items.slice(0))
 			}), ['content'], function(){});
-		};
-
-		var selectOption = function(listName, value, $node) {
-			if (!$node) {
-				$node = $el;
-			}
-
-			$node.find('[name='+listName+'] option').each(function(){
-				if($(this).val() == value){
-					$(this).attr('selected', 'selected');
-				}
-			});
 		};
 
 		var popType = function(type, data, isDel) {
@@ -125,13 +125,26 @@
 
 			$el.find('[name=subscribed]').live('change', function(){
 				options.subscribed = $(this).is(':checked') ? 'yes' : 'no';
+
+				if (options.subscribed == 'no') {
+					options.items = [];
+					options.messageTypes = types;
+				}
+
 				render({ isSaved: true });
 			});
 
 			$el.find('[name=stoppingAfter]').live('change', function(){
 				var types = $(this).parents('.notification-item').data('types');
 
-				popItem(types, false).filter.notifycations = $(this).val();
+				popItem(types, false).filter.notifications = $(this).val();
+				update();
+			});
+
+			$el.find('[name=devices]').live('change', function(){
+				var types = $(this).parents('.notification-item').data('types');				
+
+				popItem(types, false).deliver = $(this).val();
 				update();
 			});
 
@@ -156,11 +169,11 @@
 				}
 
 				options.items.push({
-					deliver: $el.find('[name=devices]').val(),
+					deliver: options.devices[0].value,
 					filter : {
 						types 		 : item.value,
 						labels		 : item.name,
-						notifycations: 1
+						notifications: 1
 					}
 				});
 
@@ -173,57 +186,53 @@
 
 	Q.Template.set('Streams/subscription/view',
 		'<div class="streams_subscription_container">'+
-			'<div class="left w10">'+
-				'<input type="checkbox" name="subscribed" {{#subscribed}} checked {{/subscribed}} />'+
+			'<div class="Q_left Q_w10">'+
+				'<input type="checkbox" name="subscribed" id="Streams_subscription_subscribed" {{#subscribed}} checked {{/subscribed}} />'+
 			'</div>'+
-			'<div class="right w90">'+
-				'<b>Participating</b>'+
+			'<div class="Q_right Q_w90">'+
+				'<label for="Streams_subscription_subscribed"><b>Participaties</b></label>'+
 				'<br />'+
 				'<div>Get real-time updates when you are online.</div>'+
 			'</div>'+
-			'<div class="clear"></div>'+
-			'{{#subscribed}}'+
-				'<hr />'+
-				'<b>'+
-					'When I\'m offline</br />'+
-					'notify me about'+
-				'</b>'+
-				'<br />'+
-				'send to&nbsp;'+
-				'<select name="devices">'+
-					'{{#devices}}'+
-						'<option value="{{value}}">{{name}}</option>'+
-					'{{/devices}}'+
-				'</select>'+
-				'<div class="notifycations"></div>'+
-				'<hr />'+
-				'{{#items}}'+
-					'<div class="notification-item" data-types="{{filter.types}}">'+
-						'<b class="left w90 messageType" data-value="{{filter.types}}">'+
-							'{{filter.labels}}'+
-						'</b>'+
-						'<div class="right w10 remove">'+
-							'x'+
+			'<div class="Q_clear"></div>'+
+			'{{#isRenderItems}}'+
+				'{{#subscribed}}'+
+					'{{#items}}'+
+						'<div class="notification-item" data-types="{{filter.types}}">'+
+							'<hr />'+
+							'<b class="Q_left Q_w90">When I\'m offline</br />notify me about</b>'+
+							'<div class="Q_right Q_w10 remove">x</div>'+
+							'<div class="Q_clear"></div>'+
+							'<span class="messageType" data-value="{{filter.types}}">'+
+								'{{filter.labels}}'+
+							'</span>'+
+							'<br />'+
+							'send to&nbsp;'+
+							'<select name="devices">'+
+								'{{#devices}}'+
+									'<option value="{{value}}">{{name}}</option>'+
+								'{{/devices}}'+
+							'</select>'+
+							'<div class="notifications"></div>'+
+							'<br />'+
+							'stopping after&nbsp;'+
+							'<select name="stoppingAfter">'+
+								'<option value="1">1</option>'+
+								'<option value="3">3</option>'+
+								'<option value="5">5</option>'+
+								'<option value="10">10</option>'+
+							'</select>'+
+							'&nbsp;alerts'+
 						'</div>'+
-						'<div class="clear"></div>'+
-						'stopping after&nbsp;'+
-						'<select name="stoppingAfter">'+
-							'<option value="1">1</option>'+
-							'<option value="3">3</option>'+
-							'<option value="5">5</option>'+
-							'<option value="10">10</option>'+
-						'</select>'+
-						'&nbsp;alerts'+
-						'<hr />'+
-					'</div>'+
-				'{{/items}}'+
-				'<select class="add">'+
-					'<option selected>add message type</option>'+
-					'{{#messageTypes}}'+
-						'<option value="{{value}}" data-name="{{name}}">{{name}}</option>'+
-					'{{/messageTypes}}'+
-				'</select>'+
-			'{{/subscribed}}'+
+					'{{/items}}'+
+					'<select class="add">'+
+						'<option selected>add message type</option>'+
+						'{{#messageTypes}}'+
+							'<option value="{{value}}" data-name="{{name}}">{{name}}</option>'+
+						'{{/messageTypes}}'+
+					'</select>'+
+				'{{/subscribed}}'+
+			'{{/isRenderItems}}'+
 		'</div>'
 	);
 })(Q, jQuery);

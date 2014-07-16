@@ -1496,6 +1496,7 @@ Q.Event = function _Q_Event(callable, key, prepend) {
 	 */
 	this.handle = function _Q_Event_instance_handle() {
 		var i, count = 0, result;
+		if (this.stopped) return 0;
 		for (i=0; i<event.keys.length; ++i) {
 			result = Q.handle(event.handlers[ event.keys[i] ], this, arguments);
 			if (result === false) return false;
@@ -1687,26 +1688,23 @@ Evp.removeAllHandlers = function _Q_Event_prototype_removeAllHandlers() {
 };
 
 /**
- * Return a new Q.Event object that is handled whenever this event is handled,
- * until anotherEvent occurs, in which case this event occurs one final time.
- * @method Event.until
- * @param {Q.Event} anotherEvent
- *  An event whose occurrence will stop the returned event
- * @param {Boolean} prepend If true, then prepends the handler to the chain
- * @return {Q.Event} A new Q.Event object
+ * Tells the event that the stream should stop
+ * @method Event.stop
+ * @param {Boolean} removeAllHandlers
+ *  If true, then also removes all the handlers added to this event
  */
-Evp.until = function _Q_Event_prototype_until(anotherEvent) {
-	var newEvent = new Q.Event();
-	var key = this.add(newEvent.handle);
-	var event = this;
-	anotherEvent.add(function () {
-		event.remove(key);
-	});
-	return newEvent;
+Evp.stop = function _Q_Event_prototype_stop(removeAllHandlers) {
+	this.stopped = true;
+	if (this._onStop) {
+		this._onStop.handle();
+	}
+	if (removeAllHandlers) {
+		this.removeAllHandlers();
+	}
 };
 
 /**
- * Make a copy of this handler
+ * Make a copy of this event, with all the keys and handlers
  * @method Event.copy
  * @return {Q.Event}
  */
@@ -1717,6 +1715,113 @@ Evp.copy = function _Q_Event_prototype_copy() {
 		result.keys.push(this.keys[i]);
 	}
 	return result;
+};
+
+/**
+ * Return a new Q.Event object that is handled whenever this event is handled,
+ * until anotherEvent occurs, in which case this event occurs one final time.
+ * @method Event.until
+ * @param {Q.Event} anotherEvent
+ *  An event whose occurrence will stop the returned event
+ * @return {Q.Event} A new Q.Event object
+ */
+Evp.until = function _Q_Event_prototype_until(anotherEvent) {
+	var newEvent = new Q.Event();
+	var key = this.add(newEvent.handle);
+	var event = this;
+	var anotherKey = anotherEvent.add(function () {
+		event.remove(key);
+		anotherEvent.remove(anotherKey);
+		event.stop();
+	});
+	return newEvent;
+};
+
+/**
+ * Return a new Q.Event object that waits until this event is stopped,
+ * then processes all the pending calls to .handle(), continuing normally after that.
+ * @method Event.then
+ * @return {Q.Event} A new Q.Event object
+ */
+Evp.then = function _Q_Event_prototype_then() {
+	var newEvent = new Q.Event();
+	var handle = newEvent.handle;
+	var _waiting = true;
+	var _pending = [];
+	newEvent.handle = function () {
+		if (_waiting) {
+			_pending.push([this, arguments]);
+			return 0;
+		}
+		return handle.apply(this, arguments);
+	};
+	var key = this.onStop().add(function () {
+		for (var i=0; i<_pending.length; ++i) {
+			handle.apply(_pending[i][0], _pending[i][1]);
+		}
+		_waiting = false;
+		this.onStop().remove(key);
+	});
+	return newEvent;
+};
+
+/**
+ * Return a new Q.Event object that waits until after this event's handle() stops
+ * being called for a given number of milliseconds, before processing the last call.
+ * @method Event.debounce
+ * @param {Number} milliseconds The number of milliseconds
+ * @return {Q.Event} A new Q.Event object
+ */
+Evp.debounce = function _Q_Event_prototype_debounce(milliseconds) {
+	var newEvent = new Q.Event();
+	this.add(Q.debounce(newEvent.handle, milliseconds, 0));
+	return newEvent;
+};
+
+/**
+ * Return a new Q.Event object that will call handle() when this event's handle()
+ * is called, but only at most every given milliseconds.
+ * @method Event.throttle
+ * @param {Number} milliseconds The number of milliseconds
+ * @return {Q.Event} A new Q.Event object
+ */
+Evp.throttle = function _Q_Event_prototype_throttle(milliseconds) {
+	var newEvent = new Q.Event();
+	this.add(Q.throttle(newEvent.handle, milliseconds, 0));
+	return newEvent;
+};
+
+/**
+ * Return a new Q.Event object that will call handle() when this event's handle()
+ * is called, but only if the test function returns true
+ * @method Event.throttle
+ * @param {Function} test Function to test the arguments and return a Boolean
+ * @return {Q.Event} A new Q.Event object
+ */
+Evp.filter = function _Q_Event_prototype_filter(test) {
+	var newEvent = new Q.Event();
+	this.add(function () {
+		if (!test.apply(this, arguments)) return 0;
+		return newEvent.handle.apply(newEvent, arguments);
+	});
+	return newEvent;
+};
+
+/**
+ * Return a new Q.Event object that will call handle() when this event's handle()
+ * is called, but with the arguments returned by the transform function
+ * @method Event.throttle
+ * @param {Function} transform Function to transform the arguments and return
+ *   an array of two items for the new call: [this, arguments]
+ * @return {Q.Event} A new Q.Event object
+ */
+Evp.map = function _Q_Event_prototype_map(transform) {
+	var newEvent = new Q.Event();
+	this.add(function () {
+		var parts = transform.apply(this, arguments);
+		return newEvent.handle.apply(parts[0], parts[1]);
+	});
+	return newEvent;
 };
 
 Evp.onFirst = function () {
@@ -1733,6 +1838,10 @@ Evp.onRemove = function () {
 
 Evp.onEmpty = function () {
    return this._onEmpty || (this._onEmpty = new Q.Event());
+};
+
+Evp.onStop = function () {
+   return this._onStop || (this._onStop = new Q.Event());
 };
 
 /**
@@ -2398,6 +2507,60 @@ Q.getter.CACHED = 0;
 Q.getter.REQUESTING = 1;
 Q.getter.WAITING = 2;
 Q.getter.THROTTLING = 3;
+
+/**
+ * Wraps a function and returns a wrapper that will call the function at most once.
+ * @param {Function} original The function to wrap
+ * @param {Mixed} defaultValue Value to return whenever original function isn't called
+ * @return {Function} The wrapper function
+ */
+Q.once = function (original, defaultValue) {
+	var _called = false;
+	return function _Q_once_wrapper() {
+		if (_called) return defaultValue;
+		_called = true;
+		return original.apply(this, arguments);
+	};
+};
+
+/**
+ * Wraps a function and returns a wrapper that will call the function
+ * at most once every given milliseconds.
+ * @param {Function} original The function to wrap
+ * @param {Number} milliseconds The number of milliseconds
+ * @param {Mixed} defaultValue Value to return whenever original function isn't called
+ * @return {Function} The wrapper function
+ */
+Q.throttle = function (original, milliseconds, defaultValue) {
+	var _lastCalled = undefined;
+	return function _Q_throttle_wrapper() {
+		if (Date.now() - _lastCalled < milliseconds) return defaultValue;
+		_lastCalled = Date.now();
+		return original.apply(this, arguments);
+	};
+};
+
+/**
+ * Wraps a function and returns a wrapper that will call the function
+ * after calls stopped coming in for a given number of milliseconds
+ * @param {Function} original The function to wrap
+ * @param {Number} milliseconds The number of milliseconds
+ * @param {Mixed} defaultValue Value to return whenever original function isn't called
+ * @return {Function} The wrapper function
+ */
+Q.debounce = function (original, milliseconds, defaultValue) {
+	var _timeout = null;
+	return function _Q_debounce_wrapper() {
+		if (_timeout) {
+			clearTimeout(_timeout);
+		}
+		var t = this, a = arguments;
+		_timeout = setTimeout(function () {
+			original.apply(t, a);
+		}, milliseconds);
+		return defaultValue;
+	};
+};
 
 /**
  * Custom exception constructor

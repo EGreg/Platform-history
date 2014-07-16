@@ -29,18 +29,16 @@ function Streams_subscription_tool($options) {
 		));
 	}
 
-	$streams_participant 			   = new Streams_Participant();
-	$streams_participant->publisherId  = $publisherId;
-	$streams_participant->streamName   = $streamName;
-	$streams_participant->userId  	   = $user->id;
+	$streams_participant 			  = new Streams_Participant();
+	$streams_participant->publisherId = $publisherId;
+	$streams_participant->streamName  = $streamName;
+	$streams_participant->userId  	  = $user->id;
 	if ($streams_participant->retrieve()) {
 		$subscribed = $streams_participant->subscribed;
 	}
 
-	/*
-	* TODO - resolve this
-	*/
 	$types = Q_Config::get('Streams', 'types', $stream->type, 'messages', array());
+
 	$messageTypes = array();
 	foreach($types as $type => $msg) {
 		$name = Q::ifset($msg, 'title', $type);
@@ -68,9 +66,6 @@ function Streams_subscription_tool($options) {
 	$devices = array();
 	$emails  = Users_Email::select('address')->where($usersFetch)->fetchAll(PDO::FETCH_COLUMN);
 	$mobiles = Users_Mobile::select('number')->where($usersFetch)->fetchAll(PDO::FETCH_COLUMN);
-	if (!$emails and !$mobiles) {
-		throw new Users_Exception_NotVerified('Your account not verificate');
-	}
 
 	foreach ($emails as $email) {
 		$devices[] = array(
