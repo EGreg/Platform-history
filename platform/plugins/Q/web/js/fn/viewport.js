@@ -201,13 +201,13 @@ function (options) {
 
         if (!useZoom) {
             if (options.minimumResultSize
-                && options.minimumResultSize.width > stretcher.width() / factor) {
+                && options.minimumResultSize.width > container.width() / factor) {
                 console.log('minimumResultSize.width is reached');
 //            f = Math.min(factor, container.width() / options.minimumResultSize.width);
                 return false;
             }
             if (options.minimumResultSize
-                && options.minimumResultSize.height > stretcher.height() / factor) {
+                && options.minimumResultSize.height > container.height() / factor) {
                 console.log('minimumResultSize.height is reached');
 //            f = Math.min(factor, container.height() / options.minimumResultSize.height);
                 return false;
@@ -258,10 +258,10 @@ function (options) {
 
 //      TODO: result should be set in beforeClose event
         state.result = {
-            left: stretcher.offset().left * scale.factor,
-            top: stretcher.offset().top * scale.factor,
-            width: stretcher.width() * scale.factor,
-            height: stretcher.height() * scale.factor
+            left: - stretcher.offset().left / scale.factor,
+            top: - stretcher.offset().top / scale.factor,
+            width: container.width() / scale.factor,
+            height: container.height() / scale.factor
         };
     };
 

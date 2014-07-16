@@ -95,8 +95,8 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
             }
 
 //          canvas should be equal to cropped image
-            canvas.width = coord.width;
-            canvas.height = coord.height;
+            canvas.width = coord.origImg.width;
+            canvas.height = coord.origImg.height;
             var context = canvas.getContext('2d');
             var imageObj = new Image();
 
@@ -201,13 +201,19 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 
             img.onload = function() {
 //              TODO add option useAnySize
+                imgInfo.height = img.height;
+                imgInfo.width = img.width;
+
                 if (state.saveSizeName  && ! state.cropping ) {
 //                  do reduce image to showSize by default
                     var requiredSize  = _calculateRequiredSize(state.saveSizeName);
-
                     var neededImgSize = _calculateImageSize(requiredSize, img);
                     var coord = neededImgSize;
-                    coord.x = 0; coord.y = 0;
+                    coord.x = 0;
+                    coord.y = 0;
+                    coord.origImg = {};
+                    coord.origImg.width =  imgInfo.width;
+                    coord.origImg.height =  imgInfo.height;
 
                     _doCanvasCrop(params.data, coord, function(cropImg) {
                         params.data = cropImg;
@@ -215,18 +221,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
                     });
                 }
                 if (state.saveSizeName  && state.cropping ) {
-                    function _cropAndUpload(coord) {
-
-//                      1) TODO calc if crop area is not 1:1 to real
-//                      2) get coord from Q/viewport
-                        _doCanvasCrop(img.src, coord, function(data) {
-                            _doUpload({data:data});
-                        });
-                    };
-                    imgInfo.height = img.height;
-                    imgInfo.width = img.width;
                     var croppingElement = imgInfo.content = $('<img />').attr({src: img.src});
-
                     Q.Dialogs.push({
                         className: 'Q_Dialog_imagepicker',
                         title: 'Edit the image',
@@ -235,17 +230,30 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 //                        size: {width:dialogSize.width, height: dialogSize.height},
                         fullscreen: true,
                         beforeClose: function(res) {
-                                var result = $('.Q_viewport', res).state('Q/viewport').result;
-                               _cropAndUpload(result);
+//                          TODO Subpath should be kept, the one is needed
+                            state.subpath = "streams/Trump/Websites/header";
+                            var result = $('.Q_viewport', res).state('Q/viewport').result;
+                            var coord = {
+                                origImg: {
+                                    width : imgInfo.width,
+                                    height: imgInfo.height
+                                },
+                                x:  result.left,
+                                y: result.top,
+                                width: result.width,
+                                height: result.height
+                            };
+                            _doCanvasCrop(img.src, coord, function(data) {
+                                _doUpload({data:data});
+                            });
                         },
-                        onActivate
-                        : {"Q/imagepicker": function () {
+                        onActivate : {
+                            "Q/imagepicker": function () {
 //                          TODO: width and height should be proportial to orginal file
-//                            css({width:1000, height:750})
                             croppingElement
                                 .plugin('Q/viewport',{
                                     initial:{left: 400, top: 400, width: 1000, height: 750 },
-                                    minimumResultSize: {width: 1000, height: 750}
+                                    minimumResultSize: {width: 500  , height: 350}
                                 })
                             }
                         }
