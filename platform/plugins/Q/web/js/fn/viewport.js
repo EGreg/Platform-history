@@ -54,8 +54,8 @@ function (options) {
             'float': this.css('float'),
             'z-index': this.css('z-index'),
             'overflow': 'hidden',
-            'width': this.outerWidth(true),
-            'height': this.outerHeight(true),
+            'width': options.initial.width ? options.initial.width  : this.outerWidth(true),
+            'height': options.initial.height ?  options.initial.height : this.outerHeight(true),
             'text-align': 'left',
             'line-height': this.css('line-height'),
             'vertical-align': this.css('vertical-align'),
@@ -72,18 +72,17 @@ function (options) {
         }
     }
 
-    var widthFactor = options.initial.width ? (container.width() / options.initial.width) : 1;
-    var heightFactor = options.initial.height ? (container.height() / options.initial.height) : 1;
+
     stretcher.css({
         'position': 'absolute',
-        'left': Math.max(options.initial.left, 0) * widthFactor + 'px',
-        'top': Math.max(options.initial.top, 0) * heightFactor + 'px',
-        'width': container.width() * widthFactor + 0.5 + 'px',
-        'height': container.height() * heightFactor + 0.5 + 'px',
         'overflow': 'visible',
         'padding': '0px',
-        'margin': '0px'
+        'margin': '0px',
+        'left': -Math.max(options.initial.left, 0) + 'px',
+        'top': -Math.max(options.initial.top, 0)  + 'px'
     });
+
+
 
 
 	var useZoom = Q.info.isIE(0, 8);
