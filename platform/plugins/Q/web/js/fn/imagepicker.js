@@ -154,45 +154,8 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
             return calcSize;
         };
 
-//        function _calcSizeQDialog(img) {
-//            //      get size of available place
-//            var mandatory_margin = 100; //the space for margins of Q.Dialog window
-//            var page = {
-//                width:  $(window).width(),
-//                height: $(window).height()
-//            };
-//            page.ratio = page.width > page.height ? page.height/page.width : page.width/page.height;
-//            var ratio = img.width/img.height;
-////            ? img.height/img.width : img.width/img.height;
-//            var dialog = {width: img.width, height: img.height};
-//            page.width -= mandatory_margin; page.height -= mandatory_margin;
-//
-//
-////          if image size is more then page size, image should be reduced
-////          there can be two loops if first loop reduces a first side but other side is higher then page
-//            while ( dialog.width > page.width || dialog.height > page.height ) {
-//
-////              find max side of image and check if it's higher then the same page side
-//                if ( dialog.width > page.width ) {
-//                    dialog.width = page.width;
-//                    dialog.height = page.width/ratio;
-//                }
-//                if ( dialog.height > page.height ) {
-//                    dialog.height = page.height;
-//                    dialog.width = dialog.height * ratio;
-//                }
-//            }
-//
-//            return dialog;
-//        };
 
         function _calculateRequiredSize (saveSizeName) {
-//          TODO: should be refactored
-//          http://ejohn.org/blog/fast-javascript-maxmin/
-//            Array.prototype.max = function(){
-//                return Math.max.apply( Math, this );
-//            };
-
             var widths = [], heights = [];
             Q.each(saveSizeName, function(key, size) {
                 var requiredSize = {
@@ -262,9 +225,6 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
                     };
                     imgInfo.height = img.height;
                     imgInfo.width = img.width;
-//                    imgInfo.ratio = img.width > img.height ? img.height/img.width : img.width/img.height;
-
-//                    var dialogSize = _calcSizeQDialog(img);
 
 
                     var croppingElement = imgInfo.content = $('<img />').attr({src: img.src});
@@ -275,10 +235,12 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 ////                        '" height="'+imgInfo.height,
 //                        '" />'].join('');
 
+
+
                     Q.Dialogs.push({
                         className: 'Q_Dialog_imagepicker',
                         title: 'Edit the image',
-                        content: imgInfo.content,
+                        content: croppingElement,
                         destroyOnClose: true,
 //                        size: {width:dialogSize.width, height: dialogSize.height},
                         fullscreen: true,
@@ -293,7 +255,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 //                          TODO: width and height should be proportial to orginal file
                             croppingElement.css({width:1000, height:750})
                                 .plugin('Q/viewport',{
-                                    initial:{left: 0, top: 0, width: 200, height: 200 }
+                                    initial:{left: 400, top: 400, width: 1000, height: 750 }
                                 })
                             }
                         }

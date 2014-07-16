@@ -57,7 +57,6 @@ function (options) {
             'width': this.outerWidth(true),
             'height': this.outerHeight(true),
             'text-align': 'left',
-            'overflow': 'hidden',
             'line-height': this.css('line-height'),
             'vertical-align': this.css('vertical-align'),
             'text-align': this.css('text-align')
@@ -77,8 +76,8 @@ function (options) {
     var heightFactor = options.initial.height ? (container.height() / options.initial.height) : 1;
     stretcher.css({
         'position': 'absolute',
-        'left': Math.max(-options.initial.left, 0) * widthFactor + 'px',
-        'top': Math.max(-options.initial.top, 0) * heightFactor + 'px',
+        'left': Math.max(options.initial.left, 0) * widthFactor + 'px',
+        'top': Math.max(options.initial.top, 0) * heightFactor + 'px',
         'width': container.width() * widthFactor + 0.5 + 'px',
         'height': container.height() * heightFactor + 0.5 + 'px',
         'overflow': 'visible',
