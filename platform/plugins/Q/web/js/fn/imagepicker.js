@@ -225,17 +225,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
                     };
                     imgInfo.height = img.height;
                     imgInfo.width = img.width;
-
-
                     var croppingElement = imgInfo.content = $('<img />').attr({src: img.src});
-//                        = ['<img src="',
-//                        img.src,
-//                        '" id="Q_imagepicker_cropping"',
-////                        ' width="'+imgInfo.width,
-////                        '" height="'+imgInfo.height,
-//                        '" />'].join('');
-
-
 
                     Q.Dialogs.push({
                         className: 'Q_Dialog_imagepicker',
@@ -244,18 +234,18 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
                         destroyOnClose: true,
 //                        size: {width:dialogSize.width, height: dialogSize.height},
                         fullscreen: true,
-                        beforeClose: function() {
-                            var result = $('.Q_viewport_tool', this)
-                                .state('Q/viewport')
-                                .result;
+                        beforeClose: function(res) {
+                                var result = $('.Q_viewport', res).state('Q/viewport').result;
                                _cropAndUpload(result);
                         },
                         onActivate
                         : {"Q/imagepicker": function () {
 //                          TODO: width and height should be proportial to orginal file
-                            croppingElement.css({width:1000, height:750})
+//                            css({width:1000, height:750})
+                            croppingElement
                                 .plugin('Q/viewport',{
-                                    initial:{left: 400, top: 400, width: 1000, height: 750 }
+                                    initial:{left: 400, top: 400, width: 1000, height: 750 },
+                                    minimumResultSize: {width: 1000, height: 750}
                                 })
                             }
                         }

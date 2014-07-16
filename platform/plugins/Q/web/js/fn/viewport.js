@@ -33,7 +33,7 @@ function (options) {
 	var position = this.css('position');
 	var display = this.css('display');
 
-    var state  = this.state('Q/viewport');
+    var state  = this.addClass('Q_viewport').state('Q/viewport');
 
     state.oldCursor = this.css('cursor');
 	this.css('cursor', 'move');
@@ -256,11 +256,12 @@ function (options) {
 		pos.left = Math.min(0, Math.max(pos.left, w+1)) + 'px';
 		pos.top = Math.min(0, Math.max(pos.top, h+1)) + 'px';
 
+//      TODO: result should be set in beforeClose event
         state.result = {
-            left: -pos.left,
-            top: -pos.top,
-            width: w,
-            height: h
+            left: stretcher.offset().left * scale.factor,
+            top: stretcher.offset().top * scale.factor,
+            width: stretcher.width() * scale.factor,
+            height: stretcher.height() * scale.factor
         };
     };
 
