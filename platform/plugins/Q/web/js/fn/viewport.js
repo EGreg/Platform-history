@@ -184,43 +184,6 @@ function (options) {
 		return false;
 	});
 
-    function scale_bak(zoom, mouseX, mouseY) {
-        console.log(zoom, mouseX, mouseY);
-        var zoomObj = stretcher.children();
-        var Z = zoom / scale.factor;
-
-        if (!Q.info.isIE(0, 8)) {
-            var containerOffset = zoomObj.offset();
-            var mouseRel = {
-                x: mouseX - containerOffset.left,
-                y: mouseY - containerOffset.top
-            };
-            var dimension = {
-                width: zoomObj.width() * Z,
-                height: zoomObj.height() * Z
-            };
-
-            var translate = {
-                left: containerOffset.left + (mouseRel.x - dimension.width * mouseRel.x / zoomObj.width() ),
-                top: containerOffset.top + (mouseRel.y - dimension.height * mouseRel.y / zoomObj.height() )
-            };
-            var css = {
-                'transform-origin': '0% 0%',
-                'width': dimension.width,
-                'height': dimension.height,
-                'top': translate.top,
-                'left': translate.left
-            };
-            for (var k in css) {
-                css[Q.info.browser.prefix + k] = css[k];
-            }
-            zoomObj.css(css);
-            scale.factor = zoom;
-
-        }
-	};
-
-
     function scale(factor, x, y) {
         console.log(' scale.factor ', scale.factor, 'factor ', factor);
         var left1, left2, left3, top1, top2, top3, offset, css;
@@ -230,12 +193,16 @@ function (options) {
         var f = useZoom ? scale.factor : 1;
 
         if (options.minimumResultSize
-        && options.minimumResultSize.width > container.width() / f) {
-            f = Math.min(f, container.width() / options.minimumResultSize.width);
+        && options.minimumResultSize.width > stretcher.width() / factor) {
+            console.log('minimumResultSize.width is reached');
+//            f = Math.min(factor, container.width() / options.minimumResultSize.width);
+              return false;
         }
         if (options.minimumResultSize
-        && options.minimumResultSize.height > container.height() / f) {
-            f = Math.min(f, container.height() / options.minimumResultSize.height);
+        && options.minimumResultSize.height > stretcher.height() / factor) {
+            console.log('minimumResultSize.height is reached');
+//            f = Math.min(factor, container.height() / options.minimumResultSize.height);
+            return false;
         }
 
         left1 = parseInt(stretcher.css('left')) * f;
