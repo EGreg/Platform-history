@@ -192,18 +192,7 @@ function (options) {
         console.log('scale offset'+offset);
         var f = useZoom ? scale.factor : 1;
 
-        if (options.minimumResultSize
-        && options.minimumResultSize.width > stretcher.width() / factor) {
-            console.log('minimumResultSize.width is reached');
-//            f = Math.min(factor, container.width() / options.minimumResultSize.width);
-              return false;
-        }
-        if (options.minimumResultSize
-        && options.minimumResultSize.height > stretcher.height() / factor) {
-            console.log('minimumResultSize.height is reached');
-//            f = Math.min(factor, container.height() / options.minimumResultSize.height);
-            return false;
-        }
+
 
         left1 = parseInt(stretcher.css('left')) * f;
         top1 = parseInt(stretcher.css('top')) * f;
@@ -211,11 +200,22 @@ function (options) {
         top1 -= (y - offset.top) * (factor / scale.factor - 1);//- 1
 
         if (!useZoom) {
-            var parent = container.parent();
-            var image = stretcher.children();
-            if ( image.width()*factor <= parent.width() || image.height()*factor <=  parent.height() ) {
-                console.log('image width '+ image.width()*factor + ' parent '+ parent.width());
-                console.log('image height '+ image.height()*factor + ' parent '+ parent.height());
+            if (options.minimumResultSize
+                && options.minimumResultSize.width > stretcher.width() / factor) {
+                console.log('minimumResultSize.width is reached');
+//            f = Math.min(factor, container.width() / options.minimumResultSize.width);
+                return false;
+            }
+            if (options.minimumResultSize
+                && options.minimumResultSize.height > stretcher.height() / factor) {
+                console.log('minimumResultSize.height is reached');
+//            f = Math.min(factor, container.height() / options.minimumResultSize.height);
+                return false;
+            }
+
+            if ( stretcher.width()*factor <= container.width() || stretcher.height()*factor <=  container.height() ) {
+                console.log('image width '+ stretcher.width()*factor + ' parent '+ container.width());
+                console.log('image height '+ stretcher.height()*factor + ' parent '+ container.height());
                 console.log('Block zoom out');
                 return false;
             }
