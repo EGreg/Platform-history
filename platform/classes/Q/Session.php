@@ -290,6 +290,7 @@ class Q_Session
 			if (empty($_SERVER['HTTP_HOST'])) {
 				echo "Warning: Ignoring Q_Session::start() called before running {$prefix}scripts/Q/install.php --all".PHP_EOL;
 			} else {
+				apc_clear_cache('user');
 				throw new Q_Exception("Please run {$prefix}scripts/Q/install.php --all");
 			}
 		}
