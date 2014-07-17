@@ -19,32 +19,37 @@
 function Streams_chat_tool($options)
 {
 	$user = Users::loggedInUser(true);
-	if (!$user) return '';
-	
-	if (empty($options['publisherId']))
-	{
-		throw new Q_Exception("Streams/chat: please provide 'publisherId' parameter.");
+
+	extract($options);
+
+	if (!isset($publisherId)) {
+		$publisherId = Streams::requestedPublisherId(true);
 	}
-	if (empty($options['streamName']))
-	{
-		throw new Q_Exception("Streams/chat: please provide 'streamName' parameter.");
+
+	if (!isset($streamName)) {
+		$streamName = Streams::requestedName();
 	}
-	$defaults = array(
-		'loadMore' => (Q_Request::isTouchscreen() && Q_Request::platform() != 'android') ? 'pull' : 'scroll',
+
+	$options = array_merge(array(
+		'loadMore'     => (Q_Request::isTouchscreen() and Q_Request::platform() !== 'android') ? 'pull' : 'scroll',
 		'amountToLoad' => 3
-	);
-	$options = array_merge($defaults, $options);
-	
-	// fetching existing messages
-	$stream = new Streams_Stream();
-	$stream->publisherId = $options['publisherId'];
-	$stream->name = $options['streamName'];
-	$messages = $stream->getMessages(array('type' => 'Streams/chat/message', 'max' => -1, 'limit' => 10));
-	$messages = array_reverse($messages);
-	
-	Q_Response::addScript('plugins/Q/js/phpjs.js');
-	Q_Response::addScript('plugins/Streams/js/Streams.js');
-	Q_Response::addStylesheet('plugins/Streams/css/Streams.css');
+	), $options);
+
+	$stream = Streams::fetchOne($user->id, $publisherId, $streamName);
+	if (!$stream) {
+		throw new Q_Exception_MissingRow(array(
+			'table'    => 'stream',
+			'criteria' => compact('publisherId', 'streamName')
+		));
+	}
+
+	$options['messages'] = $stream->getMessages(array(
+		'type'  => 'Streams/chat/message',
+		'max'   => -1,
+		'limit' => 10
+	));
+
+	$options['stream'] = $stream;
+
 	Q_Response::setToolOptions($options);
-	return Q::view('Streams/tool/chat.php', compact('params', 'user', 'messages'));
 }

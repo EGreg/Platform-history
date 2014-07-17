@@ -169,7 +169,7 @@ Q.Tool.define("Q/tabs", function(options) {
 	},
 	
 	getName: function (tab) {
-		return tab.getAttribute("data-name");
+		return tab ? tab.getAttribute("data-name") : '';
 	},
 	
 	getUrl: function (tab) {
