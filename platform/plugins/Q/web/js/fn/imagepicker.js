@@ -7,7 +7,6 @@
  * Should be applied to <img /> element like this $('#someimg').plugin('Q/imagepicker', options).
  * @module Q
  * @submodule Plugins
- * @class jQuery
  * @namespace Q
  * @method imagepicker
  * @param {Object} [options] options is an Object that contains parameters for function

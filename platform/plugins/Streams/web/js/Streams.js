@@ -804,7 +804,7 @@ Streams.invite = function (publisherId, streamName, fields, callback) {
 
 /**
  * Constructs a stream from fields, which are typically returned from the server.
- * @class Stream
+ * @class Streams.Stream
  * @constructor
  * @param {String} fields
  */
@@ -845,7 +845,7 @@ Stream.define = Streams.define;
  * Call this function to retain a particular stream.
  * When a stream is retained, it is refreshed when Streams.refresh() or
  * Streams.refresh() are called. You can release it with stream.release().
- * @class Stream
+ * @class Streams.Stream
  * @static
  * @method retain
  * @param {String} publisherId
@@ -867,7 +867,7 @@ Stream.retain = function _Stream_retain (publisherId, streamName, key, callback)
 
 /**
  * Releases a stream from being retained. See Streams.retain()
- * @class Stream
+ * @class Streams.Stream
  * @static
  * @method release
  * @param {String} publisherId
@@ -890,7 +890,7 @@ Stream.release = function _Stream_release (publisherId, streamName) {
 /**
  * Refreshes a stream, to show the latest content and possibly process the latest messages posted to the stream.
  * If your app uses socket.io, then calling this manually is largely unnecessary because messages arrive via push.
- * @class Stream
+ * @class Streams.Stream
  * @static
  * @method refresh
  * @param {Function} callback This is called when the stream has been refreshed.
@@ -936,7 +936,7 @@ var Sp = Stream.prototype;
  * Streams.refresh() are called. You can release it with stream.release().
  * Call this function in a chain before calling Streams.get, Streams.related, etc.
  * in order to set the key for retaining the streams those functions obtain.
- * @class Stream
+ * @class Streams.Stream
  * @method retainWith
  * @param {String} key
  * @return {Object} returns Streams for chaining with .get(), .related() or .getParticipating()
@@ -945,7 +945,7 @@ Sp.retainWith = Streams.retainWith;
 
 /**
  * Get all stream attributes
- * @class Stream
+ * @class Streams.Stream
  * @method getAll
  * @param {Boolean} usePending
  * @return {Array}
@@ -957,7 +957,7 @@ Sp.getAll = function _Stream_prototype_getAll (usePending) {
 
 /**
  * Get the value of an attribute
- * @class Stream
+ * @class Streams.Stream
  * @method get
  * @param {String} attributeName the name of the attribute to get
  * @param {Boolean} usePending if true, and there is a value pending to be saved, get that instead
@@ -970,7 +970,7 @@ Sp.get = function _Stream_prototype_get (attributeName, usePending) {
 
 /**
  * Set the value of an attribute, pending to be saved to the server with the stream
- * @class Stream
+ * @class Streams.Stream
  * @method set
  * @param {String} attributeName
  * @param {Mixed} value
@@ -991,7 +991,7 @@ Sp.set = function _Stream_prototype_set (attributeName, value) {
 
 /**
  * Remove an attribute from the stream, pending to be saved to the server
- * @class Stream
+ * @class Streams.Stream
  * @method clear
  * @param {String} attributeName
  */
@@ -1011,7 +1011,7 @@ Sp.clear = function _Stream_prototype_clear (attributeName) {
 
 /**
  * Save a stream to the server
- * @class Stream
+ * @class Streams.Stream
  * @method save
  * @param {Function} callback
  */
@@ -1039,7 +1039,7 @@ Sp.save = function _Stream_prototype_save (callback) {
 
 /**
  * Remove a stream on the server
- * @class Stream
+ * @class Streams.Stream
  * @method remove
  * @param {Function} callback
  */
@@ -1050,7 +1050,7 @@ Sp.remove = function _Stream_prototype_remove (callback) {
 /**
  * Retain the stream in the client under a certain key.
  * Retained streams are refreshed during Streams.refresh()
- * @class Stream
+ * @class Streams.Stream
  * @method retain
  * @param {String} key
  * @param {Function} callback
@@ -1070,7 +1070,7 @@ Sp.retain = function _Stream_prototype_retain (key, callback) {
  * Release the stream in the client retained under a certain key.
  * When the stream is released under all the keys it was retained under,
  * it is no longer refreshed during Streams.refresh()
- * @class Stream
+ * @class Streams.Stream
  * @method release
  * @return {Q.Streams.Stream}
  */
@@ -1081,7 +1081,7 @@ Sp.release = function _Stream_prototype_release () {
 
 /**
  * Retrieves a Streams.Message object, by using Message.get
- * @class Stream
+ * @class Streams.Stream
  * @method getMessage
  * @param {Number} ordinal the ordinal of the message
  * @param {Function} callback arguments = (err) and this = the message
@@ -1092,7 +1092,7 @@ Sp.getMessage = function _Stream_prototype_getMessage (ordinal, callback) {
 
 /**
  * Retrieves a Streams.Participant object, by using Participant.get
- * @class Stream
+ * @class Streams.Stream
  * @method getParticipant
  * @param {String} userId
  * @param {Function} callback arguments = (err) and this = the message
@@ -1103,7 +1103,7 @@ Sp.getParticipant = function _Stream_prototype_getParticipant (userId, callback)
 
 /**
  * Event factory for listening to messages based on type.
- * @class Stream
+ * @class Streams.Stream
  * @event onMessage
  * @param {String} messageType can be "" for all message types
  */
@@ -1113,7 +1113,7 @@ Sp.onMessage = function _Stream_prototype_onMessage (messageType) {
 
 /**
  * Event factory for listening to attributes based on name.
- * @class Stream
+ * @class Streams.Stream
  * @event onUpdated
  * @param {String} attribute can be "" for all attributes
  */
@@ -1123,7 +1123,7 @@ Sp.onUpdated = function _Stream_prototype_onUpdated (attribute) {
 
 /**
  * Event factory for listening for changed stream fields based on name.
- * @class Stream
+ * @class Streams.Stream
  * @event onFieldChanged
  * @param {String} field can be "" for all fields
  */
@@ -1133,7 +1133,7 @@ Sp.onFieldChanged = function _Stream_prototype_onFieldChanged (field) {
 
 /**
  * Event factory for listening to this stream being related to other streams
- * @class Stream
+ * @class Streams.Stream
  * @event onRelatedFrom
  */
 Sp.onRelatedFrom = function _Stream_prototype_onRelatedFrom () {
@@ -1142,7 +1142,7 @@ Sp.onRelatedFrom = function _Stream_prototype_onRelatedFrom () {
 
 /**
  * Event factory for listening to streams being related to this stream
- * @class Stream
+ * @class Streams.Stream
  * @event onRelatedTo
  */
 Sp.onRelatedTo = function _Stream_prototype_onRelatedTo () {
@@ -1151,7 +1151,7 @@ Sp.onRelatedTo = function _Stream_prototype_onRelatedTo () {
 
 /**
  * Event factory for listening to this stream becoming un-related to other streams
- * @class Stream
+ * @class Streams.Stream
  * @event onUnrelatedFrom
  */
 Sp.onUnrelatedFrom = function _Stream_prototype_onUnrelatedFrom () {
@@ -1160,7 +1160,7 @@ Sp.onUnrelatedFrom = function _Stream_prototype_onUnrelatedFrom () {
 
 /**
  * Event factory for listening to other streams becoming un-related to this stream
- * @class Stream
+ * @class Streams.Stream
  * @event onUnrelatedTo
  */
 Sp.onUnrelatedTo = function  _Stream_prototype_onUnrelatedTo () {
@@ -1169,7 +1169,7 @@ Sp.onUnrelatedTo = function  _Stream_prototype_onUnrelatedTo () {
 
 /**
  * Event factory for listening to changes in relations from this stream to others
- * @class Stream
+ * @class Streams.Stream
  * @event onUnrelatedFrom
  */
 Sp.onUpdatedRelateFrom = function  _Stream_prototype_onUpdatedRelateFrom () {
@@ -1178,7 +1178,7 @@ Sp.onUpdatedRelateFrom = function  _Stream_prototype_onUpdatedRelateFrom () {
 
 /**
  * Event factory for listening to changes in relations of other streams to this stream
- * @class Stream
+ * @class Streams.Stream
  * @event onUnrelatedTo
  */
 Sp.onUpdatedRelateTo = function _Stream_prototype_onUpdatedRelateTo () {
@@ -1187,7 +1187,7 @@ Sp.onUpdatedRelateTo = function _Stream_prototype_onUpdatedRelateTo () {
 
 /**
  * Post a message to this stream.
- * @class Stream
+ * @class Streams.Stream
  * @method post
  * @param {Object} [data] A Streams.Message object or a hash of fields to post. This stream's publisherId and streamName are added to it.
  *   @param {String} [data.publisherId]
@@ -1204,7 +1204,7 @@ Sp.post = function  _Stream_prototype_post (data, callback) {
 
 /**
  * Join a stream as a participant, so you get realtime messages through socket events.
- * @class Stream
+ * @class Streams.Stream
  * @method join
  * @param {Function} callback receives (err, participant) as parameters
  */
@@ -1214,7 +1214,7 @@ Sp.join = function _Stream_prototype_join (callback) {
 
 /**
  * Leave a stream that you previously joined, so that you don't get realtime messages anymore.
- * @class Stream
+ * @class Streams.Stream
  * @method leave
  * @param {Function} callback Receives (err, participant) as parameters
  */
@@ -1224,7 +1224,7 @@ Sp.leave = function _Stream_prototype_leave (callback) {
 
 /**
  * Test whether the user has enough access rights when it comes to reading from the stream
- * @class Stream
+ * @class Streams.Stream
  * @method testReadLevel
  * @param {String} level One of the values in Streams.READ_LEVEL
  * @return {Boolean} Returns true if the user has at least this level of access
@@ -1241,7 +1241,7 @@ Sp.testReadLevel = function _Stream_prototype_testReadLevel (level) {
 
 /**
  * Test whether the user has enough access rights when it comes to writing to the stream
- * @class Stream
+ * @class Streams.Stream
  * @method testWriteLevel
  * @param {String} level One of the values in Streams.WRITE_LEVEL
  * @return {Boolean} Returns true if the user has at least this level of access
@@ -1258,7 +1258,7 @@ Sp.testWriteLevel = function _Stream_prototype_testWriteLevel (level) {
 
 /**
  * Test whether the user has enough access rights when it comes to administering the stream
- * @class Stream
+ * @class Streams.Stream
  * @method testAdminLevel
  * @param {String} level One of the values in Streams.ADMIN_LEVEL
  * @return {Boolean} Returns true if the user has at least this level of access
@@ -1275,7 +1275,7 @@ Sp.testAdminLevel = function _Stream_prototype_testAdminLevel (level) {
 
 /**
  * This function displays a Streams/access tool in a dialog
- * @class Stream
+ * @class Streams.Stream
  * @method accessDialog
  * @param options {Object} Additional options to pass to Q.Dialogs.push
  */
@@ -1285,7 +1285,7 @@ Sp.accessDialog = function(options) {
 
 /**
  * A convenience method to get the URL of the streams-related action
- * @class Stream
+ * @class Streams.Stream
  * @method actionUrl
  * @param {String} what
  *	Defaults to 'stream'. Can also be 'message', 'relation', etc.
@@ -1298,7 +1298,7 @@ Sp.actionUrl = function _Stream_prototype_actionUrl (what) {
 
 /**
  * Invite other users to this stream. Must be logged in first.
- * @class Stream
+ * @class Streams.Stream
  * @method invite
  * @param {Object} [fields] More fields that are passed to the API, which can include:
  *   @param {String} [fields.identifier] Required for now. An email address or mobile number to invite. Might not belong to an existing user yet.
@@ -1313,7 +1313,7 @@ Sp.invite = function (fields, callback) {
 /**
  * Waits for the latest messages to be posted to a given stream.
  * If your app is using socket.io, then calling this manually is largely unnecessary.
- * @class Stream
+ * @class Streams.Stream
  * @method refresh
  * @param {Function} callback This is called when the stream has been updated with the latest messages.
  * @param {Object} [options] A hash of options, including:
@@ -1499,7 +1499,7 @@ Streams.related.onError = new Q.Event();
 
 /**
  * Returns all the streams this stream is related to
- * @class Stream
+ * @class Streams.Stream
  * @method relatedFrom
  * @param relationType {String} the type of the relation
  * @param {Object} [options] optional object that can include:
@@ -1516,7 +1516,7 @@ Sp.relatedFrom = function _Stream_prototype_relatedFrom (relationType, options, 
 
 /**
  * Returns all the streams related to this stream
- * @class Stream
+ * @class Streams.Stream
  * @method relatedTo
  * @param relationType {String} the type of the relation
  * @param {Object} [options] optional object that can include:
@@ -1534,6 +1534,7 @@ Sp.relatedTo = function _Stream_prototype_relatedTo (relationType, options, call
 
 /**
  * Relates streams to one another
+ * @class Streams
  * @method relate
  * @param publisherId {String} the publisher id of the stream to relate to
  * @param streamName {String} the name of the stream to relate to
@@ -1613,7 +1614,7 @@ Streams.unrelate = function _Stream_prototype_unrelate (publisherId, streamName,
 
 /**
  * Relates this stream to another stream
- * @class Stream
+ * @class Streams.Stream
  * @method relateTo
  * @param type {String} the type of the relation
  * @param toPublisherId {String} id of publisher of the stream
@@ -1627,7 +1628,7 @@ Sp.relateTo = function _Stream_prototype_relateTo (type, toPublisherId, toStream
 
 /**
  * Relates another stream to this stream
- * @class Stream
+ * @class Streams.Stream
  * @method relate
  * @param type {String} the type of the relation
  * @param fromPublisherId {String} id of publisher of the stream
@@ -1641,7 +1642,7 @@ Sp.relate = function _Stream_prototype_relate (type, fromPublisherId, fromStream
 
 /**
  * Removes a relation from this stream to another stream
- * @class Stream
+ * @class Streams.Stream
  * @method unrelateTo
  * @param toPublisherId {String} id of publisher which is publishing the stream
  * @param toStreamName {String} name of stream which the being unrelated
@@ -1654,7 +1655,7 @@ Sp.unrelateTo = function _Stream_prototype_unrelateTo (toPublisherId, toStreamNa
 
 /**
  * Removes a relation from another stream to this stream
- * @class Stream
+ * @class Streams.Stream
  * @method unrelateFrom
  * @param fromPublisherId {String} id of publisher which is publishing the stream
  * @param fromStreamName {String} name of stream which is being unrelated
@@ -1668,7 +1669,7 @@ Sp.unrelateFrom = function _Stream_prototype_unrelateFrom (fromPublisherId, from
 /**
  * Later we will probably make Streams.Relation objects which will provide easier access to this functionality.
  * For now, use this to update weights of relations, etc.
- * @class Stream
+ * @class Streams.Stream
  * @method updateRelation
  * @param {String} toPublisherId
  * @param {String} toStreamName
@@ -1769,10 +1770,9 @@ Stream.onUnrelatedTo = Q.Event.factory(_streamUnrelatedToHandlers, ["", ""]);
 
 /**
  * Returns Q.Event which occurs when this stream was unrelated to a category stream
- * @method Streams.Stream.onUnrelatedFrom
+ * @event Streams.Stream.onUnrelatedFrom
  * @param publisherId {String} id of publisher which is publishing this stream
  * @param streamName {String} optional name of this stream
- * @return {Q.Event}
  */
 Stream.onUnrelatedFrom = Q.Event.factory(_streamUnrelatedFromHandlers, ["", ""]);
 
@@ -1804,7 +1804,7 @@ Stream.onConstruct = Q.Event.factory(_streamConstructHandlers, ["", ""]);
 /**
  * Join a stream as a participant, so messages start arriving in real time via sockets.
  * May call Streams.join.onError if an error occurs.
- * @class Stream
+ * @class Streams.Stream
  * @static
  * @method join
  * @param publisherId {String} id of publisher which is publishing the stream
@@ -1844,7 +1844,7 @@ Stream.join.onError = new Q.Event();
  * Leave a stream that you previously joined,
  * so that you don't get realtime socket messages for that stream anymore.
  * May call Stream.leave.onError if an error occurs.
- * @class Stream
+ * @class Streams.Stream
  * @static
  * @method leave
  * @param {String} publisherId
@@ -1884,7 +1884,7 @@ Stream.leave.onError = new Q.Event();
 
 /**
  * Remove a stream from the database.
- * @class Stream
+ * @class Streams.Stream
  * @static
  * @method remove
  * @param {String} publisherId
@@ -1926,7 +1926,7 @@ var Mp = Message.prototype;
 
 /**
  * Get all the instructions from a message.
- * @class Message
+ * @class Streams.Message
  * @method getAll
  */
 Mp.getAll = function _Message_prototype_getAll () {
@@ -1939,7 +1939,7 @@ Mp.getAll = function _Message_prototype_getAll () {
 
 /**
  * Get the value of an instruction in the message
- * @class Message
+ * @class Streams.Message
  * @method getAll
  * @param {String} instructionName
  */
@@ -1951,7 +1951,7 @@ Mp.get = function _Message_prototype_get (instructionName) {
 /**
  * Get one or more messages, which may result in batch requests to the server.
  * May call Message.get.onError if an error occurs.
- * @class Message
+ * @class Streams.Message
  * @static
  * @method get
  * @param {String} publisherId
@@ -2051,7 +2051,7 @@ Message.post.onError = new Q.Event();
 /**
  * Gets the latest ordinal as long as there is a cache for that stream or that stream's messages.
  * Otherwise it returns 0.
- * @class Message
+ * @class Streams.Message
  * @static
  * @method latestOrdinal
  * @param {String} publisherId
@@ -2079,7 +2079,7 @@ Message.latestOrdinal = function _Message_latestOrdinal (publisherId, streamName
 /**
  * Wait until a particular message is posted.
  * Used by Streams plugin to make sure messages arrive in order.
- * @class Message
+ * @class Streams.Message
  * @static
  * @method wait
  * @param {String} publisherId
@@ -2196,7 +2196,7 @@ var Participant = Participant = function Streams_Participant(fields) {
 
 /**
  * Get one or more participants, sorted by insertedTime
- * @class Participant
+ * @class Streams.Participant
  * @static
  * @method get
  * @param {String} publisherId
@@ -2269,7 +2269,7 @@ var Avatar = Streams.Avatar = function Streams_Avatar (fields) {
 
 /**
  * Avatar batch getter.
- * @class Avatar
+ * @class Streams.Avatar
  * @static
  * @method get
  * @param userId {String|Object} The id of the user whose avatar we are requesting.
@@ -2302,7 +2302,7 @@ Avatar.get.onError = new Q.Event();
 
 /**
  * Get avatars by prefix
- * @class Avatar
+ * @class Streams.Avatar
  * @static
  * @method byPrefix
  * @param prefix {string}
@@ -2346,7 +2346,7 @@ var Ap = Avatar.prototype;
 
 /**
  * Get the display name from a Streams.Avatar
- * @class Avatar
+ * @class Streams.Avatar
  * @method displayName
  * @param {Object} [options] A bunch of options which can include:
  *   @param {String} [options.short] Try to show the first name only
@@ -2372,7 +2372,7 @@ Ap.displayName = function _Avatar_prototype_displayName (options) {
 
 /**
  * Get the url of the user icon from a Streams.Avatar
- * @class Avatar
+ * @class Streams.Avatar
  * @method iconUrl
  * @return {String}
  */
