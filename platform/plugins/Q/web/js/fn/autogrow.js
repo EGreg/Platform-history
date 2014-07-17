@@ -1,19 +1,24 @@
 (function (Q, $, window, document, undefined) {
 
+/**
+ * Q Tools
+ * @module Q-tools
+ */
 
-    /**
-     * Plugin that allows a textbox or textarea to grow to encompass its content as it changes
-     * @method autogrow
-     * @param {Object} [options] , object for an options
-     * @param {Number} [options.maxWidth] maxWidth , number for Maximum width
-     * @default 1000
-     * @param {Number} [options.minWidth] minWidth , number for Minimum width
-     * @default 0
-     * @param {Number} [options.comfortZone] comfortZone
-     * @default 10
-     * @param [Event] [options.onResize] onResize , event that triggering on resize
-     * @default new Q.Event()
-     */
+/**
+ * Plugin that allows a textbox or textarea to grow to encompass its content as it changes
+ * @class Q autogrow
+ * @constructor
+ * @param {Object} [options] , object for an options
+ * @param {Number} [options.maxWidth] maxWidth , number for Maximum width
+ * @default 1000
+ * @param {Number} [options.minWidth] minWidth , number for Minimum width
+ * @default 0
+ * @param {Number} [options.comfortZone] comfortZone
+ * @default 10
+ * @param [Q.Event] [options.onResize] onResize , event that triggering on resize
+ * @default new Q.Event()
+ */
 
 Q.Tool.jQuery('Q/autogrow',
 

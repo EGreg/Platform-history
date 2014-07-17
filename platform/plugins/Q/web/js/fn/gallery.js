@@ -1,8 +1,14 @@
 (function (Q, $, window, document, undefined) {
 
 /**
+ * Q Tools
+ * @module Q-tools
+ */
+
+/**
  * Plugin Creates gallery of of images
- * @method gallery
+ * @class Q gallery
+ * @constructor
  * @param {Object} [options] options is an Object with function parameters
  * @param {Array} [options.images] images an array of objects containing object <code> { src: String , caption: String , interval: Number, transition: Object} </code>
  *   @param {String} [options.images.src] src url of the image, will be fed through Q.url(). Required.

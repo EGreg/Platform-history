@@ -1,10 +1,15 @@
 (function (Q, $) {
 	
-var Users = Q.plugins.Users;
+/**
+ * Users Tools
+ * @module Users
+ * @submodule Users-tools
+ */
 
 /**
- * Users/status tool.
  * Renders a user status area which displays logged in status and provides various user-related operations.
+ * @class Users status
+ * @constructor
  * @method status
  * @param {Object} [options] this object contains function parameters
  *	 @param {String} [options.icom] Icon for the login button. Defaults to Qbix icon.

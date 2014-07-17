@@ -1,10 +1,13 @@
 (function (Q, $) {
 
 /**
- * This method crates tabbed panel from given element
- * Returns  A tool (Q.Tool) that has the following methods:
- *  switchTo(name) : Given the name of a tab, switches to that tab as if it was clicked.
- * @method tabs
+ * @module Q-tools
+ */
+	
+/**
+ * This tool renders a nice set of tabs that adapts to different environments
+ * @class Q tabs
+ * @constructor
  * @param {Object} [options] This object contains properties for this function
  *  @param {Array} [options.tabs] An associative array of name: title pairs.
  *  @param {Array} [options.urls] An associative array of name: url pairs to override the default urls.
@@ -63,6 +66,10 @@ Q.Tool.define("Q/tabs", function(options) {
 },
 
 {
+	/**
+	 * @method switchTo
+	 * @param {String} name the name of the tab to switch to
+	 */
 	switchTo: function (name, tab, extra) {
 		if (tab === undefined) {
 			$('.Q_tabs_tab', this.element).each(function () {
@@ -124,10 +131,18 @@ Q.Tool.define("Q/tabs", function(options) {
 		Q.loadUrl(href, o);
 	},
 	
+	/**
+	 * @method isInDialog
+	 * @return {Boolean} whether the tabs are rendered inside an overlay / dialog
+	 */
 	isInDialog: function() {
 		return !!$(this.element).parents('.Q_overlay').length;
 	},
 
+	/**
+	 * @method indicateSelected
+	 * @param {String} tab optional name of the tab to indicate
+	 */
 	indicateSelected: function (tab) {
 		var name;
 		if (typeof tab === 'string') {
@@ -164,14 +179,20 @@ Q.Tool.define("Q/tabs", function(options) {
 		this.state.tab = tab;
 	},
 	
+	/**
+	 * @method getName
+	 * @param {HTMLElement} tab corresponds to the tab
+	 * @return {String} the name of the tab
+	 */
 	getName: function (tab) {
 		return tab.getAttribute("data-name");
 	},
 	
-	getName: function (tab) {
-		return tab.getAttribute("data-name");
-	},
-	
+	/**
+	 * @method getUrl
+	 * @param {HTMLElement} tab corresponds to the tab
+	 * @return {String} the url that the tab links to
+	 */
 	getUrl: function (tab) {
 		var $tab = $(tab);
 		var state = this.state;
@@ -187,7 +208,11 @@ Q.Tool.define("Q/tabs", function(options) {
 		return href;
 	},
 	
-	refresh: function (options) {
+	/**
+	 * Render the tabs element again and indicate the selected tab
+	 * @method refresh
+	 */
+	refresh: function () {
 		var tool = this;
 		var $te = $(this.element);
 		var w = $te.width(), w2 = 0, w3 = 0, index = -10;

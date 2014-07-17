@@ -1,10 +1,15 @@
 (function (Q, $) {
 
-    /**
-     * This method generates panel from given element.
-     * It don't have any options
-     * @method panel
-    */
+/**
+ * Q Tools
+ * @module Q-tools
+ */
+
+/**
+ * This constructor activates a Q/panel tool rendered on the server side
+ * @class Q panel
+ * @constructor
+ */
 
 Q.Tool.define("Q/panel", function() {
 
@@ -15,7 +20,7 @@ Q.Tool.define("Q/panel", function() {
 	var form = $('form', $te);
 	var container = $('.Q_panel_tool_container', $te);
 
-	this.onChildConstruct('Q/form').add(function (options) {
+	this.onChildActivate('Q/form').add(function (options) {
 		this.state.onSubmit.set(function() {
 			var buttons = $('.Q_panel_tool_buttons', $te);
 			buttons.addClass('Q_throb');

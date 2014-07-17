@@ -1,8 +1,15 @@
 (function (Q, $, window, document, undefined) {
 
+
+/**
+ * Q Tools
+ * @module Q-tools
+ */
+
 /**
  * This plugin Makes a contextual menu from given options and handles its showing / hiding.
- * @method contextual
+ * @class Q contextual
+ * @constructor
  * @param {Object} [options] options an object of options that can include
  * @param {Array} [options.elements] elements is an array of LI elements to add
  * @param {String} [options.className] className is a CSS class name for additional styling. Optional
@@ -71,6 +78,10 @@ Q.Tool.jQuery('Q/contextual', function (o) {
 },
 
 {
+	/**
+	 * Removes the contextual functionality from the element
+	 * @method remove
+	 */
 	remove: function () {
 		var $this = $(this);
 		var cid = $this.data('Q_contextual_id');

@@ -1,10 +1,8 @@
 /**
- * Q namespace/module/singleton
+ * You'll find all your Q related functionality right here.
  *
- * Used to access functionality for Q front ends.
- * Some methods of this module were taken from Douglas Crockford's website.
  * @module Q
- * @class Q
+ * @main Q
  */
 (function (window) {
 
@@ -12,12 +10,25 @@
 var _isReady = false;
 var _isOnline = null;
 
+/**
+ * @class Q
+ * @constructor
+ */
 function Q () {
 	// not called right now
 }
 
+/**
+ * @module Q
+ */
+
 // public properties:
 Q.plugins = {};
+
+/**
+ * Store and customize your text strings under Q.text
+ * @property {Object} text
+ */
 Q.text = {
 	Q: {
 		"request": {
@@ -168,8 +179,12 @@ Sp.replaceAll = function _String_prototype_replaceAll(pairs) {
 };
 
 /**
- * Gets a param from a string, which is usually the location.search or location.hash
  * @class String
+ * @description Q extended methods for Strings
+ */
+
+/**
+ * Gets a param from a string, which is usually the location.search or location.hash
  * @method queryField
  * @param {String} name The name of the field
  * @param value {String} Optional, provide a value to set in the querystring, or null to delete any fields that match name as a RegExp
@@ -217,7 +232,6 @@ Sp.queryField = function Q_queryField(name, value) {
 
 /**
  * Obtain some unique hash from a string, analogous to Q_Utils::hashCode
- * @class String
  * @method hashCode
  * @return {number}
  */
@@ -234,7 +248,6 @@ Sp.hashCode = function() {
 };
 
 /**
- * @class String
  * @method trim
  * @return {String}
  */
@@ -244,7 +257,6 @@ Sp.trim = String.prototype.trim || function _String_prototype_trim() {
 
 /**
  * Analogous to PHP's parse_url function
- * @class String
  * @method parseUrl
  * @param {String} component Optional name of component to return
  * @return {String}
@@ -266,10 +278,9 @@ Sp.parseUrl = function _String_prototype_parseUrl (component) {
 };
 
 /**
- * @class Strin
  * @method sameDomain
  * @param {String} url2 The url to compare against
- * @param {Object} options can include the following:
+ * @param {Object} options can include the following:<br>
  *  "compareScheme": boolean for whether the url scheme should be compared also
  * @return {boolean}
  * @private
@@ -287,9 +298,13 @@ Sp.sameDomain = function _String_prototype_sameDomain (url2, options) {
 };
 
 /**
+ * @class Function
+ * @description Q extended methods for Functions
+ */
+
+/**
  * Binds a method to an object, so "this" inside the method
  * refers to that object when it is called.
- * @class Function
  * @method bind
  * @param {Function} method A reference to the function to call
  * @param {Object} obj The object to bind to
@@ -309,13 +324,6 @@ Function.prototype.bind = function _Function_prototype_bind(obj, options) {
 		return method.apply(obj, args);
 	};
 };
-
-/**
- * @class Array
- * @method indexOf
- * @param {Mixed} searchElement
- * @return {Number}
- */
 
 if (!Array.prototype.indexOf)
 Array.prototype.indexOf = function _Array_prototype_indexOf(searchElement /*, fromIndex */ ) {
@@ -350,6 +358,11 @@ Array.prototype.indexOf = function _Array_prototype_indexOf(searchElement /*, fr
 
 /**
  * @class Date
+ * @description Q methods for Date
+ */
+
+/**
+ * Returns total number of milliseconds since the UNIX epoch
  * @method now
  * @return {Number}
  */
@@ -364,10 +377,14 @@ if (window.Element) { // only IE7 and lower, which we don't support, wouldn't ha
 var Elp = Element.prototype;
 
 /**
+ * @class Element
+ * @description Q extended methods for DOM Elements
+ */
+
+/**
  * Call this on an element to access tools attached to it.
  * The tools are like "view models".
  * this method is overridden by the tool constructor on specific elements
- * @class Element
  * @method Q
  * @param {String} toolName
  * @return {Q.Tool|null}
@@ -378,6 +395,12 @@ Elp.Q = function (toolName) {
 	return null;
 };
 
+/**
+ * Check whether this element contains the given element
+ * @method contains
+ * @param {Element} child
+ * @return {Boolean}
+ */
 if (!Elp.contains)
 Elp.contains = function (child) {
 	if (!child) return false;
@@ -391,11 +414,23 @@ Elp.contains = function (child) {
 	return false;
 };
 
+/**
+ * Check whether this element is the given element or contains it
+ * @method isOrContains
+ * @param {Element} child
+ * @return {Boolean}
+ */
 Elp.isOrContains = function (child) {
 	if (!child) return false;
 	return this === child || this.contains(child);
 };
 
+/**
+ * Returns the computed style of an element
+ * @method computedStyle
+ * @param {Element} name Optional. If provided, the value of a property is returned instead of the whole style object.
+ * @return {Object|String}
+ */
 Elp.computedStyle = function(name) {
 	var computedStyle;
 	if ( this.currentStyle !== undefined ) {
@@ -406,6 +441,12 @@ Elp.computedStyle = function(name) {
 	return name ? computedStyle[name] : computedStyle;
 };
 
+/**
+ * Copies the computed style from another Element, and assigns it to this Element.
+ * @method copyComputedStyle
+ * @param {Element} src
+ * @return {Element} returns this, for chaining
+ */
 Elp.copyComputedStyle = function(src) {
 	var s = src.computedStyle();
 	for ( var i in s ) {
@@ -426,6 +467,11 @@ Elp.copyComputedStyle = function(src) {
 	return this;
 };
 
+/**
+ * Switch places with another element
+ * @method swap
+ * @param {Element} element
+ */
 Elp.swap = function(element) {
 	var parent1, next1, parent2, next2;
 	parent1 = this.parentNode;
@@ -437,6 +483,12 @@ Elp.swap = function(element) {
 };
 
 function _returnFalse() { return false; }
+
+/**
+ * Prevent ability to select text in an element
+ * @method preventSelections
+ * @param {Boolean} deep whether to prevent it also on child elements
+ */
 Elp.preventSelections = function (deep) {
 	Q.addEventListener(this, 'selectstart', _returnFalse);
 	this.preventSelectionsInfo = this.preventSelectionsInfo || {
@@ -457,6 +509,12 @@ Elp.preventSelections = function (deep) {
 	});
 };
 
+/**
+ * Restore ability to select text in an element 
+ * @method restoreSelections
+ * @param {Boolean} deep whether to restore it also on child elements
+ * @return {Boolean}
+ */
 Elp.restoreSelections = function (deep) {
 	var p = this.preventSelectionsInfo;
 	if (p) {
@@ -474,6 +532,13 @@ Elp.restoreSelections = function (deep) {
 	});
 };
 
+/**
+ * Check whether this Element comes before another one, in a certain context
+ * @method isBefore
+ * @param {Element} element
+ * @param {Element} context optional containing element, defaults ot the document element
+ * @return {Boolean}
+ */
 Elp.isBefore = function (element, context) {
 	var before = true, that = this;
 	context = context || document.documentElement; // TODO: can triangulate a parentNode instead
@@ -489,6 +554,12 @@ Elp.isBefore = function (element, context) {
 	return before;
 };
 
+/**
+ * Check whether this element has a given CSS class
+ * @method hasClass
+ * @param {String} className
+ * @return {Boolean}
+ */
 Elp.hasClass = function (className) {
 	if (this.classList) {
 		return this.classList.contains(className);
@@ -497,6 +568,12 @@ Elp.hasClass = function (className) {
 	}
 };
 
+/**
+ * Remove a CSS class from the element
+ * @method removeClass
+ * @param {String} className
+ * @return {Element} returns this, for chaining
+ */
 Elp.removeClass = function (className) {
 	if (this.classList) {
 		this.classList.remove(className)
@@ -506,6 +583,12 @@ Elp.removeClass = function (className) {
 	return this;
 };
 
+/**
+ * Restore ability to select text in an element 
+ * @method addClass
+ * @param {String} className
+ * @return {Element} returns this, for chaining
+ */
 Elp.addClass = function (className) {
 	if (this.classList) {
 		this.classList.add(className)
@@ -516,6 +599,11 @@ Elp.addClass = function (className) {
 	return this;
 };
 
+/**
+ * Get the text content of an element (as opposed to its inner HTML)
+ * @method text
+ * @return {String}
+ */
 Elp.text = function() {
 	return el.textContent || el.innerText;
 };
@@ -547,8 +635,11 @@ if(!document.getElementsByClassName) {
 // public methods:
 
 /**
- * Returns microtime like PHP
  * @class Q
+ */
+
+/**
+ * Returns microtime like PHP
  * @static
  * @method microtime
  * @param getAsFloat {Boolean}
@@ -564,12 +655,12 @@ Q.microtime = function _Q_microtime(getAsFloat) {
 /**
  * Returns the number of milliseconds since the
  * first call to this function (i.e. since script started).
- * @class Q
+ * 
  * @static
  * @method milliseconds
  * @param {Boolean} sinceEpoch
  *  Defaults to false. If true, just returns the number of milliseconds in the UNIX timestamp.
- * @return {float} f
+ * @return {float}
  *  The number of milliseconds, with fractional part
  */
 Q.milliseconds = function (sinceEpoch) {
@@ -581,7 +672,7 @@ Q.milliseconds.start = Date.now();
 
 /**
  * Creates a derived object which you can extend, inheriting from an existing object
- * @class Q
+ * 
  * @static
  * @method objectWithPrototype
  * @param {Derived} original
@@ -598,7 +689,7 @@ Q.objectWithPrototype = function _Q_objectWithPrototype(original) {
 
 /**
  * Returns the type of a value
- * @class Q
+ * 
  * @static
  * @method typeOf
  * @param {Mixed} value
@@ -639,7 +730,7 @@ Q.typeOf = function _Q_typeOf(value) {
 /**
  * Iterates over elements in a container, and calls the callback.
  * Use this if you want to avoid problems with loops and closures.
- * @class Q
+ * 
  * @static
  * @method each
  * @param {Array|Object|String|Number} container, which can be an array, object or string.
@@ -650,10 +741,10 @@ Q.typeOf = function _Q_typeOf(value) {
  *	value: the value of the current item
  *  Also can be a string, which would be the name of a method to invoke on each item, if possible.
  *  In this case the callback should be followed by an array of arguments to pass to the method calls.
- * @param {Object} options
- *  ascending: Optional. Pass true here to traverse in ascending key order, false in descending.
- *  numeric: Optional. Used together with ascending. Use numeric sort instead of string sort.
- *  hasOwnProperty: Optional. Set to true to skip properties found on the prototype chain.
+ * @param {Object} options Can include the following: <br>
+ *  ascending: Optional. Pass true here to traverse in ascending key order, false in descending.<br><br>
+ *  numeric: Optional. Used together with ascending. Use numeric sort instead of string sort.<br>
+ *  hasOwnProperty: Optional. Set to true to skip properties found on the prototype chain.<br>
  * @throws {Q.Exception} If container is not array, object or string
  */
 Q.each = function _Q_each(container, callback, options) {
@@ -783,11 +874,11 @@ Q.each = function _Q_each(container, callback, options) {
 
 /**
  * Returns the first non-undefined value found in a container
- * @class Q
+ * 
  * @static
  * @method first
  * @param {Array|Object|String} container
- * @param {Object} options
+ * @param {Object} options<br>
  *  "nonEmptyKey": return the first non-empty key
  * @return {mixed} the value in the container, or undefined
  * @throws {Q.Exception} If container is not array, object or string
@@ -799,11 +890,11 @@ Q.first = function _Q_first(container, options) {
 
 /**
  * Returns the first key or index in a container with a value that's not undefined
- * @class Q
+ * 
  * @static
  * @method firstKey
  * @param {Array|Object|String} container
- * @param {Object} options
+ * @param {Object} options<br>
  *  "nonEmptyKey": return the first non-empty key
  * @return {Number|String}
  *  the index in the container, or null
@@ -841,9 +932,9 @@ Q.firstKey = function _Q_firstKey(container, options) {
 
 /**
  * Returns a container with the items in the first parameter that are not in the others
- * @class Q
+ * 
  * @static
- * @method first
+ * @method diff
  * @param {Array|Object} container to subtract items from to form the result
  * @param {Array|Object} container whose items are subtracted in the result
  * @param {Function} comparator accepts item1, item2, index1, index2) and returns whether two items are equal
@@ -888,7 +979,7 @@ Q.diff = function _Q_diff(container1, container2 /*, ... comparator */) {
 /**
  * Tests whether a variable contains a falsy value,
  * or an empty object or array.
- * @class Q
+ * 
  * @static
  * @method isEmpty
  * @param {object} o
@@ -918,7 +1009,7 @@ Q.isEmpty = function _Q_isEmpty(o) {
 
 /**
  * Tests if the value is an integer
- * @class Q
+ * 
  * @static
  * @method isInteger
  * @param value {mixed}
@@ -933,7 +1024,7 @@ Q.isInteger = function _Q_isInteger(value) {
 /**
  * Determines whether something is a plain object created within Javascript,
  * or something else, like a DOMElement or Number
- * @class Q
+ * 
  * @static
  * @method isPlainObject
  * @param {Mixed} x
@@ -959,7 +1050,7 @@ Q.isPlainObject = function (x) {
 /**
  * Makes a shallow copy of an object. But, if any property is an object with a "copy" method,
  * it recursively calls that method to copy the property.
- * @class Q
+ * 
  * @static
  * @method copy
  * @param {Array} fields
@@ -1006,7 +1097,7 @@ Q.copy = function _Q_copy(x, fields) {
 
 /**
  * Extends an object with properties from one or more other objects.
- * @class Q
+ * 
  * @static
  * @method extend
  * @param {Object} target
@@ -1094,7 +1185,7 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 
 /**
  * Returns whether an object contains a property directly
- * @class Q
+ * 
  * @static
  * @method has
  * @param  {Object} obj
@@ -1106,7 +1197,7 @@ Q.has = function _Q_has(obj, key) {
 };
 
 /**
- * @class Q
+ * 
  * @static
  * @method take
  * @param {Object} source
@@ -1135,7 +1226,7 @@ Q.take = function _Q_take(source, fields) {
 
 /**
  * Shuffles an array
- * @class Q
+ * 
  * @static
  * @method shuffle
  * @param {Array} arr
@@ -1154,27 +1245,8 @@ Q.shuffle = function _Q_shuffle( arr ) {
 };
 
 /**
- * Returns microtime like PHP
- * @class Q
- * @static
- * @method microtime
- * @param {Boolean} get_as_float
- * @return {String}
- */
-Q.microtime = function _Q_microtime(get_as_float) {
-	// http://kevin.vanzonneveld.net
-	// +   original by: Paulo Freitas
-	// *	 example 1: timeStamp = microtime(true);
-	// *	 results 1: timeStamp > 1000000000 && timeStamp < 2000000000
-	var now = new Date().getTime() / 1000;
-	var s = parseInt(now, 10);
-
-	return (get_as_float) ? now : (Math.round((now - s) * 1000) / 1000) + ' ' + s;
-};
-
-/**
  * Mixes in one or more classes. Useful for inheritance and multiple inheritance.
- * @class Q
+ * 
  * @static
  * @method mixin
  * @param {Function} A
@@ -1237,7 +1309,7 @@ Q.mixin = function _Q_mixin(A, B) {
 
 /**
  * Use this function to create "Classes", i.e. functions that construct objects
- * @class Q
+ * 
  * @static
  * @method Class
  * @param {Function} construct
@@ -1282,7 +1354,7 @@ Q.Class.options = {
 /**
  * Normalizes text by converting it to lower case, and
  * replacing all non-accepted characters with underscores.
- * @class Q
+ * 
  * @static
  * @method normalize
  * @param {String} text
@@ -1334,7 +1406,7 @@ function _getProp (/*Array*/parts, /*Boolean*/create, /*Object*/context){
  * Useful for longer api chains where you have to test each object in
  * the chain, or when you have an object reference in string format.
  * Objects are created as needed along `path`.
- * @class Q
+ * 
  * @static
  * @method extendObject
  * @param {String} name Path to a property, in the form "A.B.C".
@@ -1371,7 +1443,7 @@ Q.extendObject.options = {
  * Objects are created as needed along `path`.
  * Another way to call this function is to pass an object of {name: value} pairs as the first parameter
  * and context as an optional second parameter. Then the return value is an object of the usual return values.
- * @class Q
+ * 
  * @static
  * @method setObject
  * @param {String|Array} name Path to a property, in the form "A.B.C" or ["A", "B", "C"]
@@ -1402,7 +1474,7 @@ Q.setObject = function _Q_setObject(name, value, context, delimiter) {
  * Get a property from a delimiter-separated string, such as "A.B.C"
  * Useful for longer api chains where you have to test each object in
  * the chain, or when you have an object reference in string format.
- * @class Q
+ * 
  * @static
  * @method getObject
  * @param {String|Array} name Path to a property, in the form "A.B.C" or ["A", "B", "C"]
@@ -1425,7 +1497,7 @@ Q.getObject = function _Q_getObject(name, context, delimiter, create) {
 
 /**
  * Walks the tree from the parent, returns the object at the end of the path, or the the defaultValue
- * @class Q
+ * 
  * @static
  * @method ifSet
  * @param parent {object}
@@ -1451,7 +1523,7 @@ Q.ifSet = function _Q_ifSet(parent, keys, defaultValue) {
 /**
  * Use this to ensure that a property exists before running some javascript code.
  * If something is undefined, loads a script or executes a function, calling the callback on success.
- * @class Q
+ * 
  * @static
  * @method ensure
  * @param {Mixed} property
@@ -1488,7 +1560,7 @@ Q.ensure = function _Q_ensure(property, loader, callback) {
  *   if (!Q.latest(tool, ordinal)) return;
  *   // otherwise, show the latest results on the client
  * });
- * @class Q
+ * 
  * @static
  * @method latest
  * @param key {String|Q.Tool}
@@ -1576,7 +1648,7 @@ Q.Event.jQueryForPage = [];
 
 /**
  * Returns a Q.Event that will fire given an DOM object and an event name
- * @class Q.Event
+ * 
  * @static
  * @method from
  * @param {String|Q.Tool} key
@@ -1593,7 +1665,7 @@ Q.Event.from = function _Q_Event_from(source, eventName) {
 /**
  * Calculates a string key by considering the parameter that was passed,
  * the tool being activated, and the page being activated
- * @class Q.Event
+ * 
  * @static
  * @method calculateKey
  * @param {String|Q.Tool} key
@@ -1628,7 +1700,7 @@ Evp.occurred = false;
 
 /**
  * Adds a callable to a handler, or overwrites an existing one
- * @class Q.Event
+ * 
  * @method set
  * @param {Mixed} callable Any kind of callable which Q.handle can invoke
  * @param {String|Boolean|Q.Tool} key Optional key to associate with the callable.
@@ -1673,7 +1745,7 @@ Evp.set = function _Q_Event_prototype_set(callable, key, prepend) {
  * Like the "set" method, adds a callable to a handler, or overwrites an existing one.
  * But in addition, immediately handles the callable if the event has already occurred at least once,
  * passing it the same subject and arguments as were passed to the event the last time it occurred.
- * @class Q.Event
+ * 
  * @method add
  * @param {mixed} callable Any kind of callable which Q.handle can invoke
  * @param {String|Boolean|Q.Tool} Optional key to associate with the callable.
@@ -1695,7 +1767,7 @@ Evp.add = function _Q_Event_prototype_add(callable, key, prepend) {
 
 /**
  * Removes an event handler
- * @class Q.Event
+ * 
  * @method remove
  * @param {String} key
  *  The key of the callable to remove.
@@ -1741,7 +1813,7 @@ Evp.remove = function _Q_Event_prototype_remove(key) {
 
 /**
  * Removes all handlers for this event
- * @class Q.Event
+ * 
  * @method removeAllHandlers
  * @param {String} key
  *  The key of the callable to remove.
@@ -1757,7 +1829,7 @@ Evp.removeAllHandlers = function _Q_Event_prototype_removeAllHandlers() {
 
 /**
  * Tells the event that the stream should stop
- * @class Q.Event
+ * 
  * @method stop
  * @param {Boolean} removeAllHandlers
  *  If true, then also removes all the handlers added to this event
@@ -1774,7 +1846,7 @@ Evp.stop = function _Q_Event_prototype_stop(removeAllHandlers) {
 
 /**
  * Make a copy of this event, with all the keys and handlers
- * @class Q.Event
+ * 
  * @method copy
  * @return {Q.Event}
  */
@@ -1790,7 +1862,7 @@ Evp.copy = function _Q_Event_prototype_copy() {
 /**
  * Return a new Q.Event object that is handled whenever this event is handled,
  * until anotherEvent occurs, in which case this event occurs one final time.
- * @class Q.Event
+ * 
  * @method until
  * @param {Q.Event} anotherEvent
  *  An event whose occurrence will stop the returned event
@@ -1811,7 +1883,7 @@ Evp.until = function _Q_Event_prototype_until(anotherEvent) {
 /**
  * Return a new Q.Event object that waits until this event is stopped,
  * then processes all the pending calls to .handle(), continuing normally after that.
- * @class Q.Event
+ * 
  * @method then
  * @return {Q.Event} A new Q.Event object
  */
@@ -1840,7 +1912,7 @@ Evp.then = function _Q_Event_prototype_then() {
 /**
  * Return a new Q.Event object that waits until after this event's handle() stops
  * being called for a given number of milliseconds, before processing the last call.
- * @class Q.Event
+ * 
  * @method debounce
  * @param {Number} milliseconds The number of milliseconds
  * @return {Q.Event} A new Q.Event object
@@ -1854,7 +1926,7 @@ Evp.debounce = function _Q_Event_prototype_debounce(milliseconds) {
 /**
  * Return a new Q.Event object that will call handle() when this event's handle()
  * is called, but only at most every given milliseconds.
- * @class Q.Event
+ * 
  * @method throttle
  * @param {Number} milliseconds The number of milliseconds
  * @return {Q.Event} A new Q.Event object
@@ -1868,7 +1940,7 @@ Evp.throttle = function _Q_Event_prototype_throttle(milliseconds) {
 /**
  * Return a new Q.Event object that will call handle() when this event's handle()
  * is called, but only if the test function returns true
- * @class Q.Event
+ * 
  * @method filter
  * @param {Function} test Function to test the arguments and return a Boolean
  * @return {Q.Event} A new Q.Event object
@@ -1885,7 +1957,7 @@ Evp.filter = function _Q_Event_prototype_filter(test) {
 /**
  * Return a new Q.Event object that will call handle() when this event's handle()
  * is called, but with the arguments returned by the transform function
- * @class Q.Event
+ * 
  * @method map
  * @param {Function} transform Function to transform the arguments and return
  *   an array of two items for the new call: [this, arguments]
@@ -1922,7 +1994,7 @@ Evp.onStop = function () {
 
 /**
  * Make an event factory
- * @class Q.Event
+ * 
  * @static
  * @method factory
  * @param {Object} collection
@@ -2013,7 +2085,7 @@ Q.onOffline = new Q.Event(function () {
 Q.beforeActivate = new Q.Event();
 /**
  * This event occurs every time after something is activated
- * @event beforeActivate
+ * @event onActivate
  */
 Q.onActivate = new Q.Event();
 /**
@@ -2038,7 +2110,7 @@ Q.onJQuery = new Q.Event();
 Q.onLayout = new Q.Event();
 /**
  * This event tracks the document.onvisibilitychange event, when online connection is lost
- * @event beforeActivate
+ * @event onVisibilityChange
  */
 Q.onVisibilityChange = new Q.Event();
 
@@ -2078,7 +2150,7 @@ var Pp = Q.Pipe.prototype;
 
 /**
  * Adds a callback to the pipe
- * @class Q.Pipe
+ * 
  * @method on
  * @param field {String}
  *  Pass the name of a field to wait for, until it is filled, before calling the callback.
@@ -2098,7 +2170,7 @@ Pp.on = function _Q_pipe_on(field, callback) {
 
 /**
  * Adds a callback to the pipe with more flexibility
- * @class Q.Pipe
+ * 
  * @method add
  * @param requires {Array}
  *  Optional. Pass an array of required field names here.
@@ -2167,7 +2239,7 @@ Pp.add = function _Q_pipe_add(requires, maxTimes, callback) {
 
 /**
  * Makes a function that fills a particular field in the pipe and can be used as a callback
- * @class Q.Pipe
+ * 
  * @method fill
  * @param field {String}
  *   For error callbacks, you can use field="error" or field="users.error" for example.
@@ -2198,7 +2270,7 @@ Pp.fill = function _Q_pipe_fill(field, ignore) {
 
 /**
  * Runs the pipe
- * @class Q.Pipe
+ * 
  * @method run
  * @param field {String} optionally indicate name of the field that was just filled
  * @return {Number} the number of pipe callbacks that wound up running
@@ -2253,7 +2325,7 @@ Pp.run = function _Q_pipe_run(field) {
 /**
  * A convenience method for constructing Q.Pipe objects
  * and is really here just for backward compatibility.
- * @class Q
+ * 
  * @static
  * @method pipe
  * @return {Q.Pipe}
@@ -2266,7 +2338,7 @@ Q.pipe = function _Q_pipe(a, b, c, d) {
 /**
  * This function helps create "batch functions", which can be used in getter functions
  * and other places to accomplish things in batches.
- * @class Q
+ * 
  * @static
  * @method batcher
  * @param batch {Function}
@@ -2368,7 +2440,7 @@ Q.batcher.options = {
 
 /**
  * Used to create a basic batcher function, given only the url.
- * @class Q
+ * 
  * @static
  * @method batcher.factory
  * @param {Object} collection An object to contain all the batcher functions
@@ -2376,9 +2448,9 @@ Q.batcher.options = {
  * @param {String} tail The rest of the url of the webservice built to support batch requests.
  * @param {String} slotName The name of the slot to request. Defaults to "batch".
  * @param {String} fieldName The name of the data field. Defaults to "batch".
- * @param {Object} options Any additional options to pass to Q.req, as well as:
- *  "max": Passed as option to Q.batcher
- *  "ms": Passed as option to Q.batcher
+ * @param {Object} options Any additional options to pass to Q.req, as well as:<br>
+ *  "max": Passed as option to Q.batcher<br>
+ *  "ms": Passed as option to Q.batcher<br>
  *  "preprocess": Optional function calculating a data structure to JSON stringify into the data field
  * @return {Function} A function with any number of non-function arguments followed by
  *  one function which is treated as a callback and passed (errors, content)
@@ -2442,7 +2514,7 @@ Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotN
  *  the wrapper function being returned. This is useful when calling Q.getter(Q.batcher(...))
  *  Call method .forget with the same arguments as original getter to clear cache record
  *  and update it on next call to getter (if it happen)
- * @class Q
+ * 
  * @static
  * @method getter
  * @param original {Function}
@@ -2654,7 +2726,7 @@ Q.getter.THROTTLING = 3;
 
 /**
  * Wraps a function and returns a wrapper that will call the function at most once.
- * @class Q
+ * 
  * @static
  * @method once
  * @param {Function} original The function to wrap
@@ -2673,7 +2745,7 @@ Q.once = function (original, defaultValue) {
 /**
  * Wraps a function and returns a wrapper that will call the function
  * at most once every given milliseconds.
- * @class Q
+ * 
  * @static
  * @method throttle
  * @param {Function} original The function to wrap
@@ -2693,7 +2765,7 @@ Q.throttle = function (original, milliseconds, defaultValue) {
 /**
  * Wraps a function and returns a wrapper that will call the function
  * after calls stopped coming in for a given number of milliseconds
- * @class Q
+ * 
  * @static
  * @method debounce
  * @param {Function} original The function to wrap
@@ -2731,7 +2803,7 @@ Q.Exception.prototype = Error;
 
 /**
  * The root mixin added to all tools.
- * @class Q.Exception
+ * 
  * @constructor
  * @param [element] the element to activate into a tool
  * @param [options={}] an optional set of options that may contain ".Tool_name or #Some_exact_tool or #Some_child_tool"
@@ -2874,7 +2946,7 @@ Q.Tool.onActivate = Q.Event.factory(_activateToolHandlers, ["", _toolEventFactor
 /**
  * Returns Q.Event which occurs when a tool has been initialized
  * Generic callbacks can be assigned by setting toolName to ""
- * @class Q.Tool
+ * 
  * @event onInit
  * @param nameOrId {String} the name of the tool, such as "Q/inplace", or "id:" followed by tool's id
  */
@@ -2883,7 +2955,7 @@ Q.Tool.onInit = Q.Event.factory(_initToolHandlers, ["", _toolEventFactoryNormali
 /**
  * Returns Q.Event which occurs when a tool is about to be removed
  * Generic callbacks can be assigned by setting toolName to ""
- * @class Q.Tool
+ * 
  * @event beforeRemove
  * @param nameOrId {String} the name of the tool, such as "Q/inplace", or "id:" followed by tool's id
  */
@@ -2891,7 +2963,7 @@ Q.Tool.beforeRemove = Q.Event.factory(_beforeRemoveToolHandlers, ["", _toolEvent
 
 /**
  * Traverses elements in a particular container, including the container, and removes + destroys all tools.
- * @class Q.Tool
+ * 
  * @static
  * @method remove
  * @param elem {HTMLElement}
@@ -2910,7 +2982,7 @@ Q.Tool.remove = function _Q_Tool_remove(elem, removeCached) {
 
 /**
  * Traverses children in a particular container and removes + destroys all tools.
- * @class Q.Tool
+ * 
  * @static
  * @method clear
  * @param elem {HTMLElement}
@@ -2930,7 +3002,7 @@ Q.Tool.clear = function _Q_Tool_clear(elem, removeCached) {
 
 /**
  * Call this function to define a tool
- * @class Q.Tool
+ * 
  * @static
  * @method define
  * @param name {String|Object} The name of the tool, e.g. "Q/foo". Also you can pass an object of name: filename here here.
@@ -2976,7 +3048,7 @@ Q.Tool.beingActivated = undefined;
 /**
  * Call this function to define options for a tool constructor
  * that may not have been loaded yet.
- * @class Q.Tool
+ * 
  * @static
  * @method define.options
  * @param {String} toolName the name of the tool
@@ -2999,7 +3071,7 @@ var _qtdo = {};
 
 /**
  * Call this function to define a jQuery plugin, and a tool with the same name that uses it.
- * @class Q.Tool
+ * 
  * @static
  * @method jQuery
  * @param {String} name The name of the jQuery plugin and tool, e.g. "Q/foo"
@@ -3075,7 +3147,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 /**
  * Call this function to define options for a jQuery tool constructor
  * that may not have been loaded yet.
- * @class Q.Tool
+ * 
  * @static
  * @method jQuery.options
  * @param {String} toolName the name of the tool
@@ -3104,7 +3176,7 @@ var Tp = Q.Tool.prototype;
 /**
  * Gets child tools contained in the tool, as determined by their prefixes
  * based on the prefix of the tool.
- * @class Q.Tool
+ * 
  * @method children
  * @param {String} append The string to append to the prefix to find the child tools
  * @param {Number} levels Pass 1 here to get only the immediate children, 2 for immediate children and grandchildren, etc.
@@ -3137,7 +3209,7 @@ Tp.children = function Q_Tool_prototype_children(append, levels) {
 /**
  * Gets one child tool contained in the tool, which matches the prefix
  * based on the prefix of the tool.
- * @class Q.Tool
+ * 
  * @method child
  * @param {String} append The string to append to the prefix to find the child tool
  * @return {Tool|null}
@@ -3159,7 +3231,7 @@ Tp.child = function Q_Tool_prototype_child(append) {
 /**
  * Gets the first child tool contained in the tool, which matches the prefix
  * based on the prefix of the tool.
- * @class Q.Tool
+ * 
  * @method parentIds
  * @return {Tool|null}
  */
@@ -3181,7 +3253,7 @@ Tp.parentIds = function Q_Tool_prototype_parentIds() {
 /**
  * Gets parents tools containing the tool, as determined by their prefixes
  * based on the prefix of the tool.
- * @class Q.Tool
+ * 
  * @method parents
  * @return {Object} A hash of {prefix: Tool} pairs
  */
@@ -3199,7 +3271,7 @@ Tp.parents = function Q_Tool_prototype_parents() {
 /**
  * Gets the first child tool contained in the tool, which matches the prefix
  * based on the prefix of the tool.
- * @class Q.Tool
+ * 
  * @method parent
  * @return {Tool|null}
  */
@@ -3216,7 +3288,7 @@ Tp.parent = function Q_Tool_prototype_parent() {
  * markup for the new instance tool.
  * Also can be used for removing a tool instance
  * and all of its children.
- * @class Q.Tool
+ * 
  * @method remove
  * @param {Boolean} removeCached
  *  Defaults to false. Whether or not to remove the actual tool if its containing element
@@ -3268,7 +3340,7 @@ Tp.remove = function _Q_Tool_prototype_remove(removeCached) {
  * If jQuery is available, returns jQuery(selector, this.element).
  * Just a tiny Backbone.js-style convenience helper; this.$ is similar
  * to $, but scoped to the DOM tree of this tool.
- * @class Q.Tool
+ * 
  * @method $
  * @param {String} selector
  *   jQuery selector
@@ -3287,7 +3359,7 @@ Tp.$ = function _Q_Tool_prototype_$(selector) {
 
 /**
  * Returns all subelements with the given class name.
- * @class Q.Tool
+ * 
  * @method getElementsByClassName
  * @param {String} className
  *   the class name to look for
@@ -3301,7 +3373,7 @@ Tp.getElementsByClassName = function _Q_Tool_prototype_getElementsByClasName(cla
 /**
  * Be notified whenever a child tool is activated, repeatedly if it is
  * removed and then activated again.
- * @class Q.Tool
+ * 
  * @event onChildActivate
  */
 Tp.onChildActivate = function _Q_Tool_prototype_onChildActivate(append) {
@@ -3311,8 +3383,8 @@ Tp.onChildActivate = function _Q_Tool_prototype_onChildActivate(append) {
 /**
  * Be notified whenever a child tool is initialized, repeatedly if it is
  * removed and then activated again.
- * @class Q.Tool
- * @method onChildInit
+ * 
+ * @event onChildInit
  */
 Tp.onChildInit = function _Q_Tool_prototype_onChildInit(append) {
 	return Q.Tool.onInit('id:'+this.prefix+append);
@@ -3320,7 +3392,7 @@ Tp.onChildInit = function _Q_Tool_prototype_onChildInit(append) {
 
 /**
  * Returns a string that is already properly encoded and can be set as the value of an options attribute
- * @class Q.Tool
+ * 
  * @static
  * @method encodeOptions
  * @param {Object} options the options to pass to a tool
@@ -3333,7 +3405,7 @@ Q.Tool.encodeOptions = function _Q_Tool_stringFromOptions(options) {
 /**
  * Sets up element so that it can be used to activate a tool
  * For example: $('container').append(Q.Tool.setUpElement('div', 'Streams/chat')).activate(options);
- * @class Q.Tool
+ * 
  * @static
  * @method setUpElement
  * @param {String|Element} element
@@ -3376,7 +3448,7 @@ Q.Tool.setUpElement = function _Q_Tool_element(element, toolType, toolOptions, i
 
 /**
  * Returns HTML for an element that it can be used to activate a tool
- * @class Q.Tool
+ * 
  * @static
  * @method setUpElementHTML
  * @param {String|Element} element
@@ -3401,7 +3473,7 @@ Q.Tool.setUpElementHTML = function _Q_Tool_elementHTML(element, toolType, toolOp
  * Sets up element so that it can be used to activate a tool
  * For example: $('container').append(Q.Tool.setUpElement('div', 'Streams/chat')).activate(options);
  * The prefix and id of the element are derived from the tool on which this method is called.
- * @class Q.Tool
+ * 
  * @method setUpElement
  * @param {String|Element} element
  *  The tag of the element, such as "div", or a reference to an existing Element
@@ -3422,7 +3494,7 @@ Tp.setUpElement = function (element, toolType, toolOptions, id) {
  * Returns HTML for an element that it can be used to activate a tool.
  * The prefix and id of the element are derived from the tool on which this method is called.
  * For example: $('container').append(Q.Tool.make('Streams/chat')).activate(options);
- * @class Q.Tool
+ * 
  * @method setUpElementHTML
  * @param {String|Element} element
  *  The tag of the element, such as "div", or a reference to an existing Element
@@ -3441,7 +3513,7 @@ Tp.setUpElementHTML = function (element, toolType, toolOptions, id) {
 
 /**
  * Returns a tool corresponding to the given DOM element, if such tool has already been constructed.
- * @class Q.Tool
+ * 
  * @static
  * @method from
  * @param toolElement {Element}
@@ -3460,7 +3532,7 @@ Q.Tool.from = function _Q_Tool_from(toolElement, toolName) {
 
 /**
  * Reference a tool by its id
- * @class Q.Tool
+ * 
  * @static
  * @method byId
  * @param {String} id
@@ -3474,7 +3546,7 @@ Q.Tool.byId = function _Q_Tool_byId(id, name) {
 
 /**
  * Computes and returns a tool's prefix
- * @class Q.Tool
+ * 
  * @static
  * @method calculatePrefix
  * @param {String} id the id or prefix of an existing tool or its element
@@ -3492,7 +3564,7 @@ Q.Tool.calculatePrefix = function _Q_Tool_calculatePrefix(id) {
 
 /**
  * Computes and returns a tool's id
- * @class Q.Tool
+ * 
  * @static
  * @method calculateId
  * @param {String} id the id or prefix of an existing tool or its element
@@ -3510,7 +3582,7 @@ Q.Tool.calculateId = function _Q_Tool_calculatePrefix(id) {
 
 /**
  * For debugging purposes only, allows to log tool names conveniently
- * @class Q.Tool
+ * 
  * @method toString
  * @return {String}
  */
@@ -3617,13 +3689,13 @@ Q.Session = function _Q_Session() {
 };
 
 /**
- * Q.Cache constructor
+ * A Q.Cache object stores items in a cache and throws out least-recently-used ones.
  * @class Q.Cache
  * @constructor
- * @param {Object}  options  you can pass the following options:
- *  "localStorage": use local storage instead of page storage
- *  "sessionStorage": use session storage instead of page storage
- *  "name": the name of the cache, not really used for now
+ * @param {Object} options you can pass the following options:
+ *  "localStorage": use local storage instead of page storage<br>
+ *  "sessionStorage": use session storage instead of page storage<br>
+ *  "name": the name of the cache, not really used for now<br>
  *  "max": the maximum number of items the cache should hold. Defaults to 100.
  */
 Q.Cache = function _Q_Cache(options) {
@@ -3783,7 +3855,7 @@ function Q_Cache_pluck(cache, existing) {
 }
 /**
  * Generates the key under which things will be stored in a cache
- * @class Q.Cache
+ * 
  * @static
  * @method key
  * @param  {Array} args the arguments from which to generate the key
@@ -3806,7 +3878,7 @@ var Cp = Q.Cache.prototype;
 
 /**
  * Accesses the cache and sets an entry in it
- * @class Q.Cache
+ * 
  * @static
  * @method set
  * @param {String} key  the key to save the entry under, or an array of arguments
@@ -3855,7 +3927,7 @@ Cp.set = function _Q_Cache_prototype_set(key, cbpos, subject, params, options) {
 };
 /**
  * Accesses the cache and gets an entry from it
- * @class Q.Cache
+ * 
  * @static
  * @method get
  * @param {String} key  the key to search for
@@ -3890,7 +3962,7 @@ Cp.get = function _Q_Cache_prototype_get(key, options) {
 };
 /**
  * Accesses the cache and removes an entry from it.
- * @class Q.Cache
+ * 
  * @static
  * @method remove
  * @param {String} key  the key of the entry to remove
@@ -3926,7 +3998,7 @@ Cp.remove = function _Q_Cache_prototype_remove(key) {
 };
 /**
  * Accesses the cache and clears all entries from it
- * @class Q.Cache
+ * 
  * @static
  * @method clear
  */
@@ -3951,7 +4023,7 @@ Cp.clear = function _Q_Cache_prototype_clear() {
 };
 /**
  * Cycles through all the entries in the cache
- * @class Q.Cache
+ * 
  * @static
  * @method each
  * @param {Array} args  An array consisting of some or all the arguments that form the key
@@ -4031,43 +4103,47 @@ Q.Page.beingActivated = false;
 
 /**
  * Occurs after the page loads
- * @class Q.Page
+ * 
  * @event onLoad
  * @param uriString {String} The full URI string, or "Module/action"
  */
 Q.Page.onLoad = Q.Event.factory(null, [""]);
 /**
  * Occurs after the page is activated
- * @class Q.Page
+ * 
  * @event onActivate
  * @param uriString {String} The full URI string, or "Module/action"
  */
 Q.Page.onActivate = Q.Event.factory(null, [""]);
 /**
  * Occurs after the page unloads
- * @class Q.Page
+ * 
  * @event onUnload
  * @param uriString {String} The full URI string, or "Module/action"
  */
 Q.Page.onUnload = Q.Event.factory(null, [""]);
 /**
  * Occurs before the page loads
- * @class Q.Page
+ * 
  * @event beforeLoad
  * @param uriString {String} The full URI string, or "Module/action"
  */
 Q.Page.beforeLoad = Q.Event.factory(null, [""]);
 /**
  * Occurs before the page unloads
- * @class Q.Page
+ * 
  * @event beforeUnload
  * @param uriString {String} The full URI string, or "Module/action"
  */
 Q.Page.beforeUnload = Q.Event.factory(null, [""]);
 
 /**
- * Use this function to set handlers for when the page is loaded or unloaded.
  * @class Q
+ */
+
+/**
+ * Use this function to set handlers for when the page is loaded or unloaded.
+ * 
  * @static
  * @method page
  * @param page {String} "$Module/$action" or a more specific URI string, or "" to handle all pages
@@ -4106,7 +4182,7 @@ Q.page = function _Q_page(page, handler, key) {
 
 /**
  * Initialize the Q javascript platform
- * @class Q
+ * 
  * @static
  * @method init
  * @param {Object} options
@@ -4212,7 +4288,7 @@ Q.init.jsonLibraryUrl = "http://cdnjs.cloudflare.com/ajax/libs/json3/3.2.4/json3
 
 /**
  * This is called when the DOM is ready
- * @class Q
+ * 
  * @static
  * @method ready
  */
@@ -4304,7 +4380,7 @@ Q.ready = function _Q_ready() {
 /**
  * This function is called by Q to make sure that we've loaded the session nonce.
  * If you like, you can also call it yourself.
- * @class Q
+ * 
  * @static
  * @method loadNonce
  * @param {Function} callback This function is called when the nonce is loaded
@@ -4337,7 +4413,7 @@ Q.loadNonce = function _Q_loadNonce(callback, context, args) {
 
 /**
  * Call this function to set a notice that is shown when the page is almost about to be unloaded
- * @class Q
+ * 
  * @static
  * @method beforeUnload
  * @param notice {String} The notice to set. It should typically be worded so that "Cancel" cancels the unloading.
@@ -4356,7 +4432,7 @@ Q.beforeUnload = function _Q_beforeUnload(notice) {
 
 /**
  * Remove an element from the DOM and try to clean up memory as much as possible
- * @class Q
+ * 
  * @static
  * @method removeElement
  * @param {HTMLElement} element
@@ -4378,7 +4454,7 @@ Q.removeElement = function _Q_removeElement(element) {
 
 /**
  * Add an event listener to an element
- * @class Q
+ * 
  * @static
  * @method addEventListener
  * @param {HTMLElement} element
@@ -4433,7 +4509,7 @@ Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandl
 
 /**
  * Remove an event listener from an element
- * @class Q
+ * 
  * @static
  * @method removeEventListener
  * @param {HTMLElement} element
@@ -4467,7 +4543,7 @@ Q.removeEventListener = function _Q_addEventListener(element, eventName, eventHa
 
 /**
  * Triggers a method or Q.Event on all the tools inside a particular element
- * @class Q
+ * 
  * @static
  * @method trigger
  * @param {String} eventName  Required, the name of the method or Q.Event to trigger
@@ -4510,12 +4586,13 @@ Q.clientId = function () {
 
 /**
  * Call this function to get an rfc4122 version 4 compliant id for the current client
- * @class Q
+ * 
  * @static
  * @method uuid
- * TODO: consider replacing with https://github.com/broofa/node-uuid/blob/master/uuid.js
  */
 Q.uuid = function () {
+	// TODO: consider replacing with
+	// https://github.com/broofa/node-uuid/blob/master/uuid.js
 	return Q.uuid.value = Q.uuid.value || 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
 		var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
 		return v.toString(16);
@@ -4524,7 +4601,7 @@ Q.uuid = function () {
 
 /**
  * Returns whether Q.ready() has been called
- * @class Q
+ * 
  * @static
  * @method isReady
  * @return {Boolean}
@@ -4535,7 +4612,7 @@ Q.isReady = function _Q_isReady() {
 
 /**
  * Returns whether the client is currently connected to the 'net
- * @class Q
+ * 
  * @static
  * @method isOnline
  * @return {Boolean}
@@ -4546,7 +4623,7 @@ Q.isOnline = function _Q_isOnline() {
 
 /**
  * Loads a plugin
- * @class Q
+ * 
  * @static
  * @method load
  * @param {String|Array} plugins
@@ -4569,7 +4646,7 @@ Q.load = function _Q_load(plugins, callback, options) {
 
 /**
  * Obtain a URL
- * @class Q
+ * 
  * @static
  * @method url
  * @param {Object} what
@@ -4619,7 +4696,7 @@ Q.url.options = {
 
 /**
  * Get the URL for an action
- * @class Q
+ * 
  * @static
  * @method action
  * @param {String} uri
@@ -4640,7 +4717,7 @@ Q.action = function _Q_action(uri, fields, options) {
 
 /**
  * Extends a string or object to be used with AJAX
- * @class Q
+ * 
  * @static
  * @method ajaxExtend
  * @param {String} what
@@ -4737,7 +4814,7 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 
 /**
  * The easiest way to make direct web service requests in Q
- * @class Q
+ * 
  * @static
  * @method req
  * @param {String} uri
@@ -4762,7 +4839,7 @@ Q.req = function _Q_req(uri, slotNames, callback, options) {
 /**
  * A way to make requests that is cross-domain. Typically used for requesting JSON or various templates.
  * It uses script tags and JSONP callbacks for remote domains, and prefers XHR for the local domain.
- * @class Q
+ * 
  * @static
  * @method request
  * @param {Object} fields
@@ -4989,7 +5066,7 @@ Q.request.callbacks = []; // used by Q.request
 
 /**
  * Try to find an error message assuming typical error data structures for the arguments
- * @class Q
+ * 
  * @static
  * @method firstErrorMessage
  * @param {Object} data an object where the errors may be found, you can pass as many of these as you want
@@ -5026,7 +5103,7 @@ Q.firstErrorMessage = function _Q_firstErrorMessage(data /*, data2, ... */) {
 /**
  * Turns AJAX errors returned by Q to a hash that might be
  * useful for validating a form.
- * @class Q
+ * 
  * @static
  * @method ajaxErrors
  * @param {Object} errors
@@ -5068,7 +5145,7 @@ Q.ajaxErrors = function _Q_ajaxErrors(errors, fields) {
  * But may also use XHR if we have CORS enabled.
  * Now this function is just an alias for Q.request
  * @private
- * @class Q
+ * 
  * @static
  * @method jsonRequest
  * @param {Object} fields
@@ -5088,7 +5165,7 @@ Q.jsonRequest = Q.request;
 /**
  * Serialize an object of fields into a shallow object of key/value pairs
  * @private
- * @class Q
+ * 
  * @static
  * @method serializeFields
  * @param {Object} fields
@@ -5150,7 +5227,7 @@ Q.serializeFields = function _Q_serializeFields(fields, keys) {
  * Uses a form to do a real POST, but doesn't have a callback
  * Useful for convincing Safari to stop blocking third-party cookies
  * Technically we could use AJAX and CORS instead, and then we could have a callback.
- * @class Q
+ * 
  * @static
  * @method formPost
  * @param action {String}
@@ -5249,7 +5326,7 @@ Q.formPost.counter = 0;
 
 /**
  * Adds a reference to a javascript, if it's not already there
- * @class Q
+ * 
  * @static
  * @method addScript
  * @param {String|Array} src
@@ -5476,7 +5553,7 @@ Q.findScript = function (src) {
 
 /**
  * Adds a reference to a stylesheet, if it's not already there
- * @class Q
+ * 
  * @static
  * @method addStylesheet
  * @param {String} href
@@ -5597,7 +5674,7 @@ Q.findStylesheet = function (href) {
 
 /**
  * Gets, sets or a deletes a cookie
- * @class Q
+ * 
  * @static
  * @method cookie
  * @param {String} name
@@ -5658,7 +5735,7 @@ Q.cookie = function _Q_cookie(name, value, options) {
 /**
  * Finds all elements that contain a class matching the filter,
  * and calls the callback for each of them.
- * @class Q
+ * 
  * @static
  * @method find
  * @param {HTMLElement|Array} elem
@@ -5759,7 +5836,7 @@ Q.find.skipSubtree = "Q:skipSubtree";
 /**
  * Unleash this on an element to activate all the tools within it.
  * If the element is itself an outer div of a tool, that tool is activated too.
- * @class Q
+ * 
  * @static
  * @method activate
  * @param {HTMLElement|Q.Tool} elem
@@ -5808,7 +5885,7 @@ Q.activate = function _Q_activate(elem, options, callback) {
 
 /**
  * Replaces the contents of an element and does the right thing with all the tools in it
- * @class Q
+ * 
  * @static
  * @method replace
  * @param {HTMLElement} container
@@ -5891,7 +5968,7 @@ Q.replace = function _Q_replace(container, source, options) {
 
 
 /**
- * @class Q
+ * 
  * @static
  * @method loadUrl
  * @param {String} url
@@ -6337,7 +6414,7 @@ Q.loadUrl.saveScroll = function _Q_loadUrl_saveScroll (url, options) {
 /**
  * Used for handling callbacks, whether they come as functions,
  * strings referring to functions (if evaluated), arrays or hashes.
- * @class Q
+ * 
  * @static
  * @method handle
  * @param {Mixed} callables
@@ -6487,7 +6564,7 @@ Q.handle.onUrl = new Q.Event();
 
 /**
  * Parses a querystring
- * @class Q
+ * 
  * @static
  * @method parseQueryString
  * @param {String} queryString  The string to parse
@@ -6513,7 +6590,7 @@ Q.parseQueryString = function Q_parseQueryString(queryString, keys) {
 
 /**
  * Builds a querystring from an object
- * @class Q
+ * 
  * @static
  * @method buildQueryString
  * @param from {Object} An object containing {key: value} pairs
@@ -6673,7 +6750,7 @@ function _initTool(toolElement) {
 
 /**
  * Given a hash of values, returns the hostname and port for connecting to PHP server running Q
- * @class Q
+ * 
  * @static
  * @method baseUrl
  * @param {Object} where
@@ -6693,7 +6770,7 @@ Q.baseUrl.routers = []; // functions returning a custom url
 
 /**
  * Given an index and field values, returns the hostname and port for connecting to a Node.js server running Q
- * @class Q
+ * 
  * @static
  * @method nodeUrl
  * @param {Object} where
@@ -6727,7 +6804,7 @@ Q.Template.collection = {};
  * Sets the content of a template in the document's collection.
  * This is usually called by Q.loadUrl when the server sends over some templates,
  * so they won't have to be requested later.
- * @class Q.Template
+ * 
  * @static
  * @method set
  * @param {String} name The template's name under which it will be found
@@ -6744,7 +6821,7 @@ Q.Template.set = function (name, content, type) {
 
 /**
  * Load template from server and store to cache
- * @class Q.Template
+ * 
  * @static
  * @method load
  * @param name {String} The template name. Here is how templates are found:
@@ -6834,7 +6911,7 @@ Q.Template.onError = new Q.Event(function (err) {
 
 /**
  * Render template taken from DOM or from file on server with partials
- * @class Q.Template
+ * 
  * @static
  * @method render
  * @param name {string} The name of template. See Q.Template.load
@@ -6900,6 +6977,12 @@ function _ioOn(obj, evt, callback) {
  	});
 }
 
+/**
+ * Q.Socket class can be used to manage sockets (implemented with socket.io)<br>
+ * Instantiate sockets with Q.Socket.connect
+ * @class Q.Socket
+ * @constructor
+ */
 Q.Socket = function (params) {
 	this.namespace = params.namespace;
 	this.url = params.url;
@@ -6908,7 +6991,6 @@ Q.Socket = function (params) {
 
 /**
  * Returns a socket, if it was already connected, or returns undefined
- * @class Q.Socket
  * @static
  * @method get
  * @param ns {String} The socket.io namespace
@@ -6956,7 +7038,7 @@ function _connectSocketNS(ns, url, callback, force) {
 						Q.Socket.onConnect(ns).handle(socket);
 						Q.Socket.onConnect(ns, url).handle(socket);
 						console.log('Socket connected to '+url);
-					}, 500);
+					}, 100);
 				});
 				_ioOn(_ioSockets[url], 'connect_failed', function () {
 					console.log('Failed to connect to '+url);
@@ -6988,12 +7070,12 @@ function _connectSocketNS(ns, url, callback, force) {
 
 /**
  * Connects a socket, and stores it in the list of connected sockets
- * @class Q.Socket
+ * 
  * @static
  * @method connect
- * @param ns {String}
- * @param url {String}
- * @param callback {Function}
+ * @param ns {String} A socket.io namespace to use
+ * @param url {String} The url of the socket.io node to connect to
+ * @param callback {Function} When a connection is made, receives the socket object
  */
 Q.Socket.connect = function _Q_Socket_prototype_connect(ns, url, callback) {
 	if (typeof ns === 'function') {
@@ -7013,7 +7095,7 @@ Q.Socket.connect = function _Q_Socket_prototype_connect(ns, url, callback) {
 
 /**
  * Disconnects a socket (not just a namespace) corresponding to a Q.Socket
- * @class Q.Socket
+ * 
  * @method disconnect
  */
 Q.Socket.prototype.disconnect = function _Q_Socket_prototype_disconnect() {
@@ -7030,7 +7112,7 @@ Q.Socket.prototype.disconnect = function _Q_Socket_prototype_disconnect() {
 
 /**
  * Disconnects all sockets that have been connected
- * @class Q.Socket
+ * 
  * @static
  * @method disconnectAll
  */
@@ -7042,7 +7124,7 @@ Q.Socket.disconnectAll = function _Q_Socket_disconnectAll() {
 
 /**
  * Reconnect all sockets that have been connected
- * @class Q.Socket
+ * 
  * @static
  * @method reconnectAll
  */
@@ -7061,7 +7143,7 @@ Q.Socket.reconnectAll = function _Q_Socket_reconnectAll() {
 
 /**
  * Completely remove all sockets, de-register events and forget socket.io
- * @class Q.Socket
+ * 
  * @static
  * @method destroyAll
  */
@@ -7080,7 +7162,7 @@ Q.Socket.destroyAll = function _Q_Socket_destroyAll() {
 
 /**
  * Subscribe to a socket event and obtain a Q.Event based on the parameters
- * @class Q.Socket
+ * 
  * @event onEvent
  * @param {String} ns the namespace of the socket
  * @param {String} url the url of the socket
@@ -7129,7 +7211,7 @@ Q.Socket.onEvent = Q.Event.factory(
 
 /**
  * Be notified when a socket connects and obtain a Q.Event based on the parameters
- * @class Q.Socket
+ * 
  * @event onConnect
  * @param {String} ns the namespace of the socket
  * @param {String} url the url of the socket
@@ -7154,7 +7236,8 @@ Q.Socket.prototype.onEvent = function(name) {
 };
 
 /**
- * Repeatedly calls a function in order to animate something
+ * Q.Animation class can be used to repeatedly call a function
+ * in order to animate something
  * @class Q.Animation
  * @constructor
  * @param {Function} callback
@@ -7189,18 +7272,35 @@ Q.Animation = function _Q_Animation(callback, duration, ease, params) {
 	this.params = params;
 	this.onRewind = new Q.Event();
 };
-Q.Animation.prototype.pause = function _Q_Animation_prototype_pause() {
+
+var Ap = Q.Animation.prototype;
+
+/**
+ * Pause the animation
+ * @method pause
+ */
+Ap.pause = function _Q_Animation_prototype_pause() {
 	this.playing = false;
 	delete Q.Animation.playing[this.id];
 	return this;
 };
-Q.Animation.prototype.rewind = function _Q_Animation_prototype_rewind() {
+
+/**
+ * Rewind the animation
+ * @method rewind
+ */
+Ap.rewind = function _Q_Animation_prototype_rewind() {
 	this.pause();
 	this.position = this.milliseconds = 0;
 	this.onRewind.handle.call(this);
 	return this;
 };
-Q.Animation.prototype.render = function _Q_Animation_prototype_rewind() {
+
+/**
+ * Render the current frame of the animation
+ * @method render
+ */
+Ap.render = function _Q_Animation_prototype_rewind() {
 	var anim = this;
 	var ms = Q.milliseconds();
 	window.requestAnimationFrame(function () {
@@ -7217,17 +7317,51 @@ Q.Animation.prototype.render = function _Q_Animation_prototype_rewind() {
 		}
 	});
 };
-Q.Animation.prototype.play = function _Q_Animation_instance_play() {
+
+/**
+ * Play the animation (resume after a pause)
+ * @method play
+ */
+Ap.play = function _Q_Animation_instance_play() {
 	Q.Animation.playing[this.id] = this;
 	this.playing = true;
 	this.render();
 	return this;
 };
+
+/**
+ * Play the animation
+ * @static
+ * @method play
+ * @param {Function} callback
+ *  The function to call. It is passed the following parameters:
+ *  x = the position in the animation, between 0 and 1
+ *  y = the output of the ease function after plugging in x
+ *  params = the fourth parameter passed to the run function
+ * @param {Number} duration
+ *  The number of milliseconds the animation should run
+ * @param {String|Function} ease
+ *  The key of the ease function in Q.Animation.ease object, or another ease function
+ * @param {Object} params
+ *  Optional parameters to pass to the callback
+ */
 Q.Animation.play = function _Q_Animation_play(callback, duration, ease, params) {
 	var result = new Q.Animation(callback, duration, ease, params);
 	return result.play();
 };
+
+/**
+ * The frames per second, used if requestAnimationFrame isn't defined
+ * @property {Number} fps
+ */
 Q.Animation.fps = 60;
+
+/**
+ * Ease functions for animations
+ * Contains "linear", "bounce", "smooth" and "inOutQuintic".
+ * Feel free to add more.
+ * @property {Object} ease
+ */
 Q.Animation.ease = {
 	linear: function(fraction) {
 		return fraction;
@@ -7294,7 +7428,8 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	/**
 	 * Loads a jQuery plugin if it is not there, then calls the callback
 	 * @class jQuery.fn
-     * @method plugin
+	 * @static
+	 * @method plugin
 	 * @param {String} pluginName
 	 * @param {Array|Mixed} options
 	 * @param {Function} callback
@@ -7326,8 +7461,8 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	};
 	/**
 	 * The function used by the "plugin" plugin to load other plugins
-	 * @class jQuery.fn
-     * @method plugin.load
+	 * @static
+	 * @method plugin.load
 	 * @param {String|Array} pluginNames
 	 * @param {Function} callback
 	 * @param {Object} options
@@ -7364,8 +7499,8 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	};
 	/**
 	 * Used to access the state of a plugin, e.g. $('#foo').state('Q/something').foo
-	 * @class jQuery.fn
-     * @method state
+	 * @static
+	 * @method state
 	 */
 	$.fn.state = function _jQuery_fn_state(pluginName) {
 		var key = Q.normalize(pluginName) + ' state';
@@ -7373,8 +7508,8 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	};
 	/**
 	 * Calls Q.activate on all the elements in the jQuery
-	 * @class jQuery.fn
-     * @method activate
+	 * @static
+	 * @method activate
 	 */
 	$.fn.activate = function _jQuery_fn_activate(options) {
 		jQuery(this).each(function _jQuery_fn_activate_each(index, element) {
@@ -7718,7 +7853,7 @@ Q.Browser = {
 var detected = Q.Browser.detect();
 /**
  * Useful info about the page and environment
- * @class Q
+ * 
  * @property {Object} info
  */
 Q.info = {
@@ -8217,7 +8352,7 @@ Q.Dialogs.push.options = {
 /**
  * Provides replacement for default javascript alert() using Q front-end features, specifically dialogs.
  * Shows dialog with customizable title, message and button label.
- * @class Q
+ * 
  * @static
  * @method Q.alert
  * @param {String} message The only required parameter, this specifies text of the alert.
@@ -8243,7 +8378,7 @@ Q.alert = function(message, options) {
  * The only major difference from regular confirm is that this implementation doesn't stop JS execution
  * and thus it's impossible to synchronously return true | false when user presses 'Ok' or 'Cancel' and
  * thereby callback is used to pass the user decision result.
- * @class Q
+ * 
  * @static
  * @method confirm
  * @param {String} message The only required parameter, this specifies confirmation text.
@@ -8295,7 +8430,7 @@ Q.confirm = function(message, callback, options) {
  * Provides replacement for default javascript prompt() using Q front-end features, specifically dialogs.
  * Shows dialog with customizable title, message, input field placeholder and button label.
  * Unlike a regular JS prompt, the entered value is passed asynchronously using callback.
- * @class Q
+ * 
  * @static
  * @method prompt
  * @param {String} [message='Enter a value'] Optional, specifies text before input field useful to ask
