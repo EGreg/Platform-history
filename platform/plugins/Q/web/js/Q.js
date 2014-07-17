@@ -46,6 +46,16 @@ Q.Error = Error;
  * Extend some built-in prototypes
  */
 
+/**
+ * @class String
+ * @description Q extended methods for Objects
+ */
+
+/**
+ * Returns the prototype of an object, if one can be found
+ * @method getPrototypeOf
+ * @return {Object}
+ */
 if (!Object.getPrototypeOf)
 Object.getPrototypeOf = function (obj) {
 	if (obj.__proto__) return obj.__proto__;
@@ -55,6 +65,11 @@ Object.getPrototypeOf = function (obj) {
 	return null;
 };
 
+/**
+ * Returns an array containing the object's keys, in a cross-browser way
+ * @method keys
+ * @return {Array}
+ */
 if (!Object.keys)
 Object.keys = (function () {
 	var hasOwnProperty = Object.prototype.hasOwnProperty,
@@ -91,6 +106,16 @@ Object.keys = (function () {
 	};
 })();
 
+/**
+ * @class String
+ * @description Q extended methods for Strings
+ */
+
+/**
+ * Returns a copy of the string with Every Word Capitalized
+ * @method toCapitalized
+ * @return {String}
+ */
 var Sp = String.prototype;
 Sp.toCapitalized = function _String_prototype_toCapitalized() {
 	return (this + '').replace(/^([a-z])|\s+([a-z])/g, function (found) {
@@ -98,11 +123,21 @@ Sp.toCapitalized = function _String_prototype_toCapitalized() {
 	});
 };
 
+/**
+ * Determins whether the string's contents are a URL
+ * @method isUrl
+ * @return {Boolean}
+ */
 Sp.isUrl = function _String_prototype_isUrl () {
 	return this.match(new RegExp("^[A-Za-z]*:\/\/"));
 };
 
-Sp.encodeHTML = function _String_prototype_encodHTML(quote_style, charset, double_encode) {
+/**
+ * Returns a copy of the string with special HTML characters escaped
+ * @method encodeHTML
+ * @return {String}
+ */
+Sp.encodeHTML = function _String_prototype_encodeHTML(quote_style, charset, double_encode) {
 	return this.replaceAll({
 		'&': '&amp;',
 		'<': '&lt;',
@@ -113,7 +148,12 @@ Sp.encodeHTML = function _String_prototype_encodHTML(quote_style, charset, doubl
 	});
 };
 
-Sp.decodeHTML = function _String_prototype_encodHTML(quote_style, charset, double_encode) {
+/**
+ * Reverses what encodeHTML does
+ * @method decodeHTML
+ * @return {String}
+ */
+Sp.decodeHTML = function _String_prototype_decodeHTML(quote_style, charset, double_encode) {
 	return this.replaceAll({
 		'&amp;': '&',
 		'&lt;': '<',
@@ -125,51 +165,26 @@ Sp.decodeHTML = function _String_prototype_encodHTML(quote_style, charset, doubl
 	});
 };
 
-Sp.quote = function _String_prototype_quote() {
-	var c, i, l = this.length, o = '"';
-	for (i = 0; i < l; i += 1) {
-		c = this.charAt(i);
-		if (c >= ' ') {
-			if (c === '\\' || c === '"') {
-				o += '\\';
-			}
-			o += c;
-		} else {
-			switch (c) {
-			case '\b':
-				o += '\\b';
-				break;
-			case '\f':
-				o += '\\f';
-				break;
-			case '\n':
-				o += '\\n';
-				break;
-			case '\r':
-				o += '\\r';
-				break;
-			case '\t':
-				o += '\\t';
-				break;
-			default:
-				c = c.charCodeAt();
-				o += '\\u00' + Math.floor(c / 16).toString(16) +
-					(c % 16).toString(16);
-			}
-		}
-	}
-	return o + '"';
-};
-
-Sp.interpolate = function _String_prototype_interpolate(o) {
+/**
+ * Interpolates some fields into the string wherever "{{fieldName}}" appears
+ * @method interpolate
+ * @param {Object} fields The field names and values
+ * @return {String}
+ */
+Sp.interpolate = function _String_prototype_interpolate(fields) {
 	return this.replace(/\{\{([^{}]*)\}\}/g,
 		function (a, b) {
-			var r = o[b];
+			var r = fields[b];
 			return typeof r === 'string' || typeof r === 'number' ? r : a;
 		}
 	);
 };
 
+/**
+ * Similar to String.prototype.replace, but replaces globally
+ * @method replaceAll
+ * @return {String}
+ */
 Sp.replaceAll = function _String_prototype_replaceAll(pairs) {
 	var result = this;
 	for (var k in pairs) {
@@ -177,11 +192,6 @@ Sp.replaceAll = function _String_prototype_replaceAll(pairs) {
 	}
 	return result;
 };
-
-/**
- * @class String
- * @description Q extended methods for Strings
- */
 
 /**
  * Gets a param from a string, which is usually the location.search or location.hash
