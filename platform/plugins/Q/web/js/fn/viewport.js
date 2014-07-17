@@ -72,7 +72,6 @@ function (options) {
         }
     }
 
-
     stretcher.css({
         'position': 'absolute',
         'overflow': 'visible',
@@ -81,11 +80,13 @@ function (options) {
         'left': -Math.max(options.initial.left, 0) + 'px',
         'top': -Math.max(options.initial.top, 0)  + 'px'
     });
-
-
-
-
 	var useZoom = Q.info.isIE(0, 8);
+    scale.factor = 1;
+    fixPosition({
+        left: stretcher.offset().left,
+        top: stretcher.offset().top,
+        zoom: 1
+    });
 
 	var grab = null;
 	var cur = null;

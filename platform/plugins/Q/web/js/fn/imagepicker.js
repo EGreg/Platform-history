@@ -197,23 +197,20 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 
             var img = new Image,
                 imgInfo = {};
-
-
             img.onload = function() {
-//              TODO add option useAnySize
                 imgInfo.height = img.height;
                 imgInfo.width = img.width;
 
                 if (state.saveSizeName  && ! state.cropping ) {
-//                  do reduce image to showSize by default
                     var requiredSize  = _calculateRequiredSize(state.saveSizeName);
                     var neededImgSize = _calculateImageSize(requiredSize, img);
                     var coord = neededImgSize;
                     coord.x = 0;
                     coord.y = 0;
-                    coord.origImg = {};
-                    coord.origImg.width =  imgInfo.width;
-                    coord.origImg.height =  imgInfo.height;
+                    coord.origImg = {
+                        width:  imgInfo.width,
+                        height: mgInfo.height
+                    };
 
                     _doCanvasCrop(params.data, coord, function(cropImg) {
                         params.data = cropImg;
@@ -230,8 +227,6 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 //                        size: {width:dialogSize.width, height: dialogSize.height},
                         fullscreen: true,
                         beforeClose: function(res) {
-//                          TODO Subpath should be kept, the one is needed
-                            state.subpath = "streams/Trump/Websites/header";
                             var result = $('.Q_viewport', res).state('Q/viewport').result;
                             var coord = {
                                 origImg: {
@@ -244,7 +239,11 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
                                 height: result.height
                             };
                             _doCanvasCrop(img.src, coord, function(data) {
-                                _doUpload({data:data});
+//                              TODO: subpath should be retrieved from state, but it missed by some reason, should be fixed
+                                _doUpload({
+                                    data:data,
+                                    subpath: "streams/Trump/Websites/header"
+                                });
                             });
                         },
                         onActivate : {
@@ -376,6 +375,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 	path: 'uploads',
 	subpath: '',
 	saveSizeName: {},
+    useAnySize: false,
 	showSize: null,
 	crop: null,
     cropping: false,
