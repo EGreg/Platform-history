@@ -218,7 +218,7 @@ Streams.onError = new Q.Event(function (err, data) {
 
 /**
  * Returns Q.Event that occurs on message post event coming from socket.io
- * @event Streams.onMessage
+ * @event onMessage
  * @param type {String} type of the stream to which a message is posted
  * @param messageType {String} type of the message
  * @return {Q.Event}
@@ -227,7 +227,7 @@ Streams.onMessage = Q.Event.factory(_messageHandlers, ["", ""]);
 
 /**
  * Returns Q.Event that occurs after a stream is constructed on the client side
- * @event Streams.onConstruct
+ * @event onConstruct
  * @param type {String} type of the stream being constructed on the client side
  * @return {Q.Event}
  */
@@ -1307,10 +1307,6 @@ Sp.refresh = function _Stream_prototype_refresh (callback, options) {
 };
 
 /**
- * @class Streams
- */
-
-/**
  * Get streams related to a particular stream.
  * @static
  * @method related
@@ -1518,84 +1514,6 @@ Sp.relatedTo = function _Stream_prototype_relatedTo (relationType, options, call
 };
 
 /**
- * Relates streams to one another
- * @method relate
- * @param publisherId {String} the publisher id of the stream to relate to
- * @param streamName {String} the name of the stream to relate to
- * @param relationType {String} the type of the relation, such as "parent" or "photo"
- * @param fromPublisherId {String} the publisher id of the stream to relate from
- * @param fromStreamName {String} the name of the stream to relate from
- * @param callback {Function} callback to call with the results
- *  First parameter is the error, the second will be relations data
- */
-Streams.relate = function _Streams_relate (publisherId, streamName, relationType, fromPublisherId, fromStreamName, callback) {
-	if (!Q.plugins.Users.loggedInUser) {
-		throw new Error("Streams.relate: Not logged in.");
-	}
-	var slotName = "result";
-	var fields = {
-		"toPublisherId": publisherId,
-		"toStreamName": streamName,
-		"type": relationType,
-		"fromPublisherId": fromPublisherId,
-		"fromStreamName": fromStreamName,
-		"Q.clientId": Q.clientId()
-	};
-	// TODO: When we refactor Streams to support multiple hosts,
-	// the client will have to post this request to both hosts if they are different
-	// or servers will have tell each other on their own
-	var baseUrl = Q.baseUrl({
-		publisherId: publisherId,
-		streamName: streamName
-	});
-	Q.req('Streams/related', [slotName], function (err, data) {
-		var messageFrom = Q.getObject('slots.result.messageFrom', data);
-		var messageTo = Q.getObject('slots.result.messageTo', data);
-		// wait for messages from cached streams -- from, to or both!
-		callback && callback.call(this, err, Q.getObject('slots.result', data) || null);
-	}, { method: 'post', fields: fields, baseUrl: baseUrl });
-	_retain = undefined;
-};
-
-/**
- * Removes relations from streams to one another
- * @static
- * @method relate
- * @param publisherId {String} the publisher id of the stream to relate to
- * @param streamName {String} the name of the stream to relate to
- * @param relationType {String} the type of the relation, such as "parent" or "photo"
- * @param fromPublisherId {String} the publisher id of the stream to relate from
- * @param fromStreamName {String} the name of the stream to relate from
- * @param callback {Function} callback to call with the results
- *  First parameter is the error, the second will be relations data
- */
-Streams.unrelate = function _Stream_prototype_unrelate (publisherId, streamName, relationType, fromPublisherId, fromStreamName, callback) {
-	if (!Q.plugins.Users.loggedInUser) {
-		throw new Error("Streams.unrelate: Not logged in.");
-	}
-	var slotName = "result";
-	var fields = {
-		"toPublisherId": publisherId,
-		"toStreamName": streamName,
-		"type": relationType,
-		"fromPublisherId": fromPublisherId,
-		"fromStreamName": fromStreamName,
-		"Q.clientId": Q.clientId()
-	};
-	// TODO: When we refactor Streams to support multiple hosts,
-	// the client will have to post this request to both hosts if they are different
-	// or servers will have tell each other on their own
-	var baseUrl = Q.baseUrl({
-		publisherId: publisherId,
-		streamName: streamName
-	});
-	Q.req('Streams/related', [slotName], function (err, data) {
-		callback && callback.call(this, err, Q.getObject('slots.result', data) || null);
-	}, { method: 'delete', fields: fields, baseUrl: baseUrl });
-	_retain = undefined;
-};
-
-/**
  * Relates this stream to another stream
  * 
  * @method relateTo
@@ -1650,59 +1568,9 @@ Sp.unrelateFrom = function _Stream_prototype_unrelateFrom (fromPublisherId, from
 };
 
 /**
- * Later we will probably make Streams.Relation objects which will provide easier access to this functionality.
- * For now, use this to update weights of relations, etc.
- * 
- * @method updateRelation
- * @param {String} toPublisherId
- * @param {String} toStreamName
- * @param {String} relationType
- * @param {String} fromPublisherId
- * @param {String} fromStreamName
- * @param {Number} weight
- * @param {Boolean} adjustWeights
- * @param {Function} callback
- */
-Streams.updateRelation = function(
-	toPublisherId,
-	toStreamName,
-	relationType,
-	fromPublisherId,
-	fromStreamName,
-	weight,
-	adjustWeights,
-	callback
-) {
-	if (!Q.plugins.Users.loggedInUser) {
-		throw new Error("Streams.relate: Not logged in.");
-	}
-	// We will send a request to wherever (toPublisherId, toStreamName) is hosted
-	var slotName = "result";
-	var fields = {
-		"toPublisherId": toPublisherId,
-		"toStreamName": toStreamName,
-		"type": relationType,
-		"fromPublisherId": fromPublisherId,
-		"fromStreamName": fromStreamName,
-		"weight": weight,
-		"adjustWeights": adjustWeights,
-		"Q.clientId": Q.clientId()
-	};
-	var baseUrl = Q.baseUrl({
-		publisherId: toPublisherId,
-		streamName: toStreamName
-	});
-	Q.req('Streams/related', [slotName], function (err, data) {
-		var message = Q.getObject('slots.result.message', data);
-		callback && callback.call(this, err, Q.getObject('slots.result', data) || null);
-	}, { method: 'put', fields: fields, baseUrl: baseUrl });
-	_retain = undefined;
-};
-
-/**
  * Returns Q.Event which occurs on a message post event coming from socket.io
  * Generic callbacks can be assigend by setting messageType to ""
- * @event Streams.Stream.onMessage
+ * @event onMessage
  * @param publisherId {String} id of publisher which is publishing the stream
  * @param streamName {String} name of stream which the message is posted to
  * @param messageType {String} type of the message
@@ -1711,7 +1579,7 @@ Stream.onMessage = Q.Event.factory(_streamMessageHandlers, ["", "", ""]);
 
 /**
  * Returns Q.Event which occurs when fields of the stream officially changed
- * @event Streams.Stream.onFieldChanged
+ * @event onFieldChanged
  * @param publisherId {String} id of publisher which is publishing the stream
  * @param streamName {String} optional name of stream which the message is posted to
  * @param fieldName {String} optional name of the field to listen for
@@ -1720,7 +1588,7 @@ Stream.onFieldChanged = Q.Event.factory(_streamFieldChangedHandlers, ["", "", ""
 
 /**
  * Returns Q.Event which occurs when attributes of the stream officially updated
- * @event Streams.Stream.onUpdated
+ * @event onUpdated
  * @param publisherId {String} id of publisher which is publishing the stream
  * @param streamName {String} optional name of stream which the message is posted to
  * @param attributeName {String} optional name of the attribute to listen for
@@ -1729,7 +1597,7 @@ Stream.onUpdated = Q.Event.factory(_streamUpdatedHandlers, ["", "", ""]);
 
 /**
  * Returns Q.Event which occurs when another stream has been related to this stream
- * @event Streams.Stream.onRelatedTo
+ * @event onRelatedTo
  * @param publisherId {String} id of publisher which is publishing this stream
  * @param streamName {String} optional name of this stream
  */
@@ -1737,7 +1605,7 @@ Stream.onRelatedTo = Q.Event.factory(_streamRelatedToHandlers, ["", ""]);
 
 /**
  * Returns Q.Event which occurs when this stream was related to a category stream
- * @event Streams.Stream.onRelatedFrom
+ * @event onRelatedFrom
  * @param publisherId {String} id of publisher which is publishing this stream
  * @param streamName {String} optional name of this stream
  */
@@ -1745,7 +1613,7 @@ Stream.onRelatedFrom = Q.Event.factory(_streamRelatedFromHandlers, ["", ""]);
 
 /**
  * Returns Q.Event which occurs when another stream has been unrelated to this stream
- * @event Streams.Stream.onUnrelatedTo
+ * @event onUnrelatedTo
  * @param publisherId {String} id of publisher which is publishing this stream
  * @param streamName {String} optional name of this stream
  */
@@ -1753,7 +1621,7 @@ Stream.onUnrelatedTo = Q.Event.factory(_streamUnrelatedToHandlers, ["", ""]);
 
 /**
  * Returns Q.Event which occurs when this stream was unrelated to a category stream
- * @event Streams.Stream.onUnrelatedFrom
+ * @event onUnrelatedFrom
  * @param publisherId {String} id of publisher which is publishing this stream
  * @param streamName {String} optional name of this stream
  */
@@ -1761,7 +1629,7 @@ Stream.onUnrelatedFrom = Q.Event.factory(_streamUnrelatedFromHandlers, ["", ""])
 
 /**
  * Returns Q.Event which occurs when another stream has been related to this stream
- * @event Streams.Stream.onUpdatedRelateTo
+ * @event onUpdatedRelateTo
  * @param publisherId {String} id of publisher which is publishing this stream
  * @param streamName {String} optional name of this stream
  */
@@ -1769,7 +1637,7 @@ Stream.onUpdatedRelateTo = Q.Event.factory(_streamUpdatedRelateToHandlers, ["", 
 
 /**
  * Returns Q.Event which occurs when this stream was related to a category stream
- * @event Streams.Stream.onUpdatedRelateFrom
+ * @event onUpdatedRelateFrom
  * @param publisherId {String} id of publisher which is publishing this stream
  * @param streamName {String} optional name of this stream
  */
@@ -1778,7 +1646,7 @@ Stream.onUpdatedRelateFrom = Q.Event.factory(_streamUpdatedRelateFromHandlers, [
 /**
  * Returns Q.Event which occurs after a stream is constructed on the client side
  * Generic callbacks can be assigend by setting type or mtype or both to ""
- * @event Streams.Stream.onConstruct
+ * @event onConstruct
  * @param publisherId {String} id of publisher which is publishing the stream
  * @param name {String} name of stream which is being constructed on the client side
  */
@@ -1895,6 +1763,138 @@ Stream.remove = function _Stream_remove (publisherId, streamName, callback) {
 Stream.remove.onError = new Q.Event();
 
 /**
+ * @class Streams
+ */
+
+/**
+ * Relates streams to one another
+ * @method relate
+ * @param publisherId {String} the publisher id of the stream to relate to
+ * @param streamName {String} the name of the stream to relate to
+ * @param relationType {String} the type of the relation, such as "parent" or "photo"
+ * @param fromPublisherId {String} the publisher id of the stream to relate from
+ * @param fromStreamName {String} the name of the stream to relate from
+ * @param callback {Function} callback to call with the results
+ *  First parameter is the error, the second will be relations data
+ */
+Streams.relate = function _Streams_relate (publisherId, streamName, relationType, fromPublisherId, fromStreamName, callback) {
+	if (!Q.plugins.Users.loggedInUser) {
+		throw new Error("Streams.relate: Not logged in.");
+	}
+	var slotName = "result";
+	var fields = {
+		"toPublisherId": publisherId,
+		"toStreamName": streamName,
+		"type": relationType,
+		"fromPublisherId": fromPublisherId,
+		"fromStreamName": fromStreamName,
+		"Q.clientId": Q.clientId()
+	};
+	// TODO: When we refactor Streams to support multiple hosts,
+	// the client will have to post this request to both hosts if they are different
+	// or servers will have tell each other on their own
+	var baseUrl = Q.baseUrl({
+		publisherId: publisherId,
+		streamName: streamName
+	});
+	Q.req('Streams/related', [slotName], function (err, data) {
+		var messageFrom = Q.getObject('slots.result.messageFrom', data);
+		var messageTo = Q.getObject('slots.result.messageTo', data);
+		// wait for messages from cached streams -- from, to or both!
+		callback && callback.call(this, err, Q.getObject('slots.result', data) || null);
+	}, { method: 'post', fields: fields, baseUrl: baseUrl });
+	_retain = undefined;
+};
+
+/**
+ * Removes relations from streams to one another
+ * @static
+ * @method unrelate
+ * @param publisherId {String} the publisher id of the stream to relate to
+ * @param streamName {String} the name of the stream to relate to
+ * @param relationType {String} the type of the relation, such as "parent" or "photo"
+ * @param fromPublisherId {String} the publisher id of the stream to relate from
+ * @param fromStreamName {String} the name of the stream to relate from
+ * @param callback {Function} callback to call with the results
+ *  First parameter is the error, the second will be relations data
+ */
+Streams.unrelate = function _Stream_prototype_unrelate (publisherId, streamName, relationType, fromPublisherId, fromStreamName, callback) {
+	if (!Q.plugins.Users.loggedInUser) {
+		throw new Error("Streams.unrelate: Not logged in.");
+	}
+	var slotName = "result";
+	var fields = {
+		"toPublisherId": publisherId,
+		"toStreamName": streamName,
+		"type": relationType,
+		"fromPublisherId": fromPublisherId,
+		"fromStreamName": fromStreamName,
+		"Q.clientId": Q.clientId()
+	};
+	// TODO: When we refactor Streams to support multiple hosts,
+	// the client will have to post this request to both hosts if they are different
+	// or servers will have tell each other on their own
+	var baseUrl = Q.baseUrl({
+		publisherId: publisherId,
+		streamName: streamName
+	});
+	Q.req('Streams/related', [slotName], function (err, data) {
+		callback && callback.call(this, err, Q.getObject('slots.result', data) || null);
+	}, { method: 'delete', fields: fields, baseUrl: baseUrl });
+	_retain = undefined;
+};
+
+/**
+ * Later we will probably make Streams.Relation objects which will provide easier access to this functionality.
+ * For now, use this to update weights of relations, etc.
+ * 
+ * @method updateRelation
+ * @param {String} toPublisherId
+ * @param {String} toStreamName
+ * @param {String} relationType
+ * @param {String} fromPublisherId
+ * @param {String} fromStreamName
+ * @param {Number} weight
+ * @param {Boolean} adjustWeights
+ * @param {Function} callback
+ */
+Streams.updateRelation = function(
+	toPublisherId,
+	toStreamName,
+	relationType,
+	fromPublisherId,
+	fromStreamName,
+	weight,
+	adjustWeights,
+	callback
+) {
+	if (!Q.plugins.Users.loggedInUser) {
+		throw new Error("Streams.relate: Not logged in.");
+	}
+	// We will send a request to wherever (toPublisherId, toStreamName) is hosted
+	var slotName = "result";
+	var fields = {
+		"toPublisherId": toPublisherId,
+		"toStreamName": toStreamName,
+		"type": relationType,
+		"fromPublisherId": fromPublisherId,
+		"fromStreamName": fromStreamName,
+		"weight": weight,
+		"adjustWeights": adjustWeights,
+		"Q.clientId": Q.clientId()
+	};
+	var baseUrl = Q.baseUrl({
+		publisherId: toPublisherId,
+		streamName: toStreamName
+	});
+	Q.req('Streams/related', [slotName], function (err, data) {
+		var message = Q.getObject('slots.result.message', data);
+		callback && callback.call(this, err, Q.getObject('slots.result', data) || null);
+	}, { method: 'put', fields: fields, baseUrl: baseUrl });
+	_retain = undefined;
+};
+
+/**
  * @class Streams.Message
  */
 
@@ -1926,7 +1926,7 @@ Mp.getAll = function _Message_prototype_getAll () {
 /**
  * Get the value of an instruction in the message
  * 
- * @method getAll
+ * @method get
  * @param {String} instructionName
  */
 Mp.get = function _Message_prototype_get (instructionName) {
@@ -2005,7 +2005,8 @@ Message.get.onError = new Q.Event();
 /**
  * Post a message to a stream, so it can be broadcast to all participants, sent to all subscribers, etc.
  * May call Message.post.onError if an error occurs.
- * @method Message.post
+ * @static
+ * @method post
  * @param {Object} msg A Streams.Message object or a hash of fields to post. Must include publisherId and streamName.
  * @param {Function} callback Receives (err, message) as parameters
  */
@@ -2246,11 +2247,8 @@ Participant.get = Q.getter(function _Participant_get(publisherId, streamName, us
 Participant.get.onError = new Q.Event();
 
 /**
- * @class Streams.Avatar
- */
-
-/**
  * Constructs an avatar from fields, which are typically returned from the server.
+ * @class Streams.Avatar
  * @constructor
  * @param {Array} fields
  */

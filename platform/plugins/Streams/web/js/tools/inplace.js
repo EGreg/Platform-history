@@ -1,8 +1,14 @@
 (function (Q, $, window, document, undefined) {
 
 /**
- * This tool generates an inline editor to edit the content or attribute of a stream.
- * @method inplace
+ * Streams Tools
+ * @module Streams-tools
+ */
+
+/**
+ * Inplace text editor tool to edit the content or attribute of a stream
+ * @class Streams inplace
+ * @constructor
  * @param {Object} [options] this object contains function parameters
  *   @param {String} [options.inplaceType] The type of the fieldInput. Can be "textarea" or "text"
  *   @required
