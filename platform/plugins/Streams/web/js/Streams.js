@@ -127,7 +127,6 @@ Streams.constructors = {};
 
 /**
  * Call this function to define a stream type
- * @class Streams
  * @static
  * @method define
  * @param {String} type The type of the stream, e.g. "Streams/smalltext"
@@ -157,7 +156,6 @@ Streams.define = function (type, ctor, methods) {
 
 /**
  * Calculate the url of a stream's icon
- * @class Streams
  * @static
  * @method iconUrl
  * @param {String} icon the value of the stream's "icon" field
@@ -200,7 +198,6 @@ var _socket = null,
 
 /**
  * Calculate the key of a stream used internally for retaining and releasing
- * @class Streams
  * @static
  * @method key
  * @param {String} publisherId
@@ -213,7 +210,6 @@ Streams.key = function (publisherId, streamName) {
 
 /**
  * This event is fired if an error occurs in any Streams function
- * @class Streams
  * @event onError
  */
 Streams.onError = new Q.Event(function (err, data) {
@@ -222,7 +218,6 @@ Streams.onError = new Q.Event(function (err, data) {
 
 /**
  * Returns Q.Event that occurs on message post event coming from socket.io
- * @class Streams
  * @event Streams.onMessage
  * @param type {String} type of the stream to which a message is posted
  * @param messageType {String} type of the message
@@ -232,7 +227,6 @@ Streams.onMessage = Q.Event.factory(_messageHandlers, ["", ""]);
 
 /**
  * Returns Q.Event that occurs after a stream is constructed on the client side
- * @class Streams
  * @event Streams.onConstruct
  * @param type {String} type of the stream being constructed on the client side
  * @return {Q.Event}
@@ -258,7 +252,6 @@ Streams.onActivate = new Q.Event();
 
 /**
  * Connects or reconnects sockets for all participating streams
- * @class Streams
  * @private
  * @static
  * @method _connectSockets
@@ -285,7 +278,6 @@ function _connectSockets(refresh) {
  * Disconnects all Streams sockets which have been connected
  * note that this also affects other plugins that might be listening on the sockets
  * maybe we should have another thing, I don't know, but for now it's ok
- * @class Streams
  * @private
  * @static
  * @method _disconnectSockets
@@ -297,7 +289,6 @@ function _disconnectSockets() {
 /**
  * Get the current client's socket session id on the node hosting the socket,
  * a node which is found based on the publisherId and streamName.
- * @class Streams
  * @static
  * @method socketSessionId
  * @param {String} publisherId
@@ -314,7 +305,6 @@ Streams.socketSessionId = function (publisherId, streamName) {
 
 /**
  * A convenience method to get the URL of the streams-related action
- * @class Streams
  * @static
  * @method actionUrl
  * @param {String} publisherId , The name of the publisher
@@ -356,7 +346,6 @@ Q.Tool.define({
 
 /**
  * Streams batch getter.
- * @class Streams
  * @static
  * @method get
  * @param publisherId {string}
@@ -422,7 +411,6 @@ Streams.get = Q.getter(function (publisherId, streamName, callback, extra) {
 Streams.get.onError = new Q.Event();
 
 /**
- * @class Streams
  * @static
  * @method batchFunction
  * @param {String} baseUrl
@@ -453,7 +441,6 @@ var _Streams_batchFunction_preprocess = {
 
 /**
  * Create a new stream
- * @class Streams
  * @static
  * @method create
  * @param fields {Object}
@@ -522,7 +509,6 @@ Streams.create.onError = new Q.Event();
  * That one is to create "controllers" on the front end,
  * and this one is to create "models" on the front end.
  * They have very similar conventions.
- * @class Streams
  * @static
  * @method construct
  * @param fields {Object} Provide any stream fields here. Requires at least the "type" of the stream.
@@ -644,7 +630,6 @@ _toolInDialog = function(toolName, toolParams, callback, classContainer){
 
 /**
  * Show a dialog to manage "subscription" related stuff in a stream.
- * @class Streams
  * @static
  * @method subscriptionDialog
  * @param publisherId {String} id of publisher which is publishing the stream
@@ -660,7 +645,6 @@ Streams.subscriptionDialog = function(publisherId, streamName, callback) {
 
 /**
  * Show a dialog to manage "subscription" related stuff in a stream.
- * @class Streams
  * @static
  * @method accessDialog
  * @param publisherId {String} id of publisher which is publishing the stream
@@ -680,7 +664,6 @@ Streams.displayName = function(options) {
 
 /**
  * Returns streams for current user
- * @class Streams
  * @static
  * @method getParticipating
  */
@@ -695,7 +678,6 @@ Streams.getParticipating = Q.getter(function(callback) {
 /**
  * Refreshes all the streams the logged-in user is participating in
  * If your app is using socket.io, then calling this manually is largely unnecessary.
- * @class Streams
  * @static
  * @method refresh
  * @param {Function} callback optional callback
@@ -737,7 +719,6 @@ Streams.refresh.beforeRequest = new Q.Event();
  * Streams.refresh() are called. You can release it with stream.release().
  * Call this function in a chain before calling Streams.get, Streams.related, etc.
  * in order to set the key for retaining the streams those functions obtain.
- * @class Streams
  * @static
  * @method retainWith
  * @param {String} key
@@ -750,7 +731,6 @@ Streams.retainWith = function (key) {
 
 /**
  * Releases all retained streams under a given key. See Streams.retain()
- * @class Streams
  * @static
  * @method release
  * @param {String} key
@@ -771,7 +751,6 @@ Streams.release = function (key) {
 
 /**
  * Invite other users to a stream. Must be logged in first.
- * @class Streams
  * @static
  * @method invite
  * @param {String} publisherId The user id of the publisher of the stream 
@@ -803,8 +782,11 @@ Streams.invite = function (publisherId, streamName, fields, callback) {
 };
 
 /**
- * Constructs a stream from fields, which are typically returned from the server.
  * @class Streams.Stream
+ */
+
+/**
+ * Constructs a stream from fields, which are typically returned from the server.
  * @constructor
  * @param {String} fields
  */
@@ -1325,8 +1307,11 @@ Sp.refresh = function _Stream_prototype_refresh (callback, options) {
 };
 
 /**
- * Get streams related to a particular stream.
  * @class Streams
+ */
+
+/**
+ * Get streams related to a particular stream.
  * @static
  * @method related
  * @param publisherId {string}
@@ -1534,7 +1519,6 @@ Sp.relatedTo = function _Stream_prototype_relatedTo (relationType, options, call
 
 /**
  * Relates streams to one another
- * @class Streams
  * @method relate
  * @param publisherId {String} the publisher id of the stream to relate to
  * @param streamName {String} the name of the stream to relate to
@@ -1575,7 +1559,6 @@ Streams.relate = function _Streams_relate (publisherId, streamName, relationType
 
 /**
  * Removes relations from streams to one another
- * @class Streams
  * @static
  * @method relate
  * @param publisherId {String} the publisher id of the stream to relate to
@@ -1912,8 +1895,11 @@ Stream.remove = function _Stream_remove (publisherId, streamName, callback) {
 Stream.remove.onError = new Q.Event();
 
 /**
- * Constructs a message from fields, which are typically returned from the server.
  * @class Streams.Message
+ */
+
+/**
+ * Constructs a message from fields, which are typically returned from the server.
  * @constructor
  * @param {Object} fields
  */
@@ -2184,8 +2170,11 @@ Message.wait.options = {
 };
 
 /**
- * Constructs a participant from fields, which are typically returned from the server.
  * @class Streams.Participant
+ */
+
+/**
+ * Constructs a participant from fields, which are typically returned from the server.
  * @constructor
  * @param {Object} fields
  */
@@ -2257,8 +2246,11 @@ Participant.get = Q.getter(function _Participant_get(publisherId, streamName, us
 Participant.get.onError = new Q.Event();
 
 /**
- * Constructs an avatar from fields, which are typically returned from the server.
  * @class Streams.Avatar
+ */
+
+/**
+ * Constructs an avatar from fields, which are typically returned from the server.
  * @constructor
  * @param {Array} fields
  */
@@ -2381,8 +2373,11 @@ Ap.iconUrl = function _Avatar_prototype_iconUrl () {
 };
 
 /**
- * Try to figure out a displayable title from a stream's type
  * @class Streams
+ */
+
+/**
+ * Try to figure out a displayable title from a stream's type
  * @static
  * @method displayType
  * @param {String} type
