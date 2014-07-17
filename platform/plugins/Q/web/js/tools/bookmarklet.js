@@ -7,7 +7,6 @@
  * look on browser panel and instructions how to add bookmarklet to that panel.
  * @module Q
  * @submodule Plugins
- * @class jQuery
  * @namespace Q
  * @method bookmarklet
  * @param {Object} [options] This is an object with properties for this function

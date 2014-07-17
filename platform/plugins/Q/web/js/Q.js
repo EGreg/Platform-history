@@ -14,7 +14,7 @@ var _isOnline = null;
 
 function Q () {
 	// not called right now
-};
+}
 
 // public properties:
 Q.plugins = {};
@@ -177,7 +177,7 @@ Sp.replaceAll = function _String_prototype_replaceAll(pairs) {
 Sp.queryField = function Q_queryField(name, value) {
 	var what = this;
 	var prefixes = ['#!', '#', '?', '!'], count = prefixes.length, prefix = '', i, l, p, keys, parsed;
-	for (var i=0; i<count; ++i) {
+	for (i=0; i<count; ++i) {
 		l = prefixes[i].length;
 		p = this.substring(0, l);
 		if (p == prefixes[i]) {
@@ -221,7 +221,7 @@ Sp.queryField = function Q_queryField(name, value) {
  */
 Sp.hashCode = function() {
 	var hash = 0;
-	if (this.length == 0) return hash;
+	if (!this.length) return hash;
 	for (i = 0; i < this.length; i++) {
 		var c = this.charCodeAt(i);
 		hash = hash % 16777216;
@@ -374,7 +374,7 @@ if (!Elp.contains)
 Elp.contains = function (child) {
 	if (!child) return false;
 	var node = child.parentNode;
-	while (node != null) {
+	while (node) {
 		if (node == this) {
 			return true;
 		}
@@ -402,7 +402,7 @@ Elp.copyComputedStyle = function(src) {
 	var s = src.computedStyle();
 	for ( var i in s ) {
 		// Do not use `hasOwnProperty`, nothing will get copied
-		if ( typeof i == "string" && i != "cssText" && !/\d/.test(i) ) {
+		if ( typeof i == "string" && i != "cssText" && !(new RegExp("\d")).test(i) ) {
 			// The try is for setter only properties
 			try {
 				this.style[i] = s[i];
@@ -483,7 +483,7 @@ Elp.isBefore = function (element, context) {
 
 Elp.hasClass = function (className) {
 	if (this.classList) {
-		return this.classList.contains(className)
+		return this.classList.contains(className);
 	} else {
 		return new RegExp('(^| )' + className + '( |$)', 'gi').test(this.className);
 	}
@@ -493,7 +493,7 @@ Elp.removeClass = function (className) {
 	if (this.classList) {
 		this.classList.remove(className)
 	} else {
-		this.className = this.className.replace(new RegExp('(^| )' + className.split(' ').join('|') + '( |$)', 'gi'), ' ')	
+		this.className = this.className.replace(new RegExp('(^| )' + className.split(' ').join('|') + '( |$)', 'gi'), ' ');
 	}
 	return this;
 };
@@ -651,7 +651,7 @@ Q.each = function _Q_each(container, callback, options) {
 			// Make a copy in case it changes during iteration. Then iterate.
 			var c = Array.prototype.slice.call(container, 0);
 			if (('0' in container) && !('0' in c)) { // we are probably dealing with IE < 9
-				var c = [];
+				c = [];
 				for (i=0; r = container[i]; ++i) {
 					c.push(r);
 				}
@@ -1209,7 +1209,7 @@ Q.Class = function _Q_Class(construct /* [, Base1, ...] [, properties, [classPro
 	for (i=1, j=1; i<l; ++i) {
 		if (typeof arguments[i] !== 'function') break;
 		j = i;
-	};
+	}
 	var constructors = Array.prototype.slice.call(arguments, 1, j+1);
 	constructors.unshift(Q_ClassConstructor);
 	
@@ -1279,7 +1279,7 @@ function _getProp (/*Array*/parts, /*Boolean*/create, /*Object*/context){
 		}
 	}
 	return context; // mixed
-};
+}
 
 /**
  * Extend a property from a delimiter-separated string, such as "A.B.C"
@@ -2020,6 +2020,8 @@ Q.Pipe.prototype.add = function _Q_pipe_add(requires, maxTimes, callback) {
 			case 'number':
 				n = arguments[i];
 				break;
+			default:
+				break;
 			}
 			if (e != null && typeof e !== 'string') {
 				throw new Q.Error("Q.Pipe.prototype.add requires event name after array of objects");
@@ -2466,9 +2468,7 @@ Q.getter = function _Q_getter(original, options) {
 	} else if (wrapper.cache === true) {
 		// create our own Object that will cache locally in the page
 		wrapper.cache = Q.Cache.document(++_Q_getter_i);
-	} else {
-		// assume we were passed an Object that supports the cache interface
-	}
+	} // else assume we were passed an Object that supports the cache interface
 
 	wrapper.throttle = wrapper.throttle || null;
 	if (wrapper.throttle === true) {
@@ -2889,7 +2889,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 				});
 			}
 			return this;
-		};
+		}
 		jQueryPluginConstructor.options = defaultOptions || {};
 		jQueryPluginConstructor.methods = methods || {};
 		$.fn[name] = jQueryPluginConstructor;
@@ -3001,7 +3001,9 @@ Q.Tool.prototype.parentIds = function Q_Tool_prototype_parentIds() {
 		}
 	}
 	// sort in reverse length order
-	ids.sort(function (a, b) { return String(b).length - String(a).length } );
+	ids.sort(function (a, b) { 
+		return String(b).length - String(a).length; 
+	});
 	return ids;
 };
 
@@ -3012,7 +3014,7 @@ Q.Tool.prototype.parentIds = function Q_Tool_prototype_parentIds() {
  * @return {Object} A hash of {prefix: Tool} pairs
  */
 Q.Tool.prototype.parents = function Q_Tool_prototype_parents() {
-	var ids = [], ids, i, id;
+	var ids = [], i, id;
 	ids = this.parentIds();
 	var result = {}, len = ids.length;
 	for (i=0; i<len; ++i) {
@@ -3029,7 +3031,7 @@ Q.Tool.prototype.parents = function Q_Tool_prototype_parents() {
  * @return {Tool|null}
  */
 Q.Tool.prototype.parent = function Q_Tool_prototype_parent() {
-	var ids = [], ids, i;
+	var ids = [], i;
 	ids = this.parentIds();
 	return ids.length ? Q.Tool.active[ids[0]] : null;
 };
@@ -3076,8 +3078,8 @@ Q.Tool.prototype.remove = function _Q_Tool_prototype_remove(removeCached) {
 		Q.Event.forTool[this.id][0].remove(tool);
 	}
 	
-	var p;
-	if (p = Q.Event.jQueryForTool[this.id]) {
+	var p = Q.Event.jQueryForTool[this.id];
+	if (p) {
 		for (i=p.length-1; i >= 0; --i) {
 			var off = p[i][0];
 			window.jQuery.fn[off].call(p[i][1], p[i][2], p[i][3]);
@@ -3358,7 +3360,7 @@ function _loadToolScript(toolElement, callback, shared, parentPipe) {
 		for (var i=0, nl = toolNames.length; i<nl; ++i) {
 			var toolName = toolNames[i];
 			callback.apply(null, params[toolName]);
-		};
+		}
 	});
 	Q.each(toolNames, function (i, toolName) {
 		function _loadToolScript_loaded() {
@@ -3412,7 +3414,7 @@ function _loadToolScript(toolElement, callback, shared, parentPipe) {
 			Q.addScript(toolFunc, _loadToolScript_loaded);
 		}
 	});
-};
+}
 
 Q.Tool.onLoadedConstructor = Q.Event.factory({}, ["", function (name) { 
 	return [Q.normalize(name)];
@@ -4098,7 +4100,7 @@ Q.loadNonce = function _Q_loadNonce(callback, context, args) {
 Q.beforeUnload = function _Q_beforeUnload(notice) {
 	window.onbeforeunload = function(e){
 		if (!notice) return undefined;
-		var e = e || window.event;
+		e = e || window.event;
 		if (e) { // For IE and Firefox (prior to 4)
 			e.returnValue = notice;
 		}
@@ -4247,7 +4249,7 @@ Q.clientId = function () {
 			+ "\t" + info.OS.substr(0, 3)
 			+ "\t" + info.name.substr(0, 3)
 			+ "\t" + info.mainVersion + (info.isWebView ? "n" : "w")
-			+ "\t" + Math.floor(Date.now()/1000).toString(36)
+			+ "\t" + Math.floor(Date.now()/1000).toString(36);
 	}
 	return Q.clientId.value;
 };
@@ -4609,8 +4611,8 @@ Q.request = function (url, slotNames, callback, options) {
 		}
 		
 		function _onCancel (status, msg) {
-			var msg = msg || Q.text.Q.request[status] || Q.text.Q.request.error;
-			msg = msg.interpolate({'status': status, 'url': url})
+			msg = (msg || Q.text.Q.request[status] || Q.text.Q.request.error)
+				.interpolate({'status': status, 'url': url})
 			t.cancelled = true;
 			_onResponse();
 			var errors = {
@@ -4639,7 +4641,7 @@ Q.request = function (url, slotNames, callback, options) {
 							onCancel.call(xmlhttp, xmlhttp.status);
 						}
 					}
-				}
+				};
 				var method = options.method || 'GET';
 				var verb = method.toUpperCase();
 				var overrides = {
@@ -4840,12 +4842,13 @@ Q.serializeFields = function _Q_serializeFields(fields, keys) {
 			_add(prefix, obj);
 		}
 	}
+	
 	function _add(key, value) {
 		if (value == undefined) return;
 		// If value is a function, invoke it and return its value
 		value = Q.typeOf(value) === "function" ? value() : value;
 		parts.push(encodeURIComponent(key) + "=" + encodeURIComponent(value));
-	};
+	}
 
 	if (keys) {
 		Q.each(keys, function _Q_param_each(i, field) {
@@ -4975,136 +4978,6 @@ Q.formPost.counter = 0;
  */
 Q.addScript = function _Q_addScript(src, onload, options) {
 	
-	if (Q.typeOf(src) === 'array') {
-		var srcs = [], ret = [];
-		Q.each(src, function (i, src) {
-			if (!src) return;
-			srcs.push((src && src.src) ? src.src : src);
-		});
-		if (Q.isEmpty(srcs)) {
-			onload();
-			return [];
-		}
-		var p = new Q.Pipe(srcs, onload);
-		Q.each(srcs, function (i, src) {
-			ret.push(Q.addScript(src, p.fill(src), options));
-		});
-		return ret;
-	}
-
-	var o = Q.extend({}, Q.addScript.options, options),
-		ret = [],
-		arr = src,
-		firstScript = document.scripts ? document.scripts[0] : document.getElementsByTagName('script')[0],
-		container = o.container || document.head  || document.getElementsByTagName('head')[0];
-		
-	if (!onload) {
-		onload = function() { };
-	}
-	
-	var script, i;
-	_onload.loaded = {};
-	var src = (src && src.src) ? src.src : src;
-	if (!src) {
-		return null;
-	}
-	src = Q.url(src);
-	
-	if (!o || !o.duplicate) {
-		var scripts = document.getElementsByTagName('script');
-		for (i=0; i<scripts.length; ++i) {
-			var script = scripts[i];
-			if (script.getAttribute('src') !== src) {
-				continue;
-			}
-			// move the element to the right container if necessary
-			// hopefully, moving the script element won't change the order of execution
-			var p = scripts[i], outside = true;
-	    	while (p = p.parentNode) {
-				if (p === container) {
-					outside = false;
-    				break;
-				}
-			}
-			if (outside) {
-				container.appendChild(scripts[i]);
-			}
-			// the script already exists in the document
-			if (Q.addScript.loaded[src]) {
-				// the script was already loaded successfully
-				_onload();
-				return o.returnAll ? script : false;
-			}
-			if (Q.addScript.loaded[src] === false) {
-				// the script had an error when loading
-				if (o.ignoreLoadingErrors) {
-					_onload();
-				} else if (o.onError) {
-					o.onError.call(scripts[i]);
-				}
-				return o.returnAll ? script : false;
-			}
-			if (!Q.addScript.added[src]
-			&& (!('readyState' in script) || (script.readyState !== 'complete' || script.readyState !== 'loaded'))) {
-				// the script was added by someone else (and hopefully loaded)
-				// we can't always know whether to call the error handler
-				// if we got here, we might as well call onload
-				_onload();
-				return o.returnAll ? script : false;
-			}
-			// this is our script, the script hasn't yet loaded, so register onload2 and onerror2 callbacks
-			if (!Q.addScript.onLoadCallbacks[src]) {
-				Q.addScript.onLoadCallbacks[src] = [];
-			}
-			if (!Q.addScript.onErrorCallbacks[src]) {
-				Q.addScript.onErrorCallbacks[src] = [];
-			}
-			Q.addScript.onLoadCallbacks[src].push(onload);
-			if (o.onError) {
-				Q.addScript.onErrorCallbacks[src].push(o.onError);
-			}
-			if (!scripts[i].wasProcessedByQ) {
-				scripts[i].onload = onload2;
-				scripts[i].onreadystatechange = onload2; // for IE
-				Q.addEventListener(script, 'error', onerror2);
-				scripts[i].wasProcessedByQ = true;
-			}
-			return o.returnAll ? script : false; // don't add this script to the DOM
-		}
-	}
-
-	// Create the script tag and insert it into the document
-	var script = document.createElement('script');
-	script.setAttribute('type', 'text/javascript');
-	Q.addScript.added[src] = true;
-	Q.addScript.onLoadCallbacks[src] = [_onload];
-	Q.addScript.onErrorCallbacks[src] = [];
-	if (o.onError) {
-		Q.addScript.onErrorCallbacks[src].push(o.onError);
-	}
-	script.onload = onload2;
-	script.wasProcessedByQ = true;
-	Q.addEventListener(script, 'error', onerror2);
-	
-	if ('async' in firstScript) { // modern browsers
-		script.setAttribute('src', src);
-		script.async = false;
-		container.appendChild(script);
-	} else if (firstScript.readyState) { // IE<10
-		// create a script and add it to our todo pile
-		if (!Q.addScript.pendingScripts) {
-			Q.addScript.pendingScripts = [];
-		}
-		Q.addScript.pendingScripts.push(script);
-		script.onreadystatechange = stateChangeInIE; // listen for state changes
-		script.setAttribute('src', src); // setting src after onreadystatechange listener is necessary for cached scripts
-	} else { // fall back to defer
-		script.setAttribute('defer', 'defer');
-		script.setAttribute('src', src);
-		container.appendChild(script);
-	}
-	return script;
-	
 	function stateChangeInIE(e) { // function to watch scripts load in IE
 		// Execute as many scripts in order as we can
 		var script, pendingScripts = Q.addScript.pendingScripts;
@@ -5161,6 +5034,137 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 		Q.jQueryPluginPlugin();
 		onload();
 	}
+	
+	var p, ret = [];
+	
+	if (Q.typeOf(src) === 'array') {
+		var srcs = [];
+		Q.each(src, function (i, src) {
+			if (!src) return;
+			srcs.push((src && src.src) ? src.src : src);
+		});
+		if (Q.isEmpty(srcs)) {
+			onload();
+			return [];
+		}
+		p = new Q.Pipe(srcs, onload);
+		Q.each(srcs, function (i, src) {
+			ret.push(Q.addScript(src, p.fill(src), options));
+		});
+		return ret;
+	}
+
+	var o = Q.extend({}, Q.addScript.options, options),
+		arr = src,
+		firstScript = document.scripts ? document.scripts[0] : document.getElementsByTagName('script')[0],
+		container = o.container || document.head  || document.getElementsByTagName('head')[0];
+		
+	if (!onload) {
+		onload = function() { };
+	}
+	
+	var script, i;
+	_onload.loaded = {};
+	src = (src && src.src) ? src.src : src;
+	if (!src) {
+		return null;
+	}
+	src = Q.url(src);
+	
+	if (!o || !o.duplicate) {
+		var scripts = document.getElementsByTagName('script');
+		for (i=0; i<scripts.length; ++i) {
+			script = scripts[i];
+			if (script.getAttribute('src') !== src) {
+				continue;
+			}
+			// move the element to the right container if necessary
+			// hopefully, moving the script element won't change the order of execution
+			p = scripts[i], outside = true;
+	    	while (p = p.parentNode) {
+				if (p === container) {
+					outside = false;
+    				break;
+				}
+			}
+			if (outside) {
+				container.appendChild(scripts[i]);
+			}
+			// the script already exists in the document
+			if (Q.addScript.loaded[src]) {
+				// the script was already loaded successfully
+				_onload();
+				return o.returnAll ? script : false;
+			}
+			if (Q.addScript.loaded[src] === false) {
+				// the script had an error when loading
+				if (o.ignoreLoadingErrors) {
+					_onload();
+				} else if (o.onError) {
+					o.onError.call(scripts[i]);
+				}
+				return o.returnAll ? script : false;
+			}
+			if (!Q.addScript.added[src]
+			&& (!('readyState' in script) || (script.readyState !== 'complete' || script.readyState !== 'loaded'))) {
+				// the script was added by someone else (and hopefully loaded)
+				// we can't always know whether to call the error handler
+				// if we got here, we might as well call onload
+				_onload();
+				return o.returnAll ? script : false;
+			}
+			// this is our script, the script hasn't yet loaded, so register onload2 and onerror2 callbacks
+			if (!Q.addScript.onLoadCallbacks[src]) {
+				Q.addScript.onLoadCallbacks[src] = [];
+			}
+			if (!Q.addScript.onErrorCallbacks[src]) {
+				Q.addScript.onErrorCallbacks[src] = [];
+			}
+			Q.addScript.onLoadCallbacks[src].push(onload);
+			if (o.onError) {
+				Q.addScript.onErrorCallbacks[src].push(o.onError);
+			}
+			if (!scripts[i].wasProcessedByQ) {
+				scripts[i].onload = onload2;
+				scripts[i].onreadystatechange = onload2; // for IE
+				Q.addEventListener(script, 'error', onerror2);
+				scripts[i].wasProcessedByQ = true;
+			}
+			return o.returnAll ? script : false; // don't add this script to the DOM
+		}
+	}
+
+	// Create the script tag and insert it into the document
+	script = document.createElement('script');
+	script.setAttribute('type', 'text/javascript');
+	Q.addScript.added[src] = true;
+	Q.addScript.onLoadCallbacks[src] = [_onload];
+	Q.addScript.onErrorCallbacks[src] = [];
+	if (o.onError) {
+		Q.addScript.onErrorCallbacks[src].push(o.onError);
+	}
+	script.onload = onload2;
+	script.wasProcessedByQ = true;
+	Q.addEventListener(script, 'error', onerror2);
+	
+	if ('async' in firstScript) { // modern browsers
+		script.setAttribute('src', src);
+		script.async = false;
+		container.appendChild(script);
+	} else if (firstScript.readyState) { // IE<10
+		// create a script and add it to our todo pile
+		if (!Q.addScript.pendingScripts) {
+			Q.addScript.pendingScripts = [];
+		}
+		Q.addScript.pendingScripts.push(script);
+		script.onreadystatechange = stateChangeInIE; // listen for state changes
+		script.setAttribute('src', src); // setting src after onreadystatechange listener is necessary for cached scripts
+	} else { // fall back to defer
+		script.setAttribute('defer', 'defer');
+		script.setAttribute('src', src);
+		container.appendChild(script);
+	}
+	return script;
 };
 
 Q.addScript.onLoadCallbacks = {};
@@ -5207,7 +5211,7 @@ Q.addStylesheet = function _Q_addStylesheet(href, media, onload, options) {
 	if (Q.typeOf(href) === 'array') {
 		var ret = [];
 		var len = href.length;
-		for (var i=0; i<len; ++i) {
+		for (i=0; i<len; ++i) {
 			ret.push(Q.addStylesheet(href[i].href, href[i].media));
 		}
 		return ret;
@@ -5244,7 +5248,7 @@ Q.addStylesheet = function _Q_addStylesheet(href, media, onload, options) {
 		} else {
 			Q.addStylesheet.onLoadCallbacks[href] = [onload];
 		}
-		var links = document.getElementsByTagName('link');
+		links = document.getElementsByTagName('link');
 		for (var j=0; j<links.length; ++j) {
 			if (links[j].href !== href) continue;
 			links[j].onload = onload2;
@@ -5381,7 +5385,7 @@ Q.cookie = function _Q_cookie(name, value, options) {
  * @param {Mixed} shared
  *  An optional object that will be passed to each callbackBefore and callbackAfter
  */
-Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, shared, parent, i) {
+Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, shared, parent, index) {
 	var i;
 	if (!elem) {
 		return;
@@ -5426,8 +5430,9 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 			}
 		}
 	}
+	var ret;
 	if (found && typeof callbackBefore == 'function') {
-		var ret = callbackBefore(elem, options, shared, parent, i);
+		ret = callbackBefore(elem, options, shared, parent, index);
 		if (ret === 0) {
 			return;
 		}
@@ -5447,12 +5452,12 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 			c[i] = children[i];
 		}
 	}
-	var ret = Q.find(c, filter, callbackBefore, callbackAfter, options, shared, elem);
+	ret = Q.find(c, filter, callbackBefore, callbackAfter, options, shared, elem);
 	if (ret === false) {
 		return false;
 	}
 	if (found && typeof callbackAfter  == 'function') {
-		if (false ===  callbackAfter(elem, options, shared, parent, i)) {
+		if (false === callbackAfter(elem, options, shared, parent, index)) {
 			return false;
 		}
 	}
@@ -5531,7 +5536,7 @@ Q.replace = function _Q_replace(container, source, options) {
 		container.innerHTML = '';
 		return container;
 	}
-	var options = Q.extend({}, Q.replace.options, options);
+	options = Q.extend({}, Q.replace.options, options);
 	if (Q.typeOf(source) === 'string') {
 		var s = document.createElement('div'); // temporary container
 		s.innerHTML = source;
@@ -5586,7 +5591,7 @@ Q.replace = function _Q_replace(container, source, options) {
 	}
 	
 	return container;
-}
+};
 
 
 /**
@@ -5899,7 +5904,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 			var domElements = handler(response, url, o); // this is where we fill all the slots
 			if (!o.ignorePage) {
 				_doEvents('on', moduleSlashAction);
-				newStylesheets = loadStylesheets(),
+				newStylesheets = loadStylesheets();
 				newStyles = loadStyles();
 			}
 			
@@ -6135,7 +6140,7 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 				} else if (o.externalLoader) {
 					o.externalLoader.apply(this, arguments);
 				} else {
-//					window.location = callables;
+					window.location = callables;
 				}
 			} else {
 				if (Q.typeOf(o.fields) === 'object') {
@@ -6160,10 +6165,10 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 						if (window.location.href == callables) {
 							window.location.reload(true);
 						} else {
-//							window.location = callables;
+							window.location = callables;
 						}
 					} else {
-//						window.open(callables, o.target);
+						window.open(callables, o.target);
 					}
 				}
 			}
@@ -6297,8 +6302,8 @@ function _constructTool(toolElement, options, shared) {
 				} catch (e) {
 					debugger; // pause here if debugging
 					console.warn(e);
-					throw e;
 					Q.Tool.beingActivated = prevTool;
+					throw e;
 				}
 				this.activated = true;
 			};
@@ -6323,7 +6328,7 @@ function _constructTool(toolElement, options, shared) {
 function _initTool(toolElement) {
 	
 	function _handleInit() {
-		var tn, tn, tool, normalizedName, normalizedId;
+		var tn, tool, normalizedName, normalizedId;
 		var tools = toolElement.Q.tools;
 		for (tn in tools) {
 			tool = tools[tn];
@@ -6808,7 +6813,7 @@ Q.Socket.prototype.onEvent = function(name) {
 
 /**
  * Repeatedly calls a function in order to animate something
- * @method Animation
+ * @class Q.Animation
  * @param {Function} callback
  *  The function to call. It is passed the following parameters:
  *  x = the position in the animation, between 0 and 1
@@ -7006,7 +7011,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 				$.fn[pluginName].options = Q.extend($.fn[pluginName].options, 10, existingOptions[pluginName]);
 			}
 			for (pluginName in results) {
-				results[pluginName] = $.fn[pluginName]
+				results[pluginName] = $.fn[pluginName];
 			}
 			Q.handle(callback, window, [results]);
 		}, options);
@@ -7129,7 +7134,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 				arguments[f] = af.Q_wrapper;
 			}
 			return _jQuery_fn_off.apply(this, arguments);
-		}
+		};
 	});
 };
 Q.jQueryPluginPlugin();
@@ -7175,12 +7180,13 @@ Q.Browser = {
 			|| (new RegExp("(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)", "i").test(navigator.userAgent));
 		
 		var name = browser.toLowerCase();
-		var prefix = '';
+		var prefix;
 		
 		switch (engine) {
-		case 'webkit': prefix = '-webkit-'; break;
-		case 'gecko': prefix = '-moz-'; break;
-		case 'presto': prefix = '-o-'; break;
+			case 'webkit': prefix = '-webkit-'; break;
+			case 'gecko': prefix = '-moz-'; break;
+			case 'presto': prefix = '-o-'; break;
+			default: prefix = '';
 		}
 		
 		prefix = (name === 'explorer') ? '-ms-' : prefix;
@@ -7533,7 +7539,7 @@ function _onPointerMoveHandler(evt) { // see http://stackoverflow.com/a/2553717/
 		screenX = evt.changedTouches[0].screenX;
 		screenY = evt.changedTouches[0].screenY;
 	} else {
-		screenX = evt.screenX,
+		screenX = evt.screenX;
 		screenY = evt.screenY;
 		if (!screenX || !screenY) {
 			return;
@@ -7569,7 +7575,7 @@ var _onPointerEndHandler = Q.Pointer.ended = function _onPointerEndHandler() {
 	setTimeout(function () {
 		Q.Pointer.canceledClick = false;
 	}, 100);
-}
+};
 
 /**
  * Operates with dialogs.
@@ -7625,7 +7631,7 @@ Q.Dialogs = {
 		var o = Q.extend({mask: maskDefault}, Q.Dialogs.push.options, options);
 		if (o.fullscreen) o.mask = false;
 		var dialog = $(o.dialog);
-		if (dialog.length == 0) {
+		if (!dialog.length) {
 			// create this dialog element
 			dialog = $('<div />').append(
 				$('<div class="title_slot" />').append($('<h2 class="Q_dialog_title" />').append(o.title))
@@ -7686,7 +7692,7 @@ Q.Dialogs = {
 				dialog.data('Q/dialog').close();
 			}
 		}
-		if (this.dialogs.length == 0) {
+		if (!this.dialogs.length) {
 			Q.Mask.hide('Q.screen.mask');
 		}
 		return dialog;
@@ -7925,7 +7931,7 @@ Q.Mask = {
 		}
 		if (options === undefined) options = {};
 		var mask = Q.Mask.collection[key];
-		if (mask.shows == 0) {
+		if (!mask.shows) {
 			if (options.className) { // temporary class name which is applied only until mask is hidden
 				mask.tmpClassName = options.className;
 				mask.element.addClass(mask.tmpClassName);
@@ -7958,7 +7964,7 @@ Q.Mask = {
 		if (mask.shows > 0) {
 			mask.shows--;
 		}
-		if (mask.shows == 0) {
+		if (!mask.shows) {
 			if (mask.button) {
 				mask.button.remove();
 				delete mask.button;
@@ -8036,7 +8042,7 @@ Q.Mask = {
 	isVisible: function(key)
 	{
 		if (!(key in Q.Mask.collection)) return false;
-		return (Q.Mask.collection[key].shows != 0);
+		return !!Q.Mask.collection[key].shows;
 	},
 	
 	/**
@@ -8245,8 +8251,8 @@ Q.request.options = {
 	onShowCancel: new Q.Event(),
 	onLoadEnd: new Q.Event(),
 	onCancel: new Q.Event(function (error, response) {
-		var msg;
-		if (msg = Q.firstErrorMessage(error)) {
+		var msg = Q.firstErrorMessage(error);
+		if (msg) {
 			console.warn(msg);
 		}
 	}, 'Q')
@@ -8269,7 +8275,7 @@ Q.onReady.set(function _Q_masks() {
 		if (o.quiet) return;
 		var mask = Q.Mask.get('Q.request.cancel.mask').element;
 		var button = mask.children('.Q_load_cancel_button');
-		if (button.length == 0) {
+		if (!button.length) {
 			button = document.createElement('button');
 			button.setAttribute('class', 'Q_load_cancel_button');
 			button.innerHTML = 'Cancel';
