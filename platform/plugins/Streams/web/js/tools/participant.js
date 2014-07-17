@@ -1,10 +1,14 @@
 (function (Q, $) {
 
 /**
- * Streams/participant tool.
- * Display participants of certain stream using horizontally scrolled list.
- * Each item in the list is presented with avatar and username and also can have a contextual associated with it.
- * @method participant
+ * @module Streams-tools
+ */
+
+/**
+ * Displays participants of a given stream in a horizontal list.
+ * Each item in the list is presented with an avatar and also can have a contextual associated with it.
+ * @class Streams participant
+ * @constructor
  * @param {Object} [options] this object contains function parameters
  *   @param {Number} [options.hideContextualOnMovePixels]
  *   Optional. Amount of pixels the user have to scroll the list before shown contextual

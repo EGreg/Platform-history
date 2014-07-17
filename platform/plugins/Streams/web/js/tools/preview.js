@@ -1,9 +1,13 @@
 (function (Q, $, window, undefined) {
 
 /**
- * Streams/preview tool.
- * Renders a default tool to preview streams
- * @method preview
+ * @module Streams-tools
+ */
+
+/**
+ * Renders a default interface for rendering stream preview
+ * @class Streams preview
+ * @constructor
  * @param {Object} [options] this object contains function parameters
  *   @param {String} [options.publisherId] The publisher's user id.
  *   @required

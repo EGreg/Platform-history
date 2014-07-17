@@ -1,8 +1,14 @@
 (function (Q, $) {
 
 /**
- * Streams/related tool.
- * @method related
+ * @module Streams-tools
+ */
+
+/**
+ * Renders a bunch of Stream/preview tools for streams related to the given stream.
+ * Has options for adding new related streams, as well as sorting the relations, etc.
+ * @class Streams related
+ * @constructor
  * @param {Object} [options] this object contains function parameters
  *   @param {String} [options.publisherId] Either this or "stream" is required. Publisher id of the stream to which the others are related
  *   @param {String} [options.streamName] Either this or "stream" is required. Name of the stream to which the others are related

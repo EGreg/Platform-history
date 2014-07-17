@@ -1,7 +1,15 @@
 (function (Q, $) {
 
 /**
- * @method getintouch
+ * Users Tools
+ * @module Users-tools
+ * @main
+ */
+
+/**
+ * Renders an interface for getting in touch with the given user via email or mobile
+ * @class Users getintouch
+ * @constructor
  * @param {Object} [options] this object contains function parameters
  *   @param {String} [options.emailSubject] The default subject of the email, if any
  *   @param {String} [options.emailAddress] The email address.

@@ -1,8 +1,15 @@
 (function (Q, $) {
 
 /**
- * Users/friendSelector tool. Makes a tool which allows selecting a friend from the logged-in user's friends list.
- * @method friendSelector
+ * Users Tools
+ * @module Users-tools
+ * @main
+ */
+
+/**
+ * Allows selecting a facebook friend from the logged-in user's friends list.
+ * @class Users friendSelector
+ * @constructor
  * @param {Object} [options] this object contains function parameters
  *   @param {Function} [options.onSelect] This callback is called when the user selects a friend.
  *   @required

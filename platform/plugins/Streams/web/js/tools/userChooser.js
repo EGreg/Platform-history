@@ -1,8 +1,15 @@
 (function (Q, $) {
 
 /**
- * Streams/userChooser tool
- * @method userChooser
+ * Streams Tools
+ * @module Streams-tools
+ * @main
+ */
+
+/**
+ * Interface for selecting an app user
+ * @class Streams userChooser
+ * @constructor
  * @param {Object} [options] this object contains function parameters
  *   @param {Function} [options.onChoose] callback function with (userId, current)  parameters
  *   @param {Number} [options.delay]

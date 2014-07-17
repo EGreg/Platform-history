@@ -1,9 +1,15 @@
 (function (Q, $) {
 
 /**
- * Streams/comments tool.
- * Renders a comment form and comments feed which is looking like standard Facebook.
- * @method comments
+ * Streams Tools
+ * @module Streams-tools
+ * @main
+ */
+
+/**
+ * Renders a facebook comments form and feed that looks like the stadard Facebook
+ * @class Streams comments
+ * @constructor
  * @param {Object} [options] this object contains function parameters
  *   @param {String} [options.objectId] A Graph object id which is used to load comments from it and post comments to it.
  *   @required

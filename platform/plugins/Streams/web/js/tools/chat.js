@@ -1,8 +1,14 @@
 (function (Q, $) {
 
 /**
- * Streams/chat tool.
- * @method chat
+ * Streams Tools
+ * @module Streams-tools
+ */
+
+/**
+ * Standard chatting interface
+ * @class Streams chat
+ * @constructor
  * @param {Object} [options] this object contains function parameters
  *   @param {String} [options.publisherId] Publisher id of the stream to get messsages from.
  *   @required
