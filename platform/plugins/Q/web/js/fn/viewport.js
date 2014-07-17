@@ -270,7 +270,7 @@ function (options) {
 
 {	// default options:
 	containerClass: '', // any class names to add to the actions container
-	initial: { left: 0, top: 0, width: 0, height: 0 },
+	initial: { left: 0, top: 0, width: 0, height: 0 }, //width and height should be proportional to original file and smaller then width & height of original file
     minimumResultSize: {},
 	result: {},
 	onRelease: new Q.Event(),

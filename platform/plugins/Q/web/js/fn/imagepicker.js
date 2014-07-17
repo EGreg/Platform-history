@@ -124,6 +124,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
         };
 
         function _calculateImageSize(requiredSize, imageSize) {
+            _checkRequiredSize(requiredSize, imageSize);
             var calcSize = {};
             if ( requiredSize.width && requiredSize.height ) {
 //              if specified two dimensions - we should remove small size to avoid double reductions
@@ -135,17 +136,11 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 
             }
             if ( requiredSize.width ) {
-                if ( requiredSize.width > imageSize.width ) {
-                    throw new Q.Error("Q/imagepicker tool: the image is too small");
-                }
                 calcSize.width = requiredSize.width;
                 var ratio = requiredSize.width/imageSize.width;
                 calcSize.height = Math.ceil(imageSize.height * ratio);
             }
             if ( requiredSize.height ) {
-                if ( requiredSize.height > imageSize.height ) {
-                    throw new Q.Error("Q/imagepicker tool: the image is too small");
-                }
                 calcSize.height = requiredSize.height;
                 var ratio = requiredSize.height/imageSize.height;
                 calcSize.width = Math.ceil(imageSize.width * ratio);
@@ -154,6 +149,16 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
             return calcSize;
         };
 
+        function _checkRequiredSize(requiredSize, imageSize) {
+            if ( ! state.useAnySize && requiredSize.width > imageSize.width ) {
+                throw new Q.Error("Q/imagepicker tool: the image is too small");
+            }
+            if ( ! state.useAnySize && requiredSize.height > imageSize.height ) {
+                throw new Q.Error("Q/imagepicker tool: the image is too small");
+            }
+
+            return true;
+        }
 
         function _calculateRequiredSize (saveSizeName) {
             var widths = [], heights = [];
@@ -200,16 +205,16 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
             img.onload = function() {
                 imgInfo.height = img.height;
                 imgInfo.width = img.width;
+                var requiredSize  = _calculateRequiredSize(state.saveSizeName);
 
                 if (state.saveSizeName  && ! state.cropping ) {
-                    var requiredSize  = _calculateRequiredSize(state.saveSizeName);
                     var neededImgSize = _calculateImageSize(requiredSize, img);
                     var coord = neededImgSize;
                     coord.x = 0;
                     coord.y = 0;
                     coord.origImg = {
                         width:  imgInfo.width,
-                        height: mgInfo.height
+                        height: imgInfo.height
                     };
 
                     _doCanvasCrop(params.data, coord, function(cropImg) {
@@ -238,6 +243,7 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
                                 width: result.width,
                                 height: result.height
                             };
+                            _checkRequiredSize(requiredSize, coord);
                             _doCanvasCrop(img.src, coord, function(data) {
 //                              TODO: subpath should be retrieved from state, but it missed by some reason, should be fixed
                                 _doUpload({
@@ -251,8 +257,8 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 //                          TODO: width and height should be proportial to orginal file
                             croppingElement
                                 .plugin('Q/viewport',{
-                                    initial:{left: 400, top: 400, width: 1000, height: 750 },
-                                    minimumResultSize: {width: 500  , height: 350}
+                                    initial:{left: 0, top: 0, width: 377, height: 323 },
+                                    minimumResultSize: {width: 377  , height: 323}
                                 })
                             }
                         }
@@ -275,7 +281,8 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 				'subpath': state.subpath,
 				'save': state.saveSizeName,
 				'url': state.url,
-				'loader': state.loader
+				'loader': state.loader,
+                'useAnySize': state.useAnySize
 			};
 			if (state.crop) {
 				params.crop = state.crop;
