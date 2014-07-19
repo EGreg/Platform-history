@@ -1683,7 +1683,7 @@ Q.Event.from = function _Q_Event_from(source, eventName) {
  * @param {Number} number at which to start the loop for the default key generation
  * @return {String}
  */
-Q.Event.calculateKey = function _Q_Event_calculateKe(key, container, start) {
+Q.Event.calculateKey = function _Q_Event_calculateKey(key, container, start) {
 	if (key === true) {
 		return key;
 	}
@@ -2936,7 +2936,8 @@ Q.Tool.latestNames = {};
 var _activateToolHandlers = {};
 var _initToolHandlers = {};
 var _beforeRemoveToolHandlers = {};
-var _waitingPipeStack = [];
+var _waitingParentStack = [];
+var _pendingParentStack = [];
 
 function _toolEventFactoryNormalizeKey(key) {
 	var parts = key.split(':', 2);
@@ -5882,7 +5883,11 @@ Q.activate = function _Q_activate(elem, options, callback) {
 		options = undefined;
 	}
 	Q.find(elem, true, Q.activate.onConstruct.handle, Q.activate.onInit.handle, options, shared);
-	shared.pipe.add(shared.waitingForTools, 1, _activated).run();
+	shared.pipe.add(shared.waitingForTools, 1, _activated);
+	setTimeout(function () {
+		// do this in its own stack frame
+		shared.pipe.run();
+	}, 0);
 	
 	Q.Tool.beingActivated = ba;
 	
@@ -6666,6 +6671,9 @@ function Q_popStateHandler() {
  *  A shared pipe which we can use to fill
  */
 function _constructTool(toolElement, options, shared) {
+	var pendingParentEvent = _pendingParentStack[_pendingParentStack.length-1];
+	var pendingCurrentEvent = new Q.Event();
+	_pendingParentStack.push(pendingCurrentEvent); // wait for construct of parent tool
 	_loadToolScript(toolElement, function _constructTool_doConstruct(toolElement, toolFunc, toolName, uniqueToolId) {
 		if (!toolFunc.toolConstructor) {
 			toolFunc.toolConstructor = function Q_Tool(element, options) {
@@ -6703,13 +6711,22 @@ function _constructTool(toolElement, options, shared) {
 			Q.mixin(toolFunc, Q.Tool);
 			Q.mixin(toolFunc.toolConstructor, toolFunc);
 		}
-		var result = new toolFunc.toolConstructor(toolElement, options);
-		if (uniqueToolId) {
-			shared.pipe.fill(uniqueToolId)();
+		var key;
+		if (pendingParentEvent) {
+			key = pendingParentEvent.add(_reallyConstruct, null);
+		} else {
+			_reallyConstruct();
 		}
-		return result;
+		function _reallyConstruct() {
+			pendingParentEvent && pendingParentEvent.remove(key);
+			var result = new toolFunc.toolConstructor(toolElement, options);
+			if (uniqueToolId) {
+				shared.pipe.fill(uniqueToolId)();
+			}
+			pendingCurrentEvent.handle.call(result, options);
+		}
 	}, shared);
-	_waitingPipeStack.push(new Q.Pipe());
+	_waitingParentStack.push(new Q.Pipe()); // wait for init of child tools
 }
 
 /**
@@ -6742,9 +6759,11 @@ function _initTool(toolElement) {
 		}
 	}
 	
-	var currentPipe = _waitingPipeStack.pop();
-	var parentPipe = _waitingPipeStack.length
-		? _waitingPipeStack[_waitingPipeStack.length-1]
+	_pendingParentStack.pop();
+	
+	var currentPipe = _waitingParentStack.pop();
+	var parentPipe = _waitingParentStack.length
+		? _waitingParentStack[_waitingParentStack.length-1]
 		: null;
 	
 	_loadToolScript(toolElement, function (toolElement, toolFunc, toolName, uniqueToolId) {
@@ -6754,7 +6773,6 @@ function _initTool(toolElement) {
 		} else {
 			_handleInit(); // just a slight optimization
 		}
-		
 	}, null, parentPipe);
 }
 
