@@ -1,7 +1,15 @@
 (function (Q, $, window, document, undefined) {
 
 /**
+ * Q Tools
+ * @module Q-tools
+ * @main Q-tools
+ */
+	
+/**
  * Listing that appears in contextual menus
+ * @class Q listing
+ * @constructor
  * @param {Mixed} [Object_or_String] mixed parameter , could be an Object of parameters or String
  * @param {Object} [Object_or_String.Object]
  *	 If an object then it's a hash of options, that can include:

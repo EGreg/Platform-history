@@ -2814,6 +2814,7 @@ Q.Exception.prototype = Error;
 /**
  * The root mixin added to all tools.
  * 
+ * @class Q.Tool
  * @constructor
  * @param [element] the element to activate into a tool
  * @param [options={}] an optional set of options that may contain ".Tool_name or #Some_exact_tool or #Some_child_tool"
