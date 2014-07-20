@@ -7936,6 +7936,18 @@ Q.Pointer = {
 	 */
 	cancel: (Q.info.isTouchscreen ? 'touchcancel' : 'mousecancel'), // mousecancel can be a custom event
 	/**
+	 * The 'focusin' event name, depending on environment
+	 * @static
+	 * @property {String} focusin
+	 */
+	focusin: (Q.info.browser.engine === 'gecko' ? 'focus' : 'focusin'),
+	/**
+	 * The 'focusout' event name, depending on environment
+	 * @static
+	 * @property {String} focusout
+	 */
+	focusout: (Q.info.browser.engine === 'gecko' ? 'blur' : 'focusout'),
+	/**
 	 * Intelligent click event that also works on touchscreens, and respects Q.Pointer.canceledClick
 	 * @static
 	 * @method click
