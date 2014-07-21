@@ -43,11 +43,18 @@
 					fullContent: message.content, 
 					content    : sliceContent(message.content),
 					date       : self.parseDate(message.sentTime),
-					byUserId   : message.byUserId
+					byUserId   : message.byUserId,
+					_class     : ''
 				};
 
 				if (data.content.length > self.options.messageMaxHeight) {
 					data._class = 'Q_ellipsis'
+				}
+
+				if (message.byUserId === self.options.userId) {
+					data._class += ' with-me';
+				} else {
+					data._class += ' to-me';
 				}
 
 				return data;
@@ -152,12 +159,17 @@
 				});
 			}
 
-			$el.find('.Q_ellipsis').live('click', function(){
-				var $item = $(this).parents('.message-item');
+			$el.find('.Q_ellipsis .message-item-text').live('click', function(){
+				var $container = $(this).parents('.message-item'),
+					username   = $container.find('.Users_avatar_contents').text();
+
+				if ($container.data('byuserid') === self.options.userId) {
+					username = 'me';
+				}
 
 				Q.Dialogs.push({
-					title  : 'Message from ' + $item.find('.Users_avatar_contents').text(),
-					content: '<div class="Streams_popup_content">' + $item.data('content') + '</div>'
+					title  : 'Message from ' + username,
+					content: '<div class="Streams_popup_content">' + $container.data('content') + '</div>'
 				});
 			});
 
@@ -172,6 +184,13 @@
 			/*
 			* send message
 			*/
+			$el.find('.message-text').keypress(function(event){
+				if (event.charCode == 13) {
+					$el.find('.send-message').trigger('click');
+					return false;
+				}
+			});
+
 			$el.find('.send-message').click(function() {
 				if (blocked) {
 					return false;
@@ -197,7 +216,6 @@
 		},
 
 		parseDate: function(date){
-			// TODO inspect other parameters
 			var date = (date.expression == 'CURRENT_TIMESTAMP') ? new Date() : new Date(date);
 			var pretyDate = function(d){
 				return d.toString().length == 1 ? '0'+d : d;
@@ -221,12 +239,15 @@
 	});
 
 	Q.Template.set('Streams/chat/message-item',
-		'<div class="message-item Q_w100" data-content="{{fullContent}}">'+
-			'<div class="Q_w20 Q_left avatar-container"></div>'+
-			'<div class="Q_w60 Q_left username"></div>'+
-			'<div class="Q_w20 Q_right date">{{date}}</div>'+
+		'<div class="message-item Q_w100 {{#_class}} {{_class}} {{/_class}}" data-content="{{fullContent}}" data-byUserId="{{byUserId}}">'+
+			'<div class="Q_w20 avatar-container"></div>'+
+			'<div class="Q_w100 message-text-container">'+
+				'<div class="message-item-text">{{content}}</div>'+
+				'<div class="Q_clear"></div>'+
+				'<div class="Q_w20 Q_right date">{{date}}</div>'+
+				'<div class="Q_clear"></div>'+
+			'</div>'+
 			'<div class="Q_clear"></div>'+
-			'<div class="Q_w100 message-item-text {{#_class}} {{_class}} {{/_class}}">{{content}}</div>'+
 		'</div>'
 	);
 

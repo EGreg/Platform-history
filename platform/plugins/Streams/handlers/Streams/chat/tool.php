@@ -44,8 +44,7 @@ function Streams_chat_tool($options)
 		));
 	}
 
-	$options['user']   = $user;
-	$options['stream'] = $stream;
+	$options['userId'] = $user->id;
 
 	Q_Response::setToolOptions($options);
 }

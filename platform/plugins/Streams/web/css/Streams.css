@@ -495,6 +495,11 @@
 .Q_overlay .streams_subscription_container { width: 96%; margin: 0 auto; padding: 5px; }
 .Streams_subscription_tool_dialog_container { width: 300px; }
 
+/* for all popups */
+.Streams_popup_content{
+	padding: 7px;
+}
+
 /* Streams chat tool */
 .Streams_chat_tool{
 	padding: 10px;
@@ -513,9 +518,9 @@
 	color: gray !important;
 }
 .Streams_chat_tool .message-item-text{
-	margin-left: 40px;
 	font-size: 13pt !important;
 	color: gray !important;
+	width: 96%;
 }
 .Streams_chat_tool .messages-container{
 	padding: 10px;
@@ -556,7 +561,33 @@
 	color: rgb(238, 238, 238) !important;
 	background: #bbb;
 }
-
-.Streams_popup_content{
-	padding: 7px;
+.Streams_chat_tool .date{
+	text-align: right;
+}
+.Streams_chat_tool .Q_ellipsis .message-item-text{
+	cursor: pointer;
+}
+.Streams_chat_tool .message-text-container{
+	width: 80%;
+	padding: 10px;
+	background: wheat;
+	margin-top: -13px;
+}
+.Streams_chat_tool .to-me .avatar-container{
+	float: left;
+}
+.Streams_chat_tool .to-me .message-text-container{
+	border-radius: 0px 13px 13px 13px;
+	float: left;
+	margin-left: 50px;
+}
+.Streams_chat_tool .with-me .avatar-container,
+.Streams_chat_tool .with-me .avatar-container img,
+.Streams_chat_tool .with-me .avatar-container span.Users_avatar_contents{
+	float: right;
+}
+.Streams_chat_tool .with-me .message-text-container{
+	border-radius: 13px 0 13px 13px;
+	float: right;
+	margin-right: 50px;
 }
