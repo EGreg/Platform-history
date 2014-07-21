@@ -1,22 +1,30 @@
 (function (Q, $, window, document, undefined) {
 
-    /**
-     * Plugin which automatically hides scrollbars on 'overflow: scroll' or 'overflow: auto' elements when
-     * mouse cursor is not over them.
-     * Usable on desktop browsers for not overloading interface with unneeded visual elements (such as scrollbars)
-     * if there are lot of scrollable areas.
-     * @method scrollbarsAutoHide
-     * @param {Mixed} [Object_or_String] function could have String or Object parameter
-     * @param {Object} [Object_or_String.Object] If an object then it's a hash of options, that can include:
-     *   @param {Boolean} [Object_or_String.Object.scrollbarPadding] Boolean which indicates whether to preserve padding in a container based on scrollbar
-     *   width. Padding preserved on the right side (for vertical scrolling) or on the bottom side (for horizontal scrolling).
-     *	 @default true
-     *	 @param {Q.Event} [Object_or_String.Object.showHandler] callback which is called when scrollbar is just shown.
-     *	 @param {Q.Event} [Object_or_String.Object.hideHandler] callback which is called when scrollbar is just hidden.
-     * @param {String} [Object_or_String.String]
-     *	 If a string then it's a command and it can have following values:
-     *	 "destroy": Destroys the plugin functionality so the container won't hide its scrollbars automatically anymore.
-     */
+/**
+ * Q Tools
+ * @module Q-tools
+ */
+
+/**
+ * jQuery plugin for automatically hiding scrollbars
+ * on 'overflow: scroll' or 'overflow: auto' elements when
+ * mouse cursor is not over them.
+ * Usable on desktop browsers for not overloading interface
+ * with unneeded visual elements (such as scrollbars)
+ * if there are lot of scrollable areas.
+ * @class Q scrollbarsAutoHide
+ * @constructor
+ * @param {Mixed} [Object_or_String] function could have String or Object parameter
+ * @param {Object} [Object_or_String.Object] If an object then it's a hash of options, that can include:
+ *   @param {Boolean} [Object_or_String.Object.scrollbarPadding] Boolean which indicates whether to preserve padding in a container based on scrollbar
+ *   width. Padding preserved on the right side (for vertical scrolling) or on the bottom side (for horizontal scrolling).
+ *	 @default true
+ *	 @param {Q.Event} [Object_or_String.Object.showHandler] callback which is called when scrollbar is just shown.
+ *	 @param {Q.Event} [Object_or_String.Object.hideHandler] callback which is called when scrollbar is just hidden.
+ * @param {String} [Object_or_String.String]
+ *	 If a string then it's a command and it can have following values:
+ *	 "destroy": Destroys the plugin functionality so the container won't hide its scrollbars automatically anymore.
+ */
 
     Q.Tool.jQuery('Q/scrollbarsAutoHide',
 
@@ -113,6 +121,10 @@
         },
 
         {
+			/**
+			 * Removes the scrollbarsAutoHide functionality from the element
+			 * @method remove
+			 */
             remove: function () {
                 this.each(function(index) {
                     var $this = $(this);

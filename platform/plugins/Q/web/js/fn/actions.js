@@ -1,13 +1,14 @@
 (function (Q, $, window, document, undefined) {
 
+/**
+ * Q Tools
+ * @module Q-tools
+ */
 
 /**
- * Plugin that adds action icons that appear over elements and allow the user to perform some action, and display correctly on both desktop and mobile.
- * @module Q
- * @submodule Plugins
- * @class jQuery
- * @namespace Q
- * @method actions
+ * jQuery plugin that adds action icons that appear over elements and allow the user to perform some action, and display correctly on both desktop and mobile.
+ * @class Q actions
+ * @constructor
  * @param {Object} [options] , object for an options
  * @param {Array} [options.actions] actions an array of name:function pairs
  * @default {}
@@ -31,11 +32,11 @@
  * @default {}
  * @param {Number} [options.repositionMs] repositionMs how many milliseconds between repositioning
  * @default 200
- * @param {Event} [options.onShow] onShow , event that triggering after action show
+ * @param {Q.Event} [options.onShow] onShow , event that triggering after action show
  * @default new Q.Event()
- * @param [Event] [options.beforeHide] beforeHide , event that triggering before action close
+ * @param [Q.Event] [options.beforeHide] beforeHide , event that triggering before action close
  * @default new Q.Event()
- * @param [Event] [options.onClick] onClick , event that triggering on action click
+ * @param [Q.Event] [options.onClick] onClick , event that triggering on action click
  * @default new Q.Event()
 */
 Q.Tool.jQuery('Q/actions',

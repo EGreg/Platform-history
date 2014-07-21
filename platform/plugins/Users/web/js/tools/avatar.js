@@ -1,8 +1,15 @@
 (function (Q, $, window, undefined) {
 
 /**
- * Users/avatar tool
- * @method avatar
+ * Users Tools
+ * @module Users-tools
+ * @main
+ */
+
+/**
+ * Avatar representing a user
+ * @class Users avatar
+ * @constructor
  * @param {Object} [options] this object contains function parameters
  *   @param {String} [options.userId] User Id for getting avatar
  *   @required

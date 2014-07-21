@@ -22,6 +22,12 @@ function Streams_chat_tool($options)
 
 	extract($options);
 
+	$options = array_merge(array(
+		'loadMore'         => (Q_Request::isTouchscreen() && Q_Request::platform() != 'android') ? 'click' : 'scroll',
+		'messagesToLoad'   => 5,
+		'messageMaxHeight' => 200
+	), $options);
+
 	if (!isset($publisherId)) {
 		$publisherId = Streams::requestedPublisherId(true);
 	}
@@ -29,11 +35,6 @@ function Streams_chat_tool($options)
 	if (!isset($streamName)) {
 		$streamName = Streams::requestedName();
 	}
-
-	$options = array_merge(array(
-		'loadMore'     => (Q_Request::isTouchscreen() and Q_Request::platform() !== 'android') ? 'pull' : 'scroll',
-		'amountToLoad' => 3
-	), $options);
 
 	$stream = Streams::fetchOne($user->id, $publisherId, $streamName);
 	if (!$stream) {
@@ -43,12 +44,7 @@ function Streams_chat_tool($options)
 		));
 	}
 
-	$options['messages'] = $stream->getMessages(array(
-		'type'  => 'Streams/chat/message',
-		'max'   => -1,
-		'limit' => 10
-	));
-
+	$options['user']   = $user;
 	$options['stream'] = $stream;
 
 	Q_Response::setToolOptions($options);

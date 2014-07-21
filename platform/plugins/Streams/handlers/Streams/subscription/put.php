@@ -84,7 +84,7 @@ function Streams_subscription_put($params) {
 	$streams_participant->save();
 
 	if ($subscribed === 'yes') {
-		$stream->subscribe();
+		$stream->subscribe(array('skipRules' => true));
 	} else {
 		$stream->unsubscribe();
 	}

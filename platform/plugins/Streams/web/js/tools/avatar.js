@@ -1,8 +1,15 @@
 (function (Q, $, window, undefined) {
 
 /**
- * Users/avatar tool
- * @method avatar
+ * Users Tools
+ * @module Users-tools
+ * @main
+ */
+
+/**
+ * Avatar representing a user
+ * @class Users avatar
+ * @constructor
  * @param {String} prefix Prefix of the tool to be constructed.
  * @param {Object} [options] A hash of options, containing:
  *   @param {String} [options.userId] The id of the user object.

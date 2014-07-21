@@ -1,15 +1,17 @@
 (function (Q, $, window, document, undefined) {
 
 /**
- * Plugin that allows to choose and upload an image to the server by clicking / tapping on it.
+ * Q Tools
+ * @module Q-tools
+ */
+
+/**
+ * jQuery plugin that allows to choose and upload an image to the server by clicking / tapping on it.
  * Works on various platforms (desktop and mobile etc) in similar way. On mobiles allows to choose picture
  * from photo library or take an instant camera photo if OS supports such functionality.
  * Should be applied to <img /> element like this $('#someimg').plugin('Q/imagepicker', options).
- * @module Q
- * @submodule Plugins
- * @class jQuery
- * @namespace Q
- * @method imagepicker
+ * @class Q imagepicker
+ * @constructor
  * @param {Object} [options] options is an Object that contains parameters for function
  * @param {Object} [options.saveSizeName] saveSizeName Required hash where key is the preferred image size and value is the image name. Several key-value pairs may
  *                   be given and image will be generated and saved in different files. Key may be just one number, e.g. '100'
@@ -210,6 +212,10 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 },
 
 {
+	/**
+	 * Removes the imagepicker functionality from the element
+	 * @method remove
+	 */
 	remove: function () {
 		return this.each(function() {
 			var $this = $(this);

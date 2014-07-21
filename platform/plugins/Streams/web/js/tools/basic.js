@@ -1,11 +1,18 @@
 (function (Q, $) {
 
 /**
- * Streams/basic tool
+ * Streams Tools
+ * @module Streams-tools
+ */
+
+/**
+ * Interface for the logged-in user to edit their basic profile fields
+ * @class Streams basic
+ * @constructor
  * @method basic
  * @param {Object} [options] this object contains function parameters
  *   @param {Event} [options.onSuccess]
-*/
+ */
 Q.Tool.define("Streams/basic", function(options) {
 	var me = this;
 	var tool = this.element;

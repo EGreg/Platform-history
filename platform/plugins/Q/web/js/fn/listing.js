@@ -1,8 +1,7 @@
 (function (Q, $, window, document, undefined) {
 
 /**
- * Makes a selectable listing which acts like a menu.
- * @method listing
+ * Listing that appears in contextual menus
  * @param {Mixed} [Object_or_String] mixed parameter , could be an Object of parameters or String
  * @param {Object} [Object_or_String.Object]
  *	 If an object then it's a hash of options, that can include:

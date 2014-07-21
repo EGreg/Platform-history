@@ -1,8 +1,13 @@
 (function (Q, $, window, document, undefined) {
 
 /**
- * Streams/html tool.
- * @method html
+ * @module Streams-tools
+ */
+	
+/**
+ * Inline editor for HTML content
+ * @class Streams html
+ * @constructor
  * @param {Object} [options] this object contains function parameters
  *   @param {Boolean} [options.editable] Set to false to avoid showing even authorized users an interface to replace the contents
  *   @param {Object} [options.ckeditor]  The config, if any, to pass to ckeditor

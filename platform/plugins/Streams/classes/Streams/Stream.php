@@ -281,30 +281,6 @@ class Streams_Stream extends Base_Streams_Stream
 					}
 				}
 			}
-
-			// create subscription with template for this stream 
-			$subscriptionTemplate 	   = $this->getSubscriptionTemplate('Streams_Subscription', $type);
-			$subscription 			   = new Streams_Subscription();
-			$subscription->publisherId = $this->publisherId;
-			$subscription->streamName  = $this->name;
-			$subscription->ofUserId    = $userId;
-			$subscription->retrieve();
-			$subscription->filter      = isset($subscriptionTemplate->filter) 
-				? $subscriptionTemplate->filter 
-				: '{"types":{},"notifications":0}'; 
-			$subscription->save();
-
-			// create rule with template for this stream
-			$ruleTemplate 	   = $this->getSubscriptionTemplate('Streams_Rule', $type);
-			$rule              = new Streams_Rule();
-			$rule->ofUserId    = $user->id;
-			$rule->publisherId = $this->publisherId;
-			$rule->streamName  = $this->name;
-			$rule->relevance   = 1;
-			$rule->retrieve();
-			$rule->filter      = isset($ruleTemplate->filter)  ? $ruleTemplate->filter  : '{"types":[],"labels":[]}';
-			$rule->deliver     = isset($ruleTemplate->deliver) ? $ruleTemplate->deliver : '{}';
-			$rule->save();
 		}
 
 		/**
@@ -694,10 +670,11 @@ class Streams_Stream extends Base_Streams_Stream
 	 *	"untilTime": time limit for subscription, default - null meaning forever
 	 *	"readyTime": time from which user is ready to receive notifications again
 	 *  "userId": the user subscribing to the stream. Defaults to the logged in user.
+	 *  "skipRules": if true, do not attempt to create rules
 	 * @return {Streams_Subscription|false}
 	 */
-	function subscribe($options = array()) {
-
+	function subscribe($options = array())
+	{
 		$stream = $this->getUserStream($options, $userId, $user);
 		
 		// first make user a participant
@@ -711,10 +688,14 @@ class Streams_Stream extends Base_Streams_Stream
 		$s->ofUserId = $userId;
 		$s->retrieve();
 
-		$filter = array(
-			'types' => array(),
-			'notifications' => 0
-		);
+		if ($template = $stream->getSubscriptionTemplate('Streams_Subscription', $userId, $type)) {
+			$filter = json_decode($template->filter, true);
+		} else {
+			$filter = array(
+				'types' => array(),
+				'notifications' => 0
+			);
+		}
 		if (isset($options['types'])) {
 			$filter['types'] = !empty($options['types']) ? $options['types'] : $filter['types'];
 		}
@@ -726,22 +707,56 @@ class Streams_Stream extends Base_Streams_Stream
 
 		if (isset($options['untilTime'])) {
 			$s->untilTime = $options['untilTime'];
-		} else {
-			$s->untilTime = date("c", time());
+		} else if ($type > 0 and $template and $template->duration > 0) {
+			$s->untilTime = date("c", time() + $template->duration);
 		}
 		if (!$s->save(true)) {
 			return false;
 		}
 
-		// Now let's handle rules
-		$rule_success = true;
+		if (empty($options['skipRules'])) {
+			// Now let's handle rules
+			$template = $stream->getSubscriptionTemplate('Streams_Rule', $userId, $type2);
+
+			$ruleSuccess = true;
+			if ($type2 !== 0) {
+				$rule = new Streams_Rule();
+				$rule->ofUserId = $userId;
+				$rule->publisherId = $stream->publisherId;
+				$rule->streamName = $stream->name;
+
+				// defaults - use if no template or no template value. 
+				$rule->readyTime = isset($options['readyTime']) ? $options['readyTime'] : new Db_Expression('CURRENT_TIMESTAMP');
+				$rule->filter = !empty($template->filter) ? $template->filter : '{"types":[],"labels":[]}';
+				$rule->relevance = !empty($template->relevance) ? $template->relevance : 1;
+			
+				if (!empty($template->deliver)) {
+					$rule->deliver = $template->deliver;
+				} else {
+					if (isset($user->mobileNumber)) {
+						$deliver = array('mobile' => $user->mobileNumber);
+					} else if (isset($user->emailAddress)) {
+						$deliver = array('email' => $user->emailAddress);
+					} else if (isset($user->mobileNumberPending)) {
+						$deliver = array('mobile' => $user->mobileNumberPending);
+					} else if (isset($user->emailAddressPending)) {
+						$deliver = array('email' => $user->emailAddressPending);
+					} else {
+						$deliver = array();
+						$ruleSuccess = false;
+					}
+					$rule->deliver = Q::json_encode($deliver);
+				}
+				$ruleSuccess = !!$rule->save();
+			}
+		}
 
 		// skip error testing for rule save BUT inform node. Node can notify user to check the rules
 		Q_Utils::sendToNode(array(
 			"Q/method" => "Streams/Stream/subscribe",
 			"subscription" => Q::json_encode($s->toArray()),
 			"stream" => Q::json_encode($stream->toArray()),
-			"success" => Q::json_encode($rule_success)
+			"success" => Q::json_encode($ruleSuccess)
 		));
 		
 		// Post Streams/subscribe message to the stream

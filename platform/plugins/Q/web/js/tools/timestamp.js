@@ -1,10 +1,18 @@
 (function (Q, $) {
 
 /**
+ * Q Tools
+ * @module Q-tools
+ */
+
+/**
  * This function Makes a timestamp which is periodically updated.
- * Initially shows time offsets in '<some_time> ago' manner. Later represents time depending on format,
- * wisely excluding unnecessary detais (i.e. 'year' if timestamp has been made this year, 'year' and 'month if in this month etc).
- * @method timestamp
+ * Initially shows time offsets in '<some_time> ago' manner.
+ * Later represents time depending on format,
+ * wisely excluding unnecessary detais
+ * (i.e. 'year' if timestamp has been made this year, 'year' and 'month if in this month etc).
+ * @class Q timestamp
+ * @constructor
  * @param {Object} [options] This is an object of parameters for this function
  *  @param {Number} [options.time] Unix timestamp (in seconds).
  *  @default 'new Date().getTime() / 1000'

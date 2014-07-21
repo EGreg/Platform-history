@@ -494,3 +494,69 @@
 .streams_subscription_container .remove { cursor: pointer; }
 .Q_overlay .streams_subscription_container { width: 96%; margin: 0 auto; padding: 5px; }
 .Streams_subscription_tool_dialog_container { width: 300px; }
+
+/* Streams chat tool */
+.Streams_chat_tool{
+	padding: 10px;
+}
+.Streams_chat_tool h1{
+	text-align: center !important;
+	width: 100% !important;
+}
+.Streams_chat_tool .date{
+	font-size: 10pt !important;
+	color: gray !important;
+}
+.Streams_chat_tool .Users_avatar_contents{
+	font-weight: bold;
+	font-size: 13pt !important;
+	color: gray !important;
+}
+.Streams_chat_tool .message-item-text{
+	margin-left: 40px;
+	font-size: 13pt !important;
+	color: gray !important;
+}
+.Streams_chat_tool .messages-container{
+	padding: 10px;
+	min-height: 70px;
+	max-height: 300px;
+	overflow-x: hidden;
+}
+.Streams_chat_tool .message-item{
+	margin: 10px 0;
+}
+.Streams_chat_tool .no-messages{
+	color: grey !important;
+	font-size: 13pt !important;
+	text-align: center;
+	width: 100%;
+	display: block;
+	line-height: 50pt;
+}
+.Streams_chat_tool .message-text{
+	border: none;
+	font-size: 12pt !important;
+	width: 97%;
+	margin: 0 auto;
+	display: block;
+	padding: 6px;
+	height: 90px;
+	color: grey !important;
+}
+.Streams_chat_tool .more{
+	cursor: pointer;
+	background: #CFCACA;
+	color: white !important;
+	text-align: center;
+	padding: 5px 0;
+	font-size: 11pt !important;
+}
+.Streams_chat_tool .more:hover{
+	color: rgb(238, 238, 238) !important;
+	background: #bbb;
+}
+
+.Streams_popup_content{
+	padding: 7px;
+}

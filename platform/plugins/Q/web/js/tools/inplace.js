@@ -1,8 +1,16 @@
 (function (Q, $, window, document, undefined) {
 
 /**
- * Inline text editor tool.
- * @method inplace
+ * Q Tools
+ * @module Q-tools
+ * @main Q-tools
+ */
+	
+/**
+ * Inplace text editor tool
+ * @class Q tabs
+ * @constructor
+ * @class Q inplace
  * @param {Object} [options] This is an object of parameters for this function
  *  @param {String} [options.method] The HTTP verb to use.
  *  @default 'put'
@@ -95,12 +103,20 @@ Q.Tool.define("Q/inplace", function (options) {
 },
 
 {
+	/**
+	 * Hide Q/actions, if any
+	 * @method hideActions
+	 */
 	hideActions: function () { // Temporarily hide Q/actions if any
 		this.actionsContainer = $('.Q_actions_container');
 		this.actionsContainerVisibility = this.actionsContainer.css('visibility');
 		this.actionsContainer.css('visibility', 'hidden');
 	},
 	
+	/**
+	 * Restore Q/actions, if any
+	 * @method restoreActions
+	 */
 	restoreActions: function () { // Restore Q/actions if any
 		if (!this.actionsContainer) return;
 		this.actionsContainer.css('visibility', this.actionsContainerVisibility);

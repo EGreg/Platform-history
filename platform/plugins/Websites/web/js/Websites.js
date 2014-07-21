@@ -11,10 +11,17 @@ var Websites = Q.Websites = Q.plugins.Websites = {
 
 };
 
-    /**
-     * @method Websites/bio
-     * @param {Object} fields
-     */
+/**
+ * Websites Tools
+ * @module Websites-tools
+ * @main
+ */
+
+/**
+ * Display a user's bio on the website, which the user can edit
+ * @class Websites bio
+ * @constructor
+ */
 
 Q.Tool.define("Websites/bio", function (fields) {
 	var gittool = this.$('.Users_getintouch_tool');
@@ -42,6 +49,11 @@ Q.onInit.set(function () {
 	}, "Websites");
 }, "Websites");
 
+/**
+ * Interface for editing some common meta fields for search engine optimization
+ * @class Websites seo
+ * @constructor
+ */
 Q.Tool.define({
 	"Websites/seo": "plugins/Websites/js/tools/seo.js"
 });

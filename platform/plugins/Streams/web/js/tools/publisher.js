@@ -1,8 +1,13 @@
 (function (Q, $) {
 
 /**
- * Streams/publisher tool
- * @method publisher
+ * @module Streams-tools
+ */
+
+/**
+ * Renders a default interface for composing and publishing stream content
+ * @class Streams publishing
+ * @constructor
  * @param {Object} [options] this object contains function parameters
  *   @param {String} [options.label]
  *   @default ""
