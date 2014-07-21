@@ -3665,8 +3665,13 @@ function _loadToolScript(toolElement, callback, shared, parentPipe) {
 			var normalizedName = Q.normalize(toolName);
 			parentPipe.waitForIdNames.push(normalizedId+"\t"+normalizedName);
 		}
+		if (shared) {
+			var uniqueToolId = "tool " + (shared.waitingForTools.length+1)
+				+ ": " + normalizedId;
+			shared.waitingForTools.push(uniqueToolId);
+		}
 		if (typeof toolFunc === 'function') {
-			return p.fill(toolName)(toolElement, toolFunc, toolName);
+			return p.fill(toolName)(toolElement, toolFunc, toolName, uniqueToolId);
 		}
 		if (toolFunc === undefined) {
 			return;
@@ -3675,10 +3680,6 @@ function _loadToolScript(toolElement, callback, shared, parentPipe) {
 			throw new Q.Error("Q.Tool.loadScript: toolFunc cannot be " + typeof(toolFunc));
 		}
 		var existingOptions = _qtdo[toolName];
-		if (shared) {
-			var uniqueToolId = "tool " + (shared.waitingForTools.length+1);
-			shared.waitingForTools.push(uniqueToolId);
-		}
 		if (Q.Tool.latestNames[toolFunc]) {
 			Q.Tool.latestName = Q.Tool.latestNames[toolFunc];
 			_loadToolScript_loaded();
@@ -5883,11 +5884,8 @@ Q.activate = function _Q_activate(elem, options, callback) {
 		options = undefined;
 	}
 	Q.find(elem, true, Q.activate.onConstruct.handle, Q.activate.onInit.handle, options, shared);
-	shared.pipe.add(shared.waitingForTools, 1, _activated);
-	setTimeout(function () {
-		// do this in its own stack frame
-		shared.pipe.run();
-	}, 0);
+	shared.pipe.add(shared.waitingForTools, 1, _activated)
+		.run();
 	
 	Q.Tool.beingActivated = ba;
 	
@@ -6718,12 +6716,12 @@ function _constructTool(toolElement, options, shared) {
 			_reallyConstruct();
 		}
 		function _reallyConstruct() {
-			pendingParentEvent && pendingParentEvent.remove(key);
 			var result = new toolFunc.toolConstructor(toolElement, options);
 			if (uniqueToolId) {
 				shared.pipe.fill(uniqueToolId)();
 			}
 			pendingCurrentEvent.handle.call(result, options);
+			pendingCurrentEvent.removeAllHandlers();
 		}
 	}, shared);
 	_waitingParentStack.push(new Q.Pipe()); // wait for init of child tools
