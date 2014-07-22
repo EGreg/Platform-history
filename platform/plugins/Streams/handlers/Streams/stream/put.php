@@ -77,19 +77,19 @@ function Streams_stream_put($params) {
 		}
 	}
 	
-	$to_save = $stream->toArray();
-	$instructions = array('changed' => array());
+	$toSave = $stream->toArray();
+	$instructions = array('changes' => array());
 	foreach ($mergedFields as $k) {
 		$v = $stream->$k;
 		if (isset($original[$k])
 		and json_encode($original[$k]) === json_encode($v)) {
 			continue;
 		}
-		$instructions['changed'][$k] = in_array($k, $coreFields)
+		$instructions['changes'][$k] = in_array($k, $coreFields)
 			? $v // record the changed value in the instructions
 			: null; // record a change but the value may be too big, etc.
 	}
-	unset($instructions['changed']['updatedTime']);
+	unset($instructions['changes']['updatedTime']);
 	
 	if ($suggest) {
 		$stream->post($user->id, array(

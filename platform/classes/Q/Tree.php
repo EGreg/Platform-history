@@ -245,10 +245,10 @@ class Q_Tree
 
 		if (empty($array_path)) {
 			$array_path = array();
-			$to_save = $this->parameters;
+			$toSave = $this->parameters;
 		} else {
 			$array_path[] = null;
-			$to_save = call_user_func_array(array($this, 'get'), $array_path);
+			$toSave = call_user_func_array(array($this, 'get'), $array_path);
 		}
 
 		if(is_null($prefix_path)) {
@@ -259,23 +259,23 @@ class Q_Tree
 
 		foreach($prefix_path as $ap) {
 			if($ap) {
-				$to_save = array($ap=>$to_save);
+				$toSave = array($ap=>$toSave);
 			}
 		}
 
 		$mask = umask(Q_Config::get('Q', 'internal','umask' , 0000));
 		$success = file_put_contents(
 			$filename2, 
-			!empty($to_save) 
-				? Q::json_encode($to_save, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+			!empty($toSave) 
+				? Q::json_encode($toSave, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
 				: '{}',
 			LOCK_EX);
 
 		umask($mask);
 
 		if ($success) {
-			self::$cache[$filename] = $to_save;
-			Q_Cache::set("Q_Tree\t$filename", $to_save); // no need to check result - on failure Q_Cache is disabled
+			self::$cache[$filename] = $toSave;
+			Q_Cache::set("Q_Tree\t$filename", $toSave); // no need to check result - on failure Q_Cache is disabled
 		}
 		return $success;
 	}

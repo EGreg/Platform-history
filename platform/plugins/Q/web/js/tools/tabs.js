@@ -188,6 +188,11 @@ Q.Tool.define("Q/tabs", function(options) {
 		return tab ? tab.getAttribute("data-name") : '';
 	},
 	
+	/**
+	 * @method getUrl
+	 * @param {HTMLElement} tab corresponds to the tab
+	 * @return {String} the url that the tab links to
+	 */
 	getUrl: function (tab) {
 		var $tab = $(tab);
 		var state = this.state;

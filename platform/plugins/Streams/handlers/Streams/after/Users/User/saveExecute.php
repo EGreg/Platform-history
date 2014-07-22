@@ -90,9 +90,9 @@ function Streams_after_Users_User_saveExecute($params)
 			$stream->post($user->id, array(
 				'type' => 'Streams/edited',
 				'content' => '',
-				'instructions' => array(
+				'instructions' => array('changes' => array(
 					'content' => $value
-				)
+				))
 			), true);
 		}
 	}

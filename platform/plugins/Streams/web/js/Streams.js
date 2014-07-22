@@ -787,6 +787,7 @@ Streams.invite = function (publisherId, streamName, fields, callback) {
 
 /**
  * Constructs a stream from fields, which are typically returned from the server.
+ * @class Streams.Stream
  * @constructor
  * @param {String} fields
  */
@@ -1896,10 +1897,8 @@ Streams.updateRelation = function(
 
 /**
  * @class Streams.Message
- */
-
-/**
  * Constructs a message from fields, which are typically returned from the server.
+ * @class Streams.Message
  * @constructor
  * @param {Object} fields
  */
@@ -2171,11 +2170,8 @@ Message.wait.options = {
 };
 
 /**
- * @class Streams.Participant
- */
-
-/**
  * Constructs a participant from fields, which are typically returned from the server.
+ * @class Streams.Participant
  * @constructor
  * @param {Object} fields
  */
@@ -2867,7 +2863,7 @@ Q.onInit.add(function _Streams_onInit() {
 					}
 					break;
 				case 'Streams/edited':
-					updateStream(stream, fields.changed, null);
+					updateStream(stream, fields.changes, null);
 					break;
 				case 'Streams/relatedFrom':
 					updateRelatedCache(fields);

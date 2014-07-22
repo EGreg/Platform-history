@@ -12,10 +12,13 @@ function Streams_after_Q_image($params)
 	$sizes = array_keys($save);
 	$stream->setAttribute('sizes', $sizes);
 	$stream->save();
-	$to_save = array('icon' => $stream->icon, 'attributes' => $stream->attributes);
+	$toSave = array('changes' => array(
+		'icon' => $stream->icon, 
+		'attributes' => $stream->attributes
+	));
 	$stream->post($user->id, array(
 		'type' => 'Streams/edited',
 		'content' => '',
-		'instructions' => $to_save
+		'instructions' => $toSave
 	));
 }
