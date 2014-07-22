@@ -187,7 +187,7 @@ Q.Tool.define("Streams/html", function (options) {
 },
 
 {
-	editor: 'froala',
+	editor: 'auto',
 	editable: true,
 	ckeditor: {},
 	froala: {
