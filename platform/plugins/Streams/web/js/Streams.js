@@ -2858,7 +2858,7 @@ Q.onInit.add(function _Streams_onInit() {
 					}
 					break;
 				case 'Streams/edited':
-					updateStream(stream, fields.changed, null);
+					updateStream(stream, fields.changes, null);
 					break;
 				case 'Streams/relatedFrom':
 					updateRelatedCache(fields);
