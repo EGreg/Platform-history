@@ -80,12 +80,13 @@ Q.Tool.jQuery('Q/timestamp', function (o) {
       // special formatting
       if (result.indexOf('{time') != -1)
       {
-        if (result.indexOf('{time-week}') != -1 && curTime - o.time > 3600 * 24 * 7)
+        if (result.indexOf('{time-week}') != -1 && curTime - o.time > 3600 * 24 * 7) {
           result = result.replace('{time-week}', '').replace(/\s+/g, ' ').trim();
-        else if (result.indexOf('{time-day}') != -1 && curTime - o.time > 3600 * 24)
+        } else if (result.indexOf('{time-day}') != -1 && curTime - o.time > 3600 * 24) {
           result = result.replace('{time-day}', '').replace(/\s+/g, ' ').trim();
-        else
-          result = result.replace(/\{time-week\}|\{time-day\}|\{time\}/g, strftime('%H:%M', o.time));
+        } else {
+          result = result.replace(/\{time-week\}|\{time-day\}|\{time\}/g, strftime('%X', o.time));
+	    }
       }
       if (result.indexOf('{day') != -1)
       {
