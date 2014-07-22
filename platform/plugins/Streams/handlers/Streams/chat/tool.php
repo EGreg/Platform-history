@@ -18,6 +18,7 @@
 */
 function Streams_chat_tool($options)
 {
+	Q_Response::addScript('plugins/Q/js/QTools.js');
 	$user = Users::loggedInUser(true);
 	if (!$user) return '';
 	
