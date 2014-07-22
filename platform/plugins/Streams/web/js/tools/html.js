@@ -9,7 +9,7 @@
  * @class Streams html
  * @constructor
  * @param {Object} [options] this object contains function parameters
- *   @param {Object} [options.editor]  Can be "ckeditor", "froala", or "auto". Defaults to "auto".
+ *   @param {Object} [options.editor]  Can be "ckeditor", "froala", "basic" or "auto". Defaults to "auto".
  *   @param {Boolean} [options.editable] Set to false to avoid showing even authorized users an interface to replace the contents
  *   @param {Object} [options.ckeditor]  The config, if any, to pass to ckeditor
  *   @param {Object} [options.froala]  The config, if any, to pass to froala
@@ -58,10 +58,13 @@ Q.Tool.define("Streams/html", function (options) {
 			}
 		}
 		switch (state.editor && state.editor.toLowerCase()) {
+		case 'basic':
+			tool.element.setAttribute('contenteditable', true);
+			break;
 		case 'ckeditor':
+			tool.element.setAttribute('contenteditable', true);
             Q.addScript("plugins/Q/js/ckeditor/ckeditor.js", function () {
                 CKEDITOR.disableAutoInline = true;
-                tool.element.setAttribute('contenteditable', true);
                 var editor = CKEDITOR.inline(tool.element, state.ckeditor || undefined);
                 state.editorObject = editor;
             });
@@ -124,8 +127,8 @@ Q.Tool.define("Streams/html", function (options) {
 			.off('keydown')
 			.on('keydown', function(e){
 	            if (e.originalEvent.keyCode != 27) return;
+				e.target.blur();
                 document.body.focus();
-				_blur();
 	        });
 		if (state.stream) {
 			state.stream.onFieldChanged(state.field).set(function (fields, field) {
@@ -184,7 +187,7 @@ Q.Tool.define("Streams/html", function (options) {
 },
 
 {
-	editor: 'auto',
+	editor: 'froala',
 	editable: true,
 	ckeditor: {},
 	froala: {
