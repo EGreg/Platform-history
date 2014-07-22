@@ -8,8 +8,30 @@
 		initialize: function(){
 			var self = this;
 
-			this.pretyData();
+			if ($.isEmptyObject(this.options)) {
+				return false;
+			}
 
+			Q.Template.set('Streams/chat/message-error',
+				'<div class="message-item Q_w100 error">'+
+					'<div class="Q_w100 message-text-container">'+
+						'<div class="message-item-text">'+
+							'{{#error.isLoggedError}}'+
+								this.options.notLoggedIn+
+							'{{/error.isLoggedError}}'+
+							'{{#error.isAuthorizedError}}'+
+								this.options.notAuthorized+
+							'{{/error.isAuthorizedError}}'+
+						'</div>'+
+						'<div class="Q_clear"></div>'+
+						'<div class="Q_w20 Q_right date">{{date}}</div>'+
+						'<div class="Q_clear"></div>'+
+					'</div>'+
+					'<div class="Q_clear"></div>'+
+				'</div>'
+			);
+
+			this.pretyData();
 			this.render(function(){
 				self.renderMessages();
 				self.scrollBottom();
@@ -111,6 +133,35 @@
 			}
 		},
 
+		renderError: function(message){
+			var $el = $(this.element);
+
+			for (var i in message) {
+				if (message[i] && message[i].errors) {
+					for (var error in message[i].errors) {
+						var data = {
+							error: {},
+							date : this.parseDate({ expression: 'CURRENT_TIMESTAMP' })
+						};
+
+						// detect error type and get html
+						if (message[i].errors[error].classname.match(/notLoggedIn/i)) {
+							data.error.isLoggedError = true;							
+						} else if (message[i].errors[error].classname.match(/notAuthorized/i)) {
+							data.error.isAuthorizedError = true;
+						}
+
+						Q.Template.render('Streams/chat/message-error', data, function(error, html){
+							if (error) { return error; }
+
+							$el.find('.no-messages').remove();
+							$el.find('.messages-container').html(html);
+						});
+					}
+				}
+			}
+		},
+
 		more: function(callback){
 			var opt    = this.options,
 				self   = this,
@@ -209,6 +260,10 @@
 					'content'    : content
 				}, function(err, message)
 				{
+					if (err) {
+						self.renderError(message);
+					}
+
 					Q.jsonRequest.options.quiet = false;
 					blocked = false;
 				});

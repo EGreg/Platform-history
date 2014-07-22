@@ -46,5 +46,13 @@ function Streams_chat_tool($options)
 
 	$options['userId'] = $user->id;
 
+	if (!isset($options['notLoggedIn'])) {
+		$options['notLoggedIn'] = 'You Not Logged In';
+	}
+
+	if (!isset($options['notAuthorized'])) {
+		$options['notAuthorized'] = 'You Not Authorized';
+	}
+
 	Q_Response::setToolOptions($options);
 }
