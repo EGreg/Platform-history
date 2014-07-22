@@ -6,35 +6,32 @@
  */
 
 /**
- * This function Makes a timestamp which is periodically updated.
+ * This tool makes a timestamp which is periodically updated.
  * Initially shows time offsets in '<some_time> ago' manner.
  * Later represents time depending on format,
  * wisely excluding unnecessary detais
  * (i.e. 'year' if timestamp has been made this year, 'year' and 'month if in this month etc).
  * @class Q timestamp
  * @constructor
- * @param {Object} [options] This is an object of parameters for this function
+ * @param {Object} [options] This is an object of parameters for this tool
  *  @param {Number} [options.time] Unix timestamp (in seconds).
  *  @default 'new Date().getTime() / 1000'
  *  @param {String} [options.format] formatting string which makes specific timestamp representation. Can contain placeholders supported by strftime() and also few special placeholders with specific functionality.
+ *     Including time, time-day, time-week, day, day-week, longday, longday-week, date, date+week, year, year+year
  *  @default '%a %b %#d %Y at %H:%M:%S'
  */
-$.fn.timestamp = function(options)
-{
-  var o = {
-    'time': new Date().getTime() / 1000,
-    'format': '%a %b %#d %Y at %H:%M:%S'
-  };
-  Q.extend(o, options);
 
-  return this.each(function()
-  {
+Q.Tool.jQuery('Q/timestamp', function (o) {
+
+	o.time = o.time || Date.now() / 1000;
+
     var $this = $(this);
+	var state = $this.state('Q/timestamp');
     function update()
     {
       var needZeroCorrection = o.format.indexOf('%#d') != -1;
       var format = o.format.replace('%#d', '%d');
-      var curTime = new Date().getTime() / 1000;
+      var curTime = Date.now() / 1000;
       var result = '';
 
       // regular formatting using strftime()
@@ -140,17 +137,27 @@ $.fn.timestamp = function(options)
         }
       }
 
+	  if (state.beforeUpdate.handle.call($this, result) === false) {
+		  return;
+	  }
       $this.html(result);
     }
-    update();
-    setInterval(update, 60000);
-  });
-};
+	Q.addScript("plugins/Q/js/phpjs.js", function () {
+	    update();
+		var elapsed = Date.now() - o.time * 1000;
+		setTimeout(function () {
+			update();
+			setInterval(update, 60000);
+		}, 60000 - elapsed || 60000);
+	});
+},
 
-Q.Tool.constructors['q_timestamp'] = function(options)
 {
-  var toolDiv = $('#' + prefix + 'tool');
-  toolDiv.timestamp(options);
-};
+    time: null,
+    format: '%a %b %#d %Y at %H:%M:%S',
+	beforeUpdate: new Q.Event()
+}
+
+);
 
 })(Q, jQuery);
