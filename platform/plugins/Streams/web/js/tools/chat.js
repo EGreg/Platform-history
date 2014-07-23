@@ -139,6 +139,22 @@
 			}
 		},
 
+		renderNotification: function(message){
+			var $container = $('<div>');
+			Q.activate($container.html(Q.Tool.setUpElement('div', 'Users/avatar', { userId: message.byUserId })), function(){
+				var data = {
+					username: $container.find('.Users_avatar_contents').text()
+				};
+
+				Q.Template.render('Streams/chat/message-notification', data, function(error, html){
+					if (error) { return error }
+
+					$el.find('.no-messages').remove();
+					$el.find('.messages-container').append(html);
+				});
+			});
+		},
+
 		renderError: function(message){
 			var $el = $(this.element);
 
@@ -235,6 +251,28 @@
 			*/
 			Q.Streams.Stream.onMessage(opt.publisherId, opt.streamName, 'Streams/chat/message').set(function(stream, message) {
 				self.renderMessages(self.pretyMessages(message));
+				self.scrollBottom();
+			}, 'Streams.chat');
+
+			/*
+			* join new users
+			*/
+			Q.Streams.Stream.onMessage(opt.publisherId, opt.streamName, 'Streams/join').set(function GGG(stream, message) {
+				message = self.pretyMessages(message);
+				message.action = { join: true };
+
+				self.renderNotification(message);
+				self.scrollBottom();
+			}, 'Streams.chat');
+
+			/*
+			* users leave
+			*/
+			Q.Streams.Stream.onMessage(opt.publisherId, opt.streamName, 'Streams/leave').set(function(stream, message) {
+				message = self.pretyMessages(message);
+				message.action = { leave: true };
+
+				self.renderNotification(self.pretyMessages(message), 'leave');
 				self.scrollBottom();
 			}, 'Streams.chat');
 
@@ -350,6 +388,17 @@
 				'<div class="Q_clear"></div>'+
 			'</div>'+
 			'<div class="Q_clear"></div>'+
+		'</div>'
+	);
+
+	Q.Template.set('Streams/chat/message-notification', 
+		'<div class="chat-notification>'+
+			'{{#action.join}}'+
+				'<b>{{username}}</b> joined the chat'+
+			'{{/action.join}}'+
+			'{{#action.leave}}'+
+				'<b>{{username}}</b> left the chat'+
+			'{{/action.leave}}'+
 		'</div>'
 	);
 

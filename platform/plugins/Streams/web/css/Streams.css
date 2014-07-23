@@ -591,3 +591,10 @@
 	float: right;
 	margin-right: 50px;
 }
+
+.Streams_chat_tool .chat-notification{
+	text-align: center;
+	color: grey;
+	font-size: 12pt;
+	font-style: italic;
+}
