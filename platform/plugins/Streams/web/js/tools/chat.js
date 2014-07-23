@@ -52,6 +52,18 @@
 			var res  = [],
 				self = this;
 
+			if (messages.content) { // one message
+				res.push(parseMessage(messages));
+			} else { // more messages
+				for(var i in messages) {
+					if (messages[i].content) {
+						res.push(parseMessage(messages[i]));
+					}
+				}
+			}
+
+			return res;
+
 			function sliceContent(content) {
 				if (content.length > self.options.messageMaxHeight) {
 					return content.slice(0, self.options.messageMaxHeight) + '..';
@@ -66,6 +78,7 @@
 					content    : sliceContent(message.content),
 					date       : self.parseDate(message.sentTime),
 					byUserId   : message.byUserId,
+					ordinal    : message.ordinal,
 					_class     : ''
 				};
 
@@ -81,18 +94,6 @@
 
 				return data;
 			};
-
-			if (messages.content) { // one message
-				res.push(parseMessage(messages));
-			} else { // more messages
-				for(var i in messages) {
-					if (messages[i].content) {
-						res.push(parseMessage(messages[i]));
-					}
-				}
-			}
-
-			return res;
 		},
 
 		render: function(callback){
@@ -111,6 +112,11 @@
 
 			if (messages && !$.isEmptyObject(messages) && $.isArray(messages)) {
 				for (var i=0; i<messages.length; ++i) {
+					// is set this message
+					if (this.getOrdinal(false, messages[i].ordinal)) {
+						continue;
+					}
+
 					Q.Template.render('Streams/chat/message-item', messages[i], function(error, html){
 						if (error) { return error; }
 
@@ -166,7 +172,7 @@
 			var opt    = this.options,
 				self   = this,
 				params = {
-					'max'  : opt.messagesToLoad, //хз
+					'max'  : this.getOrdinal(0, 'first') - 1,
 					'limit': opt.messagesToLoad
 				};
 
@@ -193,7 +199,7 @@
 			function renderMore(messages) {
 				messages = self.pretyMessages(messages);
 				if (!!messages.length) {
-					self.renderMessages();
+					self.renderMessages(messages);
 					self.scrollTop();
 				}
 			};
@@ -258,8 +264,7 @@
 					'streamName' : opt.streamName,
 					'type'       : 'Streams/chat/message',
 					'content'    : content
-				}, function(err, message)
-				{
+				}, function(err, message) {
 					if (err) {
 						self.renderError(message);
 					}
@@ -284,6 +289,45 @@
 				   date.getSeconds();
 		},
 
+		getOrdinal: function(action, ordinal){
+			if (ordinal) {
+				ordinal = 'data-ordinal='+ordinal;
+			}
+
+			var data = this.findMessageData.call(this, action, ordinal);
+			return data ? data.ordinal : null;
+		},
+
+		/*
+		* find by options [first, last] or/and param
+		* or only by param
+		* @return data attribute or null 
+		*/
+		findMessageData: function(action, byParam){
+			var $el = $(this.element),
+				query = '.message-item';
+
+			byParam = (byParam ? '['+byParam+']' : '');
+
+			if (!action && byParam) {
+				var $node = $el.find(query+byParam);
+				return $node ? $node.data() : null;
+			}
+
+			if (typeof(action) == 'string') {
+				switch(action){
+					case 'first':
+					case 'last':
+						return $el.find(query+':'+action+byParam).data();
+				}
+			} else if (typeof(action) == 'number') {
+				var messages = $el.find(query+byParam);
+				return messages.length <= action ? $(messages.get(action)).data() : null;
+			}
+
+			return null;
+		},
+
 		scrollBottom: function() {
 			$(this.element).find('.messages-container').animate({ scrollTop: $(document).height() }, '300');
 		},
@@ -294,7 +338,10 @@
 	});
 
 	Q.Template.set('Streams/chat/message-item',
-		'<div class="message-item Q_w100 {{#_class}} {{_class}} {{/_class}}" data-content="{{fullContent}}" data-byUserId="{{byUserId}}">'+
+		'<div class="message-item Q_w100 {{#_class}} {{_class}} {{/_class}}" '+
+				'data-content="{{fullContent}}" '+
+				'data-byUserId="{{byUserId}}" '+
+				'data-ordinal="{{ordinal}}">'+
 			'<div class="Q_w20 avatar-container"></div>'+
 			'<div class="Q_w100 message-text-container">'+
 				'<div class="message-item-text">{{content}}</div>'+
