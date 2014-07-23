@@ -812,10 +812,10 @@ class Q_Response
 	 * @method addTemplate
 	 * @static
 	 * @param {string} $name The location of the template file relative to the "views" folder
-	 * @param {string} [$type="mustache"]
+	 * @param {string} [$type="handlebars"]
 	 * @return {boolean} returns false if script was already added, else returns true
 	 */
-	static function addTemplate ($name, $type = 'mustache')
+	static function addTemplate ($name, $type = 'handlebars')
 	{
 		self::$templates[] = compact('name', 'type');
 		// Now, for the slot

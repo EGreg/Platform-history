@@ -70,7 +70,7 @@ class Users_Email extends Base_Users_Email
 		}
 		
 		$app = Q_Config::expect('Q', 'app');
-		$subject = Q_Mustache::renderSource($subject, $fields);
+		$subject = Q_Handlebars::renderSource($subject, $fields);
 		$body = Q::view($view, $fields);
 		
 		if(is_null(Q_Config::get('Users', 'email', 'smtp', null))) {
