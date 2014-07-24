@@ -253,7 +253,7 @@ class Handlebars_Engine
     public function getLoader()
     {
         if (! isset($this->loader)) {
-            $this->loader = new Handlebars_Loader_FilesystemLoader();
+            $this->loader = new Handlebars_Loader_StringLoader();
         }
         return $this->loader;
     }
@@ -277,7 +277,7 @@ class Handlebars_Engine
     public function getPartialsLoader()
     {
         if (!isset($this->partialsLoader)) {
-            $this->partialsLoader = new Handlebars_Loader_FilesystemLoader();
+            $this->partialsLoader = new Handlebars_Loader_StringLoader();
         }
         return $this->partialsLoader;
     }
