@@ -257,7 +257,7 @@
 			/*
 			* join new users
 			*/
-			Q.Streams.Stream.onMessage(opt.publisherId, opt.streamName, 'Streams/join').set(function GGG(stream, message) {
+			Q.Streams.Stream.onMessage(opt.publisherId, opt.streamName, 'Streams/join').set(function(stream, message) {
 				message = self.pretyMessages(message);
 				message.action = { join: true };
 
@@ -313,8 +313,25 @@
 			});
 		},
 
+		/*
+		* @params date
+		* 	string of date
+		*	object of date
+		* 	object { expression: 'CURRENT_TIMESTAMP' }
+		*/
 		parseDate: function(date){
-			var date = (date.expression == 'CURRENT_TIMESTAMP') ? new Date() : new Date(date);
+			if (typeof date == 'object'){
+				if (date.expression) {
+					date = (date.expression == 'CURRENT_TIMESTAMP') ? new Date() : new Date(date);
+				} else if (!date instanceof Date) {
+					date = new Date();
+				}
+			} else if (typeof date == 'string') {
+				// fix for FF
+				var d = date.match(/\w+/g);
+				date = new Date(d[0], d[1], d[2], d[3], d[4], d[5]);
+			}
+
 			var pretyDate = function(d){
 				return d.toString().length == 1 ? '0'+d : d;
 			};
