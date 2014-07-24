@@ -1,9 +1,11 @@
 (function (Q, $) {
-	
+
 /**
  * Users Tools
  * @module Users-tools
  */
+
+var Users = Q.Users;
 
 /**
  * Renders a user status area which displays logged in status and provides various user-related operations.

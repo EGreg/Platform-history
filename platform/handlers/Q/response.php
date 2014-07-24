@@ -162,7 +162,7 @@ Q.init();
 	$slots = array();
 	foreach ($slotNames as $sn) {
 		Q_Response::fillSlot($sn, 'default',
-			Q::ifset($idPrefixes, $slotName, null)
+			Q::ifset($idPrefixes, $sn, null)
 		);
 	}
 
@@ -170,7 +170,7 @@ Q.init();
 	// their contents using Q_Response::setSlot()
 	foreach ($slotNames as $sn) {
 		Q_Response::fillSlot($sn, 'default',
-			Q::ifset($idPrefixes, $slotName, null)
+			Q::ifset($idPrefixes, $sn, null)
 		);
 	}
 

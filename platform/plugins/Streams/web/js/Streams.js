@@ -1897,6 +1897,134 @@ Streams.updateRelation = function(
 
 /**
  * @class Streams.Message
+ * Relates streams to one another
+ * @method relate
+ * @param publisherId {String} the publisher id of the stream to relate to
+ * @param streamName {String} the name of the stream to relate to
+ * @param relationType {String} the type of the relation, such as "parent" or "photo"
+ * @param fromPublisherId {String} the publisher id of the stream to relate from
+ * @param fromStreamName {String} the name of the stream to relate from
+ * @param callback {Function} callback to call with the results
+ *  First parameter is the error, the second will be relations data
+ */
+Streams.relate = function _Streams_relate (publisherId, streamName, relationType, fromPublisherId, fromStreamName, callback) {
+	if (!Q.plugins.Users.loggedInUser) {
+		throw new Error("Streams.relate: Not logged in.");
+	}
+	var slotName = "result";
+	var fields = {
+		"toPublisherId": publisherId,
+		"toStreamName": streamName,
+		"type": relationType,
+		"fromPublisherId": fromPublisherId,
+		"fromStreamName": fromStreamName,
+		"Q.clientId": Q.clientId()
+	};
+	// TODO: When we refactor Streams to support multiple hosts,
+	// the client will have to post this request to both hosts if they are different
+	// or servers will have tell each other on their own
+	var baseUrl = Q.baseUrl({
+		publisherId: publisherId,
+		streamName: streamName
+	});
+	Q.req('Streams/related', [slotName], function (err, data) {
+		var messageFrom = Q.getObject('slots.result.messageFrom', data);
+		var messageTo = Q.getObject('slots.result.messageTo', data);
+		// wait for messages from cached streams -- from, to or both!
+		callback && callback.call(this, err, Q.getObject('slots.result', data) || null);
+	}, { method: 'post', fields: fields, baseUrl: baseUrl });
+	_retain = undefined;
+};
+
+/**
+ * Removes relations from streams to one another
+ * @static
+ * @method unrelate
+ * @param publisherId {String} the publisher id of the stream to relate to
+ * @param streamName {String} the name of the stream to relate to
+ * @param relationType {String} the type of the relation, such as "parent" or "photo"
+ * @param fromPublisherId {String} the publisher id of the stream to relate from
+ * @param fromStreamName {String} the name of the stream to relate from
+ * @param callback {Function} callback to call with the results
+ *  First parameter is the error, the second will be relations data
+ */
+Streams.unrelate = function _Stream_prototype_unrelate (publisherId, streamName, relationType, fromPublisherId, fromStreamName, callback) {
+	if (!Q.plugins.Users.loggedInUser) {
+		throw new Error("Streams.unrelate: Not logged in.");
+	}
+	var slotName = "result";
+	var fields = {
+		"toPublisherId": publisherId,
+		"toStreamName": streamName,
+		"type": relationType,
+		"fromPublisherId": fromPublisherId,
+		"fromStreamName": fromStreamName,
+		"Q.clientId": Q.clientId()
+	};
+	// TODO: When we refactor Streams to support multiple hosts,
+	// the client will have to post this request to both hosts if they are different
+	// or servers will have tell each other on their own
+	var baseUrl = Q.baseUrl({
+		publisherId: publisherId,
+		streamName: streamName
+	});
+	Q.req('Streams/related', [slotName], function (err, data) {
+		callback && callback.call(this, err, Q.getObject('slots.result', data) || null);
+	}, { method: 'delete', fields: fields, baseUrl: baseUrl });
+	_retain = undefined;
+};
+
+/**
+ * Later we will probably make Streams.Relation objects which will provide easier access to this functionality.
+ * For now, use this to update weights of relations, etc.
+ * 
+ * @method updateRelation
+ * @param {String} toPublisherId
+ * @param {String} toStreamName
+ * @param {String} relationType
+ * @param {String} fromPublisherId
+ * @param {String} fromStreamName
+ * @param {Number} weight
+ * @param {Boolean} adjustWeights
+ * @param {Function} callback
+ */
+Streams.updateRelation = function(
+	toPublisherId,
+	toStreamName,
+	relationType,
+	fromPublisherId,
+	fromStreamName,
+	weight,
+	adjustWeights,
+	callback
+) {
+	if (!Q.plugins.Users.loggedInUser) {
+		throw new Error("Streams.relate: Not logged in.");
+	}
+	// We will send a request to wherever (toPublisherId, toStreamName) is hosted
+	var slotName = "result";
+	var fields = {
+		"toPublisherId": toPublisherId,
+		"toStreamName": toStreamName,
+		"type": relationType,
+		"fromPublisherId": fromPublisherId,
+		"fromStreamName": fromStreamName,
+		"weight": weight,
+		"adjustWeights": adjustWeights,
+		"Q.clientId": Q.clientId()
+	};
+	var baseUrl = Q.baseUrl({
+		publisherId: toPublisherId,
+		streamName: toStreamName
+	});
+	Q.req('Streams/related', [slotName], function (err, data) {
+		var message = Q.getObject('slots.result.message', data);
+		callback && callback.call(this, err, Q.getObject('slots.result', data) || null);
+	}, { method: 'put', fields: fields, baseUrl: baseUrl });
+	_retain = undefined;
+};
+
+/**
  * Constructs a message from fields, which are typically returned from the server.
  * @class Streams.Message
  * @constructor
