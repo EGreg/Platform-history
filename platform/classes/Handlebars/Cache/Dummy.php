@@ -13,7 +13,7 @@
  */
 
 
-class Handlebars_Dummy implements Handlebars_Cache
+class Handlebars_Cache_Dummy implements Handlebars_Cache
 {
     private $cache = [];
 

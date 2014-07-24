@@ -34,9 +34,9 @@ class Handlebars_Parser
     /**
      * Helper method for recursively building a parse tree.
      *
-     * @param \ArrayIterator $tokens Stream of tokens
+     * @param ArrayIterator $tokens Stream of tokens
      *
-     * @throws \LogicException when nesting errors or mismatched section tags
+     * @throws LogicInvalidArgumentException when nesting errors or mismatched section tags
      * are encountered.
      * @return array Token parse tree
      *
@@ -58,7 +58,7 @@ class Handlebars_Parser
                     do {
                         $result = array_pop($stack);
                         if ($result === null) {
-                            throw new LogicException(
+                            throw new LogicInvalidArgumentException(
                                 'Unexpected closing tag: /' . $token[Handlebars_Tokenizer::NAME]
                             );
                         }

@@ -93,7 +93,7 @@ class Handlebars_Engine
      *
      * @param array $options array of options to set
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function __construct(Array $options = [])
     {
@@ -253,7 +253,7 @@ class Handlebars_Engine
     public function getLoader()
     {
         if (! isset($this->loader)) {
-            $this->loader = new Handlebars_StringLoader();
+            $this->loader = new Handlebars_Loader_FilesystemLoader();
         }
         return $this->loader;
     }
@@ -277,7 +277,7 @@ class Handlebars_Engine
     public function getPartialsLoader()
     {
         if (!isset($this->partialsLoader)) {
-            $this->partialsLoader = new Handlebars_StringLoader();
+            $this->partialsLoader = new Handlebars_Loader_FilesystemLoader();
         }
         return $this->partialsLoader;
     }
@@ -301,7 +301,7 @@ class Handlebars_Engine
     public function getCache()
     {
         if (!isset($this->cache)) {
-            $this->cache = new Handlebars_Dummy();
+            $this->cache = new Handlebars_Cache_Dummy();
         }
         return $this->cache;
     }
@@ -320,7 +320,7 @@ class Handlebars_Engine
      * Set current escape function
      *
      * @param callable $escape function
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      * @return void
      */
     public function setEscape($escape)

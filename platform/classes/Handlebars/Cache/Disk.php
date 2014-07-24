@@ -15,7 +15,7 @@
  */
 
 
-class Disk implements Handlebars_Cache
+class Handlebars_Cache_Disk implements Handlebars_Cache
 {
 
     private $path = '';
@@ -29,18 +29,18 @@ class Disk implements Handlebars_Cache
      * @param string $prefix optional file prefix, defaults to empty string
      * @param string $suffix optional file extension, defaults to empty string
      *
-     * @throws \RuntimeException
-     * @throws \InvalidArgumentException
+     * @throws RuntimeInvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function __construct($path, $prefix = '', $suffix = '')
     {
         if (empty($path)) {
-            throw new Exception('Must specify disk cache path');
+            throw new InvalidArgumentException('Must specify disk cache path');
         } elseif (!is_dir($path)) {
             @mkdir($path, 0777, true);
 
             if (!is_dir($path)) {
-                throw new Exception('Could not create cache file path');
+                throw new InvalidArgumentException('Could not create cache file path');
             }
         }
 

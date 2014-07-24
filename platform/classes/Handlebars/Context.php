@@ -1,7 +1,7 @@
 <?php
 /**
  * Handlebars context
- * Context for a template
+ * Handlebars_Context for a template
  *
  * @category  Xamin
  * @package   Handlebars
@@ -16,7 +16,7 @@
  */
 
 
-class Context
+class Handlebars_Context
 {
 
     /**
@@ -35,7 +35,7 @@ class Context
     protected $key = [];
 
     /**
-     * Mustache rendering Context constructor.
+     * Mustache rendering Handlebars_Context constructor.
      *
      * @param mixed $context Default rendering context (default: null)
      */
@@ -47,7 +47,7 @@ class Context
     }
 
     /**
-     * Push a new Context frame onto the stack.
+     * Push a new Handlebars_Context frame onto the stack.
      *
      * @param mixed $value Object or array to use for context
      *
@@ -83,9 +83,9 @@ class Context
     }
 
     /**
-     * Pop the last Context frame from the stack.
+     * Pop the last Handlebars_Context frame from the stack.
      *
-     * @return mixed Last Context frame (object or array)
+     * @return mixed Last Handlebars_Context frame (object or array)
      */
     public function pop()
     {
@@ -113,9 +113,9 @@ class Context
     }
 
     /**
-     * Get the last Context frame.
+     * Get the last Handlebars_Context frame.
      *
-     * @return mixed Last Context frame (object or array)
+     * @return mixed Last Handlebars_Context frame (object or array)
      */
     public function last()
     {
@@ -207,7 +207,7 @@ class Context
                 if (is_string($current) and $current == '') {
                     return $current;
                 }
-                $current = $this->findVariableInContext($current, $chunk, $strict);
+                $current = $this->findVariableInHandlebars_Context($current, $chunk, $strict);
             }
         }
         return $current;
@@ -220,10 +220,10 @@ class Context
      * @param string  $inside   property/method to check
      * @param boolean $strict   strict search? if not found then throw exception
      *
-     * @throws \InvalidArgumentException in strict mode and variable not found
+     * @throws InvalidArgumentException in strict mode and variable not found
      * @return boolean true if exist
      */
-    private function findVariableInContext($variable, $inside, $strict = false)
+    private function findVariableInHandlebars_Context($variable, $inside, $strict = false)
     {
         $value = '';
         if (($inside !== '0' && empty($inside)) || ($inside == 'this')) {

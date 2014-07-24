@@ -13,7 +13,7 @@
  * @link      http://voodoophp.org/docs/handlebars
  */
 
-class Handlebars_FilesystemLoader implements Handlebars_Loader
+class Handlebars_Loader_FilesystemLoader implements Handlebars_Loader
 {
     private $_baseDir;
     private $_extension = '.handlebars';
@@ -33,7 +33,7 @@ class Handlebars_FilesystemLoader implements Handlebars_Loader
      * @param string|array $baseDirs A path contain template files or array of paths
      * @param array        $options  Array of Loader options (default: array())
      *
-     * @throws \RuntimeException if $baseDir does not exist.
+     * @throws RuntimeInvalidArgumentException if $baseDir does not exist.
      */
     public function __construct($baseDirs, Array $options = [])
     {
@@ -49,7 +49,7 @@ class Handlebars_FilesystemLoader implements Handlebars_Loader
 
         foreach ($this->_baseDir as $dir) {
             if (!is_dir($dir)) {
-                throw new \RuntimeException(
+                throw new RuntimeInvalidArgumentException(
                     'FilesystemLoader baseDir must be a directory: ' . $dir
                 );
             }
@@ -89,7 +89,7 @@ class Handlebars_FilesystemLoader implements Handlebars_Loader
      *
      * @param string $name template name
      *
-     * @throws \InvalidArgumentException if a template file is not found.
+     * @throws InvalidArgumentException if a template file is not found.
      * @return string Handlebars Template source
      */
     protected function loadFile($name)
@@ -97,7 +97,7 @@ class Handlebars_FilesystemLoader implements Handlebars_Loader
         $fileName = $this->getFileName($name);
 
         if ($fileName === false) {
-            throw new \InvalidArgumentException('Template ' . $name . ' not found.');
+            throw new InvalidArgumentException('Template ' . $name . ' not found.');
         }
 
         return file_get_contents($fileName);

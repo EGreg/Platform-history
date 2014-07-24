@@ -30,7 +30,7 @@ class Q_Handlebars {
 	 * @return {string} Rendered template
 	 */
 	static function renderSource($source, $data = array()) {
-		return self::handlebars()->loadLambda($source)->render($data);
+		return self::handlebars($source)->loadLambda($source)->render($data);
 	}
 	
 	static function handlebars()
@@ -38,8 +38,10 @@ class Q_Handlebars {
 		if (isset(self::$handlebars)) {
 			return self::$handlebars;
 		}
-		return self::$handlebars = new Handlebars(array(
-			'cache' => APP_FILES_DIR.DS.'Q'.DS.'cache'.DS.'handlebars',
+		return self::$handlebars = new Handlebars_Engine(array(
+			'cache' => new Handlebars_Cache_Disk(
+				APP_FILES_DIR.DS.'Q'.DS.'cache'.DS.'handlebars'
+            ),
 			'loader' => new Q_Handlebars_Loader(),
 			'partials_loader' => new Q_Handlebars_Loader('partials'),
 			'escape' => function($value) {
@@ -72,7 +74,7 @@ class Q_Handlebars_Loader implements Handlebars_Loader {
 		if (!empty($xpath)) $xpath = DS.$xpath;
 		// the last resourt is to search Q views
 		if (file_exists(Q_VIEWS_DIR.$xpath)) {
-			array_unshift(self::$loaders, new Handlebars_FilesystemLoader(Q_VIEWS_DIR.$xpath, $options));
+			array_unshift(self::$loaders, new Handlebars_Loader_FilesystemLoader(Q_VIEWS_DIR.$xpath, $options));
 		}
 
 		// search plugin views
@@ -81,13 +83,13 @@ class Q_Handlebars_Loader implements Handlebars_Loader {
 			$plugin = is_numeric($k) ? $v : $k;
 			$PLUGIN = strtoupper($plugin);
 			if (file_exists(constant($PLUGIN.'_PLUGIN_VIEWS_DIR').$xpath)) {
-				array_unshift(self::$loaders, new Handlebars_FilesystemLoader(constant($PLUGIN.'_PLUGIN_VIEWS_DIR').$xpath, $options));
+				array_unshift(self::$loaders, new Handlebars_Loader_FilesystemLoader(constant($PLUGIN.'_PLUGIN_VIEWS_DIR').$xpath, $options));
 			}
 		}
 
 		// application views
 		if (file_exists(APP_VIEWS_DIR.$xpath)) {
-			array_unshift(self::$loaders, new Handlebars_FilesystemLoader(APP_VIEWS_DIR.$xpath, $options));
+			array_unshift(self::$loaders, new Handlebars_Loader_FilesystemLoader(APP_VIEWS_DIR.$xpath, $options));
 		}
 	}
 	/**

@@ -12,7 +12,7 @@
  */
 
 
-class APC implements Handlebars_Cache
+class Handlebars_Cache_APC implements Handlebars_Cache
 {
 
     /**

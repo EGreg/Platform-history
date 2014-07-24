@@ -14,7 +14,7 @@
  * @link      http://voodoophp.org/docs/handlebars
  */
 
-class Handlebars_StringLoader implements Handlebars_Loader
+class Handlebars_Loader_FilesystemLoader implements Handlebars_Loader
 {
 
     /**

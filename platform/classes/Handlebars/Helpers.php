@@ -51,7 +51,7 @@ class Handlebars_Helpers
      * Create new helper container class
      *
      * @param array      $helpers  array of name=>$value helpers
-     * @throws \InvalidArgumentException when $helpers is not an array
+     * @throws InvalidArgumentException when $helpers is not an array
      * (or traversable) or helper is not a callable
      */
     public function __construct($helpers = null)
@@ -63,7 +63,7 @@ class Handlebars_Helpers
 
         if ($helpers != null) {
             if (!is_array($helpers) && !$helpers instanceof Traversable) {
-                throw new InvalidArgumentException(
+                throw new InvalidArgumentInvalidArgumentException(
                     'HelperCollection constructor expects an array of helpers'
                 );
             }
@@ -79,13 +79,13 @@ class Handlebars_Helpers
      * @param string   $name   helper name
      * @param callable $helper a function as a helper
      *
-     * @throws \InvalidArgumentException if $helper is not a callable
+     * @throws InvalidArgumentException if $helper is not a callable
      * @return void
      */
     public function add($name, $helper)
     {
         if (!is_callable($helper)) {
-            throw new InvalidArgumentException("$name Helper is not a callable.");
+            throw new InvalidArgumentInvalidArgumentException("$name Helper is not a callable.");
         }
         $this->helpers[$name] = $helper;
     }
@@ -107,7 +107,7 @@ class Handlebars_Helpers
      *
      * @param string $name helper name
      *
-     * @throws \InvalidArgumentException if $name is not available
+     * @throws InvalidArgumentException if $name is not available
      * @return callable helper function
      */
     public function __get($name)
@@ -160,7 +160,7 @@ class Handlebars_Helpers
      * Check whether a given helper is present in the collection.
      *
      * @param string $name helper name
-     * @throws \InvalidArgumentException if the requested helper is not present.
+     * @throws InvalidArgumentException if the requested helper is not present.
      * @return void
      */
     public function remove($name)
@@ -202,8 +202,8 @@ class Handlebars_Helpers
      *      something else here
      * {{/if}}
      *
-     * @param \Handlebars\Template $template template that is being rendered
-     * @param \Handlebars\Context  $context  context object
+     * @param Handlebars_Template $template template that is being rendered
+     * @param Handlebars_Context  $context  context object
      * @param array                $args     passed arguments to helper
      * @param string               $source   part of template that is wrapped
      *                                       within helper
@@ -236,8 +236,8 @@ class Handlebars_Helpers
      *      Nothing found
      *  {{/each}}
      *
-     * @param \Handlebars\Template $template template that is being rendered
-     * @param \Handlebars\Context  $context  context object
+     * @param Handlebars_Template $template template that is being rendered
+     * @param Handlebars_Context  $context  context object
      * @param array                $args     passed arguments to helper
      * @param string               $source   part of template that is wrapped
      *                                       within helper
@@ -284,8 +284,8 @@ class Handlebars_Helpers
     /**
      * Applying the DRY principle here.
      * This method help us render {{else}} portion of a block
-     * @param \Handlebars\Template $template
-     * @param \Handlebars\Context $context
+     * @param Handlebars_Template $template
+     * @param Handlebars_Context $context
      * @return string
      */
     private function renderElse($template, $context)
@@ -304,8 +304,8 @@ class Handlebars_Helpers
      * {{else}}
      *      something else here
      * {{/unless}}
-     * @param \Handlebars\Template $template template that is being rendered
-     * @param \Handlebars\Context  $context  context object
+     * @param Handlebars_Template $template template that is being rendered
+     * @param Handlebars_Context  $context  context object
      * @param array                $args     passed arguments to helper
      * @param string               $source   part of template that is wrapped
      *                                       within helper
@@ -331,8 +331,8 @@ class Handlebars_Helpers
      * Needed for compatibility with PHP 5.2 since it doesn't support anonymous
      * functions.
      *
-     * @param \Handlebars\Template $template template that is being rendered
-     * @param \Handlebars\Context  $context  context object
+     * @param Handlebars_Template $template template that is being rendered
+     * @param Handlebars_Context  $context  context object
      * @param array                $args     passed arguments to helper
      * @param string               $source   part of template that is wrapped
      *                                       within helper
@@ -354,8 +354,8 @@ class Handlebars_Helpers
      * Needed for compatibility with PHP 5.2 since it doesn't support anonymous
      * functions.
      *
-     * @param \Handlebars\Template $template template that is being rendered
-     * @param \Handlebars\Context  $context  context object
+     * @param Handlebars_Template $template template that is being rendered
+     * @param Handlebars_Context  $context  context object
      * @param array                $args     passed arguments to helper
      * @param string               $source   part of template that is wrapped
      *                                       within helper
@@ -372,8 +372,8 @@ class Handlebars_Helpers
      *
      * {{#upper data}}
      *
-     * @param \Handlebars\Template $template template that is being rendered
-     * @param \Handlebars\Context  $context  context object
+     * @param Handlebars_Template $template template that is being rendered
+     * @param Handlebars_Context  $context  context object
      * @param array                $args     passed arguments to helper
      * @param string               $source   part of template that is wrapped
      *                                       within helper
@@ -390,8 +390,8 @@ class Handlebars_Helpers
      *
      * {{#lower data}}
      *
-     * @param \Handlebars\Template $template template that is being rendered
-     * @param \Handlebars\Context  $context  context object
+     * @param Handlebars_Template $template template that is being rendered
+     * @param Handlebars_Context  $context  context object
      * @param array                $args     passed arguments to helper
      * @param string               $source   part of template that is wrapped
      *                                       within helper
@@ -408,8 +408,8 @@ class Handlebars_Helpers
      *
      * {{#capitalize}}
      *
-     * @param \Handlebars\Template $template template that is being rendered
-     * @param \Handlebars\Context  $context  context object
+     * @param Handlebars_Template $template template that is being rendered
+     * @param Handlebars_Context  $context  context object
      * @param array                $args     passed arguments to helper
      * @param string               $source   part of template that is wrapped
      *                                       within helper
@@ -426,8 +426,8 @@ class Handlebars_Helpers
      *
      * {{#capitalize_words data}}
      *
-     * @param \Handlebars\Template $template template that is being rendered
-     * @param \Handlebars\Context  $context  context object
+     * @param Handlebars_Template $template template that is being rendered
+     * @param Handlebars_Context  $context  context object
      * @param array                $args     passed arguments to helper
      * @param string               $source   part of template that is wrapped
      *                                       within helper
@@ -444,8 +444,8 @@ class Handlebars_Helpers
      *
      * {{#reverse data}}
      *
-     * @param \Handlebars\Template $template template that is being rendered
-     * @param \Handlebars\Context  $context  context object
+     * @param Handlebars_Template $template template that is being rendered
+     * @param Handlebars_Context  $context  context object
      * @param array                $args     passed arguments to helper
      * @param string               $source   part of template that is wrapped
      *                                       within helper
@@ -462,8 +462,8 @@ class Handlebars_Helpers
      *
      * {{#format_date date 'Y-m-d @h:i:s'}}
      *
-     * @param \Handlebars\Template $template template that is being rendered
-     * @param \Handlebars\Context  $context  context object
+     * @param Handlebars_Template $template template that is being rendered
+     * @param Handlebars_Context  $context  context object
      * @param array                $args     passed arguments to helper
      * @param string               $source   part of template that is wrapped
      *                                       within helper
@@ -494,8 +494,8 @@ class Handlebars_Helpers
      * {{inflect count 'album' 'albums'}}
      * {{inflect count '%d album' '%d albums'}}
      *
-     * @param \Handlebars\Template $template template that is being rendered
-     * @param \Handlebars\Context  $context  context object
+     * @param Handlebars_Template $template template that is being rendered
+     * @param Handlebars_Context  $context  context object
      * @param array                $args     passed arguments to helper
      * @param string               $source   part of template that is wrapped
      *                                       within helper
@@ -518,8 +518,8 @@ class Handlebars_Helpers
     *
      * {{default title "No title available"}}
      *
-     * @param \Handlebars\Template $template template that is being rendered
-     * @param \Handlebars\Context  $context  context object
+     * @param Handlebars_Template $template template that is being rendered
+     * @param Handlebars_Context  $context  context object
      * @param array                $args     passed arguments to helper
      * @param string               $source   part of template that is wrapped
      *                                       within helper
@@ -540,8 +540,8 @@ class Handlebars_Helpers
      * {{#truncate content 5 "..."}}
      *
      *
-     * @param \Handlebars\Template $template template that is being rendered
-     * @param \Handlebars\Context  $context  context object
+     * @param Handlebars_Template $template template that is being rendered
+     * @param Handlebars_Context  $context  context object
      * @param array                $args     passed arguments to helper
      * @param string               $source   part of template that is wrapped
      *                                       within helper
@@ -566,8 +566,8 @@ class Handlebars_Helpers
      *
      * {{#raw}} {{/raw}}
      *
-     * @param \Handlebars\Template $template template that is being rendered
-     * @param \Handlebars\Context  $context  context object
+     * @param Handlebars_Template $template template that is being rendered
+     * @param Handlebars_Context  $context  context object
      * @param array                $args     passed arguments to helper
      * @param string               $source   part of template that is wrapped
      *                                       within helper
@@ -587,8 +587,8 @@ class Handlebars_Helpers
      * {{/repeat}}
      *
      *
-     * @param \Handlebars\Template $template template that is being rendered
-     * @param \Handlebars\Context  $context  context object
+     * @param Handlebars_Template $template template that is being rendered
+     * @param Handlebars_Context  $context  context object
      * @param array                $args     passed arguments to helper
      * @param string               $source   part of template that is wrapped
      *                                       within helper
@@ -616,8 +616,8 @@ class Handlebars_Helpers
      * {{#invoke hello}}
      *
      *
-     * @param \Handlebars\Template $template template that is being rendered
-     * @param \Handlebars\Context  $context  context object
+     * @param Handlebars_Template $template template that is being rendered
+     * @param Handlebars_Context  $context  context object
      * @param array                $args     passed arguments to helper
      * @param string               $source   part of template that is wrapped
      *                                       within helper
@@ -643,8 +643,8 @@ class Handlebars_Helpers
      * {{#invoke hello}}
      *
      *
-     * @param \Handlebars\Template $template template that is being rendered
-     * @param \Handlebars\Context  $context  context object
+     * @param Handlebars_Template $template template that is being rendered
+     * @param Handlebars_Context  $context  context object
      * @param array                $args     passed arguments to helper
      * @param string               $source   part of template that is wrapped
      *                                       within helper
@@ -654,7 +654,7 @@ class Handlebars_Helpers
     public function helperInvoke($template, $context, $args, $source)
     {
         if (! isset($this->tpl["DEFINE"][$args])) {
-            throw new LogicException("Can't INVOKE '{$args}'. '{$args}' was not DEFINE ");
+            throw new LogicInvalidArgumentException("Can't INVOKE '{$args}'. '{$args}' was not DEFINE ");
         }
         return $this->tpl["DEFINE"][$args]->render($context);
     }
