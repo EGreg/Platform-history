@@ -22,17 +22,17 @@ class Handlebars_Context
     /**
      * @var array stack for context only top stack is available
      */
-    protected $stack = [];
+    protected $stack = array();
 
     /**
      * @var array index stack for sections
      */
-    protected $index = [];
+    protected $index = array();
 
     /**
      * @var array key stack for objects
      */
-    protected $key = [];
+    protected $key = array();
 
     /**
      * Mustache rendering Handlebars_Context constructor.
@@ -42,7 +42,7 @@ class Handlebars_Context
     public function __construct($context = null)
     {
         if ($context !== null) {
-            $this->stack = [$context];
+            $this->stack = array($context);
         }
     }
 

@@ -26,7 +26,7 @@ class Handlebars_Parser
      *
      * @return array Token parse tree
      */
-    public function parse(Array $tokens = [])
+    public function parse(Array $tokens = array())
     {
         return $this->buildTree(new ArrayIterator($tokens));
     }
@@ -43,7 +43,7 @@ class Handlebars_Parser
      */
     private function buildTree(ArrayIterator $tokens)
     {
-        $stack = [];
+        $stack = array();
 
         do {
             $token = $tokens->current();
@@ -54,7 +54,7 @@ class Handlebars_Parser
             } else {
                 switch ($token[Handlebars_Tokenizer::TYPE]) {
                 case Handlebars_Tokenizer::T_END_SECTION:
-                    $newNodes = [];
+                    $newNodes = array();
                     do {
                         $result = array_pop($stack);
                         if ($result === null) {

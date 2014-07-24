@@ -24,9 +24,9 @@ class Handlebars_Helpers
     /**
      * @var array array of helpers
      */
-    protected $helpers = [];
-    private $tpl = [];
-    protected $builtinHelpers = [
+    protected $helpers = array();
+    private $tpl = array();
+    protected $builtinHelpers = array(
         "if",
         "each",
         "with",
@@ -45,7 +45,7 @@ class Handlebars_Helpers
         "repeat",               // Repeat a section
         "define",               // Define a block to be used using "invoke"
         "invoke",               // Invoke a block that was defined with "define"
-    ];
+    );
 
     /**
      * Create new helper container class
@@ -58,7 +58,7 @@ class Handlebars_Helpers
     {
         foreach($this->builtinHelpers as $helper) {
             $helperName = $this->underscoreToCamelCase($helper);
-            $this->add($helper, [$this, "helper{$helperName}"]);
+            $this->add($helper, array($this, "helper{$helperName}"));
         }
 
         if ($helpers != null) {
@@ -180,7 +180,7 @@ class Handlebars_Helpers
      */
     public function clear()
     {
-        $this->helpers = [];
+        $this->helpers = array();
     }
 
     /**
@@ -480,7 +480,7 @@ class Handlebars_Helpers
         if ($format) {
             $dt = new DateTime;
             if (is_numeric($date)) {
-                $dt = (new DateTime)->setTimestamp($date);
+                $dt = $dt->setTimestamp($date);
             } else {
                 $dt = new DateTime($date);
             }
@@ -695,6 +695,6 @@ class Handlebars_Helpers
             $slice_start = (int) $slice_start;
             $slice_end = $slice_end ? (int) $slice_end : null;
         }
-        return [$m[1], $slice_start, $slice_end];
+        return array($m[1], $slice_start, $slice_end);
     }
 }

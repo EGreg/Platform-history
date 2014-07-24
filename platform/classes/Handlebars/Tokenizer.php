@@ -39,7 +39,7 @@ class Handlebars_Tokenizer
     const T_TEXT = '_t';
 
     // Valid token types
-    private $tagTypes = [
+    private $tagTypes = array(
         self::T_SECTION => true,
         self::T_INVERTED => true,
         self::T_END_SECTION => true,
@@ -50,14 +50,14 @@ class Handlebars_Tokenizer
         self::T_ESCAPED => true,
         self::T_UNESCAPED => true,
         self::T_UNESCAPED_2 => true,
-    ];
+    );
 
     // Interpolated tags
-    private $interpolatedTags = [
+    private $interpolatedTags = array(
         self::T_ESCAPED => true,
         self::T_UNESCAPED => true,
         self::T_UNESCAPED_2 => true,
-    ];
+    );
 
     // Token properties
     const TYPE = 'type';
@@ -146,10 +146,10 @@ class Handlebars_Tokenizer
                 if ($this->tagChange($this->ctag, $text, $i)) {
                     // Sections (Helpers) can accept parameters
                     // Same thing for Partials (little known fact)
-                    if (in_array($this->tagType, [
+                    if (in_array($this->tagType, array(
                                     self::T_SECTION,
                                     self::T_PARTIAL,
-                                    self::T_PARTIAL_2]
+                                    self::T_PARTIAL_2)
                             )) {
                         $newBuffer = explode(' ', trim($this->buffer), 2);
                         $args = '';
@@ -158,7 +158,7 @@ class Handlebars_Tokenizer
                         }
                         $this->buffer = $newBuffer[0];
                     }
-                    $t = [
+                    $t = array(
                         self::TYPE => $this->tagType,
                         self::NAME => trim($this->buffer),
                         self::OTAG => $this->otag,
@@ -166,7 +166,7 @@ class Handlebars_Tokenizer
                         self::INDEX => ($this->tagType == self::T_END_SECTION) ?
                             $this->seenTag - strlen($this->otag) :
                             $i + strlen($this->ctag),
-                    ];
+                    );
                     if (isset($args)) {
                         $t[self::ARGS] = $args;
                     }
@@ -213,7 +213,7 @@ class Handlebars_Tokenizer
         $this->tagType = null;
         $this->tag = null;
         $this->buffer = '';
-        $this->tokens = [];
+        $this->tokens = array();
         $this->seenTag = false;
         $this->lineStart = 0;
         $this->otag = '{{';
@@ -228,10 +228,10 @@ class Handlebars_Tokenizer
     protected function flushBuffer()
     {
         if (!empty($this->buffer)) {
-            $this->tokens[] = [
+            $this->tokens[] = array(
                 self::TYPE => self::T_TEXT,
                 self::VALUE => $this->buffer
-            ];
+            );
             $this->buffer = '';
         }
     }
@@ -285,7 +285,10 @@ class Handlebars_Tokenizer
                 }
             }
         } elseif (!$noNewLine) {
-            $this->tokens[] = [self::TYPE => self::T_TEXT, self::VALUE => "\n"];
+            $this->tokens[] = array(
+				self::TYPE => self::T_TEXT,
+				self::VALUE => "\n"
+			);
         }
 
         $this->seenTag = false;

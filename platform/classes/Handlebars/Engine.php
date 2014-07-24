@@ -95,7 +95,7 @@ class Handlebars_Engine
      *
      * @throws InvalidArgumentException
      */
-    public function __construct(Array $options = [])
+    public function __construct(Array $options = array())
     {
         if (isset($options['helpers'])) {
             $this->setHelpers($options['helpers']);

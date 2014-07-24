@@ -15,7 +15,7 @@
 
 class Handlebars_Cache_Dummy implements Handlebars_Cache
 {
-    private $cache = [];
+    private $cache = array();
 
     /**
      * Get cache for $name if exist.

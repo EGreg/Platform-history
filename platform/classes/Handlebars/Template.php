@@ -24,15 +24,15 @@ class Handlebars_Template
     protected $handlebars;
 
 
-    protected $tree = [];
+    protected $tree = array();
 
     protected $source = '';
 
     /**
      * @var array Run stack
      */
-    private $stack = [];
-    private $_stack = [];
+    private $stack = array();
+    private $_stack = array();
 
     /**
      * Handlebars template constructor
@@ -46,7 +46,7 @@ class Handlebars_Template
         $this->handlebars = $engine;
         $this->tree = $tree;
         $this->source = $source;
-        array_push($this->stack, [0, $this->getTree(), false]);
+        array_push($this->stack, array(0, $this->getTree(), false));
 
     }
 
@@ -104,7 +104,8 @@ class Handlebars_Template
 
     public function getStopToken()
     {
-        return end($this->stack)[2];
+		$result = end($this->stack);
+        return $result[2];
     }
 
     /**
@@ -137,15 +138,15 @@ class Handlebars_Template
             switch ($current[Handlebars_Tokenizer::TYPE]) {
             case Handlebars_Tokenizer::T_SECTION :
                 $newStack = isset($current[Handlebars_Tokenizer::NODES])
-                    ? $current[Handlebars_Tokenizer::NODES] : [];
-                array_push($this->stack, [0, $newStack, false]);
+                    ? $current[Handlebars_Tokenizer::NODES] : array();
+                array_push($this->stack, array(0, $newStack, false));
                 $buffer .= $this->section($context, $current);
                 array_pop($this->stack);
                 break;
             case Handlebars_Tokenizer::T_INVERTED :
                 $newStack = isset($current[Handlebars_Tokenizer::NODES]) ?
-                    $current[Handlebars_Tokenizer::NODES] : [];
-                array_push($this->stack, [0, $newStack, false]);
+                    $current[Handlebars_Tokenizer::NODES] : array();
+                array_push($this->stack, array(0, $newStack, false));
                 $buffer .= $this->inverted($context, $current);
                 array_pop($this->stack);
                 break;
@@ -239,12 +240,12 @@ class Handlebars_Template
             } else {
                 $source = '';
             }
-            $params = [
+            $params = array(
                 $this, //First argument is this template
                 $context, //Second is current context
                 $current[Handlebars_Tokenizer::ARGS], //Arguments
                 $source
-            ];
+            );
 
             $return = call_user_func_array($helpers->$sectionName, $params);
             if ($return instanceof Handlebars_String) {

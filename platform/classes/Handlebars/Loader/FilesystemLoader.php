@@ -35,7 +35,7 @@ class Handlebars_Loader_FilesystemLoader implements Handlebars_Loader
      *
      * @throws RuntimeInvalidArgumentException if $baseDir does not exist.
      */
-    public function __construct($baseDirs, Array $options = [])
+    public function __construct($baseDirs, Array $options = array())
     {
         if (is_string($baseDirs)) {
             $baseDirs = array(rtrim(realpath($baseDirs), '/'));
