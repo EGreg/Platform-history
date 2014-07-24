@@ -7058,7 +7058,7 @@ function _connectSocketNS(ns, url, callback, force) {
 			Q.Socket.onConnect(ns, url).add(_Q_Socket_register, 'Q');
 			// remember actual socket - for disconnecting
 			if (!_ioSockets[url]) {
-				_ioSockets[url] = socket.namespace.socket;
+				_ioSockets[url] = socket.namespace.io;
 				_ioOn(_ioSockets[url], 'connect', function () {
 					setTimeout(function () { // TODO: TAKE AWAY THIS ARTIFICIAL DELAY
 						socket.namespace.emit('session', Q.cookie(Q.info.sessionName || 'sessionId'));
@@ -7161,8 +7161,8 @@ Q.Socket.reconnectAll = function _Q_Socket_reconnectAll() {
 		for (url in _sockets[ns]) {
 			if (!_sockets[ns][url]) {
 				_connectSocketNS(ns, url);
-			} else if (!_sockets[ns][url].namespace.socket.connected) {
-				_sockets[ns][url].namespace.socket.reconnect();
+			} else if (!_sockets[ns][url].namespace.io.connected) {
+				_sockets[ns][url].namespace.io.reconnect();
 			}
 		}
 	}
