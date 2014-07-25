@@ -730,6 +730,7 @@ Streams.listen = function (options) {
 	socketServer = Q.Socket.listen({host: pubHost, port: pubPort}).of('/Streams');
 
 	socketServer.on('connection', function(client) {
+		console.log("Socket.IO client connected " + client.id);
 		/**
 		 * Socket connection
 		 * @event connection
