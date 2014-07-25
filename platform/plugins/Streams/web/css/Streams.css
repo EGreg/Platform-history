@@ -502,7 +502,8 @@
 
 /* Streams chat tool */
 .Streams_chat_tool{
-	padding: 10px;
+	width: 91% !important;
+	margin: 0 auto !important;
 }
 .Streams_chat_tool h1{
 	text-align: center !important;
@@ -570,16 +571,31 @@
 .Streams_chat_tool .message-text-container{
 	width: 80%;
 	padding: 10px;
-	background: wheat;
-	margin-top: -13px;
+	margin-top: -15px;
+	border: 1px solid #D0D9E4;
 }
 .Streams_chat_tool .to-me .avatar-container{
 	float: left;
 }
+.Streams_chat_tool .to-me .message-tick{
+	float: left;
+	margin: 0px 0px 0px -19px
+}
 .Streams_chat_tool .to-me .message-text-container{
-	border-radius: 0px 13px 13px 13px;
+	border-radius: 13px;
 	float: left;
 	margin-left: 50px;
+	background: #DAE3ED;
+}
+.Streams_chat_tool .message-tick{
+	background: url('../../Streams/img/chat/message-tick.png');
+	width: 9px;
+	height: 13px;
+}
+.Streams_chat_tool .with-me .message-tick{
+	float: right;
+	margin: 0px -19px 0px 0px;
+	background-position: 0px 13px;
 }
 .Streams_chat_tool .with-me .avatar-container,
 .Streams_chat_tool .with-me .avatar-container img,
@@ -587,14 +603,32 @@
 	float: right;
 }
 .Streams_chat_tool .with-me .message-text-container{
-	border-radius: 13px 0 13px 13px;
+	border-radius: 13px;
 	float: right;
 	margin-right: 50px;
+	background: #FFFFFF;
 }
-
 .Streams_chat_tool .chat-notification{
 	text-align: center;
 	color: grey;
 	font-size: 12pt;
 	font-style: italic;
+}
+/* phones */
+@media (min-width: 320px) and (max-width: 580px) {
+	.Streams_chat_tool .to-me .Users_avatar_contents{
+		float: left;
+		margin: -37px 0px 0px 50px;
+	}
+	.Streams_chat_tool .with-me .Users_avatar_contents{
+		float: right;
+		margin: -37px 47px 0px 0px;
+	}
+	.Streams_chat_tool .message-text-container{
+		width: 73%;
+	}
+	.Streams_chat_tool .date {
+		width: 100%;
+		margin-top: 15px;
+	}
 }

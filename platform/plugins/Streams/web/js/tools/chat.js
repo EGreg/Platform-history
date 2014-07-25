@@ -399,6 +399,7 @@
 				'data-ordinal="{{ordinal}}">'+
 			'<div class="Q_w20 avatar-container"></div>'+
 			'<div class="Q_w100 message-text-container">'+
+				'<div class="message-tick"></div>'+
 				'<div class="message-item-text">{{content}}</div>'+
 				'<div class="Q_clear"></div>'+
 				'<div class="Q_w20 Q_right date">{{date}}</div>'+
