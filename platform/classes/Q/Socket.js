@@ -35,7 +35,6 @@ Socket.listen = function (options) {
 		util.log("Starting socket server on http://"+server.host+":"+server.port);
 		try {
 			server.attached.socket = require('socket.io').listen(server);
-			server.attached.socket.set('log level', 2);
 		} catch (e) {
 			util.log("Socket was not attached.", e);
 		}

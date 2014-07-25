@@ -2228,31 +2228,30 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 		streamName: streamName
 	});
 	var socket = Q.Socket.get('Streams', node);
-	if (socket && ordinal >= 0 && ordinal - o.max <= latest) {
-		// ok, wait a little while
-		var t = setTimeout(_tryLoading, o.timeout);
-		var ordinals = [];
-		Q.each(latest+1, ordinal, 1, function (ord) {
-			ordinals.push(ord);
-			var event = Streams.Stream.onMessage(publisherId, streamName, ord);
-			handlerKey = event.set(function () {
-				p.fill(ord)();
-				event.remove(handlerKey);
-				handlerKey = null;
-			});
-			waiting[ord] = [event, handlerKey];
-		});
-		return new Q.Pipe(ordinals, function () {
-			// they all arrived
-			if (!alreadyCalled) {
-				Q.handle(callback, this, [ordinals]);
-			}
-			alreadyCalled = true;
-			return true;
-		});
-	} else {
+	if (!socket || ordinal < 0 || ordinal - o.max > latest) {
 		return _tryLoading();
-	}	
+	}
+	// ok, wait a little while
+	var t = setTimeout(_tryLoading, o.timeout);
+	var ordinals = [];
+	Q.each(latest+1, ordinal, 1, function (ord) {
+		ordinals.push(ord);
+		var event = Streams.Stream.onMessage(publisherId, streamName, ord);
+		handlerKey = event.set(function () {
+			p.fill(ord)();
+			event.remove(handlerKey);
+			handlerKey = null;
+		});
+		waiting[ord] = [event, handlerKey];
+	});
+	return new Q.Pipe(ordinals, function () {
+		// they all arrived
+		if (!alreadyCalled) {
+			Q.handle(callback, this, [ordinals]);
+		}
+		alreadyCalled = true;
+		return true;
+	});	
 	function _tryLoading() {
 		// forget waiting, we'll request them again
 		
