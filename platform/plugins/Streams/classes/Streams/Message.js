@@ -85,7 +85,7 @@ Streams_Message.prototype.beforeSave = function (value, callback)
 /**
  * Delivers the message posted to stream according to particular
  * delivery method (see: Streams_Rule.deliver). Message template is taken from views/{message.type} folder -
- * 'email.mustache' or 'mobile.mustache' depending on delivery
+ * 'email.handlebars' or 'mobile.handlebars' depending on delivery
  * @method deliver
  * @param {Streams.Stream} stream
  * @param {object} delivery
@@ -110,10 +110,10 @@ Streams_Message.prototype.deliver = function(stream, delivery, callback) {
 	var viewPath;
 
 	if (delivery.email) {
-		viewPath = Q.Mustache.template(this.fields.type+'/email.mustache') ? this.fields.type : 'Streams/message';
+		viewPath = Q.Handlebars.template(this.fields.type+'/email.mustache') ? this.fields.type : 'Streams/message';
 		Q.Utils.sendEmail(delivery.email, subject, viewPath+'/email.mustache', fields, {html: true}, callback);
 	} else {
-		viewPath = Q.Mustache.template(this.fields.type+'/mobile.mustache') ? this.fields.type : 'Streams/message';
+		viewPath = Q.Handlebars.template(this.fields.type+'/mobile.mustache') ? this.fields.type : 'Streams/message';
 		Q.Utils.sendSMS(delivery.mobile, viewPath+'/mobile.mustache', fields, {}, callback);
 	}
 };

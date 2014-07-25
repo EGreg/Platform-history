@@ -178,7 +178,8 @@ function parse_url (str, component) {
 var smtpTransport = null;
 Utils.sendEmail = function (to, subject, view, fields, options, callback) {
 	var mailer = require('nodemailer'),
-		mustache = require('mustache'),
+//		mustache = require('mustache'),
+        handlebars = require('handlebars'),
 		key = Q.Config.get(['Users', 'mobile', 'log', 'key'], 'email');
 
 	if (!smtpTransport) {
@@ -224,11 +225,11 @@ Utils.sendEmail = function (to, subject, view, fields, options, callback) {
 	var mailOptions = {
 		from: from[1]+' <'+from[0]+'>',
 		to: to,
-		subject: subject ? Q.Mustache.renderSource(subject, fields) : ''
+		subject: subject ? Q.Handlebars.renderSource(subject, fields) : ''
 	};
 	mailOptions[options.html ? 'html' : 'text'] = options.isSource
-		? Q.Mustache.renderSource(view, fields)
-		: Q.Mustache.render(view, fields);
+		? Q.Handlebars.renderSource(view, fields)
+		: Q.Handlebars.render(view, fields);
 	if (key) {
 		Q.log('Sent email message to ' + to
 			+ ":\n" + mailOptions.subject
@@ -278,8 +279,8 @@ Utils.sendSMS = function (to, view, fields, options, callback) {
 		}
 	}
 	var content = options.isSource
-		? Q.Mustache.renderSource(view, fields)
-		: Q.Mustache.render(view, fields);
+		? Q.Handlebars.renderSource(view, fields)
+		: Q.Handlebars.render(view, fields);
 	if (twilioClient && (from = options.from || Q.Config.get(['Users', 'mobile', 'from'], null))) {
 		twilioClient.sendSms(from, '+'+number, content, {}, function (res) {
 			if (key) {
