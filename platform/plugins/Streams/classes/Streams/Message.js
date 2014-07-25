@@ -110,11 +110,11 @@ Streams_Message.prototype.deliver = function(stream, delivery, callback) {
 	var viewPath;
 
 	if (delivery.email) {
-		viewPath = Q.Handlebars.template(this.fields.type+'/email.mustache') ? this.fields.type : 'Streams/message';
-		Q.Utils.sendEmail(delivery.email, subject, viewPath+'/email.mustache', fields, {html: true}, callback);
+		viewPath = Q.Handlebars.template(this.fields.type+'/email.handlebars') ? this.fields.type : 'Streams/message';
+		Q.Utils.sendEmail(delivery.email, subject, viewPath+'/email.handlebars', fields, {html: true}, callback);
 	} else {
-		viewPath = Q.Handlebars.template(this.fields.type+'/mobile.mustache') ? this.fields.type : 'Streams/message';
-		Q.Utils.sendSMS(delivery.mobile, viewPath+'/mobile.mustache', fields, {}, callback);
+		viewPath = Q.Handlebars.template(this.fields.type+'/mobile.handlebars') ? this.fields.type : 'Streams/message';
+		Q.Utils.sendSMS(delivery.mobile, viewPath+'/mobile.handlebars', fields, {}, callback);
 	}
 };
 
