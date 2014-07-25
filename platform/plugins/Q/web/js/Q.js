@@ -6992,7 +6992,7 @@ Q.Template.render = function _Q_Template_render(name, fields, partials, callback
 	});
 };
 
-var _sockets = {}, _ioSockets = {}, _eventHandlers = {}, _connectHandlers = {}, _ioCleanup = [];
+var _qsockets = {}, _eventHandlers = {}, _connectHandlers = {}, _ioCleanup = [];
 var _socketRegister = [];
 
 function _ioOn(obj, evt, callback) {
@@ -7008,10 +7008,12 @@ function _ioOn(obj, evt, callback) {
  * Q.Socket class can be used to manage sockets (implemented with socket.io)<br>
  * Instantiate sockets with Q.Socket.connect
  * @class Q.Socket
+ * @param {Object} params
+ * @private
  * @constructor
  */
 Q.Socket = function (params) {
-	this.namespace = params.namespace;
+	this.socket = params.socket;
 	this.url = params.url;
 	this.ns = params.ns;
 };
@@ -7030,9 +7032,9 @@ Q.Socket.get = function _Q_Socket_get(ns, url) {
 		ns = '/' + ns;
 	}
 	if (!url) {
-		return _sockets[ns];
+		return _qsockets[ns];
 	}
-	return _sockets[ns] && _sockets[ns][url];
+	return _qsockets[ns] && _qsockets[ns][url];
 };
 
 function _connectSocketNS(ns, url, callback, force) {
@@ -7040,10 +7042,12 @@ function _connectSocketNS(ns, url, callback, force) {
 	function _connectNS(ns, url, callback) {
 		// connect to (ns, url)
 		if (!window.io) return;
-		var socket = _sockets[ns][url];
-		if (!socket || !socket.namespace) {
-			_sockets[ns][url] = socket = new Q.Socket({
-				namespace: io.connect(url+ns, force ? { 'force new connection': true } : {}),
+		var qs = _qsockets[ns][url];
+		if (!qs || !qs.socket) {
+			_qsockets[ns][url] = qs = new Q.Socket({
+				socket: io.connect(url+ns, force ? {
+					'force new connection': true
+				} : {}),
 				url: url,
 				ns: ns
 			});
@@ -7051,35 +7055,36 @@ function _connectSocketNS(ns, url, callback, force) {
 				Q.each(_socketRegister, function (i, item) {
 					if (item[0] !== ns) return;
 					var name = item[1];
-					_ioOn(socket.namespace, name, Q.Socket.onEvent(ns, url, name).handle); // may overwrite again, but it's ok
-					_ioOn(socket.namespace, name, Q.Socket.onEvent(ns, '', name).handle);
+					_ioOn(socket, name, Q.Socket.onEvent(ns, url, name).handle); // may overwrite again, but it's ok
+					_ioOn(socket, name, Q.Socket.onEvent(ns, '', name).handle);
 				});
 			}
 			Q.Socket.onConnect(ns, url).add(_Q_Socket_register, 'Q');
 			// remember actual socket - for disconnecting
-			if (!_ioSockets[url]) {
-				_ioSockets[url] = socket.namespace.io;
-				_ioOn(_ioSockets[url], 'connect', function () {
-					setTimeout(function () { // TODO: TAKE AWAY THIS ARTIFICIAL DELAY
-						socket.namespace.emit('session', Q.cookie(Q.info.sessionName || 'sessionId'));
-						Q.Socket.onConnect(ns).handle(socket);
-						Q.Socket.onConnect(ns, url).handle(socket);
-						console.log('Socket connected to '+url);
-					}, 100);
-				});
-				_ioOn(_ioSockets[url], 'connect_failed', function () {
-					console.log('Failed to connect to '+url);
-				});
-				_ioOn(_ioSockets[url], 'disconnect', function () {
-					console.log('Socket disconnected from '+url);
-				});
-				_ioOn(_ioSockets[url], 'error', function () {
-					console.log('Error on connection '+url);
-				});
+			var socket = qs.socket;
+			function _connected() {
+				this.emit('session', Q.cookie(Q.info.sessionName || 'sessionId'));
+				Q.Socket.onConnect(ns).handle(socket);
+				Q.Socket.onConnect(ns, url).handle(socket);
+				console.log('Socket connected to '+url);
 			}
+			_ioOn(socket, 'connect', _connected);
+			_ioOn(socket, 'reconnect', function () {
+				this.connected = true;
+				++this.io.connected;
+				_connected.apply(this, arguments);
+			});
+			_ioOn(socket, 'connect_error', function (error) {
+				console.log('Failed to connect to '+url, error);
+			});
+			_ioOn(socket, 'disconnect', function () {
+				console.log('Socket ' + ns + ' disconnected from '+url);
+			});
+			_ioOn(socket, 'error', function () {
+				console.log('Error on connection '+url);
+			});
 		}
-		callback && callback(_sockets[ns][url]);
-		Q.Socket.reconnectAll();
+		callback && callback(_qsockets[ns][url]);
 	}
 	
 	if (ns[0] !== '/') {
@@ -7113,15 +7118,15 @@ Q.Socket.connect = function _Q_Socket_prototype_connect(ns, url, callback) {
 	} else if (ns[0] !== '/') {
 		ns = '/' + ns;
 	}
-	if (!_sockets[ns]) _sockets[ns] = {};
-	if (!_sockets[ns][url]) {
-		_sockets[ns][url] = null; // pending
+	if (!_qsockets[ns]) _qsockets[ns] = {};
+	if (!_qsockets[ns][url]) {
+		_qsockets[ns][url] = null; // pending
 	}
 	_connectSocketNS(ns, url, callback); // check if socket already connected and try to restore it
 };
 
 /**
- * Disconnects a socket (not just a namespace) corresponding to a Q.Socket
+ * Disconnects a socket corresponding to a Q.Socket
  * 
  * @method disconnect
  */
@@ -7130,22 +7135,32 @@ Q.Socket.prototype.disconnect = function _Q_Socket_prototype_disconnect() {
 		console.warn("Q.Socket.prototype.disconnect: Attempt to disconnect socket with empty url");
 		return;
 	}
-	if (!_ioSockets[this.url]) {
+	var qs = Q.getObject([this.ns, this.url], _qsockets);
+	if (!qs) {
 		console.warn("Q.Socket.prototype.disconnect: Attempt to disconnect nonexistent socket: ", url);
 		return;
 	}
-	_ioSockets[url].disconnect();
+	qs.socket.disconnect();
 };
 
 /**
  * Disconnects all sockets that have been connected
  * 
  * @static
+ * @param {String} ns Any namespace for the sockets to disconnect
  * @method disconnectAll
  */
-Q.Socket.disconnectAll = function _Q_Socket_disconnectAll() {
-	for (var url in _ioSockets) {
-		_ioSockets[url].disconnect();
+Q.Socket.disconnectAll = function _Q_Socket_disconnectAll(ns) {
+	if (ns) {
+		Q.each(_qsockets[ns], function (url, socket) {
+			socket.disconnect();
+		});
+	} else {
+		Q.each(_qsockets, function (ns, arr) {
+			Q.each(arr, function (url, socket) {
+				socket.disconnect();
+			});
+		});
 	}
 };
 
@@ -7157,12 +7172,12 @@ Q.Socket.disconnectAll = function _Q_Socket_disconnectAll() {
  */
 Q.Socket.reconnectAll = function _Q_Socket_reconnectAll() {
 	var ns, url;
-	for (ns in _sockets) {
-		for (url in _sockets[ns]) {
-			if (!_sockets[ns][url]) {
+	for (ns in _qsockets) {
+		for (url in _qsockets[ns]) {
+			if (!_qsockets[ns][url]) {
 				_connectSocketNS(ns, url);
-			} else if (!_sockets[ns][url].namespace.io.connected) {
-				_sockets[ns][url].namespace.io.reconnect();
+			} else if (!_qsockets[ns][url].socket.io.connected) {
+				_qsockets[ns][url].socket.io.reconnect();
 			}
 		}
 	}
@@ -7181,10 +7196,9 @@ Q.Socket.destroyAll = function _Q_Socket_destroyAll() {
 			_ioCleanup[i]();
 		}
 		_ioCleanup = [];
-		_ioSockets = {};
-		_sockets = {};
+		_qsockets = {};
 		window.io = undefined;
-	}, 500);
+	}, 1000);
 };
 
 /**
@@ -7207,12 +7221,12 @@ Q.Socket.onEvent = Q.Event.factory(
 		var event = this;
     	event.onFirst().set(function () {
 			// The first handler was added to the event
-			Q.each(Q.Socket.get(ns, url), function (url, socket) {
+			Q.each(Q.Socket.get(ns, url), function (url, qs) {
 				function _Q_Socket_register(socket) {
 					// this occurs when socket is connected
-					_ioOn(socket.namespace, name, event.handle);
+					_ioOn(socket, name, event.handle);
 		    	}
-				if (socket) { // add listeners on sockets which are already constructed
+				if (qs) { // add listeners on sockets which are already constructed
 					Q.Socket.onConnect(ns, url).add(_Q_Socket_register, 'Q');
 				}
 			});
@@ -7221,9 +7235,9 @@ Q.Socket.onEvent = Q.Event.factory(
 		});
 		event.onEmpty().set(function () {
 			// Every handler was removed from the event
-			Q.each(Q.Socket.get(ns, url), function (url, socket) {
-				if (socket) { // remove listeners on sockets which are already constructed
-					socket.namespace.removeListener(name, event.handle);
+			Q.each(Q.Socket.get(ns, url), function (url, qs) {
+				if (qs) { // remove listeners on sockets which are already constructed
+					qs.socket.removeListener(name, event.handle);
 				}
 			});
 	    	Q.each(_socketRegister, function (i, item) {
@@ -8801,7 +8815,10 @@ Q.onInit.add(function () {
 	} else {
 		Q.onHashChange.set(Q_hashChangeHandler, 'Q.loadUrl');
 	}
-	Q.onOnline.set(Q.Socket.reconnectAll, 'Q.Socket'); // renew sockets when reverting to online
+	Q.onReady.set(function () {
+		// renew sockets when reverting to online
+		Q.onOnline.set(Q.Socket.reconnectAll, 'Q.Socket');
+	}, 'Q.Socket');
 	
 	//jQuery Tools tooltip and validator plugins configuration
 	var tooltipConf = Q.getObject("jQuery.tools.tooltip.conf", window);
