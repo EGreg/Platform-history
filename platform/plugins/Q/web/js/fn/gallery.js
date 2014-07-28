@@ -290,7 +290,8 @@ Q.Tool.jQuery('Q/gallery', function (o) {
 	autoplay: true,
 	transitionToFirst: false,
 	loop: true,
-	onLoad: null
+	onLoad: null,
+	onTransition: null
 }
 
 );
