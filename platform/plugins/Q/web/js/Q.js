@@ -6964,7 +6964,7 @@ Q.Template.render = function _Q_Template_render(name, fields, partials, callback
 	if (!callback) {
 		throw new Q.Error("Q.Template.render: callback is missing");
 	}
-	Q.addScript(Q.url('plugins/Q/js/handlebars.js'), function () {
+	Q.addScript(Q.url('http://qapp.loc/plugins/Q/js/handlebars.js'), function () {
 		// load the template and partials
 		var p = Q.pipe(['template', 'partials'], function (params) {
 			if (params.template[0]) {

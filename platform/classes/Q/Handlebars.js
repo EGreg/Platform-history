@@ -99,7 +99,7 @@ module.exports = {
 				}
 			}
 		}
-		return handlebars.render(tpl, data, part);
+		return handlebars.compile(tpl)(data, part);
 	},
 
 	/**
