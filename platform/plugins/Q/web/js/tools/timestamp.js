@@ -149,7 +149,7 @@ Q.Tool.jQuery('Q/timestamp', function (o) {
 		setTimeout(function () {
 			update();
 			setInterval(update, 60000);
-		}, 60000 - elapsed || 60000);
+		}, 60000 - elapsed % 60000);
 	});
 },
 

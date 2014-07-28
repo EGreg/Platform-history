@@ -108,7 +108,7 @@ class Users_User extends Base_Users_User
 	}
 	
 	/**
-	 * Use this function to display the name of a user object
+	 * Use this function to display the name of a user
 	 * @param {array} $options to pass to any hooks
 	 */
 	function displayName($options = array())
@@ -119,7 +119,7 @@ class Users_User extends Base_Users_User
 	}
 	
 	/**
-	 * Use this function to display the name of a user object
+	 * Use this function to compute the hash of a passphrase
 	 * @param {array} $options to pass to any hooks
 	 * @param {boolean} $isHashed Whether the first passphrase hash iteration occurred, e.g. on the client
 	 */
