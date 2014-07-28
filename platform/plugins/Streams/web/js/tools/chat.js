@@ -281,35 +281,35 @@
 			*/
 			$el.find('.message-text').keypress(function(event){
 				if (event.charCode == 13) {
-					$el.find('.send-message').trigger('click');
-					return false;
-				}
-			});
-
-			$el.find('.send-message').click(function() {
-				if (blocked) {
-					return false;
-				}
-
-				Q.jsonRequest.options.quiet = true;
-				blocked = this;
-
-				var content = $el.find('.message-text').val();
-				$el.find('.message-text').val('');
-
-				Q.Streams.Message.post({
-					'publisherId': opt.publisherId,
-					'streamName' : opt.streamName,
-					'type'       : 'Streams/chat/message',
-					'content'    : content
-				}, function(err, message) {
-					if (err) {
-						self.renderError(message);
+					if (blocked) {
+						return false;
 					}
 
-					Q.jsonRequest.options.quiet = false;
-					blocked = false;
-				});
+					var content = $el.find('.message-text').val().trim();
+					$el.find('.message-text').val('');
+					if (content.length == 0) {
+						return false;
+					}
+
+					Q.jsonRequest.options.quiet = true;
+					blocked = true;					
+
+					Q.Streams.Message.post({
+						'publisherId': opt.publisherId,
+						'streamName' : opt.streamName,
+						'type'       : 'Streams/chat/message',
+						'content'    : content
+					}, function(err, message) {
+						if (err) {
+							self.renderError(message);
+						}
+
+						Q.jsonRequest.options.quiet = false;
+						blocked = false;
+					});
+
+					return false;
+				}
 			});
 		},
 
@@ -433,7 +433,6 @@
 		'</div>'+
 		'<textarea class="message-text Q_w100" placeholder="Write your message"></textarea>'+
 		'<hr />'+
-		'<button class="Q_right send-message">Send</button>'+
 		'<div class="Q_clear"></div>'
 	);
 })(Q, jQuery);
