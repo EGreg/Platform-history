@@ -3666,6 +3666,9 @@ function _loadToolScript(toolElement, callback, shared, parentPipe) {
 			var normalizedName = Q.normalize(toolName);
 			parentPipe.waitForIdNames.push(normalizedId+"\t"+normalizedName);
 		}
+		if (toolFunc === undefined) {
+			return;
+		}
 		if (shared) {
 			var uniqueToolId = "tool " + (shared.waitingForTools.length+1)
 				+ ": " + normalizedId;
@@ -3673,9 +3676,6 @@ function _loadToolScript(toolElement, callback, shared, parentPipe) {
 		}
 		if (typeof toolFunc === 'function') {
 			return p.fill(toolName)(toolElement, toolFunc, toolName, uniqueToolId);
-		}
-		if (toolFunc === undefined) {
-			return;
 		}
 		if (typeof toolFunc !== 'string') {
 			throw new Q.Error("Q.Tool.loadScript: toolFunc cannot be " + typeof(toolFunc));
