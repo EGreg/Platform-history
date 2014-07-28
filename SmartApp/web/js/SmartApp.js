@@ -11,7 +11,7 @@ var SmartApp = (function (Q, $) {
 	};
 	
 	// example stream
-	Q.Streams.define("SmartApp/cool", "js/models/SmartApp/cool.js");
+	Q.Streams.define("SmartApp/cool", "js/streams/SmartApp/cool.js");
 	
 	// example tool
 	Q.Tool.define("SmartApp/cool", "js/tools/SmartApp/cool.js");

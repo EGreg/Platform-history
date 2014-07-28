@@ -44,7 +44,7 @@ var MyApp = (function (Q, $) {
 	});
 	
 	// example stream
-	Q.Streams.define("MyApp/cool", "js/models/MyApp/cool.js");
+	Q.Streams.define("MyApp/cool", "js/streams/MyApp/cool.js");
 	
 	// example tool
 	Q.Tool.define("MyApp/cool", "js/tools/MyApp/cool.js");
