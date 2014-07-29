@@ -11,7 +11,7 @@ Q.Tool.define("SmartApp/cool", function (options) {
 	this.getMyStream(function (err) {
 		if (err) return;
 		var stream = this;
-		stream.onMove().set(function (err, message) {
+		stream.onMove.set(function (err, message) {
 			// do something here
 		}, this); // handler will be auto-removed when this tool is removed
 	});

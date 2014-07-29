@@ -7156,12 +7156,12 @@ Q.Socket.prototype.disconnect = function _Q_Socket_prototype_disconnect() {
 Q.Socket.disconnectAll = function _Q_Socket_disconnectAll(ns) {
 	if (ns) {
 		Q.each(_qsockets[ns], function (url, socket) {
-			socket.disconnect();
+			socket && socket.disconnect();
 		});
 	} else {
 		Q.each(_qsockets, function (ns, arr) {
 			Q.each(arr, function (url, socket) {
-				socket.disconnect();
+				socket && socket.disconnect();
 			});
 		});
 	}
