@@ -12,6 +12,10 @@
 				return false;
 			}
 
+			if (Q.info.formFactor === 'desktop') {
+				this.options.loadMore = 'click';
+			}
+
 			Q.Template.set('Streams/chat/message-error',
 				'<div class="message-item Q_w100 error">'+
 					'<div class="Q_w100 message-text-container">'+
@@ -225,11 +229,14 @@
 					self.more(renderMore);
 				});
 			} else {
-				$el.find('.messages-container').scroll(function(event){
+				this.niceScroll(function(){
+					self.more(renderMore);
+				});
+				/*$el.find('.messages-container').scroll(function(event){
 					if ($(this).scrollTop() == 0) {
 						self.more(renderMore);
 					}
-				});
+				});*/
 			}
 
 			$el.find('.Q_ellipsis .message-item-text').live('click', function(){
@@ -309,6 +316,51 @@
 					});
 
 					return false;
+				}
+			});
+		},
+
+		niceScroll: function(callback) {
+			if (Q.info.formFactor === 'desktop') {
+				return false;
+			}
+
+			// TODO - when user scrolled in message container not running this function
+			var isScrollNow = false,
+				startY      = null,
+				$el         = $(this.element);
+
+			function touchstart(event){
+				isScrollNow = true;
+				startY      = event.originalEvent.touches[0].pageY;
+			};
+
+			function touchend(event){
+				isScrollNow = false;
+				startY      = null;
+			};
+
+			$(document.body)
+				.bind('touchstart', touchstart)
+				.bind('touchend', touchend)
+				.bind('touchmove', function(event){
+
+				if (isScrollNow && event.originalEvent.touches[0].pageY > startY) {
+					// isset scollbar in window
+					if (0 > $(window).height() - $(document.body).height()) {
+						$(document.body)
+							.unbind('touchstart')
+							.unbind('touchend')
+							.unbind('touchmove');
+
+						$el.find('.messages-container').scroll(function(event){
+							if ($(this).scrollTop() == 0) {
+								callback && callback();
+							}
+						});
+					} else {
+						callback && callback();
+					}
 				}
 			});
 		},
