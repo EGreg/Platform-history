@@ -1,5 +1,9 @@
-Q.Tool.define("SmartApp/cool", function () { // tool constructor
-	var tool = this; // use tool.options, tool.element, tool.prefix
+Q.Tool.define("SmartApp/cool", function (options) {
+	var tool = this;
+
+	if (!state.publisherId || !state.streamName) {
+		throw new Q.Exception("publisherId or streamName is required");
+	}
 
 	Q.addStylesheet("css/html.css"); // add any css you need
 	
@@ -13,13 +17,23 @@ Q.Tool.define("SmartApp/cool", function () { // tool constructor
 	});
 	
 	this.onMove = new Q.Event(); // an event that the stream might trigger
-}, {
+},
+
+{ // default options here
+	publisherId: null,
+	streamName: null,
+},
+
+{ // methods go here
+	
+	/**
+	 * Example method for this tool
+	 * @method getMyStream
+	 * @param {Function} callback receives arguments (err) with this = stream
+	 */
 	getMyStream: function (callback) {
-		// example method for the tool
-		Q.Streams.get(
-			this.options.publisherId, 
-			this.options.streamName,
-			callback
-		);
+		var state = this.state;
+		Q.Streams.get(state.publisherId, state.streamName, callback);
 	}
+	
 });
