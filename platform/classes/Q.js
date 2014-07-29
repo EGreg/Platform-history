@@ -2156,7 +2156,12 @@ Q.init = function _Q_init(app, notListen) {
 	 * @type {object}
 	 */
 	Q.Mustache = require('./Q/Mustache');
-
+    /**
+     * Reference to Q.Handlebars class
+     * @property Handlebars
+     * @type {object}
+     */
+    Q.Handlebars = require('./Q/Handlebars');
 	//
 	// set things up
 	//

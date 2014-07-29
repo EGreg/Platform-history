@@ -4,13 +4,13 @@
  
 var Q = require('../Q');
 var fs = require('fs');
-var mustache = require('mustache');
+var handlebars = require('handlebars');
 
 var _loaders;
 var _partials;
 var _templates = {};
 
-var _ext = Q.Config.get(['Q', 'extensions', 'mustache'], '.mustache');
+var _ext = Q.Config.get(['Q', 'extensions', 'handlebars'], '.handlebars');
 
 function _loader(path) {
 	return function(name) {
@@ -53,14 +53,14 @@ function _getLoaders() {
 }
 
 /**
- * Creates a Q.Mustache object
- * @class Mustache
+ * Creates a Q.Handlebars object
+ * @class Handlebars
  * @namespace Q
  */
 module.exports = {
 
 	/**
-	 * Search for mustache template
+	 * Search for handlebars template
 	 * @method template
 	 * @param {string} path The template name
 	 * @return {string|null}
@@ -75,7 +75,7 @@ module.exports = {
 	},
 
 	/**
-	 * Render mustache template
+	 * Render handlebars template
 	 * @method render
 	 * @param {string} template The template name
 	 * @param {object} data Optional. The data to render
@@ -89,6 +89,30 @@ module.exports = {
 		if (!tpl) return null;
 
 		if (partials) {
+			for (path in partials) {
+				var path = partials[i];
+				for (j=0; j<_partials.length; j++) {
+					if (part[path] = _partials[j](path)) {
+						break;
+					}
+				}
+			}
+		}
+		return handlebars.compile(tpl)(data, {partials: part});
+	},
+
+	/**
+	 * Render handlebars literal source string
+	 * @method render
+	 * @param {string} content The source content
+	 * @param {object} data Optional. The data to render
+	 * @param {Array} partials Optional. The names of partials to load and use for rendering.
+	 * @return {string|null}
+	 */
+	renderSource: function(content, data, partials) {
+		var i, j, path, part = {};
+
+		if (partials) {
 			_getLoaders();
 			for (i=0; i<partials.length; i++) {
 				var path = partials[i];
@@ -97,38 +121,8 @@ module.exports = {
 						break;
 					}
 				}
-				if (part[path]) {
-					part[path] = part[path].toString();
-				}
 			}
 		}
-		return mustache.render(tpl, data, part);
-	},
-
-	/**
-	 * Render mustache literal source string
-	 * @method render
-	 * @param {string} content The source content
-	 * @param {object} data Optional. The data to render
-	 * @param {Array} partials Optional. The names of partials to load and use for rendering.
-	 * @return {string|null}
-	 */
-	renderSource: function(content, data, partials) {
-		var i, path, part = {};
-
-		if (partials) {
-			for (i=0; i<partials.length; i++) {
-				var path = partials[i];
-				for (j=0; j<_partials.length; j++) {
-					if (part[path] = _partials[j](path)) {
-						break;
-					}
-				}
-				if (part[path]) {
-					part[path] = part[path].toString();
-				}
-			}
-		}
-		return mustache.render(content, data, part);
+		return handlebars.compile(content)(data, {partials: part});
 	}
 };

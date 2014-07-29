@@ -4,12 +4,13 @@
  * @module Q
  */
 /**
- * This class lets you output render mustache templates
- * @class Q_Mustache
+ * This class lets you output render handlebars templates
+ * @class Q_Handlebars
  */
-class Q_Mustache {
+
+class Q_Handlebars {
 	/**
-	 * Render view using Mustache rendering engine
+	 * Render view using Handlebars rendering engine
 	 * @method render
 	 * @static
 	 * @param {string} $template
@@ -17,11 +18,11 @@ class Q_Mustache {
 	 * @return {string} Rendered template
 	 */
 	static function render($template, $data = array()) {
-		return self::mustache()->render($template, $data);
+		return self::handlebars()->render($template, $data);
 	}
 	
 	/**
-	 * Render source using Mustache rendering engine
+	 * Render source using Handlebars rendering engine
 	 * @method render
 	 * @static
 	 * @param {string} $source
@@ -29,39 +30,41 @@ class Q_Mustache {
 	 * @return {string} Rendered template
 	 */
 	static function renderSource($source, $data = array()) {
-		return self::mustache()->loadSource($source)->render($data);
+		return self::handlebars($source)->loadString($source)->render($data);
 	}
 	
-	static function mustache()
+	static function handlebars()
 	{
-		if (isset(self::$mustache)) {
-			return self::$mustache;
+		if (isset(self::$handlebars)) {
+			return self::$handlebars;
 		}
-		return self::$mustache = new Mustache_Engine(array(
-			'cache' => APP_FILES_DIR.DS.'Q'.DS.'cache'.DS.'mustache',
-			'loader' => new Q_Mustache_Loader(),
-			'partials_loader' => new Q_Mustache_Loader('partials'),
+		return self::$handlebars = new Handlebars_Engine(array(
+			'cache' => new Handlebars_Cache_Disk(
+				APP_FILES_DIR.DS.'Q'.DS.'cache'.DS.'handlebars'
+            ),
+			'loader' => new Q_Handlebars_Loader(),
+			'partials_loader' => new Q_Handlebars_Loader('partials'),
 			'escape' => function($value) {
 				return htmlspecialchars($value, ENT_COMPAT, 'UTF-8');
 			}
 		));
 	}
 
-	private static $mustache = null;
+	private static $handlebars = null;
 }
 
-class Q_Mustache_Loader implements Mustache_Loader {
+class Q_Handlebars_Loader implements Handlebars_Loader {
 	/**
-	 * Q_Mustache filesystem Loader constructor.
+	 * Q_Handlebars filesystem Loader constructor.
 	 *
 	 * Passing an $options array allows overriding certain Loader options during instantiation:
 	 *
 	 *	 $options = array(
-	 *		 // The filename extension used for Mustache templates. Defaults to '.mustache'
+	 *		 // The filename extension used for Handlebars templates. Defaults to '.handlebars'
 	 *		 'extension' => '.ms',
 	 *	 );
 	 *
-	 * @class Q_Mustache_Loader
+	 * @class Q_Handlebars_Loader
 	 * @private
 	 * @constructor
 	 * @param {string} [$xpath=''] Extra path to add to standard view path (for partials)
@@ -71,7 +74,7 @@ class Q_Mustache_Loader implements Mustache_Loader {
 		if (!empty($xpath)) $xpath = DS.$xpath;
 		// the last resourt is to search Q views
 		if (file_exists(Q_VIEWS_DIR.$xpath)) {
-			array_unshift(self::$loaders, new Mustache_Loader_FilesystemLoader(Q_VIEWS_DIR.$xpath, $options));
+			array_unshift(self::$loaders, new Handlebars_Loader_FilesystemLoader(Q_VIEWS_DIR.$xpath, $options));
 		}
 
 		// search plugin views
@@ -80,20 +83,20 @@ class Q_Mustache_Loader implements Mustache_Loader {
 			$plugin = is_numeric($k) ? $v : $k;
 			$PLUGIN = strtoupper($plugin);
 			if (file_exists(constant($PLUGIN.'_PLUGIN_VIEWS_DIR').$xpath)) {
-				array_unshift(self::$loaders, new Mustache_Loader_FilesystemLoader(constant($PLUGIN.'_PLUGIN_VIEWS_DIR').$xpath, $options));
+				array_unshift(self::$loaders, new Handlebars_Loader_FilesystemLoader(constant($PLUGIN.'_PLUGIN_VIEWS_DIR').$xpath, $options));
 			}
 		}
 
 		// application views
 		if (file_exists(APP_VIEWS_DIR.$xpath)) {
-			array_unshift(self::$loaders, new Mustache_Loader_FilesystemLoader(APP_VIEWS_DIR.$xpath, $options));
+			array_unshift(self::$loaders, new Handlebars_Loader_FilesystemLoader(APP_VIEWS_DIR.$xpath, $options));
 		}
 	}
 	/**
 	 * Load a Template by name.
 	 * @method load
 	 * @param {string} $name
-	 * @return {string} Mustache Template source
+	 * @return {string} Handlebars Template source
 	 */
 	public function load($name) {
 		if (!isset(self::$templates[$name])) {
@@ -102,12 +105,12 @@ class Q_Mustache_Loader implements Mustache_Loader {
 		return self::$templates[$name];
 	}
 	/**
-	 * Helper function for loading a Mustache file by name.
+	 * Helper function for loading a Handlebars file by name.
 	 * @method loadFile
 	 * @protected
 	 * @throws {Q_Exception_MissingFile} if a template file is not found.
 	 * @param {string} $name
-	 * @return {string} Mustache Template source
+	 * @return {string} Handlebars Template source
 	 */
 	protected function loadFile($name) {
 		$tpl = null;
