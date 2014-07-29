@@ -6861,7 +6861,7 @@ Q.Template.set = function (name, content, type) {
  *   "name" - option to override the name of the template
  * @return {String|undefined}
  */
-Q.Template.load = function _Q_Template_load(name, callback, options) {
+Q.Template.load = Q.getter(function _Q_Template_load(name, callback, options) {
 	if (typeof callback === "object") {
 		options = callback;
 		callback = undefined;
@@ -6923,9 +6923,12 @@ Q.Template.load = function _Q_Template_load(name, callback, options) {
 	}
 	var url = Q.url(o.dir+'/'+name+'.'+ o.type);
 
-	Q.request(url, _callback, {parse: false, extend: false});
+	Q.request(url, _callback, {
+		parse: false, 
+		extend: false
+	});
 	return true;
-};
+});
 
 Q.Template.load.options = {
 	type: "handlebars",
@@ -6943,7 +6946,7 @@ Q.Template.onError = new Q.Event(function (err) {
  * @method render
  * @param name {string} The name of template. See Q.Template.load
  * @param fields {object?} Rendering params - to be substituted to template
- * @param partials {array?} An array of partials to be used with template
+ * @param partials {array?} Names of partials to load and use for rendering the template
  * @param callback {function} a callback - receives the rendering result or nothing
  * @param options {object?} Options.
  *   "type" - the type and extension of the template, defaults to 'handlebars'
@@ -6964,24 +6967,24 @@ Q.Template.render = function _Q_Template_render(name, fields, partials, callback
 	if (!callback) {
 		throw new Q.Error("Q.Template.render: callback is missing");
 	}
-	Q.addScript(Q.url('plugins/Q/js/handlebars.js'), function () {
+	Q.addScript(Q.url('plugins/Q/js/handlebars-v1.3.0.min.js'), function () {
 		// load the template and partials
 		var p = Q.pipe(['template', 'partials'], function (params) {
 			if (params.template[0]) {
 				return callback(null);
 			}
-			callback(null, Handlebars.compile(params.template[1])(fields, params.partials[0]));
+			callback(null, Handlebars.compile(params.template[1])(fields, {partials: params.partials[0]}));
 		});
 		Q.Template.load(name, p.fill('template'), options);
 		// pipe for partials
 		if (partials && partials.length) {
 			var pp = Q.pipe(partials, function (params) {
-				var i, partial, results = {};
+				var i, partial, part = {};
 				for (i=0; i<partials.length; i++) {
 					partial = partials[i];
-					results[partial] = params[partial][0] ? null : params[partial][1];
+					part[partial] = params[partial][0] ? null : params[partial][1];
 				}
-				p.fill('partials')(results);
+				p.fill('partials')(part);
 			});
 			for (var i=0; i<partials.length; i++) {
 				Q.Template.load(partials[i], pp.fill(partials[i]), options);

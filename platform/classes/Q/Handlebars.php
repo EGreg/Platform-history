@@ -30,7 +30,7 @@ class Q_Handlebars {
 	 * @return {string} Rendered template
 	 */
 	static function renderSource($source, $data = array()) {
-		return self::handlebars($source)->loadLambda($source)->render($data);
+		return self::handlebars($source)->loadString($source)->render($data);
 	}
 	
 	static function handlebars()

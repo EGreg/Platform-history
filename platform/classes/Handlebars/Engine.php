@@ -25,7 +25,7 @@ class Handlebars_Engine
      *
      * @param array $options see __construct's options parameter
      *
-     * @return Handlebars
+     * @return Handlebars_Engine
      */
     public static function factory($options = array())
     {
@@ -178,7 +178,7 @@ class Handlebars_Engine
     /**
      * Get helpers, or create new one if ther is no helper
      *
-     * @return Helpers
+     * @return Handlebars_Helpers
      */
     public function getHelpers()
     {
@@ -248,7 +248,7 @@ class Handlebars_Engine
     /**
      * get current loader
      *
-     * @return Loader
+     * @return Handlebars_Loader
      */
     public function getLoader()
     {
@@ -272,7 +272,7 @@ class Handlebars_Engine
     /**
      * get current partials loader
      *
-     * @return Loader
+     * @return Handlebars_Loader
      */
     public function getPartialsLoader()
     {
@@ -296,7 +296,7 @@ class Handlebars_Engine
     /**
      * Get cache
      *
-     * @return Cache
+     * @return Handlebars_Cache
      */
     public function getCache()
     {
@@ -375,7 +375,7 @@ class Handlebars_Engine
      * If no Tokenizer instance has been explicitly specified, this method will
      * instantiate and return a new one.
      *
-     * @return Tokenizer
+     * @return Handlebars_Tokenizer
      */
     public function getTokenizer()
     {
@@ -403,7 +403,7 @@ class Handlebars_Engine
      * If no Parser instance has been explicitly specified, this method will
      * instantiate and return a new one.
      *
-     * @return Parser
+     * @return Handlebars_Parser
      */
     public function getParser()
     {
@@ -418,7 +418,7 @@ class Handlebars_Engine
      *
      * @param string $name template name
      *
-     * @return Template
+     * @return Handlebars_Template
      */
     public function loadTemplate($name)
     {
@@ -432,7 +432,7 @@ class Handlebars_Engine
      *
      * @param string $name partial name
      *
-     * @return Template
+     * @return Handlebars_Template
      */
     public function loadPartial($name)
     {
@@ -473,7 +473,7 @@ class Handlebars_Engine
      * Load string into a template object
      *
      * @param string $source string to load
-     * @return Template
+     * @return Handlebars_Template
      */
     public function loadString($source)
     {
