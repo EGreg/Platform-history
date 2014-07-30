@@ -101,7 +101,7 @@
 					} else {
 						result = result.replace('{date+week}', '').replace(/\s+/g, ' ').trim();
 					}
-				} else (result.indexOf('{date}') != -1) {
+				} else if (result.indexOf('{date}') != -1) {
 					result = result.replace('{date}', strftime('%b %d', o.time));
 				}
 			}

@@ -28,7 +28,7 @@
 							'{{/error.isAuthorizedError}}'+
 						'</div>'+
 						'<div class="Q_clear"></div>'+
-						'<div class="Q_w20 Q_right date">{{date}}</div>'+
+						'<div class="Q_w20 Q_right date"></div>'+
 						'<div class="Q_clear"></div>'+
 					'</div>'+
 					'<div class="Q_clear"></div>'+
@@ -112,7 +112,8 @@
 		},
 
 		renderMessages: function(messages){
-			var $el = $(this.element);
+			var $el  = $(this.element),
+				self = this;
 
 			if (messages && !$.isEmptyObject(messages) && $.isArray(messages)) {
 				for (var i=0; i<messages.length; ++i) {
@@ -133,6 +134,11 @@
 						));
 
 						$el.find('.messages-container').append($html);
+
+						self.findMessage('last')
+							.find('.date')
+							.html(Q.Tool.setUpElement('div', 'Q/timestamp', messages[i].date))
+							.activate();
 					});
 				}
 			} else {
@@ -160,7 +166,8 @@
 		},
 
 		renderError: function(message){
-			var $el = $(this.element);
+			var $el  = $(this.element),
+				self = this;
 
 			for (var i in message) {
 				if (message[i] && message[i].errors) {
@@ -182,6 +189,11 @@
 
 							$el.find('.no-messages').remove();
 							$el.find('.messages-container').html(html);
+
+							self.findMessage('last')
+								.find('.date')
+								.html(Q.Tool.setUpElement('div', 'Q/timestamp', data.date))
+								.activate();
 						});
 					}
 				}
@@ -232,11 +244,6 @@
 				this.niceScroll(function(){
 					self.more(renderMore);
 				});
-				/*$el.find('.messages-container').scroll(function(event){
-					if ($(this).scrollTop() == 0) {
-						self.more(renderMore);
-					}
-				});*/
 			}
 
 			$el.find('.Q_ellipsis .message-item-text').live('click', function(){
@@ -372,28 +379,21 @@
 		* 	object { expression: 'CURRENT_TIMESTAMP' }
 		*/
 		parseDate: function(date){
-			if (typeof date == 'object'){
-				if (date.expression) {
-					date = (date.expression == 'CURRENT_TIMESTAMP') ? new Date() : new Date(date);
-				} else if (!date instanceof Date) {
-					date = new Date();
+			if (typeof date == 'string') {
+				return { time: parseTime(date) };
+			} else if (typeof date == 'object'){
+				if (date.expression == 'CURRENT_TIMESTAMP') {
+					return {};
+				} else {
+					return { time: parseTime(date.expression) };
 				}
-			} else if (typeof date == 'string') {
-				// fix for FF
-				var d = date.match(/\w+/g);
-				date = new Date(d[0], d[1], d[2], d[3], d[4], d[5]);
 			}
 
-			var pretyDate = function(d){
-				return d.toString().length == 1 ? '0'+d : d;
-			};
+			return {};
 
-			return date.getFullYear() 		  + '-' + 
-				   pretyDate(date.getMonth()) + '-' + 
-				   pretyDate(date.getDay())   + ' ' +
-				   date.getHours()     		  + ':' +
-				   date.getMinutes()  		  + ':' +
-				   date.getSeconds();
+			function parseTime(date){
+				return (new Date(date)).getTime() / 1000;
+			}
 		},
 
 		getOrdinal: function(action, ordinal){
@@ -411,25 +411,29 @@
 		* @return data attribute or null 
 		*/
 		findMessageData: function(action, byParam){
+			var message = this.findMessage(action, byParam);
+			return message ? message.data() : null;
+		},
+
+		findMessage: function(action, byParam) {
 			var $el = $(this.element),
 				query = '.message-item';
 
 			byParam = (byParam ? '['+byParam+']' : '');
 
 			if (!action && byParam) {
-				var $node = $el.find(query+byParam);
-				return $node ? $node.data() : null;
+				return $el.find(query+byParam);
 			}
 
 			if (typeof(action) == 'string') {
 				switch(action){
 					case 'first':
 					case 'last':
-						return $el.find(query+':'+action+byParam).data();
+						return $el.find(query+':'+action+byParam);
 				}
 			} else if (typeof(action) == 'number') {
 				var messages = $el.find(query+byParam);
-				return messages.length <= action ? $(messages.get(action)).data() : null;
+				return messages.length <= action ? $(messages.get(action)) : null;
 			}
 
 			return null;
@@ -454,7 +458,7 @@
 				'<div class="message-tick"></div>'+
 				'<div class="message-item-text">{{content}}</div>'+
 				'<div class="Q_clear"></div>'+
-				'<div class="Q_w20 Q_right date">{{date}}</div>'+
+				'<div class="Q_w20 Q_right date"></div>'+
 				'<div class="Q_clear"></div>'+
 			'</div>'+
 			'<div class="Q_clear"></div>'+

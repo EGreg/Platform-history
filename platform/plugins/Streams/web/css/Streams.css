@@ -509,7 +509,7 @@
 	text-align: center !important;
 	width: 100% !important;
 }
-.Streams_chat_tool .date{
+.Streams_chat_tool .date .Q_timestamp_tool{
 	font-size: 10pt !important;
 	color: gray !important;
 }
