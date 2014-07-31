@@ -126,19 +126,30 @@
 						if (error) { return error; }
 
 						$el.find('.no-messages').remove();
-
 						var $html = $(html);
 
 						Q.activate($html.find('.avatar-container').html(
-							Q.Tool.setUpElement('div', 'Users/avatar', { userId: messages[i].byUserId })
+							Q.Tool.setUpElement('div', 'Users/avatar', {
+								userId: messages[i].byUserId
+							})
 						));
 
 						$el.find('.messages-container').append($html);
-
 						self.findMessage('last')
 							.find('.date')
 							.html(Q.Tool.setUpElement('div', 'Q/timestamp', messages[i].date))
 							.activate();
+
+						// sort by ordinal
+						$el.find('.message-item').sort(function(curr, next){
+							if ($(curr).data('ordinal') > $(next).data('ordinal')) {
+								return 1;
+							} else if ($(curr).data('ordinal') < $(next).data('ordinal')) {
+								return -1;
+							}
+
+							return 0;
+						}).detach().appendTo($el.find('.messages-container'));
 					});
 				}
 			} else {
@@ -216,7 +227,7 @@
 				}
 
 				callback.call(self, messages);
-			}, { 'type': 'Streams/chat/message', 'ascending': false });
+			}, { 'type': 'Streams/chat/message', 'ascending': true });
 		},
 
 		addEvents: function(){
