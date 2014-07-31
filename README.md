@@ -3,6 +3,8 @@ The Q Platform
 
 ###[Platform Portal](http://platform.qbix.com) - tutorials, docs, platform reference, and more.
 
+===
+
 ###About Q
 There are lots of frameworks out there for making websites. You've probably encountered them. Well, Q is different. It was designed from the ground up to power social apps.
 
