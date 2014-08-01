@@ -14,7 +14,8 @@
  * @class Base_Places_Nearby
  * @extends Db_Row
  *
- * @property string $fromZipcode
+ * @property float $latitude
+ * @property float $longitude
  * @property float $miles
  * @property string $toZipcode
  * @property string $updatedTime
@@ -22,8 +23,12 @@
 abstract class Base_Places_Nearby extends Db_Row
 {
 	/**
-	 * @property $fromZipcode
-	 * @type string
+	 * @property $latitude
+	 * @type float
+	 */
+	/**
+	 * @property $longitude
+	 * @type float
 	 */
 	/**
 	 * @property $miles
@@ -67,7 +72,7 @@ abstract class Base_Places_Nearby extends Db_Row
 	 * Retrieve the table name to use in SQL statement
 	 * @method table
 	 * @static
-	 * @param {boolean} [$with_db_name=true] Indicates wheather table name shall contain the database name
+	 * @param {boolean} [$with_db_name=true] Indicates wheather table name should contain the database name
  	 * @return {string|Db_Expression} The table name as string optionally without database name if no table sharding
 	 * was started or Db_Expression class with prefix and database name templates is table was sharded
 	 */
@@ -183,24 +188,6 @@ abstract class Base_Places_Nearby extends Db_Row
 	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
-	 * @method beforeSet_fromZipcode
-	 * @param {string} $value
-	 * @return {array} An array of field name and value
-	 * @throws {Exception} An exception is thrown if $value is not string or is exceedingly long
-	 */
-	function beforeSet_fromZipcode($value)
-	{
-		if ($value instanceof Db_Expression) return array('fromZipcode', $value);
-		if (!is_string($value) and !is_numeric($value))
-			throw new Exception('Must pass a string to '.$this->getTable().".fromZipcode");
-		if (strlen($value) > 10)
-			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".fromZipcode");
-		return array('fromZipcode', $value);			
-	}
-
-	/**
-	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
-	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_toZipcode
 	 * @param {string} $value
 	 * @return {array} An array of field name and value
@@ -217,20 +204,6 @@ abstract class Base_Places_Nearby extends Db_Row
 	}
 
 	/**
-	 * Method is called after field is set and used to keep $fieldsModified property up to date
-	 * @method afterSet
-	 * @param {string} $name The field name
-	 * @param {mixed} $value The value of the field
-	 * @return {mixed} Original value
-	 */
-	function afterSet($name, $value)
-	{
-		if (!in_array($name, $this->fieldNames()))
-			$this->notModified($name);
-		return $value;			
-	}
-
-	/**
 	 * Check if mandatory fields are set and updates 'magic fields' with appropriate values
 	 * @method beforeSave
 	 * @param {array} $value The array of fields
@@ -241,7 +214,7 @@ abstract class Base_Places_Nearby extends Db_Row
 	{
 		if (!$this->retrieved) {
 			$table = $this->getTable();
-			foreach (array('fromZipcode','miles','toZipcode') as $name) {
+			foreach (array('latitude','longitude','miles','toZipcode') as $name) {
 				if (!isset($value[$name])) {
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}
@@ -262,7 +235,7 @@ abstract class Base_Places_Nearby extends Db_Row
 	 */
 	static function fieldNames($table_alias = null, $field_alias_prefix = null)
 	{
-		$field_names = array('fromZipcode', 'miles', 'toZipcode', 'updatedTime');
+		$field_names = array('latitude', 'longitude', 'miles', 'toZipcode', 'updatedTime');
 		$result = $field_names;
 		if (!empty($table_alias)) {
 			$temp = array();

@@ -3,11 +3,12 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 -------- NEXT QUERY STARTS HERE --------
 
 CREATE TABLE IF NOT EXISTS `{$prefix}nearby` (
-  `fromZipcode` varchar(10) NOT NULL,
+  `latitude` decimal(10,7) NOT NULL,
+  `longitude` decimal(10,7) NOT NULL,
   `miles` decimal(10,4) NOT NULL,
   `toZipcode` varchar(10) NOT NULL,
   `updatedTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  KEY `MILES` (`fromZipcode`,`miles`)
+  KEY `MILES` (`latitude`, `longitude`,`miles`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 -------- NEXT QUERY STARTS HERE --------

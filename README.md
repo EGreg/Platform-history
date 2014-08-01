@@ -79,4 +79,4 @@ Build beautiful interfaces through which people will interact with one another.
 * Theme marketplace: After designing and polishing your themes, you can package and sell them on our marketplace. Or give them away for free. Either way, when an app developer uses your theme, your work and your brand will get a lot of exposure.
 
 ##Developer Community
-* Our community: We are currently in the process of growing our developer community. If you feel you can contribute, by all means join us!
+We are currently in the process of growing our developer community. If you feel you can contribute, by all means join us!

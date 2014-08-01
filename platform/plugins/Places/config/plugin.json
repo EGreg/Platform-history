@@ -9,5 +9,11 @@
 				"connections": ["Places"]
 			}
 		}
+	},
+	"Places": {
+		"nearbyZipcodes": {
+			"limit": 100,
+			"maxMiles": 100
+		}
 	}
 }

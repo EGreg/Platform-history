@@ -34,7 +34,7 @@ abstract class Places extends Base_Places
 		$sin_lat   = sin(deg2rad($lat_2  - $lat_1)  / 2.0);
 		$sin2_lat  = $sin_lat * $sin_lat;
 
-		$sin_long  = sin(deg2rad($long_2 - $long_2) / 2.0);
+		$sin_long  = sin(deg2rad($long_2 - $long_1) / 2.0);
 		$sin2_long = $sin_long * $sin_long;
 
 		$cos_lat_1 = cos($lat_1);

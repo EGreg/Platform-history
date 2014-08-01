@@ -30,7 +30,8 @@ class Places_Zipcode extends Base_Places_Zipcode
 	 * @param {array} $array
 	 * @return {Places_Zipcode} Class instance
 	 */
-	static function __set_state(array $array) {
+	static function __set_state(array $array)
+	{
 		$result = new Places_Zipcode();
 		foreach($array as $k => $v)
 			$result->$k = $v;
@@ -41,49 +42,98 @@ class Places_Zipcode extends Base_Places_Zipcode
 	/**
 	 * Call this function to calculate and save Places_Nearby rows
 	 * @param {double} $miles The radius, in miles, around the central point of the zipcode
-	 * @param {double} $save_cache Defaults to true. Set to false to simply fetch them without saving Places_Nearby rows.
-	 * @param {array} Array of all the Places_Zipcode rows that are within the given radius
+	 * @param {boolean} $saveNearby Defaults to true. Set to false to simply fetch them without saving Places_Nearby rows.
+	 * @return Array of all the Places_Zipcode rows that are within the given radius
 	 */
-	public function fetchNearbyZipcodes($miles, $save_nearby = true) {
-
+	public function nearbyZipcodes($miles, $saveNearby = true)
+	{
+		$zipcodes = self::fetchNearbyZipcodes(
+			$this->latitude, $this->longitude, $miles, $this->zipcode, $saveNearby
+		);
+		return $zipcodes;
+	}
+	
+	/**
+	 * Call this function to calculate and save Places_Nearby rows
+	 * @param {double} $latitude The latitude of the coordinates to search around
+	 * @param {double} $longitude The longitude of the coordinates to search around
+	 * @param {double} $miles The radius, in miles, around the central point of the zipcode
+	 * @param {string} $omitZipcode optional zipcode to omit
+	 * @param {boolean} $saveNearby Defaults to true. Set to false to simply fetch them without saving Places_Nearby rows.
+	 * @return Array of all the Places_Zipcode rows that are within the given radius
+	 */
+	static function fetchNearbyZipcodes(
+		$latitude, 
+		$longitude, 
+		$miles, 
+		$omitZipcode, 
+		$saveNearby = true)
+	{
+		$existing = self::existingNearbyZipcodes($latitude, $longitude, $miles);
+		if ($existing) {
+			return $existing;
+		}
+		
 		// First, get a bounding box
 		$max_lat = $miles/69/sqrt(2);
 		$max_lon = $miles/69/sqrt(2);
 		
 		// Now, select zipcodes in a bounding box using one of the indexes
-		$q = Places_Zipcode::select('*')->where(array(
-			'latitude >' => $this->latitude - $max_lat,
-			'latitude <' => $this->latitude + $max_lat,
-			'zipcode !=' => $this->zipcode
-		));
-		$longitudes = array(
-			'longitude >' => max($this->longitude - $max_lon, -180),
-			'longitude <' => min($this->longitude + $max_lon, 180),
+		$criteria = array(
+			'latitude >' => $latitude - $max_lat,
+			'latitude <' => $latitude + $max_lat
 		);
-		if ($this->latitude + $max_lon > 180) {
+		if ($omitZipcode) {
+			$criteria['zipcode !='] = $omitZipcode;
+		}
+		$q = Places_Zipcode::select('*')->where($criteria);
+		$longitudes = array(
+			'longitude >' => max($longitude - $max_lon, -180),
+			'longitude <' => min($longitude + $max_lon, 180),
+		);
+		if ($latitude + $max_lon > 180) {
 			$q->andWhere($longitudes, array(
 				'longitude >' => -180, // should always be the case anyway
-				'longitude <' => $this->longitude + $max_lon - 180 * 2,
+				'longitude <' => $longitude + $max_lon - 180 * 2,
 			));
-		} else if ($this->latitude - $max_lon < -180) {
+		} else if ($latitude - $max_lon < -180) {
 			$q->andwhere($longitudes, array(
 				'longitude <=' => 180, // should always be the case anyway
-				'longitude >' => $this->longitude - $max_lon + 180 * 2,
+				'longitude >' => $longitude - $max_lon + 180 * 2,
 			));
 		} else {
 			$q->andWhere($longitudes);
 		}
 		$zipcodes = $q->noCache()->fetchDbRows();
-		if ($save_nearby) {
-			foreach ($zipcodes as $z) {
-				$pn = new Places_Nearby();
-				$pn->fromZipcode = $z->zipcode;
-				$pn->toZipcode = $z->zipcode;
-				$pn->miles = $this->distanceToZipcode($z);
-				$pn->save();
-			}
+		if (!$saveNearby) {
+			return $zipcodes;
 		}
-		return $zipcodes;
+		foreach ($zipcodes as $z) {
+			$pn = new Places_Nearby();
+			$pn->latitude = $latitude;
+			$pn->longitude = $longitude;
+			$pn->toZipcode = $z->zipcode;
+			$pn->miles = Places::distance($latitude, $longitude, $z->latitude, $z->longitude);
+			$pn->save();
+		}
+		return self::existingNearbyZipcodes($latitude, $longitude, $miles);
+	}
+	
+	protected static function existingNearbyZipcodes($latitude, $longitude, $miles)
+	{
+		$maxMiles = Q_Config::get('Places', 'nearbyZipcodes', 'maxMiles', 100);
+		$limit = Q_Config::get('Places', 'nearbyZipcodes', 'limit', 100);
+		$existing = Places_Nearby::select('toZipcode')->where(array(
+			'latitude' => $latitude,
+			'longitude' => $longitude,
+			'miles <=' => min($miles, $maxMiles)
+		))->limit($limit)->fetchAll(PDO::FETCH_COLUMN, 0);
+		if (!$existing) {
+			return null;
+		}
+		return Places_Zipcode::select('*')->where(array(
+			'zipcode' => $existing
+		))->fetchDbRows();
 	}
 	
 	/**
