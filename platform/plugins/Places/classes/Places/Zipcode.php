@@ -66,7 +66,7 @@ class Places_Zipcode extends Base_Places_Zipcode
 		$latitude, 
 		$longitude, 
 		$miles, 
-		$omitZipcode, 
+		$omitZipcode = null, 
 		$saveNearby = true)
 	{
 		$existing = self::existingNearbyZipcodes($latitude, $longitude, $miles);

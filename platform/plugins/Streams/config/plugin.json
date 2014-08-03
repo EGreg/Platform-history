@@ -65,9 +65,19 @@
 			},
 			"Streams/category": {
 				"create": true,
-				"edit": true
+				"edit": true,
+				"defaults": {
+					"title": "Untitled Category"
+				}
 			},
-			"Streams/location": {
+			"Streams/interest": {
+				"create": true,
+				"edit": true,
+				"defaults": {
+					"title": "Untitled Interest"
+				}
+			},
+			"Places/location": {
 				"create": true,
 				"edit": true,
 				"messages": {

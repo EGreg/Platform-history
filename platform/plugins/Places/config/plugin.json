@@ -6,7 +6,28 @@
 		"pluginInfo": {
 			"Places": {
 				"version": "0.3",
-				"connections": ["Places"]
+				"compatible": "0.3",
+				"connections": ["Places"],
+				"requires": {"Streams": "0.8"},
+			}
+		}
+	},
+	"Streams": {
+		"types": {
+			"Places/location": {
+				"create": true,
+				"edit": true,
+				"messages": {
+					"Places/location/visit": { "post": true },
+					"Places/location/stay": { "post": true }
+				}
+			},
+			"Places/location/city": {
+				"create": true,
+				"edit": true,
+				"messages": {
+					"Places/location/visit": { "post": true }
+				}
 			}
 		}
 	},

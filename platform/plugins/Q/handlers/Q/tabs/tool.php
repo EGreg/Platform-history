@@ -36,6 +36,10 @@ function Q_tabs_tool($options)
 	if (!isset($tabs)) {
 		return '';
 	}
+	if (!isset($defaultTab)) {
+		reset($tabs);
+		$defaultTab = key($tabs);
+	}
 	/**
 	 * @var array $tabs
 	 */

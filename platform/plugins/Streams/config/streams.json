@@ -106,11 +106,11 @@
 		"title": "Age",
 		"icon": ""
 	},
-	"Streams/user/hometown_location": {
-		"type": "Streams/location/city",
+	"Places/user/hometown_location": {
+		"type": "Places/location/city",
 		"title": "Hometown Location",
 		"icon": ""
-	},	
+	},
 	"Streams/user/fb_uid": {
 		"type": "Streams/uid/fb_uid",
 		"title": "My facebook uid",
@@ -121,8 +121,8 @@
 		"title": "Political views",
 		"icon": ""
 	},	
-	"Streams/user/current_location": {
-		"type": "Streams/location/city",
+	"Places/user/current_location": {
+		"type": "Places/location/city",
 		"title": "Current location",
 		"icon": ""
 	},	
