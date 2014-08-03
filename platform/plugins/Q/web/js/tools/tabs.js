@@ -27,6 +27,8 @@ Q.Tool.define("Q/tabs", function(options) {
 	var tool = this;
 	var $te = $(tool.element);
 	
+	tool.state.defaultTab = tool.state.defaultTab || Q.firstKey(options.tabs);
+	
 	// catches events that bubble up from any child elements
 	$te.on([Q.Pointer.fastclick, '.Q_tabs'], '.Q_tabs_tab', function () {
 		if (false === tool.state.onClick.handle.call(tool, this.getAttribute('data-name'), this)) {
