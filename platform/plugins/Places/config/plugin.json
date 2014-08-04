@@ -8,7 +8,7 @@
 				"version": "0.3",
 				"compatible": "0.3",
 				"connections": ["Places"],
-				"requires": {"Streams": "0.8"},
+				"requires": {"Streams": "0.8"}
 			}
 		}
 	},
@@ -22,12 +22,8 @@
 					"Places/location/stay": { "post": true }
 				}
 			},
-			"Places/location/city": {
-				"create": true,
-				"edit": true,
-				"messages": {
-					"Places/location/visit": { "post": true }
-				}
+			"Places/community": {
+				"edit": true
 			}
 		}
 	},

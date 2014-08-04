@@ -6489,6 +6489,7 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 		case 'string':
 			var o = Q.extend({}, Q.handle.options, options);
 			if (!callables.isUrl()
+			&& (callables[0] != '#')
 			&& (!o.target || o.target.toLowerCase() === '_self')) {
 				// Assume this is not a URL.
 				// Try to evaluate the expression, and execute the resulting function
@@ -6517,7 +6518,9 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 				}
 			}
 			var sameDomain = callables.sameDomain(Q.info.baseUrl);
-			if (o.loadUsingAjax && sameDomain
+			if (callables[0] === '#') {
+				window.location.hash = callables;
+			} else if (o.loadUsingAjax && sameDomain
 			&& (!o.target || o.target === true || o.target === '_self')) {
 				if (callables.search(Q.info.baseUrl) === 0) {
 					// Use AJAX to refresh the page whenever the request is for a local page

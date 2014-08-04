@@ -107,7 +107,7 @@
 		"icon": ""
 	},
 	"Places/user/hometown_location": {
-		"type": "Places/location/city",
+		"type": "Places/location",
 		"title": "Hometown Location",
 		"icon": ""
 	},
@@ -122,7 +122,7 @@
 		"icon": ""
 	},	
 	"Places/user/current_location": {
-		"type": "Places/location/city",
+		"type": "Places/location",
 		"title": "Current location",
 		"icon": ""
 	},	

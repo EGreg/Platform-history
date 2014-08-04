@@ -13,7 +13,8 @@
 			"Q/responseExtras": ["Streams/after/Q/responseExtras"],
 			"Q/image": ["Streams/after/Q/image"],
 			"Db/Row/Users_User/saveExecute": ["Streams/after/Users/User/saveExecute"],
-			"Db/Row/Users_Contact/removeExecute": ["Streams/after/Users/Contact/removeExecute"]
+			"Db/Row/Users_Contact/removeExecute": ["Streams/after/Users/Contact/removeExecute"],
+			"Users/saveContactsFromLinks": ["Streams/after/Users/saveContactsFromLinks"]
 		},
 		"routes": {
 			"plugins/Streams/:action": {"module": "Streams"},
@@ -75,13 +76,6 @@
 				"edit": true,
 				"defaults": {
 					"title": "Untitled Interest"
-				}
-			},
-			"Places/location": {
-				"create": true,
-				"edit": true,
-				"messages": {
-					"Streams/location/message": {"post": true}
 				}
 			},
 			"Streams/incoming": {
