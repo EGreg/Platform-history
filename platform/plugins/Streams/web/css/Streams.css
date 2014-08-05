@@ -532,8 +532,8 @@
 .Streams_chat_tool .message-item{
 	margin: 10px 0;
 }
-.Streams_chat_tool .no-messages{
-	color: grey !important;
+.Streams_chat_tool .noMessages{
+	color: gray !important;
 	font-size: 13pt !important;
 	text-align: center;
 	width: 100%;

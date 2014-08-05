@@ -42,7 +42,13 @@
 	"Streams": {
 		"types": {
 			"Streams/text": {"create": true, "edit": true},
-			"Streams/text/small": {"create": true, "edit": true},
+			"Streams/text/small": {"create": true, "edit": true,
+				"messages": {
+					"Streams/chat/message": {
+						"post": true
+					}
+				}
+			},
 			"Streams/text/medium": {"create": true, "edit": true},
 			"Streams/text/name": {"create": true, "edit": true},
 			"Streams/text/url": {"create": true, "edit": true},

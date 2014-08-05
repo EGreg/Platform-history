@@ -62,7 +62,7 @@ Q.Tool.define("Q/inplace", function (options) {
 	Q.Template.render(
 		'Q/inplace/tool',
 		{
-			classes: function () { return o.editing ? 'Q_editing Q_nocancel' : ''; },
+			'classes': function () { return o.editing ? 'Q_editing Q_nocancel' : ''; },
 			staticClass: staticClass,
 			staticHtml: staticHtml
 				|| '<span class="Q_placeholder">'+tool.state.placeholder.encodeHTML()+'</div>'
