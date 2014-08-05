@@ -42,6 +42,56 @@ Q.text = {
 
 Q.Error = Error;
 
+Q.exit = function(status) {
+	// http://kevin.vanzonneveld.net
+	// +	 original by: Brett Zamir (http://brett-zamir.me)
+	// +			input by: Paul
+	// +	 bugfixed by: Hyam Singer (http://www.impact-computing.com/)
+	// +	 improved by: Philip Peterson
+	// +	 bugfixed by: Brett Zamir (http://brett-zamir.me)
+	// %				note 1: Should be considered experimental. Please comment on this function.
+	// *		 example 1: exit();
+	// *		 returns 1: null
+
+	var i;
+	var _stopEvent = function(e) {
+		if (e.stopPropagation) { /* W3C */
+			e.stopPropagation();
+			e.preventDefault();
+		} else {
+			window.event.cancelBubble = true;
+			window.event.returnValue = false;
+		}
+	};
+
+	if (typeof status === 'string') {
+		alert(status);
+	}
+
+	Q.addEventListener(window, 'error', function(e) {
+		_stopEvent(e);
+	}, false);
+
+	var handlers = [
+		'copy', 'cut', 'paste',
+		'beforeunload', 'blur', 'change', 'click', 'contextmenu', 'dblclick', 'focus', 'keydown', 'keypress', 'keyup', 'mousedown', 'mousemove', 'mouseout', 'mouseover', 'mouseup', 'resize', 'scroll',
+		'DOMNodeInserted', 'DOMNodeRemoved', 'DOMNodeRemovedFromDocument', 'DOMNodeInsertedIntoDocument', 'DOMAttrModified', 'DOMCharacterDataModified', 'DOMElementNameChanged', 'DOMAttributeNameChanged', 'DOMActivate', 'DOMFocusIn', 'DOMFocusOut', 'online', 'offline', 'textInput',
+		'abort', 'close', 'dragdrop', 'load', 'paint', 'reset', 'select', 'submit', 'unload'
+	];
+
+	for (i = 0; i < handlers.length; i++) {
+		Q.addEventListener(window, handlers[i], function(e) {
+			_stopEvent(e);
+		}, true);
+	}
+
+	if (window.stop) {
+		window.stop();
+	}
+
+	throw new Q.Error("Q.exit() was called");
+};
+
 /*
  * Extend some built-in prototypes
  */
@@ -616,6 +666,16 @@ Elp.addClass = function (className) {
  */
 Elp.text = function() {
 	return el.textContent || el.innerText;
+};
+
+/**
+ * Returns whether the element's content has overflowed the element's bounds.
+ * Does not work in IE8 and below for elements with {text-overflow: ellipsis}.
+ * @method text
+ * @return {String}
+ */
+Elp.isOverflowed = function(e) {
+     return (e.offsetWidth < e.scrollWidth) || (e.offsetHeight < e.scrollHeight);
 };
 
 }
@@ -2835,8 +2895,8 @@ Q.Tool = function _Q_Tool(element, options) {
 
 	// ID and prefix
 	if (!this.element.id) {
-		var prefix = Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '_';
-		this.element.id = (prefix + this.name + '_' (Q.Tool.nextDefaultId++) + "_tool").toLowerCase();
+		var prefix = Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '';
+		this.element.id = (prefix + this.name + '_' + (Q.Tool.nextDefaultId++) + "_tool").toLowerCase();
 	}
 	this.prefix = Q.Tool.calculatePrefix(this.element.id);
 	this.id = this.prefix.substr(0, this.prefix.length-1);
@@ -3443,7 +3503,7 @@ Q.Tool.setUpElement = function _Q_Tool_element(element, toolType, toolOptions, i
 	}
 	var ntt = toolType.replace(new RegExp('/', 'g'), '_');
 	element.setAttribute('class', 'Q_tool '+ntt+'_tool');
-	if (!id) {
+	if (!id && !element.getAttribute(id)) {
 		var p1, p2;
 		p1 = prefix ? prefix : (Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '');
 		do {
@@ -3666,9 +3726,6 @@ function _loadToolScript(toolElement, callback, shared, parentPipe) {
 			var normalizedName = Q.normalize(toolName);
 			parentPipe.waitForIdNames.push(normalizedId+"\t"+normalizedName);
 		}
-		if (toolFunc === undefined) {
-			return;
-		}
 		if (shared) {
 			var uniqueToolId = "tool " + (shared.waitingForTools.length+1)
 				+ ": " + normalizedId;
@@ -3676,6 +3733,9 @@ function _loadToolScript(toolElement, callback, shared, parentPipe) {
 		}
 		if (typeof toolFunc === 'function') {
 			return p.fill(toolName)(toolElement, toolFunc, toolName, uniqueToolId);
+		}
+		if (toolFunc === undefined) {
+			return;
 		}
 		if (typeof toolFunc !== 'string') {
 			throw new Q.Error("Q.Tool.loadScript: toolFunc cannot be " + typeof(toolFunc));
@@ -6682,7 +6742,8 @@ function _constructTool(toolElement, options, shared) {
 					this.options = Q.extend({}, Q.Tool.options.levels, toolFunc.options, Q.Tool.options.levels, options);
 					this.name = toolName;
 					if (Q.getObject(['Q', 'tools', toolName], element)) {
-						return; // support re-entrancy of Q.activate
+						// support re-entrancy of Q.activate
+						return _constructTool.alreadyActivated;
 					}
 					Q.Tool.call(this, element, options);
 					this.state = Q.copy(this.options, toolFunc.stateKeys);
@@ -6718,6 +6779,13 @@ function _constructTool(toolElement, options, shared) {
 		}
 		function _reallyConstruct() {
 			var result = new toolFunc.toolConstructor(toolElement, options);
+			
+			if (result !== _constructTool.alreadyActivated) {
+				// recursively activate whatever was inside,
+				// handle _initTool events, etc.
+				Q.activate(toolElement);
+			}
+			
 			if (uniqueToolId) {
 				shared.pipe.fill(uniqueToolId)();
 			}
@@ -6727,6 +6795,8 @@ function _constructTool(toolElement, options, shared) {
 	}, shared);
 	_waitingParentStack.push(new Q.Pipe()); // wait for init of child tools
 }
+
+_constructTool.alreadyActivated = {};
 
 /**
  * Calls the init method of a tool. Used internally.
@@ -6836,10 +6906,10 @@ Q.Template.collection = {};
  * @method set
  * @param {String} name The template's name under which it will be found
  * @param {String} content The content of the template that will be processed by the template engine
- * @param {String} type The type of template. Defaults to "handlebars"
+ * @param {String} type The type of template. Defaults to "mustache"
  */
 Q.Template.set = function (name, content, type) {
-	type = type || 'handlebars';
+	type = type || 'mustache';
 	if (!Q.Template.collection[type]) {
 		Q.Template.collection[type] = {};
 	}
@@ -6856,12 +6926,12 @@ Q.Template.set = function (name, content, type) {
  *   Then, check the cache. If not there, we try to load the template from dir+'/'+name+'.'+type
  * @param callback {Function} Receives two parameters: (err, templateText)
  * @param options {Object?} Options.
- *   "type" - the type and extension of the template, defaults to 'handlebars'
+ *   "type" - the type and extension of the template, defaults to 'mustache'
  *   "dir" - the subpath of the app url under which to look for the template if it needs to be loaded
  *   "name" - option to override the name of the template
  * @return {String|undefined}
  */
-Q.Template.load = Q.getter(function _Q_Template_load(name, callback, options) {
+Q.Template.load = function _Q_Template_load(name, callback, options) {
 	if (typeof callback === "object") {
 		options = callback;
 		callback = undefined;
@@ -6873,7 +6943,7 @@ Q.Template.load = Q.getter(function _Q_Template_load(name, callback, options) {
 		console.error('Q.Template.load: name is empty');
 		return;
 	}
-	// defaults to handlebars templates
+	// defaults to mustache templates
 	var o = Q.extend({}, Q.Template.load.options, options);
 	if (!Q.Template.collection[o.type]) {
 		Q.Template.collection[o.type] = {};
@@ -6883,7 +6953,7 @@ Q.Template.load = Q.getter(function _Q_Template_load(name, callback, options) {
 	
 	// Now attempt to load the template.
 	// First, search the DOM for templates loaded inside script tag with type "text/theType",
-	// e.g. "text/handlebars" and id matching the template name.
+	// e.g. "text/mustache" and id matching the template name.
 	var i, scripts = document.getElementsByTagName('script'), script, trash = [];
 	for (i = 0, l = scripts.length; i < l; i++) {
 		script = scripts[i];
@@ -6923,15 +6993,12 @@ Q.Template.load = Q.getter(function _Q_Template_load(name, callback, options) {
 	}
 	var url = Q.url(o.dir+'/'+name+'.'+ o.type);
 
-	Q.request(url, _callback, {
-		parse: false, 
-		extend: false
-	});
+	Q.request(url, _callback, {parse: false, extend: false});
 	return true;
-});
+};
 
 Q.Template.load.options = {
-	type: "handlebars",
+	type: "mustache",
 	dir: "views"
 };
 
@@ -6946,10 +7013,10 @@ Q.Template.onError = new Q.Event(function (err) {
  * @method render
  * @param name {string} The name of template. See Q.Template.load
  * @param fields {object?} Rendering params - to be substituted to template
- * @param partials {array?} Names of partials to load and use for rendering the template
+ * @param partials {array?} An array of partials to be used with template
  * @param callback {function} a callback - receives the rendering result or nothing
  * @param options {object?} Options.
- *   "type" - the type and extension of the template, defaults to 'handlebars'
+ *   "type" - the type and extension of the template, defaults to 'mustache'
  *   "dir" - the folder under project web folder where templates are located
  *   "name" - option to override the name of the template
  */
@@ -6967,24 +7034,24 @@ Q.Template.render = function _Q_Template_render(name, fields, partials, callback
 	if (!callback) {
 		throw new Q.Error("Q.Template.render: callback is missing");
 	}
-	Q.addScript(Q.url('plugins/Q/js/handlebars-v1.3.0.min.js'), function () {
+	Q.addScript(Q.url('plugins/Q/js/mustache.js'), function () {
 		// load the template and partials
 		var p = Q.pipe(['template', 'partials'], function (params) {
 			if (params.template[0]) {
 				return callback(null);
 			}
-			callback(null, Handlebars.compile(params.template[1])(fields, {partials: params.partials[0]}));
+			callback(null, Mustache.render(params.template[1], fields, params.partials[0]));
 		});
 		Q.Template.load(name, p.fill('template'), options);
 		// pipe for partials
 		if (partials && partials.length) {
 			var pp = Q.pipe(partials, function (params) {
-				var i, partial, part = {};
+				var i, partial, results = {};
 				for (i=0; i<partials.length; i++) {
 					partial = partials[i];
-					part[partial] = params[partial][0] ? null : params[partial][1];
+					results[partial] = params[partial][0] ? null : params[partial][1];
 				}
-				p.fill('partials')(part);
+				p.fill('partials')(results);
 			});
 			for (var i=0; i<partials.length; i++) {
 				Q.Template.load(partials[i], pp.fill(partials[i]), options);
@@ -7156,12 +7223,12 @@ Q.Socket.prototype.disconnect = function _Q_Socket_prototype_disconnect() {
 Q.Socket.disconnectAll = function _Q_Socket_disconnectAll(ns) {
 	if (ns) {
 		Q.each(_qsockets[ns], function (url, socket) {
-			socket && socket.disconnect();
+			socket.disconnect();
 		});
 	} else {
 		Q.each(_qsockets, function (ns, arr) {
 			Q.each(arr, function (url, socket) {
-				socket && socket.disconnect();
+				socket.disconnect();
 			});
 		});
 	}
