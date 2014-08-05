@@ -548,7 +548,7 @@
 	display: block;
 	padding: 6px;
 	height: 90px;
-	color: grey !important;
+	color: gray !important;
 }
 .Streams_chat_tool .more{
 	cursor: pointer;
@@ -564,6 +564,7 @@
 }
 .Streams_chat_tool .date{
 	text-align: right;
+	float: right;
 }
 .Streams_chat_tool .Q_ellipsis .message-item-text{
 	cursor: pointer;
@@ -574,7 +575,7 @@
 	margin-top: -15px;
 	border: 1px solid #D0D9E4;
 }
-.Streams_chat_tool .to-me .avatar-container{
+.Streams_chat_tool .to-me .Users_avatar_tool{
 	float: left;
 }
 .Streams_chat_tool .to-me .message-tick{
@@ -597,9 +598,9 @@
 	margin: 0px -19px 0px 0px;
 	background-position: 0px 13px;
 }
-.Streams_chat_tool .with-me .avatar-container,
-.Streams_chat_tool .with-me .avatar-container img,
-.Streams_chat_tool .with-me .avatar-container span.Users_avatar_contents{
+.Streams_chat_tool .with-me .Users_avatar_tool,
+.Streams_chat_tool .with-me .Users_avatar_tool img,
+.Streams_chat_tool .with-me .Users_avatar_tool span.Users_avatar_contents{
 	float: right;
 }
 .Streams_chat_tool .with-me .message-text-container{
@@ -610,7 +611,7 @@
 }
 .Streams_chat_tool .chat-notification{
 	text-align: center;
-	color: grey;
+	color: gray;
 	font-size: 12pt;
 	font-style: italic;
 }
@@ -629,6 +630,7 @@
 	}
 	.Streams_chat_tool .date {
 		width: 100%;
+		float: right;
 		margin-top: 15px;
 	}
 }

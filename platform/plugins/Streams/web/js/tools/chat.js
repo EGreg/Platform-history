@@ -1,559 +1,564 @@
 (function (Q, $) {
 	
-	/*
-	* Streams/chat
-	*/
-	Q.Tool.define('Streams/chat', function(options) {
-		this.Q.onInit.set(this.initialize, 'Streams/chat');
-	}, 
-	
-	{
-		templates: {
-			main: {
+/**
+ * Streams Tools
+ * @module Streams-tools
+ */
+
+/**
+ * Chatroom for people chat in a stream that allows posting messages with type "Streams/chat/message"
+ * @class Streams chat
+ * @constructor
+ * @param {Object} [options] this object contains function parameters
+ *   @param {String} [options.publisherId] Required if stream option is empty. The publisher's user id.
+ *   @param {String} [options.streamName] Required if stream option is empty. The stream's name.
+ *   @param {Stream} [options.stream] Optionally pass a Streams.Stream object here if you have it already
+ *   @param {String} [options.messageMaxHeight] The maximum height, in pixels, of a rendered message
+ *   @param {String} [options.messagesToLoad] The number of "Streams/chat" messages to load at a time.
+ *   @param {Object} [options.loadMore] May be "scroll", "click" or null/false. Defaults to "scroll".
+ *     <ul>
+ *         <li>"click" will show label with "Click to see earlier messages" (configurable in Q.text.Streams.chat.loadMore.click string), and when the user clicks it, new messages will be loaded.</li>
+ *         <li>"scroll" means new messages will be loaded when the scrollbar of the chat container reaches the top (for desktop) or whole document scrollbar reaches the top (android). On all other browsers it would use pull-to-refresh ... meaning, it will show "Pull to see earlier messages" (html configurable in Q.text.Streams.chat.loadMore.pull string) and as you pull "too far" you trigger the load. As for the indicator of "pulling too far", we will worry about that later, for now skip it. But remember to discuss it with me afterwards.</li>
+ *         <li>null/false/etc. - no interface to load earlier messages</li>
+ *     </ul>
+ *   @param {Q.Event} [options.onError] Event for when an error occurs, and the error is passed
+ */
+Q.Tool.define('Streams/chat', function(options) {		
+	function _construct(err, stream, extra) {
+		if (err) {
+			return Q.handle(state.onError, this, [err]);
+		}
+		var stream = state.stream = this;
+		state.publisherId = stream.fields.publisherId;
+		state.streamName = stream.fields.name;
+		tool.render(function() {
+			tool.renderMessages(tool.prettyMessages(extra.messages), function (snippets) {
+				var $te = $(tool.element);
+				Q.each(snippets, function (key, html) {
+					var $html = $(html);
+					$te.find('.noMessages').remove();
+					$html.find('.Streams_chat_avatar').each(function () {
+						Q.Tool.setUpElement(this, 'Users/avatar', {
+							userId: $(this).attr('data-byUserId')
+						}, null, tool.prefix);
+					});
+					$html.find('.Streams_chat_timestamp').each(function () {
+						Q.Tool.setUpElement(this, 'Q/timestamp', {
+							time: $(this).attr('data-time')
+						}, null, tool.prefix);
+					});
+					var $mc = $te.find('.messages-container'); 
+					$html.appendTo($mc).activate();
+				});
+			});
+			tool.scrollToBottom();
+			tool.addEvents();
+		});
+	}
+	var tool = this;
+	var state = tool.state;
+	state.more = {};
+	switch (state.loadMore) {
+		case 'click': state.more.isClick = true; break;
+		case 'scroll': state.more.isScroll = true; break;
+		default: break;
+	}
+	Q.Streams.retainWith(this)
+	.get(state.publisherId, state.streamName, _construct, {
+		messages: state.messagesToLoad
+	});
+	//tool.Q.onInit.set(_init, "Streams/chat");
+}, 
+
+{
+	messageMaxHeight: '200px',
+	messagesToLoad: 10,
+	loadMore: 'click',
+	templates: {
+		main: {
+			dir: 'plugins/Streams/views',
+			name: 'Streams/chat/main',
+			fields: { placeholder: "Add a comment" }
+		},
+		noMessages: {
+			dir: 'plugins/Streams/views',
+			name: 'Streams/chat/noMessages',
+			fields: { }
+		},
+		message: {
+			item: {
 				dir: 'plugins/Streams/views',
-				name: 'Streams/chat/main',
+				name: 'Streams/chat/message/item',
+				fields: {  }
+			},
+			notification: {
+				dir: 'plugins/Streams/views',
+				name: 'Streams/chat/message/notification',
 				fields: { }
 			},
-			noMessages: {
+			error: {
 				dir: 'plugins/Streams/views',
-				name: 'Streams/chat/noMessages',
-				fields: { }
-			},
-			message: {
-				item: {
-					dir: 'plugins/Streams/views',
-					name: 'Streams/chat/message/item',
-					fields: {  }
-				},
-				notification: {
-					dir: 'plugins/Streams/views',
-					name: 'Streams/chat/message/notification',
-					fields: { }
-				},
-				error: {
-					dir: 'plugins/Streams/views',
-					name: 'Streams/chat/message/error',
-					fields: {
-						text: {
-							notLoggedIn: "You are not logged in",
-							notAuthorized: "You are not authorized"
-						}
+				name: 'Streams/chat/message/error',
+				fields: {
+					text: {
+						notLoggedIn: "You are not logged in",
+						notAuthorized: "You are not authorized"
 					}
 				}
 			}
 		}
-	}, 
-	
-	{
-		initialize: function(){
-			var tool = this;
-			var state = this.state;
+	}
+}, 
 
-			if (Q.info.formFactor === 'desktop') {
-				state.loadMore = 'click';
-			}
+{
+	prettyMessages: function(messages){
+		var res  = [];
+		var tool = this;
+		var state = tool.state;
 
-			this.prettyData();
-			this.render(function(){
-				tool.renderMessages();
-				tool.scrollBottom();
-				tool.addEvents();
-			});
-		},
-
-		prettyData: function() {
-			var state = this.state;
-			state.more = {};
-			if (state.loadMore == 'click') {
-				state.more.isClick = true;
-			} else if (state.loadMore == 'scroll') {
-				state.more.isScroll = true;
-			}
-		},
-
-		prettyMessages: function(messages){
-			var res  = [];
-			var tool = this;
-			var state = tool.state;
-
-			if (messages.content) { // one message
-				res.push(parseMessage(messages));
-			} else { // more messages
-				for(var i in messages) {
-					if (messages[i].content) {
-						res.push(parseMessage(messages[i]));
-					}
+		if (messages.content) { // one message
+			res.push(parseMessage(messages));
+		} else { // more messages
+			for(var i in messages) {
+				if (messages[i].content) {
+					res.push(parseMessage(messages[i]));
 				}
 			}
+		}
 
-			return res;
+		return res;
 
-			function sliceContent(content) {
-				if (content.length > state.messageMaxHeight) {
-					return content.slice(0, state.messageMaxHeight) + '..';
-				}
+		function sliceContent(content) {
+			if (content.length > state.messageMaxHeight) {
+				return content.slice(0, state.messageMaxHeight) + '..';
+			}
 
-				return content;
+			return content;
+		};
+
+		function parseMessage(message) {
+			var data = {
+				fullContent: message.content, 
+				content    : sliceContent(message.content),
+				time       : new Date(message.sentTime).getTime() / 1000,
+				byUserId   : message.byUserId,
+				ordinal    : message.ordinal,
+				_class     : ''
 			};
 
-			function parseMessage(message) {
-				var data = {
-					fullContent: message.content, 
-					content    : sliceContent(message.content),
-					date       : tool.parseDate(message.sentTime),
-					byUserId   : message.byUserId,
-					ordinal    : message.ordinal,
-					_class     : ''
-				};
+			if (data.content.length > state.messageMaxHeight) {
+				data._class = 'Q_ellipsis'
+			}
 
-				if (data.content.length > state.messageMaxHeight) {
-					data._class = 'Q_ellipsis'
-				}
+			if (message.byUserId === state.userId) {
+				data._class += ' with-me';
+			} else {
+				data._class += ' to-me';
+			}
 
-				if (message.byUserId === state.userId) {
-					data._class += ' with-me';
-				} else {
-					data._class += ' to-me';
-				}
+			return data;
+		};
+	},
 
-				return data;
-			};
-		},
+	render: function(callback){
+		var $te = $(this.element);
+		var state = this.state;
 
-		render: function(callback){
-			var $el = $(this.element);
-			var state = this.state;
+		var fields = Q.extend({}, state.more, state.templates.main.fields);
+		Q.Template.render(
+			'Streams/chat/main',
+			fields,
+			function(error, html){
+				if (error) { return error; }
+				$te.html(html);
 
-			var fields = Q.extend({
-				isClick: state.more.isClick
-			}, state.templates.main.fields);
-			Q.Template.render(
-				'Streams/chat/main',
-				fields,
+				callback && callback();
+			},
+			state.templates.main
+		);
+	},
+
+	renderMessages: function(messages, callback){
+		var $te  = $(this.element);
+		var tool = this;
+		var state = this.state;
+
+		if (Q.isEmpty(messages)) {
+			return Q.Template.render(
+				'Streams/chat/noMessages', 
 				function(error, html){
 					if (error) { return error; }
-					$el.html(html);
-
-					callback && callback();
+					$te.find('.messages-container').html(html);
 				},
-				state.templates.main
+				state.templates.noMessages
 			);
-		},
-
-		renderMessages: function(messages){
-			var $el  = $(this.element);
-			var tool = this;
-			var state = this.state;
-
-			if (messages && !$.isEmptyObject(messages) && $.isArray(messages)) {
-				for (var i=0; i<messages.length; ++i) {
-					// is set this message
-					if (this.getOrdinal(false, messages[i].ordinal)) {
-						continue;
-					}
-
-					Q.Template.render(
-						'Streams/chat/message/item', 
-						messages[i], 
-						function(error, html){
-							if (error) { return error; }
-                        	
-							$el.find('.noMessages').remove();
-							var $html = $(html);
-                        	
-							Q.activate($html.find('.avatar-container').html(
-								Q.Tool.setUpElement('div', 'Users/avatar', {
-									userId: messages[i].byUserId
-								})
-							));
-                        	
-							$el.find('.messages-container').append($html);
-							tool.findMessage('last')
-								.find('.date')
-								.html(Q.Tool.setUpElement('div', 'Q/timestamp', messages[i].date))
-								.activate();
-                        	
-							// sort by ordinal
-							$el.find('.message-item').sort(function(curr, next){
-								if ($(curr).data('ordinal') > $(next).data('ordinal')) {
-									return 1;
-								} else if ($(curr).data('ordinal') < $(next).data('ordinal')) {
-									return -1;
-								}
-                        	
-								return 0;
-							}).detach().appendTo($el.find('.messages-container'));
-						},
-						state.templates.message.item
-					);
-				}
-			} else {
-				Q.Template.render(
-					'Streams/chat/noMessages', 
-					function(error, html){
-						if (error) { return error; }
-						$el.find('.messages-container').html(html);
-					},
-					state.templates.noMessages
-				);
+		}
+		
+		function _processMessage(ordinal, message) {
+			// TODO: in the future, render stream players inside message template
+			// according to the instructions in the message
+			Q.Template.render(
+				'Streams/chat/message/item',
+				message,
+				p.fill(ordinal)
+			);
+			ordinals.push(ordinal);
+		}
+		var p = new Q.Pipe();
+		var ordinals = [];
+		Q.each(messages, _processMessage, {ascending: true});
+		p.add(ordinals, 1, function (params) {
+			var snippets = {};
+			for (var ordinal in params) {
+				snippets[ordinal] = params[ordinal][1];
 			}
-		},
+			callback(snippets, messages);
+		}).run();
+	},
 
-		renderNotification: function(message){
-			var $container = $('<div>');
-			Q.activate($container.html(Q.Tool.setUpElement('div', 'Users/avatar', { userId: message.byUserId })), function(){
-				var data = {
-					username: $container.find('.Users_avatar_contents').text()
-				};
-
-				Q.Template.render(
-					'Streams/chat/message/notification', 
-					data, 
-					function(error, html){
-						if (error) { return error }
-						
-						$el.find('.noMessages').remove();
-						$el.find('.messages-container').append(html);
-					},
-					state.templates.message.notification
-				);
-			});
-		},
-
-		renderError: function(msg, err, data){
-			var $el  = $(this.element);
-			var tool = this;
-			var state = tool.state;
-
-			if (!msg) return;
-			var fields = {
-				error: {},
-				date : this.parseDate({ expression: 'CURRENT_TIMESTAMP' })
+	renderNotification: function(message){
+		var $container = $('<div>');
+		Q.activate($container.html(Q.Tool.setUpElement('div', 'Users/avatar', { userId: message.byUserId })), function(){
+			var data = {
+				username: $container.find('.Users_avatar_contents').text()
 			};
 
 			Q.Template.render(
-				'Streams/chat/message/error', 
-				{
-					errorText: msg,
-					data: data
-				}, 
+				'Streams/chat/message/notification', 
+				data, 
 				function(error, html){
-					if (error) { return error; }
-        	
-					$el.find('.noMessages').remove();
-					$el.find('.messages-container').append(html);
-        	
-					tool.findMessage('last')
-						.find('.date')
-						.html(Q.Tool.setUpElement('div', 'Q/timestamp', data.date))
-						.activate();
+					if (error) { return error }
+					
+					$te.find('.noMessages').remove();
+					$te.find('.messages-container').append(html);
 				},
-				state.templates.message.error
+				state.templates.message.notification
 			);
-		},
+		});
+	},
 
-		more: function(callback){
-			var tool = this;
-			var state = tool.state;
-			var params = {
-				max  : this.getOrdinal(0, 'first') - 1,
-				limit: state.messagesToLoad
-			};
+	renderError: function(msg, err, data){
+		var $te  = $(this.element);
+		var tool = this;
+		var state = tool.state;
 
-			Q.jsonRequest.options.quiet = true;
-			Q.Streams.Message.get(state.publisherId, state.streamName, params,
-			function(err, messages){
-				Q.jsonRequest.options.quiet = false;
-				if (err) {
-					return;
-				}
+		if (!msg) return;
+		var fields = {
+			errorText: msg,
+			time: Date.now() / 1000
+		};
 
-				callback.call(tool, messages);
-			}, {
-				'type': 'Streams/chat/message',
-				'ascending': true
-			});
-		},
+		Q.Template.render(
+			'Streams/chat/message/error', 
+			fields, 
+			function(error, html){
+				if (error) { return error; }
+    	
+				$te.find('.noMessages').remove();
+				$te.find('.messages-container').append(html);
+    	
+				tool.findMessage('last')
+					.find('.date')
+					.html(Q.Tool.setUpElement('div', 'Q/timestamp', data.date))
+					.activate();
+			},
+			state.templates.message.error
+		);
+	},
 
-		addEvents: function(){
-			var tool    = this,
-				$el     = $(this.element),
-				state   = this.state,
-				blocked = false;
+	more: function(callback){
+		var tool = this;
+		var state = tool.state;
+		var params = {
+			max  : this.getOrdinal(0, 'first') - 1,
+			limit: state.messagesToLoad,
+			type: "Streams/chat"
+		};
 
-			/*
-			* get more messages
-			*/
-			function renderMore(messages) {
-				messages = tool.prettyMessages(messages);
-				if (!!messages.length) {
-					tool.renderMessages(messages);
-					tool.scrollTop();
-				}
-			};
-
-			if (state.more.isClick) {
-				$el.find('.more').click(function(){
-					tool.more(renderMore);
-				});
-			} else {
-				this.niceScroll(function(){
-					tool.more(renderMore);
-				});
+		Q.jsonRequest.options.quiet = true;
+		Q.Streams.Message.get(state.publisherId, state.streamName, params,
+		function(err, messages){
+			Q.jsonRequest.options.quiet = false;
+			if (err) {
+				return;
 			}
 
-			$el.find('.Q_ellipsis .message-item-text').live('click', function(){
-				var $container = $(this).parents('.message-item'),
-					username   = $container.find('.Users_avatar_contents').text();
+			callback.call(tool, messages);
+		}, {
+			'type': 'Streams/chat/message',
+			'ascending': true
+		});
+	},
 
-				if ($container.data('byuserid') === state.userId) {
-					username = 'me';
-				}
+	addEvents: function(){
+		var tool    = this,
+			$te     = $(this.element),
+			state   = this.state,
+			blocked = false;
 
-				Q.Dialogs.push({
-					title  : 'Message from ' + username,
-					content: '<div class="Streams_popup_content">' + $container.data('content') + '</div>'
+		/*
+		* get more messages
+		*/
+		function renderMore(messages) {
+			messages = tool.prettyMessages(messages);
+			if (!!messages.length) {
+				tool.renderMessages(messages, function (snippets) {
+					$te.find('.noMessages').remove();
+					var $mc = $te.find('.messages-container'); 
+					Q.each(snippets, function (key, html) {
+						$(html).prependTo($mc).activate();
+					}, {ascending: false});
 				});
+				tool.scrollTop();
+			}
+		};
+
+		if (state.more.isClick) {
+			$te.find('.more').click(function(){
+				tool.more(renderMore);
 			});
+		} else {
+			this.niceScroll(function(){
+				tool.more(renderMore);
+			});
+		}
 
-			// new message arrived
-			Q.Streams.Stream.onMessage(state.publisherId, state.streamName, 'Streams/chat/message')
-			.set(function(stream, message) {
-				tool.renderMessages(tool.prettyMessages(message));
-				tool.scrollBottom();
-			}, 'Streams/chat');
+		$te.find('.Q_ellipsis .message-item-text').live('click', function(){
+			var $container = $(this).parents('.message-item'),
+				username   = $container.find('.Users_avatar_contents').text();
 
-			// new user joined
-			Q.Streams.Stream.onMessage(state.publisherId, state.streamName, 'Streams/join')
-			.set(function(stream, message) {
-				message = tool.prettyMessages(message);
-				message.action = { join: true };
+			if ($container.data('byuserid') === state.userId) {
+				username = 'me';
+			}
 
-				tool.renderNotification(message);
-				tool.scrollBottom();
-			}, 'Streams/chat');
+			Q.Dialogs.push({
+				title  : 'Message from ' + username,
+				content: '<div class="Streams_popup_content">' + $container.data('content') + '</div>'
+			});
+		});
 
-			// new user left
-			Q.Streams.Stream.onMessage(state.publisherId, state.streamName, 'Streams/leave')
-			.set(function(stream, message) {
-				message = tool.prettyMessages(message);
-				message.action = { leave: true };
+		// new message arrived
+		Q.Streams.Stream.onMessage(state.publisherId, state.streamName, 'Streams/chat/message')
+		.set(function(stream, message) {
+			tool.renderMessages(tool.prettyMessages([message]), function (snippets) {
+				$te.find('.noMessages').remove();
+				var $mc = $te.find('.messages-container'); 
+				Q.each(snippets, function (key, html) {
+					$(html).appendTo($mc).activate();
+				}, {ascending: true});
+			});
+			tool.scrollToBottom();
+		}, 'Streams/chat');
 
-				tool.renderNotification(tool.prettyMessages(message), 'leave');
-				tool.scrollBottom();
-			}, 'Streams/chat');
+		// new user joined
+		Q.Streams.Stream.onMessage(state.publisherId, state.streamName, 'Streams/join')
+		.set(function(stream, message) {
+			message = tool.prettyMessages(message);
+			message.action = { join: true };
 
-			/*
-			* send message
-			*/
-			$el.find('.message-text').keypress(function(event){
-				if (event.charCode == 13) {
-					if (blocked) {
-						return false;
-					}
+			tool.renderNotification(message);
+			tool.scrollToBottom();
+		}, 'Streams/chat');
 
-					var content = $el.find('.message-text').val().trim();
-					$el.find('.message-text').val('');
-					if (content.length == 0) {
-						return false;
-					}
+		// new user left
+		Q.Streams.Stream.onMessage(state.publisherId, state.streamName, 'Streams/leave')
+		.set(function(stream, message) {
+			message = tool.prettyMessages(message);
+			message.action = { leave: true };
 
-					Q.jsonRequest.options.quiet = true;
-					blocked = true;					
+			tool.renderNotification(tool.prettyMessages(message), 'leave');
+			tool.scrollToBottom();
+		}, 'Streams/chat');
 
-					Q.Streams.Message.post({
-						'publisherId': state.publisherId,
-						'streamName' : state.streamName,
-						'type'       : 'Streams/chat/message',
-						'content'    : content
-					}, function(err, args) {
-						if (err) {
-							tool.renderError(err, args[0], args[1]);
-						}
-						Q.jsonRequest.options.quiet = false;
-						blocked = false;
-					});
-
+		/*
+		* send message
+		*/
+		$te.find('.message-text').keypress(function(event){
+			if (event.charCode == 13) {
+				if (blocked) {
 					return false;
 				}
-			});
-		},
 
-		niceScroll: function(callback) {
-			if (Q.info.formFactor === 'desktop') {
+				var content = $te.find('.message-text').val().trim();
+				$te.find('.message-text').val('');
+				if (content.length == 0) {
+					return false;
+				}
+
+				Q.jsonRequest.options.quiet = true;
+				blocked = true;					
+
+				Q.Streams.Message.post({
+					'publisherId': state.publisherId,
+					'streamName' : state.streamName,
+					'type'       : 'Streams/chat/message',
+					'content'    : content
+				}, function(err, args) {
+					if (err) {
+						tool.renderError(err, args[0], args[1]);
+					}
+					state.stream.refresh(null, {messages: true});
+					Q.jsonRequest.options.quiet = false;
+					blocked = false;
+				});
+
 				return false;
 			}
+		});
+	},
 
-			// TODO - when user scrolled in message container not running this function
-			var isScrollNow = false,
-				startY      = null,
-				$el         = $(this.element);
-
-			function touchstart(event){
-				isScrollNow = true;
-				startY      = event.originalEvent.touches[0].pageY;
-			};
-
-			function touchend(event){
-				isScrollNow = false;
-				startY      = null;
-			};
-
-			$(document.body)
-				.bind('touchstart', touchstart)
-				.bind('touchend', touchend)
-				.bind('touchmove', function(event){
-
-				if (isScrollNow && event.originalEvent.touches[0].pageY > startY) {
-					// isset scollbar in window
-					if (0 > $(window).height() - $(document.body).height()) {
-						$(document.body)
-							.unbind('touchstart')
-							.unbind('touchend')
-							.unbind('touchmove');
-
-						$el.find('.messages-container').scroll(function(event){
-							if ($(this).scrollTop() == 0) {
-								callback && callback();
-							}
-						});
-					} else {
-						callback && callback();
-					}
-				}
-			});
-		},
-
-		/*
-		* @params date
-		* 	string of date
-		*	object of date
-		* 	object { expression: 'CURRENT_TIMESTAMP' }
-		*/
-		parseDate: function(date){
-			if (typeof date == 'string') {
-				return { time: parseTime(date) };
-			} else if (typeof date == 'object'){
-				if (date.expression == 'CURRENT_TIMESTAMP') {
-					return {};
-				} else {
-					return { time: parseTime(date.expression) };
-				}
-			}
-
-			return {};
-
-			function parseTime(date){
-				return (new Date(date)).getTime() / 1000;
-			}
-		},
-
-		getOrdinal: function(action, ordinal){
-			if (ordinal) {
-				ordinal = 'data-ordinal='+ordinal;
-			}
-
-			var data = this.findMessageData.call(this, action, ordinal);
-			return data ? data.ordinal : null;
-		},
-
-		/*
-		* find by options [first, last] or/and param
-		* or only by param
-		* @return data attribute or null 
-		*/
-		findMessageData: function(action, byParam){
-			var message = this.findMessage(action, byParam);
-			return message ? message.data() : null;
-		},
-
-		findMessage: function(action, byParam) {
-			var $el = $(this.element),
-				query = '.message-item';
-
-			byParam = (byParam ? '['+byParam+']' : '');
-
-			if (!action && byParam) {
-				return $el.find(query+byParam);
-			}
-
-			if (typeof(action) == 'string') {
-				switch(action){
-					case 'first':
-					case 'last':
-						return $el.find(query+':'+action+byParam);
-				}
-			} else if (typeof(action) == 'number') {
-				var messages = $el.find(query+byParam);
-				return messages.length <= action ? $(messages.get(action)) : null;
-			}
-
-			return null;
-		},
-
-		scrollBottom: function() {
-			$(this.element).find('.messages-container').animate({ scrollTop: $(document).height() }, '300');
-		},
-
-		scrollTop: function() {
-			$(this.element).find('.messages-container').animate({ scrollTop: -$(document).height() }, '300');	
+	niceScroll: function(callback) {
+		if (Q.info.formFactor === 'desktop') {
+			return false;
 		}
-	});
 
-	Q.Template.set('Streams/chat/message/item',
-		'<div class="message-item Q_w100 {{#_class}} {{_class}} {{/_class}}" '+
-				'data-content="{{fullContent}}" '+
-				'data-byUserId="{{byUserId}}" '+
-				'data-ordinal="{{ordinal}}">'+
-			'<div class="Q_w20 avatar-container"></div>'+
-			'<div class="Q_w100 message-text-container">'+
-				'<div class="message-tick"></div>'+
-				'<div class="message-item-text">{{content}}</div>'+
-				'<div class="Q_clear"></div>'+
-				'<div class="Q_w20 Q_right date"></div>'+
-				'<div class="Q_clear"></div>'+
-			'</div>'+
+		// TODO - when user scrolled in message container not running this function
+		var isScrollNow = false,
+			startY      = null,
+			$te         = $(this.element);
+
+		function touchstart(event){
+			isScrollNow = true;
+			startY      = event.originalEvent.touches[0].pageY;
+		};
+
+		function touchend(event){
+			isScrollNow = false;
+			startY      = null;
+		};
+
+		$(document.body)
+			.bind('touchstart', touchstart)
+			.bind('touchend', touchend)
+			.bind('touchmove', function(event){
+
+			if (isScrollNow && event.originalEvent.touches[0].pageY > startY) {
+				// isset scollbar in window
+				if (0 > $(window).height() - $(document.body).height()) {
+					$(document.body)
+						.unbind('touchstart')
+						.unbind('touchend')
+						.unbind('touchmove');
+
+					$te.find('.messages-container').scroll(function(event){
+						if ($(this).scrollTop() == 0) {
+							callback && callback();
+						}
+					});
+				} else {
+					callback && callback();
+				}
+			}
+		});
+	},
+
+	getOrdinal: function(action, ordinal){
+		if (ordinal) {
+			ordinal = 'data-ordinal='+ordinal;
+		}
+
+		var data = this.findMessageData.call(this, action, ordinal);
+		return data ? data.ordinal : null;
+	},
+
+	/*
+	* find by options [first, last] or/and param
+	* or only by param
+	* @return data attribute or null 
+	*/
+	findMessageData: function(action, byParam){
+		var message = this.findMessage(action, byParam);
+		return message ? message.data() : null;
+	},
+
+	findMessage: function(action, byParam) {
+		var $te = $(this.element),
+			query = '.message-item';
+
+		byParam = (byParam ? '['+byParam+']' : '');
+
+		if (!action && byParam) {
+			return $te.find(query+byParam);
+		}
+
+		if (typeof(action) == 'string') {
+			switch(action){
+				case 'first':
+				case 'last':
+					return $te.find(query+':'+action+byParam);
+			}
+		} else if (typeof(action) == 'number') {
+			var messages = $te.find(query+byParam);
+			return messages.length <= action ? $(messages.get(action)) : null;
+		}
+
+		return null;
+	},
+
+	scrollToBottom: function() {
+		$(this.element).find('.messages-container').animate({ scrollTop: $(document).height() }, '300');
+	},
+
+	scrollTop: function() {
+		$(this.element).find('.messages-container').animate({ scrollTop: -$(document).height() }, '300');	
+	}
+});
+
+Q.Template.set('Streams/chat/message/item',
+	'<div class="message-item Q_w100 {{#_class}} {{_class}} {{/_class}}" '+
+			'data-content="{{fullContent}}" '+
+			'data-byUserId="{{byUserId}}" '+
+			'data-ordinal="{{ordinal}}">'+
+		'<div class="Streams_chat_avatar" data-byUserId="{{byUserId}}"></div>'+
+		'<div class="Q_w100 message-text-container">'+
+			'<div class="message-tick"></div>'+
+			'<div class="message-item-text">{{content}}</div>'+
 			'<div class="Q_clear"></div>'+
-		'</div>'
-	);
-
-	Q.Template.set('Streams/chat/message/notification', 
-		'<div class="chat-notification>'+
-			'{{#action.join}}'+
-				'<b>{{username}}</b> joined the chat'+
-			'{{/action.join}}'+
-			'{{#action.leave}}'+
-				'<b>{{username}}</b> left the chat'+
-			'{{/action.leave}}'+
-		'</div>'
-	);
-	
-	Q.Template.set('Streams/chat/message/error',
-		'<div class="message-item Q_w100 error">'+
-			'<div class="Q_w100 message-text-container">'+
-				'<div class="message-item-text">'+
-					'{{errorText}}'+
-				'</div>'+
-				'<div class="Q_clear"></div>'+
-				'<div class="Q_w20 Q_right date"></div>'+
-				'<div class="Q_clear"></div>'+
-			'</div>'+
+			'<div class="Streams_chat_timestamp" data-time="{{time}}"></div>'+
 			'<div class="Q_clear"></div>'+
-		'</div>'
-	);
-
-	Q.Template.set('Streams/chat/noMessages', '<i class="noMessages">No messages</i>');
-
-	Q.Template.set('Streams/chat/main', 
-		'<div class="Q_clear"></div>'+
-		'{{#isClick}}'+
-			'<div class="more Q_w100">More messages</div>'+
-		'{{/isClick}}'+
-		'<div class="messages-container">'+
-			'<!-- messages -->'+
 		'</div>'+
-		'<textarea class="message-text Q_w100" placeholder="Write your message"></textarea>'+
-		'<hr />'+
-		'<div class="Q_clear"></div>'
-	);
+		'<div class="Q_clear"></div>'+
+	'</div>'
+);
+
+Q.Template.set('Streams/chat/message/notification', 
+	'<div class="chat-notification>'+
+		'{{#action.join}}'+
+			'<b>{{username}}</b> joined the chat'+
+		'{{/action.join}}'+
+		'{{#action.leave}}'+
+			'<b>{{username}}</b> left the chat'+
+		'{{/action.leave}}'+
+	'</div>'
+);
+
+Q.Template.set('Streams/chat/message/error',
+	'<div class="message-item Q_w100 error">'+
+		'<div class="Q_w100 message-text-container">'+
+			'<div class="message-item-text">'+
+				'{{errorText}}'+
+			'</div>'+
+			'<div class="Q_clear"></div>'+
+			'<div class="Streams_chat_timestamp" data-time="{{time}}"></div>'+
+			'<div class="Q_clear"></div>'+
+		'</div>'+
+		'<div class="Q_clear"></div>'+
+	'</div>'
+);
+
+Q.Template.set('Streams/chat/noMessages', '<i class="noMessages">No messages</i>');
+
+Q.Template.set('Streams/chat/main', 
+	'<div class="Q_clear"></div>'+
+	'{{#isClick}}'+
+		'<div class="more Q_w100">More messages</div>'+
+	'{{/isClick}}'+
+	'<div class="messages-container">'+
+		'<!-- messages -->'+
+	'</div>'+
+	'<textarea class="message-text Q_w100" placeholder="{{placeholder}}"></textarea>'+
+	'<hr />'+
+	'<div class="Q_clear"></div>'
+);
+
 })(Q, jQuery);

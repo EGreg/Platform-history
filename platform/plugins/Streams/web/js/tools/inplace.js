@@ -13,7 +13,7 @@
  *   @param {String} [options.inplaceType] The type of the fieldInput. Can be "textarea" or "text"
  *   @required
  *   @param {String} [options.publisherId] Required if stream option is empty. The publisher's user id.
- *   @param {String} [options.publisherId] Required if stream option is empty. The publisher's user id.
+ *   @param {String} [options.streamName] Required if stream option is empty. The stream's name.
  *   @param {Stream} [options.stream] Optionally pass a Streams.Stream object here if you have it already
  *   @param {String} [options.field] Optional, name of an field to change instead of the content of the stream
  *   @param {String} [options.attribute] Optional, name of an attribute to change instead of any field.

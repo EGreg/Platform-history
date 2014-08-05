@@ -2835,8 +2835,8 @@ Q.Tool = function _Q_Tool(element, options) {
 
 	// ID and prefix
 	if (!this.element.id) {
-		var prefix = Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '_';
-		this.element.id = (prefix + this.name + '_' (Q.Tool.nextDefaultId++) + "_tool").toLowerCase();
+		var prefix = Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '';
+		this.element.id = (prefix + this.name + '_' + (Q.Tool.nextDefaultId++) + "_tool").toLowerCase();
 	}
 	this.prefix = Q.Tool.calculatePrefix(this.element.id);
 	this.id = this.prefix.substr(0, this.prefix.length-1);
@@ -3443,7 +3443,7 @@ Q.Tool.setUpElement = function _Q_Tool_element(element, toolType, toolOptions, i
 	}
 	var ntt = toolType.replace(new RegExp('/', 'g'), '_');
 	element.setAttribute('class', 'Q_tool '+ntt+'_tool');
-	if (!id) {
+	if (!id && !element.getAttribute(id)) {
 		var p1, p2;
 		p1 = prefix ? prefix : (Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '');
 		do {

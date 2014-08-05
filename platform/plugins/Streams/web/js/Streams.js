@@ -396,13 +396,13 @@ Streams.get = Q.getter(function (publisherId, streamName, callback, extra) {
 				messages: data.messages, 
 				participants: data.participants 
 			}, 
-			function Streams_get_construct_handler(err, stream) {
+			function Streams_get_construct_handler(err, stream, extra) {
 				var msg;
 				if (msg = Q.firstErrorMessage(err)) {
 					var args = [err, data, stream];
 					Streams.onError.handle(msg, args);
 				}
-				return callback && callback.call(stream, err, stream);
+				return callback && callback.call(stream, err, stream, extra);
 			}
 		);
 	}, extra);
@@ -588,14 +588,16 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 			Q.mixin(streamFunc.streamConstructor, streamFunc);
 		}
 		var stream = new streamFunc.streamConstructor(fields);
+		var messages = {}, participants = {};
 		
 		if (extra && extra.messages) {
 			Q.each(extra.messages, function (ordinal, message) {
 				if (Q.typeOf(message) !== 'Q.Streams.Message') {
 					message = new Message(message);
 				}
+				messages[ordinal] = message;
 				Message.get.cache.set(
-					[fields.publisherId, fields.name, message.ordinal], 0,
+					[fields.publisherId, fields.name, parseInt(message.ordinal)], 0,
 					message, [null, message]
 				);
 			});
@@ -605,6 +607,7 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 				if (Q.typeOf(participant) !== 'Q.Streams.Participant') {
 					participant = new Participant(participant);
 				}
+				participants[userId] = participant;
 				Participant.get.cache.set(
 					[fields.publisherId, fields.name, participant.userId], 0,
 					participant, [null, participant]
@@ -612,7 +615,10 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 			});
 		}
 		
-		Q.handle(callback, stream, [null, stream]);
+		Q.handle(callback, stream, [null, stream, {
+			messages: messages,
+			participants: participants
+		}]);
 		return stream;
 	}
 }
@@ -2081,14 +2087,14 @@ Message.get = Q.getter(function _Message_get (publisherId, streamName, ordinal, 
 	var slotName, criteria = {};
 	if (Q.typeOf(ordinal) === 'object') {
 		slotName = 'messages';
-		criteria.min = ordinal.min;
-		criteria.max = ordinal.max;
-		criteria.limit = ordinal.limit;
+		criteria.min = parseInt(ordinal.min);
+		criteria.max = parseInt(ordinal.max);
+		criteria.limit = parseInt(ordinal.limit);
 		if ('type' in ordinal) criteria.type = ordinal.type;
 		if ('ascending' in ordinal) criteria.ascending = ordinal.ascending;
 	} else {
 		slotName = 'message';
-		criteria = ordinal;
+		criteria = parseInt(ordinal);
 	}
 
 	var func = Streams.batchFunction(Q.baseUrl({
@@ -2154,7 +2160,7 @@ Message.post = function _Message_post (msg, callback) {
 		}
 		var message = data.slots.message && new Message(data.slots.message);
 		Message.get.cache.set(
-			[message.publisherId, message.streamName, message.ordinal],
+			[message.publisherId, message.streamName, parseInt(message.ordinal)],
 			0, message, [err, message]
 		);
 		callback && callback.call(message, err, message || null);
@@ -2780,7 +2786,7 @@ Q.onInit.add(function _Streams_onInit() {
 				};
 				document.addEventListener('push-notification', function(e) {
 					if (e.notification && e.notification.aps && e.notification.aps.badge !== undefined) {
-						pushNotification.setApplicationIconBadgeNumber(e.notification.aps.badge);
+						pushNotification.setApplicationIconBadgeparseInt(e.notification.aps.badge);
 					}
 				});
 				function _onActivate() {
@@ -2803,7 +2809,7 @@ Q.onInit.add(function _Streams_onInit() {
 	}
 	if (Q.info.isCordova && pushNotification && !Streams.pushNotification) {
 		Q.Users.login.options.onSuccess.set(_registerPushNotifications, 'Streams.PushNotifications');
-		Q.Users.logout.options.onSuccess.set(function() { pushNotification.setApplicationIconBadgeNumber(0); }, 'Streams.PushNotifications');
+		Q.Users.logout.options.onSuccess.set(function() { pushNotification.setApplicationIconBadgeparseInt(0); }, 'Streams.PushNotifications');
 		if (Q.Users.loggedInUser) _registerPushNotifications();
 	}
 	
@@ -2909,7 +2915,7 @@ Q.onInit.add(function _Streams_onInit() {
 				? msg
 				: new Message(msg);
 			Message.get.cache.set(
-				[msg.publisherId, msg.streamName, msg.ordinal],
+				[msg.publisherId, msg.streamName, parseInt(msg.ordinal)],
 				0, message, [null, message]
 			);
 			var cached = Streams.get.cache.get([msg.publisherId, msg.streamName]);
