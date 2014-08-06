@@ -11,17 +11,12 @@
  */
 
 function Streams_message_post () {
-		
-	// only logged in user can post to stream
-	$user = Users::loggedInUser(true);
-	$userId = $user ? $user->id : "";
-	
-	// Do the post
+	$user        = Users::loggedInUser(true);
 	$publisherId = Streams::requestedPublisherId(true);
-	$streamName = Streams::requestedName(true);
-	
+	$streamName  = Streams::requestedName(true);
+
 	// check if type is allowed
-	$streams = Streams::fetch($userId, $publisherId, $streamName);
+	$streams = Streams::fetch($user->id, $publisherId, $streamName);
 	if (empty($streams)) {
 		throw new Q_Exception_MissingRow(array(
 			'table' => 'stream', 
@@ -32,11 +27,12 @@ function Streams_message_post () {
 	if (empty($_REQUEST['type'])) {
 		throw new Q_Exception_RequiredField(array('field' => 'type'), 'type');
 	}
+
 	$type = $_REQUEST['type'];
 	if (!Q_Config::get("Streams", "types", $stream->type, "messages", $type, 'post', false)) {
 		throw new Q_Exception("This app doesn't support directly posting messages of type '$type' for streams of type '{$stream->type}'");
 	}
-	
+
 	$result = Streams_Message::post(
 		$user->id,
 		$publisherId,

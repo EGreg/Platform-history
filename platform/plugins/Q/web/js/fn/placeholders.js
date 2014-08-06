@@ -80,9 +80,7 @@ function () {
 			if (interval) clearInterval(interval);
 		});
 		$this.data('Q-placeholder', placeholder);
-	});
-	$('input', this).on('keypress keyup change input focus paste blur Q_refresh', manage);
-	$('textarea', this).on('keypress keyup change input focus paste blur Q_refresh', manage);
+	}).on('keypress keyup change input focus paste blur Q_refresh', manage);
 	return this;
 
 	function manage(event) {

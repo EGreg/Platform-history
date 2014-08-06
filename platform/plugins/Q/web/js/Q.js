@@ -638,7 +638,8 @@ Elp.removeClass = function (className) {
 	if (this.classList) {
 		this.classList.remove(className)
 	} else {
-		this.className = this.className.replace(new RegExp('(^| )' + className.split(' ').join('|') + '( |$)', 'gi'), ' ');
+		this.className = this.className.replace(new RegExp('(^| )' 
+			+ className.split(' ').join('|') + '( |$)', 'gi'), ' ');
 	}
 	return this;
 };
@@ -650,11 +651,16 @@ Elp.removeClass = function (className) {
  * @return {Element} returns this, for chaining
  */
 Elp.addClass = function (className) {
-	if (this.classList) {
-		this.classList.add(className)
-	} else {
-		this.removeClass(className);
-		this.className += ' ' + className;
+	var classNames = className.split(' ');
+	var l = classNames.length;
+	for (var i=0; i<l; ++i) {
+		var c = classNames[i];
+		if (this.classList) {
+			this.classList.add(c)
+		} else {
+			this.removeClass(c);
+			this.className += ' ' + c;
+		}
 	}
 	return this;
 };
@@ -674,8 +680,9 @@ Elp.text = function() {
  * @method text
  * @return {String}
  */
-Elp.isOverflowed = function(e) {
-     return (e.offsetWidth < e.scrollWidth) || (e.offsetHeight < e.scrollHeight);
+Elp.isOverflowed = function() {
+     return (this.offsetWidth < this.scrollWidth)
+	 	|| (this.offsetHeight < this.scrollHeight);
 };
 
 }
@@ -3502,7 +3509,7 @@ Q.Tool.setUpElement = function _Q_Tool_element(element, toolType, toolOptions, i
 		element = document.createElement(element);
 	}
 	var ntt = toolType.replace(new RegExp('/', 'g'), '_');
-	element.setAttribute('class', 'Q_tool '+ntt+'_tool');
+	element.addClass('Q_tool '+ntt+'_tool');
 	if (!id && !element.getAttribute(id)) {
 		var p1, p2;
 		p1 = prefix ? prefix : (Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '');

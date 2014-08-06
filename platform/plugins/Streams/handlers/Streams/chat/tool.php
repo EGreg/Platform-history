@@ -18,34 +18,43 @@
 */
 function Streams_chat_tool($options)
 {
-	Q_Response::addScript('plugins/Q/js/QTools.js');
 	$user = Users::loggedInUser(true);
-	if (!$user) return '';
-	
-	if (empty($options['publisherId']))
-	{
-		throw new Q_Exception("Streams/chat: please provide 'publisherId' parameter.");
-	}
-	if (empty($options['streamName']))
-	{
-		throw new Q_Exception("Streams/chat: please provide 'streamName' parameter.");
-	}
+
+	/*
 	$defaults = array(
-		'loadMore' => (Q_Request::isTouchscreen() && Q_Request::platform() != 'android') ? 'pull' : 'scroll',
-		'amountToLoad' => 3
+		'loadMore'         => (Q_Request::isTouchscreen() && Q_Request::platform() != 'android') ? 'click' : 'scroll',
+		'messagesToLoad'   => 5,
+		'messageMaxHeight' => 200
 	);
 	$options = array_merge($defaults, $options);
-	
-	// fetching existing messages
-	$stream = new Streams_Stream();
-	$stream->publisherId = $options['publisherId'];
-	$stream->name = $options['streamName'];
-	$messages = $stream->getMessages(array('type' => 'Streams/chat/message', 'max' => -1, 'limit' => 10));
-	$messages = array_reverse($messages);
-	
-	Q_Response::addScript('plugins/Q/js/phpjs.js');
-	Q_Response::addScript('plugins/Streams/js/Streams.js');
-	Q_Response::addStylesheet('plugins/Streams/css/Streams.css');
+	*/
+	extract($options);
+
+	if (!isset($publisherId)) {
+		$publisherId = Streams::requestedPublisherId(true);
+	}
+
+	if (!isset($streamName)) {
+		$streamName = Streams::requestedName();
+	}
+
+	$stream = Streams::fetchOne($user->id, $publisherId, $streamName);
+	if (!$stream) {
+		throw new Q_Exception_MissingRow(array(
+			'table'    => 'stream',
+			'criteria' => compact('publisherId', 'streamName')
+		));
+	}
+
+	$options['userId'] = $user->id;
+
+	if (!isset($options['notLoggedIn'])) {
+		$options['notLoggedIn'] = 'You Not Logged In';
+	}
+
+	if (!isset($options['notAuthorized'])) {
+		$options['notAuthorized'] = 'You Not Authorized';
+	}
+
 	Q_Response::setToolOptions($options);
-	return Q::view('Streams/tool/chat.php', compact('params', 'user', 'messages'));
 }

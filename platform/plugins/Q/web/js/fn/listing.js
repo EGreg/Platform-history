@@ -5,7 +5,7 @@
  * @module Q-tools
  * @main Q-tools
  */
-	
+
 /**
  * Listing that appears in contextual menus
  * @class Q listing

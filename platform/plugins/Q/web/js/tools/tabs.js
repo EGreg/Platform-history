@@ -187,7 +187,7 @@ Q.Tool.define("Q/tabs", function(options) {
 	 * @return {String} the name of the tab
 	 */
 	getName: function (tab) {
-		return tab.getAttribute("data-name");
+		return tab ? tab.getAttribute("data-name") : '';
 	},
 	
 	/**

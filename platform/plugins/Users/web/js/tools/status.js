@@ -1,5 +1,5 @@
 (function (Q, $) {
-	
+
 /**
  * Users Tools
  * @module Users-tools

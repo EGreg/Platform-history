@@ -1,485 +1,550 @@
 (function (Q, $) {
-
+	
 /**
  * Streams Tools
  * @module Streams-tools
  */
 
 /**
- * Standard chatting interface
+ * Chatroom for people chat in a stream that allows posting messages with type "Streams/chat/message"
  * @class Streams chat
  * @constructor
  * @param {Object} [options] this object contains function parameters
- *   @param {String} [options.publisherId] Publisher id of the stream to get messsages from.
- *   @required
- *   @param {String} [options.streamName] Name of the stream to get messsages from.
- *   @required
- *   @param {String} [options.loadMore] May have one these values: 'scroll', 'click' or 'pull' which indicates what kind of algorithm
- *     will be used for loading new messages. 'scroll' means that new messages will be loaded when scrollbar
- *     of the chat cointainer reaches the top (for desktop) or whole document scrollbar reaches the top (for android).
- *     'click' will show label with 'Click to see earlier messages' and when user clicks it, new messages will be loaded.
- *     Finally, 'pull' implements 'pull-to-refresh' behavior used in many modern applications today when new messages
- *     loaded by rubber-scrolling the container by more amount than it actually begins.
- *     Defaults to 'scroll' for desktop and Android devices and 'pull' for iOS devices.
- *   @param {Number} [options.amountToLoad]   Amount of messages to load on each request.
- *   @default 3
+ *   @param {String} [options.publisherId] Required if stream option is empty. The publisher's user id.
+ *   @param {String} [options.streamName] Required if stream option is empty. The stream's name.
+ *   @param {Stream} [options.stream] Optionally pass a Streams.Stream object here if you have it already
+ *   @param {String} [options.messageMaxHeight] The maximum height, in pixels, of a rendered message
+ *   @param {String} [options.messagesToLoad] The number of "Streams/chat" messages to load at a time.
+ *   @param {Object} [options.loadMore] May be "scroll", "click" or null/false. Defaults to "click".
+ *     <ul>
+ *         <li>"click" will show label with "Click to see earlier messages" (configurable in Q.text.Streams.chat.loadMore.click string), and when the user clicks it, new messages will be loaded.</li>
+ *         <li>"scroll" means new messages will be loaded when the scrollbar of the chat container reaches the top (for desktop) or whole document scrollbar reaches the top (android). On all other browsers it would use pull-to-refresh ... meaning, it will show "Pull to see earlier messages" (html configurable in Q.text.Streams.chat.loadMore.pull string) and as you pull "too far" you trigger the load. As for the indicator of "pulling too far", we will worry about that later, for now skip it. But remember to discuss it with me afterwards.</li>
+ *         <li>null/false/etc. - no interface to load earlier messages</li>
+ *     </ul>
+ *   @param {Q.Event} [options.onError] Event for when an error occurs, and the error is passed
  */
-Q.Tool.define("Streams/chat", function _Streams_chat_constructor (options) {
-	var o = Q.extend({
-		'loadMore': (Q.info.isTouchscreen && Q.info.platform != 'android') ? 'pull' : 'scroll',
-		'amountToLoad': 3
-	}, options);
-	
-	var tool = this, $this = $(this.element);
-	tool.valid = true;
-	if (!(o.streamName && o.publisherId))
-	{
-		tool.valid = false;
-		return;
+Q.Tool.define('Streams/chat', function(options) {		
+	function _construct(err, stream, extra) {
+		if (err) {
+			return Q.handle(state.onError, this, [err]);
+		}
+		var stream = state.stream = this;
+		state.publisherId = stream.fields.publisherId;
+		state.streamName = stream.fields.name;
+		Q.each(extra.messages, function (ordinal) {
+			state.earliest = ordinal;
+			return false;
+		}, {ascending: true});
+		tool.render(function() {
+			tool.renderMessages(tool.prepareMessages(extra.messages), function (snippets) {
+				var $te = $(tool.element);
+				Q.each(snippets, function (key, $html) {
+					$te.find('.Streams_chat_noMessages').remove();
+					var $mc = $te.find('.Streams_chat_messages'); 
+					$html.appendTo($mc).activate();
+				});
+			});
+			tool.scrollToBottom();
+			tool.addEvents();
+		});
 	}
-	$('.Streams_chat_no_messages', this.element).html(Q.text.Streams.chat.noMessages);
-	$this.data('Streams_chat_tool_options', o);
-	$this.find('.Streams_chat_comment_form').plugin('Q/placeholders');
-	if (o.loadMore == 'scroll')
-	{
-		var chatListingWrapper = $this.find('.Streams_chat_listing_wrapper');
-		var latestScrollTop = -1, timePassed = 0;
-		tool.scrollCheck = function()
-		{
-			var scrollHeight = (Q.info.platform == 'android' ? document.body.scrollHeight : chatListingWrapper[0].scrollHeight);
-			var containerHeight = (Q.info.platform == 'android' ? window.innerHeight : chatListingWrapper.height());
-			var currentScrollTop = (Q.info.platform == 'android' ? document.body.scrollTop : chatListingWrapper.scrollTop());
-			if (tool.initiallyScrolled && scrollHeight > containerHeight && !currentScrollTop)
-			{
-				if (!tool.loadingInProgress)
-				{
-					// we must ensure that scrollTop doesn't change in a given time interval
-					if (latestScrollTop == -1)
-					{
-						latestScrollTop = currentScrollTop;
-						timePassed = o.scrollIntervalMs;
-					}
-					if (timePassed >= o.scrollStableIntervalMs &&
-							latestScrollTop == currentScrollTop)
-					{
-						latestScrollTop = -1;
-						tool.loadingInProgress = true;
-						tool.loadMoreMessages($this);
-					}
-					else
-					{
-						timePassed += o.scrollIntervalMs;
+	var tool = this;
+	var state = tool.state;
+	state.more = {};
+	switch (state.loadMore) {
+		case 'click': state.more.isClick = true; break;
+		case 'scroll': state.more.isScroll = true; break;
+		default: break;
+	}
+	Q.Streams.retainWith(this)
+	.get(state.publisherId, state.streamName, _construct, {
+		messages: state.messagesToLoad
+	});
+	//tool.Q.onInit.set(_init, "Streams/chat");
+}, 
+
+{
+	messageMaxHeight: '200px',
+	messagesToLoad: 10,
+	loadMore: 'click',
+	templates: {
+		main: {
+			dir: 'plugins/Streams/views',
+			name: 'Streams/chat/main',
+			fields: { placeholder: "Add a comment" }
+		},
+		Streams_chat_noMessages: {
+			dir: 'plugins/Streams/views',
+			name: 'Streams/chat/Streams_chat_noMessages',
+			fields: { }
+		},
+		message: {
+			item: {
+				dir: 'plugins/Streams/views',
+				name: 'Streams/chat/message/bubble',
+				fields: {  }
+			},
+			notification: {
+				dir: 'plugins/Streams/views',
+				name: 'Streams/chat/message/notification',
+				fields: { }
+			},
+			error: {
+				dir: 'plugins/Streams/views',
+				name: 'Streams/chat/message/error',
+				fields: {
+					text: {
+						notLoggedIn: "You are not logged in",
+						notAuthorized: "You are not authorized"
 					}
 				}
 			}
-			else
-			{
-				latestScrollTop = -1;
-			}
-		};
-		
-		Q.Interval.set(function()
-		{
-			var scrollHeight = (Q.info.platform == 'android' ? document.body.scrollHeight : chatListingWrapper[0].scrollHeight);
-			var containerHeight = (Q.info.platform == 'android' ? window.innerHeight : chatListingWrapper.height());
-			tool.enableClickToLoad(scrollHeight <= containerHeight);
-		}, o.scrollIntervalMs, 'Streams.chat.toggleClickToLoad.interval');
-	}
-	else if (o.loadMore == 'click')
-	{
-		tool.enableClickToLoad();
-	}
-	tool.loadMoreMessages();
-	
-	tool.$('textarea').on('keydown', function(e)
-	{
-		if (e.keyCode == 13)
-		{
-			var $this = $(this);
-			$this.attr({ 'disabled': 'disabled' });
-			$this.addClass('Streams_chat_textarea_posting');
-			var text = $this.val();
-			if (text.length > 0)
-			{
-				var params = {
-					'publisherId': o.publisherId,
-					'streamName': o.streamName,
-					'type': 'Streams/chat/message',
-					'content': text
-				};
-				Q.jsonRequest.options.quiet = true;
-				Q.Streams.Message.post(params, function(err, message)
-				{
-					Q.jsonRequest.options.quiet = false;
-					if (err)
-					{
-						if (err[0] && err[0].message) {
-							alert(err[0].message);
-						} else {
-							alert('An error occured while posting a message, please try again later.');
-						}
-						console.log(error);
-					}
-					else
-					{
-						$this.val('');
-						$this.removeAttr('disabled');
-						$this.removeClass('Streams_chat_textarea_posting');
-					}
-				});
-			}
 		}
-	});
-	
-	Q.Streams.Stream.onMessage(o.publisherId, o.streamName, 'Streams/chat/message').set(function(stream, msg)
-	{
-		Q.Tool.constructors['Users/avatar'].options.onName.set(function()
-		{
-			tool.onLayout({ 'chatWidthOnly': true });
-		}, 'Users.avatar.onNameResolve');
-		tool.addMessage(msg);
-	}, 'Streams.chat');
-	
-	$this.data('Streams_chat_tool_inited', true);
-},
+	}
+}, 
 
 {
-	scrollIntervalMs: 100,
-	scrollStableIntervalMs: 300
-},
+	prepareMessages: function(messages){
+		var res  = {};
+		var tool = this;
+		var state = tool.state;
+		
+		if (messages.content) {
+			// this is a single message
+			var m = messages;
+			messages = {};
+			messages[m.ordinal] = m;
+		}
 
-{
-    enableClickToLoad: function _Streams_chat_enableClickToLoad(enabled) {
-    	var tool = this, $this = $(tool.element);
-    	var trigger = $this.find('.Streams_chat_click_to_load');
-    	if (enabled)
-    	{
-    		trigger.show().on('click.Streams_chat', function()
-    		{
-    			if (!tool.loadingInProgress)
-    			{
-    				tool.loadingInProgress = true;
-    				tool.loadMoreMessages();
-    			}
-    		});
-    	}
-    	else
-    	{
-    		trigger.hide().off('click.Streams_chat');
-    	}
-    },
-    onLayout: function _Streams_chat_onLayout(options) {
-    	var tool = this, $this = $(tool.element);
-    	if (!tool.valid) return;
+		for (var ordinal in messages) {
+			var message = messages[ordinal];
+			if (!message.content) {
+				return;
+			}
+			res[ordinal] = {
+				content    : message.content,
+				time       : new Date(message.sentTime).getTime() / 1000,
+				byUserId   : message.byUserId,
+				ordinal    : message.ordinal,
+				classes    : (message.byUserId === state.userId)
+								? ' Streams_chat_from_me'
+								: ' Streams_chat_to_me'
+			};
+		}
 
-    	if (!(options && options.chatAvailableHeight))
-    	{
-    		options.chatAvailableHeight = $this.data('Q_previous_available_height');
-    		if (!options.chatAvailableHeight) return;
-    	}
+		return res;
+	},
 
-    	if ($this.data('Streams_chat_tool_inited'))
-    	{
-    		var o = tool.options, chatPostWidth;
-    		if (o !== undefined)
-    		{
-    			if (options.chatWidthOnly)
-    			{
-    				chatPostWidth = $this.find('.Streams_chat_listing').width() - $this.find('.Streams_chat_avatar').outerWidth();
-    				$this.find('.Streams_chat_post, .Streams_chat_comment_text').css({ 'width': chatPostWidth + 'px' });
-    				$this.find('.Streams_chat_comment_text textarea').css({ 'width': (chatPostWidth - 10) + 'px' });
-    			}
-    			else
-    			{
-    				if (o.loadMore == 'pull')
-    				{
-    					var previousHeight = $this.data('Q_previous_available_height');
-    					if ((previousHeight === undefined) ||
-    							(previousHeight !== undefined && options.chatAvailableHeight != $this.data('Q_previous_available_height')))
-    					{
-    						$this.css({ 'height': options.chatAvailableHeight + 'px' });
-    						if (!tool.loadingTurnedOff)
-    						{
-    							var pullDownOffset = $this.find('.Streams_chat_pull_down').outerHeight(true);
-    							var pullDownIcon = $('.Streams_chat_pull_down_icon');
-    							var pullDownLabel = $('.Streams_chat_pull_down_label');
-    							$this.plugin('Q/iScroll', 'remove').plugin('Q/iScroll', {
-    								y: -10000,
-    								useTransition: true,
-    								topOffset: pullDownOffset,
-    								onRefresh: function()
-    								{
-    									if (pullDownIcon.hasClass('loading'))
-    									{
-    										pullDownIcon.removeClass('loading');
-    										pullDownLabel.html(pullDownLabel.html().replace(/(Release to load|Loading)/g, 'Pull down to load'));
-    									}
-    								},
-    								onScrollMove: function()
-    								{
-    									if (this.y > 5 && !pullDownIcon.hasClass('Q_flip'))
-    									{
-    										pullDownIcon.addClass('Q_flip');
-    										pullDownLabel.html(pullDownLabel.html().replace('Pull down', 'Release'));
-    										this.minScrollY = 0;
-    									}
-    									else if (this.y < 5 && pullDownIcon.hasClass('Q_flip'))
-    									{
-    										pullDownIcon.removeClass('Q_flip');
-    										pullDownLabel.html(pullDownLabel.html().replace('Release', 'Pull down'));
-    										this.minScrollY = -pullDownOffset;
-    									}
-    								},
-    								onScrollEnd: function()
-    								{
-    									if (!tool.scrollEndBlocked)
-    									{
-    										if (pullDownIcon.hasClass('Q_flip'))
-    										{
-    											pullDownIcon.addClass('loading');
-    											pullDownLabel.html(pullDownLabel.html().replace('Release to load', 'Loading'));
-    											tool.scrollEndBlocked = true;
-    											tool.loadMoreMessages();
-    										}
-    									}
-    								}
-    							});
-    						}
-    					}
-    					$this.children('div:last:not(.Streams_chat_listing_wrapper)').css({
-    						'top': $this.offset().top + 'px',
-    						'height': $this.height() + 'px',
-    						'right': '0'
-    					});
-    					$this.plugin('Q/iScroll', 'refresh');
-    				}
-    				else if (o.loadMore == 'scroll' && Q.info.platform == 'android')
-    				{
-    					if (!document.body.scrollTop)
-    					{
-    						setTimeout(function()
-    						{
-    							document.body.scrollTop = 10000;
-    							tool.initiallyScrolled = true;
-    						}, 0);
-    					}
-    					else
-    					{
-    						tool.initiallyScrolled = true;
-    					}
-    					if (Q.Interval.exists('Streams.chat.scroll.interval'))
-    					{
-    						if ($this.css('visibility') == 'visible' && $this.css('display') == 'block')
-    							Q.Interval.resume('Streams.chat.scroll.interval');
-    						else
-    							Q.Interval.pause('Streams.chat.scroll.interval');
-    					}
-    					else
-    					{
-    						if ($this.css('visibility') == 'visible' && $this.css('display') == 'block')
-    							Q.Interval.set(tool.scrollCheck, o.scrollIntervalMs, 'Streams.chat.scroll.interval');
-    					}
-    				}
-    				else
-    				{
-    					var chatListingWrapper = $this.find('.Streams_chat_listing_wrapper');
-    					chatListingWrapper.css({ 'height': options.chatAvailableHeight + 'px', 'overflow': 'auto' }).plugin('Q/scrollbarsAutoHide');
-    					if (!chatListingWrapper.scrollTop())
-    					{
-    						setTimeout(function()
-    						{
-    							chatListingWrapper.scrollTop(chatListingWrapper[0].scrollHeight);
-    							tool.initiallyScrolled = true;
-    						}, 0);
-    					}
-    					else
-    					{
-    						tool.initiallyScrolled = true;
-    					}
-    					if (!Q.Interval.exists('Streams.chat.scroll.interval'))
-    					{
-    						Q.Interval.set(tool.scrollCheck, o.scrollIntervalMs, 'Streams.chat.scroll.interval');
-    					}
-    				}
+	render: function(callback){
+		var $te = $(this.element);
+		var state = this.state;
 
-    				chatPostWidth = $this.find('.Streams_chat_listing').width() - $this.find('.Streams_chat_avatar').outerWidth();
-    				$this.find('.Streams_chat_post, .Streams_chat_comment_text').css({ 'width': chatPostWidth + 'px' });
-    				$this.find('.Streams_chat_comment_text textarea').css({ 'width': (chatPostWidth - 10) + 'px' });
+		var fields = Q.extend({}, state.more, state.templates.main.fields);
+		Q.Template.render(
+			'Streams/chat/main',
+			fields,
+			function(error, html){
+				if (error) { return error; }
+				$te.html(html);
 
-    				$this.data('Q_previous_available_height', options.chatAvailableHeight);
-    			}
-    		}
-    	}
-    	else
-    	{
-    		Q.Layout.needUpdateOnLoad = true;
-    	}
-    },
-    addMessage: function _Streams_chat_addMessage(message, before) {
-    	var tool = this, $this = $(this.element);
-    	var o = tool.options;
-    	var messageItem = $('<li />');
-    	messageItem.addClass('Streams_chat_message Q_clearfix');
-    	messageItem.attr({ 'data-ordinal': message.ordinal });
-    	messageItem.append('<span class="Streams_chat_date">' + strftime('%m/%d/%y', new Date(message.insertedTime)) + '</span>');
-    	var avatarTool = $(Q.makeTool('Users/avatar', { 'user': { 'id': message.byUserId }, 'icon': '40' }));
-    	messageItem.append(avatarTool);
-    	messageItem.append('<div class="Streams_chat_post"><p>' + message.content + '</p></div>');
-    	var listing = $this.find('.Streams_chat_listing');
-    	if (before)
-    	{
-    		if (o.loadMore == 'pull')
-    		{
-    			listing.find('.Streams_chat_pull_down').after(messageItem);
-    		}
-    		else
-    		{
-    			listing.find('.Streams_chat_click_to_load').after(messageItem);
-    		}
-    	}
-    	else
-    	{
-    		listing.append(messageItem);
-    		messageItem.hide();
-    		messageItem.hide().show(100);
-    		var times = 0;
-    		var t = setInterval(function () {
-    			if (++times > 15) {
-    				clearInterval(t);
-    			}
-    			listing.parents().each(function () {
-    				this.scrollTop = this.scrollHeight;
-    			});
-    			$('#Streams_chat_textarea').focus();
-    		}, 10);
-    	}
-    	avatarTool.activate();
-    },
-    setScrollTop: function _Streams_chat_setScrollTop() {
-    	var chatListingWrapper = $(this.element).find('.Streams_chat_listing_wrapper');
+				callback && callback();
+			},
+			state.templates.main
+		);
+	},
 
-    	if (Q.info.platform == 'android')
-    		document.body.scrollTop = document.body.scrollHeight - document.body.offsetHeight;
-    	else
-    		chatListingWrapper.scrollTop(chatListingWrapper[0].scrollHeight - chatListingWrapper[0].offsetHeight);
-    },
-    loadMoreMessages: function _Streams_chat_loadMoreMessages() {
-    	var tool = this, $this = $(tool.element);
-    	var o = $this.data('Streams_chat_tool_options');
-    	var chatListingWrapper = $this.find('.Streams_chat_listing_wrapper');
-    	var chatListing = $this.find('.Streams_chat_listing');
-    	var firstItem = chatListing.children('.Streams_chat_message:first');
-    	var messageItem = null;
-    	var oldestOrdinal = 0;
+	renderMessages: function(messages, callback){
+		var $te  = $(this.element);
+		var tool = this;
+		var state = this.state;
 
-    	if (tool.prefetchedMessages)
-    	{
-    		$('.Streams_chat_no_messages').hide();
+		if (Q.isEmpty(messages)) {
+			return Q.Template.render(
+				'Streams/chat/Streams_chat_noMessages', 
+				function(error, html){
+					if (error) { return error; }
+					$te.find('.Streams_chat_messages').html(html);
+				},
+				state.templates.Streams_chat_noMessages
+			);
+		}
+		
+		function _processMessage(ordinal, message) {
+			// TODO: in the future, render stream players inside message template
+			// according to the instructions in the message
+			Q.Template.render(
+				'Streams/chat/message/bubble',
+				message,
+				p.fill(ordinal)
+			);
+			ordinals.push(ordinal);
+		}
+		var p = new Q.Pipe();
+		var ordinals = [];
+		Q.each(messages, _processMessage, {ascending: true});
+		p.add(ordinals, 1, function (params) {
+			var snippets = {};
+			for (var ordinal in params) {
+				var $html = $(params[ordinal][1]);
+				$html.find('.Streams_chat_avatar').each(function () {
+					Q.Tool.setUpElement(this, 'Users/avatar', {
+						userId: $(this).attr('data-byUserId')
+					}, null, tool.prefix);
+				});
+				$html.find('.Streams_chat_timestamp').each(function () {
+					Q.Tool.setUpElement(this, 'Q/timestamp', {
+						time: $(this).attr('data-time')
+					}, null, tool.prefix);
+				});
+				snippets[ordinal] = $html;
+			}
+			callback(snippets, messages);
+		}).run();
+	},
 
-    		var i = 0; c = o.amountToLoad;
-    		Q.Tool.constructors['Users/avatar'].options.onName.set(function()
-    		{
-    			i++;
-    			if (i == c)
-    			{
-    				tool.onLayout({ 'chatWidthOnly': true });
-    				if (o.loadMore == 'pull')
-    				{
-    					$this.plugin('Q/iScroll', 'refresh');
-    				}
-    				else if (o.loadMore == 'scroll')
-    				{
-    					tool.setScrollTop();
-    				}
-    				tool.scrollEndBlocked = false;
-    			}
-    		}, 'Users.avatar.onNameResolve');
+	renderNotification: function(message){
+		var $container = $('<div>');
+		Q.activate($container.html(Q.Tool.setUpElement('div', 'Users/avatar', { userId: message.byUserId })), function(){
+			var data = {
+				username: $container.find('.Users_avatar_contents').text()
+			};
 
-    		Q.each(tool.prefetchedMessages, function(ordinal, msg)
-    		{
-    			tool.addMessage(msg, true);
-    		}, { 'ascending': false, 'numeric': true });
+			Q.Template.render(
+				'Streams/chat/message/notification', 
+				data, 
+				function(error, html){
+					if (error) { return error }
+					
+					$te.find('.Streams_chat_noMessages').remove();
+					$te.find('.Streams_chat_messages').append(html);
+				},
+				state.templates.message.notification
+			);
+		});
+	},
 
-    		$this.find('.Streams_chat_click_to_load').children('.Streams_chat_load_spinner').css({ 'visibility': 'hidden' });
+	renderError: function(msg, err, data){
+		var $te  = $(this.element);
+		var tool = this;
+		var state = tool.state;
 
-    		firstItem = chatListing.children('.Streams_chat_message:first');
-    		oldestOrdinal = parseInt(firstItem.attr('data-ordinal'));
-    		tool.prefetchMessages(oldestOrdinal, $this);
-    	}
-    	else
-    	{
-    		oldestOrdinal = parseInt(firstItem.attr('data-ordinal'));
-    		tool.prefetchMessages(oldestOrdinal, $this);
-    	}
-    },
-    prefetchMessages: function _Streams_chat_prefetchMessages(oldestOrdinal) {
-    	var tool = this, $this = $(tool.element);
-    	var o = tool.options;
+		if (!msg) return;
+		var fields = {
+			errorText: msg,
+			time: Date.now() / 1000
+		};
 
-    	var selectFromOrdinal = oldestOrdinal - 1;
-    	if (selectFromOrdinal >= 0)
-    	{
-    		Q.jsonRequest.options.quiet = true;
-    		Q.Streams.Message.get(o.publisherId, o.streamName, { 'max': selectFromOrdinal, 'limit': o.amountToLoad }, function(err, messages)
-    		{
-    			Q.jsonRequest.options.quiet = false;
-    			if (err)
-    			{
-    				alert('An error occured while loading chat messages');
-    			}
-    			else
-    			{
-    				if (messages.length !== undefined && messages.length === 0)
-    				{
-    					tool.turnOfLoading();
-    				}
-    				else
-    				{
-    					tool.prefetchedMessages = messages;
-    				}
-    			}
-    			tool.loadingInProgress = false;
-    		}, { 'type': 'Streams/chat/message', 'ascending': false });
-    	}
-    	else
-    	{
-    		tool.turnOfLoading();
-    	}
-    },
-    turnOfLoading: function _Streams_chat_turnOfLoading() {
-    	var tool = this, $this = $(tool.element);
-    	var o = tool.options;
-    	this.loadingTurnedOff = true;
-	
-    	if (o.loadMore == 'scroll')
-    	{
-    		if (Q.Interval.exists('Streams.chat.scroll.interval'))
-    		{
-    			Q.Interval.clear('Streams.chat.scroll.interval');
-    		}
-    		if (Q.Interval.exists('Streams.chat.toggleClickToLoad.interval'))
-    		{
-    			Q.Interval.clear('Streams.chat.toggleClickToLoad.interval');
-    		}
-    		$this.find('.Streams_chat_click_to_load').hide();
-    	}
-    	else if (o.loadMore == 'click')
-    	{
-    		$this.find('.Streams_chat_click_to_load').hide();
-    	}
-    	else if (o.loadMore == 'pull')
-    	{
-    		$this.find('.Streams_chat_pull_down').hide();
-    		$this.plugin('Q/iScroll', 'remove').plugin('Q/iScroll', { 'useTransition': true });
-    		$this.children('div:last:not(.Streams_chat_listing_wrapper)').css({
-    			'top': $this.offset().top + 'px',
-    			'height': $this.height() + 'px',
-    			'right': '0'
-    		});
-    		$this.plugin('Q/iScroll', 'refresh');
-    	}
-    }
-}
+		Q.Template.render(
+			'Streams/chat/message/error', 
+			fields, 
+			function(error, html){
+				if (error) { return error; }
+    	
+				$te.find('.Streams_chat_noMessages').remove();
+				$te.find('.Streams_chat_messages').append(html);
+    	
+				tool.findMessage('last')
+					.find('.Streams_chat_timestamp')
+					.html(Q.Tool.setUpElement('div', 'Q/timestamp', data.date))
+					.activate();
+			},
+			state.templates.message.error
+		);
+	},
+
+	more: function(callback){
+		var tool = this;
+		var state = tool.state;
+		var params = {
+			max  : state.earliest - 1,
+			limit: state.messagesToLoad,
+			type: "Streams/chat/message"
+		};
+
+		state.stream.getMessage(params, function(err, messages){
+			if (err) return;
+			Q.each(messages, function (ordinal) {
+				state.earliest = ordinal;
+				return false;
+			}, {ascending: true});
+			callback.call(tool, messages);
+		}, {
+			'type': 'Streams/chat/message',
+			'ascending': true
+		});
+	},
+
+	addEvents: function(){
+		var tool    = this,
+			$te     = $(this.element),
+			state   = this.state,
+			blocked = false;
+
+		/*
+		* get more messages
+		*/
+		function renderMore(messages) {
+			messages = tool.prepareMessages(messages);
+			if (Q.isEmpty(messages)) return;
+			tool.renderMessages(messages, function (snippets) {
+				$te.find('.Streams_chat_noMessages').remove();
+				var $mc = $te.find('.Streams_chat_messages'); 
+				Q.each(snippets, function (key, $html) {
+					$html.prependTo($mc).activate();
+				}, {ascending: false});
+			});
+			tool.scrollTop();
+		};
+
+		if (state.more.isClick) {
+			$te.find('.Streams_chat_more').click(function(){
+				tool.more(renderMore);
+			});
+		} else {
+			this.niceScroll(function(){
+				tool.more(renderMore);
+			});
+		}
+
+		$te.find('.Streams_chat_message').live(Q.Pointer.click, function(e){
+			if (!this.isOverflowed()) return;
+			
+			var $container = $(this).parents('.Streams_chat_item'),
+				username   = $container.find('.Users_avatar_contents').text();
+
+			if ($container.data('byuserid') === state.userId) {
+				username = 'me';
+			}
+
+			Q.Dialogs.push({
+				title  : 'Message from ' + username,
+				content: '<div class="Streams_popup_content">' + $(e.target).html() + '</div>'
+			});
+		});
+
+		// new message arrived
+		Q.Streams.Stream.onMessage(state.publisherId, state.streamName, 'Streams/chat/message')
+		.set(function(stream, message) {
+			tool.renderMessages(tool.prepareMessages(message), function (snippets) {
+				$te.find('.Streams_chat_noMessages').remove();
+				var $mc = $te.find('.Streams_chat_messages'); 
+				Q.each(snippets, function (key, $html) {
+					$html.appendTo($mc).activate();
+				}, {ascending: true});
+			});
+			tool.scrollToBottom();
+		}, 'Streams/chat');
+
+		// new user joined
+		Q.Streams.Stream.onMessage(state.publisherId, state.streamName, 'Streams/join')
+		.set(function(stream, message) {
+			message = tool.prepareMessages(message);
+			message.action = { join: true };
+
+			tool.renderNotification(message);
+			tool.scrollToBottom();
+		}, 'Streams/chat');
+
+		// new user left
+		Q.Streams.Stream.onMessage(state.publisherId, state.streamName, 'Streams/leave')
+		.set(function(stream, message) {
+			message = tool.prepareMessages(message);
+			message.action = { leave: true };
+
+			tool.renderNotification(tool.prepareMessages(message), 'leave');
+			tool.scrollToBottom();
+		}, 'Streams/chat');
+
+		/*
+		* send message
+		*/
+		$te.find('.Streams_chat_composer textarea')
+			.plugin('Q/placeholders')
+			.keypress(function(event){
+			if (event.charCode == 13) {
+				if (blocked) {
+					return false;
+				}
+				var $this = $(this);
+				var content = $this.val().trim();
+				$this.val('');
+				if (content.length == 0) {
+					return false;
+				}
+
+				blocked = true;			
+
+				Q.Streams.Message.post({
+					'publisherId': state.publisherId,
+					'streamName' : state.streamName,
+					'type'       : 'Streams/chat/message',
+					'content'    : content
+				}, function(err, args) {
+					if (err) {
+						tool.renderError(err, args[0], args[1]);
+					}
+					state.stream.refresh(null, {messages: true});
+					blocked = false;
+				});
+
+				return false;
+			}
+		});
+	},
+
+	niceScroll: function(callback) {
+		if (Q.info.formFactor === 'desktop') {
+			return false;
+		}
+
+		// TODO - when user scrolled in message container not running this function
+		var isScrollNow = false,
+			startY      = null,
+			$te         = $(this.element);
+
+		function touchstart(event){
+			isScrollNow = true;
+			startY      = event.originalEvent.touches[0].pageY;
+		};
+
+		function touchend(event){
+			isScrollNow = false;
+			startY      = null;
+		};
+
+		$(document.body)
+			.bind('touchstart', touchstart)
+			.bind('touchend', touchend)
+			.bind('touchmove', function(event){
+
+			if (isScrollNow && event.originalEvent.touches[0].pageY > startY) {
+				// isset scollbar in window
+				if (0 > $(window).height() - $(document.body).height()) {
+					$(document.body)
+						.unbind('touchstart')
+						.unbind('touchend')
+						.unbind('touchmove');
+
+					$te.find('.Streams_chat_messages').scroll(function(event){
+						if ($(this).scrollTop() == 0) {
+							callback && callback();
+						}
+					});
+				} else {
+					callback && callback();
+				}
+			}
+		});
+	},
+
+	getOrdinal: function(action, ordinal){
+		if (ordinal) {
+			ordinal = 'data-ordinal='+ordinal;
+		}
+
+		var data = this.findMessageData.call(this, action, ordinal);
+		return data ? data.ordinal : null;
+	},
+
+	/*
+	* find by options [first, last] or/and param
+	* or only by param
+	* @return data attribute or null 
+	*/
+	findMessageData: function(action, byParam){
+		var message = this.findMessage(action, byParam);
+		return message ? message.data() : null;
+	},
+
+	findMessage: function(action, byParam) {
+		var $te = $(this.element),
+			query = '.Streams_chat_item';
+
+		byParam = (byParam ? '['+byParam+']' : '');
+
+		if (!action && byParam) {
+			return $te.find(query+byParam);
+		}
+
+		if (typeof(action) == 'string') {
+			switch(action){
+				case 'first':
+				case 'last':
+					return $te.find(query+':'+action+byParam);
+			}
+		} else if (typeof(action) == 'number') {
+			var messages = $te.find(query+byParam);
+			return messages.length <= action ? $(messages.get(action)) : null;
+		}
+
+		return null;
+	},
+
+	scrollToBottom: function() {
+		$(this.element).find('.Streams_chat_messages').animate({ scrollTop: $(document).height() }, '300');
+	},
+
+	scrollTop: function() {
+		$(this.element).find('.Streams_chat_messages').animate({ scrollTop: -$(document).height() }, '300');	
+	}
+});
+
+Q.Template.set('Streams/chat/message/bubble',
+	'<div class="Streams_chat_item {{classes}}" '+
+			'data-byUserId="{{byUserId}}" '+
+			'data-ordinal="{{ordinal}}">'+
+		'<div class="Streams_chat_avatar" data-byUserId="{{byUserId}}"></div>'+
+		'<div class="Streams_chat_bubble">'+
+			'<div class="Streams_chat_tick"></div>'+
+			'<div class="Streams_chat_message">{{content}}</div>'+
+			'<div class="Q_clear"></div>'+
+			'<div class="Streams_chat_timestamp" data-time="{{time}}"></div>'+
+			'<div class="Q_clear"></div>'+
+		'</div>'+
+		'<div class="Q_clear"></div>'+
+	'</div>'
 );
 
-})(Q, jQuery, window);
+Q.Template.set('Streams/chat/message/notification', 
+	'<div class="Streams_chat_notification>'+
+		'{{#action.join}}'+
+			'<b>{{username}}</b> joined the chat'+
+		'{{/action.join}}'+
+		'{{#action.leave}}'+
+			'<b>{{username}}</b> left the chat'+
+		'{{/action.leave}}'+
+	'</div>'
+);
+
+Q.Template.set('Streams/chat/message/error',
+	'<div class="Streams_chat_item Q_error">'+
+		'<div class="Streams_chat_container">'+
+			'<div class="Streams_chat_error">'+
+				'{{errorText}}'+
+			'</div>'+
+			'<div class="Q_clear"></div>'+
+			'<div class="Streams_chat_timestamp" data-time="{{time}}"></div>'+
+			'<div class="Q_clear"></div>'+
+		'</div>'+
+		'<div class="Q_clear"></div>'+
+	'</div>'
+);
+
+Q.Template.set('Streams/chat/Streams_chat_noMessages', '<i class="Streams_chat_noMessages">No messages</i>');
+
+Q.Template.set('Streams/chat/main', 
+	'<div class="Q_clear"></div>'+
+	'{{#isClick}}'+
+		'<div class="Streams_chat_more">More messages</div>'+
+	'{{/isClick}}'+
+	'<div class="Streams_chat_messages">'+
+		'<!-- messages -->'+
+	'</div>'+
+	'<div class="Streams_chat_composer">'+
+		'<textarea placeholder="{{placeholder}}"></textarea>'+
+	'</div>'+
+	'<hr />'+
+	'<div class="Q_clear"></div>'
+);
+
+})(Q, jQuery);

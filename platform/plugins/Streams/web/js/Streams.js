@@ -396,13 +396,13 @@ Streams.get = Q.getter(function (publisherId, streamName, callback, extra) {
 				messages: data.messages, 
 				participants: data.participants 
 			}, 
-			function Streams_get_construct_handler(err, stream) {
+			function Streams_get_construct_handler(err, stream, extra) {
 				var msg;
 				if (msg = Q.firstErrorMessage(err)) {
 					var args = [err, data, stream];
 					Streams.onError.handle(msg, args);
 				}
-				return callback && callback.call(stream, err, stream);
+				return callback && callback.call(stream, err, stream, extra);
 			}
 		);
 	}, extra);
@@ -588,14 +588,16 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 			Q.mixin(streamFunc.streamConstructor, streamFunc);
 		}
 		var stream = new streamFunc.streamConstructor(fields);
+		var messages = {}, participants = {};
 		
 		if (extra && extra.messages) {
 			Q.each(extra.messages, function (ordinal, message) {
 				if (Q.typeOf(message) !== 'Q.Streams.Message') {
 					message = new Message(message);
 				}
+				messages[ordinal] = message;
 				Message.get.cache.set(
-					[fields.publisherId, fields.name, message.ordinal], 0,
+					[fields.publisherId, fields.name, parseInt(message.ordinal)], 0,
 					message, [null, message]
 				);
 			});
@@ -605,6 +607,7 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 				if (Q.typeOf(participant) !== 'Q.Streams.Participant') {
 					participant = new Participant(participant);
 				}
+				participants[userId] = participant;
 				Participant.get.cache.set(
 					[fields.publisherId, fields.name, participant.userId], 0,
 					participant, [null, participant]
@@ -612,7 +615,10 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 			});
 		}
 		
-		Q.handle(callback, stream, [null, stream]);
+		Q.handle(callback, stream, [null, stream, {
+			messages: messages,
+			participants: participants
+		}]);
 		return stream;
 	}
 }
@@ -780,6 +786,10 @@ Streams.invite = function (publisherId, streamName, fields, callback) {
 		Q.handle(callback, null, [err, data]);
 	}, { method: 'post', fields: fields, baseUrl: baseUrl });
 };
+
+/**
+ * @class Streams.Stream
+ */
 
 /**
  * Constructs a stream from fields, which are typically returned from the server.
@@ -1892,6 +1902,135 @@ Streams.updateRelation = function(
 };
 
 /**
+ * @class Streams.Message
+ * Relates streams to one another
+ * @method relate
+ * @param publisherId {String} the publisher id of the stream to relate to
+ * @param streamName {String} the name of the stream to relate to
+ * @param relationType {String} the type of the relation, such as "parent" or "photo"
+ * @param fromPublisherId {String} the publisher id of the stream to relate from
+ * @param fromStreamName {String} the name of the stream to relate from
+ * @param callback {Function} callback to call with the results
+ *  First parameter is the error, the second will be relations data
+ */
+Streams.relate = function _Streams_relate (publisherId, streamName, relationType, fromPublisherId, fromStreamName, callback) {
+	if (!Q.plugins.Users.loggedInUser) {
+		throw new Error("Streams.relate: Not logged in.");
+	}
+	var slotName = "result";
+	var fields = {
+		"toPublisherId": publisherId,
+		"toStreamName": streamName,
+		"type": relationType,
+		"fromPublisherId": fromPublisherId,
+		"fromStreamName": fromStreamName,
+		"Q.clientId": Q.clientId()
+	};
+	// TODO: When we refactor Streams to support multiple hosts,
+	// the client will have to post this request to both hosts if they are different
+	// or servers will have tell each other on their own
+	var baseUrl = Q.baseUrl({
+		publisherId: publisherId,
+		streamName: streamName
+	});
+	Q.req('Streams/related', [slotName], function (err, data) {
+		var messageFrom = Q.getObject('slots.result.messageFrom', data);
+		var messageTo = Q.getObject('slots.result.messageTo', data);
+		// wait for messages from cached streams -- from, to or both!
+		callback && callback.call(this, err, Q.getObject('slots.result', data) || null);
+	}, { method: 'post', fields: fields, baseUrl: baseUrl });
+	_retain = undefined;
+};
+
+/**
+ * Removes relations from streams to one another
+ * @static
+ * @method unrelate
+ * @param publisherId {String} the publisher id of the stream to relate to
+ * @param streamName {String} the name of the stream to relate to
+ * @param relationType {String} the type of the relation, such as "parent" or "photo"
+ * @param fromPublisherId {String} the publisher id of the stream to relate from
+ * @param fromStreamName {String} the name of the stream to relate from
+ * @param callback {Function} callback to call with the results
+ *  First parameter is the error, the second will be relations data
+ */
+Streams.unrelate = function _Stream_prototype_unrelate (publisherId, streamName, relationType, fromPublisherId, fromStreamName, callback) {
+	if (!Q.plugins.Users.loggedInUser) {
+		throw new Error("Streams.unrelate: Not logged in.");
+	}
+	var slotName = "result";
+	var fields = {
+		"toPublisherId": publisherId,
+		"toStreamName": streamName,
+		"type": relationType,
+		"fromPublisherId": fromPublisherId,
+		"fromStreamName": fromStreamName,
+		"Q.clientId": Q.clientId()
+	};
+	// TODO: When we refactor Streams to support multiple hosts,
+	// the client will have to post this request to both hosts if they are different
+	// or servers will have tell each other on their own
+	var baseUrl = Q.baseUrl({
+		publisherId: publisherId,
+		streamName: streamName
+	});
+	Q.req('Streams/related', [slotName], function (err, data) {
+		callback && callback.call(this, err, Q.getObject('slots.result', data) || null);
+	}, { method: 'delete', fields: fields, baseUrl: baseUrl });
+	_retain = undefined;
+};
+
+/**
+ * Later we will probably make Streams.Relation objects which will provide easier access to this functionality.
+ * For now, use this to update weights of relations, etc.
+ * 
+ * @method updateRelation
+ * @param {String} toPublisherId
+ * @param {String} toStreamName
+ * @param {String} relationType
+ * @param {String} fromPublisherId
+ * @param {String} fromStreamName
+ * @param {Number} weight
+ * @param {Boolean} adjustWeights
+ * @param {Function} callback
+ */
+Streams.updateRelation = function(
+	toPublisherId,
+	toStreamName,
+	relationType,
+	fromPublisherId,
+	fromStreamName,
+	weight,
+	adjustWeights,
+	callback
+) {
+	if (!Q.plugins.Users.loggedInUser) {
+		throw new Error("Streams.relate: Not logged in.");
+	}
+	// We will send a request to wherever (toPublisherId, toStreamName) is hosted
+	var slotName = "result";
+	var fields = {
+		"toPublisherId": toPublisherId,
+		"toStreamName": toStreamName,
+		"type": relationType,
+		"fromPublisherId": fromPublisherId,
+		"fromStreamName": fromStreamName,
+		"weight": weight,
+		"adjustWeights": adjustWeights,
+		"Q.clientId": Q.clientId()
+	};
+	var baseUrl = Q.baseUrl({
+		publisherId: toPublisherId,
+		streamName: toStreamName
+	});
+	Q.req('Streams/related', [slotName], function (err, data) {
+		var message = Q.getObject('slots.result.message', data);
+		callback && callback.call(this, err, Q.getObject('slots.result', data) || null);
+	}, { method: 'put', fields: fields, baseUrl: baseUrl });
+	_retain = undefined;
+};
+
+/**
  * Constructs a message from fields, which are typically returned from the server.
  * @class Streams.Message
  * @constructor
@@ -1948,14 +2087,14 @@ Message.get = Q.getter(function _Message_get (publisherId, streamName, ordinal, 
 	var slotName, criteria = {};
 	if (Q.typeOf(ordinal) === 'object') {
 		slotName = 'messages';
-		criteria.min = ordinal.min;
-		criteria.max = ordinal.max;
-		criteria.limit = ordinal.limit;
+		criteria.min = parseInt(ordinal.min);
+		criteria.max = parseInt(ordinal.max);
+		criteria.limit = parseInt(ordinal.limit);
 		if ('type' in ordinal) criteria.type = ordinal.type;
 		if ('ascending' in ordinal) criteria.ascending = ordinal.ascending;
 	} else {
 		slotName = 'message';
-		criteria = ordinal;
+		criteria = parseInt(ordinal);
 	}
 
 	var func = Streams.batchFunction(Q.baseUrl({
@@ -2021,7 +2160,7 @@ Message.post = function _Message_post (msg, callback) {
 		}
 		var message = data.slots.message && new Message(data.slots.message);
 		Message.get.cache.set(
-			[msg.publisherId, msg.streamName, msg.ordinal],
+			[message.publisherId, message.streamName, parseInt(message.ordinal)],
 			0, message, [err, message]
 		);
 		callback && callback.call(message, err, message || null);
@@ -2647,7 +2786,7 @@ Q.onInit.add(function _Streams_onInit() {
 				};
 				document.addEventListener('push-notification', function(e) {
 					if (e.notification && e.notification.aps && e.notification.aps.badge !== undefined) {
-						pushNotification.setApplicationIconBadgeNumber(e.notification.aps.badge);
+						pushNotification.setApplicationIconBadgeparseInt(e.notification.aps.badge);
 					}
 				});
 				function _onActivate() {
@@ -2670,7 +2809,7 @@ Q.onInit.add(function _Streams_onInit() {
 	}
 	if (Q.info.isCordova && pushNotification && !Streams.pushNotification) {
 		Q.Users.login.options.onSuccess.set(_registerPushNotifications, 'Streams.PushNotifications');
-		Q.Users.logout.options.onSuccess.set(function() { pushNotification.setApplicationIconBadgeNumber(0); }, 'Streams.PushNotifications');
+		Q.Users.logout.options.onSuccess.set(function() { pushNotification.setApplicationIconBadgeparseInt(0); }, 'Streams.PushNotifications');
 		if (Q.Users.loggedInUser) _registerPushNotifications();
 	}
 	
@@ -2776,7 +2915,7 @@ Q.onInit.add(function _Streams_onInit() {
 				? msg
 				: new Message(msg);
 			Message.get.cache.set(
-				[msg.publisherId, msg.streamName, msg.ordinal],
+				[msg.publisherId, msg.streamName, parseInt(msg.ordinal)],
 				0, message, [null, message]
 			);
 			var cached = Streams.get.cache.get([msg.publisherId, msg.streamName]);
