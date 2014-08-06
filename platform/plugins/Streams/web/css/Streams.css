@@ -214,125 +214,6 @@
 	user-select: none;
 }
 
-.Streams_chat_tool {
-	background-color: #F3F3F3;
-	font-size: 14px;
-	border-radius: 0 0 5px 5px;
-}
-
-.Streams_chat_listing {
-	margin: 10px 0 0 0;
-	padding: 0 10px;
-	list-style: none;
-}
-
-.Streams_chat_listing > li {
-	clear: both;
-	margin: 10px 0;
-}
-
-.Streams_chat_listing > li:first-child {
-	margin-top: 0;
-}
-
-.Streams_chat_listing > li.Streams_chat_pull_down, .Streams_chat_listing > li.Streams_chat_click_to_load {
-	line-height: 50px;
-	margin-top: 0;
-	text-align: center;
-}
-
-.Streams_chat_listing > li.Streams_chat_click_to_load {
-	line-height: 30px;
-}
-
-.Streams_chat_listing > li.Streams_chat_click_to_load {
-	margin-bottom: 0;
-	padding-right: 42px;
-	cursor: pointer;
-	-webkit-touch-callout: none;
-	-webkit-user-select: none;
-	-khtml-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-	-o-user-select: none;
-	user-select: none;
-}
-
-.Streams_chat_pull_down_icon, .Streams_chat_load_spinner {
-	display: inline-block;
-	width: 32px;
-	height: 32px;
-	margin-right: 10px;
-	vertical-align: middle;
-	background: url('../../Q/img/ui/pull_down_to_refresh.png') center center no-repeat;
-}
-
-.Streams_chat_pull_down_icon {
-	-webkit-transition-property: -webkit-transform;
-	-webkit-transition-duration: 250ms;
-}
-
-.Streams_chat_load_spinner {
-	visibility: hidden;
-	background: url('../../Q/img/throbbers/spinner_sticky_silver.gif') center center no-repeat;
-}
-
-.Streams_chat_pull_down_icon.flip {
-	-webkit-transform: rotate(-180deg) translateZ(0);
-}
-
-.Streams_chat_pull_down_icon.loading {
-	background-image: url('../../Q/img/throbbers/spinner_sticky_silver.gif');
-}
-
-.Streams_chat_avatar {
-	width: 50px;
-	float: left;
-}
-
-.Streams_chat_post {
-	margin-left: 50px;
-	margin-top: -26px;
-}
-
-.Streams_chat_comment_text {
-	float: left;
-}
-
-.Streams_chat_post p {
-	margin: 10px 0;
-}
-
-.Streams_chat_date {
-	float: right;
-}
-
-.Streams_chat_username {
-	font-weight: bold;
-}
-
-.Streams_chat_comment_form {
-	padding: 0 10px;
-}
-
-.Streams_chat_comment_text textarea {
-	margin-top: 5px;
-	margin-bottom: 0;
-	height: 80px;
-	border-radius: 5px;
-	padding: 5px;
-	font-size: 14px;
-}
-
-.Q_mobile .Streams_chat_comment_text textarea {
-	height: 60px;
-}
-
-.Streams_chat_tool .Users_avatar_tool * {
-	font-size: 14px;
-	vertical-align: top;
-}
-
 #Streams_login_username {
 	width: 90%;
 }
@@ -430,21 +311,24 @@
 
 /* Streams chat tool */
 .Streams_chat_tool {
-	width: 91%;
-	margin: 0 auto;
+
 }
 .Streams_chat_tool h1 {
 	text-align: center;
 	width: 100%;
 }
-.Streams_chat_timestamp {
-	font-size: 10pt;
-	color: gray;
+.Streams_chat_to_me .Users_avatar_tool {
+	float: left;
+	position: relative;
+}
+.Streams_chat_tool .Users_avatar_icon {
+	position: absolute;
 }
 .Streams_chat_tool .Users_avatar_contents {
-	font-weight: bold;
-	font-size: 13pt;
+	font-size: 10pt;
 	color: #222;
+	display: block;
+	margin-left: 55px;
 }
 .Streams_chat_message {
 	font-size: 13pt;
@@ -503,20 +387,19 @@
 	text-align: right;
 	float: right;
 	cursor: default;
+	font-size: 10pt;
+	color: gray;
 }
 .Streams_chat_bubble {
 	width: 80%;
 	padding: 10px;
-	margin-top: -5px;
 	border: 1px solid #D0D9E4;
+	clear: both;
 }
 .Streams_chat_tick {
 	background: url('../../Streams/img/chat/message-tick.png');
 	width: 9px;
 	height: 13px;
-}
-.Streams_chat_to_me .Users_avatar_tool {
-	float: left;
 }
 .Streams_chat_to_me .Streams_chat_tick {
 	float: left;
@@ -530,7 +413,6 @@
 }.Streams_chat_from_me .Streams_chat_bubble {
 	border-radius: 13px;
 	float: right;
-	margin-right: 50px;
 	background: #FFFFFF;
 }
 .Streams_chat_from_me .Streams_chat_tick {
@@ -538,9 +420,7 @@
 	margin: 0px -19px 0px 0px;
 	background-position: 0px 13px;
 }
-.Streams_chat_from_me .Users_avatar_tool,
-.Streams_chat_from_me .Users_avatar_tool img,
-.Streams_chat_from_me .Users_avatar_tool span.Users_avatar_contents {
+.Streams_chat_from_me .Users_avatar_tool {
 	display: none;
 	float: right;
 }

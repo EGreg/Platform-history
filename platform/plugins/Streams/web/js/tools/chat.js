@@ -15,6 +15,10 @@
  *   @param {Stream} [options.stream] Optionally pass a Streams.Stream object here if you have it already
  *   @param {String} [options.messageMaxHeight] The maximum height, in pixels, of a rendered message
  *   @param {String} [options.messagesToLoad] The number of "Streams/chat" messages to load at a time.
+ *   @param {String} [options.animations] Options for animation, which can include:
+ *     <ul>
+ *         <li>"duration" - defaults to 300</li>
+ *     </ul>
  *   @param {Object} [options.loadMore] May be "scroll", "click" or null/false. Defaults to "click".
  *     <ul>
  *         <li>"click" will show label with "Click to see earlier messages" (configurable in Q.text.Streams.chat.loadMore.click string), and when the user clicks it, new messages will be loaded.</li>
@@ -42,6 +46,7 @@ Q.Tool.define('Streams/chat', function(options) {
 					$te.find('.Streams_chat_noMessages').remove();
 					var $mc = $te.find('.Streams_chat_messages'); 
 					$html.appendTo($mc).activate();
+					processDOM($html);
 				});
 			});
 			tool.scrollToBottom();
@@ -67,6 +72,9 @@ Q.Tool.define('Streams/chat', function(options) {
 	messageMaxHeight: '200px',
 	messagesToLoad: 10,
 	loadMore: 'click',
+	animations: {
+		duration: 300
+	},
 	templates: {
 		main: {
 			dir: 'plugins/Streams/views',
@@ -285,15 +293,27 @@ Q.Tool.define('Streams/chat', function(options) {
 		*/
 		function renderMore(messages) {
 			messages = tool.prepareMessages(messages);
-			if (Q.isEmpty(messages)) return;
+			var $more = $te.find('.Streams_chat_more');
+			if (Q.isEmpty(messages)) {
+				return $more.hide();
+			};
+			var $mc = $te.find('.Streams_chat_messages');
 			tool.renderMessages(messages, function (snippets) {
 				$te.find('.Streams_chat_noMessages').remove();
-				var $mc = $te.find('.Streams_chat_messages'); 
-				Q.each(snippets, function (key, $html) {
+				var least = 1000;
+				var totalHeight = 0;
+				Q.each(snippets, function (ordinal, $html) {
 					$html.prependTo($mc).activate();
+					processDOM($html);
+					least = ordinal;
+					totalHeight += ($html.outerHeight(true) + $html.outerHeight())/2;
 				}, {ascending: false});
+				$more.prependTo($mc);
+				$mc.scrollTop(totalHeight);
+				if (least <= 1) {
+					return $more.hide();
+				}
 			});
-			tool.scrollTop();
 		};
 
 		if (state.more.isClick) {
@@ -330,6 +350,7 @@ Q.Tool.define('Streams/chat', function(options) {
 				var $mc = $te.find('.Streams_chat_messages'); 
 				Q.each(snippets, function (key, $html) {
 					$html.appendTo($mc).activate();
+					processDOM($html);
 				}, {ascending: true});
 			});
 			tool.scrollToBottom();
@@ -426,7 +447,7 @@ Q.Tool.define('Streams/chat', function(options) {
 						.unbind('touchmove');
 
 					$te.find('.Streams_chat_messages').scroll(function(event){
-						if ($(this).scrollTop() == 0) {
+						if ($(this).scrollToTop() == 0) {
 							callback && callback();
 						}
 					});
@@ -481,11 +502,13 @@ Q.Tool.define('Streams/chat', function(options) {
 	},
 
 	scrollToBottom: function() {
-		$(this.element).find('.Streams_chat_messages').animate({ scrollTop: $(document).height() }, '300');
+		$scm = this.$('.Streams_chat_messages');
+		$scm.animate({ scrollTop: $scm[0].scrollHeight }, this.state.animations.duration);
 	},
 
-	scrollTop: function() {
-		$(this.element).find('.Streams_chat_messages').animate({ scrollTop: -$(document).height() }, '300');	
+	scrollToTop: function() {
+		$scm = this.$('.Streams_chat_messages');
+		$scm.animate({ scrollTop: 0 }, this.state.animations.duration);
 	}
 });
 
@@ -494,11 +517,11 @@ Q.Template.set('Streams/chat/message/bubble',
 			'data-byUserId="{{byUserId}}" '+
 			'data-ordinal="{{ordinal}}">'+
 		'<div class="Streams_chat_avatar" data-byUserId="{{byUserId}}"></div>'+
+		'<div class="Streams_chat_timestamp" data-time="{{time}}"></div>'+
 		'<div class="Streams_chat_bubble">'+
 			'<div class="Streams_chat_tick"></div>'+
 			'<div class="Streams_chat_message">{{content}}</div>'+
 			'<div class="Q_clear"></div>'+
-			'<div class="Streams_chat_timestamp" data-time="{{time}}"></div>'+
 			'<div class="Q_clear"></div>'+
 		'</div>'+
 		'<div class="Q_clear"></div>'+
@@ -534,10 +557,10 @@ Q.Template.set('Streams/chat/Streams_chat_noMessages', '<i class="Streams_chat_n
 
 Q.Template.set('Streams/chat/main', 
 	'<div class="Q_clear"></div>'+
-	'{{#isClick}}'+
-		'<div class="Streams_chat_more">More messages</div>'+
-	'{{/isClick}}'+
 	'<div class="Streams_chat_messages">'+
+		'{{#isClick}}'+
+			'<div class="Streams_chat_more">More messages</div>'+
+		'{{/isClick}}'+
 		'<!-- messages -->'+
 	'</div>'+
 	'<div class="Streams_chat_composer">'+
@@ -546,5 +569,13 @@ Q.Template.set('Streams/chat/main',
 	'<hr />'+
 	'<div class="Q_clear"></div>'
 );
+
+function processDOM($html) {
+	$html.find('.Streams_chat_message').each(function () {
+		if (this.isOverflowed()) {
+			this.style.cursor = 'pointer';
+		}
+	});
+}
 
 })(Q, jQuery);
