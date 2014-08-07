@@ -37,15 +37,15 @@ Q.Tool.define("Q/tabs", function(options) {
 		return this.state.max;
 	},
 	
-	push: function (url, slotName, options) {
-		this.open(url, slotName, this.max(), options)
+	push: function (options) {
+		this.open(options, this.max())
 	},
 	
 	pop: function () {
 		this.close(this.max()-1);
 	},
 	
-	open: function (url, slotName, index, options) {
+	open: function (options, index) {
 		var tool = this;
 		var state = this.state;
 		if (index > this.max()) {
@@ -55,30 +55,52 @@ Q.Tool.define("Q/tabs", function(options) {
 			throw new Q.Exception("Q/columns open: index is negative");
 		}
 		var div = this.column(index);
+		var title, column;
 		if (!div) {
 			div = document.createElement(this.state.tagName)
-				.addClass('Q_column');
-			this.element.appendChild(div); // trying to avoid jQuery just for practice
+				.addClass('Q_columns_column');
 			++this.state.max;
 			this.state.columns[index] = div;
+			title = document.createElement('h2').addClass('title_slot');
+			column = document.createElement('div').addClass('column_slot');
+			div.appendChild(title);
+			div.appendChild(column);
+			this.element.appendChild(div);
 		}
-		if (slotName == null) {
-			div.innerHTML = url;
-			return state.onOpen.handle(url, slotName, index, options);
+		if (options.url) {
+			var url = options.url;
+			var o = Q.extend({
+				slotNames: ["title", "column"], 
+				slotContainer: {
+					title: title,
+					column: column
+				},
+				quiet: true,
+				ignoreHistory: true
+			}, options);
+			o.handler = function _handler(response) {
+				var elementsToActivate = [];
+				if ('title' in response.slots) {
+					title.innerHTML = response.slots.title;
+					elementsToActivate['title'] = title;
+				}
+				column.innerHTML = response.slots.column;
+				elementsToActivate['column'] = column;
+				return elementsToActivate;
+			};
+			o.onActivate = function _onActivate() {
+				state.onOpen.handle(options, index);
+			};
+			// this.state.triggers[index] = options.trigger || null;
+			Q.loadUrl(url, o);
+		} else {
+			if ('title' in options) {
+				title.innerHTML = options.title;
+			}
+			if ('column' in options) {
+				column.innerHTML = options.column;
+			}
 		}
-		var slotContainer = {};
-		slotContainer[slotName] = div;
-		var o = Q.extend({
-			slotNames: [slotName], 
-			slotContainer: slotContainer,
-			quiet: true,
-			ignoreHistory: true
-		}, options);
-		o.onActivate = function _onActivate() {
-			state.onOpen.handle(url, slotName, index, options);
-		}
-		// this.state.triggers[index] = options.trigger || null;
-		Q.loadUrl(url, o);
 	},
 
 	close: function (index) {

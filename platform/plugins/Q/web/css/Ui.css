@@ -1690,6 +1690,24 @@ input[type=radio] { margin-right: 5px; }
 .Q_w90{ width: 90%; }
 .Q_w100{ width: 100%; }
 
-.Q_column {
+.Q_columns_column {
+	display: block;
+	float: left;
+	background: white;
+    box-shadow: black 0px 0px 4px;
+    -webkit-box-shadow: black 0px 0px 4px;
+    -moz-box-shadow: black 0px 0px 4px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+	margin-right: 10px;
+}
+
+.Q_notMobile .Q_columns_column {
+	margin-right: 10px;
+}
+
+.Q_mobile .Q_columns_column {
 	
 }
