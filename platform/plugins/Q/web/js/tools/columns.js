@@ -16,7 +16,10 @@
 Q.Tool.define("Q/tabs", function(options) {
 
 	var tool = this;
-	var $te = $(tool.element);
+	
+	this.state.container = document.createElement('div')
+		.addClass('Q_columns_container');
+	this.element.appendChild(this.state.container);
 	
 	tool.state.max = 0;
 	this.state.columns = {};
@@ -29,7 +32,8 @@ Q.Tool.define("Q/tabs", function(options) {
 	animation: { 
 		duration: 500 // milliseconds
 	},
-	tagName: 'div'
+	tagName: 'div',
+	scrollbarsAutoHide: {}
 },
 
 {
@@ -65,7 +69,7 @@ Q.Tool.define("Q/tabs", function(options) {
 			column = document.createElement('div').addClass('column_slot');
 			div.appendChild(title);
 			div.appendChild(column);
-			this.element.appendChild(div);
+			this.state.container.appendChild(div);
 		}
 		if (options.url) {
 			var url = options.url;
@@ -88,9 +92,7 @@ Q.Tool.define("Q/tabs", function(options) {
 				elementsToActivate['column'] = column;
 				return elementsToActivate;
 			};
-			o.onActivate = function _onActivate() {
-				state.onOpen.handle(options, index);
-			};
+			o.onActivate = _onOpen;
 			// this.state.triggers[index] = options.trigger || null;
 			Q.loadUrl(url, o);
 		} else {
@@ -100,11 +102,23 @@ Q.Tool.define("Q/tabs", function(options) {
 			if ('column' in options) {
 				column.innerHTML = options.column;
 			}
+			_onOpen();
 		}
+		function _onOpen() {
+			state.onOpen.handle(options, index);
+			if (tool.state.scrollbarsAutoHide) {
+				$(column).plugin('Q/scrollbarsAutoHide', options.scrollbarsAutoHide);
+			}
+		}
+		setTimeout(function () {
+			var $sc = $(state.container);
+			$sc.width($sc.width() + $(div).outerWidth(true));
+		}, 0);
 	},
 
 	close: function (index) {
 		var div = this.column(index);
+		var width = $(div).outerWidth(true);
 		if (!div) {
 			throw new Q.Exception("Column with index " + index + " doesn't exist");
 		}
@@ -118,6 +132,8 @@ Q.Tool.define("Q/tabs", function(options) {
 		if (index === this.state.max-1) {
 			--this.state.max;
 		}
+		var $sc = $(this.state.container);
+		$sc.width($sc.width() - $(div).outerWidth(true));
 	},
 
 	column: function (index) {

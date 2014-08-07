@@ -1690,6 +1690,11 @@ input[type=radio] { margin-right: 5px; }
 .Q_w90{ width: 90%; }
 .Q_w100{ width: 100%; }
 
+.Q_columns_tool {
+	overflow: hidden;
+	overflow-x: auto;
+}
+
 .Q_columns_column {
 	display: block;
 	float: left;
@@ -1706,8 +1711,21 @@ input[type=radio] { margin-right: 5px; }
 
 .Q_notMobile .Q_columns_column {
 	margin-right: 10px;
+	width: 300px;
 }
 
 .Q_mobile .Q_columns_column {
-	
+	width: 100%;
+}
+
+.Q_columns_column .title_slot {
+	margin: 0px;
+	padding: 5px;
+	background: #eee;
+    border-bottom: 2px solid #aaa;
+}
+
+.Q_columns_column .column_slot {
+	padding: 5px;
+	height: 20px;
 }
