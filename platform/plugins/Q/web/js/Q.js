@@ -8744,7 +8744,7 @@ Q.Mask = {
 		}
 		if (!mask.shows) {
 			if (mask.button) {
-				mask.button.remove();
+				$(mask.button).remove();
 				delete mask.button;
 			}
 			if (mask.fadeTime) {
@@ -8933,14 +8933,14 @@ Q.onJQuery.add(function ($) {
 		"Q/panel": "plugins/Q/js/tools/panel.js",
 		"Q/ticker": "plugins/Q/js/tools/ticker.js",
 		"Q/timestamp": "plugins/Q/js/tools/timestamp.js",
-		"Q/bookmarklet": "plugins/Q/js/tools/bookmarklet.js"
+		"Q/bookmarklet": "plugins/Q/js/tools/bookmarklet.js",
+		"Q/columns": "plugins/Q/js/tools/columns.js"
 	});
 	
 	Q.Tool.jQuery({
 		"Q/placeholders": "plugins/Q/js/fn/placeholders.js",
 		"Q/textfill": "plugins/Q/js/fn/textfill.js",
 		"Q/autogrow": "plugins/Q/js/fn/autogrow.js",
-		"Q/columns": "plugins/Q/js/fn/columns.js",
 		"Q/dialog": "plugins/Q/js/fn/dialog.js",
 		"Q/flip": "plugins/Q/js/fn/flip.js",
 		"Q/gallery": "plugins/Q/js/fn/gallery.js",
@@ -9064,9 +9064,10 @@ Q.onReady.set(function _Q_masks() {
 			button = document.createElement('button');
 			button.setAttribute('class', 'Q_load_cancel_button');
 			button.innerHTML = 'Cancel';
+			if (mask[0]) { mask = mask[0]; }
 			mask.appendChild(button);
 		}
-		button.off(Q.Pointer.end).on(Q.Pointer.end, callback);
+		$(button).off(Q.Pointer.end).on(Q.Pointer.end, callback);
 		Q.Mask.show('Q.request.cancel.mask');
 	}, 'Q.request.load.mask');
 	Q.request.options.onLoadEnd.set(function() {
