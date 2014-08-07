@@ -62,6 +62,10 @@ Q.Tool.define("Q/tabs", function(options) {
 			++this.state.max;
 			this.state.columns[index] = div;
 		}
+		if (slotName == null) {
+			div.innerHTML = url;
+			return state.onOpen.handle(url, slotName, index, options);
+		}
 		var slotContainer = {};
 		slotContainer[slotName] = div;
 		var o = Q.extend({
@@ -87,6 +91,7 @@ Q.Tool.define("Q/tabs", function(options) {
 		
 		// this is the proper way to remove an element, so tools inside can be destructed:
 		Q.removeElement(this.column(index));
+		this.state.columns[index] = null;
 		
 		if (index === this.state.max-1) {
 			--this.state.max;
