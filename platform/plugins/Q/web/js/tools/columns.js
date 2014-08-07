@@ -30,9 +30,14 @@ Q.Tool.define("Q/tabs", function(options) {
 	onOpen: new Q.Event(function () { }, 'Q/columns'),
 	beforeClose: new Q.Event(function () { }, 'Q/columns'),
 	animation: { 
-		duration: 500 // milliseconds
+		duration: 500, // milliseconds
+		css: {
+			opacity: 0, 
+			height: 0
+		}
 	},
 	tagName: 'div',
+	fullscreenMobile: true,
 	scrollbarsAutoHide: {}
 },
 
@@ -42,7 +47,7 @@ Q.Tool.define("Q/tabs", function(options) {
 	},
 	
 	push: function (options) {
-		this.open(options, this.max())
+		this.open(options, this.max());
 	},
 	
 	pop: function () {
@@ -105,35 +110,44 @@ Q.Tool.define("Q/tabs", function(options) {
 			_onOpen();
 		}
 		function _onOpen() {
-			state.onOpen.handle(options, index);
-			if (tool.state.scrollbarsAutoHide) {
-				$(column).plugin('Q/scrollbarsAutoHide', options.scrollbarsAutoHide);
+			if (Q.info.isMobile && state.fullscreenMobile) {
+				$(div).width($(tool.element).width());
+				$(div).height($(window).height() - $(tool.element).offset().top);
 			}
-		}
-		setTimeout(function () {
 			var $sc = $(state.container);
 			$sc.width($sc.width() + $(div).outerWidth(true));
-		}, 0);
+			if (Q.info.isTouchscreen) {
+				$(column).css('overflow', 'auto');
+			} else if (tool.state.scrollbarsAutoHide) {
+				$(column).plugin('Q/scrollbarsAutoHide', options.scrollbarsAutoHide);
+			}
+			state.onOpen.handle(options, index);
+			Q.handle(options.onOpen, this, [options, index]);
+		}
 	},
 
 	close: function (index) {
 		var div = this.column(index);
+		var tool = this;
 		var width = $(div).outerWidth(true);
 		if (!div) {
 			throw new Q.Exception("Column with index " + index + " doesn't exist");
 		}
-		var shouldContinue = this.state.beforeClose.handle();
+		var shouldContinue = tool.state.beforeClose.handle();
 		if (shouldContinue === false) return;
 		
-		// this is the proper way to remove an element, so tools inside can be destructed:
-		Q.removeElement(this.column(index));
-		this.state.columns[index] = null;
+		var $column = $(tool.column(index));
+		var duration = tool.state.animation.duration;
+		$column.animate(tool.state.animation.css, duration, function () {
+			Q.removeElement(tool.column(index));
+			tool.state.columns[index] = null;
 		
-		if (index === this.state.max-1) {
-			--this.state.max;
-		}
-		var $sc = $(this.state.container);
-		$sc.width($sc.width() - $(div).outerWidth(true));
+			if (index === tool.state.max-1) {
+				--tool.state.max;
+			}
+			var $sc = $(tool.state.container);
+			$sc.width($sc.width() - $(div).outerWidth(true));
+		});
 	},
 
 	column: function (index) {
