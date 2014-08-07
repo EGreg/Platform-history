@@ -13,7 +13,7 @@
 
  * @return Q.Tool
  */
-Q.Tool.define("Q/tabs", function(options) {
+Q.Tool.define("Q/columns", function(options) {
 
 	var tool = this;
 	
