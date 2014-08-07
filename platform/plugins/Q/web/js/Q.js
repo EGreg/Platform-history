@@ -432,6 +432,10 @@ Date.now = function _Date_now() {
 	return new Date().getTime();
 };
 
+Date.fromDateTime = function _Date_fromDateTime(dateTimeString) {
+	return new Date(dateTimeString.replace(/-/g,"/"));
+};
+
 if (window.Element) { // only IE7 and lower, which we don't support, wouldn't have this
 
 var Elp = Element.prototype;
@@ -5420,7 +5424,7 @@ Q.formPost.counter = 0;
  *  'returnAll': If true, returns all the script elements instead of just the new ones
  */
 Q.addScript = function _Q_addScript(src, onload, options) {
-	
+
 	function stateChangeInIE(e) { // function to watch scripts load in IE
 		// Execute as many scripts in order as we can
 		var script, pendingScripts = Q.addScript.pendingScripts;
@@ -5531,7 +5535,7 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 				}
 			}
 			if (outside) {
-				container.appendChild(scripts[i]);
+				container.appendChild(script);
 			}
 			// the script already exists in the document
 			if (Q.addScript.loaded[src]) {
@@ -5544,7 +5548,7 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 				if (o.ignoreLoadingErrors) {
 					_onload();
 				} else if (o.onError) {
-					o.onError.call(scripts[i]);
+					o.onError.call(script);
 				}
 				return o.returnAll ? script : false;
 			}
@@ -6913,10 +6917,10 @@ Q.Template.collection = {};
  * @method set
  * @param {String} name The template's name under which it will be found
  * @param {String} content The content of the template that will be processed by the template engine
- * @param {String} type The type of template. Defaults to "mustache"
+ * @param {String} type The type of template. Defaults to "handlebars"
  */
 Q.Template.set = function (name, content, type) {
-	type = type || 'mustache';
+	type = type || 'handlebars';
 	if (!Q.Template.collection[type]) {
 		Q.Template.collection[type] = {};
 	}
@@ -6933,7 +6937,7 @@ Q.Template.set = function (name, content, type) {
  *   Then, check the cache. If not there, we try to load the template from dir+'/'+name+'.'+type
  * @param callback {Function} Receives two parameters: (err, templateText)
  * @param options {Object?} Options.
- *   "type" - the type and extension of the template, defaults to 'mustache'
+ *   "type" - the type and extension of the template, defaults to 'handlebars'
  *   "dir" - the subpath of the app url under which to look for the template if it needs to be loaded
  *   "name" - option to override the name of the template
  * @return {String|undefined}
@@ -6950,7 +6954,7 @@ Q.Template.load = function _Q_Template_load(name, callback, options) {
 		console.error('Q.Template.load: name is empty');
 		return;
 	}
-	// defaults to mustache templates
+	// defaults to handlebars templates
 	var o = Q.extend({}, Q.Template.load.options, options);
 	if (!Q.Template.collection[o.type]) {
 		Q.Template.collection[o.type] = {};
@@ -6960,7 +6964,7 @@ Q.Template.load = function _Q_Template_load(name, callback, options) {
 	
 	// Now attempt to load the template.
 	// First, search the DOM for templates loaded inside script tag with type "text/theType",
-	// e.g. "text/mustache" and id matching the template name.
+	// e.g. "text/handlebars" and id matching the template name.
 	var i, scripts = document.getElementsByTagName('script'), script, trash = [];
 	for (i = 0, l = scripts.length; i < l; i++) {
 		script = scripts[i];
@@ -7005,7 +7009,7 @@ Q.Template.load = function _Q_Template_load(name, callback, options) {
 };
 
 Q.Template.load.options = {
-	type: "mustache",
+	type: "handlebars",
 	dir: "views"
 };
 
@@ -7020,10 +7024,10 @@ Q.Template.onError = new Q.Event(function (err) {
  * @method render
  * @param name {string} The name of template. See Q.Template.load
  * @param fields {object?} Rendering params - to be substituted to template
- * @param partials {array?} An array of partials to be used with template
+ * @param partials {array?} Names of partials to load and use for rendering the template
  * @param callback {function} a callback - receives the rendering result or nothing
  * @param options {object?} Options.
- *   "type" - the type and extension of the template, defaults to 'mustache'
+ *   "type" - the type and extension of the template, defaults to 'handlebars'
  *   "dir" - the folder under project web folder where templates are located
  *   "name" - option to override the name of the template
  */
@@ -7041,32 +7045,35 @@ Q.Template.render = function _Q_Template_render(name, fields, partials, callback
 	if (!callback) {
 		throw new Q.Error("Q.Template.render: callback is missing");
 	}
-	Q.addScript(Q.url('plugins/Q/js/mustache.js'), function () {
-		// load the template and partials
-		var p = Q.pipe(['template', 'partials'], function (params) {
-			if (params.template[0]) {
-				return callback(null);
-			}
-			callback(null, Mustache.render(params.template[1], fields, params.partials[0]));
-		});
-		Q.Template.load(name, p.fill('template'), options);
-		// pipe for partials
-		if (partials && partials.length) {
-			var pp = Q.pipe(partials, function (params) {
-				var i, partial, results = {};
-				for (i=0; i<partials.length; i++) {
-					partial = partials[i];
-					results[partial] = params[partial][0] ? null : params[partial][1];
+	Q.ensure(window.Handlebars, 
+		Q.url('plugins/Q/js/handlebars-v1.3.0.min.js'),
+		function () {
+			// load the template and partials
+			var p = Q.pipe(['template', 'partials'], function (params) {
+				if (params.template[0]) {
+					return callback(null);
 				}
-				p.fill('partials')(results);
+				callback(null, Handlebars.compile(params.template[1])(fields, {partials: params.partials[0]}));
 			});
-			for (var i=0; i<partials.length; i++) {
-				Q.Template.load(partials[i], pp.fill(partials[i]), options);
+			Q.Template.load(name, p.fill('template'), options);
+			// pipe for partials
+			if (partials && partials.length) {
+				var pp = Q.pipe(partials, function (params) {
+					var i, partial, part = {};
+					for (i=0; i<partials.length; i++) {
+						partial = partials[i];
+						part[partial] = params[partial][0] ? null : params[partial][1];
+					}
+					p.fill('partials')(part);
+				});
+				for (var i=0; i<partials.length; i++) {
+					Q.Template.load(partials[i], pp.fill(partials[i]), options);
+				}
+			} else {
+				p.fill('partials')();
 			}
-		} else {
-			p.fill('partials')();
 		}
-	});
+	);
 };
 
 var _qsockets = {}, _eventHandlers = {}, _connectHandlers = {}, _ioCleanup = [];
@@ -7230,12 +7237,12 @@ Q.Socket.prototype.disconnect = function _Q_Socket_prototype_disconnect() {
 Q.Socket.disconnectAll = function _Q_Socket_disconnectAll(ns) {
 	if (ns) {
 		Q.each(_qsockets[ns], function (url, socket) {
-			socket.disconnect();
+			socket && socket.disconnect();
 		});
 	} else {
 		Q.each(_qsockets, function (ns, arr) {
 			Q.each(arr, function (url, socket) {
-				socket.disconnect();
+				socket && socket.disconnect();
 			});
 		});
 	}

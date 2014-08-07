@@ -41,15 +41,14 @@ Q.Tool.define('Streams/chat', function(options) {
 		}, {ascending: true});
 		tool.render(function() {
 			tool.renderMessages(tool.prepareMessages(extra.messages), function (snippets) {
-				var $te = $(tool.element);
 				Q.each(snippets, function (key, $html) {
-					$te.find('.Streams_chat_noMessages').remove();
-					var $mc = $te.find('.Streams_chat_messages'); 
+					tool.$('.Streams_chat_noMessages').remove();
+					var $mc = tool.$('.Streams_chat_messages'); 
 					$html.appendTo($mc).activate();
-					processDOM($html);
 				});
 			});
 			tool.scrollToBottom();
+			tool.processDOM();
 			tool.addEvents();
 		});
 	}
@@ -131,7 +130,7 @@ Q.Tool.define('Streams/chat', function(options) {
 			}
 			res[ordinal] = {
 				content    : message.content,
-				time       : new Date(message.sentTime).getTime() / 1000,
+				time       : Date.fromDateTime(message.sentTime).getTime() / 1000,
 				byUserId   : message.byUserId,
 				ordinal    : message.ordinal,
 				classes    : (message.byUserId === state.userId)
@@ -144,8 +143,9 @@ Q.Tool.define('Streams/chat', function(options) {
 	},
 
 	render: function(callback){
-		var $te = $(this.element);
-		var state = this.state;
+		var tool = this;
+		var $te = $(tool.element);
+		var state = tool.state;
 
 		var fields = Q.extend({}, state.more, state.templates.main.fields);
 		Q.Template.render(
@@ -155,6 +155,7 @@ Q.Tool.define('Streams/chat', function(options) {
 				if (error) { return error; }
 				$te.html(html);
 
+				state.inputElement = tool.$('.Streams_chat_composer textarea');
 				callback && callback();
 			},
 			state.templates.main
@@ -162,7 +163,6 @@ Q.Tool.define('Streams/chat', function(options) {
 	},
 
 	renderMessages: function(messages, callback){
-		var $te  = $(this.element);
 		var tool = this;
 		var state = this.state;
 
@@ -171,7 +171,7 @@ Q.Tool.define('Streams/chat', function(options) {
 				'Streams/chat/Streams_chat_noMessages', 
 				function(error, html){
 					if (error) { return error; }
-					$te.find('.Streams_chat_messages').html(html);
+					tool.$('.Streams_chat_messages').html(html);
 				},
 				state.templates.Streams_chat_noMessages
 			);
@@ -194,12 +194,12 @@ Q.Tool.define('Streams/chat', function(options) {
 			var snippets = {};
 			for (var ordinal in params) {
 				var $html = $(params[ordinal][1]);
-				$html.find('.Streams_chat_avatar').each(function () {
+				$('.Streams_chat_avatar', $html).each(function () {
 					Q.Tool.setUpElement(this, 'Users/avatar', {
 						userId: $(this).attr('data-byUserId')
 					}, null, tool.prefix);
 				});
-				$html.find('.Streams_chat_timestamp').each(function () {
+				$('.Streams_chat_timestamp', $html).each(function () {
 					Q.Tool.setUpElement(this, 'Q/timestamp', {
 						time: $(this).attr('data-time')
 					}, null, tool.prefix);
@@ -212,19 +212,21 @@ Q.Tool.define('Streams/chat', function(options) {
 
 	renderNotification: function(message){
 		var $container = $('<div>');
+		var tool = this;
 		Q.activate($container.html(Q.Tool.setUpElement('div', 'Users/avatar', { userId: message.byUserId })), function(){
-			var data = {
-				username: $container.find('.Users_avatar_contents').text()
+			var fields = {
+				username: $('.Users_avatar_contents', $container).text(),
+				time: Date.now() / 1000
 			};
 
 			Q.Template.render(
 				'Streams/chat/message/notification', 
-				data, 
+				fields, 
 				function(error, html){
 					if (error) { return error }
 					
-					$te.find('.Streams_chat_noMessages').remove();
-					$te.find('.Streams_chat_messages').append(html);
+					tool.$('.Streams_chat_noMessages').remove();
+					tool.$('.Streams_chat_messages').append(html);
 				},
 				state.templates.message.notification
 			);
@@ -232,7 +234,6 @@ Q.Tool.define('Streams/chat', function(options) {
 	},
 
 	renderError: function(msg, err, data){
-		var $te  = $(this.element);
 		var tool = this;
 		var state = tool.state;
 
@@ -248,8 +249,8 @@ Q.Tool.define('Streams/chat', function(options) {
 			function(error, html){
 				if (error) { return error; }
     	
-				$te.find('.Streams_chat_noMessages').remove();
-				$te.find('.Streams_chat_messages').append(html);
+				tool.$('.Streams_chat_noMessages').remove();
+				tool.$('.Streams_chat_messages').append(html);
     	
 				tool.findMessage('last')
 					.find('.Streams_chat_timestamp')
@@ -284,7 +285,6 @@ Q.Tool.define('Streams/chat', function(options) {
 
 	addEvents: function(){
 		var tool    = this,
-			$te     = $(this.element),
 			state   = this.state,
 			blocked = false;
 
@@ -293,18 +293,17 @@ Q.Tool.define('Streams/chat', function(options) {
 		*/
 		function renderMore(messages) {
 			messages = tool.prepareMessages(messages);
-			var $more = $te.find('.Streams_chat_more');
+			var $more = tool.$('.Streams_chat_more');
 			if (Q.isEmpty(messages)) {
 				return $more.hide();
 			};
-			var $mc = $te.find('.Streams_chat_messages');
+			var $mc = tool.$('.Streams_chat_messages');
 			tool.renderMessages(messages, function (snippets) {
-				$te.find('.Streams_chat_noMessages').remove();
+				tool.$('.Streams_chat_noMessages').remove();
 				var least = 1000;
 				var totalHeight = 0;
 				Q.each(snippets, function (ordinal, $html) {
 					$html.prependTo($mc).activate();
-					processDOM($html);
 					least = ordinal;
 					totalHeight += ($html.outerHeight(true) + $html.outerHeight())/2;
 				}, {ascending: false});
@@ -313,11 +312,12 @@ Q.Tool.define('Streams/chat', function(options) {
 				if (least <= 1) {
 					return $more.hide();
 				}
+				tool.processDOM();
 			});
 		};
 
 		if (state.more.isClick) {
-			$te.find('.Streams_chat_more').click(function(){
+			tool.$('.Streams_chat_more').click(function(){
 				tool.more(renderMore);
 			});
 		} else {
@@ -326,11 +326,11 @@ Q.Tool.define('Streams/chat', function(options) {
 			});
 		}
 
-		$te.find('.Streams_chat_message').live(Q.Pointer.click, function(e){
+		tool.$('.Streams_chat_message').live(Q.Pointer.click, function(e){
 			if (!this.isOverflowed()) return;
 			
 			var $container = $(this).parents('.Streams_chat_item'),
-				username   = $container.find('.Users_avatar_contents').text();
+				username   = $('.Users_avatar_contents', $container).text();
 
 			if ($container.data('byuserid') === state.userId) {
 				username = 'me';
@@ -346,12 +346,12 @@ Q.Tool.define('Streams/chat', function(options) {
 		Q.Streams.Stream.onMessage(state.publisherId, state.streamName, 'Streams/chat/message')
 		.set(function(stream, message) {
 			tool.renderMessages(tool.prepareMessages(message), function (snippets) {
-				$te.find('.Streams_chat_noMessages').remove();
-				var $mc = $te.find('.Streams_chat_messages'); 
+				tool.$('.Streams_chat_noMessages').remove();
+				var $mc = tool.$('.Streams_chat_messages'); 
 				Q.each(snippets, function (key, $html) {
 					$html.appendTo($mc).activate();
-					processDOM($html);
 				}, {ascending: true});
+				tool.processDOM();
 			});
 			tool.scrollToBottom();
 		}, 'Streams/chat');
@@ -363,7 +363,6 @@ Q.Tool.define('Streams/chat', function(options) {
 			message.action = { join: true };
 
 			tool.renderNotification(message);
-			tool.scrollToBottom();
 		}, 'Streams/chat');
 
 		// new user left
@@ -373,14 +372,15 @@ Q.Tool.define('Streams/chat', function(options) {
 			message.action = { leave: true };
 
 			tool.renderNotification(tool.prepareMessages(message), 'leave');
-			tool.scrollToBottom();
 		}, 'Streams/chat');
 
 		/*
 		* send message
 		*/
-		$te.find('.Streams_chat_composer textarea')
+		tool.$('.Streams_chat_composer textarea')
 			.plugin('Q/placeholders')
+			.plugin('Q/autogrow')
+			.plugin('Q/clickfocus')
 			.keypress(function(event){
 			if (event.charCode == 13) {
 				if (blocked) {
@@ -401,11 +401,13 @@ Q.Tool.define('Streams/chat', function(options) {
 					'type'       : 'Streams/chat/message',
 					'content'    : content
 				}, function(err, args) {
+					blocked = false;
 					if (err) {
 						tool.renderError(err, args[0], args[1]);
+						tool.scrollToBottom();
+						return;
 					}
 					state.stream.refresh(null, {messages: true});
-					blocked = false;
 				});
 
 				return false;
@@ -420,8 +422,7 @@ Q.Tool.define('Streams/chat', function(options) {
 
 		// TODO - when user scrolled in message container not running this function
 		var isScrollNow = false,
-			startY      = null,
-			$te         = $(this.element);
+			startY      = null;
 
 		function touchstart(event){
 			isScrollNow = true;
@@ -446,7 +447,7 @@ Q.Tool.define('Streams/chat', function(options) {
 						.unbind('touchend')
 						.unbind('touchmove');
 
-					$te.find('.Streams_chat_messages').scroll(function(event){
+					tool.$('.Streams_chat_messages').scroll(function(event){
 						if ($(this).scrollToTop() == 0) {
 							callback && callback();
 						}
@@ -478,23 +479,23 @@ Q.Tool.define('Streams/chat', function(options) {
 	},
 
 	findMessage: function(action, byParam) {
-		var $te = $(this.element),
+		var tool = this,
 			query = '.Streams_chat_item';
 
 		byParam = (byParam ? '['+byParam+']' : '');
 
 		if (!action && byParam) {
-			return $te.find(query+byParam);
+			return tool.$(query+byParam);
 		}
 
 		if (typeof(action) == 'string') {
 			switch(action){
 				case 'first':
 				case 'last':
-					return $te.find(query+':'+action+byParam);
+					return tool.$(query+':'+action+byParam);
 			}
 		} else if (typeof(action) == 'number') {
-			var messages = $te.find(query+byParam);
+			var messages = tool.$(query+byParam);
 			return messages.length <= action ? $(messages.get(action)) : null;
 		}
 
@@ -509,6 +510,15 @@ Q.Tool.define('Streams/chat', function(options) {
 	scrollToTop: function() {
 		$scm = this.$('.Streams_chat_messages');
 		$scm.animate({ scrollTop: 0 }, this.state.animations.duration);
+	},
+
+	processDOM: function() {
+		this.$('.Streams_chat_message').each(function () {
+			if (this.isOverflowed()) {
+				this.style.cursor = 'pointer';
+			}
+		});
+		$(this.state.inputElement).plugin('Q/clickfocus');
 	}
 });
 
@@ -530,6 +540,7 @@ Q.Template.set('Streams/chat/message/bubble',
 
 Q.Template.set('Streams/chat/message/notification', 
 	'<div class="Streams_chat_notification>'+
+		'<div class="Streams_chat_timestamp" data-time="{{time}}"></div>'+
 		'{{#action.join}}'+
 			'<b>{{username}}</b> joined the chat'+
 		'{{/action.join}}'+
@@ -542,12 +553,10 @@ Q.Template.set('Streams/chat/message/notification',
 Q.Template.set('Streams/chat/message/error',
 	'<div class="Streams_chat_item Q_error">'+
 		'<div class="Streams_chat_container">'+
+			'<div class="Streams_chat_timestamp" data-time="{{time}}"></div>'+
 			'<div class="Streams_chat_error">'+
 				'{{errorText}}'+
 			'</div>'+
-			'<div class="Q_clear"></div>'+
-			'<div class="Streams_chat_timestamp" data-time="{{time}}"></div>'+
-			'<div class="Q_clear"></div>'+
 		'</div>'+
 		'<div class="Q_clear"></div>'+
 	'</div>'
@@ -569,13 +578,5 @@ Q.Template.set('Streams/chat/main',
 	'<hr />'+
 	'<div class="Q_clear"></div>'
 );
-
-function processDOM($html) {
-	$html.find('.Streams_chat_message').each(function () {
-		if (this.isOverflowed()) {
-			this.style.cursor = 'pointer';
-		}
-	});
-}
 
 })(Q, jQuery);
