@@ -1,19 +1,18 @@
 (function (Q, $) {
-
 /**
  * @module Q-tools
  */
 	
 /**
  * This tool contains functionality to show things in columns
- * @class Q tabs
+ * @class Q columns
  * @constructor
  * @param {Object} [options] This object contains properties for this function
- *  @param {Array} [options.tabs] An associative array of name: title pairs.
+ *  @param {Array} [options.columns] An associative array of name: title pairs.
 
  * @return Q.Tool
  */
-Q.Tool.define("Q/tabs", function(options) {
+Q.Tool.define("Q/columns", function(options) {
 
 	var tool = this;
 	
@@ -24,6 +23,13 @@ Q.Tool.define("Q/tabs", function(options) {
 	tool.state.max = 0;
 	this.state.columns = {};
 	this.state.triggers = {};
+
+	this.$('.close').live('click', function(){
+		var index = $(this).parents('.Q_columns_column').data('index');
+		if (index !== undefined) {
+			tool.close(index);
+		}
+	});
 },
 
 {
@@ -57,6 +63,7 @@ Q.Tool.define("Q/tabs", function(options) {
 	open: function (options, index) {
 		var tool = this;
 		var state = this.state;
+
 		if (index > this.max()) {
 			throw new Q.Exception("Q/columns open: index is too big");
 		}
@@ -66,22 +73,27 @@ Q.Tool.define("Q/tabs", function(options) {
 		var div = this.column(index);
 		var title, column;
 		if (!div) {
-			div = document.createElement(this.state.tagName)
-				.addClass('Q_columns_column');
+			div = document.createElement(this.state.tagName).addClass('Q_columns_column');
 			++this.state.max;
 			this.state.columns[index] = div;
-			title = document.createElement('h2').addClass('title_slot');
+			title = createTitle();
+			titleText = $(title).children('.title_slot').get(0);
 			column = document.createElement('div').addClass('column_slot');
 			div.appendChild(title);
 			div.appendChild(column);
 			this.state.container.appendChild(div);
 		}
+
+		$(div).data('index', index);
+
+		console.log(div, index);
+
 		if (options.url) {
 			var url = options.url;
 			var o = Q.extend({
 				slotNames: ["title", "column"], 
 				slotContainer: {
-					title: title,
+					title: titleText,
 					column: column
 				},
 				quiet: true,
@@ -90,7 +102,7 @@ Q.Tool.define("Q/tabs", function(options) {
 			o.handler = function _handler(response) {
 				var elementsToActivate = [];
 				if ('title' in response.slots) {
-					title.innerHTML = response.slots.title;
+					$(titleText).text(response.slots.title);
 					elementsToActivate['title'] = title;
 				}
 				column.innerHTML = response.slots.column;
@@ -102,7 +114,7 @@ Q.Tool.define("Q/tabs", function(options) {
 			Q.loadUrl(url, o);
 		} else {
 			if ('title' in options) {
-				title.innerHTML = options.title;
+				titleText.innerHTML = options.title;
 			}
 			if ('column' in options) {
 				column.innerHTML = options.column;
@@ -115,14 +127,25 @@ Q.Tool.define("Q/tabs", function(options) {
 				$(div).height($(window).height() - $(tool.element).offset().top);
 			}
 			var $sc = $(state.container);
-			$sc.width($sc.width() + $(div).outerWidth(true));
+
+			$sc.width(this.$('.Q_columns_column').length * this.$('.Q_columns_column').outerWidth(true))
 			if (Q.info.isTouchscreen) {
 				$(column).css('overflow', 'auto');
 			} else if (tool.state.scrollbarsAutoHide) {
 				$(column).plugin('Q/scrollbarsAutoHide', options.scrollbarsAutoHide);
 			}
+
 			state.onOpen.handle(options, index);
 			Q.handle(options.onOpen, this, [options, index]);
+		}
+		function createTitle(){
+			var $title = $('<h2 class="title"><span class="title_slot"></span></h2>');
+			if (Q.info.isMobile) {
+				$title.find('.title_slot').after('<div class="back">^</div');
+			} else {
+				$title.find('.title_slot').after('<div class="close">x</div>');
+			}
+			return $title.get(0);
 		}
 	},
 

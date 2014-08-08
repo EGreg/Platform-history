@@ -1718,11 +1718,19 @@ input[type=radio] { margin-right: 5px; }
 	width: 300px;
 }
 
-.Q_columns_column .title_slot {
+.Q_columns_column .title {
 	margin: 0px;
 	padding: 5px;
 	background: #eee;
     border-bottom: 2px solid #aaa;
+}
+
+.Q_columns_column .title .close,
+.Q_columns_column .title .back{
+	width: 20px;
+	height: 30px;
+	float: right;
+	cursor: pointer;
 }
 
 .Q_columns_column .column_slot {
