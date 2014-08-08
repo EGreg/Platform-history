@@ -505,7 +505,7 @@ Streams.create = function (fields, callback, related) {
 Streams.create.onError = new Q.Event();
 
 /**
- * This function is similar to _constructTool in Q.js
+ * This function is similar to _activateTools in Q.js
  * That one is to create "controllers" on the front end,
  * and this one is to create "models" on the front end.
  * They have very similar conventions.

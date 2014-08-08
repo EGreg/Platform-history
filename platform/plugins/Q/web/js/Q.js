@@ -5915,7 +5915,6 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 		}
 	}
 };
-Q.find.skipSubtree = "Q:skipSubtree";
 
 /**
  * Unleash this on an element to activate all the tools within it.
@@ -5955,7 +5954,7 @@ Q.activate = function _Q_activate(elem, options, callback) {
 		callback = options;
 		options = undefined;
 	}
-	Q.find(elem, true, Q.activate.onConstruct.handle, Q.activate.onInit.handle, options, shared);
+	Q.find(elem, true, _activateTools, _initTools, options, shared);
 	shared.pipe.add(shared.waitingForTools, 1, _activated)
 		.run();
 	
@@ -6732,7 +6731,7 @@ function Q_popStateHandler() {
  * when you define your tool's constructor.
  * @private
  * @static
- * @method _constructTool
+ * @method _activateTools
  * @param {ToolElement} toolElement
  *  A tool's generated container div.
  * @param {Object} options
@@ -6740,21 +6739,22 @@ function Q_popStateHandler() {
  * @param {Mixed} shared
  *  A shared pipe which we can use to fill
  */
-function _constructTool(toolElement, options, shared) {
+function _activateTools(toolElement, options, shared) {
 	var pendingParentEvent = _pendingParentStack[_pendingParentStack.length-1];
 	var pendingCurrentEvent = new Q.Event();
 	_pendingParentStack.push(pendingCurrentEvent); // wait for construct of parent tool
-	_loadToolScript(toolElement, function _constructTool_doConstruct(toolElement, toolFunc, toolName, uniqueToolId) {
+	_loadToolScript(toolElement, function _activateTools_doConstruct(toolElement, toolFunc, toolName, uniqueToolId) {
 		if (!toolFunc.toolConstructor) {
 			toolFunc.toolConstructor = function Q_Tool(element, options) {
 				if (this.activated) return; // support re-entrancy of Q.activate
 				this.activated = false;
+				this.initialized = false;
 				try {
 					this.options = Q.extend({}, Q.Tool.options.levels, toolFunc.options, Q.Tool.options.levels, options);
 					this.name = toolName;
 					if (Q.getObject(['Q', 'tools', toolName], element)) {
 						// support re-entrancy of Q.activate
-						return _constructTool.alreadyActivated;
+						return _activateTools.alreadyActivated;
 					}
 					Q.Tool.call(this, element, options);
 					this.state = Q.copy(this.options, toolFunc.stateKeys);
@@ -6791,9 +6791,20 @@ function _constructTool(toolElement, options, shared) {
 		function _reallyConstruct() {
 			var result = new toolFunc.toolConstructor(toolElement, options);
 			
-			if (result !== _constructTool.alreadyActivated) {
+			if (result !== _activateTools.alreadyActivated) {
 				// recursively activate whatever was inside,
-				// handle _initTool events, etc.
+				// handle _initTools events, etc.
+				
+				// TODO: make a mechanism for the tools
+				// to tell Q to go deeper inside, and otherwise
+				// we can skip the subtree on every Q.activate
+				// when it hits an element where no tool on that
+				// element said to go deeper. Which also means
+				// no child tools will be activated, so nothing
+				// was added to waitForIdNames and the tool will
+				// be initialized without waiting for any child tools.
+				// tool.element.Q.supportsChildren = true
+				// set by tool.supportsChildren(true)
 				Q.activate(toolElement);
 			}
 			
@@ -6807,32 +6818,35 @@ function _constructTool(toolElement, options, shared) {
 	_waitingParentStack.push(new Q.Pipe()); // wait for init of child tools
 }
 
-_constructTool.alreadyActivated = {};
+_activateTools.alreadyActivated = {};
 
 /**
  * Calls the init method of a tool. Used internally.
  * @private
  * @static
- * @method _initTool
+ * @method _initTools
  * @param {ToolElement} toolElement
  *  A tool's generated container div
  */
-function _initTool(toolElement) {
+function _initTools(toolElement) {
 	
 	function _handleInit() {
 		var tn, tool, normalizedName, normalizedId;
 		var tools = toolElement.Q.tools;
 		for (tn in tools) {
 			tool = tools[tn];
-			Q.handle(tool.Q && tool.Q.onInit, tool, tool.options);
 			normalizedName = Q.normalize(tn);
 			normalizedId = Q.normalize(tool.id);
-			_initToolHandlers[""] &&
-			_initToolHandlers[""].handle.call(tool, tool.options);
-			_initToolHandlers[normalizedName] &&
-			_initToolHandlers[normalizedName].handle.call(tool, tool.options);
-			_initToolHandlers["id:"+normalizedId] &&
-			_initToolHandlers["id:"+normalizedId].handle.call(tool, tool.options);
+			if (!tool.initialized) {
+				tool.initialized = true;
+				Q.handle(tool.Q && tool.Q.onInit, tool, tool.options);
+				_initToolHandlers[""] &&
+				_initToolHandlers[""].handle.call(tool, tool.options);
+				_initToolHandlers[normalizedName] &&
+				_initToolHandlers[normalizedName].handle.call(tool, tool.options);
+				_initToolHandlers["id:"+normalizedId] &&
+				_initToolHandlers["id:"+normalizedId].handle.call(tool, tool.options);
+			}
 			if (parentPipe) {
 				parentPipe.fill(normalizedId+"\t"+normalizedName).call(tool, tool.options);
 			}
@@ -6846,7 +6860,7 @@ function _initTool(toolElement) {
 		? _waitingParentStack[_waitingParentStack.length-1]
 		: null;
 	
-	_loadToolScript(toolElement, function (toolElement, toolFunc, toolName, uniqueToolId) {
+	_loadToolScript(toolElement, function (toolElement, toolFunc, toolName) {
 		var wfin = currentPipe.waitForIdNames;
 		if (wfin) {
 			currentPipe.add(wfin, 1, _handleInit).run();
@@ -8744,7 +8758,7 @@ Q.Mask = {
 		}
 		if (!mask.shows) {
 			if (mask.button) {
-				mask.button.remove();
+				$(mask.button).remove();
 				delete mask.button;
 			}
 			if (mask.fadeTime) {
@@ -8933,14 +8947,14 @@ Q.onJQuery.add(function ($) {
 		"Q/panel": "plugins/Q/js/tools/panel.js",
 		"Q/ticker": "plugins/Q/js/tools/ticker.js",
 		"Q/timestamp": "plugins/Q/js/tools/timestamp.js",
-		"Q/bookmarklet": "plugins/Q/js/tools/bookmarklet.js"
+		"Q/bookmarklet": "plugins/Q/js/tools/bookmarklet.js",
+		"Q/columns": "plugins/Q/js/tools/columns.js"
 	});
 	
 	Q.Tool.jQuery({
 		"Q/placeholders": "plugins/Q/js/fn/placeholders.js",
 		"Q/textfill": "plugins/Q/js/fn/textfill.js",
 		"Q/autogrow": "plugins/Q/js/fn/autogrow.js",
-		"Q/columns": "plugins/Q/js/fn/columns.js",
 		"Q/dialog": "plugins/Q/js/fn/dialog.js",
 		"Q/flip": "plugins/Q/js/fn/flip.js",
 		"Q/gallery": "plugins/Q/js/fn/gallery.js",
@@ -9043,14 +9057,6 @@ Q.request.options = {
 	}, 'Q')
 };
 
-Q.activate.onConstruct = new Q.Event(function () {
-	_constructTool.apply(this, arguments);
-}, 'Q.Tool');
-
-Q.activate.onInit = new Q.Event(function () {
-	_initTool.apply(this, arguments);
-}, 'Q.Tool');
-
 Q.onReady.set(function _Q_masks() {	
 	Q.request.options.onLoadStart.set(function(url, slotNames, o) {
 		if (o.quiet) return;
@@ -9064,9 +9070,10 @@ Q.onReady.set(function _Q_masks() {
 			button = document.createElement('button');
 			button.setAttribute('class', 'Q_load_cancel_button');
 			button.innerHTML = 'Cancel';
+			if (mask[0]) { mask = mask[0]; }
 			mask.appendChild(button);
 		}
-		button.off(Q.Pointer.end).on(Q.Pointer.end, callback);
+		$(button).off(Q.Pointer.end).on(Q.Pointer.end, callback);
 		Q.Mask.show('Q.request.cancel.mask');
 	}, 'Q.request.load.mask');
 	Q.request.options.onLoadEnd.set(function() {
