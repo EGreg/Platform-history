@@ -1,19 +1,19 @@
 {
 	"Q": {
 		"handlersBeforeEvent": {
-			"Q/objects": ["Streams/before/Q/objects"],
-			"Q/responseExtras": ["Streams/before/Q/responseExtras"],
-			"Q/Utils/canWriteToPath": ["Streams/before/Q/Utils/canWriteToPath"],
-			"Db/Row/Users_Contact/saveExecute": ["Streams/before/Users/Contact/saveExecute"],
-			"Db/Row/Users_Contact/removeExecute": ["Streams/before/Users/Contact/removeExecute"],
+			"Q/objects": ["Streams/before/Q_objects"],
+			"Q/responseExtras": ["Streams/before/Q_responseExtras"],
+			"Q/Utils/canWriteToPath": ["Streams/before/Q_Utils_canWriteToPath"],
+			"Db/Row/Users_Contact/saveExecute": ["Streams/before/Users_Contact_saveExecute"],
+			"Db/Row/Users_Contact/removeExecute": ["Streams/before/Users_Contact_removeExecute"],
 			"Users/User/displayName": ["Streams/before/Users/User/displayName"]
 		},
 		"handlersAfterEvent": {
-			"Q/objects": ["Streams/after/Q/objects"],
-			"Q/responseExtras": ["Streams/after/Q/responseExtras"],
-			"Q/image": ["Streams/after/Q/image"],
-			"Db/Row/Users_User/saveExecute": ["Streams/after/Users/User/saveExecute"],
-			"Db/Row/Users_Contact/removeExecute": ["Streams/after/Users/Contact/removeExecute"]
+			"Q/objects": ["Streams/after/Q_objects"],
+			"Q/responseExtras": ["Streams/after/Q_responseExtras"],
+			"Q/image": ["Streams/after/Q_image"],
+			"Db/Row/Users_User/saveExecute": ["Streams/after/Users_User_saveExecute"],
+			"Db/Row/Users_Contact/removeExecute": ["Streams/after/Users_Contact_removeExecute"]
 		},
 		"routes": {
 			"plugins/Streams/:action": {"module": "Streams"},

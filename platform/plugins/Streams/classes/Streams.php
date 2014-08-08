@@ -1184,7 +1184,7 @@ abstract class Streams extends Base_Streams
 			// If the $stream isn't already defined, select it
 			$stream = new Streams_Stream();
 			$stream->publisherId = $publisherId;
-			$stream->streamName = $streamName;
+			$stream->name = $streamName;
 			if (!$stream->retrieve()) {
 				// Strange, this stream doesn't exist.
 				// Well, we will just silently set the content to '' then
@@ -1214,7 +1214,7 @@ abstract class Streams extends Base_Streams
 				}
 			} else if ($access->ofContactLabel) {
 				$ofContactLabel = $access->ofContactLabel;
-				$contact_label_list[] = $db->quote($ofContactLabel);
+				$contact_label_list[] = $ofContactLabel;
 				if ($access->get('removed', false)) {
 					$removed_labels[$ofContactLabel] = true;
 				} else {

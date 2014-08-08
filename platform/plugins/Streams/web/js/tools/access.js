@@ -49,6 +49,7 @@ Q.Tool.define("Streams/access", function(options) {
 					if (msg = Q.firstErrorMessage(err, data && data.errors)) {
 						alert(msg);
 					}
+					state.stream.refresh();
 				});
 			});
 		}
@@ -180,7 +181,8 @@ Q.Tool.define("Streams/access", function(options) {
 		actionText         = (tabName === 'read') ? 'can see' : 'can',
 		tempSelect         = $('<select />');
 		tool.child('Streams_userChooser').exclude = state.avatarArray;
-		Q.Streams.Stream.get(tool.state.publisherId, tool.state.streamName, function (err, data) {
+		Q.Streams.retainWith(tool)
+		.get(tool.state.publisherId, tool.state.streamName, function (err, data) {
 			var msg;
 			if (msg = Q.firstErrorMessage(err, data && data.errors)) {
 				alert(msg);
@@ -228,6 +230,7 @@ Q.Tool.define("Streams/access", function(options) {
 						alert(msg);
 					}
 					addAccessRow(data.slots.data.access);
+					state.stream.refresh();
 				});
 			});
 		});
