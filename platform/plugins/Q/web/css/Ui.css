@@ -1693,6 +1693,7 @@ input[type=radio] { margin-right: 5px; }
 .Q_columns_tool {
 	overflow: hidden;
 	overflow-x: auto;
+	width: 93% !important;
 }
 
 .Q_mobile .Q_columns_tool {
@@ -1723,6 +1724,8 @@ input[type=radio] { margin-right: 5px; }
 	padding: 5px;
 	background: #eee;
     border-bottom: 2px solid #aaa;
+    width: 97%;
+	height: 30px;
 }
 
 .Q_columns_column .title .close,
@@ -1733,7 +1736,28 @@ input[type=radio] { margin-right: 5px; }
 	cursor: pointer;
 }
 
+.Q_columns_column .title .back{
+	background: url('../img/icons/Q-columns-vertical-back-icon.png') no-repeat;
+	width: 40px;
+	height: 35px;
+	background-size: 62%;
+	background-position: 5px -6px;
+	font-size: 11pt !important;
+	line-height: 33pt;
+	margin-top: -1px;
+	font-weight: normal;
+}
+
 .Q_columns_column .column_slot {
 	padding: 5px;
 	overflow: auto;
+	margin-top: 8px
 }
+/*
+.fullscreen .title{
+	position: fixed;
+}
+.fullscreen .Q_columns_column{
+	height: auto !important;
+	overflow: visible;
+}*/

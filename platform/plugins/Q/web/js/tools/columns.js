@@ -13,11 +13,9 @@
  * @return Q.Tool
  */
 Q.Tool.define("Q/columns", function(options) {
-
 	var tool = this;
-	
-	this.state.container = document.createElement('div')
-		.addClass('Q_columns_container');
+
+	this.state.container = document.createElement('div').addClass('Q_columns_container');
 	this.element.appendChild(this.state.container);
 	
 	tool.state.max = 0;
@@ -30,6 +28,20 @@ Q.Tool.define("Q/columns", function(options) {
 			tool.close(index);
 		}
 	});
+
+	this.$('.back').live('click', function(){
+		$(tool.element).animate({
+			scrollLeft: '-=' + tool.$('.Q_columns_column').outerWidth(true)
+		}, tool.state.animation.duration)
+	});
+
+	if (Q.info.isMobile) {
+		$(this.element).css('overflow', 'hidden');
+	}
+
+	if (Q.info.isMobile && tool.state.fullscreenMobile) {
+		$(tool.element).addClass('fullscreen');
+	}
 },
 
 {
@@ -86,8 +98,6 @@ Q.Tool.define("Q/columns", function(options) {
 
 		$(div).data('index', index);
 
-		console.log(div, index);
-
 		if (options.url) {
 			var url = options.url;
 			var o = Q.extend({
@@ -124,7 +134,10 @@ Q.Tool.define("Q/columns", function(options) {
 		function _onOpen() {
 			if (Q.info.isMobile && state.fullscreenMobile) {
 				$(div).width($(tool.element).width());
-				$(div).height($(window).height() - $(tool.element).offset().top);
+				var collHeight = $(window).height() - $(tool.element).offset().top - 10;
+
+				$(div).find('.column_slot').height(collHeight);
+				$(div).height(collHeight);
 			}
 			var $sc = $(state.container);
 
@@ -135,13 +148,17 @@ Q.Tool.define("Q/columns", function(options) {
 				$(column).plugin('Q/scrollbarsAutoHide', options.scrollbarsAutoHide);
 			}
 
+			$(tool.element).animate({
+				scrollLeft: tool.$('.Q_columns_container').width()
+			}, tool.state.animation.duration);
+
 			state.onOpen.handle(options, index);
 			Q.handle(options.onOpen, this, [options, index]);
 		}
 		function createTitle(){
 			var $title = $('<h2 class="title"><span class="title_slot"></span></h2>');
 			if (Q.info.isMobile) {
-				$title.find('.title_slot').after('<div class="back">^</div');
+				$title.find('.title_slot').after('<div class="back">Back</div');
 			} else {
 				$title.find('.title_slot').after('<div class="close">x</div>');
 			}
