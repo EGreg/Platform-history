@@ -30,9 +30,16 @@ Q.Tool.define("Q/columns", function(options) {
 	});
 
 	this.$('.back').live('click', function(){
-		$(tool.element).animate({
-			scrollLeft: '-=' + tool.$('.Q_columns_column').outerWidth(true)
-		}, tool.state.animation.duration)
+		var $current = $(this).parents('.Q_columns_column'),
+			$trigger = $current.prev('.Q_columns_column'),
+			duration = tool.state.animation.duration;
+
+		if ($trigger.get(0)) {
+			$current.animate(tool.state.animation.css.hide, duration, function(){
+				$current.hide();
+				$trigger.show().animate(tool.state.animation.css.show, duration);
+			});
+		}
 	});
 
 	if (Q.info.isMobile) {
@@ -50,9 +57,16 @@ Q.Tool.define("Q/columns", function(options) {
 	animation: { 
 		duration: 500, // milliseconds
 		css: {
-			opacity: 0, 
-			height: 0
-		}
+			hide: {
+				opacity: 0, 
+				height: 0
+			},
+			show: {
+				opacity: 1, 
+				height: '100%',
+				display: 'block'
+			}
+		},
 	},
 	tagName: 'div',
 	fullscreenMobile: true,
@@ -96,7 +110,7 @@ Q.Tool.define("Q/columns", function(options) {
 			this.state.container.appendChild(div);
 		}
 
-		$(div).data('index', index);
+		$(div).data('index', index).css(tool.state.animation.css.hide);
 
 		if (options.url) {
 			var url = options.url;
@@ -132,28 +146,58 @@ Q.Tool.define("Q/columns", function(options) {
 			_onOpen();
 		}
 		function _onOpen() {
-			if (Q.info.isMobile && state.fullscreenMobile) {
-				$(div).width($(tool.element).width());
-				var collHeight = $(window).height() - $(tool.element).offset().top - 10;
+			var self     = this,
+				duration = tool.state.animation.duration,
+				$columns = this.$('.Q_columns_column');
 
-				$(div).find('.column_slot').height(collHeight);
-				$(div).height(collHeight);
+			if (Q.info.isMobile) {
+				tool.state.animation.css.show.width  = $(tool.element).width();
+
+				if (state.fullscreenMobile) {
+					tool.state.animation.css.show.height = $(window).height() - $(tool.element).offset().top - 10;
+				}
+
+				if ($columns.length > 0) {
+					$columns.animate(tool.state.animation.css.hide, duration, function () {
+						$columns.hide();
+						openAnimation();
+					});
+				} else {
+					openAnimation();
+				}
+			} else {
+				openAnimation();
 			}
-			var $sc = $(state.container);
 
-			$sc.width(this.$('.Q_columns_column').length * this.$('.Q_columns_column').outerWidth(true))
-			if (Q.info.isTouchscreen) {
-				$(column).css('overflow', 'auto');
-			} else if (tool.state.scrollbarsAutoHide) {
-				$(column).plugin('Q/scrollbarsAutoHide', options.scrollbarsAutoHide);
+			function openAnimation(){
+				// open animation
+				$(div).show().animate(tool.state.animation.css.show, duration, function(){
+					$(this).find('.column_slot').height($(this).height());
+				});
+
+				afterAnimate();
 			}
 
-			$(tool.element).animate({
-				scrollLeft: tool.$('.Q_columns_container').width()
-			}, tool.state.animation.duration);
+			function afterAnimate(){
+				var $sc = $(state.container);
 
-			state.onOpen.handle(options, index);
-			Q.handle(options.onOpen, this, [options, index]);
+				if (Q.info.isTouchscreen) {
+					$(column).css('overflow', 'auto');
+				} else if (tool.state.scrollbarsAutoHide) {
+					$(column).plugin('Q/scrollbarsAutoHide', options.scrollbarsAutoHide);
+				}
+
+				if (!Q.info.isMobile) {
+					$sc.width(self.$('.Q_columns_column').length * self.$('.Q_columns_column').outerWidth(true));
+
+					$(tool.element).animate({
+						scrollLeft: tool.$('.Q_columns_container').width()
+					}, duration);	
+				}
+
+				state.onOpen.handle(options, index);
+				Q.handle(options.onOpen, self, [options, index]);
+			}
 		}
 		function createTitle(){
 			var $title = $('<h2 class="title"><span class="title_slot"></span></h2>');
@@ -178,7 +222,7 @@ Q.Tool.define("Q/columns", function(options) {
 		
 		var $column = $(tool.column(index));
 		var duration = tool.state.animation.duration;
-		$column.animate(tool.state.animation.css, duration, function () {
+		$column.animate(tool.state.animation.css.hide, duration, function () {
 			Q.removeElement(tool.column(index));
 			tool.state.columns[index] = null;
 		

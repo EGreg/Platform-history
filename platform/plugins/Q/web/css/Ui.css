@@ -1753,11 +1753,7 @@ input[type=radio] { margin-right: 5px; }
 	overflow: auto;
 	margin-top: 8px
 }
-/*
-.fullscreen .title{
-	position: fixed;
-}
 .fullscreen .Q_columns_column{
-	height: auto !important;
-	overflow: visible;
-}*/
+	position: absolute;
+	overflow: hidden;
+}
