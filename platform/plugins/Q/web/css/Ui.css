@@ -1753,7 +1753,7 @@ input[type=radio] { margin-right: 5px; }
 	overflow: auto;
 	margin-top: 8px
 }
-.fullscreen .Q_columns_column{
+.Q_fullscreen .Q_columns_column{
 	position: absolute;
 	overflow: hidden;
 }

@@ -47,7 +47,7 @@ Q.Tool.define("Q/columns", function(options) {
 	}
 
 	if (Q.info.isMobile && tool.state.fullscreenMobile) {
-		$(tool.element).addClass('fullscreen');
+		$(tool.element).addClass('Q_fullscreen');
 	}
 },
 
