@@ -1734,6 +1734,7 @@ input[type=radio] { margin-right: 5px; }
 	height: 30px;
 	float: right;
 	cursor: pointer;
+	font-weight: normal
 }
 
 .Q_columns_column .title .back{
@@ -1745,7 +1746,6 @@ input[type=radio] { margin-right: 5px; }
 	font-size: 11pt !important;
 	line-height: 33pt;
 	margin-top: -1px;
-	font-weight: normal;
 }
 
 .Q_columns_column .column_slot {
