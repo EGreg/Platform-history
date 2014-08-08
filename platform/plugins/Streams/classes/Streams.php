@@ -1184,7 +1184,7 @@ abstract class Streams extends Base_Streams
 			// If the $stream isn't already defined, select it
 			$stream = new Streams_Stream();
 			$stream->publisherId = $publisherId;
-			$stream->name = $streamName;
+			$stream->streamName = $streamName;
 			if (!$stream->retrieve()) {
 				// Strange, this stream doesn't exist.
 				// Well, we will just silently set the content to '' then

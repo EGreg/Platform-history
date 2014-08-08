@@ -49,7 +49,6 @@ Q.Tool.define("Streams/access", function(options) {
 					if (msg = Q.firstErrorMessage(err, data && data.errors)) {
 						alert(msg);
 					}
-					state.stream.refresh();
 				});
 			});
 		}
@@ -229,7 +228,6 @@ Q.Tool.define("Streams/access", function(options) {
 						alert(msg);
 					}
 					addAccessRow(data.slots.data.access);
-					state.stream.refresh();
 				});
 			});
 		});
