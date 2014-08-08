@@ -1214,7 +1214,7 @@ abstract class Streams extends Base_Streams
 				}
 			} else if ($access->ofContactLabel) {
 				$ofContactLabel = $access->ofContactLabel;
-				$contact_label_list[] = $db->quote($ofContactLabel);
+				$contact_label_list[] = $ofContactLabel;
 				if ($access->get('removed', false)) {
 					$removed_labels[$ofContactLabel] = true;
 				} else {
