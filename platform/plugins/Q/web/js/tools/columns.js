@@ -86,7 +86,7 @@ Q.Tool.define("Q/columns", function(options) {
 		clickable: null
 	},
 	scrollbarsAutoHide: {},
-	fullscreen: (Q.info.platform == 'android'),
+	fullscreen: Q.info.isAndroid(1000),
 	onOpen: new Q.Event(function () { }, 'Q/columns'),
 	beforeClose: new Q.Event(function () { }, 'Q/columns')
 },

@@ -8027,8 +8027,15 @@ Q.info = {
 	},
 	isIE: function (minVersion, maxVersion) {
 		return Q.info.browser.name === 'explorer'
-			&& (minVersion === undefined || minVersion <= Q.info.browser.version)
-			&& (maxVersion === undefined || maxVersion >= Q.info.browser.version);
+			&& (minVersion == undefined || minVersion <= Q.info.browser.version)
+			&& (maxVersion == undefined || maxVersion >= Q.info.browser.version);
+	},
+	isAndroid: function (maxWidth, maxHeight, minVersion, maxVersion) {
+		return Q.info.platform === 'android'
+			&& (maxWidth == undefined || maxWidth >= Q.Pointer.windowWidth())
+			&& (maxHeight == undefined || maxHeight >= Q.Pointer.windowHeight())	
+			&& (minVersion == undefined || minVersion <= Q.info.browser.version)
+			&& (maxVersion == undefined || maxVersion >= Q.info.browser.version);
 	}
 };
 Q.info.isMobile = Q.info.isTouchscreen && !Q.info.isTablet;
@@ -8180,6 +8187,24 @@ Q.Pointer = {
 	 */
 	scrollTop: function () {
 		return window.pageYOffset || document.documentElement.scrollTop || (document.body && document.body.scrollTop);
+	},
+	/**
+	 * Returns the window's inner width, in pixels, consistently across browsers
+	 * @static
+	 * @method scrollTop
+	 * @return {Number}
+	 */
+	windowWidth: function () {
+		return window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+	},
+	/**
+	 * Returns the window's inner height, in pixels, consistently across browsers
+	 * @static
+	 * @method scrollTop
+	 * @return {Number}
+	 */
+	windowHeight: function () {
+		return window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 	},
 	/**
 	 * Returns the x coordinate of an event relative to the document
@@ -8503,7 +8528,7 @@ Q.Dialogs.push.options = {
 	'title': 'Dialog',
 	'content': '',
 	'className': null,
-	'fullscreen': Q.info.platform == 'android' ? true : false,
+	'fullscreen': Q.info.isAndroid(undefined, 1000),
 	'appendTo': document.body,
 	'alignByParent': false,
 	'beforeLoad': new Q.Event(),
