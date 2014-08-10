@@ -1586,7 +1586,7 @@ Q.Layout = {
 	/**
 	 * Updates all tools contained in the app by triggering 'onLayout' on them.
 	 * Also calculates additional options for tools with some layout-related values
-	 * and passes them to 'onLayout' triggering.
+	 * and passes them to 'Q.onLayout' triggering.
 	 * @method updateTools
 	 * @param {Boolean} [heightOnly=false] Indicates that only height of viewport has changed so many other adjustments
 	 *	 aren't needed this time. Usually this argument is passed from Q.Layout.orientationChange().
@@ -1618,7 +1618,7 @@ Q.Layout = {
 			// participants.children('.Streams_participant_tool').participants('update');
 		}
 		
-		Q.trigger('onLayout', document.body, [layoutUpdateOptions]);
+		Q.trigger('Q.onLayout', document.body, [layoutUpdateOptions]);
 	},
 	
 	/**

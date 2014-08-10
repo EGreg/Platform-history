@@ -1780,11 +1780,11 @@ var Evp = Q.Event.prototype;
 Evp.occurred = false;
 
 /**
- * Adds a callable to a handler, or overwrites an existing one
+ * Adds a handler to an event, or overwrites an existing one
  * 
  * @method set
- * @param {Mixed} callable Any kind of callable which Q.handle can invoke
- * @param {String|Boolean|Q.Tool} key Optional key to associate with the callable.
+ * @param {Mixed} handler Any kind of callable which Q.handle can invoke
+ * @param {String|Boolean|Q.Tool} key Optional key to associate with the handler.
  *  Used to replace handlers previously added under the same key.
  *  Also used for removing handlers with .remove(key).
  *  If the key is not provided, a unique one is computed.
@@ -1795,13 +1795,13 @@ Evp.occurred = false;
  * @param {Boolean} prepend If true, then prepends the handler to the chain
  * @return {String} The key under which the event was set
  */
-Evp.set = function _Q_Event_prototype_set(callable, key, prepend) {
+Evp.set = function _Q_Event_prototype_set(handler, key, prepend) {
 	var i, isTool = (Q.typeOf(key) === 'Q.Tool');
 	if (key === true || (key === undefined && Q.Page.beingActivated)) {
 		Q.Event.forPage.push(this);
 	}
 	key = Q.Event.calculateKey(key, this.handlers, this.keys.length);
-	this.handlers[key] = callable; // can be a function, string, Q.Event, etc.
+	this.handlers[key] = handler; // can be a function, string, Q.Event, etc.
 	if (this.keys.indexOf(key) < 0) {
 		if (prepend) {
 			this.keys.unshift(key);
@@ -1814,22 +1814,22 @@ Evp.set = function _Q_Event_prototype_set(callable, key, prepend) {
 		}
 	}
 	if (this.keys.length === 1 && this._onFirst) {
-		this._onFirst.handle(callable, key, prepend);
+		this._onFirst.handle(handler, key, prepend);
 	}
 	if (this._onSet) {
-		this._onSet.handle(callable, key, prepend);
+		this._onSet.handle(handler, key, prepend);
 	}
 	return key;
 };
 
 /**
- * Like the "set" method, adds a callable to a handler, or overwrites an existing one.
- * But in addition, immediately handles the callable if the event has already occurred at least once,
+ * Like the "set" method, adds a handler to an event, or overwrites an existing one.
+ * But in addition, immediately handles the handler if the event has already occurred at least once,
  * passing it the same subject and arguments as were passed to the event the last time it occurred.
  * 
  * @method add
- * @param {mixed} callable Any kind of callable which Q.handle can invoke
- * @param {String|Boolean|Q.Tool} Optional key to associate with the callable.
+ * @param {mixed} handler Any kind of callable which Q.handle can invoke
+ * @param {String|Boolean|Q.Tool} Optional key to associate with the handler.
  *  Used to replace handlers previously added under the same key.
  *  Also used for removing handlers with .remove(key).
  *  If the key is not provided, a unique one is computed.
@@ -1838,10 +1838,10 @@ Evp.set = function _Q_Event_prototype_set(callable, key, prepend) {
  * @param {Boolean} prepend If true, then prepends the handler to the chain
  * @return {String} The key under which the handler was set
  */
-Evp.add = function _Q_Event_prototype_add(callable, key, prepend) {
-	var ret = this.set(callable, key, prepend);
+Evp.add = function _Q_Event_prototype_add(handler, key, prepend) {
+	var ret = this.set(handler, key, prepend);
 	if (this.occurred) {
-		Q.handle(callable, this.lastContext, this.lastArgs);
+		Q.handle(handler, this.lastContext, this.lastArgs);
 	}
 	return ret;
 };
@@ -1851,7 +1851,7 @@ Evp.add = function _Q_Event_prototype_add(callable, key, prepend) {
  * 
  * @method remove
  * @param {String} key
- *  The key of the callable to remove.
+ *  The key of the handler to remove.
  *  Pass a Q.Tool object here to remove the handler, if any, associated with this tool.
  */
 Evp.remove = function _Q_Event_prototype_remove(key) {
@@ -1884,10 +1884,10 @@ Evp.remove = function _Q_Event_prototype_remove(key) {
 	}
 	this.keys.splice(i, 1);
 	if (this._onRemove) {
-		this._onRemove.handle(callable, key, prepend);
+		this._onRemove.handle(handler, key, prepend);
 	}
 	if (!this.keys.length && this._onEmpty) {
-		this._onEmpty.handle(callable, key, prepend);
+		this._onEmpty.handle(handler, key, prepend);
 	}
 	return 1;
 };
@@ -1897,14 +1897,14 @@ Evp.remove = function _Q_Event_prototype_remove(key) {
  * 
  * @method removeAllHandlers
  * @param {String} key
- *  The key of the callable to remove.
+ *  The key of the handler to remove.
  *  Pass a Q.Tool object here to remove the handler, if any, associated with this tool.
  */
 Evp.removeAllHandlers = function _Q_Event_prototype_removeAllHandlers() {
 	this.handlers = {};
 	this.keys = [];
 	if (this._onEmpty) {
-		this._onEmpty.handle(callable, key, prepend);
+		this._onEmpty.handle(handler, key, prepend);
 	}
 };
 
@@ -1947,9 +1947,10 @@ Evp.copy = function _Q_Event_prototype_copy() {
  * @method until
  * @param {Q.Event} anotherEvent
  *  An event whose occurrence will stop the returned event
+ * @param {String|Boolean|Q.Tool} key Optional key to pass to anotherEvent.add (see docs for that method).
  * @return {Q.Event} A new Q.Event object
  */
-Evp.until = function _Q_Event_prototype_until(anotherEvent) {
+Evp.until = function _Q_Event_prototype_until(anotherEvent, key) {
 	var newEvent = new Q.Event();
 	var key = this.add(newEvent.handle);
 	var event = this;
@@ -1957,18 +1958,19 @@ Evp.until = function _Q_Event_prototype_until(anotherEvent) {
 		event.remove(key);
 		anotherEvent.remove(anotherKey);
 		event.stop();
-	});
+	}, key);
 	return newEvent;
 };
 
 /**
  * Return a new Q.Event object that waits until this event is stopped,
  * then processes all the pending calls to .handle(), continuing normally after that.
+ * @param {String|Boolean|Q.Tool} key Optional key to pass to event.onStop().add (see docs for that method).
  * 
  * @method then
  * @return {Q.Event} A new Q.Event object
  */
-Evp.then = function _Q_Event_prototype_then() {
+Evp.then = function _Q_Event_prototype_then(key) {
 	var newEvent = new Q.Event();
 	var handle = newEvent.handle;
 	var _waiting = true;
@@ -1980,13 +1982,13 @@ Evp.then = function _Q_Event_prototype_then() {
 		}
 		return handle.apply(this, arguments);
 	};
-	var key = this.onStop().add(function () {
+	var key2 = this.onStop().add(function () {
 		for (var i=0; i<_pending.length; ++i) {
 			handle.apply(_pending[i][0], _pending[i][1]);
 		}
 		_waiting = false;
-		this.onStop().remove(key);
-	});
+		this.onStop().remove(key2);
+	}, key);
 	return newEvent;
 };
 
@@ -1996,11 +1998,12 @@ Evp.then = function _Q_Event_prototype_then() {
  * 
  * @method debounce
  * @param {Number} milliseconds The number of milliseconds
+ * @param {String|Boolean|Q.Tool} key Optional key to pass to event.add (see docs for that method).
  * @return {Q.Event} A new Q.Event object
  */
-Evp.debounce = function _Q_Event_prototype_debounce(milliseconds) {
+Evp.debounce = function _Q_Event_prototype_debounce(milliseconds, key) {
 	var newEvent = new Q.Event();
-	this.add(Q.debounce(newEvent.handle, milliseconds, 0));
+	this.add(Q.debounce(newEvent.handle, milliseconds, 0), key);
 	return newEvent;
 };
 
@@ -2010,11 +2013,12 @@ Evp.debounce = function _Q_Event_prototype_debounce(milliseconds) {
  * 
  * @method throttle
  * @param {Number} milliseconds The number of milliseconds
+ * @param {String|Boolean|Q.Tool} key Optional key to pass to event.add (see docs for that method).
  * @return {Q.Event} A new Q.Event object
  */
-Evp.throttle = function _Q_Event_prototype_throttle(milliseconds) {
+Evp.throttle = function _Q_Event_prototype_throttle(milliseconds, key) {
 	var newEvent = new Q.Event();
-	this.add(Q.throttle(newEvent.handle, milliseconds, 0));
+	this.add(Q.throttle(newEvent.handle, milliseconds, 0), key);
 	return newEvent;
 };
 
@@ -2024,14 +2028,15 @@ Evp.throttle = function _Q_Event_prototype_throttle(milliseconds) {
  * 
  * @method filter
  * @param {Function} test Function to test the arguments and return a Boolean
+ * @param {String|Boolean|Q.Tool} key Optional key to pass to event.add (see docs for that method).
  * @return {Q.Event} A new Q.Event object
  */
-Evp.filter = function _Q_Event_prototype_filter(test) {
+Evp.filter = function _Q_Event_prototype_filter(test, key) {
 	var newEvent = new Q.Event();
 	this.add(function () {
 		if (!test.apply(this, arguments)) return 0;
 		return newEvent.handle.apply(newEvent, arguments);
-	});
+	}, key);
 	return newEvent;
 };
 
@@ -2042,14 +2047,15 @@ Evp.filter = function _Q_Event_prototype_filter(test) {
  * @method map
  * @param {Function} transform Function to transform the arguments and return
  *   an array of two items for the new call: [this, arguments]
+ * @param {String|Boolean|Q.Tool} key Optional key to pass to event.add (see docs for that method).
  * @return {Q.Event} A new Q.Event object
  */
-Evp.map = function _Q_Event_prototype_map(transform) {
+Evp.map = function _Q_Event_prototype_map(transform, key) {
 	var newEvent = new Q.Event();
 	this.add(function () {
 		var parts = transform.apply(this, arguments);
 		return newEvent.handle.apply(parts[0], parts[1]);
-	});
+	}, key);
 	return newEvent;
 };
 
@@ -2189,6 +2195,11 @@ Q.onJQuery = new Q.Event();
  * @event onLayout
  */
 Q.onLayout = new Q.Event();
+/**
+ * This event is convenient for doing stuff when the window scrolls
+ * @event onLayout
+ */
+Q.onScroll = new Q.Event();
 /**
  * This event tracks the document.onvisibilitychange event, when online connection is lost
  * @event onVisibilityChange
@@ -4408,8 +4419,9 @@ Q.ready = function _Q_ready() {
 			Q.addEventListener(window, 'popstate', Q.onPopState.handle);
 
 			// To support tool layouting, trigger 'layout' event on browser resize and orientation change
-			Q.addEventListener(window, 'resize', Q.layout);
-			Q.addEventListener(window, 'orientationchange', Q.layout);
+			Q.addEventListener(window, 'resize', Q.onLayout.handle);
+			Q.addEventListener(window, 'orientationchange', Q.onLayout.handle);
+			Q.addEventListener(window, 'scroll', Q.onScroll.handle);
 
 			// Call the functions meant to be called after ready() is done
 			Q.onReady.handle.call(window, window.jQuery);
@@ -4652,8 +4664,8 @@ Q.trigger = function _Q_trigger(eventName, element, args) {
 };
 
 Q.layout = function _Q_layout(element) {
-	Q.trigger('onLayout', element || document.body, []);
-	Q.onLayout.handle(element);
+	Q.trigger('Q.onLayout', element || document.body, [element]);
+	Q.onLayout.handle.call(element);
 };
 
 Q.clientId = function () {
@@ -5961,7 +5973,7 @@ Q.activate = function _Q_activate(elem, options, callback) {
 	Q.Tool.beingActivated = ba;
 	
 	function _activated() {
-		Q.trigger('onLayout', elem, []);
+		Q.trigger('Q.onLayout', elem, []);
 		if (callback) callback(elem, options);
 		Q.onActivate.handle(elem, options);
 	}
@@ -9083,7 +9095,7 @@ Q.onReady.set(function _Q_masks() {
 		Q.Mask.hide('Q.request.load.mask');
 		Q.Mask.hide('Q.request.cancel.mask');
 	}, 'Q.request.load.mask');
-	Q.layout();
+	Q.onLayout.handle();
 }, 'Q.masks');
 
 if (typeof module !== 'undefined' && typeof process !== 'undefined') {

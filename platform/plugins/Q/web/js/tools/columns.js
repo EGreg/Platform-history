@@ -31,30 +31,33 @@ Q.Tool.define("Q/columns", function(options) {
 
 	state.container = document.createElement('div')
 		.addClass('Q_columns_container Q_clearfix');
-	this.element.appendChild(this.state.container);
-	
+	tool.element.appendChild(this.state.container);
+
 	state.max = 0;
 	state.columns = {};
 	state.triggers = {};
 
-	var selector = '.Q_close, .Q_back';
+	var selector = '.Q_close';
 	if (Q.info.isMobile && state.back.triggerFromTitle) {
-		selector += ', .Q_columns_title';
+		selector = '.Q_columns_title';
 	}
-	$(this.element).on('click', selector, function(){
-		var index = $(this).closest('.Q_columns_column').data('index');
+	$(tool.element).on(Q.Pointer.click, selector, function(){
+		var index = $(this).closest('.Q_columns_column').data(dataKey_index);
 		if (index) {
 			tool.close(index);
 		}
-	});
-
-	if (Q.info.isMobile && !state.fullscreen) {
-		$(this.element).css('overflow', 'hidden');
-	}
-
-	if (state.fullscreen) {
-		$(tool.element).addClass('Q_fullscreen');
-	}
+	}); // no need for key, it will be removed when tool element is removed
+	
+	Q.onScroll.set(Q.debounce(function () {
+		if (state.$curr) {
+			state.$curr.data(dataKey_scrollTop, Q.Pointer.scrollTop());
+		}
+	}, 100));
+	
+	tool.refresh();
+	Q.onLayout.set(function () {
+		tool.refresh();
+	}, tool);
 },
 
 {
@@ -138,9 +141,14 @@ Q.Tool.define("Q/columns", function(options) {
 				);
 			}
 			columnSlot = document.createElement('div').addClass('column_slot');
-			$(div).append($title, columnSlot)
-				.data('index', index)
+			state.$curr = $(div)
+				.append($title, columnSlot)
+				.data(dataKey_index, index)
+				.data(dataKey_scrollTop, Q.Pointer.scrollTop())
 				.appendTo(state.container);
+			if (state.fullscreen) {
+				$(window).scrollTop(0);
+			}
 		}
 
 		$(div).css(state.animation.css.hide);
@@ -154,7 +162,8 @@ Q.Tool.define("Q/columns", function(options) {
 					column: columnSlot
 				},
 				quiet: true,
-				ignoreHistory: true
+				ignoreHistory: true,
+				ignorePage: true
 			}, options);
 			o.handler = function _handler(response) {
 				var elementsToActivate = [];
@@ -265,7 +274,12 @@ Q.Tool.define("Q/columns", function(options) {
 		
 		var w = $div.outerWidth(true);
 		var duration = state.animation.duration;
-		$div.prev().show();
+		var $prev = $div.prev();
+		$prev.show();
+		if (state.fullscreen) {
+			$(window).scrollTop($prev.data(dataKey_scrollTop) || 0);
+		}
+		this.$current = $prev;
 		$div.animate(state.animation.css.hide, duration, function () {
 			Q.removeElement(tool.column(index));
 			state.columns[index] = null;
@@ -280,6 +294,25 @@ Q.Tool.define("Q/columns", function(options) {
 
 	column: function (index) {
 		return this.state.columns[index] || null;
+	},
+	
+	refresh: function () {
+		var tool = this;
+		var state = tool.state;
+		var $te = $(tool.element);
+		
+		if (Q.info.isMobile) {
+			var w = $(window).width();
+			$te.add('.Q_columns_column, .Q_columns_container', $te).width(w);
+			if (!state.fullscreen) {
+				$te.css('overflow', 'hidden');
+				// TODO: iscroll
+			}
+		}
+
+		if (state.fullscreen) {
+			$te.addClass('Q_fullscreen');
+		}
 	}
 }
 );
@@ -287,5 +320,8 @@ Q.Tool.define("Q/columns", function(options) {
 Q.Template.set('Q/columns/column',
 	'<div class="Q_contextual"><ul class="Q_listing"></ul></div>'
 );
+
+var dataKey_index = 'index';
+var dataKey_scrollTop = 'scrollTop';
 
 })(Q, jQuery);
