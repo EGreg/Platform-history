@@ -674,9 +674,8 @@ class Q_Utils
 	 */
 	static function socketUrl () {
 		$host = Q_Config::get('Q', 'node', 'host', null);
-		if (!isset($host)) throw new Q_Exception_MissingConfig(array('fieldpath' => 'Q/node/host'));
 		$port = Q_Config::get('Q', 'node', 'port', null);
-		if (!isset($port)) throw new Q_Exception_MissingConfig(array('fieldpath' => 'Q/node/port'));
+		if (!isset($port) || !isset($host)) return null;
 		return "http://$host:$port";
 	}
 

@@ -7208,6 +7208,9 @@ function _connectSocketNS(ns, url, callback, force) {
  * @param callback {Function} When a connection is made, receives the socket object
  */
 Q.Socket.connect = function _Q_Socket_prototype_connect(ns, url, callback) {
+	if (!url) {
+		return false;
+	}
 	if (typeof ns === 'function') {
 		callback = ns;
 		ns = '';
@@ -7990,17 +7993,17 @@ Q.Browser = {
 };
 
 var detected = Q.Browser.detect();
+var isTouchscreen = ('ontouchstart' in window || !!window.navigator.msMaxTouchPoints);
+var isTablet = navigator.userAgent.match(new RegExp('tablet|ipad', 'i'))
+	|| (isTouchscreen && !navigator.userAgent.match(new RegExp('mobi', 'i')));
 /**
  * Useful info about the page and environment
  * 
  * @property {Object} info
  */
 Q.info = {
-	isTouchscreen: ('ontouchstart' in window || !!window.navigator.msMaxTouchPoints), // works on ie10
-	isTablet: navigator.userAgent.match(new RegExp('tablet|ipad', 'i'))
-		|| navigator.userAgent.match(new RegExp('android', 'i'))
-		&& !navigator.userAgent.match(new RegExp('mobile', 'i'))
-		? true : false,
+	isTouchscreen: isTouchscreen, // works on ie10
+	isTablet: isTablet,
 	platform: detected.OS,
 	device: detected.device,
 	isWebView: detected.isWebView,

@@ -155,7 +155,7 @@ function (o) {
 
 	if (!o.noClose)
 	{
-		var close = $('<a class="close" />');
+		var close = $('<a class="Q_close" />');
 		$this.prepend(close);
 		close.bind(Q.Pointer.click, $this.data('Q/overlay').close);
 	}
@@ -375,7 +375,7 @@ Q.Tool.jQuery('Q/dialog', function (o) {
 {
 	'alignByParent': false,
 	'mask': false,
-	'fullscreen': Q.info.platform == 'android' ? true : false,
+	'fullscreen': (Q.info.platform == 'android'),
 	'asyncLoad': !Q.info.isTouchscreen,
 	'noClose': false,
 	'closeOnEsc': true,

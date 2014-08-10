@@ -425,28 +425,30 @@ class Q_Request
 	 */
 	static function isTablet()
 	{
-	  static $result;
-	  if (isset($result)) {
-	    return $result;
-	  }
+		static $result;
+		if (isset($result)) {
+			return $result;
+		}
 		/**
 		 * @event Q/request/isTablet {before}
 		 * @return {boolean}
 		 */
-	  $result = Q::event('Q/request/isTablet', array(), 'before');
-	  if (isset($result)) {
-	    return $result;
-	  }
-	  if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-	    return null;
-	  }
-	  $useragent = $_SERVER['HTTP_USER_AGENT'];
-	  if (preg_match('/tablet|ipad/i', $useragent)
-	  || (preg_match('/android/i', $useragent) && !preg_match('/mobi/i', $useragent)))
-	  {
-	    return true;
-	  }
-	  return false;
+		$result = Q::event('Q/request/isTablet', array(), 'before');
+		if (isset($result)) {
+			return $result;
+		}
+		if (!isset($_SERVER['HTTP_USER_AGENT'])) {
+			return null;
+		}
+		$useragent = $_SERVER['HTTP_USER_AGENT'];
+		if (preg_match('/tablet|ipad/i', $useragent)
+		|| (
+			(preg_match('/android/i', $useragent) || preg_match('/silk/i', $useragent))
+			&& !preg_match('/mobi/i', $useragent)
+		)) {
+			return true;
+		}
+		return false;
 	}
 	
 	/**

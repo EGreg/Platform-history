@@ -646,7 +646,7 @@ div.Q_placeholder { pointer-events: none; }
 	background: url(../img/bg/overlay.png);
 }
 
-.Q_fullscreen_dialog .close
+.Q_fullscreen_dialog .Q_close
 {
 	display: block;
 	position: absolute;
@@ -1427,8 +1427,8 @@ divbody { text-align: center; height: 100%; }
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-.Q_overlay .close { background-image:url(../img/close.png); position:absolute; right:-15px; top:-15px; cursor:pointer; height:35px; width:35px; }
-.Q_overlay.Q_overlay_apply .close { background-image:url(../img/apply.png); }
+.Q_overlay .Q_close { background-image:url(../img/close.png); position:absolute; right:-15px; top:-15px; cursor:pointer; height:35px; width:35px; }
+.Q_overlay.Q_overlay_apply .Q_close { background-image:url(../img/apply.png); }
 
 /* tabs */
 
@@ -1693,7 +1693,7 @@ input[type=radio] { margin-right: 5px; }
 .Q_columns_tool {
 	overflow: hidden;
 	overflow-x: auto;
-	width: 93% !important;
+	position: relative;
 }
 
 .Q_mobile .Q_columns_tool {
@@ -1704,7 +1704,12 @@ input[type=radio] { margin-right: 5px; }
 	display: block;
 	float: left;
 	background: white;
-	box-shadow: black 0px 0px 4px;
+}
+
+.Q_notMobile .Q_columns_column {
+	margin-right: 10px;
+	width: 300px;
+	box-shadow: black 2px 2px 4px;
 	-webkit-box-shadow: black 0px 0px 4px;
 	-moz-box-shadow: black 0px 0px 4px;
 	-webkit-user-select: none;
@@ -1714,46 +1719,56 @@ input[type=radio] { margin-right: 5px; }
 	margin-right: 10px;
 }
 
-.Q_notMobile .Q_columns_column {
-	margin-right: 10px;
-	width: 300px;
-}
-
-.Q_columns_column .title {
-	margin: 0px;
-	padding: 5px;
+.Q_columns_title {
 	background: #eee;
-    border-bottom: 2px solid #aaa;
-    width: 97%;
-	height: 30px;
+    border-bottom: 1px solid #aaa;
 }
 
-.Q_columns_column .title .close,
-.Q_columns_column .title .back{
-	width: 20px;
-	height: 30px;
+.Q_columns_title .Q_close {
+	width: 40px;
+	height: 40px;
 	float: right;
 	cursor: pointer;
-	font-weight: normal
+	font-weight: normal;
+	color: #555;
 }
 
-.Q_columns_column .title .back{
-	background: url('../img/icons/Q-columns-vertical-back-icon.png') no-repeat;
+.Q_columns_title .Q_close img {
 	width: 40px;
-	height: 35px;
-	background-size: 62%;
-	background-position: 5px -6px;
-	font-size: 11pt !important;
-	line-height: 33pt;
-	margin-top: -1px;
+	height: 40px;
+}
+
+.Q_columns_column .title_slot {
+	margin: 0px;
+	padding: 5px;
+    width: 80%;
+	height: 30px;
 }
 
 .Q_columns_column .column_slot {
-	padding: 5px;
+	clear: both;
 	overflow: auto;
-	margin-top: 8px
 }
-.Q_fullscreen .Q_columns_column{
-	position: absolute;
+
+.Q_columns_tool.Q_fullscreen {
+	overflow: visible;
+	height: auto;
+}
+
+.Q_columns_tool.Q_fullscreen .Q_columns_column {
+	float: none;
+	width: 100%;
+}
+
+.Q_columns_tool.Q_fullscreen .Q_columns_title {
+	position: fixed;
+	width: 100%;
+	overflow: hidden;
+	z-index: 1000;
+}
+.Q_columns_tool.Q_fullscreen .column_slot {
+	position: relative;
+	padding-top: 40px;
+	width: 100%;
 	overflow: hidden;
 }
