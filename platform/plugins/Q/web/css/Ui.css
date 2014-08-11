@@ -1691,9 +1691,9 @@ input[type=radio] { margin-right: 5px; }
 .Q_w100{ width: 100%; }
 
 .Q_columns_tool {
-	overflow: hidden;
-	overflow-x: auto;
+	overflow: visible;
 	position: relative;
+	max-height: 100%;
 }
 
 .Q_mobile .Q_columns_tool {
@@ -1704,6 +1704,10 @@ input[type=radio] { margin-right: 5px; }
 	display: block;
 	float: left;
 	background: white;
+}
+
+.Q_mobile .Q_columns_column {
+	height: auto;
 }
 
 .Q_notMobile .Q_columns_column {
@@ -1731,6 +1735,7 @@ input[type=radio] { margin-right: 5px; }
 	cursor: pointer;
 	font-weight: normal;
 	color: #555;
+	padding: 5px;
 }
 
 .Q_columns_title .Q_close img {
@@ -1741,8 +1746,9 @@ input[type=radio] { margin-right: 5px; }
 .Q_columns_column .title_slot {
 	margin: 0px;
 	padding: 5px;
+	line-height:40px;
     width: 80%;
-	height: 30px;
+	height: 40px;
 }
 
 .Q_columns_column .column_slot {
@@ -1765,6 +1771,8 @@ input[type=radio] { margin-right: 5px; }
 	width: 100%;
 	overflow: hidden;
 	z-index: 1000;
+	top: 0px;
+	left: 0px;
 }
 .Q_columns_tool.Q_fullscreen .column_slot {
 	position: relative;

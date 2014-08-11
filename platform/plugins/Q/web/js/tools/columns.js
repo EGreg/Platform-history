@@ -49,8 +49,8 @@ Q.Tool.define("Q/columns", function(options) {
 	}); // no need for key, it will be removed when tool element is removed
 	
 	Q.onScroll.set(Q.debounce(function () {
-		if (state.$curr) {
-			state.$curr.data(dataKey_scrollTop, Q.Pointer.scrollTop());
+		if (state.$currentColumn) {
+			state.$currentColumn.data(dataKey_scrollTop, Q.Pointer.scrollTop());
 		}
 	}, 100));
 	
@@ -141,7 +141,7 @@ Q.Tool.define("Q/columns", function(options) {
 				);
 			}
 			columnSlot = document.createElement('div').addClass('column_slot');
-			state.$curr = $(div)
+			state.$currentColumn = $(div)
 				.append($title, columnSlot)
 				.data(dataKey_index, index)
 				.data(dataKey_scrollTop, Q.Pointer.scrollTop())
@@ -149,6 +149,7 @@ Q.Tool.define("Q/columns", function(options) {
 			if (state.fullscreen) {
 				$(window).scrollTop(0);
 			}
+			presentColumn(tool);
 		}
 
 		$(div).css(state.animation.css.hide);
@@ -206,6 +207,7 @@ Q.Tool.define("Q/columns", function(options) {
 				var duration = state.animation.duration;
 				var $sc = $(state.container);
 				var $cs = $('.column_slot', $div);
+				var $ct = $('.Q_columns_title', $div);
 				
 				if (!Q.info.isMobile) {
 					$sc.width(tool.$('.Q_columns_column').length * tool.$('.Q_columns_column').outerWidth(true));
@@ -216,18 +218,24 @@ Q.Tool.define("Q/columns", function(options) {
 				}
 				
 				$div.css('display', 'block').css(state.animation.css.hide);
+				if (state.fullscreen) {
+					$ct.css('position', 'absolute');
+				}
 				$div.show().animate(state.animation.css.show, duration, function(){
+					if (state.fullscreen) {
+						$ct.css('position', 'fixed');
+					}
 					var heightToBottom = $(window).height()
-						-$cs.offset().top
-						-parseInt($cs.css('padding-top'));
-					var $cc = $('.Q_columns_column', $div);
+						- $cs.offset().top
+						- parseInt($cs.css('padding-top'));
 					if (Q.info.isMobile) {
 						if (state.fullscreen) {
-							$cs.add($div).add($cc).height('auto');
+							$cs.add($div).css('height', 'auto');
+							$cs.css('min-height', heightToBottom);
 						} else {
 							$cs.height(heightToBottom);
+							$div.css('height', 'auto');
 						}
-						$cs.css('min-height', heightToBottom);
 						$div.prev().hide();
 					} else {
 						if (state.close.clickable) {
@@ -240,6 +248,14 @@ Q.Tool.define("Q/columns", function(options) {
 
 			function afterAnimate(){
 				var $cs = $(columnSlot);
+				presentColumn(tool);
+
+				if (!Q.info.isMobile) {
+					var heightToBottom = $(tool.element).height()
+						- $cs.offset().top + $cs.parent().offset().top
+						- parseInt($cs.css('padding-top'));
+					$cs.height(heightToBottom);
+				}
 
 				if (Q.info.isTouchscreen) {
 					if (state.fullscreen) {
@@ -250,8 +266,12 @@ Q.Tool.define("Q/columns", function(options) {
 					} else {
 						$cs.css('overflow', 'auto');
 					}
-				} else if (state.scrollbarsAutoHide) {
-					$cs.plugin('Q/scrollbarsAutoHide', options.scrollbarsAutoHide);
+				} else {
+					if (state.scrollbarsAutoHide) {
+						$cs.plugin('Q/scrollbarsAutoHide', options.scrollbarsAutoHide);
+					} else {
+						$cs.css('overflow', 'auto');
+					}
 				}
 
 				state.onOpen.handle.call(tool, options, index);
@@ -279,9 +299,14 @@ Q.Tool.define("Q/columns", function(options) {
 		if (state.fullscreen) {
 			$(window).scrollTop($prev.data(dataKey_scrollTop) || 0);
 		}
-		this.$current = $prev;
+		state.$currentColumn = $prev;
+		if (state.fullscreen) {
+			// make the title move while animating, until it is removed
+			$('.Q_columns_title', $div).css('position', 'absolute');
+		}
+		presentColumn(tool);
 		$div.animate(state.animation.css.hide, duration, function () {
-			Q.removeElement(tool.column(index));
+			Q.removeElement(div); // remove it correctly
 			state.columns[index] = null;
 		
 			if (index === state.max-1) {
@@ -289,6 +314,7 @@ Q.Tool.define("Q/columns", function(options) {
 			}
 			var $sc = $(state.container);
 			$sc.width($sc.width() - w);
+			presentColumn(tool);
 		});
 	},
 
@@ -300,18 +326,28 @@ Q.Tool.define("Q/columns", function(options) {
 		var tool = this;
 		var state = tool.state;
 		var $te = $(tool.element);
+		var $columns = $('.Q_columns_column', $te);
+		var $container = $('.Q_columns_container', $te);
+		var $cs = $('.Q_columns_column .column_slot', $te);
 		
 		if (Q.info.isMobile) {
-			var w = $(window).width();
-			$te.add('.Q_columns_column, .Q_columns_container', $te).width(w);
+			$te.add($container).add($columns).width($(window).width());
 			if (!state.fullscreen) {
-				$te.css('overflow', 'hidden');
-				// TODO: iscroll
+				$te.css('overflow', 'visible')
+					.add($container)
+					.add($columns)
+					.height($(window).height()-$te.offset().top);
 			}
+			presentColumn(tool);
 		}
 
 		if (state.fullscreen) {
 			$te.addClass('Q_fullscreen');
+		}
+		
+		var overshoot = Q.Pointer.scrollTop() + $(document).height() - $(window).height();
+		if (overshoot > 0) {
+			$(window).scrollTop( $(window).scrollTop()-overshoot );
 		}
 	}
 }
@@ -320,6 +356,25 @@ Q.Tool.define("Q/columns", function(options) {
 Q.Template.set('Q/columns/column',
 	'<div class="Q_contextual"><ul class="Q_listing"></ul></div>'
 );
+
+function presentColumn(tool) {
+	if (!tool.state.$currentColumn) return;
+	$cs = $('.column_slot', tool.state.$currentColumn);
+	if (tool.state.fullscreen) {
+		$cs.css('padding-top', $cs.prev().outerHeight()+'px');
+	}
+	if (Q.info.isMobile) {
+		var heightToBottom = $(tool.element).height()
+			- $cs.offset().top
+			- parseInt($cs.css('padding-top'));
+		if (!tool.state.fullscreen) {
+			$cs.height(heightToBottom);
+			// TODO: iscroll
+		} else {
+			$cs.css('min-height', heightToBottom);
+		}
+	}
+}
 
 var dataKey_index = 'index';
 var dataKey_scrollTop = 'scrollTop';
