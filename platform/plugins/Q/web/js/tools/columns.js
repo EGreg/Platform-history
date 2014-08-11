@@ -268,7 +268,7 @@ Q.Tool.define("Q/columns", function(options) {
 					}
 				} else {
 					if (state.scrollbarsAutoHide) {
-						$cs.plugin('Q/scrollbarsAutoHide', options.scrollbarsAutoHide);
+						$cs.plugin('Q/scrollbarsAutoHide', state.scrollbarsAutoHide);
 					} else {
 						$cs.css('overflow', 'auto');
 					}

@@ -30,20 +30,21 @@
 
         function (o) {
 
-            var $this = $(this);
-            if (this.scrollHeight <= this.offsetHeight
-                && this.scrollWidth <= this.offsetWidth) {
+            var $this = this;
+			var element = this[0];
+            if (element.scrollHeight <= element.offsetHeight
+                && element.scrollWidth <= element.offsetWidth) {
                 return;
             }
             var scrollbarWidth = Q.Browser.getScrollbarWidth();
             var oldOverflow = $this.css('overflow');
             var oldPaddingRight = parseInt($this.css('padding-right'));
             var oldPaddingBottom = parseInt($this.css('padding-bottom'));
-            $this.data('Q_old_overflow', oldOverflow);
-            $this.data('Q_old_padding_right', oldPaddingRight);
-            $this.data('Q_old_padding_bottom', oldPaddingBottom);
-            var scrollbarRight = this.scrollHeight > this.offsetHeight;
-            var scrollbarBottom = this.scrollWidth > this.offsetWidth;
+            $this.data('Q/scrollbarsAutoHide old_overflow', oldOverflow);
+            $this.data('Q/scrollbarsAutoHide old_padding_right', oldPaddingRight);
+            $this.data('Q/scrollbarsAutoHide old_padding_bottom', oldPaddingBottom);
+            var scrollbarRight = element.scrollHeight > element.offsetHeight;
+            var scrollbarBottom = element.scrollWidth > element.offsetWidth;
             var paddingDiff =  0;
             if (scrollbarRight) {
                 $this.css('overflow', 'hidden' );
@@ -93,7 +94,7 @@
                         if (Q.Browser.detect().OS == 'mac') {
                             var scrollLeft = $this.scrollLeft();
                             $this.scrollLeft(0);
-                            $this.scrollLeft($this.data('Q_latest_scroll_left'));
+                            $this.scrollLeft($this.data('Q/scrollbarsAutoHide latest_scroll_left'));
                         }
                         Q.handle(o.showHandler);
                     },
@@ -124,19 +125,17 @@
 			 * @method remove
 			 */
             remove: function () {
-                this.each(function(index) {
-                    var $this = $(this);
-                    if ($this.data('Q_old_overflow') !== undefined)
-                    {
-                        $this.off('mouseenter.Q_scrollbar_autohide mouseleave.Q_scrollbar_autohide mousemove.Q_scrollbar_autohide');
-                        $this.css({
-                            'overflow': $this.data('Q_old_overflow'),
-                            'padding-right': $this.data('Q_old_padding_right') + 'px',
-                            'padding-bottom': $this.data('Q_old_padding_bottom') + 'px'
-                        });
-                        $this.removeData(['Q_old_overflow', 'Q_old_padding_right', 'Q_old_padding_bottom']);
-                    }
-                });
+                var $this = this;
+                if ($this.data('Q/scrollbarsAutoHide old_overflow') !== undefined)
+                {
+                    $this.off('mouseenter.Q_scrollbar_autohide mouseleave.Q_scrollbar_autohide mousemove.Q_scrollbar_autohide');
+                    $this.css({
+                        'overflow': $this.data('Q/scrollbarsAutoHide old_overflow'),
+                        'padding-right': $this.data('Q/scrollbarsAutoHide old_padding_right') + 'px',
+                        'padding-bottom': $this.data('Q/scrollbarsAutoHide old_padding_bottom') + 'px'
+                    });
+                    $this.removeData(['Q/scrollbarsAutoHide old_overflow', 'Q/scrollbarsAutoHide old_padding_right', 'Q/scrollbarsAutoHide old_padding_bottom']);
+                }
             }
         }
 
