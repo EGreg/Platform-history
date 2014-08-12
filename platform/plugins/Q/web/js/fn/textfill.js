@@ -38,6 +38,7 @@ Q.Tool.jQuery('Q/textfill',
                     ourText = $t.text();
                 }
             });
+			if (!ourElement) throw new Q.Error("Q/textill missing a visible element");
             var fontSize = o.maxFontPixels || (ourElement.height() + 10);
             var maxHeight = $(this).innerHeight();
             var maxWidth = $(this).innerWidth();

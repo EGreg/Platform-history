@@ -74,7 +74,7 @@ function Q_overlay(o) {
 			return;
 			
 		if (e.keyCode == 27)
-			$this.data('Q/overlay').close();
+			$this.data('Q/overlay').close(e);
 	}
 
 	$this.data('Q/overlay', {
@@ -150,7 +150,7 @@ function Q_overlay(o) {
 				}
 				Q.handle($overlay.options.onClose, $this, [$this]);
 			}
-			e.preventDefault();
+			if (e) $.Event(e).preventDefault();
 		}
 	});
 
@@ -353,7 +353,7 @@ Q.Tool.jQuery('Q/dialog', function Q_dialog (o) {
 				}
 				
 				Q.handle(o.onClose, $this, [$this]);
-				e.preventDefault();
+				if (e) $.Event(e).preventDefault();
 			}
 		};
 
@@ -361,7 +361,7 @@ Q.Tool.jQuery('Q/dialog', function Q_dialog (o) {
 
 		$(document).on('keydown', function(e) {
 			if (e.which == 27) {
-				dialogData.close();
+				dialogData.close(e);
 			}
 		});
 
@@ -390,8 +390,8 @@ Q.Tool.jQuery('Q/dialog', function Q_dialog (o) {
 	load: function () {
 		this.data('Q/dialog').load();
 	},
-	close: function () {
-		this.data('Q/dialog').close();
+	close: function (e) {
+		this.data('Q/dialog').close(e);
 	}
 }
 

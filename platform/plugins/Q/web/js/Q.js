@@ -5840,8 +5840,9 @@ Q.cookie = function _Q_cookie(name, value, options) {
  *  The name of the class or attribute to match
  * @param {Function} callbackBefore
  *  A function to run when a match is found (before the children).
- *  If it returns 0, the Q.find function doesn't search further inside that element.
+ *  If it returns true, the Q.find function doesn't search further inside that element.
  *  If it returns false, the Q.find function stops searching.
+ *  Otherwise, the Q.find function continues to search inside the element.
  * @param {Function} callbackAfter
  *  A function to run when a match is found (after the children)
  *  If it returns false, the Q.find function stops searching.
@@ -5898,28 +5899,27 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 	var ret;
 	if (found && typeof callbackBefore == 'function') {
 		ret = callbackBefore(elem, options, shared, parent, index);
-		if (ret === 0) {
-			return;
-		}
 		if (ret === false) {
 			return false;
 		}
 	}
-	var children;
-	if ('children' in elem) {
-		children = elem.children;
-	} else {
-		children = elem.childNodes; // more tedious search
-	}
-	var c = [];
-	if (children) {
-		for (i=0; i<children.length; ++i) {
-			c[i] = children[i];
+	if (ret !== true) {
+		var children;
+		if ('children' in elem) {
+			children = elem.children;
+		} else {
+			children = elem.childNodes; // more tedious search
 		}
-	}
-	ret = Q.find(c, filter, callbackBefore, callbackAfter, options, shared, elem);
-	if (ret === false) {
-		return false;
+		var c = [];
+		if (children) {
+			for (i=0; i<children.length; ++i) {
+				c[i] = children[i];
+			}
+		}
+		ret = Q.find(c, filter, callbackBefore, callbackAfter, options, shared, elem);
+		if (ret === false) {
+			return false;
+		}
 	}
 	if (found && typeof callbackAfter  == 'function') {
 		if (false === callbackAfter(elem, options, shared, parent, index)) {
