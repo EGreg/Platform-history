@@ -35,7 +35,7 @@
  */
 Q.Tool.jQuery('Q/overlay',
 
-function (o) {
+function Q_overlay(o) {
 	function calculatePosition($this) {
 		var width = $this.outerWidth(), height = $this.outerHeight();
 		if (!width && $this.css('width'))
@@ -93,7 +93,7 @@ function (o) {
 					{
 						if (!$overlay.options.noClose && $overlay.options.closeOnEsc)
 						{
-							$(document).bind('keydown', closeThisOverlayOnEsc);
+							$(document).on('keydown', closeThisOverlayOnEsc);
 						}
 						Q.handle($overlay.options.onLoad, $this, [$this]);
 					});
@@ -114,13 +114,13 @@ function (o) {
 					}
 					if (!$overlay.options.noClose && $overlay.options.closeOnEsc)
 					{
-						$(document).bind('keydown', closeThisOverlayOnEsc);
+						$(document).on('keydown', closeThisOverlayOnEsc);
 					}
 					Q.handle($overlay.options.onLoad, $this, [$this]);
 				}
 			}
 		},
-		close: function()
+		close: function(e)
 		{
 			$('html,body').scrollTop($this.data('Q/overlay').documentScrollTop);
 			var $overlay = $this.data('Q/overlay');
@@ -150,6 +150,7 @@ function (o) {
 				}
 				Q.handle($overlay.options.onClose, $this, [$this]);
 			}
+			e.preventDefault();
 		}
 	});
 
@@ -157,7 +158,7 @@ function (o) {
 	{
 		var close = $('<a class="Q_close" />');
 		$this.prepend(close);
-		close.bind(Q.Pointer.click, $this.data('Q/overlay').close);
+		close.on(Q.Pointer.click, $this.data('Q/overlay').close);
 	}
 },
 
@@ -235,141 +236,139 @@ function (o) {
  *   @param {Q.Event} [options.onClose]  Q.Event or function which is called when dialog is closed and hidden and probably removed from DOM (if 'removeOnClose' is 'true').
  *   @optional
  */
-Q.Tool.jQuery('Q/dialog', function (o) {
+Q.Tool.jQuery('Q/dialog', function Q_dialog (o) {
 	
-	return this.each(function(index)
-	{
-		var $this = $(this);
-		var ots = $('.title_slot', $this);
-		var ods = $('.dialog_slot', $this);
-		if (!ots.length) {
-			alert("Please add an element with the class 'title_slot' before calling dialog()");
-			return;
-		}
-		if (!ods.length) {
-			alert("Please add an element with the class 'dialog_slot' before calling dialog()");
-			return;
-		}
-		
-		if (!o.fullscreen) {
-			var topPos = Q.Dialogs.options.topMargin;
-			if (Q.info.isMobile) {
-				if (topPos.indexOf('%') != -1) {
-					topPos = parseInt(topPos) / 100 * window.innerHeight;
-				}
-				var noticeSlot = $('#notices_slot');
-				if (noticeSlot.length && noticeSlot.outerHeight() >= topPos) {
-					topPos += noticeSlot.outerHeight();
-				}
-			}
+	var $this = this;
+	var ots = $('.title_slot', $this);
+	var ods = $('.dialog_slot', $this);
+	if (!ots.length) {
+		alert("Please add an element with the class 'title_slot' before calling dialog()");
+		return;
+	}
+	if (!ods.length) {
+		alert("Please add an element with the class 'dialog_slot' before calling dialog()");
+		return;
+	}
 	
-			$.fn.plugin.load('Q/iScroll');
-			$this.plugin('Q/overlay', {
-				top: topPos,
-				mask: o.mask,
-				noClose: o.noClose,
-				beforeLoad: o.beforeLoad,
-				onLoad: { "Q/dialog": function() {
-					function _onLoadUrl() {
-						Q.activate([ots, ods], {}, function() {
-							_handlePosAndScroll.call($this, o);
-							Q.handle(o.onActivate, $this, [$this]);
-						});
-					}
-					if (o.url) {
-						_loadUrl.call($this, o, _onLoadUrl);
-					} else {
-						_onLoadUrl();
-					}
-				}},
-				beforeClose: o.beforeClose,
-				onClose: { "Q/dialog": function () {
-					if (o.removeOnClose) {
-						$this.remove();
-					}
-					Q.handle(o.onClose, $this, [$this]);
-				}},
-				alignParent: (o.alignByParent && !Q.info.isMobile ? $this.parent() : null),
-				fadeInOut: o.asyncLoad
-			});
-			$this.data('Q/dialog', $this.data('Q/overlay'));
-		} else {
-			Q.handle(o.beforeLoad, $this, [$this]);
-			var hiddenChildren = [];
-			if (Q.info.platform == 'android')
-			{
-				$(document.body).children().each(function() {
-					var child = $(this);
-					if (child[0] != $this[0] && child.css('display') != 'none' && this.className.indexOf('mask') == -1) {
-						child.hide();
-						hiddenChildren.push(child);
-					}
-				});
+	if (!o.fullscreen) {
+		var topPos = Q.Dialogs.options.topMargin;
+		if (Q.info.isMobile) {
+			if (topPos.indexOf('%') != -1) {
+				topPos = parseInt(topPos) / 100 * window.innerHeight;
 			}
-			$(document.body).prepend($this);
-			$this.addClass('Q_fullscreen_dialog');
-			$this.css({
-				'width': window.innerWidth + 'px',
-				'height': window.innerHeight + 'px'
-			});
-			var close = $('<a class="close" />');
-			$this.prepend(close);
-			$this.hide();
+			var noticeSlot = $('#notices_slot');
+			if (noticeSlot.length && noticeSlot.outerHeight() >= topPos) {
+				topPos += noticeSlot.outerHeight();
+			}
+		}
 
-			var dialogData = {
-				load: function() {
-					if ($this.css('display') != 'block') {
-						$this.css({
-							'width': window.innerWidth + 'px',
-							'height': window.innerHeight + 'px'
-						});
-						for (var i = 0; i < hiddenChildren.length; i++) {
-							hiddenChildren[i].hide();
-						}
-						$this.show();
-						
-						if (o.url) {
-							_loadUrl.call($this, o, function() {
-								Q.activate(this, {}, function () {
-									Q.handle(o.onActivate, $this, [$this]);
-								});
-							});
-						} else {
+		$.fn.plugin.load('Q/iScroll');
+		$this.plugin('Q/overlay', {
+			top: topPos,
+			mask: o.mask,
+			noClose: o.noClose,
+			beforeLoad: o.beforeLoad,
+			onLoad: { "Q/dialog": function() {
+				function _onLoadUrl() {
+					Q.activate([ots, ods], {}, function() {
+						_handlePosAndScroll.call($this, o);
+						Q.handle(o.onActivate, $this, [$this]);
+					});
+				}
+				if (o.url) {
+					_loadUrl.call($this, o, _onLoadUrl);
+				} else {
+					_onLoadUrl();
+				}
+			}},
+			beforeClose: o.beforeClose,
+			onClose: { "Q/dialog": function () {
+				if (o.removeOnClose) {
+					$this.remove();
+				}
+				Q.handle(o.onClose, $this, [$this]);
+			}},
+			alignParent: (o.alignByParent && !Q.info.isMobile ? $this.parent() : null),
+			fadeInOut: o.asyncLoad
+		});
+		$this.data('Q/dialog', $this.data('Q/overlay'));
+	} else {
+		Q.handle(o.beforeLoad, $this, [$this]);
+		var hiddenChildren = [];
+		if (Q.info.platform == 'android')
+		{
+			$(document.body).children().each(function() {
+				var child = $(this);
+				if (child[0] != $this[0] && child.css('display') != 'none' && this.className.indexOf('mask') == -1) {
+					child.hide();
+					hiddenChildren.push(child);
+				}
+			});
+		}
+		$(document.body).prepend($this);
+		$this.addClass('Q_fullscreen_dialog');
+		$this.css({
+			'width': window.innerWidth + 'px',
+			'height': window.innerHeight + 'px'
+		});
+		var close = $('<a class="Q_close" />');
+		$this.prepend(close);
+		$this.hide();
+
+		var dialogData = {
+			load: function() {
+				if ($this.css('display') != 'block') {
+					$this.css({
+						'width': window.innerWidth + 'px',
+						'height': window.innerHeight + 'px'
+					});
+					for (var i = 0; i < hiddenChildren.length; i++) {
+						hiddenChildren[i].hide();
+					}
+					$this.show();
+					
+					if (o.url) {
+						_loadUrl.call($this, o, function() {
 							Q.activate(this, {}, function () {
 								Q.handle(o.onActivate, $this, [$this]);
 							});
-						}
-					}
-				},
-				close: function() {
-					Q.handle(o.beforeClose, $this, [$this]);
-					for (var i = 0; i < hiddenChildren.length; i++) {
-						hiddenChildren[i].show();
-					}
-					
-					if (o.removeOnClose) {
-						$this.remove();
+						});
 					} else {
-						$this.hide();
+						Q.activate(this, {}, function () {
+							Q.handle(o.onActivate, $this, [$this]);
+						});
 					}
-					
-					Q.handle(o.onClose, $this, [$this]);
 				}
-			};
-
-			close.on(Q.Pointer.end, dialogData.close);
-
-			$(document).bind('keydown', function(e) {
-				if (e.which == 27) {
-					dialogData.close();
+			},
+			close: function(e) {
+				Q.handle(o.beforeClose, $this, [$this]);
+				for (var i = 0; i < hiddenChildren.length; i++) {
+					hiddenChildren[i].show();
 				}
-			});
+				
+				if (o.removeOnClose) {
+					$this.remove();
+				} else {
+					$this.hide();
+				}
+				
+				Q.handle(o.onClose, $this, [$this]);
+				e.preventDefault();
+			}
+		};
 
-			$this.data('Q/dialog', dialogData);
-		}
-		
-		$this.data('Q/dialog').load();
-	});
+		close.on(Q.Pointer.click, dialogData.close);
+
+		$(document).on('keydown', function(e) {
+			if (e.which == 27) {
+				dialogData.close();
+			}
+		});
+
+		$this.data('Q/dialog', dialogData);
+	}
+	
+	$this.data('Q/dialog').load();
 },
 
 {
@@ -381,10 +380,10 @@ Q.Tool.jQuery('Q/dialog', function (o) {
 	'closeOnEsc': true,
 	'removeOnClose': false,
 	'loadUrl': {},
-	'beforeLoad': new Q.Event(function() {}),
-	'onActivate': new Q.Event(function() {}),
-	'beforeClose': new Q.Event(function() {}),
-	'onClose': new Q.Event(function() {})
+	'beforeLoad': new Q.Event(),
+	'onActivate': new Q.Event(),
+	'beforeClose': new Q.Event(),
+	'onClose': new Q.Event()
 },
 
 {

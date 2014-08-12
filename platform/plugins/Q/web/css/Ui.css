@@ -1343,7 +1343,7 @@ divbody { text-align: center; height: 100%; }
 #column0_slot #content { width: 100%; }
 #content { position: relative; }
 #content_slot { position: relative; }
-#page { position: relative; top: 50px; bottom: 0px; width: 100%; /* top: 54px; */ /* padding-top: 10px; */
+#page { position: relative; bottom: 0px; width: 100%; /* top: 54px; */ /* padding-top: 10px; */
     left:50%; margin-left:-50%; /* reset position for ie7, ff4+ */
 }
 .Q_touchscreen #page { width: 100%; }
