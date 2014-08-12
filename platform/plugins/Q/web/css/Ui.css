@@ -1724,7 +1724,7 @@ input[type=radio] { margin-right: 5px; }
 }
 
 .Q_columns_title {
-	background: #eee;
+	background: #f8f8f8;
     border-bottom: 1px solid #aaa;
 }
 
@@ -1779,4 +1779,14 @@ input[type=radio] { margin-right: 5px; }
 	padding-top: 40px;
 	width: 100%;
 	overflow: hidden;
+}
+
+.Q_overflow {
+	overflow: auto;
+	-webkit-overflow-scrolling: touch;
+	z-index: 0; /* http://stackoverflow.com/a/16408745/467460 */
+}
+
+.Q_overflow * {
+	-webkit-transform: translateZ(0); /* http://cantina.co/thought_leadership/ios-5-native-scrolling-grins-and-gothcas/ */
 }

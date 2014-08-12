@@ -87,8 +87,10 @@ Q.Tool.define("Q/columns", function(options) {
 	},
 	scrollbarsAutoHide: {},
 	fullscreen: Q.info.isAndroid(1000),
-	onOpen: new Q.Event(function () { }, 'Q/columns'),
-	beforeClose: new Q.Event(function () { }, 'Q/columns')
+	beforeOpen: new Q.Event(),
+	beforeClose: new Q.Event(),
+	onOpen: new Q.Event(),
+	onClose: new Q.Event()
 },
 
 {
@@ -114,6 +116,12 @@ Q.Tool.define("Q/columns", function(options) {
 		if (index < 0) {
 			throw new Q.Exception("Q/columns open: index is negative");
 		}
+		
+		if (false === state.beforeOpen.handle.call(tool, options, index)
+		 || false === Q.handle(options.beforeOpen, tool, [options, index])) {
+			return false;
+		}
+		
 		var div = this.column(index);
 		var titleSlot, columnSlot;
 		if (!div) {
@@ -264,7 +272,18 @@ Q.Tool.define("Q/columns", function(options) {
 							'height': 'auto'
 						});
 					} else {
-						$cs.css('overflow', 'auto');
+						$cs.addClass('Q_overflow');
+						if (Q.info.isTouchscreen && !window.overthrow) {
+							Q.ensure(
+								window.overthrow, 
+								"plugins/Q/js/overthrow.js",
+								function () {
+									overthrow.scrollIndicatorClassName = 'Q_overflow';
+									overthrow.set();
+								}
+							)
+							Q.addScript();
+						}
 					}
 				} else {
 					if (state.scrollbarsAutoHide) {
@@ -315,6 +334,7 @@ Q.Tool.define("Q/columns", function(options) {
 			var $sc = $(state.container);
 			$sc.width($sc.width() - w);
 			presentColumn(tool);
+			state.onClose.handle.call(tool, index, div);
 		});
 	},
 
