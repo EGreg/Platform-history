@@ -1704,6 +1704,7 @@ input[type=radio] { margin-right: 5px; }
 	display: block;
 	float: left;
 	background: white;
+	overflow: hidden;
 }
 
 .Q_mobile .Q_columns_column {

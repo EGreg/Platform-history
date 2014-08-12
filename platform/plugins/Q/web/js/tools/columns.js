@@ -7,7 +7,7 @@
  * This tool contains functionality to show things in columns
  * @class Q columns
  * @constructor
- * @param {Object}   [options] This object contains properties for this function
+ * @param {Object}   [options] Override various options for this tool
  *  @param {Object}  [options.animation] For customizing animated transitions
  *  @param {Number}  [options.animation.duration] The duration of the transition in milliseconds, defaults to 500
  *  @param {Object}  [options.animation.hide] The css properties in "hide" state of animation
@@ -23,24 +23,37 @@
  *  @param {Boolean} [options.fullscreen] Whether to use fullscreen mode on mobile phones, using document to scroll instead of relying on possibly buggy "overflow" CSS implementation. Defaults to true on Android, false everywhere else.
  *  @param {Q.Event} [options.onOpen] Event that happens after a column is opened.
  *  @param {Q.Event} [options.beforeClose] Event that happens before a column is closed. Return false to prevent closing.
+ *  @param {Q.Event} [options.onOpen] Event that happens after a column is opened.
+ *  @param {Q.Event} [options.beforeClose] Event that happens before a column is closed. Return false to prevent closing.
  * @return Q.Tool
  */
 Q.Tool.define("Q/columns", function(options) {
 	var tool = this;
 	var state = tool.state;
 
-	state.container = document.createElement('div')
-		.addClass('Q_columns_container Q_clearfix');
-	tool.element.appendChild(this.state.container);
-
 	state.max = 0;
-	state.columns = {};
-	state.triggers = {};
+	state.columns = [];
+	//state.triggers = [];
+
+	state.container = tool.$('.Q_columns_container')[0];
+	if (!state.container) {
+		state.container = document.createElement('div')
+			.addClass('Q_columns_container Q_clearfix');
+		tool.element.appendChild(this.state.container);
+	} else {
+		tool.$('.Q_columns_column').each(function (index) {
+			state.columns.push(this);
+			$(this).data(dataKey_index, index)
+				.data(dataKey_scrollTop, Q.Pointer.scrollTop());
+			++state.max;
+			tool.open({animation: {duration: 0}}, index);
+		});
+	}
 
 	var selector = '.Q_close';
 	if (Q.info.isMobile && state.back.triggerFromTitle) {
 		selector = '.Q_columns_title';
-	}
+	};
 	$(tool.element).on(Q.Pointer.click, selector, function(){
 		var index = $(this).closest('.Q_columns_column').data(dataKey_index);
 		if (index) {
@@ -86,7 +99,7 @@ Q.Tool.define("Q/columns", function(options) {
 		clickable: null
 	},
 	scrollbarsAutoHide: {},
-	fullscreen: Q.info.isAndroid(1000),
+	fullscreen: Q.info.isMobile && Q.info.isAndroid(1000),
 	beforeOpen: new Q.Event(),
 	beforeClose: new Q.Event(),
 	onOpen: new Q.Event(),
@@ -109,6 +122,7 @@ Q.Tool.define("Q/columns", function(options) {
 	open: function (options, index) {
 		var tool = this;
 		var state = this.state;
+		var o = Q.extend({}, 10, state, 10, options);
 
 		if (index > this.max()) {
 			throw new Q.Exception("Q/columns open: index is too big");
@@ -138,14 +152,11 @@ Q.Tool.define("Q/columns", function(options) {
 			}
 			if (Q.info.isMobile) {
 				$close.addClass('Q_back').append(
-					$('<img alt="Back" />').attr('src', Q.url(state.back.src))
+					$('<img alt="Back" />').attr('src', Q.url(o.back.src))
 				);
-				if (state.back.hide) {
-					$close.hide();
-				}
 			} else {
 				$close.append(
-					$('<img alt="Close" />').attr('src', Q.url(state.close.src))
+					$('<img alt="Close" />').attr('src', Q.url(o.close.src))
 				);
 			}
 			columnSlot = document.createElement('div').addClass('column_slot');
@@ -154,17 +165,24 @@ Q.Tool.define("Q/columns", function(options) {
 				.data(dataKey_index, index)
 				.data(dataKey_scrollTop, Q.Pointer.scrollTop())
 				.appendTo(state.container);
-			if (state.fullscreen) {
+			if (o.fullscreen) {
 				$(window).scrollTop(0);
 			}
 			presentColumn(tool);
+		} else {
+			$close = $('Q_close', div);
+			titleSlot = $('.title_slot', div)[0];
+			columnSlot = $('.column_slot', div)[0];
+		}
+		if (o.back.hide) {
+			$close.hide();
 		}
 
-		$(div).css(state.animation.css.hide);
+		$(div).css(o.animation.css.hide);
 
 		if (options.url) {
 			var url = options.url;
-			var o = Q.extend({
+			var params = Q.extend({
 				slotNames: ["title", "column"], 
 				slotContainer: {
 					title: titleSlot,
@@ -174,7 +192,7 @@ Q.Tool.define("Q/columns", function(options) {
 				ignoreHistory: true,
 				ignorePage: true
 			}, options);
-			o.handler = function _handler(response) {
+			params.handler = function _handler(response) {
 				var elementsToActivate = [];
 				if ('title' in response.slots) {
 					$(titleSlot).html(response.slots.title);
@@ -184,9 +202,9 @@ Q.Tool.define("Q/columns", function(options) {
 				elementsToActivate['column'] = columnSlot;
 				return elementsToActivate;
 			};
-			o.onActivate = _onOpen;
+			params.onActivate = _onOpen;
 			// this.state.triggers[index] = options.trigger || null;
-			Q.loadUrl(url, o);
+			Q.loadUrl(url, params);
 		} else {
 			if ('title' in options) {
 				titleSlot.innerHTML = options.title;
@@ -202,8 +220,8 @@ Q.Tool.define("Q/columns", function(options) {
 			if (Q.info.isMobile) {
 				var $sc = $(state.container);
 				var h = $(window).height() - $sc.offset().top;
-				state.animation.css.show.width = $(tool.element).width();
-				state.animation.css.show.height = h;
+				o.animation.css.show.width = $(tool.element).width();
+				o.animation.css.show.height = h;
 				$sc.height(h);
 				$div.css('position', 'absolute');
 			}
@@ -212,7 +230,7 @@ Q.Tool.define("Q/columns", function(options) {
 
 			function openAnimation(){
 				// open animation
-				var duration = state.animation.duration;
+				var duration = o.animation.duration;
 				var $sc = $(state.container);
 				var $cs = $('.column_slot', $div);
 				var $ct = $('.Q_columns_title', $div);
@@ -225,37 +243,38 @@ Q.Tool.define("Q/columns", function(options) {
 					}, duration);
 				}
 				
-				$div.css('display', 'block').css(state.animation.css.hide);
-				if (state.fullscreen) {
+				$div.css('display', 'block').css(o.animation.css.hide);
+				if (o.fullscreen) {
 					$ct.css('position', 'absolute');
 				}
-				$div.show().animate(state.animation.css.show, duration, function(){
-					if (state.fullscreen) {
-						$ct.css('position', 'fixed');
-					}
-					var heightToBottom = $(window).height()
-						- $cs.offset().top
-						- parseInt($cs.css('padding-top'));
-					if (Q.info.isMobile) {
-						if (state.fullscreen) {
-							$cs.add($div).css('height', 'auto');
-							$cs.css('min-height', heightToBottom);
-						} else {
-							$cs.height(heightToBottom);
-							$div.css('height', 'auto');
-						}
-						$div.prev().hide();
-					} else {
-						if (state.close.clickable) {
-							$close.plugin("Q/clickable", state.close.clickable);
-						}
-					}
-					afterAnimate();
+				$div.show().animate(o.animation.css.show, duration, function(){
+					afterAnimate($cs, $sc, $ct);
 				});
 			}
 
-			function afterAnimate(){
-				var $cs = $(columnSlot);
+			function afterAnimate($cs, $sc, $ct){
+				
+				if (o.fullscreen) {
+					$ct.css('position', 'fixed');
+				}
+				var heightToBottom = $(window).height()
+					- $cs.offset().top
+					- parseInt($cs.css('padding-top'));
+				if (Q.info.isMobile) {
+					if (o.fullscreen) {
+						$cs.add($div).css('height', 'auto');
+						$cs.css('min-height', heightToBottom);
+					} else {
+						$cs.height(heightToBottom);
+						$div.css('height', 'auto');
+					}
+					$div.prev().hide();
+				} else {
+					if (o.close.clickable) {
+						$close.plugin("Q/clickable", o.close.clickable);
+					}
+				}
+				
 				presentColumn(tool);
 
 				if (!Q.info.isMobile) {
@@ -266,7 +285,7 @@ Q.Tool.define("Q/columns", function(options) {
 				}
 
 				if (Q.info.isTouchscreen) {
-					if (state.fullscreen) {
+					if (o.fullscreen) {
 						$cs.css({
 							'overflow': 'visible', 
 							'height': 'auto'
@@ -286,8 +305,8 @@ Q.Tool.define("Q/columns", function(options) {
 						}
 					}
 				} else {
-					if (state.scrollbarsAutoHide) {
-						$cs.plugin('Q/scrollbarsAutoHide', state.scrollbarsAutoHide);
+					if (o.scrollbarsAutoHide) {
+						$cs.plugin('Q/scrollbarsAutoHide', o.scrollbarsAutoHide);
 					} else {
 						$cs.css('overflow', 'auto');
 					}
