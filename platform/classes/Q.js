@@ -667,7 +667,7 @@ Q.getter = function _Q_getter(original, options) {
 		var ret = {};
 		wrapper.emit('called', this, arguments2, ret);
 
-		var cached, cbpos;
+		var cached, cbpos, cbi;
 
 		// if caching required check the cache -- maybe the result is there
 		if (wrapper.cache) {
@@ -824,7 +824,7 @@ Q.getter = function _Q_getter(original, options) {
 	}
 	return wrapper;
 };
-_Q_getter_i = 0;
+var _Q_getter_i = 0;
 Q.getter.options = {
 	cache: true,
 	throttle: null,

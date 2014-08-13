@@ -5,6 +5,8 @@
  * @main Q
  */
 (function (window) {
+	
+/* jshint -W014 -W083 */
 
 // private properties
 var _isReady = false;
@@ -41,56 +43,6 @@ Q.text = {
 }; // put all your text strings here e.g. Q.text.Users.foo
 
 Q.Error = Error;
-
-Q.exit = function(status) {
-	// http://kevin.vanzonneveld.net
-	// +	 original by: Brett Zamir (http://brett-zamir.me)
-	// +			input by: Paul
-	// +	 bugfixed by: Hyam Singer (http://www.impact-computing.com/)
-	// +	 improved by: Philip Peterson
-	// +	 bugfixed by: Brett Zamir (http://brett-zamir.me)
-	// %				note 1: Should be considered experimental. Please comment on this function.
-	// *		 example 1: exit();
-	// *		 returns 1: null
-
-	var i;
-	var _stopEvent = function(e) {
-		if (e.stopPropagation) { /* W3C */
-			e.stopPropagation();
-			e.preventDefault();
-		} else {
-			window.event.cancelBubble = true;
-			window.event.returnValue = false;
-		}
-	};
-
-	if (typeof status === 'string') {
-		alert(status);
-	}
-
-	Q.addEventListener(window, 'error', function(e) {
-		_stopEvent(e);
-	}, false);
-
-	var handlers = [
-		'copy', 'cut', 'paste',
-		'beforeunload', 'blur', 'change', 'click', 'contextmenu', 'dblclick', 'focus', 'keydown', 'keypress', 'keyup', 'mousedown', 'mousemove', 'mouseout', 'mouseover', 'mouseup', 'resize', 'scroll',
-		'DOMNodeInserted', 'DOMNodeRemoved', 'DOMNodeRemovedFromDocument', 'DOMNodeInsertedIntoDocument', 'DOMAttrModified', 'DOMCharacterDataModified', 'DOMElementNameChanged', 'DOMAttributeNameChanged', 'DOMActivate', 'DOMFocusIn', 'DOMFocusOut', 'online', 'offline', 'textInput',
-		'abort', 'close', 'dragdrop', 'load', 'paint', 'reset', 'select', 'submit', 'unload'
-	];
-
-	for (i = 0; i < handlers.length; i++) {
-		Q.addEventListener(window, handlers[i], function(e) {
-			_stopEvent(e);
-		}, true);
-	}
-
-	if (window.stop) {
-		window.stop();
-	}
-
-	throw new Q.Error("Q.exit() was called");
-};
 
 /*
  * Extend some built-in prototypes
@@ -168,7 +120,7 @@ Object.keys = (function () {
  */
 var Sp = String.prototype;
 Sp.toCapitalized = function _String_prototype_toCapitalized() {
-	return (this + '').replace(/^([a-z])|\s+([a-z])/g, function (found) {
+	return this.replace(/^([a-z])|\s+([a-z])/g, function (found) {
 		return found.toUpperCase();
 	});
 };
@@ -252,12 +204,15 @@ Sp.replaceAll = function _String_prototype_replaceAll(pairs) {
  */
 Sp.queryField = function Q_queryField(name, value) {
 	var what = this;
-	var prefixes = ['#!', '#', '?', '!'], count = prefixes.length, prefix = '', i, l, p, keys, parsed;
+	var prefixes = ['#!', '#', '?', '!'];
+	var count = prefixes.length;
+	var prefix = '';
+	var i, l, p, keys, parsed;
 	for (i=0; i<count; ++i) {
 		l = prefixes[i].length;
 		p = this.substring(0, l);
 		if (p == prefixes[i]) {
-			previx = p;
+			prefix = p;
 			what = this.substring(l);
 			break;
 		}
@@ -298,7 +253,7 @@ Sp.queryField = function Q_queryField(name, value) {
 Sp.hashCode = function() {
 	var hash = 0;
 	if (!this.length) return hash;
-	for (i = 0; i < this.length; i++) {
+	for (var i = 0; i < this.length; i++) {
 		var c = this.charCodeAt(i);
 		hash = hash % 16777216;
 		hash = ((hash<<5)-hash)+c;
@@ -569,7 +524,9 @@ Elp.preventSelections = function (deep) {
 	= this.style['user-select'] = 'none';
 	if (!deep) return;
 	Q.each(this.children || this.childNodes, function () {
-		this.preventSelections && this.preventSelections(deep);
+		if (this.preventSelections) {
+			this.preventSelections(deep);
+		}
 	});
 };
 
@@ -640,7 +597,7 @@ Elp.hasClass = function (className) {
  */
 Elp.removeClass = function (className) {
 	if (this.classList) {
-		this.classList.remove(className)
+		this.classList.remove(className);
 	} else {
 		this.className = this.className.replace(new RegExp('(^| )' 
 			+ className.split(' ').join('|') + '( |$)', 'gi'), ' ');
@@ -660,7 +617,7 @@ Elp.addClass = function (className) {
 	for (var i=0; i<l; ++i) {
 		var c = classNames[i];
 		if (this.classList) {
-			this.classList.add(c)
+			this.classList.add(c);
 		} else {
 			this.removeClass(c);
 			this.className += ' ' + c;
@@ -675,7 +632,7 @@ Elp.addClass = function (className) {
  * @return {String}
  */
 Elp.text = function() {
-	return el.textContent || el.innerText;
+	return this.textContent || this.innerText;
 };
 
 /**
@@ -688,6 +645,10 @@ Elp.isOverflowed = function() {
      return (this.offsetWidth < this.scrollWidth)
 	 	|| (this.offsetHeight < this.scrollHeight);
 };
+
+if (!Elp.getElementsByClassName) {
+	Elp.getElementsByClassName = document.getElementsByClassName;
+}
 
 }
 
@@ -708,9 +669,6 @@ if(!document.getElementsByClassName) {
 	document.getElementsByClassName = function(className) {
 		return Array.prototype.slice.call(this.querySelectorAll("." + className));
 	};
-	if (window.Element) {
-		Elp.getElementsByClassName = document.getElementsByClassName;
-	}
 }
 
 // public methods:
@@ -955,6 +913,7 @@ Q.each = function _Q_each(container, callback, options) {
 
 /**
  * Returns the first non-undefined value found in a container
+ * Note: do not rely on object key ordering, it can vary in some browsers
  * 
  * @static
  * @method first
@@ -970,7 +929,8 @@ Q.first = function _Q_first(container, options) {
 };
 
 /**
- * Returns the first key or index in a container with a value that's not undefined
+ * Returns the first key or index found in a container with a value that's not undefined
+ * Note: do not rely on object key ordering, it can vary in some browsers
  * 
  * @static
  * @method firstKey
@@ -1099,7 +1059,7 @@ Q.isEmpty = function _Q_isEmpty(o) {
  *	Whether it is an integer
  */
 Q.isInteger = function _Q_isInteger(value) {
-	return (parseFloat(value) == parseInt(value)) && !isNaN(value);
+	return value > 0 ? Math.floor(value) === value : Math.ceil(value) === value;
 };
 
 /**
@@ -1386,50 +1346,6 @@ Q.mixin = function _Q_mixin(A, B) {
 	A.prototype.constructors = function _prototype_constructors() {
 		A.constructors.apply(this, arguments);
 	};
-};
-
-/**
- * Use this function to create "Classes", i.e. functions that construct objects
- * 
- * @static
- * @method Class
- * @param {Function} construct
- *  The constructor function to call when the object's mixins have been constructed
- * @param {Function} Base1
- *  One or more constructors (e.g. other Classes) that will be mixed in as base classes
- * @param {Object} properties
- *  Here you can pass properties to add to the prototype of the class constructor
- * @param {Object} classProperties
- *  Here you can pass properties to add to the class constructor
- * @return {Function} a constructor for the class
- */
-Q.Class = function _Q_Class(construct /* [, Base1, ...] [, properties, [classProperties]] */) {
-	var i, j, l = arguments.length;
-	for (i=1, j=1; i<l; ++i) {
-		if (typeof arguments[i] !== 'function') break;
-		j = i;
-	}
-	var constructors = Array.prototype.slice.call(arguments, 1, j+1);
-	constructors.unshift(Q_ClassConstructor);
-	
-	function Q_ClassConstructor() {
-		this.constructors.apply(this, arguments);
-		construct && construct.apply(this, arguments);
-	}
-	
-	if (typeof arguments[++j] === 'object') {
-		Q.extend(Q_ClassConstructor.prototype, arguments[j]);
-		if (typeof arguments[++j] === 'object') {
-			Q.extend(Q_ClassConstructor, arguments[j]);
-		}
-	}
-	
-	Q.mixin.apply(Q_ClassConstructor, constructors);
-	return Q_ClassConstructor;
-};
-
-Q.Class.options = {
-	levels: 10
 };
 
 /**
@@ -1814,10 +1730,10 @@ Evp.set = function _Q_Event_prototype_set(handler, key, prepend) {
 		}
 	}
 	if (this.keys.length === 1 && this._onFirst) {
-		this._onFirst.handle(handler, key, prepend);
+		this._onFirst.handle.call(this, handler, key, prepend);
 	}
 	if (this._onSet) {
-		this._onSet.handle(handler, key, prepend);
+		this._onSet.handle.call(this, handler, key, prepend);
 	}
 	return key;
 };
@@ -1877,18 +1793,18 @@ Evp.remove = function _Q_Event_prototype_remove(key) {
 		}
 	}
 	// }
-	delete this.handlers[key];
 	var l, i = this.keys.indexOf(key);
 	if (i < 0) {
 		return 0;
 	}
 	this.keys.splice(i, 1);
 	if (this._onRemove) {
-		this._onRemove.handle(handler, key, prepend);
+		this._onRemove.handle.call(this, key);
 	}
 	if (!this.keys.length && this._onEmpty) {
-		this._onEmpty.handle(handler, key, prepend);
+		this._onEmpty.handle.call(this, key);
 	}
+	delete this.handlers[key];
 	return 1;
 };
 
@@ -1904,7 +1820,7 @@ Evp.removeAllHandlers = function _Q_Event_prototype_removeAllHandlers() {
 	this.handlers = {};
 	this.keys = [];
 	if (this._onEmpty) {
-		this._onEmpty.handle(handler, key, prepend);
+		this._onEmpty.handle.call(this);
 	}
 };
 
@@ -1918,10 +1834,10 @@ Evp.removeAllHandlers = function _Q_Event_prototype_removeAllHandlers() {
 Evp.stop = function _Q_Event_prototype_stop(removeAllHandlers) {
 	this.stopped = true;
 	if (this._onStop) {
-		this._onStop.handle();
+		this._onStop.handle.call(this);
 	}
 	if (removeAllHandlers) {
-		this.removeAllHandlers();
+		this.removeAllHandlers.call(this);
 	}
 };
 
@@ -1952,7 +1868,7 @@ Evp.copy = function _Q_Event_prototype_copy() {
  */
 Evp.until = function _Q_Event_prototype_until(anotherEvent, key) {
 	var newEvent = new Q.Event();
-	var key = this.add(newEvent.handle);
+	key = this.add(newEvent.handle);
 	var event = this;
 	var anotherKey = anotherEvent.add(function () {
 		event.remove(key);
@@ -2645,7 +2561,7 @@ Q.getter = function _Q_getter(original, options) {
 		var ret = {};
 		wrapper.onCalled.handle.call(this, arguments2, ret);
 
-		var cached, cbpos;
+		var cached, cbpos, cbi;
 
 		// if caching required check the cache -- maybe the result is there
 		if (wrapper.cache) {
@@ -2802,7 +2718,7 @@ Q.getter = function _Q_getter(original, options) {
 	}
 	return wrapper;
 };
-_Q_getter_i = 0;
+var _Q_getter_i = 0;
 Q.getter.options = {
 	cache: true,
 	throttle: null,
@@ -2846,7 +2762,7 @@ Q.once = function (original, defaultValue) {
  * @return {Function} The wrapper function
  */
 Q.throttle = function (original, milliseconds, defaultValue) {
-	var _lastCalled = undefined;
+	var _lastCalled;
 	return function _Q_throttle_wrapper() {
 		if (Date.now() - _lastCalled < milliseconds) return defaultValue;
 		_lastCalled = Date.now();
@@ -2944,7 +2860,7 @@ Q.Tool = function _Q_Tool(element, options) {
 	}
 
 	// options cascade -- process option keys that start with '.' or '#'
-	var partial, i, n;
+	var partial, i, l, n;
 	options = options || {};
 	this.options = this.options || {};
 	
@@ -3150,6 +3066,7 @@ Q.Tool.beingActivated = undefined;
  * @return {Object} the resulting pending options for the tool
  */
 Q.Tool.define.options = function (toolName, setOptions) {
+	var options;
 	toolName = Q.normalize(toolName);
 	if (Q.Tool.constructors[name]) {
 		options = Q.Tool.constructors[name].options;
@@ -3231,7 +3148,10 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 		});
 		Q.each(methods, function (method, handler) {
 			ToolConstructor.prototype[method] = function _Q_Tool_jQuery_method() {
-				$(this.element).plugin(name, method, options, this);
+				var args = Array.prototype.slice.call(arguments, 0);
+				args.unshift(name, method);
+				var $te = $(this.element);
+				$te.plugin.apply($te, args);
 			};
 		});
 	});
@@ -3249,6 +3169,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
  * @return {Object} the resulting pending options for the tool
  */
 Q.Tool.jQuery.options = function (pluginName, setOptions) {
+	var options;
 	pluginName = Q.normalize(pluginName);
 	if (Q.Tool.constructors[name]) {
 		options = window.jQuery.fn[pluginName].options;
@@ -3391,6 +3312,7 @@ Tp.parent = function Q_Tool_prototype_parent() {
  */
 Tp.remove = function _Q_Tool_prototype_remove(removeCached) {
 
+	var i;
 	var shouldRemove = removeCached || !this.element.getAttribute('data-Q-retain');
 	if (!shouldRemove) return false;
 
@@ -4359,8 +4281,11 @@ Q.init = function _Q_init(options) {
 			}
 			p.fill("device")();
 		}
-		if (window.device) _Q_init_deviceready_handler();
-		else Q.addEventListener(document, 'deviceready', _Q_init_deviceready_handler, false);
+		if (window.device) {
+			_Q_init_deviceready_handler();
+		} else {
+			Q.addEventListener(document, 'deviceready', _Q_init_deviceready_handler, false);
+		}
 	}
 
 	// Bind document ready event
@@ -4594,9 +4519,9 @@ Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandl
 	} else if (element.attachEvent) {
 		element.attachEvent('on'+eventName, handler);
 	} else {
-		element["on" + type] = function () {
-			if (element["on" + type]) {
-				element["on" + type].apply(this, arguments);
+		element["on"+eventName] = function () {
+			if (element["on"+eventName]) {
+				element["on"+eventName].apply(this, arguments);
 			}
 			eventHandler.apply(this, arguments);
 		}; // best we can do
@@ -4633,7 +4558,7 @@ Q.removeEventListener = function _Q_addEventListener(element, eventName, eventHa
 	} else if (element.detachEvent) {
 		element.detachEvent('on'+eventName, handler);
 	} else {
-		element["on" + type] = null; // best we can do
+		element["on"+eventName] = null; // best we can do
 	}
 };
 
@@ -4879,7 +4804,7 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 		}
 	} else {
 		// assume it's an object
-		what2 = {};
+		var what2 = {};
 		for (var k in what) {
 			what2[k] =  what[k];
 		}
@@ -4892,7 +4817,7 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 		}
 		if (options) {
 			if (options.callback) {
-				what2.Q.callback = callback;
+				what2.Q.callback = options.callback;
 			}
 			if ('echo' in options) {
 				what2.Q.echo = options.echo;
@@ -5075,7 +5000,7 @@ Q.request = function (url, slotNames, callback, options) {
 				if (window.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
 					xmlhttp = new XMLHttpRequest();
 				} else { // code for IE6, IE5
-					xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+					xmlhttp = new window.ActiveXObject("Microsoft.XMLHTTP");
 				}
 				xmlhttp.onreadystatechange = function() {
 					if (xmlhttp.readyState == 4) {
@@ -5212,7 +5137,7 @@ Q.firstErrorMessage = function _Q_firstErrorMessage(data /*, data2, ... */) {
  */
 Q.ajaxErrors = function _Q_ajaxErrors(errors, fields) {
 	var result = {};
-	var f, e;
+	var e, f, i, j;
 	if (fields && typeof fields === 'string') {
 		fields = [fields];
 	}
@@ -5476,6 +5401,7 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 		if (onerror2.executed) {
 			return;
 		}
+		var cb;
 		Q.addScript.loaded[src] = false;
 		if (Q.addScript.onErrorCallbacks[src]) {
 			while ((cb = Q.addScript.onErrorCallbacks[src].shift())) {
@@ -5539,7 +5465,8 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 			}
 			// move the element to the right container if necessary
 			// hopefully, moving the script element won't change the order of execution
-			p = scripts[i], outside = true;
+			p = scripts[i];
+			var outside = true;
 	    	while (p = p.parentNode) {
 				if (p === container) {
 					outside = false;
@@ -5861,7 +5788,7 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 	}
 	// Arrays are accepted
 	if (Q.typeOf(elem) === 'array'
-	|| (typeof HTMLCollection !== 'undefined' && (elem instanceof HTMLCollection))
+	|| (typeof HTMLCollection !== 'undefined' && (elem instanceof window.HTMLCollection))
 	|| (window.jQuery && (elem instanceof jQuery))) {
 
 		Q.each(elem, function _Q_find_array(i) {
@@ -6241,7 +6168,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				}
 				// Invoke prefixfree again if it was loaded
 				if (window.StyleFix) {
-					StyleFix.process();
+					window.StyleFix.process();
 				}
 
 				Q.handle(onActivate, this, arguments);
@@ -6991,7 +6918,9 @@ Q.Template.load = function _Q_Template_load(name, callback, options) {
 	// Now attempt to load the template.
 	// First, search the DOM for templates loaded inside script tag with type "text/theType",
 	// e.g. "text/handlebars" and id matching the template name.
-	var i, scripts = document.getElementsByTagName('script'), script, trash = [];
+	var i, l, script;
+	var scripts = document.getElementsByTagName('script');
+	var trash = [];
 	for (i = 0, l = scripts.length; i < l; i++) {
 		script = scripts[i];
 		if (script && script.id && script.innerHTML
@@ -7079,7 +7008,7 @@ Q.Template.render = function _Q_Template_render(name, fields, partials, callback
 				if (params.template[0]) {
 					return callback(null);
 				}
-				callback(null, Handlebars.compile(params.template[1])(fields, {partials: params.partials[0]}));
+				callback(null, window.Handlebars.compile(params.template[1])(fields, {partials: params.partials[0]}));
 			});
 			Q.Template.load(name, p.fill('template'), options);
 			// pipe for partials
@@ -7155,7 +7084,7 @@ function _connectSocketNS(ns, url, callback, force) {
 		var qs = _qsockets[ns][url];
 		if (!qs || !qs.socket) {
 			_qsockets[ns][url] = qs = new Q.Socket({
-				socket: io.connect(url+ns, force ? {
+				socket: window.io.connect(url+ns, force ? {
 					'force new connection': true
 				} : {}),
 				url: url,
@@ -7201,7 +7130,7 @@ function _connectSocketNS(ns, url, callback, force) {
 		ns = '/' + ns;
 	}
 	
-	if (window.io && io.Socket) {
+	if (window.io && window.io.Socket) {
 		_connectNS(ns, url, callback);
 	} else {
 		Q.addScript(url+'/socket.io/socket.io.js', function () {
@@ -7250,7 +7179,7 @@ Q.Socket.prototype.disconnect = function _Q_Socket_prototype_disconnect() {
 	}
 	var qs = Q.getObject([this.ns, this.url], _qsockets);
 	if (!qs) {
-		console.warn("Q.Socket.prototype.disconnect: Attempt to disconnect nonexistent socket: ", url);
+		console.warn("Q.Socket.prototype.disconnect: Attempt to disconnect nonexistent socket: ", this.url);
 		return;
 	}
 	qs.socket.disconnect();
@@ -7572,7 +7501,7 @@ function _handleVisibilityChange() {
 Q.onVisibilityChange.set(_handleVisibilityChange, 'Q.Animation');
 
 Q.Animation.playing = {};
-_Q_Animation_index = 0;
+var _Q_Animation_index = 0;
 
 Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	var $ = window.jQuery;
@@ -7686,7 +7615,8 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 					break;
 				}
 			} // assume f >= 1
-			var af1 = af2 = arguments[f];
+			var af1, af2;
+			af1 = af2 = arguments[f];
 			var namespace = '';
 			if (Q.typeOf(arguments[0]) === 'array') {
 				namespace = arguments[0][1] || '';
@@ -7799,19 +7729,20 @@ Q.Browser = {
 			|| this.searchVersion(navigator.appVersion)
 			|| "an unknown version").toString();
 		var dotIndex = version.indexOf('.');
-		mainVersion = version.substring(0, dotIndex != -1 ? dotIndex : version.length);
+		var mainVersion = version.substring(0, dotIndex != -1 ? dotIndex : version.length);
 		
 		var OSdata = this.searchData(this.dataOS);
 		var OS = OSdata.identity || "an unknown OS";
 		
 		var engine = '', ua = navigator.userAgent.toLowerCase();
 
-		if (ua.indexOf('webkit') != -1)
+		if (ua.indexOf('webkit') != -1) {
 			engine = 'webkit';
-		else if (ua.indexOf('gecko') != -1)
+		} else if (ua.indexOf('gecko') != -1) {
 			engine = 'gecko';
-		else if (ua.indexOf('presto') != -1)
+		} else if (ua.indexOf('presto') != -1) {
 			engine = 'presto';
+		}
 		
 		var isWebView = /(.*)QWebView(.*)/.test(navigator.userAgent)
 			|| (/(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i).test(navigator.userAgent);
@@ -8476,7 +8407,7 @@ Q.Dialogs = {
 		}, 'Q.Dialogs');
 		o.onClose.original = _onClose;
 		dialog.plugin('Q/dialog', o);
-		topDialog = null;
+		var topDialog = null;
 		dialog.isFullscreen = o.fullscreen;
 		if (this.dialogs.length) {
 			topDialog = this.dialogs[this.dialogs.length - 1];
@@ -8502,7 +8433,7 @@ Q.Dialogs = {
 			dontTriggerClose = false;
 		}
 		
-		dialog = this.dialogs.pop();
+		var dialog = this.dialogs.pop();
 		if (this.dialogs.length) {
 			this.dialogs[this.dialogs.length - 1].show();
 		}
@@ -8711,6 +8642,7 @@ Q.Mask = {
 	 */
 	create: function(key, options)
 	{
+		var $ = window.jQuery;
 		if (key in Q.Mask.collection) {
 			throw new Error("Mask with key '" + key + "' already exists.");
 		}
@@ -8725,7 +8657,7 @@ Q.Mask = {
 		}, options);
 		var width = options.sizeMatcher && $(options.sizeMatcher).width() ? $(options.sizeMatcher).width() : window.innerWidth;
 		var height = options.sizeMatcher && $(options.sizeMatcher).height() ? $(options.sizeMatcher).height() : window.innerHeight;
-		mask = $('<div class="' + options.className + '" />');
+		var mask = $('<div class="' + options.className + '" />');
 		mask.css({ 'width': width + 'px', 'height': height + 'px', 'line-height': height + 'px' });
 		if (options.html) {
 			mask.html(options.html);
@@ -8749,14 +8681,11 @@ Q.Mask = {
 	 */
 	show: function(key, options)
 	{
-		if (!(key in Q.Mask.collection))
-		{
-			if (key in Q.Mask.options)
-			{
+		var $ = window.jQuery;
+		if (!(key in Q.Mask.collection)) {
+			if (key in Q.Mask.options) {
 				Q.Mask.create(key, Q.Mask.options[key]);
-			}
-			else
-			{
+			} else {
 				throw new Error("Mask with key '" + key + "' doesn't exist");
 			}
 		}
@@ -8790,6 +8719,7 @@ Q.Mask = {
 	 */
 	hide: function(key)
 	{
+		var $ = window.jQuery;
 		if (!(key in Q.Mask.collection)) return;
 		
 		var mask = Q.Mask.collection[key];
@@ -8837,17 +8767,12 @@ Q.Mask = {
 	 */
 	get: function(key)
 	{
-		if (key in Q.Mask.collection)
-		{
+		if (key in Q.Mask.collection) {
 			return Q.Mask.collection[key];
-		}
-		else if (key in Q.Mask.options)
-		{
+		} else if (key in Q.Mask.options) {
 			Q.Mask.create(key, Q.Mask.options[key]);
 			return Q.Mask.collection[key];
-		}
-		else
-		{
+		} else {
 			throw new Error("Mask with key '" + key + "' doesn't exist");
 		}
 	},
@@ -8859,6 +8784,7 @@ Q.Mask = {
 	 */
 	update: function()
 	{
+		var $ = window.jQuery;
 		for (var i in Q.Mask.collection)
 		{
 			var mask = Q.Mask.collection[i];
