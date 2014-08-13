@@ -42,7 +42,7 @@
  *	   (due to inertial scrolling). Optional.
  *   @param {String} [Object_or_String.String]
  *	 If a string then it's a command and it can have following values:
- *	 "destroy": Destroys the plugin so the container won't have touch scrolling functionality anymore.
+ *	 "remove": Destroys the plugin so the container won't have touch scrolling functionality anymore.
  *	 "refresh": Refreshes the plugin. Useful then container size is changed to update scrollbar and other stuff.
  *	 "bind": Allows to bind Q.Event handlers to previously described events, such as 'onScrollMove'.
  *					 In this case 'reserved1' is event name and 'reserved2' is a callback function.

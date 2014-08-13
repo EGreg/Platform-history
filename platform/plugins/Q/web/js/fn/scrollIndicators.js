@@ -27,7 +27,7 @@
      *	 @default 200
      * @param {String} 	[Object_or_String.String]
      *	 If a string, then it's a command which may be:
-     *	 "destroy": Destroys plugin so scroll indicators won't be shown anymore.
+     *	 "remove": Destroys plugin so scroll indicators won't be shown anymore.
      */
     Q.Tool.jQuery('Q/scrollIndicators',
 

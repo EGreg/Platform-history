@@ -23,8 +23,8 @@
  *	 @param {Q.Event} [Object_or_String.Object.onScroll] Q.Event or callback for handling 'onScroll' event.
  * @param {String} [Object_or_String.String]
  *	 If a string, then it's a command which may be:
- *		 "destroy": Destroys scroller so it won't function anymore.
- *		 Destroy command may have its own options object passed as reserved1 arg. It can include:
+ *		 "remove": Destroys scroller so it won't function anymore.
+ *		 This command may have its own options object passed as reserved1 arg. It can include:
  *			 "restoreOverflow": restores 'overlow' style of the block to the value it has before applying scroller.
  *			 Defaults to true, but sometimes needed to be manually canceled.
  *			 "restoreHeight": restores height of the block to the value it has before applying scroller.

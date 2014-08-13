@@ -75,7 +75,7 @@ Q.Tool.define("Q/columns", function(options) {
 
 {
 	animation: { 
-		duration: 500, // milliseconds
+		duration: 300, // milliseconds
 		css: {
 			hide: {
 				opacity: 0, 
@@ -138,8 +138,10 @@ Q.Tool.define("Q/columns", function(options) {
 		
 		var div = this.column(index);
 		var titleSlot, columnSlot;
+		var $div;
 		if (!div) {
 			div = document.createElement('div').addClass('Q_columns_column');
+			$div = $(div);
 			++this.state.max;
 			this.state.columns[index] = div;
 			var $ts = $('<h2 class="title_slot"></h2>');
@@ -148,7 +150,7 @@ Q.Tool.define("Q/columns", function(options) {
 			var $title = $('<div class="Q_columns_title"></div>')
 				.append($ts);
 			if (index) {
-				$title.prepend ($close);
+				$title.prepend($close);
 			}
 			if (Q.info.isMobile) {
 				$close.addClass('Q_back').append(
@@ -160,7 +162,7 @@ Q.Tool.define("Q/columns", function(options) {
 				);
 			}
 			columnSlot = document.createElement('div').addClass('column_slot');
-			state.$currentColumn = $(div)
+			state.$currentColumn = $div
 				.append($title, columnSlot)
 				.data(dataKey_index, index)
 				.data(dataKey_scrollTop, Q.Pointer.scrollTop())
@@ -170,6 +172,7 @@ Q.Tool.define("Q/columns", function(options) {
 			}
 			presentColumn(tool);
 		} else {
+			$div = $(div);
 			$close = $('Q_close', div);
 			titleSlot = $('.title_slot', div)[0];
 			columnSlot = $('.column_slot', div)[0];
@@ -177,8 +180,17 @@ Q.Tool.define("Q/columns", function(options) {
 		if (o.back.hide) {
 			$close.hide();
 		}
+		if (!index) {
+			titleSlot.style.width = '100%';
+		}
 
-		$(div).css(o.animation.css.hide);
+		$div.css(o.animation.css.hide);
+		
+		if (options.name) {
+			var n = Q.normalize(options.name);
+			$div.attr('data-name', options.name)
+				.addClass('Q_column_'+n + 'Q_column_'+index);
+		}
 
 		if (options.url) {
 			var url = options.url;
@@ -215,8 +227,6 @@ Q.Tool.define("Q/columns", function(options) {
 			_onOpen();
 		}
 		function _onOpen() {
-			var $div = $(div);
-
 			if (Q.info.isMobile) {
 				var $sc = $(state.container);
 				var h = $(window).height() - $sc.offset().top;

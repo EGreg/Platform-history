@@ -44,8 +44,9 @@ function Q_columns_tool($options)
 			? '<div class="Q_close Q_back">'.Q_Html::img($backSrc, 'Back').'</div>'
 			: '<div class="Q_close">'.Q_Html::img($closeSrc, 'Close').'</div>');
 		$n = Q_Html::text($name);
+		$columnClass = 'Q_column_'.Q_Utils::normalize($name) . ' _Q_column_'.$i;
 		$columns[] = <<<EOT
-	<div class="Q_columns_column" data-name="$n">
+	<div class="Q_columns_column $columnClass" data-name="$n">
 		<div class="Q_columns_title">
 			$closeHtml
 			<h2 class="title_slot">$title</h2>

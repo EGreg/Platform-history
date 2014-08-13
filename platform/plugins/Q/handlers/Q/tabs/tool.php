@@ -28,10 +28,6 @@ function Q_tabs_tool($options)
 	$slot = 'content,title';
 	$selectors = array('content' => '#content_slot');
 	$urls = array();
-	$defaultTab = null;
-	$beforeSwitch = null; 
-	$beforeScripts = null;
-	$onActivate = null;
 	extract($options);
 	if (!isset($tabs)) {
 		return '';
@@ -63,7 +59,7 @@ function Q_tabs_tool($options)
 		or $name === $uri_string) {
 			$selected_class = " Q_selected";
 		}
-		$classes_string = '';
+		$classes_string = " Q_tab_".Q_Utils::normalize($name);
 		if (isset($classes[$name])) {
 			if (is_string($classes[$name])) {
 				$classes_string = $classes[$name];
@@ -87,7 +83,7 @@ function Q_tabs_tool($options)
 		);
 		$result .= Q_Html::tag('li', array(
 			'id' => 'tab_'.++$i,
-			'class' => 'Q_tabs_tab '.$classes_string.$selected_class, 
+			'class' => "Q_tabs_tab$classes_string$selected_class", 
 			'data-name' => $name
 		), Q_Html::a(
 			$urls[$name],
@@ -95,7 +91,7 @@ function Q_tabs_tool($options)
 		));
 	}
 	Q_Response::setToolOptions(compact(
-		'selectors', 'slot', 'tabs', 'urls', 'defaultTab', 'field', 'loader', 'beforeSwitch', 'beforeScripts', 'onActivate'
+		'selectors', 'slot', 'urls', 'defaultTab', 'field', 'loader', 'beforeSwitch', 'beforeScripts', 'onActivate'
 	));
 	Q_Response::addScript('plugins/Q/js/tools/tabs.js');
 	$after = isset($options['after']) ? Q::event($options['after'], $options) : '';

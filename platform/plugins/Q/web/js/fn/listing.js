@@ -26,7 +26,7 @@
  *   @param {Event} [Object_or_String.Object.eventDelegate] eventDelegate If provided, then touch / mouse events will be handled using this element.
  *	 @param {String} [Object_or_String.String]
  *	 If a string, then it's a command which may be:
- *		 "destroy": Destroys selectable listing functionality.
+ *		 "remove": Destroys selectable listing functionality.
  */
 Q.Tool.jQuery('Q/listing',
 

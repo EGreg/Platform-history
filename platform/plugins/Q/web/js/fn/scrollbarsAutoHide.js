@@ -23,7 +23,7 @@
  *	 @param {Q.Event} [Object_or_String.Object.hideHandler] callback which is called when scrollbar is just hidden.
  * @param {String} [Object_or_String.String]
  *	 If a string then it's a command and it can have following values:
- *	 "destroy": Destroys the plugin functionality so the container won't hide its scrollbars automatically anymore.
+ *	 "remove": Removes the plugin functionality so the container won't hide its scrollbars automatically anymore.
  */
 
     Q.Tool.jQuery('Q/scrollbarsAutoHide',
@@ -45,23 +45,20 @@
             $this.data('Q/scrollbarsAutoHide old_padding_bottom', oldPaddingBottom);
             var scrollbarRight = element.scrollHeight > element.offsetHeight;
             var scrollbarBottom = element.scrollWidth > element.offsetWidth;
-            var paddingDiff =  0;
             if (scrollbarRight) {
+				var newPaddingRight = Math.max(oldPaddingRight, scrollbarWidth);
+				var paddingDiffRight = Math.max(0, newPaddingRight - scrollbarWidth);
                 $this.css('overflow', 'hidden' );
                 if (o.scrollbarPadding) {
-                    $this.css('padding-right', (oldPaddingRight + scrollbarWidth) + 'px');
+                    $this.css('padding-right', newPaddingRight + 'px');
                 } else {
-                    paddingDiff = oldPaddingRight - scrollbarWidth;
-                    if (paddingDiff < 0) paddingDiff = 0;
-                    $this.css('padding-right', paddingDiff + 'px');
+                    $this.css('padding-right', paddingDiffRight + 'px');
                 }
                 $this.on({
                     'mouseenter.Q_scrollbar_autohide': function() {
                         $this.css({ 'overflow': 'auto' });
                         if (o.scrollbarPadding) {
-                            $this.css({ 'padding-right': oldPaddingRight + 'px' });
-                        } else {
-                            $this.css({ 'padding-right': paddingDiff + 'px' });
+                            $this.css({ 'padding-right': paddingDiffRight + 'px' });
                         }
                         if (Q.Browser.detect().OS == 'mac') {
                             var scrollTop = $this.scrollTop();
@@ -73,36 +70,38 @@
                     'mouseleave.Q_scrollbar_autohide': function() {
                         $this.css({ 'overflow': 'hidden' });
                         if (o.scrollbarPadding) {
-                            $this.css({ 'padding-right': (oldPaddingRight + scrollbarWidth) + 'px' });
-                        } else {
-                            $this.css({ 'padding-right': Math.max(oldPaddingRight, scrollbarWidth) + 'px' });
+                            $this.css({ 'padding-right': newPaddingRight + 'px' });
                         }
                         Q.handle(o.hideHandler);
                     }
                 });
             } else if (scrollbarBottom) {
+				var newPaddingBottom = Math.max(oldPaddingBottom, scrollbarWidth);
+				var paddingDiffBottom = Math.max(0, newPaddingRight - scrollbarWidth);
                 $this.css({ 'overflow': 'hidden' });
                 if (o.scrollbarPadding) {
-                    $this.css({ 'padding-bottom': (oldPaddingBottom + scrollbarWidth) + 'px' });
+                    $this.css('padding-bottom', newPaddingBottom + 'px');
+                } else {
+                    $this.css('padding-bottom', paddingDiffBottom + 'px');
                 }
                 $this.on({
                     'mouseenter.Q_scrollbar_autohide': function() {
                         $this.css({ 'overflow': 'auto' });
                         if (o.scrollbarPadding) {
-                            $this.css({ 'padding-bottom': oldPaddingBottom + 'px' });
+                            $this.css({ 'padding-right': paddingDiffBottom + 'px' });
                         }
                         if (Q.Browser.detect().OS == 'mac') {
                             var scrollLeft = $this.scrollLeft();
                             $this.scrollLeft(0);
-                            $this.scrollLeft($this.data('Q/scrollbarsAutoHide latest_scroll_left'));
+                            $this.scrollLeft(scrollLeft);
                         }
                         Q.handle(o.showHandler);
                     },
                     'mouseleave.Q_scrollbar_autohide': function() {
                         $this.css({ 'overflow': 'hidden' });
-                        if (o.scrollbarPadding) {
-                            $this.css({ 'padding-bottom': (oldPaddingBottom + scrollbarWidth) + 'px' });
-                        }
+		                if (o.scrollbarPadding) {
+		                    $this.css('padding-bottom', newPaddingBottom + 'px');
+		                }
                         Q.handle(o.hideHandler);
                     }
                 });

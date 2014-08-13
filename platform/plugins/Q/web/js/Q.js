@@ -3126,7 +3126,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 					var key = name + ' state';
 					var $this = $(this);
 					if ($this.data(key)) {
-						// plugin was constructed, so call destroy method if it's defined,
+						// plugin was constructed, so call remove method if it's defined,
 						// before calling constructor again
 						$this.plugin(name, 'remove');
 					}
@@ -3650,7 +3650,8 @@ function _loadToolScript(toolElement, callback, shared, parentPipe) {
 				Q.Tool.onMissingConstructor.handle(_qtc, toolName);
 				toolFunc = _qtc[toolName];
 				if (typeof toolFunc !== 'function') {
-					throw new Q.Error("Q.Tool.loadScript: Missing tool constructor for " + toolName);
+					console.warn("Q.Tool.loadScript: Missing tool constructor for " + toolName);
+					toolFunc = function () { console.log("Missing tool constructor for " + toolName); }; 
 				}
 			}
 			toolFunc.options = Q.extend(toolFunc.options, Q.Tool.options.levels, existingOptions);
@@ -3662,6 +3663,7 @@ function _loadToolScript(toolElement, callback, shared, parentPipe) {
 			toolFunc = _qtc[toolName];
 			if (typeof toolFunc !== 'function' && typeof toolFunc !== 'string') {
 				console.warn("Q.Tool.loadScript: Missing tool constructor for " + toolName);
+				toolFunc = function () { console.log("Missing tool constructor for " + toolName); }; 
 			}
 		}
 		if (parentPipe) {
@@ -4354,7 +4356,7 @@ Q.ready = function _Q_ready() {
 			}
 
 			// This is an HTML document loaded from our server
-			try {
+			//try {
 				Q.Page.beingActivated = true;
 				Q.Page.onActivate('').handle();
 				if (Q.info && Q.info.uri) {
@@ -4365,11 +4367,11 @@ Q.ready = function _Q_ready() {
 					}
 				}
 				Q.Page.beingActivated = false;
-			} catch (e) {
-				debugger; // pause here if debugging
-				Q.Page.beingActivated = false;
-				throw e;
-			}
+			//} catch (e) {
+			//	debugger; // pause here if debugging
+			//	Q.Page.beingActivated = false;
+			//	throw e;
+			//}
 			
 			if (location.hash.toString()) {
 				Q_hashChangeHandler();
@@ -7926,7 +7928,7 @@ Q.Browser = {
 
 		Q.removeElement(outer);
 		
-		Q.Browser.scrollbarWidth = w1 - w2;
+		return Q.Browser.scrollbarWidth = w1 - w2;
 	}
 	
 };
