@@ -352,14 +352,14 @@ Users.prompt = function(provider, uid, authCallback, cancelCallback, options) {
 		Q.addStylesheet(Q.url('plugins/Users/css/Users.css'));
 	
 		var title = Q.text.Users.prompt.title
-			.replace(new RegExp("{\\$provider}", 'g'), provider)
-			.replace(new RegExp("{\\$Provider}", 'g'), provider.toCapitalized());
+			.replace(/{\$provider}/g, provider)
+			.replace(/{\$Provider}/g, provider.toCapitalized());
 		var areUsing = Q.text.Users.prompt.areUsing
-			.replace(new RegExp("{\\$provider}", 'g'), provider)
-			.replace(new RegExp("{\\$Provider}", 'g'), provider.toCapitalized());
+			.replace(/{\$provider}/g, provider)
+			.replace(/{\$Provider}/g, provider.toCapitalized());
 		var noLongerUsing = Q.text.Users.prompt.noLongerUsing
-			.replace(new RegExp("{\\$provider}", 'g'), provider)
-			.replace(new RegExp("{\\$Provider}", 'g'), provider.toCapitalized());
+			.replace(/{\$provider}/g, provider)
+			.replace(/{\$Provider}/g, provider.toCapitalized());
 		var caption;
 		var tookAction = false;
 
@@ -367,12 +367,12 @@ Users.prompt = function(provider, uid, authCallback, cancelCallback, options) {
 		if (Users.loggedInUser && Users.loggedInUser.fb_uid) {
 			content_div.append(_usingInformation(Users.loggedInUser.fb_uid, noLongerUsing));
 			caption = Q.text.Users.prompt.doSwitch
-				.replace(new RegExp("{\\$provider}", 'g'), provider)
-				.replace(new RegExp("{\\$Provider}", 'g'), provider.toCapitalized());
+				.replace(/{\$provider}/, provider)
+				.replace(/{\$Provider}/, provider.toCapitalized());
 		} else {
 			caption = Q.text.Users.prompt.doAuth
-				.replace(new RegExp("{\\$provider}", 'g'), provider)
-				.replace(new RegExp("{\\$Provider}", 'g'), provider.toCapitalized());
+				.replace(/{\$provider}/, provider)
+				.replace(/{\$Provider}/, provider.toCapitalized());
 		}
 		content_div.append(_usingInformation(uid, areUsing)).append(_authenticateActions(caption));
 

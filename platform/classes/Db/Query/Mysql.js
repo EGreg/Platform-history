@@ -1282,13 +1282,13 @@ function criteria_internal (query, criteria) {
 			value = criteria[expr];
 			if (value && value.typename === "Db.Expression") {
 				Q.extend(query.parameters, value.parameters);
-				if ((new RegExp("\\W")).test(expr.substr(-1))) {
+				if (/\W/.test(expr.substr(-1))) {
 					criteria_list.push( "" + expr + "(" + value + ")" );
 				} else {
 					criteria_list.push( "" + expr + " = (" + value + ")");
 				}
 			} else {
-				if ((new RegExp("\\W")).test(expr.substr(-1))) {
+				if (/\W/.test(expr.substr(-1))) {
 					criteria_list.push( "" + expr + ":_criteria_" + _valueCounter );
 					query.parameters["_criteria_" + _valueCounter] = value;
 					++ _valueCounter;

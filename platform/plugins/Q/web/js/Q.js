@@ -179,7 +179,7 @@ Sp.toCapitalized = function _String_prototype_toCapitalized() {
  * @return {Boolean}
  */
 Sp.isUrl = function _String_prototype_isUrl () {
-	return this.match(new RegExp("^[A-Za-z]*:\/\/"));
+	return this.match(/^[A-Za-z]*:\/\//);
 };
 
 /**
@@ -515,7 +515,7 @@ Elp.copyComputedStyle = function(src) {
 	var s = src.computedStyle();
 	for ( var i in s ) {
 		// Do not use `hasOwnProperty`, nothing will get copied
-		if ( typeof i == "string" && i != "cssText" && !(new RegExp("\d")).test(i) ) {
+		if ( typeof i == "string" && i != "cssText" && !(/\d/).test(i) ) {
 			// The try is for setter only properties
 			try {
 				this.style[i] = s[i];
@@ -1453,7 +1453,7 @@ Q.Class.options = {
 Q.normalize = function _Q_normalize(text, replacement, characters, numChars) {
 	if (!numChars) numChars = 200;
 	if (replacement === undefined) replacement = '_';
-	characters = characters || new RegExp("[^A-Za-z0-9]+", "g");
+	characters = characters || /[^A-Za-z0-9]+/g;
 	if (text === undefined) {
 		debugger; // pause here if debugging
 	}
@@ -3523,7 +3523,7 @@ Q.Tool.setUpElement = function _Q_Tool_element(element, toolType, toolOptions, i
 	if (typeof element === 'string') {
 		element = document.createElement(element);
 	}
-	var ntt = toolType.replace(new RegExp('/', 'g'), '_');
+	var ntt = toolType.replace(/\//g, '_');
 	element.addClass('Q_tool '+ntt+'_tool');
 	if (!id && !element.getAttribute(id)) {
 		var p1, p2;
@@ -3558,8 +3558,8 @@ Q.Tool.setUpElement = function _Q_Tool_element(element, toolType, toolOptions, i
  */
 Q.Tool.setUpElementHTML = function _Q_Tool_elementHTML(element, toolType, toolOptions, id, prefix) {
 	var e = Q.Tool.setUpElement(element, toolType, null, id, prefix);
-	var ntt = toolType.replace(new RegExp('/', 'g'), '_');
-	e.setAttribute('data-'+ntt.replace(new RegExp('_', 'g'), '-'), Q.Tool.encodeOptions(toolOptions));
+	var ntt = toolType.replace(/\//g, '_');
+	e.setAttribute('data-'+ntt.replace(/_/g, '-'), Q.Tool.encodeOptions(toolOptions));
 	return e.outerHTML;
 };
 
@@ -6330,14 +6330,14 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 						Q_hashChangeHandler.currentUrl = url.substr(Q.info.baseUrl.length + 1);
 					} else {
 						var hash = '#!url=' + encodeURIComponent(path) +
-							location.hash.replace(new RegExp("#!url=[^&]*"), '')
-								.replace(new RegExp("&!url=[^&]*"), '')
-								.replace(new RegExp("&column=[^&]+"), '')
-								.replace(new RegExp("#column=[^&]+"), '');
+							location.hash.replace(/#!url=[^&]*/, '')
+								.replace(/&!url=[^&]*/, '')
+								.replace(/&column=[^&]+/, '')
+								.replace(/#column=[^&]+/, '');
 						if (parts[1]) {
 							hash += ('&'+parts[1])
-								.replace(new RegExp("&!url=[^&]*"), '')
-								.replace(new RegExp("&column=[^&]+"), '');
+								.replace(/&!url=[^&]*/, '')
+								.replace(/&column=[^&]+/, '');
 						}
 						if (location.hash !== hash) {
 							Q_hashChangeHandler.ignore = true;
@@ -7813,8 +7813,8 @@ Q.Browser = {
 		else if (ua.indexOf('presto') != -1)
 			engine = 'presto';
 		
-		var isWebView = (new RegExp("(.*)QWebView(.*)").test(navigator.userAgent))
-			|| (new RegExp("(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)", "i").test(navigator.userAgent));
+		var isWebView = /(.*)QWebView(.*)/.test(navigator.userAgent)
+			|| (/(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i).test(navigator.userAgent);
 		
 		var name = browser.toLowerCase();
 		var prefix;

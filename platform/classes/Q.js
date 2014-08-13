@@ -1844,7 +1844,7 @@ Q.md5_hmac_b64 = function _Q_md5_hmac_b64(a,b){return rstr2b64(rstr_hmac_md5(str
 Q.normalize = function _Q_normalize(text, replacement, characters, numChars) {
 	if (!numChars) numChars = 200;
 	if (replacement === undefined) replacement = '_';
-	characters = characters || new RegExp("[^A-Za-z0-9]+", "g");
+	characters = characters || /[^A-Za-z0-9]+/g);
 	if (text === undefined) {
 		debugger; // pause here if debugging
 	}
@@ -2319,7 +2319,7 @@ String.prototype.toCapitalized = function _String_prototype_toCapitalized() {
 };
 
 String.prototype.isUrl = function () {
-	return this.match(new RegExp("^[A-Za-z]*:\/\/"));
+	return this.match(/^[A-Za-z]*:\/\//);
 };
 
 String.prototype.encodeHTML = function _String_prototype_encodHTML(quote_style, charset, double_encode) {
@@ -2364,7 +2364,7 @@ String.prototype.hashCode = function() {
 Q.date = function (format, timestamp) {
 	// http://kevin.vanzonneveld.net
 	var that = this,
-		jsdate, f, formatChr = /\\?([a-z])/gi,
+		jsdate, f, formatChr = /\?([a-z])/gi,
 		formatChrCb,
 		// Keep this here (works, but for code commented-out
 		// below for file size reasons)
