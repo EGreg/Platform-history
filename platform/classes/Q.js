@@ -550,7 +550,7 @@ Q.batcher = function _Q_batch(batch, options) {
 		var requestArguments = arguments;
 		function nextRequest() {
 			var i, j;
-			var callbacks = [], args = [], argmax = 0, cbmax = 0;
+			var callbacks = [], args = [];
 
 			// separate fields and callbacks
 			for (i=0; i<requestArguments.length; ++i) {

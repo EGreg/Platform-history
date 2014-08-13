@@ -6,7 +6,7 @@
  */
 (function (window) {
 	
-/* jshint -W014 -W083 */
+/* jshint -W014 */
 
 // private properties
 var _isReady = false;
@@ -139,7 +139,7 @@ Sp.isUrl = function _String_prototype_isUrl () {
  * @method encodeHTML
  * @return {String}
  */
-Sp.encodeHTML = function _String_prototype_encodeHTML(quote_style, charset, double_encode) {
+Sp.encodeHTML = function _String_prototype_encodeHTML() {
 	return this.replaceAll({
 		'&': '&amp;',
 		'<': '&lt;',
@@ -155,7 +155,7 @@ Sp.encodeHTML = function _String_prototype_encodeHTML(quote_style, charset, doub
  * @method decodeHTML
  * @return {String}
  */
-Sp.decodeHTML = function _String_prototype_decodeHTML(quote_style, charset, double_encode) {
+Sp.decodeHTML = function _String_prototype_decodeHTML() {
 	return this.replaceAll({
 		'&amp;': '&',
 		'&lt;': '<',
@@ -1301,7 +1301,7 @@ Q.shuffle = function _Q_shuffle( arr ) {
  *  They will be tried in the order they are provided, meaning methods from earlier ones
  *  override methods from later ones.
  */
-Q.mixin = function _Q_mixin(A, B) {
+Q.mixin = function _Q_mixin(A /*, B, ... */) {
 	var __mixins = (A.__mixins || (A.__mixins = []));
 	var mixin, i, k, l;
 	for (i = 1, l = arguments.length; i < l; ++i) {
@@ -1674,7 +1674,6 @@ Q.Event.calculateKey = function _Q_Event_calculateKey(key, container, start) {
 	if (key === true) {
 		return key;
 	}
-	var tool = undefined;
 	if (key === undefined) {
 		key = Q.Tool.beingActivated; // by default, use the current tool as the key, if any
 	}
@@ -1712,7 +1711,7 @@ Evp.occurred = false;
  * @return {String} The key under which the event was set
  */
 Evp.set = function _Q_Event_prototype_set(handler, key, prepend) {
-	var i, isTool = (Q.typeOf(key) === 'Q.Tool');
+	var isTool = (Q.typeOf(key) === 'Q.Tool');
 	if (key === true || (key === undefined && Q.Page.beingActivated)) {
 		Q.Event.forPage.push(this);
 	}
@@ -2020,7 +2019,7 @@ Q.Event.factory = function (collection, defaults, callback) {
 	}
 	defaults = defaults || [];
 	return function _Q_Event_factory () {
-		var args = Array.prototype.slice.call(arguments, 0), a;
+		var args = Array.prototype.slice.call(arguments, 0);
 		var len = defaults.length;
 		var f = (typeof(defaults[len-1]) === 'function') ? defaults[defaults.length-1] : null;
 		if (f) --len;
@@ -2376,8 +2375,8 @@ Q.batcher = function _Q_batch(batch, options) {
 	var result = function _Q_batch_result() {
 		var requestArguments = arguments;
 		function nextRequest() {
-			var i, j;
-			var callbacks = [], args = [], argmax = 0, cbmax = 0;
+			var i;
+			var callbacks = [], args = [];
 
 			// separate fields and callbacks
 			for (i=0; i<requestArguments.length; ++i) {
@@ -2545,7 +2544,7 @@ Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotN
 Q.getter = function _Q_getter(original, options) {
 
 	function wrapper() {
-		var i, j, key, that = this, arguments2 = Array.prototype.slice.call(arguments);
+		var i, key, that = this, arguments2 = Array.prototype.slice.call(arguments);
 		var callbacks = [];
 
 		// separate fields and callbacks
@@ -2860,7 +2859,7 @@ Q.Tool = function _Q_Tool(element, options) {
 	}
 
 	// options cascade -- process option keys that start with '.' or '#'
-	var partial, i, l, n;
+	var partial, i, l;
 	options = options || {};
 	this.options = this.options || {};
 	
@@ -3112,8 +3111,8 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 	}
 	Q.onJQuery.add(function ($) {
 		function jQueryPluginConstructor(options /* or methodName, argument1, argument2, ... */) {
-			if (typeof arguments[0] === 'string') {
-				var method = arguments[0];
+			if (typeof options === 'string') {
+				var method = options;
 				if (jQueryPluginConstructor.methods[method]) {
 					// invoke method on this with arguments
 					return jQueryPluginConstructor.methods[method].apply(
@@ -3121,8 +3120,8 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 					);
 				}
 			} else {
-				arguments[0] = Q.extend({}, 10, jQueryPluginConstructor.options, 10, arguments[0]);
-				var args = arguments;
+				var args = Array.prototype.slice.call(arguments, 0);
+				args[0] = Q.extend({}, 10, jQueryPluginConstructor.options, 10, options);
 				$(this).each(function () {
 					var key = name + ' state';
 					var $this = $(this);
@@ -3131,7 +3130,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 						// before calling constructor again
 						$this.plugin(name, 'remove');
 					}
-					$this.data(key, Q.copy(options, stateKeys));
+					$this.data(key, Q.copy(args[0], stateKeys));
 					ctor.apply($this, args);
 				});
 			}
@@ -3146,7 +3145,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 				$(this.element).plugin(name, 'remove', this);
 			}, 'Q');
 		});
-		Q.each(methods, function (method, handler) {
+		Q.each(methods, function (method) {
 			ToolConstructor.prototype[method] = function _Q_Tool_jQuery_method() {
 				var args = Array.prototype.slice.call(arguments, 0);
 				args.unshift(name, method);
@@ -3230,9 +3229,8 @@ Tp.children = function Q_Tool_prototype_children(append, levels) {
  * @return {Tool|null}
  */
 Tp.child = function Q_Tool_prototype_child(append) {
-	var result = {},
-		prefix2 = Q.normalize(this.prefix + (append || "")),
-		id, ni;
+	var prefix2 = Q.normalize(this.prefix + (append || ""));
+	var id, ni;
 	for (id in Q.Tool.active) {
 		ni = Q.normalize(id);
 		if (id.length >= prefix2.length + (append ? 0 : 1)
@@ -3291,7 +3289,7 @@ Tp.parents = function Q_Tool_prototype_parents() {
  * @return {Tool|null}
  */
 Tp.parent = function Q_Tool_prototype_parent() {
-	var ids = [], i;
+	var ids = [];
 	ids = this.parentIds();
 	return ids.length ? Q.Tool.active[ids[0]] : null;
 };
@@ -3633,7 +3631,7 @@ function _loadToolScript(toolElement, callback, shared, parentPipe) {
 		}
 		toolNames.push(Q.normalize(className.substr(0, className.length-5)));
 	}
-	var p = new Q.Pipe(toolNames, function (params, subjects) {
+	var p = new Q.Pipe(toolNames, function (params) {
 		// now that all the tool scripts are loaded, activate the tools in the right order
 		for (var i=0, nl = toolNames.length; i<nl; ++i) {
 			var toolName = toolNames[i];
@@ -4269,7 +4267,7 @@ Q.init = function _Q_init(options) {
 			if ((Q.info.isCordova = window.device && window.device.available)) {
 				// avoid opening external urls in app window
 				Q.addEventListener(document, "click", function (e) {
-					var t = e.target, s, i;
+					var t = e.target, s;
 					do {
 						if (t && t.nodeName === "A" && t.href && !t.outerHTML.match(/\Whref=[',"]#[',"]\W/) && t.href.match(/^https?:\/\//)) {
 							e.preventDefault();
@@ -4414,7 +4412,7 @@ Q.loadNonce = function _Q_loadNonce(callback, context, args) {
 		Q.handle(callback, context, args);
 		return;
 	}
-	Q.req('Q/nonce', 'data', function _Q_loadNonce_nonceLoaded(err, res) {
+	Q.req('Q/nonce', 'data', function _Q_loadNonce_nonceLoaded() {
 		Q.nonce = Q.cookie('Q_nonce');
 		if (Q.nonce) {
 			Q.handle(callback, context, args);
@@ -4900,7 +4898,7 @@ Q.req = function _Q_req(uri, slotNames, callback, options) {
  */
 Q.request = function (url, slotNames, callback, options) {
 	
-	var fields, k, delim;
+	var fields, delim;
 	if (typeof url === 'object') {
 		fields = arguments[0];
 		url = arguments[1];
@@ -5362,7 +5360,7 @@ Q.formPost.counter = 0;
  */
 Q.addScript = function _Q_addScript(src, onload, options) {
 
-	function stateChangeInIE(e) { // function to watch scripts load in IE
+	function stateChangeInIE() { // function to watch scripts load in IE
 		// Execute as many scripts in order as we can
 		var script, pendingScripts = Q.addScript.pendingScripts;
 		while (pendingScripts[0]
@@ -5440,7 +5438,6 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 	}
 
 	var o = Q.extend({}, Q.addScript.options, options),
-		arr = src,
 		firstScript = document.scripts ? document.scripts[0] : document.getElementsByTagName('script')[0],
 		container = o.container || document.head  || document.getElementsByTagName('head')[0];
 		
@@ -5646,7 +5643,7 @@ Q.addStylesheet = function _Q_addStylesheet(href, media, onload, options) {
 		return options.returnAll ? links[i] : false; // don't add
 	}
 
-	function onload2(e) {
+	function onload2() {
 		if (onload2.executed) {
 			return;
 		}
@@ -5941,7 +5938,7 @@ Q.replace = function _Q_replace(container, source, options) {
 	
 	var retainedToolsArray = [];
 	var newOptionsArray = [];
-	Q.find(source, true, function (toolElement, options) {
+	Q.find(source, true, function (toolElement) {
 		var element = document.getElementById(toolElement.id);
 		if (element && element.getAttribute('data-Q-retain') !== null
 		&& !toolElement.getAttribute('data-Q-replace') !== null) {
@@ -6103,7 +6100,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 			// but some of the new scripts will be added.
 
 			var moduleSlashAction = Q.info.uri.module+"/"+Q.info.uri.action; // old page going out
-			var i, k, newStylesheets, newStyles;
+			var i, newStylesheets, newStyles;
 			
 			function _doEvents(prefix, moduleSlashAction) {
 				var event, f = Q.Page[prefix+'Unload'];
@@ -6395,7 +6392,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 			var slotPipe = Q.pipe(Object.keys(response.scripts), function _Q_loadUrl_pipe_slotNames() {
 				callback();
 			});
-			var slotName, newScripts = {};
+			var newScripts = {};
 			var keys = Object.keys(response.scripts);
 			if (response.scripts[""]) {
 				keys.splice(keys.indexOf(""), 1);
@@ -6417,7 +6414,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 
 Q.loadUrl.retainedSlots = {};
 
-Q.loadUrl.saveScroll = function _Q_loadUrl_saveScroll (url, options) {
+Q.loadUrl.saveScroll = function _Q_loadUrl_saveScroll (url) {
 	var slotNames = Q.info.slotNames, l, elem, i;
 	if (typeof slotNames === 'string') {
 		slotNames = slotNames.split(',');
@@ -6799,7 +6796,7 @@ function _initTools(toolElement) {
 		? _waitingParentStack[_waitingParentStack.length-1]
 		: null;
 	
-	_loadToolScript(toolElement, function (toolElement, toolFunc, toolName) {
+	_loadToolScript(toolElement, function () {
 		var wfin = currentPipe.waitForIdNames;
 		if (wfin) {
 			currentPipe.add(wfin, 1, _handleInit).run();
@@ -7552,7 +7549,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	 *  Optional. A hash of options for Q.addScript
 	 */
 	$.fn.plugin.load = function _jQuery_fn_load(pluginNames, callback, options) {
-		var srcs = [], result, name;
+		var srcs = [];
 		if (typeof pluginNames === 'string') {
 			pluginNames = [pluginNames];
 		}
@@ -7610,96 +7607,95 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	}, function (on, off) {
 		var _jQuery_fn_on = $.fn[on];
 		$.fn[on] = function _jQuery_on() {
-			for (var f = arguments.length-1; f >= 0; --f) {
-				if (typeof arguments[f] === 'function') {
+			var args = Array.prototype.slice.call(arguments, 0)
+			for (var f = args.length-1; f >= 0; --f) {
+				if (typeof args[f] === 'function') {
 					break;
 				}
 			} // assume f >= 1
 			var af1, af2;
-			af1 = af2 = arguments[f];
+			af1 = af2 = args[f];
 			var namespace = '';
-			if (Q.typeOf(arguments[0]) === 'array') {
-				namespace = arguments[0][1] || '';
+			if (Q.typeOf(args[0]) === 'array') {
+				namespace = args[0][1] || '';
 				if (namespace && namespace[0] !== '.') {
 					namespace = '.' + namespace;
 				}
-				arguments[0] = arguments[0][0];
+				args[0] = args[0][0];
 			}
-			if (typeof arguments[0] === 'function') {
+			if (typeof args[0] === 'function') {
 				var params = {
-					original: arguments[f]
+					original: args[f]
 				};
-				af2 = arguments[f] = arguments[0] ( params );
+				af2 = args[f] = args[0] ( params );
 				af1.Q_wrapper = af2;
 				if (!('eventName' in params)) {
 					throw new Q.Error("Custom $.fn.on handler: need to set params.eventName");
 				}
-				arguments[0] = params.eventName;
+				args[0] = params.eventName;
 			}
 			if (namespace) {
-				var parts = arguments[0].split(' ');
+				var parts = args[0].split(' ');
 				for (var i=parts.length-1; i>=0; --i) {
 					parts[i] += namespace;
 				}
-				arguments[0] = parts.join(' ');
+				args[0] = parts.join(' ');
 			}
 			var added;
-			if (arguments[f-1] === true) {
-				Q.Event.jQueryForPage.push([off, this, arguments[0], af2]);
+			if (args[f-1] === true) {
+				Q.Event.jQueryForPage.push([off, this, args[0], af2]);
 				added = 'page';
-			} else if (Q.typeOf(arguments[f-1]) === 'Q.Tool') {
-				var tool = arguments[f-1], key = tool.id;
+			} else if (Q.typeOf(args[f-1]) === 'Q.Tool') {
+				var tool = args[f-1], key = tool.id;
 				if (!Q.Event.jQueryForTool[key]) {
 					Q.Event.jQueryForTool[key] = [];
 				}
-				Q.Event.jQueryForTool[key].push([off, this, arguments[0], af2]);
+				Q.Event.jQueryForTool[key].push([off, this, args[0], af2]);
 				added = 'tool';
 			}
 			if (added) {
-				var args = Array.prototype.slice.call(arguments, 0);
 				args.splice(f-1, 1);
-				return _jQuery_fn_on.apply(this, args);
-			} else {
-				return _jQuery_fn_on.apply(this, arguments);
 			}
+			return _jQuery_fn_on.apply(this, args);
 		};
 		
 		var _jQuery_fn_off = $.fn[off];
 		$.fn[off] = function () {
+			var args = Array.prototype.slice.call(arguments, 0);
 			var namespace = '';
 			if (Q.typeOf(arguments[0]) === 'array') {
-				namespace = arguments[0][1] || '';
+				namespace = args[0][1] || '';
 				if (namespace && namespace[0] !== '.') {
 					namespace = '.' + namespace;
 				}
-				arguments[0] = arguments[0][0];
+				args[0] = args[0][0];
 			}
-			if (typeof arguments[0] === 'function') {
+			if (typeof args[0] === 'function') {
 				var params = {};
-				arguments[0] ( params );
+				args[0] ( params );
 				if (!('eventName' in params)) {
 					throw new Q.Error("Custom $.fn.on handler: need to set params.eventName");
 				}
-				arguments[0] = params.eventName;
+				args[0] = params.eventName;
 			}
 			if (namespace) {
-				var parts = arguments[0].split(' ');
+				var parts = args[0].split(' ');
 				for (var i=parts.length-1; i>=0; --i) {
 					parts[i] += namespace;
 				}
-				arguments[0] = parts.join(' ');
+				args[0] = parts.join(' ');
 			}
 			var f, af = null;
-			for (f = arguments.length-1; f >= 0; --f) {
-				if (typeof arguments[f] === 'function') {
-					af = arguments[f];
+			for (f = args.length-1; f >= 0; --f) {
+				if (typeof args[f] === 'function') {
+					af = args[f];
 					break;
 				}
 			}
 			if (af && af.Q_wrapper) {
-				arguments[f] = af.Q_wrapper;
+				args[f] = af.Q_wrapper;
 			}
-			return _jQuery_fn_off.apply(this, arguments);
+			return _jQuery_fn_off.apply(this, args);
 		};
 	});
 };
@@ -8485,7 +8481,7 @@ Q.Dialogs.push.options = {
 Q.alert = function(message, options) {
 	if (options === undefined) options = {};
 	if (options.title === undefined) options.title = 'Alert';
-	var dialog = Q.Dialogs.push(Q.extend({
+	Q.Dialogs.push(Q.extend({
 		'title': options.title,
 		'content': '<div class="Q_messagebox"><p>' + message + '</p></div>',
 		'onClose': options.onClose || undefined,
@@ -8681,7 +8677,6 @@ Q.Mask = {
 	 */
 	show: function(key, options)
 	{
-		var $ = window.jQuery;
 		if (!(key in Q.Mask.collection)) {
 			if (key in Q.Mask.options) {
 				Q.Mask.create(key, Q.Mask.options[key]);
@@ -8865,7 +8860,7 @@ function processStylesheets() {
 			continue;
 		}
 		var href = links[i].getAttribute('href');
-		processStylesheets.slots[href] = links[i].getAttribute('data-slot') || null;
+		slots[href] = links[i].getAttribute('data-slot') || null;
 	}
 }
 processStylesheets.slots = {};
@@ -8970,7 +8965,7 @@ Q.loadUrl.options = {
 		return document.getElementById(slotName+"_slot");
 	},
 	handler: function _Q_loadUrl_fillSlots (res, url, options) {
-		var elements = {}, slot, name, elem, pos;
+		var elements = {}, name, elem, pos;
 		var osc = options.slotContainer;
 		if (Q.isPlainObject(osc)) {
 			options.slotContainer = function (slotName) {
@@ -9015,7 +9010,7 @@ Q.request.options = {
 	onLoadStart: new Q.Event(),
 	onShowCancel: new Q.Event(),
 	onLoadEnd: new Q.Event(),
-	onCancel: new Q.Event(function (error, response) {
+	onCancel: new Q.Event(function (error) {
 		var msg = Q.firstErrorMessage(error);
 		if (msg) {
 			console.warn(msg);
