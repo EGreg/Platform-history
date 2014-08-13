@@ -62,9 +62,9 @@ function Q_tabs_tool($options)
 		$classes_string = " Q_tab_".Q_Utils::normalize($name);
 		if (isset($classes[$name])) {
 			if (is_string($classes[$name])) {
-				$classes_string = $classes[$name];
+				$classes_string .= $classes[$name];
 			} else if (is_array($classes[$name])) {
-				$classes_string = implode(' ', $classes[$name]);
+				$classes_string .= implode(' ', $classes[$name]);
 			}
 		}
 		$titleClasses_string = '';
@@ -83,7 +83,7 @@ function Q_tabs_tool($options)
 		);
 		$result .= Q_Html::tag('li', array(
 			'id' => 'tab_'.++$i,
-			'class' => "Q_tabs_tab$classes_string$selected_class", 
+			'class' => "Q_tabs_tab $classes_string$selected_class", 
 			'data-name' => $name
 		), Q_Html::a(
 			$urls[$name],
