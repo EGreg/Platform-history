@@ -62,9 +62,9 @@ function Q_tabs_tool($options)
 		$classes_string = " Q_tab_".Q_Utils::normalize($name);
 		if (isset($classes[$name])) {
 			if (is_string($classes[$name])) {
-				$classes_string .= $classes[$name];
+				$classes_string .= ' ' . $classes[$name];
 			} else if (is_array($classes[$name])) {
-				$classes_string .= implode(' ', $classes[$name]);
+				$classes_string .= ' ' . implode(' ', $classes[$name]);
 			}
 		}
 		$titleClasses_string = '';
