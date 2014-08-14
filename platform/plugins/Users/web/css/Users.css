@@ -244,13 +244,24 @@
 .Q_admin_pane
 {
 	float: left;
-	padding: 10px;
+	padding: 10px 10px 0px 10px;
 }
 
 .Q_extra_pane
 {
 	float: right;
 	padding: 10px 0px 10px 0px;
+}
+
+.Q_mobile .Q_extra_pane
+{
+	float: right;
+	padding: 0px 0px 10px 10px;
+}
+
+.Q_mobile h2
+{
+	margin: 5px 0px 5px 0px;
 }
 
 .Users_avatar_icon, .Users_avatar_name
@@ -315,3 +326,6 @@
 #Users_login_dialog #Users_register_terms * { font-size: 14px; }
 #Users_authorize_buttons { padding: 10px; }
 #Users_authorize_buttons .Q_button { font-size: 36px; line-height: 80px; }
+
+.Users_fromServer,
+.Users_fromYahoo { font-family: "Comic Sans MS"; font-weight: 100; }
