@@ -474,12 +474,10 @@ function _handlePosAndScroll(o)
 		}
 	}
 	
-	if (Q.Interval.exists('Q_dialog_correction'))
-	{
-		Q.Interval.clear('Q_dialog_correction');
+	if (interval) {
+		clearInterval(interval);
 	}
-	Q.Interval.set(function()
-	{
+	interval = setInterval(function() {
 		var maxContentsHeight;
 		if ($this.css('display') == 'block')
 		{
@@ -616,12 +614,12 @@ function _handlePosAndScroll(o)
 				contentsLength = ods.html().length;
 				contentsWrapper.plugin('Q/iScroll', 'refresh');
 			}
+		} else {
+			clearInterval(interval);
 		}
-		else
-		{
-			Q.Interval.clear('Q_dialog_correction');
-		}
-	}, 100, 'Q_dialog_correction');
+	}, 100);
 };
+
+var interval;
 
 })(Q, jQuery, window, document);
