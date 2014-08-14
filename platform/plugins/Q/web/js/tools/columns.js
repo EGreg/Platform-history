@@ -180,9 +180,6 @@ Q.Tool.define("Q/columns", function(options) {
 		if (o.back.hide) {
 			$close.hide();
 		}
-		if (!index) {
-			titleSlot.style.width = '100%';
-		}
 
 		$div.css(o.animation.css.hide);
 		

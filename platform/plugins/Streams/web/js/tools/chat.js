@@ -126,7 +126,7 @@ Q.Tool.define('Streams/chat', function(options) {
 		for (var ordinal in messages) {
 			var message = messages[ordinal];
 			if (!message.content) {
-				return;
+				continue;
 			}
 			res[ordinal] = {
 				content    : message.content,
@@ -379,7 +379,7 @@ Q.Tool.define('Streams/chat', function(options) {
 		*/
 		tool.$('.Streams_chat_composer textarea')
 			.plugin('Q/placeholders')
-			.plugin('Q/autogrow')
+			.plugin('Q/autogrow', {maxWidth: $(tool.element).width() })
 			.plugin('Q/clickfocus')
 			.keypress(function(event){
 			if (event.charCode == 13) {

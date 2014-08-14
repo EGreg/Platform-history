@@ -783,7 +783,12 @@ Streams.invite = function (publisherId, streamName, fields, callback) {
 	fields.streamName = streamName;
 	fields.displayName = fields.displayName || Q.Users.loggedInUser.displayName;
 	Q.req('Streams/invite', ['data'], function (err, data) {
-		Q.handle(callback, null, [err, data]);
+		var msg = Q.firstErrorMessage(err, data && data.errors);
+		if (msg) {
+			var args = [err, data];
+			Streams.onError.handle.call(this, msg, args);
+		}
+		Q.handle(callback, null, [err, data, msg]);
 	}, { method: 'post', fields: fields, baseUrl: baseUrl });
 };
 

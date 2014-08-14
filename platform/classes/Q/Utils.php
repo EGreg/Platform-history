@@ -558,7 +558,7 @@ class Q_Utils
 			$url = $nodep && $nodeh ? "http://$nodeh:$nodep" : false;
 		}
 
-		if (!$url) throw new Q_Exception("Root URL is not defined in Q_Utils::queryInternal");
+		if (!$url) throw new Q_Exception("Q_Utils::queryInternal: Node.js root URL is not defined");
 		
 		if (is_array($url)) {
 			$server = array();

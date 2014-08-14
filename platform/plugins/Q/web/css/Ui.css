@@ -1751,6 +1751,10 @@ input[type=radio] { margin-right: 5px; }
 	height: 40px;
 }
 
+.Q_columns_column:first-child .title_slot {
+	width: 100%;
+}
+
 .Q_columns_column .column_slot {
 	clear: both;
 	overflow: auto;
