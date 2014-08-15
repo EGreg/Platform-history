@@ -11,7 +11,6 @@
  *  @param {Object}  [options.animation] For customizing animated transitions
  *  @param {Number}  [options.animation.duration] The duration of the transition in milliseconds, defaults to 500
  *  @param {Object}  [options.animation.hide] The css properties in "hide" state of animation
- *  @param {Object}  [options.animation.show] The css properties in "show" state of animation
  *  @param {Object}  [options.back] For customizing the back button on mobile
  *  @param {String}  [options.back.src] The src of the image to use for the back button
  *  @param {Boolean} [options.back.triggerFromTitle] Whether the whole title would be a trigger for the back button. Defaults to true.
@@ -80,12 +79,7 @@ Q.Tool.define("Q/columns", function(options) {
 			hide: {
 				opacity: 0, 
 				top: '50%',
-				height: 0
-			},
-			show: {
-				opacity: 1, 
-				top: 0,
-				height: '100%',
+				height: '0'
 			}
 		},
 	},
@@ -141,6 +135,7 @@ Q.Tool.define("Q/columns", function(options) {
 		var $div;
 		if (!div) {
 			div = document.createElement('div').addClass('Q_columns_column');
+			div.style.display = 'none';
 			$div = $(div);
 			++this.state.max;
 			this.state.columns[index] = div;
@@ -180,8 +175,6 @@ Q.Tool.define("Q/columns", function(options) {
 		if (o.back.hide) {
 			$close.hide();
 		}
-
-		$div.css(o.animation.css.hide);
 		
 		if (options.name) {
 			var n = Q.normalize(options.name);
@@ -224,14 +217,32 @@ Q.Tool.define("Q/columns", function(options) {
 			_onOpen();
 		}
 		function _onOpen() {
+			var show = {
+				opacity: 1,
+				top: 1
+			};
+			var oldMinHeight;
+			var hide = o.animation.css.hide;
+			$div.css('position', 'absolute');
 			if (Q.info.isMobile) {
 				var $sc = $(state.container);
 				var h = $(window).height() - $sc.offset().top;
-				o.animation.css.show.width = $(tool.element).width();
-				o.animation.css.show.height = h;
+				show.width = $(tool.element).width();
+				show.height = h;
 				$sc.height(h);
-				$div.css('position', 'absolute');
+			} else {
+				$div.show();
+				show.width = $div.width();
+				show.height = $div.height();
+				for (var k in hide) {
+					if (hide[k].toString().substr(-1) === '%') {
+						hide[k] = show.height * parseInt(hide[k]) / 100;
+					}
+				}
+				$div.hide()
+				.css('position', 'relative');
 			}
+			$div.data(dataKey_hide, hide);
 			
 			openAnimation();
 
@@ -242,7 +253,12 @@ Q.Tool.define("Q/columns", function(options) {
 				var $cs = $('.column_slot', $div);
 				var $ct = $('.Q_columns_title', $div);
 				
-				if (!Q.info.isMobile) {
+				var $prev = $div.prev();
+				$div.css('z-index', $prev.css('z-index')+1 || 1);
+				
+				if (Q.info.isMobile) {
+					$div.css('width', '100%');
+				} else {
 					$sc.width(tool.$('.Q_columns_column').length * tool.$('.Q_columns_column').outerWidth(true));
 
 					$(tool.element).animate({
@@ -250,11 +266,16 @@ Q.Tool.define("Q/columns", function(options) {
 					}, duration);
 				}
 				
-				$div.css('display', 'block').css(o.animation.css.hide);
+				oldMinHeight = $div.css('min-height');
+				$div.css('min-height', 0);
+				
 				if (o.fullscreen) {
 					$ct.css('position', 'absolute');
 				}
-				$div.show().animate(o.animation.css.show, duration, function(){
+				$div.show()
+				.addClass('Q_columns_opening')
+				.css(o.animation.css.hide)
+				.animate(show, duration, function(){
 					afterAnimate($cs, $sc, $ct);
 				});
 			}
@@ -282,6 +303,9 @@ Q.Tool.define("Q/columns", function(options) {
 					}
 				}
 				
+				$div.removeClass('Q_columns_opening')
+				.addClass('Q_columns_opened');
+				
 				presentColumn(tool);
 
 				if (!Q.info.isMobile) {
@@ -290,6 +314,8 @@ Q.Tool.define("Q/columns", function(options) {
 						- parseInt($cs.css('padding-top'));
 					$cs.height(heightToBottom);
 				}
+				
+				$div.css('min-height', oldMinHeight);
 
 				if (Q.info.isTouchscreen) {
 					if (o.fullscreen) {
@@ -348,7 +374,10 @@ Q.Tool.define("Q/columns", function(options) {
 		}
 		state.$currentColumn = $prev;
 		presentColumn(tool);
-		$div.animate(state.animation.css.hide, duration, function () {
+	
+		$div.css('min-height', 0);
+		
+		$div.animate($div.data(dataKey_hide), duration, function () {
 			Q.removeElement(div); // remove it correctly
 			state.columns[index] = null;
 		
@@ -422,5 +451,6 @@ function presentColumn(tool) {
 
 var dataKey_index = 'index';
 var dataKey_scrollTop = 'scrollTop';
+var dataKey_hide = 'hide';
 
 })(Q, jQuery);
