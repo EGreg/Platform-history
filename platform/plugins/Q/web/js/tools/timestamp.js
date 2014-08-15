@@ -21,7 +21,7 @@
 	 */
 
 	Q.Tool.jQuery('Q/timestamp', function (o) {
-		time = o.time || Date.now() / 1000;
+		var time = o.time || Date.now() / 1000;
 
 		var $this = $(this),
 			state = $this.state('Q/timestamp');
