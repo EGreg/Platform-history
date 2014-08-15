@@ -477,6 +477,9 @@ function _handlePosAndScroll(o)
 	if (interval) {
 		clearInterval(interval);
 	}
+
+	Q.addScript("js/QTools.js", function () {
+
 	interval = setInterval(function() {
 		var maxContentsHeight;
 		if ($this.css('display') == 'block')
@@ -618,6 +621,8 @@ function _handlePosAndScroll(o)
 			clearInterval(interval);
 		}
 	}, 100);
+	
+	});
 };
 
 var interval;

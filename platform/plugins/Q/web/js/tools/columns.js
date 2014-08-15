@@ -343,12 +343,10 @@ Q.Tool.define("Q/columns", function(options) {
 		$prev.show();
 		if (state.fullscreen) {
 			$(window).scrollTop($prev.data(dataKey_scrollTop) || 0);
-		}
-		state.$currentColumn = $prev;
-		if (state.fullscreen) {
 			// make the title move while animating, until it is removed
 			$('.Q_columns_title', $div).css('position', 'absolute');
 		}
+		state.$currentColumn = $prev;
 		presentColumn(tool);
 		$div.animate(state.animation.css.hide, duration, function () {
 			Q.removeElement(div); // remove it correctly

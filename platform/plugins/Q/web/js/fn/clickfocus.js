@@ -11,7 +11,7 @@
 Q.Tool.jQuery("Q/clickfocus",
 
 function (o) {
-	if (this.is('input')) {
+	if (this.is('input, textarea, select')) {
 		this.click();
 	}
 	this.focus();

@@ -388,8 +388,9 @@ Q.Tool.define('Streams/chat', function(options) {
 		* send message
 		*/
 		tool.$('.Streams_chat_composer textarea')
-			.plugin('Q/placeholders')
-			.plugin('Q/autogrow', {maxWidth: $(tool.element).width() })
+			.plugin('Q/autogrow', {maxWidth: $(tool.element).width() }, function () {
+				this.plugin('Q/placeholders');
+			})
 			.plugin('Q/clickfocus')
 			.keypress(function(event){
 			if (event.charCode == 13) {

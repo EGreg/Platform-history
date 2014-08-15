@@ -112,16 +112,17 @@ function (o) {
 				fontWeight: input.css('fontWeight'),
 				letterSpacing: input.css('letterSpacing'),
 				padding: input.css('padding'),
+				margin: input.css('margin'),
 				whiteSpace: 'nowrap'
 			});
 			testSubject.html(escaped);
 
 			// Calculate new width + whether to change
 			testSubject.show();
-			var testerWidth = testSubject.outerWidth();
+			var testerWidth = testSubject.outerWidth(true);
 			testSubject.hide();
 			var newWidth = Math.max(testerWidth + o.comfortZone, minWidth);
-			var currentWidth = input.outerWidth();
+			var currentWidth = input.outerWidth(true);
 			var isValidWidthChange = (((newWidth < currentWidth && newWidth >= minWidth)
 				|| (newWidth > minWidth)) && (!o.maxWidth || newWidth <= o.maxWidth));
 
