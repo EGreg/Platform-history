@@ -393,7 +393,7 @@ Q.Tool.define('Streams/chat', function(options) {
 			})
 			.plugin('Q/clickfocus')
 			.keypress(function(event){
-			if (event.charCode == 13) {
+			if (event.keyCode == 13) {
 				if (blocked) {
 					return false;
 				}
