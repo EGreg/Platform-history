@@ -1307,10 +1307,6 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 
 		if (isset(Db_Query::$cache[$conn_name][$sql]['fetchAll'])
 		and !$this->ignoreCache) {
-			if (!empty($this->clauses['BEGIN'])) {
-				$this->clauses = array('BEGIN' => 'BEGIN');
-				$this->execute();
-			}
 			return Db_Query::$cache[$conn_name][$sql]['fetchAll'];
 		}
 		$result = $this->execute();
@@ -1347,10 +1343,6 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 
 		if (isset(Db_Query::$cache[$conn_name][$sql]['fetchArray'])
 		and !$this->ignoreCache) {
-			if (!empty($this->clauses['BEGIN'])) {
-				$this->clauses = array('BEGIN' => 'BEGIN');
-				$this->execute();
-			}
 			return Db_Query::$cache[$conn_name][$sql]['fetchArray'];
 		}
 		$result = $this->execute();
@@ -1395,10 +1387,6 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		$sql = $this->getSQL();
 		if (isset(Db_Query::$cache[$conn_name][$sql]['fetchDbRows'])
 		and !$this->ignoreCache) {
-			if (!empty($this->clauses['BEGIN'])) {
-				$this->clauses = array('BEGIN' => 'BEGIN');
-				$this->execute();
-			}
 			return Db_Query::$cache[$conn_name][$sql]['fetchDbRows'];
 		}
 		$ret = $this->execute()->fetchDbRows($class_name, $fields_prefix, $by_field);
