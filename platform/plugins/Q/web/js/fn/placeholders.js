@@ -29,16 +29,21 @@ function () {
 		
 		var plch = $this.attr('placeholder');
 		$this.removeAttr('placeholder');
-		if(!(plch)) {
+		if(!(plch))
 			return;
-		}
-		
-		var w = $this.width();
-		var h = $this.height();
 
 		var span = $('<span />').css('position', 'relative').addClass('Q_placeholder')
-		span.width($this.outerWidth(true)).height($this.outerHeight(true));
+		$this.css({
+			'width': $this.width(),
+			'height': $this.height()
+		}); // because they might have been percentages
+		Q.each(['left', 'right', 'top', 'bottom'], function (i, pos) {
+			$this.css('padding-'+pos, $this.css('padding-'+pos))
+				.css('margin-'+pos, $this.css('margin-'+pos));
+		});
 		$this.wrap(span);
+		span = $this.parent();
+		span.width($this.outerWidth(true)).height($this.outerHeight(true));
 		span.on(Q.Pointer.fastclick, function() {
 			$this.trigger('focus');
 			return false;
@@ -57,8 +62,8 @@ function () {
 			'font-weight': $this.css('font-weight'),
 			'line-height': $this.css('line-height'),
 			'overflow': 'hidden',
-			'width': w+'px',
-			'height': h+'px',
+			'width': $this.css('width'),
+			'height': $this.css('height'),
 			'text-align': $this.css('text-align')
 		}).addClass('Q_placeholder').insertAfter($this);
 		// IE8 workaround
