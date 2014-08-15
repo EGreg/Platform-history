@@ -1073,15 +1073,10 @@ abstract class Streams extends Base_Streams
 	 */
 	static function updateAvatar($toUserId, $publisherId)
 	{
-		if (isset(self::$users[$publisherId])) {
-			$user = self::$users[$publisherId];
-		} else {
-			$user = new Users_User();
-			$user->id = $publisherId;
-			if (!$user->retrieve()) {
-				return false;
-			}
-			self::$users[$publisherId] = $user;
+		$user = new Users_User();
+		$user->id = $publisherId;
+		if (!$user->retrieve(null, null, true)->ignoreCache()->resume()) {
+			return false;
 		}
 
 		// Fetch some streams as the contact user
@@ -1168,7 +1163,7 @@ abstract class Streams extends Base_Streams
 		// Select the user corresponding to this publisher
 		$user = new Users_User();
 		$user->id = $publisherId;
-		if (!$user->retrieve()) {
+		if (!$user->retrieve(null, null, true)->ignoreCache()->resume()) {
 			throw new Q_Exception_MissingRow(array(
 				'table' => 'user',
 				'criteria' => 'id = '.$user->id
@@ -1197,7 +1192,6 @@ abstract class Streams extends Base_Streams
 		$label_readLevels = array();
 		$contact_label_list = array();
 		$removed_labels = array();
-		$db = Streams::db();
 
 		// First, assign all the readLevels that are directly set for specific users,
 		// and aggregate the contact_labels from the other accesses, for an upcoming select.
@@ -1293,12 +1287,8 @@ abstract class Streams extends Base_Streams
 
 		// Now, we update the avatars:
 		$field = ($streamName === 'Streams/user/firstName') ? 'firstName' : 'lastName';
-		$rows = array();
-		$remove_userIds = array();
 		$rows_that_show = array();
 		$rows_that_hide = array();
-		$updates_that_show = array();
-		$updates_that_hide = array();
 		foreach ($showToUserIds as $userId => $show) {
 			if ($show === 'public') {
 				// If no show is explicitly specified, use the value used for the rest of the public
@@ -2254,13 +2244,6 @@ abstract class Streams extends Base_Streams
 	 * @protected
 	 */
 	protected static $fetch = array();
-	/**
-	 * @property $users
-	 * @static
-	 * @type array
-	 * @protected
-	 */
-	protected static $users = array();
 	/**
 	 * @property $cache
 	 * @static

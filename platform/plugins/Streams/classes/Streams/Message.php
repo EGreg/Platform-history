@@ -255,14 +255,17 @@ class Streams_Message extends Base_Streams_Message
 		$asUserId = isset($this->byUserId) ? $this->byUserId : $value['byUserId'];
 		$publisherId = isset($this->publisherId) ? $this->publisherId : $value['publisherId'];
 		$streamName = isset($this->streamName) ? $this->streamName : $value['streamName'];
-		$stream = Streams::fetchOne($asUserId, $publisherId, $streamName, '*', array('begin' => true));
+		$stream = Streams::fetchOne($asUserId, $publisherId, $streamName, '*', array(
+			'refetch' => true,
+			'begin' => true
+		));
 		if (!$stream) {
 			// no one should post messages to nonexistent streams
 			throw new Q_Exception("Cannot post message to nonexistent stream");
 		}
 		$this->ordinal = ++$stream->messageCount;
 		$value['ordinal'] = $this->ordinal;
-		$stream->save(false, true);
+		$stream->save(false);
 
 		$total = new Streams_Total();
 		$total->publisherId = $this->publisherId;
@@ -273,6 +276,12 @@ class Streams_Message extends Base_Streams_Message
 			'messageCount' => new Db_Expression('messageCount+1')
 		));
 		return parent::beforeSave($value);
+	}
+	
+	function beforeSaveExecute($query)
+	{
+		$query->commit();
+		return $query;
 	}
 	
 	/* * * */

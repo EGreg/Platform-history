@@ -15,11 +15,18 @@ function Users_avatar_tool($options)
 		'editable' => false
 	);
 	$options = array_merge($defaults, $options);
-	Q_Response::addStylesheet('plugins/Q/css/Ui.css');
-	Q_Response::setToolOptions($options);
+	if (empty($options['userId'])) {
+		$user = Users::loggedInUser();
+		$options['userId'] = $user->id;
+	} else {
+		$user = Users_User::getUser($options['userId']);
+	}
 	$user = !empty($options['userId'])
 		? Users_User::getUser($options['userId'])
 		: Users::loggedInUser();
+	
+	Q_Response::addStylesheet('plugins/Q/css/Ui.css');
+	Q_Response::setToolOptions($options);
 	if (!$user) {
 		return '';
 	}

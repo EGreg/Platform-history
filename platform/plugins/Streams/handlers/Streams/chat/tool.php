@@ -18,7 +18,8 @@
 */
 function Streams_chat_tool($options)
 {
-	$user = Users::loggedInUser(true);
+	$user = Users::loggedInUser();
+	$userId = $user ? $user->id : '';
 
 	/*
 	$defaults = array(
@@ -38,7 +39,7 @@ function Streams_chat_tool($options)
 		$streamName = Streams::requestedName();
 	}
 
-	$stream = Streams::fetchOne($user->id, $publisherId, $streamName);
+	$stream = Streams::fetchOne($userId, $publisherId, $streamName);
 	if (!$stream) {
 		throw new Q_Exception_MissingRow(array(
 			'table'    => 'stream',
@@ -46,14 +47,14 @@ function Streams_chat_tool($options)
 		));
 	}
 
-	$options['userId'] = $user->id;
+	$options['userId'] = $userId;
 
 	if (!isset($options['notLoggedIn'])) {
-		$options['notLoggedIn'] = 'You Not Logged In';
+		$options['notLoggedIn'] = 'You are not logged in';
 	}
 
 	if (!isset($options['notAuthorized'])) {
-		$options['notAuthorized'] = 'You Not Authorized';
+		$options['notAuthorized'] = 'You are not authorized';
 	}
 
 	Q_Response::setToolOptions($options);

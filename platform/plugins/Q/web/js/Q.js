@@ -784,7 +784,7 @@ Q.typeOf = function _Q_typeOf(value) {
  *  ascending: Optional. Pass true here to traverse in ascending key order, false in descending.<br><br>
  *  numeric: Optional. Used together with ascending. Use numeric sort instead of string sort.<br>
  *  hasOwnProperty: Optional. Set to true to skip properties found on the prototype chain.<br>
- * @throws {Q.Exception} If container is not array, object or string
+ * @throws {Q.Error} If container is not array, object or string
  */
 Q.each = function _Q_each(container, callback, options) {
 	var i, k, length, r, t, args;
@@ -921,7 +921,7 @@ Q.each = function _Q_each(container, callback, options) {
  * @param {Object} options<br>
  *  "nonEmptyKey": return the first non-empty key
  * @return {mixed} the value in the container, or undefined
- * @throws {Q.Exception} If container is not array, object or string
+ * @throws {Q.Error} If container is not array, object or string
  */
 Q.first = function _Q_first(container, options) {
 	var fk = Q.firstKey(container, options);
@@ -939,7 +939,7 @@ Q.first = function _Q_first(container, options) {
  *  "nonEmptyKey": return the first non-empty key
  * @return {Number|String}
  *  the index in the container, or null
- * @throws {Q.Exception} If container is not array, object or string
+ * @throws {Q.Error} If container is not array, object or string
  */
 Q.firstKey = function _Q_firstKey(container, options) {
 	if (!container) {
@@ -966,7 +966,7 @@ Q.firstKey = function _Q_firstKey(container, options) {
 		case 'string':
 			return 0;
 		default:
-			throw new Q.Exception("Q.first: container has to be an array, object or string");
+			throw new Q.Error("Q.first: container has to be an array, object or string");
 	}
 	return null;
 };
@@ -989,7 +989,7 @@ Q.diff = function _Q_diff(container1, container2 /*, ... comparator */) {
 	var len = arguments.length;
 	var comparator = arguments[len-1];
 	if (typeof comparator !== 'function') {
-		throw new Q.Exception("Q.diff: comparator must be a function");
+		throw new Q.Error("Q.diff: comparator must be a function");
 	}
 	var isArr = (Q.typeOf(container1) === 'array');
 	var result = isArr ? [] : {};
@@ -2806,7 +2806,7 @@ Q.Exception = function (message, fields) {
 	this.message = message || "";
 };
 
-Q.Exception.prototype = Error;
+Q.Error.prototype = Error;
 
 /**
  * The root mixin added to all tools.
@@ -4356,7 +4356,7 @@ Q.ready = function _Q_ready() {
 			}
 
 			// This is an HTML document loaded from our server
-			//try {
+			try {
 				Q.Page.beingActivated = true;
 				Q.Page.onActivate('').handle();
 				if (Q.info && Q.info.uri) {
@@ -4367,11 +4367,11 @@ Q.ready = function _Q_ready() {
 					}
 				}
 				Q.Page.beingActivated = false;
-			//} catch (e) {
-			//	debugger; // pause here if debugging
-			//	Q.Page.beingActivated = false;
-			//	throw e;
-			//}
+			} catch (e) {
+				debugger; // pause here if debugging
+				Q.Page.beingActivated = false;
+				throw e;
+			}
 			
 			if (location.hash.toString()) {
 				Q_hashChangeHandler();

@@ -6,7 +6,7 @@
 			"Q/Utils/canWriteToPath": ["Streams/before/Q_Utils_canWriteToPath"],
 			"Db/Row/Users_Contact/saveExecute": ["Streams/before/Users_Contact_saveExecute"],
 			"Db/Row/Users_Contact/removeExecute": ["Streams/before/Users_Contact_removeExecute"],
-			"Users/User/displayName": ["Streams/before/Users/User/displayName"]
+			"Users/User/displayName": ["Streams/before/Users_User_displayName"]
 		},
 		"handlersAfterEvent": {
 			"Q/objects": ["Streams/after/Q_objects"],

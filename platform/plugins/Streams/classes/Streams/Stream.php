@@ -360,9 +360,15 @@ class Streams_Stream extends Base_Streams_Stream
 			array('stream' => $this), 'after');
 
 		// Assume that the stream's name is not being changed
-		if ($this->name !== 'Streams/user/firstName' and $this->name !== 'Streams/user/lastName') {
+		if ($this->name !== 'Streams/user/firstName'
+		and $this->name !== 'Streams/user/lastName') {
 			return $result;
 		}
+		if (empty($this->fieldsModified['content'])
+		and empty($this->fieldsModified['readLevel'])) {
+			return $result;
+		}
+
 		if ($this->retrieved) {
 			// Update all avatars corresponding to access rows for this stream
 			$taintedAccess = Streams_Access::select('*')

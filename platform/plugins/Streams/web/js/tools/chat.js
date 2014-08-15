@@ -60,6 +60,12 @@ Q.Tool.define('Streams/chat', function(options) {
 		case 'scroll': state.more.isScroll = true; break;
 		default: break;
 	}
+	if (!state.publisherId) {
+		throw new Q.Error("Streams/chat: missing publisherId option");
+	}
+	if (!state.streamName) {
+		throw new Q.Error("Streams/chat: missing streamName option");
+	}
 	Q.Streams.retainWith(this)
 	.get(state.publisherId, state.streamName, _construct, {
 		messages: state.messagesToLoad
@@ -154,6 +160,10 @@ Q.Tool.define('Streams/chat', function(options) {
 			function(error, html){
 				if (error) { return error; }
 				$te.html(html);
+				
+				if (!state.stream.testWriteLevel('post')) {
+					tool.$('.Streams_chat_composer').hide();
+				}
 
 				state.inputElement = tool.$('.Streams_chat_composer textarea');
 				callback && callback();

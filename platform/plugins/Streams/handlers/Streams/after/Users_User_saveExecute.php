@@ -71,6 +71,7 @@ function Streams_after_Users_User_saveExecute($params)
 			->set($updates)
 			->where(array('publisherId' => $user->id))
 			->execute();
+		
 		foreach ($updates as $field => $value) {
 			$name = Q_Config::get('Streams', 'onUpdate', 'Users_User', $field, null);
 			if (!$name) continue;
