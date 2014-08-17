@@ -1338,7 +1338,7 @@ divbody { text-align: center; height: 100%; }
 #notices_slot,
 #content_slot { text-align: center; }
 .Q_mobile #dashboard_slot,
-.Q_mobile #notices_slot { width: 100%; position: fixed;  }
+.Q_mobile #notices_slot { width: 100%; position: fixed; left: 0px; }
 #dashboard,
 #notices,
 #content { margin: auto; text-align: left; }
