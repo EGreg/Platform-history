@@ -1783,7 +1783,6 @@ input[type=radio] { margin-right: 5px; }
 .Q_columns_tool.Q_fullscreen .column_slot {
 	position: relative;
 	padding-top: 40px;
-	width: 100%;
 	overflow: hidden;
 }
 .Q_columns_loading { height: 40px; }
