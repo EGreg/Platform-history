@@ -1337,6 +1337,8 @@ divbody { text-align: center; height: 100%; }
 #dashboard_slot,
 #notices_slot,
 #content_slot { text-align: center; }
+.Q_mobile #dashboard_slot,
+.Q_mobile #notices_slot { width: 100%; position: fixed;  }
 #dashboard,
 #notices,
 #content { margin: auto; text-align: left; }
@@ -1350,7 +1352,7 @@ divbody { text-align: center; height: 100%; }
 
 /* notices slot */
 
-#notices_slot { position: relative; text-align: center; margin: auto; padding: 0px 0px 5px 0px; overflow: hidden; z-index: 5000; }
+#notices_slot { text-align: center; margin: auto; padding: 0px 0px 5px 0px; overflow: hidden; z-index: 5000; }
 #notices { margin: auto; }
 #notices_slot div.container { overflow: none; overflow-y: auto; }
 #notices_slot ul { list-style-type: none; padding: 0px; margin: auto; width: 700px; max-width: 100%; border: solid 1px #555; border-top: solid 1px #aaa; box-shadow: 0 0 5px #222; -moz-box-shadow: 0 0 5px #222; -webkit-box-shadow: 0 0 5px #222; }
@@ -1784,6 +1786,7 @@ input[type=radio] { margin-right: 5px; }
 	width: 100%;
 	overflow: hidden;
 }
+.Q_columns_loading { height: 40px; }
 
 .Q_overflow {
 	overflow: auto;
