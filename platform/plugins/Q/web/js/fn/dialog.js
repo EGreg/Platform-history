@@ -478,7 +478,7 @@ function _handlePosAndScroll(o)
 		clearInterval(interval);
 	}
 
-	Q.addScript("js/QTools.js", function () {
+	Q.addScript("plugins/Q/js/QTools.js", function () {
 
 	interval = setInterval(function() {
 		var maxContentsHeight;

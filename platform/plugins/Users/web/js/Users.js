@@ -1179,6 +1179,9 @@ function login_callback(response) {
 		var step2 = $('#Users_login_step2').html(step2_form);
 		if (Q.info && Q.info.isTouchscreen) {
 			step2.show();
+			if (!Q.info.isAndroid()) {
+				step2_form.plugin('Q/placeholders');
+			}
 			$('input', step2_form).eq(0).plugin('Q/clickfocus').select();
 		} else {
 			step2.slideDown('fast', function () {
