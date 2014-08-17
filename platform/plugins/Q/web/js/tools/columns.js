@@ -17,7 +17,9 @@
  *  @param {Boolean} [options.back.hide] Whether to hide the back button. Defaults to false, but you can pass true on android, for example.
  *  @param {Object}  [options.close] For customizing the back button on desktop and tablet
  *  @param {String}  [options.close.src] The src of the image to use for the close button
- *  @param {Object}  [options.close.clickable] If not null, enables the Q/clickable tool with options from here. Defaults to null.
+ *  @param {String}  [options.title] You can put a default title for all columns here (which is shown as they are loading)
+ *  @param {String}  [options.column] You can put a default content for all columns here (which is shown as they are loading)
+ *  @param {Object}  [options.clickable] If not null, enables the Q/clickable tool with options from here. Defaults to null.
  *  @param {Object}  [options.scrollbarsAutoHide] If not null, enables Q/scrollbarsAutoHide functionality with options from here. Enabled by default.
  *  @param {Boolean} [options.fullscreen] Whether to use fullscreen mode on mobile phones, using document to scroll instead of relying on possibly buggy "overflow" CSS implementation. Defaults to true on Android, false everywhere else.
  *  @param {Q.Event} [options.onOpen] Event that happens after a column is opened.
@@ -45,7 +47,11 @@ Q.Tool.define("Q/columns", function(options) {
 			$(this).data(dataKey_index, index)
 				.data(dataKey_scrollTop, Q.Pointer.scrollTop());
 			++state.max;
-			tool.open({animation: {duration: 0}}, index);
+			tool.open({
+				title: undefined,
+				column: undefined,
+				animation: {duration: 0}
+			}, index);
 		});
 	}
 
@@ -92,6 +98,8 @@ Q.Tool.define("Q/columns", function(options) {
 		src: "plugins/Q/img/x.png",
 		clickable: null
 	},
+	title: undefined,
+	column: undefined,
 	scrollbarsAutoHide: {},
 	fullscreen: Q.info.isMobile && Q.info.isAndroid(1000),
 	beforeOpen: new Q.Event(),
@@ -182,7 +190,11 @@ Q.Tool.define("Q/columns", function(options) {
 				.addClass('Q_column_'+n + 'Q_column_'+index);
 		}
 
+		var p = Q.pipe();
+		var waitFor = ['animation'];
+		
 		if (options.url) {
+			waitFor.push('activated');
 			var url = options.url;
 			var params = Q.extend({
 				slotNames: ["title", "column"], 
@@ -204,18 +216,26 @@ Q.Tool.define("Q/columns", function(options) {
 				elementsToActivate['column'] = columnSlot;
 				return elementsToActivate;
 			};
-			params.onActivate = _onOpen;
+			params.onActivate = p.fill('activated');
 			// this.state.triggers[index] = options.trigger || null;
 			Q.loadUrl(url, params);
-		} else {
-			if ('title' in options) {
-				titleSlot.innerHTML = options.title;
-			}
-			if ('column' in options) {
-				columnSlot.innerHTML = options.column;
-			}
-			_onOpen();
 		}
+		
+		p.add(waitFor, function () {
+			Q.handle(callback, tool, [options, index]);
+			state.onOpen.handle.call(tool, options, index);
+			Q.handle(options.onOpen, tool, [options, index]);
+		});
+		
+		if (o.title != undefined) {
+			titleSlot.innerHTML = o.title;
+		}
+		if (o.column != undefined) {
+			columnSlot.innerHTML = o.column;
+		}
+		
+		_onOpen();
+		
 		function _onOpen() {
 			var show = {
 				opacity: 1,
@@ -257,7 +277,7 @@ Q.Tool.define("Q/columns", function(options) {
 				$div.css('z-index', $prev.css('z-index')+1 || 1);
 				
 				if (Q.info.isMobile) {
-					$div.css('width', '100%');
+					$div.add($ct).css('width', '100%');
 				} else {
 					$sc.width(tool.$('.Q_columns_column').length * tool.$('.Q_columns_column').outerWidth(true));
 
@@ -282,11 +302,11 @@ Q.Tool.define("Q/columns", function(options) {
 				.addClass('Q_columns_opening')
 				.css(o.animation.css.hide)
 				.animate(show, duration, function(){
-					afterAnimate($cs, $sc, $ct);
+					afterAnimation($cs, $sc, $ct);
 				});
 			}
 
-			function afterAnimate($cs, $sc, $ct){
+			function afterAnimation($cs, $sc, $ct){
 				
 				if (o.fullscreen) {
 					$ct.css('position', 'fixed');
@@ -350,9 +370,7 @@ Q.Tool.define("Q/columns", function(options) {
 					}
 				}
 
-				Q.handle(callback, tool, [options, index]);
-				state.onOpen.handle.call(tool, options, index);
-				Q.handle(options.onOpen, tool, [options, index]);
+				p.fill('animation')();
 			}
 		}
 	},
