@@ -5,6 +5,7 @@
 				"version": "0.8",
 				"compatible": "0.8",
 				"requires": {"Q": "0.8"},
+				"permissions": ["Users/icons"],
 				"connections": ["Users"]
 			}
 		},

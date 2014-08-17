@@ -21,11 +21,11 @@ if (!file_exists($paths_filename)) {
 	die($header."Please rename $basename/local.sample to $basename/local, and edit local/paths.php");
 }
 
-include($paths_filename);
+include_once($paths_filename);
 $Q_filename = realpath(Q_DIR.'/Q.php');
 if (!file_exists($Q_filename)) {
 	$basename = basename(APP_DIR);
 	die($header."Please have the correct path to Q in $basename/local/paths.php");
 }
 
-include($Q_filename);
+include_once($Q_filename);

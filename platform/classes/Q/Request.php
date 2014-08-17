@@ -657,7 +657,7 @@ class Q_Request
 	}
 	
 	/**
-	 * @method accepts
+	 * @method cacheTimestamp
 	 * @static
 	 * @return {boolean}
 	 */

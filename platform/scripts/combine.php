@@ -49,13 +49,7 @@ if (!defined('APP_DIR'))
 	define('APP_DIR', $LOCAL_DIR);
 
 #Include Q
-try {
-	include($Q_filename);
-}
-catch (Exception $e)
-{
-	die('[ERROR] ' . $e->getMessage() . PHP_EOL . $e->getTraceAsString() . PHP_EOL);
-}
+include($Q_filename);
 
 echo Q_scripts_combine() . PHP_EOL;
 
