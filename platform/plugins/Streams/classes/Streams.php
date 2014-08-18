@@ -2103,8 +2103,8 @@ abstract class Streams extends Base_Streams
 					$parts[$k] = ucfirst($v);
 				}
 			}
-			$last = count($parts) > 1 ? array_pop($parts) : '';
-			$first = join(' ', $parts);
+			$last = join(' ', array_slice($parts, 1));
+			$first = $parts[0];
 		} else {
 			$first = $fullName;
 		}
