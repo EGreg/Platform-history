@@ -124,7 +124,7 @@
 				"title": "Terms"
 			},
 			"icon": {
-				"leaveDefault": true
+				"leaveDefault": false
 			},
 			"delaySMS": 30000
 		},
