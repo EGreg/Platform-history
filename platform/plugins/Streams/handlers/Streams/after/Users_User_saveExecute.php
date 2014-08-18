@@ -13,29 +13,10 @@ function Streams_after_Users_User_saveExecute($params)
 	if (isset($modifiedFields['icon'])) {
 		$updates['icon'] = $modifiedFields['icon'];
 	}
+	$firstName = Q::ifset(Streams::$cache, 'register', 'first', '');
+	$lastName = Q::ifset(Streams::$cache, 'register', 'last', '');
 	$query = $params['query'];
 	if ($query->type === Db_Query::TYPE_INSERT) {
-		// we are inserting a new user.
-		// make a public avatar for them
-		$avatar = new Streams_Avatar();
-		$avatar->publisherId = $user->id;
-		$avatar->toUserId = '';
-		$avatar->username = Q::ifset($modifiedFields, 'username', $user->username);
-		$avatar->icon = Q::ifset($modifiedFields, 'icon', $user->icon);
-		$avatar->firstName = '';
-		$avatar->lastName = '';
-		$avatar->save();
-		
-		// we are inserting a new user.
-		// make a full-access avatar for themselves
-		$avatar = new Streams_Avatar();
-		$avatar->publisherId = $user->id;
-		$avatar->toUserId = $user->id;
-		$avatar->username = Q::ifset($modifiedFields, 'username', $user->username);
-		$avatar->icon = Q::ifset($modifiedFields, 'icon', $user->icon);
-		$avatar->firstName = '';
-		$avatar->lastName = '';
-		$avatar->save();
 		
 		// create some standard streams for them
 		$onInsert = Q_Config::get('Streams', 'onInsert', 'Users_User', array());
@@ -54,7 +35,7 @@ function Streams_after_Users_User_saveExecute($params)
 			}
 			$stream->type = $p->expect($name, "type");
 			$stream->title = $p->expect($name, "title");
-			$stream->content = $p->get($name, "content", '');
+			$stream->content = $p->get($name, "content", ''); // usually empty
 			$stream->readLevel = $p->get($name, 'readLevel', Streams_Stream::$DEFAULTS['readLevel']);
 			$stream->writeLevel = $p->get($name, 'writeLevel', Streams_Stream::$DEFAULTS['writeLevel']);
 			$stream->adminLevel = $p->get($name, 'adminLevel', Streams_Stream::$DEFAULTS['adminLevel']);
@@ -62,8 +43,12 @@ function Streams_after_Users_User_saveExecute($params)
 				$sizes = Q_Config::expect('Users', 'icon', 'sizes');
 				$stream->setAttribute('sizes', $sizes);
 				$stream->icon = $user->iconUrl();
+			} else if ($name === 'Streams/user/firstName') {
+				$stream->content = Q::ifset(Streams::$cache, 'register', 'first', '');
+			} else if ($name === 'Streams/user/lastName') {
+				$stream->content = Q::ifset(Streams::$cache, 'register', 'last', '');
 			}
-			$stream->save();
+			$stream->save(); // this also inserts avatars
 			$stream->join(array('userId' => $user->id));
 		}
 	} else if ($updates) {

@@ -123,6 +123,9 @@
 				"label": "I accept the $link",
 				"title": "Terms"
 			},
+			"icon": {
+				"leaveDefault": true
+			},
 			"delaySMS": 30000
 		},
 		"passphrase": {

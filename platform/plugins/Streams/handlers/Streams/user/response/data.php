@@ -5,7 +5,9 @@ function Streams_user_response_data($params)
 	$identifier = Users::requestedIdentifier($type);
 	$hash = md5(strtolower(trim($identifier)));
 
-	$icon = Q_Request::baseUrl()."/action.php/Q/image?hash=$hash&size=80&type=".Q_Config::get('Users', 'login', 'iconType', 'wavatar');
+	$icon = Q_Config::get('Users', 'register', 'icon', 'leaveDefault', false)
+		? $url = "plugins/Users/img/icons/default/80.png"
+		: Q_Request::baseUrl()."/action.php/Q/image?hash=$hash&size=80&type=".Q_Config::get('Users', 'login', 'iconType', 'wavatar');
 
 	// check our db
 	if ($user = Users::userFromContactInfo($type, $identifier)) {

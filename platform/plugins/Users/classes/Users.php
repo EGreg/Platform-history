@@ -373,12 +373,14 @@ abstract class Users extends Base_Users
 
 						// Download and save facebook icon for the user
 						$icon = array(
-							'40.png' => "http://graph.facebook.com/$fb_uid/picture?type=square",
-							'50.png' => "http://graph.facebook.com/$fb_uid/picture?type=square",
-							'80.png' => "http://graph.facebook.com/$fb_uid/picture?type=normal"
+							'40.png' => "http://graph.facebook.com/$uid/picture?width=40&height=40",
+							'50.png' => "http://graph.facebook.com/$uid/picture?type=square",
+							'80.png' => "http://graph.facebook.com/$uid/picture?width=80&height=80"
 						);
-						$user->icon = self::downloadIcon($user, $icon);
-						$user->save();
+						if (!Q_Config::get('Users', 'register', 'icon', 'leaveDefault', false)) {
+							$user->icon = self::downloadIcon($user, $icon);
+							$user->save();
+						}
 					}
 			 	}
 			}
@@ -904,6 +906,8 @@ abstract class Users extends Base_Users
 					'80.png' => array('hash' => $hash, 'size' => 80)
 				);
 			}
+		}
+		if (!Q_Config::get('Users', 'register', 'icon', 'leaveDefault', false)) {
 			$user->icon = self::downloadIcon($user, $icon);
 			$user->save();
 		}

@@ -2158,9 +2158,7 @@ abstract class Streams extends Base_Streams
 		}
 
 		$name = self::splitFullName($fullName);
-		extract($name);
-
-		if (empty($first) && empty($last)) {
+		if (empty($name['first']) && empty($name['last'])) {
 			// this is unlikely to happen
 			throw new Q_Exception("Please enter your name properly", 'name');
 		}
@@ -2177,27 +2175,6 @@ abstract class Streams extends Base_Streams
 			} else {
 				$user = Users::loggedInUser();
 			}
-		}
-
-		if (!empty($first)) {
-			$stream = new Streams_Stream();
-			$stream->publisherId = $user->id;
-			$stream->name = 'Streams/user/firstName';
-			$stream->retrieve();
-			$stream->type = 'Streams/text/small';
-			$stream->title = 'First Name';
-			$stream->content = $first;
-			$stream->save(true);
-		}
-		if (!empty($last)) {
-			$stream = new Streams_Stream();
-			$stream->publisherId = $user->id;
-			$stream->name = 'Streams/user/lastName';
-			$stream->retrieve();
-			$stream->type = 'Streams/text/small';
-			$stream->title = 'Last Name';
-			$stream->content = $last;
-			$stream->save(true);
 		}
 
 		/**
