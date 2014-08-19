@@ -297,7 +297,7 @@ Q.Tool.define("Q/columns", function(options) {
 				
 				if (o.fullscreen) {
 					$ct.css('position', 'absolute');
-				} else {
+				} else if (Q.info.isMobile) {
 					$('html').css('overflow', 'hidden');
 				}
 				$div.show()
