@@ -240,7 +240,7 @@ Q.Tool.define("Q/columns", function(options) {
 			var $te = $(tool.element);
 			var show = {
 				opacity: 1,
-				top: 1
+				top: 0
 			};
 			var oldMinHeight;
 			var hide = o.animation.css.hide;

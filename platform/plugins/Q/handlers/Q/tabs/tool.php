@@ -39,9 +39,20 @@ function Q_tabs_tool($options)
 	/**
 	 * @var array $tabs
 	 */
-	$sel = isset($_REQUEST[$field]) ? $_REQUEST[$field] : $defaultTab;
+	$sel = isset($_REQUEST[$field]) ? $_REQUEST[$field] : null;
 	$result = '';
 	$i = 0;
+	$selectedName = null;
+	$uri_string = (string)Q_Dispatcher::uri();
+	foreach ($tabs as $name => $title) {
+		if ($name === $sel
+		or $name === $uri_string
+		or $urls[$name] === $uri_string
+		or $urls[$name] === Q_Request::url()) {
+			$selectedName = $name;
+			break;
+		}
+	}
 	foreach ($tabs as $name => $title) {
 		if (isset($urls[$name])) {
 			$urls[$name] = Q_Uri::url($urls[$name]);
@@ -51,14 +62,7 @@ function Q_tabs_tool($options)
 				"/Q\.(.*)/" => null
 			)));
 		}
-		$selected_class = '';
-		$uri_string = (string)Q_Dispatcher::uri();
-		if ($sel == $name
-		or $urls[$name] === Q_Request::url()
-		or $urls[$name] === $uri_string
-		or $name === $uri_string) {
-			$selected_class = " Q_selected";
-		}
+		$selected_class = ($name === $selectedName) ? ' Q_selected' : '';
 		$classes_string = " Q_tab_".Q_Utils::normalize($name);
 		if (isset($classes[$name])) {
 			if (is_string($classes[$name])) {

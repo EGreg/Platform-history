@@ -1710,7 +1710,8 @@ input[type=radio] { margin-right: 5px; }
 }
 
 .Q_mobile .Q_columns_column {
-	height: auto;
+	width: 100%;
+	height: 5000px;
 }
 
 .Q_notMobile .Q_columns_column {
@@ -1728,6 +1729,7 @@ input[type=radio] { margin-right: 5px; }
 .Q_columns_title {
 	background: #f8f8f8;
     border-bottom: 1px solid #aaa;
+	overflow: hidden;
 }
 
 .Q_columns_title .Q_close {
@@ -1774,9 +1776,8 @@ input[type=radio] { margin-right: 5px; }
 
 .Q_columns_tool.Q_fullscreen .Q_columns_title {
 	position: fixed;
-	width: 100%;
-	overflow: hidden;
 	z-index: 1000;
+	width: 100%;
 	top: 0px;
 	left: 0px;
 }
