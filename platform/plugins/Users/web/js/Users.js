@@ -923,10 +923,12 @@ function login_callback(response) {
 		if (!$this.is(':visible')) {
 			return;
 		}
-		var first_input = $('input:not([type=hidden])', $this).add('button', $this).eq(0);
+		var first_input = $('input:not([type=hidden])', $this)
+			.add('button', $this).eq(0);
 		$('input', $this).css({
 			'background-image': 'url(' + Q.url('plugins/Q/img/throbbers/loading.gif') + ')',
-			'background-repeat': 'no-repeat'
+			'background-repeat': 'no-repeat',
+			'background-size': 'auto ' + first_input.height()+'px'
 		});
 		if (window.CryptoJS) {
 			var p = $('#Users_form_passphrase');

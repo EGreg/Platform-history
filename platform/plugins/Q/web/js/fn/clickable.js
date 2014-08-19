@@ -185,7 +185,15 @@ function (o) {
 			//	return false;
 			//});
 			var pos = null;
-			Q.Pointer.onCancelClick.set(function () {
+			Q.Pointer.onCancelClick.set(function (e, extraInfo) {
+				var jq = $(document.elementFromPoint(
+					extraInfo.toX, 
+					extraInfo.toY
+				));
+				var overElement = (jq.closest(stretcher).length > 0);
+				if (overElement) {
+					return false;
+				}
 				anim && anim.pause();
 				scale(1);
 			}, 'Q/clickable');
@@ -198,16 +206,14 @@ function (o) {
 				} else {
 					var x = (evt.pageX !== undefined) ? evt.pageX : evt.originalEvent.changedTouches[0].pageX,
 						y = (evt.pageY !== undefined) ? evt.pageY : evt.originalEvent.changedTouches[0].pageY;
-					jq = $(document.elementFromPoint(
-						x-$(window).scrollLeft(), 
-						y-$(window).scrollTop()
-					));
+					jq = $(Q.Pointer.elementFromPoint(x, y));
 				}
-				var overElement = !Q.Pointer.canceledClick && (jq.closest(stretcher).length > 0);
+				var overElement = !Q.Pointer.canceledClick 
+					&& (jq.closest(stretcher).length > 0);
+				var factor = scale.factor;
 				if (overElement) {
-					var factor = scale.factor;
 					anim = Q.Animation.play(function(x, y) {
-						scale(factor + y * (o.release.size-o.press.size));
+						scale(factor + y * (o.release.size-factor));
 						$this.css('opacity', o.press.opacity + y * (o.release.opacity-o.press.opacity));
 						if (x === 1) {
 							Q.Animation.play(function(x, y) {
@@ -225,7 +231,7 @@ function (o) {
 					}, o.release.duration, o.release.ease);
 				} else {
 					anim = Q.Animation.play(function(x, y) {
-						scale(o.press.size + y * (1-o.press.size));
+						scale(factor + y * (1-factor));
 						$this.css('opacity', o.press.opacity + y * (1-o.press.opacity));
 						// if (x === 1) {
 						// 	$this.off('click.Q_clickable');

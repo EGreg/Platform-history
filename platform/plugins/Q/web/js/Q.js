@@ -3039,7 +3039,9 @@ Q.Tool.define = function (name, ctor, defaultOptions, stateKeys, methods) {
 		methods = stateKeys;
 		stateKeys = undefined;
 	}
-	ctor.options = defaultOptions || {};
+	ctor.options = Q.extend(
+		defaultOptions, Q.Tool.options.levels, _qtdo[name]
+	);
 	ctor.stateKeys = stateKeys;
 	if (typeof ctor !== 'function') {
 		throw new Q.Error("Q.Tool.define requires ctor to be a string or a function");
@@ -3136,7 +3138,9 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 			}
 			return this;
 		}
-		jQueryPluginConstructor.options = defaultOptions || {};
+		jQueryPluginConstructor.options = Q.extend(
+			defaultOptions, Q.Tool.options.levels, _qtjo[name]
+		);
 		jQueryPluginConstructor.methods = methods || {};
 		$.fn[name] = jQueryPluginConstructor;
 		var ToolConstructor = Q.Tool.define(name, function _Q_Tool_jQuery_toolConstructor(options) {
@@ -3654,7 +3658,6 @@ function _loadToolScript(toolElement, callback, shared, parentPipe) {
 					toolFunc = function () { console.log("Missing tool constructor for " + toolName); }; 
 				}
 			}
-			toolFunc.options = Q.extend(toolFunc.options, Q.Tool.options.levels, existingOptions);
 			p.fill(toolName)(toolElement, toolFunc, toolName, uniqueToolId);
 		}
 		var toolFunc = _qtc[toolName];
@@ -3684,7 +3687,6 @@ function _loadToolScript(toolElement, callback, shared, parentPipe) {
 		if (typeof toolFunc !== 'string') {
 			throw new Q.Error("Q.Tool.loadScript: toolFunc cannot be " + typeof(toolFunc));
 		}
-		var existingOptions = _qtdo[toolName];
 		if (Q.Tool.latestNames[toolFunc]) {
 			Q.Tool.latestName = Q.Tool.latestNames[toolFunc];
 			_loadToolScript_loaded();
@@ -7555,12 +7557,10 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 		if (typeof pluginNames === 'string') {
 			pluginNames = [pluginNames];
 		}
-		var existingOptions = {};
 		var results = {};
 		Q.each(pluginNames, function _jQuery_plugin_loaded(i, pluginName) {
 			pluginName = Q.normalize(pluginName);
 			results[pluginName] = true;
-			existingOptions[pluginName] = _qtjo[pluginName];
 			if ($.fn[pluginName]) return;
 			var src = ($.fn.plugin[pluginName] || 'plugins/jQuery/'+pluginName+'.js');
 			if (typeof src === 'string') {
@@ -7568,10 +7568,6 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 			}
 		});
 		Q.addScript(srcs, function _jQuery_plugin_script_loaded() {
-			var pluginName;
-			for (pluginName in existingOptions) {
-				$.fn[pluginName].options = Q.extend($.fn[pluginName].options, 10, existingOptions[pluginName]);
-			}
 			for (pluginName in results) {
 				results[pluginName] = $.fn[pluginName];
 			}
@@ -8229,14 +8225,19 @@ Q.Pointer = {
 		e.preventDefault ? e.preventDefault() : e.returnValue = false;
 	},
 	/**
-	 * Cancels a click that may be in progress, setting Q.Pointer.canceledClick to true
+	 * Cancels a click that may be in progress,
+	 * setting Q.Pointer.canceledClick to true.
+	 * However, this canceling itself can be canceled by a handler
+	 * returning false.
 	 * @static
 	 * @method cancelClick
 	 * @param {Event} e Some mouse or touch event from the DOM
 	 * @return {Number}
 	 */
 	cancelClick: function (event, extraInfo) {
-		Q.Pointer.onCancelClick.handle(event, extraInfo);
+		if (false === Q.Pointer.onCancelClick.handle(event, extraInfo)) {
+			return false;
+		}
 		Q.Pointer.canceledClick = true;	
 	},
 	/**
@@ -8283,16 +8284,10 @@ function _Q_PointerStartHandler(e) {
 
 var _pos;
 function _onPointerMoveHandler(evt) { // see http://stackoverflow.com/a/2553717/467460
-	var screenX, screenY;
-	if (evt.changedTouches) {
-		screenX = evt.changedTouches[0].screenX;
-		screenY = evt.changedTouches[0].screenY;
-	} else {
-		screenX = evt.screenX;
-		screenY = evt.screenY;
-		if (!screenX || !screenY) {
-			return;
-		}
+	var screenX = Q.Pointer.getX(evt);
+	var screenY = Q.Pointer.getY(evt);
+	if (!screenX || !screenY) {
+		return;
 	}
 	if (!_pos) {
 		// first movement
@@ -8303,14 +8298,17 @@ function _onPointerMoveHandler(evt) { // see http://stackoverflow.com/a/2553717/
 	} else if ((_pos.x && Math.abs(_pos.x - screenX) > Q.Pointer.options.cancelClickDistance)
 	|| (_pos.y && Math.abs(_pos.y - screenY) > Q.Pointer.options.cancelClickDistance)) {
 		// finger moved more than the threshhold
-		Q.Pointer.cancelClick(evt, {
+		if (false !== Q.Pointer.cancelClick(evt, {
 			fromX: _pos.x,
 			fromY: _pos.y,
 			toX: screenX,
 			toY: screenY
-		});
-		Q.removeEventListener(document, Q.Pointer.move, _onPointerMoveHandler);
-		_pos = null;
+		})) {
+			Q.removeEventListener(
+				document, Q.Pointer.move, _onPointerMoveHandler
+			);
+			_pos = null;
+		}
 	}
 }
 
