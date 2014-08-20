@@ -3451,9 +3451,12 @@ Q.Tool.setUpElement = function _Q_Tool_element(element, toolType, toolOptions, i
 	element.addClass('Q_tool '+ntt+'_tool');
 	if (!id && !element.getAttribute(id)) {
 		var p1, p2;
-		p1 = prefix ? prefix : (Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '');
+		p1 = prefix || (Q.Tool.beingActivated 
+			? Q.Tool.beingActivated.prefix
+			: ''
+		);
 		do {
-			p2 = p1 + '_' + ntt + '_' + (Q.Tool.nextDefaultId++) + '_';
+			p2 = (p1 && p1 + '_') + ntt + '_' + (Q.Tool.nextDefaultId++) + '_';
 		} while (Q.Tool.active[p2]);
 		id = p2 + 'tool';
 	}

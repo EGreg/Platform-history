@@ -1,5 +1,6 @@
 Q.Tool.define("SmartApp/cool", function (options) {
 	var tool = this;
+	var state = tool.state;
 
 	if (!state.publisherId || !state.streamName) {
 		throw new Q.Exception("publisherId or streamName is required");
@@ -21,7 +22,7 @@ Q.Tool.define("SmartApp/cool", function (options) {
 
 { // default options here
 	publisherId: null,
-	streamName: null,
+	streamName: null
 },
 
 { // methods go here
