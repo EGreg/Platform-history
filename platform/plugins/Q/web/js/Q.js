@@ -4194,8 +4194,8 @@ Q.page = function _Q_page(page, handler, key) {
 	if (typeof handler !== 'function') {
 		return;
 	}
-	Q.Page.onActivate(page).add(function Q_onPageActivate_handler() {
-		var unload = handler.call(Q, Q.Page.beforeUnload("Q\t"+page));
+	Q.Page.onActivate(page).add(function Q_onPageActivate_handler(url, options) {
+		var unload = handler.call(Q, Q.Page.beforeUnload("Q\t"+page), url, options);
 		if (unload && typeof unload === "function") {
 			Q.Page.beforeUnload("Q\t"+page).set(unload, key);
 		}
@@ -4363,7 +4363,7 @@ Q.ready = function _Q_ready() {
 			// This is an HTML document loaded from our server
 			try {
 				Q.Page.beingActivated = true;
-				Q.Page.onActivate('').handle();
+				Q.Page.onActivate('').handle(Q.info.url);
 				if (Q.info && Q.info.uri) {
 					var moduleSlashAction = Q.info.uri.module+"/"+Q.info.uri.action;
 					Q.Page.onActivate(moduleSlashAction).handle();
@@ -6114,23 +6114,23 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				Q.handle(o.onLoadEnd, this, [url, o]);
 				if (Q.info && Q.info.uri) {
 					event = f("Q\t"+moduleSlashAction);
-					event.handle();
+					event.handle(url, o);
 					event.removeAllHandlers();
 					event = f(moduleSlashAction);
-					event.handle();
+					event.handle(url, o);
 					if (Q.info.uriString !== moduleSlashAction) {
 						event = f("Q\t"+Q.info.uriString);
-						event.handle();
+						event.handle(url, o);
 						event.removeAllHandlers();
 						event = f(Q.info.uriString);
-						event.handle();
+						event.handle(url, o);
 					}
 				}
 				event = f("Q\t");
-				event.handle();
+				event.handle(url, o);
 				event.removeAllHandlers();
 				event = f('');
-				event.handle();
+				event.handle(url, o);
 			}
 
 			function _activatedSlot() {
@@ -6155,12 +6155,12 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				if (!o.ignorePage) {
 					try {
 						Q.Page.beingActivated = true;
-						Q.Page.onActivate('').handle();
+						Q.Page.onActivate('').handle(url, o);
 						if (Q.info && Q.info.uri) {
 							var moduleSlashAction = Q.info.uri.module+"/"+Q.info.uri.action;
-							Q.Page.onActivate(moduleSlashAction).handle();
+							Q.Page.onActivate(moduleSlashAction).handle(url, o);
 							if (Q.info.uriString !== moduleSlashAction) {
-								Q.Page.onActivate(Q.info.uriString).handle();
+								Q.Page.onActivate(Q.info.uriString).handle(url, o);
 							}
 						}
 						Q.Page.beingActivated = false;
@@ -6209,12 +6209,12 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				if (!o.ignorePage) {
 					try {
 						Q.Page.beingLoaded = true;
-						Q.Page.onLoad('').handle();
+						Q.Page.onLoad('').handle(url, o);
 						if (Q.info && Q.info.uri) {
 							moduleSlashAction = Q.info.uri.module+"/"+Q.info.uri.action; // new page coming in
-							Q.Page.onLoad(moduleSlashAction).handle();
+							Q.Page.onLoad(moduleSlashAction).handle(url, o);
 							if (Q.info.uriString !== moduleSlashAction) {
-								Q.Page.onLoad(Q.info.uriString).handle();
+								Q.Page.onLoad(Q.info.uriString).handle(url, o);
 							}
 						}
 						Q.Page.beingLoaded = false;

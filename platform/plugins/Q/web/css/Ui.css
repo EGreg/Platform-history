@@ -26,7 +26,9 @@ table { border-spacing:0; border-collapse:collapse; }
 .Q_throb { background-image: url(../img/throbbers/loading.gif); background-repeat: no-repeat; background-position: center center; }
 .Q_clickable_container { cursor: pointer !important;  }
 .Q_clickable_container .Q_clickable_shadow { display: none; }
-.Q_notTouchscreen .Q_clickable_container:hover .Q_clickable_shadow { display: block; }
+.Q_notTouchscreen .Q_clickable_container.Q_hover .Q_clickable_shadow,
+.Q_notTouchscreen .Q_clickable_container:hover .Q_clickable_shadow
+ { display: block; }
 .Q_placeholder { display: inline-block; color: #999 !important; font-style: italic !important; zoom: 1; *display: inline; }
 .Q_focus .Q_placeholder { color: #aaa !important; }
 div.Q_placeholder { pointer-events: none; }

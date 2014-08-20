@@ -73,8 +73,8 @@ class Users_Email extends Base_Users_Email
 		$subject = Q_Handlebars::renderSource($subject, $fields);
 		$body = Q::view($view, $fields);
 		
-		if(is_null(Q_Config::get('Users', 'email', 'smtp', null))) {
-			Q_Response::setNotice("Q/email", "Please set up SMTP in Users/email/smtp as in docs.", true);
+		if(!Q_Config::get('Users', 'email', 'smtp', 'sendmail')) {
+			Q_Response::setNotice("Q/email", "Please set up SMTP in Users/email/smtp as in docs.", false);
 			return true;
 		}
 		$overrideLog = Q::event(

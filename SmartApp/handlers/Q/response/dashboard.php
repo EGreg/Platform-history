@@ -10,5 +10,6 @@ function Q_response_dashboard()
 		'SmartApp/tutorials' => 'Tutorials', // just an example
 		'SmartApp/guide' => 'Guide', // another example
 	);
-	return Q::view('SmartApp/dashboard.php', compact('main_items', 'docs_items'));
+	$home = Q_Uri::url('SmartApp/home');
+	return Q::view('SmartApp/dashboard.php', compact('main_items', 'docs_items', 'home'));
 }

@@ -164,7 +164,10 @@ Q.Tool.define("Q/tabs", function(options) {
 		if (!tab) {
 			$tabs.each(function (k, t) {
 				var tdn = tool.getName(t);
-				if (tdn === name || (!name && tool.getUrl(t) === url)) {
+				var tu = tool.getUrl(t);
+				if (tdn === name
+				|| (!name && tu === url)
+				|| (!name && !tool.state.field && tu === url.split('?')[0])) {
 					tab = t;
 					return false;
 				}

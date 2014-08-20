@@ -40,6 +40,9 @@
 				"Access-Control-Allow-Origin": "*"
 			}
 		},
+		"javascript": {
+			"uris": null
+		},
 		"environments": {
 			"live": {
 				"files": {

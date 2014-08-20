@@ -413,7 +413,6 @@ Users.prompt = function(provider, uid, authCallback, cancelCallback, options) {
 	Q.Dialogs.push({
 		dialog: Users.prompt.overlay, 
 		alignByParent: true,
-		mask: true,
 		doNotRemove: true,
 		onActivate: function () {
 			Users.initFacebook(function () {
@@ -461,8 +460,7 @@ Users.perms = function (provider, callback) {
  * Log the user in
  * @method login
  * @param {Object} [options] You can pass several options here
- *  @param {Function} [options.onSuccess] function to call when login or authentication "using" a provider is successful.
- *     It is passed the user information if the user changed.
+ *  @param {Q.Event} [options.onSuccess] event that occurs when login or authentication "using" a provider is successful. It is passed the user information if the user changed.
  *  @param {Function} [options.onCancel] function to call if login or authentication "using" a provider was canceled.
  *  @param {String} [options.homeUrl] If the default onSuccess implementation is used, the browser is redirected here
  *  @default Q.uris[Q.info.app+'/home']
@@ -619,12 +617,16 @@ Users.login = function(options) {
 	
 	// login complete - run onSuccess handler
 	function _onComplete(user) {
-		if (!o.onSuccess && typeof(o.onSuccess) !== 'function' && typeof(o.onSuccess) !== 'string') {
+		if (!o.onSuccess
+		&& typeof(o.onSuccess) !== 'function' 
+		&& typeof(o.onSuccess) !== 'string') {
 			alert('Need an url in the onSuccess option');
 			return;
 		}
 		Users.onLogin.handle(user);
-		Q.handle(o.onSuccess, this, [user, o, priv.result, priv.used || 'native']);
+		Q.handle(o.onSuccess, this, 
+			[user, o, priv.result, priv.used || 'native']
+		);
 	}
 };
 
@@ -632,10 +634,11 @@ Users.login = function(options) {
  * Log the user out
  * @method logout
  * @param {Object} [options] You can pass several options here
- *  @param {Function} [options.onSuccess] function to call when login is successful.
  *  It is passed the user information if the user changed.
  *  @param {String} [options.url] the URL to hit to log out. You should usually not change this.
  *  @param {String} [options.using] can be "native" or "native,facebook" to log out of both
+ *  @param {Q.Event} [options.onSuccess] event that occurs when login is successful.
+ *  @param {String} [options.welcomeUrl] the URL of the page to show on a successful logout
  */
 Users.logout = function(options) {
 	if (typeof options === 'function') {
@@ -1381,7 +1384,6 @@ function login_setupDialog(usingProviders, perms, dialogContainer, identifierTyp
 	dialog.append(titleSlot).append(dialogSlot).appendTo($(dialogContainer));
 	dialog.plugin('Q/dialog', {
 		alignByParent: true,
-		mask: true,
 		beforeLoad: function()
 		{
 			$('#Users_login_step1').css('opacity', 1).nextAll().hide();
@@ -1502,7 +1504,6 @@ function setIdentifier_setupDialog(identifierType) {
 	dialog.append(titleSlot).append(dialogSlot).appendTo(document.body);
 	dialog.plugin('Q/dialog', {
 		alignByParent: true,
-		mask: true,
 		beforeLoad: function()
 		{
 			$('input', dialog).val('');
@@ -1642,12 +1643,14 @@ Q.onInit.add(function () {
 	
 	Q.Users.login.options = Q.extend({
 		'onCancel': new Q.Event(),
-		'onSuccess': new Q.Event(function (user) {
+		'onSuccess': new Q.Event(function (user, options) {
 			// default implementation
 			if (user) {
 				// the user changed, redirect to their home page
 				var urls = Q.urls || {};
-				var url = Q.Users.login.options.homeUrl || urls[Q.info.app+'/home'] || Q.url('');
+				var url = options.homeUrl 
+					|| urls[Q.info.app+'/home']
+					|| Q.url('');
 				Q.handle(url);
 			}
 		}, 'Users.login'),
@@ -1666,9 +1669,11 @@ Q.onInit.add(function () {
 	Q.Users.logout.options = Q.extend({
 		'url': Q.action('Users/logout'),
 		'using': 'native',
-		'onSuccess': new Q.Event(function () {
+		'onSuccess': new Q.Event(function (options) {
 			var urls = Q.urls || {};
-			Q.handle( Q.Users.login.options.welcomeUrl || urls[Q.info.app+'/welcome'] || Q.url(''));
+			Q.handle( options.welcomeUrl 
+				|| urls[Q.info.app+'/welcome'] 
+				|| Q.url(''));
 		}, 'Users.logout')
 	}, Q.Users.logout.options, Q.Users.logout.serverOptions);
 
