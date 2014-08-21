@@ -1377,6 +1377,14 @@ abstract class Streams extends Base_Streams
 		if (substr($toStreamName, -1) === '/' || substr($fromStreamName, -1) === '/')
 			throw new Q_Exception("Cannot process relation on multiple streams");
 
+		if (!isset($asUserId)) {
+			$asUserId = Users::loggedInUser();
+			if (!$asUserId) $asUserId = "";
+		}
+		if ($asUserId instanceof Users_User) {
+			$asUserId = $asUserId->id;
+		}
+
 		// Check access to category stream, the stream to which other streams are related
 		$category = Streams::fetchOne($asUserId, $toPublisherId, $toStreamName);
 		if (!$category) {
@@ -1432,7 +1440,7 @@ abstract class Streams extends Base_Streams
 	 *  An array of options that can include:
 	 *  "skipAccess" => Defaults to false. If true, skips the access checks and just relates the stream to the category
 	 *  "weight" => Pass a numeric value here, or something like "max+1" to make the weight 1 greater than the current MAX(weight)
-	 * @return array|boolean
+	 * @return {array|boolean}
 	 *  Returns false if the operation was canceled by a hook
 	 *  Returns true if relation was already there
 	 *  Otherwise returns array with keys "messageFrom" and "messageTo" and values of type Streams_Message
@@ -1446,6 +1454,14 @@ abstract class Streams extends Base_Streams
 		$fromStreamName,
 		$options = array())
 	{
+		if (!isset($asUserId)) {
+			$asUserId = Users::loggedInUser();
+			if (!$asUserId) $asUserId = "";
+		}
+		if ($asUserId instanceof Users_User) {
+			$asUserId = $asUserId->id;
+		}
+		
 		self::getRelation(
 			$asUserId,
 			$toPublisherId,
@@ -1524,6 +1540,8 @@ abstract class Streams extends Base_Streams
 
 		// Send Streams/relatedTo message to a stream
 		// node server will be notified by Streams_Message::post
+		// DISTRIBUTED: in the future, the publishers may be on separate domains
+		// so posting this message may require internet communication.
 		$relatedTo_message = Streams_Message::post($asUserId, $toPublisherId, $toStreamName, array(
 			'type' => 'Streams/relatedTo',
 			'instructions' => Q::json_encode(compact('fromPublisherId', 'fromStreamName', 'type', 'weight'))
@@ -1537,6 +1555,8 @@ abstract class Streams extends Base_Streams
 
 		// Send Streams/relatedFrom message to a stream
 		// node server will be notified by Streams_Message::post
+		// DISTRIBUTED: in the future, the publishers may be on separate domains
+		// so posting this message may require internet communication.
 		$relatedFrom_message = Streams_Message::post($asUserId, $fromPublisherId, $fromStreamName, array(
 			'type' => 'Streams/relatedFrom',
 			'instructions' => Q::json_encode(compact('toPublisherId', 'toStreamName', 'type', 'weight'))
@@ -1554,7 +1574,10 @@ abstract class Streams extends Base_Streams
 			'after'
 		);
 
-		return array('messageFrom' => $relatedFrom_message, 'messageTo' => $relatedTo_message);
+		return array(
+			'messageFrom' => $relatedFrom_message, 
+			'messageTo' => $relatedTo_message
+		);
 	}
 
 	/**

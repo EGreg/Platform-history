@@ -23,9 +23,7 @@
 				}
 			},
 			"Places/nearby": {
-				"edit": true,
 				"messages": {
-					
 				}
 			},
 			"Places/community": {
@@ -34,9 +32,8 @@
 		}
 	},
 	"Places": {
-		"nearbyZipcodes": {
-			"limit": 500,
-			"maxMiles": 100
+		"nearby": {
+			"miles": [5, 10, 15, 20, 25, 50, 75, 100]
 		}
 	}
 }

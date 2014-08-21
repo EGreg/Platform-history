@@ -1907,7 +1907,7 @@ class Db_Row implements Iterator
 	 *  You can also pass true in place of the $modifyQuery field to achieve
 	 *  the same effect as array("query" => true)
 	 * @param {array} [$options=array()] Array of options to pass to beforeRetrieve and afterFetch functions.
-	 * @return {array|Db_Row} Returns the row fetched from the Db_Result (or returned by beforeRetrieve)
+	 * @return {array|Db_Row|false} Returns the row fetched from the Db_Result (or returned by beforeRetrieve)
 	 *  If retrieve() is called with no arguments, may return false if nothing retrieved.
 	 */
 	function retrieve (

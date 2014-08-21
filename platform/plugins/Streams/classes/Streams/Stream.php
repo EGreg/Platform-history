@@ -813,6 +813,50 @@ class Streams_Stream extends Base_Streams_Stream
 
 		return !!$participant;
 	}
+	
+	/**
+	 * If the user is subscribed, get the Streams_Subscription object.
+	 * Otherwise, returns false, or null if the user isn't logged in.
+	 * @param {string} $ofUserId Defaults to logged-in user's id, if any.
+	 * @return {Streams_Subscription|false|null}
+	 */
+	function subscription($ofUserId = null)
+	{
+		if (!isset($ofUserId)) {
+			$user = Users::loggedInUser();
+			if (!$user) {
+				return null;
+			}
+			$ofUserId = $user->id;
+		}
+		$s = new Streams_Subscription();
+		$s->publisherId = $this->publisherId;
+		$s->streamName = $this->name;
+		$s->ofUserId = $ofUserId;
+		return $s->retrieve();
+	}
+	
+	/**
+	 * If the user is participating, get the Streams_Participant object.
+	 * Otherwise, returns false, or null if the user isn't logged in.
+	 * @param {string} $userId Defaults to logged-in user's id, if any.
+	 * @return {Streams_Subscription|false|null}
+	 */
+	function participant($userId = null)
+	{
+		if (!isset($userId)) {
+			$user = Users::loggedInUser();
+			if (!$user) {
+				return null;
+			}
+			$userId = $user->id;
+		}
+		$p = new Streams_Participant();
+		$p->publisherId = $this->publisherId;
+		$p->streamName = $this->name;
+		$p->userId = $userId;
+		return $p->retrieve();
+	}
 
 	/**
 	 * Post a message to stream

@@ -47,16 +47,184 @@ abstract class Places extends Base_Places
 	}
 	
 	/**
-	 * Call this function to find the "nearby points" on a grid of quantized
-	 * (latitude, longitude) pairs which are spaced at most $miles apart.
+	 * Call this function to find the "nearby points" to subscribe to
+	 * on a grid of quantized (latitude, longitude) pairs
+	 * which are spaced at most $miles apart.
 	 * @param {double} $latitude The latitude of the coordinates to search around
 	 * @param {double} $longitude The longitude of the coordinates to search around
-	 * @param {double} $miles The radius, in miles, around this location. Try to limit this value to a discrete set of under 20 values.
+	 * @param {double} $miles The radius, in miles, around this location.
+	 *  Should be one of the array values in the Places/nearby/miles config.
 	 * @return {Array} Returns an array of up to four ($streamName => $info) pairs
 	 *  where the $streamName is the name of the stream corresponding to the "nearby point"
 	 *  and $info includes the keys "latitude", "longitude", and "miles".
 	 */
-	static function nearby(
+	static function nearbyForSubscribers(
+		$latitude, 
+		$longitude, 
+		$miles)
+	{
+		list($latQuantized, $longQuantized, $latGrid, $longGrid)
+			= self::quantize($latitude, $longitude, $miles);
+
+		$milesArray = Q_Config::expect('Places', 'nearby', 'miles');
+		if (!in_array($miles, $milesArray)) {
+			throw new Q_Exception("The miles value needs to be in Places/nearby/miles config.");
+		}
+		
+		$result = array();
+		foreach (array($latQuantized, $latQuantized+$latGrid) as $lat) {
+			foreach (array($longQuantized, $longQuantized+$longGrid) as $long) {
+				if ($long > 180) { $long = $long%180 - 180; }
+				if ($long < -180) { $long = $long%180 + 180; }
+				if ($lat > 90) { $lat = $lat%90 - 90; }
+				if ($lat < -90) { $lat = $lat%90 + 90; }
+				$streamName = self::streamName($lat, $long, $miles);
+				$result[$streamName] = array(
+					'latitude' => $lat,
+					'longitude' => $long,
+					'miles' => $miles
+				);
+			}
+		}
+		return $result;
+	}
+	
+	/**
+	 * Call this function to find the "nearby points" to publish to
+	 * on a grid of quantized (latitude, longitude) pairs
+	 * which are spaced at most $miles apart.
+	 * @param {double} $latitude The latitude of the coordinates to search around
+	 * @param {double} $longitude The longitude of the coordinates to search around
+	 * @return {Array} Returns an array of several ($streamName => $info) pairs
+	 *  where the $streamName is the name of the stream corresponding to the "nearby point"
+	 *  and $info includes the keys "latitude", "longitude", and "miles".
+	 */
+	static function nearbyForPublishers(
+		$latitude, 
+		$longitude)
+	{
+		list($latQuantized, $longQuantized, $latGrid, $longGrid)
+			= self::quantize($latitude, $longitude, $miles);
+		
+		$result = array();
+		$milesArray = Q_Config::expect('Places', 'nearby', 'miles');
+		foreach ($milesArray as $miles) {
+			if ($longitude > 180) { $longitude = $longitude%180 - 180; }
+			if ($longitude < -180) { $longitude = $longitude%180 + 180; }
+			if ($latitude > 90) { $latitude = $latitude%90 - 90; }
+			if ($latitude < -90) { $latitude = $latitude%90 + 90; }
+			$streamName = self::streamName($latitude, $longitude, $miles);
+			$result[$streamName] = array(
+				'latitude' => $latitude,
+				'longitude' => $longitude,
+				'miles' => $miles
+			);
+		}
+		return $result;
+	}
+	
+	/**
+	 * Call this function to subscribe to streams on which messages are posted
+	 * related to things happening the given number of $miles around the given location.
+	 * @param {double} $latitude The latitude of the coordinates to subscribe around
+	 * @param {double} $longitude The longitude of the coordinates to subscribe around
+	 * @param {double} $miles The radius, in miles, around this location.
+	 *  Should be one of the array values in the Places/nearby/miles config.
+	 * @param {string} $publisherId The id of the publisher publishing these streams.
+	 *  Defaults to the app name in Q/app config.
+	 * @param {array} $options The options to pass to the subscribe function
+	 * @return {Array} Returns an array of up to four arrays of ($publisherId, $streamName)
+	 *  of streams that were subscribed to.
+	 */
+	static function subscribe(
+		$latitude, 
+		$longitude, 
+		$miles,
+		$publisherId = null,
+		$options = array())
+	{
+		$nearby = Places::nearbyForSubscribers($latitude, $longitude, $miles);
+		if (!$nearby) { return array(); }
+		if (!isset($publisherId)) {
+			$publisherId = Q_Config::expect('Q', 'app');
+		}
+		$streams = Streams::fetch(null, $publisherId, array_keys($nearby));
+		$subscriptions = Streams_Subscription::select('*')
+			->where(array(
+				'publisherId' => $publisherId,
+				'streamName' => array_keys($nearby),
+				'ofUserId' => Users::loggedInUser()->id
+			))->fetchDbRows(null, null, 'streamName');
+		foreach ($nearby as $name => $nb) {
+			$stream = $streams[$name];
+			if (!$stream) {
+				$streams[$name] = $stream = Places::nearbyStream(
+					$nb['latitude'], $nb['longitude'], $miles, $publisherId, $name
+				);
+			}
+			
+			if (empty($subscriptions[$name])) {
+				$stream->subscribe($options);
+			}
+		}
+		return $streams;
+	}
+	
+	/**
+	 * Call this function to subscribe to streams on which messages are posted
+	 * related to things happening the given number of $miles around the given location.
+	 * @param {double} $latitude The latitude of the coordinates near which to relate
+	 * @param {double} $longitude The longitude of the coordinates near which to relate
+	 * @param {string} $fromPublisherId The publisherId of the stream to relate
+	 * @param {string} $fromStreamName The name of the stream to relate
+	 * @param {string} $relationType The type of the relation to add
+	 * @param {array} $options The options to pass to the Streams::relate function
+	 * @return {array|boolean} Returns whatever the Streams::relate function returns
+	 */
+	static function relateTo(
+		$latitude, 
+		$longitude, 
+		$fromPublisherId,
+		$fromStreamName,
+		$relationType,
+		$options = array())
+	{
+		$nearby = Places::nearbyForPublishers($latitude, $longitude);
+		if (!isset($fromPublisherId)) {
+			$fromPublisherId = Q_Config::expect('Q', 'app');
+		}
+		$streams = Streams::fetch(null, $fromPublisherId, array_keys($nearby));
+		foreach ($nearby as $name => $nb) {
+			$stream = $streams[$name];
+			if (!$stream) {
+				$streams[$name] = $stream = Places::nearbyStream(
+					$nb['latitude'], $nb['longitude'], $miles, $fromPublisherId, $name
+				);
+			}
+			Streams::relate(
+				null,
+				$stream->publisherId,
+				$stream->name,
+				$relationType,
+				$fromPublisherId,
+				$fromStreamName,
+				$options
+			);
+		}
+		return $streams;
+	}
+	
+	/**
+	 * Call this function to quantize a (latitude, longitude) pair to grid of quantized
+	 * (latitude, longitude) pairs which are spaced at most $miles apart.
+	 * @param {double} $latitude The latitude of the coordinates to search around
+	 * @param {double} $longitude The longitude of the coordinates to search around
+	 * @param {double} $miles The radius, in miles, around this location.
+	 *  Should be one of the array values in the Places/nearby/miles config.
+	 * @return {Array} Returns an array of latitude and longitude quantized,
+	 *  followed by the latitude and longitude grid spacing.
+	 */
+	static function quantize(
 		$latitude, 
 		$longitude, 
 		$miles)
@@ -65,19 +233,7 @@ abstract class Places extends Base_Places
 		$latQuantized = floor($latitude / $latGrid) * $latGrid;
 		$longGrid = abs($latGrid / cos(deg2rad($latQuantized)));
 		$longQuantized = floor($longitude / $longGrid) * $longGrid;
-		
-		$result = array();
-		foreach (array($latQuantized, $latQuantized+$latGrid) as $lat) {
-			foreach (array($longQuantized, $longQuantized+$longGrid) as $long) {
-				$name = self::streamName($lat, $long, $miles);
-				$result[$name] = array(
-					'latitude' => $lat,
-					'longitude' => $long,
-					'miles' => $miles
-				);
-			}
-		}
-		return $result;
+		return array($latQuantized, $longQuantized, $latGrid, $longGrid);
 	}
 	
 	/**
@@ -89,7 +245,59 @@ abstract class Places extends Base_Places
 	 */
 	static function streamName($latitude, $longitude, $miles)
 	{
+		if ($before = Q::event('Places/streamName',
+		compact('latitude', 'longitude', 'miles'), 'before')) {
+			return $before;
+		}
 		$hash = md5("$latitude\t$longitude\t$miles");
 		return "Places/nearby/$hash";
+	}
+	
+	/**
+	 * Fetch a stream on which messages are posted relating to things happening
+	 * a given number of $miles around the given location.
+	 * If it doesn't exist, create it.
+	 * @param {double} $latitude The latitude of the coordinates to search around
+	 * @param {double} $longitude The longitude of the coordinates to search around
+	 * @param {double} $miles The radius, in miles, around this location.
+	 *  Should be one of the array values in the Places/nearby/miles config.
+	 * @param {string} $publisherId The id of the publisher to publish this stream
+	 *  Defaults to the app name in Q/app config.
+	 * @param {string} $streamName The name of the stream to create.
+	 *  Defaults to Places::streamName($latitude, $longitude, $miles).
+	 * @return {Streams_Stream} Returns the stream object that was created or fetched.
+	 */
+	static function nearbyStream(
+		$latitude, 
+		$longitude, 
+		$miles,
+		$publisherId = null,
+		$streamName = null)
+	{
+		list($latitude, $longGrid)
+			= self::quantize($latitude, $longitude, $miles);
+		$zipcodes = Places_Zipcode::nearby(
+			$latitude, $longitude, $miles, 1
+		);
+		if (!isset($publisherId)) {
+			$publisherId = Q_Config::expect('Q', 'app');
+		}
+		if (!isset($streamName)) {
+			$streamName = self::streamName($latitude, $longitude, $miles);
+		}
+		$stream = Streams::fetchOne(null, $publisherId, $streamName);
+		if ($stream) {
+			return $stream;
+		}
+		$zipcode = reset($zipcodes);
+		$stream = new Streams_Stream();
+		$stream->publisherId = $publisherId;
+		$stream->name = $streamName;
+		$stream->type = "Places/nearby";
+		$stream->title = $zipcode
+			? "Nearby ($latitude, $longitude): {$zipcode->placeName}, zipcode {$zipcode->zipcode}"
+			: "Nearby ($latitude, $longitude)";
+		$stream->save();
+		return $stream;
 	}
 };

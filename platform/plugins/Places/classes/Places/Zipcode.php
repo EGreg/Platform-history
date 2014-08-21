@@ -41,21 +41,44 @@ class Places_Zipcode extends Base_Places_Zipcode
 	
 	/**
 	 * Call this function to calculate and save Places_Nearby rows
+	 * @param {double} $latitude The latitude of the coordinates to search around
+	 * @param {double} $longitude The longitude of the coordinates to search around
 	 * @param {double} $miles The radius, in miles, around the central point of the zipcode
-	 * @param {boolean} $saveNearby Defaults to true. Set to false to simply fetch them without saving Places_Nearby rows.
-	 * @return Array of all the Places_Zipcode rows that are within the given radius
+	 * @param {double} $limit Limit on how many to return. Defaults to 100.
+	 * @return {array} Returns an array of Places_Zipcode objects, if any are found.
 	 */
-	public function nearby($miles, $saveNearby = true)
+	public static function nearby($latitude, $longitude, $miles, $limit = 100)
 	{
-		$zipcodes = Places::nearby(
-			$this->latitude, $this->longitude, $miles, $this->zipcode, $saveNearby
+		// First, get a bounding box that's big enough to avoid false negatives
+		$latGrid = $miles / 69.1703234283616;
+		$longGrid = abs($latGrid / cos(deg2rad($latitude)));
+		
+		// Now, select zipcodes in a bounding box using one of the indexes
+		$q = Places_Zipcode::select('*')->where(array(
+			'latitude >' => $latitude - $latGrid,
+			'latitude <' => $latitude + $latGrid
+		));
+		$longitudes = array(
+			'longitude >' => max($longitude - $longGrid, -180),
+			'longitude <' => min($longitude + $longGrid, 180),
 		);
-		return $zipcodes;
-	}
-	
-	protected static function compareMiles($a, $b)
-	{
-		return $a['miles'] - $b['miles'];
+		if ($latitude + $longGrid > 180) {
+			$q->andWhere($longitudes, array(
+				'longitude >' => -180, // should always be the case anyway
+				'longitude <' => $longitude + $longGrid - 180 * 2,
+			));
+		} else if ($latitude - $longGrid < -180) {
+			$q->andwhere($longitudes, array(
+				'longitude <=' => 180, // should always be the case anyway
+				'longitude >' => $longitude - $longGrid + 180 * 2,
+			));
+		} else {
+			$q->andWhere($longitudes);
+		}
+		if ($limit) {
+			$q->limit($limit);
+		}
+		return $q->fetchDbRows();
 	}
 	
 	/**
