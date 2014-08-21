@@ -227,11 +227,11 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 		FB_getLoginStatus(function(response) {
 			if (response.status === 'connected') {
 				var fb_uid = response.authResponse.userID;
-				var ignoreUid = Q.cookie('Users_ignore_facebook_uid');
+				var ignoreUid = Q.cookie('Users_ignoreFacebookUid');
 				// the following line prevents multiple prompts for the same user,
 				// which can be a problem especially if the authenticate() is called
 				// multiple times on the same page, or because the page is reloaded
-				Q.cookie('Users_ignore_facebook_uid', fb_uid);
+				Q.cookie('Users_ignoreFacebookUid', fb_uid);
 				
 				if (Users.loggedInUser && Users.loggedInUser.fb_uid == fb_uid) {
 					// The correct user is already logged in.
@@ -284,7 +284,7 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 					// and then the javascript discovers that the facebook connection was lost,
 					// the user will not be prompted to restore it when it becomes available again.
 					// They will have to do it explicitly (calling Users.authenticate with prompt: true)
-					Q.cookie('Users_ignore_facebook_uid', ignoreUid);
+					Q.cookie('Users_ignoreFacebookUid', ignoreUid);
 				}
 				delete Users.connected.facebook;
 				onCancel && onCancel();
@@ -685,7 +685,7 @@ Users.logout = function(options) {
 			// then we should ignore the logged-in user's fb_uid
 			// when authenticating, until it is forced
 			if (Users.loggedInUser && Users.loggedInUser.fb_uid)
-			Q.cookie('Users_ignore_facebook_uid', Users.loggedInUser.fb_uid);
+			Q.cookie('Users_ignoreFacebookUid', Users.loggedInUser.fb_uid);
 			Users.loggedInUser = null;
 			Q.nonce = Q.cookie('Q_nonce');
 			Users.onLogout.handle.call(this, o);

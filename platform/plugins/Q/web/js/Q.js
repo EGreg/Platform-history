@@ -4787,7 +4787,7 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 		what2 += (what.indexOf('?') < 0) ? '?' : '&';
 		what2 += encodeURI('Q.ajax='+(options && options.loadExtras ? 'loadExtras' : 'json'))+
 			encodeURI('&Q.timestamp=')+encodeURIComponent(timestamp);
-		if (slotNames2) {
+		if (slotNames2 != null) {
 			what2 += encodeURI('&Q.slotNames=') + encodeURIComponent(slotNames2);
 		}
 		if (idPrefixes) {
@@ -4897,7 +4897,7 @@ Q.req = function _Q_req(uri, slotNames, callback, options) {
  *  "duplicate": defaults to true, but you can set it to false in order not to fetch the same url again
  *  "quiet": defaults to true. This option is just passed to your onLoadStart/onLoadEnd handlers in case they want to respect it.
  *  "handleRedirects": if set and response data.redirect.url is not empty, automatically call this function. Defaults to Q.handle.
- *  "timeout": timeout to wait for response defaults to 1.5 sec. Set to false to disable
+ *  "timeout": timeout to wait for response defaults to 20.5 sec. Set to false to disable
  *  "onTimeout": handler to call when timeout is reached. First argument is a function which can be called to cancel loading.
  *  "onResponse": handler to call when the response comes back but before it is processed - when called the argument of "onTimeout" does nothing
  *  "onLoadStart": if "quiet" option is false, anything here will be called after the request is initiated
@@ -6015,7 +6015,7 @@ Q.replace = function _Q_replace(container, source, options) {
  *   "ignoreHash": if true, does not navigate to the hash part of the URL in browsers that can support it
  *   "fields": additional fields to pass via the querystring
  *   "loadExtras": if true, asks the server to load the extra scripts, stylesheets, etc. that are loaded on first page load
- *   "timeout": timeout to wait for response defaults to 1.5 sec. Set to false to disable
+ *   "timeout": timeout to wait for response defaults to 20.5 sec. Set to false to disable
  *   "slotNames": an array of slot names to request and process (default is all slots in Q.info.slotNames)
  *   "idPrefixes": optional array of Q_Html::pushIdPrefix values for each slotName
  *   "retainSlots": an object of {slotName: whetherToRetain} pairs, retained slots aren't reloaded
@@ -6502,6 +6502,7 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 		case 'string':
 			var o = Q.extend({}, Q.handle.options, options);
 			if (!callables.isUrl()
+			&& (callables[0] != '#')
 			&& (!o.target || o.target.toLowerCase() === '_self')) {
 				// Assume this is not a URL.
 				// Try to evaluate the expression, and execute the resulting function
@@ -6530,7 +6531,9 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 				}
 			}
 			var sameDomain = callables.sameDomain(Q.info.baseUrl);
-			if (o.loadUsingAjax && sameDomain
+			if (callables[0] === '#') {
+				window.location.hash = callables;
+			} else if (o.loadUsingAjax && sameDomain
 			&& (!o.target || o.target === true || o.target === '_self')) {
 				if (callables.search(Q.info.baseUrl) === 0) {
 					// Use AJAX to refresh the page whenever the request is for a local page

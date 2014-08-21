@@ -339,18 +339,21 @@ class Db_Mysql implements iDb
 	 */
 	function insertManyAndExecute ($table_into, array $records = array(), $options = array())
 	{
-		if (empty($table_into))
+		if (empty($table_into)) {
 			throw new Exception("table not specified in call to 'insertManyAndExecute'.");
+		}
 		
-		if (empty($records))
+		if (empty($records)) {
 			return false;
+		}
 
 		$chunkSize = 20;
 		$onDuplicateKeyUpdate = null;
 		extract($options);
 		
-		if ($chunkSize < 0)
+		if ($chunkSize < 0) {
 			return false;
+		}
 			
 		// Get the columns list
 		foreach ($records[0] as $column => $value) {
@@ -2164,7 +2167,7 @@ $field_hints
 	 * @param {array} [\$options=array()]
 	 *   An associative array of options, including:
 	 *
-	 * * "chunkSize" {integer} The number of rows to insert at a time. Defaults to 1.<br/>
+	 * * "chunkSize" {integer} The number of rows to insert at a time. defaults to 20.<br/>
 	 * * "onDuplicateKeyUpdate" {array} You can put an array of fieldname => value pairs here,
 	 * 		which will add an ON DUPLICATE KEY UPDATE clause to the query.
 	 *

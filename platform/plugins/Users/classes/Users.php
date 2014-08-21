@@ -1623,7 +1623,7 @@ abstract class Users extends Base_Users
 	 *
 	 * @param {string} $userId The id of the user who has verified these identifiers
 	 */
-	static function saveContactsFromLinks($contact_info, $userId)
+	static function saveContactsFromLinks()
 	{
 		/**
 		 * @event Users/saveContactsFromLinks {before}

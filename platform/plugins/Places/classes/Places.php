@@ -34,15 +34,62 @@ abstract class Places extends Base_Places
 		$sin_lat   = sin(deg2rad($lat_2  - $lat_1)  / 2.0);
 		$sin2_lat  = $sin_lat * $sin_lat;
 
-		$sin_long  = sin(deg2rad($long_2 - $long_2) / 2.0);
+		$sin_long  = sin(deg2rad($long_2 - $long_1) / 2.0);
 		$sin2_long = $sin_long * $sin_long;
 
-		$cos_lat_1 = cos($lat_1);
-		$cos_lat_2 = cos($lat_2);
+		$cos_lat_1 = cos(deg2rad($lat_1));
+		$cos_lat_2 = cos(deg2rad($lat_2));
 
 		$sqrt      = sqrt($sin2_lat + ($cos_lat_1 * $cos_lat_2 * $sin2_long));
 		$distance  = 2.0 * $earth_radius * asin($sqrt);
 
 		return $distance;
+	}
+	
+	/**
+	 * Call this function to find the "nearby points" on a grid of quantized
+	 * (latitude, longitude) pairs which are spaced at most $miles apart.
+	 * @param {double} $latitude The latitude of the coordinates to search around
+	 * @param {double} $longitude The longitude of the coordinates to search around
+	 * @param {double} $miles The radius, in miles, around this location. Try to limit this value to a discrete set of under 20 values.
+	 * @return {Array} Returns an array of up to four ($streamName => $info) pairs
+	 *  where the $streamName is the name of the stream corresponding to the "nearby point"
+	 *  and $info includes the keys "latitude", "longitude", and "miles".
+	 */
+	static function nearby(
+		$latitude, 
+		$longitude, 
+		$miles)
+	{
+		$latGrid = $miles / 69.1703234283616;
+		$latQuantized = floor($latitude / $latGrid) * $latGrid;
+		$longGrid = abs($latGrid / cos(deg2rad($latQuantized)));
+		$longQuantized = floor($longitude / $longGrid) * $longGrid;
+		
+		$result = array();
+		foreach (array($latQuantized, $latQuantized+$latGrid) as $lat) {
+			foreach (array($longQuantized, $longQuantized+$longGrid) as $long) {
+				$name = self::streamName($lat, $long, $miles);
+				$result[$name] = array(
+					'latitude' => $lat,
+					'longitude' => $long,
+					'miles' => $miles
+				);
+			}
+		}
+		return $result;
+	}
+	
+	/**
+	 * Obtain the name of a "Places/nearby" stream
+	 * corresponding to the given parameters
+	 * @param {double} $latitude,
+	 * @param {double} $longitude
+	 * @param {double} $miles
+	 */
+	static function streamName($latitude, $longitude, $miles)
+	{
+		$hash = md5("$latitude\t$longitude\t$miles");
+		return "Places/nearby/$hash";
 	}
 };

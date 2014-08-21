@@ -102,7 +102,7 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 * Retrieve the table name to use in SQL statement
 	 * @method table
 	 * @static
-	 * @param {boolean} [$with_db_name=true] Indicates wheather table name shall contain the database name
+	 * @param {boolean} [$with_db_name=true] Indicates wheather table name should contain the database name
  	 * @return {string|Db_Expression} The table name as string optionally without database name if no table sharding
 	 * was started or Db_Expression class with prefix and database name templates is table was sharded
 	 */
@@ -205,7 +205,7 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 * @param {array} [$options=array()]
 	 *   An associative array of options, including:
 	 *
-	 * * "chunkSize" {integer} The number of rows to insert at a time. Defaults to 1.<br/>
+	 * * "chunkSize" {integer} The number of rows to insert at a time. defaults to 20.<br/>
 	 * * "onDuplicateKeyUpdate" {array} You can put an array of fieldname => value pairs here,
 	 * 		which will add an ON DUPLICATE KEY UPDATE clause to the query.
 	 *
@@ -374,20 +374,6 @@ abstract class Base_Places_Zipcode extends Db_Row
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".accuracy");
 		return array('accuracy', $value);			
-	}
-
-	/**
-	 * Method is called after field is set and used to keep $fieldsModified property up to date
-	 * @method afterSet
-	 * @param {string} $name The field name
-	 * @param {mixed} $value The value of the field
-	 * @return {mixed} Original value
-	 */
-	function afterSet($name, $value)
-	{
-		if (!in_array($name, $this->fieldNames()))
-			$this->notModified($name);
-		return $value;			
 	}
 
 	/**
