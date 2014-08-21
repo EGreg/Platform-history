@@ -161,7 +161,8 @@ Q.Tool.define('Streams/chat', function(options) {
 				if (error) { return error; }
 				$te.html(html);
 				
-				if (!state.stream.testWriteLevel('post')) {
+				if (Q.Users.loggedInUser
+				&& !state.stream.testWriteLevel('post')) {
 					tool.$('.Streams_chat_composer').hide();
 				}
 
@@ -399,27 +400,46 @@ Q.Tool.define('Streams/chat', function(options) {
 				}
 				var $this = $(this);
 				var content = $this.val().trim();
-				$this.val('');
 				if (content.length == 0) {
 					return false;
 				}
 
-				blocked = true;			
-
-				Q.Streams.Message.post({
-					'publisherId': state.publisherId,
-					'streamName' : state.streamName,
-					'type'       : 'Streams/chat/message',
-					'content'    : content
-				}, function(err, args) {
-					blocked = false;
-					if (err) {
-						tool.renderError(err, args[0], args[1]);
-						tool.scrollToBottom();
-						return;
-					}
-					state.stream.refresh(null, {messages: true});
-				});
+				blocked = true;	
+				$this.attr('disabled', 'disabled');
+				
+				if (Q.Users.loggedInUser) {
+					_postMessage();
+				} else {
+					tool.element.setAttribute('data-Q-retain', '');
+					Q.Users.login({
+						onSuccess: { "Streams/chat": _postMessage },
+						onResult: { "Streams/chat": function () {
+							blocked = false;
+							$this.removeAttr('disabled');
+						}},
+						successUrl: window.location,
+						calledBy: tool
+					});
+				}
+				
+				function _postMessage() {
+					Q.Streams.Message.post({
+						'publisherId': state.publisherId,
+						'streamName' : state.streamName,
+						'type'       : 'Streams/chat/message',
+						'content'    : content
+					}, function(err, args) {
+						blocked = false;
+						$this.removeAttr('disabled');
+						if (err) {
+							tool.renderError(err, args[0], args[1]);
+							tool.scrollToBottom();
+							return;
+						}
+						state.stream.refresh(null, {messages: true});
+						$this.val('');
+					});
+				}
 
 				return false;
 			}

@@ -1414,13 +1414,17 @@ function _getProp (/*Array*/parts, /*Boolean*/create, /*Object*/context){
  */
 Q.extendObject = function _Q_extendObject(name, value, context, delimiter){
 	delimiter = delimiter || '.';
-	var parts = name.split(delimiter), p = parts.pop(), obj = _getProp(parts, true, context);
+	var parts = name.split(delimiter);
+	var p = parts.pop();
+	var obj = _getProp(parts, true, context);
 	if (obj === undefined) {
 		console.warn("Failed to set '"+name+"'");
 		return undefined;
 	} else {
 		// not null && object (maybe array) && value is real object
-		if (obj[p] && typeof obj[p] === "object" && Q.typeOf(value) === "object") {
+		if (obj[p]
+		&& typeof obj[p] === "object"
+		&& Q.typeOf(value) === "object") {
 			Q.extend(obj[p], Q.extendObject.options, value);
 		} else {
 			obj[p] = value;
@@ -3315,7 +3319,8 @@ Tp.parent = function Q_Tool_prototype_parent() {
 Tp.remove = function _Q_Tool_prototype_remove(removeCached) {
 
 	var i;
-	var shouldRemove = removeCached || !this.element.getAttribute('data-Q-retain');
+	var shouldRemove = removeCached
+		|| !this.element.getAttribute('data-Q-retain') !== null;
 	if (!shouldRemove) return false;
 
 	// give the tool a chance to clean up after itself
@@ -4899,7 +4904,8 @@ Q.req = function _Q_req(uri, slotNames, callback, options) {
  *  "handleRedirects": if set and response data.redirect.url is not empty, automatically call this function. Defaults to Q.handle.
  *  "timeout": timeout to wait for response defaults to 20.5 sec. Set to false to disable
  *  "onTimeout": handler to call when timeout is reached. First argument is a function which can be called to cancel loading.
- *  "onResponse": handler to call when the response comes back but before it is processed - when called the argument of "onTimeout" does nothing
+ *  "onResponse": handler to call when the response comes back but before it is processed
+ *  "onProcessed": handler to call when a response was processed
  *  "onLoadStart": if "quiet" option is false, anything here will be called after the request is initiated
  *  "onLoadEnd": if "quiet" option is false, anything here will be called after the request is fully completed
  */
@@ -4933,27 +4939,31 @@ Q.request = function (url, slotNames, callback, options) {
 		var tout = false, t = {};
 		if (o.timeout !== false) tout = o.timeout || 1500;
 	
-		if (o.parse !== false && callback) {
-			var _callback = callback;
-			callback = function _Q_request_callback(err, content) {
-				if (err) {
-					return _callback(err);
-				}
-				var data;
+		function _Q_request_callback(err, content) {
+			if (err) {
+				callback(err);
+				Q.handle(o.onProcessed, Q, [err]);
+				return;
+			}
+			var data = content;
+			if (o.parse !== false) {
 				try {
-					data = (typeof content === 'string' ? JSON.parse(content) : content);
+					data = JSON.parse(content)
 				} catch (e) {
 					console.warn('Q.request(' + url + ',['+slotNames+']):' + e);
-					return callback({"errors": [e]}, content);
+					err = {"errors": [e]};
+					callback(e, content);
+					Q.handle(o.onProcessed, Q, [e, content]);
 				}
-				var redirected = false;
-				if (data && data.redirect && data.redirect.url) {
-					o.handleRedirects && o.handleRedirects.call(Q, data.redirect.url);
-					redirected = true;
-				}
-				_callback.call(this, err, data, redirected);
-			};
-		}
+			}
+			var redirected = false;
+			if (data && data.redirect && data.redirect.url) {
+				Q.handle(o.handleRedirects, Q, [data.redirect.url]);
+				redirected = true;
+			}
+			callback.call(this, err, data, redirected);
+			Q.handle(o.onProcessed, Q, [err, data, redirected]);
+		};
 
 		function _onStart () {
 			Q.handle(o.onLoadStart, this, [url, slotNames, o]);
@@ -4978,10 +4988,8 @@ Q.request = function (url, slotNames, callback, options) {
 			}
 			Q.handle(o.onLoadEnd, this, [url, slotNames, o]);
 			if (!t.cancelled) {
-				if (o.onResponse) {
-					o.onResponse(data);
-				}
-				Q.handle(callback, this, [null, data]);
+				o.onResponse.handle.call(this, data);
+				Q.handle(_Q_request_callback, this, [null, data]);
 			}
 		}
 		
@@ -4994,7 +5002,7 @@ Q.request = function (url, slotNames, callback, options) {
 				errors: [{message: msg || "Request was canceled", code: status}]
 			};
 			o.onCancel.handle.call(this, errors, o);
-			Q.handle(callback, this, [errors, errors]);
+			Q.handle(_Q_request_callback, this, [errors, errors]);
 		}
 
 		if (!o.query && o.xhr !== false
@@ -5060,7 +5068,7 @@ Q.request = function (url, slotNames, callback, options) {
 			Q.request.callbacks[i] = function _Q_request_JSONP(data) {
 				delete Q.request.callbacks[i];
 				Q.removeElement(script);
-				_onResponse(data, callback);
+				_onResponse(data);
 			};
 			if (o.callbackName) {
 				url2 = url + (url.indexOf('?') < 0 ? '?' : '&')
@@ -5069,7 +5077,9 @@ Q.request = function (url, slotNames, callback, options) {
 			} else {
 				url2 = (o.extend === false)
 					? url
-					: Q.ajaxExtend(url, slotNames, Q.extend(o, {callback: 'Q.request.callbacks['+i+']'}));
+					: Q.ajaxExtend(url, slotNames, Q.extend(o, {
+						callback: 'Q.request.callbacks['+i+']'
+					}));
 			}
 		} else {
 			url2 = (o.extend === false) ? url : Q.ajaxExtend(url, slotNames, o);
@@ -5917,8 +5927,8 @@ Q.activate = function _Q_activate(elem, options, callback) {
  * @method replace
  * @param {HTMLElement} container
  *  A existing HTMLElement whose contents are to be replaced with the source
- *  Tools found in the existing DOM which have data-Q-retain="document" attribute
- *  are actually retained unless the tool replacing them has data-Q-replace="document".
+ *  Tools found in the existing DOM which have data-Q-retain attribute
+ *  are actually retained unless the tool replacing them has a data-Q-replace attribute.
  *  You can update the tool by implementing a handler for
  *  tool.Q.onRetain, which receives the old Q.Tool object and the new options.
  *  After the event is handled, the tool's state will be extended with these new options.
@@ -6023,8 +6033,7 @@ Q.replace = function _Q_replace(container, source, options) {
  *   "quiet": defaults to false. If true, allows visual indications that the request is going to take place.
  *   "onTimeout": handler to call when timeout is reached. Receives function as argument -
  *		the function might be called to cancel loading.
- *   "onResponse": handler to call when the response comes back but before it is processed -
- *		when called the argument of "onTimeout" does nothing
+ *   "onResponse": handler to call when the response comes back but before it is processed
  *   "onError": custom error function, defaults to alert
  *   "onLoad": callback which is called when the parsed data comes back from the server
  *   "onActivate": callback which is called when all Q.activate's processed and all script lines executed
@@ -9016,6 +9025,8 @@ Q.request.options = {
 	onLoadStart: new Q.Event(),
 	onShowCancel: new Q.Event(),
 	onLoadEnd: new Q.Event(),
+	onResponse: new Q.Event(),
+	onProcessed: new Q.Event(),
 	onCancel: new Q.Event(function (error) {
 		var msg = Q.firstErrorMessage(error);
 		if (msg) {

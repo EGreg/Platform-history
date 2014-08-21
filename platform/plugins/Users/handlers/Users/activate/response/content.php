@@ -16,7 +16,7 @@ function Users_activate_response_content()
 	
 	if (!empty(Users::$cache['success'])) {
 		$app = Q_Config::expect('Q', 'app');
-		$home = Q_Config::get('Users', 'uris', "$app/home", "$app/home");
+		$home = Q_Config::get('Users', 'uris', "$app/successUrl", "$app/home");
 		if (Q_Request::method() === 'POST') {
 			Q_Response::redirect(
 				Q_Config::get('Users', 'uris', "$app/afterActivate", $home)

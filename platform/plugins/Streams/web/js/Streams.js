@@ -2772,8 +2772,8 @@ Q.onInit.add(function _Streams_onInit() {
 	Q.text.Users.login.placeholders.fullName = 'Enter your full name';
 	Q.text.Users.login.maxlengths.fullName = 50;
 
-	Users.login.options.onSuccess.set(_connectSockets, "Streams");
-	Users.logout.options.onSuccess.set(Q.Socket.destroyAll, "Streams");
+	Users.onLogin.set(_connectSockets, "Streams");
+	Users.onLogout.set(Q.Socket.destroyAll, "Streams");
 	if (Users.loggedInUser) {
 		_connectSockets();
 	}

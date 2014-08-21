@@ -121,13 +121,17 @@ function _getProp (/*Array*/parts, /*Boolean*/create, /*Object*/context){
  */
 Q.extendObject = function _Q_extendObject(name, value, context, delimiter){
 	delimiter = delimiter || '.';
-	var parts = name.split(delimiter), p = parts.pop(), obj = _getProp(parts, true, context);
+	var parts = name.split(delimiter);
+	var p = parts.pop();
+	var obj = _getProp(parts, true, context);
 	if (obj === undefined) {
 		console.warn("Failed to set '"+name+"'");
 		return undefined;
 	} else {
 		// not null && object (maybe array) && value is real object
-		if (obj[p] && typeof obj[p] === "object" && Q.typeOf(value) === "object") {
+		if (obj[p]
+		&& typeof obj[p] === "object"
+		&& Q.typeOf(value) === "object") {
 			Q.extend(obj[p], value);
 		} else {
 			obj[p] = value;

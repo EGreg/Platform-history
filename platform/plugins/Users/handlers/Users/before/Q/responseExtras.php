@@ -11,12 +11,16 @@ function Users_before_Q_responseExtras()
 	}
 	if (!Q_Request::isAjax()) {
 		Q_Response::setScriptData('Q.plugins.Users.requireLogin', $rl_array);
+		$successUrl = Q_Config::get('Users', 'uris', "$app/successUrl", "$app/home");
+		$afterActivate = Q_Config::get('Users', 'uris', "$app/afterActivate", $home);
 		$loginOptions = Q_Config::get('Users', 'login', array(
 			"identifierType" => 'email,mobile', 
 			"userQueryUri" => 'Users/user',
 			"using" => "native,facebook",
 			"noRegister" => false
 		));
+		$loginOptions["afterActivate"] = Q_Uri::url($afterActivate);
+		$loginOptions["successUrl"] = Q_Uri::url($successUrl);
 		Q_Response::setScriptData('Q.plugins.Users.login.serverOptions', $loginOptions);
 		Q_Response::setScriptData('Q.plugins.Users.setIdentifier.serverOptions', $loginOptions);
 	}
