@@ -1848,7 +1848,7 @@ Q.md5_hmac_b64 = function _Q_md5_hmac_b64(a,b){return rstr2b64(rstr_hmac_md5(str
 Q.normalize = function _Q_normalize(text, replacement, characters, numChars) {
 	if (!numChars) numChars = 200;
 	if (replacement === undefined) replacement = '_';
-	characters = characters || /[^A-Za-z0-9]+/g);
+	characters = characters || /[^A-Za-z0-9]+/g;
 	if (text === undefined) {
 		debugger; // pause here if debugging
 	}
