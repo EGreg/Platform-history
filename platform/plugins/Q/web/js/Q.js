@@ -3132,7 +3132,8 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 					var key = name + ' state';
 					var $this = $(this);
 					if ($this.data(key)) {
-						// plugin was constructed, so call remove method if it's defined,
+						// This jQuery plugin was already applied here,
+						// so call remove method if it's defined,
 						// before calling constructor again
 						$this.plugin(name, 'remove');
 					}
@@ -7051,8 +7052,8 @@ var _qsockets = {}, _eventHandlers = {}, _connectHandlers = {}, _ioCleanup = [];
 var _socketRegister = [];
 
 function _ioOn(obj, evt, callback) {
-	// don't worry, this function is idempotent
-	// so we're not being super careful about calling it only once with the same exact arguments
+	// In case we call this function again during a reconnect,
+	// and the functions were already bound, remove them first.
 	obj.off(evt, callback);
 	obj.on(evt, callback);
  	_ioCleanup.push(function () { 

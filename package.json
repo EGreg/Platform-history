@@ -17,5 +17,9 @@
 		"twilio": "0.4.x",
 		"yuidocjs": "0.3.x",
 		"apnagent": "1.x.x"
+	},
+	"repository": {
+	  "type": "git",
+	  "url": "git://github.com/EGreg/Q.git"
 	}
 }

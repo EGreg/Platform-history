@@ -385,7 +385,9 @@ Q.Tool.define('Streams/chat', function(options) {
 			maxWidth: $(tool.element).width() 
 		}, function () {
 			this.plugin('Q/placeholders', {}, function () {
-				this.plugin('Q/clickfocus');
+				if (!Q.info.isTouchscreen) {
+					this.plugin('Q/clickfocus');
+				}
 			});
 		}).keypress(function(event) {
 			if (event.keyCode != 13) {
@@ -410,7 +412,9 @@ Q.Tool.define('Streams/chat', function(options) {
 				Q.Users.login({
 					onSuccess: { "Streams/chat": _postMessage },
 					onCancel: { "Streams/chat": function () {
-						$this.plugin('Q/clickfocus');
+						if (!Q.info.isTouchscreen) {
+							$this.plugin('Q/clickfocus');
+						}
 					}},
 					onResult: { "Streams/chat": function () {
 						blocked = false;
@@ -436,7 +440,10 @@ Q.Tool.define('Streams/chat', function(options) {
 						return;
 					}
 					state.stream.refresh(null, {messages: true});
-					$this.val('').plugin('Q/clickfocus');
+					$this.val('');
+					if (!Q.info.isTouchscreen) {
+						$this.plugin('Q/clickfocus');
+					}
 				});
 			}
 
