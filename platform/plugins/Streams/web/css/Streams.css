@@ -331,7 +331,6 @@
 	margin-left: 55px;
 }
 .Streams_chat_message {
-	font-size: 13pt;
 	color: #222;
 	width: 96%;
 	max-height: 50px;
@@ -341,17 +340,17 @@
 	cursor: default;
 }
 .Streams_chat_messages {
-	padding: 10px;
 	min-height: 70px;
 	max-height: 300px;
 	overflow-x: hidden;
 }
 .Streams_chat_item {
+	font-size: 11pt;
 	margin: 10px 0;
 }
 .Streams_chat_noMessages {
 	color: gray;
-	font-size: 13pt;
+	font-size: 12pt;
 	text-align: center;
 	width: 100%;
 	display: block;
@@ -382,6 +381,7 @@
 	background: #bbb;
 }
 .Streams_chat_timestamp {
+	margin-right: 15px;
 	text-align: right;
 	float: right;
 	cursor: default;
@@ -389,7 +389,8 @@
 	color: gray;
 }
 .Streams_chat_bubble {
-	width: 80%;
+	min-width: 80%;
+	margin-right: 10px;
 	padding: 10px;
 	border: 1px solid #D0D9E4;
 	clear: both;
@@ -408,7 +409,8 @@
 	float: left;
 	margin-left: 50px;
 	background: #DAE3ED;
-}.Streams_chat_from_me .Streams_chat_bubble {
+}
+.Streams_chat_from_me .Streams_chat_bubble {
 	border-radius: 13px;
 	float: right;
 	background: #FFFFFF;

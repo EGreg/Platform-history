@@ -64,8 +64,9 @@ function (o) {
 			t.style.height = '0px';
 			var tH = t.scrollHeight + H;
 			t.style.height = tH + 'px';
-			c.style.height = 'auto';
-			c.style.height = c.offsetHeight + 'px';
+			setTimeout(function () {
+				c.style.height = t.offsetHeight + 'px';
+			}, 0)
 
 		}
 

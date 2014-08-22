@@ -6701,16 +6701,16 @@ function _activateTools(toolElement, options, shared) {
 	_loadToolScript(toolElement, function _activateTools_doConstruct(toolElement, toolFunc, toolName, uniqueToolId) {
 		if (!toolFunc.toolConstructor) {
 			toolFunc.toolConstructor = function Q_Tool(element, options) {
-				if (this.activated) return; // support re-entrancy of Q.activate
+				// support re-entrancy of Q.activate
+				if (this.activated
+				|| Q.getObject(['Q', 'tools', toolName], element)) {
+					return _activateTools.alreadyActivated;
+				}
 				this.activated = false;
 				this.initialized = false;
 				try {
 					this.options = Q.extend({}, Q.Tool.options.levels, toolFunc.options, Q.Tool.options.levels, options);
 					this.name = toolName;
-					if (Q.getObject(['Q', 'tools', toolName], element)) {
-						// support re-entrancy of Q.activate
-						return _activateTools.alreadyActivated;
-					}
 					Q.Tool.call(this, element, options);
 					this.state = Q.copy(this.options, toolFunc.stateKeys);
 					var prevTool = Q.Tool.beingActivated;

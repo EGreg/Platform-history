@@ -32,7 +32,9 @@ function () {
 		if(!(plch))
 			return;
 
-		var span = $('<span />').css('position', 'relative').addClass('Q_placeholder')
+		var span = $('<span />')
+			.css('position', 'relative')
+			.addClass('Q_placeholder')
 		$this.css({
 			'width': $this.width(),
 			'height': $this.height()
@@ -43,7 +45,6 @@ function () {
 		});
 		$this.wrap(span);
 		span = $this.parent();
-		span.width($this.outerWidth(true)).height($this.outerHeight(true));
 		span.on(Q.Pointer.fastclick, function() {
 			$this.trigger('focus');
 			return false;
