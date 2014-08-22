@@ -421,7 +421,7 @@
 }
 .Streams_chat_from_me .Users_avatar_tool {
 	display: none;
-	float: right;
+	float: left;
 }
 .Streams_chat_notification {
 	text-align: center;
@@ -431,13 +431,9 @@
 }
 /* phones */
 @media (min-width: 320px) and (max-width: 580px) {
-	.Streams_chat_to_me .Users_avatar_contents {
-		float: left;
-		margin: -37px 0px 0px 50px;
-	}
-	.Streams_chat_from_me .Users_avatar_contents {
-		float: right;
-		margin: -37px 47px 0px 0px;
+	.Users_avatar_contents {
+		position: absolute;
+		top: 0px;
 	}
 	.Streams_chat_message {
 		width: 73%;
