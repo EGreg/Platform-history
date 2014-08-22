@@ -16,10 +16,10 @@ function Users_activate_response_content()
 	
 	if (!empty(Users::$cache['success'])) {
 		$app = Q_Config::expect('Q', 'app');
-		$home = Q_Config::get('Users', 'uris', "$app/successUrl", "$app/home");
+		$successUrl = Q_Config::get('Users', 'uris', "$app/successUrl", "$app/home");
 		if (Q_Request::method() === 'POST') {
 			Q_Response::redirect(
-				Q_Config::get('Users', 'uris', "$app/afterActivate", $home)
+				Q_Config::get('Users', 'uris', "$app/afterActivate", $successUrl)
 				.'?Q.fromSuccess=Users/activate&'.$_SERVER['QUERY_STRING']
 			);
 			return true;
