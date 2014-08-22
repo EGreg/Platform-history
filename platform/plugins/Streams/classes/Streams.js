@@ -401,7 +401,7 @@ Streams.listen = function (options) {
 				// invalidate cache for this stream
 //				Streams.getParticipants.forget(stream.publisherId, stream.name);
 				// inform user's clients about change
-				Streams.emitToUser(uid, 'join', Streams.fillMagicFields(participant));
+				Streams.emitToUser(uid, 'join', Db.Row.fillMagicFields(participant));
 				(new Streams.Stream(stream)).incParticipants(/* empty callback*/);
 				Streams.Stream.emit('join', stream, uid, ssid);
 				break;
@@ -684,18 +684,18 @@ Streams.listen = function (options) {
 
     Streams.fillMagicFields = function (obj) {
 		var toFill = [];
-		for (var i=0, l=toFill.length; i<l; ++i) {
-			var f = toFill[i];
-			if (!obj[f] || obj[f].expression === "CURRENT_TIMESTAMP") {
+		for (var f in obj) {
+			if (obj[f] && obj[f].expression === "CURRENT_TIMESTAMP") {
 				toFill.push(f);
 			}
 		}
 		if (!toFill.length) {
 			return obj;
 		}
-		Streams.db().getCurrentTimestamp(function (err, timestamp) {
+		var db = Streams.db();
+		db.getCurrentTimestamp(function (err, timestamp) {
 			for (var i=0, l=toFill.length; i<l; ++i) {
-				obj[toFill[i]] = timestamp;
+				obj[toFill[i]] = db.toDateTime(timestamp);
 			}
 		});
 		return obj;

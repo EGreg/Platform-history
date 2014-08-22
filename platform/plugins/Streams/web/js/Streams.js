@@ -2149,13 +2149,12 @@ Message.get.onError = new Q.Event();
  * @param {Function} callback Receives (err, message) as parameters
  */
 Message.post = function _Message_post (msg, callback) {
-	var slotName = "message";
 	var baseUrl = Q.baseUrl({
 		publisherId: msg.publisherId,
 		streamName: msg.streamName
 	});
 	msg["Q.clientId"] = Q.clientId();
-	Q.req('Streams/message', [slotName], function (err, data) {
+	Q.req('Streams/message', [], function (err, data) {
 		var msg = Q.firstErrorMessage(err, data && data.errors);
 		if (msg) {
 			var args = [err, data];
@@ -2163,12 +2162,7 @@ Message.post = function _Message_post (msg, callback) {
 			Message.post.onError.handle.call(this, msg, args);
 			return callback && callback.call(this, msg, args);
 		}
-		var message = data.slots.message && new Message(data.slots.message);
-		Message.get.cache.set(
-			[message.publisherId, message.streamName, parseInt(message.ordinal)],
-			0, message, [err, message]
-		);
-		callback && callback.call(message, err, message || null);
+		callback && callback.call(Message, err);
 	}, { method: 'post', fields: msg, baseUrl: baseUrl });
 };
 Message.post.onError = new Q.Event();
@@ -2281,6 +2275,9 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 			// which may cause confusion in some visual representations
 			// until things settle down on the screen
 			Q.each(messages, function (ordinal, message) {
+				if (Message.get.cache.get([publisherId, streamName, ordinal])) {
+					return; // it was already processed
+				}
 				Q.Streams.onEvent('post').handle(message);
 			}, {ascending: true, numeric: true});
 			

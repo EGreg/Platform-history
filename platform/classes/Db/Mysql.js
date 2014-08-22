@@ -326,6 +326,9 @@ function Db_Mysql(connName, dsn) {
 	 * @return {integer} The timestamp
 	 */
 	dbm.fromDateTime = function(datetime) {
+		if (datetime.constructor === Date) {
+			return datetime.getTime();
+		}
 		var year = datetime.substr(0, 4),
 		    month = datetime.substr(5, 2),
 		    day = datetime.substr(8, 2),
@@ -391,23 +394,23 @@ function Db_Mysql(connName, dsn) {
 	 * @return {integer}
 	 */
 	dbm.getCurrentTimestamp = function (callback) {
-		if (!_dbtime) {
-			var time1 = Date.now();
-			dbm.SELECT('CURRENT_TIMESTAMP ct', '').execute(function (err, rows) {
-				if (err) {
-					return callback(err);
-				}
-				if (!rows || !rows[0]) {
-					return callback("No results returned");
-				}
-				_dbtime = dbm.fromDateTime(rows[0].fields.ct);
-				var time2 = Date.now();
-				_nodetime = (time1 + time2) / 2;
-				callback(null, _dbtime + Math.round((time2 - _nodetime)/1000));
-			});
-		} else {
-			callback(null, _dbtime + Math.round((Date.now() - _nodetime)/1000));
+		if (_dbtime) {
+			return callback(null, _dbtime + Math.round(Date.now() - _nodetime));
 		}
+		var time1 = Date.now();
+		dbm.SELECT('CURRENT_TIMESTAMP ct', '').execute(function (err, rows) {
+			if (err) {
+				return callback(err);
+			}
+			if (!rows || !rows[0]) {
+				return callback("No results returned");
+			}
+			_dbtime = dbm.fromDateTime(rows[0].fields.ct);
+			var time2 = Date.now();
+			_nodetime = (time1 + time2) / 2;
+			console.log(_dbtime, _nodetime);
+			callback(null, _dbtime + Math.round(time2 - _nodetime));
+		});
 	};
 
 }

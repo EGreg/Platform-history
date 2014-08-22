@@ -7053,9 +7053,10 @@ var _socketRegister = [];
 function _ioOn(obj, evt, callback) {
 	// don't worry, this function is idempotent
 	// so we're not being super careful about calling it only once with the same exact arguments
+	obj.off(evt, callback);
 	obj.on(evt, callback);
  	_ioCleanup.push(function () { 
- 		obj.removeListener(evt, callback);
+ 		obj.off(evt, callback);
  	});
 }
 
@@ -7124,11 +7125,13 @@ function _connectSocketNS(ns, url, callback, force) {
 				console.log('Socket connected to '+url);
 			}
 			_ioOn(socket, 'connect', _connected);
+			/*
 			_ioOn(socket, 'reconnect', function () {
 				this.connected = true;
 				++this.io.connected;
 				_connected.apply(this, arguments);
 			});
+			*/
 			_ioOn(socket, 'connect_error', function (error) {
 				console.log('Failed to connect to '+url, error);
 			});
@@ -7284,7 +7287,8 @@ Q.Socket.onEvent = Q.Event.factory(
 					// this occurs when socket is connected
 					_ioOn(socket, name, event.handle);
 		    	}
-				if (qs) { // add listeners on sockets which are already constructed
+				if (qs) { 
+					// add listeners on sockets which are already constructed
 					Q.Socket.onConnect(ns, url).add(_Q_Socket_register, 'Q');
 				}
 			});
@@ -7295,7 +7299,7 @@ Q.Socket.onEvent = Q.Event.factory(
 			// Every handler was removed from the event
 			Q.each(Q.Socket.get(ns, url), function (url, qs) {
 				if (qs) { // remove listeners on sockets which are already constructed
-					qs.socket.removeListener(name, event.handle);
+					qs.socket.off(name, event.handle);
 				}
 			});
 	    	Q.each(_socketRegister, function (i, item) {

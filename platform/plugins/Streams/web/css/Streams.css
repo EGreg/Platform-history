@@ -333,7 +333,7 @@
 .Streams_chat_message {
 	color: #222;
 	width: 96%;
-	max-height: 50px;
+	max-height: 100px;
 	overflow: hidden;
 	word-wrap: break-word;
 	text-overflow: ellipsis;
@@ -389,7 +389,7 @@
 	color: gray;
 }
 .Streams_chat_bubble {
-	min-width: 80%;
+	min-width: 30%;
 	margin-right: 10px;
 	padding: 10px;
 	border: 1px solid #D0D9E4;
@@ -406,13 +406,12 @@
 }
 .Streams_chat_to_me .Streams_chat_bubble {
 	border-radius: 13px;
-	float: left;
 	margin-left: 50px;
 	background: #DAE3ED;
 }
 .Streams_chat_from_me .Streams_chat_bubble {
 	border-radius: 13px;
-	float: right;
+	margin-left: 50px;
 	background: #FFFFFF;
 }
 .Streams_chat_from_me .Streams_chat_tick {

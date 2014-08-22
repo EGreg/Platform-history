@@ -95,8 +95,14 @@ Q.Tool.define('Streams/chat', function(options) {
 	Q: {
 	
 		onRetain: function () {
+			var $last = this.$('.Streams_chat_bubble').last();
+			var selector = '.Streams_chat_item';
+			var $nextAll = $last.length
+				? $last.nextAll(selector)
+				: this.$(selector);
 			this.refresh(function () {
 				this.$('.Streams_chat_messages')
+					.append($nextAll)
 					.scrollTop(this.state.lastScrollTop);
 			});
 		}
@@ -430,7 +436,7 @@ Q.Tool.define('Streams/chat', function(options) {
 						return;
 					}
 					state.stream.refresh(null, {messages: true});
-					$this.val('');
+					$this.val('').plugin('Q/clickfocus');
 				});
 			}
 

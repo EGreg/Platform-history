@@ -51,13 +51,6 @@ Base.connectionName = function() {
 };
 
 /**
- * Link to Places.Nearby model
- * @property Nearby
- * @type Places.Nearby
- */
-Base.Nearby = Q.require('Places/Nearby');
-
-/**
  * Link to Places.Zipcode model
  * @property Zipcode
  * @type Places.Zipcode
