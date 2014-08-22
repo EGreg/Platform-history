@@ -39,7 +39,7 @@ Q.Tool.define("Q/tabs", function(options) {
 		}
 		var element = this;
 		setTimeout(function () {
-			tool.switchTo(element.getAttribute('data-name'), element);	
+			tool.switchTo([element.getAttribute('data-name'), element]);	
 		}, 0);
 	}).click(function (event) {
 		event.preventDefault();
@@ -70,9 +70,18 @@ Q.Tool.define("Q/tabs", function(options) {
 {
 	/**
 	 * @method switchTo
-	 * @param {String} name the name of the tab to switch to
+	 * @param {String|Array} name the name of the tab to switch to.
+	 *  Can also be [name, tabElement]
+	 * @param {Object} loaderOptions any options to merge on top of
+	 *  tool.state.loaderOptions
+	 * @param {Mixed} extra anything to pass to beforeSwitch handlers
 	 */
-	switchTo: function (name, tab, extra) {
+	switchTo: function (name, loaderOptions, extra) {
+		var tab;
+		if (Q.typeOf(name) === 'array') {
+			tab = name[1];
+			name = name[0];
+		}
 		if (tab === undefined) {
 			$('.Q_tabs_tab', this.element).each(function () {
 				if (this.getAttribute('data-name') === name) {
@@ -85,6 +94,7 @@ Q.Tool.define("Q/tabs", function(options) {
 				return false;
 			}
 		}
+		console.log(tab);
 
 		var state = this.state;
 
@@ -112,13 +122,13 @@ Q.Tool.define("Q/tabs", function(options) {
 		var tool = this;
 		var o = Q.extend({
 			slotNames: slots,
-			onError: {"Q/tabs": function (msg) {
+			onError: new Q.Event(function (msg) {
 				alert(msg);
-			}},
-			onActivate: {"Q/tabs": function () {
+			}, "Q/tabs"),
+			onActivate: new Q.Event(function () {
 				tool.indicateSelected(tool.getName(tab));
 				state.onActivate.handle(tab);
-			}},
+			}, "Q/tabs"),
 			loadExtras: true,
 			ignorePage: this.isInDialog(),
 			ignoreHistory: this.isInDialog(),
@@ -127,8 +137,7 @@ Q.Tool.define("Q/tabs", function(options) {
 				return $(state.selectors[slotName])[0]
 					|| document.getElementById(slotName+"_slot");
 			}
-			
-		}, state.loaderOptions);
+		}, loaderOptions);
 
 		Q.loadUrl(href, o);
 	},
@@ -266,7 +275,7 @@ Q.Tool.define("Q/tabs", function(options) {
 				$overflow.plugin("Q/contextual", {
 					elements: elements,
 					defaultHandler: function ($tab) {
-						tool.switchTo($tab.attr('data-name'), $tab[0]);
+						tool.switchTo([$tab.attr('data-name'), $tab[0]]);
 					},
 					className: "Q_tabs_contextual"
 				});
