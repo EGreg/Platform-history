@@ -401,7 +401,7 @@ Streams.listen = function (options) {
 				// invalidate cache for this stream
 //				Streams.getParticipants.forget(stream.publisherId, stream.name);
 				// inform user's clients about change
-				Streams.emitToUser(uid, 'join', Db.Row.fillMagicFields(participant));
+				Streams.emitToUser(uid, 'join', Streams.fillMagicFields(participant));
 				(new Streams.Stream(stream)).incParticipants(/* empty callback*/);
 				Streams.Stream.emit('join', stream, uid, ssid);
 				break;

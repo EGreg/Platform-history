@@ -667,8 +667,9 @@ Row.prototype.fillMagicFields = function () {
 	var toFill = [];
 	var _fieldNames = this.fieldNames();
 	for (var i=0, l=_fieldNames.length; i<l; ++i) {
-		var f = _fieldNames[i];
-		if (this.fields[f].expression === "CURRENT_TIMESTAMP") {
+		var f = _fieldNames[i], ff;
+		if ((ff = this.fields[f])
+		&& ff.expression === "CURRENT_TIMESTAMP") {
 			toFill.push(f);
 		}
 	}
