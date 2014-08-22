@@ -210,7 +210,7 @@ Utils.sendEmail = function (to, subject, view, fields, options, callback) {
 		? Q.Handlebars.renderSource(view, fields)
 		: Q.Handlebars.render(view, fields);
 	
-	var smtp = Q.Config.get(['Users', 'email', 'smtp'], {host: 'sendmail'}));
+	var smtp = Q.Config.get(['Users', 'email', 'smtp'], {host: 'sendmail'});
 	if (!smtpTransport && smtp) {
 		// Set up the default mail transport
 		var host = smtp.host || 'sendmail';
@@ -276,20 +276,23 @@ Utils.sendSMS = function (to, view, fields, options, callback) {
 	} else {
 		number = to;
 	}
-	var twilio = Q.Config.get(['Users', 'mobile', 'twilio']);
-	if (!twilioClient && twilio) {
+	var config = Q.Config.get(['Users', 'mobile', 'twilio']);
+	if (!twilioClient && config) {
 		var twilio = require('twilio');
 		// try twilio config
 		var sid, token;
-		if (twilio.sid && twilio.token) {
+		if (config.sid && config.token) {
 			// twilio config is given. Let's create transport to use it
-			twilioClient = new twilio.RestClient(twilio.sid, twilio.token);
+			twilioClient = new twilio.RestClient(config.sid, config.token);
 		}
 	}
+	
 	var content = options.isSource
 		? Q.Handlebars.renderSource(view, fields)
 		: Q.Handlebars.render(view, fields);
-	if (twilioClient && (from = options.from || Q.Config.get(['Users', 'mobile', 'from'], null))) {
+	
+	if (twilioClient
+	&& (from = options.from || Q.Config.get(['Users', 'mobile', 'from'], null))) {
 		twilioClient.sendSms(from, '+'+number, content, {}, function (res) {
 			if (key) {
 				Q.log('sent mobile message (via twilio) to '+number+":\n"+content, key);
