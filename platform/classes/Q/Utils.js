@@ -210,9 +210,8 @@ Utils.sendEmail = function (to, subject, view, fields, options, callback) {
 		? Q.Handlebars.renderSource(view, fields)
 		: Q.Handlebars.render(view, fields);
 	
-	var smtp;
-	if (!smtpTransport
-	&& (smtp = Q.Config.get(['Users', 'email', 'smtp'], {host: 'sendmail'}))) {
+	var smtp = Q.Config.get(['Users', 'email', 'smtp'], {host: 'sendmail'}));
+	if (!smtpTransport && smtp) {
 		// Set up the default mail transport
 		var host = smtp.host || 'sendmail';
 
@@ -278,8 +277,7 @@ Utils.sendSMS = function (to, view, fields, options, callback) {
 		number = to;
 	}
 	var twilio = Q.Config.get(['Users', 'mobile', 'twilio']);
-	if (!twilioClient
-	&& (twilio = Q.Config.get(['Users', 'mobile', 'twilio', 'sid']))) {
+	if (!twilioClient && twilio) {
 		var twilio = require('twilio');
 		// try twilio config
 		var sid, token;
