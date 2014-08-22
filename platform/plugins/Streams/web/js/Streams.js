@@ -2046,6 +2046,8 @@ var Message = Streams.Message = function Streams_Message(fields) {
 	this.typename = 'Q.Streams.Message';
 };
 
+Message.latest = {};
+
 var Mp = Message.prototype;
 
 /**
@@ -2179,16 +2181,16 @@ Message.post.onError = new Q.Event();
  */
 Message.latestOrdinal = function _Message_latestOrdinal (publisherId, streamName) {
 	var latest = 0;
-	Streams.get.cache.each([publisherId, streamName], function (k, v) {
-		if (!v.params[0] && v.subject.fields.messageCount > 0) {
-			latest = v.subject.fields.messageCount;
-			return false;
+	Message.get.cache.each([publisherId, streamName], function (k, v) {
+		if (!v.params[0] && v.subject.ordinal > 0) {
+			latest = Math.max(latest, v.subject.ordinal);
 		}
 	});
 	if (!latest) {
-		Message.get.cache.each([publisherId, streamName], function (k, v) {
-			if (!v.params[0] && v.subject.ordinal > 0) {
-				latest = Math.max(latest, v.subject.ordinal);
+		Streams.get.cache.each([publisherId, streamName], function (k, v) {
+			if (!v.params[0] && v.subject.fields.messageCount > 0) {
+				latest = v.subject.fields.messageCount;
+				return false;
 			}
 		});
 	}
@@ -2275,7 +2277,7 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 			// which may cause confusion in some visual representations
 			// until things settle down on the screen
 			Q.each(messages, function (ordinal, message) {
-				if (Message.get.cache.get([publisherId, streamName, ordinal])) {
+				if (Message.latest[publisherId+"\t"+streamName] >= ordinal) {
 					return; // it was already processed
 				}
 				Q.Streams.onEvent('post').handle(message);
@@ -2920,6 +2922,7 @@ Q.onInit.add(function _Streams_onInit() {
 				[msg.publisherId, msg.streamName, parseInt(msg.ordinal)],
 				0, message, [null, message]
 			);
+			Message.latest[msg.publisherId+"\t"+msg.streamName] = msg.ordinal;
 			var cached = Streams.get.cache.get([msg.publisherId, msg.streamName]);
 			Streams.get(msg.publisherId, msg.streamName, function (err) {
 

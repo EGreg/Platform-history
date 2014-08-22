@@ -408,7 +408,6 @@ function Db_Mysql(connName, dsn) {
 			_dbtime = dbm.fromDateTime(rows[0].fields.ct);
 			var time2 = Date.now();
 			_nodetime = (time1 + time2) / 2;
-			console.log(_dbtime, _nodetime);
 			callback(null, _dbtime + Math.round(time2 - _nodetime));
 		});
 	};
