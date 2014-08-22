@@ -46,7 +46,9 @@ Q.Tool.define('Streams/chat', function(options) {
 		tool.scrollToBottom();
 	});
 	Q.Streams.refresh.beforeRequest.add(function () {
-		this.stream.refresh({messages: true});
+		if (state.stream) {
+			state.stream.refresh(null, {messages: true});
+		}
 	}, tool);
 	//tool.Q.onInit.set(_init, "Streams/chat");
 }, 
