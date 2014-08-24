@@ -277,7 +277,7 @@ Q.Tool.define('Streams/chat', function(options) {
 		var tool = this;
 		var state = tool.state;
 		var params = {
-			max  : state.earliest - 1,
+			max  : state.earliest ? state.earliest - 1 : -1,
 			limit: state.messagesToLoad,
 			type: "Streams/chat/message"
 		};
