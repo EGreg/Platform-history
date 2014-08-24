@@ -303,7 +303,7 @@ Q.Tool.define('Streams/chat', function(options) {
 		/*
 		 * get more messages
 		 */
-		function renderMore(messages) {
+		function _renderMore(messages) {
 			messages = tool.prepareMessages(messages);
 			var $more = tool.$('.Streams_chat_more');
 			if (Q.isEmpty(messages)) {
@@ -330,11 +330,11 @@ Q.Tool.define('Streams/chat', function(options) {
 
 		if (state.more.isClick) {
 			tool.$('.Streams_chat_more').click(function(){
-				tool.more(tool.renderMore);
+				tool.more(_renderMore);
 			});
 		} else {
 			this.niceScroll(function(){
-				tool.more(tool.renderMore);
+				tool.more(_renderMore);
 			});
 		}
 
