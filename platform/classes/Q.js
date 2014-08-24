@@ -2365,9 +2365,7 @@ String.prototype.hashCode = function() {
  */
 Q.date = function (format, timestamp) {
 	// http://kevin.vanzonneveld.net
-	var that = this,
-		jsdate, f, formatChr = /\?([a-z])/gi,
-		formatChrCb,
+	var jsdate, f, formatChr = /[a-z]{1}/gi,
 		// Keep this here (works, but for code commented-out
 		// below for file size reasons)
 		//, tal= [],
@@ -2378,7 +2376,7 @@ Q.date = function (format, timestamp) {
 			return n;
 		},
 		txt_words = ["Sun", "Mon", "Tues", "Wednes", "Thurs", "Fri", "Satur", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-	formatChrCb = function (t, s) {
+	function formatChrCb(t, s) {
 		return f[t] ? f[t]() : s;
 	};
 	f = {
@@ -2562,12 +2560,8 @@ Q.date = function (format, timestamp) {
 			return jsdate / 1000 | 0;
 		}
 	};
-	this.date = function _Q_date (format, timestamp) {
-		that = this;
-		jsdate = (!timestamp ? new Date() : (timestamp instanceof Date) ? new Date(timestamp) : new Date(timestamp * 1000));
-		return format.replace(formatChr, formatChrCb);
-	};
-	return this.date(format, timestamp);
+	jsdate = (!timestamp ? new Date() : (timestamp instanceof Date) ? new Date(timestamp) : new Date(timestamp * 1000));
+	return format.replace(formatChr, formatChrCb);
 };
 
 var timeHandles = {};
