@@ -991,6 +991,7 @@ Q.Cache.prototype.clear = function _Q_Cache_prototype_clear(key) {
 Q.Cache.prototype.each = function _Q_Cache_prototype_clear(args, callback) {
 	var cache = this;
 	var prefix = null;
+	if (!callback) return;
 	if (typeof args === 'function') {
 		callback = args;
 		args = undefined;

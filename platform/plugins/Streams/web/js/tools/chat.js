@@ -36,6 +36,10 @@ Q.Tool.define('Streams/chat', function(options) {
 		case 'scroll': state.more.isScroll = true; break;
 		default: break;
 	}
+	if (state.stream) {
+		state.publisherId = state.stream.fields.publisherId;
+		state.streamName = state.stream.fields.name;
+	}
 	if (!state.publisherId) {
 		throw new Q.Error("Streams/chat: missing publisherId option");
 	}
@@ -278,16 +282,16 @@ Q.Tool.define('Streams/chat', function(options) {
 			type: "Streams/chat/message"
 		};
 
-		state.stream.getMessage(params, function(err, messages){
-			if (err) return;
+		Q.Streams.Message.get(state.publisherId, state.streamName, params,
+		function(err, messages){
+			if (err) {
+				return Q.handle(state.onError, this, [err]);
+			}
 			Q.each(messages, function (ordinal) {
 				state.earliest = ordinal;
 				return false;
 			}, {ascending: true});
 			callback.call(tool, messages);
-		}, {
-			'type': 'Streams/chat/message',
-			'ascending': true
 		});
 	},
 
@@ -297,8 +301,8 @@ Q.Tool.define('Streams/chat', function(options) {
 			blocked = false;
 
 		/*
-		* get more messages
-		*/
+		 * get more messages
+		 */
 		function renderMore(messages) {
 			messages = tool.prepareMessages(messages);
 			var $more = tool.$('.Streams_chat_more');
@@ -326,11 +330,11 @@ Q.Tool.define('Streams/chat', function(options) {
 
 		if (state.more.isClick) {
 			tool.$('.Streams_chat_more').click(function(){
-				tool.more(renderMore);
+				tool.more(tool.renderMore);
 			});
 		} else {
 			this.niceScroll(function(){
-				tool.more(renderMore);
+				tool.more(tool.renderMore);
 			});
 		}
 
@@ -559,7 +563,9 @@ Q.Tool.define('Streams/chat', function(options) {
 				this.style.cursor = 'pointer';
 			}
 		});
-		$(this.state.inputElement).plugin('Q/clickfocus');
+		if (!Q.info.isTouchscreen) {
+			$(this.state.inputElement).plugin('Q/clickfocus');
+		}
 	},
 	
 	refresh: function (callback) {
@@ -567,21 +573,15 @@ Q.Tool.define('Streams/chat', function(options) {
 		var tool = this;
 		var state = tool.state;
 		
-		function _render(err, stream, extra) {
-			if (err) {
-				return Q.handle(state.onError, this, [err]);
-			}
-			var stream = state.stream = this;
-			state.publisherId = stream.fields.publisherId;
-			state.streamName = stream.fields.name;
-			Q.each(extra.messages, function (ordinal) {
+		function _render(messages) {
+			Q.each(messages, function (ordinal) {
 				state.earliest = ordinal;
 				return false;
 			}, {ascending: true});
 		
 			tool.render(function() {
 				tool.renderMessages(
-					tool.prepareMessages(extra.messages), 
+					tool.prepareMessages(messages), 
 					function (snippets) {
 						Q.each(snippets, function (key, $html) {
 							tool.$('.Streams_chat_noMessages').remove();
@@ -602,10 +602,14 @@ Q.Tool.define('Streams/chat', function(options) {
 		
 		}
 		
-		Q.Streams.retainWith(this)
-		.get(state.publisherId, state.streamName, _render, {
-			messages: state.messagesToLoad
+		var p = new Q.Pipe();
+		p.add(['stream', 'messages'], function (params, subjects) {
+			state.stream = subjects.stream;
+			_render.apply(subjects.messages, params.messages);
 		});
+		Q.Streams.retainWith(this)
+		.get(state.publisherId, state.streamName, p.fill('stream'));
+		tool.more(p.fill('messages'));
 	}
 });
 

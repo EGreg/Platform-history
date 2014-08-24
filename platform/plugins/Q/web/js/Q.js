@@ -4059,6 +4059,7 @@ Cp.clear = function _Q_Cache_prototype_clear() {
  */
 Cp.each = function _Q_Cache_prototype_clear(args, callback) {
 	var prefix = null;
+	if (!callback) return;
 	if (typeof args === 'function') {
 		callback = args;
 		args = undefined;
@@ -4962,7 +4963,7 @@ Q.request = function (url, slotNames, callback, options) {
 				Q.handle(o.handleRedirects, Q, [data.redirect.url]);
 				redirected = true;
 			}
-			callback.call(this, err, data, redirected);
+			callback && callback.call(this, err, data, redirected);
 			Q.handle(o.onProcessed, Q, [err, data, redirected]);
 		};
 
@@ -8606,7 +8607,8 @@ Q.prompt = function(message, callback, options) {
 						   - field.next().outerWidth(true) - 5;
 			field.css({ 'width': fieldWidth + 'px' })
 				.plugin('Q/placeholders')
-				.plugin('Q/clickfocus').on('keydown', function (event) {
+				.plugin('Q/clickfocus')
+				.on('keydown', function (event) {
 					if (event.keyCode === 13) {
 						_done();
 					}

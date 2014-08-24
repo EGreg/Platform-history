@@ -839,8 +839,10 @@ class Q_Html
 		}
 		$cdata = !empty($attributes['cdata']);
 		unset($attributes['cdata']);
-		$comment = isset($attributes['comment']) ? $attributes['comment'] : null;
+		$comment = !empty($attributes['comment']);
 		unset($attributes['comment']);
+		$raw = !empty($attributes['raw']);
+		unset($attributes['raw']);
 		$return = "\n".self::tag('script', $attributes);
 		if ($cdata) {
 			$return .= "\n// <![CDATA[\n";
@@ -848,7 +850,7 @@ class Q_Html
 			$return .= "<!-- \n"; 
 		} else {
 			$return .= "\n";
-			if (empty($attributes['raw'])) {
+			if (!$raw) {
 				$script = self::text($script);
 			}
 		}

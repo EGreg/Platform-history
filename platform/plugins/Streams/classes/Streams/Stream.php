@@ -1006,8 +1006,7 @@ class Streams_Stream extends Base_Streams_Stream
 		return array(
 			'success' => $result,
 			'invited' => $userIds,
-			'participating' => $total - $to_invite,
-			'levels' => compact('readLevel', 'writeLevel', 'adminLevel')
+			'alreadyParticipating' => $total - $to_invite
 		);
 	}
 	

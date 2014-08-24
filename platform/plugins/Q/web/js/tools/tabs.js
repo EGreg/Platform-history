@@ -94,7 +94,6 @@ Q.Tool.define("Q/tabs", function(options) {
 				return false;
 			}
 		}
-		console.log(tab);
 
 		var state = this.state;
 
@@ -137,7 +136,7 @@ Q.Tool.define("Q/tabs", function(options) {
 				return $(state.selectors[slotName])[0]
 					|| document.getElementById(slotName+"_slot");
 			}
-		}, loaderOptions);
+		}, state.loaderOptions, loaderOptions);
 
 		Q.loadUrl(href, o);
 	},

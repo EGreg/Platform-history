@@ -25,7 +25,7 @@
 			":action": {"module": "MyApp"}
 		},
 		"response": {
-			"slotNames": ["title", "notices", "dashboard", "content", "dialogs"],
+			"slotNames": ["dashboard", "content", "dialogs", "title", "notices"],
 			"ajax": [],
 			"layout": {
 				"desktop": "MyApp/layout/desktop.php",

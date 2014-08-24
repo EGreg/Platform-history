@@ -2093,14 +2093,14 @@ Mp.get = function _Message_prototype_get (instructionName) {
 Message.get = Q.getter(function _Message_get (publisherId, streamName, ordinal, callback) {
 	var slotName, criteria = {};
 	if (Q.typeOf(ordinal) === 'object') {
-		slotName = 'messages';
+		slotName = ['messages'];
 		criteria.min = parseInt(ordinal.min);
 		criteria.max = parseInt(ordinal.max);
 		criteria.limit = parseInt(ordinal.limit);
 		if ('type' in ordinal) criteria.type = ordinal.type;
 		if ('ascending' in ordinal) criteria.ascending = ordinal.ascending;
 	} else {
-		slotName = 'message';
+		slotName = ['message'];
 		criteria = parseInt(ordinal);
 	}
 
@@ -2844,6 +2844,7 @@ Q.onInit.add(function _Streams_onInit() {
 			Q.Dialogs.push({
 				dialog: dialog,
 				mask: true,
+				noClose: true,
 				closeOnEsc: false, 
 				onActivate: {'Streams.completeInvited': function() {
 					dialog.find('#Streams_login_username')

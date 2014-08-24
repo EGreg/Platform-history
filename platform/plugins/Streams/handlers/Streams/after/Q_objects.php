@@ -32,7 +32,7 @@ function Streams_after_Q_objects () {
 	);
 	
 	$params = array(
-		'displayName' => $displayName,
+		'displayName' => null,
 		'action' => 'Streams/basic',
 		'icon' => Q_Html::themedUrl("plugins/Users/img/icons/{$user->icon}"),
 		'token' => $invite->token,
