@@ -2841,17 +2841,30 @@ Q.onInit.add(function _Streams_onInit() {
 		}
 		Q.Template.render('Streams/invite/complete', params, function(err, html) {
 			var dialog = $(html);
+			var interval;
 			Q.Dialogs.push({
 				dialog: dialog,
 				mask: true,
 				noClose: true,
 				closeOnEsc: false, 
+				beforeClose: function () {
+					if (interval) {
+						clearInterval(interval);
+					}
+				},
 				onActivate: {'Streams.completeInvited': function() {
 					dialog.find('#Streams_login_username')
 						  .attr('maxlength', Q.text.Users.login.maxlengths.fullName)
 						  .attr('placeholder', Q.text.Users.login.placeholders.fullName)
 						  .plugin('Q/placeholders');
-					$('input', dialog).eq(0).plugin('Q/clickfocus');
+					if (!Q.info.isTouchscreen) {
+						var $input = $('input', dialog).eq(0);
+						$input.plugin('Q/clickfocus');
+						interval = setInterval(function () {
+							if ($input.val()) return;
+							$input.plugin('Q/clickfocus');
+						}, 100);
+					}
 					var complete_form = dialog.find('form').validator().submit(function(e) {
 						e.preventDefault();
 						var baseUrl = Q.baseUrl({
