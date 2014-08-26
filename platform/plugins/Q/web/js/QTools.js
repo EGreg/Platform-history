@@ -896,7 +896,7 @@ Q.Layout = {
 		
 		Q.Layout.checkOrientation();
 		
-		Q.Notices.processAdded();
+		Q.Notice.processAdded();
 		
 		if (Q.Layout.needUpdateOnLoad)
 		{
@@ -1211,7 +1211,7 @@ Q.Layout = {
 		}
 		
 		if (!heightOnly)
-			Q.Contextual.hide(Q.Notices.expanded);
+			Q.Contextual.hide(Q.Notice.expanded);
 		
 		if (Q.info.isTouchscreen)
 		{
@@ -1258,7 +1258,7 @@ Q.Layout = {
 			Q.Dashboard.build();
 		}
 		Q.Dashboard.updateLayout();
-		Q.Notices.updateLayout();
+		Q.Notice.updateLayout();
 		
 		var columnsHeight = 0;
 		if (Q.info.isMobile)
@@ -3054,9 +3054,9 @@ Q.Contextual.options = {
 
 /**
  * Operates with notices.
- * @class Q.Notices
+ * @class Q.Notice
  */
-Q.Notices = {
+Q.Notice = {
 		
 	/**
 	 * Setting that changes notices slide down / slide up time.
@@ -3100,10 +3100,10 @@ Q.Notices = {
 			noticesList.append(notice);
 			if (allNotices.length != 0)
 			{
-				Q.Notices.removeCounter();
-				Q.Notices.addCounter();
+				Q.Notice.removeCounter();
+				Q.Notice.addCounter();
 			}
-			Q.Notices.processAdded();
+			Q.Notice.processAdded();
 		}
 		else
 		{
@@ -3112,7 +3112,7 @@ Q.Notices = {
 	},
 	
 	/**
-	 * Processes added notices, either using Q.Notices.add() or using 'notices' slot contents.
+	 * Processes added notices, either using Q.Notice.add() or using 'notices' slot contents.
      * @method processAdded
 	 */
 	processAdded: function()
@@ -3134,7 +3134,7 @@ Q.Notices = {
 				lastNotice.find('.Q_common_notice').css({ 'width': noticeWidth + 'px' });
 			}, 0);
 			
-			if (!Q.Notices.poppedUp)
+			if (!Q.Notice.poppedUp)
 			{
 				if (noticesCount > 1)
 				{
@@ -3142,15 +3142,15 @@ Q.Notices = {
 					{
 						noticesSlot.find('ul li').hide();
 						noticesSlot.find('ul li:last').show();
-						Q.Notices.addCounter();
+						Q.Notice.addCounter();
 					}, 0);
 				}
 				var noticesMarginTop = '-' + noticesSlot.outerHeight() + 'px';
 				noticesSlot.css({ 'margin-top': noticesMarginTop });
-				noticesSlot.show().clearQueue().animate({ 'margin-top': '0' }, Q.Notices.popUpTime);
+				noticesSlot.show().clearQueue().animate({ 'margin-top': '0' }, Q.Notice.popUpTime);
 				setTimeout(function()
 				{
-					Q.Notices.animateTopOffsets();
+					Q.Notice.animateTopOffsets();
 				}, 0);
 			}
 			
@@ -3158,29 +3158,29 @@ Q.Notices = {
 			{
 				noticesSlot.mousemove(function(e)
 				{
-					if (!Q.Notices.slidingInProgress)
-						Q.Notices.triggerCollapse = false;
+					if (!Q.Notice.slidingInProgress)
+						Q.Notice.triggerCollapse = false;
 				});
 			}
 			
-			if (!Q.Notices.helpersCreated)
+			if (!Q.Notice.helpersCreated)
 			{
-				Q.Notices.eventHandlers = { 'expand': function() {}, 'collapse': function() {} };
+				Q.Notice.eventHandlers = { 'expand': function() {}, 'collapse': function() {} };
 				
-				Q.Notices.eventHandlers.expand = function()
+				Q.Notice.eventHandlers.expand = function()
 				{
-					if ((Q.info.isMobile || Q.info.isTablet) && Q.Notices.expanded)
+					if ((Q.info.isMobile || Q.info.isTablet) && Q.Notice.expanded)
 						return true;
 					
 					noticesSlot.find('ul li').show();
 					noticesMarginTop = '-' + (noticesSlot.outerHeight() - noticesSlot.find('ul li:last').outerHeight()) + 'px';
 					noticesSlot.css({ 'margin-top': noticesMarginTop });
 					
-					Q.Notices.removeCounter();
+					Q.Notice.removeCounter();
 					
 					noticesSlot.clearQueue().animate({ 'margin-top': '0' }, 200, function()
 					{
-						Q.Notices.expanded = true;
+						Q.Notice.expanded = true;
 					});
 					
 					if (Q.info.isMobile || Q.info.isTablet)
@@ -3189,7 +3189,7 @@ Q.Notices = {
 					}
 				};
 				
-				Q.Notices.eventHandlers.collapse = function(event)
+				Q.Notice.eventHandlers.collapse = function(event)
 				{
 					noticesMarginTop = '-' + (noticesSlot.outerHeight() - noticesSlot.find('ul li:last').outerHeight()) + 'px';
 					noticesSlot.clearQueue().animate({ 'margin-top': noticesMarginTop }, 200, function()
@@ -3198,9 +3198,9 @@ Q.Notices = {
 						noticesSlot.find('ul li:last').show();
 						noticesSlot.css({ 'margin-top': '0' });
 						
-						Q.Notices.addCounter();
+						Q.Notice.addCounter();
 						
-						Q.Notices.expanded = false;
+						Q.Notice.expanded = false;
 					});
 					
 					if (Q.info.isMobile || Q.info.isTablet)
@@ -3209,44 +3209,44 @@ Q.Notices = {
 					}
 				};
 				
-				Q.Notices.bindExpandEvents = function()
+				Q.Notice.bindExpandEvents = function()
 				{
-					if (!Q.Notices.expandEventsBound)
+					if (!Q.Notice.expandEventsBound)
 					{
 						if (Q.info.isMobile || Q.info.isTablet)
 						{
-							noticesSlot.bind(Q.Pointer.start, Q.Notices.eventHandlers.expand);
-							Q.Mask.get('Q.screen.mask').element.bind(Q.Pointer.start, Q.Notices.eventHandlers.collapse);
+							noticesSlot.bind(Q.Pointer.start, Q.Notice.eventHandlers.expand);
+							Q.Mask.get('Q.screen.mask').element.bind(Q.Pointer.start, Q.Notice.eventHandlers.collapse);
 						}
 						else
 						{
-							noticesSlot.bind('mouseenter', Q.Notices.eventHandlers.expand);
-							noticesSlot.bind('mouseleave', Q.Notices.eventHandlers.collapse);
+							noticesSlot.bind('mouseenter', Q.Notice.eventHandlers.expand);
+							noticesSlot.bind('mouseleave', Q.Notice.eventHandlers.collapse);
 						}
-						Q.Notices.expandEventsBound = true;
+						Q.Notice.expandEventsBound = true;
 					}
 				};
 				
-				Q.Notices.unbindExpandEvents = function()
+				Q.Notice.unbindExpandEvents = function()
 				{
-					if (Q.Notices.expandEventsBound)
+					if (Q.Notice.expandEventsBound)
 					{
 						if (Q.info.isTouchscreen)
 						{
-							noticesSlot.unbind(Q.Pointer.start, Q.Notices.eventHandlers.expand);
-							Q.Mask.get('Q.screen.mask').element.unbind(Q.Pointer.start, Q.Notices.eventHandlers.collapse);
+							noticesSlot.unbind(Q.Pointer.start, Q.Notice.eventHandlers.expand);
+							Q.Mask.get('Q.screen.mask').element.unbind(Q.Pointer.start, Q.Notice.eventHandlers.collapse);
 						}
 						else
 						{
-							noticesSlot.unbind('mouseenter', Q.Notices.eventHandlers.expand);
-							noticesSlot.unbind('mouseleave', Q.Notices.eventHandlers.collapse);
-							Q.Notices.triggerCollapse = true;
+							noticesSlot.unbind('mouseenter', Q.Notice.eventHandlers.expand);
+							noticesSlot.unbind('mouseleave', Q.Notice.eventHandlers.collapse);
+							Q.Notice.triggerCollapse = true;
 						}
-						Q.Notices.expandEventsBound = false;
+						Q.Notice.expandEventsBound = false;
 					}
 				};
 				
-				Q.Notices.addCounter = function()
+				Q.Notice.addCounter = function()
 				{
 					var noticesCount = noticesSlot.find('ul li').length;
 					var lastNotice = noticesSlot.find('ul li:last');
@@ -3266,11 +3266,11 @@ Q.Notices = {
 					});
 					if (topStub.outerHeight() != noticesSlot.outerHeight())
 					{
-						Q.Notices.animateTopOffsets();
+						Q.Notice.animateTopOffsets();
 					}
 				};
 				
-				Q.Notices.removeCounter = function()
+				Q.Notice.removeCounter = function()
 				{
 					noticesSlot.find('.Q_more_notices').remove();
 					closeCross = noticesSlot.find('.Q_close');
@@ -3284,7 +3284,7 @@ Q.Notices = {
 					});
 				};
 				
-				Q.Notices.animateTopOffsets = function(remove)
+				Q.Notice.animateTopOffsets = function(remove)
 				{
 					if (remove === undefined)
 						remove = false;
@@ -3296,34 +3296,34 @@ Q.Notices = {
 						var topStubHeight = noticesSlot.outerHeight();
 						if (Q.info.platform == 'android')
 						{
-							dashboard.clearQueue().animate({ 'top': topStubHeight + 'px' }, Q.Notices.popUpTime);
+							dashboard.clearQueue().animate({ 'top': topStubHeight + 'px' }, Q.Notice.popUpTime);
 							if (column1Slot.css('position') == 'fixed' && column1Slot.css('display') == 'block')
 							{
 								var newTop = parseInt(column1Slot.css('top')) + topStubHeight;
-								column1Slot.clearQueue().animate({ 'top': newTop + 'px' }, Q.Notices.popUpTime);
+								column1Slot.clearQueue().animate({ 'top': newTop + 'px' }, Q.Notice.popUpTime);
 							}
 							if (column2Slot.css('position') == 'fixed' && column2Slot.css('display') == 'block' &&
 									column2Slot.css('visibility') == 'visible')
 							{
 								var newTop = parseInt(column2Slot.css('top')) + topStubHeight;
-								column2Slot.clearQueue().animate({ 'top': newTop + 'px' }, Q.Notices.popUpTime);
+								column2Slot.clearQueue().animate({ 'top': newTop + 'px' }, Q.Notice.popUpTime);
 							}
 							if (Q.Layout.orientation == 'portrait')
 							{
 								topStubHeight += dashboard.outerHeight();
-								participants.clearQueue().animate({ 'top': topStubHeight + 'px' }, Q.Notices.popUpTime);
+								participants.clearQueue().animate({ 'top': topStubHeight + 'px' }, Q.Notice.popUpTime);
 							}
 							Q.Layout.androidInitialOffset = -1;
 						}
 						if (fullscreenDialog.length > 0)
 						{
-							fullscreenDialog.clearQueue().animate({ 'margin-top': topStubHeight + 'px' }, Q.Notices.popUpTime);
-							fullscreenDialog.find('a.close').animate({ 'margin-top': topStubHeight + 'px' }, Q.Notices.popUpTime);
+							fullscreenDialog.clearQueue().animate({ 'margin-top': topStubHeight + 'px' }, Q.Notice.popUpTime);
+							fullscreenDialog.find('a.close').animate({ 'margin-top': topStubHeight + 'px' }, Q.Notice.popUpTime);
 						}
-						topStub.clearQueue().animate({ 'height': topStubHeight + 'px' }, Q.Notices.popUpTime, function()
+						topStub.clearQueue().animate({ 'height': topStubHeight + 'px' }, Q.Notice.popUpTime, function()
 						{
 							Q.Layout.orientationChange(false, true, true);
-							Q.Notices.poppedUp = true;
+							Q.Notice.poppedUp = true;
 						});
 					}
 					else
@@ -3337,83 +3337,83 @@ Q.Notices = {
 							{
 								document.body.scrollTop = 10000;
 							}
-							dashboard.clearQueue().animate({ 'top': '0' }, Q.Notices.popUpTime);
-							participants.clearQueue().animate({ 'top': (dashboardHeight + 1) + 'px' }, Q.Notices.popUpTime);
+							dashboard.clearQueue().animate({ 'top': '0' }, Q.Notice.popUpTime);
+							participants.clearQueue().animate({ 'top': (dashboardHeight + 1) + 'px' }, Q.Notice.popUpTime);
 							if (column1Slot.css('position') == 'fixed' && column1Slot.css('display') == 'block')
 							{
 								var newTop = parseInt(column1Slot.css('top')) - noticesHeight;
-								column1Slot.clearQueue().animate({ 'top': newTop + 'px' }, Q.Notices.popUpTime);
+								column1Slot.clearQueue().animate({ 'top': newTop + 'px' }, Q.Notice.popUpTime);
 							}
 							if (column2Slot.css('position') == 'fixed' && column2Slot.css('display') == 'block' &&
 									column2Slot.css('visibility') == 'visible')
 							{
 								var newTop = parseInt(column2Slot.css('top')) - noticesHeight;
-								column2Slot.clearQueue().animate({ 'top': newTop + 'px' }, Q.Notices.popUpTime);
+								column2Slot.clearQueue().animate({ 'top': newTop + 'px' }, Q.Notice.popUpTime);
 							}
 							Q.Layout.androidInitialOffset = -1;
 						}
 						if (fullscreenDialog.length > 0)
 						{
-							fullscreenDialog.clearQueue().animate({ 'margin-top': '0' }, Q.Notices.popUpTime);
-							fullscreenDialog.find('a.close').animate({ 'margin-top': '0' }, Q.Notices.popUpTime);
+							fullscreenDialog.clearQueue().animate({ 'margin-top': '0' }, Q.Notice.popUpTime);
+							fullscreenDialog.find('a.close').animate({ 'margin-top': '0' }, Q.Notice.popUpTime);
 						}
-						topStub.clearQueue().animate({ 'height': (Q.info.platform == 'android' ? dashboardHeight : '0') }, Q.Notices.popUpTime);
+						topStub.clearQueue().animate({ 'height': (Q.info.platform == 'android' ? dashboardHeight : '0') }, Q.Notice.popUpTime);
 						noticesMarginTop = '-' + noticesHeight + 'px';
-						noticesSlot.clearQueue().animate({ 'margin-top': noticesMarginTop }, Q.Notices.popUpTime, function()
+						noticesSlot.clearQueue().animate({ 'margin-top': noticesMarginTop }, Q.Notice.popUpTime, function()
 						{
 							noticesSlot.find('ul li').remove();
 							Q.Layout.orientationChange(false, true, true);
-							Q.Notices.poppedUp = false;
-							Q.Notices.unbindExpandEvents();
+							Q.Notice.poppedUp = false;
+							Q.Notice.unbindExpandEvents();
 						});
 					}
 				};
 				
-				Q.Notices.helpersCreated = true;
+				Q.Notice.helpersCreated = true;
 			}
 			
 			if (noticesCount > 1)
 			{
-				Q.Notices.removeCounter();
-				Q.Notices.addCounter();
-				Q.Notices.bindExpandEvents();
+				Q.Notice.removeCounter();
+				Q.Notice.addCounter();
+				Q.Notice.bindExpandEvents();
 			}
 			
-			Q.Notices.removeNotice = function(notice)
+			Q.Notice.removeNotice = function(notice)
 			{
-				if (Q.Notices.slidingInProgress)
+				if (Q.Notice.slidingInProgress)
 					return false;
 				
 				if (noticesSlot.find('ul li').length > 1)
 				{
-					if (Q.Notices.expanded)
+					if (Q.Notice.expanded)
 					{
-						Q.Notices.unbindExpandEvents();
+						Q.Notice.unbindExpandEvents();
 						
-						Q.Notices.slidingInProgress = true;
-						notice.slideUp(Q.Notices.popUpTime, function()
+						Q.Notice.slidingInProgress = true;
+						notice.slideUp(Q.Notice.popUpTime, function()
 						{
-							Q.Notices.slidingInProgress = false;
+							Q.Notice.slidingInProgress = false;
 							
 							notice.remove();
 							if (noticesSlot.find('ul li').length == 1)
 							{
-								Q.Notices.removeCounter();
+								Q.Notice.removeCounter();
 								if (Q.info.isTouchscreen)
 								{
 									Q.Mask.hide('Q.screen.mask');
-									Q.Notices.expanded = false;
+									Q.Notice.expanded = false;
 								}
 							}
 							else
 							{
-								Q.Notices.bindExpandEvents();
+								Q.Notice.bindExpandEvents();
 								
 								if (!Q.info.isTouchscreen)
 								{
 									function bodyMouseMoveStub()
 									{
-										if (Q.Notices.triggerCollapse)
+										if (Q.Notice.triggerCollapse)
 											noticesSlot.trigger('mouseleave');
 										$(document.body).unbind('mousemove', bodyMouseMoveStub);
 									};
@@ -3427,20 +3427,20 @@ Q.Notices = {
 						if (notice.index() == noticesSlot.find('ul li:last').index())
 							notice.prev().show();
 						notice.remove();
-						Q.Notices.removeCounter();
+						Q.Notice.removeCounter();
 						if (noticesSlot.find('ul li').length > 1)
 						{
-							Q.Notices.addCounter();
+							Q.Notice.addCounter();
 						}
 						else
 						{
-							Q.Notices.unbindExpandEvents();
+							Q.Notice.unbindExpandEvents();
 						}
 					}
 				}
 				else
 				{
-					Q.Notices.animateTopOffsets(true);
+					Q.Notice.animateTopOffsets(true);
 				}
 				
 				Q.req('Q/notice?key=' + encodeURIComponent(notice.attr('data-key')), 
@@ -3453,7 +3453,7 @@ Q.Notices = {
 			noticesSlot.find('ul li .Q_close').unbind(Q.Pointer.end).bind(Q.Pointer.end, function()
 			{
 				var notice = $(this).parent();
-				Q.Notices.removeNotice(notice);
+				Q.Notice.removeNotice(notice);
 			});
 		}
 	},
@@ -3469,7 +3469,7 @@ Q.Notices = {
 		var noticesSlot = $('#notices_slot');
 		notice = noticesSlot.find('ul li[data-key="' + key + '"]');
 		if (notice.length)
-			Q.Notices.removeNotice(notice);
+			Q.Notice.removeNotice(notice);
 	},
 	
 	/**

@@ -64,7 +64,9 @@ Q.Tool.define("Q/tabs", function(options) {
 	loader: Q.req,
 	onClick: new Q.Event(),
 	beforeSwitch: new Q.Event(),
-	onActivate: new Q.Event()
+	onActivate: new Q.Event(),
+	tabName: null, // set by indicateSelected
+	tab: null // set by indicateSelected
 },
 
 {
@@ -77,13 +79,15 @@ Q.Tool.define("Q/tabs", function(options) {
 	 * @param {Mixed} extra anything to pass to beforeSwitch handlers
 	 */
 	switchTo: function (name, loaderOptions, extra) {
+		var tool = this;
+		var state = this.state;
 		var tab;
 		if (Q.typeOf(name) === 'array') {
 			tab = name[1];
 			name = name[0];
 		}
 		if (tab === undefined) {
-			$('.Q_tabs_tab', this.element).each(function () {
+			$('.Q_tabs_tab', tool.element).each(function () {
 				if (this.getAttribute('data-name') === name) {
 					tab = this;
 					return false;
@@ -95,18 +99,15 @@ Q.Tool.define("Q/tabs", function(options) {
 			}
 		}
 
-
-		var state = this.state;
-
 		state.slots = typeof state.slot === "string" 
 			? state.slot.split(',')
 			: state.slot;
 
 		var slots = state.slots;
 
-		href = this.getUrl(tab);
+		href = tool.getUrl(tab);
 
-		if (false === Q.handle(state.beforeSwitch, this, [tab, href, extra])) {
+		if (false === Q.handle(state.beforeSwitch, tool, [tab, href, extra])) {
 			return false;
 		}
 
@@ -119,7 +120,6 @@ Q.Tool.define("Q/tabs", function(options) {
 			return;
 		}
 
-		var tool = this;
 		var o = Q.extend({
 			slotNames: slots,
 			onError: new Q.Event(function (msg) {
@@ -130,8 +130,8 @@ Q.Tool.define("Q/tabs", function(options) {
 				state.onActivate.handle(tab);
 			}, "Q/tabs"),
 			loadExtras: true,
-			ignorePage: this.isInDialog(),
-			ignoreHistory: this.isInDialog(),
+			ignorePage: tool.isInDialog(),
+			ignoreHistory: tool.isInDialog(),
 			loader: state.loader,
 			slotContainer: function (slotName) {
 				return $(state.selectors[slotName])[0]
