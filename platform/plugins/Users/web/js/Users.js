@@ -950,8 +950,11 @@ function login_callback(response) {
 		});
 		if (window.CryptoJS) {
 			var p = $('#Users_form_passphrase');
-			if (p.val()) {
-				p.val(CryptoJS.SHA1(p.val() + "\t" + userId));
+			var v = p.val();
+			if (v) {
+				if (!/^[0-9a-f]{40}$/i.test(v)) {
+					p.val(CryptoJS.SHA1(p.val() + "\t" + userId));
+				}
 				$('#Users_login_isHashed').attr('value', 1);
 			} else {
 				$('#Users_login_isHashed').attr('value', 0);
