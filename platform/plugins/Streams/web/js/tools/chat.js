@@ -122,7 +122,7 @@ Q.Tool.define('Streams/chat', function(options) {
 		var tool = this;
 		var state = tool.state;
 		
-		if (messages.content) {
+		if ('content' in messages) {
 			// this is a single message
 			var m = messages;
 			messages = {};
