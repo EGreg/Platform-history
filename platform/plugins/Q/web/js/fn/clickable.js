@@ -68,19 +68,19 @@ Q.Tool.jQuery('Q/clickable',
 function (o) {
 	
 	var $this = $(this);
+	var state = $this.state('Q/clickable');
 	$this.on('invoke.Q_clickable', function () {
 		$(this).trigger('mousedown');
 		setTimeout(function () {
 			$(this).trigger('release')
 		}, o.press.duration);
 	});
+	state.oldStyle = $this.attr('style');
     if (!o.selectable) {
 		this.onselectstart = function() { return false; }; 
-        this.unselectable = "on"; 
-        $this.css('-moz-user-select', 'none'); 
-        $this.css('-webkit-user-select', 'none');
-		$this.css('-ms-user-select', 'none');
-		$this.css('user-select', 'none');
+        this.unselectable = "on";
+		var prop = Q.info.browser.prefix+'user-select';
+		$this.css(prop, 'none');
 	}
 	var $triggers;
 	if (o.triggers) {
@@ -128,7 +128,7 @@ function (o) {
 			var $this = $(this);
 			var width = container.width() * o.shadow.stretch;
 			var height = Math.min($this.height() * width / $this.width(), container.height()/2);
-			$this.css({
+			var toSet = {
 				'position': 'absolute',
 				'left': (container.width() - width)/2+'px',
 				'top': container.height() - height * (1-o.shadow.dip)+'px',
@@ -140,7 +140,9 @@ function (o) {
 				'background': 'none',
 				'border': '0px',
 				'outline': '0px'
-			});
+			};
+			var i, l, props = Object.keys(toSet);
+			$this.css(toSet);
 		});
 	}
 	var stretcher = $('<div />').css({
@@ -171,8 +173,9 @@ function (o) {
 	triggers = stretcher;
 	if ($triggers && $triggers.length) {
 		if (!Q.info.isTouchscreen) {
-			$triggers.hover(
-				function () { container.addClass('Q_hover'); },
+			$triggers.mouseenter(
+				function () { container.addClass('Q_hover'); }
+			).mouseleave(
 				function () { container.removeClass('Q_hover'); }
 			);
 		}
@@ -324,6 +327,17 @@ function (o) {
 	onRelease: new Q.Event(),
 	afterRelease: new Q.Event(),
 	cancelDistance: 15
-});
+},
+
+{
+	remove: function () {
+		var container = this.parent().parent();
+		this.attr('style', this.state('Q/clickable').oldStyle || "")
+		.insertAfter(container);
+		container.remove();
+	}
+}
+
+);
 
 })(Q, jQuery, window, document);

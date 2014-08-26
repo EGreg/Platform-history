@@ -144,15 +144,13 @@ Q.Tool.define("Streams/userChooser", function(o) {
 					.attr('src', Q.plugins.Users.iconUrl(avatars[k].icon, 40))
 				).append(
 					$('<span />').html(avatars[k].displayName())
-				).hover(
-					function () {
-						$('*', results).removeClass('Q_selected');
-						$(this).addClass('Q_selected');
-					}, function () {
-						$('*', results).removeClass('Q_selected');
-						$(this).addClass('Q_selected');
-					}
-				).mouseup(function () {
+				).mouseenter(function () {
+					$('*', results).removeClass('Q_selected');
+					$(this).addClass('Q_selected');
+				}).mouseleave(function () {
+					$('*', results).removeClass('Q_selected');
+					$(this).addClass('Q_selected');
+				}).mouseup(function () {
 					onChoose($(this));
 				}).data('userId', k)
 				.data('avatar', avatars[k])

@@ -95,6 +95,7 @@ Q.Tool.define("Q/tabs", function(options) {
 			}
 		}
 
+
 		var state = this.state;
 
 		state.slots = typeof state.slot === "string" 
@@ -136,7 +137,7 @@ Q.Tool.define("Q/tabs", function(options) {
 				return $(state.selectors[slotName])[0]
 					|| document.getElementById(slotName+"_slot");
 			}
-		}, state.loaderOptions, loaderOptions);
+		}, 10, state.loaderOptions, 10, loaderOptions);
 
 		Q.loadUrl(href, o);
 	},

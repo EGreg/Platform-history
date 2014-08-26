@@ -451,12 +451,9 @@ Elp.isOrContains = function (child) {
  * @return {Object|String}
  */
 Elp.computedStyle = function(name) {
-	var computedStyle;
-	if ( this.currentStyle !== undefined ) {
-		computedStyle = this.currentStyle;
-	} else {
-		computedStyle = window.getComputedStyle(this, null);
-	}
+	var computedStyle = window.getComputedStyle
+		? window.getComputedStyle(this, null)
+		: this.currentStyle;
 	return name ? computedStyle[name] : computedStyle;
 };
 
@@ -4607,11 +4604,11 @@ Q.layout = function _Q_layout(element) {
 
 Q.clientId = function () {
 	if (!Q.clientId.value) {
-		var info = Q.Browser.detect();
-		Q.clientId.value = (info.device || "desktop").substr(0, 4)
-			+ "\t" + info.OS.substr(0, 3)
-			+ "\t" + info.name.substr(0, 3)
-			+ "\t" + info.mainVersion + (info.isWebView ? "n" : "w")
+		var detected = Q.Browser.detect();
+		Q.clientId.value = (detected.device || "desktop").substr(0, 4)
+			+ "\t" + detected.OS.substr(0, 3)
+			+ "\t" + detected.name.substr(0, 3)
+			+ "\t" + detected.mainVersion + (detected.isWebView ? "n" : "w")
 			+ "\t" + Math.floor(Date.now()/1000).toString(36);
 	}
 	return Q.clientId.value;
@@ -7775,13 +7772,13 @@ Q.Browser = {
 		prefix = (name === 'explorer') ? '-ms-' : prefix;
 		
 		return {
-			'name': name,
-			'mainVersion': mainVersion,
-			'prefix': prefix,
-			'OS': OS.toLowerCase(),
-			'engine': engine,
-			'device': OSdata.device,
-			'isWebView': isWebView
+			name: name,
+			mainVersion: mainVersion,
+			prefix: prefix,
+			OS: OS.toLowerCase(),
+			engine: engine,
+			device: OSdata.device,
+			isWebView: isWebView
 		};
 	},
 	
@@ -7963,14 +7960,7 @@ Q.info = {
 	isTouchscreen: isTouchscreen, // works on ie10
 	isTablet: isTablet,
 	platform: detected.OS,
-	device: detected.device,
-	isWebView: detected.isWebView,
-	browser: {
-		name: detected.name,
-		version: detected.mainVersion,
-		engine: detected.engine,
-		prefix: detected.prefix
-	},
+	browser: detected,
 	isIE: function (minVersion, maxVersion) {
 		return Q.info.browser.name === 'explorer'
 			&& (minVersion == undefined || minVersion <= Q.info.browser.version)
