@@ -202,7 +202,7 @@ function (o) {
 		$('body')[0].preventSelections();
 		zindex = $this.css('z-index');
 		container.css('z-index', 1000000);
-		Q.handle(o.onPress, $this, [evt]);
+		Q.handle(o.onPress, $this, [evt, triggers]);
 		Q.Animation.play(function(x, y) {
 			scale(1 + y * (o.press.size-1));
 			$this.css('opacity', 1 + y * (o.press.opacity-1));
@@ -275,7 +275,7 @@ function (o) {
 			
 			$(window).off([Q.Pointer.end, '.Q_clickable']);
 			$(window).off('release.Q_clickable');
-			Q.handle($this.state('Q/clickable').onRelease, $this, [evt, overElement]);
+			Q.handle($this.state('Q/clickable').onRelease, $this, [evt, overElement, triggers]);
 		};
 		function scale(factor) {
 			scale.factor = factor;
