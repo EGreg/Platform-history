@@ -9,7 +9,6 @@
  * Adjusts the font size of the context text until it fills the element's width and height
  * @class Q textfill
  * @constructor
- * @constructor
  * @param {Object} [options] options object that contains function parameters
  *   @param {Number} [options.maxFontPixels] Maximum size of text font,
  *   set this if your text container is large and you don't want to have extra large text on page

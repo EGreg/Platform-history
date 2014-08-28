@@ -2,7 +2,7 @@
 
 /**
  * This tool is meant to be wrapped in a <form> tag
- * @param array $options
+ * @param {array} $options
  *  An associative array of parameters, containing:
  *  "fields" => an associative array of fieldname => fieldinfo pairs,
  *   where fieldinfo contains the following:

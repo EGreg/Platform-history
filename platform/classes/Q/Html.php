@@ -990,7 +990,7 @@ class Q_Html
 	 * @param {string} [$tag=null]
 	 * @return {string}
 	 */
-	protected static function attributes (
+	public static function attributes (
 		array $attributes, 
 		$between = ' ', 
 		$escape = true, 

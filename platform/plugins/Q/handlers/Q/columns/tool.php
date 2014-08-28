@@ -4,24 +4,24 @@
  * This tool contains functionality to show things in columns
  * @class Q columns
  * @constructor
- * @param {Object}   [options] Provide options for this tool
- *  @param {Object}  [options.animation] For customizing animated transitions
- *  @param {Number}  [options.animation.duration] The duration of the transition in milliseconds, defaults to 500
- *  @param {Object}  [options.animation.hide] The css properties in "hide" state of animation
- *  @param {Object}  [options.animation.show] The css properties in "show" state of animation
- *  @param {Object}  [options.back] For customizing the back button on mobile
- *  @param {String}  [options.back.src] The src of the image to use for the back button
- *  @param {Boolean} [options.back.triggerFromTitle] Whether the whole title would be a trigger for the back button. Defaults to true.
- *  @param {Boolean} [options.back.hide] Whether to hide the back button. Defaults to false, but you can pass true on android, for example.
- *  @param {Object}  [options.close] For customizing the back button on desktop and tablet
- *  @param {String}  [options.close.src] The src of the image to use for the close button
- *  @param {String}  [options.title] You can put a default title for all columns here (which is shown as they are loading)
- *  @param {String}  [options.column] You can put a default content for all columns here (which is shown as they are loading)
- *  @param {Object}  [options.clickable] If not null, enables the Q/clickable tool with options from here. Defaults to null.
- *  @param {Object}  [options.scrollbarsAutoHide] If not null, enables Q/scrollbarsAutoHide functionality with options from here. Enabled by default.
- *  @param {Boolean} [options.fullscreen] Whether to use fullscreen mode on mobile phones, using document to scroll instead of relying on possibly buggy "overflow" CSS implementation. Defaults to true on Android, false everywhere else.
- *  @param {Array}   [options.columns] In PHP only, an array of $name => $column pairs, where $column is in the form array('title' => $html, 'content' => $html, 'close' => true)
- * @return Q.Tool
+ * @param {array}   [options] Provide options for this tool
+ *  @param {array}  [options.animation] For customizing animated transitions
+ *  @param {integer}  [options.animation.duration] The duration of the transition in milliseconds, defaults to 500
+ *  @param {array}  [options.animation.hide] The css properties in "hide" state of animation
+ *  @param {array}  [options.animation.show] The css properties in "show" state of animation
+ *  @param {array}  [options.back] For customizing the back button on mobile
+ *  @param {string}  [options.back.src] The src of the image to use for the back button
+ *  @param {boolean} [options.back.triggerFromTitle] Whether the whole title would be a trigger for the back button. Defaults to true.
+ *  @param {boolean} [options.back.hide] Whether to hide the back button. Defaults to false, but you can pass true on android, for example.
+ *  @param {array}  [options.close] For customizing the back button on desktop and tablet
+ *  @param {string}  [options.close.src] The src of the image to use for the close button
+ *  @param {string}  [options.title] You can put a default title for all columns here (which is shown as they are loading)
+ *  @param {string}  [options.column] You can put a default content for all columns here (which is shown as they are loading)
+ *  @param {array}  [options.clickable] If not null, enables the Q/clickable tool with options from here. Defaults to null.
+ *  @param {array}  [options.scrollbarsAutoHide] If not null, enables Q/scrollbarsAutoHide functionality with options from here. Enabled by default.
+ *  @param {boolean} [options.fullscreen] Whether to use fullscreen mode on mobile phones, using document to scroll instead of relying on possibly buggy "overflow" CSS implementation. Defaults to true on Android, false everywhere else.
+ *  @param {array}   [options.columns] In PHP only, an array of $name => $column pairs, where $column is in the form array('title' => $html, 'content' => $html, 'close' => true)
+ * @return {string}
  */
 function Q_columns_tool($options)
 {

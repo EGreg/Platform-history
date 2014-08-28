@@ -8,9 +8,8 @@
 	
 /**
  * Inplace text editor tool
- * @class Q tabs
- * @constructor
  * @class Q inplace
+ * @constructor
  * @param {Object} [options] This is an object of parameters for this function
  *  @param {String} [options.method] The HTTP verb to use.
  *  @default 'put'

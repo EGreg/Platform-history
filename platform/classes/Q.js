@@ -1412,71 +1412,6 @@ Q.copy = function _Q_copy(x, fields) {
  * @return
  *  The extended object.
  */
-Q.extend = function _Q_extend(target /* [[deep,] anotherObject] */ ) {
-	var length = arguments.length;
-	var namespace = undefined;
-	if (typeof arguments[length-1] === 'string') {
-		namespace = arguments[length-1];
-		--length;
-	}
-	if (length === 0) {
-		return {};
-	}
-	target = target || {};
-	var deep = false, levels = 0;
-	// shim for Object.hasOwnProperty
-	var __hasProp = Object.prototype.hasOwnProperty || function(key) { return key in self; };
-	for (var i=1; i<length; ++i) {
-		var arg = arguments[i];
-		if (!arg) {
-			continue;
-		}
-		if (arg === true) {
-			deep = true;
-			continue;
-		}
-		if (arg === false) {
-			continue;
-		}
-		if (typeof(arg) === 'number' && arg) {
-			levels = arg;
-			continue;
-		}
-		for (var k in arg) {
-			if (deep === true || (arg.hasOwnProperty && arg.hasOwnProperty(k))
-				|| (!arg.hasOwnProperty && (k in arg)))
-			{
-				var a = arg[k];
-				if (!levels || !Q.isPlainObject(a)
-				|| (a.constructor == Object)) {
-					target[k] = Q.copy(a);
-				} else {
-					target[k] = Q.extend(target[k], deep, levels-1, a);
-				}
-			}
-		}
-		deep = false;
-		levels = 0;
-	}
-	return target;
-};
-
-/**
- * Extends an object with other objects. Similar to the jQuery method.
- * @method extend
- * @param target {Object}
- *  This is the first object. It winds up being modified, and also returned
- *  as the return value of the function.
- * @param deep {Boolean|Number}
- *  Optional. Precede any Object with a boolean true to indicate that we should
- *  also copy the properties it inherits through its prototype chain.
- *  Precede it with a nonzero integer to indicate that we should also copy
- *  that many additional levels inside the object.
- * @param anotherObject {Object}
- *  Put as many objects here as you want, and they will extend the original one.
- * @return
- *  The extended object.
- */
 Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespace] */ ) {
 	var length = arguments.length;
 	var namespace = undefined;
@@ -1489,8 +1424,6 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 	}
 	target = target || {};
 	var deep = false, levels = 0;
-	// shim for Object.hasOwnProperty
-	var __hasProp = Object.prototype.hasOwnProperty || function(key) { return key in self; };
 	for (var i=1; i<length; ++i) {
 		if (!arguments[i]) {
 			continue;
@@ -1505,16 +1438,21 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 		if (typeof(arguments[i]) === 'number' && arguments[i]) {
 			levels = arguments[i];
 			continue;
-		}
+		}		
 		var arg = arguments[i];
-		for (var k in arg) {
-			if (deep === true || (arg.hasOwnProperty && arg.hasOwnProperty(k))
-				|| (!arg.hasOwnProperty && (k in arg)))
-			{
-				if (levels && Q.isPlainObject(arguments[i][k])) {
-					target[k] = Q.extend(target[k], deep, levels-1, arguments[i][k]);
-				} else {
-					target[k] = Q.copy(arguments[i][k]);
+		if (Q.typeOf(target) === 'array' && Q.typeOf(arg) === 'array') {
+			target = target.concat(arg);
+		} else {
+			for (var k in arg) {
+				if (deep === true 
+					|| (arg.hasOwnProperty && arg.hasOwnProperty(k))
+					|| (!arg.hasOwnProperty && (k in arg)))
+				{
+					if (levels && Q.isPlainObject(arguments[i][k])) {
+						target[k] = Q.extend(target[k], deep, levels-1, arguments[i][k]);
+					} else {
+						target[k] = Q.copy(arguments[i][k]);
+					}
 				}
 			}
 		}

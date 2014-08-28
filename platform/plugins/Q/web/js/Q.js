@@ -1165,7 +1165,8 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 	}
 	target = target || {};
 	var deep = false, levels = 0;
-	var targetIsEvent = (Q.typeOf(target) === 'Q.Event');
+	var type = Q.typeOf(target);
+	var targetIsEvent = (type === 'Q.Event');
 	var k, a, m;
 	for (var i=1; i<length; ++i) {
 		var arg = arguments[i];
@@ -1193,25 +1194,30 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 			}
 			continue;
 		}
-		for (k in arg) {
-			if (deep === true || (arg.hasOwnProperty && arg.hasOwnProperty(k))
-				|| (!arg.hasOwnProperty && (k in arg)))
-			{
-				a = arg[k];
-				if ((k in target) && Q.typeOf(target[k]) === 'Q.Event') {
-					if (a && a.constructor === Object) {
-						for (m in a) {
-							target[k].set(a[m], m);
+		if (type === 'array' && Q.typeOf(arg) === 'array') {
+			target = target.concat(arg);
+		} else {
+			for (k in arg) {
+				if (deep === true
+					|| (arg.hasOwnProperty && arg.hasOwnProperty(k))
+					|| (!arg.hasOwnProperty && (k in arg)))
+				{
+					a = arg[k];
+					if ((k in target) && Q.typeOf(target[k]) === 'Q.Event') {
+						if (a && a.constructor === Object) {
+							for (m in a) {
+								target[k].set(a[m], m);
+							}
+						} else {
+							target[k].set(a, namespace);
 						}
+					} else if (!levels || !Q.isPlainObject(a)
+					|| Q.typeOf(arg[k]) === 'Q.Event'
+					|| (a.constructor !== Object)) {
+						target[k] = Q.copy(a);
 					} else {
-						target[k].set(a, namespace);
+						target[k] = Q.extend(target[k], deep, levels-1, a);
 					}
-				} else if (!levels || !Q.isPlainObject(a)
-				|| Q.typeOf(arg[k]) === 'Q.Event'
-				|| (a.constructor !== Object)) {
-					target[k] = Q.copy(a);
-				} else {
-					target[k] = Q.extend(target[k], deep, levels-1, a);
 				}
 			}
 		}
@@ -2121,6 +2127,11 @@ Q.onScroll = new Q.Event();
  * @event onVisibilityChange
  */
 Q.onVisibilityChange = new Q.Event();
+/**
+ * This event occurs before replacing the contents of an element
+ * @event beforeReplace
+ */
+Q.beforeReplace = new Q.Event();
 
 /**
  * Sets up control flows involving multiple callbacks and dependencies
@@ -4466,8 +4477,12 @@ Q.beforeUnload = function _Q_beforeUnload(notice) {
  * @static
  * @method removeElement
  * @param {HTMLElement} element
+ * @param {Boolean} removeTools
  */
-Q.removeElement = function _Q_removeElement(element) {
+Q.removeElement = function _Q_removeElement(element, removeTools) {
+	if (removeTools) {
+		Q.Tool.clear(element);
+	}
 	if (window.jQuery) {
 		return window.jQuery(element).remove();
 	}
@@ -5975,6 +5990,8 @@ Q.replace = function _Q_replace(container, source, options) {
 			}
 		}
 	});
+	
+	Q.beforeReplace.handle(container, source, options, newOptionsArray);
 	
 	Q.Tool.clear(container); // Remove all the tools remaining in the container, with their events etc.
 	container.innerHTML = ''; // Clear the container
@@ -8921,7 +8938,8 @@ Q.onJQuery.add(function ($) {
 		"Q/ticker": "plugins/Q/js/tools/ticker.js",
 		"Q/timestamp": "plugins/Q/js/tools/timestamp.js",
 		"Q/bookmarklet": "plugins/Q/js/tools/bookmarklet.js",
-		"Q/columns": "plugins/Q/js/tools/columns.js"
+		"Q/columns": "plugins/Q/js/tools/columns.js",
+		"Q/drawers": "plugins/Q/js/tools/drawers.js"
 	});
 	
 	Q.Tool.jQuery({
