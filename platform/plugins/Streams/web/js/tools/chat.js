@@ -223,8 +223,9 @@ Q.Tool.define('Streams/chat', function(options) {
 	},
 
 	renderNotification: function(message){
-		var $container = $('<div>');
 		var tool = this;
+		var state = tool.state;
+		var $container = $('<div>');
 		Q.activate($container.html(Q.Tool.setUpElement('div', 'Users/avatar', { userId: message.byUserId })), function(){
 			var fields = {
 				username: $('.Users_avatar_contents', $container).text(),

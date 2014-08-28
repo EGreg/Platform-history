@@ -1799,3 +1799,7 @@ input[type=radio] { margin-right: 5px; }
 .Q_overflow * {
 	-webkit-transform: translateZ(0); /* http://cantina.co/thought_leadership/ios-5-native-scrolling-grins-and-gothcas/ */
 }
+
+.Q_drawers_placeholder {
+	cursor: default;
+}

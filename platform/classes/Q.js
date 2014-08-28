@@ -1448,7 +1448,10 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 					|| (arg.hasOwnProperty && arg.hasOwnProperty(k))
 					|| (!arg.hasOwnProperty && (k in arg)))
 				{
-					if (levels && Q.isPlainObject(arguments[i][k])) {
+					if (levels && (
+						Q.isPlainObject(arguments[i][k])
+						|| Q.typeOf(arguments[i][k]) === 'array'
+					)) {
 						target[k] = Q.extend(target[k], deep, levels-1, arguments[i][k]);
 					} else {
 						target[k] = Q.copy(arguments[i][k]);

@@ -1211,9 +1211,12 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 						} else {
 							target[k].set(a, namespace);
 						}
-					} else if (!levels || !Q.isPlainObject(a)
+					} else if (!levels
 					|| Q.typeOf(arg[k]) === 'Q.Event'
-					|| (a.constructor !== Object)) {
+					|| (
+						(!Q.isPlainObject(a) || a.constructor !== Object)
+						&& Q.typeOf(a) !== 'array'
+					)) {
 						target[k] = Q.copy(a);
 					} else {
 						target[k] = Q.extend(target[k], deep, levels-1, a);
