@@ -81,8 +81,7 @@ function Q_tabs_tool($options)
 		}
 		$title_container = Q_Html::div(
 			null, 
-			'Q_tabs_title', 
-			array('class' => $titleClasses_string), 
+			"Q_tabs_title $titleClasses_string",
 			isset($title) ? $title : $name
 		);
 		$result .= Q_Html::tag('li', array(

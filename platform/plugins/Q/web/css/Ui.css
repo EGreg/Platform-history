@@ -1165,6 +1165,7 @@ div.Q_placeholder { pointer-events: none; }
 .Q_tabs_tab { display: block; float: left; padding: 3px 10px 3px 10px; line-height: 30px; border: solid 1px #aaa; border-bottom: 0px; border-left: 0px; margin-bottom: -1px; background-color: #f8f8f8;; font-weight: bold; }
 .Q_tabs_tab:first-child { border-left: solid 1px #aaa; }
 .Q_tabs_tab.Q_selected { background-color: white; border-bottom: solid 1px white; }
+.Q_tabs_title { position: relative; }
 
 .Q_tabs_contextual .Q_tabs_tab { display: block; float: none; line-height:30px; border: 0px; } 
 
