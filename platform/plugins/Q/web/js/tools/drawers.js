@@ -16,6 +16,10 @@ Q.Tool.define("Q/drawers", function(options) {
 	var state = tool.state;
 	state.drawers = [];
 	state.switchCount = 0;
+	
+	if (state.fullscreen) {
+		state.container = $(tool.element).parents().eq(-3)[0];
+	}
 
 	$(this.element).children().each(function () {
 		state.drawers.push(this);
@@ -36,7 +40,7 @@ Q.Tool.define("Q/drawers", function(options) {
 	container: null,
 	width: function () { return $(this.element).width() },
 	height: function () {
-		var result;
+		var result = $(window).height() - $(this.element).offset().top;
 		$(this.element).parents().each(function () {
 			var $this = $(this);
 			var overflow = $this.css('overflow');
@@ -50,36 +54,26 @@ Q.Tool.define("Q/drawers", function(options) {
 	currentIndex: null,
 	heights: [100, 100],
 	behind: [true, false],
-	fullscreen: Q.info.isMobile && Q.info.isAndroid(1000)
+	scrollToBottom: [],
+	fullscreen: Q.info.isMobile && Q.info.isAndroid(1000),
+	foregroundZIndex: 50
 },
 
-{
-	/**
-	 * Animated resizing to fill a specified area
-	 * By default, it toggles between original size and fullscreen.
-	 * @method expand
-	 * @param {Object} options
-	 * @param {Number} [options.width] 
-	 * @param {Number} [options.height]
-	 * @param {Number} [options.duration]
-	 * @param {Number} [options.ease]
-	 */
-    resize: function (options) {
-		
-    },
-	
+{	
 	switchTo: function (index) {
 		var tool = this;
 		var state = tool.state;
 		if (state.currentIndex == index) return;
 		var $drawer = $(state.drawers[index]);
-		var sWidth = typeof state.width === 'function' 
+		var sWidth = (typeof state.width === 'function')
 			? state.width.call(tool, index) : state.width;
-		var sHeights = typeof state.heights === 'function' 
+		var sHeights = (typeof state.heights === 'function')
 			? state.heights.call(tool, index) : state.heights;
-		var sHeight = typeof state.width === 'function' 
+		var sHeight = (typeof state.height === 'function')
 			? state.height.call(tool) : state.height;
+		var $se = state.fullscreen ? $(window) : $(state.container);
 		
+		$se.scrollTop(0);
 		if (state.switchCount == 0) {
 			_pin(1-index);
 		} else if (index) {
@@ -141,6 +135,10 @@ Q.Tool.define("Q/drawers", function(options) {
 				width: sWidth,
 				'z-index': $p2.css('z-index')
 			}).offset(state.originalOffset);
+			if (state.fullscreen && !state.behind[index]) {
+				$element.css('z-index', state.foregroundZIndex);
+			}
+			$se.scrollTop(0);
 	
 			Q.addScript("plugins/Q/js/jquery.easing.min.js", function () {
 				var eventName = Q.info.isTouchscreen
