@@ -117,7 +117,7 @@ Q.Tool.define('Streams/chat', function(options) {
 		}
 		
 	},
-	prepareMessages: function(messages){
+	prepareMessages: function(messages, action){
 		var res  = {};
 		var tool = this;
 		var state = tool.state;
@@ -131,10 +131,7 @@ Q.Tool.define('Streams/chat', function(options) {
 
 		for (var ordinal in messages) {
 			var message = messages[ordinal];
-			if (!message.content) {
-				continue;
-			};
-			res[ordinal] = {
+			var r = res[ordinal] = {
 				content    : message.content,
 				time       : Date.fromDateTime(message.sentTime).getTime() / 1000,
 				byUserId   : message.byUserId,
@@ -143,6 +140,7 @@ Q.Tool.define('Streams/chat', function(options) {
 								? ' Streams_chat_from_me'
 								: ' Streams_chat_to_me'
 			};
+			r[action] = true;
 		}
 
 		return res;
@@ -225,16 +223,13 @@ Q.Tool.define('Streams/chat', function(options) {
 	renderNotification: function(message){
 		var tool = this;
 		var state = tool.state;
-		var $container = $('<div>');
-		Q.activate($container.html(Q.Tool.setUpElement('div', 'Users/avatar', { userId: message.byUserId })), function(){
-			var fields = {
-				username: $('.Users_avatar_contents', $container).text(),
-				time: Date.now() / 1000
-			};
+		Q.Streams.Avatar.get(message.byUserId, function (err, avatar) {
+			message.displayName = avatar.displayName();
+			message.time = Date.now() / 1000;
 
 			Q.Template.render(
 				'Streams/chat/message/notification', 
-				fields, 
+				message, 
 				function(error, html){
 					if (error) { return error }
 					
@@ -339,18 +334,18 @@ Q.Tool.define('Streams/chat', function(options) {
 			});
 		}
 
-		tool.$('.Streams_chat_message').live(Q.Pointer.click, function(e){
+		tool.$('.Streams_chat_message').on(Q.Pointer.click, function(e){
 			if (!this.isOverflowed()) return;
 			
-			var $container = $(this).parents('.Streams_chat_item'),
-				username   = $('.Users_avatar_contents', $container).text();
+			var $container = $(this).parents('.Streams_chat_item');
+			var displayName   = $('.Users_avatar_contents', $container).text();
 
 			if ($container.data('byuserid') === state.userId) {
-				username = 'me';
+				displayName = 'me';
 			}
 
 			Q.Dialogs.push({
-				title  : 'Message from ' + username,
+				title  : 'Message from ' + displayName,
 				content: '<div class="Streams_popup_content">' + $(e.target).html() + '</div>'
 			});
 		});
@@ -372,19 +367,15 @@ Q.Tool.define('Streams/chat', function(options) {
 		// new user joined
 		Q.Streams.Stream.onMessage(state.publisherId, state.streamName, 'Streams/join')
 		.set(function(stream, message) {
-			message = tool.prepareMessages(message);
-			message.action = { join: true };
-
-			tool.renderNotification(message);
+			var messages = tool.prepareMessages(message, 'join');
+			tool.renderNotification(Q.first(messages));
 		}, 'Streams/chat');
 
 		// new user left
 		Q.Streams.Stream.onMessage(state.publisherId, state.streamName, 'Streams/leave')
 		.set(function(stream, message) {
-			message = tool.prepareMessages(message);
-			message.action = { leave: true };
-
-			tool.renderNotification(tool.prepareMessages(message), 'leave');
+			var messages = tool.prepareMessages(message, 'leave');
+			tool.renderNotification(Q.first(messages));
 		}, 'Streams/chat');
 
 		/*
@@ -633,12 +624,15 @@ Q.Template.set('Streams/chat/message/bubble',
 Q.Template.set('Streams/chat/message/notification', 
 	'<div class="Streams_chat_notification>'+
 		'<div class="Streams_chat_timestamp" data-time="{{time}}"></div>'+
-		'{{#action.join}}'+
-			'<b>{{username}}</b> joined the chat'+
-		'{{/action.join}}'+
-		'{{#action.leave}}'+
-			'<b>{{username}}</b> left the chat'+
-		'{{/action.leave}}'+
+		'{{#visit}}'+
+			'<b>{{displayName}}</b> visited the chat'+
+		'{{/visit}}'+
+		'{{#join}}'+
+			'<b>{{displayName}}</b> joined the chat'+
+		'{{/join}}'+
+		'{{#leave}}'+
+			'<b>{{displayName}}</b> left the chat'+
+		'{{/leave}}'+
 	'</div>'
 );
 
