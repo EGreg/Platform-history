@@ -14,28 +14,42 @@
 Q.Tool.define("Q/drawers", function(options) {
 	var tool = this;
 	var state = tool.state;
-	state.drawers = [];
-	state.switchCount = 0;
+	state.swapCount = 0;
 	
-	if (state.fullscreen) {
+	if (state.fullscreen || !state.container) {
 		state.container = $(tool.element).parents().eq(-3)[0];
 	}
 
-	$(this.element).children().each(function () {
-		state.drawers.push(this);
+	state.$drawers = $(this.element).children();
+	state.currentIndex = 1 - state.initial.index;
+	this.swap();
+	
+	$(this.element).parents().each(function () {
+		var $this = $(this);
+		$this.data('Q/drawers originalBackground', $this.css('background'));
+		$this.css('background', 'transparent');
+		if ($this.is(state.container)) return false;
 	});
-	this.switchTo(state.initial.index);
+	
+	Q.onLayout.set(function () {
+		// to do: fix for cases where element doesn't take up whole screen
+		//state.$drawers.width($(window).width());
+	}, tool);
 },
 
 {
 	initial: {
 		duration: 300,
-		easing: 'easeOutBack',
+		ease: Q.Animation.linear,
 		index: 1
 	},
 	transition: {
 		duration: 300,
-		easing: 'swing'
+		easing: Q.Animation.linear
+	},
+	reversion: {
+		duration: 300,
+		easing: Q.Animation.linear
 	},
 	container: null,
 	width: function () { return $(this.element).width() },
@@ -56,55 +70,64 @@ Q.Tool.define("Q/drawers", function(options) {
 	behind: [true, false],
 	scrollToBottom: [],
 	fullscreen: Q.info.isMobile && Q.info.isAndroid(1000),
-	foregroundZIndex: 50
+	foregroundZIndex: 50,
+	scrollPause: 300
 },
 
 {	
-	switchTo: function (index) {
+	swap: function (callback) {
 		var tool = this;
 		var state = tool.state;
-		if (state.currentIndex == index) return;
-		var $drawer = $(state.drawers[index]);
+		var otherIndex = state.currentIndex;
+		var index = state.currentIndex = (state.currentIndex + 1) % 2;
+		var $drawer = state.$drawers.eq(index);
+		var $otherDrawer = state.$drawers.eq(otherIndex);
 		var sWidth = (typeof state.width === 'function')
 			? state.width.call(tool, index) : state.width;
 		var sHeights = (typeof state.heights === 'function')
 			? state.heights.call(tool, index) : state.heights;
 		var sHeight = (typeof state.height === 'function')
 			? state.height.call(tool) : state.height;
-		var $se = state.fullscreen ? $(window) : $(state.container);
+		var $scrolling = state.fullscreen ? $(window) : $(state.container);
+		var fromScroll = $scrolling.scrollTop();
+		var behind = state.behind[index];
+		var mHeight = sHeight - sHeights[index];
+		var oHeight = mHeight - sHeights[otherIndex];
+		var eventName = Q.info.isTouchscreen
+			? 'touchstart.Q_drawers'
+			: 'mousemove.Q_drawers';
+		var scrollEventName = Q.info.isTouchscreen
+			? 'touchend.Q_drawers'
+			: 'nope.Q_drawers';
+		var scrollEventDebounce = Q.info.isTouchscreen
+			? 0
+			: state.scrollPause;
 		
-		$se.scrollTop(0);
-		if (state.switchCount == 0) {
-			_pin(1-index);
-		} else if (index) {
-			_pin(0);
-			$(state.$placeholder).animate({
-				height: sHeights[1-index]
-			});
+		if (state.locked) return false;
+		state.locked = true;
+		$scrolling.off(scrollEventName);
+		$scrolling.scrollTop(0);
+		$drawer.add($otherDrawer).add(state.$placeholder).off(eventName);
+		
+		if (behind) {
+			_animate(_pin, _addEvents, callback);
 		} else {
-			$(state.$placeholder).animate({
-				height: sHeight - sHeights[1-index]
-			}, function () {
-				_pin(1);
-			});
+			_pin(_animate, _addEvents, callback);
 		}
-		state.currentIndex = index;
 		
-		function _pin(index) {
+		function _pin(callback, callback2, callback3) {
+			var p = state.drawerPosition;
+			var w = state.drawerWidth;
+			var h = state.drawerHeight;
+			
+			state.drawerPosition = $otherDrawer.css('position');
+			state.drawerWidth = $otherDrawer.width();
+			state.drawerHeight = $otherDrawer.height();
+			state.drawerOffset = $otherDrawer.offset();
+			$otherDrawer.css('position', 'relative');
+			
 			var $pe;
-			var p = state.originalPosition;
-			var w = state.originalWidth;
-			var h = state.originalHeight;
-	
-			$element = $(state.drawers[index]);
-			state.originalPosition = $element.css('position');
-			$element.css('position', 'relative');
-			state.originalWidth = $element.width();
-			state.originalHeight = $element.height();
-			state.originalOffset = $element.offset();
-	
-			if (state.pinnedElement) {
-				$pe = $(state.pinnedElement);
+			if ($pe = state.$pinnedElement) {
 				state.$placeholder.before($pe).remove();
 				$pe.css({
 					position: p,
@@ -114,63 +137,99 @@ Q.Tool.define("Q/drawers", function(options) {
 					top: 0
 				});
 			}
-			state.pinnedElement = $element[0];
-
-			state.$placeholder = $('<div class="Q_drawers_placeholder" style="background: transparent;" />')
-			.width(sWidth)
-			.height(sHeights[index])
-			.insertAfter($element);
-
-			var $te = $(tool.element);
-			var $p = $element.parents();
-			var $p2 = state.container ? $te.closest(state.container) : $p.eq(-3);
-			$p.each(function () {
-				var $this = $(this);
-				$this.css('background', 'transparent');
-				if ($this.is(state.container)) return false;
-			});
-			$element['insert'+(state.behind[index]?'Before':'After')]($p2)
-			.css({
+			
+			state.$placeholder = $('<div class="Q_drawers_placeholder" />')
+				.css({
+					background: 'transparent',
+					height: (behind ? sHeights[index] : mHeight) + 'px'
+				}).insertAfter($otherDrawer);
+			
+			var jqAction = 'insert'+(state.behind[otherIndex]?'Before':'After');
+			$otherDrawer[jqAction](state.container).css({
 				position: state.fullscreen ? 'fixed' : 'absolute',
 				width: sWidth,
-				'z-index': $p2.css('z-index')
-			}).offset(state.originalOffset);
-			if (state.fullscreen && !state.behind[index]) {
-				$element.css('z-index', state.foregroundZIndex);
+				zIndex: $(state.container).css('zIndex')
+			}).offset(state.drawerOffset);
+			if (state.fullscreen && state.behind[index]) {
+				$otherDrawer.css({zIndex: state.foregroundZIndex});
 			}
-			$se.scrollTop(0);
-	
-			Q.addScript("plugins/Q/js/jquery.easing.min.js", function () {
-				var eventName = Q.info.isTouchscreen
-					? 'touchstart'
-					: 'mouseenter';
-				var k = state.switchCount ? 'transition' : 'initial';
-				var o = state[k];
-				$(state.$placeholder).css({
-					width: sWidth,
-					height: sHeight / 2
-				}).animate({
-					height: sHeights[index]
-				}, o.duration, o.easing, function () {
-					var $jq = state.behind[index]
-						? $(state.$placeholder)
-						: $(state.pinnedElement);
-					$jq.on(eventName, function () {
-						tool.switchTo(index);
-					});
-					++state.switchCount;
-				});
+			state.$pinnedElement = $otherDrawer;
+			
+			// TODO: adjust height, do not rely on parent of container having
+			// overflow: hidden
+			
+			callback(callback2, callback3);
+		}
+		
+		function _animate(callback, callback2, callback3) {
+			var o = state[state.switchCount ? 'transition' : 'initial'];
+			var toScroll = index ? oHeight : 0;
+			Q.Animation.play(function (x, y) {
+				$scrolling.scrollTop(fromScroll + (toScroll-fromScroll) * y);
+			}, o.duration, o.ease)
+			.onComplete.set(function () {
+				this.onComplete.remove("Q/drawers");
+				setTimeout(function () {
+					callback(callback2, callback3);
+				}, 0);
+			}, "Q/drawers");
+		}
+		
+		function _addEvents(callback) {
+			var o = state[state.switchCount ? 'transition' : 'initial'];
+			var $jq = $(behind ? state.$pinnedElement : state.$placeholder);
+			$jq.off(eventName).on(eventName, function () {
+				tool.swap();
 			});
+			if (!behind) {
+				setTimeout(function () {
+					$scrolling.on(scrollEventName, 
+						Q.debounce(_dragSwap, state.scrollEventDebounce)
+					);
+				}, 500);
+			}
+			state.locked = false;
+			++state.swapCount;
+			Q.handle(callback, tool)
+		}
+		
+		function _dragSwap() {
+			var st = $scrolling.scrollTop();
+			if (st < oHeight / 2) {
+				tool.swap();
+			} else if (st < oHeight) {
+				state.locked = true;
+				$scrolling.off(scrollEventName);
+				var o = state.reversion;
+				var scrollTop = $scrolling.scrollTop();
+				Q.Animation.play(function (x, y) {
+					$scrolling.scrollTop(scrollTop + (oHeight - scrollTop) * y);
+				}, o.duration, o.ease)
+				.onComplete.set(function () {
+					state.locked = false;
+					_addEvents();
+					this.onComplete.remove("Q/drawers");
+				}, "Q/drawers");
+			}
 		}
 	},
 	
 	Q: {
 		beforeRemove: {"Q/drawers": function () {
 			var state = this.state;
-			var pinnedElement = state.pinnedElement;
-			if (!pinnedElement) return;
-			Q.Tool.clear(pinnedElement);
-			Q.removeElement(pinnedElement);
+			$(this.element).parents().each(function () {
+				var $this = $(this);
+				var b = $this.data('Q/drawers originalBackground');
+				if (b) {
+					$this.css('background', b)
+						.removeData('Q/drawers originalBackground');
+				}
+				if ($this.is(state.container)) return false;
+			});
+			var $pinnedElement = state.$pinnedElement;
+			if (!$pinnedElement) return;
+			Q.Tool.clear($pinnedElement[0]);
+			Q.removeElement($pinnedElement[0]);
 		}}
 	}
 }

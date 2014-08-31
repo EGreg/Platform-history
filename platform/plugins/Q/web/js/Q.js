@@ -1834,7 +1834,7 @@ Evp.removeAllHandlers = function _Q_Event_prototype_removeAllHandlers() {
 };
 
 /**
- * Tells the event that the stream should stop
+ * Indicates that the event won't be firing anymore
  * 
  * @method stop
  * @param {Boolean} removeAllHandlers
@@ -7393,6 +7393,9 @@ Q.Animation = function _Q_Animation(callback, duration, ease, params) {
 	this.callback = callback;
 	this.params = params;
 	this.onRewind = new Q.Event();
+	this.onPause = new Q.Event();
+	this.onRender = new Q.Event();
+	this.onComplete = new Q.Event();
 };
 
 var Ap = Q.Animation.prototype;
@@ -7404,6 +7407,7 @@ var Ap = Q.Animation.prototype;
 Ap.pause = function _Q_Animation_prototype_pause() {
 	this.playing = false;
 	delete Q.Animation.playing[this.id];
+	this.onPause.handle.call(this);
 	return this;
 };
 
@@ -7430,13 +7434,17 @@ Ap.render = function _Q_Animation_prototype_rewind() {
 		var x = anim.position = anim.milliseconds / anim.duration;
 		if (x >= 1) {
 			Q.handle(anim.callback, anim, [1, anim.ease(1), anim.params]);
+			anim.onRender.stop();
+			anim.onComplete.handle.call(anim);
 			anim.rewind();
 			return;
 		}
-		Q.handle(anim.callback, anim, [x, anim.ease(x), anim.params]);
+		var y = anim.ease(x);
+		Q.handle(anim.callback, anim, [x, y, anim.params]);
 		if (anim.playing) {
 			anim.render();
 		}
+		anim.onRender.handle.call(anim, x, y, anim.params);
 	});
 };
 
