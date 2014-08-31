@@ -33,7 +33,6 @@ Q.Tool.define("Q/drawers", function(options) {
 	
 	Q.onLayout.set(function () {
 		// to do: fix for cases where element doesn't take up whole screen
-		//state.$drawers.width($(window).width());
 	}, tool);
 },
 
@@ -141,7 +140,8 @@ Q.Tool.define("Q/drawers", function(options) {
 			state.$placeholder = $('<div class="Q_drawers_placeholder" />')
 				.css({
 					background: 'transparent',
-					height: (behind ? sHeights[index] : mHeight) + 'px'
+					height: (behind ? sHeights[index] : mHeight) + 'px',
+					cursor: 'pointer'
 				}).insertAfter($otherDrawer);
 			
 			var jqAction = 'insert'+(state.behind[otherIndex]?'Before':'After');
@@ -150,6 +150,9 @@ Q.Tool.define("Q/drawers", function(options) {
 				width: sWidth,
 				zIndex: $(state.container).css('zIndex')
 			}).offset(state.drawerOffset);
+			if (state.behind[index]) {
+				$otherDrawer.css({cursor: 'pointer'});
+			}
 			if (state.fullscreen && state.behind[index]) {
 				$otherDrawer.css({zIndex: state.foregroundZIndex});
 			}
@@ -180,6 +183,7 @@ Q.Tool.define("Q/drawers", function(options) {
 			var $jq = $(behind ? state.$pinnedElement : state.$placeholder);
 			$jq.off(eventName).on(eventName, function () {
 				tool.swap();
+				return false;
 			});
 			if (!behind) {
 				setTimeout(function () {
