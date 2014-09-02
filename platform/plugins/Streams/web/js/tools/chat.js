@@ -379,8 +379,8 @@ Q.Tool.define('Streams/chat', function(options) {
 		}, 'Streams/chat');
 
 		/*
-		* send message
-		*/
+		 * activate the composer
+		 */
 		tool.$('.Streams_chat_composer textarea')
 		.plugin('Q/autogrow', {
 			maxWidth: $(tool.element).width() 
@@ -402,6 +402,8 @@ Q.Tool.define('Streams/chat', function(options) {
 			if (content.length == 0) {
 				return false;
 			}
+			
+			state.hadFocus = true;
 
 			blocked = true;	
 			$this.attr('disabled', 'disabled');
@@ -413,9 +415,10 @@ Q.Tool.define('Streams/chat', function(options) {
 				Q.Users.login({
 					onSuccess: { "Streams/chat": _postMessage },
 					onCancel: { "Streams/chat": function () {
-						if (!Q.info.isTouchscreen) {
+						if (!Q.info.isTouchscreen && state.hadFocus) {
 							$this.plugin('Q/clickfocus');
 						}
+						state.hadFocus = false;
 					}},
 					onResult: { "Streams/chat": function () {
 						blocked = false;
@@ -442,9 +445,10 @@ Q.Tool.define('Streams/chat', function(options) {
 					}
 					state.stream.refresh(null, {messages: true});
 					$this.val('');
-					if (!Q.info.isTouchscreen) {
+					if (!Q.info.isTouchscreen && state.hadFocus) {
 						$this.plugin('Q/clickfocus');
 					}
+					state.hadFocus = false;
 				});
 			}
 
@@ -540,8 +544,28 @@ Q.Tool.define('Streams/chat', function(options) {
 	},
 
 	scrollToBottom: function() {
-		$scm = this.$('.Streams_chat_messages');
-		$scm.animate({ scrollTop: $scm[0].scrollHeight }, this.state.animations.duration);
+		var state = this.state;
+		var $scm = this.$('.Streams_chat_messages');
+		var overflow = $scm.css('overflow-y');
+		if (['scroll', 'auto'].indexOf(overflow) >= 0) {
+			state.$scrolling = $scm;
+		}
+		if (!state.$scrolling) {
+			var $element = $('body');
+			$scm.parents().each(function () {
+				var $this = $(this);
+				var overflow = $this.css('overflow-y');
+				if (['scroll', 'auto'].indexOf(overflow) >= 0) {
+					$element = $this;
+					return false;
+				}
+			});
+			state.$scrolling = $element;
+		}
+		var top = $scm.offset().top - state.$scrolling.offset().top;
+		state.$scrolling.animate({ 
+			scrollTop: state.$scrolling[0].scrollHeight
+		}, this.state.animations.duration);
 	},
 
 	scrollToTop: function() {
@@ -550,14 +574,16 @@ Q.Tool.define('Streams/chat', function(options) {
 	},
 
 	processDOM: function() {
+		var state = this.state;
 		this.$('.Streams_chat_message').each(function () {
 			if (this.isOverflowed()) {
 				this.style.cursor = 'pointer';
 			}
 		});
-		if (!Q.info.isTouchscreen) {
+		if (!Q.info.isTouchscreen && state.hadFocus) {
 			$(this.state.inputElement).plugin('Q/clickfocus');
 		}
+		state.hadFocus = false;
 	},
 	
 	refresh: function (callback) {

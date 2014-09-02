@@ -14,6 +14,7 @@
 Q.Tool.define("Q/drawers", function(options) {
 	var tool = this;
 	var state = tool.state;
+	var $scrolling = state.fullscreen ? $(window) : $(state.container);
 	state.swapCount = 0;
 	
 	if (state.fullscreen || !state.container) {
@@ -33,6 +34,17 @@ Q.Tool.define("Q/drawers", function(options) {
 	
 	Q.onLayout.set(function () {
 		// to do: fix for cases where element doesn't take up whole screen
+		if (Q.info.isMobile) {
+			var w = state.drawerWidth = $(window).width();
+			$(tool.element).width(w);
+			state.$drawers.width(w);
+			state.$drawers.height();
+		}
+		var sh = $scrolling.height();
+		var $d0 = state.$drawers.eq(0);
+		var $d1 = state.$drawers.eq(1);
+		$d0.css('min-height', sh-state.heights[1]+'px');
+		$d1.css('min-height', sh-state.heights[0]+'px');
 	}, tool);
 },
 
@@ -70,7 +82,7 @@ Q.Tool.define("Q/drawers", function(options) {
 	scrollToBottom: [],
 	fullscreen: Q.info.isMobile && Q.info.isAndroid(1000),
 	foregroundZIndex: 50,
-	scrollPause: 300
+	scrollPause: Q.info.isTouchscreen ? 500 : 100
 },
 
 {	
@@ -96,11 +108,8 @@ Q.Tool.define("Q/drawers", function(options) {
 			? 'touchstart.Q_drawers'
 			: 'mousedown.Q_drawers';
 		var scrollEventName = Q.info.isTouchscreen
-			? 'touchend.Q_drawers'
+			? 'scroll.Q_drawers'
 			: 'scroll.Q_drawers';
-		var scrollEventDebounce = Q.info.isTouchscreen
-			? 0
-			: state.scrollPause;
 		
 		if (state.locked) return false;
 		state.locked = true;
@@ -187,10 +196,17 @@ Q.Tool.define("Q/drawers", function(options) {
 				return false;
 			});
 			if (!behind) {
+				if (Q.info.isTouchscreen) {
+					$scrolling.off('touchstart.Q_columns')
+						.off('touchend.Q_columns')
+						.on('touchstart.Q_columns', function (event) {
+							state.touchCount = Q.Pointer.touchCount(event);
+						}).on('touchend.Q_columns', function (event) {
+							state.touchCount = 0;
+						});
+				}
 				setTimeout(function () {
-					$scrolling.on(scrollEventName,
-						Q.debounce(_dragSwap, scrollEventDebounce)	
-					);
+					$scrolling.on(scrollEventName, _dragSwap);
 				}, 100);
 			}
 			state.locked = false;
@@ -198,17 +214,25 @@ Q.Tool.define("Q/drawers", function(options) {
 			Q.handle(callback, tool)
 		}
 		
+		var interval = null;
 		function _dragSwap() {
 			var lastScrollTop = $scrolling.scrollTop();
-			var interval = setInterval(function () {
+			if (interval) return;
+			interval = setInterval(function () {
 				var st = $scrolling.scrollTop();
-				if (st != lastScrollTop) {
+				if (st != lastScrollTop && st > 0) {
 					lastScrollTop = st;
 					return; // wait until scrolling stops
 				}
+				if (state.locked || state.touchCount) return;
 				clearInterval(interval);
+				interval = null;
+				var overflow = $scrolling.css('overflow-y');
+				$scrolling.css('overflow-y', 'hidden');
 				if (st < oHeight / 2) {
-					tool.swap();
+					tool.swap(function () {
+						$scrolling.css('overflow-y', overflow);
+					});
 				} else if (st < oHeight) {
 					state.locked = true;
 					$scrolling.off(scrollEventName);
@@ -220,10 +244,11 @@ Q.Tool.define("Q/drawers", function(options) {
 					.onComplete.set(function () {
 						state.locked = false;
 						_addEvents();
+						$scrolling.css('overflow-y', overflow);
 						this.onComplete.remove("Q/drawers");
 					}, "Q/drawers");
 				}
-			}, 100);
+			}, state.scrollPause);
 		}
 	},
 	
@@ -243,6 +268,10 @@ Q.Tool.define("Q/drawers", function(options) {
 			if (!$pinnedElement) return;
 			Q.Tool.clear($pinnedElement[0]);
 			Q.removeElement($pinnedElement[0]);
+			var $scrolling = state.fullscreen ? $(window) : $(state.container);
+			$scrolling.off(state.scrollEventName)
+				.off('touchstart.Q_drawers')
+				.off('touchend.Q_drawers');
 		}}
 	}
 }

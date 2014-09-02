@@ -341,7 +341,6 @@
 }
 .Streams_chat_messages {
 	min-height: 70px;
-	max-height: 300px;
 	overflow-x: hidden;
 }
 .Streams_chat_item {

@@ -361,12 +361,8 @@ Q.Tool.define("Q/columns", function(options) {
 							Q.addScript();
 						}
 					}
-				} else {
-					if (o.scrollbarsAutoHide) {
-						$cs.plugin('Q/scrollbarsAutoHide', o.scrollbarsAutoHide);
-					} else {
-						$cs.css('overflow', 'auto');
-					}
+				} else if (o.scrollbarsAutoHide) {
+					$cs.plugin('Q/scrollbarsAutoHide', o.scrollbarsAutoHide);
 				}
 
 				p.fill('animation')();
