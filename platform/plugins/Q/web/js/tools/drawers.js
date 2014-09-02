@@ -94,10 +94,10 @@ Q.Tool.define("Q/drawers", function(options) {
 		var oHeight = mHeight - sHeights[otherIndex];
 		var eventName = Q.info.isTouchscreen
 			? 'touchstart.Q_drawers'
-			: 'mousemove.Q_drawers';
+			: 'mousedown.Q_drawers';
 		var scrollEventName = Q.info.isTouchscreen
 			? 'touchend.Q_drawers'
-			: 'nope.Q_drawers';
+			: 'scroll.Q_drawers';
 		var scrollEventDebounce = Q.info.isTouchscreen
 			? 0
 			: state.scrollPause;
@@ -187,10 +187,10 @@ Q.Tool.define("Q/drawers", function(options) {
 			});
 			if (!behind) {
 				setTimeout(function () {
-					$scrolling.on(scrollEventName, 
-						Q.debounce(_dragSwap, state.scrollEventDebounce)
+					$scrolling.on(scrollEventName,
+						Q.debounce(_dragSwap, scrollEventDebounce)	
 					);
-				}, 500);
+				}, 100);
 			}
 			state.locked = false;
 			++state.swapCount;
@@ -198,23 +198,31 @@ Q.Tool.define("Q/drawers", function(options) {
 		}
 		
 		function _dragSwap() {
-			var st = $scrolling.scrollTop();
-			if (st < oHeight / 2) {
-				tool.swap();
-			} else if (st < oHeight) {
-				state.locked = true;
-				$scrolling.off(scrollEventName);
-				var o = state.reversion;
-				var scrollTop = $scrolling.scrollTop();
-				Q.Animation.play(function (x, y) {
-					$scrolling.scrollTop(scrollTop + (oHeight - scrollTop) * y);
-				}, o.duration, o.ease)
-				.onComplete.set(function () {
-					state.locked = false;
-					_addEvents();
-					this.onComplete.remove("Q/drawers");
-				}, "Q/drawers");
-			}
+			var lastScrollTop = $scrolling.scrollTop();
+			var interval = setInterval(function () {
+				var st = $scrolling.scrollTop();
+				if (st != lastScrollTop) {
+					lastScrollTop = st;
+					return; // wait until scrolling stops
+				}
+				clearInterval(interval);
+				if (st < oHeight / 2) {
+					tool.swap();
+				} else if (st < oHeight) {
+					state.locked = true;
+					$scrolling.off(scrollEventName);
+					var o = state.reversion;
+					var scrollTop = $scrolling.scrollTop();
+					Q.Animation.play(function (x, y) {
+						$scrolling.scrollTop(scrollTop + (oHeight - scrollTop) * y);
+					}, o.duration, o.ease)
+					.onComplete.set(function () {
+						state.locked = false;
+						_addEvents();
+						this.onComplete.remove("Q/drawers");
+					}, "Q/drawers");
+				}
+			}, 100);
 		}
 	},
 	
