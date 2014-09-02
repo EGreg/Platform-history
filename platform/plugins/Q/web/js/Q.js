@@ -6618,7 +6618,12 @@ Q.handle.options = {
 	externalLoader: null,
 	dontReload: false
 };
-Q.handle.onUrl = new Q.Event();
+Q.handle.onUrl = new Q.Event(function () {
+	var elements = document.getElementsByClassName('Q_error_message');
+	Q.each(elements, function () {
+		Q.removeElement(this);
+	});
+}, "Q");
 
 /**
  * Parses a querystring

@@ -149,7 +149,8 @@ Q.Tool.define("Q/drawers", function(options) {
 				position: state.fullscreen ? 'fixed' : 'absolute',
 				width: sWidth,
 				zIndex: $(state.container).css('zIndex')
-			}).offset(state.drawerOffset);
+			}).offset(state.drawerOffset)
+			.activate(); // otherwise Q.find might not have found this element!
 			if (state.behind[index]) {
 				$otherDrawer.css({cursor: 'pointer'});
 			}

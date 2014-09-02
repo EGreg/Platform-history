@@ -139,7 +139,7 @@ Q.Tool.define("Q/tabs", function(options) {
 			}
 		}, 10, state.loaderOptions, 10, loaderOptions);
 
-		Q.loadUrl(href, o);
+		Q.handle(href, o);
 	},
 	
 	/**
