@@ -27,7 +27,6 @@ module.exports = Base;
  * @type array
  */
 Base.tableClasses = [
-		"Places_Nearby",
 		"Places_Zipcode"
 	];
 

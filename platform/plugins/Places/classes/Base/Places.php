@@ -20,8 +20,7 @@ abstract class Base_Places
 	 * @type array
 	 */
 	static $table_classnames = array (
-  0 => 'Places_Nearby',
-  1 => 'Places_Zipcode',
+  0 => 'Places_Zipcode',
 );
 
 	/**
