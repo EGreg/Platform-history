@@ -81,8 +81,7 @@ Q.Tool.define("Q/drawers", function(options) {
 	behind: [true, false],
 	scrollToBottom: [],
 	fullscreen: Q.info.isMobile && Q.info.isAndroid(1000),
-	foregroundZIndex: 50,
-	scrollPause: Q.info.isTouchscreen ? 500 : 100
+	foregroundZIndex: 50
 },
 
 {	
@@ -100,10 +99,13 @@ Q.Tool.define("Q/drawers", function(options) {
 		var sHeight = (typeof state.height === 'function')
 			? state.height.call(tool) : state.height;
 		var $scrolling = state.fullscreen ? $(window) : $(state.container);
-		var fromScroll = $scrolling.scrollTop();
 		var behind = state.behind[index];
-		var mHeight = sHeight - sHeights[index];
-		var oHeight = mHeight - sHeights[otherIndex];
+		var fromHeight = behind 
+			? sHeights[index] 
+			: sHeight - sHeights[index];
+		var toHeight = behind 
+			? sHeight - sHeights[otherIndex] 
+			: sHeights[otherIndex];
 		var eventName = Q.info.isTouchscreen
 			? 'touchstart.Q_drawers'
 			: 'mousedown.Q_drawers';
@@ -149,7 +151,7 @@ Q.Tool.define("Q/drawers", function(options) {
 			state.$placeholder = $('<div class="Q_drawers_placeholder" />')
 				.css({
 					background: 'transparent',
-					height: (behind ? sHeights[index] : mHeight) + 'px',
+					height: fromHeight + 'px',
 					cursor: 'pointer'
 				}).insertAfter($otherDrawer);
 			
@@ -176,9 +178,8 @@ Q.Tool.define("Q/drawers", function(options) {
 		
 		function _animate(callback, callback2, callback3) {
 			var o = state[state.switchCount ? 'transition' : 'initial'];
-			var toScroll = index ? oHeight : 0;
 			Q.Animation.play(function (x, y) {
-				$scrolling.scrollTop(fromScroll + (toScroll-fromScroll) * y);
+				state.$placeholder.height(fromHeight + (toHeight-fromHeight)*y);
 			}, o.duration, o.ease)
 			.onComplete.set(function () {
 				this.onComplete.remove("Q/drawers");
@@ -205,51 +206,12 @@ Q.Tool.define("Q/drawers", function(options) {
 							state.touchCount = 0;
 						});
 				}
-				setTimeout(function () {
-					$scrolling.on(scrollEventName, _dragSwap);
-				}, 100);
 			}
 			state.locked = false;
 			++state.swapCount;
 			Q.handle(callback, tool)
 		}
-		
-		var interval = null;
-		function _dragSwap() {
-			var lastScrollTop = $scrolling.scrollTop();
-			if (interval) return;
-			interval = setInterval(function () {
-				var st = $scrolling.scrollTop();
-				if (st != lastScrollTop && st > 0) {
-					lastScrollTop = st;
-					return; // wait until scrolling stops
-				}
-				if (state.locked || state.touchCount) return;
-				clearInterval(interval);
-				interval = null;
-				var overflow = $scrolling.css('overflow-y');
-				$scrolling.css('overflow-y', 'hidden');
-				if (st < oHeight / 2) {
-					tool.swap(function () {
-						$scrolling.css('overflow-y', overflow);
-					});
-				} else if (st < oHeight) {
-					state.locked = true;
-					$scrolling.off(scrollEventName);
-					var o = state.reversion;
-					var scrollTop = $scrolling.scrollTop();
-					Q.Animation.play(function (x, y) {
-						$scrolling.scrollTop(scrollTop + (oHeight - scrollTop) * y);
-					}, o.duration, o.ease)
-					.onComplete.set(function () {
-						state.locked = false;
-						_addEvents();
-						$scrolling.css('overflow-y', overflow);
-						this.onComplete.remove("Q/drawers");
-					}, "Q/drawers");
-				}
-			}, state.scrollPause);
-		}
+
 	},
 	
 	Q: {

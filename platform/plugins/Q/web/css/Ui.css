@@ -1358,7 +1358,7 @@ divbody { text-align: center; height: 100%; }
 #notices_slot { text-align: center; margin: auto; padding: 0px; overflow: hidden; z-index: 5000; }
 #notices { margin: auto; }
 #notices_slot div.container { overflow: none; overflow-y: auto; }
-#notices_slot ul { list-style-type: none; padding: 0px; margin: auto; width: 700px; max-width: 100%; border: solid 1px #555; border-top: solid 1px #aaa; box-shadow: 0 0 5px #222; -moz-box-shadow: 0 0 5px #222; -webkit-box-shadow: 0 0 5px #222; }
+#notices_slot ul { list-style-type: none; padding: 0px; margin: auto; width: 700px; max-width: 100%; border: solid 1px #555; border-top: solid 1px #aaa; box-shadow: 0 0 5px #222; -moz-box-shadow: 0 0 5px #222; -webkit-box-shadow: 0 0 5px #222; cursor: pointer; }
 #notices_slot li { list-style-type: none; padding: 0px; margin: 0px; text-align: center; background: #ffd4aa; border: 0px; border-bottom: solid 1px #aaa; line-height: 30px; min-height: 30px; }
 
 #notices_slot ul.pie_errors * { background-color: #ebb; color: #500; }
