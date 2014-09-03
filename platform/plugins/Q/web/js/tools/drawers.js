@@ -32,6 +32,7 @@ Q.Tool.define("Q/drawers", function(options) {
 		if ($this.is(state.container)) return false;
 	});
 	
+	var lastScrollingHeight = $scrolling[0].clientHeight;
 	Q.onLayout.set(function () {
 		// to do: fix for cases where element doesn't take up whole screen
 		if (Q.info.isMobile) {
@@ -40,11 +41,20 @@ Q.Tool.define("Q/drawers", function(options) {
 			state.$drawers.width(w);
 			state.$drawers.height();
 		}
-		var sh = $scrolling.height();
+		var sh = $scrolling[0].clientHeight;
 		var $d0 = state.$drawers.eq(0);
 		var $d1 = state.$drawers.eq(1);
 		$d0.css('min-height', sh-state.heights[1]+'px');
 		$d1.css('min-height', sh-state.heights[0]+'px');
+		if (state.currentIndex == 0) {
+			var heightDiff = sh - lastScrollingHeight;
+			var offset = $d1.offset();
+			$d1.offset({
+				left: offset.left,
+				top: offset.top + heightDiff
+			});
+		}
+		lastScrollingHeight = $scrolling[0].clientHeight;
 	}, tool);
 },
 
@@ -141,8 +151,6 @@ Q.Tool.define("Q/drawers", function(options) {
 				state.$placeholder.before($pe).remove();
 				$pe.css({
 					position: p,
-					width: w,
-					height: h,
 					left: 0,
 					top: 0
 				});
