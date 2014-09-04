@@ -44,7 +44,7 @@ Q.Tool.define("Q/drawers", function(options) {
 		var sh = $scrolling[0].clientHeight;
 		var $d0 = state.$drawers.eq(0);
 		var $d1 = state.$drawers.eq(1);
-		$d0.css('min-height', sh-state.heights[1]+'px');
+		$d0.css('min-height', sh+'px');
 		$d1.css('min-height', sh-state.heights[0]+'px');
 		if (state.currentIndex == 0) {
 			var heightDiff = sh - lastScrollingHeight;
@@ -92,6 +92,7 @@ Q.Tool.define("Q/drawers", function(options) {
 	scrollToBottom: [],
 	fullscreen: Q.info.isMobile && Q.info.isAndroid(1000),
 	foregroundZIndex: 50,
+	beforeSwap: new Q.Event(),
 	onSwap: new Q.Event()
 },
 
@@ -135,6 +136,7 @@ Q.Tool.define("Q/drawers", function(options) {
 			Q.handle(callback, tool);
 		};
 		
+		state.beforeSwap.handle.call(tool, index);
 		if (behind) {
 			_animate(_pin, _addEvents, _onSwap);
 		} else {
@@ -191,20 +193,26 @@ Q.Tool.define("Q/drawers", function(options) {
 		}
 		
 		function _animate(callback, callback2, callback3) {
-			var o = state[state.switchCount ? 'transition' : 'initial'];
+			var o = state[state.swapCount ? 'transition' : 'initial'];
+			if (!state.$placeholder) {
+				return _continue();
+			}
 			Q.Animation.play(function (x, y) {
 				state.$placeholder.height(fromHeight + (toHeight-fromHeight)*y);
 			}, o.duration, o.ease)
 			.onComplete.set(function () {
 				this.onComplete.remove("Q/drawers");
+				_continue();
+			}, "Q/drawers");
+			function _continue() {
 				setTimeout(function () {
 					callback(callback2, callback3);
 				}, 0);
-			}, "Q/drawers");
+			}
 		}
 		
 		function _addEvents(callback) {
-			var o = state[state.switchCount ? 'transition' : 'initial'];
+			var o = state[state.swapCount ? 'transition' : 'initial'];
 			var $jq = $(behind ? state.$pinnedElement : state.$placeholder);
 			$jq.off(eventName).on(eventName, function () {
 				tool.swap();

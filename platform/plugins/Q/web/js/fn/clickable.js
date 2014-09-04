@@ -121,6 +121,9 @@ function (o) {
 	if (display === 'inline') {
 		container.html('&nbsp;');
 	}
+	if (!o.allowContextMenu) {
+		$this.css('-webkit-touch-callout', 'none');
+	}
 	if (o.shadow && o.shadow.src) {
 		var shadow = $('<img />').addClass('Q_clickable_shadow')
 			.attr('src', Q.url(o.shadow.src));
@@ -329,10 +332,11 @@ function (o) {
 		y: 0.5
 	},
 	selectable: false,
+	allowContextMenu: false,
+	cancelDistance: 15,
 	onPress: new Q.Event(),
 	onRelease: new Q.Event(),
-	afterRelease: new Q.Event(),
-	cancelDistance: 15
+	afterRelease: new Q.Event()
 },
 
 {

@@ -620,13 +620,10 @@ Users.login = function(options) {
 	// login complete - run onSuccess handler
 	function _onComplete(user) {
 		Users.onLogin.handle(user);
-		var ret = Q.handle(o.onResult, this, 
-			[user, o, priv.result, priv.used || 'native', o]
-		);
+		var pn = priv.used || 'native';
+		var ret = Q.handle(o.onResult, this, [user, o, priv.result, pn]);
 		if (false !== ret) {
-			Q.handle(o.onSuccess, this, 
-				[user, o, priv.result, priv.used || 'native', o]
-			);	
+			Q.handle(o.onSuccess, this, [user, o, priv.result, pn]);	
 		}	
 	}
 };
