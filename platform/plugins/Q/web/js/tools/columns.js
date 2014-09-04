@@ -61,6 +61,7 @@ Q.Tool.define("Q/columns", function(options) {
 	};
 	$(tool.element).on(Q.Pointer.click, selector, function(){
 		var index = $(this).closest('.Q_columns_column').data(dataKey_index);
+		if (state.locked) return;
 		if (index) {
 			tool.close(index);
 		}
@@ -265,6 +266,7 @@ Q.Tool.define("Q/columns", function(options) {
 			}
 			$div.data(dataKey_hide, hide);
 			
+			state.locked = true;
 			openAnimation();
 
 			function openAnimation(){
@@ -364,6 +366,8 @@ Q.Tool.define("Q/columns", function(options) {
 				} else if (o.scrollbarsAutoHide) {
 					$cs.plugin('Q/scrollbarsAutoHide', o.scrollbarsAutoHide);
 				}
+				
+				state.locked = false;
 
 				p.fill('animation')();
 			}
