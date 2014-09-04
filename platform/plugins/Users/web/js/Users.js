@@ -850,7 +850,7 @@ Users.setIdentifier = function(options) {
 	}
 	
 	function onCancel(perms) {
-		if (false !== Q.handle(o.onResult, this, [user])) {
+		if (false !== Q.handle(o.onResult, this, [perms])) {
 			Q.handle(o.onCancel, this, [perms]);
 		}
 	}
