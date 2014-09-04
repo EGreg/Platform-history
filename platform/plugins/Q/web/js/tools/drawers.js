@@ -91,7 +91,8 @@ Q.Tool.define("Q/drawers", function(options) {
 	behind: [true, false],
 	scrollToBottom: [],
 	fullscreen: Q.info.isMobile && Q.info.isAndroid(1000),
-	foregroundZIndex: 50
+	foregroundZIndex: 50,
+	onSwap: new Q.Event()
 },
 
 {	
@@ -129,10 +130,15 @@ Q.Tool.define("Q/drawers", function(options) {
 		$scrolling.scrollTop(0);
 		$drawer.add($otherDrawer).add(state.$placeholder).off(eventName);
 		
+		function _onSwap() {
+			state.onSwap.handle.call(tool, state.currentIndex);
+			Q.handle(callback, tool);
+		};
+		
 		if (behind) {
-			_animate(_pin, _addEvents, callback);
+			_animate(_pin, _addEvents, _onSwap);
 		} else {
-			_pin(_animate, _addEvents, callback);
+			_pin(_animate, _addEvents, _onSwap);
 		}
 		
 		function _pin(callback, callback2, callback3) {
