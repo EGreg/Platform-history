@@ -166,9 +166,11 @@ function (o) {
 	var tw = $this.outerWidth();
 	var th = $this.outerHeight();
 	$this.appendTo(stretcher).css({
-		'position': 'absolute',
-		'left': '0px',
-		'top': '0px'
+		position: 'absolute',
+		left: '0px',
+		top: '0px',
+		width: width,
+		height: height
 	});
 	var zindex;
 	var anim = null;
