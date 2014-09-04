@@ -891,6 +891,9 @@ Stream.release = function _Stream_release (publisherId, streamName) {
  * @param {Object} [options] A hash of options, including:
  *   @param {Boolean} [options.messages] If set to true, then besides just reloading the fields, attempt to catch up on the latest messages
  *   @param {Array} [options.changed] An array of {fieldName: true} pairs naming fields to trigger change events for, even if their values stayed the same
+ *   @param {Number} [options.max] The maximum number of messages to wait and hope they will arrive via sockets. Any more and we just request them again.
+ *   @param {Number} [options.timeout] The maximum amount of time to wait and hope the messages will arrive via sockets. After this we just request them again.
+ *   @param {Number} [options.unlessSocket] Whether to avoid doing any requests when a socket is attached
  * @return {boolean} whether the refresh is occurring, or whether it has been canceled
  */
 Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, options) {
@@ -903,7 +906,7 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 	// If the stream was retained, fetch latest messages,
 	// and replay their being "posted" to trigger the right events
 	if (options && options.messages) {
-		result = !!Message.wait(publisherId, streamName, -1, callback);
+		result = !!Message.wait(publisherId, streamName, -1, callback, options);
 	}
 	if (!result) {
 		Streams.get.cache.each([publisherId, streamName], function (k, v) {
@@ -2210,6 +2213,7 @@ Message.latestOrdinal = function _Message_latestOrdinal (publisherId, streamName
  * @param {Object} [options] A hash of options which can include:
  *   @param {Number} [options.max] The maximum number of messages to wait and hope they will arrive via sockets. Any more and we just request them again.
  *   @param {Number} [options.timeout] The maximum amount of time to wait and hope the messages will arrive via sockets. After this we just request them again.
+ *   @param {Number} [options.unlessSocket] Whether to avoid doing any requests when a socket is attached
  * @return {Boolean|Number|Q.Pipe}
  *   Returns false if no attempt was made because stream wasn't cached,
  *   true if the cached stream already got this message,
@@ -2236,7 +2240,7 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 	});
 	var socket = Q.Socket.get('Streams', node);
 	if (!socket || ordinal < 0 || ordinal - o.max > latest) {
-		return _tryLoading();
+		return o.unlessSocket ? false : _tryLoading();
 	}
 	// ok, wait a little while
 	var t = setTimeout(_tryLoading, o.timeout);
@@ -2927,6 +2931,10 @@ Q.onInit.add(function _Streams_onInit() {
 		// Will return immediately if previous message is already cached
 		// (e.g. from a post or retrieving a stream, or because there was no cache yet)
 		Message.wait(msg.publisherId, msg.streamName, msg.ordinal-1, function () {
+			if (Message.latest[msg.publisherId+"\t"+msg.streamName]
+			>= msg.ordinal) {
+				return; // it was already processed
+			}
 			// New message posted - update cache
 			console.log('Streams.onEvent("post")', msg);
 			var message = (Q.typeOf(msg) === 'Q.Streams.Message')

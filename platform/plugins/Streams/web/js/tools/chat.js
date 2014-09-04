@@ -443,7 +443,10 @@ Q.Tool.define('Streams/chat', function(options) {
 						tool.scrollToBottom();
 						return;
 					}
-					state.stream.refresh(null, {messages: true});
+					state.stream.refresh(null, {
+						messages: true, 
+						unlessSocket: true
+					});
 					$this.val('');
 					if (!Q.info.isTouchscreen && state.hadFocus) {
 						$this.plugin('Q/clickfocus');
