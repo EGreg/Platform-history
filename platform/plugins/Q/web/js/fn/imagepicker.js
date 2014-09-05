@@ -13,15 +13,15 @@
  * @class Q imagepicker
  * @constructor
  * @param {Object} [options] options is an Object that contains parameters for function
- * @param {Object} [options.saveSizeName] saveSizeName Required hash where key is the preferred image size and value is the image name. Several key-value pairs may
- *                   be given and image will be generated and saved in different files. Key may be just one number, e.g. '100'
- *                   which means square image 100x100 or in format '<width>x<height>', e.g. '80x120' to make non-square image.
- *                   You can have one of <width> or <height> be empty, and then it will automatically keep the proportions.
- *                   Or you can pass 'x' and then it will keep the original width and height of the image.
+ * @param {Object} [options.saveSizeName] Required hash where key is the preferred image size and value is the image name. Several key-value pairs may be given and image will be generated and saved in different files.
+*   Key may be just one number, e.g. '100' which means square image 100x100 or in format '<width>x<height>', e.g. '80x120' to make non-square image.
+ *  You can have one of <width> or <height> be empty, and then it will automatically keep the proportions.
+ *  Or you can pass 'x' and then it will keep the original width and height of the image.
  * @default {}
- * @param {String} [options.path] path Can be a URL path or a function returning a URL path. It must exist on the server.
+ * @param {String} [options.url] url is a url to post to.
+ * @param {String} [options.path] Can be a URL path or a function returning a URL path. It must exist on the server.
  * @default 'uploads'
- * @param {String} [options.subpath] subpath is a subpath which may be created on the server.
+ * @param {String} [options.subpath] A subpath which may be created on the server if it doesn't already exist.
  * @default ''
  * @param {String} [options.showSize] showSize is a key in saveSizeName to show on success. Optional.
  * @default null
@@ -31,7 +31,6 @@
  *   @param {Number} [options.crop.y] y is a top value for cropping
  *   @param {Number} [options.crop.w] w is a width value for cropping
  *   @param {Number} [options.crop.h] h is a height value for cropping
- * @param {String} [options.url] url is a url to post to.
  * @default Q.action('Q/image')
  * @param {Event} [options.preprocess] preprocess is a function which is triggering before image upload.
  * Its "this" object will be a jQuery of the imagepicker element
@@ -92,10 +91,14 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 				$this.attr('src', state.oldSrc).stop().removeClass('Q_imagepicker_uploading');
 				return;
 			}
+			var path = $this.state('Q/imagepicker').path;
+			path = (typeof path === 'function') ? path() : path;
+			var subpath = $this.state('Q/imagepicker').subpath;
+			subpath = (typeof subpath === 'function') ? subpath() : subpath;
 			var params = {
 				'data': data,
-				'path': $this.state('Q/imagepicker').path,
-				'subpath': $this.state('Q/imagepicker').subpath,
+				'path': path,
+				'subpath': subpath,
 				'save': o.saveSizeName,
 				'url': o.url,
 				'loader': o.loader

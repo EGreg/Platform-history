@@ -92,7 +92,7 @@ Q.Tool.define("Q/inplace", function (options) {
 	selectOnEdit: true,
 	maxWidth: null,
 	minWidth: 100,
-	placeholder: null,
+	placeholder: 'Type something...',
 	template: {
 		dir: 'plugins/Q/views',
 		name: 'Q/inplace/tool'

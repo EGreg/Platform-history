@@ -142,6 +142,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 
 			var inplace = tool.setUpElement('div', 'Q/inplace', ipo);
 			tool.element.appendChild(inplace);
+			Q.activate(inplace);
 		}
 	}
 

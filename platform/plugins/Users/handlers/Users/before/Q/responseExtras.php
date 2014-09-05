@@ -39,5 +39,8 @@ function Users_before_Q_responseExtras()
 			Q_Response::setScriptData('Q.plugins.Users.loggedInUser', $u);
 		}
 	}
+	if ($sizes = Q_Config::expect('Users', 'icon', 'sizes')) {
+		Q_Response::setScriptData('Q.plugins.Users.icon.sizes', $sizes);
+	}
 	Q_Response::addStylesheet("plugins/Users/css/Users.css");
 }

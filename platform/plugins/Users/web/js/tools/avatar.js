@@ -15,8 +15,6 @@
  *   @required
  *   @param {String} [options.icon] icon for avatar
  *   @default '40'
- *   @param {Event} [options.onName]
- *   @default Q.Event(function() {}, 'Users')
  *   @param {Object} [options.templates] Object for avatar template parameters
  *     @param {Object} [options.templates.icon]
  *       @param {String} [options.templates.icon.dir]
@@ -79,7 +77,6 @@ Q.Tool.define("Users/avatar", function(options) {
 {
 	user: null,
 	icon: '40',
-	onName: new Q.Event(function() {}, 'Users'),
 	templates: {
 		icon: {
 			dir: 'plugins/Users/views',

@@ -120,6 +120,7 @@ class Streams_Avatar extends Base_Streams_Avatar
 	 *  "fullAccess" => Ignore the access restrictions for the name<br/>
 	 *  "short" => Only display the first name<br/>
 	 *  "spans" => If true, encloses the first and last name in span tags<br/>
+	 *      If an array, then it will be used as the attributes of the spans.
 	 *  "escape" => If true, does HTML escaping of the retrieved fields
 	 * @param {string|null} $default
 	 *  What to return if there is no info to get displayName from.
@@ -133,8 +134,18 @@ class Streams_Avatar extends Base_Streams_Avatar
 		$u = $escape ? Q_Html::text($this->username) : $this->username;
 
 		if (!empty($options['spans'])) {
-			$fn = $fn ? "<span class='Streams_firstName'>$fn</span>" : "";
-			$ln = $ln ? "<span class='Streams_lastName'>$ln</span>" : "";
+			$attributes = is_array($options['spans'])
+				? $options['spans'] 
+				: array();
+			$class = isset($attributes['class'])
+				? ' ' . $attributes['class']
+				: '';
+			$attributes['class'] = "Streams_firstName$class";
+			$attr = Q_Html::attributes($attributes);
+			$fn = $fn ? "<span $attr>$fn</span>" : "";
+			$attributes['class'] = "Streams_lastName$class";
+			$attr = Q_Html::attributes($attributes);
+			$ln = $ln ? "<span $attr>$ln</span>" : "";
 		}
 
 		if (!empty($options['short'])) {

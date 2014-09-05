@@ -265,7 +265,7 @@
 	padding: 5px;
 }
 
-.Streams_inplace_tool { display: inline; position: relative; }
+.Streams_inplace_tool { display: inline-block; position: relative; }
 
 /* streams basic tool */
 

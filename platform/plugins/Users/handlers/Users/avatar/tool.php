@@ -7,6 +7,7 @@
  * An associative array of parameters, containing:
  *   "userId" => The user's id. Defaults to id of the logged-in user, if any.
  *   "icon" => Optional. Render icon before the username.
+ *   "iconAttributes" => Optional. Array of attributes to render for the icon.
  */
 function Users_avatar_tool($options)
 {
@@ -39,9 +40,13 @@ function Users_avatar_tool($options)
 	if ($icon) {
 		if ($icon === true) $icon = 40;
 		$path = $user->iconPath();
-		$result .= Q_Html::img("$path/$icon.png", 'user icon', array(
-			'class' => 'Users_avatar_icon'
-		));
+		$attributes = isset($options['iconAttributes'])
+			? $options['iconAttributes']
+			: array();
+		$attributes['class'] = isset($attributes['class'])
+			? $attributes['class'] . ' Users_avatar_icon'
+			: 'Users_avatar_icon';
+		$result .= Q_Html::img("$path/$icon.png", 'user icon', $attributes);
 	}
 	$result .= '<span class="Users_avatar_name">' . $user->username . '</span>';
 	return $result;

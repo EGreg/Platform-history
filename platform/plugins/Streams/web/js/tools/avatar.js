@@ -16,10 +16,8 @@
  *   @required
  *   @param {Number} [options.icon] Size of the icon to render before the display name.
  *   @default 40
- *   @param {Boolean} [options.icon] If true, renders the short version of the display name.
+ *   @param {Boolean} [options.short] If true, renders the short version of the display name.
  *   @default false
- *   @param {Event} [options.onName]
- *   @default  new Q.Event(function() {}, 'Users')
  *   @param {Object} [options.templates]
  *     @param {Object} [options.templates.icon]
  *       @param {String} [options.templates.icon.dir]
@@ -39,10 +37,10 @@
  *         @default "span"
  */
 Q.Tool.define("Users/avatar", function(options) {
-	if (this.element.childNodes.length) {
-		return;
-	}
 	var tool = this, state = this.state;
+	if (tool.element.childNodes.length) {
+		return _present();
+	}
 	if (!state.userId) {
 		console.warn("Users/avatar: no userId provided");
 		return; // empty
@@ -53,6 +51,7 @@ Q.Tool.define("Users/avatar", function(options) {
 	
 	var p = new Q.Pipe(['icon', 'contents'], function (params) {
 		tool.element.innerHTML = params.icon + params.contents;	
+		_present();
 	});
 	
 	Q.Streams.Avatar.get(state.userId, function (err, avatar) {
@@ -79,13 +78,40 @@ Q.Tool.define("Users/avatar", function(options) {
 			p.fill('contents')(html);
 		}, state.templates.contents);
 	});
+	
+	function _present() {
+		if (!state.editable) return;
+		
+		Q.each(['first', 'last'], function (k, v) {
+			var vName = v+'Name';
+			var e = Q.Tool.setUpElement('span', 'Streams/inplace', {
+				publisherId: state.userId,
+				streamName: 'Streams/user/'+vName,
+				placeholder: 'Your '+v+' name',
+				inplaceType: 'text'
+			}, vName, tool.prefix);
+			var f = tool.getElementsByClassName('Streams_'+vName)[0];
+			f.innerHTML = '';
+			f.appendChild(e);
+			Q.activate(e);
+		});
+		var $img = tool.$('.Users_avatar_icon');
+		var saveSizeName = {};
+		Q.each(Q.Users.icon.sizes, function (k, v) {
+			saveSizeName[v] = v+".png";
+		});
+		var o = Q.extend({
+			saveSizeName: saveSizeName,
+			showSize: $img.width()
+		}, state.imagepicker);
+		$img.plugin('Q/imagepicker', o);
+	}
 },
 
 {
 	user: null,
 	icon: '40',
 	"short": false,
-	onName: new Q.Event(function() {}, 'Users'),
 	templates: {
 		icon: {
 			dir: 'plugins/Users/views',
@@ -97,7 +123,9 @@ Q.Tool.define("Users/avatar", function(options) {
 			name: 'Users/avatar/contents',
 			fields: { tag: "span" }
 		}
-	}
+	},
+	editable: false,
+	imagepicker: {}
 }
 
 );

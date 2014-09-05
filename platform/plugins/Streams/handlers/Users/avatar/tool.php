@@ -7,8 +7,9 @@
  * An associative array of parameters, containing:
  *   "userId" => The user's id. Defaults to id of the logged-in user, if any.
  *   "icon" => Optional. Render icon before the display name. Can be true or a valid icon size: 40, 50 or 80.
- *   "short" => Optional. Renders the short version of the display name.
  *   "iconAttributes" => Optional. Array of attributes to render for the icon.
+ *   "short" => Optional. Renders the short version of the display name.
+ *   "editable" => Optional. Provides an interface for editing the user's info.
  */
 function Users_avatar_tool($options)
 {
@@ -30,9 +31,6 @@ function Users_avatar_tool($options)
 	$result = '';
 	if ($icon = $options['icon']) {
 		if ($icon === true) $icon = 40;
-		$attributes = array(
-			'class' => 'Users_avatar_icon'
-		);
 		$attributes = isset($options['iconAttributes'])
 			? $options['iconAttributes']
 			: array();
@@ -45,7 +43,9 @@ function Users_avatar_tool($options)
 		);
 	}
 	$o = $options['short'] ? array('short' => true) : array();
-	$result .= '<span class="Users_avatar_name">' . $avatar->displayName($o) . '</span>';
+	$o['spans'] = true;
+	$displayName = $avatar->displayName($o);
+	$result .= "<span class='Users_avatar_name'>$displayName</span>";
 	unset($options['iconAttributes']);
 	Q_Response::setToolOptions($options);
 	return $result;
