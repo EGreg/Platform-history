@@ -121,7 +121,7 @@ function (o) {
 	if (display === 'inline') {
 		container.html('&nbsp;');
 	}
-	if (!o.allowContextMenu) {
+	if (!o.allowCallout) {
 		$this.css('-webkit-touch-callout', 'none');
 	}
 	if (o.shadow && o.shadow.src) {
@@ -334,7 +334,7 @@ function (o) {
 		y: 0.5
 	},
 	selectable: false,
-	allowContextMenu: false,
+	allowCallout: false,
 	cancelDistance: 15,
 	onPress: new Q.Event(),
 	onRelease: new Q.Event(),

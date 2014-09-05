@@ -504,14 +504,16 @@ function _returnFalse() { return false; }
  * Prevent ability to select text in an element
  * @method preventSelections
  * @param {Boolean} deep whether to prevent it also on child elements
+ * @param {Boolean} callouts whether to also cancel the callouts in webkit
  */
-Elp.preventSelections = function (deep) {
+Elp.preventSelections = function (deep, callouts) {
 	Q.addEventListener(this, 'selectstart', _returnFalse);
 	this.preventSelectionsInfo = this.preventSelectionsInfo || {
 		style: this.style['-moz-user-select']
 			|| this.style['-webkit-user-select']
 			|| this.style['-ms-user-select']
 			|| this.style['user-select'],
+		callout: this.style['-webkit-user-callout'],
 		unselectable: this.unselectable
 	};
 	this.unselectable = 'on'; 
@@ -519,6 +521,9 @@ Elp.preventSelections = function (deep) {
 	= this.style['-webkit-user-select']
 	= this.style['-ms-user-select']
 	= this.style['user-select'] = 'none';
+	if (callouts) {
+		this.style['-webkit-user-callout'] = 'none';
+	}
 	if (!deep) return;
 	Q.each(this.children || this.childNodes, function () {
 		if (this.preventSelections) {
@@ -540,6 +545,7 @@ Elp.restoreSelections = function (deep) {
 		= this.style['-webkit-user-select']
 		= this.style['-ms-user-select']
 		= this.style['user-select'] = p.style || 'text';
+		this.style['-webkit-user-callout'] = p.callout;
 		this.unselectable = p.unselectable;
 		delete this.preventSelectionsInfo;
 	}
