@@ -94,6 +94,7 @@ function (o) {
 	if (p.length && p[0].tagName.toUpperCase() === 'TD') {
 		p.css('position', 'relative');
 	}
+	var w = $this.css('width');
 	var h = $this.css('height');
 	// $this.css('height', $this.height()+'px');
 	var container = $('<span class="Q_clickable_container" />').css({
@@ -169,8 +170,8 @@ function (o) {
 		position: 'absolute',
 		left: '0px',
 		top: '0px',
-		width: width,
-		height: height
+		width: w,
+		height: h
 	});
 	var zindex;
 	var anim = null;
