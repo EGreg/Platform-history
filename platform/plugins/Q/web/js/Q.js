@@ -1222,10 +1222,11 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 							target[k].set(a, namespace);
 						}
 					} else if (!levels
-					|| Q.typeOf(arg[k]) === 'Q.Event'
+					|| Q.typeOf(a) === 'Q.Event'
 					|| (
 						(!Q.isPlainObject(a) || a.constructor !== Object)
-						&& Q.typeOf(a) !== 'array'
+						&& (Q.typeOf(a) !== 'array'
+						    || Q.typeOf(target[k]) !== 'array')
 					)) {
 						target[k] = Q.copy(a);
 					} else {

@@ -1444,17 +1444,18 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 			target = target.concat(arg);
 		} else {
 			for (var k in arg) {
+				var argk = arg[k];
 				if (deep === true 
 					|| (arg.hasOwnProperty && arg.hasOwnProperty(k))
 					|| (!arg.hasOwnProperty && (k in arg)))
 				{
 					if (levels && (
-						Q.isPlainObject(arguments[i][k])
-						|| Q.typeOf(arguments[i][k]) === 'array'
+						Q.isPlainObject(argk)
+						|| (Q.typeOf(argk) === 'array' && Q.typeOf(argk) === 'array')
 					)) {
-						target[k] = Q.extend(target[k], deep, levels-1, arguments[i][k]);
+						target[k] = Q.extend(target[k], deep, levels-1, argk);
 					} else {
-						target[k] = Q.copy(arguments[i][k]);
+						target[k] = Q.copy(argk);
 					}
 				}
 			}

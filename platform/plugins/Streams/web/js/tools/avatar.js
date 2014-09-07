@@ -81,33 +81,39 @@ Q.Tool.define("Users/avatar", function(options) {
 	
 	function _present() {
 		if (!state.editable) return;
-		
-		Q.each(['first', 'last'], function (k, v) {
-			var vName = v+'Name';
-			var f = tool.getElementsByClassName('Streams_'+vName)[0];
-			var e = Q.Tool.setUpElement('span', 'Streams/inplace', {
-				publisherId: state.userId,
-				streamName: 'Streams/user/'+vName,
-				placeholder: 'Your '+v+' name',
-				inplaceType: 'text',
-				inplace: {
-					bringToFront: f
-				}
-			}, vName, tool.prefix);
-			f.innerHTML = '';
-			f.appendChild(e);
-			Q.activate(e);
-		});
-		var $img = tool.$('.Users_avatar_icon');
-		var saveSizeName = {};
-		Q.each(Q.Users.icon.sizes, function (k, v) {
-			saveSizeName[v] = v+".png";
-		});
-		var o = Q.extend({
-			saveSizeName: saveSizeName,
-			showSize: $img.width()
-		}, state.imagepicker);
-		$img.plugin('Q/imagepicker', o);
+		if (state.editable === true) {
+			state.editable = ['icon', 'name'];
+		}
+		if (state.editable.indexOf('name') >= 0) {
+			Q.each(['first', 'last'], function (k, v) {
+				var vName = v+'Name';
+				var f = tool.getElementsByClassName('Streams_'+vName)[0];
+				var e = Q.Tool.setUpElement('span', 'Streams/inplace', {
+					publisherId: state.userId,
+					streamName: 'Streams/user/'+vName,
+					placeholder: 'Your '+v+' name',
+					inplaceType: 'text',
+					inplace: {
+						bringToFront: f
+					}
+				}, vName, tool.prefix);
+				f.innerHTML = '';
+				f.appendChild(e);
+				Q.activate(e);
+			});
+		}
+		if (state.editable.indexOf('icon') >= 0) {
+			var $img = tool.$('.Users_avatar_icon');
+			var saveSizeName = {};
+			Q.each(Q.Users.icon.sizes, function (k, v) {
+				saveSizeName[v] = v+".png";
+			});
+			var o = Q.extend({
+				saveSizeName: saveSizeName,
+				showSize: $img.width()
+			}, state.imagepicker);
+			$img.plugin('Q/imagepicker', o);
+		}
 	}
 },
 

@@ -8,6 +8,7 @@
  *   "userId" => The user's id. Defaults to id of the logged-in user, if any.
  *   "icon" => Optional. Render icon before the username.
  *   "iconAttributes" => Optional. Array of attributes to render for the icon.
+ *   "editable" => Optional. Whether to provide an interface for editing the user's info. Can be array containing "icon", "name".
  */
 function Users_avatar_tool($options)
 {

@@ -9,7 +9,7 @@
  *   "icon" => Optional. Render icon before the display name. Can be true or a valid icon size: 40, 50 or 80.
  *   "iconAttributes" => Optional. Array of attributes to render for the icon.
  *   "short" => Optional. Renders the short version of the display name.
- *   "editable" => Optional. Provides an interface for editing the user's info.
+ *   "editable" => Optional. Whether to provide an interface for editing the user's info. Can be array containing "icon", "name".
  */
 function Users_avatar_tool($options)
 {
