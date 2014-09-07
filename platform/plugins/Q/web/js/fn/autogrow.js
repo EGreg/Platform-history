@@ -10,7 +10,7 @@
  * @class Q autogrow
  * @constructor
  * @param {Object} [options] , object for an options
- * @param {Number} [options.maxWidth] maxWidth , number for Maximum width
+ * @param {Number} [options.maxWidth] maxWidth , number for Maximum width, or reference to an Element
  * @default 1000
  * @param {Number} [options.minWidth] minWidth , number for Minimum width
  * @default 0
@@ -23,6 +23,12 @@
 Q.Tool.jQuery('Q/autogrow',
 
 function (o) {
+
+	var possibleEvents = 'keyup.Q_autogrow'
+		+ ' blur.Q_autogrow'
+		+ ' update.Q_autogrow'
+		+ ' paste.Q_autogrow'
+		+ ' autogrowCheck';
 
 	this.filter('textarea').each(function (i) {
 		var $t = $(this), t = this;
@@ -52,14 +58,13 @@ function (o) {
 		c.style.padding = '0px';
 		c.style.margin = '0px';
 
-		$t.bind('focus', function(){
+		$t.on('focus', function(){
 			t.startUpdating()
-		}).bind('blur', function(){
+		}).on('blur', function(){
 			t.stopUpdating()
 		});
 
-		this.heightUpdate = function(){
-
+		function updateHeight() {
 			tVal = t.value;
 			t.style.height = '0px';
 			var tH = t.scrollHeight + H;
@@ -67,21 +72,20 @@ function (o) {
 			setTimeout(function () {
 				c.style.height = t.offsetHeight + 'px';
 			}, 0)
+		};
 
-		}
-
-		this.startUpdating = function(){
-			$(this).bind('keyup blur update paste autogrowCheck', t.heightUpdate);
-			t.timeout1 = setTimeout(t.heightUpdate, 0);
-			t.timeout2 = setTimeout(t.heightUpdate, 100);
-		}
+		this.startUpdating = function() {
+			$(this).off(possibleEvents).on(possibleEvents, updateHeight);
+			t.timeout1 = setTimeout(updateHeight, 0);
+			t.timeout2 = setTimeout(updateHeight, 100);
+		};
 
 		this.stopUpdating = function(){
 			clearTimeout(t.timeout1);
 			clearTimeout(t.timeout2);
-		}
+		};
 		
-		this.heightUpdate();
+		updateHeight();
 		Q.handle(o.onResize, this, []);
 	});
 
@@ -95,7 +99,7 @@ function (o) {
 			$(this).data('Q-tester', testSubject);
 			testSubject.insertAfter(input);
 		}
-		var check = function() {
+		function updateWidth() {
 			val = input.val();
 			if (!val) {
 				val = input.attr('placeholder') || '';
@@ -124,8 +128,13 @@ function (o) {
 			testSubject.hide();
 			var newWidth = Math.max(testerWidth + o.comfortZone, minWidth);
 			var currentWidth = input.outerWidth(true);
-			var isValidWidthChange = (((newWidth < currentWidth && newWidth >= minWidth)
-				|| (newWidth > minWidth)) && (!o.maxWidth || newWidth <= o.maxWidth));
+			var maxWidth = (o.maxWidth instanceof Element)
+				? $(o.maxWidth).innerWidth()
+				: o.maxWidth;
+			var isValidWidthChange = ((
+				(newWidth < currentWidth && newWidth >= minWidth)
+				|| (newWidth > minWidth)
+			) && (!maxWidth || newWidth <= maxWidth));
 
 			// Animate width
 			if (isValidWidthChange) {
@@ -137,8 +146,8 @@ function (o) {
 
 		};
 
-		$(this).bind('keyup keydown blur update autogrowCheck', check);
-		check();
+		$(this).off(possibleEvents).on(possibleEvents, updateWidth);
+		updateWidth();
 
 	});
 

@@ -526,7 +526,8 @@ Elp.preventSelections = function (deep, callouts) {
 	}
 	if (!deep) return;
 	Q.each(this.children || this.childNodes, function () {
-		if (this.preventSelections) {
+		if (this.preventSelections
+		&& ['INPUT', 'TEXTAREA'].indexOf(this.tagName.toUpperCase()) >= 0) {
 			this.preventSelections(deep);
 		}
 	});
@@ -552,7 +553,10 @@ Elp.restoreSelections = function (deep) {
 	Q.removeEventListener(this, 'selectstart', _returnFalse);
 	if (!deep) return;
 	Q.each(this.children || this.childNodes, function () {
-		this.restoreSelections && this.restoreSelections(deep);
+		if (this.restoreSelections
+		&& ['INPUT', 'TEXTAREA'].indexOf(this.tagName.toUpperCase()) >= 0) {
+			this.restoreSelections(deep);
+		}
 	});
 };
 
@@ -6941,7 +6945,7 @@ Q.Template.set = function (name, content, type) {
  *   "name" - option to override the name of the template
  * @return {String|undefined}
  */
-Q.Template.load = function _Q_Template_load(name, callback, options) {
+Q.Template.load = Q.getter(function _Q_Template_load(name, callback, options) {
 	if (typeof callback === "object") {
 		options = callback;
 		callback = undefined;
@@ -7007,7 +7011,10 @@ Q.Template.load = function _Q_Template_load(name, callback, options) {
 
 	Q.request(url, _callback, {parse: false, extend: false});
 	return true;
-};
+}, {
+	cache: Q.Cache.document('Q.Template.load', 100),
+	throttle: 'Q.Template.load'
+});
 
 Q.Template.load.options = {
 	type: "handlebars",

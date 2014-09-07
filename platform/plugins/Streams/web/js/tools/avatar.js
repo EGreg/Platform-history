@@ -84,13 +84,16 @@ Q.Tool.define("Users/avatar", function(options) {
 		
 		Q.each(['first', 'last'], function (k, v) {
 			var vName = v+'Name';
+			var f = tool.getElementsByClassName('Streams_'+vName)[0];
 			var e = Q.Tool.setUpElement('span', 'Streams/inplace', {
 				publisherId: state.userId,
 				streamName: 'Streams/user/'+vName,
 				placeholder: 'Your '+v+' name',
-				inplaceType: 'text'
+				inplaceType: 'text',
+				inplace: {
+					bringToFront: f
+				}
 			}, vName, tool.prefix);
-			var f = tool.getElementsByClassName('Streams_'+vName)[0];
 			f.innerHTML = '';
 			f.appendChild(e);
 			Q.activate(e);

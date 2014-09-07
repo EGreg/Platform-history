@@ -94,8 +94,8 @@ function (o) {
 	if (p.length && p[0].tagName.toUpperCase() === 'TD') {
 		p.css('position', 'relative');
 	}
-	var w = $this.css('width');
-	var h = $this.css('height');
+	
+	var cs = $this[0].computedStyle();
 	// $this.css('height', $this.height()+'px');
 	var container = $('<span class="Q_clickable_container" />').css({
 		'display': (display === 'inline' || display === 'inline-block') ? 'inline-block' : display,
@@ -170,8 +170,8 @@ function (o) {
 		position: 'absolute',
 		left: '0px',
 		top: '0px',
-		width: w,
-		height: h
+		width: cs.width,
+		height: cs.height
 	});
 	var zindex;
 	var anim = null;

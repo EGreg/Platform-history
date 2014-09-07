@@ -2380,7 +2380,10 @@ Participant.get = Q.getter(function _Participant_get(publisherId, streamName, us
 			callback && callback.call(participant, err, participant || null);
 		}
 	});
-}, {cache: Q.Cache.document("Streams.Participant.get", 1000), throttle: 'Streams.Participant.get'});
+}, {
+	cache: Q.Cache.document("Streams.Participant.get", 1000), 
+	throttle: 'Streams.Participant.get'
+});
 Participant.get.onError = new Q.Event();
 
 /**

@@ -49,7 +49,9 @@ Q.Tool.define("Streams/inplace", function (options) {
 				state.stream = this;
 			});
 			var $e, html = content.encodeHTML()
-				|| '<span class="Q_placeholder">'+tool.child('Q/inplace').state.placeholder.encodeHTML()+'</div>'
+				|| '<span class="Q_placeholder">'
+					+ tool.child('Q/inplace').state.placeholder.encodeHTML()
+					+ '</div>'
 				|| '';
 			switch (state.inplaceType) {
 				case 'text':
@@ -104,7 +106,8 @@ Q.Tool.define("Streams/inplace", function (options) {
 				action: stream.actionUrl(),
 				method: 'put',
 				field: field,
-				type: state.inplaceType
+				type: state.inplaceType,
+				maxWidth: $te.parent()[0]
 			});
 			var value = (state.attribute ? stream.get(state.attribute) : stream.fields[field]) || "";
 			switch (state.inplaceType) {

@@ -37,6 +37,7 @@
  */
 Q.Tool.define("Q/inplace", function (options) {
 	var tool = this, 
+		state = tool.state,
 		$te = $(tool.element), 
 		container = $('.Q_inplace_tool_container', $te);
 	if (container.length) {
@@ -64,13 +65,15 @@ Q.Tool.define("Q/inplace", function (options) {
 			'classes': function () { return o.editing ? 'Q_editing Q_nocancel' : ''; },
 			staticClass: staticClass,
 			staticHtml: staticHtml
-				|| '<span class="Q_placeholder">'+tool.state.placeholder.encodeHTML()+'</div>'
+				|| '<span class="Q_placeholder">'
+					+state.placeholder.encodeHTML()
+					+'</div>'
 				|| '',
 			method: o.method || 'put',
 			action: o.action,
 			field: o.field,
 			textarea: (o.type === 'textarea'),
-			placeholder: tool.state.placeholder,
+			placeholder: state.placeholder,
 			text: function (field) {
 				return staticHtml.decodeHTML();
 			},
@@ -143,6 +146,7 @@ function _Q_inplace_tool_constructor(element, options) {
 
 	// constructor & private declarations
 	var tool = this;
+	var state = tool.state;
 	var blurring = false;
 	var focusedOn = null;
 	var dialogMode = false;
@@ -177,8 +181,8 @@ function _Q_inplace_tool_constructor(element, options) {
 		letterSpacing: static_span.css('letterSpacing')
 	});
 	fieldinput.plugin('Q/autogrow', {
-		maxWidth: tool.state.maxWidth || $te.parent().innerWidth(),
-		minWidth: tool.state.minWidth || 0
+		maxWidth: state.maxWidth || $te.parent().innerWidth(),
+		minWidth: state.minWidth || 0
 	});
 	if (!fieldinput.data('inplace')) {
 		fieldinput.data('inplace', {});
@@ -188,15 +192,21 @@ function _Q_inplace_tool_constructor(element, options) {
 		fieldinput.data('inplace').heightWasAdjusted = true;
 	}
 	function onClick() {
-		$(tool.element).parents().each(function () {
-			var $this = $(this);
-			$this.data(_stateKey_zIndex, $this.css('z-index'));
-			$this.css('z-index', 99999);
-		});
-		tool.state.zIndex = $(tool.element).css('z-index');
+		container_span.addClass('Q_editing');
+		container_span.addClass('Q_discouragePointerEvents');
+		if (state.bringToFront) {
+			var $bringToFront = $(state.bringToFront);
+			var pos = $bringToFront.css('position');
+			$bringToFront.data(_stateKey_zIndex, $bringToFront.css('zIndex'))
+				.data(_stateKey_position, pos)
+				.css({
+					zIndex: 99999,
+					position: (pos === 'static') ? 'relative' : pos
+				});
+		}
 		fieldinput.plugin('Q/autogrow', {
-			maxWidth: tool.state.maxWidth || $te.parent().innerWidth(),
-			minWidth: tool.state.minWidth || 0
+			maxWidth: state.maxWidth || $te.parent().innerWidth(),
+			minWidth: state.minWidth || 0
 		});
 		var field_width = static_span.outerWidth();
 		var field_height = static_span.outerHeight();
@@ -219,8 +229,6 @@ function _Q_inplace_tool_constructor(element, options) {
 		tool.hideActions();
 		
 		previousValue = fieldinput.val();
-		container_span.addClass('Q_editing');
-		container_span.addClass('Q_discouragePointerEvents');
 		if (!fieldinput.is('select')) {
 			fieldinput.data('inplace').widthWasAdjusted = true;
 			try {
@@ -230,11 +238,12 @@ function _Q_inplace_tool_constructor(element, options) {
 			}
 			fieldinput.trigger('autogrowCheck');
 		}
+		_updateSaveButton();
 		undermessage.empty().css('display', 'none').addClass('Q_error');
 		focusedOn = 'fieldinput';
 		fieldinput.focus();
 		var selStart = 0;
-		if (tool.state.selectOnEdit) {
+		if (state.selectOnEdit) {
 			if (fieldinput.attr('type') == 'text' && fieldinput.select) {
 				fieldinput.select();
 			}
@@ -248,13 +257,15 @@ function _Q_inplace_tool_constructor(element, options) {
 				fieldinput.val().length
 			);
 		}
-		$('.Q_inplace_tool_buttons', $te).css({ 'width': container_span.outerWidth() + 'px' });
+		$('.Q_inplace_tool_buttons', $te).css({
+			width: container_span.outerWidth() + 'px'
+		});
 		return false;
 	};
 	function onSave () {
 		var form = $('.Q_inplace_tool_form', $te);
-		if (tool.state && tool.state.beforeSave) {
-			if (false === Q.handle(tool.state.beforeSave, this, [form])) {
+		if (state && state.beforeSave) {
+			if (false === Q.handle(state.beforeSave, this, [form])) {
 				return false;
 			}
 		}
@@ -316,7 +327,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		alert(message);
 		fieldinput.focus();
 		undermessage.css('display', 'none');
-		_restoreParentsZ();
+		_restoreZ();
 		/*
 			.html(message)
 			.css('whiteSpace', 'nowrap')
@@ -330,9 +341,9 @@ function _Q_inplace_tool_constructor(element, options) {
 				newval = response.slots.Q_inplace;
 			}
 		}
-		_restoreParentsZ();
+		_restoreZ();
 		static_span.html(newval
-			|| '<span class="Q_placeholder">'+tool.state.placeholder.encodeHTML()+'</div>'
+			|| '<span class="Q_placeholder">'+state.placeholder.encodeHTML()+'</div>'
 			|| ''
 		);
 		undermessage.empty().css('display', 'none').addClass('Q_error');
@@ -342,13 +353,13 @@ function _Q_inplace_tool_constructor(element, options) {
 			.removeClass('Q_discouragePointerEvents');
 		_hideEditButtons();
 		noCancel = false;
-		Q.handle(tool.state.onSave, tool, [response.slots.Q_inplace]);
+		Q.handle(state.onSave, tool, [response.slots.Q_inplace]);
 	};
 	function onCancel (dontAsk) {
 		if (noCancel) {
 			return;
 		}
-		_restoreParentsZ();
+		_restoreZ();
 		if (!dontAsk && fieldinput.val() != previousValue) {
 			dialogMode = true;
 			var continueEditing = confirm(
@@ -367,7 +378,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		container_span.removeClass('Q_editing')
 			.removeClass('Q_discouragePointerEvents');;
 		_hideEditButtons();
-		Q.handle(tool.state.onCancel, tool);
+		Q.handle(state.onCancel, tool);
 	};
 	function onBlur() {
 		setTimeout(function () {
@@ -382,17 +393,18 @@ function _Q_inplace_tool_constructor(element, options) {
 			onCancel();
 		}, 100);
 	};
-	function _restoreParentsZ()
+	function _restoreZ()
 	{
-		$(tool.element).parents().each(function () {
-			var $this = $(this);
-			$this.css('z-index', $this.data(_stateKey_zIndex))
-				.removeData(_stateKey_zIndex);
-		});
+		if (!state.bringToFront) return;
+		var $bringToFront = $(state.bringToFront);
+		$bringToFront.css('zIndex', $bringToFront.data(_stateKey_zIndex))
+			.css('position', $bringToFront.data(_stateKey_position))
+			.removeData(_stateKey_zIndex)
+			.removeData(_stateKey_position);
 	}
 	function _editButtons() {
 		if (Q.info.isTouchscreen) {
-			if (!tool.state.editOnClick) {
+			if (!state.editOnClick) {
 				$('.Q_inplace_tool_editbuttons', $te).css({ 
 					'margin-top': static_span.outerHeight() + 'px',
 					'line-height': '1px',
@@ -428,7 +440,7 @@ function _Q_inplace_tool_constructor(element, options) {
 			// could have been canceled by Q/sortable for instance
 			return;
 		}
-		if ((tool.state.editOnClick && event.target === static_span[0])
+		if ((state.editOnClick && event.target === static_span[0])
 		|| $(event.target).is('button')) {
 			Q.Pointer.cancelClick(event);
 			Q.Pointer.ended();
@@ -452,14 +464,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		focusedOn = 'save_button'; }, 50);
 	});
 	save_button.blur(function() { focusedOn = null; setTimeout(onBlur, 100); });
-	fieldinput.keyup(function() {
-		var invisible_span = $('.Q_inplace_tool_invisible_span', $te);
-		invisible_span
-			.css('font-family', fieldinput.css('font-family'))
-			.css('font-size', fieldinput.css('font-size'));
-		invisible_span.text(fieldinput.val());
-		save_button.attr('display', (fieldinput.val() == previousValue) ? 'none' : 'inline');
-	});
+	fieldinput.keyup(_updateSaveButton);
 	fieldinput.focus(function() { focusedOn = 'fieldinput'; });
 	fieldinput.blur(function() { focusedOn = null; setTimeout(onBlur, 100); });
 	fieldinput.change(function() { fieldinput.attr(fieldinput.val().length.toString() + 'em;') });
@@ -481,9 +486,15 @@ function _Q_inplace_tool_constructor(element, options) {
 	fieldinput.click(function (event) {
 		event.stopPropagation();
 	});
-
+	function _updateSaveButton() {
+		save_button.css('display', (fieldinput.val() == previousValue)
+			? 'none' 
+			: 'inline'
+		);
+	}
 }
 
-var _stateKey_zIndex = 'Q/inplace z-index';
+var _stateKey_zIndex = 'Q/inplace zIndex';
+var _stateKey_position = 'Q/inplace position';
 
 })(Q, jQuery, window, document);
