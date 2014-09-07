@@ -96,6 +96,8 @@ function (o) {
 	}
 	
 	var cs = $this[0].computedStyle();
+	var csw = cs.width; // the object can change, so get the values now
+	var csh = cs.height;
 	// $this.css('height', $this.height()+'px');
 	var container = $('<span class="Q_clickable_container" />').css({
 		'display': (display === 'inline' || display === 'inline-block') ? 'inline-block' : display,
@@ -170,8 +172,8 @@ function (o) {
 		position: 'absolute',
 		left: '0px',
 		top: '0px',
-		width: cs.width,
-		height: cs.height
+		width: csw,
+		height: csh
 	});
 	var zindex;
 	var anim = null;
