@@ -11,8 +11,6 @@ function Streams_before_Q_Utils_canWriteToPath($params, &$result)
 	
 	// Assume that Users/before/Q/Utils/canWriteToPath already executed
 
-	$result = false;
-
 	$user = Users::loggedInUser();
 	$userId = $user ? $user->id : "";
 	$app = Q_Config::expect('Q', 'app');

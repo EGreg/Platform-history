@@ -47,6 +47,9 @@ function Users_avatar_tool($options)
 	$displayName = $avatar->displayName($o);
 	$result .= "<span class='Users_avatar_name'>$displayName</span>";
 	unset($options['iconAttributes']);
+	if (is_string($options['editable'])) {
+		$options['editable'] = array($options['editable']);
+	}
 	Q_Response::setToolOptions($options);
 	return $result;
 }
