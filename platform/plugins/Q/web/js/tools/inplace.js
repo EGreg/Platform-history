@@ -188,6 +188,12 @@ function _Q_inplace_tool_constructor(element, options) {
 		fieldinput.data('inplace').heightWasAdjusted = true;
 	}
 	function onClick() {
+		$(tool.element).parents().each(function () {
+			var $this = $(this);
+			$this.data(_stateKey_zIndex, $this.css('z-index'));
+			$this.css('z-index', 99999);
+		});
+		tool.state.zIndex = $(tool.element).css('z-index');
 		fieldinput.plugin('Q/autogrow', {
 			maxWidth: tool.state.maxWidth || $te.parent().innerWidth(),
 			minWidth: tool.state.minWidth || 0
@@ -310,6 +316,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		alert(message);
 		fieldinput.focus();
 		undermessage.css('display', 'none');
+		_restoreParentsZ();
 		/*
 			.html(message)
 			.css('whiteSpace', 'nowrap')
@@ -323,6 +330,7 @@ function _Q_inplace_tool_constructor(element, options) {
 				newval = response.slots.Q_inplace;
 			}
 		}
+		_restoreParentsZ();
 		static_span.html(newval
 			|| '<span class="Q_placeholder">'+tool.state.placeholder.encodeHTML()+'</div>'
 			|| ''
@@ -340,6 +348,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		if (noCancel) {
 			return;
 		}
+		_restoreParentsZ();
 		if (!dontAsk && fieldinput.val() != previousValue) {
 			dialogMode = true;
 			var continueEditing = confirm(
@@ -373,6 +382,14 @@ function _Q_inplace_tool_constructor(element, options) {
 			onCancel();
 		}, 100);
 	};
+	function _restoreParentsZ()
+	{
+		$(tool.element).parents().each(function () {
+			var $this = $(this);
+			$this.css('z-index', $this.data(_stateKey_zIndex))
+				.removeData(_stateKey_zIndex);
+		});
+	}
 	function _editButtons() {
 		if (Q.info.isTouchscreen) {
 			if (!tool.state.editOnClick) {
@@ -466,5 +483,7 @@ function _Q_inplace_tool_constructor(element, options) {
 	});
 
 }
+
+var _stateKey_zIndex = 'Q/inplace z-index';
 
 })(Q, jQuery, window, document);

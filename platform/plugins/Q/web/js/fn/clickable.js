@@ -218,6 +218,9 @@ function (o) {
 		//});
 		var pos = null;
 		Q.Pointer.onCancelClick.set(function (e, extraInfo) {
+			if (!extraInfo) {
+				return false;
+			}
 			var jq = $(document.elementFromPoint(
 				extraInfo.toX, 
 				extraInfo.toY
