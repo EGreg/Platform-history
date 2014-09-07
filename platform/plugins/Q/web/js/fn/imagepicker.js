@@ -55,7 +55,8 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 	});
 	var originalSrc = $this.attr('src');
 	if (originalSrc.indexOf('?') < 0) {
-		$this.attr('src', originalSrc+"?"+Date.now()); // cache busting
+		// cache busting
+		$this.attr('src', Q.url(originalSrc, null, {cacheBust: 1000}));
 	}
 	$this.before(input);
 	$this.addClass('Q_imagepicker');
@@ -74,7 +75,9 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 		}
 		var c = Q.handle(o.onSuccess, $this, [res.slots.data, key]);
 		if (c !== false && key) {
-			$this.attr('src', Q.url(res.slots.data[key]+"?"+Date.now()));
+			$this.attr('src', 
+				Q.url(res.slots.data[key], null, {cacheBust: 1000})
+			);
 		}
 		$this.removeClass('Q_imagepicker_uploading');
 	}

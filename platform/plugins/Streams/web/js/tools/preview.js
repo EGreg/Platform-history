@@ -268,7 +268,10 @@ Q.Tool.define("Streams/preview", function(options) {
 				jq.off('load.Streams-preview').on('load.Streams-preview', function () {
 					tool.state.onLoad.handle.apply(tool, []);
 				});
-				jq.attr('src', Q.Streams.iconUrl(icon, file)+'?'+Date.now());
+				jq.attr('src', Q.url(
+					Q.Streams.iconUrl(icon, file), null, 
+					{cacheBust: 1000}
+				));
 				return true;
 			}
 
@@ -287,8 +290,12 @@ Q.Tool.define("Streams/preview", function(options) {
 			}
 			var f = state.template && state.template.fields;
 			var fields = Q.extend({}, state.templates.edit.fields, f, {
-				src: Q.Streams.iconUrl(icon, file)+'?'+Date.now(),
-				srcFull: Q.Streams.iconUrl(icon, full)+'?'+Date.now(),
+				src: Q.url(
+					Q.Streams.iconUrl(icon, file), null, 
+					{cacheBust: 1000}),
+				srcFull: Q.url(
+					Q.Streams.iconUrl(icon,full), null, 
+					{cacheBust: 1000}),
 				alt: stream.fields.title,
 				inplace: inplace
 			});
@@ -303,7 +310,8 @@ Q.Tool.define("Streams/preview", function(options) {
 					tool.element.innerHTML = html;
 					Q.activate(tool, function () {
 						tool.state.onRefresh.handle.apply(tool, []);
-						$('img', tool.element).off('load.Streams-preview').on('load.Streams-preview', function () {
+						$('img', tool.element).off('load.Streams-preview')
+						.on('load.Streams-preview', function () {
 							tool.state.onLoad.handle.apply(tool, []);
 						});
 						callback.apply(tool);

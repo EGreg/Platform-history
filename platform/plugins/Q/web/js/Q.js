@@ -4716,13 +4716,16 @@ Q.load = function _Q_load(plugins, callback, options) {
  * @param {Object} options
  *  A hash of options, including:
  *  'baseUrl': A string to replace the default base url
+ *  'cacheBust': Number of milliseconds before a new cachebuster is appended
  */
 Q.url = function _Q_url(what, fields, options) {
 	if (fields) {
-		what += '?';
 		for (var k in fields) {
-			what += '&'+encodeURIComponent(k)+'='+encodeURIComponent(fields[k]);
+			what += '?'+encodeURIComponent(k)+'='+encodeURIComponent(fields[k]);
 		}
+	}
+	if (options && options.cacheBust) {
+		what += "?Q.cacheBust="+Math.floor(Date.now()/options.cacheBust);
 	}
 	var parts = what.split('?');
 	if (parts.length > 2) {

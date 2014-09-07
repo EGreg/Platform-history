@@ -42,5 +42,7 @@ function Users_before_Q_responseExtras()
 	if ($sizes = Q_Config::expect('Users', 'icon', 'sizes')) {
 		Q_Response::setScriptData('Q.plugins.Users.icon.sizes', $sizes);
 	}
+	$defaultSize = Q_Config::get('Users', 'icon', 'defaultSize', 40);
+	Q_Response::setScriptData('Q.plugins.Users.icon.defaultSize', $defaultSize);
 	Q_Response::addStylesheet("plugins/Users/css/Users.css");
 }

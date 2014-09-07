@@ -137,7 +137,8 @@
 			"default": "Someone"
 		},
 		"icon": {
-			"sizes": ["40", "50", "80"]
+			"sizes": ["40", "50", "80"],
+			"defaultSize": "40"
 		}
 	}
 }

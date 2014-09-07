@@ -2589,10 +2589,12 @@ Q.firstErrorMessage = function _Q_firstErrorMessage(data /*, data2, ... */) {
  */
 Q.url = function _Q_url(what, fields, options) {
 	if (fields) {
-		what += '?';
 		for (var k in fields) {
-			what += '&'+encodeURIComponent(k)+'='+encodeURIComponent(fields[k]);
+			what += '?'+encodeURIComponent(k)+'='+encodeURIComponent(fields[k]);
 		}
+	}
+	if (options && options.cacheBust) {
+		what += "?Q.cacheBust="+Math.floor(Date.now()/options.cacheBust);
 	}
 	var parts = what.split('?');
 	if (parts.length > 2) {

@@ -4,10 +4,14 @@ function Streams_after_Q_image($params)
 {
 	$user = $path = $subpath = $data = $save = null;
 	extract($params, EXTR_OVERWRITE);
-	if (empty(Streams::$cache['canWriteToStream'])) {
+	if (!empty(Users::$cache['iconWasChanged'])) {
+		$stream = Streams::fetchOne($user->id, $user->id, "Streams/user/icon");
+	} else if (!empty(Streams::$cache['canWriteToStream'])) {
+		$stream = Streams::$cache['canWriteToStream'];
+	}
+	if (empty($stream)) {
 		return;
 	}
-	$stream = Streams::$cache['canWriteToStream'];
 	$stream->icon = Q_Request::baseUrl().'/'.$data[''];
 	$sizes = array_keys($save);
 	$stream->setAttribute('sizes', $sizes);

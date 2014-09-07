@@ -37,7 +37,16 @@
  *         @default "span"
  */
 Q.Tool.define("Users/avatar", function(options) {
+	var tool = this, state = this.state;
 	this.refresh();
+	Q.Streams.Stream.onFieldChanged(
+		state.userId, 'Streams/user/icon', 'icon'
+	).set(function () {
+		tool.$('.Users_avatar_icon').attr('src', 
+			Q.url(Q.Users.iconUrl(arguments[0].icon, state.icon), null,
+				{cacheBust: 100})
+		);
+	}, this);
 },
 
 {
@@ -61,12 +70,21 @@ Q.Tool.define("Users/avatar", function(options) {
 },
 
 {
-	refresh: function () {
+	/**
+	 * Refresh the avatar's display
+	 */
+	refresh: function (options) {
 		
 		var tool = this, state = this.state;
 		if (tool.element.childNodes.length) {
 			return _present();
 		}
+		
+		// TODO: implement analogous functionality
+		// to when Users/avatar is rendered server-side,
+		// with "editable" and the same <span> elements
+		// for firstName and lastName.
+		
 		if (!state.userId) {
 			console.warn("Users/avatar: no userId provided");
 			return; // empty
@@ -86,9 +104,11 @@ Q.Tool.define("Users/avatar", function(options) {
 			state.avatar = avatar;
 			if (state.icon) {
 				fields = Q.extend({}, state.templates.icon.fields, {
-					src: Q.Users.iconUrl(this.icon, state.icon)
+					src: Q.url(Q.Users.iconUrl(this.icon, state.icon), null,
+						{cacheBust: 100})
 				});
-				Q.Template.render('Users/avatar/icon', fields, function (err, html) {
+				Q.Template.render('Users/avatar/icon', fields, 
+				function (err, html) {
 					p.fill('icon')(html);
 				}, state.templates.icon);
 			} else {
