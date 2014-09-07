@@ -451,6 +451,9 @@ Q.Tool.define('Streams/chat', function(options) {
 					if (!Q.info.isTouchscreen && state.hadFocus) {
 						$this.plugin('Q/clickfocus');
 					}
+					if (Q.info.isTouchscreen) {
+						$this.blur();
+					}
 					state.hadFocus = false;
 				});
 			}
