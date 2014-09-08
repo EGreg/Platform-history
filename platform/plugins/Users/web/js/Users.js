@@ -55,7 +55,7 @@ Q.text.Users = {
 	},
 	
 	setIdentifier: {
-		title: "My Account Login",
+		title: "Add a way to log in",
 		sendMessage: "Send Activation Message",
 		placeholders: {
 			identifier: "enter your mobile # or email",
@@ -833,6 +833,7 @@ Users.importContacts = function(provider)
  * @method setIdentifier
  * @param {Object} [options] You can pass several options here
  *  It is passed the user information if the user changed.
+ *  @param {String} [options.identifierType] the type of the identifier, which could be "mobile" or "email" or "email,mobile"
  *  @param {Q.Event} [options.onSuccess] event that occurs on success
  *  @param {Q.Event} [options.onCancel] event that occurs if the dialog is canceled
  *  @param {Function} [options.onResult] event that occurs before either onSuccess or onCancel
@@ -1466,11 +1467,8 @@ function setIdentifier_callback(err, response) {
 	setIdentifier_setupDialog.dialog.data('Q/dialog').close();
 }
 
-function setIdentifier_setupDialog(identifierType) {
-	if (setIdentifier_setupDialog.dialog) {
-		return;
-	}
-
+function setIdentifier_setupDialog(identifierType, options) {
+	var options = options || {};
 	var placeholder = Q.text.Users.setIdentifier.placeholders.identifier;
 	var type = 'email';
 	var parts = identifierType ? identifierType.split(',') : [];
@@ -1513,7 +1511,8 @@ function setIdentifier_setupDialog(identifierType) {
 	
 	var dialog = $('<div id="Users_setIdentifier_dialog" class="Users_setIdentifier_dialog" />');
 	var titleSlot = $('<div class="title_slot">').append(
-		$('<h2 class="Users_dialog_title Q_dialog_title" />').html(Q.text.Users.setIdentifier.title)
+		$('<h2 class="Users_dialog_title Q_dialog_title" />')
+		.html(options.title || Q.text.Users.setIdentifier.title)
 	);
 	var dialogSlot = $('<div class="dialog_slot Q_dialog_content">').append(step1_div);
 	dialog.append(titleSlot).append(dialogSlot).appendTo(document.body);

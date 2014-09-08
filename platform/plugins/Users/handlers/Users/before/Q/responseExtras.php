@@ -22,7 +22,8 @@ function Users_before_Q_responseExtras()
 		$loginOptions["afterActivate"] = Q_Uri::url($afterActivate);
 		$loginOptions["successUrl"] = Q_Uri::url($successUrl);
 		Q_Response::setScriptData('Q.plugins.Users.login.serverOptions', $loginOptions);
-		Q_Response::setScriptData('Q.plugins.Users.setIdentifier.serverOptions', $loginOptions);
+		$setIdentifierOptions = Q::take($loginOptions, array('identifierType'));
+		Q_Response::setScriptData('Q.plugins.Users.setIdentifier.serverOptions', $setIdentifierOptions);
 	}
 	$fb_app_info = Q_Config::get('Users', 'facebookApps', $app, array());
 	if ($fb_app_info) {
