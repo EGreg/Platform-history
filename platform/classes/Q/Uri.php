@@ -208,6 +208,16 @@ class Q_Uri
 	}
 	
 	/**
+	 * Adds cache busting to a url
+	 * @param {string} $url A string to replace the default base url
+	 * @param {integer} $milliseconds Number of milliseconds before a new cachebuster code is appended
+	 */
+	static function cacheBust($url, $milliseconds)
+	{
+		return Q_Uri::url("$url?Q.cacheBust=".floor(microtime(true)*1000/$milliseconds));
+	}
+	
+	/**
 	 * Set a suffix for all URLs that will be generated with this class.
 	 * @method suffix
 	 * @static

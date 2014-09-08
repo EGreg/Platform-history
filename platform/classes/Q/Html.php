@@ -996,6 +996,11 @@ class Q_Html
 		$escape = true, 
 		$tag = null)
 	{
+		$cacheBust = null;
+		if (isset($attributes['cacheBust'])) {
+			$cacheBust = $attributes['cacheBust'];
+			unset($attributes['cacheBust']);
+		}
 		if (Q_Config::get('Q', 'html', 'w3c', true)) {
 			$defaults = array(
 				'img' => array(
@@ -1066,6 +1071,7 @@ class Q_Html
 				$name2 = 'src'; // treat the href as src
 			}
 
+			$isUrl = false;
 			switch (strtolower($name2)) {
 				case 'href': // Automatic unrouting of this attribute
 					$href = true;
@@ -1074,16 +1080,22 @@ class Q_Html
 					if ($value === false) {
 						$value = '#_Q_bad_url';
 					}
+					$isUrl = true;
 					break;
 				case 'src': // Automatically prefixes theme url if any
 					list ($value, $filename) = self::themedUrlAndFilename($value);
+					$isUrl = true;
 					break;
 				case 'id': // Automatic prefixing of this attribute
 				case 'for': // For labels, too
 					if ($prefix = self::getIdPrefix()) {
 						$value = $prefix . $value;
 					}
+					$isUrl = true;
 					break;
+			}
+			if ($isUrl and isset($cacheBust)) {
+				$value = Q_Uri::cacheBust($value, $cacheBust);
 			}
 			if ($escape) {
 				$name = self::text($name);

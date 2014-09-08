@@ -138,7 +138,8 @@
 		},
 		"icon": {
 			"sizes": ["40", "50", "80"],
-			"defaultSize": "40"
+			"defaultSize": "40",
+			"defaultCacheBust": "1000"
 		}
 	}
 }

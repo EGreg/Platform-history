@@ -10,12 +10,14 @@
  *   "iconAttributes" => Optional. Array of attributes to render for the icon.
  *   "short" => Optional. Renders the short version of the display name.
  *   "editable" => Optional. Whether to provide an interface for editing the user's info. Can be array containing "icon", "name".
+ *   "cacheBust" => Defaults to 1000. Number of milliseconds to use for Q_Uri::cacheBust for combating unintended caching on some environments.
  */
 function Users_avatar_tool($options)
 {
 	$defaults = array(
 		'icon' => false,
-		'short' => false
+		'short' => false,
+		'cacheBust' => Q_Config::get('Users', 'icon', 'defaultCacheBust', 1000)
 	);
 	$options = array_merge($defaults, $options);
 	Q_Response::addStylesheet('plugins/Users/css/Users.css');
@@ -39,6 +41,9 @@ function Users_avatar_tool($options)
 		$attributes['class'] = isset($attributes['class'])
 			? $attributes['class'] . ' Users_avatar_icon'
 			: 'Users_avatar_icon';
+		if (isset($options['cacheBust'])) {
+			$attributes['cacheBust'] = $options['cacheBust'];
+		}
 		$result .= Q_Html::img(
 			"plugins/Users/img/icons/{$avatar->icon}/$icon.png", 
 			'user icon', $attributes

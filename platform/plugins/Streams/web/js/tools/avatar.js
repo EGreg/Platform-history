@@ -137,10 +137,10 @@ Q.Tool.define("Users/avatar", function(options) {
 					var e = Q.Tool.setUpElement('span', 'Streams/inplace', {
 						publisherId: state.userId,
 						streamName: 'Streams/user/'+vName,
-						placeholder: 'Your '+v+' name',
 						inplaceType: 'text',
 						inplace: {
-							bringToFront: f
+							bringToFront: f,
+							placeholder: 'Your '+v+' name'
 						}
 					}, vName, tool.prefix);
 					f.innerHTML = '';
