@@ -842,7 +842,7 @@ Users.setIdentifier = function(options) {
 	var o = Q.extend({}, Users.setIdentifier.options, options);
 	
 	function onSuccess(user) {
-		if (false === Q.handle(o.onResult, this, [user])) {
+		if (false !== Q.handle(o.onResult, this, [user])) {
 			Q.handle(o.onSuccess, this, [user]);
 		}
 	}
@@ -1450,19 +1450,21 @@ function setIdentifier_callback(err, response) {
 	var form = $('#Users_setIdentifier_step1_form');
 	identifier_input.css('background-image', 'none');
 
-	var msg = Q.firstErrorMessage(err);
+	var msg = Q.firstErrorMessage(err, response && response.errors);
 	if (msg) {
-		return alert(msg);
-	}
-	if (response.errors) {
 		// There were errors
-		form.data('validator').invalidate(Q.ajaxErrors(response.errors, 'identifier'));
+		Q.handle(priv.setIdentifier_onCancel, this, [err, response]);
+		form.data('validator').invalidate(
+			Q.ajaxErrors(response.errors, 'identifier')
+		);
 		identifier_input.plugin('Q/clickfocus');
-		return;
+		return alert(msg);
 	}
 
 	// Remove any errors we may have displayed
 	form.data('validator').reset();
+	
+	Q.handle(priv.setIdentifier_onSuccess);
 
 	setIdentifier_setupDialog.dialog.data('Q/dialog').close();
 }
