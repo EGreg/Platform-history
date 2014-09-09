@@ -23,6 +23,7 @@
  *  @default null
  *  @param {Number} [options.minWidth] The minimum width that the field can shrink to
  *  @default 100
+ *  @param {String} [options.staticHtml] The static HTML to start out with
  *  @param {String} [options.placeholder] Text to show in the staticHtml or input field when the editor is empty
  *  @default null
  *  @param {Object} [options.template]  Can be used to override info for the tool's view template.
@@ -58,11 +59,15 @@ Q.Tool.define("Q/inplace", function (options) {
 		return console.error("Q/inplace tool: missing option 'field'", o);
 	}
 	var staticHtml = o.staticHtml || $te.html();
-	var staticClass = o.type === 'textarea' ? 'Q_inplace_tool_blockstatic' : 'Q_inplace_tool_static';
+	var staticClass = o.type === 'textarea' 
+		? 'Q_inplace_tool_blockstatic' 
+		: 'Q_inplace_tool_static';
 	Q.Template.render(
 		'Q/inplace/tool',
 		{
-			'classes': function () { return o.editing ? 'Q_editing Q_nocancel' : ''; },
+			'classes': function () { 
+				return o.editing ? 'Q_editing Q_nocancel' : '';
+			},
 			staticClass: staticClass,
 			staticHtml: staticHtml
 				|| '<span class="Q_placeholder">'

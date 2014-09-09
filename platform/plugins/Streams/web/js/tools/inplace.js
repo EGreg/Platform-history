@@ -144,11 +144,15 @@ Q.Tool.define("Streams/inplace", function (options) {
 			}
 
 			var inplace = tool.setUpElement('div', 'Q/inplace', ipo);
-			tool.element.appendChild(inplace);
-			Q.activate(inplace);
+			Q.activate(inplace, function () {
+				$(tool.element).empty().append(inplace);
+			});
 		}
 	}
-
+	if (state.inplace && state.inplace.staticHtml) {
+		tool.element.innerHTML = state.inplace.staticHtml;
+	}
+	
 	if (state.stream) {
 		state.publisherId = state.stream.publisherId;
 		state.streamName = state.stream.name;
@@ -156,7 +160,8 @@ Q.Tool.define("Streams/inplace", function (options) {
 	if (!state.publisherId || !state.streamName) {
 		throw new Q.Error("Streams/inplace tool: stream is undefined");
 	}
-	Q.Streams.retainWith(tool).get(state.publisherId, state.streamName, _construct);
+	Q.Streams.retainWith(tool)
+	.get(state.publisherId, state.streamName, _construct);
 },
 
 {

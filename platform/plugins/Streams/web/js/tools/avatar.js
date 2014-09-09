@@ -140,7 +140,8 @@ Q.Tool.define("Users/avatar", function(options) {
 						inplaceType: 'text',
 						inplace: {
 							bringToFront: f,
-							placeholder: 'Your '+v+' name'
+							placeholder: 'Your '+v+' name',
+							staticHtml: f.innerHTML
 						}
 					}, vName, tool.prefix);
 					f.innerHTML = '';

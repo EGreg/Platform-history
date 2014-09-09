@@ -511,6 +511,7 @@ class Q_Html
 	 * @param {string} $src The source of the image. Will be subjected to theming before being rendered.
 	 * @param {string} [$alt='image'] The alternative text to display in place of the image.
 	 * @param {array} [$attributes=array()] An array of additional attributes to render. Consists of name => value pairs.
+	 *     Can also contain "cacheBust" => milliseconds, to use Q_Uri::cacheBust on the src.
 	 * @return {string} The generated markup
 	 */
 	static function img (
@@ -795,6 +796,7 @@ class Q_Html
 	 *  Consists of name => value pairs. Note that the parameter with name="movie" is always rendered.
 	 * @param {array} [$attributes=array()] An array of additional attributes to render. Consists of name => value pairs.
 	 *  Don't forget to include "codebase", "width", "height" and "classid"
+	 *  Can also contain "cacheBust" => milliseconds, to use Q_Uri::cacheBust on the src.
 	 * @return {string} The resulting markup
 	 */
 	static function swf (
@@ -825,6 +827,7 @@ class Q_Html
 	 *  "cdata" => Defaults to true. Whether to enclose in CDATA tags.
 	 *  "comment" => Whether to enclose in HTML comments
 	 *  "raw" => Set to true to skip HTML encoding even if cdata and comment are false
+	 *  "cacheBust" => milliseconds, to use Q_Uri::cacheBust on the src.
 	 * @return {string} The generated markup.
 	 */
 	static function script (
@@ -873,6 +876,7 @@ class Q_Html
 	 * @static
 	 * @param {string} $tag The tag name of the element
 	 * @param {array} [$attributes=array()] An array of additional attributes to render. Consists of name => value pairs.
+	 *  Can also contain "cacheBust" => milliseconds, to use Q_Uri::cacheBust on the src.
 	 * @param {string} [$contents=null] If null, only the opening tag is generated. 
 	 *  If a string, also inserts the contents and generates a closing tag.
 	 *  If you want to do escaping on the contents, you must do it yourself.

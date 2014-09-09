@@ -229,10 +229,10 @@ Q.Tool.define("Q/columns", function(options) {
 		});
 		
 		if (o.title != undefined) {
-			titleSlot.innerHTML = o.title;
+			$(titleSlot).empty().append(o.title);
 		}
 		if (o.column != undefined) {
-			columnSlot.innerHTML = o.column;
+			$(columnSlot).empty().append(o.column);
 		}
 		
 		_onOpen();
