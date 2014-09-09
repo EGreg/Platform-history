@@ -251,6 +251,12 @@ Streams.onEvent = function (name) {
 Streams.onActivate = new Q.Event();
 
 /**
+ * Event occurs when the user enters their full name after following an invite, completing their registration
+ * @event onInviteComplete
+ */
+Streams.onInviteComplete = new Q.Event();
+
+/**
  * Connects or reconnects sockets for all participating streams
  * @private
  * @static
@@ -2846,7 +2852,8 @@ Q.onInit.add(function _Streams_onInit() {
 		if (!params) {
 			return;
 		}
-		Q.Template.render('Streams/invite/complete', params, function(err, html) {
+		Q.Template.render('Streams/invite/complete', params, 
+		function(err, html) {
 			var dialog = $(html);
 			var interval;
 			Q.Dialogs.push({
@@ -2860,10 +2867,11 @@ Q.onInit.add(function _Streams_onInit() {
 					}
 				},
 				onActivate: {'Streams.completeInvited': function() {
+					var l = Q.text.Users.login;
 					dialog.find('#Streams_login_username')
-						  .attr('maxlength', Q.text.Users.login.maxlengths.fullName)
-						  .attr('placeholder', Q.text.Users.login.placeholders.fullName)
-						  .plugin('Q/placeholders');
+						.attr('maxlength', l.maxlengths.fullName)
+						.attr('placeholder', l.placeholders.fullName)
+						.plugin('Q/placeholders');
 					if (!Q.info.isTouchscreen) {
 						var $input = $('input', dialog).eq(0);
 						$input.plugin('Q/clickfocus');
@@ -2872,23 +2880,32 @@ Q.onInit.add(function _Streams_onInit() {
 							$input.plugin('Q/clickfocus');
 						}, 100);
 					}
-					var complete_form = dialog.find('form').validator().submit(function(e) {
+					var complete_form = dialog.find('form')
+					.validator()
+					.submit(function(e) {
 						e.preventDefault();
 						var baseUrl = Q.baseUrl({
 							publisherId: Q.plugins.Users.loggedInUser.id,
-							streamName: ""  // NOTE: the request is routed to wherever the "" stream would have been hosted
+							streamName: "Streams/user/firstName"
 						});
-						Q.req('Streams/basic?' + $(this).serialize(), ['data'], function (err, data) {
-							var msg = Q.firstErrorMessage(err, data && data.errors);
+						var url = 'Streams/basic?' + $(this).serialize();
+						Q.req(url, ['data'], function (err, data) {
+							var msg = Q.firstErrorMessage(
+								err, data && data.errors
+							);
 							if (data && data.errors) {
-								complete_form.data('validator').invalidate(Q.ajaxErrors(data.errors, ['fullName']));
-								$('input', complete_form).eq(0).plugin('Q/clickfocus');
+								complete_form.data('validator').invalidate(
+									Q.ajaxErrors(data.errors, ['fullName'])
+								);
+								$('input', complete_form).eq(0)
+								.plugin('Q/clickfocus');
 								return;
 							} else if (msg) {
 								return alert(msg);
 							}
 							complete_form.data('validator').reset();
 							dialog.data('Q/dialog').close();
+							Q.handle(Streams.onInviteComplete, data);
 						}, {method: "post", quietly: true, baseUrl: baseUrl});
 					});
 				}}
@@ -2902,7 +2919,8 @@ Q.onInit.add(function _Streams_onInit() {
 
 	// if stream was edited or removed - invalidate cache
 	Streams.onEvent('remove').set(function _Streams_remove_handler (stream) {
-		Streams.get.cache.each([msg.publisherId, msg.streamName], function (k, v) {
+		Streams.get.cache.each([msg.publisherId, msg.streamName], 
+		function (k, v) {
 			Streams.get.cache.remove(k);
 		});
 	}, 'Streams');

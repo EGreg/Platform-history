@@ -250,6 +250,10 @@ Q.Tool.define("Q/drawers", function(options) {
 				tool.swap();
 				return false;
 			});
+			$drawer.addClass('Q_drawers_current')
+				.removeClass('Q_drawers_notCurrent');
+			$otherDrawer.removeClass('Q_drawers_current')
+				.addClass('Q_drawers_notCurrent');
 			if (!behind) {
 				if (Q.info.isTouchscreen) {
 					$scrolling.off('touchstart.Q_columns')
