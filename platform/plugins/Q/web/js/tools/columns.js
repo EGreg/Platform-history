@@ -103,6 +103,7 @@ Q.Tool.define("Q/columns", function(options) {
 	column: undefined,
 	scrollbarsAutoHide: {},
 	fullscreen: Q.info.isMobile && Q.info.isAndroid(1000),
+	openCallbackDelay: 300,
 	beforeOpen: new Q.Event(),
 	beforeClose: new Q.Event(),
 	onOpen: new Q.Event(),
@@ -122,6 +123,22 @@ Q.Tool.define("Q/columns", function(options) {
 		this.close(this.max()-1, callback);
 	},
 	
+	/**
+	 * Calculate the url of a stream's icon
+	 * @static
+	 * @method iconUrl
+	 * @param {String} icon the value of the stream's "icon" field
+	 * @param {Number} [size=40] the size of the icon to render. Defaults to 40.
+	 * @return {String} the url
+	 */
+	/**
+	 * Opens a column
+	 * @method open
+	 * @param {Object} options Can be used to override various tool options
+	 * @param {Number} [options.delayedCallback] Pass a callback here to be called when it's safe to attach onClick events, since mobile phones may trigger them too soon if attached in the non-delayed callback
+	 * @param {Number} index The index of the column to open
+	 * @param {Function} callback Called when the column is opened
+	 */
 	open: function (options, index, callback) {
 		var tool = this;
 		var state = this.state;
@@ -227,6 +244,11 @@ Q.Tool.define("Q/columns", function(options) {
 			Q.handle(callback, tool, [options, index]);
 			state.onOpen.handle.call(tool, options, index);
 			Q.handle(options.onOpen, tool, [options, index]);
+			if (options.delayedCallback) {
+				setTimeout(function () {
+					Q.handle(options.delayedCallback, tool, [options, index]);
+				}, state.openCallbackDelay || 300);
+			}
 		});
 		
 		if (o.title != undefined) {
