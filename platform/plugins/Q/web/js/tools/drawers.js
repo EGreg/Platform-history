@@ -61,7 +61,7 @@ Q.Tool.define("Q/drawers", function(options) {
 		});
 	}
 	
-	var lastScrollingHeight = $scrolling[0].clientHeight;
+	var lastScrollingHeight = $scrolling[0].clientHeight || $scrolling.height();
 	Q.onLayout.set(function () {
 		// to do: fix for cases where element doesn't take up whole screen
 		if (Q.info.isMobile) {
@@ -83,7 +83,7 @@ Q.Tool.define("Q/drawers", function(options) {
 				top: offset.top + heightDiff
 			});
 		}
-		lastScrollingHeight = $scrolling[0].clientHeight;
+		lastScrollingHeight = $scrolling[0].clientHeight || $scrolling.height();
 	}, tool);
 },
 
