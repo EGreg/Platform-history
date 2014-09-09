@@ -307,6 +307,7 @@
 /* for all popups */
 .Streams_popup_content {
 	padding: 7px;
+	word-wrap:break-word;
 }
 
 /* Streams chat tool */

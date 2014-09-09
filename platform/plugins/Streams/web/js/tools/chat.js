@@ -334,10 +334,15 @@ Q.Tool.define('Streams/chat', function(options) {
 			});
 		}
 
-		tool.$('.Streams_chat_message').on(Q.Pointer.click, function(e){
-			if (!this.isOverflowed()) return;
+		$(tool.element).on(Q.Pointer.click, '.Streams_chat_message',
+		function(e) {
+			var $element = $(this);
+			if (!$element.is('.Streams_chat_message')) {
+				$element = $element.parents('.Streams_chat_message');
+			}
+			if (!$element[0].isOverflowed()) return;
 			
-			var $container = $(this).parents('.Streams_chat_item');
+			var $container = $element.parents('.Streams_chat_item');
 			var displayName   = $('.Users_avatar_contents', $container).text();
 
 			if ($container.data('byuserid') === state.userId) {

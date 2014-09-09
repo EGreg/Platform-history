@@ -1458,7 +1458,7 @@ function setIdentifier_callback(err, response) {
 			Q.ajaxErrors(response.errors, 'identifier')
 		);
 		identifier_input.plugin('Q/clickfocus');
-		return alert(msg);
+		return;
 	}
 
 	// Remove any errors we may have displayed
@@ -1708,6 +1708,11 @@ Q.onInit.add(function () {
 Q.onReady.set(function Users_Q_onReady_handler() {
 	$.fn.plugin.load('Q/dialog');
 	$.fn.plugin.load('Q/placeholders');
+	$('#notices_set_email, #notices_set_mobile')
+	.on(Q.Pointer.fastclick, function () {
+		Q.plugins.Users.setIdentifier()
+		return false;
+	});
 }, 'Users');
 
 Q.beforeActivate.add(function (elem) {

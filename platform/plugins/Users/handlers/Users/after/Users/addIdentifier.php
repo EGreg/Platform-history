@@ -11,10 +11,10 @@ function Users_after_Users_addIdentifier($params)
 		return;
 	}
 	if (isset($email)) {
-		$resend_button = "<button id='notices_set_email' class='Q_button' onclick='window.Q.plugins.Users.setIdentifier(); return false;'>Need it re-sent?</button>";
+		$resend_button = "<button id='notices_set_email' class='Q_button'>Need it re-sent?</button>";
 		Q_Response::setNotice('Users/email', "Please check your email for an activation link. $resend_button");
 	} else if (isset($mobile)) {
-		$resend_button = "<button id='notices_set_mobile' class='Q_button' onclick='window.Q.plugins.Users.setIdentifier(); return false;'>Need it re-sent?</button>";
+		$resend_button = "<button id='notices_set_mobile' class='Q_button'>Need it re-sent?</button>";
 		Q_Response::setNotice('Users/mobile', "Please check your mobile phone for an activation message. $resend_button");
 	}
 }
