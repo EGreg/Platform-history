@@ -1602,7 +1602,7 @@ input.number:focus,
 textarea:focus { background: white; box-shadow: 0 1px 10px rgba(0,0,0,.15); -webkit-box-shadow: 0 1px 4px rgba(0,0,100,.15); -moz-box-shadow: 0 1px 4px rgba(0,0,100,.15); }
 input.placeholder,
 textarea.placeholder { color: #aaa; font-style: italic; }
-select:focus { outline: dashed 1px #779; }
+select:focus { outline: dotted 1px #779; }
 /* select { margin-top: 0.75em; } */
 input[type=text],
 input[type=password],

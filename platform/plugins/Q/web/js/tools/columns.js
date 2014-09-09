@@ -184,7 +184,8 @@ Q.Tool.define("Q/columns", function(options) {
 		if (o.back.hide) {
 			$close.hide();
 		}
-		
+
+		$div.attr('data-index', index);
 		if (options.name) {
 			var n = Q.normalize(options.name);
 			$div.attr('data-name', options.name)

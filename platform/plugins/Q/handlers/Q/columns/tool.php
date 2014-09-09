@@ -49,7 +49,7 @@ function Q_columns_tool($options)
 		$n = Q_Html::text($name);
 		$columnClass = 'Q_column_'.Q_Utils::normalize($name) . ' _Q_column_'.$i;
 		$columns[] = <<<EOT
-	<div class="Q_columns_column $columnClass" data-name="$n">
+	<div class="Q_columns_column $columnClass" data-index="$i" data-name="$n">
 		<div class="Q_columns_title">
 			$closeHtml
 			<h2 class="title_slot">$title</h2>
