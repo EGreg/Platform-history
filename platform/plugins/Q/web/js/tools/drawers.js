@@ -73,7 +73,7 @@ Q.Tool.define("Q/drawers", function(options) {
 		var sh = $scrolling[0].clientHeight || $scrolling.height();
 		var $d0 = state.$drawers.eq(0);
 		var $d1 = state.$drawers.eq(1);
-		$d0.css('min-height', sh+'px');
+		$d0.css('min-height', sh-state.heights[1]+'px');
 		$d1.css('min-height', sh-state.heights[0]+'px');
 		if (state.currentIndex == 0) {
 			var heightDiff = sh - lastScrollingHeight;
@@ -158,19 +158,22 @@ Q.Tool.define("Q/drawers", function(options) {
 		state.locked = true;
 		$scrolling.off(scrollEventName);
 		$scrolling.scrollTop(0);
-		$drawer.add($otherDrawer).add(state.$placeholder).off(eventName);
 		
-		function _onSwap() {
-			state.onSwap.handle.call(tool, state.currentIndex);
-			Q.handle(callback, tool);
-		};
+		setTimeout(function () {
+			$drawer.add($otherDrawer).add(state.$placeholder).off(eventName);
 		
-		state.beforeSwap.handle.call(tool, index);
-		if (behind) {
-			_animate(_pin, _addEvents, _onSwap);
-		} else {
-			_pin(_animate, _addEvents, _onSwap);
-		}
+			function _onSwap() {
+				state.onSwap.handle.call(tool, state.currentIndex);
+				Q.handle(callback, tool);
+			};
+		
+			state.beforeSwap.handle.call(tool, index);
+			if (behind) {
+				_animate(_pin, _addEvents, _onSwap);
+			} else {
+				_pin(_animate, _addEvents, _onSwap);
+			}
+		}, 0);
 		
 		function _pin(callback, callback2, callback3) {
 			var p = state.drawerPosition;
