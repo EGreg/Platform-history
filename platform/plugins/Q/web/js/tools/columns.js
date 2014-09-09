@@ -229,10 +229,18 @@ Q.Tool.define("Q/columns", function(options) {
 		});
 		
 		if (o.title != undefined) {
-			$(titleSlot).empty().append(o.title);
+			$(titleSlot).empty().append(
+				o.title instanceof Element
+					? $(o.title).clone(true) 
+					: o.title
+			);
 		}
 		if (o.column != undefined) {
-			$(columnSlot).empty().append(o.column);
+			$(columnSlot).empty().append(
+				o.column instanceof Element
+					? $(o.column).clone(true) 
+					: o.column
+			);
 		}
 		
 		_onOpen();
