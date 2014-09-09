@@ -142,10 +142,10 @@ class Streams_Avatar extends Base_Streams_Avatar
 				: '';
 			$attributes['class'] = "Streams_firstName$class";
 			$attr = Q_Html::attributes($attributes);
-			$fn = $fn ? "<span $attr>$fn</span>" : "";
+			$fn = "<span $attr>$fn</span>";
 			$attributes['class'] = "Streams_lastName$class";
 			$attr = Q_Html::attributes($attributes);
-			$ln = $ln ? "<span $attr>$ln</span>" : "";
+			$ln = "<span $attr>$ln</span>";
 		}
 
 		if (!empty($options['short'])) {

@@ -404,13 +404,13 @@ Q.Tool.define("Q/columns", function(options) {
 			$('.Q_columns_title', $div).css('position', 'absolute');
 		}
 		state.$currentColumn = $prev;
+		state.columns[index] = null;
 		presentColumn(tool);
 	
 		$div.css('min-height', 0);
 		
 		$div.animate($div.data(dataKey_hide), duration, function () {
 			Q.removeElement(div); // remove it correctly
-			state.columns[index] = null;
 		
 			if (index === state.max-1) {
 				--state.max;
