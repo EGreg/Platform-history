@@ -2130,7 +2130,21 @@ Q.onJQuery = new Q.Event();
  * This event occurs every time the layout needs to be updated
  * @event onLayout
  */
-Q.onLayout = new Q.Event();
+Q.onLayout = new Q.Event(function (e) {
+	var w = window,
+	    d = document,
+	    h = d.documentElement,
+	    b = d.getElementsByTagName('body')[0],
+	    x = w.innerWidth || h.clientWidth || b.clientWidth,
+	    y = w.innerHeight|| h.clientHeight|| b.clientHeight;
+	if (x > y) {
+		h.removeClass('Q_verticalOrientation')
+			.addClass('Q_horizontalOrientation');
+	} else {
+		h.removeClass('Q_horizontalOrientation')
+			.addClass('Q_verticalOrientation');
+	}
+}, 'Q');
 /**
  * This event is convenient for doing stuff when the window scrolls
  * @event onLayout
