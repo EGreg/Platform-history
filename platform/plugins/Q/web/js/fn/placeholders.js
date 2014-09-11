@@ -65,8 +65,12 @@ function () {
 			'overflow': 'hidden',
 			'width': $this.css('width'),
 			'height': $this.css('height'),
-			'text-align': $this.css('text-align')
+			'text-align': $this.css('text-align'),
+			'pointer-events': 'none'
 		}).addClass('Q_placeholder').insertAfter($this);
+		if (t === 'input') {
+			placeholder.css('white-space', 'nowrap');
+		}
 		// IE8 workaround
 		placeholder[0].style.fontFamily = $this[0].style.fontFamily;
 		if ($this.val()) {

@@ -24,7 +24,7 @@
 		"title": "First name",
 		"icon": ""
 	},
-	"Streams/user/middle_name": {
+	"Streams/user/middleName": {
 		"type": "Streams/text/name",
 		"title": "Middle name",
 		"icon": ""
@@ -33,6 +33,22 @@
 		"type": "Streams/text/name",
 		"title": "Last name",
 		"icon": ""
+	},
+	"Streams/user/emailAddress": {
+		"type": "Streams/text/emailAddress",
+		"title": "Email Address",
+		"icon": "",
+		"readLevel": "0",
+		"writeLevel": "0",
+		"adminLevel": "0"
+	},
+	"Streams/user/mobileNumber": {
+		"type": "Streams/text/mobileNumber",
+		"title": "Mobile Number",
+		"icon": "",
+		"readLevel": "0",
+		"writeLevel": "0",
+		"adminLevel": "0"
 	},
 	"Streams/user/status": {
 		"type": "Streams/text/small",

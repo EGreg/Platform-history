@@ -54,6 +54,8 @@
 			"Streams/text/medium": {"create": true, "edit": true},
 			"Streams/text/name": {"create": true, "edit": true},
 			"Streams/text/url": {"create": true, "edit": true},
+			"Streams/text/emailAddress": {"create": true, "edit": true},
+			"Streams/text/mobileNumber": {"create": true, "edit": true},
 			"Streams/date": {"create": true, "edit": true},
 			"Streams/number": {"create": true, "edit": true},
 			"Streams/image": {
@@ -184,13 +186,17 @@
 				"Streams/user/username",
 				"Streams/user/icon",
 				"Streams/user/firstName",
-				"Streams/user/lastName"
+				"Streams/user/lastName",
+				"Streams/user/emailAddress",
+				"Streams/user/mobileNumber"
 			]
 		},
 		"onUpdate": {
 			"Users_User": {
 				"username": "Streams/user/username",
-				"icon": "Streams/user/icon"
+				"icon": "Streams/user/icon",
+				"emailAddress": "Streams/user/emailAddress",
+				"mobileNumber": "Streams/user/mobileNumber"
 			}
 		}
 	}

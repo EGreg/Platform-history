@@ -1705,12 +1705,12 @@ Q.onInit.add(function () {
 	}, Q.Users.prompt.options, Q.Users.prompt.serverOptions);
 }, 'Users');
 
-Q.onReady.set(function Users_Q_onReady_handler() {
+Q.Page.onActivate('').add(function _Users_Q_Page_onActivate_handler () {
 	$.fn.plugin.load('Q/dialog');
 	$.fn.plugin.load('Q/placeholders');
 	$('#notices_set_email, #notices_set_mobile')
 	.on(Q.Pointer.fastclick, function () {
-		Q.plugins.Users.setIdentifier()
+		Q.plugins.Users.setIdentifier();
 		return false;
 	});
 }, 'Users');

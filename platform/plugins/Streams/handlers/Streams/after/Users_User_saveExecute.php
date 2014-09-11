@@ -51,20 +51,20 @@ function Streams_after_Users_User_saveExecute($params)
 			$stream->save(); // this also inserts avatars
 			$stream->join(array('userId' => $user->id));
 		}
-	} else if ($updates) {
-		Streams_Avatar::update()
-			->set($updates)
-			->where(array('publisherId' => $user->id))
-			->execute();
+	} else if ($modifiedFields) {
+		if ($updates) {
+			Streams_Avatar::update()
+				->set($updates)
+				->where(array('publisherId' => $user->id))
+				->execute();
+		}
 		
-		foreach ($updates as $field => $value) {
+		foreach ($modifiedFields as $field => $value) {
 			$name = Q_Config::get('Streams', 'onUpdate', 'Users_User', $field, null);
 			if (!$name) continue;
 			$stream = Streams::fetchOne($user->id, $user->id, $name);
 			if (!$stream) { // it should probably already be in the db
-				$stream = new Streams_Stream();
-				$stream->publisherId = $user->id;
-				$stream->name = $name;
+				continue;
 			}
 			$stream->content = $value;
 			if ($name === "Streams/user/icon") {

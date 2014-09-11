@@ -212,7 +212,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		fieldinput.plugin('Q/autogrow', {
 			maxWidth: state.maxWidth || $te.parent().innerWidth(),
 			minWidth: state.minWidth || 0
-		});
+		}).plugin('Q/placeholders');
 		var field_width = static_span.outerWidth();
 		var field_height = static_span.outerHeight();
 		if (fieldinput.is('select')) {

@@ -4237,8 +4237,11 @@ Q.page = function _Q_page(page, handler, key) {
 	if (typeof handler !== 'function') {
 		return;
 	}
-	Q.Page.onActivate(page).add(function Q_onPageActivate_handler(url, options) {
-		var unload = handler.call(Q, Q.Page.beforeUnload("Q\t"+page), url, options);
+	Q.Page.onActivate(page)
+	.add(function Q_onPageActivate_handler(url, options) {
+		var unload = handler.call(
+			Q, Q.Page.beforeUnload("Q\t"+page), url, options
+		);
 		if (unload && typeof unload === "function") {
 			Q.Page.beforeUnload("Q\t"+page).set(unload, key);
 		}
