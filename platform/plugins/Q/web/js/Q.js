@@ -7426,6 +7426,7 @@ Q.Animation = function _Q_Animation(callback, duration, ease, params) {
 	var anim = this;
 	anim.position = 0;
 	anim.milliseconds = 0;
+	anim.sinceLastFrame = 0;
 	this.id = ++_Q_Animation_index;
 	this.duration = duration;
 	this.ease = ease;
@@ -7456,7 +7457,7 @@ Ap.pause = function _Q_Animation_prototype_pause() {
  */
 Ap.rewind = function _Q_Animation_prototype_rewind() {
 	this.pause();
-	this.position = this.milliseconds = 0;
+	this.position = this.milliseconds = this.sinceLastFrame = 0;
 	this.onRewind.handle.call(this);
 	return this;
 };
@@ -7469,7 +7470,9 @@ Ap.render = function _Q_Animation_prototype_rewind() {
 	var anim = this;
 	var ms = Q.milliseconds();
 	window.requestAnimationFrame(function () {
+		var _milliseconds = anim.milliseconds || 0;
 		anim.milliseconds += Q.milliseconds() - ms;
+		anim.sinceLastFrame = anim.milliseconds - _milliseconds;
 		var x = anim.position = anim.milliseconds / anim.duration;
 		if (x >= 1) {
 			Q.handle(anim.callback, anim, [1, anim.ease(1), anim.params]);
@@ -7535,11 +7538,19 @@ Q.Animation.ease = {
 	linear: function(fraction) {
 		return fraction;
 	},
+	power: function (exponent) {
+		return function(fraction) {
+			return 1-Math.pow(1-fraction, exponent);
+		};
+	},
 	bounce: function(fraction) {
 		return Math.sin(Math.PI * 1.2 * (fraction - 0.5)) / 1.7 + 0.5;
 	},
 	smooth: function(fraction) {
 		return Math.sin(Math.PI * (fraction - 0.5)) / 2 + 0.5;
+	},
+	easeInExpo: function (t) {
+		return (x==0) ? 0 : pow(2, 10 * (x - 1)) + 0 - 1 * 0.001;
 	},
 	inOutQuintic: function(t) {
 		var ts = t * t;
@@ -8035,7 +8046,7 @@ Q.info = {
 	},
 	isAndroid: function (maxWidth, maxHeight, minVersion, maxVersion) {
 		return Q.info.platform === 'android'
-			&& (maxWidth == undefined || maxWidth >= Q.Pointer.windowWidth())
+			&& (maxWidth == undefined || maxWidth >= f.windowWidth())
 			&& (maxHeight == undefined || maxHeight >= Q.Pointer.windowHeight())	
 			&& (minVersion == undefined || minVersion <= Q.info.browser.version)
 			&& (maxVersion == undefined || maxVersion >= Q.info.browser.version);
@@ -8365,11 +8376,14 @@ function _Q_PointerStartHandler(e) {
 		positions: [],
 		velocities: [],
 		movingAverageVelocity: null,
-		accelerations: []
+		accelerations: [],
+		timeout: 300
 	};
 }
 
+var _pointerMoveTimeout = null;
 function _onPointerMoveHandler(evt) { // see http://stackoverflow.com/a/2553717/467460
+	clearTimeout(_pointerMoveTimeout);
 	var screenX = Q.Pointer.getX(evt) + Q.Pointer.scrollLeft();
 	var screenY = Q.Pointer.getY(evt) + Q.Pointer.scrollTop();
 	if (!screenX || !screenY) {
@@ -8400,7 +8414,7 @@ function _onPointerMoveHandler(evt) { // see http://stackoverflow.com/a/2553717/
 			x: screenX - _last.x,
 			y: screenY - _last.y
 		};
-		_timeDiff = _timestamp - _lastTimestamp;
+		var _timeDiff = _timestamp - _lastTimestamp;
 		var velocity = {
 			x: _dist.x / _timeDiff,
 			y: _dist.y / _timeDiff
@@ -8426,6 +8440,20 @@ function _onPointerMoveHandler(evt) { // see http://stackoverflow.com/a/2553717/
 			x: totalX / count, // if we're here then count > 0
 			y: totalY /count
 		};
+		_pointerMoveTimeout = setTimeout(function () {
+			// no movement for a while
+			var noMovement = {x: 0, y: 0};
+			var _timestamp = Q.milliseconds();
+			var _timeDiff = _timeDiff - _lastTimestamp;
+			var movement = Q.Pointer.movement;
+			movement.times.push(_timestamp);
+			movement.velocities.push(noMovement);
+			movement.movingAverageVelocity = noMovement;
+			movement.accelerations.push({
+				x: -velocity.x / _timeDiff,
+				y: -velocity.y / _timeDiff
+			});
+		}, Q.Pointer.movement.timeout);
 	}
 	_lastTimestamp = _timestamp;
 	_last = {
@@ -8440,6 +8468,7 @@ var _onPointerEndHandler = Q.Pointer.ended = function _onPointerEndHandler() {
 	setTimeout(function () {
 		Q.Pointer.started = null;
 	}, 0);
+	clearTimeout(_pointerMoveTimeout);
 	Q.removeEventListener(window, Q.Pointer.move, _onPointerMoveHandler);
 	Q.removeEventListener(window, Q.Pointer.end, _onPointerEndHandler);
 	Q.removeEventListener(window, Q.Pointer.cancel, _onPointerEndHandler);
