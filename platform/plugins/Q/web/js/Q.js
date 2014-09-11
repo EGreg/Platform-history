@@ -8174,7 +8174,7 @@ Q.Pointer = {
 	 */
 	canceledClick: false,
 	/**
-	 * Returns the scroll left in pixels, consistently across browsers
+	 * Returns the document's scroll left in pixels, consistently across browsers
 	 * @static
 	 * @method scrollLeft
 	 * @return {Number}
@@ -8183,7 +8183,7 @@ Q.Pointer = {
 		return window.pageXOffset || document.documentElement.scrollLeft || (document.body && document.body.scrollLeft);
 	},
 	/**
-	 * Returns the scroll top in pixels, consistently across browsers
+	 * Returns the document's scroll top in pixels, consistently across browsers
 	 * @static
 	 * @method scrollTop
 	 * @return {Number}
@@ -8352,22 +8352,30 @@ Q.Pointer.which.LEFT = 1;
 Q.Pointer.which.MIDDLE = 2;
 Q.Pointer.which.RIGHT = 3;
 
+var _pos, _dist, _last, _lastTimestamp, _lastVelocity;
 function _Q_PointerStartHandler(e) {
 	Q.Pointer.started = Q.Pointer.target(e);
 	Q.Pointer.canceledClick = false;
-	Q.addEventListener(document, Q.Pointer.move, _onPointerMoveHandler);
-	Q.addEventListener(document, Q.Pointer.end, _onPointerEndHandler);
-	Q.addEventListener(document, Q.Pointer.cancel, _onPointerEndHandler);
+	Q.addEventListener(window, Q.Pointer.move, _onPointerMoveHandler);
+	Q.addEventListener(window, Q.Pointer.end, _onPointerEndHandler);
+	Q.addEventListener(window, Q.Pointer.cancel, _onPointerEndHandler);
+	_pos = _dist = _last = _lastTimestamp = _lastVelocity = null;
+	Q.Pointer.movement = {
+		times: [],
+		positions: [],
+		velocities: [],
+		movingAverageVelocity: null,
+		accelerations: []
+	};
 }
 
-var _pos;
 function _onPointerMoveHandler(evt) { // see http://stackoverflow.com/a/2553717/467460
-	var screenX = Q.Pointer.getX(evt);
-	var screenY = Q.Pointer.getY(evt);
+	var screenX = Q.Pointer.getX(evt) + Q.Pointer.scrollLeft();
+	var screenY = Q.Pointer.getY(evt) + Q.Pointer.scrollTop();
 	if (!screenX || !screenY) {
 		return;
 	}
-	if (!_pos) {
+	if (_pos === null) {
 		// first movement
 		_pos = {
 			x: screenX,
@@ -8382,21 +8390,59 @@ function _onPointerMoveHandler(evt) { // see http://stackoverflow.com/a/2553717/
 			toX: screenX,
 			toY: screenY
 		})) {
-			Q.removeEventListener(
-				document, Q.Pointer.move, _onPointerMoveHandler
-			);
-			_pos = null;
+			_pos = false;
 		}
 	}
+	var _timestamp = Q.milliseconds();
+	Q.Pointer.movement.times.push(_timestamp);
+	if (_last && _lastTimestamp) {
+		_dist = {
+			x: screenX - _last.x,
+			y: screenY - _last.y
+		};
+		_timeDiff = _timestamp - _lastTimestamp;
+		var velocity = {
+			x: _dist.x / _timeDiff,
+			y: _dist.y / _timeDiff
+		};
+		Q.Pointer.movement.velocities.push(velocity);
+		if (_lastVelocity != null) {
+			Q.Pointer.movement.accelerations.push({
+				x: (velocity.x - _lastVelocity.x) / _timeDiff,
+				y: (velocity.y - _lastVelocity.y) / _timeDiff
+			});
+		}
+		_lastVelocity = velocity;
+		var times = Q.Pointer.movement.times;
+		var totalX = 0, totalY = 0, count = 0;
+		for (var i=times.length-1; i>=1; --i) {
+			if (times[i] < _timestamp - 100) break;
+			var v = Q.Pointer.movement.velocities[i-1];
+			totalX += v.x;
+			totalY += v.y;
+			++count;
+		}
+		Q.Pointer.movement.movingAverageVelocity = {
+			x: totalX / count, // if we're here then count > 0
+			y: totalY /count
+		};
+	}
+	_lastTimestamp = _timestamp;
+	_last = {
+		x: screenX,
+		y: screenY
+	};
+	Q.Pointer.movement.positions.push(_last);
+
 }
 
 var _onPointerEndHandler = Q.Pointer.ended = function _onPointerEndHandler() {
 	setTimeout(function () {
 		Q.Pointer.started = null;
 	}, 0);
-	Q.removeEventListener(document, Q.Pointer.move, _onPointerMoveHandler);
-	Q.removeEventListener(document, Q.Pointer.end, _onPointerEndHandler);
-	Q.removeEventListener(document, Q.Pointer.cancel, _onPointerEndHandler);
+	Q.removeEventListener(window, Q.Pointer.move, _onPointerMoveHandler);
+	Q.removeEventListener(window, Q.Pointer.end, _onPointerEndHandler);
+	Q.removeEventListener(window, Q.Pointer.cancel, _onPointerEndHandler);
 	setTimeout(function () {
 		Q.Pointer.canceledClick = false;
 	}, 100);

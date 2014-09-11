@@ -14,7 +14,8 @@
 Q.Tool.define("Q/drawers", function(options) {
 	var tool = this;
 	var state = tool.state;
-	var $scrolling = state.fullscreen ? $(window) : $(state.container);
+	var $scrolling = state.$scrolling = 
+		state.fullscreen ? $(window) : $(state.container);
 	state.swapCount = 0;
 	
 	if (state.fullscreen || !state.container) {
@@ -129,6 +130,10 @@ Q.Tool.define("Q/drawers", function(options) {
 	swap: function (callback) {
 		var tool = this;
 		var state = tool.state;
+		
+		if (state.locked) return false;
+		state.locked = true;
+		
 		var otherIndex = state.currentIndex;
 		var index = state.currentIndex = (state.currentIndex + 1) % 2;
 		var $drawer = state.$drawers.eq(index);
@@ -153,16 +158,14 @@ Q.Tool.define("Q/drawers", function(options) {
 		var scrollEventName = Q.info.isTouchscreen
 			? 'scroll.Q_drawers'
 			: 'scroll.Q_drawers';
-			
+		
+		$scrolling.off(scrollEventName);
+		$scrolling.scrollTop(0);
+		
 		$drawer.addClass('Q_drawers_current')
 			.removeClass('Q_drawers_notCurrent');
 		$otherDrawer.removeClass('Q_drawers_current')
 			.addClass('Q_drawers_notCurrent');
-		
-		if (state.locked) return false;
-		state.locked = true;
-		$scrolling.off(scrollEventName);
-		$scrolling.scrollTop(0);
 		
 		setTimeout(function () {
 			$drawer.add($otherDrawer).add(state.$placeholder).off(eventName);
