@@ -32,9 +32,10 @@ class Places_Geohash
      * Call this function to calculate a hash from latitude, longitude
 	 * @param {float} $latitude
 	 * @param {float} $longitude
+	 * @param {integer} $length Optional length of the resulting geohash
 	 * @return {string}
      */
-    static public function encode($latitude, $longtitude){
+    static public function encode($latitude, $longtitude, $length = null){
         /***
             eq('xpssc0', Places_Geohash::encode(43.025, 141.377));
             eq('xn76urx4dzxy', Places_Geohash::encode(35.6813177190391, 139.7668218612671));
@@ -42,13 +43,17 @@ class Places_Geohash
         $is_even = true;
         $bit = 0;
         $ch = 0;
-        $precision = min((max(strlen(strstr($latitude, '.')), strlen(strstr($longtitude, '.'))) - 1) * 2, 12);
+		if (!isset($length)) {
+			$lenLat = strlen(strstr($latitude, '.'));
+			$lenLong = strlen(strstr($longtitude, '.'));
+			$length = min(12, (max($lenLat, $lenLong) - 1) * 2);
+		}
         $geohash = '';
         
         $lat = array(-90.0, 90.0);
         $lon = array(-180.0, 180.0);
         
-        while(strlen($geohash) < $precision){
+        while(strlen($geohash) < $length){
             if($is_even){
                 $mid = array_sum($lon) / 2;
                 if($longtitude > $mid){
@@ -94,7 +99,8 @@ class Places_Geohash
         $lon = array(-180.0, 180.0);
         $lat_err = 90.0;
         $lon_err = 180.0;
-        for($i=0; $i<strlen($geohash); $i++){
+		$len = strlen($geohash);
+        for($i=0; $i<$len; $i++){
             $c = $geohash{$i};
             $cd = stripos(self::$base32, $c);
             for($j=0; $j<5; $j++){

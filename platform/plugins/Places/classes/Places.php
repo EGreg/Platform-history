@@ -250,8 +250,8 @@ abstract class Places extends Base_Places
 		compact('latitude', 'longitude', 'miles'), 'before')) {
 			return $before;
 		}
-		$hash = md5("$latitude\t$longitude\t$miles");
-		return "Places/nearby/$hash";
+		$geohash = Places_Geohash::encode($latitude, $longitude, 6);
+		return "Places/nearby/$geohash/$miles";
 	}
 	
 	/**
