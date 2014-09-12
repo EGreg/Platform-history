@@ -2246,7 +2246,7 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 	});
 	var socket = Q.Socket.get('Streams', node);
 	if (!socket || ordinal < 0 || ordinal - o.max > latest) {
-		return o.unlessSocket ? false : _tryLoading();
+		return (socket && o.unlessSocket) ? false : _tryLoading();
 	}
 	// ok, wait a little while
 	var t = setTimeout(_tryLoading, o.timeout);
@@ -2286,6 +2286,7 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 			// and moreover without browser refresh cycles in between,
 			// which may cause confusion in some visual representations
 			// until things settle down on the screen
+			ordinal = parseInt(ordinal);
 			Q.each(messages, function (ordinal, message) {
 				if (Message.latest[publisherId+"\t"+streamName] >= ordinal) {
 					return; // it was already processed
@@ -2953,7 +2954,7 @@ Q.onInit.add(function _Streams_onInit() {
 		// (e.g. from a post or retrieving a stream, or because there was no cache yet)
 		Message.wait(msg.publisherId, msg.streamName, msg.ordinal-1, function () {
 			if (Message.latest[msg.publisherId+"\t"+msg.streamName]
-			>= msg.ordinal) {
+			>= parseInt(msg.ordinal)) {
 				return; // it was already processed
 			}
 			// New message posted - update cache
@@ -2965,7 +2966,7 @@ Q.onInit.add(function _Streams_onInit() {
 				[msg.publisherId, msg.streamName, parseInt(msg.ordinal)],
 				0, message, [null, message]
 			);
-			Message.latest[msg.publisherId+"\t"+msg.streamName] = msg.ordinal;
+			Message.latest[msg.publisherId+"\t"+msg.streamName] = parseInt(msg.ordinal);
 			var cached = Streams.get.cache.get([msg.publisherId, msg.streamName]);
 			Streams.get(msg.publisherId, msg.streamName, function (err) {
 

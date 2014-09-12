@@ -72,8 +72,9 @@ Q.Tool.define("Users/avatar", function(options) {
 {
 	/**
 	 * Refresh the avatar's display
+	 * @method refresh
 	 */
-	refresh: function (options) {
+	refresh: function () {
 		
 		var tool = this, state = this.state;
 		if (tool.element.childNodes.length) {
