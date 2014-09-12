@@ -155,13 +155,25 @@ Q.Tool.define("Users/avatar", function(options) {
 				Q.each(Q.Users.icon.sizes, function (k, v) {
 					saveSizeName[v] = v+".png";
 				});
-				var o = Q.extend({
-					saveSizeName: saveSizeName,
-					showSize: $img.width(),
-					path: 'plugins/Users/img/icons',
-					subpath: 'user-'+state.userId
-				}, state.imagepicker);
-				$img.plugin('Q/imagepicker', o);
+				Q.Streams.retainWith(tool).get(
+					Q.Users.loggedInUser.id,
+					'Streams/user/icon',
+					function (err) {
+						var stream = this;
+						var o = Q.extend({
+							saveSizeName: saveSizeName,
+							showSize: $img.width(),
+							path: 'plugins/Users/img/icons',
+							subpath: 'user-'+state.userId,
+							onSuccess: {"Users/avatar": function () {
+								stream.refresh(function () {
+									
+								}, {messages: true});
+							}}
+						}, state.imagepicker);
+						$img.plugin('Q/imagepicker', o);
+					}
+				)
 			}
 		}
 	}

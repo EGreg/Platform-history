@@ -39,7 +39,7 @@
  * @param {Array} [options.cameraCommands] cameraCommands is an Array of titles for the commands that pop up to take a photo
  * @param {Event} [options.onClick] onClick is a function to execute during the click, which may cancel the click
  * @param {Event} [options.onSuccess] onSuccess is Q.Event which is called on successful upload. First parameter will be the server response with
- * hash in format similar to 'saveSizeName' field. Optional.
+ * an object in a format similar to the 'saveSizeName' field. Optional.
  * @param {Event} [options.onError] onError Q.Event which is called if upload failed. Optional.
  */
 Q.Tool.jQuery('Q/imagepicker', function (o) {
