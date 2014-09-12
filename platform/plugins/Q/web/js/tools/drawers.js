@@ -127,7 +127,7 @@ Q.Tool.define("Q/drawers", function(options) {
 },
 
 {	
-	swap: function (callback) {
+	swap: function (callback, animationStartCallback) {
 		var tool = this;
 		var state = tool.state;
 		
@@ -177,13 +177,13 @@ Q.Tool.define("Q/drawers", function(options) {
 		
 			state.beforeSwap.handle.call(tool, index);
 			if (behind) {
-				_animate(_pin, _addEvents, _onSwap);
+				_animate([_pin, _addEvents, _onSwap]);
 			} else {
-				_pin(_animate, _addEvents, _onSwap);
+				_pin([_animate, _addEvents, _onSwap]);
 			}
 		}, 0);
 		
-		function _pin(callback, callback2, callback3) {
+		function _pin(callbacks) {
 			var p = state.drawerPosition;
 			var w = state.drawerWidth;
 			var h = state.drawerHeight;
@@ -229,10 +229,11 @@ Q.Tool.define("Q/drawers", function(options) {
 			// TODO: adjust height, do not rely on parent of container having
 			// overflow: hidden
 			
-			callback(callback2, callback3);
+			callbacks[0](callbacks.slice(1));
 		}
 		
-		function _animate(callback, callback2, callback3) {
+		function _animate(callbacks) {
+			Q.handle(animationStartCallback);
 			var o = state[state.swapCount ? 'transition' : 'initial'];
 			if (!state.$placeholder) {
 				return _continue();
@@ -246,12 +247,12 @@ Q.Tool.define("Q/drawers", function(options) {
 			}, "Q/drawers");
 			function _continue() {
 				setTimeout(function () {
-					callback(callback2, callback3);
+					callbacks[0](callbacks.slice(1));
 				}, 0);
 			}
 		}
 		
-		function _addEvents(callback) {
+		function _addEvents(callbacks) {
 			var o = state[state.swapCount ? 'transition' : 'initial'];
 			var $jq = $(behind ? state.$pinnedElement : state.$placeholder);
 			$jq.off(eventName).on(eventName, function () {
@@ -271,7 +272,59 @@ Q.Tool.define("Q/drawers", function(options) {
 			}
 			state.locked = false;
 			++state.swapCount;
-			Q.handle(callback, tool)
+			
+			if (Q.info.isTouchscreen && !Q.info.isAndroid()) {
+				_addTouchEvents();
+			}
+			
+			Q.handle(callbacks[0], tool);
+		}
+		
+		function _addTouchEvents() {
+			var y1, y2;
+			var anim = null;
+			var notThisOne = false;
+			state.$drawers.eq(state.currentIndex)
+			.on('touchstart', true, function (e) {
+				if (anim) anim.pause();
+				notThisOne = false;
+				if (state.currentIndex == 0
+				|| state.$scrolling.scrollTop() > 0) {
+					notThisOne = true;
+					return;
+				}
+				y1 = Q.Pointer.getY(e);
+				e.preventDefault();
+			}).on('touchmove', true, function (e) {
+				if (notThisOne) return;
+				y2 = Q.Pointer.getY(e);
+				if (y1 - y2 > 0) {
+					state.$scrolling.scrollTop(y1-y2);	
+					state.$drawers.eq(1).css('margin-top', 0);
+				} else {
+					state.$drawers.eq(1).css('margin-top', y2-y1);
+				}
+			}).on('touchend', true, function (e) {
+				if (notThisOne) return;
+				if (y2 - y1 > 20) {
+					Q.Tool.byId("Q_drawers").swap(null, function () {
+						var $d = state.$drawers.eq(1);
+						var mt = parseInt($d.css('margin-top'));
+						Q.Animation.play(function (x, y) {
+							$d.css('margin-top', mt*(1-y)+'px');
+						}, state.transition.duration);
+					});
+				} else {
+					anim = Q.Animation.play(function (x, y) {
+						if (!Q.Pointer.movement.movingAverageVelocity) return;
+						var v = Q.Pointer.movement.movingAverageVelocity.y;
+						var t = state.$scrolling.scrollTop();
+						var dampening = 1-y;
+						state.$scrolling.scrollTop(t-v*this.sinceLastFrame*dampening);
+					}, 3000, Q.Animation.ease.power(3));
+				}
+				y1 = y2 = undefined;
+			});
 		}
 
 	},
