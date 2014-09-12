@@ -34,10 +34,13 @@ function () {
 
 		var span = $('<span />')
 			.css('position', 'relative')
-			.addClass('Q_placeholder')
+			.addClass('Q_placeholder');
+		var cs = $this[0].computedStyle();
+		var csw = cs.width; // the object can change, so get the values now
+		var csh = cs.height;
 		$this.css({
-			'width': $this.width(),
-			'height': $this.height()
+			'width': csw,
+			'height': csh
 		}); // because they might have been percentages
 		Q.each(['left', 'right', 'top', 'bottom'], function (i, pos) {
 			$this.css('padding-'+pos, $this.css('padding-'+pos))

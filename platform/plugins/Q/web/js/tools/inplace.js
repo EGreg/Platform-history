@@ -179,23 +179,25 @@ function _Q_inplace_tool_constructor(element, options) {
 	if (container_span.hasClass('Q_nocancel')) {
 		noCancel = true;
 	}
-	fieldinput.css({
-		fontSize: static_span.css('fontSize'),
-		fontFamily: static_span.css('fontFamily'),
-		fontWeight: static_span.css('fontWeight'),
-		letterSpacing: static_span.css('letterSpacing')
-	});
-	fieldinput.plugin('Q/autogrow', {
-		maxWidth: state.maxWidth || $te.parent().innerWidth(),
-		minWidth: state.minWidth || 0
-	});
-	if (!fieldinput.data('inplace')) {
-		fieldinput.data('inplace', {});
-	}
-	if (container_span.hasClass('Q_editing')) {
-		fieldinput.data('inplace').widthWasAdjusted = true;
-		fieldinput.data('inplace').heightWasAdjusted = true;
-	}
+	setTimeout(function () {
+		fieldinput.css({
+			fontSize: static_span.css('fontSize'),
+			fontFamily: static_span.css('fontFamily'),
+			fontWeight: static_span.css('fontWeight'),
+			letterSpacing: static_span.css('letterSpacing')
+		});
+		fieldinput.plugin('Q/autogrow', {
+			maxWidth: state.maxWidth || $te.parent().innerWidth(),
+			minWidth: state.minWidth || 0
+		});
+		if (!fieldinput.data('inplace')) {
+			fieldinput.data('inplace', {});
+		}
+		if (container_span.hasClass('Q_editing')) {
+			fieldinput.data('inplace').widthWasAdjusted = true;
+			fieldinput.data('inplace').heightWasAdjusted = true;
+		}
+	}, 0); // hopefully it will be inserted into the DOM by then
 	function onClick() {
 		container_span.addClass('Q_editing');
 		container_span.addClass('Q_discouragePointerEvents');
