@@ -171,14 +171,15 @@ abstract class Places extends Base_Places
 	}
 	
 	/**
-	 * Call this function to subscribe to streams on which messages are posted
-	 * related to things happening the given number of $miles around the given location.
+	 * Call this function to relate a stream to streams for things happening
+	 * the given number of $miles around the given location.
 	 * @param {double} $latitude The latitude of the coordinates near which to relate
 	 * @param {double} $longitude The longitude of the coordinates near which to relate
 	 * @param {string} $fromPublisherId The publisherId of the stream to relate
 	 * @param {string} $fromStreamName The name of the stream to relate
 	 * @param {string} $relationType The type of the relation to add
 	 * @param {array} $options The options to pass to the Streams::relate function
+	 *  Also can contain "miles" to override the default set of distances.
 	 * @return {array|boolean} Returns whatever the Streams::relate function returns
 	 */
 	static function relateTo(

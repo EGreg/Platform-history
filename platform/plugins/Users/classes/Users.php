@@ -372,11 +372,11 @@ abstract class Users extends Base_Users
 						$ui->save(true);
 
 						// Download and save facebook icon for the user
-						$icon = array(
-							'40.png' => "http://graph.facebook.com/$uid/picture?width=40&height=40",
-							'50.png' => "http://graph.facebook.com/$uid/picture?type=square",
-							'80.png' => "http://graph.facebook.com/$uid/picture?width=80&height=80"
-						);
+						$sizes = Q_Config::expect('Users', 'icon', 'sizes');
+						$icon = array();
+						foreach ($sizes as $size) {
+							$icon["$size.png"] = "http://graph.facebook.com/$uid/picture?width=$size&height=$size";
+						}
 						if (!Q_Config::get('Users', 'register', 'icon', 'leaveDefault', false)) {
 							$user->icon = self::downloadIcon($user, $icon);
 							$user->save();
@@ -753,7 +753,7 @@ abstract class Users extends Base_Users
 	 * @static
 	 * @param {string} $username The name of the user
 	 * @param {string} $identifier User identifier
-	 * @param {array} [$icon=array()] User icon
+	 * @param {array|string} [$icon=array()] Array of filename => url pairs
 	 * @param {string} [$provider=null] Provider
 	 * @param {array} $options=array() An array of options that could include:
 	 *  "activation": The key under "Users"/"transactional" config to use for sending an activation message.
@@ -881,30 +881,31 @@ abstract class Users extends Base_Users
 				if (empty($uid)) {
 					break;
 				}
-				$icon = array(
-					'40.png' => "http://graph.facebook.com/$uid/picture?width=40&height=40",
-					'50.png' => "http://graph.facebook.com/$uid/picture?type=square",
-					'80.png' => "http://graph.facebook.com/$uid/picture?width=80&height=80"
-				);
+				$sizes = Q_Config::expect('Users', 'icon', 'sizes');
+				$icon = array();
+				foreach ($sizes as $size) {
+					$icon["$size.png"] = "http://graph.facebook.com/$uid/picture?width=$size&height=$size";
+				}
 				break;
 			}
 		} else {
 			// Import the user's icon and save it
 			if (is_string($icon)) {
 				// assume it's from gravatar
-				$icon = array(
-					'40.png' => $icon.'&s=40',
-					'50.png' => $icon.'&s=50',
-					'80.png' => $icon.'&s=80'
-				);
+				$sizes = Q_Config::expect('Users', 'icon', 'sizes');
+				$iconString = $icon;
+				$icon = array();
+				foreach ($sizes as $size) {
+					$icon["$size.png"] = "$iconString&s=$size";
+				}
 			} else {
 				// locally generated icons
 				$hash = md5(strtolower(trim($identifier)));
-				$icon = array(
-					'40.png' => array('hash' => $hash, 'size' => 40),
-					'50.png' => array('hash' => $hash, 'size' => 50),
-					'80.png' => array('hash' => $hash, 'size' => 80)
-				);
+				$sizes = Q_Config::expect('Users', 'icon', 'sizes');
+				$icon = array();
+				foreach ($sizes as $size) {
+					$icon["$size.png"] = array('hash' => $hash, 'size' => $size);
+				}
 			}
 		}
 		if (!Q_Config::get('Users', 'register', 'icon', 'leaveDefault', false)) {
