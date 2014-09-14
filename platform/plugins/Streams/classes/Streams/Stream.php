@@ -469,36 +469,43 @@ class Streams_Stream extends Base_Streams_Stream
 	
 	/**
 	 * @method getAttribute
-	 * @param {string} $attribute_name The name of the attribute to get
+	 * @param {string} $attributeName The name of the attribute to get
 	 * @param {mixed} $default The value to return if the attribute is missing
 	 * @return {mixed} The value of the attribute, or the default value, or null
 	 */
-	function getAttribute($attribute_name, $default = null)
+	function getAttribute($attributeName, $default = null)
 	{
 		$attr = $this->getAttributes();
-		return isset($attr[$attribute_name]) ? $attr[$attribute_name] : $default;
+		return isset($attr[$attributeName]) ? $attr[$attributeName] : $default;
 	}
 	
 	/**
 	 * @method setAttribute
-	 * @param {string} $attribute_name The name of the attribute to set
+	 * @param {string} $attributeName The name of the attribute to set,
+	 *  or an array of $attributeName => $attributeValue pairs
 	 * @param {mixed} $value The value to set the attribute to
 	 */
-	function setAttribute($attribute_name, $value)
+	function setAttribute($attributeName, $value = null)
 	{
 		$attr = $this->getAttributes();
-		$attr[$attribute_name] = $value;
+		if (is_array($attributeName)) {
+			foreach ($attributeName as $k => $v) {
+				$attr[$k] = $v;
+			}
+		} else {
+			$attr[$attributeName] = $value;
+		}
 		$this->attributes = Q::json_encode($attr);
 	}
 	
 	/**
 	 * @method clearAttribute
-	 * @param {string} $attribute_name The name of the attribute to remove
+	 * @param {string} $attributeName The name of the attribute to remove
 	 */
-	function clearAttribute($attribute_name)
+	function clearAttribute($attributeName)
 	{
 		$attr = $this->getAttributes();
-		unset($attr[$attribute_name]);
+		unset($attr[$attributeName]);
 		$this->attributes = Q::json_encode($attr);
 	}
 	
@@ -535,26 +542,24 @@ class Streams_Stream extends Base_Streams_Stream
 		$participant->streamName = $stream->name;
 		$participant->userId = $userId;
 
-		if($participant->retrieve()) {
+		if($participant->retrieve(null, null, array('ignoreCache' => true))) {
 			if (isset($options['subscribed'])) {
 				$subscribed = empty($options['subscribed']) ? 'no' : 'yes';
-				if ($participant->subscribed !== $subscribed) {
-					$participant->subscribed = $subscribed;
-				}
-			}
-			$type = ($participant->state === 'participating') ? 'visit' : 'join';
+				$participant->subscribed = $subscribed;
+			}	
 			$participant->state = 'participating';
 			if (!$participant->save()) {
 				return false;
 			}
-			// Send a message to Node
-			Q_Utils::sendToNode(array(
-				"Q/method" => "Streams/Stream/$type",
-				"participant" => Q::json_encode($participant->toArray()),
-				"stream" => Q::json_encode($stream->toArray())
-			));
-			// Post a message
+			$type = ($participant->state === 'participating') ? 'visit' : 'join';
 			if (empty($options['noVisit']) or $type !== 'visit') {
+				// Send a message to Node
+				Q_Utils::sendToNode(array(
+					"Q/method" => "Streams/Stream/$type",
+					"participant" => Q::json_encode($participant->toArray()),
+					"stream" => Q::json_encode($stream->toArray())
+				));
+				// Post a message
 				$stream->post($userId, array('type' => "Streams/$type"), true);
 				// Now post Streams/joined message to Streams/participating
 				Streams_Message::post($userId, $userId, 'Streams/participating', array(
@@ -684,7 +689,11 @@ class Streams_Stream extends Base_Streams_Stream
 		$stream = $this->getUserStream($options, $userId, $user);
 		
 		// first make user a participant
-		$stream->join(array("subscribed" => true, "userId" => $userId));
+		$stream->join(array(
+			"userId" => $userId,
+			"subscribed" => true,
+			"noVisit" => true
+		));
 
 		// check for 'messages' level
 
@@ -790,7 +799,11 @@ class Streams_Stream extends Base_Streams_Stream
 	function unsubscribe($options = array()) {
 
 		$stream = $this->getUserStream($options, $userId);
-		$participant = $stream->join(array('subscribed' => false));
+		$participant = $stream->join(array(
+			"userId" => $userId,
+			'subscribed' => false,
+			'noVisit' => true
+		));
 
 		Q_Utils::sendToNode(array(
 			"Q/method" => "Streams/Stream/unsubscribe",

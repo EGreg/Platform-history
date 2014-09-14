@@ -1896,7 +1896,7 @@ class Db_Row implements Iterator
 	 *       rollback the transaction if the row we're trying to retrieve is missing.
 	 *       Defaults to false.
 	 * * "ignoreCache" => if true, then call ignoreCache on the query
-	 * * "noCache" => if true, then call noCache on the query
+	 * * "dontCache" => if true, then call dontCache on the query
 	 * * Any other keys will be sent to $query->options($modifyQuery);
 	 * * "query" => if true, it will return a Db_Query that can be modified, rather than the result. 
 	 *   You can call more methods, like limit, offset, where, orderBy,

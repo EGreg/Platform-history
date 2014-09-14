@@ -12,19 +12,39 @@ function Places_geolocation_post()
 		'heading',
 		'latitude',
 		'longitude',
-		'speed'
+		'speed',
+		'miles'
 	);
-	if (!$stream) {
+	if ($stream) {
+		$latitude = $stream->getAttribute('latitude');
+		$longitude = $stream->getAttribute('longitude');
+	} else {
 		$stream = new Streams_Stream();
 		$stream->publisherId = $user->id;
 		$stream->name = $streamName;
 		$stream->type = "Places/location";
 		$stream->content = '';
+		$latitude = null;
 	}
-	foreach ($fields as $f) {
-		if (isset($_REQUEST[$f])) {
-			$stream->setAttribute($f, $_REQUEST[$f]);
-		}
-	}
+	$attributes = Q::take($_REQUEST, $fields);
+	$stream->setAttribute($attributes);
 	$stream->save();
+	
+	$miles = Q::ifset($attributes, 'miles', 
+		Q_Config::expect('Places', 'nearby', 'defaultMiles')
+	);
+	
+	if (!empty($_REQUEST['unsubscribe']) and isset($latitude)) {
+		$attributes['unsubscribed'] = Places::unsubscribe($latitude, $longitude, $miles);
+	}
+	
+	if (!empty($_REQUEST['subscribe'])) {
+		$latitude = $stream->getAttribute('latitude');
+		$longitude = $stream->getAttribute('longitude');
+		$attributes['subscribed'] = Places::subscribe($latitude, $longitude, $miles);
+	}
+	
+	$attributes['stream'] = $stream;
+	
+	Q::event("Places/geolocation", $attributes, 'after');
 }

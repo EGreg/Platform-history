@@ -124,8 +124,9 @@ Q.Tool.define('Q/form', function(options) {
 			}
 			var input = $('input[name="Q.method"]', form);
 			method = (input.val() || form.attr('method')).toUpperCase();
-			if (tool.state.noCache && typeof tool.state.loader.forget === "function") {
-				tool.state.noCache = false;
+			if (tool.state.ignoreCache
+			&& typeof tool.state.loader.forget === "function") {
+				tool.state.ignoreCache = false;
 				tool.state.loader.forget(action, method, form.serialize(), tool.state.slotsToRequest);
 			}
 			tool.state.loader(action, method, form.serialize(), tool.state.slotsToRequest, onResponse);

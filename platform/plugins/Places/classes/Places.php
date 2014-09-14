@@ -143,18 +143,52 @@ abstract class Places extends Base_Places
 		$publisherId = null,
 		$options = array())
 	{
+		return self::subscribersDo($latitude, $longitude, $miles, $publisherId, $options, 'subscribe');
+	}
+	
+	/**
+	 * Call this function to unsubscribe from streams you previously subscribed to
+	 * using Places::subscribe.
+	 * @param {double} $latitude The latitude of the coordinates to subscribe around
+	 * @param {double} $longitude The longitude of the coordinates to subscribe around
+	 * @param {double} $miles The radius, in miles, around this location.
+	 *  Should be one of the array values in the Places/nearby/miles config.
+	 * @param {string} $publisherId The id of the publisher publishing these streams.
+	 *  Defaults to the app name in Q/app config.
+	 * @param {array} $options The options to pass to the unsubscribe function
+	 * @return {Array} Returns an array of up to four arrays of ($publisherId, $streamName)
+	 *  of streams that were subscribed to.
+	 */
+	static function unsubscribe(
+		$latitude, 
+		$longitude, 
+		$miles,
+		$publisherId = null,
+		$options = array())
+	{
+		return self::subscribersDo($latitude, $longitude, $miles, $publisherId, $options, 'unsubscribe');
+	}
+	
+	protected static function subscribersDo(
+		$latitude, 
+		$longitude, 
+		$miles,
+		$publisherId = null,
+		$options = array(),
+		$action = null)
+	{
 		$nearby = Places::nearbyForSubscribers($latitude, $longitude, $miles);
 		if (!$nearby) { return array(); }
 		if (!isset($publisherId)) {
 			$publisherId = Q_Config::expect('Q', 'app');
 		}
 		$streams = Streams::fetch(null, $publisherId, array_keys($nearby));
-		$subscriptions = Streams_Subscription::select('*')
+		$participants = Streams_Participant::select('*')
 			->where(array(
 				'publisherId' => $publisherId,
 				'streamName' => array_keys($nearby),
-				'ofUserId' => Users::loggedInUser()->id
-			))->fetchDbRows(null, null, 'streamName');
+				'userId' => Users::loggedInUser()->id
+			))->ignoreCache()->fetchDbRows(null, null, 'streamName');
 		foreach ($nearby as $name => $nb) {
 			$stream = $streams[$name];
 			if (!$stream) {
@@ -162,9 +196,13 @@ abstract class Places extends Base_Places
 					$nb['latitude'], $nb['longitude'], $miles, $publisherId, $name
 				);
 			}
-			
-			if (empty($subscriptions[$name])) {
+			$subscribed = ('yes' === Q::ifset($participants, $name, 'subscribed', 'no'));
+			if ($action === 'subscribe' and !$subscribed) {
+				Q::log('subscribe');
 				$stream->subscribe($options);
+			} else if ($action === 'unsubscribe' and $subscribed) {
+				Q::log('unsubscribe');
+				$stream->unsubscribe();
 			}
 		}
 		return $streams;
