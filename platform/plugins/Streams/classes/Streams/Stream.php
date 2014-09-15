@@ -457,11 +457,14 @@ class Streams_Stream extends Base_Streams_Stream
 		if ($userId === $this->get('asUserId', null)) {
 			return $this;
 		} else {
-			$stream = Streams::fetch($userId, $this->publisherId, $this->name, '*', array('refetch' => true));
-			if (count($stream) !== 1) { // this shall never happen!!!
-				throw new Q_Exception("Error Processing join request for user '$userId'");
+			$stream = Streams::fetchOne($userId, 
+				$this->publisherId, $this->name, '*', 
+				array('refetch' => true)
+			);
+			if (!$stream) { // this should never happen
+				throw new Q_Exception("Error getting {$this->name} stream published by {$this->publisherId} for user '$userId'");
 			}
-			return reset($stream);
+			return $stream;
 		}
 	}
 	
@@ -532,6 +535,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 *  "enthusiasm" => decimal<br/>
 	 *  "userId" => The user who is joining the stream. Defaults to the logged-in user.
 	 *  "noVisit" => If user is already participating, don't post a "Streams/visited" message
+	 *  "skipAccess": if true, skip access check for whether user can join
 	 * @param $participant=null {reference}
 	 *  Optional reference to a participant object that will be filled
 	 *  to point to the participant object, if any.
@@ -541,7 +545,11 @@ class Streams_Stream extends Base_Streams_Stream
 	{
 		$stream = $this->getUserStream($options, $userId);
 
-		if (!$stream->testWriteLevel('join')) {
+		if (empty($options['skipAccess'])
+		and !$stream->testWriteLevel('join')) {
+			if (!$stream->testReadLevel('see')) {
+				throw new Streams_Exception_NoSuchStream();
+			}
 			throw new Users_Exception_NotAuthorized();
 		}
 
@@ -620,6 +628,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 * @param $options=array() {array}
 	 *  An associative array of options. The keys can be:<br/>
 	 *  "userId": The user who is leaving the stream. Defaults to the logged-in user.
+	 *  "skipAccess": if true, skip access check for whether user can join
 	 * @param $participant=null {reference}
 	 *  Optional reference to a participant object that will be filled
 	 *  to point to the participant object, if any.
@@ -628,6 +637,14 @@ class Streams_Stream extends Base_Streams_Stream
 	function leave($options = array(), &$participant = null)
 	{
 		$stream = $this->getUserStream($options, $userId);
+		
+		if (empty($options['skipAccess'])
+		and !$stream->testWriteLevel('join')) {
+			if (!$stream->testReadLevel('see')) {
+				throw new Streams_Exception_NoSuchStream();
+			}
+			throw new Users_Exception_NotAuthorized();
+		}
 		
 		$participant = new Streams_Participant();
 		$participant->publisherId = $stream->publisherId;
@@ -691,17 +708,27 @@ class Streams_Stream extends Base_Streams_Stream
 	 *	"readyTime": time from which user is ready to receive notifications again
 	 *  "userId": the user subscribing to the stream. Defaults to the logged in user.
 	 *  "skipRules": if true, do not attempt to create rules
+	 *  "skipAccess": if true, skip access check for whether user can subscribe
 	 * @return {Streams_Subscription|false}
 	 */
 	function subscribe($options = array())
 	{
 		$stream = $this->getUserStream($options, $userId, $user);
 		
+		if (empty($options['skipAccess'])
+		and !$stream->testReadLevel('messages')) {
+			if (!$stream->testReadLevel('see')) {
+				throw new Streams_Exception_NoSuchStream();
+			}
+			throw new Users_Exception_NotAuthorized();
+		}
+		
 		// first make user a participant
 		$stream->join(array(
 			"userId" => $userId,
 			"subscribed" => true,
-			"noVisit" => true
+			"noVisit" => true,
+			"skipAccess" => Q::ifset($options, 'skipAccess', false)
 		));
 
 		// check for 'messages' level
@@ -803,15 +830,26 @@ class Streams_Stream extends Base_Streams_Stream
 	 * @method unsubscribe
 	 * @param $options=array() {array}
 	 *  "userId": The user who is unsubscribing from the stream. Defaults to the logged-in user.
+	 *  "skipAccess": if true, skip access check for whether user can unsubscribe
 	 * @return {boolean}
 	 */
 	function unsubscribe($options = array()) {
 
 		$stream = $this->getUserStream($options, $userId);
+		
+		if (empty($options['skipAccess'])
+		and !$stream->testReadLevel('messages')) {
+			if (!$stream->testReadLevel('see')) {
+				throw new Streams_Exception_NoSuchStream();
+			}
+			throw new Users_Exception_NotAuthorized();
+		}
+		
 		$participant = $stream->join(array(
 			"userId" => $userId,
 			'subscribed' => false,
-			'noVisit' => true
+			'noVisit' => true,
+			"skipAccess" => Q::ifset($options, 'skipAccess', false)
 		));
 
 		Q_Utils::sendToNode(array(

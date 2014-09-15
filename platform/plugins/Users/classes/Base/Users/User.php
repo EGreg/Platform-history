@@ -18,7 +18,7 @@
  * @property string $insertedTime
  * @property string $updatedTime
  * @property string $sessionId
- * @property string $mobileToken
+ * @property integer $sessionCount
  * @property integer $fb_uid
  * @property integer $tw_uid
  * @property string $g_uid
@@ -53,8 +53,8 @@ abstract class Base_Users_User extends Db_Row
 	 * @type string
 	 */
 	/**
-	 * @property $mobileToken
-	 * @type string
+	 * @property $sessionCount
+	 * @type integer
 	 */
 	/**
 	 * @property $fb_uid
@@ -294,22 +294,20 @@ abstract class Base_Users_User extends Db_Row
 	}
 
 	/**
-	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
-	 * Optionally accept numeric value which is converted to string
-	 * @method beforeSet_mobileToken
-	 * @param {string} $value
+	 * Method is called before setting the field and verifies if integer value falls within allowed limits
+	 * @method beforeSet_sessionCount
+	 * @param {integer} $value
 	 * @return {array} An array of field name and value
-	 * @throws {Exception} An exception is thrown if $value is not string or is exceedingly long
+	 * @throws {Exception} An exception is thrown if $value is not integer or does not fit in allowed range
 	 */
-	function beforeSet_mobileToken($value)
+	function beforeSet_sessionCount($value)
 	{
-		if (!isset($value)) return array('mobileToken', $value);
-		if ($value instanceof Db_Expression) return array('mobileToken', $value);
-		if (!is_string($value) and !is_numeric($value))
-			throw new Exception('Must pass a string to '.$this->getTable().".mobileToken");
-		if (strlen($value) > 255)
-			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".mobileToken");
-		return array('mobileToken', $value);			
+		if ($value instanceof Db_Expression) return array('sessionCount', $value);
+		if (!is_numeric($value) or floor($value) != $value)
+			throw new Exception('Non-integer value being assigned to '.$this->getTable().".sessionCount");
+		if ($value < -2147483648 or $value > 2147483647)
+			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".sessionCount");
+		return array('sessionCount', $value);			
 	}
 
 	/**
@@ -601,7 +599,7 @@ abstract class Base_Users_User extends Db_Row
 	 */
 	static function fieldNames($table_alias = null, $field_alias_prefix = null)
 	{
-		$field_names = array('id', 'insertedTime', 'updatedTime', 'sessionId', 'mobileToken', 'fb_uid', 'tw_uid', 'g_uid', 'y_uid', 'passphraseHash', 'emailAddress', 'mobileNumber', 'emailAddressPending', 'mobileNumberPending', 'signedUpWith', 'username', 'icon', 'url', 'pincodeHash');
+		$field_names = array('id', 'insertedTime', 'updatedTime', 'sessionId', 'sessionCount', 'fb_uid', 'tw_uid', 'g_uid', 'y_uid', 'passphraseHash', 'emailAddress', 'mobileNumber', 'emailAddressPending', 'mobileNumberPending', 'signedUpWith', 'username', 'icon', 'url', 'pincodeHash');
 		$result = $field_names;
 		if (!empty($table_alias)) {
 			$temp = array();

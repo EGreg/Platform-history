@@ -9,7 +9,9 @@ function Streams_0_8_1_Streams_mysql()
 	$stream->type = 'Streams/template';
 	$stream->title = 'Announcements';
 	$stream->content = '';
-	$stream->readLevel = $stream->writeLevel = $stream->adminLevel = 0;
+	$readLevel = Streams::$READ_LEVEL['none'];
+	$writeLevel = Streams::$WRITE_LEVEL['join'];
+	$adminLevel = Streams::$ADMIN_LEVEL['invite'];
 	$stream->save();
 	
 	// app announcements

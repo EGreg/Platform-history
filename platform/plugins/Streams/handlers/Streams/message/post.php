@@ -18,10 +18,7 @@ function Streams_message_post () {
 	// check if type is allowed
 	$streams = Streams::fetch($user->id, $publisherId, $streamName);
 	if (empty($streams)) {
-		throw new Q_Exception_MissingRow(array(
-			'table' => 'stream', 
-			'criteria' => "{publisherId: '$publisherId', name: '$streamName'}"
-		));
+		throw new Streams_Exception_NoSuchStream();
 	}
 	$stream = reset($streams);
 	if (empty($_REQUEST['type'])) {
