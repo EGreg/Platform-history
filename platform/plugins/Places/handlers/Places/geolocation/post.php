@@ -32,7 +32,7 @@ function Places_geolocation_post()
 	
 	if (!empty($_REQUEST['unsubscribe']) and isset($oldMiles)) {
 		$attributes['unsubscribed'] = Places::unsubscribe(
-			$oldLongitude, $oldLongitude, $oldMiles
+			$oldLatitude, $oldLongitude, $oldMiles
 		);
 	}
 	
