@@ -325,19 +325,18 @@ EOT;
 	 * @param boolean $once=false
 	 *  Optional. Whether to use include_once instead of include.
 	 * @param {boolean} $get_vars=false
-	 *  Optional. Set to true to return result of get_defined_vars()
-	 *  at the end.
-	 * @return {mixed}
 	 *  Optional. If true, returns the result of get_defined_vars() at the end.
 	 *  Otherwise, returns whatever the file returned.
+	 * @return {mixed}
+	 *  Depends on $get_vars
 	 * @throws {Q_Exception_MissingFile}
 	 *  May throw a Q_Exception_MissingFile exception.
 	 */
 	static function includeFile(
-	 $filename,
-	 array $params = array(),
-	 $once = false,
-	 $get_vars = false)
+		$filename,
+		array $params = array(),
+		$once = false,
+		$get_vars = false)
 	{
 		/**
 		 * Skips includes to prevent recursion

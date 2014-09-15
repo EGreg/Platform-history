@@ -6443,8 +6443,11 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 			}
 			var slotName, newTemplates = {};
 			for (slotName in response.templates) {
-				Q.each(response.templates, function (slotName) {
-					newTemplates[slotName] = Q.Template.set(this.name, this.content, this.type);
+				newTemplates[slotName] = [];
+				Q.each(response.templates[slotName], function (i) {
+					newTemplates[slotName].push(
+						Q.Template.set(this.name, this.content, this.type)
+					);
 				});
 			}
 			return newTemplates;
@@ -7080,7 +7083,7 @@ Q.Template.render = function _Q_Template_render(name, fields, partials, callback
 			// load the template and partials
 			var p = Q.pipe(['template', 'partials'], function (params) {
 				if (params.template[0]) {
-					return callback(null);
+					return callback(params.template[0]);
 				}
 				callback(null, window.Handlebars.compile(params.template[1])(fields, {partials: params.partials[0]}));
 			});

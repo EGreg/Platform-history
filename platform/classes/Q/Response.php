@@ -813,13 +813,16 @@ class Q_Response
 	 * @static
 	 * @param {string} $name The location of the template file relative to the "views" folder
 	 * @param {string} [$type="handlebars"]
+	 * @param {array} [$params=array()] Optional array of parameters to pass to PHP
 	 * @return {boolean} returns false if script was already added, else returns true
 	 */
-	static function addTemplate ($name, $type = 'handlebars')
+	static function addTemplate ($name, $type = 'handlebars', $params = array())
 	{
 		self::$templates[] = compact('name', 'type');
 		// Now, for the slot
-		$slotName = isset(self::$slotName) ? self::$slotName : '';
+		if (!isset($slotName)) {
+			$slotName = isset(self::$slotName) ? self::$slotName : '';
+		}
 		if (!isset(self::$inlineTemplates[$slotName])) {
 			self::$inlineTemplates[$slotName] = array();
 		}
@@ -832,7 +835,9 @@ class Q_Response
 		if (!$filename) {
 			throw new Q_Exception_MissingFile(array('filename' => "views/$name.$type"));
 		}
-		$content = file_get_contents($filename, true);
+		$ob = new Q_OutputBuffer();
+		Q::includeFile($filename, $params, true);
+		$content = $ob->getClean();
 		if (!$content) {
 			throw new Q_Exception("Failed to load template '$name'");
 		}
@@ -1032,6 +1037,7 @@ class Q_Response
 	 * @static
 	 * @param {string} [$between=''] Optional text to insert between the &lt;link&gt; tags.
 	 * @param {string} [$slotName=null] If provided, returns only the scripts added while filling this slot.
+	 *  If you pass the boolean constant true here, slotName is set to Q_Request::slotNames(true)
 	 * @return {string} the HTML markup for referencing all the scripts added so far
 	 */
 	static function scripts ($slotName = null, $between = "\n")
@@ -1180,8 +1186,9 @@ class Q_Response
 	 */
 	static function stylesheetsInline ($styles = array(), $slotName = null)
 	{
-		if (empty(self::$stylesheets))
+		if (empty(self::$stylesheets)) {
 			return '';
+		}
 
 		$sheets = self::stylesheetsArray($slotName, false);
 		$sheets_for_slots = array();

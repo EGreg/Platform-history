@@ -464,7 +464,9 @@ class Streams_Stream extends Base_Streams_Stream
 	 */
 	function getAttributes()
 	{
-		return empty($this->attributes) ? array() : json_decode($this->attributes, true);
+		return empty($this->attributes) 
+			? array()
+			: json_decode($this->attributes, true);
 	}
 	
 	/**

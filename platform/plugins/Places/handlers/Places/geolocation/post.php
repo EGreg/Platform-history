@@ -16,32 +16,38 @@ function Places_geolocation_post()
 		'miles'
 	);
 	if ($stream) {
-		$latitude = $stream->getAttribute('latitude');
-		$longitude = $stream->getAttribute('longitude');
+		$oldLatitude = $stream->getAttribute('latitude');
+		$oldLongitude = $stream->getAttribute('longitude');
+		$oldMiles = $stream->getAttribute('miles');
 	} else {
 		$stream = new Streams_Stream();
 		$stream->publisherId = $user->id;
 		$stream->name = $streamName;
 		$stream->type = "Places/location";
 		$stream->content = '';
-		$latitude = null;
 	}
 	$attributes = Q::take($_REQUEST, $fields);
 	$stream->setAttribute($attributes);
 	$stream->save();
 	
-	$miles = Q::ifset($attributes, 'miles', 
-		Q_Config::expect('Places', 'nearby', 'defaultMiles')
-	);
-	
-	if (!empty($_REQUEST['unsubscribe']) and isset($latitude)) {
-		$attributes['unsubscribed'] = Places::unsubscribe($latitude, $longitude, $miles);
+	if (!empty($_REQUEST['unsubscribe']) and isset($oldMiles)) {
+		$attributes['unsubscribed'] = Places::unsubscribe(
+			$oldLongitude, $oldLongitude, $oldMiles
+		);
 	}
 	
 	if (!empty($_REQUEST['subscribe'])) {
 		$latitude = $stream->getAttribute('latitude');
 		$longitude = $stream->getAttribute('longitude');
-		$attributes['subscribed'] = Places::subscribe($latitude, $longitude, $miles);
+		$miles = Q::ifset($attributes, 'miles', 
+			$stream->getAttribute(
+				'miles',
+				Q_Config::expect('Places', 'nearby', 'defaultMiles')
+			)
+		);
+		$attributes['subscribed'] = Places::subscribe(
+			$latitude, $longitude, $miles
+		);
 	}
 	
 	$attributes['stream'] = $stream;

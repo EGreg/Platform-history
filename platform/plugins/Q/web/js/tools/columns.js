@@ -251,25 +251,29 @@ Q.Tool.define("Q/columns", function(options) {
 			}
 		});
 		
-		if (o.title != undefined) {
-			$(titleSlot).empty().append(
-				o.title instanceof Element
-					? $(o.title).clone(true) 
-					: o.title
-			);
-		}
-		if (o.column != undefined) {
-			$(columnSlot).empty().append(
-				o.column instanceof Element
-					? $(o.column).clone(true) 
-					: o.column
-			);
+		if (o.template) {
+			Q.Template.render(o.template, function (err, html) {
+				var element = $('<div />').html(html);
+				o.title = $('.title_slot', element).html();
+				o.column = $('.column_slot', element).html();
+				_open();
+			});
+		} else {
+			_open();
 		}
 		
-		_onOpen();
-		
-		function _onOpen() {
+		function _open() {
 			var $te = $(tool.element);
+			if (o.title != undefined) {
+				$(titleSlot).empty().append(
+					o.title instanceof Element ? $(o.title) : o.title
+				);
+			}
+			if (o.column != undefined) {
+				$(columnSlot).empty().append(
+					o.column instanceof Element ? $(o.column) : o.column
+				);
+			}
 			var show = {
 				opacity: 1,
 				top: 0
