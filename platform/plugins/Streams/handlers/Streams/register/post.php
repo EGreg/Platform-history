@@ -11,7 +11,9 @@ function Streams_register_post()
 	extract($_REQUEST, EXTR_IF_EXISTS);
 	
 	if (Q_Config::get('Users', 'login', 'noRegister', false)) {
-		throw new Users_Exception_NoRegister(array(), array('identifier', 'emailAddress', 'mobileNumber'));
+		throw new Users_Exception_NoRegister(array(), array(
+			'identifier', 'emailAddress', 'mobileNumber'
+		));
 	}
 	$user = Streams::register(
 		$fullName, 

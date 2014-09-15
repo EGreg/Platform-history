@@ -2208,7 +2208,9 @@ abstract class Streams extends Base_Streams
 		 * @param {Users_User} 'user'
 		 * @return {Users_User}
 		 */
-		Q::event('Streams/register', compact('name', 'identifier', 'icon', 'user', 'provider', 'options'), 'after');
+		Q::event('Streams/register', compact(
+			'name', 'identifier', 'icon', 'user', 'provider', 'options'
+		), 'after');
 
 		return $user;
 	}

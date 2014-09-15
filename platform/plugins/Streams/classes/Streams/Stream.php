@@ -425,7 +425,8 @@ class Streams_Stream extends Base_Streams_Stream
 		 */
 		Q::event("Streams/remove/{$stream->type}", compact('stream', 'result'), 'after');
 
-		if ($this->name !== 'Streams/user/firstName' and $this->name !== 'Streams/user/lastName') {
+		if ($this->name !== 'Streams/user/firstName'
+		and $this->name !== 'Streams/user/lastName') {
 			return $result;
 		}
 		
