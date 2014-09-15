@@ -23,7 +23,7 @@
 		},
 		"pluginInfo": {
 			"Streams": {
-				"version": "0.8",
+				"version": "0.8.1",
 				"compatible": "0.8",
 				"requires": {"Users": "0.8"},
 				"permissions": ["Streams/icons"],
@@ -113,6 +113,8 @@
 						"title": "Chat message"
 					}
 				}
+			},
+			"Streams/announcement": {
 			}
 		},
 		"defaults": {

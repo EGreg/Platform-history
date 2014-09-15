@@ -172,7 +172,8 @@ class Q_Plugin
 					try {
 						Q::includeFile($scriptsdir.DS.$script);
 					} catch (Exception $e) {
-						die($e->getMessage()."\n"."(Then run the installer again.)\n");
+						Q::exceptionHandler($e);
+						die($e->getMessage()."\n"."(Fix the error, then run the installer again.)\n");
 					}
 					continue;
 				}

@@ -59,11 +59,11 @@ abstract class Streams extends Base_Streams
 	 * @final
 	 */
 	public static $READ_LEVEL = array(
-		'none' => 0,						// can't see the stream
-		'see' => 10,						// can see icon and title
-		'content' => 20,					// can preview stream and its content
-		'participants' => 30,				// can see participants in the stream
-		'messages' => 40,					// can play stream in a player
+		'none' => 0,				// can't see the stream
+		'see' => 10,				// can see icon and title
+		'content' => 20,			// can preview stream and its content
+		'participants' => 30,		// can see participants in the stream
+		'messages' => 40,			// can play stream in a player
 		'max' => 40
 	);
 	/**

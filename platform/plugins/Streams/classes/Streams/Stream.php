@@ -243,26 +243,32 @@ class Streams_Stream extends Base_Streams_Stream
 					$this->getPrimaryKey(),
 					$magicFieldNames
 				) as $field) {
-					if (in_array($field, $privateFieldNames) || !array_key_exists($field, $modifiedFields)) {
-						$this->fields[$field] = $modifiedFields[$field] = $streamTemplate->$field;
+					if (in_array($field, $privateFieldNames)
+					|| !array_key_exists($field, $modifiedFields)) {
+						$this->$field = $modifiedFields[$field] = $streamTemplate->$field;
 					}
 				}
 			} else {
 				// otherwise (no template) set all private fields to defaults
 				foreach ($privateFieldNames as $field) {
-					$this->fields[$field] = $modifiedFields[$field] = Q_Config::get(
+					$this->$field = $modifiedFields[$field] = Q_Config::get(
 						'Streams', 'types', $this->type, 'defaults', $field,
-						isset(Streams_Stream::$DEFAULTS[$field]) ? Streams_Stream::$DEFAULTS[$field] : null
+						isset(Streams_Stream::$DEFAULTS[$field]) 
+							? Streams_Stream::$DEFAULTS[$field] 
+							: null
 					);
 				}
 			}
-			
+
 			// Assign default values to fields that haven't been set yet
-			foreach ($fieldNames as $f) {
-				if (!array_key_exists($f, $this->fields) and !array_key_exists($f, $modifiedFields)) {
-					$this->fields[$field] = $modifiedFields[$f] = Q_Config::get(
-						'Streams', 'types', $this->type, 'defaults', $f,
-						isset(Streams_Stream::$DEFAULTS[$f]) ? Streams_Stream::$DEFAULTS[$f] : null
+			foreach ($fieldNames as $field) {
+				if (!array_key_exists($field, $this->fields)
+				and !array_key_exists($field, $modifiedFields)) {
+					$this->$field = $modifiedFields[$field] = Q_Config::get(
+						'Streams', 'types', $this->type, 'defaults', $field,
+						isset(Streams_Stream::$DEFAULTS[$field])
+							? Streams_Stream::$DEFAULTS[$field] 
+							: null
 					);
 				}
 			}
@@ -538,7 +544,7 @@ class Streams_Stream extends Base_Streams_Stream
 			throw new Users_Exception_NotAuthorized();
 		}
 
-		#Add to participant list
+		// Add to participant list
 		$participant = new Streams_Participant();
 		$participant->publisherId = $stream->publisherId;
 		$participant->streamName = $stream->name;
@@ -634,7 +640,7 @@ class Streams_Stream extends Base_Streams_Stream
 			));
 		}
 
-		#Remove from participant list
+		// Remove from participant list
 		if ($participant->state === 'left') {
 			return false;
 		}
