@@ -236,7 +236,7 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 				if (Users.loggedInUser && Users.loggedInUser.fb_uid == fb_uid) {
 					// The correct user is already logged in.
 					// Call onSuccess but do not pass a user object -- the user didn't change.
-					_doSuccess();
+					_doSuccess(null);
 					return;
 				}
 				if (options.prompt === undefined || options.prompt === null) {
@@ -267,11 +267,10 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 			}
 
 			function _doSuccess(user) {
-				// TODO: check what to do if user has changed
+				// if the user hasn't changed then user is null here
 				Users.connected.facebook = true;
-				var changed = (!Users.loggedInUser
-				|| Users.loggedInUser.fb_uid != response.authResponse.UserID);
-				Users.onLogin.handle(user);
+				Users.onLogin.handle.call(Users, user, options);
+				Users.onConnected.handle.call(Users, provider, user, options);
 				Q.handle(onSuccess, this, [user, options]);
 			}
 			
@@ -288,6 +287,7 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 					Q.cookie('Users_ignoreFacebookUid', ignoreUid);
 				}
 				delete Users.connected.facebook;
+				Users.onConnectionLost.handle.call(Users, provider, options);
 				Q.handle(onCancel, Users, [options]);
 			}
 
@@ -1756,5 +1756,7 @@ Users.onLogout = new Q.Event(function () {
 Users.onLoginLost = new Q.Event(function () {
 	console.warn("Call to server was made which normally requires user login.");
 });
+Users.onConnected = new Q.Event();
+Users.onConnectionLost = new Q.Event();
 
 })(Q, jQuery);
