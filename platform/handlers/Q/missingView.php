@@ -4,7 +4,7 @@ function Q_missingView($params)
 {
 	extract($params);
 	/**
-	 * @var string $view_name
+	 * @var string $viewName
 	 */
-	return "Missing view $view_name";
+	return "Missing view $viewName";
 }

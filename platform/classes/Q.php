@@ -485,7 +485,7 @@ EOT;
 	 * Renders a particular view
 	 * @method view
 	 * @static
-	 * @param {string} $view_name
+	 * @param {string} $viewName
 	 *  The full name of the view
 	 * @param {array} $params=array()
 	 *  Parameters to pass to the view
@@ -494,14 +494,14 @@ EOT;
 	 * @throws {Q_Exception_MissingFile}
 	 */
 	static function view(
-	 $view_name,
+	 $viewName,
 	 $params = array())
 	{
 		require_once(Q_CLASSES_DIR.DS.'Q'.DS.'Exception'.DS.'MissingFile.php');
 
 		if (empty($params)) $params = array();
 
-		$view_name = implode(DS, explode('/', $view_name));
+		$viewName = implode(DS, explode('/', $viewName));
 
 		$fields = Q_Config::get('Q', 'views', 'fields', null);
 		if ($fields) {
@@ -510,29 +510,32 @@ EOT;
 
 		/**
 		 * @event {before} Q/view
-		 * @param {string} 'view_name'
+		 * @param {string} 'viewName'
 		 * @param {string} 'params'
 		 * @return {string}
 		 *  Optional. If set, override method return
 		 */
-		$result = self::event('Q/view', compact('view_name', 'params'), 'before');
+		$result = self::event('Q/view', compact('viewName', 'params'), 'before');
 		if (isset($result)) {
 			return $result;
 		}
 
 		try {
 			$ob = new Q_OutputBuffer();
-			self::includeFile('views'.DS.$view_name, $params);
+			self::includeFile('views'.DS.$viewName, $params);
 			return $ob->getClean();
 		} catch (Q_Exception_MissingFile $e) {
+			if (basename($e->params['filename']) != basename($viewName)) {
+				throw $e;
+			}
 			$ob->flushHigherBuffers();
 			/**
 			 * Renders 'Missing View' page
 			 * @event Q/missingView
-			 * @param {string} view_name
+			 * @param {string} viewName
 			 * @return {string}
 			 */
-			return self::event('Q/missingView', compact('view_name'));
+			return self::event('Q/missingView', compact('viewName'));
 		}
 	}
 
