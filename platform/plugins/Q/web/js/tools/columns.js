@@ -90,6 +90,9 @@ Q.Tool.define("Q/columns", function(options) {
 			}
 		},
 	},
+	delay: {
+		duration: 300 // until it's safe to register clicks
+	},
 	back: {
 		src: "plugins/Q/img/back-v.png",
 		triggerFromTitle: true,
@@ -106,7 +109,8 @@ Q.Tool.define("Q/columns", function(options) {
 	beforeOpen: new Q.Event(),
 	beforeClose: new Q.Event(),
 	onOpen: new Q.Event(),
-	onClose: new Q.Event()
+	onClose: new Q.Event(),
+	afterDelay: new Q.Event()
 },
 
 {
@@ -118,7 +122,6 @@ Q.Tool.define("Q/columns", function(options) {
 	 * Opens a new column at the end
 	 * @method push
 	 * @param {Object} options Can be used to override various tool options
-	 * @param {Function} [options.onFullyOpened] Pass a callback here to be called when the animation has completed
 	 * @param {Function} callback Called when the column is opened
 	 */
 	push: function (options, callback) {
@@ -139,7 +142,6 @@ Q.Tool.define("Q/columns", function(options) {
 	 * Opens a column
 	 * @method open
 	 * @param {Object} options Can be used to override various tool options
-	 * @param {Function} [options.onFullyOpened] Pass a callback here to be called when the animation has completed
 	 * @param {Number} index The index of the column to open
 	 * @param {Function} callback Called when the column is opened
 	 */
@@ -260,11 +262,10 @@ Q.Tool.define("Q/columns", function(options) {
 			Q.handle(callback, tool, [options, index]);
 			state.onOpen.handle.call(tool, options, index);
 			Q.handle(options.onOpen, tool, [options, index]);
-			if (options.onFullyOpened) {
-				setTimeout(function () {
-					Q.handle(options.onFullyOpened, tool, [options, index]);
-				}, o.animation.duration);
-			}
+			setTimeout(function () {
+				$mask.remove();
+				Q.handle(options.afterDelay, tool, [options, index]);
+			}, o.delay.duration);
 		});
 		
 		if (o.template) {
@@ -384,7 +385,6 @@ Q.Tool.define("Q/columns", function(options) {
 					$div.css('min-height', oldMinHeight);
 				}
 				
-				$mask.remove();
 				$div.removeClass('Q_columns_opening')
 				.addClass('Q_columns_opened');
 				
