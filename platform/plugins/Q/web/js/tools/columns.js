@@ -436,12 +436,13 @@ Q.Tool.define("Q/columns", function(options) {
 	
 		$div.css('min-height', 0);
 		
+		if (index === state.max-1) {
+			--state.max;
+		}
+		
 		$div.animate($div.data(dataKey_hide), duration, function () {
 			Q.removeElement(div); // remove it correctly
 		
-			if (index === state.max-1) {
-				--state.max;
-			}
 			var $sc = $(state.container);
 			$sc.width($sc.width() - w);
 			presentColumn(tool);
