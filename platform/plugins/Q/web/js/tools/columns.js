@@ -118,7 +118,7 @@ Q.Tool.define("Q/columns", function(options) {
 	 * Opens a new column at the end
 	 * @method push
 	 * @param {Object} options Can be used to override various tool options
-	 * @param {Function} [options.delayedCallback] Pass a callback here to be called when it's safe to attach onClick events, since mobile phones may trigger them too soon if attached in the non-delayed callback
+	 * @param {Function} [options.onFullyOpened] Pass a callback here to be called when the animation has completed
 	 * @param {Function} callback Called when the column is opened
 	 */
 	push: function (options, callback) {
@@ -128,19 +128,18 @@ Q.Tool.define("Q/columns", function(options) {
 	/**
 	 * Closes the last column
 	 * @method pop
+	 * @param {Function} callback Called when the column is closed
 	 * @param {Object} options Can be used to override various tool options
-	 * @param {Number} [options.delayedCallback] Pass a callback here to be called when it's safe to attach onClick events, since mobile phones may trigger them too soon if attached in the non-delayed callback
-	 * @param {Function} callback Called when the column is opened
 	 */
-	pop: function (callback) {
-		this.close(this.max()-1, callback);
+	pop: function (callback, options) {
+		this.close(this.max()-1, callback, options);
 	},
 	
 	/**
 	 * Opens a column
 	 * @method open
 	 * @param {Object} options Can be used to override various tool options
-	 * @param {Function} [options.delayedCallback] Pass a callback here to be called when it's safe to attach onClick events, since mobile phones may trigger them too soon if attached in the non-delayed callback
+	 * @param {Function} [options.onFullyOpened] Pass a callback here to be called when the animation has completed
 	 * @param {Number} index The index of the column to open
 	 * @param {Function} callback Called when the column is opened
 	 */
@@ -261,9 +260,9 @@ Q.Tool.define("Q/columns", function(options) {
 			Q.handle(callback, tool, [options, index]);
 			state.onOpen.handle.call(tool, options, index);
 			Q.handle(options.onOpen, tool, [options, index]);
-			if (options.delayedCallback) {
+			if (options.onFullyOpened) {
 				setTimeout(function () {
-					Q.handle(options.delayedCallback, tool, [options, index]);
+					Q.handle(options.onFullyOpened, tool, [options, index]);
 				}, o.animation.duration);
 			}
 		});
