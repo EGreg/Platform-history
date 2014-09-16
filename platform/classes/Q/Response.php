@@ -814,9 +814,16 @@ class Q_Response
 	 * @param {string} $name The location of the template file relative to the "views" folder
 	 * @param {string} [$type="handlebars"]
 	 * @param {array} [$params=array()] Optional array of parameters to pass to PHP
-	 * @return {boolean} returns false if script was already added, else returns true
+	 * @param {array} [$slotName=null] A way to override the slot name. Pass "" here to
+	 *  have the script lines be returned first by Q_Response::scriptLines.
+	 *  The other special value, "Q", is intended for internal use.
+	 * @return {boolean} returns false if template was already added, else returns true
 	 */
-	static function addTemplate ($name, $type = 'handlebars', $params = array())
+	static function addTemplate (
+		$name, 
+		$type = 'handlebars', 
+		$params = array(), 
+		$slotName = null)
 	{
 		self::$templates[] = compact('name', 'type');
 		// Now, for the slot
