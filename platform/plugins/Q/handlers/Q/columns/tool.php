@@ -38,8 +38,6 @@ function Q_columns_tool($options)
 	$i=0;
 	foreach ($options['columns'] as $name => $column) {
 		$close = Q::ifset($column, 'close', $i > 0);
-		$title = Q::ifset($column, 'title', '[title]');
-		$column = Q::ifset($column, 'column', '[column]');
 		$closeSrc = Q::ifset($column, 'close', 'src', "plugins/Q/img/x.png");
 		$backSrc = Q::ifset($column, 'back', 'src', "plugins/Q/img/back-v.png");
 		$Q_close = Q_Request::isMobile() ? 'Q_close' : 'Q_close Q_back';
@@ -48,15 +46,26 @@ function Q_columns_tool($options)
 			: '<div class="Q_close">'.Q_Html::img($closeSrc, 'Close').'</div>');
 		$n = Q_Html::text($name);
 		$columnClass = 'Q_column_'.Q_Utils::normalize($name) . ' _Q_column_'.$i;
-		$columns[] = <<<EOT
+		if (isset($column['html'])) {
+			$html = $column['html'];
+			$columns[] = <<<EOT
+	<div class="Q_columns_column $columnClass" data-index="$i" data-name="$n">
+		$html
+	</div>
+EOT;
+		} else {
+			$titleHtml = Q::ifset($column, 'title', '[title]');
+			$columnHtml = Q::ifset($column, 'column', '[column]');
+			$columns[] = <<<EOT
 	<div class="Q_columns_column $columnClass" data-index="$i" data-name="$n">
 		<div class="Q_columns_title">
 			$closeHtml
-			<h2 class="title_slot">$title</h2>
+			<h2 class="title_slot">$titleHtml</h2>
 		</div>
-		<div class="column_slot">$column</div>
+		<div class="column_slot">$columnHtml</div>
 	</div>
 EOT;
+		}
 		++$i;
 	}
 	$result .= "\n" . implode("\n", $columns) . "\n</div>";

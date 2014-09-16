@@ -135,6 +135,9 @@ Q.Tool.define("Users/avatar", function(options) {
 				Q.each(['first', 'last'], function (k, v) {
 					var vName = v+'Name';
 					var f = tool.getElementsByClassName('Streams_'+vName)[0];
+					if (f.getElementsByClassName('Streams_inplace_tool').length) {
+						return;
+					}
 					var e = Q.Tool.setUpElement('span', 'Streams/inplace', {
 						publisherId: state.userId,
 						streamName: 'Streams/user/'+vName,
@@ -144,7 +147,7 @@ Q.Tool.define("Users/avatar", function(options) {
 							placeholder: 'Your '+v+' name',
 							staticHtml: f.innerHTML
 						}
-					}, vName, tool.prefix);
+					}, tool.prefix+vName, tool.prefix);
 					f.innerHTML = '';
 					f.appendChild(e);
 					Q.activate(e);

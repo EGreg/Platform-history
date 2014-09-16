@@ -103,7 +103,6 @@ Q.Tool.define("Q/columns", function(options) {
 	column: undefined,
 	scrollbarsAutoHide: {},
 	fullscreen: Q.info.isMobile && Q.info.isAndroid(1000),
-	openCallbackDelay: 300,
 	beforeOpen: new Q.Event(),
 	beforeClose: new Q.Event(),
 	onOpen: new Q.Event(),
@@ -169,7 +168,7 @@ Q.Tool.define("Q/columns", function(options) {
 		
 		var div = this.column(index);
 		var titleSlot, columnSlot;
-		var $div, $mask;
+		var $div, $mask, $close, $title;
 		if (!div) {
 			div = document.createElement('div').addClass('Q_columns_column');
 			div.style.display = 'none';
@@ -178,21 +177,8 @@ Q.Tool.define("Q/columns", function(options) {
 			this.state.columns[index] = div;
 			var $ts = $('<h2 class="title_slot"></h2>');
 			titleSlot = $ts[0];
-			var $close = !index ? $() : $('<div class="Q_close"></div>');
-			var $title = $('<div class="Q_columns_title"></div>')
+			$title = $('<div class="Q_columns_title"></div>')
 				.append($ts);
-			if (index) {
-				$title.prepend($close);
-			}
-			if (Q.info.isMobile) {
-				$close.addClass('Q_back').append(
-					$('<img alt="Back" />').attr('src', Q.url(o.back.src))
-				);
-			} else {
-				$close.append(
-					$('<img alt="Close" />').attr('src', Q.url(o.close.src))
-				);
-			}
 			columnSlot = document.createElement('div').addClass('column_slot');
 			$div.append($title, columnSlot)
 				.data(dataKey_index, index)
@@ -205,8 +191,24 @@ Q.Tool.define("Q/columns", function(options) {
 		} else {
 			$div = $(div);
 			$close = $('Q_close', div);
+			$title = $('.Q_columns_title', div);
 			titleSlot = $('.title_slot', div)[0];
 			columnSlot = $('.column_slot', div)[0];
+		}
+		if (!$close || !$close.length) {
+			$close = !index ? $() : $('<div class="Q_close"></div>');
+			if (Q.info.isMobile) {
+				$close.addClass('Q_back').append(
+					$('<img alt="Back" />').attr('src', Q.url(o.back.src))
+				);
+			} else {
+				$close.append(
+					$('<img alt="Close" />').attr('src', Q.url(o.close.src))
+				);
+			}
+			if (index) {
+				$title.prepend($close);
+			}
 		}
 		state.$currentColumn = $div;
 		if (o.back.hide) {
@@ -262,7 +264,7 @@ Q.Tool.define("Q/columns", function(options) {
 			if (options.delayedCallback) {
 				setTimeout(function () {
 					Q.handle(options.delayedCallback, tool, [options, index]);
-				}, state.openCallbackDelay || 300);
+				}, o.animation.duration);
 			}
 		});
 		
