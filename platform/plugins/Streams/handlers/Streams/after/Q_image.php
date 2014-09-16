@@ -4,7 +4,8 @@ function Streams_after_Q_image($params)
 {
 	$user = $path = $subpath = $data = $save = null;
 	extract($params, EXTR_OVERWRITE);
-	if (!empty(Users::$cache['iconWasChanged'])) {
+	if (isset(Users::$cache['iconWasChanged'])
+	and (Users::$cache['iconWasChanged'] === false)) {
 		$stream = Streams::fetchOne($user->id, $user->id, "Streams/user/icon");
 	} else if (!empty(Streams::$cache['canWriteToStream'])) {
 		$stream = Streams::$cache['canWriteToStream'];

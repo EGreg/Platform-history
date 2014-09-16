@@ -269,7 +269,8 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 			function _doSuccess(user) {
 				// TODO: check what to do if user has changed
 				Users.connected.facebook = true;
-				var changed = (!Users.loggedInUser || Users.loggedInUser.fb_uid != response.authResponse.UserID);
+				var changed = (!Users.loggedInUser
+				|| Users.loggedInUser.fb_uid != response.authResponse.UserID);
 				Users.onLogin.handle(user);
 				Q.handle(onSuccess, this, [user, options]);
 			}
