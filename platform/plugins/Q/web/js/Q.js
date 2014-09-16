@@ -6007,20 +6007,20 @@ Q.replace = function _Q_replace(container, source, options) {
 	
 	var retainedToolsArray = [];
 	var newOptionsArray = [];
-	Q.find(source, true, function (toolElement) {
-		var element = document.getElementById(toolElement.id);
+	Q.find(source, null, function (incomingElement) {
+		var element = document.getElementById(incomingElement.id);
 		if (element && element.getAttribute('data-Q-retain') !== null
-		&& !toolElement.getAttribute('data-Q-replace') !== null) {
+		&& !incomingElement.getAttribute('data-Q-replace') !== null) {
 			// If a tool exists with this exact id and has "data-Q-retain",
 			// then re-use it and all its HTML elements, unless
 			// the new tool HTML has data-Q-replace.
 			// This way tools can avoid doing expensive operations each time
 			// they are replaced and reactivated.
-			toolElement.parentNode.replaceChild(element, toolElement);
+			incomingElement.parentNode.replaceChild(element, incomingElement);
 			for (var name in element.Q.tools) {
 				var tool = Q.Tool.from(element, name);
 				var attrName = 'data-' + Q.normalize(tool.name, '-');
-				var newOptionsString = toolElement.getAttribute(attrName);
+				var newOptionsString = incomingElement.getAttribute(attrName);
 				var newOptions = JSON.parse(newOptionsString);
 				element.setAttribute(attrName, newOptionsString);
 				retainedToolsArray.push(tool);
