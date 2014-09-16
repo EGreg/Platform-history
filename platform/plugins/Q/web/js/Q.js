@@ -839,7 +839,9 @@ Q.each = function _Q_each(container, callback, options) {
 						keys.push(options.numeric ? Number(k) : k);
 					}
 				}
-				keys = options.numeric ? keys.sort(function (a,b) {return Number(a)-Number(b);}) : keys.sort();
+				keys = options.numeric ? keys.sort(function (a,b) {
+					return Number(a)-Number(b);
+				}) : keys.sort();
 				if (options.ascending === false) {
 					for (i=keys.length-1; i>=0; --i) {
 						key = keys[i];
@@ -883,9 +885,6 @@ Q.each = function _Q_each(container, callback, options) {
 				to = arguments[1];
 				if (typeof arguments[2] === 'number') {
 					step = arguments[2];
-					if (!step || (to-from)*step<0) {
-						throw new Q.Error("Q.each: step="+step+" leads to infinite loop");
-					}
 					callback = arguments[3];
 					options = arguments[4];
 				} else {
@@ -897,15 +896,20 @@ Q.each = function _Q_each(container, callback, options) {
 			if (step === undefined) {
 				step = (from <= to ? 1 : -1);
 			}
+			if (!step || (to-from)*step<0) {
+				return 0;
+			}
 			if (from <= to) {
 				for (i=from; i<=to; i+=step) {
 					r = Q.handle(callback, this, args || [i]);
 					if (r === false) return false;
+					if (step < 0) return 0;
 				}
 			} else {
 				for (i=from; i>=to; i+=step) {
 					r = Q.handle(callback, this, args || [i]);
 					if (r === false) return false;
+					if (step > 0) return 0;
 				}
 			}
 			break;
@@ -6948,10 +6952,7 @@ Q.Template.collection = {};
  */
 Q.Template.set = function (name, content, type) {
 	type = type || 'handlebars';
-	if (!Q.Template.collection[type]) {
-		Q.Template.collection[type] = {};
-	}
-	Q.Template.collection[type][Q.normalize(name)] = content;
+	Q.Template.collection[Q.normalize(name)] = content;
 };
 
 /**
@@ -6983,10 +6984,7 @@ Q.Template.load = Q.getter(function _Q_Template_load(name, callback, options) {
 	}
 	// defaults to handlebars templates
 	var o = Q.extend({}, Q.Template.load.options, options);
-	if (!Q.Template.collection[o.type]) {
-		Q.Template.collection[o.type] = {};
-	}
-	var tpl = Q.Template.collection[o.type];
+	var tpl = Q.Template.collection;
 
 	
 	// Now attempt to load the template.
@@ -6997,8 +6995,10 @@ Q.Template.load = Q.getter(function _Q_Template_load(name, callback, options) {
 	var trash = [];
 	for (i = 0, l = scripts.length; i < l; i++) {
 		script = scripts[i];
+		var type = script.getAttribute('type');
 		if (script && script.id && script.innerHTML
-		&& script.getAttribute('type') === 'text/'+ o.type) {
+		&& type.substr(0, 5) === 'text/'
+		&& o.types[type.substr(5)]) {
 			tpl[Q.normalize(script.id)] = script.innerHTML.trim();
 			trash.unshift(script);
 		}
@@ -7042,6 +7042,7 @@ Q.Template.load = Q.getter(function _Q_Template_load(name, callback, options) {
 
 Q.Template.load.options = {
 	type: "handlebars",
+	types: { "handlebars": true, "mustache": true, "php": true },
 	dir: "views"
 };
 

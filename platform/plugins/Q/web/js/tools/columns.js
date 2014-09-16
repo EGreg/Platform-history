@@ -115,33 +115,44 @@ Q.Tool.define("Q/columns", function(options) {
 		return this.state.max;
 	},
 	
+	/**
+	 * Opens a new column at the end
+	 * @method push
+	 * @param {Object} options Can be used to override various tool options
+	 * @param {Function} [options.delayedCallback] Pass a callback here to be called when it's safe to attach onClick events, since mobile phones may trigger them too soon if attached in the non-delayed callback
+	 * @param {Function} callback Called when the column is opened
+	 */
 	push: function (options, callback) {
 		this.open(options, this.max(), callback);
 	},
 	
+	/**
+	 * Closes the last column
+	 * @method pop
+	 * @param {Object} options Can be used to override various tool options
+	 * @param {Number} [options.delayedCallback] Pass a callback here to be called when it's safe to attach onClick events, since mobile phones may trigger them too soon if attached in the non-delayed callback
+	 * @param {Function} callback Called when the column is opened
+	 */
 	pop: function (callback) {
 		this.close(this.max()-1, callback);
 	},
 	
 	/**
-	 * Calculate the url of a stream's icon
-	 * @static
-	 * @method iconUrl
-	 * @param {String} icon the value of the stream's "icon" field
-	 * @param {Number} [size=40] the size of the icon to render. Defaults to 40.
-	 * @return {String} the url
-	 */
-	/**
 	 * Opens a column
 	 * @method open
 	 * @param {Object} options Can be used to override various tool options
-	 * @param {Number} [options.delayedCallback] Pass a callback here to be called when it's safe to attach onClick events, since mobile phones may trigger them too soon if attached in the non-delayed callback
+	 * @param {Function} [options.delayedCallback] Pass a callback here to be called when it's safe to attach onClick events, since mobile phones may trigger them too soon if attached in the non-delayed callback
 	 * @param {Number} index The index of the column to open
 	 * @param {Function} callback Called when the column is opened
 	 */
 	open: function (options, index, callback) {
 		var tool = this;
 		var state = this.state;
+		if (typeof options === 'number') {
+			options = {};
+			callback = index;
+			index = options;
+		}
 		var o = Q.extend({}, 10, state, 10, options);
 
 		if (index > this.max()) {
@@ -158,7 +169,7 @@ Q.Tool.define("Q/columns", function(options) {
 		
 		var div = this.column(index);
 		var titleSlot, columnSlot;
-		var $div;
+		var $div, $mask;
 		if (!div) {
 			div = document.createElement('div').addClass('Q_columns_column');
 			div.style.display = 'none';
@@ -200,6 +211,10 @@ Q.Tool.define("Q/columns", function(options) {
 		state.$currentColumn = $div;
 		if (o.back.hide) {
 			$close.hide();
+		}
+		
+		if ($div.css('position') === 'static') {
+			$div.css('position', 'relative');
 		}
 
 		$div.attr('data-index', index);
@@ -337,10 +352,12 @@ Q.Tool.define("Q/columns", function(options) {
 				} else if (Q.info.isMobile) {
 					$('html').css('overflow', 'hidden');
 				}
+				$mask = $('<div class="Q_columns_mask" />')
+				.appendTo($div);
 				$div.show()
 				.addClass('Q_columns_opening')
 				.css(o.animation.css.hide)
-				.animate(show, duration, function(){
+				.animate(show, duration, function() {
 					afterAnimation($cs, $sc, $ct);
 				});
 			}
@@ -366,6 +383,7 @@ Q.Tool.define("Q/columns", function(options) {
 					$div.css('min-height', oldMinHeight);
 				}
 				
+				$mask.remove();
 				$div.removeClass('Q_columns_opening')
 				.addClass('Q_columns_opened');
 				
@@ -409,20 +427,49 @@ Q.Tool.define("Q/columns", function(options) {
 		}
 	},
 
-	close: function (index, callback) {
+	/**
+	 * Closes a column
+	 * @method close
+	 * @param {Number|Array|Object} index The index of the column to close.
+	 *  You can pass an array of indexes here, or an object with "min" and
+	 *  optional "max"
+	 * @param {Function} callback Called when the column is opened
+	 * @param {Object} options Can be used to override various tool options
+	 */
+	close: function (index, callback, options) {
 		var tool = this;
 		var state = tool.state;
+		var t = Q.typeOf(index);
+		var p, waitFor = [];
+		if (t === 'object') {
+			p = new Q.Pipe();
+			Q.each(index.max||state.max-1, index.min||0, -1, function (i) {
+				try { tool.close(i, p.fill(i), options); } catch (e) {}
+				waitFor.push(i);
+			});
+		} else if (t === 'array') {
+			p = new Q.Pipe();
+			Q.each(index, function (k, i) {
+				try { tool.close(i, p.fill(i), options); } catch (e) {}
+				waitFor.push(i);
+			}, {ascending: false});
+		}
+		if (p) {
+			p.add(waitFor, callback).run();
+			return;
+		}
+		var o = Q.extend({}, 10, state, 10, options);
 		var div = tool.column(index);
 		if (!div) {
 			throw new Q.Exception("Column with index " + index + " doesn't exist");
 		}
 		var $div = $(div);
 		var width = $div.outerWidth(true);
-		var shouldContinue = state.beforeClose.handle.call(tool, index);
+		var shouldContinue = o.beforeClose.handle.call(tool, index);
 		if (shouldContinue === false) return;
 		
 		var w = $div.outerWidth(true);
-		var duration = state.animation.duration;
+		var duration = o.animation.duration;
 		var $prev = $div.prev();
 		$prev.show();
 		if (state.fullscreen) {

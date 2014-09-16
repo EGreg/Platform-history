@@ -1128,7 +1128,9 @@ Q.each = function _Q_each(container, callback, options) {
 						keys.push(options.numeric ? Number(k) : k);
 					}
 				}
-				keys = options.numeric ? keys.sort(function (a,b) {return a-b;}) : keys.sort();
+				keys = options.numeric ? keys.sort(function (a,b) {
+					return a-b;
+				}) : keys.sort();
 				if (options.ascending === false) {
 					for (i=keys.length-1; i>=0; --i) {
 						key = keys[i];
@@ -1172,9 +1174,6 @@ Q.each = function _Q_each(container, callback, options) {
 				to = arguments[1];
 				if (typeof arguments[2] === 'number') {
 					step = arguments[2];
-					if (!step || (to-from)*step<0) {
-						throw new Q.Exception("Q.each: step="+step+" leads to infinite loop");
-					}
 					callback = arguments[3];
 					options = arguments[4];
 				} else {
@@ -1183,18 +1182,20 @@ Q.each = function _Q_each(container, callback, options) {
 				}
 			}
 			if (!callback) return;
-			if (step === undefined) {
-				step = (from <= to ? 1 : -1);
+			if (!step || (to-from)*step<0) {
+				return 0;
 			}
 			if (from <= to) {
 				for (i=from; i<=to; i+=step) {
 					r = Q.handle(callback, this, args || [i]);
 					if (r === false) return false;
+					if (step < 0) return 0;
 				}
 			} else {
 				for (i=from; i>=to; i+=step) {
 					r = Q.handle(callback, this, args || [i]);
 					if (r === false) return false;
+					if (step > 0) return 0;
 				}
 			}
 			break;

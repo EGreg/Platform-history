@@ -835,9 +835,13 @@ class Q_Response
 		if (!$filename) {
 			throw new Q_Exception_MissingFile(array('filename' => "views/$name.$type"));
 		}
-		$ob = new Q_OutputBuffer();
-		Q::includeFile($filename, $params, true);
-		$content = $ob->getClean();
+		if ($type === 'php') {
+			$ob = new Q_OutputBuffer();
+			Q::includeFile($filename, $params, true);
+			$content = $ob->getClean();
+		} else {
+			$content = file_get_contents($filename);
+		}
 		if (!$content) {
 			throw new Q_Exception("Failed to load template '$name'");
 		}

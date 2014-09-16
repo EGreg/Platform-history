@@ -1788,6 +1788,7 @@ input[type=radio] { margin-right: 5px; }
 	overflow: hidden;
 }
 .Q_columns_loading { height: 40px; }
+.Q_columns_mask { position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px; z-index: 9999; }
 
 .Q_overflow {
 	overflow: auto;
