@@ -513,7 +513,9 @@ Q.Tool.define("Q/columns", function(options) {
 		var $cs = $('.Q_columns_column .column_slot', $te);
 		var top = 0;
 		
-		$te.prevAll().each(function () {
+		$te.prevAll()
+		.add($te.parents().prevAll())
+		.each(function () {
 			var $this = $(this);
 			if ($this.css('position') === 'fixed') {
 				top += $this.outerHeight() + parseInt($this.css('margin-bottom'));
