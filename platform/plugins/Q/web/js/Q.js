@@ -8058,8 +8058,12 @@ Q.info = {
 };
 Q.info.isMobile = Q.info.isTouchscreen && !Q.info.isTablet;
 Q.info.formFactor = Q.info.isMobile ? 'mobile' : (Q.info.isTablet ? 'tablet' : 'desktop');
-document.documentElement.className += Q.info.isTouchscreen ? ' Q_touchscreen' : ' Q_notTouchscreen';
-document.documentElement.className += Q.info.isMobile ? ' Q_mobile' : ' Q_notMobile';
+document.documentElement.className += Q.info.isTouchscreen 
+	? ' Q_touchscreen' : ' Q_notTouchscreen';
+document.documentElement.className += Q.info.isMobile 
+	? ' Q_mobile' : ' Q_notMobile';
+document.documentElement.className += Q.info.isAndroid() 
+	? ' Q_android' : ' Q_notAndroid';
 
 // universal pointer events
 
