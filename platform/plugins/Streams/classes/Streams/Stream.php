@@ -522,6 +522,14 @@ class Streams_Stream extends Base_Streams_Stream
 	}
 	
 	/**
+	 * @method clearAllAttributes
+	 */
+	function clearAllAttributes()
+	{
+		$this->attributes = '{}';
+	}
+	
+	/**
 	 * If the user is not participating in the stream yet, 
 	 * inserts a participant record and posts a "Streams/join" type message to the stream.
 	 * Otherwise update timestamp

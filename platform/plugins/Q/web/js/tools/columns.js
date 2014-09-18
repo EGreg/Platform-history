@@ -258,16 +258,6 @@ Q.Tool.define("Q/columns", function(options) {
 			Q.loadUrl(url, params);
 		}
 		
-		p.add(waitFor, function () {
-			Q.handle(callback, tool, [options, index]);
-			state.onOpen.handle.call(tool, options, index);
-			Q.handle(options.onOpen, tool, [options, index]);
-			setTimeout(function () {
-				$mask.remove();
-				Q.handle(options.afterDelay, tool, [options, index]);
-			}, o.delay.duration);
-		});
-		
 		if (o.template) {
 			Q.Template.render(o.template, function (err, html) {
 				var element = $('<div />').html(html);
@@ -282,15 +272,26 @@ Q.Tool.define("Q/columns", function(options) {
 		function _open() {
 			var $te = $(tool.element);
 			if (o.title != undefined) {
+				waitFor.push('activated1');
 				$(titleSlot).empty().append(
 					o.title instanceof Element ? $(o.title) : o.title
-				);
+				).activate(p.fill('activated1'));
 			}
 			if (o.column != undefined) {
+				waitFor.push('activated2');
 				$(columnSlot).empty().append(
 					o.column instanceof Element ? $(o.column) : o.column
-				);
+				).activate(p.fill('activated2'));
 			}
+			p.add(waitFor, function () {
+				Q.handle(callback, tool, [options, index]);
+				state.onOpen.handle.call(tool, options, index);
+				Q.handle(options.onOpen, tool, [options, index]);
+				setTimeout(function () {
+					$mask.remove();
+					Q.handle(options.afterDelay, tool, [options, index]);
+				}, o.delay.duration);
+			}).run();
 			var show = {
 				opacity: 1,
 				top: 0

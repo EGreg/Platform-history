@@ -7,7 +7,6 @@ table { border-spacing:0; border-collapse:collapse; }
 .Q_errors { color: #a00; }
 .Q_error_message { z-index: 11000; font-size: 12px; background-color: #a00; color: white; padding: 2px 5px 4px 5px; opacity: 0.8; pointer-events: none; }
 .Q_error_message p { margin: 0px; }
-.Q_placeholder { color: #999; font-weight: normal; }
 .Q_field_name { color: #222; opacity:0.5; filter:alpha(opacity=50) }
 
 /* Common Q classes */
@@ -29,7 +28,8 @@ table { border-spacing:0; border-collapse:collapse; }
 .Q_notTouchscreen .Q_clickable_container.Q_hover .Q_clickable_shadow,
 .Q_notTouchscreen .Q_clickable_container:hover .Q_clickable_shadow
  { display: block; }
-.Q_placeholder { display: inline-block; color: #999 !important; font-style: italic !important; zoom: 1; *display: inline; }
+.Q_placeholder_container,
+.Q_placeholder { display: inline-block; color: #999; font-style: italic; zoom: 1; *display: inline; }
 .Q_focus .Q_placeholder { color: #aaa !important; }
 div.Q_placeholder { pointer-events: none; }
 

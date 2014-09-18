@@ -937,7 +937,7 @@ var Sp = Stream.prototype;
 /**
  * When a stream is retained, it is refreshed when Streams.refresh() or
  * Streams.refresh() are called. You can release it with stream.release().
- * Call this function in a chain before calling Streams.get, Streams.related, etc.
+ * Call this function in a chain before calling stream.related, etc.
  * in order to set the key for retaining the streams those functions obtain.
  * 
  * @method retainWith

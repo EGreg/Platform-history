@@ -5488,6 +5488,9 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 	}
 	
 	var p, ret = [];
+	if (!onload) {
+		onload = function () {};
+	}
 	
 	if (Q.typeOf(src) === 'array') {
 		var srcs = [];
@@ -7689,12 +7692,12 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	 * @static
 	 * @method activate
 	 */
-	$.fn.activate = function _jQuery_fn_activate(options) {
+	$.fn.activate = function _jQuery_fn_activate(options, callback) {
 		jQuery(this).each(function _jQuery_fn_activate_each(index, element) {
 			if (!jQuery(element).closest('html').length) {
 				throw new Q.Error("jQuery.fn.activate: element to activate must be in the DOM");
 			}
-			Q.activate(element, options, options && options.callback);
+			Q.activate(element, options, callback);
 		});
 	};
 	

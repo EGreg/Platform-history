@@ -1,6 +1,7 @@
 <?php
 
-function Streams_before_Q_responseExtras() {
+function Streams_before_Q_responseExtras()
+{
 	Q_Response::addScript('plugins/Streams/js/Streams.js');
 
 	$host = Q_Config::get('Streams', 'node', 'host', Q_Config::get('Q', 'node', 'host', null));

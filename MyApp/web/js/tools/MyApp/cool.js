@@ -16,13 +16,12 @@ Q.Tool.define("MyApp/cool", function (options) {
 			// do something here
 		}, this); // handler will be auto-removed when this tool is removed
 	});
-	
-	this.onMove = new Q.Event(); // an event that the stream might trigger
 },
 
 { // default options here
 	publisherId: null,
-	streamName: null
+	streamName: null,
+	onMove: new Q.Event() // an event that the tool might trigger
 },
 
 { // methods go here
@@ -34,7 +33,8 @@ Q.Tool.define("MyApp/cool", function (options) {
 	 */
 	getMyStream: function (callback) {
 		var state = this.state;
-		Q.Streams.get(state.publisherId, state.streamName, callback);
+		Q.Streams.retainWith(this)
+		.get(state.publisherId, state.streamName, callback);
 	}
 	
 });

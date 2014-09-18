@@ -14,9 +14,31 @@ function Places_geolocation_post()
 		'latitude',
 		'longitude',
 		'speed',
-		'miles'
+		'miles',
+		'zipcode'
 	);
 	$attributes = Q::take($_REQUEST, $fields);
+	if (!empty($attributes['zipcode'])
+	and !isset($attributes['latitude'])) {
+		$z = new Places_Zipcode();
+		$z->countryCode = 'US';
+		$z->zipcode = $attributes['zipcode'];
+		if ($z->retrieve()) {
+			$attributes['latitude'] = $z->latitude;
+			$attributes['longitude'] = $z->longitude;
+		} else {
+			throw new Q_Exception_MissingRow(array(
+				'table' => 'zipcode',
+				'criteria' => $attributes['zipcode']
+			));
+		}
+	}
+	$attributes['miles'] = Q::ifset($attributes, 'miles', 
+		$stream->getAttribute(
+			'miles',
+			Q_Config::expect('Places', 'nearby', 'defaultMiles')
+		)
+	);
 	$stream->setAttribute($attributes);
 	$stream->save();
 	
@@ -29,12 +51,7 @@ function Places_geolocation_post()
 	if (!empty($_REQUEST['subscribe'])) {
 		$latitude = $stream->getAttribute('latitude');
 		$longitude = $stream->getAttribute('longitude');
-		$miles = Q::ifset($attributes, 'miles', 
-			$stream->getAttribute(
-				'miles',
-				Q_Config::expect('Places', 'nearby', 'defaultMiles')
-			)
-		);
+		$miles = $stream->getAttribute('miles');
 		$attributes['subscribed'] = Places::subscribe(
 			$latitude, $longitude, $miles
 		);
@@ -42,5 +59,6 @@ function Places_geolocation_post()
 	
 	$attributes['stream'] = $stream;
 	
+	Q_Response::setSlot('attributes', $attributes);
 	Q::event("Places/geolocation", $attributes, 'after');
 }

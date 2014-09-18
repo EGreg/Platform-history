@@ -10,6 +10,11 @@
 				"connections": ["Places"],
 				"requires": {"Streams": "0.8"}
 			}
+		},
+		"handlersBeforeEvent": {
+			"Q/responseExtras": ["Places/before/Q_responseExtras"]
+		},
+		"handlersAfterEvent": {
 		}
 	},
 	"Streams": {
