@@ -1,0 +1,14 @@
+.Places_location_set { padding-top: 20px; width: 100%; cursor: pointer; }
+
+.Places_location_map { height: 200px; }
+
+.Places_location_obtained .Places_location_whileObtaining,
+.Places_location_obtaining .Places_location_whileObtained {
+	display: none;
+}
+
+.Places_location_map_container {
+	margin: 10px 0px 10px 0px;
+	border-radius: 30px;
+	box-shadow: #777 2px 2px 10px;
+}
