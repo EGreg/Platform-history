@@ -26,13 +26,17 @@ Q.Tool.define("Places/location", function (options) {
 	
 	Q.Streams.Stream
 	.onMessage(publisherId, streamName, 'Places/location/updated')
-	.set(function (s, msg) {
-		state.stream = s; // in case it was missing before
-		var a = JSON.parse(msg.instructions);
-		if (a.miles) {
-			tool.$('.Places_location_miles').val(a.miles);
+	.set(function (stream, msg) {
+		stream.refresh(function () {
+			var miles = stream.get('miles');
+			var latitude = stream.get('latitude');
+			var longitude = stream.get('longitude');
 		});
-		_showMap(a.latitude, a.longitude, a.miles);
+		state.stream = s; // in case it was missing before
+		if (miles) {
+			tool.$('.Places_location_miles').val(miles);
+		};
+		_showMap(latitude, longitude, miles);
 	});
 	
 	Q.Streams.retainWith(this)
