@@ -31,7 +31,7 @@ Q.Tool.define("Places/location", function (options) {
 		var a = JSON.parse(msg.instructions);
 		if (a.miles) {
 			tool.$('.Places_location_miles').val(a.miles);
-		}
+		});
 		_showMap(a.latitude, a.longitude, a.miles);
 	});
 	
@@ -57,7 +57,7 @@ Q.Tool.define("Places/location", function (options) {
 			}, state.map.delay);
 		}
 		
-		stream.refresh(null, { messages: 1 });
+		stream.refresh(null, { messages: true });
 	});
 	
 	tool.$('.Places_location_miles').on('change', function () {
