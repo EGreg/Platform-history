@@ -31,12 +31,12 @@ Q.Tool.define("Places/location", function (options) {
 			var miles = stream.get('miles');
 			var latitude = stream.get('latitude');
 			var longitude = stream.get('longitude');
+			if (miles) {
+				tool.$('.Places_location_miles').val(miles);
+			};
+			_showMap(latitude, longitude, miles);
 		});
 		state.stream = s; // in case it was missing before
-		if (miles) {
-			tool.$('.Places_location_miles').val(miles);
-		};
-		_showMap(latitude, longitude, miles);
 	});
 	
 	Q.Streams.retainWith(this)
