@@ -2,6 +2,7 @@
 	
 function Places_geolocation_post()
 {
+	$user = Users::loggedInUser(true);
 	$stream = Places::userLocationStream();
 	$oldLatitude = $stream->getAttribute('latitude');
 	$oldLongitude = $stream->getAttribute('longitude');
@@ -41,6 +42,11 @@ function Places_geolocation_post()
 	);
 	$stream->setAttribute($attributes);
 	$stream->save();
+	$stream->post($user->id, array(
+		'type' => 'Places/location/updated',
+		'content' => '',
+		'instructions' => $stream->getAllAttributes()
+	), true);
 	
 	if (!empty($_REQUEST['unsubscribe']) and isset($oldMiles)) {
 		$attributes['unsubscribed'] = Places::unsubscribe(

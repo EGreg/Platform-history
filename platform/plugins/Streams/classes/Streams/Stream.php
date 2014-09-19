@@ -469,10 +469,10 @@ class Streams_Stream extends Base_Streams_Stream
 	}
 	
 	/**
-	 * @method getAttributes
+	 * @method getAllAttributes
 	 * @return {array} The array of all attributes set in the stream
 	 */
-	function getAttributes()
+	function getAllAttributes()
 	{
 		return empty($this->attributes) 
 			? array()
@@ -487,7 +487,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 */
 	function getAttribute($attributeName, $default = null)
 	{
-		$attr = $this->getAttributes();
+		$attr = $this->getAllAttributes();
 		return isset($attr[$attributeName]) ? $attr[$attributeName] : $default;
 	}
 	
@@ -499,7 +499,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 */
 	function setAttribute($attributeName, $value = null)
 	{
-		$attr = $this->getAttributes();
+		$attr = $this->getAllAttributes();
 		if (is_array($attributeName)) {
 			foreach ($attributeName as $k => $v) {
 				$attr[$k] = $v;
@@ -516,7 +516,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 */
 	function clearAttribute($attributeName)
 	{
-		$attr = $this->getAttributes();
+		$attr = $this->getAllAttributes();
 		unset($attr[$attributeName]);
 		$this->attributes = Q::json_encode($attr);
 	}

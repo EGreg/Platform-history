@@ -718,7 +718,7 @@ Q.getter = function _Q_getter(original, options) {
 
 					// process waiting callbacks
 					var wk = _waiting[key];
-					for (i = 0; i < wk.length; i++) {
+					if (wk) for (i = 0; i < wk.length; i++) {
 						wrapper.emit('result', this, arguments, arguments2, wk[i].ret, original);
 						wk[i].callbacks[cbpos].apply(this, arguments);
 					}
@@ -787,7 +787,7 @@ Q.getter = function _Q_getter(original, options) {
 		return ret;
 	}
 
-	Q.extend(wrapper, Q.getter.options, options);
+	Q.extend(wrapper, original, Q.getter.options, options);
 	Q.makeEventEmitter(wrapper);
 
 	var _waiting = {};

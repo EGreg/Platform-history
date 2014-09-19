@@ -11,37 +11,21 @@ Q.Tool.define("Places/location", function (options) {
 	$(tool.element).addClass('Places_location_obtained');
 	tool.$('.Places_location_map_container').hide();
 	
-	var previous = {};
-	Q.Streams.Stream.onUpdated(publisherId, streamName)
-	.set(function (attributes, updated) {
-		if (updated.miles) {
-			tool.$('.Places_location_miles').val(updated.miles);
+	Q.Streams.Stream
+	.onMessage(publisherId, streamName, 'Places/location/updated')
+	.set(function (s, msg) {
+		state.stream = s; // in case it was missing before
+		var a = JSON.parse(msg.instructions);
+		if (a.miles) {
+			tool.$('.Places_location_miles').val(a.miles);
 		}
-		var latitude = updated.latitude || stream.get('latitude');
-		var longitude = updated.longitude || stream.get('longitude');
-		var miles = updated.miles || stream.get('miles');
-		if (latitude && longitude && miles
-		&& ( latitude != previous.latitude
-		  || longitude != previous.longitude
-		  || miles != previous.miles
-		)) {
-			tool.$('.Places_location_miles').val(miles);
-			_showMap(latitude, longitude, miles);
-			previous = {
-				latitude: latitude,
-				longitude: longitude,
-				miles: miles
-			};
-		} else {
-			
-		}
-	}, tool);
+		_showMap(a.latitude, a.longitude, a.miles);
+	});
 	
-	var stream;
 	Q.Streams.retainWith(this)
 	.get(publisherId, streamName, function (err) {
 		if (!err) {
-			stream = this;
+			var stream = state.stream = this;
 			var miles = stream.get('miles');
 			var latitude = stream.get('latitude');
 			var longitude = stream.get('longitude');
@@ -69,6 +53,8 @@ Q.Tool.define("Places/location", function (options) {
 // 		.plugin('Q/placeholders')
 // 		.plugin('Q/clickfocus');
 // 		return;
+		var $this = $(this);
+		$this.addClass('Places_obtaining');
 		navigator.geolocation.getCurrentPosition(
 		function (geo) {
 			var fields = Q.extend({
@@ -78,8 +64,11 @@ Q.Tool.define("Places/location", function (options) {
 			}, geo.coords);
 			Q.req("Places/geolocation", [], 
 			function (err, data) {
-				stream.refresh();
-				$this.hide(500);
+				Q.Streams.Stream.refresh(
+					publisherId, streamName, null,
+					{ messages: 1, evenIfNotRetained: true}
+				);
+				$this.removeClass('Places_obtaining').hide(500);
 			}, {method: 'post', fields: fields});
 		}, function () {
 			tool.$('.Places_location_set').hide();
@@ -104,7 +93,8 @@ Q.Tool.define("Places/location", function (options) {
 					} else {
 						_cancel($this);
 					}
-				});	
+				});
+				$this.removeClass('Places_obtaining').hide(500);
 			});
 		}, {
 			maximumAge: 300000
@@ -118,7 +108,10 @@ Q.Tool.define("Places/location", function (options) {
 				return alert(msg);
 			}
 			tool.$('.Places_location_zipcode').hide();
-			stream.refresh();
+			Q.Streams.Stream.refresh(
+				publisherId, streamName, null,
+				{ messages: 1, evenIfNotRetained: true }
+			);
 		}, {
 			method: 'post',
 			fields: {
@@ -134,7 +127,19 @@ Q.Tool.define("Places/location", function (options) {
 		tool.$('.Places_location_set').show();
 	}
 	
+	var previous = {};
 	function _showMap(latitude, longitude, miles, callback) {
+
+		if (latitude == previous.latitude
+		&& longitude == previous.longitude
+		&& miles == previous.miles) {
+			return;
+		}
+		previous = {
+			latitude: latitude,
+			longitude: longitude,
+			miles: miles
+		};
 
 		Q.Places.loadGoogleMaps(function () {
 			_showPlaceName();

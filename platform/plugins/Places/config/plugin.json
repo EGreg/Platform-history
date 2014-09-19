@@ -25,6 +25,9 @@
 				"messages": {
 					"Places/location/visit": { "post": true },
 					"Places/location/stay": { "post": true }
+				},
+				"defaults": {
+					"title": "Location"
 				}
 			},
 			"Places/nearby": {

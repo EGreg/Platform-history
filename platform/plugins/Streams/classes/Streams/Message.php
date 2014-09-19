@@ -43,7 +43,7 @@ class Streams_Message extends Base_Streams_Message
 	 * @method post
 	 * @static
 	 * @param {string} $asUserId
-	 *  The user to post as
+	 *  The user to post the message as
 	 * @param {string} $publisherId
 	 *  The publisher of the stream
 	 * @param {string|array} $streamName
@@ -70,6 +70,14 @@ class Streams_Message extends Base_Streams_Message
 		$skipAccess=false,
 		$streams = null)
 	{
+		if (!isset($asUserId)) {
+			$asUserId = Users::loggedInUser();
+			if (!$asUserId) $asUserId = "";
+		}
+		if ($asUserId instanceof Users_User) {
+			$asUserId = $asUserId->id;
+		}
+
 		$type = Q::ifset($information, 'type', 'text/small');
 		$content = Q::ifset($information, 'content', '');
 		$instructions = Q::ifset($information, 'instructions', '');

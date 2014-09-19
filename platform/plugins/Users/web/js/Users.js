@@ -711,7 +711,7 @@ Users.logout = function(options) {
  *	if there were errors, first parameter is an array of errors
  *  otherwise, first parameter is null and second parameter is a Users.User object
  */
-Users.get = Q.getter(function (userId, callback) {
+Users.get = function (userId, callback) {
 	var url = Q.action('Users/avatar');
 	var func = Users.batchFunction(Q.baseUrl({
 		userIds: userId
@@ -729,7 +729,7 @@ Users.get = Q.getter(function (userId, callback) {
 		var user = new Users.User(data.avatar);
 		callback.call(user, err, user);
 	});
-});
+}
 Users.get.onError = new Q.Event();
 
 /**
@@ -1644,6 +1644,15 @@ Q.Tool.define({
 	"Users/friendSelector": "plugins/Users/js/tools/friendSelector.js",
 	"Users/getintouch": "plugins/Users/js/tools/getintouch.js"
 });
+
+Q.beforeInit.add(function _Users_beforeInit() {
+
+	Users.get = Q.getter(Users.get, {
+		cache: Q.Cache.document("Users.get", 100), 
+		throttle: 'Users.get'
+	});
+
+}, 'Users');
 
 Q.onInit.add(function () {
 	if (Q.Users.loggedInUser

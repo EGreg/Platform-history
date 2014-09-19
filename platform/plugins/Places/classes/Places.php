@@ -29,6 +29,7 @@ abstract class Places extends Base_Places
 			$stream->publisherId = $user->id;
 			$stream->name = $streamName;
 			$stream->type = "Places/location";
+			$stream->title = "User location";
 			$stream->save();
 			$stream->join();
 		}

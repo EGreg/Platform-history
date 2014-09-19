@@ -2067,6 +2067,11 @@ Q.Event.factory = function (collection, defaults, callback) {
 };
 
 /**
+ * This event occurs right before Q javascript library is initialized
+ * @event beforeInit
+ */
+Q.beforeInit = new Q.Event();
+/**
  * This event occurs when Q javascript library has just been initialized
  * @event onInit
  */
@@ -2654,7 +2659,7 @@ Q.getter = function _Q_getter(original, options) {
 
 					// process waiting callbacks
 					var wk = _waiting[key];
-					for (i = 0; i < wk.length; i++) {
+					if (wk) for (i = 0; i < wk.length; i++) {
 						wrapper.onResult.handle(this, arguments, arguments2, wk[i].ret, original);
 						wk[i].callbacks[cbpos].apply(this, arguments);
 					}
@@ -2723,7 +2728,7 @@ Q.getter = function _Q_getter(original, options) {
 		return ret;
 	}
 
-	Q.extend(wrapper, Q.getter.options, options);
+	Q.extend(wrapper, original, Q.getter.options, options);
 	wrapper.onCalled = new Q.Event();
 	wrapper.onExecuted = new Q.Event();
 	wrapper.onResult = new Q.Event();
@@ -4263,6 +4268,7 @@ Q.page = function _Q_page(page, handler, key) {
  */
 Q.init = function _Q_init(options) {
 
+	Q.handle(Q.beforeInit);
 	Q.handle(Q.onInit); // Call all the onInit handlers
 
 	Q.addEventListener(window, 'unload', Q.onUnload);
