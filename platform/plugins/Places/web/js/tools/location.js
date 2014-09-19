@@ -1,3 +1,17 @@
+(function (Q, $, window, document, undefined) {
+
+/**
+ * Streams Tools
+ * @module Streams-tools
+ */
+
+/**
+ * Inplace text editor tool to edit the content or attribute of a stream
+ * @class Streams location
+ * @constructor
+ * @param {Object} [options] used to pass options
+ */
+
 Q.Tool.define("Places/location", function (options) {
 	var tool = this;
 	var state = tool.state;
@@ -8,8 +22,7 @@ Q.Tool.define("Places/location", function (options) {
 	var publisherId = Q.Users.loggedInUser.id;
 	var streamName = "Places/user/location";
 	
-	$(tool.element).addClass('Places_location_obtained');
-	tool.$('.Places_location_map_container').hide();
+	$(tool.element).addClass('Places_location_checking');
 	
 	Q.Streams.Stream
 	.onMessage(publisherId, streamName, 'Places/location/updated')
@@ -34,13 +47,17 @@ Q.Tool.define("Places/location", function (options) {
 			}
 		}
 		if (!latitude || !longitude || !miles) {
-			$(tool.element).removeClass('Places_location_obtained')
+			$(tool.element)
+				.removeClass('Places_location_obtained')
+				.removeClass('Places_location_checking')
 				.addClass('Places_location_obtaining');
 		} else {
 			setTimeout(function () {
 				_showMap(latitude, longitude, miles);
 			}, state.map.delay);
 		}
+		
+		stream.refresh(null, { messages: 1 });
 	});
 	
 	tool.$('.Places_location_miles').on('change', function () {
@@ -49,10 +66,6 @@ Q.Tool.define("Places/location", function (options) {
 	
 	tool.$('.Places_location_set, .Places_location_update_button')
 	.on(Q.Pointer.click, function () {
-		// $('#Places_location_foo').show()
-// 		.plugin('Q/placeholders')
-// 		.plugin('Q/clickfocus');
-// 		return;
 		var $this = $(this);
 		$this.addClass('Places_obtaining');
 		navigator.geolocation.getCurrentPosition(
@@ -71,31 +84,11 @@ Q.Tool.define("Places/location", function (options) {
 				$this.removeClass('Places_obtaining').hide(500);
 			}, {method: 'post', fields: fields});
 		}, function () {
-			tool.$('.Places_location_set').hide();
-			tool.$('.Places_location_zipcode')
-			.submit(function () { return false; })
-			.show(1, function () {
-				$('input', this)
-				.plugin('Q/placeholders')
-				.plugin('Q/clickfocus')
-				.on('keydown', function (event) {
-					var $this = $(this);
-					if (event.keyCode == 13) {
-						_submit($this.val());
-						return false;
-					} else if (event.keyCode == 27) {
-						_cancel($this);
-					}
-				}).on('blur', function () {
-					var $this = $(this);
-					if ($this.val().length === 5) {
-						_submit($this.val());
-					} else {
-						_cancel($this);
-					}
-				});
-				$this.removeClass('Places_obtaining').hide(500);
-			});
+			var zipcode = window.prompt("Please enter your zipcode:");
+			if (zipcode) {
+				_submit(zipcode);
+			}
+			$this.removeClass('Places_obtaining');
 		}, {
 			maximumAge: 300000
 		});
@@ -107,7 +100,6 @@ Q.Tool.define("Places/location", function (options) {
 			if (msg) {
 				return alert(msg);
 			}
-			tool.$('.Places_location_zipcode').hide();
 			Q.Streams.Stream.refresh(
 				publisherId, streamName, null,
 				{ messages: 1, evenIfNotRetained: true }
@@ -115,16 +107,10 @@ Q.Tool.define("Places/location", function (options) {
 		}, {
 			method: 'post',
 			fields: {
-				zipcode: zipcode || undefined,
+				zipcode: zipcode || '',
 				miles: tool.$('.Places_location_miles').val()
 			}
 		});
-	}
-	
-	function _cancel($input) {
-		$input.val('');
-		tool.$('.Places_location_zipcode').hide();
-		tool.$('.Places_location_set').show();
 	}
 	
 	var previous = {};
@@ -142,21 +128,15 @@ Q.Tool.define("Places/location", function (options) {
 		};
 
 		Q.Places.loadGoogleMaps(function () {
-			_showPlaceName();
-			$(tool.element).removeClass('Places_location_obtaining')
+			$(tool.element)
+				.removeClass('Places_location_obtaining')
+				.removeClass('Places_location_checking')
 				.addClass('Places_location_obtained');
 			setTimeout(function () {
-				tool.$('.Places_location_map_container')
+				tool.$('.Places_location_map_container, .Places_location_update')
 				.slideDown(300, _showLocationAndCircle);
 			}, 0);
 		});
-		
-		function _showPlaceName() {
-			// proxy through server, up to 15,000 requests though per 24 hours
-			// Q.request("http://maps.googleapis.com/maps/api/geocode/json?latlng=37.42,-122.08&sensor=false&_=1411063858378", function (err, data) {
-			// 	debugger;
-			// }, {extend: false});
-		}
 
 		function _showLocationAndCircle() {
 			var element = tool.$('.Places_location_map')[0];
@@ -173,10 +153,6 @@ Q.Tool.define("Places/location", function (options) {
 				scrollwheel: false,
 				navigationControl: false
 	        });
-			// var latlngbounds = new google.maps.LatLngBounds();
-			// latlngbounds.extend(n);
-			// map.setCenter(latlngbounds.getCenter());
-			// map.fitBounds(latlngbounds);
 			
 			// Create marker 
 			var marker = new google.maps.Marker({
@@ -207,3 +183,5 @@ Q.Tool.define("Places/location", function (options) {
 { // methods go here
 	
 });
+
+})(Q, jQuery, window, document);

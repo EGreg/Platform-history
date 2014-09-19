@@ -3,7 +3,9 @@
 .Places_location_map { height: 200px; }
 
 .Places_location_obtained .Places_location_whileObtaining,
-.Places_location_obtaining .Places_location_whileObtained {
+.Places_location_obtaining .Places_location_whileObtained,
+.Places_location_checking .Places_location_whileObtaining,
+.Places_location_checking .Places_location_whileObtained {
 	display: none;
 }
 

@@ -9,7 +9,7 @@
  * Inplace text editor tool to edit the content or attribute of a stream
  * @class Streams inplace
  * @constructor
- * @param {Object} [options] this object contains function parameters
+ * @param {Object} [options] used to pass options
  *   @param {String} [options.inplaceType] The type of the fieldInput. Can be "textarea" or "text"
  *   @required
  *   @param {String} [options.publisherId] Required if stream option is empty. The publisher's user id.
