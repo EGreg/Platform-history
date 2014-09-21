@@ -817,12 +817,12 @@ Q.each = function _Q_each(container, callback, options) {
 			if (!container || !length || !callback) return;
 			if (options && options.ascending === false) {
 				for (i=length-1; i>=0; --i) {
-					r = Q.handle(callback, container[i], args || [i, container[i]]);
+					r = Q.handle(callback, container[i], args || [i, container[i], container]);
 					if (r === false) return false;
 				}
 			} else {
 				for (i=0; i<length; ++i) {
-					r = Q.handle(callback, container[i], args || [i, container[i]]);
+					r = Q.handle(callback, container[i], args || [i, container[i]], container);
 					if (r === false) return false;
 				}
 			}
@@ -845,35 +845,38 @@ Q.each = function _Q_each(container, callback, options) {
 				if (options.ascending === false) {
 					for (i=keys.length-1; i>=0; --i) {
 						key = keys[i];
-						r = Q.handle(callback, container[key], args || [key, container[key]]);
+						r = Q.handle(callback, container[key], args || [key, container[key], container]);
 						if (r === false) return false;
 					}
 				} else {
 					for (i=0; i<keys.length; ++i) {
 						key = keys[i];
-						r = Q.handle(callback, container[key], args || [key, container[key]]);
+						r = Q.handle(callback, container[key], args || [key, container[key], container]);
 						if (r === false) return false;
 					}
 				}
 			} else {
 				for (k in container) {
 					if (container.hasOwnProperty && container.hasOwnProperty(k)) {
-						r = Q.handle(callback, container[k], args || [k, container[k]]);
+						r = Q.handle(callback, container[k], args || [k, container[k], container]);
 						if (r === false) return false;
 					}
 				}
 			}
 			break;
 		case 'string':
+			var c;
 			if (!container || !callback) return;
 			if (options && options.ascending === false) {
 				for (i=0; i<container.length; ++i) {
-					r = Q.handle(callback, container, args || [i, container.charAt(i)]);
+					c = container.charAt(i);
+					r = Q.handle(callback, c, args || [i, c, container]);
 					if (r === false) return false;
 				}
 			} else {
 				for (i=container.length-1; i>=0; --i) {
-					r = Q.handle(callback, container, args || [i, container.charAt(i)]);
+					c = container.charAt(i);
+					r = Q.handle(callback, c, args || [i, c, container]);
 					if (r === false) return false;
 				}
 			}
@@ -901,13 +904,13 @@ Q.each = function _Q_each(container, callback, options) {
 			}
 			if (from <= to) {
 				for (i=from; i<=to; i+=step) {
-					r = Q.handle(callback, this, args || [i]);
+					r = Q.handle(callback, this, args || [i], container);
 					if (r === false) return false;
 					if (step < 0) return 0;
 				}
 			} else {
 				for (i=from; i>=to; i+=step) {
-					r = Q.handle(callback, this, args || [i]);
+					r = Q.handle(callback, this, args || [i], container);
 					if (r === false) return false;
 					if (step > 0) return 0;
 				}
@@ -1963,6 +1966,21 @@ Evp.throttle = function _Q_Event_prototype_throttle(milliseconds, key) {
 };
 
 /**
+ * Return a new Q.Event object that will queue calls to this event's handle()
+ * method, to occur once every given milliseconds
+ * 
+ * @method throttle
+ * @param {Number} milliseconds The number of milliseconds, can be 0
+ * @param {String|Boolean|Q.Tool} key Optional key to pass to event.add (see docs for that method).
+ * @return {Q.Event} A new Q.Event object
+ */
+Evp.queue = function _Q_Event_prototype_throttle(milliseconds, key) {
+	var newEvent = new Q.Event();
+	this.add(Q.queue(newEvent.handle, milliseconds), key);
+	return newEvent;
+};
+
+/**
  * Return a new Q.Event object that will call handle() when this event's handle()
  * is called, but only if the test function returns true
  * 
@@ -2423,6 +2441,7 @@ Q.batcher = function _Q_batch(batch, options) {
 	var o = Q.extend({}, Q.batcher.options, options);
 	var result = function _Q_batch_result() {
 		var requestArguments = arguments;
+		
 		function nextRequest() {
 			var i;
 			var callbacks = [], args = [];
@@ -2815,6 +2834,45 @@ Q.throttle = function (original, milliseconds, defaultValue) {
 		if (Date.now() - _lastCalled < milliseconds) return defaultValue;
 		_lastCalled = Date.now();
 		return original.apply(this, arguments);
+	};
+};
+
+/**
+ * Wraps a function and returns a wrapper that queue the function
+ * to be called at most once every given milliseconds.
+ * 
+ * @static
+ * @method queue
+ * @param {Function} original The function to wrap
+ * @param {Number} milliseconds The number of milliseconds
+ * @return {Function} The wrapper function
+ */
+Q.queue = function (original, milliseconds) {
+	var _queue = [];
+	var _timeout = null;
+	function _Q_queue_next() {
+		if (!_queue.length) {
+			_timeout = null;
+			return 0;
+		}
+		var p = _queue.shift();
+		var ret = original.apply(p[0], p[1]);
+		if (ret === false) {
+			_timeout = null;
+			_queue = [];
+		} else {
+			_timeout = setTimeout(_Q_queue_next, milliseconds);
+		}
+	};
+	return function _Q_queue_wrapper() {
+		var args = Array.prototype.slice.call(arguments, 0);
+		var len = _queue.push([this, args]);
+		if (!_timeout) {
+			_timeout = setTimeout(function () {
+				_Q_queue_next();
+			}, 0);
+		}
+		return len;
 	};
 };
 
