@@ -2303,7 +2303,7 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 				if (Message.latest[publisherId+"\t"+streamName] >= ordinal) {
 					return; // it was already processed
 				}
-				Q.Streams.onEvent('post').handle(message);
+				Q.Streams.onEvent('post').handle(message, messages);
 			}, {ascending: true, numeric: true});
 			
 			// if any new messages were encountered, updateMessageCache removed all the cached
@@ -2993,7 +2993,7 @@ Q.onInit.add(function _Streams_onInit() {
 		);
 	});
 
-	Streams.onEvent('post').set(function _Streams_post_handler (msg) {
+	Streams.onEvent('post').set(function _Streams_post_handler (msg, messages) {
 		if (!msg) {
 			throw new Q.Error("Q.Streams.onEvent msg is empty");
 		}
@@ -3025,7 +3025,7 @@ Q.onInit.add(function _Streams_onInit() {
 				}
 
 				var stream = this;
-				var params = [this, message];
+				var params = [this, message, messages];
 				
 				if (cached && ('messageCount' in stream.fields)) {
 					++stream.fields.messageCount; // increment message count
@@ -3052,13 +3052,13 @@ Q.onInit.add(function _Streams_onInit() {
 						Q.handle(
 							Q.getObject([publisherId, streamName, ordinal], _streamMessageHandlers),
 							Q.plugins.Streams,
-							[stream, msg]
+							params
 						);
 						Q.each([msg.type, ''], function (ordinal, type) {
 							Q.handle(
 								Q.getObject([publisherId, streamName, type], _streamMessageHandlers),
 								Q.plugins.Streams,
-								[stream, msg]
+								params
 							);
 						});
 					});
