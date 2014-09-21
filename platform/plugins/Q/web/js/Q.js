@@ -1974,7 +1974,7 @@ Evp.throttle = function _Q_Event_prototype_throttle(milliseconds, key) {
  * @param {String|Boolean|Q.Tool} key Optional key to pass to event.add (see docs for that method).
  * @return {Q.Event} A new Q.Event object
  */
-Evp.queue = function _Q_Event_prototype_throttle(milliseconds, key) {
+Evp.queue = function _Q_Event_prototype_queue(milliseconds, key) {
 	var newEvent = new Q.Event();
 	this.add(Q.queue(newEvent.handle, milliseconds), key);
 	return newEvent;
@@ -2844,12 +2844,13 @@ Q.throttle = function (original, milliseconds, defaultValue) {
  * @static
  * @method queue
  * @param {Function} original The function to wrap
- * @param {Number} milliseconds The number of milliseconds
+ * @param {Number} milliseconds The number of milliseconds, defaults to 0
  * @return {Function} The wrapper function
  */
 Q.queue = function (original, milliseconds) {
 	var _queue = [];
 	var _timeout = null;
+	milliseconds = milliseconds || 0;
 	function _Q_queue_next() {
 		if (!_queue.length) {
 			_timeout = null;

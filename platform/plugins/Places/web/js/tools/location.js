@@ -36,7 +36,7 @@ Q.Tool.define("Places/location", function (options) {
 			};
 			_showMap(latitude, longitude, miles);
 		});
-		state.stream = s; // in case it was missing before
+		state.stream = stream; // in case it was missing before
 	});
 	
 	Q.Streams.retainWith(this)

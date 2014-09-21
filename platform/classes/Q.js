@@ -884,12 +884,13 @@ Q.throttle = function (original, milliseconds, defaultValue) {
  * @static
  * @method queue
  * @param {Function} original The function to wrap
- * @param {Number} milliseconds The number of milliseconds, can be 0
+ * @param {Number} milliseconds The number of milliseconds, defaults to 0
  * @return {Function} The wrapper function
  */
 Q.queue = function (original, milliseconds) {
 	var _queue = [];
 	var _timeout = null;
+	milliseconds = milliseconds || 0;
 	function _Q_queue_next() {
 		if (!_queue.length) {
 			_timeout = null;
