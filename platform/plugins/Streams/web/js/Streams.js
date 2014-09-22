@@ -964,8 +964,9 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 			_retainedStreams[ps] = this;
 			callback && callback.call(this, err, stream);
 			
+			var f = this.fields;
 			_triggerOnRefresh(
-				this.publisherId, this.name, this.type,
+				f.publisherId, f.name, f.type,
 				this, []
 			);
 		});
@@ -3194,7 +3195,7 @@ Q.onInit.add(function _Streams_onInit() {
 				
 				if (!cached) {
 					_triggerOnRefresh(
-						this.publisherId, this.name, this.type,
+						msg.publisherId, msg.name, msg.type,
 						this, [message, messages]
 					);
 				}
