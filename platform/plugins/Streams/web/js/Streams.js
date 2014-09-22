@@ -441,7 +441,16 @@ Streams.get = function (publisherId, streamName, callback, extra) {
 					var params = [err, data, stream];
 					Streams.onError.handle(msg, params);
 				}
-				return callback && callback.call(stream, err, stream, extra);
+				var ret = callback && callback.call(stream, err, stream, extra);
+				if (ret === false) {
+					return false;
+				}
+				var f = stream.fields;
+				_triggerOnRefresh(
+					f.publisherId, f.name, f.type,
+					stream, []
+				);
+				return ret;
 			}
 		);
 	}, extra);
@@ -963,12 +972,6 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 			updateStream(_retainedStreams[ps], this.fields, changed);
 			_retainedStreams[ps] = this;
 			callback && callback.call(this, err, stream);
-			
-			var f = this.fields;
-			_triggerOnRefresh(
-				f.publisherId, f.name, f.type,
-				this, []
-			);
 		});
 		result = true;
 	}

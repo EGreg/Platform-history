@@ -24,6 +24,10 @@ Q.Tool.define("Places/location", function (options) {
 	
 	$(tool.element).addClass('Places_location_checking');
 	
+	var pipe = Q.pipe(['info', 'show'], function (params) {
+		_showMap.apply(this, params.info);
+	});
+	
 	Q.Streams.Stream
 	.onRefresh(publisherId, streamName)
 	.set(function () {
@@ -33,7 +37,7 @@ Q.Tool.define("Places/location", function (options) {
 		if (miles) {
 			tool.$('.Places_location_miles').val(miles);
 		};
-		_showMap(latitude, longitude, miles);
+		pipe.fill('info')(latitude, longitude, miles);
 		state.stream = this; // in case it was missing before
 	});
 	
@@ -55,11 +59,13 @@ Q.Tool.define("Places/location", function (options) {
 				.addClass('Places_location_obtaining');
 		} else {
 			setTimeout(function () {
-				_showMap(latitude, longitude, miles);
+				pipe.fill('show')();
 			}, state.map.delay);
 		}
 		
-		stream.refresh(null, { messages: true });
+		if (Q.getter.usingCached) {
+			stream.refresh();
+		}
 	});
 	
 	tool.$('.Places_location_miles').on('change', function () {

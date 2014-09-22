@@ -676,6 +676,7 @@ Q.getter = function _Q_getter(original, options) {
 				cbpos = cached.cbpos;
 				if (callbacks[cbpos]) {
 					wrapper.emit('result', cached.subject, cached.params, arguments2, ret, original);
+					Q.getter.usingCached = true;
 					callbacks[cbpos].apply(cached.subject, cached.params);
 					ret.result = Q.getter.CACHED;
 					wrapper.emit('executed', this, arguments2, ret);
@@ -683,6 +684,7 @@ Q.getter = function _Q_getter(original, options) {
 				}
 			}
 		}
+		Q.getter.usingCached = false;
 
 		_waiting[key] = _waiting[key] || [];
 		_waiting[key].push({
@@ -722,7 +724,7 @@ Q.getter = function _Q_getter(original, options) {
 						wrapper.emit('result', this, arguments, arguments2, wk[i].ret, original);
 						wk[i].callbacks[cbpos].apply(this, arguments);
 					}
-					delete _waiting[key]; // check if need to delete item by item ***
+					delete _waiting[key];
 
 					// tell throttle to execute the next function, if any
 					if (wrapper.throttle && wrapper.throttle.throttleNext) {
