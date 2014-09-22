@@ -234,6 +234,28 @@ Streams.onMessage = Q.Event.factory(_messageHandlers, ["", ""]);
 Streams.onConstruct = Q.Event.factory(_constructHandlers, [""]);
 
 /**
+ * Returns Q.Event that should be used to update any stream representations
+ * @event onConstruct
+ * @param type {String} type of the stream being refreshed on the client side
+ * @return {Q.Event}
+ */
+Streams.onRefresh = Q.Event.factory(_refreshHandlers, [""]);
+Streams.onRefresh.ms = 75;
+
+var _triggerOnRefresh = Q.debounce(
+	function (publisherId, streamName, streamType, context, args) {
+		var handler = Q.getObject([streamType], _refreshHandlers);
+		Q.handle(handler, context, args);
+		handler = Q.getObject(
+			[publisherId, streamName], 
+			_streamRefreshHandlers
+		);
+		Q.handle(handler, context, args);
+	},
+	Streams.onRefresh.ms
+);
+
+/**
  * Returns Q.Event that occurs on some socket event coming from socket.io
  * that is meant to be processed by the Streams API.
  * @event onEvent
@@ -582,7 +604,8 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 
 				// update the Streams.get cache
 				if (f.publisherId && f.name) {
-					Streams.get.cache.each([f.publisherId, f.name], function (k, v) {
+					Streams.get.cache.each([f.publisherId, f.name],
+					function (k, v) {
 						Streams.get.cache.remove(k);
 					});
 					Streams.get.cache.set(
@@ -706,6 +729,8 @@ Streams.getParticipating = function(callback) {
  * @param {Function} callback optional callback
  * @param {Object} [options] A hash of options, including:
  *   @param {Boolean} [options.messages] If set to true, then besides just reloading the stream, attempt to catch up on the latest messages
+ *   @param {Number} [options.max] The maximum number of messages to wait and hope they will arrive via sockets. Any more and we just request them again.
+ *   @param {Number} [options.unlessSocket] Whether to avoid doing any requests when a socket is attached
  *   @param {Array} [options.duringEvents] Streams.refresh.options.duringEvents are the window events that can lead to an automatic refresh
  *   @param {Number} [options.minSeconds] Streams.refresh.options.minEvents is the minimum number of seconds to wait between automatic refreshes
  * @return {boolean} whether the refresh occurred
@@ -938,6 +963,11 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 			updateStream(_retainedStreams[ps], this.fields, changed);
 			_retainedStreams[ps] = this;
 			callback && callback.call(this, err, stream);
+			
+			_triggerOnRefresh(
+				this.publisherId, this.name, this.type,
+				this, []
+			);
 		});
 		result = true;
 	}
@@ -1685,6 +1715,15 @@ Stream.onUpdatedRelateFrom = Q.Event.factory(_streamUpdatedRelateFromHandlers, [
 Stream.onConstruct = Q.Event.factory(_streamConstructHandlers, ["", ""]);
 
 /**
+ * Returns Q.Event that should be used to update any representaitons of this stream
+ * @event onConstruct
+ * @param publisherId {String} id of publisher which is publishing the stream
+ * @param name {String} name of stream which is being refreshed
+ * @return {Q.Event}
+ */
+Stream.onRefresh = Q.Event.factory(_streamRefreshHandlers, ["", ""]);
+
+/**
  * Join a stream as a participant, so messages start arriving in real time via sockets.
  * May call Streams.join.onError if an error occurs.
  * 
@@ -2304,7 +2343,7 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 					return; // it was already processed
 				}
 				Q.Streams.onEvent('post').handle(message, messages);
-			}), {ascending: true, numeric: true});
+			}, 0), {ascending: true, numeric: true});
 			
 			// if any new messages were encountered, updateMessageCache removed all the cached
 			// results where max < 0, so future calls to Streams.Message.get with max < 0 will
@@ -2327,6 +2366,21 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 Message.wait.options = {
 	max: 5, // maximum number of messages we'll actually wait for, if there's a socket
 	timeout: 1000 // maximum number of milliseconds we'll actually wait for, if there's a socket
+};
+
+var _messageShouldRefreshStream = {};
+
+/**
+ * This affects how the Streams plugin handles the posting of this message
+ * on the front end. Before the message-related events are triggered,
+ * the Streams plugin calls Streams.get to obtain the Stream object.
+ * Normally, this call would wind up using the Streams.get cache, but
+ * this type of message should refresh the stream, then the cache is not used
+ * and the stream is refetched from the server every time the message is posted.
+ * (Of course, Q.getter and Q.batcher still limit the number of requests.)
+ */
+Message.shouldRefreshStream = function (type, should) {
+	_messageShouldRefreshStream[type] = should;
 };
 
 /**
@@ -3015,7 +3069,17 @@ Q.onInit.add(function _Streams_onInit() {
 				0, message, [null, message]
 			);
 			Message.latest[msg.publisherId+"\t"+msg.streamName] = parseInt(msg.ordinal);
-			var cached = Streams.get.cache.get([msg.publisherId, msg.streamName]);
+			var cached = null;
+			if (_messageShouldRefreshStream[msg.type]) {
+				Streams.get.cache.each([msg.publisherId, msg.streamName],
+				function (k, v) {
+					Streams.get.cache.remove(k);
+				});
+			} else {
+				cached = Streams.get.cache.get(
+					[msg.publisherId, msg.streamName]
+				);
+			}
 			Streams.get(msg.publisherId, msg.streamName, function (err) {
 
 				if (err) {
@@ -3126,6 +3190,13 @@ Q.onInit.add(function _Streams_onInit() {
 					break;
 				default:
 					break;
+				}
+				
+				if (!cached) {
+					_triggerOnRefresh(
+						this.publisherId, this.name, this.type,
+						this, [message, messages]
+					);
 				}
 
 				function _relationHandlers(handlers, msg, stream, fields) {

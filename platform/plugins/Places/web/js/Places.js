@@ -27,6 +27,8 @@ Places.loaded = function () {
 	Q.handle(Places.loadGoogleMaps.waitingCallbacks);
 };
 
+Q.Streams.Message.shouldRefreshStream("Places/location/updated", true);
+
 Q.text.Places = {
 
 

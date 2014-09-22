@@ -25,18 +25,16 @@ Q.Tool.define("Places/location", function (options) {
 	$(tool.element).addClass('Places_location_checking');
 	
 	Q.Streams.Stream
-	.onMessage(publisherId, streamName, 'Places/location/updated')
-	.set(function (stream, msg) {
-		stream.refresh(function () {
-			var miles = stream.get('miles');
-			var latitude = stream.get('latitude');
-			var longitude = stream.get('longitude');
-			if (miles) {
-				tool.$('.Places_location_miles').val(miles);
-			};
-			_showMap(latitude, longitude, miles);
-		});
-		state.stream = stream; // in case it was missing before
+	.onRefresh(publisherId, streamName)
+	.set(function () {
+		var miles = this.get('miles');
+		var latitude = this.get('latitude');
+		var longitude = this.get('longitude');
+		if (miles) {
+			tool.$('.Places_location_miles').val(miles);
+		};
+		_showMap(latitude, longitude, miles);
+		state.stream = this; // in case it was missing before
 	});
 	
 	Q.Streams.retainWith(this)
