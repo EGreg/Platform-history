@@ -242,19 +242,6 @@ Streams.onConstruct = Q.Event.factory(_constructHandlers, [""]);
 Streams.onRefresh = Q.Event.factory(_refreshHandlers, [""]);
 Streams.onRefresh.ms = 75;
 
-var _triggerOnRefresh = Q.debounce(
-	function (publisherId, streamName, streamType, context, args) {
-		var handler = Q.getObject([streamType], _refreshHandlers);
-		Q.handle(handler, context, args);
-		handler = Q.getObject(
-			[publisherId, streamName], 
-			_streamRefreshHandlers
-		);
-		Q.handle(handler, context, args);
-	},
-	Streams.onRefresh.ms
-);
-
 /**
  * Returns Q.Event that occurs on some socket event coming from socket.io
  * that is meant to be processed by the Streams API.
@@ -946,6 +933,7 @@ Stream.release = function _Stream_release (publisherId, streamName) {
  *   @param {Number} [options.unlessSocket] Whether to avoid doing any requests when a socket is attached
  *   @param {Array} [options.changed] An array of {fieldName: true} pairs naming fields to trigger change events for, even if their values stayed the same
  *   @param {Boolean} [options.evenIfNotRetained] If the stream wasn't retained (for example because it was missing last time), then refresh anyway
+ *   @param {Object} [options.extra] Any extra parameters to pass to the callback
  * @return {boolean} whether the refresh is occurring, or whether it has been canceled
  */
 Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, options) {
@@ -971,13 +959,32 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 			var changed = (options && options.changed) || {};
 			updateStream(_retainedStreams[ps], this.fields, changed);
 			_retainedStreams[ps] = this;
-			callback && callback.call(this, err, stream);
+			if (callback) {
+				var params = [err, stream];
+				if (options && options.extra) {
+					params.concat(extra);
+				}
+				callback.apply(this, params);
+			}
 		});
 		result = true;
 	}
 	_retain = undefined;
 	return true;
 };
+
+var _triggerOnRefresh = Q.debounce(
+	function (publisherId, streamName, streamType, context, args) {
+		var handler = Q.getObject([streamType], _refreshHandlers);
+		Q.handle(handler, context, args);
+		handler = Q.getObject(
+			[publisherId, streamName], 
+			_streamRefreshHandlers
+		);
+		Q.handle(handler, context, args);
+	},
+	Streams.onRefresh.ms
+);
 
 var Sp = Stream.prototype;
 
@@ -1363,9 +1370,15 @@ Sp.invite = function (fields, callback) {
  * If your app is using socket.io, then calling this manually is largely unnecessary.
  * 
  * @method refresh
- * @param {Function} callback This is called when the stream has been updated with the latest messages.
+ * @param {Function} callback This is called when the stream has been refreshed.
  * @param {Object} [options] A hash of options, including:
- *   @param {Boolean} [options.messages] If set to true, then besides just reloading the stream, attempt to catch up on the latest messages
+ *   @param {Boolean} [options.messages] If set to true, then besides just reloading the fields, attempt to catch up on the latest messages
+ *   @param {Number} [options.max] The maximum number of messages to wait and hope they will arrive via sockets. Any more and we just request them again.
+ *   @param {Number} [options.timeout] The maximum amount of time to wait and hope the messages will arrive via sockets. After this we just request them again.
+ *   @param {Number} [options.unlessSocket] Whether to avoid doing any requests when a socket is attached
+ *   @param {Array} [options.changed] An array of {fieldName: true} pairs naming fields to trigger change events for, even if their values stayed the same
+ *   @param {Boolean} [options.evenIfNotRetained] If the stream wasn't retained (for example because it was missing last time), then refresh anyway
+ *   @param {Object} [options.extra] Any extra parameters to pass to the callback
  * @return {boolean} whether the refresh occurred
  */
 Sp.refresh = function _Stream_prototype_refresh (callback, options) {
@@ -2376,12 +2389,10 @@ var _messageShouldRefreshStream = {};
 
 /**
  * This affects how the Streams plugin handles the posting of this message
- * on the front end. Before the message-related events are triggered,
- * the Streams plugin calls Streams.get to obtain the Stream object.
- * Normally, this call would wind up using the Streams.get cache, but
- * this type of message should refresh the stream, then the cache is not used
- * and the stream is refetched from the server every time the message is posted.
- * (Of course, Q.getter and Q.batcher still limit the number of requests.)
+ * on the front end. If true for a particular message type, the stream is
+ * refreshed (if it was cached before) after all the message handlers have run.
+ * You can, of course, implement more complex functionality in message handlers.
+ * @param {Boolean} should Whether the stream should be refreshed. Defaults to false.
  */
 Message.shouldRefreshStream = function (type, should) {
 	_messageShouldRefreshStream[type] = should;
@@ -3073,17 +3084,9 @@ Q.onInit.add(function _Streams_onInit() {
 				0, message, [null, message]
 			);
 			Message.latest[msg.publisherId+"\t"+msg.streamName] = parseInt(msg.ordinal);
-			var cached = null;
-			if (_messageShouldRefreshStream[msg.type]) {
-				Streams.get.cache.each([msg.publisherId, msg.streamName],
-				function (k, v) {
-					Streams.get.cache.remove(k);
-				});
-			} else {
-				cached = Streams.get.cache.get(
-					[msg.publisherId, msg.streamName]
-				);
-			}
+			var cached = Streams.get.cache.get(
+				[msg.publisherId, msg.streamName]
+			);
 			Streams.get(msg.publisherId, msg.streamName, function (err) {
 
 				if (err) {
@@ -3094,6 +3097,7 @@ Q.onInit.add(function _Streams_onInit() {
 
 				var stream = this;
 				var params = [this, message, messages];
+				var usingCached = Q.getter.usingCached;
 				
 				if (cached && ('messageCount' in stream.fields)) {
 					++stream.fields.messageCount; // increment message count
@@ -3196,11 +3200,8 @@ Q.onInit.add(function _Streams_onInit() {
 					break;
 				}
 				
-				if (!cached) {
-					_triggerOnRefresh(
-						msg.publisherId, msg.name, msg.type,
-						this, [message, messages]
-					);
+				if (usingCached && _messageShouldRefreshStream[msg.type]) {
+					stream.refresh();
 				}
 
 				function _relationHandlers(handlers, msg, stream, fields) {
