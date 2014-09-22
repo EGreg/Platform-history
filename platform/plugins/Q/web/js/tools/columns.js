@@ -490,7 +490,7 @@ Q.Tool.define("Q/columns", function(options) {
 		}
 		
 		$div.animate($div.data(dataKey_hide), duration, function () {
-			Q.removeElement(div); // remove it correctly
+			Q.removeElement(div, true); // remove it correctly
 		
 			var $sc = $(state.container);
 			$sc.width($sc.width() - w);

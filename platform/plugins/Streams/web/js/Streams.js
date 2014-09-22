@@ -240,7 +240,6 @@ Streams.onConstruct = Q.Event.factory(_constructHandlers, [""]);
  * @return {Q.Event}
  */
 Streams.onRefresh = Q.Event.factory(_refreshHandlers, [""]);
-Streams.onRefresh.ms = 75;
 
 /**
  * Returns Q.Event that occurs on some socket event coming from socket.io
@@ -433,10 +432,13 @@ Streams.get = function (publisherId, streamName, callback, extra) {
 					return false;
 				}
 				var f = stream.fields;
-				_triggerOnRefresh(
-					f.publisherId, f.name, f.type,
-					stream, []
+				var handler = Q.getObject([f.type], _refreshHandlers);
+				Q.handle(handler, stream, []);
+				handler = Q.getObject(
+					[f.publisherId, f.name], 
+					_streamRefreshHandlers
 				);
+				Q.handle(handler, stream, []);
 				return ret;
 			}
 		);
@@ -973,18 +975,8 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 	return true;
 };
 
-var _triggerOnRefresh = Q.debounce(
-	function (publisherId, streamName, streamType, context, args) {
-		var handler = Q.getObject([streamType], _refreshHandlers);
-		Q.handle(handler, context, args);
-		handler = Q.getObject(
-			[publisherId, streamName], 
-			_streamRefreshHandlers
-		);
-		Q.handle(handler, context, args);
-	},
-	Streams.onRefresh.ms
-);
+Stream.refresh.ms = 75;
+var _debouncedRefresh = Q.debounce(Stream.refresh, Stream.refresh.ms);
 
 var Sp = Stream.prototype;
 
@@ -3201,7 +3193,10 @@ Q.onInit.add(function _Streams_onInit() {
 				}
 				
 				if (usingCached && _messageShouldRefreshStream[msg.type]) {
-					stream.refresh();
+					_debouncedRefresh(
+						stream.fields.publisherId, 
+						stream.fields.name
+					);
 				}
 
 				function _relationHandlers(handlers, msg, stream, fields) {
@@ -3287,7 +3282,7 @@ Q.onInit.add(function _Streams_onInit() {
 }, 'Streams');
 
 Q.Tool.beforeRemove("").set(function (tool) {
-	Streams.release(tool);
+	Streams.release(this);
 }, 'Streams');
 
 Q.Page.beforeUnload("").set(function () {
