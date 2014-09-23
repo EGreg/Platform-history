@@ -57,11 +57,10 @@ Q.Tool.define("Places/location", function (options) {
 				.removeClass('Places_location_obtained')
 				.removeClass('Places_location_checking')
 				.addClass('Places_location_obtaining');
-		} else {
-			setTimeout(function () {
-				pipe.fill('show')();
-			}, state.map.delay);
 		}
+		setTimeout(function () {
+			pipe.fill('show')();
+		}, state.map.delay);
 		
 		if (Q.getter.usingCached) {
 			stream.refresh();

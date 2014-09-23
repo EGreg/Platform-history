@@ -665,7 +665,7 @@ _toolInDialog = function(toolName, toolParams, callback, classContainer){
 	Q.Dialogs.push({
 		url: Q.action(toolName, toolParams),
 		removeOnClose: true,
-		onActivate: function(){
+		onActivate: function() {
 			callback && callback.apply(this, arguments);
 		},
 		apply: true
@@ -966,7 +966,7 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 				if (options && options.extra) {
 					params.concat(extra);
 				}
-				callback.apply(this, params);
+				callback && callback.apply(this, params);
 			}
 		});
 		result = true;
@@ -3195,7 +3195,9 @@ Q.onInit.add(function _Streams_onInit() {
 				if (usingCached && _messageShouldRefreshStream[msg.type]) {
 					_debouncedRefresh(
 						stream.fields.publisherId, 
-						stream.fields.name
+						stream.fields.name,
+						null,
+						{evenIfNotRetained: true}
 					);
 				}
 
