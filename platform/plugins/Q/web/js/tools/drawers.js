@@ -14,6 +14,7 @@
 Q.Tool.define("Q/drawers", function(options) {
 	var tool = this;
 	var state = tool.state;
+	var $te = $(tool.element);
 	var $scrolling = state.$scrolling = 
 		state.fullscreen ? $(window) : $(state.container);
 	state.swapCount = 0;
@@ -23,6 +24,10 @@ Q.Tool.define("Q/drawers", function(options) {
 	if (state.fullscreen || !state.container) {
 		state.container = $(tool.element).parents().eq(-3)[0];
 	}
+	
+	if ($te.css('position') == 'static') {
+		$te.css('position', 'relative');
+	}
 
 	state.$drawers = $(this.element).children();
 	state.currentIndex = 1 - state.initial.index;
@@ -30,7 +35,7 @@ Q.Tool.define("Q/drawers", function(options) {
 		tool.swap(_layout);
 	}, state.initialDelay);
 	
-	$(this.element).parents().each(function () {
+	$te.parents().each(function () {
 		var $this = $(this);
 		$this.data('Q/drawers originalBackground', $this.css('background'));
 		$this.css('background', 'transparent');
@@ -39,7 +44,7 @@ Q.Tool.define("Q/drawers", function(options) {
 	
 	var columnIndex;
 	if (Q.info.isMobile) {
-		$(this.element).parents().each(function () {
+		$te.parents().each(function () {
 			var $this = $(this);
 			if ($this.hasClass('Q_columns_column')) {
 				columnIndex = $this.attr('data-index');
@@ -172,6 +177,10 @@ Q.Tool.define("Q/drawers", function(options) {
 			.removeClass('Q_drawers_notCurrent');
 		$otherDrawer.removeClass('Q_drawers_current')
 			.addClass('Q_drawers_notCurrent');
+			
+		if ($(tool.element).css('position') == 'static') {
+			$(tool.element).css('position', 'relative');
+		}
 		
 		setTimeout(function () {
 			$drawer.add($otherDrawer).add(state.$placeholder).off(eventName);
