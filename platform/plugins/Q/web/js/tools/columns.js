@@ -141,7 +141,8 @@ Q.Tool.define("Q/columns", function(options) {
 	/**
 	 * Opens a column
 	 * @method open
-	 * @param {Object} options Can be used to override various tool options
+	 * @param {Object} options Can be used to override various tool options.
+	 *  Also can include "columnClass".
 	 * @param {Number} index The index of the column to open
 	 * @param {Function} callback Called when the column is opened
 	 */
@@ -196,6 +197,9 @@ Q.Tool.define("Q/columns", function(options) {
 			titleSlot = $('.title_slot', div)[0];
 			columnSlot = $('.column_slot', div)[0];
 		}
+		if (options && options.columnClass) {
+			$div.addClass(options.columnClass);
+		}
 		if (!$close || !$close.length) {
 			$close = !index ? $() : $('<div class="Q_close"></div>');
 			if (Q.info.isMobile) {
@@ -220,11 +224,11 @@ Q.Tool.define("Q/columns", function(options) {
 			$div.css('position', 'relative');
 		}
 
-		$div.attr('data-index', index);
+		$div.attr('data-index', index).addClass('Q_column_'+index);
 		if (options.name) {
 			var n = Q.normalize(options.name);
 			$div.attr('data-name', options.name)
-				.addClass('Q_column_'+n + 'Q_column_'+index);
+				.addClass('Q_column_'+n);
 		}
 
 		var p = Q.pipe();

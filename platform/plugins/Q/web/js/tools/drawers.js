@@ -18,13 +18,17 @@ Q.Tool.define("Q/drawers", function(options) {
 		state.fullscreen ? $(window) : $(state.container);
 	state.swapCount = 0;
 	
+	state.heights = state.heights || [100, 100];
+	
 	if (state.fullscreen || !state.container) {
 		state.container = $(tool.element).parents().eq(-3)[0];
 	}
 
 	state.$drawers = $(this.element).children();
 	state.currentIndex = 1 - state.initial.index;
-	this.swap();
+	setTimeout(function () {
+		tool.swap(_layout);
+	}, state.initialDelay);
 	
 	$(this.element).parents().each(function () {
 		var $this = $(this);
@@ -63,7 +67,8 @@ Q.Tool.define("Q/drawers", function(options) {
 	}
 	
 	var lastScrollingHeight = $scrolling[0].clientHeight || $scrolling.height();
-	Q.onLayout.set(function () {
+	Q.onLayout.set(_layout, tool);
+	function _layout() {
 		// to do: fix for cases where element doesn't take up whole screen
 		if (Q.info.isMobile) {
 			var w = state.drawerWidth = $(window).width();
@@ -85,7 +90,7 @@ Q.Tool.define("Q/drawers", function(options) {
 			});
 		}
 		lastScrollingHeight = $scrolling[0].clientHeight || $scrolling.height();
-	}, tool);
+	}
 },
 
 {
@@ -116,8 +121,9 @@ Q.Tool.define("Q/drawers", function(options) {
 		});
 		return result;
 	},
+	initialDelay: 0,
 	currentIndex: null,
-	heights: [100, 100],
+	heights: null,
 	behind: [true, false],
 	scrollToBottom: [],
 	fullscreen: Q.info.isMobile && Q.info.isAndroid(1000),

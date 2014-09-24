@@ -14,7 +14,7 @@ function Q_drawers_tool($options)
 {
 	$result = '';
 	foreach ($options['drawers'] as $i => $html) {
-		$result .= Q_Html::div("drawer_$i", null, $html);
+		$result .= Q_Html::div("drawer_$i", "Q_drawers_drawer Q_drawers_drawer_$i", $html);
 	}
 	unset($options['drawers']);
 	Q_Response::setToolOptions($options);
