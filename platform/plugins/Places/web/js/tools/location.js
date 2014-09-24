@@ -149,7 +149,7 @@ Q.Tool.define("Places/location", function (options) {
 			var element = tool.$('.Places_location_map')[0];
 	        var map = new google.maps.Map(element, {
 				center: new google.maps.LatLng(latitude, longitude),
-				zoom: 11 - Math.floor(Math.log(miles) / Math.log(2)),
+				zoom: 12 - Math.floor(Math.log(miles) / Math.log(2)),
 				mapTypeId: google.maps.MapTypeId.ROADMAP,
 				draggable: false,
 				panControl: false,
