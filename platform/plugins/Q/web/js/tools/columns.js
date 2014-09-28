@@ -17,9 +17,9 @@
  *  @param {Boolean} [options.back.hide] Whether to hide the back button. Defaults to false, but you can pass true on android, for example.
  *  @param {Object}  [options.close] For customizing the back button on desktop and tablet
  *  @param {String}  [options.close.src] The src of the image to use for the close button
+ *  @param {Object}  [options.close.clickable] If not null, enables the Q/clickable tool with options from here. Defaults to null.
  *  @param {String}  [options.title] You can put a default title for all columns here (which is shown as they are loading)
  *  @param {String}  [options.column] You can put a default content for all columns here (which is shown as they are loading)
- *  @param {Object}  [options.clickable] If not null, enables the Q/clickable tool with options from here. Defaults to null.
  *  @param {Object}  [options.scrollbarsAutoHide] If not null, enables Q/scrollbarsAutoHide functionality with options from here. Enabled by default.
  *  @param {Boolean} [options.fullscreen] Whether to use fullscreen mode on mobile phones, using document to scroll instead of relying on possibly buggy "overflow" CSS implementation. Defaults to true on Android, false everywhere else.
  *  @param {Q.Event} [options.onOpen] Event that happens after a column is opened.
