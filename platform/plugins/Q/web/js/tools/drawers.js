@@ -322,7 +322,7 @@ Q.Tool.define("Q/drawers", function(options) {
 			}).on('touchend', true, function (e) {
 				if (notThisOne) return;
 				if (y2 - y1 > 20) {
-					Q.Tool.byId("Q_drawers").swap(null, function () {
+					tool.swap(null, function () {
 						var $d = state.$drawers.eq(1);
 						var mt = parseInt($d.css('margin-top'));
 						Q.Animation.play(function (x, y) {
