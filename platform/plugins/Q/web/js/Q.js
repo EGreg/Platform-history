@@ -8506,18 +8506,21 @@ function _onPointerMoveHandler(evt) { // see http://stackoverflow.com/a/2553717/
 		}
 		_lastVelocity = velocity;
 		var times = Q.Pointer.movement.times;
-		var totalX = 0, totalY = 0, count = 0;
+		var velocities = Q.Pointer.movement.velocities;
+		var totalX = 0, totalY = 0;
+		var t = _timestamp, tNext;
 		for (var i=times.length-1; i>=1; --i) {
-			if (times[i] < _timestamp - 100) break;
-			var v = Q.Pointer.movement.velocities[i-1];
-			totalX += v.x;
-			totalY += v.y;
-			++count;
+			var tNext = times[i];
+			if (tNext < _timestamp - 100) break;
+			var v = velocities[i-1];
+			totalX += v.x * (t-tNext);
+			totalY += v.y * (t-tNext);
+			t = tNext;
 		}
-		Q.Pointer.movement.movingAverageVelocity = {
-			x: totalX / count, // if we're here then count > 0
-			y: totalY /count
-		};
+		var tDiff = _timestamp - t;
+		Q.Pointer.movement.movingAverageVelocity = tDiff
+			? Q.Pointer.movement.velocities[velocities.length-1]
+			: { x: totalX / tDiff, y: totalY / tDiff };
 		_pointerMoveTimeout = setTimeout(function () {
 			// no movement for a while
 			var noMovement = {x: 0, y: 0};
