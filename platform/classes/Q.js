@@ -1506,22 +1506,28 @@ Q.copy = function _Q_copy(x, fields) {
 };
 
 /**
- * Extends an object with other objects. Similar to the jQuery method.
+ * Extends an object by merging other objects on top. Among other things,
+ *  Q.Events can be extended with Q.Events or objects of {key: handler} pairs,
+ *  Arrays can be extended by other arrays or objects.
+ *  (If an array is being extended by an object with a "replace" property,
+ *   the array is replaced by the value of that property.)
+ *  You can also extend recursively, see the levels parameter.
  * @method extend
  * @param target {Object}
  *  This is the first object. It winds up being modified, and also returned
  *  as the return value of the function.
+ * @param levels {Number}
+ *  Optional. Precede any Object with an integer to indicate that we should 
+ *  also copy that many additional levels inside the object.
  * @param deep {Boolean|Number}
  *  Optional. Precede any Object with a boolean true to indicate that we should
  *  also copy the properties it inherits through its prototype chain.
- *  Precede it with a nonzero integer to indicate that we should also copy
- *  that many additional levels inside the object.
  * @param anotherObject {Object}
  *  Put as many objects here as you want, and they will extend the original one.
  * @return
  *  The extended object.
  */
-Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespace] */ ) {
+Q.extend = function _Q_extend(target /* [[deep,] [levels,] anotherObject], ... */ ) {
 	var length = arguments.length;
 	var namespace = undefined;
 	if (typeof arguments[length-1] === 'string') {
@@ -1553,19 +1559,23 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 			target = target.concat(arg);
 		} else {
 			for (var k in arg) {
+				if (deep !== true 
+				&& (!arg.hasOwnProperty || !arg.hasOwnProperty(k))
+				&& (arg.hasOwnProperty && (k in arg))) {
+					continue;
+				}
 				var argk = arg[k];
-				if (deep === true 
-					|| (arg.hasOwnProperty && arg.hasOwnProperty(k))
-					|| (!arg.hasOwnProperty && (k in arg)))
-				{
-					if (levels && (
-						Q.isPlainObject(argk)
-						|| (Q.typeOf(argk) === 'array' && Q.typeOf(argk) === 'array')
-					)) {
-						target[k] = Q.extend(target[k], deep, levels-1, argk);
-					} else {
-						target[k] = Q.copy(argk);
-					}
+				var ttk = Q.typeOf(target[k]);
+				var tak = Q.typeOf(argk);
+				if (levels && (
+					Q.isPlainObject(argk)
+					|| (ttk === 'array' && tak === 'array')
+				)) {
+					target[k] = (ttk === 'array' && ('replace' in argk))
+						? Q.copy(argk.replace)
+						: Q.extend(target[k], deep, levels-1, argk);
+				} else {
+					target[k] = Q.copy(argk);
 				}
 			}
 		}

@@ -339,7 +339,16 @@ class Q_Tree
 	 */
 	protected static function merge_internal ($array1 = array(), $array2 = array())
 	{
-		$second_is_json_array = true;
+		$first_is_json_array = $second_is_json_array = true;
+		foreach ($array1 as $key => $value) {
+			if (!is_int($key)) {
+				$first_is_json_array = false;
+				break;
+			}
+		}
+		if ($first_is_json_array and isset($array2['replace'])) {
+			return $array2['replace'];
+		}
 		foreach ($array2 as $key => $value) {
 			if (!is_int($key)) {
 				$second_is_json_array = false;
@@ -356,7 +365,6 @@ class Q_Tree
 					// resulting key in the result
 					$result[] = $value;
 				}
-				continue;
 			} else if (array_key_exists($key, $result)) {
 				if (is_array($value) and is_array($result[$key])) {
 					// key already in result and both values are arrays

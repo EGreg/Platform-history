@@ -19,8 +19,6 @@ Q.Tool.define("Q/drawers", function(options) {
 		state.fullscreen ? $(window) : $(state.container);
 	state.swapCount = 0;
 	
-	state.heights = state.heights || [100, 100];
-	
 	if (state.fullscreen || !state.container) {
 		state.container = $(tool.element).parents().eq(-3)[0];
 	}
@@ -128,7 +126,7 @@ Q.Tool.define("Q/drawers", function(options) {
 	},
 	initialDelay: 0,
 	currentIndex: null,
-	heights: null,
+	heights: [100, 100],
 	behind: [true, false],
 	scrollToBottom: [],
 	fullscreen: Q.info.isMobile && Q.info.isAndroid(1000),

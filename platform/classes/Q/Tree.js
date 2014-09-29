@@ -260,8 +260,12 @@ module.exports = function (linked) {
 	};
 
 	function _merge(first, second) {
-		var result = (Q.typeOf(second) === 'object' ? {} : []), k;
+		var result = (Q.typeOf(second) === 'object' ? {} : []);
+		var k;
 		// copy first to the result
+		if (Q.typeOf(first) === 'array' && second.replace) {
+			return second.replace;
+		}
 		for (k in first) {
 			result[k] = first[k];
 		}

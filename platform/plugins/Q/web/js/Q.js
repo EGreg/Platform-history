@@ -1151,23 +1151,27 @@ Q.copy = function _Q_copy(x, fields) {
 };
 
 /**
- * Extends an object with properties from one or more other objects.
- * 
- * @static
+ * Extends an object by merging other objects on top. Among other things,
+ *  Q.Events can be extended with Q.Events or objects of {key: handler} pairs,
+ *  Arrays can be extended by other arrays or objects.
+ *  (If an array is being extended by an object with a "replace" property,
+ *   the array is replaced by the value of that property.)
+ *  You can also extend recursively, see the levels parameter.
  * @method extend
- * @param {Object} target
+ * @param target {Object}
  *  This is the first object. It winds up being modified, and also returned
  *  as the return value of the function.
- * @param  {Boolean|Number} deep
+ * @param levels {Number}
+ *  Optional. Precede any Object with an integer to indicate that we should 
+ *  also copy that many additional levels inside the object.
+ * @param deep {Boolean|Number}
  *  Optional. Precede any Object with a boolean true to indicate that we should
  *  also copy the properties it inherits through its prototype chain.
- *  Precede it with a nonzero integer to indicate that we should also copy
- *  that many additional levels inside the object.
- * @param {Object} anotherObject
+ * @param anotherObject {Object}
  *  Put as many objects here as you want, and they will extend the original one.
- * @param {String} namespace
- *  At the end, you can specify namespace to add to handlers added to any Q.Event during this operation
- * @return {Object}
+ * @param namespace {String}
+ *  Optional namespace to use when extending encountered Q.Event objects
+ * @return
  *  The extended object.
  */
 Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespace] */ ) {
@@ -1184,9 +1188,9 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 	var deep = false, levels = 0;
 	var type = Q.typeOf(target);
 	var targetIsEvent = (type === 'Q.Event');
-	var k, a, m;
-	for (var i=1; i<length; ++i) {
-		var arg = arguments[i];
+	var i, arg, k, argk, m, ttk;
+	for (i=1; i<length; ++i) {
+		arg = arguments[i];
 		if (!arg) {
 			continue;
 		}
@@ -1215,30 +1219,31 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 			target = target.concat(arg);
 		} else {
 			for (k in arg) {
-				if (deep === true
-					|| (arg.hasOwnProperty && arg.hasOwnProperty(k))
-					|| (!arg.hasOwnProperty && (k in arg)))
-				{
-					a = arg[k];
-					if ((k in target) && Q.typeOf(target[k]) === 'Q.Event') {
-						if (a && a.constructor === Object) {
-							for (m in a) {
-								target[k].set(a[m], m);
-							}
-						} else {
-							target[k].set(a, namespace);
+				if (deep !== true 
+				&& (!arg.hasOwnProperty || !arg.hasOwnProperty(k))
+				&& (arg.hasOwnProperty && (k in arg))) {
+					continue;
+				}
+				argk = arg[k];
+				ttk = Q.typeOf(target[k]);
+				tak = Q.typeOf(argk);
+				if ((k in target) && Q.typeOf(target[k]) === 'Q.Event') {
+					if (Q.isPlainObject(argk)) {
+						for (var m in argk) {
+							target[k].set(argk[m], m);
 						}
-					} else if (!levels
-					|| Q.typeOf(a) === 'Q.Event'
-					|| (
-						(!Q.isPlainObject(a) || a.constructor !== Object)
-						&& (Q.typeOf(a) !== 'array'
-						    || Q.typeOf(target[k]) !== 'array')
-					)) {
-						target[k] = Q.copy(a);
 					} else {
-						target[k] = Q.extend(target[k], deep, levels-1, a);
+						target[k].set(argk, namespace);
 					}
+				} else if (!levels || Q.typeOf(argk) === 'Q.Event' || !(
+					Q.isPlainObject(argk)
+					|| (ttk === 'array' && tak === 'array')
+				)) {
+					target[k] = Q.copy(argk);
+				} else {
+					target[k] = (ttk === 'array' && ('replace' in argk))
+						? Q.copy(argk.replace)
+						: Q.extend(target[k], deep, levels-1, argk);
 				}
 			}
 		}
