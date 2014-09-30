@@ -219,6 +219,16 @@ function (o) {
 		//	return false;
 		//});
 		var pos = null;
+		var $scrollable = null;
+		$this.parents().each(function () {
+			var $t = $(this);
+			var overflow = $t.css('overflow');
+			if (['hidden', 'visible'].indexOf(overflow) < 0) {
+				$scrollable = $t;
+				return false;
+			}
+		});
+		var st = $scrollable && $scrollable.scrollTop();
 		Q.Pointer.onCancelClick.set(function (e, extraInfo) {
 			if (!extraInfo) {
 				return false;
@@ -227,9 +237,12 @@ function (o) {
 				extraInfo.toX, 
 				extraInfo.toY
 			));
-			var overElement = (jq.closest(triggers).length > 0);
-			if (overElement) {
-				return false;
+			if (!$scrollable || $scrollable.scrollTop() == st) {
+				// no scrolling occurred
+				var overElement = (jq.closest(triggers).length > 0);
+				if (overElement) {
+					return false; // click doesn't have to be canceled
+				}
 			}
 			anim && anim.pause();
 			scale(1);

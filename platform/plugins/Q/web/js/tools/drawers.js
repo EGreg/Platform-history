@@ -128,7 +128,7 @@ Q.Tool.define("Q/drawers", function(options) {
 	currentIndex: null,
 	heights: [100, 100],
 	behind: [true, false],
-	scrollToBottom: [],
+	bottom: [false, false],
 	fullscreen: Q.info.isMobile && Q.info.isAndroid(1000),
 	foregroundZIndex: 50,
 	beforeSwap: new Q.Event(),
@@ -167,9 +167,13 @@ Q.Tool.define("Q/drawers", function(options) {
 		var scrollEventName = Q.info.isTouchscreen
 			? 'scroll.Q_drawers'
 			: 'scroll.Q_drawers';
+		var scrollingHeight = $scrolling[0].clientHeight || $scrolling.height();
+		var scrollTop = state.bottom[otherIndex]
+			? -scrollingHeight + state.heights[index] + $otherDrawer.height()
+			: 0;
 		
 		$scrolling.off(scrollEventName);
-		$scrolling.scrollTop(0);
+		$scrolling.scrollTop(scrollTop);
 		
 		$drawer.addClass('Q_drawers_current')
 			.removeClass('Q_drawers_notCurrent');
@@ -207,6 +211,10 @@ Q.Tool.define("Q/drawers", function(options) {
 			state.drawerOffset = $otherDrawer.offset();
 			$otherDrawer.css('position', 'relative');
 			
+			$scrolling.scrollTop(
+				state.bottom[index] ? $scrolling[0].scrollHeight : 0
+			);
+			
 			var $pe;
 			if ($pe = state.$pinnedElement) {
 				state.$placeholder.before($pe).remove();
@@ -230,7 +238,7 @@ Q.Tool.define("Q/drawers", function(options) {
 				width: sWidth,
 				zIndex: $(state.container).css('zIndex')
 			}).offset(state.drawerOffset)
-			.activate(); // otherwise Q.find might not have found this element!
+			.activate(); // Q.find missed it outside the tool's element
 			if (state.behind[index]) {
 				$otherDrawer.css({cursor: 'pointer'});
 			}
