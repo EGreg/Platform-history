@@ -219,16 +219,11 @@ function (o) {
 		//	return false;
 		//});
 		var pos = null;
-		var $scrollable = null;
-		$this.parents().each(function () {
+		container.parents().each(function () {
 			var $t = $(this);
-			var overflow = $t.css('overflow');
-			if (['hidden', 'visible'].indexOf(overflow) < 0) {
-				$scrollable = $t;
-				return false;
-			}
+			$t.data('Q/clickable scrollTop', $t.scrollTop());
+			$t.data('Q/clickable transform', $t.css('transform'));
 		});
-		var st = $scrollable && $scrollable.scrollTop();
 		Q.Pointer.onCancelClick.set(function (e, extraInfo) {
 			if (!extraInfo) {
 				return false;
@@ -237,8 +232,17 @@ function (o) {
 				extraInfo.toX, 
 				extraInfo.toY
 			));
-			if (!$scrollable || $scrollable.scrollTop() == st) {
-				// no scrolling occurred
+			var scrolled = false;
+			container.parents().each(function () {
+				var $t = $(this);
+				if ($t.data('Q/clickable scrollTop') != $t.scrollTop()
+				|| $t.data('Q/clickable transform') != $t.css('transform')) {
+					// there was some scrolling of parent elements
+					scrolled = true;
+					return false;
+				}
+			});
+			if (!scrolled) {
 				var overElement = (jq.closest(triggers).length > 0);
 				if (overElement) {
 					return false; // click doesn't have to be canceled
@@ -250,6 +254,11 @@ function (o) {
 		$(window).on([Q.Pointer.end, '.Q_clickable'], onRelease);
 		$(window).on('release.Q_clickable', onRelease);
 		function onRelease (evt) {
+			container.parents().each(function () {
+				$(this).removeData(
+					['Q/clickable scrollTop', 'Q/clickable transform']
+				);
+			});
 			var jq;
 			if (evt.type === 'release') {
 				jq = $this;

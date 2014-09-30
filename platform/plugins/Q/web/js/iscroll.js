@@ -69,6 +69,7 @@ var m = Math,
 	})(),
 	cancelFrame = (function () {
 		return window.cancelRequestAnimationFrame ||
+			window.cancelAnimationFrame || 
 			window.webkitCancelAnimationFrame ||
 			window.webkitCancelRequestAnimationFrame ||
 			window.mozCancelRequestAnimationFrame ||
