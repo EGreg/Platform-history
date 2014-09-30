@@ -31,7 +31,7 @@
      */
     Q.Tool.jQuery('Q/scrollIndicators',
 
-        function (o) {
+        function _Q_scrollIndicators(o) {
 
             if (!o.type)
             {

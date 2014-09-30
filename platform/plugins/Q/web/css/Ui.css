@@ -1761,6 +1761,7 @@ input[type=radio] { margin-right: 5px; }
 .Q_columns_column .column_slot {
 	clear: both;
 	overflow: auto;
+	position: relative;
 }
 
 .Q_columns_tool.Q_fullscreen {

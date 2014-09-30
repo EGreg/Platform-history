@@ -10,7 +10,7 @@
 
 Q.Tool.jQuery("Q/clickfocus",
 
-function (o) {
+function _Q_clickfocus(o) {
 	if (this.is('input, textarea, select')) {
 		this.click();
 	}

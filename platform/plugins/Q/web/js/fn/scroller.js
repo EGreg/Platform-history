@@ -42,7 +42,7 @@
  *	 Reserved parameter, can be used differently in different situations.
  *	 For example for passing Q.Event or callback for 'bind' command.
  */
-Q.Tool.jQuery("Q/scroller", function (o) {
+Q.Tool.jQuery("Q/scroller", function _Q_scroller(o) {
 
         _initScroller(o);
 

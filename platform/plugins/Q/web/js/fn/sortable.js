@@ -65,7 +65,7 @@
  */
 Q.Tool.jQuery('Q/sortable',
 
-    function (options) {
+    function _Q_sortable(options) {
 
         var $this = $(this);
         var state = $this.state('Q/sortable');

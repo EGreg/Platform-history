@@ -41,7 +41,7 @@
 */
 Q.Tool.jQuery('Q/actions',
 
-function (options) {
+function _Q_actions(options) {
 	var container = $('<div class="Q_actions_container" />').css({
 		'position': 'absolute',
 		'zIndex': options.zIndex

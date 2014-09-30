@@ -65,7 +65,7 @@
  */
 Q.Tool.jQuery('Q/clickable',
 
-function (o) {
+function _Q_clickable(o) {
 	
 	var $this = $(this);
 	var state = $this.state('Q/clickable');
@@ -181,11 +181,11 @@ function (o) {
 	triggers = stretcher;
 	if ($triggers && $triggers.length) {
 		if (!Q.info.isTouchscreen) {
-			$triggers.mouseenter(
-				function () { container.addClass('Q_hover'); }
-			).mouseleave(
-				function () { container.removeClass('Q_hover'); }
-			);
+			$triggers.mouseenter(function () {
+				container.addClass('Q_hover');
+			}).mouseleave(function () {
+				container.removeClass('Q_hover');
+			});
 		}
 		triggers = triggers.add($triggers);
 	}

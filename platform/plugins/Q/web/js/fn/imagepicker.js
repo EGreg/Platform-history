@@ -42,7 +42,7 @@
  * an object in a format similar to the 'saveSizeName' field. Optional.
  * @param {Event} [options.onError] onError Q.Event which is called if upload failed. Optional.
  */
-Q.Tool.jQuery('Q/imagepicker', function (o) {
+Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 	var $this = this;
 	var input = $('<input type="file" accept="image/gif, image/jpeg, image/png" class="Q_imagepicker_file" />');
 	input.css({

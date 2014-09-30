@@ -7493,7 +7493,7 @@ Q.Socket.prototype.onEvent = function(name) {
  *  Optional parameters to pass to the callback
  */
 Q.Animation = function _Q_Animation(callback, duration, ease, params) {
-	if (!duration) {
+	if (duration == undefined) {
 		duration = 1000;
 	}
 	if (typeof ease == "string") {

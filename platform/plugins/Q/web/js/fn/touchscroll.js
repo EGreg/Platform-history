@@ -53,7 +53,7 @@
  */
 Q.Tool.jQuery('Q/touchscroll',
 
-    function(o)
+    function _Q_touchscroll(o)
     {
 
         return this.each(function(index)

@@ -22,7 +22,7 @@
 
 Q.Tool.jQuery('Q/autogrow',
 
-function (o) {
+function _Q_autogrow(o) {
 
 	var possibleEvents = 'keyup.Q_autogrow'
 		+ ' blur.Q_autogrow'

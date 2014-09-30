@@ -34,7 +34,7 @@
  */
 Q.Tool.jQuery('Q/viewport',
 
-function (options) {
+function _Q_viewport(options) {
 	var container, stretcher;
 	var position = this.css('position');
 	var display = this.css('display');

@@ -35,7 +35,7 @@
  */
 Q.Tool.jQuery('Q/overlay',
 
-function Q_overlay(o) {
+function _Q_overlay(o) {
 	function calculatePosition($this) {
 		var width = $this.outerWidth(), height = $this.outerHeight();
 		if (!width && $this.css('width'))
@@ -236,7 +236,7 @@ function Q_overlay(o) {
  *   @param {Q.Event} [options.onClose]  Q.Event or function which is called when dialog is closed and hidden and probably removed from DOM (if 'removeOnClose' is 'true').
  *   @optional
  */
-Q.Tool.jQuery('Q/dialog', function Q_dialog (o) {
+Q.Tool.jQuery('Q/dialog', function _Q_dialog (o) {
 	
 	var $this = this;
 	var ots = $('.title_slot', $this);

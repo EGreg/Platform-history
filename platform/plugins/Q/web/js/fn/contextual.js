@@ -23,7 +23,7 @@
  * @param {Number} [options.size.width] width
  * @param {Number} [options.size.height] height
  */
-Q.Tool.jQuery('Q/contextual', function (o) {
+Q.Tool.jQuery('Q/contextual', function _Q_contextual(o) {
 
 	var $this = $(this);
 	if ($this.data('Q_contextual')) {

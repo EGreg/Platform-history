@@ -6,12 +6,12 @@
 /**
  * Implements vertical drawers that work on most modern browsers,
  * including ones on touchscreens.
- * @class Q fixed
+ * @class Q drawers
  * @constructor
  * @param {Object}   [options] Override various options for this tool
  * @return Q.Tool
  */
-Q.Tool.define("Q/drawers", function(options) {
+Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 	var tool = this;
 	var state = tool.state;
 	var $te = $(tool.element);
@@ -25,6 +25,13 @@ Q.Tool.define("Q/drawers", function(options) {
 	
 	if ($te.css('position') == 'static') {
 		$te.css('position', 'relative');
+	}
+
+	if (!state.behind[0]) {
+		state.bottom[0] = true;
+	}
+	if (!state.behind[1]) {
+		state.bottom[1] = false;
 	}
 
 	state.$drawers = $(this.element).children();
@@ -211,10 +218,6 @@ Q.Tool.define("Q/drawers", function(options) {
 			state.drawerOffset = $otherDrawer.offset();
 			$otherDrawer.css('position', 'relative');
 			
-			$scrolling.scrollTop(
-				state.bottom[index] ? $scrolling[0].scrollHeight : 0
-			);
-			
 			var $pe;
 			if ($pe = state.$pinnedElement) {
 				state.$placeholder.before($pe).remove();
@@ -223,7 +226,18 @@ Q.Tool.define("Q/drawers", function(options) {
 					left: 0,
 					top: 0
 				});
+			} else {
+				if (!index) {
+					state.drawerOffset = $scrolling.offset();
+					state.drawerOffset.top += state.bottom[1]
+						? 0
+						: scrollingHeight - state.heights[0];
+				}
 			}
+			
+			$scrolling.scrollTop(
+				state.bottom[index] ? $scrolling[0].scrollHeight : 0
+			);
 			
 			state.$placeholder = $('<div class="Q_drawers_placeholder" />')
 				.css({
@@ -257,6 +271,10 @@ Q.Tool.define("Q/drawers", function(options) {
 			Q.handle(animationStartCallback);
 			var o = state[state.swapCount ? 'transition' : 'initial'];
 			if (!state.$placeholder) {
+				return _continue();
+			}
+			if (!o.duration) {
+				state.$placeholder.height(toHeight);
 				return _continue();
 			}
 			Q.Animation.play(function (x, y) {
@@ -337,7 +355,10 @@ Q.Tool.define("Q/drawers", function(options) {
 					});
 				} else {
 					anim = Q.Animation.play(function (x, y) {
-						if (!Q.Pointer.movement.movingAverageVelocity) return;
+						if (!Q.Pointer.movement
+						|| !Q.Pointer.movement.movingAverageVelocity) {
+							return;
+						}
 						var v = Q.Pointer.movement.movingAverageVelocity.y;
 						var t = state.$scrolling.scrollTop();
 						var dampening = 1-y;

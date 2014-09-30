@@ -46,7 +46,7 @@
  * @param {Event} [options.onLoad] onLoad event fires when an image loads, also passes all loaded images
  * @param {Event} [options.onTransition] onTransition event fires when an image loads, also passes all loaded images
  */
-Q.Tool.jQuery('Q/gallery', function (o) {
+Q.Tool.jQuery('Q/gallery', function _Q_gallery(o) {
 	
 	var $this = this, i, image, imgs=[], caps=[], current, tm, gallery;
 	var animTransition, animInterval, animPreviousInterval;
