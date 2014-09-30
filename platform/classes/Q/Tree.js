@@ -237,10 +237,10 @@ module.exports = function (linked) {
 	};
 
 	/**
-	 * Merges a configuration over the top of an existing configuration
+	 * Merges a tree over the top of an existing tree
 	 * @method merge
-	 * @param second {Q.Tree|object} The Object or Q.Tree to merge over the existing tree.
-	 * @param [under=false] {boolean} If true, merges the second under this tree.
+	 * @param second {Q.Tree|Object} The Object or Q.Tree to merge over the existing tree.
+	 * @param [under=false] {boolean} If true, merges the second under this tree, instead of over it.
 	 *  By default, second is merged on top of this tree.
 	 * @return {object} Returns the resulting tree, modified by the merge.
 	 **/

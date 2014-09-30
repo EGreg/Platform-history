@@ -281,7 +281,7 @@ class Q_Tree
 	}
 	
 	/**
-	 * Merges parameters over the top of existing parameters
+	 * Merges trees over the top of existing trees
 	 * @method merge
 	 * @param {array|Q_Tree} $second The array or Q_Tree to merge on top of the existing one
 	 * @return {boolean}

@@ -1188,7 +1188,7 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 	var deep = false, levels = 0;
 	var type = Q.typeOf(target);
 	var targetIsEvent = (type === 'Q.Event');
-	var i, arg, k, argk, m, ttk;
+	var i, arg, k, argk, m, ttk, tak;
 	for (i=1; i<length; ++i) {
 		arg = arguments[i];
 		if (!arg) {
@@ -1225,10 +1225,10 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 					continue;
 				}
 				argk = arg[k];
-				ttk = Q.typeOf(target[k]);
+				ttk = (k in target) && Q.typeOf(target[k]);
 				tak = Q.typeOf(argk);
-				if ((k in target) && Q.typeOf(target[k]) === 'Q.Event') {
-					if (Q.isPlainObject(argk)) {
+				if (ttk === 'Q.Event') {
+					if (argk && arg.constructor === Q.Event) {
 						for (var m in argk) {
 							target[k].set(argk[m], m);
 						}

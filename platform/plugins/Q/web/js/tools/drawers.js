@@ -333,8 +333,10 @@ Q.Tool.define("Q/drawers", function(options) {
 						var v = Q.Pointer.movement.movingAverageVelocity.y;
 						var t = state.$scrolling.scrollTop();
 						var dampening = 1-y;
-						state.$scrolling.scrollTop(t-v*this.sinceLastFrame*dampening);
-					}, 3000, Q.Animation.ease.power(3));
+						state.$scrolling.scrollTop(
+							t-v*this.sinceLastFrame*dampening
+						);
+					}, 3000, Q.Animation.ease.power(3.5));
 				}
 				y1 = y2 = undefined;
 			});
