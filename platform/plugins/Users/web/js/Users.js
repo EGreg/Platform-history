@@ -226,8 +226,8 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 		// check if user is connected to facebook
 		FB_getLoginStatus(function(response) {
 			if (response.status === 'connected') {
-				var fb_uid = response.authResponse.userID;
-				var ignoreUid = Q.cookie('Users_ignoreFacebookUid');
+				var fb_uid = parseInt(response.authResponse.userID);
+				var ignoreUid = parseInt(Q.cookie('Users_ignoreFacebookUid'));
 				// the following line prevents multiple prompts for the same user,
 				// which can be a problem especially if the authenticate() is called
 				// multiple times on the same page, or because the page is reloaded
@@ -365,7 +365,7 @@ Users.prompt = function(provider, uid, authCallback, cancelCallback, options) {
 		var tookAction = false;
 
 		var content_div = $('<div />');
-		if (Users.loggedInUser && Users.loggedInUser.fb_uid) {
+		if (Users.loggedInUser && parseInt(Users.loggedInUser.fb_uid)) {
 			content_div.append(_usingInformation(Users.loggedInUser.fb_uid, noLongerUsing));
 			caption = Q.text.Users.prompt.doSwitch
 				.replace(/{\$provider}/, provider)
@@ -683,7 +683,7 @@ Users.logout = function(options) {
 			// if we log out without logging out of facebook,
 			// then we should ignore the logged-in user's fb_uid
 			// when authenticating, until it is forced
-			if (Users.loggedInUser && Users.loggedInUser.fb_uid)
+			if (Users.loggedInUser && parseInt(Users.loggedInUser.fb_uid))
 			Q.cookie('Users_ignoreFacebookUid', Users.loggedInUser.fb_uid);
 			Users.loggedInUser = null;
 			Q.nonce = Q.cookie('Q_nonce');

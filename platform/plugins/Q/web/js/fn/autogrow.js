@@ -67,7 +67,7 @@ function _Q_autogrow(o) {
 		function updateHeight() {
 			tVal = t.value;
 			t.style.height = '0px';
-			var tH = t.scrollHeight + H;
+			var tH = t.scrollHeight; // + H;
 			t.style.height = tH + 'px';
 			setTimeout(function () {
 				c.style.height = t.offsetHeight + 'px';
