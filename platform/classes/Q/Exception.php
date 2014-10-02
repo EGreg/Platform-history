@@ -245,7 +245,7 @@ class Q_Exception extends Exception
 		} else {
 			$trace_string = $this->getTraceAsString();
 		}
-		return coloredString($message, $file, $line, $trace_string);
+		return self::coloredString($message, $file, $line, $trace_string);
 	}
 	
 	/**

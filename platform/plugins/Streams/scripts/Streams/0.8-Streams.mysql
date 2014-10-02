@@ -29,8 +29,8 @@ CREATE TABLE `{$prefix}avatar` (
   `publisherId` varchar(31) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'the user whose avatar is being displayed',
   `updatedTime` timestamp NULL DEFAULT NULL COMMENT 'the time this record was last updated',
   `username` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'just a cache of the username',
-  `firstName` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'if not empty, the user can see this first name',
-  `lastName` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'if not empty, the user can see this last name',
+  `firstName` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'if not empty, the user can see this first name',
+  `lastName` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'if not empty, the user can see this last name',
   `icon` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'the icon to display',
 PRIMARY KEY (`toUserId`,`publisherId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='stored primarily on publisherId''s Q server';
