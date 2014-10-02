@@ -661,7 +661,7 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 	}
 }
 
-_toolInDialog = function(toolName, toolParams, callback, classContainer){
+function _toolInDialog(toolName, toolParams, callback, classContainer) {
 	Q.Dialogs.push({
 		url: Q.action(toolName, toolParams),
 		removeOnClose: true,
@@ -2384,6 +2384,7 @@ var _messageShouldRefreshStream = {};
  * on the front end. If true for a particular message type, the stream is
  * refreshed (if it was cached before) after all the message handlers have run.
  * You can, of course, implement more complex functionality in message handlers.
+ * @param {type} The type of the message
  * @param {Boolean} should Whether the stream should be refreshed. Defaults to false.
  */
 Message.shouldRefreshStream = function (type, should) {

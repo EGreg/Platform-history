@@ -15,7 +15,12 @@
 		"exception": {
 			"showTrace": false,
 			"showFileAndLine": false,
-			"nodeLogName": null
+			"nodeLogName": null,
+			"colors": {
+				"message": ["red", "light_gray"],
+				"fileAndLine": ["black", "light_gray"],
+				"trace": ["black", "light_gray"]
+			}
 		},
 		"web": {
 			"ignoreUserAbort": true,

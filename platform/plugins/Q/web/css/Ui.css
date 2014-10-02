@@ -1739,6 +1739,7 @@ input[type=radio] { margin-right: 5px; }
 	font-weight: normal;
 	color: #555;
 	padding: 5px;
+	opacity: 0.25;
 }
 
 .Q_columns_title .Q_close img {

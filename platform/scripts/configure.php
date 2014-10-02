@@ -1,6 +1,6 @@
 <?php
 if (!defined('RUNNING_FROM_APP') or !defined('CONFIGURE_ORIGINAL_APP_NAME')) {
-	die("This script can only be run from an app template.");
+	die("This script can only be run from an app template.\n");
 }
 
 #Arguments

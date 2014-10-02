@@ -770,8 +770,11 @@ class Q_Utils
 		return false;
 	}
 	
-	static function colored($text, $foreground_color, $background_color = null)
+	static function colored($text, $foreground_color = null, $background_color = null)
 	{
+		if (!$foreground_color and !$background_color) {
+			return $text;
+		}
 		static $foreground_colors = array(
 			'black' => '0;30',
 			'dark_gray' => '1;30',

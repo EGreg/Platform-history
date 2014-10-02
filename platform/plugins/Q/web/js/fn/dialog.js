@@ -6,6 +6,7 @@
  * This is replacement for jQuery Tools overlay, it has similar behavoir and API.
  * @method overlay
  * @param {Object} [options] options is an object of parameters
+ * @param {Boolean} apply Optional. Set to true if the dialog should show the "apply" style button to close dialog
  * @param {String} [options.left] left is a Horizontal position of the overlay, May have 'center' value to be centered horizontally
  * or have a percentage or absolute (pixels) value of offset from the left border of 'alignParent'.
  * Optional
@@ -27,7 +28,6 @@
  * @default true
  * @param {Event} [options.loadUrl] options to override for the call to Q.loadUrl
  * @default {}
- * @param {Boolean} apply Whether the dialog should show the "apply" style button to close dialog
  * @param {Event} [options.beforeLoad] beforeLoad Q.Event or function which is called before overlay is loaded (shown). Optional.
  * @param {Event} [options.onLoad] onLoad  Q.Event or function which is called when overlay is loaded (shown). Optiona.
  * @param {Event} [options.beforeClose] beforeClose Q.Event or function which is called when overlay closing initiated and it's still visible. Optional.

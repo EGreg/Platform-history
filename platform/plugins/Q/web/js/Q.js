@@ -8581,6 +8581,7 @@ Q.Dialogs = {
      * @method push
 	 * @param {Object} options
 	 *	 A hash of options, that can include:
+     *   "apply": Optional. Set to true if the dialog should show the "apply" style button to close dialog
 	 *   "dialog": Optional. If provided, may be Element or jQuery object containing already prepared dialog html
 	 *	       structure with 'title_slot', 'dialog_slot' and appropriate content in them. If it's provided, then
 	 *           'title' and 'content' options given below are ignored.
@@ -8589,7 +8590,6 @@ Q.Dialogs = {
 	 *	 "title": Optional. Dialog title, defaults to 'Dialog'.
 	 *	 "content": Optional. Dialog content, initially defaults to loading throbber.
 	 *   "className": Optional. Maybe a CSS class name or space-separated list of classes to append to the dialog element.
-     *   "apply": Whether the dialog should show the "apply" style button to close dialog
 	 *   "mask": Default is true unless fullscreen. If true, adds a mask to cover the screen behind the dialog.
 	 *	 "fullscreen": Defaults to true only on Android and false on all other platforms. If true, dialog will be shown not as overlay
 	 *								 but instead will be prepended to document.body and all other child elements of the body will be hidden.
