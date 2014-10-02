@@ -245,12 +245,25 @@ class Q_Exception extends Exception
 		} else {
 			$trace_string = $this->getTraceAsString();
 		}
+		return coloredString($message, $file, $line, $trace_string);
+	}
+	
+	/**
+	 * Return colored text that you can output in logs or text mode
+	 * @param {string} $message
+	 * @param {string} $file
+	 * @param {string} $line
+	 * @param {string} $trace
+	 * @return {string}
+	 */
+	static function coloredString($message, $file, $line, $trace)
+	{
 		$colors = Q_Config::get('Q', 'exception', 'colors', array());
 		Q::autoload('Q_Utils');
 		$fields = array(
 			'message' => $message,
 			'fileAndLine' => "in $file ($line)",
-			'trace' => $trace_string
+			'trace' => $trace
 		);
 		foreach ($fields as $f => $v) {
 			$c0 = isset($colors[$f][0]) ? $colors[$f][0] : null;

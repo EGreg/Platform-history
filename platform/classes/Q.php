@@ -145,15 +145,13 @@ class Q
 			case E_NOTICE:
 			case E_USER_WARNING:
 			case E_USER_NOTICE:
-				$context = var_export($errcontext, true);
-				$log = <<<EOT
-PHP ($errno): $errstr
-FILE: $errfile
-LINE: $errline
-CONTEXT: $context
-EOT;
-
-				Q::log($log);
+				$context = Q::var_dump($errcontext, 4, '$', 'text');
+				$dump = Q_Exception::coloredString(
+					$errstr, $errfile, $errline, $context
+				);
+				Q::log("PHP Error($errno): \n\n$dump", null, null, array(
+					'maxLength' => 10000
+				));
 				$type = 'warning';
 				break;
 			default:
@@ -1016,7 +1014,7 @@ EOT;
 	 * @param {bool} $timestamp=true
 	 *  whether to prepend the current timestamp
 	 * @param {array} $options
-	 *  Can be used to override "maxLength"
+	 *  Can be used to override "maxLength" and $depth
 	 * @throws {Q_Exception_MissingFile}
 	 *	If unable to create directory or file for the log
 	 */
@@ -1030,11 +1028,11 @@ EOT;
 			return;
 
 		if (!is_string($message)) {
+			$maxDepth = Q::ifset($options, 'maxDepth', 3);
 			if (!is_object($message)) {
-				$message = Q::var_dump($message, 3, '$', 'text');
-			}
-			elseif (!is_callable(array($message, '__toString'))) {
-				$message = Q::var_dump($message, null, '$', 'text');
+				$message = Q::var_dump($message, $maxDepth, '$', 'text');
+			} else if (!is_callable(array($message, '__toString'))) {
+				$message = Q::var_dump($message, $maxDepth, '$', 'text');
 			}
 		}
 
@@ -1110,7 +1108,7 @@ EOT;
 	 *  optional - label of the dumped variable. Defaults to $.
 	 * @param {boolean} $return_content=null
 	 *  if true, returns the content instead of dumping it.
-	 *  You can also set to "true" to return text instead of HTML
+	 *  You can also set to "text" to return text instead of HTML
 	 * @return {string|null}
 	 */
 	static function var_dump (
@@ -1119,15 +1117,10 @@ EOT;
 		$label = '$',
 		$return_content = null)
 	{
-		if ($return_content === 'text') {
-			$as_text = true;
-		} else {
-			$as_text = Q::textMode();
-		}
-
 		$scope = false;
 		$prefix = 'unique';
 		$suffix = 'value';
+		$as_text = ($return_content === 'text') ? true : Q::textMode();
 
 		if ($scope) {
 			$vals = $scope;
