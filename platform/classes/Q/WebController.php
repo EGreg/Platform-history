@@ -39,7 +39,9 @@ class Q_WebController
 			$slots = Q_Request::slotNames(false);
 			$slots = $slots ? ' slots: ('.implode(',', $slots).') from' : '';
 			$method = Q_Request::method();
-			Q::log("$method$slots url: " . Q_Request::url(true));
+			Q::log("$method$slots url: " . Q_Request::url(true),
+				null, null, array('maxLength' => 10000)
+			);
 			Q_Dispatcher::dispatch();
 			$dispatchResult = Q_Dispatcher::result();
 			if (!isset($dispatchResult)) {
@@ -56,12 +58,15 @@ class Q_WebController
 				Q::log("~" . ceil(Q::milliseconds()) . 'ms+'
 					. ceil(memory_get_peak_usage()/1000) . 'kb.'
 					. " $dispatchResult for $module/$action"
-					. " ($returned_slots)"
+					. " ($returned_slots)",
+					null, null, array('maxLength' => 10000)
 				);
 			} else {
 				Q::log("~" . ceil(Q::milliseconds()) . 'ms+'
 					. ceil(memory_get_peak_usage()/1000) . 'kb.'
-					. " $dispatchResult No route for " . $_SERVER['REQUEST_URI']);
+					. " $dispatchResult No route for " . $_SERVER['REQUEST_URI'],
+					null, null, array('maxLength' => 10000)
+				);
 			}
 		} catch (Exception $exception) {
 			/**

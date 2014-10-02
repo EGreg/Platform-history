@@ -232,6 +232,36 @@ class Q_Exception extends Exception
 	}
 	
 	/**
+	 * Return colored text that you can output in logs or text mode
+	 * @return {string}
+	 */
+	function colored()
+	{
+		$message = $this->getMessage();
+		$file = $this->getFile();
+		$line = $this->getLine();
+		if (is_callable(array($this, 'getTraceAsStringEx'))) {
+			$trace_string = $this->getTraceAsStringEx();
+		} else {
+			$trace_string = $this->getTraceAsString();
+		}
+		$colors = Q_Config::get('Q', 'exception', 'colors', array());
+		Q::autoload('Q_Utils');
+		$fields = array(
+			'message' => $message,
+			'fileAndLine' => "in $file ($line)",
+			'trace' => $trace_string
+		);
+		foreach ($fields as $f => $v) {
+			$c0 = isset($colors[$f][0]) ? $colors[$f][0] : null;
+			$c1 = isset($colors[$f][1]) ? $colors[$f][1] : null;
+			$fields[$f] = Q_Utils::colored($v, $c0, $c1);
+		}
+		$reset = Q_Utils::colored("", "", "");
+		return "$fields[message]\n\n$fields[fileAndLine]\n$fields[trace]\n";
+	}
+	
+	/**
 	 * @property $params
 	 * @protected
 	 * @type array

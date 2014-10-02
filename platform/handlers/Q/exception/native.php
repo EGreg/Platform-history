@@ -7,30 +7,6 @@ function Q_exception_native($params)
 	 * @var Exception $exception 
 	 */
 
-	$message = $exception->getMessage();
-	$file = $exception->getFile();
-	$line = $exception->getLine();
-	if (is_callable(array($exception, 'getTraceAsStringEx'))) {
-		$trace_string = $exception->getTraceAsStringEx();
-	} else {
-		$trace_string = $exception->getTraceAsString();
-	}
-
-	$colors = Q_Config::get('Q', 'exception', 'colors', array());
-	Q::autoload('Q_Utils');
-	$fields = array(
-		'message' => $message,
-		'fileAndLine' => "in $file ($line)",
-		'trace' => $trace_string
-	);
-	foreach ($fields as $f => $v) {
-		$c0 = isset($colors[$f][0]) ? $colors[$f][0] : null;
-		$c1 = isset($colors[$f][1]) ? $colors[$f][1] : null;
-		$fields[$f] = Q_Utils::colored($v, $c0, $c1);
-	}
-	$reset = Q_Utils::colored("", "", "");
-	$colorful = "$fields[message]\n\n$fields[fileAndLine]\n$fields[trace]\n";
-
 	if ($is_ajax = Q_Request::isAjax()) {
 		// Render a JSON layout for ajax
 		switch (strtolower($is_ajax)) {
@@ -45,7 +21,7 @@ function Q_exception_native($params)
 		}
 	} else {
 		if (Q::textMode()) {
-			echo $colorful;
+			echo $exception->colored();
 			exit;
 		}
 		if (($exception instanceof Q_Exception_PhpError) or !empty($exception->messageIsHtml)) {
@@ -66,8 +42,9 @@ function Q_exception_native($params)
 		echo Q::view('Q/layout/html.php', compact('content', 'dashboard', 'title'));
 	}
 	$app = Q_Config::get('Q', 'app', null);
+	$colored = $exception->colored();
 	Q::log(
-		"$app: Exception in " . ceil(Q::milliseconds()) . "ms:\n\n$colorful\n",
+		"$app: Exception in " . ceil(Q::milliseconds()) . "ms:\n\n$colored\n",
 		null, true, array('maxLength' => 10000)
 	);
 }

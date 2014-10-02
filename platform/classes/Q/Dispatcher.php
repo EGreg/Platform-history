@@ -353,6 +353,7 @@ class Q_Dispatcher
 				} else {
 					$partial_response = null;
 				}
+				$colored = $exception->colored();
 				$message = $exception->getMessage();
 				$file = $exception->getFile();
 				$line = $exception->getLine();
@@ -361,7 +362,7 @@ class Q_Dispatcher
 				} else {
 					$trace_string = $exception->getTraceAsString();
 				}
-				self::result("Exception occurred (line $line, $file)\n$message\n$trace_string");
+				self::result("Exception occurred:\n\n$colored");
 				try {
 					self::errors($exception, $module, $partial_response);
 				} catch (Exception $e) {
