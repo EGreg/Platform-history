@@ -1015,13 +1015,16 @@ EOT;
 	 *  The name of log file. Defaults to "$app_name.log"
 	 * @param {bool} $timestamp=true
 	 *  whether to prepend the current timestamp
+	 * @param {array} $options
+	 *  Can be used to override "maxLength"
 	 * @throws {Q_Exception_MissingFile}
 	 *	If unable to create directory or file for the log
 	 */
 	static function log (
 		$message,
 		$key = null,
-		$timestamp = true)
+		$timestamp = true,
+		$options = array())
 	{
 		if (false === Q::event('Q/log', compact('message', 'timestamp', 'error_log_arguments'), 'before'))
 			return;
@@ -1040,7 +1043,9 @@ EOT;
 			$app = defined('APP_DIR') ? basename(APP_DIR) : 'Q App';
 		}
 		$message = "(".(isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : "cli").") $app: $message";
-		$max_len = Q_Config::get('Q', 'log', 'maxLength', ini_get('log_errors_max_len'));
+		$max_len = Q::ifset($options, 'maxLength', 
+			Q_Config::get('Q', 'log', 'maxLength', ini_get('log_errors_max_len'))
+		);
 		$path = (defined('APP_FILES_DIR') ? APP_FILES_DIR : Q_FILES_DIR)
 			.DS.'Q'.DS.Q_Config::get('Q', 'internal', 'logDir', 'logs');
 

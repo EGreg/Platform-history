@@ -282,10 +282,12 @@ class Q_Plugin
 				case '':
 				case 'y':
 				case 'Y':
-					if ($groupfix)
-						if (!chgrp($file, $gid)) echo "[WARN] Couldn't change group for $file";
-					if ($modefix)
-						if (!chmod($file, $mode)) echo "[WARN] Couldn't fix permissions for $files";
+					if ($groupfix and !chgrp($file, $gid)) {
+						echo Q_Utils::colored("[WARN] Couldn't change group for $file", 'red', 'yellow')."\n";
+					}
+					if ($modefix and !chmod($file, $mode)) {
+						echo Q_Utils::colored("[WARN] Couldn't fix permissions for $file", 'red', 'yellow')."\n";
+					}
 					break;
 				default:
 					break;
@@ -602,23 +604,27 @@ EOT;
 
 		$is_win = (substr(strtolower(PHP_OS), 0, 3) === 'win');
 
-		if(is_dir($link) && !$is_win && !is_link($link))
-		{
-			echo "[WARN] Symlink '$link' (target: '$target') was not created".PHP_EOL;
+		if(is_dir($link) && !$is_win && !is_link($link)) {
+			echo Q_Utils::colored(
+				"[WARN] Symlink '$link' (target: '$target') was not created".PHP_EOL, 
+				'red', 'yellow'
+			);
 			return;
 		}
 
-		if (file_exists($target))
-		{
-			if ($is_win && is_dir($link))
+		if (file_exists($target)) {
+			if ($is_win && is_dir($link)) {
 				rmdir($link);
-			elseif (is_link($link))
+			} else if (is_link($link)) {
 				unlink($link);
+			}
 		}
 
-		if(!@symlink($target, $link))
-		{
-			echo "[WARN] Symlink '$link' (target: '$target') was not created".PHP_EOL;
+		if(!@symlink($target, $link)) {
+			echo Q_Utils::colored(
+				"[WARN] Symlink '$link' (target: '$target') was not created".PHP_EOL, 
+				'red', 'yellow'
+			);
 			return;
 		}
 	}

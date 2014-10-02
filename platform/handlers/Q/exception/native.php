@@ -28,6 +28,7 @@ function Q_exception_native($params)
 		$c1 = isset($colors[$f][1]) ? $colors[$f][1] : null;
 		$fields[$f] = Q_Utils::colored($v, $c0, $c1);
 	}
+	$reset = Q_Utils::colored("", "", "");
 	$colorful = "$fields[message]\n\n$fields[fileAndLine]\n$fields[trace]\n";
 
 	if ($is_ajax = Q_Request::isAjax()) {
@@ -65,5 +66,8 @@ function Q_exception_native($params)
 		echo Q::view('Q/layout/html.php', compact('content', 'dashboard', 'title'));
 	}
 	$app = Q_Config::get('Q', 'app', null);
-	Q::log("$app: Exception in " . ceil(Q::milliseconds()) . "ms:\n\n".$colorful);
+	Q::log(
+		"$app: Exception in " . ceil(Q::milliseconds()) . "ms:\n\n$colorful\n",
+		null, true, array('maxLength' => 10000)
+	);
 }
