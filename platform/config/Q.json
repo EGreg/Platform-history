@@ -17,7 +17,7 @@
 			"showFileAndLine": false,
 			"nodeLogName": null,
 			"colors": {
-				"message": ["red", "light_gray"],
+				"message": ["red"],
 				"fileAndLine": ["black", "light_gray"],
 				"trace": ["black", "light_gray"]
 			}
