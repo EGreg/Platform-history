@@ -2,10 +2,10 @@
 
 /**
  * Class for Q object
-* @class Q
-* @constructor
+ * @class Q
+ * @constructor
  * @param {Function} callback , This callback function fires after Q object creation
-*/
+ */
 
 function Q(callback) {
 	priv.init(function () {

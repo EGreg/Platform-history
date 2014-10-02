@@ -63,7 +63,7 @@ module.exports = function (linked) {
 						callback && callback.call(that, err);
 					} else {
 						try {
-							data.replace(new RegExp("\\s*(?!<\")\\/\\*[^\\*]+\\*\\/(?!\")\\s*", 'gi'), '');
+							data = data.replace(/\s*(?!<")\/\*[^\*]+\*\/(?!")\s*/gi, '');
 							data = JSON.parse(data);
 						} catch (e) {
 							callback && callback.call(that, e);
@@ -151,7 +151,7 @@ module.exports = function (linked) {
 					{keys: keys, key: key}
 				);
 			}
-			if (!(key in result)) {
+			if (!result || !(key in result)) {
 				return def;
 			}
 			result = result[key];
@@ -237,10 +237,10 @@ module.exports = function (linked) {
 	};
 
 	/**
-	 * Merges a configuration over the top of an existing configuration
+	 * Merges a tree over the top of an existing tree
 	 * @method merge
-	 * @param second {Q.Tree|object} The Object or Q.Tree to merge over the existing tree.
-	 * @param [under=false] {boolean} If true, merges the second under this tree.
+	 * @param second {Q.Tree|Object} The Object or Q.Tree to merge over the existing tree.
+	 * @param [under=false] {boolean} If true, merges the second under this tree, instead of over it.
 	 *  By default, second is merged on top of this tree.
 	 * @return {object} Returns the resulting tree, modified by the merge.
 	 **/
@@ -260,8 +260,12 @@ module.exports = function (linked) {
 	};
 
 	function _merge(first, second) {
-		var result = (Q.typeOf(second) === 'object' ? {} : []), k;
+		var result = (Q.typeOf(second) === 'object' ? {} : []);
+		var k;
 		// copy first to the result
+		if (Q.typeOf(first) === 'array' && second.replace) {
+			return second.replace;
+		}
 		for (k in first) {
 			result[k] = first[k];
 		}

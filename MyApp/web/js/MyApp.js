@@ -34,6 +34,25 @@ var MyApp = (function (Q, $) {
 			}
 		});
 		
+		// For hiding notices and errors that may be displayed
+		$('#notices li').on(Q.Pointer.fastclick, function () {
+			var $this = $(this), key;
+			$this.css('min-height', 0)
+			.slideUp(300, function () {
+				$(this).remove();
+				if (!$('#notices li').length) {
+					$('#notices_slot').empty();
+				}
+				Q.layout();
+			});
+			if (key = encodeURIComponent($this.attr('data-key'))) {
+				Q.req('Q/notice', 'data', null, { 
+					method: 'delete', 
+					fields: {key: key} 
+				});
+			}
+		}).css('cursor', 'pointer');
+		
 	});
 	
 	Q.page("MyApp/welcome", function () {
@@ -44,7 +63,7 @@ var MyApp = (function (Q, $) {
 	});
 	
 	// example stream
-	Q.Streams.define("MyApp/cool", "js/models/MyApp/cool.js");
+	Q.Streams.define("MyApp/cool", "js/streams/MyApp/cool.js");
 	
 	// example tool
 	Q.Tool.define("MyApp/cool", "js/tools/MyApp/cool.js");

@@ -13,9 +13,9 @@ function Websites_0_8_Streams_mysql()
 	$ofUserId = '';
 	$ofContactLabel = 'admins';
 	$grantedByUserId = null;
-	$readLevel = 40;
-	$writeLevel = 30;
-	$adminLevel = 40;
+	$readLevel = Streams::$READ_LEVEL['messages'];
+	$writeLevel = Streams::$WRITE_LEVEL['edit'];
+	$adminLevel = Streams::$ADMIN_LEVEL['own'];
 	
 	$streams = array(
 		"Streams/images/" => array('type' => "Streams/template", "title" => "", "icon" => "default", "content" => "", "deletable" => true),
@@ -42,9 +42,9 @@ function Websites_0_8_Streams_mysql()
 	
 	$attributes = null;
 	$closedTime = null;
-	$readLevel = 40;
-	$writeLevel = 10;
-	$adminLevel = 20;
+	$readLevel = Streams::$READ_LEVEL['messages'];
+	$writeLevel = Streams::$WRITE_LEVEL['join'];
+	$adminLevel = Streams::$ADMIN_LEVEL['invite'];
 	$inheritAccess = null;
 	
 	$rows = array();

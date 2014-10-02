@@ -1,9 +1,15 @@
 (function (Q, $, window, document, undefined) {
 
 /**
+ * Q Tools
+ * @module Q-tools
+ */
+
+/**
  * Activates placeholder effect on any input and textarea elements contained within this jquery.
  * Attribute placeholder must be set for element
- * @method placeholders
+ * @class Q placeholders
+ * @constructor
  * @param {Object} [options]
  */
 Q.Tool.jQuery('Q/placeholders',
@@ -26,10 +32,15 @@ function () {
 		if(!(plch))
 			return;
 
-		var span = $('<span />').css('position', 'relative').addClass('Q_placeholder')
+		var span = $('<span />')
+			.css('position', 'relative')
+			.addClass('Q_placeholder_container');
+		var cs = $this[0].computedStyle();
+		var csw = cs.width; // the object can change, so get the values now
+		var csh = cs.height;
 		$this.css({
-			'width': $this.width(),
-			'height': $this.height()
+			'width': csw,
+			'height': csh
 		}); // because they might have been percentages
 		Q.each(['left', 'right', 'top', 'bottom'], function (i, pos) {
 			$this.css('padding-'+pos, $this.css('padding-'+pos))
@@ -37,7 +48,6 @@ function () {
 		});
 		$this.wrap(span);
 		span = $this.parent();
-		span.width($this.outerWidth(true)).height($this.outerHeight(true));
 		span.on(Q.Pointer.fastclick, function() {
 			$this.trigger('focus');
 			return false;
@@ -58,8 +68,12 @@ function () {
 			'overflow': 'hidden',
 			'width': $this.css('width'),
 			'height': $this.css('height'),
-			'text-align': $this.css('text-align')
+			'text-align': $this.css('text-align'),
+			'pointer-events': 'none'
 		}).addClass('Q_placeholder').insertAfter($this);
+		if (t === 'input') {
+			placeholder.css('white-space', 'nowrap');
+		}
 		// IE8 workaround
 		placeholder[0].style.fontFamily = $this[0].style.fontFamily;
 		if ($this.val()) {
@@ -74,9 +88,7 @@ function () {
 			if (interval) clearInterval(interval);
 		});
 		$this.data('Q-placeholder', placeholder);
-	});
-	$('input', this).on('keypress keyup change input focus blur Q_refresh', manage);
-	$('textarea', this).on('keypress keyup change input focus blur Q_refresh', manage);
+	}).on('keypress keyup change input focus paste blur Q_refresh', manage);
 	return this;
 
 	function manage(event) {

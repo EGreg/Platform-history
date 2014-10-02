@@ -243,26 +243,32 @@ class Streams_Stream extends Base_Streams_Stream
 					$this->getPrimaryKey(),
 					$magicFieldNames
 				) as $field) {
-					if (in_array($field, $privateFieldNames) || !array_key_exists($field, $modifiedFields)) {
-						$this->fields[$field] = $modifiedFields[$field] = $streamTemplate->$field;
+					if (in_array($field, $privateFieldNames)
+					|| !array_key_exists($field, $modifiedFields)) {
+						$this->$field = $modifiedFields[$field] = $streamTemplate->$field;
 					}
 				}
 			} else {
 				// otherwise (no template) set all private fields to defaults
 				foreach ($privateFieldNames as $field) {
-					$this->fields[$field] = $modifiedFields[$field] = Q_Config::get(
+					$this->$field = $modifiedFields[$field] = Q_Config::get(
 						'Streams', 'types', $this->type, 'defaults', $field,
-						isset(Streams_Stream::$DEFAULTS[$field]) ? Streams_Stream::$DEFAULTS[$field] : null
+						isset(Streams_Stream::$DEFAULTS[$field]) 
+							? Streams_Stream::$DEFAULTS[$field] 
+							: null
 					);
 				}
 			}
-			
+
 			// Assign default values to fields that haven't been set yet
-			foreach ($fieldNames as $f) {
-				if (!array_key_exists($f, $this->fields) and !array_key_exists($f, $modifiedFields)) {
-					$this->fields[$field] = $modifiedFields[$f] = Q_Config::get(
-						'Streams', 'types', $this->type, 'defaults', $f,
-						isset(Streams_Stream::$DEFAULTS[$f]) ? Streams_Stream::$DEFAULTS[$f] : null
+			foreach ($fieldNames as $field) {
+				if (!array_key_exists($field, $this->fields)
+				and !array_key_exists($field, $modifiedFields)) {
+					$this->$field = $modifiedFields[$field] = Q_Config::get(
+						'Streams', 'types', $this->type, 'defaults', $field,
+						isset(Streams_Stream::$DEFAULTS[$field])
+							? Streams_Stream::$DEFAULTS[$field] 
+							: null
 					);
 				}
 			}
@@ -303,7 +309,7 @@ class Streams_Stream extends Base_Streams_Stream
 
 		return parent::beforeSave($modifiedFields);
 	}
-	
+
 	function afterFetch($result)
 	{
 		/**
@@ -360,9 +366,15 @@ class Streams_Stream extends Base_Streams_Stream
 			array('stream' => $this), 'after');
 
 		// Assume that the stream's name is not being changed
-		if ($this->name !== 'Streams/user/firstName' and $this->name !== 'Streams/user/lastName') {
+		if ($this->name !== 'Streams/user/firstName'
+		and $this->name !== 'Streams/user/lastName') {
 			return $result;
 		}
+		if (empty($this->fieldsModified['content'])
+		and empty($this->fieldsModified['readLevel'])) {
+			return $result;
+		}
+
 		if ($this->retrieved) {
 			// Update all avatars corresponding to access rows for this stream
 			$taintedAccess = Streams_Access::select('*')
@@ -413,7 +425,8 @@ class Streams_Stream extends Base_Streams_Stream
 		 */
 		Q::event("Streams/remove/{$stream->type}", compact('stream', 'result'), 'after');
 
-		if ($this->name !== 'Streams/user/firstName' and $this->name !== 'Streams/user/lastName') {
+		if ($this->name !== 'Streams/user/firstName'
+		and $this->name !== 'Streams/user/lastName') {
 			return $result;
 		}
 		
@@ -444,56 +457,76 @@ class Streams_Stream extends Base_Streams_Stream
 		if ($userId === $this->get('asUserId', null)) {
 			return $this;
 		} else {
-			$stream = Streams::fetch($userId, $this->publisherId, $this->name, '*', array('refetch' => true));
-			if (count($stream) !== 1) { // this shall never happen!!!
-				throw new Q_Exception("Error Processing join request for user '$userId'");
+			$stream = Streams::fetchOne($userId, 
+				$this->publisherId, $this->name, '*', 
+				array('refetch' => true)
+			);
+			if (!$stream) { // this should never happen
+				throw new Q_Exception("Error getting {$this->name} stream published by {$this->publisherId} for user '$userId'");
 			}
-			return reset($stream);
+			return $stream;
 		}
 	}
 	
 	/**
-	 * @method getAttributes
+	 * @method getAllAttributes
 	 * @return {array} The array of all attributes set in the stream
 	 */
-	function getAttributes()
+	function getAllAttributes()
 	{
-		return empty($this->attributes) ? array() : json_decode($this->attributes, true);
+		return empty($this->attributes) 
+			? array()
+			: json_decode($this->attributes, true);
 	}
 	
 	/**
 	 * @method getAttribute
-	 * @param {string} $attribute_name The name of the attribute to get
+	 * @param {string} $attributeName The name of the attribute to get
 	 * @param {mixed} $default The value to return if the attribute is missing
 	 * @return {mixed} The value of the attribute, or the default value, or null
 	 */
-	function getAttribute($attribute_name, $default = null)
+	function getAttribute($attributeName, $default = null)
 	{
-		$attr = $this->getAttributes();
-		return isset($attr[$attribute_name]) ? $attr[$attribute_name] : $default;
+		$attr = $this->getAllAttributes();
+		return isset($attr[$attributeName]) ? $attr[$attributeName] : $default;
 	}
 	
 	/**
 	 * @method setAttribute
-	 * @param {string} $attribute_name The name of the attribute to set
+	 * @param {string} $attributeName The name of the attribute to set,
+	 *  or an array of $attributeName => $attributeValue pairs
 	 * @param {mixed} $value The value to set the attribute to
 	 */
-	function setAttribute($attribute_name, $value)
+	function setAttribute($attributeName, $value = null)
 	{
-		$attr = $this->getAttributes();
-		$attr[$attribute_name] = $value;
+		$attr = $this->getAllAttributes();
+		if (is_array($attributeName)) {
+			foreach ($attributeName as $k => $v) {
+				$attr[$k] = $v;
+			}
+		} else {
+			$attr[$attributeName] = $value;
+		}
 		$this->attributes = Q::json_encode($attr);
 	}
 	
 	/**
 	 * @method clearAttribute
-	 * @param {string} $attribute_name The name of the attribute to remove
+	 * @param {string} $attributeName The name of the attribute to remove
 	 */
-	function clearAttribute($attribute_name)
+	function clearAttribute($attributeName)
 	{
-		$attr = $this->getAttributes();
-		unset($attr[$attribute_name]);
+		$attr = $this->getAllAttributes();
+		unset($attr[$attributeName]);
 		$this->attributes = Q::json_encode($attr);
+	}
+	
+	/**
+	 * @method clearAllAttributes
+	 */
+	function clearAllAttributes()
+	{
+		$this->attributes = '{}';
 	}
 	
 	/**
@@ -510,6 +543,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 *  "enthusiasm" => decimal<br/>
 	 *  "userId" => The user who is joining the stream. Defaults to the logged-in user.
 	 *  "noVisit" => If user is already participating, don't post a "Streams/visited" message
+	 *  "skipAccess": if true, skip access check for whether user can join
 	 * @param $participant=null {reference}
 	 *  Optional reference to a participant object that will be filled
 	 *  to point to the participant object, if any.
@@ -519,36 +553,38 @@ class Streams_Stream extends Base_Streams_Stream
 	{
 		$stream = $this->getUserStream($options, $userId);
 
-		if (!$stream->testWriteLevel('join')) {
+		if (empty($options['skipAccess'])
+		and !$stream->testWriteLevel('join')) {
+			if (!$stream->testReadLevel('see')) {
+				throw new Streams_Exception_NoSuchStream();
+			}
 			throw new Users_Exception_NotAuthorized();
 		}
 
-		#Add to participant list
+		// Add to participant list
 		$participant = new Streams_Participant();
 		$participant->publisherId = $stream->publisherId;
 		$participant->streamName = $stream->name;
 		$participant->userId = $userId;
 
-		if($participant->retrieve()) {
+		if($participant->retrieve(null, null, array('ignoreCache' => true))) {
 			if (isset($options['subscribed'])) {
 				$subscribed = empty($options['subscribed']) ? 'no' : 'yes';
-				if ($participant->subscribed !== $subscribed) {
-					$participant->subscribed = $subscribed;
-				}
-			}
-			$type = ($participant->state === 'participating') ? 'visit' : 'join';
+				$participant->subscribed = $subscribed;
+			}	
 			$participant->state = 'participating';
 			if (!$participant->save()) {
 				return false;
 			}
-			// Send a message to Node
-			Q_Utils::sendToNode(array(
-				"Q/method" => "Streams/Stream/$type",
-				"participant" => Q::json_encode($participant->toArray()),
-				"stream" => Q::json_encode($stream->toArray())
-			));
-			// Post a message
+			$type = ($participant->state === 'participating') ? 'visit' : 'join';
 			if (empty($options['noVisit']) or $type !== 'visit') {
+				// Send a message to Node
+				Q_Utils::sendToNode(array(
+					"Q/method" => "Streams/Stream/$type",
+					"participant" => Q::json_encode($participant->toArray()),
+					"stream" => Q::json_encode($stream->toArray())
+				));
+				// Post a message
 				$stream->post($userId, array('type' => "Streams/$type"), true);
 				// Now post Streams/joined message to Streams/participating
 				Streams_Message::post($userId, $userId, 'Streams/participating', array(
@@ -600,6 +636,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 * @param $options=array() {array}
 	 *  An associative array of options. The keys can be:<br/>
 	 *  "userId": The user who is leaving the stream. Defaults to the logged-in user.
+	 *  "skipAccess": if true, skip access check for whether user can join
 	 * @param $participant=null {reference}
 	 *  Optional reference to a participant object that will be filled
 	 *  to point to the participant object, if any.
@@ -608,6 +645,14 @@ class Streams_Stream extends Base_Streams_Stream
 	function leave($options = array(), &$participant = null)
 	{
 		$stream = $this->getUserStream($options, $userId);
+		
+		if (empty($options['skipAccess'])
+		and !$stream->testWriteLevel('join')) {
+			if (!$stream->testReadLevel('see')) {
+				throw new Streams_Exception_NoSuchStream();
+			}
+			throw new Users_Exception_NotAuthorized();
+		}
 		
 		$participant = new Streams_Participant();
 		$participant->publisherId = $stream->publisherId;
@@ -621,7 +666,7 @@ class Streams_Stream extends Base_Streams_Stream
 			));
 		}
 
-		#Remove from participant list
+		// Remove from participant list
 		if ($participant->state === 'left') {
 			return false;
 		}
@@ -670,14 +715,29 @@ class Streams_Stream extends Base_Streams_Stream
 	 *	"untilTime": time limit for subscription, default - null meaning forever
 	 *	"readyTime": time from which user is ready to receive notifications again
 	 *  "userId": the user subscribing to the stream. Defaults to the logged in user.
+	 *  "skipRules": if true, do not attempt to create rules
+	 *  "skipAccess": if true, skip access check for whether user can subscribe
 	 * @return {Streams_Subscription|false}
 	 */
-	function subscribe($options = array()) {
-
+	function subscribe($options = array())
+	{
 		$stream = $this->getUserStream($options, $userId, $user);
 		
+		if (empty($options['skipAccess'])
+		and !$stream->testReadLevel('messages')) {
+			if (!$stream->testReadLevel('see')) {
+				throw new Streams_Exception_NoSuchStream();
+			}
+			throw new Users_Exception_NotAuthorized();
+		}
+		
 		// first make user a participant
-		$stream->join(array("subscribed" => true, "userId" => $userId));
+		$stream->join(array(
+			"userId" => $userId,
+			"subscribed" => true,
+			"noVisit" => true,
+			"skipAccess" => Q::ifset($options, 'skipAccess', false)
+		));
 
 		// check for 'messages' level
 
@@ -713,39 +773,41 @@ class Streams_Stream extends Base_Streams_Stream
 			return false;
 		}
 
-		// Now let's handle rules
-		$template = $stream->getSubscriptionTemplate('Streams_Rule', $userId, $type2);
+		if (empty($options['skipRules'])) {
+			// Now let's handle rules
+			$template = $stream->getSubscriptionTemplate('Streams_Rule', $userId, $type2);
 
-		$rule_success = true;
-		if ($type2 !== 0) {
-			$rule = new Streams_Rule();
-			$rule->ofUserId = $userId;
-			$rule->publisherId = $stream->publisherId;
-			$rule->streamName = $stream->name;
+			$ruleSuccess = true;
+			if ($type2 !== 0) {
+				$rule = new Streams_Rule();
+				$rule->ofUserId = $userId;
+				$rule->publisherId = $stream->publisherId;
+				$rule->streamName = $stream->name;
 
-			// defaults - use if no template or no template value. 
-			$rule->readyTime = isset($options['readyTime']) ? $options['readyTime'] : new Db_Expression('CURRENT_TIMESTAMP');
-			$rule->filter = !empty($template->filter) ? $template->filter : '{"types":[],"labels":[]}';
-			$rule->relevance = !empty($template->relevance) ? $template->relevance : 1;
+				// defaults - use if no template or no template value. 
+				$rule->readyTime = isset($options['readyTime']) ? $options['readyTime'] : new Db_Expression('CURRENT_TIMESTAMP');
+				$rule->filter = !empty($template->filter) ? $template->filter : '{"types":[],"labels":[]}';
+				$rule->relevance = !empty($template->relevance) ? $template->relevance : 1;
 			
-			if (!empty($template->deliver)) {
-				$rule->deliver = $template->deliver;
-			} else {
-				if (isset($user->mobileNumber)) {
-					$deliver = array('mobile' => $user->mobileNumber);
-				} else if (isset($user->emailAddress)) {
-					$deliver = array('email' => $user->emailAddress);
-				} else if (isset($user->mobileNumberPending)) {
-					$deliver = array('mobile' => $user->mobileNumberPending);
-				} else if (isset($user->emailAddressPending)) {
-					$deliver = array('email' => $user->emailAddressPending);
+				if (!empty($template->deliver)) {
+					$rule->deliver = $template->deliver;
 				} else {
-					$deliver = array();
-					$rule_success = false;
+					if (isset($user->mobileNumber)) {
+						$deliver = array('mobile' => $user->mobileNumber);
+					} else if (isset($user->emailAddress)) {
+						$deliver = array('email' => $user->emailAddress);
+					} else if (isset($user->mobileNumberPending)) {
+						$deliver = array('mobile' => $user->mobileNumberPending);
+					} else if (isset($user->emailAddressPending)) {
+						$deliver = array('email' => $user->emailAddressPending);
+					} else {
+						$deliver = array();
+						$ruleSuccess = false;
+					}
+					$rule->deliver = Q::json_encode($deliver);
 				}
-				$rule->deliver = Q::json_encode($deliver);
+				$ruleSuccess = !!$rule->save();
 			}
-			$rule_success = !!$rule->save();
 		}
 
 		// skip error testing for rule save BUT inform node. Node can notify user to check the rules
@@ -753,7 +815,7 @@ class Streams_Stream extends Base_Streams_Stream
 			"Q/method" => "Streams/Stream/subscribe",
 			"subscription" => Q::json_encode($s->toArray()),
 			"stream" => Q::json_encode($stream->toArray()),
-			"success" => Q::json_encode($rule_success)
+			"success" => Q::json_encode($ruleSuccess)
 		));
 		
 		// Post Streams/subscribe message to the stream
@@ -776,12 +838,27 @@ class Streams_Stream extends Base_Streams_Stream
 	 * @method unsubscribe
 	 * @param $options=array() {array}
 	 *  "userId": The user who is unsubscribing from the stream. Defaults to the logged-in user.
+	 *  "skipAccess": if true, skip access check for whether user can unsubscribe
 	 * @return {boolean}
 	 */
 	function unsubscribe($options = array()) {
 
 		$stream = $this->getUserStream($options, $userId);
-		$participant = $stream->join(array('subscribed' => false));
+		
+		if (empty($options['skipAccess'])
+		and !$stream->testReadLevel('messages')) {
+			if (!$stream->testReadLevel('see')) {
+				throw new Streams_Exception_NoSuchStream();
+			}
+			throw new Users_Exception_NotAuthorized();
+		}
+		
+		$participant = $stream->join(array(
+			"userId" => $userId,
+			'subscribed' => false,
+			'noVisit' => true,
+			"skipAccess" => Q::ifset($options, 'skipAccess', false)
+		));
 
 		Q_Utils::sendToNode(array(
 			"Q/method" => "Streams/Stream/unsubscribe",
@@ -803,6 +880,50 @@ class Streams_Stream extends Base_Streams_Stream
 		), true);
 
 		return !!$participant;
+	}
+	
+	/**
+	 * If the user is subscribed, get the Streams_Subscription object.
+	 * Otherwise, returns false, or null if the user isn't logged in.
+	 * @param {string} $ofUserId Defaults to logged-in user's id, if any.
+	 * @return {Streams_Subscription|false|null}
+	 */
+	function subscription($ofUserId = null)
+	{
+		if (!isset($ofUserId)) {
+			$user = Users::loggedInUser();
+			if (!$user) {
+				return null;
+			}
+			$ofUserId = $user->id;
+		}
+		$s = new Streams_Subscription();
+		$s->publisherId = $this->publisherId;
+		$s->streamName = $this->name;
+		$s->ofUserId = $ofUserId;
+		return $s->retrieve();
+	}
+	
+	/**
+	 * If the user is participating, get the Streams_Participant object.
+	 * Otherwise, returns false, or null if the user isn't logged in.
+	 * @param {string} $userId Defaults to logged-in user's id, if any.
+	 * @return {Streams_Subscription|false|null}
+	 */
+	function participant($userId = null)
+	{
+		if (!isset($userId)) {
+			$user = Users::loggedInUser();
+			if (!$user) {
+				return null;
+			}
+			$userId = $user->id;
+		}
+		$p = new Streams_Participant();
+		$p->publisherId = $this->publisherId;
+		$p->streamName = $this->name;
+		$p->userId = $userId;
+		return $p->retrieve();
 	}
 
 	/**
@@ -953,8 +1074,7 @@ class Streams_Stream extends Base_Streams_Stream
 		return array(
 			'success' => $result,
 			'invited' => $userIds,
-			'participating' => $total - $to_invite,
-			'levels' => compact('readLevel', 'writeLevel', 'adminLevel')
+			'alreadyParticipating' => $total - $to_invite
 		);
 	}
 	
@@ -1333,7 +1453,7 @@ class Streams_Stream extends Base_Streams_Stream
 	}
 
 	/**
-	 * Set access data for the stream. Acces data is calculated:
+	 * Set access data for the stream. Access data is calculated:
 	 *	<ol>
 	 * 		<li>from read/write/admin level fields of the stream</li>
 	 *		<li>from labels. Streams_Access record may contain &lt;publisherId&gt;, &lt;streamName&gt;
@@ -1346,11 +1466,14 @@ class Streams_Stream extends Base_Streams_Stream
 	 *			&lt;ofUserId&gt;. Such record is considered in access calculation.</li>
 	 *	</ol>
 	 * @method calculateAccess
-	 * @param {string} $asUserId='' The user relative to whom the access is calculated
+	 * @param {string} $asUserId=null The user relative to whom the access is calculated
+	 *  If this matches the publisherId, just sets full access and calls publishedByFetcher(true).
+	 *  If this is '', only returns the streams anybody can see.
+	 *  If this is null, the logged-in user's id is used, or '' if no one is logged in
 	 * @param {boolean} $recalculate=false Pass true here to force recalculating even if access was already calculated
 	 * @chainable
 	 */
-	function calculateAccess($asUserId = '', $recalculate = false)
+	function calculateAccess($asUserId = null, $recalculate = false)
 	{
 		Streams::calculateAccess($asUserId, $this->publisherId, array($this), $recalculate);
 		return $this;
@@ -1496,10 +1619,13 @@ class Streams_Stream extends Base_Streams_Stream
 	/**
 	 * Add this stream to the list of streams to be preloaded onto the client with the rest of the page
 	 * @method addPreloaded
-	 * @param {string} $asUserId
-	 *	Required. The id of the user from whose point of view the access is calculated.
+	 * @param {string} $asUserId=null
+	 *	The id of the user from whose point of view the access should be calculated.
+	 *  If this matches the publisherId, just sets full access and calls publishedByFetcher(true).
+	 *  If this is '', only returns the streams anybody can see.
+	 *  If this is null, the logged-in user's id is used, or '' if no one is logged in
 	 */
-	function addPreloaded($asUserId)
+	function addPreloaded($asUserId=null)
 	{
 		$this->calculateAccess($asUserId);
 		self::$preloaded["{$this->publisherId}, {$this->name}"] = $this;

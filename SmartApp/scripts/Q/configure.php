@@ -13,7 +13,6 @@ if (!file_exists($paths_filename)) {
 }
 
 define("CONFIGURE_ORIGINAL_APP_NAME", "SmartApp");
-define("RUNNING_FROM_APP", APP_DIR);
 
 include dirname(__FILE__).'/../Q.inc.php';
 include Q_SCRIPTS_DIR.DS.'configure.php';

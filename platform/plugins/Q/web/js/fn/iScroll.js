@@ -56,7 +56,7 @@
  * @default true
  * @param {String} [object_or_string.String]
  *	 If a string, then it's a command which may be:
- *		 "destroy": Destroys iScroll together with Q/scrollIndicators.
+ *		 "remove": Destroys iScroll together with Q/scrollIndicators.
  */
 Q.Tool.jQuery("Q/iScroll", function (o) {
 

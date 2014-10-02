@@ -79,6 +79,9 @@ class Streams_Avatar extends Base_Streams_Avatar
 		if ($toUserId instanceof Users_User) {
 			$toUserId = $toUserId->id;
 		}
+		$toUserId = empty($options['public'])
+			? $toUserId
+			: array($toUserId, '');
 		$fields = isset($options['fields'])
 			? $options['fields']
 			: array('firstName', 'lastName', 'username');
@@ -87,17 +90,40 @@ class Streams_Avatar extends Base_Streams_Avatar
 			: Q_Config::get('Users', 'Avatar', 'fetchByPrefix', 'limit', 100);
 		$max = $limit;
 		$avatars = array();
-		foreach ($fields as $field) {
+		$prefixes = preg_split("/\s+/", $prefix);
+		$prefix = reset($prefixes);
+		$criteria = array();
+		if (count($prefixes) < 2) {
+			foreach ($fields as $field) {
+				$criteria[] = array(
+					$field => new Db_Range($prefix, true, false, true)
+				);	
+			}
+		} else {
+			$criteria = array(
+				array(
+					'firstName' => new Db_Range($prefixes[0], true, false, true),
+					'lastName' => new Db_Range($prefixes[1], true, false, true)
+				),
+				array(
+					'firstName' => new Db_Range($prefixes[0], true, false, true),
+					'username' => new Db_Range($prefixes[1], true, false, true)
+				),
+				array(
+					'username' => new Db_Range($prefixes[0], true, false, true),
+					'lastName' => new Db_Range($prefixes[1], true, false, true)
+				)
+			);
+		}
+		$count = count($criteria);
+		for ($i=0; $i<$count; ++$i) {
 			// NOTE: sharding should be done on toUserId only, not publisherId
-			$rows = Streams_Avatar::select('*')
-			->where(array(
-				'toUserId' => empty($options['public'])
-					? $toUserId
-					: array($toUserId, ''),
-				$field => new Db_Range($prefix, true, false, true)
-			))->orderBy($field)
-			->limit($max)
-			->fetchDbRows();
+			$q = Streams_Avatar::select('*')
+				->where(array(
+					'toUserId' => $toUserId
+				))->andWhere($criteria[$i])
+				->orderBy('firstName');
+			$rows = $q->limit($max)->fetchDbRows();
 			foreach ($rows as $r) {
 				if (!isset($avatars[$r->publisherId])
 				or $r->toUserId !== '') {
@@ -120,6 +146,7 @@ class Streams_Avatar extends Base_Streams_Avatar
 	 *  "fullAccess" => Ignore the access restrictions for the name<br/>
 	 *  "short" => Only display the first name<br/>
 	 *  "spans" => If true, encloses the first and last name in span tags<br/>
+	 *      If an array, then it will be used as the attributes of the spans.
 	 *  "escape" => If true, does HTML escaping of the retrieved fields
 	 * @param {string|null} $default
 	 *  What to return if there is no info to get displayName from.
@@ -133,8 +160,18 @@ class Streams_Avatar extends Base_Streams_Avatar
 		$u = $escape ? Q_Html::text($this->username) : $this->username;
 
 		if (!empty($options['spans'])) {
-			$fn = $fn ? "<span class='Streams_firstName'>$fn</span>" : "";
-			$ln = $ln ? "<span class='Streams_lastName'>$ln</span>" : "";
+			$attributes = is_array($options['spans'])
+				? $options['spans'] 
+				: array();
+			$class = isset($attributes['class'])
+				? ' ' . $attributes['class']
+				: '';
+			$attributes['class'] = "Streams_firstName$class";
+			$attr = Q_Html::attributes($attributes);
+			$fn = "<span $attr>$fn</span>";
+			$attributes['class'] = "Streams_lastName$class";
+			$attr = Q_Html::attributes($attributes);
+			$ln = "<span $attr>$ln</span>";
 		}
 
 		if (!empty($options['short'])) {

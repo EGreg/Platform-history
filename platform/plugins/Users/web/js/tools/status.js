@@ -1,11 +1,16 @@
 (function (Q, $) {
-	
-var Users = Q.plugins.Users;
 
 /**
- * Users/status tool.
+ * Users Tools
+ * @module Users-tools
+ */
+
+var Users = Q.Users;
+
+/**
  * Renders a user status area which displays logged in status and provides various user-related operations.
- * @method status
+ * @class Users status
+ * @constructor
  * @param {Object} [options] this object contains function parameters
  *	 @param {String} [options.icom] Icon for the login button. Defaults to Qbix icon.
  *	 @optional
@@ -98,10 +103,12 @@ Q.Tool.define("Users/status", function(options) {
 		if (user)
 		{
 			var iconUrl = null;
-			if (user.fb_uid && user.fb_uid.length > 1)
+			if (user.fb_uid && user.fb_uid.length > 1) {
 				iconUrl = 'http://graph.facebook.com/' + user.fb_uid + '/picture';
-			else
-				iconUrl = Q.url('/plugins/Users/img/icons/' + user.icon + '/40.png?' + Date.now());
+			} else {
+				iconUrl = Q.url('/plugins/Users/img/icons/' + user.icon +
+					'/40.png?' + Date.now() / 1000);
+			}
 			Users.userStatus.button.addClass('Q_logged_in').removeClass('Q_dialog_trigger');
 			var username = user.displayName || user.username || 'User';
 			if (!o.fullName)

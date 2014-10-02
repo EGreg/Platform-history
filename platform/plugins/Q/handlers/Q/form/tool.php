@@ -2,7 +2,7 @@
 
 /**
  * This tool is meant to be wrapped in a <form> tag
- * @param array $options
+ * @param {array} $options
  *  An associative array of parameters, containing:
  *  "fields" => an associative array of fieldname => fieldinfo pairs,
  *   where fieldinfo contains the following:
@@ -23,7 +23,7 @@
  *  "loader" => Optional. Name of function which takes (action, method, params, slots, callback) as arguments.
  *    It should call the callback and pass it an object with the response info. Can be used to implement caching, etc.
  *    instead of the default HTTP request.
- *    If "loader" is Q.getter and request shall be done bypasing cache, assign true to .noCache property of the tool
+ *    If "loader" is Q.getter and request should be done bypasing cache, assign true to .ignoreCache property of the tool
  *  "slotsToRequest" => Optional. A string or array of slot names to request in response. Should include "form".
  *  "contentElements" => Optional. Array of $slotName => $cssSelector pairs for child element of the form to fill with HTML returned from the slot.
  */

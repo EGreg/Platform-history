@@ -43,7 +43,7 @@ class Streams_Message extends Base_Streams_Message
 	 * @method post
 	 * @static
 	 * @param {string} $asUserId
-	 *  The user to post as
+	 *  The user to post the message as
 	 * @param {string} $publisherId
 	 *  The publisher of the stream
 	 * @param {string|array} $streamName
@@ -70,6 +70,14 @@ class Streams_Message extends Base_Streams_Message
 		$skipAccess=false,
 		$streams = null)
 	{
+		if (!isset($asUserId)) {
+			$asUserId = Users::loggedInUser();
+			if (!$asUserId) $asUserId = "";
+		}
+		if ($asUserId instanceof Users_User) {
+			$asUserId = $asUserId->id;
+		}
+
 		$type = Q::ifset($information, 'type', 'text/small');
 		$content = Q::ifset($information, 'content', '');
 		$instructions = Q::ifset($information, 'instructions', '');
@@ -244,7 +252,7 @@ class Streams_Message extends Base_Streams_Message
 	 * Assigns ordinal
 	 * @method beforeSave
 	 * @param {array} $value
-	 *	The row beind saved
+	 *	The row being saved
 	 * @return {array}
 	 */
 	function beforeSave($value)
@@ -255,14 +263,17 @@ class Streams_Message extends Base_Streams_Message
 		$asUserId = isset($this->byUserId) ? $this->byUserId : $value['byUserId'];
 		$publisherId = isset($this->publisherId) ? $this->publisherId : $value['publisherId'];
 		$streamName = isset($this->streamName) ? $this->streamName : $value['streamName'];
-		$stream = Streams::fetchOne($asUserId, $publisherId, $streamName, '*', array('begin' => true));
+		$stream = Streams::fetchOne($asUserId, $publisherId, $streamName, '*', array(
+			'refetch' => true,
+			'begin' => true
+		));
 		if (!$stream) {
 			// no one should post messages to nonexistent streams
 			throw new Q_Exception("Cannot post message to nonexistent stream");
 		}
 		$this->ordinal = ++$stream->messageCount;
 		$value['ordinal'] = $this->ordinal;
-		$stream->save(false, true);
+		$stream->save(false);
 
 		$total = new Streams_Total();
 		$total->publisherId = $this->publisherId;
@@ -273,6 +284,12 @@ class Streams_Message extends Base_Streams_Message
 			'messageCount' => new Db_Expression('messageCount+1')
 		));
 		return parent::beforeSave($value);
+	}
+	
+	function beforeSaveExecute($query)
+	{
+		$query->commit();
+		return $query;
 	}
 	
 	/* * * */

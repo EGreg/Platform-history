@@ -9,7 +9,8 @@ function Q_response_notices()
 	if (!empty($notices)) {
 		$result .= "<ul class='Q_notices'>";
 		foreach ($notices as $k => $n) {
-			$result .= "<li>$n</li>\n";
+			$key = Q_Html::text($k);
+			$result .= "<li data-key='$key'>$n</li>\n";
 		}
 		$result .= "</ul>";
 	}

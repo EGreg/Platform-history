@@ -62,7 +62,7 @@ class Zend_Oauth_Config implements Zend_Oauth_Config_ConfigInterface
     protected $_requestMethod = Zend_Oauth::POST;
 
     /**
-     * OAuth Version; This defaults to 1.0 - Must not be changed!
+     * OAuth Version; This defaults to 20.0 - Must not be changed!
      *
      * @var string
      */

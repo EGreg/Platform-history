@@ -15,50 +15,43 @@ var Db = Q.require('Db');
  * @class Places
  * @static
  */
-module.exports = function () {
-	
-	/**
-	 * The list of model classes
-	 * @property tableClasses
-	 * @type array
-	 */
-	this.tableClasses = [
-		"Places_Nearby",
+function Base () {
+	return this;
+}
+ 
+module.exports = Base;
+
+/**
+ * The list of model classes
+ * @property tableClasses
+ * @type array
+ */
+Base.tableClasses = [
 		"Places_Zipcode"
 	];
-	
-	/**
-	 * This method uses Db.connect() to establish a connection to database using information stored in the configuration.
-	 * If the connection to Db object has already been made, it returns this Db object.
-	 * @method db
-	 * @return {Db} The database connection
-	 */
-	this.db = function () {
-		return Db.connect('Places');
-	};
-	
-	/**
-	 * The connection name for the class
-	 * @method connectionName
-	 * @return {string} The name of the connection
-	 */
-	this.connectionName = function() {
-		return 'Places';
-	};
 
-	/**
-	 * Link to Places.Nearby model
-	 * @property Nearby
-	 * @type Places.Nearby
-	 */
-	this.Nearby = Q.require('Places/Nearby');
-	/**
-	 * Link to Places.Zipcode model
-	 * @property Zipcode
-	 * @type Places.Zipcode
-	 */
-	this.Zipcode = Q.require('Places/Zipcode');
-	
-	return this;
-	
+/**
+ * This method calls Db.connect() using information stored in the configuration.
+ * If this has already been called, then the same db object is returned.
+ * @method db
+ * @return {Db} The database connection
+ */
+Base.db = function () {
+	return Db.connect('Places');
 };
+
+/**
+ * The connection name for the class
+ * @method connectionName
+ * @return {string} The name of the connection
+ */
+Base.connectionName = function() {
+	return 'Places';
+};
+
+/**
+ * Link to Places.Zipcode model
+ * @property Zipcode
+ * @type Places.Zipcode
+ */
+Base.Zipcode = Q.require('Places/Zipcode');

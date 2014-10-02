@@ -30,7 +30,8 @@ class Places_Zipcode extends Base_Places_Zipcode
 	 * @param {array} $array
 	 * @return {Places_Zipcode} Class instance
 	 */
-	static function __set_state(array $array) {
+	static function __set_state(array $array)
+	{
 		$result = new Places_Zipcode();
 		foreach($array as $k => $v)
 			$result->$k = $v;
@@ -40,60 +41,55 @@ class Places_Zipcode extends Base_Places_Zipcode
 	
 	/**
 	 * Call this function to calculate and save Places_Nearby rows
+	 * @param {double} $latitude The latitude of the coordinates to search around
+	 * @param {double} $longitude The longitude of the coordinates to search around
 	 * @param {double} $miles The radius, in miles, around the central point of the zipcode
-	 * @param {double} $save_cache Defaults to true. Set to false to simply fetch them without saving Places_Nearby rows.
-	 * @param {array} Array of all the Places_Zipcode rows that are within the given radius
+	 * @param {double} $limit Limit on how many to return. Defaults to 100.
+	 * @return {array} Returns an array of Places_Zipcode objects, if any are found.
 	 */
-	public function fetchNearbyZipcodes($miles, $save_nearby = true) {
-
-		// First, get a bounding box
-		$max_lat = $miles/69/sqrt(2);
-		$max_lon = $miles/69/sqrt(2);
+	public static function nearby($latitude, $longitude, $miles, $limit = 100)
+	{
+		// First, get a bounding box that's big enough to avoid false negatives
+		$latGrid = $miles / 69.1703234283616;
+		$longGrid = abs($latGrid / cos(deg2rad($latitude)));
 		
 		// Now, select zipcodes in a bounding box using one of the indexes
 		$q = Places_Zipcode::select('*')->where(array(
-			'latitude >' => $this->latitude - $max_lat,
-			'latitude <' => $this->latitude + $max_lat,
-			'zipcode !=' => $this->zipcode
+			'latitude >' => $latitude - $latGrid,
+			'latitude <' => $latitude + $latGrid
 		));
 		$longitudes = array(
-			'longitude >' => max($this->longitude - $max_lon, -180),
-			'longitude <' => min($this->longitude + $max_lon, 180),
+			'longitude >' => max($longitude - $longGrid, -180),
+			'longitude <' => min($longitude + $longGrid, 180),
 		);
-		if ($this->latitude + $max_lon > 180) {
+		if ($latitude + $longGrid > 180) {
 			$q->andWhere($longitudes, array(
 				'longitude >' => -180, // should always be the case anyway
-				'longitude <' => $this->longitude + $max_lon - 180 * 2,
+				'longitude <' => $longitude + $longGrid - 180 * 2,
 			));
-		} else if ($this->latitude - $max_lon < -180) {
+		} else if ($latitude - $longGrid < -180) {
 			$q->andwhere($longitudes, array(
 				'longitude <=' => 180, // should always be the case anyway
-				'longitude >' => $this->longitude - $max_lon + 180 * 2,
+				'longitude >' => $longitude - $longGrid + 180 * 2,
 			));
 		} else {
 			$q->andWhere($longitudes);
 		}
-		$zipcodes = $q->noCache()->fetchDbRows();
-		if ($save_nearby) {
-			foreach ($zipcodes as $z) {
-				$pn = new Places_Nearby();
-				$pn->fromZipcode = $z->zipcode;
-				$pn->toZipcode = $z->zipcode;
-				$pn->miles = $this->distanceToZipcode($z);
-				$pn->save();
-			}
+		if ($limit) {
+			$q->limit($limit);
 		}
-		return $zipcodes;
+		return $q->fetchDbRows();
 	}
 	
 	/**
-	 * Use this to calculate the distance of a zipcode's central point to some lat/long pair
-	 * @param {double} $lat
-	 * @param {double} $long
+	 * Use this to calculate the distance of a zipcode's central point to some
+	 * pair of geographic coordinates.
+	 * @param {double} $latitude
+	 * @param {double} $longitude
 	 */
-	function distanceTo($lat, $long)
+	function distanceTo($latitude, $longitude)
 	{
-		return Places::distance($this->latitude, $this->longitude, $lat, $long);
+		return Places::distance($this->latitude, $this->longitude, $latitude, $longitude);
 	}
 	
 	/**

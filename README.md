@@ -1,7 +1,12 @@
 The Q Platform
 ===
 
-###[Developer Guide](https://github.com/EGreg/Q/wiki)
+###[Platform Portal](http://platform.qbix.com) - tutorials, docs, platform reference, and more.
+
+===
+
+###Getting Started
+[![ScreenShot](https://i.vimeocdn.com/video/483865734_960.jpg)](https://vimeo.com/101967404)
 
 ###About Q
 There are lots of frameworks out there for making websites. You've probably encountered them. Well, Q is different. It was designed from the ground up to power social apps.
@@ -9,20 +14,12 @@ There are lots of frameworks out there for making websites. You've probably enco
 A social app is an app that enables spontaneous communication and collaboration between users.
 Out of the box, Q helps any app support user accounts, real-time collaboration and offline notifications, automatically scaling up to millions of users if necessary.
 
-###Building with Q
 Apps built with Q can go viral as they work on practically every device and integrate with
 
 * emails + address books
 * mobile phones + contacts
 * facebook accounts + friend lists
-* Working in the Q platform encourages best practices when it comes to [modern web standards](http://en.wikipedia.org/wiki/Representational_state_transfer), [security](https://www.owasp.org/index.php/Main_Page), [privacy](http://platform.qbix.com/welcome/business), and achieving business objectives.
-
-###A new landscape
-If you build or use websites, you know the landscape has steadily changed. Over 60% of mobile phone users now use internet-enabled smartphones.([1](http://mashable.com/2013/06/06/smartphones-61-percent/)) You need to reach them where they are.
-
-No — more than that — you should empower people to use your app in ways that take advantage of their new devices, while respecting their privacy and protecting them from information overload.
-
-Q lets you get it right. It's a modular platform that provides a lot right out of the box, and can be easily extended with new functionality.
+* Working in the Q platform encourages best practices, e.g. when it comes to [modern web standards](http://platform.qbix.com/welcome/developers), [security](https://www.owasp.org/index.php/Main_Page), [privacy](http://platform.qbix.com/guide/access) and [achieving business objectives](http://platform.qbix.com/welcome/business).
 
 ###Back End Technology Stack
 * PHP: Q runs on pretty much any environment with PHP 5 or above.
@@ -33,7 +30,7 @@ Q lets you get it right. It's a modular platform that provides a lot right out o
 * Browsers: Q comes with libraries to quickly build extremely efficient web apps for desktop or mobile browsers.
 * PhoneGap: Also known as Cordova, it can be used to build native mobile apps with Q, which integrate with the phone's contact list and more.
 * jQuery: Some of Q's plugins make use of jQuery on the front end.
-* engine.io: Connects with Node.js on the back end to enable real time updates in the user interface.
+* socket.io: Connects with Node.js on the back end to enable real time updates in the user interface.
 
 Businesses and Startups
 ===
@@ -66,7 +63,6 @@ Q was built from the ground up to help development teams be more productive.
 
 ##How Qbix can help you
 * Support and Certification: We are available to provide training and guidance on how to get the most out of Q. We also plan to offer classes and certification to those developers who want to make money working on Q projects.
-* Our community: We are currently in the process of growing our developer community. If you feel you can contribute, by all means join us!
 
 Designers
 ===
@@ -81,4 +77,6 @@ Build beautiful interfaces through which people will interact with one another.
 
 ###How Qbix can help you
 * Theme marketplace: After designing and polishing your themes, you can package and sell them on our marketplace. Or give them away for free. Either way, when an app developer uses your theme, your work and your brand will get a lot of exposure.
-* Our community: We are currently in the process of growing our developer community. If you feel you can contribute, by all means join us!
+
+##Developer Community
+We are currently in the process of growing our developer community. If you feel you can contribute, by all means join us!

@@ -5,6 +5,9 @@
 #dashboard h2 { float: left; }
 #dashboard_user { float: right; }
 
+.Q_mobile #dashboard_slot,
+.Q_mobile #notices_slot { width: 100%; position: sticky; left: 0px; }
+
 #Users_avatar_tool .Users_avatar_name { text-indent: 5px; }
 
 @media screen and (-webkit-min-device-pixel-ratio:0) { 

@@ -15,6 +15,8 @@
  * @extends Db_Row
  *
  * @property string $identifier
+ * @property string $insertedTime
+ * @property string $updatedTime
  * @property mixed $state
  * @property string $userId
  */
@@ -22,6 +24,14 @@ abstract class Base_Users_Identify extends Db_Row
 {
 	/**
 	 * @property $identifier
+	 * @type string
+	 */
+	/**
+	 * @property $insertedTime
+	 * @type string
+	 */
+	/**
+	 * @property $updatedTime
 	 * @type string
 	 */
 	/**
@@ -166,7 +176,7 @@ abstract class Base_Users_Identify extends Db_Row
 	 * @param {array} [$options=array()]
 	 *   An associative array of options, including:
 	 *
-	 * * "chunkSize" {integer} The number of rows to insert at a time. Defaults to 1.<br/>
+	 * * "chunkSize" {integer} The number of rows to insert at a time. defaults to 20.<br/>
 	 * * "onDuplicateKeyUpdate" {array} You can put an array of fieldname => value pairs here,
 	 * 		which will add an ON DUPLICATE KEY UPDATE clause to the query.
 	 *
@@ -244,6 +254,11 @@ abstract class Base_Users_Identify extends Db_Row
 				}
 			}
 		}
+		if (!$this->retrieved and !isset($value['insertedTime']))
+			$value['insertedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
+		//if ($this->retrieved and !isset($value['updatedTime']))
+		// convention: we'll have updatedTime = insertedTime if just created.
+		$value['updatedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
 		return $value;			
 	}
 
@@ -257,7 +272,7 @@ abstract class Base_Users_Identify extends Db_Row
 	 */
 	static function fieldNames($table_alias = null, $field_alias_prefix = null)
 	{
-		$field_names = array('identifier', 'state', 'userId');
+		$field_names = array('identifier', 'insertedTime', 'updatedTime', 'state', 'userId');
 		$result = $field_names;
 		if (!empty($table_alias)) {
 			$temp = array();

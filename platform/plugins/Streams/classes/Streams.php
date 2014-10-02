@@ -59,11 +59,11 @@ abstract class Streams extends Base_Streams
 	 * @final
 	 */
 	public static $READ_LEVEL = array(
-		'none' => 0,						// can't see the stream
-		'see' => 10,						// can see icon and title
-		'content' => 20,					// can preview stream and its content
-		'participants' => 30,				// can see participants in the stream
-		'messages' => 40,					// can play stream in a player
+		'none' => 0,				// can't see the stream
+		'see' => 10,				// can see icon and title
+		'content' => 20,			// can preview stream and its content
+		'participants' => 30,		// can see participants in the stream
+		'messages' => 40,			// can play stream in a player
 		'max' => 40
 	);
 	/**
@@ -114,10 +114,17 @@ abstract class Streams extends Base_Streams
 	 * @final
 	 */
 	/**
+	 * Can update properties of relations directly
+	 * @config WRITE_LEVEL['relations']
+	 * @type integer
+	 * @default 25
+	 * @final
+	 */
+	/**
 	 * Can post messages requesting edits of stream
 	 * @config $WRITE_LEVEL['suggest']
 	 * @type integer
-	 * @default 25
+	 * @default 28
 	 * @final
 	 */
 	/**
@@ -143,18 +150,17 @@ abstract class Streams extends Base_Streams
 	 * @final
 	 */
 	public static $WRITE_LEVEL = array(
-		'none' => 0,						// cannot affect stream or participants list
-		'join' => 10,						// can become a participant, chat, and leave
-		'vote' => 13,						// can vote for a relation message posted to the stream
-		'postPending' => 18,				// can post messages which require manager's approval
-		'post' => 20,						// can post messages which take effect immediately
-		'relate' => 23,						// can relate other streams to this one and vote for weights
-		'relations' => 25,					// can update properties of relations directly
-		'suggest' => 28,					// can suggest edits of stream
-		'edit' => 30,						// can edit stream content immediately
-		'closePending' => 35,				// can post a message requesting to close the stream
-		'close' => 40,						// don't delete, just prevent any new changes to stream
-											// however, joining and leaving is still ok
+		'none' => 0,
+		'join' => 10,
+		'vote' => 13,
+		'postPending' => 18,
+		'post' => 20,
+		'relate' => 23,
+		'relations' => 25,
+		'suggest' => 28,
+		'edit' => 30,
+		'closePending' => 35,
+		'close' => 40,
 		'max' => 40
 	);
 	/**
@@ -198,11 +204,11 @@ abstract class Streams extends Base_Streams
 	 * @final
 	 */
 	public static $ADMIN_LEVEL = array(
-		'none' => 0,						// cannot do anything related to admin / users
-		'tell' => 10,					// can post on your stream about participating
-		'invite' => 20,						// able to create invitations for others, granting access
-		'manage' => 30,						// can approve posts and give people any adminLevel < 30
-		'own' => 40,						// can give people any adminLevel <= 40
+		'none' => 0,
+		'tell' => 10,
+		'invite' => 20,
+		'manage' => 30,
+		'own' => 40,
 		'max' => 40
 	);
 	/**
@@ -318,9 +324,9 @@ abstract class Streams extends Base_Streams
 				$name = array($name);
 			}
 		}
-		$namesToFetch = $name;
 		$allCached = array();
 		if (is_array($name) and empty($options['refetch'])) {
+            $namesToFetch = array();
 			foreach ($name as $n) {
 				if (isset(self::$fetch[$asUserId][$publisherId][$n][$fields])) {
 					$allCached[$n] = self::$fetch[$asUserId][$publisherId][$n][$fields];
@@ -329,18 +335,22 @@ abstract class Streams extends Base_Streams
 				}
 			}
 			$namesToFetch = array_unique($namesToFetch);
-		}
+		} else {
+            $namesToFetch = $name;
+        }
 		$criteria = array(
 			'publisherId' => $publisherId,
 			'name' => $namesToFetch
 		);
 
 		// Get streams and set their default access info
-		$allRetrieved = Streams_Stream::select($fields)
-			->where($criteria)
-			->ignoreCache()
-			->options($options)
-			->fetchDbRows(null, '', 'name');
+		$allRetrieved = $namesToFetch
+            ? Streams_Stream::select($fields)
+                ->where($criteria)
+                ->ignoreCache()
+                ->options($options)
+                ->fetchDbRows(null, '', 'name')
+            : array();
 
 		$streams = $allCached ? array_merge($allCached, $allRetrieved) : $allRetrieved;
 
@@ -467,7 +477,7 @@ abstract class Streams extends Base_Streams
 	 *  Set this to the user relative to whom access is calculated.
 	 *  If this matches the publisherId, just sets full access and calls publishedByFetcher(true).
 	 *  If this is '', only returns the streams anybody can see.
-	 *  Otherwise, return the streams joined with the calculated access settings.
+     *  If this is null, the logged-in user's id is used, or '' if no one is logged in
 	 * @param {string} $publisherId
 	 *  The id of the user publishing these streams
 	 * @param {array} $streams
@@ -1063,15 +1073,10 @@ abstract class Streams extends Base_Streams
 	 */
 	static function updateAvatar($toUserId, $publisherId)
 	{
-		if (isset(self::$users[$publisherId])) {
-			$user = self::$users[$publisherId];
-		} else {
-			$user = new Users_User();
-			$user->id = $publisherId;
-			if (!$user->retrieve()) {
-				return false;
-			}
-			self::$users[$publisherId] = $user;
+		$user = new Users_User();
+		$user->id = $publisherId;
+		if (!$user->retrieve(null, null, true)->ignoreCache()->resume()) {
+			return false;
 		}
 
 		// Fetch some streams as the contact user
@@ -1158,7 +1163,7 @@ abstract class Streams extends Base_Streams
 		// Select the user corresponding to this publisher
 		$user = new Users_User();
 		$user->id = $publisherId;
-		if (!$user->retrieve()) {
+		if (!$user->retrieve(null, null, true)->ignoreCache()->resume()) {
 			throw new Q_Exception_MissingRow(array(
 				'table' => 'user',
 				'criteria' => 'id = '.$user->id
@@ -1174,7 +1179,7 @@ abstract class Streams extends Base_Streams
 			// If the $stream isn't already defined, select it
 			$stream = new Streams_Stream();
 			$stream->publisherId = $publisherId;
-			$stream->streamName = $streamName;
+			$stream->name = $streamName;
 			if (!$stream->retrieve()) {
 				// Strange, this stream doesn't exist.
 				// Well, we will just silently set the content to '' then
@@ -1187,7 +1192,6 @@ abstract class Streams extends Base_Streams
 		$label_readLevels = array();
 		$contact_label_list = array();
 		$removed_labels = array();
-		$db = Streams::db();
 
 		// First, assign all the readLevels that are directly set for specific users,
 		// and aggregate the contact_labels from the other accesses, for an upcoming select.
@@ -1204,7 +1208,7 @@ abstract class Streams extends Base_Streams
 				}
 			} else if ($access->ofContactLabel) {
 				$ofContactLabel = $access->ofContactLabel;
-				$contact_label_list[] = $db->quote($ofContactLabel);
+				$contact_label_list[] = $ofContactLabel;
 				if ($access->get('removed', false)) {
 					$removed_labels[$ofContactLabel] = true;
 				} else {
@@ -1283,12 +1287,8 @@ abstract class Streams extends Base_Streams
 
 		// Now, we update the avatars:
 		$field = ($streamName === 'Streams/user/firstName') ? 'firstName' : 'lastName';
-		$rows = array();
-		$remove_userIds = array();
 		$rows_that_show = array();
 		$rows_that_hide = array();
-		$updates_that_show = array();
-		$updates_that_hide = array();
 		foreach ($showToUserIds as $userId => $show) {
 			if ($show === 'public') {
 				// If no show is explicitly specified, use the value used for the rest of the public
@@ -1377,6 +1377,14 @@ abstract class Streams extends Base_Streams
 		if (substr($toStreamName, -1) === '/' || substr($fromStreamName, -1) === '/')
 			throw new Q_Exception("Cannot process relation on multiple streams");
 
+		if (!isset($asUserId)) {
+			$asUserId = Users::loggedInUser();
+			if (!$asUserId) $asUserId = "";
+		}
+		if ($asUserId instanceof Users_User) {
+			$asUserId = $asUserId->id;
+		}
+
 		// Check access to category stream, the stream to which other streams are related
 		$category = Streams::fetchOne($asUserId, $toPublisherId, $toStreamName);
 		if (!$category) {
@@ -1432,7 +1440,7 @@ abstract class Streams extends Base_Streams
 	 *  An array of options that can include:
 	 *  "skipAccess" => Defaults to false. If true, skips the access checks and just relates the stream to the category
 	 *  "weight" => Pass a numeric value here, or something like "max+1" to make the weight 1 greater than the current MAX(weight)
-	 * @return array|boolean
+	 * @return {array|boolean}
 	 *  Returns false if the operation was canceled by a hook
 	 *  Returns true if relation was already there
 	 *  Otherwise returns array with keys "messageFrom" and "messageTo" and values of type Streams_Message
@@ -1446,6 +1454,14 @@ abstract class Streams extends Base_Streams
 		$fromStreamName,
 		$options = array())
 	{
+		if (!isset($asUserId)) {
+			$asUserId = Users::loggedInUser();
+			if (!$asUserId) $asUserId = "";
+		}
+		if ($asUserId instanceof Users_User) {
+			$asUserId = $asUserId->id;
+		}
+		
 		self::getRelation(
 			$asUserId,
 			$toPublisherId,
@@ -1524,6 +1540,8 @@ abstract class Streams extends Base_Streams
 
 		// Send Streams/relatedTo message to a stream
 		// node server will be notified by Streams_Message::post
+		// DISTRIBUTED: in the future, the publishers may be on separate domains
+		// so posting this message may require internet communication.
 		$relatedTo_message = Streams_Message::post($asUserId, $toPublisherId, $toStreamName, array(
 			'type' => 'Streams/relatedTo',
 			'instructions' => Q::json_encode(compact('fromPublisherId', 'fromStreamName', 'type', 'weight'))
@@ -1537,6 +1555,8 @@ abstract class Streams extends Base_Streams
 
 		// Send Streams/relatedFrom message to a stream
 		// node server will be notified by Streams_Message::post
+		// DISTRIBUTED: in the future, the publishers may be on separate domains
+		// so posting this message may require internet communication.
 		$relatedFrom_message = Streams_Message::post($asUserId, $fromPublisherId, $fromStreamName, array(
 			'type' => 'Streams/relatedFrom',
 			'instructions' => Q::json_encode(compact('toPublisherId', 'toStreamName', 'type', 'weight'))
@@ -1554,7 +1574,10 @@ abstract class Streams extends Base_Streams
 			'after'
 		);
 
-		return array('messageFrom' => $relatedFrom_message, 'messageTo' => $relatedTo_message);
+		return array(
+			'messageFrom' => $relatedFrom_message, 
+			'messageTo' => $relatedTo_message
+		);
 	}
 
 	/**
@@ -2103,8 +2126,8 @@ abstract class Streams extends Base_Streams
 					$parts[$k] = ucfirst($v);
 				}
 			}
-			$last = count($parts) > 1 ? array_pop($parts) : '';
-			$first = join(' ', $parts);
+			$last = join(' ', array_slice($parts, 1));
+			$first = $parts[0];
 		} else {
 			$first = $fullName;
 		}
@@ -2158,9 +2181,7 @@ abstract class Streams extends Base_Streams
 		}
 
 		$name = self::splitFullName($fullName);
-		extract($name);
-
-		if (empty($first) && empty($last)) {
+		if (empty($name['first']) && empty($name['last'])) {
 			// this is unlikely to happen
 			throw new Q_Exception("Please enter your name properly", 'name');
 		}
@@ -2179,27 +2200,6 @@ abstract class Streams extends Base_Streams
 			}
 		}
 
-		if (!empty($first)) {
-			$stream = new Streams_Stream();
-			$stream->publisherId = $user->id;
-			$stream->name = 'Streams/user/firstName';
-			$stream->retrieve();
-			$stream->type = 'Streams/text/small';
-			$stream->title = 'First Name';
-			$stream->content = $first;
-			$stream->save(true);
-		}
-		if (!empty($last)) {
-			$stream = new Streams_Stream();
-			$stream->publisherId = $user->id;
-			$stream->name = 'Streams/user/lastName';
-			$stream->retrieve();
-			$stream->type = 'Streams/text/small';
-			$stream->title = 'Last Name';
-			$stream->content = $last;
-			$stream->save(true);
-		}
-
 		/**
 		 * @event Users/register {after}
 		 * @param {string} 'username'
@@ -2208,7 +2208,9 @@ abstract class Streams extends Base_Streams
 		 * @param {Users_User} 'user'
 		 * @return {Users_User}
 		 */
-		Q::event('Streams/register', compact('name', 'identifier', 'icon', 'user', 'provider', 'options'), 'after');
+		Q::event('Streams/register', compact(
+			'name', 'identifier', 'icon', 'user', 'provider', 'options'
+		), 'after');
 
 		return $user;
 	}
@@ -2244,13 +2246,6 @@ abstract class Streams extends Base_Streams
 	 * @protected
 	 */
 	protected static $fetch = array();
-	/**
-	 * @property $users
-	 * @static
-	 * @type array
-	 * @protected
-	 */
-	protected static $users = array();
 	/**
 	 * @property $cache
 	 * @static

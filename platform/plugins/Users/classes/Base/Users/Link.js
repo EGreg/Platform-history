@@ -187,7 +187,8 @@ Base.prototype.table = function () {
  */
 Base.prototype.primaryKey = function () {
 	return [
-		"identifier"
+		"identifier",
+		"userId"
 	];
 };
 

@@ -2,9 +2,10 @@
 	"Q": {
 		"pluginInfo": {
 			"Users": {
-				"version": "0.8",
+				"version": "0.8.2",
 				"compatible": "0.8",
 				"requires": {"Q": "0.8"},
+				"permissions": ["Users/icons"],
 				"connections": ["Users"]
 			}
 		},
@@ -122,6 +123,9 @@
 				"label": "I accept the $link",
 				"title": "Terms"
 			},
+			"icon": {
+				"leaveDefault": false
+			},
 			"delaySMS": 30000
 		},
 		"passphrase": {
@@ -133,7 +137,9 @@
 			"default": "Someone"
 		},
 		"icon": {
-			"sizes": ["40", "50", "80"]
+			"sizes": ["40", "50", "80", "200"],
+			"defaultSize": "40",
+			"defaultCacheBust": "1000"
 		}
 	}
 }

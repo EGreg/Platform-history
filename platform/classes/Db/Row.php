@@ -675,18 +675,27 @@ class Db_Row implements Iterator
 	/**
 	 * Returns whether a particular field was modified since retrieval or creation of the object.
 	 * @method wasModified
-	 * @param {string} [$field_name=null] The name of the field
+	 * @param {string} [$field_name=null] The name of the field.
+	 *  You can also pass false here to mark the whole row unmodified.
 	 * @return {boolean} Whether the field with that name was modified in the first place.
 	 */
-	function wasModified ($field_name = null)
+	function wasModified ($fieldName = null)
 	{
-		if (! isset($field_name)) {
+		if ($fieldName === false) {
+			if (is_array($this->fields)) {
+				foreach ($this->fields as $name => $value) {
+					$this->fieldsModified[$name] = false;
+				}
+			}
+			return;
+		}
+		if (! isset($fieldName)) {
 			foreach ($this->fieldsModified as $key => $value)
 				if (! empty($value))
 					return true;
 			return false;
 		}
-		if (empty($this->fieldsModified[$field_name]))
+		if (empty($this->fieldsModified[$fieldName]))
 			return false;
 		return true;
 	}
@@ -1744,21 +1753,21 @@ class Db_Row implements Iterator
 		$table = $this->getTable();
 		if ($this->retrieved) {
 			// Do an update of an existing row
-			//if (count($fieldsToSave) > 0) {
+			// If pkValue contains more or less fields than
+			// the primary key should, it is only through tinkering.
+			// We'll let it pass, since the person was most likely
+			// trying to do something clever.
 			$where = $this->getPkValue();
 			if (!$where) {
 				throw new Exception("The primary key is not specified for $table");
 			}
-			// If pkValue cantains more or less fields than
-			// the primary key should, it is only through tinkering.
-			// We'll let it pass, since the person was most likely
-			// trying to do something clever.
-			if (empty($fieldsToSave))
+			if (empty($fieldsToSave)) {
+				$this->wasModified(false);
 				return false;
+            }
 			$query = $db->update($table)
 				->set($fieldsToSave)
 				->where($where);
-			//}
 			$inserting = false;
 		} else {
 			// Do an insert
@@ -1865,11 +1874,7 @@ class Db_Row implements Iterator
 		}
 			
 		// Finally, set all fields as unmodified again
-		if (is_array($this->fields)) {
-			foreach ($this->fields as $name => $value) {
-				$this->fieldsModified[$name] = false;
-			}
-		}
+		$this->wasModified(false);
 		
 		return $query;
 	}
@@ -1891,7 +1896,7 @@ class Db_Row implements Iterator
 	 *       rollback the transaction if the row we're trying to retrieve is missing.
 	 *       Defaults to false.
 	 * * "ignoreCache" => if true, then call ignoreCache on the query
-	 * * "noCache" => if true, then call noCache on the query
+	 * * "dontCache" => if true, then call dontCache on the query
 	 * * Any other keys will be sent to $query->options($modifyQuery);
 	 * * "query" => if true, it will return a Db_Query that can be modified, rather than the result. 
 	 *   You can call more methods, like limit, offset, where, orderBy,
@@ -1902,7 +1907,7 @@ class Db_Row implements Iterator
 	 *  You can also pass true in place of the $modifyQuery field to achieve
 	 *  the same effect as array("query" => true)
 	 * @param {array} [$options=array()] Array of options to pass to beforeRetrieve and afterFetch functions.
-	 * @return {array|Db_Row} Returns the row fetched from the Db_Result (or returned by beforeRetrieve)
+	 * @return {array|Db_Row|false} Returns the row fetched from the Db_Result (or returned by beforeRetrieve)
 	 *  If retrieve() is called with no arguments, may return false if nothing retrieved.
 	 */
 	function retrieve (

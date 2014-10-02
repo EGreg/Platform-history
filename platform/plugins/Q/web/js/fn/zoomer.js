@@ -30,7 +30,7 @@
 
     Q.Tool.jQuery('Q/zoomer',
 
-        function (o) {
+        function _Q_zoomer(o) {
 
             // they should all be images
             var $this = this;

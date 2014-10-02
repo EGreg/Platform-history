@@ -7,7 +7,6 @@ table { border-spacing:0; border-collapse:collapse; }
 .Q_errors { color: #a00; }
 .Q_error_message { z-index: 11000; font-size: 12px; background-color: #a00; color: white; padding: 2px 5px 4px 5px; opacity: 0.8; pointer-events: none; }
 .Q_error_message p { margin: 0px; }
-.Q_placeholder { color: #999; font-weight: normal; }
 .Q_field_name { color: #222; opacity:0.5; filter:alpha(opacity=50) }
 
 /* Common Q classes */
@@ -22,12 +21,15 @@ table { border-spacing:0; border-collapse:collapse; }
 .Q_notice a { font-weight: bold; }
 .Q_success { background: #e2ffee !important; }
 .Q_required { border: solid 2px #AAC !important; }
-.Q_selected {}
+.Q_selected { background: #98bede; }
 .Q_throb { background-image: url(../img/throbbers/loading.gif); background-repeat: no-repeat; background-position: center center; }
 .Q_clickable_container { cursor: pointer !important;  }
 .Q_clickable_container .Q_clickable_shadow { display: none; }
-.Q_notTouchscreen .Q_clickable_container:hover .Q_clickable_shadow { display: block; }
-.Q_placeholder { display: inline-block; color: #999 !important; font-style: italic !important; zoom: 1; *display: inline; }
+.Q_notTouchscreen .Q_clickable_container.Q_hover .Q_clickable_shadow,
+.Q_notTouchscreen .Q_clickable_container:hover .Q_clickable_shadow
+ { display: block; }
+.Q_placeholder_container,
+.Q_placeholder { display: inline-block; color: #999; font-style: italic; zoom: 1; *display: inline; }
 .Q_focus .Q_placeholder { color: #aaa !important; }
 div.Q_placeholder { pointer-events: none; }
 
@@ -646,7 +648,7 @@ div.Q_placeholder { pointer-events: none; }
 	background: url(../img/bg/overlay.png);
 }
 
-.Q_fullscreen_dialog .close
+.Q_fullscreen_dialog .Q_close
 {
 	display: block;
 	position: absolute;
@@ -1155,11 +1157,15 @@ div.Q_placeholder { pointer-events: none; }
 .Q_overlay { background: #EEEEF3; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; }
 .Q_overlay .Q_title { background-color: #55A; color: white; margin: 0px; padding: 5px 10px 5px 10px; font-size: 18px; font-weight: bold; -moz-border-radius: 5px 5px 0px 0px; border-radius: 5px 5px 0px 0px; -webkit-border-top-left-radius:5px; -webkit-border-top-right-radius:5px; }
 .Q_loading { opacity:0.9; filter:alpha(opacity=90) }
+.Q_document_surface { background: white; padding: 10px; }
+.Q_chrome_surface { background: gray; }
+.Q_tabbed { border: 1px solid #aaa; border-top: 1px solid #eee; background: white; }
 
 .Q_tabs_tabs { border-bottom: solid 1px #aaa; width: 100%; }
-.Q_tabs_tab { display: block; float: left; padding: 3px 10px 3px 10px; line-height: 30px; border: solid 1px #aaa; border-bottom: 0px; border-left: 0px; margin-bottom: -1px; background-color: #eef; font-weight: bold; }
+.Q_tabs_tab { display: block; float: left; padding: 3px 10px 3px 10px; line-height: 30px; border: solid 1px #aaa; border-bottom: 0px; border-left: 0px; margin-bottom: -1px; background-color: #f8f8f8;; font-weight: bold; }
 .Q_tabs_tab:first-child { border-left: solid 1px #aaa; }
 .Q_tabs_tab.Q_selected { background-color: white; border-bottom: solid 1px white; }
+.Q_tabs_title { position: relative; }
 
 .Q_tabs_contextual .Q_tabs_tab { display: block; float: none; line-height:30px; border: 0px; } 
 
@@ -1193,8 +1199,7 @@ div.Q_placeholder { pointer-events: none; }
 .Q_form_tool .Q_form_textareamessage { text-align: center; padding-right: 5%; }
 form textarea { width: 250px; }
 
-.Q_inplace_tool, .Q_inplace_tool_container { display: inline; position: relative; }
-.Q_inplace_tool .Q_inplace_tool_nicewrap { display: inline; }
+.Q_inplace_tool, .Q_inplace_tool_container { display: inline-block; position: relative; }
 .Q_inplace_tool .Q_inplace_tool_editbuttons { display: none; position: absolute; left: 0px; z-index: 9901; }
 .Q_inplace_tool .Q_inplace_tool_editbuttons button { display: inline; color: black !important; }
 .Q_inplace_tool .Q_inplace_tool_static { display: inline-block; border: solid 1px transparent; cursor: default; }
@@ -1340,17 +1345,17 @@ divbody { text-align: center; height: 100%; }
 #column0_slot #content { width: 100%; }
 #content { position: relative; }
 #content_slot { position: relative; }
-#page { position: absolute; top: 50px; bottom: 0px; width: 100%; /* top: 54px; */ /* padding-top: 10px; */
+#page { position: relative; bottom: 0px; width: 100%; /* top: 54px; */ /* padding-top: 10px; */
     left:50%; margin-left:-50%; /* reset position for ie7, ff4+ */
 }
-.Q_touchscreen #page { width: 100%; overflow-x: hidden; }
+.Q_touchscreen #page { width: 100%; }
 
 /* notices slot */
 
-#notices_slot { position: relative; text-align: center; margin: auto; padding: 0px 0px 5px 0px; overflow: hidden; z-index: 5000; }
+#notices_slot { text-align: center; margin: auto; padding: 0px; overflow: hidden; z-index: 5000; }
 #notices { margin: auto; }
 #notices_slot div.container { overflow: none; overflow-y: auto; }
-#notices_slot ul { list-style-type: none; padding: 0px; margin: auto; width: 700px; max-width: 100%; border: solid 1px #555; border-top: solid 1px #aaa; box-shadow: 0 0 5px #222; -moz-box-shadow: 0 0 5px #222; -webkit-box-shadow: 0 0 5px #222; }
+#notices_slot ul { list-style-type: none; padding: 0px; margin: auto; width: 700px; max-width: 100%; border: solid 1px #555; border-top: solid 1px #aaa; box-shadow: 0 0 5px #222; -moz-box-shadow: 0 0 5px #222; -webkit-box-shadow: 0 0 5px #222; cursor: pointer; }
 #notices_slot li { list-style-type: none; padding: 0px; margin: 0px; text-align: center; background: #ffd4aa; border: 0px; border-bottom: solid 1px #aaa; line-height: 30px; min-height: 30px; }
 
 #notices_slot ul.pie_errors * { background-color: #ebb; color: #500; }
@@ -1361,7 +1366,7 @@ divbody { text-align: center; height: 100%; }
 /* dashboard slot */
 
 #dashboard_slot {
-  z-index: 900; position: fixed; width: 100%; text-align: center; border: solid 0px #aaa; 
+  z-index: 900; width: 100%; text-align: center; border: solid 0px #aaa; 
   box-shadow: #aaa 0px 0px 4px; -webkit-box-shadow: #aaa 0px 0px 4px; -moz-box-shadow: #aaa 0px 0px 4px;
   background: #444; /* for non-css3 browsers */
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#444444', endColorstr='#111111'); /* for IE */
@@ -1424,7 +1429,8 @@ divbody { text-align: center; height: 100%; }
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-.Q_overlay .close { background-image:url(../img/close.png); position:absolute; right:-15px; top:-15px; cursor:pointer; height:35px; width:35px; }
+.Q_overlay .Q_close { background-image:url(../img/close.png); position:absolute; right:-15px; top:-15px; cursor:pointer; height:35px; width:35px; }
+.Q_overlay.Q_overlay_apply .Q_close { background-image:url(../img/apply.png); }
 
 /* tabs */
 
@@ -1594,7 +1600,7 @@ input.number:focus,
 textarea:focus { background: white; box-shadow: 0 1px 10px rgba(0,0,0,.15); -webkit-box-shadow: 0 1px 4px rgba(0,0,100,.15); -moz-box-shadow: 0 1px 4px rgba(0,0,100,.15); }
 input.placeholder,
 textarea.placeholder { color: #aaa; font-style: italic; }
-select:focus { outline: dashed 1px #779; }
+select:focus { outline: dotted 1px #779; }
 /* select { margin-top: 0.75em; } */
 input[type=text],
 input[type=password],
@@ -1631,9 +1637,8 @@ input[type=radio] { margin-right: 5px; }
 .Q_big_prompt input.password,
 .Q_big_prompt input.number,
 .Q_big_prompt textarea { font-size: 18px; border-radius:3px; -moz-border-radius:3px; -webkit-border-radius:3px; width: 250px; }
-.Q_big_prompt select { font-size: 18px; border-radius: 3px; -moz-border-radius:3px; -webkit-border-radius:3px; }
+.Q_big_prompt select { font-size: 18px; border-radius: 3px; -moz-border-radius:3px; -webkit-border-radius:3px; vertical-align: middle; }
 .Q_big_prompt .Q_field_title { vertical-align: middle; text-align: right; padding-right: 10px; }
-.Q_big_prompt select { vertical-align: middle; }
 
 /* big messages */
 
@@ -1672,4 +1677,128 @@ input[type=radio] { margin-right: 5px; }
 
 #dialogs_slot { display: none; }
 
-.clear{ clear: both; }
+.Q_clear{ clear: both; }
+.Q_left{ float: left; }
+.Q_right{ float: right; }
+.Q_w10{ width: 10%; }
+.Q_w20{ width: 20%; }
+.Q_w30{ width: 30%; }
+.Q_w40{ width: 40%; }
+.Q_w50{ width: 50%; }
+.Q_w60{ width: 60%; }
+.Q_w70{ width: 70%; }
+.Q_w80{ width: 80%; }
+.Q_w90{ width: 90%; }
+.Q_w100{ width: 100%; }
+
+.Q_columns_tool {
+	overflow: visible;
+	position: relative;
+	max-height: 100%;
+}
+
+.Q_mobile .Q_columns_tool {
+	width: 100%;
+}
+
+.Q_columns_column {
+	display: block;
+	float: left;
+	background: white;
+	overflow: hidden;
+}
+
+.Q_mobile .Q_columns_column {
+	width: 100%;
+	height: 5000px;
+}
+
+.Q_notMobile .Q_columns_column {
+	margin-right: 10px;
+	width: 300px;
+	box-shadow: black 2px 2px 4px;
+	-webkit-box-shadow: black 0px 0px 4px;
+	-moz-box-shadow: black 0px 0px 4px;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	-o-user-select: none;
+}
+
+.Q_columns_title {
+	background: #f8f8f8;
+    border-bottom: 1px solid #aaa;
+	overflow: hidden;
+}
+
+.Q_columns_title .Q_close {
+	width: 40px;
+	height: 40px;
+	float: right;
+	cursor: pointer;
+	font-weight: normal;
+	color: #555;
+	padding: 5px;
+}
+
+.Q_columns_title .Q_close img {
+	width: 40px;
+	height: 40px;
+}
+
+.Q_columns_column .title_slot {
+	margin: 0px;
+	padding: 5px;
+	line-height:40px;
+    width: 80%;
+	height: 40px;
+}
+
+.Q_columns_column:first-child .title_slot {
+	width: 100%;
+}
+
+.Q_columns_column .column_slot {
+	clear: both;
+	overflow: auto;
+	position: relative;
+}
+
+.Q_columns_tool.Q_fullscreen {
+	overflow: visible;
+	height: auto;
+}
+
+.Q_columns_tool.Q_fullscreen .Q_columns_column {
+	float: none;
+	width: 100%;
+}
+
+.Q_columns_tool.Q_fullscreen .Q_columns_title {
+	position: fixed;
+	z-index: 1000;
+	width: 100%;
+	top: 0px;
+	left: 0px;
+}
+.Q_columns_tool.Q_fullscreen .column_slot {
+	position: relative;
+	padding-top: 40px;
+	overflow: hidden;
+}
+.Q_columns_loading { height: 40px; }
+.Q_columns_mask { position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px; z-index: 9999; }
+
+.Q_overflow {
+	overflow: auto;
+	-webkit-overflow-scrolling: touch;
+	z-index: 0; /* http://stackoverflow.com/a/16408745/467460 */
+}
+
+.Q_overflow * {
+	-webkit-transform: translateZ(0); /* http://cantina.co/thought_leadership/ios-5-native-scrolling-grins-and-gothcas/ */
+}
+
+.Q_drawers_placeholder {
+	cursor: default;
+}

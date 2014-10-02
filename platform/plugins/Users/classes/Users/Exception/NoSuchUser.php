@@ -6,11 +6,11 @@
 class Users_Exception_NoSuchUser extends Q_Exception
 {
 	/**
-	 * An exception is raised if user does not exists in the system
+	 * This exception is raised if user was not found in the system
 	 * @class Users_Exception_NoSuchUser
 	 * @constructor
 	 * @extends Q_Exception
 	 */
 };
 
-Q_Exception::add('Users_Exception_NoSuchUser', 'there is no such user on the system');
+Q_Exception::add('Users_Exception_NoSuchUser', 'no such user was found in the system');

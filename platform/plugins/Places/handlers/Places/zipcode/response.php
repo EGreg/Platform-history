@@ -16,6 +16,8 @@ function Places_zipcode_response()
 		$zip = explode(',', $zip);
 	}
 	
-	$zipcodes = Places_Zipcode::select('*')->where(array('zipcode' => $zip))->fetchDbRows();
+	$zipcodes = Places_Zipcode::select('*')
+		->where(array('zipcode' => $zip))
+		->fetchDbRows();
 	Q_Response::setSlot('zipcodes', $zipcodes);
 }

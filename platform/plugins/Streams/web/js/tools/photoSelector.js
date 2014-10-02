@@ -1,8 +1,14 @@
 (function (Q, $) {
 
 /**
- * Streams/photoSelector tool. Makes a tool which provides possibility to select photos from user albums.
- * @method photoSelector
+ * Streams Tools
+ * @module Streams-tools
+ */
+
+/**
+ * Interface for selecting facebook photos from user albums
+ * @class Streams inplace
+ * @constructor
  * @param {Object} [options] this object contains function parameters
  *   @param {Event} [options.onSelect] This callback is called when the user selects a photo.
  *   @required

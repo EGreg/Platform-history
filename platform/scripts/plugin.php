@@ -133,16 +133,16 @@ $options['sql'] = $sql_array;
 
 try {
 	echo 'Q Platform plugin installer'.PHP_EOL;
-	if($PLUGIN_NAME=='--all')
-	{
+	if($PLUGIN_NAME=='--all') {
 		if(!$all = Q_Config::get('Q', 'plugins', null))
 			die('No plugins were installed');
 
-		foreach($all as $pl)
+		foreach($all as $pl) {
 			Q_Plugin::installPlugin($pl, $options);
-	}
-	else
+		}
+	} else {
 		Q_Plugin::installPlugin($PLUGIN_NAME, $options);
+	}
 }
 catch (Exception $e)
 {

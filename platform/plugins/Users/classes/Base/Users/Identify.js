@@ -33,6 +33,14 @@ Q.mixin(Base, Row);
  * @type string
  */
 /**
+ * @property insertedTime
+ * @type string
+ */
+/**
+ * @property updatedTime
+ * @type string
+ */
+/**
  * @property state
  * @type string
  */
@@ -195,6 +203,8 @@ Base.prototype.primaryKey = function () {
 Base.prototype.fieldNames = function () {
 	return [
 		"identifier",
+		"insertedTime",
+		"updatedTime",
 		"state",
 		"userId"
 	];
@@ -265,6 +275,10 @@ Base.prototype.beforeSave = function (value) {
 			}
 		}
 	}
+	if (!this._retrieved && !value['insertedTime'])
+		value['insertedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
+	// convention: we'll have updatedTime = insertedTime if just created.
+	value['updatedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
 	return value;
 };
 

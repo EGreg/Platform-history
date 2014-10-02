@@ -19,8 +19,8 @@ EOT;
 $help = <<<EOT
 Script to update information for cache url rewriting
 
-1) Check modified times of files in \$app_dir/web, and \$plugin_dir/web for each plugin
-2) Cache this information in \$app_dir/config/Q/urls.php, for use during requests
+1) Checks modified times of files in \$app_dir/web, and \$plugin_dir/web for each plugin
+2) Caches this information in \$app_dir/config/Q/urls.php, for use during requests
 
 $usage
 
@@ -49,13 +49,7 @@ if (!defined('APP_DIR'))
 	define('APP_DIR', $LOCAL_DIR);
 
 #Include Q
-try {
-	include($Q_filename);
-}
-catch (Exception $e)
-{
-	die('[ERROR] ' . $e->getMessage() . PHP_EOL . $e->getTraceAsString() . PHP_EOL);
-}
+include($Q_filename);
 
 $result = Q_script_urls(APP_WEB_DIR);
 $dir_to_save = APP_CONFIG_DIR.DS.'Q';
@@ -82,8 +76,8 @@ function Q_script_urls($dir, $len = null, &$result = null, $was_link = false) {
 			$result[$u] = filemtime($f);
 		}
 		$is_link = is_link($f);
+		// do depth first search, following symlinks one level down
 		if (!$was_link or !$is_link) {
-			// continue depth-first-search
 			Q_script_urls($f, $len, $result, $was_link or $is_link);
 		}
 	}

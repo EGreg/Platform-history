@@ -20,8 +20,13 @@ class Q
 	 * @method ifset
 	 * @param {&mixed} $ref
 	 *  The reference to test. Only lvalues can be passed.
-	 *  If $ref is an array or object, it can be followed by one or more strings or numbers
-	 *  which will be used to index deeper into the contained arrays or objects.
+	 *  If $ref is an array or object, it can be followed by one or more
+	 *  strings or numbers, which will be used to index deeper into
+	 *  the contained arrays or objects.
+	 *  You can also pass arrays instead of the strings and numbers,
+	 *  which will then widen the search to try all combinations
+	 *  of the strings and numbers in all the arrays, before returning
+	 *  the default.
 	 * @param {mixed} $def=null
 	 *  The default, if the reference isn't set
 	 * @return {mixed}
@@ -320,19 +325,18 @@ EOT;
 	 * @param boolean $once=false
 	 *  Optional. Whether to use include_once instead of include.
 	 * @param {boolean} $get_vars=false
-	 *  Optional. Set to true to return result of get_defined_vars()
-	 *  at the end.
-	 * @return {mixed}
 	 *  Optional. If true, returns the result of get_defined_vars() at the end.
 	 *  Otherwise, returns whatever the file returned.
+	 * @return {mixed}
+	 *  Depends on $get_vars
 	 * @throws {Q_Exception_MissingFile}
 	 *  May throw a Q_Exception_MissingFile exception.
 	 */
 	static function includeFile(
-	 $filename,
-	 array $params = array(),
-	 $once = false,
-	 $get_vars = false)
+		$filename,
+		array $params = array(),
+		$once = false,
+		$get_vars = false)
 	{
 		/**
 		 * Skips includes to prevent recursion
@@ -481,7 +485,7 @@ EOT;
 	 * Renders a particular view
 	 * @method view
 	 * @static
-	 * @param {string} $view_name
+	 * @param {string} $viewName
 	 *  The full name of the view
 	 * @param {array} $params=array()
 	 *  Parameters to pass to the view
@@ -490,14 +494,14 @@ EOT;
 	 * @throws {Q_Exception_MissingFile}
 	 */
 	static function view(
-	 $view_name,
+	 $viewName,
 	 $params = array())
 	{
 		require_once(Q_CLASSES_DIR.DS.'Q'.DS.'Exception'.DS.'MissingFile.php');
 
 		if (empty($params)) $params = array();
 
-		$view_name = implode(DS, explode('/', $view_name));
+		$viewName = implode(DS, explode('/', $viewName));
 
 		$fields = Q_Config::get('Q', 'views', 'fields', null);
 		if ($fields) {
@@ -506,29 +510,32 @@ EOT;
 
 		/**
 		 * @event {before} Q/view
-		 * @param {string} 'view_name'
+		 * @param {string} 'viewName'
 		 * @param {string} 'params'
 		 * @return {string}
 		 *  Optional. If set, override method return
 		 */
-		$result = self::event('Q/view', compact('view_name', 'params'), 'before');
+		$result = self::event('Q/view', compact('viewName', 'params'), 'before');
 		if (isset($result)) {
 			return $result;
 		}
 
 		try {
 			$ob = new Q_OutputBuffer();
-			self::includeFile('views'.DS.$view_name, $params);
+			self::includeFile('views'.DS.$viewName, $params);
 			return $ob->getClean();
 		} catch (Q_Exception_MissingFile $e) {
+			if (basename($e->params['filename']) != basename($viewName)) {
+				throw $e;
+			}
 			$ob->flushHigherBuffers();
 			/**
 			 * Renders 'Missing View' page
 			 * @event Q/missingView
-			 * @param {string} view_name
+			 * @param {string} viewName
 			 * @return {string}
 			 */
-			return self::event('Q/missingView', compact('view_name'));
+			return self::event('Q/missingView', compact('viewName'));
 		}
 	}
 
@@ -1046,8 +1053,8 @@ EOT;
 			$realPath = Q::realPath($path, true);
 		}
 		$filename = (isset($key) ? $key : $app).'.log';
-		$to_save = "\n".($timestamp ? '['.date('Y-m-d h:i:s') . '] ' : '') .substr($message, 0, $max_len);
-		file_put_contents($realPath.DS.$filename, $to_save, FILE_APPEND);
+		$toSave = "\n".($timestamp ? '['.date('Y-m-d h:i:s') . '] ' : '') .substr($message, 0, $max_len);
+		file_put_contents($realPath.DS.$filename, $toSave, FILE_APPEND);
 		umask($mask);
 	}
 

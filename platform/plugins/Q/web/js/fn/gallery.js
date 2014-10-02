@@ -1,8 +1,14 @@
 (function (Q, $, window, document, undefined) {
 
 /**
+ * Q Tools
+ * @module Q-tools
+ */
+
+/**
  * Plugin Creates gallery of of images
- * @method gallery
+ * @class Q gallery
+ * @constructor
  * @param {Object} [options] options is an Object with function parameters
  * @param {Array} [options.images] images an array of objects containing object <code> { src: String , caption: String , interval: Number, transition: Object} </code>
  *   @param {String} [options.images.src] src url of the image, will be fed through Q.url(). Required.
@@ -40,7 +46,7 @@
  * @param {Event} [options.onLoad] onLoad event fires when an image loads, also passes all loaded images
  * @param {Event} [options.onTransition] onTransition event fires when an image loads, also passes all loaded images
  */
-Q.Tool.jQuery('Q/gallery', function (o) {
+Q.Tool.jQuery('Q/gallery', function _Q_gallery(o) {
 	
 	var $this = this, i, image, imgs=[], caps=[], current, tm, gallery;
 	var animTransition, animInterval, animPreviousInterval;
@@ -284,7 +290,8 @@ Q.Tool.jQuery('Q/gallery', function (o) {
 	autoplay: true,
 	transitionToFirst: false,
 	loop: true,
-	onLoad: null
+	onLoad: null,
+	onTransition: null
 }
 
 );

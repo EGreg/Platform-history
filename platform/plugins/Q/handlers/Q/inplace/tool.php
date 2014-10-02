@@ -55,8 +55,8 @@ return <<<EOT
 	$formTag
 		$fieldInput
 		<div class='Q_inplace_tool_buttons'>
-			<button class='Q_inplace_tool_save basic16 basic16_save'>Save</button>
 			<button class='Q_inplace_tool_cancel basic16 basic16_cancel'>Cancel</button>
+			<button class='Q_inplace_tool_save basic16 basic16_save'>Save</button>
 		</div>
 	</form>
 </div>

@@ -475,7 +475,7 @@ Streams.listen = function (options) {
 					invitingUserId = parsed.invitingUserId;
 					username = parsed.username;
 					appUrl = parsed.appUrl;
-					label = parsed.label ? Q.normalize(parsed.label, '_', new RegExp("[^A-Za-z0-9\/]+")) : null;
+					label = parsed.label ? Q.normalize(parsed.label, '_', /[^A-Za-z0-9\/]+/) : null;
 					title = parsed.label ? parsed.label: null;
 					readLevel = parsed.readLevel && JSON.parse(parsed.readLevel) || null;
 					writeLevel = parsed.writeLevel && JSON.parse(parsed.writeLevel) || null;
@@ -684,18 +684,18 @@ Streams.listen = function (options) {
 
     Streams.fillMagicFields = function (obj) {
 		var toFill = [];
-		for (var i=0, l=toFill.length; i<l; ++i) {
-			var f = toFill[i];
-			if (!obj[f] || obj[f].expression === "CURRENT_TIMESTAMP") {
+		for (var f in obj) {
+			if (obj[f] && obj[f].expression === "CURRENT_TIMESTAMP") {
 				toFill.push(f);
 			}
 		}
 		if (!toFill.length) {
 			return obj;
 		}
-		Streams.db().getCurrentTimestamp(function (err, timestamp) {
+		var db = Streams.db();
+		db.getCurrentTimestamp(function (err, timestamp) {
 			for (var i=0, l=toFill.length; i<l; ++i) {
-				obj[toFill[i]] = timestamp;
+				obj[toFill[i]] = db.toDateTime(timestamp);
 			}
 		});
 		return obj;
@@ -730,6 +730,7 @@ Streams.listen = function (options) {
 	socketServer = Q.Socket.listen({host: pubHost, port: pubPort}).of('/Streams');
 
 	socketServer.on('connection', function(client) {
+		console.log("Socket.IO client connected " + client.id);
 		/**
 		 * Socket connection
 		 * @event connection

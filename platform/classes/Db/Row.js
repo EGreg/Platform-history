@@ -665,18 +665,21 @@ Row.prototype.toArray = function () {
 
 Row.prototype.fillMagicFields = function () {
 	var toFill = [];
-	for (var i=0, l=toFill.length; i<l; ++i) {
-		var f = toFill[i];
-		if (!this.fields[f] || this.fields[f].expression === "CURRENT_TIMESTAMP") {
+	var _fieldNames = this.fieldNames();
+	for (var i=0, l=_fieldNames.length; i<l; ++i) {
+		var f = _fieldNames[i], ff;
+		if ((ff = this.fields[f])
+		&& ff.expression === "CURRENT_TIMESTAMP") {
 			toFill.push(f);
 		}
 	}
 	if (!toFill.length) {
 		return this;
 	}
-	this.db().getCurrentTimestamp(function (err, timestamp) {
+	var db = this.db();
+	db.getCurrentTimestamp(function (err, timestamp) {
 		for (var i=0, l=toFill.length; i<l; ++i) {
-			this.fields[toFill[i]] = timestamp;
+			this.fields[toFill[i]] = db.toDateTime(timestamp);
 		}
 	});
 	return this;

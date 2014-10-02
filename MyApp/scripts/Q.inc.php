@@ -10,6 +10,7 @@
 if (!defined('APP_DIR')) {
 	define ('APP_DIR', realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'));
 }
+define("RUNNING_FROM_APP", APP_DIR);
 
 //
 // Include Q

@@ -1,13 +1,19 @@
 (function (Q, $, window, document, undefined) {
 
 /**
- * This tool generates an inline editor to edit the content or attribute of a stream.
- * @method inplace
- * @param {Object} [options] this object contains function parameters
+ * Streams Tools
+ * @module Streams-tools
+ */
+
+/**
+ * Inplace text editor tool to edit the content or attribute of a stream
+ * @class Streams inplace
+ * @constructor
+ * @param {Object} [options] used to pass options
  *   @param {String} [options.inplaceType] The type of the fieldInput. Can be "textarea" or "text"
  *   @required
  *   @param {String} [options.publisherId] Required if stream option is empty. The publisher's user id.
- *   @param {String} [options.publisherId] Required if stream option is empty. The publisher's user id.
+ *   @param {String} [options.streamName] Required if stream option is empty. The stream's name.
  *   @param {Stream} [options.stream] Optionally pass a Streams.Stream object here if you have it already
  *   @param {String} [options.field] Optional, name of an field to change instead of the content of the stream
  *   @param {String} [options.attribute] Optional, name of an attribute to change instead of any field.
@@ -42,20 +48,27 @@ Q.Tool.define("Streams/inplace", function (options) {
 			Q.Streams.get(state.publisherId, state.streamName, function () {
 				state.stream = this;
 			});
-			var html = content.encodeHTML()
-				|| '<span class="Q_placeholder">'+tool.child('Q/inplace').state.placeholder.encodeHTML()+'</div>'
+			var $e, html = content.encodeHTML()
+				|| '<span class="Q_placeholder">'
+					+ tool.child('Q/inplace').state.placeholder.encodeHTML()
+					+ '</div>'
 				|| '';
 			switch (state.inplaceType) {
 				case 'text':
-					tool.$('input[type!=hidden]').val(content);
-					tool.$('.Q_inplace_tool_static').html(html);
+					$e = tool.$('input[type!=hidden]');
+					if ($e.val() !== content) $e.val(content);
+					$e = tool.$('.Q_inplace_tool_static');
+					if ($e.html() !== html) $e.html(html);
 					break;
 				case 'textarea':
-					tool.$('textarea').val(content);
-					tool.$('.Q_inplace_tool_blockstatic').html(html.replaceAll({
+					var toSet = html.replaceAll({
 						"\n": '<br>',
 					 	' ': '&nbsp;'
-					}));
+					});
+					$e = tool.$('textarea');
+					if ($e.val() !== content) $e.val(content);
+					$e = tool.$('.Q_inplace_tool_blockstatic');
+					if ($e.html !== toSet) $e.html(toSet);
 					break;
 				default:
 					throw new Q.Error("Streams/inplace tool: inplaceType must be 'textarea' or 'text'");
@@ -66,12 +79,24 @@ Q.Tool.define("Streams/inplace", function (options) {
 		if (state.attribute) {
 			field = 'attributes['+encodeURIComponent(state.attribute)+']';
 			stream.onUpdated(state.attribute).set(function (attributes, k) {
-				_setContent(attributes[k]);
+				if (attributes[k] !== null) {
+					_setContent(attributes[k]);
+				} else {
+					state.stream.refresh(function () {
+						_setContent(this.get(k));
+					});
+				}
 			}, tool);
 		} else {
 			field = state.field || 'content';
 			stream.onFieldChanged(field).set(function (fields, k) {
-				_setContent(fields[k]);
+				if (fields[k] !== null) {
+					_setContent(fields[k]);
+				} else {
+					state.stream.refresh(function () {
+						_setContent(this.fields[k]);
+					});
+				}
 			}, tool);
 		}
 		
@@ -81,7 +106,8 @@ Q.Tool.define("Streams/inplace", function (options) {
 				action: stream.actionUrl(),
 				method: 'put',
 				field: field,
-				type: state.inplaceType
+				type: state.inplaceType,
+				maxWidth: $te.parent()[0]
 			});
 			var value = (state.attribute ? stream.get(state.attribute) : stream.fields[field]) || "";
 			switch (state.inplaceType) {
@@ -109,30 +135,24 @@ Q.Tool.define("Streams/inplace", function (options) {
 					? 'Q_inplace_tool_blockstatic'
 					: 'Q_inplace_tool_static';
 				div.setAttribute('class', staticClass);
-				div.innerHTML = ipo.staticHtml;
+				if (div.innerHTML !== ipo.staticHtml) {
+					div.innerHTML = ipo.staticHtml;
+				}
 				span.appendChild(div);
 				tool.element.appendChild(span);
 				return; // leave the html that is currently in the element
 			}
 
 			var inplace = tool.setUpElement('div', 'Q/inplace', ipo);
-			tool.element.appendChild(inplace);
+			Q.activate(inplace, function () {
+				$(tool.element).empty().append(inplace);
+			});
 		}
-		
-		// Wire up the events
-		Q.activate(tool.element, function () {
-			var inplace = tool.child('Q/inplace');
-			if (!inplace) {
-				return;
-			}
-			inplace.state.onSave.set(function () {
-				state.stream.refresh(function () {
-					state.onUpdate.handle.call(tool);
-				}, {messages: true});
-			}, 'Streams/inplace');
-		});
 	}
-
+	if (state.inplace && state.inplace.staticHtml) {
+		tool.element.innerHTML = state.inplace.staticHtml;
+	}
+	
 	if (state.stream) {
 		state.publisherId = state.stream.publisherId;
 		state.streamName = state.stream.name;
@@ -140,7 +160,8 @@ Q.Tool.define("Streams/inplace", function (options) {
 	if (!state.publisherId || !state.streamName) {
 		throw new Q.Error("Streams/inplace tool: stream is undefined");
 	}
-	Q.Streams.retainWith(tool).get(state.publisherId, state.streamName, _construct);
+	Q.Streams.retainWith(tool)
+	.get(state.publisherId, state.streamName, _construct);
 },
 
 {
@@ -153,6 +174,23 @@ Q.Tool.define("Streams/inplace", function (options) {
 		var msg = Q.firstErrorMessage(err);
 		console.warn("Streams/inplace: ", msg);
 	}, "Streams/inplace")
+},
+
+{
+	Q: {
+		onInit: {"Streams/inplace": function () {
+			var tool = this, state = tool.state;
+			var inplace = tool.child('Q/inplace');
+			if (!inplace) {
+				return;
+			}
+			inplace.state.onSave.set(function () {
+				state.stream.refresh(function () {
+					state.onUpdate.handle.call(tool);
+				}, {messages: true});
+			}, 'Streams/inplace');
+		}}
+	}
 }
 
 );

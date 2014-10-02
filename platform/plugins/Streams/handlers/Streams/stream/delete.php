@@ -41,10 +41,22 @@ function Streams_stream_delete() {
 	}
 
 	// Clean up relations from this stream to categories
-	list($relations, $related) = Streams::related($user->id, $stream->publisherId, $stream->name, false);
+	list($relations, $related) = Streams::related(
+		$user->id,
+		$stream->publisherId,
+		$stream->name,
+		false
+	);
 	foreach ($relations as $r) {
 		try {
-			Streams::unrelate($user->id, $r->toPublisherId, $r->toStreamName, $r->type, $stream->publisherId, $stream->name);
+			Streams::unrelate(
+				$user->id, 
+				$r->toPublisherId,
+				$r->toStreamName,
+				$r->type,
+				$stream->publisherId,
+				$stream->name
+			);
 		} catch (Exception $e) {}
 	}
 

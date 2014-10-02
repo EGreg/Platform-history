@@ -20,13 +20,12 @@ abstract class Base_Places
 	 * @type array
 	 */
 	static $table_classnames = array (
-  0 => 'Places_Nearby',
-  1 => 'Places_Zipcode',
+  0 => 'Places_Zipcode',
 );
 
 	/**
-	 * This method uses Db::connect() to establish a connection to database using information stored in the configuration.
-	 * If the connection to Db object has already been made, it returns this Db object.
+     * This method calls Db.connect() using information stored in the configuration.
+     * If this has already been called, then the same db object is returned.
 	 * @method db
 	 * @return {iDb} The database object
 	 */

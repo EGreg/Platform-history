@@ -109,7 +109,7 @@ interface iDb
 	 * @default array()
 	 * @param {array} $options=array()
 	 *  An associative array of options, including:
-	 *  "chunkSize" => The number of rows to insert at a time. Defaults to 1.
+	 *  "chunkSize" => The number of rows to insert at a time. defaults to 20.
 	 *  "onDuplicateKeyUpdate" => You can put an array of fieldname => value pairs here,
 	 *    which will add an ON DUPLICATE KEY UPDATE clause to the query.
 	 * @default array()

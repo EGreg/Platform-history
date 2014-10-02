@@ -8,6 +8,7 @@
  *  "tabs" => optional array of tab name => title. Defaults to read, write, admin tabs.
  *  "ranges" => optional. Associative array with keys "read", "write", "admin"
  *    and values as associative arrays of ($min, $max) for the displayed levels.
+ *  "controls" => optionally set this to true to render only the controls
  */
 function Streams_access_tool($options)
 {
@@ -124,12 +125,25 @@ function Streams_access_tool($options)
 	$accessActionUrl = Q_Uri::url("Streams/access?publisherId=$publisherId&streamName=$streamName");
 	
 	$dir = Q_Config::get('Users', 'paths', 'icons', 'files/Users/icons');
+	
+	$accessArray = Db::exportArray($access_array);
+	$avatarArray = Db::exportArray($avatar_array);
 
-	Q_Response::addScript("plugins/Streams/js/tools/access.js");
-	Q_Response::addScript("plugins/Streams/js/Streams.js");
-	Q_Response::setToolOptions(compact('access_array', 'avatar_array', 'labels', 'icons', 'tab', 'publisherId', 'streamName'));
+	if (empty($controls)) {
+		Q_Response::addScript("plugins/Streams/js/Streams.js");
+		Q_Response::addScript("plugins/Streams/js/tools/access.js");
+		Q_Response::setToolOptions(compact(
+			'accessArray', 'avatarArray', 'labels', 
+			'icons', 'tab', 'publisherId', 
+			'streamName'
+		));
+	} else {
+		$extra = compact('stream', 'accessArray', 'avatarArray');
+		Q_Response::setSlot('extra', $extra);
+	}
 
 	return Q::view('Streams/tool/access.php', compact(
-		'stream', 'access_array', 'contact_array', 'label_array', 'tabs', 'tab', 'labels', 'icons', 'levels', 'dir', 'publisherId', 'streamName', 'accessActionUrl'
+		'stream', 'access_array', 'contact_array', 'label_array', 'tabs', 'tab', 'labels', 'icons', 'levels', 'dir', 'publisherId', 'streamName', 'accessActionUrl',
+		'controls'
 	));
 }

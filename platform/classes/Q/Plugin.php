@@ -172,7 +172,8 @@ class Q_Plugin
 					try {
 						Q::includeFile($scriptsdir.DS.$script);
 					} catch (Exception $e) {
-						die($e->getMessage()."\n"."(Then run the installer again.)\n");
+						Q::exceptionHandler($e);
+						die($e->getMessage()."\n"."(Fix the error, then run the installer again.)\n");
 					}
 					continue;
 				}
@@ -302,7 +303,6 @@ class Q_Plugin
 	 */
 	static function checkPermissions($files_dir, $options) {
 		// Check and fix permissions
-		echo "Checking permissions".PHP_EOL;
 		if(!file_exists($files_dir)) {
 			mkdir($files_dir, $options['dirmode']);
 		}
@@ -484,8 +484,8 @@ EOT;
 		if (Q_Config::get('Q', 'pluginInfo', $plugin_name, 'version', null) == null)
 			throw new Exception("Could not identify plugin version. Check $plugin_conf_file");
 
-		$PLUGIN_CONF = Q_Config::get('Q', 'pluginInfo', $plugin_name, null);
-		$PLUGIN_VERSION = $PLUGIN_CONF['version'];
+		$plugin_conf = Q_Config::get('Q', 'pluginInfo', $plugin_name, null);
+		$plugin_version = $plugin_conf['version'];
 
 		if (file_exists($app_plugins_file)) {
 			Q_Config::load($app_plugins_file);
@@ -501,12 +501,17 @@ EOT;
 		if (($version_installed = Q_Config::get('Q', 'pluginLocal', $plugin_name, 'version', null)) != null) {
 			//We have this plugin installed
 			echo "Plugin '$plugin_name' (version: $version_installed) is already installed" . PHP_EOL;
-			if (Q::compare_version($version_installed, $PLUGIN_VERSION) < 0)
-				echo "Upgrading '$plugin_name' to version: $PLUGIN_VERSION" . PHP_EOL;
+			if (Q::compare_version($version_installed, $plugin_version) < 0)
+				echo "Upgrading '$plugin_name' to version: $plugin_version" . PHP_EOL;
 		}
 		
 		// Check and fix permissions
 		self::checkPermissions($files_dir, $options);
+		if (isset($plugin_conf['permissions'])) {
+			foreach ($plugin_conf['permissions'] as $perm) {
+				self::checkPermissions($files_dir.DS.$perm, $options);
+			}
+		}
 
 		// Symbolic links
 		echo 'Creating symbolic links'.PHP_EOL;
@@ -526,7 +531,7 @@ EOT;
 
 		// Save info about plugin
 		echo 'Registering plugin'.PHP_EOL;
-		Q_Config::set('Q', 'pluginLocal', $plugin_name, $PLUGIN_CONF);
+		Q_Config::set('Q', 'pluginLocal', $plugin_name, $plugin_conf);
 		Q_Config::save($app_plugins_file, array('Q', 'pluginLocal'));
 
 		echo Q_Utils::colored("Plugin '$plugin_name' successfully installed".PHP_EOL, 'green');

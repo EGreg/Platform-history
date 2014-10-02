@@ -1,19 +1,21 @@
 {
 	"Q": {
 		"handlersBeforeEvent": {
-			"Q/objects": ["Streams/before/Q/objects"],
-			"Q/responseExtras": ["Streams/before/Q/responseExtras"],
-			"Q/Utils/canWriteToPath": ["Streams/before/Q/Utils/canWriteToPath"],
-			"Db/Row/Users_Contact/saveExecute": ["Streams/before/Users/Contact/saveExecute"],
-			"Db/Row/Users_Contact/removeExecute": ["Streams/before/Users/Contact/removeExecute"],
-			"Users/User/displayName": ["Streams/before/Users/User/displayName"]
+			"Q/objects": ["Streams/before/Q_objects"],
+			"Q/responseExtras": ["Streams/before/Q_responseExtras"],
+			"Q/Utils/canWriteToPath": ["Streams/before/Q_Utils_canWriteToPath"],
+			"Db/Row/Users_Contact/saveExecute": ["Streams/before/Users_Contact_saveExecute"],
+			"Db/Row/Users_Contact/removeExecute": ["Streams/before/Users_Contact_removeExecute"],
+			"Users/User/displayName": ["Streams/before/Users_User_displayName"]
 		},
 		"handlersAfterEvent": {
-			"Q/objects": ["Streams/after/Q/objects"],
-			"Q/responseExtras": ["Streams/after/Q/responseExtras"],
-			"Q/image": ["Streams/after/Q/image"],
-			"Db/Row/Users_User/saveExecute": ["Streams/after/Users/User/saveExecute"],
-			"Db/Row/Users_Contact/removeExecute": ["Streams/after/Users/Contact/removeExecute"]
+			"Q/objects": ["Streams/after/Q_objects"],
+			"Q/responseExtras": ["Streams/after/Q_responseExtras"],
+			"Q/image": ["Streams/after/Q_image"],
+			"Db/Row/Users_User/saveExecute": ["Streams/after/Users_User_saveExecute"],
+			"Db/Row/Users_Contact/removeExecute": ["Streams/after/Users_Contact_removeExecute"],
+			"Users/saveContactsFromLinks": ["Streams/after/Users_saveContactsFromLinks"],
+			"Users/setLoggedInUser": ["Streams/after/Users_setLoggedInUser"]
 		},
 		"routes": {
 			"plugins/Streams/:action": {"module": "Streams"},
@@ -22,9 +24,10 @@
 		},
 		"pluginInfo": {
 			"Streams": {
-				"version": "0.8",
+				"version": "0.8.1",
 				"compatible": "0.8",
 				"requires": {"Users": "0.8"},
+				"permissions": ["Streams/icons"],
 				"connections": ["Streams"]
 			}
 		}
@@ -42,10 +45,18 @@
 	"Streams": {
 		"types": {
 			"Streams/text": {"create": true, "edit": true},
-			"Streams/text/small": {"create": true, "edit": true},
+			"Streams/text/small": {"create": true, "edit": true,
+				"messages": {
+					"Streams/chat/message": {
+						"post": true
+					}
+				}
+			},
 			"Streams/text/medium": {"create": true, "edit": true},
 			"Streams/text/name": {"create": true, "edit": true},
 			"Streams/text/url": {"create": true, "edit": true},
+			"Streams/text/emailAddress": {"create": true, "edit": true},
+			"Streams/text/mobileNumber": {"create": true, "edit": true},
 			"Streams/date": {"create": true, "edit": true},
 			"Streams/number": {"create": true, "edit": true},
 			"Streams/image": {
@@ -65,13 +76,16 @@
 			},
 			"Streams/category": {
 				"create": true,
-				"edit": true
+				"edit": true,
+				"defaults": {
+					"title": "Untitled Category"
+				}
 			},
-			"Streams/location": {
+			"Streams/interest": {
 				"create": true,
 				"edit": true,
-				"messages": {
-					"Streams/location/message": {"post": true}
+				"defaults": {
+					"title": "Untitled Interest"
 				}
 			},
 			"Streams/incoming": {
@@ -83,11 +97,25 @@
 			"Streams/chat": {
 				"create": true,
 				"messages": {
-					"Streams/chat/message": {"post": true},
-					"Streams/chat/edit": {"post": true},
-					"Streams/chat/remove": {"post": true},
-					"Streams/chat/reply": {"post": true}
+					"Streams/chat/message": {
+						"post": true,
+						"title": "Chat message"
+					},
+					"Streams/chat/edit": {
+						"post": true,
+						"title": "Chat change"
+					},
+					"Streams/chat/remove": {
+						"post": true,
+						"title": "Chat change"
+					},
+					"Streams/chat/reply": {
+						"post": true,
+						"title": "Chat message"
+					}
 				}
+			},
+			"Streams/announcement": {
 			}
 		},
 		"defaults": {
@@ -99,7 +127,7 @@
 			],
 			"invite": {
 				"dialog": {
-					"title": "You are invited",
+					"title": "You've been invited",
 					"user": {
 						"text": "has invited you to"
 					},
@@ -161,13 +189,17 @@
 				"Streams/user/username",
 				"Streams/user/icon",
 				"Streams/user/firstName",
-				"Streams/user/lastName"
+				"Streams/user/lastName",
+				"Streams/user/emailAddress",
+				"Streams/user/mobileNumber"
 			]
 		},
 		"onUpdate": {
 			"Users_User": {
 				"username": "Streams/user/username",
-				"icon": "Streams/user/icon"
+				"icon": "Streams/user/icon",
+				"emailAddress": "Streams/user/emailAddress",
+				"mobileNumber": "Streams/user/mobileNumber"
 			}
 		}
 	}

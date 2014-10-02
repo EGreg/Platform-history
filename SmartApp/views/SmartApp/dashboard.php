@@ -15,9 +15,9 @@
 <?php echo Q::tool('Users/status', array(
 	'icon' => 'plugins/Q/img/icons/login30.png',
 	'menuItems' => array(
-		array('contents' => 'Profile', 'action' => Q_Uri::url('QF/home')),
-		array('contents' => 'Home', 'action' => Q_Uri::url('QF/home')),
-		array('contents' => 'Settings', 'action' => Q_Uri::url('QF/home'))
+		array('contents' => 'Profile', 'action' => $home),
+		array('contents' => 'Home', 'action' => $home),
+		array('contents' => 'Settings', 'action' => $home)
 	),
 	'onMenuSelect' => 'SmartApp.userMenuHandler'
 )); ?>

@@ -32,20 +32,19 @@
 					'userId' => $user->id
 				)) ?>
 				<div class='Q_big_prompt'>
-					<p>
+					<p style="max-width: 350px;">
 					<?php if (empty($_REQUEST['p'])): ?>
-						Set up a pass <strong>phrase</strong> to protect your account.<br>
-						In case you're wondering, passphrases are harder to guess, and<br>
-						easier to type than passwords with weird characters.
-						See the suggestions for some ideas.
+						Choose a <strong>pass phrase</strong> to log in with.<br>
+						Better to have a unique phrase you'll remember,
+						rather than a single word with weird characters.
 					<?php else: ?>
-						Choose a pass <strong>phrase</strong> to protect your account.
+						Choose a good <strong>pass phrase</strong> to protect your account.
 						See the suggestions for some ideas.
 					<?php endif; ?>
 					</p>
 					<?php echo Q_Html::form(Q_Dispatcher::uri(), 'post', array('id' => 'Q_activation_form')) ?>
 						<?php echo Q_Html::formInfo(null) ?>
-						<input type="password" id='activate_passphrase' name="passphrase" class='password' autofocus placeholder="Enter a passphrase" /><br>
+						<input type="password" id='activate_passphrase' name="passphrase" class='password' autofocus placeholder="Enter a passphrase" autocomplete="new-password" /><br>
 						<button type="submit" class="Q_button" style="width: 250px;">Activate My Account</button>
 						<input type="hidden" id="activate_identifier" name="<?php echo $t ?>"
 							value="<?php echo Q_Html::text($identifier) ?>">
@@ -57,10 +56,10 @@
 				</div>
 		</div>
 		<div class="Q_extra_pane">
-			<h2>Suggestions</h2>
+			<h2>Suggestions:</h2>
 			<ul id='suggestions'>
 				<?php foreach ($suggestions as $s): ?>
-					<li class="fromServer"><?php echo Q_Html::text($s) ?></li>
+					<li class="Users_fromServer"><?php echo Q_Html::text($s) ?></li>
 				<?php endforeach ?>
 			</ul>
 		</div>
@@ -72,7 +71,6 @@
 <?php endif; ?>
 
 <?php Q_Response::addScript('plugins/Q/js/Q.js'); ?>
-<?php Q_Response::addScript('plugins/Q/js/JSON.js'); ?>
 
 <?php Q_Response::addScriptLine("jQuery(function() {
 	$('#activate_setIdentifier').click(function() { Q.plugins.Users.setIdentifier(); });
@@ -107,7 +105,7 @@
 				rand = Math.floor(Math.random() * source_words.length);
 				var text = source_words.slice(rand, rand+3).join(' ');
 				if (text) {
-					ul.prepend($('<li />').addClass('fromYahoo').html(text));
+					ul.prepend($('<li />').addClass('Users_fromYahoo').html(text));
 					$('li:last', ul).eq(0).remove();
 				}
 			}

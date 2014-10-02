@@ -185,11 +185,11 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 
 	/**
 	 * Whether to cache or not
-	 * @property $noCache
+	 * @property $dontCache
 	 * @type boolean
 	 * @default false
 	 */
-	protected $noCache = null;
+	protected $dontCache = null;
 
 	/**
 	 * Turn off automatic caching on fetchAll and fetchDbRows.
@@ -202,7 +202,18 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		return $this;
 	}
 
-
+	/**
+	 * Turn off automatic caching on fetchAll and fetchDbRows.
+	 * @method dontCache
+	 * @param {boolean} [$onlyEmpty=false] Defaults to false. Pass true to suppress caching empty results only.
+	 * @return Db_Query_Mysql
+	 */
+	function dontCache($onlyEmpty = false)
+	{
+		$this->dontCache = $onlyEmpty;
+		return $this;
+	}
+	
 	/**
 	 * Builds the query from the clauses
 	 * @method build
@@ -1313,8 +1324,8 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		$arguments = func_get_args();
 		$ret = call_user_func_array(array($result, 'fetchAll'), $arguments);
 
-		if ($this->noCache === null
-		or ($this->noCache === true and !empty($ret))) {
+		if ($this->dontCache === null
+		or ($this->dontCache === true and !empty($ret))) {
 			// cache the result of executing this particular SQL on this db connection
 			Db_Query::$cache[$conn_name][$sql]['fetchAll'] = $ret;
 		}
@@ -1349,8 +1360,8 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		$arguments = func_get_args();
 		$ret = call_user_func_array(array($result, 'fetchArray'), $arguments);
 
-		if ($this->noCache === null
-		or ($this->noCache === true and !empty($ret))) {
+		if ($this->dontCache === null
+		or ($this->dontCache === true and !empty($ret))) {
 			// cache the result of executing this particular SQL on this db connection
 			Db_Query::$cache[$conn_name][$sql]['fetchArray'] = $ret;
 		}
@@ -1390,8 +1401,8 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 			return Db_Query::$cache[$conn_name][$sql]['fetchDbRows'];
 		}
 		$ret = $this->execute()->fetchDbRows($class_name, $fields_prefix, $by_field);
-		if ($this->noCache === null
-		or ($this->noCache === true and !empty($ret))) {
+		if ($this->dontCache === null
+		or ($this->dontCache === true and !empty($ret))) {
 			// cache the result of executing this particular SQL on this db connection
 			Db_Query::$cache[$conn_name][$sql]['fetchDbRows'] = $ret;
 		}
@@ -1417,18 +1428,6 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 			return null;
 		}
 		return reset($rows);
-	}
-
-	/**
-	 * Turn off automatic caching on fetchAll and fetchDbRows.
-	 * @method noCache
-	 * @param {boolean} [$onlyEmpty=false] Defaults to false. Pass true to suppress caching empty results only
-	 * @return Db_Query_Mysql
-	 */
-	function noCache($onlyEmpty = false)
-	{
-		$this->noCache = $onlyEmpty;
-		return $this;
 	}
 
 	/**

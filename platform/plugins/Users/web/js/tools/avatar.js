@@ -1,15 +1,20 @@
 (function (Q, $, window, undefined) {
 
 /**
- * Users/avatar tool
- * @method avatar
+ * Users Tools
+ * @module Users-tools
+ * @main
+ */
+
+/**
+ * Avatar representing a user
+ * @class Users avatar
+ * @constructor
  * @param {Object} [options] this object contains function parameters
  *   @param {String} [options.userId] User Id for getting avatar
  *   @required
  *   @param {String} [options.icon] icon for avatar
  *   @default '40'
- *   @param {Event} [options.onName]
- *   @default Q.Event(function() {}, 'Users')
  *   @param {Object} [options.templates] Object for avatar template parameters
  *     @param {Object} [options.templates.icon]
  *       @param {String} [options.templates.icon.dir]
@@ -72,7 +77,6 @@ Q.Tool.define("Users/avatar", function(options) {
 {
 	user: null,
 	icon: '40',
-	onName: new Q.Event(function() {}, 'Users'),
 	templates: {
 		icon: {
 			dir: 'plugins/Users/views',

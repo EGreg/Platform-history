@@ -14,9 +14,11 @@ var _ext = Q.Config.get(['Q', 'extensions', 'mustache'], '.mustache');
 
 function _loader(path) {
 	return function(name) {
-		if (name.slice(-_ext.length) !== _ext) name += _ext;
+		if (name.slice(-_ext.length) !== _ext) {
+			name += _ext;
+		}
 		if (fs.existsSync(path+Q.DS+name)) {
-			return fs.readFileSync(path+Q.DS+name);
+			return fs.readFileSync(path+Q.DS+name, 'utf8');
 		}
 	};
 }
@@ -77,7 +79,7 @@ module.exports = {
 	 * @method render
 	 * @param {string} template The template name
 	 * @param {object} data Optional. The data to render
-	 * @param {function|object} partials Optional. Partials to render
+	 * @param {Array} partials Optional. The names of partials to load and use for rendering.
 	 * @return {string|null}
 	 */
 	render: function(tPath, data, partials) {
@@ -87,15 +89,16 @@ module.exports = {
 		if (!tpl) return null;
 
 		if (partials) {
-			for (path in partials) {
-				if (typeof partials[path] === "function") {
-					part[path] = partials[path];
-				} else {
-					// shall be string!!!
-					for (i=0; i<_partials.length; i++) {
-						if ((part[path] = _partials[i](partials[path]))) break;
+			_getLoaders();
+			for (i=0; i<partials.length; i++) {
+				var path = partials[i];
+				for (j=0; j<_partials.length; j++) {
+					if (part[path] = _partials[j](path)) {
+						break;
 					}
-					if (part[path]) part[path] = part[path].toString();
+				}
+				if (part[path]) {
+					part[path] = part[path].toString();
 				}
 			}
 		}
@@ -107,25 +110,25 @@ module.exports = {
 	 * @method render
 	 * @param {string} content The source content
 	 * @param {object} data Optional. The data to render
-	 * @param {function|object} partials Optional. Partials to render
+	 * @param {Array} partials Optional. The names of partials to load and use for rendering.
 	 * @return {string|null}
 	 */
 	renderSource: function(content, data, partials) {
-		var i, path;
+		var i, path, part = {};
 
 		if (partials) {
-			for (path in partials) {
-				if (typeof partials[path] === "function") {
-					part[path] = partials[path];
-				} else {
-					// shall be string!!!
-					for (i=0; i<_partials.length; i++) {
-						if ((part[path] = _partials[i](partials[path]))) break;
+			for (i=0; i<partials.length; i++) {
+				var path = partials[i];
+				for (j=0; j<_partials.length; j++) {
+					if (part[path] = _partials[j](path)) {
+						break;
 					}
-					if (part[path]) part[path] = part[path].toString();
+				}
+				if (part[path]) {
+					part[path] = part[path].toString();
 				}
 			}
 		}
-		return mustache.render(content, data, partials);
+		return mustache.render(content, data, part);
 	}
 };

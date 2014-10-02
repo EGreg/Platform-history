@@ -44,6 +44,9 @@ function Q_after_Q_tool_render($params, &$result)
 	if (isset($extra['classes'])) {
 		$classes .= ' ' . $extra['classes'];
 	}
+	$attributes = isset($extra['attributes'])
+		? ' ' . Q_Html::attributes($extra['attributes'])
+		: '';
 	$data_retain = !empty($extra['retain']) || Q_Response::shouldRetainTool($id_prefix)
 		? " data-Q-retain=''"
 		: '';
@@ -52,7 +55,7 @@ function Q_after_Q_tool_render($params, &$result)
 		: '';
 	$names = ($count === 1) ? ' '.key($info) : 's '.implode(" ", $names);
 	$result = "<!--\n\nbegin tool$names\n\n-->"
-	 . "<$tag id='{$id_prefix}tool' class='Q_tool $classes'$data_options$data_retain$data_replace>"
+	 . "<$tag id='{$id_prefix}tool' class='Q_tool $classes'$data_options$data_retain$data_replace$attributes>"
 	 . $result 
 	 . "</div><!--\n\nend tool$names \n\n-->";
 	

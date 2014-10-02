@@ -236,13 +236,13 @@ class Q_Exception extends Exception
 	 * @protected
 	 * @type array
 	 */
-	protected $params = array();
+	public $params = array();
 	/**
 	 * @property $inputFields
 	 * @protected
 	 * @type array
 	 */
-	protected $inputFields = array();
+	public $inputFields = array();
 	
 	/**
 	 * @property $codes

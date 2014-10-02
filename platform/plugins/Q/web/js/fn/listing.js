@@ -1,8 +1,15 @@
 (function (Q, $, window, document, undefined) {
 
 /**
- * Makes a selectable listing which acts like a menu.
- * @method listing
+ * Q Tools
+ * @module Q-tools
+ * @main Q-tools
+ */
+
+/**
+ * Listing that appears in contextual menus
+ * @class Q listing
+ * @constructor
  * @param {Mixed} [Object_or_String] mixed parameter , could be an Object of parameters or String
  * @param {Object} [Object_or_String.Object]
  *	 If an object then it's a hash of options, that can include:
@@ -19,7 +26,7 @@
  *   @param {Event} [Object_or_String.Object.eventDelegate] eventDelegate If provided, then touch / mouse events will be handled using this element.
  *	 @param {String} [Object_or_String.String]
  *	 If a string, then it's a command which may be:
- *		 "destroy": Destroys selectable listing functionality.
+ *		 "remove": Destroys selectable listing functionality.
  */
 Q.Tool.jQuery('Q/listing',
 

@@ -29,7 +29,7 @@ class Q_Mustache {
 	 * @return {string} Rendered template
 	 */
 	static function renderSource($source, $data = array()) {
-		return self::mustache()->loadLambda($source)->render($data);
+		return self::mustache()->loadSource($source)->render($data);
 	}
 	
 	static function mustache()

@@ -70,11 +70,11 @@ class Users_Email extends Base_Users_Email
 		}
 		
 		$app = Q_Config::expect('Q', 'app');
-		$subject = Q_Mustache::renderSource($subject, $fields);
+		$subject = Q_Handlebars::renderSource($subject, $fields);
 		$body = Q::view($view, $fields);
 		
-		if(is_null(Q_Config::get('Users', 'email', 'smtp', null))) {
-			Q_Response::setNotice("Q/email", "Please set up SMTP in Users/email/smtp as in docs.", true);
+		if(!Q_Config::get('Users', 'email', 'smtp', 'sendmail')) {
+			Q_Response::setNotice("Q/email", "Please set up SMTP in Users/email/smtp as in docs.", false);
 			return true;
 		}
 		$overrideLog = Q::event(
@@ -82,7 +82,7 @@ class Users_Email extends Base_Users_Email
 			compact('emailAddress', 'subject', 'body'),
 			'before'
 		);
-		if(is_null($overrideLog)
+		if(!isset($overrideLog)
 		and $key = Q_Config::get('Users', 'email', 'log', 'key', null)) {
 			Q::log("\nSent email message to $emailAddress:\n$subject\n$body", $key);
 		}

@@ -32,12 +32,13 @@ class Streams_Rule extends Base_Streams_Rule
 	function beforeSave($value)
 	{
 		if (!$this->retrieved) {
-			$max = Streams_Rule::select("MAX(ordinal)")->where(array(
-				'ofUserId' => $this->ofUserId,
+			$max = Streams_Rule::select("MAX(ordinal) + 1")->where(array(
+				'ofUserId'    => $this->ofUserId,
 				'publisherId' => $this->publisherId,
-				'streamName' => $this->streamName
-			))->fetchAll(PDO::FETCH_COLUMN);
-			$value['ordinal'] = $this->ordinal = isset($max[0]) ? $max[0]+1 : 1; 
+				'streamName'  => $this->streamName
+			))->ignoreCache()->fetchAll(PDO::FETCH_COLUMN);
+
+			$value['ordinal'] = $this->ordinal = isset($max[0]) ? $max[0] : 1; 
 			if (!isset($this->readyTime)) {
 				$value['readyTime'] = $this->readyTime = new Db_Expression('CURRENT_TIMESTAMP');
 			}

@@ -1,15 +1,17 @@
 (function (Q, $) {
 
 /**
+ * Q Tools
+ * @module Q-tools
+ */
+
+/**
  * Makes an infomation block for adding a bookmarklet on the browser's bookmarks bar
  * the way similar to how facebook does: http://www.facebook.com/share_options.php .
- * Main purpose of the tool is to present in cross-browser way how bookmarklet button will look, how bookmarklet will
- * look on browser panel and instructions how to add bookmarklet to that panel.
- * @module Q
- * @submodule Plugins
- * @class jQuery
- * @namespace Q
- * @method bookmarklet
+ * The main purpose of the tool is to present, in a cross-browser way,
+ * user-friendly instructions on how to add bookmarklet in the browser.
+ * @class Q bookmarklet
+ * @constructor
  * @param {Object} [options] This is an object with properties for this function
  *   @param {String} [options.content] Javascript code or url of the script.
  *   @required

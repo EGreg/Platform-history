@@ -6,8 +6,43 @@
 		"pluginInfo": {
 			"Places": {
 				"version": "0.3",
-				"connections": ["Places"]
+				"compatible": "0.3",
+				"connections": ["Places"],
+				"requires": {"Streams": "0.8"}
 			}
+		},
+		"handlersBeforeEvent": {
+			"Q/responseExtras": ["Places/before/Q_responseExtras"]
+		},
+		"handlersAfterEvent": {
+		}
+	},
+	"Streams": {
+		"types": {
+			"Places/location": {
+				"create": true,
+				"edit": true,
+				"messages": {
+					"Places/location/visit": { "post": true },
+					"Places/location/stay": { "post": true }
+				},
+				"defaults": {
+					"title": "Location"
+				}
+			},
+			"Places/nearby": {
+				"messages": {
+				}
+			},
+			"Places/community": {
+				"edit": true
+			}
+		}
+	},
+	"Places": {
+		"nearby": {
+			"miles": [5, 10, 15, 20, 25, 50, 75, 100],
+			"defaultMiles": 20
 		}
 	}
 }

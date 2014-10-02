@@ -62,10 +62,6 @@ class Users_Mobile extends Base_Users_Mobile
 		$app = Q_Config::expect('Q', 'app');
 		$body = Q::view($view, $fields);
 
-		if(is_null(Q_Config::get('Users', 'email', 'smtp', null))){
-			Q_Response::setNotice("Q/mobile", "Please set up transport in Users/mobile/twilio as in docs", true);
-			return true;
-		}
 		$overrideLog = Q::event(
 			'Users/mobile/log', 
 			compact('mobileNumber', 'body'), 
@@ -73,7 +69,7 @@ class Users_Mobile extends Base_Users_Mobile
 		);
 		if(is_null($overrideLog)
 		and $key = Q_Config::get('Users', 'mobile', 'log', 'key', null)) {
-			Q::log("\nSent mobile message to $mobileNumber:\n$body", $key);
+			Q::log("\nSent mobile message to {$this->number}:\n$body", $key);
 		}
 
 		$sent = false;
@@ -112,12 +108,17 @@ class Users_Mobile extends Base_Users_Mobile
 					throw new Users_Exception_MobileMessage(array('error' => $e->getMessage()));
 				}
 			} else {
+				if(!Q_Config::get('Users', 'email', 'smtp', null)){
+					Q_Response::setNotice("Q/mobile", "Please set up transport in Users/mobile/twilio as in docs", false);
+					return true;
+				}
+				
 				if (!is_array($from)) {
 					$from = array($from, "$app activation");
 				}
 
 				// Set up the default mail transport
-				$host = Q_Config::get('Users', 'email', 'transport', 'host', 'sendmail');
+				$host = Q_Config::get('Users', 'email', 'smtp', 'host', 'sendmail');
 				if ($host === 'sendmail') {
 					$transport = new Zend_Mail_Transport_Sendmail('-f'.reset($from));
 				} else {

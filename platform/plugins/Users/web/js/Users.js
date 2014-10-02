@@ -55,7 +55,7 @@ Q.text.Users = {
 	},
 	
 	setIdentifier: {
-		title: "My Account Login",
+		title: "Add a way to log in",
 		sendMessage: "Send Activation Message",
 		placeholders: {
 			identifier: "enter your mobile # or email",
@@ -226,17 +226,17 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 		// check if user is connected to facebook
 		FB_getLoginStatus(function(response) {
 			if (response.status === 'connected') {
-				var fb_uid = response.authResponse.userID;
-				var ignoreUid = Q.cookie('Users_ignore_facebook_uid');
+				var fb_uid = parseInt(response.authResponse.userID);
+				var ignoreUid = parseInt(Q.cookie('Users_ignoreFacebookUid'));
 				// the following line prevents multiple prompts for the same user,
 				// which can be a problem especially if the authenticate() is called
 				// multiple times on the same page, or because the page is reloaded
-				Q.cookie('Users_ignore_facebook_uid', fb_uid);
+				Q.cookie('Users_ignoreFacebookUid', fb_uid);
 				
 				if (Users.loggedInUser && Users.loggedInUser.fb_uid == fb_uid) {
 					// The correct user is already logged in.
 					// Call onSuccess but do not pass a user object -- the user didn't change.
-					_doSuccess();
+					_doSuccess(null);
 					return;
 				}
 				if (options.prompt === undefined || options.prompt === null) {
@@ -267,11 +267,11 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 			}
 
 			function _doSuccess(user) {
-				// TODO: check what to do if user has changed
+				// if the user hasn't changed then user is null here
 				Users.connected.facebook = true;
-				var changed = (!Users.loggedInUser || Users.loggedInUser.fb_uid != response.authResponse.UserID);
-				Users.onLogin.handle(user);
-				Q.handle(onSuccess, this, [user]);
+				Users.onLogin.handle.call(Users, user, options);
+				Users.onConnected.handle.call(Users, provider, user, options);
+				Q.handle(onSuccess, this, [user, options]);
 			}
 			
 			function _doCancel(ignoreUid) {
@@ -284,10 +284,11 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 					// and then the javascript discovers that the facebook connection was lost,
 					// the user will not be prompted to restore it when it becomes available again.
 					// They will have to do it explicitly (calling Users.authenticate with prompt: true)
-					Q.cookie('Users_ignore_facebook_uid', ignoreUid);
+					Q.cookie('Users_ignoreFacebookUid', ignoreUid);
 				}
 				delete Users.connected.facebook;
-				onCancel && onCancel();
+				Users.onConnectionLost.handle.call(Users, provider, options);
+				Q.handle(onCancel, Users, [options]);
 			}
 
 			function _doAuthenticate() {
@@ -352,27 +353,27 @@ Users.prompt = function(provider, uid, authCallback, cancelCallback, options) {
 		Q.addStylesheet(Q.url('plugins/Users/css/Users.css'));
 	
 		var title = Q.text.Users.prompt.title
-			.replace(new RegExp("{\\$provider}", 'g'), provider)
-			.replace(new RegExp("{\\$Provider}", 'g'), provider.toCapitalized());
+			.replace(/{\$provider}/g, provider)
+			.replace(/{\$Provider}/g, provider.toCapitalized());
 		var areUsing = Q.text.Users.prompt.areUsing
-			.replace(new RegExp("{\\$provider}", 'g'), provider)
-			.replace(new RegExp("{\\$Provider}", 'g'), provider.toCapitalized());
+			.replace(/{\$provider}/g, provider)
+			.replace(/{\$Provider}/g, provider.toCapitalized());
 		var noLongerUsing = Q.text.Users.prompt.noLongerUsing
-			.replace(new RegExp("{\\$provider}", 'g'), provider)
-			.replace(new RegExp("{\\$Provider}", 'g'), provider.toCapitalized());
+			.replace(/{\$provider}/g, provider)
+			.replace(/{\$Provider}/g, provider.toCapitalized());
 		var caption;
 		var tookAction = false;
 
 		var content_div = $('<div />');
-		if (Users.loggedInUser && Users.loggedInUser.fb_uid) {
+		if (Users.loggedInUser && parseInt(Users.loggedInUser.fb_uid)) {
 			content_div.append(_usingInformation(Users.loggedInUser.fb_uid, noLongerUsing));
 			caption = Q.text.Users.prompt.doSwitch
-				.replace(new RegExp("{\\$provider}", 'g'), provider)
-				.replace(new RegExp("{\\$Provider}", 'g'), provider.toCapitalized());
+				.replace(/{\$provider}/, provider)
+				.replace(/{\$Provider}/, provider.toCapitalized());
 		} else {
 			caption = Q.text.Users.prompt.doAuth
-				.replace(new RegExp("{\\$provider}", 'g'), provider)
-				.replace(new RegExp("{\\$Provider}", 'g'), provider.toCapitalized());
+				.replace(/{\$provider}/, provider)
+				.replace(/{\$Provider}/, provider.toCapitalized());
 		}
 		content_div.append(_usingInformation(uid, areUsing)).append(_authenticateActions(caption));
 
@@ -413,7 +414,6 @@ Users.prompt = function(provider, uid, authCallback, cancelCallback, options) {
 	Q.Dialogs.push({
 		dialog: Users.prompt.overlay, 
 		alignByParent: true,
-		mask: true,
 		doNotRemove: true,
 		onActivate: function () {
 			Users.initFacebook(function () {
@@ -461,10 +461,10 @@ Users.perms = function (provider, callback) {
  * Log the user in
  * @method login
  * @param {Object} [options] You can pass several options here
- *  @param {Function} [options.onSuccess] function to call when login or authentication "using" a provider is successful.
- *     It is passed the user information if the user changed.
- *  @param {Function} [options.onCancel] function to call if login or authentication "using" a provider was canceled.
- *  @param {String} [options.homeUrl] If the default onSuccess implementation is used, the browser is redirected here
+ *  @param {Q.Event} [options.onSuccess] event that occurs when login or authentication "using" a provider is successful. It is passed the user information if the user changed.
+ *  @param {Function} [options.onCancel] event that occurs when login or authentication "using" a provider was canceled.
+ *  @param {Function} [options.onResult] event that occurs before either onSuccess, onCancel, or onRequireComplete
+ *  @param {String} [options.successUrl] If the default onSuccess implementation is used, the browser is redirected here
  *  @default Q.uris[Q.info.app+'/home']
  *  @param  {String} [options.accountStatusUrl] if passed, this URL is hit to determine if the account is complete
  *  @param {Function} [options.onRequireComplete] function to call if the user logged in but account is incomplete.
@@ -593,7 +593,8 @@ Users.login = function(options) {
 				return;
 			}
 
-			if (!o.onRequireComplete || response2.slots.accountStatus === 'complete') {
+			if (!o.onRequireComplete 
+			|| response2.slots.accountStatus === 'complete') {
 				_onComplete(user);
 			} else if (response2.slots.accountStatus === 'refresh') {
 				// we are logged in, refresh the page
@@ -603,28 +604,28 @@ Users.login = function(options) {
 				// take the user to the profile page which will ask
 				// the user to complete their registration process
 				// by entering additional information
-				if (typeof(o.onRequireComplete) !== 'function' && typeof(o.onRequireComplete) !== 'string') {
-					alert('Need an url in the onRequireComplete option');
-					return;
+				if (false !== Q.handle(o.onResult, this, [user, response2, o])) {
+					Q.handle(o.onRequireComplete, this, [user, response2, o]);
 				}
-				Q.handle(o.onRequireComplete, this, [user, response2]);
 			}
 		});
 	}
 	
 	// User clicked "cancel" or closed login dialog
 	function _onCancel(perms) {
-		Q.handle(o.onCancel, this, [perms]);
+		if (false !== Q.handle(o.onResult, this, [perms, o])) {
+			Q.handle(o.onCancel, this, [perms, o]);
+		}
 	}
 	
 	// login complete - run onSuccess handler
 	function _onComplete(user) {
-		if (!o.onSuccess && typeof(o.onSuccess) !== 'function' && typeof(o.onSuccess) !== 'string') {
-			alert('Need an url in the onSuccess option');
-			return;
-		}
 		Users.onLogin.handle(user);
-		Q.handle(o.onSuccess, this, [user, o, priv.result, priv.used || 'native']);
+		var pn = priv.used || 'native';
+		var ret = Q.handle(o.onResult, this, [user, o, priv.result, pn]);
+		if (false !== ret) {
+			Q.handle(o.onSuccess, this, [user, o, priv.result, pn]);	
+		}	
 	}
 };
 
@@ -632,10 +633,11 @@ Users.login = function(options) {
  * Log the user out
  * @method logout
  * @param {Object} [options] You can pass several options here
- *  @param {Function} [options.onSuccess] function to call when login is successful.
  *  It is passed the user information if the user changed.
  *  @param {String} [options.url] the URL to hit to log out. You should usually not change this.
  *  @param {String} [options.using] can be "native" or "native,facebook" to log out of both
+ *  @param {Q.Event} [options.onSuccess] event that occurs when logout is successful.
+ *  @param {String} [options.welcomeUrl] the URL of the page to show on a successful logout
  */
 Users.logout = function(options) {
 	if (typeof options === 'function') {
@@ -681,8 +683,8 @@ Users.logout = function(options) {
 			// if we log out without logging out of facebook,
 			// then we should ignore the logged-in user's fb_uid
 			// when authenticating, until it is forced
-			if (Users.loggedInUser && Users.loggedInUser.fb_uid)
-			Q.cookie('Users_ignore_facebook_uid', Users.loggedInUser.fb_uid);
+			if (Users.loggedInUser && parseInt(Users.loggedInUser.fb_uid))
+			Q.cookie('Users_ignoreFacebookUid', Users.loggedInUser.fb_uid);
 			Users.loggedInUser = null;
 			Q.nonce = Q.cookie('Q_nonce');
 			Users.onLogout.handle.call(this, o);
@@ -709,7 +711,7 @@ Users.logout = function(options) {
  *	if there were errors, first parameter is an array of errors
  *  otherwise, first parameter is null and second parameter is a Users.User object
  */
-Users.get = Q.getter(function (userId, callback) {
+Users.get = function (userId, callback) {
 	var url = Q.action('Users/avatar');
 	var func = Users.batchFunction(Q.baseUrl({
 		userIds: userId
@@ -727,7 +729,7 @@ Users.get = Q.getter(function (userId, callback) {
 		var user = new Users.User(data.avatar);
 		callback.call(user, err, user);
 	});
-});
+}
 Users.get.onError = new Q.Event();
 
 /**
@@ -826,15 +828,30 @@ Users.importContacts = function(provider)
 	window.open(Q.action("Users/importContacts?provider=" + provider), "import_contacts", "scrollbars,resizable,width=700,height=500");
 };
 
+/**
+ * Displays a dialog allowing the user to set a different identifier
+ * (email address, mobile number, etc.) as their primary login method
+ * @method setIdentifier
+ * @param {Object} [options] You can pass several options here
+ *  It is passed the user information if the user changed.
+ *  @param {String} [options.identifierType] the type of the identifier, which could be "mobile" or "email" or "email,mobile"
+ *  @param {Q.Event} [options.onSuccess] event that occurs on success
+ *  @param {Q.Event} [options.onCancel] event that occurs if the dialog is canceled
+ *  @param {Function} [options.onResult] event that occurs before either onSuccess or onCancel
+ */
 Users.setIdentifier = function(options) {
 	var o = Q.extend({}, Users.setIdentifier.options, options);
 	
 	function onSuccess(user) {
-		Q.handle(o.onSuccess, this, [user]);
+		if (false !== Q.handle(o.onResult, this, [user])) {
+			Q.handle(o.onSuccess, this, [user]);
+		}
 	}
 	
 	function onCancel(perms) {
-		Q.handle(o.onCancel, this, [perms]);
+		if (false !== Q.handle(o.onResult, this, [perms])) {
+			Q.handle(o.onCancel, this, [perms]);
+		}
 	}
 	
 	priv.setIdentifier_onSuccess = onSuccess;
@@ -923,15 +940,20 @@ function login_callback(response) {
 		if (!$this.is(':visible')) {
 			return;
 		}
-		var first_input = $('input:not([type=hidden])', $this).add('button', $this).eq(0);
+		var first_input = $('input:not([type=hidden])', $this)
+			.add('button', $this).eq(0);
 		$('input', $this).css({
 			'background-image': 'url(' + Q.url('plugins/Q/img/throbbers/loading.gif') + ')',
-			'background-repeat': 'no-repeat'
+			'background-repeat': 'no-repeat',
+			'background-size': 'auto ' + first_input.height()+'px'
 		});
 		if (window.CryptoJS) {
 			var p = $('#Users_form_passphrase');
-			if (p.val()) {
-				p.val(CryptoJS.SHA1(p.val() + "\t" + userId));
+			var v = p.val();
+			if (v) {
+				if (!/^[0-9a-f]{40}$/i.test(v)) {
+					p.val(CryptoJS.SHA1(p.val() + "\t" + userId));
+				}
 				$('#Users_login_isHashed').attr('value', 1);
 			} else {
 				$('#Users_login_isHashed').attr('value', 0);
@@ -988,6 +1010,7 @@ function login_callback(response) {
 		var passphrase_input = $('<input type="password" name="passphrase" id="Users_form_passphrase" class="Q_password" />')
 			.attr('maxlength', Q.text.Users.login.maxlengths.passphrase)
 			.attr('maxlength', Q.text.Users.login.maxlengths.passphrase)
+			.attr('autocomplete', 'current-password')
 			.on('change keyup input', function () {
 				$('#Users_login_passphrase_forgot')
 					.css('display', $(this).val() ? 'none' : 'inline');
@@ -1178,6 +1201,9 @@ function login_callback(response) {
 		var step2 = $('#Users_login_step2').html(step2_form);
 		if (Q.info && Q.info.isTouchscreen) {
 			step2.show();
+			if (!Q.info.isAndroid()) {
+				step2_form.plugin('Q/placeholders');
+			}
 			$('input', step2_form).eq(0).plugin('Q/clickfocus').select();
 		} else {
 			step2.slideDown('fast', function () {
@@ -1238,6 +1264,7 @@ function login_setupDialog(usingProviders, perms, dialogContainer, identifierTyp
 	var identifierInput = $('<input id="Users_login_identifier" autocomplete="email" type="'+type+'" class="text" />')
 	.attr('maxlength', Q.text.Users.login.maxlengths.identifier)
 	.attr('placeholder', placeholder)
+	.attr('autocomplete', 'username')
 	.focus(hideForm2);
 
 	if (type === 'email') {
@@ -1374,7 +1401,6 @@ function login_setupDialog(usingProviders, perms, dialogContainer, identifierTyp
 	dialog.append(titleSlot).append(dialogSlot).appendTo($(dialogContainer));
 	dialog.plugin('Q/dialog', {
 		alignByParent: true,
-		mask: true,
 		beforeLoad: function()
 		{
 			$('#Users_login_step1').css('opacity', 1).nextAll().hide();
@@ -1425,28 +1451,27 @@ function setIdentifier_callback(err, response) {
 	var form = $('#Users_setIdentifier_step1_form');
 	identifier_input.css('background-image', 'none');
 
-	var msg = Q.firstErrorMessage(err);
+	var msg = Q.firstErrorMessage(err, response && response.errors);
 	if (msg) {
-		return alert(msg);
-	}
-	if (response.errors) {
 		// There were errors
-		form.data('validator').invalidate(Q.ajaxErrors(response.errors, 'identifier'));
+		Q.handle(priv.setIdentifier_onCancel, this, [err, response]);
+		form.data('validator').invalidate(
+			Q.ajaxErrors(response.errors, 'identifier')
+		);
 		identifier_input.plugin('Q/clickfocus');
 		return;
 	}
 
 	// Remove any errors we may have displayed
 	form.data('validator').reset();
+	
+	Q.handle(priv.setIdentifier_onSuccess);
 
 	setIdentifier_setupDialog.dialog.data('Q/dialog').close();
 }
 
-function setIdentifier_setupDialog(identifierType) {
-	if (setIdentifier_setupDialog.dialog) {
-		return;
-	}
-
+function setIdentifier_setupDialog(identifierType, options) {
+	var options = options || {};
 	var placeholder = Q.text.Users.setIdentifier.placeholders.identifier;
 	var type = 'email';
 	var parts = identifierType ? identifierType.split(',') : [];
@@ -1489,13 +1514,13 @@ function setIdentifier_setupDialog(identifierType) {
 	
 	var dialog = $('<div id="Users_setIdentifier_dialog" class="Users_setIdentifier_dialog" />');
 	var titleSlot = $('<div class="title_slot">').append(
-		$('<h2 class="Users_dialog_title Q_dialog_title" />').html(Q.text.Users.setIdentifier.title)
+		$('<h2 class="Users_dialog_title Q_dialog_title" />')
+		.html(options.title || Q.text.Users.setIdentifier.title)
 	);
 	var dialogSlot = $('<div class="dialog_slot Q_dialog_content">').append(step1_div);
 	dialog.append(titleSlot).append(dialogSlot).appendTo(document.body);
 	dialog.plugin('Q/dialog', {
 		alignByParent: true,
-		mask: true,
 		beforeLoad: function()
 		{
 			$('input', dialog).val('');
@@ -1620,6 +1645,15 @@ Q.Tool.define({
 	"Users/getintouch": "plugins/Users/js/tools/getintouch.js"
 });
 
+Q.beforeInit.add(function _Users_beforeInit() {
+
+	Users.get = Q.getter(Users.get, {
+		cache: Q.Cache.document("Users.get", 100), 
+		throttle: 'Users.get'
+	});
+
+}, 'Users');
+
 Q.onInit.add(function () {
 	if (Q.Users.loggedInUser
 	&& Q.typeOf(Q.Users.loggedInUser) !== 'Q.Users.User') {
@@ -1634,51 +1668,61 @@ Q.onInit.add(function () {
 	}
 	
 	Q.Users.login.options = Q.extend({
-		'onCancel': new Q.Event(),
-		'onSuccess': new Q.Event(function (user) {
+		onCancel: new Q.Event(),
+		onSuccess: new Q.Event(function (user, options) {
 			// default implementation
 			if (user) {
 				// the user changed, redirect to their home page
 				var urls = Q.urls || {};
-				var url = Q.Users.login.options.homeUrl || urls[Q.info.app+'/home'] || Q.url('');
+				var url = options.successUrl 
+					|| urls[Q.info.app+'/home']
+					|| Q.url('');
 				Q.handle(url);
 			}
-		}, 'Users.login'),
-		'onRequireComplete': new Q.Event(),
-		"accountStatusUrl": null,
-		'tryQuietly': false,
-		'using': 'native', // can also be 'facebook'
-		'perms': 'email,publish_stream', // the permissions to ask for on facebook
-		'linkToken': null,
-		'dialogContainer': 'body',
-		'setupRegisterForm': null,
-		'identifierType': 'email,mobile',
-		'activation': 'activation'
+		}, 'Users'),
+		onResult: new Q.Event(),
+		onRequireComplete: new Q.Event(),
+		accountStatusUrl: null,
+		tryQuietly: false,
+		using: 'native', // can also be 'facebook'
+		perms: 'email,publish_stream', // the permissions to ask for on facebook
+		linkToken: null,
+		dialogContainer: 'body',
+		setupRegisterForm: null,
+		identifierType: 'email,mobile',
+		activation: 'activation'
 	}, Q.Users.login.options, Q.Users.login.serverOptions);
 
 	Q.Users.logout.options = Q.extend({
-		'url': Q.action('Users/logout'),
-		'using': 'native',
-		'onSuccess': new Q.Event(function () {
+		url: Q.action('Users/logout'),
+		using: 'native',
+		onSuccess: new Q.Event(function (options) {
 			var urls = Q.urls || {};
-			Q.handle( Q.Users.login.options.welcomeUrl || urls[Q.info.app+'/welcome'] || Q.url(''));
+			Q.handle( options.welcomeUrl 
+				|| urls[Q.info.app+'/welcome'] 
+				|| Q.url(''));
 		}, 'Users.logout')
 	}, Q.Users.logout.options, Q.Users.logout.serverOptions);
 
 	Q.Users.setIdentifier.options = Q.extend({
-		'onCancel': null,
-		'onSuccess': null, // gets passed session
-		'identifierType': 'email,mobile'
+		onCancel: null,
+		onSuccess: null, // gets passed session
+		identifierType: 'email,mobile'
 	}, Q.Users.setIdentifier.options, Q.Users.setIdentifier.serverOptions);
 	
 	Q.Users.prompt.options = Q.extend({
-		'dialogContainer': document.body
+		dialogContainer: document.body
 	}, Q.Users.prompt.options, Q.Users.prompt.serverOptions);
 }, 'Users');
 
-Q.onReady.set(function Users_Q_onReady_handler() {
+Q.Page.onActivate('').add(function _Users_Q_Page_onActivate_handler () {
 	$.fn.plugin.load('Q/dialog');
 	$.fn.plugin.load('Q/placeholders');
+	$('#notices_set_email, #notices_set_mobile')
+	.on(Q.Pointer.fastclick, function () {
+		Q.plugins.Users.setIdentifier();
+		return false;
+	});
 }, 'Users');
 
 Q.beforeActivate.add(function (elem) {
@@ -1690,6 +1734,25 @@ Q.beforeActivate.add(function (elem) {
 	Users.preloaded = null;
 }, 'Users');
 
+Q.request.options.onProcessed.set(function (err, data) {
+	if (!data || !data.errors) return;
+	var i, l = data.errors.length, lost = false;
+	for (i=0; i<l; ++i) {
+		switch (data.errors[i].classname) {
+		case 'Users_Exception_NotLoggedIn':
+		case 'Q_Exception_NonceExpired':
+			lost = true;
+			break;
+		default:
+			break;
+		}
+	}
+	if (lost) {
+		Q.Users.onLoginLost.handle(data);
+		Q.Users.loggedInUser = null;
+	}
+}, 'Users');
+
 Users.onInitFacebook = new Q.Event();
 Users.onLogin = new Q.Event(function () {
 	document.documentElement.className.replace(' Users_loggedOut', '');
@@ -1699,5 +1762,10 @@ Users.onLogout = new Q.Event(function () {
 	document.documentElement.className.replace(' Users_loggedIn', '');
 	document.documentElement.className += ' Users_loggedOut';
 });
+Users.onLoginLost = new Q.Event(function () {
+	console.warn("Call to server was made which normally requires user login.");
+});
+Users.onConnected = new Q.Event();
+Users.onConnectionLost = new Q.Event();
 
 })(Q, jQuery);

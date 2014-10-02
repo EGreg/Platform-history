@@ -13,7 +13,7 @@
 */
 Q.Tool.jQuery('Q/hautoscroll',
 
-function () {
+function _Q_hautoscroll() {
 	return this.each(function() {
 		var $this = $(this);
 		$this.addClass('Q_hautoscroll');

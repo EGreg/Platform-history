@@ -1,29 +1,32 @@
 (function (Q, $, window, document, undefined) {
 
 /**
- * Plugin that allows to choose and upload an image to the server by clicking / tapping on it.
+ * Q Tools
+ * @module Q-tools
+ */
+
+/**
+ * jQuery plugin that allows to choose and upload an image to the server by clicking / tapping on it.
  * Works on various platforms (desktop and mobile etc) in similar way. On mobiles allows to choose picture
  * from photo library or take an instant camera photo if OS supports such functionality.
  * Should be applied to <img /> element like this $('#someimg').plugin('Q/imagepicker', options).
- * @module Q
- * @submodule Plugins
- * @class jQuery
- * @namespace Q
- * @method imagepicker
+ * @class Q imagepicker
+ * @constructor
  * @param {Object} [options] options is an Object that contains parameters for function
- * @param {Object} [options.saveSizeName] saveSizeName Required hash where key is the preferred image size and value is the image name. Several key-value pairs may
- *                   be given and image will be generated and saved in different files. Key may be just one number, e.g. '100'
- *                   which means square image 100x100 or in format '<width>x<height>', e.g. '80x120' to make non-square image.
- *                   You can have one of <width> or <height> be empty, and then it will automatically keep the proportions.
- *                   Or you can pass 'x' and then it will keep the original width and height of the image.
+ * @param {Object} [options.saveSizeName] Required hash where key is the preferred image size and value is the image name. Several key-value pairs may be given and image will be generated and saved in different files.
+*   Key may be just one number, e.g. '100' which means square image 100x100 or in format '<width>x<height>', e.g. '80x120' to make non-square image.
+ *  You can have one of <width> or <height> be empty, and then it will automatically keep the proportions.
+ *  Or you can pass 'x' and then it will keep the original width and height of the image.
  * @default {}
+ * @param {String} [options.url] url is a url to post to.
+ * @param {String} [options.path] Can be a URL path or a function returning a URL path. It must exist on the server.
  * @param {Object} [options.cropping]
  * @param {Boolean} [options.cropping.dialog]
  * @param {Boolean} [options.cropping.jCrop]
  *
  * @param {String} [options.path] path Can be a URL path or a function returning a URL path. It must exist on the server.
  * @default 'uploads'
- * @param {String} [options.subpath] subpath is a subpath which may be created on the server.
+ * @param {String} [options.subpath] A subpath which may be created on the server if it doesn't already exist.
  * @default ''
  * @param {String} [options.showSize] showSize is a key in saveSizeName to show on success. Optional.
  * @default null
@@ -33,7 +36,6 @@
  *   @param {Number} [options.crop.y] y is a top value for cropping
  *   @param {Number} [options.crop.w] w is a width value for cropping
  *   @param {Number} [options.crop.h] h is a height value for cropping
- * @param {String} [options.url] url is a url to post to.
  * @default Q.action('Q/image')
  * @param {Event} [options.preprocess] preprocess is a function which is triggering before image upload.
  * Its "this" object will be a jQuery of the imagepicker element
@@ -42,10 +44,10 @@
  * @param {Array} [options.cameraCommands] cameraCommands is an Array of titles for the commands that pop up to take a photo
  * @param {Event} [options.onClick] onClick is a function to execute during the click, which may cancel the click
  * @param {Event} [options.onSuccess] onSuccess is Q.Event which is called on successful upload. First parameter will be the server response with
- * hash in format similar to 'saveSizeName' field. Optional.
+ * an object in a format similar to the 'saveSizeName' field. Optional.
  * @param {Event} [options.onError] onError Q.Event which is called if upload failed. Optional.
  */
-Q.Tool.jQuery('Q/imagepicker', function (o) {
+Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 	var $this = this;
 	var input = $('<input type="file" accept="image/gif, image/jpeg, image/png" class="Q_imagepicker_file" />');
 	input.css({
@@ -58,7 +60,8 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 	});
 	var originalSrc = $this.attr('src');
 	if (originalSrc.indexOf('?') < 0) {
-		$this.attr('src', originalSrc+"?"+Date.now()); // cache busting
+		// cache busting
+		$this.attr('src', Q.url(originalSrc, null, {cacheBust: 1000}));
 	}
 	$this.before(input);
 	$this.addClass('Q_imagepicker');
@@ -77,7 +80,9 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 		}
 		var c = Q.handle(state.onSuccess, $this, [res.slots.data, key]);
 		if (c !== false && key) {
-			$this.attr('src', Q.url(res.slots.data[key]+"?"+Date.now()));
+			$this.attr('src', 
+				Q.url(res.slots.data[key], null, {cacheBust: 1000})
+			);
 		}
 		$this.removeClass('Q_imagepicker_uploading');
 	}
@@ -275,19 +280,32 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 				$this.attr('src', state.oldSrc).stop().removeClass('Q_imagepicker_uploading');
 				return;
 			}
+			var path = $this.state('Q/imagepicker').path;
+			path = (typeof path === 'function') ? path() : path;
+			var subpath = $this.state('Q/imagepicker').subpath;
+			subpath = (typeof subpath === 'function') ? subpath() : subpath;
 			var params = {
 				'data': data,
-				'path': state.path,
-				'subpath': state.subpath,
-				'save': state.saveSizeName,
-				'url': state.url,
-				'loader': state.loader,
-                'useAnySize': state.useAnySize
+				'path': path,
+				'subpath': subpath,
+				'save': o.saveSizeName,
+				'url': o.url,
+				'loader': o.loader
 			};
+//            var params = {
+//                'data': data,
+//                'path': state.path,
+//                'subpath': state.subpath,
+//                'save': state.saveSizeName,
+//                'url': state.url,
+//                'loader': state.loader,
+//                'useAnySize': state.useAnySize
+//            };
 			if (state.crop) {
 				params.crop = state.crop;
 			}
 			Q.extend(params, override);
+			var state = $this.state('Q/imagepicker');
 			if (params.save && !params.save[state.showSize]) {
 				throw new Q.Error("Q/imagepicker tool: no size found corresponding to showSize");
 			}
@@ -397,6 +415,10 @@ Q.Tool.jQuery('Q/imagepicker', function (o) {
 },
 
 {
+	/**
+	 * Removes the imagepicker functionality from the element
+	 * @method remove
+	 */
 	remove: function () {
 		return this.each(function() {
 			var $this = $(this);

@@ -1,0 +1,48 @@
+.Places_location_set { padding-top: 20px; width: 100%; cursor: pointer; }
+
+.Places_location_map { height: 200px; }
+
+.Places_location_obtained .Places_location_whileObtaining,
+.Places_location_obtaining .Places_location_whileObtained,
+.Places_location_checking .Places_location_whileObtaining,
+.Places_location_checking .Places_location_whileObtained {
+	display: none;
+}
+
+.Places_location_map_container {
+	margin: 10px 0px 10px 0px;
+	border-radius: 30px;
+	box-shadow: #777 2px 2px 10px;
+}
+
+@keyframes Places_obtaining {
+	from { opacity: 0.75; }
+	to { opacity: 0.25; }
+}
+@-webkit-keyframes Places_obtaining {
+	from { opacity: 0.75; }
+	to { opacity: 0.25; }
+}
+
+.Places_obtaining {
+	opacity: 0.5;
+	animation: Places_obtaining 1s ease-in-out infinite alternate;
+	-webkit-animation: Places_obtaining 1s ease-in-out infinite alternate;
+	position: relative;
+	cursor: wait;
+}
+
+.Places_obtaining:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background: rgba(57, 74, 213, 0.2);
+	-moz-transition: background .3s linear;
+	-webkit-transition: background .3s linear;
+	-o-transition: background .3s linear;
+	transition: background .3s linear;
+}

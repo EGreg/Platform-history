@@ -178,29 +178,9 @@ function parse_url (str, component) {
 var smtpTransport = null;
 Utils.sendEmail = function (to, subject, view, fields, options, callback) {
 	var mailer = require('nodemailer'),
-		mustache = require('mustache'),
-		key = Q.Config.get(['Users', 'mobile', 'log', 'key'], 'email');
-
-	if (!smtpTransport) {
-		// Set up the default mail transport
-		var smtp = Q.Config.get(['Users', 'email', 'smtp'], {host: 'sendmail'});
-		var host = smtp.host || 'sendmail';
-
-		if (host === "sendmail") {
-			smtpTransport = mailer.createTransport("sendmail");
-		} else {
-			host = {host: host};
-			if (smtp.port) host.port = smtp.port;
-			if (smtp.auth === "login") {
-				if (smtp.ssl) host.secureConnection = true;
-				host.auth = {
-					user: smtp.username,
-					pass: smtp.password
-				};
-			}
-			smtpTransport = mailer.createTransport("SMTP", host);
-		}
-	}
+//		mustache = require('mustache'),
+        handlebars = require('handlebars'),
+		key = Q.Config.get(['Users', 'email', 'log', 'key'], 'email');
 
 	if (typeof fields === 'function') {
 		callback = fields;
@@ -224,19 +204,48 @@ Utils.sendEmail = function (to, subject, view, fields, options, callback) {
 	var mailOptions = {
 		from: from[1]+' <'+from[0]+'>',
 		to: to,
-		subject: subject ? Q.Mustache.renderSource(subject, fields) : ''
+		subject: subject ? Q.Handlebars.renderSource(subject, fields) : ''
 	};
 	mailOptions[options.html ? 'html' : 'text'] = options.isSource
-		? Q.Mustache.renderSource(view, fields)
-		: Q.Mustache.render(view, fields);
-	if (key) {
-		Q.log('Sent email message to ' + to
-			+ ":\n" + mailOptions.subject
-			+ "\n" + mailOptions.html || mailOptions.text,
-			key
-		);
+		? Q.Handlebars.renderSource(view, fields)
+		: Q.Handlebars.render(view, fields);
+	
+	var smtp = Q.Config.get(['Users', 'email', 'smtp'], {host: 'sendmail'});
+	if (!smtpTransport && smtp) {
+		// Set up the default mail transport
+		var host = smtp.host || 'sendmail';
+
+		if (host === "sendmail") {
+			smtpTransport = mailer.createTransport("sendmail");
+		} else {
+			host = {host: host};
+			if (smtp.port) host.port = smtp.port;
+			if (smtp.auth === "login") {
+				if (smtp.ssl) host.secureConnection = true;
+				host.auth = {
+					user: smtp.username,
+					pass: smtp.password
+				};
+			}
+			smtpTransport = mailer.createTransport("SMTP", host);
+		}
 	}
-	smtpTransport.sendMail(mailOptions, callback);
+	
+	var logContent = 'Sent email message to ' + to
+		+ ":\n" + mailOptions.subject
+		+ "\n" + mailOptions.html || mailOptions.text,
+		key;
+	if (smtpTransport) {
+		smtpTransport.sendMail(mailOptions, callback);
+	} else {
+		logContent = 'Would have ' + logContent;
+		setTimeout(function () {
+			callback();
+		}, 0);
+	}
+	if (key) {
+		Q.log(logContent);
+	}
 };
 
 /**
@@ -257,7 +266,7 @@ var twilioClient = null;
 Utils.sendSMS = function (to, view, fields, options, callback) {
 	// some mobile number normalization
 	var number, provider, address = [],
-		key = Q.Config.get(['Users', 'mobile', 'log', 'key'], null);
+		key = Q.Config.get(['Users', 'mobile', 'log', 'key'], 'mobile');
 	if (to.slice(0, 2) === "00") {
 		// convert 00 to + in international numbers
 		number = '+'+to.slice(2);
@@ -267,20 +276,23 @@ Utils.sendSMS = function (to, view, fields, options, callback) {
 	} else {
 		number = to;
 	}
-	if (!twilioClient) {
+	var config = Q.Config.get(['Users', 'mobile', 'twilio']);
+	if (!twilioClient && config) {
 		var twilio = require('twilio');
 		// try twilio config
 		var sid, token;
-		if ((sid = Q.Config.get(['Users', 'mobile', 'twilio', 'sid'], null)) &&
-			(token = Q.Config.get(['Users', 'mobile', 'twilio', 'token'], null))) {
+		if (config.sid && config.token) {
 			// twilio config is given. Let's create transport to use it
-			twilioClient = new twilio.RestClient(sid, token);
+			twilioClient = new twilio.RestClient(config.sid, config.token);
 		}
 	}
+	
 	var content = options.isSource
-		? Q.Mustache.renderSource(view, fields)
-		: Q.Mustache.render(view, fields);
-	if (twilioClient && (from = options.from || Q.Config.get(['Users', 'mobile', 'from'], null))) {
+		? Q.Handlebars.renderSource(view, fields)
+		: Q.Handlebars.render(view, fields);
+	
+	if (twilioClient
+	&& (from = options.from || Q.Config.get(['Users', 'mobile', 'from'], null))) {
 		twilioClient.sendSms(from, '+'+number, content, {}, function (res) {
 			if (key) {
 				Q.log('sent mobile message (via twilio) to '+number+":\n"+content, key);
@@ -292,7 +304,18 @@ Utils.sendSMS = function (to, view, fields, options, callback) {
 		// we are done! Skip smtp method
 		return;
 	}
-	// no twilio - try to send via smtp
+	// no twilio - see if we can send via smtp
+	if (!Q.Config.get(['Users', 'email', 'smtp'], {host: 'sendmail'})) {
+		if (key) {
+			Q.log('would have sent message to '
+				+number+":\n"+content, key
+			);
+		}
+		callback(null, 'log');
+		return;
+	}
+	
+	// send via smtp gateways, good for development purposes
 	var gateways = Q.Config.get(['Users', 'mobile', 'gateways'], {
 		'at&t': 'txt.att.net',
 		'sprint': 'messaging.sprintpcs.com',

@@ -245,10 +245,10 @@ class Q_Tree
 
 		if (empty($array_path)) {
 			$array_path = array();
-			$to_save = $this->parameters;
+			$toSave = $this->parameters;
 		} else {
 			$array_path[] = null;
-			$to_save = call_user_func_array(array($this, 'get'), $array_path);
+			$toSave = call_user_func_array(array($this, 'get'), $array_path);
 		}
 
 		if(is_null($prefix_path)) {
@@ -259,29 +259,29 @@ class Q_Tree
 
 		foreach($prefix_path as $ap) {
 			if($ap) {
-				$to_save = array($ap=>$to_save);
+				$toSave = array($ap=>$toSave);
 			}
 		}
 
 		$mask = umask(Q_Config::get('Q', 'internal','umask' , 0000));
 		$success = file_put_contents(
 			$filename2, 
-			!empty($to_save) 
-				? Q::json_encode($to_save, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+			!empty($toSave) 
+				? Q::json_encode($toSave, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
 				: '{}',
 			LOCK_EX);
 
 		umask($mask);
 
 		if ($success) {
-			self::$cache[$filename] = $to_save;
-			Q_Cache::set("Q_Tree\t$filename", $to_save); // no need to check result - on failure Q_Cache is disabled
+			self::$cache[$filename] = $toSave;
+			Q_Cache::set("Q_Tree\t$filename", $toSave); // no need to check result - on failure Q_Cache is disabled
 		}
 		return $success;
 	}
 	
 	/**
-	 * Merges parameters over the top of existing parameters
+	 * Merges trees over the top of existing trees
 	 * @method merge
 	 * @param {array|Q_Tree} $second The array or Q_Tree to merge on top of the existing one
 	 * @return {boolean}
@@ -339,7 +339,16 @@ class Q_Tree
 	 */
 	protected static function merge_internal ($array1 = array(), $array2 = array())
 	{
-		$second_is_json_array = true;
+		$first_is_json_array = $second_is_json_array = true;
+		foreach ($array1 as $key => $value) {
+			if (!is_int($key)) {
+				$first_is_json_array = false;
+				break;
+			}
+		}
+		if ($first_is_json_array and isset($array2['replace'])) {
+			return $array2['replace'];
+		}
 		foreach ($array2 as $key => $value) {
 			if (!is_int($key)) {
 				$second_is_json_array = false;
@@ -356,7 +365,6 @@ class Q_Tree
 					// resulting key in the result
 					$result[] = $value;
 				}
-				continue;
 			} else if (array_key_exists($key, $result)) {
 				if (is_array($value) and is_array($result[$key])) {
 					// key already in result and both values are arrays

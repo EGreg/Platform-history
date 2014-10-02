@@ -18,13 +18,11 @@
 <!-- - - - - - - - - - - - - - end dashboard slot- - - - - - - - - - - - - - - - -->
 	</div>
 	<div id="page">
-		<?php if ($notices): ?>
-			<div id="notices_slot">
+		<div id="notices_slot">
 <!-- - - - - - - - - - - - - - begin notices slot- - - - - - - - - - - - - - - - -->
 <?php echo $notices ?> 
 <!-- - - - - - - - - - - - - - end dashboard_slot- - - - - - - - - - - - - - - - -->
-			</div>
-		<?php endif; ?>
+		</div>
 		<div id="content_slot">
 <!-- - - - - - - - - - - - - - begin content slot- - - - - - - - - - - - - - - - -->
 <?php echo $content; ?> 

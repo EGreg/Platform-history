@@ -16,10 +16,10 @@ function Users_activate_response_content()
 	
 	if (!empty(Users::$cache['success'])) {
 		$app = Q_Config::expect('Q', 'app');
-		$home = Q_Config::get('Users', 'uris', "$app/home", "$app/home");
+		$successUrl = Q_Config::get('Users', 'uris', "$app/successUrl", "$app/home");
 		if (Q_Request::method() === 'POST') {
 			Q_Response::redirect(
-				Q_Config::get('Users', 'uris', "$app/afterActivate", $home)
+				Q_Config::get('Users', 'uris', "$app/afterActivate", $successUrl)
 				.'?Q.fromSuccess=Users/activate&'.$_SERVER['QUERY_STRING']
 			);
 			return true;
@@ -47,9 +47,9 @@ function Users_activate_response_content()
 	$code = Q::ifset($_REQUEST['code']);
 
 	Q_Response::addScriptLine("Q.onReady.set(function () {
-		if (Q.Notices) {
-			Q.Notices.hide('Users/email');
-			Q.Notices.hide('Users/mobile');
+		if (Q.Notice) {
+			Q.Notice.hide('Users/email');
+			Q.Notice.hide('Users/mobile');
 		}
 	});"); // shh! not while I'm activating! lol
 	

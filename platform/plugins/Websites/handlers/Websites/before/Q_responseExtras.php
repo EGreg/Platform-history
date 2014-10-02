@@ -12,7 +12,7 @@ function Websites_before_Q_responseExtras()
 	));
 	if (!empty($streams[$seoStreamName])) {
 		$fields = Q::take(
-			$streams[$seoStreamName]->getAttributes(),
+			$streams[$seoStreamName]->getAllAttributes(),
 			array('keywords', 'description')
 		);
 		foreach ($fields as $k => $v) {

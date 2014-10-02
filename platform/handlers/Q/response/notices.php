@@ -9,7 +9,9 @@ function Q_response_notices()
 	if (!empty($notices)) {
 		$result .= "<ul class='Q_notices'>";
 		foreach ($notices as $k => $n) {
-			$result .= "<li data-key=\"$k\">$n</li>\n";
+			$key = Q_Html::text($k);
+			$close = "<div class='x'>x</div>";
+			$result .= "<li data-key='$key'>$close$n</li>\n";
 		}
 		$result .= "</ul>";
 	}
@@ -31,7 +33,7 @@ function Q_response_notices()
 	$removed_notices = Q_Response::getRemovedNotices();
 	if (!empty($removed_notices)) {
 		$json = Q::json_encode($removed_notices);
-		Q_Response::addScriptLine("if (Q.Notices) Q.handle(Q.Notices.add($json));");
+		Q_Response::addScriptLine("if (Q.Notice) Q.handle(Q.Notice.remove($json));");
 	}
 
 	return $result ? "<div id='notices'>$result</div>" : '';

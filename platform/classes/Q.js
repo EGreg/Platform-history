@@ -45,9 +45,6 @@ Q.typeOf = function _Q_typeOf(value) {
 			if (value.constructor.name == 'Object') {
 				return 'object';
 			}
-			if (value.constructor === window.jQuery) {
-				return 'jQuery';
-			}
 			return value.constructor.name;
 		} else if ((x = Object.prototype.toString.apply(value)).substr(0, 8) === "[object ") {
 			return x.substring(8, x.length-1);
@@ -121,13 +118,17 @@ function _getProp (/*Array*/parts, /*Boolean*/create, /*Object*/context){
  */
 Q.extendObject = function _Q_extendObject(name, value, context, delimiter){
 	delimiter = delimiter || '.';
-	var parts = name.split(delimiter), p = parts.pop(), obj = _getProp(parts, true, context);
+	var parts = name.split(delimiter);
+	var p = parts.pop();
+	var obj = _getProp(parts, true, context);
 	if (obj === undefined) {
 		console.warn("Failed to set '"+name+"'");
 		return undefined;
 	} else {
 		// not null && object (maybe array) && value is real object
-		if (obj[p] && typeof obj[p] === "object" && Q.typeOf(value) === "object") {
+		if (obj[p]
+		&& typeof obj[p] === "object"
+		&& Q.typeOf(value) === "object") {
 			Q.extend(obj[p], value);
 		} else {
 			obj[p] = value;
@@ -550,7 +551,7 @@ Q.batcher = function _Q_batch(batch, options) {
 		var requestArguments = arguments;
 		function nextRequest() {
 			var i, j;
-			var callbacks = [], args = [], argmax = 0, cbmax = 0;
+			var callbacks = [], args = [];
 
 			// separate fields and callbacks
 			for (i=0; i<requestArguments.length; ++i) {
@@ -667,7 +668,7 @@ Q.getter = function _Q_getter(original, options) {
 		var ret = {};
 		wrapper.emit('called', this, arguments2, ret);
 
-		var cached, cbpos;
+		var cached, cbpos, cbi;
 
 		// if caching required check the cache -- maybe the result is there
 		if (wrapper.cache) {
@@ -675,6 +676,7 @@ Q.getter = function _Q_getter(original, options) {
 				cbpos = cached.cbpos;
 				if (callbacks[cbpos]) {
 					wrapper.emit('result', cached.subject, cached.params, arguments2, ret, original);
+					Q.getter.usingCached = true;
 					callbacks[cbpos].apply(cached.subject, cached.params);
 					ret.result = Q.getter.CACHED;
 					wrapper.emit('executed', this, arguments2, ret);
@@ -682,6 +684,7 @@ Q.getter = function _Q_getter(original, options) {
 				}
 			}
 		}
+		Q.getter.usingCached = false;
 
 		_waiting[key] = _waiting[key] || [];
 		_waiting[key].push({
@@ -717,11 +720,11 @@ Q.getter = function _Q_getter(original, options) {
 
 					// process waiting callbacks
 					var wk = _waiting[key];
-					for (i = 0; i < wk.length; i++) {
+					if (wk) for (i = 0; i < wk.length; i++) {
 						wrapper.emit('result', this, arguments, arguments2, wk[i].ret, original);
 						wk[i].callbacks[cbpos].apply(this, arguments);
 					}
-					delete _waiting[key]; // check if need to delete item by item ***
+					delete _waiting[key];
 
 					// tell throttle to execute the next function, if any
 					if (wrapper.throttle && wrapper.throttle.throttleNext) {
@@ -786,7 +789,7 @@ Q.getter = function _Q_getter(original, options) {
 		return ret;
 	}
 
-	Q.extend(wrapper, Q.getter.options, options);
+	Q.extend(wrapper, original, Q.getter.options, options);
 	Q.makeEventEmitter(wrapper);
 
 	var _waiting = {};
@@ -824,7 +827,7 @@ Q.getter = function _Q_getter(original, options) {
 	}
 	return wrapper;
 };
-_Q_getter_i = 0;
+var _Q_getter_i = 0;
 Q.getter.options = {
 	cache: true,
 	throttle: null,
@@ -837,6 +840,109 @@ Q.getter.CACHED = 0;
 Q.getter.REQUESTING = 1;
 Q.getter.WAITING = 2;
 Q.getter.THROTTLING = 3;
+
+/**
+ * Wraps a function and returns a wrapper that will call the function at most once.
+ * 
+ * @static
+ * @method once
+ * @param {Function} original The function to wrap
+ * @param {Mixed} defaultValue Value to return whenever original function isn't called
+ * @return {Function} The wrapper function
+ */
+Q.once = function (original, defaultValue) {
+	var _called = false;
+	return function _Q_once_wrapper() {
+		if (_called) return defaultValue;
+		_called = true;
+		return original.apply(this, arguments);
+	};
+};
+
+/**
+ * Wraps a function and returns a wrapper that will call the function
+ * at most once every given milliseconds.
+ * 
+ * @static
+ * @method throttle
+ * @param {Function} original The function to wrap
+ * @param {Number} milliseconds The number of milliseconds
+ * @param {Mixed} defaultValue Value to return whenever original function isn't called
+ * @return {Function} The wrapper function
+ */
+Q.throttle = function (original, milliseconds, defaultValue) {
+	var _lastCalled;
+	return function _Q_throttle_wrapper() {
+		if (Date.now() - _lastCalled < milliseconds) return defaultValue;
+		_lastCalled = Date.now();
+		return original.apply(this, arguments);
+	};
+};
+
+/**
+ * Wraps a function and returns a wrapper that queue the function
+ * to be called at most once every given milliseconds.
+ * 
+ * @static
+ * @method queue
+ * @param {Function} original The function to wrap
+ * @param {Number} milliseconds The number of milliseconds, defaults to 0
+ * @return {Function} The wrapper function
+ */
+Q.queue = function (original, milliseconds) {
+	var _queue = [];
+	var _timeout = null;
+	milliseconds = milliseconds || 0;
+	function _Q_queue_next() {
+		if (!_queue.length) {
+			_timeout = null;
+			return 0;
+		}
+		var p = _queue.shift();
+		var ret = original.apply(p[0], p[1]);
+		if (ret === false) {
+			_timeout = null;
+			_queue = [];
+		} else {
+			_timeout = setTimeout(_Q_queue_next, milliseconds);
+		}
+	};
+	return function _Q_queue_wrapper() {
+		var args = Array.prototype.slice.call(arguments, 0);
+		var len = _queue.push([this, args]);
+		if (!_timeout) {
+			_timeout = setTimeout(function () {
+				_Q_queue_next();
+			}, 0);
+		}
+		return len;
+	};
+};
+
+/**
+ * Wraps a function and returns a wrapper that will call the function
+ * after calls stopped coming in for a given number of milliseconds
+ * 
+ * @static
+ * @method debounce
+ * @param {Function} original The function to wrap
+ * @param {Number} milliseconds The number of milliseconds
+ * @param {Mixed} defaultValue Value to return whenever original function isn't called
+ * @return {Function} The wrapper function
+ */
+Q.debounce = function (original, milliseconds, defaultValue) {
+	var _timeout = null;
+	return function _Q_debounce_wrapper() {
+		if (_timeout) {
+			clearTimeout(_timeout);
+		}
+		var t = this, a = arguments;
+		_timeout = setTimeout(function () {
+			original.apply(t, a);
+		}, milliseconds);
+		return defaultValue;
+	};
+};
 
 /**
  * Q.Cache constructor
@@ -990,6 +1096,7 @@ Q.Cache.prototype.clear = function _Q_Cache_prototype_clear(key) {
 Q.Cache.prototype.each = function _Q_Cache_prototype_clear(args, callback) {
 	var cache = this;
 	var prefix = null;
+	if (!callback) return;
 	if (typeof args === 'function') {
 		callback = args;
 		args = undefined;
@@ -1104,12 +1211,12 @@ Q.each = function _Q_each(container, callback, options) {
 			if (!container || !length || !callback) return;
 			if (options && options.ascending === false) {
 				for (i=length-1; i>=0; --i) {
-					r = Q.handle(callback, container[i], args || [i, container[i]]);
+					r = Q.handle(callback, container[i], args || [i, container[i]], container);
 					if (r === false) return false;
 				}
 			} else {
 				for (i=0; i<length; ++i) {
-					r = Q.handle(callback, container[i], args || [i, container[i]]);
+					r = Q.handle(callback, container[i], args || [i, container[i]], container);
 					if (r === false) return false;
 				}
 			}
@@ -1126,39 +1233,44 @@ Q.each = function _Q_each(container, callback, options) {
 						keys.push(options.numeric ? Number(k) : k);
 					}
 				}
-				keys = options.numeric ? keys.sort(function (a,b) {return a-b;}) : keys.sort();
+				keys = options.numeric ? keys.sort(function (a,b) {
+					return a-b;
+				}) : keys.sort();
 				if (options.ascending === false) {
 					for (i=keys.length-1; i>=0; --i) {
 						key = keys[i];
-						r = Q.handle(callback, container[key], args || [key, container[key]]);
+						r = Q.handle(callback, container[key], args || [key, container[key]], container);
 						if (r === false) return false;
 					}
 				} else {
 					for (i=0; i<keys.length; ++i) {
 						key = keys[i];
-						r = Q.handle(callback, container[key], args || [key, container[key]]);
+						r = Q.handle(callback, container[key], args || [key, container[key]], container);
 						if (r === false) return false;
 					}
 				}
 			} else {
 				for (k in container) {
 					if (container.hasOwnProperty && container.hasOwnProperty(k)) {
-						r = Q.handle(callback, container[k], args || [k, container[k]]);
+						r = Q.handle(callback, container[k], args || [k, container[k]], container);
 						if (r === false) return false;
 					}
 				}
 			}
 			break;
 		case 'string':
+			var c;
 			if (!container || !callback) return;
 			if (options && options.ascending === false) {
 				for (i=0; i<container.length; ++i) {
-					r = Q.handle(callback, container, args || [i, container.charAt(i)]);
+					c = container.charAt(i);
+					r = Q.handle(callback, c, args || [i, c], container);
 					if (r === false) return false;
 				}
 			} else {
 				for (i=container.length-1; i>=0; --i) {
-					r = Q.handle(callback, container, args || [i, container.charAt(i)]);
+					c = container.charAt(i);
+					r = Q.handle(callback, c, args || [i, c, container]);
 					if (r === false) return false;
 				}
 			}
@@ -1170,9 +1282,6 @@ Q.each = function _Q_each(container, callback, options) {
 				to = arguments[1];
 				if (typeof arguments[2] === 'number') {
 					step = arguments[2];
-					if (!step || (to-from)*step<0) {
-						throw new Q.Exception("Q.each: step="+step+" leads to infinite loop");
-					}
 					callback = arguments[3];
 					options = arguments[4];
 				} else {
@@ -1181,18 +1290,20 @@ Q.each = function _Q_each(container, callback, options) {
 				}
 			}
 			if (!callback) return;
-			if (step === undefined) {
-				step = (from <= to ? 1 : -1);
+			if (!step || (to-from)*step<0) {
+				return 0;
 			}
 			if (from <= to) {
 				for (i=from; i<=to; i+=step) {
-					r = Q.handle(callback, this, args || [i]);
+					r = Q.handle(callback, this, args || [i], container);
 					if (r === false) return false;
+					if (step < 0) return 0;
 				}
 			} else {
 				for (i=from; i>=to; i+=step) {
-					r = Q.handle(callback, this, args || [i]);
+					r = Q.handle(callback, this, args || [i], container);
 					if (r === false) return false;
+					if (step > 0) return 0;
 				}
 			}
 			break;
@@ -1395,22 +1506,28 @@ Q.copy = function _Q_copy(x, fields) {
 };
 
 /**
- * Extends an object with other objects. Similar to the jQuery method.
+ * Extends an object by merging other objects on top. Among other things,
+ *  Q.Events can be extended with Q.Events or objects of {key: handler} pairs,
+ *  Arrays can be extended by other arrays or objects.
+ *  (If an array is being extended by an object with a "replace" property,
+ *   the array is replaced by the value of that property.)
+ *  You can also extend recursively, see the levels parameter.
  * @method extend
  * @param target {Object}
  *  This is the first object. It winds up being modified, and also returned
  *  as the return value of the function.
+ * @param levels {Number}
+ *  Optional. Precede any Object with an integer to indicate that we should 
+ *  also copy that many additional levels inside the object.
  * @param deep {Boolean|Number}
  *  Optional. Precede any Object with a boolean true to indicate that we should
  *  also copy the properties it inherits through its prototype chain.
- *  Precede it with a nonzero integer to indicate that we should also copy
- *  that many additional levels inside the object.
  * @param anotherObject {Object}
  *  Put as many objects here as you want, and they will extend the original one.
  * @return
  *  The extended object.
  */
-Q.extend = function _Q_extend(target /* [[deep,] anotherObject] */ ) {
+Q.extend = function _Q_extend(target /* [[deep,] [levels,] anotherObject], ... */ ) {
 	var length = arguments.length;
 	var namespace = undefined;
 	if (typeof arguments[length-1] === 'string') {
@@ -1422,73 +1539,6 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject] */ ) {
 	}
 	target = target || {};
 	var deep = false, levels = 0;
-	// shim for Object.hasOwnProperty
-	var __hasProp = Object.prototype.hasOwnProperty || function(key) { return key in self; };
-	for (var i=1; i<length; ++i) {
-		var arg = arguments[i];
-		if (!arg) {
-			continue;
-		}
-		if (arg === true) {
-			deep = true;
-			continue;
-		}
-		if (arg === false) {
-			continue;
-		}
-		if (typeof(arg) === 'number' && arg) {
-			levels = arg;
-			continue;
-		}
-		for (var k in arg) {
-			if (deep === true || (arg.hasOwnProperty && arg.hasOwnProperty(k))
-				|| (!arg.hasOwnProperty && (k in arg)))
-			{
-				var a = arg[k];
-				if (!levels || !Q.isPlainObject(a)
-				|| (a.constructor == Object)) {
-					target[k] = Q.copy(a);
-				} else {
-					target[k] = Q.extend(target[k], deep, levels-1, a);
-				}
-			}
-		}
-		deep = false;
-		levels = 0;
-	}
-	return target;
-};
-
-/**
- * Extends an object with other objects. Similar to the jQuery method.
- * @method extend
- * @param target {Object}
- *  This is the first object. It winds up being modified, and also returned
- *  as the return value of the function.
- * @param deep {Boolean|Number}
- *  Optional. Precede any Object with a boolean true to indicate that we should
- *  also copy the properties it inherits through its prototype chain.
- *  Precede it with a nonzero integer to indicate that we should also copy
- *  that many additional levels inside the object.
- * @param anotherObject {Object}
- *  Put as many objects here as you want, and they will extend the original one.
- * @return
- *  The extended object.
- */
-Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespace] */ ) {
-	var length = arguments.length;
-	var namespace = undefined;
-	if (typeof arguments[length-1] === 'string') {
-		namespace = arguments[length-1];
-		--length;
-	}
-	if (length === 0) {
-		return {};
-	}
-	target = target || {};
-	var deep = false, levels = 0;
-	// shim for Object.hasOwnProperty
-	var __hasProp = Object.prototype.hasOwnProperty || function(key) { return key in self; };
 	for (var i=1; i<length; ++i) {
 		if (!arguments[i]) {
 			continue;
@@ -1503,16 +1553,29 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 		if (typeof(arguments[i]) === 'number' && arguments[i]) {
 			levels = arguments[i];
 			continue;
-		}
+		}		
 		var arg = arguments[i];
-		for (var k in arg) {
-			if (deep === true || (arg.hasOwnProperty && arg.hasOwnProperty(k))
-				|| (!arg.hasOwnProperty && (k in arg)))
-			{
-				if (levels && Q.isPlainObject(arguments[i][k])) {
-					target[k] = Q.extend(target[k], deep, levels-1, arguments[i][k]);
+		if (Q.typeOf(target) === 'array' && Q.typeOf(arg) === 'array') {
+			target = target.concat(arg);
+		} else {
+			for (var k in arg) {
+				if (deep !== true 
+				&& (!arg.hasOwnProperty || !arg.hasOwnProperty(k))
+				&& (arg.hasOwnProperty && (k in arg))) {
+					continue;
+				}
+				var argk = arg[k];
+				var ttk = Q.typeOf(target[k]);
+				var tak = Q.typeOf(argk);
+				if (levels && (
+					Q.isPlainObject(argk)
+					|| (ttk === 'array' && tak === 'array')
+				)) {
+					target[k] = (ttk === 'array' && ('replace' in argk))
+						? Q.copy(argk.replace)
+						: Q.extend(target[k], deep, levels-1, argk);
 				} else {
-					target[k] = Q.copy(arguments[i][k]);
+					target[k] = Q.copy(argk);
 				}
 			}
 		}
@@ -1844,7 +1907,7 @@ Q.md5_hmac_b64 = function _Q_md5_hmac_b64(a,b){return rstr2b64(rstr_hmac_md5(str
 Q.normalize = function _Q_normalize(text, replacement, characters, numChars) {
 	if (!numChars) numChars = 200;
 	if (replacement === undefined) replacement = '_';
-	characters = characters || new RegExp("[^A-Za-z0-9]+", "g");
+	characters = characters || /[^A-Za-z0-9]+/g;
 	if (text === undefined) {
 		debugger; // pause here if debugging
 	}
@@ -2156,7 +2219,12 @@ Q.init = function _Q_init(app, notListen) {
 	 * @type {object}
 	 */
 	Q.Mustache = require('./Q/Mustache');
-
+    /**
+     * Reference to Q.Handlebars class
+     * @property Handlebars
+     * @type {object}
+     */
+    Q.Handlebars = require('./Q/Handlebars');
 	//
 	// set things up
 	//
@@ -2314,7 +2382,7 @@ String.prototype.toCapitalized = function _String_prototype_toCapitalized() {
 };
 
 String.prototype.isUrl = function () {
-	return this.match(new RegExp("^[A-Za-z]*:\/\/"));
+	return this.match(/^[A-Za-z]*:\/\//);
 };
 
 String.prototype.encodeHTML = function _String_prototype_encodHTML(quote_style, charset, double_encode) {
@@ -2358,9 +2426,7 @@ String.prototype.hashCode = function() {
  */
 Q.date = function (format, timestamp) {
 	// http://kevin.vanzonneveld.net
-	var that = this,
-		jsdate, f, formatChr = /\\?([a-z])/gi,
-		formatChrCb,
+	var jsdate, f, formatChr = /[a-z]{1}/gi,
 		// Keep this here (works, but for code commented-out
 		// below for file size reasons)
 		//, tal= [],
@@ -2371,7 +2437,7 @@ Q.date = function (format, timestamp) {
 			return n;
 		},
 		txt_words = ["Sun", "Mon", "Tues", "Wednes", "Thurs", "Fri", "Satur", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-	formatChrCb = function (t, s) {
+	function formatChrCb(t, s) {
 		return f[t] ? f[t]() : s;
 	};
 	f = {
@@ -2555,12 +2621,8 @@ Q.date = function (format, timestamp) {
 			return jsdate / 1000 | 0;
 		}
 	};
-	this.date = function _Q_date (format, timestamp) {
-		that = this;
-		jsdate = (!timestamp ? new Date() : (timestamp instanceof Date) ? new Date(timestamp) : new Date(timestamp * 1000));
-		return format.replace(formatChr, formatChrCb);
-	};
-	return this.date(format, timestamp);
+	jsdate = (!timestamp ? new Date() : (timestamp instanceof Date) ? new Date(timestamp) : new Date(timestamp * 1000));
+	return format.replace(formatChr, formatChrCb);
 };
 
 var timeHandles = {};
@@ -2646,10 +2708,12 @@ Q.firstErrorMessage = function _Q_firstErrorMessage(data /*, data2, ... */) {
  */
 Q.url = function _Q_url(what, fields, options) {
 	if (fields) {
-		what += '?';
 		for (var k in fields) {
-			what += '&'+encodeURIComponent(k)+'='+encodeURIComponent(fields[k]);
+			what += '?'+encodeURIComponent(k)+'='+encodeURIComponent(fields[k]);
 		}
+	}
+	if (options && options.cacheBust) {
+		what += "?Q.cacheBust="+Math.floor(Date.now()/options.cacheBust);
 	}
 	var parts = what.split('?');
 	if (parts.length > 2) {

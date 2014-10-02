@@ -558,7 +558,7 @@ class Q_Utils
 			$url = $nodep && $nodeh ? "http://$nodeh:$nodep" : false;
 		}
 
-		if (!$url) throw new Q_Exception("Root URL is not defined in Q_Utils::queryInternal");
+		if (!$url) throw new Q_Exception("Q_Utils::queryInternal: Node.js root URL is not defined");
 		
 		if (is_array($url)) {
 			$server = array();
@@ -674,9 +674,8 @@ class Q_Utils
 	 */
 	static function socketUrl () {
 		$host = Q_Config::get('Q', 'node', 'host', null);
-		if (!isset($host)) throw new Q_Exception_MissingConfig(array('fieldpath' => 'Q/node/host'));
 		$port = Q_Config::get('Q', 'node', 'port', null);
-		if (!isset($port)) throw new Q_Exception_MissingConfig(array('fieldpath' => 'Q/node/port'));
+		if (!isset($port) || !isset($host)) return null;
 		return "http://$host:$port";
 	}
 
