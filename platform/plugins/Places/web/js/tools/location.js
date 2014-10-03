@@ -123,6 +123,11 @@ Q.Tool.define("Places/location", function (options) {
 	var previous = {};
 	function _showMap(latitude, longitude, miles, callback) {
 
+		if (latitude == undefined
+		|| longitude == undefined
+		|| !miles) {
+			return;
+		}
 		if (latitude == previous.latitude
 		&& longitude == previous.longitude
 		&& miles == previous.miles) {
