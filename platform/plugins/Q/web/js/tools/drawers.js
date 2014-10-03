@@ -36,8 +36,11 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 
 	state.$drawers = $(this.element).children();
 	state.currentIndex = 1 - state.initial.index;
+	var lastScrollingHeight;
 	setTimeout(function () {
+		lastScrollingHeight = $scrolling[0].clientHeight || $scrolling.height();
 		tool.swap(_layout);
+		Q.onLayout.set(_layout, tool);
 	}, state.initialDelay);
 	
 	$te.parents().each(function () {
@@ -75,9 +78,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 			}
 		});
 	}
-	
-	var lastScrollingHeight = $scrolling[0].clientHeight || $scrolling.height();
-	Q.onLayout.set(_layout, tool);
+
 	function _layout() {
 		// to do: fix for cases where element doesn't take up whole screen
 		if (Q.info.isMobile) {
@@ -174,40 +175,53 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 		var scrollEventName = Q.info.isTouchscreen
 			? 'scroll.Q_drawers'
 			: 'scroll.Q_drawers';
-		var scrollingHeight = $scrolling[0].clientHeight || $scrolling.height();
-		var scrollTop = state.bottom[otherIndex]
-			? -scrollingHeight + state.heights[index] + $otherDrawer.height()
-			: 0;
+		var scrollingHeight;
 		
-		$scrolling.off(scrollEventName);
-		$scrolling.scrollTop(scrollTop);
+		// give things a chance to settle down
+		setTimeout(_setup1, 0);
 		
-		$drawer.addClass('Q_drawers_current')
-			.removeClass('Q_drawers_notCurrent');
-		$otherDrawer.removeClass('Q_drawers_current')
-			.addClass('Q_drawers_notCurrent');
+		function _setup1() {
+			var scrollTop;
+			scrollingHeight = $scrolling[0].clientHeight
+				|| $scrolling.height();
+			scrollTop = state.bottom[otherIndex]
+				? -scrollingHeight + state.heights[index] + $otherDrawer.height()
+				: 0;
+			$scrolling.scrollTop(scrollTop);
+		
+			$scrolling.off(scrollEventName);
+		
+			$drawer.addClass('Q_drawers_current')
+				.removeClass('Q_drawers_notCurrent');
+			$otherDrawer.removeClass('Q_drawers_current')
+				.addClass('Q_drawers_notCurrent');
 			
-		if ($(tool.element).css('position') == 'static') {
-			$(tool.element).css('position', 'relative');
+			if ($(tool.element).css('position') == 'static') {
+				$(tool.element).css('position', 'relative');
+			}
+			
+			// give that scrollTop a chance to take effect
+			setTimeout(_setup2, 0);
 		}
 		
-		setTimeout(function () {
+		function _setup2() {
 			$drawer.add($otherDrawer).add(state.$placeholder).off(eventName);
-		
+
 			function _onSwap() {
 				state.onSwap.handle.call(tool, state.currentIndex);
 				Q.handle(callback, tool);
 			};
-		
+
 			state.beforeSwap.handle.call(tool, index);
 			if (behind) {
 				_animate([_pin, _addEvents, _onSwap]);
 			} else {
 				_pin([_animate, _addEvents, _onSwap]);
 			}
-		}, 0);
+		}
 		
 		function _pin(callbacks) {
+			var ae = document.activeElement;
 			var p = state.drawerPosition;
 			var w = state.drawerWidth;
 			var h = state.drawerHeight;
@@ -231,7 +245,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 					state.drawerOffset = $scrolling.offset();
 					state.drawerOffset.top += state.bottom[1]
 						? 0
-						: scrollingHeight - state.heights[0];
+						: scrollingHeight - state.heights[1];
 				}
 			}
 			
@@ -264,6 +278,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 			// TODO: adjust height, do not rely on parent of container having
 			// overflow: hidden
 			
+			ae.focus();
 			callbacks[0](callbacks.slice(1));
 		}
 		

@@ -30,7 +30,7 @@ table { border-spacing:0; border-collapse:collapse; }
  { display: block; }
 .Q_placeholder_container,
 .Q_placeholder { display: inline-block; color: #999; font-style: italic; zoom: 1; *display: inline; }
-.Q_focus .Q_placeholder { color: #aaa !important; }
+.Q_focus .Q_placeholder { color: #aaa; }
 div.Q_placeholder { pointer-events: none; }
 
 /* SmartApp related styles */
@@ -1739,7 +1739,7 @@ input[type=radio] { margin-right: 5px; }
 	font-weight: normal;
 	color: #555;
 	padding: 5px;
-	opacity: 0.25;
+	opacity: 0.5;
 }
 
 .Q_columns_title .Q_close img {

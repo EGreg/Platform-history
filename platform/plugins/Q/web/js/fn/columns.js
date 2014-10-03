@@ -22,7 +22,7 @@
  */
 Q.Tool.jQuery('Q/columns',
 
-function (o) {
+function _Q_columns(o) {
 	
 	return this.each(function(index) {
 		var $this = $(this);

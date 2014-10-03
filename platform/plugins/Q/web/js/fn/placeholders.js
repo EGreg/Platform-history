@@ -69,7 +69,9 @@ function () {
 			'width': $this.css('width'),
 			'height': $this.css('height'),
 			'text-align': $this.css('text-align'),
-			'pointer-events': 'none'
+			'pointer-events': 'none',
+			'color': $this.css('color'),
+			'opacity': '0.5'
 		}).addClass('Q_placeholder').insertAfter($this);
 		if (t === 'input') {
 			placeholder.css('white-space', 'nowrap');
