@@ -348,6 +348,7 @@ class Q_Dispatcher
 				self::result("Rendered errors");
 				return true;	
 			} catch (Exception $exception) {
+				$exception = Q_Exception::fromException($exception);
 				if (!empty($ob)) {
 					$partial_response = $ob->getClean();
 				} else {

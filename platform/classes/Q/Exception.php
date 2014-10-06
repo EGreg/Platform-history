@@ -49,6 +49,22 @@ class Q_Exception extends Exception
 	}
 	
 	/**
+	 * Construct a Q_Exception object from an Exception.
+	 * @method $exception
+	 * @param $exception
+	 * @return Q_Exception
+	 */
+	static function fromException($exception)
+	{
+		$result = new Q_Exception();
+		$fields = get_object_vars($exception);
+		foreach ($fields as $k => $v) {
+			$result->$k = $v;
+		}
+		return $result;
+	}
+	
+	/**
 	 * @method __get
 	 * @param {string} $param
 	 * @return {mixed}
