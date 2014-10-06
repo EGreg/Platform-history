@@ -24,7 +24,16 @@ function Q_exception_native($params)
 			echo $exception->colored();
 			exit;
 		}
-		if (($exception instanceof Q_Exception_PhpError) or !empty($exception->messageIsHtml)) {
+		$message = $exception->getMessage();
+		$file = $exception->getFile();
+		$line = $exception->getLine();
+		if (is_callable(array($this, 'getTraceAsStringEx'))) {
+			$trace_string = $exception->getTraceAsStringEx();
+		} else {
+			$trace_string = $exception->getTraceAsString();
+		}
+		if (($exception instanceof Q_Exception_PhpError)
+		or !empty($exception->messageIsHtml)) {
 			// do not sanitize $message
 		} else {
 			$message = Q_Html::text($message);
