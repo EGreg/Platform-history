@@ -348,13 +348,11 @@ class Q_Dispatcher
 				self::result("Rendered errors");
 				return true;	
 			} catch (Exception $exception) {
-				$exception = Q_Exception::fromException($exception);
 				if (!empty($ob)) {
 					$partial_response = $ob->getClean();
 				} else {
 					$partial_response = null;
 				}
-				$colored = $exception->colored();
 				$message = $exception->getMessage();
 				$file = $exception->getFile();
 				$line = $exception->getLine();
@@ -363,6 +361,9 @@ class Q_Dispatcher
 				} else {
 					$trace_string = $exception->getTraceAsString();
 				}
+				$colored = Q_Exception::coloredString(
+					$message, $file, $line, $trace_string
+				);
 				self::result("Exception occurred:\n\n$colored");
 				try {
 					self::errors($exception, $module, $partial_response);
