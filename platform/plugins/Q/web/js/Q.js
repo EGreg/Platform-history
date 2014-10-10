@@ -3029,10 +3029,32 @@ Q.Tool = function _Q_Tool(element, options) {
 	
 	// Add a Q property on the object and extend it with the prototype.Q if any
 	this.Q = Q.extend({
+		/**
+		 * Q.Event which occurs when the tool was constructed
+		 * @event onConstruct
+		 */
 		onConstruct: new Q.Event(),
+		/**
+		 * Q.Event which occurs when the tool was initialized
+		 * @event onInit
+		 */
 		onInit: new Q.Event(),
+		/**
+		 * Q.Event which occurs when the tool was removed
+		 * @event onRemove
+		 */
 		beforeRemove: new Q.Event(),
-		onRetain: new Q.Event()
+		/**
+		 * Q.Event which occurs when the tool was retained while replacing some HTML
+		 * @event onRetained
+		 */
+		onRetain: new Q.Event(),
+		/**
+		 * Returns Q.Event which occurs when some fields in the tool's state changed
+		 * @event onStateChanged
+		 * @param name {String} The name of the field. Can be "" to listen on all fields.
+		 */
+		onStateChanged: new Q.Event.factory({}, "")
 	}, this.Q);
 	
 	return this;
@@ -3306,6 +3328,28 @@ Q.Tool.nextDefaultId = 1;
 var _qtc = Q.Tool.constructors = {};
 
 var Tp = Q.Tool.prototype;
+
+/**
+ * Call this after changing one more values in the state.
+ * Unlike Angular and Ember, Q provides a more explicit mechanism
+ * for signaling that a tool's state has changed.
+ * Other parts of code can use the Tool.prototype.onState event factory
+ * to attach handlers to be run when the state changes.
+ * 
+ * @method stateChanged
+ * @param {String|Array} names Name(s) of properties that may have changed
+ */
+Tp.stateChanged = function Q_Tool_prototype_stateChanged(names) {
+	if (typeof names === 'string') {
+		names = [names];
+	}
+	var l = names.length;
+	for (var i=0; i<l; ++i) {
+		var name = names[i];
+		this.Q.onStateChanged(name).handle.call(this, name);
+	}
+	this.Q.onStateChanged('').handle(this, names);
+};
 
 /**
  * Gets child tools contained in the tool, as determined by their prefixes
