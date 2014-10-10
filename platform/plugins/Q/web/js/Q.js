@@ -9214,7 +9214,8 @@ Q.onJQuery.add(function ($) {
 		"Q/timestamp": "plugins/Q/js/tools/timestamp.js",
 		"Q/bookmarklet": "plugins/Q/js/tools/bookmarklet.js",
 		"Q/columns": "plugins/Q/js/tools/columns.js",
-		"Q/drawers": "plugins/Q/js/tools/drawers.js"
+		"Q/drawers": "plugins/Q/js/tools/drawers.js",
+		"Q/expandable": "plugins/Q/js/tools/expandable.js"
 	});
 	
 	Q.Tool.jQuery({
