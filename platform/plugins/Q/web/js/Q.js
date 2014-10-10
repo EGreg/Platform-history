@@ -1974,7 +1974,7 @@ Evp.throttle = function _Q_Event_prototype_throttle(milliseconds, key) {
  * Return a new Q.Event object that will queue calls to this event's handle()
  * method, to occur once every given milliseconds
  * 
- * @method throttle
+ * @method queue
  * @param {Number} milliseconds The number of milliseconds, can be 0
  * @param {String|Boolean|Q.Tool} key Optional key to pass to event.add (see docs for that method).
  * @return {Q.Event} A new Q.Event object
@@ -2088,6 +2088,10 @@ Q.Event.factory = function (collection, defaults, callback) {
 		return e;
 	};
 };
+
+/**
+ * @class Q
+ */
 
 /**
  * This event occurs right before Q javascript library is initialized
@@ -2400,6 +2404,11 @@ Pp.run = function _Q_pipe_run(field) {
 	}
 	return count;
 };
+
+
+/**
+ * @class Q
+ */
 
 /**
  * A convenience method for constructing Q.Pipe objects
@@ -3865,6 +3874,13 @@ Q.Tool.onLoadedConstructor = Q.Event.factory({}, ["", function (name) {
 	return [Q.normalize(name)];
 }]);
 Q.Tool.onMissingConstructor = new Q.Event();
+
+
+/**
+ * A Q.Session object represents a session, and implements things like an "expiring" dialog
+ * @class Q.Session
+ * @constructor
+ */
 
 Q.Session = function _Q_Session() {
 	// TODO: Set a timer for when session expires?
@@ -8751,11 +8767,15 @@ Q.Dialogs.push.options = {
 };
 
 /**
+ * @class Q
+ */
+
+/**
  * Provides replacement for default javascript alert() using Q front-end features, specifically dialogs.
  * Shows dialog with customizable title, message and button label.
  * 
  * @static
- * @method Q.alert
+ * @method alert
  * @param {String} message The only required parameter, this specifies text of the alert.
  * @param {Object} [options] An optiopnal hash of options which can include:
  *   "title": Optional parameter to override alert dialog title. Defaults to 'Alert'.
