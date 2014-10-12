@@ -1024,8 +1024,16 @@ class Q
 		$timestamp = true,
 		$options = array())
 	{
-		if (false === Q::event('Q/log', compact('message', 'timestamp', 'error_log_arguments'), 'before'))
+		if (is_array($key)) {
+			$options = $key;
+			$key = null;
+			$timestamp = true;
+		}
+		if (false === Q::event('Q/log', compact(
+			'message', 'timestamp', 'error_log_arguments'
+		), 'before')) {
 			return;
+		}
 
 		if (!is_string($message)) {
 			$maxDepth = Q::ifset($options, 'maxDepth', 3);

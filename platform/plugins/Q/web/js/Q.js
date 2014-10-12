@@ -4949,6 +4949,7 @@ Q.action = function _Q_action(uri, fields, options) {
  *  "callback": if a string, adds a "&Q.callback="+encodeURIComponent(callback) to the querystring.
  *  "loadExtras": if true, asks the server to load the extra scripts, stylesheets, etc. that are loaded on first page load
  *  "idPrefixes": optional array of Q_Html::pushIdPrefix values for each slotName
+ *  "timestamp": whether to include a timestamp (e.g. as a cache-breaker)
  * @return {String|Object}
  *  Returns the extended string or object
  */
@@ -4974,8 +4975,11 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 			what2 += '/'; // otherwise we will have 301 redirect with trailing slash on most servers
 		}
 		what2 += (what.indexOf('?') < 0) ? '?' : '&';
-		what2 += encodeURI('Q.ajax='+(options && options.loadExtras ? 'loadExtras' : 'json'))+
-			encodeURI('&Q.timestamp=')+encodeURIComponent(timestamp);
+		var ajax = options && options.loadExtras ? 'loadExtras' : 'json';
+		what2 += encodeURI('Q.ajax='+ajax);
+		if (options.timestamp) {
+			what2 += encodeURI('&Q.timestamp=')+encodeURIComponent(timestamp);
+		}
 		if (slotNames2 != null) {
 			what2 += encodeURI('&Q.slotNames=') + encodeURIComponent(slotNames2);
 		}
@@ -5085,6 +5089,7 @@ Q.req = function _Q_req(uri, slotNames, callback, options) {
  *  "callbackName": if set, the URL is not extended with Q fields and the value is used to name the callback field in the request.
  *  "duplicate": defaults to true, but you can set it to false in order not to fetch the same url again
  *  "quiet": defaults to true. This option is just passed to your onLoadStart/onLoadEnd handlers in case they want to respect it.
+ *  "timestamp": whether to include a timestamp (e.g. as a cache-breaker)
  *  "handleRedirects": if set and response data.redirect.url is not empty, automatically call this function. Defaults to Q.handle.
  *  "timeout": timeout to wait for response defaults to 20.5 sec. Set to false to disable
  *  "onTimeout": handler to call when timeout is reached. First argument is a function which can be called to cancel loading.
@@ -5123,7 +5128,7 @@ Q.request = function (url, slotNames, callback, options) {
 		var tout = false, t = {};
 		if (o.timeout !== false) tout = o.timeout || 1500;
 	
-		function _Q_request_callback(err, content) {
+		function _Q_request_callback(err, content, wasJsonP) {
 			if (err) {
 				callback(err);
 				Q.handle(o.onProcessed, Q, [err]);
@@ -5132,7 +5137,11 @@ Q.request = function (url, slotNames, callback, options) {
 			var data = content;
 			if (o.parse !== false) {
 				try {
-					data = JSON.parse(content)
+					if (wasJsonP) {
+						data = content;
+					} else {
+						data = JSON.parse(content)
+					}
 				} catch (e) {
 					console.warn('Q.request(' + url + ',['+slotNames+']):' + e);
 					err = {"errors": [e]};
@@ -5165,15 +5174,15 @@ Q.request = function (url, slotNames, callback, options) {
 			}
 		}
 
-		function _onResponse (data) {
+		function _onResponse (data, wasJsonP) {
 			t.loaded = true;
 			if (t.timeout) {
 				clearTimeout(t.timeout);
 			}
 			Q.handle(o.onLoadEnd, this, [url, slotNames, o]);
 			if (!t.cancelled) {
-				o.onResponse.handle.call(this, data);
-				Q.handle(_Q_request_callback, this, [null, data]);
+				o.onResponse.handle.call(this, data, wasJsonP);
+				Q.handle(_Q_request_callback, this, [null, data, wasJsonP]);
 			}
 		}
 		
@@ -5190,7 +5199,7 @@ Q.request = function (url, slotNames, callback, options) {
 		}
 
 		if (!o.query && o.xhr !== false
-		&& url.search(Q.info.baseUrl) === 0) {
+		&& Q.url(url).search(Q.info.baseUrl) === 0) {
 			
 			function xhr(url, slotNames, onSuccess, onCancel, options) {					
 				var xmlhttp;
@@ -5252,7 +5261,7 @@ Q.request = function (url, slotNames, callback, options) {
 			Q.request.callbacks[i] = function _Q_request_JSONP(data) {
 				delete Q.request.callbacks[i];
 				Q.removeElement(script);
-				_onResponse(data);
+				_onResponse(data, true);
 			};
 			if (o.callbackName) {
 				url2 = url + (url.indexOf('?') < 0 ? '?' : '&')
@@ -5693,7 +5702,9 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 				return o.returnAll ? script : false;
 			}
 			if (!Q.addScript.added[src]
-			&& (!('readyState' in script) || (script.readyState !== 'complete' || script.readyState !== 'loaded'))) {
+			&& (!('readyState' in script)
+			|| (script.readyState !== 'complete'
+			|| script.readyState !== 'loaded'))) {
 				// the script was added by someone else (and hopefully loaded)
 				// we can't always know whether to call the error handler
 				// if we got here, we might as well call onload
