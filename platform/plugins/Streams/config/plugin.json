@@ -79,7 +79,9 @@
 				"edit": true,
 				"defaults": {
 					"title": "Untitled Category"
-				}
+				},
+				"fields": ["relatedTo"],
+				"see": ["relatedTo"],
 			},
 			"Streams/interest": {
 				"create": true,

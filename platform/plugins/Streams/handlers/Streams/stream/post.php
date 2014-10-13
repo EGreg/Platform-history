@@ -3,7 +3,7 @@
 /**
  * Used to create a new stream
  *
- * @param array $_REQUEST 
+ * @param {array} $_REQUEST 
  *   publisherId, type
  *   Q.Streams.related.publisherId, Q.Streams.related.name, Q.Streams.related.weight
  *   dontSubscribe (optional)
