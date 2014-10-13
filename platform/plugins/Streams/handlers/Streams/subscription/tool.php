@@ -69,14 +69,14 @@ function Streams_subscription_tool($options) {
 
 	foreach ($emails as $email) {
 		$devices[] = array(
-			'value' => json_encode(array( 'email' => $email )),
+			'value' => Q::json_encode(array( 'email' => $email )),
 			'name'  => 'my email'
 		);
 	}
 
 	foreach ($mobiles as $mobile) {
 		$devices[] = array(
-			'value' => json_encode(array( 'mobile' => $mobile )),
+			'value' => Q::json_encode(array( 'mobile' => $mobile )),
 			'name'  => 'my mobile'
 		);
 	}

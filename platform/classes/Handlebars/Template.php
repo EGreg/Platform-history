@@ -169,7 +169,7 @@ class Handlebars_Template
                 break;
             default:
                 throw new RuntimeInvalidArgumentException(
-                    'Invalid node type : ' . json_encode($current)
+                    'Invalid node type : ' . Q::json_encode($current)
                 );
             }
         }

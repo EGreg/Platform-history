@@ -313,6 +313,9 @@ abstract class Streams extends Base_Streams
 		if ($asUserId instanceof Users_User) {
 			$asUserId = $asUserId->id;
 		}
+		if ($publisherId instanceof Users_User) {
+			$publisherId = $publisherId->id;
+		}
 		if (empty($publisherId) or empty($name)) {
 			return null;
 		}
@@ -499,6 +502,9 @@ abstract class Streams extends Base_Streams
 		}
 		if ($asUserId instanceof Users_User) {
 			$asUserId = $asUserId->id;
+		}
+		if ($publisherId instanceof Users_User) {
+			$publisherId = $publisherId->id;
 		}
 		if ($recalculate) {
 			$streams2 = $streams;
@@ -1384,6 +1390,9 @@ abstract class Streams extends Base_Streams
 		if ($asUserId instanceof Users_User) {
 			$asUserId = $asUserId->id;
 		}
+		if ($toPublisherId instanceof Users_User) {
+			$toPublisherId = $toPublisherId->id;
+		}
 
 		// Check access to category stream, the stream to which other streams are related
 		$category = Streams::fetchOne($asUserId, $toPublisherId, $toStreamName);
@@ -1460,6 +1469,9 @@ abstract class Streams extends Base_Streams
 		}
 		if ($asUserId instanceof Users_User) {
 			$asUserId = $asUserId->id;
+		}
+		if ($toPublisherId instanceof Users_User) {
+			$toPublisherId = $toPublisherId->id;
 		}
 		
 		self::getRelation(
@@ -1873,7 +1885,7 @@ abstract class Streams extends Base_Streams
 			
 		if (!$relatedTo->retrieve()) {
 			throw new Q_Exception_MissingRow(
-				array('table' => 'relatedTo', 'criteria' => 'those fields'),
+				array('table' => 'relatedTo', 'criteria' => 'with those fields'),
 				array('publisherId', 'name', 'type', 'toPublisherId', 'to_name')
 			);			
 		}
@@ -1899,6 +1911,7 @@ abstract class Streams extends Base_Streams
 		 * @param {double} 'previousWeight'
 		 */
 		$previousWeight = $relatedTo->weight;
+		$adjustWeightsBy = $weight < $previousWeight ? $adjustWeights : -$adjustWeights;
 		if (Q::event(
 			"Streams/updateRelation/{$stream->type}",
 			compact('relatedTo', 'relatedFrom', 'type', 'weight', 'previousWeight', 'adjustWeightsBy', 'byUserId'), 
@@ -1907,7 +1920,9 @@ abstract class Streams extends Base_Streams
 			return false;
 		}
 		
-		if (!empty($adjustWeights) and is_numeric($adjustWeights) and $weight !== $previousWeight) {
+		if (!empty($adjustWeights)
+		and is_numeric($adjustWeights)
+		and $weight !== $previousWeight) {
 			$criteria = array(
 				'toPublisherId' => $toPublisherId,
 				'toStreamName' => $toStreamName,
@@ -1916,7 +1931,6 @@ abstract class Streams extends Base_Streams
 					? new Db_Range($weight, true, false, $previousWeight)
 					: new Db_Range($previousWeight, false, true, $weight)
 			);
-			$adjustWeightsBy = $weight < $previousWeight ? $adjustWeights : -$adjustWeights;
 			Streams_RelatedTo::update()->set(array(
 				'weight' => new Db_Expression("weight + " . $adjustWeightsBy)
 			))->where($criteria)->execute();

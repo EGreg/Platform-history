@@ -77,6 +77,9 @@ class Streams_Message extends Base_Streams_Message
 		if ($asUserId instanceof Users_User) {
 			$asUserId = $asUserId->id;
 		}
+		if ($publisherId instanceof Users_User) {
+			$publisherId = $publisherId->id;
+		}
 
 		$type = Q::ifset($information, 'type', 'text/small');
 		$content = Q::ifset($information, 'content', '');

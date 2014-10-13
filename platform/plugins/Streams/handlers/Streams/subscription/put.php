@@ -56,8 +56,8 @@ function Streams_subscription_put($params) {
 				$rule->relevance   = 1;
 			}
 
-			$rule->filter          = json_encode($item['filter']);
-			$rule->deliver         = json_encode($item['deliver']);
+			$rule->filter          = Q::json_encode($item['filter']);
+			$rule->deliver         = Q::json_encode($item['deliver']);
 			$rule->save();
 		}
 	}
@@ -70,7 +70,7 @@ function Streams_subscription_put($params) {
 	$streams_subscription->streamName  = $streamName;
 	$streams_subscription->publisherId = $publisherId;
 	$streams_subscription->ofUserId    = $user->id;
-	$streams_subscription->filter      = json_encode(array());
+	$streams_subscription->filter      = Q::json_encode(array());
 	$streams_subscription->retrieve();
 
 	$streams_participant               = new Streams_Participant();

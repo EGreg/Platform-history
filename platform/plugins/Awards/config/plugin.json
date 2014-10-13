@@ -11,7 +11,7 @@
 			"Awards": {
 				"version": "0.8",
 				"compatible": "0.8",
-				"requires": {"Q": "0.8", "Streams": "0.8"},
+				"requires": {"Q": "0.8", "Streams": "0.8.2"},
 				"connections": ["Awards"]
 			}
 		}

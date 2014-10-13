@@ -29,6 +29,7 @@ module.exports = Base;
 Base.tableClasses = [
 		"Streams_Access",
 		"Streams_Avatar",
+		"Streams_Category",
 		"Streams_Invite",
 		"Streams_Invited",
 		"Streams_Message",
@@ -77,6 +78,13 @@ Base.Access = Q.require('Streams/Access');
  * @type Streams.Avatar
  */
 Base.Avatar = Q.require('Streams/Avatar');
+
+/**
+ * Link to Streams.Category model
+ * @property Category
+ * @type Streams.Category
+ */
+Base.Category = Q.require('Streams/Category');
 
 /**
  * Link to Streams.Invite model

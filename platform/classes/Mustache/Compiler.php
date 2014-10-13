@@ -107,7 +107,7 @@ class Mustache_Compiler
                     break;
 
                 default:
-                    throw new InvalidArgumentException('Unknown node type: '.json_encode($node));
+                    throw new InvalidArgumentException('Unknown node type: '.Q::json_encode($node));
             }
         }
 

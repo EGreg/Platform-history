@@ -23,13 +23,13 @@ function Streams_related_post($params) {
 	
 	if (!($stream = Streams::fetch($asUserId, $toPublisherId, $toStreamName))) {
 		throw new Q_Exception_MissingRow(
-			array('table' => 'stream', 'criteria' => 'those fields'), 
+			array('table' => 'stream', 'criteria' => 'with those fields'), 
 			array('publisherId', 'name')
 		);
 	}
 	if (!($stream = Streams::fetch($asUserId, $fromPublisherId, $fromStreamName))) {
 		throw new Q_Exception_MissingRow(
-			array('table' => 'stream', 'criteria' => 'those fields'),
+			array('table' => 'stream', 'criteria' => 'with those fields'),
 			array('fromPublisherId', 'from_name')
 		);
 	}

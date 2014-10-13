@@ -15,7 +15,8 @@
 			"Db/Row/Users_User/saveExecute": ["Streams/after/Users_User_saveExecute"],
 			"Db/Row/Users_Contact/removeExecute": ["Streams/after/Users_Contact_removeExecute"],
 			"Users/saveContactsFromLinks": ["Streams/after/Users_saveContactsFromLinks"],
-			"Users/setLoggedInUser": ["Streams/after/Users_setLoggedInUser"]
+			"Users/setLoggedInUser": ["Streams/after/Users_setLoggedInUser"],
+			"Streams/post/Streams/category": ["Streams/after/Streams_post_Streams_category"]
 		},
 		"routes": {
 			"plugins/Streams/:action": {"module": "Streams"},
@@ -24,7 +25,7 @@
 		},
 		"pluginInfo": {
 			"Streams": {
-				"version": "0.8.1",
+				"version": "0.8.2",
 				"compatible": "0.8",
 				"requires": {"Users": "0.8"},
 				"permissions": ["Streams/icons"],
@@ -81,7 +82,7 @@
 					"title": "Untitled Category"
 				},
 				"fields": ["relatedTo"],
-				"see": ["relatedTo"],
+				"see": ["relatedTo"]
 			},
 			"Streams/interest": {
 				"create": true,
