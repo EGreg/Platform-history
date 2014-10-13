@@ -624,55 +624,56 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 				// log query if shard split process is active
 				// all activities will be done by node.js
 				switch ($this->type) {
-					case Db_Query::TYPE_SELECT:
-						// SELECT queries don't need to be logged
-					case Db_Query::TYPE_RAW:
-						// Raw queries are run on shard '' - i.e. main db only
-						// actually, raw query may get here only on initial sharding
-						// when sharding has started raw queries are never run on shard
+				case Db_Query::TYPE_SELECT:
+					// SELECT queries don't need to be logged
+				case Db_Query::TYPE_RAW:
+					// Raw queries are run on shard '' - i.e. main db only
+					// actually, raw query may get here only on initial sharding
+					// when sharding has started raw queries are never run on shard
+					break;
+				default:
+					if (!$upcoming or $shard_name !== $upcoming['shard']) {
 						break;
-					default:
-						if ($upcoming && $shard_name === $upcoming['shard']) {
-							$table = $this->table;
-							foreach ($this->replacements as $k => $v) {
-								$table = str_replace($k, $v, $table);
-							}
-							if ($table !== $upcoming['dbTable']) break;
-							// node will determine new shard(s) names using
-							// new sharding config which is available within aplit process
-							$timestamp = $pdo->query("SELECT CURRENT_TIMESTAMP")->fetchAll(PDO::FETCH_COLUMN, 0);
-							if ($timestamp === false || !isset($timestamp[0]))
-								$timestamp = date("Y-m-d H:i:s"); // backup solution
-							else $timestamp = $timestamp[0];
-							$sql_template = str_replace('CURRENT_TIMESTAMP', "'$timestamp'", $sql_template);
+					}
+					$table = $this->table;
+					foreach ($this->replacements as $k => $v) {
+						$table = str_replace($k, $v, $table);
+					}
+					if ($table !== $upcoming['dbTable']) break;
+					// node will determine new shard(s) names using
+					// new sharding config which is available within aplit process
+					$timestamp = $pdo->query("SELECT CURRENT_TIMESTAMP")->fetchAll(PDO::FETCH_COLUMN, 0);
+					if ($timestamp === false || !isset($timestamp[0]))
+						$timestamp = date("Y-m-d H:i:s"); // backup solution
+					else $timestamp = $timestamp[0];
+					$sql_template = str_replace('CURRENT_TIMESTAMP', "'$timestamp'", $sql_template);
 
-							$transaction =
-								(!empty($this->clauses['COMMIT']) ? 'COMMIT' :
-								(!empty($this->clauses['BEGIN']) ? 'BEGIN' :
-								(!empty($this->clauses['ROLLBACK']) ? 'ROLLBACK' : '')));
+					$transaction =
+						(!empty($this->clauses['COMMIT']) ? 'COMMIT' :
+						(!empty($this->clauses['BEGIN']) ? 'BEGIN' :
+						(!empty($this->clauses['ROLLBACK']) ? 'ROLLBACK' : '')));
 
-							if (!empty($transaction) && $transaction !== 'COMMIT') {
-								Q_Utils::sendToNode(array(
-									'Q/method' => 'Db/Shards/log',
-									'shards' => array_keys($query->shard($upcoming['indexes'][$upcoming['table']])),
-									'sql' => "$transaction;"
-								), Q_Config::get('Db', 'internal', 'sharding', 'logServer', null));
-							}
+					if (!empty($transaction) && $transaction !== 'COMMIT') {
+						Q_Utils::sendToNode(array(
+							'Q/method' => 'Db/Shards/log',
+							'shards' => array_keys($query->shard($upcoming['indexes'][$upcoming['table']])),
+							'sql' => "$transaction;"
+						), Q_Config::get('Db', 'internal', 'sharding', 'logServer', null));
+					}
 
-							Q_Utils::sendToNode(array(
-								'Q/method' => 'Db/Shards/log',
-								'shards' => array_keys($query->shard($upcoming['indexes'][$upcoming['table']])),
-								'sql' => trim(str_replace("\n", ' ', $sql_template))
-							), Q_Config::get('Db', 'internal', 'sharding', 'logServer', null));
+					Q_Utils::sendToNode(array(
+						'Q/method' => 'Db/Shards/log',
+						'shards' => array_keys($query->shard($upcoming['indexes'][$upcoming['table']])),
+						'sql' => trim(str_replace("\n", ' ', $sql_template))
+					), Q_Config::get('Db', 'internal', 'sharding', 'logServer', null));
 
-							if (!empty($transaction) && $transaction === 'COMMIT') {
-								Q_Utils::sendToNode(array(
-									'Q/method' => 'Db/Shards/log',
-									'shards' => array_keys($query->shard($upcoming['indexes'][$upcoming['table']])),
-									'sql' => "$transaction;"
-								), Q_Config::get('Db', 'internal', 'sharding', 'logServer', null));
-							}
-						}
+					if (!empty($transaction) && $transaction === 'COMMIT') {
+						Q_Utils::sendToNode(array(
+							'Q/method' => 'Db/Shards/log',
+							'shards' => array_keys($query->shard($upcoming['indexes'][$upcoming['table']])),
+							'sql' => "$transaction;"
+						), Q_Config::get('Db', 'internal', 'sharding', 'logServer', null));
+					}
 				}
 				/**
 				 * @event Db/query/execute {after}

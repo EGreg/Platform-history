@@ -43,20 +43,9 @@ function Streams_interest_post()
 		$user->id,
 		$user->id,
 		'Streams/user/interests',
-		'interest',
+		'Streams/interest',
 		$publisherId,
 		$name,
 		compact('weight')
-	);
-	
-	Streams::updateRelation(
-		$user->id,
-		$user->id,
-		'Streams/user/interests',
-		'interest',
-		$publisherId,
-		'Streams/interest/a_c',
-		1,
-		1
 	);
 }

@@ -12,7 +12,7 @@ function Streams_after_Streams_post_Streams_category($params)
 		return;
 	}
 	$type = $message->getInstruction('type', null);
-	$rtypes = Q_Config::get('Streams', 'categories', 'relationTypesToSave', array());
+	$rtypes = Q_Config::get('Streams', 'categories', 'relationTypesToAccelerate', array());
 	if (!in_array($type, $rtypes)) {
 		return;
 	}
@@ -29,7 +29,7 @@ function Streams_after_Streams_post_Streams_category($params)
 	or !isset($fromStreamName)) {
 		return;
 	}
-	$relatedTo = $c->retrieve()
+	$relatedTo = $c->retrieve(null, null, array('ignoreCache' => true))
 		? json_decode($c->relatedTo, true)
 		: array();
 	

@@ -149,6 +149,9 @@
 				}
 			}
 		},
+		"categories": {
+			"relationTypesToAccelerate": ["Streams/interest"]
+		},
 		"invites": {
 			"tokens": {
 				"length": 16,
