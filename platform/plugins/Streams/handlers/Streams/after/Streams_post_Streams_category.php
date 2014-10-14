@@ -61,6 +61,19 @@ function Streams_after_Streams_post_Streams_category($params)
 					break;
 				}
  			}
+			$o = $message->getInstruction('options', null);
+			$w = $message->getInstruction('weight', null);
+			if (!empty($o['adjustWeights'])) {
+				$rt = array();
+				foreach ($relatedTo[$type] as $weight => $info) {
+					if ($weight > $w) {
+						$rt[$weight-1] = $info;
+					} else {
+						$rt[$weight] = $info;
+					}
+				}
+				$relatedTo[$type] = $rt;
+			}
  		}
 		break;
 	case 'Streams/updatedRelateTo':

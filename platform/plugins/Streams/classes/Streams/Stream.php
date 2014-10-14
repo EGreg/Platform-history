@@ -662,7 +662,7 @@ class Streams_Stream extends Base_Streams_Stream
 		if(!$participant->retrieve()) {
 			throw new Q_Exception_MissingRow(array(
 				'table' => 'participant', 
-				'criteria' => "userId = $userId, publisherId = {$stream->publisherId}, {name = $stream->name}"
+				'criteria' => "userId = $userId, publisherId = {$stream->publisherId}, name = {$stream->name}"
 			));
 		}
 

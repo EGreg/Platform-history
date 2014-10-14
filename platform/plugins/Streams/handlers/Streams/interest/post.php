@@ -3,9 +3,10 @@
 /**
  * Used to create a new stream
  *
- * @param array $_REQUEST 
- *   title (of the interest) is required,
- *   publisherId is optional
+ * @param {array} $_REQUEST 
+ * @param {String} [$_REQUEST.title] Required. The title of the interest.
+ * @param {String} [$_REQUEST.publisherId] Optional. Defaults to the app name.
+ * @param {String} [$_REQUEST.subscribe] Optional. Defauls to false. Whether to subscribe rather than just join the interest stream.
  * @return void
  */
 function Streams_interest_post()
@@ -27,18 +28,24 @@ function Streams_interest_post()
 		$stream->title = $title;
 		$stream->save();
 	}
+	$subscribe = Q::ifset($_REQUEST, 'subscribe', false);
+	if ($subscribe) {
+		$stream->subscribe();
+	} else {
+		$stream->join();
+	}
 	
-	$myInterests = Streams::fetchOne($user, $user, 'Streams/user/interests');
+	$myInterestsName = 'Streams/user/interests';
+	$myInterests = Streams::fetchOne($user->id, $user->id, $myInterestsName);
 	if (!$myInterests) {
 		$myInterests = new Streams_Stream();
 		$myInterests->publisherId = $user->id;
-		$myInterests->name = 'Streams/user/interests';
+		$myInterests->name = $myInterestsName;
 		$myInterests->type = 'Streams/category';
 		$myInterests->title = 'My Interests';
 		$myInterests->save();
 	}
 	
-	$weight = "+1";
 	Streams::relate(
 		$user->id,
 		$user->id,
@@ -46,6 +53,6 @@ function Streams_interest_post()
 		'Streams/interest',
 		$publisherId,
 		$name,
-		compact('weight')
+		array('weight' => '+1')
 	);
 }

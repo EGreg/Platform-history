@@ -1613,6 +1613,7 @@ abstract class Streams extends Base_Streams
 	 * @param {array} $options=array()
 	 *  An array of options that can include:
 	 *  "skipAccess" => Defaults to false. If true, skips the access checks and just relates the stream to the category
+	 *  "adjustWeights" => Defaults to false. If true, also decrements all following relations' weights by one.
 	 * @return boolean
 	 *  Whether the relation was removed
 	 */
@@ -1666,12 +1667,27 @@ abstract class Streams extends Base_Streams
 		 * we consider category stream as 'remote' i.e. more error prone.
 		 */
 
+		$weight = isset($relatedTo->weight) ? $relatedTo->weight : null;
 		if ($to && $relatedTo->remove()) {
+			if (isset($weight) and !empty($options['adjustWeights'])) {
+				$criteria = array(
+					'toPublisherId' => $toPublisherId,
+					'toStreamName' => $toStreamName,
+					'type' => $type,
+					'weight' => new Db_Range($weight, false, false, null)
+				);
+				Streams_RelatedTo::update()->set(array(
+					'weight' => new Db_Expression("weight - 1")
+				))->where($criteria)->execute();
+			}
+			
 			// Send Streams/unrelatedTo message to a stream
 			// node server will be notified by Streams_Message::post
 			Streams_Message::post($asUserId, $toPublisherId, $toStreamName, array(
 				'type' => 'Streams/unrelatedTo',
-				'instructions' => Q::json_encode(compact('fromPublisherId', 'fromStreamName', 'type'))
+				'instructions' => Q::json_encode(compact(
+					'fromPublisherId', 'fromStreamName', 'type', 'options', 'weight'
+				))
 			), true);
 		}
 
@@ -1680,7 +1696,9 @@ abstract class Streams extends Base_Streams
 			// node server will be notified by Streams_Message::post
 			Streams_Message::post($asUserId, $fromPublisherId, $fromStreamName, array(
 				'type' => 'Streams/unrelatedFrom',
-				'instructions' => Q::json_encode(compact('toPublisherId', 'toStreamName', 'type'))
+				'instructions' => Q::json_encode(compact(
+					'toPublisherId', 'toStreamName', 'type', 'options'
+				))
 			), true);
 		}
 
@@ -1795,9 +1813,13 @@ abstract class Streams extends Base_Streams
 			throw new Q_Exception("limit is too large, must be <= $max_limit");
 		}
 
+		$min = isset($options['min']) ? $options['min'] : null;
+		$max = isset($options['max']) ? $options['max'] : null;
+		if (isset($min) or isset($max)) {
+			$range = new Db_Range($min, true, true, $max);
+			$query = $query->where(array('weight' => $range));
+		}
 		if (isset($limit)) $query = $query->limit($limit, $offset);
-		if (isset($options['min'])) $query = $query->where(array('weight >=' => $options['min']));
-		if (isset($options['max'])) $query = $query->where(array('weight <=' => $options['max']));
 		if (isset($options['type'])) $query = $query->where(array('type' => $options['type']));
 		if (isset($options['where'])) $query = $query->where($options['where']);
 
