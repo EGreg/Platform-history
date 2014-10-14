@@ -12,7 +12,9 @@ function Streams_after_Streams_post_Streams_category($params)
 		return;
 	}
 	$type = $message->getInstruction('type', null);
-	$rtypes = Q_Config::get('Streams', 'categories', 'relationTypesToAccelerate', array());
+	$rtypes = Q_Config::get(
+		'Streams', 'categories', 'relationTypesToAccelerate', array()
+	);
 	if (!in_array($type, $rtypes)) {
 		return;
 	}

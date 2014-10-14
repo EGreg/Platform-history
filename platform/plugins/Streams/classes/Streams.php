@@ -1725,13 +1725,14 @@ abstract class Streams extends Base_Streams
 	 *  The user who is fetching
 	 * @param {string} $publisherId
 	 *  The publisher of the stream
-	 * @param {string} $toStreamName
+	 * @param {string} $streamName
 	 *  The name of the stream which is presumably related to/from other streams
 	 * @param {mixed} $isCategory=true
 	 *  If false, returns the categories that this stream is related to.
 	 *  If true, returns all the streams this related to this category.
 	 *  If a string, returns all the streams related to this category with names prefixed by this string.
 	 * @param {array} $options=array()
+	 *  'accelerated' => if true, just returns the "accelerated" array(weight => array($publisherId, $streamName, $title, $icon)
 	 *	'limit' =>  number of records to fetch
 	 *	'offset' =>  offset to start
 	 *  'min' => the minimum weight (inclusive) to filter by, if any
@@ -1772,6 +1773,26 @@ abstract class Streams extends Base_Streams
 		}
 		if (!$stream->testReadLevel('see')) {
 			throw new Users_Exception_NotAuthorized();
+		}
+		
+		$rtypes = Q_Config::get(
+			'Streams', 'categories', 'relationTypesToAccelerate', array()
+		);
+		if ($isCategory
+		and !empty($options['accelerated'])
+		and !empty($options['type'])
+		and in_array($options['type'], $rtypes)) {
+			$type = $options['type'];
+			$row = Streams_Category::select('*')
+				->where(compact('publisherId', 'streamName'))
+				->fetchDbRow();
+			if ($row) {
+				$relatedTo = json_decode($row->relatedTo, true);
+				if (!isset($relatedTo[$type])) {
+					return null;
+				}
+				return $relatedTo[$type];
+			}
 		}
 
 		if ($isCategory) {

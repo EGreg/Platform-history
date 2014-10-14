@@ -197,7 +197,8 @@
 				"Streams/user/firstName",
 				"Streams/user/lastName",
 				"Streams/user/emailAddress",
-				"Streams/user/mobileNumber"
+				"Streams/user/mobileNumber",
+				"Streams/user/interests"
 			]
 		},
 		"onUpdate": {
