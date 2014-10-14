@@ -1757,23 +1757,28 @@ abstract class Streams extends Base_Streams
 		$isCategory = true,
 		$options = array())
 	{
-		// Function supports only single stream/category operation
-		if (!is_string($streamName) or substr($streamName, -1) === '/') {
-			throw new Q_Exception("Cannot fetch relations to multiple streams");
+		if (is_string($streamName) and substr($streamName, -1) === '/') {
+			$streamName = new Db_Range($streamName, false, false, true);
 		}
+		$returnMultiple = !is_string($streamName);
 		if (is_array($isCategory)) {
 			$options = $isCategory;
 			$isCategory = true;
 		}
 
 		// Check access to stream
-		$stream = Streams::fetchOne($asUserId, $publisherId, $streamName);
-		if (!$stream) {
-			throw new Q_Exception("Stream $streamName not found", array('streamName', 'name', 'publisherId'));
+		$streams = Streams::fetch($asUserId, $publisherId, $streamName);
+		if (!$streams) {
+			throw new Q_Exception("Stream $streamName not found", 
+				array('streamName', 'name', 'publisherId')
+			);
 		}
-		if (!$stream->testReadLevel('see')) {
-			throw new Users_Exception_NotAuthorized();
+		foreach($streams as $stream) {
+			if (!$stream->testReadLevel('see')) {
+				throw new Users_Exception_NotAuthorized();
+			}
 		}
+		$stream = reset($streams);
 		
 		$rtypes = Q_Config::get(
 			'Streams', 'categories', 'relationTypesToAccelerate', array()
@@ -1840,9 +1845,15 @@ abstract class Streams extends Base_Streams
 			$range = new Db_Range($min, true, true, $max);
 			$query = $query->where(array('weight' => $range));
 		}
-		if (isset($limit)) $query = $query->limit($limit, $offset);
-		if (isset($options['type'])) $query = $query->where(array('type' => $options['type']));
-		if (isset($options['where'])) $query = $query->where($options['where']);
+		if (isset($limit)) {
+			$query = $query->limit($limit, $offset);
+		}
+		if (isset($options['type'])) {
+			$query = $query->where(array('type' => $options['type']));
+		}
+		if (isset($options['where'])) {
+			$query = $query->where($options['where']);
+		}
 
 		$relations = $query->fetchDbRows(null, '', $isCategory ? 'fromStreamName' : 'toStreamName');
 
@@ -1866,15 +1877,21 @@ abstract class Streams extends Base_Streams
 				: implode(',', $options['streamFields']);
 		}
 		$extra = isset($options['extra']) ? $options['extra'] : null;
-		$streams = Streams::fetch($asUserId, $publisherId, array_keys($relations), $fields, $extra);
-		foreach ($streams as $name => $s) {
+		$relatedStreams = Streams::fetch($asUserId, $publisherId, array_keys($relations), $fields, $extra);
+		foreach ($relatedStreams as $name => $s) {
 			if (!$s) continue;
-			$s->weight = isset($relations[$name]->weight) ? $relations[$name]->weight : null;
+			$s->weight = isset($relations[$name]->weight)
+				? $relations[$name]->weight
+				: null;
 		}
 		if (!empty($options['streamsOnly'])) {
-			return $streams;
+			return $relatedStreams;
 		}
-		return array($relations, $streams, $stream);
+		return array(
+			$relations, 
+			$relatedStreams,
+			$returnMultiple ? $streams : $stream
+		);
 	}
 	
 	/**
