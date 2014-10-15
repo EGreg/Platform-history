@@ -4978,7 +4978,7 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 		what2 += (what.indexOf('?') < 0) ? '?' : '&';
 		var ajax = options && options.loadExtras ? 'loadExtras' : 'json';
 		what2 += encodeURI('Q.ajax='+ajax);
-		if (options.timestamp) {
+		if (options && options.timestamp) {
 			what2 += encodeURI('&Q.timestamp=')+encodeURIComponent(timestamp);
 		}
 		if (slotNames2 != null) {
@@ -5007,10 +5007,10 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 		for (var k in what) {
 			what2[k] =  what[k];
 		}
-		what2.Q = {
-			"ajax": "json",
-			"timestamp": timestamp
-		};
+		what2.Q = { "ajax": "json" };
+		if (options && options.timestamp) {
+			what2.Q.timestamp = timestamp;
+		}
 		if (slotNames) {
 			what2.slotNames = slotNames2;
 		}

@@ -19,7 +19,6 @@ Q.Tool.define('Q/expandable', function (options) {
 	var tool = this;
 	var state = tool.state;
 	var $te = $(tool.element);
-	var $parent = $te.parent();
 	
 	if (!$te.children().length) {
 		// set it up with javascript
@@ -35,49 +34,12 @@ Q.Tool.define('Q/expandable', function (options) {
 	this.element.preventSelections(true);
 	var $h2 = $('h2', $te)
 	.on(Q.Pointer.fastclick, function () {
-		if (false === Q.handle(state.beforeExpand, tool, [])) {
-			return false;
+		var $h2 = $('h2', $te);
+		if ($h2.hasClass('Q_selected')) {
+			tool.collapse();
+		} else {
+			tool.expand();
 		}
-		var $this = $(this);
-		if ($this.hasClass('Q_selected')) {
-			$this.removeClass('Q_selected')
-			.next().slideUp(300).each(function () {
-				var t = this.parentNode.Q("Q/expandable");
-				Q.handle(t.state.beforeCollapse, t, [tool]);
-			});
-			return;
-		}
-		if (state.autoCollapseSiblings) {
-			$('.Q_expandable_tool h2', $parent).not(this)
-			.removeClass('Q_selected')
-			.next().slideUp(300).each(function () {
-				var t = this.parentNode.Q("Q/expandable");
-				Q.handle(t.state.beforeCollapse, t, [tool]);
-			});
-		}
-		var $expandable = $this.addClass('Q_selected')
-		.next().slideDown(300);
-		var $scrollable = null;
-		$te.parents().each(function () {
-			var $this = $(this);
-			var overflow = $this.css('overflow');
-			if (['hidden', 'visible'].indexOf(overflow) < 0) {
-				$scrollable = $this;
-				return false;
-			}
-		});
-		var t1 = $this.offset().top - $scrollable.offset().top;
-		var h1 = $this.height();
-		Q.Animation.play(function (x, y) {
-			if ($scrollable) {
-				var t = $this.offset().top - $scrollable.offset().top;
-				var scrollTop = $scrollable.scrollTop() + t - t1 * (1-y) - h1/2;
-				$scrollable.scrollTop(scrollTop);
-			}
-			$expandable.css('overflow', 'visible');
-		}, 300).onComplete.set(function () {
-			Q.handle(state.onExpand, tool, []);
-		});
 	}).on(Q.Pointer.start, function () {
 		var $this = $(this);
 		$this.addClass('Q_pressed');
@@ -99,10 +61,69 @@ Q.Tool.define('Q/expandable', function (options) {
 	});
 }, {
 	count: 0,
+	expanded: false,
 	autoCollapseSiblings: true,
+	scrollContainer: true,
 	beforeExpand: new Q.Event(),
 	onExpand: new Q.Event(),
 	beforeCollapse: new Q.Event()
+}, {
+	expand: function (options) {
+		var tool = this;
+		var state = tool.state;
+		if (false === Q.handle(state.beforeExpand, this, [])) {
+			return false;
+		}
+		var o = Q.extend({}, tool.state, options);
+		var $te = $(this.element);
+		var $h2 = $('h2', $te);
+		var $parent = $te.parent();
+		if (o.autoCollapseSiblings) {
+			$('.Q_expandable_tool h2', $parent).not(this)
+			.removeClass('Q_selected')
+			.next().slideUp(300).each(function () {
+				var t = this.parentNode.Q("Q/expandable");
+				Q.handle(t.state.beforeCollapse, t, [tool]);
+			});
+		}
+		var $expandable = $h2.addClass('Q_selected')
+		.next().slideDown(300);
+		var $scrollable = null;
+		$te.parents().each(function () {
+			var $this = $(this);
+			var overflow = $this.css('overflow');
+			if (['hidden', 'visible'].indexOf(overflow) < 0) {
+				$scrollable = $this;
+				return false;
+			}
+		});
+		var t1 = $h2.offset().top - $scrollable.offset().top;
+		var h1 = $h2.height();
+		Q.Animation.play(function (x, y) {
+			if (!o.scrollContainer) return;
+			if ($scrollable) {
+				var t = $h2.offset().top - $scrollable.offset().top;
+				var scrollTop = $scrollable.scrollTop() + t - t1 * (1-y) - h1/2;
+				$scrollable.scrollTop(scrollTop);
+			}
+			$expandable.css('overflow', 'visible');
+		}, 300).onComplete.set(function () {
+			Q.handle(state.onExpand, tool, []);
+		});
+		state.expanded = true;
+	},
+	
+	collapse: function () {
+		var tool = this;
+		var state = this.state;
+		var $h2 = $('h2', this.element);
+		$h2.removeClass('Q_selected')
+		.next().slideUp(300).each(function () {
+			var t = this.parentNode.Q("Q/expandable");
+			Q.handle(t.state.beforeCollapse, t, [tool]);
+		});
+		state.expanded = false;
+	}
 });
 
 })(Q, jQuery);
