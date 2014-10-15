@@ -80,7 +80,8 @@ Q.Tool.define("Places/location", function (options) {
 			var fields = Q.extend({
 				unsubscribe: true,
 				subscribe: true,
-				miles: $('select[name=miles]').val()
+				miles: $('select[name=miles]').val(),
+				timezone: (new Date()).getTimezoneOffset() / 60
 			}, geo.coords);
 			Q.req("Places/geolocation", [], 
 			function (err, data) {
@@ -115,7 +116,8 @@ Q.Tool.define("Places/location", function (options) {
 			method: 'post',
 			fields: {
 				zipcode: zipcode || '',
-				miles: tool.$('.Places_location_miles').val()
+				miles: tool.$('.Places_location_miles').val(),
+				timezone: (new Date()).getTimezoneOffset() / 60
 			}
 		});
 	}

@@ -1,5 +1,7 @@
-<?php echo Q_Response::scripts("\n\t") ?>
-<?php echo Q_Response::scriptLines(true) ?>
+<?php echo Q_Response::scripts(true, "\n\t") ?> 
+<?php echo Q_Response::templates(true, "\n\t") ?> 
+<?php echo Q_Response::scriptLines(true) ?> 
+
 
 <?php 
 if (Q_Config::get('Q', 'socketbug', 'on', false))

@@ -168,37 +168,37 @@
 		"icon": ""
 	},	
 	"Streams/user/activities": {
-		"type": "Streams/list/activities",
+		"type": "Streams/category",
 		"title": "Activities",
 		"icon": ""
 	},	
 	"Streams/user/interests": {
-		"type": "Streams/list/interests",
+		"type": "Streams/category",
 		"title": "Interests",
 		"icon": ""
 	},	
 	"Streams/user/music": {
-		"type": "Streams/list/music",
+		"type": "Streams/category",
 		"title": "Music",
 		"icon": ""
 	},	
 	"Streams/user/tv": {
-		"type": "Streams/list/tv",
+		"type": "Streams/category",
 		"title": "TV Shows",
 		"icon": ""
 	},	
 	"Streams/user/movies": {
-		"type": "Streams/list/movies",
+		"type": "Streams/category",
 		"title": "Movies",
 		"icon": ""
 	},	
 	"Streams/user/books": {
-		"type": "Streams/list/books",
+		"type": "Streams/category",
 		"title": "Books",
 		"icon": ""
 	},	
 	"Streams/user/quotes": {
-		"type": "Streams/list/quotes",
+		"type": "Streams/category",
 		"title": "Quotes",
 		"icon": ""
 	}

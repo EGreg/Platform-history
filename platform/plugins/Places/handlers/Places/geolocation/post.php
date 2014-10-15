@@ -16,7 +16,8 @@ function Places_geolocation_post()
 		'longitude',
 		'speed',
 		'miles',
-		'zipcode'
+		'zipcode',
+		'timezone'
 	);
 	$attributes = Q::take($_REQUEST, $fields);
 	if (!empty($attributes['zipcode'])

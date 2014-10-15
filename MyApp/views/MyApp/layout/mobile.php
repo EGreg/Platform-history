@@ -41,7 +41,7 @@
 		</div>
 	</div>
 	<?php echo Q_Response::scripts(true, "\n\t") ?> 
-	<?php echo Q_Response::scriptLines(true) ?>
-	<?php echo Q_Response::templates(true, "\n\t") ?>
+	<?php echo Q_Response::templates(true, "\n\t") ?> 
+	<?php echo Q_Response::scriptLines(true) ?> 
 </body>
 </html>

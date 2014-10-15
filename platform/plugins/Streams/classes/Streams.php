@@ -1803,13 +1803,14 @@ abstract class Streams extends Base_Streams
 			$row = Streams_Category::select('*')
 				->where(compact('publisherId', 'streamName'))
 				->fetchDbRow();
-			if ($row) {
-				$relatedTo = json_decode($row->relatedTo, true);
-				if (!isset($relatedTo[$type])) {
-					return null;
-				}
-				return $relatedTo[$type];
+			if (!$row) {
+				return null;
 			}
+			$relatedTo = json_decode($row->relatedTo, true);
+			if (!isset($relatedTo[$type])) {
+				return null;
+			}
+			return $relatedTo[$type];
 		}
 
 		if ($isCategory) {
