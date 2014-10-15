@@ -656,7 +656,7 @@ div.Q_placeholder { pointer-events: none; }
 	right: 2px;
 	height: 35px;
 	width: 35px;
-	background-image: url('../img/ui/close_big.png');
+	background-image: url(../img/ui/close_big.png);
 	cursor: pointer;
 }
 

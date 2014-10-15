@@ -194,7 +194,7 @@ Q.Tool.define("Q/columns", function(options) {
 			presentColumn(tool);
 		} else {
 			$div = $(div);
-			$close = $('Q_close', div);
+			$close = $('.Q_close', div);
 			$title = $('.Q_columns_title', div);
 			titleSlot = $('.title_slot', div)[0];
 			columnSlot = $('.column_slot', div)[0];
