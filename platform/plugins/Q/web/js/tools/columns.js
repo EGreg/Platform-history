@@ -126,6 +126,7 @@ Q.Tool.define("Q/columns", function(options) {
 	 */
 	push: function (options, callback) {
 		this.open(options, this.max(), callback);
+		return this;
 	},
 	
 	/**
@@ -136,6 +137,7 @@ Q.Tool.define("Q/columns", function(options) {
 	 */
 	pop: function (callback, options) {
 		this.close(this.max()-1, callback, options);
+		return this;
 	},
 	
 	/**
@@ -272,6 +274,7 @@ Q.Tool.define("Q/columns", function(options) {
 		} else {
 			_open();
 		}
+		return this;
 		
 		function _open() {
 			var $te = $(tool.element);
@@ -502,6 +505,7 @@ Q.Tool.define("Q/columns", function(options) {
 			Q.handle(callback, tool, [index, div]);
 			state.onClose.handle.call(tool, index, div);
 		});
+		return this;
 	},
 
 	column: function (index) {
@@ -547,6 +551,7 @@ Q.Tool.define("Q/columns", function(options) {
 		if (overshoot > 0) {
 			$(window).scrollTop( $(window).scrollTop()-overshoot );
 		}
+		return this;
 	}
 }
 );

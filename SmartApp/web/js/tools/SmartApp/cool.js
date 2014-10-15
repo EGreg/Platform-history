@@ -1,3 +1,19 @@
+(function (window, Q, $, undefined) {
+	
+/**
+ * @module SmartApp
+ */
+	
+/**
+ * YUIDoc description goes here
+ * @class SmartApp cool
+ * @constructor
+ * @param {Object} [options] Override various options for this tool
+ *  @param {String} [options.publisherId] user id of the publisher of the stream
+ *  @param {String} [options.streamName] the stream's name
+ *  @param {Q.Event} [options.onMove] Event that fires after a move
+ */
+
 Q.Tool.define("SmartApp/cool", function (options) {
 	var tool = this;
 	var state = tool.state;
@@ -38,3 +54,5 @@ Q.Tool.define("SmartApp/cool", function (options) {
 	}
 	
 });
+
+})(window, Q, jQuery);
