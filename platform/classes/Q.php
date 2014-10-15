@@ -1000,7 +1000,12 @@ class Q
 	 */
 	static function isAssociative($array)
 	{
-		return (bool)count(array_filter(array_keys($array), 'is_string'));
+		foreach ($array as $k => $v) {
+			if (is_string($k)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
