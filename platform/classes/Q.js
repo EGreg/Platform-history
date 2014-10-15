@@ -1312,6 +1312,7 @@ Q.each = function _Q_each(container, callback, options) {
 			if (container === false) break;
 			throw new Q.Error("Q.each: does not support iterating a " + t);
 		case 'null':
+		case 'undefined':
 			break;
 	}
 }

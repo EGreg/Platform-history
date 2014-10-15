@@ -858,7 +858,7 @@ abstract class Streams extends Base_Streams
 	 * @param {boolean} $throw_if_missing=false
 	 *  Optional. If true, throws an exception if the stream name cannot be deduced
 	 * @param {string} $return_as
-	 *  Defaults to "string". Can also be "array".
+	 *  Defaults to "string". Can also be "array" or "original"
 	 * @return {string}
 	 *  The name of the stream
 	 * @throws {Q_Exception_RequiredField}
@@ -886,6 +886,14 @@ abstract class Streams extends Base_Streams
 			}
 			if ($return_as === 'array' and is_string($result)) {
 				$result = explode('/', $result);
+			}
+			if (is_array($result)) {
+				if (isset($uri->name_prefix)) {
+					foreach ($result as $k => $v) {
+						$result[$k] = $uri->name_prefix.$result;
+					}
+				}
+				return $result;
 			}
 			if (!is_string($result)) {
 				return $result;
@@ -1734,7 +1742,7 @@ abstract class Streams extends Base_Streams
 	 * @param {array} $options=array()
 	 *  'accelerated' => if true, just returns the "accelerated" array(weight => array($publisherId, $streamName, $title, $icon)
 	 *	'limit' =>  number of records to fetch
-	 *	'offset' =>  offset to start
+	 *	'offset' =>  offset to start from
 	 *  'min' => the minimum weight (inclusive) to filter by, if any
 	 *  'max' => the maximum weight (inclusive) to filter by, if any
 	 *  'orderBy' => defaults to false, which means order by descending weight. True means by ascending weight.
@@ -1749,6 +1757,9 @@ abstract class Streams extends Base_Streams
 	 *  'streamFields' => If specified, fetches only the fields listed here for any streams
 	 *  'skipFields' => Optional array of field names. If specified, skips these fields when fetching streams
 	 * @return {array}
+	 *  Returns array($relations, $relatedStreams, $stream).
+	 *  However, if $streamName wasn't a string or ended in "/"
+	 *  then the third parameter is an array of streams.
 	 */
 	static function related(
 		$asUserId,
@@ -1767,16 +1778,17 @@ abstract class Streams extends Base_Streams
 		}
 
 		// Check access to stream
-		$streams = Streams::fetch($asUserId, $publisherId, $streamName);
-		if (!$streams) {
-			throw new Q_Exception("Stream $streamName not found", 
-				array('streamName', 'name', 'publisherId')
-			);
-		}
-		foreach($streams as $stream) {
-			if (!$stream->testReadLevel('see')) {
+		$rows = Streams::fetch($asUserId, $publisherId, $streamName);
+		$streams = array();
+		foreach($rows as $n => $row) {
+			if (!$row) continue;
+			if (!$row->testReadLevel('see')) {
 				throw new Users_Exception_NotAuthorized();
 			}
+			$streams[$n] = $row;
+		}
+		if (!$streams) {
+			return array(array(), array(), $returnMultiple ? array() : null);
 		}
 		$stream = reset($streams);
 		

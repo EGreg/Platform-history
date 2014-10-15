@@ -1396,9 +1396,9 @@ Sp.refresh = function _Stream_prototype_refresh (callback, options) {
  *   @param {Number} [options.max] the maximum weight (inclusive) to filter by, if any
  *   @param {String} [options.prefix] optional prefix to filter the streams by
  *   @param {Boolean} [options.stream] pass true here to fetch the latest version of the stream (ignores cache)
- *   @param {Mixed} [options.participants]  optional. Pass a limit here to fetch that many participants (ignores cache)
+ *   @param {Mixed} [options.participants]  optional. Pass a limit here to fetch that many participants (ignores cache). Only honored if streamName is a string.
  *   @param {Boolean} [options.messages]
- *   @param {String} [options.messageType] optional String specifying the type of messages to fetch
+ *   @param {String} [options.messageType] optional String specifying the type of messages to fetch. Only honored if streamName is a string.
  *   @param {Object} [options."$Module/$fieldname"] any other fields you would like can be added, to be passed to your hooks on the back end
  * @param callback {function}
  *	if there were errors, first parameter is an array of errors
@@ -1406,9 +1406,11 @@ Sp.refresh = function _Stream_prototype_refresh (callback, options) {
  */
 Streams.related = function _Streams_related(publisherId, streamName, relationType, isCategory, options, callback) {
 	if (typeof publisherId !== 'string'
-	|| typeof streamName !== 'string'
 	|| typeof relationType !== 'string') {
-		throw new Q.Error("Streams.related is expecting publisherId, streamName, relationType as strings");
+		throw new Q.Error("Streams.related is expecting publisherId, relationType as strings");
+	}
+	if (!publisherId || !streamName) {
+		throw new Q.Error("Streams.related is expecting publisherId and streamName to be non-empty");
 	}
 	if (typeof isCategory !== 'boolean') {
 		callback = options;
@@ -1424,11 +1426,8 @@ Streams.related = function _Streams_related(publisherId, streamName, relationTyp
 		far = isCategory ? 'from' : 'to',
 		farPublisherId = far+'PublisherId',
 		farStreamName = far+'StreamName',
-		slotNames = ['relations', 'streams'],
+		slotNames = ['relations', 'relatedStreams'],
 		fields = {"publisherId": publisherId, "streamName": streamName};
-	if (options.stream) {
-		slotNames.push('stream');
-	}		
 	if (options.messages) {
 		slotNames.push('messages');
 	}
@@ -1445,9 +1444,13 @@ Streams.related = function _Streams_related(publisherId, streamName, relationTyp
 	}
 
 	var cached = Streams.get.cache.get([publisherId, streamName]);
-	if (!cached || !options.stream) {
-		// even if a pending request has already been sent out, we'll request it again
-		slotNames.push('stream');
+	if (!cached || options.stream) {
+		if (typeof streamName === 'string'
+		&& streamName[streamName.length-1] !== '/') {
+			slotNames.push('stream');
+		} else {
+			slotNames.push('streams');
+		}
 	}
 
 	var baseUrl = Q.baseUrl({
@@ -1484,7 +1487,7 @@ Streams.related = function _Streams_related(publisherId, streamName, relationTyp
 			
 			// Construct related streams from data that has been returned
 			var p = new Q.Pipe(), keys = [], keys2 = {}, streams = {};
-			Q.each(data.slots.streams, function (k, fields) {
+			Q.each(data.slots.relatedStreams, function (k, fields) {
 				if (!Q.isPlainObject(fields)) return;
 				var key = Streams.key(fields.publisherId, fields.name);
 				keys.push(key);
@@ -1537,7 +1540,7 @@ Streams.related = function _Streams_related(publisherId, streamName, relationTyp
 					}
 				}
 				callback && callback.call({
-					streams: streams, 
+					relatedStreams: streams, 
 					relations: data.slots.relations, 
 					stream: stream, 
 					errors: params
@@ -2824,12 +2827,14 @@ function _onResultHandler(subject, params, args, ret, original) {
 	if (key == undefined || params[0] || !subject) {
 		return; // either retainWith was not called or an error occurred during the request
 	}
-	if (subject.stream) {
-		subject.stream.retain(key);
-		Q.each(subject.streams, 'retain', [key]);
-	}
 	if (Q.typeOf(subject) === 'Q.Streams.Stream') {
 		subject.retain(key);
+	} else {
+		if (subject.stream) {
+			subject.stream.retain(key);
+		}
+		Q.each(subject.streams, 'retain', [key]);
+		Q.each(subject.relatedStreams, 'retain', [key]);
 	}
 }
 

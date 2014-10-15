@@ -187,9 +187,9 @@ function _Streams_related_tool (options)
                     && s1.fields.name === s2.fields.name;
             }
             if (tool.state.result) {
-                exiting = Q.diff(tool.state.result.streams, result.streams, comparator);
-                entering = Q.diff(result.streams, tool.state.result.streams, comparator);
-                updating = Q.diff(result.streams, entering, entering, comparator);
+                exiting = Q.diff(tool.state.result.relatedStreams, result.relatedStreams, comparator);
+                entering = Q.diff(result.relatedStreams, tool.state.result.relatedStreams, comparator);
+                updating = Q.diff(result.relatedStreams, entering, entering, comparator);
             } else {
                 exiting = entering = updating = [];
             }

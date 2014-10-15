@@ -9,10 +9,10 @@ function Streams_related_response()
 	$user = Users::loggedInUser();
 	$asUserId = $user ? $user->id : '';
 	$publisherId = Streams::requestedPublisherId(true);
-	$streamName = Streams::requestedName(true);
+	$streamName = Streams::requestedName(true, 'original');
 	$isCategory = !empty($_REQUEST['isCategory']);
 	$slotNames = Q_Request::slotNames();
-	$streams_requested = in_array('streams', $slotNames);
+	$streams_requested = in_array('relatedStreams', $slotNames);
 	$options = array(
 		'relationsOnly' => !$streams_requested,
 		'orderBy' => !empty($_REQUEST['ascending'])
@@ -67,10 +67,17 @@ function Streams_related_response()
 			'adminLevel' => $s->get('adminLevel', $s->adminLevel)
 		);
 	}
-	Q_Response::setSlot('streams', $arr);
+	Q_Response::setSlot('relatedStreams', $arr);
 	
 	$stream = $result[2];
-	Q_Response::setSlot('stream', $stream->exportArray());
+	if (is_array($stream)) {
+		Q_Response::setSlot('streams', Db::exportArray($stream));
+		return;
+	} else if (is_object($stream)) {
+		Q_Response::setSlot('stream', $stream->exportArray());
+	} else {
+		Q_Response::setSlot('stream', false);
+	}
 	
 	if (!empty($_REQUEST['messages'])) {
 		$max = -1;
@@ -78,7 +85,9 @@ function Streams_related_response()
 		$messages = false;
 		$type = isset($_REQUEST['messageType']) ? $_REQUEST['messageType'] : null;
 		if ($stream->testReadLevel('messages')) {
-			$messages = Db::exportArray($stream->getMessages(compact('type', 'max', 'limit')));
+			$messages = Db::exportArray($stream->getMessages(
+				compact('type', 'max', 'limit')
+			));
 		}
 		Q_Response::setSlot('messages', $messages);
 	}
@@ -87,7 +96,9 @@ function Streams_related_response()
 		$offset = -1;
 		$participants = false;
 		if ($stream->testReadLevel('participants')) {
-			$participants = Db::exportArray($stream->getParticipants(compact('limit', 'offset')));
+			$participants = Db::exportArray($stream->getParticipants(
+				compact('limit', 'offset')
+			));
 		}
 		Q_Response::setSlot('participants', $participants);
 	}

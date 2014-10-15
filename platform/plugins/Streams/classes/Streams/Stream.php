@@ -1381,6 +1381,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 *  'streamFields' => If specified, fetches only the fields listed here for any streams
 	 *  'skipFields' => Optional array of field names. If specified, skips these fields when fetching streams
 	 * @return {array}
+	 *  Returns array($relations, $relatedStreams, $this)
 	 */
 	function related(
 		$asUserId,
