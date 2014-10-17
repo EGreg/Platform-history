@@ -99,6 +99,7 @@ abstract class Places extends Base_Places
 				$result[$streamName] = array(
 					'latitude' => $lat,
 					'longitude' => $long,
+					'geohash' => Places_Geohash::encode($lat, $long, 6),
 					'miles' => $miles
 				);
 			}
@@ -120,9 +121,6 @@ abstract class Places extends Base_Places
 		$latitude, 
 		$longitude)
 	{
-		list($latQuantized, $longQuantized, $latGrid, $longGrid)
-			= self::quantize($latitude, $longitude, $miles);
-		
 		$result = array();
 		$milesArray = Q_Config::expect('Places', 'nearby', 'miles');
 		foreach ($milesArray as $miles) {
@@ -130,10 +128,13 @@ abstract class Places extends Base_Places
 			if ($longitude < -180) { $longitude = $longitude%180 + 180; }
 			if ($latitude > 90) { $latitude = $latitude%90 - 90; }
 			if ($latitude < -90) { $latitude = $latitude%90 + 90; }
-			$streamName = self::streamName($latitude, $longitude, $miles);
+			list($latQuantized, $longQuantized, $latGrid, $longGrid)
+				= self::quantize($latitude, $longitude, $miles);
+			$streamName = self::streamName($latQuantized, $longQuantized, $miles);
 			$result[$streamName] = array(
-				'latitude' => $latitude,
-				'longitude' => $longitude,
+				'latitude' => $latQuantized,
+				'longitude' => $longQuantized,
+				'geohash' => Places_Geohash::encode($latQuantized, $longQuantized, 6),
 				'miles' => $miles
 			);
 		}
