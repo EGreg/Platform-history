@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:og="http://ogp.me/ns#" xmlns:fb="http://www.facebook.com/2008/fbml">
+<html <?php echo Q_Response::htmlAttributes() ?>>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<?php echo Q_Response::metas(true, "\n\t") ?>

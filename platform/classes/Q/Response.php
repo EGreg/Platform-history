@@ -1258,6 +1258,17 @@ class Q_Response
 		}
 		return implode($between, $tags);
 	}
+	
+	static function htmlAttributes()
+	{
+		$touchscreen = Q_Request::isTouchscreen() ? 'Q_touchscreen' : 'Q_notTouchscreen';
+		$mobile = Q_Request::isTouchscreen() ? 'Q_mobile' : 'Q_notMobile';
+		$ie = Q_Request::isIE() ? 'Q_ie' : 'Q_notIE';
+		$result = 'lang="en" xmlns:og="http://ogp.me/ns#" '
+			. 'xmlns:fb="http://www.facebook.com/2008/fbml" '
+			. "class='$touchscreen $mobile $ie'";
+		return $result;
+	}
 
 	/**
 	 * Gets/sets the favicon url
