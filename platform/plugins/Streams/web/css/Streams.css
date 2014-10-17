@@ -167,6 +167,19 @@
 	text-align: center;
 }
 
+.Streams_participants_tool .Users_avatar_tool {
+	float: left;
+	width: 50px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	text-align: center;
+}
+
+.Streams_participants_tool .Users_avatar_name {
+	display: block;
+	font-size: 10px;
+}
+
 .Streams_participant_tool {
 	padding-top: 10px;
 	font-size: 14px;

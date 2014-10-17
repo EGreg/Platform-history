@@ -7,7 +7,6 @@
  */
 function Streams_participant_tool($options)
 {
- 	/* TODO (DT): tmp commented because we need placeholder tool
  	$publisherId = Streams::requestedPublisherId(true);
  	$streamName = Streams::requestedName(true);
 	
@@ -31,8 +30,8 @@ function Streams_participant_tool($options)
 	} else {
 		$avatars = array();
 	}
-	return Q::view('Streams/tool/participants.php', compact('participants', 'avatars'));*/
-	
+	return Q::view('Streams/tool/participants.php', compact('participants', 'avatars'));
+		/*
 	Q_Response::addScript('plugins/Streams/js/Streams.js');
 	Q_Response::addStylesheet('plugins/Streams/css/Streams.css');
 	Q_Response::setToolOptions($options);
@@ -46,4 +45,5 @@ function Streams_participant_tool($options)
 		);
 	}
 	return Q::view('Streams/tool/participants.php', compact('participants'));
+	*/
 }

@@ -325,7 +325,7 @@ Streams.socketSessionId = function (publisherId, streamName) {
  * A convenience method to get the URL of the streams-related action
  * @static
  * @method actionUrl
- * @param {String} publisherId , The name of the publisher
+ * @param {String} publisherId , The id of the publisher
  * @param {String} streamName , The name of the stream
  * @param {String} what , Defaults to 'stream'. Can also be 'message', 'relation', etc.
  * @return {String} The corresponding URL
