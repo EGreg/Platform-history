@@ -330,9 +330,9 @@ class Q_Html
 			$attributes2 = self::copyAttributes($attributes, $key);
 			$attributes2['value'] = $key;
 			$attributes2['id'] = $id;
-			if ("$key" === "$selected") {
+			if (is_array($selected) and array_key_exists($key, $selected)) {
 				$attributes2['selected'] = 'selected';
-			} else if (is_array($selected) and array_key_exists($key, $selected)) {
+			} else if ("$key" === "$selected") {
 				$attributes2['selected'] = 'selected';
 			}
 			$html_parts[] = self::tag('option', $attributes2, $value);
