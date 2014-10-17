@@ -4239,8 +4239,8 @@ Cp.each = function _Q_Cache_prototype_clear(args, callback) {
 		var json = Q.Cache.key(args);
 		prefix = json.substring(0, json.length-1);
 	}
+	var cache = this;
 	if (this.documentStorage) {
-		var cache = this;
 		return Q.each(this.data, function (k, v) {
 			if (prefix && k.substring(0, prefix.length) !== prefix) {
 				return;

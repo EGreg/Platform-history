@@ -9,6 +9,10 @@
 
 var Streams = Q.Streams = Q.plugins.Streams = {
 
+	cache: {
+		where: null // to override default, use 'document', 'session' or 'local'
+	}
+
 };
 
 Q.text.Streams = {
@@ -2852,8 +2856,10 @@ Q.Tool.onMissingConstructor.set(function (constructors, normalized) {
 
 Q.beforeInit.add(function _Streams_beforeInit() {
 
+	var where = Streams.cache.where || 'document';
+
 	Streams.get = Q.getter(Streams.get, {
-		cache: Q.Cache.document("Streams.get", 100), 
+		cache: Q.Cache[where]("Streams.get", 100), 
 		throttle: 'Streams.get'
 	});
 
@@ -2862,27 +2868,27 @@ Q.beforeInit.add(function _Streams_beforeInit() {
 	});
 
 	Streams.related = Q.getter(Streams.related, {
-		cache: Q.Cache.document("Streams.related", 100), 
+		cache: Q.Cache[where]("Streams.related", 100), 
 		throttle: 'Streams.related'
 	});
 
 	Message.get = Q.getter(Message.get, {
-		cache: Q.Cache.document("Streams.Message.get", 1000), 
+		cache: Q.Cache[where]("Streams.Message.get", 1000), 
 		throttle: 'Streams.Message.get'
 	});
 
 	Participant.get = Q.getter(Participant.get, {
-		cache: Q.Cache.document("Streams.Participant.get", 1000), 
+		cache: Q.Cache[where]("Streams.Participant.get", 1000), 
 		throttle: 'Streams.Participant.get'
 	});
 
 	Avatar.get = Q.getter(Avatar.get, {
-		cache: Q.Cache.document("Streams.Avatar.get", 1000), 
+		cache: Q.Cache[where]("Streams.Avatar.get", 1000), 
 		throttle: 'Streams.Avatar.get'
 	});
 
 	Avatar.byPrefix = Q.getter(Avatar.byPrefix, {
-		cache: Q.Cache.document("Streams.Avatar.byPrefix", 100),
+		cache: Q.Cache[where]("Streams.Avatar.byPrefix", 100),
 		throttle: 'Streams.Avatar.byPrefix'
 	});
 	
