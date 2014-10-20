@@ -1740,7 +1740,6 @@ abstract class Streams extends Base_Streams
 	 *  If true, returns all the streams this related to this category.
 	 *  If a string, returns all the streams related to this category with names prefixed by this string.
 	 * @param {array} $options=array()
-	 *  'accelerated' => if true, just returns the "accelerated" array(weight => array($publisherId, $streamName, $title, $icon)
 	 *	'limit' =>  number of records to fetch
 	 *	'offset' =>  offset to start from
 	 *  'min' => the minimum weight (inclusive) to filter by, if any
@@ -1791,27 +1790,6 @@ abstract class Streams extends Base_Streams
 			return array(array(), array(), $returnMultiple ? array() : null);
 		}
 		$stream = reset($streams);
-		
-		$rtypes = Q_Config::get(
-			'Streams', 'categories', 'relationTypesToAccelerate', array()
-		);
-		if ($isCategory
-		and !empty($options['accelerated'])
-		and !empty($options['type'])
-		and in_array($options['type'], $rtypes)) {
-			$type = $options['type'];
-			$row = Streams_Category::select('*')
-				->where(compact('publisherId', 'streamName'))
-				->fetchDbRow();
-			if (!$row) {
-				return null;
-			}
-			$relatedTo = json_decode($row->relatedTo, true);
-			if (!isset($relatedTo[$type])) {
-				return null;
-			}
-			return $relatedTo[$type];
-		}
 
 		if ($isCategory) {
 			$query = Streams_RelatedTo::select('*')
@@ -1875,7 +1853,7 @@ abstract class Streams extends Base_Streams
 		}
 		if (empty($relations)) {
 			return empty($options['streamsOnly'])
-				? array($relations, array(), $stream)
+				? array($relations, array(), $returnMultiple ? $streams : $stream)
 				: array();
 		}
 		$fields = '*';

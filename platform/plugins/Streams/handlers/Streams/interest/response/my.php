@@ -7,8 +7,8 @@
 function Streams_interest_response_my()
 {
 	$user = Users::loggedInUser(true);
-	return Streams::related(
-		$user->id, $user->id, 'Streams/user/interests', true,
-		array('type' => 'Streams/interest', 'accelerated' => true)
+	
+	return Streams_Category::getRelatedTo(
+		$user->id, 'Streams/user/interests', 'Streams/interest'
 	);
 }

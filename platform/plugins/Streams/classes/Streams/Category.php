@@ -24,6 +24,30 @@ class Streams_Category extends Base_Streams_Category
 		// INSERT YOUR CODE HERE
 		// e.g. $this->hasMany(...) and stuff like that.
 	}
+	
+	/**
+	 * Get the contents of the Streams_Category row, if any.
+	 * @param {string} $publisherId
+	 *  The publisher of the stream
+	 * @param {string} $streamName
+	 *  The name of the stream which is presumably related to/from other streams
+	 * @return {array}
+	 *  Returns the array(weight => array($publisherId, $streamName, $title, $icon)
+	 */
+	static function getRelatedTo($publisherId, $streamName, $relationType)
+	{
+		$row = Streams_Category::select('*')
+			->where(compact('publisherId', 'streamName'))
+			->fetchDbRow();
+		if (!$row) {
+			return null;
+		}
+		$relatedTo = json_decode($row->relatedTo, true);
+		if (!isset($relatedTo[$relationType])) {
+			return null;
+		}
+		return $relatedTo[$relationType];
+	}
 
 	/* 
 	 * Add any Streams_Category methods here, whether public or not
