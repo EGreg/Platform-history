@@ -19,9 +19,12 @@ abstract class Places extends Base_Places
 
 	/* * * */
 	
-	static function userLocationStream()
+	static function userLocationStream($throwIfNotLoggedIn = false)
 	{
-		$user = Users::loggedInUser(true);
+		$user = Users::loggedInUser($throwIfNotLoggedIn);
+		if (!$user) {
+			return null;
+		}
 		$streamName = "Places/user/location";
 		$stream = Streams::fetchOne($user->id, $user->id, $streamName);
 		if (!$stream) {
