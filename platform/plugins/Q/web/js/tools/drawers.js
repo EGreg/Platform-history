@@ -242,7 +242,8 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 				});
 			} else {
 				if (!index) {
-					state.drawerOffset = $scrolling.offset();
+					state.drawerOffset = $scrolling.offset()
+						|| {left: 0, top: 0};
 					state.drawerOffset.top += state.bottom[1]
 						? 0
 						: scrollingHeight - state.heights[1];

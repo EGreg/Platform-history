@@ -71,6 +71,9 @@ var MyApp = (function (Q, $) {
 	// tell Q.handle to load pages using AJAX
 	Q.handle.options.loadUsingAjax = true;
 	
+	// make the app feel more native on touch devices
+	Q.Pointer.preventTouchScrolling();
+	
 	return MyApp;
 	
 })(Q, jQuery);

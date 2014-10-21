@@ -8197,7 +8197,7 @@ Q.info = {
 	},
 	isAndroid: function (maxWidth, maxHeight, minVersion, maxVersion) {
 		return Q.info.platform === 'android'
-			&& (maxWidth == undefined || maxWidth >= f.windowWidth())
+			&& (maxWidth == undefined || maxWidth >= Q.Pointer.windowWidth())
 			&& (maxHeight == undefined || maxHeight >= Q.Pointer.windowHeight())	
 			&& (minVersion == undefined || minVersion <= Q.info.browser.version)
 			&& (maxVersion == undefined || maxVersion >= Q.info.browser.version);
@@ -8461,10 +8461,14 @@ Q.Pointer = {
 	 * @static
 	 * @method preventDefault
 	 * @param {Event} e Some mouse or touch event from the DOM
-	 * @return {Number}
+	 * @return {Boolean} Whether the preventDefault succeeded
 	 */
 	preventDefault: function (e) {
+		if (('cancelable' in e) && !e.cancelable) {
+			return false;
+		}
 		e.preventDefault ? e.preventDefault() : e.returnValue = false;
+		return true;
 	},
 	/**
 	 * Cancels a click that may be in progress,
