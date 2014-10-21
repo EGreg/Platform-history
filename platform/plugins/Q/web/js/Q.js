@@ -8508,8 +8508,8 @@ Q.Pointer = {
 				if (p.style) {
 					var overflow = p.computedStyle().overflow;
 					if (['hidden', 'visible'].indexOf(overflow) < 0
-					&& this.offsetHeight < this.scrollHeight) {
-						scrollable = this;
+					&& p.offsetHeight < p.scrollHeight) {
+						scrollable = p;
 						break;
 					}
 				}
