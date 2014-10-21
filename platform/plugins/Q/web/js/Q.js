@@ -8496,6 +8496,31 @@ Q.Pointer = {
 		);
 	},
 	/**
+	 * Call this function to prevent touch scrolling
+	 * @method preventTouchScrolling
+	 */
+	preventTouchScrolling: function () {
+		Q.addEventListener(document, 'touchmove', function (event) {
+		    var isTouchMoveAllowed = false;
+		    var p = event.target;
+			var scrollable = null;
+			while (p) {
+				if (p.style) {
+					var overflow = p.style.overflow;
+					if (['hidden', 'visible'].indexOf(overflow) < 0
+					&& this.offsetHeight < this.scrollHeight) {
+						scrollable = this;
+						break;
+					}
+				}
+				p = p.parentNode;
+			}
+		    if (!scrollable) {
+		        Q.Pointer.preventDefault(event);
+		    }
+		});
+	},
+	/**
 	 * This event occurs when a click has been canceled, for one of several possible reasons.
 	 * @static
 	 * @event onCancelClick
