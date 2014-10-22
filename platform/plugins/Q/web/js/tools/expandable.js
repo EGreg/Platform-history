@@ -88,7 +88,7 @@ Q.Tool.define('Q/expandable', function (options) {
 		}
 		var $expandable = $h2.addClass('Q_selected')
 		.next().slideDown(300);
-		var $scrollable = null;
+		var $scrollable = $('body');
 		$te.parents().each(function () {
 			var $this = $(this);
 			var overflow = $this.css('overflow');
@@ -97,12 +97,15 @@ Q.Tool.define('Q/expandable', function (options) {
 				return false;
 			}
 		});
-		var t1 = $h2.offset().top - $scrollable.offset().top;
+		var offset = $scrollable
+			? $scrollable.offset()
+			: {left: 0, top: 0};
+		var t1 = $h2.offset().top - offset.top;
 		var h1 = $h2.height();
 		Q.Animation.play(function (x, y) {
 			if (!o.scrollContainer) return;
 			if ($scrollable) {
-				var t = $h2.offset().top - $scrollable.offset().top;
+				var t = $h2.offset().top - offset.top;
 				var scrollTop = $scrollable.scrollTop() + t - t1 * (1-y) - h1/2;
 				$scrollable.scrollTop(scrollTop);
 			}

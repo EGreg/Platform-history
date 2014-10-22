@@ -454,7 +454,9 @@ Elp.computedStyle = function(name) {
 	var computedStyle = window.getComputedStyle
 		? window.getComputedStyle(this, null)
 		: this.currentStyle;
-	return name ? computedStyle[name] : computedStyle;
+	return name
+		? (computedStyle ? computedStyle[name] : null)
+		: computedStyle;
 };
 
 /**
@@ -8477,8 +8479,9 @@ Q.Pointer = {
 	 * returning false.
 	 * @static
 	 * @method cancelClick
-	 * @param {Event} e Some mouse or touch event from the DOM
-	 * @return {Number}
+	 * @param {Event} event Some mouse or touch event from the DOM
+	 * @param {Object} extraInfo Extra info to pass to onCancelClick
+	 * @return {Boolean}
 	 */
 	cancelClick: function (event, extraInfo) {
 		if (false === Q.Pointer.onCancelClick.handle(event, extraInfo)) {
@@ -8504,21 +8507,31 @@ Q.Pointer = {
 	 * @method preventTouchScrolling
 	 */
 	preventTouchScrolling: function () {
-		Q.addEventListener(document, 'touchmove', function (event) {
+		Q.addEventListener(window, 'touchmove', function (event) {
 		    var isTouchMoveAllowed = false;
 		    var p = event.target;
+			var pos;
 			var scrollable = null;
-			while (p) {
-				if (p.style) {
+			do {
+				if (p.computedStyle) {
 					var overflow = p.computedStyle().overflow;
-					if (['hidden', 'visible'].indexOf(overflow) < 0
-					&& p.offsetHeight < p.scrollHeight) {
+					var hiddenHeight = p.scrollHeight - p.offsetHeight;
+					var s = (['hidden', 'visible'].indexOf(overflow) < 0);
+					if ((s || p.tagName === 'HTML') && hiddenHeight > 0) {
+						if ((Q.Pointer.movement.positions.length == 1)
+						&& (pos = Q.Pointer.movement.positions[0])) {
+							var sy = Q.Pointer.getY(event)
+								+ Q.Pointer.scrollTop();
+							if ((sy > pos.y && p.scrollTop == 0)
+							|| (sy < pos.y && p.scrollTop >= hiddenHeight)) {
+								continue;
+							}
+						}
 						scrollable = p;
 						break;
 					}
 				}
-				p = p.parentNode;
-			}
+			} while (p = p.parentNode)
 		    if (!scrollable) {
 		        Q.Pointer.preventDefault(event);
 		    }
@@ -8552,7 +8565,13 @@ function _Q_PointerStartHandler(e) {
 	Q.addEventListener(window, Q.Pointer.move, _onPointerMoveHandler);
 	Q.addEventListener(window, Q.Pointer.end, _onPointerEndHandler);
 	Q.addEventListener(window, Q.Pointer.cancel, _onPointerEndHandler);
-	_pos = _dist = _last = _lastTimestamp = _lastVelocity = null;
+	var screenX = Q.Pointer.getX(e) + Q.Pointer.scrollLeft();
+	var screenY = Q.Pointer.getY(e) + Q.Pointer.scrollTop();
+	_pos = { // first movement
+		x: screenX,
+		y: screenY
+	};
+	_dist = _last = _lastTimestamp = _lastVelocity = null;
 	Q.Pointer.movement = {
 		times: [],
 		positions: [],
@@ -8571,14 +8590,10 @@ function _onPointerMoveHandler(evt) { // see http://stackoverflow.com/a/2553717/
 	if (!screenX || !screenY) {
 		return;
 	}
-	if (_pos === null) {
-		// first movement
-		_pos = {
-			x: screenX,
-			y: screenY
-		};
-	} else if ((_pos.x && Math.abs(_pos.x - screenX) > Q.Pointer.options.cancelClickDistance)
-	|| (_pos.y && Math.abs(_pos.y - screenY) > Q.Pointer.options.cancelClickDistance)) {
+	var ccd = Q.Pointer.options.cancelClickDistance;
+	if (_pos
+	&& ((_pos.x && Math.abs(_pos.x - screenX) > ccd)
+	 || (_pos.y && Math.abs(_pos.y - screenY) > ccd))) {
 		// finger moved more than the threshhold
 		if (false !== Q.Pointer.cancelClick(evt, {
 			fromX: _pos.x,
