@@ -343,7 +343,7 @@ Q.Tool.define('Streams/chat', function(options) {
 			if (!$element[0].isOverflowed()) return;
 			
 			var $container = $element.parents('.Streams_chat_item');
-			var displayName   = $('.Users_avatar_contents', $container).text();
+			var displayName   = $('.Users_avatar_name', $container).text();
 
 			if ($container.data('byuserid') === state.userId) {
 				displayName = 'me';

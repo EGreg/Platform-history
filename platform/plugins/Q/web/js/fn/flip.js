@@ -13,7 +13,7 @@
  * @default 'h'
  * @param {Number} [options.duration] duration is a Duration of animation in milliseconds
  * @default 500
- * @param {Event} [options.onFinish] onFinish  Q.Event to call when flipping is finished. Optional.
+ * @param {Q.Event} [options.onFinish] onFinish  Q.Event to call when flipping is finished. Optional.
  */
 Q.Tool.jQuery('Q/flip',
 

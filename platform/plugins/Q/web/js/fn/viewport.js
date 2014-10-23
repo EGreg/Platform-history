@@ -25,11 +25,11 @@
  *     @param {Number} [options.initial.height]
  *     @default 0
  *   @param {Object} [options.result]
- *   @param {Event} [options.onRelease] This event triggering after viewport creation
+ *   @param {Q.Event} [options.onRelease] This event triggering after viewport creation
  *   @default Q.Event()
- *   @param {Event} [options.onZoom] This event triggering after zooming
+ *   @param {Q.Event} [options.onZoom] This event triggering after zooming
  *   @default Q.Event()
- *   @param {Event} [options.onMove] This event triggering after element move
+ *   @param {Q.Event} [options.onMove] This event triggering after element move
  *   @default Q.Event()
  */
 Q.Tool.jQuery('Q/viewport',

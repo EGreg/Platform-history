@@ -32,15 +32,15 @@
  *   @param {Number} [options.crop.w] w is a width value for cropping
  *   @param {Number} [options.crop.h] h is a height value for cropping
  * @default Q.action('Q/image')
- * @param {Event} [options.preprocess] preprocess is a function which is triggering before image upload.
+ * @param {Q.Event} [options.preprocess] preprocess is a function which is triggering before image upload.
  * Its "this" object will be a jQuery of the imagepicker element
  * The first parameter is a callback, which should be called with an optional
  * hash of overrides, which can include "data", "path", "subpath", "save", "url", "loader" and "crop"
  * @param {Array} [options.cameraCommands] cameraCommands is an Array of titles for the commands that pop up to take a photo
- * @param {Event} [options.onClick] onClick is a function to execute during the click, which may cancel the click
- * @param {Event} [options.onSuccess] onSuccess is Q.Event which is called on successful upload. First parameter will be the server response with
+ * @param {Q.Event} [options.onClick] onClick is a function to execute during the click, which may cancel the click
+ * @param {Q.Event} [options.onSuccess] onSuccess is Q.Event which is called on successful upload. First parameter will be the server response with
  * an object in a format similar to the 'saveSizeName' field. Optional.
- * @param {Event} [options.onError] onError Q.Event which is called if upload failed. Optional.
+ * @param {Q.Event} [options.onError] onError Q.Event which is called if upload failed. Optional.
  */
 Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 	var $this = this;

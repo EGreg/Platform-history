@@ -7,7 +7,7 @@
  * @param {Object} [options] this is an object that contains parameters for this function
  *   @param {String} [options.publisherId] Publisher ID
  *   @required
- *   @param {String} [options.streamName]  If empty, and <code>creatable<code> is true, then this can be used to add new related Streams/image streams.
+ *   @param {String} [options.streamName]  If empty, and <code>creatable</code> is true, then this can be used to add new related Streams/image streams.
  *   @optional
  *   @param {Object} [options.related] A hash with properties "publisherId" and "streamName", and usually "type" and "weight"
  *     @param {String} [options.related.publisherId]
@@ -58,10 +58,10 @@
  *         @param {String} [options.templates.create.fields.alt]
  *         @param {String} [options.templates.create.fields.titleClass]
  *         @param {String} [options.templates.create.fields.titleTag]
- *   @param {Event} [options.onCreate] An event that occurs after a new stream is created by a creatable preview
- *   @param {Event} [options.onUpdate] An event that occurs when the icon is updated via this tool
- *   @param {Event} [options.onRefresh] An event that occurs when the icon is refreshed
- *   @param {Event} [options.onRemove] An event that occurs when the icon is removed via the 'remove' action
+ *   @param {Q.Event} [options.onCreate] An event that occurs after a new stream is created by a creatable preview
+ *   @param {Q.Event} [options.onUpdate] An event that occurs when the icon is updated via this tool
+ *   @param {Q.Event} [options.onRefresh] An event that occurs when the icon is refreshed
+ *   @param {Q.Event} [options.onRemove] An event that occurs when the icon is removed via the 'remove' action
  */
 Q.Tool.define("Streams/image/preview", function(options) {
 	

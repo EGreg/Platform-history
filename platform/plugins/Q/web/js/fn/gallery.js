@@ -43,8 +43,8 @@
  * @default false
  * @param {Boolean} [options.loop] loop for whether to show first image after last image is done.
  * @default true
- * @param {Event} [options.onLoad] onLoad event fires when an image loads, also passes all loaded images
- * @param {Event} [options.onTransition] onTransition event fires when an image loads, also passes all loaded images
+ * @param {Q.Event} [options.onLoad] onLoad event fires when an image loads, also passes all loaded images
+ * @param {Q.Event} [options.onTransition] onTransition event fires when an image loads, also passes all loaded images
  */
 Q.Tool.jQuery('Q/gallery', function _Q_gallery(o) {
 	

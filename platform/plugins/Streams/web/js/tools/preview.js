@@ -27,10 +27,10 @@
  *   @param {Object} [options.overrideSize]  A hash of {icon: size} pairs to override imagepicker.showSize when the icon is a certain string. The empty string matches all icons.
  *   @param {String} [options.throbber]  The url of an image to use as an activity indicator when the image is loading
  *   @param {Object} [options.templates]  Under the keys "views", "edit" and "create" you can override options for Q.Template.render . The fields passed to the template include "alt", "titleTag" and "titleClass"
- *   @param {Event} [options.onCreate] An event that occurs after a new stream is created by a creatable preview
- *   @param {Event} [options.onUpdate] An event that occurs when the icon is updated via this tool
- *   @param {Event} [options.onRefresh]  An event that occurs when the icon is refreshed
- *   @param {Event} [options.onRemove] An event that occurs when the icon is removed via the 'remove' action
+ *   @param {Q.Event} [options.onCreate] An event that occurs after a new stream is created by a creatable preview
+ *   @param {Q.Event} [options.onUpdate] An event that occurs when the icon is updated via this tool
+ *   @param {Q.Event} [options.onRefresh]  An event that occurs when the icon is refreshed
+ *   @param {Q.Event} [options.onRemove] An event that occurs when the icon is removed via the 'remove' action
  */
 Q.Tool.define("Streams/preview", function(options) {
 	

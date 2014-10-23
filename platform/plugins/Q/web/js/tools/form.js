@@ -9,11 +9,11 @@
  * @class Q form
  * @constructor
  * @param {Object} [options] This is an object of parameters for this function
- *   @param {Event} [options.onSubmit] This event triggers On form submit
+ *   @param {Q.Event} [options.onSubmit] This event triggers On form submit
  *   @default Q.Event()
- *   @param {Event} [options.onResponse] This event triggers after getting some response from from url request
+ *   @param {Q.Event} [options.onResponse] This event triggers after getting some response from from url request
  *   @default Q.Event()
- *   @param {Event} [options.onSuccess] This event triggers if response returned with 200 success code , and if there are no HTTP errors in response headers
+ *   @param {Q.Event} [options.onSuccess] This event triggers if response returned with 200 success code , and if there are no HTTP errors in response headers
  *   @default Q.Event()
  *   @param {String} [options.slotsToRequest] Slot names for Q.request
  *   @default 'form'

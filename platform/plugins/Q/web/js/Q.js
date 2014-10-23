@@ -93,8 +93,9 @@ Object.keys = (function () {
 	 
 		var result = [];
 		for (var name in o) {
-			if (hasOwnProperty.call(o, name))
+			if (hasOwnProperty.call(o, name)) {
 				result.push(name);
+			}
 		}
 	 
 		if (hasDontEnumBug) {
@@ -519,17 +520,17 @@ Elp.preventSelections = function (deep, callouts) {
 		unselectable: this.unselectable
 	};
 	this.unselectable = 'on'; 
-	this.style['-moz-user-select']
-	= this.style['-webkit-user-select']
-	= this.style['-ms-user-select']
+	this.style[Q.info.browser.prefix+'user-select']
 	= this.style['user-select'] = 'none';
 	if (callouts) {
-		this.style['-webkit-user-callout'] = 'none';
+		this.style[Q.info.browser.prefix+'user-callout']
+		= this.style['user-select'] = 'none';
 	}
 	if (!deep) return;
 	Q.each(this.children || this.childNodes, function () {
 		if (this.preventSelections
-		&& ['INPUT', 'TEXTAREA'].indexOf(this.tagName.toUpperCase()) >= 0) {
+		&& ['INPUT', 'TEXTAREA'].indexOf(this.tagName.toUpperCase()) < 0
+		&& !this.hasClass('Q_selectable')) {
 			this.preventSelections(deep);
 		}
 	});
@@ -792,6 +793,7 @@ Q.typeOf = function _Q_typeOf(value) {
  * @param {Object} options Can include the following: <br>
  *  ascending: Optional. Pass true here to traverse in ascending key order, false in descending.<br><br>
  *  numeric: Optional. Used together with ascending. Use numeric sort instead of string sort.<br>
+ *  sort: Optional. Pass a compare Function here to be used when sorting object keys before traversal. Also can pass a String naming the property on which to sort.
  *  hasOwnProperty: Optional. Set to true to skip properties found on the prototype chain.<br>
  * @throws {Q.Error} If container is not array, object or string
  */
@@ -831,7 +833,7 @@ Q.each = function _Q_each(container, callback, options) {
 			break;
 		case 'object':
 			if (!container || !callback) return;
-			if (options && ('ascending' in options)) {
+			if (options && ('ascending' in options || 'sort' in options)) {
 				var keys = [], key;
 				for (k in container) {
 					if (options.hasOwnProperty && !Q.has(container, k)) {
@@ -841,9 +843,22 @@ Q.each = function _Q_each(container, callback, options) {
 						keys.push(options.numeric ? Number(k) : k);
 					}
 				}
-				keys = options.numeric ? keys.sort(function (a,b) {
-					return Number(a)-Number(b);
-				}) : keys.sort();
+				var s = options.sort;
+				var t = typeof(s);
+				var _byKeys = undefined;
+				function _byFields(a, b) { 
+					return container[a][s] > container[b][s];
+				}
+				function _byKeysNumeric(a, b) { 
+					return Number(a) - Number(b); 
+				}
+				function _byFieldsNumeric(a, b) { 
+					return Number(container[a][s]) - Number(container[b][s]); 
+				}
+				var compare = (t === 'function') ? s : (t === 'string'
+					? (options.numeric ? _byFieldsNumeric : _byFields)
+					: (options.numeric ? _byKeysNumeric : _byKeys));
+				keys.sort(compare);
 				if (options.ascending === false) {
 					for (i=keys.length-1; i>=0; --i) {
 						key = keys[i];
@@ -6007,7 +6022,10 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 	|| (window.jQuery && (elem instanceof jQuery))) {
 
 		Q.each(elem, function _Q_find_array(i) {
-			if (false === Q.find(this, filter, callbackBefore, callbackAfter, options, shared, parent, i)) {
+			if (false === Q.find(
+				this, filter, callbackBefore, callbackAfter, 
+				options, shared, parent, i
+			)) {
 				return false;
 			}
 		});
@@ -6081,8 +6099,13 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
  *  If this is empty, then Q.activate exits early
  * @param {Object} options
  *  Optional options to provide to tools and their children.
- * @param {Function} callback
- *  Optional callback to call after the activation was complete
+ * @param {Function|Q.Event} callback
+ *  This will get called when the content has been completely activated.
+ *  That is, after all the files, if any, have been loaded and all the
+ *  constructors have run.
+ *  It receives (elem, options, tools) as arguments, and the last tool to be
+ *  activated as "this".
+ *  @optional
  */
 Q.activate = function _Q_activate(elem, options, callback) {
 	
@@ -6101,6 +6124,8 @@ Q.activate = function _Q_activate(elem, options, callback) {
 	Q.beforeActivate.handle.call(window, elem); // things to do before things are activated
 	
 	var shared = {
+		tool: null,
+		tools: {},
 		waitingForTools: [],
 		pipe: Q.pipe()
 	};
@@ -6116,8 +6141,10 @@ Q.activate = function _Q_activate(elem, options, callback) {
 	
 	function _activated() {
 		Q.trigger('Q.onLayout', elem, []);
-		if (callback) callback(elem, options);
-		Q.onActivate.handle(elem, options);
+		if (callback) {
+			Q.handle(callback, shared.tool, [elem, options, shared.tools]);
+		}
+		Q.handle(Q.onActivate, shared.tool, [elem, options, shared.tools]);
 	}
 };
 
@@ -6913,8 +6940,9 @@ function _activateTools(toolElement, options, shared) {
 		if (!toolFunc.toolConstructor) {
 			toolFunc.toolConstructor = function Q_Tool(element, options) {
 				// support re-entrancy of Q.activate
-				if (this.activated
-				|| Q.getObject(['Q', 'tools', toolName], element)) {
+				var tool = Q.getObject(['Q', 'tools', toolName], element);
+				if (this.activated || tool) {
+					tool = tool || this;
 					return _activateTools.alreadyActivated;
 				}
 				this.activated = false;
@@ -6956,6 +6984,8 @@ function _activateTools(toolElement, options, shared) {
 		}
 		function _reallyConstruct() {
 			var result = new toolFunc.toolConstructor(toolElement, options);
+			var tool = Q.getObject(['Q', 'tools', toolName], toolElement);
+			shared.tools[tool.id] = shared.tool = tool;
 			
 			if (result !== _activateTools.alreadyActivated) {
 				// recursively activate whatever was inside,
@@ -7837,6 +7867,14 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	 * Calls Q.activate on all the elements in the jQuery
 	 * @static
 	 * @method activate
+	 * @param {Object} options
+	 *  Optional options to provide to tools and their children.
+	 * @param {Function|Q.Event} callback
+	 *  This will get called when the content has been completely activated.
+	 *  That is, after all the files, if any, have been loaded and all the
+	 *  constructors have run.
+	 *  It receives (elem, options, tools) as arguments, and the last tool to be
+	 *  activated as "this".
 	 */
 	$.fn.activate = function _jQuery_fn_activate(options, callback) {
 		jQuery(this).each(function _jQuery_fn_activate_each(index, element) {
@@ -8212,7 +8250,35 @@ de.addClass(Q.info.isTouchscreen  ? 'Q_touchscreen' : 'Q_notTouchscreen');
 de.addClass(Q.info.isMobile ? 'Q_mobile' : 'Q_notMobile');
 de.addClass(Q.info.isAndroid() ? 'Q_android' : 'Q_notAndroid');
 
-// universal pointer events
+function _touchScrollingHandler(event) {
+    var p = event.target;
+	var pos;
+	var scrollable = null;
+	do {
+		if (!p.computedStyle) {
+			continue;
+		}
+		var overflow = p.computedStyle().overflow;
+		var hiddenHeight = p.scrollHeight - p.offsetHeight;
+		var s = (['hidden', 'visible'].indexOf(overflow) < 0);
+		if ((s || p.tagName === 'HTML') && hiddenHeight > 0) {
+			if ((Q.Pointer.movement.positions.length == 1)
+			&& (pos = Q.Pointer.movement.positions[0])) {
+				var sy = Q.Pointer.getY(event)
+					+ Q.Pointer.scrollTop();
+				if ((sy > pos.y && p.scrollTop == 0)
+				|| (sy < pos.y && p.scrollTop >= hiddenHeight)) {
+					continue;
+				}
+			}
+			scrollable = p;
+			break;
+		}
+	} while (p = p.parentNode);
+    if (!scrollable) {
+        Q.Pointer.preventDefault(event);
+    }
+}
 
 /**
  * Methods for working with pointer and touchscreen events
@@ -8379,7 +8445,7 @@ Q.Pointer = {
 	 * Returns the x coordinate of an event relative to the document
 	 * @static
 	 * @method getX
-	 * @param {Event} e Some mouse or touch event from the DOM
+	 * @param {Q.Event} e Some mouse or touch event from the DOM
 	 * @return {Number}
 	 */
 	getX: function(e) {
@@ -8396,7 +8462,7 @@ Q.Pointer = {
 	 * Returns the y coordinate of an event relative to the document
 	 * @static
 	 * @method getY
-	 * @param {Event} e Some mouse or touch event from the DOM
+	 * @param {Q.Event} e Some mouse or touch event from the DOM
 	 * @return {Number}
 	 */
 	getY: function(e) {
@@ -8413,7 +8479,7 @@ Q.Pointer = {
 	 * Returns the number of touch points of an event
 	 * @static
 	 * @method touchCount
-	 * @param {Event} e Some mouse or touch event from the DOM
+	 * @param {Q.Event} e Some mouse or touch event from the DOM
 	 * @return {Number}
 	 */
 	touchCount: function (e) {
@@ -8424,7 +8490,7 @@ Q.Pointer = {
 	 * Returns which button was pressed - Q.Pointer.which.{LEFT|MIDDLE|RIGHT}
 	 * @static
 	 * @method which
-	 * @param {Event} e Some mouse or touch event from the DOM
+	 * @param {Q.Event} e Some mouse or touch event from the DOM
 	 * @return {Number}
 	 */
 	which: function (e) {
@@ -8438,7 +8504,7 @@ Q.Pointer = {
 	 * Consistently returns the target of an event across browsers
 	 * @static
 	 * @method target
-	 * @param {Event} e Some mouse or touch event from the DOM
+	 * @param {Q.Event} e Some mouse or touch event from the DOM
 	 * @return {HTMLElement}
 	 */
 	target: function (e) {
@@ -8452,7 +8518,7 @@ Q.Pointer = {
 	 * Consistently returns the related target of an event across browsers
 	 * @static
 	 * @method relatedTarget
-	 * @param {Event} e Some mouse or touch event from the DOM
+	 * @param {Q.Event} e Some mouse or touch event from the DOM
 	 * @return {Number}
 	 */
 	relatedTarget: function (e) {
@@ -8462,7 +8528,7 @@ Q.Pointer = {
 	 * Consistently prevents the default behavior of an event across browsers
 	 * @static
 	 * @method preventDefault
-	 * @param {Event} e Some mouse or touch event from the DOM
+	 * @param {Q.Event} e Some mouse or touch event from the DOM
 	 * @return {Boolean} Whether the preventDefault succeeded
 	 */
 	preventDefault: function (e) {
@@ -8479,7 +8545,7 @@ Q.Pointer = {
 	 * returning false.
 	 * @static
 	 * @method cancelClick
-	 * @param {Event} event Some mouse or touch event from the DOM
+	 * @param {Q.Event} event Some mouse or touch event from the DOM
 	 * @param {Object} extraInfo Extra info to pass to onCancelClick
 	 * @return {Boolean}
 	 */
@@ -8493,7 +8559,7 @@ Q.Pointer = {
 	 * Consistently obtains the element under pageX and pageY relative to document
 	 * @static
 	 * @method elementFromPoint
-	 * @param {Event} e Some mouse or touch event from the DOM
+	 * @param {Q.Event} e Some mouse or touch event from the DOM
 	 * @return {Number}
 	 */
 	elementFromPoint: function (pageX, pageY) {
@@ -8507,35 +8573,14 @@ Q.Pointer = {
 	 * @method preventTouchScrolling
 	 */
 	preventTouchScrolling: function () {
-		Q.addEventListener(window, 'touchmove', function (event) {
-		    var isTouchMoveAllowed = false;
-		    var p = event.target;
-			var pos;
-			var scrollable = null;
-			do {
-				if (p.computedStyle) {
-					var overflow = p.computedStyle().overflow;
-					var hiddenHeight = p.scrollHeight - p.offsetHeight;
-					var s = (['hidden', 'visible'].indexOf(overflow) < 0);
-					if ((s || p.tagName === 'HTML') && hiddenHeight > 0) {
-						if ((Q.Pointer.movement.positions.length == 1)
-						&& (pos = Q.Pointer.movement.positions[0])) {
-							var sy = Q.Pointer.getY(event)
-								+ Q.Pointer.scrollTop();
-							if ((sy > pos.y && p.scrollTop == 0)
-							|| (sy < pos.y && p.scrollTop >= hiddenHeight)) {
-								continue;
-							}
-						}
-						scrollable = p;
-						break;
-					}
-				}
-			} while (p = p.parentNode)
-		    if (!scrollable) {
-		        Q.Pointer.preventDefault(event);
-		    }
-		});
+		Q.addEventListener(window, 'touchmove', _touchScrollingHandler);
+	},
+	/**
+	 * Can restore touch scrolling after preventTouchScrolling() was called
+	 * @method restoreTouchScrolling
+	 */
+	restoreTouchScrolling: function () {
+		Q.removeEventListener(window, 'touchmove', _touchScrollingHandler);
 	},
 	/**
 	 * This event occurs when a click has been canceled, for one of several possible reasons.
@@ -8565,8 +8610,8 @@ function _Q_PointerStartHandler(e) {
 	Q.addEventListener(window, Q.Pointer.move, _onPointerMoveHandler);
 	Q.addEventListener(window, Q.Pointer.end, _onPointerEndHandler);
 	Q.addEventListener(window, Q.Pointer.cancel, _onPointerEndHandler);
-	var screenX = Q.Pointer.getX(e) + Q.Pointer.scrollLeft();
-	var screenY = Q.Pointer.getY(e) + Q.Pointer.scrollTop();
+	var screenX = Q.Pointer.getX(e) - Q.Pointer.scrollLeft();
+	var screenY = Q.Pointer.getY(e) - Q.Pointer.scrollTop();
 	_pos = { // first movement
 		x: screenX,
 		y: screenY
@@ -8585,8 +8630,8 @@ function _Q_PointerStartHandler(e) {
 var _pointerMoveTimeout = null;
 function _onPointerMoveHandler(evt) { // see http://stackoverflow.com/a/2553717/467460
 	clearTimeout(_pointerMoveTimeout);
-	var screenX = Q.Pointer.getX(evt) + Q.Pointer.scrollLeft();
-	var screenY = Q.Pointer.getY(evt) + Q.Pointer.scrollTop();
+	var screenX = Q.Pointer.getX(evt) - Q.Pointer.scrollLeft();
+	var screenY = Q.Pointer.getY(evt) - Q.Pointer.scrollTop();
 	if (!screenX || !screenY) {
 		return;
 	}

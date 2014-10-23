@@ -34,11 +34,11 @@
  *	   @param {Boolean} [Object_or_String.Object.indicators] Boolean which indicates whether to show scroll indicators
  *	   (apply Q/scrollIndicators plugin).
  *	   @default true
- *	   @param {Event}  [Object_or_String.Object.onRefresh]  Q.Event callback which is called when touchscroll('refresh') is called.
- *	   @param {Event} [Object_or_String.Object.onScrollStart] Q.Event callback which is called when scrolling is just started. Optional.
- *	   @param {Event} [Object_or_String.Object.onScrollMove] Q.Event callback which is called when scrolling is in progress (while finger is moving or when inertial scrolling is applied). Optional.
- *	   @param {Event} [Object_or_String.Object.onScrollEnd] Q.Event callback which is called when scrolling is ended. Optional.
- *	   @param {Event} [Object_or_String.Object.onTouchEnd] Q.Event callback which is called when finger is released but scrolling still may continue
+ *	   @param {Q.Event}  [Object_or_String.Object.onRefresh]  Q.Event callback which is called when touchscroll('refresh') is called.
+ *	   @param {Q.Event} [Object_or_String.Object.onScrollStart] Q.Event callback which is called when scrolling is just started. Optional.
+ *	   @param {Q.Event} [Object_or_String.Object.onScrollMove] Q.Event callback which is called when scrolling is in progress (while finger is moving or when inertial scrolling is applied). Optional.
+ *	   @param {Q.Event} [Object_or_String.Object.onScrollEnd] Q.Event callback which is called when scrolling is ended. Optional.
+ *	   @param {Q.Event} [Object_or_String.Object.onTouchEnd] Q.Event callback which is called when finger is released but scrolling still may continue
  *	   (due to inertial scrolling). Optional.
  *   @param {String} [Object_or_String.String]
  *	 If a string then it's a command and it can have following values:

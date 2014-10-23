@@ -26,17 +26,17 @@
  * @default false
  * @param {Number} [object_or_string.Object.topOffset] topOffset
  * @default 0
- * @param {Event} [object_or_string.Object.onRefresh] onRefresh
+ * @param {Q.Event} [object_or_string.Object.onRefresh] onRefresh
  * @default null
- * @param {Event} [object_or_string.Object.onBeforeScrollStart] onBeforeScrollStart
+ * @param {Q.Event} [object_or_string.Object.onBeforeScrollStart] onBeforeScrollStart
  * @default null
- * @param {Event} [object_or_string.Object.onScrollStart] onScrollStart
+ * @param {Q.Event} [object_or_string.Object.onScrollStart] onScrollStart
  * @default null
- * @param {Event} [object_or_string.Object.onScrollMove] onScrollMove
+ * @param {Q.Event} [object_or_string.Object.onScrollMove] onScrollMove
  * @default null
- * @param {Event} [object_or_string.Object.onScrollEnd] onScrollEnd
+ * @param {Q.Event} [object_or_string.Object.onScrollEnd] onScrollEnd
  * @default null
- * @param {Event} [object_or_string.Object.onTouchEnd] onTouchEnd
+ * @param {Q.Event} [object_or_string.Object.onTouchEnd] onTouchEnd
  * @default null
  * @param {Boolean} [object_or_string.Object.showArrows] showArrows
  * @default true

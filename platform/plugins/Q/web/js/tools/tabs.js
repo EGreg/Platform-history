@@ -16,8 +16,8 @@
  *  @param {String} [options.selectors] Array of (slotName => selector) pairs, where the values are CSS style selectors indicating the element to update with javascript, and can be a parent of the tabs. Set to null to reload the page.
  *  @param {String} [options.slot] The name of the slot to request when changing tabs with javascript.
  *  @param {Function} [options.loader] Name of a function which takes url, slot, callback. It should call the callback and pass it an object with the response info. Can be used to implement caching, etc. instead of the default HTTP request. This function shall be Q.batcher getter
- *  @param {Event} [options.onClick] Event when a tab was clicked, with arguments (name, element). Returning false cancels the tab switching. Optional.
- *  @param {Event} [options.beforeSwitch] Event when tab switching begins. Returning false cancels the switching. Optional.
+ *  @param {Q.Event} [options.onClick] Event when a tab was clicked, with arguments (name, element). Returning false cancels the tab switching. Optional.
+ *  @param {Q.Event} [options.beforeSwitch] Event when tab switching begins. Returning false cancels the switching. Optional.
  *  @param {Function} [options.beforeScripts] Name of the function to execute after tab is loaded but before its javascript is executed. Optional.
  *  @param {Function} [options.onActivate] Name of the function to execute after a tab is activated. Optional.
  * @return Q.Tool

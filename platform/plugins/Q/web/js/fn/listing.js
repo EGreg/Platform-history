@@ -23,7 +23,7 @@
  *   Usually tracking initial event is needed to detect if it's scroll drag event and prevent item selection in this case.
  *		 If true, then initial event won't be tracked and only 'touchend' / 'mouseup' will be considered as
  *		 item selection.
- *   @param {Event} [Object_or_String.Object.eventDelegate] eventDelegate If provided, then touch / mouse events will be handled using this element.
+ *   @param {Q.Event} [Object_or_String.Object.eventDelegate] eventDelegate If provided, then touch / mouse events will be handled using this element.
  *	 @param {String} [Object_or_String.String]
  *	 If a string, then it's a command which may be:
  *		 "remove": Destroys selectable listing functionality.

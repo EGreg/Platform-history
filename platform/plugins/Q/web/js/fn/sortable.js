@@ -51,16 +51,16 @@
  *    @default 300
  *  @param {Boolean} [options.requireDropTarget]
  *  @default true
- *  @param {Event} [options.onLift] This event triggering on elemen vertical dragging
+ *  @param {Q.Event} [options.onLift] This event triggering on elemen vertical dragging
  *  @default Q.Event()
- *  @param {Event} [options.onIndicate] This event triggering before dragging
+ *  @param {Q.Event} [options.onIndicate] This event triggering before dragging
  *  @default Q.Event()
- *  @param {Event} [options.beforeDrop] This event triggering before drop
+ *  @param {Q.Event} [options.beforeDrop] This event triggering before drop
  *  @default Q.Event()
- *  @param {Event} [options.onDrop] This event triggering after drop. Default event handler is in example
+ *  @param {Q.Event} [options.onDrop] This event triggering after drop. Default event handler is in example
  * @param {Boolean} [options.requireDropTarget] Target element for dropping
  * @default true
- * @param {Event} [options.onSuccess] This event triggers after sortable successfully creation
+ * @param {Q.Event} [options.onSuccess] This event triggers after sortable successfully creation
  * @default Q.Event()
  */
 Q.Tool.jQuery('Q/sortable',

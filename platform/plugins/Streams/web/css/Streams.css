@@ -167,6 +167,12 @@
 	text-align: center;
 }
 
+.Streams_participants_tool {
+	padding: 5px;
+	color: black;
+	bottom: 0;
+}
+
 .Streams_participants_tool .Users_avatar_tool {
 	float: left;
 	width: 50px;
@@ -177,7 +183,11 @@
 
 .Streams_participants_tool .Users_avatar_name {
 	display: block;
+	width: 100%;
 	font-size: 10px;
+	text-indent: 0px;
+	text-align: center;
+	position: relative;
 }
 
 .Streams_participant_tool {
@@ -338,7 +348,7 @@
 .Streams_chat_tool .Users_avatar_icon {
 	position: absolute;
 }
-.Streams_chat_tool .Users_avatar_contents {
+.Streams_chat_tool .Users_avatar_name {
 	font-size: 10pt;
 	color: #222;
 	display: block;
@@ -444,7 +454,7 @@
 }
 /* phones */
 @media (min-width: 320px) and (max-width: 580px) {
-	.Users_avatar_contents {
+	.Users_avatar_name {
 		position: absolute;
 		top: 0px;
 	}

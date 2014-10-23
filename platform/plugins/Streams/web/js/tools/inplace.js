@@ -21,8 +21,8 @@
  *   @param {Function} [options.create] Optional. You can pass a function here, which takes the tool as "this"
  *     and a callback as the first parameter, is supposed to create a stream and
  *     call the callback with (err, stream). If omitted, then the tool doesn't render.
- *   @param {Event} [options.onUpdate]
- *   @param {Event} [options.onError]
+ *   @param {Q.Event} [options.onUpdate]
+ *   @param {Q.Event} [options.onError]
  */
 Q.Tool.define("Streams/inplace", function (options) {
 	var tool = this,

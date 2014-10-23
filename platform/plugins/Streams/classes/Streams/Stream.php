@@ -571,12 +571,12 @@ class Streams_Stream extends Base_Streams_Stream
 			if (isset($options['subscribed'])) {
 				$subscribed = empty($options['subscribed']) ? 'no' : 'yes';
 				$participant->subscribed = $subscribed;
-			}	
+			}
+			$type = ($participant->state === 'participating') ? 'visit' : 'join';
 			$participant->state = 'participating';
 			if (!$participant->save()) {
 				return false;
 			}
-			$type = ($participant->state === 'participating') ? 'visit' : 'join';
 			if (empty($options['noVisit']) or $type !== 'visit') {
 				// Send a message to Node
 				Q_Utils::sendToNode(array(
@@ -588,7 +588,7 @@ class Streams_Stream extends Base_Streams_Stream
 				$stream->post($userId, array('type' => "Streams/$type"), true);
 				// Now post Streams/joined message to Streams/participating
 				Streams_Message::post($userId, $userId, 'Streams/participating', array(
-					'type' => "Streams/{$type}d",
+					'type' => "Streams/{$type}ed",
 					'instructions' => Q::json_encode(array(
 						'publisherId' => $stream->publisherId,
 						'streamName' => $stream->name
@@ -1573,16 +1573,15 @@ class Streams_Stream extends Base_Streams_Stream
 			$criteria['state'] = $options['state'];
 		}
 		$q = Streams_Participant::select('*')->where($criteria);
-		$ascending = true;
+		$ascending = false;
 		if (empty($options['limit'])) {
 			$options['limit'] = 1000;
 		}
-		$offset = isset($options['offset']) ? $options['offset'] : -1;
-		if ($offset < 0) {
-			$ascending = false;
-			$offset = 1-$offset;
+		$limit = isset($options['limit']) ? $options['limit'] : null;
+		$offset = isset($options['offset']) ? $options['offset'] : 0;
+		if (isset($limit)) {
+			$q->limit($options['limit'], $offset);
 		}
-		$q->limit($options['limit'], $offset);
 		$q->orderBy('insertedTime', isset($options['ascending']) ? $options['ascending'] : $ascending);
 		return $q->fetchDbRows(null, '', 'userId');
 	}

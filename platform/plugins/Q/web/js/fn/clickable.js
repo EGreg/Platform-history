@@ -53,11 +53,11 @@
  * @default false
  * @param {Boolean} [options.triggers] A jquery selector or jquery of additional elements to trigger the clickable
  * @default null
- * @param {Event} [options.onPress] onPress
+ * @param {Q.Event} [options.onPress] onPress
  * @default new Q.Event()
- * @param {Event} [options.onRelease] onRelease
+ * @param {Q.Event} [options.onRelease] onRelease
  * @default new Q.Event()
- * @param {Event} [options.afterRelease] afterRelease
+ * @param {Q.Event} [options.afterRelease] afterRelease
  * @default new Q.Event()
  * @param {Number} [options.cancelDistance] cancelDistance
  * @default 15
@@ -77,10 +77,7 @@ function _Q_clickable(o) {
 	});
 	state.oldStyle = $this.attr('style');
     if (!o.selectable) {
-		this.onselectstart = function() { return false; }; 
-        this.unselectable = "on";
-		var prop = Q.info.browser.prefix+'user-select';
-		$this.css(prop, 'none');
+		$this[0].preventSelections(true);
 	}
 	var $triggers;
 	if (o.triggers) {
@@ -206,8 +203,9 @@ function _Q_clickable(o) {
 		|| $('.Q_discouragePointerEvents', evt.target).length) {
 			return;
 		}
-		triggers[0].preventSelections();
-		$('body')[0].preventSelections();
+		if (!o.selectable) {
+			triggers[0].preventSelections(true);
+		}
 		zindex = $this.css('z-index');
 		container.css('z-index', 1000000);
 		Q.handle(o.onPress, $this, [evt, triggers]);
@@ -303,8 +301,9 @@ function _Q_clickable(o) {
 				}, o.release.duration);
 			}
 			
-			triggers[0].restoreSelections();
-			$('body')[0].restoreSelections();
+			if (!o.selectable) {
+				triggers[0].restoreSelections(true);
+			}
 			
 			$(window).off([Q.Pointer.end, '.Q_clickable']);
 			$(window).off('release.Q_clickable');
@@ -374,6 +373,7 @@ function _Q_clickable(o) {
 		var container = this.parent().parent();
 		this.attr('style', this.state('Q/clickable').oldStyle || "")
 		.insertAfter(container);
+		this[0].restoreSelections();
 		container.remove();
 	}
 }

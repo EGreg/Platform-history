@@ -11,7 +11,7 @@
  * @constructor
  * @method basic
  * @param {Object} [options] this object contains function parameters
- *   @param {Event} [options.onSuccess]
+ *   @param {Q.Event} [options.onSuccess]
  */
 Q.Tool.define("Streams/basic", function(options) {
 	var me = this;

@@ -31,6 +31,7 @@ function Streams_participants_tool($options)
 	
 	Q_Response::addScript('plugins/Streams/js/Streams.js');
 	Q_Response::addStylesheet('plugins/Streams/css/Streams.css');
+	$options['rendered'] = true;
 	Q_Response::setToolOptions($options);
 	
 	$avatars = '';

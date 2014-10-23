@@ -65,7 +65,6 @@ function Streams_stream_response()
 	}
 	if (!empty($_REQUEST['participants'])) {
 		$limit = $_REQUEST['participants'];
-		$offset = -1;
 		$participants = false;
 		if ($stream->testReadLevel('participants')) {
 			$participants = Db::exportArray($stream->getParticipants(compact('limit', 'offset')));

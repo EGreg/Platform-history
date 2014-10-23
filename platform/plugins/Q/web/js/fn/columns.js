@@ -17,7 +17,7 @@
  * On the mobile it shows only one column at a time and makes segmented control for switching between columns.
  * @method columns
  * @param {Object} [options] options, an object of options
- * @param {Event} [options.onSwitch] onSwitch Optional. Callback or Q.Event to call when user switches to another column. Also Called immediately after initialization (considered as first time switch).
+ * @param {Q.Event} [options.onSwitch] onSwitch Optional. Callback or Q.Event to call when user switches to another column. Also Called immediately after initialization (considered as first time switch).
  * @default new Q.Event(function() {})
  */
 Q.Tool.jQuery('Q/columns',

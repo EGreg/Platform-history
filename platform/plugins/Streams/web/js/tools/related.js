@@ -29,8 +29,8 @@
  *   @param {Object} [options.sortable] Options for "Q/sortable" jQuery plugin. Pass false here to disable sorting interface.
  *   @param {Function} [options.tabs] Function for interacting with any parent "Q/tabs" tool. Format is function (previewTool, tabsTool) { return urlOrTabKey; }
  *   @param {Object} [options.updateOptions] Options for onUpdate such as duration of the animation, etc.
- *   @param {Event} [options.onUpdate] Event that receives parameters "data", "entering", "exiting", "updating"
- *   @param {Event} [options.onRefresh] Event that occurs when the tool is completely refreshed, the "this" is the tool
+ *   @param {Q.Event} [options.onUpdate] Event that receives parameters "data", "entering", "exiting", "updating"
+ *   @param {Q.Event} [options.onRefresh] Event that occurs when the tool is completely refreshed, the "this" is the tool
  */
 Q.Tool.define("Streams/related",
 

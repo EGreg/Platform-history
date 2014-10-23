@@ -35,6 +35,7 @@
  *       @param {Object} [options.templates.contents.fields]
  *         @param {String} [options.templates.contents.fields.tag]
  *         @default "span"
+ *   @param {Q.Event} [options.onRefresh]  An event that occurs when the avatar is refreshed
  */
 Q.Tool.define("Users/avatar", function(options) {
 	var tool = this, state = this.state;
@@ -66,7 +67,8 @@ Q.Tool.define("Users/avatar", function(options) {
 		}
 	},
 	editable: false,
-	imagepicker: {}
+	imagepicker: {},
+	onRefresh: new Q.Event()
 },
 
 {
@@ -127,6 +129,7 @@ Q.Tool.define("Users/avatar", function(options) {
 		});
 	
 		function _present() {
+			Q.handle(state.onRefresh, tool, []);
 			if (!state.editable) return;
 			if (state.editable === true) {
 				state.editable = ['icon', 'name'];
@@ -170,9 +173,7 @@ Q.Tool.define("Users/avatar", function(options) {
 							path: 'plugins/Users/img/icons',
 							subpath: 'user-'+state.userId,
 							onSuccess: {"Users/avatar": function () {
-								stream.refresh(function () {
-									
-								}, {messages: true});
+								stream.refresh(null, {messages: true});
 							}}
 						}, state.imagepicker);
 						$img.plugin('Q/imagepicker', o);
@@ -186,6 +187,6 @@ Q.Tool.define("Users/avatar", function(options) {
 );
 
 Q.Template.set('Users/avatar/icon', '<img src="{{& src}}" alt="{{alt}}" class="Users_avatar_icon">');
-Q.Template.set('Users/avatar/contents', '<{{tag}} class="Users_avatar_contents">{{name}}</{{tag}}>');
+Q.Template.set('Users/avatar/contents', '<{{tag}} class="Users_avatar_name">{{name}}</{{tag}}>');
 
 })(Q, jQuery, window);

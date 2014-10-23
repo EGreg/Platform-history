@@ -31,9 +31,9 @@
  *    @default 'plugins/Q/views'
  *    @param {String} [options.template.name]
  *    @default 'Q/inplace/tool'
- *  @param {Event} [options.onSave] This event triggers after save
+ *  @param {Q.Event} [options.onSave] This event triggers after save
  *  @default Q.Event()
- *  @param {Event} [options.onCancel] This event triggers after canceling
+ *  @param {Q.Event} [options.onCancel] This event triggers after canceling
  *  @default Q.Event()
  */
 Q.Tool.define("Q/inplace", function (options) {

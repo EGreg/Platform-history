@@ -15,7 +15,7 @@
  *   @default "Leave a message for {user}"
  *   @param {String} [options.field_type]
  *   @default "textarea"
- *   @param {Event} [options.submit]
+ *   @param {Q.Event} [options.submit]
  *   @default null
  *   @param {Object} [options.login_options]
  *    @param {String} [options.login_options.activate]

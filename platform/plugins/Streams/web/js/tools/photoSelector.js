@@ -10,13 +10,13 @@
  * @class Streams inplace
  * @constructor
  * @param {Object} [options] this object contains function parameters
- *   @param {Event} [options.onSelect] This callback is called when the user selects a photo.
+ *   @param {Q.Event} [options.onSelect] This callback is called when the user selects a photo.
  *   @required
  *   @param {String} [options.uid] Optional. The uid of the user on the provider whose photos are shown. Defaults to 'me()' which is current logged in user.
  *   @param {String} [options.fetchBy] The tool supports different algoriths for fetching photos
  *   @default 'album'
- *   @param {Event} [options.onLoad] Q.Event, callback or callback string name which is called when bunch of photos has been loaded.
- *   @param {Event} [options.onError] Q.Event, callback or callback string which will be called for each image that is unable to load. Image DOM element will be passed as first argument.
+ *   @param {Q.Event} [options.onLoad] Q.Event, callback or callback string name which is called when bunch of photos has been loaded.
+ *   @param {Q.Event} [options.onError] Q.Event, callback or callback string which will be called for each image that is unable to load. Image DOM element will be passed as first argument.
  *   @param {String} [options.provider]  Has to be "facebook" for now. so currently there are two variants: by 'album' and by 'tags'. Maybe more will be added later.
  *   @default 'facebook'
  *   @param {String} [options.prompt]  Has to be "facebook" for now.

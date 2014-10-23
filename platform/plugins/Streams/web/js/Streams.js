@@ -350,7 +350,7 @@ Q.Tool.define({
 	"Streams/comments"     : "plugins/Streams/js/tools/comments.js",
 	"Streams/photoSelector": "plugins/Streams/js/tools/photoSelector.js",
 	"Streams/userChooser"  : "plugins/Streams/js/tools/userChooser.js",
-	"Streams/participant"  : "plugins/Streams/js/tools/participant.js",
+	"Streams/participants" : "plugins/Streams/js/tools/participants.js",
 	"Streams/publisher"    : "plugins/Streams/js/tools/publisher.js",
 	"Streams/basic"        : "plugins/Streams/js/tools/basic.js",
 	"Streams/access"       : "plugins/Streams/js/tools/access.js",
@@ -1765,7 +1765,7 @@ Stream.join = function _Stream_join (publisherId, streamName, callback) {
 		if (msg) {
 			var args = [err, data];
 			Streams.onError.handle.call(this, msg, args);
-			Streams.join.onError.handle.call(this, msg, args);
+			Stream.join.onError.handle.call(this, msg, args);
 			return callback && callback.call(this, msg, args);
 		}
 		var participant = new Participant(data.slots.participant);
@@ -1808,7 +1808,7 @@ Stream.leave = function _Stream_leave (publisherId, streamName, callback) {
 		if (msg) {
 			var args = [err, data];
 			Streams.onError.handle.call(this, msg, args);
-			Streams.leave.onError.handle.call(this, msg, args);
+			Stream.leave.onError.handle.call(this, msg, args);
 			return callback && callback.call(this, msg, args);
 		}
 		var participant = new Participant(data.slots.participant);
@@ -2391,6 +2391,7 @@ var _messageShouldRefreshStream = {};
  * on the front end. If true for a particular message type, the stream is
  * refreshed (if it was cached before) after all the message handlers have run.
  * You can, of course, implement more complex functionality in message handlers.
+ * @method shouldRefreshStream
  * @param {type} The type of the message
  * @param {Boolean} should Whether the stream should be refreshed. Defaults to false.
  */

@@ -1192,6 +1192,7 @@ Q.event = function _Q_event(name, context, args) {
  * @param {Object} options
  *  ascending: Optional. Pass true here to traverse in ascending key order, false in descending.
  *  numeric: Optional. Used together with ascending. Use numeric sort instead of string sort.
+ *  sort: Optional. Pass a compare Function here to be used when sorting object keys before traversal. Also can pass a String naming the property on which to sort.
  *  hasOwnProperty: Optional. Set to true to skip properties found on the prototype chain.
  * @throws {Q.Exception} If container is not array, object or string
  */
@@ -1223,7 +1224,7 @@ Q.each = function _Q_each(container, callback, options) {
 			break;
 		case 'object':
 			if (!container || !callback) return;
-			if (options && ('ascending' in options)) {
+			if (options && ('ascending' in options || 'sort' in options)) {
 				var keys = [], key;
 				for (k in container) {
 					if (options.hasOwnProperty && !Q.has(container, k)) {
@@ -1233,9 +1234,22 @@ Q.each = function _Q_each(container, callback, options) {
 						keys.push(options.numeric ? Number(k) : k);
 					}
 				}
-				keys = options.numeric ? keys.sort(function (a,b) {
-					return a-b;
-				}) : keys.sort();
+				var s = options.sort;
+				var t = typeof(s);
+				var _byKeys = undefined;
+				function _byFields(a, b) { 
+					return container[a][s] > container[b][s]; 
+				}
+				function _byKeysNumeric(a, b) { 
+					return Number(a) - Number(b); 
+				}
+				function _byFieldsNumeric(a, b) { 
+					return Number(container[a][s]) - Number(container[b][s]); 
+				}
+				var compare = (t === 'function') ? s : (t === 'string'
+					? (options.numeric ? _byFieldsNumeric : _byFields)
+					: (options.numeric ? _byKeysNumeric : _byKeys));
+				keys.sort(compare);
 				if (options.ascending === false) {
 					for (i=keys.length-1; i>=0; --i) {
 						key = keys[i];

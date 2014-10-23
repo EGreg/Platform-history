@@ -14,7 +14,7 @@
  * @param {Array} [options.elements] elements is an array of LI elements to add
  * @param {String} [options.className] className is a CSS class name for additional styling. Optional
  * @default ''
- * @param {Event} [options.defaultHandler] defaultHandler is a  Q.Event, function or
+ * @param {Q.Event} [options.defaultHandler] defaultHandler is a  Q.Event, function or
  *     function name which is called when personal handler for selected item is not defined. Optional
  * @default null
  * @param {Object} [options.size] size is an object with values for override default contextual size.
