@@ -482,7 +482,7 @@
 }
 /* phones */
 @media (min-width: 320px) and (max-width: 580px) {
-	.Users_avatar_name {
+	.Streams_chat_tool .Users_avatar_name {
 		position: absolute;
 		top: 0px;
 	}
