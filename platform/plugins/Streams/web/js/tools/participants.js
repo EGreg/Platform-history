@@ -57,6 +57,8 @@ function(options) {
 		var $summary = $("<div class='Streams_participants_summary' />")
 			.append($('<span />').append($count, $max))
 			.appendTo($te);
+		var $pc = $("<div class='Streams_participants_container' />")
+			.appendTo($te);
 
 		Q.Streams.get(state.publisherId, state.streamName,
 		function (err, stream, extra) {
@@ -70,8 +72,10 @@ function(options) {
 			_refreshCount();
 			var count = 0;
 			Q.each(extra.participants, function (userId, participant) {
-				if (++count > state.maxShow && state.maxShow) {
-					return false;
+				if (state.maxShow) {
+					if (++count > state.maxShow) {
+						return false;
+					}
 				}
 				if (participant.state !== 'left') {
 					prependAvatar(userId);
@@ -79,6 +83,12 @@ function(options) {
 			}, { sort: 'insertedTime' });
 			$te.append($("<div style='clear: both' />"));
 			Q.handle(state.onRefresh, tool, []);
+			
+			setTimeout(function () {
+				var w = $te.width() - $summary.outerWidth(true);
+				var pm = $pc.outerWidth(true) - $pc.width();
+				$pc.width(w - pm);
+			}, 0);
 			
 			if (state.max) {
 				$max.text('/' + state.max);
@@ -111,7 +121,7 @@ function(options) {
 			}));
 			if (false !== Q.handle(state.filter, tool, [$element])) {
 				$elements[userId] = $element;
-				$element.prependTo($te).activate();
+				$element.prependTo($pc).activate();
 			}
 		}
 		
