@@ -66,9 +66,9 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 	 *    If true, returns array of plain object instead of instances
 	 * * "raw": defaults to false.
 	 *    If true, or if the query type is Db.Query.TYPE_RAW, the callback will be passed an object
-	 *    containing `&#123;shardName: [err, results, fields]&#125;` pairs representing the results returned
+ pairs representing the results returned
 	 *    from the mysql query on each shard. Note that the results array will contain raw objects
-	 *    of the form `&#123;fieldName: fieldValue&#125;`, and not objects which have Db.Row mixed in.
+	 *    of the form "{fieldName: fieldValue};", and not objects which have Db.Row mixed in.
 	 * * "queries": Manually specify the queries, to bypass the sharding.
 	 */
 	mq.execute = function(callback, options) {
@@ -260,8 +260,8 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 	/**
 	 * Creates a query to select fields from one or more tables.
 	 * @method SELECT
-	 * @param fields {string|object} The fields as strings, or associative array of `{alias: field}`;
-	 * @param tables {string|object} The tables as strings, or associative array of `{alias: table}`;
+	 * @param fields {string|object} The fields as strings, or associative array of {alias: field};
+	 * @param tables {string|object} The tables as strings, or associative array of {alias: table};
 	 * @param [repeat=false] {boolean} If tables is an array, and select() has
 	 *  already been called with the exact table name and alias
 	 *  as one of the tables in that array, then
@@ -390,7 +390,7 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 	 * @method where
 	 * @param criteria {Db.Expression|object|string} An associative array of expression: value pairs.
 	 *  The values are automatically turned into placeholders to be escaped later.
-	 *  They can also be arrays, in which case they are placed into an expression of the form `key IN ('val1', 'val2')`
+	 *  They can also be arrays, in which case they are placed into an expression of the form "key IN ('val1', 'val2')"
 	 *  Or, this could be a Db.Expression object.
 	 * @return {Db.Query.Mysql} The resulting Db.Query
 	 * @throws {Q.Exception} If WHERE criteria specified incorrectly
@@ -425,12 +425,12 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 	};
 
 	/**
-	 * Adds to the WHERE clause, like this:   `... AND (x OR y OR z)`,
+	 * Adds to the WHERE clause, like this:  " ... AND (x OR y OR z)",
 	 * where x, y and z are the arguments to this function.
 	 * @method andWhere
 	 * @param criteria {Db.Expression|object|string} An associative array of expression: value pairs.
 	 *  The values are automatically turned into placeholders to be escaped later.
-	 *  They can also be arrays, in which case they are placed into an expression of the form `key IN ('val1', 'val2')`
+	 *  They can also be arrays, in which case they are placed into an expression of the form "key IN ('val1', 'val2')"
 	 *  Or, this could be a Db.Expression object.
 	 * @param or_criteria {Db.Expression|object|string} You can have any number of these, including zero.
 	 * @return {Db.Query.Mysql} The resulting Db.Query object
@@ -481,12 +481,12 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 	};
 
 	/**
-	 * Adds to the WHERE clause, like this:   `... OR (x AND y AND z)`,
+	 * Adds to the WHERE clause, like this:  " ... OR (x AND y AND z)",
 	 * where x, y and z are the arguments to this function.
 	 * @method orWhere
 	 * @param criteria {Db.Expression|object|string} An associative array of expression: value pairs.
 	 *  The values are automatically turned into placeholders to be escaped later.
-	 *  They can also be arrays, in which case they are placed into an expression of the form `key IN ('val1', 'val2')`
+	 *  They can also be arrays, in which case they are placed into an expression of the form "key IN ('val1', 'val2')"
 	 *  Or, this could be a Db.Expression object.
 	 * @param and_criteria {Db.Expression|object|string}
 	 * @return {Db.Query.Mysql} The resulting Db.Query object
@@ -699,7 +699,7 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 	 * Adds an ON DUPLICATE KEY UPDATE clause to an INSERT statement.
 	 * Use only with MySQL.
 	 * @method onDuplicateKeyUpdate
-	 * @param updates {object} An associative array of `{column: value}` pairs.
+	 * @param updates {object} An associative array of {column: value} pairs.
 	 *  The values are automatically escaped using PDO placeholders.
 	 * @return {Db.Query.Mysql} The resulting Db.Query object
 	 * @chainable

@@ -41,6 +41,10 @@
 		"nearby": {
 			"miles": [5, 10, 15, 20, 25, 50, 75, 100],
 			"defaultMiles": 20
+		},
+		"geolocation": {
+			"requireLogin": false,
+			"allowClientQueries": false
 		}
 	}
 }

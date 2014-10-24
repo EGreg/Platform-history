@@ -20,6 +20,13 @@ function Places_geolocation_post()
 		'timezone'
 	);
 	$attributes = Q::take($_REQUEST, $fields);
+	if (isset($attributes['latitude'])
+	xor isset($attributes['longitude'])) {
+		throw new Q_Exception(
+			"When specifying latitude,longitude you must specify both",
+			array('latitude', 'longitude')
+		);
+	}
 	if (!empty($attributes['zipcode'])
 	and !isset($attributes['latitude'])) {
 		$z = new Places_Zipcode();
@@ -32,7 +39,7 @@ function Places_geolocation_post()
 			throw new Q_Exception_MissingRow(array(
 				'table' => 'zipcode',
 				'criteria' => $attributes['zipcode']
-			));
+			), 'zipcode');
 		}
 	}
 	$attributes['miles'] = Q::ifset($attributes, 'miles', 
@@ -41,6 +48,19 @@ function Places_geolocation_post()
 			Q_Config::expect('Places', 'nearby', 'defaultMiles')
 		)
 	);
+	if (empty($attributes['zipcode'])
+	and isset($attributes['latitude'])) {
+		$zipcodes = Places_Zipcode::nearby(
+			$attributes['latitude'],
+			$attributes['longitude'],
+			$attributes['miles'],
+			1
+		);
+		$zipcode = $zipcodes ? reset($zipcodes) : null;
+		$attributes['zipcode'] = $zipcode->zipcode;
+		$attributes['placeName'] = $zipcode->placeName;
+		$attributes['state'] = $zipcode->state;
+	}
 	$stream->setAttribute($attributes);
 	$stream->save();
 	$stream->post($user->id, array(

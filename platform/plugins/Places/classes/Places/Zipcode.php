@@ -40,7 +40,7 @@ class Places_Zipcode extends Base_Places_Zipcode
 	
 	
 	/**
-	 * Call this function to calculate and save Places_Nearby rows
+	 * Call this function to find zipcodes near a certain location
 	 * @param {double} $latitude The latitude of the coordinates to search around
 	 * @param {double} $longitude The longitude of the coordinates to search around
 	 * @param {double} $miles The radius, in miles, around the central point of the zipcode
@@ -68,15 +68,20 @@ class Places_Zipcode extends Base_Places_Zipcode
 				'longitude <' => $longitude + $longGrid - 180 * 2,
 			));
 		} else if ($latitude - $longGrid < -180) {
-			$q->andwhere($longitudes, array(
+			$q->andWhere($longitudes, array(
 				'longitude <=' => 180, // should always be the case anyway
 				'longitude >' => $longitude - $longGrid + 180 * 2,
 			));
 		} else {
 			$q->andWhere($longitudes);
 		}
+		$latitude = substr($latitude, 0, 10);
+		$longitude = substr($longitude, 0, 10);
+		$q = $q->orderBy(
+			"POW(latitude - ($latitude), 2) + POW(longitude - ($longitude), 2)"
+		);
 		if ($limit) {
-			$q->limit($limit);
+			$q = $q->limit($limit);
 		}
 		return $q->fetchDbRows();
 	}

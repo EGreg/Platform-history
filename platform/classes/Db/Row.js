@@ -192,14 +192,14 @@ function Row(fields, retrieved /* false */) {
 		/**
 		 * Optional. If defined the method is called before taking actions to save row.
 		 * It can be used synchronously and can ignore callback but must return
-		 * `modifiedFields` object. If used asyncronously shall pass this object
+		 * "modifiedFields" object. If used asyncronously shall pass this object
 		 * to callback
 		 *
 		 * **NOTE:** *if this method is defined but do not return result and do not call callback,
-		 * the `save()` method fails silently without making any changes in the database!!!*
+		 * the save() method fails silently without making any changes in the database!!!*
 		 * @method beforeSave
 		 * @param modifiedFields {object}
-		 * @param [callback=null] {function} This function is called when hook completes. Returns `error` -
+		 * @param [callback=null] {function} This function is called when hook completes. Returns error -
 		 *	error object if any and `modifiedFields` as parameters.
 		 */
 		if (!_split && typeof this.beforeSave === "function") { // skip beforeSave when on _split is defined

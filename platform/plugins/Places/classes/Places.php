@@ -349,7 +349,7 @@ abstract class Places extends Base_Places
 		if ($stream) {
 			return $stream;
 		}
-		$zipcode = reset($zipcodes);
+		$zipcode = $zipcodes ? reset($zipcodes) : null;
 		$stream = new Streams_Stream();
 		$stream->publisherId = $publisherId;
 		$stream->name = $streamName;
@@ -357,6 +357,11 @@ abstract class Places extends Base_Places
 		$stream->title = $zipcode
 			? "Nearby ($latitude, $longitude): {$zipcode->placeName}, zipcode {$zipcode->zipcode}"
 			: "Nearby ($latitude, $longitude)";
+		$stream->setAttribute('latitude', $latitude);
+		$stream->setAttribute('longitude', $longitude);
+		$stream->setAttribute('zipcode', $zipcode->zipcode);
+		$stream->setAttribute('placeName', $zipcode->placeName);
+		$stream->setAttribute('state', $zipcode->state);
 		$stream->save();
 		return $stream;
 	}

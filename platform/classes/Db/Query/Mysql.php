@@ -363,7 +363,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	 * @param {callable} [$callback=null] If not set, this function returns the generated SQL string.
 	 * If it is set, this function calls $callback, passing it the SQL string, and then returns $this, for chainable interface.
 	 * @param {boolean} [$template=false]
-	 * @return {string|Db_Query} Depends on whether `$callback` is set or not.
+	 * @return {string|Db_Query} Depends on whether $callback is set or not.
 	 * @throws {Exception} This function calls self::build()
 	 */
 	function getSQL ($callback = null, $template = false)
@@ -414,7 +414,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	 * @method getClause
 	 * @param {string} $clause_name
 	 * @param {boolean} [$with_after=false]
-	 * @return {mixed} If $with_after is true, returns `array($clause, $after)` otherwise just returns `$clause`
+	 * @return {mixed} If $with_after is true, returns array($clause, $after) otherwise just returns $clause
 	 */
 	function getClause($clause_name, $with_after = false)
 	{
@@ -490,8 +490,8 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	 * @param {boolean} [$prepare_statement=false] If true, a PDO statement will be prepared
 	 * from the query before it is executed. It is also saved for future invocations to use.
 	 * Do this only if the statement will be executed many times with
-	 * different parameters. Basically you would use `->bind(...)` between
-	 * invocations of `->execute()`.
+	 * different parameters. Basically you would use ->bind(...) between
+	 * invocations of ->execute().
 	 * @return {Db_Result} The Db_Result object containing the PDO statement that resulted from the query.
 	 */
 	function execute ($prepare_statement = false)
@@ -751,13 +751,13 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	/**
 	 * Creates a query to select fields from one or more tables.
 	 * @method select
-	 * @param {string|array} $fields The fields as strings, or array of `alias=>field`
-	 * @param {string|array} [$tables=''] The tables as strings, or array of `alias=>field`
+	 * @param {string|array} $fields The fields as strings, or array of alias=>field
+	 * @param {string|array} [$tables=''] The tables as strings, or array of alias=>field
 	 * @param {boolean} [$repeat=false] If $tables is an array, and select() has
 	 * already been called with the exact table name and alias
 	 * as one of the tables in that array, then
 	 * this table is not appended to the tables list if
-	 * `$repeat` is false. Otherwise it is.
+	 * $repeat is false. Otherwise it is.
 	 * This is really just for using in your hooks.
 	 * @return {Db_Query_Mysql} The resulting object implementing iDb_Query.
 	 * You can use it to chain the calls together.
@@ -891,7 +891,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	 * @method where
 	 * @param {Db_Expression|array} $criteria An associative array of expression => value pairs.
 	 * The values are automatically escaped using the database server, or turned into PDO placeholders for prepared statements
-	 * They can also be arrays, in which case they are placed into an expression of the form `key IN ('val1', 'val2')`
+	 * They can also be arrays, in which case they are placed into an expression of the form key IN ('val1', 'val2')
 	 * Or, this could be a Db_Expression object.
 	 * @return {Db_Query_Mysql} The resulting object implementing iDb_Query
 	 * @throws {Exception} If WHERE clause does not belong to context
@@ -932,13 +932,13 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	}
 
 	/**
-	 * Adds to the WHERE clause, like this:   `... AND (x OR y OR z)`,
+	 * Adds to the WHERE clause, like this:   "... AND (x OR y OR z)",
 	 * where x, y and z are the arguments to this function.
 	 * @method andWhere
 	 * @param {Db_Expression|string} $criteria An associative array of expression => value pairs.
 	 * The values are automatically escaped using the database server, or turned into PDO placeholders
 	 * for prepared statements
-	 * They can also be arrays, in which case they are placed into an expression of the form `key IN ('val1', 'val2')`
+	 * They can also be arrays, in which case they are placed into an expression of the form "key IN ('val1', 'val2')"
 	 * Or, this could be a Db_Expression object.
 	 * @param {Db_Expression|string} [$or_criteria=null]
 	 * @return {Db_Query_Mysql} The resulting object implementing iDb_Query
@@ -996,12 +996,12 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	}
 
 	/**
-	 * Adds to the WHERE clause, like this:   `... OR (x AND y AND z)`,
+	 * Adds to the WHERE clause, like this:   "... OR (x AND y AND z)",
 	 * where x, y and z are the arguments to this function.
 	 * @method orWhere
 	 * @param {Db_Expression|string} $criteria An associative array of expression => value pairs.
 	 * The values are automatically escaped using the database server, or turned into PDO placeholders for prepared statements
-	 * They can also be arrays, in which case they are placed into an expression of the form `key IN ('val1', 'val2')`
+	 * They can also be arrays, in which case they are placed into an expression of the form key IN ('val1', 'val2')
 	 * Or, this could be a Db_Expression object.
 	 * @param {Db_Expression|string} [$and_criteria=null]
 	 * @return {Db_Query_Mysql} The resulting object implementing iDb_Query
@@ -1164,10 +1164,8 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 			if (is_array($expression->parameters)) {
 				$this->parameters = array_merge($this->parameters, $expression->parameters);
 			}
-			$expression = (string) $expression;
-		} else {
-			$expression = self::column($expression);
 		}
+		$expression = (string) $expression;
 		if (! is_string($expression))
 			throw new Exception("The ORDER BY expression has to be specified correctly.",-1);
 
@@ -1181,7 +1179,8 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 			}
 		}
 
-		if (empty($this->clauses['ORDER BY']) or $this->clauses['ORDER BY'] == 'NULL') {
+		if (empty($this->clauses['ORDER BY'])
+		or $this->clauses['ORDER BY'] == 'NULL') {
 			$this->clauses['ORDER BY'] = "$expression";
 		} else {
 			$this->clauses['ORDER BY'] .= ", $expression";
@@ -1510,7 +1509,8 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	
 	static function column($column)
 	{
-		$pos = strrpos("$column", '.');
+		$parts = explode(' ', $column);
+		$pos = strrpos($parts[0], '.');
 		if ($pos === false) {
 			return "`$column`";
 		}
