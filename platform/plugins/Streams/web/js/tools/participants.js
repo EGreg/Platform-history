@@ -39,7 +39,8 @@ function(options) {
 },
 
 {
-	max: 4,
+	maxShow: null,
+	max: null,
     filter: function () { },
 	onRefresh: new Q.Event()
 },
@@ -51,6 +52,11 @@ function(options) {
 		var $te = $(tool.element);
 		var $elements = {};
 
+		var $count = $("<span class='Streams_participants_count'></span>");
+		var $max = $("<span class='Streams_participants_max'></span>");
+		var $summary = $("<div class='Streams_participants_summary' />")
+			.append($('<span />').append($count, $max))
+			.appendTo($te);
 
 		Q.Streams.get(state.publisherId, state.streamName,
 		function (err, stream, extra) {
@@ -60,7 +66,13 @@ function(options) {
 			}
 			var stream = tool.stream = this;
 			var keys = Object.keys(extra.participants);
+			state.count = Object.keys(extra.participants).length;
+			_refreshCount();
+			var count = 0;
 			Q.each(extra.participants, function (userId, participant) {
+				if (++count > state.maxShow && state.maxShow) {
+					return false;
+				}
 				if (participant.state !== 'left') {
 					prependAvatar(userId);
 				}
@@ -68,9 +80,15 @@ function(options) {
 			$te.append($("<div style='clear: both' />"));
 			Q.handle(state.onRefresh, tool, []);
 			
+			if (state.max) {
+				$max.text('/' + state.max);
+			}
+			
 			stream.onMessage("Streams/join").set(
 			function (stream, message, messages) {
 				prependAvatar(message.byUserId);
+				++tool.state.count;
+				_refreshCount();
 			}, tool);
 			
 			stream.onMessage("Streams/leave").set(
@@ -79,9 +97,11 @@ function(options) {
 				if ($element) {
 					$element.remove();
 				}
+				--tool.state.count;
+				_refreshCount();
 			}, tool);
 			
-		}, {participants: state.max});
+		}, {participants: 100});
 		
 		function prependAvatar(userId) {
 			var $element = $(Q.Tool.setUpElement('div', 'Users/avatar', {
@@ -93,6 +113,13 @@ function(options) {
 				$elements[userId] = $element;
 				$element.prependTo($te).activate();
 			}
+		}
+		
+		function _refreshCount() {
+			var c = state.count;
+			tool.stateChanged('count');
+			$count.text(c >= 100 ? '99+' : c.toString());
+			$summary.plugin('Q/textfill', 'refresh');
 		}
 	}
 }

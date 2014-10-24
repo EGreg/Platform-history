@@ -30,14 +30,14 @@ Q.Tool.jQuery('Q/textfill',
         refresh: function (options) {
 			var o = Q.extend({}, this.state('Q/textfill'), options);
             var ourElement, ourText = "";
-            $('*:visible', this).each(function () {
+            this.children(':visible').each(function () {
                 var $t = $(this);
-                if (!$t.children().length && $t.text().length > ourText.length) {
+                if ($t.text().length > ourText.length) {
                     ourElement = $t;
                     ourText = $t.text();
                 }
             });
-			if (!ourElement) throw new Q.Error("Q/textfill missing a visible element");
+			if (!ourElement) throw new Q.Error("Q/textfill missing a visible element inside the container");
             var fontSize = o.maxFontPixels || (ourElement.height() + 10);
             var maxHeight = $(this).innerHeight();
             var maxWidth = $(this).innerWidth();
