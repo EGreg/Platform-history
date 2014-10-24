@@ -22,10 +22,10 @@
  *  @param {String}  [options.column] You can put a default content for all columns here (which is shown as they are loading)
  *  @param {Object}  [options.scrollbarsAutoHide] If not null, enables Q/scrollbarsAutoHide functionality with options from here. Enabled by default.
  *  @param {Boolean} [options.fullscreen] Whether to use fullscreen mode on mobile phones, using document to scroll instead of relying on possibly buggy "overflow" CSS implementation. Defaults to true on Android, false everywhere else.
- *  @param {Q.Event} [options.onOpen] Event that happens after a column is opened.
+ *  @param {Q.Event} [options.beforeOpen] Event that happens before a column is opened. Return false to prevent opening.
  *  @param {Q.Event} [options.beforeClose] Event that happens before a column is closed. Return false to prevent closing.
  *  @param {Q.Event} [options.onOpen] Event that happens after a column is opened.
- *  @param {Q.Event} [options.beforeClose] Event that happens before a column is closed. Return false to prevent closing.
+ *  @param {Q.Event} [options.onClose] Event that happens after a column is closed.
  * @return Q.Tool
  */
 Q.Tool.define("Q/columns", function(options) {

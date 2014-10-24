@@ -16,6 +16,21 @@ var Places = Q.Places = Q.plugins.Places = {
 			Places.loadGoogleMaps.waitingCallbacks.push(callback);
 			Q.addScript(Places.loadGoogleMaps.src);
 		}
+	},
+	
+	getUserLocationStream: function (callback) {
+		var userId = Q.Users.loggedInUser.id;
+		if (!userId) {
+			var err = new Q.Error("Places.userLocationStream: not logged in");
+			return callback(err);
+		}
+		Q.Streams.get(userId, "Places/user/location", function (err) {
+			var msg = Q.firstErrorMessage(err);
+			if (msg) {
+				return callback(err);
+			}
+			callback.call(this, err, this);
+		});
 	}
 
 };
