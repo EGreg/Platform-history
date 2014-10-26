@@ -92,7 +92,7 @@ function _Streams_participants(options) {
 				if (!state.maxShow || ++i <= state.maxShow) {
 					prependAvatar(userId);
 				}
-			}, { sort: 'insertedTime' });
+			}, { sort: 'insertedTime', ascending: false });
 			state.count = c;
 			tool.stateChanged('count');
 			Q.handle(state.onRefresh, tool, []);
