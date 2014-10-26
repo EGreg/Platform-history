@@ -3375,7 +3375,7 @@ Tp.stateChanged = function Q_Tool_prototype_stateChanged(names) {
 		var name = names[i];
 		this.Q.onStateChanged(name).handle.call(this, name);
 	}
-	this.Q.onStateChanged('').handle(this, names);
+	this.Q.onStateChanged('').handle(this, [names]);
 };
 
 /**

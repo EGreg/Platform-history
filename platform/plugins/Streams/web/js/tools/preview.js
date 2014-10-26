@@ -32,7 +32,7 @@
  *   @param {Q.Event} [options.onRefresh]  An event that occurs when the icon is refreshed
  *   @param {Q.Event} [options.onRemove] An event that occurs when the icon is removed via the 'remove' action
  */
-Q.Tool.define("Streams/preview", function(options) {
+Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 	
 	var tool = this, state = tool.state;
 	if (!state.publisherId) {

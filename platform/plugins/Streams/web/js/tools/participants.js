@@ -27,7 +27,7 @@
  */
 Q.Tool.define("Streams/participants",
 
-function(options) {
+function _Streams_participants(options) {
 	
 	var tool = this;
 	var state = tool.state;
@@ -35,6 +35,12 @@ function(options) {
 	if (!state.rendered) {
 		tool.refresh();
 	}
+	
+	tool.Q.onStateChanged('count').set(function (name) {
+		var c = state.count;
+		tool.$count.text(c >= 100 ? '99+' : c.toString());
+		tool.$summary.plugin('Q/textfill', 'refresh');
+	}, tool);
 	
 },
 
@@ -52,12 +58,12 @@ function(options) {
 		var $te = $(tool.element);
 		var $elements = {};
 
-		var $count = $("<span class='Streams_participants_count'></span>");
-		var $max = $("<span class='Streams_participants_max'></span>");
-		var $summary = $("<div class='Streams_participants_summary' />")
-			.append($('<span />').append($count, $max))
+		tool.$count = $("<span class='Streams_participants_count'></span>");
+		tool.$max = $("<span class='Streams_participants_max'></span>");
+		tool.$summary = $("<div class='Streams_participants_summary' />")
+			.append($('<span />').append(tool.$count, tool.$max))
 			.appendTo($te);
-		var $pc = $("<div class='Streams_participants_container' />")
+		tool.$pc = $("<div class='Streams_participants_container' />")
 			.appendTo($te);
 
 		Q.Streams.get(state.publisherId, state.streamName,
@@ -85,13 +91,13 @@ function(options) {
 			Q.handle(state.onRefresh, tool, []);
 			
 			setTimeout(function () {
-				var w = $te.width() - $summary.outerWidth(true);
-				var pm = $pc.outerWidth(true) - $pc.width();
-				$pc.width(w - pm);
+				var w = $te.width() - tool.$summary.outerWidth(true);
+				var pm = tool.$pc.outerWidth(true) - tool.$pc.width();
+				tool.$pc.width(w - pm);
 			}, 0);
 			
 			if (state.max) {
-				$max.text('/' + state.max);
+				tool.$max.text('/' + state.max);
 			}
 			
 			stream.retain(tool).onMessage("Streams/join").set(
@@ -121,15 +127,12 @@ function(options) {
 			}));
 			if (false !== Q.handle(state.filter, tool, [$element])) {
 				$elements[userId] = $element;
-				$element.prependTo($pc).activate();
+				$element.prependTo(tool.$pc).activate();
 			}
 		}
 		
 		function _refreshCount() {
-			var c = state.count;
 			tool.stateChanged('count');
-			$count.text(c >= 100 ? '99+' : c.toString());
-			$summary.plugin('Q/textfill', 'refresh');
 		}
 	}
 }
