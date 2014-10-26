@@ -6233,6 +6233,7 @@ Q.replace = function _Q_replace(container, source, options) {
 	return container;
 };
 
+var _latestLoadUrlObject;
 
 /**
  * 
@@ -6311,9 +6312,13 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 	if (o.onActivate) {
 		onActivate = o.onActivate;
 	}
+	var _loadUrlObject = _latestLoadUrlObject = {};
 	loader(url, slotNames, loadResponse, o);
 
 	function loadResponse(err, response, redirected) {
+		if (_loadUrlObject != _latestLoadUrlObject) {
+			return; // a newer request was sent
+		}
 		if (err) {
 			return Q.handle(onError, this, [Q.firstErrorMessage(err)]);
 		}
