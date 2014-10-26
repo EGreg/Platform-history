@@ -946,6 +946,9 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 	var notRetained = !_retainedByStream[Streams.key(publisherId, streamName)];
 	if (!Q.isOnline()
 	|| (notRetained && !(options && options.evenIfNotRetained))) {
+		Streams.get.cache.each([publisherId, streamName], function (k, v) {
+			Streams.get.cache.remove(k);
+		});
 		callback && callback(null, null);
 		return false;
 	}
