@@ -2718,6 +2718,18 @@ Streams.setupRegisterForm = function _Streams_setupRegisterForm(identifier, json
 	return register_form;
 };
 
+function updateAvatarCache(stream) {
+	var avatarFields = {
+		'Streams/user/firstName': true,
+		'Streams/user/lastName': true,
+		'Streams/user/username': true,
+		'Streams/user/icon': true
+	};
+	if (avatarFields[stream.fields.name]) {
+		Avatar.get.cache.remove([stream.fields.publisherId]);
+	}
+}
+
 function updateStream(stream, fields, onlyChangedFields) {
 	if (!stream || !fields) {
 		return false;
@@ -2799,6 +2811,7 @@ function updateStream(stream, fields, onlyChangedFields) {
 	}
 	// Now time to replace the fields in the stream with the incoming fields
 	Q.extend(stream.fields, fields);
+	updateAvatarCache(stream);
 	prepareStream(stream);
 }
 
@@ -3045,6 +3058,7 @@ Q.onInit.add(function _Streams_onInit() {
 		Streams.get.cache.each([msg.publisherId, msg.streamName], 
 		function (k, v) {
 			Streams.get.cache.remove(k);
+			updateAvatarCache(v.subject);
 		});
 	}, 'Streams');
 
@@ -3229,7 +3243,8 @@ Q.onInit.add(function _Streams_onInit() {
 				}
 
 				function updateMessageCache() {
-					Streams.get.cache.each([msg.publisherId, msg.streamName], function (k, v) {
+					Streams.get.cache.each([msg.publisherId, msg.streamName],
+					function (k, v) {
 						var stream = (v && !v.params[0]) ? v.subject : null;
 						if (!stream) {
 							return;
@@ -3237,9 +3252,11 @@ Q.onInit.add(function _Streams_onInit() {
 						var args = JSON.parse(k), extra = args[2];
 						if (extra && extra.messages) {
 							Streams.get.cache.remove(k);
+							updateAvatarCache(v.subject);
 						}
 					});
-					Message.get.cache.each([msg.publisherId, msg.streamName], function (k, v) {
+					Message.get.cache.each([msg.publisherId, msg.streamName],
+					function (k, v) {
 						var args = JSON.parse(k), ordinal = args[2];
 						if (ordinal && ordinal.max && ordinal.max < 0) {
 							Message.get.cache.remove(k); 
@@ -3248,7 +3265,8 @@ Q.onInit.add(function _Streams_onInit() {
 				}
 
 				function updateParticipantCache(incrementCount) {
-					Streams.get.cache.each([msg.publisherId, msg.streamName], function (k, v) {
+					Streams.get.cache.each([msg.publisherId, msg.streamName],
+					function (k, v) {
 						var stream = (v && !v.params[0]) ? v.subject : null;
 						if (!stream) {
 							return;
@@ -3259,9 +3277,11 @@ Q.onInit.add(function _Streams_onInit() {
 						var args = JSON.parse(k), extra = args[2];
 						if (extra && extra.participants) {
 							Streams.get.cache.remove(k);
+							updateAvatarCache(v.subject);
 						}
 					});
-					Participant.get.cache.each([msg.publisherId, msg.streamName], function (k, v) {
+					Participant.get.cache.each([msg.publisherId, msg.streamName],
+					function (k, v) {
 						if (extra && extra.offset < 0) {
 							Participant.get.cache.remove(k); // later, we can refactor this to insert the correct data into the cache
 						}
