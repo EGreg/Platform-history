@@ -1553,23 +1553,21 @@ Q.extend = function _Q_extend(target /* [[deep,] [levels,] anotherObject], ... *
 		return {};
 	}
 	target = target || {};
-	var deep = false, levels = 0;
+	var deep = false, levels = 0, arg;
 	for (var i=1; i<length; ++i) {
-		if (!arguments[i]) {
+		arg = arguments[i];
+		if (!arg) {
 			continue;
 		}
-		if (arguments[i] === true) {
+		if (arg === true) {
 			deep = true;
 			continue;
 		}
-		if (arguments[i] === false) {
-			continue;
-		}
-		if (typeof(arguments[i]) === 'number' && arguments[i]) {
-			levels = arguments[i];
+		if (typeof(arg) === 'number' && arg) {
+			levels = arg;
 			continue;
 		}		
-		var arg = arguments[i];
+		var arg = arg;
 		if (Q.typeOf(target) === 'array' && Q.typeOf(arg) === 'array') {
 			target = target.concat(arg);
 		} else {
@@ -1591,6 +1589,9 @@ Q.extend = function _Q_extend(target /* [[deep,] [levels,] anotherObject], ... *
 						: Q.extend(target[k], deep, levels-1, argk);
 				} else {
 					target[k] = Q.copy(argk);
+				}
+				if (target[k] === undefined) {
+					delete target[k];
 				}
 			}
 		}

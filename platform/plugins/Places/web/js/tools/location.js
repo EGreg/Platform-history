@@ -62,7 +62,7 @@ Q.Tool.define("Places/location", function (options) {
 			pipe.fill('show')();
 		}, state.map.delay);
 		
-		if (Q.getter.usingCached) {
+		if (stream && Q.getter.usingCached) {
 			stream.refresh();
 		}
 	});

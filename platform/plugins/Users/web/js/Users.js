@@ -942,10 +942,12 @@ function login_callback(response) {
 		}
 		var first_input = $('input:not([type=hidden])', $this)
 			.add('button', $this).eq(0);
+		var h = $('#Users_login_identifier').outerHeight()-5;
 		$('input', $this).css({
-			'background-image': 'url(' + Q.url('plugins/Q/img/throbbers/loading.gif') + ')',
+			'background-image': 'url(' + Q.info.imgLoading + ')',
 			'background-repeat': 'no-repeat',
-			'background-size': 'auto ' + first_input.height()+'px'
+			'background-size': 'auto ' + first_input.height()+'px',
+			'background-position': 'right center',
 		});
 		if (window.CryptoJS) {
 			var p = $('#Users_form_passphrase');
@@ -1298,9 +1300,12 @@ function login_setupDialog(usingProviders, perms, dialogContainer, identifierTyp
 			return;
 		}
 		$('.Q_button', $(this)).focus();
+		var h = $('#Users_login_identifier').outerHeight()-5;
 		$('#Users_login_identifier').css({
-			'background-image': 'url(' + Q.url('plugins/Q/img/throbbers/loading.gif') + ')',
-			'background-repeat': 'no-repeat'
+			'background-image': 'url(' + Q.info.imgLoading + ')',
+			'background-repeat': 'no-repeat',
+			'background-position': 'right center',
+			'background-size': 'auto ' + h + 'px'
 		}).trigger('Q_refresh');
 		var url = Q.action(Users.login.options.userQueryUri) + '?' + $(this).serialize();
 		$.ajax({
@@ -1501,9 +1506,12 @@ function setIdentifier_setupDialog(identifierType, options) {
 			)
 		)
 	).submit(function(event) {
+		var h = $('#Users_setIdentifier_identifier').outerHeight()-5;;
 		$('#Users_setIdentifier_identifier').css({
-			'background-image': 'url(' + Q.url('plugins/Q/img/throbbers/loading.gif') + ')',
-			'background-repeat': 'no-repeat'
+			'background-image': 'url(' + Q.info.imgLoading + ')',
+			'background-repeat': 'no-repeat',
+			'background-position': 'right center',
+			'background-size': 'auto ' + h + 'px'
 		});
 		var url = Q.action('Users/identifier') + '?' + $(this).serialize();
 		Q.request(url, 'data', setIdentifier_callback, {"method": "post"});
@@ -1701,7 +1709,7 @@ Q.onInit.add(function () {
 			Q.handle( options.welcomeUrl 
 				|| urls[Q.info.app+'/welcome'] 
 				|| Q.url(''));
-		}, 'Users.logout')
+		}, 'Users')
 	}, Q.Users.logout.options, Q.Users.logout.serverOptions);
 
 	Q.Users.setIdentifier.options = Q.extend({

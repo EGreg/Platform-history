@@ -1216,9 +1216,6 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 			deep = true;
 			continue;
 		}
-		if (arg === false) {
-			continue;
-		}
 		if (typeof arg === 'number' && arg) {
 			levels = arg;
 			continue;
@@ -1262,6 +1259,9 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 					target[k] = (ttk === 'array' && ('replace' in argk))
 						? Q.copy(argk.replace)
 						: Q.extend(target[k], deep, levels-1, argk);
+				}
+				if (target[k] === undefined) {
+					delete target[k];
 				}
 			}
 		}
@@ -4412,6 +4412,9 @@ Q.page = function _Q_page(page, handler, key) {
  */
 Q.init = function _Q_init(options) {
 
+	Q.info.imgLoading = Q.info.imgLoading ||
+		Q.url('plugins/Q/img/throbbers/loading.gif');
+
 	Q.handle(Q.beforeInit);
 	Q.handle(Q.onInit); // Call all the onInit handlers
 
@@ -4980,7 +4983,7 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 	}
 	var slotNames2 = (typeof slotNames === 'string')
 		? slotNames 
-		: (slotNames && slotNames.join(','));
+		: Q.extend([], slotNames).join(',');
 	var idPrefixes = options
 		? ((typeof options.idPrefixes === 'string')
 			? options.idPrefixes 
@@ -6835,7 +6838,8 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 Q.handle.options = {
 	loadUsingAjax: false,
 	externalLoader: null,
-	dontReload: false
+	dontReload: false,
+	slotNames: []
 };
 Q.handle.onUrl = new Q.Event(function () {
 	var elements = document.getElementsByClassName('Q_error_message');
@@ -7884,7 +7888,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	$.fn.activate = function _jQuery_fn_activate(options, callback) {
 		jQuery(this).each(function _jQuery_fn_activate_each(index, element) {
 			if (!jQuery(element).closest('html').length) {
-				throw new Q.Error("jQuery.fn.activate: element to activate must be in the DOM");
+				console.warn(new Q.Error("jQuery.fn.activate: element to activate must be in the DOM"));
 			}
 			Q.activate(element, options, callback);
 		});
@@ -9371,6 +9375,7 @@ Q.loadUrl.options = {
 	onLoadStart: new Q.Event(Q.loadUrl.saveScroll, 'Q'),
 	onLoadEnd: new Q.Event(),
 	onActivate: new Q.Event(),
+	slotNames: [],
 	slotContainer: function (slotName) {
 		return document.getElementById(slotName+"_slot");
 	},
