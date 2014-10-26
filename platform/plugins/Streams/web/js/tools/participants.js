@@ -41,9 +41,7 @@ function _Streams_participants(options) {
 		tool.$summary.plugin('Q/textfill', 'refresh');
 	}, tool);
 	
-	if (!state.rendered) {
-		tool.refresh();
-	}
+	tool.refresh();
 	
 },
 
@@ -60,14 +58,21 @@ function _Streams_participants(options) {
 		var state = tool.state;
 		var $te = $(tool.element);
 		var $elements = {};
-
-		tool.$count = $("<span class='Streams_participants_count'></span>");
-		tool.$max = $("<span class='Streams_participants_max'></span>");
-		tool.$summary = $("<div class='Streams_participants_summary' />")
-			.append($('<span />').append(tool.$count, tool.$max))
-			.appendTo($te);
-		tool.$pc = $("<div class='Streams_participants_container' />")
-			.appendTo($te);
+		
+		if (state.rendered) {
+			tool.$count = $('.Streams_participants_count', $te);
+			tool.$max = $('.Streams_participants_max', $te);
+			tool.$summary = $('.Streams_participants_summary', $te);
+			tool.$pc = $('.Streams_participants_container', $te);
+		} else {
+			tool.$count = $("<span class='Streams_participants_count'></span>");
+			tool.$max = $("<span class='Streams_participants_max'></span>");
+			tool.$summary = $("<div class='Streams_participants_summary' />")
+				.append($('<span />').append(tool.$count, tool.$max))
+				.appendTo($te);
+			tool.$pc = $("<div class='Streams_participants_container' />")
+				.appendTo($te);
+		}
 
 		Q.Streams.get(state.publisherId, state.streamName,
 		function (err, stream, extra) {
@@ -77,20 +82,18 @@ function _Streams_participants(options) {
 			}
 			var stream = tool.stream = this;
 			var keys = Object.keys(extra.participants);
-			state.count = Object.keys(extra.participants).length;
-			tool.stateChanged('count');
-			var count = 0;
+			var i = 0, c = 0;
+			tool.$pc.empty();
 			Q.each(extra.participants, function (userId, participant) {
-				if (state.maxShow) {
-					if (++count > state.maxShow) {
-						return false;
-					}
+				if (participant.state === 'participating') {
+					++c;
 				}
-				if (participant.state !== 'left') {
+				if (!state.maxShow || ++i <= state.maxShow) {
 					prependAvatar(userId);
 				}
 			}, { sort: 'insertedTime' });
-			$te.append($("<div style='clear: both' />"));
+			state.count = c;
+			tool.stateChanged('count');
 			Q.handle(state.onRefresh, tool, []);
 			
 			setTimeout(function () {
@@ -103,15 +106,16 @@ function _Streams_participants(options) {
 				tool.$max.text('/' + state.max);
 			}
 			
-			stream.retain(tool).onMessage("Streams/join").set(
-			function (stream, message, messages) {
+			stream.retain(tool);
+			stream.onMessage("Streams/join")
+			.set(function (stream, message, messages) {
 				prependAvatar(message.byUserId);
 				++tool.state.count;
 				tool.stateChanged('count');
 			}, tool);
-			
-			stream.retain(tool).onMessage("Streams/leave").set(
-			function (stream, message, messages) {
+	
+			stream.onMessage("Streams/leave")
+			.set(function (stream, message, messages) {
 				var $element = $elements[message.byUserId];
 				if ($element) {
 					$element.remove();

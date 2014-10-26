@@ -29,39 +29,51 @@ function Streams_participants_tool($options)
 	if (!isset($streamName)) {
 		$streamName = Streams::requestedName(true);
 	}
-	
 	$max = Q_Config::get(
 		'Streams', 'participants', 'max', 
 		Q::ifset($options, 'max', 10)
 	);
-	$participants = Streams_Participant::select('*')
-		->where(compact('publisherId', 'streamName'))
-		->limit($max)
-		->fetchDbRows();
+	
+	$stream = Streams::fetchOne($userId, $publisherId, $streamName);
+	if (empty($stream)) {
+		throw new Q_Exception_MissingRow(array(
+			'table' => 'Stream', 
+			'criteria' => "{publisherId: '$publisherId', name: '$streamName'}"
+		));
+	}
+	if (!$stream->testReadLevel('participants')) {
+		throw new Users_Exception_NotAuthorized();
+	}
+	$participants = $stream->getParticipants(compact('limit', 'offset', 'state'));
 	
 	Q_Response::addScript('plugins/Streams/js/Streams.js');
 	Q_Response::addStylesheet('plugins/Streams/css/Streams.css');
 	$options['rendered'] = true;
 	Q_Response::setToolOptions($options);
+	$stream->addPreloaded();
 	
 	$avatars = '';
+	$c = 0;
 	if ($participants) {
 		$i = 0;
 		foreach ($participants as $p) {
-			$avatars .= Q::tool("Users/avatar", array(
-				'userId' => $p->userId,
-				'icon' => true,
-				'short' => true
-			), $p->userId);
-			if (++$i == $options['maxShow']) {
-				break;
+			if ($p->state === 'participating') {
+				++$c;
+			}
+			if (empty($options['maxShow'])
+			or ++$i <= $options['maxShow']) {
+				$avatars .= Q::tool("Users/avatar", array(
+					'userId' => $p->userId,
+					'icon' => true,
+					'short' => true
+				), $p->userId);
 			}
 		}
 	}
-	$c = count($participants);
+	$container = "<div class='Streams_participants_container'>$avatars</div>";
 	$count = "<span class='Streams_participants_count'>$c</span>";
 	$m = isset($options['max']) ? '/'.$options['max'] : '';
 	$max = "<span class='Streams_participants_max'>$m</span>";
-	$summary = "<div class='Streams_participants_summary'>$count$max</div>";
-	return $avatars.$summary;
+	$summary = "<div class='Streams_participants_summary'><span>$count$max</span></div>";
+	return $summary.$container;
 }
