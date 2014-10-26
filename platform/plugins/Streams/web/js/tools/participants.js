@@ -94,14 +94,14 @@ function(options) {
 				$max.text('/' + state.max);
 			}
 			
-			stream.onMessage("Streams/join").set(
+			stream.retain(tool).onMessage("Streams/join").set(
 			function (stream, message, messages) {
 				prependAvatar(message.byUserId);
 				++tool.state.count;
 				_refreshCount();
 			}, tool);
 			
-			stream.onMessage("Streams/leave").set(
+			stream.retain(tool).onMessage("Streams/leave").set(
 			function (stream, message, messages) {
 				var $element = $elements[message.byUserId];
 				if ($element) {

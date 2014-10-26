@@ -1774,6 +1774,14 @@ Stream.join = function _Stream_join (publisherId, streamName, callback) {
 			0, participant, [err, participant]
 		);
 		callback && callback.call(participant, err, participant || null);
+		var node = Q.nodeUrl({
+			publisherId: publisherId,
+			streamName: streamName
+		});
+		var socket = Q.Socket.get('Streams', node);
+		if (!socket) {
+			Stream.refresh(publisherId, streamName, null, { messages: true });
+		}
 	}, { method: 'post', fields: fields, baseUrl: baseUrl });
 };
 Stream.join.onError = new Q.Event();
@@ -1812,10 +1820,19 @@ Stream.leave = function _Stream_leave (publisherId, streamName, callback) {
 			return callback && callback.call(this, msg, args);
 		}
 		var participant = new Participant(data.slots.participant);
-		Participant.get.cache.remove(
-			[data.slots.participant.publisherId, data.slots.participant.name, data.slots.participant.userId]
+		Participant.get.cache.set(
+			[participant.publisherId, participant.name, participant.userId],
+			0, participant, [err, participant]
 		);
 		callback && callback.call(this, err, participant || null);
+		var node = Q.nodeUrl({
+			publisherId: publisherId,
+			streamName: streamName
+		});
+		var socket = Q.Socket.get('Streams', node);
+		if (!socket) {
+			Stream.refresh(publisherId, streamName, null, { messages: true });
+		}
 	}, { method: 'post', fields: fields, baseUrl: baseUrl });
 };
 Stream.leave.onError = new Q.Event();
@@ -2405,7 +2422,7 @@ Message.shouldRefreshStream = function (type, should) {
  * @constructor
  * @param {Object} fields
  */
-var Participant = Participant = function Streams_Participant(fields) {
+var Participant = Streams.Participant = function Streams_Participant(fields) {
 	Q.extend(this, fields);
 	this.typename = 'Q.Streams.Participant';
 };
@@ -3161,8 +3178,13 @@ Q.onInit.add(function _Streams_onInit() {
 				var node;
 				var updatedParticipants = true;
 				switch (msg.type) {
-				case 'Streams/joined':
+				case 'Streams/join':
 					updateParticipantCache(1);
+					break;
+				case 'Streams/leave':
+					updateParticipantCache(-1);
+					break;
+				case 'Streams/joined':
 					if (stream.fields.name==="Streams/participating") {
 						node = Q.nodeUrl({
 							publisherId: fields.publisherId,
@@ -3171,11 +3193,10 @@ Q.onInit.add(function _Streams_onInit() {
 						Q.Socket.onConnect(node).add(function (socket) {
 							console.log('Listening to stream '+p.publisherId+", "+p.streamName);
 						}, 'Streams');
-						Q.Socket.connect(node, 'Streams');
+						Q.Socket.connect('Streams', node);
 					}
 					break;
 				case 'Streams/left':
-					updateParticipantCache(-1);
 					if (stream.fields.name==="Streams/participating") {
 						node = Q.nodeUrl({
 							publisherId: fields.publisherId,
@@ -3252,7 +3273,6 @@ Q.onInit.add(function _Streams_onInit() {
 						var args = JSON.parse(k), extra = args[2];
 						if (extra && extra.messages) {
 							Streams.get.cache.remove(k);
-							updateAvatarCache(v.subject);
 						}
 					});
 					Message.get.cache.each([msg.publisherId, msg.streamName],
@@ -3277,14 +3297,13 @@ Q.onInit.add(function _Streams_onInit() {
 						var args = JSON.parse(k), extra = args[2];
 						if (extra && extra.participants) {
 							Streams.get.cache.remove(k);
-							updateAvatarCache(v.subject);
 						}
 					});
 					Participant.get.cache.each([msg.publisherId, msg.streamName],
 					function (k, v) {
-						if (extra && extra.offset < 0) {
-							Participant.get.cache.remove(k); // later, we can refactor this to insert the correct data into the cache
-						}
+						Participant.get.cache.remove(k);
+						// later, we can refactor this to insert
+						// the correct data into the cache
 					});
 				}
 

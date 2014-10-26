@@ -2872,8 +2872,8 @@ Q.throttle = function (original, milliseconds, defaultValue) {
 };
 
 /**
- * Wraps a function and returns a wrapper that queue the function
- * to be called at most once every given milliseconds.
+ * Wraps a function and returns a wrapper that adds the function to a queue
+ * of functions to be called one by one at most once every given milliseconds.
  * 
  * @static
  * @method queue

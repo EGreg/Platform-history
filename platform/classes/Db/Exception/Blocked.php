@@ -7,7 +7,7 @@
 class Db_Exception_Blocked extends Db_Exception
 {
 	/**
-	 * Represents an exception thrown by `Db_Query_Mysql::excecute()` when shard is blocked during split process
+	 * Represents an exception thrown by Db_Query_Mysql::excecute() when shard is blocked during split process
 	 * @class Db_Exception_Blocked
 	 * @constructor
 	 * @extends Db_Exception
