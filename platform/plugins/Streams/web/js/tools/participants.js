@@ -9,20 +9,23 @@
  * Each item in the list is presented with an avatar and also can have a contextual associated with it.
  * @class Streams participants
  * @constructor
- * @param {Object} [options] this object contains function parameters
- *   @param {String} [options.publisherId] Publisher ID
+ * @param {Object} [options] Provide options for this tool
+ *   @param {String} [options.publisherId] The id of the publisher
  *   @required
- *   @param {String} [options.streamName]  If empty, and <code>creatable</code> is true, then this can be used to add new related Streams/image streams.
+ *   @param {String} [options.streamName] The name of the stream
  *   @required
  *   @param {Number} [options.max]
- *    The maximum number of participants to display
+ *    The number, if any, to show in the denominator of the summary
+ *   @optional
+ *   @param {Number} [options.maxShow]
+ *    The maximum number of participants to fetch for display
  *   @optional
  *   @default 10
  *   @param {Function} [options.filter]
  *    Takes (participant, element) and can modify them.
  *    If this function returns false, the element is not appended.
- *   @options
- *   @param {Q.Event} [options.onRefresh] An event that occurs when the icon is refreshed
+ *   @optional
+ *   @param {Q.Event} [options.onRefresh] An event that occurs when the tool is refreshed
  *   @optional
  */
 Q.Tool.define("Streams/participants",
@@ -32,15 +35,15 @@ function _Streams_participants(options) {
 	var tool = this;
 	var state = tool.state;
 	
-	if (!state.rendered) {
-		tool.refresh();
-	}
-	
 	tool.Q.onStateChanged('count').set(function (name) {
 		var c = state.count;
 		tool.$count.text(c >= 100 ? '99+' : c.toString());
 		tool.$summary.plugin('Q/textfill', 'refresh');
 	}, tool);
+	
+	if (!state.rendered) {
+		tool.refresh();
+	}
 	
 },
 
@@ -75,7 +78,7 @@ function _Streams_participants(options) {
 			var stream = tool.stream = this;
 			var keys = Object.keys(extra.participants);
 			state.count = Object.keys(extra.participants).length;
-			_refreshCount();
+			tool.stateChanged('count');
 			var count = 0;
 			Q.each(extra.participants, function (userId, participant) {
 				if (state.maxShow) {
@@ -104,7 +107,7 @@ function _Streams_participants(options) {
 			function (stream, message, messages) {
 				prependAvatar(message.byUserId);
 				++tool.state.count;
-				_refreshCount();
+				tool.stateChanged('count');
 			}, tool);
 			
 			stream.retain(tool).onMessage("Streams/leave").set(
@@ -114,7 +117,7 @@ function _Streams_participants(options) {
 					$element.remove();
 				}
 				--tool.state.count;
-				_refreshCount();
+				tool.stateChanged('count');
 			}, tool);
 			
 		}, {participants: 100});
@@ -129,10 +132,6 @@ function _Streams_participants(options) {
 				$elements[userId] = $element;
 				$element.prependTo(tool.$pc).activate();
 			}
-		}
-		
-		function _refreshCount() {
-			tool.stateChanged('count');
 		}
 	}
 }
