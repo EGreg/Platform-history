@@ -1246,7 +1246,7 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 				ttk = (k in target) && Q.typeOf(target[k]);
 				tak = Q.typeOf(argk);
 				if (ttk === 'Q.Event') {
-					if (argk && arg.constructor === Q.Event) {
+					if (argk && argk.constructor === Object) {
 						for (var m in argk) {
 							target[k].set(argk[m], m);
 						}

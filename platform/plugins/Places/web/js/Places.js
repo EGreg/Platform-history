@@ -19,7 +19,7 @@ var Places = Q.Places = Q.plugins.Places = {
 	},
 	
 	getUserLocationStream: function (callback) {
-		var userId = Q.Users.loggedInUser.id;
+		var userId = Q.getObject('Users.loggedInUser.id', Q);
 		if (!userId) {
 			var err = new Q.Error("Places.userLocationStream: not logged in");
 			return callback(err);
