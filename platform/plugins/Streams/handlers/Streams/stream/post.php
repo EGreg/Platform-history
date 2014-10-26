@@ -8,7 +8,7 @@
  *   Q.Streams.related.publisherId, Q.Streams.related.name, Q.Streams.related.weight
  *   dontSubscribe (optional)
  *   icon (optional) see fields for Q/image/post
- * @return void
+ * @return {void}
  */
 
 function Streams_stream_post($params) {

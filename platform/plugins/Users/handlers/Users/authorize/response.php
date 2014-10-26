@@ -14,7 +14,7 @@ function Users_authorize_response()
 	$redirect_url = $_REQUEST['redirect_uri'];
 	$state = $_REQUEST['state'];
 
-	$client = Users::fromId($client_id);
+	$client = Users_User::getUser($client_id);
 	if (!$client) {
 		throw new Q_Exception_MissingRow(array(
 			'table' => 'user',

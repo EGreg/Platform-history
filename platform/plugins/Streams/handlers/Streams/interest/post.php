@@ -55,4 +55,7 @@ function Streams_interest_post()
 		$name,
 		array('weight' => '+1')
 	);
+	
+	Q_Response::setSlot('publisherId', $publisherId);
+	Q_Response::setSlot('streamName', $name);
 }

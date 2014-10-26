@@ -160,6 +160,9 @@
 			"baseUrl": "i",
 			"participantReason": "Was invited"
 		},
+		"interests": {
+			"allowClientQueries": false
+		},
 		"db": {
 			"limits": {
 				"stream": 100,

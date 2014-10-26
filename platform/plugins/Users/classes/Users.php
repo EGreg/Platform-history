@@ -39,23 +39,6 @@ abstract class Users extends Base_Users
 	static $facebooks = array();
 
 	/**
-	 * Just a convenience method for getting a user from an id
-	 * @method fromId
-	 * @static
-	 * @param {string} $userId The id of the user to retrieve
-	 * @return {Users_User|false}
-	 */
-	static function fromId($userId)
-	{
-		if (isset(self::$users[$userId])) {
-			return self::$users[$userId];
-		}
-		$user = new Users_User();
-		$user->id = $userId;
-		return self::$users[$userId] = $user->retrieve();
-	}
-
-	/**
 	 * @method oAuth
 	 * @static
 	 * @param {string} $provider Currently only supports the value "facebook".

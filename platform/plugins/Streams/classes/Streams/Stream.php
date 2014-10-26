@@ -443,7 +443,7 @@ class Streams_Stream extends Base_Streams_Stream
 
 	protected function getUserStream ($options, &$userId, &$user = null) {
 		if (isset($options['userId'])) {
-			$user = Users::fromId($options['userId']);
+			$user = Users_User::getUser($options['userId']);
 			if (!$user) {
 				throw new Q_Exception_MissingRow(array(
 					'table' => 'user',

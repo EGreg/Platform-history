@@ -1888,8 +1888,8 @@ class Db_Row implements Iterator
 	 *  An exception is thrown when some fields of the primary key are not specified
 	 * @param {array|boolean} [$modifyQuery=false] If an array, the following keys are options for modifying the query:
 	 * 
-	 * * "begin" => this will cause the query to have `->begin()` a transaction
-	 *       which locks the row for update. You should call `->save(..., true)`
+	 * * "begin" => this will cause the query to have ->begin() a transaction
+	 *       which locks the row for update. You should call ->save(..., true)
 	 *       to unlock the row, otherwise other database clients trying to access
 	 *       the row will be blocked.
 	 * * "rollbackIfMissing" => if begin is true, this option determines whether to

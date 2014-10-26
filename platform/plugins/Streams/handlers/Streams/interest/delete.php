@@ -49,4 +49,7 @@ function Streams_interest_delete()
 		$name,
 		array('adjustWeights' => true)
 	);
+	
+	Q_Response::setSlot('publisherId', $publisherId);
+	Q_Response::setSlot('streamName', $name);
 }

@@ -1774,14 +1774,7 @@ Stream.join = function _Stream_join (publisherId, streamName, callback) {
 			0, participant, [err, participant]
 		);
 		callback && callback.call(participant, err, participant || null);
-		var node = Q.nodeUrl({
-			publisherId: publisherId,
-			streamName: streamName
-		});
-		var socket = Q.Socket.get('Streams', node);
-		if (!socket) {
-			Stream.refresh(publisherId, streamName, null, { messages: true });
-		}
+		_refreshUnlessSocket(publisherId, streamName);
 	}, { method: 'post', fields: fields, baseUrl: baseUrl });
 };
 Stream.join.onError = new Q.Event();
@@ -1825,14 +1818,7 @@ Stream.leave = function _Stream_leave (publisherId, streamName, callback) {
 			0, participant, [err, participant]
 		);
 		callback && callback.call(this, err, participant || null);
-		var node = Q.nodeUrl({
-			publisherId: publisherId,
-			streamName: streamName
-		});
-		var socket = Q.Socket.get('Streams', node);
-		if (!socket) {
-			Stream.refresh(publisherId, streamName, null, { messages: true });
-		}
+		_refreshUnlessSocket(publisherId, streamName);
 	}, { method: 'post', fields: fields, baseUrl: baseUrl });
 };
 Stream.leave.onError = new Q.Event();
@@ -2614,6 +2600,70 @@ Ap.iconUrl = function _Avatar_prototype_iconUrl () {
 };
 
 /**
+ * Methods related to "Streams/interest" streams.
+ * @class Streams.Interests
+ * @constructor
+ * @param {Object} fields
+ */
+var Interests = Streams.Interests = {
+	add: function (title, callback, options) {
+		if (!Q.Users.loggedInUser) {
+			return false;
+		}
+		var fields = {
+			title: title
+		};
+		if (options) {
+			if (options.subscribe) {
+				fields.subscribe = 1;
+			}
+			if (options.publisherId) {
+				fields.publisherId = options.publisherId;
+			}
+		}
+		Q.req('Streams/interest', ['publisherId', 'streamName'],
+		function (err, response) {
+			Q.handle(callback, this, arguments);
+			var s = response && response.slots;
+			if (s) {
+				_refreshUnlessSocket(s.publisherId, s.streamName);
+			}
+		}, {
+			method: 'post', 
+			fields: fields
+		});
+	},
+	remove: function (title, callback) {
+		if (!Q.Users.loggedInUser) {
+			return false;
+		}
+		var fields = {
+			title: title
+		};
+		Q.req('Streams/interest', ['publisherId', 'streamName'],
+		function (err, response) {
+			Q.handle(callback, this, arguments);
+			var s = response && response.slots;
+			if (s) {
+				_refreshUnlessSocket(s.publisherId, s.streamName);
+			}
+		}, {
+			method: 'delete', 
+			fields: fields
+		});
+	},
+	forUser: function (userId, callback) {
+		var fields = {};
+		if (userId) {
+			fields.userId = userId;
+		}
+		Q.req('Streams/interest', 'interests', function (err, response) {
+			Q.handle(callback, this, arguments);
+		}, { fields: fields });
+	}
+};
+
+/**
  * @class Streams
  */
 
@@ -3370,6 +3420,17 @@ function _scheduleUpdate() {
 		_scheduleUpdate.lastTime = now;
 		setTimeout(_scheduleUpdate, ms);
 	}, ms);
+}
+
+function _refreshUnlessSocket(publisherId, streamName) {
+	var node = Q.nodeUrl({
+		publisherId: publisherId,
+		streamName: streamName
+	});
+	var socket = Q.Socket.get('Streams', node);
+	if (!socket) {
+		Stream.refresh(publisherId, streamName, null, { messages: true });
+	}
 }
 
 _scheduleUpdate.delay = 5000;
