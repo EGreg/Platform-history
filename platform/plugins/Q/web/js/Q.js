@@ -6167,6 +6167,7 @@ Q.activate = function _Q_activate(elem, options, callback) {
  *  An HTML string or a Element which is not part of the DOM
  * @param {Object} options
  *  Optional. A hash of options, including:
+ *  "replaceElements": array of elements or ids of elements in the document to replace, even if they have "data-q-retain" attributes.
  *  "animation": To animate the transition, pass an object here with optional "duration", "ease" and "callback" properties.
  * @return {HTMLElement}
  *  Returns the container element if successful
@@ -6182,6 +6183,16 @@ Q.replace = function _Q_replace(container, source, options) {
 		var s = document.createElement('div'); // temporary container
 		s.innerHTML = source;
 		source = s;
+	}
+	
+	var replaceElements;
+	if (options.replaceElements) {
+		replaceElements = [];
+		Q.each(options.replaceElements, function (i, e) {
+			replaceElements.push(
+				typeof e === 'string' ? document.getElementById(e) : e
+			);
+		});
 	}
 	
 	var retainedToolsArray = [];
@@ -6260,11 +6271,12 @@ var _latestLoadUrlObject;
  *   "fields": additional fields to pass via the querystring
  *   "loadExtras": if true, asks the server to load the extra scripts, stylesheets, etc. that are loaded on first page load
  *   "timeout": timeout to wait for response defaults to 20.5 sec. Set to false to disable
+ *   "quiet": defaults to false. If true, allows visual indications that the request is going to take place.
  *   "slotNames": an array of slot names to request and process (default is all slots in Q.info.slotNames)
  *   "idPrefixes": optional array of Q_Html::pushIdPrefix values for each slotName
- *   "retainSlots": an object of {slotName: whetherToRetain} pairs, retained slots aren't reloaded
+ *   "retainSlots": an object of {slotName: whetherToRetain} pairs, retained slots aren't requested
  *   "slotContainer": optional function taking (slotName, response) and returning the element, if any, to fill for that slot
- *   "quiet": defaults to false. If true, allows visual indications that the request is going to take place.
+ *   "replaceElements": array of elements or ids of elements in the document to replace. Overrides "data-q-retain" attributes but not retainSlots option.
  *   "onTimeout": handler to call when timeout is reached. Receives function as argument -
  *		the function might be called to cancel loading.
  *   "onResponse": handler to call when the response comes back but before it is processed
@@ -9369,6 +9381,38 @@ Q.onJQuery.add(function ($) {
 		
 }, 'Q');
 
+function _Q_loadUrl_fillSlots (res, url, options) {
+	var elements = {}, name, elem, pos;
+	var osc = options.slotContainer;
+	if (Q.isPlainObject(osc)) {
+		options.slotContainer = function (slotName) {
+			return osc[slotName] || document.getElementById(slotName+"_slot");
+		};
+	}
+	for (name in res.slots) {
+		// res.slots will simply not contain the slots that have
+		// already been "cached"
+
+		if (name.toUpperCase() === 'TITLE') {
+			window.document.title = res.slots[name];
+		} else if (elem = options.slotContainer(name, res)) { 
+			try {
+				Q.replace(elem, res.slots[name], options);
+				if (pos = Q.getObject(['Q', 'scroll', url], elem)) {
+					elem.scrollLeft = pos.left;
+					elem.scrollTop = pos.top;
+				}
+			} catch (e) {
+				debugger; // pause here if debugging
+				console.warn('slot ' + name + ' could not be filled');
+				console.warn(e);
+			}
+			elements[name] = elem;
+		}
+	}
+	return elements;
+}
+
 Q.loadUrl.options = {
 	quiet: false,
 	onLoad: new Q.Event(),
@@ -9379,37 +9423,7 @@ Q.loadUrl.options = {
 	slotContainer: function (slotName) {
 		return document.getElementById(slotName+"_slot");
 	},
-	handler: function _Q_loadUrl_fillSlots (res, url, options) {
-		var elements = {}, name, elem, pos;
-		var osc = options.slotContainer;
-		if (Q.isPlainObject(osc)) {
-			options.slotContainer = function (slotName) {
-				return osc[slotName] || document.getElementById(slotName+"_slot");
-			};
-		}
-		for (name in res.slots) {
-			// res.slots will simply not contain the slots that have
-			// already been "cached"
-
-			if (name.toUpperCase() === 'TITLE') {
-				window.document.title = res.slots[name];
-			} else if (elem = options.slotContainer(name, res)) { 
-				try {
-					Q.replace(elem, res.slots[name]);
-					if (pos = Q.getObject(['Q', 'scroll', url], elem)) {
-						elem.scrollLeft = pos.left;
-						elem.scrollTop = pos.top;
-					}
-				} catch (e) {
-					debugger; // pause here if debugging
-					console.warn('slot ' + name + ' could not be filled');
-					console.warn(e);
-				}
-				elements[name] = elem;
-			}
-		}
-		return elements;
-	}
+	handler: _Q_loadUrl_fillSlots
 };
 
 Q.request.options = {

@@ -290,7 +290,7 @@ class Q_Response
 		call_user_func_array(array($p, 'set'), $args);
 
 		// Now, for the slot
-		if (!$slotName) {
+		if (!isset($slotName)) {
 			$slotName = isset(self::$slotName) ? self::$slotName : '';
 		}
 		if (!isset(self::$stylesForSlot[$slotName])) {

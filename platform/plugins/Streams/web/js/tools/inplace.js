@@ -107,7 +107,12 @@ Q.Tool.define("Streams/inplace", function (options) {
 				method: 'put',
 				field: field,
 				type: state.inplaceType,
-				maxWidth: $te.parent()[0]
+				maxWidth: $te.parent()[0],
+				onSave: { 'Streams/inplace': function () {
+					state.stream.refresh(function () {
+						state.onUpdate.handle.call(tool);
+					}, {messages: true});
+				}}
 			});
 			var value = (state.attribute ? stream.get(state.attribute) : stream.fields[field]) || "";
 			switch (state.inplaceType) {
