@@ -85,9 +85,10 @@ function _Streams_participants(options) {
 			var i = 0, c = 0;
 			tool.$pc.empty();
 			Q.each(extra.participants, function (userId, participant) {
-				if (participant.state === 'participating') {
-					++c;
+				if (participant.state !== 'participating') {
+					return;
 				}
+				++c;
 				if (!state.maxShow || ++i <= state.maxShow) {
 					prependAvatar(userId);
 				}

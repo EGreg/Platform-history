@@ -57,9 +57,10 @@ function Streams_participants_tool($options)
 	if ($participants) {
 		$i = 0;
 		foreach ($participants as $p) {
-			if ($p->state === 'participating') {
-				++$c;
+			if ($p->state !== 'participating') {
+				continue;
 			}
+			++$c;
 			if (empty($options['maxShow'])
 			or ++$i <= $options['maxShow']) {
 				$avatars .= Q::tool("Users/avatar", array(
