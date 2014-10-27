@@ -4416,6 +4416,8 @@ Q.init = function _Q_init(options) {
 	Q.info.imgLoading = Q.info.imgLoading ||
 		Q.url('plugins/Q/img/throbbers/loading.gif');
 
+	Q.loadUrl.options.slotNames = Q.info.slotNames;
+
 	Q.handle(Q.beforeInit);
 	Q.handle(Q.onInit); // Call all the onInit handlers
 
@@ -6294,7 +6296,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 	Q.handle(o.onLoadStart, this, [url, o]);
 
 	var handler = o.handler;
-	var slotNames = o.slotNames || Q.info.slotNames;
+	var slotNames = o.slotNames;
 	if (typeof slotNames === 'string') {
 		slotNames = slotNames.split(',');
 	}

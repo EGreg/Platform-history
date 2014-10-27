@@ -620,7 +620,7 @@ Streams_Stream.prototype.join = function(options, callback) {
 					instructions: JSON.stringify({
 						reason: f.reason,
 						enthusiasm: f.enthusiasm
-					});
+					})
 				}, function(err) {
 					if (err) return callback.call(stream, err);
 					new Streams.Stream({
