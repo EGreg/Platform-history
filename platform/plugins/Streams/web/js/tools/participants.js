@@ -90,7 +90,7 @@ function _Streams_participants(options) {
 				}
 				++c;
 				if (!state.maxShow || ++i <= state.maxShow) {
-					prependAvatar(userId);
+					appendAvatar(userId);
 				}
 			}, { sort: 'insertedTime', ascending: false });
 			state.count = c;
@@ -110,7 +110,7 @@ function _Streams_participants(options) {
 			stream.retain(tool);
 			stream.onMessage("Streams/join")
 			.set(function (stream, message, messages) {
-				prependAvatar(message.byUserId);
+				appendAvatar(message.byUserId);
 				++tool.state.count;
 				tool.stateChanged('count');
 			}, tool);
@@ -127,7 +127,7 @@ function _Streams_participants(options) {
 			
 		}, {participants: 100});
 		
-		function prependAvatar(userId) {
+		function appendAvatar(userId) {
 			var $element = $(Q.Tool.setUpElement('div', 'Users/avatar', {
 				userId: userId,
 				short: true,
@@ -135,7 +135,7 @@ function _Streams_participants(options) {
 			}));
 			if (false !== Q.handle(state.filter, tool, [$element])) {
 				$elements[userId] = $element;
-				$element.prependTo(tool.$pc).activate();
+				$element.appendTo(tool.$pc).activate();
 			}
 		}
 	}

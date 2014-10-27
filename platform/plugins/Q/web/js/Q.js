@@ -847,7 +847,8 @@ Q.each = function _Q_each(container, callback, options) {
 				var t = typeof(s);
 				var _byKeys = undefined;
 				function _byFields(a, b) { 
-					return container[a][s] > container[b][s];
+					return container[a][s] > container[b][s] ? 1
+						: (container[a][s] < container[b][s] ? -1 : 0); 
 				}
 				function _byKeysNumeric(a, b) { 
 					return Number(a) - Number(b); 

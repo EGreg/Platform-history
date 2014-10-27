@@ -59,7 +59,7 @@ Q.Tool.define("Q/columns", function(options) {
 	if (Q.info.isMobile && state.back.triggerFromTitle) {
 		selector = '.Q_columns_title';
 	};
-	$(tool.element).on(Q.Pointer.click, selector, function(){
+	$(tool.element).on(Q.Pointer.fastclick, selector, function(){
 		var index = $(this).closest('.Q_columns_column').data(dataKey_index);
 		if (state.locked) return;
 		if (index) {
@@ -84,8 +84,8 @@ Q.Tool.define("Q/columns", function(options) {
 		duration: 300, // milliseconds
 		css: {
 			hide: {
-				opacity: 0, 
-				top: '50%',
+				opacity: 0.1, 
+				top: '40%',
 				height: '0'
 			}
 		},
