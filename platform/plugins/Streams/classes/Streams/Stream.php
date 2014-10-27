@@ -585,7 +585,13 @@ class Streams_Stream extends Base_Streams_Stream
 					"stream" => Q::json_encode($stream->toArray())
 				));
 				// Post a message
-				$stream->post($userId, array('type' => "Streams/$type"), true);
+				$stream->post($userId, array(
+					'type' => "Streams/$type",
+					'instructions' => Q::json_encode(array(
+						'reason' => $participant->reason,
+						'enthusiasm' => $participant->enthusiasm
+					))
+				), true);
 				// Now post Streams/joined message to Streams/participating
 				Streams_Message::post($userId, $userId, 'Streams/participating', array(
 					'type' => "Streams/{$type}ed",
@@ -615,7 +621,13 @@ class Streams_Stream extends Base_Streams_Stream
 			));
 
 			// Post Streams/join message to the stream
-			$stream->post($userId, array('type' => 'Streams/join'), true);
+			$stream->post($userId, array(
+				'type' => 'Streams/join',
+				'instructions' => Q::json_encode(array(
+					'reason' => $participant->reason,
+					'enthusiasm' => $participant->enthusiasm
+				))
+			), true);
 
 			// Now post Streams/joined message to Streams/participating
 			Streams_Message::post($userId, $userId, 'Streams/participating', array(

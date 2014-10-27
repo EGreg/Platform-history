@@ -572,23 +572,27 @@ Streams_Stream.prototype.join = function(options, callback) {
 			userId: userId
 		}).retrieve(function(err, sp) {
 			if (err) return callback.call(stream, err);
+			var type = 'Streams/join';
 			if (sp.length) {
 				sp = sp[0];
 				var save = false, subscribed = options['subscribed'];
-				if (subscribed && sp.fields.subscribed !== (subscribed = (subscribed ? 'yes' : 'no'))) {
-					sp.fields.subscribed = subscribed;
+				var yn = subscribed ? 'yes' : 'no';
+				if (subscribed && sp.fields.subscribed !== yn) {
+					sp.fields.subscribed = yn;
 					save = true;
+				}
+				if (sp.fields.state === 'participating') {
+					type = 'Streams/visit';
 				}
 				if (sp.fields.state === 'participating') {
 					sp.fields.state = 'participating';
 					save = true;
 				}
 				if (save) {
-					sp.save(true, function(err) {
-						if (err) callback.call(stream, err);
-						else callback.call(stream, null, sp);
-					});
-				} else callback.call(stream, null, sp);
+					sp.save(true, _afterSaveParticipant);
+				} else {
+					_afterSaveParticipant();
+				}
 			} else {
 				sp = new Streams.Participant({
 					publisherId: stream.fields.publisherId,
@@ -602,33 +606,39 @@ Streams_Stream.prototype.join = function(options, callback) {
 					reason: options['reason'] || '',
 					enthusiasm: options['enthusiasm'] || 0
 				});
-				sp.save(function(err) {
+				sp.save(_afterSaveParticipant);
+			}
+			function _afterSaveParticipant(err) {
+				if (err) return callback.call(stream, err);
+				Streams.emitToUser(userId, 'join', sp.fillMagicFields().toArray());
+				stream.incParticipants(/* empty callback*/);
+				
+				var f = sp.fields;
+				stream.post({
+					byUserId: userId,
+					type: type,
+					instructions: JSON.stringify({
+						reason: f.reason,
+						enthusiasm: f.enthusiasm
+					});
+				}, function(err) {
 					if (err) return callback.call(stream, err);
-					Streams.emitToUser(userId, 'join', sp.fillMagicFields().toArray());
-					stream.incParticipants(/* empty callback*/);
-
-					stream.post({
-						byUserId: userId,
-						type: 'Streams/join'
-					}, function(err) {
-						if (err) return callback.call(stream, err);
-						new Streams.Stream({
-							publisherId: userId,
-							name: 'Streams/participating'
-						}).retrieve(function (err, pstream) {
-							if (err || !pstream.length) return callback.call(stream, err);
-							pstream[0].post({
-								byUserId: userId,
-								type: 'Streams/joined',
-								content: '',
-								instructions: JSON.stringify({
-									publisherId: stream.fields.publisherId,
-									streamName: stream.fields.name
-								})
-							}, function (err) {
-								if (err) return callback.call(stream, err);
-								callback.call(stream, null, sp);
-							});
+					new Streams.Stream({
+						publisherId: userId,
+						name: 'Streams/participating'
+					}).retrieve(function (err, pstream) {
+						if (err || !pstream.length) return callback.call(stream, err);
+						pstream[0].post({
+							byUserId: userId,
+							type: type+'ed',
+							content: '',
+							instructions: JSON.stringify({
+								publisherId: stream.fields.publisherId,
+								streamName: stream.fields.name
+							})
+						}, function (err) {
+							if (err) return callback.call(stream, err);
+							callback.call(stream, null, sp);
 						});
 					});
 				});

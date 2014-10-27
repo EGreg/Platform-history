@@ -390,7 +390,7 @@ function Db_Mysql(connName, dsn) {
 	/**
 	 * Returns the timestamp the db server would have, based on synchronization
 	 * @method timestamp
-	 * @param {Function} callback
+	 * @param {Function} callback receives (err, timestamp)
 	 * @return {integer}
 	 */
 	dbm.getCurrentTimestamp = function (callback) {
