@@ -45,6 +45,9 @@
 		"geolocation": {
 			"requireLogin": false,
 			"allowClientQueries": false
+		},
+		"googleMaps": {
+			"key": null
 		}
 	}
 }

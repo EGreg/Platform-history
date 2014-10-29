@@ -279,13 +279,17 @@ class Q_Response
 	 * Sets one of the attributes of a style to a value.
 	 * @method setStyle
 	 * @static
-	 * @param {string} $list_of_keys Can be multiple keys - see Q_Tree::set()
+	 * @param {string|array} $keys Can be a key or array of keys in the style of Q_Tree->set
 	 * @param {mixed} [$value=null]
 	 * @param {string} [$slotName=null]
 	 */
-	static function setStyle($list_of_keys, $value = null, $slotName = null)
+	static function setStyle($keys, $value = null, $slotName = null)
 	{
-		$args = func_get_args();
+		if (!is_array($keys)) {
+			$keys = array($keys);
+		}
+		$args = is_array($keys) ? $keys : array($keys);
+		$args[] = $value;
 		$p = new Q_Tree(self::$styles);
 		call_user_func_array(array($p, 'set'), $args);
 
@@ -358,7 +362,7 @@ class Q_Response
 				$result = $s;
 			} else {
 				foreach ($s as $selector => $style) {
-					$result .= "\n\t$selector {\n\t\t";
+					$result .= "\n\t\t$selector {\n\t\t\t";
 					if (is_string($style)) {
 						$result .= $style;
 					} else if (is_array($style)) {
@@ -366,7 +370,7 @@ class Q_Response
 							$result .= "$property: $value;   ";
 						}
 					}
-					$result .= "\n\t}";
+					$result .= "\n\t\t}\n\t";
 				}
 			}
 			if ($result) {
@@ -374,7 +378,7 @@ class Q_Response
 			}
 		}
 		if (!$tags) {
-			return implode("\n", $texts);	
+			return implode("\n", $texts);
 		}
 		$tags = array();
 

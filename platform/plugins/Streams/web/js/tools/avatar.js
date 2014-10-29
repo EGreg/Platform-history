@@ -18,6 +18,10 @@
  *   @default 40
  *   @param {Boolean} [options.short] If true, renders the short version of the display name.
  *   @default false
+ *   @param {Boolean|Array} [options.editable] If true, and userId is the logged-in user's id, the tool presents an interface for the logged-in user to edit their name and icon. This can also be an array containing one or more of ['icon','name'].
+ *   @default true
+ *   @param {Boolean} [options.reflectChanges] Whether the tool should update its contents on changes
+ *   @default true
  *   @param {Object} [options.templates]
  *     @param {Object} [options.templates.icon]
  *       @param {String} [options.templates.icon.dir]
@@ -40,20 +44,33 @@
 Q.Tool.define("Users/avatar", function(options) {
 	var tool = this, state = this.state;
 	this.refresh();
-	Q.Streams.Stream.onFieldChanged(
-		state.userId, 'Streams/user/icon', 'icon'
-	).set(function () {
-		tool.$('.Users_avatar_icon').attr('src', 
-			Q.url(Q.Users.iconUrl(arguments[0].icon, state.icon), null,
-				{cacheBust: 100})
-		);
+	if (!state.reflectChanges) {
+		return;
+	}
+	Q.Streams.Stream.onFieldChanged(state.userId, 'Streams/user/icon')
+	.set(function (fields, updated) {
+		for (var k in updated) {
+			switch (k) {
+			case 'icon':
+				tool.$('.Users_avatar_icon').attr('src', 
+					Q.url(Q.Users.iconUrl(updated.icon, state.icon), null,
+						{cacheBust: 100})
+				);
+				break;
+			case 'firstName':
+			case 'lastName':
+				tool.refresh();
+				break;
+			}
+		}
 	}, this);
 },
 
 {
-	user: null,
+	userId: null,
 	icon: '40',
 	"short": false,
+	reflectChanges: true,
 	templates: {
 		icon: {
 			dir: 'plugins/Users/views',

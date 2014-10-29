@@ -15,7 +15,7 @@ function Streams_access_response_content($options)
 	if (!$stream->retrieve()) {
 		throw new Q_Exception_MissingRow(array(
 			'table' => 'stream', 
-			'criteria' => 'that name'
+			'criteria' => 'with that name'
 		), 'name');
 	}
 	

@@ -11,7 +11,7 @@ function Streams_access_put($params)
 	if (!$stream) {
 		throw new Q_Exception_MissingRow(array(
 			'table'    => 'stream',
-			'criteria' => 'that name'
+			'criteria' => 'with that name'
 		));
 	}
 	if (!$stream->testAdminLevel('own')) {

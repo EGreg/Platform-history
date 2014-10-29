@@ -147,8 +147,11 @@ Q.Tool.define("Places/location", function (options) {
 				.removeClass('Places_location_checking')
 				.addClass('Places_location_obtained');
 			setTimeout(function () {
-				tool.$('.Places_location_map_container, .Places_location_update')
-				.slideDown(300, _showLocationAndCircle);
+				tool.$('.Places_location_map_container').show();
+				tool.$('.Places_location_update').slideDown(800);
+				setTimeout(function () {
+					_showLocationAndCircle();
+				}, 300);
 			}, 0);
 		});
 

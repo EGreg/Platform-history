@@ -1001,7 +1001,7 @@ class Streams_Stream extends Base_Streams_Stream
 		if (!$stream) {
 			throw new Q_Exception_MissingRow(array(
 				'table' => 'stream',
-				'criteria' => 'that name'
+				'criteria' => 'with that name'
 			), 'streamName');		
 		}
 		$stream = reset($stream);

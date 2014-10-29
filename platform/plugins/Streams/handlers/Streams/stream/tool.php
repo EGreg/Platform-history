@@ -17,7 +17,7 @@ function Streams_stream_tool($options) {
 		if (!$stream) {
 			throw new Q_Exception_MissingRow(array(
 				'table' => 'stream',
-				'criteria' => 'that name'
+				'criteria' => 'with that name'
 			), 'streamName');	
 		}
 		if (!$stream->testReadLevel('content') || !$stream->testWriteLevel('edit')) {

@@ -221,10 +221,11 @@ class Q_Uri
 	 * Set a suffix for all URLs that will be generated with this class.
 	 * @method suffix
 	 * @static
-	 * @param {array} [$suffix=null] If no arguments are passed, just returns the current suffix.
+	 * @param {array|string} [$suffix=null] If no arguments are passed, just returns the current suffix.
 	 *  Pass an array here. For each entry, the key is tested and if it
 	 *  begins the URL, then the value is appended.
 	 *  Suffixes are applied when URLs are generated.
+	 *  You can also pass a string here, in which case the array('' => $suffix) is used.
 	 * @return {array} Returns the suffix at the time the function was called.
 	 */
 	static function suffix($suffix = null)

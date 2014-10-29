@@ -31,14 +31,51 @@ var Places = Q.Places = Q.plugins.Places = {
 			}
 			callback.call(this, err, this);
 		});
-	}
+	},
+	
+	/**
+	 * Use this to calculate the haversine distance between two sets of lat/long coordinates on the Earth
+	 * @param {double} $lat1
+	 * @param {double} $long1
+	 * @param {double} $lat2
+	 * @param {double} $long2
+	 * @return {double} The result of applying the haversine formula
+	 */
+	distance: function(lat1, long1, lat2, long2) {
+		var earthRadius = 3963.1676; // in miles
+
+		var sin_lat   = Math.sin(_deg2rad(lat2  - lat1)  / 2.0);
+		var sin2_lat  = sin_lat * sin_lat;
+
+		var sin_long  = Math.sin(_deg2rad(long2 - long1) / 2.0);
+		var sin2_long = sin_long * sin_long;
+
+		var cos_lat1 = Math.cos(_deg2rad(lat1));
+		var cos_lat2 = Math.cos(_deg2rad(lat2));
+
+		var sqrt      = Math.sqrt(sin2_lat + (cos_lat1 * cos_lat2 * sin2_long));
+		var distance  = 2.0 * earthRadius * Math.asin(sqrt);
+
+		return distance;
+	},
+
 
 };
 
-Places.loadGoogleMaps.src = 'https://maps.googleapis.com/maps/api/js?v=3.exp&'
-	+ 'callback=Q.Places.loaded';
+function _deg2rad(angle) {
+	return angle * 0.017453292519943295; // (angle / 180) * Math.PI;
+}
+
+Q.beforeInit.set(function () {
+	var plk = Places.loadGoogleMaps.key;
+	Places.loadGoogleMaps.src = 'https://maps.googleapis.com/maps/api/js?v=3.exp'
+		+ '&libraries=places'
+		+ (plk ? '&key='+encodeURIComponent(plk) : '')
+		+ '&callback=Q.Places.loadGoogleMaps.loaded';
+}, 'Places');
+
 Places.loadGoogleMaps.waitingCallbacks = [];
-Places.loaded = function () {
+Places.loadGoogleMaps.loaded = function () {
 	Q.handle(Places.loadGoogleMaps.waitingCallbacks);
 };
 

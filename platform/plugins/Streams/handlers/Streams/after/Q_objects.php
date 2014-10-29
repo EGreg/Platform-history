@@ -14,7 +14,7 @@ function Streams_after_Q_objects () {
 	if (!$stream->retrieve()) {
 		throw new Q_Exception_MissingRow(array(
 			'table' => 'stream',
-			'criteria' => 'that name'
+			'criteria' => 'with that name'
 		), 'streamName');
 	}
 

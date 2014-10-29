@@ -41,7 +41,7 @@ function Streams_access_tool($options)
     if (!$stream) {
         throw new Q_Exception_MissingRow(array(
             'table' => 'stream',
-            'criteria' => 'that name'
+            'criteria' => 'with that name'
         ));
 	}
 	$stream->addPreloaded($user->id);
@@ -50,7 +50,7 @@ function Streams_access_tool($options)
 	if (!$stream) {
 		throw new Q_Exception_MissingRow(array(
 			'table' => 'stream',
-			'criteria' => 'that name'
+			'criteria' => 'with that name'
 		));
 	}
 

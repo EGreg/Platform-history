@@ -2804,9 +2804,9 @@ function updateStream(stream, fields, onlyChangedFields) {
 	if (!stream || !fields) {
 		return false;
 	}
-	var publisherId = stream.fields.publisherId,
-		streamName = stream.fields.name,
-		updated = {}, cleared = [], k;
+	var publisherId = stream.fields.publisherId;
+	var streamName = stream.fields.name;
+	var updated = {}, cleared = [], k;
 		
 	// events about updated fields
 	for (k in fields) {
@@ -2822,19 +2822,23 @@ function updateStream(stream, fields, onlyChangedFields) {
 		);
 		updated[k] = fields[k];
 	}
-	Q.handle(
-		Q.getObject([publisherId, streamName, ''], _streamFieldChangedHandlers),
-		stream,
-		[fields, updated]
-	);
-	Q.handle(
-		Q.getObject([publisherId, '', ''], _streamFieldChangedHandlers),
-		stream,
-		[fields, updated]
-	);
-	if ('attributes' in fields) {
+	if (!onlyChangedFields || !Q.isEmpty(updated)) {
+		Q.handle(
+			Q.getObject([publisherId, streamName, ''], _streamFieldChangedHandlers),
+			stream,
+			[fields, updated]
+		);
+		Q.handle(
+			Q.getObject([publisherId, '', ''], _streamFieldChangedHandlers),
+			stream,
+			[fields, updated]
+		);
+	}
+	if (('attributes' in fields)
+	&& (!onlyChangedFields || fields.attributes != stream.fields.attributes)) {
 		var attributes = JSON.parse(fields.attributes || "{}");
-		var publisherId = stream.fields.publisherId, streamName = stream.fields.name, obj;
+		var publisherId = stream.fields.publisherId;
+		var streamName = stream.fields.name, obj;
 		updated = {}, cleared = [];
 		
 		// events about cleared attributes
