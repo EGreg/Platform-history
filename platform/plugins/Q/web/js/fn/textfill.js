@@ -37,7 +37,10 @@ Q.Tool.jQuery('Q/textfill',
                     ourText = $t.text();
                 }
             });
-			if (!ourElement) throw new Q.Error("Q/textfill missing a visible element inside the container");
+			if (!ourElement) {
+				var e = new Q.Error("Q/textfill missing a visible element inside the container");
+				console.warn(e);
+			}
             var fontSize = o.maxFontPixels || (ourElement.height() + 10);
             var maxHeight = $(this).innerHeight();
             var maxWidth = $(this).innerWidth();
