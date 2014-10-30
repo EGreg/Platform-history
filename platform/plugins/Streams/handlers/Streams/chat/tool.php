@@ -13,7 +13,6 @@
  *     Finally, 'pull' implements 'pull-to-refresh' behavior used in many modern applications today when new messages
  *     loaded by rubber-scrolling the container by more amount than it actually begins.
  *     Defaults to 'scroll' for desktop and Android devices and 'pull' for iOS devices.
- *   "amountToLoad" => Optional. Amount of messages to load on each request. Defaults to 3.
  * @return string
 */
 function Streams_chat_tool($options)

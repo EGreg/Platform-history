@@ -250,7 +250,7 @@ Q.Tool.define("Q/columns", function(options) {
 				ignorePage: true
 			}, options);
 			params.handler = function _handler(response) {
-				var elementsToActivate = [];
+				var elementsToActivate = {};
 				if ('title' in response.slots) {
 					$(titleSlot).html(response.slots.title);
 					elementsToActivate['title'] = titleSlot;

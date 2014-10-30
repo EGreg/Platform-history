@@ -40,6 +40,7 @@ Q.Tool.jQuery('Q/textfill',
 			if (!ourElement) {
 				var e = new Q.Error("Q/textfill missing a visible element inside the container");
 				console.warn(e);
+				return false;
 			}
             var fontSize = o.maxFontPixels || (ourElement.height() + 10);
             var maxHeight = $(this).innerHeight();
