@@ -20,7 +20,9 @@ function Streams_participating_response()
 	$q = Streams_Participating::select('*')
 		->where(array('userId'=>$user->id));
 
-	if ($type) $q = $q->where(array('streamType' => $type));
+	if ($type) $q = $q->where(array(
+		'streamName' => new Db_Range($type.'/', true, false, true)
+	));
 	if ($limit) $q = $q->limit($limit, $offset);
 	if ($order) $q = $q->orderBy('updatedTime', false);
 		

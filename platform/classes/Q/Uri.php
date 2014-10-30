@@ -838,8 +838,11 @@ class Q_Uri
 			return $url;
 		}
 		$url_relative_to_base = substr($url, strlen(Q_Request::baseUrl()));
-		if (isset(Q_Uri::$urls[$url_relative_to_base])
-		and Q_Uri::$urls[$url_relative_to_base] <= $timestamp
+		$fileTimestamp = isset(Q_Uri::$urls[$url_relative_to_base])
+			? Q_Uri::$urls[$url_relative_to_base]
+			: null;
+		if (isset($fileTimestamp)
+		and $fileTimestamp <= $timestamp
 		and self::$cacheBaseUrl) {
 			return self::$cacheBaseUrl . $url_relative_to_base;
 		}

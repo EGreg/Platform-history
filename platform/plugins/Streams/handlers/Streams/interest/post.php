@@ -26,6 +26,7 @@ function Streams_interest_post()
 		$stream->name = $name;
 		$stream->type = 'Streams/interest';
 		$stream->title = $title;
+		$stream->icon = $name;
 		$stream->save();
 	}
 	$subscribe = Q::ifset($_REQUEST, 'subscribe', false);
