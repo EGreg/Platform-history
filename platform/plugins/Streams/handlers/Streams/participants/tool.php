@@ -18,9 +18,16 @@
  *   @default 10
  *   @param {Q.Event} [options.onRefresh] An event that occurs when the tool is refreshed
  *   @optional
+ *   @param {boolean} [options.renderOnClient]
+ *    If true, only the html container is rendered, so the client will do the rest.
+ *   @optional
  */
 function Streams_participants_tool($options)
 {
+	if (!empty($options['renderOnClient'])) {
+		Q_Response::setToolOptions($options);
+		return '';
+	}
  	$publisherId = Q::ifset($options, 'publisherId', null);
  	$streamName = Q::ifset($options, 'streamName', null);
 	if (!isset($publisherId)) {
@@ -34,7 +41,7 @@ function Streams_participants_tool($options)
 		Q::ifset($options, 'max', 10)
 	);
 	
-	$stream = Streams::fetchOne($userId, $publisherId, $streamName);
+	$stream = Streams::fetchOne(null, $publisherId, $streamName);
 	if (empty($stream)) {
 		throw new Q_Exception_MissingRow(array(
 			'table' => 'Stream', 
