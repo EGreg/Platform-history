@@ -198,7 +198,7 @@ Q.Tool.define('Streams/chat', function(options) {
 		}
 		var p = new Q.Pipe();
 		var ordinals = [];
-		Q.each(messages, _processMessage, {ascending: true});
+		Q.each(messages, _processMessage, {ascending: true, numeric: true});
 		p.add(ordinals, 1, function (params) {
 			var snippets = {};
 			for (var ordinal in params) {
@@ -286,7 +286,7 @@ Q.Tool.define('Streams/chat', function(options) {
 			Q.each(messages, function (ordinal) {
 				state.earliest = ordinal;
 				return false;
-			}, {ascending: true});
+			}, {ascending: true, numeric: true});
 			callback.call(tool, messages);
 		});
 	},
@@ -606,7 +606,7 @@ Q.Tool.define('Streams/chat', function(options) {
 			Q.each(messages, function (ordinal) {
 				state.earliest = ordinal;
 				return false;
-			}, {ascending: true});
+			}, {ascending: true, numeric: true});
 		
 			tool.render(function() {
 				tool.renderMessages(
