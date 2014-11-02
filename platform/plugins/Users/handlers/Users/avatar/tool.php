@@ -3,12 +3,17 @@
 /**
  * This tool renders a user avatar
  *
- * @param array $options
- * An associative array of parameters, containing:
+ * @param {array} $options An associative array of parameters, containing:
+ * @param {boolean} [options.userId]
  *   "userId" => The user's id. Defaults to id of the logged-in user, if any.
+ * @param {boolean} [options.icon]
  *   "icon" => Optional. Render icon before the username.
+ * @param {boolean} [options.iconAttributes]
  *   "iconAttributes" => Optional. Array of attributes to render for the icon.
+ * @param {boolean} [options.editable]
  *   "editable" => Optional. Whether to provide an interface for editing the user's info. Can be array containing "icon", "name".
+ * @param {boolean} [options.renderOnClient]
+ *    If true, only the html container is rendered, so the client will do the rest.
  */
 function Users_avatar_tool($options)
 {
@@ -23,12 +28,15 @@ function Users_avatar_tool($options)
 	} else {
 		$user = Users_User::getUser($options['userId']);
 	}
+	Q_Response::addStylesheet('plugins/Q/css/Ui.css');
+	Q_Response::setToolOptions($options);
+	if (!empty($options['renderOnClient'])) {
+		return '';
+	}
 	$user = !empty($options['userId'])
 		? Users_User::getUser($options['userId'])
 		: Users::loggedInUser();
 	
-	Q_Response::addStylesheet('plugins/Q/css/Ui.css');
-	Q_Response::setToolOptions($options);
 	if (!$user) {
 		return '';
 	}

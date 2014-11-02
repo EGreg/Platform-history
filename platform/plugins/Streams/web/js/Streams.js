@@ -2572,24 +2572,35 @@ var Ap = Avatar.prototype;
  * @method displayName
  * @param {Object} [options] A bunch of options which can include:
  *   @param {String} [options.short] Try to show the first name only
+ *   @param {String} [options.short] Try to show the first name only
  * @return {String}
  */
 Ap.displayName = function _Avatar_prototype_displayName (options) {
-	var fn = this.firstName, 
-		ln = this.lastName,
-		u = this.username;
+	var fn = this.firstName;
+	var ln = this.lastName;
+	var u = this.username;
+	var p1 = null, p2 = null;
 	if (options && options['short']) {
-		return fn || u;
-	}
-	if (fn && ln) {
-		return fn + ' ' + ln;
+		p1 = fn || u;
+		p2 = null;
+	} else if (fn && ln) {
+		p1 = fn;
+		p2 = ln;
 	} else if (fn && !ln) {
-		return u ? fn + ' ' + u : fn;
+		p1 = fn;
+		p2 = u || null;
 	} else if (!fn && !ln) {
-		return u + ' ' + ln;
+		p1 = u;
+		p2 = ln;
 	} else {
-		return u ? u : null;
+		p1 = u || null;
+		p2 = null;
 	}
+	if (options && options['spans']) {
+		p1 = p1 && '<span class="Streams_firstName">'+p1.encodeHTML()+'</span>';
+		p2 = p2 && '<span class="Streams_lastName">'+p2.encodeHTML()+'</span>';
+	}
+	return (p1 === null) ? '' : ((p2 === null) ? p1 : p1 + ' ' + p2);
 };
 
 /**

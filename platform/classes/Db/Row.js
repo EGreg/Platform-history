@@ -192,15 +192,20 @@ function Row(fields, retrieved /* false */) {
 		/**
 		 * Optional. If defined the method is called before taking actions to save row.
 		 * It can be used synchronously and can ignore callback but must return
-		 * "modifiedFields" object. If used asyncronously shall pass this object
+		 * `modifiedFields` object. If used asyncronously shall pass this object
 		 * to callback
 		 *
 		 * **NOTE:** *if this method is defined but do not return result and do not call callback,
-		 * the save() method fails silently without making any changes in the database!!!*
+		 * the `save()` method fails silently without making any changes in the database!!!*
 		 * @method beforeSave
 		 * @param modifiedFields {object}
+<<<<<<< Local Changes
 		 * @param [callback=null] {function} This function is called when hook completes. Returns error -
+		 *	error object if any and modifiedFields as parameters.
+=======
+		 * @param [callback=null] {function} This function is called when hook completes. Returns `error` -
 		 *	error object if any and `modifiedFields` as parameters.
+>>>>>>> External Changes
 		 */
 		if (!_split && typeof this.beforeSave === "function") { // skip beforeSave when on _split is defined
 			try {
@@ -343,15 +348,15 @@ function Row(fields, retrieved /* false */) {
 		/**
 		 * Optional. If defined the method is called before taking actions to retrieve row.
 		 * It can be used synchronously and can ignore callback but must return
-		 * `search_criteria` object. If used asyncronously shall pass this object
+		 * search_criteria object. If used asyncronously shall pass this object
 		 * to callback
 		 *
 		 * **NOTE:** *if this method is defined but do not return result and do not call callback,
-		 * the `retrieve()` method fails silently!!!*
+		 * the retrieve() method fails silently!!!*
 		 * @method beforeRetrieve
 		 * @param search_criteria {object}
-		 * @param [callback=null] {function} This function is called when hook completes. Returns `error` -
-		 *	error object if any and `search_criteria` as parameters.
+		 * @param [callback=null] {function} This function is called when hook completes. Returns error -
+		 *	error object if any and search_criteria as parameters.
 		 */
 		if (typeof this.beforeRetrieve === "function") {
 			try {
@@ -510,15 +515,15 @@ function Row(fields, retrieved /* false */) {
 		/**
 		 * Optional. If defined the method is called before taking actions to remove row.
 		 * It can be used synchronously and can ignore callback but must return
-		 * `search_criteria` object. If used asyncronously shall pass this object
+		 * search_criteria object. If used asyncronously shall pass this object
 		 * to callback
 		 *
 		 * **NOTE:** *if this method is defined but do not return result and do not call callback,
-		 * the `remove()` method fails silently without changing database!!!*
+		 * the remove() method fails silently without changing database!!!*
 		 * @method beforeRemove
 		 * @param search_criteria {object}
-		 * @param [callback=null] {function} This function is called when hook completes. Returns `error` -
-		 *	error object if any and `search_criteria` as parameters.
+		 * @param [callback=null] {function} This function is called when hook completes. Returns error -
+		 *	error object if any and search_criteria as parameters.
 		 */
 		if (typeof this.beforeRemove === "function") {
 			try {

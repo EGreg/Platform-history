@@ -3,14 +3,20 @@
 /**
  * This tool renders a user avatar
  *
- * @param array $options
- * An associative array of parameters, containing:
+ * @param {array} $options An associative array of parameters, containing:
+ * @param {boolean} [options.userId]
  *   "userId" => The user's id. Defaults to id of the logged-in user, if any.
- *   "icon" => Optional. Render icon before the display name. Can be true or a valid icon size: 40, 50 or 80.
- *   "iconAttributes" => Optional. Array of attributes to render for the icon.
+ * @param {boolean} [options.icon]
+ *   "icon" => Optional. Render icon before the username.
+ * @param {boolean} [options.iconAttributes]
+ *   "iconAttributes" => Optional. Array of attributes to render for the icon. * @param {boolean} [options.short]
  *   "short" => Optional. Renders the short version of the display name.
+ * @param {boolean} [options.editable]
  *   "editable" => Optional. Whether to provide an interface for editing the user's info. Can be array containing "icon", "name".
+ * @param {boolean} [options.cacheBust]
  *   "cacheBust" => Defaults to 1000. Number of milliseconds to use for Q_Uri::cacheBust for combating unintended caching on some environments.
+ * @param {boolean} [options.renderOnClient]
+ *    If true, only the html container is rendered, so the client will do the rest.
  */
 function Users_avatar_tool($options)
 {
@@ -25,6 +31,15 @@ function Users_avatar_tool($options)
 	$loggedInUserId = $loggedInUser ? $loggedInUser->id : "";
 	if (empty($options['userId'])) {
 		$options['userId'] = $loggedInUserId;
+	}
+	unset($options['iconAttributes']);
+	if (!empty($options['editable'])
+	and is_string($options['editable'])) {
+		$options['editable'] = array($options['editable']);
+	}
+	Q_Response::setToolOptions($options);
+	if (!empty($options['renderOnClient'])) {
+		return '';
 	}
 	$avatar = Streams_Avatar::fetch($loggedInUserId, $options['userId']);
 	if (!$avatar) {
@@ -53,11 +68,5 @@ function Users_avatar_tool($options)
 	$o['spans'] = true;
 	$displayName = $avatar->displayName($o);
 	$result .= "<span class='Users_avatar_name'>$displayName</span>";
-	unset($options['iconAttributes']);
-	if (!empty($options['editable'])
-	and is_string($options['editable'])) {
-		$options['editable'] = array($options['editable']);
-	}
-	Q_Response::setToolOptions($options);
 	return $result;
 }

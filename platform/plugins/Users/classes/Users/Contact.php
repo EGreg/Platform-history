@@ -26,29 +26,56 @@ class Users_Contact extends Base_Users_Contact
 	 * Add contact to label
 	 * @method addContact
 	 * @param {string} $userId
-	 * @param {string} $label
-	 * @param {string} $contactId
+	 *  The id of the user whose contact will be added
+	 * @param {string} $contactUserId
+	 *  The id of the user who is the contact
+	 * @param {string|array} $label
+	 *  The label of the contact. This can be a string or an array of strings, in which case
+	 *  multiple contact rows are saved.
 	 * @param {string} [$nickname='']
-	 * @return {boolean}
+	 *  Optional nickname to assign to the contact
+	 *  @optional
+	 * @throws {Q_Exception_RequiredField}
+	 *	if $label is missing
+	 * @return {array} Array of contacts that are saved
 	 */
-	static function addContact($userId, $label, $contactId, $nickname = '') {
-		$contact = new Users_Contact();
-		$contact->userId = $userId;
-		$contact->label = $label;
-		$contact->contactUserId = $contactId;
-		$contact->nickname = !empty($nickname) ? $nickname : '';
-		return !!$contact->save(true);
+	static function addContact($userId, $label, $contactUserId, $nickname = '') {
+		if (empty($label)) {
+			throw new Q_Exception_RequiredField(
+				array('field' => 'label')
+			);
+		}
+		$labels = is_array($label) ? $label : array($label);
+		$contacts = array();
+		foreach ($labels as $l) {
+			// Insert the contacts one by one, so if an error occurs
+			// we can continue right on inserting the rest.
+			$contact = new Users_Contact();
+			$contact->userId = $userId;
+			$contact->contactUserId = $contactUserId;
+			$contact->label = $l;
+			$contact->save(true);
+			$contacts[] = $contact;
+		}
+		/**
+		 * @event Users/User/addContact {after}
+		 * @param {string} 'contactUserId'
+		 * @param {string} 'label'
+		 * @param {array} 'contacts'
+		 */
+		Q::event('Users/Contact/add', compact('contactUserId', 'label', 'contacts'), 'after');
+		return $contacts;
 	}
 
 	/**
 	 * Check if contact belongs to label
-	 * @method checkContact
+	 * @method checkLabel
 	 * @param {string} $userId
 	 * @param {string} $label
 	 * @param {string} $contactId
 	 * @return {boolean}
 	 */
-	static function checkContact($userId, $label, $contactId) {
+	static function checkLabel($userId, $label, $contactId) {
 		if (!$userId or !$contactId) {
 			return null;
 		}
@@ -67,7 +94,7 @@ class Users_Contact extends Base_Users_Contact
 
 	/**
 	 * Retrieve contacts belonging to label
-	 * @method getContacts
+	 * @method fetch
 	 * @param {string} $userId
 	 * @param {string|DB_Range} $label
 	 * @param {array} [$options=array()] Query options including:
@@ -75,7 +102,7 @@ class Users_Contact extends Base_Users_Contact
 	 * 		@param 'offset' {integer}
 	 * @return {array}
 	 */
-	static function getContacts($userId, $label /* string|DB_Range */, $options = array()) {
+	static function fetch($userId, $label /* string|DB_Range */, $options = array()) {
 		if (empty($label)) throw new Q_Exception("Label is required");
 		$limit = isset($options['limit']) ? $options['limit'] : false;
 		$offset = isset($options['offset']) ? $options['offset'] : 0;

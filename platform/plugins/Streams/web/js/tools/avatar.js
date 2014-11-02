@@ -114,7 +114,7 @@ Q.Tool.define("Users/avatar", function(options) {
 		}
 	
 		var p = new Q.Pipe(['icon', 'contents'], function (params) {
-			tool.element.innerHTML = params.icon + params.contents;	
+			tool.element.innerHTML = params.icon[0] + params.contents[0];
 			_present();
 		});
 		
@@ -137,10 +137,12 @@ Q.Tool.define("Users/avatar", function(options) {
 
 			fields = Q.extend({}, state.templates.contents.fields, {
 				name: this.displayName({
-					"short": state["short"]
+					"short": state["short"],
+					"spans": true
 				})
 			});
-			Q.Template.render('Users/avatar/contents', fields, function (err, html) {
+			Q.Template.render('Users/avatar/contents', fields,
+			function (err, html) {
 				p.fill('contents')(html);
 			}, state.templates.contents);
 		});
@@ -204,6 +206,6 @@ Q.Tool.define("Users/avatar", function(options) {
 );
 
 Q.Template.set('Users/avatar/icon', '<img src="{{& src}}" alt="{{alt}}" class="Users_avatar_icon">');
-Q.Template.set('Users/avatar/contents', '<{{tag}} class="Users_avatar_name">{{name}}</{{tag}}>');
+Q.Template.set('Users/avatar/contents', '<{{tag}} class="Users_avatar_name">{{& name}}</{{tag}}>');
 
 })(Q, jQuery, window);

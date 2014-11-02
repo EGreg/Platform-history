@@ -263,35 +263,16 @@ class Users_User extends Base_Users_User
 	 * @param {string|array} $label
 	 *  The label of the contact. This can be a string or an array of strings, in which case
 	 *  multiple contact rows are saved.
+	 * @param {string} [$nickname='']
+	 *  Optional nickname to assign to the contact
+	 *  @optional
 	 * @throws {Q_Exception_RequiredField}
 	 *	if $label is missing
+	 * @return {array} Array of contacts that are saved
 	 */
-	function addContact($contactUserId, $label)
+	function addContact($label, $contactUserId, $nickname = '')
 	{
-		if (empty($label)) {
-			throw new Q_Exception_RequiredField(
-				array('field' => 'label')
-			);
-		}
-		$labels = is_array($label) ? $label : array($label);
-		$contacts = array();
-		foreach ($labels as $l) {
-			// Insert the contacts one by one, so if an error occurs
-			// we can continue right on inserting the rest.
-			$contact = new Users_Contact();
-			$contact->userId = $this->id;
-			$contact->contactUserId = $contactUserId;
-			$contact->label = $l;
-			$contact->save(true);
-			$contacts[] = $contact;
-		}
-		/**
-		 * @event Users/User/addContact {after}
-		 * @param {string} 'contactUserId'
-		 * @param {string} 'label'
-		 * @param {array} 'contacts'
-		 */
-		Q::event('Users/User/addContact', compact('contactUserId', 'label', 'contacts'), 'after');
+		Users_Contact::addContact($this->id, $label, $contactId, $nickname);
 	}
 	
 	/**

@@ -130,7 +130,7 @@ function _Streams_participants(options) {
 		function addAvatar(userId, prepend) {
 			var $element = $(Q.Tool.setUpElement('div', 'Users/avatar', {
 				userId: userId,
-				short: true,
+				"short": true,
 				icon: '40'
 			}));
 			if (false !== Q.handle(state.filter, tool, [$element])) {

@@ -90,8 +90,8 @@ interface iDb_Query
 	 *  from the query before it is executed. It is also saved for
 	 *  future invocations to use.
 	 *  Do this only if the statement will be executed many times with
-	 *  different parameters. Basically you would use `->bind(...)` between 
-	 *  invocations of `->execute()`.
+	 *  different parameters. Basically you would use "->bind(...)" between 
+	 *  invocations of "->execute()".
 	 * @return {Db_Result}
 	 *  The Db_Result object containing the PDO statement that resulted
 	 *  from the query.
@@ -164,7 +164,7 @@ interface iDb_Query
 	function where ($criteria);
 
 	/**
-	 * Adds to the WHERE clause, like this:   `... AND (x OR y OR z)`,
+	 * Adds to the WHERE clause, like this:   "... AND (x OR y OR z)",
 	 * where x, y and z are the arguments to this function.
 	 * @method andWhere
 	 * @param {Db_Expression|string} $criteria
@@ -174,7 +174,7 @@ interface iDb_Query
 	function andWhere ($criteria, $or_criteria = null);
 
 	/**
-	 * Adds to the WHERE clause, like this:   `... OR (x AND y AND z)`,
+	 * Adds to the WHERE clause, like this:   "... OR (x AND y AND z)",
 	 * where x, y and z are the arguments to this function.
 	 * @method orWhere
 	 * @param {Db_Expression|string} $criteria
@@ -457,7 +457,7 @@ abstract class Db_Query extends Db_Expression
 	 *
 	 * @method shard
 	 * @param {array} [$upcoming=null] Temporary config to use in sharding. Used during shard split process only
-	 * @return {array} Returns an array of `$shardName => $query` pairs, where $shardName
+	 * @return {array} Returns an array of ($shardName => $query) pairs, where $shardName
 	 *  can be the name of a shard, '' for just the main shard, or "*" to have the query run on all the shards.
 	 */
 

@@ -615,19 +615,33 @@ Streams.listen = function (options) {
                                     contactUserId: userId
             				    }).save(true);
             				}
+							
 
             				// Add Streams/invited/$type label
             				(new Users.Contact({
         				        userId: invitingUserId,
                                 label: "Streams/invited/"+stream.type,
                                 contactUserId: userId
-        				    })).save(true);             
+        				    })).save(true);
+							
+            				(new Users.Contact({
+        				        userId: invitingUserId,
+                                label: "Streams/invited",
+                                contactUserId: userId
+        				    })).save(true);
 
         				    // Add Streams/invitedBy/$type label
-        				    // NOTE: In the future, we will have to send a distributed message to the new user's node                  				
+        				    // NOTE: In the future, we will have to send a distributed message to the new user's node
+							     				
             				(new Users.Contact({
         				        userId: userId,
                                 label: "Streams/invitedBy/"+stream.type,
+                                contactUserId: invitingUserId
+        				    })).save(true);
+							
+            				(new Users.Contact({
+        				        userId: userId,
+                                label: "Streams/invitedBy",
                                 contactUserId: invitingUserId
         				    })).save(true);
 
