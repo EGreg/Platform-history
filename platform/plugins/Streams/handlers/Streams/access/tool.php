@@ -46,14 +46,6 @@ function Streams_access_tool($options)
 	}
 	$stream->addPreloaded($user->id);
 
-	$stream = Streams::fetchOne($user->id, $publisherId, $streamName);
-	if (!$stream) {
-		throw new Q_Exception_MissingRow(array(
-			'table' => 'stream',
-			'criteria' => 'with that name'
-		));
-	}
-
 	if (!$stream->testAdminLevel('own')) {
 		throw new Users_Exception_NotAuthorized();
 	}
@@ -122,12 +114,18 @@ function Streams_access_tool($options)
 			'streamName'
 		));
 	} else {
-		$extra = compact('stream', 'accessArray', 'avatarArray', 'labels', 'icons');
-		Q_Response::setSlot('extra', $extra);
+		Q_Response::setSlot('extra', array(
+			'stream' => $stream->exportArray(),
+			'accessArray' => $accessArray,
+			'avatarArray' => $avatarArray,
+			'labels' => $labels,
+			'icons' => $icons
+		));
 	}
 
 	return Q::view('Streams/tool/access.php', compact(
-		'stream', 'access_array', 'tabs', 'tab', 'labels', 'icons', 'levels', 'dir', 'publisherId', 'streamName', 'accessActionUrl',
+		'stream', 'tabs', 'tab', 'labels', 'icons',
+		'levels', 'dir', 'publisherId', 'streamName', 'accessActionUrl',
 		'controls'
 	));
 }
