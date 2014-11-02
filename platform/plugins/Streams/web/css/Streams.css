@@ -338,6 +338,9 @@
 .Streams_access_tool_dialog_container input { width: 97%; }
 .Streams_access_tool_dialog_container .Streams_access_user_array td select { float: right; }
 
+.Streams_access_label_array { font-size: 11px; }
+.Streams_access_label_array img { width: 30px; height: 30px; }
+
 /* phones */
 @media (min-width: 320px) and (max-width: 580px) {
 	.Streams_access_tool_dialog_container, .Streams_access_tool_dialog_container select { width: 100%; }

@@ -630,18 +630,18 @@ Streams.listen = function (options) {
                                 contactUserId: userId
         				    })).save(true);
 
-        				    // Add Streams/invitedBy/$type label
+        				    // Add Streams/invitedMe/$type label
         				    // NOTE: In the future, we will have to send a distributed message to the new user's node
 							     				
             				(new Users.Contact({
         				        userId: userId,
-                                label: "Streams/invitedBy/"+stream.type,
+                                label: "Streams/invitedMe/"+stream.type,
                                 contactUserId: invitingUserId
         				    })).save(true);
 							
             				(new Users.Contact({
         				        userId: userId,
-                                label: "Streams/invitedBy",
+                                label: "Streams/invitedMe",
                                 contactUserId: invitingUserId
         				    })).save(true);
 

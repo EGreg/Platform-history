@@ -29,7 +29,7 @@ function Users_getintouch_tool($options)
 	}
 	if (is_string($user)) {
 		$userId = $user;
-		$user = Users_User::getUser($userId);
+		$user = Users_User::fetch($userId);
 		if (!$user) {
 			throw new Q_Exception_MissingRow(array('table' => 'user', 'criteria' => "id=$userId"));
 		}

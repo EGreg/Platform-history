@@ -13,6 +13,6 @@ function Streams_invited_response()
 			'criteria' => "token: $token"
 		), 'token');
 	}
-	Users_User::getUser($invite->userId, true)->setVerified();
+	Users_User::fetch($invite->userId, true)->setVerified();
 	Q_Response::redirect($invite->appUrl."?".http_build_query(array('Q.Streams.token' => $token), null, '&'));
 }

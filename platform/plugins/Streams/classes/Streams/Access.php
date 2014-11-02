@@ -35,7 +35,7 @@ class Streams_Access extends Base_Streams_Access
 		if (!isset($user)) {
 			$user = Users::loggedInUser();
 		} else if (is_string($user)) {
-			$user = Users_User::getUser($user);
+			$user = Users_User::fetch($user);
 		}
 		if (!isset($user)) return false;
 

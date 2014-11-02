@@ -21,13 +21,6 @@ class Users_Label extends Base_Users_Label
 	function setUp()
 	{
 		parent::setUp();
-	}	/**
-	 * @method getTitle
-	 * @param  {User_Label} $label
-	 * @return {string}
-	 */
-	static function getTitle($label) {
-		return $label->title;
 	}
 
 	/**
@@ -38,7 +31,12 @@ class Users_Label extends Base_Users_Label
 	 * @param {string} [$title='']
 	 * @param {string} [$icon='default']
 	 */
-	static function addLabel($label, $userId = null, $title = '', $icon = 'default') {
+	static function addLabel(
+		$label, 
+		$userId = null, 
+		$title = '', 
+		$icon = 'default')
+	{
 		if (!isset($userId)) {
 			$user = Users::loggedInUser(true);
 			$userId = $user->id;
@@ -52,31 +50,14 @@ class Users_Label extends Base_Users_Label
 	}
 
 	/**
-	 * Retrieve label
-	 * @method removeLabel
-	 * @param {string} $label
-	 * @param {string|null} [$userId=null]
-	 * @return {boolean}
-	 */
-	static function getLabel($label, $userId = null) {
-		if (!isset($userId)) {
-			$user = Users::loggedInUser(true);
-			$userId = $user->id;
-		}
-		$l = new Users_Label();
-		$l->label = $label;
-		$l->userId = $userId;
-		return $l->retrieve();		
-	}
-
-	/**
 	 * Remove label
 	 * @method removeLabel
 	 * @param {string} $label
 	 * @param {string|null} [$userId=null]
 	 * @return {boolean}
 	 */
-	static function removeLabel($label, $userId = null) {
+	static function removeLabel($label, $userId = null)
+	{
 		if (!isset($userId)) {
 			$user = Users::loggedInUser(true);
 			$userId = $user->id;
@@ -90,6 +71,49 @@ class Users_Label extends Base_Users_Label
 		$l->userId = $userId;
 		return $l->remove(); 
 	}
+	
+	/**
+	 * Fetch an array of labels. By default, returns all the labels.
+	 * @method fetch
+	 * @param {string} [$userId=null] The id of the user whose contact labels should be fetched
+	 * @param {string} [$prefix=''] An optional prefix such as "Users/" to get only a particular subset of labels.
+	 * @param {boolean} [$checkContacts=false] Whether to also look in the Users_Contact table and only return labels that have at least one contact.
+	 * @return {array} An array of array(label => title) pairs
+	 */
+	static function fetch($userId = null, $prefix = '', $checkContacts = false)
+	{
+		if (!isset($userId)) {
+			$user = Users::loggedInUser(true);
+			$userId = $user->id;
+		}
+		$criteria = array('userId' => $userId);
+		if ($prefix) {
+			$criteria['label'] = new Db_Range($prefix, true, false, null);
+		}
+		if ($checkContacts) {
+			$contact_array = Users_Contact::select('*')
+				->where($criteria)
+				->groupBy('userId, label')
+				->fetchDbRows();
+		}
+		$labels = Users_Label::select('*')
+			->where($criteria)
+			->fetchDbRows(null, null, 'label');
+		$icons = array();
+		if (!$checkContacts) {
+			return $labels;
+		}
+		$contacts = array();
+		foreach ($contact_array as $contact) {
+			$contacts[$contact->label] = $contact->label;
+		}
+		foreach ($labels as $label) {
+			if (!isset($contacts[$label->label])) {
+				unset($labels[$label->label]);
+			}
+		}
+		return $labels;
+	}
 
 	/* * * */
 	/**
@@ -99,7 +123,8 @@ class Users_Label extends Base_Users_Label
 	 * @param {array} $array
 	 * @return {Users_Label} Class instance
 	 */
-	static function __set_state(array $array) {
+	static function __set_state(array $array)
+	{
 		$result = new Users_Label();
 		foreach($array as $k => $v)
 			$result->$k = $v;

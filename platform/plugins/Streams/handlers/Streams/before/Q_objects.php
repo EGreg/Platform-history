@@ -49,7 +49,7 @@ function Streams_before_Q_objects()
 	}
 	
 	// now process the invite
-	$userId = Users_User::getUser($invite->userId, true);
+	$userId = Users_User::fetch($invite->userId, true);
 	$stream = new Streams_Stream();
 	$stream->publisherId = $invite->publisherId;
 	$stream->name = $invite->streamName;
@@ -61,7 +61,7 @@ function Streams_before_Q_objects()
 	}
 	$stream->calculateAccess($userId);
 	
-	$byUserId = Users_User::getUser($invite->invitingUserId, true);
+	$byUserId = Users_User::fetch($invite->invitingUserId, true);
 	$byStream = new Streams_Stream();
 	$byStream->publisherId = $invite->publisherId;
 	$byStream->name = $invite->streamName;

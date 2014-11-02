@@ -28,7 +28,7 @@ function Streams_stream_response_column1()
 	$token = Q_Request::special('token', null);
 	$invite = Streams_Invite::fromToken($token);
 	if ($invite) {
-		$by_user = Users_User::getUser($invite->invitingUserId);
+		$by_user = Users_User::fetch($invite->invitingUserId);
 		$by_display_name = $invite->displayName;
 		if (empty($by_display_name)) {
 			$by_display_name = Streams::displayName($by_user->id);

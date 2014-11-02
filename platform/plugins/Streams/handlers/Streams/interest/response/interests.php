@@ -19,7 +19,7 @@ function Streams_interest_response_interests()
 		throw new Q_Exception("Client queries are restricted, as per Streams/interests/allowClientQueries");
 	}
 	if ($userId) {
-		$user = Users_User::getUser($userId);
+		$user = Users_User::fetch($userId);
 	}
 	if (!$user) {
 		throw new Users_Exception_NotLoggedIn();

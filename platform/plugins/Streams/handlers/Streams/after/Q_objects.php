@@ -23,7 +23,7 @@ function Streams_after_Q_objects () {
 		Q_Config::get("Streams", "defaults", "invite", "dialog", array())
 	);
 
-	$invitingUser = Users_User::getUser($invite->invitingUserId);
+	$invitingUser = Users_User::fetch($invite->invitingUserId);
 	list($relations, $related) = Streams::related(
 		$user->id,
 		$stream->publisherId,

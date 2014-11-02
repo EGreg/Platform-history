@@ -134,17 +134,25 @@ Q.Tool.define("Streams/access", function(options) {
 					$('<img />').attr('src', avatar.iconUrl()).css('width', 20)
 				)
 			).append(
-				$('<td style="vertical-align: middle;" />').append(
+				$('<td style="vertical-align: middle;" />')
+				.append(
 					$('<span class="access-tool-username">')
-						.text(Q.plugins.Streams.displayName(avatar) + ' ' + actionText)
+					.text(Q.plugins.Streams.displayName(avatar)
+						+ ' ' + actionText + ' '
+					)
 				).append(clonedSelect).append($('<div class="clear">'))
 			).append(
 				$('<td style="vertical-align: middle;" />').append(newRemoveLink(criteria))
 			).appendTo($('.Streams_access_user_array', element));
 		} else {
+			var label = state.labels[contactLabel];
+			var icon = $('<img />').attr('src', 
+				Q.Streams.iconUrl(state.icons[contactLabel], 40)
+			);
 			tr.append(
 				$('<td style="vertical-align: middle;" />')
-					.text(contactLabel).append(' ' + actionText).append(clonedSelect)
+				.text(label).prepend(icon).append(' ' + actionText + ' ')
+				.append(clonedSelect)
 			).append(
 				$('<td style="vertical-align: middle;" />').append(newRemoveLink(criteria))
 			).appendTo($('.Streams_access_label_array', element));
@@ -159,18 +167,22 @@ Q.Tool.define("Streams/access", function(options) {
 	function _initialize() {
 		
 		var ts = tool.child("Q_tabs").state;
-		ts.loaderOptions = Q.extend(ts.loaderOptions, {
+		ts.loaderOptions = Q.extend({}, 10, Q.loadUrl.options, 10, ts.loaderOptions, {
 			quiet: true,
 			loadExtras: false,
 			ignorePage: true,
+			slotNames: {replace: ['controls', 'extra']},
 			slotContainer: function (name, response) {
 				if (name === 'controls') {
 					return tool.$('.Streams_access_controls')[0];
 				}
+				if (!response) return;
 				var extra = response.slots.extra;
 				Q.Streams.construct(extra.stream, {}, null);
 				state.avatarArray = extra.avatarArray;
 				state.accessArray = extra.accessArray;
+				state.labels = extra.labels;
+				state.icons = extra.icons;
 			}
 		});
 		

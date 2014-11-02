@@ -39,7 +39,8 @@ class Users_Contact extends Base_Users_Contact
 	 *	if $label is missing
 	 * @return {array} Array of contacts that are saved
 	 */
-	static function addContact($userId, $label, $contactUserId, $nickname = '') {
+	static function addContact($userId, $label, $contactUserId, $nickname = '')
+	{
 		if (empty($label)) {
 			throw new Q_Exception_RequiredField(
 				array('field' => 'label')
@@ -75,7 +76,8 @@ class Users_Contact extends Base_Users_Contact
 	 * @param {string} $contactId
 	 * @return {boolean}
 	 */
-	static function checkLabel($userId, $label, $contactId) {
+	static function checkLabel($userId, $label, $contactId)
+	{
 		if (!$userId or !$contactId) {
 			return null;
 		}
@@ -102,7 +104,8 @@ class Users_Contact extends Base_Users_Contact
 	 * 		@param 'offset' {integer}
 	 * @return {array}
 	 */
-	static function fetch($userId, $label /* string|DB_Range */, $options = array()) {
+	static function fetch($userId, $label /* string|DB_Range */, $options = array())
+	{
 		if (empty($label)) throw new Q_Exception("Label is required");
 		$limit = isset($options['limit']) ? $options['limit'] : false;
 		$offset = isset($options['offset']) ? $options['offset'] : 0;
@@ -125,7 +128,8 @@ class Users_Contact extends Base_Users_Contact
 	 * @param {string} $contactId
 	 * @return {boolean}
 	 */
-	static function removeContact($userId, $label, $contactId) {
+	static function removeContact($userId, $label, $contactId)
+	{
 		$contact = new Users_Contact();
 		$contact->userId = $userId;
 		$contact->label = $label;

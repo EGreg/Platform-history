@@ -154,7 +154,7 @@ class Awards_Credits
 		if ($existing_amount < $amount) {
 			throw new Awards_Exception_NotEnoughCredits(array('missing' => $amount - $existing_amount));
 		}
-		$to_user = Users::getUser($toUserId, true);
+		$to_user = Users_User::fetch($toUserId, true);
 		$to_stream = new Streams_Stream();
 		$to_stream->publisherId = $toUserId;
 		$to_stream->name = 'Awards/credits';

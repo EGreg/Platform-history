@@ -665,7 +665,7 @@ abstract class Users extends Base_Users
 			return null;
 		}
 		$id = $_SESSION['Users']['loggedInUser']['id'];
-		$user = Users_User::getUser($id);
+		$user = Users_User::fetch($id);
 		if (!$user and $throwIfNotLoggedIn) {
 			throw new Users_Exception_NotLoggedIn();
 		}

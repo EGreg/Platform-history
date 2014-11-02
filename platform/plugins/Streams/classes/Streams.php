@@ -809,7 +809,7 @@ abstract class Streams extends Base_Streams
 	 * Get the publisher id from the request, if it can be deduced
 	 * @method requestedPublisherId
 	 * @static
-	 * @param {boolean} $throw_if_missing=false
+	 * @param {boolean} $throwIfMissing=false
 	 *  Optional. If true, throws an exception if the publisher id cannot be deduced
 	 * @return {integer}
 	 *  The id of the publisher user
@@ -818,7 +818,7 @@ abstract class Streams extends Base_Streams
 	 * @throws {Q_Exception_RequiredField}
 	 *  If the username can't be deduced, this is thrown
 	 */
-	static function requestedPublisherId($throw_if_missing = false)
+	static function requestedPublisherId($throwIfMissing = false)
 	{
 		if (isset(self::$requestedPublisherId_override)) {
 			return self::$requestedPublisherId_override;
@@ -839,7 +839,7 @@ abstract class Streams extends Base_Streams
 		if (Streams::$followedInvite) {
 			return Streams::$followedInvite->publisherId;
 		}
-		if ($throw_if_missing) {
+		if ($throwIfMissing) {
 			throw new Q_Exception_RequiredField(
 				array('field' => 'publisher id'),
 				'publisherId'
@@ -855,7 +855,7 @@ abstract class Streams extends Base_Streams
 	 * which is useful when the URL contains just the last part of a stream's name.
 	 * @method requestedName
 	 * @static
-	 * @param {boolean} $throw_if_missing=false
+	 * @param {boolean} $throwIfMissing=false
 	 *  Optional. If true, throws an exception if the stream name cannot be deduced
 	 * @param {string} $return_as
 	 *  Defaults to "string". Can also be "array" or "original"
@@ -864,7 +864,7 @@ abstract class Streams extends Base_Streams
 	 * @throws {Q_Exception_RequiredField}
 	 *  If the name can't be deduced, this is thrown
 	 */
-	static function requestedName($throw_if_missing = false, $return_as = 'string')
+	static function requestedName($throwIfMissing = false, $return_as = 'string')
 	{
 		if (isset(self::$requestedName_override)) {
 			return self::$requestedName_override;
@@ -903,7 +903,7 @@ abstract class Streams extends Base_Streams
 		if (Streams::$followedInvite) {
 			return Streams::$followedInvite->streamName;
 		}
-		if ($throw_if_missing) {
+		if ($throwIfMissing) {
 			throw new Q_Exception_RequiredField(
 				array('field' => 'stream name'),
 				'streamName'
@@ -916,14 +916,14 @@ abstract class Streams extends Base_Streams
 	 * Get the stream type from the request, if it can be deduced
 	 * @method requestedType
 	 * @static
-	 * @param {boolean} $throw_if_missing=false
+	 * @param {boolean} $throwIfMissing=false
 	 *  Optional. If true, throws an exception if the stream type cannot be deduced
 	 * @return {string}
 	 *  The type of the stream
 	 * @throws {Q_Exception_RequiredField}
 	 *  If the type can't be deduced, this is thrown
 	 */
-	static function requestedType($throw_if_missing = false)
+	static function requestedType($throwIfMissing = false)
 	{
 		$uri = Q_Dispatcher::uri();
 		if (isset($_REQUEST['streamType'])) {
@@ -933,7 +933,7 @@ abstract class Streams extends Base_Streams
 		} else if (isset($uri->type)) {
 			return $uri->type;
 		}
-		if ($throw_if_missing) {
+		if ($throwIfMissing) {
 			throw new Q_Exception_RequiredField(
 				array('field' => 'stream type'),
 				'streamType'
@@ -946,14 +946,14 @@ abstract class Streams extends Base_Streams
 	 * Get the message type from the request, if it can be deduced
 	 * @method requestedType
 	 * @static
-	 * @param {boolean} $throw_if_missing=false
+	 * @param {boolean} $throwIfMissing=false
 	 *  Optional. If true, throws an exception if the message type cannot be deduced
 	 * @return {string}
 	 *  The type of the message
 	 * @throws {Q_Exception_RequiredField}
 	 *  If the type can't be deduced, this is thrown
 	 */
-	static function requestedMessageType($throw_if_missing = false)
+	static function requestedMessageType($throwIfMissing = false)
 	{
 		$uri = Q_Dispatcher::uri();
 		if (isset($_REQUEST['type'])) {
@@ -961,7 +961,7 @@ abstract class Streams extends Base_Streams
 		} else if (isset($uri->type)) {
 			return $uri->type;
 		}
-		if ($throw_if_missing) {
+		if ($throwIfMissing) {
 			throw new Q_Exception_RequiredField(
 				array('field' => 'message type'),
 				array('type')
@@ -976,7 +976,7 @@ abstract class Streams extends Base_Streams
 	 * @static
 	 * @param {string} $field
 	 *	The fiels name
-	 * @param {boolean} $throw_if_missing=false
+	 * @param {boolean} $throwIfMissing=false
 	 *  Optional. If true, throws an exception if the stream field cannot be deduced
 	 * @param {mixed} $default=null
 	 *	Is returned if field is not set
@@ -985,7 +985,7 @@ abstract class Streams extends Base_Streams
 	 * @throws {Q_Exception_RequiredField}
 	 *  If the field value can't be deduced, this is thrown
 	 */
-	static function requestedField($field, $throw_if_missing = false, $default = null)
+	static function requestedField($field, $throwIfMissing = false, $default = null)
 	{
 		$uri = Q_Dispatcher::uri();
 		if (isset($_REQUEST[$field])) {
@@ -998,7 +998,7 @@ abstract class Streams extends Base_Streams
 		} else if ($field = Q_Request::special("Streams.$field", $default)) {
 			return $field;
 		}
-		if ($throw_if_missing) {
+		if ($throwIfMissing) {
 			throw new Q_Exception_RequiredField(
 				array('field' => "stream $field"),
 				$field

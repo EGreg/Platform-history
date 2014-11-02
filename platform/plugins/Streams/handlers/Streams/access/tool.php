@@ -64,16 +64,13 @@ function Streams_access_tool($options)
 			'streamName' => $stream->name,
 		))->andWhere("{$tab}Level != -1")->fetchDbRows();
 		
-	$contact_array = Users_Contact::select('*')
-		->where(array(
-			'userId' => $stream->publisherId
-		))->groupBy('userId, label')
-		->fetchDbRows();
-		
-	$label_array = Users_Label::select('*')
-		->where(array(
-			'userId' => $stream->publisherId
-		))->fetchDbRows(null, null, 'label');
+	$labelRows = Users_Label::fetch($stream->publisherId, '', true);
+	$labels = array();
+	$icons = array();
+	foreach ($labelRows as $label => $row) {
+		$labels[$label] = $row->title;
+		$icons[$label] = "labels/$label";
+	}
 	
 	$userId_list = array();
 	foreach ($access_array as $a) {
@@ -84,19 +81,6 @@ function Streams_access_tool($options)
 	$avatar_array = empty($userId_list)
 		? array()
 		: Streams_Avatar::fetch($user->id, $userId_list);
-
-	$labels = array();
-	$icons = array();
-	foreach ($contact_array as $contact) {
-		$labels[$contact->label] = $contact->label;
-		$icons[$contact->label] = 'label';
-	}
-	foreach ($label_array as $label) {
-		if (isset($labels[$label->label])) {
-			$labels[$label->label] = $label->title;
-			$icons[$label->label] = 'label_'.$user->id.'_'.$label->label;
-		}
-	}
 
 	switch ($tab) {
 		case 'read':
@@ -138,12 +122,12 @@ function Streams_access_tool($options)
 			'streamName'
 		));
 	} else {
-		$extra = compact('stream', 'accessArray', 'avatarArray');
+		$extra = compact('stream', 'accessArray', 'avatarArray', 'labels', 'icons');
 		Q_Response::setSlot('extra', $extra);
 	}
 
 	return Q::view('Streams/tool/access.php', compact(
-		'stream', 'access_array', 'contact_array', 'label_array', 'tabs', 'tab', 'labels', 'icons', 'levels', 'dir', 'publisherId', 'streamName', 'accessActionUrl',
+		'stream', 'access_array', 'tabs', 'tab', 'labels', 'icons', 'levels', 'dir', 'publisherId', 'streamName', 'accessActionUrl',
 		'controls'
 	));
 }

@@ -26,7 +26,7 @@ function Users_avatar_tool($options)
 		$user = Users::loggedInUser();
 		$options['userId'] = $user->id;
 	} else {
-		$user = Users_User::getUser($options['userId']);
+		$user = Users_User::fetch($options['userId']);
 	}
 	Q_Response::addStylesheet('plugins/Q/css/Ui.css');
 	Q_Response::setToolOptions($options);
@@ -34,7 +34,7 @@ function Users_avatar_tool($options)
 		return '';
 	}
 	$user = !empty($options['userId'])
-		? Users_User::getUser($options['userId'])
+		? Users_User::fetch($options['userId'])
 		: Users::loggedInUser();
 	
 	if (!$user) {

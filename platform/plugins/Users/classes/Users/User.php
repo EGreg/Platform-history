@@ -24,15 +24,15 @@ class Users_User extends Base_Users_User
 	}
 
 	/**
-	 * Retrieves user by id
-	 * @method getUser
+	 * Intelligently retrieves user by id
+	 * @method fetch
 	 * @static
 	 * @param {string} $userId
-	 * @param {boolean} [$throw_if_missing=false] If true, throws an exception if the user can't be fetched
+	 * @param {boolean} [$throwIfMissing=false] If true, throws an exception if the user can't be fetched
 	 * @return {Users_User|null}
 	 * @throws {Users_Exception_NoSuchUser} If the URI contains an invalid "username"
 	 */
-	static function getUser ($userId, $throw_if_missing = false)
+	static function fetch ($userId, $throwIfMissing = false)
 	{
 		if (empty($userId)) {
 			$result = null;
@@ -47,7 +47,7 @@ class Users_User extends Base_Users_User
 			self::$cache['getUser'][$userId] = $user;
 		 	$result = $user;
 		}
-		if (!$result and $throw_if_missing) {
+		if (!$result and $throwIfMissing) {
 			throw new Users_Exception_NoSuchUser();
 		}
 		return $result;
