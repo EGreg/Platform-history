@@ -12,7 +12,7 @@ syntax: regexp
 ^platform/files/sessions/
 ^platform/plugins/(?!Users|Streams).*/files/
 ^platform/plugins/Users/files/Users/icons/(?!default|future)
-^platform/plugins/Streams/files/Streams/icons/(?!default|Streams)
+^platform/plugins/Streams/files/Streams/icons/(?!default)
 ^platform/plugins/Streams/files/Streams/media/
 ^platform/node_modules
 ^MyApp/local/.*
