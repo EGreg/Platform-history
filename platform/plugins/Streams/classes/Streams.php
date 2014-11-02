@@ -1050,7 +1050,7 @@ abstract class Streams extends Base_Streams
 	 *  Associative array of options, which can include:<br/>
 	 *  "fullAccess" => Ignore the access restrictions for the name<br/>
 	 *  "short" => Only display the first name<br/>
-	 *  "spans" => If true, encloses the first and last name in span tags<br/>
+	 *  "html" => If true, encloses the first and last name in span tags<br/>
 	 *  "escape" => If true, does HTML escaping of the retrieved fields
 	 * @param {string|null} $default
 	 *  What to return if there is no info to get displayName from.

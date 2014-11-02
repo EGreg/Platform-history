@@ -65,7 +65,7 @@ function Users_avatar_tool($options)
 		);
 	}
 	$o = $options['short'] ? array('short' => true) : array();
-	$o['spans'] = true;
+	$o['html'] = true;
 	$displayName = $avatar->displayName($o);
 	$result .= "<span class='Users_avatar_name'>$displayName</span>";
 	return $result;

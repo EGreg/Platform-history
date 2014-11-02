@@ -2596,7 +2596,7 @@ Ap.displayName = function _Avatar_prototype_displayName (options) {
 		p1 = u || null;
 		p2 = null;
 	}
-	if (options && options['spans']) {
+	if (options && options['html']) {
 		p1 = p1 && '<span class="Streams_firstName">'+p1.encodeHTML()+'</span>';
 		p2 = p2 && '<span class="Streams_lastName">'+p2.encodeHTML()+'</span>';
 	}
