@@ -5836,7 +5836,10 @@ Q.addStylesheet = function _Q_addStylesheet(href, media, onload, options) {
 		var ret = [];
 		var len = href.length;
 		for (i=0; i<len; ++i) {
-			ret.push(Q.addStylesheet(href[i].href, href[i].media));
+			ret.push(Q.addStylesheet(
+				href[i].href || href[i],
+				href[i].media
+			));
 		}
 		return ret;
 	}
