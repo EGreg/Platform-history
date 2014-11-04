@@ -52,7 +52,7 @@ Q.text.Users = {
 			passphrase: 100
 		},
 		confirmTerms: "Accept the Terms of Service?",
-		facebookNoEmail: "Your facebook lacks a confirmed email address to log in with. Just try the native way."
+		facebookNoEmail: "Your facebook account is missing a confirmed email address. Simply log in the native way."
 	},
 	
 	setIdentifier: {
@@ -487,13 +487,13 @@ Users.login = function(options) {
 	}
 	var o = Q.extend({}, Users.login.options, options);
 	
-	$.fn.plugin.load('Q/dialog', function () {
+	if (typeof o.using === 'string') {
+		o.using = o.using.split(',');
+	}
+	
+	function _doLogin() {
 	
 		var dest;
-
-		if (typeof o.using === 'string') {
-			o.using = o.using.split(',');
-		}
 
 		// try quietly, possible only with facebook
 		if (o.tryQuietly) {
@@ -507,7 +507,7 @@ Users.login = function(options) {
 			}
 			return false;
 		}
-		
+	
 		priv.result = null;
 		priv.used = null;
 
@@ -567,10 +567,16 @@ Users.login = function(options) {
 				}, opts);
 			});
 		}
-	
+
 		delete priv.login_connected; // if we connect, it will be filled
+
+	}
 	
-	});
+	if (!o.using.indexOf('native') >= 0) {
+		_doLogin();
+	} else {
+		$.fn.plugin.load('Q/dialog', _doLogin);
+	}
 	
 	return false;
 
@@ -1364,6 +1370,13 @@ function login_setupDialog(usingProviders, scope, dialogContainer, identifierTyp
 							var p = Q.pipe(['me', 'picture'], function(params) {
 								var me = params.me[0];
 								var picture = params.picture[0].data;
+								if (!me.email) {
+									step1_form.data('used', null);
+									alert(Q.text.Users.login.facebookNoEmail);
+									$('#Users_login_identifier')
+									.plugin('Q/clickfocus');
+									return true;
+								}
 								priv.registerInfo = {
 									firstName: me.first_name,
 									lastName: me.last_name,
@@ -1376,10 +1389,6 @@ function login_setupDialog(usingProviders, scope, dialogContainer, identifierTyp
 									picWidth: picture.width,
 									picHeight: picture.height
 								};
-								if (!me.email) {
-									alert(Q.text.Users.login.facebookNoEmail);
-									return true;
-								}
 								$('#Users_login_identifier')
 								.val(me.email)
 								.closest('form')
