@@ -285,8 +285,11 @@ class Q_Response
 	 */
 	static function setStyle($keys, $value = null, $slotName = null)
 	{
-		if (!is_array($keys)) {
-			$keys = array($keys);
+		if (Q::isAssociative($keys)) {
+			foreach ($keys as $k => $v) {
+				self::setStyle($k, $v, $value);
+			}
+			return;
 		}
 		$args = is_array($keys) ? $keys : array($keys);
 		$args[] = $value;
