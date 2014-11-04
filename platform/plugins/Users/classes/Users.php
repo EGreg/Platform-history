@@ -210,18 +210,13 @@ abstract class Users extends Base_Users
 				$batchResponse = $facebook->api('?batch='.Q::json_encode($queries), 'POST');
 				$permissions = json_decode($batchResponse[0]['body'], true);
 				if (Q::ifset($permissions, 'data', 0, 'email', false)) {
-					$user_data = json_decode($batchResponse[1]['body'], true);
-					if (!empty($user_data['email'])) {
-						$emailAddress = $user_data['email'];
+					$userData = json_decode($batchResponse[1]['body'], true);
+					if (!empty($userData['email'])) {
+						$emailAddress = $userData['email'];
 					}
 				}
 			}
 
-			if (!$retrieved) {
-				$user->emailAddress = $emailAddress;
-				$retrieved = $user->retrieve();
-				$retrieve = !empty($retrieved);
-			}
 			$authenticated = true;
 			$fb_uid = $facebook->getUser();
 			$re_save_user = false;
@@ -312,10 +307,11 @@ abstract class Users extends Base_Users
 						// DELAY: The following call may take some time,
 						// but once the user is saved, it will not happen again
 						// for this facebook user, because it would be identified by fb_uid
-						$user_data = $facebook->api('/me');
-						if (!empty($user_data['email'])) {
-							$emailAddress = $user_data['email'];
+						$userData = $facebook->api('/me');
+						if (!empty($userData['email'])) {
+							$emailAddress = $userData['email'];
 						}
+						Users::$cache['facebookUserData'] = $userData;
 					}
 
 					if (!empty($emailAddress)) {
@@ -325,7 +321,9 @@ abstract class Users extends Base_Users
 							// load it into $user
 							$user = new Users_User();
 							$user->id = $ui->userId;
-							$user->retrieve();
+							$user->retrieve(null, null, true)
+							->dontCache()
+							->resume();
 						}
 					}
 
@@ -358,7 +356,7 @@ abstract class Users extends Base_Users
 						$sizes = Q_Config::expect('Users', 'icon', 'sizes');
 						$icon = array();
 						foreach ($sizes as $size) {
-							$icon["$size.png"] = "http://graph.facebook.com/$uid/picture?width=$size&height=$size";
+							$icon["$size.jpg"] = "http://graph.facebook.com/$fb_uid/picture?width=$size&height=$size";
 						}
 						if (!Q_Config::get('Users', 'register', 'icon', 'leaveDefault', false)) {
 							$user->icon = self::downloadIcon($user, $icon);
@@ -1177,13 +1175,10 @@ abstract class Users extends Base_Users
 		$type = Q_Config::get('Users', 'login', 'iconType', 'wavatar');
 		foreach ($urls as $basename => $url) {
 			if (is_string($url)) {
-				$fp = fopen($dir2.DS.$basename, 'wb');
-				$ch = curl_init(Q_Uri::url($url));
-				curl_setopt($ch, CURLOPT_FILE, $fp);
-				curl_setopt($ch, CURLOPT_HEADER, 0);
-				curl_exec($ch);
-				curl_close($ch);
-				fclose($fp);
+				$filename = $dir2.DS.$basename;
+				$image = imagecreatefromstring(file_get_contents($url));
+				$info = pathinfo($filename);
+				imagepng($image, $dir2.DS.$info['filename'].'.png');
 			} else {
 				Q_Icon::put(
 					$dir2.DS.$basename,

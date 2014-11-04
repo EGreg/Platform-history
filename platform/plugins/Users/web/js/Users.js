@@ -116,7 +116,7 @@ Users.initFacebook = function(callback, options) {
 		&& Q.plugins.Users.facebookApps[Q.info.app]) {
 			FB.init(Q.extend({
 				appId: Q.plugins.Users.facebookApps[Q.info.app].appId,
-				version: 'v2.0',
+				version: 'v2.2',
 				status: true,
 				cookie: true,
 				oauth: true,
@@ -269,7 +269,6 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 			function _doSuccess(user) {
 				// if the user hasn't changed then user is null here
 				Users.connected.facebook = true;
-				Users.onLogin.handle.call(Users, user, options);
 				Users.onConnected.handle.call(Users, provider, user, options);
 				Q.handle(onSuccess, this, [user, options]);
 			}
@@ -461,7 +460,9 @@ Users.perms = function (provider, callback) {
  * Log the user in
  * @method login
  * @param {Object} [options] You can pass several options here
- *  @param {Q.Event} [options.onSuccess] event that occurs when login or authentication "using" a provider is successful. It is passed the user information if the user changed.
+ *  @param {Q.Event} [options.onSuccess] event that occurs when login or authentication "using" a provider is successful. It is passed (user, options, result, used) where user is the Users.User object (null if it was unchanged),
+options were the options used in the call to Users.login, result is one of "registered", "adopted", "connected" or "authorized" (see Users::authenticate)
+and 'used' is "native", or the name of the provider used, such as "facebook".
  *  @param {Function} [options.onCancel] event that occurs when login or authentication "using" a provider was canceled.
  *  @param {Function} [options.onResult] event that occurs before either onSuccess, onCancel, or onRequireComplete
  *  @param {String} [options.successUrl] If the default onSuccess implementation is used, the browser is redirected here
@@ -1093,11 +1094,8 @@ function login_callback(response) {
 			if (priv.registerInfo.username){
 				username = priv.registerInfo.username;
 			}
-			if (priv.registerInfo.pic_square) {
-				src40 = src50 = src = priv.registerInfo.pic_square;
-			}
 			if (priv.registerInfo.pic) {
-				src80 = priv.registerInfo.pic;
+				src40 = src50 = src = src80 = priv.registerInfo.pic;
 			}
 		}
 		var img = $('<img />').attr('src', src).attr('title', 'You can change this picture later');
@@ -1363,20 +1361,34 @@ function login_setupDialog(usingProviders, perms, dialogContainer, identifierTyp
 								return;
 							}
 							step1_form.data('used', 'facebook');
-							FB.api({
-								method: 'fql.query',
-								query: "SELECT username, first_name, last_name, email, pic_small, pic_big, pic_square, pic FROM user WHERE uid="+response.authResponse.userID
-							}, function(rows) {
+							var p = Q.pipe(['me', 'picture'], function(params) {
+								var me = params.me[0];
+								var picture = params.picture[0].data;
 								priv.registerInfo = {
-									username: rows[0].username,
-									firstName: rows[0].first_name,
-									lastName: rows[0].last_name,
-									pic_square: rows[0].pic_square,
-									pic: rows[0].pic
+									firstName: me.first_name,
+									lastName: me.last_name,
+									gender: me.gender,
+									birthday: me.birthday,
+									timezone: me.timezone,
+									locale: me.locale,
+									verified: me.verified,
+									pic: picture.url,
+									picWidth: picture.width,
+									picHeight: picture.height
 								};
-								$('#Users_login_identifier').val(rows[0].email).closest('form').submit();
+								$('#Users_login_identifier')
+								.val(me.email)
+								.closest('form')
+								.submit();
 								// The login onSuccess callback is about to be called
 							});
+							FB.api("/me/picture", {
+						        "redirect": false,
+						        "height": "200",
+						        "type": "normal",
+						        "width": "200"
+						    }, p.fill('picture'));
+							FB.api('/me', p.fill('me'));
 						}, perms ? {scope: perms} : undefined);
 					});
 					return false;
@@ -1693,7 +1705,7 @@ Q.onInit.add(function () {
 		accountStatusUrl: null,
 		tryQuietly: false,
 		using: 'native', // can also be 'facebook'
-		perms: 'email,publish_stream', // the permissions to ask for on facebook
+		perms: 'email,public_profile,user_friends', // the permissions to ask for on facebook
 		linkToken: null,
 		dialogContainer: 'body',
 		setupRegisterForm: null,

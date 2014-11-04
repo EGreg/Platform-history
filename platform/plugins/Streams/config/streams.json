@@ -22,17 +22,20 @@
 	"Streams/user/firstName": {
 		"type": "Streams/text/name",
 		"title": "First name",
-		"icon": ""
+		"icon": "",
+		"name_fb": "first_name"
 	},
 	"Streams/user/middleName": {
 		"type": "Streams/text/name",
 		"title": "Middle name",
-		"icon": ""
+		"icon": "",
+		"name_fb": "middle_name"
 	},	
 	"Streams/user/lastName": {
 		"type": "Streams/text/name",
 		"title": "Last name",
-		"icon": ""
+		"icon": "",
+		"name_fb": "last_name"
 	},
 	"Streams/user/emailAddress": {
 		"type": "Streams/text/emailAddress",
@@ -76,45 +79,11 @@
 		"title": "Website",
 		"icon": ""
 	},	
-	"Streams/user/fb_username": {
-		"type": "Streams/text/username",
-		"title": "Facebook Username",
-		"icon": ""
-	},	
-	"Streams/user/affiliations": {
-		"type": "Streams/array/affiliation",
-		"title": "Affiliations",
-		"icon": ""
-	},	
-	"Streams/user/religion": {
-		"type": "Streams/text/small",
-		"title": "Religion",
-		"icon": ""
-	},	
-	"Streams/user/sex": {
-		"type": "Streams/enum/sex",
-		"title": "Sex",
-		"icon": ""
-	},	
-	"Streams/user/meeting_sex": {
-		"type": "Streams/array/sex",
-		"title": "Interested in",
-		"icon": ""
-	},	
-	"Streams/user/meeting_for": {
-		"type": "Streams/array/meeting",
-		"title": "Meeting for",
-		"icon": ""
-	},	
-	"Streams/user/relationship_status": {
-		"type": "Streams/enum/relationship_status",
-		"title": "Relationship status",
-		"icon": ""
-	},	
-	"Streams/user/significant_other_fb_uid": {
-		"type": "Streams/uid/fb_uid",
-		"title": "With facebook user",
-		"icon": ""
+	"Streams/user/gender": {
+		"type": "Streams/enum/gender",
+		"title": "Gender",
+		"icon": "",
+		"name_fb": "gender"
 	},
 	"Streams/user/birthday": {
 		"type": "Streams/date/birthday",

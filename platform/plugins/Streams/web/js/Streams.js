@@ -937,7 +937,7 @@ Stream.release = function _Stream_release (publisherId, streamName) {
  *   @param {Number} [options.max] The maximum number of messages to wait and hope they will arrive via sockets. Any more and we just request them again.
  *   @param {Number} [options.timeout] The maximum amount of time to wait and hope the messages will arrive via sockets. After this we just request them again.
  *   @param {Number} [options.unlessSocket] Whether to avoid doing any requests when a socket is attached
- *   @param {Array} [options.changed] An array of {fieldName: true} pairs naming fields to trigger change events for, even if their values stayed the same
+ *   @param {Object} [options.changed] An Object of {fieldName: true} pairs naming fields to trigger change events for, even if their values stayed the same
  *   @param {Boolean} [options.evenIfNotRetained] If the stream wasn't retained (for example because it was missing last time), then refresh anyway
  *   @param {Object} [options.extra] Any extra parameters to pass to the callback
  * @return {boolean} whether the refresh is occurring, or whether it has been canceled
@@ -2703,11 +2703,8 @@ Streams.setupRegisterForm = function _Streams_setupRegisterForm(identifier, json
 		if (priv.registerInfo.lastName){
 			lastName = priv.registerInfo.lastName;
 		}
-		if (priv.registerInfo.pic_square) {
-			src40 = src50 = src = priv.registerInfo.pic_square;
-		}
 		if (priv.registerInfo.pic) {
-			src80 = priv.registerInfo.pic;
+			src40 = src50 = src = src80 = priv.registerInfo.pic;
 		}
 	}
 	var img = $('<img />').attr('src', src).attr('title', Q.text.Streams.login.picTooltip);

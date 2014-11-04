@@ -15,7 +15,6 @@
 			"Db/Row/Users_User/saveExecute": ["Streams/after/Users_User_saveExecute"],
 			"Db/Row/Users_Contact/removeExecute": ["Streams/after/Users_Contact_removeExecute"],
 			"Users/saveContactsFromLinks": ["Streams/after/Users_saveContactsFromLinks"],
-			"Users/insertUser": ["Streams/after/Users_insertUser"],
 			"Users/setLoggedInUser": ["Streams/after/Users_setLoggedInUser"],
 			"Streams/post/Streams/category": ["Streams/after/Streams_post_Streams_category"]
 		},

@@ -26,6 +26,26 @@ function Streams_after_Users_User_saveExecute($params)
 		$p = new Q_Tree();
 		$p->load(STREAMS_PLUGIN_CONFIG_DIR.DS.'streams.json');
 		$p->load(APP_CONFIG_DIR.DS.'streams.json');
+	
+		$values = array(
+			'Streams/user/firstName' => Q::ifset(Streams::$cache, 'register', 'first', ''),
+			'Streams/user/lastName' => Q::ifset(Streams::$cache, 'register', 'last', ''),
+		);
+	
+		// Check for user data from facebook
+		if (!empty(Users::$cache['facebookUserData'])) {
+			$userData = Users::$cache['facebookUserData'];
+			foreach ($userData as $name_fb => $value) {
+				foreach ($p->getAll() as $name => $info) {
+					if (isset($info['name_fb'])
+					and $info['name_fb'] === $name_fb) {
+						$onInsert[] = $name;
+						$values[$name] = $value;
+					}
+				}
+			}
+		}
+	
 		foreach ($onInsert as $name) {
 			$stream = Streams::fetchOne($user->id, $user->id, $name);
 			if (!$stream) { // it shouldn't really be in the db yet
@@ -43,14 +63,29 @@ function Streams_after_Users_User_saveExecute($params)
 				$sizes = Q_Config::expect('Users', 'icon', 'sizes');
 				$stream->setAttribute('sizes', $sizes);
 				$stream->icon = $user->iconUrl();
-			} else if ($name === 'Streams/user/firstName') {
-				$stream->content = Q::ifset(Streams::$cache, 'register', 'first', '');
-			} else if ($name === 'Streams/user/lastName') {
-				$stream->content = Q::ifset(Streams::$cache, 'register', 'last', '');
+			}
+			if (isset($values[$name])) {
+				$stream->content = $values[$name];
 			}
 			$stream->save(); // this also inserts avatars
 			$stream->join(array('userId' => $user->id));
 		}
+	
+		// Create some standard labels
+		$label = new Users_Label();
+		$label->userId = $user->id;
+		$label->label = 'Streams/invited';
+		$label->icon = 'Streams/labels/invited';
+		$label->title = 'People I invited';
+		$label->save(true);
+	
+		$label2 = new Users_Label();
+		$label2->userId = $user->id;
+		$label2->label = 'Streams/invitedMe';
+		$label2->icon = 'Streams/labels/invitedMe';
+		$label2->title = 'Those who invited me';
+		$label2->save(true);
+		
 	} else if ($modifiedFields) {
 		if ($updates) {
 			Streams_Avatar::update()
