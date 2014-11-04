@@ -157,19 +157,20 @@ function Q_image_post($params = null) {
 				imagecopy($thumb, $mergethumb, 0, 0, 0, 0, $dw, $dh);
 			}
 		}
-		$res = false;
 		switch ($ext) {
-			case 'png':
-				$res = imagepng($thumb, $writePath.DS.$name);
-				break;
-			case 'jpg':
-				$res = imagejpeg($thumb, $writePath.DS.$name);
+			case 'jpeg':
+			case 'jpeg':
+				$func = 'imagejpeg';
 				break;
 			case 'gif':
-				$res = imagegif($thumb, $writePath.DS.$name);
+				$func = 'imagegif';
+				break;
+			case 'png':
+			default:
+				$func = 'imagepng';
 				break;
 		}
-		if ($res) {
+		if ($res = call_user_func($func, $thumb, $writePath.DS.$name)) {
 			$data[$size] = $subpath ? "$path/$subpath/$name" : "$path/$name";
 		}
 	}

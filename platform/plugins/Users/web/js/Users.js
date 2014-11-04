@@ -42,7 +42,7 @@ Q.text.Users = {
 		username: "Choose a username:",
 		placeholders: {
 			identifier: "your mobile # or email",
-			mobile: "enter your mobile number",
+			mobile: "enter your mobile #",
 			email: "enter your email address",
 			username: "username"
 		},

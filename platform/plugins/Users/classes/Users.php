@@ -356,7 +356,7 @@ abstract class Users extends Base_Users
 						$sizes = Q_Config::expect('Users', 'icon', 'sizes');
 						$icon = array();
 						foreach ($sizes as $size) {
-							$icon["$size.jpg"] = "http://graph.facebook.com/$fb_uid/picture?width=$size&height=$size";
+							$icon["$size.png"] = "http://graph.facebook.com/$fb_uid/picture?width=$size&height=$size";
 						}
 						if (!Q_Config::get('Users', 'register', 'icon', 'leaveDefault', false)) {
 							$user->icon = self::downloadIcon($user, $icon);
@@ -1173,12 +1173,64 @@ abstract class Users extends Base_Users
 			chmod($dir2, 0777);
 		}
 		$type = Q_Config::get('Users', 'login', 'iconType', 'wavatar');
+		$largestSize = 0;
+		$largestUrl = null;
+		$largestImage = null;
+		foreach ($urls as $basename => $url) {
+			if (!is_string($url)) continue;
+			$filename = $dir2.DS.$basename;
+			$info = pathinfo($filename);
+			$size = $info['filename'];
+			if ((string)(int)$size !== $size) continue;
+			if ($largestSize < (int)$size) {
+				$largestSize = (int)$size;
+				$largestUrl = $url;
+			}
+		}
+		if ($largestSize) {
+			$largestImage = imagecreatefromstring(file_get_contents($largestUrl));
+		}
 		foreach ($urls as $basename => $url) {
 			if (is_string($url)) {
 				$filename = $dir2.DS.$basename;
-				$image = imagecreatefromstring(file_get_contents($url));
 				$info = pathinfo($filename);
-				imagepng($image, $dir2.DS.$info['filename'].'.png');
+				$size = $info['filename'];
+				$success = false;
+				if ($largestImage and (string)(int)$size === $size) {
+					if ($size == $largestSize) {
+						$image = $largestImage;
+						$success = true;
+					} else {
+						$image = imagecreatetruecolor($size, $size);
+						imagealphablending($image, false);
+						$success = imagecopyresampled(
+							$image, $largestImage, 
+							0, 0, 
+							0, 0, 
+							$size, $size, 
+							$largestSize, $largestSize
+						);
+					}
+				}
+				if (!$success) {
+					$image = imagecreatefromstring(file_get_contents($url));
+				}
+				$info = pathinfo($filename);
+				switch ($info['extension']) {
+					case 'png':
+						$func = 'imagepng';
+						imagesavealpha($image, true);
+						imagealphablending($image, true);
+						break;
+					case 'jpeg':
+					case 'jpeg':
+						$func = 'imagejpeg';
+						break;
+					case 'gif':
+						$func = 'imagegif';
+						break;
+				}
+				call_user_func($func, $image, $dir2.DS.$info['filename'].'.png');
 			} else {
 				Q_Icon::put(
 					$dir2.DS.$basename,

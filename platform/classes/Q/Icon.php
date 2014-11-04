@@ -109,7 +109,7 @@ very easy to generate random-yet-still-vibrant colors.
 		$size = @getimagesize($file);
 		$im = @imagecreatefrompng($file);
 		if(!$im) return;
-		imageSaveAlpha($im, true);
+		imagesavealpha($im, true);
 		imagecopyresampled($base,$im,0,0,0,0,Q_AVATAR_SIZE,Q_AVATAR_SIZE,$size[0],$size[1]);
 		imagedestroy($im);
 	}
