@@ -571,7 +571,7 @@ abstract class BaseFacebook
    *
    * The parameters:
    * - redirect_uri: the url to go to after a successful login
-   * - scope: comma separated list of requested extended perms
+   * - scope: comma separated list of requested extended scope
    *
    * @param array $params Provide custom parameters
    * @return string The URL for the login flow

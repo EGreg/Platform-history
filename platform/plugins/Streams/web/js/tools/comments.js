@@ -159,9 +159,9 @@ Q.Tool.define("Streams/comments", function(o) {
                                     }
                                     else
                                     {
-                                        FB.ui({ method: 'permissions.request', 'perms': 'publish_stream' }, function(response)
+                                        FB.ui({ method: 'permissions.request', 'scope': 'publish_stream' }, function(response)
                                         {
-                                            if (response.perms && response.perms.indexOf('publish_stream') != -1)
+                                            if (response.scope && response.scope.indexOf('publish_stream') != -1)
                                             {
                                                 postToFacebook();
                                             }

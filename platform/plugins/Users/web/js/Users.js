@@ -51,7 +51,8 @@ Q.text.Users = {
 			username: 32,
 			passphrase: 100
 		},
-		confirmTerms: "Accept the Terms of Service?"
+		confirmTerms: "Accept the Terms of Service?",
+		facebookNoEmail: "Your facebook lacks a confirmed email address to log in with. Just try the native way."
 	},
 	
 	setIdentifier: {
@@ -432,15 +433,15 @@ Users.prompt = function(provider, uid, authCallback, cancelCallback, options) {
 /**
  * Check permissions granted by provider.
  * Currently only facebook supported.
- * @method perms
+ * @method scope
  * @param {String} provider For now, only "facebook" is supported
  * @required
  * @param {Function} callback , this function will be called after getting permissions from social provider
  * Callback parameter could be null or response object from social provider
  */
-Users.perms = function (provider, callback) {
+Users.scope = function (provider, callback) {
 	if (provider !== 'facebook') {
-		throw new Q.Error("Users.perms: The only supported provider for now is facebook");
+		throw new Q.Error("Users.scope: The only supported provider for now is facebook");
 	}
 	Users.initFacebook(function () {
 		if (!FB.getAuthResponse()) {
@@ -472,7 +473,7 @@ and 'used' is "native", or the name of the provider used, such as "facebook".
  *  It is passed the user information as well as the response from hitting accountStatusUrl
  *  @param {String} [options.using] can be "native", "facebook" or "native,facebook"
  *  @param {Boolean} [options.tryQuietly] if true, this is same as Users.authenticate, with provider = "using" option
- *  @param {String} [options.perms] permissions to request from the authentication provider
+ *  @param {String} [options.scope] permissions to request from the authentication provider
  *  @default "email,publish_stream"
  *  @param {String} [options.identifierType] the type of the identifier, which could be "mobile" or "email" or "email,mobile"
  */
@@ -514,11 +515,11 @@ Users.login = function(options) {
 		if (o.using.indexOf('native') >= 0) {
 			var usingProviders = o.using.indexOf('facebook') >= 0 ? ['facebook'] : [];
 			// set up dialog
-			login_setupDialog(usingProviders, o.perms, o.dialogContainer, o.identifierType);
+			login_setupDialog(usingProviders, o.scope, o.dialogContainer, o.identifierType);
 			priv.login_onConnect = _onConnect;
 			priv.login_onCancel = _onCancel;
 			priv.linkToken = null;
-			priv.perms = o.perms;
+			priv.scope = o.scope;
 			priv.activation = o.activation;
 			var d = login_setupDialog.dialog;
 			if (d.css('display') == 'none') {
@@ -530,26 +531,26 @@ Users.login = function(options) {
 			$('#Users_login_identifierType').val(o.identifierType);
 		} else if (o.using[0] === 'facebook') { // only facebook used. Open facebook login right away
 			Users.initFacebook(function () {
-				var opts = o.perms ? {scope: o.perms} : undefined;
+				var opts = o.scope ? {scope: o.scope} : undefined;
 				FB.login(function(response) {
 					if (!response.authResponse) {
 						_onCancel();
 						return;
 					}
-					if (!o.perms) {
+					if (!o.scope) {
 						_success();
 						return;
 					}
 					// some permissions were requested
-					Users.perms('facebook', function(perms) {
-						if (!perms) {
+					Users.scope('facebook', function(scope) {
+						if (!scope) {
 							_onCancel(null);
 							return;
 						}
-						var permsRequested = o.perms.split(',');
-						for (var i=0; i < permsRequested.length; ++i) {
-							if (!permsRequested[i]) {
-								_onCancel(perms); // at least some permission was not granted
+						var scopeRequested = o.scope.split(',');
+						for (var i=0; i < scopeRequested.length; ++i) {
+							if (!scopeRequested[i]) {
+								_onCancel(scope); // at least some permission was not granted
 								return;
 							}
 						}
@@ -571,7 +572,6 @@ Users.login = function(options) {
 	
 	});
 	
-	// you can now require login and do FQL queries:
 	return false;
 
 	function _onConnect(user) {
@@ -613,9 +613,9 @@ Users.login = function(options) {
 	}
 	
 	// User clicked "cancel" or closed login dialog
-	function _onCancel(perms) {
-		if (false !== Q.handle(o.onResult, this, [perms, o])) {
-			Q.handle(o.onCancel, this, [perms, o]);
+	function _onCancel(scope) {
+		if (false !== Q.handle(o.onResult, this, [scope, o])) {
+			Q.handle(o.onCancel, this, [scope, o]);
 		}
 	}
 	
@@ -849,9 +849,9 @@ Users.setIdentifier = function(options) {
 		}
 	}
 	
-	function onCancel(perms) {
-		if (false !== Q.handle(o.onResult, this, [perms])) {
-			Q.handle(o.onCancel, this, [perms]);
+	function onCancel(scope) {
+		if (false !== Q.handle(o.onResult, this, [scope])) {
+			Q.handle(o.onCancel, this, [scope]);
 		}
 	}
 	
@@ -1236,7 +1236,7 @@ function login_callback(response) {
  * Set up login dialog.
  * login_setupDialog.dialog will contain the dialog
  */
-function login_setupDialog(usingProviders, perms, dialogContainer, identifierType)
+function login_setupDialog(usingProviders, scope, dialogContainer, identifierType)
 {
 	$('#Users_login_step1_form').data('used', null);
 	if (login_setupDialog.dialog) {
@@ -1376,6 +1376,10 @@ function login_setupDialog(usingProviders, perms, dialogContainer, identifierTyp
 									picWidth: picture.width,
 									picHeight: picture.height
 								};
+								if (!me.email) {
+									alert(Q.text.Users.login.facebookNoEmail);
+									return true;
+								}
 								$('#Users_login_identifier')
 								.val(me.email)
 								.closest('form')
@@ -1389,7 +1393,7 @@ function login_setupDialog(usingProviders, perms, dialogContainer, identifierTyp
 						        "width": "200"
 						    }, p.fill('picture'));
 							FB.api('/me', p.fill('me'));
-						}, perms ? {scope: perms} : undefined);
+						}, scope ? {scope: scope} : undefined);
 					});
 					return false;
 				});
@@ -1705,7 +1709,7 @@ Q.onInit.add(function () {
 		accountStatusUrl: null,
 		tryQuietly: false,
 		using: 'native', // can also be 'facebook'
-		perms: 'email,public_profile,user_friends', // the permissions to ask for on facebook
+		scope: 'email,public_profile,user_friends', // the permissions to ask for on facebook
 		linkToken: null,
 		dialogContainer: 'body',
 		setupRegisterForm: null,

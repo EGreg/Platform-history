@@ -15,7 +15,7 @@ var Broadcast = Q.Broadcast = Q.plugins.Broadcast = {
 Q.onActivate.set(function () {
 	
 	Q.Users.login.options.using = 'facebook';
-	Q.Users.login.options.perms = 'email,publish_stream,offline_access';
+	Q.Users.login.options.scope = 'email,publish_stream,offline_access';
 	Q.text.Users.login.directions = "Create an account, or login:";
 	Q.text.Users.login.explanation = null;
 	

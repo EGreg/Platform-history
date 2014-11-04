@@ -283,7 +283,7 @@ Q.Tool.define("Streams/photoSelector", function _Streams_chat_constructor (o) {
                             {
                                 Q.plugins.Users.login({
                                     using: 'facebook',
-                                    perms: needFriends ? 'user_photos,friends_photos' : 'user_photos',
+                                    scope: needFriends ? 'user_photos,friends_photos' : 'user_photos',
                                     onCancel: function()
                                     {
                                         dialog.close();
@@ -331,7 +331,7 @@ Q.Tool.define("Streams/photoSelector", function _Streams_chat_constructor (o) {
                 Q.plugins.Users.login({
                     tryQuietly: true,
                     using: 'facebook',
-                    perms: 'user_photos',
+                    scope: 'user_photos',
                     onSuccess: function()
                     {
                         onSuccessfulLogin($element);
