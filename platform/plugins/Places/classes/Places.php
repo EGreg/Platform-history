@@ -64,7 +64,7 @@ abstract class Places extends Base_Places
 			return $location;
 		}
 		
-		$key = Q_Config::expect('Places', 'googleMaps', 'serverKey');
+		$key = Q_Config::expect('Places', 'google', 'keys', 'server');
 		$placeid = $id;
 		$query = http_build_query(compact('key', 'placeid'));
 		$url = "https://maps.googleapis.com/maps/api/place/details/json?$query";
