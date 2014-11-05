@@ -1481,6 +1481,9 @@ abstract class Streams extends Base_Streams
 		if ($toPublisherId instanceof Users_User) {
 			$toPublisherId = $toPublisherId->id;
 		}
+		if (!isset($options)) {
+			$options = array();
+		}
 		
 		self::getRelation(
 			$asUserId,

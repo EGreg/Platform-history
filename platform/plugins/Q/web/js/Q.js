@@ -2599,11 +2599,12 @@ Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotN
 				});
 				return;
 			}
+			var request = this;
 			Q.each(response.slots.batch, function (k, result) {
 				if (result && result.errors) {
-					callbacks[k][0].call(subjects[k], result.errors);
+					callbacks[k][0].call(request, result.errors);
 				} else {
-					callbacks[k][0].call(subjects[k], null, (result && result.slots) || {});
+					callbacks[k][0].call(request, null, (result && result.slots) || {});
 				}
 			});
 		}, o);
@@ -3907,6 +3908,19 @@ Q.Session = function _Q_Session() {
 };
 
 /**
+ * A Q.Request object represents a network request issued by Q
+ * @class Q.Request
+ * @constructor
+ */
+
+Q.Request = function _Q_Request(url, slotNames, callback, options) {
+	this.url = url;
+	this.slotNames = slotNames;
+	this.callback = callback;
+	this.options = options;
+};
+
+/**
  * A Q.Cache object stores items in a cache and throws out least-recently-used ones.
  * @class Q.Cache
  * @constructor
@@ -5149,6 +5163,8 @@ Q.request = function (url, slotNames, callback, options) {
 	}
 	function _Q_request_makeRequest (url, slotNames, callback, o) {
 
+		var request = new Q.Request(url, slotNames, callback, o);
+
 		var tout = false, t = {};
 		if (o.timeout !== false) tout = o.timeout || 1500;
 	
@@ -5203,10 +5219,10 @@ Q.request = function (url, slotNames, callback, options) {
 			if (t.timeout) {
 				clearTimeout(t.timeout);
 			}
-			Q.handle(o.onLoadEnd, this, [url, slotNames, o]);
+			Q.handle(o.onLoadEnd, request, [url, slotNames, o]);
 			if (!t.cancelled) {
-				o.onResponse.handle.call(this, data, wasJsonP);
-				Q.handle(_Q_request_callback, this, [null, data, wasJsonP]);
+				o.onResponse.handle.call(request, data, wasJsonP);
+				Q.handle(_Q_request_callback, request, [null, data, wasJsonP]);
 			}
 		}
 		
@@ -5263,6 +5279,7 @@ Q.request = function (url, slotNames, callback, options) {
 					url = Q.ajaxExtend(url, slotNames, overrides);
 				}
 				var content = Q.serializeFields(options.fields);
+				request.xmlhttp = xmlhttp;
 				if (verb === 'GET') {
 					xmlhttp.open('GET', url + (content ? '&' + content : ''), !sync);
 					xmlhttp.send();

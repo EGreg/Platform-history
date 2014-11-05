@@ -262,7 +262,10 @@ abstract class Users extends Base_Users
 				if ($ui) {
 					$user = new Users_User();
 					$user->id = $ui->userId;
-					$user->retrieve();
+					$exists = $user->retrieve();
+					if (!$exists) {
+						throw new Q_Exception("Users_Identify for fb_uid $fb_uid exists but not user with id {$ui->userId}");
+					}
 					if ($ui->state === 'future') {
 						$authenticated = 'adopted';
 
@@ -322,7 +325,7 @@ abstract class Users extends Base_Users
 							$user = new Users_User();
 							$user->id = $ui->userId;
 							$user->retrieve(null, null, true)
-							->dontCache()
+							->caching()
 							->resume();
 						}
 					}
@@ -411,10 +414,7 @@ abstract class Users extends Base_Users
 		// Now make sure our master session contains the
 		// session info for the provider app.
 		if ($provider == 'facebook') {
-			$fb_prefix = 'fb_sig_';
-
 			$access_token = $facebook->getAccessToken();
-
 			if (isset($_SESSION['Users']['appUsers']['facebook_'.$appId])) {
 				// Facebook app user exists. Do we need to update it? (Probably not!)
 				$pk = $_SESSION['Users']['appUsers']['facebook_'.$appId];
@@ -423,7 +423,7 @@ abstract class Users extends Base_Users
 					// somehow this app_user disappeared from the database
 					throw new Q_Exception_MissingRow(array(
 						'table' => 'AppUser',
-						'criteria' => http_build_query($pk, null, '&')
+						'criteria' => http_build_query($pk, null, ' & ')
 					));
 				}
 				if (empty($app_user->state) or $app_user->state !== 'added') {
@@ -1213,7 +1213,12 @@ abstract class Users extends Base_Users
 					}
 				}
 				if (!$success) {
-					$image = imagecreatefromstring(file_get_contents($url));
+					$ch = curl_init();
+					curl_setopt($ch, CURLOPT_URL, $url);
+					curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+					$data = curl_exec($ch);
+					curl_close($ch);
+					$image = imagecreatefromstring($data);
 				}
 				$info = pathinfo($filename);
 				switch ($info['extension']) {

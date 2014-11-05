@@ -17,7 +17,6 @@
  *  "loader" => Optional. Name of function which takes url, slot, callback. It should call the callback and 
  *    pass it an object with the response info. Can be used to implement caching, etc. instead of the default 
  *    HTTP request.
- *    If "loader" is Q.getter and request shall be done bypasing cache, assign true to .dontCache property of the tool
  *  "beforeSwitch" => Optional. Name of the function to execute before tab switching begins.
  *  "beforeScripts" => Optional. Name of the function to execute after tab is loaded but before its javascript is executed.
  *  "onActivate" => Optional. Name of the function to execute after a tab is activated.

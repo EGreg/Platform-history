@@ -1409,6 +1409,56 @@ class Streams_Stream extends Base_Streams_Stream
 		);
 	}
 	
+	function relateTo($toStream, $type, $asUserId = null, $options = array())
+	{
+		return Streams::relate(
+			$asUserId,
+			$toStream->publisherId,
+			$toStream->name,
+			$type,
+			$this->publisherId,
+			$this->name,
+			$options
+		);
+	}
+	
+	function relateFrom($fromStream, $type, $asUserId = null, $options = array()) {
+		return Streams::relate(
+			$asUserId,
+			$this->publisherId,
+			$this->name,
+			$type,
+			$fromStream->publisherId,
+			$fromStream->name,
+			$options
+		);
+	}
+	
+	function unrelateTo($toStream, $type, $asUserId = null, $options = array())
+	{
+		return Streams::unrelate(
+			$asUserId,
+			$toStream->publisherId,
+			$toStream->name,
+			$type,
+			$this->publisherId,
+			$this->name,
+			$options
+		);
+	}
+	
+	function unrelateFrom($fromStream, $type, $asUserId = null, $options = array()) {
+		return Streams::unrelate(
+			$asUserId,
+			$this->publisherId,
+			$this->name,
+			$type,
+			$fromStream->publisherId,
+			$fromStream->name,
+			$options
+		);
+	}
+	
 	/**
 	 * Returns array of fields allowed for user
 	 * @method exportArray

@@ -39,6 +39,64 @@ abstract class Places extends Base_Places
 		return $stream;
 	}
 	
+	static function locationStream($id, $throwIfBadValue = false)
+	{
+		if (empty($id)) {
+			if ($throwIfBadValue) {
+				throw new Q_Exception_RequiredField(array('field' => 'id'));
+			}
+			return null;
+		}
+		
+		// sanitize the ID
+		$characters = '/[^A-Za-z0-9]+/';
+		$result = preg_replace($characters, '_', $id);
+		
+		// see if it's already in the system
+		$location = new Streams_Stream();
+		$location->publisherId = Q::ifset(
+			$info, 'publisherId', Q_Config::expect('Q', 'app')
+		);
+		$location->name = "Places/location/$id";
+		if ($location->retrieve()) {
+			// TODO: make a config setting for the number of seconds
+			// before we should try to override with fresh information
+			return $location;
+		}
+		
+		$key = Q_Config::expect('Places', 'googleMaps', 'serverKey');
+		$placeid = $id;
+		$query = http_build_query(compact('key', 'placeid'));
+		$url = "https://maps.googleapis.com/maps/api/place/details/json?$query";
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		$json = curl_exec($ch);
+		curl_close($ch);
+		$response = json_decode($json, true);
+		if (empty($response['result'])) {
+			throw new Q_Exception("Places::locationStream: Couldn't obtain place information for $id");
+		}
+		if (!empty($response['error_message'])) {
+			throw new Q_Exception("Places::locationStream: ".$response['error_message']);
+		}
+		$result = $response['result'];
+		$attributes = array(
+			'name' => $result['name'],
+			'latitude' => $result['geometry']['location']['lat'],
+			'longitude' => $result['geometry']['location']['lng'],
+			'icon' => $result['icon'],
+			'phoneNumber' => $result['international_phone_number'],
+			'phoneFormatted' => $result['formatted_phone_number'],
+			'rating' => $result['rating'],
+			'address' => $result['formatted_address']
+		);
+		$location->setAttribute($attributes);
+		$location->type = 'Places/location';
+		$location->save();
+		return $location;
+	}
+	
 	/**
 	 * Use this to calculate the haversine distance between two sets of lat/long coordinates on the Earth
 	 * @param {double} $lat_1
