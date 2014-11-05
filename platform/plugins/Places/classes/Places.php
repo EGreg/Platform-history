@@ -39,9 +39,9 @@ abstract class Places extends Base_Places
 		return $stream;
 	}
 	
-	static function locationStream($id, $throwIfBadValue = false)
+	static function locationStream($publisherId, $placeId, $throwIfBadValue = false)
 	{
-		if (empty($id)) {
+		if (empty($placeId)) {
 			if ($throwIfBadValue) {
 				throw new Q_Exception_RequiredField(array('field' => 'id'));
 			}
@@ -50,14 +50,12 @@ abstract class Places extends Base_Places
 		
 		// sanitize the ID
 		$characters = '/[^A-Za-z0-9]+/';
-		$result = preg_replace($characters, '_', $id);
+		$result = preg_replace($characters, '_', $placeId);
 		
 		// see if it's already in the system
 		$location = new Streams_Stream();
-		$location->publisherId = Q::ifset(
-			$info, 'publisherId', Q_Config::expect('Q', 'app')
-		);
-		$location->name = "Places/location/$id";
+		$location->publisherId = $publisherId;
+		$location->name = "Places/location/$placeId";
 		if ($location->retrieve()) {
 			// TODO: make a config setting for the number of seconds
 			// before we should try to override with fresh information
@@ -65,7 +63,7 @@ abstract class Places extends Base_Places
 		}
 		
 		$key = Q_Config::expect('Places', 'google', 'keys', 'server');
-		$placeid = $id;
+		$placeid = $placeId;
 		$query = http_build_query(compact('key', 'placeid'));
 		$url = "https://maps.googleapis.com/maps/api/place/details/json?$query";
 		$ch = curl_init();
@@ -75,7 +73,7 @@ abstract class Places extends Base_Places
 		curl_close($ch);
 		$response = json_decode($json, true);
 		if (empty($response['result'])) {
-			throw new Q_Exception("Places::locationStream: Couldn't obtain place information for $id");
+			throw new Q_Exception("Places::locationStream: Couldn't obtain place information for $placeId");
 		}
 		if (!empty($response['error_message'])) {
 			throw new Q_Exception("Places::locationStream: ".$response['error_message']);
@@ -288,18 +286,23 @@ abstract class Places extends Base_Places
 	}
 	
 	/**
-	 * Call this function to relate a stream to streams for things happening
+	 * Call this function to relate a stream to category streams for things happening
 	 * the given number of $miles around the given location.
+	 * @param {string} $toPublisherId The publisherId of the category streams
 	 * @param {double} $latitude The latitude of the coordinates near which to relate
 	 * @param {double} $longitude The longitude of the coordinates near which to relate
 	 * @param {string} $fromPublisherId The publisherId of the stream to relate
 	 * @param {string} $fromStreamName The name of the stream to relate
 	 * @param {string} $relationType The type of the relation to add
-	 * @param {array} $options The options to pass to the Streams::relate function
-	 *  Also can contain "miles" to override the default set of distances.
-	 * @return {array|boolean} Returns whatever the Streams::relate function returns
+	 * @param {array} $options The options to pass to the Streams::relate and Streams::create functions. Also can contain the following options:
+	 * @param {array} [$options.miles] override the default set of distances found in the config under Places/nearby/miles
+	 * @param {callable} [$options.create] if set, this callback will be used to create streams when they don't already exist. It should return a Streams_Stream object.
+	 * @param {callable} [$options.transform="array_keys"] can be used to override the function which takes the output of Places::nearbyForPublishers and returns the array of names of the category streams to relate the stream to
+	 * @param {callable} [$options.transformOptions=null] you can provide an array of options to pass to the transform function here
+	 * @return {array|boolean} Returns the array of category streams
 	 */
 	static function relateTo(
+		$toPublisherId,
 		$latitude, 
 		$longitude, 
 		$fromPublisherId,
@@ -311,12 +314,31 @@ abstract class Places extends Base_Places
 		if (!isset($fromPublisherId)) {
 			$fromPublisherId = Q_Config::expect('Q', 'app');
 		}
-		$streams = Streams::fetch(null, $fromPublisherId, array_keys($nearby));
+		$transform = Q::ifset($options['transform'], 'array_keys');
+		$transformed = isset($options['transformOptions'])
+			? call_user_func($transform, $nearby, $options['transformOptions'])
+			: call_user_func($transform, $nearby);
+		$streams = Streams::fetch(null, $toPublisherId, $transformed);
 		foreach ($nearby as $name => $nb) {
-			$stream = $streams[$name];
+			if (empty($streams[$name])) {
+				if (empty($options['create'])) {
+					continue;
+				}
+				$params = compact(
+					'toPublisherId', 'latitude', 'longitude', 
+					'fromPublisherId', 'fromStreamName',
+					'relationType', 'options',
+					'transformed',
+					'nearby', 'streams'
+				);
+				$stream = $streams[$name] = call_user_func($options['create'], $params);
+			} else {
+				$stream = $streams[$name];
+			}
 			if (!$stream) {
 				$streams[$name] = $stream = Places::nearbyStream(
-					$nb['latitude'], $nb['longitude'], $miles, $fromPublisherId, $name
+					$nb['latitude'], $nb['longitude'], $nb['miles'],
+					$fromPublisherId, $name
 				);
 			}
 			Streams::relate(

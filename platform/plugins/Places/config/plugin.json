@@ -31,7 +31,12 @@
 				}
 			},
 			"Places/nearby": {},
-			"Places/timeslot": {},
+			"Places/timeslot": {
+				"defaults": {
+					"title": "Timeslot",
+					"writeLevel": 23
+				}
+			},
 			"Places/community": {
 				"edit": true
 			}

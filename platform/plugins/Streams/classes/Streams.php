@@ -727,7 +727,7 @@ abstract class Streams extends Base_Streams
 	 * @static
 	 * @param {string} $asUserId The user who is attempting to create the stream.
 	 * @param {string} $publisherId The id of the user to publish the stream.
-	 * @param {string} $streamType The type of the stream to create.
+	 * @param {string} $type The type of the stream to create.
 	 * @param {array} $fields Use this to set additional fields for the stream:
 	 * @param {string} [$fields.title=null] You can set the stream's title
 	 * @param {string} [$fields.icon=null] You can set the stream's icon
@@ -743,15 +743,20 @@ abstract class Streams extends Base_Streams
 	 *  and the user that would be publishing this new stream has a template for this stream type
 	 *  that is related to either the category stream or a template matching the category stream.
 	 *  To test for this, pass an array with the following keys:
-	 *   "streamName" => The name of the stream to which the new stream would be related
 	 *   "publisherId" => The id of the user publishing that stream, defaults to $publisherId
+	 *   "streamName" => The name of the stream to which the new stream would be related
 	 *   "type" => The type of relation, defaults to ""
 	 * @optional
 	 * @return {Streams_Stream|boolean} Returns a stream template the user must use,
 	 *  otherwise a boolean true/false to indicate a yes or no regardless of template.
 	 * @throws {Users_Exception_NotAuthorized}
 	 */
-	static function create($asUserId, $publisherId, $streamType, $fields = array(), $relate = null)
+	static function create(
+		$asUserId, 
+		$publisherId, 
+		$type, 
+		$fields = array(), 
+		$relate = null)
 	{
 		$skipAccess = Q::ifset($fields, 'skipAccess', false);
 		if (!isset($asUserId)) {
@@ -765,7 +770,7 @@ abstract class Streams extends Base_Streams
 			$publisherId = $publisherId->id;
 		}
 		$authorized = self::isAuthorizedToCreate(
-			$asUserId, $publisherId, $streamType, $relate
+			$asUserId, $publisherId, $type, $relate
 		);
 		if (!$authorized and !$skipAccess) {
 			throw new Users_Exception_NotAuthorized();
@@ -774,15 +779,15 @@ abstract class Streams extends Base_Streams
 		// OK we are good to go!
 		$stream = new Streams_Stream;
 		$stream->publisherId = $publisherId;
-		$stream->type = $streamType;
+		$stream->type = $type;
 
 		// extend with any config defaults for this stream type
-		$xtype = Q_Config::get('Streams', 'types', $streamType, 'fields', array());
+		$xtype = Q_Config::get('Streams', 'types', $type, 'fields', array());
 		$fieldnames = array_merge(array(
 			'title', 'icon', 'content', 'attributes', 
 			'readLevel', 'writeLevel', 'adminLevel'
 		), $xtype);
-		$defaults = Q_Config::get('Streams', 'types', $streamType, 'defaults', array());
+		$defaults = Q_Config::get('Streams', 'types', $type, 'defaults', array());
 		foreach ($fieldnames as $f) {
 			if (isset($fields[$f])) {
 				$stream->$f = $fields[$f];

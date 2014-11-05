@@ -1000,7 +1000,7 @@ class Q
 	 */
 	static function isAssociative($array)
 	{
-		if (!$array) return false;
+		if (!$array or !is_array($array)) return false;
 		foreach ($array as $k => $v) {
 			if (is_string($k)) {
 				return true;
