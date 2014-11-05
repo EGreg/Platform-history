@@ -600,7 +600,7 @@ abstract class Users extends Base_Users
 	static function logout()
 	{
 		// Access the session, if we haven't already.
-		$user = self::loggedInUser(true);
+		$user = self::loggedInUser();
 
 		$sessionId = Q_Session::id();
 
@@ -618,18 +618,21 @@ abstract class Users extends Base_Users
 
 		$device = new Users_Device();
 		$device->sessionId = $sessionId; // WARNING: NON-PK LOOKUP. Should store device id in session!
-		Q_Utils::sendToNode(array(
-			"Q/method" => "Users/logout",
-			"sessionId" => Q_Session::id(),
-			"userId" => $user->id,
-			"deviceId" => $deviceId
-		));
+		
+		if ($user) {
+			Q_Utils::sendToNode(array(
+				"Q/method" => "Users/logout",
+				"sessionId" => Q_Session::id(),
+				"userId" => $user->id,
+				"deviceId" => $deviceId
+			));
 
-		// forget the device for this user/session
-		Users_Device::delete()->where(array(
-			'userId' => $user->id,
-			'sessionId' => $sessionId
-		))->execute();
+			// forget the device for this user/session
+			Users_Device::delete()->where(array(
+				'userId' => $user->id,
+				'sessionId' => $sessionId
+			))->execute();
+		}
 
 		// Destroy the current session, which clears the $_SESSION and all notices, etc.
 		Q_Session::destroy();

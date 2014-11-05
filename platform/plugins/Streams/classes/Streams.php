@@ -639,7 +639,7 @@ abstract class Streams extends Base_Streams
 	/**
 	 * Calculates whether a given user is authorized by a specific publisher
 	 * to create a particular type of stream.
-	 * @method fetch
+	 * @method isAuthorizedToCreate
 	 * @static
 	 * @param {string} $userId The user who would be creating the stream.
 	 * @param {string} $publisherId The id of the user who would be publishing the stream.
@@ -718,6 +718,106 @@ abstract class Streams extends Base_Streams
 			}
 		}	
 		return $authorized;
+	}
+	
+	/**
+	 * Calculates whether a given user is authorized by a specific publisher
+	 * to create a particular type of stream.
+	 * @method create
+	 * @static
+	 * @param {string} $asUserId The user who is attempting to create the stream.
+	 * @param {string} $publisherId The id of the user to publish the stream.
+	 * @param {string} $streamType The type of the stream to create.
+	 * @param {array} $fields Use this to set additional fields for the stream:
+	 * @param {string} [$fields.title=null] You can set the stream's title
+	 * @param {string} [$fields.icon=null] You can set the stream's icon
+	 * @param {string} [$fields.title=null] You can set the stream's content
+	 * @param {string} [$fields.attributes=null] You can set the stream's attributes directly as a JSON string
+	 * @param {string|integer} [$fields.readLevel=null] You can set the stream's read access level, see Streams::$READ_LEVEL
+	 * @param {string|integer} [$fields.writeLevel=null] You can set the stream's write access level, see Streams::$WRITE_LEVEL
+	 * @param {string|integer} [$fields.adminLevel=null] You can set the stream's admin access level, see Streams::$ADMIN_LEVEL
+	 * @param {string} [$fields.name=null] Here you can specify an exact name for the stream to be created. Otherwise a unique one is generated automatically.
+	 * @param {string} [$fields.skipAccess=false] Skip all access checks when creating and relating the stream.
+	 * @param {array} $relate The user would also be authorized if the stream would be related to
+	 *  an existing category stream, in which the user has a writeLevel of at least "relate",
+	 *  and the user that would be publishing this new stream has a template for this stream type
+	 *  that is related to either the category stream or a template matching the category stream.
+	 *  To test for this, pass an array with the following keys:
+	 *   "streamName" => The name of the stream to which the new stream would be related
+	 *   "publisherId" => The id of the user publishing that stream, defaults to $publisherId
+	 *   "type" => The type of relation, defaults to ""
+	 * @optional
+	 * @return {Streams_Stream|boolean} Returns a stream template the user must use,
+	 *  otherwise a boolean true/false to indicate a yes or no regardless of template.
+	 * @throws {Users_Exception_NotAuthorized}
+	 */
+	static function create($asUserId, $publisherId, $streamType, $fields = array(), $relate = null)
+	{
+		$skipAccess = Q::ifset($fields, 'skipAccess', false);
+		if (!isset($asUserId)) {
+			$asUserId = Users::loggedInUser();
+			if (!$asUserId) $asUserId = "";
+		}
+		if ($asUserId instanceof Users_User) {
+			$asUserId = $asUserId->id;
+		}
+		if ($publisherId instanceof Users_User) {
+			$publisherId = $publisherId->id;
+		}
+		$authorized = self::isAuthorizedToCreate(
+			$asUserId, $publisherId, $streamType, $relate
+		);
+		if (!$authorized and !$skipAccess) {
+			throw new Users_Exception_NotAuthorized();
+		}
+		
+		// OK we are good to go!
+		$stream = new Streams_Stream;
+		$stream->publisherId = $publisherId;
+		$stream->type = $streamType;
+
+		// extend with any config defaults for this stream type
+		$xtype = Q_Config::get('Streams', 'types', $streamType, 'fields', array());
+		$fieldnames = array_merge(array(
+			'title', 'icon', 'content', 'attributes', 
+			'readLevel', 'writeLevel', 'adminLevel'
+		), $xtype);
+		$defaults = Q_Config::get('Streams', 'types', $streamType, 'defaults', array());
+		foreach ($fieldnames as $f) {
+			if (isset($fields[$f])) {
+				$stream->$f = $fields[$f];
+			} else if (array_key_exists($f, $defaults)) {
+				$stream->$f = $defaults[$f];
+			}
+		}
+		
+		// handle setting of attributes
+		if (isset($fields['attributes']) and is_array($fields['attributes'])) {
+			$stream->setAttribute($fields['attributes']);
+			unset($fields['attributes']);
+		}
+	
+		// ready to persist this stream to the database
+		$stream->save();
+		$stream->post($asUserId, array(
+			'type' => 'Streams/created',
+			'content' => '',
+			'instructions' => Q::json_encode($stream->toArray())
+		), true);
+		
+		// relate the stream to category stream, if any
+		if ($relate['streamName']) {
+			$result = Streams::relate(
+				$user->id, 
+				$relate['publisherId'], 
+				$relate['streamName'], 
+				$relate['type'], 
+				$stream->publisherId, 
+				$stream->name,
+				compact('weight', 'skipAccess')
+			);
+			Q_Response::setSlot('messageTo', $result['messageTo']->exportArray());
+		}
 	}
 
 	/**

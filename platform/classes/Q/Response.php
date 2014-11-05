@@ -1419,7 +1419,7 @@ class Q_Response
 	static function setCookie($name, $value, $expires = 0, $path = false)
 	{
 		if (empty($_SERVER['HTTP_HOST'])) {
-			echo 'Warning: Ignoring call to Q_Response::setCookie() without $_SERVER["HTTP_HOST"]'.PHP_EOL;
+			Q::log('Warning: Ignoring call to Q_Response::setCookie() without $_SERVER["HTTP_HOST"]'.PHP_EOL);
 			return false;
 		}
 		if (isset($_COOKIE[$name]) and $_COOKIE[$name] === $value) {

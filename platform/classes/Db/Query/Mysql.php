@@ -1312,8 +1312,9 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	{
 		$conn_name = $this->db->connectionName();
 
-		if (empty($conn_name))
+		if (empty($conn_name)) {
 			$conn_name = 'empty connection name';
+		}
 		$sql = $this->getSQL();
 
 		if (isset(Db_Query::$cache[$conn_name][$sql]['fetchAll'])
@@ -1340,6 +1341,10 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	 * that cached value is returned.
 	 * Otherwise, the query is executed and fetchAll()
 	 * is called on the result.
+	 * @param {string} [$fields_prefix=''] This is the prefix, if any, to strip out when fetching the rows.
+	 * @param {string} [$by_field=null] A field name to index the array by.
+	 *  If the field's value is NULL in a given row, that row is just appended
+	 *  in the usual way to the array.
 	 * @return {array}
 	 */
 	function fetchArray(
@@ -1348,8 +1353,9 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	{
 		$conn_name = $this->db->connectionName();
 
-		if (empty($conn_name))
+		if (empty($conn_name)) {
 			$conn_name = 'empty connection name';
+		}
 		$sql = $this->getSQL();
 
 		if (isset(Db_Query::$cache[$conn_name][$sql]['fetchArray'])

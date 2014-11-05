@@ -78,6 +78,10 @@ class Db_Result
 	/**
 	 * Fetches an array of database rows matching the query.
 	 * The query is executed and fetchAll() is called on the result.
+	 * @param {string} [$fields_prefix=''] This is the prefix, if any, to strip out when fetching the rows.
+	 * @param {string} [$by_field=null] A field name to index the array by.
+	 *  If the field's value is NULL in a given row, that row is just appended
+	 *  in the usual way to the array.
 	 * @return {array}
 	 */
 	function fetchArray(
