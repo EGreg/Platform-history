@@ -280,6 +280,7 @@ Q.Tool.jQuery('Q/dialog', function _Q_dialog (o) {
 				} else {
 					_onLoadUrl();
 				}
+				Q.handle(o.onLoad);
 			}},
 			beforeClose: o.beforeClose,
 			onClose: { "Q/dialog": function () {
@@ -381,6 +382,7 @@ Q.Tool.jQuery('Q/dialog', function _Q_dialog (o) {
 	'removeOnClose': false,
 	'loadUrl': {},
 	'beforeLoad': new Q.Event(),
+	'onLoad': new Q.Event(),
 	'onActivate': new Q.Event(),
 	'beforeClose': new Q.Event(),
 	'onClose': new Q.Event()

@@ -83,7 +83,7 @@ abstract class Places extends Base_Places
 			'name' => $result['name'],
 			'latitude' => $result['geometry']['location']['lat'],
 			'longitude' => $result['geometry']['location']['lng'],
-			'icon' => $result['icon'],
+			// 'icon' => $result['icon'],
 			'phoneNumber' => $result['international_phone_number'],
 			'phoneFormatted' => $result['formatted_phone_number'],
 			'rating' => $result['rating'],
@@ -345,12 +345,12 @@ abstract class Places extends Base_Places
 			if (!$stream) {
 				$streams[$name] = $stream = Places::nearbyStream(
 					$info['latitude'], $info['longitude'], $info['miles'],
-					$fromPublisherId, $name
+					$toPublisherId, $name
 				);
 			}
 			Streams::relate(
 				null,
-				$stream->publisherId,
+				$toPublisherId,
 				$stream->name,
 				$relationType,
 				$fromPublisherId,

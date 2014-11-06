@@ -8926,13 +8926,14 @@ Q.Dialogs.push.options = {
 Q.alert = function(message, options) {
 	if (options === undefined) options = {};
 	if (options.title === undefined) options.title = 'Alert';
-	Q.Dialogs.push(Q.extend({
+	var dialog = Q.Dialogs.push(Q.extend({
 		'title': options.title,
 		'content': '<div class="Q_messagebox"><p>' + message + '</p></div>',
 		'onClose': options.onClose || undefined,
 		'fullscreen': false,
 		'hidePrevious': false
 	}, options));
+	return dialog;
 };
 
 /**
@@ -8987,13 +8988,13 @@ Q.confirm = function(message, callback, options) {
 		Q.Dialogs.pop();
 		Q.handle(callback, window, [false]);
 	});
+	return dialog;
 };
 
 /**
  * Provides replacement for default javascript prompt() using Q front-end features, specifically dialogs.
  * Shows dialog with customizable title, message, input field placeholder and button label.
  * Unlike a regular JS prompt, the entered value is passed asynchronously using callback.
- * 
  * @static
  * @method prompt
  * @param {String} [message='Enter a value'] Optional, specifies text before input field useful to ask
@@ -9045,6 +9046,7 @@ Q.prompt = function(message, callback, options) {
 		'hidePrevious': false
 	}, options));
 	dialog.find('button').on(Q.Pointer.click, _done);
+	return dialog;
 	function _done() {
 		buttonClicked = true;
 		var value = dialog.find('input').val();

@@ -75,6 +75,20 @@ Q.Tool.define("Places/location", function (options) {
 	.on(Q.Pointer.click, function () {
 		var $this = $(this);
 		$this.addClass('Places_obtaining');
+		Q.prompt("Please enter your zipcode:", function (zipcode, dialog) {
+			if (zipcode) {
+				_submit(zipcode);
+			}
+		}, {
+			title: "My Location",
+			ok: "Update",
+			onClose: function () {
+				$this.removeClass('Places_obtaining');	
+			},
+			beforeLoad: function () {
+				$('.Q_overlay').css('opacity', 0);
+			}
+		});
 		navigator.geolocation.getCurrentPosition(
 		function (geo) {
 			var fields = Q.extend({
@@ -83,6 +97,7 @@ Q.Tool.define("Places/location", function (options) {
 				miles: $('select[name=miles]').val(),
 				timezone: (new Date()).getTimezoneOffset() / 60
 			}, true, geo.coords);
+			Q.Dialogs.pop();
 			Q.req("Places/geolocation", [], 
 			function (err, data) {
 				Q.Streams.Stream.refresh(
@@ -92,11 +107,7 @@ Q.Tool.define("Places/location", function (options) {
 				$this.removeClass('Places_obtaining').hide(500);
 			}, {method: 'post', fields: fields});
 		}, function () {
-			var zipcode = window.prompt("Please enter your zipcode:", "");
-			if (zipcode) {
-				_submit(zipcode);
-			}
-			$this.removeClass('Places_obtaining');
+			$('.Q_overlay').animate({'opacity': 1}, 500);
 		}, {
 			maximumAge: 300000
 		});
