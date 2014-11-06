@@ -317,7 +317,7 @@ abstract class Streams extends Base_Streams
 			$publisherId = $publisherId->id;
 		}
 		if (empty($publisherId) or empty($name)) {
-			return null;
+			return array();
 		}
 		if (is_string($name)) {
 			if (substr($name, -1) === '/') {
@@ -1954,7 +1954,8 @@ abstract class Streams extends Base_Streams
 			$query = $query->where($options['where']);
 		}
 
-		$relations = $query->fetchDbRows(null, '', $isCategory ? 'fromStreamName' : 'toStreamName');
+		$FT = $isCategory ? 'from' : 'to';
+		$relations = $query->fetchDbRows(null, '', $FT.'StreamName');
 
 		if (!empty($options['relationsOnly'])) {
 			return $relations;
@@ -1976,7 +1977,14 @@ abstract class Streams extends Base_Streams
 				: implode(',', $options['streamFields']);
 		}
 		$extra = isset($options['extra']) ? $options['extra'] : null;
-		$relatedStreams = Streams::fetch($asUserId, $publisherId, array_keys($relations), $fields, $extra);
+		$names = array();
+		$FTP=$FT.'PublisherId';
+		foreach ($relations as $name => $r) {
+			if ($r->$FTP === $publisherId) {
+				$names[] = $name;
+			}
+		}
+		$relatedStreams = Streams::fetch($asUserId, $publisherId, $names, $fields, $extra);
 		foreach ($relatedStreams as $name => $s) {
 			if (!$s) continue;
 			$s->weight = isset($relations[$name]->weight)
