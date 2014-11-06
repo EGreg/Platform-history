@@ -98,26 +98,31 @@ class Users_Contact extends Base_Users_Contact
 	 * Retrieve contacts belonging to label
 	 * @method fetch
 	 * @param {string} $userId
-	 * @param {string|DB_Range} $label
+	 * @param {string|Db_Range|Db_Expression} $label
 	 * @param {array} [$options=array()] Query options including:
 	 * 		@param 'limit' {integer}
 	 * 		@param 'offset' {integer}
 	 * @return {array}
 	 */
-	static function fetch($userId, $label /* string|DB_Range */, $options = array())
+	static function fetch($userId, $label = null /* string|Db_Range */, $options = array())
 	{
-		if (empty($label)) throw new Q_Exception("Label is required");
 		$limit = isset($options['limit']) ? $options['limit'] : false;
 		$offset = isset($options['offset']) ? $options['offset'] : 0;
+		
+		$criteria = compact('userId');
+		
+		if ($label) {
+			if (substr($label, -1) === '/') {
+				$label = new Db_Range($label, true, false, true);
+			}
+			$criteria['label'] = $label;
+		}
 
-		if (substr($label, -1) === '/') $label = new Db_Range($label, true, false, true);
-
-		$query = Users_Contact::select('*')->where(array(
-			'userId' => $userId,
-			'label' => $label
-		));
-		if ($limit) $query = $query->limit($limit, $offset);
-		return $query->fetchAll(PDO::FETCH_COLUMN, 2);
+		$query = Users_Contact::select('*')->where($criteria);
+		if ($limit) {
+			$query = $query->limit($limit, $offset);
+		}
+		return $query->fetchDbRows();
 	}
 
 	/**
