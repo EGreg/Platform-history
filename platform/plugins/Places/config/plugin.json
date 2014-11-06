@@ -33,8 +33,7 @@
 			"Places/nearby": {},
 			"Places/timeslot": {
 				"defaults": {
-					"title": "Timeslot",
-					"writeLevel": 23
+					"title": "Timeslot"
 				}
 			},
 			"Places/community": {

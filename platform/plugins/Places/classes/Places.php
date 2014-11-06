@@ -139,7 +139,7 @@ abstract class Places extends Base_Places
 		$longitude, 
 		$miles)
 	{
-		list($latQuantized, $longQuantized, $latGrid, $longGrid)
+		list($latQuantized, $longQuantized, $latGrid, $a)
 			= self::quantize($latitude, $longitude, $miles);
 
 		$milesArray = Q_Config::expect('Places', 'nearby', 'miles');
@@ -148,17 +148,19 @@ abstract class Places extends Base_Places
 		}
 		
 		$result = array();
-		foreach (array($latQuantized, $latQuantized+$latGrid) as $lat) {
-			foreach (array($longQuantized, $longQuantized+$longGrid) as $long) {
-				if ($long > 180) { $long = $long%180 - 180; }
-				if ($long < -180) { $long = $long%180 + 180; }
-				if ($lat > 90) { $lat = $lat%90 - 90; }
-				if ($lat < -90) { $lat = $lat%90 + 90; }
-				$streamName = self::streamName($lat, $long, $miles);
+		foreach (array($latQuantized, $latQuantized+$latGrid*1.1) as $lat) {
+			list($a, $b, $c, $longGrid) = self::quantize($lat, $longitude, $miles);
+			foreach (array($longQuantized, $longQuantized+$longGrid*1.1) as $long) {
+				list($latQ, $longQ) = self::quantize($lat, $long, $miles);
+				if ($longQ > 180) { $longQ = $long%180 - 180; }
+				if ($longQ < -180) { $longQ = $long%180 + 180; }
+				if ($latQ > 90) { $latQ = $latQ%90 - 90; }
+				if ($latQ < -90) { $latQ = $latQ%90 + 90; }
+				$streamName = self::streamName($latQ, $longQ, $miles);
 				$result[$streamName] = array(
 					'latitude' => $lat,
 					'longitude' => $long,
-					'geohash' => Places_Geohash::encode($lat, $long, 6),
+					'geohash' => Places_Geohash::encode($latQ, $longQ, 6),
 					'miles' => $miles
 				);
 			}
@@ -266,11 +268,11 @@ abstract class Places extends Base_Places
 				'streamName' => array_keys($nearby),
 				'userId' => Users::loggedInUser()->id
 			))->ignoreCache()->fetchDbRows(null, null, 'streamName');
-		foreach ($nearby as $name => $nb) {
+		foreach ($nearby as $name => $info) {
 			$stream = $streams[$name];
 			if (!$stream) {
 				$streams[$name] = $stream = Places::nearbyStream(
-					$nb['latitude'], $nb['longitude'], $miles, $publisherId, $name
+					$info['latitude'], $info['longitude'], $miles, $publisherId, $name
 				);
 			}
 			$subscribed = ('yes' === Q::ifset($participants, $name, 'subscribed', 'no'));
@@ -297,8 +299,9 @@ abstract class Places extends Base_Places
 	 * @param {array} $options The options to pass to the Streams::relate and Streams::create functions. Also can contain the following options:
 	 * @param {array} [$options.miles] override the default set of distances found in the config under Places/nearby/miles
 	 * @param {callable} [$options.create] if set, this callback will be used to create streams when they don't already exist. It should return a Streams_Stream object.
-	 * @param {callable} [$options.transform="array_keys"] can be used to override the function which takes the output of Places::nearbyForPublishers and returns the array of names of the category streams to relate the stream to
-	 * @param {callable} [$options.transformOptions=null] you can provide an array of options to pass to the transform function here
+	 * @param {array} [$options.createOptions=null] you can provide an array of options to pass to the create function here
+	 * @param {callable} [$options.transform="array_keys"] can be used to override the function which takes the output of Places::nearbyForPublishers and returns the array of ($originalName => $newCategoryName) pairs
+	 * @param {array} [$options.transformOptions=null] you can provide an array of options to pass to the transform function here
 	 * @return {array|boolean} Returns the array of category streams
 	 */
 	static function relateTo(
@@ -319,25 +322,29 @@ abstract class Places extends Base_Places
 			? call_user_func($transform, $nearby, $options['transformOptions'])
 			: call_user_func($transform, $nearby);
 		$streams = Streams::fetch(null, $toPublisherId, $transformed);
-		foreach ($nearby as $name => $nb) {
+		foreach ($nearby as $k => $info) {
+			$name = $transformed[$k];
 			if (empty($streams[$name])) {
 				if (empty($options['create'])) {
 					continue;
 				}
+				$create = $options['create'];
 				$params = compact(
 					'toPublisherId', 'latitude', 'longitude', 
 					'fromPublisherId', 'fromStreamName',
 					'relationType', 'options',
 					'transformed',
-					'nearby', 'streams'
+					'nearby', 'name', 'info', 'streams'
 				);
-				$stream = $streams[$name] = call_user_func($options['create'], $params);
+				$stream = $streams[$name] = isset($options['createOptions'])
+					? call_user_func($create, $params, $options['createOptions'])
+					: call_user_func($create, $params);
 			} else {
 				$stream = $streams[$name];
 			}
 			if (!$stream) {
 				$streams[$name] = $stream = Places::nearbyStream(
-					$nb['latitude'], $nb['longitude'], $nb['miles'],
+					$info['latitude'], $info['longitude'], $info['miles'],
 					$fromPublisherId, $name
 				);
 			}

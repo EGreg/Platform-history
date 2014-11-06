@@ -784,7 +784,7 @@ abstract class Streams extends Base_Streams
 		// extend with any config defaults for this stream type
 		$xtype = Q_Config::get('Streams', 'types', $type, 'fields', array());
 		$fieldnames = array_merge(array(
-			'title', 'icon', 'content', 'attributes', 
+			'name', 'title', 'icon', 'content', 'attributes', 
 			'readLevel', 'writeLevel', 'adminLevel'
 		), $xtype);
 		$defaults = Q_Config::get('Streams', 'types', $type, 'defaults', array());

@@ -44,6 +44,9 @@ function Streams_stream_post($params) {
 		unset($req['icon']);
 	}
 	
+	// This webservice doesn't let clients set the name of the stream
+	unset($req['name']);
+	
 	// Create the stream
 	Streams::create($user->id, $publisherId, $type, $relate, $req);
 	
