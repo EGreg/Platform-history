@@ -8650,11 +8650,17 @@ function _Q_restoreScrolling() {
 	if (!Q.info || !Q.info.isTouchscreen) return false;
 	var body = document.getElementsByTagName('body')[0];
 	var lastScrollLeft, lastScrollTop;
-	Q.addEventListener(body, 'focusin', function _Q_body_focusin() {
+	var focused = false;
+	setInterval(function _Q_saveScrollPositions() {
+		if (focused) return false;
 		lastScrollTop = Q.Pointer.scrollTop();
 		lastScrollLeft = Q.Pointer.scrollLeft();
+	}, 300);
+	Q.addEventListener(body, 'focusin', function _Q_body_focusin() {
+		focused = true;
 	});
 	Q.addEventListener(body, 'focusout', function _Q_body_focusout() {
+		focused = false;
 		if (lastScrollTop !== undefined) {
 			window.scrollTo(lastScrollLeft, lastScrollTop);
 		}

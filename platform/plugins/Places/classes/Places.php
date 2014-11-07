@@ -350,7 +350,7 @@ abstract class Places extends Base_Places
 			}
 			Streams::relate(
 				null,
-				$toPublisherId,
+				$stream->publisherId,
 				$stream->name,
 				$relationType,
 				$fromPublisherId,
