@@ -2602,9 +2602,9 @@ Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotN
 			var request = this;
 			Q.each(response.slots.batch, function (k, result) {
 				if (result && result.errors) {
-					callbacks[k][0].call(request, result.errors);
+					callbacks[k][0].call(this, result.errors, null, request);
 				} else {
-					callbacks[k][0].call(request, null, (result && result.slots) || {});
+					callbacks[k][0].call(this, null, (result && result.slots) || {}, request);
 				}
 			});
 		}, o);
