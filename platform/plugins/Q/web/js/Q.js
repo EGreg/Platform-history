@@ -8646,6 +8646,22 @@ Q.Pointer.which.LEFT = 1;
 Q.Pointer.which.MIDDLE = 2;
 Q.Pointer.which.RIGHT = 3;
 
+function _Q_restoreScrolling() {
+	if (!Q.info || !Q.info.isTouchscreen) return false;
+	var body = document.getElementsByTagName('body')[0];
+	var lastScrollLeft, lastScrollTop;
+	Q.addEventListener(body, 'focusin', function _Q_body_focusin() {
+		lastScrollTop = Q.Pointer.scrollTop();
+		lastScrollLeft = Q.Pointer.scrollLeft();
+	});
+	Q.addEventListener(body, 'focusout', function _Q_body_focusout() {
+		if (lastScrollTop !== undefined) {
+			window.scrollTo(lastScrollLeft, lastScrollTop);
+		}
+	});
+	return true;
+}
+
 var _pos, _dist, _last, _lastTimestamp, _lastVelocity;
 function _Q_PointerStartHandler(e) {
 	Q.Pointer.started = Q.Pointer.target(e);
@@ -9474,6 +9490,7 @@ Q.request.options = {
 };
 
 Q.onReady.set(function _Q_masks() {	
+	_Q_restoreScrolling();
 	Q.request.options.onLoadStart.set(function(url, slotNames, o) {
 		if (o.quiet) return;
 		Q.Mask.show('Q.request.load.mask');
