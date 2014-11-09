@@ -6303,9 +6303,9 @@ var _latestLoadUrlObject;
  *   "onTimeout": handler to call when timeout is reached. Receives function as argument -
  *		the function might be called to cancel loading.
  *   "onResponse": handler to call when the response comes back but before it is processed
- *   "onError": custom error function, defaults to alert
- *   "onLoad": callback which is called when the parsed data comes back from the server
- *   "onActivate": callback which is called when all Q.activate's processed and all script lines executed
+ *   "onError": event for when an error occurs, by default shows an alert
+ *   "onLoad": event which occurs when the parsed data comes back from the server
+ *   "onActivate": event which occurs when all Q.activate's processed and all script lines executed
  *   "onLoadStart": if "quiet" option is false, anything here will be called after the request is initiated
  *   "onLoadEnd": if "quiet" option is false, anything here will be called after the request is fully completed
  * See Q.request for more info.
@@ -6336,11 +6336,8 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 	var hashUrl = parts[1] ? parts[1].queryField('url') : undefined;
 	url = (hashUrl !== undefined) ? hashUrl : parts[0];
 
-	var loader = Q.request,
-		onError = function (msg) {
- 			window.alert(msg);
- 		},
-		onActivate;
+	var loader = Q.request;
+	var onActivate;
 	if (o.loader) {
 		loader = o.loader;
 	}
@@ -9461,6 +9458,9 @@ function _Q_loadUrl_fillSlots (res, url, options) {
 
 Q.loadUrl.options = {
 	quiet: false,
+	onError: new Q.Event(function (msg) {
+ 		window.alert(msg);
+ 	}, 'Q'),
 	onLoad: new Q.Event(),
 	onLoadStart: new Q.Event(Q.loadUrl.saveScroll, 'Q'),
 	onLoadEnd: new Q.Event(),

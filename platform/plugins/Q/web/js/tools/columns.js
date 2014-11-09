@@ -247,7 +247,10 @@ Q.Tool.define("Q/columns", function(options) {
 				},
 				quiet: true,
 				ignoreHistory: true,
-				ignorePage: true
+				ignorePage: true,
+				onError: {"Q/columns": function () {
+					$mask.remove();
+				}}
 			}, options);
 			params.handler = function _handler(response) {
 				var elementsToActivate = {};
