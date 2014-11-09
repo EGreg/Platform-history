@@ -57,7 +57,13 @@ Streams_Subscription.test = function(userId, publisherId, streamName, msgType, c
 			return callback(err);
 		}
 		var types = filter.types, notifications = filter.notifications;
-		if (msgType.substring(0, 8) === 'Streams/' && msgType !== "Streams/invite" || (types && types.length && types.indexOf(msgType) < 0)) return callback(null, []); // no subscription to type
+		var isStreamsType = (msgType.substring(0, 8) === 'Streams/'
+			&& msgType !== "Streams/invite"
+			&& msgType !== "Streams/chat/message");
+		if (isStreamsType
+		|| (types && types.length && types.indexOf(msgType) < 0)) {
+			return callback(null, []); // no subscription to type
+		}
 		Streams.Rule.SELECT('*').where({
 			ofUserId: userId,
 			publisherId: publisherId,
@@ -74,7 +80,8 @@ Streams_Subscription.test = function(userId, publisherId, streamName, msgType, c
 				callback(null, res);
 			});
 			rules.forEach(function (rule) {
-				var o = rule.fields.ordinal, readyTime = new Date(rule.fields.readyTime);
+				var o = rule.fields.ordinal;
+				var readyTime = new Date(rule.fields.readyTime);
 				try {
 					filter = JSON.parse(rule.fields.filter);
 				} catch (e) {
@@ -91,10 +98,12 @@ Streams_Subscription.test = function(userId, publisherId, streamName, msgType, c
 						}).orderBy('sentTime', false).limit(1).execute(function(err, res) {
 							if (err) return p.fill(o)(err);
 							// NOTE: all Streams/participating for a given stream must be on the same shard
-							var time_online = res.length ? res.reduce(function(pv, cv) {
-								var cvd = new Date(cv.sentTime);
-								return pv > cvd ? pv : cvd;
-							}, new Date(res[0].sentTime)) : (readyTime ? readyTime : new Date(0));
+							var time_online = res.length
+								? res.reduce(function(pv, cv) {
+									var cvd = new Date(cv.sentTime);
+									return pv > cvd ? pv : cvd;
+								}, new Date(res[0].sentTime))
+								: (readyTime ? readyTime : new Date(0));
 							// now check notifictions since time_online
 							Streams.Notification.SELECT('COUNT(1) as count').where({
 								userId: userId,
@@ -124,7 +133,8 @@ Streams_Subscription.test = function(userId, publisherId, streamName, msgType, c
 					}
 					p.fill(o)(null, deliver);
 				}
-				if ((!types || !types.length || types.indexOf(msgType) >= 0) && readyTime < new Date()) {
+				if ((!types || !types.length || types.indexOf(msgType) >= 0)
+				&& readyTime < new Date()) {
 					// type and readyTime filters passed
 					var labels = filter.labels;
 					if (labels && Q.typeOf(labels) === "array" && labels.length) {

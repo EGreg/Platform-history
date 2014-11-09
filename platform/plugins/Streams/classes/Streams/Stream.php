@@ -722,7 +722,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 * subscription - change type(s) or modify notifications
 	 * @method subscribe
 	 * @param $options=array() {array}
-	 *	"types": array of message types, if empty filter pass all types
+	 *	"types": array of message types, if this is empty then subscribes to all types
 	 *	"notifications": number of notifications, default - 0 meaning all
 	 *	"untilTime": time limit for subscription, default - null meaning forever
 	 *	"readyTime": time from which user is ready to receive notifications again
