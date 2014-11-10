@@ -269,7 +269,7 @@ class Q_Plugin
 	static private function fixPermissions($file, $mode, $gid = false, $ask = true) {
 		$line = '';
 		$modefix = $groupfix = false;
-		if(($modefix = (filescope($file) & 0777) != $mode)
+		if(($modefix = (fileperms($file) & 0777) != $mode)
 			|| ($groupfix = $gid !== false && filegroup($file) !== $gid)) {
 
 			if ($ask) {
