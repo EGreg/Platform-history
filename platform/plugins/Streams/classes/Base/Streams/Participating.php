@@ -19,6 +19,7 @@
  * @property string $streamName
  * @property mixed $state
  * @property integer $fresh
+ * @property string $extra
  * @property string $insertedTime
  * @property string $updatedTime
  */
@@ -43,6 +44,10 @@ abstract class Base_Streams_Participating extends Db_Row
 	/**
 	 * @property $fresh
 	 * @type integer
+	 */
+	/**
+	 * @property $extra
+	 * @type string
 	 */
 	/**
 	 * @property $insertedTime
@@ -285,6 +290,24 @@ abstract class Base_Streams_Participating extends Db_Row
 	}
 
 	/**
+	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
+	 * Optionally accept numeric value which is converted to string
+	 * @method beforeSet_extra
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value is not string or is exceedingly long
+	 */
+	function beforeSet_extra($value)
+	{
+		if ($value instanceof Db_Expression) return array('extra', $value);
+		if (!is_string($value) and !is_numeric($value))
+			throw new Exception('Must pass a string to '.$this->getTable().".extra");
+		if (strlen($value) > 1023)
+			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".extra");
+		return array('extra', $value);			
+	}
+
+	/**
 	 * Check if mandatory fields are set and updates 'magic fields' with appropriate values
 	 * @method beforeSave
 	 * @param {array} $value The array of fields
@@ -295,7 +318,7 @@ abstract class Base_Streams_Participating extends Db_Row
 	{
 		if (!$this->retrieved) {
 			$table = $this->getTable();
-			foreach (array('userId','publisherId','streamName','state') as $name) {
+			foreach (array('userId','publisherId','streamName','state','extra') as $name) {
 				if (!isset($value[$name])) {
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}
@@ -319,7 +342,7 @@ abstract class Base_Streams_Participating extends Db_Row
 	 */
 	static function fieldNames($table_alias = null, $field_alias_prefix = null)
 	{
-		$field_names = array('userId', 'publisherId', 'streamName', 'state', 'fresh', 'insertedTime', 'updatedTime');
+		$field_names = array('userId', 'publisherId', 'streamName', 'state', 'fresh', 'extra', 'insertedTime', 'updatedTime');
 		$result = $field_names;
 		if (!empty($table_alias)) {
 			$temp = array();

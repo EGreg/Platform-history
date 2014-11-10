@@ -407,7 +407,7 @@ Streams.get = function (publisherId, streamName, callback, extra) {
 			msg = "Streams.get: data.stream is missing";
 		}
 		if (msg) {
-			if (err && err[0].classname === "Q_Exception_MissingRow"
+			if (err && err[0] && err[0].classname === "Q_Exception_MissingRow"
 			&& (!extra || !extra.cacheIfMissing)
 			&& Streams.get.forget) {
 				setTimeout(function () {

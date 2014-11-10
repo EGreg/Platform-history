@@ -68,6 +68,67 @@ class Streams_Participant extends Base_Streams_Participant
 	}
 	
 	/**
+	 * @method getAllExtras
+	 * @return {array} The array of all extras set in the stream
+	 */
+	function getAllExtras()
+	{
+		return empty($this->extra) 
+			? array()
+			: json_decode($this->extra, true);
+	}
+	
+	/**
+	 * @method getExtra
+	 * @param {string} $extraName The name of the extra to get
+	 * @param {mixed} $default The value to return if the extra is missing
+	 * @return {mixed} The value of the extra, or the default value, or null
+	 */
+	function getExtra($extraName, $default = null)
+	{
+		$attr = $this->getAllExtras();
+		return isset($attr[$extraName]) ? $attr[$extraName] : $default;
+	}
+	
+	/**
+	 * @method setExtra
+	 * @param {string} $extraName The name of the extra to set,
+	 *  or an array of $extraName => $extraValue pairs
+	 * @param {mixed} $value The value to set the extra to
+	 */
+	function setExtra($extraName, $value = null)
+	{
+		$attr = $this->getAllExtras();
+		if (is_array($extraName)) {
+			foreach ($extraName as $k => $v) {
+				$attr[$k] = $v;
+			}
+		} else {
+			$attr[$extraName] = $value;
+		}
+		$this->extra = Q::json_encode($attr);
+	}
+	
+	/**
+	 * @method clearExtra
+	 * @param {string} $extraName The name of the extra to remove
+	 */
+	function clearExtra($extraName)
+	{
+		$attr = $this->getAllExtras();
+		unset($attr[$extraName]);
+		$this->extra = Q::json_encode($attr);
+	}
+	
+	/**
+	 * @method clearAllExtras
+	 */
+	function clearAllExtras()
+	{
+		$this->extra = '{}';
+	}
+	
+	/**
 	 * Also saves counterpart row in Streams_Participating table
 	 * @method beforeSave
 	 * @param {array} $modifiedFields
@@ -76,12 +137,33 @@ class Streams_Participant extends Base_Streams_Participant
 	 */
 	function beforeSave($modifiedFields)
 	{
-		if (isset($modifiedFields['state'])) {
+		if (empty($this->extra)) {
+			$this->extra = '{}';
+		}
+		$modifiedState = isset($modifiedFields['state']);
+		$modifiedExtra = isset($modifiedFields['extra']);
+
+		foreach ($this->fields as $name => $value) {
+			if (!empty($this->fieldsModified[$name])) {
+				$modifiedFields[$name] = $value;
+			}
+		}
+
+		if ($modifiedState or $modifiedExtra) {
 			$p = new Streams_Participating();
 			$p->userId = $this->userId; // shouldn't change
 			$p->publisherId = $this->publisherId; // shouldn't change
 			$p->streamName = $this->streamName; // shouldn't change
-			$p->state = $modifiedFields['state'];
+			if ($modifiedState) {
+				$p->state = $modifiedFields['state'];
+			} else if (isset($this->state)) {
+				$p->state = $this->state;
+			}
+			if ($modifiedExtra) {
+				$p->extra = $modifiedFields['extra'];
+			} else if (isset($this->extra)) {
+				$p->extra = $this->extra;
+			}
 			$p->save(true);
 		}
 		return parent::beforeSave($modifiedFields);

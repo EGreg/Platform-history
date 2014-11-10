@@ -23,9 +23,7 @@
  * @property mixed $state
  * @property mixed $subscribed
  * @property mixed $posted
- * @property string $reason
- * @property float $enthusiasm
- * @property integer $reputation
+ * @property string $extra
  */
 abstract class Base_Streams_Participant extends Db_Row
 {
@@ -66,16 +64,8 @@ abstract class Base_Streams_Participant extends Db_Row
 	 * @type mixed
 	 */
 	/**
-	 * @property $reason
+	 * @property $extra
 	 * @type string
-	 */
-	/**
-	 * @property $enthusiasm
-	 * @type float
-	 */
-	/**
-	 * @property $reputation
-	 * @type integer
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -344,36 +334,19 @@ abstract class Base_Streams_Participant extends Db_Row
 	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
-	 * @method beforeSet_reason
+	 * @method beforeSet_extra
 	 * @param {string} $value
 	 * @return {array} An array of field name and value
 	 * @throws {Exception} An exception is thrown if $value is not string or is exceedingly long
 	 */
-	function beforeSet_reason($value)
+	function beforeSet_extra($value)
 	{
-		if ($value instanceof Db_Expression) return array('reason', $value);
+		if ($value instanceof Db_Expression) return array('extra', $value);
 		if (!is_string($value) and !is_numeric($value))
-			throw new Exception('Must pass a string to '.$this->getTable().".reason");
-		if (strlen($value) > 255)
-			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".reason");
-		return array('reason', $value);			
-	}
-
-	/**
-	 * Method is called before setting the field and verifies if integer value falls within allowed limits
-	 * @method beforeSet_reputation
-	 * @param {integer} $value
-	 * @return {array} An array of field name and value
-	 * @throws {Exception} An exception is thrown if $value is not integer or does not fit in allowed range
-	 */
-	function beforeSet_reputation($value)
-	{
-		if ($value instanceof Db_Expression) return array('reputation', $value);
-		if (!is_numeric($value) or floor($value) != $value)
-			throw new Exception('Non-integer value being assigned to '.$this->getTable().".reputation");
-		if ($value < -2147483648 or $value > 2147483647)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".reputation");
-		return array('reputation', $value);			
+			throw new Exception('Must pass a string to '.$this->getTable().".extra");
+		if (strlen($value) > 1023)
+			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".extra");
+		return array('extra', $value);			
 	}
 
 	/**
@@ -387,7 +360,7 @@ abstract class Base_Streams_Participant extends Db_Row
 	{
 		if (!$this->retrieved) {
 			$table = $this->getTable();
-			foreach (array('streamName','state','reason') as $name) {
+			foreach (array('streamName','state','extra') as $name) {
 				if (!isset($value[$name])) {
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}
@@ -411,7 +384,7 @@ abstract class Base_Streams_Participant extends Db_Row
 	 */
 	static function fieldNames($table_alias = null, $field_alias_prefix = null)
 	{
-		$field_names = array('publisherId', 'streamName', 'userId', 'streamType', 'insertedTime', 'updatedTime', 'state', 'subscribed', 'posted', 'reason', 'enthusiasm', 'reputation');
+		$field_names = array('publisherId', 'streamName', 'userId', 'streamType', 'insertedTime', 'updatedTime', 'state', 'subscribed', 'posted', 'extra');
 		$result = $field_names;
 		if (!empty($table_alias)) {
 			$temp = array();

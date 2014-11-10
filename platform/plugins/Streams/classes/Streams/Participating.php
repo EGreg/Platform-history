@@ -22,6 +22,29 @@ class Streams_Participating extends Base_Streams_Participating
 	{
 		parent::setUp();
 	}
+	
+	/**
+	 * @method getAllExtras
+	 * @return {array} The array of all extras set in the stream
+	 */
+	function getAllExtras()
+	{
+		return empty($this->extra) 
+			? array()
+			: json_decode($this->extra, true);
+	}
+	
+	/**
+	 * @method getExtra
+	 * @param {string} $extraName The name of the extra to get
+	 * @param {mixed} $default The value to return if the extra is missing
+	 * @return {mixed} The value of the extra, or the default value, or null
+	 */
+	function getExtra($extraName, $default = null)
+	{
+		$attr = $this->getAllExtras();
+		return isset($attr[$extraName]) ? $attr[$extraName] : $default;
+	}
 
 	/**
 	 * Implements the __set_state method, so it can work with

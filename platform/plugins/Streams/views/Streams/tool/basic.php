@@ -46,23 +46,23 @@ $prefix = Q_Html::getIdPrefix();
 	</tr>
 	<tr>
 		<td class="Q_field_title">
-			<label for="<?php echo $prefix ?>sex">Sex</label>
+			<label for="<?php echo $prefix ?>gender">gender</label>
 			<?php if ($show_access): ?> 
 				<?php echo Q::tool('Streams/access', array(
-					'readLevel' => Streams::my('Streams/user/sex', 'readLevel'),
-					'streamName' => 'Streams/user/sex',
-					'input_id' => Q_Html::id('sex_readLevel')
-				), 'sex') ?>  
-				<input type="hidden" name="sex_readLevel"
-					id="<?php echo Q_Html::id('sex_readLevel') ?>"
-					value="<?php echo Streams::my('Streams/user/sex', 'readLevel') ?>">
+					'readLevel' => Streams::my('Streams/user/gender', 'readLevel'),
+					'streamName' => 'Streams/user/gender',
+					'input_id' => Q_Html::id('gender_readLevel')
+				), 'gender') ?>  
+				<input type="hidden" name="gender_readLevel"
+					id="<?php echo Q_Html::id('gender_readLevel') ?>"
+					value="<?php echo Streams::my('Streams/user/gender', 'readLevel') ?>">
 			<?php endif; ?>  
 		</td>
 		<td class="Q_field_input">
-			<select name="sex" class="select" id="<?php echo $prefix ?>sex">
+			<select name="gender" class="select" id="<?php echo $prefix ?>gender">
 				<?php echo Q_Html::options(
 					array('male' => 'male', 'female' => 'female'),
-					'', Streams::my('Streams/user/sex'), '', "\n\t\t\t\t"
+					'', Streams::my('Streams/user/gender'), '', "\n\t\t\t\t"
 				) ?> 
 			</select>
 		</td>

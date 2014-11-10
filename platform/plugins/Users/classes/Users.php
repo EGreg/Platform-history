@@ -1440,7 +1440,7 @@ abstract class Users extends Base_Users
 	 * @static
 	 * @param {Facebook} $facebook Facebook object
 	 * @param {string} [$uid=null] User id
-	 * @param {string} [$fields="uid,first\_name,last\_name,pic\_small,pic\_big,pic\_square,pic,birthday_date,sex,meeting\_sex,religion"]
+	 * @param {string} [$fields="uid,first\_name,last\_name,pic\_small,pic\_big,pic\_square,pic,birthday_date,gender,meeting\_sex,religion"]
 	 * @return {array}
 	 * @throws {Users_Exception_NotLoggedIn} If user is not logged in
 	 */

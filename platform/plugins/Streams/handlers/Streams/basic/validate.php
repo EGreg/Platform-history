@@ -9,7 +9,7 @@ function Streams_basic_validate()
 	$fields = array(
 		'firstName' => 'First name', 
 		'lastName' => 'Last name', 
-		'sex' => 'Sex', 
+		'gender' => 'Gender', 
 		'birthday_month' => 'Month', 
 		'birthday_day' => 'Day', 
 		'birthday_year' => 'Year'
@@ -47,9 +47,9 @@ function Streams_basic_validate()
 			Q_Response::addError(new Q_Exception("A world record? Really?", "birthday_year"));
 		}
 	}
-	if (!empty($_REQUEST['sex'])) {
-		if (!in_array($_REQUEST['sex'], array('male', 'female'))) {
-			Q_Response::addError(new Q_Exception("Please enter male or female", "sex"));
+	if (!empty($_REQUEST['gender'])) {
+		if (!in_array($_REQUEST['gender'], array('male', 'female'))) {
+			Q_Response::addError(new Q_Exception("Please enter male or female", "gender"));
 		}
 	}
 }

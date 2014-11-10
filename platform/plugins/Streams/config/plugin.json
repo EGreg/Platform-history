@@ -1,5 +1,14 @@
 {
 	"Q": {
+		"pluginInfo": {
+			"Streams": {
+				"version": "0.8.3",
+				"compatible": "0.8",
+				"requires": {"Users": "0.8"},
+				"permissions": ["Streams/icons"],
+				"connections": ["Streams"]
+			}
+		},
 		"handlersBeforeEvent": {
 			"Q/objects": ["Streams/before/Q_objects"],
 			"Q/responseExtras": ["Streams/before/Q_responseExtras"],
@@ -22,15 +31,6 @@
 			"plugins/Streams/:action": {"module": "Streams"},
 			"plugins/Streams/invite/:token": {"module": "Streams", "action": "invite"},
 			"i/:token": {"module": "Streams", "action": "invited"}
-		},
-		"pluginInfo": {
-			"Streams": {
-				"version": "0.8.2",
-				"compatible": "0.8",
-				"requires": {"Users": "0.8"},
-				"permissions": ["Streams/icons"],
-				"connections": ["Streams"]
-			}
 		}
 	},
 	"Users": {

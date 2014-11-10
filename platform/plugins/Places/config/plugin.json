@@ -1,8 +1,5 @@
 {
 	"Q": {
-		"routes": {
-			"plugins/Places/:action": {"module": "Places"}
-		},
 		"pluginInfo": {
 			"Places": {
 				"version": "0.3",
@@ -10,6 +7,9 @@
 				"connections": ["Places"],
 				"requires": {"Streams": "0.8"}
 			}
+		},
+		"routes": {
+			"plugins/Places/:action": {"module": "Places"}
 		},
 		"handlersBeforeEvent": {
 			"Q/responseExtras": ["Places/before/Q_responseExtras"]

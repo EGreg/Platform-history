@@ -46,13 +46,19 @@ function _Streams_participants(options) {
 },
 
 {
-	maxShow: null,
+	maxShow: 10,
 	max: null,
     filter: function () { },
 	onRefresh: new Q.Event()
 },
 
 {
+	Q: {
+		beforeRemove: function () {
+			clearInterval(this.resizeInterval);
+		}
+	},
+	
 	refresh: function (callback) {
 		var tool = this;
 		var state = tool.state;
@@ -97,11 +103,11 @@ function _Streams_participants(options) {
 			tool.stateChanged('count');
 			Q.handle(state.onRefresh, tool, []);
 			
-			setTimeout(function () {
+			tool.resizeInterval = setInterval(function () {
 				var w = $te.width() - tool.$summary.outerWidth(true);
 				var pm = tool.$pc.outerWidth(true) - tool.$pc.width();
 				tool.$pc.width(w - pm);
-			}, 0);
+			}, 500);
 			
 			if (state.max) {
 				tool.$max.text('/' + state.max);

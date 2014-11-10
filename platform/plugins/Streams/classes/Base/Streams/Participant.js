@@ -65,16 +65,8 @@ Q.mixin(Base, Row);
  * @type string
  */
 /**
- * @property reason
+ * @property extra
  * @type string
- */
-/**
- * @property enthusiasm
- * @type number
- */
-/**
- * @property reputation
- * @type integer
  */
 
 /**
@@ -241,9 +233,7 @@ Base.prototype.fieldNames = function () {
 		"state",
 		"subscribed",
 		"posted",
-		"reason",
-		"enthusiasm",
-		"reputation"
+		"extra"
 	];
 };
 
@@ -361,49 +351,17 @@ Base.prototype.beforeSet_posted = function (value) {
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
- * @method beforeSet_reason
+ * @method beforeSet_extra
  * @param {string} value
  * @return {string} The value
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
-Base.prototype.beforeSet_reason = function (value) {
+Base.prototype.beforeSet_extra = function (value) {
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
-			throw new Error('Must pass a string to '+this.table()+".reason");
-		if (typeof value === "string" && value.length > 255)
-			throw new Error('Exceedingly long value being assigned to '+this.table()+".reason");
-		return value;
-};
-
-/**
- * Method is called before setting the field to verify if value is a number
- * @method beforeSet_enthusiasm
- * @param {integer} value
- * @return {integer} The value
- * @throws {Error} If 'value' is not number
- */
-Base.prototype.beforeSet_enthusiasm = function (value) {
-		if (value instanceof Db.Expression) return value;
-		value = Number(value);
-		if (isNaN(value))
-			throw new Error('Non-number value being assigned to '+this.table()+".enthusiasm");
-		return value;
-};
-
-/**
- * Method is called before setting the field and verifies if integer value falls within allowed limits
- * @method beforeSet_reputation
- * @param {integer} value
- * @return {integer} The value
- * @throws {Error} An exception is thrown if 'value' is not integer or does not fit in allowed range
- */
-Base.prototype.beforeSet_reputation = function (value) {
-		if (value instanceof Db.Expression) return value;
-		value = Number(value);
-		if (isNaN(value) || Math.floor(value) != value)
-			throw new Error('Non-integer value being assigned to '+this.table()+".reputation");
-		if (value < -2147483648 || value > 2147483647)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".reputation");
+			throw new Error('Must pass a string to '+this.table()+".extra");
+		if (typeof value === "string" && value.length > 1023)
+			throw new Error('Exceedingly long value being assigned to '+this.table()+".extra");
 		return value;
 };
 
@@ -415,7 +373,7 @@ Base.prototype.beforeSet_reputation = function (value) {
  * @throws {Error} If mandatory field is not set
  */
 Base.prototype.beforeSave = function (value) {
-	var fields = ['streamName','state','reason'], i;
+	var fields = ['streamName','state','extra'], i;
 	if (!this._retrieved) {
 		var table = this.table();
 		for (i=0; i<fields.length; i++) {

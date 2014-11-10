@@ -49,6 +49,10 @@ Q.mixin(Base, Row);
  * @type integer
  */
 /**
+ * @property extra
+ * @type string
+ */
+/**
  * @property insertedTime
  * @type string
  */
@@ -217,6 +221,7 @@ Base.prototype.fieldNames = function () {
 		"streamName",
 		"state",
 		"fresh",
+		"extra",
 		"insertedTime",
 		"updatedTime"
 	];
@@ -305,6 +310,23 @@ Base.prototype.beforeSet_fresh = function (value) {
 };
 
 /**
+ * Method is called before setting the field and verifies if value is string of length within acceptable limit.
+ * Optionally accept numeric value which is converted to string
+ * @method beforeSet_extra
+ * @param {string} value
+ * @return {string} The value
+ * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
+ */
+Base.prototype.beforeSet_extra = function (value) {
+		if (value instanceof Db.Expression) return value;
+		if (typeof value !== "string" && typeof value !== "number")
+			throw new Error('Must pass a string to '+this.table()+".extra");
+		if (typeof value === "string" && value.length > 1023)
+			throw new Error('Exceedingly long value being assigned to '+this.table()+".extra");
+		return value;
+};
+
+/**
  * Check if mandatory fields are set and updates 'magic fields' with appropriate values
  * @method beforeSave
  * @param {array} value The array of fields
@@ -312,7 +334,7 @@ Base.prototype.beforeSet_fresh = function (value) {
  * @throws {Error} If mandatory field is not set
  */
 Base.prototype.beforeSave = function (value) {
-	var fields = ['userId','publisherId','streamName','state'], i;
+	var fields = ['userId','publisherId','streamName','state','extra'], i;
 	if (!this._retrieved) {
 		var table = this.table();
 		for (i=0; i<fields.length; i++) {

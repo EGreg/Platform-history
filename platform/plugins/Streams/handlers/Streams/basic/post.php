@@ -5,7 +5,7 @@
  * "firstName": specify the first name directly
  * "lastName": specify the last name directly
  * "fullName": the user's full name, which if provided will be split into first and last name and override them
- * "sex": the user's gender
+ * "gender": the user's gender
  * "birthday_year": the year the user was born
  * "birthday_month": the month the user was born
  * "birthday_day": the day the user was born
@@ -31,7 +31,7 @@ function Streams_basic_post()
 		$request['firstName'] = $name['first'];
 		$request['lastName'] = $name['last'];
 	}
-	foreach (array('firstName', 'lastName', 'birthday', 'sex') as $field) {
+	foreach (array('firstName', 'lastName', 'birthday', 'gender') as $field) {
 		if (isset($request[$field])) {
 			$fields[] = $field;
 		}

@@ -33,10 +33,10 @@ Q.Tool.define("Streams/basic", function(options) {
 					}
 					FB.api({
 						method: 'fql.query',
-						query:'SELECT firstName, lastName, sex'+also_birthday+' FROM user WHERE uid=me()'
+						query:'SELECT firstName, lastName, gender'+also_birthday+' FROM user WHERE uid=me()'
 					}, function (response) {
 						if (!response || !response[0]) return;
-						for (var k in {firstName:1,lastName:1,sex:1}) {
+						for (var k in {firstName:1,lastName:1,gender:1}) {
 							var tag = $('#'+this.prefix+k);
 							if (!tag.val()) {
 								tag.val(response[0][k]);
@@ -75,7 +75,7 @@ Q.Tool.define("Streams/basic", function(options) {
 				// there were errors
 				$this.data("validator").reset().invalidate(Q.ajaxErrors(
 					response.errors,
-					['firstName', 'lastName', 'sex', 'birthday_year', 'birthday_month', 'birthday_day']
+					['firstName', 'lastName', 'gender', 'birthday_year', 'birthday_month', 'birthday_day']
 				));
 				$('input.Q_errors:not([type=hidden])', $this)
 				.add('select.Q_errors', $this)
