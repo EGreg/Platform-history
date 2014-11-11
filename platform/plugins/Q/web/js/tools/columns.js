@@ -20,7 +20,7 @@
  *  @param {Object}  [options.close.clickable] If not null, enables the Q/clickable tool with options from here. Defaults to null.
  *  @param {String}  [options.title] You can put a default title for all columns here (which is shown as they are loading)
  *  @param {String}  [options.column] You can put a default content for all columns here (which is shown as they are loading)
- *  @param {Object}  [options.scrollbarsAutoHide] If not null, enables Q/scrollbarsAutoHide functionality with options from here. Enabled by default.
+ *  @param {Object}  [options.scrollbarsAutoHide] If an object, enables Q/scrollbarsAutoHide functionality with options from here. Enabled by default.
  *  @param {Boolean} [options.fullscreen] Whether to use fullscreen mode on mobile phones, using document to scroll instead of relying on possibly buggy "overflow" CSS implementation. Defaults to true on Android, false everywhere else.
  *  @param {Q.Event} [options.beforeOpen] Event that happens before a column is opened. Return false to prevent opening.
  *  @param {Q.Event} [options.beforeClose] Event that happens before a column is closed. Return false to prevent closing.

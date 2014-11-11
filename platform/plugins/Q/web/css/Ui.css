@@ -1759,6 +1759,8 @@ input[type=radio] { margin-right: 5px; }
 .Q_columns_column .column_slot {
 	clear: both;
 	overflow: auto;
+	overflow-x: hidden;
+	overflow-y: auto;
 	position: relative;
 }
 
