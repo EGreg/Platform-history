@@ -8653,10 +8653,10 @@ function _Q_restoreScrolling() {
 		lastScrollTop = Q.Pointer.scrollTop();
 		lastScrollLeft = Q.Pointer.scrollLeft();
 	}, 300);
-	Q.addEventListener(body, 'focusin', function _Q_body_focusin() {
+	Q.addEventListener(body, Q.Pointer.focusin, function _Q_body_focusin() {
 		focused = true;
 	});
-	Q.addEventListener(body, 'focusout', function _Q_body_focusout() {
+	Q.addEventListener(body, Q.Pointer.focusout, function _Q_body_focusout() {
 		focused = false;
 		if (lastScrollTop !== undefined) {
 			window.scrollTo(lastScrollLeft, lastScrollTop);
