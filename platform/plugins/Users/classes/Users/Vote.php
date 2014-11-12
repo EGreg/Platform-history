@@ -60,6 +60,9 @@ class Users_Vote extends Base_Users_Vote
 					+ $modifiedFields['value'] * $modifiedFields['weight'])
 				/ ($total->weightTotal);
 		} else {
+			if (!isset($modifiedFields['weight'])) {
+				$modifiedFields['weight'] = 1;
+			}
 			$total->weightTotal += $modifiedFields['weight'];
 			$total->voteCount += 1;
 			$total->value = ($total->value * $weightTotal + $modifiedFields['value'] * $modifiedFields['weight'])

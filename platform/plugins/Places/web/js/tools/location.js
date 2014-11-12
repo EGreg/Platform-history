@@ -10,6 +10,9 @@
  * @class Streams location
  * @constructor
  * @param {Object} [options] used to pass options
+ * @param {Object} [options.map] options for the map
+ * @param {Number} [options.map.delay=300] how many milliseconds to delay showing the map, e.g. because the container is animating
+ * @param {Q.Event} [options.onUpdate] this event occurs when the location is updated
  */
 
 Q.Tool.define("Places/location", function (options) {
@@ -37,7 +40,7 @@ Q.Tool.define("Places/location", function (options) {
 		if (miles) {
 			tool.$('.Places_location_miles').val(miles);
 		};
-		pipe.fill('info')(latitude, longitude, miles);
+		pipe.fill('info')(latitude, longitude, miles, state.onUpdate);
 		state.stream = this; // in case it was missing before
 	});
 	
@@ -195,7 +198,7 @@ Q.Tool.define("Places/location", function (options) {
 			});
 			circle.bindTo('center', marker, 'position');
 			
-			callback && callback();
+			Q.handle(callback, tool, [latitude, longitude, miles, map]);
 		}
 	}
 },
@@ -203,7 +206,8 @@ Q.Tool.define("Places/location", function (options) {
 { // default options here
 	map: {
 		delay: 300
-	}
+	},
+	onUpdate: new Q.Event()
 },
 
 { // methods go here

@@ -1595,11 +1595,12 @@ function submitClosestForm () {
  * @param {Point} [options.hotspot={x:0.5,y:0.4}] "x" and "y" represent the location of the hotspot within the image, using fractions between 0 and 1
  * @param {String} [options.width="200px"]
  * @param {String} [options.height="200px"]
- * @param {Integer} [options.zIndex=99999]
+ * @param {Number} [options.zIndex=99999]
+ * @return {Boolean} Returns true if the hint with will be shown, or false if a hint with this key was already shown before.
  */
 Users.hint = function (key, elementOrPoint, options) {
 	if (Users.hinted.indexOf(key) >= 0) {
-		return;
+		return false;
 	}
 	Q.Pointer.hint(elementOrPoint, options);
 	Q.req('Users/vote', ['vote'], function (err, result) {
@@ -1616,6 +1617,7 @@ Users.hint = function (key, elementOrPoint, options) {
 			value: 1
 		}
 	});
+	return true;
 };
 
 /**

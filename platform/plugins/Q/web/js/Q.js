@@ -8590,7 +8590,7 @@ Q.Pointer = {
 	 * @param {Element|Object} elementOrPoint Indicates where to display the hint. A point should contain properties "x" and "y".
 	 * @param {Object} [options] possible options, which can include:
 	 * @param {String} [options.src] the url of the image
-	 * @param {Point} [options.hotspot={x:0.5,y:0.4}] "x" and "y" represent the location of the hotspot within the image, using fractions between 0 and 1
+	 * @param {Point} [options.hotspot={x:0.5,y:0.3}] "x" and "y" represent the location of the hotspot within the image, using fractions between 0 and 1
 	 * @param {String} [options.width="200px"]
 	 * @param {String} [options.height="200px"]
 	 * @param {Integer} [options.zIndex=99999]
@@ -8612,12 +8612,12 @@ Q.Pointer = {
 		} else {
 			_update.call();
 		}
-		if (!Q.Pointer.stopHint.addedEventListener) {
-			Q.addEventListener(window, Q.Pointer.click, function () {
-				Q.Pointer.stopHint();
-			});
-			Q.Pointer.stopHint.addedEventListener = true;
-		}
+		Q.Pointer.stopHint.prevent = true;
+		Q.removeEventListener(window, Q.Pointer.click, Q.Pointer.stopHint);
+		setTimeout(function () {
+			Q.addEventListener(window, Q.Pointer.click, Q.Pointer.stopHint);
+			Q.Pointer.stopHint.prevent = false;
+		}, o.hide.delay);
 		function _update() {
 			var point;
 			img.style.display = 'block';
@@ -8634,6 +8634,9 @@ Q.Pointer = {
 			img.style.top = point.y - img.offsetHeight * o.hotspot.y + 'px';
 			img.style.zIndex = o.zIndex;
 			img.style.opacity = 0;
+			if (Q.Pointer.stopHint.animation) {
+				Q.Pointer.stopHint.animation.pause();
+			}
 			Q.Animation.play(function (x, y) {
 				img.style.opacity = y;
 			}, o.show.duration);
@@ -8653,7 +8656,8 @@ Q.Pointer = {
 	 */
 	stopHint: function (removeIt) {
 		var img = Q.Pointer.hint.img;
-		Q.Animation.play(function (x, y) {
+		if (!img) return;
+		Q.Pointer.stopHint.animation = Q.Animation.play(function (x, y) {
 			img.style.opacity = 1-y;
 			if (x === 1) {
 				if (removeIt) {
@@ -8746,12 +8750,12 @@ Q.Pointer.which.RIGHT = 3;
 
 Q.Pointer.hint.options = {
 	src: 'plugins/Q/img/hint.gif',
-	hotspot:  {x: 0.5, y: 0.4},
+	hotspot:  {x: 0.5, y: 0.3},
 	width: "50px",
 	height: "50px",
 	zIndex: 99999,
 	show: { duration: 500 },
-	hide: { duration: 500 }
+	hide: { duration: 500, delay: 500 }
 };
 
 function _Q_restoreScrolling() {
