@@ -8637,10 +8637,13 @@ Q.Pointer = {
 			img.style.opacity = 0;
 			if (Q.Pointer.stopHint.animation) {
 				Q.Pointer.stopHint.animation.pause();
+				img.style.opacity = 0;
 			}
-			Q.Animation.play(function (x, y) {
-				img.style.opacity = y;
-			}, o.show.duration);
+			setTimeout(function () {
+				Q.Animation.play(function (x, y) {
+					img.style.opacity = y;
+				}, o.show.duration);
+			}, o.show.delay);
 		}
 	},
 	/**
@@ -8657,16 +8660,15 @@ Q.Pointer = {
 	 */
 	stopHint: function (removeIt) {
 		var img = Q.Pointer.hint.img;
-		if (!img) return;
+		if (!img || Q.Pointer.stopHint.prevent) return;
 		Q.Pointer.stopHint.animation = Q.Animation.play(function (x, y) {
 			img.style.opacity = 1-y;
-			if (x === 1) {
-				if (removeIt) {
-					img.parentNode.removeChild(img);
-					Q.Pointer.hint.img = null;
-				} else {
-					img.style.display = 'none';
-				}
+			if (x < 1 || Q.Pointer.stopHint.prevent) return;
+			if (removeIt) {
+				img.parentNode.removeChild(img);
+				Q.Pointer.hint.img = null;
+			} else {
+				img.style.display = 'none';
 			}
 		}, Q.Pointer.hint.options.hide.duration);
 	},
@@ -8755,7 +8757,7 @@ Q.Pointer.hint.options = {
 	width: "50px",
 	height: "50px",
 	zIndex: 99999,
-	show: { duration: 500 },
+	show: { duration: 500, delay: 500 },
 	hide: { duration: 300, delay: 300 }
 };
 
