@@ -380,7 +380,7 @@ Q.Tool.define({
  *   @param {Boolean} [extra.cacheIfMissing] defaults to false. If true, caches the "missing stream" result.
  *   @param {Mixed} [extra."$Module/$fieldname"] , any other fields you would like can be added, to be passed to your hooks on the back end
  */
-Streams.get = function (publisherId, streamName, callback, extra) {
+Streams.get = function _Streams_get(publisherId, streamName, callback, extra) {
 	var args = arguments;
 	var url = Q.action('Streams/stream?')+
 		Q.serializeFields({"publisherId": publisherId, "name": streamName});

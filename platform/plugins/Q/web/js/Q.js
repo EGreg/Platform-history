@@ -2748,6 +2748,10 @@ Q.getter = function _Q_getter(original, options) {
 				args: []
 			};
 			wrapper.throttle.throttleTry = function _throttleTry(that, getter, args) {
+				console.log('+1');
+				console.log(p, getter.name, options);
+				console.log(that, args);
+				console.log('-----');
 				++p.count;
 				if (p.size === null || p.count <= p.size) {
 					getter.apply(that, args);
@@ -2759,6 +2763,10 @@ Q.getter = function _Q_getter(original, options) {
 				return false;
 			};
 			wrapper.throttle.throttleNext = function _throttleNext(that) {
+				console.log('-1');
+				console.log(p, options);
+				console.log(that, p.args[p.args.length-1]);
+				console.log('-----');
 				if (--p.count < 0) {
 					console.warn("Q.getter: throttle count is negative");
 				}
