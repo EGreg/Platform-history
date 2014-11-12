@@ -1921,7 +1921,8 @@ Evp.until = function _Q_Event_prototype_until(anotherEvent, key) {
 	var newEvent = new Q.Event();
 	key = this.add(newEvent.handle);
 	var event = this;
-	var anotherKey = anotherEvent.add(function () {
+	var anotherKey = anotherEvent.add(
+	function _Q_Event_until_wrapper() {
 		event.remove(key);
 		anotherEvent.remove(anotherKey);
 		event.stop();
@@ -1932,9 +1933,9 @@ Evp.until = function _Q_Event_prototype_until(anotherEvent, key) {
 /**
  * Return a new Q.Event object that waits until this event is stopped,
  * then processes all the pending calls to .handle(), continuing normally after that.
- * @param {String|Boolean|Q.Tool} key Optional key to pass to event.onStop().add (see docs for that method).
  * 
  * @method then
+ * @param {String|Boolean|Q.Tool} key Optional key to pass to event.onStop().add (see docs for that method).
  * @return {Q.Event} A new Q.Event object
  */
 Evp.then = function _Q_Event_prototype_then(key) {
@@ -1942,7 +1943,7 @@ Evp.then = function _Q_Event_prototype_then(key) {
 	var handle = newEvent.handle;
 	var _waiting = true;
 	var _pending = [];
-	newEvent.handle = function () {
+	newEvent.handle = function _Q_Event_then_wrapper() {
 		if (_waiting) {
 			_pending.push([this, arguments]);
 			return 0;

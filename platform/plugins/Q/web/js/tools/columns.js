@@ -143,8 +143,9 @@ Q.Tool.define("Q/columns", function(options) {
 	/**
 	 * Opens a column
 	 * @method open
-	 * @param {Object} options Can be used to override various tool options.
-	 *  Also can include "columnClass".
+	 * @param {Object} options Can be used to override various tool options,
+	 *  including events such as "onOpen" and "onClose".
+	 *  You can also pass "columnClass" to add a class to the column.
 	 * @param {Number} index The index of the column to open
 	 * @param {Function} callback Called when the column is opened
 	 */
@@ -302,6 +303,16 @@ Q.Tool.define("Q/columns", function(options) {
 					Q.handle(options.afterDelay, tool, [options, index]);
 				}, o.delay.duration);
 			}).run();
+			
+			if (options.onClose) {
+				var onClose = Q.extend(new Q.Event(), options.onClose);
+				var key = state.onClose.set(function (i) {
+					if (i != index) return;
+					onClose.handle.apply(this, arguments);
+					state.onClose.remove(key);
+				}, tool);
+			}
+			
 			var show = {
 				opacity: 1,
 				top: 0
