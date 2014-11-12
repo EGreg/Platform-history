@@ -8587,7 +8587,7 @@ Q.Pointer = {
 	 * Places a hint to click or tap on the screen
 	 * @static
 	 * @method hint 
-	 * @param {Element|Point} elementOrPoint Indicates where to display the hint
+	 * @param {Element|Object} elementOrPoint Indicates where to display the hint. A point should contain properties "x" and "y".
 	 * @param {Object} [options] possible options, which can include:
 	 * @param {String} [options.src] the url of the image
 	 * @param {Point} [options.hotspot={x:0.5,y:0.4}] "x" and "y" represent the location of the hotspot within the image, using fractions between 0 and 1

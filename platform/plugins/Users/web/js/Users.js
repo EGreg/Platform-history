@@ -1586,7 +1586,40 @@ function submitClosestForm () {
 }
 
 /**
- * Makes a dialog that looks closely to facebook standard.
+ * Places a hint to click or tap on the screen
+ * @static
+ * @method hint 
+ * @param {Element|Object} elementOrPoint Indicates where to display the hint. A point should contain properties "x" and "y".
+ * @param {Object} [options] possible options, which can include:
+ * @param {String} [options.src] the url of the image
+ * @param {Point} [options.hotspot={x:0.5,y:0.4}] "x" and "y" represent the location of the hotspot within the image, using fractions between 0 and 1
+ * @param {String} [options.width="200px"]
+ * @param {String} [options.height="200px"]
+ * @param {Integer} [options.zIndex=99999]
+ */
+Users.hint = function (key, elementOrPoint, options) {
+	if (Users.hinted.indexOf(key) >= 0) {
+		return;
+	}
+	Q.Pointer.hint(elementOrPoint, options);
+	Q.req('Users/vote', ['vote'], function (err, result) {
+		var msg = Q.firstErrorMessage(err, result && result.errors);
+		if (msg) {
+			return console.warn(msg);
+		}
+		Users.hinted.push(key);
+	}, {
+		method: 'POST',
+		fields: {
+			forType: 'Users/hinted',
+			forId: key,
+			value: 1
+		}
+	});
+};
+
+/**
+ * Makes a dialog that resembles a facebook dialog
  * @method facebookDialog
  * @param {Object} [options] A hash of options, that can include:
  *  @param {String} [options.title] Dialog title.

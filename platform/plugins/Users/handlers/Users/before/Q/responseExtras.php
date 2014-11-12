@@ -37,9 +37,14 @@ function Users_before_Q_responseExtras()
 		$user = Q_Session::id() ? Users::loggedInUser() : null;
 		if ($user) {
 			$u = $user->exportArray();
+			$u['sessionCount'] = $user->sessionCount;
 			Q_Response::setScriptData('Q.plugins.Users.loggedInUser', $u);
 		}
 	}
+	Q_Response::setScriptData(
+		'Q.plugins.Users.hinted',
+		Q::ifset($_SESSION, 'Users', 'hinted', array())
+	);
 	if ($sizes = Q_Config::expect('Users', 'icon', 'sizes')) {
 		Q_Response::setScriptData('Q.plugins.Users.icon.sizes', $sizes);
 	}

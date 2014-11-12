@@ -726,6 +726,13 @@ abstract class Users extends Base_Users
 			 */
 			Q::event('Users/setLoggedInUser/updateSessionKey', compact('user'), 'after');
 		}
+		
+		$votes = Users_Vote::select('*')
+			->where(array(
+				'userId' => $user->id,
+				'forType' => 'Users/hinted'
+			))->fetchDbRows(null, null, 'forId');
+		$_SESSION['Users']['hinted'] = array_keys($votes);
 
 		/**
 		 * @event Users/setLoggedInUser {after}

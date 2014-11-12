@@ -1396,8 +1396,9 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		$fields_prefix = '',
 		$by_field = null)
 	{
-		if (empty($conn_name))
+		if (empty($conn_name)) {
 			$conn_name = $this->db->connectionName();
+		}
 		if (empty($conn_name)) {
 			$conn_name = 'empty connection name';
 		}
