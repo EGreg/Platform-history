@@ -8565,6 +8565,107 @@ Q.Pointer = {
 		e.relatedTarget = e.relatedTarget || (e.type == 'mouseover' ? e.fromElement : e.toElement);	
 	},
 	/**
+	 * Computes the offset of an element relative to the browser
+	 * @static
+	 * @method offset
+	 * @param {Element} element
+	 * @return {Object} An object with "left" and "top" properties.
+	 */
+	offset: function (element) {
+		var offsetLeft = 0, offsetTop = 0;
+		do {
+			if (!isNaN(element.offsetLeft)) {
+				offsetLeft += element.offsetLeft;
+			}
+			if (!isNaN(element.offsetTop)) {
+				offsetTop += element.offsetTop;
+			}
+		} while (element = element.offsetParent);
+		return { left: offsetLeft,  top: offsetTop };
+	},
+	/**
+	 * Places a hint to click or tap on the screen
+	 * @static
+	 * @method hint 
+	 * @param {Element|Point} elementOrPoint Indicates where to display the hint
+	 * @param {Object} [options] possible options, which can include:
+	 * @param {String} [options.src] the url of the image
+	 * @param {Point} [options.hotspot={x:0.5,y:0.4}] "x" and "y" represent the location of the hotspot within the image, using fractions between 0 and 1
+	 * @param {String} [options.width="200px"]
+	 * @param {String} [options.height="200px"]
+	 * @param {Integer} [options.zIndex=99999]
+	 */
+	hint: function (elementOrPoint, options) {
+		var o = Q.extend({}, Q.Pointer.hint.options, options);
+		var body = document.getElementsByTagName('body')[0];
+		var img = Q.Pointer.hint.img;
+		if (!img) {
+			img = Q.Pointer.hint.img = document.createElement('img');
+			img.setAttribute('src', Q.url(o.src));
+			img.style.position = 'absolute';
+			img.style.width = o.width;
+			img.style.height = o.height;
+			img.style.display = 'block';
+			img.style.pointerEvents = 'none';
+			img.onload = _update;
+			body.appendChild(img);
+		} else {
+			_update.call();
+		}
+		if (!Q.Pointer.stopHint.addedEventListener) {
+			Q.addEventListener(window, Q.Pointer.click, function () {
+				Q.Pointer.stopHint();
+			});
+			Q.Pointer.stopHint.addedEventListener = true;
+		}
+		function _update() {
+			var point;
+			img.style.display = 'block';
+			if (elementOrPoint instanceof Element) {
+				var offset = Q.Pointer.offset(elementOrPoint);
+				point = {
+					x: offset.left + elementOrPoint.offsetWidth / 2,
+					y: offset.top + elementOrPoint.offsetHeight / 2
+				};
+			} else {
+				point = elementOrPoint;
+			}
+			img.style.left = point.x - img.offsetWidth * o.hotspot.x + 'px';
+			img.style.top = point.y - img.offsetHeight * o.hotspot.y + 'px';
+			img.style.zIndex = o.zIndex;
+			img.style.opacity = 0;
+			Q.Animation.play(function (x, y) {
+				img.style.opacity = y;
+			}, o.show.duration);
+		}
+	},
+	/**
+	 * Places a hint to click or tap on the screen
+	 * @static
+	 * @method hint 
+	 * @param {Element|Point} elementOrPoint Indicates where to display the hint
+	 * @param {Object} [options] possible options, which can include:
+	 * @param {String} [options.src] the url of the image
+	 * @param {Point} [options.hotspot={x:0.5,y:0.4}] "x" and "y" represent the location of the hotspot within the image, using fractions between 0 and 1
+	 * @param {String} [options.width="200px"]
+	 * @param {String} [options.height="200px"]
+	 * @param {Integer} [options.zIndex=99999]
+	 */
+	stopHint: function (removeIt) {
+		var img = Q.Pointer.hint.img;
+		Q.Animation.play(function (x, y) {
+			img.style.opacity = 1-y;
+			if (x === 1) {
+				if (removeIt) {
+					img.parentNode.removeChild(img);
+					Q.Pointer.hint.img = null;
+				} else {
+					img.style.display = 'none';
+				}
+			}
+		}, Q.Pointer.hint.options.hide.duration);
+	},
+	/**
 	 * Consistently prevents the default behavior of an event across browsers
 	 * @static
 	 * @method preventDefault
@@ -8642,6 +8743,16 @@ Q.Pointer = {
 Q.Pointer.which.LEFT = 1;
 Q.Pointer.which.MIDDLE = 2;
 Q.Pointer.which.RIGHT = 3;
+
+Q.Pointer.hint.options = {
+	src: 'plugins/Q/img/hint.gif',
+	hotspot:  {x: 0.5, y: 0.4},
+	width: "50px",
+	height: "50px",
+	zIndex: 99999,
+	show: { duration: 500 },
+	hide: { duration: 500 }
+};
 
 function _Q_restoreScrolling() {
 	if (!Q.info || !Q.info.isTouchscreen) return false;

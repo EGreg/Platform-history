@@ -843,7 +843,7 @@ Streams.invite = function (publisherId, streamName, options, callback) {
 		return _request();
 	}
 	var identifier = Q.prompt(
-	'Enter a mobile number or email address',
+	'Enter a mobile # or email address',
 	function (value) {
 		if (!value) return;
 		o.identifier = value;
