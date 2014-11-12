@@ -8756,7 +8756,7 @@ Q.Pointer.hint.options = {
 	height: "50px",
 	zIndex: 99999,
 	show: { duration: 500 },
-	hide: { duration: 500, delay: 500 }
+	hide: { duration: 300, delay: 300 }
 };
 
 function _Q_restoreScrolling() {
