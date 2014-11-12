@@ -9023,7 +9023,7 @@ Q.confirm = function(message, callback, options) {
  * @param {Object} [options] An optional hash of options which can include:
  *   "title": Optional parameter to override confirm dialog title. Defaults to 'Prompt'.
  *   "placeholder": Optional, used as a placeholder text in the input field. Defaults to 'Enter value'.
- *   "ok": Optional parameter to override confirm dialog 'Ok' button label, e.g. 'Yes'. Defaults to 'Done'.
+ *   "ok": Optional parameter to override confirm dialog 'Ok' button label, e.g. 'Yes'. Defaults to 'OK'.
  *   "noClose": Defaults to true. Set to false to show a close button.
  *   "onClose": Optional, occurs when dialog is closed
  */
@@ -9031,7 +9031,7 @@ Q.prompt = function(message, callback, options) {
 	if (options === undefined) options = {};
 	var o = Q.extend({
 		title: 'Prompt',
-		ok: 'Done',
+		ok: 'OK',
 		message: message,
 		placeholder: '',
 		noClose: true

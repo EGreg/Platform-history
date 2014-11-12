@@ -9,24 +9,18 @@
  * Each item in the list is presented with an avatar and also can have a contextual associated with it.
  * @class Streams participants
  * @constructor
- * @param {Object} [options] Provide options for this tool
- *   @param {String} [options.publisherId] The id of the publisher
- *   @required
- *   @param {String} [options.streamName] The name of the stream
- *   @required
+ * @param {Object} options Provide options for this tool
+ *   @param {String} options.publisherId The id of the publisher
+ *   @param {String} options.streamName The name of the stream
+ *   @param {String} [options.showSummary] Whether to show a summary
  *   @param {Number} [options.max]
  *    The number, if any, to show in the denominator of the summary
- *   @optional
- *   @param {Number} [options.maxShow]
+ *   @param {Number} [options.maxShow=10]
  *    The maximum number of participants to fetch for display
- *   @optional
- *   @default 10
  *   @param {Function} [options.filter]
  *    Takes (participant, element) and can modify them.
  *    If this function returns false, the element is not appended.
- *   @optional
  *   @param {Q.Event} [options.onRefresh] An event that occurs when the tool is refreshed
- *   @optional
  */
 Q.Tool.define("Streams/participants",
 
@@ -38,7 +32,11 @@ function _Streams_participants(options) {
 	tool.Q.onStateChanged('count').set(function (name) {
 		var c = state.count;
 		tool.$count.text(c >= 100 ? '99+' : c.toString());
-		tool.$summary.plugin('Q/textfill', 'refresh');
+		if (state.showSummary) {
+			tool.$summary.show().plugin('Q/textfill', 'refresh');
+		} else {
+			tool.$summary.hide();
+		}
 	}, tool);
 	
 	tool.refresh();
@@ -49,7 +47,17 @@ function _Streams_participants(options) {
 	maxShow: 10,
 	max: null,
     filter: function () { },
-	onRefresh: new Q.Event()
+	onRefresh: new Q.Event(),
+	templates: {
+		invite: {
+			name: 'Streams/participants/invite',
+			fields: { 
+				src: Q.Streams.iconUrl('labels/Streams/invited', 40), 
+				alt: 'Invite', 
+				title: 'Invite'
+			}
+		}
+	}
 },
 
 {
@@ -99,15 +107,51 @@ function _Streams_participants(options) {
 					addAvatar(userId);
 				}
 			}, { sort: 'insertedTime', ascending: false });
+			
+			var si = state.invite;
+			if (si) {
+				Q.Template.render(
+					'Streams/participants/invite',
+					state.templates.invite.fields,
+					function (err, html) {
+						if (err) return;
+						var $element = 
+						$('<div class="Streams_participants_invite" />')
+						.html(html)
+						.appendTo(tool.$pc)
+						.on(Q.Pointer.fastclick, function () {
+							var fields = Q.extend({
+								identifier: si.identifier
+							}, si);
+							Q.Streams.invite(
+								state.publisherId, 
+								state.streamName, 
+								fields
+							);
+						});
+						if (si.clickable) {
+							$('img', $element).plugin(
+								'Q/clickable', Q.extend({
+									triggers: $element
+								}, si.clickable)
+							);
+						}
+					},
+					state.templates.invite
+				);
+			}
+			
 			state.count = c;
 			tool.stateChanged('count');
 			Q.handle(state.onRefresh, tool, []);
 			
-			tool.resizeInterval = setInterval(function () {
-				var w = $te.width() - tool.$summary.outerWidth(true);
-				var pm = tool.$pc.outerWidth(true) - tool.$pc.width();
-				tool.$pc.width(w - pm);
-			}, 500);
+			if (state.showSummary) {
+				tool.resizeInterval = setInterval(function () {
+					var w = $te.width() - tool.$summary.outerWidth(true);
+					var pm = tool.$pc.outerWidth(true) - tool.$pc.width();
+					tool.$pc.width(w - pm);
+				}, 500);
+			}
 			
 			if (state.max) {
 				tool.$max.text('/' + state.max);
@@ -147,6 +191,11 @@ function _Streams_participants(options) {
 	}
 }
 
+);
+
+Q.Template.set('Streams/participants/invite',
+	'<img src="{{& src}}" alt="{{alt}}">'
+	+ '<div class="Streams_invite_label">{{& title}}</div>'
 );
 
 })(Q, jQuery);

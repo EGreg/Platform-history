@@ -14,11 +14,8 @@ function Streams_join_post()
 	}
 	$stream = reset($streams);
 	$options = array();
-	if (isset($_REQUEST['reason'])) {
-		$options['reason'] = $_REQUEST['reason'];
-	}
-	if (isset($_REQUEST['enthusiasm'])) {
-		$options['enthusiasm'] = $_REQUEST['enthusiasm'];
+	if (isset($_REQUEST['extra'])) {
+		$options['extra'] = json_decode($_REQUEST['extra'], true);
 	}
 	$stream->join($options, $participant);
 	Q_Response::setSlot('participant', $participant->exportArray());

@@ -805,14 +805,15 @@ Streams.release = function (key) {
  * @method invite
  * @param {String} publisherId The user id of the publisher of the stream 
  * @param {String} streamName The name of the stream you are inviting to
- * @param {String} [fields] More fields that are passed to the API, which can include:
- *   @param {String} [fields.identifier] Required for now. An email address or mobile number to invite. Might not belong to an existing user yet.
- *   @required
- *   @param {String} [fields.appUrl] Can be used to override the URL to which the invited user will be redirected and receive "Q.Streams.token" in the querystring.
- *   @param {String} [fields.displayName] Optionally override the name to display in the invitation for the inviting user
+ * @param {String} options] More options that are passed to the API, which can include:
+ *   @param {String} [options.identifier] An email address or mobile number to invite. Might not belong to an existing user yet.
+ *   @param {String} [options.appUrl] Can be used to override the URL to which the invited user will be redirected and receive "Q.Streams.token" in the querystring.
+ *   @param {String} [options.displayName] Optionally override the name to display in the invitation for the inviting user
+ *   @param {String} [options.callback] Also can be used to provide callbacks.
  * @param {Function} callback Called with (err, result)
+ * @return {Q.Request} represents the request that was made if an identifier was provided
  */
-Streams.invite = function (publisherId, streamName, fields, callback) {
+Streams.invite = function (publisherId, streamName, options, callback) {
 	// TODO: expand this implementation to be complete
 	if (!Q.Users.loggedInUser) {
 		Q.handle(callback, null, ["Streams.invite: not logged in"]);
@@ -822,19 +823,38 @@ Streams.invite = function (publisherId, streamName, fields, callback) {
 		publisherId: publisherId,
 		streamName: streamName
 	});
-	fields = Q.copy(fields);
-	fields.publisherId = publisherId,
-	fields.streamName = streamName;
-	fields.displayName = fields.displayName || Q.Users.loggedInUser.displayName;
-	Q.req('Streams/invite', ['data'], function (err, data) {
-		var msg = Q.firstErrorMessage(err, data && data.errors);
-		if (msg) {
-			var args = [err, data];
-			Streams.onError.handle.call(this, msg, args);
-		}
-		Q.handle(callback, null, [err, data, msg]);
-	}, { method: 'post', fields: fields, baseUrl: baseUrl });
+	var o = Q.extend({}, Streams.invite.options, options);
+	o.publisherId = publisherId,
+	o.streamName = streamName;
+	o.displayName = o.displayName
+		|| Q.Users.loggedInUser.displayName;
+	function _request() {
+		return Q.req('Streams/invite', ['data'], function (err, data) {
+			var msg = Q.firstErrorMessage(err, data && data.errors);
+			if (msg) {
+				var args = [err, data];
+				Streams.onError.handle.call(this, msg, args);
+			}
+			Q.handle(o && o.callback, null, [err, data, msg]);
+			Q.handle(callback, null, [err, data, msg]);
+		}, { method: 'post', options: o, baseUrl: baseUrl });
+	}
+	if (identifier) {
+		return _request();
+	}
+	var identifier = Q.prompt(
+	'Enter a mobile number or email address',
+	function (value) {
+		if (!value) return;
+		o.identifier = value;
+		_request();
+	}, {
+		title: "Invite"
+	});
+	return null;
 };
+
+Streams.invite.options = {};
 
 /**
  * @class Streams.Stream

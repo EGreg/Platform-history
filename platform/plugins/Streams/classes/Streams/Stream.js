@@ -603,8 +603,7 @@ Streams_Stream.prototype.join = function(options, callback) {
 					posted: options['posted'] ? 'yes' : 'no',
 					reputation: options['reputation'] || 0,
 					state: 'participating',
-					reason: options['reason'] || '',
-					enthusiasm: options['enthusiasm'] || 0
+					extra: options['extra'] || '{}'
 				});
 				sp.save(_afterSaveParticipant);
 			}

@@ -538,9 +538,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 *  An associative array of options. The keys can be:<br/>
 	 *  "subscribed" => boolean<br/>
 	 *  "posted" => boolean<br/>
-	 *  "reputation" => integer<br/>
-	 *  "reason" => string<br/>
-	 *  "enthusiasm" => decimal<br/>
+	 *  "extra" => array<br/>
 	 *  "userId" => The user who is joining the stream. Defaults to the logged-in user.
 	 *  "noVisit" => If user is already participating, don't post a "Streams/visited" message
 	 *  "skipAccess": if true, skip access check for whether user can join
@@ -588,8 +586,7 @@ class Streams_Stream extends Base_Streams_Stream
 				$stream->post($userId, array(
 					'type' => "Streams/$type",
 					'instructions' => Q::json_encode(array(
-						'reason' => $participant->reason,
-						'enthusiasm' => $participant->enthusiasm
+						'extra' => isset($participant->extra) ? $participant->extra : array()
 					))
 				), true);
 				// Now post Streams/joined message to Streams/participating
@@ -607,8 +604,7 @@ class Streams_Stream extends Base_Streams_Stream
 			$participant->posted = !empty($options['posted']) ? 'yes' : 'no';
 			$participant->reputation = !empty($options['reputation']) ? $options['reputation'] : 0;
 			$participant->state = 'participating';
-			$participant->reason = !empty($options['reason']) ? $options['reason'] : "";
-			$participant->enthusiasm = !empty($options['enthusiasm']) ? $options['enthusiasm'] : 0;
+			$participant->extra = !empty($options['extra']) ? $options['extra'] : '';
 
 			if (!$participant->save(true)) {
 				return false;
@@ -624,8 +620,7 @@ class Streams_Stream extends Base_Streams_Stream
 			$stream->post($userId, array(
 				'type' => 'Streams/join',
 				'instructions' => Q::json_encode(array(
-					'reason' => $participant->reason,
-					'enthusiasm' => $participant->enthusiasm
+					'extra' => isset($participant->extra) ? $participant->extra : array()
 				))
 			), true);
 
@@ -1659,6 +1654,9 @@ class Streams_Stream extends Base_Streams_Stream
 		if (Q_Valid::url($this->icon)) return $this->icon;
 		$url = "plugins/Streams/img/icons/{$this->icon}";
 		if ($basename) {
+			if (strpos($basename, '.') === false) {
+				$basename = "$basename.png";
+			}
 			$url .= "/$basename";
 		}
 		return Q_Html::themedUrl($url);
