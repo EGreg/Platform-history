@@ -27,7 +27,7 @@ function Q_exception_native($params)
 		$message = $exception->getMessage();
 		$file = $exception->getFile();
 		$line = $exception->getLine();
-		if (is_callable(array($this, 'getTraceAsStringEx'))) {
+		if (is_callable(array($exception, 'getTraceAsStringEx'))) {
 			$trace_string = $exception->getTraceAsStringEx();
 		} else {
 			$trace_string = $exception->getTraceAsString();
