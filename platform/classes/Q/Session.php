@@ -293,6 +293,7 @@ class Q_Session
 				if (is_callable('apc_clear_cache')) {
 					apc_clear_cache('user');
 				}
+				Q::log($e);
 				throw new Q_Exception("Please run {$prefix}scripts/Q/install.php --all");
 			}
 		}
