@@ -9576,9 +9576,7 @@ function _Q_loadUrl_fillSlots (res, url, options) {
 
 Q.loadUrl.options = {
 	quiet: false,
-	onError: new Q.Event(function (msg) {
- 		window.alert(msg);
- 	}, 'Q'),
+	onError: new Q.Event(),
 	onLoad: new Q.Event(),
 	onLoadStart: new Q.Event(Q.loadUrl.saveScroll, 'Q'),
 	onLoadEnd: new Q.Event(),
