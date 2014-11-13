@@ -2760,7 +2760,7 @@ Q.getter = function _Q_getter(original, options) {
 			};
 			wrapper.throttle.throttleNext = function _throttleNext(that) {
 				if (--p.count < 0) {
-					console.warn("Q.getter: throttle count is negative");
+					console.warn("Q.getter: throttle count is negative. This probably means you passed a callback somewhere it shouldn't have been passed.");
 				}
 				if (p.queue.length) {
 					p.queue.shift().apply(that, p.args.shift());
@@ -8476,7 +8476,7 @@ Q.Pointer = {
 	/**
 	 * Returns the window's inner height, in pixels, consistently across browsers
 	 * @static
-	 * @method scrollTop
+	 * @method windowHeight
 	 * @return {Number}
 	 */
 	windowHeight: function () {
@@ -9236,8 +9236,8 @@ Q.Mask = {
 		Q.Mask.collection[key] = Q.extend({
 			'fadeTime': 0
 		}, options);
-		var width = options.sizeMatcher && $(options.sizeMatcher).width() ? $(options.sizeMatcher).width() : window.innerWidth;
-		var height = options.sizeMatcher && $(options.sizeMatcher).height() ? $(options.sizeMatcher).height() : window.innerHeight;
+		var width = options.sizeMatcher && $(options.sizeMatcher).width() ? $(options.sizeMatcher).width() : Q.Pointer.windowWidth();
+		var height = options.sizeMatcher && $(options.sizeMatcher).height() ? $(options.sizeMatcher).height() : Q.Pointer.windowHeight();
 		var mask = $('<div class="' + options.className + '" />');
 		mask.css({ 'width': width + 'px', 'height': height + 'px', 'line-height': height + 'px' });
 		if (options.html) {
@@ -9368,8 +9368,8 @@ Q.Mask = {
 		for (var i in Q.Mask.collection)
 		{
 			var mask = Q.Mask.collection[i];
-			var width = mask.sizeMatcher && $(mask.sizeMatcher).width() ? $(mask.sizeMatcher).width() : window.innerWidth;
-			var height = mask.sizeMatcher && $(mask.sizeMatcher).height() ? $(mask.sizeMatcher).height() : window.innerHeight;
+			var width = mask.sizeMatcher && $(mask.sizeMatcher).width() ? $(mask.sizeMatcher).width() : Q.Pointer.windowWidth();
+			var height = mask.sizeMatcher && $(mask.sizeMatcher).height() ? $(mask.sizeMatcher).height() : Q.Pointer.windowHeight();
 			mask.element.css({ 'width': width + 'px', 'height': height + 'px', 'line-height': height + 'px' });
 		}
 	},

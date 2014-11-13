@@ -121,7 +121,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 	container: null,
 	width: function () { return $(this.element).width() },
 	height: function () {
-		var result = $(window).height() - $(this.element).offset().top;
+		var result = Q.Pointer.windowHeight() - $(this.element).offset().top;
 		$(this.element).parents().each(function () {
 			var $this = $(this);
 			var overflow = $this.css('overflow');

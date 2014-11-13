@@ -322,7 +322,7 @@ Q.Tool.define("Q/columns", function(options) {
 			$div.css('position', 'absolute');
 			if (Q.info.isMobile) {
 				var $sc = $(state.container);
-				var h = $(window).height() - $sc.offset().top;
+				var h = Q.Pointer.windowHeight() - $sc.offset().top;
 				show.width = $(tool.element).width();
 				show.height = h;
 				$sc.height(h);
@@ -388,7 +388,7 @@ Q.Tool.define("Q/columns", function(options) {
 
 			function afterAnimation($cs, $sc, $ct){
 				
-				var heightToBottom = $(window).height()
+				var heightToBottom = Q.Pointer.windowHeight()
 					- $cs.offset().top
 					- parseInt($cs.css('padding-top'));
 				if (Q.info.isMobile) {
@@ -552,7 +552,7 @@ Q.Tool.define("Q/columns", function(options) {
 			if (!state.fullscreen) {
 				$te.add($container)
 					.add($columns)
-					.height($(window).height()-$te.offset().top);
+					.height(Q.Pointer.windowHeight()-$te.offset().top);
 			}
 			presentColumn(tool);
 		}
@@ -561,7 +561,8 @@ Q.Tool.define("Q/columns", function(options) {
 			$te.addClass('Q_fullscreen');
 		}
 		
-		var overshoot = Q.Pointer.scrollTop() + $(document).height() - $(window).height();
+		var overshoot = Q.Pointer.scrollTop() + $(document).height()
+			- Q.Pointer.windowHeight();
 		if (overshoot > 0) {
 			$(window).scrollTop( $(window).scrollTop()-overshoot );
 		}
@@ -584,7 +585,7 @@ function presentColumn(tool) {
 		$cs.css('padding-top', $cs.prev().outerHeight()+'px');
 	}
 	if (Q.info.isMobile) {
-		var heightToBottom = $(window).height()
+		var heightToBottom = Q.Pointer.windowHeight()
 			- $cs.offset().top
 			- parseInt($cs.css('padding-top'));
 		if (!tool.state.fullscreen) {

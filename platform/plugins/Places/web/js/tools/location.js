@@ -95,7 +95,8 @@ Q.Tool.define("Places/location", function (options) {
 				$this.removeClass('Places_obtaining').hide(500);
 			}, {method: 'post', fields: fields});
 		}, function () {
-			Q.prompt("Please enter your zipcode:", function (zipcode, dialog) {
+			Q.prompt("Please enter your zipcode:",
+			function (zipcode, dialog) {
 				if (zipcode) {
 					_submit(zipcode);
 				}
@@ -104,9 +105,6 @@ Q.Tool.define("Places/location", function (options) {
 				ok: "Update",
 				onClose: function () {
 					$this.removeClass('Places_obtaining');	
-				},
-				beforeLoad: function () {
-					$('.Q_overlay').css('opacity', 0);
 				}
 			});
 		}, {

@@ -1692,8 +1692,8 @@ Users.facebookDialog = function(options)
 		});
 	} else {
 		dialog.css({ 
-			left: (($(window).width() - dialog.width()) / 2) + 'px',
-			top: (($(window).height() - dialog.height()) / 2) + 'px'
+			left: ((Q.Pointer.windowHeight() - dialog.width()) / 2) + 'px',
+			top: ((Q.Pointer.windowHeight() - dialog.height()) / 2) + 'px'
 		});
 	}
 	dialog.show();
