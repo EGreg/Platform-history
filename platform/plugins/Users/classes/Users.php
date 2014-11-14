@@ -266,6 +266,7 @@ abstract class Users extends Base_Users
 					if (!$exists) {
 						throw new Q_Exception("Users_Identify for fb_uid $fb_uid exists but not user with id {$ui->userId}");
 					}
+					$retrieved = true;
 					if ($ui->state === 'future') {
 						$authenticated = 'adopted';
 
