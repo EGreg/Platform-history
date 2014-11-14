@@ -199,17 +199,17 @@ Q.Template.set('Streams/subscription/view',
 			'<input type="checkbox" name="subscribed" id="Streams_subscription_subscribed" {{#subscribed}} checked {{/subscribed}} />'+
 		'</div>'+
 		'<div class="Q_right Q_w90">'+
-			'<label for="Streams_subscription_subscribed"><b>Participaties</b></label>'+
+			'<label for="Streams_subscription_subscribed"><strong>Participating</strong></label>'+
 			'<br />'+
 			'<div>Get real-time updates when you are online.</div>'+
 		'</div>'+
 		'<div class="Q_clear"></div>'+
 		'{{#isRenderItems}}'+
+			'<hr />'+
+			'<strong class="Q_left Q_w90">When I\'m offline</br />notify me about</strong>'+
 			'{{#subscribed}}'+
 				'{{#items}}'+
 					'<div class="notification-item" data-types="{{filter.types}}">'+
-						'<hr />'+
-						'<b class="Q_left Q_w90">When I\'m offline</br />notify me about</b>'+
 						'<div class="Q_right Q_w10 remove">x</div>'+
 						'<div class="Q_clear"></div>'+
 						'<span class="messageType" data-value="{{filter.types}}">'+

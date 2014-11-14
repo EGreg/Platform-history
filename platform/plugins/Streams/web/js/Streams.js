@@ -837,7 +837,7 @@ Streams.invite = function (publisherId, streamName, options, callback) {
 			}
 			Q.handle(o && o.callback, null, [err, data, msg]);
 			Q.handle(callback, null, [err, data, msg]);
-		}, { method: 'post', options: o, baseUrl: baseUrl });
+		}, { method: 'post', fields: o, baseUrl: baseUrl });
 	}
 	if (identifier) {
 		return _request();

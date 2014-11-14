@@ -118,7 +118,7 @@ class Streams_Stream extends Base_Streams_Stream
 			$type = -1;
 			return $returnAll ? $ret : null;
 		}
-		// The order of the templates will be from most specific to most genetic:
+		// The order of the templates will be from most specific to most generic:
 		// 	0. exact stream name and exact publisher id - this would be the row itself
 		//	1. generic stream name and exact publisher id
 		//	2. exact stream name and generic publisher
@@ -139,7 +139,7 @@ class Streams_Stream extends Base_Streams_Stream
 			for ($i=0; $i < 4; $i++) {
 				if (!empty($ret[$i][0])) {
 					$type = $i;
-					return $ret;
+					return $ret[$i][0];
 				}
 			}
 		} else {
@@ -790,30 +790,32 @@ class Streams_Stream extends Base_Streams_Stream
 				$rule->ofUserId = $userId;
 				$rule->publisherId = $stream->publisherId;
 				$rule->streamName = $stream->name;
-
-				// defaults - use if no template or no template value. 
-				$rule->readyTime = isset($options['readyTime']) ? $options['readyTime'] : new Db_Expression('CURRENT_TIMESTAMP');
-				$rule->filter = !empty($template->filter) ? $template->filter : '{"types":[],"labels":[]}';
-				$rule->relevance = !empty($template->relevance) ? $template->relevance : 1;
-			
-				if (!empty($template->deliver)) {
-					$rule->deliver = $template->deliver;
+				if (empty($template) and $rule->retrieve()) {
+					$ruleSuccess = false;
 				} else {
-					if (isset($user->mobileNumber)) {
-						$deliver = array('mobile' => $user->mobileNumber);
-					} else if (isset($user->emailAddress)) {
-						$deliver = array('email' => $user->emailAddress);
-					} else if (isset($user->mobileNumberPending)) {
-						$deliver = array('mobile' => $user->mobileNumberPending);
-					} else if (isset($user->emailAddressPending)) {
-						$deliver = array('email' => $user->emailAddressPending);
+					$rule->readyTime = isset($options['readyTime']) ? $options['readyTime'] : new Db_Expression('CURRENT_TIMESTAMP');
+					$rule->filter = !empty($template->filter) ? $template->filter : '{"types":[],"labels":[]}';
+					$rule->relevance = !empty($template->relevance) ? $template->relevance : 1;
+			
+					if (!empty($template->deliver)) {
+						$rule->deliver = $template->deliver;
 					} else {
-						$deliver = array();
-						$ruleSuccess = false;
+						if (isset($user->mobileNumber)) {
+							$deliver = array('mobile' => $user->mobileNumber);
+						} else if (isset($user->emailAddress)) {
+							$deliver = array('email' => $user->emailAddress);
+						} else if (isset($user->mobileNumberPending)) {
+							$deliver = array('mobile' => $user->mobileNumberPending);
+						} else if (isset($user->emailAddressPending)) {
+							$deliver = array('email' => $user->emailAddressPending);
+						} else {
+							$deliver = array();
+							$ruleSuccess = false;
+						}
+						$rule->deliver = Q::json_encode($deliver);
 					}
-					$rule->deliver = Q::json_encode($deliver);
+					$ruleSuccess = !empty($deliver) and !!$rule->save();
 				}
-				$ruleSuccess = !!$rule->save();
 			}
 		}
 
