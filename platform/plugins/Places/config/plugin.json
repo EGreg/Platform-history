@@ -51,7 +51,10 @@
 			"allowClientQueries": false
 		},
 		"googleMaps": {
-			"key": null
+			"keys": {
+				"server": null,
+				"web": null
+			}
 		}
 	}
 }
