@@ -64,6 +64,7 @@ Q.Tool.define('Streams/chat', function(options) {
 	animations: {
 		duration: 300
 	},
+	onRefresh: new Q.Event(),
 	templates: {
 		main: {
 			dir: 'plugins/Streams/views',
@@ -627,6 +628,8 @@ Q.Tool.define('Streams/chat', function(options) {
 				Q.handle(callback, tool);
 				tool.processDOM();
 				tool.addEvents();
+				
+				Q.handle(state.onRefresh, tool);
 			});
 		
 		}

@@ -201,7 +201,7 @@ CREATE TABLE `{$prefix}total` (
   `voteCount` bigint(20) NOT NULL DEFAULT '0',
   `weightTotal` decimal(10,4) NOT NULL DEFAULT '0.0000',
   `value` decimal(10,4) NOT NULL DEFAULT '0.0000',
-  `updatedTime` timestamp NULL DEFAULT NULL,
+  `updatedTime` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`forType`,`forId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Represents a total of the votes';
 
@@ -244,6 +244,6 @@ CREATE TABLE `{$prefix}vote` (
   `forId` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   `value` decimal(10,4) NOT NULL,
   `weight` decimal(10,4) NOT NULL DEFAULT '1.0000',
-  `updatedTime` timestamp NULL DEFAULT NULL,
+  `updatedTime` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`userId`,`forType`,`forId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Represents a vote by a user for something';
