@@ -50,7 +50,7 @@
 			"requireLogin": false,
 			"allowClientQueries": false
 		},
-		"googleMaps": {
+		"google": {
 			"keys": {
 				"server": null,
 				"web": null
