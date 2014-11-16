@@ -8664,7 +8664,7 @@ Q.Pointer = {
 		Q.Pointer.stopHint.animation = Q.Animation.play(function (x, y) {
 			img.style.opacity = 1-y;
 			if (x < 1 || Q.Pointer.stopHint.prevent) return;
-			if (removeIt) {
+			if (removeIt === true && img.parentNode) {
 				img.parentNode.removeChild(img);
 				Q.Pointer.hint.img = null;
 			} else {
