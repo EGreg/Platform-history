@@ -92,10 +92,11 @@ Streams_Message.prototype.beforeSave = function (value, callback)
  * @param {function} callback
  *	Callback reports errors and response from mail delivery system
  */
-Streams_Message.prototype.deliver = function(stream, delivery, callback) {
+Streams_Message.prototype.deliver = function(stream, delivery, avatar, callback) {
 	var fields = {
 		stream: stream.toArray(),
-		message: this.toArray()
+		message: this.toArray(),
+		avatar: avatar.toArray(),
 	};
 	var subject = Q.Config.get(
 		['Streams', 'types', stream.fields.type, 'messages', this.fields.type, 'subject'], 
@@ -108,7 +109,6 @@ Streams_Message.prototype.deliver = function(stream, delivery, callback) {
 		)
 	);
 	var viewPath;
-
 	if (delivery.email) {
 		viewPath = Q.Handlebars.template(this.fields.type+'/email.handlebars') ? this.fields.type : 'Streams/message';
 		Q.Utils.sendEmail(delivery.email, subject, viewPath+'/email.handlebars', fields, {html: true}, callback);

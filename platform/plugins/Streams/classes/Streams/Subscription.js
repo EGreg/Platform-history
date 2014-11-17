@@ -39,7 +39,7 @@ Q.mixin(Streams_Subscription, Q.require('Base/Streams/Subscription'));
  * @param streamName {string}
  * @param callback {function} Callback have error and array of delivery methods as arguments
  */
-Streams_Subscription.test = function(userId, publisherId, streamName, msgType, callback) {
+Streams_Subscription.test = function _Subscription_test(userId, publisherId, streamName, msgType, callback) {
 	if (!callback) return;
 	(new Streams.Subscription({
 		ofUserId: userId,
@@ -70,14 +70,15 @@ Streams_Subscription.test = function(userId, publisherId, streamName, msgType, c
 			streamName: streamName
 		}).execute(function(err, rules) {
 			if (err) return callback(err);
-			var p = new Q.Pipe(rules.map(function(r){ return r.fields.ordinal; }), function (params) {
-				var res = [], ordinal, param;
+			var waitFor = rules.map(function(r){ return r.fields.ordinal; });
+			var p = new Q.Pipe(waitFor, function (params) {
+				var deliveries = [], ordinal, param;
 				for (ordinal in params) {
 					param = params[ordinal];
 					if (param[0]) return callback(param[0]);
-					if (param[1]) res.push(param[1]);
+					if (param[1]) deliveries.push(param[1]);
 				}
-				callback(null, res);
+				callback(null, deliveries);
 			});
 			rules.forEach(function (rule) {
 				var o = rule.fields.ordinal;

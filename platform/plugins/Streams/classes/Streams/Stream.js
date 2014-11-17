@@ -819,10 +819,12 @@ Streams_Stream.prototype.notify = function(participant, event, uid, message, cal
 			return; // no need to notify the user of their own actions
 		}
 		if (participant.fields.subscribed === 'yes') {
-			Streams.Subscription.test(userId, stream.fields.publisherId, stream.fields.name, message.type, function(err, deliveries) {
+			Streams.Subscription.test(
+			userId, stream.fields.publisherId, stream.fields.name, message.type,
+			function(err, deliveries) {
 				if (err || !deliveries.length) return callback && callback(err);
-				// actually notify according to the deliveriy rules
-				var p = new Q.Pipe(deliveries.map(function(d) { return JSON.stringify(d); }), function(params) {
+				var waitingFor = deliveries.map(function(d) { return JSON.stringify(d); });
+				var p = new Q.Pipe(waitingFor, function(params) {
 					for (var d in params) {
 						if (params[d][0]) return callback && callback(params[d][0]);
 					}
@@ -835,37 +837,40 @@ Streams_Stream.prototype.notify = function(participant, event, uid, message, cal
 						callback && callback(err, deliveries);
 					});
 				});
+				// actually notify according to the deliveriy rules
 				var msg = new Streams.Message(message);
-				if (message.type === "Streams/invite") {
-					var instructions = JSON.parse(message.instructions);
-					new Streams.Invite({
-						token: instructions.token
-					}).retrieve(function(err, rows) {
-						if (err || !rows.length) return deliveries.forEach(function(delivery) { p.fill(JSON.stringify(delivery))(err); });
-						var invite = rows[0];
-						new Streams.Stream({
-							publisherId: invite.fields.publisherId,
-							name: invite.fields.streamName
-						}).retrieve(function(err, stream) {
-							if (err || !rows.length) return deliveries.forEach(function(delivery) {p.fill(JSON.stringify(delivery))(err); });
-							stream = stream[0];
-							msg.fields.invite = rows[0].toArray();
-							var instructions;
-							try { instructions = JSON.parse(message.instructions); } catch (e) {}
-							if (instructions.type) {
-								stream.fields.invite = { url: Q.url(Q.Config.get(['Streams', 'invites', 'baseUrl'], "i")) };
-								stream.fields.invite[instructions.type] = true;
-							}
-							deliveries.forEach(function(delivery) {
-								msg.deliver(stream, delivery, p.fill(JSON.stringify(delivery)));
+				Streams.Avatar.fetch(userId, msg.fields.byUserId, function (err, avatar) {
+					if (message.type === "Streams/invite") {
+						var instructions = JSON.parse(message.instructions);
+						new Streams.Invite({
+							token: instructions.token
+						}).retrieve(function(err, rows) {
+							if (err || !rows.length) return deliveries.forEach(function(delivery) { p.fill(JSON.stringify(delivery))(err); });
+							var invite = rows[0];
+							new Streams.Stream({
+								publisherId: invite.fields.publisherId,
+								name: invite.fields.streamName
+							}).retrieve(function(err, stream) {
+								if (err || !rows.length) return deliveries.forEach(function(delivery) {p.fill(JSON.stringify(delivery))(err); });
+								stream = stream[0];
+								msg.fields.invite = rows[0].toArray();
+								var instructions;
+								try { instructions = JSON.parse(message.instructions); } catch (e) {}
+								if (instructions.type) {
+									stream.fields.invite = { url: Q.url(Q.Config.get(['Streams', 'invites', 'baseUrl'], "i")) };
+									stream.fields.invite[instructions.type] = true;
+								}
+								deliveries.forEach(function(delivery) {
+									msg.deliver(stream, delivery, avatar, p.fill(JSON.stringify(delivery)));
+								});
 							});
 						});
-					});
-				} else {
-					deliveries.forEach(function(delivery) {
-						msg.deliver(stream, delivery, p.fill(JSON.stringify(delivery)));
-					});
-				}
+					} else {
+						deliveries.forEach(function(delivery) {
+							msg.deliver(stream, delivery, avatar, p.fill(JSON.stringify(delivery)));
+						});
+					}
+				});
 			});
 		} else {
 			callback && callback(null, []);
