@@ -161,10 +161,10 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 		var $otherDrawer = state.$drawers.eq(otherIndex);
 		var sWidth = (typeof state.width === 'number')
 			? state.width : Q.getObject(state.width).apply(tool);
+		var sHeight = (typeof state.height === 'number')
+			? state.height : Q.getObject(state.height).apply(tool);
 		var sHeights = (state.heights instanceof Array)
 			? state.heights : Q.getObject(state.heights).apply(tool);
-		var sHeight = (state.height instanceof Array)
-			? state.height : Q.getObject(state.height).apply(tool);
 		var $scrolling = state.fullscreen ? $(window) : $(state.container);
 		var behind = state.behind[index];
 		var fromHeight = behind 
@@ -253,7 +253,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 					|| {left: 0, top: 0};
 				state.drawerOffset.top += state.bottom[1]
 					? 0
-					: scrollingHeight - sHeights;
+					: scrollingHeight - sHeights[1];
 			}
 			
 			$scrolling.scrollTop(
