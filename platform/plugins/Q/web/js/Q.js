@@ -1523,10 +1523,11 @@ Q.setObject = function _Q_setObject(name, value, context, delimiter) {
  * Get a property from a delimiter-separated string, such as "A.B.C"
  * Useful for longer api chains where you have to test each object in
  * the chain, or when you have an object reference in string format.
+ * You can also use it to resolve an object where it might be a string or array or something else.
  * 
  * @static
  * @method getObject
- * @param {String|Array} name Path to a property, in the form "A.B.C" or ["A", "B", "C"]
+ * @param {String|Array} name Path to a property, in the form "A.B.C" or ["A", "B", "C"] . If not a string or an array, it is simply returned.
  * @param {Object} [context=window] Optional. Object to use as root of path. Null may be passed.
  * @param {String} [delimiter='.'] The delimiter to use in the name
  * @param {Mixed} [create=undefined] Pass a value here to set with Q.setObject if nothing was there
@@ -1536,6 +1537,8 @@ Q.getObject = function _Q_getObject(name, context, delimiter, create) {
 	delimiter = delimiter || '.';
 	if (typeof name === 'string') {
 		name = name.split(delimiter);
+	} else if (!(name instanceof Array)) {
+		return name;
 	}
 	var result = _getProp(name, false, context);
 	if (create !== undefined) {

@@ -144,6 +144,8 @@ Q.extendObject = function _Q_extendObject(name, value, context, delimiter){
  * Objects are created as needed along `path`.
  * Another way to call this function is to pass an object of {name: value} pairs as the first parameter
  * and context as an optional second parameter. Then the return value is an object of the usual return values.
+ *
+ * @static
  * @method setObject
  * @param name {String|Array} Path to a property, in the form "A.B.C" or ["A", "B", "C"]
  * @param value {anything} value or object to place at location given by name
@@ -173,6 +175,9 @@ Q.setObject = function _Q_setObject(name, value, context, delimiter) {
  * Get a property from a delimiter-separated string, such as "A.B.C"
  * Useful for longer api chains where you have to test each object in
  * the chain, or when you have an object reference in string format.
+ * You can also use it to resolve an object where it might be a string or array or something else.
+ *
+ * @static
  * @method getObject
  * @param name {String|Array} Path to a property, in the form "A.B.C" or ["A", "B", "C"]
  * @param [context=window] {Object} Optional. Object to use as root of path. Null may be passed.
@@ -184,6 +189,8 @@ Q.getObject = function _Q_getObject(name, context, delimiter, create) {
 	delimiter = delimiter || '.';
 	if (typeof name === 'string') {
 		name = name.split(delimiter);
+	} else if (!(name instanceof Array)) {
+		return name;
 	}
 	var result = _getProp(name, false, context);
 	if (create !== undefined) {
