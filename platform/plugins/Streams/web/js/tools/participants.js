@@ -46,7 +46,8 @@ function _Streams_participants(options) {
 {
 	maxShow: 10,
 	max: null,
-    filter: function () { },
+	filter: function () { },
+	showSummary: true,
 	onRefresh: new Q.Event(),
 	templates: {
 		invite: {

@@ -51,7 +51,7 @@ Q.Tool.define("Q/columns", function(options) {
 				title: undefined,
 				column: undefined,
 				animation: {duration: 0}
-			}, index);
+			}, index, null, true);
 		});
 	}
 
@@ -149,7 +149,7 @@ Q.Tool.define("Q/columns", function(options) {
 	 * @param {Number} index The index of the column to open
 	 * @param {Function} callback Called when the column is opened
 	 */
-	open: function (options, index, callback) {
+	open: function (options, index, callback, internal) {
 		var tool = this;
 		var state = this.state;
 		if (typeof options === 'number') {
@@ -169,6 +169,10 @@ Q.Tool.define("Q/columns", function(options) {
 		if (false === state.beforeOpen.handle.call(tool, options, index)
 		 || false === Q.handle(options.beforeOpen, tool, [options, index])) {
 			return false;
+		}
+		
+		if (!internal && state.columns[index]) {
+			this.close(index, null, {animation: {duration: 0}});
 		}
 		
 		var div = this.column(index);

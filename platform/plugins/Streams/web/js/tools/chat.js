@@ -47,7 +47,9 @@ Q.Tool.define('Streams/chat', function(options) {
 		throw new Q.Error("Streams/chat: missing streamName option");
 	}
 	tool.refresh(function () {
-		tool.scrollToBottom();
+		if (state.scrollToBottom) {
+			tool.scrollToBottom();
+		}
 	});
 	Q.Streams.refresh.beforeRequest.add(function () {
 		if (state.stream) {
@@ -64,6 +66,7 @@ Q.Tool.define('Streams/chat', function(options) {
 	animations: {
 		duration: 300
 	},
+	scrollToBottom: true,
 	onRefresh: new Q.Event(),
 	templates: {
 		main: {

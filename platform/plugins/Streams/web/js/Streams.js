@@ -1020,6 +1020,17 @@ var Sp = Stream.prototype;
 Sp.retainWith = Streams.retainWith;
 
 /**
+ * Calculate the url of a stream's icon
+ * @static
+ * @method iconUrl
+ * @param {Number} [size=40] the size of the icon to render. Defaults to 40.
+ * @return {String} the url
+ */
+Sp.iconUrl = function _Stream_prototype_iconUrl (size) {
+	return Streams.iconUrl(this.fields.icon, size)
+};
+
+/**
  * Get all stream attributes
  * 
  * @method getAll
@@ -3186,6 +3197,10 @@ Q.onInit.add(function _Streams_onInit() {
 	Streams.onEvent('post').set(function _Streams_post_handler (msg, messages) {
 		if (!msg) {
 			throw new Q.Error("Q.Streams.onEvent msg is empty");
+		}
+		var latest = Message.latestOrdinal(msg.publisherId, msg.streamName);
+		if (msg.ordinal <= latest) {
+			return;
 		}
 		// Wait until the previous message has been posted, then process this one.
 		// Will return immediately if previous message is already cached

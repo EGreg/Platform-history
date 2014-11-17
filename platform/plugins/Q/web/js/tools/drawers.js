@@ -134,6 +134,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 	},
 	initialDelay: 0,
 	currentIndex: null,
+	placeholders: ['', ''],
 	heights: [100, 100],
 	behind: [true, false],
 	bottom: [false, false],
@@ -256,11 +257,13 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 			);
 			
 			state.$placeholder = $('<div class="Q_drawers_placeholder" />')
+				.html(state.placeholders[otherIndex])
 				.css({
 					background: 'transparent',
 					height: fromHeight + 'px',
 					cursor: 'pointer'
 				}).insertAfter($otherDrawer);
+			state.$placeholder.find('*').css('pointer-events', 'none');
 			
 			var jqAction = 'insert'+(state.behind[otherIndex]?'Before':'After');
 			$otherDrawer[jqAction](state.container).css({
