@@ -88,8 +88,8 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 			state.$drawers.height();
 		}
 		var sh = $scrolling[0].clientHeight || $scrolling.height();
-		var sHeights = (typeof state.heights === 'array')
-			? state.heights : Q.handle(state.heights, tool);
+		var sHeights = (state.heights instanceof Array)
+			? state.heights : Q.getObject(state.heights).apply(tool);
 		var $d0 = state.$drawers.eq(0);
 		var $d1 = state.$drawers.eq(1);
 		$d0.css('min-height', sh-sHeights[1]+'px');
