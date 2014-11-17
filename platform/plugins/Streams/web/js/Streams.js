@@ -2289,15 +2289,18 @@ Message.post.onError = new Q.Event();
  * @method latestOrdinal
  * @param {String} publisherId
  * @param {String} streamName
+ * @param {Boolean} [checkMessageCache=false] whether to check the Streams.Message cache in addition to the Streams.Stream cache
  * @return {Number}
  */
-Message.latestOrdinal = function _Message_latestOrdinal (publisherId, streamName) {
+Message.latestOrdinal = function _Message_latestOrdinal (publisherId, streamName, checkMessageCache) {
 	var latest = 0;
-	Message.get.cache.each([publisherId, streamName], function (k, v) {
-		if (!v.params[0] && v.subject.ordinal > 0) {
-			latest = Math.max(latest, v.subject.ordinal);
-		}
-	});
+	if (checkMessageCache) {
+		Message.get.cache.each([publisherId, streamName], function (k, v) {
+			if (!v.params[0] && v.subject.ordinal > 0) {
+				latest = Math.max(latest, v.subject.ordinal);
+			}
+		});
+	}
 	if (!latest) {
 		Streams.get.cache.each([publisherId, streamName], function (k, v) {
 			if (!v.params[0] && v.subject.fields.messageCount > 0) {
@@ -2332,7 +2335,7 @@ Message.latestOrdinal = function _Message_latestOrdinal (publisherId, streamName
  */
 Message.wait = function _Message_wait (publisherId, streamName, ordinal, callback, options) {
 	var alreadyCalled = false, handlerKey;
-	var latest = Message.latestOrdinal(publisherId, streamName);
+	var latest = Message.latestOrdinal(publisherId, streamName, true);
 	if (!latest && (!options || !options.evenIfNotRetained)) {
 		// There is no cache for this stream, so we won't wait for previous messages.
 		Q.handle(callback, this, [null]);
@@ -3198,7 +3201,7 @@ Q.onInit.add(function _Streams_onInit() {
 		if (!msg) {
 			throw new Q.Error("Q.Streams.onEvent msg is empty");
 		}
-		var latest = Message.latestOrdinal(msg.publisherId, msg.streamName);
+		var latest = Message.latestOrdinal(msg.publisherId, msg.streamName, false);
 		if (msg.ordinal <= latest) {
 			return;
 		}
