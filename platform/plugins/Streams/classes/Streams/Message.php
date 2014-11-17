@@ -87,7 +87,8 @@ class Streams_Message extends Base_Streams_Message
 		$weight = Q::ifset($information, 'weight', 1);
 		
 		if (!isset($information['byClientId'])) {
-			$information['byClientId'] = substr(Q_Request::special('clientId', ''), 0, 255);
+			$clientId = Q_Request::special('clientId', '');
+			$information['byClientId'] = $clientId ? substr($clientId, 0, 255) : '';
 		}
 		
 		if (is_array($instructions)) {
@@ -140,7 +141,8 @@ class Streams_Message extends Base_Streams_Message
 			$message->streamName = $stream->name;
 			$message->sentTime = new Db_Expression("CURRENT_TIMESTAMP");
 			$message->byUserId = $asUserId;
-			$message->byClientId = substr($information['byClientId'], 0, 31);
+			$clientId = Q::ifset($information, 'byClientId', '');
+			$message->byClientId = $clientId ? substr($clientId, 0, 31) : '';
 			$message->type = $type;
 			$message->content = $content;
 			$message->instructions = $instructions;
