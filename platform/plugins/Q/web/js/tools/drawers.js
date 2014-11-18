@@ -260,11 +260,13 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 				state.bottom[index] ? $scrolling[0].scrollHeight : 0
 			);
 			
+			var sHeights = (state.heights instanceof Array)
+				? state.heights : Q.getObject(state.heights).apply(tool);
 			state.$placeholder = $('<div class="Q_drawers_placeholder" />')
 				.html(state.placeholders[otherIndex])
 				.css({
 					background: 'transparent',
-					height: fromHeight + 'px',
+					height: (index ? fromHeight : sHeights[1]) + 'px',
 					cursor: 'pointer'
 				}).insertAfter($otherDrawer);
 			state.$placeholder.find('*').css('pointer-events', 'none');
