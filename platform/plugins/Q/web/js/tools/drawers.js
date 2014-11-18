@@ -289,7 +289,9 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 			// TODO: adjust height, do not rely on parent of container having
 			// overflow: hidden
 			
-			ae.focus();
+			if (!$(ae).closest(state.$otherDrawer).length) {
+				ae.focus();
+			}
 			callbacks[0](callbacks.slice(1));
 		}
 		
