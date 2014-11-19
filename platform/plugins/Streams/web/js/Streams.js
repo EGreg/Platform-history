@@ -839,10 +839,10 @@ Streams.invite = function (publisherId, streamName, options, callback) {
 			Q.handle(callback, null, [err, data, msg]);
 		}, { method: 'post', fields: o, baseUrl: baseUrl });
 	}
-	if (identifier) {
+	if (o.identifier) {
 		return _request();
 	}
-	var identifier = Q.prompt(
+	Q.prompt(
 	'Enter a mobile # or email address',
 	function (value) {
 		if (!value) return;
