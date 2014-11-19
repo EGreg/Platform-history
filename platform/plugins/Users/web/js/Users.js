@@ -1589,6 +1589,7 @@ function submitClosestForm () {
  * Places a hint to click or tap on the screen
  * @static
  * @method hint 
+ * @param {String} key A key to ensure the hint appears only the first time for each user. Check Users.hinted to see if this has happened.
  * @param {Element|Object} elementOrPoint Indicates where to display the hint. A point should contain properties "x" and "y".
  * @param {Object} [options] possible options, which can include:
  * @param {String} [options.src] the url of the image
@@ -1596,6 +1597,7 @@ function submitClosestForm () {
  * @param {String} [options.width="200px"]
  * @param {String} [options.height="200px"]
  * @param {Number} [options.zIndex=99999]
+ * @param {}
  * @return {Boolean} Returns true if the hint with will be shown, or false if a hint with this key was already shown before.
  */
 Users.hint = function (key, elementOrPoint, options) {
