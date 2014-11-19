@@ -697,7 +697,7 @@ Q.Template.set('Streams/chat/main',
 	'<div class="Q_clear"></div>'+
 	'<div class="Streams_chat_messages">'+
 		'{{#isClick}}'+
-			'<div class="Streams_chat_more">More messages</div>'+
+			'<div class="Streams_chat_more">earlier comments</div>'+
 		'{{/isClick}}'+
 		'<!-- messages -->'+
 	'</div>'+

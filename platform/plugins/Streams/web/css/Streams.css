@@ -436,14 +436,18 @@
 }
 .Streams_chat_more {
 	cursor: pointer;
-	background: #CFCACA;
-	color: white;
+	background: #eee;
+	color: #555;
 	text-align: center;
 	padding: 5px 0;
 	font-size: 11pt;
 }
 .Streams_chat_more:hover {
-	color: rgb(238, 238, 238);
+	color: #fff;
+	background: #ccc;
+}
+.Streams_chat_more:active {
+	color: #fff;
 	background: #bbb;
 }
 .Streams_chat_timestamp {
