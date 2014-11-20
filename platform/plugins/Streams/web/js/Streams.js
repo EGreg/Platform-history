@@ -983,7 +983,7 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 		streamName: streamName
 	});
 	var socket = Q.Socket.get('Streams', node);
-	if (!result && !(socket && options.unlessSocket)) {
+	if (!result && !(socket && options && options.unlessSocket)) {
 		// there was no cache, and we didn't wait for previous messages
 		Streams.get.cache.each([publisherId, streamName], function (k, v) {
 			Streams.get.cache.remove(k);
