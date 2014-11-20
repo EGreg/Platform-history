@@ -978,7 +978,7 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 	if (options && options.messages) {
 		result = !!Message.wait(publisherId, streamName, -1, callback, options);
 	}
-	if (!result) {
+	if (!result && !options.unlessSocket) {
 		// there was no cache, and we didn't wait for previous messages
 		Streams.get.cache.each([publisherId, streamName], function (k, v) {
 			Streams.get.cache.remove(k);
@@ -3204,7 +3204,7 @@ Q.onInit.add(function _Streams_onInit() {
 		}
 		var latest = Message.latestOrdinal(msg.publisherId, msg.streamName, false);
 		if (parseInt(msg.ordinal) <= latest) {
-			// return;
+			return;
 		}
 		// Wait until the previous message has been posted, then process this one.
 		// Will return immediately if previous message is already cached
@@ -3239,9 +3239,7 @@ Q.onInit.add(function _Streams_onInit() {
 				var params = [this, message, messages];
 				var usingCached = Q.getter.usingCached;
 				
-				if (cached && ('messageCount' in stream.fields)) {
-					++stream.fields.messageCount; // increment message count
-				}
+				stream.fields.messageCount = msg.ordinal;
 
 				_messageHandlers[msg.streamType] &&
 				_messageHandlers[msg.streamType][msg.type] &&
