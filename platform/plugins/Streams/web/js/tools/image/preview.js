@@ -237,6 +237,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 		fullSize: "x"
 	},
 	overrideSize: {},
+	cacheBust: 1000,
 	templates: {
 		view: {
 			name: 'Streams/image/preview/view',
@@ -310,7 +311,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 				});
 				jq.attr('src', 
 					Q.url(Q.Streams.iconUrl(icon, file), null,
-					{cacheBust: 1000}
+					{cacheBust: state.cacheBust}
 				));
 				return true;
 			}
@@ -332,9 +333,9 @@ Q.Tool.define("Streams/image/preview", function(options) {
 			var fields = Q.extend({}, state.templates.edit.fields, f, {
 				src: Q.url(
 					Q.Streams.iconUrl(icon, file), null, 
-					{cacheBust: 1000}),
+					{cacheBust: state.cacheBust}),
 				srcFull: Q.url(Q.Streams.iconUrl(icon, full), null,
-					{cacheBust: 1000}),
+					{cacheBust: state.cacheBust}),
 				alt: stream.fields.title,
 				inplace: inplace
 			});

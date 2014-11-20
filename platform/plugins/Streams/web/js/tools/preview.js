@@ -233,6 +233,7 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 		position: 'mr'
 	},
 	throbber: "plugins/Q/img/throbbers/loading.gif",
+	cacheBust: 1000,
 	onCreate: new Q.Event(),
 	onUpdate: new Q.Event(),
 	onRefresh: new Q.Event(),
@@ -270,7 +271,7 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 				});
 				jq.attr('src', Q.url(
 					Q.Streams.iconUrl(icon, file), null, 
-					{cacheBust: 1000}
+					{cacheBust: state.cacheBust}
 				));
 				return true;
 			}
@@ -292,10 +293,10 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 			var fields = Q.extend({}, state.templates.edit.fields, f, {
 				src: Q.url(
 					Q.Streams.iconUrl(icon, file), null, 
-					{cacheBust: 1000}),
+					{cacheBust: state.cacheBust}),
 				srcFull: Q.url(
 					Q.Streams.iconUrl(icon,full), null, 
-					{cacheBust: 1000}),
+					{cacheBust: state.cacheBust}),
 				alt: stream.fields.title,
 				inplace: inplace
 			});

@@ -140,7 +140,7 @@ Q.Tool.define('Streams/chat', function(options) {
 				time       : Date.fromDateTime(message.sentTime).getTime() / 1000,
 				byUserId   : message.byUserId,
 				ordinal    : message.ordinal,
-				classes    : (message.byUserId === state.userId)
+				classes    : (message.byUserId === Q.Users.loggedInUserId())
 								? ' Streams_chat_from_me'
 								: ' Streams_chat_to_me'
 			};
@@ -349,7 +349,7 @@ Q.Tool.define('Streams/chat', function(options) {
 			var $container = $element.parents('.Streams_chat_item');
 			var displayName   = $('.Users_avatar_name', $container).text();
 
-			if ($container.data('byuserid') === state.userId) {
+			if ($container.data('byuserid') === Q.Users.loggedInUserId()) {
 				displayName = 'me';
 			}
 

@@ -22,6 +22,8 @@
  *   @default true
  *   @param {Boolean} [options.reflectChanges] Whether the tool should update its contents on changes
  *   @default true
+ *   @param {Number} [options.cacheBust=1000] Number of milliseconds to use for combating unintended caching on some environments.
+ *   @default true
  *   @param {Object} [options.templates]
  *     @param {Object} [options.templates.icon]
  *       @param {String} [options.templates.icon.dir]
@@ -54,7 +56,7 @@ Q.Tool.define("Users/avatar", function(options) {
 			case 'icon':
 				tool.$('.Users_avatar_icon').attr('src', 
 					Q.url(Q.Users.iconUrl(updated.icon, state.icon), null,
-						{cacheBust: 100})
+						{cacheBust: state.cacheBust})
 				);
 				break;
 			case 'firstName':
@@ -85,6 +87,7 @@ Q.Tool.define("Users/avatar", function(options) {
 	},
 	editable: false,
 	imagepicker: {},
+	cacheBust: 1000,
 	onRefresh: new Q.Event()
 },
 
@@ -125,7 +128,7 @@ Q.Tool.define("Users/avatar", function(options) {
 			if (state.icon) {
 				fields = Q.extend({}, state.templates.icon.fields, {
 					src: Q.url(Q.Users.iconUrl(this.icon, state.icon), null,
-						{cacheBust: 100})
+						{cacheBust: state.cacheBust})
 				});
 				Q.Template.render('Users/avatar/icon', fields, 
 				function (err, html) {

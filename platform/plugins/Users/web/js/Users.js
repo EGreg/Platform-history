@@ -710,6 +710,14 @@ Users.logout = function(options) {
 };
 
 /**
+ * A shorthand way to get the id of the logged-in user, if any
+ * @return {String} the id of the logged-in user, or the empty string if not logged in
+ */
+Users.loggedInUserId = function () {
+	return Users.loggedInUser ? Users.loggedInUser.id : '';
+};
+
+/**
  * Users batch getter.
  * @method get
  * @param userId {string}

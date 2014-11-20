@@ -825,7 +825,7 @@ Q.getter = function _Q_getter(original, options) {
 	wrapper.forget = function _forget() {
 		var key = Q.Cache.key(arguments);
 		if (key && wrapper.cache) {
-			wrapper.cache.remove(key);
+			return wrapper.cache.remove(key);
 		}
 	};
 

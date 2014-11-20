@@ -2816,7 +2816,7 @@ Q.getter = function _Q_getter(original, options) {
 	wrapper.forget = function _forget() {
 		var key = Q.Cache.key(arguments);
 		if (key && wrapper.cache) {
-			wrapper.cache.remove(key);
+			return wrapper.cache.remove(key);
 		}
 	};
 
@@ -4439,7 +4439,9 @@ Q.init = function _Q_init(options) {
 	Q.handle(Q.beforeInit);
 	Q.handle(Q.onInit); // Call all the onInit handlers
 
-	Q.addEventListener(window, 'unload', Q.onUnload);
+	Q.addEventListener(window, 'unload', Q.onUnload.handle);
+	Q.addEventListener(window, 'online', Q.onOnline.handle);
+	Q.addEventListener(window, 'offline', Q.onOffline.handle);
 
 	var checks = ["ready"];
 	if (window.cordova && Q.typeOf(window.cordova).substr(0, 4) !== 'HTML'
@@ -4458,8 +4460,6 @@ Q.init = function _Q_init(options) {
 		}
 
 		function _ready() {
-			Q.addEventListener(document, 'online', Q.onOnline);
-			Q.addEventListener(document, 'offline', Q.onOffline);
 			Q.handle(navigator.onLine ? Q.onOnline : Q.onOffline);
 			Q.ready();
 		}
