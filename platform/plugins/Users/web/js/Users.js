@@ -711,6 +711,8 @@ Users.logout = function(options) {
 
 /**
  * A shorthand way to get the id of the logged-in user, if any
+ * @method loggedInUserId
+ * @static
  * @return {String} the id of the logged-in user, or the empty string if not logged in
  */
 Users.loggedInUserId = function () {
@@ -1605,7 +1607,6 @@ function submitClosestForm () {
  * @param {String} [options.width="200px"]
  * @param {String} [options.height="200px"]
  * @param {Number} [options.zIndex=99999]
- * @param {}
  * @return {Boolean} Returns true if the hint with will be shown, or false if a hint with this key was already shown before.
  */
 Users.hint = function (key, elementOrPoint, options) {
