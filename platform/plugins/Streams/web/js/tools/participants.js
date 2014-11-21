@@ -133,6 +133,7 @@ function _Streams_participants(options) {
 									state.onInvited.handle.call(tool, err, data);
 								}
 							);
+							return false;
 						});
 						if (si.clickable) {
 							$('img', $element).plugin(
