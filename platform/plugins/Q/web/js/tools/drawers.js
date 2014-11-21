@@ -328,13 +328,13 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 		function _addEvents(callbacks) {
 			var o = state[state.swapCount ? 'transition' : 'initial'];
 			var $jq = $(behind ? state.$pinnedElement : state.$placeholder);
-			$jq.off(eventName).on(eventName, function (e) {
-				if (!$('.Q_discouragePointerEvents', evt.target).length) {
-					if (Q.Pointer.which(e) < 2) {
+			$jq.off(eventName).on(eventName, function (evt) {
+				if (!$(evt.target).closest('.Q_discouragePointerEvents').length) {
+					if (Q.Pointer.which(evt) < 2) {
 						tool.swap();
+						evt.stopPropagation();
 					}
 				}
-				return false;
 			});
 			if (!behind) {
 				if (Q.info.isTouchscreen) {
@@ -363,20 +363,25 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 					'src': Q.url(src),
 					'class': 'Q_drawers_trigger',
 					'alt': state.currentIndex ? 'reveal bottom drawer' : 'reveal top drawer'
-				}).appendTo(tool.element)
+				}).insertAfter(state.$drawers[1])
 				.css({'opacity': 0})
 				.animate({'opacity': 1})
 				.on(Q.Pointer.start, function (evt) {
-					if ($('.Q_discouragePointerEvents', evt.target).length) {
-						return;
-					}
 					state.$trigger.hide();
 					tool.swap();
 				});
-				var top = tool.state.$drawers.eq(1).offset().top
-					- $(tool.element).offset().top
+				var $drawer = tool.state.$drawers.eq(1);
+				var left = $drawer.offset().left
+					- $drawer.offsetParent().offset().left
+					+ $drawer.outerWidth(true)
+					- state.$trigger.outerWidth(true);
+				var top = $drawer.offset().top
+					- $drawer.offsetParent().offset().top
 					- state.$trigger.height() / 2;
-				state.$trigger.css('top', top);
+				state.$trigger.css({
+					left: left + 'px',
+					top: top + 'px'
+				});
 			}
 			
 			Q.handle(callbacks[0], tool);

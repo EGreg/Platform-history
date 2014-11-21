@@ -1614,12 +1614,12 @@ Users.hint = function (key, elementOrPoint, options) {
 		return false;
 	}
 	Q.Pointer.hint(elementOrPoint, options);
+	Users.hinted.push(key);
 	Q.req('Users/vote', ['vote'], function (err, result) {
 		var msg = Q.firstErrorMessage(err, result && result.errors);
 		if (msg) {
 			return console.warn(msg);
 		}
-		Users.hinted.push(key);
 	}, {
 		method: 'POST',
 		fields: {
