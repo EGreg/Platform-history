@@ -122,6 +122,7 @@ function _Streams_participants(options) {
 						.html(html)
 						.appendTo(tool.$pc)
 						.on(Q.Pointer.fastclick, function () {
+							$(this).removeClass('Q_discouragePointerEvents');
 							var fields = Q.extend({
 								identifier: si.identifier
 							}, si);
@@ -136,6 +137,8 @@ function _Streams_participants(options) {
 							return false;
 						}).on(Q.Pointer.click, function () {
 							return false;
+						}).on(Q.Pointer.start, function () {
+							$(this).addClass('Q_discouragePointerEvents');
 						});
 						if (si.clickable) {
 							$('img', $element).plugin(

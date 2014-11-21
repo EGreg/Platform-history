@@ -251,6 +251,12 @@ function _Q_clickable(o) {
 		}, 'Q/clickable');
 		$(window).on([Q.Pointer.end, '.Q_clickable'], onRelease);
 		$(window).on('release.Q_clickable', onRelease);
+		if (state.preventDefault) {
+			evt.preventDefault();
+		}
+		if (state.stopPropagation) {
+			evt.stopPropagation();
+		}
 		function onRelease (evt) {
 			container.parents().each(function () {
 				$(this).removeData(
@@ -329,6 +335,13 @@ function _Q_clickable(o) {
 				scale.started = false;
 			}
 		}
+	}).on(Q.Pointer.click, function (evt) {
+		if (state.preventDefault) {
+			evt.preventDefault();
+		}
+		if (state.stopPropagation) {
+			evt.stopPropagation();
+		}
 	});
 	return this;
 },
@@ -363,6 +376,8 @@ function _Q_clickable(o) {
 	selectable: false,
 	allowCallout: false,
 	cancelDistance: 15,
+	preventDefault: false,
+	stopPropagation: false,
 	onPress: new Q.Event(),
 	onRelease: new Q.Event(),
 	afterRelease: new Q.Event()

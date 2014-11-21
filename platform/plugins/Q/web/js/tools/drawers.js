@@ -329,8 +329,10 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 			var o = state[state.swapCount ? 'transition' : 'initial'];
 			var $jq = $(behind ? state.$pinnedElement : state.$placeholder);
 			$jq.off(eventName).on(eventName, function (e) {
-				if (Q.Pointer.which(e) < 2) {
-					tool.swap();
+				if (!$('.Q_discouragePointerEvents', evt.target).length) {
+					if (Q.Pointer.which(e) < 2) {
+						tool.swap();
+					}
 				}
 				return false;
 			});
@@ -364,7 +366,10 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 				}).appendTo(tool.element)
 				.css({'opacity': 0})
 				.animate({'opacity': 1})
-				.on(Q.Pointer.start, function () {
+				.on(Q.Pointer.start, function (evt) {
+					if ($('.Q_discouragePointerEvents', evt.target).length) {
+						return;
+					}
 					state.$trigger.hide();
 					tool.swap();
 				});
