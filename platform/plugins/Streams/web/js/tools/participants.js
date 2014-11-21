@@ -134,6 +134,8 @@ function _Streams_participants(options) {
 								}
 							);
 							return false;
+						}).on(Q.Pointer.click, function () {
+							return false;
 						});
 						if (si.clickable) {
 							$('img', $element).plugin(

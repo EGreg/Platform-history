@@ -220,6 +220,10 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 			};
 
 			state.beforeSwap.handle.call(tool, index);
+			
+			if (state.$trigger) {
+				state.$trigger.remove();
+			}
 			if (behind) {
 				_animate([_pin, _addEvents, _onSwap]);
 			} else {
