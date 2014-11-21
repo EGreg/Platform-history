@@ -8653,13 +8653,7 @@ Q.Pointer = {
 	 * Places a hint to click or tap on the screen
 	 * @static
 	 * @method hint 
-	 * @param {Element|Point} elementOrPoint Indicates where to display the hint
-	 * @param {Object} [options] possible options, which can include:
-	 * @param {String} [options.src] the url of the image
-	 * @param {Point} [options.hotspot={x:0.5,y:0.4}] "x" and "y" represent the location of the hotspot within the image, using fractions between 0 and 1
-	 * @param {String} [options.width="200px"]
-	 * @param {String} [options.height="200px"]
-	 * @param {Integer} [options.zIndex=99999]
+	 * @param {Boolean} removeIt
 	 */
 	stopHint: function (removeIt) {
 		var img = Q.Pointer.hint.img;
@@ -8755,7 +8749,7 @@ Q.Pointer.which.MIDDLE = 2;
 Q.Pointer.which.RIGHT = 3;
 
 Q.Pointer.hint.options = {
-	src: 'plugins/Q/img/hint.gif',
+	src: 'plugins/Q/img/hint/tap.gif',
 	hotspot:  {x: 0.5, y: 0.3},
 	width: "50px",
 	height: "50px",
