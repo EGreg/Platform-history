@@ -49,6 +49,7 @@ function _Streams_participants(options) {
 	filter: function () { },
 	showSummary: true,
 	onRefresh: new Q.Event(),
+	onInvited: new Q.Event(),
 	templates: {
 		invite: {
 			name: 'Streams/participants/invite',
@@ -127,7 +128,10 @@ function _Streams_participants(options) {
 							Q.Streams.invite(
 								state.publisherId, 
 								state.streamName, 
-								fields
+								fields,
+								function (err, data) {
+									state.onInvited.handle.call(tool, err, data);
+								}
 							);
 						});
 						if (si.clickable) {

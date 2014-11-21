@@ -1803,7 +1803,16 @@ input[type=radio] { margin-right: 5px; }
 	cursor: default;
 }
 
-
+.Q_drawers_trigger {
+	display: block;
+	position: absolute;
+	right: 0;
+	top: 150px;
+	width: 32px;
+	height: 32px;
+	z-index: 99999;
+	cursor: pointer;
+}
 
 
 

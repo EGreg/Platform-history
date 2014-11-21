@@ -8603,23 +8603,29 @@ Q.Pointer = {
 		var o = Q.extend({}, Q.Pointer.hint.options, options);
 		var body = document.getElementsByTagName('body')[0];
 		var img = Q.Pointer.hint.img;
-		if (!img) {
-			img = Q.Pointer.hint.img = document.createElement('img');
-			img.setAttribute('src', Q.url(o.src));
-			img.style.position = 'absolute';
-			img.style.width = o.width;
-			img.style.height = o.height;
-			img.style.display = 'block';
-			img.style.pointerEvents = 'none';
-			img.onload = _update;
-			body.appendChild(img);
+		if (img) {
+			img.parentNode.removeChild(img);
+		}
+		img = Q.Pointer.hint.img = document.createElement('img');
+		img.setAttribute('src', Q.url(o.src));
+		img.style.position = 'absolute';
+		img.style.width = o.width;
+		img.style.height = o.height;
+		img.style.display = 'block';
+		img.style.pointerEvents = 'none';
+		img.setAttribute('class', 'Q_hint');
+		body.appendChild(img);
+		if (img.complete) {
+			_update();
 		} else {
-			_update.call();
+			img.onload = _update;
 		}
 		Q.Pointer.stopHint.prevent = true;
-		Q.removeEventListener(window, Q.Pointer.click, Q.Pointer.stopHint);
+		Q.removeEventListener(window, Q.Pointer.start, Q.Pointer.stopHint);
+		Q.removeEventListener(document, 'scroll', Q.Pointer.stopHint);
 		setTimeout(function () {
-			Q.addEventListener(window, Q.Pointer.click, Q.Pointer.stopHint);
+			Q.addEventListener(window, Q.Pointer.start, Q.Pointer.stopHint);
+			Q.addEventListener(document, 'scroll', Q.Pointer.stopHint);
 			Q.Pointer.stopHint.prevent = false;
 		}, o.hide.delay);
 		function _update() {
@@ -8749,7 +8755,7 @@ Q.Pointer.which.MIDDLE = 2;
 Q.Pointer.which.RIGHT = 3;
 
 Q.Pointer.hint.options = {
-	src: 'plugins/Q/img/hint/tap.gif',
+	src: 'plugins/Q/img/hints/tap.gif',
 	hotspot:  {x: 0.5, y: 0.3},
 	width: "50px",
 	height: "50px",

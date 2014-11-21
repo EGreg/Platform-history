@@ -88,7 +88,8 @@ Q.Tool.define("Users/avatar", function(options) {
 	editable: false,
 	imagepicker: {},
 	cacheBust: 1000,
-	onRefresh: new Q.Event()
+	onRefresh: new Q.Event(),
+	onUpdate: new Q.Event()
 },
 
 {
@@ -195,7 +196,9 @@ Q.Tool.define("Users/avatar", function(options) {
 							path: 'plugins/Users/img/icons',
 							subpath: 'user-'+state.userId,
 							onSuccess: {"Users/avatar": function () {
-								stream.refresh(null, {messages: true});
+								stream.refresh(function () {
+									state.onUpdate.handle.call(tool, this);
+								}, {messages: true});
 							}}
 						}, state.imagepicker);
 						$img.plugin('Q/imagepicker', o);

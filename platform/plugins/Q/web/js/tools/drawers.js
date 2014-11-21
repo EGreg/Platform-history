@@ -140,6 +140,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 	heights: [100, 100],
 	behind: [true, false],
 	bottom: [false, false],
+	triggers: ['plugins/Q/img/drawers/up.png', 'plugins/Q/img/drawers/down.png'],
 	fullscreen: Q.info.isMobile && Q.info.isAndroid(1000),
 	foregroundZIndex: 50,
 	beforeSwap: new Q.Event(),
@@ -345,6 +346,28 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 			
 			if (Q.info.isTouchscreen && !Q.info.isAndroid()) {
 				_addTouchEvents();
+			}
+			
+			var src = state.triggers[state.currentIndex];
+			if (state.$trigger) {
+				state.$trigger.remove();
+			}
+			if (src) {
+				state.$trigger = $('<img />').attr({
+					'src': Q.url(src),
+					'class': 'Q_drawers_trigger',
+					'alt': state.currentIndex ? 'reveal bottom drawer' : 'reveal top drawer'
+				}).appendTo(tool.element)
+				.css({'opacity': 0})
+				.animate({'opacity': 1})
+				.on(Q.Pointer.start, function () {
+					state.$trigger.hide();
+					tool.swap();
+				});
+				var top = tool.state.$drawers.eq(1).offset().top
+					- $(tool.element).offset().top
+					- state.$trigger.height() / 2;
+				state.$trigger.css('top', top);
 			}
 			
 			Q.handle(callbacks[0], tool);
