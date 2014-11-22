@@ -141,6 +141,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 	behind: [true, false],
 	bottom: [false, false],
 	triggers: ['plugins/Q/img/drawers/up.png', 'plugins/Q/img/drawers/down.png'],
+	trigger: { rightMargin: 10 },
 	fullscreen: Q.info.isMobile && Q.info.isAndroid(1000),
 	foregroundZIndex: 50,
 	beforeSwap: new Q.Event(),
@@ -376,7 +377,8 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 				var left = $drawer.offset().left
 					- $drawer.offsetParent().offset().left
 					+ $drawer.outerWidth(true)
-					- state.$trigger.outerWidth(true);
+					- state.$trigger.outerWidth(true)
+					- state.trigger.rightMargin;
 				var top = $drawer.offset().top
 					- $drawer.offsetParent().offset().top
 					- state.$trigger.height() / 2;

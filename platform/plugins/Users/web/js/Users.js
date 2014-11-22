@@ -1610,7 +1610,7 @@ function submitClosestForm () {
  * @return {Boolean} Returns true if the hint with will be shown, or false if a hint with this key was already shown before.
  */
 Users.hint = function (key, elementOrPoint, options) {
-	if (!Users.loggedInUser || Users.hinted.indexOf(key) >= 0) {
+	if (!elementOrPoint || !Users.loggedInUser || Users.hinted.indexOf(key) >= 0) {
 		return false;
 	}
 	Q.Pointer.hint(elementOrPoint, options);
