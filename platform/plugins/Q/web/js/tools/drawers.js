@@ -367,8 +367,10 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 				.css({'opacity': 0})
 				.animate({'opacity': 1})
 				.on(Q.Pointer.start, function (evt) {
-					state.$trigger.hide();
-					tool.swap();
+					if (Q.Pointer.which(evt) < 2) {
+						state.$trigger.hide();
+						tool.swap();
+					}
 				});
 				var $drawer = tool.state.$drawers.eq(1);
 				var left = $drawer.offset().left
@@ -461,6 +463,9 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 			$scrolling.off(state.scrollEventName)
 				.off('touchstart.Q_drawers')
 				.off('touchend.Q_drawers');
+			if (state.$trigger) {
+				state.$trigger.remove();
+			}
 		}}
 	}
 }
