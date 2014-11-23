@@ -1806,8 +1806,8 @@ input[type=radio] { margin-right: 5px; }
 .Q_drawers_trigger {
 	display: block;
 	position: absolute;
-	width: 32px;
-	height: 32px;
+	width: 24px;
+	height: 24px;
 	z-index: 99999;
 	cursor: pointer;
 }

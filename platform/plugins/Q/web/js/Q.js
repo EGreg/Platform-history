@@ -487,6 +487,22 @@ Elp.copyComputedStyle = function(src) {
 };
 
 /**
+ * Returns the first element in the chain of parent elements which supports scrolling
+ * @method scrollingParent
+ * @param {Element} element
+ */
+Elp.scrollingParent = function() {
+	var p = this;
+	while (p = p.parentNode) {
+		var overflow = p.computedStyle().overflow;
+		if (['hidden', 'visible'].indexOf(overflow) < 0) {
+			return p;
+		}
+	}
+	return document.documentElement;
+};
+
+/**
  * Switch places with another element
  * @method swap
  * @param {Element} element

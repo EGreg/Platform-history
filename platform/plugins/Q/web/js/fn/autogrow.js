@@ -63,14 +63,24 @@ function _Q_autogrow(o) {
 		}).on('blur', function(){
 			t.stopUpdating()
 		});
+		
+		var prevH = 0;
 
 		function updateHeight() {
-			tVal = t.value;
 			t.style.height = '0px';
 			var tH = t.scrollHeight; // + H;
 			t.style.height = tH + 'px';
 			setTimeout(function () {
 				c.style.height = t.offsetHeight + 'px';
+				if (prevH && prevH != tH) {
+					var $sp = $(c.scrollingParent());
+					var st = $sp.scrollTop();
+					if (tH > prevH
+					|| st < $sp[0].scrollHeight - $sp[0].clientHeight) {
+						$sp.scrollTop(st + tH - prevH);
+					}
+				}
+				prevH = tH;
 			}, 0)
 		};
 

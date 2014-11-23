@@ -1269,7 +1269,7 @@ class Q_Response
 	static function htmlAttributes()
 	{
 		$touchscreen = Q_Request::isTouchscreen() ? 'Q_touchscreen' : 'Q_notTouchscreen';
-		$mobile = Q_Request::isTouchscreen() ? 'Q_mobile' : 'Q_notMobile';
+		$mobile = Q_Request::isMobile() ? 'Q_mobile' : 'Q_notMobile';
 		$ie = Q_Request::isIE() ? 'Q_ie' : 'Q_notIE';
 		$ie8 = Q_Request::isIE(0, 8) ? 'Q_ie8OrBelow' : 'Q_notIE8OrBelow';
 		$result = 'lang="en" xmlns:og="http://ogp.me/ns#" '
