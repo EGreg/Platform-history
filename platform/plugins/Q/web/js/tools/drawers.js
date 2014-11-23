@@ -141,7 +141,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 	behind: [true, false],
 	bottom: [false, false],
 	triggers: ['plugins/Q/img/drawers/up.png', 'plugins/Q/img/drawers/down.png'],
-	trigger: { rightMargin: 10 },
+	trigger: { rightMargin: 10, transition: 300 },
 	fullscreen: Q.info.isMobile && Q.info.isAndroid(1000),
 	foregroundZIndex: 50,
 	beforeSwap: new Q.Event(),
@@ -176,11 +176,9 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 			? sHeight - sHeights[otherIndex] 
 			: sHeights[otherIndex];
 		var eventName = Q.info.isTouchscreen
-			? 'touchstart.Q_drawers'
-			: 'mousedown.Q_drawers';
-		var scrollEventName = Q.info.isTouchscreen
-			? 'scroll.Q_drawers'
-			: 'scroll.Q_drawers';
+			? 'touchend.Q_drawers'
+			: 'mouseup.Q_drawers';
+		var scrollEventName = 'scroll.Q_drawers';
 		var scrollingHeight;
 		
 		// give things a chance to settle down
@@ -330,10 +328,13 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 			var o = state[state.swapCount ? 'transition' : 'initial'];
 			var $jq = $(behind ? state.$pinnedElement : state.$placeholder);
 			$jq.off(eventName).on(eventName, function (evt) {
-				if (!$(evt.target).closest('.Q_discouragePointerEvents').length) {
+				var product = Q.Pointer.movement && Q.Pointer.movement.movingAverageVelocity
+					? Q.Pointer.movement.movingAverageVelocity.y * (state.currentIndex-0.5)
+					: 0;
+				if (!$(evt.target).closest('.Q_discouragePointerEvents').length
+				&& product >= 0) {
 					if (Q.Pointer.which(evt) < 2) {
 						tool.swap();
-						evt.stopPropagation();
 					}
 				}
 			});
@@ -366,7 +367,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 					'alt': state.currentIndex ? 'reveal bottom drawer' : 'reveal top drawer'
 				}).insertAfter(state.$drawers[1])
 				.css({'opacity': 0})
-				.animate({'opacity': 1})
+				.animate({'opacity': 1}, state.trigger.transition)
 				.on(Q.Pointer.start, function (evt) {
 					if (Q.Pointer.which(evt) < 2) {
 						state.$trigger.hide();
@@ -395,12 +396,16 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 			var y1, y2;
 			var anim = null;
 			var notThisOne = false;
+			state.$placeholder.on('touchmove', function (e) {
+				e.preventDefault();
+			});
 			state.$drawers.eq(state.currentIndex)
 			.on('touchstart', true, function (e) {
 				if (anim) anim.pause();
 				notThisOne = false;
 				if (state.currentIndex == 0
-				|| state.$scrolling.scrollTop() > 0) {
+				|| state.$scrolling.scrollTop() > 0
+				|| $(e.target).closest('.Q_discouragePointerEvents').length) {
 					notThisOne = true;
 					return;
 				}
