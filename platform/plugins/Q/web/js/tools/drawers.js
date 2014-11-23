@@ -409,6 +409,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 					notThisOne = true;
 					return;
 				}
+				state.$trigger.hide();
 				y1 = Q.Pointer.getY(e);
 				e.preventDefault();
 			}).on('touchmove', true, function (e) {
@@ -445,6 +446,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 					}, 3000, Q.Animation.ease.power(3.5));
 				}
 				y1 = y2 = undefined;
+				state.$trigger.show();
 			});
 		}
 
