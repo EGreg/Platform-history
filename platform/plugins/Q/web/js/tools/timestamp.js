@@ -31,7 +31,7 @@
 			var format = o.format.replace('%#d', '%d');
 			var result = '';
 			var now = Date.now() / 1000;
-			var date = new Date(time * 1000);
+			var date = new Date();
 			var today = new Date(
 				date.getFullYear(), date.getMonth(), date.getDate()
 			).getTime() / 1000;
