@@ -17,7 +17,7 @@
 	 *    @default 'new Date().getTime() / 1000'
 	 *    @param {String} [options.format] formatting string which makes specific timestamp representation. Can contain placeholders supported by strftime() and also few special placeholders with specific functionality.
 	 *         Including time, time-day, time-week, day, day-week, longday, longday-week, date, date+week, year, year+year
-	 *    @default '{day-week} {date+week} {year+year} %l:%M %P''
+	 *    @default '{day-week} {date+week} {year+year} %l:%M %P'
 	 */
 
 	Q.Tool.jQuery('Q/timestamp', function (o) {
@@ -151,7 +151,7 @@
 		});
 	}, {
 		time: null,
-		format: '{day-week} {date+week} {year+year} %l:%M %P'',
+		format: '{day-week} {date+week} {year+year} %l:%M %P',
 		beforeUpdate: new Q.Event()
 	});
 })(Q, jQuery);
