@@ -84,10 +84,10 @@ abstract class Places extends Base_Places
 			'latitude' => $result['geometry']['location']['lat'],
 			'longitude' => $result['geometry']['location']['lng'],
 			// 'icon' => $result['icon'],
-			'phoneNumber' => $result['international_phone_number'],
-			'phoneFormatted' => $result['formatted_phone_number'],
-			'rating' => $result['rating'],
-			'address' => $result['formatted_address']
+			'phoneNumber' => Q::ifset($result, 'international_phone_number', null),
+			'phoneFormatted' => Q::ifset($result, 'formatted_phone_number', null),
+			'rating' => Q::ifset($result, 'rating', null),
+			'address' => Q::ifset($result, 'formatted_address', null)
 		);
 		$location->setAttribute($attributes);
 		$location->type = 'Places/location';
