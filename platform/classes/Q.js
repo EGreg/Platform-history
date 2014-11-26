@@ -2729,6 +2729,7 @@ Q.firstErrorMessage = function _Q_firstErrorMessage(data /*, data2, ... */) {
  * @param Object options
  *  A hash of options, including:
  *  'baseUrl': A string to replace the default base url
+ *  'cacheBust': Number of milliseconds before a new cachebuster is appended
  */
 Q.url = function _Q_url(what, fields, options) {
 	if (fields) {
