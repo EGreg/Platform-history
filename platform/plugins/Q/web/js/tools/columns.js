@@ -34,6 +34,7 @@ Q.Tool.define("Q/columns", function(options) {
 
 	state.max = 0;
 	state.columns = [];
+	state.data = [];
 	//state.triggers = [];
 
 	state.container = tool.$('.Q_columns_container')[0];
@@ -144,8 +145,9 @@ Q.Tool.define("Q/columns", function(options) {
 	 * Opens a column
 	 * @method open
 	 * @param {Object} options Can be used to override various tool options,
-	 *  including events such as "onOpen" and "onClose".
-	 *  You can also pass "columnClass" to add a class to the column.
+	 *  including events such as "onOpen" and "onClose". Additional options include:
+	 *  @param {String} [options.columnClass] to add a class to the column
+	 *  @param {Object} [options.data] to add data on the column element with jQuery
 	 * @param {Number} index The index of the column to open
 	 * @param {Function} callback Called when the column is opened
 	 */
@@ -207,6 +209,12 @@ Q.Tool.define("Q/columns", function(options) {
 		if (options && options.columnClass) {
 			$div.addClass(options.columnClass);
 		}
+		var dataMore = div.getAttribute('data-more');
+		tool.state.data[index] = Q.extend(
+			{},
+			options && options.data,
+			dataMore ? JSON.parse(dataMore) : null
+		);
 		if (!$close || !$close.length) {
 			$close = !index ? $() : $('<div class="Q_close"></div>');
 			if (Q.info.isMobile) {
@@ -299,12 +307,13 @@ Q.Tool.define("Q/columns", function(options) {
 				).activate(p.fill('activated2'));
 			}
 			p.add(waitFor, function () {
-				Q.handle(callback, tool, [options, index]);
-				state.onOpen.handle.call(tool, options, index);
-				Q.handle(options.onOpen, tool, [options, index]);
+				var data = tool.data(index);
+				Q.handle(callback, tool, [options, index, div, data]);
+				state.onOpen.handle.call(tool, options, index, div, data);
+				Q.handle(options.onOpen, tool, [options, index, div, data]);
 				setTimeout(function () {
 					$mask.remove();
-					Q.handle(options.afterDelay, tool, [options, index]);
+					Q.handle(options.afterDelay, tool, [options, index, div, data]);
 				}, o.delay.duration);
 			}).run();
 			
@@ -492,7 +501,7 @@ Q.Tool.define("Q/columns", function(options) {
 		}
 		var $div = $(div);
 		var width = $div.outerWidth(true);
-		var shouldContinue = o.beforeClose.handle.call(tool, index);
+		var shouldContinue = o.beforeClose.handle.call(tool, index, div);
 		if (shouldContinue === false) return;
 		
 		var w = $div.outerWidth(true);
@@ -528,6 +537,10 @@ Q.Tool.define("Q/columns", function(options) {
 
 	column: function (index) {
 		return this.state.columns[index] || null;
+	},
+	
+	data: function (index) {
+		return this.state.data[index] || null;
 	},
 	
 	refresh: function () {

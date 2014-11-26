@@ -56,8 +56,18 @@ EOT;
 		} else {
 			$titleHtml = Q::ifset($column, 'title', '[title]');
 			$columnHtml = Q::ifset($column, 'column', '[column]');
+			$classes = $columnClass . ' ' . Q::ifset($column, 'class', '');
+			$attrs = '';
+			if (isset($column['data'])) {
+				$json = Q::json_encode($column['data']);
+				$attrs = 'data-more="' . Q_Html::text($json) . '"';
+				foreach ($column['data'] as $k => $v) {
+					$attrs .= 'data-'.Q_Html::text($k).'="'.Q_Html::text($v).'" ';
+				}
+			}
+			$data = Q::ifset($column, 'data', '');
 			$columns[] = <<<EOT
-	<div class="Q_columns_column $columnClass" data-index="$i" data-name="$n">
+	<div class="Q_columns_column $classes" data-index="$i" data-name="$n" $attrs>
 		<div class="Q_columns_title">
 			$closeHtml
 			<h2 class="title_slot">$titleHtml</h2>
