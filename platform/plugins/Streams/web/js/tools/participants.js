@@ -211,7 +211,7 @@ function _Streams_participants(options) {
 			var $element = $(Q.Tool.setUpElement('div', 'Users/avatar', {
 				userId: userId,
 				"short": true,
-				icon: '40'
+				icon: (window.devicePixelRatio > 1 ? '80' : '40')
 			}));
 			var $e = userId ? tool.$avatars : tool.$blanks;
 			if (false !== Q.handle(state.filter, tool, [$element])) {
