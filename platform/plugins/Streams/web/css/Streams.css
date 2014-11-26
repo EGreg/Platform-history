@@ -170,7 +170,7 @@
 .Streams_participants_tool {
 	padding: 5px;
 	overflow: hidden;
-	height: 45px;
+	height: 50px;
 }
 
 .Streams_participants_tool .Users_avatar_tool,
@@ -204,6 +204,10 @@
 
 .Streams_participants_tool .Users_avatar_icon {
 	box-shadow: #222 0px 0px 1px;
+}
+
+.Streams_participants_tool .Users_avatar_icon_blank {
+	box-shadow: none;
 }
 
 .Streams_participants_tool .Streams_participants_summary {

@@ -13,6 +13,7 @@
  *   @param {String} options.publisherId The id of the publisher
  *   @param {String} options.streamName The name of the stream
  *   @param {String} [options.showSummary] Whether to show a summary
+ *   @param {String} [options.showBlanks] Whether to show blank avatars in place of remaining spots
  *   @param {Number} [options.max]
  *    The number, if any, to show in the denominator of the summary
  *   @param {Number} [options.maxShow=10]
@@ -48,6 +49,7 @@ function _Streams_participants(options) {
 	max: null,
 	filter: function () { },
 	showSummary: true,
+	showBlanks: false,
 	onRefresh: new Q.Event(),
 	onInvited: new Q.Event(),
 	templates: {
@@ -80,6 +82,8 @@ function _Streams_participants(options) {
 			tool.$max = $('.Streams_participants_max', $te);
 			tool.$summary = $('.Streams_participants_summary', $te);
 			tool.$pc = $('.Streams_participants_container', $te);
+			tool.$avatars = $('.Streams_participants_avatars', $te);
+			tool.$blanks = $('.Streams_participants_blanks', $te);
 		} else {
 			tool.$count = $("<span class='Streams_participants_count'></span>");
 			tool.$max = $("<span class='Streams_participants_max'></span>");
@@ -88,6 +92,10 @@ function _Streams_participants(options) {
 				.appendTo($te);
 			tool.$pc = $("<div class='Streams_participants_container' />")
 				.appendTo($te);
+			tool.$avatars = $("<span class='Streams_participants_avatars' />")
+				.appendTo(tool.$pc);
+			tool.$blanks = $("<span class='Streams_participants_blanks' />")
+				.appendTo(tool.$pc);
 		}
 
 		Q.Streams.get(state.publisherId, state.streamName,
@@ -99,7 +107,8 @@ function _Streams_participants(options) {
 			var stream = tool.stream = this;
 			var keys = Object.keys(extra.participants);
 			var i = 0, c = 0;
-			tool.$pc.empty();
+			tool.$avatars.empty();
+			tool.$blanks.empty();
 			Q.each(extra.participants, function (userId, participant) {
 				if (participant.state !== 'participating') {
 					return;
@@ -120,7 +129,7 @@ function _Streams_participants(options) {
 						var $element = 
 						$('<div class="Streams_participants_invite" />')
 						.html(html)
-						.appendTo(tool.$pc)
+						.appendTo(tool.$avatars)
 						.on(Q.Pointer.fastclick, function () {
 							var fields = Q.extend({
 								identifier: si.identifier
@@ -154,6 +163,12 @@ function _Streams_participants(options) {
 					},
 					state.templates.invite
 				);
+				++i;
+			}
+			if (state.showBlanks) {
+				Q.each(i, state.maxShow-1, 1, function () {
+					addAvatar('');
+				});
 			}
 			
 			state.count = c;
@@ -198,9 +213,10 @@ function _Streams_participants(options) {
 				"short": true,
 				icon: '40'
 			}));
+			var $e = userId ? tool.$avatars : tool.$blanks;
 			if (false !== Q.handle(state.filter, tool, [$element])) {
 				$elements[userId] = $element;
-				$element[prepend?'prependTo':'appendTo'](tool.$pc).activate();
+				$element[prepend?'prependTo':'appendTo']($e).activate();
 			}
 		}
 	}

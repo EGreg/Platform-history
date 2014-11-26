@@ -12,7 +12,7 @@
  * @constructor
  * @param {String} prefix Prefix of the tool to be constructed.
  * @param {Object} [options] A hash of options, containing:
- *   @param {String} [options.userId] The id of the user object.
+ *   @param {String} [options.userId] The id of the user object. Can be '' for a blank-looking avatar.
  *   @required
  *   @param {Number} [options.icon] Size of the icon to render before the display name.
  *   @default 40
@@ -109,7 +109,7 @@ Q.Tool.define("Users/avatar", function(options) {
 		// with "editable" and the same <span> elements
 		// for firstName and lastName.
 		
-		if (!state.userId) {
+		if (state.userId === undefined) {
 			console.warn("Users/avatar: no userId provided");
 			return; // empty
 		}
@@ -121,6 +121,19 @@ Q.Tool.define("Users/avatar", function(options) {
 			tool.element.innerHTML = params.icon[0] + params.contents[0];
 			_present();
 		});
+		
+		if (state.userId === '') {
+			fields = Q.extend({}, state.templates.contents.fields, {
+				name: ''
+			});
+			Q.Template.render('Users/avatar/icon/blank', fields, function (err, html) {
+				p.fill('icon')(html);
+			});
+			Q.Template.render('Users/avatar/contents/blank', fields, function (err, html) {
+				p.fill('contents')(html);
+			});
+			return;
+		}
 		
 		Q.Streams.Avatar.get(state.userId, function (err, avatar) {
 			var fields;
@@ -213,5 +226,7 @@ Q.Tool.define("Users/avatar", function(options) {
 
 Q.Template.set('Users/avatar/icon', '<img src="{{& src}}" alt="{{alt}}" class="Users_avatar_icon">');
 Q.Template.set('Users/avatar/contents', '<{{tag}} class="Users_avatar_name">{{& name}}</{{tag}}>');
+Q.Template.set('Users/avatar/icon/blank', '<div class="Users_avatar_icon Users_avatar_icon_blank"></div>');
+Q.Template.set('Users/avatar/contents/blank', '<div class="Users_avatar_name Users_avatar_name_blank">&nbsp;</div>');
 
 })(Q, jQuery, window);

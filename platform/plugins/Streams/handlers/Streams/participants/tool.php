@@ -78,7 +78,9 @@ function Streams_participants_tool($options)
 			}
 		}
 	}
-	$container = "<div class='Streams_participants_container'>$avatars</div>";
+	$spans = "<span class='Streams_participants_avatars'>$avatars</span>"
+		. "<span class='Streams_participants_blanks'></span>";
+	$container = "<div class='Streams_participants_container'>$spans</div>";
 	$count = "<span class='Streams_participants_count'>$c</span>";
 	$m = isset($options['max']) ? '/'.$options['max'] : '';
 	$max = "<span class='Streams_participants_max'>$m</span>";

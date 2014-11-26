@@ -11,7 +11,7 @@
  * @class Users avatar
  * @constructor
  * @param {Object} [options] this object contains function parameters
- *   @param {String} [options.userId] User Id for getting avatar
+ *   @param {String} [options.userId] The id of the user object. Can be '' for a blank-looking avatar.
  *   @required
  *   @param {String} [options.icon] icon for avatar
  *   @default '40'
@@ -38,7 +38,7 @@ Q.Tool.define("Users/avatar", function(options) {
 		return;
 	}
 	var tool = this, state = this.state;
-	if (!state.userId) {
+	if (state.userId === undefined) {
 		console.warn("Users/avatar: no userId provided");
 		return; // empty
 	}
@@ -47,8 +47,21 @@ Q.Tool.define("Users/avatar", function(options) {
 	}
 	
 	var p = new Q.Pipe(['icon', 'contents'], function (params) {
-		tool.element.innerHTML = params.icon + params.contents;	
+		tool.element.innerHTML = params.icon[0] + params.contents[0];
 	});
+	
+	if (state.userId === '') {
+		fields = Q.extend({}, state.templates.contents.fields, {
+			name: ''
+		});
+		Q.Template.render('Users/avatar/icon/blank', fields, function (err, html) {
+			p.fill('icon')(html);
+		});
+		Q.Template.render('Users/avatar/contents/blank', fields, function (err, html) {
+			p.fill('contents')(html);
+		});
+		return;
+	}
 	
 	Q.Users.get(state.userId, function (err, user) {
 		var fields;
@@ -94,6 +107,8 @@ Q.Tool.define("Users/avatar", function(options) {
 );
 
 Q.Template.set('Users/avatar/icon', '<img src="{{& src}}" alt="{{alt}}" class="Users_avatar_icon">');
-Q.Template.set('Users/avatar/contents', '<{{tag}} class="Users_avatar_name">{{name}}</{{tag}}>');
+Q.Template.set('Users/avatar/contents', '<{{tag}} class="Users_avatar_name">{{& name}}</{{tag}}>');
+Q.Template.set('Users/avatar/icon/blank', '<div class="Users_avatar_icon Users_avatar_icon_blank"></div>');
+Q.Template.set('Users/avatar/contents/blank', '<div class="Users_avatar_name Users_avatar_name_blank">&nbsp;</div>');
 
 })(Q, jQuery, window);
