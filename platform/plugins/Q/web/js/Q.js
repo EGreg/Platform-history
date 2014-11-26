@@ -3117,6 +3117,7 @@ Q.Tool.active = {};
 Q.Tool.latestName = null;
 Q.Tool.latestNames = {};
 
+var _constructToolHandlers = {};
 var _activateToolHandlers = {};
 var _initToolHandlers = {};
 var _beforeRemoveToolHandlers = {};
@@ -3128,6 +3129,15 @@ function _toolEventFactoryNormalizeKey(key) {
 	parts[parts.length-1] = Q.normalize(parts[parts.length-1]);
 	return [parts.join(':')];
 }
+
+/**
+ * Returns Q.Event which occurs when a tool has been constructed, but not yet activated
+ * Generic callbacks can be assigned by setting toolName to ""
+ * @class Q.Tool
+ * @event onActivate
+ * @param nameOrId {String} the name of the tool, such as "Q/inplace", or "id:" followed by tool's id
+ */
+Q.Tool.onConstruct = Q.Event.factory(_constructToolHandlers, ["", _toolEventFactoryNormalizeKey]);
 
 /**
  * Returns Q.Event which occurs when a tool has been activated
@@ -7014,10 +7024,16 @@ function _activateTools(toolElement, options, shared) {
 					this.state = Q.copy(this.options, toolFunc.stateKeys);
 					var prevTool = Q.Tool.beingActivated;
 					Q.Tool.beingActivated = this;
-					toolFunc.call(this, this.options);
 					// Trigger events in some global event factories
 					var normalizedName = Q.normalize(this.name);
 					var normalizedId = Q.normalize(this.id);
+					_constructToolHandlers[""] &&
+					_constructToolHandlers[""].handle.call(this, this.options);
+					_constructToolHandlers[normalizedName] &&
+					_constructToolHandlers[normalizedName].handle.call(this, this.options);
+					_constructToolHandlers["id:"+normalizedId] &&
+					_constructToolHandlers["id:"+normalizedId].handle.call(this, this.options);
+					toolFunc.call(this, this.options);
 					_activateToolHandlers[""] &&
 					_activateToolHandlers[""].handle.call(this, this.options);
 					_activateToolHandlers[normalizedName] &&

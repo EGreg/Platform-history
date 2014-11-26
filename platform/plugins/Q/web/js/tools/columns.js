@@ -295,17 +295,18 @@ Q.Tool.define("Q/columns", function(options) {
 		function _open() {
 			var $te = $(tool.element);
 			if (o.title != undefined) {
-				waitFor.push('activated1');
 				$(titleSlot).empty().append(
 					o.title instanceof Element ? $(o.title) : o.title
 				).activate(p.fill('activated1'));
 			}
 			if (o.column != undefined) {
-				waitFor.push('activated2');
 				$(columnSlot).empty().append(
 					o.column instanceof Element ? $(o.column) : o.column
-				).activate(p.fill('activated2'));
+				);
 			}
+			waitFor.push('activated1', 'activated2');
+			$(titleSlot).activate(p.fill('activated1'));
+			$(columnSlot).activate(p.fill('activated2'));
 			p.add(waitFor, function () {
 				var data = tool.data(index);
 				Q.handle(callback, tool, [options, index, div, data]);
