@@ -39,7 +39,7 @@
 			var diff = now - time;
 			
 			var dayLength = 60 * 60 * 24;
-			var day = strftime('%a');
+			var day = strftime('%a', time);
 			var longday = strftime('%A', time);
 			if (diffToday < dayLength * 0.4) {
 				day = longday = 'This morn';
