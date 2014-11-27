@@ -31,6 +31,7 @@
 Q.Tool.define("Q/columns", function(options) {
 	var tool = this;
 	var state = tool.state;
+	options = options || {};
 
 	state.max = 0;
 	state.columns = [];
