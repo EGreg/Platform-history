@@ -30,13 +30,7 @@ function Q_timestamp_tool($options)
 	$now = time();
 	$diff = $now - $time;
 	$dayLength = 60 * 60 * 24;
-	if ($diff > 3600 * 24 * 365) {
-		return strftime($format, $time);
-	} else if ($diff > 3600 * 24 * 7) {
-		$format = trim(preg_replace('/\s+/', ' ', str_replace('%Y', '', $format)));
-		return strftime($format, $time);
-	} else if ($diff > 3600 * 24) {
-		$format = trim(preg_replace('/\s+/', ' ', str_replace(array('%Y', '%#d', '%b'), '', $format)));
+	if ($diff > $dayLength) {
 		return strftime($format, $time);
 	} else if ($diff > 3600 * 2) {
 		return floor(($diff) / 3600) . ' hours ago';

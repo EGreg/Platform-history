@@ -38,10 +38,16 @@
 			var diffToday = time - today;
 			var diff = now - time;
 			
-			var dayLength = 60 * 60 * 24;
+			var dayLength = 3600 * 24;
 			var day = strftime('%a', time);
 			var longday = strftime('%A', time);
-			if (diffToday < dayLength * 0.4) {
+			if (diffToday < 0 && diffToday > -dayLength / 8) {
+				day = longday = 'Last night';
+			} if (diffToday < 0 && diffToday > -dayLength / 4) {
+				day = longday = 'Last eve';
+			} else if (diffToday < 0 && diffToday > -dayLength) {
+				day = longday = 'Yesterday';
+			} else if (diffToday < dayLength * 0.4) {
 				day = longday = 'This morn';
 			} else if (diffToday < dayLength * 3 / 4) {
 				day = longday = 'Today';
@@ -54,16 +60,14 @@
 			}
 
 			// regular formatting using strftime()
-			if (diff > 3600 * 24 * 7 * 365) {
-				result = strftime(format, time);
-			} else if (diff > 3600 * 24 * 7) {
-				format = format.replace('%Y', '').replace('    ', ' ').trim();
-				result = strftime(format, time);
-			} else if (diff > 3600 * 24) {
-				format = format.replace(/%Y|%d|%b/g, '').replace(/\s+/g, ' ').trim();
+			if (diff > dayLength) {
 				result = strftime(format, time);
 			} else if (diff > 3600 * 2) {
-				result = Math.floor((diff) / 3600) + ' hours ago';
+				if (format.indexOf('{day') < 0 || diffToday >= 0) {
+					result = Math.floor((diff) / 3600) + ' hours ago';
+				} else {
+					result = strftime(format, time);
+				}
 			} else if (diff > 3600) {
 				result = '1 hour ago';
 			} else if (diff > 60 * 2) {
@@ -84,9 +88,9 @@
 
 			// special formatting
 			if (result.indexOf('{time') != -1) {
-				if (result.indexOf('{time-week}') != -1 && diff > 3600 * 24 * 7) {
+				if (result.indexOf('{time-week}') != -1 && diffToday > dayLength * 7) {
 					result = result.replace('{time-week}', '').replace(/\s+/g, ' ').trim();
-				} else if (result.indexOf('{time-day}') != -1 && diff > 3600 * 24) {
+				} else if (result.indexOf('{time-day}') != -1 && diffToday > dayLength) {
 					result = result.replace('{time-day}', '').replace(/\s+/g, ' ').trim();
 				} else {
 					result = result.replace(/\{time-week\}|\{time-day\}|\{time\}/g, strftime('%X', time));
@@ -94,7 +98,8 @@
 			}
 
 			if (result.indexOf('{day') != -1) {
-				if (result.indexOf('{day-week}') != -1 && diff > 3600 * 24 * 7) {
+				if (result.indexOf('{day-week}') != -1
+				&& (diffToday <= -dayLength || diffToday > dayLength * 7)) {
 					result = result.replace('{day-week}', '').replace(/\s+/g, ' ').trim();
 				} else {
 					result = result.replace(/\{day-week\}|\{day\}/g, day);
@@ -102,7 +107,8 @@
 			}
 
 			if (result.indexOf('{longday') != -1) {
-				if (result.indexOf('{longday-week}') != -1 && diff > 3600 * 24 * 7) {
+				if (result.indexOf('{longday-week}') != -1
+				&& (diffToday <= -dayLength || diffToday > dayLength * 7)) {
 					result = result.replace('{longday-week}', '').replace(/\s+/g, ' ').trim();
 				} else {
 					result = result.replace(/\{longday-week\}|\{longday\}/g, longday);
@@ -111,7 +117,7 @@
 
 			if (result.indexOf('{date') != -1) {
 				if (result.indexOf('{date+week}') != -1) {
-					if (diff > 3600 * 24 * 7) {
+					if (diffToday < -dayLength || diffToday > dayLength * 7) {
 						result = result.replace('{date+week}', strftime('%b %d', time));
 					} else {
 						result = result.replace('{date+week}', '').replace(/\s+/g, ' ').trim();
@@ -122,9 +128,11 @@
 			}
 
 			if (result.indexOf('{year') != -1) {
+				var thisYear = new Date(date.getFullYear(), 0, 1).getTime() / 1000;
+				var nextYear = new Date(date.getFullYear()+1, 0, 1).getTime() / 1000;
 				if (result.indexOf('{year+year}') != -1) {
 					if (result.indexOf('{year+year}') != -1
-					&& diff > 3600 * 24 * 365) {
+					&& (time < thisYear || time > nextYear)) {
 						result = result.replace('{year+year}', strftime('%Y', time));
 					} else {
 						result = result.replace('{year+year}', '').replace(/\s+/g, ' ').trim();
