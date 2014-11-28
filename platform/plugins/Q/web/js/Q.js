@@ -494,6 +494,9 @@ Elp.copyComputedStyle = function(src) {
 Elp.scrollingParent = function() {
 	var p = this;
 	while (p = p.parentNode) {
+		if (typeof p.computedStyle !== 'function') {
+			continue;
+		}
 		var overflow = p.computedStyle().overflow;
 		if (['hidden', 'visible'].indexOf(overflow) < 0) {
 			return p;
