@@ -1,6 +1,6 @@
 <div class="Q_column1_contents">
 	<div class="SmartApp-column">
-		<h1><?php echo Q_Html::img('img/logo_big.png', 'Qbix logo', array('id' => 'SmartApp-logo', 'class' => 'clickable')) ?></h1>
+		<h1><?php echo Q_Html::img('img/logo/big.png', 'Qbix logo', array('id' => 'SmartApp-logo', 'class' => 'clickable')) ?></h1>
 		<h1>SmartApp Template</h1>
 		<h2>Just a little foundation for you to modify.</h2>
 		

@@ -244,7 +244,7 @@ Q.Tool.define("Q/tabs", function(options) {
 			var $t = $(this);
 			w3 = w2;
 			w2 += $t.outerWidth(true);
-			if (w2 > w) {
+			if (w2 > w + $tabs.length) {
 				index = i-1;
 				return false;
 			}

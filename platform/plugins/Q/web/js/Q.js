@@ -2205,21 +2205,7 @@ Q.onJQuery = new Q.Event();
  * This event occurs every time the layout needs to be updated
  * @event onLayout
  */
-Q.onLayout = new Q.Event(function (e) {
-	var w = window,
-	    d = document,
-	    h = d.documentElement,
-	    b = d.getElementsByTagName('body')[0],
-	    x = w.innerWidth || h.clientWidth || b.clientWidth,
-	    y = w.innerHeight|| h.clientHeight|| b.clientHeight;
-	if (x > y) {
-		h.removeClass('Q_verticalOrientation')
-			.addClass('Q_horizontalOrientation');
-	} else {
-		h.removeClass('Q_horizontalOrientation')
-			.addClass('Q_verticalOrientation');
-	}
-}, 'Q');
+Q.onLayout = new Q.Event(_detectOrientation, 'Q');
 /**
  * This event is convenient for doing stuff when the window scrolls
  * @event onLayout
@@ -4461,6 +4447,8 @@ Q.init = function _Q_init(options) {
 		Q.url('plugins/Q/img/throbbers/loading.gif');
 
 	Q.loadUrl.options.slotNames = Q.info.slotNames;
+
+	_detectOrientation();
 
 	Q.handle(Q.beforeInit);
 	Q.handle(Q.onInit); // Call all the onInit handlers
@@ -8335,10 +8323,13 @@ function _touchScrollingHandler(event) {
 			continue;
 		}
 		var overflow = p.computedStyle().overflow;
+		var hiddenWidth = p.scrollWidth - p.offsetWidth;
 		var hiddenHeight = p.scrollHeight - p.offsetHeight;
 		var s = (['hidden', 'visible'].indexOf(overflow) < 0);
-		if ((s || p.tagName === 'HTML') && hiddenHeight > 0) {
-			if ((Q.Pointer.movement.positions.length == 1)
+		if ((s || p.tagName === 'HTML')
+		&& hiddenHeight > 0) {
+			if (_touchScrollingHandler.options.direction != 'horizontal'
+			&& (Q.Pointer.movement.positions.length == 1)
 			&& (pos = Q.Pointer.movement.positions[0])) {
 				var sy = Q.Pointer.getY(event)
 					+ Q.Pointer.scrollTop();
@@ -8350,10 +8341,47 @@ function _touchScrollingHandler(event) {
 			scrollable = p;
 			break;
 		}
+		if (!scrollable
+		&& (s || p.tagName === 'HTML') && hiddenWidth > 0) {
+			if (_touchScrollingHandler.options.direction != 'vertical'
+			&& (Q.Pointer.movement.positions.length == 1)
+			&& (pos = Q.Pointer.movement.positions[0])) {
+				var sx = Q.Pointer.getX(event)
+					+ Q.Pointer.scrollLeft();
+				if ((sx > pos.x && p.scrollLeft == 0)
+				|| (sx < pos.x && p.scrollLeft >= hiddenWidth)) {
+					continue;
+				}
+			}
+			scrollable = p;
+			break;
+		}
 	} while (p = p.parentNode);
     if (!scrollable) {
         Q.Pointer.preventDefault(event);
     }
+}
+
+_touchScrollingHandler.options = {
+	direction: 'both'
+};
+
+function _detectOrientation(e) {
+	var w = window,
+	    d = document,
+	    h = d.documentElement,
+	    b = d.getElementsByTagName('body')[0],
+	    x = w.innerWidth || h.clientWidth || b.clientWidth,
+	    y = w.innerHeight|| h.clientHeight|| b.clientHeight;
+	if (x > y) {
+		h.removeClass('Q_verticalOrientation')
+			.addClass('Q_horizontalOrientation');
+		Q.info.isVertical = false;
+	} else {
+		h.removeClass('Q_horizontalOrientation')
+			.addClass('Q_verticalOrientation');
+		Q.info.isVertical = true;
+	}
 }
 
 /**
@@ -8753,9 +8781,12 @@ Q.Pointer = {
 	},
 	/**
 	 * Call this function to prevent touch scrolling
+	 * @param {Object} [options] possible options, which can include:
+	 * @param {String} [options.direction='both'] can be 'vertical', 'horizontal', or 'both'
 	 * @method preventTouchScrolling
 	 */
-	preventTouchScrolling: function () {
+	preventTouchScrolling: function (options) {
+		Q.extend(_touchScrollingHandler.options, options);
 		Q.addEventListener(window, 'touchmove', _touchScrollingHandler);
 	},
 	/**
@@ -9092,8 +9123,8 @@ Q.Dialogs.push.options = {
  * @method alert
  * @param {String} message The only required parameter, this specifies text of the alert.
  * @param {Object} [options] An optiopnal hash of options which can include:
- *   "title": Optional parameter to override alert dialog title. Defaults to 'Alert'.
- *   "onClose": Optional, occurs when dialog is closed
+ *   @param {String} [options.title] Optional parameter to override alert dialog title. Defaults to 'Alert'.
+ *   @param {Q.Event} [options.onClose] Optional, occurs when dialog is closed
  */
 Q.alert = function(message, options) {
 	if (options === undefined) options = {};

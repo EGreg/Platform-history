@@ -72,7 +72,9 @@ var MyApp = (function (Q, $) {
 	Q.handle.options.loadUsingAjax = true;
 	
 	// make the app feel more native on touch devices
-	Q.Pointer.preventTouchScrolling();
+	Q.Pointer.preventTouchScrolling({
+		direction: 'vertical'
+	});
 	
 	return MyApp;
 	
