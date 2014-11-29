@@ -118,7 +118,7 @@
 			if (result.indexOf('{date') != -1) {
 				if (result.indexOf('{date+week}') != -1) {
 					if (diffToday < -dayLength || diffToday > dayLength * 7) {
-						result = result.replace('{date+week}', strftime('%b %d', time));
+						result = result.replace('{date+week}', strftime('%b %e', time));
 					} else {
 						result = result.replace('{date+week}', '').replace(/\s+/g, ' ').trim();
 					}
