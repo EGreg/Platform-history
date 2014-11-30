@@ -49,23 +49,22 @@ Q.Tool.define("Users/avatar", function(options) {
 	if (!state.reflectChanges) {
 		return;
 	}
-	Q.Streams.Stream.onFieldChanged(state.userId, 'Streams/user/icon')
-	.set(function (fields, updated) {
-		for (var k in updated) {
-			switch (k) {
-			case 'icon':
-				tool.$('.Users_avatar_icon').attr('src', 
-					Q.url(Q.Users.iconUrl(updated.icon, state.icon), null,
-						{cacheBust: state.cacheBust})
-				);
-				break;
-			case 'firstName':
-			case 'lastName':
-				tool.refresh();
-				break;
-			}
-		}
+	Q.Streams.Stream.onFieldChanged(state.userId, 'Streams/user/icon', 'icon')
+	.set(function (fields, field) {
+		tool.$('.Users_avatar_icon').attr('src', 
+			Q.url(Q.Users.iconUrl(fields.icon, state.icon), null,
+				{cacheBust: state.cacheBust})
+		);
 	}, this);
+	Q.Streams.Stream.onFieldChanged(state.userId, 'Streams/user/firstName', 'content')
+	.set(handleChange, this);
+	Q.Streams.Stream.onFieldChanged(state.userId, 'Streams/user/lastName', 'content')
+	.set(handleChange, this);
+	function handleChange(fields, field) {
+		Q.Streams.Avatar.get.forget(state.userId);
+		tool.element.innerHTML = '';
+		tool.refresh();
+	}
 },
 
 {
@@ -158,10 +157,17 @@ Q.Tool.define("Users/avatar", function(options) {
 					"html": true
 				})
 			});
-			Q.Template.render('Users/avatar/contents', fields,
-			function (err, html) {
-				p.fill('contents')(html);
-			}, state.templates.contents);
+			if (fields.name) {
+				Q.Template.render('Users/avatar/contents', fields,
+				function (err, html) {
+					p.fill('contents')(html);
+				}, state.templates.contents);
+			} else {
+				Q.Template.render('Users/avatar/contents/blank', fields,
+				function (err, html) {
+					p.fill('contents')(html);
+				});
+			}
 		});
 	
 		function _present() {
