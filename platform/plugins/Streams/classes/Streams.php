@@ -2003,12 +2003,12 @@ abstract class Streams extends Base_Streams
 	
 	/**
 	 * Updates the weight on a relation
-	 * @param {string} $byUserId
+	 * @param {string} $asUserId
 	 *  The id of the user on whose behalf the app will be updating the relation
 	 * @param {string} $toPublisherId
 	 *  The publisher of the stream on the 'to' end of the reltion
 	 * @param {string} $toStreamName
-	 *  The name of the stream on the 'to' end of the reltion
+	 *  The name of the stream on the 'to' end of the relation
 	 * @param {string} $type
 	 *  The type of the relation
 	 * @param {string} $fromPublisherId
@@ -2027,7 +2027,7 @@ abstract class Streams extends Base_Streams
 	 *  Otherwise returns array with key "to" and value of type Streams_Message
 	 */
 	static function updateRelation(
-		$byUserId,
+		$asUserId,
 		$toPublisherId,
 		$toStreamName,
 		$type,
@@ -2038,7 +2038,7 @@ abstract class Streams extends Base_Streams
 		$options = array())
 	{
 		self::getRelation(
-			$byUserId,
+			$asUserId,
 			$toPublisherId,
 			$toStreamName,
 			$type,
@@ -2073,7 +2073,7 @@ abstract class Streams extends Base_Streams
 		 * @event Streams/updateRelation/$streamType {before}
 		 * @param {string} 'relatedTo'
 		 * @param {string} 'relatedFrom'
-		 * @param {string} 'byUserId'
+		 * @param {string} 'asUserId'
 		 * @param {double} 'weight'
 		 * @param {double} 'previousWeight'
 		 */
@@ -2081,7 +2081,7 @@ abstract class Streams extends Base_Streams
 		$adjustWeightsBy = $weight < $previousWeight ? $adjustWeights : -$adjustWeights;
 		if (Q::event(
 			"Streams/updateRelation/{$stream->type}",
-			compact('relatedTo', 'relatedFrom', 'type', 'weight', 'previousWeight', 'adjustWeightsBy', 'byUserId'), 
+			compact('relatedTo', 'relatedFrom', 'type', 'weight', 'previousWeight', 'adjustWeightsBy', 'asUserId'), 
 			'before') === false
 		) {
 			return false;
@@ -2108,10 +2108,10 @@ abstract class Streams extends Base_Streams
 		
 		// Send Streams/updatedRelateTo message to the category stream
 		// node server will be notified by Streams_Message::post
-		$message = Streams_Message::post($byUserId, $toPublisherId, $toStreamName, array(
+		$message = Streams_Message::post($asUserId, $toPublisherId, $toStreamName, array(
 			'type' => 'Streams/updatedRelateTo',
 			'instructions' => Q::json_encode(compact(
-				'fromPublisherId', 'fromStreamName', 'type', 'weight', 'previousWeight', 'adjustWeightsBy', 'byUserId'
+				'fromPublisherId', 'fromStreamName', 'type', 'weight', 'previousWeight', 'adjustWeightsBy', 'asUserId'
 			))
 		), true);
 		
@@ -2124,17 +2124,97 @@ abstract class Streams extends Base_Streams
 		 * @event Streams/updateRelation/$streamType {after}
 		 * @param {string} 'relatedTo'
 		 * @param {string} 'relatedFrom'
-		 * @param {string} 'byUserId'
+		 * @param {string} 'asUserId'
 		 * @param {double} 'weight'
 		 * @param {double} 'previousWeight'
 		 */
 		Q::event(
 			"Streams/updateRelation/{$stream->type}",
-			compact('relatedTo', 'relatedFrom', 'type', 'weight', 'previousWeight', 'adjustWeightsBy', 'byUserId'),
+			compact('relatedTo', 'relatedFrom', 'type', 'weight', 'previousWeight', 'adjustWeightsBy', 'asUserId'),
 			'after'
 		);
 		
 		return $message;
+	}
+	
+	/**
+	 * Closes a stream, which prevents anyone from posting messages to it
+	 * unless they have WRITE_LEVEL >= "close", as well as attempting to remove
+	 * all relations to other streams. A "cron job" can later go and delete
+	 * closed streams. The reason you should avoid deleting streams right away
+	 * is that other subscribers may still want to receive the last messages
+	 * posted to the stream.
+	 * @method close
+	 * @param {string} $asUserId The id of the user who would be closing the stream
+	 * @param {string} $publisherId The id of the user publishing the stream
+	 * @param {string} $streamName The name of the stream
+	 * @param {array} [$options=array()] Can include "skipAccess"
+	 * @static
+	 */
+	static function close($asUserId, $publisherId, $streamName, $options = array())
+	{
+		$stream = new Streams_Stream();
+		$stream->publisherId = $publisherId;
+		$stream->name = $streamName;
+		if (!$stream->retrieve()) {
+			throw new Q_Exception_MissingRow(array(
+				'table' => 'stream', 
+				'criteria' => "{publisherId: '$publisherId', name: '$streamName'}"
+			));
+		}
+		
+		// Authorization check
+		if (empty($options['skipAccess'])) {
+			if ($user->id !== $publisherId) {
+				$stream->calculateAccess($user->id);
+				if (!$stream->testWriteLevel('close')) {
+					throw new Users_Exception_NotAuthorized();
+				}
+			}
+		}
+
+		// Clean up relations from other streams to this category
+		list($relations, $related) = Streams::related($user->id, $stream->publisherId, $stream->name, true);
+		foreach ($relations as $r) {
+			try {
+				Streams::unrelate($user->id, $r->fromPublisherId, $r->fromStreamName, $r->type, $stream->publisherId, $stream->name);
+			} catch (Exception $e) {}
+		}
+
+		// Clean up relations from this stream to categories
+		list($relations, $related) = Streams::related(
+			$user->id,
+			$stream->publisherId,
+			$stream->name,
+			false
+		);
+		foreach ($relations as $r) {
+			try {
+				Streams::unrelate(
+					$user->id, 
+					$r->toPublisherId,
+					$r->toStreamName,
+					$r->type,
+					$stream->publisherId,
+					$stream->name
+				);
+			} catch (Exception $e) {}
+		}
+
+		$result = false;
+		try {
+			$stream->closedTime = new Db_Expression("CURRENT_TIMESTAMP");
+			if ($stream->save()) {
+				$stream->post($user->id, array(
+					'type' => 'Streams/closed',
+					'content' => ''
+				), true);
+				$result = true;
+			}
+		} catch (Exception$e) {
+	
+		}
+		return $result;
 	}
 
 	/**

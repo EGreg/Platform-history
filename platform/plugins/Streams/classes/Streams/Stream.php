@@ -1457,6 +1457,23 @@ class Streams_Stream extends Base_Streams_Stream
 	}
 	
 	/**
+	 * Closes a stream, which prevents anyone from posting messages to it
+	 * unless they have WRITE_LEVEL >= "close", as well as attempting to remove
+	 * all relations to other streams. A "cron job" can later go and delete
+	 * closed streams. The reason you should avoid deleting streams right away
+	 * is that other subscribers may still want to receive the last messages
+	 * posted to the stream.
+	 * @method close
+	 * @param {string} $asUserId The id of the user who would be closing the stream
+	 * @param {array} [$options=array()] Can include "skipAccess"
+	 * @static
+	 */
+	static function close($asUserId, $options = array())
+	{
+		return Streams::close($asUserId, $this->publisherId, $this->name, $options);
+	}
+	
+	/**
 	 * Returns array of fields allowed for user
 	 * @method exportArray
 	 * @param {array} $options=array()

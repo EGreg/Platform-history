@@ -10,7 +10,6 @@
  *   icon (optional) see fields for Q/image/post
  * @return {void}
  */
-
 function Streams_stream_post($params) {
 	$user = Users::loggedInUser(true);
 	$publisherId = Streams::requestedPublisherId();

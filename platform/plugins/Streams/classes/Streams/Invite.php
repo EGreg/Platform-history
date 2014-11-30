@@ -40,7 +40,9 @@ class Streams_Invite extends Base_Streams_Invite
 		 * @param {Users_User} 'user'
 		 */
 		$invite = $this;
-		if (Q::event("Streams/invite/accept", compact('invite'), 'before') === false) return false;
+		if (Q::event("Streams/invite/accept", compact('invite'), 'before') === false) {
+			return false;
+		}
 
 		$this->state = 'accepted';
 		if (!$this->save()) {
