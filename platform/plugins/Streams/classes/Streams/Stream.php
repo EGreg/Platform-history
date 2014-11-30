@@ -754,6 +754,7 @@ class Streams_Stream extends Base_Streams_Stream
 		$s->ofUserId = $userId;
 		$s->retrieve();
 
+		$type = null;
 		if ($template = $stream->getSubscriptionTemplate('Streams_Subscription', $userId, $type)) {
 			$filter = json_decode($template->filter, true);
 		} else {
@@ -782,6 +783,7 @@ class Streams_Stream extends Base_Streams_Stream
 
 		if (empty($options['skipRules'])) {
 			// Now let's handle rules
+			$type2 = null;
 			$template = $stream->getSubscriptionTemplate('Streams_Rule', $userId, $type2);
 
 			$ruleSuccess = true;
@@ -1468,7 +1470,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 * @param {array} [$options=array()] Can include "skipAccess"
 	 * @static
 	 */
-	static function close($asUserId, $options = array())
+	function close($asUserId, $options = array())
 	{
 		return Streams::close($asUserId, $this->publisherId, $this->name, $options);
 	}
@@ -1510,7 +1512,7 @@ class Streams_Stream extends Base_Streams_Stream
 				'updatedTime'
 			);
 			if (isset($this->type)) {
-				$fields = array_merge($fields, Q_Config::get('Streams', 'types', $this->type, 'see', array()));
+				$fields = array_merge($default, Q_Config::get('Streams', 'types', $this->type, 'see', array()));
 			}
 			foreach ($fields as $field) {
 				$result[$field] = ($field === 'icon')

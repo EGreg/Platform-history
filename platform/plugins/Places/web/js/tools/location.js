@@ -84,7 +84,7 @@ Q.Tool.define("Places/location", function (options) {
 				unsubscribe: true,
 				subscribe: true,
 				miles: $('select[name=miles]').val(),
-				timezone: (new Date()).getTimezoneOffset() / 60
+				timezone: (new Date()).getTimezoneOffset()
 			}, true, geo.coords);
 			Q.req("Places/geolocation", [], 
 			function (err, data) {

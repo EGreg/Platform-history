@@ -49,29 +49,23 @@ function Streams_before_Q_objects()
 	}
 	
 	// now process the invite
-	$userId = Users_User::fetch($invite->userId, true);
-	$stream = new Streams_Stream();
-	$stream->publisherId = $invite->publisherId;
-	$stream->name = $invite->streamName;
-	if (!$stream->retrieve()) {
+	$invitedUser = Users_User::fetch($invite->userId, true);
+	$stream = Streams::fetchOne($invitedUser->id, $invite->publisherId, $invite->streamName);
+	if (!$stream) {
 		throw new Q_Exception_MissingRow(array(
 			'table' => 'stream',
 			'criteria' => "publisherId = '{$invite->publisherId}', name = '{$invite->streamName}'"
 		));
 	}
-	$stream->calculateAccess($userId);
 	
-	$byUserId = Users_User::fetch($invite->invitingUserId, true);
-	$byStream = new Streams_Stream();
-	$byStream->publisherId = $invite->publisherId;
-	$byStream->name = $invite->streamName;
-	if (!$byStream->retrieve()) {
+	$byUser = Users_User::fetch($invite->invitingUserId, true);
+	$byStream = Streams::fetchOne($byUser->id, $invite->publisherId, $invite->streamName);
+	if (!$byStream) {
 		throw new Q_Exception_MissingRow(array(
 			'table' => 'stream',
 			'criteria' => "publisherId = '{$invite->publisherId}', name = '{$invite->streamName}'"
 		));
 	}
-	$byStream->calculateAccess($byUserId);
 	
 	$access = new Streams_Access();
 	$access->publisherId = $byStream->publisherId;

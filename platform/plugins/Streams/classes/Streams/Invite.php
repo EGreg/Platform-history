@@ -49,20 +49,20 @@ class Streams_Invite extends Base_Streams_Invite
 			return false;
 		}
 		
-		$p = new Streams_Participant();
-		$p->publisherId = $this->publisherId; // shouldn't change
-		$p->streamName = $this->streamName; // shouldn't change
-		$p->userId = $this->userId; // shouldn't change
-		$p->state = 'participating'; // since invite was accepted, user has begun participating in the stream
-		$p->reason = Q_Config::get('Streams', 'invites', 'participantReason', 'Was invited');
-		$p->save(true);
+		$participant = new Streams_Participant();
+		$participant->publisherId = $this->publisherId; // shouldn't change
+		$participant->streamName = $this->streamName; // shouldn't change
+		$participant->userId = $this->userId; // shouldn't change
+		$participant->state = 'participating'; // since invite was accepted, user has begun participating in the stream
+		$participant->reason = Q_Config::get('Streams', 'invites', 'participantReason', 'Was invited');
+		$participant->save(true);
 		
 		/**
 		 * @event Streams/invite {after}
 		 * @param {Streams_Invite} 'stream'
 		 * @param {Users_User} 'user'
 		 */
-		Q::event("Streams/invite/accept", compact('invite'), 'after');
+		Q::event("Streams/invite/accept", compact('invite', 'participant'), 'after');
 
 		return true;
 	}
