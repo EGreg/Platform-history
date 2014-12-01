@@ -21,7 +21,7 @@ var Base_Streams_Message = Q.require('Base/Streams/Message');
 function Streams_Message (fields) {
 
 	// Run constructors of mixed in objects
-	this.constructors.apply(this, arguments);
+	Streams_Message.constructors.apply(this, arguments);
 
 	/*
 	 * Add any other methods to the model class by assigning them to this.
@@ -33,6 +33,33 @@ function Streams_Message (fields) {
 
 Q.mixin(Streams_Message, Base_Streams_Message);
 
+Streams_Message.construct = function Streams_Message_construct(fields) {
+	if (Q.isEmpty(fields)) {
+		Q.handle(callback, this, ["Streams.Stream constructor: fields are missing"]);
+		return false;
+	}
+	var type = Q.normalize(fields.type);
+	var messageFunc = Streams_Message.defined[type];
+	if (!messageFunc) {
+		messageFunc = Streams_Message.defined[type] = function (fields) {
+			// Default constructor. Copy any additional fields.
+			if (!fields) return;
+			for (var k in fields) {
+				this.fields[k] = Q.copy(fields[k]);
+			}
+		};
+	}
+	if (!messageFunc.messageConstructor) {
+		messageFunc.messageConstructor = function Message_Constructor(fields) {
+			// run any constructors
+			this.constructors(fields);
+		};
+		Q.mixin(messageFunc, Streams_Message);
+		Q.mixin(messageFunc.messageConstructor, messageFunc);
+	}
+	return new messageFunc.messageConstructor(fields);
+};
+
 /**
  * The setUp() method is called the first time
  * an object of this class is constructed.
@@ -41,6 +68,58 @@ Q.mixin(Streams_Message, Base_Streams_Message);
 Streams_Message.prototype.setUp = function () {
 	// put any code here
 	// overrides the Base class
+};
+
+Streams_Message.defined = {};
+
+/**
+ * Call this function to set a constructor for a message type
+ * @static
+ * @method define
+ * @param {String} type The type of the message, e.g. "Streams/chat/message"
+ * @param {String|Function} ctor Your message's constructor, or path to a javascript file which will define it
+ * @param {Object} methods An optional hash of methods
+ */
+Streams_Message.define = function (type, ctor, methods) {
+	if (typeof type === 'object') {
+		for (var t in type) {
+			Q.Tool.define(t, type[t]);
+		}
+		return;
+	};
+	type = Q.normalize(type);
+	if (typeof ctor !== 'function') {
+		throw new Q.Error("Q.Streams.Message.define requires ctor to be a function");
+	}
+	Q.extend(ctor.prototype, methods);	
+	return Streams_Message.defined[type] = ctor;
+};
+
+var Mp = Streams_Message.prototype;
+
+/**
+ * Get all the instructions from a message.
+ * 
+ * @method getAll
+ */
+Mp.getAll = function _Message_prototype_getAll () {
+	try {
+		console.log(this.fields.instructions);
+		return JSON.parse(this.instructions);
+	} catch (e) {
+		return undefined;
+	}
+};
+
+/**
+ * Get the value of an instruction in the message
+ * 
+ * @method get
+ * @param {String} instructionName
+ */
+Mp.get = function _Message_prototype_get (instructionName) {
+	var instr = this.getAll();
+	return instr[instructionName];
 };
 
 /**
@@ -88,16 +167,18 @@ Streams_Message.prototype.beforeSave = function (value, callback)
  * 'email.handlebars' or 'mobile.handlebars' depending on delivery
  * @method deliver
  * @param {Streams.Stream} stream
- * @param {object} delivery
+ * @param {object} delivery can contain "email" or "mobile" for now
  * @param {function} callback
  *	Callback reports errors and response from mail delivery system
  */
 Streams_Message.prototype.deliver = function(stream, delivery, avatar, callback) {
 	var fields = {
 		stream: stream.toArray(),
-		message: this.toArray(),
+		message: this,
+		instructions: this.getAll(),
 		avatar: avatar.toArray(),
 	};
+	Q.extend(fields, extend);
 	var subject = Q.Config.get(
 		['Streams', 'types', stream.fields.type, 'messages', this.fields.type, 'subject'], 
 		Q.Config.get(
@@ -112,7 +193,7 @@ Streams_Message.prototype.deliver = function(stream, delivery, avatar, callback)
 	if (delivery.email) {
 		viewPath = Q.Handlebars.template(this.fields.type+'/email.handlebars') ? this.fields.type : 'Streams/message';
 		Q.Utils.sendEmail(delivery.email, subject, viewPath+'/email.handlebars', fields, {html: true}, callback);
-	} else {
+	} else if (delivery.mobile) {
 		viewPath = Q.Handlebars.template(this.fields.type+'/mobile.handlebars') ? this.fields.type : 'Streams/message';
 		Q.Utils.sendSMS(delivery.mobile, viewPath+'/mobile.handlebars', fields, {}, callback);
 	}

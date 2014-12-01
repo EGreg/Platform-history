@@ -127,7 +127,7 @@ Streams.ADMIN_LEVEL = {
 	'own':	 		40		// can give people any adminLevel <= 40
 };
 
-Streams.constructors = {};
+Streams.defined = {};
 
 /**
  * Call this function to define a stream type
@@ -146,8 +146,8 @@ Streams.define = function (type, ctor, methods) {
 	};
 	type = Q.normalize(type);
 	if (typeof ctor === 'string') {
-		if (typeof Q.Streams.constructors[type] !== 'function') {
-			return Q.Streams.constructors[type] = ctor;
+		if (typeof Streams.defined[type] !== 'function') {
+			return Streams.defined[type] = ctor;
 		}
 		return ctor;
 	}
@@ -155,7 +155,7 @@ Streams.define = function (type, ctor, methods) {
 		throw new Q.Error("Q.Streams.define requires ctor to be a string or a function");
 	}
 	Q.extend(ctor.prototype, methods);	
-	return Q.Streams.constructors[type] = ctor;
+	return Streams.defined[type] = ctor;
 };
 
 /**
@@ -530,7 +530,7 @@ Streams.create = function (fields, callback, related) {
 			var extra = {};
 			extra.icon = data.slots.icon;
 			if (related && data.slots.messageTo) {
-				var m = extra.messageTo = new Streams.Message(data.slots.messageTo);
+				var m = extra.messageTo = Streams.Message.construct(data.slots.messageTo);
 				extra.related = {
 					publisherId: related.publisherId,
 					streamName: related.streamName,
@@ -571,9 +571,9 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 	}
 
 	var type = Q.normalize(fields.type);
-	var streamFunc = Streams.constructors[type];
+	var streamFunc = Streams.defined[type];
 	if (!streamFunc) {
-		streamFunc = Streams.constructors[type] = function (fields) {
+		streamFunc = Streams.defined[type] = function (fields) {
 			// Default constructor. Copy any additional fields.
 			if (!fields) return;
 			for (var k in fields) {
@@ -635,13 +635,9 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 		if (extra && extra.messages) {
 			Q.each(extra.messages, function (ordinal, message) {
 				if (Q.typeOf(message) !== 'Q.Streams.Message') {
-					message = new Message(message);
+					message = Message.construct(message);
 				}
 				messages[ordinal] = message;
-				Message.get.cache.set(
-					[fields.publisherId, fields.name, parseInt(message.ordinal)], 0,
-					message, [null, message]
-				);
 			});
 		}
 		if (extra && extra.participants) {
@@ -2164,7 +2160,65 @@ var Message = Streams.Message = function Streams_Message(fields) {
 	this.typename = 'Q.Streams.Message';
 };
 
+Message.construct = function Streams_Message_construct(fields) {
+	if (Q.isEmpty(fields)) {
+		Q.handle(callback, this, ["Streams.Stream constructor: fields are missing"]);
+		return false;
+	}
+	var type = Q.normalize(fields.type);
+	var messageFunc = Message.defined[type];
+	if (!messageFunc) {
+		messageFunc = Message.defined[type] = function (fields) {
+			// Default constructor. Copy any additional fields.
+			if (!fields) return;
+			for (var k in fields) {
+				if ((k in this.fields) || k === 'access') continue;
+				this.fields[k] = Q.copy(fields[k]);
+			}
+		};
+	}
+	if (!messageFunc.messageConstructor) {
+		messageFunc.messageConstructor = function Streams_Message(fields) {
+			// run any constructors
+			this.constructors(fields);
+			var f = this.fields;
+			Message.get.cache.set(
+				[f.publisherId, f.streamName, parseInt(f.ordinal)],
+				0, this, [null, this]
+			);
+		};
+		Q.mixin(messageFunc, Streams.Message);
+		Q.mixin(messageFunc.messageConstructor, messageFunc);
+	}
+	return new messageFunc.messageConstructor(fields);
+};
+
 Message.latest = {};
+
+Message.defined = {};
+
+/**
+ * Call this function to set a constructor for a message type
+ * @static
+ * @method define
+ * @param {String} type The type of the message, e.g. "Streams/chat/message"
+ * @param {String|Function} ctor Your message's constructor, or path to a javascript file which will define it
+ * @param {Object} methods An optional hash of methods
+ */
+Message.define = function (type, ctor, methods) {
+	if (typeof type === 'object') {
+		for (var t in type) {
+			Q.Tool.define(t, type[t]);
+		}
+		return;
+	};
+	type = Q.normalize(type);
+	if (typeof ctor !== 'function') {
+		throw new Q.Error("Q.Streams.Message.define requires ctor to be a function");
+	}
+	Q.extend(ctor.prototype, methods);	
+	return Message.defined[type] = ctor;
+};
 
 var Mp = Message.prototype;
 
@@ -2226,7 +2280,8 @@ Message.get = function _Message_get (publisherId, streamName, ordinal, callback)
 		publisherId: publisherId,
 		streamName: streamName
 	}));
-	func.call(this, 'message', slotName, publisherId, streamName, criteria, function (err, data) {
+	func.call(this, 'message', slotName, publisherId, streamName, criteria,
+	function (err, data) {
 		var msg = Q.firstErrorMessage(err, data && data.errors);
 		if (msg) {
 			var args = [err, data];
@@ -2242,13 +2297,9 @@ Message.get = function _Message_get (publisherId, streamName, ordinal, callback)
 		}
 		Q.each(messages, function (ordinal, message) {
 			if (Q.typeOf(message) !== 'Q.Streams.Message') {
-				message = new Message(message);
+				message = Message.construct(message);
 			}
 			messages[ordinal] = message;
-			Message.get.cache.set(
-				[publisherId, streamName, parseInt(ordinal)],
-				0, message, [err, message]
-			);
 		});
 		if (Q.isPlainObject(ordinal)) {
 			callback && callback.call(this, err, messages || null);
@@ -3223,11 +3274,7 @@ Q.onInit.add(function _Streams_onInit() {
 			console.log('Streams.onEvent("post")', msg);
 			var message = (Q.typeOf(msg) === 'Q.Streams.Message')
 				? msg
-				: new Message(msg);
-			Message.get.cache.set(
-				[msg.publisherId, msg.streamName, parseInt(msg.ordinal)],
-				0, message, [null, message]
-			);
+				: Message.construct(msg);
 			Message.latest[msg.publisherId+"\t"+msg.streamName] = parseInt(msg.ordinal);
 			var cached = Streams.get.cache.get(
 				[msg.publisherId, msg.streamName]

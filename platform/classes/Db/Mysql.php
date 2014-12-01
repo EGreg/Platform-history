@@ -1154,7 +1154,7 @@ $table_comment * @namespace $class_name_prefix
 function $class_name (fields) {
 
 	// Run mixed-in constructors
-	this.constructors.apply(this, arguments);
+	$class_name.constructors.apply(this, arguments);
 
 	/*
 	 * Add any privileged methods to the model class here.

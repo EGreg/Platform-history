@@ -838,7 +838,7 @@ Streams_Stream.prototype.notify = function(participant, event, uid, message, cal
 					});
 				});
 				// actually notify according to the deliveriy rules
-				var msg = new Streams.Message(message);
+				var msg = Streams.Message.construct(message);
 				Streams.Avatar.fetch(userId, msg.fields.byUserId, function (err, avatar) {
 					if (message.type === "Streams/invite") {
 						var instructions = JSON.parse(message.instructions);
@@ -861,13 +861,19 @@ Streams_Stream.prototype.notify = function(participant, event, uid, message, cal
 									stream.fields.invite[instructions.type] = true;
 								}
 								deliveries.forEach(function(delivery) {
-									msg.deliver(stream, delivery, avatar, p.fill(JSON.stringify(delivery)));
+									msg.deliver(stream, delivery, avatar,
+										p.fill(JSON.stringify(delivery)),
+										Streams.Message.extend[msg.type]
+									);
 								});
 							});
 						});
 					} else {
 						deliveries.forEach(function(delivery) {
-							msg.deliver(stream, delivery, avatar, p.fill(JSON.stringify(delivery)));
+							msg.deliver(stream, delivery, avatar,
+								p.fill(JSON.stringify(delivery)),
+								Streams.Message.extend[msg.type]
+							);
 						});
 					}
 				});
@@ -912,7 +918,8 @@ Streams_Stream.prototype.post = function (f, callback) {
 	if (!f.state) f.state = 'posted';
 	if (!f.weight) f.weight = 1;
 	f.sentTime = new Db.Expression("CURRENT_TIMESTAMP");
-	var msg = new Streams.Message(f), stream = this;
+	var msg = Streams.Message.construct(f);
+	var stream = this;
 	msg.save(function (err) {
 		Streams_Stream.emit('post', stream.toArray(), f.byUserId, msg.toArray());
 		callback && callback(err);
