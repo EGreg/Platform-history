@@ -2180,9 +2180,8 @@ Message.construct = function Streams_Message_construct(fields) {
 		messageFunc.messageConstructor = function Streams_Message(fields) {
 			// run any constructors
 			this.constructors(fields);
-			var f = this.fields;
 			Message.get.cache.set(
-				[f.publisherId, f.streamName, parseInt(f.ordinal)],
+				[this.publisherId, this.streamName, parseInt(this.ordinal)],
 				0, this, [null, this]
 			);
 		};
