@@ -2172,8 +2172,7 @@ Message.construct = function Streams_Message_construct(fields) {
 			// Default constructor. Copy any additional fields.
 			if (!fields) return;
 			for (var k in fields) {
-				if ((k in this.fields) || k === 'access') continue;
-				this.fields[k] = Q.copy(fields[k]);
+				this[k] = Q.copy(fields[k]);
 			}
 		};
 	}
