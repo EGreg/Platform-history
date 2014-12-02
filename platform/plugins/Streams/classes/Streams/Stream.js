@@ -862,8 +862,7 @@ Streams_Stream.prototype.notify = function(participant, event, uid, message, cal
 								}
 								deliveries.forEach(function(delivery) {
 									msg.deliver(stream, delivery, avatar,
-										p.fill(JSON.stringify(delivery)),
-										Streams.Message.extend[msg.type]
+										p.fill(JSON.stringify(delivery))
 									);
 								});
 							});
@@ -871,8 +870,7 @@ Streams_Stream.prototype.notify = function(participant, event, uid, message, cal
 					} else {
 						deliveries.forEach(function(delivery) {
 							msg.deliver(stream, delivery, avatar,
-								p.fill(JSON.stringify(delivery)),
-								Streams.Message.extend[msg.type]
+								p.fill(JSON.stringify(delivery))
 							);
 						});
 					}

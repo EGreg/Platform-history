@@ -104,8 +104,7 @@ var Mp = Streams_Message.prototype;
  */
 Mp.getAll = function _Message_prototype_getAll () {
 	try {
-		console.log(this.fields.instructions);
-		return JSON.parse(this.instructions);
+		return JSON.parse(this.fields.instructions);
 	} catch (e) {
 		return undefined;
 	}
@@ -178,7 +177,6 @@ Streams_Message.prototype.deliver = function(stream, delivery, avatar, callback)
 		instructions: this.getAll(),
 		avatar: avatar.toArray(),
 	};
-	Q.extend(fields, extend);
 	var subject = Q.Config.get(
 		['Streams', 'types', stream.fields.type, 'messages', this.fields.type, 'subject'], 
 		Q.Config.get(

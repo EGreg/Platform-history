@@ -419,6 +419,11 @@ Streams.get = function _Streams_get(publisherId, streamName, callback, extra) {
 			Streams.get.onError.handle.call(this, msg, params);
 			return callback && callback.call(this, msg, params);
 		}
+		if (Q.isEmpty(data.stream)) {
+			return console.warn(
+				"Stream " + publisherId + " " + streamName + " is not available"
+			);
+		}
 		Streams.construct(
 			data.stream,
 			{ 
@@ -435,6 +440,7 @@ Streams.get = function _Streams_get(publisherId, streamName, callback, extra) {
 				if (ret === false) {
 					return false;
 				}
+				if (msg) return;
 				var f = stream.fields;
 				var handler = Q.getObject([f.type], _refreshHandlers);
 				Q.handle(handler, stream, []);
