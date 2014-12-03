@@ -78,8 +78,15 @@ Q.Tool.define("Places/location", function (options) {
 	.on(Q.Pointer.click, function () {
 		var $this = $(this);
 		$this.addClass('Places_obtaining');
+		if (!navigator.geolocation) {
+			return geolocationFailed();
+		}
+		var timeout = setTimeout(geolocationFailed, state.timeout);
+		var handledFail = false;
 		navigator.geolocation.getCurrentPosition(
 		function (geo) {
+			clearTimeout(timeout);
+			if (handledFail) return;
 			var fields = Q.extend({
 				unsubscribe: true,
 				subscribe: true,
@@ -95,6 +102,16 @@ Q.Tool.define("Places/location", function (options) {
 				$this.removeClass('Places_obtaining').hide(500);
 			}, {method: 'post', fields: fields});
 		}, function () {
+			clearTimeout(timeout);
+			if (handledFail) return;
+			geolocationFailed();
+		}, {
+			maximumAge: 300000,
+			timeout: state.timeout
+		});
+		
+		function geolocationFailed() {
+			handledFail = true;
 			Q.prompt("Please enter your zipcode:",
 			function (zipcode, dialog) {
 				if (zipcode) {
@@ -107,9 +124,7 @@ Q.Tool.define("Places/location", function (options) {
 					$this.removeClass('Places_obtaining');	
 				}
 			});
-		}, {
-			maximumAge: 300000
-		});
+		}
 	});
 	
 	function _submit(zipcode) {
@@ -205,6 +220,7 @@ Q.Tool.define("Places/location", function (options) {
 	map: {
 		delay: 300
 	},
+	timeout: 10000,
 	onUpdate: new Q.Event()
 },
 
