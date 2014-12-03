@@ -94,7 +94,8 @@
 			"Streams/incoming": {
 				"create": true,
 				"messages": {
-					"Streams/incoming/message": {"post": true}
+					"Streams/incoming/message": {"post": true},
+					"subject": "{{app}}: Incoming Message"
 				}
 			},
 			"Streams/chat": {
@@ -102,19 +103,23 @@
 				"messages": {
 					"Streams/chat/message": {
 						"post": true,
-						"title": "Chat message"
+						"title": "Chat message",
+						"subject": "Chat in {{stream.title}}"
 					},
 					"Streams/chat/edit": {
 						"post": true,
-						"title": "Chat change"
+						"title": "Chat change",
+						"subject": "Chat in {{stream.title}}"
 					},
 					"Streams/chat/remove": {
 						"post": true,
-						"title": "Chat change"
+						"title": "Chat change",
+						"subject": "Chat in {{stream.title}}"
 					},
 					"Streams/chat/reply": {
 						"post": true,
-						"title": "Chat message"
+						"title": "Chat message",
+						"subject": "Chat in {{stream.title}}"
 					}
 				}
 			},
