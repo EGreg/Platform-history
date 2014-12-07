@@ -36,6 +36,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 
 	state.$drawers = $(this.element).children();
 	state.currentIndex = 1 - state.initial.index;
+	state.canceledSwap = null;
 	var lastScrollingHeight;
 	setTimeout(function () {
 		lastScrollingHeight = $scrolling[0].clientHeight || $scrolling.height();
@@ -335,10 +336,13 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 				&& product >= 0) {
 					if (Q.Pointer.which(evt) < 2) {
 						setTimeout(function () {
-							if (!Q.Pointer.canceledClick) {
+							// don't do it right away, so that other event handlers
+							// can still access the old state.currentIndex
+							if (!state.canceledSwap) {
 								tool.swap();
 							}
-						});
+							state.canceledSwap = null;
+						}, 0);
 					}
 				}
 			});
