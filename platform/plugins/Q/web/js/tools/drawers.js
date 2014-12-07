@@ -334,7 +334,11 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 				if (!$(evt.target).closest('.Q_discouragePointerEvents').length
 				&& product >= 0) {
 					if (Q.Pointer.which(evt) < 2) {
-						tool.swap();
+						setTimeout(function () {
+							if (!Q.Pointer.canceledClick) {
+								tool.swap();
+							}
+						});
 					}
 				}
 			});
