@@ -173,7 +173,7 @@ Streams_Message.prototype.beforeSave = function (value, callback)
 Streams_Message.prototype.deliver = function(stream, delivery, avatar, callback) {
 	var fields = {
 		app: Q.app,
-		stream: stream.toArray(),
+		stream: stream,
 		message: this,
 		instructions: this.getAll(),
 		avatar: avatar.toArray(),

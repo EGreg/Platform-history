@@ -209,7 +209,7 @@ Utils.sendEmail = function (to, subject, view, fields, options, callback) {
 	mailOptions[options.html ? 'html' : 'text'] = options.isSource
 		? Q.Handlebars.renderSource(view, fields)
 		: Q.Handlebars.render(view, fields);
-	
+
 	var smtp = Q.Config.get(['Users', 'email', 'smtp'], {host: 'sendmail'});
 	if (!smtpTransport && smtp) {
 		// Set up the default mail transport
@@ -233,8 +233,8 @@ Utils.sendEmail = function (to, subject, view, fields, options, callback) {
 	
 	var logContent = 'Sent email message to ' + to
 		+ ":\n" + mailOptions.subject
-		+ "\n" + mailOptions.html || mailOptions.text,
-		key;
+		+ "\n" + (mailOptions.html || mailOptions.text);
+	var key;
 	if (smtpTransport) {
 		smtpTransport.sendMail(mailOptions, callback);
 	} else {
