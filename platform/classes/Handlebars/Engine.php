@@ -164,7 +164,7 @@ class Handlebars_Engine
     }
 
     /**
-     * Set helpers for current enfine
+     * Set helpers for current engine
      *
      * @param Helpers $helpers handlebars helper
      *

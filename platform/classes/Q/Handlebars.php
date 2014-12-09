@@ -35,19 +35,42 @@ class Q_Handlebars {
 	
 	static function handlebars()
 	{
-		if (isset(self::$handlebars)) {
-			return self::$handlebars;
+		if (!isset(self::$handlebars)) {
+			self::$handlebars = new Handlebars_Engine(array(
+				'cache' => new Handlebars_Cache_Disk(
+					APP_FILES_DIR.DS.'Q'.DS.'cache'.DS.'handlebars'
+	            ),
+				'loader' => new Q_Handlebars_Loader(),
+				'partials_loader' => new Q_Handlebars_Loader('partials'),
+				'escape' => function($value) {
+					return htmlspecialchars($value, ENT_COMPAT, 'UTF-8');
+				}
+			));
 		}
-		return self::$handlebars = new Handlebars_Engine(array(
-			'cache' => new Handlebars_Cache_Disk(
-				APP_FILES_DIR.DS.'Q'.DS.'cache'.DS.'handlebars'
-            ),
-			'loader' => new Q_Handlebars_Loader(),
-			'partials_loader' => new Q_Handlebars_Loader('partials'),
-			'escape' => function($value) {
-				return htmlspecialchars($value, ENT_COMPAT, 'UTF-8');
-			}
-		));
+		self::$handlebars->addHelper('call', array('Handlebars', 'helperCall'));
+	}
+	
+	static function helperCall($template, $context, $args, $source)
+	{
+		if (empty($args[0])) {
+			return "{{call missing method name}}";
+		}
+		$parts = explode('.', $args[0]);
+		if (count($parts) < 2) {
+			return "{{call ".$args[0]." not found}}";
+		}
+		$p0 = $parts[0];
+		$p1 = $parts[1];
+		if (empty($context[$p0][$p1])) {
+			return "{{call ".$args[0]." not found}}";
+		}
+		$subject = $context[$p0];
+		$method = $subject[$p1];
+		$callable = array($subject, $method);
+		if (!is_callable($callable)) {
+			return "{{call ".$args[0]." not callable}}";
+		}
+		return call_user_func_array($callable, $subject, array_slice($args, 1));
 	}
 
 	private static $handlebars = null;

@@ -176,7 +176,7 @@ Streams_Message.prototype.deliver = function(stream, delivery, avatar, callback)
 		stream: stream,
 		message: this,
 		instructions: this.getAll(),
-		avatar: avatar.toArray(),
+		avatar: avatar,
 	};
 	var subject = Q.Config.get(
 		['Streams', 'types', stream.fields.type, 'messages', this.fields.type, 'subject'], 

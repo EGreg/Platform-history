@@ -52,6 +52,20 @@ function _getLoaders() {
 	return _loaders;
 }
 
+handlebars.registerHelper('call', function(path) {
+	if (!path) {
+		return "{{call missing method name}}";
+	}
+	var parts = path.split('.');
+	var p0 = parts[0];
+	var p1 = parts[1];
+	if (this[p0] && typeof this[p0][p1] === 'function') {
+		var args = Array.prototype.slice.call(arguments, 1);
+		return this[p0][p1].apply(this[p0], args);
+	}
+	return "{{call "+path+" not found}}";
+});
+
 /**
  * Creates a Q.Handlebars object
  * @class Handlebars
@@ -83,22 +97,27 @@ module.exports = {
 	 * @return {string|null}
 	 */
 	render: function(tPath, data, partials) {
-		if (!tPath) return null;
-		var i, tpl = this.template(tPath), part = {}, path;
+		try {
+			if (!tPath) return null;
+			var i, tpl = this.template(tPath), part = {}, path;
 
-		if (!tpl) return null;
+			if (!tpl) return null;
 
-		if (partials) {
-			for (path in partials) {
-				var path = partials[i];
-				for (j=0; j<_partials.length; j++) {
-					if (part[path] = _partials[j](path)) {
-						break;
+			if (partials) {
+				for (path in partials) {
+					var path = partials[i];
+					for (j=0; j<_partials.length; j++) {
+						if (part[path] = _partials[j](path)) {
+							break;
+						}
 					}
 				}
 			}
+			return handlebars.compile(tpl)(data, {partials: part});
+		} catch(e) {
+			console.warn(e);
+			throw e;
 		}
-		return handlebars.compile(tpl)(data, {partials: part});
 	},
 
 	/**
