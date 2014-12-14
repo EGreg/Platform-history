@@ -3165,63 +3165,66 @@ Q.onInit.add(function _Streams_onInit() {
 		if (!params) {
 			return;
 		}
-		Q.Template.render('Streams/invite/complete', params, 
-		function(err, html) {
-			var dialog = $(html);
-			var interval;
-			Q.Dialogs.push({
-				dialog: dialog,
-				mask: true,
-				noClose: true,
-				closeOnEsc: false, 
-				beforeClose: function () {
-					if (interval) {
-						clearInterval(interval);
-					}
-				},
-				onActivate: {'Streams.completeInvited': function() {
-					var l = Q.text.Users.login;
-					dialog.find('#Streams_login_username')
-						.attr('maxlength', l.maxlengths.fullName)
-						.attr('placeholder', l.placeholders.fullName)
-						.plugin('Q/placeholders');
-					if (!Q.info.isTouchscreen) {
-						var $input = $('input', dialog).eq(0);
-						$input.plugin('Q/clickfocus');
-						interval = setInterval(function () {
-							if ($input.val()) return;
+		Streams.construct(params.stream, function () {
+			params.stream = this;
+			Q.Template.render('Streams/invite/complete', params, 
+			function(err, html) {
+				var dialog = $(html);
+				var interval;
+				Q.Dialogs.push({
+					dialog: dialog,
+					mask: true,
+					noClose: true,
+					closeOnEsc: false, 
+					beforeClose: function () {
+						if (interval) {
+							clearInterval(interval);
+						}
+					},
+					onActivate: {'Streams.completeInvited': function() {
+						var l = Q.text.Users.login;
+						dialog.find('#Streams_login_username')
+							.attr('maxlength', l.maxlengths.fullName)
+							.attr('placeholder', l.placeholders.fullName)
+							.plugin('Q/placeholders');
+						if (!Q.info.isTouchscreen) {
+							var $input = $('input', dialog).eq(0);
 							$input.plugin('Q/clickfocus');
-						}, 100);
-					}
-					var complete_form = dialog.find('form')
-					.validator()
-					.submit(function(e) {
-						e.preventDefault();
-						var baseUrl = Q.baseUrl({
-							publisherId: Q.plugins.Users.loggedInUser.id,
-							streamName: "Streams/user/firstName"
-						});
-						var url = 'Streams/basic?' + $(this).serialize();
-						Q.req(url, ['data'], function (err, data) {
-							var msg = Q.firstErrorMessage(
-								err, data && data.errors
-							);
-							if (data && data.errors) {
-								complete_form.data('validator').invalidate(
-									Q.ajaxErrors(data.errors, ['fullName'])
+							interval = setInterval(function () {
+								if ($input.val()) return;
+								$input.plugin('Q/clickfocus');
+							}, 100);
+						}
+						var complete_form = dialog.find('form')
+						.validator()
+						.submit(function(e) {
+							e.preventDefault();
+							var baseUrl = Q.baseUrl({
+								publisherId: Q.plugins.Users.loggedInUser.id,
+								streamName: "Streams/user/firstName"
+							});
+							var url = 'Streams/basic?' + $(this).serialize();
+							Q.req(url, ['data'], function (err, data) {
+								var msg = Q.firstErrorMessage(
+									err, data && data.errors
 								);
-								$('input', complete_form).eq(0)
-								.plugin('Q/clickfocus');
-								return;
-							} else if (msg) {
-								return alert(msg);
-							}
-							complete_form.data('validator').reset();
-							dialog.data('Q/dialog').close();
-							Q.handle(Streams.onInviteComplete, data);
-						}, {method: "post", quietly: true, baseUrl: baseUrl});
-					});
-				}}
+								if (data && data.errors) {
+									complete_form.data('validator').invalidate(
+										Q.ajaxErrors(data.errors, ['fullName'])
+									);
+									$('input', complete_form).eq(0)
+									.plugin('Q/clickfocus');
+									return;
+								} else if (msg) {
+									return alert(msg);
+								}
+								complete_form.data('validator').reset();
+								dialog.data('Q/dialog').close();
+								Q.handle(Streams.onInviteComplete, data);
+							}, {method: "post", quietly: true, baseUrl: baseUrl});
+						});
+					}}
+				});
 			});
 		});
 	}, "Streams");

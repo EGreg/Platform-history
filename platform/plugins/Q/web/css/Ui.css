@@ -1871,3 +1871,35 @@ input[type=radio] { margin-right: 5px; }
     line-height: 25px;
 	display: none;
 }
+
+.Q_filter_results {
+	padding: 5px;
+	border: solid 1px #ccc;
+	background: white;
+	color: black;
+	font-weight: normal;
+	font-style: normal;
+	display: none;
+	position: absolute;
+}
+
+.Q_filter_begun {
+	position: absolute;
+	width: 100% !important;
+	margin: 0px !important;
+	padding: 0px !important;
+}
+
+.Q_filter_begun .Q_placeholder_container {
+	width: 100% !important;
+}
+
+.Q_filter_begun .Q_filter_input {
+	width: 100% !important;
+	margin: 0px !important;
+}
+
+.Q_filter_begun .Q_placeholder {
+	width: 100% !important;
+	margin: 0px !important;
+}

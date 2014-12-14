@@ -12,7 +12,7 @@
  *  @param {String} [options.title] Required. The title for the expandable.
  *  @param {String} [options.content] Required. The content.
  *  @param {Number} [options.count] A number, if any, to display when collapsed.
- *  @Param {Boolean} [options.autoCollapseSiblings] Whether, when expanding an expandable, its siblings should be automatically collapsed.
+ *  @param {Boolean} [options.autoCollapseSiblings] Whether, when expanding an expandable, its siblings should be automatically collapsed.
  * @return Q.Tool
  */
 Q.Tool.define('Q/expandable', function (options) {

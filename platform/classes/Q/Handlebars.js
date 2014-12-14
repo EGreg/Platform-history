@@ -60,7 +60,9 @@ handlebars.registerHelper('call', function(path) {
 	var p0 = parts[0];
 	var p1 = parts[1];
 	if (this[p0] && typeof this[p0][p1] === 'function') {
-		var args = Array.prototype.slice.call(arguments, 1);
+		var args = Array.prototype.slice.call(
+			arguments, 1, arguments.length-1
+		);
 		return this[p0][p1].apply(this[p0], args);
 	}
 	return "{{call "+path+" not found}}";

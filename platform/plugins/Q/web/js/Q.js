@@ -7327,12 +7327,32 @@ Q.Template.render = function _Q_Template_render(name, fields, partials, callback
 	Q.ensure(window.Handlebars, 
 		Q.url('plugins/Q/js/handlebars-v1.3.0.min.js'),
 		function () {
+			
+			var Handlebars = window.Handlebars;
+			if (!Handlebars.helpers.call) {
+				Handlebars.registerHelper('call', function(path) {
+					if (!path) {
+						return "{{call missing method name}}";
+					}
+					var parts = path.split('.');
+					var p0 = parts[0];
+					var p1 = parts[1];
+					if (this[p0] && typeof this[p0][p1] === 'function') {
+						var args = Array.prototype.slice.call(
+							arguments, 1, arguments.length-1
+						);
+						return this[p0][p1].apply(this[p0], args);
+					}
+					return "{{call "+path+" not found}}";
+				});
+			}
+			
 			// load the template and partials
 			var p = Q.pipe(['template', 'partials'], function (params) {
 				if (params.template[0]) {
 					return callback(params.template[0]);
 				}
-				callback(null, window.Handlebars.compile(params.template[1])(fields, {partials: params.partials[0]}));
+				callback(null, Handlebars.compile(params.template[1])(fields, {partials: params.partials[0]}));
 			});
 			Q.Template.load(name, p.fill('template'), options);
 			// pipe for partials
@@ -9565,7 +9585,8 @@ Q.onJQuery.add(function ($) {
 		"Q/bookmarklet": "plugins/Q/js/tools/bookmarklet.js",
 		"Q/columns": "plugins/Q/js/tools/columns.js",
 		"Q/drawers": "plugins/Q/js/tools/drawers.js",
-		"Q/expandable": "plugins/Q/js/tools/expandable.js"
+		"Q/expandable": "plugins/Q/js/tools/expandable.js",
+		"Q/filter": "plugins/Q/js/tools/filter.js"
 	});
 	
 	Q.Tool.jQuery({

@@ -104,22 +104,22 @@
 					"Streams/chat/message": {
 						"post": true,
 						"title": "Chat message",
-						"subject": "Chat in {{stream.title}}"
+						"subject": "Chat in {{stream.fields.title}}"
 					},
 					"Streams/chat/edit": {
 						"post": true,
 						"title": "Chat change",
-						"subject": "Chat in {{stream.title}}"
+						"subject": "Chat in {{stream.fields.title}}"
 					},
 					"Streams/chat/remove": {
 						"post": true,
 						"title": "Chat change",
-						"subject": "Chat in {{stream.title}}"
+						"subject": "Chat in {{stream.fields.title}}"
 					},
 					"Streams/chat/reply": {
 						"post": true,
 						"title": "Chat message",
-						"subject": "Chat in {{stream.title}}"
+						"subject": "Chat in {{stream.fields.title}}"
 					}
 				}
 			},
@@ -147,10 +147,10 @@
 			"messageRequestLimit": 100,
 			"messages": {
 				"": {
-					"subject": "Message \"{{& message.type}}\" to \"{{& stream.title}}\""
+					"subject": "Message \"{{& message.type}}\" to \"{{& stream.fields.title}}\""
 				},
 				"Streams/invite": {
-					"subject": "You were invited to {{& stream.title}}"
+					"subject": "You were invited to {{& stream.fields.title}}"
 				}
 			}
 		},
