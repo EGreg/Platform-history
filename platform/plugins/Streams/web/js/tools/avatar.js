@@ -45,6 +45,8 @@
  */
 Q.Tool.define("Users/avatar", function(options) {
 	var tool = this, state = this.state;
+	Q.Streams.Stream.retain(state.userId, 'Streams/user/firstName', tool);
+	Q.Streams.Stream.retain(state.userId, 'Streams/user/lastName', tool);
 	this.refresh();
 	if (!state.reflectChanges) {
 		return;

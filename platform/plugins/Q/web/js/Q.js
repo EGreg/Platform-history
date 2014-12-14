@@ -2236,7 +2236,7 @@ Q.beforeReplace = new Q.Event();
  * mysql("SELECT * FROM user WHERE userId = 2", p.fill('user'));
  * mysql("SELECT * FROM stream WHERE publisherId = 2", p.fill('stream'));
  *
- * The first parameter to p.fill() is the name of the array to fill when it's called
+ * The first parameter to p.fill() is the name of the field to fill when it's called
  * You can pass a second parameter to p.fill, which can be either:
  * true - in this case, the current function is ignored during the next times through the pipe
  * a string - in this case, this name is considered unfilled the next times through this pipe
@@ -7311,6 +7311,16 @@ Q.Template.onError = new Q.Event(function (err) {
  *   "name" - option to override the name of the template
  */
 Q.Template.render = function _Q_Template_render(name, fields, partials, callback, options) {
+	var isArray = false;
+	if (isArray = (Q.typeOf(name) === 'array') || Q.isPlainObject(name)) {
+		var names = name;
+		var p = Q.pipe(isArray ? names : Object.keys(names), callback);
+		return Q.each(names, function (key, name) {
+			Q.Template.render(
+				name, fields, partials, p.fill(isArray ? name : key), options
+			);
+		});
+	}
 	if (typeof fields === "function") {
 		options = partials;
 		callback = fields;

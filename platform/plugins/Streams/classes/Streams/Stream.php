@@ -989,7 +989,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 *	'displayName' => the name of inviting user
 	 *  'appUrl' => Can be used to override the URL to which the invited user will be redirected and receive "Q.Streams.token" in the querystring.
 	 * @see Users::addLink()
-	 *  
+	 * @return {array} returns array("success", "invited", "alreadyParticipating")
 	 */
 	static function invite($publisherId, $streamName, $who, $options = array())
 	{
@@ -1015,7 +1015,13 @@ class Streams_Stream extends Base_Streams_Stream
 		// merge labels if any
 		$raw_userIds = isset($who['label']) ? array_merge($raw_userIds, Users_User::labelsToIds($user->id, $who['label'])) : $raw_userIds;
 		// merge identifiers if any
+		$identifierType = null;
 		if (isset($who['identifier'])) {
+			if (Q_Valid::email($who['identifier'])) {
+				$identifierType = 'email';
+			} else if (Q_Valid::phone($who['identifier'])) {
+				$identifierType = 'mobile';
+			}
 			$identifier_ids = Users_User::idsFromIdentifiers($who['identifier']);
 			$raw_userIds = array_merge($raw_userIds, $identifier_ids);
 		}
@@ -1085,6 +1091,7 @@ class Streams_Stream extends Base_Streams_Stream
 		return array(
 			'success' => $result,
 			'invited' => $userIds,
+			'identifierType' => $type,
 			'alreadyParticipating' => $total - $to_invite
 		);
 	}

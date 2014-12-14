@@ -339,7 +339,7 @@ Q.pipe = function _Q_pipe(a, b, c, d) {
  * mysql("SELECT * FROM user WHERE userId = 2", p.fill('user'));
  * mysql("SELECT * FROM stream WHERE publisherId = 2", p.fill('stream'));
  *
- * The first parameter to p.fill() is the name of the array to fill when it's called
+ * The first parameter to p.fill() is the name of the field to fill when it's called
  * You can pass a second parameter to p.fill, which can be either:
  * true - in this case, the current function is ignored during the next times through the pipe
  * a string - in this case, this name is considered unfilled the next times through this pipe

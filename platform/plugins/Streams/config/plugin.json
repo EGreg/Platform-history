@@ -163,7 +163,8 @@
 				"characters": "abcdefghijklmnopqrstuvwxyz"
 			},
 			"baseUrl": "i",
-			"participantReason": "Was invited"
+			"participantReason": "Was invited",
+			"limit": 100
 		},
 		"interests": {
 			"allowClientQueries": false

@@ -812,6 +812,7 @@ Streams.release = function (key) {
  *   @param {String} [options.appUrl] Can be used to override the URL to which the invited user will be redirected and receive "Q.Streams.token" in the querystring.
  *   @param {String} [options.displayName] Optionally override the name to display in the invitation for the inviting user
  *   @param {String} [options.callback] Also can be used to provide callbacks.
+ *   @param {Boolean} [options.followup=true] Whether to set up a followup email or sms for the user to send.
  * @param {Function} callback Called with (err, result)
  * @return {Q.Request} represents the request that was made if an identifier was provided
  */
@@ -828,17 +829,41 @@ Streams.invite = function (publisherId, streamName, options, callback) {
 	var o = Q.extend({}, Streams.invite.options, options);
 	o.publisherId = publisherId,
 	o.streamName = streamName;
-	o.displayName = o.displayName
-		|| Q.Users.loggedInUser.displayName;
+	o.displayName = o.displayName || Q.Users.loggedInUser.displayName;
 	function _request() {
-		return Q.req('Streams/invite', ['data'], function (err, data) {
-			var msg = Q.firstErrorMessage(err, data && data.errors);
+		return Q.req('Streams/invite', ['data'], function (err, response) {
+			var msg = Q.firstErrorMessage(err, response && response.errors);
 			if (msg) {
-				var args = [err, data];
+				var args = [err, response];
 				Streams.onError.handle.call(this, msg, args);
 			}
-			Q.handle(o && o.callback, null, [err, data, msg]);
-			Q.handle(callback, null, [err, data, msg]);
+			Q.handle(o && o.callback, null, [err, response, msg]);
+			Q.handle(callback, null, [err, response, msg]);
+			if (o.followup && response.slots.data.identifierType) {
+				switch (response.slots.data.identifierType) {
+				case 'email':
+					Q.Template.render({
+						subject: 'Streams/followup/email/subject',
+						body: 'Streams/followup/email/body'
+					},
+					function (params) {
+						var url = "mailto://" + o.identifier;
+						url += '?subject=' + encodeURIComponent(params.subject[1]);
+						url += '&body=' + encodeURIComponent(params.body[1]);
+						window.location = url;
+					});
+					break;
+				case 'mobile':
+					Q.Template.render('Streams/followup/mobile', function (err, text) {
+						var url = "sms://" + o.identifier;
+						if (Q.info.browser.OS !== 'ios') {
+							url += '?body=' + encodeURIComponent(text);
+						}
+						window.location = url;
+					});
+					break;
+				}
+			}
 		}, { method: 'post', fields: o, baseUrl: baseUrl });
 	}
 	if (o.identifier) {
@@ -3181,7 +3206,7 @@ Q.onInit.add(function _Streams_onInit() {
 							clearInterval(interval);
 						}
 					},
-					onActivate: {'Streams.completeInvited': function() {
+					onActivate: {'Streams.completeInvited': function _Streams_completeInvited() {
 						var l = Q.text.Users.login;
 						dialog.find('#Streams_login_username')
 							.attr('maxlength', l.maxlengths.fullName)
@@ -3204,7 +3229,7 @@ Q.onInit.add(function _Streams_onInit() {
 								streamName: "Streams/user/firstName"
 							});
 							var url = 'Streams/basic?' + $(this).serialize();
-							Q.req(url, ['data'], function (err, data) {
+							Q.req(url, ['data'], function _Streams_basic(err, data) {
 								var msg = Q.firstErrorMessage(
 									err, data && data.errors
 								);
@@ -3221,6 +3246,16 @@ Q.onInit.add(function _Streams_onInit() {
 								complete_form.data('validator').reset();
 								dialog.data('Q/dialog').close();
 								Q.handle(Streams.onInviteComplete, data);
+								var params = {
+									evenIfNotRetained: true,
+									unlessSocket: true
+								};
+								Stream.refresh(Q.Users.loggedInUser.id, 
+									'Streams/user/firstName', null, params
+								);
+								Stream.refresh(Q.Users.loggedInUser.id, 
+									'Streams/user/lastName', null, params
+								);
 							}, {method: "post", quietly: true, baseUrl: baseUrl});
 						});
 					}}
@@ -3543,6 +3578,16 @@ function _refreshUnlessSocket(publisherId, streamName) {
 		Stream.refresh(publisherId, streamName, null, { messages: true });
 	}
 }
+
+Q.Template.set('Streams/followup/mobile', 
+	"Hey, I just sent you an invite with {{app}}. Please check your sms and click the link!"
+);
+
+Q.Template.set('Streams/followup/email/content', "Did you get an invite?");
+
+Q.Template.set('Streams/followup/email/body', 
+	"Hey, I just sent you an invite with {{app}}. Please check your email and click the link!"
+);
 
 _scheduleUpdate.delay = 5000;
 
