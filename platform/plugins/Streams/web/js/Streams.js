@@ -840,22 +840,25 @@ Streams.invite = function (publisherId, streamName, options, callback) {
 			Q.handle(o && o.callback, null, [err, response, msg]);
 			Q.handle(callback, null, [err, response, msg]);
 			if (o.followup && response.slots.data.identifierType) {
+				var fields = Q.info;
 				switch (response.slots.data.identifierType) {
 				case 'email':
 					Q.Template.render({
 						subject: 'Streams/followup/email/subject',
 						body: 'Streams/followup/email/body'
 					},
+					fields,
 					function (params) {
-						var url = "mailto://" + o.identifier;
+						var url = "mailto:" + o.identifier;
 						url += '?subject=' + encodeURIComponent(params.subject[1]);
 						url += '&body=' + encodeURIComponent(params.body[1]);
 						window.location = url;
 					});
 					break;
 				case 'mobile':
-					Q.Template.render('Streams/followup/mobile', function (err, text) {
-						var url = "sms://" + o.identifier;
+					Q.Template.render('Streams/followup/mobile', fields,
+					function (err, text) {
+						var url = "sms:" + o.identifier;
 						if (Q.info.browser.OS !== 'ios') {
 							url += '?body=' + encodeURIComponent(text);
 						}
@@ -881,7 +884,9 @@ Streams.invite = function (publisherId, streamName, options, callback) {
 	return null;
 };
 
-Streams.invite.options = {};
+Streams.invite.options = {
+	followup: true
+};
 
 /**
  * @class Streams.Stream
@@ -3583,7 +3588,7 @@ Q.Template.set('Streams/followup/mobile',
 	"Hey, I just sent you an invite with {{app}}. Please check your sms and click the link!"
 );
 
-Q.Template.set('Streams/followup/email/content', "Did you get an invite?");
+Q.Template.set('Streams/followup/email/subject', "Did you get an invite?");
 
 Q.Template.set('Streams/followup/email/body', 
 	"Hey, I just sent you an invite with {{app}}. Please check your email and click the link!"

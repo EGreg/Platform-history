@@ -1091,7 +1091,7 @@ class Streams_Stream extends Base_Streams_Stream
 		return array(
 			'success' => $result,
 			'invited' => $userIds,
-			'identifierType' => $type,
+			'identifierType' => $identifierType,
 			'alreadyParticipating' => $total - $to_invite
 		);
 	}

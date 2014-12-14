@@ -7311,16 +7311,6 @@ Q.Template.onError = new Q.Event(function (err) {
  *   "name" - option to override the name of the template
  */
 Q.Template.render = function _Q_Template_render(name, fields, partials, callback, options) {
-	var isArray = false;
-	if (isArray = (Q.typeOf(name) === 'array') || Q.isPlainObject(name)) {
-		var names = name;
-		var p = Q.pipe(isArray ? names : Object.keys(names), callback);
-		return Q.each(names, function (key, name) {
-			Q.Template.render(
-				name, fields, partials, p.fill(isArray ? name : key), options
-			);
-		});
-	}
 	if (typeof fields === "function") {
 		options = partials;
 		callback = fields;
@@ -7333,6 +7323,16 @@ Q.Template.render = function _Q_Template_render(name, fields, partials, callback
 	}
 	if (!callback) {
 		throw new Q.Error("Q.Template.render: callback is missing");
+	}
+	var isArray = (Q.typeOf(name) === 'array');
+	if (isArray || Q.isPlainObject(name)) {
+		var names = name;
+		var p = Q.pipe(isArray ? names : Object.keys(names), callback);
+		return Q.each(names, function (key, name) {
+			Q.Template.render(
+				name, fields, partials, p.fill(isArray ? name : key), options
+			);
+		});
 	}
 	Q.ensure(window.Handlebars, 
 		Q.url('plugins/Q/js/handlebars-v1.3.0.min.js'),
