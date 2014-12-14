@@ -845,22 +845,32 @@ Streams.invite = function (publisherId, streamName, options, callback) {
 				case 'email':
 					Q.Template.render({
 						subject: 'Streams/followup/email/subject',
-						body: 'Streams/followup/email/body'
+						body: 'Streams/followup/email/body',
+						alert: 'Streams/followup/email/alert'
 					},
 					fields,
 					function (params) {
 						var url = "mailto:" + o.identifier;
 						url += '?subject=' + encodeURIComponent(params.subject[1]);
 						url += '&body=' + encodeURIComponent(params.body[1]);
+						if (params.alert[1]) {
+							alert(params.alert[1]);
+						}
 						window.location = url;
 					});
 					break;
 				case 'mobile':
-					Q.Template.render('Streams/followup/mobile', fields,
-					function (err, text) {
+					Q.Template.render({
+						text: 'Streams/followup/mobile',
+						alert: 'Streams/followup/mobile/alert'
+					}, fields,
+					function (params) {
 						var url = "sms:" + o.identifier;
 						if (Q.info.browser.OS !== 'ios') {
-							url += '?body=' + encodeURIComponent(text);
+							url += '?body=' + encodeURIComponent(params.text[1]);
+						}
+						if (params.alert[1]) {
+							alert(params.alert[1]);
 						}
 						window.location = url;
 					});
@@ -3584,9 +3594,13 @@ function _refreshUnlessSocket(publisherId, streamName) {
 	}
 }
 
+Q.Template.set('Streams/followup/mobile/alert', "Now send a message to let them know they should click the invitation link.");
+
 Q.Template.set('Streams/followup/mobile', 
 	"Hey, I just sent you an invite with {{app}}. Please check your sms and click the link!"
 );
+
+Q.Template.set('Streams/followup/email/alert', "");
 
 Q.Template.set('Streams/followup/email/subject', "Did you get an invite?");
 
