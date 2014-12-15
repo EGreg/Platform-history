@@ -3605,7 +3605,7 @@ Q.Template.set('Streams/followup/email/alert', "");
 Q.Template.set('Streams/followup/email/subject', "Did you get an invite?");
 
 Q.Template.set('Streams/followup/email/body', 
-	"Hey, I just sent you an invite with {{app}}. Please check your email and click the link!"
+	"Hey, I just sent you an invite with {{app}}. Please check your email and click the link in there!"
 );
 
 _scheduleUpdate.delay = 5000;

@@ -1066,7 +1066,7 @@ abstract class Users extends Base_Users
 	 * * "facebook" - this is the user's id on facebook
 	 * * "twitter": - this is the user's id on twitter
 	 *
-	 * @param {&string} [$status=null] The status of sthe user - 'verified' or 'future'
+	 * @param {&string} [$status=null] The status of the user - 'verified' or 'future'
 	 * @return {Users_User}
 	 * @throws {Q_Exception_WrongType} If $type is not supported
 	 * @throws {Q_Exception_MissingRow} If identity for user exists but user does not exists
@@ -1095,7 +1095,7 @@ abstract class Users extends Base_Users
 
 		$field = self::$types[$type];
 
-		// Make a very generic user and give them a random unique username
+		// Make a user row to represent a "future" user and give them an empty username
 		$user = new Users_User();
 		$user->$field = $value;
 		$user->signedUpWith = 'none'; // this marks it as a future user for now

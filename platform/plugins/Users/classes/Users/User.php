@@ -745,9 +745,10 @@ class Users_User extends Base_Users_User
 	 * @static
 	 * @param $asUserId {string} The user id of inviting user
 	 * @param $identifiers {string|array}
+	 * @param $statuses {array} Optional reference to an array to populate with $userId => $status pairs.
 	 * @return {array} The array of user ids
 	 */
-	static function idsFromIdentifiers ($identifiers)
+	static function idsFromIdentifiers ($identifiers, &$statuses = array())
 	{
 		if (empty($identifiers)) return array();
 		if (!is_array($identifiers)) {
@@ -767,7 +768,9 @@ class Users_User extends Base_Users_User
 					'type' => 'email address or mobile number'
 				), array('emailAddress', 'mobileNumber'));
 			}
-			$users[] = Users::futureUser($type, $ui_identifier);
+			$status = null;
+			$users[] = $user = Users::futureUser($type, $ui_identifier, $status);
+			$statuses[$user->id] = $status;
 		}
 		return array_map(array('Users_User', 'get_id'), $users);
 	}

@@ -1022,7 +1022,8 @@ class Streams_Stream extends Base_Streams_Stream
 			} else if (Q_Valid::phone($who['identifier'])) {
 				$identifierType = 'mobile';
 			}
-			$identifier_ids = Users_User::idsFromIdentifiers($who['identifier']);
+			$statuses = array();
+			$identifier_ids = Users_User::idsFromIdentifiers($who['identifier'], $statuses);
 			$raw_userIds = array_merge($raw_userIds, $identifier_ids);
 		}
 		// merge fb uids if any
@@ -1091,6 +1092,7 @@ class Streams_Stream extends Base_Streams_Stream
 		return array(
 			'success' => $result,
 			'invited' => $userIds,
+			'statuses' => $statuses,
 			'identifierType' => $identifierType,
 			'alreadyParticipating' => $total - $to_invite
 		);
