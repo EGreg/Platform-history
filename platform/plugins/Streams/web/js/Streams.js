@@ -812,7 +812,7 @@ Streams.release = function (key) {
  *   @param {String} [options.appUrl] Can be used to override the URL to which the invited user will be redirected and receive "Q.Streams.token" in the querystring.
  *   @param {String} [options.displayName] Optionally override the name to display in the invitation for the inviting user
  *   @param {String} [options.callback] Also can be used to provide callbacks.
- *   @param {Boolean} [options.followup=true] Whether to set up a followup email or sms for the user to send.
+ *   @param {Boolean} [options.followup="future"] Whether to set up a followup email or sms for the user to send. Set to true to always send followup, or false to never send it. Set to "future" to send followups only when the invited user hasn't registered yet.
  * @param {Function} callback Called with (err, result)
  * @return {Q.Request} represents the request that was made if an identifier was provided
  */
@@ -837,11 +837,14 @@ Streams.invite = function (publisherId, streamName, options, callback) {
 				var args = [err, response];
 				Streams.onError.handle.call(this, msg, args);
 			}
+			var rsd = response.slots.data;
 			Q.handle(o && o.callback, null, [err, response, msg]);
 			Q.handle(callback, null, [err, response, msg]);
-			if (o.followup && response.slots.data.identifierType) {
+			var shouldFollowup = (o.followup !== 'future'
+				|| rsd.statuses[rsd.invited[0]] === 'future');
+			if (o.followup && rsd.identifierType && shouldFollowup) {
 				var fields = Q.info;
-				switch (response.slots.data.identifierType) {
+				switch (rsd.identifierType) {
 				case 'email':
 					Q.Template.render({
 						subject: 'Streams/followup/email/subject',
@@ -895,7 +898,7 @@ Streams.invite = function (publisherId, streamName, options, callback) {
 };
 
 Streams.invite.options = {
-	followup: true
+	followup: "future"
 };
 
 /**
