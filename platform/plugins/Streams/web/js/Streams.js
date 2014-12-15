@@ -3594,7 +3594,7 @@ function _refreshUnlessSocket(publisherId, streamName) {
 	}
 }
 
-Q.Template.set('Streams/followup/mobile/alert', "Now send a message to let them know they should click the invitation link.");
+Q.Template.set('Streams/followup/mobile/alert', "The invite was sent from our number, which your friends don't yet recognize. Follow up with a quick text to let them know the invitation came from you, asking them to click the link.");
 
 Q.Template.set('Streams/followup/mobile', 
 	"Hey, I just sent you an invite with {{app}}. Please check your sms and click the link!"

@@ -3878,7 +3878,9 @@ function _loadToolScript(toolElement, callback, shared, parentPipe) {
 			toolFunc = _qtc[toolName];
 			if (typeof toolFunc !== 'function' && typeof toolFunc !== 'string') {
 				console.warn("Q.Tool.loadScript: Missing tool constructor for " + toolName);
-				toolFunc = function () { console.log("Missing tool constructor for " + toolName); }; 
+				toolFunc = function () {
+					console.log("Missing tool constructor for " + toolName);
+				}; 
 			}
 		}
 		if (parentPipe) {
@@ -3888,6 +3890,9 @@ function _loadToolScript(toolElement, callback, shared, parentPipe) {
 		if (shared) {
 			var uniqueToolId = "tool " + (shared.waitingForTools.length+1)
 				+ ": " + normalizedId;
+			if (!shared.firstToolId) {
+				shared.firstToolId = uniqueToolId;
+			}
 			shared.waitingForTools.push(uniqueToolId);
 		}
 		if (typeof toolFunc === 'function') {
@@ -6187,11 +6192,12 @@ Q.activate = function _Q_activate(elem, options, callback) {
 	Q.Tool.beingActivated = ba;
 	
 	function _activated() {
+		var tool = shared.firstTool || shared.tool;
 		Q.trigger('Q.onLayout', elem, []);
 		if (callback) {
-			Q.handle(callback, shared.tool, [elem, options, shared.tools]);
+			Q.handle(callback, tool, [elem, options, shared.tools]);
 		}
-		Q.handle(Q.onActivate, shared.tool, [elem, options, shared.tools]);
+		Q.handle(Q.onActivate, tool, [elem, options, shared.tools]);
 	}
 };
 
@@ -7072,6 +7078,9 @@ function _activateTools(toolElement, options, shared) {
 			}
 			
 			if (uniqueToolId) {
+				if (uniqueToolId === shared.firstToolId) {
+					shared.firstTool = tool;
+				}
 				shared.pipe.fill(uniqueToolId)();
 			}
 			pendingCurrentEvent.handle.call(result, options);
