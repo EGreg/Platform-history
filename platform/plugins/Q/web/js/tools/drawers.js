@@ -404,6 +404,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 			var y1, y2;
 			var anim = null;
 			var notThisOne = false;
+			var canShowTrigger = true;
 			state.$placeholder.on('touchmove', function (e) {
 				e.preventDefault();
 			});
@@ -418,6 +419,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 					return;
 				}
 				state.$trigger.hide();
+				canShowTrigger = false;
 				y1 = Q.Pointer.getY(e);
 				e.preventDefault();
 			}).on('touchmove', true, function (e) {
@@ -429,9 +431,10 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 				} else {
 					state.$drawers.eq(1).css('margin-top', y2-y1);
 				}
+				canShowTrigger = false;
 			}).on('touchend', true, function (e) {
 				if (notThisOne) return;
-				if (y2 - y1 > 20) {
+				if (y2 - y1 > 0) {
 					tool.swap(null, function () {
 						var $d = state.$drawers.eq(1);
 						var mt = parseInt($d.css('margin-top'));
@@ -454,8 +457,13 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 					}, 3000, Q.Animation.ease.power(3.5));
 				}
 				y1 = y2 = undefined;
-				state.$trigger.show();
+				canShowTrigger = true;
 			});
+			state.$interval = setInterval(function () {
+				if (canShowTrigger && state.$scrolling.scrollTop() === 0) {
+					state.$trigger.show();
+				}
+			}, 300);
 		}
 
 	},
@@ -483,6 +491,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 			if (state.$trigger) {
 				state.$trigger.remove();
 			}
+			clearInterval(state.$interval);
 		}}
 	}
 }
