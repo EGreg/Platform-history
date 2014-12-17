@@ -66,14 +66,14 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(res && res.errors);
 		if (msg) {
 			$this.attr('src', state.oldSrc).stop().removeClass('Q_imagepicker_uploading');
-			return Q.handle(o.onError, $this, [msg]);
+			return Q.handle(state.onError, $this, [msg]);
 		}
-		var key = o.showSize;
+		var key = state.showSize;
 		if (!key) {
 			// by default set src equal to first element of the response
 			key = Q.firstKey(res.slots.data, {nonEmpty: true});
 		}
-		var c = Q.handle(o.onSuccess, $this, [res.slots.data, key]);
+		var c = Q.handle(state.onSuccess, $this, [res.slots.data, key]);
 		if (c !== false && key) {
 			$this.attr('src', 
 				Q.url(res.slots.data[key], null, {cacheBust: 1000})
@@ -83,18 +83,19 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 	}
 	
 	function _upload(data) {
-		if (o.preprocess) {
-			o.preprocess.call($this, _doUpload);
+		var state = $this.state('Q/imagepicker');
+		if (state.preprocess) {
+			state.preprocess.call($this, _doUpload);
 		} else {
 			_doUpload();
 		}
 		function _doUpload(override) {
+			var state = $this.state('Q/imagepicker');
 			if (override === false || (override && override.cancel)) {
-				var state = $this.state('Q/imagepicker');
 				$this.attr('src', state.oldSrc).stop().removeClass('Q_imagepicker_uploading');
 				return;
 			}
-			var path = $this.state('Q/imagepicker').path;
+			var path = state.path;
 			path = (typeof path === 'function') ? path() : path;
 			var subpath = $this.state('Q/imagepicker').subpath;
 			subpath = (typeof subpath === 'function') ? subpath() : subpath;
@@ -102,12 +103,12 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 				'data': data,
 				'path': path,
 				'subpath': subpath,
-				'save': o.saveSizeName,
-				'url': o.url,
-				'loader': o.loader
+				'save': state.saveSizeName,
+				'url': state.url,
+				'loader': state.loader
 			};
-			if (o.crop) {
-				params.crop = o.crop;
+			if (state.crop) {
+				params.crop = state.crop;
 			}
 			Q.extend(params, override);
 			var state = $this.state('Q/imagepicker');
@@ -133,8 +134,8 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 	function _process() {
 		var state = $this.state('Q/imagepicker');
 		state.oldSrc = $this.attr('src');
-		if (o.throbber) {
-			$this.attr('src', Q.url(o.throbber));
+		if (state.throbber) {
+			$this.attr('src', Q.url(state.throbber));
 		}
 		$this.addClass('Q_imagepicker_uploading');
 		var reader = new FileReader();
@@ -156,7 +157,8 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 	if (navigator.camera) {
 		// "file" input type is not supported
 		$this.on([Q.Pointer.click, '.Q_imagepicker'], function(e) {
-			if (false === Q.handle(o.onClick.handle, $this, [])) {
+			var state = $this.state('Q/imagepicker');
+			if (false === Q.handle(state.onClick, $this, [])) {
 				return false;
 			}
 			navigator.notification.confirm("", function(index) {
@@ -170,7 +172,7 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 					sourceType: source,
 					destinationType: Camera.DestinationType.DATA_URL
 				});
-			}, "", o.cameraCommands.join(','));
+			}, "", state.cameraCommands.join(','));
 			e.preventDefault();
 		});
 	} else {
@@ -180,7 +182,8 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 			e.preventDefault();
 		});
 		input.click(function () {
-			if (false === Q.handle(o.onClick, $this, [])) {
+			var state = $this.state('Q/imagepicker');
+			if (false === Q.handle(state.onClick, $this, [])) {
 				return false;
 			}
 		});
