@@ -8821,8 +8821,10 @@ Q.Pointer = {
 					img.style.opacity = y;
 					if (o.show.initialScale !== 1) {
 						var z = 1 + (o.show.initialScale - 1) * (1 - y);
-						img.style.width = w = width * z + 'px';
-						img.style.height = h = height * z + 'px';
+						var w = width * z;
+						var h = height * z;
+						img.style.width = w + 'px';
+						img.style.height = h + 'px';
 						img.style.left = point.x - w * o.hotspot.x + 'px';
 						img.style.top = point.y - h * o.hotspot.y + 'px';
 					}
