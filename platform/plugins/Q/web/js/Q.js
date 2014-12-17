@@ -1930,25 +1930,72 @@ Evp.copy = function _Q_Event_prototype_copy() {
 };
 
 /**
+ * Returns a new Q.Event that occurs whenever either this or anotherEvent occurs
+ * 
+ * @method or
+ * @param {Q.Event} anotherEvent
+ *  The other event to check
+ * @param {String|Boolean|Q.Tool} [key] Optional key to pass to anotherEvent.add (see docs for that method).
+ * @param {String|Boolean|Q.Tool} [anotherKey] Optional key to pass to anotherEvent.add (see docs for that method).
+ * @return {Q.Event}
+ */
+Evp.or = function _Q_Event_prototype_or(anotherEvent, key, anotherKey) {
+	if (!anotherEvent) {
+		return this.copy();
+	}
+	var newEvent = new Q.Event();
+	this.add(newEvent.handle, key);
+	anotherEvent.add(newEvent.handle, anotherKey);
+	return newEvent;
+};
+
+/**
+ * Return a new Q.Event that occurs whenever either this or anotherEvent occurs
+ * as long as both have occurred.
+ * 
+ * @method and
+ * @param {Q.Event} anotherEvent
+ *  The other event to check
+ * @param {String|Boolean|Q.Tool} [key] Optional key to pass to this.add (see docs for that method).
+ * @param {String|Boolean|Q.Tool} [anotherKey] Optional key to pass to anotherEvent.add (see docs for that method).
+ * @return {Q.Event} A new Q.Event object
+ */
+Evp.and = function _Q_Event_prototype_and(anotherEvent, key, anotherKey) {
+	if (!anotherEvent) {
+		return this.copy();
+	}
+	var newEvent = new Q.Event();
+	var event = this;
+	function _Q_Event_and_wrapper() {
+		if (event.occurred && anotherEvent.occurred) {
+			newEvent.handle.call(this, arguments);
+		}
+	}
+	event.add(_Q_Event_and_wrapper, key);
+	anotherKey = anotherEvent.add(_Q_Event_and_wrapper, anotherKey);
+	return newEvent;
+};
+
+/**
  * Return a new Q.Event object that is handled whenever this event is handled,
  * until anotherEvent occurs, in which case this event occurs one final time.
  * 
  * @method until
  * @param {Q.Event} anotherEvent
  *  An event whose occurrence will stop the returned event
- * @param {String|Boolean|Q.Tool} key Optional key to pass to anotherEvent.add (see docs for that method).
+ * @param {String|Boolean|Q.Tool} [key] Optional key to pass to this.add (see docs for that method).
+ * @param {String|Boolean|Q.Tool} [anotherKey] Optional key to pass to anotherEvent.add (see docs for that method).
  * @return {Q.Event} A new Q.Event object
  */
-Evp.until = function _Q_Event_prototype_until(anotherEvent, key) {
+Evp.until = function _Q_Event_prototype_until(anotherEvent, key, anotherKey) {
 	var newEvent = new Q.Event();
-	key = this.add(newEvent.handle);
 	var event = this;
-	var anotherKey = anotherEvent.add(
-	function _Q_Event_until_wrapper() {
+	key = event.add(newEvent.handle, key);
+	anotherKey = anotherEvent.add(function _Q_Event_until_wrapper() {
 		event.remove(key);
 		anotherEvent.remove(anotherKey);
 		event.stop();
-	}, key);
+	}, anotherKey);
 	return newEvent;
 };
 
@@ -1957,7 +2004,7 @@ Evp.until = function _Q_Event_prototype_until(anotherEvent, key) {
  * then processes all the pending calls to .handle(), continuing normally after that.
  * 
  * @method then
- * @param {String|Boolean|Q.Tool} key Optional key to pass to event.onStop().add (see docs for that method).
+ * @param {String|Boolean|Q.Tool} [key] Optional key to pass to event.onStop().add (see docs for that method).
  * @return {Q.Event} A new Q.Event object
  */
 Evp.then = function _Q_Event_prototype_then(key) {
@@ -1988,7 +2035,7 @@ Evp.then = function _Q_Event_prototype_then(key) {
  * 
  * @method debounce
  * @param {Number} milliseconds The number of milliseconds
- * @param {String|Boolean|Q.Tool} key Optional key to pass to event.add (see docs for that method).
+ * @param {String|Boolean|Q.Tool} [key] Optional key to pass to event.add (see docs for that method).
  * @return {Q.Event} A new Q.Event object
  */
 Evp.debounce = function _Q_Event_prototype_debounce(milliseconds, key) {
@@ -2003,7 +2050,7 @@ Evp.debounce = function _Q_Event_prototype_debounce(milliseconds, key) {
  * 
  * @method throttle
  * @param {Number} milliseconds The number of milliseconds
- * @param {String|Boolean|Q.Tool} key Optional key to pass to event.add (see docs for that method).
+ * @param {String|Boolean|Q.Tool} [key] Optional key to pass to event.add (see docs for that method).
  * @return {Q.Event} A new Q.Event object
  */
 Evp.throttle = function _Q_Event_prototype_throttle(milliseconds, key) {
@@ -2018,7 +2065,7 @@ Evp.throttle = function _Q_Event_prototype_throttle(milliseconds, key) {
  * 
  * @method queue
  * @param {Number} milliseconds The number of milliseconds, can be 0
- * @param {String|Boolean|Q.Tool} key Optional key to pass to event.add (see docs for that method).
+ * @param {String|Boolean|Q.Tool} [key] Optional key to pass to event.add (see docs for that method).
  * @return {Q.Event} A new Q.Event object
  */
 Evp.queue = function _Q_Event_prototype_queue(milliseconds, key) {
@@ -2033,7 +2080,7 @@ Evp.queue = function _Q_Event_prototype_queue(milliseconds, key) {
  * 
  * @method filter
  * @param {Function} test Function to test the arguments and return a Boolean
- * @param {String|Boolean|Q.Tool} key Optional key to pass to event.add (see docs for that method).
+ * @param {String|Boolean|Q.Tool} [key] Optional key to pass to event.add (see docs for that method).
  * @return {Q.Event} A new Q.Event object
  */
 Evp.filter = function _Q_Event_prototype_filter(test, key) {
@@ -2052,7 +2099,7 @@ Evp.filter = function _Q_Event_prototype_filter(test, key) {
  * @method map
  * @param {Function} transform Function to transform the arguments and return
  *   an array of two items for the new call: [this, arguments]
- * @param {String|Boolean|Q.Tool} key Optional key to pass to event.add (see docs for that method).
+ * @param {String|Boolean|Q.Tool} [key] Optional key to pass to event.add (see docs for that method).
  * @return {Q.Event} A new Q.Event object
  */
 Evp.map = function _Q_Event_prototype_map(transform, key) {
@@ -7211,6 +7258,23 @@ Q.Template.set = function (name, content, type) {
 };
 
 /**
+ * Removes a template that may have been set before
+ * 
+ * @static
+ * @method remove
+ * @param {String} name The template's name under which it will be found
+ */
+Q.Template.remove = function (name) {
+	if (typeof name === 'string') {
+		delete Q.Template.collection[Q.normalize(name)];
+		return;
+	}
+	Q.each(name, function (i, name) {
+		Q.Template.remove(name);
+	});
+};
+
+/**
  * Load template from server and store to cache
  * 
  * @static
@@ -8751,9 +8815,18 @@ Q.Pointer = {
 				img.style.opacity = 0;
 			}
 			setTimeout(function () {
+				var width = parseInt(img.style.width);
+				var height = parseInt(img.style.height);
 				Q.Animation.play(function (x, y) {
 					img.style.opacity = y;
-				}, o.show.duration);
+					if (o.show.initialScale !== 1) {
+						var z = 1 + (o.show.initialScale - 1) * (1 - y);
+						img.style.width = w = width * z + 'px';
+						img.style.height = h = height * z + 'px';
+						img.style.left = point.x - w * o.hotspot.x + 'px';
+						img.style.top = point.y - h * o.hotspot.y + 'px';
+					}
+				}, o.show.duration, o.show.ease);
 			}, o.show.delay);
 		}
 	},
@@ -8865,8 +8938,17 @@ Q.Pointer.hint.options = {
 	width: "50px",
 	height: "50px",
 	zIndex: 99999,
-	show: { duration: 500, delay: 500 },
-	hide: { duration: 300, delay: 300 }
+	show: {
+		delay: 500,
+		duration: 500,
+		initialScale: 2,
+		ease: Q.Animation.ease.smooth
+	},
+	hide: {
+		delay: 300,
+		duration: 300,
+		ease: Q.Animation.ease.linear
+	}
 };
 
 function _Q_restoreScrolling() {

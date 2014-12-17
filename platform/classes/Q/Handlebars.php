@@ -46,8 +46,9 @@ class Q_Handlebars {
 					return htmlspecialchars($value, ENT_COMPAT, 'UTF-8');
 				}
 			));
+			self::$handlebars->addHelper('call', array('Q_Handlebars', 'helperCall'));
 		}
-		self::$handlebars->addHelper('call', array('Handlebars', 'helperCall'));
+		return self::$handlebars;
 	}
 	
 	static function helperCall($template, $context, $args, $source)

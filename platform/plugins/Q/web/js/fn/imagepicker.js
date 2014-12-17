@@ -37,7 +37,7 @@
  * The first parameter is a callback, which should be called with an optional
  * hash of overrides, which can include "data", "path", "subpath", "save", "url", "loader" and "crop"
  * @param {Array} [options.cameraCommands] cameraCommands is an Array of titles for the commands that pop up to take a photo
- * @param {Q.Event} [options.onClick] onClick is a function to execute during the click, which may cancel the click
+ * @param {Q.Event} [options.onClick] onClick is an event to execute during the click, which may cancel the click
  * @param {Q.Event} [options.onSuccess] onSuccess is Q.Event which is called on successful upload. First parameter will be the server response with
  * an object in a format similar to the 'saveSizeName' field. Optional.
  * @param {Q.Event} [options.onError] onError Q.Event which is called if upload failed. Optional.
@@ -156,6 +156,9 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 	if (navigator.camera) {
 		// "file" input type is not supported
 		$this.on([Q.Pointer.click, '.Q_imagepicker'], function(e) {
+			if (false === Q.handle(o.onClick.handle, $this, [])) {
+				return false;
+			}
 			navigator.notification.confirm("", function(index) {
 				if (index === 3) return;
 				var source = Camera.PictureSourceType[index === 1 ? "CAMERA" : "PHOTOLIBRARY"];
@@ -177,7 +180,7 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 			e.preventDefault();
 		});
 		input.click(function () {
-			if (o.onClick && o.onClick() === false) {
+			if (false === Q.handle(o.onClick, $this, [])) {
 				return false;
 			}
 		});
@@ -211,6 +214,7 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 	throbber: null,
 	preprocess: null,
 	cameraCommands: ["Take new photo","Select from library","Cancel"],
+	onClick: new Q.Event(),
 	onSuccess: new Q.Event(function() {}, 'Q/imagepicker'),
 	onError: new Q.Event(function(message) {
 		alert('Image upload error' + (message ? ': ' + message : '') + '.');

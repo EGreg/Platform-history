@@ -42,6 +42,8 @@
  *         @param {String} [options.templates.contents.fields.tag]
  *         @default "span"
  *   @param {Q.Event} [options.onRefresh]  An event that occurs when the avatar is refreshed
+ *   @param {Q.Event} [options.onUpdate]  An event that occurs when the icon is updated via this tool
+ *   @param {Q.Event} [options.onImagepicker]  An event that occurs when the imagepicker is activated
  */
 Q.Tool.define("Users/avatar", function(options) {
 	var tool = this, state = this.state;
@@ -90,7 +92,8 @@ Q.Tool.define("Users/avatar", function(options) {
 	imagepicker: {},
 	cacheBust: 1000,
 	onRefresh: new Q.Event(),
-	onUpdate: new Q.Event()
+	onUpdate: new Q.Event(),
+	onImagepicker: new Q.Event()
 },
 
 {
@@ -222,7 +225,9 @@ Q.Tool.define("Users/avatar", function(options) {
 								}, {messages: true});
 							}}
 						}, state.imagepicker);
-						$img.plugin('Q/imagepicker', o);
+						$img.plugin('Q/imagepicker', o, function () {
+							state.onImagepicker.handle($img.state('Q/imagepicker'));
+						});
 					}
 				)
 			}

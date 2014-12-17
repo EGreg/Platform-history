@@ -85,7 +85,7 @@ class Handlebars_Helpers
     public function add($name, $helper)
     {
         if (!is_callable($helper)) {
-            throw new InvalidArgumentException("$name Helper is not a callable.");
+            throw new InvalidArgumentException("$name helper is not a callable.");
         }
         $this->helpers[$name] = $helper;
     }
