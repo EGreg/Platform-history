@@ -16,15 +16,17 @@
  *  @param {String} [options.selectors] Array of (slotName => selector) pairs, where the values are CSS style selectors indicating the element to update with javascript, and can be a parent of the tabs. Set to null to reload the page.
  *  @param {String} [options.slot] The name of the slot to request when changing tabs with javascript.
  *  @param {Function} [options.loader] Name of a function which takes url, slot, callback. It should call the callback and pass it an object with the response info. Can be used to implement caching, etc. instead of the default HTTP request. This function shall be Q.batcher getter
- *  @param {Q.Event} [options.onClick] Event when a tab was clicked, with arguments (name, element). Returning false cancels the tab switching. Optional.
- *  @param {Q.Event} [options.beforeSwitch] Event when tab switching begins. Returning false cancels the switching. Optional.
- *  @param {Function} [options.beforeScripts] Name of the function to execute after tab is loaded but before its javascript is executed. Optional.
- *  @param {Function} [options.onActivate] Name of the function to execute after a tab is activated. Optional.
+ *  @param {Q.Event} [options.onClick] Event when a tab was clicked, with arguments (name, element). Returning false cancels the tab switching.
+ *  @param {Q.Event} [options.beforeSwitch] Event when tab switching begins. Returning false cancels the switching.
+ *  @param {Function} [options.beforeScripts] Name of the function to execute after tab is loaded but before its javascript is executed.
+ *  @param {Function} [options.onSelected] Name of the function to execute after a tab is shown to be selected.
+ *  @param {Function} [options.onActivate] Name of the function to execute after a tab is activated.
  * @return Q.Tool
  */
 Q.Tool.define("Q/tabs", function(options) {
 
 	var tool = this;
+	var state = tool.state;
 	var $te = $(tool.element);
 	
 	tool.state.defaultTab = tool.state.defaultTab || Q.firstKey(options.tabs);
@@ -65,6 +67,7 @@ Q.Tool.define("Q/tabs", function(options) {
 	onClick: new Q.Event(),
 	beforeSwitch: new Q.Event(),
 	onActivate: new Q.Event(),
+	onSelected: new Q.Event(),
 	tabName: null, // set by indicateSelected
 	tab: null // set by indicateSelected
 },
@@ -127,7 +130,7 @@ Q.Tool.define("Q/tabs", function(options) {
 			}, "Q/tabs"),
 			onActivate: new Q.Event(function () {
 				tool.indicateSelected(tool.getName(tab));
-				state.onActivate.handle(tab);
+				state.onActivate.handle.call(this, tab, name);
 			}, "Q/tabs"),
 			loadExtras: true,
 			ignorePage: tool.isInDialog(),
@@ -168,6 +171,7 @@ Q.Tool.define("Q/tabs", function(options) {
 		}
 		var url = window.location.href.split('#')[0];
 		var tool = this;
+		var state = tool.state;
 		var defaultTab = null;
 		$tabs.removeClass('Q_selected');
 		if (!tab) {
@@ -189,8 +193,9 @@ Q.Tool.define("Q/tabs", function(options) {
 			tab = defaultTab;
 		}
 		$(tab).addClass('Q_selected');
-		this.state.tabName = name || tool.getName(tab);
-		this.state.tab = tab;
+		state.tabName = name || tool.getName(tab);
+		state.tab = tab;
+		state.onSelected.handle.call(tool, tab, name);
 	},
 	
 	/**

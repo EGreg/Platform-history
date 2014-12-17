@@ -6481,7 +6481,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 					window.StyleFix.process();
 				}
 
-				Q.handle(onActivate, this, arguments);
+				Q.handle(onActivate, this, [domElements]);
 			}
 			
 			function afterStyles() {
