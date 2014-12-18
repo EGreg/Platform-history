@@ -181,6 +181,15 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 		var scrollEventName = 'scroll.Q_drawers';
 		var scrollingHeight;
 		
+		var p = state.drawerPosition;
+		var w = state.drawerWidth;
+		var h = state.drawerHeight;
+		
+		state.drawerPosition = $otherDrawer.css('position');
+		state.drawerWidth = $otherDrawer.width();
+		state.drawerHeight = $otherDrawer.height();
+		state.drawerOffset = $otherDrawer.offset();
+		
 		// give things a chance to settle down
 		setTimeout(_setup1, 0);
 		
@@ -188,8 +197,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 			var scrollTop;
 			var sHeights = (state.heights instanceof Array)
 				? state.heights : Q.getObject(state.heights).apply(tool);
-			scrollingHeight = $scrolling[0].clientHeight
-				|| $scrolling.height();
+			lastScrollingHeight = scrollingHeight =  $scrolling[0].clientHeight || $scrolling.height();
 			scrollTop = state.bottom[otherIndex]
 				? -scrollingHeight + sHeights + $otherDrawer.height()
 				: 0;
@@ -232,14 +240,6 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 		
 		function _pin(callbacks) {
 			var ae = document.activeElement;
-			var p = state.drawerPosition;
-			var w = state.drawerWidth;
-			var h = state.drawerHeight;
-			
-			state.drawerPosition = $otherDrawer.css('position');
-			state.drawerWidth = $otherDrawer.width();
-			state.drawerHeight = $otherDrawer.height();
-			state.drawerOffset = $otherDrawer.offset();
 			$otherDrawer.css('position', 'relative');
 			
 			var $pe;

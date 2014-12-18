@@ -382,7 +382,7 @@ Q.Tool.define("Q/columns", function(options) {
 						$(this).animate({
 							scrollLeft: this.scrollWidth
 						});
-					})
+					});
 				}
 				
 				oldMinHeight = $div.css('min-height');
@@ -416,8 +416,9 @@ Q.Tool.define("Q/columns", function(options) {
 						$cs.height(heightToBottom);
 						$div.css('height', 'auto');
 					}
+					Q.layout();
 					if (o.hideBackgroundColumns) {
-						$div.prev().show();
+						$div.prev().hide();
 					}
 				} else {
 					if (o.close.clickable) {
