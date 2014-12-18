@@ -22,6 +22,7 @@
  *  @param {String}  [options.column] You can put a default content for all columns here (which is shown as they are loading)
  *  @param {Object}  [options.scrollbarsAutoHide] If an object, enables Q/scrollbarsAutoHide functionality with options from here. Enabled by default.
  *  @param {Boolean} [options.fullscreen] Whether to use fullscreen mode on mobile phones, using document to scroll instead of relying on possibly buggy "overflow" CSS implementation. Defaults to true on Android, false everywhere else.
+ *  @param {Boolean} [options.hideBackgroundColumns=false] Whether to hide background columns on mobile (perhaps improving browser rendering). Defaults to false, because background columns may have elements whose positioning properties are being queried.
  *  @param {Q.Event} [options.beforeOpen] Event that happens before a column is opened. Return false to prevent opening.
  *  @param {Q.Event} [options.beforeClose] Event that happens before a column is closed. Return false to prevent closing.
  *  @param {Q.Event} [options.onOpen] Event that happens after a column is opened.
@@ -108,6 +109,7 @@ Q.Tool.define("Q/columns", function(options) {
 	column: undefined,
 	scrollbarsAutoHide: {},
 	fullscreen: Q.info.isMobile && Q.info.isAndroid(1000),
+	hideBackgroundColumns: false,
 	beforeOpen: new Q.Event(),
 	beforeClose: new Q.Event(),
 	onOpen: new Q.Event(),
@@ -414,7 +416,9 @@ Q.Tool.define("Q/columns", function(options) {
 						$cs.height(heightToBottom);
 						$div.css('height', 'auto');
 					}
-					$div.prev().hide();
+					if (o.hideBackgroundColumns) {
+						$div.prev().show();
+					}
 				} else {
 					if (o.close.clickable) {
 						$close.plugin("Q/clickable", o.close.clickable);
@@ -509,7 +513,9 @@ Q.Tool.define("Q/columns", function(options) {
 		var w = $div.outerWidth(true);
 		var duration = o.animation.duration;
 		var $prev = $div.prev();
-		$prev.show();
+		if (o.hideBackgroundColumns) {
+			$prev.show();
+		}
 		if (state.fullscreen) {
 			$(window).scrollTop($prev.data(dataKey_scrollTop) || 0);
 			// make the title move while animating, until it is removed

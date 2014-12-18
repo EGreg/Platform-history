@@ -146,8 +146,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 	fullscreen: Q.info.isMobile && Q.info.isAndroid(1000),
 	foregroundZIndex: 50,
 	beforeSwap: new Q.Event(),
-	onSwap: new Q.Event(),
-	afterSwap: new Q.Event()
+	onSwap: new Q.Event()
 },
 
 {	
@@ -319,7 +318,6 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 			}, "Q/drawers");
 			function _continue() {
 				setTimeout(function () {
-					state.afterSwap.handle.call(tool, state.currentIndex);
 					callbacks[0](callbacks.slice(1));
 				}, 0);
 			}

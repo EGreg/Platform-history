@@ -6951,6 +6951,7 @@ Q.handle.onUrl = new Q.Event(function () {
 	Q.each(elements, function () {
 		Q.removeElement(this);
 	});
+	Q.Pointer.stopHint();
 }, "Q");
 
 /**
@@ -8814,6 +8815,7 @@ Q.Pointer = {
 				Q.Pointer.stopHint.animation.pause();
 				img.style.opacity = 0;
 			}
+			Q.Pointer.hint.elementOrPoint = elementOrPoint;
 			setTimeout(function () {
 				var width = parseInt(img.style.width);
 				var height = parseInt(img.style.height);
@@ -8851,6 +8853,7 @@ Q.Pointer = {
 				img.style.display = 'none';
 			}
 		}, Q.Pointer.hint.options.hide.duration);
+		Q.Pointer.hint.elementOrPoint = null;
 	},
 	/**
 	 * Consistently prevents the default behavior of an event across browsers

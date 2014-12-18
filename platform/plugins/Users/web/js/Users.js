@@ -1009,9 +1009,9 @@ function login_callback(response) {
 			}
 			priv.used = $('#Users_login_step1_form').data('used');
 			var msg = 'Success!';
-			if (response.slots.data.user) {
-				if (response.slots.data.user.displayName) msg = 'Welcome, '+response.slots.data.user.displayName+'!';
-				else if (response.slots.data.user.username) msg = 'Welcome, '+response.slots.data.user.username+'!';
+			var u;
+			if (u = response.slots.data.user) {
+				msg = 'Welcome, ' + (u.displayName || u.username) + '!';
 			}
 			$('button', $this).html(msg).attr('disabled', 'disabled');
 
