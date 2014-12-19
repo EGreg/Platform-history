@@ -4641,10 +4641,12 @@ Q.ready = function _Q_ready() {
 			// see http://caniuse.com/history
 			Q.addEventListener(window, 'popstate', Q.onPopState.handle);
 
-			// To support tool layouting, trigger 'layout' event on browser resize and orientation change
+			// To support tool layouting, trigger 'layout' event
+			// on browser resize and orientation change
 			Q.addEventListener(window, 'resize', Q.onLayout.handle);
 			Q.addEventListener(window, 'orientationchange', Q.onLayout.handle);
 			Q.addEventListener(window, 'scroll', Q.onScroll.handle);
+			_setLayoutInterval();
 
 			// Call the functions meant to be called after ready() is done
 			Q.onReady.handle.call(window, window.jQuery);
@@ -8490,6 +8492,28 @@ function _detectOrientation(e) {
 		Q.info.isVertical = true;
 	}
 }
+
+function _setLayoutInterval(e) {
+	if (!Q.info.isTouchscreen
+	|| !_setLayoutInterval.milliseconds) {
+		return;
+	}
+	var w = Q.Pointer.windowWidth();
+	var h = Q.Pointer.windowHeight();
+	var interval = setInterval(function () {
+		var w2 = Q.Pointer.windowWidth();
+		var h2 = Q.Pointer.windowHeight();
+		if (w !== w2 || h !== h2) {
+			Q.onLayout.handle();
+		}
+		w = w2;
+		h = h2;
+	});
+}
+
+_setLayoutInterval.options = {
+	milliseconds: 300
+};
 
 /**
  * Methods for working with pointer and touchscreen events
