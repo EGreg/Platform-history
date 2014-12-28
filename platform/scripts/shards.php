@@ -16,7 +16,7 @@ $usage = <<<EOT
 $usage
 
 ATTENTION!: If you use config server ('Q/internal/configServer') please make sure that all your
-            Q server instances (php and node.js) use common config server
+            Qbix server instances (php and node.js) use common config server
 
 Options:
 

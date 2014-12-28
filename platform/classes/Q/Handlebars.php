@@ -96,7 +96,7 @@ class Q_Handlebars_Loader implements Handlebars_Loader {
 	 */
 	public function __construct($xpath = '', $options = array()) {
 		if (!empty($xpath)) $xpath = DS.$xpath;
-		// the last resourt is to search Q views
+		// the last resourt is to search Qbix views
 		if (file_exists(Q_VIEWS_DIR.$xpath)) {
 			array_unshift(self::$loaders, new Handlebars_Loader_FilesystemLoader(Q_VIEWS_DIR.$xpath, $options));
 		}

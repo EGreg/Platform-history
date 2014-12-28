@@ -1,12 +1,12 @@
 <?php
 
 /**
- * Contains core Q functionality.
+ * Contains core Qbix functionality.
  * @module Q
  * @main Q
  */
 /**
- * Core Q platform functionality
+ * Core Qbix platform functionality
  * @class Q
  * @static
  */
@@ -550,12 +550,12 @@ class Q
 	 * @param {array} $options=array()
 	 *  The options passed to the tool (or array of options arrays passed to the tools).
 	 * @param {array} $extra=array()
-	 *  Options used by Q when rendering the tool. Can include:<br/>
+	 *  Options used by Qbix when rendering the tool. Can include:<br/>
 	 *  "id" =>
 	 *    an additional ID to distinguish tools instantiated
 	 *    side-by-side from each other. Usually numeric.<br/>
 	 *  "cache" =>
-	 *    if true, then the Q front end will not replace existing tools with same id
+	 *    if true, then the Qbix front end will not replace existing tools with same id
 	 *    during Q.loadUrl when this tool appears in the rendered HTML
 	 * @return {string}
 	 *  The rendered content of the tool
@@ -581,12 +581,12 @@ class Q
 		 * @param {string} 'info'
 		 *  An array of $toolName => $options pairs
 		 * @param {array} 'extra'
-		 *  Options used by Q when rendering the tool. Can include:<br/>
+		 *  Options used by Qbix when rendering the tool. Can include:<br/>
 		 *  "id" =>
 		 *    an additional ID to distinguish tools instantiated
 		 *    side-by-side from each other. Usually numeric.<br/>
 		 *  "cache" =>
-		 *    if true, then the Q front end will not replace existing tools with same id
+		 *    if true, then the Qbix front end will not replace existing tools with same id
 		 *    during Q.loadUrl when this tool appears in the rendered HTML
 		 * @return {string|null}
 		 *  If set, override the method return
@@ -646,12 +646,12 @@ class Q
 		 * @param {string} 'info'
 		 *  An array of $toolName => $options pairs
 		 * @param {array} 'extra'
-		 *  Options used by Q when rendering the tool. Can include:<br/>
+		 *  Options used by Qbix when rendering the tool. Can include:<br/>
 		 *  "id" =>
 		 *    an additional ID to distinguish tools instantiated
 		 *    side-by-side from each other. Usually numeric.<br/>
 		 *  "cache" =>
-		 *    if true, then the Q front end will not replace existing tools with same id
+		 *    if true, then the Qbix front end will not replace existing tools with same id
 		 *    during Q.loadUrl when this tool appears in the rendered HTML
 		 */
 		Q::event(
@@ -1076,7 +1076,7 @@ class Q
 	}
 
 	/**
-	 * Check if Q is ran as script
+	 * Check if Qbix is ran as script
 	 * @method textMode
 	 * @static
 	 * @return {boolean}

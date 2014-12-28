@@ -8,7 +8,7 @@ var Db = Q.require('Db');
 
 /**
  * Class representing 'Request' rows in the 'Streams' database
- * <br/>stored primarily on publisherId's Q server
+ * <br/>stored primarily on publisherId's Qbix server
  * @namespace Streams
  * @class Request
  * @extends Base.Streams.Request

@@ -199,7 +199,7 @@ Utils.sendEmail = function (to, subject, view, fields, options, callback) {
 		if (!app || !appUrl) return false;
 		from = [app+'@'+parse_url(appUrl, 'host'), app];
 	}
-	if (typeof from === "string") from = [from, Q.Config.get(['Q', 'app'], 'Qbix')];
+	if (typeof from === "string") from = [from, Q.Config.get(['Q', 'app'], ' Qbix ')];
 
 	var mailOptions = {
 		from: from[1]+' <'+from[0]+'>',

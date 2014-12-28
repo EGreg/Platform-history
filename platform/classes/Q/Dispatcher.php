@@ -110,7 +110,7 @@ class Q_Dispatcher
 	 * Usually called by a front controller.
 	 * @method dispatch
 	 * @static
-	 * @param {mixed} [$uri=null] You can pass a custom URI to dispatch. Otherwise, Q will attempt
+	 * @param {mixed} [$uri=null] You can pass a custom URI to dispatch. Otherwise, Qbix will attempt
 	 *  to route the requested URL, if any.
 	 * @param {array} [$check=array('accessible')] Pass array() to skip checking whether the URI can be obtained
 	 *  as a result of routing some URL.

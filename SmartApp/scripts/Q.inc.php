@@ -1,7 +1,7 @@
 <?php
 
 /**
- * For including Q in your scripts
+ * For including Qbix in your scripts
  */
 
 //
@@ -14,7 +14,7 @@ if (!defined('APP_DIR')) {
 //
 // Include Q
 //
-$header = "This is a Q project...";
+$header = "This is a Qbix project...";
 if (!is_dir(APP_DIR)) {
 	die("$header\nPlease edit scripts/Q.inc.php and change APP_DIR to point to your app's directory.\n");
 }

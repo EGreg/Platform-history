@@ -10,7 +10,7 @@
 class Q_Plugin
 {
 	/**
-	 * Connect Q platform if it's not already connected and set up constants
+	 * Connect Qbix platform if it's not already connected and set up constants
 	 * @method prepare
 	 * @static
 	 * @private
@@ -19,7 +19,7 @@ class Q_Plugin
 	 * 	or APP_WEB_DIR, APP_LOCAL_DIR not defined
 	 */
 	static private function prepare() {
-		// Connect Q platform if it's not already connected
+		// Connect Qbix platform if it's not already connected
 		if (!class_exists('Q', false))
 			if (!file_exists($Q_file = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'Q.php'))
 				throw new Exception("$Q_file not found");
@@ -27,7 +27,7 @@ class Q_Plugin
 				include($Q_file);
 
 		if (!class_exists('Q', false))
-			throw new Exception("Could not load Q Platform");
+			throw new Exception("Could not load Qbix Platform");
 
 		// Is APP_DIR defined and does it exist?
 		if (!defined('APP_DIR'))
@@ -334,7 +334,7 @@ class Q_Plugin
 	 * @throws {Exception}
 	 */
 	static function installApp($options) {
-		// Connect Q platform if it's not already connected
+		// Connect Qbix platform if it's not already connected
 		self::prepare();
 
 		set_time_limit(Q_Config::expect('Q', 'install', 'timeLimit'));
@@ -442,7 +442,7 @@ EOT;
 	{
 		set_time_limit(Q_Config::expect('Q', 'install', 'timeLimit'));
 
-		// Connect Q platform if it's not already connected
+		// Connect Qbix platform if it's not already connected
 		self::prepare();
 
 		$app_dir = APP_DIR;

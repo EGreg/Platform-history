@@ -10,7 +10,7 @@ if (!defined('APP_DIR')) {
 //
 // Include Q
 //
-$header = "<html><body style='padding: 10px;'><h1>This is a Q project...</h1>\n";
+$header = "<html><body style='padding: 10px;'><h1>This is a Qbix project...</h1>\n";
 $footer = "</body></html>";
 if (!is_dir(APP_DIR)) {
 	die("$header\nPlease edit index.php and change APP_DIR to point to your app's directory.\n$footer");
@@ -26,7 +26,7 @@ include($paths_filename);
 $Q_filename = realpath(Q_DIR.'/Q.php');
 if (!file_exists($Q_filename)) {
 	$basename = basename(APP_DIR);
-	die("$header\nPlease have the correct path to Q in $basename/local/paths.php\n$footer");
+	die("$header\nPlease have the correct path to Qbix in $basename/local/paths.php\n$footer");
 }
 
 include($Q_filename);

@@ -1,5 +1,5 @@
 /**
- * Contains core Q functionality.
+ * Contains core Qbix functionality.
  * @module Q
  * @main Q
  */
@@ -2266,10 +2266,10 @@ Q.init = function _Q_init(app, notListen) {
 			Q.Bootstrap.loadHandlers(function () {
 				util.log(typeof notListen === "string" ? notListen : 'Q platform initialized!');
 				/**
-				 * Q platform initialized
+				 * Qbix platform initialized
 				 * @event init
 				 * @param Q {Q}
-				 *	Initialized Q instance
+				 *	Initialized Qbix instance
 				 */
 				Q.emit('init', Q);
 			});
@@ -2319,7 +2319,7 @@ Q.require = function _Q_require(what) {
 
 var logStream = {};
 /**
- * Writes a string to application log. If run outside Q application writes to console.
+ * Writes a string to application log. If run outside Qbix application writes to console.
  * @method log
  * @param message {mixed} The data to write to log file. If data is string it is written to log, if it has other type
  *	it is converted to string using util.format with depth defined by Q/var_dump_max_levels config key

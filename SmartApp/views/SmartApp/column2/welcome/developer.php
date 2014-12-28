@@ -10,7 +10,7 @@
 		<ul class="SmartApp-items">
 			<li>
 				<span class="SmartApp-item-title">Build once, run everywhere</span>:
-				Apps built on Q can run on desktop browsers, tablets and mobile phones practically out of the box.
+				Apps built on Qbix can run on desktop browsers, tablets and mobile phones practically out of the box.
 				A unified platform allows for easier maintenance.
 			</li>
 			<li>
@@ -35,12 +35,12 @@
 			</li>
 			<li>
 				<span class="SmartApp-item-title">Scalable</span>:
-				Unlike other web platforms, Q is ready to handle the day your app makes it big.
+				Unlike other web platforms, Qbix is ready to handle the day your app makes it big.
 				The database layer automatically supports sharding, and can smoothly scale your back end
 				even as your app stays online, maintaining 99.99% uptime.
 			</li>
 			<li>
-				<span class="SmartApp-item-title">Efficient</span>: Thanks to its design choices, Q is
+				<span class="SmartApp-item-title">Efficient</span>: Thanks to its design choices, Qbix is
 				very efficient. It minimizes round-trips to the server, and supports caching at all layers.
 				But since it uses
 				<a target="_blank" href="http://socket.io">socket.io</a>,
@@ -67,7 +67,7 @@
 			<li>
 				<span class="SmartApp-item-title">Support and Certification</span>: We are available to provide
 				training and guidance on how to get the most out of Q. We also plan to offer classes and
-				certification to those developers who want to make money working on Q projects.
+				certification to those developers who want to make money working on Qbix projects.
 			</li>
 			<li>
 				<span class="SmartApp-item-title">Our community</span>:

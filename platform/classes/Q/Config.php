@@ -4,7 +4,7 @@
  * @module Q
  */
 /**
- * Holds the entire Q configuration
+ * Holds the entire Qbix configuration
  * @class Q_Config
  */
 class Q_Config
@@ -223,13 +223,13 @@ class Q_Config
 			// request config server
 			if (!empty($cs['url'])) {
 				if (!empty($cs['internal'])) {
-					// query "internal" Q server
+					// query "internal" Qbix server
 					$return = Q_Utils::queryInternal(
 						'Q/Config',
 						array('Q/method' => 'get', 'filename' => $filename),
 						$cs['url']);
 				} else {
-					// query "external" Q server
+					// query "external" Qbix server
 					$return = Q_Utils::queryExternal(
 						'Q/Config',
 						array('Q/method' => 'get', 'filename' => $filename),
@@ -270,7 +270,7 @@ class Q_Config
 			// request config server
 			if (!empty($cs['url'])) {
 				if (!empty($cs['internal'])) {
-					// query "internal" Q server
+					// query "internal" Qbix server
 					return Q_Utils::queryInternal(
 						'Q/Config',
 						array(
@@ -280,7 +280,7 @@ class Q_Config
 							'clear' => $clear),
 						$cs['url']);
 				} else {
-					// query "external" Q server
+					// query "external" Qbix server
 					return Q_Utils::queryExternal(
 						'Q/Config',
 						array(
@@ -337,7 +337,7 @@ class Q_Config
 			// request config server
 			if (!empty($cs['url'])) {
 				if (!empty($cs['internal'])) {
-					// query "internal" Q server
+					// query "internal" Qbix server
 					return Q_Utils::queryInternal(
 						'Q/Config',
 						array(
@@ -347,7 +347,7 @@ class Q_Config
 							'noSave' => $noSave),
 						$cs['url']);
 				} else {
-					// query "external" Q server
+					// query "external" Qbix server
 					return Q_Utils::queryExternal(
 						'Q/Config',
 						array(

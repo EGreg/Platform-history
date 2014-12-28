@@ -1,9 +1,9 @@
-This document is about the Q Platform, by Gregory Magarshak
+This document is about the Qbix Platform, by Gregory Magarshak
 
 DESIGN GOALS
 ------------
 
-Q offers a number of advantages over other frameworks, or not using any frameworks at all. Its design goals include:
+Qbix offers a number of advantages over other frameworks, or not using any frameworks at all. Its design goals include:
   * Code Re-Use ... build apps out of plug-ins; make it easy to turn new development into a plugin
   * Don't Repeat Yourself ... one place to modify or handler things; applies to config, schemas, etc.
   * Consistent ... file locations; coding style; documentation

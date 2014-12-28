@@ -22,7 +22,7 @@ var SmartApp = (function (Q, $) {
 	// tell Q.handle to load pages using AJAX
 	Q.handle.options.loadUsingAjax = true;
 
-	// call the Q function to handle pages loading/unloading:
+	// call the Qbix function to handle pages loading/unloading:
 	Q.page('', function () {
 		// code to run after any page has activated
 		$('.SmartApp-login').on(Q.Pointer.click, function () {

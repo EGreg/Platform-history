@@ -5,12 +5,12 @@
 		<h3 id="about">Businesses and Startups</h3>
 
 		<p>
-			Use Q to build a social app, or even turn your existing applications into social apps.
-			If you have an app that people use to do X, Q will let you:
+			Use Qbix to build a social app, or even turn your existing applications into social apps.
+			If you have an app that people use to do X, Qbix will let you:
 		</p>
 		<ul class="SmartApp-items">
 			<li>
-				<span class="SmartApp-item-title">Sign up users anywhere</span>: Q handles all the details
+				<span class="SmartApp-item-title">Sign up users anywhere</span>: Qbix handles all the details
 				of user signup, either with email, mobile number, or facebook. We've thought through
 				lots of architectural and security implications, and the result "just works".
 				<a class="SmartApp-login" href="#login">Try it yourself.</a>

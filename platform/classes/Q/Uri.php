@@ -21,7 +21,7 @@ class Q_Uri
 	 * @static
 	 * @param {string} $source An absolute URL, or an array, or a URI in string form.
 	 * @param {string} [$routePattern=null] The pattern of the route in the routes config
-	 *  If not specified, then Q searches all the route patterns in order, until it finds one that fits.
+	 *  If not specified, then Qbix searches all the route patterns in order, until it finds one that fits.
 	 *  If you set this to false, then $source is treated as an absolute URL, regardless of its format.
 	 * @return {Q_Uri|false} Returns false if no route patterns match.
 	 *  Otherwise, returns the URI.
@@ -435,7 +435,7 @@ class Q_Uri
 	 * @method toUrl
 	 * @param {string} [$routePattern=null] If you name the route to use for unrouting,
 	 *  it will be used as much as possible.
-	 *  Otherwise, Q will go through the routes one by one in order,
+	 *  Otherwise, Qbix will go through the routes one by one in order,
 	 *  until it finds one that can route a URL to the full URI
 	 *  contained in this object.
 	 * @param {string} [$controller=true] You can supply a different controller name, like 'tool.php'

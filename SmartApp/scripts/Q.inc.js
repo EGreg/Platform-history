@@ -1,5 +1,5 @@
 /**
- * For including Q in your scripts
+ * For including Qbix in your scripts
  */
 module.exports = function (callback) {
 
@@ -12,7 +12,7 @@ module.exports = function (callback) {
 	//
 	// Include Q
 	//
-	var header = "This is a Node On Q project...\n";
+	var header = "This is a Node On Qbix project...\n";
 
 	var paths_filename = app_dir + '/local/paths';
 	path.exists(paths_filename+'.js', function (exists) {

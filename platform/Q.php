@@ -1,14 +1,11 @@
 <?php
 
 /**
- * Q Platform
+ * Qbix Platform
  * by Gregory Magarshak
- * 
- * MIT (X11)  License
- * You are free to use this framework however you see fit.
  *
  * This file should be included by any PHP script that wants
- * to use the Q Platform. (For example, a front controller.)
+ * to use the Qbix Platform. (For example, a front controller.)
  *
  * @package Q
  */

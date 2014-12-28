@@ -7,7 +7,7 @@
     <title>Minimal XHTML 1.0 Document</title>
   </head>
   <body>
-	<h1>Default Q 404</h1>
+	<h1>Default Qbix 404</h1>
 	<h2>
 		The url <span class='url'><?php echo $url ?></span> doesn't point to anything.
 	</h2>

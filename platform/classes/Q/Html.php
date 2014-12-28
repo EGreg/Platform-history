@@ -1171,7 +1171,7 @@ class Q_Html
 	static function popIdPrefix ()
 	{
 		if (count(self::$id_prefixes) <= 1) {
-			throw new Exception("Nothing to Q from prefix stack");
+			throw new Exception("Nothing to Qbix from prefix stack");
 		}
 		array_pop(self::$tool_ids);
 		$popped_prefix = array_pop(self::$id_prefixes);

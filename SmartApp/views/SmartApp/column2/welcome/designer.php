@@ -16,13 +16,13 @@
 			</li>
 			<li>
 				<span class="SmartApp-item-title">Multiple targets</span>:
-				Apps built on Q are able to run on desktop browsers, tablets and mobile phones practically out of the box.
-				Your themes will be accessed by users wherever they are. Q conventions enable you to design themes that work
+				Apps built on Qbix are able to run on desktop browsers, tablets and mobile phones practically out of the box.
+				Your themes will be accessed by users wherever they are. Qbix conventions enable you to design themes that work
 				with different device orientations, properly support touch events, and more.
 			</li>
 			<li>
 				<span class="SmartApp-item-title">Dynamic interfaces</span>:
-				The front end interface in Q consists of one or more virtual <span class="literal">pages</span>,
+				The front end interface in Qbix consists of one or more virtual <span class="literal">pages</span>,
 				that load dynamically yet work correctly with the back button and browser history, taking advantage of HTML5 whenever possible.
 			</li>
 			<li>
