@@ -535,11 +535,12 @@ Q.Tool.define("Q/columns", function(options) {
 		$div.animate($div.data(dataKey_hide), duration, function () {
 			Q.removeElement(div, true); // remove it correctly
 		
+			var data = tool.data(index);
 			var $sc = $(state.container);
 			$sc.width($sc.width() - w);
 			presentColumn(tool);
 			Q.handle(callback, tool, [index, div]);
-			state.onClose.handle.call(tool, index, div);
+			state.onClose.handle.call(tool, index, div, data);
 		});
 		return this;
 	},

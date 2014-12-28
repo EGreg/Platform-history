@@ -7053,7 +7053,8 @@ function _activateTools(toolElement, options, shared) {
 	var pendingParentEvent = _pendingParentStack[_pendingParentStack.length-1];
 	var pendingCurrentEvent = new Q.Event();
 	_pendingParentStack.push(pendingCurrentEvent); // wait for construct of parent tool
-	_loadToolScript(toolElement, function _activateTools_doConstruct(toolElement, toolFunc, toolName, uniqueToolId) {
+	_loadToolScript(toolElement,
+	function _activateTools_doConstruct(toolElement, toolFunc, toolName, uniqueToolId) {
 		if (!toolFunc.toolConstructor) {
 			toolFunc.toolConstructor = function Q_Tool(element, options) {
 				// support re-entrancy of Q.activate
@@ -8495,7 +8496,7 @@ function _detectOrientation(e) {
 
 function _setLayoutInterval(e) {
 	if (!Q.info.isTouchscreen
-	|| !_setLayoutInterval.milliseconds) {
+	|| !_setLayoutInterval.options.milliseconds) {
 		return;
 	}
 	var w = Q.Pointer.windowWidth();
@@ -8508,7 +8509,7 @@ function _setLayoutInterval(e) {
 		}
 		w = w2;
 		h = h2;
-	});
+	}, _setLayoutInterval.options.milliseconds);
 }
 
 _setLayoutInterval.options = {
