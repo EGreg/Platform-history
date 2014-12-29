@@ -2651,7 +2651,7 @@ Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotN
 			var error = err || response.errors;
 			if (error) {
 				Q.each(callbacks, function (k, cb) {
-					cb[0].call(this, error);
+					cb[0].call(response, error, response);
 				});
 				return;
 			}

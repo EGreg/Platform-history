@@ -961,9 +961,13 @@ Stream.retain = function _Stream_retain (publisherId, streamName, key, callback)
 	var ps = Streams.key(publisherId, streamName);
 	key = Q.Event.calculateKey(key);
 	Streams.get(publisherId, streamName, function (err) {
-		_retainedStreams[ps] = this;
-		Q.setObject([ps, key], true, _retainedByStream);
-		Q.setObject([key, ps], true, _retainedByKey);
+		if (err) {
+			_retainedStreams[ps] = null;
+		} else {
+			_retainedStreams[ps] = this;
+			Q.setObject([ps, key], true, _retainedByStream);
+			Q.setObject([key, ps], true, _retainedByKey);
+		}
 		Q.handle(callback, this, [err, this]);
 	});
 };
@@ -1035,10 +1039,12 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 		});
 		// just get the stream, and any listeners will be triggered
 		Streams.get(publisherId, streamName, function (err, stream) {
-			var ps = Streams.key(publisherId, streamName);
-			var changed = (options && options.changed) || {};
-			updateStream(_retainedStreams[ps], this.fields, changed);
-			_retainedStreams[ps] = this;
+			if (!err) {
+				var ps = Streams.key(publisherId, streamName);
+				var changed = (options && options.changed) || {};
+				updateStream(_retainedStreams[ps], this.fields, changed);
+				_retainedStreams[ps] = this;
+			}
 			if (callback) {
 				var params = [err, stream];
 				if (options && options.extra) {
