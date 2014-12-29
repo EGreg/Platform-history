@@ -7271,6 +7271,9 @@ Q.Template.set = function (name, content, type) {
 Q.Template.remove = function (name) {
 	if (typeof name === 'string') {
 		delete Q.Template.collection[Q.normalize(name)];
+		Q.Template.load.cache.each([name], function (key) {
+			Q.Template.load.cache.remove(key);
+		});
 		return;
 	}
 	Q.each(name, function (i, name) {
