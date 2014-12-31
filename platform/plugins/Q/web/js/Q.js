@@ -1533,8 +1533,8 @@ Q.setObject = function _Q_setObject(name, value, context, delimiter) {
 	if (typeof name === 'string') {
 		name = name.split(delimiter);
 	}
-	var p = name.pop(),
-		obj = _getProp(name, true, context);
+	var p = name.pop();
+	var obj = _getProp(name, true, context);
 	return obj && (p !== undefined) ? (obj[p] = value) : undefined;
 };
 
@@ -3707,10 +3707,7 @@ Q.Tool.setUpElement = function _Q_Tool_element(element, toolType, toolOptions, i
 	element.addClass('Q_tool '+ntt+'_tool');
 	if (!id && !element.getAttribute(id)) {
 		var p1, p2;
-		p1 = prefix || (Q.Tool.beingActivated 
-			? Q.Tool.beingActivated.prefix
-			: ''
-		);
+		p1 = prefix || (Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '');
 		do {
 			p2 = (p1 && p1 + '_') + ntt + '_' + (Q.Tool.nextDefaultId++) + '_';
 		} while (Q.Tool.active[p2]);
@@ -8505,6 +8502,10 @@ function _setLayoutInterval(e) {
 	var w = Q.Pointer.windowWidth();
 	var h = Q.Pointer.windowHeight();
 	var interval = setInterval(function () {
+		var ae = document.activeElement;
+		if (ae && ['INPUT', 'TEXTAREA', 'SELECT'].indexOf(ae.tagName.toUpperCase()) >= 0) {
+			return;
+		}
 		var w2 = Q.Pointer.windowWidth();
 		var h2 = Q.Pointer.windowHeight();
 		if (w !== w2 || h !== h2) {
