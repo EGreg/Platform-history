@@ -3214,6 +3214,11 @@ Q.Tool.beforeRemove = Q.Event.factory(_beforeRemoveToolHandlers, ["", _toolEvent
  *  should be removed.
  */
 Q.Tool.remove = function _Q_Tool_remove(elem, removeCached) {
+	if (typeof elem === 'string') {
+		var tool = Q.Tool.byId(elem);
+		if (!tool) return false;
+		elem = tool.element;
+	}
 	Q.find(elem, true, null, function _Q_Tool_remove_found(toolElement) {
 		for (var name in toolElement.Q.tools) {
 			toolElement.Q.tools[name].remove(removeCached);
@@ -3233,6 +3238,11 @@ Q.Tool.remove = function _Q_Tool_remove(elem, removeCached) {
  *  should be removed.
  */
 Q.Tool.clear = function _Q_Tool_clear(elem, removeCached) {
+	if (typeof elem === 'string') {
+		var tool = Q.Tool.byId(elem);
+		if (!tool) return false;
+		elem = tool.element;
+	}
 	Q.find(elem.children || elem.childNodes, true, null, function _Q_Tool_remove_found(toolElement) {
 		var tool = Q.Tool.from(toolElement);
 		if (tool) {
@@ -3686,11 +3696,11 @@ Q.Tool.encodeOptions = function _Q_Tool_stringFromOptions(options) {
  *  The tag of the element, such as "div", or a reference to an existing Element
  * @param {String} toolType
  *  The type of the tool, such as "Q/tabs"
- * @param {Object} toolOptions
+ * @param {Object} [toolOptions]
  *  The options for the tool
- * @param {String} id
+ * @param {String} [id]
  *  Optional id of the tool, such as "_2_Q_tabs"
- * @param {String} prefix
+ * @param {String} [prefix]
  *  Optional prefix to prepend to the tool's id
  * @return {HTMLElement}
  *  Returns an element you can append to things
@@ -3815,7 +3825,7 @@ Q.Tool.from = function _Q_Tool_from(toolElement, toolName) {
  */
 Q.Tool.byId = function _Q_Tool_byId(id, name) {
 	var tool = Q.Tool.active[id];
-	return tool && name ? tool.element.Q(name) : tool || null;
+	return (tool && name ? tool.element.Q(name) : tool) || null;
 };
 
 /**
