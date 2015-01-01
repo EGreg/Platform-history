@@ -327,7 +327,7 @@ Q.Tool.define("Q/columns", function(options) {
 					if (i != index) return;
 					onClose.handle.apply(this, arguments);
 					state.onClose.remove(key);
-				}, tool);
+				});
 			}
 			
 			var show = {

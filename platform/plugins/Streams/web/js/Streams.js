@@ -566,6 +566,11 @@ Streams.create.onError = new Q.Event();
  */
 Streams.construct = function _Streams_construct(fields, extra, callback) {
 
+	if (Q.typeOf(fields) === 'Q.Sterams.Stream') {
+		Q.handle(callback, fields, [null, fields]);
+		return false;
+	}
+
 	if (Q.isEmpty(fields)) {
 		Q.handle(callback, this, ["Streams.Stream constructor: fields are missing"]);
 		return false;
