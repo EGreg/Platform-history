@@ -8490,6 +8490,21 @@ _touchScrollingHandler.options = {
 	direction: 'both'
 };
 
+function _touchBlurHandler(event) {
+	var b = _touchBlurHandler.options.blur;
+	if (!b) return;
+		var ae = document.activeElement;
+	if (ae && (typeof ae.blur === 'function')
+	&& (ae !== Q.Pointer.target(event))
+	&& b.indexOf(ae.tagName.toUpperCase()) >= 0) {
+		ae.blur();
+	}
+}
+
+_touchBlurHandler.options = {
+	blur: ['INPUT', 'TEXTAREA', 'SELECT']
+};
+
 function _detectOrientation(e) {
 	var w = window,
 	    d = document,
@@ -8958,6 +8973,20 @@ Q.Pointer = {
 	 */
 	restoreTouchScrolling: function () {
 		Q.removeEventListener(window, 'touchmove', _touchScrollingHandler);
+	},
+	/**
+	 * Call this function to begin blurring active elements when touching outside them
+	 * @method startBlurringOnTouch
+	 */
+	startBlurringOnTouch: function (options) {
+		Q.addEventListener(window, 'touchstart', _touchBlurHandler);
+	},
+	/**
+	 * Call this function to begin blurring active elements when touching outside them
+	 * @method startBlurringOnTouch
+	 */
+	stopBlurringOnTouch: function (options) {
+		Q.removeEventListener(window, 'touchstart', _touchBlurHandler);
 	},
 	/**
 	 * This event occurs when a click has been canceled, for one of several possible reasons.

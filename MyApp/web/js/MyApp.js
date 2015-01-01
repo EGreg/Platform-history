@@ -75,6 +75,7 @@ var MyApp = (function (Q, $) {
 	Q.Pointer.preventTouchScrolling({
 		direction: 'vertical'
 	});
+	Q.Pointer.startBlurringOnTouch();
 	
 	return MyApp;
 	

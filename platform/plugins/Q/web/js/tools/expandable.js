@@ -76,8 +76,9 @@ Q.Tool.define('Q/expandable', function (options) {
 	 *  @param {Boolean} [options.autoCollapseSiblings] Whether, when expanding an expandable,
 	 *  @param {Boolean} [options.scrollContainer] Closest parent element that could scroll
 	 *  @param {Boolean} [options.scrollToElement] Can be used to specify another element to scroll to when expanding. Defaults to the title element of the expandable.
+	 * @param {Function} [callback] the function to call once the expanding has completed
 	 */
-	expand: function (options) {
+	expand: function (options, callback) {
 		var tool = this;
 		var state = tool.state;
 		if (false === Q.handle(state.beforeExpand, this, [])) {
@@ -113,6 +114,7 @@ Q.Tool.define('Q/expandable', function (options) {
 			}
 			$expandable.css('overflow', 'visible');
 		}, state.duration).onComplete.set(function () {
+			Q.handle(callback, tool, []);
 			Q.handle(state.onExpand, tool, []);
 		});
 		state.expanded = true;
