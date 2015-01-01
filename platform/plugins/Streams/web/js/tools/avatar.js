@@ -60,10 +60,12 @@ Q.Tool.define("Users/avatar", function(options) {
 				{cacheBust: state.cacheBust})
 		);
 	}, this);
-	Q.Streams.Stream.onFieldChanged(state.userId, 'Streams/user/firstName', 'content')
-	.set(handleChange, this);
-	Q.Streams.Stream.onFieldChanged(state.userId, 'Streams/user/lastName', 'content')
-	.set(handleChange, this);
+	if (!state.editable || state.editable.indexOf('name') < 0) {
+		Q.Streams.Stream.onFieldChanged(state.userId, 'Streams/user/firstName', 'content')
+		.set(handleChange, this);
+		Q.Streams.Stream.onFieldChanged(state.userId, 'Streams/user/lastName', 'content')
+		.set(handleChange, this);
+	}
 	function handleChange(fields, field) {
 		Q.Streams.Avatar.get.forget(state.userId);
 		tool.element.innerHTML = '';
