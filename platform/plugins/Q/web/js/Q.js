@@ -8443,8 +8443,12 @@ function _touchScrollingHandler(event) {
 			continue;
 		}
 		var overflow = p.computedStyle().overflow;
-		var hiddenWidth = p.scrollWidth - p.offsetWidth;
-		var hiddenHeight = p.scrollHeight - p.offsetHeight;
+		var hiddenWidth = p.scrollWidth - Math.min(
+			p.offsetWidth, Q.Pointer.windowWidth()
+		);
+		var hiddenHeight = p.scrollHeight - Math.min(
+			p.offsetHeight, Q.Pointer.windowHeight()
+		);
 		var s = (['hidden', 'visible'].indexOf(overflow) < 0);
 		if ((s || p.tagName === 'HTML')
 		&& hiddenHeight > 0) {
