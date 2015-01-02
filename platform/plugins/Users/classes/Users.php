@@ -1248,7 +1248,7 @@ abstract class Users extends Base_Users
 				}
 				call_user_func($func, $image, $dir2.DS.$info['filename'].'.png');
 			} else {
-				Q_Icon::put(
+				Q_Image::put(
 					$dir2.DS.$basename,
 					$url['hash'],
 					$url['size'],
