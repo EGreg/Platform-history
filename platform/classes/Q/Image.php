@@ -85,7 +85,7 @@ class Q_Image
      * @throws {Q_Exception_WrongValue} If avatar type is not supported
 	 */
 	static function put($filename, $hash, $size = Q_AVATAR_SIZE, $type = 'wavatar', $gravatar = false) {
-		$result = self::get($hash, $size, $type, $gravatar);
+		$result = self::avatar($hash, $size, $type, $gravatar);
 		if ($gravatar) {
 			file_put_contents($filename, $result);
 		} else {
