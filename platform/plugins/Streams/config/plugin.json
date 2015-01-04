@@ -88,6 +88,7 @@
 				"create": true,
 				"edit": true,
 				"defaults": {
+					"icon": "Streams/interest/default",
 					"title": "Untitled Interest"
 				}
 			},
@@ -217,6 +218,17 @@
 				"emailAddress": "Streams/user/emailAddress",
 				"mobileNumber": "Streams/user/mobileNumber"
 			}
+		},
+		"icons": {
+			"sizes": {
+				"40": "40.png",
+				"50": "50.png",
+				"80": "80.png",
+				"67x100": "x100.png",
+				"500x333": "500x.png"
+			},
+			"defaultSize": "40",
+			"defaultCacheBust": "1000"
 		}
 	}
 }

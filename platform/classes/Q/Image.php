@@ -44,31 +44,65 @@ class Q_Image
 		}
 		if (isset($avatar) && $avatar !== false) {
 			return $avatar;
-		} else {
-            if (empty($size)) $size = Q_AVATAR_SIZE;
-            if (empty($type)) $type = 'wavatar';
-            if (!function_exists('imagecreatetruecolor')) {
-                throw new Q_Exception("PHP GD support not installed!");
-            }
-            //$md5 = md5(strtolower(trim($key)));
-            switch ($type) {
-                case 'wavatar':
-                    return self::buildWAvatar($hash, $size);
-                    break;
-                case 'monster':
-                    return self::buildMAvatar($hash, $size);
-                    break;
-                case 'imageid':
-                    return self::buildIAvatar($hash, $size);
-                    break;
-                default:
-                    throw new Q_Exception_WrongValue(array(
-                        'field' => 'type', 
-                        'range' => "one of: 'wavatar', 'monster', 'imageid'")
-                    );
-                    break;
-            }
+		}
+        if (empty($size)) $size = Q_AVATAR_SIZE;
+        if (empty($type)) $type = 'wavatar';
+        if (!function_exists('imagecreatetruecolor')) {
+            throw new Q_Exception("PHP GD support not installed!");
         }
+        switch ($type) {
+            case 'wavatar':
+                return self::buildWAvatar($hash, $size);
+                break;
+            case 'monster':
+                return self::buildMAvatar($hash, $size);
+                break;
+            case 'imageid':
+                return self::buildIAvatar($hash, $size);
+                break;
+            default:
+                throw new Q_Exception_WrongValue(array(
+                    'field' => 'type', 
+                    'range' => "one of: 'wavatar', 'monster', 'imageid'")
+                );
+				break;
+        }
+	}
+	
+	/**
+	 * Download an image from pixabay
+	 * @param {string} $keywords Specify some string to search images on pixabay
+	 * @param {array} [$options=array()] Any additional options for pixabay api as per its documentation
+	 * @param {boolean} [$returnFirstImage=false] If true, downloads and returns the first image as data
+	 * @return {string} JSON according to pixabay api documentation
+	 */
+	static function pixabay($keywords, $options = array(), $returnFirstImage = false)
+	{
+		$info = Q_Config::get('Q', 'images', 'pixabay', null);
+		if (!$info['username']) {
+			throw new Q_Exception_MissingConfig(array('fieldpath' => 'Q/images/pixabay/username'));
+		}
+		if (!$info['key']) {
+			throw new Q_Exception_MissingConfig(array('fieldpath' => 'Q/images/pixabay/key'));
+		}
+		$username = $info['username'];
+		$key = $info['key'];
+		$defaults = array();
+		$options = array_merge($defaults, $options);
+		$optionString = http_build_query($options, '', '&');
+		$keywords = urlencode(strtolower($keywords));
+		$url = "http://pixabay.com/api/?username=$username&key=$key&q=$keywords&$optionString";
+		$json = @file_get_contents($url);
+		$data = json_decode($json, true);
+		if (!$returnFirstImage) {
+			return $data;
+		}
+		if (empty($data['hits'][0]['webformatURL'])) {
+			return null;
+		}
+		$webformatUrl = $data['hits'][0]['webformatURL'];
+		$data = @file_get_contents($webformatUrl);
+		return $data;
 	}
 
 	/**
@@ -105,6 +139,7 @@ class Q_Image
 	 * @param {string} [$params.crop] array with keys "x", "y", "w", "h" to crop the original image
 	 * @param {string} [$params.save=array("x" => "")] array of $size => $basename pairs
 	 *  where the size is of the format "WxH", and either W or H can be empty.
+	 * @param {string} [$params.skipAccess=false] if true, skips the check for authorization to write files there
 	 * @return {array} an array of ($size => $fullImagePath) pairs
 	 */
 	static function save($params)
@@ -113,9 +148,7 @@ class Q_Image
 			throw new Q_Exception("Image data is missing");
 		}
 		$imageData = $params['data'];
-		$image = imagecreatefromstring(
-			base64_decode(chunk_split(substr($imageData, strpos($imageData, ',')+1)))
-		);
+		$image = imagecreatefromstring($imageData);
 		if (!$image) {
 			throw new Q_Exception("Image type not supported");
 		}
@@ -140,7 +173,8 @@ class Q_Image
 		if ($lastChar !== DS and $lastChar !== '/') {
 			$writePath .= DS;
 		}
-		Q_Utils::canWriteToPath($writePath, true, true);
+		$ifNotWritable = empty($params['skipAccess']) ? true : null;
+		Q_Utils::canWriteToPath($writePath, $ifNotWritable, true);
 	
 		// check if exif is available
 		if (exif_imagetype($imageData) === IMAGETYPE_JPEG) {

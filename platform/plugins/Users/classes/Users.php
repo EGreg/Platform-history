@@ -733,6 +733,10 @@ abstract class Users extends Base_Users
 				'userId' => $user->id,
 				'forType' => 'Users/hinted'
 			))->fetchDbRows(null, null, 'forId');
+		
+		// Cache already shown hints in the session.
+		// The consistency of this mechanism across sessions is not perfect, i.e.
+		// the same hint may repeat in multiple concurrent sessions, but it's ok.
 		$_SESSION['Users']['hinted'] = array_keys($votes);
 
 		/**

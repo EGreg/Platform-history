@@ -12,7 +12,11 @@ function Q_image_post($params = null)
 {
 	$timeLimit = Q_Config::get('Q', 'uploads', 'limits', 'image', 'time', 5*60*60);
 	set_time_limit($timeLimit); // 5 min
-	$data = Q_Image::save($params ? $params : $_REQUEST);
+	if (!$params) {
+		$params = $_REQUEST;
+	}
+	$params['data'] = base64_decode(chunk_split(substr($r['data'], strpos($r['data'], ',')+1)));
+	$data = Q_Image::save($params);
 	if (empty($params)) {
 		Q_Response::setSlot('data', $data);
 	}

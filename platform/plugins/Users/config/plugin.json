@@ -140,6 +140,11 @@
 			"sizes": ["40", "50", "80", "200"],
 			"defaultSize": "40",
 			"defaultCacheBust": "1000"
+		},
+		"vote": {
+			"Users/hinted": {
+				"value": 1
+			}
 		}
 	}
 }

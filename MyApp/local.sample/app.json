@@ -12,6 +12,12 @@
 		"nodeInternal": {
 			"host": "127.0.0.1",
 			"port": "10501"
+		},
+		"images": {
+			"pixabay": /* {
+				"username": "YOUR USERNAME HERE",
+				"key": "YOUR SECRET KEY HERE"
+			} */
 		}
 	},
 	"Db": {

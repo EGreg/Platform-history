@@ -100,7 +100,8 @@
 		},
 		"images": {
 			"maxWidth": 5000,
-			"maxHeight": 5000
+			"maxHeight": 5000,
+			"pixabay": null
 		},
 		"uploads": {
 			"limits": {

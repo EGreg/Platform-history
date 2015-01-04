@@ -1596,6 +1596,38 @@ function submitClosestForm () {
 }
 
 /**
+ * Votes for something
+ * @static
+ * @method hint 
+ * @param {String} forType The type of thing to vote for
+ * @param {String} forId The id of thing to vote for
+ * @param {Number} [value=1] the value the user has voted for, such as a rating etc.
+ * @param {Element|Object} elementOrPoint Indicates where to display the hint. A point should contain properties "x" and "y".
+ * @param {Object} [options] possible options, which can include:
+ * @param {String} [options.src] the url of the image
+ * @param {Point} [options.hotspot={x:0.5,y:0.4}] "x" and "y" represent the location of the hotspot within the image, using fractions between 0 and 1
+ * @param {String} [options.width="200px"]
+ * @param {String} [options.height="200px"]
+ * @param {Number} [options.zIndex=99999]
+ * @return {Boolean} Returns true if the hint with will be shown, or false if a hint with this key was already shown before.
+ */
+Users.vote = function (forType, forId, value) {
+	var fields = {
+		forType: forType,
+		forId: forId
+	};
+	if (value !== undefined) {
+		fields.value = value;
+	}
+	Q.req('Users/vote', ['vote'], function (err, result) {
+		var msg = Q.firstErrorMessage(err, result && result.errors);
+		if (msg) {
+			return console.warn(msg);
+		}
+	}, { method: 'POST', fields: fields });
+};
+
+/**
  * Places a hint to click or tap on the screen
  * @static
  * @method hint 
@@ -1615,19 +1647,7 @@ Users.hint = function (key, elementOrPoint, options) {
 	}
 	Q.Pointer.hint(elementOrPoint, options);
 	Users.hinted.push(key);
-	Q.req('Users/vote', ['vote'], function (err, result) {
-		var msg = Q.firstErrorMessage(err, result && result.errors);
-		if (msg) {
-			return console.warn(msg);
-		}
-	}, {
-		method: 'POST',
-		fields: {
-			forType: 'Users/hinted',
-			forId: key,
-			value: 1
-		}
-	});
+	Users.vote('Users/hinted', key);
 	return true;
 };
 
