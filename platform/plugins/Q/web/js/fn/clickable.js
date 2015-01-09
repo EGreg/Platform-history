@@ -53,11 +53,11 @@
  * @default false
  * @param {Boolean} [options.triggers] A jquery selector or jquery of additional elements to trigger the clickable
  * @default null
- * @param {Q.Event} [options.onPress] onPress
+ * @param {Q.Event} [options.onPress] onPress occurs after the user begins a click or tap.
  * @default new Q.Event()
- * @param {Q.Event} [options.onRelease] onRelease
+ * @param {Q.Event} [options.onRelease] onRelease occurs after the user ends the click or tap. This event receives parameters (evt, overElement)
  * @default new Q.Event()
- * @param {Q.Event} [options.afterRelease] afterRelease
+ * @param {Q.Event} [options.afterRelease] afterRelease occurs after the user ends the click or tap and the release animation completed. This event receives parameters (evt, overElement)
  * @default new Q.Event()
  * @param {Number} [options.cancelDistance] cancelDistance
  * @default 15

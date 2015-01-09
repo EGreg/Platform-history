@@ -54,7 +54,7 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 		'position': 'absolute'
 	});
 	var originalSrc = $this.attr('src');
-	if (originalSrc.indexOf('?') < 0) {
+	if (originalSrc && originalSrc.indexOf('?') < 0) {
 		// cache busting
 		$this.attr('src', Q.url(originalSrc, null, {cacheBust: 1000}));
 	}
