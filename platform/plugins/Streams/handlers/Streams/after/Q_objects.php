@@ -50,7 +50,7 @@ function Streams_after_Q_objects () {
 		$dialogData = $tree->getAll();
 		if ($dialogData) {
 			Q_Response::setScriptData('Q.plugins.Streams.invite.dialog', $dialogData);
-			Q_Response::addTemplate('Streams/invite/completea');
+			Q_Response::addTemplate('Streams/invite/complete');
 		}
 	}
 }
