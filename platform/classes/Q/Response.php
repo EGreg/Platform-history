@@ -22,6 +22,19 @@ class Q_Response
 	{
 		self::$slots[$slotName] = $content;
 	}
+	
+	/**
+	 * Gets the content of a slot, or null if it wasn't filled
+	 * @method getSlot
+	 * @static
+	 * @param {string} $slotName The name of the slot.
+	 * @return {string|null}
+	 */
+	static function getSlot(
+	 $slotName)
+	{
+		return isset(self::$slots[$slotName]) ? self::$slots[$slotName] : null;
+	}
 
 	/**
 	 * Gets the current content of a slot, if any.
@@ -840,6 +853,7 @@ class Q_Response
 			self::$inlineTemplates[$slotName] = array();
 		}
 		foreach (self::$inlineTemplates[$slotName] as $template) {
+			Q::log("=====\n\n".$template['name']);
 			if ($template['name'] == $name && $template['type'] == $type) {
 				return false; // already added
 			}
@@ -850,7 +864,7 @@ class Q_Response
 		}
 		if ($type === 'php') {
 			$ob = new Q_OutputBuffer();
-			Q::includeFile($filename, $params, true);
+			Q::includeFile($filename, $params, false);
 			$content = $ob->getClean();
 		} else {
 			$content = file_get_contents($filename);

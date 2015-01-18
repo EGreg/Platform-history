@@ -56,7 +56,7 @@ Q.Tool.define('Q/filter', function (options) {
 		if (state.begun) return;
 		state.begun = true;
 		
-		if (!Q.info.isMobile) {
+		if (Q.info.isMobile) {
 			tool.suspended = true;
 			var $te = $(tool.element);
 			tool.$input[0].copyComputedStyle(tool.$input[0]); // preserve styles

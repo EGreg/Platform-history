@@ -1115,6 +1115,20 @@ Q.isInteger = function _Q_isInteger(value) {
 };
 
 /**
+ * Tests if the value is an array
+ * 
+ * @static
+ * @method isArray
+ * @param value {mixed}
+ *  The value to test
+ * @return {boolean}
+ *	Whether it is an array
+ */
+Q.isArray = function _Q_isArray(value) {
+	return (Q.typeOf(value) === 'array');
+};
+
+/**
  * Determines whether something is a plain object created within Javascript,
  * or something else, like a DOMElement or Number
  * 
@@ -4409,6 +4423,43 @@ Q.Page = function (uriString) {
 	this.uriString = uriString;
 };
 
+/**
+ * Pushes a url onto the history stack via pushState with a fallback to hashChange,
+ * to be handled later by either the Q_popStateHandler or the Q_hashChangeHandler.
+ * @class Q.Page
+ * @static
+ * @method
+ * @param {String} url The url to push
+ */
+Q.Page.push = function (url) {
+	url = Q.url(url);
+	if (url.substr(0, Q.info.baseUrl.length) !== Q.info.baseUrl) {
+		return;
+	}
+	var parts = url.split('#');
+	var path = (url.substr(Q.info.baseUrl.length+1) || '');
+	if (history.pushState) {
+		history.pushState({}, null, url);
+	} else {
+		var hash = '#!url=' + encodeURIComponent(path) +
+			location.hash.replace(/#!url=[^&]*/, '')
+				.replace(/&!url=[^&]*/, '')
+				.replace(/&column=[^&]+/, '')
+				.replace(/#column=[^&]+/, '');
+		if (parts[1]) {
+			hash += ('&'+parts[1])
+				.replace(/&!url=[^&]*/, '')
+				.replace(/&column=[^&]+/, '');
+		}
+		if (location.hash !== hash) {
+			Q_hashChangeHandler.ignore = true;
+			location.hash = hash;
+		}
+	}
+	Q_hashChangeHandler.currentUrl = url.substr(Q.info.baseUrl.length + 1);
+	Q.info.url = url;
+};
+
 Q.Page.beingLoaded = false;
 Q.Page.beingActivated = false;
 
@@ -4474,7 +4525,13 @@ Q.page = function _Q_page(page, handler, key) {
 	if (key === undefined) {
 		key = 'Q';
 	}
-	if (typeof page === 'object') {
+	if (Q.isArray(page)) {
+		for (var i = 0, l = page.length; i<l; ++i) {
+			Q.page(page[i], handler, key);
+		}
+		return;
+	}
+	if (Q.isPlainObject(page)) {
 		for (var k in page) {
 			Q.page(k, page[k], key);
 		}
@@ -4526,7 +4583,7 @@ Q.init = function _Q_init(options) {
 	}
 	var p = Q.pipe(checks, 1, function _Q_init_pipe_callback() {
 		if (!Q.info) Q.info = {};
-		Q.info.isCordova = !!window.device && window.device.available;
+		Q.info.isCordova = !!window.device && window.device.cordova;
 		if (options && options.isLocalFile) {
 			Q.info.isLocalFile = true;
 			Q.handle.options.loadUsingAjax = true;
@@ -4571,7 +4628,7 @@ Q.init = function _Q_init(options) {
 		}
 		function _Q_init_deviceready_handler() {
 			if (!Q.info) Q.info = {};
-			if ((Q.info.isCordova = window.device && window.device.available)) {
+			if ((Q.info.isCordova = !!window.device && window.device.cordova)) {
 				// avoid opening external urls in app window
 				Q.addEventListener(document, "click", function (e) {
 					var t = e.target, s;
@@ -6473,7 +6530,6 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 			
 			function _doEvents(prefix, moduleSlashAction) {
 				var event, f = Q.Page[prefix+'Unload'];
-				Q.handle(o.onLoadEnd, this, [url, o]);
 				if (Q.info && Q.info.uri) {
 					event = f("Q\t"+moduleSlashAction);
 					event.handle(url, o);
@@ -6614,30 +6670,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 			}
 
 			if (!o.ignoreHistory) {
-				if (url.substr(0, Q.info.baseUrl.length) === Q.info.baseUrl) {
-					var path = url.substr(Q.info.baseUrl.length+1);
-					if (!path)
-						path = '';
-					if (history.pushState) {
-						history.pushState({}, null, url);
-						Q_hashChangeHandler.currentUrl = url.substr(Q.info.baseUrl.length + 1);
-					} else {
-						var hash = '#!url=' + encodeURIComponent(path) +
-							location.hash.replace(/#!url=[^&]*/, '')
-								.replace(/&!url=[^&]*/, '')
-								.replace(/&column=[^&]+/, '')
-								.replace(/#column=[^&]+/, '');
-						if (parts[1]) {
-							hash += ('&'+parts[1])
-								.replace(/&!url=[^&]*/, '')
-								.replace(/&column=[^&]+/, '');
-						}
-						if (location.hash !== hash) {
-							Q_hashChangeHandler.ignore = true;
-							location.hash = hash;
-						}
-					}
-				}
+				Q.Page.push(url);
 			}
 			
 			if (!o.ignorePage) {
@@ -7031,7 +7064,7 @@ function Q_popStateHandler() {
 		);
 		result = true;
 	}
-	Q_hashChangeHandler.currentUrl = url;
+	Q_hashChangeHandler.currentUrl = url.substr(Q.info.baseUrl.length + 1);
 	return result;
 }
 
@@ -9720,7 +9753,8 @@ processStylesheets(); // NOTE: the above works only for stylesheets included bef
 
 Q.addEventListener(window, 'load', Q.onLoad.handle);
 Q.onInit.add(function () {
-	Q_hashChangeHandler.currentUrl = window.location.href.split('#')[0].substr(Q.info.baseUrl.length + 1);
+	Q_hashChangeHandler.currentUrl = window.location.href.split('#')[0]
+		.substr(Q.info.baseUrl.length + 1);
 	if (window.history.pushState) {
 		Q.onPopState.set(Q_popStateHandler, 'Q.loadUrl');
 	} else {
@@ -9899,7 +9933,8 @@ Q.onReady.set(function _Q_masks() {
 		$(button).off(Q.Pointer.end).on(Q.Pointer.end, callback);
 		Q.Mask.show('Q.request.cancel.mask');
 	}, 'Q.request.load.mask');
-	Q.request.options.onLoadEnd.set(function() {
+	Q.request.options.onLoadEnd.set(function(url, slotNames, o) {
+		if (o.quiet) return;
 		Q.Mask.hide('Q.request.load.mask');
 		Q.Mask.hide('Q.request.cancel.mask');
 	}, 'Q.request.load.mask');
