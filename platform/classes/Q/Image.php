@@ -177,8 +177,8 @@ class Q_Image
 		Q_Utils::canWriteToPath($writePath, $ifNotWritable, true);
 	
 		// check if exif is available
-		if (exif_imagetype($imageData) === IMAGETYPE_JPEG) {
-			$exif = exif_read_data($imageData);
+		if (self::isJPEG($imageData)) {
+			$exif = exif_read_data("data://image/jpeg;base64," . base64_encode($imageData));
 			// rotate original image if necessary (hopefully it's not too large).
 			if (!empty($exif['Orientation'])) {
 				switch ($exif['Orientation']) {
@@ -400,6 +400,16 @@ class Q_Image
 			default:
 				return !!imagepng($out, $out_filename);
 		}
+	}
+	
+	static function isJPEG(&$imageData)
+	{
+		return (bin2hex($imageData[0]) == 'ff' && bin2hex($imageData[1]) == 'd8');
+	}
+
+	static function isPNG(&$imageData)
+	{
+		return (bin2hex($imageData[0]) == '89' && $imageData[1] == 'P' && $imageData[2] == 'N' && $imageData[3] == 'G');
 	}
 	
 	/*-----------------------------------------------------------------------------

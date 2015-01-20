@@ -4353,7 +4353,7 @@ Cp.clear = function _Q_Cache_prototype_clear() {
  * @param {Array} args  An array consisting of some or all the arguments that form the key
  * @param {Function} callback  Is passed two parameters: key, value, with this = the cache
  */
-Cp.each = function _Q_Cache_prototype_clear(args, callback) {
+Cp.each = function _Q_Cache_prototype_each(args, callback) {
 	var prefix = null;
 	if (!callback) return;
 	if (typeof args === 'function') {
