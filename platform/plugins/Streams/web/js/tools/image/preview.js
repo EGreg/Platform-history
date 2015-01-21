@@ -159,7 +159,8 @@ Q.Tool.define("Streams/image/preview", function(options) {
 		tool.element.innerHTML = '';
 		tool.element.appendChild(img);
 		
-		Q.Streams.Stream.onFieldChanged(state.publisherId, state.streamName, 'icon').set(_doRefresh, tool);
+		Q.Streams.Stream.onFieldChanged(state.publisherId, state.streamName, 'icon')
+		.set(_doRefresh, tool);
 
 		Q.Streams.retainWith(tool).get(state.publisherId, state.streamName, _doRefresh);
 		

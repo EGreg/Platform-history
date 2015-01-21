@@ -742,6 +742,11 @@ Streams.getParticipating = function(callback) {
  *   @param {Number} [options.unlessSocket] Whether to avoid doing any requests when a socket is attached
  *   @param {Array} [options.duringEvents] Streams.refresh.options.duringEvents are the window events that can lead to an automatic refresh
  *   @param {Number} [options.minSeconds] Streams.refresh.options.minEvents is the minimum number of seconds to wait between automatic refreshes
+ *   @param {Number} [options.timeout] The maximum amount of time to wait and hope the messages will arrive via sockets. After this we just request them again.
+ *   @param {Number} [options.unlessSocket] Whether to avoid doing any requests when a socket is attached
+ *   @param {Object} [options.changed] An Object of {fieldName: true} pairs naming fields to trigger change events for, even if their values stayed the same
+ *   @param {Boolean} [options.evenIfNotRetained] If the stream wasn't retained (for example because it was missing last time), then refresh anyway
+ *   @param {Object} [options.extra] Any extra parameters to pass to the callback
  * @return {boolean} whether the refresh occurred
  */
 Streams.refresh = function (callback, options) {
@@ -1039,7 +1044,9 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 	var socket = Q.Socket.get('Streams', node);
 	if (!result && !(socket && options && options.unlessSocket)) {
 		// there was no cache, and we didn't wait for previous messages
+		var stored = {}, k;
 		Streams.get.cache.each([publisherId, streamName], function (k, v) {
+			stored[k] = Streams.get.cache.get(k, {dontTouch: true});
 			Streams.get.cache.remove(k);
 		});
 		// just get the stream, and any listeners will be triggered
@@ -1058,6 +1065,11 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 				callback && callback.apply(this, params);
 			}
 		});
+		// restore the cache for now, until it is overwritten by the getter results
+		for (k in stored) {
+			var sk = stored[k];
+			Streams.get.cache.set(k, sk.cbpos, sk.subject, sk.params, {dontTouch: true});
+		}
 		result = true;
 	}
 	_retain = undefined;
@@ -2502,7 +2514,11 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 		if (ordinal < 0) {
 			Message.get.forget(publisherId, streamName, {min: latest+1, max: ordinal});
 		}
-		return Message.get(publisherId, streamName, {min: latest+1, max: ordinal}, function (err, messages) {
+		return Message.get(publisherId, streamName, {min: latest+1, max: ordinal},
+		function (err, messages) {
+			if (err) {
+				return Q.handle(callback, this, [err]);
+			}
 			// Go through the messages and simulate the posting
 			// NOTE: the messages will arrive a lot quicker than they were posted,
 			// and moreover without browser refresh cycles in between,
@@ -2527,7 +2543,7 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 					w[0].remove(w[1]);
 				});
 				if (!alreadyCalled) {
-					Q.handle(callback, this, [Object.keys(messages)]);
+					Q.handle(callback, this, [null, Object.keys(messages)]);
 				}
 				alreadyCalled = true;
 			}

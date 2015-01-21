@@ -224,7 +224,10 @@ Q.Tool.define("Users/avatar", function(options) {
 							onSuccess: {"Users/avatar": function () {
 								stream.refresh(function () {
 									state.onUpdate.handle.call(tool, this);
-								}, {messages: true});
+								}, {
+									unlessSocket: true,
+									changed: { icon: true }
+								});
 							}}
 						}, state.imagepicker);
 						$img.plugin('Q/imagepicker', o, function () {

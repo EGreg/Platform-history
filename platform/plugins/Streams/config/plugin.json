@@ -145,7 +145,7 @@
 					"button": "Come Inside"
 				}
 			},
-			"messageRequestLimit": 100,
+			"getMessagesLimit": 100,
 			"messages": {
 				"": {
 					"subject": "Message \"{{& message.type}}\" to \"{{& stream.fields.title}}\""

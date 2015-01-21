@@ -1615,7 +1615,9 @@ class Streams_Stream extends Base_Streams_Stream
 			$options['max'] = $max + $options['max'] + 1;
 		}
 		if (empty($options['limit'])) {
-			$options['limit'] = 1000;
+			$options['limit'] = Q_Config::get(
+				'Streams', 'defaults', 'getMessagesLimit', 1000
+			);
 		}
 		
 		if ($options['min'] > $options['max']) {
