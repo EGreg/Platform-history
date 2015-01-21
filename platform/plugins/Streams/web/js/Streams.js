@@ -441,6 +441,8 @@ Streams.get = function _Streams_get(publisherId, streamName, callback, extra) {
 					return false;
 				}
 				if (msg) return;
+				
+				// The onRefresh handlers occur after the other callbacks
 				var f = stream.fields;
 				var handler = Q.getObject([f.type], _refreshHandlers);
 				Q.handle(handler, stream, []);
@@ -1044,13 +1046,11 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 	var socket = Q.Socket.get('Streams', node);
 	if (!result && !(socket && options && options.unlessSocket)) {
 		// there was no cache, and we didn't wait for previous messages
-		var stored = {}, k;
 		Streams.get.cache.each([publisherId, streamName], function (k, v) {
-			stored[k] = Streams.get.cache.get(k, {dontTouch: true});
 			Streams.get.cache.remove(k);
 		});
 		// just get the stream, and any listeners will be triggered
-		Streams.get(publisherId, streamName, function (err, stream) {
+		Streams.get.force(publisherId, streamName, function (err, stream) {
 			if (!err) {
 				var ps = Streams.key(publisherId, streamName);
 				var changed = (options && options.changed) || {};
@@ -1065,11 +1065,6 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 				callback && callback.apply(this, params);
 			}
 		});
-		// restore the cache for now, until it is overwritten by the getter results
-		for (k in stored) {
-			var sk = stored[k];
-			Streams.get.cache.set(k, sk.cbpos, sk.subject, sk.params, {dontTouch: true});
-		}
 		result = true;
 	}
 	_retain = undefined;

@@ -2734,8 +2734,8 @@ Q.getter = function _Q_getter(original, options) {
 
 		var cached, cbpos, cbi;
 
-		// if caching required check the cache -- maybe the result is there
-		if (wrapper.cache) {
+		// if caching is required, check the cache -- maybe the result is there
+		if (wrapper.cache && !ignoreCache) {
 			if (cached = wrapper.cache.get(key)) {
 				cbpos = cached.cbpos;
 				if (callbacks[cbpos]) {
@@ -2884,6 +2884,12 @@ Q.getter = function _Q_getter(original, options) {
 		if (key && wrapper.cache) {
 			return wrapper.cache.remove(key);
 		}
+	};
+	
+	var ignoreCache = false;
+	wrapper.force = function _force() {
+		ignoreCache = true;
+		wrapper.apply(this, arguments);
 	};
 
 	if (original.batch) {
@@ -4577,8 +4583,7 @@ Q.init = function _Q_init(options) {
 	Q.addEventListener(window, 'offline', Q.onOffline.handle);
 
 	var checks = ["ready"];
-	if (window.cordova && Q.typeOf(window.cordova).substr(0, 4) !== 'HTML'
-	&& window.device) {
+	if (window.cordova && Q.typeOf(window.cordova).substr(0, 4) !== 'HTML') {
 		checks.push("device");
 	}
 	var p = Q.pipe(checks, 1, function _Q_init_pipe_callback() {
