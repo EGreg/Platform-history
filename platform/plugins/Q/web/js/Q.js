@@ -8450,6 +8450,7 @@ var isTablet = navigator.userAgent.match(new RegExp('tablet|ipad', 'i'))
 Q.info = {
 	isTouchscreen: isTouchscreen, // works on ie10
 	isTablet: isTablet,
+	isWebView: detected.isWebView,
 	platform: detected.OS,
 	browser: detected,
 	isIE: function (minVersion, maxVersion) {
