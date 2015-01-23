@@ -678,7 +678,7 @@ Q.getter = function _Q_getter(original, options) {
 		var cached, cbpos, cbi;
 
 		// if caching required check the cache -- maybe the result is there
-		if (wrapper.cache) {
+		if (wrapper.cache && !ignoreCache) {
 			if (cached = wrapper.cache.get(key)) {
 				cbpos = cached.cbpos;
 				if (callbacks[cbpos]) {
@@ -691,6 +691,7 @@ Q.getter = function _Q_getter(original, options) {
 				}
 			}
 		}
+		ignoreCache = false;
 		Q.getter.usingCached = false;
 
 		_waiting[key] = _waiting[key] || [];
@@ -827,6 +828,12 @@ Q.getter = function _Q_getter(original, options) {
 		if (key && wrapper.cache) {
 			return wrapper.cache.remove(key);
 		}
+	};
+	
+	var ignoreCache = false;
+	wrapper.force = function _force() {
+		ignoreCache = true;
+		wrapper.apply(this, arguments);
 	};
 
 	if (original.batch) {

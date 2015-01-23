@@ -2748,6 +2748,7 @@ Q.getter = function _Q_getter(original, options) {
 				}
 			}
 		}
+		ignoreCache = false;
 		Q.getter.usingCached = false;
 
 		_waiting[key] = _waiting[key] || [];

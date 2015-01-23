@@ -3114,7 +3114,7 @@ Q.beforeInit.add(function _Streams_beforeInit() {
 
 	var where = Streams.cache.where || 'document';
 
-	Streams.get = Q.getter(Streams.get, {
+	Stream.get = Streams.get = Q.getter(Streams.get, {
 		cache: Q.Cache[where]("Streams.get", 100), 
 		throttle: 'Streams.get'
 	});
@@ -3348,8 +3348,8 @@ Q.onInit.add(function _Streams_onInit() {
 		// Will return immediately if previous message is already cached
 		// (e.g. from a post or retrieving a stream, or because there was no cache yet)
 		Message.wait(msg.publisherId, msg.streamName, msg.ordinal-1, function () {
-			if (Message.latest[msg.publisherId+"\t"+msg.streamName]
-			>= parseInt(msg.ordinal)) {
+			var ptn = msg.publisherId+"\t"+msg.streamName;
+			if (Message.latest[ptn] >= parseInt(msg.ordinal)) {
 				return; // it was already processed
 			}
 			// New message posted - update cache
@@ -3357,7 +3357,7 @@ Q.onInit.add(function _Streams_onInit() {
 			var message = (Q.typeOf(msg) === 'Q.Streams.Message')
 				? msg
 				: Message.construct(msg);
-			Message.latest[msg.publisherId+"\t"+msg.streamName] = parseInt(msg.ordinal);
+			Message.latest[ptn] = parseInt(msg.ordinal);
 			var cached = Streams.get.cache.get(
 				[msg.publisherId, msg.streamName]
 			);
