@@ -3407,7 +3407,8 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 		);
 		jQueryPluginConstructor.methods = methods || {};
 		$.fn[name] = jQueryPluginConstructor;
-		var ToolConstructor = Q.Tool.define(name, function _Q_Tool_jQuery_toolConstructor(options) {
+		var ToolConstructor = Q.Tool.define(name,
+		function _Q_Tool_jQuery_constructor(options) {
 			$(this.element).plugin(name, options, this);
 			this.Q.beforeRemove.set(function () {
 				$(this.element).plugin(name, 'remove', this);
@@ -7096,13 +7097,14 @@ function Q_popStateHandler() {
  *  A shared pipe which we can use to fill
  */
 function _activateTools(toolElement, options, shared) {
+	var _constructors = {};
 	var pendingParentEvent = _pendingParentStack[_pendingParentStack.length-1];
 	var pendingCurrentEvent = new Q.Event();
 	_pendingParentStack.push(pendingCurrentEvent); // wait for construct of parent tool
 	_loadToolScript(toolElement,
 	function _activateTools_doConstruct(toolElement, toolFunc, toolName, uniqueToolId) {
-		if (!toolFunc.toolConstructor) {
-			toolFunc.toolConstructor = function Q_Tool(element, options) {
+		if (!_constructors[toolName]) {
+			_constructors[toolName] = function Q_Tool(element, options) {
 				// support re-entrancy of Q.activate
 				var tool = Q.getObject(['Q', 'tools', toolName], element);
 				if (this.activated || tool) {
@@ -7144,7 +7146,7 @@ function _activateTools(toolElement, options, shared) {
 				this.activated = true;
 			};
 			Q.mixin(toolFunc, Q.Tool);
-			Q.mixin(toolFunc.toolConstructor, toolFunc);
+			Q.mixin(_constructors[toolName], toolFunc);
 		}
 		var key;
 		if (pendingParentEvent) {
@@ -7153,7 +7155,8 @@ function _activateTools(toolElement, options, shared) {
 			_reallyConstruct();
 		}
 		function _reallyConstruct() {
-			var result = new toolFunc.toolConstructor(toolElement, options);
+			var _constructor = _constructors[toolName];
+			var result = new _constructor(toolElement, options);
 			var tool = Q.getObject(['Q', 'tools', toolName], toolElement);
 			shared.tools[tool.id] = shared.tool = tool;
 			

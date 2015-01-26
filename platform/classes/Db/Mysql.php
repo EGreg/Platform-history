@@ -1215,7 +1215,7 @@ EOT;
 		$table_classnames_exported = var_export($table_classnames, true);
 		$table_classnames_json = $pk_json_indented = str_replace(
 			array("[", ",", "]"),
-			array("[\n\t\t", ",\n\t\t", "\n\t]"),
+			array("[\n\t", ",\n\t", "\n]"),
 			json_encode($table_classnames)
 		);
 		if (!empty($conn_name)) {

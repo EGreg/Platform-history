@@ -7,7 +7,7 @@
 
 /**
  * jQuery plugin that creates scalable and draggable element content or wraps that element.
- * Using this plugin you can move content of element inside element and make a zoom of element content with mouse whell
+ * Using this plugin you can move content of element inside element and make a zoom of element content with mouse wheel
  * @class Q viewport
  * @constructor
  * @param {Object} [options] this object contains function parameters
@@ -38,33 +38,43 @@ function _Q_viewport(options) {
 	var container, stretcher;
 	var position = this.css('position');
 	var display = this.css('display');
-	
-	this.state('Q/viewport').oldCursor = this.css('cursor');
+	var state = this.addClass('Q_viewport').state('Q/viewport');
+
+	state.oldCursor = this.css('cursor');
 	this.css('cursor', 'move');
+
+	if ( this.parent('.Q_viewport_stretcher').length ) {
+        stretcher = this.parent();
+        container = stretcher.parent();
+    } else {
+		container = $('<span class="Q_viewport_container" />').css({
+			'display': (display === 'inline' || display === 'inline-block') ? 'inline-block' : display,
+			'zoom': 1,
+			'position': position === 'static' ? 'relative' : position,
+			'left': position === 'static' ? 0 : this.position().left,
+			'top': position === 'static' ? 0 : this.position().top,
+			'margin': '0px',
+			'padding': '0px',
+			'border': '0px solid transparent',
+			'float': this.css('float'),
+			'z-index': this.css('z-index'),
+			'overflow': 'hidden',
+			'width':  options.initial.width ? options.initial.width : this.outerWidth(true),
+			'height': options.initial.height ? options.initial.height : this.outerHeight(true),
+			'text-align': 'left',
+			'overflow': 'hidden',
+			'line-height': this.css('line-height'),
+			'vertical-align': this.css('vertical-align'),
+			'text-align': this.css('text-align')
+		}).addClass('Q_viewport_container ' + (options.containerClass || ''))
+		.insertAfter(this);
+		
+		stretcher = $('<div class="Q_viewport_stretcher" />')
+		.appendTo(container)
+		.append(this);
+	}
 	
-	container = $('<span class="Q_viewport_container" />').css({
-		'display': (display === 'inline' || display === 'inline-block') ? 'inline-block' : display,
-		'zoom': 1,
-		'position': position === 'static' ? 'relative' : position,
-		'left': position === 'static' ? 0 : this.position().left,
-		'top': position === 'static' ? 0 : this.position().top,
-		'margin': '0px',
-		'padding': '0px',
-		'border': '0px solid transparent',
-		'float': this.css('float'),
-		'z-index': this.css('z-index'),
-		'overflow': 'hidden',
-		'width': this.outerWidth(true),
-		'height': this.outerHeight(true),
-		'text-align': 'left',
-		'overflow': 'hidden',
-		'line-height': this.css('line-height'),
-		'vertical-align': this.css('vertical-align'),
-		'text-align': this.css('text-align')
-	}).addClass('Q_viewport_container')
-	.insertAfter(this);
-	
-	stretcher = $('<div class="Q_viewport_stretcher" />').css({
+	stretcher.css({
 		'position': 'absolute',
 		'left': '0px',
 		'top': '0px',
@@ -73,14 +83,16 @@ function _Q_viewport(options) {
 		'overflow': 'visible',
 		'padding': '0px',
 		'margin': '0px'
-	}).appendTo(container)
-	.append(this);
+	});
 	
 	var useZoom = Q.info.isIE(0, 8);
-	
-	if (options.containerClass) {
-		container.addClass(options.containerClass);
-	}
+	scale.factor = 1;
+	var offset = stretcher.offset();
+    fixPosition({
+        left: offset.left,
+        top: offset.top,
+        zoom: 1
+    });
 	
 	var grab = null;
 	var cur = null;
@@ -127,7 +139,7 @@ function _Q_viewport(options) {
 			var newPos = {
 				left: pos.left + (x - grab.x)/f,
 				top: pos.top + (y - grab.y)/f
-			}
+			};
 			fixPosition(newPos);
 			stretcher.css(newPos);
 			Q.Pointer.cancelClick(); // on even the slightest move
@@ -151,7 +163,9 @@ function _Q_viewport(options) {
 			e.preventDefault();
 		}
 		
-		if (Q.Pointer.canceledClick) return;
+		if (Q.Pointer.canceledClick) {
+			return;
+		}
 		grab = cur = {
 			x: Q.Pointer.getX(e),
 			y: Q.Pointer.getY(e)
@@ -177,6 +191,13 @@ function _Q_viewport(options) {
 		}
 		return false;
 	});
+	
+	state.result = {
+        left: -offset.left / scale.factor,
+        top: -offset.top / scale.factor,
+        width: container.width() / scale.factor,
+        height: container.height() / scale.factor
+    };
 	
 	function scale(factor, x, y) {
 		var left1, left2, left3, top1, top2, top3, offset, css;
