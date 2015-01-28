@@ -217,7 +217,6 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
                         content: $croppingElement,
                         destroyOnClose: true,
 //                        size: {width:dialogSize.width, height: dialogSize.height},
-                        fullscreen: Q.info.isMobile,
 						apply: true,
                         onActivate : {
                             "Q/imagepicker": function ($dialog) {
@@ -428,12 +427,6 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 		});
 	}
 	
-   /**
-    * Detecting vertical squash in loaded image.
-    * Fixes a bug which squash image vertically while drawing into canvas for some images.
-    * This is a bug in iOS6 devices. This function from https://github.com/stomita/ios-imagefile-megapixel
-    * 
-    */
    function detectVerticalSquash(img) {
        var iw = img.naturalWidth, ih = img.naturalHeight;
        var canvas = document.createElement('canvas');
@@ -459,10 +452,6 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
        return (ratio===0)?1:ratio;
    }
 
-   /**
-    * A replacement for context.drawImage
-    * (args are for source and destination).
-    */
    function drawImageIOSFix(ctx, img, sx, sy, sw, sh, dx, dy, dw, dh) {
        var vertSquashRatio = detectVerticalSquash(img);
     // Works only if whole image is displayed:

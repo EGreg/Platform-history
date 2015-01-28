@@ -92,20 +92,26 @@ function _Q_viewport(options) {
 		'height': oh+0.5+'px',
 	});
 	
-	if (initial && initial.scale) {
-		var s = Math.max(state.minScale, Math.min(state.maxScale, initial.scale));
-		var off = stretcher.offset();
-		scale(s, off.left+ow/2, off.top+oh/2);
-	}
-	
-	state.$container = container;
-	state.$stretcher = stretcher;
-	
 	var useZoom = Q.info.isIE(0, 8);
 	var offset = stretcher.offset();	
 	var grab = null;
 	var cur = null;
-	var pos = null;
+	var pos = {
+		left: parseInt(stretcher.css('left')),
+		top: parseInt(stretcher.css('top'))
+	};
+	
+	var s = (initial && initial.scale)
+		|| (state.minScale + state.maxScale) / 2
+		|| 1;
+	state.scale = Math.max(state.minScale, Math.min(state.maxScale, s));
+	var off = stretcher.offset();
+	scale(state.scale, off.left+ow/2, off.top+oh/2);
+
+	state.$container = container;
+	state.$stretcher = stretcher;
+	pos = null;
+	
 	container.on('dragstart', function () {
 		return false;
 	}).on(Q.Pointer.start, function (e) {
@@ -134,11 +140,13 @@ function _Q_viewport(options) {
 						Math.pow(touches[1].pageX - touches[0].pageX, 2) +
 						Math.pow(touches[1].pageY - touches[0].pageY, 2)
 					);
-					var factor = state.scale * newDistance / touchDistance;
-					if (factor >= 1) {
-						scale(factor, Q.Pointer.getX(e), Q.Pointer.getY(e));
-						touchDistance = newDistance;
+					if (touchDistance) {
+						var midX = (touches[0].pageX + touches[1].pageX) / 2;
+						var midY = (touches[0].pageY + touches[1].pageY) / 2;
+						var factor = state.scale * newDistance / touchDistance;
+						scale(factor, midX, midY);
 					}
+					touchDistance = newDistance;
 				}
 			} else if (Q.Pointer.which(e) !== Q.Pointer.which.LEFT) {
 				return;
@@ -220,12 +228,13 @@ function _Q_viewport(options) {
 		if (w < cw || h < ch) { // don't let it get too small
 			factor = Math.max(cw / sw * f, ch / sh * f);
 		}
+		var df = factor / state.scale - 1;
 		var left1, left2, left3, top1, top2, top3, offset, css;
 		var offset = stretcher.offset();
 		left1 = parseInt(stretcher.css('left')) * f;
 		top1 = parseInt(stretcher.css('top')) * f;
-		left1 -= (x - offset.left) * (factor / state.scale - 1);
-		top1 -= (y - offset.top) * (factor / state.scale - 1);
+		left1 -= (x - offset.left) * df;
+		top1 -= (y - offset.top) * df;
 		if (!useZoom) {
 			css = { 
 				left: left1,
