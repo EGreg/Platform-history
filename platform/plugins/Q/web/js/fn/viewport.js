@@ -6,30 +6,24 @@
  */
 
 /**
- * jQuery plugin that creates scalable and draggable element content or wraps that element.
- * Using this plugin you can move content of element inside element and make a zoom of element content with mouse wheel
+ * This plugin enables the user to move & scale content inside a container using the mouse
+ * and mousewheel, or touches on a touchscreen.
  * @class Q viewport
  * @constructor
  * @param {Object} [options] this object contains function parameters
  *   @param {String} [options.containerClass] any class names to add to the actions container
  *   @default ''
- *   @param {Boolean} [options.wrap] Make element wrap or not
- *   @default false
- *   @param {Object} [options.initial] start position of content inside element
- *     @param {Number} [options.initial.left] left position
- *     @default 0
- *     @param {Number} [options.initial.top] top position
- *     @default 0
- *     @param {Number} [options.initial.width]
- *     @default 0
- *     @param {Number} [options.initial.height]
- *     @default 0
- *   @param {Object} [options.result]
+ *   @param {Object} [options.initial] can be used to set initial bounds of content to display inside tool.
+ *   @param {Object} [options.initial.x] horizontal midpoint, from 0 to 1
+ *   @param {Object} [options.initial.y] horizontal midpoint, from 0 to 1
+ *   @param {Object} [options.initial.scale] initial scale
  *   @param {Q.Event} [options.onRelease] This event triggering after viewport creation
  *   @default Q.Event()
- *   @param {Q.Event} [options.onZoom] This event triggering after zooming
+ *   @param {Q.Event} [options.onScale] Occurs when the user scales the content
  *   @default Q.Event()
- *   @param {Q.Event} [options.onMove] This event triggering after element move
+ *   @param {Q.Event} [options.onMove] Occurs when user moves the content around
+ *   @default Q.Event()
+ *   @param {Q.Event} [options.onUpdate] Occurs when the selection changes in any way
  *   @default Q.Event()
  */
 Q.Tool.jQuery('Q/viewport',
@@ -39,10 +33,14 @@ function _Q_viewport(options) {
 	var position = this.css('position');
 	var display = this.css('display');
 	var state = this.addClass('Q_viewport').state('Q/viewport');
-
+	var $this = $(this);
 	state.oldCursor = this.css('cursor');
 	this.css('cursor', 'move');
 
+	var ow = this.outerWidth(true);
+	var oh = this.outerHeight(true);
+	if (!state.width) { state.width = ow; }
+	if (!state.height) { state.height = oh; }
 	if ( this.parent('.Q_viewport_stretcher').length ) {
         stretcher = this.parent();
         container = stretcher.parent();
@@ -59,8 +57,8 @@ function _Q_viewport(options) {
 			'float': this.css('float'),
 			'z-index': this.css('z-index'),
 			'overflow': 'hidden',
-			'width':  options.initial.width ? options.initial.width : this.outerWidth(true),
-			'height': options.initial.height ? options.initial.height : this.outerHeight(true),
+			'width': state.width + 'px',
+			'height': state.height + 'px',
 			'text-align': 'left',
 			'overflow': 'hidden',
 			'line-height': this.css('line-height'),
@@ -74,26 +72,37 @@ function _Q_viewport(options) {
 		.append(this);
 	}
 	
+	var initial = state.initial;
+	var iw = ow, ih = oh, il = 0, it = 0;
+	if (initial && initial.x) {
+		il -= iw * initial.x - state.width/2;
+	}
+	if (initial && initial.y) {
+		it -= ih * initial.y - state.height/2;
+	}
+	
 	stretcher.css({
 		'position': 'absolute',
-		'left': '0px',
-		'top': '0px',
-		'width': container.width()+0.5+'px',
-		'height': container.height()+0.5+'px',
 		'overflow': 'visible',
 		'padding': '0px',
-		'margin': '0px'
+		'margin': '0px',
+		'left': il+'px',
+		'top': it+'px',
+		'width': ow+0.5+'px',
+		'height': oh+0.5+'px',
 	});
 	
-	var useZoom = Q.info.isIE(0, 8);
-	scale.factor = 1;
-	var offset = stretcher.offset();
-    fixPosition({
-        left: offset.left,
-        top: offset.top,
-        zoom: 1
-    });
+	if (initial && initial.scale) {
+		var s = Math.max(state.minScale, Math.min(state.maxScale, initial.scale));
+		var off = stretcher.offset();
+		scale(s, off.left+ow/2, off.top+oh/2);
+	}
 	
+	state.$container = container;
+	state.$stretcher = stretcher;
+	
+	var useZoom = Q.info.isIE(0, 8);
+	var offset = stretcher.offset();	
 	var grab = null;
 	var cur = null;
 	var pos = null;
@@ -101,7 +110,7 @@ function _Q_viewport(options) {
 		return false;
 	}).on(Q.Pointer.start, function (e) {
 		
-		var f = useZoom ? scale.factor : 1;
+		var f = useZoom ? state.scale : 1;
 		var touches = e.originalEvent.touches;
 		var touchDistance;
 		if (touches && touches.length > 1) {
@@ -125,7 +134,7 @@ function _Q_viewport(options) {
 						Math.pow(touches[1].pageX - touches[0].pageX, 2) +
 						Math.pow(touches[1].pageY - touches[0].pageY, 2)
 					);
-					var factor = scale.factor * newDistance / touchDistance;
+					var factor = state.scale * newDistance / touchDistance;
 					if (factor >= 1) {
 						scale(factor, Q.Pointer.getX(e), Q.Pointer.getY(e));
 						touchDistance = newDistance;
@@ -143,6 +152,8 @@ function _Q_viewport(options) {
 			fixPosition(newPos);
 			stretcher.css(newPos);
 			Q.Pointer.cancelClick(); // on even the slightest move
+			Q.handle(state.onMove, $this, [state.selection, state.scale]);
+			Q.handle(state.onUpdate, $this, [state.selection, state.scale]);
 		}
 		
 		function _endHandler (e) {
@@ -180,11 +191,13 @@ function _Q_viewport(options) {
 		$(window).on(Q.Pointer.click, _clickHandler);
 	});
 	
-	scale.factor = 1;
 	container.on(Q.Pointer.wheel, function (e) {
+		if (Q.Pointer.started) {
+			return;
+		}
 		if (typeof e.deltaY === 'number' && !isNaN(e.deltaY)) {
 			scale(
-				Math.max(1, scale.factor - e.deltaY * 0.01),
+				state.scale - e.deltaY * 0.01,
 				Q.Pointer.getX(e),
 				Q.Pointer.getY(e)
 			);
@@ -192,21 +205,27 @@ function _Q_viewport(options) {
 		return false;
 	});
 	
-	state.result = {
-        left: -offset.left / scale.factor,
-        top: -offset.top / scale.factor,
-        width: container.width() / scale.factor,
-        height: container.height() / scale.factor
-    };
-	
 	function scale(factor, x, y) {
+		if (state.maxScale > 0) {
+			factor = Math.min(state.maxScale, factor);
+		}
+		factor = Math.max(0, state.minScale, factor);
+		var cw = container.width();
+		var ch = container.height();
+		var sw = stretcher.width();
+		var sh = stretcher.height();
+		var f = useZoom ? state.scale : 1;
+		var w = sw*factor/f;
+		var h = sh*factor/f;
+		if (w < cw || h < ch) { // don't let it get too small
+			factor = Math.max(cw / sw * f, ch / sh * f);
+		}
 		var left1, left2, left3, top1, top2, top3, offset, css;
 		var offset = stretcher.offset();
-		var f = useZoom ? scale.factor : 1;
 		left1 = parseInt(stretcher.css('left')) * f;
 		top1 = parseInt(stretcher.css('top')) * f;
-		left1 -= (x - offset.left) * (factor / scale.factor - 1);
-		top1 -= (y - offset.top) * (factor / scale.factor - 1);
+		left1 -= (x - offset.left) * (factor / state.scale - 1);
+		top1 -= (y - offset.top) * (factor / state.scale - 1);
 		if (!useZoom) {
 			css = { 
 				left: left1,
@@ -230,26 +249,47 @@ function _Q_viewport(options) {
 			stretcher.css(css);
 			scale.inProgress = false;
 		}
-		scale.factor = factor;
+		if (state.scale !== factor) {
+			Q.handle(state.onScale, $this, [state.selection, state.scale]);
+			Q.handle(state.onUpdate, $this, [state.selection, state.scale]);
+		}
+		state.scale = factor;
 	}
 	
 	function fixPosition(pos) {
-		var f = useZoom ? scale.factor : 1;
-		var w = -(stretcher.width()*scale.factor - container.width())/f;
-		var h = -(stretcher.height()*scale.factor - container.height())/f;
-		pos.left = Math.min(0, Math.max(pos.left, w+1)) + 'px';
-		pos.top = Math.min(0, Math.max(pos.top, h+1)) + 'px';
+		var s = state.scale;
+		var f = useZoom ? s : 1;
+		var cw = container.width();
+		var ch = container.height();
+		var w = stretcher.width()*s/f;
+		var h = stretcher.height()*s/f;
+		var w2 = cw/f - w;
+		var h2 = ch/f - h;
+		var left = Math.min(0, Math.max(parseFloat(pos.left), w2+1));
+		var top = Math.min(0, Math.max(parseFloat(pos.top), h2+1));
+		pos.left = left + 'px';
+		pos.top = top + 'px';
+		state.selection = {
+			left: -left/w,
+			top: -top/h,
+			width: cw/w,
+			height: ch/h
+		};
 	}
 },
 
 {	// default options:
 	containerClass: '', // any class names to add to the actions container
-	wrap: false,
-	initial: { left: 0, top: 0, width: 0, height: 0 },
-	result: {},
+	initial: null,
+	scale: 1,
+	minScale: null,
+	maxScale: 2,
+	width: null,
+	height: null,
 	onRelease: new Q.Event(),
-	onZoom: new Q.Event(),
-	onMove: new Q.Event()
+	onScale: new Q.Event(),
+	onMove: new Q.Event(),
+	onUpdate: new Q.Event()
 },
 
 {

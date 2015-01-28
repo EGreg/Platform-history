@@ -2892,14 +2892,23 @@ Streams.setupRegisterForm = function _Streams_setupRegisterForm(identifier, json
 	.data('form-type', 'register')
 	.append($('<div class="Streams_login_appear" />'));
 
+	var $b = $('<button />', {
+		"type": "submit",
+		"class": "Q_button Q_main_button Streams_login_start "
+	}).html(Q.text.Users.login.registerButton)
+	.on(Q.Pointer.start, function () {
+		Users.submitClosestForm.apply(this, arguments);
+		return false;
+	});
+
 	register_form.append(table)
 	.append($('<input type="hidden" name="identifier" />').val(identifier))
 	.append($('<input type="hidden" name="icon" />'))
 	.append($('<input type="hidden" name="Q.method" />').val('post'))
-	.append($('<div class="Streams_login_get_started">&nbsp;</div>').append(
-		$('<button type="submit" class="Q_button Q_main_button Streams_login_start " />')
-		.html(Q.text.Users.login.registerButton)
-	)).submit(function () {
+	.append(
+		$('<div class="Streams_login_get_started">&nbsp;</div>')
+		.append($b)
+	).submit(function () {
 		$(this).removeData('cancelSubmit');
 		if (!$('#Users_agree').attr('checked')) {
 			if (!confirm(Q.text.Users.login.confirmTerms)) {
@@ -3096,11 +3105,6 @@ function _onResultHandler(subject, params, args, ret, original) {
 		Q.each(subject.streams, 'retain', [key]);
 		Q.each(subject.relatedStreams, 'retain', [key]);
 	}
-}
-
-function submitClosestForm () {
-	$(this).closest('form').submit();
-	return false;
 }
 
 Q.Tool.onMissingConstructor.set(function (constructors, normalized) {

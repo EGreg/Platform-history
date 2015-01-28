@@ -4583,6 +4583,7 @@ Q.init = function _Q_init(options) {
 	Q.addEventListener(window, 'unload', Q.onUnload.handle);
 	Q.addEventListener(window, 'online', Q.onOnline.handle);
 	Q.addEventListener(window, 'offline', Q.onOffline.handle);
+	Q.addEventListener(window, Q.Pointer.focusout, _onPointerBlurHandler);
 
 	var checks = ["ready"];
 	if (window.cordova && Q.typeOf(window.cordova).substr(0, 4) !== 'HTML') {
@@ -9212,6 +9213,13 @@ var _onPointerEndHandler = Q.Pointer.ended = function _onPointerEndHandler() {
 	}, 100);
 };
 
+function _onPointerBlurHandler() {
+	Q.Pointer.blurring = true;
+	setTimeout(function () {
+		Q.Pointer.blurring = false;
+	}, 500); // for touchscreens that retry clicks after keyboard disappears
+};
+
 /**
  * Operates with dialogs.
  * @class Q.Dialogs
@@ -9250,7 +9258,7 @@ Q.Dialogs = {
 	 *                    but to the center of containing element instead.
 	 *   "noClose": Defaults to false. If true, overlay close button will not appear and overlay won't be closed by pressing 'Esc' key.
 	 *   "closeOnEsc": Defaults to true. Indicates whether to close overlay on 'Esc' key press. Has sense only if 'noClose' is false.
-	 *   "destroyOnClose": Defaults to false if "dialog" is provided. If true, dialog DOM element will be removed from the document on close.
+	 *   "destroyOnClose": Defaults to false if "dialog" is provided, and true otherwise. If true, dialog DOM element will be removed from the document on close.
 	 *   "beforeLoad": Optional. Q.Event or function which is called before dialog is loaded.
 	 *   "onActivate": Optional. Q.Event or function which is called when dialog is activated
 	 *                 (all inner tools, if any, are activated and dialog is fully loaded and shown).
@@ -9266,43 +9274,47 @@ Q.Dialogs = {
 		}
 		var o = Q.extend({mask: maskDefault}, Q.Dialogs.push.options, options);
 		if (o.fullscreen) o.mask = false;
-		var dialog = $(o.dialog);
-		if (!dialog.length) {
+		var $dialog = $(o.dialog);
+		if (!$dialog.length) {
 			// create this dialog element
-			dialog = $('<div />').append(
-				$('<div class="title_slot" />').append($('<h2 class="Q_dialog_title" />').append(o.title))
+			$dialog = $('<div />').append(
+				$('<div class="title_slot" />')
+				.append($('<h2 class="Q_dialog_title" />')
+				.append(o.title))
 			).append(
 				$('<div class="dialog_slot Q_dialog_content" id="dialog_slot" />').append(o.content)
 			);
-			if (o.className) dialog.addClass(o.className);
-			if (o.apply) dialog.addClass('Q_overlay_apply');
-			if (o.destroyOnClose !== false) o.destroyOnClose = true;
+			if (o.className) $dialog.addClass(o.className);
+			if (o.apply) $dialog.addClass('Q_overlay_apply');
+			if (o.destroyOnClose !== false) {
+				o.destroyOnClose = true;
+			}
 		}
-		dialog.hide();
-		//if (dialog.parent().length == 0) {
-			$(o.appendTo || $('body')[0]).append(dialog);
+		$dialog.hide();
+		//if ($dialog.parent().length == 0) {
+			$(o.appendTo || $('body')[0]).append($dialog);
 		//}
 		var _onClose = o.onClose;
 		o.onClose = new Q.Event(function() {
-			Q.handle(o.onClose.original, dialog, [dialog]);
+			Q.handle(o.onClose.original, $dialog, [$dialog]);
 			if (!Q.Dialogs.dontPopOnClose)
 				Q.Dialogs.pop(true);
 			Q.Dialogs.dontPopOnClose = false;
 		}, 'Q.Dialogs');
 		o.onClose.original = _onClose;
-		dialog.plugin('Q/dialog', o);
+		$dialog.plugin('Q/dialog', o);
 		var topDialog = null;
-		dialog.isFullscreen = o.fullscreen;
+		$dialog.isFullscreen = o.fullscreen;
 		if (this.dialogs.length) {
 			topDialog = this.dialogs[this.dialogs.length - 1];
 		}
-		if (!topDialog || topDialog[0] !== dialog[0]) {
-			this.dialogs.push(dialog);
+		if (!topDialog || topDialog[0] !== $dialog[0]) {
+			this.dialogs.push($dialog);
 			if (o.hidePrevious && topDialog) {
 				topDialog.hide();
 			}
 		}
-		return dialog;
+		return $dialog;
 	},
 	
 	/**
