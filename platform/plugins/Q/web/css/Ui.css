@@ -1430,7 +1430,10 @@ divbody { text-align: center; height: 100%; }
 	text-overflow: ellipsis;
 }
 .Q_overlay .Q_close { background-image:url(../img/close.png); position:absolute; right:-15px; top:-15px; cursor:pointer; height:35px; width:35px; }
-.Q_overlay.Q_overlay_apply .Q_close { background-image:url(../img/apply.png); }
+.Q_overlay.Q_overlay_apply .Q_close,
+.Q_fullscreen_dialog.Q_overlay_apply .Q_close { 
+	background-image:url(../img/apply.png);
+}
 
 /* tabs */
 
@@ -1904,6 +1907,6 @@ input[type=radio] { margin-right: 5px; }
 	margin: 0px !important;
 }
 
-.Q_Dialog_imagepicker {
+.Q_dialog_imagepicker {
 	
 }
