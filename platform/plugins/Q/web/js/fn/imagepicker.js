@@ -94,7 +94,7 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 		
 		function _doCropping(override) {
 			
-			function _calculateRequiredSize (saveSizeName, imageSize) {
+			function _calculateRequiredSize (saveSizeName, imageSize, rotated) {
 		        var widths = [], heights = [];
 		        Q.each(saveSizeName, function(key, size) {
 		            var parts = key.split('x');
@@ -104,11 +104,10 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 					widths.push(w || h * r || imageSize.height);
 					heights.push(h || w / r || imageSize.width);
 		        });
+				var width = Math.max.apply( Math, widths );
+				var height = Math.max.apply( Math, heights );
 
-		        return {
-		            width: Math.max.apply( Math, widths ),
-		            height: Math.max.apply( Math, heights )
-		        };
+		        return { width: width, height: height };
 		    };
 	
 			function _checkRequiredSize(requiredSize, imageSize) {
@@ -159,9 +158,9 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 	            return result;
 	        };
 			
-            function _doCanvasCrop (data, coord, callback) {
+            function _doCanvasCrop (data, bounds, orientation, callback) {
 				// nothing to crop
-				if ( ! data || ! coord ) {
+				if ( ! data || ! bounds ) {
 				    throw new Q.Exception('Q/imagepicker: Not specified neccessary data!');
 				}
 				
@@ -170,124 +169,180 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 				if (!( canvas && canvas.getContext('2d') )) {
 					return callback.call(this, data, params.crop);
 				}
-
-				// canvas should be equal to cropped image
-				canvas.width = coord.requiredSize.width;
-				canvas.height = coord.requiredSize.height;
-				var context = canvas.getContext('2d');
-				var $img = $('<img />');
-				$img.on('load', function() {
+				
+				canvas.width = bounds.requiredSize.width;
+				canvas.height = bounds.requiredSize.height;
+		
+				var $img = $('<img />').on('load', function() {
 				    // draw cropped image
-				    var sourceLeft = coord.left;
-				    var sourceTop = coord.top;
-				    var sourceWidth = coord.width;
-				    var sourceHeight = coord.height;
-				    var destWidth = coord.requiredSize.width;
-				    var destHeight = coord.requiredSize.height;
+				    var sourceLeft = bounds.left;
+				    var sourceTop = bounds.top;
+				    var sourceWidth = bounds.width;
+				    var sourceHeight = bounds.height;
 				    var destLeft = 0;
 				    var destTop = 0;
+				    var destWidth = bounds.requiredSize.width;
+				    var destHeight = bounds.requiredSize.height;
+					var context = canvas.getContext('2d');
+					switch (orientation) {
+					case 8:
+						context.translate(-canvas.width, 0); 
+						context.rotate(-90*Math.PI/180);
+						break;
+					case 3:
+						context.translate(canvas.width, canvas.height); 
+						context.rotate(180*Math.PI/180);
+						break;
+					case 6:
+						context.translate(canvas.width, 0); 
+						context.rotate(90*Math.PI/180);
+						break;
+				    }
+					var rotated = (orientation === 8 || orientation === 6);
+					var dw = rotated ? destHeight : destWidth;
+					var dh = rotated ? destWidth : destHeight;
 				    drawImageIOSFix(
 						context, $img[0],
 						sourceLeft, sourceTop, sourceWidth, sourceHeight,
-						destLeft, destTop, destWidth, destHeight
+						destLeft, destTop, dw, dh
 					);
 				    var imageData = canvas.toDataURL();
 				    $(canvas).remove();
 					$img.remove();
 				    callback.call(this, imageData, null);
-				});
-				$img.attr('src', data);
-				$img.appendTo('body');
+				}).attr('src', data)
+				.css('display', 'none')
+				.appendTo('body');
 			};
 			
 			function _onImgLoad() {
-				var isw = imageSize.height = img.height;
-				var ish = imageSize.width = img.width;
-				var requiredSize  = _calculateRequiredSize(state.saveSizeName, imageSize);
-				if (!_checkRequiredSize(requiredSize, imageSize)) {
-					return _revert();
-				}
 
-				if (state.cropping) {
-                    var $croppingElement = $('<img />').attr({ src: img.src })
-						.css({'visibility': 'hidden'});
-                    Q.Dialogs.push({
-                        className: 'Q_dialog_imagepicker',
-                        title: state.croppingTitle,
-                        content: $croppingElement,
-                        destroyOnClose: true,
-//                        size: {width:dialogSize.width, height: dialogSize.height},
-						apply: true,
-                        onActivate : {
-                            "Q/imagepicker": function ($dialog) {
-								// TODO: width and height should be proportial to orginal file
-								var w = requiredSize.width / imageSize.width;
-								var h = requiredSize.height / imageSize.height;
-								var rsw1 = rsw2 = requiredSize.width;
-								var rsh1 = rsh2 = requiredSize.height;
-								var dw = this.width();
-								var dh = this.height();
-								if (rsw2 != dw) {
-									rsh2 *= dw / rsw1;
-									rsw2 = dw;
-								}
-								if (rsh2 > dh) {
-									rsw2 *= dh / rsh1;
-									rsh2 = dh;
-								}
-								var maxScale = Math.min(rsw2 / rsw1, rsh2 / rsh1);
-	                            $croppingElement.plugin('Q/viewport', {
-                                    initial: {
-										x: 0.5, 
-										y: 0.5, 
-										scale: Math.max(rsw2 / isw, rsh2 / ish)
-									},
-									width: rsw2,
-									height: rsh2,
-									maxScale: maxScale
-                                }, function () {
-                                	$croppingElement.css({'visibility': 'visible'});
-                                });
-                            }
-                        },
-                        beforeClose: function(res) {
-							var state = $('.Q_viewport', res).state('Q/viewport');
-                            var result = state.selection;
-                            var coord = {
-                                requiredSize: requiredSize,
-                                left: result.left * imageSize.width,
-                                top: result.top * imageSize.height,
-                                width: Math.max(
-									result.width * imageSize.width,
-									requiredSize.width
-								),
-                                height: Math.max(
-									result.height * imageSize.height,
-									requiredSize.height
-								)
-                            };
-                            if (!_checkRequiredSize(requiredSize, coord)) {
-                            	return;
-                            }
-                            _doCanvasCrop(img.src, coord, function(data, crop) {
-                                _doUpload({
-                                    data: data,
-									crop: crop
-                                });
-                            });
-                        }
-                    });
-				} else {
-					var coord = _selectionInfo(requiredSize, imageSize);
-					coord.requiredSize = requiredSize;
-
-					_doCanvasCrop(params.data, coord, function(data, crop) {
-						params.data = data;
-						params.crop = crop;
-						_doUpload(params);
+				Q.addScript(EXIFjslib, function () {
+					EXIF.getData(img, function () {
+						var orientation = this.exifdata.Orientation;
+						var rotated = (orientation === 8 || orientation === 6);
+						var isw = img.width;
+						var ish = img.height;
+						var temp = null;
+						if (rotated) {
+							temp = isw;
+							isw = ish;
+							ish = temp;
+						}
+						imageSize = {
+							width: isw,
+							height: ish
+						};
+						var requiredSize  = _calculateRequiredSize(
+							state.saveSizeName, {width: isw, height: ish}, rotated
+						);
+						if (!_checkRequiredSize(requiredSize, imageSize)) {
+							return _revert();
+						}
+						
+						if (state.cropping) {
+		                    var $croppingElement = $('<img />').attr({ src: img.src })
+								.css({'visibility': 'hidden'});
+		                    Q.Dialogs.push({
+		                        className: 'Q_dialog_imagepicker',
+		                        title: state.croppingTitle,
+		                        content: $croppingElement,
+		                        destroyOnClose: true,
+		//                        size: {width:dialogSize.width, height: dialogSize.height},
+								apply: true,
+		                        onActivate : {
+		                            "Q/imagepicker": function ($dialog) {
+										// TODO: width and height should be proportial to orginal file
+										var w = requiredSize.width / isw;
+										var h = requiredSize.height / ish;
+										var rsw1 = rsw2 = requiredSize.width;
+										var rsh1 = rsh2 = requiredSize.height;
+										var dw = this.width();
+										var dh = this.height();
+										if (rsw2 != dw) {
+											rsh2 *= dw / rsw1;
+											rsw2 = dw;
+										}
+										// if (rsh2 > dh) {
+										// 	rsw2 *= dh / rsh2;
+										// 	rsh2 = dh;
+										// }
+										var maxScale = Math.min(rsw2 / rsw1, rsh2 / rsh1);
+			                            $croppingElement.plugin('Q/viewport', {
+		                                    initial: {
+												x: 0.5, 
+												y: 0.5, 
+												scale: Math.max(rsw2 / isw, rsh2 / ish)
+											},
+											width: rsw2,
+											height: rsh2,
+											maxScale: maxScale
+		                                }, function () {
+		                                	$croppingElement.css({'visibility': 'visible'});
+		                                });
+		                            }
+		                        },
+		                        beforeClose: function(dialog) {
+									var state = $('.Q_viewport', dialog).state('Q/viewport');
+				                    var result = state.selection;
+				                    var bounds = {
+				                        requiredSize: requiredSize,
+				                        left: result.left * isw,
+				                        top: result.top * ish,
+				                        width: Math.max(
+											result.width * isw, requiredSize.width
+										),
+				                        height: Math.max(
+											result.height * ish, requiredSize.height
+										)
+				                    };
+				                    if (!_checkRequiredSize(requiredSize, bounds)) {
+				                    	return _revert();
+				                    }
+									var temp;
+									if (orientation === 6) {
+										temp = bounds.width;
+										bounds.width = bounds.height;
+										bounds.height = temp;
+										temp = bounds.left;
+										bounds.left = bounds.top;
+										bounds.top = isw - temp - bounds.height;
+									} else if (orientation === 8) {
+										temp = bounds.height;
+										bounds.height = bounds.width;
+										bounds.width = temp;
+										temp = bounds.top;
+										bounds.top = bounds.left;
+										bounds.left = ish - temp - bounds.width;
+									} else if (orientation === 3) {
+										bounds.top = ish - bounds.top - bounds.height;
+										bounds.left = isw - bounds.left - bounds.width;
+									}
+									if (!bounds) return;
+				                    _doCanvasCrop(img.src, bounds, orientation,
+									function(data, crop) {
+										params.data = data;
+										params.crop = crop;
+										_doUpload(params);
+				                    });
+		                        }
+		                    });
+						} else {
+							var bounds = _selectionInfo(requiredSize, imageSize);
+							bounds.requiredSize = requiredSize;
+		                    _doCanvasCrop(img.src, bounds, orientation,
+							function(data, crop) {
+								params.data = data;
+								params.crop = crop;
+								_doUpload(params);
+		                    });
+						}
 					});
-				}
+				});
 			}
+			
+			var EXIFjslib = 'plugins/Q/js/exif.js';
+			Q.addScript(EXIFjslib); // start loading it
 			
 			var params = {
 				data: data
@@ -299,7 +354,6 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 			}
 			
 			var img = new Image;
-			var imageSize = {};
 			img.onload = _onImgLoad;
 			img.src = params.data;
 		}
@@ -361,7 +415,7 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 		$this.addClass('Q_imagepicker_uploading');
 		var reader = new FileReader();
 		reader.onload = function() {
-			_upload(reader.result);
+			_upload(this.result);
 		};
 		reader.onerror = function () { 
 			setTimeout(function() { 

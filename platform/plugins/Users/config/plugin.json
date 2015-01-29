@@ -137,7 +137,7 @@
 			"default": "Someone"
 		},
 		"icon": {
-			"sizes": ["40", "50", "80", "200"],
+			"sizes": ["40", "50", "80", "200", "300x"],
 			"defaultSize": "40",
 			"defaultCacheBust": "1000"
 		},
