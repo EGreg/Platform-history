@@ -8,10 +8,12 @@
  * @class Q filter
  * @constructor
  * @param {Object} [options] Override various options for this tool
- *  @param {String} [options.name=filter] The name of the text input
+ *  @param {String} [options.name='filter'] The name of the text input
  *  @param {String} [options.value=''] The initial value of the text input
  *  @param {String} [options.placeholder] Any placeholder text
  *  @param {Object} [options.placeholders={}] Options for Q/placeholders, or null to omit it
+ *  @param {String} [options.results=''] HTML to display in the results initially. If setting them later, remember to call stateChanged('results')
+ *  @param {Q.Event} [options.onFilter] Use this event to fetch and display new results by calling tool.results(html). The first parameter is the content of the text input.
  * @return Q.Tool
  */
 Q.Tool.define('Q/filter', function (options) {
@@ -41,6 +43,38 @@ Q.Tool.define('Q/filter', function (options) {
 		tool.begin();
 	}).on('blur', function () {
 		tool.end();
+	}).on('keydown keyup change input focus paste blur Q_refresh', _changed)
+	.on(Q.Pointer.fastclick, function (evt) {
+		var $this = $(this);
+		var xMax = $this.offset().left + $this.outerWidth(true) -
+			parseInt($this.css('margin-right'));
+		var xMin = xMax - parseInt($this.css('padding-right'));
+		var x = Q.Pointer.getX(evt);
+		if (xMin < x && x < xMax) {
+			$this.val('');
+			return tool.end();
+		}
+	});
+	
+	if (state.fullscreen) {
+		$te.addClass('Q_filter_fullscreen');
+	}
+	
+	var lastVal = null;
+	function _changed(event) {
+		var $this = $(this);
+		if (event.keyCode === 27) {
+			$this.val('');
+		}
+		var val = $this.val();
+		if (val != lastVal) {
+			state.onFilter.handle.call(tool, val, this);
+		}
+		lastVal = val;
+	};
+	
+	this.Q.onStateChanged('results').set(function () {
+		this.$results.html(state.results);
 	});
 
 }, {
@@ -48,7 +82,10 @@ Q.Tool.define('Q/filter', function (options) {
 	value: '',
 	placeholder: 'Start typing...',
 	placeholders: {},
-	begun: false
+	results: null,
+	begun: false,
+	fullscreen: Q.info.isMobile,
+	onFilter: new Q.Event()
 }, {
 	begin: function () {
 		var tool = this;
@@ -56,10 +93,13 @@ Q.Tool.define('Q/filter', function (options) {
 		if (state.begun) return;
 		state.begun = true;
 		
-		if (Q.info.isMobile) {
+		tool.$input[0].copyComputedStyle(tool.$input[0]); // preserve styles
+		
+		var $te = $(tool.element);
+		$te.addClass('Q_filter_begun');
+
+		if (state.fullscreen) {
 			tool.suspended = true;
-			var $te = $(tool.element);
-			tool.$input[0].copyComputedStyle(tool.$input[0]); // preserve styles
 			tool.$placeholder = $('<div class="Q_filter_placeholder" />')
 				.insertAfter($te);
 			$te.addClass('Q_filter_begun')
@@ -98,20 +138,24 @@ Q.Tool.define('Q/filter', function (options) {
 		var state = tool.state;
 		if (!state.begun || tool.suspended) return;
 		state.begun = false;
+		var $te = $(tool.element);
+		$te.removeClass('Q_filter_begun');
 		tool.$results.hide();
-		if (!Q.info.isMobile) {
-			setTimeout(function () {
-				var $te = $(tool.element);
-				$te.nextAll().each(function () {
-					var $this = $(this);
-					$this.css('display', $this.data('Q/filter display'))
-						.removeData('Q/filter display');
-				});
-				$te.removeClass('Q_filter_begun')
-					.insertAfter(tool.$placeholder);
-				tool.$placeholder.remove();
-			}, 100000);
+		if (state.fullscreen) {
+			$te.nextAll().each(function () {
+				var $this = $(this);
+				$this.css('display', $this.data('Q/filter display'))
+					.removeData('Q/filter display');
+			});
+			$te.insertAfter(tool.$placeholder);
+			tool.$placeholder.remove();
+			tool.$input.blur();
 		}
+		return false;
+	},
+	results: function (newValue) {
+		this.state.results = newValue;
+		this.stateChanged('results');
 	}
 });
 

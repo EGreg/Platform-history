@@ -321,14 +321,16 @@ Q.Tool.define("Q/columns", function(options) {
 				}, o.delay.duration);
 			}).run();
 			
-			if (options.onClose) {
-				var onClose = Q.extend(new Q.Event(), options.onClose);
-				var key = state.onClose.set(function (i) {
+			Q.each(['on', 'before'], function (k, prefix) {
+				var event = options[prefix+'Close'];
+				var stateEvent = state[prefix+'Close'];
+				event = Q.extend(new Q.Event(), event);
+				var key = stateEvent.set(function (i) {
 					if (i != index) return;
-					onClose.handle.apply(this, arguments);
-					state.onClose.remove(key);
+					event.handle.apply(this, arguments);
+					stateEvent.remove(key);
 				});
-			}
+			});
 			
 			var show = {
 				opacity: 1,
