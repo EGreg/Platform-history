@@ -51,7 +51,7 @@ Q.Tool.define('Q/filter', function (options) {
 		var xMin = xMax - parseInt($this.css('padding-right'));
 		var x = Q.Pointer.getX(evt);
 		if (xMin < x && x < xMax) {
-			$this.val('');
+			$this.val('').trigger('Q_refresh');
 			return tool.end();
 		}
 	});

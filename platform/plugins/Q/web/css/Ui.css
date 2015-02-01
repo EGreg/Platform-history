@@ -1914,7 +1914,7 @@ input[type=radio] { margin-right: 5px; }
 	margin: 0px !important;
 }
 
-.Q_filter_begun .Q_placeholder {
+.Q_filter_fullscreen.Q_filter_begun .Q_placeholder {
 	width: 100% !important;
 	margin: 0px !important;
 }
