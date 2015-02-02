@@ -457,7 +457,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 				canShowTrigger = true;
 			});
 			state.$interval = setInterval(function () {
-				if (state.$drawers.eq(0).is(':visible')) {
+				if (!state.$drawers.eq(1).is(':visible')) {
 					state.$trigger.hide();
 				} else if (canShowTrigger && state.$scrolling.scrollTop() === 0) {
 					state.$trigger.show();
