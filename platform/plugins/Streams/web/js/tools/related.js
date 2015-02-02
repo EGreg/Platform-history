@@ -7,6 +7,7 @@
 /**
  * Renders a bunch of Stream/preview tools for streams related to the given stream.
  * Has options for adding new related streams, as well as sorting the relations, etc.
+ * Also can integrate with Q/tabs tool to render tabs "related" to some category.
  * @class Streams related
  * @constructor
  * @param {Object} [options] this object contains function parameters
@@ -26,7 +27,7 @@
  *   @param {Function} [options.toolType] Function that takes streamType and returns the tag to render (and then activate) for that stream
  *   @param {Boolean} [options.realtime] Whether to refresh every time a relation is added, removed or updated
  *   @default false
- *   @param {Object} [options.sortable] Options for "Q/sortable" jQuery plugin. Pass false here to disable sorting interface.
+ *   @param {Object} [options.sortable] Options for "Q/sortable" jQuery plugin. Pass false here to disable sorting interface. If streamName is not a String, this interface is not shown.
  *   @param {Function} [options.tabs] Function for interacting with any parent "Q/tabs" tool. Format is function (previewTool, tabsTool) { return urlOrTabKey; }
  *   @param {Object} [options.updateOptions] Options for onUpdate such as duration of the animation, etc.
  *   @param {Q.Event} [options.onUpdate] Event that receives parameters "data", "entering", "exiting", "updating"
@@ -68,17 +69,19 @@ function _Streams_related_tool (options)
 		return Q.Streams.key(previewTool.state.publisherId, previewTool.state.streamName);
 	},
 	toolType: function (streamType) { return streamType+'/preview'; },
-    onUpdate: new Q.Event(function _Streams_related_onUpdate(result, entering, exiting, updating) {
-
+    onUpdate: new Q.Event(
+	function _Streams_related_onUpdate(result, entering, exiting, updating) {
 		function addComposer(streamType, params) {
 			// TODO: test whether the user can create streams of this type
 			// and otherwise do not append this element
 			params.streamType = streamType;
-			var element = tool.elementForStream(tool.state.publisherId, "", streamType, null, {
-				creatable: params
-			});
+			var element = tool.elementForStream(
+				tool.state.publisherId, "", streamType, null, 
+				{ creatable: params }
+			);
 			element.setAttribute('class', element.getAttribute('class') + ' Streams_related_composer');
-			Q.activate(tool.element.insertBefore(element, tool.element.firstChild), function () {
+			Q.activate(tool.element.insertBefore(element, tool.element.firstChild),
+			function () {
 				var rc = tool.state.refreshCount;
 				element.Q.tool.state.onUpdate.set(function () {
 					
@@ -118,15 +121,19 @@ function _Streams_related_tool (options)
 						if (!data.direction) return;
 						var p = new Q.Pipe(['timeout', 'updated'], function () {
 							if (state.realtime) return;
-							Q.Streams.related.cache.each([state.publisherId, state.streamName], function (k, v) {
-								Q.Streams.related.cache.remove(k);
-							});
+							Q.Streams.related.cache.removeEach(
+								[state.publisherId, state.streamName]
+							);
+							// TODO: replace with animation?
 							tool.refresh();
 						});
-						var s = Q.Tool.from(data.target).state,
-							i = Q.Tool.from($item[0]).state,
-							r = i.related;
-						setTimeout(p.fill('timeout'), this.state('Q/sortable').drop.duration);
+						var s = Q.Tool.from(data.target).state;
+						var i = Q.Tool.from($item[0]).state;
+						var r = i.related;
+						setTimeout(
+							p.fill('timeout'),
+							this.state('Q/sortable').drop.duration
+						);
 						Q.Streams.updateRelation(
 							r.publisherId,
 							r.streamName,
@@ -145,7 +152,13 @@ function _Streams_related_tool (options)
 		var elements = [];
         Q.each(result.relations, function (i) {
 			if (!this.from) return;
-            var element = tool.elementForStream(this.from.fields.publisherId, this.from.fields.name, this.from.fields.type, this.weight);
+			var tff = this.from.fields;
+            var element = tool.elementForStream(
+				tff.publisherId, 
+				tff.name, 
+				tff.type, 
+				this.weight
+			);
 			element.setAttribute('class', element.getAttribute('class') + ' Streams_related_stream');
 			elements.push(element);
 			tool.element.appendChild(element);
@@ -253,8 +266,8 @@ function _Streams_related_tool (options)
 		for (id in parents) {
 			if (tabs = parents[id].element.Q("Q/tabs")) {
 				for (i=0; i<elements.length; ++i) {
-					var value = state.tabs.call(tool, elements[i].Q(), tabs),
-					    attr = value.isUrl() ? 'href' : 'data-name';
+					var value = state.tabs.call(tool, Q.Tool.from(elements[i]), tabs);
+					var attr = value.isUrl() ? 'href' : 'data-name';
 					elements[i].addClass("Q_tabs_tab")
 						.setAttribute(attr, value);
 				}

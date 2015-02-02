@@ -619,11 +619,9 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 
 				// update the Streams.get cache
 				if (f.publisherId && f.name) {
-					Streams.get.cache.each([f.publisherId, f.name],
-					function (k, v) {
-						Streams.get.cache.remove(k);
-					});
-					Streams.get.cache.set(
+					Streams.get.cache
+					.removeEach([f.publisherId, f.name])
+					.set(
 						[f.publisherId, f.name], 0,
 						this, [null, this]
 					);
@@ -1027,9 +1025,7 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 	var notRetained = !_retainedByStream[Streams.key(publisherId, streamName)];
 	if (!Q.isOnline()
 	|| (notRetained && !(options && options.evenIfNotRetained))) {
-		Streams.get.cache.each([publisherId, streamName], function (k, v) {
-			Streams.get.cache.remove(k);
-		});
+		Streams.get.cache.removeEach([publisherId, streamName]);
 		callback && callback(null, null);
 		return false;
 	}
@@ -1046,9 +1042,6 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 	var socket = Q.Socket.get('Streams', node);
 	if (!result && !(socket && options && options.unlessSocket)) {
 		// there was no cache, and we didn't wait for previous messages
-		Streams.get.cache.each([publisherId, streamName], function (k, v) {
-			Streams.get.cache.remove(k);
-		});
 		// just get the stream, and any listeners will be triggered
 		Streams.get.force(publisherId, streamName, function (err, stream) {
 			if (!err) {
@@ -3316,7 +3309,7 @@ Q.onInit.add(function _Streams_onInit() {
 	Streams.onEvent('remove').set(function _Streams_remove_handler (stream) {
 		Streams.get.cache.each([msg.publisherId, msg.streamName], 
 		function (k, v) {
-			Streams.get.cache.remove(k);
+			this.remove(k);
 			updateAvatarCache(v.subject);
 		});
 	}, 'Streams');
@@ -3512,14 +3505,14 @@ Q.onInit.add(function _Streams_onInit() {
 						}
 						var args = JSON.parse(k), extra = args[2];
 						if (extra && extra.messages) {
-							Streams.get.cache.remove(k);
+							this.remove(k);
 						}
 					});
 					Message.get.cache.each([msg.publisherId, msg.streamName],
 					function (k, v) {
 						var args = JSON.parse(k), ordinal = args[2];
 						if (ordinal && ordinal.max && ordinal.max < 0) {
-							Message.get.cache.remove(k); 
+							this.remove(k); 
 						}
 					});
 				}
@@ -3536,21 +3529,16 @@ Q.onInit.add(function _Streams_onInit() {
 						}
 						var args = JSON.parse(k), extra = args[2];
 						if (extra && extra.participants) {
-							Streams.get.cache.remove(k);
+							this.remove(k);
 						}
 					});
-					Participant.get.cache.each([msg.publisherId, msg.streamName],
-					function (k, v) {
-						Participant.get.cache.remove(k);
-						// later, we can refactor this to insert
-						// the correct data into the cache
-					});
+					Participant.get.cache.removeEach([msg.publisherId, msg.streamName]);
+					// later, we can refactor this to insert
+					// the correct data into the cache
 				}
 
 				function updateRelatedCache(fields) {
-					Streams.related.cache.each([msg.publisherId, msg.streamName, fields.type], function (k, v) {
-						Streams.related.cache.remove(k);
-					});
+					Streams.related.cache.removeEach([msg.publisherId, msg.streamName]);
 				}
 			});
 		});

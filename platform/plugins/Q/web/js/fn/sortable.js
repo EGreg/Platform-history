@@ -10,57 +10,55 @@
  * @class Q sortable
  * @constructor
  * @param {Object} [options] options object which conatins parameters for function
- *  @param {String} [options.draggable] Elements selector which can be draggable
- *  @default '*'
- *  @param {String} [options.droppable] Elements selector which can be moved
- *  @default '*'
- *  @param {Number} [options.zIndex] CSS z-index for sortable elements
- *  @default 999999
- *  @param {Number} [options.draggedOpacity] Element Drag effect opacity
- *  @default 0.8
- *  @param {Number} [options.placeholderOpacity] Opacity for elements placeholder
- *  @default 0.1
- *  @param {Object} [options.lift] parameters object for vertical movement
- *    @param {Number} [options.lift.delay] movement delay in milliseconds
- *    @default 300
- *    @param {Number} [options.lift.delayTouchscreen] movement delay for touchscreens in milliseconds
- *    @default 300
- *    @param {Number} [options.lift.threshhold] Start moving elemnt after threshhold pixels mouse (touch) dragging
- *    @default 10
- *    @param {Number} [options.lift.zoom] Zoom element on dragging
- *    @default 1.1
- *    @param {Number} [options.lift.animate] Animation speed in milliseconds
- *    @default 100
- *  @param {Object} [options.scroll] parameters object for horisontal movement and scroll dragging
- *    @param {Number} [options.scroll.delay] movement delay in milliseconds
- *    @default 300
- *    @param {Number} [options.scroll.delayTouchscreen] movement delay for touchscreens in milliseconds
- *    @default 300
- *    @param {Number} [options.scroll.threshhold] Start moving elemnt after threshhold pixels mouse (touch) dragging
- *    @default 10
- *    @param {Number} [options.scroll.distance] Scrolling distance
- *    @default 1.5
- *    @param {Number} [options.scroll.distanceWindow] distance to block corner
- *    @default 0.1
- *    @param {Number} [options.scroll.speed] Element horizontal movement , scrolling speed
- *    @default 30
- *    @param {Number} [options.scroll.acceleration] Movement Step value
- *    @default 0.1
- *  @param {Object} [options.drop] object for dropping effect options
- *    @param {Number} [options.drop.duration] Duration of dropping effect
- *    @default 300
- *  @param {Boolean} [options.requireDropTarget]
- *  @default true
- *  @param {Q.Event} [options.onLift] This event triggering on elemen vertical dragging
- *  @default Q.Event()
- *  @param {Q.Event} [options.onIndicate] This event triggering before dragging
- *  @default Q.Event()
- *  @param {Q.Event} [options.beforeDrop] This event triggering before drop
- *  @default Q.Event()
- *  @param {Q.Event} [options.onDrop] This event triggering after drop. Default event handler is in example
- * @param {Boolean} [options.requireDropTarget] Target element for dropping
+ * @param {String} [options.draggable] Selector for elements that can be dragged
+ * @default '*'
+ * @param {String} [options.droppable] Selector for elements that can act as drop targets
+ * @default '*'
+ * @param {Number} [options.zIndex] CSS z-index for sortable elements
+ * @default 999999
+ * @param {Number} [options.draggedOpacity] Element Drag effect opacity
+ * @default 0.8
+ * @param {Number} [options.placeholderOpacity] Opacity for elements placeholder
+ * @default 0.1
+ * @param {Object} [options.lift] parameters object for vertical movement
+ *   @param {Number} [options.lift.delay] movement delay in milliseconds
+ *   @default 300
+ *   @param {Number} [options.lift.delayTouchscreen] movement delay for touchscreens in milliseconds
+ *   @default 300
+ *   @param {Number} [options.lift.threshhold] Start moving elemnt after threshhold pixels mouse (touch) dragging
+ *   @default 10
+ *   @param {Number} [options.lift.zoom] Zoom element on dragging
+ *   @default 1.1
+ *   @param {Number} [options.lift.animate] Animation speed in milliseconds
+ *   @default 100
+ * @param {Object} [options.scroll] parameters object for horisontal movement and scroll dragging
+ *   @param {Number} [options.scroll.delay] movement delay in milliseconds
+ *   @default 300
+ *   @param {Number} [options.scroll.delayTouchscreen] movement delay for touchscreens in milliseconds
+ *   @default 300
+ *   @param {Number} [options.scroll.threshhold] Start moving elemnt after threshhold pixels mouse (touch) dragging
+ *   @default 10
+ *   @param {Number} [options.scroll.distance] Scrolling distance
+ *   @default 1.5
+ *   @param {Number} [options.scroll.distanceWindow] distance to block corner
+ *   @default 0.1
+ *   @param {Number} [options.scroll.speed] Element horizontal movement , scrolling speed
+ *   @default 30
+ *   @param {Number} [options.scroll.acceleration] Movement Step value
+ *   @default 0.1
+ * @param {Object} [options.drop] object for dropping effect options
+ *   @param {Number} [options.drop.duration] Duration of dropping effect
+ *   @default 300
+ * @param {Q.Event} [options.onLift] This event triggering on elemen vertical dragging
+ * @default Q.Event()
+ * @param {Q.Event} [options.onIndicate] This event triggering before dragging
+ * @default Q.Event()
+ * @param {Q.Event} [options.beforeDrop] This event triggering before drop
+ * @default Q.Event()
+ * @param {Q.Event} [options.onDrop] This event triggering after drop. Default event handler is in example
+ * @param {Boolean} [options.requireDropTarget] Whether to prevent dropping on something that is not a drop target (not in options.droppable)
  * @default true
- * @param {Q.Event} [options.onSuccess] This event triggers after sortable successfully creation
+ * @param {Q.Event} [options.onSuccess] This event triggers after a successful drag and drop
  * @default Q.Event()
  */
 Q.Tool.jQuery('Q/sortable',
@@ -247,9 +245,9 @@ Q.Tool.jQuery('Q/sortable',
             if (!lifted) {
                 return;
             }
-            var x = Q.Pointer.getX(event),
-                y = Q.Pointer.getY(event),
-                $target = getTarget(x, y);
+            var x = Q.Pointer.getX(event);
+			var y = Q.Pointer.getY(event);
+			var $target = getTarget(x, y);
             moveHandler.xStart = moveHandler.yStart = null;
             complete(!$target && state.requireDropTarget);
         }

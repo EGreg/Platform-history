@@ -4301,12 +4301,10 @@ Cp.get = function _Q_Cache_prototype_get(key, options) {
  * @return {Boolean} whether there was an existing entry under that key
  */
 Cp.remove = function _Q_Cache_prototype_remove(key) {
+	var existing, count;
 	if (typeof key !== 'string') {
 		key = Q.Cache.key(key);
 	}
-
-	var existing, count;
-
 	existing = this.get(key, true);
 	if (!existing) {
 		return false;
@@ -4314,7 +4312,6 @@ Cp.remove = function _Q_Cache_prototype_remove(key) {
 
 	count = this.count()-1;
 	this.count(count);
-
 
 	if (this.latest() === key) {
 		this.latest(existing.prev);
@@ -4398,6 +4395,19 @@ Cp.each = function _Q_Cache_prototype_each(args, callback) {
 			}
 		}
 	}
+};
+/**
+ * Removes all the entries in the cache matching the args
+ *
+ * @static
+ * @method removeEach
+ * @param {Array} args  An array consisting of some or all the arguments that form the key
+ */
+Cp.removeEach = function _Q_Cache_prototype_each(args) {
+	this.each(args, function (key) {
+		this.remove(key);
+	});
+	return this;
 };
 Q.Cache.document = function _Q_Cache_document(name, max) {
 	if (!Q.Cache.document.caches[name]) {
@@ -7321,9 +7331,7 @@ Q.Template.set = function (name, content, type) {
 Q.Template.remove = function (name) {
 	if (typeof name === 'string') {
 		delete Q.Template.collection[Q.normalize(name)];
-		Q.Template.load.cache.each([name], function (key) {
-			Q.Template.load.cache.remove(key);
-		});
+		Q.Template.load.cache.removeEach(name);
 		return;
 	}
 	Q.each(name, function (i, name) {
