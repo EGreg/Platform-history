@@ -1841,7 +1841,7 @@ abstract class Streams extends Base_Streams
 	 *  The user who is fetching
 	 * @param {string} $publisherId
 	 *  The publisher of the stream
-	 * @param {string} $streamName
+	 * @param {string|array|Db_Range} $streamName
 	 *  The name of the stream which is presumably related to/from other streams
 	 * @param {mixed} $isCategory=true
 	 *  If false, returns the categories that this stream is related to.
@@ -1866,7 +1866,7 @@ abstract class Streams extends Base_Streams
 	 * @return {array}
 	 *  Returns array($relations, $relatedStreams, $stream).
 	 *  However, if $streamName wasn't a string or ended in "/"
-	 *  then the third parameter is an array of streams.
+	 *  then these third parameter is an array of streams.
 	 */
 	static function related(
 		$asUserId,

@@ -568,7 +568,8 @@ Q.Tool.define("Q/columns", function(options) {
 		.add($te.parents().prevAll())
 		.each(function () {
 			var $this = $(this);
-			if ($this.css('position') === 'fixed') {
+			if ($this.css('position') === 'fixed'
+			&& !$this.hasClass('Q_drawers_drawer')) {
 				top += $this.outerHeight() + parseInt($this.css('margin-bottom'));
 			}
 		});
