@@ -38,6 +38,7 @@ Q.Tool.define("Streams/related",
 function _Streams_related_tool (options)
 {
     // check for required options
+	var state = this.state;
     if ((!options.publisherId || !options.streamName)
     && (!options.stream || Q.typeOf(options.stream) !== 'Streams.Stream')) {
         throw new Q.Error("Streams/related tool: missing options.stream");
@@ -46,10 +47,10 @@ function _Streams_related_tool (options)
         throw new Q.Error("Streams/related tool: missing options.relationType");
     }
 
-	this.state.publisherId = this.state.publisherId || this.state.stream.fields.publisherId;
-	this.state.streamName = this.state.streamName || this.state.stream.fields.streamName;
+	state.publisherId = state.publisherId || state.stream.fields.publisherId;
+	state.streamName = state.streamName || state.stream.fields.streamName;
     
-	this.state.refreshCount = 0;
+	state.refreshCount = 0;
 
     // render the tool
     this.refresh();
@@ -122,7 +123,7 @@ function _Streams_related_tool (options)
 						var p = new Q.Pipe(['timeout', 'updated'], function () {
 							if (state.realtime) return;
 							Q.Streams.related.cache.removeEach(
-								[state.publisherId, state.streamName]
+								state.publisherId, state.streamName
 							);
 							// TODO: replace with animation?
 							tool.refresh();
@@ -176,14 +177,15 @@ function _Streams_related_tool (options)
 {
     refresh: function () {
         var tool = this;
-        var publisherId = this.state.publisherId;
-        var streamName = this.state.streamName;
+		var state = tool.state;
+        var publisherId = state.publisherId;
+        var streamName = state.streamName;
         Q.Streams.retainWith(tool).related(
 			publisherId, 
 			streamName, 
-			this.state.relationType, 
-			this.state.isCategory, 
-			this.state.relatedOptions,
+			state.relationType, 
+			state.isCategory, 
+			state.relatedOptions,
 			relatedResult
 		);
         
@@ -199,9 +201,10 @@ function _Streams_related_tool (options)
 					&& s1.fields.publisherId === s2.fields.publisherId
                     && s1.fields.name === s2.fields.name;
             }
-            if (tool.state.result) {
-                exiting = Q.diff(tool.state.result.relatedStreams, result.relatedStreams, comparator);
-                entering = Q.diff(result.relatedStreams, tool.state.result.relatedStreams, comparator);
+			var tsr = tool.state.result;
+            if (tsr) {
+                exiting = Q.diff(tsr.relatedStreams, result.relatedStreams, comparator);
+                entering = Q.diff(result.relatedStreams, tsr.relatedStreams, comparator);
                 updating = Q.diff(result.relatedStreams, entering, entering, comparator);
             } else {
                 exiting = entering = updating = [];
@@ -242,18 +245,19 @@ function _Streams_related_tool (options)
     },
 
     elementForStream: function (publisherId, streamName, streamType, weight, options) {
+		var state = this.state;
         var o = Q.extend({
             publisherId: publisherId,
             streamName: streamName,
 			related: {
-				publisherId: this.state.publisherId,
-				streamName: this.state.streamName,
-				type: this.state.relationType,
+				publisherId: state.publisherId,
+				streamName: state.streamName,
+				type: state.relationType,
 				weight: weight
 			},
-			editable: this.state.editable
+			editable: state.editable
         }, options);
- 		return this.setUpElement(this.state.tag || 'div', this.state.toolType(streamType), o);
+ 		return this.setUpElement(state.tag || 'div', state.toolType(streamType), o);
     },
 
 	integrateWithTabs: function (elements) {
