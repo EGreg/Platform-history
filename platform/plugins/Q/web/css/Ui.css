@@ -1876,18 +1876,24 @@ input[type=radio] { margin-right: 5px; }
 }
 
 .Q_filter_results {
+	display: none;
+	position: absolute;
 	padding: 5px;
 	border: solid 1px #ccc;
 	background: white;
 	color: black;
 	font-weight: normal;
 	font-style: normal;
-	display: none;
-	position: absolute;
+	cursor: pointer;
+}
+
+.Q_filter_notFullscreen .Q_filter_results {
+	max-height: 100px;
+	overflow: auto;
 }
 
 .Q_filter_tool input.Q_filter_input {
-	padding-right: 15% !important;
+	padding-right: 10% !important;
 	cursor: default;
 }
 
@@ -1909,7 +1915,7 @@ input[type=radio] { margin-right: 5px; }
 }
 
 .Q_filter_fullscreen.Q_filter_begun .Q_filter_input {
-	width: 85% !important;
+	width: 90% !important;
 	-webkit-max-logical-width: 100% !important;
 	margin: 0px !important;
 }

@@ -39,10 +39,18 @@ Q.Tool.define('Q/filter', function (options) {
 		tool.$results = tool.$('.Q_filter_results');
 	}
 	
+	var _canceledBlur;
 	tool.$input.on('focus', function () {
 		tool.begin();
+		_canceledBlur = true;
 	}).on('blur', function () {
-		tool.end();
+		setTimeout(function () {
+			if (_canceledBlur) {
+				_canceledBlur = false;
+				return false;
+			}
+			tool.end();
+		}, 100);
 	}).on('keydown keyup change input focus paste blur Q_refresh', _changed)
 	.on(Q.Pointer.fastclick, function (evt) {
 		var $this = $(this);
@@ -55,10 +63,11 @@ Q.Tool.define('Q/filter', function (options) {
 			return tool.end();
 		}
 	});
+	$te.addClass(state.fullscreen ? 'Q_filter_fullscreen' : 'Q_filter_notFullscreen');
 	
-	if (state.fullscreen) {
-		$te.addClass('Q_filter_fullscreen');
-	}
+	tool.$results.on(Q.Pointer.start, function () {
+		_canceledBlur = true;
+	});
 	
 	var lastVal = null;
 	function _changed(event) {
@@ -99,6 +108,8 @@ Q.Tool.define('Q/filter', function (options) {
 		$te.addClass('Q_filter_begun');
 
 		if (state.fullscreen) {
+			tool.oldBodyOverflow = $('body').css('overflow');
+			$('body').css('overflow', 'auto');
 			tool.suspended = true;
 			tool.$placeholder = $('<div class="Q_filter_placeholder" />')
 				.insertAfter($te);
@@ -140,6 +151,7 @@ Q.Tool.define('Q/filter', function (options) {
 		state.begun = false;
 		var $te = $(tool.element);
 		$te.removeClass('Q_filter_begun');
+		$('body').css('overflow', tool.oldBodyOverflow);
 		tool.$results.hide();
 		if (state.fullscreen) {
 			$te.nextAll().each(function () {
