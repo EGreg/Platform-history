@@ -26,7 +26,7 @@ Q.text.Users = {
 		explanation: null,
 		goButton: "Go",
 		passphrase: 'Enter your pass phrase:',
-		loginButton: "Come Inside",
+		loginButton: "Get Started",
 		registerButton: "Get Started",
 		resendButton: "Send Activation Message",
 		forgot: "Forgot it?",
