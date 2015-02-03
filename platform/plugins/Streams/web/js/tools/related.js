@@ -178,6 +178,7 @@ function _Streams_related_tool (options)
 	/**
 	 * Call this method to refresh the contents of the tool, requesting only
 	 * what's needed and redrawing only what's needed.
+	 * @method refresh
 	 * @param {Function} An optional callback to call after refresh has completed.
 	 *  It receives (result, entering, exiting, updating) arguments.
 	 */
@@ -256,7 +257,7 @@ function _Streams_related_tool (options)
 	 * Sets up an element for the stream with the tag and toolType provided to the
 	 * Streams/related tool. Also populates "publisherId", "streamName" and "related" 
 	 * options for the tool.
-	 * @method integrateWithTabs
+	 * @method elementForStream
 	 * @param {String } publisherId
 	 * @param {String} streamName
 	 * @param {String} streamType
