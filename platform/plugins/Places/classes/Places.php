@@ -77,6 +77,12 @@ abstract class Places extends Base_Places
 		$location->publisherId = $publisherId;
 		$location->name = "Places/location/$placeId";
 		if ($location->retrieve()) {
+			$ut = $location->updatedTime;
+			$ct = $location->db()->getCurrentTimestamp()
+			$cd = Q_Config::get('Places', 'cache', 'duration', 60*60*24*30);
+			if ($ct - $cd) {
+				
+			}
 			// TODO: make a config setting for the number of seconds
 			// before we should try to override with fresh information
 			return $location;

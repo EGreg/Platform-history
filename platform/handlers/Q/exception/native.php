@@ -21,7 +21,7 @@ function Q_exception_native($params)
 		}
 	} else {
 		if (Q::textMode()) {
-			echo $exception->colored();
+			echo Q_Exception::coloredString($exception);
 			exit;
 		}
 		$message = $exception->getMessage();
@@ -51,7 +51,7 @@ function Q_exception_native($params)
 		echo Q::view('Q/layout/html.php', compact('content', 'dashboard', 'title'));
 	}
 	$app = Q_Config::get('Q', 'app', null);
-	$colored = $exception->colored();
+	$colored = Q_Exception::coloredString($exception);
 	Q::log(
 		"$app: Exception in " . ceil(Q::milliseconds()) . "ms:\n\n$colored\n",
 		null, true, array('maxLength' => 10000)

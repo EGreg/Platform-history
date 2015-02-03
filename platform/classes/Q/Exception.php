@@ -253,27 +253,32 @@ class Q_Exception extends Exception
 	 */
 	function colored()
 	{
-		$message = $this->getMessage();
-		$file = $this->getFile();
-		$line = $this->getLine();
-		if (is_callable(array($this, 'getTraceAsStringEx'))) {
-			$trace_string = $this->getTraceAsStringEx();
-		} else {
-			$trace_string = $this->getTraceAsString();
-		}
-		return self::coloredString($message, $file, $line, $trace_string);
+		return self::coloredString($this);
 	}
 	
 	/**
 	 * Return colored text that you can output in logs or text mode
-	 * @param {string} $message
-	 * @param {string} $file
-	 * @param {string} $line
-	 * @param {string} $trace
+	 * Pass an exception or 
+	 * @param {string|Exception} $exception The exception or an exception message. If the later, you must pass three more arguments.
+	 * @param {string} [$file]
+	 * @param {string} [$line]
+	 * @param {string} [$trace]
 	 * @return {string}
 	 */
-	static function coloredString($message, $file, $line, $trace)
+	static function coloredString($message, $file=null, $line=null, $trace=null)
 	{
+		if ($message instanceof Exception) {
+			$e = $message;
+			$traceString = is_callable(array($e, 'getTraceAsStringEx'))
+				? $e->getTraceAsStringEx()
+				: $e->getTraceAsString();
+			return self::coloredString(
+				$e->getMessage(),
+				$e->getFile(),
+				$e->getLine(),
+				$traceString
+			);
+		}
 		$colors = Q_Config::get('Q', 'exception', 'colors', array());
 		Q::autoload('Q_Utils');
 		$fields = array(

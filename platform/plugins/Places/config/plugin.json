@@ -55,6 +55,11 @@
 				"server": null,
 				"web": null
 			}
+		},
+		"location": {
+			"cache": {
+				"duration": 2592000
+			}
 		}
 	}
 }
