@@ -19,6 +19,15 @@ abstract class Places extends Base_Places
 
 	/* * * */
 	
+	/**
+	 * Get the logged-in user's location stream
+	 * @method userLocationStream
+	 * @param {boolean} [$throwIfNotLoggedIn=false]
+	 *   Whether to throw a Users_Exception_NotLoggedIn if no user is logged in.
+	 * @return {Streams_Stream|null}
+	 * @throws {Users_Exception_NotLoggedIn} If user is not logged in and
+	 *   $throwIfNotLoggedIn is true
+	 */
 	static function userLocationStream($throwIfNotLoggedIn = false)
 	{
 		$user = Users::loggedInUser($throwIfNotLoggedIn);
@@ -39,6 +48,17 @@ abstract class Places extends Base_Places
 		return $stream;
 	}
 	
+	/**
+	 * Get location stream of a publisher
+	 * @method locationStream
+	 * @static
+	 * @param {string} $publisherId
+	 * @param {string} $placeId
+	 * @param {boolean} $throwIfBadValue
+	 *  Whether to throw Q_Exception if the result contains a bad value
+	 * @return {Streams_Stream|null}
+	 * @throws {Q_Exception} if a bad value is encountered and $throwIfBadValue is true
+	 */
 	static function locationStream($publisherId, $placeId, $throwIfBadValue = false)
 	{
 		if (empty($placeId)) {
@@ -97,6 +117,8 @@ abstract class Places extends Base_Places
 	
 	/**
 	 * Use this to calculate the haversine distance between two sets of lat/long coordinates on the Earth
+	 * @method distance
+	 * @static
 	 * @param {double} $lat_1
 	 * @param {double} $long_1
 	 * @param {double} $lat_2
@@ -172,6 +194,8 @@ abstract class Places extends Base_Places
 	 * Call this function to find the "nearby points" to publish to
 	 * on a grid of quantized (latitude, longitude) pairs
 	 * which are spaced at most $miles apart.
+	 * @method nearbyForPublishers
+	 * @static
 	 * @param {double} $latitude The latitude of the coordinates to search around
 	 * @param {double} $longitude The longitude of the coordinates to search around
 	 * @return {Array} Returns an array of several ($streamName => $info) pairs
@@ -205,6 +229,8 @@ abstract class Places extends Base_Places
 	/**
 	 * Call this function to subscribe to streams on which messages are posted
 	 * related to things happening the given number of $miles around the given location.
+	 * @method subscribe
+	 * @static
 	 * @param {double} $latitude The latitude of the coordinates to subscribe around
 	 * @param {double} $longitude The longitude of the coordinates to subscribe around
 	 * @param {double} $miles The radius, in miles, around this location.
@@ -228,6 +254,8 @@ abstract class Places extends Base_Places
 	/**
 	 * Call this function to unsubscribe from streams you previously subscribed to
 	 * using Places::subscribe.
+	 * @method unsubscribe
+	 * @static
 	 * @param {double} $latitude The latitude of the coordinates to subscribe around
 	 * @param {double} $longitude The longitude of the coordinates to subscribe around
 	 * @param {double} $miles The radius, in miles, around this location.
@@ -290,6 +318,8 @@ abstract class Places extends Base_Places
 	/**
 	 * Call this function to relate a stream to category streams for things happening
 	 * the given number of $miles around the given location.
+	 * @method relateTo
+	 * @static
 	 * @param {string} $toPublisherId The publisherId of the category streams
 	 * @param {double} $latitude The latitude of the coordinates near which to relate
 	 * @param {double} $longitude The longitude of the coordinates near which to relate
@@ -386,6 +416,8 @@ abstract class Places extends Base_Places
 	/**
 	 * Obtain the name of a "Places/nearby" stream
 	 * corresponding to the given parameters
+	 * @method streamName
+	 * @static
 	 * @param {double} $latitude,
 	 * @param {double} $longitude
 	 * @param {double} $miles
@@ -404,6 +436,8 @@ abstract class Places extends Base_Places
 	 * Fetch a stream on which messages are posted relating to things happening
 	 * a given number of $miles around the given location.
 	 * If it doesn't exist, create it.
+	 * @method nearbyStream
+	 * @static
 	 * @param {double} $latitude The latitude of the coordinates to search around
 	 * @param {double} $longitude The longitude of the coordinates to search around
 	 * @param {double} $miles The radius, in miles, around this location.

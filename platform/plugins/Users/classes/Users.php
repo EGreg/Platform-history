@@ -643,11 +643,13 @@ abstract class Users extends Base_Users
 	 * Get the logged-in user's information
 	 * @method loggedInUser
 	 * @static
-	 * @param {boolean} [$throwIfNotLoggedIn=false] Defaults to false.
+	 * @param {boolean} [$throwIfNotLoggedIn=false]
 	 *   Whether to throw a Users_Exception_NotLoggedIn if no user is logged in.
-	 * @param {boolean} [$startSession=true] Defaults to true.
+	 * @param {boolean} [$startSession=true]
 	 *   Whether to start a PHP session if one doesn't already exist.
 	 * @return {Users_User|null}
+	 * @throws {Users_Exception_NotLoggedIn} If user is not logged in and
+	 *   $throwIfNotLoggedIn is true
 	 */
 	static function loggedInUser(
 		$throwIfNotLoggedIn = false,
