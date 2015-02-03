@@ -80,7 +80,7 @@ function _Streams_related_tool (options)
 				tool.state.publisherId, "", streamType, null, 
 				{ creatable: params }
 			);
-			element.setAttribute('class', element.getAttribute('class') + ' Streams_related_composer');
+			$(element).addClass('Streams_related_composer');
 			Q.activate(tool.element.insertBefore(element, tool.element.firstChild),
 			function () {
 				var rc = tool.state.refreshCount;
@@ -160,7 +160,7 @@ function _Streams_related_tool (options)
 				tff.type, 
 				this.weight
 			);
-			element.setAttribute('class', element.getAttribute('class') + ' Streams_related_stream');
+			$(element).addClass('Streams_related_stream');
 			elements.push(element);
 			tool.element.appendChild(element);
         });
@@ -175,7 +175,13 @@ function _Streams_related_tool (options)
 },
 
 {
-    refresh: function () {
+	/**
+	 * Call this method to refresh the contents of the tool, requesting only
+	 * what's needed and redrawing only what's needed.
+	 * @param {Function} An optional callback to call after refresh has completed.
+	 *  It receives (result, entering, exiting, updating) arguments.
+	 */
+    refresh: function (callback) {
         var tool = this;
 		var state = tool.state;
         var publisherId = state.publisherId;
@@ -210,6 +216,7 @@ function _Streams_related_tool (options)
                 exiting = entering = updating = [];
             }
             tool.state.onUpdate.handle.apply(tool, [result, entering, exiting, updating]);
+			Q.handle(callback, tool, [result, entering, exiting, updating]);
             
             // Now that we have the stream, we can update the event listeners again
             var dir = tool.state.isCategory ? 'To' : 'From';
@@ -244,6 +251,20 @@ function _Streams_related_tool (options)
         }
     },
 
+	/**
+	 * You don't normally have to call this method, since it's called automatically.
+	 * Sets up an element for the stream with the tag and toolType provided to the
+	 * Streams/related tool. Also populates "publisherId", "streamName" and "related" 
+	 * options for the tool.
+	 * @method integrateWithTabs
+	 * @param {String } publisherId
+	 * @param {String} streamName
+	 * @param {String} streamType
+	 * @param {Number} weight The weight of the relation
+	 * @param {Object} options
+	 *  The elements of the tools representing the related streams
+	 * @return {HTMLElement} An element ready for Q.activate
+	 */
     elementForStream: function (publisherId, streamName, streamType, weight, options) {
 		var state = this.state;
         var o = Q.extend({
@@ -260,15 +281,23 @@ function _Streams_related_tool (options)
  		return this.setUpElement(state.tag || 'div', state.toolType(streamType), o);
     },
 
+	/**
+	 * You don't normally have to call this method, since it's called automatically.
+	 * It integrates the tool with a Q/tabs tool on the same element or a parent element,
+	 * turning each Streams/preview of a related stream into a tab.
+	 * @method integrateWithTabs
+	 * @param elements
+	 *  The elements of the tools representing the related streams
+	 */
 	integrateWithTabs: function (elements) {
 		var id, parents, tabs, i, tool = this, state = tool.state;
 		if (typeof state.tabs !== 'function') {
 			return;
 		}
-		parents = Q.extend(tool.parents());
+		parents = tool.parents();
 		parents[tool.id] = tool;
 		for (id in parents) {
-			if (tabs = parents[id].element.Q("Q/tabs")) {
+			if (tabs = Q.Tool.from(parents[id].element, "Q/tabs")) {
 				for (i=0; i<elements.length; ++i) {
 					var value = state.tabs.call(tool, Q.Tool.from(elements[i]), tabs);
 					var attr = value.isUrl() ? 'href' : 'data-name';
