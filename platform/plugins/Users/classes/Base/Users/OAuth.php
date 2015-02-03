@@ -20,7 +20,7 @@
  * @property string $scope
  * @property string $redirect_uri
  * @property string $access_token
- * @property string $insertedTime
+ * @property string|Db_Expression $insertedTime
  * @property integer $token_expires_seconds
  */
 abstract class Base_Users_OAuth extends Db_Row
@@ -51,7 +51,7 @@ abstract class Base_Users_OAuth extends Db_Row
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * @property $token_expires_seconds
@@ -213,7 +213,9 @@ abstract class Base_Users_OAuth extends Db_Row
 	 */
 	function beforeSet_client_id($value)
 	{
-		if ($value instanceof Db_Expression) return array('client_id', $value);
+		if ($value instanceof Db_Expression) {
+			return array('client_id', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".client_id");
 		if (strlen($value) > 255)
@@ -231,7 +233,9 @@ abstract class Base_Users_OAuth extends Db_Row
 	 */
 	function beforeSet_userId($value)
 	{
-		if ($value instanceof Db_Expression) return array('userId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('userId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".userId");
 		if (strlen($value) > 255)
@@ -249,7 +253,9 @@ abstract class Base_Users_OAuth extends Db_Row
 	 */
 	function beforeSet_state($value)
 	{
-		if ($value instanceof Db_Expression) return array('state', $value);
+		if ($value instanceof Db_Expression) {
+			return array('state', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".state");
 		if (strlen($value) > 255)
@@ -267,7 +273,9 @@ abstract class Base_Users_OAuth extends Db_Row
 	 */
 	function beforeSet_scope($value)
 	{
-		if ($value instanceof Db_Expression) return array('scope', $value);
+		if ($value instanceof Db_Expression) {
+			return array('scope', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".scope");
 		if (strlen($value) > 255)
@@ -285,7 +293,9 @@ abstract class Base_Users_OAuth extends Db_Row
 	 */
 	function beforeSet_redirect_uri($value)
 	{
-		if ($value instanceof Db_Expression) return array('redirect_uri', $value);
+		if ($value instanceof Db_Expression) {
+			return array('redirect_uri', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".redirect_uri");
 		if (strlen($value) > 255)
@@ -303,12 +313,37 @@ abstract class Base_Users_OAuth extends Db_Row
 	 */
 	function beforeSet_access_token($value)
 	{
-		if ($value instanceof Db_Expression) return array('access_token', $value);
+		if ($value instanceof Db_Expression) {
+			return array('access_token', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".access_token");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".access_token");
 		return array('access_token', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_insertedTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_insertedTime($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('insertedTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".insertedTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('insertedTime', $value);			
 	}
 
 	/**
@@ -320,8 +355,12 @@ abstract class Base_Users_OAuth extends Db_Row
 	 */
 	function beforeSet_token_expires_seconds($value)
 	{
-		if (!isset($value)) return array('token_expires_seconds', $value);
-		if ($value instanceof Db_Expression) return array('token_expires_seconds', $value);
+		if (!isset($value)) {
+			return array('token_expires_seconds', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('token_expires_seconds', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".token_expires_seconds");
 		if ($value < -2147483648 or $value > 2147483647)

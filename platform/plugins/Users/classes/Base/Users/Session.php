@@ -20,7 +20,7 @@
  * @property string $deviceId
  * @property integer $timeout
  * @property integer $duration
- * @property string $updatedTime
+ * @property string|Db_Expression $updatedTime
  */
 abstract class Base_Users_Session extends Db_Row
 {
@@ -50,7 +50,7 @@ abstract class Base_Users_Session extends Db_Row
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -206,7 +206,9 @@ abstract class Base_Users_Session extends Db_Row
 	 */
 	function beforeSet_id($value)
 	{
-		if ($value instanceof Db_Expression) return array('id', $value);
+		if ($value instanceof Db_Expression) {
+			return array('id', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".id");
 		if (strlen($value) > 255)
@@ -224,7 +226,9 @@ abstract class Base_Users_Session extends Db_Row
 	 */
 	function beforeSet_content($value)
 	{
-		if ($value instanceof Db_Expression) return array('content', $value);
+		if ($value instanceof Db_Expression) {
+			return array('content', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".content");
 		if (strlen($value) > 4095)
@@ -242,7 +246,9 @@ abstract class Base_Users_Session extends Db_Row
 	 */
 	function beforeSet_php($value)
 	{
-		if ($value instanceof Db_Expression) return array('php', $value);
+		if ($value instanceof Db_Expression) {
+			return array('php', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".php");
 		if (strlen($value) > 4095)
@@ -260,7 +266,9 @@ abstract class Base_Users_Session extends Db_Row
 	 */
 	function beforeSet_deviceId($value)
 	{
-		if ($value instanceof Db_Expression) return array('deviceId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('deviceId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".deviceId");
 		if (strlen($value) > 255)
@@ -277,7 +285,9 @@ abstract class Base_Users_Session extends Db_Row
 	 */
 	function beforeSet_timeout($value)
 	{
-		if ($value instanceof Db_Expression) return array('timeout', $value);
+		if ($value instanceof Db_Expression) {
+			return array('timeout', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".timeout");
 		if ($value < -2147483648 or $value > 2147483647)
@@ -294,12 +304,37 @@ abstract class Base_Users_Session extends Db_Row
 	 */
 	function beforeSet_duration($value)
 	{
-		if ($value instanceof Db_Expression) return array('duration', $value);
+		if ($value instanceof Db_Expression) {
+			return array('duration', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".duration");
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".duration");
 		return array('duration', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_updatedTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_updatedTime($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('updatedTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".updatedTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('updatedTime', $value);			
 	}
 
 	/**

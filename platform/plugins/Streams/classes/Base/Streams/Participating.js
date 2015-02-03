@@ -54,11 +54,11 @@ Q.mixin(Base, Row);
  */
 /**
  * @property insertedTime
- * @type string
+ * @type string|Db.Expression
  */
 /**
  * @property updatedTime
- * @type string
+ * @type string|Db.Expression
  */
 
 /**
@@ -323,6 +323,30 @@ Base.prototype.beforeSet_extra = function (value) {
 			throw new Error('Must pass a string to '+this.table()+".extra");
 		if (typeof value === "string" && value.length > 1023)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".extra");
+		return value;
+};
+
+/**
+ * Method is called before setting the field
+ * @method beforeSet_insertedTime
+ * @param {string} value
+ * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
+ */
+Base.prototype.beforeSet_insertedTime = function (value) {
+       if (value instanceof Db.Expression) return value;
+		value = (value instanceof Date) ? Streams.db().toDateTime(value) : value;
+		return value;
+};
+
+/**
+ * Method is called before setting the field
+ * @method beforeSet_updatedTime
+ * @param {string} value
+ * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
+ */
+Base.prototype.beforeSet_updatedTime = function (value) {
+       if (value instanceof Db.Expression) return value;
+		value = (value instanceof Date) ? Streams.db().toDateTime(value) : value;
 		return value;
 };
 

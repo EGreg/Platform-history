@@ -38,11 +38,11 @@ Q.mixin(Base, Row);
  */
 /**
  * @property insertedTime
- * @type string
+ * @type string|Db.Expression
  */
 /**
  * @property updatedTime
- * @type string
+ * @type string|Db.Expression
  */
 /**
  * @property type
@@ -90,7 +90,7 @@ Q.mixin(Base, Row);
  */
 /**
  * @property closedTime
- * @type string
+ * @type string|Db.Expression
  */
 
 /**
@@ -301,6 +301,31 @@ Base.prototype.beforeSet_name = function (value) {
 };
 
 /**
+ * Method is called before setting the field
+ * @method beforeSet_insertedTime
+ * @param {string} value
+ * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
+ */
+Base.prototype.beforeSet_insertedTime = function (value) {
+       if (value instanceof Db.Expression) return value;
+		value = (value instanceof Date) ? Streams.db().toDateTime(value) : value;
+		return value;
+};
+
+/**
+ * Method is called before setting the field
+ * @method beforeSet_updatedTime
+ * @param {string} value
+ * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
+ */
+Base.prototype.beforeSet_updatedTime = function (value) {
+       if (!value) return value;
+		if (value instanceof Db.Expression) return value;
+		value = (value instanceof Date) ? Streams.db().toDateTime(value) : value;
+		return value;
+};
+
+/**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
  * @method beforeSet_type
@@ -486,6 +511,19 @@ Base.prototype.beforeSet_participantCount = function (value) {
 			throw new Error('Non-integer value being assigned to '+this.table()+".participantCount");
 		if (value < -2147483648 || value > 2147483647)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".participantCount");
+		return value;
+};
+
+/**
+ * Method is called before setting the field
+ * @method beforeSet_closedTime
+ * @param {string} value
+ * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
+ */
+Base.prototype.beforeSet_closedTime = function (value) {
+       if (!value) return value;
+		if (value instanceof Db.Expression) return value;
+		value = (value instanceof Date) ? Streams.db().toDateTime(value) : value;
 		return value;
 };
 

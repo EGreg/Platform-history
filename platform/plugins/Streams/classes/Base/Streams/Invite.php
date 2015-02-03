@@ -25,8 +25,8 @@
  * @property integer $writeLevel
  * @property integer $adminLevel
  * @property mixed $state
- * @property string $insertedTime
- * @property string $expireTime
+ * @property string|Db_Expression $insertedTime
+ * @property string|Db_Expression $expireTime
  */
 abstract class Base_Streams_Invite extends Db_Row
 {
@@ -76,11 +76,11 @@ abstract class Base_Streams_Invite extends Db_Row
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * @property $expireTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -236,7 +236,9 @@ abstract class Base_Streams_Invite extends Db_Row
 	 */
 	function beforeSet_token($value)
 	{
-		if ($value instanceof Db_Expression) return array('token', $value);
+		if ($value instanceof Db_Expression) {
+			return array('token', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".token");
 		if (strlen($value) > 255)
@@ -254,7 +256,9 @@ abstract class Base_Streams_Invite extends Db_Row
 	 */
 	function beforeSet_userId($value)
 	{
-		if ($value instanceof Db_Expression) return array('userId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('userId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".userId");
 		if (strlen($value) > 31)
@@ -272,7 +276,9 @@ abstract class Base_Streams_Invite extends Db_Row
 	 */
 	function beforeSet_publisherId($value)
 	{
-		if ($value instanceof Db_Expression) return array('publisherId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('publisherId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".publisherId");
 		if (strlen($value) > 31)
@@ -290,7 +296,9 @@ abstract class Base_Streams_Invite extends Db_Row
 	 */
 	function beforeSet_streamName($value)
 	{
-		if ($value instanceof Db_Expression) return array('streamName', $value);
+		if ($value instanceof Db_Expression) {
+			return array('streamName', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".streamName");
 		if (strlen($value) > 255)
@@ -308,7 +316,9 @@ abstract class Base_Streams_Invite extends Db_Row
 	 */
 	function beforeSet_invitingUserId($value)
 	{
-		if ($value instanceof Db_Expression) return array('invitingUserId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('invitingUserId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".invitingUserId");
 		if (strlen($value) > 31)
@@ -326,7 +336,9 @@ abstract class Base_Streams_Invite extends Db_Row
 	 */
 	function beforeSet_displayName($value)
 	{
-		if ($value instanceof Db_Expression) return array('displayName', $value);
+		if ($value instanceof Db_Expression) {
+			return array('displayName', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".displayName");
 		if (strlen($value) > 255)
@@ -344,7 +356,9 @@ abstract class Base_Streams_Invite extends Db_Row
 	 */
 	function beforeSet_appUrl($value)
 	{
-		if ($value instanceof Db_Expression) return array('appUrl', $value);
+		if ($value instanceof Db_Expression) {
+			return array('appUrl', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".appUrl");
 		if (strlen($value) > 255)
@@ -361,8 +375,12 @@ abstract class Base_Streams_Invite extends Db_Row
 	 */
 	function beforeSet_readLevel($value)
 	{
-		if (!isset($value)) return array('readLevel', $value);
-		if ($value instanceof Db_Expression) return array('readLevel', $value);
+		if (!isset($value)) {
+			return array('readLevel', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('readLevel', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".readLevel");
 		if ($value < -2147483648 or $value > 2147483647)
@@ -379,8 +397,12 @@ abstract class Base_Streams_Invite extends Db_Row
 	 */
 	function beforeSet_writeLevel($value)
 	{
-		if (!isset($value)) return array('writeLevel', $value);
-		if ($value instanceof Db_Expression) return array('writeLevel', $value);
+		if (!isset($value)) {
+			return array('writeLevel', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('writeLevel', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".writeLevel");
 		if ($value < -2147483648 or $value > 2147483647)
@@ -397,8 +419,12 @@ abstract class Base_Streams_Invite extends Db_Row
 	 */
 	function beforeSet_adminLevel($value)
 	{
-		if (!isset($value)) return array('adminLevel', $value);
-		if ($value instanceof Db_Expression) return array('adminLevel', $value);
+		if (!isset($value)) {
+			return array('adminLevel', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('adminLevel', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".adminLevel");
 		if ($value < -2147483648 or $value > 2147483647)
@@ -415,10 +441,61 @@ abstract class Base_Streams_Invite extends Db_Row
 	 */
 	function beforeSet_state($value)
 	{
-		if ($value instanceof Db_Expression) return array('state', $value);
+		if ($value instanceof Db_Expression) {
+			return array('state', $value);
+		}
 		if (!in_array($value, array('pending','accepted','declined','forwarded','expired','claimed')))
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".state");
 		return array('state', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_insertedTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_insertedTime($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('insertedTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".insertedTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('insertedTime', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_expireTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_expireTime($value)
+	{
+		if (!isset($value)) {
+			return array('expireTime', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('expireTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".expireTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('expireTime', $value);			
 	}
 
 	/**

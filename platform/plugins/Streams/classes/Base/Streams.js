@@ -27,24 +27,24 @@ module.exports = Base;
  * @type array
  */
 Base.tableClasses = [
-		"Streams_Access",
-		"Streams_Avatar",
-		"Streams_Category",
-		"Streams_Invite",
-		"Streams_Invited",
-		"Streams_Message",
-		"Streams_Notification",
-		"Streams_Participant",
-		"Streams_Participating",
-		"Streams_RelatedFrom",
-		"Streams_RelatedTo",
-		"Streams_Request",
-		"Streams_Rule",
-		"Streams_Sent",
-		"Streams_Stream",
-		"Streams_Subscription",
-		"Streams_Total"
-	];
+	"Streams_Access",
+	"Streams_Avatar",
+	"Streams_Category",
+	"Streams_Invite",
+	"Streams_Invited",
+	"Streams_Message",
+	"Streams_Notification",
+	"Streams_Participant",
+	"Streams_Participating",
+	"Streams_RelatedFrom",
+	"Streams_RelatedTo",
+	"Streams_Request",
+	"Streams_Rule",
+	"Streams_Sent",
+	"Streams_Stream",
+	"Streams_Subscription",
+	"Streams_Total"
+];
 
 /**
  * This method calls Db.connect() using information stored in the configuration.

@@ -46,11 +46,11 @@ Q.mixin(Base, Row);
  */
 /**
  * @property insertedTime
- * @type string
+ * @type string|Db.Expression
  */
 /**
  * @property readyTime
- * @type string
+ * @type string|Db.Expression
  */
 /**
  * @property filter
@@ -298,6 +298,31 @@ Base.prototype.beforeSet_ordinal = function (value) {
 			throw new Error('Non-integer value being assigned to '+this.table()+".ordinal");
 		if (value < -2147483648 || value > 2147483647)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".ordinal");
+		return value;
+};
+
+/**
+ * Method is called before setting the field
+ * @method beforeSet_insertedTime
+ * @param {string} value
+ * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
+ */
+Base.prototype.beforeSet_insertedTime = function (value) {
+       if (value instanceof Db.Expression) return value;
+		value = (value instanceof Date) ? Streams.db().toDateTime(value) : value;
+		return value;
+};
+
+/**
+ * Method is called before setting the field
+ * @method beforeSet_readyTime
+ * @param {string} value
+ * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
+ */
+Base.prototype.beforeSet_readyTime = function (value) {
+       if (!value) return value;
+		if (value instanceof Db.Expression) return value;
+		value = (value instanceof Date) ? Streams.db().toDateTime(value) : value;
 		return value;
 };
 

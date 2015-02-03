@@ -54,7 +54,7 @@ Q.mixin(Base, Row);
  */
 /**
  * @property updatedTime
- * @type string
+ * @type string|Db.Expression
  */
 
 /**
@@ -319,6 +319,18 @@ Base.prototype.beforeSet_duration = function (value) {
 			throw new Error('Non-integer value being assigned to '+this.table()+".duration");
 		if (value < -2147483648 || value > 2147483647)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".duration");
+		return value;
+};
+
+/**
+ * Method is called before setting the field
+ * @method beforeSet_updatedTime
+ * @param {string} value
+ * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
+ */
+Base.prototype.beforeSet_updatedTime = function (value) {
+       if (value instanceof Db.Expression) return value;
+		value = (value instanceof Date) ? Users.db().toDateTime(value) : value;
 		return value;
 };
 

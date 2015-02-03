@@ -42,15 +42,15 @@ Q.mixin(Base, Row);
  */
 /**
  * @property insertedTime
- * @type string
+ * @type string|Db.Expression
  */
 /**
  * @property updatedTime
- * @type string
+ * @type string|Db.Expression
  */
 /**
  * @property expireTime
- * @type string
+ * @type string|Db.Expression
  */
 
 /**
@@ -261,6 +261,43 @@ Base.prototype.beforeSet_state = function (value) {
 		if (value instanceof Db.Expression) return value;
 		if (['pending','accepted','declined','forwarded','expired','claimed'].indexOf(value) < 0)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".state");
+		return value;
+};
+
+/**
+ * Method is called before setting the field
+ * @method beforeSet_insertedTime
+ * @param {string} value
+ * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
+ */
+Base.prototype.beforeSet_insertedTime = function (value) {
+       if (value instanceof Db.Expression) return value;
+		value = (value instanceof Date) ? Streams.db().toDateTime(value) : value;
+		return value;
+};
+
+/**
+ * Method is called before setting the field
+ * @method beforeSet_updatedTime
+ * @param {string} value
+ * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
+ */
+Base.prototype.beforeSet_updatedTime = function (value) {
+       if (value instanceof Db.Expression) return value;
+		value = (value instanceof Date) ? Streams.db().toDateTime(value) : value;
+		return value;
+};
+
+/**
+ * Method is called before setting the field
+ * @method beforeSet_expireTime
+ * @param {string} value
+ * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
+ */
+Base.prototype.beforeSet_expireTime = function (value) {
+       if (!value) return value;
+		if (value instanceof Db.Expression) return value;
+		value = (value instanceof Date) ? Streams.db().toDateTime(value) : value;
 		return value;
 };
 

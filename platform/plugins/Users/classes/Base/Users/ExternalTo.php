@@ -17,7 +17,7 @@
  * @property string $publisherId
  * @property string $userId
  * @property string $xid
- * @property string $insertedTime
+ * @property string|Db_Expression $insertedTime
  */
 abstract class Base_Users_ExternalTo extends Db_Row
 {
@@ -35,7 +35,7 @@ abstract class Base_Users_ExternalTo extends Db_Row
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -192,7 +192,9 @@ abstract class Base_Users_ExternalTo extends Db_Row
 	 */
 	function beforeSet_publisherId($value)
 	{
-		if ($value instanceof Db_Expression) return array('publisherId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('publisherId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".publisherId");
 		if (strlen($value) > 31)
@@ -210,7 +212,9 @@ abstract class Base_Users_ExternalTo extends Db_Row
 	 */
 	function beforeSet_userId($value)
 	{
-		if ($value instanceof Db_Expression) return array('userId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('userId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".userId");
 		if (strlen($value) > 31)
@@ -228,12 +232,37 @@ abstract class Base_Users_ExternalTo extends Db_Row
 	 */
 	function beforeSet_xid($value)
 	{
-		if ($value instanceof Db_Expression) return array('xid', $value);
+		if ($value instanceof Db_Expression) {
+			return array('xid', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".xid");
 		if (strlen($value) > 31)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".xid");
 		return array('xid', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_insertedTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_insertedTime($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('insertedTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".insertedTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('insertedTime', $value);			
 	}
 
 	/**

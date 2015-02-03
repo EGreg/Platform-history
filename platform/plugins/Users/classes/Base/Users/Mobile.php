@@ -15,15 +15,15 @@
  * @extends Db_Row
  *
  * @property string $number
- * @property string $insertedTime
- * @property string $updatedTime
+ * @property string|Db_Expression $insertedTime
+ * @property string|Db_Expression $updatedTime
  * @property string $userId
  * @property string $extension
  * @property mixed $carrier
  * @property mixed $state
  * @property mixed $capabilities
  * @property string $activationCode
- * @property string $activationCodeExpires
+ * @property string|Db_Expression $activationCodeExpires
  * @property string $authCode
  */
 abstract class Base_Users_Mobile extends Db_Row
@@ -34,11 +34,11 @@ abstract class Base_Users_Mobile extends Db_Row
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * @property $userId
@@ -66,7 +66,7 @@ abstract class Base_Users_Mobile extends Db_Row
 	 */
 	/**
 	 * @property $activationCodeExpires
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * @property $authCode
@@ -226,12 +226,63 @@ abstract class Base_Users_Mobile extends Db_Row
 	 */
 	function beforeSet_number($value)
 	{
-		if ($value instanceof Db_Expression) return array('number', $value);
+		if ($value instanceof Db_Expression) {
+			return array('number', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".number");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".number");
 		return array('number', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_insertedTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_insertedTime($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('insertedTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".insertedTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('insertedTime', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_updatedTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_updatedTime($value)
+	{
+		if (!isset($value)) {
+			return array('updatedTime', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('updatedTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".updatedTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('updatedTime', $value);			
 	}
 
 	/**
@@ -244,7 +295,9 @@ abstract class Base_Users_Mobile extends Db_Row
 	 */
 	function beforeSet_userId($value)
 	{
-		if ($value instanceof Db_Expression) return array('userId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('userId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".userId");
 		if (strlen($value) > 31)
@@ -262,7 +315,9 @@ abstract class Base_Users_Mobile extends Db_Row
 	 */
 	function beforeSet_extension($value)
 	{
-		if ($value instanceof Db_Expression) return array('extension', $value);
+		if ($value instanceof Db_Expression) {
+			return array('extension', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".extension");
 		if (strlen($value) > 7)
@@ -279,7 +334,9 @@ abstract class Base_Users_Mobile extends Db_Row
 	 */
 	function beforeSet_carrier($value)
 	{
-		if ($value instanceof Db_Expression) return array('carrier', $value);
+		if ($value instanceof Db_Expression) {
+			return array('carrier', $value);
+		}
 		if (!in_array($value, array('unverified','att','cingular','sprint','tmobile','verizon')))
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".carrier");
 		return array('carrier', $value);			
@@ -294,7 +351,9 @@ abstract class Base_Users_Mobile extends Db_Row
 	 */
 	function beforeSet_state($value)
 	{
-		if ($value instanceof Db_Expression) return array('state', $value);
+		if ($value instanceof Db_Expression) {
+			return array('state', $value);
+		}
 		if (!in_array($value, array('unverified','active','suspended','unsubscribed')))
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".state");
 		return array('state', $value);			
@@ -309,7 +368,9 @@ abstract class Base_Users_Mobile extends Db_Row
 	 */
 	function beforeSet_capabilities($value)
 	{
-		if ($value instanceof Db_Expression) return array('capabilities', $value);
+		if ($value instanceof Db_Expression) {
+			return array('capabilities', $value);
+		}
 		if (!in_array($value, array('unverified','sms','wap','internet','sms_and_wap','sms_and_internet')))
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".capabilities");
 		return array('capabilities', $value);			
@@ -325,12 +386,37 @@ abstract class Base_Users_Mobile extends Db_Row
 	 */
 	function beforeSet_activationCode($value)
 	{
-		if ($value instanceof Db_Expression) return array('activationCode', $value);
+		if ($value instanceof Db_Expression) {
+			return array('activationCode', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".activationCode");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".activationCode");
 		return array('activationCode', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_activationCodeExpires
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_activationCodeExpires($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('activationCodeExpires', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".activationCodeExpires");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('activationCodeExpires', $value);			
 	}
 
 	/**
@@ -343,7 +429,9 @@ abstract class Base_Users_Mobile extends Db_Row
 	 */
 	function beforeSet_authCode($value)
 	{
-		if ($value instanceof Db_Expression) return array('authCode', $value);
+		if ($value instanceof Db_Expression) {
+			return array('authCode', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".authCode");
 		if (strlen($value) > 255)

@@ -54,7 +54,7 @@ Q.mixin(Base, Row);
  */
 /**
  * @property insertedTime
- * @type string
+ * @type string|Db.Expression
  */
 /**
  * @property token_expires_seconds
@@ -326,6 +326,18 @@ Base.prototype.beforeSet_access_token = function (value) {
 			throw new Error('Must pass a string to '+this.table()+".access_token");
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".access_token");
+		return value;
+};
+
+/**
+ * Method is called before setting the field
+ * @method beforeSet_insertedTime
+ * @param {string} value
+ * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
+ */
+Base.prototype.beforeSet_insertedTime = function (value) {
+       if (value instanceof Db.Expression) return value;
+		value = (value instanceof Date) ? Users.db().toDateTime(value) : value;
 		return value;
 };
 

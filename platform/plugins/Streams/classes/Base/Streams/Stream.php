@@ -16,8 +16,8 @@
  *
  * @property string $publisherId
  * @property string $name
- * @property string $insertedTime
- * @property string $updatedTime
+ * @property string|Db_Expression $insertedTime
+ * @property string|Db_Expression $updatedTime
  * @property string $type
  * @property string $title
  * @property string $icon
@@ -29,7 +29,7 @@
  * @property string $inheritAccess
  * @property integer $messageCount
  * @property integer $participantCount
- * @property string $closedTime
+ * @property string|Db_Expression $closedTime
  */
 abstract class Base_Streams_Stream extends Db_Row
 {
@@ -43,11 +43,11 @@ abstract class Base_Streams_Stream extends Db_Row
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * @property $type
@@ -95,7 +95,7 @@ abstract class Base_Streams_Stream extends Db_Row
 	 */
 	/**
 	 * @property $closedTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -252,7 +252,9 @@ abstract class Base_Streams_Stream extends Db_Row
 	 */
 	function beforeSet_publisherId($value)
 	{
-		if ($value instanceof Db_Expression) return array('publisherId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('publisherId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".publisherId");
 		if (strlen($value) > 31)
@@ -270,12 +272,63 @@ abstract class Base_Streams_Stream extends Db_Row
 	 */
 	function beforeSet_name($value)
 	{
-		if ($value instanceof Db_Expression) return array('name', $value);
+		if ($value instanceof Db_Expression) {
+			return array('name', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".name");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".name");
 		return array('name', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_insertedTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_insertedTime($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('insertedTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".insertedTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('insertedTime', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_updatedTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_updatedTime($value)
+	{
+		if (!isset($value)) {
+			return array('updatedTime', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('updatedTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".updatedTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('updatedTime', $value);			
 	}
 
 	/**
@@ -288,7 +341,9 @@ abstract class Base_Streams_Stream extends Db_Row
 	 */
 	function beforeSet_type($value)
 	{
-		if ($value instanceof Db_Expression) return array('type', $value);
+		if ($value instanceof Db_Expression) {
+			return array('type', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".type");
 		if (strlen($value) > 63)
@@ -306,7 +361,9 @@ abstract class Base_Streams_Stream extends Db_Row
 	 */
 	function beforeSet_title($value)
 	{
-		if ($value instanceof Db_Expression) return array('title', $value);
+		if ($value instanceof Db_Expression) {
+			return array('title', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".title");
 		if (strlen($value) > 255)
@@ -324,7 +381,9 @@ abstract class Base_Streams_Stream extends Db_Row
 	 */
 	function beforeSet_icon($value)
 	{
-		if ($value instanceof Db_Expression) return array('icon', $value);
+		if ($value instanceof Db_Expression) {
+			return array('icon', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".icon");
 		if (strlen($value) > 255)
@@ -342,7 +401,9 @@ abstract class Base_Streams_Stream extends Db_Row
 	 */
 	function beforeSet_content($value)
 	{
-		if ($value instanceof Db_Expression) return array('content', $value);
+		if ($value instanceof Db_Expression) {
+			return array('content', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".content");
 		if (strlen($value) > 1023)
@@ -360,8 +421,12 @@ abstract class Base_Streams_Stream extends Db_Row
 	 */
 	function beforeSet_attributes($value)
 	{
-		if (!isset($value)) return array('attributes', $value);
-		if ($value instanceof Db_Expression) return array('attributes', $value);
+		if (!isset($value)) {
+			return array('attributes', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('attributes', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".attributes");
 		if (strlen($value) > 1023)
@@ -378,7 +443,9 @@ abstract class Base_Streams_Stream extends Db_Row
 	 */
 	function beforeSet_readLevel($value)
 	{
-		if ($value instanceof Db_Expression) return array('readLevel', $value);
+		if ($value instanceof Db_Expression) {
+			return array('readLevel', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".readLevel");
 		if ($value < -2147483648 or $value > 2147483647)
@@ -395,7 +462,9 @@ abstract class Base_Streams_Stream extends Db_Row
 	 */
 	function beforeSet_writeLevel($value)
 	{
-		if ($value instanceof Db_Expression) return array('writeLevel', $value);
+		if ($value instanceof Db_Expression) {
+			return array('writeLevel', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".writeLevel");
 		if ($value < -2147483648 or $value > 2147483647)
@@ -412,7 +481,9 @@ abstract class Base_Streams_Stream extends Db_Row
 	 */
 	function beforeSet_adminLevel($value)
 	{
-		if ($value instanceof Db_Expression) return array('adminLevel', $value);
+		if ($value instanceof Db_Expression) {
+			return array('adminLevel', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".adminLevel");
 		if ($value < -2147483648 or $value > 2147483647)
@@ -430,8 +501,12 @@ abstract class Base_Streams_Stream extends Db_Row
 	 */
 	function beforeSet_inheritAccess($value)
 	{
-		if (!isset($value)) return array('inheritAccess', $value);
-		if ($value instanceof Db_Expression) return array('inheritAccess', $value);
+		if (!isset($value)) {
+			return array('inheritAccess', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('inheritAccess', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".inheritAccess");
 		if (strlen($value) > 255)
@@ -448,7 +523,9 @@ abstract class Base_Streams_Stream extends Db_Row
 	 */
 	function beforeSet_messageCount($value)
 	{
-		if ($value instanceof Db_Expression) return array('messageCount', $value);
+		if ($value instanceof Db_Expression) {
+			return array('messageCount', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".messageCount");
 		if ($value < -2147483648 or $value > 2147483647)
@@ -465,12 +542,40 @@ abstract class Base_Streams_Stream extends Db_Row
 	 */
 	function beforeSet_participantCount($value)
 	{
-		if ($value instanceof Db_Expression) return array('participantCount', $value);
+		if ($value instanceof Db_Expression) {
+			return array('participantCount', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".participantCount");
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".participantCount");
 		return array('participantCount', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_closedTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_closedTime($value)
+	{
+		if (!isset($value)) {
+			return array('closedTime', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('closedTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".closedTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('closedTime', $value);			
 	}
 
 	/**

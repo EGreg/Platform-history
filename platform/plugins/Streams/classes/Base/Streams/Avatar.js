@@ -38,7 +38,7 @@ Q.mixin(Base, Row);
  */
 /**
  * @property updatedTime
- * @type string
+ * @type string|Db.Expression
  */
 /**
  * @property username
@@ -252,6 +252,19 @@ Base.prototype.beforeSet_publisherId = function (value) {
 			throw new Error('Must pass a string to '+this.table()+".publisherId");
 		if (typeof value === "string" && value.length > 31)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".publisherId");
+		return value;
+};
+
+/**
+ * Method is called before setting the field
+ * @method beforeSet_updatedTime
+ * @param {string} value
+ * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
+ */
+Base.prototype.beforeSet_updatedTime = function (value) {
+       if (!value) return value;
+		if (value instanceof Db.Expression) return value;
+		value = (value instanceof Date) ? Streams.db().toDateTime(value) : value;
 		return value;
 };
 

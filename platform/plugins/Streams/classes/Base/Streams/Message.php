@@ -16,8 +16,8 @@
  *
  * @property string $publisherId
  * @property string $streamName
- * @property string $insertedTime
- * @property string $sentTime
+ * @property string|Db_Expression $insertedTime
+ * @property string|Db_Expression $sentTime
  * @property string $byUserId
  * @property string $byClientId
  * @property string $type
@@ -39,11 +39,11 @@ abstract class Base_Streams_Message extends Db_Row
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * @property $sentTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * @property $byUserId
@@ -233,7 +233,9 @@ abstract class Base_Streams_Message extends Db_Row
 	 */
 	function beforeSet_publisherId($value)
 	{
-		if ($value instanceof Db_Expression) return array('publisherId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('publisherId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".publisherId");
 		if (strlen($value) > 31)
@@ -251,12 +253,63 @@ abstract class Base_Streams_Message extends Db_Row
 	 */
 	function beforeSet_streamName($value)
 	{
-		if ($value instanceof Db_Expression) return array('streamName', $value);
+		if ($value instanceof Db_Expression) {
+			return array('streamName', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".streamName");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".streamName");
 		return array('streamName', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_insertedTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_insertedTime($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('insertedTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".insertedTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('insertedTime', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_sentTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_sentTime($value)
+	{
+		if (!isset($value)) {
+			return array('sentTime', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('sentTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".sentTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('sentTime', $value);			
 	}
 
 	/**
@@ -269,7 +322,9 @@ abstract class Base_Streams_Message extends Db_Row
 	 */
 	function beforeSet_byUserId($value)
 	{
-		if ($value instanceof Db_Expression) return array('byUserId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('byUserId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".byUserId");
 		if (strlen($value) > 31)
@@ -287,7 +342,9 @@ abstract class Base_Streams_Message extends Db_Row
 	 */
 	function beforeSet_byClientId($value)
 	{
-		if ($value instanceof Db_Expression) return array('byClientId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('byClientId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".byClientId");
 		if (strlen($value) > 31)
@@ -305,7 +362,9 @@ abstract class Base_Streams_Message extends Db_Row
 	 */
 	function beforeSet_type($value)
 	{
-		if ($value instanceof Db_Expression) return array('type', $value);
+		if ($value instanceof Db_Expression) {
+			return array('type', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".type");
 		if (strlen($value) > 255)
@@ -323,7 +382,9 @@ abstract class Base_Streams_Message extends Db_Row
 	 */
 	function beforeSet_content($value)
 	{
-		if ($value instanceof Db_Expression) return array('content', $value);
+		if ($value instanceof Db_Expression) {
+			return array('content', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".content");
 		if (strlen($value) > 1023)
@@ -341,7 +402,9 @@ abstract class Base_Streams_Message extends Db_Row
 	 */
 	function beforeSet_instructions($value)
 	{
-		if ($value instanceof Db_Expression) return array('instructions', $value);
+		if ($value instanceof Db_Expression) {
+			return array('instructions', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".instructions");
 		if (strlen($value) > 4092)
@@ -358,8 +421,12 @@ abstract class Base_Streams_Message extends Db_Row
 	 */
 	function beforeSet_reOrdinal($value)
 	{
-		if (!isset($value)) return array('reOrdinal', $value);
-		if ($value instanceof Db_Expression) return array('reOrdinal', $value);
+		if (!isset($value)) {
+			return array('reOrdinal', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('reOrdinal', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".reOrdinal");
 		if ($value < -2147483648 or $value > 2147483647)
@@ -376,7 +443,9 @@ abstract class Base_Streams_Message extends Db_Row
 	 */
 	function beforeSet_ordinal($value)
 	{
-		if ($value instanceof Db_Expression) return array('ordinal', $value);
+		if ($value instanceof Db_Expression) {
+			return array('ordinal', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".ordinal");
 		if ($value < 0 or $value > 4294967295)

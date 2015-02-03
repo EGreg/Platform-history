@@ -27,8 +27,8 @@ module.exports = Base;
  * @type array
  */
 Base.tableClasses = [
-		"Places_Zipcode"
-	];
+	"Places_Zipcode"
+];
 
 /**
  * This method calls Db.connect() using information stored in the configuration.

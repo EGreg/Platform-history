@@ -19,7 +19,7 @@
  * @property string $type
  * @property string $toPublisherId
  * @property string $toStreamName
- * @property string $insertedTime
+ * @property string|Db_Expression $insertedTime
  */
 abstract class Base_Streams_RelatedFrom extends Db_Row
 {
@@ -45,7 +45,7 @@ abstract class Base_Streams_RelatedFrom extends Db_Row
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -205,7 +205,9 @@ abstract class Base_Streams_RelatedFrom extends Db_Row
 	 */
 	function beforeSet_fromPublisherId($value)
 	{
-		if ($value instanceof Db_Expression) return array('fromPublisherId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('fromPublisherId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".fromPublisherId");
 		if (strlen($value) > 31)
@@ -223,7 +225,9 @@ abstract class Base_Streams_RelatedFrom extends Db_Row
 	 */
 	function beforeSet_fromStreamName($value)
 	{
-		if ($value instanceof Db_Expression) return array('fromStreamName', $value);
+		if ($value instanceof Db_Expression) {
+			return array('fromStreamName', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".fromStreamName");
 		if (strlen($value) > 255)
@@ -241,7 +245,9 @@ abstract class Base_Streams_RelatedFrom extends Db_Row
 	 */
 	function beforeSet_type($value)
 	{
-		if ($value instanceof Db_Expression) return array('type', $value);
+		if ($value instanceof Db_Expression) {
+			return array('type', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".type");
 		if (strlen($value) > 255)
@@ -259,7 +265,9 @@ abstract class Base_Streams_RelatedFrom extends Db_Row
 	 */
 	function beforeSet_toPublisherId($value)
 	{
-		if ($value instanceof Db_Expression) return array('toPublisherId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('toPublisherId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".toPublisherId");
 		if (strlen($value) > 31)
@@ -277,12 +285,37 @@ abstract class Base_Streams_RelatedFrom extends Db_Row
 	 */
 	function beforeSet_toStreamName($value)
 	{
-		if ($value instanceof Db_Expression) return array('toStreamName', $value);
+		if ($value instanceof Db_Expression) {
+			return array('toStreamName', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".toStreamName");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".toStreamName");
 		return array('toStreamName', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_insertedTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_insertedTime($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('insertedTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".insertedTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('insertedTime', $value);			
 	}
 
 	/**

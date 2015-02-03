@@ -1533,8 +1533,8 @@ EOT;
 					break;
 			}
 			
-			$null_check = $field_null ? "if (!isset(\$value)) return array('$field_name', \$value);\n\t\t" : '';
-			$dbe_check = "if (\$value instanceof Db_Expression) return array('$field_name', \$value);\n\t\t";
+			$null_check = $field_null ? "if (!isset(\$value)) {\n\t\t\treturn array('$field_name', \$value);\n\t\t}\n\t\t" : '';
+			$dbe_check = "if (\$value instanceof Db_Expression) {\n\t\t\treturn array('$field_name', \$value);\n\t\t}\n\t\t";
 			$js_null_check = $field_null ? "if (!value) return value;\n\t\t" : '';
 			$js_dbe_check = "if (value instanceof Db.Expression) return value;\n\t\t";
 			if (! isset($functions["beforeSet_$field_name"]))
@@ -1656,10 +1656,12 @@ EOT;
 					$js_properties[] = "$field_name string|Db.Expression";
 					$functions["beforeSet_$field_name"][] = <<<EOT
 		{$null_check}{$dbe_check}\$date = date_parse(\$value);
-		if (!empty(\$date['errors']))
+		if (!empty(\$date['errors'])) {
 			throw new Exception("Date \$value in incorrect format being assigned to ".\$this->getTable().".$field_name");
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as \$v)
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as \$v) {
 			\$\$v = \$date[\$v];
+		}
 		\$value = sprintf("%04d-%02d-%02d", \$year, \$month, \$day);
 EOT;
 					$functions["beforeSet_$field_name"]['comment'] = <<<EOT
@@ -1684,6 +1686,7 @@ $dc
 EOT;
 					break;
 				case 'datetime':
+				case 'timestamp':
 					$properties[]="string|Db_Expression $field_name";
 					$js_properties[] = "$field_name string|Db.Expression";
 					if (in_array($field_name, array('insertedTime', 'updatedTime', 'created_time', 'updated_time'))) {
@@ -1691,12 +1694,14 @@ EOT;
 						$is_magic_field = true;
 					}
 					$functions["beforeSet_$field_name"][] = <<<EOT
-       {$null_check}{$dbe_check}\$date = date_parse(\$value);
-       if (!empty(\$date['errors']))
-           throw new Exception("DateTime \$value in incorrect format being assigned to ".\$this->getTable().".$field_name");
-       foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as \$v)
-           \$\$v = \$date[\$v];
-       \$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", \$year, \$month, \$day, \$hour, \$minute, \$second);
+		{$null_check}{$dbe_check}\$date = date_parse(\$value);
+		if (!empty(\$date['errors'])) {
+			throw new Exception("DateTime \$value in incorrect format being assigned to ".\$this->getTable().".$field_name");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as \$v) {
+			\$\$v = \$date[\$v];
+		}
+		\$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", \$year, \$month, \$day, \$hour, \$minute, \$second);
 EOT;
 					$functions["beforeSet_$field_name"]['comment'] = <<<EOT
 	$dc
