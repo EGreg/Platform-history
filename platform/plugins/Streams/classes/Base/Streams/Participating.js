@@ -30,19 +30,19 @@ Q.mixin(Base, Row);
 
 /**
  * @property userId
- * @type string
+ * @type String
  */
 /**
  * @property publisherId
- * @type string
+ * @type String
  */
 /**
  * @property streamName
- * @type string
+ * @type String
  */
 /**
  * @property state
- * @type string
+ * @type String
  */
 /**
  * @property fresh
@@ -50,7 +50,7 @@ Q.mixin(Base, Row);
  */
 /**
  * @property extra
- * @type string
+ * @type String
  */
 /**
  * @property insertedTime
@@ -367,10 +367,8 @@ Base.prototype.beforeSave = function (value) {
 			}
 		}
 	}
-	if (!this._retrieved && !value['insertedTime'])
-		value['insertedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
 	// convention: we'll have updatedTime = insertedTime if just created.
-	value['updatedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
+	this[updatedTime] = value['updatedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
 	return value;
 };
 

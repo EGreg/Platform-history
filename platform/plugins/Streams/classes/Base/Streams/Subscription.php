@@ -393,12 +393,9 @@ abstract class Base_Streams_Subscription extends Db_Row
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}
 			}
-		}
-		if (!$this->retrieved and !isset($value['insertedTime']))
-			$value['insertedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
-		//if ($this->retrieved and !isset($value['updatedTime']))
+		}						
 		// convention: we'll have updatedTime = insertedTime if just created.
-		$value['updatedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
+		$this->updatedTime = $value['updatedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
 		return $value;			
 	}
 

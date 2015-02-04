@@ -30,23 +30,23 @@ Q.mixin(Base, Row);
 
 /**
  * @property fromPublisherId
- * @type string
+ * @type String
  */
 /**
  * @property fromStreamName
- * @type string
+ * @type String
  */
 /**
  * @property type
- * @type string
+ * @type String
  */
 /**
  * @property toPublisherId
- * @type string
+ * @type String
  */
 /**
  * @property toStreamName
- * @type string
+ * @type String
  */
 /**
  * @property insertedTime
@@ -333,8 +333,6 @@ Base.prototype.beforeSave = function (value) {
 			}
 		}
 	}
-	if (!this._retrieved && !value['insertedTime'])
-		value['insertedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
 	return value;
 };
 

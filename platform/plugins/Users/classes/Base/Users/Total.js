@@ -30,11 +30,11 @@ Q.mixin(Base, Row);
 
 /**
  * @property forType
- * @type string
+ * @type String
  */
 /**
  * @property forId
- * @type string
+ * @type String
  */
 /**
  * @property voteCount
@@ -328,7 +328,7 @@ Base.prototype.beforeSave = function (value) {
 		}
 	}
 	// convention: we'll have updatedTime = insertedTime if just created.
-	value['updatedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
+	this[updatedTime] = value['updatedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
 	return value;
 };
 

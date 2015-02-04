@@ -76,16 +76,18 @@ abstract class Places extends Base_Places
 		$location = new Streams_Stream();
 		$location->publisherId = $publisherId;
 		$location->name = "Places/location/$placeId";
+		echo 'a'; exit;
 		if ($location->retrieve()) {
 			$ut = $location->updatedTime;
-			$ct = $location->db()->getCurrentTimestamp()
-			$cd = Q_Config::get('Places', 'cache', 'duration', 60*60*24*30);
-			if ($ct - $cd) {
-				
+			if (isset($ut)) {
+				$ut = Db_Mysql::fromDateTime($ut);
+				$ct = $location->db()->getCurrentTimestamp();
+				$cd = Q_Config::get('Places', 'cache', 'duration', 60*60*24*30);
+				if ($ct - $ut < $cd) {
+					// there is a cached location stream that is still viable
+					return $location;
+				}
 			}
-			// TODO: make a config setting for the number of seconds
-			// before we should try to override with fresh information
-			return $location;
 		}
 		
 		$key = Q_Config::expect('Places', 'google', 'keys', 'server');

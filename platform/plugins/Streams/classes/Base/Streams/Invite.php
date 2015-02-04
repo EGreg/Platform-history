@@ -515,9 +515,6 @@ abstract class Base_Streams_Invite extends Db_Row
 				}
 			}
 		}
-		if (!$this->retrieved and !isset($value['insertedTime']))
-			$value['insertedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
-
 		return $value;			
 	}
 

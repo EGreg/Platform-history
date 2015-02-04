@@ -30,35 +30,35 @@ Q.mixin(Base, Row);
 
 /**
  * @property countryCode
- * @type string
+ * @type String
  */
 /**
  * @property zipcode
- * @type string
+ * @type String
  */
 /**
  * @property placeName
- * @type string
+ * @type String
  */
 /**
  * @property stateName
- * @type string
+ * @type String
  */
 /**
  * @property state
- * @type string
+ * @type String
  */
 /**
  * @property regionName
- * @type string
+ * @type String
  */
 /**
  * @property region
- * @type string
+ * @type String
  */
 /**
  * @property community
- * @type string
+ * @type String
  */
 /**
  * @property latitude

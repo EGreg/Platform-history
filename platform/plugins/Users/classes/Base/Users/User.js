@@ -30,7 +30,7 @@ Q.mixin(Base, Row);
 
 /**
  * @property id
- * @type string
+ * @type String
  */
 /**
  * @property insertedTime
@@ -42,7 +42,7 @@ Q.mixin(Base, Row);
  */
 /**
  * @property sessionId
- * @type string
+ * @type String
  */
 /**
  * @property sessionCount
@@ -58,51 +58,51 @@ Q.mixin(Base, Row);
  */
 /**
  * @property g_uid
- * @type string
+ * @type String
  */
 /**
  * @property y_uid
- * @type string
+ * @type String
  */
 /**
  * @property passphraseHash
- * @type string
+ * @type String
  */
 /**
  * @property emailAddress
- * @type string
+ * @type String
  */
 /**
  * @property mobileNumber
- * @type string
+ * @type String
  */
 /**
  * @property emailAddressPending
- * @type string
+ * @type String
  */
 /**
  * @property mobileNumberPending
- * @type string
+ * @type String
  */
 /**
  * @property signedUpWith
- * @type string
+ * @type String
  */
 /**
  * @property username
- * @type string
+ * @type String
  */
 /**
  * @property icon
- * @type string
+ * @type String
  */
 /**
  * @property url
- * @type string
+ * @type String
  */
 /**
  * @property pincodeHash
- * @type string
+ * @type String
  */
 
 /**
@@ -616,10 +616,8 @@ Base.prototype.beforeSave = function (value) {
 			}
 		}
 	}
-	if (!this._retrieved && !value['insertedTime'])
-		value['insertedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
 	// convention: we'll have updatedTime = insertedTime if just created.
-	value['updatedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
+	this[updatedTime] = value['updatedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
 	return value;
 };
 

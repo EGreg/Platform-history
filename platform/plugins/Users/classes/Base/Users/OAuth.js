@@ -30,27 +30,27 @@ Q.mixin(Base, Row);
 
 /**
  * @property client_id
- * @type string
+ * @type String
  */
 /**
  * @property userId
- * @type string
+ * @type String
  */
 /**
  * @property state
- * @type string
+ * @type String
  */
 /**
  * @property scope
- * @type string
+ * @type String
  */
 /**
  * @property redirect_uri
- * @type string
+ * @type String
  */
 /**
  * @property access_token
- * @type string
+ * @type String
  */
 /**
  * @property insertedTime
@@ -376,8 +376,6 @@ Base.prototype.beforeSave = function (value) {
 			}
 		}
 	}
-	if (!this._retrieved && !value['insertedTime'])
-		value['insertedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
 	return value;
 };
 

@@ -261,7 +261,7 @@ class Streams_Stream extends Base_Streams_Stream
 			}
 
 			// Assign default values to fields that haven't been set yet
-			foreach ($fieldNames as $field) {
+			foreach (array_diff($fieldNames, $magicFieldNames) as $field) {
 				if (!array_key_exists($field, $this->fields)
 				and !array_key_exists($field, $modifiedFields)) {
 					$this->$field = $modifiedFields[$field] = Q_Config::get(

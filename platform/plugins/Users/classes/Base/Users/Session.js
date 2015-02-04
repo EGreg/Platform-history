@@ -30,19 +30,19 @@ Q.mixin(Base, Row);
 
 /**
  * @property id
- * @type string
+ * @type String
  */
 /**
  * @property content
- * @type string
+ * @type String
  */
 /**
  * @property php
- * @type string
+ * @type String
  */
 /**
  * @property deviceId
- * @type string
+ * @type String
  */
 /**
  * @property timeout
@@ -352,7 +352,7 @@ Base.prototype.beforeSave = function (value) {
 		}
 	}
 	// convention: we'll have updatedTime = insertedTime if just created.
-	value['updatedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
+	this[updatedTime] = value['updatedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
 	return value;
 };
 

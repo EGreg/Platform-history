@@ -30,11 +30,11 @@ Q.mixin(Base, Row);
 
 /**
  * @property publisherId
- * @type string
+ * @type String
  */
 /**
  * @property streamName
- * @type string
+ * @type String
  */
 /**
  * @property insertedTime
@@ -46,23 +46,23 @@ Q.mixin(Base, Row);
  */
 /**
  * @property byUserId
- * @type string
+ * @type String
  */
 /**
  * @property comment
- * @type string
+ * @type String
  */
 /**
  * @property instructions
- * @type string
+ * @type String
  */
 /**
  * @property chatPublisherId
- * @type string
+ * @type String
  */
 /**
  * @property chatStreamName
- * @type string
+ * @type String
  */
 /**
  * @property reOrdinal
@@ -416,8 +416,6 @@ Base.prototype.beforeSave = function (value) {
 			}
 		}
 	}
-	if (!this._retrieved && !value['insertedTime'])
-		value['insertedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
 	return value;
 };
 

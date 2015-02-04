@@ -30,15 +30,15 @@ Q.mixin(Base, Row);
 
 /**
  * @property publisherId
- * @type string
+ * @type String
  */
 /**
  * @property userId
- * @type string
+ * @type String
  */
 /**
  * @property xid
- * @type string
+ * @type String
  */
 /**
  * @property insertedTime
@@ -286,8 +286,6 @@ Base.prototype.beforeSave = function (value) {
 			}
 		}
 	}
-	if (!this._retrieved && !value['insertedTime'])
-		value['insertedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
 	return value;
 };
 

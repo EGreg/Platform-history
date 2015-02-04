@@ -30,15 +30,15 @@ Q.mixin(Base, Row);
 
 /**
  * @property userId
- * @type string
+ * @type String
  */
 /**
  * @property provider
- * @type string
+ * @type String
  */
 /**
  * @property appId
- * @type string
+ * @type String
  */
 /**
  * @property insertedTime
@@ -50,23 +50,23 @@ Q.mixin(Base, Row);
  */
 /**
  * @property access_token
- * @type string
+ * @type String
  */
 /**
  * @property session_secret
- * @type string
+ * @type String
  */
 /**
  * @property session_expires
- * @type string
+ * @type String
  */
 /**
  * @property state
- * @type string
+ * @type String
  */
 /**
  * @property provider_uid
- * @type string
+ * @type String
  */
 
 /**
@@ -412,10 +412,8 @@ Base.prototype.beforeSave = function (value) {
 			}
 		}
 	}
-	if (!this._retrieved && !value['insertedTime'])
-		value['insertedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
 	// convention: we'll have updatedTime = insertedTime if just created.
-	value['updatedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
+	this[updatedTime] = value['updatedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
 	return value;
 };
 

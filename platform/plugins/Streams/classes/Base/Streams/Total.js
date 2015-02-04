@@ -30,15 +30,15 @@ Q.mixin(Base, Row);
 
 /**
  * @property publisherId
- * @type string
+ * @type String
  */
 /**
  * @property streamName
- * @type string
+ * @type String
  */
 /**
  * @property messageType
- * @type string
+ * @type String
  */
 /**
  * @property messageCount

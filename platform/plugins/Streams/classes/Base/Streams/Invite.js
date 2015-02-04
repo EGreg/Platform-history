@@ -30,31 +30,31 @@ Q.mixin(Base, Row);
 
 /**
  * @property token
- * @type string
+ * @type String
  */
 /**
  * @property userId
- * @type string
+ * @type String
  */
 /**
  * @property publisherId
- * @type string
+ * @type String
  */
 /**
  * @property streamName
- * @type string
+ * @type String
  */
 /**
  * @property invitingUserId
- * @type string
+ * @type String
  */
 /**
  * @property displayName
- * @type string
+ * @type String
  */
 /**
  * @property appUrl
- * @type string
+ * @type String
  */
 /**
  * @property readLevel
@@ -70,7 +70,7 @@ Q.mixin(Base, Row);
  */
 /**
  * @property state
- * @type string
+ * @type String
  */
 /**
  * @property insertedTime
@@ -479,8 +479,6 @@ Base.prototype.beforeSave = function (value) {
 			}
 		}
 	}
-	if (!this._retrieved && !value['insertedTime'])
-		value['insertedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
 	return value;
 };
 

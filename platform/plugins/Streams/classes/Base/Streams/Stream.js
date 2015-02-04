@@ -30,11 +30,11 @@ Q.mixin(Base, Row);
 
 /**
  * @property publisherId
- * @type string
+ * @type String
  */
 /**
  * @property name
- * @type string
+ * @type String
  */
 /**
  * @property insertedTime
@@ -46,23 +46,23 @@ Q.mixin(Base, Row);
  */
 /**
  * @property type
- * @type string
+ * @type String
  */
 /**
  * @property title
- * @type string
+ * @type String
  */
 /**
  * @property icon
- * @type string
+ * @type String
  */
 /**
  * @property content
- * @type string
+ * @type String
  */
 /**
  * @property attributes
- * @type string
+ * @type String
  */
 /**
  * @property readLevel
@@ -78,7 +78,7 @@ Q.mixin(Base, Row);
  */
 /**
  * @property inheritAccess
- * @type string
+ * @type String
  */
 /**
  * @property messageCount
@@ -544,10 +544,8 @@ Base.prototype.beforeSave = function (value) {
 			}
 		}
 	}
-	if (!this._retrieved && !value['insertedTime'])
-		value['insertedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
 	// convention: we'll have updatedTime = insertedTime if just created.
-	value['updatedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
+	this[updatedTime] = value['updatedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
 	return value;
 };
 

@@ -1584,7 +1584,7 @@ EOT;
 
 				case 'enum':
 					$properties[]="mixed $field_name";
-					$js_properties[] = "$field_name string";
+					$js_properties[] = "$field_name String";
 					$functions["beforeSet_$field_name"][] = <<<EOT
 		{$null_check}{$dbe_check}if (!in_array(\$value, array($type_display_range)))
 			throw new Exception("Out-of-range value '\$value' being assigned to ".\$this->getTable().".$field_name");
@@ -1616,7 +1616,7 @@ EOT;
 				case 'varchar':
 				case 'varbinary':
 					$properties[]="string $field_name";
-					$js_properties[] = "$field_name string";
+					$js_properties[] = "$field_name String";
 					$functions["beforeSet_$field_name"][] = <<<EOT
 		{$null_check}{$dbe_check}if (!is_string(\$value) and !is_numeric(\$value))
 			throw new Exception('Must pass a string to '.\$this->getTable().".$field_name");
@@ -1653,7 +1653,7 @@ EOT;
 				
 				case 'date':
 					$properties[]="string|Db_Expression $field_name";
-					$js_properties[] = "$field_name string|Db.Expression";
+					$js_properties[] = "$field_name String|Db.Expression";
 					$functions["beforeSet_$field_name"][] = <<<EOT
 		{$null_check}{$dbe_check}\$date = date_parse(\$value);
 		if (!empty(\$date['errors'])) {
@@ -1689,9 +1689,14 @@ EOT;
 				case 'timestamp':
 					$properties[]="string|Db_Expression $field_name";
 					$js_properties[] = "$field_name string|Db.Expression";
-					if (in_array($field_name, array('insertedTime', 'updatedTime', 'created_time', 'updated_time'))) {
-						$magic_field_names[] = $field_name;
-						$is_magic_field = true;
+					$possibleMagicFields = array('insertedTime', 'updatedTime', 'created_time', 'updated_time');
+					$possibleMagicInsertFields = array('insertedTime', 'created_time');
+					if (in_array($field_name, $possibleMagicFields)) {
+						if (!in_array($field_name, $possibleMagicInsertFields)
+						or !isset($field_default)) {
+							$magic_field_names[] = $field_name;
+							$is_magic_field = true;
+						}
 					}
 					$functions["beforeSet_$field_name"][] = <<<EOT
 		{$null_check}{$dbe_check}\$date = date_parse(\$value);
@@ -1723,13 +1728,6 @@ $dc
  * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
  */
 EOT;
-					break;
-
-				case 'timestamp':
-					$properties[]="string $field_name";
-					$js_properties[] = "$field_name string";
-					$magic_field_names[] = $field_name;
-					$is_magic_field = true;
 					break;
 
 				case 'decimal':
@@ -1766,13 +1764,8 @@ EOT;
 		return value;
 EOT;
 			}
-			if (! $field_null and ! $is_magic_field and ! $auto_inc
-				//and (in_array($type_name, array(
-				//	'tinyint', 'smallint', 'mediumint', 'int', 'bigint', 'enum',
-				//)) 
-				and !isset($field_default)
-				//)
-				) {
+			if (! $field_null and ! $is_magic_field
+			and ! $auto_inc and !isset($field_default)) {
 				$required_field_names[] = "'$field_name'";
 			}
 		
@@ -1847,18 +1840,20 @@ EOT;
 		if (count($magic_field_names) > 0) {
 			$beforeSave_code = '';
 			$js_beforeSave_code = '';
-			foreach (array('created_time', 'insertedTime', ) as $cmf) {
+			foreach (array('created_time', 'insertedTime') as $cmf) {
 				if (in_array($cmf, $magic_field_names)) {
 					$beforeSave_code .= <<<EOT
 
-		if (!\$this->retrieved and !isset(\$value['$cmf']))
-			\$value['$cmf'] = new Db_Expression('CURRENT_TIMESTAMP');
+		if (!\$this->retrieved and !isset(\$value['$cmf'])) {
+			\$this->$cmf = \$value['$cmf'] = new Db_Expression('CURRENT_TIMESTAMP');
+		}
 
 EOT;
 					$js_beforeSave_code .= <<<EOT
 
-	if (!this._retrieved && !value['$cmf'])
-		value['$cmf'] = new Db.Expression('CURRENT_TIMESTAMP');
+	if (!this._retrieved && !value['$cmf']) {
+		this[$cmf] = value['$cmf'] = new Db.Expression('CURRENT_TIMESTAMP');
+	}
 EOT;
 					break;
 				}
@@ -1866,14 +1861,14 @@ EOT;
 			foreach (array('updated_time', 'updatedTime') as $umf) {
 				if (in_array($umf, $magic_field_names)) {
 					$beforeSave_code .= <<<EOT
-		//if (\$this->retrieved and !isset(\$value['$umf']))
+						
 		// convention: we'll have $umf = $cmf if just created.
-		\$value['$umf'] = new Db_Expression('CURRENT_TIMESTAMP');
+		\$this->$umf = \$value['$umf'] = new Db_Expression('CURRENT_TIMESTAMP');
 EOT;
 					$js_beforeSave_code .= <<<EOT
 
 	// convention: we'll have $umf = $cmf if just created.
-	value['$umf'] = new Db.Expression('CURRENT_TIMESTAMP');
+	this[$umf] = value['$umf'] = new Db.Expression('CURRENT_TIMESTAMP');
 EOT;
 					break;
 				}

@@ -30,19 +30,19 @@ Q.mixin(Base, Row);
 
 /**
  * @property userId
- * @type string
+ * @type String
  */
 /**
  * @property label
- * @type string
+ * @type String
  */
 /**
  * @property icon
- * @type string
+ * @type String
  */
 /**
  * @property title
- * @type string
+ * @type String
  */
 
 /**
