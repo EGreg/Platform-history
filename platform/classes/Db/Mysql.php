@@ -1578,7 +1578,7 @@ EOT;
 EOT;
 					$js_functions["beforeSet_$field_name"][] = <<<EOT
 		{$js_null_check}{$js_dbe_check}value = Number(value);
-		if (isNaN(value) || Math.floor(value) != value)
+		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".$field_name");
 		if (value < $type_range_min || value > $type_range_max)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".$field_name");
@@ -1690,13 +1690,13 @@ EOT;
 	 */
 EOT;
 					$js_functions["beforeSet_$field_name"][] = <<<EOT
-		{$js_null_check}{$js_dbe_check}value = (value instanceof Date) ? $conn_name.db().toDateTime(value) : value;
+		{$js_null_check}{$js_dbe_check}value = (value instanceof Date) ? Base.db().toDateTime(value) : value;
 EOT;
 					$js_functions["beforeSet_$field_name"]['comment'] = <<<EOT
 $dc
  * Method is called before setting the field
  * @method beforeSet_$field_name
- * @param {string} value
+ * @param {String} value
  * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
  */
 EOT;
@@ -1704,7 +1704,7 @@ EOT;
 				case 'datetime':
 				case 'timestamp':
 					$properties[]="string|Db_Expression $field_name";
-					$js_properties[] = "$field_name string|Db.Expression";
+					$js_properties[] = "$field_name String|Db.Expression";
 					$possibleMagicFields = array('insertedTime', 'updatedTime', 'created_time', 'updated_time');
 					$possibleMagicInsertFields = array('insertedTime', 'created_time');
 					if (in_array($field_name, $possibleMagicFields)) {
@@ -1734,13 +1734,13 @@ EOT;
 	 */
 EOT;
 					$js_functions["beforeSet_$field_name"][] = <<<EOT
-       {$js_null_check}{$js_dbe_check}value = (value instanceof Date) ? $conn_name.db().toDateTime(value) : value;
+		{$js_null_check}{$js_dbe_check}value = (value instanceof Date) ? Base.db().toDateTime(value) : value;
 EOT;
 					$js_functions["beforeSet_$field_name"]['comment'] = <<<EOT
 $dc
  * Method is called before setting the field
  * @method beforeSet_$field_name
- * @param {string} value
+ * @param {String} value
  * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
  */
 EOT;
@@ -1868,7 +1868,7 @@ EOT;
 					$js_beforeSave_code .= <<<EOT
 
 	if (!this._retrieved && !value['$cmf']) {
-		this[$cmf] = value['$cmf'] = new Db.Expression('CURRENT_TIMESTAMP');
+		this['$cmf'] = value['$cmf'] = new Db.Expression('CURRENT_TIMESTAMP');
 	}
 EOT;
 					break;
@@ -1884,7 +1884,7 @@ EOT;
 					$js_beforeSave_code .= <<<EOT
 
 	// convention: we'll have $umf = $cmf if just created.
-	this[$umf] = value['$umf'] = new Db.Expression('CURRENT_TIMESTAMP');
+	this['$umf'] = value['$umf'] = new Db.Expression('CURRENT_TIMESTAMP');
 EOT;
 					break;
 				}
@@ -2245,7 +2245,7 @@ $dc
  * Retrieve the table name to use in SQL statements
  * @method table
  * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
- * @return {string|Db.Expression} The table name as string optionally without database name if no table sharding was started
+ * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
 Base.table = function (withoutDbName) {
@@ -2359,7 +2359,7 @@ $dc
  * Retrieve the table name to use in SQL statements
  * @method table
  * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
- * @return {string|Db.Expression} The table name as string optionally without database name if no table sharding was started
+ * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
 Base.prototype.table = function () {

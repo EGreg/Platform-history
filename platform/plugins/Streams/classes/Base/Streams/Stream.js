@@ -38,11 +38,11 @@ Q.mixin(Base, Row);
  */
 /**
  * @property insertedTime
- * @type string|Db.Expression
+ * @type String|Db.Expression
  */
 /**
  * @property updatedTime
- * @type string|Db.Expression
+ * @type String|Db.Expression
  */
 /**
  * @property type
@@ -90,7 +90,7 @@ Q.mixin(Base, Row);
  */
 /**
  * @property closedTime
- * @type string|Db.Expression
+ * @type String|Db.Expression
  */
 
 /**
@@ -107,7 +107,7 @@ Base.db = function () {
  * Retrieve the table name to use in SQL statements
  * @method table
  * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
- * @return {string|Db.Expression} The table name as string optionally without database name if no table sharding was started
+ * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
 Base.table = function (withoutDbName) {
@@ -221,7 +221,7 @@ Base.prototype.db = function () {
  * Retrieve the table name to use in SQL statements
  * @method table
  * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
- * @return {string|Db.Expression} The table name as string optionally without database name if no table sharding was started
+ * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
 Base.prototype.table = function () {
@@ -303,25 +303,25 @@ Base.prototype.beforeSet_name = function (value) {
 /**
  * Method is called before setting the field
  * @method beforeSet_insertedTime
- * @param {string} value
+ * @param {String} value
  * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
  */
 Base.prototype.beforeSet_insertedTime = function (value) {
-       if (value instanceof Db.Expression) return value;
-		value = (value instanceof Date) ? Streams.db().toDateTime(value) : value;
+		if (value instanceof Db.Expression) return value;
+		value = (value instanceof Date) ? Base.db().toDateTime(value) : value;
 		return value;
 };
 
 /**
  * Method is called before setting the field
  * @method beforeSet_updatedTime
- * @param {string} value
+ * @param {String} value
  * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
  */
 Base.prototype.beforeSet_updatedTime = function (value) {
-       if (!value) return value;
+		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
-		value = (value instanceof Date) ? Streams.db().toDateTime(value) : value;
+		value = (value instanceof Date) ? Base.db().toDateTime(value) : value;
 		return value;
 };
 
@@ -421,7 +421,7 @@ Base.prototype.beforeSet_attributes = function (value) {
 Base.prototype.beforeSet_readLevel = function (value) {
 		if (value instanceof Db.Expression) return value;
 		value = Number(value);
-		if (isNaN(value) || Math.floor(value) != value)
+		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".readLevel");
 		if (value < -2147483648 || value > 2147483647)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".readLevel");
@@ -438,7 +438,7 @@ Base.prototype.beforeSet_readLevel = function (value) {
 Base.prototype.beforeSet_writeLevel = function (value) {
 		if (value instanceof Db.Expression) return value;
 		value = Number(value);
-		if (isNaN(value) || Math.floor(value) != value)
+		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".writeLevel");
 		if (value < -2147483648 || value > 2147483647)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".writeLevel");
@@ -455,7 +455,7 @@ Base.prototype.beforeSet_writeLevel = function (value) {
 Base.prototype.beforeSet_adminLevel = function (value) {
 		if (value instanceof Db.Expression) return value;
 		value = Number(value);
-		if (isNaN(value) || Math.floor(value) != value)
+		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".adminLevel");
 		if (value < -2147483648 || value > 2147483647)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".adminLevel");
@@ -490,7 +490,7 @@ Base.prototype.beforeSet_inheritAccess = function (value) {
 Base.prototype.beforeSet_messageCount = function (value) {
 		if (value instanceof Db.Expression) return value;
 		value = Number(value);
-		if (isNaN(value) || Math.floor(value) != value)
+		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".messageCount");
 		if (value < -2147483648 || value > 2147483647)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".messageCount");
@@ -507,7 +507,7 @@ Base.prototype.beforeSet_messageCount = function (value) {
 Base.prototype.beforeSet_participantCount = function (value) {
 		if (value instanceof Db.Expression) return value;
 		value = Number(value);
-		if (isNaN(value) || Math.floor(value) != value)
+		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".participantCount");
 		if (value < -2147483648 || value > 2147483647)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".participantCount");
@@ -517,13 +517,13 @@ Base.prototype.beforeSet_participantCount = function (value) {
 /**
  * Method is called before setting the field
  * @method beforeSet_closedTime
- * @param {string} value
+ * @param {String} value
  * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
  */
 Base.prototype.beforeSet_closedTime = function (value) {
-       if (!value) return value;
+		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
-		value = (value instanceof Date) ? Streams.db().toDateTime(value) : value;
+		value = (value instanceof Date) ? Base.db().toDateTime(value) : value;
 		return value;
 };
 
@@ -545,7 +545,7 @@ Base.prototype.beforeSave = function (value) {
 		}
 	}
 	// convention: we'll have updatedTime = insertedTime if just created.
-	this[updatedTime] = value['updatedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
+	this['updatedTime'] = value['updatedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
 	return value;
 };
 

@@ -42,7 +42,7 @@ Q.mixin(Base, Row);
  */
 /**
  * @property insertedTime
- * @type string|Db.Expression
+ * @type String|Db.Expression
  */
 /**
  * @property nickname
@@ -63,7 +63,7 @@ Base.db = function () {
  * Retrieve the table name to use in SQL statements
  * @method table
  * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
- * @return {string|Db.Expression} The table name as string optionally without database name if no table sharding was started
+ * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
 Base.table = function (withoutDbName) {
@@ -177,7 +177,7 @@ Base.prototype.db = function () {
  * Retrieve the table name to use in SQL statements
  * @method table
  * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
- * @return {string|Db.Expression} The table name as string optionally without database name if no table sharding was started
+ * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
 Base.prototype.table = function () {
@@ -265,12 +265,12 @@ Base.prototype.beforeSet_xid = function (value) {
 /**
  * Method is called before setting the field
  * @method beforeSet_insertedTime
- * @param {string} value
+ * @param {String} value
  * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
  */
 Base.prototype.beforeSet_insertedTime = function (value) {
-       if (value instanceof Db.Expression) return value;
-		value = (value instanceof Date) ? Users.db().toDateTime(value) : value;
+		if (value instanceof Db.Expression) return value;
+		value = (value instanceof Date) ? Base.db().toDateTime(value) : value;
 		return value;
 };
 
