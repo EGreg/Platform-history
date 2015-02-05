@@ -262,7 +262,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 			$scrolling.scrollTop(
 				state.bottom[index] ? $scrolling[0].scrollHeight : 0
 			);
-			if ($pe) {
+			if ($pe && index) {
 				state.drawerOffset = $otherDrawer.offset();
 			}
 			
