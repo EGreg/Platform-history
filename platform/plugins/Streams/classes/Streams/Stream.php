@@ -261,7 +261,7 @@ class Streams_Stream extends Base_Streams_Stream
 			}
 
 			// Assign default values to fields that haven't been set yet
-			foreach ($fieldNames as $field) {
+			foreach (array_diff($fieldNames, $magicFieldNames) as $field) {
 				if (!array_key_exists($field, $this->fields)
 				and !array_key_exists($field, $modifiedFields)) {
 					$this->$field = $modifiedFields[$field] = Q_Config::get(
@@ -1615,7 +1615,9 @@ class Streams_Stream extends Base_Streams_Stream
 			$options['max'] = $max + $options['max'] + 1;
 		}
 		if (empty($options['limit'])) {
-			$options['limit'] = 1000;
+			$options['limit'] = Q_Config::get(
+				'Streams', 'defaults', 'getMessagesLimit', 1000
+			);
 		}
 		
 		if ($options['min'] > $options['max']) {

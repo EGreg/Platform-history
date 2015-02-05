@@ -9,16 +9,23 @@
 function Users_vote_post()
 {
 	$user = Users::loggedInUser(true);
-	$required = array('forType', 'forId', 'value');
+	$required = array('forType', 'forId');
 	foreach ($required as $field) {
 		if (empty($_REQUEST[$field])) {
 			throw new Q_Exception_RequiredField(compact('field'));
 		}
 	}
-	$hinted = Q::ifset($_SESSION, 'Users', 'hinted', array());
-	if ($_REQUEST['forType'] === 'Users/hinted'
-	and !in_array($_REQUEST['forId'], $hinted)) {
-		$_SESSION['Users']['hinted'][] = $_REQUEST['forId'];
+	$value = Q_Config::get('Users', 'vote', $_REQUEST['forType'], 'value', null);
+	if (isset($value)) {
+		$_REQUEST['value'] = $value;
+	} else if (!isset($_REQUEST['value'])) {
+		$_REQUEST['value'] = 1;
+	}
+	if ($_REQUEST['forType'] === 'Users/hinted') {
+		$hinted = Q::ifset($_SESSION, 'Users', 'hinted', array());
+		if (!in_array($_REQUEST['forId'], $hinted)) {
+			$_SESSION['Users']['hinted'][] = $_REQUEST['forId'];
+		}
 	}
 	$vote = new Users_Vote();
 	$vote->userId = $user->id;

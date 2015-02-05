@@ -30,39 +30,39 @@ Q.mixin(Base, Row);
 
 /**
  * @property publisherId
- * @type string
+ * @type String
  */
 /**
  * @property streamName
- * @type string
+ * @type String
  */
 /**
  * @property insertedTime
- * @type string
+ * @type String|Db.Expression
  */
 /**
  * @property sentTime
- * @type string
+ * @type String|Db.Expression
  */
 /**
  * @property byUserId
- * @type string
+ * @type String
  */
 /**
  * @property byClientId
- * @type string
+ * @type String
  */
 /**
  * @property type
- * @type string
+ * @type String
  */
 /**
  * @property content
- * @type string
+ * @type String
  */
 /**
  * @property instructions
- * @type string
+ * @type String
  */
 /**
  * @property reOrdinal
@@ -91,7 +91,7 @@ Base.db = function () {
  * Retrieve the table name to use in SQL statements
  * @method table
  * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
- * @return {string|Db.Expression} The table name as string optionally without database name if no table sharding was started
+ * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
 Base.table = function (withoutDbName) {
@@ -205,7 +205,7 @@ Base.prototype.db = function () {
  * Retrieve the table name to use in SQL statements
  * @method table
  * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
- * @return {string|Db.Expression} The table name as string optionally without database name if no table sharding was started
+ * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
 Base.prototype.table = function () {
@@ -278,6 +278,31 @@ Base.prototype.beforeSet_streamName = function (value) {
 			throw new Error('Must pass a string to '+this.table()+".streamName");
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".streamName");
+		return value;
+};
+
+/**
+ * Method is called before setting the field
+ * @method beforeSet_insertedTime
+ * @param {String} value
+ * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
+ */
+Base.prototype.beforeSet_insertedTime = function (value) {
+		if (value instanceof Db.Expression) return value;
+		value = (value instanceof Date) ? Base.db().toDateTime(value) : value;
+		return value;
+};
+
+/**
+ * Method is called before setting the field
+ * @method beforeSet_sentTime
+ * @param {String} value
+ * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
+ */
+Base.prototype.beforeSet_sentTime = function (value) {
+		if (!value) return value;
+		if (value instanceof Db.Expression) return value;
+		value = (value instanceof Date) ? Base.db().toDateTime(value) : value;
 		return value;
 };
 
@@ -377,7 +402,7 @@ Base.prototype.beforeSet_reOrdinal = function (value) {
 		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		value = Number(value);
-		if (isNaN(value) || Math.floor(value) != value)
+		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".reOrdinal");
 		if (value < -2147483648 || value > 2147483647)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".reOrdinal");
@@ -409,7 +434,7 @@ Base.prototype.beforeSet_weight = function (value) {
 Base.prototype.beforeSet_ordinal = function (value) {
 		if (value instanceof Db.Expression) return value;
 		value = Number(value);
-		if (isNaN(value) || Math.floor(value) != value)
+		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".ordinal");
 		if (value < 0 || value > 4294967295)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".ordinal");
@@ -433,8 +458,6 @@ Base.prototype.beforeSave = function (value) {
 			}
 		}
 	}
-	if (!this._retrieved && !value['insertedTime'])
-		value['insertedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
 	return value;
 };
 

@@ -19,6 +19,15 @@ abstract class Places extends Base_Places
 
 	/* * * */
 	
+	/**
+	 * Get the logged-in user's location stream
+	 * @method userLocationStream
+	 * @param {boolean} [$throwIfNotLoggedIn=false]
+	 *   Whether to throw a Users_Exception_NotLoggedIn if no user is logged in.
+	 * @return {Streams_Stream|null}
+	 * @throws {Users_Exception_NotLoggedIn} If user is not logged in and
+	 *   $throwIfNotLoggedIn is true
+	 */
 	static function userLocationStream($throwIfNotLoggedIn = false)
 	{
 		$user = Users::loggedInUser($throwIfNotLoggedIn);
@@ -39,6 +48,17 @@ abstract class Places extends Base_Places
 		return $stream;
 	}
 	
+	/**
+	 * Get location stream of a publisher
+	 * @method locationStream
+	 * @static
+	 * @param {string} $publisherId
+	 * @param {string} $placeId
+	 * @param {boolean} $throwIfBadValue
+	 *  Whether to throw Q_Exception if the result contains a bad value
+	 * @return {Streams_Stream|null}
+	 * @throws {Q_Exception} if a bad value is encountered and $throwIfBadValue is true
+	 */
 	static function locationStream($publisherId, $placeId, $throwIfBadValue = false)
 	{
 		if (empty($placeId)) {
@@ -57,9 +77,17 @@ abstract class Places extends Base_Places
 		$location->publisherId = $publisherId;
 		$location->name = "Places/location/$placeId";
 		if ($location->retrieve()) {
-			// TODO: make a config setting for the number of seconds
-			// before we should try to override with fresh information
-			return $location;
+			$ut = $location->updatedTime;
+			if (isset($ut)) {
+				$db = $location->db();
+				$ut = $db->fromDateTime($ut);
+				$ct = $db->getCurrentTimestamp();
+				$cd = Q_Config::get('Places', 'cache', 'duration', 60*60*24*30);
+				if ($ct - $ut < $cd) {
+					// there is a cached location stream that is still viable
+					return $location;
+				}
+			}
 		}
 		
 		$key = Q_Config::expect('Places', 'google', 'keys', 'server');
@@ -96,7 +124,107 @@ abstract class Places extends Base_Places
 	}
 	
 	/**
+	 * Get autocomplete results
+	 * @method autocomplete
+	 * @static
+	 * @param {string} $input The text (typically typed by a user) to find completions for
+	 * @param {boolean} [$throwIfBadValue=false]
+	 *  Whether to throw Q_Exception if the result contains a bad value
+	 * @param {array} [$types=array("establishment")] Can include "establishment", "locality", "sublocality", "postal_code", "country", "administrative_area_level_1", "administrative_area_level_2". Set to true to include all types.
+	 * @param {double} [$latitude=userLocation] Override the latitude of the coordinates to search around
+	 * @param {double} [$longitude=userLocation] Override the longitude of the coordinates to search around
+ 	 * @param {double} [$miles=25] Override the radius, in miles, to search around
+	 * @return {Streams_Stream|null}
+	 * @throws {Q_Exception} if a bad value is encountered and $throwIfBadValue is true
+	 */
+	static function autocomplete(
+		$input, 
+		$throwIfBadValue = false,
+		$types = null, 
+		$latitude = null, 
+		$longitude = null,
+		$miles = 25)
+	{
+		$input = strtolower($input);
+		if (is_string($types)) {
+			$types = array($types);
+		} else if ($types === true) {
+			unset($types);
+		}
+		$supportedTypes = array("establishment", "locality", "sublocality", "postal_code", "country", "administrative_area_level_1", "administrative_area_level_2");
+		foreach ($types as $type) {
+			if (!in_array($type, $supportedTypes)) {
+				throw new Q_Exception_BadValue(array(
+					'internal' => '$types',
+					'problem' => "$type is not supported"
+				));
+			}
+		}
+		if (empty($input)) {
+			if ($throwIfBadValue) {
+				throw new Q_Exception_RequiredField(array('field' => 'input'));
+			}
+			return null;
+		}
+		
+		if (!isset($latitude) or !isset($longitude)) {
+			$user = Users::loggedInUser();
+			if ($uls = Places::userLocationStream()) {
+				$latitude = $uls->getAttribute('latitude', null);
+				$longitude = $uls->getAttribute('longitude', null);
+				if (!isset($miles)) {
+					$miles = $uls->getAttribute('miles', 25);
+				}
+			} else {
+				// put some defaults
+				$latitude = 40.5806032;
+				$longitude = -73.9755244;
+				$miles = 25;
+			}
+		}
+
+		$pa = null;
+		if (class_exists('Places_Autocomplete')) {
+			$pa = new Places_Autocomplete();
+			$pa->query = $input;
+			$pa->types = implode(',', $types);
+			$pa->latitude = $latitude;
+			$pa->longitude = $longitude;
+			$pa->miles = $miles;
+			if ($pa->retrieve()) {
+				return json_decode($pa->results, true);
+			}
+		}
+
+		$key = Q_Config::expect('Places', 'google', 'keys', 'server');
+		$location = "$latitude,$longitude";
+		$radius = ceil(1609.34 * $miles);
+		$query = http_build_query(compact('key', 'input', 'types', 'location', 'radius'));
+		$url = "https://maps.googleapis.com/maps/api/place/autocomplete/json?$query";
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		$json = curl_exec($ch);
+		curl_close($ch);
+		$response = json_decode($json, true);
+		if (empty($response['predictions'])) {
+			throw new Q_Exception("Places::autocomplete: Couldn't obtain predictions for $input");
+		}
+		if (!empty($response['error_message'])) {
+			throw new Q_Exception("Places::autocomplete: ".$response['error_message']);
+		}
+		$results = $response['predictions'];
+		if ($pa) {
+			$pa->results = json_encode($results);
+			$pa->save();
+		}
+		return $results;
+	}
+	
+	/**
 	 * Use this to calculate the haversine distance between two sets of lat/long coordinates on the Earth
+	 * @method distance
+	 * @static
 	 * @param {double} $lat_1
 	 * @param {double} $long_1
 	 * @param {double} $lat_2
@@ -172,6 +300,8 @@ abstract class Places extends Base_Places
 	 * Call this function to find the "nearby points" to publish to
 	 * on a grid of quantized (latitude, longitude) pairs
 	 * which are spaced at most $miles apart.
+	 * @method nearbyForPublishers
+	 * @static
 	 * @param {double} $latitude The latitude of the coordinates to search around
 	 * @param {double} $longitude The longitude of the coordinates to search around
 	 * @return {Array} Returns an array of several ($streamName => $info) pairs
@@ -205,6 +335,8 @@ abstract class Places extends Base_Places
 	/**
 	 * Call this function to subscribe to streams on which messages are posted
 	 * related to things happening the given number of $miles around the given location.
+	 * @method subscribe
+	 * @static
 	 * @param {double} $latitude The latitude of the coordinates to subscribe around
 	 * @param {double} $longitude The longitude of the coordinates to subscribe around
 	 * @param {double} $miles The radius, in miles, around this location.
@@ -228,6 +360,8 @@ abstract class Places extends Base_Places
 	/**
 	 * Call this function to unsubscribe from streams you previously subscribed to
 	 * using Places::subscribe.
+	 * @method unsubscribe
+	 * @static
 	 * @param {double} $latitude The latitude of the coordinates to subscribe around
 	 * @param {double} $longitude The longitude of the coordinates to subscribe around
 	 * @param {double} $miles The radius, in miles, around this location.
@@ -290,6 +424,8 @@ abstract class Places extends Base_Places
 	/**
 	 * Call this function to relate a stream to category streams for things happening
 	 * the given number of $miles around the given location.
+	 * @method relateTo
+	 * @static
 	 * @param {string} $toPublisherId The publisherId of the category streams
 	 * @param {double} $latitude The latitude of the coordinates near which to relate
 	 * @param {double} $longitude The longitude of the coordinates near which to relate
@@ -386,6 +522,8 @@ abstract class Places extends Base_Places
 	/**
 	 * Obtain the name of a "Places/nearby" stream
 	 * corresponding to the given parameters
+	 * @method streamName
+	 * @static
 	 * @param {double} $latitude,
 	 * @param {double} $longitude
 	 * @param {double} $miles
@@ -404,6 +542,8 @@ abstract class Places extends Base_Places
 	 * Fetch a stream on which messages are posted relating to things happening
 	 * a given number of $miles around the given location.
 	 * If it doesn't exist, create it.
+	 * @method nearbyStream
+	 * @static
 	 * @param {double} $latitude The latitude of the coordinates to search around
 	 * @param {double} $longitude The longitude of the coordinates to search around
 	 * @param {double} $miles The radius, in miles, around this location.

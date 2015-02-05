@@ -593,7 +593,8 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 					}
 
 					$stmts[] = $stmt;
-					if (!empty($query->clauses["COMMIT"]) && !empty(self::$transaction[$shard_name])) {
+					if (!empty($query->clauses["COMMIT"])
+					&& !empty(self::$transaction[$shard_name])) {
 						self::$transaction[$shard_name] = false;
 						// we commit only if no error occured - warnings are permitted
 						if ($stmt && in_array(substr($stmt->errorCode(), 0, 2), array('00', '01'))) {

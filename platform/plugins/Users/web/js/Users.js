@@ -26,7 +26,7 @@ Q.text.Users = {
 		explanation: null,
 		goButton: "Go",
 		passphrase: 'Enter your pass phrase:',
-		loginButton: "Come Inside",
+		loginButton: "Get Started",
 		registerButton: "Get Started",
 		resendButton: "Send Activation Message",
 		forgot: "Forgot it?",
@@ -1034,6 +1034,12 @@ function login_callback(response) {
 				$('#Users_login_passphrase_forgot')
 					.css('display', $(this).val() ? 'none' : 'inline');
 			});
+		var $b = $('<a class="Q_button Users_login_start Q_main_button" />')
+		.html(Q.text.Users.login.loginButton)
+		.on(Q.Pointer.start, function () {
+			Users.submitClosestForm.apply(this, arguments);
+			return false;
+		});
 		var login_form = $('<form method="post" />')
 		.attr('action', Q.action("Users/login"))
 		.data('form-type', 'login')
@@ -1073,12 +1079,11 @@ function login_callback(response) {
 					return false;
 				})
 			)
-		).append($('<input type="hidden" name="identifier" />').val(identifier_input.val()))
-		.append($('<div class="Q_buttons"></div>').append(
-			$('<a class="Q_button Users_login_start Q_main_button" />')
-			.html(Q.text.Users.login.loginButton)
-			.click(submitClosestForm)
-		)).append($('<input type="hidden" name="isHashed" id="Users_login_isHashed" value="0" />'));
+		).append(
+			$('<input type="hidden" name="identifier" />').val(identifier_input.val())
+		).append(
+			$('<div class="Q_buttons"></div>').append($b)
+		).append($('<input type="hidden" name="isHashed" id="Users_login_isHashed" value="0" />'));
 		setTimeout(function () {
 			$('#Users_login_passphrase_div').width(passphrase_input.outerWidth());
 		}, 10);
@@ -1288,6 +1293,19 @@ function login_setupDialog(usingProviders, scope, dialogContainer, identifierTyp
 	} else if (type === 'mobile') {
 		identifierInput.attr('name', 'phone');
 	}
+	
+	var $a = $('<a class="Q_button Users_login_go Q_main_button" />')
+	.append(
+		$('<span id="Users_login_go_span">'  + Q.text.Users.login.goButton + '</span>')
+	).click(submitClosestForm);
+	$(window).on('touchend', function (event) {
+		if (!$a[0].isOrContains(event.target)) {
+			return;
+		}
+		if ($('#Users_login_identifier').is(':focus')) {
+			$('#Users_login_identifier').blur();
+		}
+	})
 
 	step1_form.html(
 		$('<label for="Users_login_identifier" />').html(Q.text.Users.login.directions)
@@ -1295,17 +1313,9 @@ function login_setupDialog(usingProviders, scope, dialogContainer, identifierTyp
 		identifierInput
 	).append(
 		$('<input id="Users_login_identifierType" type="hidden" name="identifierType" />').val(identifierType)
-	).append('&nbsp;').append(
-		$('<a class="Q_button Users_login_go Q_main_button" />')
-			.append(
-			$('<span id="Users_login_go_span">'  + Q.text.Users.login.goButton + '</span>')
-		).click(submitClosestForm)
-		.on('touchend', function () {
-			if ($('#Users_login_identifier').is(':focus')) {
-				$('#Users_login_identifier').blur();
-			}
-		})
-	).append(
+	).append('&nbsp;')
+	.append($a)
+	.append(
 		$('<div id="Users_login_explanation" />').html(Q.text.Users.login.explanation)
 	).submit(function(event) {
 		$('#Users_login_identifier').attr('name', 'identifier');
@@ -1468,17 +1478,23 @@ function login_setupDialog(usingProviders, scope, dialogContainer, identifierTyp
 	login_setupDialog.dialog = dialog;
 
 	function hideForm2() {
+		if (_submitting) {
+			return;
+		}
 		if ($('#Users_login_step1').next().is(':visible')) {
 			$('#Users_login_step1').animate({"opacity": 1}, 'fast');
 			$('#Users_login_step1 *').removeAttr('disabled');
 		}
 		priv.registerInfo = null;
-		$('#Users_login_step1').nextAll().slideUp('fast').each(function() {
-			var v = $('form', $(this)).data('validator');
-			if (v) {
-				v.reset();
-			}
-		});
+		$nextAll = $('#Users_login_step1').nextAll();
+		if ($nextAll.is(':visible')) {
+			$nextAll.slideUp('fast').each(function() {
+				var v = $('form', $(this)).data('validator');
+				if (v) {
+					v.reset();
+				}
+			});
+		}
 		if ($('#Users_login_usingProviders').css('display') === 'none') {
 			$('#Users_login_usingProviders').css({opacity: 0}).show()
 				.animate({opacity: 1}, 'fast');
@@ -1590,10 +1606,47 @@ function setIdentifier_setupDialog(identifierType, options) {
 	setIdentifier_setupDialog.dialog = dialog;
 }
 
-function submitClosestForm () {
+var _submitting = false;
+var submitClosestForm= Users.submitClosestForm = function submitClosestForm () {
+	_submitting = true;
 	$(this).closest('form').submit();
+	setTimeout(function () {
+		_submitting = false;
+	}, 500);
 	return false;
 }
+
+/**
+ * Votes for something
+ * @static
+ * @method hint 
+ * @param {String} forType The type of thing to vote for
+ * @param {String} forId The id of thing to vote for
+ * @param {Number} [value=1] the value the user has voted for, such as a rating etc.
+ * @param {Element|Object} elementOrPoint Indicates where to display the hint. A point should contain properties "x" and "y".
+ * @param {Object} [options] possible options, which can include:
+ * @param {String} [options.src] the url of the image
+ * @param {Point} [options.hotspot={x:0.5,y:0.4}] "x" and "y" represent the location of the hotspot within the image, using fractions between 0 and 1
+ * @param {String} [options.width="200px"]
+ * @param {String} [options.height="200px"]
+ * @param {Number} [options.zIndex=99999]
+ * @return {Boolean} Returns true if the hint with will be shown, or false if a hint with this key was already shown before.
+ */
+Users.vote = function (forType, forId, value) {
+	var fields = {
+		forType: forType,
+		forId: forId
+	};
+	if (value !== undefined) {
+		fields.value = value;
+	}
+	Q.req('Users/vote', ['vote'], function (err, result) {
+		var msg = Q.firstErrorMessage(err, result && result.errors);
+		if (msg) {
+			return console.warn(msg);
+		}
+	}, { method: 'POST', fields: fields });
+};
 
 /**
  * Places a hint to click or tap on the screen
@@ -1615,19 +1668,7 @@ Users.hint = function (key, elementOrPoint, options) {
 	}
 	Q.Pointer.hint(elementOrPoint, options);
 	Users.hinted.push(key);
-	Q.req('Users/vote', ['vote'], function (err, result) {
-		var msg = Q.firstErrorMessage(err, result && result.errors);
-		if (msg) {
-			return console.warn(msg);
-		}
-	}, {
-		method: 'POST',
-		fields: {
-			forType: 'Users/hinted',
-			forId: key,
-			value: 1
-		}
-	});
+	Users.vote('Users/hinted', key);
 	return true;
 };
 

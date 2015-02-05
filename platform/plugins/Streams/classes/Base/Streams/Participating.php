@@ -20,8 +20,8 @@
  * @property mixed $state
  * @property integer $fresh
  * @property string $extra
- * @property string $insertedTime
- * @property string $updatedTime
+ * @property string|Db_Expression $insertedTime
+ * @property string|Db_Expression $updatedTime
  */
 abstract class Base_Streams_Participating extends Db_Row
 {
@@ -51,11 +51,11 @@ abstract class Base_Streams_Participating extends Db_Row
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -213,7 +213,9 @@ abstract class Base_Streams_Participating extends Db_Row
 	 */
 	function beforeSet_userId($value)
 	{
-		if ($value instanceof Db_Expression) return array('userId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('userId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".userId");
 		if (strlen($value) > 31)
@@ -231,7 +233,9 @@ abstract class Base_Streams_Participating extends Db_Row
 	 */
 	function beforeSet_publisherId($value)
 	{
-		if ($value instanceof Db_Expression) return array('publisherId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('publisherId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".publisherId");
 		if (strlen($value) > 31)
@@ -249,7 +253,9 @@ abstract class Base_Streams_Participating extends Db_Row
 	 */
 	function beforeSet_streamName($value)
 	{
-		if ($value instanceof Db_Expression) return array('streamName', $value);
+		if ($value instanceof Db_Expression) {
+			return array('streamName', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".streamName");
 		if (strlen($value) > 255)
@@ -266,7 +272,9 @@ abstract class Base_Streams_Participating extends Db_Row
 	 */
 	function beforeSet_state($value)
 	{
-		if ($value instanceof Db_Expression) return array('state', $value);
+		if ($value instanceof Db_Expression) {
+			return array('state', $value);
+		}
 		if (!in_array($value, array('invited','participating','left')))
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".state");
 		return array('state', $value);			
@@ -281,7 +289,9 @@ abstract class Base_Streams_Participating extends Db_Row
 	 */
 	function beforeSet_fresh($value)
 	{
-		if ($value instanceof Db_Expression) return array('fresh', $value);
+		if ($value instanceof Db_Expression) {
+			return array('fresh', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".fresh");
 		if ($value < 0 or $value > 4294967295)
@@ -299,12 +309,60 @@ abstract class Base_Streams_Participating extends Db_Row
 	 */
 	function beforeSet_extra($value)
 	{
-		if ($value instanceof Db_Expression) return array('extra', $value);
+		if ($value instanceof Db_Expression) {
+			return array('extra', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".extra");
 		if (strlen($value) > 1023)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".extra");
 		return array('extra', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_insertedTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_insertedTime($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('insertedTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".insertedTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('insertedTime', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_updatedTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_updatedTime($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('updatedTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".updatedTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('updatedTime', $value);			
 	}
 
 	/**
@@ -323,12 +381,9 @@ abstract class Base_Streams_Participating extends Db_Row
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}
 			}
-		}
-		if (!$this->retrieved and !isset($value['insertedTime']))
-			$value['insertedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
-		//if ($this->retrieved and !isset($value['updatedTime']))
+		}						
 		// convention: we'll have updatedTime = insertedTime if just created.
-		$value['updatedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
+		$this->updatedTime = $value['updatedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
 		return $value;			
 	}
 

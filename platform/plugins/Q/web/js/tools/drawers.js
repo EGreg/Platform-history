@@ -262,6 +262,9 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 			$scrolling.scrollTop(
 				state.bottom[index] ? $scrolling[0].scrollHeight : 0
 			);
+			if ($pe && index) {
+				state.drawerOffset = $otherDrawer.offset();
+			}
 			
 			var sHeights = (state.heights instanceof Array)
 				? state.heights : Q.getObject(state.heights).apply(tool);
@@ -457,7 +460,9 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 				canShowTrigger = true;
 			});
 			state.$interval = setInterval(function () {
-				if (canShowTrigger && state.$scrolling.scrollTop() === 0) {
+				if (!state.$drawers.eq(1).is(':visible')) {
+					state.$trigger.hide();
+				} else if (canShowTrigger && state.$scrolling.scrollTop() === 0) {
 					state.$trigger.show();
 				}
 			}, 300);

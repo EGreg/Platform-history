@@ -192,7 +192,9 @@ abstract class Base_Users_Label extends Db_Row
 	 */
 	function beforeSet_userId($value)
 	{
-		if ($value instanceof Db_Expression) return array('userId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('userId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".userId");
 		if (strlen($value) > 31)
@@ -210,7 +212,9 @@ abstract class Base_Users_Label extends Db_Row
 	 */
 	function beforeSet_label($value)
 	{
-		if ($value instanceof Db_Expression) return array('label', $value);
+		if ($value instanceof Db_Expression) {
+			return array('label', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".label");
 		if (strlen($value) > 255)
@@ -228,7 +232,9 @@ abstract class Base_Users_Label extends Db_Row
 	 */
 	function beforeSet_icon($value)
 	{
-		if ($value instanceof Db_Expression) return array('icon', $value);
+		if ($value instanceof Db_Expression) {
+			return array('icon', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".icon");
 		if (strlen($value) > 255)
@@ -246,7 +252,9 @@ abstract class Base_Users_Label extends Db_Row
 	 */
 	function beforeSet_title($value)
 	{
-		if ($value instanceof Db_Expression) return array('title', $value);
+		if ($value instanceof Db_Expression) {
+			return array('title', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".title");
 		if (strlen($value) > 255)

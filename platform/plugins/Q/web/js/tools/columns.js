@@ -22,10 +22,11 @@
  *  @param {String}  [options.column] You can put a default content for all columns here (which is shown as they are loading)
  *  @param {Object}  [options.scrollbarsAutoHide] If an object, enables Q/scrollbarsAutoHide functionality with options from here. Enabled by default.
  *  @param {Boolean} [options.fullscreen] Whether to use fullscreen mode on mobile phones, using document to scroll instead of relying on possibly buggy "overflow" CSS implementation. Defaults to true on Android, false everywhere else.
- *  @param {Boolean} [options.hideBackgroundColumns=false] Whether to hide background columns on mobile (perhaps improving browser rendering). Defaults to false, because background columns may have elements whose positioning properties are being queried.
+ *  @param {Boolean} [options.hideBackgroundColumns=false] Whether to hide background columns on mobile (perhaps improving browser rendering). Defaults to false (true if fullscreen is true), because background columns may have elements whose positioning properties are being queried.
  *  @param {Q.Event} [options.beforeOpen] Event that happens before a column is opened. Return false to prevent opening.
  *  @param {Q.Event} [options.beforeClose] Event that happens before a column is closed. Return false to prevent closing.
  *  @param {Q.Event} [options.onOpen] Event that happens after a column is opened.
+ *  @param {Q.Event} [options.afterDelay] Event that happens after a column is opened, after a delay intended to wait out various animations.
  *  @param {Q.Event} [options.onClose] Event that happens after a column is closed.
  * @return Q.Tool
  */
@@ -109,7 +110,7 @@ Q.Tool.define("Q/columns", function(options) {
 	column: undefined,
 	scrollbarsAutoHide: {},
 	fullscreen: Q.info.isMobile && Q.info.isAndroid(1000),
-	hideBackgroundColumns: false,
+	hideBackgroundColumns: Q.info.isMobile && Q.info.isAndroid(1000),
 	beforeOpen: new Q.Event(),
 	beforeClose: new Q.Event(),
 	onOpen: new Q.Event(),
@@ -321,14 +322,16 @@ Q.Tool.define("Q/columns", function(options) {
 				}, o.delay.duration);
 			}).run();
 			
-			if (options.onClose) {
-				var onClose = Q.extend(new Q.Event(), options.onClose);
-				var key = state.onClose.set(function (i) {
+			Q.each(['on', 'before'], function (k, prefix) {
+				var event = options[prefix+'Close'];
+				var stateEvent = state[prefix+'Close'];
+				event = Q.extend(new Q.Event(), event);
+				var key = stateEvent.set(function (i) {
 					if (i != index) return;
-					onClose.handle.apply(this, arguments);
-					state.onClose.remove(key);
-				}, tool);
-			}
+					event.handle.apply(this, arguments);
+					stateEvent.remove(key);
+				});
+			});
 			
 			var show = {
 				opacity: 1,
@@ -566,7 +569,8 @@ Q.Tool.define("Q/columns", function(options) {
 		.add($te.parents().prevAll())
 		.each(function () {
 			var $this = $(this);
-			if ($this.css('position') === 'fixed') {
+			if ($this.css('position') === 'fixed'
+			&& !$this.hasClass('Q_drawers_drawer')) {
 				top += $this.outerHeight() + parseInt($this.css('margin-bottom'));
 			}
 		});

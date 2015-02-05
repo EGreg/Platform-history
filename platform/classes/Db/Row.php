@@ -2095,7 +2095,7 @@ class Db_Row implements Iterator
 		$fields = '*', 
 		$options = array())
 	{
-		if (!$this->retrieve($fields, true, false, $options)) {
+		if ($this->retrieve($fields, true, false, $options)) {
 			return false;
 		}
 

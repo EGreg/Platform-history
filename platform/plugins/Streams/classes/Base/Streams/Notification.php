@@ -15,12 +15,12 @@
  * @extends Db_Row
  *
  * @property string $userId
- * @property string $insertedTime
+ * @property string|Db_Expression $insertedTime
  * @property string $publisherId
  * @property string $streamName
  * @property string $type
- * @property string $viewedTime
- * @property string $readTime
+ * @property string|Db_Expression $viewedTime
+ * @property string|Db_Expression $readTime
  * @property string $comment
  */
 abstract class Base_Streams_Notification extends Db_Row
@@ -31,7 +31,7 @@ abstract class Base_Streams_Notification extends Db_Row
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * @property $publisherId
@@ -47,11 +47,11 @@ abstract class Base_Streams_Notification extends Db_Row
 	 */
 	/**
 	 * @property $viewedTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * @property $readTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * @property $comment
@@ -212,12 +212,37 @@ abstract class Base_Streams_Notification extends Db_Row
 	 */
 	function beforeSet_userId($value)
 	{
-		if ($value instanceof Db_Expression) return array('userId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('userId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".userId");
 		if (strlen($value) > 31)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".userId");
 		return array('userId', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_insertedTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_insertedTime($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('insertedTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".insertedTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('insertedTime', $value);			
 	}
 
 	/**
@@ -230,7 +255,9 @@ abstract class Base_Streams_Notification extends Db_Row
 	 */
 	function beforeSet_publisherId($value)
 	{
-		if ($value instanceof Db_Expression) return array('publisherId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('publisherId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".publisherId");
 		if (strlen($value) > 31)
@@ -248,7 +275,9 @@ abstract class Base_Streams_Notification extends Db_Row
 	 */
 	function beforeSet_streamName($value)
 	{
-		if ($value instanceof Db_Expression) return array('streamName', $value);
+		if ($value instanceof Db_Expression) {
+			return array('streamName', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".streamName");
 		if (strlen($value) > 255)
@@ -266,13 +295,69 @@ abstract class Base_Streams_Notification extends Db_Row
 	 */
 	function beforeSet_type($value)
 	{
-		if (!isset($value)) return array('type', $value);
-		if ($value instanceof Db_Expression) return array('type', $value);
+		if (!isset($value)) {
+			return array('type', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('type', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".type");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".type");
 		return array('type', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_viewedTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_viewedTime($value)
+	{
+		if (!isset($value)) {
+			return array('viewedTime', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('viewedTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".viewedTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('viewedTime', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_readTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_readTime($value)
+	{
+		if (!isset($value)) {
+			return array('readTime', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('readTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".readTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('readTime', $value);			
 	}
 
 	/**
@@ -285,8 +370,12 @@ abstract class Base_Streams_Notification extends Db_Row
 	 */
 	function beforeSet_comment($value)
 	{
-		if (!isset($value)) return array('comment', $value);
-		if ($value instanceof Db_Expression) return array('comment', $value);
+		if (!isset($value)) {
+			return array('comment', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('comment', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".comment");
 		if (strlen($value) > 255)
@@ -311,9 +400,6 @@ abstract class Base_Streams_Notification extends Db_Row
 				}
 			}
 		}
-		if (!$this->retrieved and !isset($value['insertedTime']))
-			$value['insertedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
-
 		return $value;			
 	}
 

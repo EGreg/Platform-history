@@ -493,6 +493,37 @@ class Q_Request
 	}
 	
 	/**
+	 * Detects whether the request is coming from a mobile browser
+	 * @method isMobile
+	 * @static
+	 * @return {boolean}
+	 */
+	static function isWebView()
+	{
+		static $result;
+		if (isset($result)) {
+			return $result;
+		}
+		/**
+		 * @event Q/request/isMobile {before}
+		 * @return {boolean}
+		 */
+		$result = Q::event('Q/request/isMobile', array(), 'before');
+		if (isset($result)) {
+			return $result;
+		}
+		if (!isset($_SERVER['HTTP_USER_AGENT'])) {
+			return null;
+		}
+		$useragent = $_SERVER['HTTP_USER_AGENT'];
+		if (preg_match('/(.*)QWebView(.*)/', $useragent)
+		or preg_match('/(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i', $useragent)) {
+			return true;
+		}
+		return false;
+	}
+	
+	/**
 	 * Returns the form factor based on the user agent
 	 * @method formFactor
 	 * @static

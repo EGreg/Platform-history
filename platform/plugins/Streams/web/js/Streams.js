@@ -441,6 +441,8 @@ Streams.get = function _Streams_get(publisherId, streamName, callback, extra) {
 					return false;
 				}
 				if (msg) return;
+				
+				// The onRefresh handlers occur after the other callbacks
 				var f = stream.fields;
 				var handler = Q.getObject([f.type], _refreshHandlers);
 				Q.handle(handler, stream, []);
@@ -566,6 +568,11 @@ Streams.create.onError = new Q.Event();
  */
 Streams.construct = function _Streams_construct(fields, extra, callback) {
 
+	if (Q.typeOf(fields) === 'Q.Sterams.Stream') {
+		Q.handle(callback, fields, [null, fields]);
+		return false;
+	}
+
 	if (Q.isEmpty(fields)) {
 		Q.handle(callback, this, ["Streams.Stream constructor: fields are missing"]);
 		return false;
@@ -612,11 +619,9 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 
 				// update the Streams.get cache
 				if (f.publisherId && f.name) {
-					Streams.get.cache.each([f.publisherId, f.name],
-					function (k, v) {
-						Streams.get.cache.remove(k);
-					});
-					Streams.get.cache.set(
+					Streams.get.cache
+					.removeEach([f.publisherId, f.name])
+					.set(
 						[f.publisherId, f.name], 0,
 						this, [null, this]
 					);
@@ -737,6 +742,11 @@ Streams.getParticipating = function(callback) {
  *   @param {Number} [options.unlessSocket] Whether to avoid doing any requests when a socket is attached
  *   @param {Array} [options.duringEvents] Streams.refresh.options.duringEvents are the window events that can lead to an automatic refresh
  *   @param {Number} [options.minSeconds] Streams.refresh.options.minEvents is the minimum number of seconds to wait between automatic refreshes
+ *   @param {Number} [options.timeout] The maximum amount of time to wait and hope the messages will arrive via sockets. After this we just request them again.
+ *   @param {Number} [options.unlessSocket] Whether to avoid doing any requests when a socket is attached
+ *   @param {Object} [options.changed] An Object of {fieldName: true} pairs naming fields to trigger change events for, even if their values stayed the same
+ *   @param {Boolean} [options.evenIfNotRetained] If the stream wasn't retained (for example because it was missing last time), then refresh anyway
+ *   @param {Object} [options.extra] Any extra parameters to pass to the callback
  * @return {boolean} whether the refresh occurred
  */
 Streams.refresh = function (callback, options) {
@@ -961,9 +971,13 @@ Stream.retain = function _Stream_retain (publisherId, streamName, key, callback)
 	var ps = Streams.key(publisherId, streamName);
 	key = Q.Event.calculateKey(key);
 	Streams.get(publisherId, streamName, function (err) {
-		_retainedStreams[ps] = this;
-		Q.setObject([ps, key], true, _retainedByStream);
-		Q.setObject([key, ps], true, _retainedByKey);
+		if (err) {
+			_retainedStreams[ps] = null;
+		} else {
+			_retainedStreams[ps] = this;
+			Q.setObject([ps, key], true, _retainedByStream);
+			Q.setObject([key, ps], true, _retainedByKey);
+		}
 		Q.handle(callback, this, [err, this]);
 	});
 };
@@ -1011,9 +1025,7 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 	var notRetained = !_retainedByStream[Streams.key(publisherId, streamName)];
 	if (!Q.isOnline()
 	|| (notRetained && !(options && options.evenIfNotRetained))) {
-		Streams.get.cache.each([publisherId, streamName], function (k, v) {
-			Streams.get.cache.remove(k);
-		});
+		Streams.get.cache.removeEach([publisherId, streamName]);
 		callback && callback(null, null);
 		return false;
 	}
@@ -1030,15 +1042,14 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 	var socket = Q.Socket.get('Streams', node);
 	if (!result && !(socket && options && options.unlessSocket)) {
 		// there was no cache, and we didn't wait for previous messages
-		Streams.get.cache.each([publisherId, streamName], function (k, v) {
-			Streams.get.cache.remove(k);
-		});
 		// just get the stream, and any listeners will be triggered
-		Streams.get(publisherId, streamName, function (err, stream) {
-			var ps = Streams.key(publisherId, streamName);
-			var changed = (options && options.changed) || {};
-			updateStream(_retainedStreams[ps], this.fields, changed);
-			_retainedStreams[ps] = this;
+		Streams.get.force(publisherId, streamName, function (err, stream) {
+			if (!err) {
+				var ps = Streams.key(publisherId, streamName);
+				var changed = (options && options.changed) || {};
+				updateStream(_retainedStreams[ps], this.fields, changed);
+				_retainedStreams[ps] = this;
+			}
 			if (callback) {
 				var params = [err, stream];
 				if (options && options.extra) {
@@ -2491,7 +2502,11 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 		if (ordinal < 0) {
 			Message.get.forget(publisherId, streamName, {min: latest+1, max: ordinal});
 		}
-		return Message.get(publisherId, streamName, {min: latest+1, max: ordinal}, function (err, messages) {
+		return Message.get(publisherId, streamName, {min: latest+1, max: ordinal},
+		function (err, messages) {
+			if (err) {
+				return Q.handle(callback, this, [err]);
+			}
 			// Go through the messages and simulate the posting
 			// NOTE: the messages will arrive a lot quicker than they were posted,
 			// and moreover without browser refresh cycles in between,
@@ -2516,7 +2531,7 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 					w[0].remove(w[1]);
 				});
 				if (!alreadyCalled) {
-					Q.handle(callback, this, [Object.keys(messages)]);
+					Q.handle(callback, this, [null, Object.keys(messages)]);
 				}
 				alreadyCalled = true;
 			}
@@ -2870,14 +2885,23 @@ Streams.setupRegisterForm = function _Streams_setupRegisterForm(identifier, json
 	.data('form-type', 'register')
 	.append($('<div class="Streams_login_appear" />'));
 
+	var $b = $('<button />', {
+		"type": "submit",
+		"class": "Q_button Q_main_button Streams_login_start "
+	}).html(Q.text.Users.login.registerButton)
+	.on(Q.Pointer.start, function () {
+		Users.submitClosestForm.apply(this, arguments);
+		return false;
+	});
+
 	register_form.append(table)
 	.append($('<input type="hidden" name="identifier" />').val(identifier))
 	.append($('<input type="hidden" name="icon" />'))
 	.append($('<input type="hidden" name="Q.method" />').val('post'))
-	.append($('<div class="Streams_login_get_started">&nbsp;</div>').append(
-		$('<button type="submit" class="Q_button Q_main_button Streams_login_start " />')
-		.html(Q.text.Users.login.registerButton)
-	)).submit(function () {
+	.append(
+		$('<div class="Streams_login_get_started">&nbsp;</div>')
+		.append($b)
+	).submit(function () {
 		$(this).removeData('cancelSubmit');
 		if (!$('#Users_agree').attr('checked')) {
 			if (!confirm(Q.text.Users.login.confirmTerms)) {
@@ -3076,11 +3100,6 @@ function _onResultHandler(subject, params, args, ret, original) {
 	}
 }
 
-function submitClosestForm () {
-	$(this).closest('form').submit();
-	return false;
-}
-
 Q.Tool.onMissingConstructor.set(function (constructors, normalized) {
 	var str = "_preview";
 	if (normalized.substr(-str.length) === str) {
@@ -3092,7 +3111,7 @@ Q.beforeInit.add(function _Streams_beforeInit() {
 
 	var where = Streams.cache.where || 'document';
 
-	Streams.get = Q.getter(Streams.get, {
+	Stream.get = Streams.get = Q.getter(Streams.get, {
 		cache: Q.Cache[where]("Streams.get", 100), 
 		throttle: 'Streams.get'
 	});
@@ -3290,7 +3309,7 @@ Q.onInit.add(function _Streams_onInit() {
 	Streams.onEvent('remove').set(function _Streams_remove_handler (stream) {
 		Streams.get.cache.each([msg.publisherId, msg.streamName], 
 		function (k, v) {
-			Streams.get.cache.remove(k);
+			this.remove(k);
 			updateAvatarCache(v.subject);
 		});
 	}, 'Streams');
@@ -3326,8 +3345,8 @@ Q.onInit.add(function _Streams_onInit() {
 		// Will return immediately if previous message is already cached
 		// (e.g. from a post or retrieving a stream, or because there was no cache yet)
 		Message.wait(msg.publisherId, msg.streamName, msg.ordinal-1, function () {
-			if (Message.latest[msg.publisherId+"\t"+msg.streamName]
-			>= parseInt(msg.ordinal)) {
+			var ptn = msg.publisherId+"\t"+msg.streamName;
+			if (Message.latest[ptn] >= parseInt(msg.ordinal)) {
 				return; // it was already processed
 			}
 			// New message posted - update cache
@@ -3335,7 +3354,7 @@ Q.onInit.add(function _Streams_onInit() {
 			var message = (Q.typeOf(msg) === 'Q.Streams.Message')
 				? msg
 				: Message.construct(msg);
-			Message.latest[msg.publisherId+"\t"+msg.streamName] = parseInt(msg.ordinal);
+			Message.latest[ptn] = parseInt(msg.ordinal);
 			var cached = Streams.get.cache.get(
 				[msg.publisherId, msg.streamName]
 			);
@@ -3486,14 +3505,14 @@ Q.onInit.add(function _Streams_onInit() {
 						}
 						var args = JSON.parse(k), extra = args[2];
 						if (extra && extra.messages) {
-							Streams.get.cache.remove(k);
+							this.remove(k);
 						}
 					});
 					Message.get.cache.each([msg.publisherId, msg.streamName],
 					function (k, v) {
 						var args = JSON.parse(k), ordinal = args[2];
 						if (ordinal && ordinal.max && ordinal.max < 0) {
-							Message.get.cache.remove(k); 
+							this.remove(k); 
 						}
 					});
 				}
@@ -3510,21 +3529,16 @@ Q.onInit.add(function _Streams_onInit() {
 						}
 						var args = JSON.parse(k), extra = args[2];
 						if (extra && extra.participants) {
-							Streams.get.cache.remove(k);
+							this.remove(k);
 						}
 					});
-					Participant.get.cache.each([msg.publisherId, msg.streamName],
-					function (k, v) {
-						Participant.get.cache.remove(k);
-						// later, we can refactor this to insert
-						// the correct data into the cache
-					});
+					Participant.get.cache.removeEach([msg.publisherId, msg.streamName]);
+					// later, we can refactor this to insert
+					// the correct data into the cache
 				}
 
 				function updateRelatedCache(fields) {
-					Streams.related.cache.each([msg.publisherId, msg.streamName, fields.type], function (k, v) {
-						Streams.related.cache.remove(k);
-					});
+					Streams.related.cache.removeEach([msg.publisherId, msg.streamName]);
 				}
 			});
 		});

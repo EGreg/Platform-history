@@ -16,7 +16,7 @@ function Q_image_response () {
 	$gravatar = isset($_REQUEST['gravatar'])
 		? $_REQUEST['gravatar']
 		: Q_Config::get('Users', 'login', 'gravatar', false);
-	$result = Q_Icon::get(
+	$result = Q_Image::avatar(
 		$hash,
 		isset($_REQUEST['size']) ? $_REQUEST['size'] : null,
 		isset($_REQUEST['type']) ? $_REQUEST['type'] : null,

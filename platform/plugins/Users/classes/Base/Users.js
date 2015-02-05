@@ -27,22 +27,22 @@ module.exports = Base;
  * @type array
  */
 Base.tableClasses = [
-		"Users_AppUser",
-		"Users_Contact",
-		"Users_Device",
-		"Users_Email",
-		"Users_ExternalFrom",
-		"Users_ExternalTo",
-		"Users_Identify",
-		"Users_Label",
-		"Users_Link",
-		"Users_Mobile",
-		"Users_OAuth",
-		"Users_Session",
-		"Users_Total",
-		"Users_User",
-		"Users_Vote"
-	];
+	"Users_AppUser",
+	"Users_Contact",
+	"Users_Device",
+	"Users_Email",
+	"Users_ExternalFrom",
+	"Users_ExternalTo",
+	"Users_Identify",
+	"Users_Label",
+	"Users_Link",
+	"Users_Mobile",
+	"Users_OAuth",
+	"Users_Session",
+	"Users_Total",
+	"Users_User",
+	"Users_Vote"
+];
 
 /**
  * This method calls Db.connect() using information stored in the configuration.

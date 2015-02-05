@@ -2,7 +2,7 @@
 	"Q": {
 		"pluginInfo": {
 			"Places": {
-				"version": "0.3",
+				"version": "0.4",
 				"compatible": "0.3",
 				"connections": ["Places"],
 				"requires": {"Streams": "0.8"}
@@ -54,6 +54,11 @@
 			"keys": {
 				"server": null,
 				"web": null
+			}
+		},
+		"location": {
+			"cache": {
+				"duration": 2592000
 			}
 		}
 	}

@@ -225,7 +225,9 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_countryCode($value)
 	{
-		if ($value instanceof Db_Expression) return array('countryCode', $value);
+		if ($value instanceof Db_Expression) {
+			return array('countryCode', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".countryCode");
 		if (strlen($value) > 2)
@@ -243,7 +245,9 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_zipcode($value)
 	{
-		if ($value instanceof Db_Expression) return array('zipcode', $value);
+		if ($value instanceof Db_Expression) {
+			return array('zipcode', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".zipcode");
 		if (strlen($value) > 10)
@@ -261,7 +265,9 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_placeName($value)
 	{
-		if ($value instanceof Db_Expression) return array('placeName', $value);
+		if ($value instanceof Db_Expression) {
+			return array('placeName', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".placeName");
 		if (strlen($value) > 180)
@@ -279,7 +285,9 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_stateName($value)
 	{
-		if ($value instanceof Db_Expression) return array('stateName', $value);
+		if ($value instanceof Db_Expression) {
+			return array('stateName', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".stateName");
 		if (strlen($value) > 100)
@@ -297,7 +305,9 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_state($value)
 	{
-		if ($value instanceof Db_Expression) return array('state', $value);
+		if ($value instanceof Db_Expression) {
+			return array('state', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".state");
 		if (strlen($value) > 20)
@@ -315,7 +325,9 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_regionName($value)
 	{
-		if ($value instanceof Db_Expression) return array('regionName', $value);
+		if ($value instanceof Db_Expression) {
+			return array('regionName', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".regionName");
 		if (strlen($value) > 100)
@@ -333,7 +345,9 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_region($value)
 	{
-		if ($value instanceof Db_Expression) return array('region', $value);
+		if ($value instanceof Db_Expression) {
+			return array('region', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".region");
 		if (strlen($value) > 20)
@@ -351,7 +365,9 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_community($value)
 	{
-		if ($value instanceof Db_Expression) return array('community', $value);
+		if ($value instanceof Db_Expression) {
+			return array('community', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".community");
 		if (strlen($value) > 100)
@@ -368,7 +384,9 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_accuracy($value)
 	{
-		if ($value instanceof Db_Expression) return array('accuracy', $value);
+		if ($value instanceof Db_Expression) {
+			return array('accuracy', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".accuracy");
 		if ($value < -2147483648 or $value > 2147483647)

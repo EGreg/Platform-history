@@ -30,19 +30,19 @@ Q.mixin(Base, Row);
 
 /**
  * @property id
- * @type string
+ * @type String
  */
 /**
  * @property insertedTime
- * @type string
+ * @type String|Db.Expression
  */
 /**
  * @property updatedTime
- * @type string
+ * @type String|Db.Expression
  */
 /**
  * @property sessionId
- * @type string
+ * @type String
  */
 /**
  * @property sessionCount
@@ -58,51 +58,51 @@ Q.mixin(Base, Row);
  */
 /**
  * @property g_uid
- * @type string
+ * @type String
  */
 /**
  * @property y_uid
- * @type string
+ * @type String
  */
 /**
  * @property passphraseHash
- * @type string
+ * @type String
  */
 /**
  * @property emailAddress
- * @type string
+ * @type String
  */
 /**
  * @property mobileNumber
- * @type string
+ * @type String
  */
 /**
  * @property emailAddressPending
- * @type string
+ * @type String
  */
 /**
  * @property mobileNumberPending
- * @type string
+ * @type String
  */
 /**
  * @property signedUpWith
- * @type string
+ * @type String
  */
 /**
  * @property username
- * @type string
+ * @type String
  */
 /**
  * @property icon
- * @type string
+ * @type String
  */
 /**
  * @property url
- * @type string
+ * @type String
  */
 /**
  * @property pincodeHash
- * @type string
+ * @type String
  */
 
 /**
@@ -119,7 +119,7 @@ Base.db = function () {
  * Retrieve the table name to use in SQL statements
  * @method table
  * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
- * @return {string|Db.Expression} The table name as string optionally without database name if no table sharding was started
+ * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
 Base.table = function (withoutDbName) {
@@ -233,7 +233,7 @@ Base.prototype.db = function () {
  * Retrieve the table name to use in SQL statements
  * @method table
  * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
- * @return {string|Db.Expression} The table name as string optionally without database name if no table sharding was started
+ * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
 Base.prototype.table = function () {
@@ -298,6 +298,31 @@ Base.prototype.beforeSet_id = function (value) {
 };
 
 /**
+ * Method is called before setting the field
+ * @method beforeSet_insertedTime
+ * @param {String} value
+ * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
+ */
+Base.prototype.beforeSet_insertedTime = function (value) {
+		if (value instanceof Db.Expression) return value;
+		value = (value instanceof Date) ? Base.db().toDateTime(value) : value;
+		return value;
+};
+
+/**
+ * Method is called before setting the field
+ * @method beforeSet_updatedTime
+ * @param {String} value
+ * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
+ */
+Base.prototype.beforeSet_updatedTime = function (value) {
+		if (!value) return value;
+		if (value instanceof Db.Expression) return value;
+		value = (value instanceof Date) ? Base.db().toDateTime(value) : value;
+		return value;
+};
+
+/**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
  * @method beforeSet_sessionId
@@ -325,7 +350,7 @@ Base.prototype.beforeSet_sessionId = function (value) {
 Base.prototype.beforeSet_sessionCount = function (value) {
 		if (value instanceof Db.Expression) return value;
 		value = Number(value);
-		if (isNaN(value) || Math.floor(value) != value)
+		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".sessionCount");
 		if (value < -2147483648 || value > 2147483647)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".sessionCount");
@@ -342,7 +367,7 @@ Base.prototype.beforeSet_sessionCount = function (value) {
 Base.prototype.beforeSet_fb_uid = function (value) {
 		if (value instanceof Db.Expression) return value;
 		value = Number(value);
-		if (isNaN(value) || Math.floor(value) != value)
+		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".fb_uid");
 		if (value < -9.2233720368548E+18 || value > 9223372036854775807)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".fb_uid");
@@ -359,7 +384,7 @@ Base.prototype.beforeSet_fb_uid = function (value) {
 Base.prototype.beforeSet_tw_uid = function (value) {
 		if (value instanceof Db.Expression) return value;
 		value = Number(value);
-		if (isNaN(value) || Math.floor(value) != value)
+		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".tw_uid");
 		if (value < -9.2233720368548E+18 || value > 9223372036854775807)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".tw_uid");
@@ -591,10 +616,8 @@ Base.prototype.beforeSave = function (value) {
 			}
 		}
 	}
-	if (!this._retrieved && !value['insertedTime'])
-		value['insertedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
 	// convention: we'll have updatedTime = insertedTime if just created.
-	value['updatedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
+	this['updatedTime'] = value['updatedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
 	return value;
 };
 

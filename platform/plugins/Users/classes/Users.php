@@ -643,11 +643,13 @@ abstract class Users extends Base_Users
 	 * Get the logged-in user's information
 	 * @method loggedInUser
 	 * @static
-	 * @param {boolean} [$throwIfNotLoggedIn=false] Defaults to false.
+	 * @param {boolean} [$throwIfNotLoggedIn=false]
 	 *   Whether to throw a Users_Exception_NotLoggedIn if no user is logged in.
-	 * @param {boolean} [$startSession=true] Defaults to true.
+	 * @param {boolean} [$startSession=true]
 	 *   Whether to start a PHP session if one doesn't already exist.
 	 * @return {Users_User|null}
+	 * @throws {Users_Exception_NotLoggedIn} If user is not logged in and
+	 *   $throwIfNotLoggedIn is true
 	 */
 	static function loggedInUser(
 		$throwIfNotLoggedIn = false,
@@ -733,6 +735,10 @@ abstract class Users extends Base_Users
 				'userId' => $user->id,
 				'forType' => 'Users/hinted'
 			))->fetchDbRows(null, null, 'forId');
+		
+		// Cache already shown hints in the session.
+		// The consistency of this mechanism across sessions is not perfect, i.e.
+		// the same hint may repeat in multiple concurrent sessions, but it's ok.
 		$_SESSION['Users']['hinted'] = array_keys($votes);
 
 		/**
@@ -1248,7 +1254,7 @@ abstract class Users extends Base_Users
 				}
 				call_user_func($func, $image, $dir2.DS.$info['filename'].'.png');
 			} else {
-				Q_Icon::put(
+				Q_Image::put(
 					$dir2.DS.$basename,
 					$url['hash'],
 					$url['size'],

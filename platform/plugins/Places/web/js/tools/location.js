@@ -13,6 +13,7 @@
  * @param {Object} [options.map] options for the map
  * @param {Number} [options.map.delay=300] how many milliseconds to delay showing the map, e.g. because the container is animating
  * @param {Q.Event} [options.onUpdate] this event occurs when the location is updated
+ * @param {Q.Event} [options.onUnset] this event occurs when the location is unset
  */
 
 Q.Tool.define("Places/location", function (options) {
@@ -40,7 +41,7 @@ Q.Tool.define("Places/location", function (options) {
 		if (miles) {
 			tool.$('.Places_location_miles').val(miles);
 		};
-		pipe.fill('info')(latitude, longitude, miles, state.onUpdate);
+		pipe.fill('info')(latitude, longitude, miles, state.onUpdate.handle);
 		state.stream = this; // in case it was missing before
 	});
 	
@@ -60,6 +61,7 @@ Q.Tool.define("Places/location", function (options) {
 				.removeClass('Places_location_obtained')
 				.removeClass('Places_location_checking')
 				.addClass('Places_location_obtaining');
+			Q.handle(state.onUnset, tool, [err, stream]);
 		}
 		setTimeout(function () {
 			pipe.fill('show')();
@@ -221,6 +223,7 @@ Q.Tool.define("Places/location", function (options) {
 		delay: 300
 	},
 	timeout: 10000,
+	onUnset: new Q.Event(),
 	onUpdate: new Q.Event()
 },
 

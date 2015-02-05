@@ -30,47 +30,47 @@ Q.mixin(Base, Row);
 
 /**
  * @property number
- * @type string
+ * @type String
  */
 /**
  * @property insertedTime
- * @type string
+ * @type String|Db.Expression
  */
 /**
  * @property updatedTime
- * @type string
+ * @type String|Db.Expression
  */
 /**
  * @property userId
- * @type string
+ * @type String
  */
 /**
  * @property extension
- * @type string
+ * @type String
  */
 /**
  * @property carrier
- * @type string
+ * @type String
  */
 /**
  * @property state
- * @type string
+ * @type String
  */
 /**
  * @property capabilities
- * @type string
+ * @type String
  */
 /**
  * @property activationCode
- * @type string
+ * @type String
  */
 /**
  * @property activationCodeExpires
- * @type string
+ * @type String|Db.Expression
  */
 /**
  * @property authCode
- * @type string
+ * @type String
  */
 
 /**
@@ -87,7 +87,7 @@ Base.db = function () {
  * Retrieve the table name to use in SQL statements
  * @method table
  * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
- * @return {string|Db.Expression} The table name as string optionally without database name if no table sharding was started
+ * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
 Base.table = function (withoutDbName) {
@@ -201,7 +201,7 @@ Base.prototype.db = function () {
  * Retrieve the table name to use in SQL statements
  * @method table
  * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
- * @return {string|Db.Expression} The table name as string optionally without database name if no table sharding was started
+ * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
 Base.prototype.table = function () {
@@ -254,6 +254,31 @@ Base.prototype.beforeSet_number = function (value) {
 			throw new Error('Must pass a string to '+this.table()+".number");
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".number");
+		return value;
+};
+
+/**
+ * Method is called before setting the field
+ * @method beforeSet_insertedTime
+ * @param {String} value
+ * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
+ */
+Base.prototype.beforeSet_insertedTime = function (value) {
+		if (value instanceof Db.Expression) return value;
+		value = (value instanceof Date) ? Base.db().toDateTime(value) : value;
+		return value;
+};
+
+/**
+ * Method is called before setting the field
+ * @method beforeSet_updatedTime
+ * @param {String} value
+ * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
+ */
+Base.prototype.beforeSet_updatedTime = function (value) {
+		if (!value) return value;
+		if (value instanceof Db.Expression) return value;
+		value = (value instanceof Date) ? Base.db().toDateTime(value) : value;
 		return value;
 };
 
@@ -351,6 +376,18 @@ Base.prototype.beforeSet_activationCode = function (value) {
 };
 
 /**
+ * Method is called before setting the field
+ * @method beforeSet_activationCodeExpires
+ * @param {String} value
+ * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
+ */
+Base.prototype.beforeSet_activationCodeExpires = function (value) {
+		if (value instanceof Db.Expression) return value;
+		value = (value instanceof Date) ? Base.db().toDateTime(value) : value;
+		return value;
+};
+
+/**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
  * @method beforeSet_authCode
@@ -384,10 +421,8 @@ Base.prototype.beforeSave = function (value) {
 			}
 		}
 	}
-	if (!this._retrieved && !value['insertedTime'])
-		value['insertedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
 	// convention: we'll have updatedTime = insertedTime if just created.
-	value['updatedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
+	this['updatedTime'] = value['updatedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
 	return value;
 };
 

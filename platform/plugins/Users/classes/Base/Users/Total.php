@@ -19,7 +19,7 @@
  * @property integer $voteCount
  * @property float $weightTotal
  * @property float $value
- * @property string $updatedTime
+ * @property string|Db_Expression $updatedTime
  */
 abstract class Base_Users_Total extends Db_Row
 {
@@ -45,7 +45,7 @@ abstract class Base_Users_Total extends Db_Row
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -202,7 +202,9 @@ abstract class Base_Users_Total extends Db_Row
 	 */
 	function beforeSet_forType($value)
 	{
-		if ($value instanceof Db_Expression) return array('forType', $value);
+		if ($value instanceof Db_Expression) {
+			return array('forType', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".forType");
 		if (strlen($value) > 31)
@@ -220,7 +222,9 @@ abstract class Base_Users_Total extends Db_Row
 	 */
 	function beforeSet_forId($value)
 	{
-		if ($value instanceof Db_Expression) return array('forId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('forId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".forId");
 		if (strlen($value) > 255)
@@ -237,12 +241,40 @@ abstract class Base_Users_Total extends Db_Row
 	 */
 	function beforeSet_voteCount($value)
 	{
-		if ($value instanceof Db_Expression) return array('voteCount', $value);
+		if ($value instanceof Db_Expression) {
+			return array('voteCount', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".voteCount");
 		if ($value < -9.2233720368548E+18 or $value > 9223372036854775807)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".voteCount");
 		return array('voteCount', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_updatedTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_updatedTime($value)
+	{
+		if (!isset($value)) {
+			return array('updatedTime', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('updatedTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".updatedTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('updatedTime', $value);			
 	}
 
 	/**
@@ -261,9 +293,9 @@ abstract class Base_Users_Total extends Db_Row
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}
 			}
-		}		//if ($this->retrieved and !isset($value['updatedTime']))
+		}						
 		// convention: we'll have updatedTime = insertedTime if just created.
-		$value['updatedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
+		$this->updatedTime = $value['updatedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
 		return $value;			
 	}
 

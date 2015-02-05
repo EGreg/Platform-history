@@ -193,7 +193,9 @@ abstract class Base_Streams_Total extends Db_Row
 	 */
 	function beforeSet_publisherId($value)
 	{
-		if ($value instanceof Db_Expression) return array('publisherId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('publisherId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".publisherId");
 		if (strlen($value) > 31)
@@ -211,7 +213,9 @@ abstract class Base_Streams_Total extends Db_Row
 	 */
 	function beforeSet_streamName($value)
 	{
-		if ($value instanceof Db_Expression) return array('streamName', $value);
+		if ($value instanceof Db_Expression) {
+			return array('streamName', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".streamName");
 		if (strlen($value) > 255)
@@ -229,7 +233,9 @@ abstract class Base_Streams_Total extends Db_Row
 	 */
 	function beforeSet_messageType($value)
 	{
-		if ($value instanceof Db_Expression) return array('messageType', $value);
+		if ($value instanceof Db_Expression) {
+			return array('messageType', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".messageType");
 		if (strlen($value) > 255)
@@ -246,7 +252,9 @@ abstract class Base_Streams_Total extends Db_Row
 	 */
 	function beforeSet_messageCount($value)
 	{
-		if ($value instanceof Db_Expression) return array('messageCount', $value);
+		if ($value instanceof Db_Expression) {
+			return array('messageCount', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".messageCount");
 		if ($value < -9.2233720368548E+18 or $value > 9223372036854775807)

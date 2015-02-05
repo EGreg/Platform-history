@@ -16,7 +16,7 @@
  *
  * @property string $toUserId
  * @property string $publisherId
- * @property string $updatedTime
+ * @property string|Db_Expression $updatedTime
  * @property string $username
  * @property string $firstName
  * @property string $lastName
@@ -34,7 +34,7 @@ abstract class Base_Streams_Avatar extends Db_Row
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * @property $username
@@ -207,7 +207,9 @@ abstract class Base_Streams_Avatar extends Db_Row
 	 */
 	function beforeSet_toUserId($value)
 	{
-		if ($value instanceof Db_Expression) return array('toUserId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('toUserId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".toUserId");
 		if (strlen($value) > 31)
@@ -225,12 +227,40 @@ abstract class Base_Streams_Avatar extends Db_Row
 	 */
 	function beforeSet_publisherId($value)
 	{
-		if ($value instanceof Db_Expression) return array('publisherId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('publisherId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".publisherId");
 		if (strlen($value) > 31)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".publisherId");
 		return array('publisherId', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_updatedTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_updatedTime($value)
+	{
+		if (!isset($value)) {
+			return array('updatedTime', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('updatedTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".updatedTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('updatedTime', $value);			
 	}
 
 	/**
@@ -243,7 +273,9 @@ abstract class Base_Streams_Avatar extends Db_Row
 	 */
 	function beforeSet_username($value)
 	{
-		if ($value instanceof Db_Expression) return array('username', $value);
+		if ($value instanceof Db_Expression) {
+			return array('username', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".username");
 		if (strlen($value) > 255)
@@ -261,7 +293,9 @@ abstract class Base_Streams_Avatar extends Db_Row
 	 */
 	function beforeSet_firstName($value)
 	{
-		if ($value instanceof Db_Expression) return array('firstName', $value);
+		if ($value instanceof Db_Expression) {
+			return array('firstName', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".firstName");
 		if (strlen($value) > 255)
@@ -279,7 +313,9 @@ abstract class Base_Streams_Avatar extends Db_Row
 	 */
 	function beforeSet_lastName($value)
 	{
-		if ($value instanceof Db_Expression) return array('lastName', $value);
+		if ($value instanceof Db_Expression) {
+			return array('lastName', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".lastName");
 		if (strlen($value) > 255)
@@ -297,7 +333,9 @@ abstract class Base_Streams_Avatar extends Db_Row
 	 */
 	function beforeSet_icon($value)
 	{
-		if ($value instanceof Db_Expression) return array('icon', $value);
+		if ($value instanceof Db_Expression) {
+			return array('icon', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".icon");
 		if (strlen($value) > 255)
@@ -321,9 +359,9 @@ abstract class Base_Streams_Avatar extends Db_Row
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}
 			}
-		}		//if ($this->retrieved and !isset($value['updatedTime']))
+		}						
 		// convention: we'll have updatedTime = insertedTime if just created.
-		$value['updatedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
+		$this->updatedTime = $value['updatedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
 		return $value;			
 	}
 

@@ -13,9 +13,8 @@ function Streams_message_response_messages()
 	$publisherId = Streams::requestedPublisherId(true);
 	$streamName = Streams::requestedName(true);
 	$type = Streams::requestedMessageType();
-	$limit = isset($_REQUEST['limit'])
-		? $_REQUEST['limit']
-		: Q_Config::get('Streams', 'defaults', 'messageRequestLimit', 100);
+	$maxLimit = Q_Config::get('Streams', 'defaults', 'getMessagesLimit', 100);
+	$limit = min($maxLimit, Q::ifset($_REQUEST, 'limit', $maxLimit));
 	if (isset($_REQUEST['ordinal'])) {
 		$min = $_REQUEST['ordinal'];
 		$limit = 1;

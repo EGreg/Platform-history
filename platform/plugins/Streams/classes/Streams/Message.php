@@ -293,8 +293,7 @@ class Streams_Message extends Base_Streams_Message
 	
 	function beforeSaveExecute($query)
 	{
-		$query->commit();
-		return $query;
+		return $query->commit(); // make this query commit
 	}
 	
 	/* * * */

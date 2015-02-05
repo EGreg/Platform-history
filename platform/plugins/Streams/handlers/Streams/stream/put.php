@@ -77,7 +77,10 @@ function Streams_stream_put($params) {
 	if (is_array($icon)) {
 		unset($mergedFields['icon']);
 		$icon['subpath'] = "streams/{$stream->publisherId}/{$stream->name}";
-		Q_Response::setSlot('icon', Q::event("Q/image/post", $icon));
+		$timeLimit = Q_Config::get('Q', 'uploads', 'limits', 'image', 'time', 5*60*60);
+		set_time_limit($timeLimit); // 5 min
+		$saved = Q_Image::save($icon);
+		Q_Response::setSlot('icon', $saved);
 	}
 	
 	if (!empty($mergedFields)) {

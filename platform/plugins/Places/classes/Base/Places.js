@@ -27,8 +27,9 @@ module.exports = Base;
  * @type array
  */
 Base.tableClasses = [
-		"Places_Zipcode"
-	];
+	"Places_Autocomplete",
+	"Places_Zipcode"
+];
 
 /**
  * This method calls Db.connect() using information stored in the configuration.
@@ -48,6 +49,13 @@ Base.db = function () {
 Base.connectionName = function() {
 	return 'Places';
 };
+
+/**
+ * Link to Places.Autocomplete model
+ * @property Autocomplete
+ * @type Places.Autocomplete
+ */
+Base.Autocomplete = Q.require('Places/Autocomplete');
 
 /**
  * Link to Places.Zipcode model

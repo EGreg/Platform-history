@@ -26,7 +26,30 @@ function Streams_interest_post()
 		$stream->name = $name;
 		$stream->type = 'Streams/interest';
 		$stream->title = $title;
-		$stream->icon = $name;
+		$parts = explode(': ', $title, 2);
+		$keywords = $parts[1];
+		try {
+			$data = Q_Image::pixabay($keywords, array(
+				'orientation' => 'horizontal',
+				'min_width' => '500',
+				'safesearch' => 'true',
+				'image_type' => 'photo'
+			), true);
+		} catch (Exception $e) {
+			Q::log("Exception during Streams/interest post: ". $e->getMessage());
+			$data = null;
+		}
+		if (!empty($data)) {
+			$params = array(
+				'data' => $data,
+				'path' => "plugins/Streams/img/icons",
+				'subpath' => $name,
+				'save' => Q_Config::expect('Streams', 'icons', 'sizes'),
+				'skipAccess' => true
+			);
+			Q_Image::save($params);
+			$stream->icon = $name;
+		}
 		$stream->save();
 	}
 	$subscribe = Q::ifset($_REQUEST, 'subscribe', false);

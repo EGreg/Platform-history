@@ -29,11 +29,11 @@ Q.Tool.define("Q/tabs", function(options) {
 	var state = tool.state;
 	var $te = $(tool.element);
 	
-	tool.state.defaultTab = tool.state.defaultTab || Q.firstKey(options.tabs);
+	state.defaultTab = state.defaultTab || Q.firstKey(options.tabs);
 	
 	// catches events that bubble up from any child elements
 	$te.on([Q.Pointer.fastclick, '.Q_tabs'], '.Q_tabs_tab', function () {
-		if (false === tool.state.onClick.handle.call(tool, this.getAttribute('data-name'), this)) {
+		if (false === state.onClick.handle.call(tool, this.getAttribute('data-name'), this)) {
 			return;
 		}
 		if (Q.Pointer.canceledClick || $('.Q_discouragePointerEvents', tool.element).length) {
@@ -180,11 +180,11 @@ Q.Tool.define("Q/tabs", function(options) {
 				var tu = tool.getUrl(t);
 				if (tdn === name
 				|| (!name && tu === url)
-				|| (!name && !tool.state.field && tu === url.split('?')[0])) {
+				|| (!name && !state.field && tu === url.split('?')[0])) {
 					tab = t;
 					return false;
 				}
-				if (tool.state.defaultTab === tdn) {
+				if (state.defaultTab === tdn) {
 					defaultTab = t;
 				}
 			});

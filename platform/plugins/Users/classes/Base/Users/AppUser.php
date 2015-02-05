@@ -17,8 +17,8 @@
  * @property string $userId
  * @property mixed $provider
  * @property string $appId
- * @property string $insertedTime
- * @property string $updatedTime
+ * @property string|Db_Expression $insertedTime
+ * @property string|Db_Expression $updatedTime
  * @property string $access_token
  * @property string $session_secret
  * @property string $session_expires
@@ -41,11 +41,11 @@ abstract class Base_Users_AppUser extends Db_Row
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * @property $access_token
@@ -223,7 +223,9 @@ abstract class Base_Users_AppUser extends Db_Row
 	 */
 	function beforeSet_userId($value)
 	{
-		if ($value instanceof Db_Expression) return array('userId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('userId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".userId");
 		if (strlen($value) > 31)
@@ -240,7 +242,9 @@ abstract class Base_Users_AppUser extends Db_Row
 	 */
 	function beforeSet_provider($value)
 	{
-		if ($value instanceof Db_Expression) return array('provider', $value);
+		if ($value instanceof Db_Expression) {
+			return array('provider', $value);
+		}
 		if (!in_array($value, array('native','facebook','twitter','google','yahoo')))
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".provider");
 		return array('provider', $value);			
@@ -256,12 +260,63 @@ abstract class Base_Users_AppUser extends Db_Row
 	 */
 	function beforeSet_appId($value)
 	{
-		if ($value instanceof Db_Expression) return array('appId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('appId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".appId");
 		if (strlen($value) > 200)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".appId");
 		return array('appId', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_insertedTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_insertedTime($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('insertedTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".insertedTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('insertedTime', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_updatedTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_updatedTime($value)
+	{
+		if (!isset($value)) {
+			return array('updatedTime', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('updatedTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".updatedTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('updatedTime', $value);			
 	}
 
 	/**
@@ -274,8 +329,12 @@ abstract class Base_Users_AppUser extends Db_Row
 	 */
 	function beforeSet_access_token($value)
 	{
-		if (!isset($value)) return array('access_token', $value);
-		if ($value instanceof Db_Expression) return array('access_token', $value);
+		if (!isset($value)) {
+			return array('access_token', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('access_token', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".access_token");
 		if (strlen($value) > 1023)
@@ -293,8 +352,12 @@ abstract class Base_Users_AppUser extends Db_Row
 	 */
 	function beforeSet_session_secret($value)
 	{
-		if (!isset($value)) return array('session_secret', $value);
-		if ($value instanceof Db_Expression) return array('session_secret', $value);
+		if (!isset($value)) {
+			return array('session_secret', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('session_secret', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".session_secret");
 		if (strlen($value) > 1023)
@@ -312,8 +375,12 @@ abstract class Base_Users_AppUser extends Db_Row
 	 */
 	function beforeSet_session_expires($value)
 	{
-		if (!isset($value)) return array('session_expires', $value);
-		if ($value instanceof Db_Expression) return array('session_expires', $value);
+		if (!isset($value)) {
+			return array('session_expires', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('session_expires', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".session_expires");
 		if (strlen($value) > 255)
@@ -330,7 +397,9 @@ abstract class Base_Users_AppUser extends Db_Row
 	 */
 	function beforeSet_state($value)
 	{
-		if ($value instanceof Db_Expression) return array('state', $value);
+		if ($value instanceof Db_Expression) {
+			return array('state', $value);
+		}
 		if (!in_array($value, array('visited','added','removed')))
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".state");
 		return array('state', $value);			
@@ -346,7 +415,9 @@ abstract class Base_Users_AppUser extends Db_Row
 	 */
 	function beforeSet_provider_uid($value)
 	{
-		if ($value instanceof Db_Expression) return array('provider_uid', $value);
+		if ($value instanceof Db_Expression) {
+			return array('provider_uid', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".provider_uid");
 		if (strlen($value) > 200)
@@ -370,12 +441,9 @@ abstract class Base_Users_AppUser extends Db_Row
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}
 			}
-		}
-		if (!$this->retrieved and !isset($value['insertedTime']))
-			$value['insertedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
-		//if ($this->retrieved and !isset($value['updatedTime']))
+		}						
 		// convention: we'll have updatedTime = insertedTime if just created.
-		$value['updatedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
+		$this->updatedTime = $value['updatedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
 		return $value;			
 	}
 

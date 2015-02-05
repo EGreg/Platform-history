@@ -693,7 +693,7 @@ class Db_Mysql implements iDb
 		if (!isset($dbtime)) {
 			$phptime1 = time();
 			$row = $this->select('CURRENT_TIMESTAMP', '')->execute()->fetch(PDO::FETCH_NUM);
-			$dbtime = self::fromDateTime($row[0]);
+			$dbtime = $this->fromDateTime($row[0]);
 			$phptime2 = time();
 			$phptime = round(($phptime1 + $phptime2) / 2);
 		}
@@ -1215,7 +1215,7 @@ EOT;
 		$table_classnames_exported = var_export($table_classnames, true);
 		$table_classnames_json = $pk_json_indented = str_replace(
 			array("[", ",", "]"),
-			array("[\n\t\t", ",\n\t\t", "\n\t]"),
+			array("[\n\t", ",\n\t", "\n]"),
 			json_encode($table_classnames)
 		);
 		if (!empty($conn_name)) {
@@ -1531,10 +1531,22 @@ EOT;
 					$type_range_min = $type_unsigned ? 0 : - 9223372036854775808;
 					$type_range_max = $type_unsigned ? 18446744073709551615 : 9223372036854775807;
 					break;
+				case 'tinytext':
+					$type_display_range = 255;
+					break;
+				case 'text':
+					$type_display_range = 65535;
+					break;
+				case 'mediumtext':
+					$type_display_range = 16777215;
+					break;
+				case 'longtext':
+					$type_display_range = 4294967295;
+					break;
 			}
 			
-			$null_check = $field_null ? "if (!isset(\$value)) return array('$field_name', \$value);\n\t\t" : '';
-			$dbe_check = "if (\$value instanceof Db_Expression) return array('$field_name', \$value);\n\t\t";
+			$null_check = $field_null ? "if (!isset(\$value)) {\n\t\t\treturn array('$field_name', \$value);\n\t\t}\n\t\t" : '';
+			$dbe_check = "if (\$value instanceof Db_Expression) {\n\t\t\treturn array('$field_name', \$value);\n\t\t}\n\t\t";
 			$js_null_check = $field_null ? "if (!value) return value;\n\t\t" : '';
 			$js_dbe_check = "if (value instanceof Db.Expression) return value;\n\t\t";
 			if (! isset($functions["beforeSet_$field_name"]))
@@ -1566,7 +1578,7 @@ EOT;
 EOT;
 					$js_functions["beforeSet_$field_name"][] = <<<EOT
 		{$js_null_check}{$js_dbe_check}value = Number(value);
-		if (isNaN(value) || Math.floor(value) != value)
+		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".$field_name");
 		if (value < $type_range_min || value > $type_range_max)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".$field_name");
@@ -1584,7 +1596,7 @@ EOT;
 
 				case 'enum':
 					$properties[]="mixed $field_name";
-					$js_properties[] = "$field_name string";
+					$js_properties[] = "$field_name String";
 					$functions["beforeSet_$field_name"][] = <<<EOT
 		{$null_check}{$dbe_check}if (!in_array(\$value, array($type_display_range)))
 			throw new Exception("Out-of-range value '\$value' being assigned to ".\$this->getTable().".$field_name");
@@ -1615,8 +1627,12 @@ EOT;
 				
 				case 'varchar':
 				case 'varbinary':
+				case 'tinytext':
+				case 'text':
+				case 'mediumtext':
+				case 'longtext':
 					$properties[]="string $field_name";
-					$js_properties[] = "$field_name string";
+					$js_properties[] = "$field_name String";
 					$functions["beforeSet_$field_name"][] = <<<EOT
 		{$null_check}{$dbe_check}if (!is_string(\$value) and !is_numeric(\$value))
 			throw new Exception('Must pass a string to '.\$this->getTable().".$field_name");
@@ -1653,13 +1669,15 @@ EOT;
 				
 				case 'date':
 					$properties[]="string|Db_Expression $field_name";
-					$js_properties[] = "$field_name string|Db.Expression";
+					$js_properties[] = "$field_name String|Db.Expression";
 					$functions["beforeSet_$field_name"][] = <<<EOT
 		{$null_check}{$dbe_check}\$date = date_parse(\$value);
-		if (!empty(\$date['errors']))
+		if (!empty(\$date['errors'])) {
 			throw new Exception("Date \$value in incorrect format being assigned to ".\$this->getTable().".$field_name");
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as \$v)
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as \$v) {
 			\$\$v = \$date[\$v];
+		}
 		\$value = sprintf("%04d-%02d-%02d", \$year, \$month, \$day);
 EOT;
 					$functions["beforeSet_$field_name"]['comment'] = <<<EOT
@@ -1672,31 +1690,39 @@ EOT;
 	 */
 EOT;
 					$js_functions["beforeSet_$field_name"][] = <<<EOT
-		{$js_null_check}{$js_dbe_check}value = (value instanceof Date) ? $conn_name.db().toDateTime(value) : value;
+		{$js_null_check}{$js_dbe_check}value = (value instanceof Date) ? Base.db().toDateTime(value) : value;
 EOT;
 					$js_functions["beforeSet_$field_name"]['comment'] = <<<EOT
 $dc
  * Method is called before setting the field
  * @method beforeSet_$field_name
- * @param {string} value
+ * @param {String} value
  * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
  */
 EOT;
 					break;
 				case 'datetime':
+				case 'timestamp':
 					$properties[]="string|Db_Expression $field_name";
-					$js_properties[] = "$field_name string|Db.Expression";
-					if (in_array($field_name, array('insertedTime', 'updatedTime', 'created_time', 'updated_time'))) {
-						$magic_field_names[] = $field_name;
-						$is_magic_field = true;
+					$js_properties[] = "$field_name String|Db.Expression";
+					$possibleMagicFields = array('insertedTime', 'updatedTime', 'created_time', 'updated_time');
+					$possibleMagicInsertFields = array('insertedTime', 'created_time');
+					if (in_array($field_name, $possibleMagicFields)) {
+						if (!in_array($field_name, $possibleMagicInsertFields)
+						or !isset($field_default)) {
+							$magic_field_names[] = $field_name;
+							$is_magic_field = true;
+						}
 					}
 					$functions["beforeSet_$field_name"][] = <<<EOT
-       {$null_check}{$dbe_check}\$date = date_parse(\$value);
-       if (!empty(\$date['errors']))
-           throw new Exception("DateTime \$value in incorrect format being assigned to ".\$this->getTable().".$field_name");
-       foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as \$v)
-           \$\$v = \$date[\$v];
-       \$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", \$year, \$month, \$day, \$hour, \$minute, \$second);
+		{$null_check}{$dbe_check}\$date = date_parse(\$value);
+		if (!empty(\$date['errors'])) {
+			throw new Exception("DateTime \$value in incorrect format being assigned to ".\$this->getTable().".$field_name");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as \$v) {
+			\$\$v = \$date[\$v];
+		}
+		\$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", \$year, \$month, \$day, \$hour, \$minute, \$second);
 EOT;
 					$functions["beforeSet_$field_name"]['comment'] = <<<EOT
 	$dc
@@ -1708,23 +1734,16 @@ EOT;
 	 */
 EOT;
 					$js_functions["beforeSet_$field_name"][] = <<<EOT
-       {$js_null_check}{$js_dbe_check}value = (value instanceof Date) ? $conn_name.db().toDateTime(value) : value;
+		{$js_null_check}{$js_dbe_check}value = (value instanceof Date) ? Base.db().toDateTime(value) : value;
 EOT;
 					$js_functions["beforeSet_$field_name"]['comment'] = <<<EOT
 $dc
  * Method is called before setting the field
  * @method beforeSet_$field_name
- * @param {string} value
+ * @param {String} value
  * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
  */
 EOT;
-					break;
-
-				case 'timestamp':
-					$properties[]="string $field_name";
-					$js_properties[] = "$field_name string";
-					$magic_field_names[] = $field_name;
-					$is_magic_field = true;
 					break;
 
 				case 'decimal':
@@ -1761,13 +1780,8 @@ EOT;
 		return value;
 EOT;
 			}
-			if (! $field_null and ! $is_magic_field and ! $auto_inc
-				//and (in_array($type_name, array(
-				//	'tinyint', 'smallint', 'mediumint', 'int', 'bigint', 'enum',
-				//)) 
-				and !isset($field_default)
-				//)
-				) {
+			if (! $field_null and ! $is_magic_field
+			and ! $auto_inc and !isset($field_default)) {
 				$required_field_names[] = "'$field_name'";
 			}
 		
@@ -1842,18 +1856,20 @@ EOT;
 		if (count($magic_field_names) > 0) {
 			$beforeSave_code = '';
 			$js_beforeSave_code = '';
-			foreach (array('created_time', 'insertedTime', ) as $cmf) {
+			foreach (array('created_time', 'insertedTime') as $cmf) {
 				if (in_array($cmf, $magic_field_names)) {
 					$beforeSave_code .= <<<EOT
 
-		if (!\$this->retrieved and !isset(\$value['$cmf']))
-			\$value['$cmf'] = new Db_Expression('CURRENT_TIMESTAMP');
+		if (!\$this->retrieved and !isset(\$value['$cmf'])) {
+			\$this->$cmf = \$value['$cmf'] = new Db_Expression('CURRENT_TIMESTAMP');
+		}
 
 EOT;
 					$js_beforeSave_code .= <<<EOT
 
-	if (!this._retrieved && !value['$cmf'])
-		value['$cmf'] = new Db.Expression('CURRENT_TIMESTAMP');
+	if (!this._retrieved && !value['$cmf']) {
+		this['$cmf'] = value['$cmf'] = new Db.Expression('CURRENT_TIMESTAMP');
+	}
 EOT;
 					break;
 				}
@@ -1861,14 +1877,14 @@ EOT;
 			foreach (array('updated_time', 'updatedTime') as $umf) {
 				if (in_array($umf, $magic_field_names)) {
 					$beforeSave_code .= <<<EOT
-		//if (\$this->retrieved and !isset(\$value['$umf']))
+						
 		// convention: we'll have $umf = $cmf if just created.
-		\$value['$umf'] = new Db_Expression('CURRENT_TIMESTAMP');
+		\$this->$umf = \$value['$umf'] = new Db_Expression('CURRENT_TIMESTAMP');
 EOT;
 					$js_beforeSave_code .= <<<EOT
 
 	// convention: we'll have $umf = $cmf if just created.
-	value['$umf'] = new Db.Expression('CURRENT_TIMESTAMP');
+	this['$umf'] = value['$umf'] = new Db.Expression('CURRENT_TIMESTAMP');
 EOT;
 					break;
 				}
@@ -2229,7 +2245,7 @@ $dc
  * Retrieve the table name to use in SQL statements
  * @method table
  * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
- * @return {string|Db.Expression} The table name as string optionally without database name if no table sharding was started
+ * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
 Base.table = function (withoutDbName) {
@@ -2343,7 +2359,7 @@ $dc
  * Retrieve the table name to use in SQL statements
  * @method table
  * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
- * @return {string|Db.Expression} The table name as string optionally without database name if no table sharding was started
+ * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
 Base.prototype.table = function () {

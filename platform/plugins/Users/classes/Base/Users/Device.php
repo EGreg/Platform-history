@@ -20,8 +20,8 @@
  * @property string $version
  * @property string $sessionId
  * @property mixed $formFactor
- * @property string $insertedTime
- * @property string $updatedTime
+ * @property string|Db_Expression $insertedTime
+ * @property string|Db_Expression $updatedTime
  */
 abstract class Base_Users_Device extends Db_Row
 {
@@ -51,11 +51,11 @@ abstract class Base_Users_Device extends Db_Row
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -212,7 +212,9 @@ abstract class Base_Users_Device extends Db_Row
 	 */
 	function beforeSet_userId($value)
 	{
-		if ($value instanceof Db_Expression) return array('userId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('userId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".userId");
 		if (strlen($value) > 31)
@@ -230,7 +232,9 @@ abstract class Base_Users_Device extends Db_Row
 	 */
 	function beforeSet_deviceId($value)
 	{
-		if ($value instanceof Db_Expression) return array('deviceId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('deviceId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".deviceId");
 		if (strlen($value) > 255)
@@ -247,7 +251,9 @@ abstract class Base_Users_Device extends Db_Row
 	 */
 	function beforeSet_platform($value)
 	{
-		if ($value instanceof Db_Expression) return array('platform', $value);
+		if ($value instanceof Db_Expression) {
+			return array('platform', $value);
+		}
 		if (!in_array($value, array('ios','android')))
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".platform");
 		return array('platform', $value);			
@@ -263,8 +269,12 @@ abstract class Base_Users_Device extends Db_Row
 	 */
 	function beforeSet_version($value)
 	{
-		if (!isset($value)) return array('version', $value);
-		if ($value instanceof Db_Expression) return array('version', $value);
+		if (!isset($value)) {
+			return array('version', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('version', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".version");
 		if (strlen($value) > 45)
@@ -282,7 +292,9 @@ abstract class Base_Users_Device extends Db_Row
 	 */
 	function beforeSet_sessionId($value)
 	{
-		if ($value instanceof Db_Expression) return array('sessionId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('sessionId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".sessionId");
 		if (strlen($value) > 255)
@@ -299,11 +311,64 @@ abstract class Base_Users_Device extends Db_Row
 	 */
 	function beforeSet_formFactor($value)
 	{
-		if (!isset($value)) return array('formFactor', $value);
-		if ($value instanceof Db_Expression) return array('formFactor', $value);
+		if (!isset($value)) {
+			return array('formFactor', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('formFactor', $value);
+		}
 		if (!in_array($value, array('mobile','tablet')))
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".formFactor");
 		return array('formFactor', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_insertedTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_insertedTime($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('insertedTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".insertedTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('insertedTime', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_updatedTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_updatedTime($value)
+	{
+		if (!isset($value)) {
+			return array('updatedTime', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('updatedTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".updatedTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('updatedTime', $value);			
 	}
 
 	/**
@@ -322,12 +387,9 @@ abstract class Base_Users_Device extends Db_Row
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}
 			}
-		}
-		if (!$this->retrieved and !isset($value['insertedTime']))
-			$value['insertedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
-		//if ($this->retrieved and !isset($value['updatedTime']))
+		}						
 		// convention: we'll have updatedTime = insertedTime if just created.
-		$value['updatedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
+		$this->updatedTime = $value['updatedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
 		return $value;			
 	}
 

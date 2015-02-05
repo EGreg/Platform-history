@@ -1,8 +1,9 @@
 <?php
 
-function Streams_after_Q_image($params)
+function Streams_after_Q_image_save($params)
 {
-	$user = $path = $subpath = $data = $save = null;
+	$user = Users::loggedInUser(true);
+	$path = $subpath = $data = $save = null;
 	extract($params, EXTR_OVERWRITE);
 	if (isset(Users::$cache['iconWasChanged'])
 	and (Users::$cache['iconWasChanged'] === false)) {

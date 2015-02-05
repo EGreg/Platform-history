@@ -60,10 +60,12 @@ Q.Tool.define("Users/avatar", function(options) {
 				{cacheBust: state.cacheBust})
 		);
 	}, this);
-	Q.Streams.Stream.onFieldChanged(state.userId, 'Streams/user/firstName', 'content')
-	.set(handleChange, this);
-	Q.Streams.Stream.onFieldChanged(state.userId, 'Streams/user/lastName', 'content')
-	.set(handleChange, this);
+	if (!state.editable || state.editable.indexOf('name') < 0) {
+		Q.Streams.Stream.onFieldChanged(state.userId, 'Streams/user/firstName', 'content')
+		.set(handleChange, this);
+		Q.Streams.Stream.onFieldChanged(state.userId, 'Streams/user/lastName', 'content')
+		.set(handleChange, this);
+	}
 	function handleChange(fields, field) {
 		Q.Streams.Avatar.get.forget(state.userId);
 		tool.element.innerHTML = '';
@@ -185,7 +187,7 @@ Q.Tool.define("Users/avatar", function(options) {
 				Q.each(['first', 'last'], function (k, v) {
 					var vName = v+'Name';
 					var f = tool.getElementsByClassName('Streams_'+vName)[0];
-					if (f.getElementsByClassName('Streams_inplace_tool').length) {
+					if (!f || f.getElementsByClassName('Streams_inplace_tool').length) {
 						return;
 					}
 					var e = Q.Tool.setUpElement('span', 'Streams/inplace', {
@@ -222,7 +224,10 @@ Q.Tool.define("Users/avatar", function(options) {
 							onSuccess: {"Users/avatar": function () {
 								stream.refresh(function () {
 									state.onUpdate.handle.call(tool, this);
-								}, {messages: true});
+								}, {
+									unlessSocket: true,
+									changed: { icon: true }
+								});
 							}}
 						}, state.imagepicker);
 						$img.plugin('Q/imagepicker', o, function () {

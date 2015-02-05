@@ -17,7 +17,7 @@
  * @property string $publisherId
  * @property string $streamName
  * @property string $byUserId
- * @property string $insertedTime
+ * @property string|Db_Expression $insertedTime
  * @property integer $readLevel
  * @property integer $writeLevel
  * @property integer $adminLevel
@@ -38,7 +38,7 @@ abstract class Base_Streams_Request extends Db_Row
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * @property $readLevel
@@ -208,7 +208,9 @@ abstract class Base_Streams_Request extends Db_Row
 	 */
 	function beforeSet_publisherId($value)
 	{
-		if ($value instanceof Db_Expression) return array('publisherId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('publisherId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".publisherId");
 		if (strlen($value) > 31)
@@ -226,7 +228,9 @@ abstract class Base_Streams_Request extends Db_Row
 	 */
 	function beforeSet_streamName($value)
 	{
-		if ($value instanceof Db_Expression) return array('streamName', $value);
+		if ($value instanceof Db_Expression) {
+			return array('streamName', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".streamName");
 		if (strlen($value) > 255)
@@ -244,12 +248,37 @@ abstract class Base_Streams_Request extends Db_Row
 	 */
 	function beforeSet_byUserId($value)
 	{
-		if ($value instanceof Db_Expression) return array('byUserId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('byUserId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".byUserId");
 		if (strlen($value) > 31)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".byUserId");
 		return array('byUserId', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_insertedTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_insertedTime($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('insertedTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".insertedTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('insertedTime', $value);			
 	}
 
 	/**
@@ -261,7 +290,9 @@ abstract class Base_Streams_Request extends Db_Row
 	 */
 	function beforeSet_readLevel($value)
 	{
-		if ($value instanceof Db_Expression) return array('readLevel', $value);
+		if ($value instanceof Db_Expression) {
+			return array('readLevel', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".readLevel");
 		if ($value < -2147483648 or $value > 2147483647)
@@ -278,7 +309,9 @@ abstract class Base_Streams_Request extends Db_Row
 	 */
 	function beforeSet_writeLevel($value)
 	{
-		if ($value instanceof Db_Expression) return array('writeLevel', $value);
+		if ($value instanceof Db_Expression) {
+			return array('writeLevel', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".writeLevel");
 		if ($value < -2147483648 or $value > 2147483647)
@@ -295,7 +328,9 @@ abstract class Base_Streams_Request extends Db_Row
 	 */
 	function beforeSet_adminLevel($value)
 	{
-		if ($value instanceof Db_Expression) return array('adminLevel', $value);
+		if ($value instanceof Db_Expression) {
+			return array('adminLevel', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".adminLevel");
 		if ($value < -2147483648 or $value > 2147483647)
@@ -320,9 +355,6 @@ abstract class Base_Streams_Request extends Db_Row
 				}
 			}
 		}
-		if (!$this->retrieved and !isset($value['insertedTime']))
-			$value['insertedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
-
 		return $value;			
 	}
 

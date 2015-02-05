@@ -168,9 +168,9 @@
 }
 
 .Streams_participants_tool {
-	padding: 5px;
+	padding: 0px 5px 0px 5px;
 	overflow: hidden;
-	height: 50px;
+	white-space: nowrap;
 }
 
 .Streams_participants_tool .Users_avatar_tool,
@@ -512,9 +512,6 @@
 	.Streams_chat_tool .Users_avatar_name {
 		position: absolute;
 		top: 0px;
-	}
-	.Streams_chat_message {
-		width: 73%;
 	}
 	.Streams_chat_date {
 		width: 100%;
