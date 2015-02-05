@@ -26,6 +26,7 @@
  *  @param {Q.Event} [options.beforeOpen] Event that happens before a column is opened. Return false to prevent opening.
  *  @param {Q.Event} [options.beforeClose] Event that happens before a column is closed. Return false to prevent closing.
  *  @param {Q.Event} [options.onOpen] Event that happens after a column is opened.
+ *  @param {Q.Event} [options.afterDelay] Event that happens after a column is opened, after a delay intended to wait out various animations.
  *  @param {Q.Event} [options.onClose] Event that happens after a column is closed.
  * @return Q.Tool
  */

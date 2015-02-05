@@ -1893,7 +1893,7 @@ input[type=radio] { margin-right: 5px; }
 }
 
 .Q_filter_tool input.Q_filter_input {
-	padding-right: 10% !important;
+	padding-right: 15% !important;
 	cursor: default;
 }
 
@@ -1915,7 +1915,7 @@ input[type=radio] { margin-right: 5px; }
 }
 
 .Q_filter_fullscreen.Q_filter_begun .Q_filter_input {
-	width: 90% !important;
+	width: 85% !important;
 	-webkit-max-logical-width: 100% !important;
 	margin: 0px !important;
 }
@@ -1927,4 +1927,21 @@ input[type=radio] { margin-right: 5px; }
 
 .Q_dialog_imagepicker {
 	
+}
+
+@keyframes Q_working {
+	from { opacity: 0.75; }
+	to { opacity: 0.25; }
+}
+@-webkit-keyframes Q_working {
+	from { opacity: 0.75; }
+	to { opacity: 0.25; }
+}
+
+.Q_working {
+	opacity: 0.5;
+	animation: Places_obtaining 1s ease-in-out infinite alternate;
+	-webkit-animation: Places_obtaining 1s ease-in-out infinite alternate;
+	position: relative;
+	cursor: wait;
 }

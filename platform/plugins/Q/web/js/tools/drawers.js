@@ -262,6 +262,9 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 			$scrolling.scrollTop(
 				state.bottom[index] ? $scrolling[0].scrollHeight : 0
 			);
+			if ($pe) {
+				state.drawerOffset = $otherDrawer.offset();
+			}
 			
 			var sHeights = (state.heights instanceof Array)
 				? state.heights : Q.getObject(state.heights).apply(tool);

@@ -74,6 +74,7 @@ Q.Tool.define('Q/filter', function (options) {
 		var $this = $(this);
 		if (event.keyCode === 27) {
 			$this.val('');
+			tool.end();
 		}
 		var val = $this.val();
 		if (val != lastVal) {

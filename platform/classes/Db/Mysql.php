@@ -693,7 +693,7 @@ class Db_Mysql implements iDb
 		if (!isset($dbtime)) {
 			$phptime1 = time();
 			$row = $this->select('CURRENT_TIMESTAMP', '')->execute()->fetch(PDO::FETCH_NUM);
-			$dbtime = self::fromDateTime($row[0]);
+			$dbtime = $this->fromDateTime($row[0]);
 			$phptime2 = time();
 			$phptime = round(($phptime1 + $phptime2) / 2);
 		}
@@ -1531,6 +1531,18 @@ EOT;
 					$type_range_min = $type_unsigned ? 0 : - 9223372036854775808;
 					$type_range_max = $type_unsigned ? 18446744073709551615 : 9223372036854775807;
 					break;
+				case 'tinytext':
+					$type_display_range = 255;
+					break;
+				case 'text':
+					$type_display_range = 65535;
+					break;
+				case 'mediumtext':
+					$type_display_range = 16777215;
+					break;
+				case 'longtext':
+					$type_display_range = 4294967295;
+					break;
 			}
 			
 			$null_check = $field_null ? "if (!isset(\$value)) {\n\t\t\treturn array('$field_name', \$value);\n\t\t}\n\t\t" : '';
@@ -1615,6 +1627,10 @@ EOT;
 				
 				case 'varchar':
 				case 'varbinary':
+				case 'tinytext':
+				case 'text':
+				case 'mediumtext':
+				case 'longtext':
 					$properties[]="string $field_name";
 					$js_properties[] = "$field_name String";
 					$functions["beforeSet_$field_name"][] = <<<EOT
