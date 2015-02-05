@@ -291,9 +291,9 @@ class Streams_Message extends Base_Streams_Message
 		return parent::beforeSave($value);
 	}
 	
-	function afterSaveExecute($query)
+	function beforeSaveExecute($query)
 	{
-		return $query->commit();
+		return $query->commit(); // make this query commit
 	}
 	
 	/* * * */
