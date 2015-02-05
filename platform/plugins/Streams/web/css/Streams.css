@@ -177,6 +177,7 @@
 .Streams_participants_tool .Streams_participants_invite {
 	display: inline-block;
 	width: 44px;
+	height: 50px;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	text-align: center;
