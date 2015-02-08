@@ -13,7 +13,7 @@
  *  @param {String} [options.placeholder] Any placeholder text
  *  @param {Object} [options.placeholders={}] Options for Q/placeholders, or null to omit it
  *  @param {String} [options.results=''] HTML to display in the results initially. If setting them later, remember to call stateChanged('results')
- *  @param {Q.Event} [options.onFilter] Use this event to fetch and display new results by calling tool.results(html). The first parameter is the content of the text input.
+ *  @param {Q.Event} [options.onFilter] This event handler is meant to fetch and update results by editing the contents of the element pointed to by the second argument. The first argument is the content of the text input.
  * @return Q.Tool
  */
 Q.Tool.define('Q/filter', function (options) {
@@ -50,7 +50,7 @@ Q.Tool.define('Q/filter', function (options) {
 				return false;
 			}
 			tool.end();
-		}, 100);
+		}, 1000000);
 	}).on('keydown keyup change input focus paste blur Q_refresh', _changed)
 	.on(Q.Pointer.fastclick, function (evt) {
 		var $this = $(this);
@@ -78,13 +78,13 @@ Q.Tool.define('Q/filter', function (options) {
 		}
 		var val = $this.val();
 		if (val != lastVal) {
-			state.onFilter.handle.call(tool, val, this);
+			state.onFilter.handle.call(tool, val, tool.$results[0]);
 		}
 		lastVal = val;
 	};
 	
 	this.Q.onStateChanged('results').set(function () {
-		this.$results.html(state.results);
+		this.$results.empty().append(state.results);
 	});
 
 }, {
@@ -140,10 +140,8 @@ Q.Tool.define('Q/filter', function (options) {
 			+ parseInt(tool.$results.css('border-right'));
 		tool.$results.insertAfter($container).css({
 			left: $container[0].offsetLeft + 'px',
-			top: $container[0].offsetTop + topH + 'px',
 			width: $container.outerWidth() - paddingW
-		}).show()
-		.html('something<br>nice');
+		}).show();
 	},
 	end: function () {
 		var tool = this;
@@ -165,10 +163,6 @@ Q.Tool.define('Q/filter', function (options) {
 			tool.$input.blur();
 		}
 		return false;
-	},
-	results: function (newValue) {
-		this.state.results = newValue;
-		this.stateChanged('results');
 	}
 });
 

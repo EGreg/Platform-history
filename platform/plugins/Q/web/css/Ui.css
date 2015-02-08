@@ -22,7 +22,8 @@ table { border-spacing:0; border-collapse:collapse; }
 .Q_success { background: #e2ffee !important; }
 .Q_required { border: solid 2px #AAC !important; }
 .Q_selected { background: #98bede; }
-.Q_throb { background-image: url(../img/throbbers/loading.gif); background-repeat: no-repeat; background-position: center center; }
+.Q_throb,
+.Q_throb input { background-image: url(../img/throbbers/loading.gif); background-repeat: no-repeat; background-position: center center; }
 .Q_clickable_container { cursor: pointer !important;  }
 .Q_clickable_container .Q_clickable_shadow { display: none; }
 .Q_notTouchscreen .Q_clickable_container.Q_hover .Q_clickable_shadow,
@@ -32,6 +33,25 @@ table { border-spacing:0; border-collapse:collapse; }
 .Q_placeholder { display: inline-block; color: #999; font-style: italic; zoom: 1; *display: inline; }
 .Q_focus .Q_placeholder { color: #aaa; }
 div.Q_placeholder { pointer-events: none; }
+
+.Q_loading { opacity:0.9; filter:alpha(opacity=90) }
+
+@keyframes Q_working {
+	from { opacity: 0.75; }
+	to { opacity: 0.25; }
+}
+@-webkit-keyframes Q_working {
+	from { opacity: 0.75; }
+	to { opacity: 0.25; }
+}
+
+.Q_working {
+	opacity: 0.5;
+	animation: Places_obtaining 1s ease-in-out infinite alternate;
+	-webkit-animation: Places_obtaining 1s ease-in-out infinite alternate;
+	position: relative;
+	cursor: wait;
+}
 
 /* SmartApp related styles */
 .Q_orientation_mask
@@ -1156,7 +1176,6 @@ div.Q_placeholder { pointer-events: none; }
 
 .Q_overlay { background: #EEEEF3; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; }
 .Q_overlay .Q_title { background-color: #55A; color: white; margin: 0px; padding: 5px 10px 5px 10px; font-size: 18px; font-weight: bold; -moz-border-radius: 5px 5px 0px 0px; border-radius: 5px 5px 0px 0px; -webkit-border-top-left-radius:5px; -webkit-border-top-right-radius:5px; }
-.Q_loading { opacity:0.9; filter:alpha(opacity=90) }
 .Q_document_surface { background: white; padding: 10px; }
 .Q_chrome_surface { background: gray; }
 .Q_tabbed { border: 1px solid #aaa; border-top: 1px solid #eee; background: white; }
@@ -1877,7 +1896,7 @@ input[type=radio] { margin-right: 5px; }
 
 .Q_filter_results {
 	display: none;
-	position: absolute;
+	position: relative;
 	padding: 5px;
 	border: solid 1px #ccc;
 	background: white;
@@ -1904,7 +1923,7 @@ input[type=radio] { margin-right: 5px; }
 }
 
 .Q_filter_fullscreen.Q_filter_begun {
-	position: absolute;
+	position: relative;
 	width: 100% !important;
 	margin: 0px !important;
 	padding: 0px !important;
@@ -1927,21 +1946,4 @@ input[type=radio] { margin-right: 5px; }
 
 .Q_dialog_imagepicker {
 	
-}
-
-@keyframes Q_working {
-	from { opacity: 0.75; }
-	to { opacity: 0.25; }
-}
-@-webkit-keyframes Q_working {
-	from { opacity: 0.75; }
-	to { opacity: 0.25; }
-}
-
-.Q_working {
-	opacity: 0.5;
-	animation: Places_obtaining 1s ease-in-out infinite alternate;
-	-webkit-animation: Places_obtaining 1s ease-in-out infinite alternate;
-	position: relative;
-	cursor: wait;
 }
