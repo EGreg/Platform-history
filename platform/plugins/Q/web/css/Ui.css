@@ -1909,6 +1909,7 @@ input[type=radio] { margin-right: 5px; }
 .Q_filter_notFullscreen .Q_filter_results {
 	max-height: 100px;
 	overflow: auto;
+	position: absolute;
 }
 
 .Q_filter_tool input.Q_filter_input {

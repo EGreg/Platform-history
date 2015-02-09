@@ -38,6 +38,9 @@ Q.Tool.define('Q/filter', function (options) {
 		tool.$input = tool.$('.Q_filter_input');
 		tool.$results = tool.$('.Q_filter_results');
 	}
+	if ($te.css('position') === 'static') {
+		$te.css('position', 'relative');
+	}
 	
 	var _canceledBlur;
 	tool.$input.on('focus', function () {
@@ -50,7 +53,7 @@ Q.Tool.define('Q/filter', function (options) {
 				return false;
 			}
 			tool.end();
-		}, 1000000);
+		}, 100000);
 	}).on('keydown keyup change input focus paste blur Q_refresh', _changed)
 	.on(Q.Pointer.fastclick, function (evt) {
 		var $this = $(this);
@@ -139,8 +142,11 @@ Q.Tool.define('Q/filter', function (options) {
 			+ parseInt(tool.$results.css('border-left'))
 			+ parseInt(tool.$results.css('border-right'));
 		tool.$results.insertAfter($container).css({
-			left: $container[0].offsetLeft + 'px',
-			width: $container.outerWidth() - paddingW
+			left: 0,
+			width: $container.outerWidth() - paddingW,
+			top: state.fullscreen 
+				? 0
+				: $container.offset().top - $te.offset().top + topH
 		}).show();
 	},
 	end: function () {
