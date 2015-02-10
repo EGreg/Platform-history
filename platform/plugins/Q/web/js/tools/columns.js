@@ -450,7 +450,7 @@ Q.Tool.define("Q/columns", function(options) {
 						});
 					} else {
 						$cs.addClass('Q_overflow');
-						if (Q.info.isTouchscreen && !window.overthrow) {
+						if (Q.info.isTouchscreen) {
 							Q.ensure(
 								window.overthrow, 
 								"plugins/Q/js/overthrow.js",
@@ -459,7 +459,6 @@ Q.Tool.define("Q/columns", function(options) {
 									overthrow.set();
 								}
 							)
-							Q.addScript();
 						}
 					}
 				} else if (o.scrollbarsAutoHide) {
@@ -608,7 +607,7 @@ Q.Template.set('Q/columns/column',
 
 function presentColumn(tool) {
 	if (!tool.state.$currentColumn) return;
-	$cs = $('.column_slot', tool.state.$currentColumn);
+	var $cs = $('.column_slot', tool.state.$currentColumn);
 	if (tool.state.fullscreen) {
 		var $ct = tool.$('.Q_columns_title');
 		$ct.css('position', 'fixed');

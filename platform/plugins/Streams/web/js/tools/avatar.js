@@ -129,7 +129,7 @@ Q.Tool.define("Users/avatar", function(options) {
 		});
 		
 		if (state.userId === '') {
-			fields = Q.extend({}, state.templates.contents.fields, {
+			var fields = Q.extend({}, state.templates.contents.fields, {
 				name: ''
 			});
 			Q.Template.render('Users/avatar/icon/blank', fields, function (err, html) {

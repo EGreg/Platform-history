@@ -42,18 +42,16 @@ Q.Tool.define('Q/filter', function (options) {
 		$te.css('position', 'relative');
 	}
 	
-	var _canceledBlur;
 	tool.$input.on('focus', function () {
 		tool.begin();
-		_canceledBlur = true;
 	}).on('blur', function () {
 		setTimeout(function () {
-			if (_canceledBlur) {
-				_canceledBlur = false;
+			if (tool.canceledBlur) {
+				tool.canceledBlur = false;
 				return false;
 			}
 			tool.end();
-		}, 100000);
+		}, 100);
 	}).on('keydown keyup change input focus paste blur Q_refresh', _changed)
 	.on(Q.Pointer.fastclick, function (evt) {
 		var $this = $(this);
@@ -69,7 +67,11 @@ Q.Tool.define('Q/filter', function (options) {
 	$te.addClass(state.fullscreen ? 'Q_filter_fullscreen' : 'Q_filter_notFullscreen');
 	
 	tool.$results.on(Q.Pointer.start, function () {
-		_canceledBlur = true;
+		tool.canceledBlur = true;
+	});
+	
+	tool.$results.on(Q.Pointer.end, function () {
+		tool.canceledBlur = true;
 	});
 	
 	var lastVal = null;
@@ -102,6 +104,7 @@ Q.Tool.define('Q/filter', function (options) {
 }, {
 	begin: function () {
 		var tool = this;
+		tool.canceledBlur = true;
 		var state = tool.state;
 		if (state.begun) return;
 		state.begun = true;
@@ -112,9 +115,22 @@ Q.Tool.define('Q/filter', function (options) {
 		$te.addClass('Q_filter_begun');
 
 		if (state.fullscreen) {
-			tool.oldBodyOverflow = $('body').css('overflow');
-			$('body').css('overflow', 'auto');
+			var $body = $('body');
+			state.oldBodyOverflow = $body.css('overflow');
+			$body.css('overflow', 'auto')
+				.addClass('Q_overflow');
+			if (Q.info.isTouchscreen) {
+				Q.ensure(
+					window.overthrow, 
+					"plugins/Q/js/overthrow.js",
+					function () {
+						overthrow.scrollIndicatorClassName = 'Q_overflow';
+						overthrow.set();
+					}
+				)
+			}
 			tool.suspended = true;
+			Q.Pointer.cancelClick();
 			tool.$placeholder = $('<div class="Q_filter_placeholder" />')
 				.insertAfter($te);
 			$te.addClass('Q_filter_begun')
@@ -156,7 +172,6 @@ Q.Tool.define('Q/filter', function (options) {
 		state.begun = false;
 		var $te = $(tool.element);
 		$te.removeClass('Q_filter_begun');
-		$('body').css('overflow', tool.oldBodyOverflow);
 		tool.$results.hide();
 		if (state.fullscreen) {
 			$te.nextAll().each(function () {
@@ -167,6 +182,8 @@ Q.Tool.define('Q/filter', function (options) {
 			$te.insertAfter(tool.$placeholder);
 			tool.$placeholder.remove();
 			tool.$input.blur();
+			$('body').css('overflow', state.oldBodyOverflow)
+			.removeClass('Q_overflow');
 		}
 		return false;
 	}

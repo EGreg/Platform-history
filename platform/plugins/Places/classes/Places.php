@@ -145,13 +145,13 @@ abstract class Places extends Base_Places
 		$longitude = null,
 		$miles = 25)
 	{
+		$supportedTypes = array("establishment", "locality", "sublocality", "postal_code", "country", "administrative_area_level_1", "administrative_area_level_2");
 		$input = strtolower($input);
 		if (is_string($types)) {
 			$types = array($types);
 		} else if ($types === null or $types === true) {
 			unset($types);
 		}
-		$supportedTypes = array("establishment", "locality", "sublocality", "postal_code", "country", "administrative_area_level_1", "administrative_area_level_2");
 		foreach ($types as $type) {
 			if (!in_array($type, $supportedTypes)) {
 				throw new Q_Exception_BadValue(array(

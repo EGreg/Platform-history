@@ -39,7 +39,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 	state.canceledSwap = null;
 	var lastScrollingHeight;
 	setTimeout(function () {
-		lastScrollingHeight = $scrolling[0].clientHeight || $scrolling.height();
+		state.lastScrollingHeight = $scrolling[0].clientHeight || $scrolling.height();
 		tool.swap(_layout);
 		Q.onLayout.set(_layout, tool);
 	}, state.initialDelay);
@@ -103,7 +103,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 				top: offset.top + heightDiff
 			});
 		}
-		lastScrollingHeight = $scrolling[0].clientHeight || $scrolling.height();
+		state.lastScrollingHeight = $scrolling[0].clientHeight || $scrolling.height();
 	}
 },
 
@@ -188,7 +188,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 			var scrollTop;
 			var sHeights = (state.heights instanceof Array)
 				? state.heights : Q.getObject(state.heights).apply(tool);
-			lastScrollingHeight = scrollingHeight =  $scrolling[0].clientHeight || $scrolling.height();
+			state.lastScrollingHeight = scrollingHeight =  $scrolling[0].clientHeight || $scrolling.height();
 			scrollTop = state.bottom[otherIndex]
 				? -scrollingHeight + sHeights + $otherDrawer.height()
 				: 0;

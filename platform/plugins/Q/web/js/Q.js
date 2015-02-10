@@ -1642,7 +1642,7 @@ Q.ensure = function _Q_ensure(property, loader, callback) {
  *  to the method under this key, corresponding to the latest results seen.
  * @return {Number|Boolean}
  *  If only key is provided, returns an ordinal to use.
- *  If ordinal is provided, then returns whether this was the latest ordinal.
+ *  If ordinal is provided, then returns whether this is still the latest ordinal.
  */
 Q.latest = function (key, ordinal) {
 	if (Q.typeOf(key) === 'Q.Tool')	{
@@ -3385,7 +3385,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
  */
 Q.Tool.jQuery.options = function (pluginName, setOptions) {
 	var options;
-	pluginName = Q.normalize(pluginName);
+	var pluginName = Q.normalize(pluginName);
 	if (Q.Tool.constructors[name]) {
 		options = window.jQuery.fn[pluginName].options;
 	} else {
@@ -4587,7 +4587,7 @@ Q.init = function _Q_init(options) {
 		Q.onJQuery.handle(window.jQuery, [window.jQuery]);
 		window.jQuery(document).ready(_domReady);
 	} else {
-		var _timer=setInterval(function(){
+		var _timer = setInterval(function(){
 			if(/loaded|complete/.test(document.readyState)) {
 				clearInterval(_timer);
 				_domReady();
@@ -6380,7 +6380,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 	url = (hashUrl !== undefined) ? hashUrl : parts[0];
 
 	var loader = Q.request;
-	var onActivate;
+	var onActivate, onError;
 	if (o.loader) {
 		loader = o.loader;
 	}

@@ -88,7 +88,7 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 
 	function _composer () {
 		var f = state.template && state.template.fields,
-		fields = Q.extend({}, state.templates.create.fields, f, {
+		var fields = Q.extend({}, state.templates.create.fields, f, {
 			src: Q.url('plugins/Streams/img/actions/add.png'),
 			alt: state.creatable.title,
 			title: state.creatable.title
