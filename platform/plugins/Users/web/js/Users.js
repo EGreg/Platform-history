@@ -787,9 +787,7 @@ function _constructUser (fields) {
 	var user = new Users.User(fields);
 
 	// update the Users.get cache
-	Users.get.cache.each([fields.id], function (k, v) {
-		Users.get.cache.remove(k);
-	});
+	Users.get.cache.removeEach(fields.id);
 	if (fields.id) {
 		Users.get.cache.set(
 			[fields.id], 0,
