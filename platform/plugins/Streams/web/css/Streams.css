@@ -170,7 +170,7 @@
 .Streams_participants_tool {
 	padding: 0px 5px 0px 5px;
 	overflow: hidden;
-	white-space: nowrap;
+	height: 54px;
 }
 
 .Streams_participants_tool .Users_avatar_tool,
@@ -187,7 +187,8 @@
 }
 
 .Streams_participants_tool .Users_avatar_name,
-.Streams_participants_tool .Streams_invite_label {
+.Streams_participants_tool .Streams_invite_label,
+.Streams_participants_tool .Streams_participants_expand_text {
 	display: block;
 	width: 100%;
 	font-size: 10px;
@@ -231,6 +232,18 @@
 	text-align: center;
 	overflow: hidden;
 	margin-right: 2%;
+}
+
+.Streams_participants_tool .Streams_participants_controls {
+	float: right; width: 40px; display: none; visibility: hidden; pointer-events: none;
+}
+
+.Streams_participants_tool.Q_overflowed .Streams_participants_controls {
+	display: block; visibility: visible; pointer-events: auto;
+}
+
+.Streams_participants_tool .Streams_participants_expand img {
+	width: 40px; height: 40px;
 }
 
 .Streams_participants_tool .Streams_participants_container {
