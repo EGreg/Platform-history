@@ -394,9 +394,6 @@ function _Q_inplace_tool_constructor(element, options) {
 			 || !container_span.hasClass('Q_editing')) {
 				return;
 			}
-			if (fieldinput.val() == previousValue) {
-				onCancel(); return;
-			}
 			onCancel();
 		}, 100);
 	};
@@ -462,12 +459,12 @@ function _Q_inplace_tool_constructor(element, options) {
 	}
 	edit_button.click(onClick); // happens despite canceled click
 	cancel_button.click(function() { onCancel(true); return false; });
-	cancel_button.on('focus mousedown', function() { setTimeout(function() {
+	cancel_button.on('focus '+Q.Pointer.start, function() { setTimeout(function() {
 		focusedOn = 'cancel_button'; }, 50);
 	});
 	cancel_button.blur(function() { focusedOn = null; setTimeout(onBlur, 100); });
 	save_button.click(function() { onSave(); return false; });
-	save_button.on('focus mousedown', function() { setTimeout(function() {
+	save_button.on('focus '+Q.Pointer.start, function() { setTimeout(function() {
 		focusedOn = 'save_button'; }, 50);
 	});
 	save_button.blur(function() { focusedOn = null; setTimeout(onBlur, 100); });
