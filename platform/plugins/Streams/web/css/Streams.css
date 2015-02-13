@@ -451,6 +451,12 @@
 	height: 30px;
 	color: black;
 }
+.Streams_chat_prevent {
+	text-align: center;
+	vertical-align: middle;
+	color: #555;
+	font-style: italic;
+}
 .Streams_chat_posting
 {
 	background: url('../../Q/img/throbbers/loading.gif') center no-repeat;

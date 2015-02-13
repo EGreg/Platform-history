@@ -25,6 +25,7 @@
  *         <li>"scroll" means new messages will be loaded when the scrollbar of the chat container reaches the top (for desktop) or whole document scrollbar reaches the top (android). On all other browsers it would use pull-to-refresh ... meaning, it will show "Pull to see earlier messages" (html configurable in Q.text.Streams.chat.loadMore.pull string) and as you pull "too far" you trigger the load. As for the indicator of "pulling too far", we will worry about that later, for now skip it. But remember to discuss it with me afterwards.</li>
  *         <li>null/false/etc. - no interface to load earlier messages</li>
  *     </ul>
+ *   @param {Q.Event} [options.onRefresh] Event for when an the chat has been updated
  *   @param {Q.Event} [options.onError] Event for when an error occurs, and the error is passed
  */
 Q.Tool.define('Streams/chat', function(options) {		
@@ -121,6 +122,35 @@ Q.Tool.define('Streams/chat', function(options) {
 		}
 		
 	},
+	/**
+	 * Disables the textarea, preventing the user from writing
+	 * a message using the provided interface. They are still able to POST
+	 * to the server, however, e.g. manually.
+	 * @param {String|false} message
+	 *  The text to display in the placeholder of the textarea while input is prevented.
+	 *  Pass false here to re-enable the textarea.
+	 * @return {HTMLElement} the div that replaces the textarea
+	 */
+	prevent: function (message, callback) {
+		var tool = this;
+		var state = tool.state;
+		var $ie = state.$inputElement;
+		var $prevent = state.$prevent;
+		if (state.prevented && message === false) {
+			$ie.attr('placeholder', state.lastPlaceholder)
+			.removeAttr('disabled')
+			.css('cursor', 'text')
+			.trigger('Q_refresh');
+		} else if (!state.prevented && message !== false) {
+			state.lastPlaceholder = $ie.attr('placeholder')
+				|| $ie.data('Q-placeholder').text();
+			$ie.val('').attr('placeholder', message)
+			.trigger('Q_refresh')
+			.attr('disabled', 'disabled')
+			.css('cursor', 'not-allowed');
+		}
+		state.prevented = !!message;
+	},
 	prepareMessages: function(messages, action){
 		var res  = {};
 		var tool = this;
@@ -168,7 +198,7 @@ Q.Tool.define('Streams/chat', function(options) {
 					tool.$('.Streams_chat_composer').hide();
 				}
 
-				state.inputElement = tool.$('.Streams_chat_composer textarea');
+				state.$inputElement = tool.$('.Streams_chat_composer textarea');
 				callback && callback();
 			},
 			state.templates.main
@@ -596,7 +626,7 @@ Q.Tool.define('Streams/chat', function(options) {
 			}
 		});
 		if (!Q.info.isTouchscreen && state.hadFocus) {
-			$(this.state.inputElement).plugin('Q/clickfocus');
+			$(this.state.$inputElement).plugin('Q/clickfocus');
 		}
 		state.hadFocus = false;
 	},
@@ -668,13 +698,13 @@ Q.Template.set('Streams/chat/message/notification',
 	'<div class="Streams_chat_notification>'+
 		'<div class="Streams_chat_timestamp" data-time="{{time}}"></div>'+
 		'{{#visit}}'+
-			'<b>{{displayName}}</b> visited the chat'+
+			'<b>{{displayName}}</b> visited'+
 		'{{/visit}}'+
 		'{{#join}}'+
-			'<b>{{displayName}}</b> joined the chat'+
+			'<b>{{displayName}}</b> joined'+
 		'{{/join}}'+
 		'{{#leave}}'+
-			'<b>{{displayName}}</b> left the chat'+
+			'<b>{{displayName}}</b> left'+
 		'{{/leave}}'+
 	'</div>'
 );
