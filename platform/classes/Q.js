@@ -1187,10 +1187,6 @@ Q.handle = function _Q_handle(callables, context, args) {
 	}
 };
 
-Q.event = function _Q_event(name, context, args) {
-	return Q.handle(Q.getObject(name, Q.handlers, '/'), context, args);
-};
-
 /**
  * Iterates over elements in a container, and calls the callback.
  * Use this if you want to avoid problems with loops and closures.

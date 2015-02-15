@@ -199,34 +199,29 @@ function Row(fields, retrieved /* false */) {
 		 * the `save()` method fails silently without making any changes in the database!!!*
 		 * @method beforeSave
 		 * @param modifiedFields {object}
-<<<<<<< Local Changes
-		 * @param [callback=null] {function} This function is called when hook completes. Returns error -
-		 *	error object if any and modifiedFields as parameters.
-=======
-		 * @param [callback=null] {function} This function is called when hook completes. Returns `error` -
-		 *	error object if any and `modifiedFields` as parameters.
->>>>>>> External Changes
+		 * @param [callback=null] {function} This function is called when hook completes.
+		 *  Receives "error" - error object if any, and modifiedFields as parameters.
 		 */
 		if (!_split && typeof this.beforeSave === "function") { // skip beforeSave when on _split is defined
 			try {
 				modifiedFields = this.beforeSave(modifiedFields, function (error, modifiedFields) {
 					if (error) callback && callback.call(self, error);
-					else _do_save(modifiedFields);
+					else _do_save.call(this, modifiedFields);
 				});
 			} catch (error) {
 				callback && callback.call(self, error);
 				return;
 			}
 		}
-		if (modifiedFields) _do_save(modifiedFields);
+		if (modifiedFields) _do_save.call(this, modifiedFields);
 
 		function _do_save(modifiedFields) {
 			if (!modifiedFields) {
-				callback && callback.call(self, new Error(this.className+".beforeSave callback cancelled save")); // nothing saved
+				callback && callback.call(self, new Error(self.className+".beforeSave callback cancelled save")); // nothing saved
 				return;
 			}
 			if (typeof modifiedFields !== "object")
-				throw new Error(this.className + ".beforeSave() must return the array of (modified) fields to save!");
+				throw new Error(self.className + ".beforeSave() must return the array of (modified) fields to save!");
 
 			var db, query, _inserting;
 			if (!(db = self.db()))
@@ -263,7 +258,9 @@ function Row(fields, retrieved /* false */) {
 				if (commit) query.commit();
 				query.execute(function (error, lastId) {
 					if (typeof self.afterSaveExecute === "function") {
-						// trigger Db/Row/this.className/saveExecute after event.// NOTE: this is synchronous
+						Row.emit(self.className+'/after/saveExecute', 
+							self, query, error, lastId
+						);
 						query.resume = _do_callbacks;
 						if (!self.afterSaveExecute(query, error, lastId)) {
 							_do_callbacks(error, lastId);
@@ -275,12 +272,15 @@ function Row(fields, retrieved /* false */) {
 					}
 				}, {indexes: _split});
 			}
-			// trigger Db/Row/this.className/saveExecute before event. // NOTE: this is synchronous
-			if (typeof this.beforeSaveExecute === "function") {
+			Row.emit(self.className+'/before/saveExecute', 
+				self, query, modifiedFields
+			);
+			if (typeof self.beforeSaveExecute === "function") {
 				query.resume = _execute;
-				query = (_continue = !!this.beforeSaveExecute(query, modifiedFields)) || query; // NOTE: this is synchronous
-												// to use it async way return *false* and use query.resume() to continue
-												// or handle callbacks in some creative way
+				query = (_continue = !!self.beforeSaveExecute(query, modifiedFields))
+					|| query; // NOTE: this is synchronous
+					// to use it async way return *false* and use query.resume() to continue
+					// or handle callbacks in some creative way
 			}
 			if (_continue) _execute.apply(query);
 		}
@@ -402,7 +402,9 @@ function Row(fields, retrieved /* false */) {
 				// Now, execute the query!
 				query = this;
 				query.execute(function (error, result) {
-					// trigger Db/Row/this.className/retrieveExecute after event.// NOTE: this is synchronous
+					Row.emit(self.className+'/after/retrieveExecute', 
+						self, query, error, result
+					);
 					if (typeof self.afterRetrieveExecute === "function") {
 						query.resume = _do_callbacks;
 						if (!self.afterRetrieveExecute(query, error, result)) {
@@ -429,7 +431,9 @@ function Row(fields, retrieved /* false */) {
 					callback = cback;
 				}
 				query = this;
-				// trigger Db/Row/this.className/retrieveExecute before event. // NOTE: this is synchronous
+				Row.emit(self.className+'/before/retrieveExecute', 
+					self, query, search_criteria
+				);
 				if (typeof self.beforeRetrieveExecute === "function") {
 					query.resume = _execute;
 					query = (_continue = !!self.beforeRetrieveExecute(query, search_criteria)) || query;
@@ -564,17 +568,22 @@ function Row(fields, retrieved /* false */) {
 			// Now, execute the query!
 				query = this;
 				query.execute(function (error, result) {
-					// trigger Db/Row/this.className/removeExecuteExecute after event.// NOTE: this is synchronous
+					Row.emit(self.className+'/after/removeExecute', 
+						self, query, error, result
+					);
 					if (typeof self.afterRemoveExecute === "function") {
 						query.resume = _do_callbacks;
 						if (!self.afterRemoveExecute(query, error, result))
 							_do_callbacks(error, result);	// NOTE: this is synchronous
-												// to use it async way return *true* and use query.resume(error, result) to continue
+							// to use it async way return *true* and use
+							// query.resume(error, result) to continue
 					} else _do_callbacks(error, result);
 				}, {indexes: _split});
 			}
 
-			// trigger Db/Row/this.className/removeExecute before event. // NOTE: this is synchronous
+			Row.emit(self.className+'/before/removeExecute', 
+				self, query, search_criteria
+			);
 			if (typeof this.beforeRemoveExecute === "function") {
 				query.resume = _execute;
 				query = (_continue = !!this.beforeRemoveExecute(query, search_criteria)) || query; // NOTE: this is synchronous

@@ -1011,9 +1011,13 @@ class Streams_Stream extends Base_Streams_Stream
 		}
 
 		// get user ids if any to array, throw if user not found
-		$raw_userIds = isset($who['userId']) ? Users_User::verifyUserIds($who['userId'], true) : array();
+		$raw_userIds = isset($who['userId']) 
+			? Users_User::verifyUserIds($who['userId'], true)
+			: array();
 		// merge labels if any
-		$raw_userIds = isset($who['label']) ? array_merge($raw_userIds, Users_User::labelsToIds($user->id, $who['label'])) : $raw_userIds;
+		$raw_userIds = isset($who['label'])
+			? array_merge($raw_userIds, Users_User::labelsToIds($user->id, $who['label']))
+			: $raw_userIds;
 		// merge identifiers if any
 		$identifierType = null;
 		if (isset($who['identifier'])) {
@@ -1039,7 +1043,10 @@ class Streams_Stream extends Base_Streams_Stream
 
 		$appUrl = !empty($options['appUrl'])
 			? $options['appUrl']
-			: Q_Request::baseUrl().'/'.Q_Config::get("Streams", "types", $stream->type, "invite", "url", "plugins/Streams/stream");
+			: Q_Request::baseUrl().'/'.Q_Config::get(
+				"Streams", "types", $stream->type, 
+				"invite", "url", "plugins/Streams/stream"
+			);
 
 		// now check and define levels for invited user
 		$readLevel = isset($options['readLevel']) ? $options['readLevel'] : null;
@@ -1085,7 +1092,9 @@ class Streams_Stream extends Base_Streams_Stream
 			"readLevel" => $readLevel,
 			"writeLevel" => $writeLevel,
 			"adminLevel" => $adminLevel,
-			"displayName" => isset($options['displayName']) ? $options['displayName'] : Streams::displayName($user),
+			"displayName" => isset($options['displayName'])
+				? $options['displayName']
+				: Streams::displayName($user),
 			"expiry" => $expiry
 		));
 

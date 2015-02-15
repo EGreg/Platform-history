@@ -1153,7 +1153,7 @@ abstract class Streams extends Base_Streams
 	 *  If it is null, we fetch them as the logged-in user.
 	 * @param {array} $options=array()
 	 *  Associative array of options, which can include:<br/>
-	 *  "fullAccess" => Ignore the access restrictions for the name<br/>
+	 *  "fullAccess" => Ignore the access restrictions for the name<br/> 
 	 *  "short" => Only display the first name<br/>
 	 *  "html" => If true, encloses the first and last name in span tags<br/>
 	 *  "escape" => If true, does HTML escaping of the retrieved fields

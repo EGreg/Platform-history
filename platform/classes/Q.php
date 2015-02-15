@@ -674,7 +674,7 @@ class Q
 	 *  The name of the event
 	 * @param {array} $params=array()
 	 *  Parameters to pass to the event
-	 * @param {boolean} $no_handler=false
+	 * @param {boolean} $pure=false
 	 *  Defaults to false.
 	 *  If true, the handler of the same name is not invoked.
 	 *  Put true here if you just want to fire a pure event,
@@ -704,7 +704,7 @@ class Q
 	static function event(
 	 $event_name,
 	 $params = array(),
-	 $no_handler = false,
+	 $pure = false,
 	 $skip_includes = false,
 	 &$result = null)
 	{
@@ -720,7 +720,7 @@ class Q
 		if (!isset($event_stack_limit)) {
 			$event_stack_limit = Q_Config::get('Q', 'eventStackLimit', 100);
 		}
-		self::$event_stack[] = compact('event_name', 'params', 'no_handler', 'skip_includes');
+		self::$event_stack[] = compact('event_name', 'params', 'pure', 'skip_includes');
 		++self::$event_stack_length;
 		if (self::$event_stack_length > $event_stack_limit) {
 			if (!class_exists('Q_Exception_Recursion', false)) {
@@ -730,7 +730,7 @@ class Q
 		}
 
 		try {
-			if ($no_handler !== 'after') {
+			if ($pure !== 'after') {
 				// execute the "before" handlers
 				$handlers = Q_Config::get('Q', 'handlersBeforeEvent', $event_name, array());
 				if (is_string($handlers)) {
@@ -747,13 +747,13 @@ class Q
 			}
 
 			// Execute the primary handler, wherever that is
-			if (!$no_handler) {
+			if (!$pure) {
 				// If none of the "after" handlers return anything,
 				// the following result will be returned:
 				$result = self::handle($event_name, $params, $skip_includes, $result);
 			}
 
-			if ($no_handler !== 'before') {
+			if ($pure !== 'before') {
 				// execute the "after" handlers
 				$handlers = Q_Config::get('Q', 'handlersAfterEvent', $event_name, array());
 				if (is_string($handlers)) {

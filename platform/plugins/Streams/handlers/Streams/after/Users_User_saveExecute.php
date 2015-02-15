@@ -86,6 +86,29 @@ function Streams_after_Users_User_saveExecute($params)
 		$label2->title = 'Those who invited me';
 		$label2->save(true);
 		
+		// By default, users they invite should see their full name
+		$access = new Streams_Access();
+		$access->publisherId = $user->id;
+		$access->streamName = 'Streams/user/firstName';
+		$access->ofUserId = '';
+		$access->ofContactLabel = 'Streams/invited';
+		$access->grantedByUserId = $user->id;
+		$access->readLevel = Streams::$READ_LEVEL['content'];
+		$access->writeLevel = -1;
+		$access->adminLevel = -1;
+		$access->save();
+		
+		$access = new Streams_Access();
+		$access->publisherId = $user->id;
+		$access->streamName = 'Streams/user/lastName';
+		$access->ofUserId = '';
+		$access->ofContactLabel = 'Streams/invited';
+		$access->grantedByUserId = $user->id;
+		$access->readLevel = Streams::$READ_LEVEL['content'];
+		$access->writeLevel = -1;
+		$access->adminLevel = -1;
+		$access->save();
+		
 	} else if ($modifiedFields) {
 		if ($updates) {
 			Streams_Avatar::update()
