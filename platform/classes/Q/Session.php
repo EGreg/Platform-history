@@ -391,7 +391,6 @@ class Q_Session
 		session_id($sid = self::generateId()); // generate a new session id
 		session_start(); // start a new session
 		$_SESSION = $old_SESSION; // restore $_SESSION, which will be saved when session closes
-		$_SESSION['a'];
 
 		return $sid;
 	}
