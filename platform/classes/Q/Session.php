@@ -358,12 +358,9 @@ class Q_Session
 	}
 	
 	/**
-	 * You might want to use this instead of simply calling
-	 * session_regenerateId().
-	 * Clones session with the given $sessionId
-	 * by generating a new session id.
-	 * Writes to and closes the session with given $sessionId.
-	 * From now on, $_SESSION will be saved under the newly generated id.
+	 * You should use this instead of simply calling session_regenerate_id().
+	 * Generates a new session id signed with "Q"/"external"/"secret", and
+	 * clones the current session data into it.
 	 * @method regenerateId
 	 * @static
 	 * @param {boolean} [$destroy_old_session=false] Set to true if you want to get rid
@@ -900,7 +897,6 @@ class Q_Session
 		}
 		$result = '';
 		$len = strlen($id);
-		$escaped = false;
 		$i = 0;
 		$replacements = array(
 			'z' => 'z',
