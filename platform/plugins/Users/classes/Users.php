@@ -695,14 +695,9 @@ abstract class Users extends Base_Users
 			}
 		}
 
-		Users_Session::delete()
-			->where(array('id' => Q_Session::id()))
-			->limit(1)
-			->execute();
-
 		if ($sessionId = Q_Session::id()) {
 			// Change the session id to prevent session fixation attacks
-			$sessionId = Q_Session::regenerate_id(true);
+			$sessionId = Q_Session::regenerateId(true);
 		}
 
 		// Store the new information in the session

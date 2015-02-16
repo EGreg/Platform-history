@@ -750,7 +750,7 @@ Streams.getParticipating = function(callback) {
  * @return {boolean} whether the refresh occurred
  */
 Streams.refresh = function (callback, options) {
-	if (!Q.isOnline()) {
+	if (!Q.isOnline() || Streams.refresh.options.preventAutomatic) {
 		Q.handle(callback, this, [false]);
 		return false;
 	}
