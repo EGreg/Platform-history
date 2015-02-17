@@ -282,7 +282,7 @@ Q.makeEventEmitter = function _Q_makeEventEmitter(what, isConstructor) {
 	if (isConstructor) {
 		what.prototype.__proto__ = events.EventEmitter.prototype;
 	} else {
-		what.__proto__ = events.EventEmitter.prototype;
+		Q.extend(what, events.EventEmitter.prototype);
 	}
 };
 
@@ -2735,6 +2735,7 @@ Q.firstErrorMessage = function _Q_firstErrorMessage(data /*, data2, ... */) {
  *  'cacheBust': Number of milliseconds before a new cachebuster is appended
  */
 Q.url = function _Q_url(what, fields, options) {
+	what = encodeURI(what);
 	if (fields) {
 		for (var k in fields) {
 			what += '?'+encodeURIComponent(k)+'='+encodeURIComponent(fields[k]);

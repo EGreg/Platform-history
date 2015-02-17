@@ -663,6 +663,8 @@ function Row(fields, retrieved /* false */) {
 	};
 }
 
+Q.makeEventEmitter(Row);
+
 /**
  * Get plain object representing the row
  * @method toArray

@@ -221,6 +221,13 @@ Streams.onError = new Q.Event(function (err, data) {
 }, 'Streams.onError');
 
 /**
+ * This event is fired when the invited user takes the first action after
+ * entering their name. It is a good time to start playing any audio, etc.
+ * @event onError
+ */
+Streams.onInvitedUserAction = new Q.Event();
+
+/**
  * Returns Q.Event that occurs on message post event coming from socket.io
  * @event onMessage
  * @param type {String} type of the stream to which a message is posted
@@ -3294,6 +3301,15 @@ Q.onInit.add(function _Streams_onInit() {
 									'Streams/user/lastName', null, params
 								);
 							}, {method: "post", quietly: true, baseUrl: baseUrl});
+						}).on('submit keydown', function (e) {
+							if (e.type === 'keydown'
+							&& (e.keyCode || e.which) !== 13) {
+								return;
+							}
+							var val = dialog.find('#Streams_login_username').val();
+							Streams.onInvitedUserAction.handle.call(
+								[val, dialog]
+							);
 						});
 					}}
 				});

@@ -1042,10 +1042,14 @@ class Streams_Stream extends Base_Streams_Stream
 			$raw_userIds = array_merge($raw_userIds, $identifier_ids);
 		}
 		// merge fb uids if any
-		if ($who['fb_uid']) {
+		if (isset($who['fb_uid'])) {
+			$fb_uids = $who['fb_uid'];
+			if (is_string($fb_uids)) {
+				$fb_uids = array_map('trim', explode("\t", $fb_uids)) ;
+			}
 			$raw_userIds = array_merge(
 				$raw_userIds, 
-				Users_User::idsFromFacebook($who['fb_uid'])
+				Users_User::idsFromFacebook($fb_uids)
 			);
 		}
 		// ensure that each userId is included only once

@@ -4774,14 +4774,22 @@ Q.removeElement = function _Q_removeElement(element, removeTools) {
  * @method addEventListener
  * @param {HTMLElement} element
  *  An HTML element, window or other element that supports listening to events
- * @param {String|Array} eventName
- *  A space-delimited string of event names
+ * @param {String|Array|Object} eventName
+ *  A space-delimited string of event names, or an array of event names.
+ *  You can also pass an object of { eventName: eventHandler } pairs, in which csae
+ *  the next parameter would be useCapture.
  * @param {Function} eventHandler
  *  A function to call when the event fires
  * @param {Boolean} useCapture
  *  Whether to use the capture instead of bubble phase. Ignored in IE8 and below.
  */
 Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandler, useCapture) {
+	if (Q.isPlainObject(eventName)) {
+		for (var k in eventName) {
+			Q.addEventListener(element, k, eventName[k], eventHandler);
+		}
+		return;
+	}
 	var handler = (eventHandler.typename === "Q.Event"
 		? eventHandler.eventListener = function _Q_addEventListener_wrapper(e) { Q.handle(eventHandler, element, [e]); }
 		: eventHandler);
@@ -4968,6 +4976,7 @@ Q.load = function _Q_load(plugins, callback, options) {
  *  'cacheBust': Number of milliseconds before a new cachebuster is appended
  */
 Q.url = function _Q_url(what, fields, options) {
+	what = encodeURI(what);
 	if (fields) {
 		for (var k in fields) {
 			what += '?'+encodeURIComponent(k)+'='+encodeURIComponent(fields[k]);
@@ -8816,7 +8825,7 @@ Q.Pointer = {
 		}
 	},
 	/**
-	 * Places a hint to click or tap on the screen
+	 * Stops a hint that was previously displayed
 	 * @static
 	 * @method hint 
 	 * @param {Boolean} removeIt
@@ -9370,7 +9379,7 @@ Q.prompt = function(message, callback, options) {
 				.plugin('Q/placeholders')
 				.plugin('Q/clickfocus')
 				.on('keydown', function (event) {
-					if (event.keyCode === 13) {
+					if ((event.keyCode || event.which) === 13) {
 						_done();
 					}
 				});
@@ -9388,6 +9397,61 @@ Q.prompt = function(message, callback, options) {
 		var value = dialog.find('input').val();
 		Q.Dialogs.pop();
 		Q.handle(callback, this, [value]);
+	}
+};
+
+Q.Audio = function (url) {
+	if (this === window) {
+		throw new Q.Error("Please call Q.Audio with the keyword new");
+	}
+	var container = document.getElementById('Q-audio-container');
+	if (!container) {
+		container = document.createElement('div');
+		container.setAttribute('id', 'Q-audio-container');
+		document.body.appendChild(container);
+	}
+	container.style.display = 'none';
+	this.container = container;
+	var audio = this.audio = document.createElement('audio');
+	audio.setAttribute('src', Q.url(url));
+	audio.setAttribute('preload', 'auto');
+	Q.addEventListener(audio, {
+		'playthrough': this.onCanPlayThrough.handle,
+		'ended': this.onEnded.handle
+	});
+	container.appendChild(audio); // loads the file
+};
+
+var Aup = Q.Audio.prototype;
+
+Aup.onCanPlayThrough = new Q.Event();
+Aup.onEnded = new Q.Event();
+
+/**
+ * Plays the audio as soon it is loaded
+ */
+Aup.play = function (removeAfterPlaying) {
+	var t = this;
+	if (removeAfterPlaying) {
+		t.onEnded.set(function () {
+			container.removeChild(t.audio);
+			t.onEnded.remove('Q.Audio');
+		}, 'Q.Audio');
+	}
+	t.playing = true;
+	t.paused = false;
+	t.audio.play();
+};
+
+/**
+ * Pauses the audio if it is playing
+ */
+Aup.pause = function () {
+	var t = this;
+	if (t.playing) {
+		t.audio.pause();
+		t.playing = false;
+		t.paused = true;
 	}
 };
 
