@@ -8763,6 +8763,7 @@ Q.Pointer = {
 	 */
 	hint: function (elementsOrPoints, options) {
 		var img, i, l;
+		options = options || {};
 		if (Q.isArray(elementsOrPoints)) {
 			for (i=0; i<elementsOrPoints.length; ++i) {
 				Q.Pointer.hint(

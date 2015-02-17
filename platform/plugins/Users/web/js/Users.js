@@ -1651,7 +1651,7 @@ Users.vote = function (forType, forId, value) {
  * @static
  * @method hint 
  * @param {String} key A key to ensure the hint appears only the first time for each user. Check Users.hinted to see if this has happened.
- * @param {Element|Object} elementOrPoint Indicates where to display the hint. A point should contain properties "x" and "y".
+ * @param {Element|Object|Array} elementsOrPoints Indicates where to display the hint. A point should contain properties "x" and "y". Can also be an array of elements or points.
  * @param {Object} [options] possible options, which can include:
  * @param {String} [options.src] the url of the image
  * @param {Point} [options.hotspot={x:0.5,y:0.4}] "x" and "y" represent the location of the hotspot within the image, using fractions between 0 and 1
