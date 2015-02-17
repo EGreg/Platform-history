@@ -6904,7 +6904,7 @@ Q.handle.onUrl = new Q.Event(function () {
 	Q.each(elements, function () {
 		Q.removeElement(this);
 	});
-	Q.Pointer.stopHint();
+	Q.Pointer.stopHints();
 }, "Q");
 
 /**
@@ -8745,20 +8745,47 @@ Q.Pointer = {
 	 * Places a hint to click or tap on the screen
 	 * @static
 	 * @method hint 
-	 * @param {Element|Object} elementOrPoint Indicates where to display the hint. A point should contain properties "x" and "y".
+	 * @param {Element|Object|Array} elementsOrPoints Indicates where to display the hint. A point should contain properties "x" and "y". Can also be an array of elements or points.
 	 * @param {Object} [options] possible options, which can include:
 	 * @param {String} [options.src] the url of the image
 	 * @param {Point} [options.hotspot={x:0.5,y:0.3}] "x" and "y" represent the location of the hotspot within the image, using fractions between 0 and 1
 	 * @param {String} [options.width="200px"]
 	 * @param {String} [options.height="200px"]
 	 * @param {Integer} [options.zIndex=99999]
+	 * @param {Boolean} [options.dontRemove=false] Pass true to keep current hints displayed
+	 * @param {Integer} [options.show.delay=500]
+	 * @param {Integer} [options.show.duration=500]
+	 * @param {Integer} [options.show.initialScale=2]
+	 * @param {Function} [options.show.ease=Q.Animation.ease.smooth]
+	 * @param {Integer} [options.hide.delay=500]
+	 * @param {Integer} [options.hide.duration=500]
+	 * @param {Function} [options.hide.ease=Q.Animation.ease.smooth]
 	 */
-	hint: function (elementOrPoint, options) {
+	hint: function (elementsOrPoints, options) {
+		var img, i, l;
+		if (Q.isArray(elementsOrPoints)) {
+			for (i=0; i<elementsOrPoints.length; ++i) {
+				Q.Pointer.hint(
+					elementsOrPoints[i],
+					Q.extend({}, options, {
+						dontRemove: i ? true : options.dontRemove
+					})
+				);
+			}
+			return;
+		}
+		var elementOrPoint = elementsOrPoints;
 		var o = Q.extend({}, Q.Pointer.hint.options, options);
 		var body = document.getElementsByTagName('body')[0];
-		var img = Q.Pointer.hint.img;
-		if (img) {
-			img.parentNode.removeChild(img);
+		var imgs = Q.Pointer.hint.imgs;
+		if (!options.dontRemove) {
+			for (i=0, l=imgs.length; i < l; ++i) {
+				img = imgs[i];
+				if (img.parentNode) {
+					img.parentNode.removeChild(img);
+				}
+			}
+			imgs = Q.Pointer.hint.imgs = [];
 		}
 		img = Q.Pointer.hint.img = document.createElement('img');
 		img.setAttribute('src', Q.url(o.src));
@@ -8768,19 +8795,20 @@ Q.Pointer = {
 		img.style.display = 'block';
 		img.style.pointerEvents = 'none';
 		img.setAttribute('class', 'Q_hint');
+		imgs.push(img);
 		body.appendChild(img);
 		if (img.complete) {
 			_update();
 		} else {
 			img.onload = _update;
 		}
-		Q.Pointer.stopHint.prevent = true;
-		Q.removeEventListener(window, Q.Pointer.start, Q.Pointer.stopHint);
-		Q.removeEventListener(document, 'scroll', Q.Pointer.stopHint);
+		Q.Pointer.stopHints.prevent = true;
+		Q.removeEventListener(window, Q.Pointer.start, Q.Pointer.stopHints);
+		Q.removeEventListener(document, 'scroll', Q.Pointer.stopHints);
 		setTimeout(function () {
-			Q.addEventListener(window, Q.Pointer.start, Q.Pointer.stopHint);
-			Q.addEventListener(document, 'scroll', Q.Pointer.stopHint);
-			Q.Pointer.stopHint.prevent = false;
+			Q.addEventListener(window, Q.Pointer.start, Q.Pointer.stopHints);
+			Q.addEventListener(document, 'scroll', Q.Pointer.stopHints);
+			Q.Pointer.stopHints.prevent = false;
 		}, o.hide.delay);
 		function _update() {
 			var point;
@@ -8801,8 +8829,8 @@ Q.Pointer = {
 			img.style.top = point.y - img.offsetHeight * o.hotspot.y + 'px';
 			img.style.zIndex = o.zIndex;
 			img.style.opacity = 0;
-			if (Q.Pointer.stopHint.animation) {
-				Q.Pointer.stopHint.animation.pause();
+			if (Q.Pointer.stopHints.animation) {
+				Q.Pointer.stopHints.animation.pause();
 				img.style.opacity = 0;
 			}
 			Q.Pointer.hint.elementOrPoint = elementOrPoint;
@@ -8825,23 +8853,24 @@ Q.Pointer = {
 		}
 	},
 	/**
-	 * Stops a hint that was previously displayed
+	 * Stops any hints that are currently being displayed
 	 * @static
 	 * @method hint 
-	 * @param {Boolean} removeIt
 	 */
-	stopHint: function (removeIt) {
-		var img = Q.Pointer.hint.img;
-		if (!img || Q.Pointer.stopHint.prevent) return;
-		Q.Pointer.stopHint.animation = Q.Animation.play(function (x, y) {
-			img.style.opacity = 1-y;
-			if (x < 1 || Q.Pointer.stopHint.prevent) return;
-			if (removeIt === true && img.parentNode) {
-				img.parentNode.removeChild(img);
-				Q.Pointer.hint.img = null;
-			} else {
-				img.style.display = 'none';
+	stopHints: function () {
+		var imgs = Q.Pointer.hint.imgs;
+		if (!imgs || Q.Pointer.stopHints.prevent) return;
+		Q.Pointer.stopHints.animation = Q.Animation.play(function (x, y) {
+			var img, i, l;
+			for (i=0, l=imgs.length; i<l; ++i) {
+				img = imgs[i];
+				img.style.opacity = 1-y;
+				if (x < 1 || Q.Pointer.stopHints.prevent) continue;
+				if (img.parentNode) {
+					img.parentNode.removeChild(img);
+				}
 			}
+			Q.Pointer.hint.imgs = [];
 		}, Q.Pointer.hint.options.hide.duration);
 		Q.Pointer.hint.elementOrPoint = null;
 	},
@@ -8959,6 +8988,8 @@ Q.Pointer.hint.options = {
 		ease: Q.Animation.ease.linear
 	}
 };
+
+Q.Pointer.hint.imgs = [];
 
 function _Q_restoreScrolling() {
 	if (!Q.info || !Q.info.isTouchscreen) return false;
@@ -9441,6 +9472,7 @@ Aup.play = function (removeAfterPlaying) {
 	t.playing = true;
 	t.paused = false;
 	t.audio.play();
+	return t;
 };
 
 /**
@@ -9453,6 +9485,7 @@ Aup.pause = function () {
 		t.playing = false;
 		t.paused = true;
 	}
+	return t;
 };
 
 /**

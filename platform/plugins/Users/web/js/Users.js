@@ -1658,6 +1658,14 @@ Users.vote = function (forType, forId, value) {
  * @param {String} [options.width="200px"]
  * @param {String} [options.height="200px"]
  * @param {Number} [options.zIndex=99999]
+ * @param {Boolean} [options.dontRemove=false] Pass true to keep current hints displayed
+ * @param {Integer} [options.show.delay=500]
+ * @param {Integer} [options.show.duration=500]
+ * @param {Integer} [options.show.initialScale=2]
+ * @param {Function} [options.show.ease=Q.Animation.ease.smooth]
+ * @param {Integer} [options.hide.delay=500]
+ * @param {Integer} [options.hide.duration=500]
+ * @param {Function} [options.hide.ease=Q.Animation.ease.smooth]
  * @return {Boolean} Returns true if the hint with will be shown, or false if a hint with this key was already shown before.
  */
 Users.hint = function (key, elementOrPoint, options) {
