@@ -8835,7 +8835,7 @@ Q.Pointer = {
 				img.style.opacity = 0;
 			}
 			Q.Pointer.hint.elementOrPoint = elementOrPoint;
-			setTimeout(function () {
+			Q.Pointer.hint.timeout = setTimeout(function () {
 				var width = parseInt(img.style.width);
 				var height = parseInt(img.style.height);
 				Q.Animation.play(function (x, y) {
@@ -8861,19 +8861,30 @@ Q.Pointer = {
 	stopHints: function () {
 		var imgs = Q.Pointer.hint.imgs;
 		if (!imgs || Q.Pointer.stopHints.prevent) return;
-		Q.Pointer.stopHints.animation = Q.Animation.play(function (x, y) {
+		var a = Q.Pointer.stopHints.animation = Q.Animation.play(function (x, y) {
 			var img, i, l;
 			for (i=0, l=imgs.length; i<l; ++i) {
 				img = imgs[i];
 				img.style.opacity = 1-y;
-				if (x < 1 || Q.Pointer.stopHints.prevent) continue;
-				if (img.parentNode) {
-					img.parentNode.removeChild(img);
+			}
+		}, Q.Pointer.hint.options.hide.duration);
+		a.onComplete.set(function () {
+			var img, i, l;
+			for (i=0, l=imgs.length; i<l; ++i) {
+				img = imgs[i];
+				if (Q.Pointer.stopHints.prevent) {
+					img.style.opacity = 1;
+				} else {
+					if (img.parentNode) {
+						img.parentNode.removeChild(img);
+					}
 				}
 			}
 			Q.Pointer.hint.imgs = [];
-		}, Q.Pointer.hint.options.hide.duration);
+		});
 		Q.Pointer.hint.elementOrPoint = null;
+		clearTimeout(Q.Pointer.hint.timeout);
+		Q.Pointer.hint.timeout = null;
 	},
 	/**
 	 * Consistently prevents the default behavior of an event across browsers

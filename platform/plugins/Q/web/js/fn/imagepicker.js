@@ -37,9 +37,10 @@
  * @param {Array} [options.cameraCommands] cameraCommands is an Array of titles for the commands that pop up to take a photo
  * @param {Q.Event} [options.onClick] onClick is an event to execute during the click, which may cancel the click
  * @param {Q.Event} [options.onSuccess] onSuccess is Q.Event which is called on successful upload. First parameter will be the server response with
- * an object in a format similar to the 'saveSizeName' field. Optional.
- * @param {Q.Event} [options.onError] onError Q.Event which is called if upload failed. Optional.
+ * an object in a format similar to the 'saveSizeName' field.
+ * @param {Q.Event} [options.onError] onError Q.Event which is called if upload failed.
  * @param {Q.Event} [options.onTooSmall] onError Q.Event which is called if an image is selected that's too small for one of the sizes in saveSizeName. Return false to abort.
+ * @param {Q.Event} [options.onFinish] onError Q.Event which is called at the end, whatever the outcome.
  */
 Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 	var $this = this;
@@ -68,14 +69,14 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(res && res.errors);
 		if (msg) {
 			$this.attr('src', state.oldSrc).stop().removeClass('Q_imagepicker_uploading');
-			return Q.handle(state.onError, $this, [msg]);
+			return Q.handle([state.onError, state.onFinish], $this, [msg]);
 		}
 		var key = state.showSize;
 		if (!key) {
 			// by default set src equal to first element of the response
 			key = Q.firstKey(res.slots.data, {nonEmpty: true});
 		}
-		var c = Q.handle(state.onSuccess, $this, [res.slots.data, key]);
+		var c = Q.handle([state.onSuccess, state.onFinish], $this, [res.slots.data, key]);
 		if (c !== false && key) {
 			$this.attr('src', 
 				Q.url(res.slots.data[key], null, {cacheBust: 1000})
@@ -117,7 +118,7 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 				if (requiredSize.width > imageSize.width
 				 || requiredSize.height > imageSize.height) {
 					var result = Q.handle(
-						state.onTooSmall, state, 
+						[state.onTooSmall, state.onFinish], state, 
 						[requiredSize, imageSize]
 					);
 					if (result === false) {
@@ -401,6 +402,7 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 	}
 	
 	function _revert() {
+		var state = $this.state('Q/imagepicker');
 		$this.attr('src', state.oldSrc)
 			.stop()
 			.removeClass('Q_imagepicker_uploading');
@@ -538,7 +540,8 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 	onTooSmall: new Q.Event(function (requiredSize, imageSize) {
 		alert('Please choose a larger image.');
 		return false;
-	}, 'Q/imagepicker')
+	}, 'Q/imagepicker'),
+	onFinish: new Q.Event()
 },
 
 {
