@@ -6328,7 +6328,7 @@ var _latestLoadUrlObject;
 /**
  * @static
  * @method loadUrl
- * @param {String} url
+ * @param {String} url The url to load.
  * @param {Array|String} slotNames Optional, defaults to all application slots
  * @param {Function} callback Callback which is called when response returned and scripts,
  * stylesheets and inline styles added, but before inline scripts executed.
@@ -6364,6 +6364,7 @@ var _latestLoadUrlObject;
  * Also it is passed to loader function so any additional options can be passed
  */
 Q.loadUrl = function _Q_loadUrl(url, options) {
+	url = Q.url(url);
 	var o = Q.extend({}, Q.loadUrl.options, options);
 	Q.handle(o.onLoadStart, this, [url, o]);
 
