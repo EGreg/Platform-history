@@ -280,6 +280,7 @@ function _Streams_participants(options) {
 			if (userId) {
 				state.avatarsWidth += $element.outerWidth(true);
 			}
+			adjustInterval();
 		}
 		
 		function removeAvatar(userId) {
