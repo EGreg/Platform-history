@@ -3264,7 +3264,7 @@ Q.onInit.add(function _Streams_onInit() {
 								$input.plugin('Q/clickfocus');
 							}, 100);
 						}
-						var complete_form = dialog.find('form')
+						var $complete_form = dialog.find('form')
 						.validator()
 						.submit(function(e) {
 							e.preventDefault();
@@ -3278,16 +3278,16 @@ Q.onInit.add(function _Streams_onInit() {
 									err, data && data.errors
 								);
 								if (data && data.errors) {
-									complete_form.data('validator').invalidate(
+									$complete_form.data('validator').invalidate(
 										Q.ajaxErrors(data.errors, ['fullName'])
 									);
-									$('input', complete_form).eq(0)
+									$('input', $complete_form).eq(0)
 									.plugin('Q/clickfocus');
 									return;
 								} else if (msg) {
 									return alert(msg);
 								}
-								complete_form.data('validator').reset();
+								$complete_form.data('validator').reset();
 								dialog.data('Q/dialog').close();
 								Q.handle(Streams.onInviteComplete, data);
 								var params = {
@@ -3310,6 +3310,9 @@ Q.onInit.add(function _Streams_onInit() {
 							Streams.onInvitedUserAction.handle.call(
 								[val, dialog]
 							);
+						});
+						$('button', $complete_form).on('touchstart', function () {
+							$(this).submit();
 						});
 					}}
 				});

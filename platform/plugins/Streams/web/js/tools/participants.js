@@ -191,7 +191,10 @@ function _Streams_participants(options) {
 			tool.stateChanged('count');
 			Q.handle(state.onRefresh, tool, []);
 			
-			tool.adjustInterval = setInterval(function () {
+			tool.adjustInterval = setInterval(adjustInterval, 500);
+			adjustInterval();
+			
+			function adjustInterval() {
 				if (state.showSummary) {
 					var w = $te.width() - tool.$summary.outerWidth(true);
 					var pm = tool.$pc.outerWidth(true) - tool.$pc.width();
@@ -240,7 +243,7 @@ function _Streams_participants(options) {
 					}
 					state.overflowed = overflowed;
 				}
-			}, 500);
+			}
 			
 			if (state.max) {
 				tool.$max.text('/' + state.max);

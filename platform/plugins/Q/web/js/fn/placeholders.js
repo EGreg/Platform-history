@@ -50,7 +50,6 @@ function () {
 		span = $this.parent();
 		span.on(Q.Pointer.fastclick, function() {
 			$this.trigger('focus');
-			return false;
 		});
 		var $placeholder = $('<div />').text(plch).css({
 			'position': 'absolute',
