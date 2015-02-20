@@ -9444,6 +9444,12 @@ Q.prompt = function(message, callback, options) {
 	}
 };
 
+/**
+ * Q.Audio objects facilitate audio functionality on various browsers
+ * @class Q.Audio
+ * @constructor
+ * @param {String} url the url of the audio to load
+ */
 Q.Audio = function (url) {
 	if (this === window) {
 		throw new Q.Error("Please call Q.Audio with the keyword new");
@@ -9467,13 +9473,8 @@ Q.Audio = function (url) {
 };
 
 var Aup = Q.Audio.prototype;
-
 Aup.onCanPlayThrough = new Q.Event();
 Aup.onEnded = new Q.Event();
-
-/**
- * Plays the audio as soon it is loaded
- */
 Aup.play = function (removeAfterPlaying) {
 	var t = this;
 	if (removeAfterPlaying) {

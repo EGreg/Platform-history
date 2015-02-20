@@ -123,6 +123,7 @@ Q.Tool.define('Streams/chat', function(options) {
 		
 	},
 	/**
+	 * @method prevent
 	 * Disables the textarea, preventing the user from writing
 	 * a message using the provided interface. They are still able to POST
 	 * to the server, however, e.g. manually.
