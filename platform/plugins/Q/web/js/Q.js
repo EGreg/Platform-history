@@ -9475,6 +9475,10 @@ Q.Audio = function (url) {
 var Aup = Q.Audio.prototype;
 Aup.onCanPlayThrough = new Q.Event();
 Aup.onEnded = new Q.Event();
+/**
+ * @method play
+ * Plays the audio as soon as it is available
+ */
 Aup.play = function (removeAfterPlaying) {
 	var t = this;
 	if (removeAfterPlaying) {
@@ -9490,6 +9494,7 @@ Aup.play = function (removeAfterPlaying) {
 };
 
 /**
+ * @method pause
  * Pauses the audio if it is playing
  */
 Aup.pause = function () {
