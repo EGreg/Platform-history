@@ -194,57 +194,6 @@ function _Streams_participants(options) {
 			tool.adjustInterval = setInterval(adjustInterval, 500);
 			adjustInterval();
 			
-			function adjustInterval() {
-				if (state.showSummary) {
-					var w = $te.width() - tool.$summary.outerWidth(true);
-					var pm = tool.$pc.outerWidth(true) - tool.$pc.width();
-					tool.$pc.width(w - pm);
-				}
-				if (state.showControls) {
-					var $c = tool.$controls;	
-					var overflowed = (state.avatarsWidth > $te.width());
-					if (overflowed) {
-						if (!state.overflowed) {
-							$te.addClass('Q_overflowed');
-							var $expand = $te.find('.Streams_participants_expand');
-							tool.$pei.plugin('Q/clickable', {
-								triggers: $expand,
-								onRelease: function (evt, overElement) {
-									if (!overElement) return;
-									if (state.expanded) {
-										tool.$blanks.show();
-										$te.animate({
-											height: state.originalHeight
-										});
-										tool.$pei.attr({
-											src: Q.url('plugins/Q/img/expand.png'),
-											alt: 'expand'
-										});
-										tool.$pet.html('See All');
-									} else {
-										state.originalHeight = $te.height();
-										tool.$blanks.hide();
-										$te.animate({
-											height: tool.$pc.height()
-										});
-										tool.$pei.attr({
-											src: Q.url('plugins/Q/img/collapse.png'),
-											alt: 'collapse'
-										});
-										tool.$pet.html('Fewer');
-									}
-									state.expanded = !state.expanded;
-								}
-							});
-						}
-					} else {
-						$te.removeClass('Q_overflowed');
-						tool.$blanks.show();
-					}
-					state.overflowed = overflowed;
-				}
-			}
-			
 			if (state.max) {
 				tool.$max.text('/' + state.max);
 			}
@@ -265,6 +214,57 @@ function _Streams_participants(options) {
 			}, tool);
 			
 		}, {participants: 100});
+		
+		function adjustInterval() {
+			if (state.showSummary) {
+				var w = $te.width() - tool.$summary.outerWidth(true);
+				var pm = tool.$pc.outerWidth(true) - tool.$pc.width();
+				tool.$pc.width(w - pm);
+			}
+			if (state.showControls) {
+				var $c = tool.$controls;	
+				var overflowed = (state.avatarsWidth > $te.width());
+				if (overflowed) {
+					if (!state.overflowed) {
+						$te.addClass('Q_overflowed');
+						var $expand = $te.find('.Streams_participants_expand');
+						tool.$pei.plugin('Q/clickable', {
+							triggers: $expand,
+							onRelease: function (evt, overElement) {
+								if (!overElement) return;
+								if (state.expanded) {
+									tool.$blanks.show();
+									$te.animate({
+										height: state.originalHeight
+									});
+									tool.$pei.attr({
+										src: Q.url('plugins/Q/img/expand.png'),
+										alt: 'expand'
+									});
+									tool.$pet.html('See All');
+								} else {
+									state.originalHeight = $te.height();
+									tool.$blanks.hide();
+									$te.animate({
+										height: tool.$pc.height()
+									});
+									tool.$pei.attr({
+										src: Q.url('plugins/Q/img/collapse.png'),
+										alt: 'collapse'
+									});
+									tool.$pet.html('Fewer');
+								}
+								state.expanded = !state.expanded;
+							}
+						});
+					}
+				} else {
+					$te.removeClass('Q_overflowed');
+					tool.$blanks.show();
+				}
+				state.overflowed = overflowed;
+			}
+		}
 		
 		function addAvatar(userId, prepend) {
 			var $element = $(Q.Tool.setUpElement('div', 'Users/avatar', {

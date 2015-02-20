@@ -7,6 +7,7 @@
 
 (function(Q, $) {
 
+var Users = Q.Users;
 var Streams = Q.Streams = Q.plugins.Streams = {
 
 	cache: {
@@ -283,7 +284,7 @@ Streams.onInviteComplete = new Q.Event();
  * @param {Boolean} refresh
  */
 function _connectSockets(refresh) {
-	if (!Q.Users.loggedInUser) {
+	if (!Users.loggedInUser) {
 		return false;
 	}
 	Streams.getParticipating(function (err, participating) {
@@ -362,6 +363,7 @@ Q.Tool.define({
 	"Streams/basic"        : "plugins/Streams/js/tools/basic.js",
 	"Streams/access"       : "plugins/Streams/js/tools/access.js",
 	"Streams/subscription" : "plugins/Streams/js/tools/subscription.js",
+	"Streams/interests"    : "plugins/Streams/js/tools/interests.js",
 	"Streams/related"      : "plugins/Streams/js/tools/related.js",
 	"Streams/inplace"      : "plugins/Streams/js/tools/inplace.js",
 	"Streams/html"         : "plugins/Streams/js/tools/html.js",
@@ -835,7 +837,7 @@ Streams.release = function (key) {
  */
 Streams.invite = function (publisherId, streamName, options, callback) {
 	// TODO: expand this implementation to be complete
-	if (!Q.Users.loggedInUser) {
+	if (!Users.loggedInUser) {
 		Q.handle(callback, null, ["Streams.invite: not logged in"]);
 		return false; // not logged in
 	}
@@ -846,7 +848,7 @@ Streams.invite = function (publisherId, streamName, options, callback) {
 	var o = Q.extend({}, Streams.invite.options, options);
 	o.publisherId = publisherId,
 	o.streamName = streamName;
-	o.displayName = o.displayName || Q.Users.loggedInUser.displayName;
+	o.displayName = o.displayName || Users.loggedInUser.displayName;
 	function _request() {
 		return Q.req('Streams/invite', ['data'], function (err, response) {
 			var msg = Q.firstErrorMessage(err, response && response.errors);
@@ -2524,7 +2526,7 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 				if (Message.latest[publisherId+"\t"+streamName] >= ordinal) {
 					return; // it was already processed
 				}
-				Q.Streams.onEvent('post').handle(message, messages);
+				Streams.onEvent('post').handle(message, messages);
 			}, 0), {ascending: true, numeric: true});
 			
 			// if any new messages were encountered, updateMessageCache removed all the cached
@@ -2699,7 +2701,7 @@ Avatar.get.onError = new Q.Event();
  *   @default false
  */
 Avatar.byPrefix = function _Avatar_byPrefix (prefix, callback, options) {
-	var userId = Q.plugins.Users.loggedInUser ? Q.Users.loggedInUser.id : "";
+	var userId = Q.plugins.Users.loggedInUser ? Users.loggedInUser.id : "";
 	var func = Streams.batchFunction(Q.baseUrl({
 		userId: userId // if userId is empty, then we query avatars on one of the public servers
 	}), 'avatar');
@@ -2781,7 +2783,7 @@ Ap.iconUrl = function _Avatar_prototype_iconUrl () {
  */
 var Interests = Streams.Interests = {
 	add: function (title, callback, options) {
-		if (!Q.Users.loggedInUser) {
+		if (!Users.loggedInUser) {
 			return false;
 		}
 		var fields = {
@@ -2808,7 +2810,7 @@ var Interests = Streams.Interests = {
 		});
 	},
 	remove: function (title, callback) {
-		if (!Q.Users.loggedInUser) {
+		if (!Users.loggedInUser) {
 			return false;
 		}
 		var fields = {
@@ -2826,15 +2828,42 @@ var Interests = Streams.Interests = {
 			fields: fields
 		});
 	},
-	forUser: function (userId, callback) {
+	forUser: function (userId, communityId, callback) {
 		var fields = {};
 		if (userId) {
 			fields.userId = userId;
 		}
+		if (communityId) {
+			fields.communityId = communityId;
+		}
 		Q.req('Streams/interest', 'interests', function (err, response) {
 			Q.handle(callback, this, arguments);
 		}, { fields: fields });
-	}
+	},
+	forMe: function (communityId, callback) {
+		if (!Q.isEmpty(Interests.my)) {
+			return callback(null, Interests.my);
+		}
+		var userId = Q.getObject('Q.plugins.Users.loggedInUser.id');
+		Interests.forUser(userId, communityId, function (err, response) {
+			var msg;
+			var r = response && response.errors;
+			if (msg = Q.firstErrorMessage(err, r)) {
+				return callback(msg);
+			}
+			var relatedTo = response.slots.interests;
+			Interests.my = {};
+			for (var w in relatedTo) {
+				var info = relatedTo[w];
+				var title = info[2];
+				var normalized = Q.normalize(title);
+				Interests.my[normalized] = title;
+			}
+			callback(null, Interests.my);
+		});
+	},
+	all: {},
+	my: null
 };
 
 /**
@@ -3207,9 +3236,9 @@ Q.onInit.add(function _Streams_onInit() {
 		});
 	}
 	if (Q.info.isCordova && pushNotification && !Streams.pushNotification) {
-		Q.Users.login.options.onSuccess.set(_registerPushNotifications, 'Streams.PushNotifications');
-		Q.Users.logout.options.onSuccess.set(function() { pushNotification.setApplicationIconBadgeparseInt(0); }, 'Streams.PushNotifications');
-		if (Q.Users.loggedInUser) _registerPushNotifications();
+		Users.login.options.onSuccess.set(_registerPushNotifications, 'Streams.PushNotifications');
+		Users.logout.options.onSuccess.set(function() { pushNotification.setApplicationIconBadgeparseInt(0); }, 'Streams.PushNotifications');
+		if (Users.loggedInUser) _registerPushNotifications();
 	}
 	
 	// handle resign/resume application in Cordova
@@ -3294,10 +3323,10 @@ Q.onInit.add(function _Streams_onInit() {
 									evenIfNotRetained: true,
 									unlessSocket: true
 								};
-								Stream.refresh(Q.Users.loggedInUser.id, 
+								Stream.refresh(Users.loggedInUser.id, 
 									'Streams/user/firstName', null, params
 								);
-								Stream.refresh(Q.Users.loggedInUser.id, 
+								Stream.refresh(Users.loggedInUser.id, 
 									'Streams/user/lastName', null, params
 								);
 							}, {method: "post", quietly: true, baseUrl: baseUrl});
@@ -3575,8 +3604,8 @@ Q.onInit.add(function _Streams_onInit() {
 	Q.beforeActivate.add(_preloadedStreams, 'Streams');
 	Q.loadUrl.options.onLoad.add(_preloadedStreams, 'Streams');
 	
-	Q.Users.onLogin.set(_clearCaches, 'Streams');
-	Q.Users.onLogout.set(_clearCaches, 'Streams');
+	Users.onLogin.set(_clearCaches, 'Streams');
+	Users.onLogout.set(_clearCaches, 'Streams');
 	Q.addEventListener(window, Streams.refresh.options.duringEvents, Streams.refresh);
 	_scheduleUpdate();
 

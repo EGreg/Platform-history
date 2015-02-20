@@ -538,3 +538,43 @@
 		margin-top: 15px;
 	}
 }
+
+
+
+
+
+.Q_expandable_count,
+.Q_expandable_tool .Q_selected,
+#Streams_interests_unlisted .Q_selected {
+	background: rgba(255, 180, 180, 0.9);
+    color: #220;
+	text-shadow: none;
+}
+
+.Streams_interest_title,
+#Streams_new_interest_title {
+	font-size: 17px;
+	white-space: nowrap;
+	padding: 0px 3px 0px 3px;
+	margin: 0px -3px 0px -3px;
+    font-weight: 300;
+}
+
+.Streams_interest_title {
+	cursor: pointer;
+	border: 1px solid #777;
+    border-radius: 5px;
+}
+
+.Q_notTouchscreen .Streams_interest_title:hover {
+	text-decoration: underline;
+}
+
+.Streams_interest_title.Q_selected {
+	padding: 0px 3px 0px 3px;
+	margin: 0px -3px 0px -3px;
+    border-radius: 5px;
+    font-weight: 300;
+}
+
+#Streams_interests_unlisted { font-size: 11px; padding: 5px; }
