@@ -1700,12 +1700,14 @@ Q.Event = function _Q_Event(callable, key, prepend) {
 	this.handle = function _Q_Event_instance_handle() {
 		var i, count = 0, result;
 		if (this.stopped) return 0;
-		for (i=0; i<event.keys.length; ++i) {
-			result = Q.handle(event.handlers[ event.keys[i] ], this, arguments);
+		event.occurred = 0; // shows that the event has begun to occur
+		var keys = Q.copy(event.keys); // in case event.remove is called during loop
+		for (i=0; i<keys.length; ++i) {
+			result = Q.handle(event.handlers[ keys[i] ], this, arguments);
 			if (result === false) return false;
 			count += result;
 		}
-		event.occurred = true;
+		event.occurred = true; // unless an exception was thrown
 		event.lastContext = this;
 		event.lastArgs = arguments;
 		return count;
@@ -4976,7 +4978,6 @@ Q.load = function _Q_load(plugins, callback, options) {
  *  'cacheBust': Number of milliseconds before a new cachebuster is appended
  */
 Q.url = function _Q_url(what, fields, options) {
-	what = encodeURI(what);
 	if (fields) {
 		for (var k in fields) {
 			what += '?'+encodeURIComponent(k)+'='+encodeURIComponent(fields[k]);

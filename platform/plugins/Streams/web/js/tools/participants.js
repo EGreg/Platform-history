@@ -119,6 +119,9 @@ function _Streams_participants(options) {
 			if (fem) {
 				return console.warn("Streams/preview: " + fem);
 			}
+			if (!Q.Tool.byId(tool.id)) {
+				return;
+			}
 			var stream = tool.stream = this;
 			var keys = Object.keys(extra.participants);
 			var i = 0, c = 0;

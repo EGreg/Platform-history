@@ -577,7 +577,7 @@ Streams.create.onError = new Q.Event();
  */
 Streams.construct = function _Streams_construct(fields, extra, callback) {
 
-	if (Q.typeOf(fields) === 'Q.Sterams.Stream') {
+	if (Q.typeOf(fields) === 'Q.Streams.Stream') {
 		Q.handle(callback, fields, [null, fields]);
 		return false;
 	}
@@ -1019,7 +1019,7 @@ Stream.release = function _Stream_release (publisherId, streamName) {
  * 
  * @static
  * @method refresh
- * @param {Function} callback This is called when the stream has been refreshed.
+ * @param {Function} callback This is called when the stream has been refreshed, or if Streams has determined it won't send a refresh request, it will get null as the first parameter.
  * @param {Object} [options] A hash of options, including:
  *   @param {Boolean} [options.messages] If set to true, then besides just reloading the fields, attempt to catch up on the latest messages
  *   @param {Number} [options.max] The maximum number of messages to wait and hope they will arrive via sockets. Any more and we just request them again.
@@ -1035,7 +1035,7 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 	if (!Q.isOnline()
 	|| (notRetained && !(options && options.evenIfNotRetained))) {
 		Streams.get.cache.removeEach([publisherId, streamName]);
-		callback && callback(null, null);
+		callback && callback(null, false);
 		return false;
 	}
 	var result = false;
@@ -1068,6 +1068,8 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 			}
 		});
 		result = true;
+	} else {
+		callback && callback(null, false);
 	}
 	_retain = undefined;
 	return true;
@@ -1471,7 +1473,7 @@ Sp.invite = function (fields, callback) {
  * If your app is using socket.io, then calling this manually is largely unnecessary.
  * 
  * @method refresh
- * @param {Function} callback This is called when the stream has been refreshed.
+ * @param {Function} callback This is called when the stream has been refreshed, or if Streams has determined it won't send a refresh request, it will get null as the first parameter.
  * @param {Object} [options] A hash of options, including:
  *   @param {Boolean} [options.messages] If set to true, then besides just reloading the fields, attempt to catch up on the latest messages
  *   @param {Number} [options.max] The maximum number of messages to wait and hope they will arrive via sockets. Any more and we just request them again.
@@ -3318,16 +3320,20 @@ Q.onInit.add(function _Streams_onInit() {
 								}
 								$complete_form.data('validator').reset();
 								dialog.data('Q/dialog').close();
-								Q.handle(Streams.onInviteComplete, data);
 								var params = {
 									evenIfNotRetained: true,
 									unlessSocket: true
 								};
+								var p = new Q.Pipe(['first', 'last'], function (params) {
+									Q.handle(Streams.onInviteComplete, data, 
+										[ params.first[0], params.last[0] ]
+									);
+								});
 								Stream.refresh(Users.loggedInUser.id, 
-									'Streams/user/firstName', null, params
+									'Streams/user/firstName', p.fill('first'), params
 								);
 								Stream.refresh(Users.loggedInUser.id, 
-									'Streams/user/lastName', null, params
+									'Streams/user/lastName', p.fill('last'), params
 								);
 							}, {method: "post", quietly: true, baseUrl: baseUrl});
 						}).on('submit keydown', function (e) {
