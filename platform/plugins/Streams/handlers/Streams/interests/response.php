@@ -6,7 +6,7 @@ function Streams_interests_response()
 	$app = Q_Config::expect('Q', 'app');
 	$communityId = Q::ifset($_REQUEST, 'communityId', $app);
 	$tree = new Q_Tree();
-	$tree->load("config/$communityId/interests.json");
+	$tree->load("files/Streams/interests/$communityId.json");
 	$categories = $tree->getAll();
 	foreach ($categories as $category => &$v1) {
 		foreach ($v1 as $k2 => &$v2) {
