@@ -7,6 +7,7 @@
 
 (function(Q, $) {
 
+var Users = Q.Users;
 var Streams = Q.Streams = Q.plugins.Streams = {
 
 	cache: {
@@ -221,6 +222,13 @@ Streams.onError = new Q.Event(function (err, data) {
 }, 'Streams.onError');
 
 /**
+ * This event is fired when the invited user takes the first action after
+ * entering their name. It is a good time to start playing any audio, etc.
+ * @event onError
+ */
+Streams.onInvitedUserAction = new Q.Event();
+
+/**
  * Returns Q.Event that occurs on message post event coming from socket.io
  * @event onMessage
  * @param type {String} type of the stream to which a message is posted
@@ -276,7 +284,7 @@ Streams.onInviteComplete = new Q.Event();
  * @param {Boolean} refresh
  */
 function _connectSockets(refresh) {
-	if (!Q.Users.loggedInUser) {
+	if (!Users.loggedInUser) {
 		return false;
 	}
 	Streams.getParticipating(function (err, participating) {
@@ -355,6 +363,7 @@ Q.Tool.define({
 	"Streams/basic"        : "plugins/Streams/js/tools/basic.js",
 	"Streams/access"       : "plugins/Streams/js/tools/access.js",
 	"Streams/subscription" : "plugins/Streams/js/tools/subscription.js",
+	"Streams/interests"    : "plugins/Streams/js/tools/interests.js",
 	"Streams/related"      : "plugins/Streams/js/tools/related.js",
 	"Streams/inplace"      : "plugins/Streams/js/tools/inplace.js",
 	"Streams/html"         : "plugins/Streams/js/tools/html.js",
@@ -568,7 +577,7 @@ Streams.create.onError = new Q.Event();
  */
 Streams.construct = function _Streams_construct(fields, extra, callback) {
 
-	if (Q.typeOf(fields) === 'Q.Sterams.Stream') {
+	if (Q.typeOf(fields) === 'Q.Streams.Stream') {
 		Q.handle(callback, fields, [null, fields]);
 		return false;
 	}
@@ -750,7 +759,7 @@ Streams.getParticipating = function(callback) {
  * @return {boolean} whether the refresh occurred
  */
 Streams.refresh = function (callback, options) {
-	if (!Q.isOnline()) {
+	if (!Q.isOnline() || Streams.refresh.options.preventAutomatic) {
 		Q.handle(callback, this, [false]);
 		return false;
 	}
@@ -828,7 +837,7 @@ Streams.release = function (key) {
  */
 Streams.invite = function (publisherId, streamName, options, callback) {
 	// TODO: expand this implementation to be complete
-	if (!Q.Users.loggedInUser) {
+	if (!Users.loggedInUser) {
 		Q.handle(callback, null, ["Streams.invite: not logged in"]);
 		return false; // not logged in
 	}
@@ -839,7 +848,7 @@ Streams.invite = function (publisherId, streamName, options, callback) {
 	var o = Q.extend({}, Streams.invite.options, options);
 	o.publisherId = publisherId,
 	o.streamName = streamName;
-	o.displayName = o.displayName || Q.Users.loggedInUser.displayName;
+	o.displayName = o.displayName || Users.loggedInUser.displayName;
 	function _request() {
 		return Q.req('Streams/invite', ['data'], function (err, response) {
 			var msg = Q.firstErrorMessage(err, response && response.errors);
@@ -1010,7 +1019,7 @@ Stream.release = function _Stream_release (publisherId, streamName) {
  * 
  * @static
  * @method refresh
- * @param {Function} callback This is called when the stream has been refreshed.
+ * @param {Function} callback This is called when the stream has been refreshed, or if Streams has determined it won't send a refresh request, it will get null as the first parameter.
  * @param {Object} [options] A hash of options, including:
  *   @param {Boolean} [options.messages] If set to true, then besides just reloading the fields, attempt to catch up on the latest messages
  *   @param {Number} [options.max] The maximum number of messages to wait and hope they will arrive via sockets. Any more and we just request them again.
@@ -1026,7 +1035,7 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 	if (!Q.isOnline()
 	|| (notRetained && !(options && options.evenIfNotRetained))) {
 		Streams.get.cache.removeEach([publisherId, streamName]);
-		callback && callback(null, null);
+		callback && callback(null, false);
 		return false;
 	}
 	var result = false;
@@ -1059,6 +1068,8 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 			}
 		});
 		result = true;
+	} else {
+		callback && callback(null, false);
 	}
 	_retain = undefined;
 	return true;
@@ -1462,7 +1473,7 @@ Sp.invite = function (fields, callback) {
  * If your app is using socket.io, then calling this manually is largely unnecessary.
  * 
  * @method refresh
- * @param {Function} callback This is called when the stream has been refreshed.
+ * @param {Function} callback This is called when the stream has been refreshed, or if Streams has determined it won't send a refresh request, it will get null as the first parameter.
  * @param {Object} [options] A hash of options, including:
  *   @param {Boolean} [options.messages] If set to true, then besides just reloading the fields, attempt to catch up on the latest messages
  *   @param {Number} [options.max] The maximum number of messages to wait and hope they will arrive via sockets. Any more and we just request them again.
@@ -2517,7 +2528,7 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 				if (Message.latest[publisherId+"\t"+streamName] >= ordinal) {
 					return; // it was already processed
 				}
-				Q.Streams.onEvent('post').handle(message, messages);
+				Streams.onEvent('post').handle(message, messages);
 			}, 0), {ascending: true, numeric: true});
 			
 			// if any new messages were encountered, updateMessageCache removed all the cached
@@ -2692,7 +2703,7 @@ Avatar.get.onError = new Q.Event();
  *   @default false
  */
 Avatar.byPrefix = function _Avatar_byPrefix (prefix, callback, options) {
-	var userId = Q.plugins.Users.loggedInUser ? Q.Users.loggedInUser.id : "";
+	var userId = Q.plugins.Users.loggedInUser ? Users.loggedInUser.id : "";
 	var func = Streams.batchFunction(Q.baseUrl({
 		userId: userId // if userId is empty, then we query avatars on one of the public servers
 	}), 'avatar');
@@ -2774,7 +2785,7 @@ Ap.iconUrl = function _Avatar_prototype_iconUrl () {
  */
 var Interests = Streams.Interests = {
 	add: function (title, callback, options) {
-		if (!Q.Users.loggedInUser) {
+		if (!Users.loggedInUser) {
 			return false;
 		}
 		var fields = {
@@ -2801,7 +2812,7 @@ var Interests = Streams.Interests = {
 		});
 	},
 	remove: function (title, callback) {
-		if (!Q.Users.loggedInUser) {
+		if (!Users.loggedInUser) {
 			return false;
 		}
 		var fields = {
@@ -2819,15 +2830,42 @@ var Interests = Streams.Interests = {
 			fields: fields
 		});
 	},
-	forUser: function (userId, callback) {
+	forUser: function (userId, communityId, callback) {
 		var fields = {};
 		if (userId) {
 			fields.userId = userId;
 		}
+		if (communityId) {
+			fields.communityId = communityId;
+		}
 		Q.req('Streams/interest', 'interests', function (err, response) {
 			Q.handle(callback, this, arguments);
 		}, { fields: fields });
-	}
+	},
+	forMe: function (communityId, callback) {
+		if (!Q.isEmpty(Interests.my)) {
+			return callback(null, Interests.my);
+		}
+		var userId = Q.getObject('Q.plugins.Users.loggedInUser.id');
+		Interests.forUser(userId, communityId, function (err, response) {
+			var msg;
+			var r = response && response.errors;
+			if (msg = Q.firstErrorMessage(err, r)) {
+				return callback(msg);
+			}
+			var relatedTo = response.slots.interests;
+			Interests.my = {};
+			for (var w in relatedTo) {
+				var info = relatedTo[w];
+				var title = info[2];
+				var normalized = Q.normalize(title);
+				Interests.my[normalized] = title;
+			}
+			callback(null, Interests.my);
+		});
+	},
+	all: {},
+	my: null
 };
 
 /**
@@ -3200,9 +3238,9 @@ Q.onInit.add(function _Streams_onInit() {
 		});
 	}
 	if (Q.info.isCordova && pushNotification && !Streams.pushNotification) {
-		Q.Users.login.options.onSuccess.set(_registerPushNotifications, 'Streams.PushNotifications');
-		Q.Users.logout.options.onSuccess.set(function() { pushNotification.setApplicationIconBadgeparseInt(0); }, 'Streams.PushNotifications');
-		if (Q.Users.loggedInUser) _registerPushNotifications();
+		Users.login.options.onSuccess.set(_registerPushNotifications, 'Streams.PushNotifications');
+		Users.logout.options.onSuccess.set(function() { pushNotification.setApplicationIconBadgeparseInt(0); }, 'Streams.PushNotifications');
+		if (Users.loggedInUser) _registerPushNotifications();
 	}
 	
 	// handle resign/resume application in Cordova
@@ -3257,7 +3295,7 @@ Q.onInit.add(function _Streams_onInit() {
 								$input.plugin('Q/clickfocus');
 							}, 100);
 						}
-						var complete_form = dialog.find('form')
+						var $complete_form = dialog.find('form')
 						.validator()
 						.submit(function(e) {
 							e.preventDefault();
@@ -3271,29 +3309,45 @@ Q.onInit.add(function _Streams_onInit() {
 									err, data && data.errors
 								);
 								if (data && data.errors) {
-									complete_form.data('validator').invalidate(
+									$complete_form.data('validator').invalidate(
 										Q.ajaxErrors(data.errors, ['fullName'])
 									);
-									$('input', complete_form).eq(0)
+									$('input', $complete_form).eq(0)
 									.plugin('Q/clickfocus');
 									return;
 								} else if (msg) {
 									return alert(msg);
 								}
-								complete_form.data('validator').reset();
+								$complete_form.data('validator').reset();
 								dialog.data('Q/dialog').close();
-								Q.handle(Streams.onInviteComplete, data);
 								var params = {
 									evenIfNotRetained: true,
 									unlessSocket: true
 								};
-								Stream.refresh(Q.Users.loggedInUser.id, 
-									'Streams/user/firstName', null, params
+								var p = new Q.Pipe(['first', 'last'], function (params) {
+									Q.handle(Streams.onInviteComplete, data, 
+										[ params.first[0], params.last[0] ]
+									);
+								});
+								Stream.refresh(Users.loggedInUser.id, 
+									'Streams/user/firstName', p.fill('first'), params
 								);
-								Stream.refresh(Q.Users.loggedInUser.id, 
-									'Streams/user/lastName', null, params
+								Stream.refresh(Users.loggedInUser.id, 
+									'Streams/user/lastName', p.fill('last'), params
 								);
 							}, {method: "post", quietly: true, baseUrl: baseUrl});
+						}).on('submit keydown', function (e) {
+							if (e.type === 'keydown'
+							&& (e.keyCode || e.which) !== 13) {
+								return;
+							}
+							var val = dialog.find('#Streams_login_username').val();
+							Streams.onInvitedUserAction.handle.call(
+								[val, dialog]
+							);
+						});
+						$('button', $complete_form).on('touchstart', function () {
+							$(this).submit();
 						});
 					}}
 				});
@@ -3556,8 +3610,8 @@ Q.onInit.add(function _Streams_onInit() {
 	Q.beforeActivate.add(_preloadedStreams, 'Streams');
 	Q.loadUrl.options.onLoad.add(_preloadedStreams, 'Streams');
 	
-	Q.Users.onLogin.set(_clearCaches, 'Streams');
-	Q.Users.onLogout.set(_clearCaches, 'Streams');
+	Users.onLogin.set(_clearCaches, 'Streams');
+	Users.onLogout.set(_clearCaches, 'Streams');
 	Q.addEventListener(window, Streams.refresh.options.duringEvents, Streams.refresh);
 	_scheduleUpdate();
 

@@ -49,6 +49,7 @@ function _Streams_participants(options) {
 	max: null,
 	filter: function () { },
 	showSummary: true,
+	showControls: false,
 	showBlanks: false,
 	onRefresh: new Q.Event(),
 	onInvited: new Q.Event(),
@@ -67,7 +68,7 @@ function _Streams_participants(options) {
 {
 	Q: {
 		beforeRemove: function () {
-			clearInterval(this.resizeInterval);
+			clearInterval(this.adjustInterval);
 		}
 	},
 	
@@ -76,17 +77,31 @@ function _Streams_participants(options) {
 		var state = tool.state;
 		var $te = $(tool.element);
 		var $elements = {};
+		state.avatarsWidth = 0;
 		
 		if (state.rendered) {
 			tool.$count = $('.Streams_participants_count', $te);
 			tool.$max = $('.Streams_participants_max', $te);
 			tool.$summary = $('.Streams_participants_summary', $te);
+			tool.$controls = $('.Streams_participants_controls', $te);
+			tool.$pei = $('.Streams_participants_expand_img', $te);
+			tool.$pet = $('.Streams_participants_expand_text', $te);
 			tool.$pc = $('.Streams_participants_container', $te);
 			tool.$avatars = $('.Streams_participants_avatars', $te);
 			tool.$blanks = $('.Streams_participants_blanks', $te);
 		} else {
 			tool.$count = $("<span class='Streams_participants_count'></span>");
 			tool.$max = $("<span class='Streams_participants_max'></span>");
+			tool.$pet = $("<span class='Streams_participants_expand_text'>See All</span>");
+			tool.$pei = $('<img class="Streams_participants_expand_img" />', {
+				src: Q.url('plugins/Q/img/expand.png'),
+				alt: "expand"
+			});
+			tool.$controls = $("<div class='Streams_participants_controls' />")
+				.append(
+					$("<div class='Streams_participants_expand' />")
+					.append(tool.$pei, tool.$pet)
+				).appendTo($te);
 			tool.$summary = $("<div class='Streams_participants_summary' />")
 				.append($('<span />').append(tool.$count, tool.$max))
 				.appendTo($te);
@@ -103,6 +118,9 @@ function _Streams_participants(options) {
 			var fem = Q.firstErrorMessage(err);
 			if (fem) {
 				return console.warn("Streams/preview: " + fem);
+			}
+			if (!Q.Tool.byId(tool.id)) {
+				return;
 			}
 			var stream = tool.stream = this;
 			var keys = Object.keys(extra.participants);
@@ -153,6 +171,7 @@ function _Streams_participants(options) {
 							}
 							$(window).on(Q.Pointer.end, _pointerEndHandler);
 						});
+						state.avatarsWidth += $element.outerWidth(true);
 						if (si.clickable) {
 							$('img', $element).plugin(
 								'Q/clickable', Q.extend({
@@ -175,13 +194,8 @@ function _Streams_participants(options) {
 			tool.stateChanged('count');
 			Q.handle(state.onRefresh, tool, []);
 			
-			if (state.showSummary) {
-				tool.resizeInterval = setInterval(function () {
-					var w = $te.width() - tool.$summary.outerWidth(true);
-					var pm = tool.$pc.outerWidth(true) - tool.$pc.width();
-					tool.$pc.width(w - pm);
-				}, 500);
-			}
+			tool.adjustInterval = setInterval(adjustInterval, 500);
+			adjustInterval();
 			
 			if (state.max) {
 				tool.$max.text('/' + state.max);
@@ -197,15 +211,63 @@ function _Streams_participants(options) {
 	
 			stream.onMessage("Streams/leave")
 			.set(function (stream, message, messages) {
-				var $element = $elements[message.byUserId];
-				if ($element) {
-					$element.remove();
-				}
+				removeAvatar(message.byUserId);
 				--tool.state.count;
 				tool.stateChanged('count');
 			}, tool);
 			
 		}, {participants: 100});
+		
+		function adjustInterval() {
+			if (state.showSummary) {
+				var w = $te.width() - tool.$summary.outerWidth(true);
+				var pm = tool.$pc.outerWidth(true) - tool.$pc.width();
+				tool.$pc.width(w - pm);
+			}
+			if (state.showControls) {
+				var $c = tool.$controls;	
+				var overflowed = (state.avatarsWidth > $te.width());
+				if (overflowed) {
+					if (!state.overflowed) {
+						$te.addClass('Q_overflowed');
+						var $expand = $te.find('.Streams_participants_expand');
+						tool.$pei.plugin('Q/clickable', {
+							triggers: $expand,
+							onRelease: function (evt, overElement) {
+								if (!overElement) return;
+								if (state.expanded) {
+									tool.$blanks.show();
+									$te.animate({
+										height: state.originalHeight
+									});
+									tool.$pei.attr({
+										src: Q.url('plugins/Q/img/expand.png'),
+										alt: 'expand'
+									});
+									tool.$pet.html('See All');
+								} else {
+									state.originalHeight = $te.height();
+									tool.$blanks.hide();
+									$te.animate({
+										height: tool.$pc.height()
+									});
+									tool.$pei.attr({
+										src: Q.url('plugins/Q/img/collapse.png'),
+										alt: 'collapse'
+									});
+									tool.$pet.html('Fewer');
+								}
+								state.expanded = !state.expanded;
+							}
+						});
+					}
+				} else {
+					$te.removeClass('Q_overflowed');
+					tool.$blanks.show();
+				}
+				state.overflowed = overflowed;
+			}
+		}
 		
 		function addAvatar(userId, prepend) {
 			var $element = $(Q.Tool.setUpElement('div', 'Users/avatar', {
@@ -217,6 +279,20 @@ function _Streams_participants(options) {
 			if (false !== Q.handle(state.filter, tool, [$element])) {
 				$elements[userId] = $element;
 				$element[prepend?'prependTo':'appendTo']($e).activate();
+			}
+			if (userId) {
+				state.avatarsWidth += $element.outerWidth(true);
+			}
+			adjustInterval();
+		}
+		
+		function removeAvatar(userId) {
+			var $element = $elements[userId];
+			if ($element) {
+				$element.remove();
+			}
+			if (userId) {
+				state.avatarsWidth -= $element.outerWidth(true);
 			}
 		}
 	}

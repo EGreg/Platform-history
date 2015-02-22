@@ -1642,7 +1642,7 @@ Q.ensure = function _Q_ensure(property, loader, callback) {
  *  to the method under this key, corresponding to the latest results seen.
  * @return {Number|Boolean}
  *  If only key is provided, returns an ordinal to use.
- *  If ordinal is provided, then returns whether this was the latest ordinal.
+ *  If ordinal is provided, then returns whether this is still the latest ordinal.
  */
 Q.latest = function (key, ordinal) {
 	if (Q.typeOf(key) === 'Q.Tool')	{
@@ -1700,12 +1700,14 @@ Q.Event = function _Q_Event(callable, key, prepend) {
 	this.handle = function _Q_Event_instance_handle() {
 		var i, count = 0, result;
 		if (this.stopped) return 0;
-		for (i=0; i<event.keys.length; ++i) {
-			result = Q.handle(event.handlers[ event.keys[i] ], this, arguments);
+		event.occurred = 0; // shows that the event has begun to occur
+		var keys = Q.copy(event.keys); // in case event.remove is called during loop
+		for (i=0; i<keys.length; ++i) {
+			result = Q.handle(event.handlers[ keys[i] ], this, arguments);
 			if (result === false) return false;
 			count += result;
 		}
-		event.occurred = true;
+		event.occurred = true; // unless an exception was thrown
 		event.lastContext = this;
 		event.lastArgs = arguments;
 		return count;
@@ -3385,7 +3387,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
  */
 Q.Tool.jQuery.options = function (pluginName, setOptions) {
 	var options;
-	pluginName = Q.normalize(pluginName);
+	var pluginName = Q.normalize(pluginName);
 	if (Q.Tool.constructors[name]) {
 		options = window.jQuery.fn[pluginName].options;
 	} else {
@@ -4587,7 +4589,7 @@ Q.init = function _Q_init(options) {
 		Q.onJQuery.handle(window.jQuery, [window.jQuery]);
 		window.jQuery(document).ready(_domReady);
 	} else {
-		var _timer=setInterval(function(){
+		var _timer = setInterval(function(){
 			if(/loaded|complete/.test(document.readyState)) {
 				clearInterval(_timer);
 				_domReady();
@@ -4774,14 +4776,22 @@ Q.removeElement = function _Q_removeElement(element, removeTools) {
  * @method addEventListener
  * @param {HTMLElement} element
  *  An HTML element, window or other element that supports listening to events
- * @param {String|Array} eventName
- *  A space-delimited string of event names
+ * @param {String|Array|Object} eventName
+ *  A space-delimited string of event names, or an array of event names.
+ *  You can also pass an object of { eventName: eventHandler } pairs, in which csae
+ *  the next parameter would be useCapture.
  * @param {Function} eventHandler
  *  A function to call when the event fires
  * @param {Boolean} useCapture
  *  Whether to use the capture instead of bubble phase. Ignored in IE8 and below.
  */
 Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandler, useCapture) {
+	if (Q.isPlainObject(eventName)) {
+		for (var k in eventName) {
+			Q.addEventListener(element, k, eventName[k], eventHandler);
+		}
+		return;
+	}
 	var handler = (eventHandler.typename === "Q.Event"
 		? eventHandler.eventListener = function _Q_addEventListener_wrapper(e) { Q.handle(eventHandler, element, [e]); }
 		: eventHandler);
@@ -6319,7 +6329,7 @@ var _latestLoadUrlObject;
 /**
  * @static
  * @method loadUrl
- * @param {String} url
+ * @param {String} url The url to load.
  * @param {Array|String} slotNames Optional, defaults to all application slots
  * @param {Function} callback Callback which is called when response returned and scripts,
  * stylesheets and inline styles added, but before inline scripts executed.
@@ -6355,6 +6365,7 @@ var _latestLoadUrlObject;
  * Also it is passed to loader function so any additional options can be passed
  */
 Q.loadUrl = function _Q_loadUrl(url, options) {
+	url = Q.url(url);
 	var o = Q.extend({}, Q.loadUrl.options, options);
 	Q.handle(o.onLoadStart, this, [url, o]);
 
@@ -6380,7 +6391,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 	url = (hashUrl !== undefined) ? hashUrl : parts[0];
 
 	var loader = Q.request;
-	var onActivate;
+	var onActivate, onError;
 	if (o.loader) {
 		loader = o.loader;
 	}
@@ -6895,7 +6906,7 @@ Q.handle.onUrl = new Q.Event(function () {
 	Q.each(elements, function () {
 		Q.removeElement(this);
 	});
-	Q.Pointer.stopHint();
+	Q.Pointer.stopHints();
 }, "Q");
 
 /**
@@ -8736,20 +8747,48 @@ Q.Pointer = {
 	 * Places a hint to click or tap on the screen
 	 * @static
 	 * @method hint 
-	 * @param {Element|Object} elementOrPoint Indicates where to display the hint. A point should contain properties "x" and "y".
+	 * @param {Element|Object|Array} elementsOrPoints Indicates where to display the hint. A point should contain properties "x" and "y". Can also be an array of elements or points.
 	 * @param {Object} [options] possible options, which can include:
 	 * @param {String} [options.src] the url of the image
 	 * @param {Point} [options.hotspot={x:0.5,y:0.3}] "x" and "y" represent the location of the hotspot within the image, using fractions between 0 and 1
 	 * @param {String} [options.width="200px"]
 	 * @param {String} [options.height="200px"]
 	 * @param {Integer} [options.zIndex=99999]
+	 * @param {Boolean} [options.dontRemove=false] Pass true to keep current hints displayed
+	 * @param {Integer} [options.show.delay=500]
+	 * @param {Integer} [options.show.duration=500]
+	 * @param {Integer} [options.show.initialScale=2]
+	 * @param {Function} [options.show.ease=Q.Animation.ease.smooth]
+	 * @param {Integer} [options.hide.delay=500]
+	 * @param {Integer} [options.hide.duration=500]
+	 * @param {Function} [options.hide.ease=Q.Animation.ease.smooth]
 	 */
-	hint: function (elementOrPoint, options) {
+	hint: function (elementsOrPoints, options) {
+		var img, i, l;
+		options = options || {};
+		if (Q.isArray(elementsOrPoints)) {
+			for (i=0; i<elementsOrPoints.length; ++i) {
+				Q.Pointer.hint(
+					elementsOrPoints[i],
+					Q.extend({}, options, {
+						dontRemove: i ? true : options.dontRemove
+					})
+				);
+			}
+			return;
+		}
+		var elementOrPoint = elementsOrPoints;
 		var o = Q.extend({}, Q.Pointer.hint.options, options);
 		var body = document.getElementsByTagName('body')[0];
-		var img = Q.Pointer.hint.img;
-		if (img) {
-			img.parentNode.removeChild(img);
+		var imgs = Q.Pointer.hint.imgs;
+		if (!options.dontRemove) {
+			for (i=0, l=imgs.length; i < l; ++i) {
+				img = imgs[i];
+				if (img.parentNode) {
+					img.parentNode.removeChild(img);
+				}
+			}
+			imgs = Q.Pointer.hint.imgs = [];
 		}
 		img = Q.Pointer.hint.img = document.createElement('img');
 		img.setAttribute('src', Q.url(o.src));
@@ -8759,19 +8798,20 @@ Q.Pointer = {
 		img.style.display = 'block';
 		img.style.pointerEvents = 'none';
 		img.setAttribute('class', 'Q_hint');
+		imgs.push(img);
 		body.appendChild(img);
 		if (img.complete) {
 			_update();
 		} else {
 			img.onload = _update;
 		}
-		Q.Pointer.stopHint.prevent = true;
-		Q.removeEventListener(window, Q.Pointer.start, Q.Pointer.stopHint);
-		Q.removeEventListener(document, 'scroll', Q.Pointer.stopHint);
+		Q.Pointer.stopHints.prevent = true;
+		Q.removeEventListener(window, Q.Pointer.start, Q.Pointer.stopHints);
+		Q.removeEventListener(document, 'scroll', Q.Pointer.stopHints);
 		setTimeout(function () {
-			Q.addEventListener(window, Q.Pointer.start, Q.Pointer.stopHint);
-			Q.addEventListener(document, 'scroll', Q.Pointer.stopHint);
-			Q.Pointer.stopHint.prevent = false;
+			Q.addEventListener(window, Q.Pointer.start, Q.Pointer.stopHints);
+			Q.addEventListener(document, 'scroll', Q.Pointer.stopHints);
+			Q.Pointer.stopHints.prevent = false;
 		}, o.hide.delay);
 		function _update() {
 			var point;
@@ -8792,12 +8832,12 @@ Q.Pointer = {
 			img.style.top = point.y - img.offsetHeight * o.hotspot.y + 'px';
 			img.style.zIndex = o.zIndex;
 			img.style.opacity = 0;
-			if (Q.Pointer.stopHint.animation) {
-				Q.Pointer.stopHint.animation.pause();
+			if (Q.Pointer.stopHints.animation) {
+				Q.Pointer.stopHints.animation.pause();
 				img.style.opacity = 0;
 			}
 			Q.Pointer.hint.elementOrPoint = elementOrPoint;
-			setTimeout(function () {
+			Q.Pointer.hint.timeout = setTimeout(function () {
 				var width = parseInt(img.style.width);
 				var height = parseInt(img.style.height);
 				Q.Animation.play(function (x, y) {
@@ -8816,25 +8856,37 @@ Q.Pointer = {
 		}
 	},
 	/**
-	 * Places a hint to click or tap on the screen
+	 * Stops any hints that are currently being displayed
 	 * @static
 	 * @method hint 
-	 * @param {Boolean} removeIt
 	 */
-	stopHint: function (removeIt) {
-		var img = Q.Pointer.hint.img;
-		if (!img || Q.Pointer.stopHint.prevent) return;
-		Q.Pointer.stopHint.animation = Q.Animation.play(function (x, y) {
-			img.style.opacity = 1-y;
-			if (x < 1 || Q.Pointer.stopHint.prevent) return;
-			if (removeIt === true && img.parentNode) {
-				img.parentNode.removeChild(img);
-				Q.Pointer.hint.img = null;
-			} else {
-				img.style.display = 'none';
+	stopHints: function () {
+		var imgs = Q.Pointer.hint.imgs;
+		if (!imgs || Q.Pointer.stopHints.prevent) return;
+		var a = Q.Pointer.stopHints.animation = Q.Animation.play(function (x, y) {
+			var img, i, l;
+			for (i=0, l=imgs.length; i<l; ++i) {
+				img = imgs[i];
+				img.style.opacity = 1-y;
 			}
 		}, Q.Pointer.hint.options.hide.duration);
+		a.onComplete.set(function () {
+			var img, i, l;
+			for (i=0, l=imgs.length; i<l; ++i) {
+				img = imgs[i];
+				if (Q.Pointer.stopHints.prevent) {
+					img.style.opacity = 1;
+				} else {
+					if (img.parentNode) {
+						img.parentNode.removeChild(img);
+					}
+				}
+			}
+			Q.Pointer.hint.imgs = [];
+		});
 		Q.Pointer.hint.elementOrPoint = null;
+		clearTimeout(Q.Pointer.hint.timeout);
+		Q.Pointer.hint.timeout = null;
 	},
 	/**
 	 * Consistently prevents the default behavior of an event across browsers
@@ -8950,6 +9002,8 @@ Q.Pointer.hint.options = {
 		ease: Q.Animation.ease.linear
 	}
 };
+
+Q.Pointer.hint.imgs = [];
 
 function _Q_restoreScrolling() {
 	if (!Q.info || !Q.info.isTouchscreen) return false;
@@ -9370,7 +9424,7 @@ Q.prompt = function(message, callback, options) {
 				.plugin('Q/placeholders')
 				.plugin('Q/clickfocus')
 				.on('keydown', function (event) {
-					if (event.keyCode === 13) {
+					if ((event.keyCode || event.which) === 13) {
 						_done();
 					}
 				});
@@ -9389,6 +9443,69 @@ Q.prompt = function(message, callback, options) {
 		Q.Dialogs.pop();
 		Q.handle(callback, this, [value]);
 	}
+};
+
+/**
+ * Q.Audio objects facilitate audio functionality on various browsers
+ * @class Q.Audio
+ * @constructor
+ * @param {String} url the url of the audio to load
+ */
+Q.Audio = function (url) {
+	if (this === window) {
+		throw new Q.Error("Please call Q.Audio with the keyword new");
+	}
+	var container = document.getElementById('Q-audio-container');
+	if (!container) {
+		container = document.createElement('div');
+		container.setAttribute('id', 'Q-audio-container');
+		document.body.appendChild(container);
+	}
+	container.style.display = 'none';
+	this.container = container;
+	var audio = this.audio = document.createElement('audio');
+	audio.setAttribute('src', Q.url(url));
+	audio.setAttribute('preload', 'auto');
+	Q.addEventListener(audio, {
+		'playthrough': this.onCanPlayThrough.handle,
+		'ended': this.onEnded.handle
+	});
+	container.appendChild(audio); // loads the file
+};
+
+var Aup = Q.Audio.prototype;
+Aup.onCanPlayThrough = new Q.Event();
+Aup.onEnded = new Q.Event();
+/**
+ * @method play
+ * Plays the audio as soon as it is available
+ */
+Aup.play = function (removeAfterPlaying) {
+	var t = this;
+	if (removeAfterPlaying) {
+		t.onEnded.set(function () {
+			container.removeChild(t.audio);
+			t.onEnded.remove('Q.Audio');
+		}, 'Q.Audio');
+	}
+	t.playing = true;
+	t.paused = false;
+	t.audio.play();
+	return t;
+};
+
+/**
+ * @method pause
+ * Pauses the audio if it is playing
+ */
+Aup.pause = function () {
+	var t = this;
+	if (t.playing) {
+		t.audio.pause();
+		t.playing = false;
+		t.paused = true;
+	}
+	return t;
 };
 
 /**

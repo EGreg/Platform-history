@@ -787,9 +787,7 @@ function _constructUser (fields) {
 	var user = new Users.User(fields);
 
 	// update the Users.get cache
-	Users.get.cache.each([fields.id], function (k, v) {
-		Users.get.cache.remove(k);
-	});
+	Users.get.cache.removeEach(fields.id);
 	if (fields.id) {
 		Users.get.cache.set(
 			[fields.id], 0,
@@ -1653,13 +1651,21 @@ Users.vote = function (forType, forId, value) {
  * @static
  * @method hint 
  * @param {String} key A key to ensure the hint appears only the first time for each user. Check Users.hinted to see if this has happened.
- * @param {Element|Object} elementOrPoint Indicates where to display the hint. A point should contain properties "x" and "y".
+ * @param {Element|Object|Array} elementsOrPoints Indicates where to display the hint. A point should contain properties "x" and "y". Can also be an array of elements or points.
  * @param {Object} [options] possible options, which can include:
  * @param {String} [options.src] the url of the image
  * @param {Point} [options.hotspot={x:0.5,y:0.4}] "x" and "y" represent the location of the hotspot within the image, using fractions between 0 and 1
  * @param {String} [options.width="200px"]
  * @param {String} [options.height="200px"]
  * @param {Number} [options.zIndex=99999]
+ * @param {Boolean} [options.dontRemove=false] Pass true to keep current hints displayed
+ * @param {Integer} [options.show.delay=500]
+ * @param {Integer} [options.show.duration=500]
+ * @param {Integer} [options.show.initialScale=2]
+ * @param {Function} [options.show.ease=Q.Animation.ease.smooth]
+ * @param {Integer} [options.hide.delay=500]
+ * @param {Integer} [options.hide.duration=500]
+ * @param {Function} [options.hide.ease=Q.Animation.ease.smooth]
  * @return {Boolean} Returns true if the hint with will be shown, or false if a hint with this key was already shown before.
  */
 Users.hint = function (key, elementOrPoint, options) {

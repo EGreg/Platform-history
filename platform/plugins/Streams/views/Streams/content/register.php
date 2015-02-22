@@ -4,13 +4,13 @@
 			<tr>
 				<td>
 					<?php echo Q_Html::img(
-						"plugins/Users/img/icons/user-{$by_user->id}/80.png",
-						$by_display_name,
+						"plugins/Users/img/icons/user-{$byUser->id}/80.png",
+						$byDisplayName,
 						array('class' => 'item_icon')
 					) ?>
 				</td>
 				<td>
-					<h2><?php echo $by_display_name ?> invited you to:</h2>
+					<h2><?php echo $byDisplayName ?> invited you to:</h2>
 					<div class='stream_title'><?php echo $stream->title ?></div>
 				</td>
 			</tr>

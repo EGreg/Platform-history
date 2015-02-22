@@ -616,8 +616,11 @@ Streams.listen = function (options) {
             				    }).save(true);
             				}
 							
-
-            				// Add Streams/invited/$type label
+        				    // Add contacts.
+							// TODO: Implement hooks similar to PHP to update
+							// users_avatar table when contacts change.
+        				    // NOTE: In the future, we will have to send a distributed message to the new user's node.
+							
             				(new Users.Contact({
         				        userId: invitingUserId,
                                 label: "Streams/invited/"+stream.type,
@@ -629,9 +632,6 @@ Streams.listen = function (options) {
                                 label: "Streams/invited",
                                 contactUserId: userId
         				    })).save(true);
-
-        				    // Add Streams/invitedMe/$type label
-        				    // NOTE: In the future, we will have to send a distributed message to the new user's node
 							     				
             				(new Users.Contact({
         				        userId: userId,

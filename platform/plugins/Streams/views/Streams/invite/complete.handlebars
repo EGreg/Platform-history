@@ -8,8 +8,8 @@
 			<table>
 				{{#user}}
 					<tr class="Streams_complete_user">
-						<td><img src="{{icon}}/50.png" title="{{name}}"></td>
-						<td><div>{{name}}</div><div>{{text}}</div></td>
+						<td><img src="{{icon}}/50.png" title="{{displayName}} icon"></td>
+						<td><div>{{displayName}}</div><div>{{text}}</div></td>
 					</tr>
 				{{/user}}
 					<tr class="Streams_complete_stream">
@@ -29,7 +29,7 @@
 			</table>
 			<input type="hidden" name="token" value="{{token}}"/>
 			<input type="hidden" name="Q.method" value="get"/>
-			<div class="Streams_login_get_started">&nbsp;
+			<div class="Streams_login_get_started">
 				<button type="submit" class="Q_button Q_main_button Streams_login_start">{{button}}</button>
 			</div>
 		</form>

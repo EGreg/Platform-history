@@ -15,6 +15,7 @@
 			"Q/Utils/canWriteToPath": ["Streams/before/Q_Utils_canWriteToPath"],
 			"Db/Row/Users_Contact/saveExecute": ["Streams/before/Users_Contact_saveExecute"],
 			"Db/Row/Users_Contact/removeExecute": ["Streams/before/Users_Contact_removeExecute"],
+			"Db/Row/Streams_Participant/save": ["Streams/before/Streams_Participant_save"],
 			"Users/User/displayName": ["Streams/before/Users_User_displayName"]
 		},
 		"handlersAfterEvent": {
@@ -25,7 +26,8 @@
 			"Db/Row/Users_Contact/removeExecute": ["Streams/after/Users_Contact_removeExecute"],
 			"Users/saveContactsFromLinks": ["Streams/after/Users_saveContactsFromLinks"],
 			"Users/setLoggedInUser": ["Streams/after/Users_setLoggedInUser"],
-			"Streams/post/Streams/category": ["Streams/after/Streams_post_Streams_category"]
+			"Streams/post/Streams/category": ["Streams/after/Streams_post_Streams_category"],
+			"Streams/Stream/save/Streams/greeting": ["Streams/after/Streams_Stream_save_Streams_greeting"]
 		},
 		"routes": {
 			"plugins/Streams/:action": {"module": "Streams"},
@@ -109,22 +111,23 @@
 					},
 					"Streams/chat/edit": {
 						"post": true,
-						"title": "Chat change",
+						"title": "Chat message edited",
 						"subject": "Chat in {{stream.fields.title}}"
 					},
 					"Streams/chat/remove": {
 						"post": true,
-						"title": "Chat change",
-						"subject": "Chat in {{stream.fields.title}}"
-					},
-					"Streams/chat/reply": {
-						"post": true,
-						"title": "Chat message",
+						"title": "Chat message removed",
 						"subject": "Chat in {{stream.fields.title}}"
 					}
 				}
 			},
-			"Streams/announcement": {
+			"Streams/community": {
+			},
+			"Streams/greeting": {
+				"edit": true,
+				"defaults": {
+					"title": "Community Greeting"
+				}
 			}
 		},
 		"defaults": {

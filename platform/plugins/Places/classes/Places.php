@@ -145,13 +145,13 @@ abstract class Places extends Base_Places
 		$longitude = null,
 		$miles = 25)
 	{
+		$supportedTypes = array("establishment", "locality", "sublocality", "postal_code", "country", "administrative_area_level_1", "administrative_area_level_2");
 		$input = strtolower($input);
 		if (is_string($types)) {
 			$types = array($types);
-		} else if ($types === true) {
+		} else if ($types === null or $types === true) {
 			unset($types);
 		}
-		$supportedTypes = array("establishment", "locality", "sublocality", "postal_code", "country", "administrative_area_level_1", "administrative_area_level_2");
 		foreach ($types as $type) {
 			if (!in_array($type, $supportedTypes)) {
 				throw new Q_Exception_BadValue(array(
@@ -187,12 +187,22 @@ abstract class Places extends Base_Places
 		if (class_exists('Places_Autocomplete')) {
 			$pa = new Places_Autocomplete();
 			$pa->query = $input;
-			$pa->types = implode(',', $types);
+			$pa->types = $types ? implode(',', $types) : '';
 			$pa->latitude = $latitude;
 			$pa->longitude = $longitude;
 			$pa->miles = $miles;
 			if ($pa->retrieve()) {
-				return json_decode($pa->results, true);
+				$ut = $pa->updatedTime;
+				if (isset($ut)) {
+					$db = $pa->db();
+					$ut = $db->fromDateTime($ut);
+					$ct = $db->getCurrentTimestamp();
+					$cd = Q_Config::get('Places', 'cache', 'duration', 60*60*24*30);
+					if ($ct - $ut < $cd) {
+						// there are cached autocomplete results that are still viable
+						return json_decode($pa->results, true);
+					}
+				}
 			}
 		}
 

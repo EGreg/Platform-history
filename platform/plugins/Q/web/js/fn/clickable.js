@@ -92,7 +92,13 @@ function _Q_clickable(o) {
 		p.css('position', 'relative');
 	}
 	
-	setTimeout(function () {
+	setTimeout(function _clickify() {
+		if (!$this.is(':visible')) {
+			if (state.waitingDelay) {
+				setTimeout(_clickify, state.waitingDelay);
+			}
+			return;
+		}
 		var cs = $this[0].computedStyle();
 		var csw = cs.width; // the object can change, so get the values now
 		var csh = cs.height;
@@ -376,6 +382,7 @@ function _Q_clickable(o) {
 		y: 0.5
 	},
 	slightDelay: 10,
+	waitingDelay: 100,
 	selectable: false,
 	allowCallout: false,
 	cancelDistance: 15,

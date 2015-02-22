@@ -170,7 +170,7 @@
 .Streams_participants_tool {
 	padding: 0px 5px 0px 5px;
 	overflow: hidden;
-	white-space: nowrap;
+	height: 54px;
 }
 
 .Streams_participants_tool .Users_avatar_tool,
@@ -187,7 +187,8 @@
 }
 
 .Streams_participants_tool .Users_avatar_name,
-.Streams_participants_tool .Streams_invite_label {
+.Streams_participants_tool .Streams_invite_label,
+.Streams_participants_tool .Streams_participants_expand_text {
 	display: block;
 	width: 100%;
 	font-size: 10px;
@@ -231,6 +232,18 @@
 	text-align: center;
 	overflow: hidden;
 	margin-right: 2%;
+}
+
+.Streams_participants_tool .Streams_participants_controls {
+	float: right; width: 40px; display: none; visibility: hidden; pointer-events: none;
+}
+
+.Streams_participants_tool.Q_overflowed .Streams_participants_controls {
+	display: block; visibility: visible; pointer-events: auto;
+}
+
+.Streams_participants_tool .Streams_participants_expand img {
+	width: 40px; height: 40px;
 }
 
 .Streams_participants_tool .Streams_participants_container {
@@ -438,6 +451,12 @@
 	height: 30px;
 	color: black;
 }
+.Streams_chat_prevent {
+	text-align: center;
+	vertical-align: middle;
+	color: #555;
+	font-style: italic;
+}
 .Streams_chat_posting
 {
 	background: url('../../Q/img/throbbers/loading.gif') center no-repeat;
@@ -519,3 +538,43 @@
 		margin-top: 15px;
 	}
 }
+
+
+
+
+
+.Q_expandable_count,
+.Q_expandable_tool .Q_selected,
+#Streams_interests_unlisted .Q_selected {
+	background: rgba(255, 180, 180, 0.9);
+    color: #220;
+	text-shadow: none;
+}
+
+.Streams_interest_title,
+#Streams_new_interest_title {
+	font-size: 17px;
+	white-space: nowrap;
+	padding: 0px 3px 0px 3px;
+	margin: 0px -3px 0px -3px;
+    font-weight: 300;
+}
+
+.Streams_interest_title {
+	cursor: pointer;
+	border: 1px solid #777;
+    border-radius: 5px;
+}
+
+.Q_notTouchscreen .Streams_interest_title:hover {
+	text-decoration: underline;
+}
+
+.Streams_interest_title.Q_selected {
+	padding: 0px 3px 0px 3px;
+	margin: 0px -3px 0px -3px;
+    border-radius: 5px;
+    font-weight: 300;
+}
+
+#Streams_interests_unlisted { font-size: 11px; padding: 5px; }

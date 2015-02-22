@@ -978,8 +978,8 @@ class Streams_Stream extends Base_Streams_Stream
 	 *  Array that can contain the following keys:
 	 *  'userId' => user id or an array of user ids
 	 *  'fb_uid' => fb user id or array of fb user ids
-	 *  'label' => label or an array of labels
-	 *  'identifier' => identifier or an array of identifiers
+	 *  'label' => label or an array of labels, or tab-delimited string
+	 *  'identifier' => identifier or an array of identifiers, or tab-delimited string
 	 * @param {mixed} $options
 	 *  Array that can contain the following keys:
 	 *	'label' => the contact label to add to the invited users
@@ -1011,26 +1011,49 @@ class Streams_Stream extends Base_Streams_Stream
 		}
 
 		// get user ids if any to array, throw if user not found
-		$raw_userIds = isset($who['userId']) ? Users_User::verifyUserIds($who['userId'], true) : array();
+		$raw_userIds = isset($who['userId']) 
+			? Users_User::verifyUserIds($who['userId'], true)
+			: array();
 		// merge labels if any
-		$raw_userIds = isset($who['label']) ? array_merge($raw_userIds, Users_User::labelsToIds($user->id, $who['label'])) : $raw_userIds;
+		if (isset($who['labels'])) {
+			$labels = $who['labels'];
+			if (is_string($labels)) {
+				$labels = array_map('trim', explode("\t", $labels)) ;
+			}
+			$raw_userIds = array_merge(
+				$raw_userIds, 
+				Users_User::labelsToIds($user->id, $labels)
+			);
+		}
 		// merge identifiers if any
 		$identifierType = null;
 		if (isset($who['identifier'])) {
-			if (Q_Valid::email($who['identifier'])) {
-				$identifierType = 'email';
-			} else if (Q_Valid::phone($who['identifier'])) {
-				$identifierType = 'mobile';
+			$identifier = $who['identifier'];
+			if (is_string($identifier)) {
+				if (Q_Valid::email($who['identifier'])) {
+					$identifierType = 'email';
+				} else if (Q_Valid::phone($who['identifier'])) {
+					$identifierType = 'mobile';
+				}
+				$identifier = array_map('trim', explode("\t", $identifier)) ;
 			}
 			$statuses = array();
 			$identifier_ids = Users_User::idsFromIdentifiers($who['identifier'], $statuses);
 			$raw_userIds = array_merge($raw_userIds, $identifier_ids);
 		}
 		// merge fb uids if any
-		$raw_userIds = isset($who['fb_uid'])
-			? array_merge($raw_userIds, Users_User::idsFromFacebook($who['fb_uid']))
-			: $raw_userIds;
-		// ensure that each userId is included only once and remove already participating users
+		if (isset($who['fb_uid'])) {
+			$fb_uids = $who['fb_uid'];
+			if (is_string($fb_uids)) {
+				$fb_uids = array_map('trim', explode("\t", $fb_uids)) ;
+			}
+			$raw_userIds = array_merge(
+				$raw_userIds, 
+				Users_User::idsFromFacebook($fb_uids)
+			);
+		}
+		// ensure that each userId is included only once
+		// and remove already participating users
 		$raw_userIds = array_unique($raw_userIds);
 		$total = count($raw_userIds);
 
@@ -1039,7 +1062,10 @@ class Streams_Stream extends Base_Streams_Stream
 
 		$appUrl = !empty($options['appUrl'])
 			? $options['appUrl']
-			: Q_Request::baseUrl().'/'.Q_Config::get("Streams", "types", $stream->type, "invite", "url", "plugins/Streams/stream");
+			: Q_Request::baseUrl().'/'.Q_Config::get(
+				"Streams", "types", $stream->type, 
+				"invite", "url", "plugins/Streams/stream"
+			);
 
 		// now check and define levels for invited user
 		$readLevel = isset($options['readLevel']) ? $options['readLevel'] : null;
@@ -1085,7 +1111,9 @@ class Streams_Stream extends Base_Streams_Stream
 			"readLevel" => $readLevel,
 			"writeLevel" => $writeLevel,
 			"adminLevel" => $adminLevel,
-			"displayName" => isset($options['displayName']) ? $options['displayName'] : Streams::displayName($user),
+			"displayName" => isset($options['displayName'])
+				? $options['displayName']
+				: Streams::displayName($user),
 			"expiry" => $expiry
 		));
 

@@ -1698,22 +1698,27 @@ class Db_Row implements Iterator
 			? $this->fieldNames()
 			: null;
 
+		if (class_exists('Q')) {
+			if (false === Q::event(
+				"Db/Row/$this_class/save",
+				array(
+					'row' => $this,
+					'onDuplicateKeyUpdate' => &$onDuplicateKeyUpdate,
+					'commit' => &$commit
+				),
+				'before'
+			)) {
+				return false;
+			}
+		}
+
 		$modifiedFields = array();
 		foreach ($this->fields as $name => $value) {
 			if ($this->fieldsModified[$name]) {
 				$modifiedFields[$name] = $value;
 			}
 		}
-
-		if (class_exists('Q')) {
-			$row = $this;
-			if (false === Q::event(
-				"Db/Row/$this_class/save",
-				compact('row', 'modifiedFields', 'onDuplicateKeyUpdate', 'commit'), 'before'
-			)) {
-				return false;
-			}
-		}
+		
 		$callback = array($this, "beforeSave");
 		if (is_callable($callback)) {
 			$modifiedFields = call_user_func($callback, $modifiedFields, $onDuplicateKeyUpdate, $commit);

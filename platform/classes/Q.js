@@ -282,7 +282,7 @@ Q.makeEventEmitter = function _Q_makeEventEmitter(what, isConstructor) {
 	if (isConstructor) {
 		what.prototype.__proto__ = events.EventEmitter.prototype;
 	} else {
-		what.__proto__ = events.EventEmitter.prototype;
+		Q.extend(what, events.EventEmitter.prototype);
 	}
 };
 
@@ -1185,10 +1185,6 @@ Q.handle = function _Q_handle(callables, context, args) {
 	 default:
 		return 0;
 	}
-};
-
-Q.event = function _Q_event(name, context, args) {
-	return Q.handle(Q.getObject(name, Q.handlers, '/'), context, args);
 };
 
 /**
@@ -2739,6 +2735,7 @@ Q.firstErrorMessage = function _Q_firstErrorMessage(data /*, data2, ... */) {
  *  'cacheBust': Number of milliseconds before a new cachebuster is appended
  */
 Q.url = function _Q_url(what, fields, options) {
+	what = encodeURI(what);
 	if (fields) {
 		for (var k in fields) {
 			what += '?'+encodeURIComponent(k)+'='+encodeURIComponent(fields[k]);

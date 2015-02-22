@@ -50,9 +50,8 @@ function () {
 		span = $this.parent();
 		span.on(Q.Pointer.fastclick, function() {
 			$this.trigger('focus');
-			return false;
 		});
-		var placeholder = $('<div />').html(plch).css({
+		var $placeholder = $('<div />').text(plch).css({
 			'position': 'absolute',
 			'left': $this.position().left,
 			'top': $this.position().top,
@@ -74,35 +73,40 @@ function () {
 			'opacity': '0.5'
 		}).addClass('Q_placeholder').insertAfter($this);
 		if (t === 'input') {
-			placeholder.css('white-space', 'nowrap');
+			$placeholder.css('white-space', 'nowrap');
 		}
 		// IE8 workaround
-		placeholder[0].style.fontFamily = $this[0].style.fontFamily;
+		$placeholder[0].style.fontFamily = $this[0].style.fontFamily;
 		if ($this.val()) {
-			placeholder.stop().hide();
+			$placeholder.stop().hide();
 		}
 		var interval;
 		$this.focus(function () {
-			placeholder.parent().addClass('Q_focus');
+			$placeholder.parent().addClass('Q_focus');
 		});
 		$this.blur(function () {
-			placeholder.parent().removeClass('Q_focus');
+			$placeholder.parent().removeClass('Q_focus');
 			if (interval) clearInterval(interval);
 		});
-		$this.data('Q-placeholder', placeholder);
+		$this.data('Q-placeholder', $placeholder);
 	}).on('keypress keyup change input focus paste blur Q_refresh', manage);
 	return this;
 
 	function manage(event) {
 		var $this = $(this);
-		var placeholder = $this.data('Q-placeholder');
-		if (!placeholder) {
+		var $placeholder = $this.data('Q-placeholder');
+		if (!$placeholder) {
 			return;
 		}
+		var p;
+		if (p = $this.attr('placeholder')) {
+			$placeholder.text(p);
+			$this.removeAttr('placeholder');
+		}
 		if ($this.val()) { //  || event.type === 'keypress' || event.type === 'change'
-			placeholder.hide();
+			$placeholder.hide();
 		} else {
-			placeholder.show();
+			$placeholder.show();
 		}
 	}
 });

@@ -1,24 +1,26 @@
 <?php
 
 function Streams_0_8_1_Streams_mysql()
-{
-	// template for announcements
+{	
+	// template for community stream
 	$stream = new Streams_Stream();
 	$stream->publisherId = '';
-	$stream->name = 'Streams/announcement/';
+	$stream->name = 'Streams/community/';
 	$stream->type = 'Streams/template';
-	$stream->title = 'Announcements';
+	$stream->title = "Community";
 	$stream->content = '';
-	$readLevel = Streams::$READ_LEVEL['none'];
+	$readLevel = Streams::$READ_LEVEL['content'];
 	$writeLevel = Streams::$WRITE_LEVEL['join'];
 	$adminLevel = Streams::$ADMIN_LEVEL['invite'];
 	$stream->save();
 	
-	// app announcements
+	// app community stream, for announcements
+	$app = Q_Config::expect('Q', 'app');
 	$stream = new Streams_Stream();
-	$stream->publisherId = Q_Config::expect('Q', 'app');
-	$stream->name = 'Streams/announcement/main';
-	$stream->type = 'Streams/announcement';
+	$stream->publisherId = $app;
+	$stream->name = 'Streams/community/main';
+	$stream->type = 'Streams/community';
+	$stream->title = "$app Community";
 	$stream->save();
 }
 

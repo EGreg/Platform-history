@@ -26,7 +26,7 @@ include($paths_filename);
 $Q_filename = realpath(Q_DIR.'/Q.php');
 if (!file_exists($Q_filename)) {
 	$basename = basename(APP_DIR);
-	die("$header\nPlease have the correct path to Qbix in $basename/local/paths.php\n$footer");
+	die("$header\nPlease edit $basename/local/paths.php and $basename/local/paths.js to indicate the location of the Q/platform directory\n$footer");
 }
 
 include($Q_filename);

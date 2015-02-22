@@ -29,6 +29,6 @@ include($paths_filename);
 
 $realpath = realpath(Q_DIR.'/Q.php');
 if (!$realpath) {
-	die("Please edit $basename/local/paths.js and $basename/local/paths.php to indicate the location of the Q/platform directory, then run configure.php again\n");
+	die("Please edit $basename/local/paths.php and $basename/local/paths.js to indicate the location of the Q/platform directory, then run configure.php again\n");
 }
 include($realpath);

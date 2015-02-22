@@ -28,8 +28,8 @@ function Streams_after_Users_User_saveExecute($params)
 		$p->load(APP_CONFIG_DIR.DS.'streams.json');
 	
 		$values = array(
-			'Streams/user/firstName' => Q::ifset(Streams::$cache, 'register', 'first', ''),
-			'Streams/user/lastName' => Q::ifset(Streams::$cache, 'register', 'last', ''),
+			'Streams/user/firstName' => $firstName,
+			'Streams/user/lastName' => $lastName,
 		);
 	
 		// Check for user data from facebook
@@ -70,6 +70,14 @@ function Streams_after_Users_User_saveExecute($params)
 			$stream->save(); // this also inserts avatars
 			$stream->join(array('userId' => $user->id));
 		}
+		
+		// Save a greeting stream, to be edited
+		$communityId = Q_Config::expect('Q', 'app');
+		$stream = new Streams_Stream();
+		$stream->publisherId = $user->id;
+		$stream->name = "Streams/greeting/$communityId";
+		$stream->type = "Streams/greeting";
+		$stream->save();
 	
 		// Create some standard labels
 		$label = new Users_Label();
@@ -85,6 +93,29 @@ function Streams_after_Users_User_saveExecute($params)
 		$label2->icon = 'Streams/labels/invitedMe';
 		$label2->title = 'Those who invited me';
 		$label2->save(true);
+		
+		// By default, users they invite should see their full name
+		$access = new Streams_Access();
+		$access->publisherId = $user->id;
+		$access->streamName = 'Streams/user/firstName';
+		$access->ofUserId = '';
+		$access->ofContactLabel = 'Streams/invited';
+		$access->grantedByUserId = $user->id;
+		$access->readLevel = Streams::$READ_LEVEL['content'];
+		$access->writeLevel = -1;
+		$access->adminLevel = -1;
+		$access->save();
+		
+		$access = new Streams_Access();
+		$access->publisherId = $user->id;
+		$access->streamName = 'Streams/user/lastName';
+		$access->ofUserId = '';
+		$access->ofContactLabel = 'Streams/invited';
+		$access->grantedByUserId = $user->id;
+		$access->readLevel = Streams::$READ_LEVEL['content'];
+		$access->writeLevel = -1;
+		$access->adminLevel = -1;
+		$access->save();
 		
 	} else if ($modifiedFields) {
 		if ($updates) {
