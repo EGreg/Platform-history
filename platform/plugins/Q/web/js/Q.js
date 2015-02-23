@@ -9513,19 +9513,12 @@ Aup.pause = function () {
 };
 
 /**
- * Operates a collection of masks, covering screen for some purposes or providing some splash screens.
+ * Methods for temporarily covering up certain parts of the screen with masks
  * @class Q.Masks
  * @namespace Q
  * @static
  */
 Q.Masks = {
-	/**
-	 * Property to store masks in hash indexed by mask key.
-	 * @static
-	 * @property collection
-	 * @type Object
-	 * @private
-	 */
 	collection: {},
 	/**
 	 * Creates new mask with given key and options, or returns already created one for that key.
@@ -9550,7 +9543,7 @@ Q.Masks = {
 		}, Q.Masks.options[key], options);
 		var me = mask.element = document.createElement('div');
 		me.addClass('Q_mask ' + (mask.className || ''));
-		if (options.html) {
+		if (options && options.html) {
 			me.innerHTML = options.html;
 		}
 		document.body.appendChild(me);
