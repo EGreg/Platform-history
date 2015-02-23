@@ -1700,7 +1700,7 @@ Q.Event = function _Q_Event(callable, key, prepend) {
 	 */
 	this.handle = function _Q_Event_instance_handle() {
 		var i, count = 0, oldOccurring = event.occurring, result;
-		if (this.stopped) return 0;
+		if (event.stopped) return 0;
 		event.occurring = true;
 		event.lastContext = this;
 		event.lastArgs = arguments;
