@@ -493,7 +493,11 @@ var _Streams_batchFunction_preprocess = {
 				userIds.push(args[i][0]);
 			}
 			return {userIds: userIds};
-		}
+		},
+		max: 100
+	},
+	batch: {
+		max: 100
 	}
 };
 
@@ -3193,12 +3197,20 @@ Q.beforeInit.add(function _Streams_beforeInit() {
 
 Q.onInit.add(function _Streams_onInit() {
 	var Users = Q.plugins.Users;
-	Users.login.options.setupRegisterForm = Streams.setupRegisterForm;
+	Users.login.options.setupRegisterForm=  Streams.setupRegisterForm;
 	Q.text.Users.login.placeholders.fullName = 'Enter your full name';
 	Q.text.Users.login.maxlengths.fullName = 50;
 
-	Users.onLogin.set(_connectSockets, "Streams");
-	Users.onLogout.set(Q.Socket.destroyAll, "Streams");
+	Users.onLogin.set(function (user) {
+		if (user) { // the user changed
+			Interests.my = {};
+		};
+		_connectSockets.apply(this, arguments);
+	}, "Streams");
+	Users.onLogout.set(function () {
+		Interests.my = {}; // clear the interests
+		Q.Socket.destroyAll();
+	}, "Streams");
 	if (Users.loggedInUser) {
 		_connectSockets();
 	}

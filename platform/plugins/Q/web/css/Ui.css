@@ -354,7 +354,7 @@ div.Q_placeholder { pointer-events: none; }
 	visibility: hidden;
 }
 
-.Q_screen_mask, .Q_load_data_mask, .Q_cancel_mask, .Q_image_picker_mask
+.Q_mask
 {
 	display: none;
 	position: fixed;

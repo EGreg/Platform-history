@@ -645,6 +645,7 @@ Elp.addClass = function (className) {
 	var l = classNames.length;
 	for (var i=0; i<l; ++i) {
 		var c = classNames[i];
+		if (!c) continue;
 		if (this.classList) {
 			this.classList.add(c);
 		} else {
@@ -2239,7 +2240,10 @@ Q.onJQuery = new Q.Event();
  * This event occurs every time the layout needs to be updated
  * @event onLayout
  */
-Q.onLayout = new Q.Event(_detectOrientation, 'Q');
+Q.onLayout = new Q.Event(function () {
+	_detectOrientation.apply(this, arguments);
+	Q.Masks.update();
+}, 'Q');
 /**
  * This event is convenient for doing stuff when the window scrolls
  * @event onLayout
@@ -9275,7 +9279,7 @@ Q.Dialogs = {
 			}
 		}
 		if (!this.dialogs.length) {
-			Q.Mask.hide('Q.screen.mask');
+			Q.Masks.hide('Q.screen.mask');
 		}
 		return dialog;
 	}
@@ -9509,99 +9513,74 @@ Aup.pause = function () {
 };
 
 /**
- * Operates a collection of masks, covering screen for some purposes or providing some splash screens.
- * @class Q.Mask
+ * Methods for temporarily covering up certain parts of the screen with masks
+ * @class Q.Masks
  * @namespace Q
  * @static
  */
-Q.Mask = {
-	/**
-	 * Property to store masks in hash indexed by mask key.
-	 * @static
-	 * @property collection
-	 * @type Object
-	 * @private
-	 */
+Q.Masks = {
 	collection: {},
 	/**
-	 * Creates new mask with given key and options.
+	 * Creates new mask with given key and options, or returns already created one for that key.
 	 * @static
-	 * @method create
-	 * @param {String} key A string key to identify mask in subsequent Q.Mask calls.
-	 * @param {Object} options A hash of additioal options which may include:
-	 *   'className': Optional. String that provide CSS class name for the mask to stylize it properly.
-	 *   'fadeTime': Defaults to '0'. Fade-in / fade-out time for mask showing / hiding.
-	 *   'sizeMatcher': Optional. If provided, should be DOM element, jQuery object or jQuery selector of the element which will be used
-	 *                  to calculated mask width and height, i.e. mask size will match element size. 'window' object is used by default,
-	 *                  particularly its 'innerWidth' and 'innerHeight' properties.
+	 * @method mask
+	 * @param {String} key A string key to identify mask in subsequent Q.Masks calls.
+	 * @param {Object} [options={}] The defaults are taken from Q.Masks.options[key]
+	 * @param {String} [options.className=''] CSS class name for the mask to style it properly.
+	 * @param {Number} [options.fadeIn=0] Milliseconds it should take to fade in the mask
+	 * @param {Number} [options.fadeOut=0] Milliseconds it should take to fade out the mask.
+	 * @param {String} [options.html=''] Any HTML to insert into the mask.
+	 * @param {HTMLElement} [options.shouldCover=null] Optional element in the DOM to cover.
 	 */
-	create: function(key, options)
+	mask: function(key, options)
 	{
-		var $ = window.jQuery;
-		if (key in Q.Mask.collection) {
+		if (key in Q.Masks.collection) {
 			throw new Error("Mask with key '" + key + "' already exists.");
 		}
-		if (!options) {
-			throw new Error("'options' is required when creating new mask.");
+		var mask = Q.Masks.collection[key] = Q.extend({
+			'fadeTime': 0,
+			'shouldCover': null
+		}, Q.Masks.options[key], options);
+		var me = mask.element = document.createElement('div');
+		me.addClass('Q_mask ' + (mask.className || ''));
+		if (options && options.html) {
+			me.innerHTML = options.html;
 		}
-		if (!options.className) {
-			throw new Error("'options.className' is required when creating new mask.");
-		}
-		Q.Mask.collection[key] = Q.extend({
-			'fadeTime': 0
-		}, options);
-		var width = options.sizeMatcher && $(options.sizeMatcher).width() ? $(options.sizeMatcher).width() : Q.Pointer.windowWidth();
-		var height = options.sizeMatcher && $(options.sizeMatcher).height() ? $(options.sizeMatcher).height() : Q.Pointer.windowHeight();
-		var mask = $('<div class="' + options.className + '" />');
-		mask.css({ 'width': width + 'px', 'height': height + 'px', 'line-height': height + 'px' });
-		if (options.html) {
-			mask.html(options.html);
-		}
-		$(document.body).append(mask);
-		Q.Mask.collection[key].element = mask;
-		Q.Mask.collection[key].shows = 0;
+		document.body.appendChild(me);
+		me.style.display = 'none';
+		mask.counter = 0;
+		Q.Masks.collection[key] = mask;
 	},
 	/**
-	 * Shows the mask by given key. Additional options maybe provided to override default mask options.
-	 * Mask shows is counted and in case of multiple show() calls on the same mask, mask will be shown only one time and then
-	 * the counter is just incremented. Similar is for hide() calls - mask will be really hidden only if counter is equal zero.
-	 * Also note, that there may be predefined options for the mask in Q.Mask.options[key] and in case if mask doesn't exist, it will be created
-	 * with these options. Otherwise, the mask at first must be created with explicit create() call and if it's not the case, exception will be thrown.
+	 * Shows the mask by given key. Only one mask is shown for any given key.
+	 * A counter is incremented on Masks.show and decremented on Masks.hide, causing
+	 * the mask to be hidden when the counter reaches zero.
+	 * If a mask with the given key doesn't exist, Mask.create is automatically
+	 * called with the key and options from Q.Masks.options[key] .
 	 * @static
 	 * @method show
-	 * @param {String} key A string key to of the mask to show.
-	 * @param {Object} [options] A hash of additional options which are same as for create and used to override initial mask options.
-	 *                           but only for one show() call (they are restored back after mask is hidden).
+	 * @param {String} key The key of the mask to show.
+	 * @param {Object} [options={}] Used to provide any mask options to Q.Masks.mask
 	 */
 	show: function(key, options)
 	{
-		if (!(key in Q.Mask.collection)) {
-			if (key in Q.Mask.options) {
-				Q.Mask.create(key, Q.Mask.options[key]);
-			} else {
-				throw new Error("Mask with key '" + key + "' doesn't exist");
+		if (!(key in Q.Masks.collection)) {
+			Q.Masks.mask(key, options);
+		}
+		var mask = Q.Masks.collection[key];
+		if (!mask.counter) {
+			var me = mask.element;
+			me.style.display = 'block';
+			if (mask.fadeIn) {
+				var opacity = me.computedStyle().opacity;
+				Q.Animation.play(function (x, y) {
+					me.style.opacity = y * opacity;
+				}, mask.fadeIn);
+				me.style.opacity = 0;
 			}
 		}
-		if (options === undefined) options = {};
-		var mask = Q.Mask.collection[key];
-		if (!mask.shows) {
-			if (options.className) { // temporary class name which is applied only until mask is hidden
-				mask.tmpClassName = options.className;
-				mask.element.addClass(mask.tmpClassName);
-			}
-			if (options.fadeTime) { // temporary fadeTime also to overwrite default
-				if (mask.fadeTime) {
-					mask.oldFadeTime = mask.fadeTime;
-				}
-				mask.fadeTime = options.fadeTime;
-			}
-			if (mask.fadeTime) {
-				mask.element.fadeIn(mask.fadeTime);
-			} else {
-				mask.element.show();
-			}
-		}
-		mask.shows++;
+		++mask.counter;
+		Q.Masks.update(key);
 	},
 	/**
 	 * Hides the mask by given key. If mask with given key doesn't exist, fails silently.
@@ -9611,105 +9590,59 @@ Q.Mask = {
 	 */
 	hide: function(key)
 	{
-		var $ = window.jQuery;
-		if (!(key in Q.Mask.collection)) return;
-		
-		var mask = Q.Mask.collection[key];
-		if (mask.shows > 0) {
-			mask.shows--;
-		}
-		if (!mask.shows) {
-			if (mask.button) {
-				$(mask.button).remove();
-				delete mask.button;
-			}
-			if (mask.fadeTime) {
-				mask.element.fadeOut(mask.fadeTime, function()
-				{
-					if (mask.oldFadeTime !== undefined)
-					{
-						mask.fadeTime = mask.oldFadeTime;
-						delete mask.oldFadeTime;
-					}
-					if (mask.tmpClassName !== undefined)
-					{
-						mask.element.removeClass(mask.tmpClassName);
-						delete mask.tmpClassName;
-					}
+		if (!(key in Q.Masks.collection)) return;
+		var mask = Q.Masks.collection[key];
+		if (mask.counter === 0) return;
+		var me = mask.element;
+		if (--mask.counter === 0) {
+			if (mask.fadeOut) {
+				var opacity = me.computedStyle().opacity;
+				Q.Animation.play(function (x, y) {
+					me.style.opacity = (1-y) * opacity;
+				}, mask.fadeOut).onComplete.set(function () {
+					me.style.display = 'none';
 				});
 			} else {
-				mask.element.hide();
-				if (mask.tmpClassName !== undefined)
-				{
-					mask.element.removeClass(mask.tmpClassName);
-					delete mask.tmpClassName;
-				}
+				me.style.display = 'none';
 			}
 		}
 	},
 	/**
-	 * Returns mask object by given key. This object is an extension of the mask options used during creation
-	 * plus some additional fields, most important of which is mask.element - jQuery object representing
-	 * mask element in the DOM. If the mask with given key is not found in the collection, get() tries to
-	 * create it from predefined options (if there are ones), otherwise it throws an error.
-	 * @static
-	 * @method get
-	 * @param {String} key A key of the mask to get.
-	 */
-	get: function(key)
-	{
-		if (key in Q.Mask.collection) {
-			return Q.Mask.collection[key];
-		} else if (key in Q.Mask.options) {
-			Q.Mask.create(key, Q.Mask.options[key]);
-			return Q.Mask.collection[key];
-		} else {
-			throw new Error("Mask with key '" + key + "' doesn't exist");
-		}
-	},
-	/**
-	 * Updates all masks. This particularly measn it adjusts mask DOM element size, useful when window size changes.
+	 * Updates size and appearance of all the masks. 
+	 * Automatically called on Q.onLayout
 	 * @static
 	 * @method update
 	 */
 	update: function()
 	{
-		var $ = window.jQuery;
-		for (var i in Q.Mask.collection)
-		{
-			var mask = Q.Mask.collection[i];
-			var width = mask.sizeMatcher && $(mask.sizeMatcher).width() ? $(mask.sizeMatcher).width() : Q.Pointer.windowWidth();
-			var height = mask.sizeMatcher && $(mask.sizeMatcher).height() ? $(mask.sizeMatcher).height() : Q.Pointer.windowHeight();
-			mask.element.css({ 'width': width + 'px', 'height': height + 'px', 'line-height': height + 'px' });
+		for (var k in Q.Masks.collection) {
+			var mask = Q.Masks.collection[k];
+			if (!mask.counter) continue;
+			var html = document.documentElement;
+			var rect = mask.rect = (mask.shouldCover || html).getBoundingClientRect();
+			var ms = mask.element.style;
+			ms.left = rect.left;
+			ms.top = rect.top;
+			ms.width = rect.right - rect.left + 'px';
+			ms.height = ms['line-height'] = rect.bottom - rect.top + 'px';
 		}
 	},
 	/**
-	 * Checks if mask with given key is currently shown. If mask with given key is not found, fails silently.
+	 * Checks if a mask with given key has been created and is currently being shown.
 	 * @static
 	 * @method isVisible
-	 * @param {String} key A key of the mask to check whether it's visible. 
+	 * @param {String} key The key of the mask
 	 */
 	isVisible: function(key)
 	{
-		if (!(key in Q.Mask.collection)) return false;
-		return !!Q.Mask.collection[key].shows;
-	},
-	/**
-	 * Checks if the mask with given key is already created and exists in the collection.
-	 * @static
-	 * @method exists
-	 * @param {String} key A key of the mask to check whether it exists. 
-	 */
-	exists: function(key)
-	{
-		return (key in Q.Mask.collection);
+		return !!Q.getObject([key, 'counter'], Q.Masks.Collection);
 	}
 };
 
-Q.Mask.options = {
-	'Q.screen.mask': { 'className': 'Q_screen_mask' },
-	'Q.request.load.mask': { 'className': 'Q_load_data_mask', 'fadeTime': 200 },
-	'Q.request.cancel.mask': { 'className': 'Q_cancel_mask', 'fadeTime': 200 }
+Q.Masks.options = {
+	'Q.screen.mask': { className: 'Q_screen_mask', fadeIn: 500 },
+	'Q.request.load.mask': { className: 'Q_load_data_mask', fadeIn: 200 },
+	'Q.request.cancel.mask': { className: 'Q_cancel_mask', fadeIn: 200 }
 };
 
 Q.addEventListener(window, Q.Pointer.start, _Q_PointerStartHandler);
@@ -9925,11 +9858,11 @@ Q.onReady.set(function _Q_masks() {
 	_Q_restoreScrolling();
 	Q.request.options.onLoadStart.set(function(url, slotNames, o) {
 		if (o.quiet) return;
-		Q.Mask.show('Q.request.load.mask');
+		Q.Masks.show('Q.request.load.mask');
 	}, 'Q.request.load.mask');
 	Q.request.options.onShowCancel.set(function(callback, o) {
 		if (o.quiet) return;
-		var mask = Q.Mask.get('Q.request.cancel.mask').element;
+		var mask = Q.Masks.mask('Q.request.cancel.mask').element;
 		var button = mask.children('.Q_load_cancel_button');
 		if (!button.length) {
 			button = document.createElement('button');
@@ -9939,15 +9872,15 @@ Q.onReady.set(function _Q_masks() {
 			mask.appendChild(button);
 		}
 		$(button).off(Q.Pointer.end).on(Q.Pointer.end, callback);
-		Q.Mask.show('Q.request.cancel.mask');
+		Q.Masks.show('Q.request.cancel.mask');
 	}, 'Q.request.load.mask');
 	Q.request.options.onLoadEnd.set(function(url, slotNames, o) {
 		if (o.quiet) return;
-		Q.Mask.hide('Q.request.load.mask');
-		Q.Mask.hide('Q.request.cancel.mask');
+		Q.Masks.hide('Q.request.load.mask');
+		Q.Masks.hide('Q.request.cancel.mask');
 	}, 'Q.request.load.mask');
 	Q.onLayout.handle();
-}, 'Q.masks');
+}, 'Q.Maskss');
 
 if (typeof module !== 'undefined' && typeof process !== 'undefined') {
 	// Assume we are in a Node.js environment, e.g. running tests
