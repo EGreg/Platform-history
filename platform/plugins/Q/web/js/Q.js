@@ -1699,18 +1699,19 @@ Q.Event = function _Q_Event(callable, key, prepend) {
 	 * @return {mixed}
 	 */
 	this.handle = function _Q_Event_instance_handle() {
-		var i, count = 0, result;
+		var i, count = 0, oldOccurring = event.occurring, result;
 		if (this.stopped) return 0;
-		event.occurred = 0; // shows that the event has begun to occur
+		event.occurring = true;
+		event.lastContext = this;
+		event.lastArgs = arguments;
 		var keys = Q.copy(event.keys); // in case event.remove is called during loop
 		for (i=0; i<keys.length; ++i) {
 			result = Q.handle(event.handlers[ keys[i] ], this, arguments);
 			if (result === false) return false;
 			count += result;
 		}
+		event.occurring = oldOccurring;
 		event.occurred = true; // unless an exception was thrown
-		event.lastContext = this;
-		event.lastArgs = arguments;
 		return count;
 	};
 };
@@ -1813,7 +1814,7 @@ Evp.set = function _Q_Event_prototype_set(handler, key, prepend) {
 
 /**
  * Like the "set" method, adds a handler to an event, or overwrites an existing one.
- * But in addition, immediately handles the handler if the event has already occurred at least once,
+ * But in addition, immediately handles the handler if the event has already occurred at least once, or is currently occuring,
  * passing it the same subject and arguments as were passed to the event the last time it occurred.
  * @method add
  * @param {mixed} handler Any kind of callable which Q.handle can invoke
@@ -1828,7 +1829,7 @@ Evp.set = function _Q_Event_prototype_set(handler, key, prepend) {
  */
 Evp.add = function _Q_Event_prototype_add(handler, key, prepend) {
 	var ret = this.set(handler, key, prepend);
-	if (this.occurred) {
+	if (this.occurred || this.occurring) {
 		Q.handle(handler, this.lastContext, this.lastArgs);
 	}
 	return ret;
@@ -6985,6 +6986,8 @@ function Q_popStateHandler() {
 
 // private methods
 
+var _constructors = {};
+
 /**
  * Given a tool's generated container div, constructs the
  * corresponding JS tool object. Used internally.
@@ -7005,9 +7008,9 @@ function Q_popStateHandler() {
  *  A shared pipe which we can use to fill
  */
 function _activateTools(toolElement, options, shared) {
-	var _constructors = {};
 	var pendingParentEvent = _pendingParentStack[_pendingParentStack.length-1];
 	var pendingCurrentEvent = new Q.Event();
+	pendingCurrentEvent.toolElement = toolElement; // just to keep track for debugging
 	_pendingParentStack.push(pendingCurrentEvent); // wait for construct of parent tool
 	_loadToolScript(toolElement,
 	function _activateTools_doConstruct(toolElement, toolFunc, toolName, uniqueToolId) {
