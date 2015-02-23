@@ -652,7 +652,7 @@ Q.Layout = {
 						if (!Q.Layout.focusEventOccured && !Q.Layout.keyboardVisible && Q.Layout.addressBarVisible)
 						{
 							Q.Layout.hideAddressBar(true);
-							Q.Mask.hide('Q.screen.mask');
+							Q.Masks.hide('Q.screen.mask');
 							if ($('#main').height() != window.innerHeight)
 								Q.Layout.orientationChange(false, true);
 						}
@@ -1086,9 +1086,9 @@ Q.Layout = {
 				Q.Layout.orientationChange(false, true, true);
 		}
 		if (Q.Layout.handleAddressBarAppearing && Q.Layout.heightWithAddressBar < Q.Layout.fullScreenHeight &&
-				window.innerHeight == Q.Layout.heightWithAddressBar && !Q.Mask.isVisible('Q.screen.mask'))
+				window.innerHeight == Q.Layout.heightWithAddressBar && !Q.Masks.isVisible('Q.screen.mask'))
 		{
-			Q.Mask.show('Q.screen.mask');
+			Q.Masks.show('Q.screen.mask');
 			Q.Layout.addressBarVisible = true;
 		}
 	},
@@ -1310,7 +1310,7 @@ Q.Layout = {
 		
 		Q.Layout.adjustScrolling();
 		Q.Contextual.updateLayout();
-		Q.Mask.update();
+		Q.Masks.update();
 		
 		$('.Q_player').each(function()
 		{
@@ -2975,7 +2975,7 @@ Q.Contextual = {
 		
 		if (Q.info.isTouchscreen)
 		{
-			Q.Mask.show('Q.screen.mask', { 'fadeTime': Q.Contextual.fadeTime });
+			Q.Masks.show('Q.screen.mask', { 'fadeTime': Q.Contextual.fadeTime });
 		}
 		
 		if (!info.ellipsissed)
@@ -3019,7 +3019,7 @@ Q.Contextual = {
 				contextual.hide();
 			if (!leaveMask)
 			{
-				Q.Mask.hide('Q.screen.mask');
+				Q.Masks.hide('Q.screen.mask');
 			}
 			
 			Q.Contextual.current = -1;
@@ -3185,7 +3185,7 @@ Q.Notice = {
 					
 					if (Q.info.isMobile || Q.info.isTablet)
 					{
-						Q.Mask.show('Q.screen.mask', { 'fadeTime': 200, 'className': 'Q_screen_shadow_mask' });
+						Q.Masks.show('Q.screen.mask', { 'fadeTime': 200, 'className': 'Q_screen_shadow_mask' });
 					}
 				};
 				
@@ -3205,7 +3205,7 @@ Q.Notice = {
 					
 					if (Q.info.isMobile || Q.info.isTablet)
 					{
-						Q.Mask.hide('Q.screen.mask');
+						Q.Masks.hide('Q.screen.mask');
 					}
 				};
 				
@@ -3216,7 +3216,7 @@ Q.Notice = {
 						if (Q.info.isMobile || Q.info.isTablet)
 						{
 							noticesSlot.bind(Q.Pointer.start, Q.Notice.eventHandlers.expand);
-							Q.Mask.get('Q.screen.mask').element.bind(Q.Pointer.start, Q.Notice.eventHandlers.collapse);
+							Q.Masks.get('Q.screen.mask').element.bind(Q.Pointer.start, Q.Notice.eventHandlers.collapse);
 						}
 						else
 						{
@@ -3234,7 +3234,7 @@ Q.Notice = {
 						if (Q.info.isTouchscreen)
 						{
 							noticesSlot.unbind(Q.Pointer.start, Q.Notice.eventHandlers.expand);
-							Q.Mask.get('Q.screen.mask').element.unbind(Q.Pointer.start, Q.Notice.eventHandlers.collapse);
+							Q.Masks.get('Q.screen.mask').element.unbind(Q.Pointer.start, Q.Notice.eventHandlers.collapse);
 						}
 						else
 						{
@@ -3401,7 +3401,7 @@ Q.Notice = {
 								Q.Notice.removeCounter();
 								if (Q.info.isTouchscreen)
 								{
-									Q.Mask.hide('Q.screen.mask');
+									Q.Masks.hide('Q.screen.mask');
 									Q.Notice.expanded = false;
 								}
 							}

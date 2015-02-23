@@ -493,7 +493,11 @@ var _Streams_batchFunction_preprocess = {
 				userIds.push(args[i][0]);
 			}
 			return {userIds: userIds};
-		}
+		},
+		max: 100
+	},
+	batch: {
+		max: 100
 	}
 };
 
