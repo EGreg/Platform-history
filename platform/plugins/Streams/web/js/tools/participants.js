@@ -119,7 +119,7 @@ function _Streams_participants(options) {
 			if (fem) {
 				return console.warn("Streams/preview: " + fem);
 			}
-			if (!Q.Tool.byId(tool.id)) {
+			if (!$(tool.element).closest('body').length) {
 				return;
 			}
 			var stream = tool.stream = this;

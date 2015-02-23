@@ -8,6 +8,8 @@ var Db = Q.require('Db');
 var Streams = Q.require('Streams');
 var Base_Streams_Message = Q.require('Base/Streams/Message');
 
+Q.makeEventEmitter(Streams_Message);
+
 /**
  * Class representing 'Message' rows in the 'Streams' database
  * <br/>stored primarily on publisherId's fm server
@@ -177,6 +179,7 @@ Streams_Message.prototype.deliver = function(stream, delivery, avatar, callback)
 		message: this,
 		instructions: this.getAll(),
 		avatar: avatar,
+		config: Q.Config.getAll()
 	};
 	var subject = Q.Config.get(
 		['Streams', 'types', stream.fields.type, 'messages', this.fields.type, 'subject'], 
@@ -188,13 +191,31 @@ Streams_Message.prototype.deliver = function(stream, delivery, avatar, callback)
 			)
 		)
 	);
+	var t = delivery.email ? 'email' : (delivery.mobile ? 'mobile' : '');
+	if (!t) {
+		return callback("Streams.Message: delivery has to be email or mobile for now");
+	}
+	var viewPath = Q.Handlebars.template(this.fields.type+'/'+t+'.handlebars')
+		? this.fields.type
+		: 'Streams/message';
+	
+	// Give the app an opportunity to modify the fields or anything else
+	var o = {
+		fields: fields,
+		subject: subject,
+		delivery: delivery,
+		stream: stream,
+		avatar: avatar,
+		callback: callback,
+		viewPath: viewPath+'/'+t+'.handlebars'
+	};
+	Streams_Message.emit('deliver/before', o);
+	
 	var viewPath;
-	if (delivery.email) {
-		viewPath = Q.Handlebars.template(this.fields.type+'/email.handlebars') ? this.fields.type : 'Streams/message';
-		Q.Utils.sendEmail(delivery.email, subject, viewPath+'/email.handlebars', fields, {html: true}, callback);
-	} else if (delivery.mobile) {
-		viewPath = Q.Handlebars.template(this.fields.type+'/mobile.handlebars') ? this.fields.type : 'Streams/message';
-		Q.Utils.sendSMS(delivery.mobile, viewPath+'/mobile.handlebars', fields, {}, callback);
+	if (o.delivery.email) {
+		Q.Utils.sendEmail(o.delivery.email, o.subject, o.viewPath, o.fields, {html: true}, callback);
+	} else if (o.delivery.mobile) {
+		Q.Utils.sendSMS(o.delivery.mobile, o.viewPath, o.fields, {}, callback);
 	}
 };
 
