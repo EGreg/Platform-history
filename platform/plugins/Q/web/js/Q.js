@@ -49,7 +49,7 @@ Q.Error = Error;
  */
 
 /**
- * @class String
+ * @class Object
  * @description Q extended methods for Objects
  */
 
@@ -340,6 +340,11 @@ Function.prototype.bind = function _Function_prototype_bind(obj, options) {
 		return method.apply(obj, args);
 	};
 };
+
+/**
+ * @class Array
+ * @description Q extended methods for Arrays
+ */
 
 if (!Array.prototype.indexOf)
 Array.prototype.indexOf = function _Array_prototype_indexOf(searchElement /*, fromIndex */ ) {
@@ -1748,15 +1753,14 @@ Q.Event.from = function _Q_Event_from(source, eventName) {
  */
 Q.Event.calculateKey = function _Q_Event_calculateKey(key, container, start) {
 	if (key === true) {
-		return key;
+		return "PAGE: CURRENT";
 	}
 	if (key === undefined) {
 		key = Q.Tool.beingActivated; // by default, use the current tool as the key, if any
 	}
 	if (Q.typeOf(key) === 'Q.Tool')	{
-		key = key.id;
-	}
-	if (container && key == undefined) { // key is undefined or null
+		key = "TOOL: " + key.id;
+	} else if (container && key == undefined) { // key is undefined or null
 		var i = (start === undefined) ? 1 : start;
 		key = 'AUTOKEY_' + i;
 		while (container[key]) {
@@ -3428,7 +3432,7 @@ Tp.stateChanged = function Q_Tool_prototype_stateChanged(names) {
 		var name = names[i];
 		this.Q.onStateChanged(name).handle.call(this, name);
 	}
-	this.Q.onStateChanged('').handle(this, [names]);
+	this.Q.onStateChanged('').handle.call(this, names);
 };
 
 /**
@@ -3826,7 +3830,7 @@ Q.Tool.calculateId = function _Q_Tool_calculatePrefix(id) {
  * @return {String}
  */
 Tp.toString = function _Q_Tool_prototype_toString() {
-	return this.id.substr(0, this.id.length - 1);
+	return this.id;
 };
 
 /**
@@ -7239,14 +7243,13 @@ Q.Template.remove = function (name) {
  * Load template from server and store to cache
  * @static
  * @method load
- * @param name {String} The template name. Here is how templates are found:
- *   First, load any new templates from the DOM if found inside script tag with type "text/"+type
+ * @param {String} name The template name. Here is how templates are found:
+ *   First, load any new templates from the DOM found inside script tags with type "text/"+type.
  *   Then, check the cache. If not there, we try to load the template from dir+'/'+name+'.'+type
- * @param callback {Function} Receives two parameters: (err, templateText)
- * @param options {Object?} Options.
- *   "type" - the type and extension of the template, defaults to 'handlebars'
- *   "dir" - the subpath of the app url under which to look for the template if it needs to be loaded
- *   "name" - option to override the name of the template
+ * @param {Function} callback Receives two parameters: (err, templateText)
+ * @param {String} [options.type='handlebars'] the type and extension of the template
+ * @param {String} [options.dir] the folder under project web folder where templates are located
+ * @param {String} [options.name] option to override the name of the template
  * @return {String|undefined}
  */
 Q.Template.load = Q.getter(function _Q_Template_load(name, callback, options) {
@@ -7333,14 +7336,14 @@ Q.Template.onError = new Q.Event(function (err) {
  * Render template taken from DOM or from file on server with partials
  * @static
  * @method render
- * @param name {string} The name of template. See Q.Template.load
- * @param fields {object?} Rendering params - to be substituted to template
- * @param partials {array?} Names of partials to load and use for rendering the template
- * @param callback {function} a callback - receives the rendering result or nothing
- * @param options {object?} Options.
- *   "type" - the type and extension of the template, defaults to 'handlebars'
- *   "dir" - the folder under project web folder where templates are located
- *   "name" - option to override the name of the template
+ * @param {String} name The name of template. See Q.Template.load
+ * @param {Object} fields Rendering params - to be substituted to template
+ * @param {Array} [partials] Names of partials to load and use for rendering the template
+ * @param {Function} [callback] a callback - receives the rendering result or nothing
+ * @param {Object} [options={}] Options.
+ * @param {String} [options.type='handlebars'] the type and extension of the template
+ * @param {String} [options.dir] the folder under project web folder where templates are located
+ * @param {String} [options.name] option to override the name of the template
  */
 Q.Template.render = function _Q_Template_render(name, fields, partials, callback, options) {
 	if (typeof fields === "function") {
