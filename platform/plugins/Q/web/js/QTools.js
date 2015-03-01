@@ -3216,7 +3216,7 @@ Q.Notice = {
 						if (Q.info.isMobile || Q.info.isTablet)
 						{
 							noticesSlot.bind(Q.Pointer.start, Q.Notice.eventHandlers.expand);
-							Q.Masks.get('Q.screen.mask').element.bind(Q.Pointer.start, Q.Notice.eventHandlers.collapse);
+							Q.Masks.mask('Q.screen.mask').element.bind(Q.Pointer.start, Q.Notice.eventHandlers.collapse);
 						}
 						else
 						{
@@ -3234,7 +3234,7 @@ Q.Notice = {
 						if (Q.info.isTouchscreen)
 						{
 							noticesSlot.unbind(Q.Pointer.start, Q.Notice.eventHandlers.expand);
-							Q.Masks.get('Q.screen.mask').element.unbind(Q.Pointer.start, Q.Notice.eventHandlers.collapse);
+							Q.Masks.mask('Q.screen.mask').element.unbind(Q.Pointer.start, Q.Notice.eventHandlers.collapse);
 						}
 						else
 						{

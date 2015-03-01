@@ -1939,12 +1939,11 @@ Evp.copy = function _Q_Event_prototype_copy() {
  * @return {Q.Event}
  */
 Evp.or = function _Q_Event_prototype_or(anotherEvent, key, anotherKey) {
-	if (!anotherEvent) {
-		return this.copy();
-	}
 	var newEvent = new Q.Event();
 	this.add(newEvent.handle, key);
-	anotherEvent.add(newEvent.handle, anotherKey);
+	if (anotherEvent) {
+		anotherEvent.add(newEvent.handle, anotherKey);
+	}
 	return newEvent;
 };
 
@@ -1959,14 +1958,15 @@ Evp.or = function _Q_Event_prototype_or(anotherEvent, key, anotherKey) {
  * @return {Q.Event} A new Q.Event object
  */
 Evp.and = function _Q_Event_prototype_and(anotherEvent, key, anotherKey) {
-	if (!anotherEvent) {
-		return this.copy();
-	}
 	var newEvent = new Q.Event();
+	if (!anotherEvent) {
+		return newEvent();
+	}
 	var event = this;
 	function _Q_Event_and_wrapper() {
-		if (event.occurred && anotherEvent.occurred) {
-			newEvent.handle.call(this, arguments);
+		if ((event.occurred || event.occurring)
+		 && (anotherEvent.occurred || anotherEvent.occurring)) {
+			 return newEvent.handle.apply(this, arguments);
 		}
 	}
 	event.add(_Q_Event_and_wrapper, key);
@@ -2145,7 +2145,7 @@ Q.Event.factory = function (collection, defaults, callback) {
 		collection = {};
 	}
 	defaults = defaults || [];
-	return function _Q_Event_factory () {
+	var _Q_Event_factory = function _Q_Event_factory_function() {
 		var args = Array.prototype.slice.call(arguments, 0);
 		var len = defaults.length;
 		var f = (typeof(defaults[len-1]) === 'function') ? defaults[defaults.length-1] : null;
@@ -2165,7 +2165,9 @@ Q.Event.factory = function (collection, defaults, callback) {
 			callback.apply(e, args);
 		}
 		return e;
-	};
+	}
+	_Q_Event_factory.collection = collection;
+	return _Q_Event_factory;
 };
 
 /**
@@ -3421,11 +3423,12 @@ var Tp = Q.Tool.prototype;
  * Other parts of code can use the Tool.prototype.onState event factory
  * to attach handlers to be run when the state changes.
  * @method stateChanged
- * @param {String|Array} names Name(s) of properties that may have changed
+ * @param {String|Array} names Name(s) of properties that may have changed,
+ *  either asn array or comma-separated string.
  */
 Tp.stateChanged = function Q_Tool_prototype_stateChanged(names) {
 	if (typeof names === 'string') {
-		names = [names];
+		names = names.split(',').map(function (str) { return str.trim(); });
 	}
 	var l = names.length;
 	for (var i=0; i<l; ++i) {
@@ -3433,6 +3436,48 @@ Tp.stateChanged = function Q_Tool_prototype_stateChanged(names) {
 		this.Q.onStateChanged(name).handle.call(this, name);
 	}
 	this.Q.onStateChanged('').handle.call(this, names);
+};
+
+/**
+ * When implementing tools, use this to implement rendering markup that can vary
+ * as a function of the tool's state (with no additional side effects).
+ * @method rendering
+ * @param {Array|String} fields The names of fields to watch for, either as an array or comma-separated string. When stateChanged is called, if one of the fields named here really changed, the callback will be called.
+ * @param {Boolean} [dontWaitForAnimationFrame=false] Pass true here if you don't want to wait for the next animation frame to do rendering (for example, if you are using a library like FastDOM to manage DOM thrashing)
+ * @param {Function} callback The callback, which receives (changed, previous [, timestamp]). By default, Qbix defers the execution of your rendering handler until the next animation frame. If several calls to tool.stateChanged</span> occurred in the meantime, Qbix aggregates all the changes and reports them to the rendering handler. If a field in the state was changed several times in the meantime, those intermediate values aren't given to the rendering handler, since the assumption is that the view depends on the state without any side effects. However, if the field was changed, even if it later went back to its original value, it will show up in the list of changed fields.
+ * @param {String} [key=""] Optional key used when attaching event handlers to tool.Q.onStateChanged events.
+ */
+Tp.rendering = function (fields, dontWaitForAnimationFrame, callback, key) {
+	var tool = this;
+	if (typeof fields === 'string') {
+		fields = fields.split(',').map(function (str) { return str.trim(); });
+	}
+	if (!fields.length) return false;
+	if (typeof dontWaitForAnimationFrame === 'function') {
+		callback = dontWaitForAnimationFrame;
+		dontWaitForAnimationFrame = false;
+	}
+	var event;
+	for (var i=0, l=fields.length; i<l; ++i) {
+		this.Q.onStateChanged(fields[i]).set(_handleChange, key);
+	}
+	var previous = (Q.Tool.beingActivated === this)
+		? {} : Q.copy(this.state, fields);
+	var changed = {};
+	var r;
+	function _handleChange(name) {
+		if (this.state[name] === previous[name]) return;
+		changed[name] = this.state[name];
+		r = r || (dontWaitForAnimationFrame
+			? setTimeout(_render, 0) 
+			: requestAnimationFrame(_render));
+	}
+	function _render(t) { // this is only called once per animation frame
+		Q.handle(callback, tool, [changed, previous, t])
+		previous = Q.copy(tool.state, fields);
+		changed = {};
+		r = null;
+	}
 };
 
 /**
@@ -4766,6 +4811,7 @@ Q.removeElement = function _Q_removeElement(element, removeTools) {
 		Q.Tool.clear(element);
 	}
 	if (window.jQuery) {
+		// give jQuery a chance to do its own cleanup
 		return window.jQuery(element).remove();
 	}
 	if (!element.parentNode) return false;
@@ -6261,7 +6307,9 @@ Q.activate = function _Q_activate(elem, options, callback) {
 Q.replace = function _Q_replace(container, source, options) {
 	if (!source) {
 		Q.Tool.clear(container); // Remove all the tools remaining in the container, with their events etc.
-		container.innerHTML = '';
+		var c; while (c = container.lastChild) {
+			container.removeChild(c);
+		} // Clear the container
 		return container;
 	}
 	options = Q.extend({}, Q.replace.options, options);
@@ -6308,7 +6356,9 @@ Q.replace = function _Q_replace(container, source, options) {
 	Q.beforeReplace.handle(container, source, options, newOptionsArray);
 	
 	Q.Tool.clear(container); // Remove all the tools remaining in the container, with their events etc.
-	container.innerHTML = ''; // Clear the container
+	var c; while (c = container.lastChild) {
+		container.removeChild(c);
+	} // Clear the container
 	
 	// Move the actual nodes from the source to existing container
 	var c;
@@ -6982,9 +7032,9 @@ function Q_popStateHandler() {
 				quiet: true
 			}
 		);
+		Q_hashChangeHandler.currentUrl = url;
 		result = true;
 	}
-	Q_hashChangeHandler.currentUrl = url.substr(Q.info.baseUrl.length + 1);
 	return result;
 }
 
@@ -7045,6 +7095,12 @@ function _activateTools(toolElement, options, shared) {
 					_constructToolHandlers["id:"+normalizedId] &&
 					_constructToolHandlers["id:"+normalizedId].handle.call(this, this.options);
 					toolFunc.call(this, this.options);
+					var collection = this.Q.onStateChanged.collection;
+					for (var name in this.state) {
+						if (collection[name]) {
+							collection[name].handle.call(this, name);
+						}
+					}
 					_activateToolHandlers[""] &&
 					_activateToolHandlers[""].handle.call(this, this.options);
 					_activateToolHandlers[normalizedName] &&
@@ -7777,7 +7833,7 @@ Ap.rewind = function _Q_Animation_prototype_rewind() {
 Ap.render = function _Q_Animation_prototype_rewind() {
 	var anim = this;
 	var ms = Q.milliseconds();
-	window.requestAnimationFrame(function () {
+	requestAnimationFrame(function () {
 		var _milliseconds = anim.milliseconds || 0;
 		anim.milliseconds += Q.milliseconds() - ms;
 		anim.sinceLastFrame = anim.milliseconds - _milliseconds;
