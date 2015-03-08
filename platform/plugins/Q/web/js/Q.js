@@ -3159,7 +3159,7 @@ function _toolEventFactoryNormalizeKey(key) {
  * Returns Q.Event which occurs when a tool has been constructed, but not yet activated
  * Generic callbacks can be assigned by setting toolName to ""
  * @class Q.Tool
- * @event onActivate
+ * @event onConstruct
  * @param nameOrId {String} the name of the tool, such as "Q/inplace", or "id:" followed by tool's id
  */
 Q.Tool.onConstruct = Q.Event.factory(_constructToolHandlers, ["", _toolEventFactoryNormalizeKey]);
@@ -3674,6 +3674,7 @@ Tp.getElementsByClassName = function _Q_Tool_prototype_getElementsByClasName(cla
  * Be notified whenever a child tool is activated, repeatedly if it is
  * removed and then activated again.
  * @event onChildActivate
+ * @param append text to append to this tool's prefix to form child id
  */
 Tp.onChildActivate = function _Q_Tool_prototype_onChildActivate(append) {
 	return Q.Tool.onActivate('id:'+this.prefix+append);
@@ -3683,6 +3684,7 @@ Tp.onChildActivate = function _Q_Tool_prototype_onChildActivate(append) {
  * Be notified whenever a child tool is initialized, repeatedly if it is
  * removed and then activated again.
  * @event onChildInit
+ * @param append text to append to this tool's prefix to form child id
  */
 Tp.onChildInit = function _Q_Tool_prototype_onChildInit(append) {
 	return Q.Tool.onInit('id:'+this.prefix+append);
