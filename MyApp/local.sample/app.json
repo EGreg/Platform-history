@@ -14,7 +14,7 @@
 			"port": "10501"
 		},
 		"images": {
-			"pixabay": /* {
+			"pixabay": null /* {
 				"username": "YOUR USERNAME HERE",
 				"key": "YOUR SECRET KEY HERE"
 			} */
