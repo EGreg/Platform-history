@@ -800,7 +800,7 @@ Streams.refresh.beforeRequest = new Q.Event();
  * @return {Object} returns Streams for chaining with .get(), .related() or .getParticipating()
  */
 Streams.retainWith = function (key) {
-	_retain = Q.Event.calculateKey(key, _retainedByKey);
+	_retain = Q.calculateKey(key, _retainedByKey);
 	return this;
 };
 
@@ -811,7 +811,7 @@ Streams.retainWith = function (key) {
  * @param {String} key
  */
 Streams.release = function (key) {
-	key = Q.Event.calculateKey(key);
+	key = Q.calculateKey(key);
 	Q.each(_retainedByKey[key], function (ps, v) {
 		if (_retainedByStream[ps]) {
 			delete _retainedByStream[ps][key];
@@ -982,7 +982,7 @@ Stream.define = Streams.define;
  */
 Stream.retain = function _Stream_retain (publisherId, streamName, key, callback) {
 	var ps = Streams.key(publisherId, streamName);
-	key = Q.Event.calculateKey(key);
+	key = Q.calculateKey(key);
 	Streams.get(publisherId, streamName, function (err) {
 		if (err) {
 			_retainedStreams[ps] = null;
@@ -1221,7 +1221,7 @@ Sp.remove = function _Stream_prototype_remove (callback) {
  */
 Sp.retain = function _Stream_prototype_retain (key) {
 	var ps = Streams.key(this.fields.publisherId, this.fields.name);
-	key = Q.Event.calculateKey(key);
+	key = Q.calculateKey(key);
 	_retainedStreams[ps] = this;
 	Q.setObject([ps, key], true, _retainedByStream);
 	Q.setObject([key, ps], true, _retainedByKey);

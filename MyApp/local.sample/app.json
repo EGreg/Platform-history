@@ -14,13 +14,13 @@
 			"port": "10501"
 		},
 		"images": {
-			"pixabay": /* {
+			"pixabay": null /* {
 				"username": "YOUR USERNAME HERE",
 				"key": "YOUR SECRET KEY HERE"
 			} */
 		},
 		"internal": {
-			"secret": "CHANGE TO SOME RANDOM STRING, FOR SIGNING DATA FOR EXTERNAL CLIENTS",
+			"secret": "CHANGE TO SOME RANDOM STRING, FOR SIGNING DATA FOR EXTERNAL CLIENTS"
 		},
 		"external": {
 			"secret": "CHANGE TO SOME RANDOM STRING, FOR SIGNING INTERNAL MESSAGES"

@@ -42,7 +42,8 @@ Q.Tool.define('Q/filter', function (options) {
 		$te.css('position', 'relative');
 	}
 	
-	tool.$input.on('focus', function () {
+	var events = 'focus ' + Q.Pointer.start;
+	tool.$input.on(events, function () {
 		tool.begin();
 	}).on('blur', function () {
 		setTimeout(function () {
@@ -99,6 +100,7 @@ Q.Tool.define('Q/filter', function (options) {
 	placeholders: {},
 	results: null,
 	begun: false,
+	delayTouchscreen: 500,
 	fullscreen: Q.info.isMobile,
 	onFilter: new Q.Event()
 }, {
@@ -115,6 +117,7 @@ Q.Tool.define('Q/filter', function (options) {
 		$te.addClass('Q_filter_begun');
 
 		if (state.fullscreen) {
+			// on slower mobile browsers, the following might synchronously lag a bit
 			var $body = $('body');
 			state.oldBodyOverflow = $body.css('overflow');
 			$body.css('overflow', 'auto')
@@ -140,10 +143,14 @@ Q.Tool.define('Q/filter', function (options) {
 				$this.data('Q/filter display', $this.css('display'));
 				$this.css('display', 'none');
 			});
+			Q.Masks.show(tool);
 			tool.$input.focus();
 			setTimeout(function () {
 				tool.suspended = false;
 			}, 10);
+			setTimeout(function () {
+				Q.Masks.hide(tool);
+			}, state.delayTouchscreen); // to prevent touchend events from wreaking havoc
 		}
 		
 		var $container = tool.$input.parent('.Q_placeholder_container');

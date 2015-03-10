@@ -49,7 +49,7 @@ Q.Error = Error;
  */
 
 /**
- * @class String
+ * @class Object
  * @description Q extended methods for Objects
  */
 
@@ -340,6 +340,11 @@ Function.prototype.bind = function _Function_prototype_bind(obj, options) {
 		return method.apply(obj, args);
 	};
 };
+
+/**
+ * @class Array
+ * @description Q extended methods for Arrays
+ */
 
 if (!Array.prototype.indexOf)
 Array.prototype.indexOf = function _Array_prototype_indexOf(searchElement /*, fromIndex */ ) {
@@ -1668,6 +1673,37 @@ Q.latest.seen = {};
 Q.latest.max = 10000;
 
 /**
+ * Calculates a string key by considering the parameter that was passed,
+ * the tool being activated, and the page being activated.
+ * These keys can be used in methods of Q.Event, Q.Masks etc.
+ * @static
+ * @method calculateKey
+ * @param {String|Q.Tool} key
+ * @param {Object} container in which the key will be used
+ * @param {Number} number at which to start the loop for the default key generation
+ * @return {String}
+ */
+Q.calculateKey = function _Q_Event_calculateKey(key, container, start) {
+	if (key === true) {
+		return "PAGE: CURRENT";
+	}
+	if (key === undefined) {
+		key = Q.Tool.beingActivated; // by default, use the current tool as the key, if any
+	}
+	if (Q.typeOf(key) === 'Q.Tool')	{
+		key = "TOOL: " + key.id;
+	} else if (container && key == undefined) { // key is undefined or null
+		var i = (start === undefined) ? 1 : start;
+		key = 'AUTOKEY_' + i;
+		while (container[key]) {
+			key = 'AUTOKEY_' + (++i);
+		}
+	}
+	return key;
+};
+Q.calculateKey.keys = [];
+
+/**
  * Wraps a callable in a Q.Event object
  * @class Q.Event
  * @namespace Q
@@ -1700,7 +1736,7 @@ Q.Event = function _Q_Event(callable, key, prepend) {
 	 */
 	this.handle = function _Q_Event_instance_handle() {
 		var i, count = 0, oldOccurring = event.occurring, result;
-		if (this.stopped) return 0;
+		if (event.stopped) return 0;
 		event.occurring = true;
 		event.lastContext = this;
 		event.lastArgs = arguments;
@@ -1736,37 +1772,6 @@ Q.Event.from = function _Q_Event_from(source, eventName) {
 	return event;
 };
 
-/**
- * Calculates a string key by considering the parameter that was passed,
- * the tool being activated, and the page being activated
- * @static
- * @method calculateKey
- * @param {String|Q.Tool} key
- * @param {Object} container in which the key will be used
- * @param {Number} number at which to start the loop for the default key generation
- * @return {String}
- */
-Q.Event.calculateKey = function _Q_Event_calculateKey(key, container, start) {
-	if (key === true) {
-		return key;
-	}
-	if (key === undefined) {
-		key = Q.Tool.beingActivated; // by default, use the current tool as the key, if any
-	}
-	if (Q.typeOf(key) === 'Q.Tool')	{
-		key = key.id;
-	}
-	if (container && key == undefined) { // key is undefined or null
-		var i = (start === undefined) ? 1 : start;
-		key = 'AUTOKEY_' + i;
-		while (container[key]) {
-			key = 'AUTOKEY_' + (++i);
-		}
-	}
-	return key;
-};
-Q.Event.calculateKey.keys = [];
-
 var Evp = Q.Event.prototype;
 Evp.occurred = false;
 
@@ -1790,7 +1795,7 @@ Evp.set = function _Q_Event_prototype_set(handler, key, prepend) {
 	if (key === true || (key === undefined && Q.Page.beingActivated)) {
 		Q.Event.forPage.push(this);
 	}
-	key = Q.Event.calculateKey(key, this.handlers, this.keys.length);
+	key = Q.calculateKey(key, this.handlers, this.keys.length);
 	this.handlers[key] = handler; // can be a function, string, Q.Event, etc.
 	if (this.keys.indexOf(key) < 0) {
 		if (prepend) {
@@ -1935,12 +1940,11 @@ Evp.copy = function _Q_Event_prototype_copy() {
  * @return {Q.Event}
  */
 Evp.or = function _Q_Event_prototype_or(anotherEvent, key, anotherKey) {
-	if (!anotherEvent) {
-		return this.copy();
-	}
 	var newEvent = new Q.Event();
 	this.add(newEvent.handle, key);
-	anotherEvent.add(newEvent.handle, anotherKey);
+	if (anotherEvent) {
+		anotherEvent.add(newEvent.handle, anotherKey);
+	}
 	return newEvent;
 };
 
@@ -1955,14 +1959,15 @@ Evp.or = function _Q_Event_prototype_or(anotherEvent, key, anotherKey) {
  * @return {Q.Event} A new Q.Event object
  */
 Evp.and = function _Q_Event_prototype_and(anotherEvent, key, anotherKey) {
-	if (!anotherEvent) {
-		return this.copy();
-	}
 	var newEvent = new Q.Event();
+	if (!anotherEvent) {
+		return newEvent();
+	}
 	var event = this;
 	function _Q_Event_and_wrapper() {
-		if (event.occurred && anotherEvent.occurred) {
-			newEvent.handle.call(this, arguments);
+		if ((event.occurred || event.occurring)
+		 && (anotherEvent.occurred || anotherEvent.occurring)) {
+			 return newEvent.handle.apply(this, arguments);
 		}
 	}
 	event.add(_Q_Event_and_wrapper, key);
@@ -2141,7 +2146,7 @@ Q.Event.factory = function (collection, defaults, callback) {
 		collection = {};
 	}
 	defaults = defaults || [];
-	return function _Q_Event_factory () {
+	var _Q_Event_factory = function _Q_Event_factory_function() {
 		var args = Array.prototype.slice.call(arguments, 0);
 		var len = defaults.length;
 		var f = (typeof(defaults[len-1]) === 'function') ? defaults[defaults.length-1] : null;
@@ -2161,7 +2166,9 @@ Q.Event.factory = function (collection, defaults, callback) {
 			callback.apply(e, args);
 		}
 		return e;
-	};
+	}
+	_Q_Event_factory.collection = collection;
+	return _Q_Event_factory;
 };
 
 /**
@@ -3153,7 +3160,7 @@ function _toolEventFactoryNormalizeKey(key) {
  * Returns Q.Event which occurs when a tool has been constructed, but not yet activated
  * Generic callbacks can be assigned by setting toolName to ""
  * @class Q.Tool
- * @event onActivate
+ * @event onConstruct
  * @param nameOrId {String} the name of the tool, such as "Q/inplace", or "id:" followed by tool's id
  */
 Q.Tool.onConstruct = Q.Event.factory(_constructToolHandlers, ["", _toolEventFactoryNormalizeKey]);
@@ -3417,18 +3424,61 @@ var Tp = Q.Tool.prototype;
  * Other parts of code can use the Tool.prototype.onState event factory
  * to attach handlers to be run when the state changes.
  * @method stateChanged
- * @param {String|Array} names Name(s) of properties that may have changed
+ * @param {String|Array} names Name(s) of properties that may have changed,
+ *  either asn array or comma-separated string.
  */
 Tp.stateChanged = function Q_Tool_prototype_stateChanged(names) {
 	if (typeof names === 'string') {
-		names = [names];
+		names = names.split(',').map(function (str) { return str.trim(); });
 	}
 	var l = names.length;
 	for (var i=0; i<l; ++i) {
 		var name = names[i];
 		this.Q.onStateChanged(name).handle.call(this, name);
 	}
-	this.Q.onStateChanged('').handle(this, [names]);
+	this.Q.onStateChanged('').handle.call(this, names);
+};
+
+/**
+ * When implementing tools, use this to implement rendering markup that can vary
+ * as a function of the tool's state (with no additional side effects).
+ * @method rendering
+ * @param {Array|String} fields The names of fields to watch for, either as an array or comma-separated string. When stateChanged is called, if one of the fields named here really changed, the callback will be called.
+ * @param {Boolean} [dontWaitForAnimationFrame=false] Pass true here if you don't want to wait for the next animation frame to do rendering (for example, if you are using a library like FastDOM to manage DOM thrashing)
+ * @param {Function} callback The callback, which receives (changed, previous [, timestamp]). By default, Qbix defers the execution of your rendering handler until the next animation frame. If several calls to tool.stateChanged</span> occurred in the meantime, Qbix aggregates all the changes and reports them to the rendering handler. If a field in the state was changed several times in the meantime, those intermediate values aren't given to the rendering handler, since the assumption is that the view depends on the state without any side effects. However, if the field was changed, even if it later went back to its original value, it will show up in the list of changed fields.
+ * @param {String} [key=""] Optional key used when attaching event handlers to tool.Q.onStateChanged events.
+ */
+Tp.rendering = function (fields, dontWaitForAnimationFrame, callback, key) {
+	var tool = this;
+	if (typeof fields === 'string') {
+		fields = fields.split(',').map(function (str) { return str.trim(); });
+	}
+	if (!fields.length) return false;
+	if (typeof dontWaitForAnimationFrame === 'function') {
+		callback = dontWaitForAnimationFrame;
+		dontWaitForAnimationFrame = false;
+	}
+	var event;
+	for (var i=0, l=fields.length; i<l; ++i) {
+		this.Q.onStateChanged(fields[i]).set(_handleChange, key);
+	}
+	var previous = (Q.Tool.beingActivated === this)
+		? {} : Q.copy(this.state, fields);
+	var changed = {};
+	var r;
+	function _handleChange(name) {
+		if (this.state[name] === previous[name]) return;
+		changed[name] = this.state[name];
+		r = r || (dontWaitForAnimationFrame
+			? setTimeout(_render, 0) 
+			: requestAnimationFrame(_render));
+	}
+	function _render(t) { // this is only called once per animation frame
+		Q.handle(callback, tool, [changed, previous, t])
+		previous = Q.copy(tool.state, fields);
+		changed = {};
+		r = null;
+	}
 };
 
 /**
@@ -3625,6 +3675,7 @@ Tp.getElementsByClassName = function _Q_Tool_prototype_getElementsByClasName(cla
  * Be notified whenever a child tool is activated, repeatedly if it is
  * removed and then activated again.
  * @event onChildActivate
+ * @param append text to append to this tool's prefix to form child id
  */
 Tp.onChildActivate = function _Q_Tool_prototype_onChildActivate(append) {
 	return Q.Tool.onActivate('id:'+this.prefix+append);
@@ -3634,6 +3685,7 @@ Tp.onChildActivate = function _Q_Tool_prototype_onChildActivate(append) {
  * Be notified whenever a child tool is initialized, repeatedly if it is
  * removed and then activated again.
  * @event onChildInit
+ * @param append text to append to this tool's prefix to form child id
  */
 Tp.onChildInit = function _Q_Tool_prototype_onChildInit(append) {
 	return Q.Tool.onInit('id:'+this.prefix+append);
@@ -3826,7 +3878,7 @@ Q.Tool.calculateId = function _Q_Tool_calculatePrefix(id) {
  * @return {String}
  */
 Tp.toString = function _Q_Tool_prototype_toString() {
-	return this.id.substr(0, this.id.length - 1);
+	return this.id;
 };
 
 /**
@@ -4762,6 +4814,7 @@ Q.removeElement = function _Q_removeElement(element, removeTools) {
 		Q.Tool.clear(element);
 	}
 	if (window.jQuery) {
+		// give jQuery a chance to do its own cleanup
 		return window.jQuery(element).remove();
 	}
 	if (!element.parentNode) return false;
@@ -6257,7 +6310,9 @@ Q.activate = function _Q_activate(elem, options, callback) {
 Q.replace = function _Q_replace(container, source, options) {
 	if (!source) {
 		Q.Tool.clear(container); // Remove all the tools remaining in the container, with their events etc.
-		container.innerHTML = '';
+		var c; while (c = container.lastChild) {
+			container.removeChild(c);
+		} // Clear the container
 		return container;
 	}
 	options = Q.extend({}, Q.replace.options, options);
@@ -6304,7 +6359,9 @@ Q.replace = function _Q_replace(container, source, options) {
 	Q.beforeReplace.handle(container, source, options, newOptionsArray);
 	
 	Q.Tool.clear(container); // Remove all the tools remaining in the container, with their events etc.
-	container.innerHTML = ''; // Clear the container
+	var c; while (c = container.lastChild) {
+		container.removeChild(c);
+	} // Clear the container
 	
 	// Move the actual nodes from the source to existing container
 	var c;
@@ -6978,9 +7035,9 @@ function Q_popStateHandler() {
 				quiet: true
 			}
 		);
+		Q_hashChangeHandler.currentUrl = url;
 		result = true;
 	}
-	Q_hashChangeHandler.currentUrl = url.substr(Q.info.baseUrl.length + 1);
 	return result;
 }
 
@@ -7041,6 +7098,12 @@ function _activateTools(toolElement, options, shared) {
 					_constructToolHandlers["id:"+normalizedId] &&
 					_constructToolHandlers["id:"+normalizedId].handle.call(this, this.options);
 					toolFunc.call(this, this.options);
+					var collection = this.Q.onStateChanged.collection;
+					for (var name in this.state) {
+						if (collection[name]) {
+							collection[name].handle.call(this, name);
+						}
+					}
 					_activateToolHandlers[""] &&
 					_activateToolHandlers[""].handle.call(this, this.options);
 					_activateToolHandlers[normalizedName] &&
@@ -7239,14 +7302,13 @@ Q.Template.remove = function (name) {
  * Load template from server and store to cache
  * @static
  * @method load
- * @param name {String} The template name. Here is how templates are found:
- *   First, load any new templates from the DOM if found inside script tag with type "text/"+type
+ * @param {String} name The template name. Here is how templates are found:
+ *   First, load any new templates from the DOM found inside script tags with type "text/"+type.
  *   Then, check the cache. If not there, we try to load the template from dir+'/'+name+'.'+type
- * @param callback {Function} Receives two parameters: (err, templateText)
- * @param options {Object?} Options.
- *   "type" - the type and extension of the template, defaults to 'handlebars'
- *   "dir" - the subpath of the app url under which to look for the template if it needs to be loaded
- *   "name" - option to override the name of the template
+ * @param {Function} callback Receives two parameters: (err, templateText)
+ * @param {String} [options.type='handlebars'] the type and extension of the template
+ * @param {String} [options.dir] the folder under project web folder where templates are located
+ * @param {String} [options.name] option to override the name of the template
  * @return {String|undefined}
  */
 Q.Template.load = Q.getter(function _Q_Template_load(name, callback, options) {
@@ -7333,14 +7395,14 @@ Q.Template.onError = new Q.Event(function (err) {
  * Render template taken from DOM or from file on server with partials
  * @static
  * @method render
- * @param name {string} The name of template. See Q.Template.load
- * @param fields {object?} Rendering params - to be substituted to template
- * @param partials {array?} Names of partials to load and use for rendering the template
- * @param callback {function} a callback - receives the rendering result or nothing
- * @param options {object?} Options.
- *   "type" - the type and extension of the template, defaults to 'handlebars'
- *   "dir" - the folder under project web folder where templates are located
- *   "name" - option to override the name of the template
+ * @param {String} name The name of template. See Q.Template.load
+ * @param {Object} fields Rendering params - to be substituted to template
+ * @param {Array} [partials] Names of partials to load and use for rendering the template
+ * @param {Function} [callback] a callback - receives the rendering result or nothing
+ * @param {Object} [options={}] Options.
+ * @param {String} [options.type='handlebars'] the type and extension of the template
+ * @param {String} [options.dir] the folder under project web folder where templates are located
+ * @param {String} [options.name] option to override the name of the template
  */
 Q.Template.render = function _Q_Template_render(name, fields, partials, callback, options) {
 	if (typeof fields === "function") {
@@ -7774,7 +7836,7 @@ Ap.rewind = function _Q_Animation_prototype_rewind() {
 Ap.render = function _Q_Animation_prototype_rewind() {
 	var anim = this;
 	var ms = Q.milliseconds();
-	window.requestAnimationFrame(function () {
+	requestAnimationFrame(function () {
 		var _milliseconds = anim.milliseconds || 0;
 		anim.milliseconds += Q.milliseconds() - ms;
 		anim.sinceLastFrame = anim.milliseconds - _milliseconds;
@@ -9534,11 +9596,13 @@ Q.Masks = {
 	 * @param {Number} [options.fadeOut=0] Milliseconds it should take to fade out the mask.
 	 * @param {String} [options.html=''] Any HTML to insert into the mask.
 	 * @param {HTMLElement} [options.shouldCover=null] Optional element in the DOM to cover.
+	 * @return {Object} the mask info
 	 */
 	mask: function(key, options)
 	{
+		key = Q.calculateKey(key);
 		if (key in Q.Masks.collection) {
-			throw new Error("Mask with key '" + key + "' already exists.");
+			return Q.Masks.collection[key];
 		}
 		var mask = Q.Masks.collection[key] = Q.extend({
 			'fadeTime': 0,
@@ -9552,7 +9616,7 @@ Q.Masks = {
 		document.body.appendChild(me);
 		me.style.display = 'none';
 		mask.counter = 0;
-		Q.Masks.collection[key] = mask;
+		return Q.Masks.collection[key] = mask;
 	},
 	/**
 	 * Shows the mask by given key. Only one mask is shown for any given key.
@@ -9567,10 +9631,7 @@ Q.Masks = {
 	 */
 	show: function(key, options)
 	{
-		if (!(key in Q.Masks.collection)) {
-			Q.Masks.mask(key, options);
-		}
-		var mask = Q.Masks.collection[key];
+		var mask = Q.Masks.mask(key, options);
 		if (!mask.counter) {
 			var me = mask.element;
 			me.style.display = 'block';
@@ -9593,6 +9654,7 @@ Q.Masks = {
 	 */
 	hide: function(key)
 	{
+		key = Q.calculateKey(key);
 		if (!(key in Q.Masks.collection)) return;
 		var mask = Q.Masks.collection[key];
 		if (mask.counter === 0) return;
@@ -9624,10 +9686,12 @@ Q.Masks = {
 			var html = document.documentElement;
 			var rect = mask.rect = (mask.shouldCover || html).getBoundingClientRect();
 			var ms = mask.element.style;
-			ms.left = rect.left;
-			ms.top = rect.top;
-			ms.width = rect.right - rect.left + 'px';
-			ms.height = ms['line-height'] = rect.bottom - rect.top + 'px';
+			ms.left = rect.left + 'px';
+			ms.top = rect.top + 'px';
+			var width = Math.max(rect.right - rect.left, Q.Pointer.windowWidth());
+			var height = Math.max(rect.bottom - rect.top, Q.Pointer.windowHeight());
+			ms.width = width + 'px';
+			ms.height = ms['line-height'] = height + 'px';
 		}
 	},
 	/**
@@ -9638,6 +9702,7 @@ Q.Masks = {
 	 */
 	isVisible: function(key)
 	{
+		key = Q.calculateKey(key);
 		return !!Q.getObject([key, 'counter'], Q.Masks.Collection);
 	}
 };
