@@ -9685,8 +9685,8 @@ Q.Masks = {
 			var html = document.documentElement;
 			var rect = mask.rect = (mask.shouldCover || html).getBoundingClientRect();
 			var ms = mask.element.style;
-			ms.left = rect.left;
-			ms.top = rect.top;
+			ms.left = rect.left + 'px';
+			ms.top = rect.top + 'px';
 			ms.width = rect.right - rect.left + 'px';
 			ms.height = ms['line-height'] = rect.bottom - rect.top + 'px';
 		}
