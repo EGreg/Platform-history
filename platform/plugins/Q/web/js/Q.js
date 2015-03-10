@@ -1651,9 +1651,7 @@ Q.ensure = function _Q_ensure(property, loader, callback) {
  *  If ordinal is provided, then returns whether this is still the latest ordinal.
  */
 Q.latest = function (key, ordinal) {
-	if (Q.typeOf(key) === 'Q.Tool')	{
-		key = key.id;
-	}
+	key = Q.calculateKey(key);
 	if (ordinal === undefined) {
 		return Q.latest.issued[key]
 			= ((Q.latest.issued[key] || 0) % Q.latest.max) + 1;
@@ -1849,9 +1847,7 @@ Evp.add = function _Q_Event_prototype_add(handler, key, prepend) {
  */
 Evp.remove = function _Q_Event_prototype_remove(key) {
 	// Only available in the front-end Q.js: {
-	if (Q.typeOf(key) === 'Q.Tool')	{
-		key = key.id;
-	}
+	var key2 = Q.calculateKey(key);
 	if (key === true) {
 		l = Q.Event.forPage.length;
 		for (i=0; i<l; ++i) {
@@ -1860,28 +1856,28 @@ Evp.remove = function _Q_Event_prototype_remove(key) {
 				break;
 			}
 		}
-	} else if (Q.Event.forTool[key]) {
-		l = Q.Event.forTool[key].length;
+	} else if (Q.Event.forTool[key2]) {
+		l = Q.Event.forTool[key2].length;
 		for (i=0; i<l; ++i) {
-			if (Q.Event.forTool[key][i] === this) {
-				Q.Event.forTool[key].splice(i, 1);
+			if (Q.Event.forTool[key2][i] === this) {
+				Q.Event.forTool[key2].splice(i, 1);
 				break;
 			}
 		}
 	}
 	// }
-	var l, i = this.keys.indexOf(key);
+	var l, i = this.keys.indexOf(key2);
 	if (i < 0) {
 		return 0;
 	}
 	this.keys.splice(i, 1);
 	if (this._onRemove) {
-		this._onRemove.handle.call(this, key);
+		this._onRemove.handle.call(this, key2);
 	}
 	if (!this.keys.length && this._onEmpty) {
-		this._onEmpty.handle.call(this, key);
+		this._onEmpty.handle.call(this, key2);
 	}
-	delete this.handlers[key];
+	delete this.handlers[key2];
 	return 1;
 };
 
