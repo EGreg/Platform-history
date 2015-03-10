@@ -1673,6 +1673,37 @@ Q.latest.seen = {};
 Q.latest.max = 10000;
 
 /**
+ * Calculates a string key by considering the parameter that was passed,
+ * the tool being activated, and the page being activated.
+ * These keys can be used in methods of Q.Event, Q.Masks etc.
+ * @static
+ * @method calculateKey
+ * @param {String|Q.Tool} key
+ * @param {Object} container in which the key will be used
+ * @param {Number} number at which to start the loop for the default key generation
+ * @return {String}
+ */
+Q.calculateKey = function _Q_Event_calculateKey(key, container, start) {
+	if (key === true) {
+		return "PAGE: CURRENT";
+	}
+	if (key === undefined) {
+		key = Q.Tool.beingActivated; // by default, use the current tool as the key, if any
+	}
+	if (Q.typeOf(key) === 'Q.Tool')	{
+		key = "TOOL: " + key.id;
+	} else if (container && key == undefined) { // key is undefined or null
+		var i = (start === undefined) ? 1 : start;
+		key = 'AUTOKEY_' + i;
+		while (container[key]) {
+			key = 'AUTOKEY_' + (++i);
+		}
+	}
+	return key;
+};
+Q.calculateKey.keys = [];
+
+/**
  * Wraps a callable in a Q.Event object
  * @class Q.Event
  * @namespace Q
@@ -1741,36 +1772,6 @@ Q.Event.from = function _Q_Event_from(source, eventName) {
 	return event;
 };
 
-/**
- * Calculates a string key by considering the parameter that was passed,
- * the tool being activated, and the page being activated
- * @static
- * @method calculateKey
- * @param {String|Q.Tool} key
- * @param {Object} container in which the key will be used
- * @param {Number} number at which to start the loop for the default key generation
- * @return {String}
- */
-Q.Event.calculateKey = function _Q_Event_calculateKey(key, container, start) {
-	if (key === true) {
-		return "PAGE: CURRENT";
-	}
-	if (key === undefined) {
-		key = Q.Tool.beingActivated; // by default, use the current tool as the key, if any
-	}
-	if (Q.typeOf(key) === 'Q.Tool')	{
-		key = "TOOL: " + key.id;
-	} else if (container && key == undefined) { // key is undefined or null
-		var i = (start === undefined) ? 1 : start;
-		key = 'AUTOKEY_' + i;
-		while (container[key]) {
-			key = 'AUTOKEY_' + (++i);
-		}
-	}
-	return key;
-};
-Q.Event.calculateKey.keys = [];
-
 var Evp = Q.Event.prototype;
 Evp.occurred = false;
 
@@ -1794,7 +1795,7 @@ Evp.set = function _Q_Event_prototype_set(handler, key, prepend) {
 	if (key === true || (key === undefined && Q.Page.beingActivated)) {
 		Q.Event.forPage.push(this);
 	}
-	key = Q.Event.calculateKey(key, this.handlers, this.keys.length);
+	key = Q.calculateKey(key, this.handlers, this.keys.length);
 	this.handlers[key] = handler; // can be a function, string, Q.Event, etc.
 	if (this.keys.indexOf(key) < 0) {
 		if (prepend) {
@@ -9595,11 +9596,13 @@ Q.Masks = {
 	 * @param {Number} [options.fadeOut=0] Milliseconds it should take to fade out the mask.
 	 * @param {String} [options.html=''] Any HTML to insert into the mask.
 	 * @param {HTMLElement} [options.shouldCover=null] Optional element in the DOM to cover.
+	 * @return {Object} the mask info
 	 */
 	mask: function(key, options)
 	{
+		key = Q.calculateKey(key);
 		if (key in Q.Masks.collection) {
-			throw new Error("Mask with key '" + key + "' already exists.");
+			return Q.Masks.collection[key];
 		}
 		var mask = Q.Masks.collection[key] = Q.extend({
 			'fadeTime': 0,
@@ -9613,7 +9616,7 @@ Q.Masks = {
 		document.body.appendChild(me);
 		me.style.display = 'none';
 		mask.counter = 0;
-		Q.Masks.collection[key] = mask;
+		return Q.Masks.collection[key] = mask;
 	},
 	/**
 	 * Shows the mask by given key. Only one mask is shown for any given key.
@@ -9628,10 +9631,7 @@ Q.Masks = {
 	 */
 	show: function(key, options)
 	{
-		if (!(key in Q.Masks.collection)) {
-			Q.Masks.mask(key, options);
-		}
-		var mask = Q.Masks.collection[key];
+		var mask = Q.Masks.mask(key, options);
 		if (!mask.counter) {
 			var me = mask.element;
 			me.style.display = 'block';
@@ -9654,6 +9654,7 @@ Q.Masks = {
 	 */
 	hide: function(key)
 	{
+		key = Q.calculateKey(key);
 		if (!(key in Q.Masks.collection)) return;
 		var mask = Q.Masks.collection[key];
 		if (mask.counter === 0) return;
@@ -9687,8 +9688,10 @@ Q.Masks = {
 			var ms = mask.element.style;
 			ms.left = rect.left + 'px';
 			ms.top = rect.top + 'px';
-			ms.width = rect.right - rect.left + 'px';
-			ms.height = ms['line-height'] = rect.bottom - rect.top + 'px';
+			var width = Math.max(rect.right - rect.left, Q.Pointer.windowWidth());
+			var height = Math.max(rect.bottom - rect.top, Q.Pointer.windowHeight());
+			ms.width = width + 'px';
+			ms.height = ms['line-height'] = height + 'px';
 		}
 	},
 	/**
@@ -9699,6 +9702,7 @@ Q.Masks = {
 	 */
 	isVisible: function(key)
 	{
+		key = Q.calculateKey(key);
 		return !!Q.getObject([key, 'counter'], Q.Masks.Collection);
 	}
 };
