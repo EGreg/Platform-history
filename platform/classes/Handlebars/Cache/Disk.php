@@ -1,26 +1,39 @@
 <?php
 /**
- * A flat-file filesystem cache.
+ * This file is part of Handlebars-php
+ * Base on mustache-php https://github.com/bobthecow/mustache.php
+ *
+ * PHP version 5.2
  *
  * @category  Xamin
  * @package   Handlebars
  * @author    Alex Soncodi <alex@brokerloop.com>
  * @author    Behrooz Shabani <everplays@gmail.com>
- * @author    Mardix <https://github.com/mardix>
  * @copyright 2013 (c) Brokerloop, Inc.
  * @copyright 2013 (c) Behrooz Shabani
- * @copyright 2013 (c) Mardix
- * @license   MIT
- * @link      http://voodoophp.org/docs/handlebars
+ * @license   MIT <http://opensource.org/licenses/MIT>
+ * @version   GIT: $Id$
+ * @link      http://xamin.ir
  */
 
+/**
+ * A flat-file filesystem cache.
+ *
+ * @category  Xamin
+ * @package   Handlebars
+ * @author    Alex Soncodi <alex@brokerloop.com>
+ * @copyright 2013 (c) Brokerloop, Inc.
+ * @license   MIT <http://opensource.org/licenses/MIT>
+ * @version   Release: @package_version@
+ * @link      http://xamin.ir
+ */
 
 class Handlebars_Cache_Disk implements Handlebars_Cache
 {
 
-    private $path = '';
-    private $prefix = '';
-    private $suffix = '';
+    private $_path = '';
+    private $_prefix = '';
+    private $_suffix = '';
 
     /**
      * Construct the disk cache.
@@ -29,7 +42,7 @@ class Handlebars_Cache_Disk implements Handlebars_Cache
      * @param string $prefix optional file prefix, defaults to empty string
      * @param string $suffix optional file extension, defaults to empty string
      *
-     * @throws RuntimeInvalidArgumentException
+     * @throws RuntimeException
      * @throws InvalidArgumentException
      */
     public function __construct($path, $prefix = '', $suffix = '')
@@ -40,13 +53,13 @@ class Handlebars_Cache_Disk implements Handlebars_Cache
             @mkdir($path, 0777, true);
 
             if (!is_dir($path)) {
-                throw new InvalidArgumentException('Could not create cache file path');
+                throw new RuntimeException('Could not create cache file path');
             }
         }
 
-        $this->path = $path;
-        $this->prefix = $prefix;
-        $this->suffix = $suffix;
+        $this->_path = $path;
+        $this->_prefix = $prefix;
+        $this->_suffix = $suffix;
     }
 
     /**
@@ -58,22 +71,22 @@ class Handlebars_Cache_Disk implements Handlebars_Cache
      *
      * @return string full disk path of cached item
      */
-    private function getPath($name)
+    private function _getPath($name)
     {
-        return $this->path . DIRECTORY_SEPARATOR .
-            $this->prefix . $name . $this->suffix;
+        return $this->_path . DIRECTORY_SEPARATOR .
+            $this->_prefix . $name . $this->_suffix;
     }
 
     /**
      * Get cache for $name if it exists.
      *
-     * @param string $name Cache id
+     * @param string $name Handlebars_Cache id
      *
      * @return mixed data on hit, boolean false on cache not found
      */
     public function get($name)
     {
-        $path = $this->getPath($name);
+        $path = $this->_getPath($name);
 
         return (file_exists($path)) ?
             unserialize(file_get_contents($path)) : false;
@@ -89,7 +102,7 @@ class Handlebars_Cache_Disk implements Handlebars_Cache
      */
     public function set($name, $value)
     {
-        $path = $this->getPath($name);
+        $path = $this->_getPath($name);
 
         file_put_contents($path, serialize($value));
     }
@@ -97,13 +110,13 @@ class Handlebars_Cache_Disk implements Handlebars_Cache
     /**
      * Remove cache
      *
-     * @param string $name Cache id
+     * @param string $name Handlebars_Cache id
      *
      * @return void
      */
     public function remove($name)
     {
-        $path = $this->getPath($name);
+        $path = $this->_getPath($name);
 
         unlink($path);
     }

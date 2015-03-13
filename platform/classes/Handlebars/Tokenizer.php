@@ -1,20 +1,39 @@
 <?php
 /**
- * Handlebars tokenizer (based on mustache)
+ * This file is part of Mustache.php.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ * Changes to match xamin-std and handlebars made by xamin team
+ *
+ * PHP version 5.2
  *
  * @category  Xamin
  * @package   Handlebars
  * @author    Justin Hileman <dontknow@example.org>
  * @author    fzerorubigd <fzerorubigd@gmail.com>
  * @author    Behrooz Shabani <everplays@gmail.com>
- * @author    Mardix <https://github.com/mardix>
+ * @author    Dmitriy Simushev <simushevds@gmail.com>
+ * @copyright 2010-2012 (c) Justin Hileman
  * @copyright 2012 (c) ParsPooyesh Co
  * @copyright 2013 (c) Behrooz Shabani
- * @copyright 2013 (c) Mardix
- * @license   MIT
- * @link      http://voodoophp.org/docs/handlebars
+ * @license   MIT <http://opensource.org/licenses/mit-license.php>
+ * @version   GIT: $Id$
+ * @link      http://xamin.ir
  */
 
+
+/**
+ * Handlebars tokenizer (based on mustache)
+ *
+ * @category  Xamin
+ * @package   Handlebars
+ * @author    Justin Hileman <dontknow@example.org>
+ * @author    fzerorubigd <fzerorubigd@gmail.com>
+ * @copyright 2012 Justin Hileman
+ * @license   MIT <http://opensource.org/licenses/mit-license.php>
+ * @version   Release: @package_version@
+ * @link      http://xamin.ir
+ */
 
 class Handlebars_Tokenizer
 {
@@ -37,9 +56,13 @@ class Handlebars_Tokenizer
     const T_UNESCAPED = '{';
     const T_UNESCAPED_2 = '&';
     const T_TEXT = '_t';
+    const T_ESCAPE = "\\";
+    const T_SINGLE_Q = "'";
+    const T_DOUBLE_Q = "\"";
+    const T_TRIM = "~";
 
     // Valid token types
-    private $tagTypes = array(
+    private static $_tagTypes = array(
         self::T_SECTION => true,
         self::T_INVERTED => true,
         self::T_END_SECTION => true,
@@ -53,7 +76,7 @@ class Handlebars_Tokenizer
     );
 
     // Interpolated tags
-    private $interpolatedTags = array(
+    private static $_interpolatedTags = array(
         self::T_ESCAPED => true,
         self::T_UNESCAPED => true,
         self::T_UNESCAPED_2 => true,
@@ -70,47 +93,77 @@ class Handlebars_Tokenizer
     const NODES = 'nodes';
     const VALUE = 'value';
     const ARGS = 'args';
+    const TRIM_LEFT = 'tleft';
+    const TRIM_RIGHT = 'tright';
 
     protected $state;
     protected $tagType;
     protected $tag;
-    protected $buffer;
+    protected $buffer = '';
     protected $tokens;
     protected $seenTag;
     protected $lineStart;
     protected $otag;
     protected $ctag;
+    protected $escaped;
+    protected $escaping;
+    protected $trimLeft;
+    protected $trimRight;
 
     /**
      * Scan and tokenize template source.
      *
-     * @param string $text       Mustache template source to tokenize
-     * @param string $delimiters Optional, pass opening and closing delimiters
+     * @param string $text Mustache template source to tokenize
+     *
+     * @internal string $delimiters Optional, pass opening and closing delimiters
      *
      * @return array Set of Mustache tokens
      */
-    public function scan($text, $delimiters = null)
+    public function scan($text/*, $delimiters = null*/)
     {
         if ($text instanceof Handlebars_String) {
             $text = $text->getString();
         }
         $this->reset();
 
+        /* Actually we not support this. so this code is not used at all, yet.
         if ($delimiters = trim($delimiters)) {
             list($otag, $ctag) = explode(' ', $delimiters);
             $this->otag = $otag;
             $this->ctag = $ctag;
         }
-
+        */
         $len = strlen($text);
         for ($i = 0; $i < $len; $i++) {
+
+            $this->escaping = $this->tagChange(self::T_ESCAPE, $text, $i);
+
+            // To play nice with helpers' arguments quote and apostrophe marks
+            // should be additionally escaped only when they are not in a tag.
+            $quoteInTag = $this->state != self::IN_TEXT
+                && ($text[$i] == self::T_SINGLE_Q || $text[$i] == self::T_DOUBLE_Q);
+
+            if ($this->escaped && $text[$i] != self::T_UNESCAPED && !$quoteInTag) {
+                $this->buffer .= "\\";
+            }
+
             switch ($this->state) {
             case self::IN_TEXT:
-                if ($this->tagChange($this->otag, $text, $i)) {
+                if ($this->tagChange($this->otag. self::T_TRIM, $text, $i) and !$this->escaped) {
+                    $this->flushBuffer();
+                    $this->state = self::IN_TAG_TYPE;
+                    $this->trimLeft = true;
+                } elseif ($this->tagChange(self::T_UNESCAPED.$this->otag, $text, $i) and $this->escaped) {
+                    $this->buffer .= "{{{";
+                    $i += 2;
+                    continue;
+                } elseif ($this->tagChange($this->otag, $text, $i) and !$this->escaped) {
                     $i--;
                     $this->flushBuffer();
                     $this->state = self::IN_TAG_TYPE;
-                } else {
+                } elseif ($this->escaped and $this->escaping) {
+                    $this->buffer .= "\\";
+                } elseif (!$this->escaping) {
                     if ($text[$i] == "\n") {
                         $this->filterLine();
                     } else {
@@ -122,7 +175,7 @@ class Handlebars_Tokenizer
             case self::IN_TAG_TYPE:
 
                 $i += strlen($this->otag) - 1;
-                if (isset($this->tagTypes[$text[$i + 1]])) {
+                if (isset(self::$_tagTypes[$text[$i + 1]])) {
                     $tag = $text[$i + 1];
                     $this->tagType = $tag;
                 } else {
@@ -143,14 +196,17 @@ class Handlebars_Tokenizer
                 break;
 
             default:
+                if ($this->tagChange(self::T_TRIM . $this->ctag, $text, $i)) {
+                    $this->trimRight = true;
+                    continue;
+                }
                 if ($this->tagChange($this->ctag, $text, $i)) {
-                    // Sections (Helpers) can accept parameters
+                    // Sections (Handlebars_Helpers) can accept parameters
                     // Same thing for Partials (little known fact)
-                    if (in_array($this->tagType, array(
-                                    self::T_SECTION,
-                                    self::T_PARTIAL,
-                                    self::T_PARTIAL_2)
-                            )) {
+                    if (($this->tagType == self::T_SECTION)
+                        || ($this->tagType == self::T_PARTIAL)
+                        || ($this->tagType == self::T_PARTIAL_2)
+                    ) {
                         $newBuffer = explode(' ', trim($this->buffer), 2);
                         $args = '';
                         if (count($newBuffer) == 2) {
@@ -166,6 +222,8 @@ class Handlebars_Tokenizer
                         self::INDEX => ($this->tagType == self::T_END_SECTION) ?
                             $this->seenTag - strlen($this->otag) :
                             $i + strlen($this->ctag),
+                        self::TRIM_LEFT => $this->trimLeft,
+                        self::TRIM_RIGHT => $this->trimRight
                     );
                     if (isset($args)) {
                         $t[self::ARGS] = $args;
@@ -174,12 +232,14 @@ class Handlebars_Tokenizer
                     unset($t);
                     unset($args);
                     $this->buffer = '';
+                    $this->trimLeft = false;
+                    $this->trimRight = false;
                     $i += strlen($this->ctag) - 1;
                     $this->state = self::IN_TEXT;
                     if ($this->tagType == self::T_UNESCAPED) {
                         if ($this->ctag == '}}') {
                             $i++;
-                        } else {
+                        } /* else { // I can't remember why this part is here! the ctag is always }} and
                             // Clean up `{{{ tripleStache }}}` style tokens.
                             $lastIndex = count($this->tokens) - 1;
                             $lastName = $this->tokens[$lastIndex][self::NAME];
@@ -188,13 +248,15 @@ class Handlebars_Tokenizer
                                     substr($lastName, 0, -1)
                                 );
                             }
-                        }
+                        } */
                     }
                 } else {
                     $this->buffer .= $text[$i];
                 }
                 break;
             }
+
+            $this->escaped = ($this->escaping and !$this->escaped);
         }
 
         $this->filterLine(true);
@@ -203,13 +265,15 @@ class Handlebars_Tokenizer
     }
 
     /**
-     * Helper function to reset tokenizer internal state.
+     * Handlebars_Helper function to reset tokenizer internal state.
      *
      * @return void
      */
     protected function reset()
     {
         $this->state = self::IN_TEXT;
+        $this->escaped = false;
+        $this->escaping = false;
         $this->tagType = null;
         $this->tag = null;
         $this->buffer = '';
@@ -218,6 +282,8 @@ class Handlebars_Tokenizer
         $this->lineStart = 0;
         $this->otag = '{{';
         $this->ctag = '}}';
+        $this->trimLeft = false;
+        $this->trimRight = false;
     }
 
     /**
@@ -227,7 +293,7 @@ class Handlebars_Tokenizer
      */
     protected function flushBuffer()
     {
-        if (!empty($this->buffer)) {
+        if ($this->buffer !== '') {
             $this->tokens[] = array(
                 self::TYPE => self::T_TEXT,
                 self::VALUE => $this->buffer
@@ -246,8 +312,8 @@ class Handlebars_Tokenizer
         $tokensCount = count($this->tokens);
         for ($j = $this->lineStart; $j < $tokensCount; $j++) {
             $token = $this->tokens[$j];
-            if (isset($this->tagTypes[$token[self::TYPE]])) {
-                if (isset($this->interpolatedTags[$token[self::TYPE]])) {
+            if (isset(self::$_tagTypes[$token[self::TYPE]])) {
+                if (isset(self::$_interpolatedTags[$token[self::TYPE]])) {
                     return false;
                 }
             } elseif ($token[self::TYPE] == self::T_TEXT) {
@@ -285,10 +351,7 @@ class Handlebars_Tokenizer
                 }
             }
         } elseif (!$noNewLine) {
-            $this->tokens[] = array(
-				self::TYPE => self::T_TEXT,
-				self::VALUE => "\n"
-			);
+            $this->tokens[] = array(self::TYPE => self::T_TEXT, self::VALUE => "\n");
         }
 
         $this->seenTag = false;
@@ -296,7 +359,7 @@ class Handlebars_Tokenizer
     }
 
     /**
-     * Change the current Mustache delimiters. Set new `otag` and `ctag` values.
+     * Change the current Handlebars delimiters. Set new `otag` and `ctag` values.
      *
      * @param string $text  Mustache template source
      * @param int    $index Current tokenizer index
@@ -323,7 +386,7 @@ class Handlebars_Tokenizer
      * Test whether it's time to change tags.
      *
      * @param string $tag   Current tag name
-     * @param string $text  Mustache template source
+     * @param string $text  Handlebars template source
      * @param int    $index Current tokenizer index
      *
      * @return boolean True if this is a closing section tag
