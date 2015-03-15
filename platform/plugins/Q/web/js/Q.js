@@ -2703,6 +2703,7 @@ Q.getter = function _Q_getter(original, options) {
 		wrapper.onCalled.handle.call(this, arguments2, ret);
 
 		var cached, cbpos, cbi;
+		Q.getter.usingCached = false;
 
 		// if caching is required, check the cache -- maybe the result is there
 		if (wrapper.cache && !ignoreCache) {
@@ -2714,12 +2715,12 @@ Q.getter = function _Q_getter(original, options) {
 					callbacks[cbpos].apply(cached.subject, cached.params);
 					ret.result = Q.getter.CACHED;
 					wrapper.onExecuted.handle.call(this, arguments2, ret);
+					Q.getter.usingCached = false;
 					return ret; // wrapper found in cache, callback and throttling have run
 				}
 			}
 		}
 		ignoreCache = false;
-		Q.getter.usingCached = false;
 
 		_waiting[key] = _waiting[key] || [];
 		_waiting[key].push({
@@ -3710,13 +3711,13 @@ Q.Tool.encodeOptions = function _Q_Tool_stringFromOptions(options) {
  * @param {Object} [toolOptions]
  *  The options for the tool
  * @param {String} [id]
- *  Optional id of the tool, such as "_2_Q_tabs"
+ *  Optional id of the tool, such as "Q_tabs_2"
  * @param {String} [prefix]
  *  Optional prefix to prepend to the tool's id
  * @return {HTMLElement}
  *  Returns an element you can append to things
  */
-Q.Tool.setUpElement = function _Q_Tool_element(element, toolType, toolOptions, id, prefix) {
+Q.Tool.setUpElement = function _Q_Tool_setUpElement(element, toolType, toolOptions, id, prefix) {
 	if (typeof toolOptions === 'string') {
 		id = toolOptions;
 		toolOptions = undefined;
@@ -3752,14 +3753,18 @@ Q.Tool.setUpElement = function _Q_Tool_element(element, toolType, toolOptions, i
  * @param {Object} toolOptions
  *  The options for the tool
  * @param {String} id
- *  Optional id of the tool, such as "_2_Q_tabs"
+ *  Optional id of the tool, such as "Q_tabs_2"
+ * @param {String} [prefix]
+ *  Optional prefix to prepend to the tool's id
  * @return {String}
  *  Returns HTML that you can include in templates, etc.
  */
-Q.Tool.setUpElementHTML = function _Q_Tool_elementHTML(element, toolType, toolOptions, id, prefix) {
+Q.Tool.setUpElementHTML = function _Q_Tool_setUpElementHTML(element, toolType, toolOptions, id, prefix) {
 	var e = Q.Tool.setUpElement(element, toolType, null, id, prefix);
 	var ntt = toolType.replace(/\//g, '_');
-	e.setAttribute('data-'+ntt.replace(/_/g, '-'), Q.Tool.encodeOptions(toolOptions));
+	if (toolOptions) {
+		e.setAttribute('data-'+ntt.replace(/_/g, '-'), Q.Tool.encodeOptions(toolOptions));
+	}
 	return e.outerHTML;
 };
 
@@ -7394,7 +7399,7 @@ Q.Template.onError = new Q.Event(function (err) {
  * @param {String} name The name of template. See Q.Template.load
  * @param {Object} fields Rendering params - to be substituted to template
  * @param {Array} [partials] Names of partials to load and use for rendering the template
- * @param {Function} [callback] a callback - receives the rendering result or nothing
+ * @param {Function} [callback] a callback - receives (error) or (error, html)
  * @param {Object} [options={}] Options.
  * @param {String} [options.type='handlebars'] the type and extension of the template
  * @param {String} [options.dir] the folder under project web folder where templates are located
@@ -7444,6 +7449,19 @@ Q.Template.render = function _Q_Template_render(name, fields, partials, callback
 						return this[p0][p1].apply(this[p0], args);
 					}
 					return "{{call "+path+" not found}}";
+				});
+			}
+			if (!Handlebars.helpers.tool) {
+				Handlebars.registerHelper('tool', function (name, id, options) {
+					if (!name) {
+						return "{{tool missing name}}";
+					}
+					if (typeof id === 'object') {
+						options = id;
+						id = undefined;
+					}
+					var o = Q.extend({}, options && options.hash, this[name]);
+					return Q.Tool.setUpElementHTML('div', name, o, id);
 				});
 			}
 			

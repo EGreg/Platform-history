@@ -47,6 +47,7 @@ class Q_Handlebars {
 				}
 			));
 			self::$handlebars->addHelper('call', array('Q_Handlebars', 'helperCall'));
+			self::$handlebars->addHelper('tool', array('Q_Handlebars', 'helperTool'));
 		}
 		return self::$handlebars;
 	}
@@ -60,18 +61,31 @@ class Q_Handlebars {
 		if (count($parts) < 2) {
 			return "{{call ".$args[0]." not found}}";
 		}
-		$p0 = $parts[0];
-		$p1 = $parts[1];
-		if (empty($context[$p0][$p1])) {
+		$name = $parts[0];
+		$method = $parts[1];
+		$fields = $context->fields();
+		if (empty($fields[$name])) {
 			return "{{call ".$args[0]." not found}}";
 		}
-		$subject = $context[$p0];
-		$method = $subject[$p1];
+		$subject = $fields[$name];
 		$callable = array($subject, $method);
-		if (!is_callable($callable)) {
+		if (!is_object($subject) or !is_callable($callable)) {
 			return "{{call ".$args[0]." not callable}}";
 		}
-		return call_user_func_array($callable, $subject, array_slice($args, 1));
+		return call_user_func_array($callable, array_slice($args, 1));
+	}
+	
+	static function helperTool($template, $context, $args, $source)
+	{
+		if (empty($args[0])) {
+			return "{{tool missing name}}";
+		}
+		$name = $args[0];
+		$id = count($args) > 1 && is_string($args[1]) ? $args[1] : null;
+		$options = Q::ifset($args, 'hash', array());
+		$fields = $context->fields();
+		$o = array_merge($options, Q::ifset($fields, $name, array()));
+		return Q::tool($name, $o, compact('id'));
 	}
 
 	private static $handlebars = null;

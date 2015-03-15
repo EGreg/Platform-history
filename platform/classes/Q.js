@@ -676,6 +676,7 @@ Q.getter = function _Q_getter(original, options) {
 		wrapper.emit('called', this, arguments2, ret);
 
 		var cached, cbpos, cbi;
+		Q.getter.usingCached = false;
 
 		// if caching required check the cache -- maybe the result is there
 		if (wrapper.cache && !ignoreCache) {
@@ -687,12 +688,12 @@ Q.getter = function _Q_getter(original, options) {
 					callbacks[cbpos].apply(cached.subject, cached.params);
 					ret.result = Q.getter.CACHED;
 					wrapper.emit('executed', this, arguments2, ret);
+					Q.getter.usingCached = false;
 					return ret; // wrapper found in cache, callback and throttling have run
 				}
 			}
 		}
 		ignoreCache = false;
-		Q.getter.usingCached = false;
 
 		_waiting[key] = _waiting[key] || [];
 		_waiting[key].push({

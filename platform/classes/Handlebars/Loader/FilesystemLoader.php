@@ -1,5 +1,10 @@
 <?php
+
 /**
+ * This file is part of Handlebars-php
+ * Base on mustache-php https://github.com/bobthecow/mustache.php
+ *
+ * PHP version 5.2
  *
  * @category  Xamin
  * @package   Handlebars
@@ -7,10 +12,25 @@
  * @author    Behrooz Shabani <everplays@gmail.com>
  * @author    Craig Bass <craig@clearbooks.co.uk>
  * @author    ^^         <craig@devls.co.uk>
+ * @copyright 2010-2012 (c) Justin Hileman
  * @copyright 2012 (c) ParsPooyesh Co
  * @copyright 2013 (c) Behrooz Shabani
- * @license   MIT
- * @link      http://voodoophp.org/docs/handlebars
+ * @license   MIT <http://opensource.org/licenses/MIT>
+ * @version   GIT: $Id$
+ * @link      http://xamin.ir
+ */
+
+/**
+ * Handlebars Handlebars_Template filesystem Handlebars_Loader implementation.
+ *
+ * @category  Xamin
+ * @package   Handlebars
+ * @author    fzerorubigd <fzerorubigd@gmail.com>
+ * @copyright 2010-2012 (c) Justin Hileman
+ * @copyright 2012 (c) ParsPooyesh Co
+ * @license   MIT <http://opensource.org/licenses/MIT>
+ * @version   Release: @package_version@
+ * @link      http://xamin.ir *
  */
 
 class Handlebars_Loader_FilesystemLoader implements Handlebars_Loader
@@ -21,9 +41,9 @@ class Handlebars_Loader_FilesystemLoader implements Handlebars_Loader
     private $_templates = array();
 
     /**
-     * Handlebars filesystem Loader constructor.
+     * Handlebars filesystem Handlebars_Loader constructor.
      *
-     * $options array allows overriding certain Loader options during instantiation:
+     * $options array allows overriding certain Handlebars_Loader options during instantiation:
      *
      *     $options = array(
      *         // extension used for Handlebars templates. Defaults to '.handlebars'
@@ -31,25 +51,26 @@ class Handlebars_Loader_FilesystemLoader implements Handlebars_Loader
      *     );
      *
      * @param string|array $baseDirs A path contain template files or array of paths
-     * @param array        $options  Array of Loader options (default: array())
+     * @param array        $options  Array of Handlebars_Loader options (default: array())
      *
-     * @throws RuntimeInvalidArgumentException if $baseDir does not exist.
+     * @throws RuntimeException if $baseDir does not exist.
      */
-    public function __construct($baseDirs, Array $options = array())
+    public function __construct($baseDirs, array $options = array())
     {
         if (is_string($baseDirs)) {
             $baseDirs = array(rtrim(realpath($baseDirs), '/'));
         } else {
             foreach ($baseDirs as &$dir) {
                 $dir = rtrim(realpath($dir), '/');
-            } unset( $dir );
+            }
+            unset($dir);
         }
 
         $this->_baseDir = $baseDirs;
 
         foreach ($this->_baseDir as $dir) {
             if (!is_dir($dir)) {
-                throw new RuntimeInvalidArgumentException(
+                throw new RuntimeException(
                     'FilesystemLoader baseDir must be a directory: ' . $dir
                 );
             }
@@ -65,15 +86,15 @@ class Handlebars_Loader_FilesystemLoader implements Handlebars_Loader
     }
 
     /**
-     * Load a Template by name.
+     * Load a Handlebars_Template by name.
      *
-     *     $loader = new FilesystemLoader(dirname(__FILE__).'/views');
+     *     $loader = new Handlebars_Loader_FilesystemLoader(dirname(__FILE__).'/views');
      *     // loads "./views/admin/dashboard.handlebars";
      *     $loader->load('admin/dashboard');
      *
      * @param string $name template name
      *
-     * @return String Handlebars Template source
+     * @return Handlebars_String Handlebars Handlebars_Template source
      */
     public function load($name)
     {
@@ -85,30 +106,30 @@ class Handlebars_Loader_FilesystemLoader implements Handlebars_Loader
     }
 
     /**
-     * Helper function for loading a Handlebars file by name.
+     * Handlebars_Helper function for loading a Handlebars file by name.
      *
      * @param string $name template name
      *
      * @throws InvalidArgumentException if a template file is not found.
-     * @return string Handlebars Template source
+     * @return string Handlebars Handlebars_Template source
      */
     protected function loadFile($name)
     {
         $fileName = $this->getFileName($name);
 
         if ($fileName === false) {
-            throw new InvalidArgumentException('Template ' . $name . ' not found.');
+            throw new InvalidArgumentException('Handlebars_Template ' . $name . ' not found.');
         }
 
         return file_get_contents($fileName);
     }
 
     /**
-     * Helper function for getting a Handlebars template file name.
+     * Handlebars_Helper function for getting a Handlebars template file name.
      *
      * @param string $name template name
      *
-     * @return string Template file name
+     * @return string Handlebars_Template file name
      */
     protected function getFileName($name)
     {
