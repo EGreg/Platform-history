@@ -84,7 +84,7 @@ class Q_Handlebars {
 		$id = count($args) > 1 && is_string($args[1]) ? $args[1] : null;
 		$options = Q::ifset($args, 'hash', array());
 		$fields = $context->fields();
-		$o = array_merge(Q::ifset($fields, $name, array()), $options);
+		$o = array_merge($options, Q::ifset($fields, $name, array()));
 		return Q::tool($name, $o, compact('id'));
 	}
 

@@ -7460,7 +7460,7 @@ Q.Template.render = function _Q_Template_render(name, fields, partials, callback
 						options = id;
 						id = undefined;
 					}
-					var o = Q.extend({}, this[name], options && options.hash);
+					var o = Q.extend({}, options && options.hash, this[name]);
 					return Q.Tool.setUpElementHTML('div', name, o, id);
 				});
 			}
