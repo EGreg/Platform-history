@@ -329,6 +329,7 @@ Sp.sameDomain = function _String_prototype_sameDomain (url2, options) {
 if (!Function.prototype.bind)
 Function.prototype.bind = function _Function_prototype_bind(obj, options) {
 	var method = this;
+	if (!obj) obj = window;
 	if (!options) {
 		return function _Q_bind_result() {
 			return method.apply(obj, arguments);
@@ -1573,30 +1574,6 @@ Q.getObject = function _Q_getObject(name, context, delimiter, create) {
 		Q.setObject(name, create, context, delimiter);
 	}
 	return result;
-};
-
-/**
- * Walks the tree from the parent, returns the object at the end of the path, or the the defaultValue
- * @static
- * @method ifSet
- * @param parent {object}
- * @param keys {array}
- * @param defaultValue {mixed}
- * @return {mixed}
- *	The resulting object
- */
-Q.ifSet = function _Q_ifSet(parent, keys, defaultValue) {
-	var p = parent;
-	if (!p) {
-		return defaultValue;
-	}
-	for (var i=0; i<keys.length; i++) {
-		if (!(keys[i] in p)) {
-			return defaultValue;
-		}
-		p = p[keys[i]];
-	}
-	return p;
 };
 
 /**
@@ -5011,13 +4988,12 @@ Q.isOnline = function _Q_isOnline() {
 Q.load = function _Q_load(plugins, callback, options) {
 	var urls = [];
 	if (typeof plugins === 'string') {
-		plugins = [plugins];
+		plugins = plugins.split(' ').map(function (str) { return str.trim(); });
 	}
 	Q.each(plugins, function (i, plugin) {
-		if (Q.plugins[plugin]) {
-			return;
+		if (plugin && !Q.plugins[plugin]) {
+			urls.push(Q.info.baseUrl+'/plugins/'+plugin+'/js/'+plugin+'.js');
 		}
-		urls.push(Q.info.baseUrl+'/plugins/'+plugin+'/js/'+plugin+'.js');
 	});
 	return Q.addScript(urls, callback, options);	
 };
@@ -6847,14 +6823,13 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 	if (!callables) {
 		return 0;
 	}
+	if (!context) context = window;
+	if (!args) args = [];
 	var i=0, count=0, k, result;
 	if (callables === location) callables = location.href;
 	switch (Q.typeOf(callables)) {
 		case 'function':
-			result = callables.apply(
-				context ? context : window,
-				args ? args : []
-			);
+			result = callables.apply(context, args);
 			if (result === false) return false;
 			return 1;
 		case 'array':
@@ -8271,6 +8246,12 @@ Q.Browser = {
 	dataBrowser : [
 		{
 			string : navigator.userAgent,
+			subString : "MSIE",
+			identity : "Explorer",
+			versionSearch : "MSIE"
+		},
+		{
+			string : navigator.userAgent,
 			subString : "Chrome",
 			identity : "Chrome"
 		},
@@ -8315,12 +8296,6 @@ Q.Browser = {
 			string : navigator.userAgent,
 			subString : "Netscape",
 			identity : "Netscape"
-		},
-		{
-			string : navigator.userAgent,
-			subString : "MSIE",
-			identity : "Explorer",
-			versionSearch : "MSIE"
 		},
 		{
 			string : navigator.userAgent,
@@ -8430,15 +8405,15 @@ Q.info = {
 	browser: detected,
 	isIE: function (minVersion, maxVersion) {
 		return Q.info.browser.name === 'explorer'
-			&& (minVersion == undefined || minVersion <= Q.info.browser.version)
-			&& (maxVersion == undefined || maxVersion >= Q.info.browser.version);
+			&& (minVersion == undefined || minVersion <= Q.info.browser.mainVersion)
+			&& (maxVersion == undefined || maxVersion >= Q.info.browser.mainVersion);
 	},
 	isAndroid: function (maxWidth, maxHeight, minVersion, maxVersion) {
 		return Q.info.platform === 'android'
 			&& (maxWidth == undefined || maxWidth >= Q.Pointer.windowWidth())
 			&& (maxHeight == undefined || maxHeight >= Q.Pointer.windowHeight())	
-			&& (minVersion == undefined || minVersion <= Q.info.browser.version)
-			&& (maxVersion == undefined || maxVersion >= Q.info.browser.version);
+			&& (minVersion == undefined || minVersion <= Q.info.browser.mainVersion)
+			&& (maxVersion == undefined || maxVersion >= Q.info.browser.mainVersion);
 	}
 };
 Q.info.isMobile = Q.info.isTouchscreen && !Q.info.isTablet;
@@ -8507,11 +8482,19 @@ _touchScrollingHandler.options = {
 function _touchBlurHandler(event) {
 	var b = _touchBlurHandler.options.blur;
 	if (!b) return;
-		var ae = document.activeElement;
+	var target = Q.Pointer.target(event);
+	var ae = document.activeElement;
 	if (ae && (typeof ae.blur === 'function')
-	&& (ae !== Q.Pointer.target(event))
-	&& b.indexOf(ae.tagName.toUpperCase()) >= 0) {
-		ae.blur();
+	&& (ae !== target)) {
+		if (b.indexOf(target.tagName.toUpperCase()) >= 0) {
+			var f = function () {
+				target.focus();
+				Q.removeEventListener(window, 'click', f);
+			};
+			Q.addEventListener(window, 'click', f);
+		} else {
+			ae.blur();
+		}
 	}
 }
 
@@ -9094,6 +9077,11 @@ function _Q_restoreScrolling() {
 	var lastScrollLeft, lastScrollTop;
 	var focused = false;
 	setInterval(function _Q_saveScrollPositions() {
+		var ae = document.activeElement;
+		var b = _Q_restoreScrolling.options.prevent;
+		if (b.indexOf(ae.tagName.toUpperCase()) >= 0) {
+			focused = true;
+		}
 		if (focused) return false;
 		lastScrollTop = Q.Pointer.scrollTop();
 		lastScrollLeft = Q.Pointer.scrollLeft();
@@ -9109,6 +9097,10 @@ function _Q_restoreScrolling() {
 	});
 	return true;
 }
+
+_Q_restoreScrolling.options = {
+	prevent: ["INPUT", "TEXTAREA", "SELECT"]
+};
 
 var _pos, _dist, _last, _lastTimestamp, _lastVelocity;
 function _Q_PointerStartHandler(e) {

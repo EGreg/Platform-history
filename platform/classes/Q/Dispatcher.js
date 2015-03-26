@@ -35,7 +35,7 @@ function Dispatcher (server, options) {
 		 *	The object containing request, response and url
 		 */
 		dispatcher.emit('validate', info);
-		handler = Q.ifSet(Q.handlers, [uri.module, uri.action, 'validate'], false);
+		handler = Q.getObject([uri.module, uri.action, 'validate'], Q.handlers);
 		if (!Q.isEmpty(handler)) {
 			Q.handle(handler, this, [info, afterValidate]);
 		} else {
@@ -80,7 +80,7 @@ function Dispatcher (server, options) {
 			 */
 
 			dispatcher.emit(m, info);
-			handler = Q.ifSet(Q.handlers, [uri.module, uri.action, m], false);
+			handler = Q.getObject([uri.module, uri.action, m], Q.handlers);
 			if (!Q.isEmpty(handler)) {
 				Q.handle(handler, this, [info, afterMethod]);
 			} else {
@@ -136,7 +136,7 @@ function Dispatcher (server, options) {
 			});
 			for (var i=0; i<slotNames.length; ++i) {
 				var slotName = slotNames[i];
-				var handler = Q.ifSet(Q.handlers, [uri.module, uri.action, 'response', slotName], false);
+				var handler = Q.getObject([uri.module, uri.action, 'response', slotName], Q.handlers);
 				if (!Q.isEmpty(handler)) {
 					Q.handle(handler, this, [info, p.fill(slotName)]);
 				} else {

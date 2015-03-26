@@ -143,7 +143,7 @@ function Streams_stream_tool($options) {
 				'onSuccess' => 'function (data) {
 					if (data.errors) alert(data.errors);
 					else {
-						var stream = Q.ifSet(data, ["slots", "form", "fields"], null);
+						var stream = Q.getObject(["slots", "form", "fields"], data);
 						Q.handle(Q.info.baseUrl+"/plugins/Streams/put?publisherId="+stream.publisherId+"&name="+stream.name);
 					}
 				}'

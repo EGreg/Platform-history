@@ -53,7 +53,8 @@ Users.clients = {};
  */
 Users.userFromSession = function (sessionId, callback) {
 	if (Users.sessions[sessionId]) {
-		callback && callback(Q.ifSet(Users.sessions, [sessionId, 'Users', 'loggedInUser'], null));
+		var user = Q.getObject([sessionId, 'Users', 'loggedInUser'], Users.sessions) || null;
+		callback && callback(user);
 	} else {
 		Users.Session.SELECT('*').where({
 			id: sessionId

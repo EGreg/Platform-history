@@ -200,33 +200,6 @@ Q.getObject = function _Q_getObject(name, context, delimiter, create) {
 };
 
 /**
- * Walks the tree from the parent, returns the object at the end of the path, or the the defaultValue
- * @method ifSet
- * @param parent {object}
- * @param keys {array}
- * @param defaultValue {mixed}
- * @param delimiter {string} Optional
- * @return {mixed} The resulting object
- */
-Q.ifSet = function _Q_ifSet(parent, keys, defaultValue, delimiter) {
-	var p = parent;
-	if (!p) {
-		return defaultValue;
-	}
-	delimiter = delimiter || '.';
-	if (typeof keys === 'string') {
-		keys = keys.split(delimiter);
-	}
-	for (var i=0; i<keys.length; i++) {
-		if (!(keys[i] in p)) {
-			return defaultValue;
-		}
-		p = p[keys[i]];
-	}
-	return p;
-};
-
-/**
  * Used to prevent overwriting the latest results on the client with older ones.
  * Typically, you would call this function before making some sort of request,
  * save the ordinal in a variable, and then pass it to the function again inside
@@ -1985,7 +1958,7 @@ Q.listen = function _Q_listen(options, callback) {
 	if (host === null)
 		throw new Q.Exception("Q.listen: Missing config field: Q/nodeInternal/host");
 
-	var server = Q.ifSet(Q.servers, [port, host], null);
+	var server = Q.getObject([port, host], servers) || null;
 	if (server) {
 		var address = server.address();
 		if (address) callback && callback(address);
