@@ -15,7 +15,6 @@
 			"Q/Utils/canWriteToPath": ["Streams/before/Q_Utils_canWriteToPath"],
 			"Db/Row/Users_Contact/saveExecute": ["Streams/before/Users_Contact_saveExecute"],
 			"Db/Row/Users_Contact/removeExecute": ["Streams/before/Users_Contact_removeExecute"],
-			"Db/Row/Streams_Participant/save": ["Streams/before/Streams_Participant_save"],
 			"Users/User/displayName": ["Streams/before/Users_User_displayName"]
 		},
 		"handlersAfterEvent": {
@@ -26,8 +25,7 @@
 			"Db/Row/Users_Contact/removeExecute": ["Streams/after/Users_Contact_removeExecute"],
 			"Users/saveContactsFromLinks": ["Streams/after/Users_saveContactsFromLinks"],
 			"Users/setLoggedInUser": ["Streams/after/Users_setLoggedInUser"],
-			"Streams/post/Streams/category": ["Streams/after/Streams_post_Streams_category"],
-			"Streams/Stream/save/Streams/greeting": ["Streams/after/Streams_Stream_save_Streams_greeting"]
+			"Streams/post/Streams/category": ["Streams/after/Streams_post_Streams_category"]
 		},
 		"routes": {
 			"plugins/Streams/:action": {"module": "Streams"},

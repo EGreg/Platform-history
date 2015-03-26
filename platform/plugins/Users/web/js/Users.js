@@ -1295,7 +1295,19 @@ function login_setupDialog(usingProviders, scope, dialogContainer, identifierTyp
 	var $a = $('<a class="Q_button Users_login_go Q_main_button" />')
 	.append(
 		$('<span id="Users_login_go_span">'  + Q.text.Users.login.goButton + '</span>')
-	).click(submitClosestForm);
+	);
+	var _relevantClick = false;
+	if (Q.info.isTouchscreen) {
+		$(window).click(function (e) {
+			if (!_relevantClick) {
+				return;
+			}
+			_relevantClick = false; // in case another click is triggered
+			submitClosestForm.apply($a, arguments);
+		});
+	} else {
+		$a.click(submitClosestForm);
+	}
 	$(window).on('touchend', function (event) {
 		if (!$a[0].isOrContains(event.target)) {
 			return;
@@ -1303,7 +1315,16 @@ function login_setupDialog(usingProviders, scope, dialogContainer, identifierTyp
 		if ($('#Users_login_identifier').is(':focus')) {
 			$('#Users_login_identifier').blur();
 		}
-	})
+		setTimeout(function () {
+			_relevantClick = false;
+		}, 400);
+	});
+	$a.on('touchstart', function (event) {
+		if ($('#Users_login_identifier').is(':focus')) {
+			$('#Users_login_identifier').blur();
+		}
+		_relevantClick = true;
+	});
 
 	step1_form.html(
 		$('<label for="Users_login_identifier" />').html(Q.text.Users.login.directions)
@@ -1605,7 +1626,7 @@ function setIdentifier_setupDialog(identifierType, options) {
 }
 
 var _submitting = false;
-var submitClosestForm= Users.submitClosestForm = function submitClosestForm () {
+var submitClosestForm = Users.submitClosestForm = function submitClosestForm () {
 	_submitting = true;
 	$(this).closest('form').submit();
 	setTimeout(function () {

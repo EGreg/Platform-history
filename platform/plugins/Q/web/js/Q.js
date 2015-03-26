@@ -329,6 +329,7 @@ Sp.sameDomain = function _String_prototype_sameDomain (url2, options) {
 if (!Function.prototype.bind)
 Function.prototype.bind = function _Function_prototype_bind(obj, options) {
 	var method = this;
+	if (!obj) obj = window;
 	if (!options) {
 		return function _Q_bind_result() {
 			return method.apply(obj, arguments);
@@ -5011,13 +5012,12 @@ Q.isOnline = function _Q_isOnline() {
 Q.load = function _Q_load(plugins, callback, options) {
 	var urls = [];
 	if (typeof plugins === 'string') {
-		plugins = [plugins];
+		plugins = plugins.split(' ').map(function (str) { return str.trim(); });
 	}
 	Q.each(plugins, function (i, plugin) {
-		if (Q.plugins[plugin]) {
-			return;
+		if (plugin && !Q.plugins[plugin]) {
+			urls.push(Q.info.baseUrl+'/plugins/'+plugin+'/js/'+plugin+'.js');
 		}
-		urls.push(Q.info.baseUrl+'/plugins/'+plugin+'/js/'+plugin+'.js');
 	});
 	return Q.addScript(urls, callback, options);	
 };
@@ -6847,14 +6847,13 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 	if (!callables) {
 		return 0;
 	}
+	if (!context) context = window;
+	if (!args) args = [];
 	var i=0, count=0, k, result;
 	if (callables === location) callables = location.href;
 	switch (Q.typeOf(callables)) {
 		case 'function':
-			result = callables.apply(
-				context ? context : window,
-				args ? args : []
-			);
+			result = callables.apply(context, args);
 			if (result === false) return false;
 			return 1;
 		case 'array':
@@ -8271,6 +8270,12 @@ Q.Browser = {
 	dataBrowser : [
 		{
 			string : navigator.userAgent,
+			subString : "MSIE",
+			identity : "Explorer",
+			versionSearch : "MSIE"
+		},
+		{
+			string : navigator.userAgent,
 			subString : "Chrome",
 			identity : "Chrome"
 		},
@@ -8315,12 +8320,6 @@ Q.Browser = {
 			string : navigator.userAgent,
 			subString : "Netscape",
 			identity : "Netscape"
-		},
-		{
-			string : navigator.userAgent,
-			subString : "MSIE",
-			identity : "Explorer",
-			versionSearch : "MSIE"
 		},
 		{
 			string : navigator.userAgent,
@@ -8430,15 +8429,15 @@ Q.info = {
 	browser: detected,
 	isIE: function (minVersion, maxVersion) {
 		return Q.info.browser.name === 'explorer'
-			&& (minVersion == undefined || minVersion <= Q.info.browser.version)
-			&& (maxVersion == undefined || maxVersion >= Q.info.browser.version);
+			&& (minVersion == undefined || minVersion <= Q.info.browser.mainVersion)
+			&& (maxVersion == undefined || maxVersion >= Q.info.browser.mainVersion);
 	},
 	isAndroid: function (maxWidth, maxHeight, minVersion, maxVersion) {
 		return Q.info.platform === 'android'
 			&& (maxWidth == undefined || maxWidth >= Q.Pointer.windowWidth())
 			&& (maxHeight == undefined || maxHeight >= Q.Pointer.windowHeight())	
-			&& (minVersion == undefined || minVersion <= Q.info.browser.version)
-			&& (maxVersion == undefined || maxVersion >= Q.info.browser.version);
+			&& (minVersion == undefined || minVersion <= Q.info.browser.mainVersion)
+			&& (maxVersion == undefined || maxVersion >= Q.info.browser.mainVersion);
 	}
 };
 Q.info.isMobile = Q.info.isTouchscreen && !Q.info.isTablet;
@@ -9094,7 +9093,12 @@ function _Q_restoreScrolling() {
 	var lastScrollLeft, lastScrollTop;
 	var focused = false;
 	setInterval(function _Q_saveScrollPositions() {
+		if (b.indexOf(ae.toUpperCase) >= 0) {
+			focused = true;
+		}
 		if (focused) return false;
+		var b = _Q_restoreScrolling.options.prevent;
+		var ae = document.activeElement;
 		lastScrollTop = Q.Pointer.scrollTop();
 		lastScrollLeft = Q.Pointer.scrollLeft();
 	}, 300);
@@ -9109,6 +9113,10 @@ function _Q_restoreScrolling() {
 	});
 	return true;
 }
+
+_Q_restoreScrolling.options = {
+	prevent: ["INPUT", "TEXTAREA", "SELECT"]
+};
 
 var _pos, _dist, _last, _lastTimestamp, _lastVelocity;
 function _Q_PointerStartHandler(e) {
