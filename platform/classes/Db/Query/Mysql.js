@@ -1249,7 +1249,7 @@ function slice_partitions(partition, j, hashed, adjust) {
 		upper_found = upper_found && next;
 		current = point[j];
 		if (!adjust && max != null && current > max) break;
-		if ((next = Q.ifSet(partition, [i+1, j], null)) === current) continue;
+		if ((next = (Q.getObject([i+1, j], partition) || null)) === current) continue;
 		if (adjust && current > next) lower_found = !(next = null);
 		if (!lower_found && next && min >= next) lower = i+1;
 		if (!upper_found) {

@@ -1577,30 +1577,6 @@ Q.getObject = function _Q_getObject(name, context, delimiter, create) {
 };
 
 /**
- * Walks the tree from the parent, returns the object at the end of the path, or the the defaultValue
- * @static
- * @method ifSet
- * @param parent {object}
- * @param keys {array}
- * @param defaultValue {mixed}
- * @return {mixed}
- *	The resulting object
- */
-Q.ifSet = function _Q_ifSet(parent, keys, defaultValue) {
-	var p = parent;
-	if (!p) {
-		return defaultValue;
-	}
-	for (var i=0; i<keys.length; i++) {
-		if (!(keys[i] in p)) {
-			return defaultValue;
-		}
-		p = p[keys[i]];
-	}
-	return p;
-};
-
-/**
  * Use this to ensure that a property exists before running some javascript code.
  * If something is undefined, loads a script or executes a function, calling the callback on success.
  * @static
@@ -8506,11 +8482,19 @@ _touchScrollingHandler.options = {
 function _touchBlurHandler(event) {
 	var b = _touchBlurHandler.options.blur;
 	if (!b) return;
-		var ae = document.activeElement;
+	var target = Q.Pointer.target(event);
+	var ae = document.activeElement;
 	if (ae && (typeof ae.blur === 'function')
-	&& (ae !== Q.Pointer.target(event))
-	&& b.indexOf(ae.tagName.toUpperCase()) >= 0) {
-		ae.blur();
+	&& (ae !== target)) {
+		if (b.indexOf(target.tagName.toUpperCase()) >= 0) {
+			var f = function () {
+				target.focus();
+				Q.removeEventListener(window, 'click', f);
+			};
+			Q.addEventListener(window, 'click', f);
+		} else {
+			ae.blur();
+		}
 	}
 }
 
@@ -9093,12 +9077,12 @@ function _Q_restoreScrolling() {
 	var lastScrollLeft, lastScrollTop;
 	var focused = false;
 	setInterval(function _Q_saveScrollPositions() {
-		if (b.indexOf(ae.toUpperCase) >= 0) {
+		var ae = document.activeElement;
+		var b = _Q_restoreScrolling.options.prevent;
+		if (b.indexOf(ae.tagName.toUpperCase()) >= 0) {
 			focused = true;
 		}
 		if (focused) return false;
-		var b = _Q_restoreScrolling.options.prevent;
-		var ae = document.activeElement;
 		lastScrollTop = Q.Pointer.scrollTop();
 		lastScrollLeft = Q.Pointer.scrollLeft();
 	}, 300);

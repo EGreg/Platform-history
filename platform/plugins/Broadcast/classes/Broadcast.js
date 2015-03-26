@@ -66,20 +66,26 @@ Broadcast.listen = function (options) {
 				var content = parsed.content ? JSON.parse(parsed.content) : null;
 				if (content !== null) {
 					var appId = Q.Config.get(["Users", "facebookApps", "Broadcast", "appId"], null);
-					var token = Q.ifSet(content, ['fb_'+appId+'_access_token'], null);
-					var userId = Q.ifSet(content, ['Users', 'loggedInUser', 'id'], null);
-					if (token) fb.createClient(token).getObject('me/friends', {}, function(err, res, data) {
-						if (!err && userId) {
-							(new Broadcast.User({
-								'userId': userId,
-								'friend_count': data.data.length
-							})).save(true, function(error){
-								if (error) console.log("Insert broadcast user error: ", error);
-							});
-						} else {
-							console.log('Failed to update friends count: ' + err.message);
-						}
-					});
+					var token = Q.getObject(['fb_'+appId+'_access_token'], content);
+					var userId = Q.getObject(['Users', 'loggedInUser', 'id'], content);
+					if (userId === undefined) {
+						userId = null;
+					}
+					if (token) {
+						fb.createClient(token).getObject('me/friends', {},
+						function(err, res, data) {
+							if (!err && userId) {
+								(new Broadcast.User({
+									'userId': userId,
+									'friend_count': data.data.length
+								})).save(true, function(error){
+									if (error) console.log("Insert broadcast user error: ", error);
+								});
+							} else {
+								console.log('Failed to update friends count: ' + err.message);
+							}
+						});
+					}
 				}
 				return next();
 			default:
