@@ -525,7 +525,7 @@ abstract class Db
 		$month = substr($datetime, 5, 2);
 		$day = substr($datetime, 8, 2);
 		
-		return mktime($month, $day, $year);
+		return mktime(0, 0, 0, $month, $day, $year);
 	}
 
 	/**
