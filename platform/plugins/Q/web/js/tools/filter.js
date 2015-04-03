@@ -53,7 +53,8 @@ Q.Tool.define('Q/filter', function (options) {
 			}
 			tool.end();
 		}, 100);
-	}).on('keydown keyup change input focus paste blur Q_refresh', _changed)
+	})
+	.on('keydown keyup change input focus paste blur Q_refresh Q_refresh_filter', _changed)
 	.on(Q.Pointer.fastclick, function (evt) {
 		var $this = $(this);
 		var xMax = $this.offset().left + $this.outerWidth(true) -
@@ -67,12 +68,10 @@ Q.Tool.define('Q/filter', function (options) {
 	});
 	$te.addClass(state.fullscreen ? 'Q_filter_fullscreen' : 'Q_filter_notFullscreen');
 	
-	tool.$results.on(Q.Pointer.start, function () {
-		tool.canceledBlur = true;
-	});
-	
-	tool.$results.on(Q.Pointer.end, function () {
-		tool.canceledBlur = true;
+	tool.$results.on(Q.Pointer.start+' '+Q.Pointer.end, function () {
+		if (Q.info.isTouchscreen) {
+			tool.canceledBlur = true;
+		}
 	});
 	
 	var lastVal = null;

@@ -40,7 +40,8 @@ Q.Tool.define("Streams/interests", function (options) {
 		}
 		var $expandable = $(Q.Tool.setUpElement('div', 'Q/expandable', {
 			title: img+"<span>"+category+"</span>",
-			content: content
+			content: content,
+            count: ''
 		}, 'Q_expandable_' + Q.normalize(category)));
 		$expandable.appendTo(tool.element).activate(p.fill(category));
 	}

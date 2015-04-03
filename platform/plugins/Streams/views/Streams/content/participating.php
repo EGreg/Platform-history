@@ -7,7 +7,7 @@
 		});
 
 		$('#partTest2').click(function() {
-			Q.jsonRequest('Streams/participating', 'participating', function (err, response) {
+			Q.request('Streams/participating', 'participating', function (err, response) {
 				console.log(response.slots);
 			});
 		});

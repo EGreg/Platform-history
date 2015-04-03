@@ -152,6 +152,8 @@ Q.Tool.define("Q/columns", function(options) {
 	 *  including events such as "onOpen" and "onClose". Additional options include:
 	 *  @param {String} [options.columnClass] to add a class to the column
 	 *  @param {Object} [options.data] to add data on the column element with jQuery
+	 *  @param {Object} [options.template] template to render for the "content" slot
+	 *  @param {Object} [options.url] a url to request the slots "title" and "content" from
 	 * @param {Number} index The index of the column to open
 	 * @param {Function} callback Called when the column is opened
 	 */
@@ -249,40 +251,6 @@ Q.Tool.define("Q/columns", function(options) {
 			$div.attr('data-name', options.name)
 				.addClass('Q_column_'+n);
 		}
-
-		var p = Q.pipe();
-		var waitFor = ['animation'];
-		
-		if (options.url) {
-			waitFor.push('activated');
-			var url = options.url;
-			var params = Q.extend({
-				slotNames: ["title", "column"], 
-				slotContainer: {
-					title: titleSlot,
-					column: columnSlot
-				},
-				quiet: true,
-				ignoreHistory: true,
-				ignorePage: true,
-				onError: {"Q/columns": function () {
-					$mask.remove();
-				}}
-			}, options);
-			params.handler = function _handler(response) {
-				var elementsToActivate = {};
-				if ('title' in response.slots) {
-					$(titleSlot).html(response.slots.title);
-					elementsToActivate['title'] = titleSlot;
-				}
-				columnSlot.innerHTML = response.slots.column;
-				elementsToActivate['column'] = columnSlot;
-				return elementsToActivate;
-			};
-			params.onActivate = p.fill('activated');
-			// this.state.triggers[index] = options.trigger || null;
-			Q.loadUrl(url, params);
-		}
 		
 		if (o.template) {
 			Q.Template.render(o.template, function (err, html) {
@@ -297,6 +265,39 @@ Q.Tool.define("Q/columns", function(options) {
 		return this;
 		
 		function _open() {
+			var p = Q.pipe();
+			var waitFor = ['animation'];
+			if (options.url) {
+				waitFor.push('activated');
+				var url = options.url;
+				var params = Q.extend({
+					slotNames: ["title", "column"], 
+					slotContainer: {
+						title: titleSlot,
+						column: columnSlot
+					},
+					quiet: true,
+					ignoreHistory: true,
+					ignorePage: true,
+					onError: {"Q/columns": function () {
+						$mask.remove();
+					}}
+				}, options);
+				params.handler = function _handler(response) {
+					var elementsToActivate = {};
+					if ('title' in response.slots) {
+						$(titleSlot).html(response.slots.title);
+						elementsToActivate['title'] = titleSlot;
+					}
+					columnSlot.innerHTML = response.slots.column;
+					elementsToActivate['column'] = columnSlot;
+					return elementsToActivate;
+				};
+				params.onActivate = p.fill('activated');
+				// this.state.triggers[index] = options.trigger || null;
+				Q.loadUrl(url, params);
+			}
+			
 			var $te = $(tool.element);
 			if (o.title != undefined) {
 				$(titleSlot).empty().append(
