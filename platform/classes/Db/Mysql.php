@@ -99,10 +99,11 @@ class Db_Mysql implements iDb
 		}
 		if (class_exists('Q')) {
 			/**
+			 * Occurs before a real connection to the database is made
 			 * @event Db/reallyConnect {before}
-			 * @param {Db_Mysql} 'db'
-			 * @param {string} 'shard_name'
-			 * @param {array} 'modifications'
+			 * @param {Db_Mysql} db
+			 * @param {string} shard_name
+			 * @param {array} modifications
 			 * @return {array}
 			 *	Extra modifications
 			 */
@@ -146,10 +147,11 @@ class Db_Mysql implements iDb
 
 		if (class_exists('Q')) {
 			/**
+			 * Occurs when a real connection to the database has been made
 			 * @event Db/reallyConnect {after}
-			 * @param {Db_Mysql} 'db'
-			 * @param {string} 'shard_name'
-			 * @param {array} 'modifications'
+			 * @param {Db_Mysql} db
+			 * @param {string} shard_name
+			 * @param {array} modifications
 			 */
 			Q::event('Db/reallyConnect', array(
 				'db' => $this,

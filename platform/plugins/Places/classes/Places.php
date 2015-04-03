@@ -408,25 +408,43 @@ abstract class Places extends Base_Places
 		$options = array(),
 		$action = null)
 	{
+		$user = Users::loggedInUser(true);
 		$nearby = Places::nearbyForSubscribers($latitude, $longitude, $miles);
 		if (!$nearby) { return array(); }
 		if (!isset($publisherId)) {
 			$publisherId = Q_Config::expect('Q', 'app');
 		}
-		$streams = Streams::fetch(null, $publisherId, array_keys($nearby));
+		if ($transform = Q::ifset($options, 'transform', null)) {
+			$create = Q::ifset($options, 'create', null);
+			$transformed = call_user_func($transform, $nearby, $options);
+		} else {
+			$transformed = array_keys($nearby);
+			$createMethod = ($action === 'subscribe')
+				? array('Places', '_createNearby')
+				: null;
+			$create = Q::ifset($options, 'create', $createMethod);
+		}
+		$streams = Streams::fetch(null, $publisherId, $transformed);
 		$participants = Streams_Participant::select('*')
 			->where(array(
 				'publisherId' => $publisherId,
-				'streamName' => array_keys($nearby),
-				'userId' => Users::loggedInUser()->id
+				'streamName' => $transformed,
+				'userId' => $user->id
 			))->ignoreCache()->fetchDbRows(null, null, 'streamName');
 		foreach ($nearby as $name => $info) {
-			$stream = $streams[$name];
-			if (!$stream) {
-				$streams[$name] = $stream = Places::nearbyStream(
-					$info['latitude'], $info['longitude'], $miles, $publisherId, $name
+			$name = isset($transformed[$name]) ? $transformed[$name] : $name;
+			if (empty($streams[$name])) {
+				if (empty($create)) {
+					continue;
+				}
+				$params = compact(
+					'publisherId', 'latitude', 'longitude',
+					'transformed', 'miles',
+					'nearby', 'name', 'info', 'streams'
 				);
+				$streams[$name] = call_user_func($create, $params, $options);
 			}
+			$stream = $streams[$name];
 			$subscribed = ('yes' === Q::ifset($participants, $name, 'subscribed', 'no'));
 			if ($action === 'subscribe' and !$subscribed) {
 				$stream->subscribe($options);
@@ -442,7 +460,7 @@ abstract class Places extends Base_Places
 	 * around the given location.
 	 * @method relateTo
 	 * @static
-	 * @param {string} $toPublisherId The publisherId of the category streams
+	 * @param {string} $publisherId The publisherId of the category streams
 	 * @param {double} $latitude The latitude of the coordinates near which to relate
 	 * @param {double} $longitude The longitude of the coordinates near which to relate
 	 * @param {string} $fromPublisherId The publisherId of the stream to relate
@@ -455,7 +473,7 @@ abstract class Places extends Base_Places
 	 * @return {array|boolean} Returns the array of category streams
 	 */
 	static function relateTo(
-		$toPublisherId,
+		$publisherId,
 		$latitude, 
 		$longitude, 
 		$fromPublisherId,
@@ -473,9 +491,9 @@ abstract class Places extends Base_Places
 			$transformed = call_user_func($transform, $nearby, $options);
 		} else {
 			$transformed = array_keys($nearby);
-			$create = Q::ifset($options, 'create', array('Places', 'nearbyCreate'));
+			$create = Q::ifset($options, 'create', array('Places', '_createNearby'));
 		}
-		$streams = Streams::fetch(null, $toPublisherId, $transformed);
+		$streams = Streams::fetch(null, $publisherId, $transformed);
 		foreach ($nearby as $k => $info) {
 			$name = isset($transformed[$k]) ? $transformed[$k] : $k;
 			if (empty($streams[$name])) {
@@ -483,10 +501,10 @@ abstract class Places extends Base_Places
 					continue;
 				}
 				$params = compact(
-					'toPublisherId', 'latitude', 'longitude',
+					'publisherId', 'latitude', 'longitude',
 					'fromPublisherId', 'fromStreamName',
-					'relationType', 'options',
-					'transformed',
+					'relationType',
+					'transformed', 'miles',
 					'nearby', 'name', 'info', 'streams'
 				);
 				$streams[$name] = call_user_func($create, $params, $options);
@@ -607,7 +625,7 @@ abstract class Places extends Base_Places
 	 * around the given location, during a particular hour.
 	 * @method relateToTimeslot
 	 * @static
-	 * @param {string} $toPublisherId The publisherId of the category streams
+	 * @param {string} $publisherId The publisherId of the category streams
 	 * @param {double} $latitude The latitude of the coordinates near which to relate
 	 * @param {double} $longitude The longitude of the coordinates near which to relate
 	 * @param {double} $timestamp Timestamp the stream "takes place", used to determine the hour
@@ -619,7 +637,7 @@ abstract class Places extends Base_Places
 	 * @return {array|boolean} Returns the array of category streams
 	 */
 	static function relateToTimeslot(
-		$toPublisherId,
+		$publisherId,
 		$latitude, 
 		$longitude, 
 		$timestamp,
@@ -628,12 +646,12 @@ abstract class Places extends Base_Places
 		$options = array())
 	{
 		$options = array_merge(array(
-			'transform' => array('Places', 'timeslotTransform'),
-			'create' => array('Places', 'timeslotCreate'),
+			'transform' => array('Places', '_transformTimeslot'),
+			'create' => array('Places', '_createTimeslot'),
 			'timestamp' => $timestamp
 		), $options);
 		Places::relateTo(
-			$toPublisherId,
+			$publisherId,
 			$latitude,
 			$longitude,
 			$fromPublisherId,
@@ -648,7 +666,7 @@ abstract class Places extends Base_Places
 	 * around the given location, about a certain interest.
 	 * @method relateToInterest
 	 * @static
-	 * @param {string} $toPublisherId The publisherId of the category streams
+	 * @param {string} $publisherId The publisherId of the category streams
 	 * @param {double} $latitude The latitude of the coordinates near which to relate
 	 * @param {double} $longitude The longitude of the coordinates near which to relate
 	 * @param {double} $title The title of the interest, which will be normalized
@@ -660,7 +678,7 @@ abstract class Places extends Base_Places
 	 * @return {array|boolean} Returns the array of category streams
 	 */
 	static function relateToInterest(
-		$toPublisherId,
+		$publisherId,
 		$latitude, 
 		$longitude, 
 		$title,
@@ -668,14 +686,13 @@ abstract class Places extends Base_Places
 		$fromStreamName,
 		$options = array())
 	{
-		$title = Q_Utils::normalize($title);
 		$options = array_merge(array(
-			'transform' => array('Places', 'interestTransform'),
-			'create' => array('Places', 'interestCreate'),
+			'transform' => array('Places', '_transformInterest'),
+			'create' => array('Places', '_createInterest'),
 			'title' => $title
 		), $options);
 		Places::relateTo(
-			$toPublisherId,
+			$publisherId,
 			$latitude,
 			$longitude,
 			$fromPublisherId,
@@ -685,7 +702,7 @@ abstract class Places extends Base_Places
 		);
 	}
 	
-	protected static function timeslotTransform($nearby, $options)
+	static function _transformTimeslot($nearby, $options)
 	{
 		$timestamp = $options['timestamp'];
 		$timestamp = $timestamp - $timestamp % 3600;
@@ -696,36 +713,40 @@ abstract class Places extends Base_Places
 		return $result;
 	}
 	
-	protected static function timeslotCreate($params, $options)
+	static function _createTimeslot($params, $options)
 	{
 		$timestamp = $options['timestamp'];
 		$timestamp = $timestamp - $timestamp % 3600;
 		$info = $params['info'];
 		$options['name'] = "Places/timeslot/$info[geohash]/$info[miles]/h/$timestamp";
-		return Streams::create(null, $params['toPublisherId'], 'Places/timeslot', $options);
+		return Streams::create(null, $params['publisherId'], 'Places/timeslot', $options);
 	}
 	
-	protected static function interestTransform($nearby, $options)
+	static function _transformInterest($nearby, $options)
 	{
+		$title = Q_Utils::normalize($options['title']);
 		$result = array();
 		foreach ($nearby as $k => $info) {
-			$result[$k] = "Places/interest/$info[geohash]/$info[miles]/$options[title]";
+			$result[$k] = "Places/interest/$info[geohash]/$info[miles]/$title";
 		}
 		return $result;
 	}
 	
-	protected static function interestCreate($params, $options)
+	static function _createInterest($params, $options)
 	{
+		$title = Q_Utils::normalize($options['title']);
 		$info = $params['info'];
-		$options['name'] = "Places/interest/$info[geohash]/$info[miles]/$options[title]";
-		return Streams::create(null, $params['toPublisherId'], 'Places/interest', $options);
+		$options['name'] = "Places/interest/$info[geohash]/$info[miles]/$title";
+		return Streams::create(null, $params['publisherId'], 'Places/interest', $options);
 	}
 	
-	protected static function nearbyCreate($params, $options)
+	static function _createNearby($params, $options)
 	{
 		$info = $params['info'];
 		return Places::nearbyStream(
-			$info['latitude'], $info['longitude'], $info['miles']
+			$info['latitude'], $info['longitude'], $info['miles'],
+			Q::ifset($info, 'publisherId', null),
+			Q::ifset($info, 'name', null)
 		);
 	}
 };

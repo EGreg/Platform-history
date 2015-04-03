@@ -15,6 +15,8 @@
 			"Q/responseExtras": ["Places/before/Q_responseExtras"]
 		},
 		"handlersAfterEvent": {
+			"Streams/interest/add": ["Places/after/Streams_interest_add"],
+			"Streams/interest/remove": ["Places/after/Streams_interest_remove"]
 		}
 	},
 	"Streams": {

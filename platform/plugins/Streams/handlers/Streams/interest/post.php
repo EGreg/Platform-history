@@ -52,7 +52,7 @@ function Streams_interest_post()
 		}
 		$stream->save();
 	}
-	$subscribe = Q::ifset($_REQUEST, 'subscribe', false);
+	$subscribe = !!Q::ifset($_REQUEST, 'subscribe', false);
 	if ($subscribe) {
 		$stream->subscribe();
 	} else {
@@ -82,4 +82,18 @@ function Streams_interest_post()
 	
 	Q_Response::setSlot('publisherId', $publisherId);
 	Q_Response::setSlot('streamName', $name);
+
+	/**
+	 * Occurs when the logged-in user has successfully added an interest via HTTP
+	 * @event Streams/interest/post {after}
+	 * @param {string} publisherId The publisher of the interest stream
+	 * @param {string} title The title of the interest
+	 * @param {boolean} subscribe Whether the user subscribed to the interest stream
+	 * @param {Users_User} user The logged-in user
+	 * @param {Streams_Stream} stream The interest stream
+	 * @param {Streams_Stream} myInterests The user's "Streams/user/interests" stream
+	 */
+	Q::event("Streams/interest/add", compact(
+		'publisherId', 'title', 'subscribe', 'user', 'stream', 'myInterests'
+	), 'after');
 }
