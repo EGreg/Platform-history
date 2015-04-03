@@ -329,7 +329,7 @@ abstract class Streams extends Base_Streams
 		}
 		$allCached = array();
 		if (is_array($name) and empty($options['refetch'])) {
-            $namesToFetch = array();
+			$namesToFetch = array();
 			foreach ($name as $n) {
 				if (isset(self::$fetch[$asUserId][$publisherId][$n][$fields])) {
 					$allCached[$n] = self::$fetch[$asUserId][$publisherId][$n][$fields];
@@ -339,8 +339,8 @@ abstract class Streams extends Base_Streams
 			}
 			$namesToFetch = array_unique($namesToFetch);
 		} else {
-            $namesToFetch = $name;
-        }
+			$namesToFetch = $name;
+		}
 		$criteria = array(
 			'publisherId' => $publisherId,
 			'name' => $namesToFetch
@@ -348,12 +348,12 @@ abstract class Streams extends Base_Streams
 
 		// Get streams and set their default access info
 		$allRetrieved = $namesToFetch
-            ? Streams_Stream::select($fields)
-                ->where($criteria)
-                ->ignoreCache()
-                ->options($options)
-                ->fetchDbRows(null, '', 'name')
-            : array();
+			? Streams_Stream::select($fields)
+				->where($criteria)
+				->ignoreCache()
+				->options($options)
+				->fetchDbRows(null, '', 'name')
+			: array();
 
 		$streams = $allCached ? array_merge($allCached, $allRetrieved) : $allRetrieved;
 
@@ -480,7 +480,7 @@ abstract class Streams extends Base_Streams
 	 *  Set this to the user relative to whom access is calculated.
 	 *  If this matches the publisherId, just sets full access and calls publishedByFetcher(true).
 	 *  If this is '', only returns the streams anybody can see.
-     *  If this is null, the logged-in user's id is used, or '' if no one is logged in
+	 *  If this is null, the logged-in user's id is used, or '' if no one is logged in
 	 * @param {string} $publisherId
 	 *  The id of the user publishing these streams
 	 * @param {array} $streams
@@ -813,7 +813,7 @@ abstract class Streams extends Base_Streams
 		// relate the stream to category stream, if any
 		if ($relate['streamName']) {
 			$result = Streams::relate(
-				$user->id, 
+				$asUserId,
 				$relate['publisherId'], 
 				$relate['streamName'], 
 				$relate['type'], 
@@ -823,6 +823,7 @@ abstract class Streams extends Base_Streams
 			);
 			Q_Response::setSlot('messageTo', $result['messageTo']->exportArray());
 		}
+		return $stream;
 	}
 
 	/**
@@ -1227,16 +1228,16 @@ abstract class Streams extends Base_Streams
 	 * You should rarely have to call this function. It is used internally by the model,
 	 * in two main situations:
 	 * <ol><li>
-	 *    adding, removing or modifying a Streams_Access row for Streams/user/firstName or Streams/user/lastName
-	 *    In this case, the function is able to update exactly the avatars that need updating.
+	 *	adding, removing or modifying a Streams_Access row for Streams/user/firstName or Streams/user/lastName
+	 *	In this case, the function is able to update exactly the avatars that need updating.
 	 * </li><li>
-	 *    adding, removing or modifying a Stream row for Streams/user/firstName or Streams/user/lastName
-	 *    In this case, there may be some avatars which this function will miss.
-	 *    These correspond to users which are reachable by the access array for one stream,
-	 *    but not the other. For example, if Streams/user/firstName is being updated, but
-	 *    a particular user is reachable only by the access array for Streams/user/lastName, then
-	 *    their avatar will not be updated and contain a stale value for firstName.
-	 *    To fix this, the Streams_Stream model passes true in the 4th parameter to this function.
+	 *	adding, removing or modifying a Stream row for Streams/user/firstName or Streams/user/lastName
+	 *	In this case, there may be some avatars which this function will miss.
+	 *	These correspond to users which are reachable by the access array for one stream,
+	 *	but not the other. For example, if Streams/user/firstName is being updated, but
+	 *	a particular user is reachable only by the access array for Streams/user/lastName, then
+	 *	their avatar will not be updated and contain a stale value for firstName.
+	 *	To fix this, the Streams_Stream model passes true in the 4th parameter to this function.
 	 * </li></ol>
 	 * @method updateAvatars
 	 * @static
@@ -1860,7 +1861,7 @@ abstract class Streams extends Base_Streams
 	 *	'relationsOnly' =>  If true, returns only the relations to/from stream, doesn't fetch the streams.
 	 *		Useful if publisher id of relation objects is not the same as provided by publisherId.
 	 *  'streamsOnly' => If true, returns only the streams related to/from stream, doesn't return the relations.
-	 *      Useful for shorthand in while( ) statements.
+	 *	  Useful for shorthand in while( ) statements.
 	 *  'streamFields' => If specified, fetches only the fields listed here for any streams
 	 *  'skipFields' => Optional array of field names. If specified, skips these fields when fetching streams
 	 * @return {array}
@@ -2259,17 +2260,17 @@ abstract class Streams extends Base_Streams
 	 *   if array is provided fetches streams for each array member
 	 * @param {array} $options=array()
 	 *   Array of parameters including:<br/>
-	 *    "search" => Experimental, Optional. A search term to look in 'title' and 'content'.
-	 *      If provided, $streamName shall be not empty and contain generic name (type) of the
-	 *      streams to search. Streams/search/$type 'before' and 'after' hooks are called to
-	 *      adjust search result<br/>
+	 *	"search" => Experimental, Optional. A search term to look in 'title' and 'content'.
+	 *	  If provided, $streamName shall be not empty and contain generic name (type) of the
+	 *	  streams to search. Streams/search/$type 'before' and 'after' hooks are called to
+	 *	  adjust search result<br/>
 	 *
 	 *   Following options work only if $publisherId and $streamName are strings and 'Stream' table is not
 	 *	 sharded:<br/>
 	 *
-	 *    "limit" => Optional. The number of streams to fetch<br/>
-	 *    "offset" => Optional. The offset to start from<br/>
-	 *    "orderBy" => Optional. The name(s) of the field(s) to order result<br/>
+	 *	"limit" => Optional. The number of streams to fetch<br/>
+	 *	"offset" => Optional. The offset to start from<br/>
+	 *	"orderBy" => Optional. The name(s) of the field(s) to order result<br/>
 	 * @param {boolean} $single=false
 	 * @return {array}
 	 *  Array of resulting stream indexed by name
