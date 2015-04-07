@@ -556,19 +556,26 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 
 			$upcoming = Q_Config::get('Db', 'upcoming', $connection, false);
 			if ($query->type !== Db_Query::TYPE_SELECT && $query->type !== Db_Query::TYPE_RAW) {
-				if (!empty($upcoming['block']) && $shard_name === $upcoming['shard'])
+				if (!empty($upcoming['block']) && $shard_name === $upcoming['shard']) {
 					throw new Db_Exception_Blocked(compact('shard_name', 'connection'));
+				}
 			}
 
 			$pdo = $query->reallyConnect($shard_name);
+			$nt = & self::$nestedTransactions[$connection][$shard_name];
+			if (!isset($nt)) {
+				self::$nestedTransactions[$connection][$shard_name] = 0;
+				$nt = & self::$nestedTransactions[$connection][$shard_name];
+			}
 
 			try {
-				if (!empty($query->clauses["BEGIN"]) && empty(self::$transaction[$shard_name])) {
-					self::$transaction[$shard_name] = true;
-					$pdo->beginTransaction();
-				} else if (!empty($query->clauses["ROLLBACK"]) && !empty(self::$transaction[$shard_name])) {
-					self::$transaction[$shard_name] = false;
+				if (!empty($query->clauses["BEGIN"])) {
+					if (++$nt == 1) {
+						$pdo->beginTransaction();
+					}
+				} else if (!empty($query->clauses["ROLLBACK"])) {
 					$pdo->rollBack();
+					$nt = 0;
 				}
 
 				if ($query->type !== Db_Query::TYPE_ROLLBACK) {
@@ -593,15 +600,15 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 					}
 
 					$stmts[] = $stmt;
-					if (!empty($query->clauses["COMMIT"])
-					&& !empty(self::$transaction[$shard_name])) {
-						self::$transaction[$shard_name] = false;
-						// we commit only if no error occured - warnings are permitted
+					if (!empty($query->clauses["COMMIT"]) && $nt) {
+						// we commit only if no error occurred - warnings are permitted
 						if ($stmt && in_array(substr($stmt->errorCode(), 0, 2), array('00', '01'))) {
-							$pdo->commit();
+							if (--$nt == 0) {
+								$pdo->commit();
+							}
 						} else {
 							$err = $pdo->errorInfo();
-							throw new Exception($err[2], $err[1]);
+							throw new Exception($err[0], $err[1]);
 						}
 					}
 				}
@@ -609,9 +616,9 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 				if (!isset($sql)) {
 					$sql = $query->getSQL();
 				}
-				if (!empty(self::$transaction[$shard_name])) {
-					self::$transaction[$shard_name] = false;
+				if ($nt) {
 					$pdo->rollBack();
+					$nt = 0;
 				}
 				if (!class_exists('Q_Exception_DbQuery')) {
 					throw $e;
@@ -621,6 +628,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 					'message' => $e->getMessage()
 				));
 			}
+			$this->nestedTransactionCount = $nt;
 			if (class_exists('Q') && isset($sql)) {
 				// log query if shard split process is active
 				// all activities will be done by node.js
@@ -654,24 +662,26 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 						(!empty($this->clauses['BEGIN']) ? 'BEGIN' :
 						(!empty($this->clauses['ROLLBACK']) ? 'ROLLBACK' : '')));
 
+					$upcoming_shards = array_keys($query->shard($upcoming['indexes'][$upcoming['table']]));
+
 					if (!empty($transaction) && $transaction !== 'COMMIT') {
 						Q_Utils::sendToNode(array(
 							'Q/method' => 'Db/Shards/log',
-							'shards' => array_keys($query->shard($upcoming['indexes'][$upcoming['table']])),
+							'shards' => $upcoming_shards,
 							'sql' => "$transaction;"
 						), Q_Config::get('Db', 'internal', 'sharding', 'logServer', null));
 					}
 
 					Q_Utils::sendToNode(array(
 						'Q/method' => 'Db/Shards/log',
-						'shards' => array_keys($query->shard($upcoming['indexes'][$upcoming['table']])),
+						'shards' => $upcoming_shards,
 						'sql' => trim(str_replace("\n", ' ', $sql_template))
 					), Q_Config::get('Db', 'internal', 'sharding', 'logServer', null));
 
 					if (!empty($transaction) && $transaction === 'COMMIT') {
 						Q_Utils::sendToNode(array(
 							'Q/method' => 'Db/Shards/log',
-							'shards' => array_keys($query->shard($upcoming['indexes'][$upcoming['table']])),
+							'shards' => $upcoming_shards,
 							'sql' => "$transaction;"
 						), Q_Config::get('Db', 'internal', 'sharding', 'logServer', null));
 					}
@@ -681,7 +691,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 				 * @param {Db_Query_Mysql} 'query'
 				 * @param {string} 'sql'
 				 */
-				Q::event('Db/query/execute', array('query' => $query, 'sql' => $sql), 'after');
+				Q::event('Db/query/execute', compact('query', 'queries', 'sql'), 'after');
 			}
 		}
 
@@ -1514,7 +1524,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		$args[] = $this;
 		return call_user_func_array($callback, $args);
 	}
-	
+
 	static function column($column)
 	{
 		$parts = explode(' ', $column);
@@ -1704,10 +1714,11 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	}
 
 	/**
-	 * Memoraze shards which have transaction open
-	 * @property $transaction
-	 * @protected
-	 * @type array
+	 * Count nesting of transactions, indexed by [$connection_name][$shard_name]
+	 * @property $nestedTransactionCount
+	 * @type integer
 	 */
-	protected static $transaction = array();
+	public $nestedTransactionCount = null;
+
+	protected static $nestedTransactions = array();
 }

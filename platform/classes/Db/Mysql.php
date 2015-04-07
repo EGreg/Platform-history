@@ -387,6 +387,7 @@ class Db_Mysql implements iDb
 		
 		// Execute all the queries using this prepared statement
 		$row_of_chunk = 1;
+		$q = '';
 		foreach ($records as $record) {
 			if ($first_chunk) {
 				// Prepare statement from first query

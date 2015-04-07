@@ -1,5 +1,30 @@
 <?php
-	
+
+/**
+ * Used to set the user's location from geolocation data.
+ * @param $_REQUEST
+ * @param [$_REQUEST.latitude] The new latitude. If set, must also specify longitude.
+ * @param [$_REQUEST.longitude] The new longitude. If set, must also specify latitude.
+ * @param [$_REQUEST.zipcode] The new zip code. Can be set instead of latitude, longitude.
+ * @param [$_REQUEST.miles] The distance around their location around that the user is interested in
+ * @param [$_REQUEST.subscribe] Whether to subscribe to all the local interests at the new location.
+ * @param [$_REQUEST.unsubscribe] Whether to unsubscribe from all the local interests at the old location.
+ * @param [$_REQUEST.accuracy]
+ * @param [$_REQUEST.altitude]
+ * @param [$_REQUEST.altitudeAccuracy]
+ * @param [$_REQUEST.heading]
+ * @param [$_REQUEST.speed]
+ * @param [$_REQUEST.timezone]
+
+ * @param [$_REQUEST.]
+ * @param [$_REQUEST.]
+ *
+ * @throws Exception
+ * @throws Q_Exception
+ * @throws Q_Exception_MissingRow
+ * @throws Q_Exception_Recursion
+ * @throws Users_Exception_NotLoggedIn *
+ */
 function Places_geolocation_post()
 {
 	$user = Users::loggedInUser(true);
