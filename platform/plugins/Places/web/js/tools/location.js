@@ -142,6 +142,8 @@ Q.Tool.define("Places/location", function (options) {
 		}, {
 			method: 'post',
 			fields: {
+				subscribe: true,
+				unsubscribe: true,
 				zipcode: zipcode || '',
 				miles: tool.$('.Places_location_miles').val(),
 				timezone: (new Date()).getTimezoneOffset() / 60

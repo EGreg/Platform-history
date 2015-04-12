@@ -290,8 +290,8 @@ abstract class Streams extends Base_Streams
 	 *  Optional. Defaults to array().
 	 *  Provide additional stream selection options like 'limit', 'offset', 'orderBy', 'where' etc.
 	 *  Also can have the following options:
-	 *  "includeTemplate" => Set to true if you want to include the template when $name ends in a slash
-	 *  "refetch" => Ignore cache of previous calls to fetch, and save a new cache if necessary
+	 *  @param {boolean} [$options.refetch] => Ignore cache of previous calls to fetch, and save a new cache if necessary.
+	 *  @param {boolean} [$options.includeTemplate] => Set to true if you want to include the template when $name ends in a slash
 	 *  See Query/Mysql::options().
 	 * @return {array}
 	 *  Returns an array of Streams_Stream objects with access info calculated

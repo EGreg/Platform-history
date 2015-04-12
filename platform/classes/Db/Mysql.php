@@ -329,46 +329,45 @@ class Db_Mysql implements iDb
 	 * @method insertManyAndExecute
 	 * @param {string} $table_into The name of the table to insert into
 	 * @param {array} [$records=array()] The array of records to insert. 
-	 * (The field names for the prepared statement are taken from the first record.)
-	 * You cannot use Db_Expression objects here, because the function binds all parameters with PDO.
-	 * @param {array} [$options=array()]
-	 *  An associative array of options, including:
-	 *
-	 * * "chunkSize" => The number of rows to insert at a time. Defaults to 20.
+	 * Each record should be an array of ($field => $value) pairs, with the exact
+	 * same set of keys (field names) in each array.
+	 * @param {array} [$options=array()] An associative array of options, including:
+	 * @param {string} [$options.className]
+	 *    If you provide the class name, the system will be able to use any sharding
+	 *    indexes under that class name in the config.
+	 * @param {integer} [$options.chunkSize]
+	 *    The number of rows to insert at a time. Defaults to 20.
 	 *    You can also put 0 here, which means unlimited chunks, but it's not recommended.
-	 * * "onDuplicateKeyUpdate" => You can put an array of fieldname => value pairs here,
+	 * @param {string} [$options.onDuplicateKeyUpdate]
+	 *    You can put an array of fieldname => value pairs here,
 	 *    which will add an ON DUPLICATE KEY UPDATE clause to the query.
 	 */
 	function insertManyAndExecute ($table_into, array $records = array(), $options = array())
 	{
+		// Validate and get options
 		if (empty($table_into)) {
 			throw new Exception("table not specified in call to 'insertManyAndExecute'.");
 		}
-		
 		if (empty($records)) {
 			return false;
 		}
-
-		$chunkSize = 20;
-		$onDuplicateKeyUpdate = null;
-		extract($options);
-		
+		$chunkSize = isset($options['chunkSize']) ? $options['chunkSize'] : 20;
 		if ($chunkSize < 0) {
 			return false;
 		}
-			
+		$onDuplicateKeyUpdate = isset($options['onDuplicateKeyUpdate'])
+				? $options['onDuplicateKeyUpdate'] : null;
+		$className = isset($options['className']) ? $options['className'] : null;
+		
 		// Get the columns list
-		foreach ($records[0] as $column => $value) {
+		$record = reset($records);
+		foreach ($record as $column => $value) {
 			$columns_list[] = Db_Query_Mysql::column($column);
 		}
 		$columns_string = implode(', ', $columns_list);
-
 		$into = "$table_into ($columns_string)";
-		$index = 1;
-		$first_chunk = true;
-		$to_bind = array();
-		$record_count = count($records);
 		
+		// On duplicate key update clause (optional)
 		$update_fields = array();
 		$odku_clause = '';
 		if ($onDuplicateKeyUpdate) {
@@ -385,46 +384,83 @@ class Db_Mysql implements iDb
 			$odku_clause .= implode(",\n\t", $parts);
 		}
 		
-		// Execute all the queries using this prepared statement
-		$row_of_chunk = 1;
-		$q = '';
+		// Start filling
+		$queries = array();
+		$queryCounts = array();
+		$bindings = array();
+		$last_q = array();
+		$last_queries = array();
 		foreach ($records as $record) {
-			if ($first_chunk) {
-				// Prepare statement from first query
-				$values_list = array();
-				foreach ($record as $column => $value) {
-					if ($value instanceof Db_Expression) {
-						$values_list[] = "$value";
-					} else {
-						$values_list[] = ":$column" . $row_of_chunk;
-					}
+			// get shard, if any
+			$query = new Db_Query_Mysql($this, Db_Query::TYPE_INSERT);
+			$shard = '';
+			if (isset($className)) {
+				$sharded = $query->shard(null, $record);
+				if (count($sharded) > 1 or $sharded[0] === '*') { // should be only one shard
+					throw new Exception("Db_Mysql::insertManyAndExecute query should not hit more than one shard: " . Q::json_encode($record));
 				}
-				$values_string = implode(', ', $values_list);
-				if ($index == 1) {
-					$q = "INSERT INTO $into\nVALUES ($values_string) ";
-				} else {
-					$q .= ",\n       ($values_string) ";
-				}
+				$shard = reset($sharded);
 			}
 			
+			// start filling out the query data
+			$qc = empty($queryCounts[$shard]) ? 1 : $queryCounts[$shard] + 1;
+			if (!$bindings[$shard]) {
+				$bindings[$shard] = array();
+			}
+			$values_list = array();
 			foreach ($record as $column => $value) {
-				$to_bind[$column . $row_of_chunk] = $value;
+				if ($value instanceof Db_Expression) {
+					$values_list[] = "$value";
+				} else {
+					$values_list[] = ':_'.$qc.'_'.$column;
+					$bindings[$shard]['_'.$qc.'_'.$column] = $value;
+				}
+			}
+			$values_string = implode(', ', $values_list);
+			if (empty($queryCounts[$shard])) {
+				$q = $queries[$shard] = "INSERT INTO $into\nVALUES ($values_string) ";
+				$queryCounts[$shard] = 1;
+			} else {
+				$q = $queries[$shard] .= ",\n       ($values_string) ";
+				++$queryCounts[$shard];
 			}
 
-			++$row_of_chunk;
-			if ($chunkSize === 1 
-			or ($chunkSize > 1 and $row_of_chunk % $chunkSize === 1)
-			or $index === $record_count) {
+			// if chunk filled up for this shard, execute it
+			if ($qc === $chunkSize) {
 				if ($onDuplicateKeyUpdate) {
 					$q .= $odku_clause;
 				}
-				$q .= ';';
-				$first_chunk = false;
-				$this->rawQuery($q)->bind($to_bind)->bind($update_fields)
-					->execute(true);
-				$row_of_chunk = 1;
+				$query = $this->rawQuery($q)->bind($bindings[$shard]);
+				if ($onDuplicateKeyUpdate) {
+					$query = $query->bind($update_fields);
+				}
+				if (isset($last_q[$shard]) and $last_q[$shard] === $q) {
+					// re-use the prepared statement, save round-trips to the db
+					$query->reuseStatement($last_queries[$shard]);
+				}
+				$query->execute(true);
+				$last_q[$shard] = $q;
+				$last_queries[$shard] = $query; // save for re-use
+				$bindings[$shard] = $queries[$shard] = array();
+				$queryCounts[$shard] = 0;
 			}
-			++$index;
+		}
+		
+		// Now execute the remaining queries, if any
+		foreach ($queries as $shard => $q) {
+			if (!$q) continue;
+			if ($onDuplicateKeyUpdate) {
+				$q .= $odku_clause;
+			}
+			$query = $this->rawQuery($q)->bind($bindings[$shard]);
+			if ($onDuplicateKeyUpdate) {
+				$query = $query->bind($update_fields);
+			}
+			if (isset($last_q[$shard]) and $last_q[$shard] === $q) {
+				// re-use the prepared statement, save round-trips to the db
+				$query->reuseStatement($last_queries[$shard]);
+			}
+			$query->execute(true);
 		}
 	}
 
@@ -554,7 +590,8 @@ class Db_Mysql implements iDb
         }
         
         // Count all the rows
-    	$rows = $this->rawQuery("SELECT COUNT(1) _count FROM $table")->fetchAll(PDO::FETCH_ASSOC);
+    	$rows = $this->rawQuery("SELECT COUNT(1) _count FROM $table")
+			->fetchAll(PDO::FETCH_ASSOC);
 		$count = $rows[0]['_count'];
     	
         // Here comes the magic:

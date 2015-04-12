@@ -94,19 +94,71 @@ function Places_geolocation_post()
 		'instructions' => $stream->getAllAttributes()
 	), true);
 	
-	if (!empty($_REQUEST['unsubscribe']) and isset($oldMiles)) {
-		$attributes['unsubscribed'] = Places::unsubscribe(
-			$oldLatitude, $oldLongitude, $oldMiles
-		);
+	$shouldUnsubscribe = !empty($_REQUEST['unsubscribe']) && isset($oldMiles);
+	$shouldSubscribe = !empty($_REQUEST['subscribe']);
+	$noChange = false;
+
+	$latitude = $stream->getAttribute('latitude');
+	$longitude = $stream->getAttribute('longitude');
+	$miles = $stream->getAttribute('miles');
+
+	if ($shouldUnsubscribe and $shouldSubscribe
+	and abs($latitude - $oldLatitude) < 0.0001
+	and abs($longitude - $oldLongitude) < 0.0001
+	and abs($miles - $oldMiles) < 0.001) {
+		$noChange = true;
 	}
+
+	if (!$noChange) {
+		if ($shouldUnsubscribe or $shouldSubscribe) {
+			$myInterests = Streams_Category::getRelatedTo(
+				$user->id, 'Streams/user/interests', 'Streams/interest'
+			);
+			if (!isset($myInterests)) {
+				$myInterests = array();
+			}
+		}
 	
-	if (!empty($_REQUEST['subscribe'])) {
-		$latitude = $stream->getAttribute('latitude');
-		$longitude = $stream->getAttribute('longitude');
-		$miles = $stream->getAttribute('miles');
-		$attributes['subscribed'] = Places::subscribe(
-			$latitude, $longitude, $miles
-		);
+		if ($shouldUnsubscribe) {
+			// TODO: implement mass unsubscribe
+			foreach ($myInterests as $weight => $info) {
+				Places::unsubscribe(
+					$oldLatitude,
+					$oldLongitude,
+					$oldMiles,
+					$info[0],
+					array(
+						'transform' => array('Places', '_transformInterest'),
+						'title' => $info[2],
+						'skipAccess' => true
+					)
+				);
+			}
+			$attributes['unsubscribed'] = Places::unsubscribe(
+				$oldLatitude, $oldLongitude, $oldMiles
+			);
+		}
+	
+		if ($shouldSubscribe) {
+			// TODO: implement mass subscribe
+			foreach ($myInterests as $weight => $info) {
+				Places::subscribe(
+					$latitude,
+					$longitude,
+					$miles,
+					$info[0],
+					array(
+						'transform' => array('Places', '_transformInterest'),
+						'create' => array('Places', '_createInterest'),
+						'title' => $info[2],
+						'skipAccess' => true
+					)
+				);
+			}
+			$attributes['subscribed'] = Places::subscribe(
+				$latitude, $longitude, $miles
+			);
+		}	
 	}
 	
 	$attributes['stream'] = $stream;

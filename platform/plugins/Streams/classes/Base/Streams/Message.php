@@ -23,7 +23,6 @@
  * @property string $type
  * @property string $content
  * @property string $instructions
- * @property integer $reOrdinal
  * @property float $weight
  * @property integer $ordinal
  */
@@ -64,10 +63,6 @@ abstract class Base_Streams_Message extends Db_Row
 	/**
 	 * @property $instructions
 	 * @type string
-	 */
-	/**
-	 * @property $reOrdinal
-	 * @type integer
 	 */
 	/**
 	 * @property $weight
@@ -414,28 +409,6 @@ abstract class Base_Streams_Message extends Db_Row
 
 	/**
 	 * Method is called before setting the field and verifies if integer value falls within allowed limits
-	 * @method beforeSet_reOrdinal
-	 * @param {integer} $value
-	 * @return {array} An array of field name and value
-	 * @throws {Exception} An exception is thrown if $value is not integer or does not fit in allowed range
-	 */
-	function beforeSet_reOrdinal($value)
-	{
-		if (!isset($value)) {
-			return array('reOrdinal', $value);
-		}
-		if ($value instanceof Db_Expression) {
-			return array('reOrdinal', $value);
-		}
-		if (!is_numeric($value) or floor($value) != $value)
-			throw new Exception('Non-integer value being assigned to '.$this->getTable().".reOrdinal");
-		if ($value < -2147483648 or $value > 2147483647)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".reOrdinal");
-		return array('reOrdinal', $value);			
-	}
-
-	/**
-	 * Method is called before setting the field and verifies if integer value falls within allowed limits
 	 * @method beforeSet_ordinal
 	 * @param {integer} $value
 	 * @return {array} An array of field name and value
@@ -483,7 +456,7 @@ abstract class Base_Streams_Message extends Db_Row
 	 */
 	static function fieldNames($table_alias = null, $field_alias_prefix = null)
 	{
-		$field_names = array('publisherId', 'streamName', 'insertedTime', 'sentTime', 'byUserId', 'byClientId', 'type', 'content', 'instructions', 'reOrdinal', 'weight', 'ordinal');
+		$field_names = array('publisherId', 'streamName', 'insertedTime', 'sentTime', 'byUserId', 'byClientId', 'type', 'content', 'instructions', 'weight', 'ordinal');
 		$result = $field_names;
 		if (!empty($table_alias)) {
 			$temp = array();

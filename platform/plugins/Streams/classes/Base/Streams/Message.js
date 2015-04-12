@@ -65,10 +65,6 @@ Q.mixin(Base, Row);
  * @type String
  */
 /**
- * @property reOrdinal
- * @type integer
- */
-/**
  * @property weight
  * @type number
  */
@@ -241,7 +237,6 @@ Base.prototype.fieldNames = function () {
 		"type",
 		"content",
 		"instructions",
-		"reOrdinal",
 		"weight",
 		"ordinal"
 	];
@@ -388,24 +383,6 @@ Base.prototype.beforeSet_instructions = function (value) {
 			throw new Error('Must pass a string to '+this.table()+".instructions");
 		if (typeof value === "string" && value.length > 4092)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".instructions");
-		return value;
-};
-
-/**
- * Method is called before setting the field and verifies if integer value falls within allowed limits
- * @method beforeSet_reOrdinal
- * @param {integer} value
- * @return {integer} The value
- * @throws {Error} An exception is thrown if 'value' is not integer or does not fit in allowed range
- */
-Base.prototype.beforeSet_reOrdinal = function (value) {
-		if (!value) return value;
-		if (value instanceof Db.Expression) return value;
-		value = Number(value);
-		if (isNaN(value) || Math.floor(value) != value) 
-			throw new Error('Non-integer value being assigned to '+this.table()+".reOrdinal");
-		if (value < -2147483648 || value > 2147483647)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".reOrdinal");
 		return value;
 };
 

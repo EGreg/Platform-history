@@ -457,12 +457,15 @@ abstract class Db_Query extends Db_Expression
 	 *
 	 * @method shard
 	 * @param {array} [$upcoming=null] Temporary config to use in sharding. Used during shard split process only
+	 * @param {array} [$criteria=null] Rarely used unless testing what shards the query would be executed on. Overrides the sharding criteria for the query.
 	 * @return {array} Returns an array of ($shardName => $query) pairs, where $shardName
 	 *  can be the name of a shard, '' for just the main shard, or "*" to have the query run on all the shards.
 	 */
-
-	function shard($upcoming = null)
+	function shard($upcoming = null, $criteria = null)
 	{
+		if (isset($criteria)) {
+			$this->criteria = $criteria;
+		}
 		$index = $this->shardIndex();
 		if (!$index) {
 			return array("" => $this);
@@ -508,7 +511,7 @@ abstract class Db_Query extends Db_Expression
 			}
 		}
 		if (array_keys($index['partition']) === range(0, count($index['partition']) - 1)) {
-			// $index['partition'] is simple array, no mapping provided
+			// $index['partition'] is simple array, name the shards after the partition points
 			self::$mapping = array_combine($index['partition'], $index['partition']);
 		} else {
 			self::$mapping = $index['partition'];
@@ -593,7 +596,10 @@ abstract class Db_Query extends Db_Expression
 			}
 			$last_point = $point;
 		}
-		return array_fill_keys(array_map(array($this, "map_shard"), self::slice_partitions($partition, 0, $hashed)), $this);
+		return array_fill_keys(array_map(
+			array($this, "map_shard"), 
+			self::slice_partitions($partition, 0, $hashed)
+		), $this);
 	}
 
 	/**
@@ -622,7 +628,10 @@ abstract class Db_Query extends Db_Expression
 			$temp = $hashed;
 			foreach ($hj as $h) {
 				$temp[$j] = $h;
-				$result = array_merge($result, self::slice_partitions($partition, $j, $temp, $adjust));
+				$result = array_merge(
+					$result, 
+					self::slice_partitions($partition, $j, $temp, $adjust)
+				);
 			}
 			// $result may contain duplicates!
 			return $result;
@@ -678,7 +687,9 @@ abstract class Db_Query extends Db_Expression
 		// otherwise - check the rest of $hashed
 		if (isset($hashed[$j+1])) {
 			return self::slice_partitions(
-				array_slice($partition, $lower, $upper-$lower+1), $j+1, $hashed, $hj instanceof Db_Range || $adjust);
+				array_slice($partition, $lower, $upper-$lower+1), 
+				$j+1, $hashed, $hj instanceof Db_Range || $adjust
+			);
 		} else {
 			return array_slice($partition, $lower, $upper-$lower+1);
 		}

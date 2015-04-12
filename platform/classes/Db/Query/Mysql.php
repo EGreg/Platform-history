@@ -517,7 +517,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 			// Prepare the query into a SQL statement
 			// this takes two round-trips to the database
 
-			// Preparing the statement
+			// Preparing the statement if it wasn't yet set
 			if (!isset($this->statement)) {
 				$q = $this->build();
 				$pdo = $this->reallyConnect();
@@ -544,7 +544,9 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		$connection = $this->db->connectionName();
 
 		if (!empty($queries["*"])) {
-			$shard_names = Q_Config::get('Db', 'connections', $connection, 'shards', array('' => ''));
+			$shard_names = Q_Config::get(
+				'Db', 'connections', $connection, 'shards', array('' => '')
+			);
 			$q = $queries["*"];
 			foreach ($shard_names as $k => $v) {
 				$queries[$k] = $q;
@@ -1533,6 +1535,17 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 			return "`$column`";
 		}
 		return substr($column, 0, $pos).".`".substr($column, $pos+1)."`";
+	}
+
+	/**
+	 * Re-use an existing (prepared) statement. Rarely used except internally.
+	 * @method reuseStatement
+	 * @param {Db_Query_Mysql} $query
+	 */
+	function reuseStatement($query)
+	{
+		$this->statement = $query->statement;
+		return $this;
 	}
 
 	/**
