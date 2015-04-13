@@ -116,7 +116,6 @@ class Streams_Message extends Base_Streams_Message
 		if ($asUserId instanceof Users_User) {
 			$asUserId = $asUserId->id;
 		}
-		$asUserId = 'Groups';
 		
 		// Build arrays we will need
 		foreach ($messages as $publisherId => $arr) {
