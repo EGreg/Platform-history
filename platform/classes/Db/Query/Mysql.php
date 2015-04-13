@@ -570,6 +570,8 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 				$nt = & self::$nestedTransactions[$connection][$shard_name];
 			}
 
+			$sql = $query->getSQL();
+
 			try {
 				if (!empty($query->clauses["BEGIN"])) {
 					if (++$nt == 1) {
@@ -590,14 +592,11 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 							if (class_exists('Q_Exception_DbQuery')) {
 								throw $e;
 							}
-							if (!isset($sql))
-								$sql = $query->getSQL();
 							throw new Exception($e->getMessage() . "\n... Query was: $sql", - 1);
 						}
 					} else {
 						// Obtain the full SQL code ourselves
 						// and send to the database, without preparing it there.
-						$sql = $query->getSQL();
 						$stmt = $pdo->query($sql);
 					}
 
@@ -615,9 +614,6 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 					}
 				}
 			} catch (Exception $e) {
-				if (!isset($sql)) {
-					$sql = $query->getSQL();
-				}
 				if ($nt) {
 					$pdo->rollBack();
 					$nt = 0;

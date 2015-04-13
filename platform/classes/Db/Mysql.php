@@ -396,15 +396,15 @@ class Db_Mysql implements iDb
 			$shard = '';
 			if (isset($className)) {
 				$sharded = $query->shard(null, $record);
-				if (count($sharded) > 1 or $sharded[0] === '*') { // should be only one shard
+				$shard = key($sharded);
+				if (count($sharded) > 1 or $shard === '*') { // should be only one shard
 					throw new Exception("Db_Mysql::insertManyAndExecute query should not hit more than one shard: " . Q::json_encode($record));
 				}
-				$shard = reset($sharded);
 			}
 			
 			// start filling out the query data
 			$qc = empty($queryCounts[$shard]) ? 1 : $queryCounts[$shard] + 1;
-			if (!$bindings[$shard]) {
+			if (!isset($bindings[$shard])) {
 				$bindings[$shard] = array();
 			}
 			$values_list = array();
@@ -2230,7 +2230,10 @@ $field_hints
 	 */
 	static function insertManyAndExecute(\$records = array(), \$options = array())
 	{
-		self::db()->insertManyAndExecute(self::table(), \$records, \$options);
+		self::db()->insertManyAndExecute(
+			self::table(), \$records,
+			array_merge(\$options, array('className' => $class_name_var))
+		);
 	}
 	
 $functions_string

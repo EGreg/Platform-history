@@ -199,7 +199,10 @@ abstract class Base_Streams_Notification extends Db_Row
 	 */
 	static function insertManyAndExecute($records = array(), $options = array())
 	{
-		self::db()->insertManyAndExecute(self::table(), $records, $options);
+		self::db()->insertManyAndExecute(
+			self::table(), $records,
+			array_merge($options, array('className' => 'Streams_Notification'))
+		);
 	}
 	
 	/**
