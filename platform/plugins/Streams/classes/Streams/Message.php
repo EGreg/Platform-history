@@ -53,8 +53,6 @@ class Streams_Message extends Base_Streams_Message
 	 *  names of the streams to post message to.
 	 * @param {booleam} $skipAccess=false
 	 *  If true, skips the access checks and just posts the message.
-	 * @param {array} $streams=null
-	 *  Pass an array of Streams_Stream objects here to skip having to fetch them again.
 	 * @return {Streams_Message|array|false}
 	 *  If not successful, returns false
 	 *  If successful, returns the Streams_Message that was posted.
@@ -66,148 +64,28 @@ class Streams_Message extends Base_Streams_Message
 		$publisherId,
 		$streamName,
 		$information,
-		$skipAccess=false,
-		$streams = null)
+		$skipAccess=false)
 	{
-		if (!isset($asUserId)) {
-			$asUserId = Users::loggedInUser();
-			if (!$asUserId) $asUserId = "";
+		$messages = array($publisherId => array());
+		$streamNames = is_string($streamName) ? array($streamName) : $streamName;
+		if (!is_array($streamNames)) {
+			throw new Q_Exception_WrongType(array(
+				'field' => 'streamName', 
+				'type' => 'string or array'
+			));
 		}
-		if ($asUserId instanceof Users_User) {
-			$asUserId = $asUserId->id;
+		foreach ($streamNames as $sn) {
+			$messages[$publisherId][$sn] = $information;
 		}
-		if ($publisherId instanceof Users_User) {
-			$publisherId = $publisherId->id;
+		list($posted, $streams) = self::postMessages($asUserId, $messages, $skipAccess);
+		if (is_string($streamName)) {
+			return reset($posted);
 		}
-
-		$type = Q::ifset($information, 'type', 'text/small');
-		$content = Q::ifset($information, 'content', '');
-		$instructions = Q::ifset($information, 'instructions', '');
-		$weight = Q::ifset($information, 'weight', 1);
-		
-		if (!isset($information['byClientId'])) {
-			$clientId = Q_Request::special('clientId', '');
-			$information['byClientId'] = $clientId ? substr($clientId, 0, 255) : '';
-		}
-		
-		if (is_array($instructions)) {
-			$instructions = Q::json_encode($instructions);
-		}
-
-		// If there are any other streams, add their names
-		// You can post a message to multiple streams as long as they're by the same publisher.
-		$streamNames = array($streamName);
-		if (isset($information['streamNames']) and is_array($information['streamNames'])) {
-			$streamNames = array_merge($streamNames, $information['streamNames']);
-		}
-
-		// Post the message to the streams:
 		$results = array();
-		if (empty($streams)) {
-			$streams = Streams::fetch($asUserId, $publisherId, $streamNames);
-			foreach ($streams as $s) {
-				if (!$s) {
-					$streamName = $s->name;
-					throw new Q_Exception_MissingRow(array(
-						'table' => 'stream',
-						'criteria' => "{publisherId: '$publisherId', name: '$streamName'}"
-					));
-				}
-			}
+		foreach ($posted as $p) {
+			$results[$p->streamName] = $p;
 		}
-		foreach ($streams as $stream) {
-			if (!$skipAccess
-			and $asUserId != $publisherId
-			and !$stream->testWriteLevel('post')) {
-				throw new Users_Exception_NotAuthorized();
-			}
-
-			$message = new Streams_Message();
-			$message->publisherId = $publisherId;
-			$message->streamName = $stream->name;
-			$message->sentTime = new Db_Expression("CURRENT_TIMESTAMP");
-			$message->byUserId = $asUserId;
-			$clientId = Q::ifset($information, 'byClientId', '');
-			$message->byClientId = $clientId ? substr($clientId, 0, 31) : '';
-			$message->type = $type;
-			$message->content = $content;
-			$message->instructions = $instructions;
-			$message->weight = $weight;
-
-			$sendToNode = true;
-			$params = compact('publisherId', 'stream', 'message');
-			$params['sendToNode'] = &$sendToNode;
-
-			/**
-			 * @event Streams/post/$streamType {before}
-			 * @param {string} 'publisherId'
-			 * @param {Streams_Stream} 'stream'
-			 * @param {string} 'message'
-			 * @return {false} To cancel further processing
-			 */
-			if (Q::event("Streams/post/{$stream->type}", $params, 'before') === false) {
-				$results[$stream->name] = false;
-				continue;
-			}
-			
-			/**
-			 * @event Streams/message/$messageType {before}
-			 * @param {string} 'publisherId'
-			 * @param {Streams_Stream} 'stream'
-			 * @param {string} 'message'
-			 * @return {false} To cancel further processing
-			 */
-			if (Q::event("Streams/message/{$type}", $params, 'before') === false) {
-				$results[$stream->name] = false;
-				continue;
-			}
-
-			$result = $message->save() ? $message : false; // also updates stream row
-			
-			// Send a message to Node
-			if ($result && $sendToNode) {
-				Q_Utils::sendToNode(array(
-					"Q/method" => "Streams/Message/post",
-					"message" => Q::json_encode($message->toArray()),
-					"stream" => Q::json_encode($stream->toArray())
-				));
-			}
-			
-			/**
-			 * @event Streams/message/$messageType {after}
-			 * @param {string} 'publisherId'
-			 * @param {Streams_Stream} 'stream'
-			 * @param {string} 'message'
-			 */
-			Q::event("Streams/message/{$message->type}", $params, 'after', false, $result);
-			/**
-			 * @event Streams/post/$streamType {after}
-			 * @param {string} 'publisherId'
-			 * @param {Streams_Stream} 'stream'
-			 * @param {string} 'message'
-			 */
-			Q::event("Streams/post/{$stream->type}", $params, 'after', false, $result);
-
-			$results[$stream->name] = $result;
-		}
-
-		/*
-		// Send notifications	
-		$subscriptions = Streams_Subscription::select('*')
-		->where(array('toStreamName' => $streamName))
-		->andWhere(array('toPublisherId' => $publisherId), array('toPublisherId' => 0))
-
-		// notify aggregators, etc.
-		// but how to access people's private contacts? you can't.
-		// you can only send it to people who subscribed to 0 and told YOU about it
-		*/
-		
-		if (is_array($streamName)) {
-			return $results;
-		} else {
-			$result = reset($results);
-			return $result ? $result : false;
-		}
+		return $results;
 	}
 	
 	/**
@@ -223,17 +101,13 @@ class Streams_Message extends Base_Streams_Message
 	 *  or arrays containing all the fields of messages that will need to be posted.
 	 * @param {booleam} $skipAccess=false
 	 *  If true, skips the access checks and just posts the message.
-	 * @param {array} $streams=null
-	 *  Pass an array of Streams_Stream objects here to skip having to fetch them again.
-	 *  This array should be indexed by []$publisherId][$name].
 	 * @return {array}
 	 *  Returns an array(array(Streams_Message), array(Streams_Stream))
 	 */
 	static function postMessages(
 		$asUserId, 
 		$messages, 
-		$skipAccess = false,
-		$streams = null)
+		$skipAccess = false)
 	{
 		if (!isset($asUserId)) {
 			$asUserId = Users::loggedInUser();
@@ -268,12 +142,13 @@ class Streams_Message extends Base_Streams_Message
 		// Start posting messages, publisher by publisher
 		$eventParams = array();
 		$posted = array();
+		$streams = array();
 		$messages2 = array();
 		$totals2 = array();
 		$clientId = Q_Request::special('clientId', '');
 		foreach ($messages as $publisherId => $arr) {
 			$streamNames = array_keys($messages[$publisherId]);
-			$fetched = Streams::fetch(
+			$streams[$publisherId] = $fetched = Streams::fetch(
 				$asUserId, $publisherId, $streamNames, '*', 
 				array('begin' => array(true)) // lock for updates
 			);
@@ -459,44 +334,6 @@ class Streams_Message extends Base_Streams_Message
 		$instr = $this->getAllInstructions();
 		unset($instr[$instruction_name]);
 		$this->instructions = Q::json_encode($instr);
-	}
-
-	/**
-	 * Assigns ordinal
-	 * @method beforeSave
-	 * @param {array} $value
-	 *	The row being saved
-	 * @return {array}
-	 */
-	function beforeSave($value)
-	{
-		if ($this->retrieved) {
-			return parent::beforeSave($value);
-		}
-		$asUserId = isset($this->byUserId) ? $this->byUserId : $value['byUserId'];
-		$publisherId = isset($this->publisherId) ? $this->publisherId : $value['publisherId'];
-		$streamName = isset($this->streamName) ? $this->streamName : $value['streamName'];
-		$stream = Streams::fetchOne($asUserId, $publisherId, $streamName, '*', array(
-			'refetch' => true,
-			'begin' => true
-		));
-		if (!$stream) {
-			// no one should post messages to nonexistent streams
-			throw new Q_Exception("Cannot post message to nonexistent stream");
-		}
-		$this->ordinal = ++$stream->messageCount;
-		$value['ordinal'] = $this->ordinal;
-		$stream->save(false);
-
-		$total = new Streams_Total();
-		$total->publisherId = $this->publisherId;
-		$total->streamName = $this->streamName;
-		$total->messageType = $this->type;
-		$total->messageCount = 1;
-		$total->save(array(
-			'messageCount' => new Db_Expression('messageCount+1')
-		));
-		return parent::beforeSave($value);
 	}
 	
 	function beforeSaveExecute($query)
