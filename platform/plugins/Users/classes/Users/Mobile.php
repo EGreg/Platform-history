@@ -101,7 +101,7 @@ class Users_Mobile extends Base_Users_Mobile
 					$client = new Services_Twilio($sid, $token);
 					$message = $client->account->sms_messages->create(
 						$from, // From a valid Twilio number
-						"+$number", // Text this number
+						$number, // Text this number
 						Q::view($view, $fields)
 					);
 				} catch (Exception $e) {
@@ -141,7 +141,7 @@ class Users_Mobile extends Base_Users_Mobile
 					'verizon' => 'vtext.com',
 					't-mobile' => 'tmomail.net'
 				));
-				$number2 = substr($this->number, 1);
+				$number2 = substr($this->number, 2);
 				foreach ($gateways as $k => $v) {
 					$mail->addTo($number2.'@'.$v);
 				}
