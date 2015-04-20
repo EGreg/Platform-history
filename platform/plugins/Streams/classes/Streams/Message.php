@@ -149,7 +149,7 @@ class Streams_Message extends Base_Streams_Message
 			$streamNames = array_keys($messages[$publisherId]);
 			$streams[$publisherId] = $fetched = Streams::fetch(
 				$asUserId, $publisherId, $streamNames, '*', 
-				array('begin' => array(true)) // lock for updates
+				array('refetch' => true, 'begin' => true) // lock for updates
 			);
 			foreach ($arr as $streamName => $message) {
 				$p = &$posted[$publisherId][$streamName];
