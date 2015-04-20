@@ -19,10 +19,10 @@
 				"key": "YOUR SECRET KEY HERE"
 			} */
 		},
-		"internal": {
+		"external": {
 			"secret": "CHANGE TO SOME RANDOM STRING, FOR SIGNING DATA FOR EXTERNAL CLIENTS"
 		},
-		"external": {
+		"internal": {
 			"secret": "CHANGE TO SOME RANDOM STRING, FOR SIGNING INTERNAL MESSAGES"
 		}
 	},
