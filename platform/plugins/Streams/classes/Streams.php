@@ -1896,6 +1896,10 @@ abstract class Streams extends Base_Streams
 			$streams[$n] = $row;
 		}
 		if (!$streams) {
+			if (!empty($options['relationsOnly'])
+			|| !empty($options['streamsOnly'])) {
+				return array();
+			}
 			return array(array(), array(), $returnMultiple ? array() : null);
 		}
 		$stream = reset($streams);
