@@ -1958,7 +1958,7 @@ Q.listen = function _Q_listen(options, callback) {
 	if (host === null)
 		throw new Q.Exception("Q.listen: Missing config field: Q/nodeInternal/host");
 
-	var server = Q.getObject([port, host], servers) || null;
+	var server = Q.getObject([port, host], Q.servers) || null;
 	if (server) {
 		var address = server.address();
 		if (address) callback && callback(address);

@@ -355,7 +355,7 @@ class Q_Utils
 	 * @param {string|array} $url The URL to post to
 	 *  This can also be an array of ($url, $ip) to send the request
 	 *  to a particular IP, while retaining the hostname and request URI
-	 * @param {array} $data The associative array of data to post
+	 * @param {array|string} $data The data content to post or an array of ($field => $value) pairs
 	 * @param {string} [$user_agent=null] The user-agent string to send. Defaults to Mozilla.
 	 * @param {string} [$follow_redirects=true] Whether to follow redirects when getting a response.
 	 * @param {string} [$header=null] Optional string to replace the entire POST header
@@ -396,7 +396,7 @@ class Q_Utils
 	 * @param {string|array} $url The URL to request
 	 *  This can also be an array of ($url, $ip) to send the request
 	 *  to a particular IP, while retaining the hostname and request URI
-	 * @param {array} $data The associative array of data to post
+	 * @param {array|string} $data The data content to post or an array of ($field => $value) pairs
 	 * @param {string} [$user_agent=null] The user-agent string to send. Defaults to Mozilla.
 	 * @param {string} [$follow_redirects=true] Whether to follow redirects when getting a response.
 	 * @param {string} [$header=null] Optional string to replace the entire header

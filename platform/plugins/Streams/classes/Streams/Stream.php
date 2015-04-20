@@ -1142,7 +1142,7 @@ class Streams_Stream extends Base_Streams_Stream
 	}
 	
 	/**
-	 * Verifies wheather Stream can be read
+	 * Verifies whether the user has at least a certain read level for the Stream
 	 * @method testReadLevel
 	 * @param {string|integer} $level
 	 *	String describing the level (see Streams::$READ_LEVEL) or integer
@@ -1191,7 +1191,7 @@ class Streams_Stream extends Base_Streams_Stream
 	}
 	
 	/**
-	 * Verifies wheather Stream can be written
+	 * Verifies whether the user has at least a certain write level for the Stream
 	 * @method testWriteLevel
 	 * @param {string|integer} $level
 	 *	String describing the level (see Streams::$WRITE_LEVEL) or integer
@@ -1240,7 +1240,7 @@ class Streams_Stream extends Base_Streams_Stream
 	}
 	
 	/**
-	 * Verifies wheather Stream can be administered
+	 * Verifies whether the user has at least a certain admin level in the Stream
 	 * @method testAdminLevel
 	 * @param {string|integer} $level
 	 *	String describing the level (see Streams::$ADMIN_LEVEL) or integer
@@ -1292,8 +1292,9 @@ class Streams_Stream extends Base_Streams_Stream
 	
 	/**
 	 * Calculate admin level to correspond to Streams::$ADMIN_LEVEL
+	 * Primarily used by apps which invite a user to a stream
+	 * and giving them a slightly lower admin level.
 	 * @method lowerAdminLevel
-	 * @deprecated Does not use the result of calculation
 	 */
 	function lowerAdminLevel()
 	{
