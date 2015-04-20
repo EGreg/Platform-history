@@ -166,16 +166,6 @@ class Streams_Message extends Base_Streams_Message
 				}
 				$byClientId = $message['byClientId'];
 				
-				// Set up some parameters for the event hooks
-				$sendToNode = true;
-				$eventParams[$publisherId][$streamName] = array(
-					'publisherId' => $publisherId,
-					'message' => $message,
-					'skipAccess' => $skipAccess,
-					'sendToNode' => &$sendToNode // sending to node can be canceled
-				);
-				$params = &$eventParams[$publisherId][$streamName];
-				
 				// Get the Streams_Stream object
 				if (!isset($fetched[$streamName])) {
 					$p = new Q_Exception_MissingRow(array(
@@ -184,7 +174,7 @@ class Streams_Message extends Base_Streams_Message
 					));
 					continue;
 				}
-				$params['stream'] = $stream = $fetched[$streamName];
+				$stream = $fetched[$streamName];
 				
 				// Make a Streams_Message object
 				$message = new Streams_Message();
@@ -199,6 +189,17 @@ class Streams_Message extends Base_Streams_Message
 				$message->instructions = $instructions;
 				$message->weight = $weight;
 				$message->ordinal = $stream->messageCount + 1; // thanks to transaction
+				
+				// Set up some parameters for the event hooks
+				$sendToNode = true;
+				$eventParams[$publisherId][$streamName] = array(
+					'publisherId' => $publisherId,
+					'message' => $message,
+					'skipAccess' => $skipAccess,
+					'sendToNode' => &$sendToNode, // sending to node can be canceled
+					'stream' => $stream
+				);
+				$params = &$eventParams[$publisherId][$streamName];
 				
 				/**
 				 * @event Streams/post/$streamType {before}

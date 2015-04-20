@@ -218,7 +218,7 @@ class Q_Image
 				// generate a filename
 				do {
 					$name = Q_Utils::unique(8).'.png';
-				} while (file_exists($writePath.DS.$name));
+				} while (file_exists($writePath.$name));
 			}
 			if (strrpos($name, '.') === false) {
 				$name .= '.png';
@@ -306,7 +306,7 @@ class Q_Image
 					$func = 'imagepng';
 					break;
 			}
-			if ($res = call_user_func($func, $thumb, $writePath.DS.$name)) {
+			if ($res = call_user_func($func, $thumb, $writePath.$name)) {
 				$data[$size] = $subpath ? "$path/$subpath/$name" : "$path/$name";
 			}
 		}
