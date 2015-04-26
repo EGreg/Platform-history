@@ -117,7 +117,7 @@ Users.initFacebook = function(callback, options) {
 		&& Q.plugins.Users.facebookApps[Q.info.app]) {
 			FB.init(Q.extend({
 				appId: Q.plugins.Users.facebookApps[Q.info.app].appId,
-				version: 'v2.2',
+				version: 'v2.3',
 				status: true,
 				cookie: true,
 				oauth: true,
@@ -135,9 +135,7 @@ Users.initFacebook = function(callback, options) {
 		$('body').prepend($('<div id="fb-root"></div>'));
 	}
 	Q.addScript(
-		(window.location.protocol || window.location.protocol === 'file:'
-			? 'http:'
-			: window.location.protocol) + '//connect.facebook.net/en_US/sdk.js',
+		'https://connect.facebook.net/en_US/sdk.js',
 		_init,
 		{
 			onError: function () {

@@ -15,7 +15,7 @@ module.exports = function (callback) {
 	var header = "This is a Node On Qbix project...\n";
 
 	var paths_filename = app_dir + '/local/paths';
-	path.exists(paths_filename+'.js', function (exists) {
+	fs.exists(paths_filename+'.js', function (exists) {
 		if (!exists) {
 			var basename = path.basename(app_dir);
 			throw header+"Please rename "+basename+"/local.sample to "

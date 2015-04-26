@@ -2971,7 +2971,7 @@ Q.Exception = function (message, fields) {
 	this.message = message || "";
 };
 
-Q.Error.prototype = Error;
+Q.Exception.prototype = Error;
 
 /**
  * The root mixin added to all tools.
@@ -9954,7 +9954,7 @@ Q.onReady.set(function _Q_masks() {
 		Q.Masks.hide('Q.request.cancel.mask');
 	}, 'Q.request.load.mask');
 	Q.onLayout.handle();
-}, 'Q.Maskss');
+}, 'Q.Masks');
 
 if (typeof module !== 'undefined' && typeof process !== 'undefined') {
 	// Assume we are in a Node.js environment, e.g. running tests
