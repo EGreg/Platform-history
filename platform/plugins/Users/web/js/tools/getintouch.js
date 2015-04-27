@@ -18,6 +18,9 @@
  */
 Q.Tool.define("Users/getintouch", function(options) {
 
+	function preventDefault(e) {
+		e.preventDefault();
+	}
 	function deobfuscate(str) {
 		var l = str.length, result = '';
 		for (var i=0; i<l; ++i) {
@@ -38,13 +41,13 @@ Q.Tool.define("Users/getintouch", function(options) {
 			url += '?'+qp.join('&');
 		}
 		window.location = url;
-	});
+	}).click(preventDefault);
 	$('#'+this.prefix+'sms').on(Q.Pointer.fastclick, this, function () {
 		window.location = "sms:"+deobfuscate(options.mobileNumber);
-	});
+	}).click(preventDefault);
 	$('#'+this.prefix+'call').on(Q.Pointer.fastclick, this, function () {
 		window.location = "tel:"+deobfuscate(options.mobileNumber);
-	});
+	}).click(preventDefault);
 });
 
 })(Q, jQuery);
