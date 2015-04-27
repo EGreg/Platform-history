@@ -184,7 +184,7 @@ class Q_Uri
 			}
 		}
 		if (!isset($url)) {
-			$hash = Q_Config::get('Q', 'uri', 'unreachableUri', '#_noRouteToUri');
+			$hash = Q_Uri::unreachableUri();
 			if ($hash) {
 				$result = $hash;
 				if (is_string($source)) {
@@ -205,6 +205,11 @@ class Q_Uri
 			$cache[$source] = $result;
 		}
 		return $result;
+	}
+
+	static function unreachableUri()
+	{
+		return Q_Config::get('Q', 'uri', 'unreachableUri', '#_noRouteToUri');
 	}
 	
 	/**

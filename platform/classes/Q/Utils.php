@@ -529,6 +529,8 @@ class Q_Utils
 		}
 
 		$result = json_decode(self::post($server, self::sign($data)), null, true, null, Q_UTILS_CON_TIMEOUT, Q_UTILS_CON_TIMEOUT, true);
+		
+		// TODO: check signature of returned data
 
 		if (isset($result['errors'])) {
 			throw new Q_Exception($result['errors']);
@@ -569,6 +571,8 @@ class Q_Utils
 		}
 
 		$result = json_decode(self::post($server, self::sign($data), null, true, null, Q_UTILS_CON_INTERNAL_TIMEOUT, Q_UTILS_CON_INTERNAL_TIMEOUT), true);
+
+		// TODO: check signature of returned data
 
 		// delete the above line to throw on error
 		if (isset($result['errors'])) {

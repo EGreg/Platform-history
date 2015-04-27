@@ -18,9 +18,12 @@ function Users_activate_response_content()
 		$app = Q_Config::expect('Q', 'app');
 		$successUrl = Q_Config::get('Users', 'uris', "$app/successUrl", "$app/home");
 		if (Q_Request::method() === 'POST') {
+			if ($qs = $_SERVER['QUERY_STRING']) {
+				$qs = "&$qs";
+			}
 			Q_Response::redirect(
 				Q_Config::get('Users', 'uris', "$app/afterActivate", $successUrl)
-				.'?Q.fromSuccess=Users/activate&'.$_SERVER['QUERY_STRING']
+				.'?Q.fromSuccess=Users/activate'.$qs
 			);
 			return true;
 		}
@@ -54,7 +57,7 @@ function Users_activate_response_content()
 	});"); // shh! not while I'm activating! lol
 	
 	return Q::view($view, compact(
-		'identifier', 'type', 'user', 'code', 'suggestions', 'noun_ue', 't',
-		'app', 'home'
+		'identifier', 'type', 'user', 'code',
+		'suggestions', 'noun_ue', 't', 'app', 'home', 'complete'
 	));
 }

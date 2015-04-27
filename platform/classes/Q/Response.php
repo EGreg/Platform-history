@@ -1364,6 +1364,12 @@ class Q_Response
 	{
 		extract($options);
 		$url = Q_Uri::url($uri, null, !empty($no_proxy));
+		if ($url === Q_Uri::unreachableUri()) {
+			throw new Q_Exception_BadValue(array(
+				'internal' => 'uri',
+				'problem' => 'no url routes to it'
+			));
+		}
 		$level = ob_get_level();
 		for ($i=0; $i<$level; ++$i) {
 			ob_clean();

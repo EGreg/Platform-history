@@ -317,7 +317,7 @@ Config.listen = function(callback) {
 				}, clear);
 				break;
 			default:
-				res.send({data: false, errors: "Unknown 'Q/methos' in 'Q/config' handler: '"+parsed['Q/method']+"'"});
+				res.send({data: false, errors: "Unknown 'Q/method' in 'Q/config' handler: '"+parsed['Q/method']+"'"});
 				break;
         } // switch Q/method
 	});
