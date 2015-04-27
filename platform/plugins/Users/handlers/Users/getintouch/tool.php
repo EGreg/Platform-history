@@ -47,7 +47,7 @@ function Users_getintouch_tool($options)
 		));
 	}
 	if (Q_Request::isMobile()) {
-		$obfuscated_mobileNumber = Q_Utils::obfuscate('+'.$user->mobileNumber);
+		$obfuscated_mobileNumber = Q_Utils::obfuscate($user->mobileNumber);
 		if (!empty($options['sms']) and $user->mobileNumber) {
 			$sms = is_string($options['sms']) ? $options['sms'] : "Text me";
 			$sms = Q_Html::img("plugins/Users/img/sms.png") . $sms;
