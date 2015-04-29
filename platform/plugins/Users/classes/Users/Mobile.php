@@ -195,8 +195,12 @@ class Users_Mobile extends Base_Users_Mobile
 			"CURRENT_TIMESTAMP + INTERVAL $minutes MINUTE"
 		);
 		$this->authCode = md5(microtime() + mt_rand());
-		$mobile = $this;
-		$link = 'Users/activate?p=1&code='.urlencode($this->activationCode) . ' mobileNumber='.urlencode($this->number);
+		$number = $this->number;
+		if (substr($number, 0, 2) == '+1') {
+			$number = substr($number, 2);
+		}
+		$link = 'Users/activate?p=1&code='.urlencode($this->activationCode)
+			. ' mobileNumber='.urlencode($number);
 		/**
 		 * @event Users/resend {before}
 		 * @param {string} 'user'

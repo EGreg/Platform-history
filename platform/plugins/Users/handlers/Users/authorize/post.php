@@ -34,7 +34,8 @@ function Users_authorize_post()
 		Users::$cache['oAuth'] = $oa;
 		return;
 	}
-	$duration = Q_Config::expect('Q', 'session', 'durations', Q_Config::expect('Users', 'authorize', 'duration'));
+	$duration_name = Q_Config::expect('Users', 'authorize', 'duration');
+	$duration = Q_Config::expect('Q', 'session', 'durations', $duration_name);
 	$access_token = Users::copyToNewSession($duration);
 	$oa->scope = 'user'; // for now the scope of authorization is always "user"
 	$oa->redirect_uri = $redirect_url; // just saving it

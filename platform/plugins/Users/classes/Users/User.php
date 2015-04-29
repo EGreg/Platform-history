@@ -532,8 +532,13 @@ class Users_User extends Base_Users_User
 		$mobile->activationCodeExpires = new Db_Expression(
 			"CURRENT_TIMESTAMP + INTERVAL $minutes MINUTE"
 		);
+		$number = $mobile->number;
+		if (substr($number, 0, 2) == '+1') {
+			$number = substr($number, 2);
+		}
 		$mobile->authCode = md5(microtime() + mt_rand());
-		$link = 'Users/activate?code='.urlencode($mobile->activationCode) . ' mobileNumber='.urlencode($mobile->number);
+		$link = 'Users/activate?code='.urlencode($mobile->activationCode)
+			. ' mobileNumber='.urlencode($number);
 		/**
 		 * @event Users/addIdentifier {before}
 		 * @param {string} 'user'

@@ -1784,7 +1784,9 @@ abstract class Users extends Base_Users
 		if (!$id) {
 			return null;
 		}
-		$seconds = is_string($duration) ? Q_Config::expect('Q', 'session', 'durations', $duration) : $duration;
+		$seconds = is_string($duration)
+			? Q_Config::expect('Q', 'session', 'durations', $duration)
+			: $duration;
 		session_write_close(); // close current session
 		$us = new Users_Session();
 		$us->id = $id;

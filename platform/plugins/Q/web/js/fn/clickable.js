@@ -381,7 +381,7 @@ function _Q_clickable(o) {
 		x: 0.5,
 		y: 0.5
 	},
-	slightDelay: 10,
+	slightDelay: 100,
 	waitingDelay: 100,
 	selectable: false,
 	allowCallout: false,
