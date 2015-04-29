@@ -33,6 +33,14 @@
 			"plugins/Users/img/icons/:folder/:size.png": {"mobile": "Users", "action": "missingIcon"}
 		},
 		"session": {
+			"db": {
+				"connection": "Users",
+				"rowClass": "Users_Session",
+				"idField": "id",
+				"dataField": "php",
+				"updatedField": "updatedTime",
+				"durationField": "duration"
+			}
 		}
 	},
 	"Users": {
