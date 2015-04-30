@@ -1469,7 +1469,12 @@ divbody { text-align: center; height: 100%; }
 
 div.Q_buttons { text-align: center; }
 
-.Q_button { border-width:1px; font-size:1em; padding: 1px 5px 1px 5px; color: #fff; cursor:pointer; border-radius: 0.3em; -moz-border-radius: 0.3em;  -webkit-border-radius: 0.3em; border-color: rgba(200,200,200,0.5); border-bottom-color: rgba(0,0,200,0.2); border-right-color: rgba(0,0,200,0.2);	box-shadow: 0px 0px 1px rgba(50,50,50,0.5); -moz-box-shadow: 0px 0px 1px rgba(50,50,50,0.5); -webkit-box-shadow: 0px 0px 1px rgba(50,50,50,0.5);
+.Q_button {
+	white-space: nowrap;
+	border-width:1px; font-size:1em; padding: 1px 5px 1px 5px; color: #fff; cursor:pointer; border-radius: 0.3em;
+	-moz-border-radius: 0.3em;  -webkit-border-radius: 0.3em; border-color: rgba(200,200,200,0.5); border-bottom-color: rgba(0,0,200,0.2); border-right-color: rgba(0,0,200,0.2);
+	
+	box-shadow: 0px 0px 1px rgba(50,50,50,0.5); -moz-box-shadow: 0px 0px 1px rgba(50,50,50,0.5); -webkit-box-shadow: 0px 0px 1px rgba(50,50,50,0.5);
 	background: #444; /* for non-css3 browsers */
 
 	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#444444', endColorstr='#222222'); /* for IE */

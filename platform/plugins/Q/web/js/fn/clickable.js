@@ -91,11 +91,17 @@ function _Q_clickable(o) {
 	if (p.length && p[0].tagName.toUpperCase() === 'TD') {
 		p.css('position', 'relative');
 	}
+	var originalTime = Date.now();
+	var timing = state.timing;
 	
 	setTimeout(function _clickify() {
 		if (!$this.is(':visible')) {
-			if (state.waitingDelay) {
-				setTimeout(_clickify, state.waitingDelay);
+			if (timing.waitingPeriod
+			&& Date.now() - originalTime >= timing.waitingPeriod) {
+				return;
+			}
+			if (timing.waitingInterval) {
+				setTimeout(_clickify, timing.waitingInterval);
 			}
 			return;
 		}
@@ -350,7 +356,34 @@ function _Q_clickable(o) {
 				evt.stopPropagation();
 			}
 		});
-	}, state.slightDelay);
+		
+		if (timing.renderingInterval) {
+			setTimeout(function _update() {
+				if (Date.now() - originalTime >= timing.renderingPeriod) {
+					return;
+				}
+				var cs = $this[0].computedStyle();
+				var csw2 = cs.width; // the object can change, so get the values now
+				var csh2 = cs.height;
+				if (csw2 != csw || csh2 != csh) {
+					if (!$this.is(':visible')) {
+						return;
+					}
+					container.css({
+						'width': $this.outerWidth(true),
+						'height': $this.outerHeight(true)
+					});
+					stretcher.css({
+						'width': container.width()+0.5+'px',
+						'height': container.height()+0.5+'px'
+					});
+				}
+				csw = csw2;
+				csh = csh2;
+				setTimeout(_update, timing.renderingInterval);
+			}, timing.renderingInterval);
+		}
+	}, timing.renderingDelay);
 	return this;
 },
 
@@ -381,8 +414,13 @@ function _Q_clickable(o) {
 		x: 0.5,
 		y: 0.5
 	},
-	slightDelay: 100,
-	waitingDelay: 100,
+	timing: {
+		renderingPeriod: 1000,
+		renderingInterval: 100,
+		waitingPeriod: 0,
+		waitingInterval: 100,
+		renderingDelay: 0
+	},
 	selectable: false,
 	allowCallout: false,
 	cancelDistance: 15,
