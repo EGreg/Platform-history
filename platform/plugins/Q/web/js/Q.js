@@ -3300,7 +3300,8 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 	}
 	name = Q.normalize(name);
 	if (typeof ctor === 'string') {
-		if (typeof window.jQuery.fn.plugin[name] !== 'function') {
+		if (window.jQuery
+		&& typeof window.jQuery.fn.plugin[name] !== 'function') {
 			_qtjo[name] = _qtjo[name] || {};
 			window.jQuery.fn.plugin[name] = Q.Tool.constructors[name] = ctor;
 		}
