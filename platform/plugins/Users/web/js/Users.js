@@ -1046,7 +1046,7 @@ function login_callback(response) {
 				passphrase_input,
 				$('<a id="Users_login_passphrase_forgot" href="#forgot"/>')
 				.html(Q.text.Users.login.forgot)
-				.click(function() {
+				.on(Q.Pointer.touchclick, function() {
 					if (Q.text.Users.login.resendConfirm) {
 						if (confirm(Q.text.Users.login.resendConfirm)) {
 							_resend();
@@ -1293,35 +1293,8 @@ function login_setupDialog(usingProviders, scope, dialogContainer, identifierTyp
 	var $a = $('<a class="Q_button Users_login_go Q_main_button" />')
 	.append(
 		$('<span id="Users_login_go_span">'  + Q.text.Users.login.goButton + '</span>')
-	);
-	var _relevantClick = false;
-	if (Q.info.isTouchscreen) {
-		$(window).click(function (e) {
-			if (!_relevantClick) {
-				return;
-			}
-			_relevantClick = false; // in case another click is triggered
-			submitClosestForm.apply($a, arguments);
-		});
-	} else {
-		$a.click(submitClosestForm);
-	}
-	$(window).on('touchend', function (event) {
-		if (!$a[0].isOrContains(event.target)) {
-			return;
-		}
-		if ($('#Users_login_identifier').is(':focus')) {
-			$('#Users_login_identifier').blur();
-		}
-		setTimeout(function () {
-			_relevantClick = false;
-		}, 400);
-	});
-	$a.on('touchstart', function (event) {
-		if ($('#Users_login_identifier').is(':focus')) {
-			$('#Users_login_identifier').blur();
-		}
-		_relevantClick = true;
+	).on(Q.Pointer.touchclick, function () {
+		submitClosestForm.apply($a, arguments);
 	});
 
 	step1_form.html(

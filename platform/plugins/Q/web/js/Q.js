@@ -8632,6 +8632,40 @@ Q.Pointer = {
 		};
 	},
 	/**
+	 * Like click event but works on touchscreens even if the viewport moves 
+	 * during click (such as when the on-screen keyboard disappears).
+	 * Respects Q.Pointer.canceledClick
+	 * @static
+	 * @method touchclick
+	 */
+	touchclick: function _Q_touchclick (params) {
+		if (!Q.info.isTouchscreen) {
+			return Q.Pointer.click(params);
+		}
+		params.eventName = Q.Pointer.start;
+		return function _Q_touchclick_on_wrapper (e) {
+			var _relevantClick = true;
+			var t = this, a = arguments;
+			function _clickHandler(e) {
+				Q.removeEventListener(window, 'click', _clickHandler);
+				if (Q.Pointer.canceledClick) {
+					return Q.Pointer.preventDefault(e);
+				}
+				if (_relevantClick) {
+					params.original.apply(t, a);
+				}
+			}
+			function _touchendHandler(e) {
+				Q.removeEventListener(this, 'touchend', _touchendHandler);
+				setTimeout(function () {
+					_relevantClick = false;
+				}, Q.Pointer.touchclick.duration);
+			}
+			Q.addEventListener(window, 'click', _clickHandler);
+			Q.addEventListener(this, 'touchend', _touchendHandler);
+		};
+	},
+	/**
 	 * Normalized mouse wheel event that works with various browsers
 	 * @static
 	 * @method click
@@ -9050,7 +9084,7 @@ Q.Pointer = {
 Q.Pointer.which.LEFT = 1;
 Q.Pointer.which.MIDDLE = 2;
 Q.Pointer.which.RIGHT = 3;
-
+Q.Pointer.touchclick.duration = 400;
 Q.Pointer.hint.options = {
 	src: 'plugins/Q/img/hints/tap.gif',
 	hotspot:  {x: 0.5, y: 0.3},
@@ -9069,7 +9103,6 @@ Q.Pointer.hint.options = {
 		ease: Q.Animation.ease.linear
 	}
 };
-
 Q.Pointer.hint.imgs = [];
 
 function _Q_restoreScrolling() {

@@ -67,7 +67,7 @@
 <?php elseif (Users::loggedInUser()): ?>
 	<h1 class='Q_big_message'>If you feel something went wrong, <button id='activate_setIdentifier'>try again</button></h1>
 <?php else: ?>
-	<h1 class='Q_big_message'>Please <a href='#' id='activate_login'>log in</a> and get another email sent to you.</h1>
+	<h1 class='Q_big_message'>Please try <a href='#' id='activate_login'>logging in</a> to activate your account.</h1>
 <?php endif; ?>
 
 <?php Q_Response::addScript('plugins/Q/js/Q.js'); ?>
