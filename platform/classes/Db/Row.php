@@ -1762,6 +1762,9 @@ class Db_Row implements Iterator
 			// the primary key should, it is only through tinkering.
 			// We'll let it pass, since the person was most likely
 			// trying to do something clever.
+			if (!$this->getPrimaryKey()) {
+				throw new Exception("Db_Row cannot update an existing row using without a primary key");
+			}
 			$where = $this->getPkValue();
 			if (!$where) {
 				throw new Exception("The primary key is not specified for $table");
