@@ -332,6 +332,7 @@ class Q_Uri
 		}
 
 		/**
+		 * Hook for custom logic modifying routing from URLs to internal URIs
 		 * @event Q/uriFromUrl {before}
 		 * @param {string} 'url'
 		 * @return {Q_Uri}

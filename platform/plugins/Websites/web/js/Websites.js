@@ -68,7 +68,9 @@ Q.page('', function () {
 	return function () {
 		if (!window.CryptoJS) return;
 		var streamName = "Websites/seo/"+CryptoJS.SHA1(Q.info.uriString);
-		Q.Streams.Stream.onUpdated(Q.plugins.Websites.userId, streamName, "title").remove("Websites");
+		Q.Streams.Stream.onUpdated(
+			Q.plugins.Websites.userId, streamName, "title"
+		).remove("Websites");
 	}
 }, 'Websites');
 
