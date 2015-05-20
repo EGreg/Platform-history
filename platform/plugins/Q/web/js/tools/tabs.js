@@ -243,6 +243,9 @@ Q.Tool.define("Q/tabs", function(options) {
 			$o.plugin("Q/contextual", "remove");
 			$o.remove();
 		}
+		if (tool.state.vertical) {
+			return;
+		}
 		var $tabs = $('.Q_tabs_tab', $te);
 		var $overflow, $lastVisibleTab;
 		$tabs.each(function (i) {

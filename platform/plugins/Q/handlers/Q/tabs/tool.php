@@ -6,6 +6,7 @@
  *  "tabs" => An associative array of name => title pairs.
  *  "urls" => An associative array of name => url pairs to override the default urls.
  *  "classes" => An associative array of the form name => classes, for adding classes to tabs
+ *  "vertical" => Stack the tabs vertically instead of horizontally
  *  "titleClasses" => An associative array for adding classes to tab titles
  *  "field" => Defaults to "tab". Uses this field when urls doesn't contain the tab name.
  *  "selectors" => Array of (slotName => selector) pairs, where the values are CSS style selectors indicating the element to update with javascript, and can be a parent of the tabs. Set to null to reload the page.
@@ -37,6 +38,7 @@ function Q_tabs_tool($options)
 	}
 	/**
 	 * @var array $tabs
+	 * @var boolean $vertical
 	 */
 	$sel = isset($_REQUEST[$field]) ? $_REQUEST[$field] : null;
 	$result = '';
@@ -93,9 +95,11 @@ function Q_tabs_tool($options)
 		));
 	}
 	Q_Response::setToolOptions(compact(
-		'selectors', 'slot', 'urls', 'defaultTab', 'field', 'loader', 'beforeSwitch', 'beforeScripts', 'onActivate'
+		'selectors', 'slot', 'vertical', 'urls', 'defaultTab',
+		'field', 'loader', 'beforeSwitch', 'beforeScripts', 'onActivate'
 	));
 	Q_Response::addScript('plugins/Q/js/tools/tabs.js');
+	$verticalClass = empty($vertical) ? '' : ' Q_tabs_vertical';
 	$after = isset($options['after']) ? Q::event($options['after'], $options) : '';
-	return "<div class='Q_tabs_tabs Q_clearfix'>$result$after</div>";
+	return "<div class='Q_tabs_tabs Q_clearfix$verticalClass'>$result$after</div>";
 }

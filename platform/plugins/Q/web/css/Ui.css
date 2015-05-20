@@ -34,7 +34,11 @@ table { border-spacing:0; border-collapse:collapse; }
 .Q_focus .Q_placeholder { color: #aaa; }
 div.Q_placeholder { pointer-events: none; }
 
-.Q_loading { opacity:0.9; filter:alpha(opacity=90) }
+.Q_loading { 
+	opacity:0.9; filter:alpha(opacity=90);
+	-webkit-animation: Q_rotateplane 1.2s infinite ease-in-out;
+	animation: Q_rotateplane 1.2s infinite ease-in-out;
+}
 
 @keyframes Q_working {
 	from { opacity: 0.75; }
@@ -1185,6 +1189,7 @@ div.Q_placeholder { pointer-events: none; }
 .Q_tabs_tab:first-child { border-left: solid 1px #aaa; }
 .Q_tabs_tab.Q_selected { background-color: white; border-bottom: solid 1px white; }
 .Q_tabs_title { position: relative; }
+.Q_tabs_vertical>.Q_tabs_tab { float: none; }
 
 .Q_tabs_contextual .Q_tabs_tab { display: block; float: none; line-height:30px; border: 0px; } 
 
@@ -1952,4 +1957,23 @@ input[type=radio] { margin-right: 5px; }
 
 .Q_dialog_imagepicker {
 	
+}
+
+@-webkit-keyframes Q_rotateplane {
+  0% { -webkit-transform: perspective(120px) }
+  50% { -webkit-transform: perspective(120px) rotateY(180deg) }
+  100% { -webkit-transform: perspective(120px) rotateY(180deg)  rotateX(180deg) }
+}
+
+@keyframes Q_rotateplane {
+  0% {
+    transform: perspective(120px) rotateX(0deg) rotateY(0deg);
+    -webkit-transform: perspective(120px) rotateX(0deg) rotateY(0deg)
+  } 50% {
+    transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+    -webkit-transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg)
+  } 100% {
+    transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+    -webkit-transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+  }
 }
