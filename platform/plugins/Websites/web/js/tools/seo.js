@@ -5,11 +5,8 @@
  * @method Websites/seo
  * @param {Object} [options]
  *   @param {Object} [options.template] Optional fields to override info for seo tool template
- *   @optional
- *     @param {String} [options.template.name] name of template
- *     @default "Websites/seo"
- *   @optional {Object} [options.inplace] Hash of {attributeName: options} for Streams/inplace tools
- *   @example
+ *   @param {String} [options.template.name="Websites/seo"] name of template
+ *   @param {Object} [options.inplace={}] Hash of {attributeName: options} for Streams/inplace tools
  *   <code>
  *        url: { inplace: { placeholder: "Url" } },
  *        title: { inplace: { placeholder: "Title" } },
