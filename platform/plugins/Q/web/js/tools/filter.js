@@ -152,7 +152,7 @@ Q.Tool.define('Q/filter', function (options) {
 			}, state.delayTouchscreen); // to prevent touchend events from wreaking havoc
 		}
 		
-		var $container = tool.$input.parent('.Q_placeholder_container');
+		var $container = tool.$input.parent('.Q_placeholders_container');
 		var topH = tool.$input.outerHeight();
 		if (!$container.length) {
 			$container = tool.$input;

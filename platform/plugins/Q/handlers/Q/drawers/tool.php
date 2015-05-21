@@ -17,6 +17,8 @@ function Q_drawers_tool($options)
 		$result .= Q_Html::div("drawer_$i", "Q_drawers_drawer Q_drawers_drawer_$i", $html);
 	}
 	unset($options['drawers']);
+	Q_Response::addScript('plugins/Q/js/tools/drawers.js');
+	Q_Response::addStylesheet('plugins/Q/css/drawers.css');
 	Q_Response::setToolOptions($options);
 	return $result;
 }

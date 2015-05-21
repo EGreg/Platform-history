@@ -4,7 +4,7 @@ function MyApp_before_Q_responseExtras()
 {
 	$app = Q_Config::expect('Q', 'app');	
 	
-	Q_Response::addStylesheet('plugins/Q/css/Ui.css');
+	Q_Response::addStylesheet('plugins/Q/css/Q.css');
 	Q_Response::addStylesheet('css/html.css');
 
 	if (Q_Config::get('Q', 'firebug', false)) {

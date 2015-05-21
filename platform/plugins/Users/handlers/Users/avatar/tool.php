@@ -28,7 +28,7 @@ function Users_avatar_tool($options)
 	} else {
 		$user = Users_User::fetch($options['userId']);
 	}
-	Q_Response::addStylesheet('plugins/Q/css/Ui.css');
+	Q_Response::addStylesheet('plugins/Q/css/Q.css');
 	Q_Response::setToolOptions($options);
 	if (!empty($options['renderOnClient'])) {
 		return '';

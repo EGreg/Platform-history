@@ -36,6 +36,7 @@ function Q_inplace_tool($options)
 		? 'Q_inplace_tool_blockstatic'
 		: 'Q_inplace_tool_static';
 	Q_Response::addScript('plugins/Q/js/tools/inplace.js');
+	Q_Response::addStylesheet('plugins/Q/css/inplace.css');
 
 	$formTag = Q_Html::form("$action", $method, array('class' => 'Q_inplace_tool_form'));
 

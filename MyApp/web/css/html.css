@@ -1,3 +1,32 @@
+/**
+ * This CSS is just to get you started.
+ * Feel free to modify any of it for your own app.
+ */
+
+* { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: rgba(0,0,0,0); -webkit-tap-highlight-color: transparent; }
+
+a { text-decoration: none; }
+
+html { background: #f2f2f2;  /* background: #f3f3f3; */ }
+body { text-align: center; height: 100%; }
+#dashboard_slot,
+#notices_slot,
+#content_slot { text-align: center; }
+#dashboard,
+#notices,
+#content { margin: auto; text-align: left; }
+#content { position: relative; }
+#content_slot { position: relative; }
+#page { position: relative; bottom: 0px; width: 100%; /* top: 54px; */ /* padding-top: 10px; */
+    left:50%; margin-left:-50%; /* reset position for ie7, ff4+ */
+}
+.Q_touchscreen #page { width: 100%; }
+
+.Q_notTouchscreen #dashboard,
+.Q_notTouchscreen #content { width: 990px; }
+
+.Q_mobile .Q_overlay { width: 90%; }
+
 #dashboard_slot { cursor: default; }
 #dashboard_slot * { font-size: 24px; }
 #dashboard>* { margin: 5px; line-height: 40px; }
@@ -10,9 +39,132 @@
 
 #Users_avatar_tool .Users_avatar_name { text-indent: 5px; }
 
-@media screen and (-webkit-min-device-pixel-ratio:0) { 
-	select:focus, textarea:focus, input:focus {
-		font-size: 16px;
-		background: #eee;
-	}
+
+#dashboard_slot {
+  z-index: 900; width: 100%; text-align: center; border: solid 0px #aaa; 
+  box-shadow: #aaa 0px 0px 4px; -webkit-box-shadow: #aaa 0px 0px 4px; -moz-box-shadow: #aaa 0px 0px 4px;
+  background: #444; /* for non-css3 browsers */
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#444444', endColorstr='#111111'); /* for IE */
+  background: -webkit-gradient(linear, left top, left bottom, from(#444), to(#111)); /* for webkit browsers */
+  background: -moz-linear-gradient(top,  #444444,  #111111); /* for firefox 3.6+ */
+  height: 50px;
 }
+#dashboard>* { margin: 10px; padding: 0px; }
+#dashboard_slot * { font-size: 16px; font-family: Arial, sans-serif; color: white; }
+#dashboard .Q_contextual * { color: black; }
+#dashboard { position: static; margin: auto; text-align: left; }
+#dashboard td { vertical-align: middle; }
+#dashboard table { width: 100%; padding: 0px; margin: 0px; }
+#dashboard .Q_dashboard_logo { padding: 0px; }
+#dashboard .Q_dashboard_logo a { padding: 5px; border-radius: 5px; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; }
+#dashboard .Q_dashboard_logo img { height: 40px; }
+#dashboard .Q_dashboard_search { padding: 8px 10px 8px 10px; font-weight: bold; text-align: left; }
+#dashboard .Q_dashboard_search input {
+	width: 104px;
+	margin-right: 4px;
+	border-radius: 2em;
+	-moz-border-radius: 2em;
+	padding-left: 27px;
+	padding-right: 17px;
+	border: none;
+	border-top: 1px solid #CCC;
+	background: white url(../plugins/Q/img/search_icon.png) no-repeat;
+	color: #444;
+}
+
+
+#dashboard .Q_tabs_tabs { border: 0px; }
+#dashboard .Q_tabs_tab { cursor: pointer; width: auto; margin: 5px 10px 0px 10px; border: 0px !important; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; background-color: #f8f8f8; background: none; font-size: 14px; line-height: 30px !important; text-align: center; }
+#dashboard .Q_tabs_tab:first-child { border-top: 0px solid #e5e5e5; border-left: 0px; }
+#dashboard .Q_tabs_tab,
+#dashboard .Q_tabs_tab>* { cursor: pointer; vertical-align: middle; }
+#dashboard .Q_tabs_tab { text-decoration: none; color: white; }
+.Q_notTouchscreen #dashboard .Q_tabs_tab:hover { text-decoration: underline;}
+#dashboard .Q_tabs_tab img { margin-right: 10px; width: 24px; }
+#dashboard .Q_tabs_tab span { display: inline; text-align: left; }
+#dashboard .Q_tabs_tab.Q_selected { background-image: url(../plugins/Q/img/bg/stucco.png) !important; color: black !important; }
+#dashboard .Q_tabs_tab.Q_selected * { color: black; }
+
+
+
+
+#notices_slot { text-align: center; margin: auto; padding: 0px; overflow: hidden; z-index: 5000; }
+#notices { margin: auto; }
+#notices_slot div.container { overflow: none; overflow-y: auto; }
+#notices_slot ul { list-style-type: none; padding: 0px; margin: auto; width: 700px; max-width: 100%; border: solid 1px #555; border-top: solid 1px #aaa; box-shadow: 0 0 5px #222; -moz-box-shadow: 0 0 5px #222; -webkit-box-shadow: 0 0 5px #222; cursor: pointer; }
+#notices_slot li { list-style-type: none; padding: 0px; margin: 0px; text-align: center; background: #ffd4aa; border: 0px; border-bottom: solid 1px #aaa; line-height: 30px; min-height: 30px; }
+
+#notices_slot ul.Q_errors * { background-color: #ebb; color: #500; }
+#notices_slot ul.Q_errors li { text-align: left; padding: 0px 10px 0px 10px; }
+
+#notices_slot .Q_field_name { float: right; font-size: 12px; padding-right: 10px; }
+
+
+
+#notices_slot button
+{
+	display: inline-block;
+	vertical-align: top;
+	margin-left: 5px;
+	padding: 2px 10px;
+	color: #69552e;
+	background: #F1E2C6;
+	box-shadow: 1px 1px 1px 0 #CCC;
+	border: none;
+}
+.Q_notTouchscreen #notices_slot button:active
+{
+	background: #f0d298;
+	margin-left: 6px;
+	box-shadow: none;
+}
+#notices_slot ul li span {
+	font-size: 12px;
+	line-height: 26px;
+}
+#notices_slot ul li * {
+	vertical-align: middle;
+}
+
+
+/* inputs */
+
+input[type=text],
+input[type=email],
+input[type=tel],
+input[type=password],
+input[type=number],
+input.text,
+input.email,
+input.tel,
+input.password,
+input.number,
+textarea { border: 1px solid #ccc; border-bottom: 1px solid #aaa; background-color: #fefefe; cursor: text; font-family: "Trebuchet MS"; }
+input[type=text]:focus,
+input[type=email]:focus,
+input[type=tel]:focus,
+input[type=password]:focus,
+input[type=number]:focus,
+input.text:focus,
+input.email:focus,
+input.tell:focus,
+input.password:focus,
+input.number:focus,
+textarea:focus { background: white; box-shadow: 0 1px 10px rgba(0,0,0,.15); -webkit-box-shadow: 0 1px 4px rgba(0,0,100,.15); -moz-box-shadow: 0 1px 4px rgba(0,0,100,.15); }
+input.placeholder,
+textarea.placeholder { color: #aaa; font-style: italic; }
+select:focus { outline: dotted 1px #779; }
+/* select { margin-top: 0.75em; } */
+input[type=text],
+input[type=password],
+input[type=tel],
+input[type=password],
+input[type=number],
+input.text,
+input.email,
+input.tel,
+input.password,
+input.number,
+textarea { margin-top: 0.5em; margin-bottom: 0.5em; border-radius: 3px; -moz-border-radius:3px; -webkit-border-radius:3px; padding: 4px; }
+input[type=checkbox],
+input[type=radio] { margin-right: 5px; }

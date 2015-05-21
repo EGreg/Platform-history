@@ -2,7 +2,7 @@
  * ticker
  */
 
-.ticker {
+.Q_ticker {
 	margin: 0;
 	text-indent: 0;
 	padding-left: 0;
@@ -10,38 +10,38 @@
 	overflow: hidden;
 }
 
-.ticker ul {
+.Q_ticker ul {
 	margin:0;
 	padding:0;
 }
 
-.ticker.vertical {
+.Q_ticker.vertical {
 	width: 100%;
 	height: 150px;
 }
 
-.ticker.horizontal {
+.Q_ticker.horizontal {
 	width: 100%;
 	height: 50px;
 }
 
-.ticker.horizontal.scrollbars {
+.Q_ticker.horizontal.scrollbars {
 	overflow: hidden;
 	overflow-x: auto;
 }
 
-.ticker.vertical.scrollbars {
+.Q_ticker.vertical.scrollbars {
 	overflow: hidden;
 	overflow-y: auto;
 }
 
-.ticker.vertical .error {
+.Q_ticker.vertical .error {
 	border: 0;
 	margin: 0;
 	padding: 0;
 }
 
-.ticker.horizontal .error {
+.Q_ticker.horizontal .error {
 	width: 10000px;
 	height:50px;
 	border: 0;
@@ -49,13 +49,13 @@
 	padding: 0;
 }
 
-.ticker.horizontal li {
+.Q_ticker.horizontal li {
 	display: inline;
 	width:200px;
 	/*width:1228px;*/
 }
 
-.ticker ul.error li div {
+.Q_ticker ul.error li div {
 	display:inline-block;
 	width:220px;
 	height:50px;
@@ -64,5 +64,5 @@
 	color:white;
 }
 
-.ticker table { padding:0; border-spacing:0; border-collapse:collapse; }
-.ticker td { padding:0; border-spacing:0; border-collapse:collapse; }
+.Q_ticker table { padding:0; border-spacing:0; border-collapse:collapse; }
+.Q_ticker td { padding:0; border-spacing:0; border-collapse:collapse; }

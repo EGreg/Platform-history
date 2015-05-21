@@ -99,6 +99,7 @@ function Q_tabs_tool($options)
 		'field', 'loader', 'beforeSwitch', 'beforeScripts', 'onActivate'
 	));
 	Q_Response::addScript('plugins/Q/js/tools/tabs.js');
+	Q_Response::addStylesheet('plugins/Q/css/tabs.css');
 	$verticalClass = empty($vertical) ? '' : ' Q_tabs_vertical';
 	$after = isset($options['after']) ? Q::event($options['after'], $options) : '';
 	return "<div class='Q_tabs_tabs Q_clearfix$verticalClass'>$result$after</div>";

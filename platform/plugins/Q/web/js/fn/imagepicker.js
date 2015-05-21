@@ -68,7 +68,7 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 		var state = $this.state('Q/imagepicker');
 		var msg = Q.firstErrorMessage(err) || Q.firstErrorMessage(res && res.errors);
 		if (msg) {
-			$this.attr('src', state.oldSrc).stop().removeClass('Q_imagepicker_uploading');
+			$this.attr('src', state.oldSrc).stop().removeClass('Q_uploading');
 			return Q.handle([state.onError, state.onFinish], $this, [msg]);
 		}
 		var key = state.showSize;
@@ -82,7 +82,7 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 				Q.url(res.slots.data[key], null, {cacheBust: 1000})
 			);
 		}
-		$this.removeClass('Q_imagepicker_uploading');
+		$this.removeClass('Q_uploading');
 	}
 	
 	function _upload(data) {
@@ -405,7 +405,7 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 		var state = $this.state('Q/imagepicker');
 		$this.attr('src', state.oldSrc)
 			.stop()
-			.removeClass('Q_imagepicker_uploading');
+			.removeClass('Q_uploading');
 	}
 	
 	function _process() {
@@ -414,7 +414,7 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 		if (state.throbber) {
 			$this.attr('src', Q.url(state.throbber));
 		}
-		$this.addClass('Q_imagepicker_uploading');
+		$this.addClass('Q_uploading');
 		var reader = new FileReader();
 		reader.onload = function() {
 			_upload(this.result);

@@ -86,7 +86,7 @@ function Q_ticker_tool($options = array())
 		}
 	}
 
-	Q_Response::addStylesheet('plugins/Q/css/Ticker.css');
+	Q_Response::addStylesheet('plugins/Q/css/ticker.css');
 	Q_Response::addScript('plugins/Q/js/tools/ticker.js');
 	Q_Response::setToolOptions($fields2);
 
@@ -94,7 +94,7 @@ function Q_ticker_tool($options = array())
 	$scrollbars_class = $fields2['scrollbars'] ? 'scrollbars' : '';
 
 	return Q_Html::tag('div', array(
-		'class' => "ticker $direction_class $scrollbars_class"),
+		'class' => "Q_ticker $direction_class $scrollbars_class"),
 		$fields2['content']
 	);
 }

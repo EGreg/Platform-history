@@ -31,6 +31,8 @@ function Q_expandable_tool($options)
 			throw new Q_Exception_RequiredField(compact('field'));
 		}
 	}
+	Q_Response::addScript('plugins/Q/js/tools/expandable.js');
+	Q_Response::addStylesheet('plugins/Q/css/expandable.css');
 	$count = Q::ifset($options, 'count', '');
 	$h2 = "<h2>\n\t<span class='Q_expandable_count'>$count</span>\n\t$options[title]\n</h2>";
 	$div = "<div class='Q_expandable_content'>\n\t$options[content]\n</div>";

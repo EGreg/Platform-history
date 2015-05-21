@@ -110,7 +110,7 @@ function _Q_overlay(o) {
 					$this.show();
 					if ($overlay.options.mask)
 					{
-						Q.Masks.show('Q.screen.mask', { 'className': 'Q_screen_shadow_mask' });
+						Q.Masks.show('Q.screen.mask', { 'className': 'Q_screen_mask' });
 					}
 					if (!$overlay.options.noClose && $overlay.options.closeOnEsc)
 					{

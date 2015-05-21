@@ -3185,7 +3185,7 @@ Q.Notice = {
 					
 					if (Q.info.isMobile || Q.info.isTablet)
 					{
-						Q.Masks.show('Q.screen.mask', { 'fadeTime': 200, 'className': 'Q_screen_shadow_mask' });
+						Q.Masks.show('Q.screen.mask', { 'fadeTime': 200, 'className': 'Q_screen_mask' });
 					}
 				};
 				

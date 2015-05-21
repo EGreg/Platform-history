@@ -85,7 +85,7 @@
 		},
 		"stylesheets": {
 			"responseExtras": {
-				"plugins/Q/css/Ui.css": true
+				"plugins/Q/css/Q.css": true
 			}
 		},
 		"environments": {

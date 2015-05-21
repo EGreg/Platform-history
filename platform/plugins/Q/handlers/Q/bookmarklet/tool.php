@@ -18,7 +18,7 @@ function Q_bookmarklet_tool($options)
   		'icon' => null
     ), $options);
 	Q_Response::addScript('plugins/Q/js/tools/bookmarklet.js');
-	Q_Response::addStylesheet('plugins/Q/css/Ui.css');
+	Q_Response::addStylesheet('plugins/Q/css/bookmarklet.css');
 	Q_Response::setToolOptions($options);
 	return '';
 }

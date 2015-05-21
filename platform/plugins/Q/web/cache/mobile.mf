@@ -2,7 +2,7 @@ CACHE MANIFEST
 # 2012-05-30
 
 # css
-../../../plugins/Q/css/Ui.css
+../../../plugins/Q/css/Q.css
 ../../../plugins/Users/css/Users.css
 
 # js

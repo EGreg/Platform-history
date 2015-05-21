@@ -34,7 +34,7 @@ function () {
 
 		var span = $('<span />')
 			.css('position', 'relative')
-			.addClass('Q_placeholder_container');
+			.addClass('Q_placeholders_container');
 		var cs = $this[0].computedStyle();
 		var csw = cs.width; // the object can change, so get the values now
 		var csh = cs.height;
