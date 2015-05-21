@@ -577,7 +577,7 @@ class Q_Response
 			return is_array(self::$scriptLines) ? self::$scriptLines : array();
 		}
 		if (!isset($slotName) or $slotName === true) {
-			$slotName = array_merge(array('', 'Q'), Q_Request::slotNames(true));
+			$slotName = array_merge(array('', 'Q'), Q_Request::slotNames(true), array('@end'));
 		}
 		if (is_array($slotName)) {
 			$scriptLines = array();
@@ -1141,7 +1141,6 @@ class Q_Response
 			}
 		}
 		self::$stylesheetsForSlot[$slotName][] = compact('href', 'media', 'type');
-
 		return true;
 	}
 
@@ -1161,7 +1160,7 @@ class Q_Response
 			return $sheets = self::$stylesheets;
 		}
 		if (!isset($slotName) or $slotName === true) {
-			$slotName = array_merge(array(''), Q_Request::slotNames(true));
+			$slotName = array_merge(array('', 'Q'), Q_Request::slotNames(true), array('@end'));
 		}
 		if (is_array($slotName)) {
 			$sheets = array();
