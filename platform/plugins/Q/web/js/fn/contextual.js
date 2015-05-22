@@ -100,4 +100,6 @@ Q.Tool.jQuery('Q/contextual', function _Q_contextual(o) {
 
 );
 
+Q.addStylesheet('plugins/Q/css/contextual.css');
+
 })(Q, jQuery, window, document);

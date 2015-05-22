@@ -168,3 +168,14 @@ input.number,
 textarea { margin-top: 0.5em; margin-bottom: 0.5em; border-radius: 3px; -moz-border-radius:3px; -webkit-border-radius:3px; padding: 4px; }
 input[type=checkbox],
 input[type=radio] { margin-right: 5px; }
+
+#dashboard_slot {
+	cursor: default; 
+	box-shadow: #333 0px 0px 10px; -webkit-box-shadow: #333 0px 0px 10px; -moz-box-shadow: #333 0px 0px 10px;
+    background: #aaa; /* for non-css3 browsers */
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#444444', endColorstr='#111111'); /* for IE */
+    background: -webkit-gradient(linear, left top, left bottom, from(#aaa), to(#111)); /* for webkit browsers */
+    background: -moz-linear-gradient(top,  #aaaaaa,  #111111); /* for firefox 3.6+ */
+}
+#dashboard_slot * { font-size: 24px; }
+#dashboard>* { margin: 5px; line-height: 40px; }
