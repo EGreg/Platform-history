@@ -4402,7 +4402,7 @@ Q.Page.beingLoaded = false;
 Q.Page.beingActivated = false;
 
 /**
- * Occurs after the page loads
+ * Occurs when the page has begun to load
  * @event onLoad
  * @param uriString {String} The full URI string, or "Module/action"
  */
@@ -4419,12 +4419,6 @@ Q.Page.onActivate = Q.Event.factory(null, [""]);
  * @param uriString {String} The full URI string, or "Module/action"
  */
 Q.Page.onUnload = Q.Event.factory(null, [""]);
-/**
- * Occurs before the page loads
- * @event beforeLoad
- * @param uriString {String} The full URI string, or "Module/action"
- */
-Q.Page.beforeLoad = Q.Event.factory(null, [""]);
 /**
  * Occurs before the page unloads
  * @event beforeUnload
