@@ -6509,11 +6509,9 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 			function afterStyles() {
 			
 				if (!o.ignorePage && Q.info && Q.info.uri) {
-					Q.Page.beforeLoad(moduleSlashAction).occurred = false;
 					Q.Page.onLoad(moduleSlashAction).occurred = false;
 					Q.Page.onActivate(moduleSlashAction).occurred = false;
 					if (Q.info.uriString !== Q.moduleSlashAction) {
-						Q.Page.beforeLoad(Q.info.uriString).occurred = false;
 						Q.Page.onLoad(Q.info.uriString).occurred = false;
 						Q.Page.onActivate(Q.info.uriString).occurred = false;
 					}
