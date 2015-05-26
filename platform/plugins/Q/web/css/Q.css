@@ -2,15 +2,6 @@ body { margin: 0px; }
 table { border-spacing:0; border-collapse:collapse; }
 
 /* Animations */
-@keyframes Q_working {
-	from { opacity: 0.75; }
-	to { opacity: 0.25; }
-}
-@-webkit-keyframes Q_working {
-	from { opacity: 0.75; }
-	to { opacity: 0.25; }
-}
-
 @keyframes Q_rotateplane {
 	0% {
 		transform: perspective(120px) rotateX(0deg) rotateY(0deg);
@@ -114,7 +105,7 @@ table { border-spacing:0; border-collapse:collapse; }
 .Q_load_cancel_button { vertical-align: middle; margin-top: 80px; }
 .Q_notice_mask,
 .Q_screen_mask,
-.Q_dialog_mask { background-color: black; opacity: 0.3; filter:	alpha(opacity=30); }
+.Q_dialog_mask { background-color: black; opacity: 0.2; filter:	alpha(opacity=30); }
 
 /* Clear fix */
 
@@ -147,7 +138,33 @@ html[xmlns] .Q_clearfix { display: block; }
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
-.Q_overlay .Q_close { background-image:url(../img/close.png); position:absolute; right:-15px; top:-15px; cursor:pointer; height:35px; width:35px; }
+.Q_fullscreen_dialog
+{
+	position: relative;
+	z-index: 950; /* must be at least higher than dashboard_slot z-index */
+	background: url(../img/bg/overlay.png);
+}
+
+.Q_fullscreen_dialog .Q_close
+{
+	display: block;
+	position: absolute;
+	top: 2px;
+	right: 2px;
+	height: 35px;
+	width: 35px;
+	background-image: url(../img/ui/close_big.png);
+	cursor: pointer;
+}
+.Q_overlay .Q_close {
+	background-image:url(../img/close.png);
+	position:absolute;
+	right:-15px;
+	top:-15px; 
+	cursor:pointer;
+	height:35px;
+	width:35px;
+}
 .Q_overlay.Q_overlay_apply .Q_close,
 .Q_fullscreen_dialog.Q_overlay_apply .Q_close { 
 	background-image:url(../img/apply.png);

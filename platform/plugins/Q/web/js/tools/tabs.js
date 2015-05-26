@@ -48,11 +48,16 @@ Q.Tool.define("Q/tabs", function(options) {
 		// return false;
 	});
 	
+	tool.$tabs = $('.Q_tabs_tab', tool.element).css('visibility', 'hidden');
+	function _showTabs() {
+		tool.$tabs.css('visibility', 'visible');
+	}
+	
 	Q.onLayout.set(function () {
-		tool.refresh();
+		tool.refresh(_showTabs);
 	}, tool);
 	
-	tool.refresh();
+	tool.refresh(_showTabs);
 	tool.indicateSelected();
 	
 },
@@ -163,17 +168,21 @@ Q.Tool.define("Q/tabs", function(options) {
 			name = tab;
 			tab = null;
 		}
-		var $tabs = this.$('.Q_tabs_tab');
-		if (!$tabs.closest('body').length) {
+		var tool = this;
+		if (!$(tool.element).closest('body').length) {
 			// the replaced html probably included the tool's own element,
 			// so let's find something with the same id on the page
-			$tabs = $('.Q_tabs_tab', $(document.getElementById(this.element.id)));
+			var element = document.getElementById(this.element.id);
+			if (!element) {
+				return false;
+			}
+			tool = element.Q('Q/tabs');
 		}
+		var $tabs = tool.$tabs;
 		var url = window.location.href.split('#')[0];
-		var tool = this;
 		var state = tool.state;
 		var defaultTab = null;
-		$tabs.removeClass('Q_selected');
+		$tabs.removeClass('Q_current');
 		if (!tab) {
 			$tabs.each(function (k, t) {
 				var tdn = tool.getName(t);
@@ -192,7 +201,7 @@ Q.Tool.define("Q/tabs", function(options) {
 		if (!tab) {
 			tab = defaultTab;
 		}
-		$(tab).addClass('Q_selected');
+		$(tab).addClass('Q_current');
 		state.tabName = name || tool.getName(tab);
 		state.tab = tab;
 		state.onSelected.handle.call(tool, tab, name);
@@ -231,11 +240,19 @@ Q.Tool.define("Q/tabs", function(options) {
 	 * Render the tabs element again and indicate the selected tab
 	 * @method refresh
 	 */
-	refresh: function () {
+	refresh: function (callback) {
 		var tool = this;
 		var $te = $(this.element);
 		var w = $te.width(), w2 = 0, w3 = 0, index = -10;
 		var $o = $('.Q_tabs_overflow', $te);
+		if (!parseInt($te[0].style.width)) {
+			$te.siblings(':visible').each(function () {
+				var $t = $(this);
+				if ($t.css('float') != 'none') {
+					w -= $t.outerWidth(true);
+				}
+			});
+		}
 		if ($o.length) {
 			if ($o.data('Q_contextual')) {
 				$('.Q_tabs_tab', $o.data('Q_contextual')).insertAfter($o);
@@ -243,52 +260,55 @@ Q.Tool.define("Q/tabs", function(options) {
 			$o.plugin("Q/contextual", "remove");
 			$o.remove();
 		}
-		if (tool.state.vertical) {
-			return;
-		}
-		var $tabs = $('.Q_tabs_tab', $te);
+		var $tabs = tool.$tabs = $('.Q_tabs_tab', $te);
 		var $overflow, $lastVisibleTab;
+		if (tool.state.vertical) {
+			return callback && callback.call(this);
+		}
 		$tabs.each(function (i) {
 			var $t = $(this);
 			w3 = w2;
 			w2 += $t.outerWidth(true);
-			if (w2 > w + $tabs.length) {
+			if (w2 > w + 1) {
 				index = i-1;
 				return false;
 			}
 		});
 		if (index >= 0) {
 			$lastVisibleTab = $tabs.eq(index);
-			$overflow = $('<a class="Q_tabs_tab Q_tabs_overflow" />')
+			$overflow = $('<li class="Q_tabs_tab Q_tabs_overflow" />')
+			.css('visibility', 'visible')
 			.html(this.state.overflow.interpolate({
 				count: $tabs.length - index - 1
 			}));
 			$overflow.insertAfter($lastVisibleTab);
+			// REFLOW happens here
 			if ($overflow.outerWidth(true) > w - w3) {
 				--index;
-				$lastVisibleTab = $tabs.eq(index);
-				$overflow.insertAfter($lastVisibleTab)
+				$overflow.insertBefore($lastVisibleTab)
 				.html(this.state.overflow.interpolate({
 					count: $tabs.length - index - 1
 				}));
 			}
 		}
-		
-		if ($overflow) {
-			Q.addScript("plugins/Q/js/QTools.js", function () {
-				var elements = [];
-				for (var i=index+1; i<$tabs.length; ++i) {
-					elements.push($tabs.eq(i));
-				}
-				$overflow.plugin("Q/contextual", {
-					elements: elements,
-					defaultHandler: function ($tab) {
-						tool.switchTo([$tab.attr('data-name'), $tab[0]]);
-					},
-					className: "Q_tabs_contextual"
-				});
-			});
+		if (!$overflow) {
+			return callback && callback.call(tool);
 		}
+		Q.addScript("plugins/Q/js/QTools.js", function () {
+			var elements = [];
+			for (var i=index+1; i<$tabs.length; ++i) {
+				elements.push($tabs.eq(i));
+			}
+			$overflow.plugin("Q/contextual", {
+				elements: elements,
+				defaultHandler: function ($tab) {
+					tool.switchTo([$tab.attr('data-name'), $tab[0]]);
+				},
+				className: "Q_tabs_contextual"
+			});
+			tool.$overflowed = $(elements);
+			callback && callback.call(tool);
+		});
 	}
 }
 );

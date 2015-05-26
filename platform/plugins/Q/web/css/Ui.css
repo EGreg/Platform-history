@@ -328,6 +328,20 @@ div.Q_placeholder { pointer-events: none; }
 	border-top: solid 1px #eaf5ff;
 }
 
+.Q_contextual .Q_listing .Q_current,
+.Q_selectable_listing .Q_current
+{
+	background: #999;
+	background: -moz-linear-gradient(top,  #eaf5ff 0%, #999 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#eaf5ff), color-stop(100%,#999));
+	background: -webkit-linear-gradient(top,  #eaf5ff 0%,#999 100%);
+	background: -o-linear-gradient(top,  #eaf5ff 0%,#999 100%);
+	background: -ms-linear-gradient(top,  #eaf5ff 0%,#999 100%);
+	background: linear-gradient(top,  #eaf5ff 0%,#98bede 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eaf5ff', endColorstr='#98bede',GradientType=0 );
+	border-top: solid 1px #eaf5ff;
+}
+
 .Q_contextual .Q_contextual_bottom_arrow, .Q_contextual .Q_contextual_top_arrow
 {
 	position: absolute;
@@ -1431,8 +1445,8 @@ divbody { text-align: center; height: 100%; }
 .Q_notTouchscreen #dashboard .Q_tabs_tab:hover { text-decoration: underline;}
 #dashboard .Q_tabs_tab img { margin-right: 10px; width: 24px; }
 #dashboard .Q_tabs_tab span { display: inline; text-align: left; }
-#dashboard .Q_tabs_tab.Q_selected { background-image: url(../img/bg/stucco.png) !important; color: black !important; }
-#dashboard .Q_tabs_tab.Q_selected * { color: black; }
+#dashboard .Q_tabs_tab.Q_current { background-image: url(../img/bg/stucco.png) !important; color: black !important; }
+#dashboard .Q_tabs_tab.Q_current * { color: black; }
 
 .Q_notTouchscreen #dashboard,
 .Q_notTouchscreen #content { width: 990px; }

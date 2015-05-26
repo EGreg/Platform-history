@@ -2506,7 +2506,7 @@ Q.Contextual = {
 								Q.Contextual.hide();
 							
 							if (current == i) // if triggering same contextual that was shown before
-								return false;
+								return e.preventDefault();
 							
 							Q.Contextual.current = i;
 							if (Q.info.platform == 'android')
@@ -2532,7 +2532,7 @@ Q.Contextual = {
 								Q.Contextual.toDismiss = true;
 							}, Q.Contextual.dismissTimeout);
 							
-							return false;
+							return e.preventDefault();
 						}
 					}
 				}

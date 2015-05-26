@@ -791,12 +791,13 @@ Q.typeOf = function _Q_typeOf(value) {
 			s = 'array';
 		} else if (typeof value.typename != 'undefined' ) {
 			return value.typename;
-		} else if (typeof value.constructor != 'undefined' && typeof value.constructor.name != 'undefined') {
+		} else if (typeof value.constructor != 'undefined'
+		&& typeof value.constructor.name != 'undefined') {
 			if (value.constructor.name == 'Object') {
 				return 'object';
 			}
 			if (value.constructor === window.jQuery) {
-				return 'jQuery';
+				return 'array';
 			}
 			return value.constructor.name;
 		} else if ((x = Object.prototype.toString.apply(value)).substr(0, 8) === "[object ") {
@@ -8420,6 +8421,7 @@ Q.info = {
 Q.info.isMobile = Q.info.isTouchscreen && !Q.info.isTablet;
 Q.info.formFactor = Q.info.isMobile ? 'mobile' : (Q.info.isTablet ? 'tablet' : 'desktop');
 var de = document.documentElement;
+de.addClass('Q_js');
 de.addClass(Q.info.isTouchscreen  ? 'Q_touchscreen' : 'Q_notTouchscreen');
 de.addClass(Q.info.isMobile ? 'Q_mobile' : 'Q_notMobile');
 de.addClass(Q.info.isAndroid() ? 'Q_android' : 'Q_notAndroid');
@@ -8440,15 +8442,18 @@ function _touchScrollingHandler(event) {
 			p.offsetHeight, Q.Pointer.windowHeight()
 		);
 		var s = (['hidden', 'visible'].indexOf(overflow) < 0);
+		var q = (p.tagName === 'HTML')
+			? document.getElementsByTagName('body')[0]
+			: p;
 		if ((s || p.tagName === 'HTML')
-		&& hiddenHeight > 0) {
+		&& hiddenHeight > 0
+		&& Q.Pointer.movement) {
 			if (_touchScrollingHandler.options.direction != 'horizontal'
 			&& (Q.Pointer.movement.positions.length == 1)
 			&& (pos = Q.Pointer.movement.positions[0])) {
-				var sy = Q.Pointer.getY(event)
-					+ Q.Pointer.scrollTop();
-				if ((sy > pos.y && p.scrollTop == 0)
-				|| (sy < pos.y && p.scrollTop >= hiddenHeight)) {
+				var sy = Q.Pointer.getY(event) - Q.Pointer.scrollTop();
+				if ((sy > pos.y && q.scrollTop == 0)
+				|| (sy < pos.y && q.scrollTop >= hiddenHeight)) {
 					continue;
 				}
 			}
@@ -8460,10 +8465,9 @@ function _touchScrollingHandler(event) {
 			if (_touchScrollingHandler.options.direction != 'vertical'
 			&& (Q.Pointer.movement.positions.length == 1)
 			&& (pos = Q.Pointer.movement.positions[0])) {
-				var sx = Q.Pointer.getX(event)
-					+ Q.Pointer.scrollLeft();
-				if ((sx > pos.x && p.scrollLeft == 0)
-				|| (sx < pos.x && p.scrollLeft >= hiddenWidth)) {
+				var sx = Q.Pointer.getX(event) - Q.Pointer.scrollLeft();
+				if ((sx > pos.x && q.scrollLeft == 0)
+				|| (sx < pos.x && q.scrollLeft >= hiddenWidth)) {
 					continue;
 				}
 			}
@@ -9748,7 +9752,7 @@ Q.Masks = {
 };
 
 Q.Masks.options = {
-	'Q.screen.mask': { className: 'Q_screen_mask', fadeIn: 500 },
+	'Q.screen.mask': { className: 'Q_screen_mask', fadeIn: 100 },
 	'Q.request.load.mask': { className: 'Q_load_data_mask', fadeIn: 200 },
 	'Q.request.cancel.mask': { className: 'Q_cancel_mask', fadeIn: 200 }
 };

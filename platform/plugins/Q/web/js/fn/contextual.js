@@ -57,9 +57,9 @@ Q.Tool.jQuery('Q/contextual', function _Q_contextual(o) {
 			contextual.data('defaultHandler', o.defaultHandler);
 		}
 	}
-	var listing = $('<ul class="Q_listing" />'), i;
+	var listing = $('<ul class="Q_listing" />');
 	if (o.elements) {
-		for (i = 0; i < o.elements.length; ++i) {
+		for (var i = 0; i < o.elements.length; ++i) {
 			listing.append(o.elements[i]);
 		}
 	}

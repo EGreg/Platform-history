@@ -54,10 +54,10 @@ function Q_after_Q_tool_render($params, &$result)
 		? " data-Q-replace=''"
 		: '';
 	$names = ($count === 1) ? ' '.key($info) : 's '.implode(" ", $names);
-	$result = "<!--\n\nbegin tool$names\n\n-->"
+	$result = "<!--\nbegin tool$names\n-->"
 	 . "<$tag id='{$id_prefix}tool' class='Q_tool $classes'$data_options$data_retain$data_replace$attributes>"
 	 . $result 
-	 . "</div><!--\n\nend tool$names \n\n-->";
+	 . "</div><!--\nend tool$names \n-->";
 	
 	Q_Html::popIdPrefix();
 }

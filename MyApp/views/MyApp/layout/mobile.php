@@ -23,7 +23,12 @@
 
 	<title><?php echo $title; ?></title>
 	<link rel="shortcut icon" href="<?php echo Q_Request::baseUrl() ?>/favicon.ico" type="image/x-icon">
+	
+	<script type="text/javascript">
+		document.getElementsByTagName('html')[0].className += ' Q_js';
+	</script>
 
+	<!-- scripts have been moved to the bottom of the body -->
 	<?php echo Q_Response::stylesheets(true, "\n\t") ?> 
 	<?php echo Q_Response::styles(true, "\n\t") ?> 
 </head>

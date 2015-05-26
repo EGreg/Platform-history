@@ -1028,7 +1028,7 @@ function login_callback(response) {
 			.attr('autocomplete', 'current-password')
 			.on('change keyup input', function () {
 				$('#Users_login_passphrase_forgot')
-					.css('display', $(this).val() ? 'none' : 'inline');
+				.css('display', $(this).val() ? 'none' : 'inline');
 			});
 		var $b = $('<a class="Q_button Users_login_start Q_main_button" />')
 		.html(Q.text.Users.login.loginButton)
@@ -1224,6 +1224,9 @@ function login_callback(response) {
 			$('input', step2_form).eq(0).plugin('Q/clickfocus').select();
 		} else {
 			step2.slideDown('fast', function () {
+				var $d = $('#Users_login_passphrase_div');
+				var $f = $('#Users_login_passphrase_forgot');
+				$f.css('bottom', ($d.outerHeight(true) - $f.outerHeight(true)) / 2 + 'px');
 				step2_form.plugin('Q/placeholders');
 				if (step2_form.data('form-type') === 'resend') {
 					$('.Q_main_button', step2_form).focus();

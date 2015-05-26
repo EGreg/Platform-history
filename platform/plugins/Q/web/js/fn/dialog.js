@@ -101,7 +101,7 @@ function _Q_overlay(o) {
 					{
 						Q.Masks.show('Q.screen.mask', { 
 							fadeTime: o.fadeTime,
-							className: 'Q_screen_shadow_mask'
+							className: 'Q_dialog_mask'
 						});
 					}
 				}
@@ -205,10 +205,8 @@ function _Q_overlay(o) {
  * @param {Object} [options] A hash of options, that can include:
  *   @param {String} [options.url]  If provided, this url will be used to fetch the "title" and "dialog" slots, to display in the dialog.
  *   @optional
- *   @param {Boolean} [options.alignByParent] If true, the dialog will be aligned to the center of not the entire window, but to the center of containing element instead.
- *   @default false
- *   @param {Boolean} [options.mask] If true, adds a mask to cover the screen behind the dialog.
- *   @default false
+ *   @param {Boolean} [options.alignByParent=false] If true, the dialog will be aligned to the center of not the entire window, but to the center of containing element instead.
+ *   @param {Boolean} [options.mask=true] If true, adds a mask to cover the screen behind the dialog.
  *   @param {Boolean} [options.fullscreen]
  *   Only on Android and false on all other platforms. If true, dialog will be shown not as overlay
  *               but instead will be prepended to document.body and all other child elements of the body will be hidden.
@@ -374,7 +372,7 @@ Q.Tool.jQuery('Q/dialog', function _Q_dialog (o) {
 
 {
 	'alignByParent': false,
-	'mask': false,
+	'mask': true,
 	'fullscreen': Q.info.isMobile && Q.info.isAndroid(1000),
 	'asyncLoad': !Q.info.isTouchscreen,
 	'noClose': false,
@@ -497,9 +495,10 @@ function _handlePosAndScroll(o)
 			if (Q.info.isMobile)
 			{
 				// correcting x-pos
-				if (parseInt($this.css('left')) != ((window.innerWidth - $this.outerWidth()) / 2))
+				var left = Math.floor((window.innerWidth - $this.outerWidth()) / 2);
+				if (parseInt($this.css('left')) != left)
 				{
-					$this.css({ 'left': ((window.innerWidth - $this.outerWidth()) / 2) + 'px' });
+					$this.css({ 'left': left + 'px' });
 					if (iScrollBar)
 					{
 						iScrollBar.css({ 'left': (contentsWrapper.offset().left + contentsWrapper.width() - iScrollBar.width()) + 'px' });

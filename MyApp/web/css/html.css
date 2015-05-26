@@ -4,101 +4,51 @@
  */
 
 * { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: rgba(0,0,0,0); -webkit-tap-highlight-color: transparent; }
-
 a { text-decoration: none; }
+html { background: #f2f2f2; }
+body { height: 100%; }
 
-html { background: #f2f2f2;  /* background: #f3f3f3; */ }
-body { text-align: center; height: 100%; }
-#dashboard_slot,
-#notices_slot,
-#content_slot { text-align: center; }
-#dashboard,
-#notices,
-#content { margin: auto; text-align: left; }
-#content { position: relative; }
-#content_slot { position: relative; }
-#page { position: relative; bottom: 0px; width: 100%; left:50%; margin-left:-50%; }
-.Q_touchscreen #page { width: 100%; }
-
-.Q_notTouchscreen #dashboard,
-.Q_notTouchscreen #content { width: 990px; }
-
-.Q_mobile .Q_overlay { width: 90%; }
-
-#dashboard_slot { cursor: default; }
-#dashboard_slot * { font-size: 24px; }
-#dashboard>* { margin: 5px; line-height: 40px; }
-#dashboard h1 { float: left; width: auto; padding-right: 5px; border-right: 1px dotted #444; }
-#dashboard h2 { float: left; }
-#dashboard_user { float: right; }
-
-.Q_mobile #dashboard_slot,
-.Q_mobile #notices_slot { width: 100%; position: sticky; left: 0px; }
-
-#Users_avatar_tool .Users_avatar_name { text-indent: 5px; }
-
-
+/* The various slot containers */
+#notices_slot {
+	text-align: center;
+}
+#content_slot {
+	position: relative;
+	padding: 10px;
+	background: #fff;
+	box-shadow: #aaa 0px 0px 4px;
+	-webkit-box-shadow: #aaa 0px 0px 4px;
+	-moz-box-shadow: #aaa 0px 0px 4px;
+}
 #dashboard_slot {
-  z-index: 900; width: 100%; text-align: center; border: solid 0px #aaa; 
-  box-shadow: #aaa 0px 0px 4px; -webkit-box-shadow: #aaa 0px 0px 4px; -moz-box-shadow: #aaa 0px 0px 4px;
-  background: #444; /* for non-css3 browsers */
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#444444', endColorstr='#111111'); /* for IE */
-  background: -webkit-gradient(linear, left top, left bottom, from(#444), to(#111)); /* for webkit browsers */
-  background: -moz-linear-gradient(top,  #444444,  #111111); /* for firefox 3.6+ */
-  height: 50px;
+	position: fixed;
+	margin: auto;
+	border: solid 0px #aaa; 
+	width: 100%;
+	height: 50px;
+	z-index: 900;
+	text-align: left;
+	cursor: default; 
+    box-shadow: #aaa 0px 0px 4px; -webkit-box-shadow: #aaa 0px 0px 4px; -moz-box-shadow: #aaa 0px 0px 4px;
+    background: #aaa; /* for non-css3 browsers */
+    background: -webkit-gradient(linear, left top, left bottom, from(#aaa), to(#111)); /* for webkit browsers */
+    background: -moz-linear-gradient(top,  #aaaaaa,  #111111); /* for firefox 3.6+ */
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#444444', endColorstr='#111111'); /* for IE */
 }
-#dashboard>* { margin: 10px; padding: 0px; }
-#dashboard_slot * { font-size: 16px; font-family: Arial, sans-serif; color: white; }
-#dashboard .Q_contextual * { color: black; }
-#dashboard { position: static; margin: auto; text-align: left; }
-#dashboard td { vertical-align: middle; }
-#dashboard table { width: 100%; padding: 0px; margin: 0px; }
-#dashboard .Q_dashboard_logo { padding: 0px; }
-#dashboard .Q_dashboard_logo a { padding: 5px; border-radius: 5px; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; }
-#dashboard .Q_dashboard_logo img { height: 40px; }
-#dashboard .Q_dashboard_search { padding: 8px 10px 8px 10px; font-weight: bold; text-align: left; }
-#dashboard .Q_dashboard_search input {
-	width: 104px;
-	margin-right: 4px;
-	border-radius: 2em;
-	-moz-border-radius: 2em;
-	padding-left: 27px;
-	padding-right: 17px;
-	border: none;
-	border-top: 1px solid #CCC;
-	background: white url(../plugins/Q/img/search_icon.png) no-repeat;
-	color: #444;
-}
+#dashboard_slot * { color: white; font-size: 24px; font-family: Arial, sans-serif; }
 
+#dashboard, #notices, #content { margin: auto; text-align: left; }
+#content { position: relative; }
 
-#dashboard .Q_tabs_tabs { border: 0px; }
-#dashboard .Q_tabs_tab { cursor: pointer; width: auto; margin: 5px 10px 0px 10px; border: 0px !important; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; background-color: #f8f8f8; background: none; font-size: 14px; line-height: 30px !important; text-align: center; }
-#dashboard .Q_tabs_tab:first-child { border-top: 0px solid #e5e5e5; border-left: 0px; }
-#dashboard .Q_tabs_tab,
-#dashboard .Q_tabs_tab>* { cursor: pointer; vertical-align: middle; }
-#dashboard .Q_tabs_tab { text-decoration: none; color: white; }
-.Q_notTouchscreen #dashboard .Q_tabs_tab:hover { text-decoration: underline;}
-#dashboard .Q_tabs_tab img { margin-right: 10px; width: 24px; }
-#dashboard .Q_tabs_tab span { display: inline; text-align: left; }
-#dashboard .Q_tabs_tab.Q_selected { background-image: url(../plugins/Q/img/bg/stucco.png) !important; color: black !important; }
-#dashboard .Q_tabs_tab.Q_selected * { color: black; }
-
-
-
-
-#notices_slot { text-align: center; margin: auto; padding: 0px; overflow: hidden; z-index: 5000; }
+/* Notices contents */
+#notices_slot { text-align: center; margin: auto; padding: 0px; z-index: 5000; }
 #notices { margin: auto; }
 #notices_slot div.container { overflow: none; overflow-y: auto; }
 #notices_slot ul { list-style-type: none; padding: 0px; margin: auto; width: 700px; max-width: 100%; border: solid 1px #555; border-top: solid 1px #aaa; box-shadow: 0 0 5px #222; -moz-box-shadow: 0 0 5px #222; -webkit-box-shadow: 0 0 5px #222; cursor: pointer; }
 #notices_slot li { list-style-type: none; padding: 0px; margin: 0px; text-align: center; background: #ffd4aa; border: 0px; border-bottom: solid 1px #aaa; line-height: 30px; min-height: 30px; }
-
 #notices_slot ul.Q_errors * { background-color: #ebb; color: #500; }
 #notices_slot ul.Q_errors li { text-align: left; padding: 0px 10px 0px 10px; }
-
 #notices_slot .Q_field_name { float: right; font-size: 12px; padding-right: 10px; }
-
-
-
 #notices_slot button
 {
 	display: inline-block;
@@ -123,6 +73,45 @@ body { text-align: center; height: 100%; }
 #notices_slot ul li * {
 	vertical-align: middle;
 }
+
+/* Dashboard contents */
+#dashboard>* { margin: 5px; padding: 0px; line-height: 30px; text-align: center; }
+#dashboard h1 { float: left; width: auto; padding-right: 5px; }
+#dashboard h2 { float: left; }
+#dashboard_user { float: right; }
+#dashboard .Q_contextual * { color: black; }
+#dashboard td { vertical-align: middle; }
+#dashboard table { width: 100%; padding: 0px; margin: 0px; }
+#dashboard .Q_dashboard_logo { padding: 0px; }
+#dashboard .Q_dashboard_logo a { padding: 5px; border-radius: 5px; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; }
+#dashboard .Q_dashboard_logo img { height: 40px; }
+#dashboard .Q_dashboard_search { padding: 8px 10px 8px 10px; font-weight: bold; text-align: left; }
+#dashboard .Q_dashboard_search input {
+	width: 104px;
+	margin-right: 4px;
+	border-radius: 2em;
+	-moz-border-radius: 2em;
+	padding-left: 27px;
+	padding-right: 17px;
+	border: none;
+	border-top: 1px solid #CCC;
+	background: white url(../plugins/Q/img/search_icon.png) no-repeat;
+	color: #444;
+}
+#page { padding-top: 50px; }
+
+/* Dashboard tabs */
+#dashboard .Q_tabs_tabs { border: 0px; }
+#dashboard .Q_tabs_tab { cursor: pointer; width: auto; margin: 5px 10px 0px 10px; border: 0px !important; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; background-color: #f8f8f8; background: none; font-size: 14px; line-height: 30px !important; text-align: center; }
+#dashboard .Q_tabs_tab:first-child { border-top: 0px solid #e5e5e5; border-left: 0px; }
+#dashboard .Q_tabs_tab,
+#dashboard .Q_tabs_tab>* { cursor: pointer; vertical-align: middle; }
+#dashboard .Q_tabs_tab { text-decoration: none; color: white; }
+.Q_notTouchscreen #dashboard .Q_tabs_tab:hover { text-decoration: underline;}
+#dashboard .Q_tabs_tab img { margin-right: 10px; width: 24px; }
+#dashboard .Q_tabs_tab span { display: inline; text-align: left; }
+#dashboard .Q_tabs_tab.Q_current { background-image: url(../plugins/Q/img/bg/stucco.png) !important; color: black !important; }
+#dashboard .Q_tabs_tab.Q_current * { color: black; }
 
 
 /* inputs */
@@ -167,13 +156,20 @@ textarea { margin-top: 0.5em; margin-bottom: 0.5em; border-radius: 3px; -moz-bor
 input[type=checkbox],
 input[type=radio] { margin-right: 5px; }
 
-#dashboard_slot {
-	cursor: default; 
-	box-shadow: #333 0px 0px 10px; -webkit-box-shadow: #333 0px 0px 10px; -moz-box-shadow: #333 0px 0px 10px;
-    background: #aaa; /* for non-css3 browsers */
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#444444', endColorstr='#111111'); /* for IE */
-    background: -webkit-gradient(linear, left top, left bottom, from(#aaa), to(#111)); /* for webkit browsers */
-    background: -moz-linear-gradient(top,  #aaaaaa,  #111111); /* for firefox 3.6+ */
-}
-#dashboard_slot * { font-size: 24px; }
-#dashboard>* { margin: 5px; line-height: 40px; }
+.Q_mobile #dashboard_slot,
+.Q_mobile #notices_slot { width: 100%; position: sticky; left: 0px; }
+.Q_mobile #dashboard h2 { display: none; }
+.Q_mobile .Q_overlay { width: 90%; }
+
+.Users_avatar_name { text-indent: 5px; }
+
+/* Override default for a block-style website */
+html.Q_notMobile { height: 100%; }
+.Q_notMobile body { height: 100%; }
+.Q_notMobile #dashboard h1,
+.Q_notMobile #dashboard h2 { float: none; }
+.Q_notMobile #notices_slot { position: fixed; left: 0px; top: 0px; width: 100%; }
+.Q_notMobile #dashboard_slot { position: fixed; left: 15%; width: 20%; height: 80%; top: 10%; }
+.Q_notMobile #page { position: absolute; padding: 0px; top: 50px; left: 35%; width: 50%; height: 80%; top: 10%; }
+.Q_notMobile #Users_avatar_tool { width: 100%; background: #222; background: rgba(255,255,255,.05); }
+.Q_notMobile #dashboard_user { float: none; position: absolute; width: 100%; margin: 10px 0px 10px 0px;  text-align: center;  bottom: 0; }

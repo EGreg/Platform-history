@@ -63,7 +63,7 @@ function Q_tabs_tool($options)
 				"/Q\.(.*)/" => null
 			)));
 		}
-		$selected_class = ($name === $selectedName) ? ' Q_selected' : '';
+		$selected_class = ($name === $selectedName) ? ' Q_current' : '';
 		$classes_string = " Q_tab_".Q_Utils::normalize($name);
 		if (isset($classes[$name])) {
 			if (is_string($classes[$name])) {

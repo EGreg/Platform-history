@@ -1,5 +1,5 @@
 <div id='dashboard'>
-	<h1>This is MyApp: </h1>
+	<h1>MyApp</h1>
 	<h2><?php echo Q_Html::text($slogan) ?></h2>
 
 	<div id="dashboard_user">
