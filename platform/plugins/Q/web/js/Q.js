@@ -3237,7 +3237,7 @@ Q.Tool.define.options = function (toolName, setOptions) {
 		options = _qtdo[toolName] = _qtdo[toolName] || {};
 	}
 	if (setOptions) {
-		Q.extend(options, setOptions);
+		Q.extend(options, Q.Tool.options.levels, setOptions);
 	}
 	return options;
 };
@@ -3343,7 +3343,7 @@ Q.Tool.jQuery.options = function (pluginName, setOptions) {
 		options = _qtjo[pluginName] = _qtjo[pluginName] || {};
 	}
 	if (setOptions) {
-		Q.extend(options, setOptions, 10);
+		Q.extend(options, Q.Tool.options.levels, setOptions);
 	}
 	return options;
 };
