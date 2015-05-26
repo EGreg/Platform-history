@@ -495,7 +495,7 @@ function _handlePosAndScroll(o)
 			if (Q.info.isMobile)
 			{
 				// correcting x-pos
-				var left = Math.floor((window.innerWidth - $this.outerWidth()) / 2);
+				var left = Math.ceil((window.innerWidth - $this.outerWidth()) / 2);
 				if (parseInt($this.css('left')) != left)
 				{
 					$this.css({ 'left': left + 'px' });

@@ -48,6 +48,8 @@ Q.Tool.define("Q/ticker", function(options) {
 	if ($children.length && !options.vertical) {
 		$children = $children.children();
 	}
+	
+	Q.addStylesheet('plugins/Q/css/Ticker.css');
 
 	this.onHitStart = function() {}; // override this to handle this event
 	this.onHitEnd = function() {}; // override this to handle this event

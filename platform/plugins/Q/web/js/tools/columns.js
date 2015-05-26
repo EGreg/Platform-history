@@ -39,6 +39,8 @@ Q.Tool.define("Q/columns", function(options) {
 	state.columns = [];
 	state.data = [];
 	//state.triggers = [];
+	
+	Q.addStylesheet('plugins/Q/css/columns.css');
 
 	state.container = tool.$('.Q_columns_container')[0];
 	if (!state.container) {

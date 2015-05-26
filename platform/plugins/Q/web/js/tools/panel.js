@@ -19,6 +19,8 @@ Q.Tool.define("Q/panel", function() {
 	var $te = $(tool.element);
 	var form = $('form', $te);
 	var container = $('.Q_panel_tool_container', $te);
+	
+	Q.addStylesheet('plugins/Q/css/panel.css');
 
 	this.onChildActivate('Q/form').add(function (options) {
 		this.state.onSubmit.set(function() {

@@ -45,6 +45,8 @@ Q.Tool.define("Q/inplace", function (options) {
 		return _Q_inplace_tool_constructor.call(tool, this.element, options);
 	}
 	
+	Q.addStylesheet('plugins/Q/css/inplace.css');
+	
 	// if activated with JS should have following options:
 	//	- action: required. the form action to save tool value
 	//	- name: required. the name for input field

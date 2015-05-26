@@ -33,6 +33,8 @@ Q.Tool.jQuery('Q/bookmarklet', function (o) {
 		alert("Please provide 'usage' for bookmarklet.");
 	}
 	
+	Q.addStylesheet('plugins/Q/css/inplace.css');
+	
 	var bookmarkletSettings = {
 		'common': {
 			'instructions': 'Drag me to your Bookmarks Bar to ' + o.usage + '.<br /><br />' +

@@ -19,6 +19,8 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 		state.fullscreen ? $(window) : $(state.container);
 	state.swapCount = 0;
 	
+	Q.addStylesheet('plugins/Q/css/drawers.css');
+	
 	if (state.fullscreen || !state.container) {
 		state.container = $(tool.element).parents().eq(-3)[0];
 	}

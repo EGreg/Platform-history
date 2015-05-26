@@ -29,6 +29,8 @@ Q.Tool.define("Q/tabs", function(options) {
 	var state = tool.state;
 	var $te = $(tool.element);
 	
+	Q.addStylesheet('plugins/Q/css/tabs.css');
+
 	state.defaultTab = state.defaultTab || Q.firstKey(options.tabs);
 	
 	// catches events that bubble up from any child elements
