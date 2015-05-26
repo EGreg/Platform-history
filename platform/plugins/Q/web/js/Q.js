@@ -1480,44 +1480,6 @@ function _getProp (/*Array*/parts, /*Boolean*/create, /*Object*/context){
 }
 
 /**
- * Extend a property from a delimiter-separated string, such as "A.B.C"
- * Useful for longer api chains where you have to test each object in
- * the chain, or when you have an object reference in string format.
- * Objects are created as needed along `path`.
- * @static
- * @method extendObject
- * @param {String} name Path to a property, in the form "A.B.C".
- * @param {Object} value value or object to place at location given by name
- * @param {Object} [context=window] Optional. Object to use as root of path.
- * @param {String} [delimiter='.'] The delimiter to use in the name
- * @return {Object|undefined} Returns the passed value if setting is successful or `undefined` if not.
- */
-Q.extendObject = function _Q_extendObject(name, value, context, delimiter){
-	delimiter = delimiter || '.';
-	var parts = name.split(delimiter);
-	var p = parts.pop();
-	var obj = _getProp(parts, true, context);
-	if (obj === undefined) {
-		console.warn("Failed to set '"+name+"'");
-		return undefined;
-	} else {
-		// not null && object (maybe array) && value is real object
-		if (obj[p]
-		&& typeof obj[p] === "object"
-		&& Q.typeOf(value) === "object") {
-			Q.extend(obj[p], Q.extendObject.options, value);
-		} else {
-			obj[p] = value;
-		}
-		return value;
-	}
-};
-
-Q.extendObject.options = {
-	levels: 10
-};
-
-/**
  * Set an object from a delimiter-separated string, such as "A.B.C"
  * Useful for longer api chains where you have to test each object in
  * the chain, or when you have an object reference in string format.
@@ -1533,7 +1495,6 @@ Q.extendObject.options = {
  * @return {Object|undefined} Returns the passed value if setting is successful or `undefined` if not.
  */
 Q.setObject = function _Q_setObject(name, value, context, delimiter) {
-	delimiter = delimiter || '.';
 	if (Q.isPlainObject(name)) {
 		context = value;
 		var result = {};
@@ -1543,7 +1504,7 @@ Q.setObject = function _Q_setObject(name, value, context, delimiter) {
 		return result;
 	}
 	if (typeof name === 'string') {
-		name = name.split(delimiter);
+		name = name.split(delimiter || '.');
 	}
 	var p = name.pop();
 	var obj = _getProp(name, true, context);
@@ -6567,7 +6528,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				if (response.scriptData) {
 					Q.each(response.scriptData, function _Q_loadUrl_scriptData_each(slot, data) {
 						Q.each(data, function _Q_loadUrl_scriptData_assign(k, v) {
-							Q.extendObject(k, v);
+							Q.setObject(k, v);
 						});
 					});
 				}

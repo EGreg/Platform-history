@@ -105,39 +105,6 @@ function _getProp (/*Array*/parts, /*Boolean*/create, /*Object*/context){
 };
 
 /**
- * Extend a property from a delimiter-separated string, such as "A.B.C"
- * Useful for longer api chains where you have to test each object in
- * the chain, or when you have an object reference in string format.
- * Objects are created as needed along `path`.
- * @method extendObject
- * @param name {String} Path to a property, in the form "A.B.C".
- * @param value {Object} value or object to place at location given by name
- * @param [context=window] {Object} Optional. Object to use as root of path.
- * @param [delimiter='.'] {String} The delimiter to use in the name
- * @return {Object|undefined} Returns the passed value if setting is successful or `undefined` if not.
- */
-Q.extendObject = function _Q_extendObject(name, value, context, delimiter){
-	delimiter = delimiter || '.';
-	var parts = name.split(delimiter);
-	var p = parts.pop();
-	var obj = _getProp(parts, true, context);
-	if (obj === undefined) {
-		console.warn("Failed to set '"+name+"'");
-		return undefined;
-	} else {
-		// not null && object (maybe array) && value is real object
-		if (obj[p]
-		&& typeof obj[p] === "object"
-		&& Q.typeOf(value) === "object") {
-			Q.extend(obj[p], value);
-		} else {
-			obj[p] = value;
-		}
-		return value;
-	}
-};
-
-/**
  * Set an object from a delimiter-separated string, such as "A.B.C"
  * Useful for longer api chains where you have to test each object in
  * the chain, or when you have an object reference in string format.
