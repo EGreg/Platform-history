@@ -175,12 +175,10 @@ Sp.decodeHTML = function _String_prototype_decodeHTML() {
  * @return {String}
  */
 Sp.interpolate = function _String_prototype_interpolate(fields) {
-	return this.replace(/\{\{([^{}]*)\}\}/g,
-		function (a, b) {
-			var r = fields[b];
-			return typeof r === 'string' || typeof r === 'number' ? r : a;
-		}
-	);
+	return this.replace(/\{\{([^{}]*)\}\}/g, function (a, b) {
+		var r = fields[b];
+		return (typeof r === 'string' || typeof r === 'number') ? r : a;
+	});
 };
 
 /**
@@ -323,8 +321,8 @@ Sp.sameDomain = function _String_prototype_sameDomain (url2, options) {
  * refers to that object when it is called.
  * @method bind
  * @param {Function} method A reference to the function to call
- * @param {Object} obj The object to bind to
- * @param {object} options If supplied, binds these options and passes them during invocation. Optional.
+ * @param {Object} obj The object to bind as the context for the function call
+ * @param {Object} options If supplied, binds these options and pushes them as the last argument to the function call.
  */
 if (!Function.prototype.bind)
 Function.prototype.bind = function _Function_prototype_bind(obj, options) {

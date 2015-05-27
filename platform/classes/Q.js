@@ -2846,16 +2846,14 @@ if (!String.prototype.trim) {
  * Binds a method to an object, so "this" inside the method
  * refers to that object when it is called.
  * @method bind
- * @param method
- *  A reference to the function to call
- * @param obj
- *  The object to bind to
- * @param options
- *  Optional. If supplied, binds these options and passes
- *  them during invocation.
+ * @param {Function} method A reference to the function to call
+ * @param {Object} obj The object to bind as the context for the function call
+ * @param {Object} options If supplied, binds these options and pushes them as the last argument to the function call.
  */
-Function.prototype.bind = Function.prototype.bind || function _Function_prototype_bind(obj, options) {
+if (!Function.prototype.bind)
+Function.prototype.bind = function _Function_prototype_bind(obj, options) {
 	var method = this;
+	if (!obj) obj = window;
 	if (!options) {
 		return function _Q_bind_result() {
 			return method.apply(obj, arguments);

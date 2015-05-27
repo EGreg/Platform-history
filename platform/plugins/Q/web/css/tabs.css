@@ -5,6 +5,10 @@
 .Q_tabs_title { position: relative; }
 .Q_tabs_vertical>.Q_tabs_tab { float: none; }
 
-.Q_tabs_contextual .Q_tabs_tab { display: block; float: none; line-height:30px; border: 0px; } 
+.Q_tabs_contextual .Q_tabs_tab { display: block; float: none; line-height: 40px; border: 0px; } 
 
 .Q_js .Q_tabs_tab { visibility: hidden; }
+
+.Q_tabs_overflowGlyph { float: right; display: inline-block; margin-left: 5px; font-size: 100% !important; }
+
+.Q_tabs_overflow { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
