@@ -2920,6 +2920,27 @@ Q.debounce = function (original, milliseconds, defaultValue) {
 };
 
 /**
+ * Wraps a function and causes it to return early if called recursively.
+ * Use sparingly, since most functions should make guarantees about postconditions.
+ * @static
+ * @method preventRecursion
+ * @param {String} name The name of the function, passed explicitly
+ * @param {Function} original The function or method to wrap
+ * @param {Mixed} defaultValue Value to return whenever original function isn't called
+ * @return {Function} The wrapper function
+ */
+Q.preventRecursion = function (name, original, defaultValue) {
+	return function () {
+		var n = '__preventRecursion_'+name;
+		if (this[n]) return defaultValue;
+		this[n] = true;
+		var ret = original.apply(this, arguments);
+		delete this[n];
+		return ret;
+	};
+};
+
+/**
  * Custom exception constructor
  * @class Q.Exception
  * @constructor
@@ -7010,7 +7031,7 @@ function _activateTools(toolElement, options, shared) {
 				}
 				this.activated = false;
 				this.initialized = false;
-				try {
+				// try {
 					this.options = Q.extend({}, Q.Tool.options.levels, toolFunc.options, Q.Tool.options.levels, options);
 					this.name = toolName;
 					Q.Tool.call(this, element, options);
@@ -7039,13 +7060,13 @@ function _activateTools(toolElement, options, shared) {
 					_activateToolHandlers[normalizedName].handle.call(this, this.options);
 					_activateToolHandlers["id:"+normalizedId] &&
 					_activateToolHandlers["id:"+normalizedId].handle.call(this, this.options);
-					Q.Tool.beingActivated = prevTool;
-				} catch (e) {
-					debugger; // pause here if debugging
-					console.warn(e);
-					Q.Tool.beingActivated = prevTool;
-					throw e;
-				}
+				// 	Q.Tool.beingActivated = prevTool;
+				// } catch (e) {
+				// 	debugger; // pause here if debugging
+				// 	console.warn(e);
+				// 	Q.Tool.beingActivated = prevTool;
+				// 	throw e;
+				// }
 				this.activated = true;
 			};
 			Q.mixin(toolFunc, Q.Tool);

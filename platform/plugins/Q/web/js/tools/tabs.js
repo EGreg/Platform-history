@@ -22,8 +22,8 @@
  *  @param {Q.Event} [options.onClick] Event when a tab was clicked, with arguments (name, element). Returning false cancels the tab switching.
  *  @param {Q.Event} [options.beforeSwitch] Event when tab switching begins. Returning false cancels the switching.
  *  @param {Function} [options.beforeScripts] Name of the function to execute after tab is loaded but before its javascript is executed.
- *  @param {Function} [options.onSelected] Name of the function to execute after a tab is shown to be selected.
- *  @param {Function} [options.onActivate] Name of the function to execute after a tab is activated.
+ *  @param {Function} [options.onCurrent] Event after a tab has been selected. Note that this is in the view layer, so your handlers would trigger recursion if they call Q.layout().
+ *  @param {Function} [options.onActivate] Event after a tab has been activated. Note that this is in the view layer, so your handlers would trigger recursion if they call Q.layout().
  * @return Q.Tool
  */
 Q.Tool.define("Q/tabs", function(options) {
@@ -77,9 +77,9 @@ Q.Tool.define("Q/tabs", function(options) {
 	onClick: new Q.Event(),
 	beforeSwitch: new Q.Event(),
 	onActivate: new Q.Event(),
-	onSelected: new Q.Event(),
-	tabName: null, // set by indicateSelected
-	tab: null // set by indicateSelected
+	onCurrent: new Q.Event(),
+	tabName: null, // set by indicateCurrent
+	tab: null // set by indicateCurrent
 },
 
 {
@@ -139,7 +139,7 @@ Q.Tool.define("Q/tabs", function(options) {
 				alert(msg);
 			}, "Q/tabs"),
 			onActivate: new Q.Event(function () {
-				tool.indicateSelected(tool.getName(tab));
+				tool.indicateCurrent(tool.getName(tab));
 				tool.refresh();
 				state.onActivate.handle.call(this, tab, name);
 			}, "Q/tabs"),
@@ -165,10 +165,10 @@ Q.Tool.define("Q/tabs", function(options) {
 	},
 
 	/**
-	 * @method indicateSelected
+	 * @method indicateCurrent
 	 * @param {String} tab optional name of the tab to indicate
 	 */
-	indicateSelected: function (tab) {
+	indicateCurrent: function (tab) {
 		var name;
 		if (typeof tab === 'string') {
 			name = tab;
@@ -210,7 +210,7 @@ Q.Tool.define("Q/tabs", function(options) {
 		$(tab).addClass('Q_current');
 		state.tabName = name || tool.getName(tab);
 		state.tab = tab;
-		state.onSelected.handle.call(tool, tab, name);
+		state.onCurrent.handle.call(tool, tab, name);
 	},
 	
 	/**
@@ -246,13 +246,13 @@ Q.Tool.define("Q/tabs", function(options) {
 	 * Render the tabs element again and indicate the selected tab
 	 * @method refresh
 	 */
-	refresh: function (callback) {
+	refresh: Q.preventRecursion('refresh', function (callback) {
 		var tool = this;
 		var state = tool.state;
 		var $te = $(tool.element);
 		var w = $te.width(), w2 = 0, w3 = 0, index = -10;
 		var $o = $('.Q_tabs_overflow', $te);
-		tool.indicateSelected();
+		tool.indicateCurrent();
 		if (!parseInt($te[0].style.width)) {
 			$te.siblings(':visible').each(function () {
 				var $t = $(this);
@@ -335,7 +335,7 @@ Q.Tool.define("Q/tabs", function(options) {
 			});
 			tool.$overflowed = $(elements);
 		});
-	}
+	})
 }
 );
 

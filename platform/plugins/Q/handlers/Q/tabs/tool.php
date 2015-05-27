@@ -19,7 +19,7 @@
  *  @param {Q.Event} [options.onClick] Event when a tab was clicked, with arguments (name, element). Returning false cancels the tab switching.
  *  @param {Q.Event} [options.beforeSwitch] Event when tab switching begins. Returning false cancels the switching.
  *  @param {Function} [options.beforeScripts] Name of the function to execute after tab is loaded but before its javascript is executed.
- *  @param {Function} [options.onSelected] Name of the function to execute after a tab is shown to be selected.
+ *  @param {Function} [options.onCurrent] Name of the function to execute after a tab is shown to be selected.
  *  @param {Function} [options.onActivate] Name of the function to execute after a tab is activated.
  */
 function Q_tabs_tool($options)
