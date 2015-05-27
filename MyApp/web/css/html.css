@@ -5,7 +5,7 @@
 
 * { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: rgba(0,0,0,0); -webkit-tap-highlight-color: transparent; }
 a { text-decoration: none; }
-html { background: #f2f2f2; }
+html { background: #f2f2f2; height: 100%; }
 body { height: 100%; }
 
 /* The various slot containers */
@@ -36,6 +36,7 @@ body { height: 100%; }
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#444444', endColorstr='#111111'); /* for IE */
 }
 #dashboard_slot * { color: white; font-size: 24px; font-family: Arial, sans-serif; }
+#page { position: absolute; left: 0%; width: 100%; top:50px; bottom: 0px; } 
 
 #dashboard, #notices, #content { margin: auto; text-align: left; }
 #content { position: relative; }
@@ -98,11 +99,10 @@ body { height: 100%; }
 	background: white url(../plugins/Q/img/search_icon.png) no-repeat;
 	color: #444;
 }
-#page { padding-top: 50px; }
 
 /* Dashboard tabs */
 #dashboard .Q_tabs_tabs { border: 0px; }
-#dashboard .Q_tabs_tab { cursor: pointer; width: auto; margin: 5px 10px 0px 10px; border: 0px !important; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; background-color: #f8f8f8; background: none; font-size: 14px; line-height: 30px !important; text-align: center; }
+#dashboard .Q_tabs_tab { cursor: pointer; width: auto; margin: 5px 10px 0px 10px; border: 0px !important; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; background-color: #f8f8f8; background: none; line-height: 30px !important; text-align: center; }
 #dashboard .Q_tabs_tab:first-child { border-top: 0px solid #e5e5e5; border-left: 0px; }
 #dashboard .Q_tabs_tab,
 #dashboard .Q_tabs_tab>* { cursor: pointer; vertical-align: middle; }
@@ -157,7 +157,7 @@ input[type=checkbox],
 input[type=radio] { margin-right: 5px; }
 
 .Q_mobile #dashboard_slot,
-.Q_mobile #notices_slot { width: 100%; position: sticky; left: 0px; }
+.Q_mobile #notices_slot { width: 100%; position: fixed; left: 0px; }
 .Q_mobile #dashboard h2 { display: none; }
 .Q_mobile .Q_overlay { width: 90%; }
 
