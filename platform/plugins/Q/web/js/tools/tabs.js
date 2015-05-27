@@ -63,7 +63,6 @@ Q.Tool.define("Q/tabs", function(options) {
 	}, tool);
 	
 	tool.refresh(_showTabs);
-	tool.indicateSelected();
 	
 },
 
@@ -253,6 +252,7 @@ Q.Tool.define("Q/tabs", function(options) {
 		var $te = $(tool.element);
 		var w = $te.width(), w2 = 0, w3 = 0, index = -10;
 		var $o = $('.Q_tabs_overflow', $te);
+		tool.indicateSelected();
 		if (!parseInt($te[0].style.width)) {
 			$te.siblings(':visible').each(function () {
 				var $t = $(this);
