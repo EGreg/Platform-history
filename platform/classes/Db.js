@@ -38,7 +38,13 @@ Db.setConnection = function(name, details) {
  * @return {object}
  */
 Db.getConnections = function () {
-	return Q.Config.get(['Db', 'connections'], {});
+	var result = Q.Config.get(['Db', 'connections'], {});
+	var base = result['*'];
+	for (var k in result) {
+		result[k] = Q.extend({}, base, result[k]);
+	}
+	delete result['*'];
+	return result;
 };
 
 /**
@@ -48,8 +54,13 @@ Db.getConnections = function () {
  * @return {object|null}
  */
 Db.getConnection = function(name) {
+
 	if (!name) return null;
-	return Q.Config.get(['Db', 'connections', name], null);
+	var result = Q.Config.get(['Db', 'connections', name], null);
+	if (name !== '*' && (base = Db.getConnection('*'))) {
+		result = Q.extend({}, base, result);
+	}
+	return result;
 };
 
 /**

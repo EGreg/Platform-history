@@ -28,24 +28,18 @@
 	},
 	"Db": {
 		"connections": {
-			"Users": {
-				"prefix": "users_",
+			"*": {
 				"dsn": "mysql:host=localhost;dbname=DBNAME",
 				"username": "USERNAME",
 				"password": "PASSWORD",
-				"driver_options": {
-				  "3": 2
-				},
+				"driver_options": { "3": 2 }	
+			},
+			"Users": {
+				"prefix": "users_",
 				"shards": {}
 			},
 			"Streams": {
 				"prefix": "streams_",
-				"dsn": "mysql:host=localhost;dbname=DBNAME",
-				"username": "USERNAME",
-				"password": "PASSWORD",
-				"driver_options": {
-				  "3": 2
-				},
 				"shards": {}
 			}
 		}
