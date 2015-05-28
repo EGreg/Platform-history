@@ -79,7 +79,8 @@ body { height: 100%; }
 #dashboard>* { margin: 5px; padding: 0px; line-height: 30px; text-align: center; }
 #dashboard h1 { float: left; width: auto; padding-right: 5px; }
 #dashboard h2 { float: left; }
-#dashboard_user { float: right; }
+#dashboard_user { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.Q_mobile #dashboard_user { float: right; margin: 0 5px 0 0; max-width: 40%;  }
 #dashboard .Q_contextual * { color: black; }
 #dashboard td { vertical-align: middle; }
 #dashboard table { width: 100%; padding: 0px; margin: 0px; }

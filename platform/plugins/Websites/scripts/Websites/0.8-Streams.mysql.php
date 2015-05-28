@@ -11,7 +11,7 @@ function Websites_0_8_Streams_mysql()
 	
 	$publisherId = $userId;
 	$ofUserId = '';
-	$ofContactLabel = 'admins';
+	$ofContactLabel = 'Websites/admins';
 	$grantedByUserId = null;
 	$readLevel = Streams::$READ_LEVEL['messages'];
 	$writeLevel = Streams::$WRITE_LEVEL['edit'];
@@ -38,7 +38,9 @@ function Websites_0_8_Streams_mysql()
 		);
 	}
 	
-	Streams_Access::insertManyAndExecute($rows);
+	Streams_Access::insertManyAndExecute($rows, array(
+		'onDuplicateKeyUpdate' => true
+	));
 	
 	$attributes = null;
 	$closedTime = null;
