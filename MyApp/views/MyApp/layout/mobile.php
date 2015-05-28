@@ -16,10 +16,16 @@
 	<link rel="apple-touch-icon-precomposed" sizes="180x180" href="<?php echo Q_Html::themedUrl('img/icon/180.png') ?>" />
 	<?php endif; ?>
 	<link rel="shortcut icon" sizes="196x196" href="<?php echo Q_Html::themedUrl('img/icon/196.png') ?>" />
-	<link rel="icon" sizes="196x196" href="<?php echo Q_Html::themedUrl('img/icon/196.png') ?>" />
+	<?php if (Q_Request::platform() === 'android'): ?>
+		<?php foreach (array(36, 48, 72, 96, 144, 192) as $size): ?>
+			<link rel="icon" sizes="<?php echo $size.'x'.$size ?>" href="<?php echo Q_Html::themedUrl("img/icon/android-icon-{$size}x{$size}.png") ?>" />
+		<?php endforeach; ?>
+	<?php endif; ?>
 	<meta name="msapplication-square70x70logo" content="<?php echo Q_Html::themedUrl('img/icon/70.png') ?>">
 	<meta name="msapplication-square150x150logo" content="<?php echo Q_Html::themedUrl('img/icon/150.png') ?>">
 	<meta name="msapplication-square310x310logo" content="<?php echo Q_Html::themedUrl('img/icon/150.png') ?>">
+	<meta name="msapplication-TileColor" content="#ffffff">
+	<meta name="msapplication-TileImage" content="<?php echo Q_Html::themedUrl('img/icon/144.png') ?>">
 
 	<title><?php echo $title; ?></title>
 	<link rel="shortcut icon" href="<?php echo Q_Request::baseUrl() ?>/favicon.ico" type="image/x-icon">
