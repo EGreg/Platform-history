@@ -38,9 +38,7 @@ function Websites_0_8_Streams_mysql()
 		);
 	}
 	
-	Streams_Access::insertManyAndExecute($rows, array(
-		'onDuplicateKeyUpdate' => true
-	));
+	Streams_Access::insertManyAndExecute($rows);
 	
 	$attributes = null;
 	$closedTime = null;

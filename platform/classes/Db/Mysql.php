@@ -338,7 +338,7 @@ class Db_Mysql implements iDb
 	 * @param {integer} [$options.chunkSize]
 	 *    The number of rows to insert at a time. Defaults to 20.
 	 *    You can also put 0 here, which means unlimited chunks, but it's not recommended.
-	 * @param {string} [$options.onDuplicateKeyUpdate]
+	 * @param {array} [$options.onDuplicateKeyUpdate]
 	 *    You can put an array of fieldname => value pairs here,
 	 *    which will add an ON DUPLICATE KEY UPDATE clause to the query.
 	 */
@@ -370,7 +370,7 @@ class Db_Mysql implements iDb
 		// On duplicate key update clause (optional)
 		$update_fields = array();
 		$odku_clause = '';
-		if ($onDuplicateKeyUpdate) {
+		if (isset($onDuplicateKeyUpdate)) {
 			$odku_clause = "\n\t ON DUPLICATE KEY UPDATE ";
 			$parts = array();
 			foreach ($onDuplicateKeyUpdate as $k => $v) {
@@ -395,6 +395,7 @@ class Db_Mysql implements iDb
 			$query = new Db_Query_Mysql($this, Db_Query::TYPE_INSERT);
 			$shard = '';
 			if (isset($className)) {
+				$query->className = $className;
 				$sharded = $query->shard(null, $record);
 				$shard = key($sharded);
 				if (count($sharded) > 1 or $shard === '*') { // should be only one shard
