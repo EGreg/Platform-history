@@ -287,6 +287,7 @@ Streams.ACCESS_SOURCES = {
  * "Streams/Stream/create",
  * "Streams/Stream/remove",
  * "Streams/Message/post",
+ * "Streams/Message/postMessages",
  * "Streams/Stream/invite"
  * @method listen
  * @param {object} options={}
@@ -364,7 +365,7 @@ Streams.listen = function (options) {
 		if (!parsed || !parsed['Q/method']) {
 			return next();
 		}
-		var participant, stream, msg, token;
+		var participant, stream, msg, posted, token, k;
 		var ssid = parsed["Q.clientId"];
 		switch (parsed['Q/method']) {
 			case 'Users/device':
@@ -466,6 +467,22 @@ Streams.listen = function (options) {
 					);
 				}
 				Streams.Stream.emit('post', stream, msg.byUserId, msg, ssid);
+				break;
+			case 'Streams/Message/postMessages':
+				posted = JSON.parse(parsed.posted);
+				stream = JSON.parse(parsed.stream);
+				for (k in posted) {
+					msg = posted[k];
+					if (Q.Config.get(['Streams', 'logging'], false)) {
+						Q.log('Streams.listen: Streams/Message/post {'
+							+ '"publisherId": "' + stream.publisherId
+							+ '", "name": "' + stream.name
+							+ '", "msg.type": "' + msg.type
+							+ '"}'
+						);
+					}
+					Streams.Stream.emit('post', stream, msg.byUserId, msg, ssid);
+				}
 				break;
 			case 'Streams/Stream/invite':
 				var userIds, invitingUserId, username, appUrl, label,

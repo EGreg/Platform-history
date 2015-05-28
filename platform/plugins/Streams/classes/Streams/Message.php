@@ -199,7 +199,7 @@ class Streams_Message extends Base_Streams_Message
 					'sendToNode' => &$sendToNode, // sending to node can be canceled
 					'stream' => $stream
 				);
-				$params = &$eventParams[$publisherId][$streamName];
+				$params = $eventParams[$publisherId][$streamName];
 				
 				/**
 				 * @event Streams/post/$streamType {before}
@@ -278,7 +278,7 @@ class Streams_Message extends Base_Streams_Message
 		foreach ($posted as $publisherId => $arr) {
 			foreach ($arr as $streamName => $m) {
 				$message = $posted[$publisherId][$streamName];
-				$params = $eventParams[$publisherId][$streamName];
+				$params = &$eventParams[$publisherId][$streamName];
 				
 				/**
 				 * @event Streams/message/$messageType {after}
@@ -286,14 +286,14 @@ class Streams_Message extends Base_Streams_Message
 				 * @param {Streams_Stream} 'stream'
 				 * @param {string} 'message'
 				 */
-				Q::event("Streams/message/{$message->type}", $params, 'after', false, $result);
+				Q::event("Streams/message/{$message->type}", $params, 'after', false);
 				/**
 				 * @event Streams/post/$streamType {after}
 				 * @param {string} 'publisherId'
 				 * @param {Streams_Stream} 'stream'
 				 * @param {string} 'message'
 				 */
-				Q::event("Streams/post/{$stream->type}", $params, 'after', false, $result);
+				Q::event("Streams/post/{$stream->type}", $params, 'after', false);
 			}
 		}
 		/**
@@ -307,7 +307,20 @@ class Streams_Message extends Base_Streams_Message
 			'messages' => $messages,
 			'skipAccess' => $skipAccess,
 			'posted' => $posted
-		), 'after', false, $result);
+		), 'after', false);
+		
+		if ($sendToNode) {
+			$messages = array();
+			foreach ($posted as $publisherId => $arr) {
+
+			}
+			Q_Utils::sendToNode(array(
+				"Q/method" => "Streams/Message/postMessages",
+				"posted" => Q::json_encode($messages2),
+				"stream" => Q::json_encode($stream->toArray())
+			));
+		}
+		
 		return array($posted, $streams);
 	}
 	

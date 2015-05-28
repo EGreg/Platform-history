@@ -89,8 +89,7 @@ function Streams_stream_put($params) {
 				$stream->$f = $more_fields[$f];
 			}
 		}
-	
-		$toSave = $stream->toArray();
+
 		$instructions = array('changes' => array());
 		foreach ($mergedFields as $k) {
 			$v = $stream->$k;

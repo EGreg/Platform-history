@@ -8457,13 +8457,14 @@ _touchScrollingHandler.options = {
 };
 
 function _touchBlurHandler(event) {
-	var b = _touchBlurHandler.options.blur;
-	if (!b) return;
+	var o = _touchBlurHandler.options.blur;
+	if (!o.blur) return;
 	var target = Q.Pointer.target(event);
 	var ae = document.activeElement;
 	if (ae && (typeof ae.blur === 'function')
 	&& (ae !== target)) {
-		if (b.indexOf(target.tagName.toUpperCase()) >= 0) {
+		if (o.blur.indexOf(target.tagName.toUpperCase()) >= 0
+		|| (o.blurContentEditable && target.getAttribute('contenteditable'))) {
 			var f = function () {
 				target.focus();
 				Q.removeEventListener(window, 'click', f);
@@ -8476,7 +8477,8 @@ function _touchBlurHandler(event) {
 }
 
 _touchBlurHandler.options = {
-	blur: ['INPUT', 'TEXTAREA', 'SELECT']
+	blur: ['INPUT', 'TEXTAREA', 'SELECT'],
+	blurContentEditable: true
 };
 
 function _detectOrientation(e) {
