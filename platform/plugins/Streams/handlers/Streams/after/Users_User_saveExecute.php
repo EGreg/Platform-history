@@ -91,7 +91,7 @@ function Streams_after_Users_User_saveExecute($params)
 		$label2->userId = $user->id;
 		$label2->label = 'Streams/invitedMe';
 		$label2->icon = 'Streams/labels/invitedMe';
-		$label2->title = 'Those who invited me';
+		$label2->title = 'Who invited me';
 		$label2->save(true);
 		
 		// By default, users they invite should see their full name
