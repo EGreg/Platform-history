@@ -11,30 +11,19 @@
  * @class Q inplace
  * @constructor
  * @param {Object} [options] This is an object of parameters for this function
- *  @param {String} [options.method] The HTTP verb to use.
- *  @default 'put'
- *  @param {String} [options.type] The type of the input field. Can be "textarea" or "text"
- *  @default 'textarea'
- *  @param {Boolean} [options.editOnClick] Whether to enter editing mode when clicking on the text.
- *  @default true
- *  @param {Boolean} [options.selectOnEdit] Whether to select everything in the input field when entering edit mode.
- *  @default true
- *  @param {Number} [options.maxWidth] The maximum width that the field can grow to
- *  @default null
- *  @param {Number} [options.minWidth] The minimum width that the field can shrink to
- *  @default 100
+ *  @param {String} [options.method='put'] The HTTP verb to use.
+ *  @param {String} [options.type='textarea'] The type of the input field. Can be "textarea" or "text"
+ *  @param {Boolean=true} [options.editOnClick] Whether to enter editing mode when clicking on the text.
+ *  @param {Boolean} [options.selectOnEdit=true] Whether to select everything in the input field when entering edit mode.
+ *  @param {Number} [options.maxWidth=null] The maximum width that the field can grow to
+ *  @param {Number} [options.minWidth=100] The minimum width that the field can shrink to
  *  @param {String} [options.staticHtml] The static HTML to start out with
- *  @param {String} [options.placeholder] Text to show in the staticHtml or input field when the editor is empty
- *  @default null
+ *  @param {String} [options.placeholder=null] Text to show in the staticHtml or input field when the editor is empty
  *  @param {Object} [options.template]  Can be used to override info for the tool's view template.
- *    @param {String} [options.template.dir]
- *    @default 'plugins/Q/views'
- *    @param {String} [options.template.name]
- *    @default 'Q/inplace/tool'
+ *    @param {String} [options.template.dir='plugins/Q/views']
+ *    @param {String} [options.template.name='Q/inplace/tool']
  *  @param {Q.Event} [options.onSave] This event triggers after save
- *  @default Q.Event()
  *  @param {Q.Event} [options.onCancel] This event triggers after canceling
- *  @default Q.Event()
  */
 Q.Tool.define("Q/inplace", function (options) {
 	var tool = this, 

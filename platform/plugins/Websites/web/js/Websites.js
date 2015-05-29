@@ -59,28 +59,24 @@ Q.Tool.define({
 });
 
 Q.page('', function () {
-	Q.addScript("plugins/Q/js/sha1.js", function () {
-		var streamName = "Websites/seo/"+CryptoJS.SHA1(Q.info.uriString);
-		var publisherId = Q.plugins.Websites.userId;
-		Q.Streams.Stream.onUpdated(publisherId, streamName, "title")
+	var streamName = Websites.seoStreamName;
+	var publisherId = Q.plugins.Websites.userId;
+	Q.Streams.Stream.onUpdated(publisherId, streamName, "title")
+	.set(function (attributes, k) {
+		document.title = attributes[k];
+	}, "Websites");
+	if (Websites.seoReload) {
+		Q.Streams.Stream.onUpdated(publisherId, streamName, "url")
 		.set(function (attributes, k) {
-			document.title = attributes[k];
+			var tail = attributes[k];
+			if (tail && location !== Q.url(tail)) {
+				location = Q.url(tail);
+			}
 		}, "Websites");
-		if (Websites.seoReload) {
-			Q.Streams.Stream.onUpdated(publisherId, streamName, "url")
-			.set(function (attributes, k) {
-				var tail = attributes[k];
-				if (tail && location !== Q.url(tail)) {
-					location = Q.url(tail);
-				}
-			}, "Websites");
-		}
-	});
+	}
 	return function () {
-		if (!window.CryptoJS) return;
-		var streamName = "Websites/seo/"+CryptoJS.SHA1(Q.info.uriString);
 		Q.Streams.Stream.onUpdated(
-			Q.plugins.Websites.userId, streamName, "title"
+			Q.plugins.Websites.userId, Websites.seoStreamName, "title"
 		).remove("Websites");
 	}
 }, 'Websites');

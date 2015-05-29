@@ -19,6 +19,10 @@ Q.Tool.define("Websites/seo", function () {
 	var Websites = Q.plugins.Websites;
 	var tool = this, state = tool.state;
 	
+	if (state.skip) {
+		return;
+	}
+	
 	Q.addScript("plugins/Q/js/sha1.js", function () {
 		var publisherId = Websites.userId,
 			streamName = "Websites/seo/"+CryptoJS.SHA1(Q.info.uriString);
