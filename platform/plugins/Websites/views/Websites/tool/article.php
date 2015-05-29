@@ -6,11 +6,11 @@
 			'clickable' => false
 		),
 		'imagepicker' => array(
-			'showSize' => '400x',
+			'showSize' => '200x',
 			'saveSizeName' => array(
 				'40' => '40',
 				'50' => '50',
-				'400x' => '400x'
+				'200x' => '200x'
 			)
 		),
 		'actions' => null

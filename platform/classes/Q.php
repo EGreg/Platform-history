@@ -1187,6 +1187,11 @@ class Q
 	static function json_encode()
 	{
 		$result = call_user_func_array('json_encode', func_get_args());
+		if ($result === false) {
+			$msg = json_last_error_msg();
+			$code = json_last_error();
+			throw new Q_Exception("JSON encoding error $code: $msg");
+		}
 		return str_replace("\\/", '/', $result);
 	}
 

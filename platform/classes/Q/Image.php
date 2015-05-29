@@ -168,6 +168,11 @@ class Q_Image
 		$path = isset($params['path']) ? $params['path'] : 'uploads';
 		$subpath = isset($params['subpath']) ? $params['subpath'] : '';
 		$realPath = Q::realPath(APP_WEB_DIR.DS.$path);
+		if ($realPath === false) {
+			throw new Q_Exception_MissingFile(array(
+				'filename' => APP_WEB_DIR.DS.$path
+			));
+		}
 		$writePath = $realPath.($subpath ? DS.$subpath : '');
 		$lastChar = substr($writePath, -1);
 		if ($lastChar !== DS and $lastChar !== '/') {
