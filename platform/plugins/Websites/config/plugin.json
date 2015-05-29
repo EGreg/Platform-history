@@ -12,11 +12,11 @@
 			"Q/url": ["Websites/before/Q_url"],
 			"Q/uriFromUrl": ["Websites/before/Q_uriFromUrl"],
 			"Q/responseExtras": ["Websites/before/Q_responseExtras"],
-			"Streams/Stream/save/Websites/bio": ["Websites/before/Streams_Stream_save_Websites_bio"],
-			"Streams/Stream/save/Websites/seo": ["Websites/before/Streams_Stream_save_Websites_seo"]
+			"Streams/Stream/save/Websites/article": ["Websites/before/Streams_Stream_save_Websites_article"],
+			"Streams/Stream/save/Websites/seo": ["Websites/before/Streams_Stream_save_Websites_article"]
 		},
 		"handlersAfterEvent": {
-			"Streams/fetch/Websites/bio": ["Websites/after/Streams_fetch_Websites_bio"]
+			"Streams/fetch/Websites/article": ["Websites/after/Streams_fetch_Websites_article"]
 		}
 	},
 	"Streams": {
@@ -28,13 +28,13 @@
 					"title": "Website SEO"
 				}
 			},
-			"Websites/bio": {
+			"Websites/article": {
 				"create": true,
 				"edit": true,
-				"fields": ["userId", "bio", "getintouch"],
-				"see": ["bio", "getintouch"],
+				"fields": ["userId", "article", "getintouch"],
+				"see": ["article", "getintouch"],
 				"defaults": {
-					"title": "User Bio"
+					"title": "Article"
 				}
 			}
 		}

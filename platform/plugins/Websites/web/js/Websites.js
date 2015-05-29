@@ -18,12 +18,12 @@ var Websites = Q.Websites = Q.plugins.Websites = {
  */
 
 /**
- * Display a user's bio on the website, which the user can edit
- * @class Websites bio
+ * Display a user's article on the website, which the user can edit
+ * @class Websites article
  * @constructor
  */
 
-Q.Tool.define("Websites/bio", function (fields) {
+Q.Tool.define("Websites/article", function (fields) {
 	var gittool = this.$('.Users_getintouch_tool');
 	var form = this.$('form.Websites_getintouch');
 	function _refresh() {
@@ -39,8 +39,8 @@ Q.Tool.define("Websites/bio", function (fields) {
 	$('input[type=checkbox]', form).click(function () { $(this).submit() });
 });
 
-Q.Streams.define("Websites/bio", function (fields) {
-	this.fields.bio = fields.bio;
+Q.Streams.define("Websites/article", function (fields) {
+	this.fields.article = fields.article;
 });
 
 Q.onInit.set(function () {

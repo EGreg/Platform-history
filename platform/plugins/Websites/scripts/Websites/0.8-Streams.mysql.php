@@ -20,13 +20,13 @@ function Websites_0_8_Streams_mysql()
 	$streams = array(
 		"Streams/images/" => array('type' => "Streams/template", "title" => "", "icon" => "default", "content" => "", "deletable" => true),
 		"Streams/image/" => array('type' => "Streams/template", "title" => "", "icon" => "default", "content" => "", "deletable" => true),
-		"Websites/bio/" => array('type' => "Streams/template", "title" => "", "icon" => "default", "content" => "", "deletable" => true),
+		"Websites/article/" => array('type' => "Streams/template", "title" => "", "icon" => "default", "content" => "", "deletable" => true),
 		"Websites/seo/" => array('type' => "Streams/template", "title" => "Website SEO", "icon" => Q_Html::themedUrl("plugins/Websites/img/seo"), "content" => "", "deletable" => true),
 		"Websites/header" => array('type' => "Streams/image/icon", "title" => "Header image", "icon" => Q_Html::themedUrl("plugins/Websites/img/header"), "content" => ""),
 		"Websites/slogan" => array('type' => "Streams/text/small", "title" => "Website slogan", "icon" => "default", "content" => "The coolest website"),
 		"Websites/title" => array('type' => "Streams/text/small", "title" => "Website title", "icon" => "default", "content" => "Website Title"),
 		"Websites/menu" => array('type' => "Streams/category", "title" => "Website Menu", "icon" => "default", "content" => ""),
-		"Websites/bios" => array('type' => "Streams/category", "title" => "Biographies", "icon" => "default", "content" => "Biographies"),
+		"Websites/articles" => array('type' => "Streams/category", "title" => "Articles", "icon" => "default", "content" => "Articles"),
 	);
 	
 	$rows = array();

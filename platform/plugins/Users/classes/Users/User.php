@@ -662,14 +662,14 @@ class Users_User extends Base_Users_User
 	{
 		$identifier = null;
 		if ($this->signedUpWith === 'none') {
-			if (empty($this->emailAddressPending)) {
-				$identifier = $this->mobileNumberPending;
-				$this->mobileNumberPending = '';
-				$this->signedUpWith = 'mobile';
-			} else {
+			if (!empty($this->emailAddressPending)) {
 				$identifier = $this->emailAddressPending;
 				$this->emailAddressPending = '';
 				$this->signedUpWith = 'email';
+			} else if (!empty($this->mobileNumberPending)) {
+				$identifier = $this->mobileNumberPending;
+				$this->mobileNumberPending = '';
+				$this->signedUpWith = 'mobile';
 			}
 		}
 		if (empty($identifier)) return false;
@@ -695,7 +695,7 @@ class Users_User extends Base_Users_User
 			);
 			$this->icon = Users::downloadIcon($this, $icon);
 		}
-		return $true;
+		return true;
 	}
 	
 	/**

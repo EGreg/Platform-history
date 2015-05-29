@@ -189,7 +189,7 @@ class Q_Utils
 		$result = preg_replace($characters, $replacement, strtolower($text));
 		if (strlen($text) > $numChars) {
 			$result = substr($result, 0, $numChars - 11) . '_' 
-			          . self::hashCode(substr($result, $numChars - 11));
+					  . self::hashCode(substr($result, $numChars - 11));
 		}
 		return $result;
 	}
@@ -819,6 +819,28 @@ class Q_Utils
 			$colored_string .= "\033[" . $background_colors[$background_color] . "m";
 		}
 		return $colored_string .  $text . "\033[0m";
+	}
+		
+	static function cp ($src, $dest)
+	{
+		if (is_file($src)) {
+			return copy($src, $dest);
+		}
+		if (!is_dir($src)) {
+			return false;
+		}
+		@mkdir($dest);
+		foreach(scandir($src) as $file) {
+			if( $file == "." || $file == ".." ) {
+				continue;
+			}
+			if( is_dir( $src.DS.$file ) ) {
+				self::cp( $src.DS.$file, $dest.DS.$file );
+			} else {
+				copy( $src.DS.$file, $dest.DS.$file );
+			}
+		}
+		return true;
 	}
 	
 	protected static $urand;

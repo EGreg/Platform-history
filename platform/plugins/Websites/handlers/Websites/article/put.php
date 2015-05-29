@@ -1,6 +1,6 @@
 <?php
 	
-function Websites_bio_put()
+function Websites_article_put()
 {
 	// only a logged-in user can do this
 	$user = Users::loggedInUser(true);
@@ -9,16 +9,16 @@ function Websites_bio_put()
 		$publisherId = $_REQUEST['publisherId'] = $user->id;
 	}
 	$name = Streams::requestedName(true);
-	$bio = Streams::fetchOne($user->id, $publisherId, $name);
-	if (!$bio) {
+	$article = Streams::fetchOne($user->id, $publisherId, $name);
+	if (!$article) {
 		throw new Q_Exception_MissingRow(array(
 			'table' => 'stream',
 			'criteria' => "{publisherId: '$publisherId', name: '$name'}"
 		));
 	}
-	$bio->getintouch = isset($_REQUEST['getintouch'])
+	$article->getintouch = isset($_REQUEST['getintouch'])
 		? $_REQUEST['getintouch']
 		: '';
-	$bio->save();
+	$article->save();
 	Q_Response::setSlot('form', '');
 }

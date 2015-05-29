@@ -3,15 +3,15 @@
  * @module Websites
  */
 /**
- * Class representing 'Bio' rows in the 'Websites' database
+ * Class representing 'Article' rows in the 'Websites' database
  * You can create an object of this class either to
  * access its non-static methods, or to actually
- * represent a bio row in the Websites database.
+ * represent a article row in the Websites database.
  *
- * @class Websites_Bio
- * @extends Base_Websites_Bio
+ * @class Websites_Article
+ * @extends Base_Websites_Article
  */
-class Websites_Bio extends Base_Websites_Bio
+class Websites_Article extends Base_Websites_Article
 {
 	/**
 	 * The setUp() method is called the first time
@@ -26,8 +26,8 @@ class Websites_Bio extends Base_Websites_Bio
 	}
 
 	/* 
-	 * Add any Websites_Bio methods here, whether public or not
-	 * If file 'Bio.php.inc' exists, its content is included
+	 * Add any Websites_Article methods here, whether public or not
+	 * If file 'Article.php.inc' exists, its content is included
 	 * * * */
 
 	/* * * */
@@ -36,10 +36,10 @@ class Websites_Bio extends Base_Websites_Bio
 	 * with var_export and be re-imported successfully.
 	 * @method __set_state
 	 * @param {array} $array
-	 * @return {Websites_Bio} Class instance
+	 * @return {Websites_Article} Class instance
 	 */
 	static function __set_state(array $array) {
-		$result = new Websites_Bio();
+		$result = new Websites_Article();
 		foreach($array as $k => $v)
 			$result->$k = $v;
 		return $result;

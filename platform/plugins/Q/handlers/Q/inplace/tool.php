@@ -2,22 +2,21 @@
 
 /**
  * This tool generates an inline editor, along with a form tag.
- * @param array $options
- *  An associative array of parameters, containing:
- *  "fieldInput" => Required. HTML representing a text input, textarea, or select.
- *  "type" => Required. The type of the type. Can be "textarea", "text" or "select"
- *  "staticHtml" => Required. The static HTML to display when the input isn't showing.
- *  "action" => Defaults to "". The uri or url to submit to
- *  "method" => Defaults to "put". The method to use for submitting the form.
- *  "editing" => If true, then renders the inplace tool in editing mode.
- *  "editOnClick" => Defaults to true. If true, then edit mode starts only if "Edit" button is clicked.
- *  "selectOnEdit" => Defaults to true. If true, selects all the text when entering edit mode.
- *  "placeholder" => Text to show in the staticHtml or input field when the editor is empty
- *  "maxWidth" => The maximum width for the Q/autogrow
- *  "beforeSave" => Optional, reference to a callback to call after a successful save.
- *     This callback can cancel the save by returning false.
- *  "onSave" => Optional, reference to a callback or event to run after a successful save.
- *  "onCancel" => Optional, reference to a callback or event to run after cancel.
+ * @class Q inplace
+ * @param {array} [$options] An associative array of parameters, containing:
+ *   @param {string} $options.fieldInput  Required. HTML representing a text input, textarea, or select.
+ *   @param {string} $options.type  Required. The type of the input. Can be "textarea", "text" or "select"
+ *   @param {string} $options.staticHtml  Required. The static HTML to display when the input isn't showing.
+ *   @param {string} [$options.action=""]  The uri or url to submit to
+ *   @param {string} [$options.method="put"]  The method to use for submitting the form.
+ *   @param {boolean} [$options.editing]  If true, then renders the inplace tool in editing mode.
+ *   @param {boolean} [$options.editOnClick=true]  If true, then edit mode starts only if "Edit" button is clicked.
+ *   @param {boolean} [$options.selectOnEdit=true] If true, selects all the text when entering edit mode.
+ *   @param {string} [$options.placeholder] Text to show in the staticHtml or input field when the editor is empty
+ *   @param {integer} [$options.maxWidth] The maximum width for the Q/autogrow
+ *   @param {string} [$options.beforeSave] Reference to a callback to call after a successful save. This callback can cancel the save by returning false.
+ *   @param {string} [$options.onSave] Reference to a callback or event to run after a successful save.
+ *   @param {string} [$options.onCancel] Reference to a callback or event to run after cancel.
  */
 function Q_inplace_tool($options)
 {

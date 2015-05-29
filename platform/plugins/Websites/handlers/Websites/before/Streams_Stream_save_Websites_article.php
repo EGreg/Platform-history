@@ -1,13 +1,13 @@
 <?php
 
-function Websites_before_Streams_Stream_save_Websites_bio($params)
+function Websites_before_Streams_Stream_save_Websites_article($params)
 {
 	$stream = $params['stream'];
 	$retrieved = $stream->wasRetrieved();
 
 	if ($retrieved
 	and !$stream->wasModified('userId')
-	and !$stream->wasModified('bio')
+	and !$stream->wasModified('article')
 	and !$stream->wasModified('getintouch')) {
 		return;
 	}
@@ -31,22 +31,22 @@ function Websites_before_Streams_Stream_save_Websites_bio($params)
 		$stream->setAttribute('sizes', $sizes);
 	}
 
-	$bio = new Websites_Bio();
-	$bio->publisherId = $stream->publisherId;
-	$bio->streamName = $stream->name;
-	$bio->retrieve(null, null, array('ignoreCache' => true));
+	$article = new Websites_Article();
+	$article->publisherId = $stream->publisherId;
+	$article->streamName = $stream->name;
+	$article->retrieve(null, null, array('ignoreCache' => true));
 
-	foreach (array('userId', 'bio', 'getintouch') as $f) {
+	foreach (array('userId', 'article', 'getintouch') as $f) {
 		if (!isset($stream->$f)) continue;
-		if (isset($bio->$f) and $bio->$f === $stream->$f) continue;
-		$bio->$f = $stream->$f;
+		if (isset($article->$f) and $article->$f === $stream->$f) continue;
+		$article->$f = $stream->$f;
 	}
-	if (!isset($bio->bio)) {
-		$bio->bio = '';
+	if (!isset($article->article)) {
+		$article->article = '';
 	}
-	if (!isset($bio->getintouch)) {
-		$bio->getintouch = 'true';
+	if (!isset($article->getintouch)) {
+		$article->getintouch = '{}';
 	}
-	Q::event("Websites/bio/save", compact('user', 'stream', 'bio'), "before");
-	$bio->save();
+	Q::event("Websites/article/save", compact('user', 'stream', 'article'), "before");
+	$article->save();
 }
