@@ -1,4 +1,4 @@
-<div id="content">
+<div id="content" class="Q_clearfix">
 <?php if ($user) : ?>
 	<?php if (empty($_REQUEST['p']) and !empty($user->passphraseHash)): ?>
 		<div class="Q_admin_pane">
