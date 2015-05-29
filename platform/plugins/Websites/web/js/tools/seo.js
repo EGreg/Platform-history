@@ -55,6 +55,7 @@ Q.Tool.define("Websites/seo", function () {
 					method: 'post',
 					fields: {streamName: streamName, uri: Q.info.uriString}
 				});
+				return;
 			}
 			Q.Template.render(
 				'Websites/seo',
