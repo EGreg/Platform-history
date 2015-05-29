@@ -51,7 +51,9 @@
 	"Users": {
 		"transactional": {
 			"activation": {
-				"subject": "Welcome! Please verify your email address."
+				"subject": "Welcome! Please verify your email address.",
+				"body": "MyApp/email/activation.php",
+				"sms": "MyApp/sms/activation.php"
 			},
 			"identifier": {
 				"subject": "Welcome! Verify your email address.",
