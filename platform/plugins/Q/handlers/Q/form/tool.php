@@ -143,7 +143,7 @@ function Q_form_tool($options)
 		$leftside = $extra ? $extra : $label;
 		$tr_array[] = "<tr><td class='Q_form_fieldname'>$leftside</td>$tr_rest</tr>";
 	}
-	$result = "<table class='Q_form_tool_table' cellspacing='0'>\n"
+	$result = "<table class='Q_form_tool_table'>\n"
 		.implode("\n\t", $tr_array)
 		."\n</table>";
 	foreach ($options['fields'] as $name => $field) {
