@@ -42,6 +42,7 @@
 	"Websites": {
 		"user": {
 			"id": null
-		}
+		},
+		"seoReload": true
 	}
 }
