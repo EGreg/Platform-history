@@ -14,3 +14,4 @@
 .Q_tabs_overflow { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
 .Q_tabs_tab * { max-width: 100%; }
+.Q_tabs_tabs * { vertical-align: middle; }
