@@ -120,10 +120,13 @@ function _Streams_related_tool (options)
 		if (result.stream.testWriteLevel('relate')) {
 			Q.each(state.creatable, addComposer);
 			if (state.sortable && result.stream.testWriteLevel('suggest')) {
+				if (state.realtime) {
+					alert("Streams/related: can't mix realtime and sortable options yet");
+					return;
+				}
 				var sortableOptions = Q.extend({}, state.sortable);
 				var $t = tool.$();
 				$t.plugin('Q/sortable', sortableOptions, function () {
-					if (state.realtime) return;
 					$t.state('Q/sortable').onSuccess.set(function ($item, data) {
 						if (!data.direction) return;
 						var p = new Q.Pipe(['timeout', 'updated'], function () {
