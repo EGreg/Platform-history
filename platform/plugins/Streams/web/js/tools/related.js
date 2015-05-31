@@ -132,7 +132,7 @@ function _Streams_related_tool (options)
 						var p = new Q.Pipe(['timeout', 'updated'], function () {
 							if (state.realtime) return;
 							Q.Streams.related.cache.removeEach(
-								state.publisherId, state.streamName
+								[state.publisherId, state.streamName]
 							);
 							// TODO: replace with animation?
 							tool.refresh();

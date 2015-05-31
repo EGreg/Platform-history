@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Used to create a new stream
+ * Used to update relations
  *
  * @param array $_REQUEST
  *   toPublisherId, toStreamName, type, fromPublisherId, fromStreamName
