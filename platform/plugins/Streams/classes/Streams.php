@@ -816,7 +816,10 @@ abstract class Streams extends Base_Streams
 				$relate['type'], 
 				$stream->publisherId, 
 				$stream->name,
-				compact('weight', 'skipAccess')
+				array(
+					'weight' => isset($relate['weight']) ? $relate['weight'] : null,
+					'skipAccess' => $skipAccess
+				)
 			);
 			Q_Response::setSlot('messageTo', $result['messageTo']->exportArray());
 		}

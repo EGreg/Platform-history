@@ -33,7 +33,7 @@ function Streams_stream_post($params) {
 	if (isset($relate['streamName'])) {
 		$relate['publisherId'] = Q_Request::special("Streams.related.publisherId", $publisherId);
 		$relate['type'] = Q_Request::special("Streams.related.type", "");
-		$weight = "+1"; // TODO: introduce ways to have "1" and "+1" for some admins etc.
+		$relate['weight'] = "+1"; // TODO: introduce ways to have "1" and "+1" for some admins etc.
 	}
 	
 	// Hold on to any icon that was posted
