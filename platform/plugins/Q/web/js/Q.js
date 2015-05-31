@@ -398,6 +398,12 @@ Date.fromDateTime = function _Date_fromDateTime(dateTimeString) {
 
 if (window.Element) { // only IE7 and lower, which we don't support, wouldn't have this
 
+if(!document.getElementsByClassName) {
+	document.getElementsByClassName = function(className) {
+		return Array.prototype.slice.call(this.querySelectorAll("." + className));
+	};
+}
+
 var Elp = Element.prototype;
 
 /**
@@ -706,12 +712,6 @@ if (!window.requestAnimationFrame) {
 				callback(Q.milliseconds());
 			}, 1000 / Q.Animation.fps);
 		};
-}
-
-if(!document.getElementsByClassName) {
-	document.getElementsByClassName = function(className) {
-		return Array.prototype.slice.call(this.querySelectorAll("." + className));
-	};
 }
 
 // public methods:
@@ -9949,7 +9949,7 @@ Q.onReady.set(function _Q_masks() {
 	Q.request.options.onShowCancel.set(function(callback, o) {
 		if (o.quiet) return;
 		var mask = Q.Masks.mask('Q.request.cancel.mask').element;
-		var button = mask.children('.Q_load_cancel_button');
+		var button = mask.querySelectorAll('.Q_load_cancel_button');
 		if (!button.length) {
 			button = document.createElement('button');
 			button.setAttribute('class', 'Q_load_cancel_button');

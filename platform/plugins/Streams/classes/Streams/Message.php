@@ -79,7 +79,8 @@ class Streams_Message extends Base_Streams_Message
 		}
 		list($posted, $streams) = self::postMessages($asUserId, $messages, $skipAccess);
 		if (is_string($streamName)) {
-			return reset($posted);
+			$arr = reset($posted);
+			return reset($arr);
 		}
 		$results = array();
 		foreach ($posted as $p) {

@@ -5,5 +5,5 @@
 .Q_notMobile .Websites_side_column { float: right; width: 30%; }
 .Q_notMobile .Websites_article_tool .Streams_html_tool { width: 60%; font-size: 24px; }
 
-.Websites_seo_tool .Q_inplace_tool,
-.Websites_seo_tool .Q_inplace_tool_container { display: block; text-align: left; }
+.Websites_seo_tool .Streams_inplace_tool,
+.Websites_seo_tool .Streams_inplace_tool_container { display: block; text-align: left; }

@@ -721,8 +721,7 @@ abstract class Streams extends Base_Streams
 	}
 	
 	/**
-	 * Calculates whether a given user is authorized by a specific publisher
-	 * to create a particular type of stream.
+	 * Creates a new stream in the system
 	 * @method create
 	 * @static
 	 * @param {string} $asUserId The user who is attempting to create the stream.
@@ -743,12 +742,10 @@ abstract class Streams extends Base_Streams
 	 *  and the user that would be publishing this new stream has a template for this stream type
 	 *  that is related to either the category stream or a template matching the category stream.
 	 *  To test for this, pass an array with the following keys:
-	 *   "publisherId" => The id of the user publishing that stream, defaults to $publisherId
-	 *   "streamName" => The name of the stream to which the new stream would be related
-	 *   "type" => The type of relation, defaults to ""
-	 * @optional
-	 * @return {Streams_Stream|boolean} Returns a stream template the user must use,
-	 *  otherwise a boolean true/false to indicate a yes or no regardless of template.
+	 * @param {string} $relate.publisherId The id of the user publishing that stream, defaults to $publisherId
+	 * @param {string} $relate.streamName The name of the stream to which the new stream would be related
+	 * @param {string} [$relate.type] The type of relation, defaults to ""
+	 * @return {Streams_Stream|boolean} Returns the stream that was created.
 	 * @throws {Users_Exception_NotAuthorized}
 	 */
 	static function create(

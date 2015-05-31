@@ -360,8 +360,8 @@
 .Streams_preview { height: auto; }
 .Streams_preview_create { cursor: pointer; }
 .Streams_preview_add,
-.Streams_preview_icon { float: left; }
-.Streams_preview_contents { float: left; }
+.Streams_preview_icon,
+.Streams_preview_contents { display: inline-block; vertical-align: middle; }
 .Streams_preview h3 { margin: 0px; padding: 0px 0px 0px 10px; line-height: 50px; font-size: 30px; }
 
 

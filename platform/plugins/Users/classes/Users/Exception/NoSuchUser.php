@@ -13,4 +13,4 @@ class Users_Exception_NoSuchUser extends Q_Exception
 	 */
 };
 
-Q_Exception::add('Users_Exception_NoSuchUser', 'no such user was found in the system');
+Q_Exception::add('Users_Exception_NoSuchUser', 'No such user was found in the system');

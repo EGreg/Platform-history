@@ -13,4 +13,4 @@ class Users_Exception_UsernameExists extends Q_Exception
 	 */
 };
 
-Q_Exception::add('Users_Exception_UsernameExists', 'someone else has that username');
+Q_Exception::add('Users_Exception_UsernameExists', 'Someone else has that username');

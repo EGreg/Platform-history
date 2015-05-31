@@ -14,4 +14,4 @@ class Users_Exception_NotVerified extends Q_Exception
 	 */
 };
 
-Q_Exception::add('Users_Exception_NotVerified', 'this $type has not been verified yet');
+Q_Exception::add('Users_Exception_NotVerified', 'This $type has not been verified yet');

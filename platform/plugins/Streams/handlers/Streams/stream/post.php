@@ -47,7 +47,7 @@ function Streams_stream_post($params) {
 	unset($req['name']);
 	
 	// Create the stream
-	Streams::create($user->id, $publisherId, $type, $relate, $req);
+	$stream = Streams::create($user->id, $publisherId, $type, $req, $relate);
 	
 	// Process any icon that was posted
 	if (is_array($icon)) {

@@ -1,5 +1,5 @@
-.Q_tabs_tabs { border-bottom: solid 1px #aaa; width: 100%; margin: 0px; padding: 0px;  }
-.Q_tabs_tab { cursor: pointer; display: block; float: left; padding: 3px 10px 3px 10px; line-height: 30px; border: solid 1px #aaa; border-bottom: 0px; border-left: 0px; margin-bottom: -1px; background-color: #f8f8f8;; font-weight: bold; }
+.Q_tabs_tabs { border-bottom: solid 1px #aaa; width: 100%; margin: 0px; padding: 0px; list-style-type: none; }
+.Q_tabs_tab { cursor: pointer; display: block; float: left; padding: 3px 10px 3px 10px; line-height: 30px; border: solid 1px #aaa; border-bottom: 0px; border-left: 0px; margin-bottom: -1px; background-color: #f8f8f8;; font-weight: bold; list-style-type: none; }
 .Q_tabs_tab:first-child { border-left: solid 1px #aaa; }
 .Q_tabs_tab.Q_current { background-color: white; border-bottom: solid 1px white; }
 .Q_tabs_title { position: relative; }
@@ -12,3 +12,5 @@
 .Q_tabs_overflowGlyph { float: right; display: inline-block; margin-left: 5px; font-size: 100% !important; }
 
 .Q_tabs_overflow { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+.Q_tabs_tab * { max-width: 100%; }

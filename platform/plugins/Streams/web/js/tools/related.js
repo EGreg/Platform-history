@@ -10,23 +10,19 @@
  * Also can integrate with Q/tabs tool to render tabs "related" to some category.
  * @class Streams related
  * @constructor
- * @param {Object} [options] this object contains function parameters
+ * @param {Object} [options] options for the tool
  *   @param {String} [options.publisherId] Either this or "stream" is required. Publisher id of the stream to which the others are related
  *   @param {String} [options.streamName] Either this or "stream" is required. Name of the stream to which the others are related
- *   @param {String} [options.tag] The type of element to contain the preview tool for each related stream.
- *   @default "div"
+ *   @param {String} [options.tag="div"] The type of element to contain the preview tool for each related stream.
  *   @param {Stream} [options.stream] You can pass a Streams.Stream object here instead of "publisherId" and "streamName"
- *   @param {Stream} [options.relationType] The type of the relation.
- *   @default ""
- *   @param {Boolean} [options.isCategory] Whether to show the streams related TO this stream, or the ones it is related to.
- *   @default true
+ *   @param {Stream} [options.relationType =""] The type of the relation.
+ *   @param {Boolean} [options.isCategory=true] Whether to show the streams related TO this stream, or the ones it is related to.
  *   @param {Object} [options.relationOptions] Can include options like 'limit', 'offset', 'ascending', 'min', 'max' and 'prefix'
  *   @param {Boolean} [options.editable] Set to false to avoid showing even authorized users an interface to replace the image or text
  *   @param {Boolean} [options.creatable]  Optional pairs of {streamType: params} to create new related streams.
  *   The params typically include at least a "title" field which you can fill with values such as "New" or "New ..."
  *   @param {Function} [options.toolType] Function that takes streamType and returns the tag to render (and then activate) for that stream
- *   @param {Boolean} [options.realtime] Whether to refresh every time a relation is added, removed or updated
- *   @default false
+ *   @param {Boolean} [options.realtime=false] Whether to refresh every time a relation is added, removed or updated by anyone
  *   @param {Object} [options.sortable] Options for "Q/sortable" jQuery plugin. Pass false here to disable sorting interface. If streamName is not a String, this interface is not shown.
  *   @param {Function} [options.tabs] Function for interacting with any parent "Q/tabs" tool. Format is function (previewTool, tabsTool) { return urlOrTabKey; }
  *   @param {Object} [options.updateOptions] Options for onUpdate such as duration of the animation, etc.
@@ -79,10 +75,14 @@ function _Streams_related_tool (options)
 			var element = tool.elementForStream(
 				tool.state.publisherId, "", streamType, null, 
 				{ creatable: params }
-			);
-			$(element).addClass('Streams_related_composer');
-			Q.activate(tool.element.insertBefore(element, tool.element.firstChild),
-			function () {
+			).addClass('Streams_related_composer');
+			var $prev = $('.Streams_related_stream:first', $container).prev();
+			if ($prev.length) {
+				$prev.after(element);
+			} else {
+				$container.append(element);
+			}
+			Q.activate(element, function () {
 				var rc = tool.state.refreshCount;
 				element.Q.tool.state.onUpdate.set(function () {
 					
@@ -102,11 +102,17 @@ function _Streams_related_tool (options)
 			});
 		}
 		
-        var tool = this, state = tool.state;
-        Q.Tool.clear(tool.element);
-        tool.element.innerHTML = '';
+        var tool = this;
+		var state = tool.state;
+		var $te = $(tool.element);
+		var $container = $te;
+		var isTabs = $te.hasClass('Q_tabs_tool');
+		if (isTabs) {
+			$container = $('.Q_tabs_tabs', $te);
+		}
+		Q.Tool.remove($('.Streams_related_composer', $container));
+		Q.Tool.remove($('.Streams_related_stream', $container));
 		++state.refreshCount;
-		
 		Q.Streams.refresh.beforeRequest.set(function () {
 			result.stream.refresh(null, {messages: true});
 		}, 'Streams/related');
@@ -162,7 +168,7 @@ function _Streams_related_tool (options)
 			);
 			$(element).addClass('Streams_related_stream');
 			elements.push(element);
-			tool.element.appendChild(element);
+			$container.append(element);
         });
 		Q.activate(tool.element, function () {
 			tool.integrateWithTabs(elements);
@@ -214,7 +220,8 @@ function _Streams_related_tool (options)
                 entering = Q.diff(result.relatedStreams, tsr.relatedStreams, comparator);
                 updating = Q.diff(result.relatedStreams, entering, entering, comparator);
             } else {
-                exiting = entering = updating = [];
+                exiting = updating = [];
+				entering = result.relatedStreams;
             }
             tool.state.onUpdate.handle.apply(tool, [result, entering, exiting, updating]);
 			Q.handle(callback, tool, [result, entering, exiting, updating]);
@@ -279,7 +286,9 @@ function _Streams_related_tool (options)
 			},
 			editable: state.editable
         }, options);
- 		return this.setUpElement(state.tag || 'div', state.toolType(streamType), o);
+		var e = this.setUpElement(state.tag || 'div', state.toolType(streamType), o);
+		e.style.visibility = 'visible';
+ 		return e;
     },
 
 	/**
@@ -292,20 +301,27 @@ function _Streams_related_tool (options)
 	 */
 	integrateWithTabs: function (elements) {
 		var id, parents, tabs, i, tool = this, state = tool.state;
-		if (typeof state.tabs !== 'function') {
-			return;
+		if (typeof state.tabs === 'string') {
+			state.tabs = Q.getObject(state.tabs);
+			if (typeof state.tabs !== 'function') {
+				throw new Q.Error("Q/tabs tool: state.tabs does not refer to a function");
+			}
 		}
 		parents = tool.parents();
 		parents[tool.id] = tool;
 		for (id in parents) {
 			if (tabs = Q.Tool.from(parents[id].element, "Q/tabs")) {
 				for (i=0; i<elements.length; ++i) {
+					var element = elements[i];
 					var value = state.tabs.call(tool, Q.Tool.from(elements[i]), tabs);
 					var attr = value.isUrl() ? 'href' : 'data-name';
 					elements[i].addClass("Q_tabs_tab")
 						.setAttribute(attr, value);
+					if (!tabs.$tabs.is(element)) {
+						tabs.$tabs = tabs.$tabs.add(element);
+					}
 				}
-				tabs.indicateSelected();
+				tabs.indicateCurrent();
 				break;
 			}
 		}

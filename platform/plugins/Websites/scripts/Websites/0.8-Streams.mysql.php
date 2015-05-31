@@ -61,10 +61,18 @@ function Websites_0_8_Streams_mysql()
 	Streams_RelatedTo::insert(array(
 		'toPublisherId' => $publisherId,
 		'toStreamName' => 'Streams/images/',
-		'type' => 'image',
+		'type' => 'images',
 		'fromPublisherId' => $publisherId,
 		'fromStreamName' => 'Streams/image/'
-	));
+	))->execute();
+	
+	Streams_RelatedTo::insert(array(
+		'toPublisherId' => $publisherId,
+		'toStreamName' => 'Streams/articles',
+		'type' => 'articles',
+		'fromPublisherId' => $publisherId,
+		'fromStreamName' => 'Streams/article'
+	))->execute();
 }
 
 Websites_0_8_Streams_mysql();

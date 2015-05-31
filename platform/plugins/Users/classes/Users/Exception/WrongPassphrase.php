@@ -13,4 +13,4 @@ class Users_Exception_WrongPassphrase extends Q_Exception
 	 */
 };
 
-Q_Exception::add('Users_Exception_WrongPassphrase', 'that is not the right pass phrase');
+Q_Exception::add('Users_Exception_WrongPassphrase', 'That is not the right pass phrase');
