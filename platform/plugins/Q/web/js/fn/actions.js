@@ -137,6 +137,7 @@ function _Q_actions(options) {
 				}
 			}).width(0);
 		}
+		
 		_position($this, state.position, container);
 		interval = setInterval(function () {
 			_position($this, state.position, container);
@@ -175,6 +176,10 @@ function _Q_actions(options) {
 
 
 function _position($this, position, container) {
+	if (!$this.is(':visible')) {
+		return container.hide();
+	}
+	container.show();
 	var cw = container.width(), ch = container.height(), left, top;
 	switch (position[0]) {
 		case 'b':
