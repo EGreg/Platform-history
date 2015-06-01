@@ -314,7 +314,7 @@ function _Streams_related_tool (options)
 		parents[tool.id] = tool;
 		for (id in parents) {
 			if (tabs = Q.Tool.from(parents[id].element, "Q/tabs")) {
-				for (i=0; i<elements.length; ++i) {
+				Q.each(elements, function (i) {
 					var element = elements[i];
 					var value = state.tabs.call(tool, Q.Tool.from(elements[i]), tabs);
 					var attr = value.isUrl() ? 'href' : 'data-name';
@@ -323,8 +323,18 @@ function _Streams_related_tool (options)
 					if (!tabs.$tabs.is(element)) {
 						tabs.$tabs = tabs.$tabs.add(element);
 					}
-				}
-				tabs.indicateCurrent();
+					var onLoad = Q.Tool.from(element).state.onLoad;
+					if (onLoad) {
+						onLoad.set(function () {
+							var tab = tabs.state.tab;
+							var $tab = $(tab);
+							if (tab === element) {
+								tabs.refresh();
+							}
+						});
+					}
+				});
+				tabs.refresh();
 				break;
 			}
 		}

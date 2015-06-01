@@ -26,9 +26,7 @@
 Q.Tool.jQuery('Q/contextual', function _Q_contextual(o) {
 
 	var $this = $(this);
-	if ($this.data('Q_contextual')) {
-		return;
-	}
+	var state = $this.state('Q/contextual');
 
 	// the first time when any contextual is added we need to preload its graphics,
 	if ($('.Q_contextual_arrows_preloaded').length == 0) {
@@ -69,12 +67,15 @@ Q.Tool.jQuery('Q/contextual', function _Q_contextual(o) {
 	var cid = Q.Contextual.add($this, contextual, null, o.size);
 	$this.data('Q_contextual_id', cid);
 	$this.data('Q_contextual', contextual);
+	
+	Q.handle(state.onConstruct, $this, [contextual, cid]);
 },
 
 {
 	'className': '',
 	'defaultHandler': null,
-	'size': null
+	'size': null,
+	'onConstruct': new Q.Event()
 },
 
 {

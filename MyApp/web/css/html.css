@@ -80,8 +80,8 @@ h2 { margin: 0px; }
 
 /* Dashboard contents */
 #dashboard>* { margin: 5px; padding: 0px; line-height: 30px; text-align: center; }
-#dashboard h1 { float: left; width: auto; padding-right: 5px; }
-#dashboard h2 { float: left; }
+#dashboard>h1 { float: left; width: auto; padding-right: 5px; }
+#dashboard>h2 { float: left; }
 #dashboard_user { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .Q_mobile #dashboard_user { float: right; margin: 0 5px 0 0; max-width: 40%;  }
 #dashboard .Q_contextual * { color: black; }
@@ -162,7 +162,7 @@ input[type=radio] { margin-right: 5px; }
 
 .Q_mobile #dashboard_slot,
 .Q_mobile #notices_slot { width: 100%; position: fixed; left: 0px; }
-.Q_mobile #dashboard h2 { display: none; }
+.Q_mobile #dashboard>h2 { display: none; }
 .Q_mobile .Q_overlay { width: 90%; }
 
 .Users_avatar_name { text-indent: 5px; }
@@ -170,8 +170,8 @@ input[type=radio] { margin-right: 5px; }
 /* Override default for a block-style website */
 html.Q_notMobile { height: 100%; }
 .Q_notMobile body { height: 100%; }
-.Q_notMobile #dashboard h1,
-.Q_notMobile #dashboard h2 { float: none; }
+.Q_notMobile #dashboard>h1,
+.Q_notMobile #dashboard>h2 { float: none; }
 .Q_notMobile #notices_slot { position: fixed; left: 0px; top: 0px; width: 100%; }
 .Q_notMobile #dashboard_slot { position: fixed; left: 15%; width: 20%; height: 80%; top: 10%; }
 .Q_notMobile #page { position: absolute; padding: 0px; top: 50px; left: 35%; width: 50%; height: 80%; top: 10%; }

@@ -317,21 +317,25 @@ Q.Tool.define("Q/tabs", function(options) {
 			}
 		}
 		if (!$overflow) {
+			tool.$overflow = null;
 			return callback && callback.call(tool);
 		}
+		tool.overflowIndex = index;
+		tool.$overflow = $overflow;
 		Q.addScript("plugins/Q/js/QTools.js", function () {
 			var elements = [];
 			for (var i=index+1; i<$tabs.length; ++i) {
-				elements.push($tabs.eq(i));
+				elements.push($tabs[i]);
 			}
 			$overflow.plugin("Q/contextual", {
 				elements: elements,
 				defaultHandler: function ($tab) {
 					tool.switchTo([$tab.attr('data-name'), $tab[0]]);
 				},
-				className: "Q_tabs_contextual"
-			}, function () {
-				callback && callback.call(tool);
+				className: "Q_tabs_contextual",
+				onConstruct: function ($contextual) {
+					callback && callback.call(tool);
+				}
 			});
 			tool.$overflowed = $(elements);
 		});

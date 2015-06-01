@@ -149,9 +149,8 @@ Q.Tool.define("Streams/inplace", function (options) {
 			}
 
 			var inplace = tool.setUpElement('div', 'Q/inplace', ipo);
-			Q.activate(inplace, function () {
-				$(tool.element).empty().append(inplace);
-			});
+			$(tool.element).empty().append(inplace);
+			Q.activate(inplace);
 		}
 	}
 	if (state.inplace && state.inplace.staticHtml) {

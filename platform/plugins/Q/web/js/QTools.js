@@ -2711,8 +2711,23 @@ Q.Contextual = {
 					
 					var event = (Q.info.isTouchscreen ? e.originalEvent.changedTouches[0] : e);
 					var target = (info.curScroll == 'iScroll' || info.curScroll == 'touchscroll'
-										 ? event.target : (info.moveTarget ? info.moveTarget[0] : event.target));
+							? event.target
+							: (info.moveTarget ? info.moveTarget[0] : event.target));
 					var px = Q.Pointer.getX(event), py = Q.Pointer.getY(event);
+					
+					var element = target;
+					while (element)
+					{
+						if (element.tagName && element.tagName.toLowerCase() == 'li' && $(element).parents('.Q_contextual').length != 0)
+							break;
+						element = element.parentNode;
+					}
+					
+					if ($(target).parentsUntil(element, '.Q_discouragePointerEvents').length
+					|| $('.Q_discouragePointerEvents', target).length) {
+						return;
+					}
+
 					
 					// if it was mouseup / touchend on the triggering element, then use it to switch to iScroll instead of $.fn.scroller
 					if (info.curScroll != 'iScroll' && info.curScroll != 'touchscroll' &&

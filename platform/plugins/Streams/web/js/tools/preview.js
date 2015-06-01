@@ -262,12 +262,16 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 			var icon = stream && stream.fields.icon && stream.fields.icon !== 'default'
 				? stream.fields.icon
 				: "default";
+			var p = Q.pipe(['inplace', 'icon'], function () {
+				tool.state.onLoad.handle.apply(tool, []);
+			});
 
 			var jq = tool.$('img.Streams_preview_icon');
 			if (jq.length) {
 				tool.state.onRefresh.handle.apply(tool, []);
-				jq.off('load.Streams-preview').on('load.Streams-preview', function () {
-					tool.state.onLoad.handle.apply(tool, []);
+				jq.off('load.Streams-preview')
+				.on('load.Streams-preview', function () {
+					p.fill('icon')(tool, []);
 				});
 				jq.attr('src', Q.url(
 					Q.Streams.iconUrl(icon, file), null, 
@@ -308,12 +312,15 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 				fields,
 				function (err, html) {
 					if (err) return;
+					tool.forEachChild('Q/inplace', function () {
+						p.fill('inplace')(this, arguments);
+					});
 					tool.element.innerHTML = html;
 					Q.activate(tool, function () {
 						tool.state.onRefresh.handle.apply(tool, []);
 						$('img', tool.element).off('load.Streams-preview')
 						.on('load.Streams-preview', function () {
-							tool.state.onLoad.handle.apply(tool, []);
+							p.fill('icon')(tool, []);
 						});
 						callback.apply(tool);
 					});

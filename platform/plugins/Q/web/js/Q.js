@@ -1709,6 +1709,7 @@ Q.Event.from = function _Q_Event_from(source, eventName) {
 
 var Evp = Q.Event.prototype;
 Evp.occurred = false;
+Evp.occurring = false;
 
 /**
  * Adds a handler to an event, or overwrites an existing one
@@ -2013,7 +2014,7 @@ Evp.filter = function _Q_Event_prototype_filter(test, key) {
 	var newEvent = new Q.Event();
 	this.add(function () {
 		if (!test.apply(this, arguments)) return 0;
-		return newEvent.handle.apply(newEvent, arguments);
+		return newEvent.handle.apply(this, arguments);
 	}, key);
 	return newEvent;
 };
@@ -2070,15 +2071,37 @@ Evp.onStop = function () {
  *  An optional callback that gets called when a new event is created.
  *  The "this" object is the Q.Event, and the parameters are the processed parameters
  *  passed to the returned factory function.
+ * @param {Function} [callback]
+ *  An optional callback that gets called when a new event is created.
+ *  The "this" object is the Q.Event, and the parameters are the processed parameters
+ *  passed to the returned factory function.
+ * @param {Function} [removeOnEmpty=false]
+ *  Pass true here to remove events from the factory after their last handler is removed.
+ *  They might be created again by the factory.
  * @return {Function}
  *  Returns a function that can take one or more index fields and return a Q.Event
  *  that was either already stored under those index fields or newly created.
  */
-Q.Event.factory = function (collection, defaults, callback) {
+Q.Event.factory = function (collection, defaults, callback, removeOnEmpty) {
 	if (!collection) {
 		collection = {};
 	}
 	defaults = defaults || [];
+	function _remove() {
+		var delimiter = "\t";
+		var args = this.indexes.split(delimiter);
+		var l = args.length, i, objs = [collection];
+		for (i=0; i<l; ++i) {
+			objs.push(objs[i][ args[i] ]);
+		}
+		for (i=l-1; i>=0; --i) {
+			var arg = args[i];
+			delete objs[i][arg];
+			if (!Q.isEmpty(objs[i])) {
+				break;
+			}
+		}
+	}
 	var _Q_Event_factory = function _Q_Event_factory_function() {
 		var args = Array.prototype.slice.call(arguments, 0);
 		var len = defaults.length;
@@ -2098,6 +2121,10 @@ Q.Event.factory = function (collection, defaults, callback) {
 		if (callback) {
 			callback.apply(e, args);
 		}
+		if (removeOnEmpty) {
+			e.onEmpty().set(_remove);
+		}
+		e.indexes = name;
 		return e;
 	}
 	_Q_Event_factory.collection = collection;
@@ -3127,7 +3154,7 @@ Q.Tool.onConstruct = Q.Event.factory(_constructToolHandlers, ["", _toolEventFact
  * @event onActivate
  * @param nameOrId {String} the name of the tool, such as "Q/inplace", or "id:" followed by tool's id
  */
-Q.Tool.onActivate = Q.Event.factory(_activateToolHandlers, ["", _toolEventFactoryNormalizeKey]);
+Q.Tool.onActivate = Q.Event.factory(_activateToolHandlers, ["", _toolEventFactoryNormalizeKey], null, true);
 
 /**
  * Returns Q.Event which occurs when a tool has been initialized
@@ -3135,7 +3162,7 @@ Q.Tool.onActivate = Q.Event.factory(_activateToolHandlers, ["", _toolEventFactor
  * @event onInit
  * @param nameOrId {String} the name of the tool, such as "Q/inplace", or "id:" followed by tool's id
  */
-Q.Tool.onInit = Q.Event.factory(_initToolHandlers, ["", _toolEventFactoryNormalizeKey]);
+Q.Tool.onInit = Q.Event.factory(_initToolHandlers, ["", _toolEventFactoryNormalizeKey], null, true);
 
 /**
  * Returns Q.Event which occurs when a tool is about to be removed
@@ -3143,7 +3170,7 @@ Q.Tool.onInit = Q.Event.factory(_initToolHandlers, ["", _toolEventFactoryNormali
  * @event beforeRemove
  * @param nameOrId {String} the name of the tool, such as "Q/inplace", or "id:" followed by tool's id
  */
-Q.Tool.beforeRemove = Q.Event.factory(_beforeRemoveToolHandlers, ["", _toolEventFactoryNormalizeKey]);
+Q.Tool.beforeRemove = Q.Event.factory(_beforeRemoveToolHandlers, ["", _toolEventFactoryNormalizeKey], null, true);
 
 /**
  * Traverses elements in a particular container, including the container, and removes + destroys all tools.
@@ -3441,28 +3468,32 @@ Tp.rendering = function (fields, dontWaitForAnimationFrame, callback, key) {
  * Gets child tools contained in the tool, as determined by their prefixes
  * based on the prefix of the tool.
  * @method children
- * @param {String} append The string to append to the prefix to find the child tools
- * @param {Number} levels Pass 1 here to get only the immediate children, 2 for immediate children and grandchildren, etc.
+ * @param {String} [name=""] Filter children by their tool name, such as "Q/inplace"
+ * @param {Number} [levels] Pass 1 here to get only the immediate children, 2 for immediate children and grandchildren, etc.
  * @return {Object} A hash of {prefix: Tool} pairs
  */
-Tp.children = function Q_Tool_prototype_children(append, levels) {
-	var result = {},
-		prefix2 = Q.normalize(this.prefix + (append || "")),
-		id, ni, i, ids;
+Tp.children = function Q_Tool_prototype_children(name, levels) {
+	var result = {};
+	var prefix = this.prefix;
+	var id, ni, i, ids;
+	name = name && Q.normalize(name);
 	for (id in Q.Tool.active) {
-		ni = Q.normalize(id);
-		if (id.length >= prefix2.length + (append ? 0 : 1)
-		&& ni.substr(0, prefix2.length) == prefix2) {
-			if (levels) {
-				ids = Q.Tool.active[id].parentIds();
-				for (i=0; i<levels; ++i) {
-					if (ids[i] === this.id) {
-						result[id] = Q.Tool.active[id];
-						break;
-					}
-				}
-			} else {
-				result[id] = Q.Tool.active[id];
+		var tool = Q.Tool.active[id];
+		if ((name && tool.name != name)
+		|| id.length <= prefix.length
+		|| id.substr(0, prefix.length) != prefix) {
+			continue;
+		}
+		if (!levels) {
+			result[id] = Q.Tool.active[id];
+			continue;
+		}
+		ids = tool.parentIds();
+		var l = Math.min(levels, ids.length);
+		for (i=0; i<l; ++i) {
+			if (ids[i] === this.id) {
+				result[id] = tool;
+				break;
 			}
 		}
 	}
@@ -3473,8 +3504,8 @@ Tp.children = function Q_Tool_prototype_children(append, levels) {
  * Gets one child tool contained in the tool, which matches the prefix
  * based on the prefix of the tool.
  * @method child
- * @param {String} append The string to append to the prefix to find the child tool
- * @return {Tool|null}
+ * @param {String} append The string to append to the tool prefix to find the child tool
+ * @return {Q.Tool|null}
  */
 Tp.child = function Q_Tool_prototype_child(append) {
 	var prefix2 = Q.normalize(this.prefix + (append || ""));
@@ -3490,10 +3521,9 @@ Tp.child = function Q_Tool_prototype_child(append) {
 };
 
 /**
- * Gets the first child tool contained in the tool, which matches the prefix
- * based on the prefix of the tool.
+ * Gets the ids of the parent, grandparent, etc. tools (in that order) of the given tool
  * @method parentIds
- * @return {Tool|null}
+ * @return {Q.Tool|null}
  */
 Tp.parentIds = function Q_Tool_prototype_parentIds() {
 	var prefix2 = Q.normalize(this.prefix), ids = [], id, ni;
@@ -3511,10 +3541,9 @@ Tp.parentIds = function Q_Tool_prototype_parentIds() {
 };
 
 /**
- * Gets parents tools containing the tool, as determined by their prefixes
- * based on the prefix of the tool.
+ * Gets parent tools, as determined by parentIds()
  * @method parents
- * @return {Object} A hash of {prefix: Tool} pairs
+ * @return {Object} A hash of {prefix: Q.Tool} pairs
  */
 Tp.parents = function Q_Tool_prototype_parents() {
 	var ids = [], i, id;
@@ -3528,10 +3557,9 @@ Tp.parents = function Q_Tool_prototype_parents() {
 };
 
 /**
- * Gets the first child tool contained in the tool, which matches the prefix
- * based on the prefix of the tool.
+ * Returns the immediate parent tool, if any
  * @method parent
- * @return {Tool|null}
+ * @return {Q.Tool|null}
  */
 Tp.parent = function Q_Tool_prototype_parent() {
 	var ids = [];
@@ -3628,23 +3656,29 @@ Tp.getElementsByClassName = function _Q_Tool_prototype_getElementsByClasName(cla
 };
 
 /**
- * Be notified whenever a child tool is activated, repeatedly if it is
- * removed and then activated again.
- * @event onChildActivate
- * @param append text to append to this tool's prefix to form child id
+ * Do something 
+ * @method forEachChild
+ * @param {String} [name=""] The tool name, such as "Q/inplace"
+ * @param {Number} [levels] Optionally pass 1 here to get only the immediate children, 2 for immediate children and grandchildren, etc.
+ * @param {Function} callback The callback to execute event handler
  */
-Tp.onChildActivate = function _Q_Tool_prototype_onChildActivate(append) {
-	return Q.Tool.onActivate('id:'+this.prefix+append);
-};
-
-/**
- * Be notified whenever a child tool is initialized, repeatedly if it is
- * removed and then activated again.
- * @event onChildInit
- * @param append text to append to this tool's prefix to form child id
- */
-Tp.onChildInit = function _Q_Tool_prototype_onChildInit(append) {
-	return Q.Tool.onInit('id:'+this.prefix+append);
+Tp.forEachChild = function _Q_Tool_prototype_forEachChild(name, levels, callback) {
+	if (typeof levels !== 'number') {
+		callback = levels;
+		levels = null;
+	}
+	name = Q.normalize(name);
+	var tool = this;
+	Q.each(tool.children(name, levels), callback);
+	var onActivate = Q.Tool.onActivate(name);
+	var key = onActivate.set(function () {
+		if (this.prefix.substr(0, tool.prefix.length) === tool.prefix) {
+			callback.apply(this, arguments);
+		}
+	});
+	tool.Q.beforeRemove.set(function () {
+		onActivate.remove(key);
+	});
 };
 
 /**
@@ -7007,7 +7041,7 @@ var _constructors = {};
  * @private
  * @static
  * @method _activateTools
- * @param {ToolElement} toolElement
+ * @param {HTMLElement} toolElement
  *  A tool's generated container div.
  * @param {Object} options
  *  Options that should be passed onto the tool
@@ -7054,6 +7088,7 @@ function _activateTools(toolElement, options, shared) {
 							collection[name].handle.call(this, name);
 						}
 					}
+					if (normalizedName === 'q_inplace') 
 					_activateToolHandlers[""] &&
 					_activateToolHandlers[""].handle.call(this, this.options);
 					_activateToolHandlers[normalizedName] &&
@@ -7121,7 +7156,7 @@ _activateTools.alreadyActivated = {};
  * @private
  * @static
  * @method _initTools
- * @param {ToolElement} toolElement
+ * @param {HTMLElement} toolElement
  *  A tool's generated container div
  */
 function _initTools(toolElement) {
