@@ -232,7 +232,7 @@
 .Q_extra_pane #suggestions
 {
 	list-style-type: none;
-	padding: 0px;
+	padding: 0;
 }
 
 .Q_extra_pane #suggestions li
@@ -244,19 +244,19 @@
 .Q_admin_pane
 {
 	float: left;
-	padding: 10px 10px 0px 10px;
+	padding: 10px 10px 0 10px;
 }
 
 .Q_extra_pane
 {
 	float: right;
-	padding: 10px 0px 10px 0px;
+	padding: 10px 0 10px 0;
 }
 
 .Q_mobile .Q_extra_pane
 {
 	float: right;
-	padding: 0px 0px 10px 10px;
+	padding: 0 0 10px 10px;
 }
 
 .Users_avatar_icon, .Users_avatar_name

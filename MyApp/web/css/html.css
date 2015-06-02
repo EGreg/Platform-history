@@ -7,7 +7,7 @@
 a { text-decoration: none; }
 html { background: #f2f2f2; height: 100%; }
 body { height: 100%; }
-h2 { margin: 0px; }
+h2 { margin: 0; }
 
 /* The various slot containers */
 #notices_slot {
@@ -17,20 +17,22 @@ h2 { margin: 0px; }
 	position: relative;
 	padding: 10px;
 	background: #fff;
-	box-shadow: #aaa 0px 0px 4px;
-	-webkit-box-shadow: #aaa 0px 0px 4px;
-	-moz-box-shadow: #aaa 0px 0px 4px;
+	box-shadow: #aaa 0 0 4px;
+	-webkit-box-shadow: #aaa 0 0 4px;
+	-moz-box-shadow: #aaa 0 0 4px;
 }
 #dashboard_slot {
 	position: fixed;
 	margin: auto;
-	border: solid 0px #aaa; 
+	border: solid 0 #aaa; 
+	left: 0px;
+	top: 0px;
 	width: 100%;
 	height: 50px;
 	z-index: 900;
 	text-align: left;
 	cursor: default; 
-    box-shadow: #aaa 0px 0px 4px; -webkit-box-shadow: #aaa 0px 0px 4px; -moz-box-shadow: #aaa 0px 0px 4px;
+    box-shadow: #aaa 0 0 4px; -webkit-box-shadow: #aaa 0 0 4px; -moz-box-shadow: #aaa 0 0 4px;
     background: #aaa; /* for non-css3 browsers */
     background: -webkit-gradient(linear, left top, left bottom, from(#aaa), to(#111)); /* for webkit browsers */
     background: -moz-linear-gradient(top,  #aaaaaa,  #111111); /* for firefox 3.6+ */
@@ -39,19 +41,19 @@ h2 { margin: 0px; }
 #dashboard_slot * { color: white; font-size: 24px; font-family: Arial, sans-serif; }
 #dashboard_slot input,
 #dashboard_slot textarea { color: black; }
-#page { position: absolute; left: 0%; width: 100%; top:50px; bottom: 0px; } 
+#page { position: absolute; left: 0%; width: 100%; top:50px; bottom: 0; } 
 
 #dashboard, #notices, #content { margin: auto; text-align: left; }
 #content { position: relative; }
 
 /* Notices contents */
-#notices_slot { text-align: center; margin: auto; padding: 0px; z-index: 5000; }
+#notices_slot { text-align: center; margin: auto; padding: 0; z-index: 5000; }
 #notices { margin: auto; }
 #notices_slot div.container { overflow: none; overflow-y: auto; }
-#notices_slot ul { list-style-type: none; padding: 0px; margin: auto; width: 700px; max-width: 100%; border: solid 1px #555; border-top: solid 1px #aaa; box-shadow: 0 0 5px #222; -moz-box-shadow: 0 0 5px #222; -webkit-box-shadow: 0 0 5px #222; cursor: pointer; }
-#notices_slot li { list-style-type: none; padding: 0px; margin: 0px; text-align: center; background: #ffd4aa; border: 0px; border-bottom: solid 1px #aaa; line-height: 30px; min-height: 30px; }
+#notices_slot ul { list-style-type: none; padding: 0; margin: auto; width: 700px; max-width: 100%; border: solid 1px #555; border-top: solid 1px #aaa; box-shadow: 0 0 5px #222; -moz-box-shadow: 0 0 5px #222; -webkit-box-shadow: 0 0 5px #222; cursor: pointer; }
+#notices_slot li { list-style-type: none; padding: 0; margin: 0; text-align: center; background: #ffd4aa; border: 0; border-bottom: solid 1px #aaa; line-height: 30px; min-height: 30px; }
 #notices_slot ul.Q_errors * { background-color: #ebb; color: #500; }
-#notices_slot ul.Q_errors li { text-align: left; padding: 0px 10px 0px 10px; }
+#notices_slot ul.Q_errors li { text-align: left; padding: 0 10px 0 10px; }
 #notices_slot .Q_field_name { float: right; font-size: 12px; padding-right: 10px; }
 #notices_slot button
 {
@@ -79,15 +81,15 @@ h2 { margin: 0px; }
 }
 
 /* Dashboard contents */
-#dashboard>* { margin: 5px; padding: 0px; line-height: 30px; text-align: center; }
+#dashboard>* { margin: 5px; padding: 0; line-height: 30px; text-align: center; }
 #dashboard>h1 { float: left; width: auto; padding-right: 5px; }
 #dashboard>h2 { float: left; }
 #dashboard_user { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .Q_mobile #dashboard_user { float: right; margin: 0 5px 0 0; max-width: 40%;  }
 #dashboard .Q_contextual * { color: black; }
 #dashboard td { vertical-align: middle; }
-#dashboard table { width: 100%; padding: 0px; margin: 0px; }
-#dashboard .Q_dashboard_logo { padding: 0px; }
+#dashboard table { width: 100%; padding: 0; margin: 0; }
+#dashboard .Q_dashboard_logo { padding: 0; }
 #dashboard .Q_dashboard_logo a { padding: 5px; border-radius: 5px; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; }
 #dashboard .Q_dashboard_logo img { height: 40px; }
 #dashboard .Q_dashboard_search { padding: 8px 10px 8px 10px; font-weight: bold; text-align: left; }
@@ -105,9 +107,9 @@ h2 { margin: 0px; }
 }
 
 /* Dashboard tabs */
-#dashboard .Q_tabs_tabs { border: 0px; }
-#dashboard .Q_tabs_tab { cursor: pointer; width: auto; margin: 5px 10px 0px 10px; border: 0px !important; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; background-color: #f8f8f8; background: none; line-height: 30px !important; text-align: center; }
-#dashboard .Q_tabs_tab:first-child { border-top: 0px solid #e5e5e5; border-left: 0px; }
+#dashboard .Q_tabs_tabs { border: 0; }
+#dashboard .Q_tabs_tab { cursor: pointer; width: auto; margin: 5px 10px 0 10px; border: 0 !important; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; background-color: #f8f8f8; background: none; line-height: 30px !important; text-align: center; }
+#dashboard .Q_tabs_tab:first-child { border-top: 0 solid #e5e5e5; border-left: 0; }
 #dashboard .Q_tabs_tab,
 #dashboard .Q_tabs_tab>* { cursor: pointer; vertical-align: middle; }
 #dashboard .Q_tabs_tab { text-decoration: none; color: white; }
@@ -161,7 +163,7 @@ input[type=checkbox],
 input[type=radio] { margin-right: 5px; }
 
 .Q_mobile #dashboard_slot,
-.Q_mobile #notices_slot { width: 100%; position: fixed; left: 0px; }
+.Q_mobile #notices_slot { width: 100%; position: fixed; left: 0; }
 .Q_mobile #dashboard>h2 { display: none; }
 .Q_mobile .Q_overlay { width: 90%; }
 
@@ -172,10 +174,10 @@ html.Q_notMobile { height: 100%; }
 .Q_notMobile body { height: 100%; }
 .Q_notMobile #dashboard>h1,
 .Q_notMobile #dashboard>h2 { float: none; }
-.Q_notMobile #notices_slot { position: fixed; left: 0px; top: 0px; width: 100%; }
+.Q_notMobile #notices_slot { position: fixed; left: 0; top: 0; width: 100%; }
 .Q_notMobile #dashboard_slot { position: fixed; left: 15%; width: 20%; height: 80%; top: 10%; }
-.Q_notMobile #page { position: absolute; padding: 0px; top: 50px; left: 35%; width: 50%; height: 80%; top: 10%; }
-.Q_notMobile #content_slot { min-height: 100%; padding: 0px; }
+.Q_notMobile #page { position: absolute; padding: 0; top: 50px; left: 35%; width: 50%; height: 80%; top: 10%; }
+.Q_notMobile #content_slot { min-height: 100%; padding: 0; }
 .Q_notMobile #content { padding: 20px; }
 .Q_notMobile #Users_avatar_tool { width: 100%; background: #222; background: rgba(255,255,255,.05); }
-.Q_notMobile #dashboard_user { float: none; position: absolute; width: 100%; margin: 10px 0px 10px 0px;  text-align: center;  bottom: 0; }
+.Q_notMobile #dashboard_user { float: none; position: absolute; width: 100%; margin: 10px 0 10px 0;  text-align: center;  bottom: 0; }

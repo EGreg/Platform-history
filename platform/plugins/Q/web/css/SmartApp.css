@@ -84,7 +84,7 @@
 
 .Q_dashboard_item_horizontal img
 {
-  margin-right: 0px;
+  margin-right: 0;
 }
 
 .Q_dashboard_expandable
@@ -136,7 +136,7 @@
 .Q_listing li:first-child { border-top: none !important; }
 .Q_listing li:last-child { border-bottom: none; }
 .Q_listing li .Q_listing_item_text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.Q_contextual { position: fixed; z-index: 10000; display: none; top: 0; left: 0; width: 250px; padding: 7px; background-color: black; border-radius: 5px 5px 5px 5px; -moz-border-radius: 5px 5px 5px 5px; -webkit-border-radius: 5px 5px 5px 5px; box-shadow: black 0px 0px 4px; -webkit-box-shadow: black 0px 0px 4px; -moz-box-shadow: black 0px 0px 4px; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none; filter: none !important; }
+.Q_contextual { position: fixed; z-index: 10000; display: none; top: 0; left: 0; width: 250px; padding: 7px; background-color: black; border-radius: 5px 5px 5px 5px; -moz-border-radius: 5px 5px 5px 5px; -webkit-border-radius: 5px 5px 5px 5px; box-shadow: black 0 0 4px; -webkit-box-shadow: black 0 0 4px; -moz-box-shadow: black 0 0 4px; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none; filter: none !important; }
 
 .Q_contextual_preview
 {
@@ -384,9 +384,9 @@
 {
 	color: black;
   background-color: #91C2F2;
-  box-shadow: #AAA 0px 0px 2px;
-  -webkit-box-shadow: #AAA 0px 0px 2px;
-  -moz-box-shadow: #AAA 0px 0px 2px;
+  box-shadow: #AAA 0 0 2px;
+  -webkit-box-shadow: #AAA 0 0 2px;
+  -moz-box-shadow: #AAA 0 0 2px;
 }
 
 .Q_player_buttons li:first-child
@@ -526,7 +526,7 @@
 	padding-left: 10px;
 	padding-right: 10px;
 
-	border-width:1px; font-size:1em; padding: 1px 5px 1px 5px; color: #fff; cursor:pointer; border-radius: 0.3em; -moz-border-radius: 0.3em;  -webkit-border-radius: 0.3em; border-color: rgba(200,200,200,0.5); border-bottom-color: rgba(0,0,200,0.2); border-right-color: rgba(0,0,200,0.2);	box-shadow: 0px 0px 1px rgba(50,50,50,0.5); -moz-box-shadow: 0px 0px 1px rgba(50,50,50,0.5); -webkit-box-shadow: 0px 0px 1px rgba(50,50,50,0.5);
+	border-width:1px; font-size:1em; padding: 1px 5px 1px 5px; color: #fff; cursor:pointer; border-radius: 0.3em; -moz-border-radius: 0.3em;  -webkit-border-radius: 0.3em; border-color: rgba(200,200,200,0.5); border-bottom-color: rgba(0,0,200,0.2); border-right-color: rgba(0,0,200,0.2);	box-shadow: 0 0 1px rgba(50,50,50,0.5); -moz-box-shadow: 0 0 1px rgba(50,50,50,0.5); -webkit-box-shadow: 0 0 1px rgba(50,50,50,0.5);
 	
 	background: #444; /* for non-css3 browsers */
 
@@ -599,8 +599,8 @@
 
 /* tabs -- Q_sections isn't used? */
 
-.Q_sections .Q_tabs_tab { float: left; clear: left; width: 160px; margin: 0px 10px 0px 10px; border-top: 1px solid #e5e5e5; border-right: 0px !important; -moz-border-radius: 3px; border-radius: 3px; -webkit-border-radius: 3px; background-color: #f8f8f8; background: none; font-size: 14px; }
-.Q_sections .Q_tabs_tab:first-child { border-top: 0px solid #e5e5e5; border-left: 0px; }
+.Q_sections .Q_tabs_tab { float: left; clear: left; width: 160px; margin: 0 10px 0 10px; border-top: 1px solid #e5e5e5; border-right: 0 !important; -moz-border-radius: 3px; border-radius: 3px; -webkit-border-radius: 3px; background-color: #f8f8f8; background: none; font-size: 14px; }
+.Q_sections .Q_tabs_tab:first-child { border-top: 0 solid #e5e5e5; border-left: 0; }
 .Q_sections .Q_tabs_tab,
 .Q_sections .Q_tabs_tab * { cursor: pointer; vertical-align: middle; }
 .Q_sections a.Q_tabs_tab { text-decoration: none; }

@@ -1,7 +1,7 @@
 .Q_panel_tool { text-align: left; }
-.Q_panel_tool_header { padding: 2px 0px 2px 0px; font-weight: bold; height: 20px; font-size: 14px; background-color: #EEE; }
+.Q_panel_tool_header { padding: 2px 0 2px 0; font-weight: bold; height: 20px; font-size: 14px; background-color: #EEE; }
 .Q_panel_tool_header button:active { background-color: #CCC; }
-.Q_panel_tool_title { padding: 2px 0px 0px 5px; }
+.Q_panel_tool_title { padding: 2px 0 0 5px; }
 .Q_collapsed .Q_panel_tool_title { cursor: pointer; }
 .Q_panel_tool_header .Q_panel_tool_buttons { float: right; }
 .Q_panel_tool_form { display: none; clear: both; padding: 5px; border: solid 1px #EEE; }

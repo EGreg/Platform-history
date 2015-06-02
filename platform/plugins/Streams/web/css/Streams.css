@@ -168,7 +168,7 @@
 }
 
 .Streams_participants_tool {
-	padding: 0px 5px 0px 5px;
+	padding: 0 5px 0 5px;
 	overflow: hidden;
 	height: 54px;
 }
@@ -192,7 +192,7 @@
 	display: block;
 	width: 100%;
 	font-size: 10px;
-	text-indent: 0px;
+	text-indent: 0;
 	text-align: center;
 	position: relative;
 }
@@ -208,7 +208,7 @@
 }
 
 .Streams_participants_tool .Users_avatar_icon {
-	box-shadow: #222 0px 0px 1px;
+	box-shadow: #222 0 0 1px;
 }
 
 .Streams_participants_tool .Users_avatar_icon_blank {
@@ -218,7 +218,7 @@
 .Streams_participants_tool .Streams_participants_summary {
 	color: white;
 	float: right;
-	text-shadow: rgba(0, 0, 0, 0.5) 0px 0px 5px;
+	text-shadow: rgba(0, 0, 0, 0.5) 0 0 5px;
 	width: 40px;
 	height: 25px;
 	line-height: 25px;
@@ -362,7 +362,7 @@
 .Streams_preview_add,
 .Streams_preview_icon,
 .Streams_preview_contents { display: inline-block; vertical-align: middle; }
-.Streams_preview h3 { margin: 0px; padding: 0px 0px 0px 10px; line-height: 50px; font-size: 30px; }
+.Streams_preview h3 { margin: 0; padding: 0 0 0 10px; line-height: 50px; font-size: 30px; }
 
 
 /* Streams access tool */
@@ -499,7 +499,7 @@
 }
 .Streams_chat_to_me .Streams_chat_tick {
 	float: left;
-	margin: 0px 0px 0px -19px
+	margin: 0 0 0 -19px
 }
 .Streams_chat_to_me .Streams_chat_bubble {
 	border-radius: 13px;
@@ -513,8 +513,8 @@
 }
 .Streams_chat_from_me .Streams_chat_tick {
 	float: right;
-	margin: 0px -19px 0px 0px;
-	background-position: 0px 13px;
+	margin: 0 -19px 0 0;
+	background-position: 0 13px;
 }
 .Streams_chat_from_me .Users_avatar_tool {
 	display: none;
@@ -530,7 +530,7 @@
 @media (min-width: 320px) and (max-width: 580px) {
 	.Streams_chat_tool .Users_avatar_name {
 		position: absolute;
-		top: 0px;
+		top: 0;
 	}
 	.Streams_chat_date {
 		width: 100%;
@@ -555,8 +555,8 @@
 #Streams_new_interest_title {
 	font-size: 17px;
 	white-space: nowrap;
-	padding: 0px 3px 0px 3px;
-	margin: 0px -3px 0px -3px;
+	padding: 0 3px 0 3px;
+	margin: 0 -3px 0 -3px;
     font-weight: 300;
 }
 
@@ -571,8 +571,8 @@
 }
 
 .Streams_interest_title.Q_selected {
-	padding: 0px 3px 0px 3px;
-	margin: 0px -3px 0px -3px;
+	padding: 0 3px 0 3px;
+	margin: 0 -3px 0 -3px;
     border-radius: 5px;
     font-weight: 300;
 }

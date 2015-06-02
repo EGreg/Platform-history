@@ -24,8 +24,8 @@
 	margin-right: 10px;
 	width: 300px;
 	box-shadow: black 2px 2px 4px;
-	-webkit-box-shadow: black 0px 0px 4px;
-	-moz-box-shadow: black 0px 0px 4px;
+	-webkit-box-shadow: black 0 0 4px;
+	-moz-box-shadow: black 0 0 4px;
 	-webkit-user-select: none;
 	-moz-user-select: none;
 	-ms-user-select: none;
@@ -55,7 +55,7 @@
 }
 
 .Q_columns_column .title_slot {
-	margin: 0px;
+	margin: 0;
 	padding: 5px;
 	line-height:40px;
     width: 80%;
@@ -88,8 +88,8 @@
 	position: fixed;
 	z-index: 1000;
 	width: 100%;
-	top: 0px;
-	left: 0px;
+	top: 0;
+	left: 0;
 }
 .Q_columns_tool.Q_fullscreen .column_slot {
 	position: relative;
@@ -99,9 +99,9 @@
 .Q_columns_loading { height: 40px; }
 .Q_columns_mask {
 	position: absolute; 
-	top: 0px; 
-	bottom: 0px; 
-	left: 0px; 
-	right: 0px; 
+	top: 0; 
+	bottom: 0; 
+	left: 0; 
+	right: 0; 
 	z-index: 9999; 
 }

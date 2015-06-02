@@ -30,8 +30,8 @@
 .Q_filter_fullscreen.Q_filter_begun {
 	position: relative;
 	width: 100% !important;
-	margin: 0px !important;
-	padding: 0px !important;
+	margin: 0 !important;
+	padding: 0 !important;
 }
 
 .Q_filter_fullscreen.Q_filter_begun .Q_placeholders_container {
@@ -41,10 +41,10 @@
 .Q_filter_fullscreen.Q_filter_begun .Q_filter_input {
 	width: 85% !important;
 	-webkit-max-logical-width: 100% !important;
-	margin: 0px !important;
+	margin: 0 !important;
 }
 
 .Q_filter_fullscreen.Q_filter_begun .Q_placeholder {
 	width: 100% !important;
-	margin: 0px !important;
+	margin: 0 !important;
 }
