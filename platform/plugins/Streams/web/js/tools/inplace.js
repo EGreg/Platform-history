@@ -21,6 +21,7 @@
  *   @param {Function} [options.create] Optional. You can pass a function here, which takes the tool as "this"
  *     and a callback as the first parameter, is supposed to create a stream and
  *     call the callback with (err, stream). If omitted, then the tool doesn't render.
+ *   @param {Q.Event} [options.onLoad]
  *   @param {Q.Event} [options.onUpdate]
  *   @param {Q.Event} [options.onError]
  */
@@ -145,12 +146,15 @@ Q.Tool.define("Streams/inplace", function (options) {
 				}
 				span.appendChild(div);
 				tool.element.appendChild(span);
+				Q.handle(state.onLoad, tool);
 				return; // leave the html that is currently in the element
 			}
 
 			var inplace = tool.setUpElement('div', 'Q/inplace', ipo);
 			$(tool.element).empty().append(inplace);
-			Q.activate(inplace);
+			Q.activate(inplace, function () {
+				Q.handle(state.onLoad, tool);
+			});
 		}
 	}
 	if (state.inplace && state.inplace.staticHtml) {
@@ -173,6 +177,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 	editable: true,
 	create: null,
 	inplace: {},
+	onLoad: new Q.Event(),
 	onUpdate: new Q.Event(),
 	onError: new Q.Event(function (err) {
 		var msg = Q.firstErrorMessage(err);

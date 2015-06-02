@@ -218,7 +218,7 @@ Streams.key = function (publisherId, streamName) {
  * @event onError
  */
 Streams.onError = new Q.Event(function (err, data) {
-	var code = Q.getObject(data, 0, 'errors', 0, 'code');
+	var code = Q.getObject([0, 'errors', 0, 'code'], data);
 	if (!code) return;
 	console.warn(Q.firstErrorMessage(err, data && data.errors));
 }, 'Streams.onError');

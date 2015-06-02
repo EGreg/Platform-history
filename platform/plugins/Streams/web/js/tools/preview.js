@@ -312,15 +312,19 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 				fields,
 				function (err, html) {
 					if (err) return;
-					tool.forEachChild('Q/inplace', function () {
-						p.fill('inplace')(this, arguments);
-					});
 					tool.element.innerHTML = html;
-					Q.activate(tool, function () {
+					Q.activate(tool, {
+						onLoad: {
+							"Streams/preview": function () {
+								p.fill('inplace').apply(this, arguments);
+							}
+						}
+					},
+					function () {
 						tool.state.onRefresh.handle.apply(tool, []);
 						$('img', tool.element).off('load.Streams-preview')
 						.on('load.Streams-preview', function () {
-							p.fill('icon')(tool, []);
+							p.fill('icon').call(tool);
 						});
 						callback.apply(tool);
 					});
