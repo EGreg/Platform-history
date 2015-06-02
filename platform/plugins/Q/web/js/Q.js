@@ -9051,19 +9051,19 @@ Q.Pointer = {
 	 * making the app feel more native there.
 	 * @param {Object} [options] possible options, which can include:
 	 * @param {String} [options.direction='both'] can be 'vertical', 'horizontal', or 'both'
-	 * @method preventTouchScrolling
+	 * @method preventRubberBand
 	 */
-	preventTouchScrolling: function (options) {
+	preventRubberBand: function (options) {
 		if (Q.info.platform === 'ios') {
 			Q.extend(_touchScrollingHandler.options, options);
 			Q.addEventListener(window, 'touchmove', _touchScrollingHandler);
 		}
 	},
 	/**
-	 * Can restore touch scrolling after preventTouchScrolling() was called
-	 * @method restoreTouchScrolling
+	 * Can restore touch scrolling after preventRubberBand() was called
+	 * @method restoreRubberBand
 	 */
-	restoreTouchScrolling: function () {
+	restoreRubberBand: function () {
 		Q.removeEventListener(window, 'touchmove', _touchScrollingHandler);
 	},
 	/**
