@@ -8445,13 +8445,13 @@ function _touchScrollingHandler(event) {
 		var hiddenWidth = p.scrollWidth - Math.min(
 			p.offsetWidth, Q.Pointer.windowWidth()
 		);
-		var hiddenHeight = p.scrollHeight - Math.min(
-			p.offsetHeight, Q.Pointer.windowHeight()
-		);
-		var s = (['hidden', 'visible'].indexOf(overflow) < 0);
 		var q = (p.tagName === 'HTML')
 			? document.getElementsByTagName('body')[0]
 			: p;
+		var hiddenHeight = q.scrollHeight - Math.min(
+			p.offsetHeight, Q.Pointer.windowHeight()
+		);
+		var s = (['hidden', 'visible'].indexOf(overflow) < 0);
 		if ((s || p.tagName === 'HTML')
 		&& hiddenHeight > 0
 		&& Q.Pointer.movement) {

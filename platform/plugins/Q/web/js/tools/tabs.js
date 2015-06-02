@@ -141,7 +141,7 @@ Q.Tool.define("Q/tabs", function(options) {
 			onActivate: new Q.Event(function () {
 				tool.indicateCurrent(tool.getName(tab));
 				tool.refresh();
-				state.onActivate.handle.call(this, tab, name);
+				state.onActivate.handle.call(tool, tab, name);
 			}, "Q/tabs"),
 			loadExtras: true,
 			ignorePage: tool.isInDialog(),
