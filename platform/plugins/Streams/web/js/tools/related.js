@@ -69,13 +69,13 @@ function _Streams_related_tool (options)
     onUpdate: new Q.Event(
 	function _Streams_related_onUpdate(result, entering, exiting, updating) {
 		function addComposer(streamType, params) {
-			// TODO: test whether the user can create streams of this type
+			// TODO: test whether the user can really create streams of this type
 			// and otherwise do not append this element
 			params.streamType = streamType;
 			var element = tool.elementForStream(
 				tool.state.publisherId, "", streamType, null, 
 				{ creatable: params }
-			).addClass('Streams_related_composer');
+			).addClass('Streams_related_composer Q_tabs_tab Q_contextual_inactive');
 			var $prev = $('.Streams_related_stream:first', $container).prev();
 			if ($prev.length) {
 				$prev.after(element);

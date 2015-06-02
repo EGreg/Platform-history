@@ -235,7 +235,7 @@ Q.Tool.define("Q/tabs", function(options) {
 		if (!href) {
 			href = state.urls && state.urls[name];
 		}
-		if (!href) {
+		if (!href && state.field && name) {
 			href = window.location.href.split('?')[0]
 				+ '?' + window.location.search.queryField(state.field, name);
 		}

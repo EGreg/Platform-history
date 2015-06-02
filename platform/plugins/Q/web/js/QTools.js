@@ -2693,6 +2693,9 @@ Q.Contextual = {
 			
 			Q.Contextual.endEventHandler = function(e)
 			{
+				if ($(e.target).hasClass('Q_contextual_inactive')) {
+					return;
+				}
 				if (Q.Contextual.current != -1)
 				{
 					var current = Q.Contextual.collection[Q.Contextual.current];

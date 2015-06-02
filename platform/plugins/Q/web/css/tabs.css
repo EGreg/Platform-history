@@ -15,3 +15,5 @@
 
 .Q_tabs_tab * { max-width: 100%; }
 .Q_tabs_tabs * { vertical-align: middle; }
+
+.Q_tabs_overflow .Q_actions_container { display: none; }

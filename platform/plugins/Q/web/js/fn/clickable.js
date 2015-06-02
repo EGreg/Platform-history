@@ -181,9 +181,9 @@ function _Q_clickable(o) {
 		$this.appendTo(stretcher).css({
 			position: 'absolute',
 			left: '0px',
-			top: '0px',
-			width: csw,
-			height: csh
+			top: '0px'
+			// width: csw,
+			// height: csh
 		});
 		var zindex;
 		var anim = null;
