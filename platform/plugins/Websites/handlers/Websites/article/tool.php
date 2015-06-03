@@ -15,17 +15,15 @@ function Websites_article_tool($params)
 	$publisherId = $params['publisherId'];
 	$streamName = $params['streamName'];
 	$article = Streams::fetchOne(null, $publisherId, $streamName);
-	$getintouch = Q::take(Q::ifset($params, 'getintouch', array()), array(
-		'emailSubject' => 'Reaching out from your website',
-		'classes' => 'Q_button Q_clickable'
-	));
 	$getintouch = array_merge(array(
 		'user' => $article->userId,
 		'email' => true,
 		'sms' => true,
 		'call' => true,
-		'between' => ""
-	), $getintouch);
+		'between' => "",
+		'emailSubject' => 'Reaching out from your website',
+		'classes' => 'Q_button Q_clickable'
+	), Q::ifset($params, 'getintouch', array()));
 	$edit = $article->testWriteLevel('edit');
 	if ($article->getintouch) {
 		if (is_array($git = json_decode($article->getintouch, true))) {
@@ -36,7 +34,7 @@ function Websites_article_tool($params)
 	$article->addPreloaded();
 	Q_Response::addStylesheet('plugins/Websites/css/Websites.css');
 	Q_Response::addScript("plugins/Websites/js/Websites.js");
-	Q_Response::setToolOptions(compact('publisherId', 'streamName'));
+	Q_Response::setToolOptions($params);
 	return Q::view("Websites/tool/article.php", 
 		compact('article', 'getintouch', 'edit', 'html')
 	);
