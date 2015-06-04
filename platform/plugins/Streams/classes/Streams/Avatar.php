@@ -171,29 +171,33 @@ class Streams_Avatar extends Base_Streams_Avatar
 				: '';
 			$attributes['class'] = "Streams_firstName$class";
 			$attr = Q_Html::attributes($attributes);
-			$fn = "<span $attr>".Q_Html::text($fn)."</span>";
+			$fn2 = "<span $attr>".Q_Html::text($fn)."</span>";
 			$attributes['class'] = "Streams_lastName$class";
 			$attr = Q_Html::attributes($attributes);
-			$ln = "<span $attr>".Q_Html::text($ln)."</span>";
+			$ln2 = "<span $attr>".Q_Html::text($ln)."</span>";
 			$attributes['class'] = "Streams_username$class";
 			$attr = Q_Html::attributes($attributes);
-			$u = "<span $attr>".Q_Html::text($u)."</span>";
+			$u2 = "<span $attr>".Q_Html::text($u)."</span>";
+		} else {
+			$fn2 = $fn;
+			$ln2 = $ln;
+			$u2 = $u;
 		}
 
 		if (!empty($options['short'])) {
-			return $fn ? $fn : $u;
+			return $fn ? $fn2 : $u2;
 		}
 
 		// $u = $u ? "\"$username\"" : '';
 
 		if ($fn and $ln) {
-			return "$fn $ln";
+			return "$fn2 $ln2";
 		} else if ($fn and !$ln) {
-			return $u ? "$fn $u" : $fn;
+			return $u2 ? "$fn2 $u2" : $fn2;
 		} else if (!$fn and $ln) {
-			return "$u $ln";
+			return "$u2 $ln2";
 		} else {
-			return $u ? $u : $default;
+			return $u ? $u2 : $default2;
 		}
 	}
 
