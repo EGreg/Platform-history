@@ -175,6 +175,9 @@ class Streams_Avatar extends Base_Streams_Avatar
 			$attributes['class'] = "Streams_lastName$class";
 			$attr = Q_Html::attributes($attributes);
 			$ln = "<span $attr>".Q_Html::text($ln)."</span>";
+			$attributes['class'] = "Streams_username$class";
+			$attr = Q_Html::attributes($attributes);
+			$u = "<span $attr>".Q_Html::text($u)."</span>";
 		}
 
 		if (!empty($options['short'])) {

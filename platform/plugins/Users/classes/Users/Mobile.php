@@ -97,16 +97,14 @@ class Users_Mobile extends Base_Users_Mobile
 			$token = Q_Config::get('Users', 'mobile', 'twilio', 'token', null);
 
 			if ($sid and $token) {
-				try {
+
 					$client = new Services_Twilio($sid, $token);
 					$message = $client->account->sms_messages->create(
 						$from, // From a valid Twilio number
 						$number, // Text this number
 						Q::view($view, $fields)
 					);
-				} catch (Exception $e) {
-					throw new Users_Exception_MobileMessage(array('error' => $e->getMessage()));
-				}
+
 			} else {
 				if(!Q_Config::get('Users', 'email', 'smtp', null)){
 					Q_Response::setNotice("Q/mobile", "Please set up transport in Users/mobile/twilio as in docs", false);
