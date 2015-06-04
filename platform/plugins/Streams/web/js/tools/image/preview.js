@@ -226,7 +226,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 },
 
 {
-	related: null,
+	relate: null,
 	editable: true,
 	creatable: {
 		title: "New Image",

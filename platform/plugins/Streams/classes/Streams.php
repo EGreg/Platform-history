@@ -1511,7 +1511,9 @@ abstract class Streams extends Base_Streams
 		// Check access to category stream, the stream to which other streams are related
 		$category = Streams::fetchOne($asUserId, $toPublisherId, $toStreamName);
 		if (!$category) {
-			throw new Q_Exception("Category not found", compact('toPublisherId', 'toStreamName'));
+			throw new Q_Exception("Category not found", compact(
+				'toPublisherId', 'toStreamName'
+			));
 		}
 
 		if (empty($options['skipAccess'])) {
@@ -2170,7 +2172,7 @@ abstract class Streams extends Base_Streams
 		
 		// Authorization check
 		if (empty($options['skipAccess'])) {
-			if ($user->id !== $publisherId) {
+			if ($asUserId !== $publisherId) {
 				$stream->calculateAccess($user->id);
 				if (!$stream->testWriteLevel('close')) {
 					throw new Users_Exception_NotAuthorized();
@@ -2179,7 +2181,7 @@ abstract class Streams extends Base_Streams
 		}
 
 		// Clean up relations from other streams to this category
-		list($relations, $related) = Streams::related($user->id, $stream->publisherId, $stream->name, true);
+		list($relations, $related) = Streams::related($asUserId, $stream->publisherId, $stream->name, true);
 		foreach ($relations as $r) {
 			try {
 				Streams::unrelate($user->id, $r->fromPublisherId, $r->fromStreamName, $r->type, $stream->publisherId, $stream->name);
@@ -2188,7 +2190,7 @@ abstract class Streams extends Base_Streams
 
 		// Clean up relations from this stream to categories
 		list($relations, $related) = Streams::related(
-			$user->id,
+			$asUserId,
 			$stream->publisherId,
 			$stream->name,
 			false

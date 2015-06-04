@@ -70,25 +70,39 @@ Q.Tool.define("Streams/html", function (options) {
 		case 'froala':
 		default:
 			var scripts = [
-				"plugins/Q/js/froala/froala_editor.min.js",
-				"plugins/Q/js/froala/plugins/fonts/fonts.min.js",
-				"plugins/Q/js/froala/plugins/fonts/font_family.min.js",
-				"plugins/Q/js/froala/plugins/fonts/font_size.min.js",
-				"plugins/Q/js/froala/plugins/colors.min.js",
-				"plugins/Q/js/froala/plugins/tables.min.js"
+				"plugins/Q/js/froala/js/froala_editor.min.js",
+				"plugins/Q/js/froala/js/plugins/tables.min.js",
+				"plugins/Q/js/froala/js/plugins/lists.min.js",
+				"plugins/Q/js/froala/js/plugins/colors.min.js",
+				"plugins/Q/js/froala/js/plugins/font_family.min.js",
+				"plugins/Q/js/froala/js/plugins/font_size.min.js",
+				"plugins/Q/js/froala/js/plugins/block_styles.min.js",
+				"plugins/Q/js/froala/js/plugins/media_manager.min.js",
+				"plugins/Q/js/froala/js/plugins/video.min.js"
 			];
 			if (Q.info.isIE(0, 8)) {
  				scripts.push("plugins/Q/js/froala/froala_editor_ie8.min.js");
 			}
             Q.addScript(scripts, function(){
-				Q.addStylesheet("plugins/Q/js/froala/css/froala_editor.css");
-                $(tool.element).editable(state.froala);
+				Q.addStylesheet([
+					"plugins/Q/font-awesome/css/font-awesome.min.css",
+					"plugins/Q/js/froala/css/froala_editor.min.css",
+					"plugins/Q/js/froala/css/froala_style.min.css"
+				]);
+                $(tool.element).editable(state.froala)
+				.on('editable.afterRemoveImage', function (e, editor, $img) {
+					var src = $img.attr('src');
+					var parts = src.split('/');
+					var publisherId = parts.slice(-5, -4).join('/');
+					var streamName = parts.slice(-4, -1).join('/');
+					Q.Streams.Stream.remove(publisherId, streamName);
+				});
             });
 		}
 		function _blur() {
             var content = state.editorObject
 				? state.editorObject.getData()
-				: $(tool.element).editable('getHTML')[0];
+				: $(tool.element).editable('getHTML');
 			if (state.editorObject) {
 				editor.focusManager.blur();
 			}

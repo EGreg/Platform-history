@@ -281,7 +281,7 @@ function _Streams_related_tool (options)
         var o = Q.extend({
             publisherId: publisherId,
             streamName: streamName,
-			related: {
+			relate: {
 				publisherId: state.publisherId,
 				streamName: state.streamName,
 				type: state.relationType,

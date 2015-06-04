@@ -21,6 +21,18 @@ function Q_response($params)
 		Q_Response::setCookie('Q_ct', $_GET['Q_ct']);
 	}
 
+	// If output is set, use that
+	$output = Q_Response::output();
+	if (isset($output)) {
+		if ($output === true) {
+			return;
+		}
+		if (is_string($output)) {
+			echo $output;
+		}
+		return;
+	}
+
 	// Redirect to success page, if requested.
 	$isAjax = Q_Request::isAjax();
 	if (empty($errors) and empty($exception)) {

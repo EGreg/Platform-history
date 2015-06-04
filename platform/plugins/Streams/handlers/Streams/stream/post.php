@@ -1,16 +1,25 @@
 <?php
 
 /**
- * Used to create a new stream
- *
- * @param {array} $_REQUEST 
- *   publisherId, type
- *   Q.Streams.related.publisherId, Q.Streams.related.name, Q.Streams.related.weight
- *   dontSubscribe (optional)
- *   icon (optional) see fields for Q/image/post
- * @return {void}
+ * Used by HTTP clients to create a new stream in the system.
+ * @method Streams/stream/post
+ * @param {array} [$params] Parameters that can come from the request
+ *   @param {string} $params.publisherId  Required. The id of the user to publish the stream.
+ *   @param {string} $params.type Required. The type of the stream.
+ *   @param {string} [$params.related.publisherId] Optionally indicate the publisher of the stream to relate the newly created to. Used together with the related.streamName option.
+ *   @param {string} [$params.related.streamName] Optionally indicate the name of a stream to relate the newly crated stream to. This is often necessary in order to obtain permissions to create the stream.
+ *   @param {bool} [$params.dontSubscribe=false] Pass 1 or true here in order to skip auto-subscribing to the newly created stream.
+ *   @param {array} [$params.icon] This is used to upload a custom icon for the stream which will then be saved in different sizes. See fields for Q/image/post method
+ *     @param {string} [$params.icon.data]  Required for icon. Base64-encoded image data URI - see RFC 2397
+ *     @param {string} [$params.icon.path="uploads"] parent path under web dir (see subpath)
+ *     @param {string} [$params.icon.subpath=""] subpath that should follow the path, to save the image under
+ *     @param {string} [$params.icon.merge=""] path under web dir for an optional image to use as a background
+ *     @param {string} [$params.icon.crop] array with keys "x", "y", "w", "h" to crop the original image
+ *     @param {string} [$params.icon.save=array("x" => "")] array of $size => $basename pairs
+ *      where the size is of the format "WxH", and either W or H can be empty.
  */
 function Streams_stream_post($params) {
+	
 	$user = Users::loggedInUser(true);
 	$publisherId = Streams::requestedPublisherId();
 	if (empty($publisherId)) {
@@ -29,10 +38,10 @@ function Streams_stream_post($params) {
 
 	// Should this stream be related to another stream?
 	$relate = array();
-	$relate['streamName'] = Q_Request::special("Streams.related.streamName", null);
+	$relate['streamName'] = Q_Request::special("Streams.related.streamName", null, $req);
 	if (isset($relate['streamName'])) {
-		$relate['publisherId'] = Q_Request::special("Streams.related.publisherId", $publisherId);
-		$relate['type'] = Q_Request::special("Streams.related.type", "");
+		$relate['publisherId'] = Q_Request::special("Streams.related.publisherId", $publisherId, $req);
+		$relate['type'] = Q_Request::special("Streams.related.type", "", $req);
 		$relate['weight'] = "+1"; // TODO: introduce ways to have "1" and "+1" for some admins etc.
 	}
 	
@@ -66,4 +75,5 @@ function Streams_stream_post($params) {
 	}
 
 	Streams::$cache['stream'] = $stream;
+	
 }

@@ -1706,8 +1706,9 @@ class Streams_Stream extends Base_Streams_Stream
 	function iconUrl($basename = null)
 	{
 		if (empty($this->icon)) return null;
-		if (Q_Valid::url($this->icon)) return $this->icon;
-		$url = "plugins/Streams/img/icons/{$this->icon}";
+		$url = (Q_Valid::url($this->icon))
+			? $this->icon
+			: "plugins/Streams/img/icons/{$this->icon}";
 		if ($basename) {
 			if (strpos($basename, '.') === false) {
 				$basename = "$basename.png";

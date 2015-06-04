@@ -539,22 +539,26 @@ class Q_Request
 	 * @method special
 	 * @param {string} $fieldname the name of the field, which can be namespaced as "Module.fieldname"
 	 * @param {mixed} $default what to return if field is missing
+	 * @param {string} [$source=null] optionally provide an array to use instead of $_REQUEST
 	 * @static
 	 * @return {mixed|null}
 	 */
-	static function special($fieldname, $default)
-	{		
+	static function special($fieldname, $default, $source = null)
+	{
+		if (!$source) {
+			$source = $_REQUEST;
+		}
 		// PHP replaces dots with underscores
-		if (isset($_REQUEST["Q_$fieldname"])) {
-			return $_REQUEST["Q_$fieldname"];
+		if (isset($source["Q_$fieldname"])) {
+			return $source["Q_$fieldname"];
 		}
 		$fieldname = str_replace(array('/', '.'), '_', $fieldname);
-		if (isset($_REQUEST["Q_$fieldname"])) {
-			return $_REQUEST["Q_$fieldname"];
+		if (isset($source["Q_$fieldname"])) {
+			return $source["Q_$fieldname"];
 		}
 		if ($qf = Q_Config::get('Q', 'web', 'queryField', false)) {
-			if (isset($_REQUEST[$qf][$fieldname])) {
-				return $_REQUEST[$qf][$fieldname];
+			if (isset($source[$qf][$fieldname])) {
+				return $source[$qf][$fieldname];
 			}
 		}
 		
