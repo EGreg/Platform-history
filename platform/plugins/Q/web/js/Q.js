@@ -5735,15 +5735,16 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 
 	function stateChangeInIE() { // function to watch scripts load in IE
 		// Execute as many scripts in order as we can
-		var script, pendingIEScripts = Q.addScript.pendingIEScripts;
-		while (pendingIEScripts[0]
-		&& (pendingIEScripts[0].readyState == 'loaded' 
-			|| pendingIEScripts[0].readyState == 'complete'
+		var script;
+		while (_pendingIEScripts[0]
+		&& (_pendingIEScripts[0].readyState == 'loaded' 
+			|| _pendingIEScripts[0].readyState == 'complete'
 		)) {
-			script = pendingIEScripts.shift();
+			script = _pendingIEScripts.shift();
 			script.onreadystatechange = null; // avoid future loading events from this script (eg, if src changes)
 			container.appendChild(script);
-			onload2(null, script, script.getAttribute('src'));
+			onload2(null, script, script.src);
+			_pendingIESrcs[script.src] = false;
 		}
 	}
 	
@@ -5833,14 +5834,6 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 	
 	if (!o || !o.duplicate) {
 		var scripts = document.getElementsByTagName('script');
-		var qaps = Q.addScript.pendingIEScripts;
-		if (qaps.length) { // for IE < 10
-			var arr = [].concat(qaps);
-			for (i=0; i<scripts.length; ++i) {
-				arr.push(scripts[i]);
-			}
-			scripts = arr;
-		}
 		for (i=0; i<scripts.length; ++i) {
 			script = scripts[i];
 			if (script.getAttribute('src') !== src) {
@@ -5923,10 +5916,13 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 		script.async = false;
 		container.appendChild(script);
 	} else if (firstScript.readyState) { // IE<10
-		// create a script and add it to our todo pile
-		Q.addScript.pendingIEScripts.push(script);
-		script.onreadystatechange = stateChangeInIE; // listen for state changes
-		script.setAttribute('src', src); // setting src after onreadystatechange listener is necessary for cached scripts
+		if (!_pendingIESrcs[src]) {
+			// create a script and add it to our todo pile
+			_pendingIEScripts.push(script);
+			script.onreadystatechange = stateChangeInIE; // listen for state changes
+			script.src = src; // setting src after onreadystatechange listener is necessary for cached scripts
+			_pendingIESrcs[src] = true;
+		}
 	} else { // fall back to defer
 		script.setAttribute('defer', 'defer');
 		script.setAttribute('src', src);
@@ -5939,7 +5935,8 @@ Q.addScript.onLoadCallbacks = {};
 Q.addScript.onErrorCallbacks = {};
 Q.addScript.added = {};
 Q.addScript.loaded = {};
-Q.addScript.pendingIEScripts = [];
+var _pendingIEScripts = [];
+var _pendingIESrcs = {};
 
 Q.addScript.options = {
 	duplicate: false,
