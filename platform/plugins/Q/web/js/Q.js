@@ -700,6 +700,25 @@ if (!Elp.getElementsByClassName) {
 }
 
 }
+	
+(function() {
+	if(navigator.appVersion.indexOf('MSIE 8') > 0) {
+		var _slice = Array.prototype.slice;
+		Array.prototype.slice = function() {
+			if(this instanceof Array) {
+				return _slice.apply(this, arguments);
+			} else {
+				var result = [];
+				var start = (arguments.length >= 1) ? arguments[0] : 0;
+				var end = (arguments.length >= 2) ? arguments[1] : this.length;
+				for(var i=start; i<end; i++) {
+					result.push(this[i]);
+				}
+				return result;
+			}
+		};
+	}
+})();
 
 if (!window.requestAnimationFrame) {
 	window.requestAnimationFrame =
@@ -5716,10 +5735,12 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 
 	function stateChangeInIE() { // function to watch scripts load in IE
 		// Execute as many scripts in order as we can
-		var script, pendingScripts = Q.addScript.pendingScripts;
-		while (pendingScripts[0]
-		&& (pendingScripts[0].readyState == 'loaded' || pendingScripts[0].readyState == 'complete')) {
-			script = pendingScripts.shift();
+		var script, pendingIEScripts = Q.addScript.pendingIEScripts;
+		while (pendingIEScripts[0]
+		&& (pendingIEScripts[0].readyState == 'loaded' 
+			|| pendingIEScripts[0].readyState == 'complete'
+		)) {
+			script = pendingIEScripts.shift();
 			script.onreadystatechange = null; // avoid future loading events from this script (eg, if src changes)
 			container.appendChild(script);
 			onload2(null, script, script.getAttribute('src'));
@@ -5812,6 +5833,14 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 	
 	if (!o || !o.duplicate) {
 		var scripts = document.getElementsByTagName('script');
+		var qaps = Q.addScript.pendingIEScripts;
+		if (qaps.length) { // for IE < 10
+			var arr = [].concat(qaps);
+			for (i=0; i<scripts.length; ++i) {
+				arr.push(scripts[i]);
+			}
+			scripts = arr;
+		}
 		for (i=0; i<scripts.length; ++i) {
 			script = scripts[i];
 			if (script.getAttribute('src') !== src) {
@@ -5895,10 +5924,7 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 		container.appendChild(script);
 	} else if (firstScript.readyState) { // IE<10
 		// create a script and add it to our todo pile
-		if (!Q.addScript.pendingScripts) {
-			Q.addScript.pendingScripts = [];
-		}
-		Q.addScript.pendingScripts.push(script);
+		Q.addScript.pendingIEScripts.push(script);
 		script.onreadystatechange = stateChangeInIE; // listen for state changes
 		script.setAttribute('src', src); // setting src after onreadystatechange listener is necessary for cached scripts
 	} else { // fall back to defer
@@ -5913,6 +5939,7 @@ Q.addScript.onLoadCallbacks = {};
 Q.addScript.onErrorCallbacks = {};
 Q.addScript.added = {};
 Q.addScript.loaded = {};
+Q.addScript.pendingIEScripts = [];
 
 Q.addScript.options = {
 	duplicate: false,
@@ -7170,7 +7197,7 @@ function _initTools(toolElement) {
 			normalizedId = Q.normalize(tool.id);
 			if (!tool.initialized) {
 				tool.initialized = true;
-				Q.handle(tool.Q && tool.Q.onInit, tool, tool.options);
+				Q.handle(tool.Q && tool.Q.onInit, tool, [tool.options]);
 				_initToolHandlers[""] &&
 				_initToolHandlers[""].handle.call(tool, tool.options);
 				_initToolHandlers[normalizedName] &&

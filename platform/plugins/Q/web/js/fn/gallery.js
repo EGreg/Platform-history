@@ -157,6 +157,7 @@ Q.Tool.jQuery('Q/gallery', function _Q_gallery(o) {
 			return;
 		}
 		var image = o.images[index];
+		if (!image) return;
 		var img = $('<img />').attr({
 			alt: image.caption ? image.caption : 'image ' + index,
 			src: Q.url(image.src)
