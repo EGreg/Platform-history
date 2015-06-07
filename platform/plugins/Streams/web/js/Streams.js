@@ -3146,7 +3146,7 @@ function _onResultHandler(subject, params, args, ret, original) {
 
 Q.Tool.onMissingConstructor.set(function (constructors, normalized) {
 	var str = "_preview";
-	if (normalized.substr(-str.length) === str) {
+	if (normalized.substr(normalized.length-str.length) === str) {
 		constructors[normalized] = "plugins/Streams/js/tools/preview.js";
 	}
 }, 'Streams');

@@ -33,28 +33,28 @@ Q.Tool.define("Streams/related",
 
 function _Streams_related_tool (options)
 {
-    // check for required options
+	// check for required options
 	var state = this.state;
-    if ((!options.publisherId || !options.streamName)
-    && (!options.stream || Q.typeOf(options.stream) !== 'Streams.Stream')) {
-        throw new Q.Error("Streams/related tool: missing options.stream");
-    }
-    if (options.relationType === undefined) {
-        throw new Q.Error("Streams/related tool: missing options.relationType");
-    }
+	if ((!options.publisherId || !options.streamName)
+	&& (!options.stream || Q.typeOf(options.stream) !== 'Streams.Stream')) {
+		throw new Q.Error("Streams/related tool: missing options.stream");
+	}
+	if (options.relationType === undefined) {
+		throw new Q.Error("Streams/related tool: missing options.relationType");
+	}
 
 	state.publisherId = state.publisherId || state.stream.fields.publisherId;
 	state.streamName = state.streamName || state.stream.fields.streamName;
-    
+	
 	state.refreshCount = 0;
 
-    // render the tool
-    this.refresh();
+	// render the tool
+	this.refresh();
 },
 
 {
-    publisherId: Q.info.app,
-    isCategory: true,
+	publisherId: Q.info.app,
+	isCategory: true,
 	realtime: false,
 	editable: {},
 	creatable: {},
@@ -66,7 +66,7 @@ function _Streams_related_tool (options)
 		return Q.Streams.key(previewTool.state.publisherId, previewTool.state.streamName);
 	},
 	toolType: function (streamType) { return streamType+'/preview'; },
-    onUpdate: new Q.Event(
+	onUpdate: new Q.Event(
 	function _Streams_related_onUpdate(result, entering, exiting, updating) {
 		function addComposer(streamType, params) {
 			// TODO: test whether the user can really create streams of this type
@@ -102,7 +102,7 @@ function _Streams_related_tool (options)
 			});
 		}
 		
-        var tool = this;
+		var tool = this;
 		var state = tool.state;
 		var $te = $(tool.element);
 		var $container = $te;
@@ -160,10 +160,10 @@ function _Streams_related_tool (options)
 		}
 		
 		var elements = [];
-        Q.each(result.relations, function (i) {
+		Q.each(result.relations, function (i) {
 			if (!this.from) return;
 			var tff = this.from.fields;
-            var element = tool.elementForStream(
+			var element = tool.elementForStream(
 				tff.publisherId, 
 				tff.name, 
 				tff.type, 
@@ -172,14 +172,14 @@ function _Streams_related_tool (options)
 			$(element).addClass('Streams_related_stream');
 			elements.push(element);
 			$container.append(element);
-        });
+		});
 		Q.activate(tool.element, function () {
 			tool.integrateWithTabs(elements);
 			tool.state.onRefresh.handle.call(tool);
 		});
-        // The elements should animate to their respective positions, like in D3.
+		// The elements should animate to their respective positions, like in D3.
 
-    }, "Streams/related"),
+	}, "Streams/related"),
 	onRefresh: new Q.Event()
 },
 
@@ -191,12 +191,12 @@ function _Streams_related_tool (options)
 	 * @param {Function} An optional callback to call after refresh has completed.
 	 *  It receives (result, entering, exiting, updating) arguments.
 	 */
-    refresh: function (callback) {
-        var tool = this;
+	refresh: function (callback) {
+		var tool = this;
 		var state = tool.state;
-        var publisherId = state.publisherId;
-        var streamName = state.streamName;
-        Q.Streams.retainWith(tool).related(
+		var publisherId = state.publisherId;
+		var streamName = state.streamName;
+		Q.Streams.retainWith(tool).related(
 			publisherId, 
 			streamName, 
 			state.relationType, 
@@ -204,49 +204,49 @@ function _Streams_related_tool (options)
 			state.relatedOptions,
 			relatedResult
 		);
-        
-        function relatedResult(errorMessage) {
+		
+		function relatedResult(errorMessage) {
 			if (errorMessage) {
 				console.warn("Streams/related refresh: " + errorMessage);
 				return;
 			}
-            var result = this;
-            var entering = exiting = updating = null;
-            function comparator(s1, s2, i, j) {
-                return s1 && s2 && s1.fields && s2.fields
+			var result = this;
+			var entering = exiting = updating = null;
+			function comparator(s1, s2, i, j) {
+				return s1 && s2 && s1.fields && s2.fields
 					&& s1.fields.publisherId === s2.fields.publisherId
-                    && s1.fields.name === s2.fields.name;
-            }
+					&& s1.fields.name === s2.fields.name;
+			}
 			var tsr = tool.state.result;
-            if (tsr) {
-                exiting = Q.diff(tsr.relatedStreams, result.relatedStreams, comparator);
-                entering = Q.diff(result.relatedStreams, tsr.relatedStreams, comparator);
-                updating = Q.diff(result.relatedStreams, entering, entering, comparator);
-            } else {
-                exiting = updating = [];
+			if (tsr) {
+				exiting = Q.diff(tsr.relatedStreams, result.relatedStreams, comparator);
+				entering = Q.diff(result.relatedStreams, tsr.relatedStreams, comparator);
+				updating = Q.diff(result.relatedStreams, entering, entering, comparator);
+			} else {
+				exiting = updating = [];
 				entering = result.relatedStreams;
-            }
-            tool.state.onUpdate.handle.apply(tool, [result, entering, exiting, updating]);
+			}
+			tool.state.onUpdate.handle.apply(tool, [result, entering, exiting, updating]);
 			Q.handle(callback, tool, [result, entering, exiting, updating]);
-            
-            // Now that we have the stream, we can update the event listeners again
-            var dir = tool.state.isCategory ? 'To' : 'From';
-            var eventNames = ['onRelated'+dir, 'onUnrelated'+dir, 'onUpdatedRelate'+dir];
-            if (tool.state.realtime) {
-                Q.each(eventNames, function (i, eventName) {
-                    result.stream[eventName]().set(onChangedRelations, tool);
-                });
-            } else {
-                Q.each(eventNames, function (i, eventName) {
-                    result.stream[eventName]().remove(tool);
-                });
-            }
-            tool.state.result = result;
+			
+			// Now that we have the stream, we can update the event listeners again
+			var dir = tool.state.isCategory ? 'To' : 'From';
+			var eventNames = ['onRelated'+dir, 'onUnrelated'+dir, 'onUpdatedRelate'+dir];
+			if (tool.state.realtime) {
+				Q.each(eventNames, function (i, eventName) {
+					result.stream[eventName]().set(onChangedRelations, tool);
+				});
+			} else {
+				Q.each(eventNames, function (i, eventName) {
+					result.stream[eventName]().remove(tool);
+				});
+			}
+			tool.state.result = result;
 			tool.state.lastMessageOrdinal = result.stream.fields.messageCount;
-        }
-        function onChangedRelations(msg, fields) {
+		}
+		function onChangedRelations(msg, fields) {
 			// TODO: REPLACE THIS WITH AN ANIMATED UPDATE BY LOOKING AT THE ARRAYS entering, exiting, updating
-            var isCategory = tool.state.isCategory;
+			var isCategory = tool.state.isCategory;
 			if (fields.type !== tool.state.relationType) {
 				return;
 			}
@@ -254,13 +254,13 @@ function _Streams_related_tool (options)
 			|| msg.byUserId != Q.Users.loggedInUser.id
 			|| msg.byClientId != Q.clientId()
 			|| msg.ordinal !== tool.state.lastMessageOrdinal + 1) {
-            	tool.refresh();
+				tool.refresh();
 			} else {
 				tool.refresh(); // TODO: make the weights of the items in between update in the client
 			}
 			tool.state.lastMessageOrdinal = msg.ordinal;
-        }
-    },
+		}
+	},
 
 	/**
 	 * You don't normally have to call this method, since it's called automatically.
@@ -276,11 +276,11 @@ function _Streams_related_tool (options)
 	 *  The elements of the tools representing the related streams
 	 * @return {HTMLElement} An element ready for Q.activate
 	 */
-    elementForStream: function (publisherId, streamName, streamType, weight, options) {
+	elementForStream: function (publisherId, streamName, streamType, weight, options) {
 		var state = this.state;
-        var o = Q.extend({
-            publisherId: publisherId,
-            streamName: streamName,
+		var o = Q.extend({
+			publisherId: publisherId,
+			streamName: streamName,
 			relate: {
 				publisherId: state.publisherId,
 				streamName: state.streamName,
@@ -288,11 +288,11 @@ function _Streams_related_tool (options)
 				weight: weight
 			},
 			editable: state.editable
-        }, options);
+		}, options);
 		var e = this.setUpElement(state.tag || 'div', state.toolType(streamType), o);
 		e.style.visibility = 'visible';
  		return e;
-    },
+	},
 
 	/**
 	 * You don't normally have to call this method, since it's called automatically.

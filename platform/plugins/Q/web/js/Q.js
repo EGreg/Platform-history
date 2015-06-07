@@ -808,13 +808,12 @@ Q.typeOf = function _Q_typeOf(value) {
 			s = 'array';
 		} else if (typeof value.typename != 'undefined' ) {
 			return value.typename;
+		} else if (value.constructor === window.jQuery) {
+			return 'array';
 		} else if (typeof value.constructor != 'undefined'
 		&& typeof value.constructor.name != 'undefined') {
 			if (value.constructor.name == 'Object') {
 				return 'object';
-			}
-			if (value.constructor === window.jQuery) {
-				return 'array';
 			}
 			return value.constructor.name;
 		} else if ((x = Object.prototype.toString.apply(value)).substr(0, 8) === "[object ") {
@@ -3861,7 +3860,7 @@ Q.Tool.byId = function _Q_Tool_byId(id, name) {
 Q.Tool.calculatePrefix = function _Q_Tool_calculatePrefix(id) {
 	if (id.match(/_tool$/)) {
 		return id.substring(0, id.length-4);
-	} else if (id.substr(-1) === '_') {
+	} else if (id.substr(id.lengh-1) === '_') {
 		return id;
 	} else {
 		return id + "_";
@@ -3878,7 +3877,7 @@ Q.Tool.calculatePrefix = function _Q_Tool_calculatePrefix(id) {
 Q.Tool.calculateId = function _Q_Tool_calculatePrefix(id) {
 	if (id.match(/_tool$/)) {
 		return id.substring(0, id.length-5);
-	} else if (id.substr(-1) === '_') {
+	} else if (id.substr(id.length-1) === '_') {
 		return id.substring(0, id.length-1);
 	} else {
 		return id;
@@ -5744,7 +5743,6 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 			script.onreadystatechange = null; // avoid future loading events from this script (eg, if src changes)
 			container.appendChild(script);
 			onload2(null, script, script.src);
-			_pendingIESrcs[script.src] = false;
 		}
 	}
 	
@@ -5834,6 +5832,14 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 	
 	if (!o || !o.duplicate) {
 		var scripts = document.getElementsByTagName('script');
+		var ieStyle = _pendingIEScripts.length;
+		if (ieStyle) {
+			var arr = [].concat(_pendingIEScripts);
+			for (i=0; i<scripts.length; ++i) {
+				arr.push(scripts[i]);
+			}
+			scripts = arr;
+		}
 		for (i=0; i<scripts.length; ++i) {
 			script = scripts[i];
 			if (script.getAttribute('src') !== src) {
@@ -5849,7 +5855,7 @@ Q.addScript = function _Q_addScript(src, onload, options) {
     				break;
 				}
 			}
-			if (outside) {
+			if (outside && !ieStyle) {
 				container.appendChild(script);
 			}
 			// the script already exists in the document
@@ -5916,13 +5922,10 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 		script.async = false;
 		container.appendChild(script);
 	} else if (firstScript.readyState) { // IE<10
-		if (!_pendingIESrcs[src]) {
-			// create a script and add it to our todo pile
-			_pendingIEScripts.push(script);
-			script.onreadystatechange = stateChangeInIE; // listen for state changes
-			script.src = src; // setting src after onreadystatechange listener is necessary for cached scripts
-			_pendingIESrcs[src] = true;
-		}
+		// create a script and add it to our todo pile
+		_pendingIEScripts.push(script);
+		script.onreadystatechange = stateChangeInIE; // listen for state changes
+		script.src = src; // setting src after onreadystatechange listener is necessary for cached scripts
 	} else { // fall back to defer
 		script.setAttribute('defer', 'defer');
 		script.setAttribute('src', src);
@@ -5936,7 +5939,6 @@ Q.addScript.onErrorCallbacks = {};
 Q.addScript.added = {};
 Q.addScript.loaded = {};
 var _pendingIEScripts = [];
-var _pendingIESrcs = {};
 
 Q.addScript.options = {
 	duplicate: false,

@@ -354,7 +354,8 @@ Q.Tool.define("Q/columns", function(options) {
 				show.width = $div.width();
 				show.height = $div.height();
 				for (var k in hide) {
-					if (hide[k].toString().substr(-1) === '%') {
+					var str = hide[k].toString();
+					if (str.substr(str.length-1) === '%') {
 						hide[k] = show.height * parseInt(hide[k]) / 100;
 					}
 				}
