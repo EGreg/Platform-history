@@ -324,8 +324,9 @@ Sp.sameDomain = function _String_prototype_sameDomain (url2, options) {
  * @param {Object} obj The object to bind as the context for the function call
  * @param {Object} options If supplied, binds these options and pushes them as the last argument to the function call.
  */
-if (!Function.prototype.bind)
-Function.prototype.bind = function _Function_prototype_bind(obj, options) {
+var Fp = Function.prototype;
+if (!Fp.bind)
+Fp.bind = function _Function_prototype_bind(obj, options) {
 	var method = this;
 	if (!obj) obj = window;
 	if (!options) {
@@ -344,9 +345,9 @@ Function.prototype.bind = function _Function_prototype_bind(obj, options) {
  * @class Array
  * @description Q extended methods for Arrays
  */
-
-if (!Array.prototype.indexOf)
-Array.prototype.indexOf = function _Array_prototype_indexOf(searchElement /*, fromIndex */ ) {
+var Ap = Array.prototype;
+if (!Ap.indexOf)
+Ap.indexOf = function _Array_prototype_indexOf(searchElement /*, fromIndex */ ) {
 	if (this === 0 || this === null) {
 		throw new TypeError();
 	}
@@ -3430,7 +3431,10 @@ var Tp = Q.Tool.prototype;
  */
 Tp.stateChanged = function Q_Tool_prototype_stateChanged(names) {
 	if (typeof names === 'string') {
-		names = names.split(',').map(function (str) { return str.trim(); });
+		names = names.split(',');
+		for (var i=0,l=names.length; i<l; ++i) {
+			names[i] = names[i].trim();
+		}
 	}
 	var l = names.length;
 	for (var i=0; i<l; ++i) {
@@ -3452,7 +3456,10 @@ Tp.stateChanged = function Q_Tool_prototype_stateChanged(names) {
 Tp.rendering = function (fields, dontWaitForAnimationFrame, callback, key) {
 	var tool = this;
 	if (typeof fields === 'string') {
-		fields = fields.split(',').map(function (str) { return str.trim(); });
+		fields = fields.split(',');
+		for (var i=0,l=fields.length; i<l; ++i) {
+			fields[i] = fields[i].trim();
+		}
 	}
 	if (!fields.length) return false;
 	if (typeof dontWaitForAnimationFrame === 'function') {
