@@ -1,6 +1,8 @@
 <?php
 
 /**
+ * This tool renders tabs which behave appropriately in many different environments
+ *
  * @param {Object} [options] Options to pass to the tool
  *  @param {Array} [options.tabs] An associative array of name: title pairs.
  *  @param {Array} [options.urls] An associative array of name: url pairs to override the default urls.

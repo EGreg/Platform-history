@@ -4930,7 +4930,8 @@ Q.removeEventListener = function _Q_addEventListener(element, eventName, eventHa
 };
 
 /**
- * Triggers a method or Q.Event on all the tools inside a particular element
+ * Triggers a method or Q.Event on all the tools inside a particular element,
+ * traversing in a depth-first manner.
  * @static
  * @method trigger
  * @param {String} eventName  Required, the name of the method or Q.Event to trigger
@@ -5041,30 +5042,31 @@ Q.load = function _Q_load(plugins, callback, options) {
  *  'cacheBust': Number of milliseconds before a new cachebuster is appended
  */
 Q.url = function _Q_url(what, fields, options) {
+	var what2 = what || '';
 	if (fields) {
 		for (var k in fields) {
-			what += '?'+encodeURIComponent(k)+'='+encodeURIComponent(fields[k]);
+			what2 += '?'+encodeURIComponent(k)+'='+encodeURIComponent(fields[k]);
 		}
 	}
 	if (options && options.cacheBust) {
-		what += "?Q.cacheBust="+Math.floor(Date.now()/options.cacheBust);
+		what2 += "?Q.cacheBust="+Math.floor(Date.now()/options.cacheBust);
 	}
-	var parts = what.split('?');
+	var parts = what2.split('?');
 	if (parts.length > 2) {
-		what = parts.slice(0, 2).join('?') + '&' + parts.slice(2).join('&');
+		what2 = parts.slice(0, 2).join('?') + '&' + parts.slice(2).join('&');
 	}
 	var result = '';
 	var baseUrl = (options && options.baseUrl) || Q.info.proxyBaseUrl || Q.info.baseUrl;
 	if (!what) {
-		result = baseUrl;
-	} else if (what.isUrl()) {
-		result = what;
+		result = baseUrl + (what === '' ? '/' : '');
+	} else if (what2.isUrl()) {
+		result = what2;
 	} else {
-		result = baseUrl + ((what.substr(0, 1) == '/') ? '' : '/') + what;
+		result = baseUrl + ((what2.substr(0, 1) == '/') ? '' : '/') + what2;
 	}
 	if (Q.url.options.beforeResult) {
 		var params = {
-			what: what,
+			what: what2,
 			fields: fields,
 			result: result
 		};
@@ -6348,7 +6350,8 @@ Q.replace = function _Q_replace(container, source, options) {
 	var retainedToolsArray = [];
 	var newOptionsArray = [];
 	Q.find(source, null, function (incomingElement) {
-		var element = document.getElementById(incomingElement.id);
+		var element = incomingElement.id
+			&& document.getElementById(incomingElement.id);
 		if (element && element.getAttribute('data-Q-retain') !== null
 		&& !incomingElement.getAttribute('data-Q-replace') !== null) {
 			// If a tool exists with this exact id and has "data-Q-retain",
@@ -9950,17 +9953,17 @@ function _Q_loadUrl_fillSlots (res, url, options) {
 		if (name.toUpperCase() === 'TITLE') {
 			window.document.title = res.slots[name];
 		} else if (elem = options.slotContainer(name, res)) { 
-			try {
+			// try {
 				Q.replace(elem, res.slots[name], options);
 				if (pos = Q.getObject(['Q', 'scroll', url], elem)) {
 					elem.scrollLeft = pos.left;
 					elem.scrollTop = pos.top;
 				}
-			} catch (e) {
-				debugger; // pause here if debugging
-				console.warn('slot ' + name + ' could not be filled');
-				console.warn(e);
-			}
+			// } catch (e) {
+				// debugger; // pause here if debugging
+				// console.warn('slot ' + name + ' could not be filled');
+				// console.warn(e);
+			// }
 			elements[name] = elem;
 		}
 	}

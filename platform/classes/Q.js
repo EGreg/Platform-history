@@ -2676,18 +2676,18 @@ Q.firstErrorMessage = function _Q_firstErrorMessage(data /*, data2, ... */) {
  *  'cacheBust': Number of milliseconds before a new cachebuster is appended
  */
 Q.url = function _Q_url(what, fields, options) {
-	what = encodeURI(what);
+	var what2 = what;
 	if (fields) {
 		for (var k in fields) {
-			what += '?'+encodeURIComponent(k)+'='+encodeURIComponent(fields[k]);
+			what2 += '?'+encodeURIComponent(k)+'='+encodeURIComponent(fields[k]);
 		}
 	}
 	if (options && options.cacheBust) {
-		what += "?Q.cacheBust="+Math.floor(Date.now()/options.cacheBust);
+		what2 += "?Q.cacheBust="+Math.floor(Date.now()/options.cacheBust);
 	}
-	var parts = what.split('?');
+	var parts = what2.split('?');
 	if (parts.length > 2) {
-		what = parts.slice(0, 2).join('?') + '&' + parts.slice(2).join('&');
+		what2 = parts.slice(0, 2).join('?') + '&' + parts.slice(2).join('&');
 	}
 	var result = '';
 	var baseUrl = (options && options.baseUrl);
@@ -2697,11 +2697,11 @@ Q.url = function _Q_url(what, fields, options) {
 			+ (cs ? '/' + cs : '');
 	}
 	if (!what) {
-		result = baseUrl;
-	} else if (what.isUrl()) {
-		result = what;
+		result = baseUrl + (what === '' ? '/' : '');
+	} else if (what2.isUrl()) {
+		result = what2;
 	} else {
-		result = baseUrl + ((what.substr(0, 1) == '/') ? '' : '/') + what;
+		result = baseUrl + ((what2.substr(0, 1) == '/') ? '' : '/') + what;
 	}
 	return result;
 };

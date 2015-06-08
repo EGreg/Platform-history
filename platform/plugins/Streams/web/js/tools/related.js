@@ -313,30 +313,30 @@ function _Streams_related_tool (options)
 		parents = tool.parents();
 		parents[tool.id] = tool;
 		for (id in parents) {
-			if (tabs = Q.Tool.from(parents[id].element, "Q/tabs")) {
-				Q.each(elements, function (i) {
-					var element = elements[i];
-					var value = state.tabs.call(tool, Q.Tool.from(elements[i]), tabs);
-					var attr = value.isUrl() ? 'href' : 'data-name';
-					elements[i].addClass("Q_tabs_tab")
-						.setAttribute(attr, value);
-					if (!tabs.$tabs.is(element)) {
-						tabs.$tabs = tabs.$tabs.add(element);
-					}
-					var onLoad = Q.Tool.from(element).state.onLoad;
-					if (onLoad) {
-						onLoad.set(function () {
-							var tab = tabs.state.tab;
-							var $tab = $(tab);
-							if (tab === element) {
-								tabs.refresh();
-							}
-						});
-					}
-				});
-				tabs.refresh();
-				break;
-			}
+			tabs = Q.Tool.from(parents[id].element, "Q/tabs");
+			if (!tabs) continue;
+			Q.each(elements, function (i) {
+				var element = elements[i];
+				var value = state.tabs.call(tool, Q.Tool.from(elements[i]), tabs);
+				var attr = value.isUrl() ? 'href' : 'data-name';
+				elements[i].addClass("Q_tabs_tab")
+					.setAttribute(attr, value);
+				if (!tabs.$tabs.is(element)) {
+					tabs.$tabs = tabs.$tabs.add(element);
+				}
+				var onLoad = Q.Tool.from(element).state.onLoad;
+				if (onLoad) {
+					onLoad.set(function () {
+						var tab = tabs.state.tab;
+						var $tab = $(tab);
+						if (tab === element) {
+							tabs.refresh();
+						}
+					});
+				}
+			});
+			tabs.refresh();
+			break;
 		}
 	}
 }

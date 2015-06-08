@@ -49,7 +49,7 @@ Q.Tool.define("Q/tabs", function(options) {
 			tool.switchTo([element.getAttribute('data-name'), element]);	
 		}, 0);
 	}).click(function (event) {
-		//event.preventDefault();
+		event.preventDefault();
 		// return false;
 	});
 	
@@ -182,10 +182,16 @@ Q.Tool.define("Q/tabs", function(options) {
 			if (!element) {
 				return false;
 			}
+			Q.activate(element); // out of turn, but on IE it is sometimes necessary
 			tool = element.Q('Q/tabs');
 		}
 		var $tabs = tool.$tabs;
-		var url = window.location.href.split('#')[0];
+		var url = location.hash.queryField('url');
+		if (url === undefined) {
+			url = window.location.href.split('#')[0];
+		} else {
+			url = Q.url(url);
+		}
 		var state = tool.state;
 		var defaultTab = null;
 		$tabs.removeClass('Q_current');
