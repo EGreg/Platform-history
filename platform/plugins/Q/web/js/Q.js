@@ -9972,17 +9972,17 @@ function _Q_loadUrl_fillSlots (res, url, options) {
 		if (name.toUpperCase() === 'TITLE') {
 			window.document.title = res.slots[name];
 		} else if (elem = options.slotContainer(name, res)) { 
-			// try {
+			try {
 				Q.replace(elem, res.slots[name], options);
 				if (pos = Q.getObject(['Q', 'scroll', url], elem)) {
 					elem.scrollLeft = pos.left;
 					elem.scrollTop = pos.top;
 				}
-			// } catch (e) {
-				// debugger; // pause here if debugging
-				// console.warn('slot ' + name + ' could not be filled');
-				// console.warn(e);
-			// }
+			} catch (e) {
+				debugger; // pause here if debugging
+				console.warn('slot ' + name + ' could not be filled');
+				console.warn(e);
+			}
 			elements[name] = elem;
 		}
 	}
