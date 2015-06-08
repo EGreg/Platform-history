@@ -4882,6 +4882,12 @@ Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandl
 		}
 		return;
 	}
+	if (element === window
+	&& detected.name === 'explorer'
+	&& detected.mainVersion <= 8
+	&& ['mousedown','mouseup','click','dblclick'].indexOf(eventName) >= 0) {
+		element = document;
+	}
 	if (element.addEventListener) {
 		element.addEventListener(eventName, handler, useCapture || false);
 	} else if (element.attachEvent) {
@@ -4919,6 +4925,12 @@ Q.removeEventListener = function _Q_addEventListener(element, eventName, eventHa
 			Q.removeEventListener(element, eventName[i], eventHandler);
 		}
 		return;
+	}
+	if (element === window
+	&& detected.name === 'explorer'
+	&& detected.mainVersion <= 8
+	&& ['mousedown','mouseup','click','dblclick'].indexOf(eventName) >= 0) {
+		element = document;
 	}
 	if (element.removeEventListener) {
 		element.removeEventListener(eventName, handler, false);
