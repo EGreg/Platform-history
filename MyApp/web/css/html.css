@@ -84,8 +84,9 @@ h2 { margin: 0; }
 #dashboard>* { margin: 5px; padding: 0; line-height: 30px; text-align: center; }
 #dashboard>h1 { float: left; width: auto; padding-right: 5px; }
 #dashboard>h2 { float: left; }
-#dashboard_user { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.Q_mobile #dashboard_user { float: right; margin: 0 5px 0 0; max-width: 40%;  }
+#dashboard_user { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; float: right;  }
+.Q_mobile #dashboard_user { max-width: 40%; }
+.Q_mobile.Users_loggedIn #dashboard_user { margin: 0 5px 0 0; }
 #dashboard .Q_contextual * { color: black; }
 #dashboard td { vertical-align: middle; }
 #dashboard table { width: 100%; padding: 0; margin: 0; }
@@ -169,7 +170,8 @@ input[type=radio] { margin-right: 5px; }
 
 .Users_avatar_name { text-indent: 5px; }
 
-/* Override default for a block-style website */
+/* The following lines override default styles for a block-style website */
+/* Try removing them and seeing what happens */
 html.Q_notMobile { height: 100%; }
 .Q_notMobile body { height: 100%; }
 .Q_notMobile #dashboard>h1,
