@@ -313,7 +313,7 @@ class Q_Html
 		$attributes = array())
 	{	
 		if (! is_array($list))
-			return '</select><div class="Q_error">The list for options must be an array.</div>';
+			return '</select><div class="Q_error">The list for Q_Html::options must be an array.</div>';
 		if (!isset($attributes))
 			$attributes = array();	
 		if (empty($ids))
@@ -1215,20 +1215,23 @@ class Q_Html
 	 * and if we locate it under a previous theme url, we use that one.
 	 * NOTE: If your webserver supports .htaccess files, you can implement
 	 * cascading themes much more efficiently: simply push ONE theme url
-	 * using tihs function, and implement the cascade using .htaccess files.
+	 * using this function, and implement the cascade using .htaccess files.
 	 * @method pushThemeUrl
 	 * @static
-	 * @param {string} $theme_url The url to be prepended to all non-absolute "src" attributes 
+	 * @param {string} $theme The url to be prepended to all non-absolute "src" attributes 
 	 * (except for iframes) rendered by Q_Html
-	 * @return {string|null} The theme url previously at the end of the cascade, if any
+	 * @return {array} The new list of themes
 	 */
-	static function pushThemeUrl ($theme_url)
+	static function pushThemeUrl ($theme)
 	{
-		$prev_theme_url = Q_Config::get('Q', 'theme_url');
-		Q_Config::set('Q', 'theme_urls', null, $theme_url);
-		$url = Q_Valid::url($theme_url) ? $theme_url : Q_Request::baseUrl().'/'.$theme_url;
-		Q_Config::set('Q', 'theme_url', $url);
-		return $prev_theme_url;
+		if (!self::$theme) {
+			self::$theme = Q_Config::get('Q', 'theme', null);
+		}
+		self::$theme = Q_Valid::url($theme)
+			? $theme
+			: Q_Request::baseUrl().'/'.$theme;
+		self::$themes[] = self::$theme;
+		return self::$themes;
 	}
 
 	/**
@@ -1240,7 +1243,7 @@ class Q_Html
 	 */
 	static function themeUrl ()
 	{
-		return Q_Config::get('Q', 'theme_url', Q_Request::baseUrl());
+		return isset(self::$theme) ? self::$theme : Q_Request::baseUrl();
 	}
 	
 	/**
@@ -1273,29 +1276,30 @@ class Q_Html
 		}
 		
 		$filename = false;
-		$theme_url = Q_Uri::url(self::themeUrl());
-		$theme_urls = Q_Config::get('Q', 'theme_urls', array(null));
 		if (Q_Valid::url($file_path)) {
 			$url = $file_path;
 		} else {
-			$c = count($theme_urls);
+			$theme = Q_Uri::url(self::themeUrl());
+			$themes = self::$themes;
+			$c = count($themes);
 			if ($c > 1) {
 				// At least two theme URLs have been loaded
 				// Do the cascade
 				for ($i = $c - 1; $i >= 0; -- $i) {
 					try {
 						$filename = Q_Uri::filenameFromUrl(
-							$theme_urls[$i] . '/' . $file_path);
+							$themes[$i] . '/' . $file_path
+						);
 					} catch (Exception $e) {
 						continue;
 					}
 					if ($filename and file_exists($filename)) {
-						$theme_url = $theme_urls[$i];
+						$theme = $themes[$i];
 						break;
 					}
 				}
 			}
-			$url = $theme_url . '/' . $file_path;
+			$url = $theme . '/' . $file_path;
 		}
 		
 		if (empty($filename)) {
@@ -1389,21 +1393,21 @@ class Q_Html
 		
 	/**
 	 * The theme url to be used in various methods of this class.
-	 * @property $theme_url
+	 * @property $theme
 	 * @type string
 	 * @static
 	 * @protected
 	 */
-	protected static $theme_url = null;
+	protected static $theme = null;
 	
 	/**
 	 * The cascade of theme urls
-	 * @property $theme_urls
+	 * @property $themes
 	 * @type array
 	 * @static
 	 * @protected
 	 */
-	protected static $theme_urls = array(null);
+	protected static $themes = array(null);
 	
 	/**
 	 * The id prefix to be prepended to all ids passed in
