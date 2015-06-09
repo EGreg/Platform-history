@@ -6,7 +6,7 @@
 	</select>
 	of
 	<div class="Places_location_whileObtaining">
-		<?php echo Q_Html::img('img/map.png', 'map', array(
+		<?php echo Q_Html::img($map['prompt'], 'map', array(
 			'class' => 'Places_location_set '
 		)) ?> 
 	</div>

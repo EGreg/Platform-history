@@ -46,3 +46,5 @@
 	-o-transition: background .3s linear;
 	transition: background .3s linear;
 }
+
+.Places_location_update { text-align: center; }
