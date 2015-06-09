@@ -21,7 +21,12 @@ function Websites_seo_tool($options)
 		$sha1 = sha1(Q_Dispatcher::uri());
 		$seoStreamName = "Websites/seo/$sha1";
 		$stream = Streams::fetchOne(null, $websitesUserId, $seoStreamName);
-		if (!$stream or !$stream->testWriteLevel('suggest')) {
+		$user = Users::loggedInUser();
+		if (!$user or ($stream and !$stream->testWriteLevel('suggest'))) {
+			$options['skip'] = true;
+		}
+		if (!$stream
+		and !Streams::isAuthorizedToCreate($user->id, $websitesUserId, 'Websites/seo')) {
 			$options['skip'] = true;
 		}
 	}
