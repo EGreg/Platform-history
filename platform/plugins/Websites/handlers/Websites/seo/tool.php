@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Q Tools
- * @module Q-tools
- * @main Q-tools
+ * Websites Tools
+ * @module Websites-tools
+ * @main Websites-tools
  */
 	
 /**

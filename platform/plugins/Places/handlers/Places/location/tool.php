@@ -1,7 +1,6 @@
 <?php
 
 /**
- * Places Tools
  * @module Places-tools
  */
 

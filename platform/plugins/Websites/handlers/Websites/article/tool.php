@@ -1,6 +1,12 @@
 <?php
 
 /**
+ * Websites tools
+ * @module Websites-tools
+ * @main
+ */
+
+/**
  * This tool generates an HTML article viewer that lets authorized users edit the article.
  * @class Websites article
  * @constructor

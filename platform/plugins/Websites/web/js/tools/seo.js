@@ -1,6 +1,10 @@
 (function (Q, $, window, document, undefined) {
 
 /**
+ * @module Websites-tools
+ */
+
+/**
  * Tool for admins to edit the meta tags on a page, for SEO purposes.
  * @method Websites/seo
  * @param {Object} [options]
