@@ -15,7 +15,6 @@
  * @param [$_REQUEST.heading]
  * @param [$_REQUEST.speed]
  * @param [$_REQUEST.timezone]
-
  * @param [$_REQUEST.]
  * @param [$_REQUEST.]
  *

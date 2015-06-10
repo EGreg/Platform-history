@@ -3,6 +3,19 @@
 var Streams = Q.Streams;
 var Interests = Streams.Interests;
 
+/**
+ * Streams Tools
+ * @module Streams-tools
+ */
+	
+/**
+ * Tool for user to manage their interests in a community
+ * @class Streams interests
+ * @constructor
+ * @param {Object} [options] This is an object of parameters for this function
+ *  @param {String} [options.communityId=Q.info.app] The id of the user representing the community publishing the interests
+ *  @param {String} [options.cachebust=1000*60*60*24] How often to reload the list of major community interests
+ */
 Q.Tool.define("Streams/interests", function (options) {
 	var tool = this;
 	var state = tool.state;

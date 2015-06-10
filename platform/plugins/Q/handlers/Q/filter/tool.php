@@ -1,6 +1,10 @@
 <?php
 
 /**
+ * @module Q-tools
+ */
+
+/**
  * Implements an input that filters an associated list (like an autocomplete)
  * @class Q filter
  * @constructor

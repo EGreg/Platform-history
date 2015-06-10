@@ -4,12 +4,12 @@
  * Makes a timestamp which is periodically updated.
  * Initially shows time offsets in '<some_time> ago' manner. Later represents time depending on format,
  * wisely excluding unnecessary detais (i.e. 'year' if timestamp has been made this year, 'year' and 'month if in this month etc).
- * @param array $options
- *	 An associative array of parameters, which can include:
- *	 "time" => Unix timestamp (in seconds), defaults to value of time() call.
- *	 "format" => formatting string which makes specific timestamp representation.
+ * @class Q timestamp
+ * @constructor
+ * @param {array} $options Options for the tool
+ *	@param {integer} [$options.time=time()] Unix timestamp (in seconds), defaults to value of time() call.
+ *	@param {string} [$options.format] formatting string which makes specific timestamp representation.
  *	 Can contain placeholders supported by strftime() and also few special placeholders with specific functionality.
- * @return string
  */
 function Q_timestamp_tool($options)
 {

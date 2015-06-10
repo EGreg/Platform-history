@@ -1,8 +1,7 @@
 /*jshint node:true */
 /**
- * Websites model
+ * Websites plugin
  * @module Websites
- * @main Websites
  */
 var Q = require('Q');
 

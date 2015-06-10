@@ -1,8 +1,13 @@
 <?php
 
 /**
+ * @module Q-tools
+ */
+
+/**
  * This tool generates an inline editor, along with a form tag.
  * @class Q inplace
+ * @constructor
  * @param {array} [$options] An associative array of parameters, containing:
  *   @param {string} $options.fieldInput  Required. HTML representing a text input, textarea, or select.
  *   @param {string} $options.type  Required. The type of the input. Can be "textarea", "text" or "select"

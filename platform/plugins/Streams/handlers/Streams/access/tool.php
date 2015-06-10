@@ -1,14 +1,19 @@
 <?php
 
 /**
+ * @module Streams-tools
+ */
+
+/**
  * Access tool
- * @param array $options
- *  "publisherId" => the id of the user who is publishing the stream
- *  "streamName" => the name of the stream for which to edit access levels
- *  "tabs" => optional array of tab name => title. Defaults to read, write, admin tabs.
- *  "ranges" => optional. Associative array with keys "read", "write", "admin"
- *    and values as associative arrays of ($min, $max) for the displayed levels.
- *  "controls" => optionally set this to true to render only the controls
+ * @class Streams access
+ * @constructor
+ * @param {array} $options Options for the tool
+ * @param {string} [$options.publisherId] the id of the user who is publishing the stream
+ * @param {string} [$options.streamName] the name of the stream for which to edit access levels
+ * @param {array} [$options.tabs] array of tab name => title. Defaults to read, write, admin tabs.
+ * @param {array} [$options.ranges] associative array with keys "read", "write", "admin" and values as associative arrays of ($min, $max) for the displayed levels.
+ * @param {boolean} [$options.controls] optionally set this to true to render only the controls
  */
 function Streams_access_tool($options)
 {

@@ -1,22 +1,27 @@
 <?php
 
 /**
+ * @module Streams-tools
+ */
+
+/**
  * This tool generates an inline editor to edit the content or attribute of a stream.
- * @param array $options
+ * @class Streams inplace
+ * @constructor
+ * @param {array} $options Options for the tool
  *  An associative array of parameters, containing:
- *  "inplaceType" => Required. The type of the fieldInput. Can be "textarea" or "text"
- *  "stream" => A Streams_Stream object
- *  "staticHtml" => Optional. The static HTML to display when there is nothing to edit
- *  "editing" => If true, then renders the inplace tool in editing mode.
- *  "field" => Optional, name of an field to change instead of the content of the stream
- *  "attribute" => Optional, name of an attribute to change instead of any field.
- *  "editOnClick" => Defaults to true. If true, then edit mode starts only if "Edit" button is clicked.
- *  "selectOnEdit" => Defaults to true. If true, selects all the text when entering edit mode.
- *  "beforeSave" => Optional, reference to a callback to call after a successful save.
- *     This callback can cancel the save by returning false.
- *  "onSave" => Optional, reference to a callback or event to run after a successful save.
- *  "onCancel" => Optional, reference to a callback or event to run after cancel.
- *  "inplace" => Additional fields to pass to the child Q/inplace tool, if any
+ * @param {string} $options.inplaceType The type of the fieldInput. Can be "textarea" or "text"
+ * @param {Streams_Stream} $options.stream A Streams_Stream object
+ * @param {string} [$options.staticHtml] Optional. The static HTML to display when there is nothing to edit
+ * @param {boolean} [$options.editing] If true, then renders the inplace tool in editing mode.
+ * @param {string} [$options.field] Optional, name of an field to change instead of the content of the stream
+ * @param {string} [$options.attribute] Optional, name of an attribute to change instead of any field.
+ * @param {boolean} [$options.editOnClick=true] If true, then edit mode starts only if "Edit" button is clicked.
+ * @param {boolean} [$options.selectOnEdit=true] If true, selects all the text when entering edit mode.
+ * @param {string} [$options.beforeSave] Reference to a callback to call after a successful save. This callback can cancel the save by returning false.
+ * @param {string} [$options.onSave] Reference to a callback or event to run after a successful save.
+ * @param {string} [$options.onCancel] Reference to a callback or event to run after cancel.
+ * @param {array} [$options.inplace=array()] Additional fields to pass to the child Q/inplace tool, if any
  */
 function Streams_inplace_tool($options)
 {

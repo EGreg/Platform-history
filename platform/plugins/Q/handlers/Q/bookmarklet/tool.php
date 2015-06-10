@@ -1,6 +1,10 @@
 <?php
 
 /**
+ * @module Q-tools
+ */
+
+/**
  * Makes an infomation block for adding a bookmarklet on the browser's bookmarks bar
  * the way similar to how facebook does: http://www.facebook.com/share_options.php .
  * Main purpose of the tool is to present in cross-browser way how bookmarklet button will look, how bookmarklet will

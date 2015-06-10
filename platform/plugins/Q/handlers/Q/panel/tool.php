@@ -1,7 +1,13 @@
 <?php
 
 /**
+ * @module Q-tools
+ */
+
+/**
  * This tool generates a panel with a <form> tag inside it
+ * @class Q panel
+ * @constructor
  * @param array $options
  *  An associative array of parameters, containing:
  *  "uri" => the uri or url the form should post to

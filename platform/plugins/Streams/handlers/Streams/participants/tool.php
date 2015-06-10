@@ -1,8 +1,12 @@
 <?php
-	
+
+/**
+ * @module Streams-tools
+ */
+
 /**
  * This tool renders the participants in a stream
- * @class Q columns
+ * @class Streams participants
  * @constructor
  * @param {array} [options] Provide options for this tool
  *   @param {string} [options.publisherId] The id of the publisher

@@ -1,6 +1,6 @@
 <?php
 /**
- * Websites model
+ * Websites plugin
  * @module Websites
  * @main Websites
  */

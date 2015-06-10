@@ -1,6 +1,10 @@
 <?php
 
 /**
+ * @module Q-tools
+ */
+
+/**
  * Creates an area that behaves like position: fixed in most modern browsers,
  * including ones on touchscreens. Often used for fixed areas that wind up
  * covered by content as it scrolls over the areas.
@@ -8,7 +12,6 @@
  * @constructor
  * @param {Object}   [options] Provide options for this tool
  *  @param {string}  [options.drawers] Array of strings holding html for drawers
- * @return Q.Tool
  */
 function Q_drawers_tool($options)
 {

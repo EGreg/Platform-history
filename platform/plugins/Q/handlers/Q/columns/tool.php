@@ -1,6 +1,10 @@
 <?php
 
 /**
+ * @module Q-tools
+ */
+
+/**
  * This tool contains functionality to show things in columns
  * @class Q columns
  * @constructor

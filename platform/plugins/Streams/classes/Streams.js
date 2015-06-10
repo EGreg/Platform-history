@@ -290,6 +290,7 @@ Streams.ACCESS_SOURCES = {
  * "Streams/Message/postMessages",
  * "Streams/Stream/invite"
  * @method listen
+ * @static
  * @param {object} options={}
  *  So far no options are implemented.
  */
@@ -864,6 +865,7 @@ Streams.clients = {};
 /**
  * Check if device is online
  * @method isDeviceOnline
+ * @static
  * @param userId {string}
  *	The id of the user
  * @param sessionId {?string}
@@ -881,6 +883,7 @@ Streams.isDeviceOnline = function(userId, sessionId) {
 /**
  * Emits an event to user's socket.io clients that are currently connected
  * @method emitToUser
+ * @static
  * @param userId {string}
  *	The id of the user
  * @param event {string}
@@ -907,6 +910,7 @@ Streams.emitToUser = function(userId, event, data, excludeSessionIds) {
 /**
  * Emits push notification to native client
  * @method pushNotification
+ * @static
  * @param userId {string}
  *	The id of the user
  * @param tokens {object}
@@ -955,6 +959,7 @@ Streams.pushNotification = function (userId, tokens, event, data) {
  * Method may return some value or, if return `undefined` callback must be called
  * To change functionality override it in application script
  * @method pushNotification.badge
+ * @static
  * @param userId {string}
  * @param event {string}
  * @param data {object}
@@ -977,6 +982,7 @@ Streams.pushNotification.badge = function (userId, event, data, callback) {
  * Method may return some value or, if return `undefined` callback must be called.
  * Use "default" to play default system sound
  * @method pushNotification.sound
+ * @static
  * @param userId {string}
  * @param event {string}
  * @param data {object}
@@ -989,6 +995,7 @@ Streams.pushNotification.badge = function (userId, event, data, callback) {
  * Define this method in application script
  * Method may return some value or, if return `undefined` callback must be called
  * @method pushNotification.alert
+ * @static
  * @param userId {string}
  * @param event {string}
  * @param data {object}
@@ -1001,6 +1008,7 @@ Streams.pushNotification.badge = function (userId, event, data, callback) {
  * Define this method in application script
  * Method may return some value or, if return `undefined` callback must be called
  * @method pushNotification.data
+ * @static
  * @param userId {string}
  * @param event {string}
  * @param data {object}
@@ -1010,6 +1018,7 @@ Streams.pushNotification.badge = function (userId, event, data, callback) {
 /**
  * Retrieve stream participants
  * @method getParticipants
+ * @static
  * @param publisherId {string}
  *	The publisher Id
  * @param streamName {string}
@@ -1041,6 +1050,7 @@ Streams.getParticipants = function(publisherId, streamName, callback) {
 /**
  * Retrieve stream with calculated access rights
  * @method fetch
+ * @static
  * @param asUserId {String}
  *	The user id to calculate access rights
  * @param publisherId {String}
@@ -1082,7 +1092,8 @@ Streams.fetch = function (asUserId, publisherId, streamName, callback) {
 
 /**
  * Retrieve stream with calculated access rights
- * @method fetch
+ * @method fetchOne
+ * @static
  * @param asUserId {String}
  *	The user id to calculate access rights
  * @param publisherId {String}
@@ -1117,6 +1128,7 @@ Streams.fetchOne = function (asUserId, publisherId, streamName, callback) {
  * Retrieve the user's stream needed to post invite messages
  * If stream does not exist - create it
  * @method getInvitedStream
+ * @static
  * @param asUserId {string}
  *	The user id of inviting user
  * @param forUserId {string}
@@ -1159,6 +1171,7 @@ function getInvitedStream (asUserId, forUserId, callback) {
 /**
  * Register a message handler
  * @method messageHandler
+ * @static
  * @param msgType {string}
  *	Type of stream
  * @param callback {function}

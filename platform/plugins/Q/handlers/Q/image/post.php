@@ -1,8 +1,13 @@
 <?php
 
 /**
+ * @module Q
+ */
+
+/**
  * Used by HTTP clients to upload a new image to the server
- * @method Q/image/post
+ * @class Q/image
+ * @method post
  * @param {array} [$params] Parameters that can come from the request
  *   @param {string} [$params.icon.data]  Required for icon. Base64-encoded image data URI - see RFC 2397
  *   @param {string} [$params.icon.path="uploads"] parent path under web dir (see subpath)

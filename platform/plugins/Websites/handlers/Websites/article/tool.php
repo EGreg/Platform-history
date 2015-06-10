@@ -3,7 +3,6 @@
 /**
  * Websites tools
  * @module Websites-tools
- * @main
  */
 
 /**

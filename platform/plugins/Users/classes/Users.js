@@ -1,6 +1,6 @@
 /*jshint node:true */
 /**
- * Users model
+ * Users plugin
  * @module Users
  * @main Users
  */
