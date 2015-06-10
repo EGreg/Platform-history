@@ -57,7 +57,7 @@ var Places = Q.Places = Q.plugins.Places = {
 		var distance  = 2.0 * earthRadius * Math.asin(sqrt);
 
 		return distance;
-	},
+	}
 
 
 };
