@@ -19,5 +19,11 @@ function Q_filters_googleClosureCompiler($params)
 			"Google Closure Compiler:\n" . $result
 		);
 	}
+	if (!trim($result)) {
+		$options['output_info'] = 'errors';
+		throw new Q_Exception(
+			"Google Closure Compiler:\n" . Q_Utils::post($service_url, $options)
+		);
+	}
 	return $result;
 }

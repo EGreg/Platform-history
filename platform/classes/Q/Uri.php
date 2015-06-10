@@ -843,14 +843,14 @@ class Q_Uri
 		if (empty($timestamp)) {
 			return $url;
 		}
-		$url_relative_to_base = substr($url, strlen(Q_Request::baseUrl()));
-		$fileTimestamp = isset(Q_Uri::$urls[$url_relative_to_base])
-			? Q_Uri::$urls[$url_relative_to_base]
+		$urlRelativeToBase = substr($url, strlen(Q_Request::baseUrl()));
+		$fileTimestamp = isset(Q_Uri::$urls[$urlRelativeToBase])
+			? Q_Uri::$urls[$urlRelativeToBase]
 			: null;
 		if (isset($fileTimestamp)
 		and $fileTimestamp <= $timestamp
 		and self::$cacheBaseUrl) {
-			return self::$cacheBaseUrl . $url_relative_to_base;
+			return self::$cacheBaseUrl . $urlRelativeToBase;
 		}
 		return $url;
 	}

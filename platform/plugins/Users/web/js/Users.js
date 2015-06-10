@@ -960,7 +960,7 @@ function login_callback(response) {
 			'background-image': 'url(' + Q.info.imgLoading + ')',
 			'background-repeat': 'no-repeat',
 			'background-size': 'auto ' + first_input.height()+'px',
-			'background-position': 'right center',
+			'background-position': 'right center'
 		});
 		if (window.CryptoJS) {
 			var p = $('#Users_form_passphrase');

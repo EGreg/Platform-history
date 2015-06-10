@@ -24,6 +24,10 @@
 		},
 		"internal": {
 			"secret": "CHANGE TO SOME RANDOM STRING, FOR SIGNING INTERNAL MESSAGES"
+		},
+		"environment": "",
+		"response": {
+			"cacheBaseUrl": "MyApp:"
 		}
 	},
 	"Db": {

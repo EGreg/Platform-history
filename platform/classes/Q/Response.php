@@ -984,9 +984,6 @@ class Q_Response
 				$srcs = array();
 				foreach ($slotName as $sn) {
 					foreach (self::scriptsArray($sn, $urls) as $b)  {
-						if ($urls) {
-							$b['src'] = Q_Html::themedUrl($b['src']);
-						}
 						$key = $b['src'];
 						if (!empty($srcs[$key])) {
 							continue;
@@ -1167,9 +1164,6 @@ class Q_Response
 			$saw = array();
 			foreach ($slotName as $sn) {
 				foreach (self::stylesheetsArray($sn, $urls) as $b)  {
-					if ($urls) {
-						$b['href'] = Q_Html::themedUrl($b['href']);
-					}
 					$key = $b['href'].' '.$b['media'];
 					if (!empty($saw[$key])) {
 						continue;
