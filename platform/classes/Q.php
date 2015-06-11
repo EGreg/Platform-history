@@ -996,7 +996,7 @@ class Q
 	/**
 	 * Determine whether a PHP array if associative or not
 	 * Might be slow as it has to iterate through the array
-	 * @param {array}
+	 * @param {array} $array
 	 */
 	static function isAssociative($array)
 	{
