@@ -2,13 +2,19 @@
 
 function Q_init()
 {
-	// the following statement causes the session to be opened for every request
 	if (!empty($_SERVER['HTTP_HOST'])) {
+		// the following statement causes the session to be opened for every request
 		Q_Session::setNonce();
 	}
 	
-	$logging = Q_Config::get('Db', 'logging', true);
-	if ($logging) {
+	if (Q_Config::get('First', 'testing', false)) {
+		// sometimes the APC can cause files to appear missing
+		// if they were created after it tried to load them once
+		apc_clear_cache('user');
+	}
+	
+	if (Q_Config::get('Db', 'logging', true)) {
+		// logging database queries
 		Q::log("\n-----");
 		Q_Config::set('Q', 'handlersAfterEvent', 'Db/query/execute', 'log_shard_query');
 	}

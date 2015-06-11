@@ -4,7 +4,8 @@
  */
 
 * { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: rgba(0,0,0,0); -webkit-tap-highlight-color: transparent; }
-a { text-decoration: none; }
+a { text-decoration: none; color: #0055ff; }
+a:visited { color: #aa88cc; }
 html { background: #f2f2f2; height: 100%; }
 body { height: 100%; }
 h2 { margin: 0; }
@@ -46,6 +47,8 @@ h2 { margin: 0; }
 #dashboard, #notices, #content { margin: auto; text-align: left; }
 #content { position: relative; }
 
+#dashboard { display: inline-block; width: 100%; }
+
 /* Notices contents */
 #notices_slot { text-align: center; margin: auto; padding: 0; z-index: 5000; }
 #notices { margin: auto; }
@@ -81,10 +84,10 @@ h2 { margin: 0; }
 }
 
 /* Dashboard contents */
-#dashboard>* { margin: 5px; padding: 0; line-height: 30px; text-align: center; }
-#dashboard>h1 { float: left; width: auto; padding-right: 5px; }
+#dashboard>* { margin: 5px auto 5px auto; padding: 0; line-height: 30px; text-align: center; }
+#dashboard>h1 { float: left; padding: 5px; width: auto; }
 #dashboard>h2 { float: left; }
-#dashboard_user { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; float: right;  }
+#dashboard_user { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; float: right; padding: 5px; }
 .Q_mobile #dashboard_user { max-width: 40%; }
 .Q_mobile.Users_loggedIn #dashboard_user { margin: 0 5px 0 0; }
 #dashboard .Q_contextual * { color: black; }
@@ -108,18 +111,21 @@ h2 { margin: 0; }
 }
 
 /* Dashboard tabs */
-#dashboard .Q_tabs_tabs { border: 0; }
-#dashboard .Q_tabs_tab { cursor: pointer; width: auto; margin: 5px 10px 0 10px; border: 0 !important; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; background-color: #f8f8f8; background: none; line-height: 30px !important; text-align: center; }
+#dashboard .Q_tabs_tabs { border: 0; width: 80%; margin: auto; text-align: center; }
+#dashboard .Q_tabs_tab { cursor: pointer; width: auto; border: 0 !important; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; background-color: #f8f8f8; background: none; line-height: 30px !important; text-align: left; max-width: 90%; overflow: hidden; text-overflow: ellipsis; }
+#dashboard .Q_tabs_compact .Q_tabs_tab { background: #222; }
+#dashboard .Q_tabs_vertical .Q_tabs_tab { background: transparent; }
 #dashboard .Q_tabs_tab:first-child { border-top: 0 solid #e5e5e5; border-left: 0; }
 #dashboard .Q_tabs_tab,
-#dashboard .Q_tabs_tab>* { cursor: pointer; vertical-align: middle; }
+#dashboard .Q_tabs_tab>* { cursor: pointer; }
 #dashboard .Q_tabs_tab { text-decoration: none; color: white; }
 .Q_notTouchscreen #dashboard .Q_tabs_tab:hover { text-decoration: underline;}
 #dashboard .Q_tabs_tab img { margin-right: 10px; width: 24px; }
 #dashboard .Q_tabs_tab span { display: inline; text-align: left; }
 #dashboard .Q_tabs_tab.Q_current { background-image: url(../plugins/Q/img/bg/stucco.png) !important; color: black !important; }
 #dashboard .Q_tabs_tab.Q_current * { color: black; }
-
+#dashboard .Q_tabs_tab { padding: 5px; margin: 0px; }
+.Q_mobile #dashboard .Q_tabs_tool { max-width: 80%; overflow: hidden; }
 
 /* inputs */
 
@@ -169,6 +175,10 @@ input[type=radio] { margin-right: 5px; }
 .Q_mobile .Q_overlay { width: 90%; }
 
 .Users_avatar_name { text-indent: 5px; }
+
+
+
+
 
 /* The following lines override default styles for a block-style website */
 /* Try removing them and seeing what happens */

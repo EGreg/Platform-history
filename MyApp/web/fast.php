@@ -26,7 +26,7 @@ echo <<<EOT
 			In this scenario, the entire Qbix environment is ready to go in <strong>$ms milliseconds</strong>!
 		</p>
 		<p>
-			Try refreshing the page, and it will probably load even faster.
+			Try refreshing this page, and it will probably load even faster.
 		</p>
  
 	</body>
