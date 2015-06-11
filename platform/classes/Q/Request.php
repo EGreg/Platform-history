@@ -480,6 +480,10 @@ class Q_Request
 	 */
 	static function isIE($min_version = 0, $max_version = 10)
 	{
+		static $result;
+		if (isset($result)) {
+			return $result;
+		}
 		if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 			return null;
 		}
@@ -487,14 +491,16 @@ class Q_Request
 		preg_match('/(MSIE) (\d)/i', $_SERVER['HTTP_USER_AGENT'], $matches);
 		if (count($matches) == 3) {
 			$version = intval($matches[2]);
-			return ($version >= $min_version && $version <= $max_version);
+			$result = ($version >= $min_version && $version <= $max_version);
+		} else {
+			$result = false;
 		}
-		return false;
+		return $result;
 	}
 	
 	/**
-	 * Detects whether the request is coming from a mobile browser
-	 * @method isMobile
+	 * Detects whether the request is coming from a WebView on a mobile browser
+	 * @method isWebView
 	 * @static
 	 * @return {boolean}
 	 */
@@ -505,10 +511,10 @@ class Q_Request
 			return $result;
 		}
 		/**
-		 * @event Q/request/isMobile {before}
+		 * @event Q/request/isWebView {before}
 		 * @return {boolean}
 		 */
-		$result = Q::event('Q/request/isMobile', array(), 'before');
+		$result = Q::event('Q/request/isWebView', array(), 'before');
 		if (isset($result)) {
 			return $result;
 		}
@@ -517,10 +523,33 @@ class Q_Request
 		}
 		$useragent = $_SERVER['HTTP_USER_AGENT'];
 		if (preg_match('/(.*)QWebView(.*)/', $useragent)
-		or preg_match('/(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i', $useragent)) {
-			return true;
+		or preg_match('/(.*)QCordova(.*)/', $useragent)
+		or preg_match('/(iPhone|iPod|iPad).*AppleWebKit(?!.*Version)/i', $useragent)) {
+			$result = true;
+		} else {
+			$result = false;
 		}
-		return false;
+		return $result;
+	}
+	
+	/**
+	 * Detects whether the request is coming from a WebView enabled with Cordova
+	 * @method isCordova
+	 * @static
+	 * @return {boolean}
+	 */
+	static function isCordova()
+	{
+		static $result;
+		if (isset($result)) {
+			return $result;
+		}
+		if (!isset($_SERVER['HTTP_USER_AGENT'])) {
+			return null;
+		}
+		$useragent = $_SERVER['HTTP_USER_AGENT'];
+		$result = preg_match('/(.*)QCordova(.*)/', $useragent) ? true : false;
+		return $result;
 	}
 	
 	/**
