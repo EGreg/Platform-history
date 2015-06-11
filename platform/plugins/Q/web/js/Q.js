@@ -6331,7 +6331,7 @@ Q.activate = function _Q_activate(elem, options, callback) {
  *  Tools found in the existing DOM which have data-Q-retain attribute
  *  are actually retained unless the tool replacing them has a data-Q-replace attribute.
  *  You can update the tool by implementing a handler for
- *  tool.Q.onRetain, which receives the old Q.Tool object and the new options.
+ *  tool.Q.onRetain, which receives the old Q.Tool object, the new options and incoming element.
  *  After the event is handled, the tool's state will be extended with these new options.
  * @param {Element|String} source
  *  An HTML string or a Element which is not part of the DOM
@@ -6367,11 +6367,12 @@ Q.replace = function _Q_replace(container, source, options) {
 		});
 	}
 	
-	var retainedToolsArray = [];
-	var newOptionsArray = [];
-	Q.find(source, null, function (incomingElement) {
-		var element = incomingElement.id
-			&& document.getElementById(incomingElement.id);
+	var retainedTools = {};
+	var newOptions = {};
+	var incomingElements = {};
+	Q.find(source.childNodes, null, function (incomingElement) {
+		var id = incomingElement.id;
+		var element = id && document.getElementById(id);
 		if (element && element.getAttribute('data-Q-retain') !== null
 		&& !incomingElement.getAttribute('data-Q-replace') !== null) {
 			// If a tool exists with this exact id and has "data-Q-retain",
@@ -6379,20 +6380,20 @@ Q.replace = function _Q_replace(container, source, options) {
 			// the new tool HTML has data-Q-replace.
 			// This way tools can avoid doing expensive operations each time
 			// they are replaced and reactivated.
+			incomingElements[incomingElement.id] = incomingElement;
 			incomingElement.parentNode.replaceChild(element, incomingElement);
 			for (var name in element.Q.tools) {
 				var tool = Q.Tool.from(element, name);
 				var attrName = 'data-' + Q.normalize(tool.name, '-');
 				var newOptionsString = incomingElement.getAttribute(attrName);
-				var newOptions = JSON.parse(newOptionsString);
 				element.setAttribute(attrName, newOptionsString);
-				retainedToolsArray.push(tool);
-				newOptionsArray.push(newOptions);
+				retainedTools[id] = tool;
+				newOptions[id] = JSON.parse(newOptionsString);
 			}
 		}
 	});
 	
-	Q.beforeReplace.handle(container, source, options, newOptionsArray);
+	Q.beforeReplace.handle(container, source, options, newOptions, retainedTools);
 	
 	Q.Tool.clear(container); // Remove all the tools remaining in the container, with their events etc.
 	var c; while (c = container.lastChild) {
@@ -6405,9 +6406,9 @@ Q.replace = function _Q_replace(container, source, options) {
 		container.appendChild(c);
 	}
 	
-	for (var i=0, l=retainedToolsArray.length; i<l; ++i) {
-		var tool = retainedToolsArray[i];
-		var newOptions = newOptionsArray[i];
+	for (var id in retainedTools) {
+		var tool = retainedTools[id];
+		var newOpt = newOptions[id];
 		// The tool's constructor not will be called again with the new options.
 		// Instead, implement Q.onRetain, from the tool we decided to retain.
 		// The Q.Tool object still contains all its old properties, options, state.
@@ -6415,7 +6416,7 @@ Q.replace = function _Q_replace(container, source, options) {
 		// attached jQuery data and events, and more.
 		// However, the element's data-TOOL-NAME attribute now contains
 		// the new options.
-		Q.handle(tool.Q.onRetain, tool, [newOptions]);
+		Q.handle(tool.Q.onRetain, tool, [newOptions, incomingElements[id]]);
 		Q.extend(tool.state, 10, newOptions);
 	}
 	

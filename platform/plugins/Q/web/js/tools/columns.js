@@ -603,6 +603,15 @@ Q.Tool.define("Q/columns", function(options) {
 			$(window).scrollTop( $(window).scrollTop()-overshoot );
 		}
 		return this;
+	},
+	Q: {
+		onRetain: function(newOptions, incomingElement) {
+			Q.replace(this.element, incomingElement);
+			var tool = this;
+			setTimeout(function () {
+				tool.refresh();
+			}, 0);
+		}
 	}
 }
 );
