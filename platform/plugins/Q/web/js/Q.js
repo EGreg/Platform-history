@@ -4581,7 +4581,8 @@ Q.init = function _Q_init(options) {
 	Q.addEventListener(window, Q.Pointer.focusout, _onPointerBlurHandler);
 
 	var checks = ["ready"];
-	if (window.cordova && Q.typeOf(window.cordova).substr(0, 4) !== 'HTML') {
+	if (Q.info.isCordova
+	&& window.cordova && Q.typeOf(window.cordova).substr(0, 4) !== 'HTML') {
 		checks.push("device");
 	}
 	var p = Q.pipe(checks, 1, function _Q_init_pipe_callback() {
@@ -8241,12 +8242,9 @@ Q.Browser = {
 			|| "an unknown version").toString();
 		var dotIndex = version.indexOf('.');
 		var mainVersion = version.substring(0, dotIndex != -1 ? dotIndex : version.length);
-		
 		var OSdata = this.searchData(this.dataOS);
 		var OS = OSdata.identity || "an unknown OS";
-		
 		var engine = '', ua = navigator.userAgent.toLowerCase();
-
 		if (ua.indexOf('webkit') != -1) {
 			engine = 'webkit';
 		} else if (ua.indexOf('gecko') != -1) {
@@ -8254,22 +8252,28 @@ Q.Browser = {
 		} else if (ua.indexOf('presto') != -1) {
 			engine = 'presto';
 		}
-		
+		var isCordova = /(.*)QCordova(.*)/.test(navigator.userAgent);
 		var isWebView = /(.*)QWebView(.*)/.test(navigator.userAgent)
-			|| (/(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i).test(navigator.userAgent);
-		
+			|| (/(iPhone|iPod|iPad).*AppleWebKit(?!.*Version)/i).test(navigator.userAgent);
+		var isStandalone = navigator.standalone
+			|| (window.external && external.msIsSiteMode && external.msIsSiteMode())
+			|| false;
+		if (OS === 'Android') {
+			isStandalone = screen.height-document.documentElement.clientHeight<40
+			             || screen.width-document.documentElement.clientHeight<40;
+		}
+		if (/(.*)QWebView(.*)/.test(navigator.userAgent)) {
+			isStandalone = false;
+		}
 		var name = browser.toLowerCase();
 		var prefix;
-		
 		switch (engine) {
 			case 'webkit': prefix = '-webkit-'; break;
 			case 'gecko': prefix = '-moz-'; break;
 			case 'presto': prefix = '-o-'; break;
 			default: prefix = '';
 		}
-		
 		prefix = (name === 'explorer') ? '-ms-' : prefix;
-		
 		return {
 			name: name,
 			mainVersion: mainVersion,
@@ -8277,7 +8281,9 @@ Q.Browser = {
 			OS: OS.toLowerCase(),
 			engine: engine,
 			device: OSdata.device,
-			isWebView: isWebView
+			isWebView: isWebView,
+			isStandalone: isStandalone,
+			isCordova: isCordova
 		};
 	},
 	
@@ -8458,6 +8464,7 @@ Q.info = {
 	isTouchscreen: isTouchscreen, // works on ie10
 	isTablet: isTablet,
 	isWebView: detected.isWebView,
+	isStandalone: detected.isStandalone,
 	platform: detected.OS,
 	browser: detected,
 	isIE: function (minVersion, maxVersion) {
