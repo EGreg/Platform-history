@@ -406,7 +406,9 @@ Q.Tool.define("Q/columns", function(options) {
 				.addClass('Q_columns_opening')
 				.css(o.animation.css.hide)
 				.animate(show, duration, function() {
-					afterAnimation($cs, $sc, $ct);
+					setTimeout(function () {
+						afterAnimation($cs, $sc, $ct);
+					}, 0);
 				});
 			}
 

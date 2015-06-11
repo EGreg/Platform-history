@@ -178,12 +178,11 @@ Q.Tool.define("Q/tabs", function(options) {
 		if (!$(tool.element).closest('body').length) {
 			// the replaced html probably included the tool's own element,
 			// so let's find something with the same id on the page
-			var element = document.getElementById(this.element.id);
-			if (!element) {
-				return false;
-			}
-			Q.activate(element); // out of turn, but on IE it is sometimes necessary
-			tool = element.Q('Q/tabs');
+			var key = Q.Tool.onActivate(tool.id).set(function () {
+				this.indicateCurrent();
+				Q.Tool.onActivate(tool.id).remove(key);
+			});
+			return;
 		}
 		var $tabs = tool.$tabs;
 		var url = location.hash.queryField('url');
