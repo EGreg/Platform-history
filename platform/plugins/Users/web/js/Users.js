@@ -757,6 +757,12 @@ Users.User = function (fields) {
     this.typename = 'Q.Users.User';
 };
 
+/**
+ * Calculate the url of a user's icon
+ * @method
+ * @param {Number} [size=40] the size of the icon to render.
+ * @return {String} the url
+ */
 Users.User.prototype.iconUrl = function Users_User_iconUrl(size) {
 	return Users.iconUrl(this.icon, size);
 };
@@ -767,8 +773,7 @@ Users.User.get = Users.get;
  * Calculate the url of a user's icon
  * @method
  * @param {String} icon the value of the user's "icon" field
- * @param {Number} size the size of the icon to render.
- * @default 40
+ * @param {Number} [size=40] the size of the icon to render.
  * @return {String} the url
  */
 Users.iconUrl = function Users_iconUrl(icon, size) {

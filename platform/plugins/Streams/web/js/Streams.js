@@ -2783,12 +2783,12 @@ Ap.displayName = function _Avatar_prototype_displayName (options) {
 
 /**
  * Get the url of the user icon from a Streams.Avatar
- * 
- * @method iconUrl
- * @return {String}
+ * @method
+ * @param {Number} [size=40] the size of the icon to render.
+ * @return {String} the url
  */
-Ap.iconUrl = function _Avatar_prototype_iconUrl () {
-	return Q.plugins.Users.iconUrl(this.icon, 40);
+Ap.iconUrl = function _Avatar_prototype_iconUrl (size) {
+	return Q.plugins.Users.iconUrl(this.icon, size);
 };
 
 /**
