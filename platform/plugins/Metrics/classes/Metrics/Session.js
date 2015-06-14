@@ -27,7 +27,7 @@ function Metrics_Session (fields) {
 	};
 
 	// Run constructors of mixed in objects
-	this.constructors.apply(this, arguments);
+	Metrics_Session.constructors.apply(this, arguments);
 
 }
 

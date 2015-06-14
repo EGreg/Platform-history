@@ -1,8 +1,11 @@
 (function (Q, $, window, undefined) {
 
+var Users = Q.Users;
+var Streams = Q.Streams;
+
 /**
- * Users Tools
- * @module Users-tools
+ * Streams Tools
+ * @module Streams-tools
  * @main
  */
 
@@ -22,7 +25,7 @@
  *   @default true
  *   @param {Boolean} [options.reflectChanges] Whether the tool should update its contents on changes
  *   @default true
- *   @param {Number} [options.cacheBust=1000] Number of milliseconds to use for combating unintended caching on some environments.
+ *   @param {Number} [options.cacheBust=null] Number of milliseconds to use for combating unintended caching on some environments.
  *   @default true
  *   @param {Object} [options.templates]
  *     @param {Object} [options.templates.icon]
@@ -47,27 +50,32 @@
  */
 Q.Tool.define("Users/avatar", function(options) {
 	var tool = this, state = this.state;
-	Q.Streams.Stream.retain(state.userId, 'Streams/user/firstName', tool);
-	Q.Streams.Stream.retain(state.userId, 'Streams/user/lastName', tool);
+	Streams.Stream.retain(state.userId, 'Streams/user/firstName', tool);
+	Streams.Stream.retain(state.userId, 'Streams/user/lastName', tool);
 	this.refresh();
 	if (!state.reflectChanges) {
 		return;
 	}
-	Q.Streams.Stream.onFieldChanged(state.userId, 'Streams/user/icon', 'icon')
+	Streams.Stream.onFieldChanged(state.userId, 'Streams/user/icon', 'icon')
 	.set(function (fields, field) {
-		tool.$('.Users_avatar_icon').attr('src', 
-			Q.url(Q.Users.iconUrl(fields.icon, state.icon), null,
-				{cacheBust: state.cacheBust})
-		);
+		Users.get.forget(state.userId);
+		Streams.Avatar.get.forget(state.userId);
+		var p = Q.pipe(['user', 'avatar'], function (params, subjects) {
+			tool.$('.Users_avatar_icon').attr('src', 
+				Q.url(subjects.avatar.iconUrl(state.icon))
+			);
+		});
+		Users.get(state.userId, p.fill('user'));
+		Streams.Avatar.get(state.userId, p.fill('avatar'));
 	}, this);
 	if (!state.editable || state.editable.indexOf('name') < 0) {
-		Q.Streams.Stream.onFieldChanged(state.userId, 'Streams/user/firstName', 'content')
+		Streams.Stream.onFieldChanged(state.userId, 'Streams/user/firstName', 'content')
 		.set(handleChange, this);
-		Q.Streams.Stream.onFieldChanged(state.userId, 'Streams/user/lastName', 'content')
+		Streams.Stream.onFieldChanged(state.userId, 'Streams/user/lastName', 'content')
 		.set(handleChange, this);
 	}
 	function handleChange(fields, field) {
-		Q.Streams.Avatar.get.forget(state.userId);
+		Streams.Avatar.get.forget(state.userId);
 		tool.element.innerHTML = '';
 		tool.refresh();
 	}
@@ -92,7 +100,7 @@ Q.Tool.define("Users/avatar", function(options) {
 	},
 	editable: false,
 	imagepicker: {},
-	cacheBust: 1000,
+	cacheBust: null,
 	onRefresh: new Q.Event(),
 	onUpdate: new Q.Event(),
 	onImagepicker: new Q.Event()
@@ -141,13 +149,13 @@ Q.Tool.define("Users/avatar", function(options) {
 			return;
 		}
 		
-		Q.Streams.Avatar.get(state.userId, function (err, avatar) {
+		Streams.Avatar.get(state.userId, function (err, avatar) {
 			var fields;
 			if (!avatar) return;
 			state.avatar = avatar;
 			if (state.icon) {
 				fields = Q.extend({}, state.templates.icon.fields, {
-					src: Q.url(Q.Users.iconUrl(this.icon, state.icon), null,
+					src: Q.url(Users.iconUrl(this.icon, state.icon), null,
 						{cacheBust: state.cacheBust})
 				});
 				Q.Template.render('Users/avatar/icon', fields, 
@@ -208,19 +216,21 @@ Q.Tool.define("Users/avatar", function(options) {
 			if (state.editable.indexOf('icon') >= 0) {
 				var $img = tool.$('.Users_avatar_icon');
 				var saveSizeName = {};
-				Q.each(Q.Users.icon.sizes, function (k, v) {
+				Q.each(Users.icon.sizes, function (k, v) {
 					saveSizeName[v] = v+".png";
 				});
-				Q.Streams.retainWith(tool).get(
-					Q.Users.loggedInUser.id,
+				Streams.retainWith(tool).get(
+					Users.loggedInUser.id,
 					'Streams/user/icon',
 					function (err) {
 						var stream = this;
 						var o = Q.extend({
 							saveSizeName: saveSizeName,
-							showSize: $img.width(),
+							showSize: state.icon || $img.width(),
 							path: 'plugins/Users/img/icons',
-							subpath: 'user-'+state.userId,
+							subpath: function () {
+								return 'user-'+state.userId+'/'+Math.floor(Date.now()/1000);
+							},
 							onSuccess: {"Users/avatar": function () {
 								stream.refresh(function () {
 									state.onUpdate.handle.call(tool, this);
@@ -228,7 +238,8 @@ Q.Tool.define("Users/avatar", function(options) {
 									unlessSocket: true,
 									changed: { icon: true }
 								});
-							}}
+							}},
+							cacheBust: null
 						}, state.imagepicker);
 						$img.plugin('Q/imagepicker', o, function () {
 							state.onImagepicker.handle($img.state('Q/imagepicker'));

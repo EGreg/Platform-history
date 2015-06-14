@@ -757,6 +757,10 @@ Users.User = function (fields) {
     this.typename = 'Q.Users.User';
 };
 
+Users.User.prototype.iconUrl = function Users_User_iconUrl(size) {
+	return Users.iconUrl(this.icon, size);
+};
+
 Users.User.get = Users.get;
 
 /**
@@ -767,7 +771,7 @@ Users.User.get = Users.get;
  * @default 40
  * @return {String} the url
  */
-Users.iconUrl = function(icon, size) {
+Users.iconUrl = function Users_iconUrl(icon, size) {
 	if (!icon) {
 		console.warn("Users.iconUrl: icon is empty");
 		return '';
@@ -1465,6 +1469,8 @@ function login_setupDialog(usingProviders, scope, dialogContainer, identifierTyp
 			if (!priv.login_connected && priv.login_onCancel) {
 				priv.login_onCancel();
 			}
+			$(this).remove();
+			login_setupDialog.dialog = null;
 		}
 	});
 	
@@ -1593,6 +1599,8 @@ function setIdentifier_setupDialog(identifierType, options) {
 			if (priv.setIdentifier_onCancel) {
 				priv.setIdentifier_onCancel();
 			}
+			$(this).remove();
+			setIdentifier_setupDialog.dialog = null;
 		}
 	});
 	

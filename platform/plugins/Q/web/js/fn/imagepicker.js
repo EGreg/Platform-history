@@ -20,7 +20,7 @@
  * @default {}
  * @param {String} [options.url] url is a url to post to.
  * @param {String} [options.path="uploads"] Can be a URL path or a function returning a URL path. It must exist on the server.
- * @param {String} [options.subpath=""] A subpath which may be created on the server if it doesn't already exist.
+ * @param {String|Function} [options.subpath=""] A subpath which may be created on the server if it doesn't already exist. If this is a function, it is executed right before the request is sent.
  * @param {String} [options.showSize=null] showSize is a key in saveSizeName to show on success.
  * @param {String} [options.useAnySize=false] whether to tell the server to accept any size without complaining.
  * @param {Object} [options.crop] crop If provided, the image will be cropped according to the given parameters before it is saved on the server in the saveSizeName formats. If the browser supports it, the cropping will occur in the browser.
@@ -57,9 +57,10 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 		'position': 'absolute'
 	});
 	var originalSrc = $this.attr('src');
+	var state = $this.state('Q/imagepicker');
 	if (originalSrc && originalSrc.indexOf('?') < 0) {
 		// cache busting
-		$this.attr('src', Q.url(originalSrc, null, {cacheBust: 1000}));
+		$this.attr('src', Q.url(originalSrc, null, {cacheBust: state.cacheBust}));
 	}
 	$this.before(input);
 	$this.addClass('Q_imagepicker');
@@ -79,7 +80,7 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 		var c = Q.handle([state.onSuccess, state.onFinish], $this, [res.slots.data, key]);
 		if (c !== false && key) {
 			$this.attr('src', 
-				Q.url(res.slots.data[key], null, {cacheBust: 1000})
+				Q.url(res.slots.data[key], null, {cacheBust: state.cacheBust})
 			);
 		}
 		$this.removeClass('Q_uploading');
@@ -529,6 +530,7 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 	cropping: true,
 	croppingTitle: 'Adjust size and position',
 	url: Q.action("Q/image"),
+	cacheBust: 1000,
 	throbber: null,
 	preprocess: null,
 	cameraCommands: ["Take new photo","Select from library","Cancel"],

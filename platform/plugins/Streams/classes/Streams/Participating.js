@@ -19,7 +19,7 @@ var Db = Q.require('Db');
 function Streams_Participating (fields) {
 
 	// Run constructors of mixed in objects
-	this.constructors.apply(this, arguments);
+	Streams_Participating.constructors.apply(this, arguments);
 
 }
 

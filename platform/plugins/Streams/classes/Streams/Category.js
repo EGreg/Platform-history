@@ -22,7 +22,7 @@ var Category = Q.require('Base/Streams/Category');
 function Streams_Category (fields) {
 
 	// Run mixed-in constructors
-	this.constructors.apply(this, arguments);
+	Streams_Category.constructors.apply(this, arguments);
 
 	/*
 	 * Add any privileged methods to the model class here.

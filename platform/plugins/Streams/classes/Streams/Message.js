@@ -35,31 +35,30 @@ function Streams_Message (fields) {
 
 Q.mixin(Streams_Message, Base_Streams_Message);
 
+Streams_Message.defined = {};
+
 Streams_Message.construct = function Streams_Message_construct(fields) {
 	if (Q.isEmpty(fields)) {
-		Q.handle(callback, this, ["Streams.Stream constructor: fields are missing"]);
+		Q.handle(callback, this, ["Streams.Message constructor: fields are missing"]);
 		return false;
 	}
+	if (fields.fields) {
+		fields = fields.fields;
+	}
 	var type = Q.normalize(fields.type);
-	var messageFunc = Streams_Message.defined[type];
-	if (!messageFunc) {
-		messageFunc = Streams_Message.defined[type] = function (fields) {
+	var MC = Streams_Message.defined[type];
+	if (!MC) {
+		MC = Streams_Message.defined[type] = function MessageConstructor(fields) {
+			MessageConstructor.constructors.apply(this, arguments);
 			// Default constructor. Copy any additional fields.
 			if (!fields) return;
 			for (var k in fields) {
 				this.fields[k] = Q.copy(fields[k]);
 			}
 		};
+		Q.mixin(MC, Streams_Message);
 	}
-	if (!messageFunc.messageConstructor) {
-		messageFunc.messageConstructor = function Message_Constructor(fields) {
-			// run any constructors
-			this.constructors(fields);
-		};
-		Q.mixin(messageFunc, Streams_Message);
-		Q.mixin(messageFunc.messageConstructor, messageFunc);
-	}
-	return new messageFunc.messageConstructor(fields);
+	return new MC(fields);
 };
 
 /**
@@ -72,8 +71,6 @@ Streams_Message.prototype.setUp = function () {
 	// overrides the Base class
 };
 
-Streams_Message.defined = {};
-
 /**
  * Call this function to set a constructor for a message type
  * @static
@@ -85,7 +82,7 @@ Streams_Message.defined = {};
 Streams_Message.define = function (type, ctor, methods) {
 	if (typeof type === 'object') {
 		for (var t in type) {
-			Q.Tool.define(t, type[t]);
+			Streams_Message.define(t, type[t]);
 		}
 		return;
 	};
@@ -93,8 +90,13 @@ Streams_Message.define = function (type, ctor, methods) {
 	if (typeof ctor !== 'function') {
 		throw new Q.Error("Q.Streams.Message.define requires ctor to be a function");
 	}
-	Q.extend(ctor.prototype, methods);	
-	return Streams_Message.defined[type] = ctor;
+	function CustomMessageConstructor() {
+		CustomMessageConstructor.constructors.apply(this, arguments);
+		ctor.apply(this, arguments);
+	}
+	Q.mixin(CustomMessageConstructor, Streams_Message);
+	Q.extend(CustomMessageConstructor.prototype, methods);	
+	return Streams_Message.defined[type] = CustomMessageConstructor;
 };
 
 var Mp = Streams_Message.prototype;
@@ -138,10 +140,13 @@ Streams_Message.prototype.beforeSave = function (value, callback)
 		(new Streams.Stream({
 			publisherId: value['publisherId'],
 			name: value['streamName']
-		})).retrieve('*', true, true).lock().resume(function(error, stream) {
+		})).retrieve('*', true, true)
+		.lock()
+		.resume(function(error, stream) {
 			if (error) callback(error);
-			else if (!stream || !stream.length) callback(null, null); // no stream - no message!!!
-			else {
+			else if (!stream || !stream.length) {
+				callback(null, null); // no stream - no message!!!
+			} else {
 				stream = stream[0];
 				self.fields.ordinal = ++stream.fields.messageCount;
 				value['ordinal'] = self.fields.ordinal;

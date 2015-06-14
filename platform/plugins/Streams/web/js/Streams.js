@@ -155,8 +155,13 @@ Streams.define = function (type, ctor, methods) {
 	if (typeof ctor !== 'function') {
 		throw new Q.Error("Q.Streams.define requires ctor to be a string or a function");
 	}
-	Q.extend(ctor.prototype, methods);	
-	return Streams.defined[type] = ctor;
+	function CustomStreamConstructor() {
+		CustomStreamConstructor.constructors.apply(this, arguments);
+		ctor.apply(this, arguments);
+	}
+	Q.mixin(CustomStreamConstructor, Streams.Stream);
+	Q.extend(CustomStreamConstructor.prototype, methods);	
+	return Streams.defined[type] = CustomStreamConstructor;
 };
 
 /**
@@ -601,7 +606,8 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 	var type = Q.normalize(fields.type);
 	var streamFunc = Streams.defined[type];
 	if (!streamFunc) {
-		streamFunc = Streams.defined[type] = function (fields) {
+		streamFunc = Streams.defined[type] = function StreamConstructor(fields) {
+			streamFunc.constructors.apply(this, arguments);
 			// Default constructor. Copy any additional fields.
 			if (!fields) return;
 			for (var k in fields) {
@@ -614,7 +620,7 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 		return _doConstruct();
 	} else if (typeof streamFunc === 'string') {
 		Q.addScript(streamFunc, function () {
-			streamFunc = Q.Tool.constructors[streamName] || Q.Tool.constructors[streamName2];
+			streamFunc = Streams.defined[streamName];
 			if (typeof streamFunc !== 'function') {
 				throw new Error("Streams.construct: streamFunc cannot be " + typeof(streamFunc));
 			}
@@ -628,7 +634,7 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 		if (!streamFunc.streamConstructor) {
 			streamFunc.streamConstructor = function Streams_Stream(fields) {
 				// run any constructors
-				this.constructors(fields);
+				streamFunc.streamConstructor.constructors.apply(this, arguments);
 
 				var f = this.fields;
 
@@ -2245,7 +2251,8 @@ Message.construct = function Streams_Message_construct(fields) {
 	var type = Q.normalize(fields.type);
 	var messageFunc = Message.defined[type];
 	if (!messageFunc) {
-		messageFunc = Message.defined[type] = function (fields) {
+		messageFunc = Message.defined[type] = function MessageConstructor(fields) {
+			messageFunc.constructors.apply(this, arguments);
 			// Default constructor. Copy any additional fields.
 			if (!fields) return;
 			for (var k in fields) {
@@ -2256,7 +2263,7 @@ Message.construct = function Streams_Message_construct(fields) {
 	if (!messageFunc.messageConstructor) {
 		messageFunc.messageConstructor = function Streams_Message(fields) {
 			// run any constructors
-			this.constructors(fields);
+			messageFunc.messageConstructor.constructors.apply(this, arguments);
 			Message.get.cache.set(
 				[this.publisherId, this.streamName, parseInt(this.ordinal)],
 				0, this, [null, this]
@@ -2291,8 +2298,9 @@ Message.define = function (type, ctor, methods) {
 	if (typeof ctor !== 'function') {
 		throw new Q.Error("Q.Streams.Message.define requires ctor to be a function");
 	}
-	Q.extend(ctor.prototype, methods);	
-	return Message.defined[type] = ctor;
+	Q.mixin(CustomMessageConstructor, Message);
+	Q.extend(CustomMessageConstructor.prototype, methods);	
+	return Message.defined[type] = CustomMessageConstructor;
 };
 
 var Mp = Message.prototype;

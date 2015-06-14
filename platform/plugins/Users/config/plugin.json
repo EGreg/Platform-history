@@ -139,7 +139,7 @@
 		"icon": {
 			"sizes": ["40", "50", "80", "200", "200x"],
 			"defaultSize": "40",
-			"defaultCacheBust": "1000"
+			"defaultCacheBust": null
 		},
 		"vote": {
 			"Users/hinted": {

@@ -149,11 +149,11 @@ function Row(fields, retrieved /* false */) {
 	 * If object has methods beforeSave, beforeSaveExecute or afterSaveExecute they are triggered in
 	 * appropriate time.
 	 * @method save
-	 * @param [onDuplicateKeyUpdate=false] {boolean} If MySQL is being used, you can set this to TRUE
+	 * @param {boolean} [onDuplicateKeyUpdate=false] If MySQL is being used, you can set this to TRUE
 	 *  to add an ON DUPLICATE KEY UPDATE clause to the INSERT statement
-	 * @param [commit=false] {boolean} If this is TRUE, then the current transaction is committed right after the save.
+	 * @param {boolean} [commit=false] If this is TRUE, then the current transaction is committed right after the save.
 	 *  Use this only if you started a transaction before.
-	 * @param [callback=null] {function} This function is called when the queries have all completed.
+	 * @param {function} [callback=null] This function is called when the queries have all completed.
 	 *  It is passed the one optional argument:
 	 *  errors: an Object. If there were any errors, it will be passed error object as returned from query.execute
 	 *  If successful, it will be passed nothing.
@@ -198,8 +198,8 @@ function Row(fields, retrieved /* false */) {
 		 * **NOTE:** *if this method is defined but do not return result and do not call callback,
 		 * the `save()` method fails silently without making any changes in the database!!!*
 		 * @method beforeSave
-		 * @param modifiedFields {object}
-		 * @param [callback=null] {function} This function is called when hook completes.
+		 * @param {object} modifiedFields 
+		 * @param {function} [callback=null] This function is called when hook completes.
 		 *  Receives "error" - error object if any, and modifiedFields as parameters.
 		 */
 		if (!_split && typeof this.beforeSave === "function") { // skip beforeSave when on _split is defined
@@ -291,16 +291,16 @@ function Row(fields, retrieved /* false */) {
 	 * If object has methods beforeRetrieve, beforeRetrieveExecute or afterRetrieveExecute they are triggered in
 	 * appropriate time.
 	 * @method retrieve
-	 * @param [fields='*'] {string} The fields to retrieve and set in the Db_Row.
+	 * @param {String} [fields='*'] The fields to retrieve and set in the Db_Row.
 	 *  This gets used if we make a query to the database.
-	 * @param [use_index=false] {boolean} If true, the primary key is used in searching.
+	 * @param {boolean} [use_index=false] If true, the primary key is used in searching.
 	 *  An exception is thrown when some fields of the primary key are not specified
-	 * @param [modifyQuery=false] {boolean} If true, returns a Db.Query object that can be modified, rather than
+	 * @param {boolean} [modifyQuery=false] If true, returns a Db.Query object that can be modified, rather than
 	 *  the result. You can call more methods, like limit, offset, where, orderBy,
 	 *  and so forth, on that Db.Query. After you have modified it sufficiently,
 	 *  get the ultimate result of this function, by calling the resume() method on
 	 *  the Db.Query object (via the chainable interface).
-	 * @param [callback=null] {function} This function is called when all queries have completed
+	 * @param {function} [callback=null] This function is called when all queries have completed
 	 *  It is passed the arguments:
 	 *
 	 * * errors: an Object. If there were any errors, it will be passed error object as returned from query.execute
@@ -354,8 +354,8 @@ function Row(fields, retrieved /* false */) {
 		 * **NOTE:** *if this method is defined but do not return result and do not call callback,
 		 * the retrieve() method fails silently!!!*
 		 * @method beforeRetrieve
-		 * @param search_criteria {object}
-		 * @param [callback=null] {function} This function is called when hook completes. Returns error -
+		 * @param {Object} search_criteria 
+		 * @param {function} [callback=null] This function is called when hook completes. Returns error -
 		 *	error object if any and search_criteria as parameters.
 		 */
 		if (typeof this.beforeRetrieve === "function") {
@@ -461,13 +461,13 @@ function Row(fields, retrieved /* false */) {
 	 * If object has methods beforeRemove, beforeRemoveExecute or afterRemoveExecute they are triggered in
 	 * appropriate time.
 	 * @method remove
-	 * @param [search_criteria=null] {string|object} You can provide custom search criteria here, such as `&#123;"tag.name LIKE ": this.name&#125;`
+	 * @param {String|Object} [search_criteria=null] You can provide custom search criteria here, such as `&#123;"tag.name LIKE ": this.name&#125;`
 	 *  If this is left null, and this Db_Row was retrieved, then the db rows corresponding
 	 *  to the primary key are deleted.
 	 *  But if it wasn't retrieved, then the modified fields are used as the search criteria.
-	 * @param [use_index=false] {boolean} If true, the primary key is used in searching for rows to delete.
+	 * @param {boolean} [use_index=false] If true, the primary key is used in searching for rows to delete.
 	 *  An exception is thrown when some fields of the primary key are not specified
-	 * @param [callback=null] {function} This function is called when all queries have completed.
+	 * @param {function} [callback=null] This function is called when all queries have completed.
 	 *  It is passed the arguments:
 	 *
 	 * * errors: an Object. If there were any errors, it will be passed error object as returned from query.execute
@@ -597,7 +597,7 @@ function Row(fields, retrieved /* false */) {
 	/**
 	 * Rolls back the transaction
 	 * @method rollback
-	 * @param [callback=null] {function} This function is called when rollback have completed.
+	 * @param {function} [callback=null] This function is called when rollback have completed.
 	 *  It is passed the arguments:
 	 *
 	 * * errors: an Object. If there were any errors, it will be passed error object as returned from query.execute
@@ -634,7 +634,7 @@ function Row(fields, retrieved /* false */) {
 	/**
 	 * Set up temporary config for shard split
 	 * @method split
-	 * @param index {object} Split shard index
+	 * @param {Object} index Split shard index
 	 *
 	 * * 'indexes->connection' section of sharding config. Shall contain 'fields' and 'partition' fields
 	 * * 'partition' field shall contain new points mapped to shards
@@ -650,7 +650,7 @@ function Row(fields, retrieved /* false */) {
 	 * This function copies the members of another row,
 	 * as well as the primary key, etc. and assigns it to this row.
 	 * @method copyFromRow
-	 * @param row {Db.Row} The source row. Be careful -- In this case, Db does not check 
+	 * @param {Db.Row} row The source row. Be careful -- In this case, Db does not check 
 	 *  whether the class of the Db_Row matches. It leaves things up to you.
 	 * @return {Db_Row} returns this object, for chaining
 	 */
@@ -666,10 +666,10 @@ function Row(fields, retrieved /* false */) {
 Q.makeEventEmitter(Row);
 
 /**
- * Get plain object representing the row
- * @method toArray
+ * Get plain object with the fields of the row
+ * @method getFields
  */
-Row.prototype.toArray = function () {
+Row.prototype.getFields = function () {
 	var res = {};
 	for (var field in this.fields) {
 		if (this.fields[field] !== undefined) {
@@ -678,6 +678,8 @@ Row.prototype.toArray = function () {
 	}
 	return res;
 };
+
+Row.prototype.toArray = Row.prototype.getFields;
 
 Row.prototype.fillMagicFields = function () {
 	var toFill = [];
@@ -693,9 +695,10 @@ Row.prototype.fillMagicFields = function () {
 		return this;
 	}
 	var db = this.db();
+	var row = this;
 	db.getCurrentTimestamp(function (err, timestamp) {
 		for (var i=0, l=toFill.length; i<l; ++i) {
-			this.fields[toFill[i]] = db.toDateTime(timestamp);
+			row.fields[toFill[i]] = db.toDateTime(timestamp);
 		}
 	});
 	return this;

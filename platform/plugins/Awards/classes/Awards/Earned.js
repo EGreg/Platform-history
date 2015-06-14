@@ -27,7 +27,7 @@ function Awards_Earned (fields) {
 	};
 
 	// Run constructors of mixed in objects
-	this.constructors.apply(this, arguments);
+	Awards_Earned.constructors.apply(this, arguments);
 
 }
 

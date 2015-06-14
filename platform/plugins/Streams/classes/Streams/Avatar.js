@@ -20,7 +20,7 @@ var Db = Q.require('Db');
 function Streams_Avatar (fields) {
 
 	// Run constructors of mixed in objects
-	this.constructors.apply(this, arguments);
+	Streams_Avatar.constructors.apply(this, arguments);
 
 	/*
 	 * Add any privileged methods to the model class here.
@@ -38,36 +38,42 @@ Q.mixin(Streams_Avatar, Q.require('Base/Streams/Avatar'));
  * 
  * @method displayName
  * @param {Object} [options] A bunch of options which can include:
- *   @param {String} [options.short] Try to show the first name only
- *   @param {String} [options.short] Try to show the first name only
+ *   @param {Boolean} [options.short] Show one part of the name only
+ *   @param {Boolean} [options.html] If true, encloses the first name, last name, username in span tags. If an array, then it will be used as the attributes of the html.
+ *   @param {Boolean} [options.escape] If true, does HTML escaping of the retrieved fields
+ * @param {String} [fallback] What to return if there is no info to get displayName from.
  * @return {String}
  */
-Streams_Avatar.prototype.displayName = function _Avatar_prototype_displayName (options) {
+Streams_Avatar.prototype.displayName = function _Avatar_prototype_displayName (options, fallback) {
 	var fn = this.fields.firstName;
 	var ln = this.fields.lastName;
 	var u = this.fields.username;
-	var p1 = null, p2 = null;
-	if (options && options['short']) {
-		p1 = fn || u;
-		p2 = null;
-	} else if (fn && ln) {
-		p1 = fn;
-		p2 = ln;
-	} else if (fn && !ln) {
-		p1 = fn;
-		p2 = u || null;
-	} else if (!fn && !ln) {
-		p1 = u;
-		p2 = ln;
+	var fn2, ln2, u2;	
+	if (options && (options.escape || options.html)) {
+		fn = fn.encodeHTML();
+		ln = ln.encodeHTML();
+		u = u.encodeHTML();
+	}
+	if (options && options.html) {
+		fn2 = fn && '<span class="Streams_firstName">'+fn+'</span>';
+		ln2 = ln && '<span class="Streams_lastName">'+ln+'</span>';
+		u2 = u && '<span class="Streams_username">'+u+'</span>';
 	} else {
-		p1 = u || null;
-		p2 = null;
+		fn2 = fn;
+		ln2 = ln;
+		u2 = u;
 	}
-	if (options && options['html']) {
-		p1 = p1 && '<span class="Streams_firstName">'+p1.encodeHTML()+'</span>';
-		p2 = p2 && '<span class="Streams_lastName">'+p2.encodeHTML()+'</span>';
+	if (options && options.short) {
+		return fn ? fn2 : u2;
+	} else if (fn && ln) {
+		return fn + ' ' + ln2;
+	} else if (fn && !ln) {
+		return u ? fn2 + ' ' + u2 : fn2;
+	} else if (!fn && ln) {
+		return u ? u2 + ' ' + ln2 : ln2;
+	} else {
+		return u ? u2 : fallback;
 	}
-	return (p1 === null) ? '' : ((p2 === null) ? p1 : p1 + ' ' + p2);
 };
 
 /**

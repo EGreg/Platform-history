@@ -18,7 +18,7 @@ var Db = Q.require('Db');
 function Users_Email (fields) {
 
 	// Run constructors of mixed in objects
-	this.constructors.apply(this, arguments);
+	Users_Email.constructors.apply(this, arguments);
 
 	/*
 	 * Add any other methods to the model class by assigning them to this.

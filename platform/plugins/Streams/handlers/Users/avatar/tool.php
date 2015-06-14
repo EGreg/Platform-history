@@ -13,8 +13,8 @@
  *   "short" => Optional. Renders the short version of the display name.
  * @param {boolean} [options.editable]
  *   "editable" => Optional. Whether to provide an interface for editing the user's info. Can be array containing "icon", "name".
- * @param {boolean} [options.cacheBust]
- *   "cacheBust" => Defaults to 1000. Number of milliseconds to use for Q_Uri::cacheBust for combating unintended caching on some environments.
+ * @param {boolean} [options.cacheBust=null]
+ *   "cacheBust" => Number of milliseconds to use for Q_Uri::cacheBust for combating unintended caching on some environments.
  * @param {boolean} [options.renderOnClient]
  *    If true, only the html container is rendered, so the client will do the rest.
  */
@@ -23,7 +23,7 @@ function Users_avatar_tool($options)
 	$defaults = array(
 		'icon' => false,
 		'short' => false,
-		'cacheBust' => Q_Config::get('Users', 'icon', 'defaultCacheBust', 1000)
+		'cacheBust' => Q_Config::get('Users', 'icon', 'defaultCacheBust', null)
 	);
 	$options = array_merge($defaults, $options);
 	Q_Response::addStylesheet('plugins/Users/css/Users.css');

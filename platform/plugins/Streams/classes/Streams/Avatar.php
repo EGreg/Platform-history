@@ -146,21 +146,22 @@ class Streams_Avatar extends Base_Streams_Avatar
 	 * @method displayName
 	 * @param {array} $options=array()
 	 *  Associative array of options, which can include:<br/>
-	 *  "fullAccess" => Ignore the access restrictions for the name<br/>
-	 *  "short" => Only display the first name<br/>
-	 *  "html" => If true, encloses the first and last name in span tags<br/>
-	 *      If an array, then it will be used as the attributes of the html.
-	 *  "escape" => If true, does HTML escaping of the retrieved fields
-	 * @param {string|null} $default
-	 *  What to return if there is no info to get displayName from.
+	 *   @param {boolean} [$options.short] Show one part of the name only
+	 *   @param {boolean} [$options.html] If true, encloses the first name, last name, username in span tags. If an array, then it will be used as the attributes of the html.
+	 *   @param {boolean} [$options.escape] If true, does HTML escaping of the retrieved fields
+	 * @param {string} [$fallback] What to return if there is no info to get displayName from.
 	 * @return {string|null}
 	 */
-	function displayName($options = array(), $default = null)
+	function displayName($options = array(), $fallback = null)
 	{
-		$escape = !empty($options['escape']);
-		$fn = $escape ? Q_Html::text($this->firstName) : $this->firstName;
-		$ln = $escape ? Q_Html::text($this->lastName) : $this->lastName;
-		$u = $escape ? Q_Html::text($this->username) : $this->username;
+		$fn = $this->firstName;
+		$ln = $this->lastName;
+		$u = $this->username;
+		if (!empty($options['escape']) or !empty($options['html'])) {
+			$fn = Q_Html::text($fn);
+			$ln = Q_Html::text($ln);	
+			$u = Q_Html::text($u);
+		}
 
 		if (!empty($options['html'])) {
 			$attributes = is_array($options['html'])
@@ -171,13 +172,13 @@ class Streams_Avatar extends Base_Streams_Avatar
 				: '';
 			$attributes['class'] = "Streams_firstName$class";
 			$attr = Q_Html::attributes($attributes);
-			$fn2 = "<span $attr>".Q_Html::text($fn)."</span>";
+			$fn2 = "<span $attr>$fn</span>";
 			$attributes['class'] = "Streams_lastName$class";
 			$attr = Q_Html::attributes($attributes);
-			$ln2 = "<span $attr>".Q_Html::text($ln)."</span>";
+			$ln2 = "<span $attr>$ln</span>";
 			$attributes['class'] = "Streams_username$class";
 			$attr = Q_Html::attributes($attributes);
-			$u2 = "<span $attr>".Q_Html::text($u)."</span>";
+			$u2 = "<span $attr>$u</span>";
 		} else {
 			$fn2 = $fn;
 			$ln2 = $ln;
@@ -193,11 +194,11 @@ class Streams_Avatar extends Base_Streams_Avatar
 		if ($fn and $ln) {
 			return "$fn2 $ln2";
 		} else if ($fn and !$ln) {
-			return $u2 ? "$fn2 $u2" : $fn2;
+			return $u ? "$fn2 $u2" : $fn2;
 		} else if (!$fn and $ln) {
-			return "$u2 $ln2";
+			return $u ? "$u2 $ln2" : $ln2;
 		} else {
-			return $u ? $u2 : $default2;
+			return $u ? $u2 : $fallback;
 		}
 	}
 

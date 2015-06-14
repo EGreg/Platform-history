@@ -27,7 +27,7 @@ function Metrics_Publisher (fields) {
 	};
 
 	// Run constructors of mixed in objects
-	this.constructors.apply(this, arguments);
+	Metrics_Publisher.constructors.apply(this, arguments);
 
 }
 

@@ -28,7 +28,7 @@ function Websites_Permalink (fields) {
 	};
 
 	// Run constructors of mixed in objects
-	this.constructors.apply(this, arguments);
+	Websites_Permalink.constructors.apply(this, arguments);
 
 	/*
 	 * Add any privileged methods to the model class here.

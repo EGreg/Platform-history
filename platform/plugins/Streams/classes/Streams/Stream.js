@@ -23,7 +23,7 @@ Q.makeEventEmitter(Streams_Stream);
 function Streams_Stream (fields) {
 
 	// Run constructors of mixed in objects
-	this.constructors.apply(this, arguments);
+	Streams_Stream.constructors.apply(this, arguments);
 
 
 	var p = {};
@@ -67,6 +67,41 @@ function Streams_Stream (fields) {
 }
 
 Q.mixin(Streams_Stream, Q.require('Base/Streams/Stream'));
+
+Streams_Stream.construct = function Streams_Stream_construct(fields) {
+	if (Q.isEmpty(fields)) {
+		Q.handle(callback, this, ["Streams.Stream constructor: fields are missing"]);
+		return false;
+	}
+	if (fields.fields) {
+		fields = fields.fields;
+	}
+	var type = Q.normalize(fields.type);
+	var SC = Streams.defined[type];
+	if (!SC) {
+		SC = Streams.defined[type] = function StreamConstructor(fields) {
+			StreamConstructor.constructors.apply(this, arguments);
+			// Default constructor. Copy any additional fields.
+			if (!fields) return;
+			for (var k in fields) {
+				this.fields[k] = Q.copy(fields[k]);
+			}
+		};
+		Q.mixin(SC, Streams_Stream);
+	}
+	return new SC(fields);
+};
+
+Streams_Stream.define = Streams.define;
+
+/**
+ * The setUp() method is called the first time
+ * an object of this class is constructed.
+ * @method setUp
+ */
+Streams_Stream.prototype.setUp = function () {
+	// put any code here
+};
 
 /**
  * Updates a field using an arithmetic expression
@@ -237,7 +272,7 @@ Streams_Stream.prototype.messageParticipants = function (event, uid, msg) {
 	var stream = this;
 	Streams.getParticipants(fields.publisherId, fields.name, function (participants) {
 		var debug, userId;
-		msg["streamType"] = fields.type;
+		msg.fields.streamType = fields.type;
 		for (userId in participants) {
 			var participant = participants[userId];
 			stream.notify(participant, event, uid, msg, function(err) {
@@ -609,7 +644,7 @@ Streams_Stream.prototype.join = function(options, callback) {
 			}
 			function _afterSaveParticipant(err) {
 				if (err) return callback.call(stream, err);
-				Streams.emitToUser(userId, 'join', sp.fillMagicFields().toArray());
+				Streams.emitToUser(userId, 'join', sp.fillMagicFields().getFields());
 				stream.incParticipants(/* empty callback*/);
 				
 				var f = sp.fields;
@@ -811,16 +846,16 @@ Streams_Stream.prototype.notify = function(participant, event, uid, message, cal
 			Streams.pushNotification(userId, tokens, event, message);
 		}
 		// 2) if user has socket connected - emit socket message and quit
-		if (Streams.emitToUser(userId, event, message)) {
+		if (Streams.emitToUser(userId, event, message.getFields())) {
 			return callback && callback();
 		}
 		// 3) if user has no socket connected notify subscribed users
-		if (userId === message.byUserId) {
+		if (userId === message.fields.byUserId) {
 			return; // no need to notify the user of their own actions
 		}
 		if (participant.fields.subscribed === 'yes') {
 			Streams.Subscription.test(
-			userId, stream.fields.publisherId, stream.fields.name, message.type,
+			userId, stream.fields.publisherId, stream.fields.name, message.fields.type,
 			function(err, deliveries) {
 				if (err || !deliveries.length) return callback && callback(err);
 				var waitingFor = deliveries.map(function(d) { return JSON.stringify(d); });
@@ -832,16 +867,15 @@ Streams_Stream.prototype.notify = function(participant, event, uid, message, cal
 						userId: userId,
 						publisherId: participant.fields.publisherId,
 						streamName: participant.fields.streamName,
-						type: message.type
+						type: message.fields.type
 					}).save(function(err) {
 						callback && callback(err, deliveries);
 					});
 				});
 				// actually notify according to the deliveriy rules
-				var msg = Streams.Message.construct(message);
-				Streams.Avatar.fetch(userId, msg.fields.byUserId, function (err, avatar) {
-					if (message.type === "Streams/invite") {
-						var instructions = JSON.parse(message.instructions);
+				Streams.Avatar.fetch(userId, message.fields.byUserId, function (err, avatar) {
+					if (message.fields.type === "Streams/invite") {
+						var instructions = JSON.parse(message.fields.instructions);
 						new Streams.Invite({
 							token: instructions.token
 						}).retrieve(function(err, rows) {
@@ -850,18 +884,28 @@ Streams_Stream.prototype.notify = function(participant, event, uid, message, cal
 							new Streams.Stream({
 								publisherId: invite.fields.publisherId,
 								name: invite.fields.streamName
-							}).retrieve(function(err, stream) {
-								if (err || !rows.length) return deliveries.forEach(function(delivery) {p.fill(JSON.stringify(delivery))(err); });
-								stream = stream[0];
-								msg.fields.invite = rows[0].toArray();
+							}).retrieve(function(err, rows2) {
+								if (err || !rows2.length) {
+									return deliveries.forEach(function(delivery) {
+										p.fill(JSON.stringify(delivery))(err); 
+									});
+								}
+								stream = rows2[0];
+								message.fields.invite = rows[0].getFields();
 								var instructions;
-								try { instructions = JSON.parse(message.instructions); } catch (e) {}
+								try { 
+									instructions = JSON.parse(message.fields.instructions); 
+								} catch (e) {}
 								if (instructions.type) {
-									stream.fields.invite = { url: Q.url(Q.Config.get(['Streams', 'invites', 'baseUrl'], "i")) };
+									stream.fields.invite = { 
+										url: Q.url(Q.Config.get(
+											['Streams', 'invites', 'baseUrl'], "i"
+										))
+									};
 									stream.fields.invite[instructions.type] = true;
 								}
 								deliveries.forEach(function(delivery) {
-									msg.deliver(stream, delivery, avatar,
+									message.deliver(stream, delivery, avatar,
 										p.fill(JSON.stringify(delivery))
 									);
 								});
@@ -869,7 +913,7 @@ Streams_Stream.prototype.notify = function(participant, event, uid, message, cal
 						});
 					} else {
 						deliveries.forEach(function(delivery) {
-							msg.deliver(stream, delivery, avatar,
+							message.deliver(stream, delivery, avatar,
 								p.fill(JSON.stringify(delivery))
 							);
 						});
@@ -919,18 +963,9 @@ Streams_Stream.prototype.post = function (f, callback) {
 	var msg = Streams.Message.construct(f);
 	var stream = this;
 	msg.save(function (err) {
-		Streams_Stream.emit('post', stream.toArray(), f.byUserId, msg.toArray());
+		Streams_Stream.emit('post', stream, f.byUserId, msg);
 		callback && callback(err);
 	});
-};
-
-/**
- * The setUp() method is called the first time
- * an object of this class is constructed.
- * @method setUp
- */
-Streams_Stream.prototype.setUp = function () {
-	// put any code here
 };
 
 module.exports = Streams_Stream;

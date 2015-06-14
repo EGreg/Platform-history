@@ -27,7 +27,7 @@ function Broadcast_User (fields) {
 	};
 
 	// Run constructors of mixed in objects
-	this.constructors.apply(this, arguments);
+	Broadcast_User.constructors.apply(this, arguments);
 
 }
 

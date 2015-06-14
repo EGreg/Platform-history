@@ -1602,9 +1602,6 @@ Q.mixin = function _Q_mixin(A, B) {
 		var mixins = A.__mixins;
 		var i;
 		for (i = mixins.length - 1; i >= 0; --i) {
-			if (typeof mixins[i].constructors === 'function') {
-				mixins[i].constructors.apply(this, arguments);
-			}
 			mixins[i].apply(this, arguments);
 		}
 	};
@@ -1637,7 +1634,7 @@ Q.Class = function _Q_Class(construct /* [, Base1, ...] [, properties, [classPro
 	constructors.unshift(Q_ClassConstructor);
 	
 	function Q_ClassConstructor() {
-		this.constructors.apply(this, arguments);
+		Q_ClassConstructor.constructors.apply(this, arguments);
 		construct && construct.apply(this, arguments);
 	}
 	

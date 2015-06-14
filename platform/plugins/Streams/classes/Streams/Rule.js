@@ -21,7 +21,7 @@ var Base_Streams_Rule = Q.require('Base/Streams/Rule');
 function Streams_Rule (fields) {
 
 	// Run constructors of mixed in objects
-	this.constructors.apply(this, arguments);
+	Streams_Rule.constructors.apply(this, arguments);
 
 }
 

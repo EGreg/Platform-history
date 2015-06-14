@@ -27,7 +27,7 @@ function Metrics_Domain (fields) {
 	};
 
 	// Run constructors of mixed in objects
-	this.constructors.apply(this, arguments);
+	Metrics_Domain.constructors.apply(this, arguments);
 
 }
 

@@ -28,7 +28,7 @@ function Broadcast_Agreement (fields) {
 	};
 
 	// Run constructors of mixed in objects
-	this.constructors.apply(this, arguments);
+	Broadcast_Agreement.constructors.apply(this, arguments);
 
 }
 

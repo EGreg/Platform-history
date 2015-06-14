@@ -134,7 +134,7 @@ function _Q_overlay(o) {
 			{
 				$this.fadeOut(o.fadeTime, function()
 				{
-					Q.handle($overlay.options.onClose, $this, [$this]);
+					Q.handle($overlay.options.onClose, $this, []);
 				});
 				if ($overlay.options.mask)
 				{

@@ -8,7 +8,7 @@
  * Ticker that scrolls its contents with various speeds and pauses
  * @class Q ticker
  * @constructor
- * @param $options
+ * @param {array} $options
  *  An associative array of fields, possibly including:
  *
  * "content" => string

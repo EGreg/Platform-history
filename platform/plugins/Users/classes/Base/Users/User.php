@@ -533,9 +533,6 @@ abstract class Base_Users_User extends Db_Row
 	 */
 	function beforeSet_emailAddressPending($value)
 	{
-		if (!isset($value)) {
-			return array('emailAddressPending', $value);
-		}
 		if ($value instanceof Db_Expression) {
 			return array('emailAddressPending', $value);
 		}
@@ -556,9 +553,6 @@ abstract class Base_Users_User extends Db_Row
 	 */
 	function beforeSet_mobileNumberPending($value)
 	{
-		if (!isset($value)) {
-			return array('mobileNumberPending', $value);
-		}
 		if ($value instanceof Db_Expression) {
 			return array('mobileNumberPending', $value);
 		}

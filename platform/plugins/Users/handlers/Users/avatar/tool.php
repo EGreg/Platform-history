@@ -47,15 +47,16 @@ function Users_avatar_tool($options)
 	$result = '';
 	$icon = $options['icon'];
 	if ($icon) {
-		if ($icon === true) $icon = 40;
-		$path = $user->iconPath();
+		if ($icon === true) {
+			$icon = 40;
+		}
 		$attributes = isset($options['iconAttributes'])
 			? $options['iconAttributes']
 			: array();
 		$attributes['class'] = isset($attributes['class'])
 			? $attributes['class'] . ' Users_avatar_icon'
 			: 'Users_avatar_icon';
-		$result .= Q_Html::img("$path/$icon.png", 'user icon', $attributes);
+		$result .= Q_Html::img($user->iconPath($icon), 'user icon', $attributes);
 	}
 	$result .= '<span class="Users_avatar_name">' . $user->username . '</span>';
 	return $result;
