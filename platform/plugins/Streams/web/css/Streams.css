@@ -545,14 +545,14 @@
 
 .Q_expandable_count,
 .Q_expandable_tool .Q_selected,
-#Streams_interests_unlisted .Q_selected {
+.Streams_interests_unlisted .Q_selected {
 	background: rgba(255, 180, 180, 0.9);
     color: #220;
 	text-shadow: none;
 }
 
 .Streams_interest_title,
-#Streams_new_interest_title {
+.Streams_new_interest_title {
 	font-size: 17px;
 	white-space: nowrap;
 	padding: 0 3px 0 3px;
@@ -577,6 +577,8 @@
     font-weight: 300;
 }
 
-#Streams_interests_unlisted { font-size: 11px; padding: 5px; }
+.Streams_interests_unlisted { font-size: 11px; padding: 5px; }
 
 .Streams_image_preview_tool { text-align: center; }
+
+.Streams_interests_filter_input { width: 100%; }

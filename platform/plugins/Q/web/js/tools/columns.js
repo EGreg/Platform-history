@@ -380,7 +380,10 @@ Q.Tool.define("Q/columns", function(options) {
 				if (Q.info.isMobile) {
 					$div.add($ct).css('width', '100%');
 				} else {
-					$sc.width(tool.$('.Q_columns_column').length * tool.$('.Q_columns_column').outerWidth(true));
+					$sc.width(
+						tool.$('.Q_columns_column').length *
+						tool.$('.Q_columns_column').outerWidth(true)+1
+					);
 
 					var $toScroll = ($te.css('overflow') === 'visible')
 						? $te.parents()

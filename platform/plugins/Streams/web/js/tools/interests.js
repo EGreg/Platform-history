@@ -119,7 +119,8 @@ Q.Tool.define("Streams/interests", function (options) {
 		var $unlisted1 = $("<div />").html("Don't see it? Try some synonyms.");
 		var $unlisted2 = $("<div class='Streams_interest_unlisted1' />")
 		.text("If you still can't find what you're looking for, you can add a new interest below:");
-		$unlistedTitle = $('<span id="Streams_new_interest_title" />');
+		$unlistedTitle = $('<span id="Streams_new_interest_title" />')
+			.addClass('Streams_new_interest_title');
 		var $select = $('<select class="Streams_new_interest_categories" />')
 			.on('change', function () {
 				var $this = $(this);
@@ -152,6 +153,7 @@ Q.Tool.define("Streams/interests", function (options) {
 				}, {subscribe: true});
 			});
 		var $unlisted = $('<div id="Streams_interests_unlisted" />')
+			.addClass("Streams_interests_unlisted")
 			.append($unlisted1, $unlisted2)
 			.append(
 				$('<div />').append(
