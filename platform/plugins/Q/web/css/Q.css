@@ -45,7 +45,7 @@ table { border-spacing:0; border-collapse:collapse; }
 .Q_editing {}
 .Q_error { color: #C22 !important; font-style: italic !important; }
 .Q_errors { color: #a00; }
-.Q_error_message { z-index: 11000; font-size: 12px; background-color: #a00; color: white; padding: 2px 5px 4px 5px; opacity: 0.8; pointer-events: none; }
+.Q_error_message { z-index: 11000; font-size: 12px; background-color: #a00; color: white; padding: 2px 5px 4px 5px; opacity: 0.8; pointer-events: none; box-sizing: content-box; }
 .Q_error_message p { margin: 0; }
 .Q_expanded { }
 .Q_field_name { color: #222; opacity:0.5; filter:alpha(opacity=50) }
@@ -130,7 +130,7 @@ html[xmlns] .Q_clearfix { display: block; }
 .Q_overlay { background: url(../img/bg/overlay.png); display:none; width: 350px; text-align:left; padding: 0; border: 2px solid #444; z-index: 9000;
  opacity: 1; border-radius: 7px; -moz-border-radius: 7px; -webkit-border-radius: 7px; -moz-box-shadow: 0 0 20px #333; -webkit-box-shadow: 0 0 50px #333; }
 
-.Q_dialog_title { padding: 10px; margin:0px; border-bottom: 1px solid #333; font-size: 20px; height: 20px; font-weight: bold; color: white; cursor: default;
+.Q_dialog_title { padding: 10px; box-sizing: content-box; margin:0px; border-bottom: 1px solid #333; font-size: 20px; height: 20px; font-weight: bold; color: white; cursor: default;
 	background: #444; /* for non-css3 browsers */
 	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#444444', endColorstr='#111111'); /* for IE */
 	background: -webkit-gradient(linear, left top, left bottom, from(#444), to(#111)); /* for webkit browsers */
@@ -179,6 +179,7 @@ div.Q_buttons { text-align: center; }
 	white-space: nowrap;
 	border-width:1px; font-size:1em; padding: 1px 5px 1px 5px; color: #fff; cursor:pointer; border-radius: 0.3em;
 	-moz-border-radius: 0.3em;  -webkit-border-radius: 0.3em; border-color: rgba(200,200,200,0.5); border-bottom-color: rgba(0,0,200,0.2); border-right-color: rgba(0,0,200,0.2);
+	box-sizing: content-box;
 	
 	box-shadow: 0 0 1px rgba(50,50,50,0.5); -moz-box-shadow: 0 0 1px rgba(50,50,50,0.5); -webkit-box-shadow: 0 0 1px rgba(50,50,50,0.5);
 	background: #444; /* for non-css3 browsers */
@@ -217,22 +218,23 @@ button:focus:disabled,
 .Q_button:focus:disabled { cursor: default; background: -moz-linear-gradient(top,  #AAA,  #888); }
 button.basic16 { background-color: #eee; color: black; }
 .Q_notTouchscreen button.basic16:active { background-color: #ccc; color: black; }
-.Q_button { padding: 0.4em 1em 0.4em 1em; }
+.Q_button { padding: 0.4em 1em 0.4em 1em; box-sizing: content-box; }
 
 /* tooltips */
 
-.Q_tooltip { background-color: #555; /* #005; */ border:1px solid #fff; padding:10px 15px; width:200px; display:none; color:#fff; text-align:center; font-size:12px; z-index: 12000;
+.Q_tooltip { background-color: #555; /* #005; */ border:1px solid #fff; padding:10px 15px; box-sizing: content-box; width:200px; display:none; color:#fff; text-align:center; font-size:12px; z-index: 12000;
  /* outline radius for mozilla/firefox only */ box-shadow:0 0 10px #000; -moz-box-shadow:0 0 10px #000; -webkit-box-shadow:0 0 10px #000; }
 
 /* big prompts */
 
-.Q_big_prompt { padding: 10px; }
+.Q_big_prompt { padding: 10px; box-sizing: border-box; }
 .Q_big_prompt label,
 .Q_big_prompt input,
 .Q_big_prompt button,
 .Q_big_prompt .Q_button { font-size: 18px; } 
-.Q_big_prompt button,
-.Q_notTouchscreen .Q_big_prompt .Q_button, .Q_big_prompt .Q_button:active { padding: 5px 1em; }
+.Q_big_prompt .Q_button,
+.Q_notTouchscreen .Q_big_prompt .Q_button,
+.Q_notTouchscreen .Q_big_prompt .Q_button:active { padding: 5px 1em; box-sizing: content-box; }
 .Q_big_prompt .Q_button span { display: inline-block; line-height: 1em; margin-top: -2px; }
 .Q_big_prompt input[type=text],
 .Q_big_prompt input[type=email],
@@ -246,12 +248,12 @@ button.basic16 { background-color: #eee; color: black; }
 .Q_big_prompt input.number,
 .Q_big_prompt textarea { font-size: 18px; border-radius:3px; -moz-border-radius:3px; -webkit-border-radius:3px; width: 250px; }
 .Q_big_prompt select { font-size: 18px; border-radius: 3px; -moz-border-radius:3px; -webkit-border-radius:3px; vertical-align: middle; }
-.Q_big_prompt .Q_field_title { vertical-align: middle; text-align: right; padding-right: 10px; }
+.Q_big_prompt .Q_field_title { vertical-align: middle; text-align: right; padding-right: 10px; box-sizing: content-box; }
 
 /* big messages */
 
-.Q_big_message { padding: 30px 30px 50px 30px !important; font-size: 20px; font-weight: bold; text-align: center; }
-.Q_big_message>div { padding-top: 20px; }
+.Q_big_message { padding: 30px 30px 50px 30px !important; box-sizing: content-box; font-size: 20px; font-weight: bold; text-align: center; }
+.Q_big_message>div { padding-top: 20px; box-sizing: content-box; }
 .Q_big_message>.Q_explanation { font-size: 18px; font-weight: normal; }
 
 

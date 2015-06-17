@@ -6,7 +6,7 @@
 .Q_inplace_tool .Q_hover .Q_inplace_tool_static,
 .Q_inplace_tool .Q_hover .Q_inplace_tool_blockstatic { border: dashed 1px #AAE; cursor: pointer; }
 .Q_inplace_tool .Q_hover .Q_inplace_tool_editbuttons { background-color: #EEE; display: inline; }
-.Q_inplace_tool .Q_inplace_tool_fieldinput { max-height: 500px; }
+.Q_inplace_tool .Q_inplace_tool_fieldinput { max-height: 500px; text-align: inherit; }
 .Q_inplace_tool .Q_inplace_tool_undermessage { display: none; position: absolute; bottom: -18px; left: 10px; min-width: 100px; }
 .Q_inplace_tool .Q_error { background-color: #FEE; }
 

@@ -46,6 +46,7 @@
 	font-weight: normal;
 	color: #555;
 	padding: 5px;
+	box-sizing: content-box;
 	opacity: 0.5;
 }
 
@@ -60,6 +61,7 @@
 	line-height:40px;
     width: 80%;
 	height: 40px;
+	box-sizing: content-box;
 }
 
 .Q_columns_column:first-child .title_slot {
@@ -94,6 +96,7 @@
 .Q_columns_tool.Q_fullscreen .column_slot {
 	position: relative;
 	padding-top: 40px;
+	box-sizing: content-box;
 	overflow: hidden;
 }
 .Q_columns_loading { height: 40px; }
