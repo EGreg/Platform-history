@@ -6,13 +6,15 @@
  * @param {array} $options An associative array of parameters, containing:
  * @param {boolean} [options.userId]
  *   "userId" => The user's id. Defaults to id of the logged-in user, if any.
- * @param {boolean} [options.icon]
- *   "icon" => Optional. Render icon before the username.
- * @param {boolean} [options.iconAttributes]
- *   "iconAttributes" => Optional. Array of attributes to render for the icon. * @param {boolean} [options.short]
+ * @param {boolean} [options.short]
  *   "short" => Optional. Renders the short version of the display name.
- * @param {boolean} [options.editable]
- *   "editable" => Optional. Whether to provide an interface for editing the user's info. Can be array containing "icon", "name".
+ * @param {boolean|integer} [options.icon=false]
+ *   "icon" => Optional. Pass the size in pixels of the (square) icon to render
+ *   before the username. Or pass true to render the default size.
+ * @param {array} [options.iconAttributes]
+ *   "iconAttributes" => Optional. Array of attributes to render for the icon.
+ * @param {boolean} [options.editable=false]
+ *   "editable" => Optional. Whether to provide an interface for editing the user's info. Can be array containing one or more of "icon", "name".
  * @param {boolean} [options.cacheBust=null]
  *   "cacheBust" => Number of milliseconds to use for Q_Uri::cacheBust for combating unintended caching on some environments.
  * @param {boolean} [options.renderOnClient]

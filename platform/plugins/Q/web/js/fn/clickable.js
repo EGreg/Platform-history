@@ -6,7 +6,7 @@
  */
 
 /**
- * Makes an element clickable, creating cool "popping" effect when you press it,
+ * Makes an element clickable, creating a cool "popping" effect when you press it,
  * which especially looks nice on touchscreens.
  * I originally came up with this effect at Intermagix.
  * @class Q clickable

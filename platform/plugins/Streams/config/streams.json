@@ -85,6 +85,11 @@
 		"icon": "",
 		"name_fb": "gender"
 	},
+	"Streams/user/height": {
+		"type": "Streams/date/height",
+		"title": "Height",
+		"icon": ""
+	},
 	"Streams/user/birthday": {
 		"type": "Streams/date/birthday",
 		"title": "Birthday",

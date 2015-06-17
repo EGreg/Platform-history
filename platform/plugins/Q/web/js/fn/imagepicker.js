@@ -103,8 +103,8 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 					var w = parseInt(parts[0] || 0);
 					var h = (parts.length === 2) ? parseInt(parts[1] || 0) : w;
 					var r = imageSize.width / imageSize.height;
-					widths.push(w || h * r || imageSize.height);
-					heights.push(h || w / r || imageSize.width);
+					widths.push(w || h * r || imageSize.width);
+					heights.push(h || w / r || imageSize.height);
 		        });
 				var width = Math.max.apply( Math, widths );
 				var height = Math.max.apply( Math, heights );
