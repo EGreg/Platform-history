@@ -32,7 +32,7 @@
  *   @uses Q inplace
  *   @param {Object} [options.actions] Any options to pass to the Q/actions jquery plugin -- see its options.
  *   @uses Q actions
- *   @param {Object} [options.sizes] If passed, uses this instead of Q.Streams.image.sizes for the sizes
+ *   @param {Object} [options.sizes] If passed, uses this instead of Q.Streams.image.sizes for the sizes when imagepicker.saveSizeName isn't passed
  *   @param {Object} [options.overrideShowSize]  A hash of {icon: size} pairs to override imagepicker.showSize when the icon is a certain string. The empty string matches all icons.
  *   @param {String} [options.throbber="plugins/Q/img/throbbers/loading.gif"] The url of an image to use as an activity indicator when the image is loading
  *   @param {Number} [options.cacheBust=null] Number of milliseconds to use for combating the re-use of cached images when they are first loaded.

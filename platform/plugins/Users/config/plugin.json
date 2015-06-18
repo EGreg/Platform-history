@@ -138,8 +138,7 @@
 		},
 		"icon": {
 			"sizes": ["40", "50", "80", "200", "200x"],
-			"defaultSize": "40",
-			"defaultCacheBust": null
+			"defaultSize": "40"
 		},
 		"vote": {
 			"Users/hinted": {

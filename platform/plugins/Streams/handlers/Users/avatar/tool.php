@@ -25,7 +25,7 @@ function Users_avatar_tool($options)
 	$defaults = array(
 		'icon' => false,
 		'short' => false,
-		'cacheBust' => Q_Config::get('Users', 'icon', 'defaultCacheBust', null)
+		'cacheBust' => null
 	);
 	$options = array_merge($defaults, $options);
 	Q_Response::addStylesheet('plugins/Users/css/Users.css');
