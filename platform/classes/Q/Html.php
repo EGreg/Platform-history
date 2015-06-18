@@ -163,8 +163,7 @@ class Q_Html
 	 * @param {array|string} [$keys=null] An array of keys to precede the keys in the associative array.
 	 *  If a string is passed, it becomes the name of the field (array).
 	 *  Defaults to empty. Used mainly during recursion.
-	 * @param {boolean} [$class_attributes=true] Defaults to true. If true, generates the class attribute name
-	 *  from the name of each field.
+	 * @param {boolean} [$class_attributes=true] Defaults to true. If true, generates the class attribute from the name of each field.
 	 */
 	static function hidden (
 	 array $list = array(), 

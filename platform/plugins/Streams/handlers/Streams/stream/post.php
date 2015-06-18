@@ -1,8 +1,13 @@
 <?php
 
 /**
+ * @module Streams
+ */
+
+/**
  * Used by HTTP clients to create a new stream in the system.
- * @method Streams/stream/post
+ * @class Streams/stream
+ * @method post
  * @param {array} [$params] Parameters that can come from the request
  *   @param {string} $params.publisherId  Required. The id of the user to publish the stream.
  *   @param {string} $params.type Required. The type of the stream.
