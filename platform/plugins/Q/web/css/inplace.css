@@ -1,4 +1,4 @@
-.Q_inplace_tool, .Q_inplace_tool_container { display: inline-block; position: relative; }
+.Q_inplace_tool, .Q_inplace_tool_container { display: inline-block; position: relative; width: 100%; }
 .Q_inplace_tool .Q_inplace_tool_editbuttons { display: none; position: absolute; left: 0; z-index: 9901; }
 .Q_inplace_tool .Q_inplace_tool_editbuttons button { display: inline; color: black !important; }
 .Q_inplace_tool .Q_inplace_tool_static { display: inline-block; border: solid 1px transparent; cursor: default; }

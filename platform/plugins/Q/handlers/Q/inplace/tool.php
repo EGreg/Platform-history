@@ -50,7 +50,10 @@ function Q_inplace_tool($options)
 		: '';
 
 	$classes = !empty($editing) ? 'Q_editing Q_nocancel' : '';
-	$options = compact('editOnClick', 'selectOnEdit', 'maxWidth', 'beforeSave', 'onSave');
+	$options = compact(
+		'editOnClick', 'selectOnEdit', 'maxWidth', 'beforeSave', 'onSave',
+		'placeholder'
+	);
 	Q_Response::setToolOptions($options);
 	$sh = $staticHtml
 		? $staticHtml

@@ -64,14 +64,16 @@ Q.Tool.define("Streams/inplace", function (options) {
 					break;
 				case 'textarea':
 					var convert = {};
-					var replacements = {
-						"\n": '<br>',
-					 	' ': '&nbsp;'
-					};
-					if (state.convert) {
-						for (var i=0, l=state.convert.length; i<l; ++i) {
-							var c = state.convert[i];
-							convert[c] = replacements[c];
+					if (content) {
+						var replacements = {
+							"\n": '<br>',
+						 	' ': '&nbsp;'
+						};
+						if (state.convert) {
+							for (var i=0, l=state.convert.length; i<l; ++i) {
+								var c = state.convert[i];
+								convert[c] = replacements[c];
+							}
 						}
 					}
 					var toSet = html.replaceAll(convert);
