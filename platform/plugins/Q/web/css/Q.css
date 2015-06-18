@@ -246,7 +246,7 @@ button.basic16 { background-color: #eee; color: black; }
 .Q_big_prompt input.tel,
 .Q_big_prompt input.password,
 .Q_big_prompt input.number,
-.Q_big_prompt textarea { font-size: 18px; border-radius:3px; -moz-border-radius:3px; -webkit-border-radius:3px; min-width: 250px; }
+.Q_big_prompt textarea { font-size: 18px; border-radius:3px; -moz-border-radius:3px; -webkit-border-radius:3px; }
 .Q_big_prompt select { font-size: 18px; border-radius: 3px; -moz-border-radius:3px; -webkit-border-radius:3px; vertical-align: middle; }
 .Q_big_prompt .Q_field_title { vertical-align: middle; text-align: right; padding-right: 10px; box-sizing: content-box; }
 
