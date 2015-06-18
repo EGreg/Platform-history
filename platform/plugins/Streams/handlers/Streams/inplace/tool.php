@@ -20,6 +20,7 @@
  * @param {string} [$options.onSave] Reference to a callback or event to run after a successful save.
  * @param {string} [$options.onCancel] Reference to a callback or event to run after cancel.
  * @param {array} [$options.inplace=array()] Additional fields to pass to the child Q/inplace tool, if any
+ * @uses Q inplace
  */
 function Streams_inplace_tool($options)
 {
@@ -35,12 +36,13 @@ function Streams_inplace_tool($options)
 	if (isset($options['inplace'])) {
 		$inplace = array_merge($options['inplace'], $inplace);
 	}
+	$convert = Q::ifset($options, 'convert', array("\n"));
+	$inplace['hidden']['convert'] = json_encode($convert);
 	if (!empty($options['attribute'])) {
 		$field = 'attributes['.urlencode($options['attribute']).']';
 	} else {
 		$field = !empty($options['field']) ? $options['field'] : 'content';
 	}
-	$convert = Q::ifset($options, 'convert', array("\n"));
 	switch ($options['inplaceType']) {
 		case 'text':
 			$inplace['fieldInput'] = Q_Html::input($field, $stream->content);
@@ -68,7 +70,7 @@ function Streams_inplace_tool($options)
 		'streamName' => $stream->name,
 		'inplaceType' => $options['inplaceType']
 	);
-	Q::take($options, array('attribute', 'field'), $toolOptions);
+	Q::take($options, array('attribute', 'field', 'convert'), $toolOptions);
 	$toolOptions['inplace'] = $inplace;
 	Q_Response::setToolOptions($toolOptions);
 	return Q::tool("Q/inplace", $inplace);

@@ -19,5 +19,6 @@ function Streams_stream_response_Q_inplace()
 	} else {
 		$result = $stream->content;
 	}
-	return Q_Html::text($result, array("\n", " "));
+	$convert = Q::ifset($_REQUEST, 'convert', '["\n"]');
+	return Q_Html::text($result, json_decode($convert, true));
 }

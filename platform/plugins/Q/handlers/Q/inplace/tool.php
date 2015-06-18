@@ -18,6 +18,7 @@
  *   @param {boolean} [$options.editOnClick=true]  If true, then edit mode starts only if "Edit" button is clicked.
  *   @param {boolean} [$options.selectOnEdit=true] If true, selects all the text when entering edit mode.
  *   @param {string} [$options.placeholder] Text to show in the staticHtml or input field when the editor is empty
+ *   @param {array} [$options.hidden] An associative array of additional hidden fields to submit in the form
  *   @param {integer} [$options.maxWidth] The maximum width for the Q/autogrow
  *   @param {string} [$options.beforeSave] Reference to a callback to call after a successful save. This callback can cancel the save by returning false.
  *   @param {string} [$options.onSave] Reference to a callback or event to run after a successful save.
@@ -44,6 +45,10 @@ function Q_inplace_tool($options)
 
 	$formTag = Q_Html::form("$action", $method, array('class' => 'Q_inplace_tool_form'));
 
+	$hiddenInputs = $options['hidden'] 
+		? Q_Html::hidden($options['hidden'])
+		: '';
+
 	$classes = !empty($editing) ? 'Q_editing Q_nocancel' : '';
 	$options = compact('editOnClick', 'selectOnEdit', 'maxWidth', 'beforeSave', 'onSave');
 	Q_Response::setToolOptions($options);
@@ -59,6 +64,7 @@ return <<<EOT
 	<div class='$staticClass'>$sh</div>
 	$formTag
 		$fieldInput
+		$hiddenInputs
 		<div class='Q_inplace_tool_buttons'>
 			<button class='Q_inplace_tool_cancel basic16 basic16_cancel'>Cancel</button>
 			<button class='Q_inplace_tool_save basic16 basic16_save'>Save</button>
