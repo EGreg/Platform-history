@@ -581,4 +581,4 @@
 
 .Streams_image_preview_tool { text-align: center; }
 
-.Streams_interests_filter_input { width: 100%; }
+.Streams_interests_filter_input { width: 100%; box-sizing: border-box; }
