@@ -26,10 +26,10 @@
  *  @param {Q.Event} [options.onCancel] This event triggers after canceling
  */
 Q.Tool.define("Q/inplace", function (options) {
-	var tool = this, 
-		state = tool.state,
-		$te = $(tool.element), 
-		container = $('.Q_inplace_tool_container', $te);
+	var tool = this;
+	var state = tool.state;
+	var $te = $(tool.element);
+	var container = $('.Q_inplace_tool_container', $te);
 	if (container.length) {
 		return _Q_inplace_tool_constructor.call(tool, this.element, options);
 	}

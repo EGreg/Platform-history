@@ -375,7 +375,8 @@ Q.Tool.define({
 	"Streams/inplace"      : "plugins/Streams/js/tools/inplace.js",
 	"Streams/html"         : "plugins/Streams/js/tools/html.js",
 	"Streams/preview"  	   : "plugins/Streams/js/tools/preview.js",
-	"Streams/image/preview": "plugins/Streams/js/tools/image/preview.js"
+	"Streams/image/preview": "plugins/Streams/js/tools/image/preview.js",
+	"Streams/form"         : "plugins/Streams/js/tools/form.js"
 });
 
 /**

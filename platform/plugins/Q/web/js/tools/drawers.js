@@ -53,32 +53,17 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 		if ($this.is(state.container)) return false;
 	});
 	
-	var columnIndex;
 	if (Q.info.isMobile) {
-		$te.parents().each(function () {
-			var $this = $(this);
-			if ($this.hasClass('Q_columns_column')) {
-				columnIndex = $this.attr('data-index');
-			}
-			var columns = this.Q("Q/columns");
-			if (columns) {
-				columns.state.beforeOpen.set(function (options, index) {
-					if (index !== columnIndex
-					&& state.$pinnedElement
-					&& state.behind[state.currentIndex]) {
-						state.$pinnedElement.hide();
-					}
-				}, tool);
-				columns.state.onClose.set(function () {
-					var index = this.state.$currentColumn.attr('data-index');
-					if (index === columnIndex
-					&& state.$pinnedElement
-					&& state.behind[state.currentIndex]) {
-						state.$pinnedElement.show();
-					}
-				}, tool);
-				return false;
-			}
+		this.managePinned();
+	}
+	
+	// Accomodate mobile keyboard
+	if (Q.info.isMobile) {
+		state.$drawers.eq(0).on(Q.Pointer.focusin, tool, function () {
+			state.$drawers.eq(1).hide();
+		});
+		state.$drawers.eq(0).on(Q.Pointer.focusout, tool, function () {
+			state.$drawers.eq(1).show();
 		});
 	}
 
@@ -293,6 +278,9 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 				$otherDrawer.css({zIndex: state.foregroundZIndex});
 			}
 			state.$pinnedElement = $otherDrawer;
+			if (Q.info.isMobile) {
+				tool.managePinned();
+			}
 			
 			// TODO: adjust height, do not rely on parent of container having
 			// overflow: hidden
@@ -497,6 +485,40 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 			}
 			clearInterval(state.$interval);
 		}}
+	},
+	managePinned: function () {
+		var columnIndex;
+		var tool = this;
+		var state = tool.state;
+		$(this.element).parents().each(function () {
+			var $this = $(this);
+			if ($this.hasClass('Q_columns_column')) {
+				columnIndex = $this.attr('data-index');
+			}
+			var columns = this.Q("Q/columns");
+			if (columns) {
+				if (columns.state.currentIndex != columnIndex
+				&& state.$pinnedElement) {
+					state.$pinnedElement.hide();
+				}
+				columns.state.beforeOpen.set(function (options, index) {
+					if (index !== columnIndex
+					&& state.$pinnedElement
+					&& state.behind[state.currentIndex]) {
+						state.$pinnedElement.hide();
+					}
+				}, tool);
+				columns.state.onClose.set(function () {
+					var index = this.state.$currentColumn.attr('data-index');
+					if (index === columnIndex
+					&& state.$pinnedElement
+					&& state.behind[state.currentIndex]) {
+						state.$pinnedElement.show();
+					}
+				}, tool);
+				return false;
+			}
+		});
 	}
 }
 

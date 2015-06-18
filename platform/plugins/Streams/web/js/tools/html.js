@@ -20,8 +20,8 @@
  *   @param {Function} [options.preprocess]  Optional function which takes [callback, tool] and calls callback(objectToExtendAnyStreamFields)
  */
 Q.Tool.define("Streams/html", function (options) {
-	var tool = this,
-		state = tool.state;
+	var tool = this;
+	var state = tool.state;
 
 	if (!tool.state.publisherId) {
 		throw new Q.Error("Streams/html tool: missing options.publisherId");

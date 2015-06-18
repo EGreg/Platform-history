@@ -239,6 +239,7 @@ Q.Tool.define("Q/columns", function(options) {
 			}
 		}
 		state.$currentColumn = $div;
+		state.currentIndex = index;
 		if (o.back.hide) {
 			$close.hide();
 		}
@@ -534,6 +535,7 @@ Q.Tool.define("Q/columns", function(options) {
 			$('.Q_columns_title', $div).css('position', 'absolute');
 		}
 		state.$currentColumn = $prev;
+		state.currentIndex = $prev.attr('data-index');
 		state.columns[index] = null;
 		presentColumn(tool);
 	
