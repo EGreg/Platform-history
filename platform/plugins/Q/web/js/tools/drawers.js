@@ -453,7 +453,19 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 				if (!state.$drawers.eq(1).is(':visible')) {
 					state.$trigger.hide();
 				} else if (canShowTrigger && state.$scrolling.scrollTop() === 0) {
-					state.$trigger.show();
+					var $drawer = tool.state.$drawers.eq(1);
+					var left = $drawer.offset().left
+						- $drawer.offsetParent().offset().left
+						+ $drawer.outerWidth(true)
+						- state.$trigger.outerWidth(true)
+						- state.trigger.rightMargin;
+					var top = $drawer.offset().top
+						- $drawer.offsetParent().offset().top
+						- state.$trigger.height() / 2;
+					state.$trigger.show().css({
+						left: left + 'px',
+						top: top + 'px'
+					});
 				}
 			}, 300);
 		}
