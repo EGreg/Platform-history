@@ -13,7 +13,6 @@
  * @param {string} $options.inplaceType The type of the fieldInput. Can be "textarea" or "text"
  * @param {array} [$options.convert] The characters to convert to HTML. Pass an array containing zero or more of "\n", " "
  * @param {Streams_Stream} $options.stream A Streams_Stream object
- * @param {boolean} [$options.editing] If true, then renders the inplace tool in editing mode.
  * @param {string} [$options.field] Optional, name of an field to change instead of the content of the stream
  * @param {string} [$options.attribute] Optional, name of an attribute to change instead of any field.
  * @param {string} [$options.beforeSave] Reference to a callback to call after a successful save. This callback can cancel the save by returning false.
@@ -40,17 +39,24 @@ function Streams_inplace_tool($options)
 	$inplace['hidden']['convert'] = json_encode($convert);
 	if (!empty($options['attribute'])) {
 		$field = 'attributes['.urlencode($options['attribute']).']';
+		$content = $stream->get($options['attribute']);
 	} else {
 		$field = !empty($options['field']) ? $options['field'] : 'content';
+		$content = $stream->$field;
 	}
 	switch ($options['inplaceType']) {
 		case 'text':
-			$inplace['fieldInput'] = Q_Html::input($field, $stream->content);
-			$inplace['staticHtml'] = Q_Html::text($stream->content);
+			$inplace['fieldInput'] = Q_Html::input($field, $content, array(
+				'placeholder' => Q::ifset($input, 'placeholder', null),
+			));
+			$inplace['staticHtml'] = Q_Html::text($content);
 			break;
 		case 'textarea':
-			$inplace['fieldInput'] = Q_Html::textarea($field, 5, 80, $stream->content);
-			$inplace['staticHtml'] = Q_Html::text($stream->content, $convert);
+			$inplace['fieldInput'] = Q_Html::textarea($field, 5, 80, array(
+				'placeholder' => Q::ifset($inplace, 'placeholder', null),
+				'maxlength' => Q::ifset($options, 'maxlength', null)
+			), $content);
+			$inplace['staticHtml'] = Q_Html::text($content, $convert);
 			break;
 		default:
 			return "inplaceType must be 'textarea' or 'text'";

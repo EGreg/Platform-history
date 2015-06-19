@@ -15,6 +15,7 @@
  *  @param {String} [options.type='textarea'] The type of the input field. Can be "textarea" or "text"
  *  @param {Boolean=true} [options.editOnClick] Whether to enter editing mode when clicking on the text.
  *  @param {Boolean} [options.selectOnEdit=true] Whether to select everything in the input field when entering edit mode.
+ *  @param {Boolean=true} [options.showEditButtons=false] Set to true to force showing the edit buttons
  *  @param {Number} [options.maxWidth=null] The maximum width that the field can grow to
  *  @param {Number} [options.minWidth=100] The minimum width that the field can shrink to
  *  @param {String} [options.staticHtml] The static HTML to start out with
@@ -89,6 +90,7 @@ Q.Tool.define("Q/inplace", function (options) {
 	type: 'textarea',
 	editOnClick: true,
 	selectOnEdit: true,
+	showEditButtons: false,
 	maxWidth: null,
 	minWidth: 100,
 	placeholder: 'Type something...',
@@ -187,6 +189,10 @@ function _Q_inplace_tool_constructor(element, options) {
 		if (container_span.hasClass('Q_editing')) {
 			fieldinput.data('inplace').widthWasAdjusted = true;
 			fieldinput.data('inplace').heightWasAdjusted = true;
+		}
+		if (fieldinput.is('textarea')) {
+			var height = static_span.outerHeight() + 'px';
+			fieldinput.add(fieldinput.parent()).css('min-height', height);
 		}
 	}, 0); // hopefully it will be inserted into the DOM by then
 	function onClick() {
@@ -399,7 +405,7 @@ function _Q_inplace_tool_constructor(element, options) {
 	}
 	function _editButtons() {
 		if (Q.info.isTouchscreen) {
-			if (!state.editOnClick) {
+			if (!state.editOnClick || state.showEditButtons) {
 				$('.Q_inplace_tool_editbuttons', $te).css({ 
 					'margin-top': static_span.outerHeight() + 'px',
 					'line-height': '1px',
@@ -459,10 +465,9 @@ function _Q_inplace_tool_constructor(element, options) {
 		focusedOn = 'save_button'; }, 50);
 	});
 	save_button.blur(function() { focusedOn = null; setTimeout(onBlur, 100); });
-	fieldinput.keyup(_updateSaveButton);
+	fieldinput.on('keyup input', _updateSaveButton);
 	fieldinput.focus(function() { focusedOn = 'fieldinput'; });
 	fieldinput.blur(function() { focusedOn = null; setTimeout(onBlur, 100); });
-	fieldinput.change(function() { fieldinput.attr(fieldinput.val().length.toString() + 'em;') });
 	fieldinput.keydown(function(event) {
 		if (!focusedOn) {
 			return false;

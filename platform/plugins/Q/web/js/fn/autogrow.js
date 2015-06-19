@@ -24,7 +24,8 @@ Q.Tool.jQuery('Q/autogrow',
 
 function _Q_autogrow(o) {
 
-	var possibleEvents = 'keyup.Q_autogrow'
+	var possibleEvents = 'input.Q_autogrow'
+		+ 'keyup.Q_autogrow'
 		+ ' blur.Q_autogrow'
 		+ ' update.Q_autogrow'
 		+ ' paste.Q_autogrow'

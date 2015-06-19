@@ -51,8 +51,8 @@ function Q_inplace_tool($options)
 
 	$classes = !empty($editing) ? 'Q_editing Q_nocancel' : '';
 	$options = compact(
-		'editOnClick', 'selectOnEdit', 'maxWidth', 'beforeSave', 'onSave',
-		'placeholder'
+		'editOnClick', 'selectOnEdit', 'showEditButtons',
+		'maxWidth', 'beforeSave', 'onSave', 'placeholder'
 	);
 	Q_Response::setToolOptions($options);
 	$sh = $staticHtml
@@ -60,7 +60,7 @@ function Q_inplace_tool($options)
 		: '<span class="Q_placeholder">'.Q_Html::text($placeholder).'</span>';
 
 return <<<EOT
-<div class='Q_inplace_tool_container $classes' style="position: relative;">
+<div class='Q_inplace_tool_container $classes Q_inplace_$type' style="position: relative;">
 	<div class='Q_inplace_tool_editbuttons'>
 		<button class='Q_inplace_tool_edit basic16 basic16_edit'>Edit</button>
 	</div>

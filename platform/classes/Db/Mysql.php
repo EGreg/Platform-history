@@ -1674,6 +1674,10 @@ EOT;
 				case 'longtext':
 					$properties[]="string $field_name";
 					$js_properties[] = "$field_name String";
+					$functions["maxSize_$field_name"]['return_statement'] = <<<EOT
+		return $type_display_range;
+EOT;
+					$functions["maxSize_$field_name"]['args'] = '';
 					$functions["beforeSet_$field_name"][] = <<<EOT
 		{$null_check}{$dbe_check}if (!is_string(\$value) and !is_numeric(\$value))
 			throw new Exception('Must pass a string to '.\$this->getTable().".$field_name");
@@ -1690,6 +1694,10 @@ EOT;
 	 * @throws {Exception} An exception is thrown if \$value is not string or is exceedingly long
 	 */
 EOT;
+					$js_functions["maxSize_$field_name"]['return_statement'] = <<<EOT
+		return $type_display_range;
+EOT;
+					$js_functions["maxSize_$field_name"]['args'] = '';
 					$js_functions["beforeSet_$field_name"][] = <<<EOT
 		{$js_null_check}{$js_dbe_check}if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".$field_name");

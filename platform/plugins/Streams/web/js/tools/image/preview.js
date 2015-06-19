@@ -70,7 +70,9 @@ Q.Tool.define("Streams/image/preview", function(options) {
 	if (!tool.state.imagepicker || !tool.state.imagepicker.showSize) {
 		throw new Q.Error("Streams/image/preview tool: missing options.imagepicker.showSize");
 	}
-	var state = tool.state, ip = state.imagepicker;
+	var state = tool.state
+	var ip = state.imagepicker;
+	ip.showSize = ip.showSize.toString();
 	var parts = ip.showSize.split('x');
 	
 	if (!ip.saveSizeName) {
