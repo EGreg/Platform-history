@@ -223,6 +223,15 @@ Base.prototype.beforeSet_identifier = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the identifier field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_identifier = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -240,6 +249,15 @@ Base.prototype.beforeSet_userId = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the userId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_userId = function () {
+
+		return 31;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -255,6 +273,15 @@ Base.prototype.beforeSet_extraInfo = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".extraInfo");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the extraInfo field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_extraInfo = function () {
+
+		return 255;
 };
 
 /**

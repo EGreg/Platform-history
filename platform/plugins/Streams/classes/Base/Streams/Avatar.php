@@ -221,6 +221,16 @@ abstract class Base_Streams_Avatar extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the toUserId field
+	 * @return {integer}
+	 */
+	function maxSize_toUserId()
+	{
+
+		return 31;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_publisherId
@@ -238,6 +248,16 @@ abstract class Base_Streams_Avatar extends Db_Row
 		if (strlen($value) > 31)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".publisherId");
 		return array('publisherId', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the publisherId field
+	 * @return {integer}
+	 */
+	function maxSize_publisherId()
+	{
+
+		return 31;			
 	}
 
 	/**
@@ -287,6 +307,16 @@ abstract class Base_Streams_Avatar extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the username field
+	 * @return {integer}
+	 */
+	function maxSize_username()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_firstName
@@ -304,6 +334,16 @@ abstract class Base_Streams_Avatar extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".firstName");
 		return array('firstName', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the firstName field
+	 * @return {integer}
+	 */
+	function maxSize_firstName()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -327,6 +367,16 @@ abstract class Base_Streams_Avatar extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the lastName field
+	 * @return {integer}
+	 */
+	function maxSize_lastName()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_icon
@@ -344,6 +394,16 @@ abstract class Base_Streams_Avatar extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".icon");
 		return array('icon', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the icon field
+	 * @return {integer}
+	 */
+	function maxSize_icon()
+	{
+
+		return 255;			
 	}
 
 	/**

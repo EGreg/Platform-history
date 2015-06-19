@@ -1602,6 +1602,16 @@ EOT;
 				case 'bigint':
 					$properties[]="integer $field_name";
 					$js_properties[] = "$field_name integer";
+					$functions["maxSize_$field_name"]['comment'] = <<<EOT
+	$dc
+	 * Returns the maximum integer that can be assigned to the $field_name field
+	 * @return {integer}
+	 */
+EOT;
+					$functions["maxSize_$field_name"]['args'] = '';
+					$functions["maxSize_$field_name"]['return_statement'] = <<<EOT
+		return $type_range_max;
+EOT;
 					$functions["beforeSet_$field_name"][] = <<<EOT
 		{$null_check}{$dbe_check}if (!is_numeric(\$value) or floor(\$value) != \$value)
 			throw new Exception('Non-integer value being assigned to '.\$this->getTable().".$field_name");
@@ -1616,6 +1626,16 @@ EOT;
 	 * @return {array} An array of field name and value
 	 * @throws {Exception} An exception is thrown if \$value is not integer or does not fit in allowed range
 	 */
+EOT;
+					$js_functions["maxSize_$field_name"]['comment'] = <<<EOT
+	$dc
+	 * Returns the maximum integer that can be assigned to the $field_name field
+	 * @return {integer}
+	 */
+EOT;
+					$js_functions["maxSize_$field_name"]['args'] = '';
+					$js_functions["maxSize_$field_name"]['return_statement'] = <<<EOT
+		return $type_range_max;
 EOT;
 					$js_functions["beforeSet_$field_name"][] = <<<EOT
 		{$js_null_check}{$js_dbe_check}value = Number(value);
@@ -1674,10 +1694,16 @@ EOT;
 				case 'longtext':
 					$properties[]="string $field_name";
 					$js_properties[] = "$field_name String";
+					$functions["maxSize_$field_name"]['comment'] = <<<EOT
+	$dc
+	 * Returns the maximum string length that can be assigned to the $field_name field
+	 * @return {integer}
+	 */
+EOT;
+					$functions["maxSize_$field_name"]['args'] = '';
 					$functions["maxSize_$field_name"]['return_statement'] = <<<EOT
 		return $type_display_range;
 EOT;
-					$functions["maxSize_$field_name"]['args'] = '';
 					$functions["beforeSet_$field_name"][] = <<<EOT
 		{$null_check}{$dbe_check}if (!is_string(\$value) and !is_numeric(\$value))
 			throw new Exception('Must pass a string to '.\$this->getTable().".$field_name");
@@ -1694,10 +1720,16 @@ EOT;
 	 * @throws {Exception} An exception is thrown if \$value is not string or is exceedingly long
 	 */
 EOT;
+					$js_functions["maxSize_$field_name"]['comment'] = <<<EOT
+	$dc
+	 * Returns the maximum string length that can be assigned to the $field_name field
+	 * @return {integer}
+	 */
+EOT;
+					$js_functions["maxSize_$field_name"]['args'] = '';
 					$js_functions["maxSize_$field_name"]['return_statement'] = <<<EOT
 		return $type_display_range;
 EOT;
-					$js_functions["maxSize_$field_name"]['args'] = '';
 					$js_functions["beforeSet_$field_name"][] = <<<EOT
 		{$js_null_check}{$js_dbe_check}if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".$field_name");

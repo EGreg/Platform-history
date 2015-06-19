@@ -226,6 +226,16 @@ abstract class Base_Users_Device extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the userId field
+	 * @return {integer}
+	 */
+	function maxSize_userId()
+	{
+
+		return 31;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_deviceId
@@ -243,6 +253,16 @@ abstract class Base_Users_Device extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".deviceId");
 		return array('deviceId', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the deviceId field
+	 * @return {integer}
+	 */
+	function maxSize_deviceId()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -286,6 +306,16 @@ abstract class Base_Users_Device extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the version field
+	 * @return {integer}
+	 */
+	function maxSize_version()
+	{
+
+		return 45;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_sessionId
@@ -303,6 +333,16 @@ abstract class Base_Users_Device extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".sessionId");
 		return array('sessionId', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the sessionId field
+	 * @return {integer}
+	 */
+	function maxSize_sessionId()
+	{
+
+		return 255;			
 	}
 
 	/**

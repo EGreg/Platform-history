@@ -220,6 +220,16 @@ abstract class Base_Users_Session extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the id field
+	 * @return {integer}
+	 */
+	function maxSize_id()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_content
@@ -237,6 +247,16 @@ abstract class Base_Users_Session extends Db_Row
 		if (strlen($value) > 4095)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".content");
 		return array('content', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the content field
+	 * @return {integer}
+	 */
+	function maxSize_content()
+	{
+
+		return 4095;			
 	}
 
 	/**
@@ -260,6 +280,16 @@ abstract class Base_Users_Session extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the php field
+	 * @return {integer}
+	 */
+	function maxSize_php()
+	{
+
+		return 4095;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_deviceId
@@ -277,6 +307,16 @@ abstract class Base_Users_Session extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".deviceId");
 		return array('deviceId', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the deviceId field
+	 * @return {integer}
+	 */
+	function maxSize_deviceId()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -299,6 +339,16 @@ abstract class Base_Users_Session extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum integer that can be assigned to the timeout field
+	 * @return {integer}
+	 */
+	function maxSize_timeout()
+	{
+
+		return 2147483647;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if integer value falls within allowed limits
 	 * @method beforeSet_duration
 	 * @param {integer} $value
@@ -315,6 +365,16 @@ abstract class Base_Users_Session extends Db_Row
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".duration");
 		return array('duration', $value);			
+	}
+
+	/**
+	 * Returns the maximum integer that can be assigned to the duration field
+	 * @return {integer}
+	 */
+	function maxSize_duration()
+	{
+
+		return 2147483647;			
 	}
 
 	/**

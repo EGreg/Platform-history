@@ -254,6 +254,15 @@ Base.prototype.beforeSet_userId = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the userId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_userId = function () {
+
+		return 31;
+};
+
 /**
  * Method is called before setting the field and verifies if value belongs to enum values list
  * @method beforeSet_provider
@@ -283,6 +292,15 @@ Base.prototype.beforeSet_appId = function (value) {
 		if (typeof value === "string" && value.length > 200)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".appId");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the appId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_appId = function () {
+
+		return 200;
 };
 
 /**
@@ -328,6 +346,15 @@ Base.prototype.beforeSet_access_token = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the access_token field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_access_token = function () {
+
+		return 1023;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -346,6 +373,15 @@ Base.prototype.beforeSet_session_secret = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the session_secret field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_session_secret = function () {
+
+		return 1023;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -362,6 +398,15 @@ Base.prototype.beforeSet_session_expires = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".session_expires");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the session_expires field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_session_expires = function () {
+
+		return 255;
 };
 
 /**
@@ -393,6 +438,15 @@ Base.prototype.beforeSet_provider_uid = function (value) {
 		if (typeof value === "string" && value.length > 200)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".provider_uid");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the provider_uid field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_provider_uid = function () {
+
+		return 200;
 };
 
 /**

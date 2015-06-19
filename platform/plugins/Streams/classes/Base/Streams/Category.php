@@ -211,6 +211,16 @@ abstract class Base_Streams_Category extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the publisherId field
+	 * @return {integer}
+	 */
+	function maxSize_publisherId()
+	{
+
+		return 31;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_streamName
@@ -228,6 +238,16 @@ abstract class Base_Streams_Category extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".streamName");
 		return array('streamName', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the streamName field
+	 * @return {integer}
+	 */
+	function maxSize_streamName()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -297,6 +317,16 @@ abstract class Base_Streams_Category extends Db_Row
 		if (strlen($value) > 65535)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".relatedTo");
 		return array('relatedTo', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the relatedTo field
+	 * @return {integer}
+	 */
+	function maxSize_relatedTo()
+	{
+
+		return 65535;			
 	}
 
 	/**

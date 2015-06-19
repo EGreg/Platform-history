@@ -223,6 +223,15 @@ Base.prototype.beforeSet_userId = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the userId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_userId = function () {
+
+		return 31;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -238,6 +247,15 @@ Base.prototype.beforeSet_label = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".label");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the label field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_label = function () {
+
+		return 255;
 };
 
 /**
@@ -257,6 +275,15 @@ Base.prototype.beforeSet_icon = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the icon field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_icon = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -272,6 +299,15 @@ Base.prototype.beforeSet_title = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".title");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the title field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_title = function () {
+
+		return 255;
 };
 
 /**

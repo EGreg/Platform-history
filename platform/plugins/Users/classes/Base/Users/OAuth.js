@@ -244,6 +244,15 @@ Base.prototype.beforeSet_client_id = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the client_id field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_client_id = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -259,6 +268,15 @@ Base.prototype.beforeSet_userId = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".userId");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the userId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_userId = function () {
+
+		return 255;
 };
 
 /**
@@ -278,6 +296,15 @@ Base.prototype.beforeSet_state = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the state field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_state = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -293,6 +320,15 @@ Base.prototype.beforeSet_scope = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".scope");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the scope field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_scope = function () {
+
+		return 255;
 };
 
 /**
@@ -312,6 +348,15 @@ Base.prototype.beforeSet_redirect_uri = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the redirect_uri field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_redirect_uri = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -327,6 +372,15 @@ Base.prototype.beforeSet_access_token = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".access_token");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the access_token field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_access_token = function () {
+
+		return 255;
 };
 
 /**
@@ -357,6 +411,15 @@ Base.prototype.beforeSet_token_expires_seconds = function (value) {
 		if (value < -2147483648 || value > 2147483647)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".token_expires_seconds");
 		return value;
+};
+
+	/**
+	 * Returns the maximum integer that can be assigned to the token_expires_seconds field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_token_expires_seconds = function () {
+
+		return 2147483647;
 };
 
 /**

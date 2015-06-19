@@ -237,6 +237,15 @@ Base.prototype.beforeSet_id = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the id field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_id = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -252,6 +261,15 @@ Base.prototype.beforeSet_content = function (value) {
 		if (typeof value === "string" && value.length > 4095)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".content");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the content field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_content = function () {
+
+		return 4095;
 };
 
 /**
@@ -271,6 +289,15 @@ Base.prototype.beforeSet_php = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the php field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_php = function () {
+
+		return 4095;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -286,6 +313,15 @@ Base.prototype.beforeSet_deviceId = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".deviceId");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the deviceId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_deviceId = function () {
+
+		return 255;
 };
 
 /**
@@ -305,6 +341,15 @@ Base.prototype.beforeSet_timeout = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum integer that can be assigned to the timeout field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_timeout = function () {
+
+		return 2147483647;
+};
+
 /**
  * Method is called before setting the field and verifies if integer value falls within allowed limits
  * @method beforeSet_duration
@@ -320,6 +365,15 @@ Base.prototype.beforeSet_duration = function (value) {
 		if (value < -2147483648 || value > 2147483647)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".duration");
 		return value;
+};
+
+	/**
+	 * Returns the maximum integer that can be assigned to the duration field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_duration = function () {
+
+		return 2147483647;
 };
 
 /**

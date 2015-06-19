@@ -250,6 +250,15 @@ Base.prototype.beforeSet_ofUserId = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the ofUserId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_ofUserId = function () {
+
+		return 31;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -265,6 +274,15 @@ Base.prototype.beforeSet_publisherId = function (value) {
 		if (typeof value === "string" && value.length > 31)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".publisherId");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the publisherId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_publisherId = function () {
+
+		return 31;
 };
 
 /**
@@ -284,6 +302,15 @@ Base.prototype.beforeSet_streamName = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the streamName field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_streamName = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if integer value falls within allowed limits
  * @method beforeSet_ordinal
@@ -299,6 +326,15 @@ Base.prototype.beforeSet_ordinal = function (value) {
 		if (value < -2147483648 || value > 2147483647)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".ordinal");
 		return value;
+};
+
+	/**
+	 * Returns the maximum integer that can be assigned to the ordinal field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_ordinal = function () {
+
+		return 2147483647;
 };
 
 /**
@@ -343,6 +379,15 @@ Base.prototype.beforeSet_filter = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the filter field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_filter = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -358,6 +403,15 @@ Base.prototype.beforeSet_deliver = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".deliver");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the deliver field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_deliver = function () {
+
+		return 255;
 };
 
 /**

@@ -242,6 +242,15 @@ Base.prototype.beforeSet_address = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the address field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_address = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field
  * @method beforeSet_insertedTime
@@ -284,6 +293,15 @@ Base.prototype.beforeSet_userId = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the userId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_userId = function () {
+
+		return 31;
+};
+
 /**
  * Method is called before setting the field and verifies if value belongs to enum values list
  * @method beforeSet_state
@@ -315,6 +333,15 @@ Base.prototype.beforeSet_activationCode = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the activationCode field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_activationCode = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field
  * @method beforeSet_activationCodeExpires
@@ -342,6 +369,15 @@ Base.prototype.beforeSet_authCode = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".authCode");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the authCode field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_authCode = function () {
+
+		return 255;
 };
 
 /**

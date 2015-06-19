@@ -216,6 +216,16 @@ abstract class Base_Users_Total extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the forType field
+	 * @return {integer}
+	 */
+	function maxSize_forType()
+	{
+
+		return 31;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_forId
@@ -236,6 +246,16 @@ abstract class Base_Users_Total extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the forId field
+	 * @return {integer}
+	 */
+	function maxSize_forId()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if integer value falls within allowed limits
 	 * @method beforeSet_voteCount
 	 * @param {integer} $value
@@ -252,6 +272,16 @@ abstract class Base_Users_Total extends Db_Row
 		if ($value < -9.2233720368548E+18 or $value > 9223372036854775807)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".voteCount");
 		return array('voteCount', $value);			
+	}
+
+	/**
+	 * Returns the maximum integer that can be assigned to the voteCount field
+	 * @return {integer}
+	 */
+	function maxSize_voteCount()
+	{
+
+		return 9223372036854775807;			
 	}
 
 	/**

@@ -239,6 +239,16 @@ abstract class Base_Places_Zipcode extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the countryCode field
+	 * @return {integer}
+	 */
+	function maxSize_countryCode()
+	{
+
+		return 2;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_zipcode
@@ -256,6 +266,16 @@ abstract class Base_Places_Zipcode extends Db_Row
 		if (strlen($value) > 10)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".zipcode");
 		return array('zipcode', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the zipcode field
+	 * @return {integer}
+	 */
+	function maxSize_zipcode()
+	{
+
+		return 10;			
 	}
 
 	/**
@@ -279,6 +299,16 @@ abstract class Base_Places_Zipcode extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the placeName field
+	 * @return {integer}
+	 */
+	function maxSize_placeName()
+	{
+
+		return 180;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_stateName
@@ -296,6 +326,16 @@ abstract class Base_Places_Zipcode extends Db_Row
 		if (strlen($value) > 100)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".stateName");
 		return array('stateName', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the stateName field
+	 * @return {integer}
+	 */
+	function maxSize_stateName()
+	{
+
+		return 100;			
 	}
 
 	/**
@@ -319,6 +359,16 @@ abstract class Base_Places_Zipcode extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the state field
+	 * @return {integer}
+	 */
+	function maxSize_state()
+	{
+
+		return 20;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_regionName
@@ -336,6 +386,16 @@ abstract class Base_Places_Zipcode extends Db_Row
 		if (strlen($value) > 100)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".regionName");
 		return array('regionName', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the regionName field
+	 * @return {integer}
+	 */
+	function maxSize_regionName()
+	{
+
+		return 100;			
 	}
 
 	/**
@@ -359,6 +419,16 @@ abstract class Base_Places_Zipcode extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the region field
+	 * @return {integer}
+	 */
+	function maxSize_region()
+	{
+
+		return 20;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_community
@@ -379,6 +449,16 @@ abstract class Base_Places_Zipcode extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the community field
+	 * @return {integer}
+	 */
+	function maxSize_community()
+	{
+
+		return 100;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if integer value falls within allowed limits
 	 * @method beforeSet_accuracy
 	 * @param {integer} $value
@@ -395,6 +475,16 @@ abstract class Base_Places_Zipcode extends Db_Row
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".accuracy");
 		return array('accuracy', $value);			
+	}
+
+	/**
+	 * Returns the maximum integer that can be assigned to the accuracy field
+	 * @return {integer}
+	 */
+	function maxSize_accuracy()
+	{
+
+		return 2147483647;			
 	}
 
 	/**

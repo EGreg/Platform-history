@@ -227,6 +227,16 @@ abstract class Base_Streams_Subscription extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the publisherId field
+	 * @return {integer}
+	 */
+	function maxSize_publisherId()
+	{
+
+		return 31;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_streamName
@@ -247,6 +257,16 @@ abstract class Base_Streams_Subscription extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the streamName field
+	 * @return {integer}
+	 */
+	function maxSize_streamName()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_ofUserId
@@ -264,6 +284,16 @@ abstract class Base_Streams_Subscription extends Db_Row
 		if (strlen($value) > 31)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".ofUserId");
 		return array('ofUserId', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the ofUserId field
+	 * @return {integer}
+	 */
+	function maxSize_ofUserId()
+	{
+
+		return 31;			
 	}
 
 	/**
@@ -362,6 +392,16 @@ abstract class Base_Streams_Subscription extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the filter field
+	 * @return {integer}
+	 */
+	function maxSize_filter()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if integer value falls within allowed limits
 	 * @method beforeSet_duration
 	 * @param {integer} $value
@@ -378,6 +418,16 @@ abstract class Base_Streams_Subscription extends Db_Row
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".duration");
 		return array('duration', $value);			
+	}
+
+	/**
+	 * Returns the maximum integer that can be assigned to the duration field
+	 * @return {integer}
+	 */
+	function maxSize_duration()
+	{
+
+		return 2147483647;			
 	}
 
 	/**

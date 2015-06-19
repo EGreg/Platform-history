@@ -228,6 +228,15 @@ Base.prototype.beforeSet_publisherId = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the publisherId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_publisherId = function () {
+
+		return 31;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -243,6 +252,15 @@ Base.prototype.beforeSet_streamName = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".streamName");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the streamName field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_streamName = function () {
+
+		return 255;
 };
 
 /**
@@ -285,6 +303,15 @@ Base.prototype.beforeSet_relatedTo = function (value) {
 		if (typeof value === "string" && value.length > 65535)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".relatedTo");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the relatedTo field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_relatedTo = function () {
+
+		return 65535;
 };
 
 /**

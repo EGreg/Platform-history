@@ -233,6 +233,16 @@ abstract class Base_Streams_Rule extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the ofUserId field
+	 * @return {integer}
+	 */
+	function maxSize_ofUserId()
+	{
+
+		return 31;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_publisherId
@@ -250,6 +260,16 @@ abstract class Base_Streams_Rule extends Db_Row
 		if (strlen($value) > 31)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".publisherId");
 		return array('publisherId', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the publisherId field
+	 * @return {integer}
+	 */
+	function maxSize_publisherId()
+	{
+
+		return 31;			
 	}
 
 	/**
@@ -273,6 +293,16 @@ abstract class Base_Streams_Rule extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the streamName field
+	 * @return {integer}
+	 */
+	function maxSize_streamName()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if integer value falls within allowed limits
 	 * @method beforeSet_ordinal
 	 * @param {integer} $value
@@ -289,6 +319,16 @@ abstract class Base_Streams_Rule extends Db_Row
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".ordinal");
 		return array('ordinal', $value);			
+	}
+
+	/**
+	 * Returns the maximum integer that can be assigned to the ordinal field
+	 * @return {integer}
+	 */
+	function maxSize_ordinal()
+	{
+
+		return 2147483647;			
 	}
 
 	/**
@@ -361,6 +401,16 @@ abstract class Base_Streams_Rule extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the filter field
+	 * @return {integer}
+	 */
+	function maxSize_filter()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_deliver
@@ -378,6 +428,16 @@ abstract class Base_Streams_Rule extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".deliver");
 		return array('deliver', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the deliver field
+	 * @return {integer}
+	 */
+	function maxSize_deliver()
+	{
+
+		return 255;			
 	}
 
 	/**

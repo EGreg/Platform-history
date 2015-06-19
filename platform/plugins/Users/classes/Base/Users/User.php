@@ -280,6 +280,16 @@ abstract class Base_Users_User extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the id field
+	 * @return {integer}
+	 */
+	function maxSize_id()
+	{
+
+		return 31;			
+	}
+
+	/**
 	 * Method is called before setting the field and normalize the DateTime string
 	 * @method beforeSet_insertedTime
 	 * @param {string} $value
@@ -352,6 +362,16 @@ abstract class Base_Users_User extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the sessionId field
+	 * @return {integer}
+	 */
+	function maxSize_sessionId()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if integer value falls within allowed limits
 	 * @method beforeSet_sessionCount
 	 * @param {integer} $value
@@ -368,6 +388,16 @@ abstract class Base_Users_User extends Db_Row
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".sessionCount");
 		return array('sessionCount', $value);			
+	}
+
+	/**
+	 * Returns the maximum integer that can be assigned to the sessionCount field
+	 * @return {integer}
+	 */
+	function maxSize_sessionCount()
+	{
+
+		return 2147483647;			
 	}
 
 	/**
@@ -390,6 +420,16 @@ abstract class Base_Users_User extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum integer that can be assigned to the fb_uid field
+	 * @return {integer}
+	 */
+	function maxSize_fb_uid()
+	{
+
+		return 9223372036854775807;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if integer value falls within allowed limits
 	 * @method beforeSet_tw_uid
 	 * @param {integer} $value
@@ -406,6 +446,16 @@ abstract class Base_Users_User extends Db_Row
 		if ($value < -9.2233720368548E+18 or $value > 9223372036854775807)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".tw_uid");
 		return array('tw_uid', $value);			
+	}
+
+	/**
+	 * Returns the maximum integer that can be assigned to the tw_uid field
+	 * @return {integer}
+	 */
+	function maxSize_tw_uid()
+	{
+
+		return 9223372036854775807;			
 	}
 
 	/**
@@ -432,6 +482,16 @@ abstract class Base_Users_User extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the g_uid field
+	 * @return {integer}
+	 */
+	function maxSize_g_uid()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_y_uid
@@ -452,6 +512,16 @@ abstract class Base_Users_User extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".y_uid");
 		return array('y_uid', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the y_uid field
+	 * @return {integer}
+	 */
+	function maxSize_y_uid()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -478,6 +548,16 @@ abstract class Base_Users_User extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the passphraseHash field
+	 * @return {integer}
+	 */
+	function maxSize_passphraseHash()
+	{
+
+		return 64;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_emailAddress
@@ -498,6 +578,16 @@ abstract class Base_Users_User extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".emailAddress");
 		return array('emailAddress', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the emailAddress field
+	 * @return {integer}
+	 */
+	function maxSize_emailAddress()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -524,6 +614,16 @@ abstract class Base_Users_User extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the mobileNumber field
+	 * @return {integer}
+	 */
+	function maxSize_mobileNumber()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_emailAddressPending
@@ -544,6 +644,16 @@ abstract class Base_Users_User extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the emailAddressPending field
+	 * @return {integer}
+	 */
+	function maxSize_emailAddressPending()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_mobileNumberPending
@@ -561,6 +671,16 @@ abstract class Base_Users_User extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".mobileNumberPending");
 		return array('mobileNumberPending', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the mobileNumberPending field
+	 * @return {integer}
+	 */
+	function maxSize_mobileNumberPending()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -601,6 +721,16 @@ abstract class Base_Users_User extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the username field
+	 * @return {integer}
+	 */
+	function maxSize_username()
+	{
+
+		return 63;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_icon
@@ -618,6 +748,16 @@ abstract class Base_Users_User extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".icon");
 		return array('icon', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the icon field
+	 * @return {integer}
+	 */
+	function maxSize_icon()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -644,6 +784,16 @@ abstract class Base_Users_User extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the url field
+	 * @return {integer}
+	 */
+	function maxSize_url()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_pincodeHash
@@ -664,6 +814,16 @@ abstract class Base_Users_User extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".pincodeHash");
 		return array('pincodeHash', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the pincodeHash field
+	 * @return {integer}
+	 */
+	function maxSize_pincodeHash()
+	{
+
+		return 255;			
 	}
 
 	/**

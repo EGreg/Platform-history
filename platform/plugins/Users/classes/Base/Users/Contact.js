@@ -229,6 +229,15 @@ Base.prototype.beforeSet_userId = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the userId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_userId = function () {
+
+		return 31;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -244,6 +253,15 @@ Base.prototype.beforeSet_label = function (value) {
 		if (typeof value === "string" && value.length > 63)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".label");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the label field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_label = function () {
+
+		return 63;
 };
 
 /**
@@ -263,6 +281,15 @@ Base.prototype.beforeSet_contactUserId = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the contactUserId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_contactUserId = function () {
+
+		return 31;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -278,6 +305,15 @@ Base.prototype.beforeSet_nickname = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".nickname");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the nickname field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_nickname = function () {
+
+		return 255;
 };
 
 /**

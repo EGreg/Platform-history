@@ -257,6 +257,15 @@ Base.prototype.beforeSet_countryCode = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the countryCode field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_countryCode = function () {
+
+		return 2;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -272,6 +281,15 @@ Base.prototype.beforeSet_zipcode = function (value) {
 		if (typeof value === "string" && value.length > 10)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".zipcode");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the zipcode field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_zipcode = function () {
+
+		return 10;
 };
 
 /**
@@ -291,6 +309,15 @@ Base.prototype.beforeSet_placeName = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the placeName field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_placeName = function () {
+
+		return 180;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -306,6 +333,15 @@ Base.prototype.beforeSet_stateName = function (value) {
 		if (typeof value === "string" && value.length > 100)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".stateName");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the stateName field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_stateName = function () {
+
+		return 100;
 };
 
 /**
@@ -325,6 +361,15 @@ Base.prototype.beforeSet_state = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the state field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_state = function () {
+
+		return 20;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -340,6 +385,15 @@ Base.prototype.beforeSet_regionName = function (value) {
 		if (typeof value === "string" && value.length > 100)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".regionName");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the regionName field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_regionName = function () {
+
+		return 100;
 };
 
 /**
@@ -359,6 +413,15 @@ Base.prototype.beforeSet_region = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the region field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_region = function () {
+
+		return 20;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -376,6 +439,15 @@ Base.prototype.beforeSet_community = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the community field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_community = function () {
+
+		return 100;
+};
+
 /**
  * Method is called before setting the field and verifies if integer value falls within allowed limits
  * @method beforeSet_accuracy
@@ -391,6 +463,15 @@ Base.prototype.beforeSet_accuracy = function (value) {
 		if (value < -2147483648 || value > 2147483647)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".accuracy");
 		return value;
+};
+
+	/**
+	 * Returns the maximum integer that can be assigned to the accuracy field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_accuracy = function () {
+
+		return 2147483647;
 };
 
 /**

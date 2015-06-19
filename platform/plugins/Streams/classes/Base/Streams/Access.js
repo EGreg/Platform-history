@@ -255,6 +255,15 @@ Base.prototype.beforeSet_publisherId = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the publisherId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_publisherId = function () {
+
+		return 31;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -270,6 +279,15 @@ Base.prototype.beforeSet_streamName = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".streamName");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the streamName field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_streamName = function () {
+
+		return 255;
 };
 
 /**
@@ -289,6 +307,15 @@ Base.prototype.beforeSet_ofUserId = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the ofUserId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_ofUserId = function () {
+
+		return 31;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -304,6 +331,15 @@ Base.prototype.beforeSet_ofContactLabel = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".ofContactLabel");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the ofContactLabel field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_ofContactLabel = function () {
+
+		return 255;
 };
 
 /**
@@ -322,6 +358,15 @@ Base.prototype.beforeSet_grantedByUserId = function (value) {
 		if (typeof value === "string" && value.length > 31)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".grantedByUserId");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the grantedByUserId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_grantedByUserId = function () {
+
+		return 31;
 };
 
 /**
@@ -366,6 +411,15 @@ Base.prototype.beforeSet_readLevel = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum integer that can be assigned to the readLevel field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_readLevel = function () {
+
+		return 2147483647;
+};
+
 /**
  * Method is called before setting the field and verifies if integer value falls within allowed limits
  * @method beforeSet_writeLevel
@@ -383,6 +437,15 @@ Base.prototype.beforeSet_writeLevel = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum integer that can be assigned to the writeLevel field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_writeLevel = function () {
+
+		return 2147483647;
+};
+
 /**
  * Method is called before setting the field and verifies if integer value falls within allowed limits
  * @method beforeSet_adminLevel
@@ -398,6 +461,15 @@ Base.prototype.beforeSet_adminLevel = function (value) {
 		if (value < -2147483648 || value > 2147483647)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".adminLevel");
 		return value;
+};
+
+	/**
+	 * Returns the maximum integer that can be assigned to the adminLevel field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_adminLevel = function () {
+
+		return 2147483647;
 };
 
 /**

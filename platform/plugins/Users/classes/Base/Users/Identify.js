@@ -227,6 +227,15 @@ Base.prototype.beforeSet_identifier = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the identifier field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_identifier = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field
  * @method beforeSet_insertedTime
@@ -281,6 +290,15 @@ Base.prototype.beforeSet_userId = function (value) {
 		if (typeof value === "string" && value.length > 31)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".userId");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the userId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_userId = function () {
+
+		return 31;
 };
 
 /**

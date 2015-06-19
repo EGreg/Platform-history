@@ -217,6 +217,16 @@ abstract class Base_Users_Vote extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the userId field
+	 * @return {integer}
+	 */
+	function maxSize_userId()
+	{
+
+		return 31;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_forType
@@ -237,6 +247,16 @@ abstract class Base_Users_Vote extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the forType field
+	 * @return {integer}
+	 */
+	function maxSize_forType()
+	{
+
+		return 31;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_forId
@@ -254,6 +274,16 @@ abstract class Base_Users_Vote extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".forId");
 		return array('forId', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the forId field
+	 * @return {integer}
+	 */
+	function maxSize_forId()
+	{
+
+		return 255;			
 	}
 
 	/**

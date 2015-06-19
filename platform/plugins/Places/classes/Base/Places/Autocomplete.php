@@ -229,6 +229,16 @@ abstract class Base_Places_Autocomplete extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the query field
+	 * @return {integer}
+	 */
+	function maxSize_query()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_types
@@ -246,6 +256,16 @@ abstract class Base_Places_Autocomplete extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".types");
 		return array('types', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the types field
+	 * @return {integer}
+	 */
+	function maxSize_types()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -315,6 +335,16 @@ abstract class Base_Places_Autocomplete extends Db_Row
 		if (strlen($value) > 65535)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".results");
 		return array('results', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the results field
+	 * @return {integer}
+	 */
+	function maxSize_results()
+	{
+
+		return 65535;			
 	}
 
 	/**

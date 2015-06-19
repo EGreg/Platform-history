@@ -224,6 +224,15 @@ Base.prototype.beforeSet_publisherId = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the publisherId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_publisherId = function () {
+
+		return 31;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -239,6 +248,15 @@ Base.prototype.beforeSet_streamName = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".streamName");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the streamName field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_streamName = function () {
+
+		return 255;
 };
 
 /**
@@ -258,6 +276,15 @@ Base.prototype.beforeSet_messageType = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the messageType field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_messageType = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if integer value falls within allowed limits
  * @method beforeSet_messageCount
@@ -273,6 +300,15 @@ Base.prototype.beforeSet_messageCount = function (value) {
 		if (value < -9.2233720368548E+18 || value > 9223372036854775807)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".messageCount");
 		return value;
+};
+
+	/**
+	 * Returns the maximum integer that can be assigned to the messageCount field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_messageCount = function () {
+
+		return 9223372036854775807;
 };
 
 /**

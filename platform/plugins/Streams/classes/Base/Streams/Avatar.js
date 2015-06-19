@@ -238,6 +238,15 @@ Base.prototype.beforeSet_toUserId = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the toUserId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_toUserId = function () {
+
+		return 31;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -253,6 +262,15 @@ Base.prototype.beforeSet_publisherId = function (value) {
 		if (typeof value === "string" && value.length > 31)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".publisherId");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the publisherId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_publisherId = function () {
+
+		return 31;
 };
 
 /**
@@ -285,6 +303,15 @@ Base.prototype.beforeSet_username = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the username field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_username = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -300,6 +327,15 @@ Base.prototype.beforeSet_firstName = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".firstName");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the firstName field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_firstName = function () {
+
+		return 255;
 };
 
 /**
@@ -319,6 +355,15 @@ Base.prototype.beforeSet_lastName = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the lastName field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_lastName = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -334,6 +379,15 @@ Base.prototype.beforeSet_icon = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".icon");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the icon field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_icon = function () {
+
+		return 255;
 };
 
 /**

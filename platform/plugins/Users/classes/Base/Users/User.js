@@ -297,6 +297,15 @@ Base.prototype.beforeSet_id = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the id field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_id = function () {
+
+		return 31;
+};
+
 /**
  * Method is called before setting the field
  * @method beforeSet_insertedTime
@@ -340,6 +349,15 @@ Base.prototype.beforeSet_sessionId = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the sessionId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_sessionId = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if integer value falls within allowed limits
  * @method beforeSet_sessionCount
@@ -355,6 +373,15 @@ Base.prototype.beforeSet_sessionCount = function (value) {
 		if (value < -2147483648 || value > 2147483647)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".sessionCount");
 		return value;
+};
+
+	/**
+	 * Returns the maximum integer that can be assigned to the sessionCount field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_sessionCount = function () {
+
+		return 2147483647;
 };
 
 /**
@@ -374,6 +401,15 @@ Base.prototype.beforeSet_fb_uid = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum integer that can be assigned to the fb_uid field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_fb_uid = function () {
+
+		return 9223372036854775807;
+};
+
 /**
  * Method is called before setting the field and verifies if integer value falls within allowed limits
  * @method beforeSet_tw_uid
@@ -389,6 +425,15 @@ Base.prototype.beforeSet_tw_uid = function (value) {
 		if (value < -9.2233720368548E+18 || value > 9223372036854775807)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".tw_uid");
 		return value;
+};
+
+	/**
+	 * Returns the maximum integer that can be assigned to the tw_uid field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_tw_uid = function () {
+
+		return 9223372036854775807;
 };
 
 /**
@@ -409,6 +454,15 @@ Base.prototype.beforeSet_g_uid = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the g_uid field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_g_uid = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -425,6 +479,15 @@ Base.prototype.beforeSet_y_uid = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".y_uid");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the y_uid field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_y_uid = function () {
+
+		return 255;
 };
 
 /**
@@ -445,6 +508,15 @@ Base.prototype.beforeSet_passphraseHash = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the passphraseHash field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_passphraseHash = function () {
+
+		return 64;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -461,6 +533,15 @@ Base.prototype.beforeSet_emailAddress = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".emailAddress");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the emailAddress field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_emailAddress = function () {
+
+		return 255;
 };
 
 /**
@@ -481,6 +562,15 @@ Base.prototype.beforeSet_mobileNumber = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the mobileNumber field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_mobileNumber = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -498,6 +588,15 @@ Base.prototype.beforeSet_emailAddressPending = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the emailAddressPending field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_emailAddressPending = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -513,6 +612,15 @@ Base.prototype.beforeSet_mobileNumberPending = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".mobileNumberPending");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the mobileNumberPending field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_mobileNumberPending = function () {
+
+		return 255;
 };
 
 /**
@@ -546,6 +654,15 @@ Base.prototype.beforeSet_username = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the username field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_username = function () {
+
+		return 63;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -561,6 +678,15 @@ Base.prototype.beforeSet_icon = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".icon");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the icon field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_icon = function () {
+
+		return 255;
 };
 
 /**
@@ -581,6 +707,15 @@ Base.prototype.beforeSet_url = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the url field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_url = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -597,6 +732,15 @@ Base.prototype.beforeSet_pincodeHash = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".pincodeHash");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the pincodeHash field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_pincodeHash = function () {
+
+		return 255;
 };
 
 /**

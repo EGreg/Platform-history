@@ -227,6 +227,16 @@ abstract class Base_Users_OAuth extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the client_id field
+	 * @return {integer}
+	 */
+	function maxSize_client_id()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_userId
@@ -244,6 +254,16 @@ abstract class Base_Users_OAuth extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".userId");
 		return array('userId', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the userId field
+	 * @return {integer}
+	 */
+	function maxSize_userId()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -267,6 +287,16 @@ abstract class Base_Users_OAuth extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the state field
+	 * @return {integer}
+	 */
+	function maxSize_state()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_scope
@@ -284,6 +314,16 @@ abstract class Base_Users_OAuth extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".scope");
 		return array('scope', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the scope field
+	 * @return {integer}
+	 */
+	function maxSize_scope()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -307,6 +347,16 @@ abstract class Base_Users_OAuth extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the redirect_uri field
+	 * @return {integer}
+	 */
+	function maxSize_redirect_uri()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_access_token
@@ -324,6 +374,16 @@ abstract class Base_Users_OAuth extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".access_token");
 		return array('access_token', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the access_token field
+	 * @return {integer}
+	 */
+	function maxSize_access_token()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -369,6 +429,16 @@ abstract class Base_Users_OAuth extends Db_Row
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".token_expires_seconds");
 		return array('token_expires_seconds', $value);			
+	}
+
+	/**
+	 * Returns the maximum integer that can be assigned to the token_expires_seconds field
+	 * @return {integer}
+	 */
+	function maxSize_token_expires_seconds()
+	{
+
+		return 2147483647;			
 	}
 
 	/**

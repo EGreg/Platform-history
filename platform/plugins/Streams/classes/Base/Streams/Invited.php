@@ -216,6 +216,16 @@ abstract class Base_Streams_Invited extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the userId field
+	 * @return {integer}
+	 */
+	function maxSize_userId()
+	{
+
+		return 31;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_token
@@ -233,6 +243,16 @@ abstract class Base_Streams_Invited extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".token");
 		return array('token', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the token field
+	 * @return {integer}
+	 */
+	function maxSize_token()
+	{
+
+		return 255;			
 	}
 
 	/**

@@ -257,6 +257,15 @@ Base.prototype.beforeSet_number = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the number field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_number = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field
  * @method beforeSet_insertedTime
@@ -299,6 +308,15 @@ Base.prototype.beforeSet_userId = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the userId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_userId = function () {
+
+		return 31;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -314,6 +332,15 @@ Base.prototype.beforeSet_extension = function (value) {
 		if (typeof value === "string" && value.length > 7)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".extension");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the extension field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_extension = function () {
+
+		return 7;
 };
 
 /**
@@ -375,6 +402,15 @@ Base.prototype.beforeSet_activationCode = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the activationCode field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_activationCode = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field
  * @method beforeSet_activationCodeExpires
@@ -402,6 +438,15 @@ Base.prototype.beforeSet_authCode = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".authCode");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the authCode field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_authCode = function () {
+
+		return 255;
 };
 
 /**

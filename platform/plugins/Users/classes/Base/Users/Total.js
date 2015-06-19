@@ -233,6 +233,15 @@ Base.prototype.beforeSet_forType = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the forType field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_forType = function () {
+
+		return 31;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -250,6 +259,15 @@ Base.prototype.beforeSet_forId = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the forId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_forId = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if integer value falls within allowed limits
  * @method beforeSet_voteCount
@@ -265,6 +283,15 @@ Base.prototype.beforeSet_voteCount = function (value) {
 		if (value < -9.2233720368548E+18 || value > 9223372036854775807)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".voteCount");
 		return value;
+};
+
+	/**
+	 * Returns the maximum integer that can be assigned to the voteCount field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_voteCount = function () {
+
+		return 9223372036854775807;
 };
 
 /**

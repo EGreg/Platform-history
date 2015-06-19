@@ -224,6 +224,16 @@ abstract class Base_Streams_RelatedTo extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the toPublisherId field
+	 * @return {integer}
+	 */
+	function maxSize_toPublisherId()
+	{
+
+		return 31;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_toStreamName
@@ -241,6 +251,16 @@ abstract class Base_Streams_RelatedTo extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".toStreamName");
 		return array('toStreamName', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the toStreamName field
+	 * @return {integer}
+	 */
+	function maxSize_toStreamName()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -264,6 +284,16 @@ abstract class Base_Streams_RelatedTo extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the type field
+	 * @return {integer}
+	 */
+	function maxSize_type()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_fromPublisherId
@@ -284,6 +314,16 @@ abstract class Base_Streams_RelatedTo extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the fromPublisherId field
+	 * @return {integer}
+	 */
+	function maxSize_fromPublisherId()
+	{
+
+		return 31;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_fromStreamName
@@ -301,6 +341,16 @@ abstract class Base_Streams_RelatedTo extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".fromStreamName");
 		return array('fromStreamName', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the fromStreamName field
+	 * @return {integer}
+	 */
+	function maxSize_fromStreamName()
+	{
+
+		return 255;			
 	}
 
 	/**

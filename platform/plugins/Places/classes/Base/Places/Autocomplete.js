@@ -246,6 +246,15 @@ Base.prototype.beforeSet_query = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the query field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_query = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -261,6 +270,15 @@ Base.prototype.beforeSet_types = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".types");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the types field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_types = function () {
+
+		return 255;
 };
 
 /**
@@ -303,6 +321,15 @@ Base.prototype.beforeSet_results = function (value) {
 		if (typeof value === "string" && value.length > 65535)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".results");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the results field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_results = function () {
+
+		return 65535;
 };
 
 /**

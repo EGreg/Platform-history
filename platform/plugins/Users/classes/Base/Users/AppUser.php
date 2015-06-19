@@ -237,6 +237,16 @@ abstract class Base_Users_AppUser extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the userId field
+	 * @return {integer}
+	 */
+	function maxSize_userId()
+	{
+
+		return 31;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value belongs to enum values list
 	 * @method beforeSet_provider
 	 * @param {string} $value
@@ -271,6 +281,16 @@ abstract class Base_Users_AppUser extends Db_Row
 		if (strlen($value) > 200)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".appId");
 		return array('appId', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the appId field
+	 * @return {integer}
+	 */
+	function maxSize_appId()
+	{
+
+		return 200;			
 	}
 
 	/**
@@ -346,6 +366,16 @@ abstract class Base_Users_AppUser extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the access_token field
+	 * @return {integer}
+	 */
+	function maxSize_access_token()
+	{
+
+		return 1023;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_session_secret
@@ -369,6 +399,16 @@ abstract class Base_Users_AppUser extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the session_secret field
+	 * @return {integer}
+	 */
+	function maxSize_session_secret()
+	{
+
+		return 1023;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_session_expires
@@ -389,6 +429,16 @@ abstract class Base_Users_AppUser extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".session_expires");
 		return array('session_expires', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the session_expires field
+	 * @return {integer}
+	 */
+	function maxSize_session_expires()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -426,6 +476,16 @@ abstract class Base_Users_AppUser extends Db_Row
 		if (strlen($value) > 200)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".provider_uid");
 		return array('provider_uid', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the provider_uid field
+	 * @return {integer}
+	 */
+	function maxSize_provider_uid()
+	{
+
+		return 200;			
 	}
 
 	/**

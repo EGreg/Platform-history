@@ -210,6 +210,16 @@ abstract class Base_Users_Identify extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the identifier field
+	 * @return {integer}
+	 */
+	function maxSize_identifier()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and normalize the DateTime string
 	 * @method beforeSet_insertedTime
 	 * @param {string} $value
@@ -293,6 +303,16 @@ abstract class Base_Users_Identify extends Db_Row
 		if (strlen($value) > 31)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".userId");
 		return array('userId', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the userId field
+	 * @return {integer}
+	 */
+	function maxSize_userId()
+	{
+
+		return 31;			
 	}
 
 	/**

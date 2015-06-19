@@ -225,6 +225,16 @@ abstract class Base_Users_Email extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the address field
+	 * @return {integer}
+	 */
+	function maxSize_address()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and normalize the DateTime string
 	 * @method beforeSet_insertedTime
 	 * @param {string} $value
@@ -294,6 +304,16 @@ abstract class Base_Users_Email extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the userId field
+	 * @return {integer}
+	 */
+	function maxSize_userId()
+	{
+
+		return 31;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value belongs to enum values list
 	 * @method beforeSet_state
 	 * @param {string} $value
@@ -328,6 +348,16 @@ abstract class Base_Users_Email extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".activationCode");
 		return array('activationCode', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the activationCode field
+	 * @return {integer}
+	 */
+	function maxSize_activationCode()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -371,6 +401,16 @@ abstract class Base_Users_Email extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".authCode");
 		return array('authCode', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the authCode field
+	 * @return {integer}
+	 */
+	function maxSize_authCode()
+	{
+
+		return 255;			
 	}
 
 	/**

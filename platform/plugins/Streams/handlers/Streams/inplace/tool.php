@@ -39,22 +39,25 @@ function Streams_inplace_tool($options)
 	$inplace['hidden']['convert'] = json_encode($convert);
 	if (!empty($options['attribute'])) {
 		$field = 'attributes['.urlencode($options['attribute']).']';
-		$content = $stream->get($options['attribute']);
+		$content = $stream->get($options['attribute'], '');
+		$maxlength = $stream->maxSize_attributes - strlen($stream->maxSize_attributes) - 10;
 	} else {
 		$field = !empty($options['field']) ? $options['field'] : 'content';
 		$content = $stream->$field;
+		$maxlength = call_user_func(array($stream, "maxSize_$field"));
 	}
 	switch ($options['inplaceType']) {
 		case 'text':
 			$inplace['fieldInput'] = Q_Html::input($field, $content, array(
 				'placeholder' => Q::ifset($input, 'placeholder', null),
+				'maxlength' => $maxlength
 			));
 			$inplace['staticHtml'] = Q_Html::text($content);
 			break;
 		case 'textarea':
 			$inplace['fieldInput'] = Q_Html::textarea($field, 5, 80, array(
 				'placeholder' => Q::ifset($inplace, 'placeholder', null),
-				'maxlength' => Q::ifset($options, 'maxlength', null)
+				'maxlength' => $maxlength
 			), $content);
 			$inplace['staticHtml'] = Q_Html::text($content, $convert);
 			break;
