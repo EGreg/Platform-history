@@ -85,6 +85,8 @@ Q.Tool.define("Streams/inplace", function (options) {
 				default:
 					throw new Q.Error("Streams/inplace tool: inplaceType must be 'textarea' or 'text'");
 			}
+			var margin = $e.outerHeight() + parseInt($e.css('margin-top'));
+			tool.$('.Q_inplace_tool_editbuttons').css('margin-top', margin+'px');
 		};
 
 		var field;

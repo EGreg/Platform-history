@@ -94,6 +94,7 @@ Q.Tool.define("Q/inplace", function (options) {
 	maxWidth: null,
 	minWidth: 100,
 	placeholder: 'Type something...',
+	cancelPrompt: "Would you like to save your changes?",
 	template: {
 		dir: 'plugins/Q/views',
 		name: 'Q/inplace/tool'
@@ -172,6 +173,7 @@ function _Q_inplace_tool_constructor(element, options) {
 	if (container_span.hasClass('Q_nocancel')) {
 		noCancel = true;
 	}
+	previousValue = fieldinput.val();
 	setTimeout(function () {
 		fieldinput.css({
 			fontSize: static_span.css('fontSize'),
@@ -370,9 +372,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		_restoreZ();
 		if (!dontAsk && fieldinput.val() != previousValue) {
 			dialogMode = true;
-			var continueEditing = confirm(
-				"Would you like to save your changes?"
-			);
+			var continueEditing = confirm(state.cancelPrompt);
 			dialogMode = false;
 			if (continueEditing) {
 				onSave();
@@ -389,10 +389,14 @@ function _Q_inplace_tool_constructor(element, options) {
 		Q.handle(state.onCancel, tool);
 	};
 	function onBlur() {
+		if (noCancel && fieldinput.val() !== previousValue) {
+			return onSave();
+		}
 		setTimeout(function () {
 			if (focusedOn
 			 || dialogMode
-			 || !container_span.hasClass('Q_editing')) {
+			 || !container_span.hasClass('Q_editing')
+			) {
 				return;
 			}
 			onCancel();
