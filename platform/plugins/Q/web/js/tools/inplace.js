@@ -212,9 +212,8 @@ function _Q_inplace_tool_constructor(element, options) {
 			maxWidth: state.maxWidth || $te.parent().innerWidth(),
 			minWidth: state.minWidth || 0,
 			onResize: {"Q/inplace": function () {
-				tool.$('.Q_inplace_tool_editbuttons').css({ 
-					'margin-top': this.outerHeight() + parseInt(this.css('margin-top')) + 'px'
-				});
+				var margin = this.outerHeight() + parseInt(this.css('margin-top'));
+				tool.$('.Q_inplace_tool_editbuttons').css('margin-top', margin+'px');
 			}}
 		}).plugin('Q/placeholders');
 		var field_width = static_span.outerWidth();

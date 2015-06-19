@@ -81,7 +81,7 @@ function _Q_autogrow(o) {
 						$sp.scrollTop(st + tH - prevH);
 					}
 				}
-				if (prevH && prevH != tH) {
+				if (prevH && tH && prevH != tH) {
 					Q.handle(o.onResize, $t, []);
 				}
 				prevH = tH;
