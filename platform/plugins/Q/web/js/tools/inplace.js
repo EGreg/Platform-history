@@ -164,7 +164,7 @@ function _Q_inplace_tool_constructor(element, options) {
 	});
 	var edit_button = tool.$('button.Q_inplace_tool_edit');
 	var save_button = tool.$('button.Q_inplace_tool_save');
-	var cancel_button = $('button.Q_inplace_tool_cancel');
+	var cancel_button = tool.$('button.Q_inplace_tool_cancel');
 	var fieldinput = tool.$(':input[type!=hidden]').not('button').eq(0)
 		.addClass('Q_inplace_tool_fieldinput');
 	var undermessage = tool.$('.Q_inplace_tool_undermessage');
@@ -259,6 +259,11 @@ function _Q_inplace_tool_constructor(element, options) {
 			}
 		} else {
 			selStart = fieldinput.val().length;
+			if (fieldinput.attr('type') == 'text') {
+				var v = fieldinput.val();
+				fieldinput.val('');
+				fieldinput.val(v); // put cursor at the end
+			}
 		}
 		if (fieldinput.is('textarea')) {
 			_setSelRange(
@@ -460,10 +465,13 @@ function _Q_inplace_tool_constructor(element, options) {
 		Q.Pointer.cancelClick(event);
 	});
 	if (this.state.editOnClick) {
-		static_span.click(onClick); // happens despite canceled click
+		static_span.on(Q.Pointer.start, onClick); // happens despite canceled click
 	}
-	edit_button.click(onClick); // happens despite canceled click
-	cancel_button.click(function() { onCancel(true); return false; });
+	edit_button.on(Q.Pointer.start, onClick); // happens despite canceled click
+	cancel_button.on(Q.Pointer.start, function() {
+		onCancel(true); 
+		return false;
+	});
 	cancel_button.on('focus '+Q.Pointer.start, function() { setTimeout(function() {
 		focusedOn = 'cancel_button'; }, 50);
 	});

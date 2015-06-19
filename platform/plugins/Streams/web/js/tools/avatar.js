@@ -39,6 +39,7 @@ var Streams = Q.Streams;
  *       @param {Object} [options.templates.contents.fields]
  *         @param {String} [options.templates.contents.fields.tag]
  *         @default "span"
+ * @param {Object} [options.inplaces] Additional fields to pass to the child Streams/inplace tools, if any
  *   @param {Q.Event} [options.onRefresh]  An event that occurs when the avatar is refreshed
  *   @param {Q.Event} [options.onUpdate]  An event that occurs when the icon is updated via this tool
  *   @param {Q.Event} [options.onImagepicker]  An event that occurs when the imagepicker is activated
@@ -97,6 +98,7 @@ Q.Tool.define("Users/avatar", function(options) {
 	},
 	editable: false,
 	imagepicker: {},
+	inplaces: {},
 	cacheBust: null,
 	cacheBustOnUpdate: 1000,
 	onRefresh: new Q.Event(),
@@ -189,13 +191,14 @@ Q.Tool.define("Users/avatar", function(options) {
 				state.editable = ['icon', 'name'];
 			}
 			if (state.editable.indexOf('name') >= 0) {
+				var zIndex = 5;
 				Q.each(['first', 'last'], function (k, v) {
 					var vName = v+'Name';
 					var f = tool.getElementsByClassName('Streams_'+vName)[0];
 					if (!f || f.getElementsByClassName('Streams_inplace_tool').length) {
 						return;
 					}
-					var e = Q.Tool.setUpElement('span', 'Streams/inplace', {
+					var opt = Q.extend({
 						publisherId: state.userId,
 						streamName: 'Streams/user/'+vName,
 						inplaceType: 'text',
@@ -204,9 +207,13 @@ Q.Tool.define("Users/avatar", function(options) {
 							placeholder: 'Your '+v+' name',
 							staticHtml: f.innerHTML
 						}
-					}, tool.prefix+vName, tool.prefix);
+					}, state.inplaces);
+					var e = Q.Tool.setUpElement(
+						'span', 'Streams/inplace', opt, tool.prefix+vName, tool.prefix
+					);
 					f.innerHTML = '';
 					f.appendChild(e);
+					f.style.zIndex = --zIndex;
 					Q.activate(e);
 				});
 			}

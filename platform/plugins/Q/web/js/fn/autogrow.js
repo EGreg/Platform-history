@@ -16,7 +16,7 @@
  * @default 0
  * @param {Number} [options.comfortZone] How many pixels of padding to allocate for typing ahead
  * @default 10
- * @param [Q.Event] [options.onResize] Triggered during a resize, its "this" object is the jQuery selector of the plugin
+ * @param [Q.Event] [options.onResize] Triggered during a resize, its "this" object is the jQuery selector of the plugin. If used with a text input, the first parameter is the new width.
  * @default new Q.Event()
  */
 
@@ -103,10 +103,11 @@ function _Q_autogrow(o) {
 	});
 
 	this.filter('input:text').each(function() {
-		var minWidth = o.minWidth || 20,
-			val = '',
-			input = $(this),
-			testSubject = $(this).data('Q-tester');
+		var minWidth = o.minWidth || 20;
+		var val = '';
+		var input = $(this);
+		var testSubject = $(this).data('Q-tester');
+		var $t = $(this);
 		if (!testSubject) {
 			testSubject = $('<div class="Q_tester"/>');
 			$(this).data('Q-tester', testSubject);
@@ -152,7 +153,7 @@ function _Q_autogrow(o) {
 			// Animate width
 			if (isValidWidthChange) {
 				input.width(newWidth);
-				Q.handle(o.onResize, this, [newWidth]);
+				Q.handle(o.onResize, $t, [newWidth]);
 			} else if (input.width() < minWidth) {
 				input.width(minWidth);
 			}
