@@ -10,13 +10,13 @@
  * @class Q autogrow
  * @constructor
  * @param {Object} [options] , object for an options
- * @param {Number} [options.maxWidth] maxWidth , number for Maximum width, or reference to an Element
+ * @param {Number|Element} [options.maxWidth] maxWidth The input won't get larger than this number or element
  * @default 1000
- * @param {Number} [options.minWidth] minWidth , number for Minimum width
+ * @param {Number} [options.minWidth] minWidth The input won't get smaller than this
  * @default 0
- * @param {Number} [options.comfortZone] comfortZone
+ * @param {Number} [options.comfortZone] How many pixels of padding to allocate for typing ahead
  * @default 10
- * @param [Q.Event] [options.onResize] onResize , event that triggering on resize
+ * @param [Q.Event] [options.onResize] Triggered during a resize, its "this" object is the jQuery selector of the plugin
  * @default new Q.Event()
  */
 
@@ -81,6 +81,9 @@ function _Q_autogrow(o) {
 						$sp.scrollTop(st + tH - prevH);
 					}
 				}
+				if (prevH && prevH != tH) {
+					Q.handle(o.onResize, $t, []);
+				}
 				prevH = tH;
 			}, 0)
 		};
@@ -97,7 +100,6 @@ function _Q_autogrow(o) {
 		};
 		
 		updateHeight();
-		Q.handle(o.onResize, this, []);
 	});
 
 	this.filter('input:text').each(function() {

@@ -15,7 +15,7 @@
  *  @param {String} [options.type='textarea'] The type of the input field. Can be "textarea" or "text"
  *  @param {Boolean=true} [options.editOnClick] Whether to enter editing mode when clicking on the text.
  *  @param {Boolean} [options.selectOnEdit=true] Whether to select everything in the input field when entering edit mode.
- *  @param {Boolean=true} [options.showEditButtons=false] Set to true to force showing the edit buttons
+ *  @param {Boolean=true} [options.showEditButtons=false] Set to true to force showing the edit buttons on touchscreens
  *  @param {Number} [options.maxWidth=null] The maximum width that the field can grow to
  *  @param {Number} [options.minWidth=100] The minimum width that the field can shrink to
  *  @param {String} [options.staticHtml] The static HTML to start out with
@@ -30,7 +30,7 @@ Q.Tool.define("Q/inplace", function (options) {
 	var tool = this;
 	var state = tool.state;
 	var $te = $(tool.element);
-	var container = $('.Q_inplace_tool_container', $te);
+	var container = tool.$('.Q_inplace_tool_container');
 	if (container.length) {
 		return _Q_inplace_tool_constructor.call(tool, this.element, options);
 	}
@@ -152,21 +152,21 @@ function _Q_inplace_tool_constructor(element, options) {
 	var noCancel = false;
 	var $te = $(tool.element);
 
-	var container_span = $('.Q_inplace_tool_container', $te);
-	var static_span = $('.Q_inplace_tool_static', $te);
+	var container_span = tool.$('.Q_inplace_tool_container');
+	var static_span = tool.$('.Q_inplace_tool_static');
 	if (!static_span.length) {
-		static_span = $('.Q_inplace_tool_blockstatic', $te);
+		static_span = tool.$('.Q_inplace_tool_blockstatic');
 	}
-	$('.Q_inplace_tool_editbuttons', $te).css({ 
+	tool.$('.Q_inplace_tool_editbuttons').css({ 
 		'margin-top': static_span.outerHeight() + 'px',
 		'line-height': '1px'
 	});
-	var edit_button = $('button.Q_inplace_tool_edit', $te);
-	var save_button = $('button.Q_inplace_tool_save', $te);
-	var cancel_button = $('button.Q_inplace_tool_cancel', $te);
-	var fieldinput = $(':input[type!=hidden]', $te).not('button').eq(0)
+	var edit_button = tool.$('button.Q_inplace_tool_edit');
+	var save_button = tool.$('button.Q_inplace_tool_save');
+	var cancel_button = $('button.Q_inplace_tool_cancel');
+	var fieldinput = tool.$(':input[type!=hidden]').not('button').eq(0)
 		.addClass('Q_inplace_tool_fieldinput');
-	var undermessage = $('.Q_inplace_tool_undermessage', $te);
+	var undermessage = tool.$('.Q_inplace_tool_undermessage');
 	var throbber_img = $('<img />')
 		.attr('src', Q.url('plugins/Q/img/throbbers/bars16.gif'));
 	if (container_span.hasClass('Q_nocancel')) {
@@ -190,7 +190,7 @@ function _Q_inplace_tool_constructor(element, options) {
 			fieldinput.data('inplace').widthWasAdjusted = true;
 			fieldinput.data('inplace').heightWasAdjusted = true;
 		}
-		if (fieldinput.is('textarea')) {
+		if (fieldinput.is('textarea') && !fieldinput.val()) {
 			var height = static_span.outerHeight() + 'px';
 			fieldinput.add(fieldinput.parent()).css('min-height', height);
 		}
@@ -210,7 +210,12 @@ function _Q_inplace_tool_constructor(element, options) {
 		}
 		fieldinput.plugin('Q/autogrow', {
 			maxWidth: state.maxWidth || $te.parent().innerWidth(),
-			minWidth: state.minWidth || 0
+			minWidth: state.minWidth || 0,
+			onResize: {"Q/inplace": function () {
+				tool.$('.Q_inplace_tool_editbuttons').css({ 
+					'margin-top': this.outerHeight() + parseInt(this.css('margin-top')) + 'px'
+				});
+			}}
 		}).plugin('Q/placeholders');
 		var field_width = static_span.outerWidth();
 		var field_height = static_span.outerHeight();
@@ -261,7 +266,7 @@ function _Q_inplace_tool_constructor(element, options) {
 				fieldinput.val().length
 			);
 		}
-		$('.Q_inplace_tool_buttons', $te).css({
+		tool.$('.Q_inplace_tool_buttons').css({
 			width: container_span.outerWidth() + 'px'
 		});
 		return false;
