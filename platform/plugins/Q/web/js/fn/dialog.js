@@ -367,7 +367,29 @@ Q.Tool.jQuery('Q/dialog', function _Q_dialog (o) {
 		$this.data('Q/dialog', dialogData);
 	}
 	
-	$this.data('Q/dialog').load();
+	var css = {
+		position: 'absolute',
+		pointerEvents: 'none',
+		visibility: 'hidden'
+	};
+	var $div = $('<div />').addClass('Q_overlay').css(css).appendTo('body');
+	var src = $div.css('background-image').match(/url\((.*)\)/)[1];
+	$div.remove();
+	if (src.isUrl() && !bgLoaded) {
+		var $img = $('<img />').on('load', function () {
+			bgLoaded = true;
+			$img.remove();
+			_loadIt();
+		}).css(css)
+		.attr('src', src)
+		.appendTo('body');
+	} else {
+		_loadIt();
+	}
+	
+	function _loadIt() {
+		$this.data('Q/dialog').load();
+	}
 },
 
 {
@@ -627,5 +649,6 @@ function _handlePosAndScroll(o)
 };
 
 var interval;
+var bgLoaded;
 
 })(Q, jQuery, window, document);

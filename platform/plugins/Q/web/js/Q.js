@@ -728,9 +728,17 @@ if (!window.requestAnimationFrame) {
 		window.oRequestAnimationFrame      || 
 		window.msRequestAnimationFrame     || 
 		function( callback ) {
-			window.setTimeout(function _shim_requestAnimationFrame() {
+			return setTimeout(function _shim_requestAnimationFrame() {
 				callback(Q.milliseconds());
 			}, 1000 / Q.Animation.fps);
+		};
+	window.cancelAnimationFrame =
+		window.webkitCancelAnimationFrame || 
+		window.mozCancelAnimationFrame    || 
+		window.oCancelAnimationFrame      || 
+		window.msCancelAnimationFrame     || 
+		function( id ) {
+			clearTimeout(id);
 		};
 }
 
