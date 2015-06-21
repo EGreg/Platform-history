@@ -655,8 +655,18 @@ class Q_Html
 		$day_select = self::tag('select', $attributes) 
 		 . self::options($days, $id, $day)
 		 . "</select>";
-		// TODO: consult the locale
-		return "$month_select$day_select$year_select";
+		$language = Q::ifset($_SERVER, 'HTTP_ACCEPT_LANGUAGE', 'en-US');
+		$mdy_countries = array('en-US', 'en-BZ');
+		if (in_array(substr($language, 0, 5), $mdy_countries) !== false) {
+			return "$month_select$day_select$year_select";
+		} else {
+			$ymd_countries = array('ch', 'ko', 'hu', 'fa', 'ja', 'lt', 'mn');
+			if (in_array(substr($language, 0, 2), $ymd_countries) !== false) {
+				return "$year_select$day_select$month_select";
+			} else {
+				return "$day_select$month_select$year_select";
+			}
+		}
 	}
 
 	/**
