@@ -262,8 +262,9 @@ function _Q_clickable(o) {
 				anim && anim.pause();
 				scale(1);
 			}, 'Q/clickable');
-			$(window).on([Q.Pointer.end, '.Q_clickable'], onRelease);
-			$(window).on('release.Q_clickable', onRelease);
+			$(window).add(triggers)
+				.on([Q.Pointer.end, '.Q_clickable'], onRelease)
+				.on('release.Q_clickable', onRelease);
 			if (state.preventDefault) {
 				evt.preventDefault();
 			}
