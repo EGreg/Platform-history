@@ -12,6 +12,9 @@ function MyApp_before_Q_responseExtras()
 	}
 	Q_Response::addScript('js/MyApp.js');
 	
+	if (Q_Request::isIE()) {
+		header("X-UA-Compatible", "IE=edge");
+	}
 	header('Vary: User-Agent');
 	
 	// running an event for loading action-specific extras (if there are any)
