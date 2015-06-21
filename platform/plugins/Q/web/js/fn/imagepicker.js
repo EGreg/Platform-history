@@ -41,6 +41,7 @@
  * @param {Q.Event} [options.onError] onError Q.Event which is called if upload failed.
  * @param {Q.Event} [options.onTooSmall] onError Q.Event which is called if an image is selected that's too small for one of the sizes in saveSizeName. Return false to abort.
  * @param {Q.Event} [options.onFinish] onError Q.Event which is called at the end, whatever the outcome.
+ * @param {Q.Event} [options.onCropping] Happens when the cropping dialog appears, in case you want to display hints or something.
  */
 Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 	var $this = this;
@@ -245,16 +246,26 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 						if (state.cropping) {
 		                    var $croppingElement = $('<img />').attr({ src: img.src })
 								.css({'visibility': 'hidden'});
+							var $title = $('<div />')
+								.addClass('Q_imagepicker_cropping_title')
+								.html(state.croppingTitle);
+							var $explanation = $('<div />')
+								.addClass('Q_imagepicker_cropping_explanation')
+								.html(Q.info.isTouchscreen
+									? state.croppingTouchscreen
+									: state.croppingNotTouchscreen
+								);
+							var $croppingTitle = $('<div />').append(
+								$title, $explanation
+							);
 		                    Q.Dialogs.push({
 		                        className: 'Q_dialog_imagepicker',
-		                        title: state.croppingTitle,
+		                        title: $croppingTitle,
 		                        content: $croppingElement,
 		                        destroyOnClose: true,
-		//                        size: {width:dialogSize.width, height: dialogSize.height},
 								apply: true,
 		                        onActivate : {
 		                            "Q/imagepicker": function ($dialog) {
-										// TODO: width and height should be proportial to orginal file
 										var w = requiredSize.width / isw;
 										var h = requiredSize.height / ish;
 										var rsw1 = rsw2 = requiredSize.width;
@@ -281,6 +292,11 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 											maxScale: maxScale
 		                                }, function () {
 		                                	$croppingElement.css({'visibility': 'visible'});
+											Q.handle(state.onCropping, $this, [
+												$dialog,
+												$croppingTitle,
+												$croppingElement
+											]);
 		                                });
 		                            }
 		                        },
@@ -354,6 +370,8 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 				_doUpload(override);
 				return;
 			}
+			
+			Q.addStylesheet('plugins/Q/css/imagepicker.css');
 			
 			var img = new Image;
 			img.onload = _onImgLoad;
@@ -529,6 +547,8 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 	crop: null,
 	cropping: true,
 	croppingTitle: 'Adjust size and position',
+	croppingTouchscreen: 'Use your fingers to zoom and drag',
+	croppingNotTouchscreen: 'Use your mouse & wheel to zoom and drag',
 	url: Q.action("Q/image"),
 	cacheBust: 1000,
 	throbber: null,
@@ -543,7 +563,8 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 		alert('Please choose a larger image.');
 		return false;
 	}, 'Q/imagepicker'),
-	onFinish: new Q.Event()
+	onFinish: new Q.Event(),
+	onCropping: new Q.Event()
 },
 
 {
