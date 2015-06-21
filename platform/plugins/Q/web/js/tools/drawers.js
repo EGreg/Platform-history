@@ -322,12 +322,12 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 				var product = Q.Pointer.movement && Q.Pointer.movement.movingAverageVelocity
 					? Q.Pointer.movement.movingAverageVelocity.y * (state.currentIndex-0.5)
 					: 0;
-				if (!$(evt.target).closest('.Q_discouragePointerEvents').length
+				if (!$(evt.target).closest('.Q_discourageDrawerSwap').length
 				&& product >= 0) {
 					if (Q.Pointer.which(evt) < 2) {
+						// don't do it right away, so that other event handlers
+						// can still access the old state.currentIndex
 						setTimeout(function () {
-							// don't do it right away, so that other event handlers
-							// can still access the old state.currentIndex
 							if (!state.canceledSwap) {
 								tool.swap();
 							}
