@@ -1231,11 +1231,10 @@ function login_callback(response) {
 				step2_form.plugin('Q/placeholders');
 			}
 			$('input', step2_form).eq(0).plugin('Q/clickfocus').select();
+			_centerIt();
 		} else {
 			step2.slideDown('fast', function () {
-				var $d = $('#Users_login_passphrase_div');
-				var $f = $('#Users_login_passphrase_forgot');
-				$f.css('bottom', ($d.outerHeight(true) - $f.outerHeight(true)) / 2 + 'px');
+				_centerIt();
 				step2_form.plugin('Q/placeholders');
 				if (step2_form.data('form-type') === 'resend') {
 					$('.Q_main_button', step2_form).focus();
@@ -1245,6 +1244,11 @@ function login_callback(response) {
 			});
 		}
 		Q.activate($('#Users_login_step2').get(0));
+		function _centerIt() {
+			var $d = $('#Users_login_passphrase_div');
+			var $f = $('#Users_login_passphrase_forgot');
+			$f.css('bottom', ($d.outerHeight(true) - $f.outerHeight(true)) / 2 + 'px');
+		}
 	}
 	$('#Users_login_step1').animate({"opacity": 0.5}, 'fast');
 	$('#Users_login_step1 .Q_button').attr('disabled', 'disabled');
