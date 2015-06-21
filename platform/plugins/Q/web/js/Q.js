@@ -7155,7 +7155,6 @@ function _activateTools(toolElement, options, shared) {
 					debugger; // pause here if debugging
 					console.warn(e);
 					Q.Tool.beingActivated = prevTool;
-					throw e;
 				}
 				this.activated = true;
 			};
