@@ -449,11 +449,7 @@ function _Q_inplace_tool_constructor(element, options) {
 	container_span.mouseout(function() {
 		container_span.removeClass('Q_hover');
 	});
-	container_span.on([Q.Pointer.end, '.Q_inplace'], function (event) {
-		if (Q.Pointer.canceledClick) {
-			// could have been canceled by Q/sortable for instance
-			return;
-		}
+	container_span.on([Q.Pointer.fastclick, '.Q_inplace'], function (event) {
 		if ((state.editOnClick && event.target === static_span[0])
 		|| $(event.target).is('button')) {
 			Q.Pointer.cancelClick(event);
@@ -465,7 +461,8 @@ function _Q_inplace_tool_constructor(element, options) {
 		Q.Pointer.cancelClick(event);
 	});
 	if (this.state.editOnClick) {
-		static_span.on(Q.Pointer.start, onClick); // happens despite canceled click
+		// happens despite canceled click
+		static_span.on([Q.Pointer.fastclick, '.Q_inplace'], onClick);
 	}
 	edit_button.on(Q.Pointer.start, onClick); // happens despite canceled click
 	cancel_button.on(Q.Pointer.start, function() {
