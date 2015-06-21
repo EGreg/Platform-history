@@ -7120,7 +7120,7 @@ function _activateTools(toolElement, options, shared) {
 				}
 				this.activated = false;
 				this.initialized = false;
-				// try {
+				try {
 					this.options = Q.extend({}, Q.Tool.options.levels, toolFunc.options, Q.Tool.options.levels, options);
 					this.name = toolName;
 					Q.Tool.call(this, element, options);
@@ -7150,13 +7150,13 @@ function _activateTools(toolElement, options, shared) {
 					_activateToolHandlers[normalizedName].handle.call(this, this.options);
 					_activateToolHandlers["id:"+normalizedId] &&
 					_activateToolHandlers["id:"+normalizedId].handle.call(this, this.options);
-				// 	Q.Tool.beingActivated = prevTool;
-				// } catch (e) {
-				// 	debugger; // pause here if debugging
-				// 	console.warn(e);
-				// 	Q.Tool.beingActivated = prevTool;
-				// 	throw e;
-				// }
+					Q.Tool.beingActivated = prevTool;
+				} catch (e) {
+					debugger; // pause here if debugging
+					console.warn(e);
+					Q.Tool.beingActivated = prevTool;
+					throw e;
+				}
 				this.activated = true;
 			};
 			Q.mixin(toolFunc, Q.Tool);
