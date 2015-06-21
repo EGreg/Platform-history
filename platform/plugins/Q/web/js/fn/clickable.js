@@ -262,6 +262,7 @@ function _Q_clickable(o) {
 				anim && anim.pause();
 				scale(1);
 			}, 'Q/clickable');
+			var _released = false;
 			$(window).add(triggers)
 				.on([Q.Pointer.end, '.Q_clickable'], onRelease)
 				.on('release.Q_clickable', onRelease);
@@ -272,6 +273,11 @@ function _Q_clickable(o) {
 				evt.stopPropagation();
 			}
 			function onRelease (evt) {
+				if (_released) return;
+				_released = true;
+				setTimeout(function () { 
+					_released = false;
+				}, 0);
 				container.parents().each(function () {
 					$(this).removeData(
 						['Q/clickable scrollTop', 'Q/clickable transform']
