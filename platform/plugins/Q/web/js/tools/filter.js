@@ -45,9 +45,13 @@ Q.Tool.define('Q/filter', function (options) {
 	}
 	
 	var events = 'focus ' + Q.Pointer.start;
+	var wasAlreadyFocused = false;
 	tool.$input.on(events, function () {
+		if (wasAlreadyFocused) return;
+		wasAlreadyFocused = true;
 		tool.begin();
 	}).on('blur', function () {
+		wasAlreadyFocused = false;
 		setTimeout(function () {
 			if (tool.canceledBlur) {
 				tool.canceledBlur = false;
