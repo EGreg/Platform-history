@@ -8928,12 +8928,12 @@ Q.Pointer = {
 	 * @param {String} [options.width="200px"]
 	 * @param {String} [options.height="200px"]
 	 * @param {Integer} [options.zIndex=99999]
+	 * @param {Boolean} [option.dontStopBeforeShown=false] Don't let Q.Pointer.stopHints stop this hint before it's shown.
 	 * @param {Boolean} [options.dontRemove=false] Pass true to keep current hints displayed
 	 * @param {Integer} [options.show.delay=500]
 	 * @param {Integer} [options.show.duration=500]
 	 * @param {Integer} [options.show.initialScale=2]
 	 * @param {Function} [options.show.ease=Q.Animation.ease.smooth]
-	 * @param {Integer} [options.hide.delay=500]
 	 * @param {Integer} [options.hide.duration=500]
 	 * @param {Function} [options.hide.ease=Q.Animation.ease.smooth]
 	 */
@@ -8941,7 +8941,7 @@ Q.Pointer = {
 		var img, i, l;
 		options = options || {};
 		if (Q.isArray(elementsOrPoints)) {
-			for (i=0; i<elementsOrPoints.length; ++i) {
+			for (i=0, l=elementsOrPoints.length; i<l; ++i) {
 				Q.Pointer.hint(
 					elementsOrPoints[i],
 					Q.extend({}, options, {
@@ -8956,7 +8956,7 @@ Q.Pointer = {
 		var body = document.getElementsByTagName('body')[0];
 		var imgs = Q.Pointer.hint.imgs;
 		if (!options.dontRemove) {
-			for (i=0, l=imgs.length; i < l; ++i) {
+			for (i=0, l=imgs.length; i<l; ++i) {
 				img = imgs[i];
 				if (img.parentNode) {
 					img.parentNode.removeChild(img);
@@ -8986,24 +8986,25 @@ Q.Pointer = {
 			Q.Pointer.hint.addedListeners = true;
 		}
 		function _update() {
-			var point;
-			img.style.display = 'block';
-			if (elementOrPoint instanceof Element) {
-				if (!elementOrPoint.isVisible()) {
-					return console.warn("Q.Pointer.hint: element is not visible");
-				}
-				var offset = Q.Pointer.offset(elementOrPoint);
-				point = {
-					x: offset.left + elementOrPoint.offsetWidth / 2,
-					y: offset.top + elementOrPoint.offsetHeight / 2
-				};
-			} else {
-				point = elementOrPoint;
-			}
-			img.style.left = point.x - img.offsetWidth * o.hotspot.x + 'px';
-			img.style.top = point.y - img.offsetHeight * o.hotspot.y + 'px';
-			img.style.zIndex = o.zIndex;
 			img.timeout = setTimeout(function () {
+				var point;
+				img.timeout = null;
+				img.style.display = 'block';
+				if (elementOrPoint instanceof Element) {
+					if (!elementOrPoint.isVisible()) {
+						return; // perhaps it disappeared
+					}
+					var offset = Q.Pointer.offset(elementOrPoint);
+					point = {
+						x: offset.left + elementOrPoint.offsetWidth / 2,
+						y: offset.top + elementOrPoint.offsetHeight / 2
+					};
+				} else {
+					point = elementOrPoint;
+				}
+				img.style.left = point.x - img.offsetWidth * o.hotspot.x + 'px';
+				img.style.top = point.y - img.offsetHeight * o.hotspot.y + 'px';
+				img.style.zIndex = o.zIndex;
 				var width = parseInt(img.style.width);
 				var height = parseInt(img.style.height);
 				Q.Animation.play(function (x, y) {
@@ -9019,6 +9020,8 @@ Q.Pointer = {
 					}
 				}, o.show.duration, o.show.ease);
 			}, o.show.delay);
+			img.hide = o.hide;
+			img.dontStopBeforeShown = o.dontStopBeforeShown;
 		}
 	},
 	/**
@@ -9027,25 +9030,21 @@ Q.Pointer = {
 	 * @method hint 
 	 */
 	stopHints: function () {
-		var imgs = Q.copy(Q.Pointer.hint.imgs);
-		Q.Pointer.hint.imgs = [];
-		if (!imgs) return;
-		Q.Animation.play(function (x, y) {
-			var img, i, l;
-			for (i=0, l=imgs.length; i<l; ++i) {
-				img = imgs[i];
+		var imgs = Q.Pointer.hint.imgs;
+		var img, i, l;
+		for (i=0, l=imgs.length; i<l; ++i) {
+			img = imgs[i];
+			if (img.timeout && img.dontStopBeforeShown) return;
+			clearTimeout(img.timeout);
+			img.timeout = null;
+			Q.Animation.play(function (x, y) {
 				img.style.opacity = 1-y;
-			}
-		}, Q.Pointer.hint.options.hide.duration)
-		.onComplete.set(function () {
-			var img, i, l;
-			for (i=0, l=imgs.length; i<l; ++i) {
-				img = imgs[i];
-				clearTimeout(img.timeout);
-				img.timeout = null;
+			}, img.hide.duration, img.hide.ease)
+			.onComplete.set(function () {
 				img.parentNode.removeChild(img);
-			}
-		});
+			});
+		}
+		Q.Pointer.hint.imgs = [];
 	},
 	/**
 	 * Consistently prevents the default behavior of an event across browsers
