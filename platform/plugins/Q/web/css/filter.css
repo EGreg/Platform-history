@@ -17,14 +17,14 @@
 }
 
 .Q_filter_tool input.Q_filter_input {
-	padding-right: 15% !important;
+	padding-right: 10% !important;
 	cursor: default;
 }
 
 .Q_filter_begun .Q_filter_input {
 	background-image: url(../img/clear.png) !important;
 	background-repeat: no-repeat !important;
-	background-position: 97% center !important;
+	background-position: 99% center !important;
 }
 
 .Q_filter_fullscreen.Q_filter_begun {
@@ -39,8 +39,8 @@
 }
 
 .Q_filter_fullscreen.Q_filter_begun .Q_filter_input {
-	width: 85% !important;
-	-webkit-max-logical-width: 100% !important;
+	width: 100% !important;
+	max-width: 100% !important;
 	margin: 0 !important;
 }
 

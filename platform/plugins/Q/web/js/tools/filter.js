@@ -161,13 +161,10 @@ Q.Tool.define('Q/filter', function (options) {
 		} else {
 			topH += parseInt(tool.$input.css('margin-top')) ;
 		}
-		var paddingW = parseInt(tool.$results.css('padding-left'))
-			+ parseInt(tool.$results.css('padding-right'))
-			+ parseInt(tool.$results.css('border-left'))
-			+ parseInt(tool.$results.css('border-right'));
 		tool.$results.insertAfter($container).css({
 			left: 0,
-			width: $container.outerWidth() - paddingW,
+			width: $container.outerWidth(),
+			"box-sizing": 'border-box',
 			top: state.fullscreen 
 				? 0
 				: $container.offset().top - $te.offset().top + topH
