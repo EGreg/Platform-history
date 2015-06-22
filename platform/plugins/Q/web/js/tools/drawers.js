@@ -404,7 +404,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 				notThisOne = false;
 				if (state.currentIndex == 0
 				|| state.$scrolling.scrollTop() > 0
-				|| $(e.target).closest('.Q_discouragePointerEvents').length) {
+				|| $(e.target).closest('.Q_discourageDrawerSwap').length) {
 					notThisOne = true;
 					return;
 				}
