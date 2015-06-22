@@ -8973,6 +8973,8 @@ Q.Pointer = {
 		img.style.pointerEvents = 'none';
 		img.setAttribute('class', 'Q_hint');
 		img.style.opacity = 0;
+		img.hide = o.hide;
+		img.dontStopBeforeShown = o.dontStopBeforeShown;
 		imgs.push(img);
 		body.appendChild(img);
 		if (img.complete) {
@@ -8989,9 +8991,11 @@ Q.Pointer = {
 			img.timeout = setTimeout(function () {
 				var point;
 				img.timeout = null;
-				img.style.display = 'block';
 				if (elementOrPoint instanceof Element) {
 					if (!elementOrPoint.isVisible()) {
+						if (img.parentNode) {
+							img.parentNode.removeChild(img);
+						}
 						return; // perhaps it disappeared
 					}
 					var offset = Q.Pointer.offset(elementOrPoint);
@@ -9002,6 +9006,7 @@ Q.Pointer = {
 				} else {
 					point = elementOrPoint;
 				}
+				img.style.display = 'block';
 				img.style.left = point.x - img.offsetWidth * o.hotspot.x + 'px';
 				img.style.top = point.y - img.offsetHeight * o.hotspot.y + 'px';
 				img.style.zIndex = o.zIndex;
@@ -9020,8 +9025,6 @@ Q.Pointer = {
 					}
 				}, o.show.duration, o.show.ease);
 			}, o.show.delay);
-			img.hide = o.hide;
-			img.dontStopBeforeShown = o.dontStopBeforeShown;
 		}
 	},
 	/**
@@ -9031,20 +9034,25 @@ Q.Pointer = {
 	 */
 	stopHints: function () {
 		var imgs = Q.Pointer.hint.imgs;
-		var img, i, l;
-		for (i=0, l=imgs.length; i<l; ++i) {
-			img = imgs[i];
-			if (img.timeout && img.dontStopBeforeShown) return;
+		var imgs2 = [];
+		Q.each(imgs, function () {
+			var img = this;
+			if (img.timeout && img.dontStopBeforeShown) {
+				imgs2.push(img);
+				return;
+			}
 			clearTimeout(img.timeout);
 			img.timeout = null;
 			Q.Animation.play(function (x, y) {
 				img.style.opacity = 1-y;
 			}, img.hide.duration, img.hide.ease)
 			.onComplete.set(function () {
-				img.parentNode.removeChild(img);
+				if (img.parentNode) {
+					img.parentNode.removeChild(img);
+				}
 			});
-		}
-		Q.Pointer.hint.imgs = [];
+		});
+		Q.Pointer.hint.imgs = imgs2;
 	},
 	/**
 	 * Consistently prevents the default behavior of an event across browsers
@@ -9620,7 +9628,7 @@ Q.prompt = function(message, callback, options) {
  * @constructor
  * @param {String} url the url of the audio to load
  */
-Q.Audio = function (url) {
+Q.Audio = function (url, callback) {
 	if (this === window) {
 		throw new Q.Error("Please call Q.Audio with the keyword new");
 	}
@@ -9639,18 +9647,29 @@ Q.Audio = function (url) {
 		'playthrough': this.onCanPlayThrough.handle,
 		'ended': this.onEnded.handle
 	});
-	container.appendChild(audio); // loads the file
+	container.appendChild(audio); // some browsers load the file immediately
+	Q.Audio.collection[url] = this;
 };
+Q.Audio.collection = {};
 
 var Aup = Q.Audio.prototype;
 Aup.onCanPlayThrough = new Q.Event();
 Aup.onEnded = new Q.Event();
+
 /**
  * @method play
  * Plays the audio as soon as it is available
+ * @param {Number} [from] The time, in seconds, from which to start.
+ * @param {Number} [until] The time, in seconds, until which to play.
+ * @param {Boolean} [removeAfterPlaying]
  */
-Aup.play = function (removeAfterPlaying) {
+Aup.play = function (from, until, removeAfterPlaying) {
 	var t = this;
+	var a = t.audio;
+	from = from || 0;
+	if (from > until) {
+		throw new Q.Error("Audio.prototype.play: from can't be greater than until");
+	}
 	if (removeAfterPlaying) {
 		t.onEnded.set(function () {
 			container.removeChild(t.audio);
@@ -9659,7 +9678,19 @@ Aup.play = function (removeAfterPlaying) {
 	}
 	t.playing = true;
 	t.paused = false;
-	t.audio.play();
+	a.load(); // some browsers like Safari need this
+	Q.addEventListener(a, 'canplaythrough', startPlaying);
+	function startPlaying() {
+		if (a.readyState > 0 && a.currentTime != from) {
+			a.currentTime = from;
+		}
+		if (until) {
+			setTimeout(function Q_Audio_play_pause() {
+				a.pause();
+			}, (until-from)*1000);
+		}
+		a.play();
+	}
 	return t;
 };
 
@@ -9675,6 +9706,16 @@ Aup.pause = function () {
 		t.paused = true;
 	}
 	return t;
+};
+
+/**
+ * @method pause
+ * Pauses the audio if it is playing
+ */
+Q.Audio.pauseAll = function () {
+	for (var url in Q.Audio.collection) {
+		Q.Audio.collection[url].pause();
+	}
 };
 
 /**
