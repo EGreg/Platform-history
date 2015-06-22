@@ -151,6 +151,7 @@ function _Q_overlay(o) {
 				Q.handle($overlay.options.onClose, $this, [$this]);
 			}
 			if (e) $.Event(e).preventDefault();
+			Q.Pointer.stopHints();
 		}
 	});
 

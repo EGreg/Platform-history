@@ -8952,7 +8952,7 @@ Q.Pointer = {
 			return;
 		}
 		var elementOrPoint = elementsOrPoints;
-		var o = Q.extend({}, Q.Pointer.hint.options, options);
+		var o = Q.extend({}, Q.Pointer.hint.options, 10, options);
 		var body = document.getElementsByTagName('body')[0];
 		var imgs = Q.Pointer.hint.imgs;
 		if (!options.dontRemove) {
@@ -8972,6 +8972,7 @@ Q.Pointer = {
 		img.style.display = 'block';
 		img.style.pointerEvents = 'none';
 		img.setAttribute('class', 'Q_hint');
+		img.style.opacity = 0;
 		imgs.push(img);
 		body.appendChild(img);
 		if (img.complete) {
@@ -9005,7 +9006,6 @@ Q.Pointer = {
 			img.style.left = point.x - img.offsetWidth * o.hotspot.x + 'px';
 			img.style.top = point.y - img.offsetHeight * o.hotspot.y + 'px';
 			img.style.zIndex = o.zIndex;
-			img.style.opacity = 0;
 			if (Q.Pointer.stopHints.animation) {
 				Q.Pointer.stopHints.animation.pause();
 				img.style.opacity = 0;
@@ -9045,18 +9045,19 @@ Q.Pointer = {
 			}
 		}, Q.Pointer.hint.options.hide.duration);
 		a.onComplete.set(function () {
+			var imgs = Q.Pointer.hint.imgs;
 			var img, i, l;
 			for (i=0, l=imgs.length; i<l; ++i) {
 				img = imgs[i];
 				if (Q.Pointer.stopHints.prevent) {
 					img.style.opacity = 1;
-				} else {
-					if (img.parentNode) {
-						img.parentNode.removeChild(img);
-					}
+				} else if (img.parentNode) {
+					img.parentNode.removeChild(img);
 				}
 			}
-			Q.Pointer.hint.imgs = [];
+			if (!Q.Pointer.stopHints.prevent) {
+				Q.Pointer.hint.imgs = [];
+			}
 		});
 		Q.Pointer.hint.elementOrPoint = null;
 		clearTimeout(Q.Pointer.hint.timeout);

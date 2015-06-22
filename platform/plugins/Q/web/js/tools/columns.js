@@ -115,7 +115,9 @@ Q.Tool.define("Q/columns", function(options) {
 	hideBackgroundColumns: Q.info.isMobile && Q.info.isAndroid(1000),
 	beforeOpen: new Q.Event(),
 	beforeClose: new Q.Event(),
-	onOpen: new Q.Event(),
+	onOpen: new Q.Event(function () {
+		Q.Pointer.stopHints();
+	}, 'Q/columns'),
 	onClose: new Q.Event(),
 	afterDelay: new Q.Event()
 },
@@ -381,10 +383,11 @@ Q.Tool.define("Q/columns", function(options) {
 				if (Q.info.isMobile) {
 					$div.add($ct).css('width', '100%');
 				} else {
-					$sc.width(
-						tool.$('.Q_columns_column').length *
-						tool.$('.Q_columns_column').outerWidth(true)+1
-					);
+					var width = 0;
+					tool.$('.Q_columns_column').each(function () {
+						width += $(this).outerWidth(true);
+					});
+					$sc.width(width);
 
 					var $toScroll = ($te.css('overflow') === 'visible')
 						? $te.parents()
@@ -545,16 +548,23 @@ Q.Tool.define("Q/columns", function(options) {
 			--state.max;
 		}
 		
-		$div.animate($div.data(dataKey_hide), duration, function () {
-			Q.removeElement(div, true); // remove it correctly
+		if (duration) {
+			$div.animate($div.data(dataKey_hide), duration, _close);
+		} else {
+			$div.hide();
+			_close();
+		}
 		
+		function _close() {
+			Q.removeElement(div, true); // remove it correctly
+
 			var data = tool.data(index);
 			var $sc = $(state.container);
 			$sc.width($sc.width() - w);
 			presentColumn(tool);
 			Q.handle(callback, tool, [index, div]);
 			state.onClose.handle.call(tool, index, div, data);
-		});
+		}
 		return this;
 	},
 

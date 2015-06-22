@@ -482,11 +482,13 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 			if (false === Q.handle(state.onClick, $this, [])) {
 				return false;
 			}
+			Q.Pointer.stopHints();
 		});
 		input.change(function () {
 			if (!this.value) {
 				return; // it was canceled
 			}
+			Q.Pointer.stopHints();
 			_process.call(this);
 		});
 		function _cancel(e) {
