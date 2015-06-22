@@ -8980,14 +8980,11 @@ Q.Pointer = {
 		} else {
 			img.onload = _update;
 		}
-		Q.Pointer.stopHints.prevent = true;
-		Q.removeEventListener(window, Q.Pointer.start, Q.Pointer.stopHints);
-		Q.removeEventListener(document, 'scroll', Q.Pointer.stopHints);
-		setTimeout(function () {
+		if (!Q.Pointer.hint.addedListeners) {
 			Q.addEventListener(window, Q.Pointer.start, Q.Pointer.stopHints);
 			Q.addEventListener(document, 'scroll', Q.Pointer.stopHints);
-			Q.Pointer.stopHints.prevent = false;
-		}, o.hide.delay);
+			Q.Pointer.hint.addedListeners = true;
+		}
 		function _update() {
 			var point;
 			img.style.display = 'block';
@@ -9006,12 +9003,7 @@ Q.Pointer = {
 			img.style.left = point.x - img.offsetWidth * o.hotspot.x + 'px';
 			img.style.top = point.y - img.offsetHeight * o.hotspot.y + 'px';
 			img.style.zIndex = o.zIndex;
-			if (Q.Pointer.stopHints.animation) {
-				Q.Pointer.stopHints.animation.pause();
-				img.style.opacity = 0;
-			}
-			Q.Pointer.hint.elementOrPoint = elementOrPoint;
-			Q.Pointer.hint.timeout = setTimeout(function () {
+			img.timeout = setTimeout(function () {
 				var width = parseInt(img.style.width);
 				var height = parseInt(img.style.height);
 				Q.Animation.play(function (x, y) {
@@ -9035,33 +9027,25 @@ Q.Pointer = {
 	 * @method hint 
 	 */
 	stopHints: function () {
-		var imgs = Q.Pointer.hint.imgs;
-		if (!imgs || Q.Pointer.stopHints.prevent) return;
-		var a = Q.Pointer.stopHints.animation = Q.Animation.play(function (x, y) {
+		var imgs = Q.copy(Q.Pointer.hint.imgs);
+		Q.Pointer.hint.imgs = [];
+		if (!imgs) return;
+		Q.Animation.play(function (x, y) {
 			var img, i, l;
 			for (i=0, l=imgs.length; i<l; ++i) {
 				img = imgs[i];
 				img.style.opacity = 1-y;
 			}
-		}, Q.Pointer.hint.options.hide.duration);
-		a.onComplete.set(function () {
-			var imgs = Q.Pointer.hint.imgs;
+		}, Q.Pointer.hint.options.hide.duration)
+		.onComplete.set(function () {
 			var img, i, l;
 			for (i=0, l=imgs.length; i<l; ++i) {
 				img = imgs[i];
-				if (Q.Pointer.stopHints.prevent) {
-					img.style.opacity = 1;
-				} else if (img.parentNode) {
-					img.parentNode.removeChild(img);
-				}
-			}
-			if (!Q.Pointer.stopHints.prevent) {
-				Q.Pointer.hint.imgs = [];
+				clearTimeout(img.timeout);
+				img.timeout = null;
+				img.parentNode.removeChild(img);
 			}
 		});
-		Q.Pointer.hint.elementOrPoint = null;
-		clearTimeout(Q.Pointer.hint.timeout);
-		Q.Pointer.hint.timeout = null;
 	},
 	/**
 	 * Consistently prevents the default behavior of an event across browsers
