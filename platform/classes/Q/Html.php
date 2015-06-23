@@ -617,17 +617,15 @@ class Q_Html
 		$year_to = isset($options['year_to'])
 		 ? $options['year_to']
 		 : date('Y');
-		$years = array(0 => 'year');
 		for ($i=$year_to; $i>=$year_from; --$i) {
 			$years[$i] = (string)$i;
 		}
 		$months = array(
-			"0" => 'month',
 			"01" => 'January', "02" => 'February', "03" => 'March', "04" => 'April',
 			"05" => 'May', "06" => 'June', "07" => 'July', "08" => 'August',
 			"09" => 'September', "10" => 'October', "11" => 'November', "12" => 'December'
 		);
-		$days = array(0 => 'day');
+		$days = array();
 		for ($i=1; $i<=31; ++$i) {
 			$days[sprintf("%02d", $i)] = (string)$i;
 		}
@@ -643,17 +641,17 @@ class Q_Html
 		$attributes['name'] = $name . '_year';
 		if ($id) $attributes['id'] = $id . '_year';
 		$year_select = self::tag('select', $attributes) 
-		 . self::options($years, $id, $year)
+		 . self::options($years, $id, $year, Q::t('year'))
 		 . "</select>";
 		$attributes['name'] = $name . '_month';
 		if ($id) $attributes['id'] = $id . '_month';
 		$month_select = self::tag('select', $attributes) 
-		 . self::options($months, $id,  $month)
+		 . self::options($months, $id,  $month, Q::t('month'))
 		 . "</select>";
 		$attributes['name'] = $name . '_day';
 		if ($id) $attributes['id'] = $id . '_day';
 		$day_select = self::tag('select', $attributes) 
-		 . self::options($days, $id, $day)
+		 . self::options($days, $id, $day, Q::t('day'))
 		 . "</select>";
 		$language = Q::ifset($_SERVER, 'HTTP_ACCEPT_LANGUAGE', 'en-US');
 		$mdy_countries = array('en-us', 'en-bz');
