@@ -15,6 +15,7 @@
  *   "iconAttributes" => Optional. Array of attributes to render for the icon.
  * @param {boolean} [options.editable=false]
  *   "editable" => Optional. Whether to provide an interface for editing the user's info. Can be array containing one or more of "icon", "name".
+ *   @param {boolean} [$options.show] The parts of the name to show. Can have the letters "f", "l", "u" in any order.
  * @param {boolean} [options.cacheBust=null]
  *   "cacheBust" => Number of milliseconds to use for Q_Uri::cacheBust for combating unintended caching on some environments.
  * @param {boolean} [options.renderOnClient]
@@ -68,7 +69,10 @@ function Users_avatar_tool($options)
 	}
 	$o = $options['short'] ? array('short' => true) : array();
 	$o['html'] = true;
-	$displayName = $avatar->displayName($o);
+	if (!empty($options['show'])) {
+		$o['show'] = $options['show'];
+	}
+	$displayName = $avatar->displayName($o, 'Someone');
 	$result .= "<span class='Users_avatar_name'>$displayName</span>";
 	return $result;
 }

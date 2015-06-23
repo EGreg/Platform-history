@@ -147,6 +147,7 @@ class Streams_Avatar extends Base_Streams_Avatar
 	 * @param {array} $options=array()
 	 *  Associative array of options, which can include:<br/>
 	 *   @param {boolean} [$options.short] Show one part of the name only
+	 *   @param {boolean} [$options.show] The parts of the name to show. Can have the letters "f", "l", "u" in any order.
 	 *   @param {boolean} [$options.html] If true, encloses the first name, last name, username in span tags. If an array, then it will be used as the attributes of the html.
 	 *   @param {boolean} [$options.escape] If true, does HTML escaping of the retrieved fields
 	 * @param {string} [$fallback] What to return if there is no info to get displayName from.
@@ -190,6 +191,15 @@ class Streams_Avatar extends Base_Streams_Avatar
 		}
 
 		// $u = $u ? "\"$username\"" : '';
+
+		if (!empty($options['show'])) {
+			$show = str_split($options['show']);
+			$parts = array();
+			foreach ($show as $s) {
+				$parts[] = ($s == 'f' ? $fn2 : ($s == 'l' ? $ln2 : $u2));
+			}
+			return implode(' ', $parts);
+		}
 
 		if ($fn and $ln) {
 			return "$fn2 $ln2";

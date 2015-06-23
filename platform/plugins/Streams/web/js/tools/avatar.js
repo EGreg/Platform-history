@@ -192,8 +192,7 @@ Q.Tool.define("Users/avatar", function(options) {
 			}
 			if (state.editable.indexOf('name') >= 0) {
 				var zIndex = 5;
-				Q.each(['first', 'last'], function (k, v) {
-					var vName = v+'Name';
+				Q.each(['firstName', 'lastName', 'username'], function (k, vName) {
 					var f = tool.getElementsByClassName('Streams_'+vName)[0];
 					if (!f || f.getElementsByClassName('Streams_inplace_tool').length) {
 						return;
@@ -204,7 +203,7 @@ Q.Tool.define("Users/avatar", function(options) {
 						inplaceType: 'text',
 						inplace: {
 							bringToFront: f,
-							placeholder: 'Your '+v+' name',
+							placeholder: 'Your '+vName.substr(0, 4)+' name',
 							staticHtml: f.innerHTML
 						}
 					}, state.inplaces);

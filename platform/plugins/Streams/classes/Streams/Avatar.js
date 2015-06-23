@@ -39,6 +39,7 @@ Q.mixin(Streams_Avatar, Q.require('Base/Streams/Avatar'));
  * @method displayName
  * @param {Object} [options] A bunch of options which can include:
  *   @param {Boolean} [options.short] Show one part of the name only
+ *   @param {boolean} [options.show] The parts of the name to show. Can have the letters "f", "l", "u" in any order.
  *   @param {Boolean} [options.html] If true, encloses the first name, last name, username in span tags. If an array, then it will be used as the attributes of the html.
  *   @param {Boolean} [options.escape] If true, does HTML escaping of the retrieved fields
  * @param {String} [fallback] What to return if there is no info to get displayName from.
@@ -55,13 +56,22 @@ Streams_Avatar.prototype.displayName = function _Avatar_prototype_displayName (o
 		u = u.encodeHTML();
 	}
 	if (options && options.html) {
-		fn2 = fn && '<span class="Streams_firstName">'+fn+'</span>';
-		ln2 = ln && '<span class="Streams_lastName">'+ln+'</span>';
-		u2 = u && '<span class="Streams_username">'+u+'</span>';
+		fn2 = '<span class="Streams_firstName">'+fn+'</span>';
+		ln2 = '<span class="Streams_lastName">'+ln+'</span>';
+		u2 = '<span class="Streams_username">'+u+'</span>';
 	} else {
 		fn2 = fn;
 		ln2 = ln;
 		u2 = u;
+	}
+	if (options && options.show) {
+		var show = options.show.split('');
+		var parts = [];
+		for (var i=0, l=show.length; i<l; ++i) {
+			var s = show[i];
+			parts.push(s == 'f' ? fn2 : (s == 'l' ? ln2 : u2));
+		}
+		return parts.join(' ');
 	}
 	if (options && options.short) {
 		return fn ? fn2 : u2;

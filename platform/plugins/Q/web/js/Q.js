@@ -9636,9 +9636,9 @@ Q.Audio = function (url, callback) {
 	if (!container) {
 		container = document.createElement('div');
 		container.setAttribute('id', 'Q-audio-container');
+		container.style.display = 'none';
 		document.body.appendChild(container);
-	}
-	container.style.display = 'none';
+	}	
 	this.container = container;
 	var audio = this.audio = document.createElement('audio');
 	audio.setAttribute('src', Q.url(url));
