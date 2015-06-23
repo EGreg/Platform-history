@@ -337,3 +337,9 @@
 	-moz-border-radius: 3px; -webkit-border-radius: 3px; border-radius: 3px;
 	border: 1px dotted #ccc;
 }
+
+#Users_login_step1 *,
+#Users_login_step2 *,
+#Users_setIdentifier_step1 * {
+	box-sizing: border-box;
+}
