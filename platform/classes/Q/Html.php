@@ -78,7 +78,7 @@ class Q_Html
 	 */
 	static function form(
 	 $action = '',
-	 $method = 'post',
+	 $method = 'POST',
 	 $attributes = array(),
 	 $contents = null)
 	{
@@ -92,6 +92,7 @@ class Q_Html
 			$attributes = array();
 		}
 		$input = null;
+		$method = strtoupper($method);
 		if ($method != 'GET' and $method != 'POST') {
 			$input = Q_Html::hidden(array('Q.method' => $method));
 			$method = 'POST';
