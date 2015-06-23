@@ -15,6 +15,8 @@ var util = require('util');
  */
 function Row(fields, retrieved /* false */) {
 
+	var self = this;
+
 	/**
 	 * The fields names
 	 * @property _fieldNames
@@ -38,7 +40,7 @@ function Row(fields, retrieved /* false */) {
 	 * @type object
 	 */
 	this.fields = {};
-	var _fields = {};
+	var _fields = this._fields = {};
 	
 	/**
 	 * Whether this Db_Row was retrieved or not.
@@ -63,7 +65,7 @@ function Row(fields, retrieved /* false */) {
 	 * @type object
 	 * @private
 	 */
-	var _fieldsModified = {};
+	var _fieldsModified = this._fieldsModified = {};
 	
 	/**
 	 * The temporary config to make shards split
@@ -73,43 +75,57 @@ function Row(fields, retrieved /* false */) {
 	 */
 	var _split = null;
 	
+	function getter(k) {
+		return function Db_Row_getter() {
+			var row = this._row;
+			if (row["beforeGet_" + k]
+			&& (typeof row["beforeGet_" + k] === "function")) {
+				// NOTE: this is synchronous, we wouldn't be able to do any async,
+				// and since Node is a single thread, we shouldn't do I/O at all in them!
+				// This should be documented.
+				row["beforeGet_" + k].call(row, row._fields);
+			}
+			return row._fields[k];
+		};
+	}
+	function setter(k) {
+		return function Db_Row_setter(x) {
+			var row = this._row;
+			// we shall skip beforeSet_xxx during shards split process to get exact copy of the data
+			if (!_split && row["beforeSet_" + k]
+			&& (typeof row["beforeSet_" + k] === "function")) {
+				// NOTE: this is synchronous, we wouldn't be able to do any async,
+				// and since Node is a single thread, we shouldn't do I/O at all in them!
+				// This should be documented.
+				var result = row["beforeSet_" + k].call(row, x, row._fields);
+				if (result !== undefined) {
+					x = result;
+				}
+			}
+			row._fieldsModified[k] = true;
+			row._fields[k] = x;
+		};
+	}
+	
 	var k, i;
 
 	for (i in _fieldNames) {
 		k = _fieldNames[i];
-		this.fields.__defineGetter__(k, (function (k, self) {
-			return function () {
-				if (self["beforeGet_" + k] && (typeof self["beforeGet_" + k] === "function")) {
-					// NOTE: this is synchronous, we wouldn't be able to do any async,
-					// and since Node is a single thread, we shouldn't do I/O at all in them!
-					// This should be documented.
-					self["beforeGet_" + k].call(self, _fields);
-				}
-				return _fields[k];
-			};
-		})(k, this));
-		this.fields.__defineSetter__(k, (function (k, self) {
-			return function (x) {
-				// we shall skip beforeSet_xxx during shards split process to get exact copy of the data
-				if (!_split && self["beforeSet_" + k] && (typeof self["beforeSet_" + k] === "function")) {
-					// NOTE: this is synchronous, we wouldn't be able to do any async,
-					// and since Node is a single thread, we shouldn't do I/O at all in them!
-					// This should be documented.
-					var result = self["beforeSet_" + k].call(self, x, _fields);
-					if (result !== undefined) {
-						x = result;
-					}
-				}
-				_fieldsModified[k] = true;
-				_fields[k] = x;
-			};
-		})(k, this));
+		Object.defineProperty(this.fields, k, {
+			'enumerable': true,
+			'get': getter(k),
+			'set': setter(k)
+		});
+		Object.defineProperty(this.fields, '_row', {
+			'enumerable': false,
+			'value': this
+		})
 		if (fields && (k in fields)) {
 			this.fields[k] = fields[k];
 		}
 	}
 	if ((_retrieved = !!retrieved)) {
-		_fieldsModified = {};
+		this._fieldsModified = {};
 	}
 
 	/**
@@ -160,7 +176,7 @@ function Row(fields, retrieved /* false */) {
 	 */
 	this.save = function (onDuplicateKeyUpdate /* = false */, commit /* = false */, callback) {
 
-		var self = this, _continue = true;
+		var _continue = true;
 		var rowClass = Q.require( this.className.split('_').join('/') );
 
 		if (typeof onDuplicateKeyUpdate === 'function') {
@@ -183,9 +199,9 @@ function Row(fields, retrieved /* false */) {
 			throw new Error("If you're going to save, please extend Db.Row.");
 
 		var modifiedFields = {}, key;
-		for (key in _fields) {
-			if (_fieldsModified[key]) {
-				modifiedFields[key] = _fields[key];
+		for (key in this._fields) {
+			if (this._fieldsModified[key]) {
+				modifiedFields[key] = this._fields[key];
 			}
 		}
 
@@ -243,10 +259,11 @@ function Row(fields, retrieved /* false */) {
 				if (error) callback && callback.call(self, error);
 				else {
 					// We assume that autoincrement field is the single primary key
-					if (_inserting && _primaryKey.length === 1 && lastId)
-						_fields[pk[0]] = lastId;
+					if (_inserting && _primaryKey.length === 1 && lastId) {
+						self._fields[pk[0]] = lastId;
+					}
 					_pkValue = calculatePKValue() || {};
-					_fieldsModified = {};
+					self._fieldsModified = {};
 					_retrieved = true;
 					callback && callback.call(self);
 				}
@@ -309,7 +326,7 @@ function Row(fields, retrieved /* false */) {
 	 */
 	this.retrieve = function (fields /* '*' */, use_index /* false */, modifyQuery /* false */, callback) {
 
-		var self = this, _continue = true;
+		var _continue = true;
 		var rowClass = Q.require( this.className.split('_').join('/') );
 
 		if (typeof fields === 'function') {
@@ -340,7 +357,7 @@ function Row(fields, retrieved /* false */) {
 			search_criteria = primaryKeyValue;
 		} else {
 			// Use the modified fields as the search criteria.
-			search_criteria = _fields;
+			search_criteria = this._fields;
 			// If no fields were modified on this object,
 			// then this function will just return an empty array -- see below.
 		}
@@ -476,7 +493,7 @@ function Row(fields, retrieved /* false */) {
 	 */
 	this.remove = function (search_criteria /* null */, use_index /* false */, callback) {
 
-		var self = this, _continue = true;
+		var _continue = true;
 		var rowClass = Q.require( this.className.split('_').join('/') );
 
 		if (typeof search_criteria === 'function') {
@@ -512,7 +529,7 @@ function Row(fields, retrieved /* false */) {
 				search_criteria = primaryKeyValue;
 			} else {
 				// use modified fields
-				search_criteria = _fields;
+				search_criteria = this._fields;
 			}
 		}
 
@@ -555,10 +572,10 @@ function Row(fields, retrieved /* false */) {
 			function _do_callbacks(error, result) {
 				if (error) callback && callback.call(self, error);
 				else {
-					_fields = {};
+					self._fields = {};
 					_retrieved = false;
 					_pkValue = {};
-					_fieldsModified = {};
+					self._fieldsModified = {};
 					callback && callback.call(self, null, result);
 				}
 				query = null;
@@ -604,7 +621,6 @@ function Row(fields, retrieved /* false */) {
 	 *    otherwise passed null.
 	 */
 	this.rollback = function (callback) {
-		var self = this;
 		var rowClass = Q.require( this.className.split('_').join('/') );
 
 		if (this.className === "Row")
@@ -615,7 +631,7 @@ function Row(fields, retrieved /* false */) {
 			throw new Error("The database was not specified!");
 		}
 		if (!(pk = calculatePKValue())) {
-			pk = _fields;
+			pk = this._fields;
 		}
 		query = db.rollback(pk).execute(callback);
 	};
@@ -624,9 +640,10 @@ function Row(fields, retrieved /* false */) {
 		var k, fname, res = {};
 		for (k in _primaryKey) {
 			fname = _primaryKey[k];
-			if (typeof _fields[fname] === "undefined")
+			if (typeof self._fields[fname] === "undefined") {
 				return false;
-			res[fname] = _fields[fname];
+			}
+			res[fname] = self._fields[fname];
 		}
 		return Object.keys(res).length ? res : false;
 	}
