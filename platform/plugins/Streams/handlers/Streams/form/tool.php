@@ -19,11 +19,11 @@
  *     "field" => The stream field to edit, or "attribute:$attributeName" for an attribute.
  *     "type" => The type of the input (@see Q_Html::smartTag())
  *     "attributes" => Additional attributes for the input
- *     "value" => The initial value of the input
  *     "options" => options for the input (if type is "select", "checkboxes" or "radios")
  */
 function Streams_form_tool($options)
 {
+	$user = Users::loggedInUser();
 	$fields = Q::ifset($options, 'fields', array());
 	$defaults = array(
 		'publisherId' => null,
@@ -31,7 +31,7 @@ function Streams_form_tool($options)
 		'field' => null,
 		'type' => 'text',
 		'attributes' => array(),
-		'value' => null,
+		'value' => array(),
 		'options' => array(),
 		'params' => array()
 	);
@@ -51,24 +51,38 @@ function Streams_form_tool($options)
 				'field' => $field[2],
 				'type' => $field[3],
 				'attributes' => isset($field[4]) ? $field[4] : array(),
-				'value' => isset($field[5]) ? $field[5] : null,
+				'attributes' => isset($field[5]) ? $field[5] : array(),
 				'options' => isset($field[6]) ? $field[6] : null,
 				'params' => isset($field[7]) ? $field[7] : null,
 			);
 		}
-		$r['attributes']['name'] = "input-$id";
+		$r['attributes']['name'] = "input_$id";
 		if (!isset($r['type'])) {
 			var_dump($r['type']);exit;
 		}
-		$sections[] = Q_Html::smartTag(
-			$r['type'], $r['attributes'], $r['value'], $r['options'], $r['params']
+		$stream = Streams::fetchOne(null, $r['publisherId'], $r['streamName']);
+		if ($stream) {
+			if (substr($r['field'], 0, 10) === 'attribute:') {
+				$attribute = trim(substr($r['field'], 10));
+				$value = $streams->get($attribute, $r['value']);
+			} else {
+				$field = $r['field'];
+				$value = $streams->$field;
+			}
+		} else {
+			$value = $r['value'];
+		}
+		$tag = Q_Html::smartTag(
+			$r['type'], $r['attributes'], $value, $r['options'], $r['params']
 		);
-		$hidden[$id] = array($r['publisherId'], $r['streamName'], $r['field']);
+		$sections[] = "<span data-publisherId='$r[publisherId]' data-streamName='$r[streamName]' data-field='$r[field]' data-type='$r[type]'>$tag</span>";
+		$hidden[$id] = array(!!$stream, $r['publisherId'], $r['streamName'], $r['field']);
 	}
 	$sections[] = Q_Html::hidden(array(
-		'inputs' => json_encode($hidden)
+		'inputs' => Q::json_encode($hidden)
 	));
-	return implode('', $sections);
+	$contents = implode('', $sections);
+	return Q_Html::form('Streams/form', 'post', array(), $contents);
 	//
 	// $fields = array('onSubmit', 'onResponse', 'onSuccess', 'slotsToRequest', 'loader', 'contentElements');
 	// Q_Response::setToolOptions(Q::take($options, $fields));

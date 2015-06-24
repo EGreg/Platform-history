@@ -93,5 +93,11 @@
 		"login": {
 			"identifierType": "email,mobile"
 		}
+	},
+	"Streams": {
+		"allowedToCreate": [
+			"Streams/user/birthday",
+			"Streams/user/height"
+		]
 	}
 }

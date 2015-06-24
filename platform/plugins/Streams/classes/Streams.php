@@ -693,7 +693,9 @@ abstract class Streams extends Base_Streams
 		}
 		if (!$authorized and $retrieved and $relate['streamName']) {
 			// Check if user is perhaps authorized to create a related stream
-			$to_stream = Streams::fetchOne($userId, $relate['publisherId'], $relate['streamName']);
+			$to_stream = Streams::fetchOne(
+				$userId, $relate['publisherId'], $relate['streamName']
+			);
 			if ($to_stream and $to_stream->testWriteLevel('relate')) {
 				$to_template = new Streams_Stream();
 				$to_template->publisherId = $to_stream->publisherId;

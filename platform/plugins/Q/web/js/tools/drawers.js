@@ -373,18 +373,22 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 					}
 				});
 				var $drawer = tool.state.$drawers.eq(1);
-				var left = $drawer.offset().left
-					- $drawer.offsetParent().offset().left
-					+ $drawer.outerWidth(true)
-					- state.$trigger.outerWidth(true)
-					- state.trigger.rightMargin;
-				var top = $drawer.offset().top
-					- $drawer.offsetParent().offset().top
-					- state.$trigger.height() / 2;
-				state.$trigger.css({
-					left: left + 'px',
-					top: top + 'px'
-				});
+				if ($drawer.is(':visible')) {
+					var left = $drawer.offset().left
+						- $drawer.offsetParent().offset().left
+						+ $drawer.outerWidth(true)
+						- state.$trigger.outerWidth(true)
+						- state.trigger.rightMargin;
+					var top = $drawer.offset().top
+						- $drawer.offsetParent().offset().top
+						- state.$trigger.height() / 2;
+					state.$trigger.css({
+						left: left + 'px',
+						top: top + 'px'
+					});
+				} else {
+					state.$trigger.hide();
+				}
 			}
 			
 			Q.handle(callbacks[0], tool);

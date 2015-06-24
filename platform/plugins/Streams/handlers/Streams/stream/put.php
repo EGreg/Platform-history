@@ -3,8 +3,15 @@
 /**
  * Used to update an existing stream
  *
- * @param string $params 
- *   Must include "publisherId" as well as "name" or "streamName"
+ * @param string $params Must include "publisherId" as well as "name" or "streamName".
+ *    Can also include 'type', 'title', 'icon', 'content', 'attributes', 'readLevel',
+ *    'writeLevel', 'adminLevel', as well as any fields named in the
+ *    'Streams'/'types'/$type/'fields' config field for this $type of stream.
+ * @param {string} [$params.publisherId] The id of the user publishing the stream
+ * @param {string} [$params.name] The name of the stream
+ * @param {string} [$params.streamName] Alternatively, the name of the stream
+ * @param {array} [$params.attributes] Array of attributeName => value to set in stream.
+ * @param {array} [$params.icon] Optional array of icon data (see Q_Image::save params)
  * @return void
  */
 
@@ -50,6 +57,13 @@ function Streams_stream_put($params) {
 				throw new Users_Exception_NotAuthorized();
 			}
 		}
+		foreach ($more_fields as $f) {
+			if (in_array($f, array('readLevel', 'writeLevel', 'adminLevel')) !== false) {
+				if (!$stream->testAdminLevel('own')) {
+					throw new Users_Exception_NotAuthorized();
+				}
+			}
+		}
 	}
 	
 	$restricted = array('readLevel', 'writeLevel', 'adminLevel');
@@ -61,7 +75,8 @@ function Streams_stream_put($params) {
 	}
 	
 	// handle setting of attributes
-	if (isset($more_fields['attributes']) and is_array($more_fields['attributes'])) {
+	if (isset($more_fields['attributes'])
+	and is_array($more_fields['attributes'])) {
 		foreach ($more_fields['attributes'] as $k => $v) {
 			$stream->setAttribute($k, $v);
 		}
