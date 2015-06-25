@@ -725,7 +725,8 @@ class Users_User extends Base_Users_User
 	 * @param $labels {string|array}
 	 * @return {array} The array of user ids
 	 */
-	static function labelsToIds ($asUserId, $labels) {
+	static function labelsToIds ($asUserId, $labels)
+	{
 
 		if (empty($labels)) return array();
 

@@ -180,10 +180,12 @@ class Streams_Avatar extends Base_Streams_Avatar
 			$attributes['class'] = "Streams_username$class";
 			$attr = Q_Html::attributes($attributes);
 			$u2 = "<span $attr>$u</span>";
+			$f2 = "<span $attr>$f</span>";
 		} else {
 			$fn2 = $fn;
 			$ln2 = $ln;
 			$u2 = $u;
+			$f2 = $fallback;
 		}
 
 		if (!empty($options['short'])) {
@@ -208,7 +210,7 @@ class Streams_Avatar extends Base_Streams_Avatar
 		} else if (!$fn and $ln) {
 			return $u ? "$u2 $ln2" : $ln2;
 		} else {
-			return $u ? $u2 : $fallback;
+			return $u ? $u2 : $f2;
 		}
 	}
 

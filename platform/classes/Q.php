@@ -670,7 +670,7 @@ class Q
 	 * Might result in several handlers being called.
 	 * @method event
 	 * @static
-	 * @param {string} $event_name
+	 * @param {string} $eventName
 	 *  The name of the event
 	 * @param {array} $params=array()
 	 *  Parameters to pass to the event
@@ -685,7 +685,7 @@ class Q
 	 *  before and after some "default behavior" happens.
 	 *  Check for a non-null return value on "before",
 	 *  and cancel the default behavior if it is present.
-	 * @param {boolean} $skip_includes=false
+	 * @param {boolean} $skipIncludes=false
 	 *  Defaults to false.
 	 *  If true, no new files are loaded. Only handlers which have
 	 *  already been defined as functions are run.
@@ -702,14 +702,14 @@ class Q
 	 * @throws {Q_Exception_MissingFunction}
 	 */
 	static function event(
-	 $event_name,
+	 $eventName,
 	 $params = array(),
 	 $pure = false,
-	 $skip_includes = false,
+	 $skipIncludes = false,
 	 &$result = null)
 	{
 		// for now, handle only event names which are strings
-		if (!is_string($event_name)) {
+		if (!is_string($eventName)) {
 			return;
 		}
 		if (!is_array($params)) {
@@ -720,25 +720,25 @@ class Q
 		if (!isset($event_stack_limit)) {
 			$event_stack_limit = Q_Config::get('Q', 'eventStackLimit', 100);
 		}
-		self::$event_stack[] = compact('event_name', 'params', 'pure', 'skip_includes');
+		self::$event_stack[] = compact('eventName', 'params', 'pure', 'skipIncludes');
 		++self::$event_stack_length;
 		if (self::$event_stack_length > $event_stack_limit) {
 			if (!class_exists('Q_Exception_Recursion', false)) {
 				include(dirname(__FILE__).DS.'Q'.DS.'Exception'.DS.'Recursion.php');
 			}
-			throw new Q_Exception_Recursion(array('function_name' => "Q::event($event_name)"));
+			throw new Q_Exception_Recursion(array('function_name' => "Q::event($eventName)"));
 		}
 
 		try {
 			if ($pure !== 'after') {
 				// execute the "before" handlers
-				$handlers = Q_Config::get('Q', 'handlersBeforeEvent', $event_name, array());
+				$handlers = Q_Config::get('Q', 'handlersBeforeEvent', $eventName, array());
 				if (is_string($handlers)) {
 					$handlers = array($handlers); // be nice
 				}
 				if (is_array($handlers)) {
 					foreach ($handlers as $handler) {
-						if (false === self::handle($handler, $params, $skip_includes, $result)) {
+						if (false === self::handle($handler, $params, $skipIncludes, $result)) {
 							// return this result instead
 							return $result;
 						}
@@ -750,18 +750,18 @@ class Q
 			if (!$pure) {
 				// If none of the "after" handlers return anything,
 				// the following result will be returned:
-				$result = self::handle($event_name, $params, $skip_includes, $result);
+				$result = self::handle($eventName, $params, $skipIncludes, $result);
 			}
 
 			if ($pure !== 'before') {
 				// execute the "after" handlers
-				$handlers = Q_Config::get('Q', 'handlersAfterEvent', $event_name, array());
+				$handlers = Q_Config::get('Q', 'handlersAfterEvent', $eventName, array());
 				if (is_string($handlers)) {
 					$handlers = array($handlers); // be nice
 				}
 				if (is_array($handlers)) {
 					foreach ($handlers as $handler) {
-						if (false === self::handle($handler, $params, $skip_includes, $result)) {
+						if (false === self::handle($handler, $params, $skipIncludes, $result)) {
 							// return this result instead
 							return $result;
 						}
@@ -1328,20 +1328,20 @@ class Q
 	 * Returns stack of events currently being executed.
 	 * @method eventStack
 	 * @static
-	 * @param {string} $event_name=null
+	 * @param {string} $eventName=null
 	 *  Optional. If supplied, searches event stack for this event name.
 	 *  If found, returns the latest call with this event name.
 	 *  Otherwise, returns false
 	 *
 	 * @return {array|false}
 	 */
-	static function eventStack($event_name = null)
+	static function eventStack($eventName = null)
 	{
-		if (!isset($event_name)) {
+		if (!isset($eventName)) {
 			return self::$event_stack;
 		}
 		foreach (self::$event_stack as $key => $ei) {
-			if ($ei['event_name'] === $event_name) {
+			if ($ei['eventName'] === $eventName) {
 				return $ei;
 			}
 		}

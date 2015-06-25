@@ -360,16 +360,31 @@ class Streams_Stream extends Base_Streams_Stream
 			array('stream' => $this), 'after');
 
 		// Assume that the stream's name is not being changed
-		if ($this->name !== 'Streams/user/firstName'
-		and $this->name !== 'Streams/user/lastName') {
+		$fields = array(
+			'Streams/user/firstName' => false,
+			'Streams/user/lastName' => false,
+			'Streams/user/username' => 'username',
+			'Streams/user/icon' => 'icon'
+		);
+		if (!isset($fields[$this->name])) {
 			return $result;
 		}
-		if (empty($this->fieldsModified['content'])
+		$field = ($this->name === 'Streams/user/icon')
+			? 'icon'
+			: 'content';
+		if (empty($this->fieldsModified[$field])
 		and empty($this->fieldsModified['readLevel'])) {
 			return $result;
 		}
+		
+		if ($publicField = $fields[$this->name]
+		and !Q::eventStack('Db/Row/Users_User/saveExecute')) {
+			$user = Users_User::fetch($this->publisherId, true);
+			$user->$publicField = $modifiedFields[$field];
+			$user->save();
+		}
 
-		if ($this->retrieved) {
+		if ($this->retrieved and !$publicField) {
 			// Update all avatars corresponding to access rows for this stream
 			$taintedAccess = Streams_Access::select('*')
 				->where(array(

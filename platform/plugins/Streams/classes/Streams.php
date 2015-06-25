@@ -1229,18 +1229,17 @@ abstract class Streams extends Base_Streams
 	 *
 	 * You should rarely have to call this function. It is used internally by the model,
 	 * in two main situations:
-	 * <ol><li>
-	 *	adding, removing or modifying a Streams_Access row for Streams/user/firstName or Streams/user/lastName
+	 *
+	 * 1)  adding, removing or modifying a Streams_Access row for Streams/user/firstName or Streams/user/lastName
 	 *	In this case, the function is able to update exactly the avatars that need updating.
-	 * </li><li>
-	 *	adding, removing or modifying a Stream row for Streams/user/firstName or Streams/user/lastName
+	 * 
+	 * 2) adding, removing or modifying a Stream row for Streams/user/firstName or Streams/user/lastName
 	 *	In this case, there may be some avatars which this function will miss.
 	 *	These correspond to users which are reachable by the access array for one stream,
 	 *	but not the other. For example, if Streams/user/firstName is being updated, but
 	 *	a particular user is reachable only by the access array for Streams/user/lastName, then
 	 *	their avatar will not be updated and contain a stale value for firstName.
 	 *	To fix this, the Streams_Stream model passes true in the 4th parameter to this function.
-	 * </li></ol>
 	 * @method updateAvatars
 	 * @static
 	 * @param {string} $publisherId
@@ -1255,7 +1254,11 @@ abstract class Streams extends Base_Streams
 	 *  if you want to first update all the avatars for this stream
 	 *  to the what the public would see, to avoid the situation described in 2).
 	 */
-	static function updateAvatars($publisherId, $taintedAccess, $streamName, $updateToPublicValue = false)
+	static function updateAvatars(
+		$publisherId, 
+		$taintedAccess, 
+		$streamName, 
+		$updateToPublicValue = false)
 	{
 		if (!isset($streamName)) {
 			$streamAccesses = array();
@@ -1276,7 +1279,8 @@ abstract class Streams extends Base_Streams
 
 		// If we are here, all the Stream_Access objects have the same streamName
 		if ($streamName !== 'Streams/user/firstName'
-		and $streamName !== 'Streams/user/lastName') {
+		and $streamName !== 'Streams/user/lastName'
+		and $streamName !== 'Streams/user/username') {
 			// we don't care about access to other streams being updated
 			return false;
 		}
@@ -1285,7 +1289,7 @@ abstract class Streams extends Base_Streams
 		// Select the user corresponding to this publisher
 		$user = new Users_User();
 		$user->id = $publisherId;
-		if (!$user->retrieve(null, null, true)->ignoreCache()->resume()) {
+		if (!$user->retrieve(null, null, array('ignoreCache' => true))) {
 			throw new Q_Exception_MissingRow(array(
 				'table' => 'user',
 				'criteria' => 'id = '.$user->id
@@ -1408,7 +1412,8 @@ abstract class Streams extends Base_Streams
 		$showToUserIds[""] = ($stream->readLevel >= $content_readLevel);
 
 		// Now, we update the avatars:
-		$field = ($streamName === 'Streams/user/firstName') ? 'firstName' : 'lastName';
+		$parts = explode('/', $streamName);
+		$field = end($parts);
 		$rows_that_show = array();
 		$rows_that_hide = array();
 		foreach ($showToUserIds as $userId => $show) {

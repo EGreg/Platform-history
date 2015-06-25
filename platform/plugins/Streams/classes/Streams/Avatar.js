@@ -59,10 +59,12 @@ Streams_Avatar.prototype.displayName = function _Avatar_prototype_displayName (o
 		fn2 = '<span class="Streams_firstName">'+fn+'</span>';
 		ln2 = '<span class="Streams_lastName">'+ln+'</span>';
 		u2 = '<span class="Streams_username">'+u+'</span>';
+		f2 = '<span class="Streams_username">'+fallback+'</span>';
 	} else {
 		fn2 = fn;
 		ln2 = ln;
 		u2 = u;
+		f2 = fallback;
 	}
 	if (options && options.show) {
 		var show = options.show.split('');
@@ -82,7 +84,7 @@ Streams_Avatar.prototype.displayName = function _Avatar_prototype_displayName (o
 	} else if (!fn && ln) {
 		return u ? u2 + ' ' + ln2 : ln2;
 	} else {
-		return u ? u2 : fallback;
+		return u ? u2 : f2;
 	}
 };
 

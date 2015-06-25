@@ -51,7 +51,7 @@ function Streams_form_tool($options)
 				'field' => $field[2],
 				'type' => $field[3],
 				'attributes' => isset($field[4]) ? $field[4] : array(),
-				'attributes' => isset($field[5]) ? $field[5] : array(),
+				'value' => isset($field[5]) ? $field[5] : array(),
 				'options' => isset($field[6]) ? $field[6] : null,
 				'params' => isset($field[7]) ? $field[7] : null,
 			);

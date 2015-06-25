@@ -203,7 +203,7 @@ Q.Tool.define("Users/avatar", function(options) {
 						inplaceType: 'text',
 						inplace: {
 							bringToFront: f,
-							placeholder: 'Your '+vName.substr(0, 4)+' name',
+							placeholder: 'Your '+vName.substr(0, vName.length-4)+' name',
 							staticHtml: f.innerHTML
 						}
 					}, state.inplaces);
