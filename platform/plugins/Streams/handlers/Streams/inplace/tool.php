@@ -68,6 +68,10 @@ function Streams_inplace_tool($options)
 		if (!isset($options['classes'])) {
 			$options['classes'] = '';
 		}
+		Q_Response::setToolOptions(array(
+			'publisherId' => $stream->publisherId,
+			'streamName' => $stream->name
+		));
 		$staticClass = ($options['inplaceType'] === 'textarea')
 			? 'Q_inplace_tool_blockstatic'
 			: 'Q_inplace_tool_static';

@@ -3951,7 +3951,6 @@ function _loadToolScript(toolElement, callback, shared, parentPipe) {
 				Q.Tool.onMissingConstructor.handle(_qtc, toolName);
 				toolFunc = _qtc[toolName];
 				if (typeof toolFunc !== 'function') {
-					console.warn("Q.Tool.loadScript: Missing tool constructor for " + toolName);
 					toolFunc = function () { console.log("Missing tool constructor for " + toolName); }; 
 				}
 			}
@@ -3962,7 +3961,6 @@ function _loadToolScript(toolElement, callback, shared, parentPipe) {
 			Q.Tool.onMissingConstructor.handle(_qtc, toolName);
 			toolFunc = _qtc[toolName];
 			if (typeof toolFunc !== 'function' && typeof toolFunc !== 'string') {
-				console.warn("Q.Tool.loadScript: Missing tool constructor for " + toolName);
 				toolFunc = function () {
 					console.log("Missing tool constructor for " + toolName);
 				}; 
@@ -4517,14 +4515,14 @@ Q.Page.beforeUnload = Q.Event.factory(null, [""]);
  * Use this function to set handlers for when the page is loaded or unloaded.
  * @static
  * @method page
- * @param page {String} "$Module/$action" or a more specific URI string, or "" to handle all pages
- * @param handler {Function} A function to run after the page loaded.
+ * @param {String} page "$Module/$action" or a more specific URI string, or "" to handle all pages
+ * @param {Function} handler A function to run after the page loaded.
  *  If the page is already currently loaded (i.e. it is the latest loaded page)
  *  then the handler is run right away.
  *  The handler can optionally returns another function, which will be run when the page is unloaded.
  *  After a page is unloaded, all the "unloading" handlers added in this way are removed, so that
  *  the next time the "loading" handlers run, they don't create duplicate "unloading" handlers.
- * @param key {String} Use this to identify the entity setting the handler, e.g. "Users/authorize".
+ * @param {String} key Use this to identify the entity setting the handler, e.g. "Users/authorize".
  *  If the key is undefined, it will be automatically set to "Q". To force no key, pass null here.
  *  Since "loading" handlers are not automatically removed, they can accumulate if the key was null.
  *  For example, if an AJAX call would execute Javascript such as Q.page(uri, handler, null),
@@ -8923,18 +8921,22 @@ Q.Pointer = {
 	 * @method hint 
 	 * @param {Element|Object|Array} elementsOrPoints Indicates where to display the hint. A point should contain properties "x" and "y". Can also be an array of elements or points.
 	 * @param {Object} [options] possible options, which can include:
-	 * @param {String} [options.src] the url of the image
+	 * @param {String} [options.src] the url of the hint pointer image
 	 * @param {Point} [options.hotspot={x:0.5,y:0.3}] "x" and "y" represent the location of the hotspot within the image, using fractions between 0 and 1
 	 * @param {String} [options.width="200px"]
 	 * @param {String} [options.height="200px"]
 	 * @param {Integer} [options.zIndex=99999]
 	 * @param {Boolean} [option.dontStopBeforeShown=false] Don't let Q.Pointer.stopHints stop this hint before it's shown.
 	 * @param {Boolean} [options.dontRemove=false] Pass true to keep current hints displayed
-	 * @param {Integer} [options.show.delay=500]
-	 * @param {Integer} [options.show.duration=500]
-	 * @param {Integer} [options.show.initialScale=2]
+	 * @param {String} [options.audio.src] Can be used to play an audio file.
+	 * @param {String} [options.audio.from=0] Number of seconds inside the audio to start playing the audio from. Make sure audio is longer than this.
+	 * @param {String} [options.audio.until] Number of seconds inside the audio to play the audio until. Make sure audio is longer than this.
+	 * @param {String} [options.audio.removeAfterPlaying] Whether to remove the audio object after playing
+	 * @param {Integer} [options.show.delay=500] How long to wait after the function call (or after audio file has loaded and starts playing, if one was specified) before showing the hint animation
+	 * @param {Integer} [options.show.initialScale=10] The initial scale of the hint pointer image in the show animation
+	 * @param {Integer} [options.show.duration=500] The duration of the hint show animation
 	 * @param {Function} [options.show.ease=Q.Animation.ease.smooth]
-	 * @param {Integer} [options.hide.duration=500]
+	 * @param {Integer} [options.hide.duration=500] The duration of the hint hide animation
 	 * @param {Function} [options.hide.ease=Q.Animation.ease.smooth]
 	 */
 	hint: function (elementsOrPoints, options) {
@@ -8978,14 +8980,25 @@ Q.Pointer = {
 		imgs.push(img);
 		body.appendChild(img);
 		if (img.complete) {
-			_update();
+			_prepare();
 		} else {
-			img.onload = _update;
+			img.onload = _prepare;
 		}
 		if (!Q.Pointer.hint.addedListeners) {
 			Q.addEventListener(window, Q.Pointer.start, Q.Pointer.stopHints);
 			Q.addEventListener(document, 'scroll', Q.Pointer.stopHints);
 			Q.Pointer.hint.addedListeners = true;
+		}
+		function _prepare() {
+			var a = options.audio || {};
+			if (a.src) {
+				Q.audio(a.src, function () {
+					this.play(a.from || 0, a.until, a.removeAfterPlaying);
+					_update();
+				});
+			} else {
+				_update();
+			}
 		}
 		function _update() {
 			img.timeout = setTimeout(function () {
@@ -9623,36 +9636,48 @@ Q.prompt = function(message, callback, options) {
 };
 
 /**
- * Q.Audio objects facilitate audio functionality on various browsers
+ * Q.Audio objects facilitate audio functionality on various browsers.
+ * Please do not create them directly, but use the Q.audio function.
  * @class Q.Audio
  * @constructor
  * @param {String} url the url of the audio to load
  */
-Q.Audio = function (url, callback) {
+Q.Audio = function (url) {
 	if (this === window) {
 		throw new Q.Error("Please call Q.Audio with the keyword new");
 	}
+	var t = this;
+	this.src = url = Q.url(url);
 	var container = document.getElementById('Q-audio-container');
 	if (!container) {
 		container = document.createElement('div');
 		container.setAttribute('id', 'Q-audio-container');
 		container.style.display = 'none';
 		document.body.appendChild(container);
-	}	
+	}
 	this.container = container;
 	var audio = this.audio = document.createElement('audio');
-	audio.setAttribute('src', Q.url(url));
+	audio.setAttribute('src', url);
 	audio.setAttribute('preload', 'auto');
+	function _handler(e) {
+		var event = (e.type === 'canplay' ? Aup.onCanPlay : (
+			(e.type === 'canplaythrough' ? Aup.onCanPlayThrough : Aup.onEnded)
+		));
+		event.handle.call(t, [e]);
+	}
 	Q.addEventListener(audio, {
-		'playthrough': this.onCanPlayThrough.handle,
-		'ended': this.onEnded.handle
+		'canplay': _handler,
+		'canplaythrough': _handler,
+		'ended': _handler
 	});
 	container.appendChild(audio); // some browsers load the file immediately
+	audio.load(); // others need this
 	Q.Audio.collection[url] = this;
 };
 Q.Audio.collection = {};
 
 var Aup = Q.Audio.prototype;
+Aup.onCanPlay = new Q.Event();
 Aup.onCanPlayThrough = new Q.Event();
 Aup.onEnded = new Q.Event();
 
@@ -9670,27 +9695,27 @@ Aup.play = function (from, until, removeAfterPlaying) {
 	if (from > until) {
 		throw new Q.Error("Audio.prototype.play: from can't be greater than until");
 	}
+	if (!a.readyState) {
+		return false;
+	}
 	if (removeAfterPlaying) {
 		t.onEnded.set(function () {
+			delete Q.Audio.collection[t.src];
 			container.removeChild(t.audio);
 			t.onEnded.remove('Q.Audio');
 		}, 'Q.Audio');
 	}
 	t.playing = true;
 	t.paused = false;
-	a.load(); // some browsers like Safari need this
-	Q.addEventListener(a, 'canplaythrough', startPlaying);
-	function startPlaying() {
-		if (a.readyState > 0 && a.currentTime != from) {
-			a.currentTime = from;
-		}
-		if (until) {
-			setTimeout(function Q_Audio_play_pause() {
-				a.pause();
-			}, (until-from)*1000);
-		}
-		a.play();
+	if (a.currentTime != from) {
+		a.currentTime = from;
 	}
+	if (until) {
+		setTimeout(function Q_Audio_play_pause() {
+			a.pause();
+		}, (until-from)*1000);
+	}
+	a.play();
 	return t;
 };
 
@@ -9717,6 +9742,31 @@ Q.Audio.pauseAll = function () {
 		Q.Audio.collection[url].pause();
 	}
 };
+
+/**
+ * @class Q
+ */
+
+/**
+ * Loads an audio file and calls the callback when it's ready to play
+ * @static
+ * @method audio
+ * @param {String} url 
+ * @param {Function} handler A function to run after the audio is ready to play
+ * @param {Object} [options={}] Can be one of the following options
+ * @param {Boolean} [options.canPlayThrough=true] Whether to wait until the audio can play all the way through before calling the handler.
+ */
+Q.audio = Q.getter(function _Q_audio(url, handler, options) {
+	url = Q.url(url);
+	var audio = Q.Audio.collection[url]
+		? Q.Audio.collection[url]
+		: new Q.Audio(url);
+	if (options && options.canPlayThrough === false) {
+		audio.onCanPlay.add(handler);
+	} else {
+		audio.onCanPlayThrough.add(handler);
+	}
+});
 
 /**
  * Methods for temporarily covering up certain parts of the screen with masks
