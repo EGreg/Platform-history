@@ -96,6 +96,9 @@ function _Q_clickable(o) {
 	
 	setTimeout(function _clickify() {
 		if (!$this.is(':visible')) {
+			if (!$this.closest('body').length) {
+				return;
+			}
 			if (timing.waitingPeriod
 			&& Date.now() - originalTime >= timing.waitingPeriod) {
 				return;
