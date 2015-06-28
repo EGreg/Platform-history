@@ -331,8 +331,9 @@ function _Q_clickable(o) {
 					triggers[0].restoreSelections(true);
 				}
 			
-				$(window).off([Q.Pointer.end, '.Q_clickable']);
-				$(window).off('release.Q_clickable');
+				$(window).add(triggers)
+					.off([Q.Pointer.end, '.Q_clickable'])
+					.off('release.Q_clickable');
 				Q.handle($this.state('Q/clickable').onRelease, $this, [evt, overElement, triggers]);
 			};
 			function scale(factor) {
