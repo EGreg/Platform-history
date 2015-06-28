@@ -385,7 +385,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 					state.$trigger.css({
 						left: left + 'px',
 						top: top + 'px',
-						position: $drawer.css('position')
+						position: state.fullscreen ? 'fixed' : 'absolute'
 					});
 				} else {
 					state.$trigger.hide();
@@ -515,7 +515,8 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 			var columns = this.Q("Q/columns");
 			if (columns) {
 				if (columns.state.currentIndex != columnIndex
-				&& state.$pinnedElement) {
+				&& state.$pinnedElement
+				&& state.behind[state.currentIndex]) {
 					state.$pinnedElement
 					.add(state.$trigger).hide();
 				}
