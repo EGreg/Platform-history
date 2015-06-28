@@ -152,7 +152,7 @@ Q.Tool.define("Streams/interests", function (options) {
 					});
 				}, {subscribe: true});
 			});
-		var $unlisted = $('<div id="Streams_interests_unlisted" />')
+		var $unlisted = $('<div />')
 			.addClass("Streams_interests_unlisted")
 			.append($unlisted1, $unlisted2)
 			.append(
@@ -160,7 +160,8 @@ Q.Tool.define("Streams/interests", function (options) {
 					$unlistedTitle.attr('data-category', 'Unlisted')
 				)
 			).append($select)
-			.appendTo(tool.element).hide();
+			.appendTo(tool.element)
+			.hide();
 		
 		$(tool.element)
 		.on(Q.Pointer.fastclick, 'span.Streams_interest_title', function () {
@@ -225,6 +226,7 @@ Q.Tool.define("Streams/interests", function (options) {
 				$this.val('');
 			}
 			var val = $this.val().toLowerCase();
+			if (!val) return;
 			var len = val.length;
 			var existing = {};
 			var image = val ? 'clear' : 'filter';
