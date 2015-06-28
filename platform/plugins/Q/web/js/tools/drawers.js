@@ -384,7 +384,8 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 						- state.$trigger.height() / 2;
 					state.$trigger.css({
 						left: left + 'px',
-						top: top + 'px'
+						top: top + 'px',
+						position: $drawer.css('position')
 					});
 				} else {
 					state.$trigger.hide();
@@ -515,15 +516,15 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 			if (columns) {
 				if (columns.state.currentIndex != columnIndex
 				&& state.$pinnedElement) {
-					state.$pinnedElement.hide();
-					state.$trigger.hide();
+					state.$pinnedElement
+					.add(state.$trigger).hide();
 				}
 				columns.state.beforeOpen.set(function (options, index) {
 					if (index !== columnIndex
 					&& state.$pinnedElement
 					&& state.behind[state.currentIndex]) {
-						state.$pinnedElement.hide();
-						state.$trigger.hide();
+						state.$pinnedElement
+						.add(state.$trigger).hide();
 					}
 				}, tool);
 				columns.state.onClose.set(function () {
@@ -531,8 +532,8 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 					if (index === columnIndex
 					&& state.$pinnedElement
 					&& state.behind[state.currentIndex]) {
-						state.$pinnedElement.show();
-						state.$trigger.show();
+						state.$pinnedElement
+						.add(state.$trigger).show();
 					}
 				}, tool);
 				return false;
