@@ -1919,9 +1919,11 @@ Evp.or = function _Q_Event_prototype_or(anotherEvent, key, anotherKey) {
 Evp.and = function _Q_Event_prototype_and(anotherEvent, key, anotherKey) {
 	var newEvent = new Q.Event();
 	if (!anotherEvent) {
-		return newEvent();
+		return Q.copy(this);
 	}
 	var event = this;
+	newEvent.occurred = event.occurred && anotherEvent.occurred;
+	newEvent.occurring = event.occurring || anotherEvent.occurring;
 	function _Q_Event_and_wrapper() {
 		if ((event.occurred || event.occurring)
 		 && (anotherEvent.occurred || anotherEvent.occurring)) {
@@ -8940,24 +8942,27 @@ Q.Pointer = {
 	 * @param {Function} [options.hide.ease=Q.Animation.ease.smooth]
 	 */
 	hint: function (elementsOrPoints, options) {
-		var img, i, l;
 		options = options || {};
+		var img, i, l;
+		var imageEvent = options.imageEvent || new Q.Event();
+		var audioEvent = options.audioEvent || new Q.Event();
 		if (Q.isArray(elementsOrPoints)) {
 			for (i=0, l=elementsOrPoints.length; i<l; ++i) {
-				Q.Pointer.hint(
-					elementsOrPoints[i],
-					Q.extend({}, options, {
-						dontRemove: i ? true : options.dontRemove
-					})
-				);
+				var o = Q.copy(options);
+				o.audio = (i===0) ? options.audio : null;
+				o.waitForEvents = (i > 0);				
+				o.imageEvent = imageEvent;
+				o.audioEvent = audioEvent;
+				Q.Pointer.hint(elementsOrPoints[i], o);
 			}
 			return;
 		}
+		var hintEvent = imageEvent.and(audioEvent);;
 		var elementOrPoint = elementsOrPoints;
 		var o = Q.extend({}, Q.Pointer.hint.options, 10, options);
 		var body = document.getElementsByTagName('body')[0];
 		var imgs = Q.Pointer.hint.imgs;
-		if (!options.dontRemove) {
+		if (!options.dontRemove && !options.waitForEvents) {
 			for (i=0, l=imgs.length; i<l; ++i) {
 				img = imgs[i];
 				if (img.parentNode) {
@@ -8979,28 +8984,7 @@ Q.Pointer = {
 		img.dontStopBeforeShown = o.dontStopBeforeShown;
 		imgs.push(img);
 		body.appendChild(img);
-		if (img.complete) {
-			_prepare();
-		} else {
-			img.onload = _prepare;
-		}
-		if (!Q.Pointer.hint.addedListeners) {
-			Q.addEventListener(window, Q.Pointer.start, Q.Pointer.stopHints);
-			Q.addEventListener(document, 'scroll', Q.Pointer.stopHints);
-			Q.Pointer.hint.addedListeners = true;
-		}
-		function _prepare() {
-			var a = options.audio || {};
-			if (a.src) {
-				Q.audio(a.src, function () {
-					this.play(a.from || 0, a.until, a.removeAfterPlaying);
-					_update();
-				});
-			} else {
-				_update();
-			}
-		}
-		function _update() {
+		hintEvent.add(Q.once(function _hintReady() {
 			img.timeout = setTimeout(function () {
 				var point;
 				img.timeout = null;
@@ -9038,6 +9022,28 @@ Q.Pointer = {
 					}
 				}, o.show.duration, o.show.ease);
 			}, o.show.delay);
+		}));
+		if (!Q.Pointer.hint.addedListeners) {
+			Q.addEventListener(window, Q.Pointer.start, Q.Pointer.stopHints);
+			Q.addEventListener(document, 'scroll', Q.Pointer.stopHints);
+			Q.Pointer.hint.addedListeners = true;
+		}
+		if (options.waitForEvents) {
+			return;
+		}
+		if (img.complete) {
+			imageEvent.handle();
+		} else {
+			img.onload = imageEvent.handle;
+		}
+		var a = options.audio || {};
+		if (a.src) {
+			Q.audio(a.src, function () {
+				this.play(a.from || 0, a.until, a.removeAfterPlaying);
+				audioEvent.handle();
+			});
+		} else if (!options.waitForEvents) {
+			audioEvent.handle();
 		}
 	},
 	/**
