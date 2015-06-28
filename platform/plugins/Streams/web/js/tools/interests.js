@@ -226,7 +226,6 @@ Q.Tool.define("Streams/interests", function (options) {
 				$this.val('');
 			}
 			var val = $this.val().toLowerCase();
-			if (!val) return;
 			var len = val.length;
 			var existing = {};
 			var image = val ? 'clear' : 'filter';
@@ -268,6 +267,27 @@ Q.Tool.define("Streams/interests", function (options) {
 						}
 					}
 				});
+				
+				var count = 0;
+				$select.empty();
+				Q.each(Interests.all[state.communityId], function (category) {
+					if (existing[category]) {
+						return;
+					}
+					$('<option />', { value: category })
+					.html(category)
+					.appendTo($select);
+					++count;
+				});
+				if (count) {
+					$unlistedTitle.text(val.toCapitalized());
+					$('<option value="" selected="selected" disabled="disabled" />')
+						.html('Add under category...')
+						.prependTo($select);
+					$unlisted.show();
+				} else {
+					$unlisted.hide();
+				}
 			} else if (lastVal) {
 				if (!revealingNewInterest) {
 					$('.Q_expandable_tool').show().each(function () {
@@ -277,27 +297,6 @@ Q.Tool.define("Streams/interests", function (options) {
 				$('.Q_expandable_tool h3').show();
 				$('.Streams_interest_sep').html(', ');
 				$('.Q_expandable_content span').show();
-				$unlisted.hide();
-			}
-			
-			var count = 0;
-			$select.empty();
-			Q.each(Interests.all[state.communityId], function (category) {
-				if (existing[category]) {
-					return;
-				}
-				$('<option />', { value: category })
-				.html(category)
-				.appendTo($select);
-				++count;
-			});
-			if (count) {
-				$unlistedTitle.text($this.val().toCapitalized());
-				$('<option value="" selected="selected" disabled="disabled" />')
-					.html('Add under category...')
-					.prependTo($select);
-				$unlisted.show();
-			} else {
 				$unlisted.hide();
 			}
 		
