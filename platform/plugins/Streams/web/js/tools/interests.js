@@ -60,7 +60,8 @@ Q.Tool.define("Streams/interests", function (options) {
 	}
 
 	var src = 'action.php/Streams/interests';
-	Q.addScript(Q.url(src, {communityId: state.communityId}, {cacheBust: state.cacheBust}),
+	var criteria = { communityId: state.communityId };
+	Q.addScript(Q.url(src, criteria, { cacheBust: state.cacheBust }),
 	function () {	
 		var categories = Object.keys(Interests.all[state.communityId]);
 		p.add(categories.concat(['my']), 1, function () {

@@ -7885,14 +7885,16 @@ Ap.rewind = function _Q_Animation_prototype_rewind() {
  * Render the current frame of the animation
  * @method render
  */
-Ap.render = function _Q_Animation_prototype_rewind() {
+Ap.render = function _Q_Animation_prototype_render() {
 	var anim = this;
 	var ms = Q.milliseconds();
 	requestAnimationFrame(function () {
 		var _milliseconds = anim.milliseconds || 0;
-		anim.milliseconds += Q.milliseconds() - ms;
+		var qm = Q.milliseconds();
+		anim.elapsed = qm - anim.started;
+		anim.milliseconds += qm - ms;
 		anim.sinceLastFrame = anim.milliseconds - _milliseconds;
-		var x = anim.position = anim.milliseconds / anim.duration;
+		var x = anim.position = anim.elapsed / anim.duration;
 		if (x >= 1) {
 			Q.handle(anim.callback, anim, [1, anim.ease(1), anim.params]);
 			anim.onRender.stop();
@@ -7915,6 +7917,9 @@ Ap.render = function _Q_Animation_prototype_rewind() {
  */
 Ap.play = function _Q_Animation_instance_play() {
 	Q.Animation.playing[this.id] = this;
+	if (!this.playing) {
+		this.started = Q.milliseconds();
+	}
 	this.playing = true;
 	this.render();
 	return this;
