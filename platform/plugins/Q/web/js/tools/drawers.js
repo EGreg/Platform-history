@@ -516,12 +516,14 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 				if (columns.state.currentIndex != columnIndex
 				&& state.$pinnedElement) {
 					state.$pinnedElement.hide();
+					state.$trigger.hide();
 				}
 				columns.state.beforeOpen.set(function (options, index) {
 					if (index !== columnIndex
 					&& state.$pinnedElement
 					&& state.behind[state.currentIndex]) {
 						state.$pinnedElement.hide();
+						state.$trigger.hide();
 					}
 				}, tool);
 				columns.state.onClose.set(function () {
@@ -530,6 +532,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 					&& state.$pinnedElement
 					&& state.behind[state.currentIndex]) {
 						state.$pinnedElement.show();
+						state.$trigger.show();
 					}
 				}, tool);
 				return false;
