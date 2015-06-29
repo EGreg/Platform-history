@@ -20,6 +20,12 @@ function Q () {
 	// not called right now
 }
 
+// external libraries, which you can override
+Q.libraries = {
+	json: "http://cdnjs.cloudflare.com/ajax/libs/json3/3.2.4/json3.min.js",
+	promise: 'plugins/Q/js/Promise.js'
+};
+
 /**
  * @module Q
  */
@@ -1585,6 +1591,8 @@ Q.ensure = function _Q_ensure(property, loader, callback) {
 		return;
 	} else if (typeof loader === 'function') {
 		loader(callback);
+	} else if (loader instanceof Q.Event) {
+		loader.add(callback);
 	}
 };
 
@@ -1793,6 +1801,7 @@ Evp.set = function _Q_Event_prototype_set(handler, key, prepend) {
  * @return {String} The key under which the handler was set
  */
 Evp.add = function _Q_Event_prototype_add(handler, key, prepend) {
+	var event = this;
 	var ret = this.set(handler, key, prepend);
 	if (this.occurred || this.occurring) {
 		Q.handle(handler, this.lastContext, this.lastArgs);
@@ -3345,7 +3354,10 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 		methods = stateKeys;
 		stateKeys = undefined;
 	}
-	Q.onJQuery.add(function ($) {
+	Q.ensure(window.jQuery, Q.onJQuery.add, _onJQuery);
+	Q.Tool.latestName = name;
+	function _onJQuery() {
+		var $ = window.jQuery;
 		function jQueryPluginConstructor(options /* or methodName, argument1, argument2, ... */) {
 			if (typeof options === 'string') {
 				var method = options;
@@ -3393,8 +3405,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 				$te.plugin.apply($te, args);
 			};
 		});
-	});
-	Q.Tool.latestName = name;
+	}
 };
 
 /**
@@ -4607,11 +4618,7 @@ Q.init = function _Q_init(options) {
 		}
 
 		function _getJSON() {
-			if (window.JSON) {
-				_ready();
-			} else {
-				Q.addScript(Q.init.jsonLibraryUrl, _ready);
-			}
+			Q.ensure(window.JSON, Q.libraries.json, _ready);
 		}
 
 		if (options && options.isLocalFile) {
@@ -4675,7 +4682,6 @@ Q.init = function _Q_init(options) {
 	
 	_waitForDeviceReady();
 };
-Q.init.jsonLibraryUrl = "http://cdnjs.cloudflare.com/ajax/libs/json3/3.2.4/json3.min.js";
 
 /**
  * This is called when the DOM is ready
