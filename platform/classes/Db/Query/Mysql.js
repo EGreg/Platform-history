@@ -162,6 +162,7 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 		}
 		function _queryShard (query, shardName, cb) {
 			query.getSQL(function (sql, client) {
+				Db.emit('execute', query, sql, client);
 				function _doTheQuery () {
 					var a = arguments;
 					_queryClient(sql, client, function (err) {
