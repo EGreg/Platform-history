@@ -229,9 +229,15 @@ Streams.onError = new Q.Event(function (err, data) {
 }, 'Streams.onError');
 
 /**
+ * This event is fired when a dialog is presented to a newly invited user.
+ * @event onInvitedDialog
+ */
+Streams.onInvitedDialog = new Q.Event();
+
+/**
  * This event is fired when the invited user takes the first action after
  * entering their name. It is a good time to start playing any audio, etc.
- * @event onError
+ * @event onInvitedUserAction
  */
 Streams.onInvitedUserAction = new Q.Event();
 
@@ -3305,6 +3311,7 @@ Q.onInit.add(function _Streams_onInit() {
 						}
 					},
 					onActivate: {'Streams.completeInvited': function _Streams_completeInvited() {
+						Streams.onInvitedDialog.handle.call(Streams, [dialog]);
 						var l = Q.text.Users.login;
 						dialog.find('#Streams_login_username')
 							.attr('maxlength', l.maxlengths.fullName)
@@ -3318,7 +3325,6 @@ Q.onInit.add(function _Streams_onInit() {
 								$input.plugin('Q/clickfocus');
 							}, 100);
 						}
-						var _userAction = false;
 						var $complete_form = dialog.find('form')
 						.validator()
 						.submit(function(e) {
@@ -3360,21 +3366,16 @@ Q.onInit.add(function _Streams_onInit() {
 									'Streams/user/lastName', p.fill('last'), params
 								);
 							}, {method: "post", quietly: true, baseUrl: baseUrl});
-						}).on('submit keydown', function (e) {
+						}).on('submit keydown', Q.debounce(function (e) {
 							if (e.type === 'keydown'
 							&& (e.keyCode || e.which) !== 13) {
 								return;
 							}
-							if (_userAction) return;
-							_userAction = true;
-							setTimeout(function () {
-								_userAction = false;
-							}, 0);
 							var val = dialog.find('#Streams_login_username').val();
 							Streams.onInvitedUserAction.handle.call(
 								[val, dialog]
 							);
-						});
+						}, 0));
 						$('button', $complete_form).on('touchstart', function () {
 							$(this).submit();
 						});
