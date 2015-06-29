@@ -8988,11 +8988,14 @@ Q.Pointer = {
 		img.hide = o.hide;
 		img.dontStopBeforeShown = o.dontStopBeforeShown;
 		imgs.push(img);
+		if (elementOrPoint instanceof Element) {
+			img.hintElement = elementOrPoint;
+		}
 		body.appendChild(img);
 		hintEvent.add(Q.once(function _hintReady() {
 			img.timeout = setTimeout(function () {
 				var point;
-				img.timeout = null;
+				img.timeout = false;
 				if (elementOrPoint instanceof Element) {
 					if (!elementOrPoint.isVisible()) {
 						if (img.parentNode) {
@@ -9044,6 +9047,7 @@ Q.Pointer = {
 		var a = options.audio || {};
 		if (a.src) {
 			Q.audio(a.src, function () {
+				img.audio = this;
 				this.play(a.from || 0, a.until, a.removeAfterPlaying);
 				audioEvent.handle();
 			});
@@ -9054,16 +9058,25 @@ Q.Pointer = {
 	/**
 	 * Stops any hints that are currently being displayed
 	 * @static
-	 * @method hint 
+	 * @method stopHints
+	 * @param {HTMLElement} [container] If provided, only hints for elements in this container are stopped.
 	 */
-	stopHints: function () {
+	stopHints: function (container) {
 		var imgs = Q.Pointer.hint.imgs;
 		var imgs2 = [];
 		Q.each(imgs, function () {
 			var img = this;
-			if (img.timeout && img.dontStopBeforeShown) {
+			var outside = (
+				container instanceof Element
+				&& !container.isOrContains(img.hintElement)
+			);
+			if ((img.timeout !== false && img.dontStopBeforeShown)
+			|| outside) {
 				imgs2.push(img);
 				return;
+			}
+			if (img.audio) {
+				img.audio.pause();
 			}
 			clearTimeout(img.timeout);
 			img.timeout = null;

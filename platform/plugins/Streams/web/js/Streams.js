@@ -589,6 +589,11 @@ Streams.create.onError = new Q.Event();
  */
 Streams.construct = function _Streams_construct(fields, extra, callback) {
 
+	if (typeof extra === 'function') {
+		callback = extra;
+		extra = null;
+	}
+
 	if (Q.typeOf(fields) === 'Q.Streams.Stream') {
 		Q.handle(callback, fields, [null, fields]);
 		return false;
@@ -597,11 +602,6 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 	if (Q.isEmpty(fields)) {
 		Q.handle(callback, this, ["Streams.Stream constructor: fields are missing"]);
 		return false;
-	}
-	
-	if (typeof extra === 'function') {
-		callback = extra;
-		extra = null;
 	}
 
 	var type = Q.normalize(fields.type);
@@ -3318,6 +3318,7 @@ Q.onInit.add(function _Streams_onInit() {
 								$input.plugin('Q/clickfocus');
 							}, 100);
 						}
+						var _userAction = false;
 						var $complete_form = dialog.find('form')
 						.validator()
 						.submit(function(e) {
@@ -3364,6 +3365,11 @@ Q.onInit.add(function _Streams_onInit() {
 							&& (e.keyCode || e.which) !== 13) {
 								return;
 							}
+							if (_userAction) return;
+							_userAction = true;
+							setTimeout(function () {
+								_userAction = false;
+							}, 0);
 							var val = dialog.find('#Streams_login_username').val();
 							Streams.onInvitedUserAction.handle.call(
 								[val, dialog]
