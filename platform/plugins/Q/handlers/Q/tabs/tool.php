@@ -16,7 +16,7 @@
  *  @param {boolean} [options.compact=false] Display the tabs interface in a compact space with a contextual menu
  *  @param {string} [options.overflow] Override the text that is displayed when the tabs overflow. You can interpolate {{count}}, {{text}} or {{html}} in the string. 
  *  @param {string} [options.overflowGlyph] Override the glyph that appears next to the overflow text. You can interpolate {{count}} here
- *  @param {string} [options.defaultTab] Here you can specify the name of the tab to show by default
+ *  @param {string} [options.defaultTabName] Here you can specify the name of the tab to show by default
  *  @param {string} [options.selectors] Array of (slotName => selector) pairs, where the values are CSS style selectors indicating the element to update with javascript, and can be a parent of the tabs. Set to null to reload the page.
  *  @param {string} [options.slot] The name of the slot to request when changing tabs with javascript.
  *  @param {string} [options.classes] An associative array of the form name => classes, for adding classes to tabs
@@ -39,9 +39,9 @@ function Q_tabs_tool($options)
 	if (!isset($tabs)) {
 		return '';
 	}
-	if (!isset($defaultTab)) {
+	if (!isset($defaultTabName)) {
 		reset($tabs);
-		$defaultTab = key($tabs);
+		$defaultTabName = key($tabs);
 	}
 	/**
 	 * @var array $tabs
@@ -103,7 +103,7 @@ function Q_tabs_tool($options)
 		));
 	}
 	Q_Response::setToolOptions(compact(
-		'selectors', 'slot', 'urls', 'defaultTab',
+		'selectors', 'slot', 'urls', 'defaultTabName',
 		'vertical', 'compact', 'overflow', 'overflowGlyph',
 		'field', 'loader', 'beforeSwitch', 'beforeScripts', 'onActivate'
 	));

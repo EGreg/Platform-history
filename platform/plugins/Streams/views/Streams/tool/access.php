@@ -12,7 +12,7 @@
 			'admin'  => 'basic32 basic32_group Streams_access_read_admin'
 		),
 		'slot'      => array('controls', 'extra'),
-		'defaultTab' => 'read'
+		'defaultTabName' => 'read'
 	)) ?> 
 	<div class="Streams_access_controls Q_tabbed Q_document_surface">
 <?php endif; ?>

@@ -34,7 +34,7 @@ Q.Tool.define("Q/tabs", function(options) {
 	
 	Q.addStylesheet('plugins/Q/css/tabs.css');
 
-	state.defaultTab = state.defaultTab || Q.firstKey(options.tabs);
+	state.defaultTabName = state.defaultTabName || Q.firstKey(options.tabs);
 	
 	// catches events that bubble up from any child elements
 	$te.on([Q.Pointer.fastclick, '.Q_tabs'], '.Q_tabs_tab', function () {
@@ -167,15 +167,16 @@ Q.Tool.define("Q/tabs", function(options) {
 
 	/**
 	 * @method indicateCurrent
-	 * @param {String} tab optional name of the tab to indicate
+	 * @param {String} [tab] a possible tab the caller requested to indicate as current
 	 */
 	indicateCurrent: function (tab) {
 		var name;
+		var tool = this;
+		var state = tool.state;
 		if (typeof tab === 'string') {
 			name = tab;
 			tab = null;
 		}
-		var tool = this;
 		if (!$(tool.element).closest('body').length) {
 			// the replaced html probably included the tool's own element,
 			// so let's find something with the same id on the page
@@ -185,6 +186,34 @@ Q.Tool.define("Q/tabs", function(options) {
 			});
 			return;
 		}
+		
+		tool.$tabs.each(function (k, t) {
+			var tdn = tool.getName(t);
+			if (state.defaultTabName === tdn) {
+				state.defaultTab = t;
+				return false;
+			}
+		});
+
+		tab = tool.getCurrentTab.call(tool, tab);
+		
+		tool.$tabs.removeClass('Q_current');
+		$(tab).addClass('Q_current');
+		state.tab = tab;
+		state.tabName = name || tool.getName(tab);
+		state.onCurrent.handle.call(tool, tab, name);
+	},
+	
+	/**
+	 * Called by indicateCurrentTab. You can override this function to provide your
+	 * own mechanisms for indicating the current tab and returning it.
+	 * @method getCurrentTab
+	 * @param {String} [tab] a possible tab the caller requested to indicate as current
+	 * @return {Element} The current tab element.
+	 */
+	getCurrentTab: function (tab) {
+		var tool = this;
+		var state = tool.state;
 		var $tabs = tool.$tabs;
 		var url = location.hash.queryField('url');
 		if (url === undefined) {
@@ -193,8 +222,7 @@ Q.Tool.define("Q/tabs", function(options) {
 			url = Q.url(url);
 		}
 		var state = tool.state;
-		var defaultTab = null;
-		$tabs.removeClass('Q_current');
+		var defaultTabName = null;
 		if (!tab) {
 			$tabs.each(function (k, t) {
 				var tdn = tool.getName(t);
@@ -205,18 +233,15 @@ Q.Tool.define("Q/tabs", function(options) {
 					tab = t;
 					return false;
 				}
-				if (state.defaultTab === tdn) {
-					defaultTab = t;
+				if (state.defaultTabName === tdn) {
+					defaultTabName = t;
 				}
 			});
 		}
 		if (!tab) {
-			tab = defaultTab;
+			tab = defaultTabName;
 		}
-		$(tab).addClass('Q_current');
-		state.tabName = name || tool.getName(tab);
-		state.tab = tab;
-		state.onCurrent.handle.call(tool, tab, name);
+		return tab;
 	},
 	
 	/**
