@@ -63,6 +63,7 @@ Q.Tool.define("Q/tabs", function(options) {
 	}, tool);
 	
 	tool.refresh(_showTabs);
+	state.onActivate.handle.call(tool, state.tab, tool.getName(state.tab));
 	
 },
 

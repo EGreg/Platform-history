@@ -35,31 +35,11 @@ Q.Tool.define("Q/columns", function(options) {
 	var state = tool.state;
 	options = options || {};
 
-	state.max = 0;
-	state.columns = [];
-	state.data = [];
 	//state.triggers = [];
 	
 	Q.addStylesheet('plugins/Q/css/columns.css');
 
-	state.container = tool.$('.Q_columns_container')[0];
-	if (!state.container) {
-		state.container = document.createElement('div')
-			.addClass('Q_columns_container Q_clearfix');
-		tool.element.appendChild(this.state.container);
-	} else {
-		tool.$('.Q_columns_column').each(function (index) {
-			state.columns.push(this);
-			$(this).data(dataKey_index, index)
-				.data(dataKey_scrollTop, Q.Pointer.scrollTop());
-			++state.max;
-			tool.open({
-				title: undefined,
-				column: undefined,
-				animation: {duration: 0}
-			}, index, null, true);
-		});
-	}
+	prepareColumns(tool);
 
 	var selector = '.Q_close';
 	if (Q.info.isMobile && state.back.triggerFromTitle) {
@@ -259,9 +239,9 @@ Q.Tool.define("Q/columns", function(options) {
 		
 		if (o.template) {
 			Q.Template.render(o.template, function (err, html) {
-				var element = $('<div />').html(html);
-				o.title = $('.title_slot', element).html();
-				o.column = $('.column_slot', element).html();
+				var $element = $('<div />').html(html);
+				o.title = $element.find('.title_slot').html();
+				o.column = $element.find('.column_slot').html();
 				_open();
 			});
 		} else {
@@ -624,6 +604,7 @@ Q.Tool.define("Q/columns", function(options) {
 			Q.replace(this.element, incomingElement);
 			var tool = this;
 			setTimeout(function () {
+				prepareColumns(tool);
 				tool.refresh();
 			}, 0);
 		}
@@ -654,6 +635,31 @@ function presentColumn(tool) {
 		} else {
 			$cs.css('min-height', heightToBottom);
 		}
+	}
+}
+
+function prepareColumns(tool) {
+	var state = tool.state;
+	state.max = 0;
+	state.data = [];
+	state.container = tool.$('.Q_columns_container')[0];
+	if (!state.container) {
+		state.container = document.createElement('div')
+			.addClass('Q_columns_container Q_clearfix');
+		tool.element.appendChild(this.state.container);
+	} else {
+		state.columns = [];
+		tool.$('.Q_columns_column').each(function (index) {
+			state.columns.push(this);
+			$(this).data(dataKey_index, index)
+				.data(dataKey_scrollTop, Q.Pointer.scrollTop());
+			++state.max;
+			tool.open({
+				title: undefined,
+				column: undefined,
+				animation: {duration: 0}
+			}, index, null, true);
+		});
 	}
 }
 

@@ -820,12 +820,14 @@ Q.typeOf = function _Q_typeOf(value) {
 		if (value === null) {
 			return 'null';
 		}
-		if (value instanceof Array || (value.constructor && value.constructor.name === 'Array')
+		if (value instanceof Array
+		|| (value.constructor && value.constructor.name === 'Array')
 		|| Object.prototype.toString.apply(value) === '[object Array]') {
 			s = 'array';
 		} else if (typeof value.typename != 'undefined' ) {
 			return value.typename;
-		} else if (value.constructor === window.jQuery) {
+		} else if (value.constructor === window.jQuery
+		|| value.constructor === NodeList) {
 			return 'array';
 		} else if (typeof value.constructor != 'undefined'
 		&& typeof value.constructor.name != 'undefined') {
@@ -864,7 +866,7 @@ Q.typeOf = function _Q_typeOf(value) {
  */
 Q.each = function _Q_each(container, callback, options) {
 	var i, k, length, r, t, args;
-	if (typeof callback === 'string' && Q.typeOf(arguments[2]) === 'array') {
+	if (typeof callback === 'string' && Q.isArray(arguments[2])) {
 		args = arguments[2];
 		options = arguments[3];
 	}
@@ -1086,7 +1088,7 @@ Q.diff = function _Q_diff(container1, container2 /*, ... comparator */) {
 	if (typeof comparator !== 'function') {
 		throw new Q.Error("Q.diff: comparator must be a function");
 	}
-	var isArr = (Q.typeOf(container1) === 'array');
+	var isArr = Q.isArray(container1);
 	var result = isArr ? [] : {};
 	Q.each(container1, function (k, v1) {
 		var found = false;
@@ -1205,7 +1207,7 @@ Q.isPlainObject = function (x) {
  */
 Q.copy = function _Q_copy(x, fields) {
 	if (Q.typeOf(x) === 'array') {
-		return x.slice(0);
+		return Array.prototype.slice.call(x, 0);
 	}
 	if (x && typeof x.copy === 'function') {
 		return x.copy();
@@ -1302,7 +1304,7 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 			}
 			continue;
 		}
-		if (type === 'array' && Q.typeOf(arg) === 'array') {
+		if (type === 'array' && Q.isArray(arg)) {
 			target = target.concat(arg);
 		} else {
 			for (k in arg) {
@@ -1368,7 +1370,7 @@ Q.has = function _Q_has(obj, key) {
 Q.take = function _Q_take(source, fields) {
 	var result = {};
 	if (!source) return result;
-	if (Q.typeOf(fields) === 'array') {
+	if (Q.isArray(fields)) {
 		for (var i = 0; i < fields.length; ++i) {
 			if (fields[i] in source) {
 				result [ fields[i] ] = source [ fields[i] ];
@@ -2401,7 +2403,7 @@ Pp.fill = function _Q_pipe_fill(field, ignore) {
 		this.ignore[this.i] = true;
 	} else if (typeof ignore === 'string') {
 		this.ignore[ignore] = true;
-	} else if (Q.typeOf(ignore) === 'array') {
+	} else if (Q.isArray(ignore)) {
 		for (var i=0; i<ignore.length; ++i) {
 			this.ignore[ignore[i]] = true;
 		}
@@ -4897,7 +4899,7 @@ Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandl
 		eventName = params.eventName;
 	}
 
-	if (Q.typeOf(eventName) === 'array') {
+	if (Q.isArray(eventName)) {
 		for (var i=0, l=eventName.length; i<l; ++i) {
 			Q.addEventListener(element, eventName[i], eventHandler, useCapture);
 		}
@@ -4941,7 +4943,7 @@ Q.removeEventListener = function _Q_addEventListener(element, eventName, eventHa
 			eventName = split;
 		}
 	}
-	if (Q.typeOf(eventName) === 'array') {
+	if (Q.isArray(eventName)) {
 		for (var i=0, l=eventName.length; i<l; ++i) {
 			Q.removeEventListener(element, eventName[i], eventHandler);
 		}
@@ -5514,7 +5516,7 @@ Q.firstErrorMessage = function _Q_firstErrorMessage(data /*, data2, ... */) {
 			error = d.errors[0];
 		} else if (d.error) {
 			error = d.error;
-		} else if (Q.typeOf(d) === 'array') {
+		} else if (Q.isArray(d)) {
 			error = d[0];
 		} else {
 			error = d;
@@ -5832,7 +5834,7 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 		onload = function () {};
 	}
 	
-	if (Q.typeOf(src) === 'array') {
+	if (Q.isArray(src)) {
 		var srcs = [];
 		Q.each(src, function (i, src) {
 			if (!src) return;
@@ -6012,7 +6014,7 @@ Q.addStylesheet = function _Q_addStylesheet(href, media, onload, options) {
 	if (!onload) {
 		onload = function _onload() { };
 	}
-	if (Q.typeOf(href) === 'array') {
+	if (Q.isArray(href)) {
 		var ret = [];
 		var len = href.length;
 		for (i=0; i<len; ++i) {
@@ -6204,7 +6206,7 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 		filter = 'q_tool';
 	}
 	// Arrays are accepted
-	if (Q.typeOf(elem) === 'array'
+	if (Q.isArray(elem)
 	|| (typeof HTMLCollection !== 'undefined' && (elem instanceof window.HTMLCollection))
 	|| (window.jQuery && (elem instanceof jQuery))) {
 
@@ -7465,7 +7467,7 @@ Q.Template.render = function _Q_Template_render(name, fields, partials, callback
 	if (!callback) {
 		throw new Q.Error("Q.Template.render: callback is missing");
 	}
-	var isArray = (Q.typeOf(name) === 'array');
+	var isArray = Q.isArray(name);
 	if (isArray || Q.isPlainObject(name)) {
 		var names = name;
 		var p = Q.pipe(isArray ? names : Object.keys(names), callback);
@@ -8110,7 +8112,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	 */
 	$.fn.state = function _jQuery_fn_state(pluginName) {
 		var key = Q.normalize(pluginName) + ' state';
-		return jQuery(this).data(key);
+		return $(this).data(key);
 	};
 	/**
 	 * Calls Q.activate on all the elements in the jQuery
@@ -8126,8 +8128,8 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	 *  activated as "this".
 	 */
 	$.fn.activate = function _jQuery_fn_activate(options, callback) {
-		jQuery(this).each(function _jQuery_fn_activate_each(index, element) {
-			if (!jQuery(element).closest('html').length) {
+		$(this).each(function _jQuery_fn_activate_each(index, element) {
+			if (!$(element).closest('html').length) {
 				console.warn(new Q.Error("jQuery.fn.activate: element to activate must be in the DOM"));
 			}
 			Q.activate(element, options, callback);
@@ -8150,7 +8152,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 			var af1, af2;
 			af1 = af2 = args[f];
 			var namespace = '';
-			if (Q.typeOf(args[0]) === 'array') {
+			if (Q.isArray(args[0])) {
 				namespace = args[0][1] || '';
 				if (namespace && namespace[0] !== '.') {
 					namespace = '.' + namespace;
@@ -8197,7 +8199,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 		$.fn[off] = function () {
 			var args = Array.prototype.slice.call(arguments, 0);
 			var namespace = '';
-			if (Q.typeOf(arguments[0]) === 'array') {
+			if (Q.isArray(arguments[0])) {
 				namespace = args[0][1] || '';
 				if (namespace && namespace[0] !== '.') {
 					namespace = '.' + namespace;

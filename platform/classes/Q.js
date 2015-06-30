@@ -37,7 +37,8 @@ Q.typeOf = function _Q_typeOf(value) {
 		if (value === null) {
 			return 'null';
 		}
-		if (value instanceof Array || (value.constructor && value.constructor.name === 'Array')) {
+		if (value instanceof Array
+		|| (value.constructor && value.constructor.name === 'Array')) {
 			s = 'array';
 		} else if (typeof(value.typename) != 'undefined' ) {
 			return value.typename;
@@ -400,7 +401,7 @@ Q.Pipe.prototype.fill = function _Q_pipe_fill(field, ignore) {
 		this.ignore[this.i] = true;
 	} else if (typeof ignore === 'string') {
 		this.ignore[ignore] = true;
-	} else if (Q.typeOf(ignore) === 'array') {
+	} else if (Q.isArray(ignore)) {
 		for (var i=0; i<ignore.length; ++i) {
 			this.ignore[ignore[i]] = true;
 		}
@@ -1149,7 +1150,7 @@ Q.handle = function _Q_handle(callables, context, args) {
  */
 Q.each = function _Q_each(container, callback, options) {
 	var i, k, length, r, t, args;
-	if (typeof callback === 'string' && Q.typeOf(arguments[2]) === 'array') {
+	if (typeof callback === 'string' && Q.isArray(arguments[2])) {
 		args = arguments[2];
 		options = arguments[3];
 	}
@@ -1355,7 +1356,7 @@ Q.diff = function _Q_diff(container1, container2 /*, ... comparator */) {
 	if (typeof comparator !== 'function') {
 		throw new Q.Exception("Q.diff: comparator must be a function");
 	}
-	var isArr = (Q.typeOf(container1) === 'array');
+	var isArr = Q.isArray(container1);
 	var result = isArr ? [] : {};
 	Q.each(container1, function (k, v1) {
 		var found = false;
@@ -1410,6 +1411,32 @@ Q.isEmpty = function _Q_isEmpty(o) {
 };
 
 /**
+ * Tests if the value is an integer
+ * @static
+ * @method isInteger
+ * @param value {mixed}
+ *  The value to test
+ * @return {boolean}
+ *	Whether it is an integer
+ */
+Q.isInteger = function _Q_isInteger(value) {
+	return value > 0 ? Math.floor(value) === value : Math.ceil(value) === value;
+};
+
+/**
+ * Tests if the value is an array
+ * @static
+ * @method isArray
+ * @param value {mixed}
+ *  The value to test
+ * @return {boolean}
+ *	Whether it is an array
+ */
+Q.isArray = function _Q_isArray(value) {
+	return (Q.typeOf(value) === 'array');
+};
+
+/**
  * Determines whether something is a plain object created within Javascript,
  * or something else, like a DOMElement or Number
  * @method isPlainObject
@@ -1437,7 +1464,7 @@ Q.isPlainObject = function (x) {
  */
 Q.copy = function _Q_copy(x, fields) {
 	if (Q.typeOf(x) === 'array') {
-		return x.slice(0);
+		return Array.prototype.slice.call(x, 0);
 	}
 	if (x && typeof x.copy === 'function') {
 		return x.copy();
@@ -1520,7 +1547,7 @@ Q.extend = function _Q_extend(target /* [[deep,] [levels,] anotherObject], ... *
 			continue;
 		}		
 		var arg = arg;
-		if (Q.typeOf(target) === 'array' && Q.typeOf(arg) === 'array') {
+		if (Q.isArray(target) && Q.isArray(arg)) {
 			target = target.concat(arg);
 		} else {
 			for (var k in arg) {
@@ -1658,7 +1685,7 @@ Q.Class = function _Q_Class(construct /* [, Base1, ...] [, properties, [classPro
 Q.take = function _Q_take(source, fields) {
 	var result = {};
 	if (!source) return result;
-	if (Q.typeOf(fields) === 'array') {
+	if (Q.isArray(fields)) {
 		for (var i = 0; i < fields.length; ++i) {
 			if (fields[i] in source) {
 				result [ fields[i] ] = source [ fields[i] ];
@@ -2642,7 +2669,7 @@ Q.firstErrorMessage = function _Q_firstErrorMessage(data /*, data2, ... */) {
 			error = d.errors[0];
 		} else if (d.error) {
 			error = d.error;
-		} else if (Q.typeOf(d) === 'array') {
+		} else if (Q.isArray(d)) {
 			error = d[0];
 		} else {
 			error = d;
