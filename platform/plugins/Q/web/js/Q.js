@@ -8,7 +8,7 @@
 
 /* jshint -W014 */
 
-window = this;
+root = this;
 
 // private properties
 var _isReady = false;
@@ -336,7 +336,7 @@ var Fp = Function.prototype;
 if (!Fp.bind)
 Fp.bind = function _Function_prototype_bind(obj, options) {
 	var method = this;
-	if (!obj) obj = window;
+	if (!obj) obj = root;
 	if (!options) {
 		return function _Q_bind_result() {
 			return method.apply(obj, arguments);
@@ -369,7 +369,7 @@ Ap.indexOf = function _Array_prototype_indexOf(searchElement /*, fromIndex */ ) 
 		n = Number(arguments[1]);
 		if (n !== n) { // shortcut for verifying if it's NaN
 			n = 0;
-		} else if (n !== 0 && n !== window.Infinity && n !== -window.Infinity) {
+		} else if (n !== 0 && n !== Infinity && n !== -Infinity) {
 			n = (n > 0 || -1) * Math.floor(Math.abs(n));
 		}
 	}
@@ -405,7 +405,7 @@ Date.fromDateTime = function _Date_fromDateTime(dateTimeString) {
 	return new Date(dateTimeString.replace(/-/g,"/"));
 };
 
-if (window.Element) { // only IE7 and lower, which we don't support, wouldn't have this
+if (root.Element) { // only IE7 and lower, which we don't support, wouldn't have this
 
 if(!document.getElementsByClassName) {
 	document.getElementsByClassName = function(className) {
@@ -471,8 +471,8 @@ Elp.isOrContains = function (child) {
  * @return {Object|String}
  */
 Elp.computedStyle = function(name) {
-	var computedStyle = window.getComputedStyle
-		? window.getComputedStyle(this, null)
+	var computedStyle = root.getComputedStyle
+		? getComputedStyle(this, null)
 		: this.currentStyle;
 	return name
 		? (computedStyle ? computedStyle[name] : null)
@@ -729,22 +729,22 @@ if (!Elp.getElementsByClassName) {
 	}
 })();
 
-if (!window.requestAnimationFrame) {
-	window.requestAnimationFrame =
-		window.webkitRequestAnimationFrame || 
-		window.mozRequestAnimationFrame    || 
-		window.oRequestAnimationFrame      || 
-		window.msRequestAnimationFrame     || 
+if (!root.requestAnimationFrame) {
+	requestAnimationFrame =
+		root.webkitRequestAnimationFrame || 
+		root.mozRequestAnimationFrame    || 
+		root.oRequestAnimationFrame      || 
+		root.msRequestAnimationFrame     || 
 		function( callback ) {
 			return setTimeout(function _shim_requestAnimationFrame() {
 				callback(Q.milliseconds());
 			}, 1000 / Q.Animation.fps);
 		};
-	window.cancelAnimationFrame =
-		window.webkitCancelAnimationFrame || 
-		window.mozCancelAnimationFrame    || 
-		window.oCancelAnimationFrame      || 
-		window.msCancelAnimationFrame     || 
+	cancelAnimationFrame =
+		root.webkitCancelAnimationFrame || 
+		root.mozCancelAnimationFrame    || 
+		root.oCancelAnimationFrame      || 
+		root.msCancelAnimationFrame     || 
 		function( id ) {
 			clearTimeout(id);
 		};
@@ -811,7 +811,7 @@ Q.objectWithPrototype = function _Q_objectWithPrototype(original) {
  * @return {String}
  */
 Q.typeOf = function _Q_typeOf(value) {
-	var s = typeof value, x;
+	var s = typeof value, x, l;
 	if (s === 'function' && !(value instanceof Function)) {
 		// older webkit workaround https://bugs.webkit.org/show_bug.cgi?id=33716
 		s = 'object';
@@ -826,8 +826,8 @@ Q.typeOf = function _Q_typeOf(value) {
 			s = 'array';
 		} else if (typeof value.typename != 'undefined' ) {
 			return value.typename;
-		} else if (value.constructor === window.jQuery
-		|| value.constructor === NodeList) {
+		} else if (typeof (l=value.length) == 'number' && (l%1==0)
+		&& (!l || ((l-1) in value))) {
 			return 'array';
 		} else if (typeof value.constructor != 'undefined'
 		&& typeof value.constructor.name != 'undefined') {
@@ -1186,7 +1186,7 @@ Q.isPlainObject = function (x) {
 	if (Object.prototype.toString.apply(x) !== "[object Object]") {
 		return false;
 	}
-	if (window.attachEvent && !window.addEventListener) {
+	if (root.attachEvent && !root.addEventListener) {
 		// This is just for IE8
 		if (x && x.constructor !== Object) {
 			return false;
@@ -1497,7 +1497,7 @@ Q.normalize = function _Q_normalize(text, replacement, characters, numChars) {
 function _getProp (/*Array*/parts, /*Boolean*/create, /*Object*/context){
 	var p, i = 0;
 	if (context === null) return undefined;
-	context = context || window;
+	context = context || root;
 	if(!parts.length) return context;
 	while(context && (p = parts[i++]) !== undefined){
 		try {
@@ -3037,7 +3037,7 @@ Q.Tool = function _Q_Tool(element, options) {
 	this.element = element;
 	this.typename = 'Q.Tool';
 
-	if (window.jQuery) {
+	if (root.jQuery) {
 		jQuery(element).data('Q_tool', this);
 	}
 
@@ -3347,10 +3347,10 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 	}
 	name = Q.normalize(name);
 	if (typeof ctor === 'string') {
-		if (window.jQuery
-		&& typeof window.jQuery.fn.plugin[name] !== 'function') {
+		if (root.jQuery
+		&& typeof jQuery.fn.plugin[name] !== 'function') {
 			_qtjo[name] = _qtjo[name] || {};
-			window.jQuery.fn.plugin[name] = Q.Tool.constructors[name] = ctor;
+			jQuery.fn.plugin[name] = Q.Tool.constructors[name] = ctor;
 		}
 		return ctor;
 	}
@@ -3358,10 +3358,10 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 		methods = stateKeys;
 		stateKeys = undefined;
 	}
-	Q.ensure(window.jQuery, Q.onJQuery.add, _onJQuery);
+	Q.ensure(root.jQuery, Q.onJQuery.add, _onJQuery);
 	Q.Tool.latestName = name;
 	function _onJQuery() {
-		var $ = window.jQuery;
+		var $ = root.jQuery;
 		function jQueryPluginConstructor(options /* or methodName, argument1, argument2, ... */) {
 			if (typeof options === 'string') {
 				var method = options;
@@ -3425,7 +3425,7 @@ Q.Tool.jQuery.options = function (pluginName, setOptions) {
 	var options;
 	var pluginName = Q.normalize(pluginName);
 	if (Q.Tool.constructors[name]) {
-		options = window.jQuery.fn[pluginName].options;
+		options = root.jQuery.fn[pluginName].options;
 	} else {
 		options = _qtjo[pluginName] = _qtjo[pluginName] || {};
 	}
@@ -3662,7 +3662,7 @@ Tp.remove = function _Q_Tool_prototype_remove(removeCached) {
 	if (p) {
 		for (i=p.length-1; i >= 0; --i) {
 			var off = p[i][0];
-			window.jQuery.fn[off].call(p[i][1], p[i][2], p[i][3]);
+			root.jQuery.fn[off].call(p[i][1], p[i][2], p[i][3]);
 		}
 		Q.Event.jQueryForTool[this.id] = [];
 	}
@@ -3681,10 +3681,10 @@ Tp.remove = function _Q_Tool_prototype_remove(removeCached) {
  *   jQuery object matched by the given selector
  */
 Tp.$ = function _Q_Tool_prototype_$(selector) {
-	if (window.jQuery) {
+	if (root.jQuery) {
 		return selector === undefined
-			? window.jQuery(this.element)
-			: window.jQuery(selector, this.element);
+			? jQuery(this.element)
+			: jQuery(selector, this.element);
 	} else {
 		throw new Q.Error("Tp.$ requires jQuery");
 	}
@@ -4595,19 +4595,19 @@ Q.init = function _Q_init(options) {
 	Q.handle(Q.beforeInit);
 	Q.handle(Q.onInit); // Call all the onInit handlers
 
-	Q.addEventListener(window, 'unload', Q.onUnload.handle);
-	Q.addEventListener(window, 'online', Q.onOnline.handle);
-	Q.addEventListener(window, 'offline', Q.onOffline.handle);
-	Q.addEventListener(window, Q.Pointer.focusout, _onPointerBlurHandler);
+	Q.addEventListener(root, 'unload', Q.onUnload.handle);
+	Q.addEventListener(root, 'online', Q.onOnline.handle);
+	Q.addEventListener(root, 'offline', Q.onOffline.handle);
+	Q.addEventListener(root, Q.Pointer.focusout, _onPointerBlurHandler);
 
 	var checks = ["ready"];
 	if (Q.info.isCordova
-	&& window.cordova && Q.typeOf(window.cordova).substr(0, 4) !== 'HTML') {
+	&& root.cordova && Q.typeOf(cordova).substr(0, 4) !== 'HTML') {
 		checks.push("device");
 	}
 	var p = Q.pipe(checks, 1, function _Q_init_pipe_callback() {
 		if (!Q.info) Q.info = {};
-		Q.info.isCordova = !!window.device && window.device.cordova;
+		Q.info.isCordova = !!root.device && device.cordova;
 		if (options && options.isLocalFile) {
 			Q.info.isLocalFile = true;
 			Q.handle.options.loadUsingAjax = true;
@@ -4622,7 +4622,7 @@ Q.init = function _Q_init(options) {
 		}
 
 		function _getJSON() {
-			Q.ensure(window.JSON, Q.libraries.json, _ready);
+			Q.ensure(root.JSON, Q.libraries.json, _ready);
 		}
 
 		if (options && options.isLocalFile) {
@@ -4648,7 +4648,7 @@ Q.init = function _Q_init(options) {
 		}
 		function _Q_init_deviceready_handler() {
 			if (!Q.info) Q.info = {};
-			if ((Q.info.isCordova = !!window.device && window.device.cordova)) {
+			if ((Q.info.isCordova = !!root.device && device.cordova)) {
 				// avoid opening external urls in app window
 				Q.addEventListener(document, "click", function (e) {
 					var t = e.target, s;
@@ -4656,14 +4656,14 @@ Q.init = function _Q_init(options) {
 						if (t && t.nodeName === "A" && t.href && !t.outerHTML.match(/\Whref=[',"]#[',"]\W/) && t.href.match(/^https?:\/\//)) {
 							e.preventDefault();
 							s = (t.target === "_blank") ? "_system" : "_blank";
-							window.open(t.href, s, "location=no");
+							root.open(t.href, s, "location=no");
 						}
 					} while ((t = t.parentNode));
 				});
 			}
 			p.fill("device")();
 		}
-		if (window.device) {
+		if (root.device) {
 			_Q_init_deviceready_handler();
 		} else {
 			Q.addEventListener(document, 'deviceready', _Q_init_deviceready_handler, false);
@@ -4671,10 +4671,10 @@ Q.init = function _Q_init(options) {
 	}
 
 	// Bind document ready event
-	if (window.jQuery) {
+	if (root.jQuery) {
 		Q.jQueryPluginPlugin();
-		Q.onJQuery.handle(window.jQuery, [window.jQuery]);
-		window.jQuery(document).ready(_domReady);
+		Q.onJQuery.handle(jQuery, [jQuery]);
+		jQuery(document).ready(_domReady);
 	} else {
 		var _timer = setInterval(function(){
 			if(/loaded|complete/.test(document.readyState)) {
@@ -4711,27 +4711,27 @@ Q.ready = function _Q_ready() {
 		// Try to add the plugin thing again
 		Q.jQueryPluginPlugin();
 		
-		Q.onDOM.handle.call(window, window.jQuery);
+		Q.onDOM.handle.call(root, root.jQuery);
 
 		var body = document.getElementsByTagName('body')[0];
 		Q.activate(body, undefined, function _onReadyActivate() {
 			// Hash changes -- will work only in browsers that support it natively
 			// see http://caniuse.com/hashchange
-			Q.addEventListener(window, 'hashchange', Q.onHashChange.handle);
+			Q.addEventListener(root, 'hashchange', Q.onHashChange.handle);
 			
 			// History changes -- will work only in browsers that support it natively
 			// see http://caniuse.com/history
-			Q.addEventListener(window, 'popstate', Q.onPopState.handle);
+			Q.addEventListener(root, 'popstate', Q.onPopState.handle);
 
 			// To support tool layouting, trigger 'layout' event
 			// on browser resize and orientation change
-			Q.addEventListener(window, 'resize', Q.onLayout.handle);
-			Q.addEventListener(window, 'orientationchange', Q.onLayout.handle);
-			Q.addEventListener(window, 'scroll', Q.onScroll.handle);
+			Q.addEventListener(root, 'resize', Q.onLayout.handle);
+			Q.addEventListener(root, 'orientationchange', Q.onLayout.handle);
+			Q.addEventListener(root, 'scroll', Q.onScroll.handle);
 			_setLayoutInterval();
 
 			// Call the functions meant to be called after ready() is done
-			Q.onReady.handle.call(window, window.jQuery);
+			Q.onReady.handle.call(root, root.jQuery);
 
 			if (Q.info.isCordova && navigator.splashscreen) {
 				navigator.splashscreen.hide();
@@ -4842,9 +4842,9 @@ Q.removeElement = function _Q_removeElement(element, removeTools) {
 	if (removeTools) {
 		Q.Tool.clear(element);
 	}
-	if (window.jQuery) {
+	if (root.jQuery) {
 		// give jQuery a chance to do its own cleanup
-		return window.jQuery(element).remove();
+		return jQuery(element).remove();
 	}
 	if (!element.parentNode) return false;
 	element.parentNode.removeChild(element);
@@ -4905,7 +4905,7 @@ Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandl
 		}
 		return;
 	}
-	if (element === window
+	if (element === root
 	&& detected.name === 'explorer'
 	&& detected.mainVersion <= 8
 	&& ['mousedown','mouseup','click','dblclick'].indexOf(eventName) >= 0) {
@@ -4949,7 +4949,7 @@ Q.removeEventListener = function _Q_addEventListener(element, eventName, eventHa
 		}
 		return;
 	}
-	if (element === window
+	if (element === root
 	&& detected.name === 'explorer'
 	&& detected.mainVersion <= 8
 	&& ['mousedown','mouseup','click','dblclick'].indexOf(eventName) >= 0) {
@@ -5407,10 +5407,10 @@ Q.request = function (url, slotNames, callback, options) {
 			
 			function xhr(url, slotNames, onSuccess, onCancel, options) {					
 				var xmlhttp;
-				if (window.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
+				if (root.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
 					xmlhttp = new XMLHttpRequest();
 				} else { // code for IE6, IE5
-					xmlhttp = new window.ActiveXObject("Microsoft.XMLHTTP");
+					xmlhttp = new root.ActiveXObject("Microsoft.XMLHTTP");
 				}
 				xmlhttp.onreadystatechange = function() {
 					if (xmlhttp.readyState == 4) {
@@ -5822,8 +5822,8 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 
 	function _onload() {
 		Q.addScript.loaded[src] = true;
-		if (window.jQuery && !Q.onJQuery.occurred) {
-			Q.onJQuery.handle(window.jQuery, [window.jQuery]);
+		if (root.jQuery && !Q.onJQuery.occurred) {
+			Q.onJQuery.handle(jQuery, [jQuery]);
 		}
 		Q.jQueryPluginPlugin();
 		onload();
@@ -6207,8 +6207,8 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 	}
 	// Arrays are accepted
 	if (Q.isArray(elem)
-	|| (typeof HTMLCollection !== 'undefined' && (elem instanceof window.HTMLCollection))
-	|| (window.jQuery && (elem instanceof jQuery))) {
+	|| (typeof HTMLCollection !== 'undefined' && (elem instanceof root.HTMLCollection))
+	|| (root.jQuery && (elem instanceof jQuery))) {
 
 		Q.each(elem, function _Q_find_array(i) {
 			if (false === Q.find(
@@ -6309,7 +6309,7 @@ Q.activate = function _Q_activate(elem, options, callback) {
 		elem = tool.element;
 	}
 	
-	Q.beforeActivate.handle.call(window, elem); // things to do before things are activated
+	Q.beforeActivate.handle.call(root, elem); // things to do before things are activated
 	
 	var shared = {
 		tool: null,
@@ -6617,8 +6617,8 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 					}
 				}
 				// Invoke prefixfree again if it was loaded
-				if (window.StyleFix) {
-					window.StyleFix.process();
+				if (root.StyleFix) {
+					root.StyleFix.process();
 				}
 
 				Q.handle(onActivate, this, [domElements]);
@@ -6690,7 +6690,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				var p = Q.Event.jQueryForPage;
 				for (i=p.length-1; i >= 0; --i) {
 					var off = p[i][0];
-					window.jQuery.fn[off].call(p[i][1], p[i][2], p[i][3]);
+					root.jQuery.fn[off].call(p[i][1], p[i][2], p[i][3]);
 				}
 				Q.Event.jQueryForPage = [];
 			}
@@ -6758,7 +6758,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				var stylesheets = [];
 				for (var j in response.stylesheets[slotName]) {
 					var stylesheet = response.stylesheets[slotName][j];
-					if (window.StyleFix && (stylesheet.href in processStylesheets.slots)) {
+					if (root.StyleFix && (stylesheet.href in processStylesheets.slots)) {
 						continue; // if prefixfree is loaded, we will not even try to load these processed stylesheets
 					}
 					var elem = Q.addStylesheet(stylesheet.href, stylesheet.media, null, {returnAll: false});
@@ -6896,7 +6896,7 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 	if (!callables) {
 		return 0;
 	}
-	if (!context) context = window;
+	if (!context) context = root;
 	if (!args) args = [];
 	var i=0, count=0, k, result;
 	if (callables === location) callables = location.href;
@@ -6954,7 +6954,7 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 			}
 			var sameDomain = callables.sameDomain(Q.info.baseUrl);
 			if (callables[0] === '#') {
-				window.location.hash = callables;
+				root.location.hash = callables;
 			} else if (o.loadUsingAjax && sameDomain
 			&& (!o.target || o.target === true || o.target === '_self')) {
 				if (callables.search(Q.info.baseUrl) === 0) {
@@ -6969,7 +6969,7 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 				} else if (o.externalLoader) {
 					o.externalLoader.apply(this, arguments);
 				} else {
-					window.location = callables;
+					root.location = callables;
 				}
 			} else {
 				if (Q.typeOf(o.fields) === 'object') {
@@ -6991,13 +6991,13 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 						callables+= '/';
 					}
 					if (!o.target || o.target === true || o.target === '_self') {
-						if (window.location.href == callables) {
-							window.location.reload(true);
+						if (root.location.href == callables) {
+							root.location.reload(true);
 						} else {
-							window.location = callables;
+							root.location = callables;
 						}
 					} else {
-						window.open(callables, o.target);
+						root.open(callables, o.target);
 					}
 				}
 			}
@@ -7058,7 +7058,7 @@ Q.buildQueryString = Q.serializeFields;
 function Q_hashChangeHandler() {
 	var url = location.hash.queryField('url'), result = null;
 	if (url === undefined) {
-		url = window.location.href.split('#')[0].substr(Q.info.baseUrl.length + 1);
+		url = root.location.href.split('#')[0].substr(Q.info.baseUrl.length + 1);
 	}
 	if (Q_hashChangeHandler.ignore) {
 		Q_hashChangeHandler.ignore = false;
@@ -7071,7 +7071,7 @@ function Q_hashChangeHandler() {
 }
 
 function Q_popStateHandler() {
-	var url = window.location.href.split('#')[0], result = null;
+	var url = root.location.href.split('#')[0], result = null;
 	if (Q.info.url === url) {
 		return; // we are already at this url
 	}
@@ -7477,11 +7477,11 @@ Q.Template.render = function _Q_Template_render(name, fields, partials, callback
 			);
 		});
 	}
-	Q.ensure(window.Handlebars, 
+	Q.ensure(root.Handlebars, 
 		Q.url('plugins/Q/js/handlebars-v1.3.0.min.js'),
 		function () {
 			
-			var Handlebars = window.Handlebars;
+			var Handlebars = root.Handlebars;
 			if (!Handlebars.helpers.call) {
 				Handlebars.registerHelper('call', function(path) {
 					if (!path) {
@@ -7591,11 +7591,11 @@ function _connectSocketNS(ns, url, callback, force) {
 	// load socket.io script and connect socket
 	function _connectNS(ns, url, callback) {
 		// connect to (ns, url)
-		if (!window.io) return;
+		if (!root.io) return;
 		var qs = _qsockets[ns][url];
 		if (!qs || !qs.socket) {
 			_qsockets[ns][url] = qs = new Q.Socket({
-				socket: window.io.connect(url+ns, force ? {
+				socket: root.io.connect(url+ns, force ? {
 					'force new connection': true
 				} : {}),
 				url: url,
@@ -7643,7 +7643,7 @@ function _connectSocketNS(ns, url, callback, force) {
 		ns = '/' + ns;
 	}
 	
-	if (window.io && window.io.Socket) {
+	if (root.io && root.io.Socket) {
 		_connectNS(ns, url, callback);
 	} else {
 		Q.addScript(url+'/socket.io/socket.io.js', function () {
@@ -7747,7 +7747,7 @@ Q.Socket.destroyAll = function _Q_Socket_destroyAll() {
 		}
 		_ioCleanup = [];
 		_qsockets = {};
-		window.io = undefined;
+		root.io = undefined;
 	}, 1000);
 };
 
@@ -8035,7 +8035,7 @@ Q.Animation.playing = {};
 var _Q_Animation_index = 0;
 
 Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
-	var $ = window.jQuery;
+	var $ = root.jQuery;
 	if (!$ || $.fn.plugin) {
 		return;
 	}
@@ -8101,7 +8101,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 			for (pluginName in results) {
 				results[pluginName] = $.fn[pluginName];
 			}
-			Q.handle(callback, window, [results]);
+			Q.handle(callback, root, [results]);
 		}, options);
 		return false;
 	};
@@ -8276,7 +8276,7 @@ Q.Browser = {
 		var isWebView = /(.*)QWebView(.*)/.test(navigator.userAgent)
 			|| (/(iPhone|iPod|iPad).*AppleWebKit(?!.*Version)/i).test(navigator.userAgent);
 		var isStandalone = navigator.standalone
-			|| (window.external && external.msIsSiteMode && external.msIsSiteMode())
+			|| (root.external && external.msIsSiteMode && external.msIsSiteMode())
 			|| false;
 		if (OS === 'Android') {
 			isStandalone = screen.height-document.documentElement.clientHeight<40
@@ -8351,7 +8351,7 @@ Q.Browser = {
 			versionSearch : "Version"
 		},
 		{
-			prop : window.opera,
+			prop : root.opera,
 			identity : "Opera",
 			versionSearch : "Version"
 		},
@@ -8473,7 +8473,7 @@ Q.Browser = {
 };
 
 var detected = Q.Browser.detect();
-var isTouchscreen = ('ontouchstart' in window || !!window.navigator.msMaxTouchPoints);
+var isTouchscreen = ('ontouchstart' in root || !!root.navigator.msMaxTouchPoints);
 var isTablet = navigator.userAgent.match(new RegExp('tablet|ipad', 'i'))
 	|| (isTouchscreen && !navigator.userAgent.match(new RegExp('mobi', 'i')));
 /**
@@ -8577,9 +8577,9 @@ function _touchBlurHandler(event) {
 		|| (o.blurContentEditable && target.getAttribute('contenteditable'))) {
 			var f = function () {
 				target.focus();
-				Q.removeEventListener(window, 'click', f);
+				Q.removeEventListener(root, 'click', f);
 			};
-			Q.addEventListener(window, 'click', f);
+			Q.addEventListener(root, 'click', f);
 		} else {
 			ae.blur();
 		}
@@ -8735,7 +8735,7 @@ Q.Pointer = {
 			var _relevantClick = true;
 			var t = this, a = arguments;
 			function _clickHandler(e) {
-				Q.removeEventListener(window, 'click', _clickHandler);
+				Q.removeEventListener(root, 'click', _clickHandler);
 				if (Q.Pointer.canceledClick) {
 					return Q.Pointer.preventDefault(e);
 				}
@@ -8749,7 +8749,7 @@ Q.Pointer = {
 					_relevantClick = false;
 				}, Q.Pointer.touchclick.duration);
 			}
-			Q.addEventListener(window, 'click', _clickHandler);
+			Q.addEventListener(root, 'click', _clickHandler);
 			Q.addEventListener(this, 'touchend', _touchendHandler);
 		};
 	},
@@ -8801,7 +8801,7 @@ Q.Pointer = {
 	 * @return {Number}
 	 */
 	scrollLeft: function () {
-		return window.pageXOffset || document.documentElement.scrollLeft || (document.body && document.body.scrollLeft);
+		return root.pageXOffset || document.documentElement.scrollLeft || (document.body && document.body.scrollLeft);
 	},
 	/**
 	 * Returns the document's scroll top in pixels, consistently across browsers
@@ -8810,7 +8810,7 @@ Q.Pointer = {
 	 * @return {Number}
 	 */
 	scrollTop: function () {
-		return window.pageYOffset || document.documentElement.scrollTop || (document.body && document.body.scrollTop);
+		return root.pageYOffset || document.documentElement.scrollTop || (document.body && document.body.scrollTop);
 	},
 	/**
 	 * Returns the window's inner width, in pixels, consistently across browsers
@@ -8819,7 +8819,7 @@ Q.Pointer = {
 	 * @return {Number}
 	 */
 	windowWidth: function () {
-		return window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+		return root.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
 	},
 	/**
 	 * Returns the window's inner height, in pixels, consistently across browsers
@@ -8828,7 +8828,7 @@ Q.Pointer = {
 	 * @return {Number}
 	 */
 	windowHeight: function () {
-		return window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+		return root.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 	},
 	/**
 	 * Returns the x coordinate of an event relative to the document
@@ -9598,12 +9598,12 @@ Q.confirm = function(message, callback, options) {
 	dialog.find('button:first').on(Q.Pointer.end, function() {
 		buttonClicked = true;
 		Q.Dialogs.pop();
-		Q.handle(callback, window, [true]);
+		Q.handle(callback, root, [true]);
 	});
 	dialog.find('button:last').on(Q.Pointer.end, function() {
 		buttonClicked = true;
 		Q.Dialogs.pop();
-		Q.handle(callback, window, [false]);
+		Q.handle(callback, root, [false]);
 	});
 	return dialog;
 };
@@ -9680,7 +9680,7 @@ Q.prompt = function(message, callback, options) {
  * @param {String} url the url of the audio to load
  */
 Q.Audio = function (url) {
-	if (this === window) {
+	if (this === root) {
 		throw new Q.Error("Please call Q.Audio with the keyword new");
 	}
 	var t = this;
@@ -9943,10 +9943,10 @@ Q.Masks.options = {
 
 Q.addEventListener(window, Q.Pointer.start, _Q_PointerStartHandler);
 
-if (!window.console) {
+if (!root.console) {
 	// for browsers like IE8 and below
 	function noop() {}
-	window.console = {
+	root.console = {
 		debug: noop,
 		dir: noop,
 		error: noop,
@@ -10003,7 +10003,7 @@ Q.onInit.add(function () {
 	}, 'Q.Socket');
 	
 	//jQuery Tools tooltip and validator plugins configuration
-	var tooltipConf = Q.getObject("jQuery.tools.tooltip.conf", window);
+	var tooltipConf = Q.getObject("jQuery.tools.tooltip.conf", root);
 	if (tooltipConf) {
 		tooltipConf.tipClass = 'Q_tooltip';
 		tooltipConf.effect = 'fade';
@@ -10011,7 +10011,7 @@ Q.onInit.add(function () {
 		tooltipConf.position = 'bottom center';
 		tooltipConf.offset = [0, 0];
 	}
-	var validatorConf = Q.getObject("jQuery.tools.validator.conf", window);
+	var validatorConf = Q.getObject("jQuery.tools.validator.conf", root);
 	if (validatorConf) {
 		validatorConf.errorClass = 'Q_errors';
 		validatorConf.messageClass = 'Q_error_message';
@@ -10094,7 +10094,7 @@ function _Q_loadUrl_fillSlots (res, url, options) {
 		// already been "cached"
 
 		if (name.toUpperCase() === 'TITLE') {
-			window.document.title = res.slots[name];
+			document.title = res.slots[name];
 		} else if (elem = options.slotContainer(name, res)) { 
 			try {
 				Q.replace(elem, res.slots[name], options);
@@ -10196,11 +10196,11 @@ if (typeof module !== 'undefined' && typeof process !== 'undefined') {
 		if (extend) {
 			Q.extend(oldQ, Q);
 		}
-		window.Q = oldQ;
+		root.Q = oldQ;
 		return Q;
 	};
-	var oldQ = window.Q;
-	window.Q = Q;
+	var oldQ = root.Q;
+	root.Q = Q;
 }
 
 })();

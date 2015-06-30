@@ -32,7 +32,7 @@ Q.Error = Error;
  * @return {string} String description of the type
  */
 Q.typeOf = function _Q_typeOf(value) {
-	var s = typeof value, x;
+	var s = typeof value, x, l;
 	if (s === 'object') {
 		if (value === null) {
 			return 'null';
@@ -42,6 +42,9 @@ Q.typeOf = function _Q_typeOf(value) {
 			s = 'array';
 		} else if (typeof(value.typename) != 'undefined' ) {
 			return value.typename;
+		} else if (typeof (l=value.length) == 'number' && (l%1==0)
+		&& (!l || ((l-1) in value))) {
+			return 'array';
 		} else if (typeof(value.constructor) != 'undefined' && typeof(value.constructor.name) != 'undefined') {
 			if (value.constructor.name == 'Object') {
 				return 'object';
