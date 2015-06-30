@@ -223,8 +223,12 @@ Streams.key = function (publisherId, streamName) {
  * @event onError
  */
 Streams.onError = new Q.Event(function (err, data) {
-	var code = Q.getObject([0, 'errors', 0, 'code'], data);
+	var code = Q.getObject([0, 'errors', 0, 'code'], data)
+		|| Q.getObject([1, 'errors', 0, 'code'], data);
 	if (!code) return;
+	var errors = data && data.errors
+		&& (data[0] && data[0].errors)
+		&& (data[1] && data[1].errors);
 	console.warn(Q.firstErrorMessage(err, data && data.errors));
 }, 'Streams.onError');
 
@@ -873,7 +877,7 @@ Streams.invite = function (publisherId, streamName, options, callback) {
 			var msg = Q.firstErrorMessage(err, response && response.errors);
 			if (msg) {
 				var args = [err, response];
-				Streams.onError.handle.call(this, msg, args);
+				return Streams.onError.handle.call(this, msg, args);
 			}
 			var rsd = response.slots.data;
 			Q.handle(o && o.callback, null, [err, response, msg]);
