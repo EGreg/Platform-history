@@ -865,35 +865,34 @@ Q.typeOf = function _Q_typeOf(value) {
  * @throws {Q.Error} If container is not array, object or string
  */
 Q.each = function _Q_each(container, callback, options) {
-	var i, k, length, r, t, args;
-	if (typeof callback === 'string' && Q.isArray(arguments[2])) {
+	var i, k, c, length, r, t, args;
+	if (typeof callback === 'string' && Q.isArrayLike(arguments[2])) {
 		args = arguments[2];
 		options = arguments[3];
 	}
 	switch (t = Q.typeOf(container)) {
+		case 'array':
 		default:
-			if (!container) break;
 			// Assume it is an array-like structure.
 			// Make a copy in case it changes during iteration. Then iterate.
-			var c = Array.prototype.slice.call(container, 0);
-			if (('0' in container) && !('0' in c)) { // we are probably dealing with IE < 9
+			c = Array.prototype.slice.call(container, 0);
+			if (('0' in container) && !('0' in c)) {
+				// we are probably dealing with IE < 9
 				c = [];
 				for (i=0; r = container[i]; ++i) {
 					c.push(r);
 				}
 			}
-			container = c;
-		case 'array':
-			length = container.length;
-			if (!container || !length || !callback) return;
+			length = c.length;
+			if (!c || !length || !callback) return;
 			if (options && options.ascending === false) {
 				for (i=length-1; i>=0; --i) {
-					r = Q.handle(callback, container[i], args || [i, container[i], container]);
+					r = Q.handle(callback, c[i], args || [i, c[i], c]);
 					if (r === false) return false;
 				}
 			} else {
 				for (i=0; i<length; ++i) {
-					r = Q.handle(callback, container[i], args || [i, container[i]], container);
+					r = Q.handle(callback, c[i], args || [i, c[i]], c);
 					if (r === false) return false;
 				}
 			}
@@ -1088,7 +1087,7 @@ Q.diff = function _Q_diff(container1, container2 /*, ... comparator */) {
 	if (typeof comparator !== 'function') {
 		throw new Q.Error("Q.diff: comparator must be a function");
 	}
-	var isArr = Q.isArray(container1);
+	var isArr = Q.isArrayLike(container1);
 	var result = isArr ? [] : {};
 	Q.each(container1, function (k, v1) {
 		var found = false;
@@ -1166,7 +1165,7 @@ Q.isInteger = function _Q_isInteger(value) {
  * @return {boolean}
  *	Whether it is an array
  */
-Q.isArray = function _Q_isArray(value) {
+Q.isArrayLike = function _Q_isArrayLike(value) {
 	return (Q.typeOf(value) === 'array');
 };
 
@@ -1304,7 +1303,7 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 			}
 			continue;
 		}
-		if (type === 'array' && Q.isArray(arg)) {
+		if (type === 'array' && Q.isArrayLike(arg)) {
 			target = target.concat(arg);
 		} else {
 			for (k in arg) {
@@ -1370,7 +1369,7 @@ Q.has = function _Q_has(obj, key) {
 Q.take = function _Q_take(source, fields) {
 	var result = {};
 	if (!source) return result;
-	if (Q.isArray(fields)) {
+	if (Q.isArrayLike(fields)) {
 		for (var i = 0; i < fields.length; ++i) {
 			if (fields[i] in source) {
 				result [ fields[i] ] = source [ fields[i] ];
@@ -2403,7 +2402,7 @@ Pp.fill = function _Q_pipe_fill(field, ignore) {
 		this.ignore[this.i] = true;
 	} else if (typeof ignore === 'string') {
 		this.ignore[ignore] = true;
-	} else if (Q.isArray(ignore)) {
+	} else if (Q.isArrayLike(ignore)) {
 		for (var i=0; i<ignore.length; ++i) {
 			this.ignore[ignore[i]] = true;
 		}
@@ -4549,7 +4548,7 @@ Q.page = function _Q_page(page, handler, key) {
 	if (key === undefined) {
 		key = 'Q';
 	}
-	if (Q.isArray(page)) {
+	if (Q.isArrayLike(page)) {
 		for (var i = 0, l = page.length; i<l; ++i) {
 			Q.page(page[i], handler, key);
 		}
@@ -4899,7 +4898,7 @@ Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandl
 		eventName = params.eventName;
 	}
 
-	if (Q.isArray(eventName)) {
+	if (Q.isArrayLike(eventName)) {
 		for (var i=0, l=eventName.length; i<l; ++i) {
 			Q.addEventListener(element, eventName[i], eventHandler, useCapture);
 		}
@@ -4943,7 +4942,7 @@ Q.removeEventListener = function _Q_addEventListener(element, eventName, eventHa
 			eventName = split;
 		}
 	}
-	if (Q.isArray(eventName)) {
+	if (Q.isArrayLike(eventName)) {
 		for (var i=0, l=eventName.length; i<l; ++i) {
 			Q.removeEventListener(element, eventName[i], eventHandler);
 		}
@@ -5516,7 +5515,7 @@ Q.firstErrorMessage = function _Q_firstErrorMessage(data /*, data2, ... */) {
 			error = d.errors[0];
 		} else if (d.error) {
 			error = d.error;
-		} else if (Q.isArray(d)) {
+		} else if (Q.isArrayLike(d)) {
 			error = d[0];
 		} else {
 			error = d;
@@ -5834,7 +5833,7 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 		onload = function () {};
 	}
 	
-	if (Q.isArray(src)) {
+	if (Q.isArrayLike(src)) {
 		var srcs = [];
 		Q.each(src, function (i, src) {
 			if (!src) return;
@@ -6014,7 +6013,7 @@ Q.addStylesheet = function _Q_addStylesheet(href, media, onload, options) {
 	if (!onload) {
 		onload = function _onload() { };
 	}
-	if (Q.isArray(href)) {
+	if (Q.isArrayLike(href)) {
 		var ret = [];
 		var len = href.length;
 		for (i=0; i<len; ++i) {
@@ -6206,7 +6205,7 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 		filter = 'q_tool';
 	}
 	// Arrays are accepted
-	if (Q.isArray(elem)
+	if (Q.isArrayLike(elem)
 	|| (typeof HTMLCollection !== 'undefined' && (elem instanceof root.HTMLCollection))
 	|| (root.jQuery && (elem instanceof jQuery))) {
 
@@ -7467,7 +7466,7 @@ Q.Template.render = function _Q_Template_render(name, fields, partials, callback
 	if (!callback) {
 		throw new Q.Error("Q.Template.render: callback is missing");
 	}
-	var isArray = Q.isArray(name);
+	var isArray = Q.isArrayLike(name);
 	if (isArray || Q.isPlainObject(name)) {
 		var names = name;
 		var p = Q.pipe(isArray ? names : Object.keys(names), callback);
@@ -8152,7 +8151,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 			var af1, af2;
 			af1 = af2 = args[f];
 			var namespace = '';
-			if (Q.isArray(args[0])) {
+			if (Q.isArrayLike(args[0])) {
 				namespace = args[0][1] || '';
 				if (namespace && namespace[0] !== '.') {
 					namespace = '.' + namespace;
@@ -8199,7 +8198,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 		$.fn[off] = function () {
 			var args = Array.prototype.slice.call(arguments, 0);
 			var namespace = '';
-			if (Q.isArray(arguments[0])) {
+			if (Q.isArrayLike(arguments[0])) {
 				namespace = args[0][1] || '';
 				if (namespace && namespace[0] !== '.') {
 					namespace = '.' + namespace;
@@ -8961,7 +8960,7 @@ Q.Pointer = {
 		var img, i, l;
 		var imageEvent = options.imageEvent || new Q.Event();
 		var audioEvent = options.audioEvent || new Q.Event();
-		if (Q.isArray(targets)) {
+		if (Q.isArrayLike(targets)) {
 			for (i=0, l=targets.length; i<l; ++i) {
 				var o = Q.copy(options);
 				o.audio = (i===0) ? options.audio : null;

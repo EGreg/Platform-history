@@ -404,7 +404,7 @@ Q.Pipe.prototype.fill = function _Q_pipe_fill(field, ignore) {
 		this.ignore[this.i] = true;
 	} else if (typeof ignore === 'string') {
 		this.ignore[ignore] = true;
-	} else if (Q.isArray(ignore)) {
+	} else if (Q.isArrayLike(ignore)) {
 		for (var i=0; i<ignore.length; ++i) {
 			this.ignore[ignore[i]] = true;
 		}
@@ -1152,27 +1152,27 @@ Q.handle = function _Q_handle(callables, context, args) {
  * @throws {Q.Exception} If container is not array, object or string
  */
 Q.each = function _Q_each(container, callback, options) {
-	var i, k, length, r, t, args;
-	if (typeof callback === 'string' && Q.isArray(arguments[2])) {
+	var i, k, c, length, r, t, args;
+	if (typeof callback === 'string' && Q.isArrayLike(arguments[2])) {
 		args = arguments[2];
 		options = arguments[3];
 	}
 	switch (t = Q.typeOf(container)) {
+		case 'array':
 		default:
 			// Assume it is an array-like structure.
 			// Make a copy in case it changes during iteration. Then iterate.
-			container = Array.prototype.slice.call(container, 0);
-		case 'array':
-			length = container.length;
-			if (!container || !length || !callback) return;
+			c = Array.prototype.slice.call(container, 0);
+			length = c.length;
+			if (!c || !length || !callback) return;
 			if (options && options.ascending === false) {
 				for (i=length-1; i>=0; --i) {
-					r = Q.handle(callback, container[i], args || [i, container[i]], container);
+					r = Q.handle(callback, c[i], args || [i, c[i]], c);
 					if (r === false) return false;
 				}
 			} else {
 				for (i=0; i<length; ++i) {
-					r = Q.handle(callback, container[i], args || [i, container[i]], container);
+					r = Q.handle(callback, c[i], args || [i, c[i]], container);
 					if (r === false) return false;
 				}
 			}
@@ -1359,7 +1359,7 @@ Q.diff = function _Q_diff(container1, container2 /*, ... comparator */) {
 	if (typeof comparator !== 'function') {
 		throw new Q.Exception("Q.diff: comparator must be a function");
 	}
-	var isArr = Q.isArray(container1);
+	var isArr = Q.isArrayLike(container1);
 	var result = isArr ? [] : {};
 	Q.each(container1, function (k, v1) {
 		var found = false;
@@ -1435,7 +1435,7 @@ Q.isInteger = function _Q_isInteger(value) {
  * @return {boolean}
  *	Whether it is an array
  */
-Q.isArray = function _Q_isArray(value) {
+Q.isArrayLike = function _Q_isArrayLike(value) {
 	return (Q.typeOf(value) === 'array');
 };
 
@@ -1550,7 +1550,7 @@ Q.extend = function _Q_extend(target /* [[deep,] [levels,] anotherObject], ... *
 			continue;
 		}		
 		var arg = arg;
-		if (Q.isArray(target) && Q.isArray(arg)) {
+		if (Q.isArrayLike(target) && Q.isArrayLike(arg)) {
 			target = target.concat(arg);
 		} else {
 			for (var k in arg) {
@@ -1688,7 +1688,7 @@ Q.Class = function _Q_Class(construct /* [, Base1, ...] [, properties, [classPro
 Q.take = function _Q_take(source, fields) {
 	var result = {};
 	if (!source) return result;
-	if (Q.isArray(fields)) {
+	if (Q.isArrayLike(fields)) {
 		for (var i = 0; i < fields.length; ++i) {
 			if (fields[i] in source) {
 				result [ fields[i] ] = source [ fields[i] ];
@@ -2672,7 +2672,7 @@ Q.firstErrorMessage = function _Q_firstErrorMessage(data /*, data2, ... */) {
 			error = d.errors[0];
 		} else if (d.error) {
 			error = d.error;
-		} else if (Q.isArray(d)) {
+		} else if (Q.isArrayLike(d)) {
 			error = d[0];
 		} else {
 			error = d;
