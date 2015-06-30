@@ -8935,7 +8935,7 @@ Q.Pointer = {
 	 * Places a hint to click or tap on the screen
 	 * @static
 	 * @method hint 
-	 * @param {Element|Object|String|Array} targets Indicates where to display the hint. A point should contain properties "x" and "y". Can also be an array of points, elements, or string css selectors to use with document.querySelector.
+	 * @param {Element|Object|String|Array} targets Indicates where to display the hint. A point should contain properties "x" and "y". Can also be a String selector referring to one or more elements after the show.delay, or an array of points, elements, or string css selectors to use with document.querySelector.
 	 * @param {Object} [options] possible options, which can include:
 	 * @param {String} [options.src] the url of the hint pointer image
 	 * @param {Point} [options.hotspot={x:0.5,y:0.3}] "x" and "y" represent the location of the hotspot within the image, using fractions between 0 and 1
@@ -8957,90 +8957,98 @@ Q.Pointer = {
 	 */
 	hint: function (targets, options) {
 		options = options || {};
-		var img, i, l;
+		var img1, i, l;
+		var qphi = Q.Pointer.hint.imgs;
 		var imageEvent = options.imageEvent || new Q.Event();
 		var audioEvent = options.audioEvent || new Q.Event();
-		if (Q.isArrayLike(targets)) {
-			for (i=0, l=targets.length; i<l; ++i) {
-				var o = Q.copy(options);
-				o.audio = (i===0) ? options.audio : null;
-				o.waitForEvents = (i > 0);				
-				o.imageEvent = imageEvent;
-				o.audioEvent = audioEvent;
-				Q.Pointer.hint(targets[i], o);
-			}
-			return;
-		}
-		var hintEvent = imageEvent.and(audioEvent);;
-		var target = targets;
+		var hintEvent = imageEvent.and(audioEvent);
 		var o = Q.extend({}, Q.Pointer.hint.options, 10, options);
 		var body = document.getElementsByTagName('body')[0];
-		var imgs = Q.Pointer.hint.imgs;
 		if (!options.dontRemove && !options.waitForEvents) {
-			for (i=0, l=imgs.length; i<l; ++i) {
-				img = imgs[i];
+			for (i=0, l=qphi.length; i<l; ++i) {
+				img = qphi[i];
 				if (img.parentNode) {
 					img.parentNode.removeChild(img);
 				}
 			}
-			imgs = Q.Pointer.hint.imgs = [];
+			qphi = Q.Pointer.hint.imgs = [];
 		}
-		img = Q.Pointer.hint.img = document.createElement('img');
-		img.setAttribute('src', Q.url(o.src));
-		img.style.position = 'absolute';
-		img.style.width = o.width;
-		img.style.height = o.height;
-		img.style.display = 'block';
-		img.style.pointerEvents = 'none';
-		img.setAttribute('class', 'Q_hint');
-		img.style.opacity = 0;
-		img.hide = o.hide;
-		img.dontStopBeforeShown = o.dontStopBeforeShown;
-		imgs.push(img);
-		if (target instanceof Element) {
-			img.hintElement = target;
-		}
-		body.appendChild(img);
+		img1 = document.createElement('img');
+		img1.setAttribute('src', Q.url(o.src));
+		img1.style.position = 'absolute';
+		img1.style.width = o.width;
+		img1.style.height = o.height;
+		img1.style.display = 'block';
+		img1.style.pointerEvents = 'none';
+		img1.setAttribute('class', 'Q_hint');
+		img1.style.opacity = 0;
+		img1.hide = o.hide;
+		img1.dontStopBeforeShown = o.dontStopBeforeShown;
+		qphi.push(img1);
+		body.appendChild(img1);
 		hintEvent.add(Q.once(function _hintReady() {
-			img.timeout = setTimeout(function () {
-				var point;
-				img.timeout = false;
-				if (typeof target === 'string') {
-					target = document.querySelector(target);
+			img1.timeout = setTimeout(function () {
+				var i, l;
+				var imgs = [img1];
+				if (typeof targets === 'string') {
+					targets = document.querySelectorAll(targets);
 				}
-				if (target instanceof Element) {
-					if (!target.isVisible()) {
-						if (img.parentNode) {
-							img.parentNode.removeChild(img);
-						}
-						return; // perhaps it disappeared
+				if (Q.isArrayLike(targets)) {
+					img1.target = targets[0];
+					for (i=1, l=targets.length; i<l; ++i) {
+						var img2 = img1.cloneNode(false);
+						img2.hide = img1.hide;
+						img2.dontStopBeforeShown = img1.dontStopBeforeShown;
+						img2.target = targets[i];
+						img2.timeout = false;
+						imgs.push(img2);
+						Q.Pointer.hint.imgs.push(img2);
+						body.appendChild(img2);
 					}
-					var offset = Q.Pointer.offset(target);
-					point = {
-						x: offset.left + target.offsetWidth / 2,
-						y: offset.top + target.offsetHeight / 2
-					};
 				} else {
-					point = target;
+					img1.target = targets;
 				}
-				img.style.display = 'block';
-				img.style.left = point.x - img.offsetWidth * o.hotspot.x + 'px';
-				img.style.top = point.y - img.offsetHeight * o.hotspot.y + 'px';
-				img.style.zIndex = o.zIndex;
-				var width = parseInt(img.style.width);
-				var height = parseInt(img.style.height);
-				Q.Animation.play(function (x, y) {
-					img.style.opacity = y;
-					if (o.show.initialScale !== 1) {
-						var z = 1 + (o.show.initialScale - 1) * (1 - y);
-						var w = width * z;
-						var h = height * z;
-						img.style.width = w + 'px';
-						img.style.height = h + 'px';
-						img.style.left = point.x - w * o.hotspot.x + 'px';
-						img.style.top = point.y - h * o.hotspot.y + 'px';
+				Q.each(imgs, function (i, img) {
+					if (typeof img.target === 'string') {
+						img.target = document.querySelector(target);
 					}
-				}, o.show.duration, o.show.ease);
+					img1.timeout = false;
+					var point;
+					var target = img.target;
+					if (target instanceof Element) {
+						if (!target.isVisible()) {
+							if (img.parentNode) {
+								img.parentNode.removeChild(img);
+							}
+							return; // perhaps it disappeared
+						}
+						var offset = Q.Pointer.offset(target);
+						point = {
+							x: offset.left + target.offsetWidth / 2,
+							y: offset.top + target.offsetHeight / 2
+						};
+					} else {
+						point = target;
+					}
+					img.style.display = 'block';
+					img.style.left = point.x - img.offsetWidth * o.hotspot.x + 'px';
+					img.style.top = point.y - img.offsetHeight * o.hotspot.y + 'px';
+					img.style.zIndex = o.zIndex;
+					var width = parseInt(img.style.width);
+					var height = parseInt(img.style.height);
+					Q.Animation.play(function (x, y) {
+						img.style.opacity = y;
+						if (o.show.initialScale !== 1) {
+							var z = 1 + (o.show.initialScale - 1) * (1 - y);
+							var w = width * z;
+							var h = height * z;
+							img.style.width = w + 'px';
+							img.style.height = h + 'px';
+							img.style.left = point.x - w * o.hotspot.x + 'px';
+							img.style.top = point.y - h * o.hotspot.y + 'px';
+						}
+					}, o.show.duration, o.show.ease);
+				});
 			}, o.show.delay);
 		}));
 		if (!Q.Pointer.hint.addedListeners) {
@@ -9051,15 +9059,15 @@ Q.Pointer = {
 		if (options.waitForEvents) {
 			return;
 		}
-		if (img.complete) {
+		if (img1.complete) {
 			imageEvent.handle();
 		} else {
-			img.onload = imageEvent.handle;
+			img1.onload = imageEvent.handle;
 		}
 		var a = options.audio || {};
 		if (a.src) {
 			Q.audio(a.src, function () {
-				img.audio = this;
+				img1.audio = this;
 				this.play(a.from || 0, a.until, a.removeAfterPlaying);
 				audioEvent.handle();
 			});
@@ -9076,11 +9084,10 @@ Q.Pointer = {
 	stopHints: function (container) {
 		var imgs = Q.Pointer.hint.imgs;
 		var imgs2 = [];
-		Q.each(imgs, function () {
-			var img = this;
+		Q.each(imgs, function (i, img) {
 			var outside = (
 				container instanceof Element
-				&& !container.isOrContains(img.hintElement)
+				&& !container.isOrContains(img.target)
 			);
 			if ((img.timeout !== false && img.dontStopBeforeShown)
 			|| outside) {
