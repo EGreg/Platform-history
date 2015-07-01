@@ -279,9 +279,8 @@ abstract class Streams extends Base_Streams
 	 *  If you pass null here, then either the logged-in user's id or '' will be used.
 	 * @param {string} $publisherId
 	 *  The id of the user publishing these streams
-	 * @param {string|array|Db_Range} $name='Streams/user/'
-	 *  If it ends in '/', then this function will return all streams that begin with $name.
-	 *  Otherwise, it is the exact stream's name.
+	 * @param {string|array|Db_Range} $name
+	 *  The name of the stream to fetch. Can end in "/" for template streams.
 	 *  Also it can be an array of stream names, or a custom Db_Range for stream names
 	 * @param {string} $fields='*'
 	 *  Must include "publisherId" and "name" fields, since they
@@ -289,9 +288,8 @@ abstract class Streams extends Base_Streams
 	 * @param {array} $options=array()
 	 *  Optional. Defaults to array().
 	 *  Provide additional stream selection options like 'limit', 'offset', 'orderBy', 'where' etc.
-	 *  Also can have the following options:
+	 *  See Query/Mysql::options().
 	 *  @param {boolean} [$options.refetch] => Ignore cache of previous calls to fetch, and save a new cache if necessary.
-	 *  @param {boolean} [$options.includeTemplate] => Set to true if you want to include the template when $name ends in a slash
 	 *  See Query/Mysql::options().
 	 * @return {array}
 	 *  Returns an array of Streams_Stream objects with access info calculated
@@ -302,7 +300,7 @@ abstract class Streams extends Base_Streams
 	static function fetch(
 		$asUserId,
 		$publisherId,
-		$name = 'Streams/user/',
+		$name,
 		$fields = '*',
 		$options = array())
 	{
@@ -318,14 +316,6 @@ abstract class Streams extends Base_Streams
 		}
 		if (empty($publisherId) or empty($name)) {
 			return array();
-		}
-		if (is_string($name)) {
-			if (substr($name, -1) === '/') {
-				$includeTemplate = !empty($options['includeTemplate']);
-				$name = new Db_Range($name, $includeTemplate, false, true);
-			} else {
-				$name = array($name);
-			}
 		}
 		$allCached = array();
 		if (is_array($name) and empty($options['refetch'])) {
@@ -434,9 +424,8 @@ abstract class Streams extends Base_Streams
 	 *  If you pass null here, then either the logged-in user's id or '' will be used.
 	 * @param {string} $publisherId
 	 *  The id of the user publishing these streams
-	 * @param {string|array|Db_Range} $name='Streams/user/'
-	 *  If it ends in '/', then this function will return all streams that begin with $name.
-	 *  Otherwise, it is the exact stream's name.
+	 * @param {string|array|Db_Range} $name
+	 *  The name of the stream to fetch. Can end in "/" for template streams.
 	 *  Also it can be an array of stream names, or a custom Db_Range for stream names
 	 * @param {string} $fields='*'
 	 *  Must include "publisherId" and "name" fields, since they
@@ -444,8 +433,6 @@ abstract class Streams extends Base_Streams
 	 * @param {array} $options=array()
 	 *  Optional. Defaults to array().
 	 *  Provide additional stream selection options like 'limit', 'offset', 'orderBy', 'where' etc.
-	 *  Also can have the following options:
-	 *  "includeTemplate" => Set to true if you want to include the template when $name ends in a slash
 	 *  See Query/Mysql::options().
 	 * @return {array|null}
 	 *  Returns an array of Streams_Stream objects with access info calculated
@@ -1500,10 +1487,6 @@ abstract class Streams extends Base_Streams
 		&$stream,
 		$options = array())
 	{
-		// Function supports only single stream/category operation
-		if (substr($toStreamName, -1) === '/' || substr($fromStreamName, -1) === '/')
-			throw new Q_Exception("Cannot process relation on multiple streams");
-
 		if (!isset($asUserId)) {
 			$asUserId = Users::loggedInUser();
 			if (!$asUserId) $asUserId = "";
