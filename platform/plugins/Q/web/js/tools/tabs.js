@@ -215,6 +215,7 @@ Q.Tool.define("Q/tabs", function(options) {
 		var tool = this;
 		var state = tool.state;
 		var $tabs = tool.$tabs;
+		var name = tool.getName(tab);
 		var url = location.hash.queryField('url');
 		if (url === undefined) {
 			url = window.location.href.split('#')[0];
@@ -222,7 +223,7 @@ Q.Tool.define("Q/tabs", function(options) {
 			url = Q.url(url);
 		}
 		var state = tool.state;
-		var defaultTabName = null;
+		var defaultTab = null;
 		if (!tab) {
 			$tabs.each(function (k, t) {
 				var tdn = tool.getName(t);
@@ -234,12 +235,12 @@ Q.Tool.define("Q/tabs", function(options) {
 					return false;
 				}
 				if (state.defaultTabName === tdn) {
-					defaultTabName = t;
+					defaultTab = t;
 				}
 			});
 		}
 		if (!tab) {
-			tab = defaultTabName;
+			tab = defaultTab;
 		}
 		return tab;
 	},
