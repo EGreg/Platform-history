@@ -14,12 +14,12 @@
  *   @param {string} [$options.publisherId] Either this or "stream" is required. Publisher id of the stream to which the others are related
  *   @param {string} [$options.streamName] Either this or "stream" is required. Name of the stream to which the others are related
  *   @param {string} [$options.tag="div"] The type of element to contain the preview tool for each related stream.
- *   @param {string} [$options.stream] You can pass a Streams.Stream object here instead of "publisherId" and "streamName"
- *   @param {string} [$options.relationType =""] The type of the relation.
+ *   @param {string} [$options.stream] You can pass a Streams_Stream object here instead of "publisherId" and "streamName"
+ *   @param {string} [$options.relationType=""] The type of the relation.
  *   @param {boolean} [$options.isCategory=true] Whether to show the streams related TO this stream, or the ones it is related to.
  *   @param {array} [$options.relationOptions] Can include options like 'limit', 'offset', 'ascending', 'min', 'max' and 'prefix'
  *   @param {boolean} [$options.editable] Set to false to avoid showing even authorized users an interface to replace the image or text
- *   @param {boolean} [$options.creatable]  Optional pairs of {streamType: params} to create new related streams.
+ *   @param {boolean} [$options.creatable]  Optional pairs of {streamType: toolOptions}  to render Streams/preview tools create new related streams.
  *   The params typically include at least a "title" field which you can fill with values such as "New" or "New ..."
  *   @param {string} [$options.toolType] Name of a function that takes streamType and returns the tag to render (and then activate) for that stream
  *   @param {boolean} [$options.realtime=false] Whether to refresh every time a relation is added, removed or updated by anyone

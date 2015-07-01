@@ -19,7 +19,7 @@
  *   @param {Boolean} [options.isCategory=true] Whether to show the streams related TO this stream, or the ones it is related to.
  *   @param {Object} [options.relationOptions] Can include options like 'limit', 'offset', 'ascending', 'min', 'max' and 'prefix'
  *   @param {Boolean} [options.editable] Set to false to avoid showing even authorized users an interface to replace the image or text
- *   @param {Boolean} [options.creatable]  Optional pairs of {streamType: params} to create new related streams.
+ *   @param {Boolean} [options.creatable]  Optional pairs of {streamType: toolOptions} to render Streams/preview tools create new related streams.
  *   The params typically include at least a "title" field which you can fill with values such as "New" or "New ..."
  *   @param {Function} [options.toolType] Function that takes streamType and returns the tag to render (and then activate) for that stream
  *   @param {Boolean} [options.realtime=false] Whether to refresh every time a relation is added, removed or updated by anyone

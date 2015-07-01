@@ -817,9 +817,8 @@ class Q
 			self::$event_empty[$handler_name] = true;
 			return false;
 		}
-		if (function_exists($function_name))
-			return true;
-		return false;
+		return function_exists($function_name);
+
 	}
 
 	/**
