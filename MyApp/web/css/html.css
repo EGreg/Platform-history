@@ -44,6 +44,11 @@ h2 { margin: 0; }
 #dashboard_slot input,
 #dashboard_slot textarea { color: black; }
 #page { position: absolute; left: 0%; width: 100%; top:50px; bottom: 0; } 
+#dashboard_slot .Q_inplace_tool .Q_hover .Q_inplace_tool_static,
+#dashboard_slot .Q_inplace_tool .Q_hover .Q_inplace_tool_blockstatic { 
+	background: white;
+	color: #333;
+}
 
 #dashboard, #notices, #content { margin: auto; text-align: left; }
 #content { position: relative; }
