@@ -3,7 +3,7 @@
 </p>
 
 <p>
-	Is this really your email address, <?php echo $user->username ?>?
+	Is this really your email address, <?php echo $user->displayName() ?>?
 	If so, click <?php echo Q_Html::a(
 		'Users/activate?code='.urlencode($email->activationCode)
 		 . ' emailAddress='.urlencode($email->address),
