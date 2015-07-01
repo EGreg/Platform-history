@@ -75,7 +75,7 @@ function _Streams_related_tool (options)
 			var element = tool.elementForStream(
 				tool.state.publisherId, "", streamType, null, 
 				{ creatable: params }
-			).addClass('Streams_related_composer Q_tabs_tab Q_contextual_inactive');
+			).addClass('Streams_related_composer Q_contextual_inactive');
 			var $prev = $('.Streams_related_stream:first', $container).prev();
 			if ($prev.length) {
 				$prev.after(element);
@@ -315,6 +315,7 @@ function _Streams_related_tool (options)
 		for (id in parents) {
 			tabs = Q.Tool.from(parents[id].element, "Q/tabs");
 			if (!tabs) continue;
+			tool.$('.Streams_related_composer').addClass('Q_tabs_tab')
 			Q.each(elements, function (i) {
 				var element = elements[i];
 				var value = state.tabs.call(tool, Q.Tool.from(elements[i]), tabs);
