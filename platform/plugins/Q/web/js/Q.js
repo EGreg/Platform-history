@@ -6205,7 +6205,7 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 		filter = 'q_tool';
 	}
 	// Arrays are accepted
-	if (Q.isArrayLike(elem)
+	if ((Q.isArrayLike(elem) && !(elem instanceof Element))
 	|| (typeof HTMLCollection !== 'undefined' && (elem instanceof root.HTMLCollection))
 	|| (root.jQuery && (elem instanceof jQuery))) {
 
