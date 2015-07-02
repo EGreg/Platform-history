@@ -87,7 +87,8 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 				publisherId: state.publisherId,
 				type: state.creatable.streamType
 			}, overrides);
-			Q.Streams.retainWith(tool).create(fields, function (err, stream, extra) {
+			Q.Streams.retainWith(tool)
+			.create(fields, function (err, stream, extra) {
 				if (err) {
 					return err;
 				}
