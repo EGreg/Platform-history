@@ -1521,7 +1521,7 @@ class Q
 					$message = addslashes($avar->getMessage());
 					echo "$indent$do_dump_indent"."code: $code, message: \"$message\"";
 					if ($avar instanceof Q_Exception) {
-						echo " inputFields: " . implode(', ', $avar->inputFIelds());
+						echo " inputFields: " . implode(', ', $avar->inputFields());
 					}
 					echo ($as_text ? $n : "<br />");
 				}

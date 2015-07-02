@@ -193,7 +193,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 							var prefix = 'plugins/Users/img/icons'
 							var path = (iconUrl.substr(0, prefix.length) === prefix)
 								? prefix
-								: 'plugin/Streams';
+								: 'plugins/Streams';
 							var subpath = iconUrl.substr(path.length+1);
 							callback({ path: path, subpath: subpath });
 						});

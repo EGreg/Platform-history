@@ -6,60 +6,39 @@
  */
 	
 /**
- * This jQuery plugin creates sortable panels
+ * This jQuery plugin adds a behavior to a container that allows the user to sort its children via drag-and-drop in various environments.
  * @class Q sortable
  * @constructor
  * @param {Object} [options] options object which conatins parameters for function
- * @param {String} [options.draggable] Selector for elements that can be dragged
- * @default '*'
- * @param {String} [options.droppable] Selector for elements that can act as drop targets
- * @default '*'
- * @param {Number} [options.zIndex] CSS z-index for sortable elements
- * @default 999999
- * @param {Number} [options.draggedOpacity] Element Drag effect opacity
- * @default 0.8
- * @param {Number} [options.placeholderOpacity] Opacity for elements placeholder
- * @default 0.1
+ * @param {String} [options.draggable='*'] Selector for elements that can be dragged
+ * @param {String} [options.droppable='*'] Selector for elements that can act as drop targets
+ * @param {Number} [options.zIndex=999999] CSS z-index for sortable elements
+ * @param {Number} [options.draggedOpacity=0.8] Element Drag effect opacity
+ * @param {Number} [options.placeholderOpacity=0.1] Opacity for elements placeholder
  * @param {Object} [options.lift] parameters object for vertical movement
- *   @param {Number} [options.lift.delay] movement delay in milliseconds
- *   @default 300
- *   @param {Number} [options.lift.delayTouchscreen] movement delay for touchscreens in milliseconds
- *   @default 300
- *   @param {Number} [options.lift.threshhold] Start moving elemnt after threshhold pixels mouse (touch) dragging
- *   @default 10
- *   @param {Number} [options.lift.zoom] Zoom element on dragging
- *   @default 1.1
- *   @param {Number} [options.lift.animate] Animation speed in milliseconds
- *   @default 100
+ *   @param {Number} [options.lift.delay=300] movement delay in milliseconds
+ *   @param {Number} [options.lift.delayTouchscreen=300] movement delay for touchscreens in milliseconds
+ *   @param {Number} [options.lift.threshhold=10] Start moving elemnt after threshhold pixels mouse (touch) dragging
+ *   @param {Number} [options.lift.zoom=1.1] Zoom element on dragging
+ *   @param {Number} [options.lift.animate=100] Animation speed in milliseconds
  * @param {Object} [options.scroll] parameters object for horisontal movement and scroll dragging
- *   @param {Number} [options.scroll.delay] movement delay in milliseconds
- *   @default 300
- *   @param {Number} [options.scroll.delayTouchscreen] movement delay for touchscreens in milliseconds
- *   @default 300
- *   @param {Number} [options.scroll.threshhold] Start moving elemnt after threshhold pixels mouse (touch) dragging
- *   @default 10
- *   @param {Number} [options.scroll.distance] Scrolling distance
- *   @default 1.5
- *   @param {Number} [options.scroll.distanceWindow] distance to block corner
- *   @default 0.1
- *   @param {Number} [options.scroll.speed] Element horizontal movement , scrolling speed
- *   @default 30
- *   @param {Number} [options.scroll.acceleration] Movement Step value
- *   @default 0.1
+ *   @param {Number} [options.scroll.delay=300] movement delay in milliseconds
+ *   @param {Number} [options.scroll.delayTouchscreen=300] movement delay for touchscreens in milliseconds
+ *   @param {Number} [options.scroll.threshhold=10] Start moving elemnt after threshhold pixels mouse (touch) dragging
+ *   @param {Number} [options.scroll.distance=1.5] Scrolling distance
+ *   @param {Number} [options.scroll.distanceWindow=0.1] distance to block corner
+ *   @param {Number} [options.scroll.speed=30] Element horizontal movement , scrolling speed
+ *   @param {Number} [options.scroll.acceleration=0.1] Movement Step value
  * @param {Object} [options.drop] object for dropping effect options
  *   @param {Number} [options.drop.duration] Duration of dropping effect
  *   @default 300
- * @param {Q.Event} [options.onLift] This event triggering on elemen vertical dragging
- * @default Q.Event()
- * @param {Q.Event} [options.onIndicate] This event triggering before dragging
- * @default Q.Event()
- * @param {Q.Event} [options.beforeDrop] This event triggering before drop
- * @default Q.Event()
- * @param {Q.Event} [options.onDrop] This event triggering after drop. Default event handler is in example
+ * @param {Q.Event} [options.onLift] This triggers when an item was lifted up for dragging
+ * @param {Q.Event} [options.onIndicate] This triggers whenever a drop result is indicated
+ * @param {Q.Event} [options.beforeDrop] This triggers right before a drop
+ * @param {Q.Event} [options.onDrop] This triggers after a drop. You can override the default handler the tool attaches.
  * @param {Boolean} [options.requireDropTarget] Whether to prevent dropping on something that is not a drop target (not in options.droppable)
  * @default true
  * @param {Q.Event} [options.onSuccess] This event triggers after a successful drag and drop
- * @default Q.Event()
  */
 Q.Tool.jQuery('Q/sortable',
 
@@ -79,6 +58,9 @@ Q.Tool.jQuery('Q/sortable',
 
         state.draggable = state.draggable || '*';
         $this.on([Q.Pointer.start, '.Q_sortable'], state.draggable, liftHandler);
+		$this.on([Q.Pointer.end, '.Q_sortable'], state.draggable, function () {
+			if (tLift) clearTimeout(tLift);
+		});
 
         $('*', $this).css('-webkit-touch-callout', 'none');
         $this.on('dragstart.Q_sortable', state.draggable, function () {

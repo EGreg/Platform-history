@@ -65,7 +65,9 @@ function _Streams_related_tool (options)
 	tabs: function (previewTool, tabsTool) {
 		return Q.Streams.key(previewTool.state.publisherId, previewTool.state.streamName);
 	},
-	toolType: function (streamType) { return streamType+'/preview'; },
+	toolType: function (streamType) {
+		return streamType+'/preview';
+	},
 	onUpdate: new Q.Event(
 	function _Streams_related_onUpdate(result, entering, exiting, updating) {
 		function addComposer(streamType, params) {
@@ -80,7 +82,7 @@ function _Streams_related_tool (options)
 			if ($prev.length) {
 				$prev.after(element);
 			} else {
-				$container.append(element);
+				$container.prepend(element);
 			}
 			Q.activate(element, function () {
 				var rc = tool.state.refreshCount;
@@ -119,7 +121,7 @@ function _Streams_related_tool (options)
 		
 		if (result.stream.testWriteLevel('relate')) {
 			Q.each(state.creatable, addComposer);
-			if (state.sortable && result.stream.testWriteLevel('suggest')) {
+			if (state.sortable && result.stream.testWriteLevel('edit')) {
 				if (state.realtime) {
 					alert("Streams/related: can't mix realtime and sortable options yet");
 					return;
@@ -281,7 +283,7 @@ function _Streams_related_tool (options)
 		var o = Q.extend({
 			publisherId: publisherId,
 			streamName: streamName,
-			relate: {
+			related: {
 				publisherId: state.publisherId,
 				streamName: state.streamName,
 				type: state.relationType,

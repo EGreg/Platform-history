@@ -1856,6 +1856,7 @@ abstract class Streams extends Base_Streams
 	 *	  Useful for shorthand in while( ) statements.
 	 *  'streamFields' => If specified, fetches only the fields listed here for any streams
 	 *  'skipFields' => Optional array of field names. If specified, skips these fields when fetching streams
+	 *  'includeTemplates' => Defaults to false. Pass true here to include template streams (whose name ends in a slash) among the related streams.
 	 * @return {array}
 	 *  Returns array($relations, $relatedStreams, $stream).
 	 *  However, if $streamName wasn't a string or ended in "/"
@@ -1950,9 +1951,22 @@ abstract class Streams extends Base_Streams
 		if (isset($options['where'])) {
 			$query = $query->where($options['where']);
 		}
+		if (0 and empty($options['includeTemplates'])) {
+			$col = $FT.'StreamName';
+			$query = $query->where(new Db_Expression(
+				"SUBSTRING($col, -1, 1) != '/'"
+			));
+		}
 
 		$FT = $isCategory ? 'from' : 'to';
 		$relations = $query->fetchDbRows(null, '', $FT.'StreamName');
+		if (empty($options['includeTemplates'])) {
+			foreach ($relations as $k => $v) {
+				if (substr($k, -1) === '/') {
+					unset($relations[$k]);
+				}
+			}
+		}
 
 		if (!empty($options['relationsOnly'])) {
 			return $relations;

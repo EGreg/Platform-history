@@ -197,7 +197,7 @@ function _Q_inplace_tool_constructor(element, options) {
 			fieldinput.add(fieldinput.parent()).css('min-height', height);
 		}
 	}, 0); // hopefully it will be inserted into the DOM by then
-	function onClick() {
+	function onClick(event) {
 		container_span.addClass('Q_editing');
 		container_span.addClass('Q_discouragePointerEvents');
 		if (state.bringToFront) {
@@ -275,7 +275,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		tool.$('.Q_inplace_tool_buttons').css({
 			width: container_span.outerWidth() + 'px'
 		});
-		return false;
+		event.preventDefault();
 	};
 	function onSave () {
 		var form = $('.Q_inplace_tool_form', $te);

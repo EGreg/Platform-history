@@ -180,7 +180,7 @@ class Streams_Avatar extends Base_Streams_Avatar
 			$attributes['class'] = "Streams_username$class";
 			$attr = Q_Html::attributes($attributes);
 			$u2 = "<span $attr>$u</span>";
-			$f2 = "<span $attr>$f</span>";
+			$f2 = "<span $attr>$fallback</span>";
 		} else {
 			$fn2 = $fn;
 			$ln2 = $ln;
