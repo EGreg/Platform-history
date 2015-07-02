@@ -3317,7 +3317,7 @@ Q.Tool.beingActivated = undefined;
 Q.Tool.define.options = function (toolName, setOptions) {
 	var options;
 	toolName = Q.normalize(toolName);
-	if (Q.Tool.constructors[toolName]) {
+	if (typeof Q.Tool.constructors[toolName] === 'functions') {
 		options = Q.Tool.constructors[toolName].options;
 	} else {
 		options = _qtdo[toolName] = _qtdo[toolName] || {};
@@ -3425,7 +3425,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 Q.Tool.jQuery.options = function (pluginName, setOptions) {
 	var options;
 	var pluginName = Q.normalize(pluginName);
-	if (Q.Tool.constructors[name]) {
+	if (typeof Q.Tool.constructors[name] === 'function') {
 		options = root.jQuery.fn[pluginName].options;
 	} else {
 		options = _qtjo[pluginName] = _qtjo[pluginName] || {};
