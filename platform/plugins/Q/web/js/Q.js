@@ -4992,7 +4992,6 @@ Q.trigger = function _Q_trigger(eventName, element, args) {
 };
 
 Q.layout = function _Q_layout(element) {
-	Q.trigger('Q.onLayout', element || document.body, [element]);
 	Q.onLayout.handle.call(element);
 };
 

@@ -19,8 +19,12 @@ Q.Tool.define("MyApp/cool", function (options) {
 	var state = tool.state;
 
 	if (!state.publisherId || !state.streamName) {
-		throw new Q.Exception("publisherId or streamName is required");
+		throw new Q.Exception(tool.id + ": publisherId or streamName is required");
 	}
+	
+	Q.Streams.get(state.publisherId, state.streamName, function () {
+		$(tool.element).text(this.fields.title);
+	});
 
 	Q.addStylesheet("css/html.css"); // add any css you need
 	

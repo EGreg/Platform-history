@@ -365,10 +365,12 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 						});
 						callback.apply(tool);
 					});
-					tool.$('.Streams_preview_title').width(
-						$(tool.element).innerWidth() 
-						- tool.$('.Streams_preview_icon').outerWidth(true)
-					);
+					Q.onLayout.add(function () {
+						tool.$('.Streams_preview_title').width(
+							$(tool.element).innerWidth() 
+							- tool.$('.Streams_preview_icon').outerWidth(true)
+						);
+					}, tool);
 				},
 				state.templates[tpl]
 			);

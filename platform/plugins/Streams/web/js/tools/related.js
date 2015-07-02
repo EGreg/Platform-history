@@ -21,7 +21,7 @@
  *   @param {Boolean} [options.editable] Set to false to avoid showing even authorized users an interface to replace the image or text
  *   @param {Boolean} [options.creatable]  Optional pairs of {streamType: toolOptions} to render Streams/preview tools create new related streams.
  *   The params typically include at least a "title" field which you can fill with values such as "New" or "New ..."
- *   @param {Function} [options.toolType] Function that takes streamType and returns the tag to render (and then activate) for that stream
+ *   @param {Function} [options.toolType] Function that takes (streamType, options) and returns the tag to render (and then activate) for that stream
  *   @param {Boolean} [options.realtime=false] Whether to refresh every time a relation is added, removed or updated by anyone
  *   @param {Object} [options.sortable] Options for "Q/sortable" jQuery plugin. Pass false here to disable sorting interface. If streamName is not a String, this interface is not shown.
  *   @param {Function} [options.tabs] Function for interacting with any parent "Q/tabs" tool. Format is function (previewTool, tabsTool) { return urlOrTabKey; }
@@ -86,15 +86,13 @@ function _Streams_related_tool (options)
 			}
 			Q.activate(element, function () {
 				var rc = tool.state.refreshCount;
-				element.Q.tool.state.onUpdate.set(function () {
-					
+				var onUpdate = element.Q.tool.state.onUpdate;
+				onUpdate && onUpdate.set(function () {
 					// workaround for now
 					if (tool.state.refreshCount > rc) {
 						return;
 					}
-					
 					tool.integrateWithTabs([element]);
-					
 					element.setAttribute('class', element.getAttribute('class').replace(
 						'Streams_related_composer', 'Streams_related_stream'
 					));
@@ -291,7 +289,8 @@ function _Streams_related_tool (options)
 			},
 			editable: state.editable
 		}, options);
-		var e = this.setUpElement(state.tag || 'div', state.toolType(streamType), o);
+		var toolType = state.toolType(streamType, o);
+		var e = this.setUpElement(state.tag || 'div', toolType, o);
 		e.style.visibility = 'visible';
  		return e;
 	},
