@@ -364,6 +364,8 @@
 .Streams_preview_contents { display: inline-block; vertical-align: middle; }
 .Streams_preview h3 { margin: 0; padding: 0 0 0 10px; line-height: 50px; font-size: 30px; }
 
+.Streams_preview_icon,
+.Streams_preview_add { width: 50px; }
 
 /* Streams access tool */
 .Streams_access_tool_dialog_container { width: 450px; }

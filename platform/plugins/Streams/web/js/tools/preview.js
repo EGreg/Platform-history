@@ -357,8 +357,7 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 								p.fill('inplace').apply(this, arguments);
 							}
 						}
-					},
-					function () {
+					}, function () {
 						tool.state.onRefresh.handle.apply(tool, []);
 						$('img', tool.element).off('load.Streams-preview')
 						.on('load.Streams-preview', function () {
@@ -366,6 +365,10 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 						});
 						callback.apply(tool);
 					});
+					tool.$('.Streams_preview_title').width(
+						$(tool.element).innerWidth() 
+						- tool.$('.Streams_preview_icon').outerWidth(true)
+					);
 				},
 				state.templates[tpl]
 			);
@@ -378,22 +381,25 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 Q.Template.set('Streams/preview/view',
 	'<div class="Streams_preview_container Q_clearfix">'
 	+ '<img src="{{& srcFull}}" alt="{{alt}}" class="Streams_preview_icon">'
-	+ '<div class="Streams_preview_contents {{titleClass}}"><{{titleTag}}>{{& inplace}}</{{titleTag}}></div>'
-	+ '</div>'
+	+ '<div class="Streams_preview_contents {{titleClass}}">'
+	+ '<{{titleTag}} class="Streams_preview_title">{{& inplace}}</{{titleTag}}>'
+	+ '</div></div>'
 );
 
 Q.Template.set('Streams/preview/edit',
 	'<div class="Streams_preview_container Q_clearfix">'
 	+ '<img src="{{& src}}" alt="{{alt}}" class="Streams_preview_icon">'
-	+ '<div class="Streams_preview_contents {{titleClass}}"><{{titleTag}}>{{& inplace}}</{{titleTag}}></div>'
-	+ '</div>'
+	+ '<div class="Streams_preview_contents {{titleClass}}">'
+	+ '<{{titleTag}} class="Streams_preview_title">{{& inplace}}</{{titleTag}}>'
+	+ '</div></div>'
 );
 
 Q.Template.set('Streams/preview/create',
 	'<div class="Streams_preview_container Q_clearfix">'
 	+ '<img src="{{& src}}" alt="{{alt}}" class="Streams_preview_add">'
-	+ '<div class="Streams_preview_contents {{titleClass}}"><{{titleTag}}>{{& title}}</{{titleTag}}></div>'
-	+ '</div>'
+	+ '<div class="Streams_preview_contents {{titleClass}}">'
+	+ '<{{titleTag}} class="Streams_preview_title">{{title}}</{{titleTag}}>'
+	+ '</div></div>'
 );
 
 })(Q, jQuery, window);

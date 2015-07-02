@@ -174,6 +174,18 @@ function _Q_inplace_tool_constructor(element, options) {
 		noCancel = true;
 	}
 	previousValue = fieldinput.val();
+	var maxWidth = state.maxWidth || null;
+	if (!maxWidth) {
+		$te.parents().each(function () {
+			var $this = $(this);
+			var display = $this.css('display');
+			if (display === 'block' || display === 'table-cell'
+			|| (display === 'inline-block' && this.style.width)) {
+				maxWidth = this;
+				return false;
+			}
+		});
+	}
 	setTimeout(function () {
 		fieldinput.css({
 			fontSize: static_span.css('fontSize'),
@@ -182,7 +194,7 @@ function _Q_inplace_tool_constructor(element, options) {
 			letterSpacing: static_span.css('letterSpacing')
 		});
 		fieldinput.plugin('Q/autogrow', {
-			maxWidth: state.maxWidth || $te.parent().innerWidth(),
+			maxWidth: state.maxWidth || maxWidth,
 			minWidth: state.minWidth || 0
 		});
 		if (!fieldinput.data('inplace')) {
@@ -211,7 +223,7 @@ function _Q_inplace_tool_constructor(element, options) {
 				});
 		}
 		fieldinput.plugin('Q/autogrow', {
-			maxWidth: state.maxWidth || $te.parent().innerWidth(),
+			maxWidth: state.maxWidth || maxWidth,
 			minWidth: state.minWidth || 0,
 			onResize: {"Q/inplace": function () {
 				var margin = this.outerHeight() + parseInt(this.css('margin-top'));
