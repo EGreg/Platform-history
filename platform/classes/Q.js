@@ -10,6 +10,7 @@ var events = require('events');
 var path = require('path');
 var fs = require('fs');
 
+var root = this;
 var QConstructor = function QConstructor() {};
 QConstructor.prototype = new events.EventEmitter();
 /**
@@ -37,7 +38,9 @@ Q.typeOf = function _Q_typeOf(value) {
 		if (value === null) {
 			return 'null';
 		}
-		if (value instanceof Array
+		if (value instanceof root.Element) {
+			return 'Element';
+		} else if (value instanceof Array
 		|| (value.constructor && value.constructor.name === 'Array')) {
 			s = 'array';
 		} else if (typeof(value.typename) != 'undefined' ) {

@@ -820,7 +820,9 @@ Q.typeOf = function _Q_typeOf(value) {
 		if (value === null) {
 			return 'null';
 		}
-		if (value instanceof Array
+		if (value instanceof root.Element) {
+			return 'Element';
+		} else if (value instanceof Array
 		|| (value.constructor && value.constructor.name === 'Array')
 		|| Object.prototype.toString.apply(value) === '[object Array]') {
 			s = 'array';
