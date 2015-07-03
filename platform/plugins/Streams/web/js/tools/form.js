@@ -31,28 +31,40 @@ Q.Tool.define("Streams/form", function (options) {
 	$inputs.on('change', function () {
 		var $this = $(this);
 		var $parent = $this.parent();
+		var name = null;
+		var value = null;
 		if ($parent.attr('data-type') === 'date') {
 			var notReady = false;
+			var y, m, d;
 			$parent.find('select').each(function () {
-				var value = $(this).val();
+				var $this = $(this);
+				switch ($this.attr('name').split('_').pop()) {
+					case 'year': y = $this.val(); break;
+					case 'month': m = $this.val(); break;
+					case 'day': d = $this.val(); break;
+				}
+				var value = $this.val();
 				if (!value || value == '0') {
 					notReady = true;
 					return false;
 				}
 			});
-			if (notReady) {
-				return;
-			}
+			var parts = $this.attr('name').split('_');
+			name = parts.slice(0, parts.length-1).join('_');
+			value = y + '-' + m + '-' + d;
+		} else {
+			name = $this.attr('name');
+			value = $this.val();
 		}
-		var params = {};
-		$parent.find($inputs).each(function () {
-			var $this = $(this);
-			params[$this.attr('name')] = $this.val();
-		});
-		params.inputs = $hidden.val();
-		Q.req('Streams/form', function () {
+		if (notReady) {
+			return;
+		}
+		var fields = {};
+		fields[name] = value;
+		fields.inputs = $hidden.val();
+		Q.req('Streams/form', 'streams', function () {
 			debugger;
-		}, {method: 'post', fields: params});
+		}, {method: 'post', fields: fields});
 	});
 
 },

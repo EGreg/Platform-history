@@ -23,11 +23,10 @@
  */
 function Streams_form_tool($options)
 {
-	$user = Users::loggedInUser();
 	$fields = Q::ifset($options, 'fields', array());
 	$defaults = array(
 		'publisherId' => null,
-		'steramName' => null,
+		'streamName' => null,
 		'field' => null,
 		'type' => 'text',
 		'attributes' => array(),
@@ -51,7 +50,7 @@ function Streams_form_tool($options)
 				'field' => $field[2],
 				'type' => $field[3],
 				'attributes' => isset($field[4]) ? $field[4] : array(),
-				'value' => isset($field[5]) ? $field[5] : array(),
+				'value' => isset($field[5]) ? $field[5] : '',
 				'options' => isset($field[6]) ? $field[6] : null,
 				'params' => isset($field[7]) ? $field[7] : null,
 			);
@@ -64,10 +63,10 @@ function Streams_form_tool($options)
 		if ($stream) {
 			if (substr($r['field'], 0, 10) === 'attribute:') {
 				$attribute = trim(substr($r['field'], 10));
-				$value = $streams->get($attribute, $r['value']);
+				$value = $stream->get($attribute, $r['value']);
 			} else {
 				$field = $r['field'];
-				$value = $streams->$field;
+				$value = $stream->$field;
 			}
 		} else {
 			$value = $r['value'];

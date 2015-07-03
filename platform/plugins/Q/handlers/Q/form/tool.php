@@ -2,8 +2,7 @@
 
 /**
  * This tool is meant to be wrapped in a <form> tag
- * @param {array} $options
- *  An associative array of parameters, containing:
+ * @param {array} $options An associative array of parameters, containing:
  * @param {array} $options.fields an associative array of fieldname => fieldinfo pairs,
  *   where fieldinfo contains the following:
  *     "type" => the type of the field (@see Q_Html::smartTag())

@@ -57,8 +57,13 @@ function Streams_stream_post($params) {
 		unset($req['icon']);
 	}
 	
-	// This webservice doesn't let clients set the name of the stream
-	unset($req['name']);
+	// Check if client can set the name of this stream
+	if (!empty($req['name'])) {
+		if ($user->id !== $publisherId
+		or !Q_Config::get('Streams', 'possibleUserStreams', $req['name'], false)) {
+			throw new Users_Exception_NotAuthorized();
+		}
+	}
 	
 	// Create the stream
 	$stream = Streams::create($user->id, $publisherId, $type, $req, $relate);

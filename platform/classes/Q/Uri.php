@@ -953,7 +953,7 @@ class Q_Uri
 	protected static function decode(
 	 $tail)
 	{
-		if ($tail[0] === '{' and $result = json_decode($tail, true)) {
+		if ($tail[0] === '{' and $result = Q::json_decode($tail, true)) {
 			return $result;
 		}
 		$clauses = explode(' ', $tail);

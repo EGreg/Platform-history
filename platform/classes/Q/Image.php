@@ -93,7 +93,7 @@ class Q_Image
 		$keywords = urlencode(strtolower($keywords));
 		$url = "http://pixabay.com/api/?username=$username&key=$key&q=$keywords&$optionString";
 		$json = @file_get_contents($url);
-		$data = json_decode($json, true);
+		$data = Q::json_decode($json, true);
 		if (!$returnFirstImage) {
 			return $data;
 		}

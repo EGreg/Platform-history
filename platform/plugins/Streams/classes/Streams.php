@@ -725,7 +725,7 @@ abstract class Streams extends Base_Streams
 	 * @param {string|integer} [$fields.writeLevel=null] You can set the stream's write access level, see Streams::$WRITE_LEVEL
 	 * @param {string|integer} [$fields.adminLevel=null] You can set the stream's admin access level, see Streams::$ADMIN_LEVEL
 	 * @param {string} [$fields.name=null] Here you can specify an exact name for the stream to be created. Otherwise a unique one is generated automatically.
-	 * @param {string} [$fields.skipAccess=false] Skip all access checks when creating and relating the stream.
+	 * @param {boolean} [$fields.skipAccess=false] Skip all access checks when creating and relating the stream.
 	 * @param {array} $relate The user would also be authorized if the stream would be related to
 	 *  an existing category stream, in which the user has a writeLevel of at least "relate",
 	 *  and the user that would be publishing this new stream has a template for this stream type
@@ -765,7 +765,22 @@ abstract class Streams extends Base_Streams
 		// OK we are good to go!
 		$stream = new Streams_Stream;
 		$stream->publisherId = $publisherId;
-		$stream->type = $type;
+		if (!empty($fields['name'])) {
+			$p = new Q_Tree();
+			$p->load(STREAMS_PLUGIN_CONFIG_DIR.DS.'streams.json');
+			$p->load(APP_CONFIG_DIR.DS.'streams.json');
+			$info = $p->get($fields['name'], array());
+			if (empty($info['type'])) {
+				throw new Q_Exception_RequiredField(array('field' => 'type'));
+			}
+			foreach (Base_Streams_Stream::fieldNames() as $f) {
+				if (isset($info[$f])) {
+					$stream->$f = $info[$f];
+				}
+			}
+		} else {
+			$stream->type = $type;
+		}
 
 		// extend with any config defaults for this stream type
 		$xtype = Q_Config::get('Streams', 'types', $type, 'fields', array());

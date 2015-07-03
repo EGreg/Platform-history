@@ -95,9 +95,9 @@
 		}
 	},
 	"Streams": {
-		"allowedToCreate": [
-			"Streams/user/birthday",
-			"Streams/user/height"
-		]
+		"possibleUserStreams": {
+			"Streams/user/birthday": true,
+			"Streams/user/height": true
+		}
 	}
 }
