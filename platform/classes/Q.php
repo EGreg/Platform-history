@@ -1187,11 +1187,26 @@ class Q
 	{
 		$result = call_user_func_array('json_encode', func_get_args());
 		if ($result === false) {
-			$msg = json_last_error_msg();
-			$code = json_last_error();
-			throw new Q_Exception("JSON encoding error $code: $msg");
+			throw new Q_Exception_JsonEncode(array(
+				'message' => json_last_error_msg()
+			), null, json_last_error());
 		}
 		return str_replace("\\/", '/', $result);
+	}
+
+
+	/**
+	 * A wrapper for json_decode
+	 */
+	static function json_decode()
+	{
+		$result = call_user_func_array('json_decode', func_get_args());
+		if ($code = json_last_error()) {
+			throw new Q_Exception_JsonDecode(array(
+				'message' => json_last_error_msg()
+			), null, $code);
+		}
+		return $result;
 	}
 
 	/**

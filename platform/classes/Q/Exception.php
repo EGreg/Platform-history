@@ -16,10 +16,12 @@ class Q_Exception extends Exception
 	 *  You can also provide a string here, which will
 	 *  then be the exception message.
 	 * @param {array} [$inputFields=array()] Array of names of input fields to which the exception applies.
+	 * @param {array} [$code=null] Optionally pass the error code here to override the default
 	 */
 	function __construct(
 	  $params = array(),
-	  $inputFields = array())
+	  $inputFields = array(),
+	  $code = null)
 	{
 		if (is_string($inputFields)) {
 			$inputFields = array($inputFields);
@@ -27,7 +29,7 @@ class Q_Exception extends Exception
 		$this->inputFields = $inputFields;
 		
 		if (is_string($params)) {
-			parent::__construct($params, 1);
+			parent::__construct($params, isset($code) ? $code : 1);
 			return;
 		}
 		$this->params = is_array($params) ? $params : array();
@@ -36,9 +38,8 @@ class Q_Exception extends Exception
 		$message = isset(self::$messages[$className])
 			? Q::interpolate(self::$messages[$className], $this->params)
 			: $className;
-		$code = isset(self::$codes[$className])
-			? self::$codes[$className]
-			: 1;
+		$code = isset($code) ? $code : 
+			(isset(self::$codes[$className]) ? self::$codes[$className] : 1);
 		parent::__construct($message, $code);
 	}
 	
