@@ -60,7 +60,8 @@ Q.Tool.define("Q/columns", function(options) {
 	}, 100));
 	
 	tool.refresh();
-	Q.onLayout.set(function () {
+	Q.onLayout(tool).set(function () {
+		if (element && !element.isOrContains(tool.element)) return;
 		tool.refresh();
 	}, tool);
 },
@@ -412,7 +413,7 @@ Q.Tool.define("Q/columns", function(options) {
 						$cs.height(heightToBottom);
 						$div.css('height', 'auto');
 					}
-					Q.layout();
+					Q.layout($cs[0]);
 					if (o.hideBackgroundColumns) {
 						$div.prev().hide();
 					}

@@ -366,7 +366,7 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 						});
 						callback.apply(tool);
 					});
-					Q.onLayout.add(function () {
+					Q.onLayout(tool).add(function () {
 						tool.$('.Streams_preview_title').width(
 							$(tool.element).innerWidth() 
 							- tool.$('.Streams_preview_icon').outerWidth(true)

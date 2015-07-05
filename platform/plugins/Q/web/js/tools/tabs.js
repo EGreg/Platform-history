@@ -58,7 +58,7 @@ Q.Tool.define("Q/tabs", function(options) {
 		tool.$tabs.css('visibility', 'visible');
 	}
 	
-	Q.onLayout.set(function () {
+	Q.onLayout(tool).set(function () {
 		tool.refresh(_showTabs);
 	}, tool);
 	
@@ -79,6 +79,7 @@ Q.Tool.define("Q/tabs", function(options) {
 	beforeSwitch: new Q.Event(),
 	onActivate: new Q.Event(),
 	onCurrent: new Q.Event(),
+	onContextual: new Q.Event(),
 	tabName: null, // set by indicateCurrent
 	tab: null // set by indicateCurrent
 },
@@ -294,10 +295,13 @@ Q.Tool.define("Q/tabs", function(options) {
 			});
 		}
 		if ($o.length) {
-			if ($o.data('Q_contextual')) {
-				$('.Q_tabs_tab', $o.data('Q_contextual')).insertAfter($o);
+			var cs = $o.state('Q/contextual');
+			if (cs) {
+				if (cs.contextual) {
+					$('.Q_tabs_tab', cs.contextual).insertAfter($o);
+				}
+				$o.plugin("Q/contextual", "remove");
 			}
-			$o.plugin("Q/contextual", "remove");
 			$o.remove();
 		}
 		var $tabs = tool.$tabs = $('.Q_tabs_tab', $te);
@@ -367,16 +371,16 @@ Q.Tool.define("Q/tabs", function(options) {
 				className: "Q_tabs_contextual",
 				onConstruct: function ($contextual) {
 					callback && callback.call(tool);
+				},
+				onShow: function () {
+					Q.layout(this.state('Q/contextual').contextual[0]);
+					Q.handle(state.onContextual, this, arguments);
 				}
 			});
 			tool.$overflowed = $(elements);
 		});
 	})
 }
-);
-
-Q.Template.set('Q/tabs/contextual',
-	'<div class="Q_contextual"><ul class="Q_listing"></ul></div>'
 );
 
 })(Q, jQuery);

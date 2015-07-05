@@ -26,7 +26,7 @@ Q.onReady.set(function()
 
 Q.onActivate.set(function()
 {
-	Q.Layout.updateTools(false);
+	// Q.Layout.updateTools(false);
 }, 'QTools');
 
 /**
@@ -1618,7 +1618,7 @@ Q.Layout = {
 			// participants.children('.Streams_participant_tool').participants('update');
 		}
 		
-		Q.trigger('Q.onLayout', document.body, [layoutUpdateOptions]);
+		Q.layout();
 	},
 	
 	/**
@@ -2371,7 +2371,7 @@ Q.Contextual = {
 	 * @param {Object} size . Optional. If provided, must be an object with such structure: { 'width': value, 'height': value }.
 	 *	 Used to override predefined size of the contextual.
 	 */
-	add: function(trigger, contextual, coords, size)
+	add: function(trigger, contextual, coords, size, events)
 	{
 		var info = {
 			'inBottomHalf': false,
@@ -2404,7 +2404,7 @@ Q.Contextual = {
 		}
 		Q.Contextual.collection.push({ 'trigger': trigger, 'contextual': contextual, 'info': info });
 		
-		Q.Contextual.makeShowHandler();
+		Q.Contextual.makeShowHandler(events);
 		Q.Contextual.makeLifecycleHandlers();
 		
 		contextual.on('click', function (e) {
@@ -2424,10 +2424,6 @@ Q.Contextual = {
 		var col = Q.Contextual.collection;
 		var current = col.splice(cid, 1)[0];
 		current.trigger.unbind('mouseenter.Q_contextual');
-		for (var i = 0; i < col.length; i++)
-		{
-			col[i].trigger.data('Q_contextual_id', i);
-		}
 		return current;
 	},
 	
@@ -2476,7 +2472,7 @@ Q.Contextual = {
 	 * contextuals collection. This is done to not overload document with many event handlers.
      * @method makeShowHandler
 	 */
-	makeShowHandler: function()
+	makeShowHandler: function(events)
 	{
 		if (!Q.Contextual.showHandler)
 		{	
@@ -2519,6 +2515,10 @@ Q.Contextual = {
 							else
 							{
 								Q.Contextual.show();
+							}
+							var cs = trigger.state('Q/contextual');
+							if (cs) {
+								Q.handle(cs.onShow, trigger, [cs]);
 							}
 							Q.Contextual.justShown = true;
 							setTimeout(function()

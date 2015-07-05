@@ -43,7 +43,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 	setTimeout(function () {
 		state.lastScrollingHeight = $scrolling[0].clientHeight || $scrolling.height();
 		tool.swap(_layout);
-		Q.onLayout.set(_layout, tool);
+		Q.onLayout(tool).set(_layout, tool);
 	}, state.initialDelay);
 	
 	$te.parents().each(function () {

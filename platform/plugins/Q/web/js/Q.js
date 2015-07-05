@@ -2114,7 +2114,8 @@ Evp.onStop = function () {
  * @param {Function} [callback]
  *  An optional callback that gets called when a new event is created.
  *  The "this" object is the Q.Event, and the parameters are the processed parameters
- *  passed to the returned factory function.
+ *  passed to the returned factory function. The callback should return the
+ *  event to be added to the collection (could just return this).
  * @param {Function} [removeOnEmpty=false]
  *  Pass true here to remove events from the factory after their last handler is removed.
  *  They might be created again by the factory.
@@ -2145,7 +2146,8 @@ Q.Event.factory = function (collection, defaults, callback, removeOnEmpty) {
 	var _Q_Event_factory = function _Q_Event_factory_function() {
 		var args = Array.prototype.slice.call(arguments, 0);
 		var len = defaults.length;
-		var f = (typeof(defaults[len-1]) === 'function') ? defaults[defaults.length-1] : null;
+		var f = (typeof(defaults[len-1]) === 'function')
+			? defaults[defaults.length-1] : null;
 		if (f) --len;
 		for (var i=args.length; i<len; ++i) {
 			args[i] = defaults[i];
@@ -2157,10 +2159,11 @@ Q.Event.factory = function (collection, defaults, callback, removeOnEmpty) {
 		if (e) {
 			return e;
 		}
-		e = Q.setObject(name, new Q.Event(), collection, delimiter);
+		var e = new Q.Event();
 		if (callback) {
 			callback.apply(e, args);
 		}
+		Q.setObject(name, e, collection, delimiter);
 		if (removeOnEmpty) {
 			e.onEmpty().set(_remove);
 		}
@@ -2244,11 +2247,30 @@ Q.onReady = new Q.Event();
  * @event onJQuery
  */
 Q.onJQuery = new Q.Event();
+var _layoutElements = [];
+var _layoutEvents = [];
 /**
- * This event occurs every time the layout needs to be updated
+ * Call this function to get an event which occurs every time
+ * Q.layout() is called on the given element or its parent.
+ * @param {Element} [element=document.documentElement] 
  * @event onLayout
  */
-Q.onLayout = new Q.Event(function () {
+Q.onLayout = function (element) {
+	element = element || document.documentElement;
+	if (Q.typeOf(element) === 'Q.Tool') {
+		element = element.element;
+	}
+	for (var i=0, l=_layoutElements.length; i<l; ++i) {
+		if (_layoutElements[i] === element) {
+			return _layoutEvents[i];
+		}
+	}
+	var event = new Q.Event();
+	var l = _layoutElements.push(element);
+	_layoutEvents[l-1] = event;
+	return event;
+}
+Q.onLayout().set(function () {
 	_detectOrientation.apply(this, arguments);
 	Q.Masks.update();
 }, 'Q');
@@ -3109,6 +3131,7 @@ Q.Tool = function _Q_Tool(element, options) {
 		Q.extend(this.options, Q.Tool.options.levels, element.options, 'Q.Tool');
 	}
 	
+	// override prototype Q function on the element to associate things with it
 	if (element.Q === Element.prototype.Q) {
 		element.Q = function (toolName) {
 			if (!toolName) {
@@ -4726,8 +4749,8 @@ Q.ready = function _Q_ready() {
 
 			// To support tool layouting, trigger 'layout' event
 			// on browser resize and orientation change
-			Q.addEventListener(root, 'resize', Q.onLayout.handle);
-			Q.addEventListener(root, 'orientationchange', Q.onLayout.handle);
+			Q.addEventListener(root, 'resize', Q.layout);
+			Q.addEventListener(root, 'orientationchange', Q.layout);
 			Q.addEventListener(root, 'scroll', Q.onScroll.handle);
 			_setLayoutInterval();
 
@@ -4856,6 +4879,12 @@ Q.removeElement = function _Q_removeElement(element, removeTools) {
 	} catch (e) {
 		// Old IE doesn't like this
 	}
+	for (var i=0, l=_layoutElements.length; i<l; ++i) {
+		if (_layoutElements[i] === element) {
+			_layoutElements.splice(i, 1);
+			_layoutEvents.splice(i, 1);
+		}
+	}
 };
 
 /**
@@ -4978,21 +5007,27 @@ Q.removeEventListener = function _Q_addEventListener(element, eventName, eventHa
 Q.trigger = function _Q_trigger(eventName, element, args) {
 	var parts = eventName.split('.');
 	Q.find(element || document.body, true, function _Q_trigger_found(toolElement) {
-		var obj = Q.Tool.from(toolElement);
-		if (obj) {
-			var len = parts.length, i;
-			for (i=0; i < len; ++i) {
-				obj = obj [ parts[i] ];
-			}
-		}
-		if (obj) {
-			Q.handle(obj, toolElement, args);
-		}
+		_Q_trigger_recursive(Q.Tool.from(toolElement), eventName, args);
+		return false;
 	}, null);
 };
 
-Q.layout = function _Q_layout(element) {
-	Q.onLayout.handle.call(element);
+/**
+ * Call this function to trigger layout changes,
+ * or assign it as an event listener to some events.
+ */
+Q.layout = function _Q_layout(elementOrEvent) {
+	var element = (elementOrEvent instanceof Element)
+		? elementOrEvent
+		: null;
+	Q.each(_layoutElements, function (i, e) {
+		if (element && !element.isOrContains(e)) {
+			return;
+		}
+		var event = _layoutEvents[i];;
+		event.handle.call(event, e, elementOrEvent);
+	});
+	Q.trigger('Q.layout');
 };
 
 Q.clientId = function () {
@@ -6329,7 +6364,6 @@ Q.activate = function _Q_activate(elem, options, callback) {
 	
 	function _activated() {
 		var tool = shared.firstTool || shared.tool;
-		Q.trigger('Q.onLayout', elem, []);
 		if (callback) {
 			Q.handle(callback, tool, [elem, options, shared.tools]);
 		}
@@ -8624,7 +8658,7 @@ function _setLayoutInterval(e) {
 		var w2 = Q.Pointer.windowWidth();
 		var h2 = Q.Pointer.windowHeight();
 		if (w !== w2 || h !== h2) {
-			Q.onLayout.handle();
+			Q.layout();
 		}
 		w = w2;
 		h = h2;
@@ -10088,6 +10122,19 @@ Q.onJQuery.add(function ($) {
 		
 }, 'Q');
 
+function _Q_trigger_recursive(tool, eventName, args) {
+	if (!tool) {
+		return false;
+	}
+	var obj = Q.getObject(eventName, tool);
+	if (obj) {
+		Q.handle(obj, tool, args);
+	}
+	Q.each(tool.children('', 1), function () {
+		_Q_trigger_recursive(this, eventName, args);
+	});
+}
+
 function _Q_loadUrl_fillSlots (res, url, options) {
 	var elements = {}, name, elem, pos;
 	var osc = options.slotContainer;
@@ -10182,7 +10229,7 @@ Q.onReady.set(function _Q_masks() {
 		Q.Masks.hide('Q.request.load.mask');
 		Q.Masks.hide('Q.request.cancel.mask');
 	}, 'Q.request.load.mask');
-	Q.onLayout.handle();
+	Q.layout();
 }, 'Q.Masks');
 
 if (typeof module !== 'undefined' && typeof process !== 'undefined') {
