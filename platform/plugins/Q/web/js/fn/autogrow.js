@@ -142,7 +142,7 @@ function _Q_autogrow(o) {
 			testSubject.hide();
 			var newWidth = Math.max(testerWidth + o.comfortZone, minWidth);
 			var currentWidth = input.outerWidth(true);
-			var maxWidth = (o.maxWidth instanceof Element)
+			var maxWidth = Q.instanceOf(o.maxWidth, Element)
 				? $(o.maxWidth).innerWidth()
 				: o.maxWidth;
 			var isValidWidthChange = ((

@@ -287,12 +287,12 @@ Q.Tool.define("Q/columns", function(options) {
 			var $te = $(tool.element);
 			if (o.title != undefined) {
 				$(titleSlot).empty().append(
-					o.title instanceof Element ? $(o.title) : o.title
+					Q.instanceOf(o.title, Element) ? $(o.title) : o.title
 				).activate(p.fill('activated1'));
 			}
 			if (o.column != undefined) {
 				$(columnSlot).empty().append(
-					o.column instanceof Element ? $(o.column) : o.column
+					Q.instanceOf(o.column, Element) ? $(o.column) : o.column
 				);
 			}
 			waitFor.push('activated1', 'activated2');

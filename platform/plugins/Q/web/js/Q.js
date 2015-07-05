@@ -1197,6 +1197,15 @@ Q.isPlainObject = function (x) {
 };
 
 /**
+ * Convenience method for testing instanceof, even in IE
+ * @param {mixed} testing
+ * @param {Function} Constructor
+ */
+Q.instanceOf = function (testing, Constructor) {
+	return testing && typeof testing === 'object' && (testing instanceof Constructor);
+};
+
+/**
  * Makes a shallow copy of an object. But, if any property is an object with a "copy" method,
  * it recursively calls that method to copy the property.
  * @static
@@ -5017,9 +5026,7 @@ Q.trigger = function _Q_trigger(eventName, element, args) {
  * or assign it as an event listener to some events.
  */
 Q.layout = function _Q_layout(elementOrEvent) {
-	var element = (elementOrEvent instanceof Element)
-		? elementOrEvent
-		: null;
+	var element = Q.instanceOf(elementOrEvent, Element) ? elementOrEvent : null;
 	Q.each(_layoutElements, function (i, e) {
 		if (element && !element.isOrContains(e)) {
 			return;
@@ -6241,7 +6248,7 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 		filter = 'q_tool';
 	}
 	// Arrays are accepted
-	if ((Q.isArrayLike(elem) && !(elem instanceof Element))
+	if ((Q.isArrayLike(elem) && !Q.instanceOf(elem, Element))
 	|| (typeof HTMLCollection !== 'undefined' && (elem instanceof root.HTMLCollection))
 	|| (root.jQuery && (elem instanceof jQuery))) {
 
@@ -9050,7 +9057,7 @@ Q.Pointer = {
 					img1.timeout = false;
 					var point;
 					var target = img.target;
-					if (target instanceof Element) {
+					if (Q.instanceOf(target, Element)) {
 						if (!target.isVisible()) {
 							if (img.parentNode) {
 								img.parentNode.removeChild(img);
@@ -9121,7 +9128,7 @@ Q.Pointer = {
 		var imgs2 = [];
 		Q.each(imgs, function (i, img) {
 			var outside = (
-				container instanceof Element
+				Q.instanceOf(container, Element)
 				&& !container.isOrContains(img.target)
 			);
 			if ((img.timeout !== false && img.dontStopBeforeShown)
