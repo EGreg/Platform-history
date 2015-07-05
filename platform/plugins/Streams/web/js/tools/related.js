@@ -70,7 +70,7 @@ function _Streams_related_tool (options)
 	},
 	onUpdate: new Q.Event(
 	function _Streams_related_onUpdate(result, entering, exiting, updating) {
-		function addComposer(streamType, params) {
+		function addComposer(streamType, params, container, oldElement) {
 			// TODO: test whether the user can really create streams of this type
 			// and otherwise do not append this element
 			params.streamType = streamType;
@@ -78,11 +78,19 @@ function _Streams_related_tool (options)
 				tool.state.publisherId, "", streamType, null, 
 				{ creatable: params }
 			).addClass('Streams_related_composer Q_contextual_inactive');
-			var $prev = $('.Streams_related_stream:first', $container).prev();
-			if ($prev.length) {
-				$prev.after(element);
+			if (oldElement) {
+				$(oldElement).before(element);
+				var $last = $('.Streams_related_composer:last');
+				if ($last.length) {
+					$(oldElement).insertAfter($last);
+				}
 			} else {
-				$container.prepend(element);
+				var $prev = $('.Streams_related_stream:first', $container).prev();
+				if ($prev.length) {
+					$prev.after(element);
+				} else {
+					$container.append(element);
+				}
 			}
 			Q.activate(element, function () {
 				var rc = tool.state.refreshCount;
@@ -95,12 +103,12 @@ function _Streams_related_tool (options)
 						if (tool.state.refreshCount > rc) {
 							return;
 						}
+						addComposer(streamType, params, null, element);
 						tool.integrateWithTabs([element]);
 						element.setAttribute('class', element.getAttribute('class').replace(
 							'Streams_related_composer', 'Streams_related_stream'
 						));
 						element.Q.tool.state.onUpdate.remove(tool);
-						addComposer(streamType, params);
 					}, tool);
 				}
 			});
