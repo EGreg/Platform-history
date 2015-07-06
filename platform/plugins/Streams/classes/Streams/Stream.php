@@ -282,14 +282,13 @@ class Streams_Stream extends Base_Streams_Stream
 				}
 			}
 		}
-		
-		$params = array('stream' => $this, 'modifiedFields' => $modifiedFields);
 
 		/**
 		 * @event Streams/Stream/save/$streamType {before}
 		 * @param {Streams_Stream} 'stream'
 		 * @return {false} To cancel further processing
 		 */
+		$params = array('stream' => $this, 'modifiedFields' => $modifiedFields);
 		if (false === Q::event(
 			"Streams/Stream/save/{$this->type}", $params, 'before'
 		)) {
@@ -308,16 +307,16 @@ class Streams_Stream extends Base_Streams_Stream
 	}
 
 	function afterFetch($result)
-	{
+	{		
 		/**
 		 * @event Streams/Stream/retrieve/$streamType {before}
 		 * @param {Streams_Stream} 'stream'
 		 * @return {false} To cancel further processing
 		 */
-		if (Q::event(
-		"Streams/Stream/fetch/{$this->type}", 
-		array('stream' => $this, 'result' => $result),
-		'after') === false) {
+		$params = array('stream' => $this, 'result' => $result);
+		if (false === Q::event(
+			"Streams/Stream/fetch/{$this->type}", $params, 'after'
+		)) {
 			return false;
 		}
 	}
@@ -353,15 +352,13 @@ class Streams_Stream extends Base_Streams_Stream
 			Q::event("Streams/create/{$stream->type}",
 				compact('stream', 'asUserId'), 'after', false, $stream);
 		}
-		
-		$params = array('stream' => $this);
-		$this->afterSaveExecuteExtend($params);
 
 		/**
 		 * @event Streams/Stream/save/$streamType {after}
 		 * @param {Streams_Stream} 'stream'
 		 * @param {string} 'asUserId'
 		 */
+		$params = array('stream' => $this);
 		Q::event("Streams/Stream/save/{$this->type}", $params, 'after');
 
 		// Assume that the stream's name is not being changed
@@ -457,31 +454,8 @@ class Streams_Stream extends Base_Streams_Stream
 	
 	protected function beforeSaveExtended()
 	{
-		$type = $this->$type;
-		$extend = Q_Config::get('Streams', 'types', $type, 'extend', null);
-		if (!$extend) {
-			return;
-		}
-		$classes = array();
-		if (Q::isAssociative($extend)) {
-			foreach ($extend as $k => $v) {
-				if (!class_exists($k, true)) {
-					throw new Q_Exception_MissingClass($k);
-				}
-				if (!is_subclass_of($k, 'Db_Row')) {
-					throw new Q_Exception_BadValue(array(
-						'internal' => "Streams/types/$type/extend",
-						'problem' => "$k must extend Db_Row"
-					));
-				}
-				if ($v === true) {
-					$v = call_user_func_array(array('Base_'.$k, 'fieldNames'));
-				} else if (Q::isAssociative($v)) {
-					$v = array_keys($v);
-				}
-				$classes[$k] = $v;
-			}
-		}
+		$type = $this->type;
+		$classes = Streams::getExtendClasses($type);
 		$rows = array();
 		if ($retrieved = $this->wasRetrieved()) {
 			foreach ($classes as $k => $v) {

@@ -380,17 +380,7 @@ abstract class Streams extends Base_Streams
 					$retrieved[$n] = $s;
 				}
 			}
-			/**
-			 * @event Streams/fetch/$streamType {after}
-			 * @param {&array} 'streams'
-			 * @param {string} 'asUserId'
-			 * @param {string} 'publisherId'
-			 * @param {string} 'name'
-			 * @param {array} 'criteria'
-			 * @param {string} 'fields'
-			 * @param {array} 'options'
-			 */
-			Q::event("Streams/fetch/$type", array(
+			$params = array(
 				'streams' => &$streams,
 				'cached' => $cached,
 				'retrieved' => $retrieved,
@@ -403,7 +393,19 @@ abstract class Streams extends Base_Streams
 				'fields' => $fields,
 				'options' => $options,
 				'type' => $type
-			), 'after', false, $streams);
+			);
+			self::afterFetchExtended($params);
+			/**
+			 * @event Streams/fetch/$streamType {after}
+			 * @param {&array} 'streams'
+			 * @param {string} 'asUserId'
+			 * @param {string} 'publisherId'
+			 * @param {string} 'name'
+			 * @param {array} 'criteria'
+			 * @param {string} 'fields'
+			 * @param {array} 'options'
+			 */
+			Q::event("Streams/fetch/$type", $params, 'after', false, $streams);
 		}
 
 		foreach ($streams as $n => $stream) {
@@ -2524,6 +2526,57 @@ abstract class Streams extends Base_Streams
 				return Q_Uri::url("Streams/$what?publisherId=".urlencode($publisherId)."&name=".urlencode($streamName));
 		}
 		return null;
+	}
+	
+	static function getExtendClasses($type)
+	{
+		$extend = Q_Config::get('Streams', 'types', $type, 'extend', null);
+		if (!$extend) {
+			return;
+		}
+		$classes = array();
+		if (Q::isAssociative($extend)) {
+			foreach ($extend as $k => $v) {
+				if (!class_exists($k, true)) {
+					throw new Q_Exception_MissingClass($k);
+				}
+				if (!is_subclass_of($k, 'Db_Row')) {
+					throw new Q_Exception_BadValue(array(
+						'internal' => "Streams/types/$type/extend",
+						'problem' => "$k must extend Db_Row"
+					));
+				}
+				if ($v === true) {
+					$v = call_user_func_array(array('Base_'.$k, 'fieldNames'));
+				} else if (Q::isAssociative($v)) {
+					$v = array_keys($v);
+				}
+				$classes[$k] = $v;
+			}
+		}
+		return $classes;
+	}
+	
+	protected static function afterFetchExtended($params)
+	{
+		if (!$params['retrieved']) {
+			return;
+		}
+		$classes = Streams::getExtendClasses($type);
+		foreach ($classes as $k => $v) {
+			$rows = call_user_func_array(array($k, 'select'), '*')
+				->where(array(
+					'publisherId' => $params['publisherId'],
+					'streamName' => array_keys($params['retrieved'])
+				))->fetchDbRows(null, '', 'streamName');
+			foreach ($params['retrieved'] as $name => $stream) {
+				foreach ($v as $f) {
+					if (isset($rows[$name]->$f)) {
+						$stream->$f = $rows[$name]->$f;
+					}
+				}
+			}
+		}
 	}
 
 	/**
