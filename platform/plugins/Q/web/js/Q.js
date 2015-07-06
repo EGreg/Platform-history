@@ -3076,7 +3076,10 @@ Q.Tool = function _Q_Tool(element, options) {
 	// ID and prefix
 	if (!this.element.id) {
 		var prefix = Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '';
-		this.element.id = (prefix + this.name + '_' + (Q.Tool.nextDefaultId++) + "_tool").toLowerCase();
+		this.element.id = (
+			prefix + this.name + '_' + (Q.Tool.nextDefaultId++) + "_tool"
+		).toLowerCase();
+		Q.Tool.nextDefaultId %= 1000000;
 	}
 	this.prefix = Q.Tool.calculatePrefix(this.element.id);
 	this.id = this.prefix.substr(0, this.prefix.length-1);
@@ -3805,6 +3808,7 @@ Q.Tool.setUpElement = function _Q_Tool_setUpElement(element, toolType, toolOptio
 		p1 = prefix || (Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '');
 		do {
 			p2 = p1 + ntt + '_' + (Q.Tool.nextDefaultId++) + '_';
+			Q.Tool.nextDefaultId %= 1000000;
 		} while (Q.Tool.active[p2]);
 		id = p2 + 'tool';
 	}
@@ -10129,9 +10133,11 @@ function _addHandlebarsHelpers() {
 			var ba = Q.Tool.beingActivated;
 			var prefix = (ba ? ba.prefix : '')
 				+ name.split('/').join('_');
-			id = id ? (prefix+'_'+id) : prefix;
+			if (id) {
+				id = prefix + '_' + id;
+			}
 			var o = Q.extend({}, options && options.hash, this[name], this['id:'+id]);
-			return Q.Tool.setUpElementHTML('div', name, o, id);
+			return Q.Tool.setUpElementHTML('div', name, o, id, prefix);
 		});
 	}
 }
