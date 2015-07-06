@@ -3175,7 +3175,7 @@ Q.Tool = function _Q_Tool(element, options) {
 		beforeRemove: new Q.Event(),
 		/**
 		 * Q.Event which occurs when the tool was retained while replacing some HTML
-		 * @event onRetained
+		 * @event onRetain
 		 */
 		onRetain: new Q.Event(),
 		/**
@@ -3804,7 +3804,7 @@ Q.Tool.setUpElement = function _Q_Tool_setUpElement(element, toolType, toolOptio
 		var p1, p2;
 		p1 = prefix || (Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '');
 		do {
-			p2 = (p1 && p1 + '_') + ntt + '_' + (Q.Tool.nextDefaultId++) + '_';
+			p2 = p1 + ntt + '_' + (Q.Tool.nextDefaultId++) + '_';
 		} while (Q.Tool.active[p2]);
 		id = p2 + 'tool';
 	}
@@ -5034,7 +5034,7 @@ Q.layout = function _Q_layout(elementOrEvent) {
 		var event = _layoutEvents[i];;
 		event.handle.call(event, e, elementOrEvent);
 	});
-	Q.trigger('Q.layout');
+	Q.trigger('Q.layout', elementOrEvent);
 };
 
 Q.clientId = function () {
@@ -7521,45 +7521,14 @@ Q.Template.render = function _Q_Template_render(name, fields, partials, callback
 	Q.ensure(root.Handlebars, 
 		Q.url('plugins/Q/js/handlebars-v1.3.0.min.js'),
 		function () {
-			
-			var Handlebars = root.Handlebars;
-			if (!Handlebars.helpers.call) {
-				Handlebars.registerHelper('call', function(path) {
-					if (!path) {
-						return "{{call missing method name}}";
-					}
-					var parts = path.split('.');
-					var p0 = parts[0];
-					var p1 = parts[1];
-					if (this[p0] && typeof this[p0][p1] === 'function') {
-						var args = Array.prototype.slice.call(
-							arguments, 1, arguments.length-1
-						);
-						return this[p0][p1].apply(this[p0], args);
-					}
-					return "{{call "+path+" not found}}";
-				});
-			}
-			if (!Handlebars.helpers.tool) {
-				Handlebars.registerHelper('tool', function (name, id, options) {
-					if (!name) {
-						return "{{tool missing name}}";
-					}
-					if (typeof id === 'object') {
-						options = id;
-						id = undefined;
-					}
-					var o = Q.extend({}, options && options.hash, this[name]);
-					return Q.Tool.setUpElementHTML('div', name, o, id);
-				});
-			}
-			
+			_addHandlebarsHelpers();
 			// load the template and partials
 			var p = Q.pipe(['template', 'partials'], function (params) {
 				if (params.template[0]) {
 					return callback(params.template[0]);
 				}
-				callback(null, Handlebars.compile(params.template[1])(fields, {partials: params.partials[0]}));
+				var compiled = Handlebars.compile(params.template[1]);
+				callback(null, compiled(fields, {partials: params.partials[0]}));
 			});
 			Q.Template.load(name, p.fill('template'), options);
 			// pipe for partials
@@ -10128,6 +10097,44 @@ Q.onJQuery.add(function ($) {
 	}
 		
 }, 'Q');
+
+function _addHandlebarsHelpers() {
+	var Handlebars = root.Handlebars;
+	if (!Handlebars.helpers.call) {
+		Handlebars.registerHelper('call', function(path) {
+			if (!path) {
+				return "{{call missing method name}}";
+			}
+			var parts = path.split('.');
+			var p0 = parts[0];
+			var p1 = parts[1];
+			if (this[p0] && typeof this[p0][p1] === 'function') {
+				var args = Array.prototype.slice.call(
+					arguments, 1, arguments.length-1
+				);
+				return this[p0][p1].apply(this[p0], args);
+			}
+			return "{{call "+path+" not found}}";
+		});
+	}
+	if (!Handlebars.helpers.tool) {
+		Handlebars.registerHelper('tool', function (name, id, options) {
+			if (!name) {
+				return "{{tool missing name}}";
+			}
+			if (typeof id === 'object') {
+				options = id;
+				id = undefined;
+			}
+			var ba = Q.Tool.beingActivated;
+			var prefix = (ba ? ba.prefix : '')
+				+ name.split('/').join('_');
+			id = id ? (prefix+'_'+id) : prefix;
+			var o = Q.extend({}, options && options.hash, this[name]);
+			return Q.Tool.setUpElementHTML('div', name, o, id);
+		});
+	}
+}
 
 function _Q_trigger_recursive(tool, eventName, args) {
 	if (!tool) {

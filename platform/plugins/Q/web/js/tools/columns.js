@@ -61,7 +61,6 @@ Q.Tool.define("Q/columns", function(options) {
 	
 	tool.refresh();
 	Q.onLayout(tool).set(function () {
-		if (element && !element.isOrContains(tool.element)) return;
 		tool.refresh();
 	}, tool);
 },
