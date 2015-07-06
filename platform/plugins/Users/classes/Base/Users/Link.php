@@ -309,7 +309,7 @@ abstract class Base_Users_Link extends Db_Row
 	{
 		if (!$this->retrieved) {
 			$table = $this->getTable();
-			foreach (array('identifier','extraInfo') as $name) {
+			foreach (array('identifier') as $name) {
 				if (!isset($value[$name])) {
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}

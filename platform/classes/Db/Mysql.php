@@ -1511,8 +1511,9 @@ EOT;
 		// Calculate primary key
 		$pk = array();
 		foreach ($table_cols as $table_col) {
-			if ($table_col['Key'] == 'PRI')
+			if ($table_col['Key'] == 'PRI') {
 				$pk[] = $table_col['Field'];
+			}
 		}
 		$pk_exported = var_export($pk, true);
 		$pk_json = json_encode($pk);
@@ -1531,7 +1532,7 @@ EOT;
 			$field_names[] = $field_name;
 			$field_null = $table_col['Null'] == 'YES' ? true : false;
 			$field_default = $table_col['Default'];
-			$auto_inc = strpos($table_col['Extra'], 'auto_increment') !== false ? true : false;
+			$auto_inc = (strpos($table_col['Extra'], 'auto_increment') !== false);
 			$type = $table_col['Type'];
 			$pieces = explode('(', $type);
 			if (isset($pieces[1])) {
@@ -1550,6 +1551,10 @@ EOT;
 				$type_modifiers = $pieces2[1];
 				$type_unsigned = (strpos($type_modifiers, 'unsigned') !== false);
 			}
+			
+			$isTextLike = false;
+			$isNumberLike = false;
+			$isTimeLike = false;
 			
 			switch ($type_name) {
 				case 'tinyint':
@@ -1600,6 +1605,7 @@ EOT;
 				case 'int':
 				case 'mediumint':
 				case 'bigint':
+					$isNumberLike = true;
 					$properties[]="integer $field_name";
 					$js_properties[] = "$field_name integer";
 					$functions["maxSize_$field_name"]['comment'] = <<<EOT
@@ -1692,6 +1698,7 @@ EOT;
 				case 'text':
 				case 'mediumtext':
 				case 'longtext':
+					$isTextLike = true;
 					$properties[]="string $field_name";
 					$js_properties[] = "$field_name String";
 					$functions["maxSize_$field_name"]['comment'] = <<<EOT
@@ -1749,6 +1756,7 @@ EOT;
 					break;
 				
 				case 'date':
+					$isTimeLike = true;
 					$properties[]="string|Db_Expression $field_name";
 					$js_properties[] = "$field_name String|Db.Expression";
 					$functions["beforeSet_$field_name"][] = <<<EOT
@@ -1784,6 +1792,7 @@ EOT;
 					break;
 				case 'datetime':
 				case 'timestamp':
+					$isTimeLike = true;
 					$properties[]="string|Db_Expression $field_name";
 					$js_properties[] = "$field_name String|Db.Expression";
 					$possibleMagicFields = array('insertedTime', 'updatedTime', 'created_time', 'updated_time');
@@ -1828,6 +1837,7 @@ EOT;
 					break;
 
 				case 'decimal':
+					$isNumberLike = true;
 					$properties[]="float $field_name";
 					$js_properties[] = "$field_name number";
 					$js_functions["beforeSet_$field_name"][] = <<<EOT
@@ -1862,6 +1872,7 @@ EOT;
 EOT;
 			}
 			if (! $field_null and ! $is_magic_field
+			and ((!$isNumberLike and !$isTextLike) or in_array($field_name, $pk))
 			and ! $auto_inc and !isset($field_default)) {
 				$required_field_names[] = "'$field_name'";
 			}

@@ -430,7 +430,7 @@ Base.prototype.maxSize_token_expires_seconds = function () {
  * @throws {Error} If mandatory field is not set
  */
 Base.prototype.beforeSave = function (value) {
-	var fields = ['client_id','userId','state','redirect_uri','access_token'], i;
+	var fields = ['client_id','userId','state'], i;
 	if (!this._retrieved) {
 		var table = this.table();
 		for (i=0; i<fields.length; i++) {

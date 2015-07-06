@@ -424,7 +424,7 @@ abstract class Base_Users_Email extends Db_Row
 	{
 		if (!$this->retrieved) {
 			$table = $this->getTable();
-			foreach (array('address','state','activationCode','authCode') as $name) {
+			foreach (array('address','state') as $name) {
 				if (!isset($value[$name])) {
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}

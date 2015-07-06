@@ -23,7 +23,7 @@ var Row = Q.require('Db/Row');
  * an associative array of `{column: value}` pairs
  */
 function Base (fields) {
-	
+	Base.constructors.apply(this, arguments);
 }
 
 Q.mixin(Base, Row);
@@ -228,6 +228,15 @@ Base.prototype.beforeSet_publisherId = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the publisherId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_publisherId = function () {
+
+		return 31;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -243,6 +252,15 @@ Base.prototype.beforeSet_streamName = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".streamName");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the streamName field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_streamName = function () {
+
+		return 255;
 };
 
 /**
@@ -262,6 +280,15 @@ Base.prototype.beforeSet_userId = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the userId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_userId = function () {
+
+		return 31;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -277,6 +304,15 @@ Base.prototype.beforeSet_article = function (value) {
 		if (typeof value === "string" && value.length > 65535)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".article");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the article field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_article = function () {
+
+		return 65535;
 };
 
 /**
@@ -296,6 +332,15 @@ Base.prototype.beforeSet_getintouch = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the getintouch field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_getintouch = function () {
+
+		return 255;
+};
+
 /**
  * Check if mandatory fields are set and updates 'magic fields' with appropriate values
  * @method beforeSave
@@ -304,7 +349,7 @@ Base.prototype.beforeSet_getintouch = function (value) {
  * @throws {Error} If mandatory field is not set
  */
 Base.prototype.beforeSave = function (value) {
-	var fields = ['publisherId','streamName','userId','article'], i;
+	var fields = ['publisherId','streamName'], i;
 	if (!this._retrieved) {
 		var table = this.table();
 		for (i=0; i<fields.length; i++) {

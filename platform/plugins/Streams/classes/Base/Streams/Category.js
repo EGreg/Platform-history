@@ -322,7 +322,7 @@ Base.prototype.maxSize_relatedTo = function () {
  * @throws {Error} If mandatory field is not set
  */
 Base.prototype.beforeSave = function (value) {
-	var fields = ['streamName','relatedTo'], i;
+	var fields = ['streamName'], i;
 	if (!this._retrieved) {
 		var table = this.table();
 		for (i=0; i<fields.length; i++) {

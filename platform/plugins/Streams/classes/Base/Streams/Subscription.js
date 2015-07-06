@@ -403,7 +403,7 @@ Base.prototype.maxSize_duration = function () {
  * @throws {Error} If mandatory field is not set
  */
 Base.prototype.beforeSave = function (value) {
-	var fields = ['ofUserId','filter'], i;
+	var fields = ['ofUserId'], i;
 	if (!this._retrieved) {
 		var table = this.table();
 		for (i=0; i<fields.length; i++) {

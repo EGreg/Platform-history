@@ -23,7 +23,7 @@ var Row = Q.require('Db/Row');
  * an associative array of `{column: value}` pairs
  */
 function Base (fields) {
-	
+	Base.constructors.apply(this, arguments);
 }
 
 Q.mixin(Base, Row);
@@ -222,6 +222,15 @@ Base.prototype.beforeSet_uri = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the uri field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_uri = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -237,6 +246,15 @@ Base.prototype.beforeSet_url = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".url");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the url field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_url = function () {
+
+		return 255;
 };
 
 /**

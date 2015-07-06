@@ -451,7 +451,7 @@ abstract class Base_Streams_Rule extends Db_Row
 	{
 		if (!$this->retrieved) {
 			$table = $this->getTable();
-			foreach (array('streamName','ordinal','filter','deliver','relevance') as $name) {
+			foreach (array('streamName','ordinal') as $name) {
 				if (!isset($value[$name])) {
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}

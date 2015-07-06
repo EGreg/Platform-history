@@ -64,10 +64,6 @@ Q.mixin(Base, Row);
  * @property chatStreamName
  * @type String
  */
-/**
- * @property reOrdinal
- * @type integer
- */
 
 /**
  * This method calls Db.connect() using information stored in the configuration.
@@ -230,8 +226,7 @@ Base.prototype.fieldNames = function () {
 		"comment",
 		"instructions",
 		"chatPublisherId",
-		"chatStreamName",
-		"reOrdinal"
+		"chatStreamName"
 	];
 };
 
@@ -442,53 +437,6 @@ Base.prototype.beforeSet_chatStreamName = function (value) {
 Base.prototype.maxSize_chatStreamName = function () {
 
 		return 255;
-};
-
-/**
- * Method is called before setting the field and verifies if integer value falls within allowed limits
- * @method beforeSet_reOrdinal
- * @param {integer} value
- * @return {integer} The value
- * @throws {Error} An exception is thrown if 'value' is not integer or does not fit in allowed range
- */
-Base.prototype.beforeSet_reOrdinal = function (value) {
-		if (!value) return value;
-		if (value instanceof Db.Expression) return value;
-		value = Number(value);
-		if (isNaN(value) || Math.floor(value) != value) 
-			throw new Error('Non-integer value being assigned to '+this.table()+".reOrdinal");
-		if (value < -2147483648 || value > 2147483647)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".reOrdinal");
-		return value;
-};
-
-	/**
-	 * Returns the maximum integer that can be assigned to the reOrdinal field
-	 * @return {integer}
-	 */
-Base.prototype.maxSize_reOrdinal = function () {
-
-		return 2147483647;
-};
-
-/**
- * Check if mandatory fields are set and updates 'magic fields' with appropriate values
- * @method beforeSave
- * @param {array} value The array of fields
- * @return {array}
- * @throws {Error} If mandatory field is not set
- */
-Base.prototype.beforeSave = function (value) {
-	var fields = ['streamName','byUserId','comment'], i;
-	if (!this._retrieved) {
-		var table = this.table();
-		for (i=0; i<fields.length; i++) {
-			if (typeof this.fields[fields[i]] === "undefined") {
-				throw new Error("the field "+table+"."+fields[i]+" needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
-			}
-		}
-	}
-	return value;
 };
 
 module.exports = Base;

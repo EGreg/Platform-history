@@ -499,7 +499,7 @@ abstract class Base_Users_AppUser extends Db_Row
 	{
 		if (!$this->retrieved) {
 			$table = $this->getTable();
-			foreach (array('provider','appId','provider_uid') as $name) {
+			foreach (array('provider','appId') as $name) {
 				if (!isset($value[$name])) {
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}

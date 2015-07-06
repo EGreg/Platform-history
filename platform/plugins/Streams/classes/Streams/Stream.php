@@ -282,18 +282,21 @@ class Streams_Stream extends Base_Streams_Stream
 				}
 			}
 		}
+		
+		$params = array('stream' => $this, 'modifiedFields' => $modifiedFields);
 
 		/**
 		 * @event Streams/Stream/save/$streamType {before}
 		 * @param {Streams_Stream} 'stream'
 		 * @return {false} To cancel further processing
 		 */
-		if (Q::event(
-		"Streams/Stream/save/{$this->type}", 
-		array('stream' => $this, 'modifiedFields' => $modifiedFields),
-		'before') === false) {
+		if (false === Q::event(
+			"Streams/Stream/save/{$this->type}", $params, 'before'
+		)) {
 			return false;
 		}
+		
+		$this->beforeSaveExtended($params);
 
 		foreach ($this->fields as $name => $value) {
 			if (!empty($this->fieldsModified[$name])) {
@@ -350,14 +353,16 @@ class Streams_Stream extends Base_Streams_Stream
 			Q::event("Streams/create/{$stream->type}",
 				compact('stream', 'asUserId'), 'after', false, $stream);
 		}
+		
+		$params = array('stream' => $this);
+		$this->afterSaveExecuteExtend($params);
 
 		/**
 		 * @event Streams/Stream/save/$streamType {after}
 		 * @param {Streams_Stream} 'stream'
 		 * @param {string} 'asUserId'
 		 */
-		Q::event("Streams/Stream/save/{$this->type}",
-			array('stream' => $this), 'after');
+		Q::event("Streams/Stream/save/{$this->type}", $params, 'after');
 
 		// Assume that the stream's name is not being changed
 		$fields = array(
@@ -448,6 +453,62 @@ class Streams_Stream extends Base_Streams_Stream
 		Streams::updateAvatars($this->publisherId, $taintedAccess, $this, true);
 
 		return $result;
+	}
+	
+	protected function beforeSaveExtended()
+	{
+		$type = $this->$type;
+		$extend = Q_Config::get('Streams', 'types', $type, 'extend', null);
+		if (!$extend) {
+			return;
+		}
+		$classes = array();
+		if (Q::isAssociative($extend)) {
+			foreach ($extend as $k => $v) {
+				if (!class_exists($k, true)) {
+					throw new Q_Exception_MissingClass($k);
+				}
+				if (!is_subclass_of($k, 'Db_Row')) {
+					throw new Q_Exception_BadValue(array(
+						'internal' => "Streams/types/$type/extend",
+						'problem' => "$k must extend Db_Row"
+					));
+				}
+				if ($v === true) {
+					$v = call_user_func_array(array('Base_'.$k, 'fieldNames'));
+				} else if (Q::isAssociative($v)) {
+					$v = array_keys($v);
+				}
+				$classes[$k] = $v;
+			}
+		}
+		$rows = array();
+		if ($retrieved = $this->wasRetrieved()) {
+			foreach ($classes as $k => $v) {
+				foreach ($v as $f) {
+					if ($this->wasModified($f)) {
+						$rows[$k] = true;
+						break;
+					}
+				}
+			}
+		}
+		foreach ($rows as $k => $v) {
+			$row = new $k;
+			$row->publisherId = $this->publisherId;
+			$row->streamName = $this->name;
+			$row->retrieve(null, null, array('ignoreCache' => true));
+			foreach ($classes[$k] as $f) {
+				if (!isset($this->$f)) continue;
+				if (isset($row->$f) and $row->$f === $this->$f) continue;
+				$row->$f = $this->$f;
+			}
+		}
+		$stream = $this;
+		Q::event("$type/save", compact('stream', 'rows'), 'before');
+		foreach ($rows as $row) {
+			$row->save();
+		}
 	}
 
 	protected function getUserStream ($options, &$userId, &$user = null) {

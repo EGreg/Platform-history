@@ -323,7 +323,7 @@ abstract class Base_Users_Vote extends Db_Row
 	{
 		if (!$this->retrieved) {
 			$table = $this->getTable();
-			foreach (array('userId','forType','forId','value') as $name) {
+			foreach (array('userId','forType','forId') as $name) {
 				if (!isset($value[$name])) {
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}

@@ -3,15 +3,6 @@
 function Websites_before_Streams_Stream_save_Websites_article($params)
 {
 	$stream = $params['stream'];
-	$retrieved = $stream->wasRetrieved();
-
-	if ($retrieved
-	and !$stream->wasModified('userId')
-	and !$stream->wasModified('article')
-	and !$stream->wasModified('getintouch')) {
-		return;
-	}
-
 	if (!$retrieved) {
 		$user = new Users_User();
 		$user->id = $stream->userId;
@@ -30,23 +21,4 @@ function Websites_before_Streams_Stream_save_Websites_article($params)
 		}
 		$stream->setAttribute('sizes', $sizes);
 	}
-
-	$article = new Websites_Article();
-	$article->publisherId = $stream->publisherId;
-	$article->streamName = $stream->name;
-	$article->retrieve(null, null, array('ignoreCache' => true));
-
-	foreach (array('userId', 'article', 'getintouch') as $f) {
-		if (!isset($stream->$f)) continue;
-		if (isset($article->$f) and $article->$f === $stream->$f) continue;
-		$article->$f = $stream->$f;
-	}
-	if (!isset($article->article)) {
-		$article->article = '';
-	}
-	if (!isset($article->getintouch)) {
-		$article->getintouch = '{}';
-	}
-	Q::event("Websites/article/save", compact('user', 'stream', 'article'), "before");
-	$article->save();
 }

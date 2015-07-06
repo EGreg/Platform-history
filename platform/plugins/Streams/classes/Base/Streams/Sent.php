@@ -23,7 +23,6 @@
  * @property string $instructions
  * @property string $chatPublisherId
  * @property string $chatStreamName
- * @property integer $reOrdinal
  */
 abstract class Base_Streams_Sent extends Db_Row
 {
@@ -62,10 +61,6 @@ abstract class Base_Streams_Sent extends Db_Row
 	/**
 	 * @property $chatStreamName
 	 * @type string
-	 */
-	/**
-	 * @property $reOrdinal
-	 * @type integer
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -479,58 +474,6 @@ abstract class Base_Streams_Sent extends Db_Row
 	}
 
 	/**
-	 * Method is called before setting the field and verifies if integer value falls within allowed limits
-	 * @method beforeSet_reOrdinal
-	 * @param {integer} $value
-	 * @return {array} An array of field name and value
-	 * @throws {Exception} An exception is thrown if $value is not integer or does not fit in allowed range
-	 */
-	function beforeSet_reOrdinal($value)
-	{
-		if (!isset($value)) {
-			return array('reOrdinal', $value);
-		}
-		if ($value instanceof Db_Expression) {
-			return array('reOrdinal', $value);
-		}
-		if (!is_numeric($value) or floor($value) != $value)
-			throw new Exception('Non-integer value being assigned to '.$this->getTable().".reOrdinal");
-		if ($value < -2147483648 or $value > 2147483647)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".reOrdinal");
-		return array('reOrdinal', $value);			
-	}
-
-	/**
-	 * Returns the maximum integer that can be assigned to the reOrdinal field
-	 * @return {integer}
-	 */
-	function maxSize_reOrdinal()
-	{
-
-		return 2147483647;			
-	}
-
-	/**
-	 * Check if mandatory fields are set and updates 'magic fields' with appropriate values
-	 * @method beforeSave
-	 * @param {array} $value The array of fields
-	 * @return {array}
-	 * @throws {Exception} If mandatory field is not set
-	 */
-	function beforeSave($value)
-	{
-		if (!$this->retrieved) {
-			$table = $this->getTable();
-			foreach (array('streamName','byUserId','comment') as $name) {
-				if (!isset($value[$name])) {
-					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
-				}
-			}
-		}
-		return $value;			
-	}
-
-	/**
 	 * Retrieves field names for class table
 	 * @method fieldNames
 	 * @static
@@ -540,7 +483,7 @@ abstract class Base_Streams_Sent extends Db_Row
 	 */
 	static function fieldNames($table_alias = null, $field_alias_prefix = null)
 	{
-		$field_names = array('publisherId', 'streamName', 'insertedTime', 'sentTime', 'byUserId', 'comment', 'instructions', 'chatPublisherId', 'chatStreamName', 'reOrdinal');
+		$field_names = array('publisherId', 'streamName', 'insertedTime', 'sentTime', 'byUserId', 'comment', 'instructions', 'chatPublisherId', 'chatStreamName');
 		$result = $field_names;
 		if (!empty($table_alias)) {
 			$temp = array();

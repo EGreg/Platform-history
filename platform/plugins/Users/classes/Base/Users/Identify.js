@@ -309,7 +309,7 @@ Base.prototype.maxSize_userId = function () {
  * @throws {Error} If mandatory field is not set
  */
 Base.prototype.beforeSave = function (value) {
-	var fields = ['identifier','state','userId'], i;
+	var fields = ['identifier','state'], i;
 	if (!this._retrieved) {
 		var table = this.table();
 		for (i=0; i<fields.length; i++) {

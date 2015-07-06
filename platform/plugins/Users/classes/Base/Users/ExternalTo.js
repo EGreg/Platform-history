@@ -304,7 +304,7 @@ Base.prototype.beforeSet_insertedTime = function (value) {
  * @throws {Error} If mandatory field is not set
  */
 Base.prototype.beforeSave = function (value) {
-	var fields = ['publisherId','userId','xid'], i;
+	var fields = ['publisherId','userId'], i;
 	if (!this._retrieved) {
 		var table = this.table();
 		for (i=0; i<fields.length; i++) {

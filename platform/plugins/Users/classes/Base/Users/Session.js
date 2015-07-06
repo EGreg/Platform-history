@@ -396,7 +396,7 @@ Base.prototype.beforeSet_updatedTime = function (value) {
  * @throws {Error} If mandatory field is not set
  */
 Base.prototype.beforeSave = function (value) {
-	var fields = ['id','content','php','deviceId','timeout'], i;
+	var fields = ['id'], i;
 	if (!this._retrieved) {
 		var table = this.table();
 		for (i=0; i<fields.length; i++) {

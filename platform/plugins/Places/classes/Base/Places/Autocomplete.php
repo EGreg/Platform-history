@@ -358,7 +358,7 @@ abstract class Base_Places_Autocomplete extends Db_Row
 	{
 		if (!$this->retrieved) {
 			$table = $this->getTable();
-			foreach (array('query','types','latitude','longitude','miles','results') as $name) {
+			foreach (array('query','types','latitude','longitude','miles') as $name) {
 				if (!isset($value[$name])) {
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}

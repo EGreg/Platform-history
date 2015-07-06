@@ -482,7 +482,7 @@ Base.prototype.maxSize_accuracy = function () {
  * @throws {Error} If mandatory field is not set
  */
 Base.prototype.beforeSave = function (value) {
-	var fields = ['countryCode','zipcode','placeName','stateName','state','regionName','region','community','latitude','longitude','accuracy'], i;
+	var fields = ['latitude','longitude'], i;
 	if (!this._retrieved) {
 		var table = this.table();
 		for (i=0; i<fields.length; i++) {

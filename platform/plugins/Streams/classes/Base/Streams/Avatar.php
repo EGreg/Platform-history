@@ -417,7 +417,7 @@ abstract class Base_Streams_Avatar extends Db_Row
 	{
 		if (!$this->retrieved) {
 			$table = $this->getTable();
-			foreach (array('toUserId','username','icon') as $name) {
+			foreach (array('toUserId') as $name) {
 				if (!isset($value[$name])) {
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}

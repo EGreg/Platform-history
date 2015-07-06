@@ -520,7 +520,7 @@ abstract class Base_Streams_Message extends Db_Row
 	{
 		if (!$this->retrieved) {
 			$table = $this->getTable();
-			foreach (array('streamName','type','content','instructions') as $name) {
+			foreach (array('streamName') as $name) {
 				if (!isset($value[$name])) {
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}

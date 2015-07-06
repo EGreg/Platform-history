@@ -211,6 +211,16 @@ abstract class Base_Websites_Article extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the publisherId field
+	 * @return {integer}
+	 */
+	function maxSize_publisherId()
+	{
+
+		return 31;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_streamName
@@ -228,6 +238,16 @@ abstract class Base_Websites_Article extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".streamName");
 		return array('streamName', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the streamName field
+	 * @return {integer}
+	 */
+	function maxSize_streamName()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -251,6 +271,16 @@ abstract class Base_Websites_Article extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the userId field
+	 * @return {integer}
+	 */
+	function maxSize_userId()
+	{
+
+		return 31;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_article
@@ -268,6 +298,16 @@ abstract class Base_Websites_Article extends Db_Row
 		if (strlen($value) > 65535)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".article");
 		return array('article', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the article field
+	 * @return {integer}
+	 */
+	function maxSize_article()
+	{
+
+		return 65535;			
 	}
 
 	/**
@@ -291,6 +331,16 @@ abstract class Base_Websites_Article extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the getintouch field
+	 * @return {integer}
+	 */
+	function maxSize_getintouch()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Check if mandatory fields are set and updates 'magic fields' with appropriate values
 	 * @method beforeSave
 	 * @param {array} $value The array of fields
@@ -301,7 +351,7 @@ abstract class Base_Websites_Article extends Db_Row
 	{
 		if (!$this->retrieved) {
 			$table = $this->getTable();
-			foreach (array('publisherId','streamName','userId','article') as $name) {
+			foreach (array('publisherId','streamName') as $name) {
 				if (!isset($value[$name])) {
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}

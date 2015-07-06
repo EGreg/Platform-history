@@ -340,7 +340,7 @@ Base.prototype.maxSize_results = function () {
  * @throws {Error} If mandatory field is not set
  */
 Base.prototype.beforeSave = function (value) {
-	var fields = ['query','types','latitude','longitude','miles','results'], i;
+	var fields = ['query','types','latitude','longitude','miles'], i;
 	if (!this._retrieved) {
 		var table = this.table();
 		for (i=0; i<fields.length; i++) {

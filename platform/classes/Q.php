@@ -402,22 +402,22 @@ class Q
 	 * Default autoloader for Q
 	 * @method autoload
 	 * @static
-	 * @param {string} $class_name
+	 * @param {string} $className
 	 * @throws {Q_Exception_MissingClass}
 	 *	If requested class is missing
 	 */
 	static function autoload(
-	 $class_name)
+	 $className)
 	{
-		if (class_exists($class_name, false)) {
+		if (class_exists($className, false)) {
 			return;
 		}
 		try {
-			$filename = self::event('Q/autoload', compact('class_name'), 'before');
+			$filename = self::event('Q/autoload', compact('className'), 'before');
 
 			if (!isset($filename)) {
-				$class_name_parts = explode('_', $class_name);
-				$filename = 'classes'.DS.implode(DS, $class_name_parts).'.php';
+				$className_parts = explode('_', $className);
+				$filename = 'classes'.DS.implode(DS, $className_parts).'.php';
 			}
 
 			// Workaround for Zend Framework, because it has require_once
@@ -458,17 +458,17 @@ class Q
 				// and you will get an error if you try to use the class
 			}
 
-			// if (!class_exists($class_name) && !interface_exists($class_name)) {
+			// if (!class_exists($className) && !interface_exists($className)) {
 			// 	require_once(Q_CLASSES_DIR.DS.'Q'.DS.'Exception'.DS.'MissingClass.php');
-			// 	throw new Q_Exception_MissingClass(compact('class_name'));
+			// 	throw new Q_Exception_MissingClass(compact('className'));
 			// }
 
 			/**
 			 * @event Q/autoload {after}
-			 * @param {string} 'class_name'
+			 * @param {string} 'className'
 			 * @param {string} 'filename'
 			 */
-			self::event('Q/autoload', compact('class_name', 'filename'), 'after');
+			self::event('Q/autoload', compact('className', 'filename'), 'after');
 
 		} catch (Exception $exception) {
 			/**
@@ -999,7 +999,9 @@ class Q
 	 */
 	static function isAssociative($array)
 	{
-		if (!$array or !is_array($array)) return false;
+		if (!$array or !is_array($array)) {
+			return false;
+		}
 		foreach ($array as $k => $v) {
 			if (is_string($k)) {
 				return true;

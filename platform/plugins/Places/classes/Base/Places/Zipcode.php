@@ -498,7 +498,7 @@ abstract class Base_Places_Zipcode extends Db_Row
 	{
 		if (!$this->retrieved) {
 			$table = $this->getTable();
-			foreach (array('countryCode','zipcode','placeName','stateName','state','regionName','region','community','latitude','longitude','accuracy') as $name) {
+			foreach (array('latitude','longitude') as $name) {
 				if (!isset($value[$name])) {
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}

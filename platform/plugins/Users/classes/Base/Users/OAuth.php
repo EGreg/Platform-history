@@ -452,7 +452,7 @@ abstract class Base_Users_OAuth extends Db_Row
 	{
 		if (!$this->retrieved) {
 			$table = $this->getTable();
-			foreach (array('client_id','userId','state','redirect_uri','access_token') as $name) {
+			foreach (array('client_id','userId','state') as $name) {
 				if (!isset($value[$name])) {
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}

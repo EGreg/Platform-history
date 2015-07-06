@@ -205,6 +205,16 @@ abstract class Base_Websites_Permalink extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the uri field
+	 * @return {integer}
+	 */
+	function maxSize_uri()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_url
@@ -222,6 +232,16 @@ abstract class Base_Websites_Permalink extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".url");
 		return array('url', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the url field
+	 * @return {integer}
+	 */
+	function maxSize_url()
+	{
+
+		return 255;			
 	}
 
 	/**

@@ -633,6 +633,9 @@ abstract class Base_Users_User extends Db_Row
 	 */
 	function beforeSet_emailAddressPending($value)
 	{
+		if (!isset($value)) {
+			return array('emailAddressPending', $value);
+		}
 		if ($value instanceof Db_Expression) {
 			return array('emailAddressPending', $value);
 		}
@@ -663,6 +666,9 @@ abstract class Base_Users_User extends Db_Row
 	 */
 	function beforeSet_mobileNumberPending($value)
 	{
+		if (!isset($value)) {
+			return array('mobileNumberPending', $value);
+		}
 		if ($value instanceof Db_Expression) {
 			return array('mobileNumberPending', $value);
 		}
@@ -826,23 +832,9 @@ abstract class Base_Users_User extends Db_Row
 		return 255;			
 	}
 
-	/**
-	 * Check if mandatory fields are set and updates 'magic fields' with appropriate values
-	 * @method beforeSave
-	 * @param {array} $value The array of fields
-	 * @return {array}
-	 * @throws {Exception} If mandatory field is not set
-	 */
 	function beforeSave($value)
 	{
-		if (!$this->retrieved) {
-			$table = $this->getTable();
-			foreach (array('username','icon') as $name) {
-				if (!isset($value[$name])) {
-					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
-				}
-			}
-		}						
+						
 		// convention: we'll have updatedTime = insertedTime if just created.
 		$this->updatedTime = $value['updatedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
 		return $value;			
