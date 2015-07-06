@@ -3106,11 +3106,11 @@ Q.Tool = function _Q_Tool(element, options) {
 	options = options || {};
 	this.options = this.options || {};
 	
-	var pids = this.parentIds(),
-		len = pids.length,
-		o = len ? Q.extend({}, Q.Tool.options.levels, options) : options;
+	var pids = this.parentIds();
+	var len = pids.length;
+	var o = len ? Q.extend({}, Q.Tool.options.levels, options) : options;
 	
-	for (i=len-1; i>=0; --i) {
+	for (i = len-1; i >= 0; --i) {
 		var pid = pids[i];
 		if (Q.isEmpty(Q.Tool.active[pid].state)) continue;
 		o = Q.extend(o, Q.Tool.options.levels, Q.Tool.active[pid].state);
@@ -7238,7 +7238,7 @@ function _activateTools(toolElement, options, shared) {
 				// be initialized without waiting for any child tools.
 				// tool.element.Q.supportsChildren = true
 				// set by tool.supportsChildren(true)
-				Q.activate(toolElement);
+				Q.activate(toolElement, options);
 			}
 			
 			if (uniqueToolId) {
@@ -10130,7 +10130,7 @@ function _addHandlebarsHelpers() {
 			var prefix = (ba ? ba.prefix : '')
 				+ name.split('/').join('_');
 			id = id ? (prefix+'_'+id) : prefix;
-			var o = Q.extend({}, options && options.hash, this[name]);
+			var o = Q.extend({}, options && options.hash, this[name], this['id:'+id]);
 			return Q.Tool.setUpElementHTML('div', name, o, id);
 		});
 	}
