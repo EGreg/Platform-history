@@ -1342,15 +1342,14 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 					} else {
 						target[k].set(argk, namespace);
 					}
-				} else if (!levels || Q.typeOf(argk) === 'Q.Event' || !(
-					Q.isPlainObject(argk)
-					|| (ttk === 'array' && tak === 'array')
-				)) {
-					target[k] = Q.copy(argk);
-				} else {
+				} else if (levels && (target[k] && typeof target[k] === 'object') 
+				&& tak !== 'Q.Event'
+				&& (Q.isPlainObject(argk) || (ttk === 'array' && tak === 'array'))) {
 					target[k] = (ttk === 'array' && ('replace' in argk))
 						? Q.copy(argk.replace)
 						: Q.extend(target[k], deep, levels-1, argk);
+				} else {
+					target[k] = Q.copy(argk);
 				}
 				if (target[k] === undefined) {
 					delete target[k];
