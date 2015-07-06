@@ -1537,7 +1537,6 @@ Q.extend = function _Q_extend(target /* [[deep,] [levels,] anotherObject], ... *
 	if (length === 0) {
 		return {};
 	}
-	target = target || {};
 	var deep = false, levels = 0, arg;
 	for (var i=1; i<length; ++i) {
 		arg = arguments[i];
@@ -1551,8 +1550,16 @@ Q.extend = function _Q_extend(target /* [[deep,] [levels,] anotherObject], ... *
 		if (typeof(arg) === 'number' && arg) {
 			levels = arg;
 			continue;
-		}		
-		var arg = arg;
+		}
+		if (target === undefined) {
+			if (Q.isArrayLike(arg)) {
+				target = [];
+				type = 'array';
+			} else {
+				target = {};
+				type = 'object';
+			}
+		}
 		if (Q.isArrayLike(target) && Q.isArrayLike(arg)) {
 			target = target.concat(arg);
 		} else {

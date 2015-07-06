@@ -1286,7 +1286,6 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 	if (length === 0) {
 		return {};
 	}
-	target = target || {};
 	var deep = false, levels = 0;
 	var type = Q.typeOf(target);
 	var targetIsEvent = (type === 'Q.Event');
@@ -1304,6 +1303,15 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 			levels = arg;
 			continue;
 		}
+		if (target === undefined) {
+			if (Q.isArrayLike(arg)) {
+				target = [];
+				type = 'array';
+			} else {
+				target = {};
+				type = 'object';
+			}
+		}
 		if (targetIsEvent) {
 			if (arg && arg.constructor === Object) {
 				for (m in arg) {
@@ -1315,7 +1323,7 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 			continue;
 		}
 		if (type === 'array' && Q.isArrayLike(arg)) {
-			target = target.concat(arg);
+			target = Array.prototype.concat.call(target, arg);
 		} else {
 			for (k in arg) {
 				if (deep !== true 
