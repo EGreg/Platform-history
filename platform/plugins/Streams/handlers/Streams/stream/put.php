@@ -57,13 +57,6 @@ function Streams_stream_put($params) {
 				throw new Users_Exception_NotAuthorized();
 			}
 		}
-		foreach ($more_fields as $f) {
-			if (in_array($f, array('readLevel', 'writeLevel', 'adminLevel')) !== false) {
-				if (!$stream->testAdminLevel('own')) {
-					throw new Users_Exception_NotAuthorized();
-				}
-			}
-		}
 	}
 	
 	$restricted = array('readLevel', 'writeLevel', 'adminLevel');

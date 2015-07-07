@@ -394,7 +394,7 @@ abstract class Streams extends Base_Streams
 				'options' => $options,
 				'type' => $type
 			);
-			self::afterFetchExtended($params);
+			self::afterFetchExtended($publisherId, $s->type, $retrieved);
 			/**
 			 * @event Streams/fetch/$streamType {after}
 			 * @param {&array} 'streams'
@@ -785,13 +785,18 @@ abstract class Streams extends Base_Streams
 		}
 
 		// extend with any config defaults for this stream type
-		$xtype = Q_Config::get('Streams', 'types', $type, 'fields', array());
-		$fieldnames = array_merge(array(
+		$classes = Streams::getExtendClasses($type);
+		$fieldNames = array(
 			'name', 'title', 'icon', 'content', 'attributes', 
 			'readLevel', 'writeLevel', 'adminLevel'
-		), $xtype);
+		);
+		foreach ($classes as $k => $v) {
+			foreach ($v as $f) {
+				$fieldNames[] = $f;
+			}
+		}
 		$defaults = Q_Config::get('Streams', 'types', $type, 'defaults', array());
-		foreach ($fieldnames as $f) {
+		foreach ($fieldNames as $f) {
 			if (isset($fields[$f])) {
 				$stream->$f = $fields[$f];
 			} else if (array_key_exists($f, $defaults)) {
@@ -2194,7 +2199,7 @@ abstract class Streams extends Base_Streams
 		// Authorization check
 		if (empty($options['skipAccess'])) {
 			if ($asUserId !== $publisherId) {
-				$stream->calculateAccess($user->id);
+				$stream->calculateAccess($asUserId);
 				if (!$stream->testWriteLevel('close')) {
 					throw new Users_Exception_NotAuthorized();
 				}
@@ -2205,7 +2210,14 @@ abstract class Streams extends Base_Streams
 		list($relations, $related) = Streams::related($asUserId, $stream->publisherId, $stream->name, true);
 		foreach ($relations as $r) {
 			try {
-				Streams::unrelate($user->id, $r->fromPublisherId, $r->fromStreamName, $r->type, $stream->publisherId, $stream->name);
+				Streams::unrelate(
+					$asUserId, 
+					$r->fromPublisherId, 
+					$r->fromStreamName, 
+					$r->type, 
+					$stream->publisherId, 
+					$stream->name
+				);
 			} catch (Exception $e) {}
 		}
 
@@ -2219,7 +2231,7 @@ abstract class Streams extends Base_Streams
 		foreach ($relations as $r) {
 			try {
 				Streams::unrelate(
-					$user->id, 
+					$asUserId, 
 					$r->toPublisherId,
 					$r->toStreamName,
 					$r->type,
@@ -2233,7 +2245,7 @@ abstract class Streams extends Base_Streams
 		try {
 			$stream->closedTime = new Db_Expression("CURRENT_TIMESTAMP");
 			if ($stream->save()) {
-				$stream->post($user->id, array(
+				$stream->post($asUserId, array(
 					'type' => 'Streams/closed',
 					'content' => ''
 				), true);
@@ -2561,6 +2573,7 @@ abstract class Streams extends Base_Streams
 				}
 				if ($v === true) {
 					$v = call_user_func(array('Base_'.$k, 'fieldNames'));
+					$v = array_diff($v, array('publisherId', 'streamName', 'name'));
 				} else if (Q::isAssociative($v)) {
 					$v = array_keys($v);
 				}
@@ -2570,38 +2583,28 @@ abstract class Streams extends Base_Streams
 		return $result[$type] = $classes;
 	}
 	
-	protected static function afterFetchExtended($params)
+	protected static function afterFetchExtended($publisherId, $type, $retrieved)
 	{
-		if (!$params['retrieved']) {
-			return;
-		}
-		$retrieved = $params['retrieved'];
+		// all streams are the same type
+		if (!$retrieved) return;
 		$classes = array();
 		$rows = array();
-		$types = array();
 		foreach ($retrieved as $name => $stream) {
-			if (!empty($types[$stream->type])) continue;
-			$types[$stream->type] = true;
-			$classes[$stream->type] = Streams::getExtendClasses($stream->type);
-			foreach ($classes[$stream->type] as $k => $v) {
-				if (empty($rows[$stream->type])) {
-					$rows[$stream->type] = array();
-				}
+			$classes = Streams::getExtendClasses($type);
+			foreach ($classes as $k => $v) {
 				$r = call_user_func(array($k, 'select'), '*')
 					->where(array(
-						'publisherId' => $params['publisherId'],
-						'streamName' => array_keys($params['retrieved'])
+						'publisherId' => $publisherId,
+						'streamName' => array_keys($retrieved)
 					))->fetchDbRows(null, '', 'streamName');
-				$rows[$stream->type] = array_merge($rows[$stream->type], $r);
+				$rows = array_merge($rows, $r);
 			}
 		}
-		$fieldNames = Base_Streams_Stream::fieldNames();
 		foreach ($retrieved as $name => $stream) {
-			foreach ($classes[$stream->type] as $k => $v) {
+			foreach ($classes as $k => $v) {
 				foreach ($v as $f) {
-					if (in_array($f, $fieldNames)) continue;
-					if (isset($rows[$stream->type][$name]->$f)) {
-						$stream->$f = $rows[$stream->type][$name]->$f;
+					if (isset($rows[$name]->$f)) {
+						$stream->$f = $rows[$name]->$f;
 					}
 				}
 			}

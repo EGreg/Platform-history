@@ -28,8 +28,6 @@
 			"Websites/article": {
 				"create": true,
 				"edit": true,
-				"fields": ["userId", "article", "getintouch"],
-				"see": ["article", "getintouch"],
 				"defaults": {
 					"title": "Article"
 				},

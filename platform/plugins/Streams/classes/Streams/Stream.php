@@ -294,7 +294,7 @@ class Streams_Stream extends Base_Streams_Stream
 		)) {
 			return false;
 		}
-		
+
 		$this->beforeSaveExtended($params);
 
 		foreach ($this->fields as $name => $value) {
@@ -456,22 +456,24 @@ class Streams_Stream extends Base_Streams_Stream
 	{
 		$type = $this->type;
 		$classes = Streams::getExtendClasses($type);
-		$rows = array();
-		if ($retrieved = $this->wasRetrieved()) {
-			foreach ($classes as $k => $v) {
-				foreach ($v as $f) {
-					if ($this->wasModified($f)) {
-						$rows[$k] = true;
-						break;
-					}
+		$modified = array();
+		foreach ($classes as $k => $v) {
+			foreach ($v as $f) {
+				if ($this->wasModified($f)) {
+					$modified[$k] = true;
+					break;
 				}
 			}
 		}
-		foreach ($rows as $k => $v) {
+		$retrieved = $this->wasRetrieved();
+		$rows = array();
+		foreach ($modified as $k => $v) {
 			$row = new $k;
 			$row->publisherId = $this->publisherId;
 			$row->streamName = $this->name;
-			$row->retrieve(null, null, array('ignoreCache' => true));
+			if ($retrieved) {
+				$row->retrieve(null, null, array('ignoreCache' => true));
+			}
 			foreach ($classes[$k] as $f) {
 				if (!isset($this->$f)) continue;
 				if (isset($row->$f) and $row->$f === $this->$f) continue;
@@ -1603,8 +1605,14 @@ class Streams_Stream extends Base_Streams_Stream
 					: $this->$field;
 			}
 		}
-		foreach (Q_Config::get('Streams', 'types', $this->type, 'see', array()) as $key) {
-			$result[$key] = isset($this->$key) ? $this->$key : null;
+		$classes = Streams::getExtendClasses($this->type);
+		$fieldNames = array();
+		foreach ($classes as $k => $v) {
+			foreach ($v as $f) {
+				foreach ($fieldNames as $key) {
+					$result[$f] = isset($this->$f) ? $this->$f : null;
+				}
+			}
 		}
 		$result['access'] = array(
 			'readLevel' => $this->get('readLevel', $this->readLevel),

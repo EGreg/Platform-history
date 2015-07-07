@@ -1974,7 +1974,7 @@ Stream.remove = function _Stream_remove (publisherId, streamName, callback) {
 		if (msg) {
 			var args = [err, data];
 			Streams.onError.handle.call(this, msg, args);
-			Streams.remove.onError.handle.call(this, msg, args);
+			Stream.remove.onError.handle.call(this, msg, args);
 			return callback && callback.call(this, msg, args);
 		}
 		callback && callback.call(this, err, data.slots.result || null);
