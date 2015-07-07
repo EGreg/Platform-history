@@ -477,6 +477,7 @@ class Streams_Stream extends Base_Streams_Stream
 				if (isset($row->$f) and $row->$f === $this->$f) continue;
 				$row->$f = $this->$f;
 			}
+			$rows[$k] = $row;
 		}
 		$stream = $this;
 		Q::event("$type/save", compact('stream', 'rows'), 'before');

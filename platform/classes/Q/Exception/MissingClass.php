@@ -13,4 +13,4 @@ class Q_Exception_MissingClass extends Q_Exception
 	 */
 };
 
-Q_Exception::add('Q_Exception_MissingClass', 'missing class $class_name');
+Q_Exception::add('Q_Exception_MissingClass', 'missing class $className');

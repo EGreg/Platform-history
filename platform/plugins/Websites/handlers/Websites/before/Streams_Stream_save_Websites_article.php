@@ -6,6 +6,9 @@ function Websites_before_Streams_Stream_save_Websites_article($params)
 	
 	$stream = $params['stream'];
 	$user = new Users_User();
+	if (empty($stream->userId)) {
+		throw new Q_Exception_RequiredField(array('field' => 'userId'));
+	}
 	$user->id = $stream->userId;
 	if (!$user->retrieve()) {
 		throw new Users_Exception_NoSuchUser();

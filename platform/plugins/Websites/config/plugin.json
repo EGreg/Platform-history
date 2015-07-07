@@ -32,7 +32,8 @@
 				"see": ["article", "getintouch"],
 				"defaults": {
 					"title": "Article"
-				}
+				},
+				"extend": ["Websites_Article"]
 			}
 		}
 	},
