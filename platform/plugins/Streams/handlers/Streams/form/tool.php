@@ -17,9 +17,10 @@
  *     "publisherId" => Required. The id of the user publishing the stream
  *     "streamName" => Required. The name of the stream
  *     "field" => The stream field to edit, or "attribute:$attributeName" for an attribute.
- *     "type" => The type of the input (@see Q_Html::smartTag())
+ *     "input" => The type of the input (@see Q_Html::smartTag())
  *     "attributes" => Additional attributes for the input
  *     "options" => options for the input (if type is "select", "checkboxes" or "radios")
+ *     "params" => array of extra parameters to Q_Html::smartTag
  */
 function Streams_form_tool($options)
 {

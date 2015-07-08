@@ -10143,7 +10143,14 @@ function _addHandlebarsHelpers() {
 			if (id) {
 				id = prefix + '_' + id;
 			}
-			var o = Q.extend({}, options && options.hash, this[name], this['id:'+id]);
+			var o = {};
+			var hash = (options && options.hash);
+			if (hash) {
+				for (var k in hash) {
+					Q.setObject(k, hash[k], o, '-');
+				}
+			}
+			Q.extend(o, this[name], this['id:'+id]);
 			return Q.Tool.setUpElementHTML('div', name, o, id, prefix);
 		});
 	}

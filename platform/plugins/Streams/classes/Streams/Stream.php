@@ -295,13 +295,12 @@ class Streams_Stream extends Base_Streams_Stream
 			return false;
 		}
 
-		$this->beforeSaveExtended($params);
-
 		foreach ($this->fields as $name => $value) {
 			if (!empty($this->fieldsModified[$name])) {
 				$modifiedFields[$name] = $value;
 			}
 		}
+		$this->beforeSaveExtended($modifiedFields);
 
 		return parent::beforeSave($modifiedFields);
 	}
@@ -452,14 +451,14 @@ class Streams_Stream extends Base_Streams_Stream
 		return $result;
 	}
 	
-	protected function beforeSaveExtended()
+	protected function beforeSaveExtended($modifiedFields)
 	{
 		$type = $this->type;
 		$classes = Streams::getExtendClasses($type);
 		$modified = array();
 		foreach ($classes as $k => $v) {
 			foreach ($v as $f) {
-				if ($this->wasModified($f)) {
+				if ($this->fieldsModified[$f]) {
 					$modified[$k] = true;
 					break;
 				}
@@ -475,9 +474,9 @@ class Streams_Stream extends Base_Streams_Stream
 				$row->retrieve(null, null, array('ignoreCache' => true));
 			}
 			foreach ($classes[$k] as $f) {
-				if (!isset($this->$f)) continue;
-				if (isset($row->$f) and $row->$f === $this->$f) continue;
-				$row->$f = $this->$f;
+				if (!isset($modifiedFields[$f])) continue;
+				if (isset($row->$f) and $row->$f === $modifiedFields[$f]) continue;
+				$row->$f = $modifiedFields[$f];
 			}
 			$rows[$k] = $row;
 		}

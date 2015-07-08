@@ -785,16 +785,7 @@ abstract class Streams extends Base_Streams
 		}
 
 		// extend with any config defaults for this stream type
-		$classes = Streams::getExtendClasses($type);
-		$fieldNames = array(
-			'name', 'title', 'icon', 'content', 'attributes', 
-			'readLevel', 'writeLevel', 'adminLevel'
-		);
-		foreach ($classes as $k => $v) {
-			foreach ($v as $f) {
-				$fieldNames[] = $f;
-			}
-		}
+		$fieldNames = Streams::getExtendFieldNames($types);
 		$defaults = Q_Config::get('Streams', 'types', $type, 'defaults', array());
 		foreach ($fieldNames as $f) {
 			if (isset($fields[$f])) {
@@ -2581,6 +2572,21 @@ abstract class Streams extends Base_Streams
 			}
 		}
 		return $result[$type] = $classes;
+	}
+	
+	static function getExtendFieldNames($type)
+	{
+		$classes = Streams::getExtendClasses($type);
+		$fieldNames = array(
+			'name', 'title', 'icon', 'content', 'attributes', 
+			'readLevel', 'writeLevel', 'adminLevel'
+		);
+		foreach ($classes as $k => $v) {
+			foreach ($v as $f) {
+				$fieldNames[] = $f;
+			}
+		}
+		return $fieldNames;
 	}
 	
 	protected static function afterFetchExtended($publisherId, $type, $retrieved)

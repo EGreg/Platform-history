@@ -24,7 +24,7 @@ function Streams_stream_put($params) {
 		$publisherId = $_REQUEST['publisherId'] = $user->id;
 	}
 	$name = Streams::requestedName(true);
-	$more_fields = array_merge($_REQUEST, $params);
+	$fields = array_merge($_REQUEST, $params);
 
 	// do not set stream name
 	$stream = Streams::fetchOne($user->id, $publisherId, $name);	
@@ -62,28 +62,36 @@ function Streams_stream_put($params) {
 	$restricted = array('readLevel', 'writeLevel', 'adminLevel');
 	$owned = $stream->testAdminLevel('own');
 	foreach ($restricted as $r) {
-		if (isset($more_fields[$r]) and !$owned) {
+		if (isset($fields[$r]) and !$owned) {
 			throw new Users_Exception_NotAuthorized();
 		}
 	}
 	
 	// handle setting of attributes
-	if (isset($more_fields['attributes'])
-	and is_array($more_fields['attributes'])) {
-		foreach ($more_fields['attributes'] as $k => $v) {
+	if (isset($fields['attributes'])
+	and is_array($fields['attributes'])) {
+		foreach ($fields['attributes'] as $k => $v) {
 			$stream->setAttribute($k, $v);
 		}
-		unset($more_fields['attributes']);
+		unset($fields['attributes']);
 	}
 	
-	$coreFields = array('type', 'title', 'icon', 'content', 'attributes', 'readLevel', 'writeLevel', 'adminLevel');
-	$exFields = Q_Config::get('Streams', 'types', $stream->type, 'fields', array());
-	$mergedFields = array_merge($coreFields, $exFields);
+	// extend with any config defaults for this stream type
+	$classes = Streams::getExtendClasses($stream->type);
+	$coreFields = $fieldNames = array(
+		'type', 'title', 'icon', 'content', 'attributes', 
+		'readLevel', 'writeLevel', 'adminLevel'
+	);
+	foreach ($classes as $k => $v) {
+		foreach ($v as $f) {
+			$fieldNames[] = $f;
+		}
+	}
 
 	// Process any icon that was posted
-	$icon = Q::ifset($mergedFields, 'icon', null);
+	$icon = Q::ifset($fieldNames, 'icon', null);
 	if (is_array($icon)) {
-		unset($mergedFields['icon']);
+		unset($fieldNames['icon']);
 		$icon['subpath'] = "streams/{$stream->publisherId}/{$stream->name}";
 		$timeLimit = Q_Config::get('Q', 'uploads', 'limits', 'image', 'time', 5*60*60);
 		set_time_limit($timeLimit); // 5 min
@@ -91,21 +99,21 @@ function Streams_stream_put($params) {
 		Q_Response::setSlot('icon', $saved);
 	}
 	
-	if (!empty($mergedFields)) {
-		foreach ($mergedFields as $f) {
-			if (isset($more_fields[$f])) {
-				$stream->$f = $more_fields[$f];
+	if (!empty($fieldNames)) {
+		foreach ($fieldNames as $f) {
+			if (isset($fields[$f])) {
+				$stream->$f = $fields[$f];
 			}
 		}
 
 		$instructions = array('changes' => array());
-		foreach ($mergedFields as $k) {
-			$v = $stream->$k;
-			if (isset($original[$k])
-			and json_encode($original[$k]) === json_encode($v)) {
+		foreach ($fieldNames as $f) {
+			$v = $stream->$f;
+			if (isset($original[$f])
+			and json_encode($original[$f]) === json_encode($v)) {
 				continue;
 			}
-			$instructions['changes'][$k] = in_array($k, $coreFields)
+			$instructions['changes'][$f] = in_array($f, $coreFields)
 				? $v // record the changed value in the instructions
 				: null; // record a change but the value may be too big, etc.
 		}
@@ -127,7 +135,7 @@ function Streams_stream_put($params) {
 		}
 	}
 	
-	if (!empty($more_fields['join'])) {
+	if (!empty($fields['join'])) {
 		$stream->join();
 	}
 	Streams::$cache['stream'] = $stream;
