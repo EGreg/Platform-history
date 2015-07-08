@@ -88,14 +88,10 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 				type: state.creatable.streamType
 			}, overrides);
 			Q.Streams.retainWith(tool)
-			.create(fields, function (err, stream, extra) {
+			.create(fields, tool, function (err, stream, extra) {
 				if (err) {
 					return err;
 				}
-				state.related.weight = Q.getObject(['related', 'weight'], extra);
-				state.publisherId = this.fields.publisherId;
-				state.streamName = this.fields.name;
-				tool.stream = this;
 				state.onCreate.handle.call(tool);
 				tool.stream.refresh(function () {
 					_render();

@@ -523,9 +523,12 @@ var _Streams_batchFunction_preprocess = {
  * Create a new stream
  * @static
  * @method create
- * @param fields {Object}
+ * @param {Object} fields
  *  Should contain at least the publisherId and type of the stream
- * @param callback {function}
+ * @param {Q.Tool} [tool]
+ *  If this is being called from a tool implementing the Streams/preview protocol,
+ *  then pass the tool before the callback, so that it can be updated properly.
+ * @param {Function} callback 
  *	if there were errors, first parameter is the error message
  *  otherwise, first parameter is null and second parameter is a Streams.Stream object
  * @param {Object} [related] , Optional information to add a relation from the newly created stream to another one. Can include:
@@ -533,7 +536,26 @@ var _Streams_batchFunction_preprocess = {
  *   @param {String} [related.streamName] the name of the related stream
  *   @param {Mixed} [related.type] the type of the relation
  */
-Streams.create = function (fields, callback, related) {
+Streams.create = function (fields, /* tool, */ callback, related) {
+	var tool = null;
+	if (Q.typeOf(callback) === 'Q.Tool') {
+		tool = callback;
+		var cb = related;
+		related = arguments[3];
+		callback = function (err, stream, extra) {
+			var state = tool.state;
+			var r = state.related;
+			Streams.related.cache.each([r.publisherId, r.streamName],
+			function (key) {
+				Streams.related.cache.remove(key);
+			});
+			state.related.weight = Q.getObject(['related', 'weight'], extra);
+			state.publisherId = this.fields.publisherId;
+			state.streamName = this.fields.name;
+			tool.stream = this;
+			cb && cb.apply(this, arguments);
+		};
+	}
 	var slotNames = ['stream'];
 	if (fields.icon) {
 		slotNames.push('icon');

@@ -19,7 +19,7 @@ function Streams_stream_response_Q_inplace()
 	} else {
 		$fieldNames = array_diff(
 			Streams::getExtendFieldNames($stream->type),
-			array('publisherId', 'name', 'insertedTime', 'updatedTime')
+			array('insertedTime', 'updatedTime')
 		);
 		$field = 'content';
 		foreach ($fieldNames as $f) {

@@ -9666,23 +9666,25 @@ Q.prompt = function(message, callback, options) {
 	var buttonClicked = false;
 	var dialog = Q.Dialogs.push(Q.extend({
 		'title': o.title,
-		'content': $('<div class="Q_messagebox" />').append(
+		'content': $('<div class="Q_messagebox Q_big_prompt" />').append(
 			$('<p />').html(o.message),
 			$('<input type="text" />').attr('placeholder', o.placeholder),
-			$('<button class="Q_messagebox_done" />').html(o.ok)
+			$('<button class="Q_messagebox_done Q_button" />').html(o.ok)
 		),
 		'onActivate': function(dialog) {
 			var field = dialog.find('input');
-			var fieldWidth = field.parent().width() - parseInt(field.css('padding-left')) - parseInt(field.css('padding-right'))
+			var fieldWidth = field.parent().width()
 						   - field.next().outerWidth(true) - 5;
-			field.css({ 'width': fieldWidth + 'px' })
-				.plugin('Q/placeholders')
-				.plugin('Q/clickfocus')
-				.on('keydown', function (event) {
-					if ((event.keyCode || event.which) === 13) {
-						_done();
-					}
-				});
+			field.css({ 
+				width: fieldWidth + 'px',
+				boxSizing: 'border-box'
+			}).plugin('Q/placeholders')
+			.plugin('Q/clickfocus')
+			.on('keydown', function (event) {
+				if ((event.keyCode || event.which) === 13) {
+					_done();
+				}
+			});
 		},
 		'onClose': {'Q.prompt': function() {
 			if (!buttonClicked) Q.handle(callback, this, [null]);

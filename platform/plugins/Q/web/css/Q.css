@@ -256,7 +256,6 @@ button.basic16 { background-color: #eee; color: black; }
 .Q_big_message>div { padding-top: 20px; box-sizing: content-box; }
 .Q_big_message>.Q_explanation { font-size: 18px; font-weight: normal; }
 
-
 /* Some quick styles for various tools */
 
 .Q_actions_action { cursor: pointer !important; }

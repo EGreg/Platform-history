@@ -76,17 +76,8 @@ function Streams_stream_put($params) {
 		unset($fields['attributes']);
 	}
 	
-	// extend with any config defaults for this stream type
-	$classes = Streams::getExtendClasses($stream->type);
-	$coreFields = $fieldNames = array(
-		'type', 'title', 'icon', 'content', 'attributes', 
-		'readLevel', 'writeLevel', 'adminLevel'
-	);
-	foreach ($classes as $k => $v) {
-		foreach ($v as $f) {
-			$fieldNames[] = $f;
-		}
-	}
+	// Get all the extended field names for this stream type
+	$fieldNames = Streams::getExtendFieldNames($stream->type);
 
 	// Process any icon that was posted
 	$icon = Q::ifset($fieldNames, 'icon', null);
@@ -108,6 +99,7 @@ function Streams_stream_put($params) {
 
 		$instructions = array('changes' => array());
 		foreach ($fieldNames as $f) {
+			if (!isset($stream->$f)) continue;
 			$v = $stream->$f;
 			if (isset($original[$f])
 			and json_encode($original[$f]) === json_encode($v)) {

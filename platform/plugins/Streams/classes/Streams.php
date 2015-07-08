@@ -2578,7 +2578,7 @@ abstract class Streams extends Base_Streams
 	{
 		$classes = Streams::getExtendClasses($type);
 		$fieldNames = array(
-			'name', 'title', 'icon', 'content', 'attributes', 
+			'title', 'icon', 'content', 'attributes', 
 			'readLevel', 'writeLevel', 'adminLevel'
 		);
 		foreach ($classes as $k => $v) {
