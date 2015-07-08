@@ -3322,7 +3322,7 @@ Q.Tool.define = function (name, /* require, */ ctor, defaultOptions, stateKeys, 
 	if (typeof name === 'object') {
 		ctors = name;
 	} else {
-		if (typeof arguments[1] !== 'function') {
+		if (typeof arguments[1] !== 'function' && typeof arguments[2] === 'function') {
 			var require = arguments[1];
 			if (typeof require === 'string') {
 				require = [require];
