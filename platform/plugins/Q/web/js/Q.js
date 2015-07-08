@@ -2799,7 +2799,7 @@ Q.getter = function _Q_getter(original, options) {
 					var wk = _waiting[key];
 					if (wk) for (i = 0; i < wk.length; i++) {
 						wrapper.onResult.handle(this, arguments, arguments2, wk[i].ret, original);
-						wk[i].callbacks[cbpos].apply(this, arguments));
+						wk[i].callbacks[cbpos].apply(this, arguments);
 					}
 					delete _waiting[key]; 
 					// tell throttle to execute the next function, if any
