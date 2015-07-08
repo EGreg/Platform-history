@@ -1198,6 +1198,8 @@ Q.isPlainObject = function (x) {
 
 /**
  * Convenience method for testing instanceof, even in IE
+ * @method instanceOf
+ * @static
  * @param {mixed} testing
  * @param {Function} Constructor
  */
@@ -2714,6 +2716,7 @@ Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotN
  *  your getter does "batching", and waits a tiny bit before sending the batch request,
  *  to see if any more will be requested. In this case, the execute function
  *  is supposed to execute the batched request without waiting any more.
+ *  If the original function returns false, the caching is canceled for that call.
  * @param options {Object}
  *  An optional hash of possible options, which include:
  *  "throttle" => a String id to throttle on, or an Object that supports the throttle interface:
@@ -2728,8 +2731,8 @@ Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotN
 Q.getter = function _Q_getter(original, options) {
 
 	function wrapper() {
-		var i, key, that = this, arguments2 = Array.prototype.slice.call(arguments);
-		var callbacks = [];
+		var i, key, that = this, callbacks = [], _dontCache = false;
+		var arguments2 = Array.prototype.slice.call(arguments);
 
 		// separate fields and callbacks
 		key = Q.Cache.key(arguments2, callbacks);
@@ -2778,32 +2781,27 @@ Q.getter = function _Q_getter(original, options) {
 		// replace the callbacks with smarter functions
 		var args = [];
 		for (i=0, cbi=0; i<arguments2.length; i++) {
-
 			// we only care about functions
 			if (typeof arguments2[i] !== 'function') {
 				args.push(arguments2[i]); // regular argument
 				continue;
 			}
-
 			args.push((function(cb, cbpos) {
 				// make a function specifically to call the
 				// callbacks in position pos, and then decrement
 				// the throttle
 				return function _Q_getter_callback() {
-
 					// save the results in the cache
-					if (wrapper.cache) {
+					if (wrapper.cache && !_dontCache) {
 						wrapper.cache.set(key, cbpos, this, arguments);
 					}
-
 					// process waiting callbacks
 					var wk = _waiting[key];
 					if (wk) for (i = 0; i < wk.length; i++) {
 						wrapper.onResult.handle(this, arguments, arguments2, wk[i].ret, original);
-						wk[i].callbacks[cbpos].apply(this, arguments);
+						wk[i].callbacks[cbpos].apply(this, arguments));
 					}
 					delete _waiting[key]; 
-
 					// tell throttle to execute the next function, if any
 					if (wrapper.throttle && wrapper.throttle.throttleNext) {
 						wrapper.throttle.throttleNext(this);
@@ -2815,7 +2813,9 @@ Q.getter = function _Q_getter(original, options) {
 
 		if (!wrapper.throttle) {
 			// no throttling, just run the function
-			original.apply(that, args);
+			if (false === original.apply(that, args)) {
+				_dontCache = true;
+			}
 			ret.result = Q.getter.REQUESTING;
 			wrapper.onExecuted.handle.call(this, arguments2, ret);
 			return ret;
@@ -2833,7 +2833,9 @@ Q.getter = function _Q_getter(original, options) {
 			wrapper.throttle.throttleTry = function _throttleTry(that, getter, args) {
 				++p.count;
 				if (p.size === null || p.count <= p.size) {
-					getter.apply(that, args);
+					if (false === getter.apply(that, args)) {
+						_dontCache = true;
+					}
 					return true;
 				}
 				// throttle is full, so queue this function

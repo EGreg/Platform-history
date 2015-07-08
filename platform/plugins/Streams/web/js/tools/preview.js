@@ -201,7 +201,7 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 				}
 				if (state.removable !== false
 				&& state.actions && stream.testWriteLevel('close')) {
-					var ao = Q.extend(state.actions, {
+					var ao = Q.extend({}, state.actions, {
 						actions: {
 							'delete': function () {
 								stream.remove(function (err) {

@@ -38,7 +38,7 @@ Q.typeOf = function _Q_typeOf(value) {
 		if (value === null) {
 			return 'null';
 		}
-		if (value instanceof root.Element) {
+		if (root.Element && value instanceof root.Element) {
 			return 'Element';
 		} else if (value instanceof Array
 		|| (value.constructor && value.constructor.name === 'Array')) {
@@ -591,6 +591,7 @@ Q.batcher.options = {
  *  your getter does "batching", and waits a tiny bit before sending the batch request,
  *  to see if any more will be requested. In this case, the execute function
  *  is supposed to execute the batched request without waiting any more.
+ *  If the original function returns false, the caching is canceled for that call.
  * @param options Object
  *  An optional hash of possible options, which include:
  *  "throttle" => a String id to throttle on, or an Object that supports the throttle interface:
@@ -606,8 +607,8 @@ Q.getter = function _Q_getter(original, options) {
 
 
 	function wrapper() {
-		var i, j, key, that = this, arguments2 = Array.prototype.slice.call(arguments);
-		var callbacks = [];
+		var i, key, that = this, callbacks = [], _dontCache = false;
+		var arguments2 = Array.prototype.slice.call(arguments);
 
 		// separate fields and callbacks
 		key = Q.Cache.key(arguments2, callbacks);
@@ -625,7 +626,7 @@ Q.getter = function _Q_getter(original, options) {
 		var cached, cbpos, cbi;
 		Q.getter.usingCached = false;
 
-		// if caching required check the cache -- maybe the result is there
+		// if caching is required check the cache -- maybe the result is there
 		if (wrapper.cache && !ignoreCache) {
 			if (cached = wrapper.cache.get(key)) {
 				cbpos = cached.cbpos;
@@ -670,7 +671,7 @@ Q.getter = function _Q_getter(original, options) {
 				return function _Q_getter_callback() {
 
 					// save the results in the cache
-					if (wrapper.cache) {
+					if (wrapper.cache && !_dontCache) {
 						wrapper.cache.set(key, cbpos, this, arguments);
 					}
 
@@ -693,7 +694,9 @@ Q.getter = function _Q_getter(original, options) {
 
 		if (!wrapper.throttle) {
 			// no throttling, just run the function
-			original.apply(that, args);
+			if (false === original.apply(that, args)) {
+				_dontCache = true;
+			}
 			ret.result = Q.getter.REQUESTING;
 			wrapper.emit('executed', this, arguments2, ret);
 			return ret;
@@ -711,7 +714,9 @@ Q.getter = function _Q_getter(original, options) {
 			wrapper.throttle.throttleTry = function _throttleTry(that, getter, args) {
 				++p.count;
 				if (p.size === null || p.count <= p.size) {
-					getter.apply(that, args);
+					if (false === getter.apply(that, args)) {
+						_dontCache = true;
+					}
 					return true;
 				}
 				// throttle is full, so queue this function
@@ -1775,7 +1780,9 @@ Q.milliseconds.start = Date.now();
 Q.exceptionHandler = function _Q_exceptionHandler(exception) {
 	debugger; // pause here if debugging
 	// print the exception in the log and keep going
-	var name = Q.Config.get(['Q', 'exception', 'nodeLogName'], null);
+	var name = Q.Config
+		? Q.Config.get(['Q', 'exception', 'nodeLogName'], null)
+		: null;
 	Q.log("UNCAUGHT EXCEPTION:", name);
 	Q.log(exception, name);
 };

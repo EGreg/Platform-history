@@ -1705,6 +1705,13 @@ Streams.related = function _Streams_related(publisherId, streamName, relationTyp
 		}
 	}, { fields: fields, baseUrl: baseUrl });
 	_retain = undefined;
+	var socket = Q.Socket.get('Streams', Q.nodeUrl({
+		publisherId: publisherId,
+		streamName: streamName
+	}));
+	if (!socket) {
+		return false; // do not cache relations to/from this stream
+	}
 };
 Streams.related.onError = new Q.Event();
 
