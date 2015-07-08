@@ -3796,8 +3796,8 @@ Tp.forEachChild = function _Q_Tool_prototype_forEachChild(name, levels, callback
  * @param {Object} options the options to pass to a tool
  * @return {String}
  */
-Q.Tool.encodeOptions = function _Q_Tool_stringFromOptions(options) {
-	return JSON.stringify(options).encodeHTML().replaceAll({"&quot;": '"'});
+Q.Tool.encodeOptions = function _Q_Tool_encodeOptions(options) {
+	var json = JSON.stringify(options).encodeHTML().replaceAll({"&quot;": '"'});
 };
 
 /**
@@ -3865,7 +3865,7 @@ Q.Tool.setUpElementHTML = function _Q_Tool_setUpElementHTML(element, toolType, t
 	var e = Q.Tool.setUpElement(element, toolType, null, id, prefix);
 	var ntt = toolType.replace(/\//g, '_');
 	if (toolOptions) {
-		e.setAttribute('data-'+ntt.replace(/_/g, '-'), Q.Tool.encodeOptions(toolOptions));
+		e.setAttribute('data-'+ntt.replace(/_/g, '-'), JSON.stringify(toolOptions));
 	}
 	return e.outerHTML;
 };
@@ -10158,11 +10158,9 @@ function _addHandlebarsHelpers() {
 				id = undefined;
 			}
 			var ba = Q.Tool.beingActivated;
-			var prefix = (ba ? ba.prefix : '')
-				+ name.split('/').join('_');
-			if (id) {
-				id = prefix + '_' + id;
-			}
+			var prefix = (ba ? ba.prefix : '');
+			id = prefix + name.split('/').join('_')
+				+ (id ? '_' + id : '');
 			var o = {};
 			var hash = (options && options.hash);
 			if (hash) {
