@@ -135,9 +135,9 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 * Create SELECT query to the class table
 	 * @method select
 	 * @static
-	 * @param $fields {array} The field values to use in WHERE clauseas as 
+	 * @param {array} $fields The field values to use in WHERE clauseas as 
 	 * an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function select($fields, $alias = null)
@@ -152,7 +152,7 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 * Create UPDATE query to the class table
 	 * @method update
 	 * @static
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function update($alias = null)
@@ -167,8 +167,8 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 * Create DELETE query to the class table
 	 * @method delete
 	 * @static
-	 * @param [$table_using=null] {object} If set, adds a USING clause with this table
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$table_using=null] If set, adds a USING clause with this table
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function delete($table_using = null, $alias = null)
@@ -183,8 +183,8 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 * Create INSERT query to the class table
 	 * @method insert
 	 * @static
-	 * @param [$fields=array()] {object} The fields as an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$fields=array()] The fields as an associative array of `column => value` pairs
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function insert($fields = array(), $alias = null)
@@ -212,7 +212,10 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	static function insertManyAndExecute($records = array(), $options = array())
 	{
-		self::db()->insertManyAndExecute(self::table(), $records, $options);
+		self::db()->insertManyAndExecute(
+			self::table(), $records,
+			array_merge($options, array('className' => 'Places_Zipcode'))
+		);
 	}
 	
 	/**
@@ -236,6 +239,16 @@ abstract class Base_Places_Zipcode extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the countryCode field
+	 * @return {integer}
+	 */
+	function maxSize_countryCode()
+	{
+
+		return 2;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_zipcode
@@ -253,6 +266,16 @@ abstract class Base_Places_Zipcode extends Db_Row
 		if (strlen($value) > 10)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".zipcode");
 		return array('zipcode', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the zipcode field
+	 * @return {integer}
+	 */
+	function maxSize_zipcode()
+	{
+
+		return 10;			
 	}
 
 	/**
@@ -276,6 +299,16 @@ abstract class Base_Places_Zipcode extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the placeName field
+	 * @return {integer}
+	 */
+	function maxSize_placeName()
+	{
+
+		return 180;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_stateName
@@ -293,6 +326,16 @@ abstract class Base_Places_Zipcode extends Db_Row
 		if (strlen($value) > 100)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".stateName");
 		return array('stateName', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the stateName field
+	 * @return {integer}
+	 */
+	function maxSize_stateName()
+	{
+
+		return 100;			
 	}
 
 	/**
@@ -316,6 +359,16 @@ abstract class Base_Places_Zipcode extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the state field
+	 * @return {integer}
+	 */
+	function maxSize_state()
+	{
+
+		return 20;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_regionName
@@ -333,6 +386,16 @@ abstract class Base_Places_Zipcode extends Db_Row
 		if (strlen($value) > 100)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".regionName");
 		return array('regionName', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the regionName field
+	 * @return {integer}
+	 */
+	function maxSize_regionName()
+	{
+
+		return 100;			
 	}
 
 	/**
@@ -356,6 +419,16 @@ abstract class Base_Places_Zipcode extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the region field
+	 * @return {integer}
+	 */
+	function maxSize_region()
+	{
+
+		return 20;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_community
@@ -373,6 +446,16 @@ abstract class Base_Places_Zipcode extends Db_Row
 		if (strlen($value) > 100)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".community");
 		return array('community', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the community field
+	 * @return {integer}
+	 */
+	function maxSize_community()
+	{
+
+		return 100;			
 	}
 
 	/**
@@ -395,6 +478,16 @@ abstract class Base_Places_Zipcode extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum integer that can be assigned to the accuracy field
+	 * @return {integer}
+	 */
+	function maxSize_accuracy()
+	{
+
+		return 2147483647;			
+	}
+
+	/**
 	 * Check if mandatory fields are set and updates 'magic fields' with appropriate values
 	 * @method beforeSave
 	 * @param {array} $value The array of fields
@@ -405,7 +498,7 @@ abstract class Base_Places_Zipcode extends Db_Row
 	{
 		if (!$this->retrieved) {
 			$table = $this->getTable();
-			foreach (array('countryCode','zipcode','placeName','stateName','state','regionName','region','community','latitude','longitude','accuracy') as $name) {
+			foreach (array('latitude','longitude') as $name) {
 				if (!isset($value[$name])) {
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}

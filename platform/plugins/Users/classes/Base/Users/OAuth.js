@@ -23,7 +23,7 @@ var Row = Q.require('Db/Row');
  * an associative array of `{column: value}` pairs
  */
 function Base (fields) {
-	
+	Base.constructors.apply(this, arguments);
 }
 
 Q.mixin(Base, Row);
@@ -74,7 +74,7 @@ Base.db = function () {
 /**
  * Retrieve the table name to use in SQL statements
  * @method table
- * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
+ * @param {boolean} [withoutDbName=false] Indicates wheather table name should contain the database name
  * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
@@ -106,8 +106,8 @@ Base.connectionName = function() {
 /**
  * Create SELECT query to the class table
  * @method SELECT
- * @param fields {object|string} The field values to use in WHERE clauseas as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {object|string} fields The field values to use in WHERE clauseas as an associative array of `{column: value}` pairs
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.SELECT = function(fields, alias) {
@@ -119,7 +119,7 @@ Base.SELECT = function(fields, alias) {
 /**
  * Create UPDATE query to the class table. Use Db.Query.Mysql.set() method to define SET clause
  * @method UPDATE
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.UPDATE = function(alias) {
@@ -131,8 +131,8 @@ Base.UPDATE = function(alias) {
 /**
  * Create DELETE query to the class table
  * @method DELETE
- * @param [table_using=null] {object} If set, adds a USING clause with this table
- * @param [alias=null] {string} Table alias
+ * @param {object}[table_using=null] If set, adds a USING clause with this table
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.DELETE = function(table_using, alias) {
@@ -145,7 +145,7 @@ Base.DELETE = function(table_using, alias) {
  * Create INSERT query to the class table
  * @method INSERT
  * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.INSERT = function(fields, alias) {
@@ -167,7 +167,7 @@ Base.prototype.className = "Users_OAuth";
  * Create INSERT query to the class table
  * @method INSERT
  * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.prototype.setUp = function() {
@@ -178,7 +178,7 @@ Base.prototype.setUp = function() {
  * Create INSERT query to the class table
  * @method INSERT
  * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.prototype.db = function () {
@@ -188,7 +188,7 @@ Base.prototype.db = function () {
 /**
  * Retrieve the table name to use in SQL statements
  * @method table
- * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
+ * @param {boolean} [withoutDbName=false] Indicates wheather table name should contain the database name
  * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
@@ -244,6 +244,15 @@ Base.prototype.beforeSet_client_id = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the client_id field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_client_id = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -259,6 +268,15 @@ Base.prototype.beforeSet_userId = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".userId");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the userId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_userId = function () {
+
+		return 255;
 };
 
 /**
@@ -278,6 +296,15 @@ Base.prototype.beforeSet_state = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the state field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_state = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -293,6 +320,15 @@ Base.prototype.beforeSet_scope = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".scope");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the scope field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_scope = function () {
+
+		return 255;
 };
 
 /**
@@ -312,6 +348,15 @@ Base.prototype.beforeSet_redirect_uri = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the redirect_uri field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_redirect_uri = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -327,6 +372,15 @@ Base.prototype.beforeSet_access_token = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".access_token");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the access_token field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_access_token = function () {
+
+		return 255;
 };
 
 /**
@@ -359,6 +413,15 @@ Base.prototype.beforeSet_token_expires_seconds = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum integer that can be assigned to the token_expires_seconds field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_token_expires_seconds = function () {
+
+		return 2147483647;
+};
+
 /**
  * Check if mandatory fields are set and updates 'magic fields' with appropriate values
  * @method beforeSave
@@ -367,7 +430,7 @@ Base.prototype.beforeSet_token_expires_seconds = function (value) {
  * @throws {Error} If mandatory field is not set
  */
 Base.prototype.beforeSave = function (value) {
-	var fields = ['client_id','userId','state','redirect_uri','access_token'], i;
+	var fields = ['client_id','userId','state'], i;
 	if (!this._retrieved) {
 		var table = this.table();
 		for (i=0; i<fields.length; i++) {

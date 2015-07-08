@@ -36,7 +36,7 @@ class Mustache_Autoloader
      *
      * @param string $baseDir Mustache library base directory (default: dirname(__FILE__).'/..')
      *
-     * @return Mustache_Autoloader Registered Autoloader instance
+     * @return {Mustache_Autoloader} Registered Autoloader instance
      */
     public static function register($baseDir = null)
     {

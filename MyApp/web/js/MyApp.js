@@ -20,7 +20,14 @@ var MyApp = (function (Q, $) {
 		}
 	};
 	
-	Q.page('', function () {
+	Q.page("MyApp/welcome", function () { 
+		// when loading
+		return function () {
+			// unloading;
+		};
+	});
+	
+	Q.page('', function () { // all pages
 		
 		$('.MyApp_login').on(Q.Pointer.click, function () {
 			Q.Users.login();
@@ -34,8 +41,8 @@ var MyApp = (function (Q, $) {
 			}
 		});
 		
-		// For hiding notices and errors that may be displayed
-		$('#notices li').on(Q.Pointer.fastclick, function () {
+		// For example, we can hide notices when the user clicks/taps on them
+		$('#notices li').on(Q.Pointer.fastclick, true, function () {
 			var $this = $(this), key;
 			$this.css('min-height', 0)
 			.slideUp(300, function () {
@@ -55,24 +62,17 @@ var MyApp = (function (Q, $) {
 		
 	});
 	
-	Q.page("MyApp/welcome", function () {
-		// when loading
-		return function () {
-			// unloading;
-		};
-	});
-	
 	// example stream
 	Q.Streams.define("MyApp/cool", "js/streams/MyApp/cool.js");
 	
 	// example tool
 	Q.Tool.define("MyApp/cool", "js/tools/MyApp/cool.js");
 
-	// tell Q.handle to load pages using AJAX
+	// tell Q.handle to load pages using AJAX - much smoother
 	Q.handle.options.loadUsingAjax = true;
 	
 	// make the app feel more native on touch devices
-	Q.Pointer.preventTouchScrolling({
+	Q.Pointer.preventRubberBand({
 		direction: 'vertical'
 	});
 	Q.Pointer.startBlurringOnTouch();

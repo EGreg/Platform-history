@@ -1,5 +1,29 @@
 <?php
-	
+
+/**
+ * Used to set the user's location from geolocation data.
+ * @param $_REQUEST
+ * @param [$_REQUEST.latitude] The new latitude. If set, must also specify longitude.
+ * @param [$_REQUEST.longitude] The new longitude. If set, must also specify latitude.
+ * @param [$_REQUEST.zipcode] The new zip code. Can be set instead of latitude, longitude.
+ * @param [$_REQUEST.miles] The distance around their location around that the user is interested in
+ * @param [$_REQUEST.subscribe] Whether to subscribe to all the local interests at the new location.
+ * @param [$_REQUEST.unsubscribe] Whether to unsubscribe from all the local interests at the old location.
+ * @param [$_REQUEST.accuracy]
+ * @param [$_REQUEST.altitude]
+ * @param [$_REQUEST.altitudeAccuracy]
+ * @param [$_REQUEST.heading]
+ * @param [$_REQUEST.speed]
+ * @param [$_REQUEST.timezone]
+ * @param [$_REQUEST.]
+ * @param [$_REQUEST.]
+ *
+ * @throws {$1}
+ * @throws {$1}
+ * @throws {$1}
+ * @throws {$1}
+ * @throws {$1} *
+ */
 function Places_geolocation_post()
 {
 	$user = Users::loggedInUser(true);
@@ -69,19 +93,71 @@ function Places_geolocation_post()
 		'instructions' => $stream->getAllAttributes()
 	), true);
 	
-	if (!empty($_REQUEST['unsubscribe']) and isset($oldMiles)) {
-		$attributes['unsubscribed'] = Places::unsubscribe(
-			$oldLatitude, $oldLongitude, $oldMiles
-		);
+	$shouldUnsubscribe = !empty($_REQUEST['unsubscribe']) && isset($oldMiles);
+	$shouldSubscribe = !empty($_REQUEST['subscribe']);
+	$noChange = false;
+
+	$latitude = $stream->getAttribute('latitude');
+	$longitude = $stream->getAttribute('longitude');
+	$miles = $stream->getAttribute('miles');
+
+	if ($shouldUnsubscribe and $shouldSubscribe
+	and abs($latitude - $oldLatitude) < 0.0001
+	and abs($longitude - $oldLongitude) < 0.0001
+	and abs($miles - $oldMiles) < 0.001) {
+		$noChange = true;
 	}
+
+	if (!$noChange) {
+		if ($shouldUnsubscribe or $shouldSubscribe) {
+			$myInterests = Streams_Category::getRelatedTo(
+				$user->id, 'Streams/user/interests', 'Streams/interest'
+			);
+			if (!isset($myInterests)) {
+				$myInterests = array();
+			}
+		}
 	
-	if (!empty($_REQUEST['subscribe'])) {
-		$latitude = $stream->getAttribute('latitude');
-		$longitude = $stream->getAttribute('longitude');
-		$miles = $stream->getAttribute('miles');
-		$attributes['subscribed'] = Places::subscribe(
-			$latitude, $longitude, $miles
-		);
+		if ($shouldUnsubscribe) {
+			// TODO: implement mass unsubscribe
+			foreach ($myInterests as $weight => $info) {
+				Places::unsubscribe(
+					$oldLatitude,
+					$oldLongitude,
+					$oldMiles,
+					$info[0],
+					array(
+						'transform' => array('Places', '_transformInterest'),
+						'title' => $info[2],
+						'skipAccess' => true
+					)
+				);
+			}
+			$attributes['unsubscribed'] = Places::unsubscribe(
+				$oldLatitude, $oldLongitude, $oldMiles
+			);
+		}
+	
+		if ($shouldSubscribe) {
+			// TODO: implement mass subscribe
+			foreach ($myInterests as $weight => $info) {
+				Places::subscribe(
+					$latitude,
+					$longitude,
+					$miles,
+					$info[0],
+					array(
+						'transform' => array('Places', '_transformInterest'),
+						'create' => array('Places', '_createInterest'),
+						'title' => $info[2],
+						'skipAccess' => true
+					)
+				);
+			}
+			$attributes['subscribed'] = Places::subscribe(
+				$latitude, $longitude, $miles
+			);
+		}	
 	}
 	
 	$attributes['stream'] = $stream;

@@ -56,9 +56,9 @@ html
 {
   color: black !important;
   background-color: #91C2F2;
-  box-shadow: #AAA 0px 0px 2px;
-  -webkit-box-shadow: #AAA 0px 0px 2px;
-  -moz-box-shadow: #AAA 0px 0px 2px;
+  box-shadow: #AAA 0 0 2px;
+  -webkit-box-shadow: #AAA 0 0 2px;
+  -moz-box-shadow: #AAA 0 0 2px;
 }
 
 .Q_player

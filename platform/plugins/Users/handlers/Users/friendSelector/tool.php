@@ -14,7 +14,7 @@
  *   "prompt" => Prompt that appears if the tool is shown but user hasn't granted sufficient permissions yet.
  *   "filter" => Custom function to filter out the friends list.
  *   "ordering" => Custom function to order the friends list. By default friends are ordered by name.
- * @return string
+ * @return {string}
  */
 function Users_friendSelector_tool($options)
 {

@@ -589,8 +589,8 @@ EOT;
 	}
 
 	/**
-	 * Create a synlink
-	 * @method synlink
+	 * Create a symlink
+	 * @method symlink
 	 * @static
 	 * @private
 	 * @param {string} $target

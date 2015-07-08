@@ -12,10 +12,10 @@ class Services_Twilio_Rest_IncomingPhoneNumbers
      * than one number matches the search string, returns the first one.
      *
      * @param string $number The number in E.164 format, eg "+684105551234"
-     * @return Services_Twilio_Rest_IncomingPhoneNumber|null The number object, 
+     * @return {Services_Twilio_Rest_IncomingPhoneNumber|null} The number object, 
      *      or null
      * 
-     * @throws Services_Twilio_RestException if the number is invalid, not 
+     * @throws {$1} if the number is invalid, not 
      *      provided in E.164 format or for any other API exception.
      */
     public function getNumber($number) {

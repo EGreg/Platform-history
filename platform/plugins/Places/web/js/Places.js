@@ -9,6 +9,12 @@
 
 var Places = Q.Places = Q.plugins.Places = {
 
+	/**
+	 * @method loadGoogleMaps
+	 * @static
+	 * Use this to load Google Maps before using them in the callback
+	 * @param {Function} callback Once the callback is called, google.maps is accessible
+	 */
 	loadGoogleMaps: function (callback) {
 		if (w.google && w.google.maps) {
 			callback();
@@ -18,6 +24,12 @@ var Places = Q.Places = Q.plugins.Places = {
 		}
 	},
 	
+	/**
+	 * @method getUserLocationStream
+	 * @static
+	 * Get the user's "Places/user/location" stream
+	 * @param {Function} callback receives (err, stream)
+	 */
 	getUserLocationStream: function (callback) {
 		var userId = Q.getObject('Users.loggedInUser.id', Q);
 		if (!userId) {
@@ -34,6 +46,8 @@ var Places = Q.Places = Q.plugins.Places = {
 	},
 	
 	/**
+	 * @method distance
+	 * @static
 	 * Use this to calculate the haversine distance between two sets of lat/long coordinates on the Earth
 	 * @param {double} $lat1
 	 * @param {double} $long1
@@ -57,7 +71,7 @@ var Places = Q.Places = Q.plugins.Places = {
 		var distance  = 2.0 * earthRadius * Math.asin(sqrt);
 
 		return distance;
-	},
+	}
 
 
 };

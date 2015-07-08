@@ -14,12 +14,14 @@
  *  @param {Object} [options.placeholders={}] Options for Q/placeholders, or null to omit it
  *  @param {String} [options.results=''] HTML to display in the results initially. If setting them later, remember to call stateChanged('results')
  *  @param {Q.Event} [options.onFilter] This event handler is meant to fetch and update results by editing the contents of the element pointed to by the second argument. The first argument is the content of the text input.
- * @return Q.Tool
+ * @return {Q.Tool}
  */
 Q.Tool.define('Q/filter', function (options) {
 	var tool = this;
 	var state = tool.state;
 	var $te = $(tool.element);
+	
+	Q.addStylesheet('plugins/Q/css/filter.css');
 	
 	if (!$te.children().length) {
 		// set it up with javascript
@@ -43,9 +45,13 @@ Q.Tool.define('Q/filter', function (options) {
 	}
 	
 	var events = 'focus ' + Q.Pointer.start;
+	var wasAlreadyFocused = false;
 	tool.$input.on(events, function () {
+		if (wasAlreadyFocused) return;
+		wasAlreadyFocused = true;
 		tool.begin();
 	}).on('blur', function () {
+		wasAlreadyFocused = false;
 		setTimeout(function () {
 			if (tool.canceledBlur) {
 				tool.canceledBlur = false;
@@ -53,7 +59,8 @@ Q.Tool.define('Q/filter', function (options) {
 			}
 			tool.end();
 		}, 100);
-	}).on('keydown keyup change input focus paste blur Q_refresh', _changed)
+	})
+	.on('keydown keyup change input focus paste blur Q_refresh Q_refresh_filter', _changed)
 	.on(Q.Pointer.fastclick, function (evt) {
 		var $this = $(this);
 		var xMax = $this.offset().left + $this.outerWidth(true) -
@@ -67,12 +74,10 @@ Q.Tool.define('Q/filter', function (options) {
 	});
 	$te.addClass(state.fullscreen ? 'Q_filter_fullscreen' : 'Q_filter_notFullscreen');
 	
-	tool.$results.on(Q.Pointer.start, function () {
-		tool.canceledBlur = true;
-	});
-	
-	tool.$results.on(Q.Pointer.end, function () {
-		tool.canceledBlur = true;
+	tool.$results.on(Q.Pointer.start+' '+Q.Pointer.end, function () {
+		if (Q.info.isTouchscreen) {
+			tool.canceledBlur = true;
+		}
 	});
 	
 	var lastVal = null;
@@ -153,20 +158,17 @@ Q.Tool.define('Q/filter', function (options) {
 			}, state.delayTouchscreen); // to prevent touchend events from wreaking havoc
 		}
 		
-		var $container = tool.$input.parent('.Q_placeholder_container');
+		var $container = tool.$input.parent('.Q_placeholders_container');
 		var topH = tool.$input.outerHeight();
 		if (!$container.length) {
 			$container = tool.$input;
 		} else {
 			topH += parseInt(tool.$input.css('margin-top')) ;
 		}
-		var paddingW = parseInt(tool.$results.css('padding-left'))
-			+ parseInt(tool.$results.css('padding-right'))
-			+ parseInt(tool.$results.css('border-left'))
-			+ parseInt(tool.$results.css('border-right'));
 		tool.$results.insertAfter($container).css({
 			left: 0,
-			width: $container.outerWidth() - paddingW,
+			width: $container.outerWidth(),
+			"box-sizing": 'border-box',
 			top: state.fullscreen 
 				? 0
 				: $container.offset().top - $te.offset().top + topH

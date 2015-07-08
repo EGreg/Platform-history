@@ -1,4 +1,4 @@
-<div id="content">
+<div id="content" class="Q_clearfix">
 <?php if ($user) : ?>
 	<?php if (empty($_REQUEST['p']) and !empty($user->passphraseHash)): ?>
 		<div class="Q_admin_pane">
@@ -67,7 +67,7 @@
 <?php elseif (Users::loggedInUser()): ?>
 	<h1 class='Q_big_message'>If you feel something went wrong, <button id='activate_setIdentifier'>try again</button></h1>
 <?php else: ?>
-	<h1 class='Q_big_message'>Please <a href='#' id='activate_login'>log in</a> and get another email sent to you.</h1>
+	<h1 class='Q_big_message'>Please try <a href='#' id='activate_login'>logging in</a> to activate your account.</h1>
 <?php endif; ?>
 
 <?php Q_Response::addScript('plugins/Q/js/Q.js'); ?>
@@ -87,7 +87,7 @@
 	// later we can pay for BOSS to do this. But for now, here is what we do:
 	var url = 'http://query.yahooapis.com/v1/public/yql?format=json&diagnostics=false&q=select%20Rating.LastReviewIntro%20from%20local.search%20where%20zip%3D%2294085%22%20and%20query%3D%22$noun_ue%22';
 	
-	Q.jsonRequest(url, null, function(err, data) {
+	Q.request(url, null, function(err, data) {
 		if (data.query && data.query.results && data.query.results.Result) {
 			// var r = data.query.results.result;
 			var r = data.query.results.Result;

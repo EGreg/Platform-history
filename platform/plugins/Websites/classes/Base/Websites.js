@@ -27,9 +27,9 @@ module.exports = Base;
  * @type array
  */
 Base.tableClasses = [
-		"Websites_Bio",
-		"Websites_Permalink"
-	];
+	"Websites_Article",
+	"Websites_Permalink"
+];
 
 /**
  * This method calls Db.connect() using information stored in the configuration.
@@ -51,11 +51,11 @@ Base.connectionName = function() {
 };
 
 /**
- * Link to Websites.Bio model
- * @property Bio
- * @type Websites.Bio
+ * Link to Websites.Article model
+ * @property Article
+ * @type Websites.Article
  */
-Base.Bio = Q.require('Websites/Bio');
+Base.Article = Q.require('Websites/Article');
 
 /**
  * Link to Websites.Permalink model

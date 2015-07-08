@@ -12,6 +12,7 @@
  * @param {Object} [options] used to pass options
  *   @param {String} [options.inplaceType] The type of the fieldInput. Can be "textarea" or "text"
  *   @required
+ *   @param {Array} [options.convert] The characters to convert to HTML. Pass an array containing zero or more of "\n", " "
  *   @param {String} [options.publisherId] Required if stream option is empty. The publisher's user id.
  *   @param {String} [options.streamName] Required if stream option is empty. The stream's name.
  *   @param {Stream} [options.stream] Optionally pass a Streams.Stream object here if you have it already
@@ -21,14 +22,15 @@
  *   @param {Function} [options.create] Optional. You can pass a function here, which takes the tool as "this"
  *     and a callback as the first parameter, is supposed to create a stream and
  *     call the callback with (err, stream). If omitted, then the tool doesn't render.
+ *   @param {Q.Event} [options.onLoad]
  *   @param {Q.Event} [options.onUpdate]
  *   @param {Q.Event} [options.onError]
  */
 Q.Tool.define("Streams/inplace", function (options) {
-	var tool = this,
-		state = tool.state, 
-		$te = $(tool.element), 
-		container = $('.Q_inplace_tool_container', $te);
+	var tool = this;
+	var state = tool.state;
+	var $te = $(tool.element);
+	var container = $('.Q_inplace_tool_container', $te);
 	
 	// if activated with JS should have following options:
 	//  - stream: a Streams.Stream object that was already constructed
@@ -61,10 +63,20 @@ Q.Tool.define("Streams/inplace", function (options) {
 					if ($e.html() !== html) $e.html(html);
 					break;
 				case 'textarea':
-					var toSet = html.replaceAll({
-						"\n": '<br>',
-					 	' ': '&nbsp;'
-					});
+					var convert = {};
+					if (content) {
+						var replacements = {
+							"\n": '<br>',
+						 	' ': '&nbsp;'
+						};
+						if (state.convert) {
+							for (var i=0, l=state.convert.length; i<l; ++i) {
+								var c = state.convert[i];
+								convert[c] = replacements[c];
+							}
+						}
+					}
+					var toSet = html.replaceAll(convert);
 					$e = tool.$('textarea');
 					if ($e.val() !== content) $e.val(content);
 					$e = tool.$('.Q_inplace_tool_blockstatic');
@@ -73,6 +85,8 @@ Q.Tool.define("Streams/inplace", function (options) {
 				default:
 					throw new Q.Error("Streams/inplace tool: inplaceType must be 'textarea' or 'text'");
 			}
+			var margin = $e.outerHeight() + parseInt($e.css('margin-top'));
+			tool.$('.Q_inplace_tool_editbuttons').css('margin-top', margin+'px');
 		};
 
 		var field;
@@ -107,7 +121,6 @@ Q.Tool.define("Streams/inplace", function (options) {
 				method: 'put',
 				field: field,
 				type: state.inplaceType,
-				maxWidth: $te.parent()[0],
 				onSave: { 'Streams/inplace': function () {
 					state.stream.refresh(function () {
 						state.onUpdate.handle.call(tool);
@@ -145,17 +158,16 @@ Q.Tool.define("Streams/inplace", function (options) {
 				}
 				span.appendChild(div);
 				tool.element.appendChild(span);
+				Q.handle(state.onLoad, tool);
 				return; // leave the html that is currently in the element
 			}
 
 			var inplace = tool.setUpElement('div', 'Q/inplace', ipo);
+			$(tool.element).empty().append(inplace);
 			Q.activate(inplace, function () {
-				$(tool.element).empty().append(inplace);
+				Q.handle(state.onLoad, tool);
 			});
 		}
-	}
-	if (state.inplace && state.inplace.staticHtml) {
-		tool.element.innerHTML = state.inplace.staticHtml;
 	}
 	
 	if (state.stream) {
@@ -174,6 +186,8 @@ Q.Tool.define("Streams/inplace", function (options) {
 	editable: true,
 	create: null,
 	inplace: {},
+	convert: [],
+	onLoad: new Q.Event(),
 	onUpdate: new Q.Event(),
 	onError: new Q.Event(function (err) {
 		var msg = Q.firstErrorMessage(err);

@@ -2,9 +2,8 @@
 
 /**
  * This tool is meant to be wrapped in a <form> tag
- * @param {array} $options
- *  An associative array of parameters, containing:
- *  "fields" => an associative array of fieldname => fieldinfo pairs,
+ * @param {array} $options An associative array of parameters, containing:
+ * @param {array} $options.fields an associative array of fieldname => fieldinfo pairs,
  *   where fieldinfo contains the following:
  *     "type" => the type of the field (@see Q_Html::smartTag())
  *     "attributes" => additional attributes for the field input
@@ -17,15 +16,15 @@
  *     "fillFromRequest" => Defaults to true.
  *       If true, uses $_REQUEST to fill any fields with same name.
  *       Currently doesn't work for names which specify arrays, such as a[b].
- *  "onSubmit" => Optional. A string identifying the javascript function or url to pass to Q.handle on submit
- *  "onResponse" => Optional. A string identifying the javascript function or url to pass to Q.handle on response
- *  "onSuccess" => Optional. A string identifying the javascript function or url to pass to Q.handle on success
- *  "loader" => Optional. Name of function which takes (action, method, params, slots, callback) as arguments.
+ * @param {string} [$options.onSubmit] Optional. Name of the javascript function or url to pass to Q.handle on submit
+ * @param {string} [$options.onResponse] Name of the javascript function or url to pass to Q.handle on response
+ * @param {string} [$options.onSuccess] Name of javascript function or url to pass to Q.handle on success
+ * @param {string} [$options.loader] Optional. Name of a javascript function which takes (action, method, params, slots, callback) as arguments.
  *    It should call the callback and pass it an object with the response info. Can be used to implement caching, etc.
  *    instead of the default HTTP request.
  *    If "loader" is Q.getter and request should be done bypasing cache, assign true to .ignoreCache property of the tool
- *  "slotsToRequest" => Optional. A string or array of slot names to request in response. Should include "form".
- *  "contentElements" => Optional. Array of $slotName => $cssSelector pairs for child element of the form to fill with HTML returned from the slot.
+ * @param {array|string} [$options.slotsToRequest] Optional. A string or array of slot names to request in response. Should include "form".
+ * @param {array|string} [$options.contentElements] Optional. Array of $slotName => $cssSelector pairs for child element of the form to fill with HTML returned from the slot.
  */
 function Q_form_tool($options)
 {
@@ -143,7 +142,7 @@ function Q_form_tool($options)
 		$leftside = $extra ? $extra : $label;
 		$tr_array[] = "<tr><td class='Q_form_fieldname'>$leftside</td>$tr_rest</tr>";
 	}
-	$result = "<table class='Q_form_tool_table' cellspacing='0'>\n"
+	$result = "<table class='Q_form_tool_table'>\n"
 		.implode("\n\t", $tr_array)
 		."\n</table>";
 	foreach ($options['fields'] as $name => $field) {
@@ -154,5 +153,6 @@ function Q_form_tool($options)
 	$fields = array('onSubmit', 'onResponse', 'onSuccess', 'slotsToRequest', 'loader', 'contentElements');
 	Q_Response::setToolOptions(Q::take($options, $fields));
 	Q_Response::addScript('plugins/Q/js/tools/form.js');
+	Q_Response::addStylesheet('plugins/Q/css/form.css');
 	return $result;
 }

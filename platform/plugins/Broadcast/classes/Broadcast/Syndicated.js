@@ -28,7 +28,7 @@ function Broadcast_Syndicated (fields) {
 	};
 
 	// Run constructors of mixed in objects
-	this.constructors.apply(this, arguments);
+	Broadcast_Syndicated.constructors.apply(this, arguments);
 
 }
 

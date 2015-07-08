@@ -10,8 +10,8 @@ var util = require('util');
  * @class Mysql
  * @namespace Db
  * @constructor
- * @param connName {string} The name of connection
- * @param dsn {string} The DSN string to make connection
+ * @param {String} connName The name of connection
+ * @param {String} dsn The DSN string to make connection
  * @throws {Q.Exception} If database connection is not registered with Db module
  */
 function Db_Mysql(connName, dsn) {
@@ -79,9 +79,9 @@ function Db_Mysql(connName, dsn) {
 	/**
 	 * Retrieve connection information possibly modified for particular shard
 	 * @method info
-	 * @param [shardName=''] {string} The name of the shard, defaults to '' - i.e. main table
-	 * @param {object} [modifications={}] Additional modifications to table information. If supplied override shard modifications
-	 * @return {object} Parsed dsn string with possible modifications
+	 * @param {String} [shardName=''] The name of the shard, defaults to '' - i.e. main table
+	 * @param {Object} [modifications={}] Additional modifications to table information. If supplied override shard modifications
+	 * @return {Object} Parsed dsn string with possible modifications
 	 */
 	dbm.info = function(shardName, modifications) {
 		modifications = modifications || Db.getShard(this.connName, shardName || '') || {};
@@ -91,8 +91,8 @@ function Db_Mysql(connName, dsn) {
 	/**
 	 * Create mysql.Client and connects to the database table
 	 * @method reallyConnect
-	 * @param callback {function} The callback is fired after connection is complete. mysql.Client is passed as argument
-	 * @param [shardName=''] {string} The name of the shard to connect
+	 * @param {Function} callback The callback is fired after connection is complete. mysql.Client is passed as argument
+	 * @param {String} [shardName=''] The name of the shard to connect
 	 * @param {object} [modifications={}] Additional modifications to table information. If supplied override shard modifications
 	 */
 	dbm.reallyConnect = function(callback, shardName, modifications) {
@@ -148,8 +148,8 @@ function Db_Mysql(connName, dsn) {
 	/**
 	 * Creates a raw query.
 	 * @method rawQuery
-	 * @param query {string} The query string
-	 * @param {array} [bind={}] An array of values to bind, if any
+	 * @param {String} query The query string
+	 * @param {Object} [bind={}] An object of values to bind, if any
 	 * @return {Db.Query.Mysql} The resulting Db.Query object
 	 */
 	dbm.rawQuery = function(query, bind) {
@@ -169,8 +169,8 @@ function Db_Mysql(connName, dsn) {
 	/**
 	 * Creates a query to select fields from a table. Needs to be used with Db.Query.from().
 	 * @method SELECT
-	 * @param fields {string|object} The fields as strings, or associative array of `{alias: field}`
-	 * @param tables {string|object} The tables as strings, or associative array of `{alias: table}`
+	 * @param {String|Object} fields The fields as strings, or associative array of `{alias: field}`
+	 * @param {String|Object} tables The tables as strings, or associative array of `{alias: table}`
 	 * @return {Db.Query.Mysql} The resulting Db.Query object
 	 */
 	dbm.SELECT = function(fields, tables) {
@@ -185,8 +185,8 @@ function Db_Mysql(connName, dsn) {
 	/**
 	 * Creates a query to insert a record into a table
 	 * @method INSERT
-	 * @param table_into {string} The name of the table to insert into
-	 * @param fields {object} The fields as an associative of `{column: value}` pairs
+	 * @param {String} table_into The name of the table to insert into
+	 * @param {Object} fields The fields as an associative of `{column: value}` pairs
 	 * @return {Db.Query.Mysql} The resulting Db.Query object
 	 */
 	dbm.INSERT = function(table_into, fields) {
@@ -222,7 +222,7 @@ function Db_Mysql(connName, dsn) {
 	/**
 	 * Creates a query to update records. Must be used with Db.Query.set
 	 * @method UPDATE
-	 * @param table {string} The table to update
+	 * @param {String} table The table to update
 	 * @return {Db.Query.Mysql} The resulting Db.Query object
 	 */
 	dbm.UPDATE = function (table) {
@@ -235,8 +235,8 @@ function Db_Mysql(connName, dsn) {
 	/**
 	 * Creates a query to delete records.
 	 * @method DELETE
-	 * @param table_from {string} The table to delete from
-	 * @param [table_using=null] {string} If set, adds a USING clause with this table.
+	 * @param {String} table_from The table to delete from
+	 * @param {String} [table_using=null] If set, adds a USING clause with this table.
 	 *  You can then use .join() with the resulting Db_Query.
 	 * @return {Db.Query.Mysql} The resulting Db.Query object
 	 */
@@ -251,10 +251,10 @@ function Db_Mysql(connName, dsn) {
 	/**
 	 * Generate an ID that is unique in a table
 	 * @method uniqueId
-	 * @param table {string} The name of the table
-	 * @param field {string} The name of the field to check for uniqueness.
+	 * @param {String} table The name of the table
+	 * @param {String} field The name of the field to check for uniqueness.
 	 *  You should probably have an index starting with this field.
-	 * @param callback {function} When an acceptable unique ID is generated, this function is called with the ID
+	 * @param {Function} callback When an acceptable unique ID is generated, this function is called with the ID
 	 *  as the first parameter.
 	 * @param {object} [where={}] You can indicate conditions here to limit the search for
 	 *  an existing value. The result is an id that is unique within

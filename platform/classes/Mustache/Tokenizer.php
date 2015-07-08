@@ -83,7 +83,7 @@ class Mustache_Tokenizer
      * @param string $text       Mustache template source to tokenize
      * @param string $delimiters Optionally, pass initial opening and closing delimiters (default: null)
      *
-     * @return array Set of Mustache tokens
+     * @return {array} Set of Mustache tokens
      */
     public function scan($text, $delimiters = null)
     {
@@ -201,7 +201,7 @@ class Mustache_Tokenizer
     /**
      * Test whether the current line is entirely made up of whitespace.
      *
-     * @return boolean True if the current line is all whitespace
+     * @return {boolean} True if the current line is all whitespace
      */
     private function lineIsWhitespace()
     {
@@ -255,7 +255,7 @@ class Mustache_Tokenizer
      * @param string $text  Mustache template source
      * @param int    $index Current tokenizer index
      *
-     * @return int New index value
+     * @return {int} New index value
      */
     private function changeDelimiters($text, $index)
     {
@@ -277,7 +277,7 @@ class Mustache_Tokenizer
      * @param string $text  Mustache template source
      * @param int    $index Current tokenizer index
      *
-     * @return boolean True if this is a closing section tag
+     * @return {boolean} True if this is a closing section tag
      */
     private function tagChange($tag, $text, $index)
     {

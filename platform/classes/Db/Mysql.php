@@ -99,10 +99,11 @@ class Db_Mysql implements iDb
 		}
 		if (class_exists('Q')) {
 			/**
+			 * Occurs before a real connection to the database is made
 			 * @event Db/reallyConnect {before}
-			 * @param {Db_Mysql} 'db'
-			 * @param {string} 'shard_name'
-			 * @param {array} 'modifications'
+			 * @param {Db_Mysql} db
+			 * @param {string} shard_name
+			 * @param {array} modifications
 			 * @return {array}
 			 *	Extra modifications
 			 */
@@ -146,10 +147,11 @@ class Db_Mysql implements iDb
 
 		if (class_exists('Q')) {
 			/**
+			 * Occurs when a real connection to the database has been made
 			 * @event Db/reallyConnect {after}
-			 * @param {Db_Mysql} 'db'
-			 * @param {string} 'shard_name'
-			 * @param {array} 'modifications'
+			 * @param {Db_Mysql} db
+			 * @param {string} shard_name
+			 * @param {array} modifications
 			 */
 			Q::event('Db/reallyConnect', array(
 				'db' => $this,
@@ -327,49 +329,48 @@ class Db_Mysql implements iDb
 	 * @method insertManyAndExecute
 	 * @param {string} $table_into The name of the table to insert into
 	 * @param {array} [$records=array()] The array of records to insert. 
-	 * (The field names for the prepared statement are taken from the first record.)
-	 * You cannot use Db_Expression objects here, because the function binds all parameters with PDO.
-	 * @param {array} [$options=array()]
-	 *  An associative array of options, including:
-	 *
-	 * * "chunkSize" => The number of rows to insert at a time. Defaults to 20.
+	 * Each record should be an array of ($field => $value) pairs, with the exact
+	 * same set of keys (field names) in each array.
+	 * @param {array} [$options=array()] An associative array of options, including:
+	 * @param {string} [$options.className]
+	 *    If you provide the class name, the system will be able to use any sharding
+	 *    indexes under that class name in the config.
+	 * @param {integer} [$options.chunkSize]
+	 *    The number of rows to insert at a time. Defaults to 20.
 	 *    You can also put 0 here, which means unlimited chunks, but it's not recommended.
-	 * * "onDuplicateKeyUpdate" => You can put an array of fieldname => value pairs here,
+	 * @param {array} [$options.onDuplicateKeyUpdate]
+	 *    You can put an array of fieldname => value pairs here,
 	 *    which will add an ON DUPLICATE KEY UPDATE clause to the query.
 	 */
 	function insertManyAndExecute ($table_into, array $records = array(), $options = array())
 	{
+		// Validate and get options
 		if (empty($table_into)) {
 			throw new Exception("table not specified in call to 'insertManyAndExecute'.");
 		}
-		
 		if (empty($records)) {
 			return false;
 		}
-
-		$chunkSize = 20;
-		$onDuplicateKeyUpdate = null;
-		extract($options);
-		
+		$chunkSize = isset($options['chunkSize']) ? $options['chunkSize'] : 20;
 		if ($chunkSize < 0) {
 			return false;
 		}
-			
+		$onDuplicateKeyUpdate = isset($options['onDuplicateKeyUpdate'])
+				? $options['onDuplicateKeyUpdate'] : null;
+		$className = isset($options['className']) ? $options['className'] : null;
+		
 		// Get the columns list
-		foreach ($records[0] as $column => $value) {
+		$record = reset($records);
+		foreach ($record as $column => $value) {
 			$columns_list[] = Db_Query_Mysql::column($column);
 		}
 		$columns_string = implode(', ', $columns_list);
-
 		$into = "$table_into ($columns_string)";
-		$index = 1;
-		$first_chunk = true;
-		$to_bind = array();
-		$record_count = count($records);
 		
+		// On duplicate key update clause (optional)
 		$update_fields = array();
 		$odku_clause = '';
-		if ($onDuplicateKeyUpdate) {
+		if (isset($onDuplicateKeyUpdate)) {
 			$odku_clause = "\n\t ON DUPLICATE KEY UPDATE ";
 			$parts = array();
 			foreach ($onDuplicateKeyUpdate as $k => $v) {
@@ -383,45 +384,84 @@ class Db_Mysql implements iDb
 			$odku_clause .= implode(",\n\t", $parts);
 		}
 		
-		// Execute all the queries using this prepared statement
-		$row_of_chunk = 1;
+		// Start filling
+		$queries = array();
+		$queryCounts = array();
+		$bindings = array();
+		$last_q = array();
+		$last_queries = array();
 		foreach ($records as $record) {
-			if ($first_chunk) {
-				// Prepare statement from first query
-				$values_list = array();
-				foreach ($record as $column => $value) {
-					if ($value instanceof Db_Expression) {
-						$values_list[] = "$value";
-					} else {
-						$values_list[] = ":$column" . $row_of_chunk;
-					}
-				}
-				$values_string = implode(', ', $values_list);
-				if ($index == 1) {
-					$q = "INSERT INTO $into\nVALUES ($values_string) ";
-				} else {
-					$q .= ",\n       ($values_string) ";
+			// get shard, if any
+			$query = new Db_Query_Mysql($this, Db_Query::TYPE_INSERT);
+			$shard = '';
+			if (isset($className)) {
+				$query->className = $className;
+				$sharded = $query->shard(null, $record);
+				$shard = key($sharded);
+				if (count($sharded) > 1 or $shard === '*') { // should be only one shard
+					throw new Exception("Db_Mysql::insertManyAndExecute query should not hit more than one shard: " . Q::json_encode($record));
 				}
 			}
 			
+			// start filling out the query data
+			$qc = empty($queryCounts[$shard]) ? 1 : $queryCounts[$shard] + 1;
+			if (!isset($bindings[$shard])) {
+				$bindings[$shard] = array();
+			}
+			$values_list = array();
 			foreach ($record as $column => $value) {
-				$to_bind[$column . $row_of_chunk] = $value;
+				if ($value instanceof Db_Expression) {
+					$values_list[] = "$value";
+				} else {
+					$values_list[] = ':_'.$qc.'_'.$column;
+					$bindings[$shard]['_'.$qc.'_'.$column] = $value;
+				}
+			}
+			$values_string = implode(', ', $values_list);
+			if (empty($queryCounts[$shard])) {
+				$q = $queries[$shard] = "INSERT INTO $into\nVALUES ($values_string) ";
+				$queryCounts[$shard] = 1;
+			} else {
+				$q = $queries[$shard] .= ",\n       ($values_string) ";
+				++$queryCounts[$shard];
 			}
 
-			++$row_of_chunk;
-			if ($chunkSize === 1 
-			or ($chunkSize > 1 and $row_of_chunk % $chunkSize === 1)
-			or $index === $record_count) {
+			// if chunk filled up for this shard, execute it
+			if ($qc === $chunkSize) {
 				if ($onDuplicateKeyUpdate) {
 					$q .= $odku_clause;
 				}
-				$q .= ';';
-				$first_chunk = false;
-				$this->rawQuery($q)->bind($to_bind)->bind($update_fields)
-					->execute(true);
-				$row_of_chunk = 1;
+				$query = $this->rawQuery($q)->bind($bindings[$shard]);
+				if ($onDuplicateKeyUpdate) {
+					$query = $query->bind($update_fields);
+				}
+				if (isset($last_q[$shard]) and $last_q[$shard] === $q) {
+					// re-use the prepared statement, save round-trips to the db
+					$query->reuseStatement($last_queries[$shard]);
+				}
+				$query->execute(true);
+				$last_q[$shard] = $q;
+				$last_queries[$shard] = $query; // save for re-use
+				$bindings[$shard] = $queries[$shard] = array();
+				$queryCounts[$shard] = 0;
 			}
-			++$index;
+		}
+		
+		// Now execute the remaining queries, if any
+		foreach ($queries as $shard => $q) {
+			if (!$q) continue;
+			if ($onDuplicateKeyUpdate) {
+				$q .= $odku_clause;
+			}
+			$query = $this->rawQuery($q)->bind($bindings[$shard]);
+			if ($onDuplicateKeyUpdate) {
+				$query = $query->bind($update_fields);
+			}
+			if (isset($last_q[$shard]) and $last_q[$shard] === $q) {
+				// re-use the prepared statement, save round-trips to the db
+				$query->reuseStatement($last_queries[$shard]);
+			}
+			$query->execute(true);
 		}
 	}
 
@@ -551,7 +591,8 @@ class Db_Mysql implements iDb
         }
         
         // Count all the rows
-    	$rows = $this->rawQuery("SELECT COUNT(1) _count FROM $table")->fetchAll(PDO::FETCH_ASSOC);
+    	$rows = $this->rawQuery("SELECT COUNT(1) _count FROM $table")
+			->fetchAll(PDO::FETCH_ASSOC);
 		$count = $rows[0]['_count'];
     	
         // Here comes the magic:
@@ -1148,7 +1189,7 @@ $table_comment * @namespace $class_name_prefix
  * @class $class_name_base
  * @extends Base.$js_class_name
  * @constructor
- * @param fields {object} The fields values to initialize table row as
+ * @param {Object} fields The fields values to initialize table row as
  * an associative array of `{column: value}` pairs
  */
 function $class_name (fields) {
@@ -1470,8 +1511,9 @@ EOT;
 		// Calculate primary key
 		$pk = array();
 		foreach ($table_cols as $table_col) {
-			if ($table_col['Key'] == 'PRI')
+			if ($table_col['Key'] == 'PRI') {
 				$pk[] = $table_col['Field'];
+			}
 		}
 		$pk_exported = var_export($pk, true);
 		$pk_json = json_encode($pk);
@@ -1490,7 +1532,7 @@ EOT;
 			$field_names[] = $field_name;
 			$field_null = $table_col['Null'] == 'YES' ? true : false;
 			$field_default = $table_col['Default'];
-			$auto_inc = strpos($table_col['Extra'], 'auto_increment') !== false ? true : false;
+			$auto_inc = (strpos($table_col['Extra'], 'auto_increment') !== false);
 			$type = $table_col['Type'];
 			$pieces = explode('(', $type);
 			if (isset($pieces[1])) {
@@ -1509,6 +1551,10 @@ EOT;
 				$type_modifiers = $pieces2[1];
 				$type_unsigned = (strpos($type_modifiers, 'unsigned') !== false);
 			}
+			
+			$isTextLike = false;
+			$isNumberLike = false;
+			$isTimeLike = false;
 			
 			switch ($type_name) {
 				case 'tinyint':
@@ -1559,8 +1605,19 @@ EOT;
 				case 'int':
 				case 'mediumint':
 				case 'bigint':
+					$isNumberLike = true;
 					$properties[]="integer $field_name";
 					$js_properties[] = "$field_name integer";
+					$functions["maxSize_$field_name"]['comment'] = <<<EOT
+	$dc
+	 * Returns the maximum integer that can be assigned to the $field_name field
+	 * @return {integer}
+	 */
+EOT;
+					$functions["maxSize_$field_name"]['args'] = '';
+					$functions["maxSize_$field_name"]['return_statement'] = <<<EOT
+		return $type_range_max;
+EOT;
 					$functions["beforeSet_$field_name"][] = <<<EOT
 		{$null_check}{$dbe_check}if (!is_numeric(\$value) or floor(\$value) != \$value)
 			throw new Exception('Non-integer value being assigned to '.\$this->getTable().".$field_name");
@@ -1575,6 +1632,16 @@ EOT;
 	 * @return {array} An array of field name and value
 	 * @throws {Exception} An exception is thrown if \$value is not integer or does not fit in allowed range
 	 */
+EOT;
+					$js_functions["maxSize_$field_name"]['comment'] = <<<EOT
+	$dc
+	 * Returns the maximum integer that can be assigned to the $field_name field
+	 * @return {integer}
+	 */
+EOT;
+					$js_functions["maxSize_$field_name"]['args'] = '';
+					$js_functions["maxSize_$field_name"]['return_statement'] = <<<EOT
+		return $type_range_max;
 EOT;
 					$js_functions["beforeSet_$field_name"][] = <<<EOT
 		{$js_null_check}{$js_dbe_check}value = Number(value);
@@ -1631,8 +1698,19 @@ EOT;
 				case 'text':
 				case 'mediumtext':
 				case 'longtext':
+					$isTextLike = true;
 					$properties[]="string $field_name";
 					$js_properties[] = "$field_name String";
+					$functions["maxSize_$field_name"]['comment'] = <<<EOT
+	$dc
+	 * Returns the maximum string length that can be assigned to the $field_name field
+	 * @return {integer}
+	 */
+EOT;
+					$functions["maxSize_$field_name"]['args'] = '';
+					$functions["maxSize_$field_name"]['return_statement'] = <<<EOT
+		return $type_display_range;
+EOT;
 					$functions["beforeSet_$field_name"][] = <<<EOT
 		{$null_check}{$dbe_check}if (!is_string(\$value) and !is_numeric(\$value))
 			throw new Exception('Must pass a string to '.\$this->getTable().".$field_name");
@@ -1648,6 +1726,16 @@ EOT;
 	 * @return {array} An array of field name and value
 	 * @throws {Exception} An exception is thrown if \$value is not string or is exceedingly long
 	 */
+EOT;
+					$js_functions["maxSize_$field_name"]['comment'] = <<<EOT
+	$dc
+	 * Returns the maximum string length that can be assigned to the $field_name field
+	 * @return {integer}
+	 */
+EOT;
+					$js_functions["maxSize_$field_name"]['args'] = '';
+					$js_functions["maxSize_$field_name"]['return_statement'] = <<<EOT
+		return $type_display_range;
 EOT;
 					$js_functions["beforeSet_$field_name"][] = <<<EOT
 		{$js_null_check}{$js_dbe_check}if (typeof value !== "string" && typeof value !== "number")
@@ -1668,6 +1756,7 @@ EOT;
 					break;
 				
 				case 'date':
+					$isTimeLike = true;
 					$properties[]="string|Db_Expression $field_name";
 					$js_properties[] = "$field_name String|Db.Expression";
 					$functions["beforeSet_$field_name"][] = <<<EOT
@@ -1703,6 +1792,7 @@ EOT;
 					break;
 				case 'datetime':
 				case 'timestamp':
+					$isTimeLike = true;
 					$properties[]="string|Db_Expression $field_name";
 					$js_properties[] = "$field_name String|Db.Expression";
 					$possibleMagicFields = array('insertedTime', 'updatedTime', 'created_time', 'updated_time');
@@ -1747,6 +1837,7 @@ EOT;
 					break;
 
 				case 'decimal':
+					$isNumberLike = true;
 					$properties[]="float $field_name";
 					$js_properties[] = "$field_name number";
 					$js_functions["beforeSet_$field_name"][] = <<<EOT
@@ -1781,6 +1872,7 @@ EOT;
 EOT;
 			}
 			if (! $field_null and ! $is_magic_field
+			and ((!$isNumberLike and !$isTextLike) or in_array($field_name, $pk))
 			and ! $auto_inc and !isset($field_default)) {
 				$required_field_names[] = "'$field_name'";
 			}
@@ -2113,9 +2205,9 @@ $field_hints
 	 * Create SELECT query to the class table
 	 * @method select
 	 * @static
-	 * @param \$fields {array} The field values to use in WHERE clauseas as 
+	 * @param {array} \$fields The field values to use in WHERE clauseas as 
 	 * an associative array of `column => value` pairs
-	 * @param [\$alias=null] {string} Table alias
+	 * @param {string} [\$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function select(\$fields, \$alias = null)
@@ -2130,7 +2222,7 @@ $field_hints
 	 * Create UPDATE query to the class table
 	 * @method update
 	 * @static
-	 * @param [\$alias=null] {string} Table alias
+	 * @param {string} [\$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function update(\$alias = null)
@@ -2145,8 +2237,8 @@ $field_hints
 	 * Create DELETE query to the class table
 	 * @method delete
 	 * @static
-	 * @param [\$table_using=null] {object} If set, adds a USING clause with this table
-	 * @param [\$alias=null] {string} Table alias
+	 * @param {object} [\$table_using=null] If set, adds a USING clause with this table
+	 * @param {string} [\$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function delete(\$table_using = null, \$alias = null)
@@ -2161,8 +2253,8 @@ $field_hints
 	 * Create INSERT query to the class table
 	 * @method insert
 	 * @static
-	 * @param [\$fields=array()] {object} The fields as an associative array of `column => value` pairs
-	 * @param [\$alias=null] {string} Table alias
+	 * @param {object} [\$fields=array()] The fields as an associative array of `column => value` pairs
+	 * @param {string} [\$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function insert(\$fields = array(), \$alias = null)
@@ -2190,7 +2282,10 @@ $field_hints
 	 */
 	static function insertManyAndExecute(\$records = array(), \$options = array())
 	{
-		self::db()->insertManyAndExecute(self::table(), \$records, \$options);
+		self::db()->insertManyAndExecute(
+			self::table(), \$records,
+			array_merge(\$options, array('className' => $class_name_var))
+		);
 	}
 	
 $functions_string
@@ -2224,7 +2319,7 @@ $dc
  * an associative array of `{column: value}` pairs
  */
 function Base (fields) {
-	
+	Base.constructors.apply(this, arguments);
 }
 
 Q.mixin(Base, Row);
@@ -2244,7 +2339,7 @@ Base.db = function () {
 $dc
  * Retrieve the table name to use in SQL statements
  * @method table
- * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
+ * @param {boolean} [withoutDbName=false] Indicates wheather table name should contain the database name
  * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
@@ -2276,8 +2371,8 @@ Base.connectionName = function() {
 $dc
  * Create SELECT query to the class table
  * @method SELECT
- * @param fields {object|string} The field values to use in WHERE clauseas as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {object|string} fields The field values to use in WHERE clauseas as an associative array of `{column: value}` pairs
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.SELECT = function(fields, alias) {
@@ -2289,7 +2384,7 @@ Base.SELECT = function(fields, alias) {
 $dc
  * Create UPDATE query to the class table. Use Db.Query.Mysql.set() method to define SET clause
  * @method UPDATE
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.UPDATE = function(alias) {
@@ -2301,8 +2396,8 @@ Base.UPDATE = function(alias) {
 $dc
  * Create DELETE query to the class table
  * @method DELETE
- * @param [table_using=null] {object} If set, adds a USING clause with this table
- * @param [alias=null] {string} Table alias
+ * @param {object}[table_using=null] If set, adds a USING clause with this table
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.DELETE = function(table_using, alias) {
@@ -2315,7 +2410,7 @@ $dc
  * Create INSERT query to the class table
  * @method INSERT
  * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.INSERT = function(fields, alias) {
@@ -2337,7 +2432,7 @@ $dc
  * Create INSERT query to the class table
  * @method INSERT
  * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.prototype.setUp = function() {
@@ -2348,7 +2443,7 @@ $dc
  * Create INSERT query to the class table
  * @method INSERT
  * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.prototype.db = function () {
@@ -2358,7 +2453,7 @@ Base.prototype.db = function () {
 $dc
  * Retrieve the table name to use in SQL statements
  * @method table
- * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
+ * @param {boolean} [withoutDbName=false] Indicates wheather table name should contain the database name
  * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */

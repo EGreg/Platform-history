@@ -27,7 +27,7 @@ function Places_Zipcode (fields) {
 	};
 
 	// Run constructors of mixed in objects
-	this.constructors.apply(this, arguments);
+	Places_Zipcode.constructors.apply(this, arguments);
 
 }
 

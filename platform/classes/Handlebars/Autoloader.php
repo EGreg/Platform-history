@@ -59,7 +59,7 @@ class Handlebars_Autoloader
      * @param string $baseDir Handlebars library base directory, default is
      *                        __DIR__.'/..'
      *
-     * @return Handlebars_Autoloader Registered Handlebars_Autoloader instance
+     * @return {Handlebars_Autoloader}
      */
     public static function register($baseDir = null)
     {
@@ -74,7 +74,7 @@ class Handlebars_Autoloader
      *
      * @param string $class class to load
      *
-     * @return void
+     * @return {void}
      */
     public function autoload($class)
     {

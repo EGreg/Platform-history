@@ -133,9 +133,9 @@ abstract class Base_Streams_Participant extends Db_Row
 	 * Create SELECT query to the class table
 	 * @method select
 	 * @static
-	 * @param $fields {array} The field values to use in WHERE clauseas as 
+	 * @param {array} $fields The field values to use in WHERE clauseas as 
 	 * an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function select($fields, $alias = null)
@@ -150,7 +150,7 @@ abstract class Base_Streams_Participant extends Db_Row
 	 * Create UPDATE query to the class table
 	 * @method update
 	 * @static
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function update($alias = null)
@@ -165,8 +165,8 @@ abstract class Base_Streams_Participant extends Db_Row
 	 * Create DELETE query to the class table
 	 * @method delete
 	 * @static
-	 * @param [$table_using=null] {object} If set, adds a USING clause with this table
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$table_using=null] If set, adds a USING clause with this table
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function delete($table_using = null, $alias = null)
@@ -181,8 +181,8 @@ abstract class Base_Streams_Participant extends Db_Row
 	 * Create INSERT query to the class table
 	 * @method insert
 	 * @static
-	 * @param [$fields=array()] {object} The fields as an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$fields=array()] The fields as an associative array of `column => value` pairs
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function insert($fields = array(), $alias = null)
@@ -210,7 +210,10 @@ abstract class Base_Streams_Participant extends Db_Row
 	 */
 	static function insertManyAndExecute($records = array(), $options = array())
 	{
-		self::db()->insertManyAndExecute(self::table(), $records, $options);
+		self::db()->insertManyAndExecute(
+			self::table(), $records,
+			array_merge($options, array('className' => 'Streams_Participant'))
+		);
 	}
 	
 	/**
@@ -234,6 +237,16 @@ abstract class Base_Streams_Participant extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the publisherId field
+	 * @return {integer}
+	 */
+	function maxSize_publisherId()
+	{
+
+		return 31;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_streamName
@@ -251,6 +264,16 @@ abstract class Base_Streams_Participant extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".streamName");
 		return array('streamName', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the streamName field
+	 * @return {integer}
+	 */
+	function maxSize_streamName()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -274,6 +297,16 @@ abstract class Base_Streams_Participant extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the userId field
+	 * @return {integer}
+	 */
+	function maxSize_userId()
+	{
+
+		return 31;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_streamType
@@ -294,6 +327,16 @@ abstract class Base_Streams_Participant extends Db_Row
 		if (strlen($value) > 63)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".streamType");
 		return array('streamType', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the streamType field
+	 * @return {integer}
+	 */
+	function maxSize_streamType()
+	{
+
+		return 63;			
 	}
 
 	/**
@@ -414,6 +457,16 @@ abstract class Base_Streams_Participant extends Db_Row
 		if (strlen($value) > 1023)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".extra");
 		return array('extra', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the extra field
+	 * @return {integer}
+	 */
+	function maxSize_extra()
+	{
+
+		return 1023;			
 	}
 
 	/**

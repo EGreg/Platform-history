@@ -476,10 +476,14 @@ class Q_Request
 	 * If provided, the method will return true only if the browser is IE and the major version is greater or equal than $min_version.
 	 * @param {number} [$max_version=0] optional maximum version of IE to check (major number like 7, 8, 9 etc).
 	 * If provided, the method will return true only if the browser is IE and the major version is less or equale than $max_version.
-	 * @return boolean
+	 * @return {boolean}
 	 */
 	static function isIE($min_version = 0, $max_version = 10)
 	{
+		static $result;
+		if (isset($result)) {
+			return $result;
+		}
 		if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 			return null;
 		}
@@ -487,14 +491,16 @@ class Q_Request
 		preg_match('/(MSIE) (\d)/i', $_SERVER['HTTP_USER_AGENT'], $matches);
 		if (count($matches) == 3) {
 			$version = intval($matches[2]);
-			return ($version >= $min_version && $version <= $max_version);
+			$result = ($version >= $min_version && $version <= $max_version);
+		} else {
+			$result = false;
 		}
-		return false;
+		return $result;
 	}
 	
 	/**
-	 * Detects whether the request is coming from a mobile browser
-	 * @method isMobile
+	 * Detects whether the request is coming from a WebView on a mobile browser
+	 * @method isWebView
 	 * @static
 	 * @return {boolean}
 	 */
@@ -505,10 +511,10 @@ class Q_Request
 			return $result;
 		}
 		/**
-		 * @event Q/request/isMobile {before}
+		 * @event Q/request/isWebView {before}
 		 * @return {boolean}
 		 */
-		$result = Q::event('Q/request/isMobile', array(), 'before');
+		$result = Q::event('Q/request/isWebView', array(), 'before');
 		if (isset($result)) {
 			return $result;
 		}
@@ -517,17 +523,40 @@ class Q_Request
 		}
 		$useragent = $_SERVER['HTTP_USER_AGENT'];
 		if (preg_match('/(.*)QWebView(.*)/', $useragent)
-		or preg_match('/(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i', $useragent)) {
-			return true;
+		or preg_match('/(.*)QCordova(.*)/', $useragent)
+		or preg_match('/(iPhone|iPod|iPad).*AppleWebKit(?!.*Version)/i', $useragent)) {
+			$result = true;
+		} else {
+			$result = false;
 		}
-		return false;
+		return $result;
+	}
+	
+	/**
+	 * Detects whether the request is coming from a WebView enabled with Cordova
+	 * @method isCordova
+	 * @static
+	 * @return {boolean}
+	 */
+	static function isCordova()
+	{
+		static $result;
+		if (isset($result)) {
+			return $result;
+		}
+		if (!isset($_SERVER['HTTP_USER_AGENT'])) {
+			return null;
+		}
+		$useragent = $_SERVER['HTTP_USER_AGENT'];
+		$result = preg_match('/(.*)QCordova(.*)/', $useragent) ? true : false;
+		return $result;
 	}
 	
 	/**
 	 * Returns the form factor based on the user agent
 	 * @method formFactor
 	 * @static
-	 * @return string can be either 'mobile', 'tablet' or 'desktop'
+	 * @return {string} can be either 'mobile', 'tablet', or 'desktop'
 	 */
 	static function formFactor()
 	{
@@ -539,22 +568,26 @@ class Q_Request
 	 * @method special
 	 * @param {string} $fieldname the name of the field, which can be namespaced as "Module.fieldname"
 	 * @param {mixed} $default what to return if field is missing
+	 * @param {string} [$source=null] optionally provide an array to use instead of $_REQUEST
 	 * @static
 	 * @return {mixed|null}
 	 */
-	static function special($fieldname, $default)
-	{		
+	static function special($fieldname, $default, $source = null)
+	{
+		if (!$source) {
+			$source = $_REQUEST;
+		}
 		// PHP replaces dots with underscores
-		if (isset($_REQUEST["Q_$fieldname"])) {
-			return $_REQUEST["Q_$fieldname"];
+		if (isset($source["Q_$fieldname"])) {
+			return $source["Q_$fieldname"];
 		}
 		$fieldname = str_replace(array('/', '.'), '_', $fieldname);
-		if (isset($_REQUEST["Q_$fieldname"])) {
-			return $_REQUEST["Q_$fieldname"];
+		if (isset($source["Q_$fieldname"])) {
+			return $source["Q_$fieldname"];
 		}
 		if ($qf = Q_Config::get('Q', 'web', 'queryField', false)) {
-			if (isset($_REQUEST[$qf][$fieldname])) {
-				return $_REQUEST[$qf][$fieldname];
+			if (isset($source[$qf][$fieldname])) {
+				return $source[$qf][$fieldname];
 			}
 		}
 		

@@ -39,7 +39,7 @@ interface Handlebars_Loader
      *
      * @param string $name template name to load
      *
-     * @return Handlebars_String
+     * @return {Handlebars_String}
      */
     public function load($name);
 

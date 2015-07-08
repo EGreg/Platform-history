@@ -136,19 +136,13 @@ class Streams_Stream extends Base_Streams_Stream
 
 		if ($returnAll) {
 			// we are looking for all templates
-			for ($i=0; $i < 4; $i++) {
-				if (!empty($ret[$i][0])) {
-					$type = $i;
-					return $ret[$i][0];
-				}
-			}
-		} else {
-			// we are looking for exactly one template
-			for ($i=0; $i < 4; $i++) {
-				if (!empty($ret[$i][0])) {
-					$type = $i;
-					return $ret[$i][0];
-				}
+			return $ret;
+		}
+		// we are looking for exactly one template
+		for ($i=0; $i < 4; $i++) {
+			if (!empty($ret[$i][0])) {
+				$type = $i;
+				return $ret[$i][0];
 			}
 		}
 		if (!$templates) {
@@ -294,10 +288,10 @@ class Streams_Stream extends Base_Streams_Stream
 		 * @param {Streams_Stream} 'stream'
 		 * @return {false} To cancel further processing
 		 */
-		if (Q::event(
-		"Streams/Stream/save/{$this->type}", 
-		array('stream' => $this, 'modifiedFields' => $modifiedFields),
-		'before') === false) {
+		$params = array('stream' => $this, 'modifiedFields' => $modifiedFields);
+		if (false === Q::event(
+			"Streams/Stream/save/{$this->type}", $params, 'before'
+		)) {
 			return false;
 		}
 
@@ -306,21 +300,22 @@ class Streams_Stream extends Base_Streams_Stream
 				$modifiedFields[$name] = $value;
 			}
 		}
+		$this->beforeSaveExtended($modifiedFields);
 
 		return parent::beforeSave($modifiedFields);
 	}
 
 	function afterFetch($result)
-	{
+	{		
 		/**
 		 * @event Streams/Stream/retrieve/$streamType {before}
 		 * @param {Streams_Stream} 'stream'
 		 * @return {false} To cancel further processing
 		 */
-		if (Q::event(
-		"Streams/Stream/fetch/{$this->type}", 
-		array('stream' => $this, 'result' => $result),
-		'after') === false) {
+		$params = array('stream' => $this, 'result' => $result);
+		if (false === Q::event(
+			"Streams/Stream/fetch/{$this->type}", $params, 'after'
+		)) {
 			return false;
 		}
 	}
@@ -362,20 +357,35 @@ class Streams_Stream extends Base_Streams_Stream
 		 * @param {Streams_Stream} 'stream'
 		 * @param {string} 'asUserId'
 		 */
-		Q::event("Streams/Stream/save/{$this->type}",
-			array('stream' => $this), 'after');
+		$params = array('stream' => $this);
+		Q::event("Streams/Stream/save/{$this->type}", $params, 'after');
 
 		// Assume that the stream's name is not being changed
-		if ($this->name !== 'Streams/user/firstName'
-		and $this->name !== 'Streams/user/lastName') {
+		$fields = array(
+			'Streams/user/firstName' => false,
+			'Streams/user/lastName' => false,
+			'Streams/user/username' => 'username',
+			'Streams/user/icon' => 'icon'
+		);
+		if (!isset($fields[$this->name])) {
 			return $result;
 		}
-		if (empty($this->fieldsModified['content'])
+		$field = ($this->name === 'Streams/user/icon')
+			? 'icon'
+			: 'content';
+		if (empty($this->fieldsModified[$field])
 		and empty($this->fieldsModified['readLevel'])) {
 			return $result;
 		}
+		
+		if ($publicField = $fields[$this->name]
+		and !Q::eventStack('Db/Row/Users_User/saveExecute')) {
+			$user = Users_User::fetch($this->publisherId, true);
+			$user->$publicField = $modifiedFields[$field];
+			$user->save();
+		}
 
-		if ($this->retrieved) {
+		if ($this->retrieved and !$publicField) {
 			// Update all avatars corresponding to access rows for this stream
 			$taintedAccess = Streams_Access::select('*')
 				->where(array(
@@ -439,6 +449,42 @@ class Streams_Stream extends Base_Streams_Stream
 		Streams::updateAvatars($this->publisherId, $taintedAccess, $this, true);
 
 		return $result;
+	}
+	
+	protected function beforeSaveExtended($modifiedFields)
+	{
+		$type = $this->type;
+		$classes = Streams::getExtendClasses($type);
+		$modified = array();
+		foreach ($classes as $k => $v) {
+			foreach ($v as $f) {
+				if ($this->fieldsModified[$f]) {
+					$modified[$k] = true;
+					break;
+				}
+			}
+		}
+		$retrieved = $this->wasRetrieved();
+		$rows = array();
+		foreach ($modified as $k => $v) {
+			$row = new $k;
+			$row->publisherId = $this->publisherId;
+			$row->streamName = $this->name;
+			if ($retrieved) {
+				$row->retrieve(null, null, array('ignoreCache' => true));
+			}
+			foreach ($classes[$k] as $f) {
+				if (!isset($modifiedFields[$f])) continue;
+				if (isset($row->$f) and $row->$f === $modifiedFields[$f]) continue;
+				$row->$f = $modifiedFields[$f];
+			}
+			$rows[$k] = $row;
+		}
+		$stream = $this;
+		Q::event("$type/save", compact('stream', 'rows'), 'before');
+		foreach ($rows as $row) {
+			$row->save();
+		}
 	}
 
 	protected function getUserStream ($options, &$userId, &$user = null) {
@@ -1142,7 +1188,7 @@ class Streams_Stream extends Base_Streams_Stream
 	}
 	
 	/**
-	 * Verifies wheather Stream can be read
+	 * Verifies whether the user has at least a certain read level for the Stream
 	 * @method testReadLevel
 	 * @param {string|integer} $level
 	 *	String describing the level (see Streams::$READ_LEVEL) or integer
@@ -1191,7 +1237,7 @@ class Streams_Stream extends Base_Streams_Stream
 	}
 	
 	/**
-	 * Verifies wheather Stream can be written
+	 * Verifies whether the user has at least a certain write level for the Stream
 	 * @method testWriteLevel
 	 * @param {string|integer} $level
 	 *	String describing the level (see Streams::$WRITE_LEVEL) or integer
@@ -1240,7 +1286,7 @@ class Streams_Stream extends Base_Streams_Stream
 	}
 	
 	/**
-	 * Verifies wheather Stream can be administered
+	 * Verifies whether the user has at least a certain admin level in the Stream
 	 * @method testAdminLevel
 	 * @param {string|integer} $level
 	 *	String describing the level (see Streams::$ADMIN_LEVEL) or integer
@@ -1292,8 +1338,9 @@ class Streams_Stream extends Base_Streams_Stream
 	
 	/**
 	 * Calculate admin level to correspond to Streams::$ADMIN_LEVEL
+	 * Primarily used by apps which invite a user to a stream
+	 * and giving them a slightly lower admin level.
 	 * @method lowerAdminLevel
-	 * @deprecated Does not use the result of calculation
 	 */
 	function lowerAdminLevel()
 	{
@@ -1310,7 +1357,7 @@ class Streams_Stream extends Base_Streams_Stream
 	/**
 	 * Inherits access from any streams specified in the inheritAccess field.
 	 * @method inheritAccess
-	 * @return boolean
+	 * @return {boolean}
 	 *  Returns whether the access potentially changed.
 	 */
 	function inheritAccess()
@@ -1557,8 +1604,14 @@ class Streams_Stream extends Base_Streams_Stream
 					: $this->$field;
 			}
 		}
-		foreach (Q_Config::get('Streams', 'types', $this->type, 'see', array()) as $key) {
-			$result[$key] = isset($this->$key) ? $this->$key : null;
+		$classes = Streams::getExtendClasses($this->type);
+		$fieldNames = array();
+		foreach ($classes as $k => $v) {
+			foreach ($v as $f) {
+				foreach ($fieldNames as $key) {
+					$result[$f] = isset($this->$f) ? $this->$f : null;
+				}
+			}
 		}
 		$result['access'] = array(
 			'readLevel' => $this->get('readLevel', $this->readLevel),
@@ -1711,8 +1764,9 @@ class Streams_Stream extends Base_Streams_Stream
 	function iconUrl($basename = null)
 	{
 		if (empty($this->icon)) return null;
-		if (Q_Valid::url($this->icon)) return $this->icon;
-		$url = "plugins/Streams/img/icons/{$this->icon}";
+		$url = (Q_Valid::url($this->icon))
+			? $this->icon
+			: "plugins/Streams/img/icons/{$this->icon}";
 		if ($basename) {
 			if (strpos($basename, '.') === false) {
 				$basename = "$basename.png";

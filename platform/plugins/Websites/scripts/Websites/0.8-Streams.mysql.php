@@ -11,23 +11,25 @@ function Websites_0_8_Streams_mysql()
 	
 	$publisherId = $userId;
 	$ofUserId = '';
-	$ofContactLabel = 'admins';
+	$ofContactLabel = 'Websites/admins';
 	$grantedByUserId = null;
-	$readLevel = Streams::$READ_LEVEL['messages'];
-	$writeLevel = Streams::$WRITE_LEVEL['edit'];
-	$adminLevel = Streams::$ADMIN_LEVEL['own'];
 	
 	$streams = array(
 		"Streams/images/" => array('type' => "Streams/template", "title" => "", "icon" => "default", "content" => "", "deletable" => true),
 		"Streams/image/" => array('type' => "Streams/template", "title" => "", "icon" => "default", "content" => "", "deletable" => true),
-		"Websites/bio/" => array('type' => "Streams/template", "title" => "", "icon" => "default", "content" => "", "deletable" => true),
+		"Websites/article/" => array('type' => "Streams/template", "title" => "", "icon" => "default", "content" => "", "deletable" => true),
 		"Websites/seo/" => array('type' => "Streams/template", "title" => "Website SEO", "icon" => Q_Html::themedUrl("plugins/Websites/img/seo"), "content" => "", "deletable" => true),
 		"Websites/header" => array('type' => "Streams/image/icon", "title" => "Header image", "icon" => Q_Html::themedUrl("plugins/Websites/img/header"), "content" => ""),
 		"Websites/slogan" => array('type' => "Streams/text/small", "title" => "Website slogan", "icon" => "default", "content" => "The coolest website"),
 		"Websites/title" => array('type' => "Streams/text/small", "title" => "Website title", "icon" => "default", "content" => "Website Title"),
 		"Websites/menu" => array('type' => "Streams/category", "title" => "Website Menu", "icon" => "default", "content" => ""),
-		"Websites/bios" => array('type' => "Streams/category", "title" => "Biographies", "icon" => "default", "content" => "Biographies"),
+		"Websites/articles" => array('type' => "Streams/category", "title" => "Articles", "icon" => "default", "content" => "Articles"),
+		"Websites/images" => array('type' => "Streams/category", "title" => "Articles", "icon" => "default", "content" => "Articles"),
 	);
+	
+	$readLevel = Streams::$READ_LEVEL['messages'];
+	$writeLevel = Streams::$WRITE_LEVEL['edit'];
+	$adminLevel = Streams::$ADMIN_LEVEL['own'];
 	
 	$rows = array();
 	foreach ($streams as $streamName => $stream) {
@@ -61,10 +63,18 @@ function Websites_0_8_Streams_mysql()
 	Streams_RelatedTo::insert(array(
 		'toPublisherId' => $publisherId,
 		'toStreamName' => 'Streams/images/',
-		'type' => 'image',
+		'type' => 'images',
 		'fromPublisherId' => $publisherId,
 		'fromStreamName' => 'Streams/image/'
-	));
+	))->execute();
+	
+	Streams_RelatedTo::insert(array(
+		'toPublisherId' => $publisherId,
+		'toStreamName' => 'Streams/articles',
+		'type' => 'articles',
+		'fromPublisherId' => $publisherId,
+		'fromStreamName' => 'Streams/article'
+	))->execute();
 }
 
 Websites_0_8_Streams_mysql();

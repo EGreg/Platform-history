@@ -1,14 +1,17 @@
 (function (Q, $, window, undefined) {
 
 /**
+ * @module Streams-tools
+ */
+
+/**
  * Streams/image/preview tool.
  * Renders a tool to preview (and possibly replace) images
- * @method image/preview
+ * @class Streams image preview
+ * @constructor
  * @param {Object} [options] this is an object that contains parameters for this function
- *   @param {String} [options.publisherId] Publisher ID
- *   @required
+ *   @param {String} options.publisherId The id of the user publishing the stream
  *   @param {String} [options.streamName]  If empty, and <code>creatable</code> is true, then this can be used to add new related Streams/image streams.
- *   @optional
  *   @param {Object} [options.related] A hash with properties "publisherId" and "streamName", and usually "type" and "weight"
  *     @param {String} [options.related.publisherId]
  *     @param {String} [options.related.streamName]
@@ -16,25 +19,23 @@
  *     @optional
  *     @param {Number} [options.related.weight]
  *     @optional
- *   @param {Boolean} [options.editable] Set to false to avoid showing even authorized users an interface to replace the image or text
- *   @default true
- *   @param {Object} [options.creatable] Optional fields to override in case if streamName = ""
- *     @param {String} [options.creatable.title]
- *     @default "New Image"
- *     @param {Boolean} [options.creatable.clickable]
- *     @default true
- *     @param {Number} [options.creatable.addIconSize]
- *     @default 100
+ *   @param {Boolean} [showTitle=true] Set to false to avoid showing the title of the image or an interface to edit it, unless streamName = "" (in which case creatable.title is used).
+ *   @param {Boolean} [options.editable=true] Set to false to avoid showing even authorized users an interface to replace the image or text
+ *   @param {Boolean} [options.removable=true] Set to false to avoid showing even authorized users an option to remove (or close) this stream
+ *   @param {Object} [options.creatable] Optional fields you can override in case if streamName = "", 
+ *     @param {String} [options.creatable.title="New Image"] Optional title for the case when streamName = "", i.e. the image composer
+ *     @param {Boolean} [options.creatable.clickable=true] Whether the image composer image is clickable
+ *     @param {Number} [options.creatable.addIconSize=100] The size in pixels of the square add icon
  *   @param {Object} [options.imagepicker] Any options to pass to the Q/imagepicker jquery plugin -- see its options.
- *   @see Q.jQuery.imagepicker
+ *   @uses Q imagepicker
  *   @param {Object} [options.inplace] Any options to pass to the Q/inplace tool -- see its options.
- *   @see Q.jQuery.inplace
+ *   @uses Q inplace
  *   @param {Object} [options.actions] Any options to pass to the Q/actions jquery plugin -- see its options.
- *   @see Q.jQuery.actions
- *   @param {Object} [options.overrideSize] A hash of {icon: size} pairs to override imagepicker.showSize when the icon is a certain string. The empty string matches all icons.
- *   @default {}
- *   @param {String} [options.throbber] The url of an image to use as an activity indicator when the image is loading
- *   @default "plugins/Q/img/throbbers/loading.gif"
+ *   @uses Q actions
+ *   @param {Object} [options.sizes] If passed, uses this instead of Q.Streams.image.sizes for the sizes when imagepicker.saveSizeName isn't passed
+ *   @param {Object} [options.overrideShowSize]  A hash of {icon: size} pairs to override imagepicker.showSize when the icon is a certain string. The empty string matches all icons.
+ *   @param {String} [options.throbber="plugins/Q/img/throbbers/loading.gif"] The url of an image to use as an activity indicator when the image is loading
+ *   @param {Number} [options.cacheBust=null] Number of milliseconds to use for combating the re-use of cached images when they are first loaded.
  *   @param {Object} [options.templates] Under the keys "views", "edit" and "create" you can override options for Q.Template.render .
  *   The fields passed to the template include "alt", "titleTag" and "titleClass"
  *     @param {Object} [options.templates.view]
@@ -69,13 +70,15 @@ Q.Tool.define("Streams/image/preview", function(options) {
 	if (!tool.state.imagepicker || !tool.state.imagepicker.showSize) {
 		throw new Q.Error("Streams/image/preview tool: missing options.imagepicker.showSize");
 	}
-	var state = tool.state, ip = state.imagepicker;
+	var state = tool.state
+	var ip = state.imagepicker;
+	ip.showSize = ip.showSize.toString();
 	var parts = ip.showSize.split('x');
 	
 	if (!ip.saveSizeName) {
 		ip.saveSizeName = {};
 		ip.saveSizeName[ip.showSize] = ip.showSize;
-		Q.each(Q.Streams.image.sizes, function (i, size) {
+		Q.each(state.sizes || Q.Streams.image.sizes, function (i, size) {
 			ip.saveSizeName[size] = size;
 		});
 	}
@@ -85,7 +88,8 @@ Q.Tool.define("Streams/image/preview", function(options) {
 		var fields = Q.extend({}, state.templates.create.fields, f, {
 			src: Q.url('plugins/Streams/img/actions/add.png'),
 			alt: state.creatable.title,
-			title: state.creatable.title
+			title: state.creatable.title,
+			showTitle: state.showTitle !== false
 		});
 		$(tool.element).addClass('Streams_image_preview_create');
 		Q.Template.render(
@@ -100,14 +104,10 @@ Q.Tool.define("Streams/image/preview", function(options) {
 							publisherId: state.publisherId,
 							type: 'Streams/image',
 							icon: icon
-						}, function (err, stream, extra) {
+						}, tool, function (err, stream, extra) {
 							if (err) {
 								return callback(err);
 							}
-							state.related.weight = Q.getObject(['related', 'weight'], extra);
-							state.publisherId = this.fields.publisherId;
-							state.streamName = this.fields.name;
-							tool.stream = this;
 							callback(null, {
 								slots: {
 									data: extra.icon
@@ -183,7 +183,15 @@ Q.Tool.define("Streams/image/preview", function(options) {
 								return console.warn(err);
 							}
 							tool.stream = stream;
-							callback({subpath: 'streams/' + stream.fields.publisherId + '/' + stream.fields.name});
+							var parts = stream.iconUrl(40).split('/');
+							var iconUrl = parts.slice(0, parts.length-1).join('/')
+								.substr(Q.info.baseUrl.length+1);
+							var prefix = 'plugins/Users/img/icons'
+							var path = (iconUrl.substr(0, prefix.length) === prefix)
+								? prefix
+								: 'plugins/Streams';
+							var subpath = iconUrl.substr(path.length+1);
+							callback({ path: path, subpath: subpath });
 						});
 					},
 					onSuccess: {'Streams/image/preview': function (data, key) {
@@ -194,7 +202,8 @@ Q.Tool.define("Streams/image/preview", function(options) {
 					}}
 				});
 				tool.$('img').plugin('Q/imagepicker', ipo);
-				if (tool.state.actions && stream.testWriteLevel('close')) {
+				if (state.removable !== false
+				&& state.actions && stream.testWriteLevel('close')) {
 					var ao = Q.extend(tool.state.actions, {
 						actions: {
 							'delete': function () {
@@ -226,8 +235,9 @@ Q.Tool.define("Streams/image/preview", function(options) {
 },
 
 {
-	related: null,
+	relate: null,
 	editable: true,
+	removable: true,
 	creatable: {
 		title: "New Image",
 		clickable: true,
@@ -237,8 +247,10 @@ Q.Tool.define("Streams/image/preview", function(options) {
 		showSize: "x200",
 		fullSize: "x"
 	},
-	overrideSize: {},
-	cacheBust: 1000,
+	sizes: null,
+	overrideShowSize: {},
+	cacheBust: null,
+	cacheBustOnUpdate: 1000,
 	templates: {
 		view: {
 			name: 'Streams/image/preview/view',
@@ -298,11 +310,17 @@ Q.Tool.define("Streams/image/preview", function(options) {
 					}
 				}
 			}
-			var file = (state.overrideSize && state.overrideSize[this.fields.icon])
+			var file = (
+					state.overrideShowSize && 
+					(state.overrideShowSize[this.fields.icon] || state.overrideShowSize[''])
+				)
 				|| size
 				|| Q.first(state.imagepicker.saveSizeName, {nonEmptyKey: true});
 			var full = state.imagepicker.saveSizeName[state.imagepicker.fullSize] || file;
 			var icon = stream && stream.fields.icon && stream.fields.icon !== 'default' ? stream.fields.icon : 'Streams/image';
+			tool.src = Q.url(Q.Streams.iconUrl(icon, file), null, {
+				cacheBust: state.cacheBustOnUpdate
+			});
 
 			var jq = tool.$('img.Streams_image_preview_icon');
 			if (jq.length) {
@@ -310,10 +328,9 @@ Q.Tool.define("Streams/image/preview", function(options) {
 				jq.off('load.Streams-image-preview').on('load.Streams-image-preview', function () {
 					tool.state.onLoad.handle.apply(tool, []);
 				});
-				jq.attr('src', 
-					Q.url(Q.Streams.iconUrl(icon, file), null,
-					{cacheBust: state.cacheBust}
-				));
+				jq.attr('src', tool.src, null, {
+					cacheBust: state.cacheBustOnUpdate
+				});
 				return true;
 			}
 
@@ -334,11 +351,15 @@ Q.Tool.define("Streams/image/preview", function(options) {
 			var fields = Q.extend({}, state.templates.edit.fields, f, {
 				src: Q.url(
 					Q.Streams.iconUrl(icon, file), null, 
-					{cacheBust: state.cacheBust}),
-				srcFull: Q.url(Q.Streams.iconUrl(icon, full), null,
-					{cacheBust: state.cacheBust}),
+					{cacheBust: state.cacheBust}
+				),
+				srcFull: Q.url(
+					Q.Streams.iconUrl(icon, full), null,
+					{cacheBust: state.cacheBust}
+				),
 				alt: stream.fields.title,
-				inplace: inplace
+				inplace: inplace,
+				showTitle: state.showTitle !== false
 			});
 			var tpl = (state.editable === false || !stream.testWriteLevel('suggest'))
 				? 'view' 
@@ -372,17 +393,17 @@ Q.Tool.define("Streams/image/preview", function(options) {
 
 Q.Template.set('Streams/image/preview/view',
 	'<img src="{{& src}}" alt="{{alt}}" class="Streams_image_preview_icon">'
-	+ '<div class="Streams_image_contents {{titleClass}}"><{{titleTag}}>{{& inplace}}</{{titleTag}}></div>'
+	+ '{{#showTitle}}<div class="Streams_image_contents {{titleClass}}"><{{titleTag}}>{{& inplace}}</{{titleTag}}></div>{{/showTitle}}'
 );
 
 Q.Template.set('Streams/image/preview/edit',
 	'<img src="{{& src}}" alt="{{alt}}" class="Streams_image_preview_icon">'
-	+ '<div class="Streams_image_contents {{titleClass}}"><{{titleTag}}>{{& inplace}}</{{titleTag}}></div>'
+	+ '{{#showTitle}}<div class="Streams_image_contents {{titleClass}}"><{{titleTag}}>{{& inplace}}</{{titleTag}}></div>{{/showTitle}}'
 );
 
 Q.Template.set('Streams/image/preview/create',
 	'<img src="{{& src}}" alt="{{alt}}" class="Streams_image_preview_add">'
-	+ '<div class="Streams_image_contents {{titleClass}}"><{{titleTag}}>{{& title}}</{{titleTag}}></div>'
+	+ '{{#showTitle}}<div class="Streams_image_contents {{titleClass}}"><{{titleTag}}>{{& title}}</{{titleTag}}></div>{{/showTitle}}'
 );
 
 })(Q, jQuery, window);

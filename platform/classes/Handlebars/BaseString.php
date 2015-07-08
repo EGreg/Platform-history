@@ -45,7 +45,7 @@ class Handlebars_BaseString
     /**
      * To Handlebars_String
      *
-     * @return string
+     * @return {string}
      */
     public function __toString()
     {
@@ -55,7 +55,7 @@ class Handlebars_BaseString
     /**
      * Get string
      *
-     * @return string
+     * @return {string}
      */
     public function getString()
     {
@@ -67,7 +67,7 @@ class Handlebars_BaseString
      *
      * @param string $string input source
      *
-     * @return void
+     * @return {void}
      */
     public function setString($string)
     {

@@ -452,6 +452,7 @@ class Q_Dispatcher
 			Q_Response::clearSlot($slotName);
 		}
 		// Go again, this time with a different URI.
+		Q::$toolWasRendered = array();
 		self::$uri = Q_Uri::from($e->uri);
 		if (is_array($e->skip)) {
 			self::$skip = $e->skip;

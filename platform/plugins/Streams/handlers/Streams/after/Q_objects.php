@@ -31,13 +31,8 @@ function Streams_after_Q_objects () {
 		false
 	);
 	
-	$invite->audio = 'audio/Getting Started.m4a';
-	
 	$params = array(
 		'displayName' => null,
-		'audio' => array(
-			'src' => $invite->audio
-		),
 		'action' => 'Streams/basic',
 		'icon' => Q_Html::themedUrl("plugins/Users/img/icons/{$user->icon}"),
 		'token' => $invite->token,

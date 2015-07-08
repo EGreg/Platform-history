@@ -36,7 +36,7 @@ Q.Tool.define("Q/ticker", function(options) {
 
 	// constructor
 	var me = this;
-	var $ticker = $('#'+this.prefix+'tool .ticker');
+	var $ticker = $('#'+this.prefix+'tool .Q_ticker');
 	var $container = $ticker.children();
 	var $children = $container.children();
 	if ($children.length && $children.get(0).tagName.toUpperCase() == 'TABLE') {
@@ -48,6 +48,8 @@ Q.Tool.define("Q/ticker", function(options) {
 	if ($children.length && !options.vertical) {
 		$children = $children.children();
 	}
+	
+	Q.addStylesheet('plugins/Q/css/Ticker.css');
 
 	this.onHitStart = function() {}; // override this to handle this event
 	this.onHitEnd = function() {}; // override this to handle this event

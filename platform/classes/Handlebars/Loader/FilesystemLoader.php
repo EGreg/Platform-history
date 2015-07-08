@@ -53,7 +53,7 @@ class Handlebars_Loader_FilesystemLoader implements Handlebars_Loader
      * @param string|array $baseDirs A path contain template files or array of paths
      * @param array        $options  Array of Handlebars_Loader options (default: array())
      *
-     * @throws RuntimeException if $baseDir does not exist.
+     * @throws {$1} if $baseDir does not exist.
      */
     public function __construct($baseDirs, array $options = array())
     {
@@ -94,7 +94,7 @@ class Handlebars_Loader_FilesystemLoader implements Handlebars_Loader
      *
      * @param string $name template name
      *
-     * @return Handlebars_String Handlebars Handlebars_Template source
+     * @return {Handlebars_String} Handlebars Handlebars_Template source
      */
     public function load($name)
     {
@@ -110,8 +110,8 @@ class Handlebars_Loader_FilesystemLoader implements Handlebars_Loader
      *
      * @param string $name template name
      *
-     * @throws InvalidArgumentException if a template file is not found.
-     * @return string Handlebars Handlebars_Template source
+     * @throws {$1} if a template file is not found.
+     * @return {string} Handlebars Handlebars_Template source
      */
     protected function loadFile($name)
     {
@@ -129,7 +129,7 @@ class Handlebars_Loader_FilesystemLoader implements Handlebars_Loader
      *
      * @param string $name template name
      *
-     * @return string Handlebars_Template file name
+     * @return {string} Handlebars_Template file name
      */
     protected function getFileName($name)
     {

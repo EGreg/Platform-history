@@ -16,7 +16,7 @@
  *
  * @property string $uri
  * @property string $url
- * @property string $insertedTime
+ * @property string|Db_Expression $insertedTime
  * @property string|Db_Expression $updatedTime
  */
 abstract class Base_Websites_Permalink extends Db_Row
@@ -31,7 +31,7 @@ abstract class Base_Websites_Permalink extends Db_Row
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string
+	 * @type string|Db_Expression
 	 */
 	/**
 	 * @property $updatedTime
@@ -101,9 +101,9 @@ abstract class Base_Websites_Permalink extends Db_Row
 	 * Create SELECT query to the class table
 	 * @method select
 	 * @static
-	 * @param $fields {array} The field values to use in WHERE clauseas as 
+	 * @param {array} $fields The field values to use in WHERE clauseas as 
 	 * an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function select($fields, $alias = null)
@@ -118,7 +118,7 @@ abstract class Base_Websites_Permalink extends Db_Row
 	 * Create UPDATE query to the class table
 	 * @method update
 	 * @static
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function update($alias = null)
@@ -133,8 +133,8 @@ abstract class Base_Websites_Permalink extends Db_Row
 	 * Create DELETE query to the class table
 	 * @method delete
 	 * @static
-	 * @param [$table_using=null] {object} If set, adds a USING clause with this table
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$table_using=null] If set, adds a USING clause with this table
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function delete($table_using = null, $alias = null)
@@ -149,8 +149,8 @@ abstract class Base_Websites_Permalink extends Db_Row
 	 * Create INSERT query to the class table
 	 * @method insert
 	 * @static
-	 * @param [$fields=array()] {object} The fields as an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$fields=array()] The fields as an associative array of `column => value` pairs
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function insert($fields = array(), $alias = null)
@@ -178,7 +178,10 @@ abstract class Base_Websites_Permalink extends Db_Row
 	 */
 	static function insertManyAndExecute($records = array(), $options = array())
 	{
-		self::db()->insertManyAndExecute(self::table(), $records, $options);
+		self::db()->insertManyAndExecute(
+			self::table(), $records,
+			array_merge($options, array('className' => 'Websites_Permalink'))
+		);
 	}
 	
 	/**
@@ -191,12 +194,24 @@ abstract class Base_Websites_Permalink extends Db_Row
 	 */
 	function beforeSet_uri($value)
 	{
-		if ($value instanceof Db_Expression) return array('uri', $value);
+		if ($value instanceof Db_Expression) {
+			return array('uri', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".uri");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".uri");
 		return array('uri', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the uri field
+	 * @return {integer}
+	 */
+	function maxSize_uri()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -209,12 +224,50 @@ abstract class Base_Websites_Permalink extends Db_Row
 	 */
 	function beforeSet_url($value)
 	{
-		if ($value instanceof Db_Expression) return array('url', $value);
+		if ($value instanceof Db_Expression) {
+			return array('url', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".url");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".url");
 		return array('url', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the url field
+	 * @return {integer}
+	 */
+	function maxSize_url()
+	{
+
+		return 255;			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_insertedTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_insertedTime($value)
+	{
+		if (!isset($value)) {
+			return array('insertedTime', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('insertedTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".insertedTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		return array('insertedTime', $value);			
 	}
 
 	/**
@@ -226,25 +279,28 @@ abstract class Base_Websites_Permalink extends Db_Row
 	 */
 	function beforeSet_updatedTime($value)
 	{
-       if (!isset($value)) return array('updatedTime', $value);
-		if ($value instanceof Db_Expression) return array('updatedTime', $value);
+		if (!isset($value)) {
+			return array('updatedTime', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('updatedTime', $value);
+		}
 		$date = date_parse($value);
-       if (!empty($date['errors']))
-           throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".updatedTime");
-       foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v)
-           $$v = $date[$v];
-       $value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		if (!empty($date['errors'])) {
+			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".updatedTime");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
+			$$v = $date[$v];
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
 		return array('updatedTime', $value);			
 	}
 
 	function beforeSave($value)
 	{
-
-		if (!$this->retrieved and !isset($value['insertedTime']))
-			$value['insertedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
-		//if ($this->retrieved and !isset($value['updatedTime']))
+						
 		// convention: we'll have updatedTime = insertedTime if just created.
-		$value['updatedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
+		$this->updatedTime = $value['updatedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
 		return $value;			
 	}
 

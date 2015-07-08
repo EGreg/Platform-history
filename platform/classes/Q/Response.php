@@ -577,7 +577,7 @@ class Q_Response
 			return is_array(self::$scriptLines) ? self::$scriptLines : array();
 		}
 		if (!isset($slotName) or $slotName === true) {
-			$slotName = array_merge(array('', 'Q'), Q_Request::slotNames(true));
+			$slotName = array_merge(array('', 'Q'), Q_Request::slotNames(true), array('@end'));
 		}
 		if (is_array($slotName)) {
 			$scriptLines = array();
@@ -984,9 +984,6 @@ class Q_Response
 				$srcs = array();
 				foreach ($slotName as $sn) {
 					foreach (self::scriptsArray($sn, $urls) as $b)  {
-						if ($urls) {
-							$b['src'] = Q_Html::themedUrl($b['src']);
-						}
 						$key = $b['src'];
 						if (!empty($srcs[$key])) {
 							continue;
@@ -1141,7 +1138,6 @@ class Q_Response
 			}
 		}
 		self::$stylesheetsForSlot[$slotName][] = compact('href', 'media', 'type');
-
 		return true;
 	}
 
@@ -1161,16 +1157,13 @@ class Q_Response
 			return $sheets = self::$stylesheets;
 		}
 		if (!isset($slotName) or $slotName === true) {
-			$slotName = array_merge(array(''), Q_Request::slotNames(true));
+			$slotName = array_merge(array('', 'Q'), Q_Request::slotNames(true), array('@end'));
 		}
 		if (is_array($slotName)) {
 			$sheets = array();
 			$saw = array();
 			foreach ($slotName as $sn) {
 				foreach (self::stylesheetsArray($sn, $urls) as $b)  {
-					if ($urls) {
-						$b['href'] = Q_Html::themedUrl($b['href']);
-					}
 					$key = $b['href'].' '.$b['media'];
 					if (!empty($saw[$key])) {
 						continue;
@@ -1364,6 +1357,12 @@ class Q_Response
 	{
 		extract($options);
 		$url = Q_Uri::url($uri, null, !empty($no_proxy));
+		if ($url === Q_Uri::unreachableUri()) {
+			throw new Q_Exception_BadValue(array(
+				'internal' => 'uri',
+				'problem' => 'no url routes to it'
+			));
+		}
 		$level = ob_get_level();
 		for ($i=0; $i<$level; ++$i) {
 			ob_clean();
@@ -1398,7 +1397,7 @@ class Q_Response
 	}
 
 	/**
-	 * Used to get/set output that the pop/response handler should consult.
+	 * Used to get/set output that the Q/response handler should consult.
 	 * @method output
 	 * @static
 	 * @param {string} [$new_output=null] Pass a string here to return as output, instead of the usual layout.
@@ -1406,6 +1405,7 @@ class Q_Response
 	 *  and to skip rendering a layout.
 	 * @param {boolean} [$override=false] If an output string is already set, doesn't override it
 	 *  unless you pass true here.
+	 * @return {string} Returns the output that was set, if any
 	 */
 	static function output($new_output = null, $override = false)
 	{

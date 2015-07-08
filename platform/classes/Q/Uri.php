@@ -184,7 +184,7 @@ class Q_Uri
 			}
 		}
 		if (!isset($url)) {
-			$hash = Q_Config::get('Q', 'uri', 'unreachableUri', '#_noRouteToUri');
+			$hash = Q_Uri::unreachableUri();
 			if ($hash) {
 				$result = $hash;
 				if (is_string($source)) {
@@ -205,6 +205,11 @@ class Q_Uri
 			$cache[$source] = $result;
 		}
 		return $result;
+	}
+
+	static function unreachableUri()
+	{
+		return Q_Config::get('Q', 'uri', 'unreachableUri', '#_noRouteToUri');
 	}
 	
 	/**
@@ -327,6 +332,7 @@ class Q_Uri
 		}
 
 		/**
+		 * Hook for custom logic modifying routing from URLs to internal URIs
 		 * @event Q/uriFromUrl {before}
 		 * @param {string} 'url'
 		 * @return {Q_Uri}
@@ -837,14 +843,14 @@ class Q_Uri
 		if (empty($timestamp)) {
 			return $url;
 		}
-		$url_relative_to_base = substr($url, strlen(Q_Request::baseUrl()));
-		$fileTimestamp = isset(Q_Uri::$urls[$url_relative_to_base])
-			? Q_Uri::$urls[$url_relative_to_base]
+		$urlRelativeToBase = substr($url, strlen(Q_Request::baseUrl()));
+		$fileTimestamp = isset(Q_Uri::$urls[$urlRelativeToBase])
+			? Q_Uri::$urls[$urlRelativeToBase]
 			: null;
 		if (isset($fileTimestamp)
 		and $fileTimestamp <= $timestamp
 		and self::$cacheBaseUrl) {
-			return self::$cacheBaseUrl . $url_relative_to_base;
+			return self::$cacheBaseUrl . $urlRelativeToBase;
 		}
 		return $url;
 	}
@@ -947,7 +953,7 @@ class Q_Uri
 	protected static function decode(
 	 $tail)
 	{
-		if ($tail[0] === '{' and $result = json_decode($tail, true)) {
+		if ($tail[0] === '{' and $result = Q::json_decode($tail, true)) {
 			return $result;
 		}
 		$clauses = explode(' ', $tail);

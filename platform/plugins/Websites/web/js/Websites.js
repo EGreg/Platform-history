@@ -18,12 +18,12 @@ var Websites = Q.Websites = Q.plugins.Websites = {
  */
 
 /**
- * Display a user's bio on the website, which the user can edit
- * @class Websites bio
+ * Display a user's article on the website, which the user can edit
+ * @class Websites article
  * @constructor
  */
 
-Q.Tool.define("Websites/bio", function (fields) {
+Q.Tool.define("Websites/article", function (fields) {
 	var gittool = this.$('.Users_getintouch_tool');
 	var form = this.$('form.Websites_getintouch');
 	function _refresh() {
@@ -39,8 +39,8 @@ Q.Tool.define("Websites/bio", function (fields) {
 	$('input[type=checkbox]', form).click(function () { $(this).submit() });
 });
 
-Q.Streams.define("Websites/bio", function (fields) {
-	this.fields.bio = fields.bio;
+Q.Streams.define("Websites/article", function (fields) {
+	this.fields.article = fields.article;
 });
 
 Q.onInit.set(function () {
@@ -59,16 +59,25 @@ Q.Tool.define({
 });
 
 Q.page('', function () {
-	Q.addScript("plugins/Q/js/sha1.js", function () {
-		var streamName = "Websites/seo/"+CryptoJS.SHA1(Q.info.uriString);
-		Q.Streams.Stream.onUpdated(Q.plugins.Websites.userId, streamName, "title").set(function (attributes, k) {
-			document.title = attributes[k];
+	var streamName = Websites.seoStreamName;
+	var publisherId = Q.plugins.Websites.userId;
+	Q.Streams.Stream.onUpdated(publisherId, streamName, "title")
+	.set(function (attributes, k) {
+		document.title = attributes[k];
+	}, "Websites");
+	if (Websites.seoReload) {
+		Q.Streams.Stream.onUpdated(publisherId, streamName, "url")
+		.set(function (attributes, k) {
+			var tail = attributes[k];
+			if (tail && location !== Q.url(tail)) {
+				Q.handle(Q.url(tail));
+			}
 		}, "Websites");
-	});
+	}
 	return function () {
-		if (!window.CryptoJS) return;
-		var streamName = "Websites/seo/"+CryptoJS.SHA1(Q.info.uriString);
-		Q.Streams.Stream.onUpdated(Q.plugins.Websites.userId, streamName, "title").remove("Websites");
+		Q.Streams.Stream.onUpdated(
+			Q.plugins.Websites.userId, Websites.seoStreamName, "title"
+		).remove("Websites");
 	}
 }, 'Websites');
 

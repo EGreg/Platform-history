@@ -10,13 +10,13 @@
  * @class Q autogrow
  * @constructor
  * @param {Object} [options] , object for an options
- * @param {Number} [options.maxWidth] maxWidth , number for Maximum width, or reference to an Element
+ * @param {Number|Element} [options.maxWidth] maxWidth The input won't get larger than this number or element
  * @default 1000
- * @param {Number} [options.minWidth] minWidth , number for Minimum width
+ * @param {Number} [options.minWidth] minWidth The input won't get smaller than this
  * @default 0
- * @param {Number} [options.comfortZone] comfortZone
+ * @param {Number} [options.comfortZone] How many pixels of padding to allocate for typing ahead
  * @default 10
- * @param [Q.Event] [options.onResize] onResize , event that triggering on resize
+ * @param [Q.Event] [options.onResize] Triggered during a resize, its "this" object is the jQuery selector of the plugin. If used with a text input, the first parameter is the new width.
  * @default new Q.Event()
  */
 
@@ -24,7 +24,8 @@ Q.Tool.jQuery('Q/autogrow',
 
 function _Q_autogrow(o) {
 
-	var possibleEvents = 'keyup.Q_autogrow'
+	var possibleEvents = 'input.Q_autogrow'
+		+ 'keyup.Q_autogrow'
 		+ ' blur.Q_autogrow'
 		+ ' update.Q_autogrow'
 		+ ' paste.Q_autogrow'
@@ -80,6 +81,9 @@ function _Q_autogrow(o) {
 						$sp.scrollTop(st + tH - prevH);
 					}
 				}
+				if (prevH && tH && prevH != tH) {
+					Q.handle(o.onResize, $t, []);
+				}
 				prevH = tH;
 			}, 0)
 		};
@@ -96,14 +100,14 @@ function _Q_autogrow(o) {
 		};
 		
 		updateHeight();
-		Q.handle(o.onResize, this, []);
 	});
 
 	this.filter('input:text').each(function() {
-		var minWidth = o.minWidth || 20,
-			val = '',
-			input = $(this),
-			testSubject = $(this).data('Q-tester');
+		var minWidth = o.minWidth || 20;
+		var val = '';
+		var input = $(this);
+		var testSubject = $(this).data('Q-tester');
+		var $t = $(this);
 		if (!testSubject) {
 			testSubject = $('<div class="Q_tester"/>');
 			$(this).data('Q-tester', testSubject);
@@ -138,7 +142,7 @@ function _Q_autogrow(o) {
 			testSubject.hide();
 			var newWidth = Math.max(testerWidth + o.comfortZone, minWidth);
 			var currentWidth = input.outerWidth(true);
-			var maxWidth = (o.maxWidth instanceof Element)
+			var maxWidth = Q.instanceOf(o.maxWidth, Element)
 				? $(o.maxWidth).innerWidth()
 				: o.maxWidth;
 			var isValidWidthChange = ((
@@ -149,7 +153,7 @@ function _Q_autogrow(o) {
 			// Animate width
 			if (isValidWidthChange) {
 				input.width(newWidth);
-				Q.handle(o.onResize, this, [newWidth]);
+				Q.handle(o.onResize, $t, [newWidth]);
 			} else if (input.width() < minWidth) {
 				input.width(minWidth);
 			}

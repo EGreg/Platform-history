@@ -89,7 +89,7 @@ class Handlebars_Context
      *
      * @param mixed $value Object or array to use for context
      *
-     * @return void
+     * @return {void}
      */
     public function push($value)
     {
@@ -101,7 +101,7 @@ class Handlebars_Context
      *
      * @param array $variables An associative array of special variables.
      *
-     * @return void
+     * @return {void}
      *
      * @see Handlebars_Context::$specialVariables
      */
@@ -113,7 +113,7 @@ class Handlebars_Context
     /**
      * Pop the last Handlebars_Context frame from the stack.
      *
-     * @return mixed Last Handlebars_Context frame (object or array)
+     * @return {mixed} Last Handlebars_Context frame (object or array)
      */
     public function pop()
     {
@@ -123,7 +123,7 @@ class Handlebars_Context
     /**
      * Pop the last special variables set from the stack.
      *
-     * @return array Associative array of special variables.
+     * @return {array} Associative array of special variables
      *
      * @see Handlebars_Context::$specialVariables
      */
@@ -135,7 +135,7 @@ class Handlebars_Context
     /**
      * Get the last Handlebars_Context frame.
      *
-     * @return mixed Last Handlebars_Context frame (object or array)
+     * @return {mixed} Last Handlebars_Context frame (object or array)
      */
     public function last()
     {
@@ -145,8 +145,7 @@ class Handlebars_Context
     /**
      * Get the last special variables set from the stack.
      *
-     * @return array Associative array of special variables.
-     *
+     * @return {array} Associative array of special variables
      * @see Handlebars_Context::$specialVariables
      */
     public function lastSpecialVariables()
@@ -158,8 +157,7 @@ class Handlebars_Context
      * Change the current context to one of current context members
      *
      * @param string $variableName name of variable or a callable on current context
-     *
-     * @return mixed actual value
+     * @return {mixed} actual value
      */
     public function with($variableName)
     {
@@ -190,10 +188,10 @@ class Handlebars_Context
      * @param string  $variableName variable name to get from current context
      * @param boolean $strict       strict search? if not found then throw exception
      *
-     * @throws InvalidArgumentException in strict mode and variable not found
-     * @throws RuntimeException if supplied argument is a malformed quoted string 
-     * @throws InvalidArgumentException if variable name is invalid
-     * @return mixed
+     * @throws {$1} in strict mode and variable not found
+     * @throws {$1} if supplied argument is a malformed quoted string 
+     * @throws {$1} if variable name is invalid
+     * @return {mixed}
      */
     public function get($variableName, $strict = false)
     {
@@ -264,8 +262,8 @@ class Handlebars_Context
      * @param string  $inside   property/method to check
      * @param boolean $strict   strict search? if not found then throw exception
      *
-     * @throws InvalidArgumentException in strict mode and variable not found
-     * @return boolean true if exist
+     * @throws {$1} in strict mode and variable not found
+     * @return {boolean} true if exists
      */
     private function _findVariableInContext($variable, $inside, $strict = false)
     {
@@ -298,8 +296,8 @@ class Handlebars_Context
      *
      * @param string $variableName Fully qualified name of a variable.
      *
-     * @throws InvalidArgumentException if variable name is invalid.
-     * @return array
+     * @throws {$1} if variable name is invalid.
+     * @return {array}
      */
     private function _splitVariableName($variableName)
     {

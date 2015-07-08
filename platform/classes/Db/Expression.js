@@ -6,7 +6,7 @@
  * @class Expression
  * @namespace Db
  * @constructor
- * @param chain1 {Db.Expression|String} Pass as many arguments as you want, and they will be concatenated together
+ * @param {Db.Expression|String} chain1 Pass as many arguments as you want, and they will be concatenated together
  *  with spaces in between them. Db.Expression objects will be enclosed in parentheses before being concatenated.
  */
 function Expression(chain, chain2) {

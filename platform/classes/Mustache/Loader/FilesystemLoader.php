@@ -42,7 +42,7 @@ class Mustache_Loader_FilesystemLoader implements Mustache_Loader
      *         'extension' => '.ms',
      *     );
      *
-     * @throws RuntimeException if $baseDir does not exist.
+     * @throws {$1} if $baseDir does not exist.
      *
      * @param string $baseDir Base directory containing Mustache template files.
      * @param array  $options Array of Loader options (default: array())
@@ -68,7 +68,7 @@ class Mustache_Loader_FilesystemLoader implements Mustache_Loader
      *
      * @param string $name
      *
-     * @return string Mustache Template source
+     * @return {string} Mustache Template source
      */
     public function load($name)
     {
@@ -82,11 +82,11 @@ class Mustache_Loader_FilesystemLoader implements Mustache_Loader
     /**
      * Helper function for loading a Mustache file by name.
      *
-     * @throws InvalidArgumentException if a template file is not found.
+     * @throws {$1} if a template file is not found.
      *
      * @param string $name
      *
-     * @return string Mustache Template source
+     * @return {string} Mustache Template source
      */
     protected function loadFile($name)
     {
@@ -104,7 +104,7 @@ class Mustache_Loader_FilesystemLoader implements Mustache_Loader
      *
      * @param string $name
      *
-     * @return string Template file name
+     * @return {string} Template file name
      */
     protected function getFileName($name)
     {

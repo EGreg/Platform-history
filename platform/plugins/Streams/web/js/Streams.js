@@ -155,8 +155,13 @@ Streams.define = function (type, ctor, methods) {
 	if (typeof ctor !== 'function') {
 		throw new Q.Error("Q.Streams.define requires ctor to be a string or a function");
 	}
-	Q.extend(ctor.prototype, methods);	
-	return Streams.defined[type] = ctor;
+	function CustomStreamConstructor() {
+		CustomStreamConstructor.constructors.apply(this, arguments);
+		ctor.apply(this, arguments);
+	}
+	Q.mixin(CustomStreamConstructor, Streams.Stream);
+	Q.extend(CustomStreamConstructor.prototype, methods);	
+	return Streams.defined[type] = CustomStreamConstructor;
 };
 
 /**
@@ -218,13 +223,25 @@ Streams.key = function (publisherId, streamName) {
  * @event onError
  */
 Streams.onError = new Q.Event(function (err, data) {
+	var code = Q.getObject([0, 'errors', 0, 'code'], data)
+		|| Q.getObject([1, 'errors', 0, 'code'], data);
+	if (!code) return;
+	var errors = data && data.errors
+		&& (data[0] && data[0].errors)
+		&& (data[1] && data[1].errors);
 	console.warn(Q.firstErrorMessage(err, data && data.errors));
 }, 'Streams.onError');
 
 /**
+ * This event is fired when a dialog is presented to a newly invited user.
+ * @event onInvitedDialog
+ */
+Streams.onInvitedDialog = new Q.Event();
+
+/**
  * This event is fired when the invited user takes the first action after
  * entering their name. It is a good time to start playing any audio, etc.
- * @event onError
+ * @event onInvitedUserAction
  */
 Streams.onInvitedUserAction = new Q.Event();
 
@@ -368,7 +385,8 @@ Q.Tool.define({
 	"Streams/inplace"      : "plugins/Streams/js/tools/inplace.js",
 	"Streams/html"         : "plugins/Streams/js/tools/html.js",
 	"Streams/preview"  	   : "plugins/Streams/js/tools/preview.js",
-	"Streams/image/preview": "plugins/Streams/js/tools/image/preview.js"
+	"Streams/image/preview": "plugins/Streams/js/tools/image/preview.js",
+	"Streams/form"         : "plugins/Streams/js/tools/form.js"
 });
 
 /**
@@ -505,9 +523,12 @@ var _Streams_batchFunction_preprocess = {
  * Create a new stream
  * @static
  * @method create
- * @param fields {Object}
+ * @param {Object} fields
  *  Should contain at least the publisherId and type of the stream
- * @param callback {function}
+ * @param {Q.Tool} [tool]
+ *  If this is being called from a tool implementing the Streams/preview protocol,
+ *  then pass the tool before the callback, so that it can be updated properly.
+ * @param {Function} callback 
  *	if there were errors, first parameter is the error message
  *  otherwise, first parameter is null and second parameter is a Streams.Stream object
  * @param {Object} [related] , Optional information to add a relation from the newly created stream to another one. Can include:
@@ -515,7 +536,26 @@ var _Streams_batchFunction_preprocess = {
  *   @param {String} [related.streamName] the name of the related stream
  *   @param {Mixed} [related.type] the type of the relation
  */
-Streams.create = function (fields, callback, related) {
+Streams.create = function (fields, /* tool, */ callback, related) {
+	var tool = null;
+	if (Q.typeOf(callback) === 'Q.Tool') {
+		tool = callback;
+		var cb = related;
+		related = arguments[3];
+		callback = function (err, stream, extra) {
+			var state = tool.state;
+			var r = state.related;
+			Streams.related.cache.each([r.publisherId, r.streamName],
+			function (key) {
+				Streams.related.cache.remove(key);
+			});
+			state.related.weight = Q.getObject(['related', 'weight'], extra);
+			state.publisherId = this.fields.publisherId;
+			state.streamName = this.fields.name;
+			tool.stream = this;
+			cb && cb.apply(this, arguments);
+		};
+	}
 	var slotNames = ['stream'];
 	if (fields.icon) {
 		slotNames.push('icon');
@@ -581,6 +621,11 @@ Streams.create.onError = new Q.Event();
  */
 Streams.construct = function _Streams_construct(fields, extra, callback) {
 
+	if (typeof extra === 'function') {
+		callback = extra;
+		extra = null;
+	}
+
 	if (Q.typeOf(fields) === 'Q.Streams.Stream') {
 		Q.handle(callback, fields, [null, fields]);
 		return false;
@@ -590,16 +635,12 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 		Q.handle(callback, this, ["Streams.Stream constructor: fields are missing"]);
 		return false;
 	}
-	
-	if (typeof extra === 'function') {
-		callback = extra;
-		extra = null;
-	}
 
 	var type = Q.normalize(fields.type);
 	var streamFunc = Streams.defined[type];
 	if (!streamFunc) {
-		streamFunc = Streams.defined[type] = function (fields) {
+		streamFunc = Streams.defined[type] = function StreamConstructor(fields) {
+			streamFunc.constructors.apply(this, arguments);
 			// Default constructor. Copy any additional fields.
 			if (!fields) return;
 			for (var k in fields) {
@@ -612,7 +653,7 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 		return _doConstruct();
 	} else if (typeof streamFunc === 'string') {
 		Q.addScript(streamFunc, function () {
-			streamFunc = Q.Tool.constructors[streamName] || Q.Tool.constructors[streamName2];
+			streamFunc = Streams.defined[streamName];
 			if (typeof streamFunc !== 'function') {
 				throw new Error("Streams.construct: streamFunc cannot be " + typeof(streamFunc));
 			}
@@ -626,7 +667,7 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 		if (!streamFunc.streamConstructor) {
 			streamFunc.streamConstructor = function Streams_Stream(fields) {
 				// run any constructors
-				this.constructors(fields);
+				streamFunc.streamConstructor.constructors.apply(this, arguments);
 
 				var f = this.fields;
 
@@ -858,7 +899,7 @@ Streams.invite = function (publisherId, streamName, options, callback) {
 			var msg = Q.firstErrorMessage(err, response && response.errors);
 			if (msg) {
 				var args = [err, response];
-				Streams.onError.handle.call(this, msg, args);
+				return Streams.onError.handle.call(this, msg, args);
 			}
 			var rsd = response.slots.data;
 			Q.handle(o && o.callback, null, [err, response, msg]);
@@ -1664,6 +1705,13 @@ Streams.related = function _Streams_related(publisherId, streamName, relationTyp
 		}
 	}, { fields: fields, baseUrl: baseUrl });
 	_retain = undefined;
+	var socket = Q.Socket.get('Streams', Q.nodeUrl({
+		publisherId: publisherId,
+		streamName: streamName
+	}));
+	if (!socket) {
+		return false; // do not cache relations to/from this stream
+	}
 };
 Streams.related.onError = new Q.Event();
 
@@ -1955,7 +2003,7 @@ Stream.remove = function _Stream_remove (publisherId, streamName, callback) {
 		if (msg) {
 			var args = [err, data];
 			Streams.onError.handle.call(this, msg, args);
-			Streams.remove.onError.handle.call(this, msg, args);
+			Stream.remove.onError.handle.call(this, msg, args);
 			return callback && callback.call(this, msg, args);
 		}
 		callback && callback.call(this, err, data.slots.result || null);
@@ -2237,13 +2285,14 @@ var Message = Streams.Message = function Streams_Message(fields) {
 
 Message.construct = function Streams_Message_construct(fields) {
 	if (Q.isEmpty(fields)) {
-		Q.handle(callback, this, ["Streams.Stream constructor: fields are missing"]);
+		Q.handle(callback, this, ["Streams.Stream constructor: empty fields object"]);
 		return false;
 	}
 	var type = Q.normalize(fields.type);
 	var messageFunc = Message.defined[type];
 	if (!messageFunc) {
-		messageFunc = Message.defined[type] = function (fields) {
+		messageFunc = Message.defined[type] = function MessageConstructor(fields) {
+			messageFunc.constructors.apply(this, arguments);
 			// Default constructor. Copy any additional fields.
 			if (!fields) return;
 			for (var k in fields) {
@@ -2254,7 +2303,7 @@ Message.construct = function Streams_Message_construct(fields) {
 	if (!messageFunc.messageConstructor) {
 		messageFunc.messageConstructor = function Streams_Message(fields) {
 			// run any constructors
-			this.constructors(fields);
+			messageFunc.messageConstructor.constructors.apply(this, arguments);
 			Message.get.cache.set(
 				[this.publisherId, this.streamName, parseInt(this.ordinal)],
 				0, this, [null, this]
@@ -2289,8 +2338,9 @@ Message.define = function (type, ctor, methods) {
 	if (typeof ctor !== 'function') {
 		throw new Q.Error("Q.Streams.Message.define requires ctor to be a function");
 	}
-	Q.extend(ctor.prototype, methods);	
-	return Message.defined[type] = ctor;
+	Q.mixin(CustomMessageConstructor, Message);
+	Q.extend(CustomMessageConstructor.prototype, methods);	
+	return Message.defined[type] = CustomMessageConstructor;
 };
 
 var Mp = Message.prototype;
@@ -2773,12 +2823,12 @@ Ap.displayName = function _Avatar_prototype_displayName (options) {
 
 /**
  * Get the url of the user icon from a Streams.Avatar
- * 
- * @method iconUrl
- * @return {String}
+ * @method
+ * @param {Number} [size=40] the size of the icon to render.
+ * @return {String} the url
  */
-Ap.iconUrl = function _Avatar_prototype_iconUrl () {
-	return Q.plugins.Users.iconUrl(this.icon, 40);
+Ap.iconUrl = function _Avatar_prototype_iconUrl (size) {
+	return Q.plugins.Users.iconUrl(this.icon, size);
 };
 
 /**
@@ -3144,7 +3194,7 @@ function _onResultHandler(subject, params, args, ret, original) {
 
 Q.Tool.onMissingConstructor.set(function (constructors, normalized) {
 	var str = "_preview";
-	if (normalized.substr(-str.length) === str) {
+	if (normalized.substr(normalized.length-str.length) === str) {
 		constructors[normalized] = "plugins/Streams/js/tools/preview.js";
 	}
 }, 'Streams');
@@ -3294,6 +3344,7 @@ Q.onInit.add(function _Streams_onInit() {
 						}
 					},
 					onActivate: {'Streams.completeInvited': function _Streams_completeInvited() {
+						Streams.onInvitedDialog.handle.call(Streams, [dialog]);
 						var l = Q.text.Users.login;
 						dialog.find('#Streams_login_username')
 							.attr('maxlength', l.maxlengths.fullName)
@@ -3348,7 +3399,7 @@ Q.onInit.add(function _Streams_onInit() {
 									'Streams/user/lastName', p.fill('last'), params
 								);
 							}, {method: "post", quietly: true, baseUrl: baseUrl});
-						}).on('submit keydown', function (e) {
+						}).on('submit keydown', Q.debounce(function (e) {
 							if (e.type === 'keydown'
 							&& (e.keyCode || e.which) !== 13) {
 								return;
@@ -3357,7 +3408,7 @@ Q.onInit.add(function _Streams_onInit() {
 							Streams.onInvitedUserAction.handle.call(
 								[val, dialog]
 							);
-						});
+						}, 0));
 						$('button', $complete_form).on('touchstart', function () {
 							$(this).submit();
 						});

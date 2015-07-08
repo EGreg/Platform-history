@@ -1,6 +1,10 @@
 <?php
 
 /**
+ * @module Q-tools
+ */
+
+/**
  * This tool contains functionality to show things in columns
  * @class Q columns
  * @constructor
@@ -33,6 +37,8 @@ function Q_columns_tool($options)
 	if (!isset($options['columns'])) {
 		return '';
 	}
+	Q_Response::addScript('plugins/Q/js/tools/columns.js');
+	Q_Response::addStylesheet('plugins/Q/css/columns.css');
 	$result = '<div class="Q_columns_container Q_clearfix">';
 	$columns = array();
 	$i=0;

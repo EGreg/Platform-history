@@ -12,13 +12,12 @@ function Users_after_Q_image_save($params, &$return)
 	$fullpath = $path.($subpath ? DS.$subpath : '');
 	$prefix = "plugins/Users/img/icons/user-{$user->id}";
 	if (substr($fullpath, 0, strlen($prefix)) === $prefix) {
-		$filename = "user-{$user->id}";
-		if ($user->icon != $filename) {
-			$user->icon = $filename;
-			$user->save();
-			Users::$cache['iconWasChanged'] = true;
+		if ($user->icon != $subpath) {
+			$user->icon = $subpath;
+			$user->save(); // triggers any registered hooks
+			Users::$cache['iconUrlWasChanged'] = true;
 		} else {
-			Users::$cache['iconWasChanged'] = false;
+			Users::$cache['iconUrlWasChanged'] = false;
 		}
 	}
 }

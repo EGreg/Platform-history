@@ -23,7 +23,7 @@ var Row = Q.require('Db/Row');
  * an associative array of `{column: value}` pairs
  */
 function Base (fields) {
-	
+	Base.constructors.apply(this, arguments);
 }
 
 Q.mixin(Base, Row);
@@ -106,7 +106,7 @@ Base.db = function () {
 /**
  * Retrieve the table name to use in SQL statements
  * @method table
- * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
+ * @param {boolean} [withoutDbName=false] Indicates wheather table name should contain the database name
  * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
@@ -138,8 +138,8 @@ Base.connectionName = function() {
 /**
  * Create SELECT query to the class table
  * @method SELECT
- * @param fields {object|string} The field values to use in WHERE clauseas as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {object|string} fields The field values to use in WHERE clauseas as an associative array of `{column: value}` pairs
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.SELECT = function(fields, alias) {
@@ -151,7 +151,7 @@ Base.SELECT = function(fields, alias) {
 /**
  * Create UPDATE query to the class table. Use Db.Query.Mysql.set() method to define SET clause
  * @method UPDATE
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.UPDATE = function(alias) {
@@ -163,8 +163,8 @@ Base.UPDATE = function(alias) {
 /**
  * Create DELETE query to the class table
  * @method DELETE
- * @param [table_using=null] {object} If set, adds a USING clause with this table
- * @param [alias=null] {string} Table alias
+ * @param {object}[table_using=null] If set, adds a USING clause with this table
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.DELETE = function(table_using, alias) {
@@ -177,7 +177,7 @@ Base.DELETE = function(table_using, alias) {
  * Create INSERT query to the class table
  * @method INSERT
  * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.INSERT = function(fields, alias) {
@@ -199,7 +199,7 @@ Base.prototype.className = "Streams_Stream";
  * Create INSERT query to the class table
  * @method INSERT
  * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.prototype.setUp = function() {
@@ -210,7 +210,7 @@ Base.prototype.setUp = function() {
  * Create INSERT query to the class table
  * @method INSERT
  * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.prototype.db = function () {
@@ -220,7 +220,7 @@ Base.prototype.db = function () {
 /**
  * Retrieve the table name to use in SQL statements
  * @method table
- * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
+ * @param {boolean} [withoutDbName=false] Indicates wheather table name should contain the database name
  * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
@@ -283,6 +283,15 @@ Base.prototype.beforeSet_publisherId = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the publisherId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_publisherId = function () {
+
+		return 31;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -298,6 +307,15 @@ Base.prototype.beforeSet_name = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".name");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the name field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_name = function () {
+
+		return 255;
 };
 
 /**
@@ -342,6 +360,15 @@ Base.prototype.beforeSet_type = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the type field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_type = function () {
+
+		return 63;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -357,6 +384,15 @@ Base.prototype.beforeSet_title = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".title");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the title field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_title = function () {
+
+		return 255;
 };
 
 /**
@@ -376,6 +412,15 @@ Base.prototype.beforeSet_icon = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the icon field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_icon = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -391,6 +436,15 @@ Base.prototype.beforeSet_content = function (value) {
 		if (typeof value === "string" && value.length > 1023)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".content");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the content field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_content = function () {
+
+		return 1023;
 };
 
 /**
@@ -411,6 +465,15 @@ Base.prototype.beforeSet_attributes = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the attributes field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_attributes = function () {
+
+		return 1023;
+};
+
 /**
  * Method is called before setting the field and verifies if integer value falls within allowed limits
  * @method beforeSet_readLevel
@@ -426,6 +489,15 @@ Base.prototype.beforeSet_readLevel = function (value) {
 		if (value < -2147483648 || value > 2147483647)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".readLevel");
 		return value;
+};
+
+	/**
+	 * Returns the maximum integer that can be assigned to the readLevel field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_readLevel = function () {
+
+		return 2147483647;
 };
 
 /**
@@ -445,6 +517,15 @@ Base.prototype.beforeSet_writeLevel = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum integer that can be assigned to the writeLevel field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_writeLevel = function () {
+
+		return 2147483647;
+};
+
 /**
  * Method is called before setting the field and verifies if integer value falls within allowed limits
  * @method beforeSet_adminLevel
@@ -460,6 +541,15 @@ Base.prototype.beforeSet_adminLevel = function (value) {
 		if (value < -2147483648 || value > 2147483647)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".adminLevel");
 		return value;
+};
+
+	/**
+	 * Returns the maximum integer that can be assigned to the adminLevel field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_adminLevel = function () {
+
+		return 2147483647;
 };
 
 /**
@@ -480,6 +570,15 @@ Base.prototype.beforeSet_inheritAccess = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the inheritAccess field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_inheritAccess = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if integer value falls within allowed limits
  * @method beforeSet_messageCount
@@ -497,6 +596,15 @@ Base.prototype.beforeSet_messageCount = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum integer that can be assigned to the messageCount field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_messageCount = function () {
+
+		return 2147483647;
+};
+
 /**
  * Method is called before setting the field and verifies if integer value falls within allowed limits
  * @method beforeSet_participantCount
@@ -512,6 +620,15 @@ Base.prototype.beforeSet_participantCount = function (value) {
 		if (value < -2147483648 || value > 2147483647)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".participantCount");
 		return value;
+};
+
+	/**
+	 * Returns the maximum integer that can be assigned to the participantCount field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_participantCount = function () {
+
+		return 2147483647;
 };
 
 /**
@@ -535,7 +652,7 @@ Base.prototype.beforeSet_closedTime = function (value) {
  * @throws {Error} If mandatory field is not set
  */
 Base.prototype.beforeSave = function (value) {
-	var fields = ['name','type','title','content'], i;
+	var fields = ['name'], i;
 	if (!this._retrieved) {
 		var table = this.table();
 		for (i=0; i<fields.length; i++) {

@@ -4,15 +4,16 @@
  * This tool renders a user avatar
  *
  * @param {array} $options An associative array of parameters, containing:
- * @param {boolean} [options.userId]
+ * @param {boolean} [$options.userId]
  *   "userId" => The user's id. Defaults to id of the logged-in user, if any.
- * @param {boolean} [options.icon]
+ * @param {boolean} [$options.icon]
  *   "icon" => Optional. Render icon before the username.
- * @param {boolean} [options.iconAttributes]
+ * @param {boolean} [$options.iconAttributes]
  *   "iconAttributes" => Optional. Array of attributes to render for the icon.
- * @param {boolean} [options.editable]
+ * @param {boolean} [$options.editable]
  *   "editable" => Optional. Whether to provide an interface for editing the user's info. Can be array containing "icon", "name".
- * @param {boolean} [options.renderOnClient]
+ * @param {array} [$options.inplaces] Additional fields to pass to the child Streams/inplace tools, if any
+ * @param {boolean} [$options.renderOnClient]
  *    If true, only the html container is rendered, so the client will do the rest.
  */
 function Users_avatar_tool($options)
@@ -28,7 +29,7 @@ function Users_avatar_tool($options)
 	} else {
 		$user = Users_User::fetch($options['userId']);
 	}
-	Q_Response::addStylesheet('plugins/Q/css/Ui.css');
+	Q_Response::addStylesheet('plugins/Q/css/Q.css');
 	Q_Response::setToolOptions($options);
 	if (!empty($options['renderOnClient'])) {
 		return '';
@@ -47,15 +48,16 @@ function Users_avatar_tool($options)
 	$result = '';
 	$icon = $options['icon'];
 	if ($icon) {
-		if ($icon === true) $icon = 40;
-		$path = $user->iconPath();
+		if ($icon === true) {
+			$icon = 40;
+		}
 		$attributes = isset($options['iconAttributes'])
 			? $options['iconAttributes']
 			: array();
 		$attributes['class'] = isset($attributes['class'])
 			? $attributes['class'] . ' Users_avatar_icon'
 			: 'Users_avatar_icon';
-		$result .= Q_Html::img("$path/$icon.png", 'user icon', $attributes);
+		$result .= Q_Html::img($user->iconPath($icon), 'user icon', $attributes);
 	}
 	$result .= '<span class="Users_avatar_name">' . $user->username . '</span>';
 	return $result;

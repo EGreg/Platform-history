@@ -1,8 +1,11 @@
 (function (Q, $, window, undefined) {
 
+var Users = Q.Users;
+var Streams = Q.Streams;
+
 /**
- * Users Tools
- * @module Users-tools
+ * Streams Tools
+ * @module Streams-tools
  * @main
  */
 
@@ -14,16 +17,11 @@
  * @param {Object} [options] A hash of options, containing:
  *   @param {String} [options.userId] The id of the user object. Can be '' for a blank-looking avatar.
  *   @required
- *   @param {Number} [options.icon] Size of the icon to render before the display name.
- *   @default 40
- *   @param {Boolean} [options.short] If true, renders the short version of the display name.
- *   @default false
- *   @param {Boolean|Array} [options.editable] If true, and userId is the logged-in user's id, the tool presents an interface for the logged-in user to edit their name and icon. This can also be an array containing one or more of ['icon','name'].
- *   @default true
- *   @param {Boolean} [options.reflectChanges] Whether the tool should update its contents on changes
- *   @default true
- *   @param {Number} [options.cacheBust=1000] Number of milliseconds to use for combating unintended caching on some environments.
- *   @default true
+ *   @param {Number} [options.icon=true] Size of the icon to render before the display name.
+ *   @param {Boolean} [options.short=false] If true, renders the short version of the display name.
+ *   @param {Boolean|Array} [options.editable=false] If true, and userId is the logged-in user's id, the tool presents an interface for the logged-in user to edit their name and icon. This can also be an array containing one or more of 'icon', 'name'.
+ *   @param {Boolean} [options.reflectChanges=true] Whether the tool should update its contents on changes
+ *   @param {Number} [options.cacheBust=null] Number of milliseconds to use for combating the re-use of cached images when they are first loaded.
  *   @param {Object} [options.templates]
  *     @param {Object} [options.templates.icon]
  *       @param {String} [options.templates.icon.dir]
@@ -41,33 +39,41 @@
  *       @param {Object} [options.templates.contents.fields]
  *         @param {String} [options.templates.contents.fields.tag]
  *         @default "span"
+ * @param {Object} [options.inplaces] Additional fields to pass to the child Streams/inplace tools, if any
  *   @param {Q.Event} [options.onRefresh]  An event that occurs when the avatar is refreshed
  *   @param {Q.Event} [options.onUpdate]  An event that occurs when the icon is updated via this tool
  *   @param {Q.Event} [options.onImagepicker]  An event that occurs when the imagepicker is activated
  */
 Q.Tool.define("Users/avatar", function(options) {
 	var tool = this, state = this.state;
-	Q.Streams.Stream.retain(state.userId, 'Streams/user/firstName', tool);
-	Q.Streams.Stream.retain(state.userId, 'Streams/user/lastName', tool);
+	Streams.Stream.retain(state.userId, 'Streams/user/firstName', tool);
+	Streams.Stream.retain(state.userId, 'Streams/user/lastName', tool);
 	this.refresh();
 	if (!state.reflectChanges) {
 		return;
 	}
-	Q.Streams.Stream.onFieldChanged(state.userId, 'Streams/user/icon', 'icon')
+	Streams.Stream.onFieldChanged(state.userId, 'Streams/user/icon', 'icon')
 	.set(function (fields, field) {
-		tool.$('.Users_avatar_icon').attr('src', 
-			Q.url(Q.Users.iconUrl(fields.icon, state.icon), null,
-				{cacheBust: state.cacheBust})
-		);
+		Users.get.forget(state.userId);
+		Streams.Avatar.get.forget(state.userId);
+		var p = Q.pipe(['user', 'avatar'], function (params, subjects) {
+			tool.$('.Users_avatar_icon').attr('src', 
+				Q.url(subjects.avatar.iconUrl(state.icon), null, {
+					cacheBust: state.cacheBustOnUpdate
+				})
+			);
+		});
+		Users.get(state.userId, p.fill('user'));
+		Streams.Avatar.get(state.userId, p.fill('avatar'));
 	}, this);
 	if (!state.editable || state.editable.indexOf('name') < 0) {
-		Q.Streams.Stream.onFieldChanged(state.userId, 'Streams/user/firstName', 'content')
+		Streams.Stream.onFieldChanged(state.userId, 'Streams/user/firstName', 'content')
 		.set(handleChange, this);
-		Q.Streams.Stream.onFieldChanged(state.userId, 'Streams/user/lastName', 'content')
+		Streams.Stream.onFieldChanged(state.userId, 'Streams/user/lastName', 'content')
 		.set(handleChange, this);
 	}
 	function handleChange(fields, field) {
-		Q.Streams.Avatar.get.forget(state.userId);
+		Streams.Avatar.get.forget(state.userId);
 		tool.element.innerHTML = '';
 		tool.refresh();
 	}
@@ -75,7 +81,7 @@ Q.Tool.define("Users/avatar", function(options) {
 
 {
 	userId: null,
-	icon: '40',
+	icon: false,
 	"short": false,
 	reflectChanges: true,
 	templates: {
@@ -92,7 +98,9 @@ Q.Tool.define("Users/avatar", function(options) {
 	},
 	editable: false,
 	imagepicker: {},
-	cacheBust: 1000,
+	inplaces: {},
+	cacheBust: null,
+	cacheBustOnUpdate: 1000,
 	onRefresh: new Q.Event(),
 	onUpdate: new Q.Event(),
 	onImagepicker: new Q.Event()
@@ -120,7 +128,7 @@ Q.Tool.define("Users/avatar", function(options) {
 			return; // empty
 		}
 		if (state.icon === true) {
-			state.icon = 50;
+			state.icon = 40;
 		}
 	
 		var p = new Q.Pipe(['icon', 'contents'], function (params) {
@@ -141,14 +149,13 @@ Q.Tool.define("Users/avatar", function(options) {
 			return;
 		}
 		
-		Q.Streams.Avatar.get(state.userId, function (err, avatar) {
+		Streams.Avatar.get(state.userId, function (err, avatar) {
 			var fields;
 			if (!avatar) return;
 			state.avatar = avatar;
 			if (state.icon) {
 				fields = Q.extend({}, state.templates.icon.fields, {
-					src: Q.url(Q.Users.iconUrl(this.icon, state.icon), null,
-						{cacheBust: state.cacheBust})
+					src: Q.url(Users.iconUrl(this.icon, state.icon), null)
 				});
 				Q.Template.render('Users/avatar/icon', fields, 
 				function (err, html) {
@@ -184,43 +191,51 @@ Q.Tool.define("Users/avatar", function(options) {
 				state.editable = ['icon', 'name'];
 			}
 			if (state.editable.indexOf('name') >= 0) {
-				Q.each(['first', 'last'], function (k, v) {
-					var vName = v+'Name';
+				var zIndex = 5;
+				Q.each(['firstName', 'lastName', 'username'], function (k, vName) {
 					var f = tool.getElementsByClassName('Streams_'+vName)[0];
 					if (!f || f.getElementsByClassName('Streams_inplace_tool').length) {
 						return;
 					}
-					var e = Q.Tool.setUpElement('span', 'Streams/inplace', {
+					var opt = Q.extend({
 						publisherId: state.userId,
 						streamName: 'Streams/user/'+vName,
 						inplaceType: 'text',
 						inplace: {
 							bringToFront: f,
-							placeholder: 'Your '+v+' name',
+							placeholder: 'Your '+vName.substr(0, vName.length-4)+' name',
 							staticHtml: f.innerHTML
 						}
-					}, tool.prefix+vName, tool.prefix);
+					}, state.inplaces);
+					var e = Q.Tool.setUpElement(
+						'span', 'Streams/inplace', opt, tool.prefix+vName, tool.prefix
+					);
 					f.innerHTML = '';
 					f.appendChild(e);
+					f.style.zIndex = --zIndex;
 					Q.activate(e);
 				});
 			}
 			if (state.editable.indexOf('icon') >= 0) {
-				var $img = tool.$('.Users_avatar_icon');
+				var $img = tool.$('.Users_avatar_icon').addClass('Streams_editable');
 				var saveSizeName = {};
-				Q.each(Q.Users.icon.sizes, function (k, v) {
+				Q.each(Users.icon.sizes, function (k, v) {
 					saveSizeName[v] = v+".png";
 				});
-				Q.Streams.retainWith(tool).get(
-					Q.Users.loggedInUser.id,
+				Streams.retainWith(tool).get(
+					Users.loggedInUser.id,
 					'Streams/user/icon',
 					function (err) {
 						var stream = this;
 						var o = Q.extend({
 							saveSizeName: saveSizeName,
-							showSize: $img.width(),
+							showSize: state.icon || $img.width(),
 							path: 'plugins/Users/img/icons',
-							subpath: 'user-'+state.userId,
+							preprocess: function (callback) {
+								callback({
+									subpath: 'user-'+state.userId+'/'+Math.floor(Date.now()/1000)
+								});
+							},
 							onSuccess: {"Users/avatar": function () {
 								stream.refresh(function () {
 									state.onUpdate.handle.call(tool, this);
@@ -228,7 +243,8 @@ Q.Tool.define("Users/avatar", function(options) {
 									unlessSocket: true,
 									changed: { icon: true }
 								});
-							}}
+							}},
+							cacheBust: state.cacheBust
 						}, state.imagepicker);
 						$img.plugin('Q/imagepicker', o, function () {
 							state.onImagepicker.handle($img.state('Q/imagepicker'));

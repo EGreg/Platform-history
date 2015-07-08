@@ -322,7 +322,7 @@ class Users_User extends Base_Users_User
 		}
 		$email = new Users_Email();
 		$email->address = $normalized;
-		if ($email->retrieve('*', null, true)->ignoreCache()->resume()
+		if ($email->retrieve('*', array('ignoreCache' => true))
 		and $email->state !== 'unverified') {
 			if ($email->userId === $this->id) {
 				$email->set('user', $this);
@@ -411,7 +411,7 @@ class Users_User extends Base_Users_User
 		$email = new Users_Email();
 		Q_Valid::email($emailAddress, $normalized);
 		$email->address = $normalized;
-		$retrieved = $email->retrieve('*', null, true)->ignoreCache()->resume();
+		$retrieved = $email->retrieve('*', array('ignoreCache' => true));
 		if (empty($email->activationCode)) {
 			$email->activationCode = '';
 			$email->activationCodeExpires = '0000-00-00 00:00:00';
@@ -505,7 +505,7 @@ class Users_User extends Base_Users_User
 		}
 		$mobile = new Users_Mobile();
 		$mobile->number = $normalized;
-		if ($mobile->retrieve('*', null, true)->ignoreCache()->resume()
+		if ($mobile->retrieve('*', array('ignoreCache' => true))
 		and $mobile->state !== 'unverified') {
 			if ($mobile->userId === $this->id) {
 				$mobile->set('user', $this);
@@ -532,8 +532,13 @@ class Users_User extends Base_Users_User
 		$mobile->activationCodeExpires = new Db_Expression(
 			"CURRENT_TIMESTAMP + INTERVAL $minutes MINUTE"
 		);
+		$number = $mobile->number;
+		if (substr($number, 0, 2) == '+1') {
+			$number = substr($number, 2);
+		}
 		$mobile->authCode = md5(microtime() + mt_rand());
-		$link = 'Users/activate?code='.urlencode($mobile->activationCode) . ' mobileNumber='.urlencode($mobile->number);
+		$link = 'Users/activate?code='.urlencode($mobile->activationCode)
+			. ' mobileNumber='.urlencode($number);
 		/**
 		 * @event Users/addIdentifier {before}
 		 * @param {string} 'user'
@@ -590,7 +595,7 @@ class Users_User extends Base_Users_User
 		Q_Valid::phone($mobileNumber, $normalized);
 		$mobile = new Users_Mobile();
 		$mobile->number = $mobileNumber;
-		$retrieved = $mobile->retrieve('*', null, true)->ignoreCache()->resume();
+		$retrieved = $mobile->retrieve('*', array('ignoreCache' => true));
 		if ($verified) {
 			$mobile->userId = $this->id;
 			if (empty($mobile->activationCode)) {
@@ -657,14 +662,14 @@ class Users_User extends Base_Users_User
 	{
 		$identifier = null;
 		if ($this->signedUpWith === 'none') {
-			if (empty($this->emailAddressPending)) {
-				$identifier = $this->mobileNumberPending;
-				$this->mobileNumberPending = '';
-				$this->signedUpWith = 'mobile';
-			} else {
+			if (!empty($this->emailAddressPending)) {
 				$identifier = $this->emailAddressPending;
 				$this->emailAddressPending = '';
 				$this->signedUpWith = 'email';
+			} else if (!empty($this->mobileNumberPending)) {
+				$identifier = $this->mobileNumberPending;
+				$this->mobileNumberPending = '';
+				$this->signedUpWith = 'mobile';
 			}
 		}
 		if (empty($identifier)) return false;
@@ -688,9 +693,9 @@ class Users_User extends Base_Users_User
 				'50.png' => array('hash' => $hash, 'size' => 50),
 				'80.png' => array('hash' => $hash, 'size' => 80)
 			);
-			$this->icon = Users::downloadIcon($this, $icon);
+			$this->icon = Users::importIcon($this, $icon);
 		}
-		return $true;
+		return true;
 	}
 	
 	/**
@@ -720,7 +725,8 @@ class Users_User extends Base_Users_User
 	 * @param $labels {string|array}
 	 * @return {array} The array of user ids
 	 */
-	static function labelsToIds ($asUserId, $labels) {
+	static function labelsToIds ($asUserId, $labels)
+	{
 
 		if (empty($labels)) return array();
 

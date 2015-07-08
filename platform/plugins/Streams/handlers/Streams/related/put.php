@@ -1,12 +1,12 @@
 <?php
 
 /**
- * Used to create a new stream
+ * Used to update relations
  *
  * @param array $_REQUEST
  *   toPublisherId, toStreamName, type, fromPublisherId, fromStreamName
  *   weight, adjustWeights
- * @return void
+ * @return {void}
  */
 function Streams_related_put($params) {
 	$user = Users::loggedInUser(true);

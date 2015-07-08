@@ -93,7 +93,7 @@ class Q_Image
 		$keywords = urlencode(strtolower($keywords));
 		$url = "http://pixabay.com/api/?username=$username&key=$key&q=$keywords&$optionString";
 		$json = @file_get_contents($url);
-		$data = json_decode($json, true);
+		$data = Q::json_decode($json, true);
 		if (!$returnFirstImage) {
 			return $data;
 		}
@@ -168,6 +168,11 @@ class Q_Image
 		$path = isset($params['path']) ? $params['path'] : 'uploads';
 		$subpath = isset($params['subpath']) ? $params['subpath'] : '';
 		$realPath = Q::realPath(APP_WEB_DIR.DS.$path);
+		if ($realPath === false) {
+			throw new Q_Exception_MissingFile(array(
+				'filename' => APP_WEB_DIR.DS.$path
+			));
+		}
 		$writePath = $realPath.($subpath ? DS.$subpath : '');
 		$lastChar = substr($writePath, -1);
 		if ($lastChar !== DS and $lastChar !== '/') {
@@ -218,7 +223,7 @@ class Q_Image
 				// generate a filename
 				do {
 					$name = Q_Utils::unique(8).'.png';
-				} while (file_exists($writePath.DS.$name));
+				} while (file_exists($writePath.$name));
 			}
 			if (strrpos($name, '.') === false) {
 				$name .= '.png';
@@ -306,7 +311,7 @@ class Q_Image
 					$func = 'imagepng';
 					break;
 			}
-			if ($res = call_user_func($func, $thumb, $writePath.DS.$name)) {
+			if ($res = call_user_func($func, $thumb, $writePath.$name)) {
 				$data[$size] = $subpath ? "$path/$subpath/$name" : "$path/$name";
 			}
 		}

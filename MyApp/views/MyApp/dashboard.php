@@ -1,6 +1,5 @@
 <div id='dashboard'>
-	<h1>This is MyApp: </h1>
-	<h2><?php echo Q_Html::text($slogan) ?></h2>
+	<h1>MyApp</h1>
 
 	<div id="dashboard_user">
 		<?php if ($user): ?>
@@ -21,4 +20,18 @@
 			</ul>
 		</div>
 	</div>
+	
+	<?php echo Q::tool('Q/tabs', array(
+		'vertical' => !Q_Request::isMobile(),
+		'overflow' => '{{html}}',
+		'compact' => true,
+		'tabs' => array(
+			'welcome' => 'Welcome',
+			'about' => 'About'
+		),
+		'urls' => array(
+			'welcome' => 'MyApp/welcome',
+			'about' => 'MyApp/about'
+		)
+	))?>
 </div>

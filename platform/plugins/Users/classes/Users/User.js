@@ -18,7 +18,7 @@ var Db = Q.require('Db');
 function Users_User (fields) {
 
 	// Run constructors of mixed in objects
-	this.constructors.apply(this, arguments);
+	Users_User.constructors.apply(this, arguments);
 
 	/*
 	 * Add any privileged methods to the model class here.

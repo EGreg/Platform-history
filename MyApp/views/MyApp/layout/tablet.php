@@ -5,6 +5,7 @@
 	<?php echo Q_Response::metas(true, "\n\t") ?>
 	<meta name="HandheldFriendly" content="True" />
 	<meta name="viewport" content="minimal-ui, width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0<?php if (Q_Request::platform() == 'android'): ?>, target-densitydpi=medium-dpi<?php endif ?>" />
+	<meta name="mobile-web-app-capable" content="yes" />
 	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
 	<meta name="apple-mobile-web-app-capable" content="yes" />
 	<meta name="apple-mobile-web-app-title" content="Groups">
@@ -23,6 +24,10 @@
 
 	<title id="title_slot"><?php echo $title ?></title>
 	<link rel="shortcut icon" href="<?php echo Q_Request::proxyBaseUrl(); ?>/favicon.ico" type="image/x-icon">
+	
+	<script type="text/javascript">
+		document.getElementsByTagName('html')[0].className += ' Q_js'; // better than noscript
+	</script>
 	
 	<!-- scripts have been moved to the bottom of the body -->
 	<?php echo Q_Response::stylesheets(true, "\n\t") ?> 

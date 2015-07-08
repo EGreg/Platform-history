@@ -71,7 +71,7 @@ Q.onActivate.set(function () {
 						page_ids.push(page_id);
 					}
 					// inform our server
-					Q.jsonRequest(
+					Q.request(
 						Q.action('Broadcast/page'
 							+ '?page_ids=' + page_ids.join(',')
 						),
@@ -99,7 +99,7 @@ Q.onActivate.set(function () {
 					'background': 'url('+ Q.url('plugins/Q/img/throbbers/bars16.gif') +')'
 				});
 
-				Q.jsonRequest(
+				Q.request(
 					Q.action('Broadcast/agreement?publisherId='
 					+encodeURIComponent(q.publisherId)+'&streamName='
 					+encodeURIComponent(q.streamName))+sessionQuerystring(),
@@ -182,7 +182,7 @@ Q.onActivate.set(function () {
 			if (q.streamName.join) {
 				q.streamName = q.streamName.join('/');
 			}
-			Q.jsonRequest(
+			Q.request(
 				Q.action('Broadcast/agreement?publisherId='
 				+encodeURIComponent(q.publisherId)+'&streamName='
 				+encodeURIComponent(q.streamName))+sessionQuerystring(),

@@ -1,6 +1,6 @@
 <?php
 /**
- * Users model
+ * Users plugin
  * @module Users
  * @main Users
  */
@@ -363,7 +363,7 @@ abstract class Users extends Base_Users
 							$icon["$size.png"] = "http://graph.facebook.com/$fb_uid/picture?width=$size&height=$size";
 						}
 						if (!Q_Config::get('Users', 'register', 'icon', 'leaveDefault', false)) {
-							$user->icon = self::downloadIcon($user, $icon);
+							$user->icon = self::importIcon($user, $icon);
 							$user->save();
 						}
 					}
@@ -906,7 +906,7 @@ abstract class Users extends Base_Users
 			}
 		}
 		if (!Q_Config::get('Users', 'register', 'icon', 'leaveDefault', false)) {
-			$user->icon = self::downloadIcon($user, $icon);
+			$user->icon = self::importIcon($user, $icon);
 			$user->save();
 		}
 
@@ -1163,26 +1163,30 @@ abstract class Users extends Base_Users
 	}
 
 	/**
-	 * @method downloadIcon
+	 * @method importIcon
 	 * @static
 	 * @param {array} $user The user for whom the icon should be downloaded
 	 * @param {array} [$urls=array()] Array of urls
-	 * @param {string} [$folder=null] Defaults to "user\_id\_".$user->id
+	 * @param {string} [$folder=null] Defaults to "user-id-".$user->id
 	 * @return {boolean}
 	 */
-	static function downloadIcon($user, $urls = array(), $folder = null)
+	static function importIcon($user, $urls = array(), $folder = null)
 	{
 		if (empty($folder)) {
-			$folder = 'user-'.$user->id;
+			$folder = 'user-'.$user->id.DS.'imported';
 		}
 		if (empty($urls)) {
 			return $folder;
 		}
 		$dir = Q_Config::get('Users', 'paths', 'icons', 'files/Users/icons');
-		$dir2 = Q::realPath($dir).DS.$folder;
+		$realpath = Q::realPath($dir);
+		$dir2 = $dir3 = $realpath.DS.$folder;
 		if (!file_exists($dir2)) {
 			mkdir($dir2, 0777, true);
-			chmod($dir2, 0777);
+			do {
+				chmod($dir3, 0777);
+				$dir3 = dirname($dir3);
+			} while ($dir3 and $dir3 != $realpath and $dir3.DS != $realpath);
 		}
 		$type = Q_Config::get('Users', 'login', 'iconType', 'wavatar');
 		$largestSize = 0;
@@ -1784,7 +1788,9 @@ abstract class Users extends Base_Users
 		if (!$id) {
 			return null;
 		}
-		$seconds = is_string($duration) ? Q_Config::expect('Q', 'session', 'durations', $duration) : $duration;
+		$seconds = is_string($duration)
+			? Q_Config::expect('Q', 'session', 'durations', $duration)
+			: $duration;
 		session_write_close(); // close current session
 		$us = new Users_Session();
 		$us->id = $id;

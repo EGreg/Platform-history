@@ -15,6 +15,8 @@
 			"Q/responseExtras": ["Places/before/Q_responseExtras"]
 		},
 		"handlersAfterEvent": {
+			"Streams/interest/add": ["Places/after/Streams_interest_add"],
+			"Streams/interest/remove": ["Places/after/Streams_interest_remove"]
 		}
 	},
 	"Streams": {
@@ -33,7 +35,12 @@
 			"Places/nearby": {},
 			"Places/timeslot": {
 				"defaults": {
-					"title": "Timeslot"
+					"title": "Nearby Timeslot"
+				}
+			},
+			"Places/interest": {
+				"defaults": {
+					"title": "Nearby Interest"
 				}
 			},
 			"Places/community": {
@@ -44,7 +51,9 @@
 	"Places": {
 		"nearby": {
 			"miles": [1, 5, 10, 15, 20, 25, 50, 75, 100],
-			"defaultMiles": 20
+			"defaultMiles": 20,
+			"minSubscribeMiles": 1,
+			"maxSubscribeMiles": 15
 		},
 		"geolocation": {
 			"requireLogin": false,

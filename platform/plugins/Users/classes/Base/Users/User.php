@@ -176,9 +176,9 @@ abstract class Base_Users_User extends Db_Row
 	 * Create SELECT query to the class table
 	 * @method select
 	 * @static
-	 * @param $fields {array} The field values to use in WHERE clauseas as 
+	 * @param {array} $fields The field values to use in WHERE clauseas as 
 	 * an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function select($fields, $alias = null)
@@ -193,7 +193,7 @@ abstract class Base_Users_User extends Db_Row
 	 * Create UPDATE query to the class table
 	 * @method update
 	 * @static
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function update($alias = null)
@@ -208,8 +208,8 @@ abstract class Base_Users_User extends Db_Row
 	 * Create DELETE query to the class table
 	 * @method delete
 	 * @static
-	 * @param [$table_using=null] {object} If set, adds a USING clause with this table
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$table_using=null] If set, adds a USING clause with this table
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function delete($table_using = null, $alias = null)
@@ -224,8 +224,8 @@ abstract class Base_Users_User extends Db_Row
 	 * Create INSERT query to the class table
 	 * @method insert
 	 * @static
-	 * @param [$fields=array()] {object} The fields as an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$fields=array()] The fields as an associative array of `column => value` pairs
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function insert($fields = array(), $alias = null)
@@ -253,7 +253,10 @@ abstract class Base_Users_User extends Db_Row
 	 */
 	static function insertManyAndExecute($records = array(), $options = array())
 	{
-		self::db()->insertManyAndExecute(self::table(), $records, $options);
+		self::db()->insertManyAndExecute(
+			self::table(), $records,
+			array_merge($options, array('className' => 'Users_User'))
+		);
 	}
 	
 	/**
@@ -274,6 +277,16 @@ abstract class Base_Users_User extends Db_Row
 		if (strlen($value) > 31)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".id");
 		return array('id', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the id field
+	 * @return {integer}
+	 */
+	function maxSize_id()
+	{
+
+		return 31;			
 	}
 
 	/**
@@ -349,6 +362,16 @@ abstract class Base_Users_User extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the sessionId field
+	 * @return {integer}
+	 */
+	function maxSize_sessionId()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if integer value falls within allowed limits
 	 * @method beforeSet_sessionCount
 	 * @param {integer} $value
@@ -365,6 +388,16 @@ abstract class Base_Users_User extends Db_Row
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".sessionCount");
 		return array('sessionCount', $value);			
+	}
+
+	/**
+	 * Returns the maximum integer that can be assigned to the sessionCount field
+	 * @return {integer}
+	 */
+	function maxSize_sessionCount()
+	{
+
+		return 2147483647;			
 	}
 
 	/**
@@ -387,6 +420,16 @@ abstract class Base_Users_User extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum integer that can be assigned to the fb_uid field
+	 * @return {integer}
+	 */
+	function maxSize_fb_uid()
+	{
+
+		return 9223372036854775807;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if integer value falls within allowed limits
 	 * @method beforeSet_tw_uid
 	 * @param {integer} $value
@@ -403,6 +446,16 @@ abstract class Base_Users_User extends Db_Row
 		if ($value < -9.2233720368548E+18 or $value > 9223372036854775807)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".tw_uid");
 		return array('tw_uid', $value);			
+	}
+
+	/**
+	 * Returns the maximum integer that can be assigned to the tw_uid field
+	 * @return {integer}
+	 */
+	function maxSize_tw_uid()
+	{
+
+		return 9223372036854775807;			
 	}
 
 	/**
@@ -429,6 +482,16 @@ abstract class Base_Users_User extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the g_uid field
+	 * @return {integer}
+	 */
+	function maxSize_g_uid()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_y_uid
@@ -449,6 +512,16 @@ abstract class Base_Users_User extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".y_uid");
 		return array('y_uid', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the y_uid field
+	 * @return {integer}
+	 */
+	function maxSize_y_uid()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -475,6 +548,16 @@ abstract class Base_Users_User extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the passphraseHash field
+	 * @return {integer}
+	 */
+	function maxSize_passphraseHash()
+	{
+
+		return 64;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_emailAddress
@@ -495,6 +578,16 @@ abstract class Base_Users_User extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".emailAddress");
 		return array('emailAddress', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the emailAddress field
+	 * @return {integer}
+	 */
+	function maxSize_emailAddress()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -521,6 +614,16 @@ abstract class Base_Users_User extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the mobileNumber field
+	 * @return {integer}
+	 */
+	function maxSize_mobileNumber()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_emailAddressPending
@@ -530,6 +633,9 @@ abstract class Base_Users_User extends Db_Row
 	 */
 	function beforeSet_emailAddressPending($value)
 	{
+		if (!isset($value)) {
+			return array('emailAddressPending', $value);
+		}
 		if ($value instanceof Db_Expression) {
 			return array('emailAddressPending', $value);
 		}
@@ -538,6 +644,16 @@ abstract class Base_Users_User extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".emailAddressPending");
 		return array('emailAddressPending', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the emailAddressPending field
+	 * @return {integer}
+	 */
+	function maxSize_emailAddressPending()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -550,6 +666,9 @@ abstract class Base_Users_User extends Db_Row
 	 */
 	function beforeSet_mobileNumberPending($value)
 	{
+		if (!isset($value)) {
+			return array('mobileNumberPending', $value);
+		}
 		if ($value instanceof Db_Expression) {
 			return array('mobileNumberPending', $value);
 		}
@@ -558,6 +677,16 @@ abstract class Base_Users_User extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".mobileNumberPending");
 		return array('mobileNumberPending', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the mobileNumberPending field
+	 * @return {integer}
+	 */
+	function maxSize_mobileNumberPending()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -598,6 +727,16 @@ abstract class Base_Users_User extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the username field
+	 * @return {integer}
+	 */
+	function maxSize_username()
+	{
+
+		return 63;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_icon
@@ -615,6 +754,16 @@ abstract class Base_Users_User extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".icon");
 		return array('icon', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the icon field
+	 * @return {integer}
+	 */
+	function maxSize_icon()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -641,6 +790,16 @@ abstract class Base_Users_User extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the url field
+	 * @return {integer}
+	 */
+	function maxSize_url()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_pincodeHash
@@ -664,22 +823,18 @@ abstract class Base_Users_User extends Db_Row
 	}
 
 	/**
-	 * Check if mandatory fields are set and updates 'magic fields' with appropriate values
-	 * @method beforeSave
-	 * @param {array} $value The array of fields
-	 * @return {array}
-	 * @throws {Exception} If mandatory field is not set
+	 * Returns the maximum string length that can be assigned to the pincodeHash field
+	 * @return {integer}
 	 */
+	function maxSize_pincodeHash()
+	{
+
+		return 255;			
+	}
+
 	function beforeSave($value)
 	{
-		if (!$this->retrieved) {
-			$table = $this->getTable();
-			foreach (array('username','icon') as $name) {
-				if (!isset($value[$name])) {
-					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
-				}
-			}
-		}						
+						
 		// convention: we'll have updatedTime = insertedTime if just created.
 		$this->updatedTime = $value['updatedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
 		return $value;			

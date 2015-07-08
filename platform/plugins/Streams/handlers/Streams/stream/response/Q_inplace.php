@@ -17,7 +17,19 @@ function Streams_stream_response_Q_inplace()
 			$result = $stream->attributes;
 		}
 	} else {
-		$result = $stream->content;
+		$fieldNames = array_diff(
+			Streams::getExtendFieldNames($stream->type),
+			array('insertedTime', 'updatedTime')
+		);
+		$field = 'content';
+		foreach ($fieldNames as $f) {
+			if (isset($_REQUEST[$f])) {
+				$field = $f;
+				break;
+			}
+		}
+		$result = $stream->$field;
 	}
-	return Q_Html::text($result, array("\n", " "));
+	$convert = Q::ifset($_REQUEST, 'convert', '["\n"]');
+	return Q_Html::text($result, json_decode($convert, true));
 }

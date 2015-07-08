@@ -91,7 +91,7 @@ function Streams_after_Users_User_saveExecute($params)
 		$label2->userId = $user->id;
 		$label2->label = 'Streams/invitedMe';
 		$label2->icon = 'Streams/labels/invitedMe';
-		$label2->title = 'Those who invited me';
+		$label2->title = 'Who invited me';
 		$label2->save(true);
 		
 		// By default, users they invite should see their full name
@@ -133,18 +133,19 @@ function Streams_after_Users_User_saveExecute($params)
 				continue;
 			}
 			$stream->content = $value;
+			$changes = array(
+				'content' => $value
+			);
 			if ($name === "Streams/user/icon") {
                 $sizes = Q_Config::expect('Users', 'icon', 'sizes');
                 $stream->setAttribute('sizes', $sizes);
-				$stream->icon = $user->iconUrl();
+				$stream->icon = $changes['icon'] = $user->iconUrl();
 			}
 			$stream->save();
 			$stream->post($user->id, array(
 				'type' => 'Streams/edited',
 				'content' => '',
-				'instructions' => array('changes' => array(
-					'content' => $value
-				))
+				'instructions' => compact('changes')
 			), true);
 		}
 	}

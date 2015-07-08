@@ -23,7 +23,7 @@ var Row = Q.require('Db/Row');
  * an associative array of `{column: value}` pairs
  */
 function Base (fields) {
-	
+	Base.constructors.apply(this, arguments);
 }
 
 Q.mixin(Base, Row);
@@ -74,7 +74,7 @@ Base.db = function () {
 /**
  * Retrieve the table name to use in SQL statements
  * @method table
- * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
+ * @param {boolean} [withoutDbName=false] Indicates wheather table name should contain the database name
  * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
@@ -106,8 +106,8 @@ Base.connectionName = function() {
 /**
  * Create SELECT query to the class table
  * @method SELECT
- * @param fields {object|string} The field values to use in WHERE clauseas as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {object|string} fields The field values to use in WHERE clauseas as an associative array of `{column: value}` pairs
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.SELECT = function(fields, alias) {
@@ -119,7 +119,7 @@ Base.SELECT = function(fields, alias) {
 /**
  * Create UPDATE query to the class table. Use Db.Query.Mysql.set() method to define SET clause
  * @method UPDATE
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.UPDATE = function(alias) {
@@ -131,8 +131,8 @@ Base.UPDATE = function(alias) {
 /**
  * Create DELETE query to the class table
  * @method DELETE
- * @param [table_using=null] {object} If set, adds a USING clause with this table
- * @param [alias=null] {string} Table alias
+ * @param {object}[table_using=null] If set, adds a USING clause with this table
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.DELETE = function(table_using, alias) {
@@ -145,7 +145,7 @@ Base.DELETE = function(table_using, alias) {
  * Create INSERT query to the class table
  * @method INSERT
  * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.INSERT = function(fields, alias) {
@@ -167,7 +167,7 @@ Base.prototype.className = "Users_Email";
  * Create INSERT query to the class table
  * @method INSERT
  * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.prototype.setUp = function() {
@@ -178,7 +178,7 @@ Base.prototype.setUp = function() {
  * Create INSERT query to the class table
  * @method INSERT
  * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.prototype.db = function () {
@@ -188,7 +188,7 @@ Base.prototype.db = function () {
 /**
  * Retrieve the table name to use in SQL statements
  * @method table
- * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
+ * @param {boolean} [withoutDbName=false] Indicates wheather table name should contain the database name
  * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
@@ -242,6 +242,15 @@ Base.prototype.beforeSet_address = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the address field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_address = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field
  * @method beforeSet_insertedTime
@@ -284,6 +293,15 @@ Base.prototype.beforeSet_userId = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the userId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_userId = function () {
+
+		return 31;
+};
+
 /**
  * Method is called before setting the field and verifies if value belongs to enum values list
  * @method beforeSet_state
@@ -315,6 +333,15 @@ Base.prototype.beforeSet_activationCode = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the activationCode field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_activationCode = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field
  * @method beforeSet_activationCodeExpires
@@ -344,6 +371,15 @@ Base.prototype.beforeSet_authCode = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the authCode field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_authCode = function () {
+
+		return 255;
+};
+
 /**
  * Check if mandatory fields are set and updates 'magic fields' with appropriate values
  * @method beforeSave
@@ -352,7 +388,7 @@ Base.prototype.beforeSet_authCode = function (value) {
  * @throws {Error} If mandatory field is not set
  */
 Base.prototype.beforeSave = function (value) {
-	var fields = ['address','state','activationCode','authCode'], i;
+	var fields = ['address','state'], i;
 	if (!this._retrieved) {
 		var table = this.table();
 		for (i=0; i<fields.length; i++) {

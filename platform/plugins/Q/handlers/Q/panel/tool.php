@@ -1,7 +1,13 @@
 <?php
 
 /**
+ * @module Q-tools
+ */
+
+/**
  * This tool generates a panel with a <form> tag inside it
+ * @class Q panel
+ * @constructor
  * @param array $options
  *  An associative array of parameters, containing:
  *  "uri" => the uri or url the form should post to
@@ -135,7 +141,7 @@ function Q_panel_tool($options)
 	if ($toggle === 'move') $panel_classes .= ' Q_panel_tool_toggle_move';
 	
 	Q_Response::addScript('plugins/Q/js/tools/panel.js');
-	Q_Response::addStylesheet('plugins/Q/css/Ui.css');
+	Q_Response::addStylesheet('plugins/Q/css/panel.css');
 	
 	if (isset($_form_static)) {
 		Q_Response::setSlot('form', $form);

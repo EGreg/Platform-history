@@ -23,7 +23,6 @@
  * @property string $type
  * @property string $content
  * @property string $instructions
- * @property integer $reOrdinal
  * @property float $weight
  * @property integer $ordinal
  */
@@ -64,10 +63,6 @@ abstract class Base_Streams_Message extends Db_Row
 	/**
 	 * @property $instructions
 	 * @type string
-	 */
-	/**
-	 * @property $reOrdinal
-	 * @type integer
 	 */
 	/**
 	 * @property $weight
@@ -143,9 +138,9 @@ abstract class Base_Streams_Message extends Db_Row
 	 * Create SELECT query to the class table
 	 * @method select
 	 * @static
-	 * @param $fields {array} The field values to use in WHERE clauseas as 
+	 * @param {array} $fields The field values to use in WHERE clauseas as 
 	 * an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function select($fields, $alias = null)
@@ -160,7 +155,7 @@ abstract class Base_Streams_Message extends Db_Row
 	 * Create UPDATE query to the class table
 	 * @method update
 	 * @static
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function update($alias = null)
@@ -175,8 +170,8 @@ abstract class Base_Streams_Message extends Db_Row
 	 * Create DELETE query to the class table
 	 * @method delete
 	 * @static
-	 * @param [$table_using=null] {object} If set, adds a USING clause with this table
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$table_using=null] If set, adds a USING clause with this table
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function delete($table_using = null, $alias = null)
@@ -191,8 +186,8 @@ abstract class Base_Streams_Message extends Db_Row
 	 * Create INSERT query to the class table
 	 * @method insert
 	 * @static
-	 * @param [$fields=array()] {object} The fields as an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$fields=array()] The fields as an associative array of `column => value` pairs
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function insert($fields = array(), $alias = null)
@@ -220,7 +215,10 @@ abstract class Base_Streams_Message extends Db_Row
 	 */
 	static function insertManyAndExecute($records = array(), $options = array())
 	{
-		self::db()->insertManyAndExecute(self::table(), $records, $options);
+		self::db()->insertManyAndExecute(
+			self::table(), $records,
+			array_merge($options, array('className' => 'Streams_Message'))
+		);
 	}
 	
 	/**
@@ -244,6 +242,16 @@ abstract class Base_Streams_Message extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the publisherId field
+	 * @return {integer}
+	 */
+	function maxSize_publisherId()
+	{
+
+		return 31;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_streamName
@@ -261,6 +269,16 @@ abstract class Base_Streams_Message extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".streamName");
 		return array('streamName', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the streamName field
+	 * @return {integer}
+	 */
+	function maxSize_streamName()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -333,6 +351,16 @@ abstract class Base_Streams_Message extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the byUserId field
+	 * @return {integer}
+	 */
+	function maxSize_byUserId()
+	{
+
+		return 31;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_byClientId
@@ -350,6 +378,16 @@ abstract class Base_Streams_Message extends Db_Row
 		if (strlen($value) > 31)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".byClientId");
 		return array('byClientId', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the byClientId field
+	 * @return {integer}
+	 */
+	function maxSize_byClientId()
+	{
+
+		return 31;			
 	}
 
 	/**
@@ -373,6 +411,16 @@ abstract class Base_Streams_Message extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the type field
+	 * @return {integer}
+	 */
+	function maxSize_type()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_content
@@ -390,6 +438,16 @@ abstract class Base_Streams_Message extends Db_Row
 		if (strlen($value) > 1023)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".content");
 		return array('content', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the content field
+	 * @return {integer}
+	 */
+	function maxSize_content()
+	{
+
+		return 1023;			
 	}
 
 	/**
@@ -413,25 +471,13 @@ abstract class Base_Streams_Message extends Db_Row
 	}
 
 	/**
-	 * Method is called before setting the field and verifies if integer value falls within allowed limits
-	 * @method beforeSet_reOrdinal
-	 * @param {integer} $value
-	 * @return {array} An array of field name and value
-	 * @throws {Exception} An exception is thrown if $value is not integer or does not fit in allowed range
+	 * Returns the maximum string length that can be assigned to the instructions field
+	 * @return {integer}
 	 */
-	function beforeSet_reOrdinal($value)
+	function maxSize_instructions()
 	{
-		if (!isset($value)) {
-			return array('reOrdinal', $value);
-		}
-		if ($value instanceof Db_Expression) {
-			return array('reOrdinal', $value);
-		}
-		if (!is_numeric($value) or floor($value) != $value)
-			throw new Exception('Non-integer value being assigned to '.$this->getTable().".reOrdinal");
-		if ($value < -2147483648 or $value > 2147483647)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".reOrdinal");
-		return array('reOrdinal', $value);			
+
+		return 4092;			
 	}
 
 	/**
@@ -454,6 +500,16 @@ abstract class Base_Streams_Message extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum integer that can be assigned to the ordinal field
+	 * @return {integer}
+	 */
+	function maxSize_ordinal()
+	{
+
+		return 4294967295;			
+	}
+
+	/**
 	 * Check if mandatory fields are set and updates 'magic fields' with appropriate values
 	 * @method beforeSave
 	 * @param {array} $value The array of fields
@@ -464,7 +520,7 @@ abstract class Base_Streams_Message extends Db_Row
 	{
 		if (!$this->retrieved) {
 			$table = $this->getTable();
-			foreach (array('streamName','type','content','instructions') as $name) {
+			foreach (array('streamName') as $name) {
 				if (!isset($value[$name])) {
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}
@@ -483,7 +539,7 @@ abstract class Base_Streams_Message extends Db_Row
 	 */
 	static function fieldNames($table_alias = null, $field_alias_prefix = null)
 	{
-		$field_names = array('publisherId', 'streamName', 'insertedTime', 'sentTime', 'byUserId', 'byClientId', 'type', 'content', 'instructions', 'reOrdinal', 'weight', 'ordinal');
+		$field_names = array('publisherId', 'streamName', 'insertedTime', 'sentTime', 'byUserId', 'byClientId', 'type', 'content', 'instructions', 'weight', 'ordinal');
 		$result = $field_names;
 		if (!empty($table_alias)) {
 			$temp = array();

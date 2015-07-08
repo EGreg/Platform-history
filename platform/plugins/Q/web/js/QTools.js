@@ -26,7 +26,7 @@ Q.onReady.set(function()
 
 Q.onActivate.set(function()
 {
-	Q.Layout.updateTools(false);
+	// Q.Layout.updateTools(false);
 }, 'QTools');
 
 /**
@@ -1618,7 +1618,7 @@ Q.Layout = {
 			// participants.children('.Streams_participant_tool').participants('update');
 		}
 		
-		Q.trigger('Q.onLayout', document.body, [layoutUpdateOptions]);
+		Q.layout();
 	},
 	
 	/**
@@ -2371,7 +2371,7 @@ Q.Contextual = {
 	 * @param {Object} size . Optional. If provided, must be an object with such structure: { 'width': value, 'height': value }.
 	 *	 Used to override predefined size of the contextual.
 	 */
-	add: function(trigger, contextual, coords, size)
+	add: function(trigger, contextual, coords, size, events)
 	{
 		var info = {
 			'inBottomHalf': false,
@@ -2404,7 +2404,7 @@ Q.Contextual = {
 		}
 		Q.Contextual.collection.push({ 'trigger': trigger, 'contextual': contextual, 'info': info });
 		
-		Q.Contextual.makeShowHandler();
+		Q.Contextual.makeShowHandler(events);
 		Q.Contextual.makeLifecycleHandlers();
 		
 		contextual.on('click', function (e) {
@@ -2424,10 +2424,6 @@ Q.Contextual = {
 		var col = Q.Contextual.collection;
 		var current = col.splice(cid, 1)[0];
 		current.trigger.unbind('mouseenter.Q_contextual');
-		for (var i = 0; i < col.length; i++)
-		{
-			col[i].trigger.data('Q_contextual_id', i);
-		}
 		return current;
 	},
 	
@@ -2476,7 +2472,7 @@ Q.Contextual = {
 	 * contextuals collection. This is done to not overload document with many event handlers.
      * @method makeShowHandler
 	 */
-	makeShowHandler: function()
+	makeShowHandler: function(events)
 	{
 		if (!Q.Contextual.showHandler)
 		{	
@@ -2506,7 +2502,7 @@ Q.Contextual = {
 								Q.Contextual.hide();
 							
 							if (current == i) // if triggering same contextual that was shown before
-								return false;
+								return e.preventDefault();
 							
 							Q.Contextual.current = i;
 							if (Q.info.platform == 'android')
@@ -2520,6 +2516,10 @@ Q.Contextual = {
 							{
 								Q.Contextual.show();
 							}
+							var cs = trigger.state('Q/contextual');
+							if (cs) {
+								Q.handle(cs.onShow, trigger, [cs]);
+							}
 							Q.Contextual.justShown = true;
 							setTimeout(function()
 							{
@@ -2532,7 +2532,7 @@ Q.Contextual = {
 								Q.Contextual.toDismiss = true;
 							}, Q.Contextual.dismissTimeout);
 							
-							return false;
+							return e.preventDefault();
 						}
 					}
 				}
@@ -2693,6 +2693,9 @@ Q.Contextual = {
 			
 			Q.Contextual.endEventHandler = function(e)
 			{
+				if ($(e.target).hasClass('Q_contextual_inactive')) {
+					return;
+				}
 				if (Q.Contextual.current != -1)
 				{
 					var current = Q.Contextual.collection[Q.Contextual.current];
@@ -2711,8 +2714,23 @@ Q.Contextual = {
 					
 					var event = (Q.info.isTouchscreen ? e.originalEvent.changedTouches[0] : e);
 					var target = (info.curScroll == 'iScroll' || info.curScroll == 'touchscroll'
-										 ? event.target : (info.moveTarget ? info.moveTarget[0] : event.target));
+							? event.target
+							: (info.moveTarget ? info.moveTarget[0] : event.target));
 					var px = Q.Pointer.getX(event), py = Q.Pointer.getY(event);
+					
+					var element = target;
+					while (element)
+					{
+						if (element.tagName && element.tagName.toLowerCase() == 'li' && $(element).parents('.Q_contextual').length != 0)
+							break;
+						element = element.parentNode;
+					}
+					
+					if ($(target).parentsUntil(element, '.Q_discouragePointerEvents').length
+					|| $('.Q_discouragePointerEvents', target).length) {
+						return;
+					}
+
 					
 					// if it was mouseup / touchend on the triggering element, then use it to switch to iScroll instead of $.fn.scroller
 					if (info.curScroll != 'iScroll' && info.curScroll != 'touchscroll' &&
@@ -3185,7 +3203,7 @@ Q.Notice = {
 					
 					if (Q.info.isMobile || Q.info.isTablet)
 					{
-						Q.Masks.show('Q.screen.mask', { 'fadeTime': 200, 'className': 'Q_screen_shadow_mask' });
+						Q.Masks.show('Q.screen.mask', { 'fadeTime': 200, 'className': 'Q_screen_mask' });
 					}
 				};
 				

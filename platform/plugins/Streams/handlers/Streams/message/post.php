@@ -7,7 +7,7 @@
  *
  * @param string $params 
  *   publisher id and stream name of existing stream shall be supplied
- * @return void
+ * @return {void}
  */
 
 function Streams_message_post () {

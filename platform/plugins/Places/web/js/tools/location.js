@@ -1,13 +1,13 @@
 (function (Q, $, window, document, undefined) {
 
 /**
- * Streams Tools
- * @module Streams-tools
+ * Places Tools
+ * @module Places-tools
  */
 
 /**
  * Inplace text editor tool to edit the content or attribute of a stream
- * @class Streams location
+ * @class Places location
  * @constructor
  * @param {Object} [options] used to pass options
  * @param {Object} [options.map] options for the map
@@ -20,6 +20,7 @@ Q.Tool.define("Places/location", function (options) {
 	var tool = this;
 	var state = tool.state;
 	if (!Q.Users.loggedInUser) {
+		tool.element.style.display = 'none';
 		console.warn("Don't render Places/location when user is not logged in");
 		return;
 	}
@@ -142,6 +143,8 @@ Q.Tool.define("Places/location", function (options) {
 		}, {
 			method: 'post',
 			fields: {
+				subscribe: true,
+				unsubscribe: true,
 				zipcode: zipcode || '',
 				miles: tool.$('.Places_location_miles').val(),
 				timezone: (new Date()).getTimezoneOffset() / 60

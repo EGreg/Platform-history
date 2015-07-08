@@ -6,7 +6,7 @@
  * @param array $_REQUEST 
  *   toPublisherId, toStreamName, type
  *   fromPublisherId, fromStreamName, weight
- * @return void
+ * @return {void}
  */
 
 function Streams_related_post($params) {

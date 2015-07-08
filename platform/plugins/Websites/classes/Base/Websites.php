@@ -20,7 +20,7 @@ abstract class Base_Websites
 	 * @type array
 	 */
 	static $table_classnames = array (
-  0 => 'Websites_Bio',
+  0 => 'Websites_Article',
   1 => 'Websites_Permalink',
 );
 

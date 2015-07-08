@@ -295,6 +295,8 @@ class Q_Session
 							self::$session_db_row = $row;
 						}
 					}
+				} else {
+					self::id($id);
 				}
 			}
 			session_start();
@@ -489,7 +491,10 @@ class Q_Session
 			$result = isset(self::$session_db_row->$data_field)
 				? self::$session_db_row->$data_field : null;
 		} else {
-			$sess_file = self::$session_save_path . DS . "$id";
+			$duration_name = self::durationName();
+			$id1 = substr($id, 0, 4);
+			$id2 = substr($id, 4);
+			$sess_file = self::$session_save_path . DS . "$duration_name/$id1/$id2";
 			if (!file_exists($sess_file)) {
 				$result = null;
 			} else {
@@ -597,15 +602,24 @@ class Q_Session
 				$row->save();
 				$result = true;
 			} else {
-				$sess_file = self::$session_save_path . DS . "$id";
-				if (!is_writable(dirname($sess_file))) {
+				$duration_name = self::durationName();
+				$id1 = substr($id, 0, 4);
+				$id2 = substr($id, 4);
+				$ssp = self::$session_save_path;
+				$sess_file = $ssp . DS . "$duration_name/$id1/$id2";
+				$dir = $ssp . DS . "$duration_name/$id1/";
+				if (!is_dir($dir)) {
+					mkdir($dir, fileperms($ssp), true);
+				}
+				if (!is_writable($dir)) {
 					// alert the developer to this problem
 					Q::log("$sess_file is not writable", 'fatal');
 					die("$sess_file is not writable");
 				}
 				$fp = fopen($sess_file, "w");
-				if (!$fp)
+				if (!$fp) {
 					return false;
+				}
 				$result = fwrite($fp, $sess_data);
 				fclose($fp);
 			}
@@ -734,10 +748,12 @@ class Q_Session
 				$datetime = date('Y-m-d H:i:s', $since_time);
 				self::$session_db
 					->delete(self::$session_db_table)
-					->where(array(self::$session_db_updated_field . '<' => $datetime))
-					->execute();
+					->where(array(
+						self::$session_db_updated_field . '<' => $datetime,
+						self::$session_db_duration_field => $v
+					))->execute();
 			} else {
-				foreach (glob(self::$session_save_path . "/$k-*") as $filename) {
+				foreach (glob(self::$session_save_path . "/$k/*/*") as $filename) {
 					$mtime = filemtime($filename);
 					if ($mtime < $since_time) {
 						unlink($filename);
@@ -795,6 +811,13 @@ class Q_Session
 		self::start();
 		$_SESSION['Q']['nonce'] = null;
 		Q_Response::setCookie('Q_nonce', null);
+	}
+	
+	static function durationName()
+	{
+		$ff = Q_Request::formFactor();
+		$duration = Q_Config::get('Q', 'session', 'durations', $ff, null);
+		return isset($duration) ? $ff : 'session';
 	}
 	
 	static function processDbInfo()

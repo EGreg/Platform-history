@@ -279,9 +279,8 @@ abstract class Streams extends Base_Streams
 	 *  If you pass null here, then either the logged-in user's id or '' will be used.
 	 * @param {string} $publisherId
 	 *  The id of the user publishing these streams
-	 * @param {string|array|Db_Range} $name='Streams/user/'
-	 *  If it ends in '/', then this function will return all streams that begin with $name.
-	 *  Otherwise, it is the exact stream's name.
+	 * @param {string|array|Db_Range} $name
+	 *  The name of the stream to fetch. Can end in "/" for template streams.
 	 *  Also it can be an array of stream names, or a custom Db_Range for stream names
 	 * @param {string} $fields='*'
 	 *  Must include "publisherId" and "name" fields, since they
@@ -289,9 +288,8 @@ abstract class Streams extends Base_Streams
 	 * @param {array} $options=array()
 	 *  Optional. Defaults to array().
 	 *  Provide additional stream selection options like 'limit', 'offset', 'orderBy', 'where' etc.
-	 *  Also can have the following options:
-	 *  "includeTemplate" => Set to true if you want to include the template when $name ends in a slash
-	 *  "refetch" => Ignore cache of previous calls to fetch, and save a new cache if necessary
+	 *  See Query/Mysql::options().
+	 *  @param {boolean} [$options.refetch] => Ignore cache of previous calls to fetch, and save a new cache if necessary.
 	 *  See Query/Mysql::options().
 	 * @return {array}
 	 *  Returns an array of Streams_Stream objects with access info calculated
@@ -302,7 +300,7 @@ abstract class Streams extends Base_Streams
 	static function fetch(
 		$asUserId,
 		$publisherId,
-		$name = 'Streams/user/',
+		$name,
 		$fields = '*',
 		$options = array())
 	{
@@ -319,17 +317,9 @@ abstract class Streams extends Base_Streams
 		if (empty($publisherId) or empty($name)) {
 			return array();
 		}
-		if (is_string($name)) {
-			if (substr($name, -1) === '/') {
-				$includeTemplate = !empty($options['includeTemplate']);
-				$name = new Db_Range($name, $includeTemplate, false, true);
-			} else {
-				$name = array($name);
-			}
-		}
 		$allCached = array();
 		if (is_array($name) and empty($options['refetch'])) {
-            $namesToFetch = array();
+			$namesToFetch = array();
 			foreach ($name as $n) {
 				if (isset(self::$fetch[$asUserId][$publisherId][$n][$fields])) {
 					$allCached[$n] = self::$fetch[$asUserId][$publisherId][$n][$fields];
@@ -339,8 +329,8 @@ abstract class Streams extends Base_Streams
 			}
 			$namesToFetch = array_unique($namesToFetch);
 		} else {
-            $namesToFetch = $name;
-        }
+			$namesToFetch = $name;
+		}
 		$criteria = array(
 			'publisherId' => $publisherId,
 			'name' => $namesToFetch
@@ -348,12 +338,12 @@ abstract class Streams extends Base_Streams
 
 		// Get streams and set their default access info
 		$allRetrieved = $namesToFetch
-            ? Streams_Stream::select($fields)
-                ->where($criteria)
-                ->ignoreCache()
-                ->options($options)
-                ->fetchDbRows(null, '', 'name')
-            : array();
+			? Streams_Stream::select($fields)
+				->where($criteria)
+				->ignoreCache()
+				->options($options)
+				->fetchDbRows(null, '', 'name')
+			: array();
 
 		$streams = $allCached ? array_merge($allCached, $allRetrieved) : $allRetrieved;
 
@@ -390,17 +380,7 @@ abstract class Streams extends Base_Streams
 					$retrieved[$n] = $s;
 				}
 			}
-			/**
-			 * @event Streams/fetch/$streamType {after}
-			 * @param {&array} 'streams'
-			 * @param {string} 'asUserId'
-			 * @param {string} 'publisherId'
-			 * @param {string} 'name'
-			 * @param {array} 'criteria'
-			 * @param {string} 'fields'
-			 * @param {array} 'options'
-			 */
-			Q::event("Streams/fetch/$type", array(
+			$params = array(
 				'streams' => &$streams,
 				'cached' => $cached,
 				'retrieved' => $retrieved,
@@ -413,7 +393,19 @@ abstract class Streams extends Base_Streams
 				'fields' => $fields,
 				'options' => $options,
 				'type' => $type
-			), 'after', false, $streams);
+			);
+			self::afterFetchExtended($publisherId, $s->type, $retrieved);
+			/**
+			 * @event Streams/fetch/$streamType {after}
+			 * @param {&array} 'streams'
+			 * @param {string} 'asUserId'
+			 * @param {string} 'publisherId'
+			 * @param {string} 'name'
+			 * @param {array} 'criteria'
+			 * @param {string} 'fields'
+			 * @param {array} 'options'
+			 */
+			Q::event("Streams/fetch/$type", $params, 'after', false, $streams);
 		}
 
 		foreach ($streams as $n => $stream) {
@@ -434,9 +426,8 @@ abstract class Streams extends Base_Streams
 	 *  If you pass null here, then either the logged-in user's id or '' will be used.
 	 * @param {string} $publisherId
 	 *  The id of the user publishing these streams
-	 * @param {string|array|Db_Range} $name='Streams/user/'
-	 *  If it ends in '/', then this function will return all streams that begin with $name.
-	 *  Otherwise, it is the exact stream's name.
+	 * @param {string|array|Db_Range} $name
+	 *  The name of the stream to fetch. Can end in "/" for template streams.
 	 *  Also it can be an array of stream names, or a custom Db_Range for stream names
 	 * @param {string} $fields='*'
 	 *  Must include "publisherId" and "name" fields, since they
@@ -444,8 +435,6 @@ abstract class Streams extends Base_Streams
 	 * @param {array} $options=array()
 	 *  Optional. Defaults to array().
 	 *  Provide additional stream selection options like 'limit', 'offset', 'orderBy', 'where' etc.
-	 *  Also can have the following options:
-	 *  "includeTemplate" => Set to true if you want to include the template when $name ends in a slash
 	 *  See Query/Mysql::options().
 	 * @return {array|null}
 	 *  Returns an array of Streams_Stream objects with access info calculated
@@ -480,14 +469,14 @@ abstract class Streams extends Base_Streams
 	 *  Set this to the user relative to whom access is calculated.
 	 *  If this matches the publisherId, just sets full access and calls publishedByFetcher(true).
 	 *  If this is '', only returns the streams anybody can see.
-     *  If this is null, the logged-in user's id is used, or '' if no one is logged in
+	 *  If this is null, the logged-in user's id is used, or '' if no one is logged in
 	 * @param {string} $publisherId
 	 *  The id of the user publishing these streams
 	 * @param {array} $streams
 	 *  An array of streams, obtained for example by Streams::fetch
 	 * @param {boolean} $recalculate=false
 	 *  Pass true here to force recalculating access to streams for which access was already calculated
-	 * @return integer
+	 * @return {integer}
 	 *  The number of streams that were recalculated
 	 */
 	static function calculateAccess(
@@ -693,7 +682,9 @@ abstract class Streams extends Base_Streams
 		}
 		if (!$authorized and $retrieved and $relate['streamName']) {
 			// Check if user is perhaps authorized to create a related stream
-			$to_stream = Streams::fetchOne($userId, $relate['publisherId'], $relate['streamName']);
+			$to_stream = Streams::fetchOne(
+				$userId, $relate['publisherId'], $relate['streamName']
+			);
 			if ($to_stream and $to_stream->testWriteLevel('relate')) {
 				$to_template = new Streams_Stream();
 				$to_template->publisherId = $to_stream->publisherId;
@@ -721,8 +712,7 @@ abstract class Streams extends Base_Streams
 	}
 	
 	/**
-	 * Calculates whether a given user is authorized by a specific publisher
-	 * to create a particular type of stream.
+	 * Creates a new stream in the system
 	 * @method create
 	 * @static
 	 * @param {string} $asUserId The user who is attempting to create the stream.
@@ -737,18 +727,16 @@ abstract class Streams extends Base_Streams
 	 * @param {string|integer} [$fields.writeLevel=null] You can set the stream's write access level, see Streams::$WRITE_LEVEL
 	 * @param {string|integer} [$fields.adminLevel=null] You can set the stream's admin access level, see Streams::$ADMIN_LEVEL
 	 * @param {string} [$fields.name=null] Here you can specify an exact name for the stream to be created. Otherwise a unique one is generated automatically.
-	 * @param {string} [$fields.skipAccess=false] Skip all access checks when creating and relating the stream.
+	 * @param {boolean} [$fields.skipAccess=false] Skip all access checks when creating and relating the stream.
 	 * @param {array} $relate The user would also be authorized if the stream would be related to
 	 *  an existing category stream, in which the user has a writeLevel of at least "relate",
 	 *  and the user that would be publishing this new stream has a template for this stream type
 	 *  that is related to either the category stream or a template matching the category stream.
 	 *  To test for this, pass an array with the following keys:
-	 *   "publisherId" => The id of the user publishing that stream, defaults to $publisherId
-	 *   "streamName" => The name of the stream to which the new stream would be related
-	 *   "type" => The type of relation, defaults to ""
-	 * @optional
-	 * @return {Streams_Stream|boolean} Returns a stream template the user must use,
-	 *  otherwise a boolean true/false to indicate a yes or no regardless of template.
+	 * @param {string} $relate.publisherId The id of the user publishing that stream, defaults to $publisherId
+	 * @param {string} $relate.streamName The name of the stream to which the new stream would be related
+	 * @param {string} [$relate.type] The type of relation, defaults to ""
+	 * @return {Streams_Stream|boolean} Returns the stream that was created.
 	 * @throws {Users_Exception_NotAuthorized}
 	 */
 	static function create(
@@ -779,16 +767,27 @@ abstract class Streams extends Base_Streams
 		// OK we are good to go!
 		$stream = new Streams_Stream;
 		$stream->publisherId = $publisherId;
-		$stream->type = $type;
+		if (!empty($fields['name'])) {
+			$p = new Q_Tree();
+			$p->load(STREAMS_PLUGIN_CONFIG_DIR.DS.'streams.json');
+			$p->load(APP_CONFIG_DIR.DS.'streams.json');
+			$info = $p->get($fields['name'], array());
+			if (empty($info['type'])) {
+				throw new Q_Exception_RequiredField(array('field' => 'type'));
+			}
+			foreach (Base_Streams_Stream::fieldNames() as $f) {
+				if (isset($info[$f])) {
+					$stream->$f = $info[$f];
+				}
+			}
+		} else {
+			$stream->type = $type;
+		}
 
 		// extend with any config defaults for this stream type
-		$xtype = Q_Config::get('Streams', 'types', $type, 'fields', array());
-		$fieldnames = array_merge(array(
-			'name', 'title', 'icon', 'content', 'attributes', 
-			'readLevel', 'writeLevel', 'adminLevel'
-		), $xtype);
+		$fieldNames = Streams::getExtendFieldNames($types);
 		$defaults = Q_Config::get('Streams', 'types', $type, 'defaults', array());
-		foreach ($fieldnames as $f) {
+		foreach ($fieldNames as $f) {
 			if (isset($fields[$f])) {
 				$stream->$f = $fields[$f];
 			} else if (array_key_exists($f, $defaults)) {
@@ -813,16 +812,20 @@ abstract class Streams extends Base_Streams
 		// relate the stream to category stream, if any
 		if ($relate['streamName']) {
 			$result = Streams::relate(
-				$user->id, 
+				$asUserId,
 				$relate['publisherId'], 
 				$relate['streamName'], 
 				$relate['type'], 
 				$stream->publisherId, 
 				$stream->name,
-				compact('weight', 'skipAccess')
+				array(
+					'weight' => isset($relate['weight']) ? $relate['weight'] : null,
+					'skipAccess' => $skipAccess
+				)
 			);
 			Q_Response::setSlot('messageTo', $result['messageTo']->exportArray());
 		}
+		return $stream;
 	}
 
 	/**
@@ -1226,18 +1229,17 @@ abstract class Streams extends Base_Streams
 	 *
 	 * You should rarely have to call this function. It is used internally by the model,
 	 * in two main situations:
-	 * <ol><li>
-	 *    adding, removing or modifying a Streams_Access row for Streams/user/firstName or Streams/user/lastName
-	 *    In this case, the function is able to update exactly the avatars that need updating.
-	 * </li><li>
-	 *    adding, removing or modifying a Stream row for Streams/user/firstName or Streams/user/lastName
-	 *    In this case, there may be some avatars which this function will miss.
-	 *    These correspond to users which are reachable by the access array for one stream,
-	 *    but not the other. For example, if Streams/user/firstName is being updated, but
-	 *    a particular user is reachable only by the access array for Streams/user/lastName, then
-	 *    their avatar will not be updated and contain a stale value for firstName.
-	 *    To fix this, the Streams_Stream model passes true in the 4th parameter to this function.
-	 * </li></ol>
+	 *
+	 * 1)  adding, removing or modifying a Streams_Access row for Streams/user/firstName or Streams/user/lastName
+	 *	In this case, the function is able to update exactly the avatars that need updating.
+	 * 
+	 * 2) adding, removing or modifying a Stream row for Streams/user/firstName or Streams/user/lastName
+	 *	In this case, there may be some avatars which this function will miss.
+	 *	These correspond to users which are reachable by the access array for one stream,
+	 *	but not the other. For example, if Streams/user/firstName is being updated, but
+	 *	a particular user is reachable only by the access array for Streams/user/lastName, then
+	 *	their avatar will not be updated and contain a stale value for firstName.
+	 *	To fix this, the Streams_Stream model passes true in the 4th parameter to this function.
 	 * @method updateAvatars
 	 * @static
 	 * @param {string} $publisherId
@@ -1252,7 +1254,11 @@ abstract class Streams extends Base_Streams
 	 *  if you want to first update all the avatars for this stream
 	 *  to the what the public would see, to avoid the situation described in 2).
 	 */
-	static function updateAvatars($publisherId, $taintedAccess, $streamName, $updateToPublicValue = false)
+	static function updateAvatars(
+		$publisherId, 
+		$taintedAccess, 
+		$streamName, 
+		$updateToPublicValue = false)
 	{
 		if (!isset($streamName)) {
 			$streamAccesses = array();
@@ -1273,7 +1279,8 @@ abstract class Streams extends Base_Streams
 
 		// If we are here, all the Stream_Access objects have the same streamName
 		if ($streamName !== 'Streams/user/firstName'
-		and $streamName !== 'Streams/user/lastName') {
+		and $streamName !== 'Streams/user/lastName'
+		and $streamName !== 'Streams/user/username') {
 			// we don't care about access to other streams being updated
 			return false;
 		}
@@ -1282,7 +1289,7 @@ abstract class Streams extends Base_Streams
 		// Select the user corresponding to this publisher
 		$user = new Users_User();
 		$user->id = $publisherId;
-		if (!$user->retrieve(null, null, true)->ignoreCache()->resume()) {
+		if (!$user->retrieve(null, null, array('ignoreCache' => true))) {
 			throw new Q_Exception_MissingRow(array(
 				'table' => 'user',
 				'criteria' => 'id = '.$user->id
@@ -1405,7 +1412,8 @@ abstract class Streams extends Base_Streams
 		$showToUserIds[""] = ($stream->readLevel >= $content_readLevel);
 
 		// Now, we update the avatars:
-		$field = ($streamName === 'Streams/user/firstName') ? 'firstName' : 'lastName';
+		$parts = explode('/', $streamName);
+		$field = end($parts);
 		$rows_that_show = array();
 		$rows_that_hide = array();
 		foreach ($showToUserIds as $userId => $show) {
@@ -1492,10 +1500,6 @@ abstract class Streams extends Base_Streams
 		&$stream,
 		$options = array())
 	{
-		// Function supports only single stream/category operation
-		if (substr($toStreamName, -1) === '/' || substr($fromStreamName, -1) === '/')
-			throw new Q_Exception("Cannot process relation on multiple streams");
-
 		if (!isset($asUserId)) {
 			$asUserId = Users::loggedInUser();
 			if (!$asUserId) $asUserId = "";
@@ -1510,7 +1514,9 @@ abstract class Streams extends Base_Streams
 		// Check access to category stream, the stream to which other streams are related
 		$category = Streams::fetchOne($asUserId, $toPublisherId, $toStreamName);
 		if (!$category) {
-			throw new Q_Exception("Category not found", compact('toPublisherId', 'toStreamName'));
+			throw new Q_Exception("Category not found", compact(
+				'toPublisherId', 'toStreamName'
+			));
 		}
 
 		if (empty($options['skipAccess'])) {
@@ -1730,7 +1736,7 @@ abstract class Streams extends Base_Streams
 	 *  An array of options that can include:
 	 *  "skipAccess" => Defaults to false. If true, skips the access checks and just relates the stream to the category
 	 *  "adjustWeights" => Defaults to false. If true, also decrements all following relations' weights by one.
-	 * @return boolean
+	 * @return {boolean}
 	 *  Whether the relation was removed
 	 */
 	static function unrelate(
@@ -1860,9 +1866,10 @@ abstract class Streams extends Base_Streams
 	 *	'relationsOnly' =>  If true, returns only the relations to/from stream, doesn't fetch the streams.
 	 *		Useful if publisher id of relation objects is not the same as provided by publisherId.
 	 *  'streamsOnly' => If true, returns only the streams related to/from stream, doesn't return the relations.
-	 *      Useful for shorthand in while( ) statements.
+	 *	  Useful for shorthand in while( ) statements.
 	 *  'streamFields' => If specified, fetches only the fields listed here for any streams
 	 *  'skipFields' => Optional array of field names. If specified, skips these fields when fetching streams
+	 *  'includeTemplates' => Defaults to false. Pass true here to include template streams (whose name ends in a slash) among the related streams.
 	 * @return {array}
 	 *  Returns array($relations, $relatedStreams, $stream).
 	 *  However, if $streamName wasn't a string or ended in "/"
@@ -1895,6 +1902,10 @@ abstract class Streams extends Base_Streams
 			$streams[$n] = $row;
 		}
 		if (!$streams) {
+			if (!empty($options['relationsOnly'])
+			|| !empty($options['streamsOnly'])) {
+				return array();
+			}
 			return array(array(), array(), $returnMultiple ? array() : null);
 		}
 		$stream = reset($streams);
@@ -1953,9 +1964,22 @@ abstract class Streams extends Base_Streams
 		if (isset($options['where'])) {
 			$query = $query->where($options['where']);
 		}
+		if (0 and empty($options['includeTemplates'])) {
+			$col = $FT.'StreamName';
+			$query = $query->where(new Db_Expression(
+				"SUBSTRING($col, -1, 1) != '/'"
+			));
+		}
 
 		$FT = $isCategory ? 'from' : 'to';
 		$relations = $query->fetchDbRows(null, '', $FT.'StreamName');
+		if (empty($options['includeTemplates'])) {
+			foreach ($relations as $k => $v) {
+				if (substr($k, -1) === '/') {
+					unset($relations[$k]);
+				}
+			}
+		}
 
 		if (!empty($options['relationsOnly'])) {
 			return $relations;
@@ -2022,7 +2046,7 @@ abstract class Streams extends Base_Streams
 	 * @param {array} $options=array()
 	 *  An array of options that can include:
 	 *  "skipAccess" => Defaults to false. If true, skips the access checks and just updates the weight on the relation
-	 * @return array|boolean
+	 * @return {array|boolean}
 	 *  Returns false if the operation was canceled by a hook
 	 *  Otherwise returns array with key "to" and value of type Streams_Message
 	 */
@@ -2165,8 +2189,8 @@ abstract class Streams extends Base_Streams
 		
 		// Authorization check
 		if (empty($options['skipAccess'])) {
-			if ($user->id !== $publisherId) {
-				$stream->calculateAccess($user->id);
+			if ($asUserId !== $publisherId) {
+				$stream->calculateAccess($asUserId);
 				if (!$stream->testWriteLevel('close')) {
 					throw new Users_Exception_NotAuthorized();
 				}
@@ -2174,16 +2198,23 @@ abstract class Streams extends Base_Streams
 		}
 
 		// Clean up relations from other streams to this category
-		list($relations, $related) = Streams::related($user->id, $stream->publisherId, $stream->name, true);
+		list($relations, $related) = Streams::related($asUserId, $stream->publisherId, $stream->name, true);
 		foreach ($relations as $r) {
 			try {
-				Streams::unrelate($user->id, $r->fromPublisherId, $r->fromStreamName, $r->type, $stream->publisherId, $stream->name);
+				Streams::unrelate(
+					$asUserId, 
+					$r->fromPublisherId, 
+					$r->fromStreamName, 
+					$r->type, 
+					$stream->publisherId, 
+					$stream->name
+				);
 			} catch (Exception $e) {}
 		}
 
 		// Clean up relations from this stream to categories
 		list($relations, $related) = Streams::related(
-			$user->id,
+			$asUserId,
 			$stream->publisherId,
 			$stream->name,
 			false
@@ -2191,7 +2222,7 @@ abstract class Streams extends Base_Streams
 		foreach ($relations as $r) {
 			try {
 				Streams::unrelate(
-					$user->id, 
+					$asUserId, 
 					$r->toPublisherId,
 					$r->toStreamName,
 					$r->type,
@@ -2205,7 +2236,7 @@ abstract class Streams extends Base_Streams
 		try {
 			$stream->closedTime = new Db_Expression("CURRENT_TIMESTAMP");
 			if ($stream->save()) {
-				$stream->post($user->id, array(
+				$stream->post($asUserId, array(
 					'type' => 'Streams/closed',
 					'content' => ''
 				), true);
@@ -2259,17 +2290,17 @@ abstract class Streams extends Base_Streams
 	 *   if array is provided fetches streams for each array member
 	 * @param {array} $options=array()
 	 *   Array of parameters including:<br/>
-	 *    "search" => Experimental, Optional. A search term to look in 'title' and 'content'.
-	 *      If provided, $streamName shall be not empty and contain generic name (type) of the
-	 *      streams to search. Streams/search/$type 'before' and 'after' hooks are called to
-	 *      adjust search result<br/>
+	 *	"search" => Experimental, Optional. A search term to look in 'title' and 'content'.
+	 *	  If provided, $streamName shall be not empty and contain generic name (type) of the
+	 *	  streams to search. Streams/search/$type 'before' and 'after' hooks are called to
+	 *	  adjust search result<br/>
 	 *
 	 *   Following options work only if $publisherId and $streamName are strings and 'Stream' table is not
 	 *	 sharded:<br/>
 	 *
-	 *    "limit" => Optional. The number of streams to fetch<br/>
-	 *    "offset" => Optional. The offset to start from<br/>
-	 *    "orderBy" => Optional. The name(s) of the field(s) to order result<br/>
+	 *	"limit" => Optional. The number of streams to fetch<br/>
+	 *	"offset" => Optional. The offset to start from<br/>
+	 *	"orderBy" => Optional. The name(s) of the field(s) to order result<br/>
 	 * @param {boolean} $single=false
 	 * @return {array}
 	 *  Array of resulting stream indexed by name
@@ -2498,6 +2529,92 @@ abstract class Streams extends Base_Streams
 				return Q_Uri::url("Streams/$what?publisherId=".urlencode($publisherId)."&name=".urlencode($streamName));
 		}
 		return null;
+	}
+	
+	static function getExtendClasses($type)
+	{
+		static $result = array();
+		if (isset($result[$type])) {
+			return $result[$type];
+		}
+		$extend = Q_Config::get('Streams', 'types', $type, 'extend', null);
+		if (is_string($extend)) {
+			$extend = array($extend);
+		}
+		$classes = array();
+		if ($extend) {
+			if (!Q::isAssociative($extend)) {
+				$temp = array();
+				foreach ($extend as $k) {
+					$temp[$k] = true;
+				}
+				$extend = $temp;
+			}
+			foreach ($extend as $k => $v) {
+				if (!class_exists($k, true)) {
+					throw new Q_Exception_MissingClass(array(
+						'className' => $k
+					));
+				}
+				if (!is_subclass_of($k, 'Db_Row')) {
+					throw new Q_Exception_BadValue(array(
+						'internal' => "Streams/types/$type/extend",
+						'problem' => "$k must extend Db_Row"
+					));
+				}
+				if ($v === true) {
+					$v = call_user_func(array('Base_'.$k, 'fieldNames'));
+					$v = array_diff($v, array('publisherId', 'streamName', 'name'));
+				} else if (Q::isAssociative($v)) {
+					$v = array_keys($v);
+				}
+				$classes[$k] = $v;
+			}
+		}
+		return $result[$type] = $classes;
+	}
+	
+	static function getExtendFieldNames($type)
+	{
+		$classes = Streams::getExtendClasses($type);
+		$fieldNames = array(
+			'title', 'icon', 'content', 'attributes', 
+			'readLevel', 'writeLevel', 'adminLevel'
+		);
+		foreach ($classes as $k => $v) {
+			foreach ($v as $f) {
+				$fieldNames[] = $f;
+			}
+		}
+		return $fieldNames;
+	}
+	
+	protected static function afterFetchExtended($publisherId, $type, $retrieved)
+	{
+		// all streams are the same type
+		if (!$retrieved) return;
+		$classes = array();
+		$rows = array();
+		foreach ($retrieved as $name => $stream) {
+			$classes = Streams::getExtendClasses($type);
+			foreach ($classes as $k => $v) {
+				$r = call_user_func(array($k, 'select'), '*')
+					->where(array(
+						'publisherId' => $publisherId,
+						'streamName' => array_keys($retrieved)
+					))->fetchDbRows(null, '', 'streamName');
+				$rows = array_merge($rows, $r);
+			}
+		}
+		foreach ($retrieved as $name => $stream) {
+			foreach ($classes as $k => $v) {
+				foreach ($v as $f) {
+					if (isset($rows[$name]->$f)) {
+						$stream->$f = $rows[$name]->$f;
+					}
+				}
+			}
+		}
 	}
 
 	/**

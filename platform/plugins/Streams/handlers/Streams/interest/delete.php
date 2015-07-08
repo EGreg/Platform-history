@@ -6,8 +6,7 @@
  * @param {array} $_REQUEST 
  * @param {String} [$_REQUEST.title] Required. The title of the interest.
  * @param {String} [$_REQUEST.publisherId] Optional. Defaults to the app name.
- * @param {String} [$_REQUEST.subscribe] Optional. Defauls to false. Whether to subscribe rather than just join the interest stream.
- * @return void
+ * @return {void}
  */
 function Streams_interest_delete()
 {
@@ -52,4 +51,17 @@ function Streams_interest_delete()
 	
 	Q_Response::setSlot('publisherId', $publisherId);
 	Q_Response::setSlot('streamName', $name);
+
+	/**
+	 * Occurs when the logged-in user has successfully removed an interest via HTTP
+	 * @event Streams/interest/delete {after}
+	 * @param {string} publisherId The publisher of the interest stream
+	 * @param {string} title The title of the interest
+	 * @param {Users_User} user The logged-in user
+	 * @param {Streams_Stream} stream The interest stream
+	 * @param {Streams_Stream} myInterests The user's "Streams/user/interests" stream
+	 */
+	Q::event("Streams/interest/remove", compact(
+		'publisherId', 'title', 'subscribe', 'user', 'stream', 'myInterests'
+	), 'after');
 }

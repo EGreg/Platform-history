@@ -27,7 +27,7 @@ function Metrics_Share (fields) {
 	};
 
 	// Run constructors of mixed in objects
-	this.constructors.apply(this, arguments);
+	Metrics_Share.constructors.apply(this, arguments);
 
 }
 

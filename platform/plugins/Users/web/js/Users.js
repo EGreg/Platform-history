@@ -117,7 +117,7 @@ Users.initFacebook = function(callback, options) {
 		&& Q.plugins.Users.facebookApps[Q.info.app]) {
 			FB.init(Q.extend({
 				appId: Q.plugins.Users.facebookApps[Q.info.app].appId,
-				version: 'v2.2',
+				version: 'v2.3',
 				status: true,
 				cookie: true,
 				oauth: true,
@@ -135,9 +135,7 @@ Users.initFacebook = function(callback, options) {
 		$('body').prepend($('<div id="fb-root"></div>'));
 	}
 	Q.addScript(
-		(window.location.protocol || window.location.protocol === 'file:'
-			? 'http:'
-			: window.location.protocol) + '//connect.facebook.net/en_US/sdk.js',
+		'https://connect.facebook.net/en_US/sdk.js',
 		_init,
 		{
 			onError: function () {
@@ -759,17 +757,26 @@ Users.User = function (fields) {
     this.typename = 'Q.Users.User';
 };
 
+/**
+ * Calculate the url of a user's icon
+ * @method
+ * @param {Number} [size=40] the size of the icon to render.
+ * @return {String} the url
+ */
+Users.User.prototype.iconUrl = function Users_User_iconUrl(size) {
+	return Users.iconUrl(this.icon, size);
+};
+
 Users.User.get = Users.get;
 
 /**
  * Calculate the url of a user's icon
  * @method
  * @param {String} icon the value of the user's "icon" field
- * @param {Number} size the size of the icon to render.
- * @default 40
+ * @param {Number} [size=40] the size of the icon to render.
  * @return {String} the url
  */
-Users.iconUrl = function(icon, size) {
+Users.iconUrl = function Users_iconUrl(icon, size) {
 	if (!icon) {
 		console.warn("Users.iconUrl: icon is empty");
 		return '';
@@ -962,7 +969,7 @@ function login_callback(response) {
 			'background-image': 'url(' + Q.info.imgLoading + ')',
 			'background-repeat': 'no-repeat',
 			'background-size': 'auto ' + first_input.height()+'px',
-			'background-position': 'right center',
+			'background-position': 'right center'
 		});
 		if (window.CryptoJS) {
 			var p = $('#Users_form_passphrase');
@@ -1030,7 +1037,7 @@ function login_callback(response) {
 			.attr('autocomplete', 'current-password')
 			.on('change keyup input', function () {
 				$('#Users_login_passphrase_forgot')
-					.css('display', $(this).val() ? 'none' : 'inline');
+				.css('display', $(this).val() ? 'none' : 'inline');
 			});
 		var $b = $('<a class="Q_button Users_login_start Q_main_button" />')
 		.html(Q.text.Users.login.loginButton)
@@ -1048,7 +1055,7 @@ function login_callback(response) {
 				passphrase_input,
 				$('<a id="Users_login_passphrase_forgot" href="#forgot"/>')
 				.html(Q.text.Users.login.forgot)
-				.click(function() {
+				.on(Q.Pointer.touchclick, function() {
 					if (Q.text.Users.login.resendConfirm) {
 						if (confirm(Q.text.Users.login.resendConfirm)) {
 							_resend();
@@ -1224,8 +1231,10 @@ function login_callback(response) {
 				step2_form.plugin('Q/placeholders');
 			}
 			$('input', step2_form).eq(0).plugin('Q/clickfocus').select();
+			_centerIt();
 		} else {
 			step2.slideDown('fast', function () {
+				_centerIt();
 				step2_form.plugin('Q/placeholders');
 				if (step2_form.data('form-type') === 'resend') {
 					$('.Q_main_button', step2_form).focus();
@@ -1235,6 +1244,11 @@ function login_callback(response) {
 			});
 		}
 		Q.activate($('#Users_login_step2').get(0));
+		function _centerIt() {
+			var $d = $('#Users_login_passphrase_div');
+			var $f = $('#Users_login_passphrase_forgot');
+			$f.css('bottom', ($d.outerHeight(true) - $f.outerHeight(true)) / 2 + 'px');
+		}
 	}
 	$('#Users_login_step1').animate({"opacity": 0.5}, 'fast');
 	$('#Users_login_step1 .Q_button').attr('disabled', 'disabled');
@@ -1295,35 +1309,8 @@ function login_setupDialog(usingProviders, scope, dialogContainer, identifierTyp
 	var $a = $('<a class="Q_button Users_login_go Q_main_button" />')
 	.append(
 		$('<span id="Users_login_go_span">'  + Q.text.Users.login.goButton + '</span>')
-	);
-	var _relevantClick = false;
-	if (Q.info.isTouchscreen) {
-		$(window).click(function (e) {
-			if (!_relevantClick) {
-				return;
-			}
-			_relevantClick = false; // in case another click is triggered
-			submitClosestForm.apply($a, arguments);
-		});
-	} else {
-		$a.click(submitClosestForm);
-	}
-	$(window).on('touchend', function (event) {
-		if (!$a[0].isOrContains(event.target)) {
-			return;
-		}
-		if ($('#Users_login_identifier').is(':focus')) {
-			$('#Users_login_identifier').blur();
-		}
-		setTimeout(function () {
-			_relevantClick = false;
-		}, 400);
-	});
-	$a.on('touchstart', function (event) {
-		if ($('#Users_login_identifier').is(':focus')) {
-			$('#Users_login_identifier').blur();
-		}
-		_relevantClick = true;
+	).on(Q.Pointer.touchclick, function () {
+		submitClosestForm.apply($a, arguments);
 	});
 
 	step1_form.html(
@@ -1491,6 +1478,8 @@ function login_setupDialog(usingProviders, scope, dialogContainer, identifierTyp
 			if (!priv.login_connected && priv.login_onCancel) {
 				priv.login_onCancel();
 			}
+			$(this).remove();
+			login_setupDialog.dialog = null;
 		}
 	});
 	
@@ -1619,6 +1608,8 @@ function setIdentifier_setupDialog(identifierType, options) {
 			if (priv.setIdentifier_onCancel) {
 				priv.setIdentifier_onCancel();
 			}
+			$(this).remove();
+			setIdentifier_setupDialog.dialog = null;
 		}
 	});
 	

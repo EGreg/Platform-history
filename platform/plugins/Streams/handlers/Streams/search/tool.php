@@ -5,9 +5,8 @@
  * @param $options
  *   An associative array of parameters, which can include:
  *   "placeholder" => Optional. Search field placeholder text. Default is "search".
- *   "submit" => Optional. Submit button text (or arbitrary html content). Default is "Submit".
- *                If 'false' value is passed, then submit button is not added.
- * @return string
+ *   "submit" => Optional. Submit button text (or arbitrary html content). Default is "Submit". If 'false' value is passed, then submit button is not added.
+ * @return {string}
  */
 function Streams_search_tool($options)
 {

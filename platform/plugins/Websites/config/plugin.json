@@ -5,18 +5,15 @@
 				"version": "0.8.2",
 				"compatible": "0.8",
 				"requires": {"Streams": "0.8.2"},
-				"connections": ["Streams", "Websites"]
+				"connections": ["Users", "Streams", "Websites"]
 			}
 		},
 		"handlersBeforeEvent": {
 			"Q/url": ["Websites/before/Q_url"],
 			"Q/uriFromUrl": ["Websites/before/Q_uriFromUrl"],
 			"Q/responseExtras": ["Websites/before/Q_responseExtras"],
-			"Streams/Stream/save/Websites/bio": ["Websites/before/Streams_Stream_save_Websites_bio"],
+			"Streams/Stream/save/Websites/article": ["Websites/before/Streams_Stream_save_Websites_article"],
 			"Streams/Stream/save/Websites/seo": ["Websites/before/Streams_Stream_save_Websites_seo"]
-		},
-		"handlersAfterEvent": {
-			"Streams/fetch/Websites/bio": ["Websites/after/Streams_fetch_Websites_bio"]
 		}
 	},
 	"Streams": {
@@ -28,20 +25,20 @@
 					"title": "Website SEO"
 				}
 			},
-			"Websites/bio": {
+			"Websites/article": {
 				"create": true,
 				"edit": true,
-				"fields": ["userId", "bio", "getintouch"],
-				"see": ["bio", "getintouch"],
 				"defaults": {
-					"title": "User Bio"
-				}
+					"title": "Article"
+				},
+				"extend": ["Websites_Article"]
 			}
 		}
 	},
 	"Websites": {
 		"user": {
 			"id": null
-		}
+		},
+		"seoReload": true
 	}
 }

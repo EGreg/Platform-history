@@ -90,14 +90,9 @@ CREATE TABLE `{$prefix}message` (
   `type` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT 'the type of the message, such as text or video',
   `content` varchar(1023) COLLATE utf8_unicode_ci NOT NULL COMMENT 'short human-readable content, like twitter and its 140 characters',
   `instructions` varchar(4092) COLLATE utf8_unicode_ci NOT NULL COMMENT 'instructions are in a machine-readable format depending on the type of the stream. delta, reverse delta, linking and embedding',
-  `reOrdinal` int(11) DEFAULT NULL COMMENT 'The ordinal of the message being replied to',
   `weight` decimal(10,4) NOT NULL DEFAULT '1.0000' COMMENT 'this may depend on the reputation of user_by relative to the stream',
   `ordinal` int(10) unsigned NOT NULL DEFAULT '0' COMMENT 'Count messages posted to the stream',
-  PRIMARY KEY (`publisherId`,`streamName`,`ordinal`),
-  KEY `author` (`byUserId`),
-  KEY `insertedTime` (`insertedTime`),
-  KEY `sentTime` (`sentTime`),
-  KEY `regarding` (`reOrdinal`)
+  PRIMARY KEY (`publisherId`,`streamName`,`ordinal`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='stored primarily on publisherId''s Q server';
 
 # Dump of table {$prefix}notification
@@ -245,7 +240,6 @@ CREATE TABLE `{$prefix}sent` (
   `instructions` varchar(4092) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'instructions are in a machine-readable format depending on the type of the stream. delta, reverse delta, linking and embedding',
   `chatPublisherId` varchar(31) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT 'If not 0, id of user that publishes the chat stream',
   `chatStreamName` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'The name of the stream where people can chat about this message',
-  `reOrdinal` int(11) DEFAULT NULL COMMENT 'The ordinal of the message being replied to',
   KEY `stream` (`publisherId`,`streamName`),
   KEY `author` (`byUserId`),
   KEY `insertedTime` (`insertedTime`),

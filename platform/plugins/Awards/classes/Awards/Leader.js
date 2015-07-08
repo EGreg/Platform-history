@@ -27,7 +27,7 @@ function Awards_Leader (fields) {
 	};
 
 	// Run constructors of mixed in objects
-	this.constructors.apply(this, arguments);
+	Awards_Leader.constructors.apply(this, arguments);
 
 }
 

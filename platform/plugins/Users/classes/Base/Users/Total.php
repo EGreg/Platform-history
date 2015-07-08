@@ -112,9 +112,9 @@ abstract class Base_Users_Total extends Db_Row
 	 * Create SELECT query to the class table
 	 * @method select
 	 * @static
-	 * @param $fields {array} The field values to use in WHERE clauseas as 
+	 * @param {array} $fields The field values to use in WHERE clauseas as 
 	 * an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function select($fields, $alias = null)
@@ -129,7 +129,7 @@ abstract class Base_Users_Total extends Db_Row
 	 * Create UPDATE query to the class table
 	 * @method update
 	 * @static
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function update($alias = null)
@@ -144,8 +144,8 @@ abstract class Base_Users_Total extends Db_Row
 	 * Create DELETE query to the class table
 	 * @method delete
 	 * @static
-	 * @param [$table_using=null] {object} If set, adds a USING clause with this table
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$table_using=null] If set, adds a USING clause with this table
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function delete($table_using = null, $alias = null)
@@ -160,8 +160,8 @@ abstract class Base_Users_Total extends Db_Row
 	 * Create INSERT query to the class table
 	 * @method insert
 	 * @static
-	 * @param [$fields=array()] {object} The fields as an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$fields=array()] The fields as an associative array of `column => value` pairs
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function insert($fields = array(), $alias = null)
@@ -189,7 +189,10 @@ abstract class Base_Users_Total extends Db_Row
 	 */
 	static function insertManyAndExecute($records = array(), $options = array())
 	{
-		self::db()->insertManyAndExecute(self::table(), $records, $options);
+		self::db()->insertManyAndExecute(
+			self::table(), $records,
+			array_merge($options, array('className' => 'Users_Total'))
+		);
 	}
 	
 	/**
@@ -213,6 +216,16 @@ abstract class Base_Users_Total extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the forType field
+	 * @return {integer}
+	 */
+	function maxSize_forType()
+	{
+
+		return 31;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_forId
@@ -233,6 +246,16 @@ abstract class Base_Users_Total extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the forId field
+	 * @return {integer}
+	 */
+	function maxSize_forId()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if integer value falls within allowed limits
 	 * @method beforeSet_voteCount
 	 * @param {integer} $value
@@ -249,6 +272,16 @@ abstract class Base_Users_Total extends Db_Row
 		if ($value < -9.2233720368548E+18 or $value > 9223372036854775807)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".voteCount");
 		return array('voteCount', $value);			
+	}
+
+	/**
+	 * Returns the maximum integer that can be assigned to the voteCount field
+	 * @return {integer}
+	 */
+	function maxSize_voteCount()
+	{
+
+		return 9223372036854775807;			
 	}
 
 	/**

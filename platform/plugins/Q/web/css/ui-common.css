@@ -10,10 +10,10 @@ html {
 #Q_dashboard_slot {
   background: #f00;
   position: absolute;
-  bottom: 0px;
+  bottom: 0;
   height: 49px;
-  left: 0px;
-  right: 0px;
+  left: 0;
+  right: 0;
   text-align: center;
   color: #fff;
 }
@@ -73,9 +73,9 @@ html {
 }
 #Q_main_area {
   position: absolute;
-  left: 0px;
-  right: 0px;
-  top: 0px;
+  left: 0;
+  right: 0;
+  top: 0;
   bottom: 49px;
   background: #eee;
 }
@@ -84,8 +84,8 @@ html {
 }
 #Q_listing_content {
   position: absolute;
-  left: 0px;
-  right: 0px;
+  left: 0;
+  right: 0;
   top: 45px;
   bottom: 1px;
 }
@@ -110,16 +110,16 @@ html {
 }
 #Q_upsteam_content {
   position: absolute;
-  left: 0px;
-  right: 0px;
-  top: 0px;
+  left: 0;
+  right: 0;
+  top: 0;
   bottom: 45px;
   display: none;
 }
 #Q_player_content {
   position: absolute;
-  left: 0px;
-  right: 0px;
+  left: 0;
+  right: 0;
   top: 45px;
   bottom: 1px;
 }
@@ -132,16 +132,16 @@ html {
 }
 #Q_chat_messages {
   position: absolute;
-  left: 0px;
-  right: 0px;
-  top: 0px;
+  left: 0;
+  right: 0;
+  top: 0;
   bottom: 41px;
 }
 #Q_chat_publisher {
   position: absolute;
-  left: 0px;
-  right: 0px;
-  bottom: 0px;
+  left: 0;
+  right: 0;
+  bottom: 0;
   height: 40px;
   border-top: 1px solid #000;
 }
@@ -154,19 +154,19 @@ html {
   font-size: 14px;
 }
 .Q_chat_visible #Q_player_content {
-  left: 0px;
+  left: 0;
   right: 151px;
 }
 .Q_chat_visible #Q_chat_content {
   display: block;
   width: 150px;
-  right: 0px;
+  right: 0;
 }
 .Q_upstream_visible #Q_player_slot .Q_controls {
   position: absolute;
-  left: 0px;
-  right: 0px;
-  bottom: 0px;
+  left: 0;
+  right: 0;
+  bottom: 0;
   border-bottom: none;
   border-top: 1px solid #fff;
 }
@@ -216,7 +216,7 @@ html {
     -webkit-background-clip: padding-box;
   }
   .Q_listing_collapsed #Q_listing_slot {
-    left: 0px;
+    left: 0;
     width: 30px;
     -webkit-border-top-left-radius: 0;
     -moz-border-radius-topleft: 0;
@@ -235,7 +235,7 @@ html {
   }
   .Q_listing_collapsed #Q_player_slot {
     width: inherit;
-    margin-left: 0px;
+    margin-left: 0;
     left: 40px;
     right: 10px;
     -webkit-border-radius: 10px;
@@ -257,10 +257,10 @@ html {
     background: #f00;
   }
   #Q_listing_slot .Q_expand_collapse {
-    right: 0px;
+    right: 0;
   }
   #Q_player_slot .Q_expand_collapse {
-    left: 0px;
+    left: 0;
   }
 }
 @media only screen and (orientation: portrait) and (min-width: 481px) {

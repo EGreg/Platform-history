@@ -28,7 +28,7 @@ function Metrics_HostnameSession (fields) {
 	};
 
 	// Run constructors of mixed in objects
-	this.constructors.apply(this, arguments);
+	Metrics_HostnameSession.constructors.apply(this, arguments);
 
 }
 

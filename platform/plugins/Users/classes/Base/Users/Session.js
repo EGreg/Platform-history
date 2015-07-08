@@ -23,7 +23,7 @@ var Row = Q.require('Db/Row');
  * an associative array of `{column: value}` pairs
  */
 function Base (fields) {
-	
+	Base.constructors.apply(this, arguments);
 }
 
 Q.mixin(Base, Row);
@@ -70,7 +70,7 @@ Base.db = function () {
 /**
  * Retrieve the table name to use in SQL statements
  * @method table
- * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
+ * @param {boolean} [withoutDbName=false] Indicates wheather table name should contain the database name
  * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
@@ -102,8 +102,8 @@ Base.connectionName = function() {
 /**
  * Create SELECT query to the class table
  * @method SELECT
- * @param fields {object|string} The field values to use in WHERE clauseas as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {object|string} fields The field values to use in WHERE clauseas as an associative array of `{column: value}` pairs
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.SELECT = function(fields, alias) {
@@ -115,7 +115,7 @@ Base.SELECT = function(fields, alias) {
 /**
  * Create UPDATE query to the class table. Use Db.Query.Mysql.set() method to define SET clause
  * @method UPDATE
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.UPDATE = function(alias) {
@@ -127,8 +127,8 @@ Base.UPDATE = function(alias) {
 /**
  * Create DELETE query to the class table
  * @method DELETE
- * @param [table_using=null] {object} If set, adds a USING clause with this table
- * @param [alias=null] {string} Table alias
+ * @param {object}[table_using=null] If set, adds a USING clause with this table
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.DELETE = function(table_using, alias) {
@@ -141,7 +141,7 @@ Base.DELETE = function(table_using, alias) {
  * Create INSERT query to the class table
  * @method INSERT
  * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.INSERT = function(fields, alias) {
@@ -163,7 +163,7 @@ Base.prototype.className = "Users_Session";
  * Create INSERT query to the class table
  * @method INSERT
  * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.prototype.setUp = function() {
@@ -174,7 +174,7 @@ Base.prototype.setUp = function() {
  * Create INSERT query to the class table
  * @method INSERT
  * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.prototype.db = function () {
@@ -184,7 +184,7 @@ Base.prototype.db = function () {
 /**
  * Retrieve the table name to use in SQL statements
  * @method table
- * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
+ * @param {boolean} [withoutDbName=false] Indicates wheather table name should contain the database name
  * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
@@ -237,6 +237,15 @@ Base.prototype.beforeSet_id = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the id field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_id = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -252,6 +261,15 @@ Base.prototype.beforeSet_content = function (value) {
 		if (typeof value === "string" && value.length > 4095)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".content");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the content field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_content = function () {
+
+		return 4095;
 };
 
 /**
@@ -271,6 +289,15 @@ Base.prototype.beforeSet_php = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the php field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_php = function () {
+
+		return 4095;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -286,6 +313,15 @@ Base.prototype.beforeSet_deviceId = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".deviceId");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the deviceId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_deviceId = function () {
+
+		return 255;
 };
 
 /**
@@ -305,6 +341,15 @@ Base.prototype.beforeSet_timeout = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum integer that can be assigned to the timeout field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_timeout = function () {
+
+		return 2147483647;
+};
+
 /**
  * Method is called before setting the field and verifies if integer value falls within allowed limits
  * @method beforeSet_duration
@@ -320,6 +365,15 @@ Base.prototype.beforeSet_duration = function (value) {
 		if (value < -2147483648 || value > 2147483647)
 			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".duration");
 		return value;
+};
+
+	/**
+	 * Returns the maximum integer that can be assigned to the duration field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_duration = function () {
+
+		return 2147483647;
 };
 
 /**
@@ -342,7 +396,7 @@ Base.prototype.beforeSet_updatedTime = function (value) {
  * @throws {Error} If mandatory field is not set
  */
 Base.prototype.beforeSave = function (value) {
-	var fields = ['id','content','php','deviceId','timeout'], i;
+	var fields = ['id'], i;
 	if (!this._retrieved) {
 		var table = this.table();
 		for (i=0; i<fields.length; i++) {

@@ -22,7 +22,13 @@ function Q_errors($params) {
 		switch (strtolower($is_ajax)) {
 		case 'json':
 		default:
-			$errors_json = @Q::json_encode($errors_array);
+			try {
+				$errors_json = @Q::json_encode($errors_array);
+			} catch (Exception $e) {
+				$errors_array = array_slice($errors_array, 0, 1);
+				unset($errors_array[0]['trace']);
+				$errors_json = @Q::json_encode($errors_array);
+			}
 			$json = "{\"errors\": $errors_json}";
 			$callback = Q_Request::callback();
 			header("Content-type: " . ($callback ? "application/javascript" : "application/json"));
@@ -32,10 +38,17 @@ function Q_errors($params) {
 	}
 
 	// Forward internally, if it was requested
-	if (Q_Request::special('onErrors', null)) {
-		$uri = Q_Dispatcher::uri();
-		$uri2 = Q_Uri::from(Q_Request::special($snf, null));
-		if ($uri !== $uri2) {
+	if ($onErrors = Q_Request::special('onErrors', null)) {
+		$uri1 = Q_Dispatcher::uri();
+		$uri2 = Q_Uri::from($onErrors);
+		$url2 = $uri2->toUrl();
+		if (!isset($uri2)) {
+			throw new Q_Exception_WrongValue(array(
+				'field' => 'onErrors',
+				'range' => 'an internal URI reachable from a URL'
+			));
+		}
+		if ($uri1->toUrl() !== $url2) {
 			Q_Dispatcher::forward($uri2);
 			return; // we don't really need this, but it's here anyway
 		}

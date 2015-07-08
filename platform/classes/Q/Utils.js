@@ -271,7 +271,8 @@ Utils.sendSMS = function (to, view, fields, options, callback) {
 		// convert 00 to + in international numbers
 		number = '+'+to.slice(2);
 	} else if (to.charAt(0) !== '+') {
-		// if number does not start with 00 or +, treat it as US phone number
+		// if number starts with 1, treat it as US phone number,
+		// otherwise just assume it's a full international numbers
 		number = (to.charAt(0) === '1' ? '+' : '+1') + to;
 	} else {
 		number = to;

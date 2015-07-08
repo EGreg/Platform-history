@@ -71,12 +71,17 @@ abstract class Services_Twilio_Resource {
 
     public static function decamelize($word)
     {
-        return preg_replace(
-            '/(^|[a-z])([A-Z])/e',
-            'strtolower(strlen("\\1") ? "\\1_\\2" : "\\2")',
+        return preg_replace_callback(
+            '/(^|[a-z])([A-Z])/',
+			array('Services_Twilio_Resource', 'decamelizeCallback'),
             $word
         );
     }
+	
+	private static function decamelizeCallback($m)
+	{
+		return strtolower(strlen($m[1]) ? "$m[1]_$m[2]" : $m[1]);
+	}
 
     /**
      * Return camelized version of a word
@@ -84,17 +89,26 @@ abstract class Services_Twilio_Resource {
      * incoming_phone_numbers => IncomingPhoneNumbers
      *
      * @param string $word The word to camelize
-     * @return string
+     * @return {string}
      */
     public static function camelize($word) {
-        return preg_replace('/(^|_)([a-z])/e', 'strtoupper("\\2")', $word);
+        return preg_replace_callback(
+			'/(^|_)([a-z])/',
+			array('Services_Twilio_Resource', 'camelizeCallback'),
+			$word
+		);
     }
+
+	private static function camelizeCallback($m)
+	{
+		return strtoupper($m[2]);
+	}
 
     /**
      * Get the value of a property on this resource.
      * 
      * @param string $key The property name
-     * @return mixed Could be anything.
+     * @return {mixed} Could be anything.
      */
     public function __get($key) {
         if ($subresource = $this->getSubresources($key)) {

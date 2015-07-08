@@ -31,6 +31,7 @@
 
 Q.Tool.define('Q/form', function(options) {
 
+	Q.addStylesheet('plugins/Q/css/form.css');
 	this.refresh(options);
 
 },

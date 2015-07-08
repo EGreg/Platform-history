@@ -11,17 +11,20 @@
  * @param {Object} [options] This object contains properties for this function
  *  @param {Array} [options.tabs] An associative array of name: title pairs.
  *  @param {Array} [options.urls] An associative array of name: url pairs to override the default urls.
- *  @param {String} [options.field] Uses this field when urls doesn't contain the tab name.
- *  @default 'tab'
- *  @param {String} [options.selectors] Array of (slotName => selector) pairs, where the values are CSS style selectors indicating the element to update with javascript, and can be a parent of the tabs. Set to null to reload the page.
+ *  @param {String} [options.field='tab'] Uses this field when urls doesn't contain the tab name.
+ *  @param {Boolean} [options.vertical=false] Stack the tabs vertically instead of horizontally
+ *  @param {Boolean} [options.compact=false] Display the tabs interface in a compact space with a contextual menu
+ *  @param {String} [options.overflow] Override the text that is displayed when the tabs overflow. You can interpolate {{count}}, {{text}} or {{html}} in the string. 
+ *  @param {String} [options.overflowGlyph] Override the glyph that appears next to the overflow text. You can interpolate {{count}} here
+ *  @param {String} [options.selectors] Object of {slotName: selector} pairs, where the values are CSS style selectors indicating the element to update with javascript, and can be a parent of the tabs. Set to null to reload the page.
  *  @param {String} [options.slot] The name of the slot to request when changing tabs with javascript.
  *  @param {Function} [options.loader] Name of a function which takes url, slot, callback. It should call the callback and pass it an object with the response info. Can be used to implement caching, etc. instead of the default HTTP request. This function shall be Q.batcher getter
  *  @param {Q.Event} [options.onClick] Event when a tab was clicked, with arguments (name, element). Returning false cancels the tab switching.
  *  @param {Q.Event} [options.beforeSwitch] Event when tab switching begins. Returning false cancels the switching.
  *  @param {Function} [options.beforeScripts] Name of the function to execute after tab is loaded but before its javascript is executed.
- *  @param {Function} [options.onSelected] Name of the function to execute after a tab is shown to be selected.
- *  @param {Function} [options.onActivate] Name of the function to execute after a tab is activated.
- * @return Q.Tool
+ *  @param {Function} [options.onCurrent] Event after a tab has been selected. Note that this is in the view layer, so your handlers would trigger recursion if they call Q.layout().
+ *  @param {Function} [options.onActivate] Event after a tab has been activated. Note that this is in the view layer, so your handlers would trigger recursion if they call Q.layout().
+ * @return {Q.Tool}
  */
 Q.Tool.define("Q/tabs", function(options) {
 
@@ -29,7 +32,9 @@ Q.Tool.define("Q/tabs", function(options) {
 	var state = tool.state;
 	var $te = $(tool.element);
 	
-	state.defaultTab = state.defaultTab || Q.firstKey(options.tabs);
+	Q.addStylesheet('plugins/Q/css/tabs.css');
+
+	state.defaultTabName = state.defaultTabName || Q.firstKey(options.tabs);
 	
 	// catches events that bubble up from any child elements
 	$te.on([Q.Pointer.fastclick, '.Q_tabs'], '.Q_tabs_tab', function () {
@@ -48,12 +53,17 @@ Q.Tool.define("Q/tabs", function(options) {
 		// return false;
 	});
 	
-	Q.onLayout.set(function () {
-		tool.refresh();
+	tool.$tabs = $('.Q_tabs_tab', tool.element).css('visibility', 'hidden');
+	function _showTabs() {
+		tool.$tabs.css('visibility', 'visible');
+	}
+	
+	Q.onLayout(tool).set(function () {
+		tool.refresh(_showTabs);
 	}, tool);
 	
-	tool.refresh();
-	tool.indicateSelected();
+	tool.refresh(_showTabs);
+	state.onActivate.handle.call(tool, state.tab, tool.getName(state.tab));
 	
 },
 
@@ -61,15 +71,17 @@ Q.Tool.define("Q/tabs", function(options) {
 	field: 'tab',
 	slot: 'content,title',
 	selectors: { content: '#content_slot' },
-	overflow: '{{count}} more &#9660;',
+	overflow: '<span><span>{{count}} more</span></span>',
+	overflowGlyph: '&#9662;',
 	loaderOptions: {},
 	loader: Q.req,
 	onClick: new Q.Event(),
 	beforeSwitch: new Q.Event(),
 	onActivate: new Q.Event(),
-	onSelected: new Q.Event(),
-	tabName: null, // set by indicateSelected
-	tab: null // set by indicateSelected
+	onCurrent: new Q.Event(),
+	onContextual: new Q.Event(),
+	tabName: null, // set by indicateCurrent
+	tab: null // set by indicateCurrent
 },
 
 {
@@ -129,8 +141,9 @@ Q.Tool.define("Q/tabs", function(options) {
 				alert(msg);
 			}, "Q/tabs"),
 			onActivate: new Q.Event(function () {
-				tool.indicateSelected(tool.getName(tab));
-				state.onActivate.handle.call(this, tab, name);
+				tool.indicateCurrent(tool.getName(tab));
+				tool.refresh();
+				state.onActivate.handle.call(tool, tab, name);
 			}, "Q/tabs"),
 			loadExtras: true,
 			ignorePage: tool.isInDialog(),
@@ -154,26 +167,64 @@ Q.Tool.define("Q/tabs", function(options) {
 	},
 
 	/**
-	 * @method indicateSelected
-	 * @param {String} tab optional name of the tab to indicate
+	 * @method indicateCurrent
+	 * @param {String} [tab] a possible tab the caller requested to indicate as current
 	 */
-	indicateSelected: function (tab) {
+	indicateCurrent: function (tab) {
 		var name;
+		var tool = this;
+		var state = tool.state;
 		if (typeof tab === 'string') {
 			name = tab;
 			tab = null;
 		}
-		var $tabs = this.$('.Q_tabs_tab');
-		if (!$tabs.closest('body').length) {
+		if (!$(tool.element).closest('body').length) {
 			// the replaced html probably included the tool's own element,
 			// so let's find something with the same id on the page
-			$tabs = $('.Q_tabs_tab', $(document.getElementById(this.element.id)));
+			var key = Q.Tool.onActivate(tool.id).set(function () {
+				this.indicateCurrent();
+				Q.Tool.onActivate(tool.id).remove(key);
+			});
+			return;
 		}
-		var url = window.location.href.split('#')[0];
+		
+		tool.$tabs.each(function (k, t) {
+			var tdn = tool.getName(t);
+			if (state.defaultTabName === tdn) {
+				state.defaultTab = t;
+				return false;
+			}
+		});
+
+		tab = tool.getCurrentTab.call(tool, tab);
+		
+		tool.$tabs.removeClass('Q_current');
+		$(tab).addClass('Q_current');
+		state.tab = tab;
+		state.tabName = name || tool.getName(tab);
+		state.onCurrent.handle.call(tool, tab, name);
+	},
+	
+	/**
+	 * Called by indicateCurrentTab. You can override this function to provide your
+	 * own mechanisms for indicating the current tab and returning it.
+	 * @method getCurrentTab
+	 * @param {String} [tab] a possible tab the caller requested to indicate as current
+	 * @return {Element} The current tab element.
+	 */
+	getCurrentTab: function (tab) {
 		var tool = this;
 		var state = tool.state;
+		var $tabs = tool.$tabs;
+		var name = tool.getName(tab);
+		var url = location.hash.queryField('url');
+		if (url === undefined) {
+			url = window.location.href.split('#')[0];
+		} else {
+			url = Q.url(url);
+		}
+		var state = tool.state;
 		var defaultTab = null;
-		$tabs.removeClass('Q_selected');
 		if (!tab) {
 			$tabs.each(function (k, t) {
 				var tdn = tool.getName(t);
@@ -184,7 +235,7 @@ Q.Tool.define("Q/tabs", function(options) {
 					tab = t;
 					return false;
 				}
-				if (state.defaultTab === tdn) {
+				if (state.defaultTabName === tdn) {
 					defaultTab = t;
 				}
 			});
@@ -192,10 +243,7 @@ Q.Tool.define("Q/tabs", function(options) {
 		if (!tab) {
 			tab = defaultTab;
 		}
-		$(tab).addClass('Q_selected');
-		state.tabName = name || tool.getName(tab);
-		state.tab = tab;
-		state.onSelected.handle.call(tool, tab, name);
+		return tab;
 	},
 	
 	/**
@@ -220,7 +268,7 @@ Q.Tool.define("Q/tabs", function(options) {
 		if (!href) {
 			href = state.urls && state.urls[name];
 		}
-		if (!href) {
+		if (!href && state.field && name) {
 			href = window.location.href.split('?')[0]
 				+ '?' + window.location.search.queryField(state.field, name);
 		}
@@ -231,67 +279,108 @@ Q.Tool.define("Q/tabs", function(options) {
 	 * Render the tabs element again and indicate the selected tab
 	 * @method refresh
 	 */
-	refresh: function () {
+	refresh: Q.preventRecursion('refresh', function (callback) {
 		var tool = this;
-		var $te = $(this.element);
+		var state = tool.state;
+		var $te = $(tool.element);
 		var w = $te.width(), w2 = 0, w3 = 0, index = -10;
 		var $o = $('.Q_tabs_overflow', $te);
-		if ($o.length) {
-			if ($o.data('Q_contextual')) {
-				$('.Q_tabs_tab', $o.data('Q_contextual')).insertAfter($o);
-			}
-			$o.plugin("Q/contextual", "remove");
-			$o.remove();
-		}
-		var $tabs = $('.Q_tabs_tab', $te);
-		var $overflow, $lastVisibleTab;
-		$tabs.each(function (i) {
-			var $t = $(this);
-			w3 = w2;
-			w2 += $t.outerWidth(true);
-			if (w2 > w + $tabs.length) {
-				index = i-1;
-				return false;
-			}
-		});
-		if (index >= 0) {
-			$lastVisibleTab = $tabs.eq(index);
-			$overflow = $('<a class="Q_tabs_tab Q_tabs_overflow" />')
-			.html(this.state.overflow.interpolate({
-				count: $tabs.length - index - 1
-			}));
-			$overflow.insertAfter($lastVisibleTab);
-			if ($overflow.outerWidth(true) > w - w3) {
-				--index;
-				$lastVisibleTab = $tabs.eq(index);
-				$overflow.insertAfter($lastVisibleTab)
-				.html(this.state.overflow.interpolate({
-					count: $tabs.length - index - 1
-				}));
-			}
-		}
-		
-		if ($overflow) {
-			Q.addScript("plugins/Q/js/QTools.js", function () {
-				var elements = [];
-				for (var i=index+1; i<$tabs.length; ++i) {
-					elements.push($tabs.eq(i));
+		tool.indicateCurrent();
+		if (!parseInt($te[0].style.width)) {
+			$te.siblings(':visible').each(function () {
+				var $t = $(this);
+				if ($t.css('float') != 'none') {
+					w -= $t.outerWidth(true);
 				}
-				$overflow.plugin("Q/contextual", {
-					elements: elements,
-					defaultHandler: function ($tab) {
-						tool.switchTo([$tab.attr('data-name'), $tab[0]]);
-					},
-					className: "Q_tabs_contextual"
-				});
 			});
 		}
-	}
+		if ($o.length) {
+			var cs = $o.state('Q/contextual');
+			if (cs) {
+				if (cs.contextual) {
+					$('.Q_tabs_tab', cs.contextual).insertAfter($o);
+				}
+				$o.plugin("Q/contextual", "remove");
+			}
+			$o.remove();
+		}
+		var $tabs = tool.$tabs = $('.Q_tabs_tab', $te);
+		var $overflow, $lastVisibleTab;
+		if (tool.state.vertical) {
+			return callback && callback.call(this);
+		}
+		if (state.compact) {
+			index = 0;
+		} else {
+			$tabs.each(function (i) {
+				var $t = $(this);
+				w3 = w2;
+				w2 += $t.outerWidth(true);
+				if (w2 > w + $tabs.length) {
+					index = i-1;
+					return false;
+				}
+			});
+		}
+		if (index >= 0) {
+			var values = {
+				count: $tabs.length - index - 1,
+				text: $(state.tab).text() || "",
+				html: $(state.tab).html() || ""
+			};
+			$lastVisibleTab = $tabs.eq(index);
+			$overflow = $('<li class="Q_tabs_tab Q_tabs_overflow" />')
+			.css('visibility', 'visible')
+			.html(state.overflow.interpolate(values));
+			var oneLess = !!state.compact;
+			if (!oneLess) {
+				$overflow.insertAfter($lastVisibleTab);
+				// REFLOW happens here
+				if ($overflow.outerWidth(true) > w - w3) {
+					oneLess = true;
+				}
+			}
+			if (oneLess) {
+				--index;
+				values.count = $tabs.length - index - 1;
+				$overflow.insertBefore($lastVisibleTab)
+				.html(this.state.overflow.interpolate(values));
+			}
+			if (state.overflowGlyph) {
+				$('<span class="Q_tabs_overflowGlyph" />')
+					.html(state.overflowGlyph.interpolate(values))
+					.prependTo($overflow);
+			}
+		}
+		if (!$overflow) {
+			tool.$overflow = null;
+			return callback && callback.call(tool);
+		}
+		tool.overflowIndex = index;
+		tool.$overflow = $overflow;
+		Q.addScript("plugins/Q/js/QTools.js", function () {
+			var elements = [];
+			for (var i=index+1; i<$tabs.length; ++i) {
+				elements.push($tabs[i]);
+			}
+			$overflow.plugin("Q/contextual", {
+				elements: elements,
+				defaultHandler: function ($tab) {
+					tool.switchTo([$tab.attr('data-name'), $tab[0]]);
+				},
+				className: "Q_tabs_contextual",
+				onConstruct: function ($contextual) {
+					callback && callback.call(tool);
+				},
+				onShow: function () {
+					Q.layout(this.state('Q/contextual').contextual[0]);
+					Q.handle(state.onContextual, this, arguments);
+				}
+			});
+			tool.$overflowed = $(elements);
+		});
+	})
 }
-);
-
-Q.Template.set('Q/tabs/contextual',
-	'<div class="Q_contextual"><ul class="Q_listing"></ul></div>'
 );
 
 })(Q, jQuery);

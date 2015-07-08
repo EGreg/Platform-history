@@ -148,7 +148,10 @@ function _Streams_participants(options) {
 						$('<div class="Streams_participants_invite" />')
 						.html(html)
 						.appendTo(tool.$avatars)
-						.on(Q.Pointer.fastclick, function () {
+						.addClass('Streams_inviteTrigger');
+						var filter = '.Streams_inviteTrigger';
+						$(tool.element)
+						.on(Q.Pointer.fastclick, filter, function () {
 							var fields = Q.extend({
 								identifier: si.identifier
 							}, si);
@@ -161,9 +164,9 @@ function _Streams_participants(options) {
 								}
 							);
 							return false;
-						}).on(Q.Pointer.click, function () {
+						}).on(Q.Pointer.click, filter, function () {
 							return false;
-						}).on(Q.Pointer.start, function () {
+						}).on(Q.Pointer.start, filter, function () {
 							$(tool.element).addClass('Q_discouragePointerEvents');
 							function _pointerEndHandler() {
 								$(tool.element).removeClass('Q_discouragePointerEvents');
@@ -273,8 +276,8 @@ function _Streams_participants(options) {
 			var $element = $(Q.Tool.setUpElement('div', 'Users/avatar', {
 				userId: userId,
 				"short": true,
-				icon: (window.devicePixelRatio > 1 ? '80' : '40')
-			}));
+				icon: (window.devicePixelRatio > 1 ? '80' : '40'),
+			})).addClass(userId ? '' : 'Streams_inviteTrigger');
 			var $e = userId ? tool.$avatars : tool.$blanks;
 			if (false !== Q.handle(state.filter, tool, [$element])) {
 				$elements[userId] = $element;

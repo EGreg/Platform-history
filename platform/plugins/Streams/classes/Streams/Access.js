@@ -19,7 +19,7 @@ var Db = Q.require('Db');
 function Streams_Access (fields) {
 
 	// Run constructors of mixed in objects
-	this.constructors.apply(this, arguments);
+	Streams_Access.constructors.apply(this, arguments);
 
 	/*
 	 * Add any privileged methods to the model class here.

@@ -97,16 +97,14 @@ class Users_Mobile extends Base_Users_Mobile
 			$token = Q_Config::get('Users', 'mobile', 'twilio', 'token', null);
 
 			if ($sid and $token) {
-				try {
+
 					$client = new Services_Twilio($sid, $token);
 					$message = $client->account->sms_messages->create(
 						$from, // From a valid Twilio number
-						"+$number", // Text this number
+						$number, // Text this number
 						Q::view($view, $fields)
 					);
-				} catch (Exception $e) {
-					throw new Users_Exception_MobileMessage(array('error' => $e->getMessage()));
-				}
+
 			} else {
 				if(!Q_Config::get('Users', 'email', 'smtp', null)){
 					Q_Response::setNotice("Q/mobile", "Please set up transport in Users/mobile/twilio as in docs", false);
@@ -141,7 +139,7 @@ class Users_Mobile extends Base_Users_Mobile
 					'verizon' => 'vtext.com',
 					't-mobile' => 'tmomail.net'
 				));
-				$number2 = substr($this->number, 1);
+				$number2 = substr($this->number, 2);
 				foreach ($gateways as $k => $v) {
 					$mail->addTo($number2.'@'.$v);
 				}
@@ -195,8 +193,12 @@ class Users_Mobile extends Base_Users_Mobile
 			"CURRENT_TIMESTAMP + INTERVAL $minutes MINUTE"
 		);
 		$this->authCode = md5(microtime() + mt_rand());
-		$mobile = $this;
-		$link = 'Users/activate?p=1&code='.urlencode($this->activationCode) . ' mobileNumber='.urlencode($this->number);
+		$number = $this->number;
+		if (substr($number, 0, 2) == '+1') {
+			$number = substr($number, 2);
+		}
+		$link = 'Users/activate?p=1&code='.urlencode($this->activationCode)
+			. ' mobileNumber='.urlencode($number);
 		/**
 		 * @event Users/resend {before}
 		 * @param {string} 'user'

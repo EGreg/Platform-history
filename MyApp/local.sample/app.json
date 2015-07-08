@@ -19,33 +19,31 @@
 				"key": "YOUR SECRET KEY HERE"
 			} */
 		},
-		"internal": {
+		"external": {
 			"secret": "CHANGE TO SOME RANDOM STRING, FOR SIGNING DATA FOR EXTERNAL CLIENTS"
 		},
-		"external": {
+		"internal": {
 			"secret": "CHANGE TO SOME RANDOM STRING, FOR SIGNING INTERNAL MESSAGES"
+		},
+		"environment": "",
+		"response": {
+			"cacheBaseUrl": "MyApp:"
 		}
 	},
 	"Db": {
 		"connections": {
-			"Users": {
-				"prefix": "users_",
+			"*": {
 				"dsn": "mysql:host=localhost;dbname=DBNAME",
 				"username": "USERNAME",
 				"password": "PASSWORD",
-				"driver_options": {
-				  "3": 2
-				},
+				"driver_options": { "3": 2 }	
+			},
+			"Users": {
+				"prefix": "users_",
 				"shards": {}
 			},
 			"Streams": {
 				"prefix": "streams_",
-				"dsn": "mysql:host=localhost;dbname=DBNAME",
-				"username": "USERNAME",
-				"password": "PASSWORD",
-				"driver_options": {
-				  "3": 2
-				},
 				"shards": {}
 			}
 		}
@@ -77,6 +75,11 @@
 				"token": "YOUR TOKEN HERE"
 			}, */
 			"from": "+1234567890"
+		}
+	},
+	"Websites": {
+		"user": {
+			"id": "MyApp" /* For publishing streams with the Websites plugin */
 		}
 	}
 }

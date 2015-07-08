@@ -10,25 +10,21 @@
  * This plugin Makes a contextual menu from given options and handles its showing / hiding.
  * @class Q contextual
  * @constructor
- * @param {Object} [options] options an object of options that can include
+ * @param {Object} [options] options an object that can include:
  * @param {Array} [options.elements] elements is an array of LI elements to add
  * @param {String} [options.className] className is a CSS class name for additional styling. Optional
  * @default ''
- * @param {Q.Event} [options.defaultHandler] defaultHandler is a  Q.Event, function or
- *     function name which is called when personal handler for selected item is not defined. Optional
+ * @param {Q.Event|function|String} [options.defaultHandler=null] defaultHandler is a Q.Event, or function which is called when a specific handler for selected item is not defined.
+ *   So you can use just one handler for whole contextual or provide separate handlers for each item.
  * @default null
- * @param {Object} [options.size] size is an object with values for override default contextual size.
- * So you can use just one handler for whole contextual or provide separate handlers for each item.
- * @default null
+ * @param {Object} [options.size=null] size is an object with values for override default contextual size.
  * @param {Number} [options.size.width] width
  * @param {Number} [options.size.height] height
  */
-Q.Tool.jQuery('Q/contextual', function _Q_contextual(o) {
+Q.Tool.jQuery('Q/contextual', function _Q_contextual() {
 
 	var $this = $(this);
-	if ($this.data('Q_contextual')) {
-		return;
-	}
+	var state = $this.state('Q/contextual');
 
 	// the first time when any contextual is added we need to preload its graphics,
 	if ($('.Q_contextual_arrows_preloaded').length == 0) {
@@ -37,44 +33,50 @@ Q.Tool.jQuery('Q/contextual', function _Q_contextual(o) {
 			'<div class="Q_contextual_bottom_arrow"></div>' +
 		'</div>').appendTo(document.body);
 	}
-	if (o.defaultHandler && Q.typeOf(o.defaultHandler) != 'Q.Event' &&
-	typeof(o.defaultHandler) != 'function' && typeof(o.defaultHandler) != 'string') {
-		alert("Default handler must be a valid Q.Event object, function or function string name.");
+	if (state.defaultHandler
+	&& Q.typeOf(state.defaultHandler) != 'Q.Event'
+	&& typeof(state.defaultHandler) != 'function'
+	&& typeof(state.defaultHandler) != 'string') {
+		console.warn("Default handler must be a valid Q.Event object, function or function string name.");
 	}
 	
 	if ($this.hasClass('Q_selected')) {
 		$this.removeClass('Q_selected');
-		$this.data('Q_restore_selected', true);
+		state.restoreSelected = true;
 	}
 
 	var contextual = $('<div class="Q_contextual" />');
-	if (o.className) contextual.addClass(o.className);
+	if (state.className) contextual.addClass(state.className);
 	var listingWrapper = $('<div class="Q_listing_wrapper" />');
-	if (o.defaultHandler) {
-		if (typeof(o.defaultHandler) == 'string') {
-			contextual.attr('data-handler', o.defaultHandler);
+	if (state.defaultHandler) {
+		if (typeof(state.defaultHandler) == 'string') {
+			contextual.attr('data-handler', state.defaultHandler);
 		} else {
-			contextual.data('defaultHandler', o.defaultHandler);
+			contextual.data('defaultHandler', state.defaultHandler);
 		}
 	}
-	var listing = $('<ul class="Q_listing" />'), i;
-	if (o.elements) {
-		for (i = 0; i < o.elements.length; ++i) {
-			listing.append(o.elements[i]);
+	var listing = $('<ul class="Q_listing" />');
+	if (state.elements) {
+		for (var i = 0; i < state.elements.length; ++i) {
+			listing.append(state.elements[i]);
 		}
 	}
 	contextual.append(listingWrapper.append(listing));
 	$(document.body).append(contextual);
 
-	var cid = Q.Contextual.add($this, contextual, null, o.size);
-	$this.data('Q_contextual_id', cid);
-	$this.data('Q_contextual', contextual);
+	var cid = Q.Contextual.add($this, contextual, null, state.size);
+	state.id = cid;
+	state.contextual = contextual;
+	
+	Q.handle(state.onConstruct, $this, [contextual, cid]);
 },
 
 {
-	'className': '',
-	'defaultHandler': null,
-	'size': null
+	className: '',
+	defaultHandler: null,
+	size: null,
+	onConstruct: new Q.Event(),
+	onShow: new Q.Event()
 },
 
 {
@@ -84,20 +86,21 @@ Q.Tool.jQuery('Q/contextual', function _Q_contextual(o) {
 	 */
 	remove: function () {
 		var $this = $(this);
-		var cid = $this.data('Q_contextual_id');
+		var state = $this.state('Q/contextual');
+		var cid = state.id;
 		if (cid !== undefined) {
 			var removed = Q.Contextual.remove(cid);
 			removed.contextual.remove();
 		}
-		if ($this.data('Q_restore_selected')) {
+		if (state.restoreSelected) {
 			$this.addClass('Q_selected');
-			$this.data('Q_restore_selected');
+			state.restoreSelected = false;
 		}
-		$this.removeData('Q_contextual_id');
-		$this.removeData('Q_contextual');
 	}
 }
 
 );
+
+Q.addStylesheet('plugins/Q/css/contextual.css');
 
 })(Q, jQuery, window, document);

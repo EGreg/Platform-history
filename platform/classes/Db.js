@@ -10,6 +10,7 @@ Q.makeEventEmitter(Db);
  * The database interface module. Contains basic properties and methods and serves as namespace
  * for more specific sub-classes
  * @class Db
+ * @namespace Db
  * @static
  * @requires Q
  */
@@ -24,8 +25,8 @@ Db.Q = Q;
 /**
  * Add a database connection with a name
  * @method setConnection
- * @param name {string} The name under which to store the connection details
- * @param details {object} The connection details. Should include the keys:
+ * @param {String} name The name under which to store the connection details
+ * @param {Object} details The connection details. Should include the keys:
  *  'dsn', 'username', 'password', 'driver_options'
  */
 Db.setConnection = function(name, details) {
@@ -35,21 +36,32 @@ Db.setConnection = function(name, details) {
 /**
  * Returns all the connections added thus far
  * @method getConnections
- * @return {object}
+ * @return {Object}
  */
 Db.getConnections = function () {
-	return Q.Config.get(['Db', 'connections'], {});
+	var result = Q.Config.get(['Db', 'connections'], {});
+	var base = result['*'];
+	for (var k in result) {
+		result[k] = Q.extend({}, base, result[k]);
+	}
+	delete result['*'];
+	return result;
 };
 
 /**
  * Returns connection details for a connection
  * @method getConnection
- * @param name {string}
- * @return {object|null}
+ * @param {String} name 
+ * @return {Object|null}
  */
 Db.getConnection = function(name) {
+
 	if (!name) return null;
-	return Q.Config.get(['Db', 'connections', name], null);
+	var result = Q.Config.get(['Db', 'connections', name], null);
+	if (name !== '*' && (base = Db.getConnection('*'))) {
+		result = Q.extend({}, base, result);
+	}
+	return result;
 };
 
 /**
@@ -57,9 +69,9 @@ Db.getConnection = function(name) {
  * Can contain the keys "dsn", "username", "password", "driver_options"
  * They are used in constructing the PDO object.
  * @method setShard
- * @param connName {string} The name of the connection to which the shard pertains
- * @param shardName {string} The name under which to store the shard modifications
- * @param modifications {object} The shard modifications. Can include the keys:
+ * @param {String} connName The name of the connection to which the shard pertains
+ * @param {String} shardName The name under which to store the shard modifications
+ * @param {Object} modifications The shard modifications. Can include the keys:
  *  'dsn', 'host', 'port', 'dbname', 'unix_socket', 'charset',
  *  'username', 'password', 'driver_options',
  */
@@ -70,8 +82,8 @@ Db.setShard = function(connName, shardName, modifications) {
 /**
  * Returns all the shards added thus far for a connection
  * @method getShards
- * @param connName {string}
- * @return {object}
+ * @param {String} connName 
+ * @return {Object}
  */
 Db.getShards = function (connName) {
 	return Q.Config.get(['Db', 'connections', connName, 'shards'], {});
@@ -80,9 +92,9 @@ Db.getShards = function (connName) {
 /**
  * Returns modification details for a shard pertaining to a connection
  * @method getShard
- * @param connName {string}
- * @param [shardName=''] {string}
- * @return {object|null}
+ * @param {String} connName
+ * @param {String} [shardName='']
+ * @return {Object|null}
  */
 Db.getShard = function(connName, shardName) {
 	if (!connName) return null;
@@ -93,8 +105,8 @@ Db.getShard = function(connName, shardName) {
 /**
  * Parses dsn string and convert to object
  * @method parseDsnString
- * @param dsn {string} The dsn string for the database
- * @return {object} The data extracted from the DSN string
+ * @param {String} dsn The dsn string for the database
+ * @return {Object} The data extracted from the DSN string
  */
 Db.parseDsnString = function(dsn) {
 	var parts = dsn.split(':');
@@ -114,7 +126,7 @@ Db.parseDsnString = function(dsn) {
  * If the this Db object has already been made,
  * it returns this Db object.
  * @method connect
- * @param name {string} The name of the connection out of the connections added with Db::setConnection
+ * @param {String} name The name of the connection out of the connections added with Db::setConnection
  * @return {Db} The database connection
  * @throws {Q.Exception} if database connection wasn't registered with Db
  */
@@ -137,7 +149,7 @@ Db.connect = function(name) {
 };
 /**
  * @method listen
- * @param  {object} [options={}]
+ * @param {Object} [options={}]
  * @return {http.server}
  */
 Db.listen = function (options) {

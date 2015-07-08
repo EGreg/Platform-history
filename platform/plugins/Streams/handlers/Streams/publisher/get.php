@@ -5,7 +5,7 @@
  *
  * @param string $params 
  *   publisher id and stream name of existing stream shall be supplied
- * @return array
+ * @return {void}
  *   array of streams indexed by names
  */
 

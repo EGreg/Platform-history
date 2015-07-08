@@ -3,17 +3,16 @@
 /**
  * This tool renders ways to get in touch
  *
- * @param array $options
- * An associative array of options, containing:
- *   "user" => Required. The user object or id of the user exposing their primary identifiers for getting in touch.
- *   "email" => Pass true here to use the primary verified email address, if any. Or pass the string label for this button.
- *   "emailSubject" => Fill this if you want the email subject to be automatically filled in
- *   "emailBody" => Fill this if you want the email body to be automatically filled in
- *   "sms" => Pass true here to allow texting the primary verified mobile number, if any. Or pass the string label for this button.
- *   "call" => Pass true here to allow calling the primary verified mobile number, if any. Or pass the string label for this button.
- *   "tag" => The type of tag to use, defaults to "button"
- *   "class" => Any classes to add to the tags
- *   "between" => Any HTML to put between the elements
+ * @param array [$options] An associative array of options, containing:
+ *   @param {string|Users_User} [$options.user] Required. The user object or id of the user exposing their primary identifiers for getting in touch.
+ *   @param {boolean|string} [$options.email] Pass true here to use the primary verified email address, if any. Or pass the string label for this button.
+ *   @param {string} [$options.emailSubject] Fill this if you want the email subject to be automatically filled in
+ *   @param {string} [$options.emailBody] Fill this if you want the email body to be automatically filled in
+ *   @param {boolean|string} [$options.sms] Pass true here to allow texting the primary verified mobile number, if any. Or pass the string label for this button.
+ *   @param {boolean|string} [$options.call] Pass true here to allow calling the primary verified mobile number, if any. Or pass the string label for this button.
+ *   @param {string} [$options.tag] The type of tag to use, defaults to "button"
+ *   @param {string} [$options.class] Any classes to add to the tags
+ *   @param {string} [$options.between] Any HTML to put between the elements
  */
 function Users_getintouch_tool($options)
 {
@@ -47,7 +46,7 @@ function Users_getintouch_tool($options)
 		));
 	}
 	if (Q_Request::isMobile()) {
-		$obfuscated_mobileNumber = Q_Utils::obfuscate('+'.$user->mobileNumber);
+		$obfuscated_mobileNumber = Q_Utils::obfuscate($user->mobileNumber);
 		if (!empty($options['sms']) and $user->mobileNumber) {
 			$sms = is_string($options['sms']) ? $options['sms'] : "Text me";
 			$sms = Q_Html::img("plugins/Users/img/sms.png") . $sms;

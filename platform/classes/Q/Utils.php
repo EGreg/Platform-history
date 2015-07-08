@@ -189,7 +189,7 @@ class Q_Utils
 		$result = preg_replace($characters, $replacement, strtolower($text));
 		if (strlen($text) > $numChars) {
 			$result = substr($result, 0, $numChars - 11) . '_' 
-			          . self::hashCode(substr($result, $numChars - 11));
+					  . self::hashCode(substr($result, $numChars - 11));
 		}
 		return $result;
 	}
@@ -214,7 +214,7 @@ class Q_Utils
 	 *
 	 * @see http://tools.ietf.org/html/rfc4122#section-4.4
 	 * @see http://en.wikipedia.org/wiki/UUID
-	 * @return string A UUID, made up of 32 hex digits and 4 hyphens.
+	 * @return {string} A UUID, made up of 32 hex digits and 4 hyphens.
 	 */
 	static function uuid() {
 		
@@ -355,7 +355,7 @@ class Q_Utils
 	 * @param {string|array} $url The URL to post to
 	 *  This can also be an array of ($url, $ip) to send the request
 	 *  to a particular IP, while retaining the hostname and request URI
-	 * @param {array} $data The associative array of data to post
+	 * @param {array|string} $data The data content to post or an array of ($field => $value) pairs
 	 * @param {string} [$user_agent=null] The user-agent string to send. Defaults to Mozilla.
 	 * @param {string} [$follow_redirects=true] Whether to follow redirects when getting a response.
 	 * @param {string} [$header=null] Optional string to replace the entire POST header
@@ -396,7 +396,7 @@ class Q_Utils
 	 * @param {string|array} $url The URL to request
 	 *  This can also be an array of ($url, $ip) to send the request
 	 *  to a particular IP, while retaining the hostname and request URI
-	 * @param {array} $data The associative array of data to post
+	 * @param {array|string} $data The data content to post or an array of ($field => $value) pairs
 	 * @param {string} [$user_agent=null] The user-agent string to send. Defaults to Mozilla.
 	 * @param {string} [$follow_redirects=true] Whether to follow redirects when getting a response.
 	 * @param {string} [$header=null] Optional string to replace the entire header
@@ -529,6 +529,8 @@ class Q_Utils
 		}
 
 		$result = json_decode(self::post($server, self::sign($data)), null, true, null, Q_UTILS_CON_TIMEOUT, Q_UTILS_CON_TIMEOUT, true);
+		
+		// TODO: check signature of returned data
 
 		if (isset($result['errors'])) {
 			throw new Q_Exception($result['errors']);
@@ -569,6 +571,8 @@ class Q_Utils
 		}
 
 		$result = json_decode(self::post($server, self::sign($data), null, true, null, Q_UTILS_CON_INTERNAL_TIMEOUT, Q_UTILS_CON_INTERNAL_TIMEOUT), true);
+
+		// TODO: check signature of returned data
 
 		// delete the above line to throw on error
 		if (isset($result['errors'])) {
@@ -815,6 +819,28 @@ class Q_Utils
 			$colored_string .= "\033[" . $background_colors[$background_color] . "m";
 		}
 		return $colored_string .  $text . "\033[0m";
+	}
+		
+	static function cp ($src, $dest)
+	{
+		if (is_file($src)) {
+			return copy($src, $dest);
+		}
+		if (!is_dir($src)) {
+			return false;
+		}
+		@mkdir($dest);
+		foreach(scandir($src) as $file) {
+			if( $file == "." || $file == ".." ) {
+				continue;
+			}
+			if( is_dir( $src.DS.$file ) ) {
+				self::cp( $src.DS.$file, $dest.DS.$file );
+			} else {
+				copy( $src.DS.$file, $dest.DS.$file );
+			}
+		}
+		return true;
 	}
 	
 	protected static $urand;

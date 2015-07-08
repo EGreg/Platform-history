@@ -355,30 +355,38 @@ abstract class Db
 	static function getConnections ()
 	{
 		if (class_exists('Q_Config')) {
-			return Q_Config::get('Db', 'connections', array());
+			$results = Q_Config::get('Db', 'connections', array());
+		} else { // standalone, no Q
+			$results = self::$connections;
 		}
-		
-		// Else standalone, no Q
-		return self::$connections;
+		if ($base = self::getConnection('*')) {
+			foreach ($results as $k => $r) {
+				$results[$k] = array_merge($base, $r);
+			}
+			unset($results['*']);
+		}
+		return $results;
 	}
 
 	/**
 	 * Returns connection details for a connection
 	 * @method getConnection
 	 * @static
-	 * @param $name {string}
+	 * @param {string} $name
 	 * @return {array|null}
 	 */
 	static function getConnection ($name)
 	{
 		if (class_exists('Q_Config')) {
-			return Q_Config::get('Db', 'connections', $name, null);
+			$result = Q_Config::get('Db', 'connections', $name, null);
+		} else { // standalone, no Q
+			$result = isset(self::$connections['name'])
+				? self::$connections[$name]
+				: null;
 		}
-			
-		// Else standalone, no Q
-		if (! isset(self::$connections[$name]))
-			return null;
-		return self::$connections[$name];
+		return ($name !== '*' and $base = self::getConnection('*'))
+			? array_merge($base, $result)
+			: $result;
 	}
 	
 	/**

@@ -261,6 +261,7 @@ class Q_Valid
 				? $stripped
 				: substr($stripped, 1);
 		}
+		$number_normalized = '+' . $number_normalized; // make this function idempotent!
 		
 		return true;
 	}

@@ -14,12 +14,14 @@
  *  @param {Number} [options.count] A number, if any, to display when collapsed.
  *  @param {Boolean} [options.autoCollapseSiblings] Whether, when expanding an expandable, its siblings should be automatically collapsed.
  *  @param {Boolean} [options.scrollContainer] Closest parent element that could scroll
- * @return Q.Tool
+ * @return {Q.Tool}
  */
 Q.Tool.define('Q/expandable', function (options) {
 	var tool = this;
 	var state = tool.state;
 	var $te = $(tool.element);
+	
+	Q.addStylesheet('plugins/Q/css/expandable.css');
 	
 	if (!$te.children().length) {
 		// set it up with javascript

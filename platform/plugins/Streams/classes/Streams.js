@@ -280,6 +280,36 @@ Streams.ACCESS_SOURCES = {
 	'inherited_direct':		5
 };
 
+Streams.defined = {};
+
+/**
+ * Call this function to set a constructor for a stream type
+ * @static
+ * @method define
+ * @param {String} type The type of the message, e.g. "Streams/chat/message"
+ * @param {String|Function} ctor Your message's constructor, or path to a javascript file which will define it
+ * @param {Object} methods An optional hash of methods
+ */
+Streams.define = function (type, ctor, methods) {
+	if (typeof type === 'object') {
+		for (var t in type) {
+			Streams.define(t, type[t]);
+		}
+		return;
+	};
+	type = Q.normalize(type);
+	if (typeof ctor !== 'function') {
+		throw new Q.Error("Q.Streams.Stream.define requires ctor to be a function");
+	}
+	function CustomStreamConstructor() {
+		CustomStreamConstructor.constructors.apply(this, arguments);
+		ctor.apply(this, arguments);
+	}
+	Q.mixin(CustomStreamConstructor, Streams.Stream);
+	Q.extend(CustomStreamConstructor.prototype, methods);	
+	return Streams.defined[type] = CustomStreamConstructor;
+};
+
 /**
  * Start internal listener for Streams plugin. Accepts messages such as<br/>
  * "Streams/Stream/join",
@@ -287,8 +317,10 @@ Streams.ACCESS_SOURCES = {
  * "Streams/Stream/create",
  * "Streams/Stream/remove",
  * "Streams/Message/post",
+ * "Streams/Message/postMessages",
  * "Streams/Stream/invite"
  * @method listen
+ * @static
  * @param {object} options={}
  *  So far no options are implemented.
  */
@@ -364,8 +396,10 @@ Streams.listen = function (options) {
 		if (!parsed || !parsed['Q/method']) {
 			return next();
 		}
-		var participant, stream, msg, token;
+		var participant, stream, msg, posted, token, k;
 		var ssid = parsed["Q.clientId"];
+		var stream = parsed.stream
+			&& Streams.Stream.construct(JSON.parse(parsed.stream));
 		switch (parsed['Q/method']) {
 			case 'Users/device':
 				if (!(token = parsed.deviceId)) break;
@@ -388,66 +422,68 @@ Streams.listen = function (options) {
 				}
 				break;
 			case 'Streams/Stream/join':
-				participant = JSON.parse(parsed.participant);
-				stream = JSON.parse(parsed.stream);
+				participant = new Streams.Participant(JSON.parse(parsed.participant));
+				participant.fillMagicFields();
 				uid = participant.userId;
 				if (Q.Config.get(['Streams', 'logging'], false)) {
 					Q.log('Streams.listen: Streams/Stream/join {'
-						+ '"publisherId": "' + stream.publisherId
-						+ '", "name": "' + stream.name
+						+ '"publisherId": "' + stream.fields.publisherId
+						+ '", "name": "' + stream.fields.name
 						+ '"}'
 					);
 				}
 				// invalidate cache for this stream
-//				Streams.getParticipants.forget(stream.publisherId, stream.name);
+//				Streams.getParticipants.forget(stream.fields.publisherId, stream.fields.name);
 				// inform user's clients about change
-				Streams.emitToUser(uid, 'join', Streams.fillMagicFields(participant));
-				(new Streams.Stream(stream)).incParticipants(/* empty callback*/);
-				Streams.Stream.emit('join', stream, uid, ssid);
+				Streams.emitToUser(uid, 'join', participant);
+				stream.incParticipants(function () {
+					Streams.Stream.emit('join', stream, uid, ssid);
+				});
 				break;
 			case 'Streams/Stream/visit':
 				participant = JSON.parse(parsed.participant);
-				stream = JSON.parse(parsed.stream);
 				uid = participant.userId;
 				Streams.Stream.emit('visit', stream, uid, ssid);
 				break;
 			case 'Streams/Stream/leave':
-				participant = JSON.parse(parsed.participant);
-				stream = JSON.parse(parsed.stream);
+				participant = new Streams.Participant(JSON.parse(parsed.participant));
+				participant.fillMagicFields();
 				uid = participant.userId;
 				if (Q.Config.get(['Streams', 'logging'], false)) {
 					Q.log('Streams.listen: Streams/Stream/leave {'
-						+ '"publisherId": "' + stream.publisherId
-						+ '", "name": "' + stream.name
+						+ '"publisherId": "' + stream.fields.publisherId
+						+ '", "name": "' + stream.fields.name
 						+ '"}'
 					);
 				}
 				// invalidate cache for this stream
-//				Streams.getParticipants.forget(stream.publisherId, stream.name);
+//				Streams.getParticipants.forget(stream.fields.publisherId, stream.fields.name);
 				// inform user's clients about change
-				Streams.emitToUser(uid, 'leave', Streams.fillMagicFields(participant));
-				(new Streams.Stream(stream)).decParticipants(/* empty callback*/);
-				Streams.Stream.emit('leave', stream, uid, ssid);
+				Streams.emitToUser(uid, 'leave', participant);
+				stream.decParticipants(function () {
+					Streams.Stream.emit('leave', stream, uid, ssid);
+				});
 				break;
 			case 'Streams/Stream/remove':
-				stream = JSON.parse(parsed.stream);
 				if (Q.Config.get(['Streams', 'logging'], false)) {
 					Q.log('Streams.listen: Streams/Stream/remove {'
-						+ '"publisherId": "' + stream.publisherId
-						+ '", "name": "' + stream.name
+						+ '"publisherId": "' + stream.fields.publisherId
+						+ '", "name": "' + stream.fields.name
 						+ '"}'
 					);
 				}
 				// invalidate cache
-				(new Streams.Stream(stream)).messageParticipants('remove', null, {publisherId: stream.publisherId, name: stream.name});
+				stream.messageParticipants('remove', null, {
+					publisherId: stream.fields.publisherId, 
+					name: stream.fields.name
+				});
 				Streams.Stream.emit('remove', stream, ssid);
 				break;
 			case 'Streams/Stream/create':
-				stream = JSON.parse(parsed.stream);
 				if (Q.Config.get(['Streams', 'logging'], false)) {
 					Q.log('Streams.listen: Streams/Stream/create {'
-						+ '"publisherId": "' + stream.publisherId
-						+ '", "name": "' + stream.name
+						+ '"publisherId": "' + stream.fields.publisherId
+						+ '", "name": "' + stream.fields.name
 						+ '"}'
 					);
 				}
@@ -455,17 +491,33 @@ Streams.listen = function (options) {
 				// no need to notify anyone
 				break;
 			case 'Streams/Message/post':
-				msg = JSON.parse(parsed.message);
-				stream = JSON.parse(parsed.stream);
+				msg = Streams.Message.construct(JSON.parse(parsed.message));
+				msg.fillMagicFields();
 				if (Q.Config.get(['Streams', 'logging'], false)) {
 					Q.log('Streams.listen: Streams/Message/post {'
-						+ '"publisherId": "' + stream.publisherId
-						+ '", "name": "' + stream.name
-						+ '", "msg.type": "' + msg.type
+						+ '"publisherId": "' + stream.fields.publisherId
+						+ '", "name": "' + stream.fields.name
+						+ '", "msg.type": "' + msg.fields.type
 						+ '"}'
 					);
 				}
-				Streams.Stream.emit('post', stream, msg.byUserId, msg, ssid);
+				Streams.Stream.emit('post', stream, msg.fields.byUserId, msg, ssid);
+				break;
+			case 'Streams/Message/postMessages':
+				posted = JSON.parse(parsed.posted);
+				for (k in posted) {
+					msg = Streams.Message.construct(posted[k]);
+					msg.fillMagicFields();
+					if (Q.Config.get(['Streams', 'logging'], false)) {
+						Q.log('Streams.listen: Streams/Message/post {'
+							+ '"publisherId": "' + stream.fields.publisherId
+							+ '", "name": "' + stream.fields.name
+							+ '", "msg.type": "' + msg.fields.type
+							+ '"}'
+						);
+					}
+					Streams.Stream.emit('post', stream, msg.fields.byUserId, msg, ssid);
+				}
 				break;
 			case 'Streams/Stream/invite':
 				var userIds, invitingUserId, username, appUrl, label,
@@ -482,7 +534,6 @@ Streams.listen = function (options) {
 					adminLevel = parsed.adminLevel && JSON.parse(parsed.adminLevel) || null;
 					displayName = parsed.displayName || '';
 					expiry = parsed.expiry ? new Date(parsed.expiry*1000) : null;
-					stream = JSON.parse(parsed.stream);
 				} catch (e) {
 					return res.send({data: false});
 				}
@@ -490,8 +541,8 @@ Streams.listen = function (options) {
 				if (logKey = Q.Config.get(['Streams', 'logging'], false)) {
 					Q.log(
 					    'Streams.listen: Streams/Stream/invite {'
-						+ '"publisherId": "' + stream.publisherId
-						+ '", "name": "' + stream.name
+						+ '"publisherId": "' + stream.fields.publisherId
+						+ '", "name": "' + stream.fields.name
 						+ '", "userIds": ' + parsed.userIds
 						+ '}',
 						logKey
@@ -529,8 +580,8 @@ Streams.listen = function (options) {
 
     				    // TODO: Change this to a getter, so that we can do throttling in case there are too many userIds
 						(new Streams.Participant({
-							"publisherId": stream.publisherId,
-							"streamName": stream.name,
+							"publisherId": stream.fields.publisherId,
+							"streamName": stream.fields.name,
 							"userId": userId,
 							"state": "participating"
 						})).retrieve(_participant);
@@ -571,8 +622,8 @@ Streams.listen = function (options) {
 							(new Streams.Invite({
 								"token": token,
 								"userId": userId,
-								"publisherId": stream.publisherId,
-								"streamName": stream.name,
+								"publisherId": stream.fields.publisherId,
+								"streamName": stream.fields.name,
 								"invitingUserId": invitingUserId,
 								"displayName": displayName,
 								"appUrl": appUrl,
@@ -591,9 +642,9 @@ Streams.listen = function (options) {
 								return;
 							}
 							(new Streams.Participant({
-								"publisherId": stream.publisherId,
-								"streamName": stream.name,
-								"streamType": stream.type,
+								"publisherId": stream.fields.publisherId,
+								"streamName": stream.fields.name,
+								"streamType": stream.fields.type,
 								"userId": userId,
 								"state": "invited",
 								"reason": ""
@@ -623,7 +674,7 @@ Streams.listen = function (options) {
 							
             				(new Users.Contact({
         				        userId: invitingUserId,
-                                label: "Streams/invited/"+stream.type,
+                                label: "Streams/invited/"+stream.fields.type,
                                 contactUserId: userId
         				    })).save(true);
 							
@@ -635,7 +686,7 @@ Streams.listen = function (options) {
 							     				
             				(new Users.Contact({
         				        userId: userId,
-                                label: "Streams/invitedMe/"+stream.type,
+                                label: "Streams/invitedMe/"+stream.fields.type,
                                 contactUserId: invitingUserId
         				    })).save(true);
 							
@@ -656,7 +707,7 @@ Streams.listen = function (options) {
 								Q.log(err);
 								return;
 							}
-							Streams.Stream.emit('invite', invited.toArray(), userId, stream);
+							Streams.Stream.emit('invite', invited.getFields(), userId, stream);
 							if (!invited.testWriteLevel('post')) {
 								Q.log("ERROR: Not authorized to post to invited stream for user '"+userId+"' during invite");
 								Q.log(err);
@@ -675,9 +726,9 @@ Streams.listen = function (options) {
 									token: token,
 									displayName: displayName,
 									appUrl: appUrl,
-									type: stream.type,
-									title: stream.title,
-									content: stream.content
+									type: stream.fields.type,
+									title: stream.fields.title,
+									content: stream.fields.content
 								})
 							};
 							invited.post(msg, function (err) {
@@ -696,32 +747,12 @@ Streams.listen = function (options) {
 		return next();
 	});
 
-    Streams.fillMagicFields = function (obj) {
-		var toFill = [];
-		for (var f in obj) {
-			if (obj[f] && obj[f].expression === "CURRENT_TIMESTAMP") {
-				toFill.push(f);
-			}
-		}
-		if (!toFill.length) {
-			return obj;
-		}
-		var db = Streams.db();
-		db.getCurrentTimestamp(function (err, timestamp) {
-			for (var i=0, l=toFill.length; i<l; ++i) {
-				obj[toFill[i]] = db.toDateTime(timestamp);
-			}
-		});
-		return obj;
-	};
-
 	Streams.Stream.on('post', function (stream, uid, msg, ssid) {
-		msg = Streams.fillMagicFields(msg);
-		if (_messageHandlers[msg.type]) {
-			_messageHandlers[msg.type].call(this, msg);
+		if (_messageHandlers[msg.fields.type]) {
+			_messageHandlers[msg.fields.type].call(this, msg);
 		}
-		Streams.Stream.emit('post/'+msg.type, stream, uid, msg);
-		(new Streams.Stream(stream)).messageParticipants('post', msg.byUserId, msg);
+		Streams.Stream.emit('post/'+msg.fields.type, stream, uid, msg);
+		stream.messageParticipants('post', msg.fields.byUserId, msg);
 //		if (stream && !msg.type.match(/^Streams\//)) {// internal messages of Streams plugin
 //			(new Streams.Stream(stream)).incMessages(/* empty callback*/);
 //		}
@@ -847,6 +878,7 @@ Streams.clients = {};
 /**
  * Check if device is online
  * @method isDeviceOnline
+ * @static
  * @param userId {string}
  *	The id of the user
  * @param sessionId {?string}
@@ -864,6 +896,7 @@ Streams.isDeviceOnline = function(userId, sessionId) {
 /**
  * Emits an event to user's socket.io clients that are currently connected
  * @method emitToUser
+ * @static
  * @param userId {string}
  *	The id of the user
  * @param event {string}
@@ -890,6 +923,7 @@ Streams.emitToUser = function(userId, event, data, excludeSessionIds) {
 /**
  * Emits push notification to native client
  * @method pushNotification
+ * @static
  * @param userId {string}
  *	The id of the user
  * @param tokens {object}
@@ -938,6 +972,7 @@ Streams.pushNotification = function (userId, tokens, event, data) {
  * Method may return some value or, if return `undefined` callback must be called
  * To change functionality override it in application script
  * @method pushNotification.badge
+ * @static
  * @param userId {string}
  * @param event {string}
  * @param data {object}
@@ -960,6 +995,7 @@ Streams.pushNotification.badge = function (userId, event, data, callback) {
  * Method may return some value or, if return `undefined` callback must be called.
  * Use "default" to play default system sound
  * @method pushNotification.sound
+ * @static
  * @param userId {string}
  * @param event {string}
  * @param data {object}
@@ -972,6 +1008,7 @@ Streams.pushNotification.badge = function (userId, event, data, callback) {
  * Define this method in application script
  * Method may return some value or, if return `undefined` callback must be called
  * @method pushNotification.alert
+ * @static
  * @param userId {string}
  * @param event {string}
  * @param data {object}
@@ -984,6 +1021,7 @@ Streams.pushNotification.badge = function (userId, event, data, callback) {
  * Define this method in application script
  * Method may return some value or, if return `undefined` callback must be called
  * @method pushNotification.data
+ * @static
  * @param userId {string}
  * @param event {string}
  * @param data {object}
@@ -993,6 +1031,7 @@ Streams.pushNotification.badge = function (userId, event, data, callback) {
 /**
  * Retrieve stream participants
  * @method getParticipants
+ * @static
  * @param publisherId {string}
  *	The publisher Id
  * @param streamName {string}
@@ -1024,6 +1063,7 @@ Streams.getParticipants = function(publisherId, streamName, callback) {
 /**
  * Retrieve stream with calculated access rights
  * @method fetch
+ * @static
  * @param asUserId {String}
  *	The user id to calculate access rights
  * @param publisherId {String}
@@ -1065,7 +1105,8 @@ Streams.fetch = function (asUserId, publisherId, streamName, callback) {
 
 /**
  * Retrieve stream with calculated access rights
- * @method fetch
+ * @method fetchOne
+ * @static
  * @param asUserId {String}
  *	The user id to calculate access rights
  * @param publisherId {String}
@@ -1100,6 +1141,7 @@ Streams.fetchOne = function (asUserId, publisherId, streamName, callback) {
  * Retrieve the user's stream needed to post invite messages
  * If stream does not exist - create it
  * @method getInvitedStream
+ * @static
  * @param asUserId {string}
  *	The user id of inviting user
  * @param forUserId {string}
@@ -1142,6 +1184,7 @@ function getInvitedStream (asUserId, forUserId, callback) {
 /**
  * Register a message handler
  * @method messageHandler
+ * @static
  * @param msgType {string}
  *	Type of stream
  * @param callback {function}

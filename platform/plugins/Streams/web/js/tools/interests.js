@@ -3,6 +3,19 @@
 var Streams = Q.Streams;
 var Interests = Streams.Interests;
 
+/**
+ * Streams Tools
+ * @module Streams-tools
+ */
+	
+/**
+ * Tool for user to manage their interests in a community
+ * @class Streams interests
+ * @constructor
+ * @param {Object} [options] This is an object of parameters for this function
+ *  @param {String} [options.communityId=Q.info.app] The id of the user representing the community publishing the interests
+ *  @param {String} [options.cachebust=1000*60*60*24] How often to reload the list of major community interests
+ */
 Q.Tool.define("Streams/interests", function (options) {
 	var tool = this;
 	var state = tool.state;
@@ -40,13 +53,15 @@ Q.Tool.define("Streams/interests", function (options) {
 		}
 		var $expandable = $(Q.Tool.setUpElement('div', 'Q/expandable', {
 			title: img+"<span>"+category+"</span>",
-			content: content
+			content: content,
+            count: ''
 		}, 'Q_expandable_' + Q.normalize(category)));
 		$expandable.appendTo(tool.element).activate(p.fill(category));
 	}
 
 	var src = 'action.php/Streams/interests';
-	Q.addScript(Q.url(src, {communityId: state.communityId}, {cacheBust: state.cacheBust}),
+	var criteria = { communityId: state.communityId };
+	Q.addScript(Q.url(src, criteria, { cacheBust: state.cacheBust }),
 	function () {	
 		var categories = Object.keys(Interests.all[state.communityId]);
 		p.add(categories.concat(['my']), 1, function () {
@@ -105,7 +120,8 @@ Q.Tool.define("Streams/interests", function (options) {
 		var $unlisted1 = $("<div />").html("Don't see it? Try some synonyms.");
 		var $unlisted2 = $("<div class='Streams_interest_unlisted1' />")
 		.text("If you still can't find what you're looking for, you can add a new interest below:");
-		$unlistedTitle = $('<span id="Streams_new_interest_title" />');
+		$unlistedTitle = $('<span id="Streams_new_interest_title" />')
+			.addClass('Streams_new_interest_title');
 		var $select = $('<select class="Streams_new_interest_categories" />')
 			.on('change', function () {
 				var $this = $(this);
@@ -137,14 +153,16 @@ Q.Tool.define("Streams/interests", function (options) {
 					});
 				}, {subscribe: true});
 			});
-		var $unlisted = $('<div id="Streams_interests_unlisted" />')
+		var $unlisted = $('<div />')
+			.addClass("Streams_interests_unlisted")
 			.append($unlisted1, $unlisted2)
 			.append(
 				$('<div />').append(
 					$unlistedTitle.attr('data-category', 'Unlisted')
 				)
 			).append($select)
-			.appendTo(tool.element).hide();
+			.appendTo(tool.element)
+			.hide();
 		
 		$(tool.element)
 		.on(Q.Pointer.fastclick, 'span.Streams_interest_title', function () {
@@ -250,6 +268,27 @@ Q.Tool.define("Streams/interests", function (options) {
 						}
 					}
 				});
+				
+				var count = 0;
+				$select.empty();
+				Q.each(Interests.all[state.communityId], function (category) {
+					if (existing[category]) {
+						return;
+					}
+					$('<option />', { value: category })
+					.html(category)
+					.appendTo($select);
+					++count;
+				});
+				if (count) {
+					$unlistedTitle.text(val.toCapitalized());
+					$('<option value="" selected="selected" disabled="disabled" />')
+						.html('Add under category...')
+						.prependTo($select);
+					$unlisted.show();
+				} else {
+					$unlisted.hide();
+				}
 			} else if (lastVal) {
 				if (!revealingNewInterest) {
 					$('.Q_expandable_tool').show().each(function () {
@@ -259,27 +298,6 @@ Q.Tool.define("Streams/interests", function (options) {
 				$('.Q_expandable_tool h3').show();
 				$('.Streams_interest_sep').html(', ');
 				$('.Q_expandable_content span').show();
-				$unlisted.hide();
-			}
-			
-			var count = 0;
-			$select.empty();
-			Q.each(Interests.all[state.communityId], function (category) {
-				if (existing[category]) {
-					return;
-				}
-				$('<option />', { value: category })
-				.html(category)
-				.appendTo($select);
-				++count;
-			});
-			if (count) {
-				$unlistedTitle.text($this.val().toCapitalized());
-				$('<option value="" selected="selected" disabled="disabled" />')
-					.html('Add under category...')
-					.prependTo($select);
-				$unlisted.show();
-			} else {
 				$unlisted.hide();
 			}
 		

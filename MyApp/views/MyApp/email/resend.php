@@ -1,5 +1,5 @@
 <p>
-	Thanks for using <?php echo $app ?>, <?php echo $user->username ?>.
+	Thanks for using <?php echo $app ?>, <?php echo $user->displayName() ?>.
 </p>
 
 <p>

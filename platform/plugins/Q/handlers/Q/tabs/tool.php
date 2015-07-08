@@ -1,25 +1,33 @@
 <?php
 
 /**
- * @param array $options
- *  The parameters to pass to the tool. They include:
- *  "tabs" => An associative array of name => title pairs.
- *  "urls" => An associative array of name => url pairs to override the default urls.
- *  "classes" => An associative array of the form name => classes, for adding classes to tabs
- *  "titleClasses" => An associative array for adding classes to tab titles
- *  "field" => Defaults to "tab". Uses this field when urls doesn't contain the tab name.
- *  "selectors" => Array of (slotName => selector) pairs, where the values are CSS style selectors indicating the element to update with javascript, and can be a parent of the tabs. Set to null to reload the page.
- *    (if multiple slots defined parameter is required and shall be array of the same length as slot)
- *  "slot" => The name of the slot to request when changing tabs with javascript.
- *    (may be array or comma-delimited string to update multiple slots)
- *  "defaultTab" => Here you can specify the name of the tab to show by default
- *  "after" => Name of an event that will return HTML to place after the generated HTML in the tabs tool element
- *  "loader" => Optional. Name of function which takes url, slot, callback. It should call the callback and 
- *    pass it an object with the response info. Can be used to implement caching, etc. instead of the default 
- *    HTTP request.
- *  "beforeSwitch" => Optional. Name of the function to execute before tab switching begins.
- *  "beforeScripts" => Optional. Name of the function to execute after tab is loaded but before its javascript is executed.
- *  "onActivate" => Optional. Name of the function to execute after a tab is activated.
+ * @module Q-tools
+ */
+
+/**
+ * This tool renders tabs which behave appropriately in many different environments
+ * @class Q tabs
+ * @constructor
+ * @param {array} [options] Options to pass to the tool
+ *  @param {array} [options.tabs] An associative array of name: title pairs.
+ *  @param {array} [options.urls] An associative array of name: url pairs to override the default urls.
+ *  @param {string} [options.field='tab'] Uses this field when urls doesn't contain the tab name.
+ *  @param {boolean} [options.vertical=false] Stack the tabs vertically instead of horizontally
+ *  @param {boolean} [options.compact=false] Display the tabs interface in a compact space with a contextual menu
+ *  @param {string} [options.overflow] Override the text that is displayed when the tabs overflow. You can interpolate {{count}}, {{text}} or {{html}} in the string. 
+ *  @param {string} [options.overflowGlyph] Override the glyph that appears next to the overflow text. You can interpolate {{count}} here
+ *  @param {string} [options.defaultTabName] Here you can specify the name of the tab to show by default
+ *  @param {string} [options.selectors] Array of (slotName => selector) pairs, where the values are CSS style selectors indicating the element to update with javascript, and can be a parent of the tabs. Set to null to reload the page.
+ *  @param {string} [options.slot] The name of the slot to request when changing tabs with javascript.
+ *  @param {string} [options.classes] An associative array of the form name => classes, for adding classes to tabs
+ *  @param {string} [options.titleClasses]  An associative array for adding classes to tab titles
+ *  @param {string} [options.after] Name of an event that will return HTML to place after the generated HTML in the tabs tool element
+ *  @param {string} [options.loader] Name of a function which takes url, slot, callback. It should call the callback and pass it an object with the response info. Can be used to implement caching, etc. instead of the default HTTP request. This function shall be Q.batcher getter
+ *  @param {string} [options.onClick] Event when a tab was clicked, with arguments (name, element). Returning false cancels the tab switching.
+ *  @param {string} [options.beforeSwitch] Event when tab switching begins. Returning false cancels the switching.
+ *  @param {string} [options.beforeScripts] Name of the function to execute after tab is loaded but before its javascript is executed.
+ *  @param {string} [options.onCurrent] Name of the function to execute after a tab is shown to be selected.
+ *  @param {string} [options.onActivate] Name of the function to execute after a tab is activated.
  */
 function Q_tabs_tool($options)
 {
@@ -31,12 +39,14 @@ function Q_tabs_tool($options)
 	if (!isset($tabs)) {
 		return '';
 	}
-	if (!isset($defaultTab)) {
+	if (!isset($defaultTabName)) {
 		reset($tabs);
-		$defaultTab = key($tabs);
+		$defaultTabName = key($tabs);
 	}
 	/**
 	 * @var array $tabs
+	 * @var boolean $vertical
+	 * @var boolean $compact
 	 */
 	$sel = isset($_REQUEST[$field]) ? $_REQUEST[$field] : null;
 	$result = '';
@@ -61,7 +71,7 @@ function Q_tabs_tool($options)
 				"/Q\.(.*)/" => null
 			)));
 		}
-		$selected_class = ($name === $selectedName) ? ' Q_selected' : '';
+		$selected_class = ($name === $selectedName) ? ' Q_current' : '';
 		$classes_string = " Q_tab_".Q_Utils::normalize($name);
 		if (isset($classes[$name])) {
 			if (is_string($classes[$name])) {
@@ -93,9 +103,16 @@ function Q_tabs_tool($options)
 		));
 	}
 	Q_Response::setToolOptions(compact(
-		'selectors', 'slot', 'urls', 'defaultTab', 'field', 'loader', 'beforeSwitch', 'beforeScripts', 'onActivate'
+		'selectors', 'slot', 'urls', 'defaultTabName',
+		'vertical', 'compact', 'overflow', 'overflowGlyph',
+		'field', 'loader', 'beforeSwitch', 'beforeScripts', 'onActivate'
 	));
 	Q_Response::addScript('plugins/Q/js/tools/tabs.js');
+	Q_Response::addStylesheet('plugins/Q/css/tabs.css');
+	$classes = empty($vertical) ? '' : ' Q_tabs_vertical';
+	if (!empty($compact)) {
+		$classes .= " Q_tabs_compact";
+	}
 	$after = isset($options['after']) ? Q::event($options['after'], $options) : '';
-	return "<div class='Q_tabs_tabs Q_clearfix'>$result$after</div>";
+	return "<ul class='Q_tabs_tabs Q_clearfix$classes'>$result$after</ul>";
 }

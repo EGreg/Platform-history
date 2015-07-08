@@ -27,7 +27,7 @@ function Metrics_Visit (fields) {
 	};
 
 	// Run constructors of mixed in objects
-	this.constructors.apply(this, arguments);
+	Metrics_Visit.constructors.apply(this, arguments);
 
 }
 

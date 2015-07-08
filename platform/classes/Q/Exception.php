@@ -15,44 +15,39 @@ class Q_Exception extends Exception
 	 *  To access them later, call $e->params()
 	 *  You can also provide a string here, which will
 	 *  then be the exception message.
-	 * @param {array} [$input_fields=array()] Array of names of input fields to which the exception applies.
+	 * @param {array} [$inputFields=array()] Array of names of input fields to which the exception applies.
+	 * @param {array} [$code=null] Optionally pass the error code here to override the default
 	 */
 	function __construct(
 	  $params = array(),
-	  $input_fields = array())
+	  $inputFields = array(),
+	  $code = null)
 	{
-		if (is_string($input_fields)) {
-			$input_fields = array($input_fields);
+		if (is_string($inputFields)) {
+			$inputFields = array($inputFields);
 		}
-		$this->inputFields = $input_fields;
+		$this->inputFields = $inputFields;
 		
 		if (is_string($params)) {
-			parent::__construct($params, 0);
+			parent::__construct($params, isset($code) ? $code : 1);
 			return;
 		}
 		$this->params = is_array($params) ? $params : array();
 
-		$class_name = get_class($this);
-		if (isset(self::$messages[$class_name])) {
-			$t_message = Q::interpolate(
-				self::$messages[$class_name], $this->params
-			);
-		} else {
-			$t_message = $class_name;
-		}
-		if (isset(self::$messages[$class_name])) {
-			$t_code = self::$codes[$class_name];
-		} else {
-			$t_code = 0;
-		}
-		parent::__construct($t_message, $t_code);
+		$className = get_class($this);
+		$message = isset(self::$messages[$className])
+			? Q::interpolate(self::$messages[$className], $this->params)
+			: $className;
+		$code = isset($code) ? $code : 
+			(isset(self::$codes[$className]) ? self::$codes[$className] : 1);
+		parent::__construct($message, $code);
 	}
 	
 	/**
 	 * Construct a Q_Exception object from an Exception.
 	 * @method $exception
 	 * @param $exception
-	 * @return Q_Exception
+	 * @return {Q_Exception}
 	 */
 	static function fromException($exception)
 	{

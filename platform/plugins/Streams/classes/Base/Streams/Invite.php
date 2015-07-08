@@ -146,9 +146,9 @@ abstract class Base_Streams_Invite extends Db_Row
 	 * Create SELECT query to the class table
 	 * @method select
 	 * @static
-	 * @param $fields {array} The field values to use in WHERE clauseas as 
+	 * @param {array} $fields The field values to use in WHERE clauseas as 
 	 * an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function select($fields, $alias = null)
@@ -163,7 +163,7 @@ abstract class Base_Streams_Invite extends Db_Row
 	 * Create UPDATE query to the class table
 	 * @method update
 	 * @static
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function update($alias = null)
@@ -178,8 +178,8 @@ abstract class Base_Streams_Invite extends Db_Row
 	 * Create DELETE query to the class table
 	 * @method delete
 	 * @static
-	 * @param [$table_using=null] {object} If set, adds a USING clause with this table
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$table_using=null] If set, adds a USING clause with this table
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function delete($table_using = null, $alias = null)
@@ -194,8 +194,8 @@ abstract class Base_Streams_Invite extends Db_Row
 	 * Create INSERT query to the class table
 	 * @method insert
 	 * @static
-	 * @param [$fields=array()] {object} The fields as an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$fields=array()] The fields as an associative array of `column => value` pairs
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function insert($fields = array(), $alias = null)
@@ -223,7 +223,10 @@ abstract class Base_Streams_Invite extends Db_Row
 	 */
 	static function insertManyAndExecute($records = array(), $options = array())
 	{
-		self::db()->insertManyAndExecute(self::table(), $records, $options);
+		self::db()->insertManyAndExecute(
+			self::table(), $records,
+			array_merge($options, array('className' => 'Streams_Invite'))
+		);
 	}
 	
 	/**
@@ -247,6 +250,16 @@ abstract class Base_Streams_Invite extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the token field
+	 * @return {integer}
+	 */
+	function maxSize_token()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_userId
@@ -264,6 +277,16 @@ abstract class Base_Streams_Invite extends Db_Row
 		if (strlen($value) > 31)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".userId");
 		return array('userId', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the userId field
+	 * @return {integer}
+	 */
+	function maxSize_userId()
+	{
+
+		return 31;			
 	}
 
 	/**
@@ -287,6 +310,16 @@ abstract class Base_Streams_Invite extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the publisherId field
+	 * @return {integer}
+	 */
+	function maxSize_publisherId()
+	{
+
+		return 31;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_streamName
@@ -304,6 +337,16 @@ abstract class Base_Streams_Invite extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".streamName");
 		return array('streamName', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the streamName field
+	 * @return {integer}
+	 */
+	function maxSize_streamName()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -327,6 +370,16 @@ abstract class Base_Streams_Invite extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the invitingUserId field
+	 * @return {integer}
+	 */
+	function maxSize_invitingUserId()
+	{
+
+		return 31;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_displayName
@@ -347,6 +400,16 @@ abstract class Base_Streams_Invite extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum string length that can be assigned to the displayName field
+	 * @return {integer}
+	 */
+	function maxSize_displayName()
+	{
+
+		return 255;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
 	 * Optionally accept numeric value which is converted to string
 	 * @method beforeSet_appUrl
@@ -364,6 +427,16 @@ abstract class Base_Streams_Invite extends Db_Row
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".appUrl");
 		return array('appUrl', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the appUrl field
+	 * @return {integer}
+	 */
+	function maxSize_appUrl()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -389,6 +462,16 @@ abstract class Base_Streams_Invite extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum integer that can be assigned to the readLevel field
+	 * @return {integer}
+	 */
+	function maxSize_readLevel()
+	{
+
+		return 2147483647;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if integer value falls within allowed limits
 	 * @method beforeSet_writeLevel
 	 * @param {integer} $value
@@ -411,6 +494,16 @@ abstract class Base_Streams_Invite extends Db_Row
 	}
 
 	/**
+	 * Returns the maximum integer that can be assigned to the writeLevel field
+	 * @return {integer}
+	 */
+	function maxSize_writeLevel()
+	{
+
+		return 2147483647;			
+	}
+
+	/**
 	 * Method is called before setting the field and verifies if integer value falls within allowed limits
 	 * @method beforeSet_adminLevel
 	 * @param {integer} $value
@@ -430,6 +523,16 @@ abstract class Base_Streams_Invite extends Db_Row
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".adminLevel");
 		return array('adminLevel', $value);			
+	}
+
+	/**
+	 * Returns the maximum integer that can be assigned to the adminLevel field
+	 * @return {integer}
+	 */
+	function maxSize_adminLevel()
+	{
+
+		return 2147483647;			
 	}
 
 	/**
@@ -509,7 +612,7 @@ abstract class Base_Streams_Invite extends Db_Row
 	{
 		if (!$this->retrieved) {
 			$table = $this->getTable();
-			foreach (array('token','userId','publisherId','streamName','invitingUserId','displayName','appUrl') as $name) {
+			foreach (array('token') as $name) {
 				if (!isset($value[$name])) {
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}

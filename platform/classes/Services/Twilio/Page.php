@@ -36,7 +36,7 @@ class Services_Twilio_Page
     /**
      * The item list of the page.
      *
-     * @return array A list of instance resources
+     * @return {array} A list of instance resources
      */
     public function getItems()
     {
@@ -48,7 +48,7 @@ class Services_Twilio_Page
      *
      * @param string $prop The property name
      *
-     * @return mixed Could be anything
+     * @return {mixed} Could be anything
      */
     public function __get($prop)
     {
@@ -58,7 +58,7 @@ class Services_Twilio_Page
     /**
      * Implementation of IteratorAggregate::getIterator().
      *
-     * @return Traversable
+     * @return {Traversable}
      */
     public function getIterator()
     {

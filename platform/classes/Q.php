@@ -320,7 +320,7 @@ class Q
 	 *  The filename to include
 	 * @param {array} $params=array()
 	 *  Optional. Extracts this array before including the file.
-	 * @param boolean $once=false
+	 * @param {boolean} $once=false
 	 *  Optional. Whether to use include_once instead of include.
 	 * @param {boolean} $get_vars=false
 	 *  Optional. If true, returns the result of get_defined_vars() at the end.
@@ -402,22 +402,22 @@ class Q
 	 * Default autoloader for Q
 	 * @method autoload
 	 * @static
-	 * @param {string} $class_name
+	 * @param {string} $className
 	 * @throws {Q_Exception_MissingClass}
 	 *	If requested class is missing
 	 */
 	static function autoload(
-	 $class_name)
+	 $className)
 	{
-		if (class_exists($class_name, false)) {
+		if (class_exists($className, false)) {
 			return;
 		}
 		try {
-			$filename = self::event('Q/autoload', compact('class_name'), 'before');
+			$filename = self::event('Q/autoload', compact('className'), 'before');
 
 			if (!isset($filename)) {
-				$class_name_parts = explode('_', $class_name);
-				$filename = 'classes'.DS.implode(DS, $class_name_parts).'.php';
+				$className_parts = explode('_', $className);
+				$filename = 'classes'.DS.implode(DS, $className_parts).'.php';
 			}
 
 			// Workaround for Zend Framework, because it has require_once
@@ -458,17 +458,17 @@ class Q
 				// and you will get an error if you try to use the class
 			}
 
-			// if (!class_exists($class_name) && !interface_exists($class_name)) {
+			// if (!class_exists($className) && !interface_exists($className)) {
 			// 	require_once(Q_CLASSES_DIR.DS.'Q'.DS.'Exception'.DS.'MissingClass.php');
-			// 	throw new Q_Exception_MissingClass(compact('class_name'));
+			// 	throw new Q_Exception_MissingClass(compact('className'));
 			// }
 
 			/**
 			 * @event Q/autoload {after}
-			 * @param {string} 'class_name'
+			 * @param {string} 'className'
 			 * @param {string} 'filename'
 			 */
-			self::event('Q/autoload', compact('class_name', 'filename'), 'after');
+			self::event('Q/autoload', compact('className', 'filename'), 'after');
 
 		} catch (Exception $exception) {
 			/**
@@ -670,7 +670,7 @@ class Q
 	 * Might result in several handlers being called.
 	 * @method event
 	 * @static
-	 * @param {string} $event_name
+	 * @param {string} $eventName
 	 *  The name of the event
 	 * @param {array} $params=array()
 	 *  Parameters to pass to the event
@@ -685,7 +685,7 @@ class Q
 	 *  before and after some "default behavior" happens.
 	 *  Check for a non-null return value on "before",
 	 *  and cancel the default behavior if it is present.
-	 * @param {boolean} $skip_includes=false
+	 * @param {boolean} $skipIncludes=false
 	 *  Defaults to false.
 	 *  If true, no new files are loaded. Only handlers which have
 	 *  already been defined as functions are run.
@@ -702,14 +702,14 @@ class Q
 	 * @throws {Q_Exception_MissingFunction}
 	 */
 	static function event(
-	 $event_name,
+	 $eventName,
 	 $params = array(),
 	 $pure = false,
-	 $skip_includes = false,
+	 $skipIncludes = false,
 	 &$result = null)
 	{
 		// for now, handle only event names which are strings
-		if (!is_string($event_name)) {
+		if (!is_string($eventName)) {
 			return;
 		}
 		if (!is_array($params)) {
@@ -720,25 +720,25 @@ class Q
 		if (!isset($event_stack_limit)) {
 			$event_stack_limit = Q_Config::get('Q', 'eventStackLimit', 100);
 		}
-		self::$event_stack[] = compact('event_name', 'params', 'pure', 'skip_includes');
+		self::$event_stack[] = compact('eventName', 'params', 'pure', 'skipIncludes');
 		++self::$event_stack_length;
 		if (self::$event_stack_length > $event_stack_limit) {
 			if (!class_exists('Q_Exception_Recursion', false)) {
 				include(dirname(__FILE__).DS.'Q'.DS.'Exception'.DS.'Recursion.php');
 			}
-			throw new Q_Exception_Recursion(array('function_name' => "Q::event($event_name)"));
+			throw new Q_Exception_Recursion(array('function_name' => "Q::event($eventName)"));
 		}
 
 		try {
 			if ($pure !== 'after') {
 				// execute the "before" handlers
-				$handlers = Q_Config::get('Q', 'handlersBeforeEvent', $event_name, array());
+				$handlers = Q_Config::get('Q', 'handlersBeforeEvent', $eventName, array());
 				if (is_string($handlers)) {
 					$handlers = array($handlers); // be nice
 				}
 				if (is_array($handlers)) {
 					foreach ($handlers as $handler) {
-						if (false === self::handle($handler, $params, $skip_includes, $result)) {
+						if (false === self::handle($handler, $params, $skipIncludes, $result)) {
 							// return this result instead
 							return $result;
 						}
@@ -750,18 +750,18 @@ class Q
 			if (!$pure) {
 				// If none of the "after" handlers return anything,
 				// the following result will be returned:
-				$result = self::handle($event_name, $params, $skip_includes, $result);
+				$result = self::handle($eventName, $params, $skipIncludes, $result);
 			}
 
 			if ($pure !== 'before') {
 				// execute the "after" handlers
-				$handlers = Q_Config::get('Q', 'handlersAfterEvent', $event_name, array());
+				$handlers = Q_Config::get('Q', 'handlersAfterEvent', $eventName, array());
 				if (is_string($handlers)) {
 					$handlers = array($handlers); // be nice
 				}
 				if (is_array($handlers)) {
 					foreach ($handlers as $handler) {
-						if (false === self::handle($handler, $params, $skip_includes, $result)) {
+						if (false === self::handle($handler, $params, $skipIncludes, $result)) {
 							// return this result instead
 							return $result;
 						}
@@ -817,9 +817,8 @@ class Q
 			self::$event_empty[$handler_name] = true;
 			return false;
 		}
-		if (function_exists($function_name))
-			return true;
-		return false;
+		return function_exists($function_name);
+
 	}
 
 	/**
@@ -996,11 +995,13 @@ class Q
 	/**
 	 * Determine whether a PHP array if associative or not
 	 * Might be slow as it has to iterate through the array
-	 * @param {array}
+	 * @param {array} $array
 	 */
 	static function isAssociative($array)
 	{
-		if (!$array or !is_array($array)) return false;
+		if (!$array or !is_array($array)) {
+			return false;
+		}
 		foreach ($array as $k => $v) {
 			if (is_string($k)) {
 				return true;
@@ -1187,7 +1188,27 @@ class Q
 	static function json_encode()
 	{
 		$result = call_user_func_array('json_encode', func_get_args());
+		if ($result === false) {
+			throw new Q_Exception_JsonEncode(array(
+				'message' => json_last_error_msg()
+			), null, json_last_error());
+		}
 		return str_replace("\\/", '/', $result);
+	}
+
+
+	/**
+	 * A wrapper for json_decode
+	 */
+	static function json_decode()
+	{
+		$result = call_user_func_array('json_decode', func_get_args());
+		if ($code = json_last_error()) {
+			throw new Q_Exception_JsonDecode(array(
+				'message' => json_last_error_msg()
+			), null, $code);
+		}
+		return $result;
 	}
 
 	/**
@@ -1323,20 +1344,20 @@ class Q
 	 * Returns stack of events currently being executed.
 	 * @method eventStack
 	 * @static
-	 * @param {string} $event_name=null
+	 * @param {string} $eventName=null
 	 *  Optional. If supplied, searches event stack for this event name.
 	 *  If found, returns the latest call with this event name.
 	 *  Otherwise, returns false
 	 *
 	 * @return {array|false}
 	 */
-	static function eventStack($event_name = null)
+	static function eventStack($eventName = null)
 	{
-		if (!isset($event_name)) {
+		if (!isset($eventName)) {
 			return self::$event_stack;
 		}
 		foreach (self::$event_stack as $key => $ei) {
-			if ($ei['event_name'] === $event_name) {
+			if ($ei['eventName'] === $eventName) {
 				return $ei;
 			}
 		}
@@ -1517,7 +1538,7 @@ class Q
 					$message = addslashes($avar->getMessage());
 					echo "$indent$do_dump_indent"."code: $code, message: \"$message\"";
 					if ($avar instanceof Q_Exception) {
-						echo " inputFields: " . implode(', ', $avar->inputFIelds());
+						echo " inputFields: " . implode(', ', $avar->inputFields());
 					}
 					echo ($as_text ? $n : "<br />");
 				}

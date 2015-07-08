@@ -1,17 +1,21 @@
 <?php
 
 /**
+ * @module Q-tools
+ */
+
+/**
  * This tool implements expandable containers that work on most modern browsers,
  * including ones on touchscreens.
- *
- * @param array $options
- * An associative array of options, containing:
- *   "title" => Required. The title for the expandable.
- *   "content" => The content. Required unless you pass "items" instead.
- *   "items" => An array of strings to wrap in <span> elements and render in the content
- *   "class" => If you use "items", optionally specify the class of the container elements for each item
- *   "count" => A number, if any, to display when collapsed
- *   "autoCollapseSiblings" =>  Whether, when expanding an expandable, its siblings should be automatically collapsed.
+ * @class Q expandable
+ * @constructor
+ * @param {array} $options Options for the tool
+ * @param {string} $options.title Required. The title for the expandable.
+ * @param {string} $options.content The content. Required unless you pass "items" instead.
+ * @param {array} [$options.items] An array of strings to wrap in <span> elements and render in the content
+ * @param {string} [$options.class] If you use "items", optionally specify the class of the container elements for each item
+ * @param {integer} [$options.title] A number, if any, to display when collapsed
+ * @param {boolean} [$options.autoCollapseSiblings]  Whether, when expanding an expandable, its siblings should be automatically collapsed.
  */
 function Q_expandable_tool($options)
 {
@@ -31,6 +35,8 @@ function Q_expandable_tool($options)
 			throw new Q_Exception_RequiredField(compact('field'));
 		}
 	}
+	Q_Response::addScript('plugins/Q/js/tools/expandable.js');
+	Q_Response::addStylesheet('plugins/Q/css/expandable.css');
 	$count = Q::ifset($options, 'count', '');
 	$h2 = "<h2>\n\t<span class='Q_expandable_count'>$count</span>\n\t$options[title]\n</h2>";
 	$div = "<div class='Q_expandable_content'>\n\t$options[content]\n</div>";

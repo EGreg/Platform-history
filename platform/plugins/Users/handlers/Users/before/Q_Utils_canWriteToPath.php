@@ -22,11 +22,11 @@ function Users_before_Q_Utils_canWriteToPath($params, &$result)
 		if (!$can_write) continue;
 		$subpath = Q::interpolate($subpath, array('userId' => $user->id, 'app' => $app));
 		if ($subpath and ($subpath[0] !== '/' or $subpath[0] !== DS)) {
-			$subpath = "/$subpath";
+			$subpath = DS.$subpath;
 		}
 		$last_char = substr($subpath, -1);
 		if ($subpath and $last_char !== '/' and $last_char !== DS) {
-			$subpath .= "/";
+			$subpath .= DS;
 		}
 		$paths[] = APP_DIR.$subpath;
 		foreach (Q_Config::get('Q', 'plugins', array()) as $plugin) {
@@ -44,9 +44,9 @@ function Users_before_Q_Utils_canWriteToPath($params, &$result)
 			if (strncmp($path, $p, $len) === 0) {
 				// we can write to this path
 				if ($mkdir_if_missing and !file_exists($path)) {
-					$mask = is_string($mkdir_if_missing)
-						? umask($mkdir_if_missing)
-						: umask();
+					$mode = is_integer($mkdir_if_missing)
+						? $mkdir_if_missing
+						: 0777;
 					if (!@mkdir($path, 0777, true)) {
 						throw new Q_Exception_FilePermissions(array(
 							'action' => 'create',
@@ -54,7 +54,11 @@ function Users_before_Q_Utils_canWriteToPath($params, &$result)
 							'recommendation' => ' Please set your files directory to be writable.'
 						));
 					}
-					umask($mask);
+					$dir3 = $path;
+					do {
+						chmod($dir3, $mode);
+						$dir3 = dirname($dir3);
+					} while ($dir3 and $dir3 != $p and $dir3.DS != $p);
 				}
 				$result = true;
 				return;

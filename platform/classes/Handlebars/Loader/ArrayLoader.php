@@ -45,7 +45,7 @@ class Handlebars_Loader_ArrayLoader implements Handlebars_Loader
      * @param string $name     template name
      * @param string $template the template
      *
-     * @return void
+     * @return {void}
      */
     public function addTemplate($name, $template)
     {
@@ -57,8 +57,8 @@ class Handlebars_Loader_ArrayLoader implements Handlebars_Loader
      *
      * @param string $name template name to load
      *
-     * @throws RuntimeException
-     * @return Handlebars_String
+     * @throws {$1}
+     * @return {Handlebars_String}
      */
     public function load($name)
     {

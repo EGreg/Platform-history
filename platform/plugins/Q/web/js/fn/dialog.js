@@ -101,7 +101,7 @@ function _Q_overlay(o) {
 					{
 						Q.Masks.show('Q.screen.mask', { 
 							fadeTime: o.fadeTime,
-							className: 'Q_screen_shadow_mask'
+							className: 'Q_dialog_mask'
 						});
 					}
 				}
@@ -110,7 +110,7 @@ function _Q_overlay(o) {
 					$this.show();
 					if ($overlay.options.mask)
 					{
-						Q.Masks.show('Q.screen.mask', { 'className': 'Q_screen_shadow_mask' });
+						Q.Masks.show('Q.screen.mask', { 'className': 'Q_screen_mask' });
 					}
 					if (!$overlay.options.noClose && $overlay.options.closeOnEsc)
 					{
@@ -134,7 +134,7 @@ function _Q_overlay(o) {
 			{
 				$this.fadeOut(o.fadeTime, function()
 				{
-					Q.handle($overlay.options.onClose, $this, [$this]);
+					Q.handle($overlay.options.onClose, $this, []);
 				});
 				if ($overlay.options.mask)
 				{
@@ -151,6 +151,7 @@ function _Q_overlay(o) {
 				Q.handle($overlay.options.onClose, $this, [$this]);
 			}
 			if (e) $.Event(e).preventDefault();
+			Q.Pointer.stopHints($this[0]);
 		}
 	});
 
@@ -205,10 +206,8 @@ function _Q_overlay(o) {
  * @param {Object} [options] A hash of options, that can include:
  *   @param {String} [options.url]  If provided, this url will be used to fetch the "title" and "dialog" slots, to display in the dialog.
  *   @optional
- *   @param {Boolean} [options.alignByParent] If true, the dialog will be aligned to the center of not the entire window, but to the center of containing element instead.
- *   @default false
- *   @param {Boolean} [options.mask] If true, adds a mask to cover the screen behind the dialog.
- *   @default false
+ *   @param {Boolean} [options.alignByParent=false] If true, the dialog will be aligned to the center of not the entire window, but to the center of containing element instead.
+ *   @param {Boolean} [options.mask=true] If true, adds a mask to cover the screen behind the dialog.
  *   @param {Boolean} [options.fullscreen]
  *   Only on Android and false on all other platforms. If true, dialog will be shown not as overlay
  *               but instead will be prepended to document.body and all other child elements of the body will be hidden.
@@ -369,12 +368,34 @@ Q.Tool.jQuery('Q/dialog', function _Q_dialog (o) {
 		$this.data('Q/dialog', dialogData);
 	}
 	
-	$this.data('Q/dialog').load();
+	var css = {
+		position: 'absolute',
+		pointerEvents: 'none',
+		visibility: 'hidden'
+	};
+	var $div = $('<div />').addClass('Q_overlay').css(css).appendTo('body');
+	var src = $div.css('background-image').match(/url\((.*)\)/)[1];
+	$div.remove();
+	if (src.isUrl() && !bgLoaded) {
+		var $img = $('<img />').on('load', function () {
+			bgLoaded = true;
+			$img.remove();
+			_loadIt();
+		}).css(css)
+		.attr('src', src)
+		.appendTo('body');
+	} else {
+		_loadIt();
+	}
+	
+	function _loadIt() {
+		$this.data('Q/dialog').load();
+	}
 },
 
 {
 	'alignByParent': false,
-	'mask': false,
+	'mask': true,
 	'fullscreen': Q.info.isMobile && Q.info.isAndroid(1000),
 	'asyncLoad': !Q.info.isTouchscreen,
 	'noClose': false,
@@ -497,9 +518,10 @@ function _handlePosAndScroll(o)
 			if (Q.info.isMobile)
 			{
 				// correcting x-pos
-				if (parseInt($this.css('left')) != ((window.innerWidth - $this.outerWidth()) / 2))
+				var left = Math.ceil((window.innerWidth - $this.outerWidth()) / 2);
+				if (parseInt($this.css('left')) != left)
 				{
-					$this.css({ 'left': ((window.innerWidth - $this.outerWidth()) / 2) + 'px' });
+					$this.css({ 'left': left + 'px' });
 					if (iScrollBar)
 					{
 						iScrollBar.css({ 'left': (contentsWrapper.offset().left + contentsWrapper.width() - iScrollBar.width()) + 'px' });
@@ -628,5 +650,6 @@ function _handlePosAndScroll(o)
 };
 
 var interval;
+var bgLoaded;
 
 })(Q, jQuery, window, document);

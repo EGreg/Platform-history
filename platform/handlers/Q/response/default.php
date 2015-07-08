@@ -10,7 +10,7 @@
  * @param array $params
  *  An array that should contain:
  *  "slotName" => The name of the slot to fill.
- * @return mixed
+ * @return {mixed}
  *  Returns whatever the slot returned, or 
  *  a string indicating what you need to fix.
  */

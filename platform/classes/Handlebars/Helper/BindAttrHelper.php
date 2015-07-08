@@ -40,7 +40,7 @@ class Handlebars_Helper_BindAttrHelper implements Handlebars_Helper
      * @param array                $args     The arguments passed the the helper
      * @param string               $source   The source
      *
-     * @return mixed
+     * @return {mixed}
      */
     public function execute(Handlebars_Template $template, Handlebars_Context $context, $args, $source)
     {

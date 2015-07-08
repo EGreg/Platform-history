@@ -33,7 +33,7 @@ class Mustache_Loader_StringLoader implements Mustache_Loader
      *
      * @param string $name Mustache Template source
      *
-     * @return string Mustache Template source
+     * @return {string} Mustache Template source
      */
     public function load($name)
     {

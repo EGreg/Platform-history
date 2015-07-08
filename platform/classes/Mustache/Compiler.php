@@ -32,7 +32,7 @@ class Mustache_Compiler
      * @param bool   $customEscape (default: false)
      * @param string $charset      (default: 'UTF-8')
      *
-     * @return string Generated PHP source code
+     * @return {string} Generated PHP source code
      */
     public function compile($source, array $tree, $name, $customEscape = false, $charset = 'UTF-8')
     {
@@ -48,12 +48,12 @@ class Mustache_Compiler
     /**
      * Helper function for walking the Mustache token parse tree.
      *
-     * @throws InvalidArgumentException upon encountering unknown token types.
+     * @throws {$1} upon encountering unknown token types.
      *
      * @param array $tree  Parse tree of Mustache tokens
      * @param int   $level (default: 0)
      *
-     * @return string Generated PHP source code
+     * @return {string} Generated PHP source code
      */
     private function walk(array $tree, $level = 0)
     {
@@ -138,7 +138,7 @@ class Mustache_Compiler
      * @param array  $tree Parse tree of Mustache tokens
      * @param string $name Mustache Template class name
      *
-     * @return string Generated PHP source code
+     * @return {string} Generated PHP source code
      */
     private function writeCode($tree, $name)
     {
@@ -183,7 +183,7 @@ class Mustache_Compiler
      * @param string $ctag  Current Mustache closing tag
      * @param int    $level
      *
-     * @return string Generated section PHP source code
+     * @return {string} Generated section PHP source code
      */
     private function section($nodes, $id, $start, $end, $otag, $ctag, $level)
     {
@@ -220,7 +220,7 @@ class Mustache_Compiler
      * @param string $id    Section name
      * @param int    $level
      *
-     * @return string Generated inverted section PHP source code
+     * @return {string} Generated inverted section PHP source code
      */
     private function invertedSection($nodes, $id, $level)
     {
@@ -243,7 +243,7 @@ class Mustache_Compiler
      * @param string $indent Whitespace indent to apply to partial
      * @param int    $level
      *
-     * @return string Generated partial call PHP source code
+     * @return {string} Generated partial call PHP source code
      */
     private function partial($id, $indent, $level)
     {
@@ -271,7 +271,7 @@ class Mustache_Compiler
      * @param boolean $escape Escape the variable value for output?
      * @param int     $level
      *
-     * @return string Generated variable interpolation PHP source
+     * @return {string} Generated variable interpolation PHP source
      */
     private function variable($id, $escape, $level)
     {
@@ -291,7 +291,7 @@ class Mustache_Compiler
      * @param string $text
      * @param int    $level
      *
-     * @return string Generated output Buffer call PHP source
+     * @return {string} Generated output Buffer call PHP source
      */
     private function text($text, $level)
     {
@@ -311,7 +311,7 @@ class Mustache_Compiler
      * @param int     $bonus          Additional indent level (default: 0)
      * @param boolean $prependNewline Prepend a newline to the snippet? (default: true)
      *
-     * @return string PHP source code snippet
+     * @return {string} PHP source code snippet
      */
     private function prepare($text, $bonus = 0, $prependNewline = true)
     {
@@ -331,7 +331,7 @@ class Mustache_Compiler
      *
      * @param string $value (default: '$value')
      *
-     * @return string Either a custom callback, or an inline call to `htmlspecialchars`
+     * @return {string} Either a custom callback, or an inline call to `htmlspecialchars`
      */
     private function getEscape($value = '$value')
     {
@@ -353,7 +353,7 @@ class Mustache_Compiler
      *
      * @param string $id Variable name
      *
-     * @return string `find` method name
+     * @return {string} `find` method name
      */
     private function getFindMethod($id)
     {
@@ -371,7 +371,7 @@ class Mustache_Compiler
     /**
      * Get the current $indent prefix to write to the buffer.
      *
-     * @return string "$indent . " or ""
+     * @return {string} "$indent . " or ""
      */
     private function flushIndent()
     {

@@ -22,7 +22,7 @@ class Mustache_Parser
      *
      * @param array $tokens Set of Mustache tokens
      *
-     * @return array Mustache token parse tree
+     * @return {array} Mustache token parse tree
      */
     public function parse(array $tokens = array())
     {
@@ -35,9 +35,9 @@ class Mustache_Parser
      * @param ArrayIterator $tokens Stream of Mustache tokens
      * @param array         $parent Parent token (default: null)
      *
-     * @return array Mustache Token parse tree
+     * @return {array} Mustache Token parse tree
      *
-     * @throws LogicException when nesting errors or mismatched section tags are encountered.
+     * @throws {$1} when nesting errors or mismatched section tags are encountered.
      */
     private function buildTree(ArrayIterator $tokens, array $parent = null)
     {

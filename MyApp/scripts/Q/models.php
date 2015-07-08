@@ -44,6 +44,7 @@ if (!isset($argv[1]) or $argv[1] != '--all')
 	$connections = array_diff($connections, $plugins);
 
 foreach($connections as $c) {
+	if ($c === '*') continue;
 	echo "\nMaking models for ".(in_array($c, $plugins) ? "plugin" : "connection")." $c\n";
 	
 	$path = (in_array($c, $plugins) ? Q_DIR.DS.'plugins'.DS.$c : APP_DIR).DS.'classes';

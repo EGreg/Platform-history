@@ -9,7 +9,7 @@
  * @class Q drawers
  * @constructor
  * @param {Object}   [options] Override various options for this tool
- * @return Q.Tool
+ * @return {Q.Tool}
  */
 Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 	var tool = this;
@@ -18,6 +18,8 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 	var $scrolling = state.$scrolling = 
 		state.fullscreen ? $(window) : $(state.container);
 	state.swapCount = 0;
+	
+	Q.addStylesheet('plugins/Q/css/drawers.css');
 	
 	if (state.fullscreen || !state.container) {
 		state.container = $(tool.element).parents().eq(-3)[0];
@@ -41,7 +43,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 	setTimeout(function () {
 		state.lastScrollingHeight = $scrolling[0].clientHeight || $scrolling.height();
 		tool.swap(_layout);
-		Q.onLayout.set(_layout, tool);
+		Q.onLayout(tool).set(_layout, tool);
 	}, state.initialDelay);
 	
 	$te.parents().each(function () {
@@ -51,32 +53,17 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 		if ($this.is(state.container)) return false;
 	});
 	
-	var columnIndex;
 	if (Q.info.isMobile) {
-		$te.parents().each(function () {
-			var $this = $(this);
-			if ($this.hasClass('Q_columns_column')) {
-				columnIndex = $this.attr('data-index');
-			}
-			var columns = this.Q("Q/columns");
-			if (columns) {
-				columns.state.beforeOpen.set(function (options, index) {
-					if (index !== columnIndex
-					&& state.$pinnedElement
-					&& state.behind[state.currentIndex]) {
-						state.$pinnedElement.hide();
-					}
-				}, tool);
-				columns.state.onClose.set(function () {
-					var index = this.state.$currentColumn.attr('data-index');
-					if (index === columnIndex
-					&& state.$pinnedElement
-					&& state.behind[state.currentIndex]) {
-						state.$pinnedElement.show();
-					}
-				}, tool);
-				return false;
-			}
+		this.managePinned();
+	}
+	
+	// Accomodate mobile keyboard
+	if (Q.info.isMobile) {
+		state.$drawers.eq(0).on(Q.Pointer.focusin, tool, function () {
+			state.$drawers.eq(1).hide();
+		});
+		state.$drawers.eq(0).on(Q.Pointer.focusout, tool, function () {
+			state.$drawers.eq(1).show();
 		});
 	}
 
@@ -291,6 +278,9 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 				$otherDrawer.css({zIndex: state.foregroundZIndex});
 			}
 			state.$pinnedElement = $otherDrawer;
+			if (Q.info.isMobile) {
+				tool.managePinned();
+			}
 			
 			// TODO: adjust height, do not rely on parent of container having
 			// overflow: hidden
@@ -332,12 +322,12 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 				var product = Q.Pointer.movement && Q.Pointer.movement.movingAverageVelocity
 					? Q.Pointer.movement.movingAverageVelocity.y * (state.currentIndex-0.5)
 					: 0;
-				if (!$(evt.target).closest('.Q_discouragePointerEvents').length
+				if (!$(evt.target).closest('.Q_discourageDrawerSwap').length
 				&& product >= 0) {
 					if (Q.Pointer.which(evt) < 2) {
+						// don't do it right away, so that other event handlers
+						// can still access the old state.currentIndex
 						setTimeout(function () {
-							// don't do it right away, so that other event handlers
-							// can still access the old state.currentIndex
 							if (!state.canceledSwap) {
 								tool.swap();
 							}
@@ -383,18 +373,23 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 					}
 				});
 				var $drawer = tool.state.$drawers.eq(1);
-				var left = $drawer.offset().left
-					- $drawer.offsetParent().offset().left
-					+ $drawer.outerWidth(true)
-					- state.$trigger.outerWidth(true)
-					- state.trigger.rightMargin;
-				var top = $drawer.offset().top
-					- $drawer.offsetParent().offset().top
-					- state.$trigger.height() / 2;
-				state.$trigger.css({
-					left: left + 'px',
-					top: top + 'px'
-				});
+				if ($drawer.is(':visible')) {
+					var left = $drawer.offset().left
+						- $drawer.offsetParent().offset().left
+						+ $drawer.outerWidth(true)
+						- state.$trigger.outerWidth(true)
+						- state.trigger.rightMargin;
+					var top = $drawer.offset().top
+						- $drawer.offsetParent().offset().top
+						- state.$trigger.height() / 2;
+					state.$trigger.css({
+						left: left + 'px',
+						top: top + 'px',
+						position: state.fullscreen ? 'fixed' : 'absolute'
+					});
+				} else {
+					state.$trigger.hide();
+				}
 			}
 			
 			Q.handle(callbacks[0], tool);
@@ -414,7 +409,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 				notThisOne = false;
 				if (state.currentIndex == 0
 				|| state.$scrolling.scrollTop() > 0
-				|| $(e.target).closest('.Q_discouragePointerEvents').length) {
+				|| $(e.target).closest('.Q_discourageDrawerSwap').length) {
 					notThisOne = true;
 					return;
 				}
@@ -463,7 +458,19 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 				if (!state.$drawers.eq(1).is(':visible')) {
 					state.$trigger.hide();
 				} else if (canShowTrigger && state.$scrolling.scrollTop() === 0) {
-					state.$trigger.show();
+					var $drawer = tool.state.$drawers.eq(1);
+					var left = $drawer.offset().left
+						- $drawer.offsetParent().offset().left
+						+ $drawer.outerWidth(true)
+						- state.$trigger.outerWidth(true)
+						- state.trigger.rightMargin;
+					var top = $drawer.offset().top
+						- $drawer.offsetParent().offset().top
+						- state.$trigger.height() / 2;
+					state.$trigger.show().css({
+						left: left + 'px',
+						top: top + 'px'
+					});
 				}
 			}, 300);
 		}
@@ -495,6 +502,44 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 			}
 			clearInterval(state.$interval);
 		}}
+	},
+	managePinned: function () {
+		var columnIndex;
+		var tool = this;
+		var state = tool.state;
+		$(this.element).parents().each(function () {
+			var $this = $(this);
+			if ($this.hasClass('Q_columns_column')) {
+				columnIndex = $this.attr('data-index');
+			}
+			var columns = this.Q("Q/columns");
+			if (columns) {
+				if (columns.state.currentIndex != columnIndex
+				&& state.$pinnedElement
+				&& state.behind[state.currentIndex]) {
+					state.$pinnedElement
+					.add(state.$trigger).hide();
+				}
+				columns.state.beforeOpen.set(function (options, index) {
+					if (index !== columnIndex
+					&& state.$pinnedElement
+					&& state.behind[state.currentIndex]) {
+						state.$pinnedElement
+						.add(state.$trigger).hide();
+					}
+				}, tool);
+				columns.state.onClose.set(function () {
+					var index = this.state.$currentColumn.attr('data-index');
+					if (index === columnIndex
+					&& state.$pinnedElement
+					&& state.behind[state.currentIndex]) {
+						state.$pinnedElement
+						.add(state.$trigger).show();
+					}
+				}, tool);
+				return false;
+			}
+		});
 	}
 }
 

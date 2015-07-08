@@ -67,7 +67,7 @@ class Handlebars_Arguments
      *
      * This method is here mostly for backward compatibility reasons.
      *
-     * @return string
+     * @return {string}
      */
     public function __toString()
     {
@@ -77,7 +77,7 @@ class Handlebars_Arguments
     /**
      * Returns a list of named arguments.
      *
-     * @return array
+     * @return {array}
      */
     public function getNamedArguments()
     {
@@ -87,7 +87,7 @@ class Handlebars_Arguments
     /**
      * Returns a list of positional arguments.
      *
-     * @return array
+     * @return {array}
      */
     public function getPositionalArguments()
     {
@@ -100,8 +100,8 @@ class Handlebars_Arguments
      *
      * @param string $args_string Handlebars_Arguments string as passed to a helper.
      *
-     * @return void
-     * @throws InvalidArgumentException
+     * @return {void}
+     * @throws {$1}
      */
     protected function parse($args_string)
     {
@@ -154,7 +154,7 @@ class Handlebars_Arguments
      *
      * @param string $value Argument's value
      *
-     * @return string|Handlebars_String
+     * @return {string|Handlebars_String}
      */
     protected function prepareArgumentValue($value)
     {
@@ -181,7 +181,7 @@ class Handlebars_Arguments
      *
      * @param strign $name Argument's name
      *
-     * @return string
+     * @return {string}
      */
     protected function prepareArgumentName($name)
     {

@@ -54,10 +54,13 @@ function Q_after_Q_tool_render($params, &$result)
 		? " data-Q-replace=''"
 		: '';
 	$names = ($count === 1) ? ' '.key($info) : 's '.implode(" ", $names);
-	$result = "<!--\n\nbegin tool$names\n\n-->"
-	 . "<$tag id='{$id_prefix}tool' class='Q_tool $classes'$data_options$data_retain$data_replace$attributes>"
-	 . $result 
-	 . "</div><!--\n\nend tool$names \n\n-->";
+	$ajax = Q_Request::isAjax();
+	$result = "<$tag id='{$id_prefix}tool' "
+		. "class='Q_tool $classes'$data_options$data_retain$data_replace$attributes>"
+		. "$result</div>";
+	if (!Q_Request::isAjax()) {
+		$result = "<!--\nbegin tool$names\n-->$result<!--\nend tool$names \n-->";
+	}
 	
 	Q_Html::popIdPrefix();
 }

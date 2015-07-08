@@ -4,9 +4,11 @@
  * @module Q
  * @main Q
  */
-(function (window) {
-	
+(function () {
+
 /* jshint -W014 */
+
+root = this;
 
 // private properties
 var _isReady = false;
@@ -19,6 +21,12 @@ var _isOnline = null;
 function Q () {
 	// not called right now
 }
+
+// external libraries, which you can override
+Q.libraries = {
+	json: "http://cdnjs.cloudflare.com/ajax/libs/json3/3.2.4/json3.min.js",
+	promise: 'plugins/Q/js/Promise.js'
+};
 
 /**
  * @module Q
@@ -175,12 +183,10 @@ Sp.decodeHTML = function _String_prototype_decodeHTML() {
  * @return {String}
  */
 Sp.interpolate = function _String_prototype_interpolate(fields) {
-	return this.replace(/\{\{([^{}]*)\}\}/g,
-		function (a, b) {
-			var r = fields[b];
-			return typeof r === 'string' || typeof r === 'number' ? r : a;
-		}
-	);
+	return this.replace(/\{\{([^{}]*)\}\}/g, function (a, b) {
+		var r = fields[b];
+		return (typeof r === 'string' || typeof r === 'number') ? r : a;
+	});
 };
 
 /**
@@ -323,13 +329,14 @@ Sp.sameDomain = function _String_prototype_sameDomain (url2, options) {
  * refers to that object when it is called.
  * @method bind
  * @param {Function} method A reference to the function to call
- * @param {Object} obj The object to bind to
- * @param {object} options If supplied, binds these options and passes them during invocation. Optional.
+ * @param {Object} obj The object to bind as the context for the function call
+ * @param {Object} options If supplied, binds these options and pushes them as the last argument to the function call.
  */
-if (!Function.prototype.bind)
-Function.prototype.bind = function _Function_prototype_bind(obj, options) {
+var Fp = Function.prototype;
+if (!Fp.bind)
+Fp.bind = function _Function_prototype_bind(obj, options) {
 	var method = this;
-	if (!obj) obj = window;
+	if (!obj) obj = root;
 	if (!options) {
 		return function _Q_bind_result() {
 			return method.apply(obj, arguments);
@@ -346,9 +353,9 @@ Function.prototype.bind = function _Function_prototype_bind(obj, options) {
  * @class Array
  * @description Q extended methods for Arrays
  */
-
-if (!Array.prototype.indexOf)
-Array.prototype.indexOf = function _Array_prototype_indexOf(searchElement /*, fromIndex */ ) {
+var Ap = Array.prototype;
+if (!Ap.indexOf)
+Ap.indexOf = function _Array_prototype_indexOf(searchElement /*, fromIndex */ ) {
 	if (this === 0 || this === null) {
 		throw new TypeError();
 	}
@@ -362,7 +369,7 @@ Array.prototype.indexOf = function _Array_prototype_indexOf(searchElement /*, fr
 		n = Number(arguments[1]);
 		if (n !== n) { // shortcut for verifying if it's NaN
 			n = 0;
-		} else if (n !== 0 && n !== window.Infinity && n !== -window.Infinity) {
+		} else if (n !== 0 && n !== Infinity && n !== -Infinity) {
 			n = (n > 0 || -1) * Math.floor(Math.abs(n));
 		}
 	}
@@ -386,6 +393,7 @@ Array.prototype.indexOf = function _Array_prototype_indexOf(searchElement /*, fr
 /**
  * Returns total number of milliseconds since the UNIX epoch
  * @method now
+ * @static
  * @return {Number}
  */
 
@@ -398,7 +406,13 @@ Date.fromDateTime = function _Date_fromDateTime(dateTimeString) {
 	return new Date(dateTimeString.replace(/-/g,"/"));
 };
 
-if (window.Element) { // only IE7 and lower, which we don't support, wouldn't have this
+if (root.Element) { // only IE7 and lower, which we don't support, wouldn't have this
+
+if(!document.getElementsByClassName) {
+	document.getElementsByClassName = function(className) {
+		return Array.prototype.slice.call(this.querySelectorAll("." + className));
+	};
+}
 
 var Elp = Element.prototype;
 
@@ -458,8 +472,8 @@ Elp.isOrContains = function (child) {
  * @return {Object|String}
  */
 Elp.computedStyle = function(name) {
-	var computedStyle = window.getComputedStyle
-		? window.getComputedStyle(this, null)
+	var computedStyle = root.getComputedStyle
+		? getComputedStyle(this, null)
 		: this.currentStyle;
 	return name
 		? (computedStyle ? computedStyle[name] : null)
@@ -696,24 +710,45 @@ if (!Elp.getElementsByClassName) {
 }
 
 }
+	
+(function() {
+	if(navigator.appVersion.indexOf('MSIE 8') > 0) {
+		var _slice = Array.prototype.slice;
+		Array.prototype.slice = function() {
+			if(this instanceof Array) {
+				return _slice.apply(this, arguments);
+			} else {
+				var result = [];
+				var start = (arguments.length >= 1) ? arguments[0] : 0;
+				var end = (arguments.length >= 2) ? arguments[1] : this.length;
+				for(var i=start; i<end; i++) {
+					result.push(this[i]);
+				}
+				return result;
+			}
+		};
+	}
+})();
 
-if (!window.requestAnimationFrame) {
-	window.requestAnimationFrame =
-		window.webkitRequestAnimationFrame || 
-		window.mozRequestAnimationFrame    || 
-		window.oRequestAnimationFrame      || 
-		window.msRequestAnimationFrame     || 
+if (!root.requestAnimationFrame) {
+	requestAnimationFrame =
+		root.webkitRequestAnimationFrame || 
+		root.mozRequestAnimationFrame    || 
+		root.oRequestAnimationFrame      || 
+		root.msRequestAnimationFrame     || 
 		function( callback ) {
-			window.setTimeout(function _shim_requestAnimationFrame() {
+			return setTimeout(function _shim_requestAnimationFrame() {
 				callback(Q.milliseconds());
 			}, 1000 / Q.Animation.fps);
 		};
-}
-
-if(!document.getElementsByClassName) {
-	document.getElementsByClassName = function(className) {
-		return Array.prototype.slice.call(this.querySelectorAll("." + className));
-	};
+	cancelAnimationFrame =
+		root.webkitCancelAnimationFrame || 
+		root.mozCancelAnimationFrame    || 
+		root.oCancelAnimationFrame      || 
+		root.msCancelAnimationFrame     || 
+		function( id ) {
+			clearTimeout(id);
+		};
 }
 
 // public methods:
@@ -777,7 +812,7 @@ Q.objectWithPrototype = function _Q_objectWithPrototype(original) {
  * @return {String}
  */
 Q.typeOf = function _Q_typeOf(value) {
-	var s = typeof value, x;
+	var s = typeof value, x, l;
 	if (s === 'function' && !(value instanceof Function)) {
 		// older webkit workaround https://bugs.webkit.org/show_bug.cgi?id=33716
 		s = 'object';
@@ -786,17 +821,21 @@ Q.typeOf = function _Q_typeOf(value) {
 		if (value === null) {
 			return 'null';
 		}
-		if (value instanceof Array || (value.constructor && value.constructor.name === 'Array')
+		if (value instanceof root.Element) {
+			return 'Element';
+		} else if (value instanceof Array
+		|| (value.constructor && value.constructor.name === 'Array')
 		|| Object.prototype.toString.apply(value) === '[object Array]') {
 			s = 'array';
 		} else if (typeof value.typename != 'undefined' ) {
 			return value.typename;
-		} else if (typeof value.constructor != 'undefined' && typeof value.constructor.name != 'undefined') {
+		} else if (typeof (l=value.length) == 'number' && (l%1==0)
+		&& (!l || ((l-1) in value))) {
+			return 'array';
+		} else if (typeof value.constructor != 'undefined'
+		&& typeof value.constructor.name != 'undefined') {
 			if (value.constructor.name == 'Object') {
 				return 'object';
-			}
-			if (value.constructor === window.jQuery) {
-				return 'jQuery';
 			}
 			return value.constructor.name;
 		} else if ((x = Object.prototype.toString.apply(value)).substr(0, 8) === "[object ") {
@@ -829,35 +868,34 @@ Q.typeOf = function _Q_typeOf(value) {
  * @throws {Q.Error} If container is not array, object or string
  */
 Q.each = function _Q_each(container, callback, options) {
-	var i, k, length, r, t, args;
-	if (typeof callback === 'string' && Q.typeOf(arguments[2]) === 'array') {
+	var i, k, c, length, r, t, args;
+	if (typeof callback === 'string' && Q.isArrayLike(arguments[2])) {
 		args = arguments[2];
 		options = arguments[3];
 	}
 	switch (t = Q.typeOf(container)) {
+		case 'array':
 		default:
-			if (!container) break;
 			// Assume it is an array-like structure.
 			// Make a copy in case it changes during iteration. Then iterate.
-			var c = Array.prototype.slice.call(container, 0);
-			if (('0' in container) && !('0' in c)) { // we are probably dealing with IE < 9
+			c = Array.prototype.slice.call(container, 0);
+			if (('0' in container) && !('0' in c)) {
+				// we are probably dealing with IE < 9
 				c = [];
 				for (i=0; r = container[i]; ++i) {
 					c.push(r);
 				}
 			}
-			container = c;
-		case 'array':
-			length = container.length;
-			if (!container || !length || !callback) return;
+			length = c.length;
+			if (!c || !length || !callback) return;
 			if (options && options.ascending === false) {
 				for (i=length-1; i>=0; --i) {
-					r = Q.handle(callback, container[i], args || [i, container[i], container]);
+					r = Q.handle(callback, c[i], args || [i, c[i], c]);
 					if (r === false) return false;
 				}
 			} else {
 				for (i=0; i<length; ++i) {
-					r = Q.handle(callback, container[i], args || [i, container[i]], container);
+					r = Q.handle(callback, c[i], args || [i, c[i]], c);
 					if (r === false) return false;
 				}
 			}
@@ -1052,7 +1090,7 @@ Q.diff = function _Q_diff(container1, container2 /*, ... comparator */) {
 	if (typeof comparator !== 'function') {
 		throw new Q.Error("Q.diff: comparator must be a function");
 	}
-	var isArr = (Q.typeOf(container1) === 'array');
+	var isArr = Q.isArrayLike(container1);
 	var result = isArr ? [] : {};
 	Q.each(container1, function (k, v1) {
 		var found = false;
@@ -1130,7 +1168,7 @@ Q.isInteger = function _Q_isInteger(value) {
  * @return {boolean}
  *	Whether it is an array
  */
-Q.isArray = function _Q_isArray(value) {
+Q.isArrayLike = function _Q_isArrayLike(value) {
 	return (Q.typeOf(value) === 'array');
 };
 
@@ -1150,13 +1188,24 @@ Q.isPlainObject = function (x) {
 	if (Object.prototype.toString.apply(x) !== "[object Object]") {
 		return false;
 	}
-	if (window.attachEvent && !window.addEventListener) {
+	if (root.attachEvent && !root.addEventListener) {
 		// This is just for IE8
 		if (x && x.constructor !== Object) {
 			return false;
 		}
 	}
 	return true;
+};
+
+/**
+ * Convenience method for testing instanceof, even in IE
+ * @static
+ * @method instanceOf
+ * @param {mixed} testing
+ * @param {Function} Constructor
+ */
+Q.instanceOf = function (testing, Constructor) {
+	return testing && typeof testing === 'object' && (testing instanceof Constructor);
 };
 
 /**
@@ -1171,7 +1220,7 @@ Q.isPlainObject = function (x) {
  */
 Q.copy = function _Q_copy(x, fields) {
 	if (Q.typeOf(x) === 'array') {
-		return x.slice(0);
+		return Array.prototype.slice.call(x, 0);
 	}
 	if (x && typeof x.copy === 'function') {
 		return x.copy();
@@ -1213,6 +1262,7 @@ Q.copy = function _Q_copy(x, fields) {
  *  (If an array is being extended by an object with a "replace" property,
  *   the array is replaced by the value of that property.)
  *  You can also extend recursively, see the levels parameter.
+ * @static
  * @method extend
  * @param target {Object}
  *  This is the first object. It winds up being modified, and also returned
@@ -1240,7 +1290,6 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 	if (length === 0) {
 		return {};
 	}
-	target = target || {};
 	var deep = false, levels = 0;
 	var type = Q.typeOf(target);
 	var targetIsEvent = (type === 'Q.Event');
@@ -1258,6 +1307,15 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 			levels = arg;
 			continue;
 		}
+		if (target === undefined) {
+			if (Q.isArrayLike(arg)) {
+				target = [];
+				type = 'array';
+			} else {
+				target = {};
+				type = 'object';
+			}
+		}
 		if (targetIsEvent) {
 			if (arg && arg.constructor === Object) {
 				for (m in arg) {
@@ -1268,8 +1326,8 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 			}
 			continue;
 		}
-		if (type === 'array' && Q.typeOf(arg) === 'array') {
-			target = target.concat(arg);
+		if (type === 'array' && Q.isArrayLike(arg)) {
+			target = Array.prototype.concat.call(target, arg);
 		} else {
 			for (k in arg) {
 				if (deep !== true 
@@ -1288,15 +1346,14 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 					} else {
 						target[k].set(argk, namespace);
 					}
-				} else if (!levels || Q.typeOf(argk) === 'Q.Event' || !(
-					Q.isPlainObject(argk)
-					|| (ttk === 'array' && tak === 'array')
-				)) {
-					target[k] = Q.copy(argk);
-				} else {
+				} else if (levels && (target[k] && typeof target[k] === 'object') 
+				&& tak !== 'Q.Event'
+				&& (Q.isPlainObject(argk) || (ttk === 'array' && tak === 'array'))) {
 					target[k] = (ttk === 'array' && ('replace' in argk))
 						? Q.copy(argk.replace)
 						: Q.extend(target[k], deep, levels-1, argk);
+				} else {
+					target[k] = Q.copy(argk);
 				}
 				if (target[k] === undefined) {
 					delete target[k];
@@ -1322,6 +1379,7 @@ Q.has = function _Q_has(obj, key) {
 };
 
 /**
+ * Copies a subset of the fields in an object
  * @static
  * @method take
  * @param {Object} source
@@ -1334,7 +1392,7 @@ Q.has = function _Q_has(obj, key) {
 Q.take = function _Q_take(source, fields) {
 	var result = {};
 	if (!source) return result;
-	if (Q.typeOf(fields) === 'array') {
+	if (Q.isArrayLike(fields)) {
 		for (var i = 0; i < fields.length; ++i) {
 			if (fields[i] in source) {
 				result [ fields[i] ] = source [ fields[i] ];
@@ -1417,9 +1475,6 @@ Q.mixin = function _Q_mixin(A /*, B, ... */) {
 		var mixins = A.__mixins;
 		var i;
 		for (i = mixins.length - 1; i >= 0; --i) {
-			if (typeof mixins[i].constructors === 'function') {
-				mixins[i].constructors.apply(this, arguments);
-			}
 			mixins[i].apply(this, arguments);
 		}
 	};
@@ -1464,7 +1519,7 @@ Q.normalize = function _Q_normalize(text, replacement, characters, numChars) {
 function _getProp (/*Array*/parts, /*Boolean*/create, /*Object*/context){
 	var p, i = 0;
 	if (context === null) return undefined;
-	context = context || window;
+	context = context || root;
 	if(!parts.length) return context;
 	while(context && (p = parts[i++]) !== undefined){
 		try {
@@ -1477,44 +1532,6 @@ function _getProp (/*Array*/parts, /*Boolean*/create, /*Object*/context){
 	}
 	return context; // mixed
 }
-
-/**
- * Extend a property from a delimiter-separated string, such as "A.B.C"
- * Useful for longer api chains where you have to test each object in
- * the chain, or when you have an object reference in string format.
- * Objects are created as needed along `path`.
- * @static
- * @method extendObject
- * @param {String} name Path to a property, in the form "A.B.C".
- * @param {Object} value value or object to place at location given by name
- * @param {Object} [context=window] Optional. Object to use as root of path.
- * @param {String} [delimiter='.'] The delimiter to use in the name
- * @return {Object|undefined} Returns the passed value if setting is successful or `undefined` if not.
- */
-Q.extendObject = function _Q_extendObject(name, value, context, delimiter){
-	delimiter = delimiter || '.';
-	var parts = name.split(delimiter);
-	var p = parts.pop();
-	var obj = _getProp(parts, true, context);
-	if (obj === undefined) {
-		console.warn("Failed to set '"+name+"'");
-		return undefined;
-	} else {
-		// not null && object (maybe array) && value is real object
-		if (obj[p]
-		&& typeof obj[p] === "object"
-		&& Q.typeOf(value) === "object") {
-			Q.extend(obj[p], Q.extendObject.options, value);
-		} else {
-			obj[p] = value;
-		}
-		return value;
-	}
-};
-
-Q.extendObject.options = {
-	levels: 10
-};
 
 /**
  * Set an object from a delimiter-separated string, such as "A.B.C"
@@ -1532,7 +1549,6 @@ Q.extendObject.options = {
  * @return {Object|undefined} Returns the passed value if setting is successful or `undefined` if not.
  */
 Q.setObject = function _Q_setObject(name, value, context, delimiter) {
-	delimiter = delimiter || '.';
 	if (Q.isPlainObject(name)) {
 		context = value;
 		var result = {};
@@ -1542,7 +1558,7 @@ Q.setObject = function _Q_setObject(name, value, context, delimiter) {
 		return result;
 	}
 	if (typeof name === 'string') {
-		name = name.split(delimiter);
+		name = name.split(delimiter || '.');
 	}
 	var p = name.pop();
 	var obj = _getProp(name, true, context);
@@ -1601,6 +1617,8 @@ Q.ensure = function _Q_ensure(property, loader, callback) {
 		return;
 	} else if (typeof loader === 'function') {
 		loader(callback);
+	} else if (loader instanceof Q.Event) {
+		loader.add(callback);
 	}
 };
 
@@ -1749,6 +1767,7 @@ Q.Event.from = function _Q_Event_from(source, eventName) {
 
 var Evp = Q.Event.prototype;
 Evp.occurred = false;
+Evp.occurring = false;
 
 /**
  * Adds a handler to an event, or overwrites an existing one
@@ -1808,6 +1827,7 @@ Evp.set = function _Q_Event_prototype_set(handler, key, prepend) {
  * @return {String} The key under which the handler was set
  */
 Evp.add = function _Q_Event_prototype_add(handler, key, prepend) {
+	var event = this;
 	var ret = this.set(handler, key, prepend);
 	if (this.occurred || this.occurring) {
 		Q.handle(handler, this.lastContext, this.lastArgs);
@@ -1934,9 +1954,11 @@ Evp.or = function _Q_Event_prototype_or(anotherEvent, key, anotherKey) {
 Evp.and = function _Q_Event_prototype_and(anotherEvent, key, anotherKey) {
 	var newEvent = new Q.Event();
 	if (!anotherEvent) {
-		return newEvent();
+		return Q.copy(this);
 	}
 	var event = this;
+	newEvent.occurred = event.occurred && anotherEvent.occurred;
+	newEvent.occurring = event.occurring || anotherEvent.occurring;
 	function _Q_Event_and_wrapper() {
 		if ((event.occurred || event.occurring)
 		 && (anotherEvent.occurred || anotherEvent.occurring)) {
@@ -2053,7 +2075,7 @@ Evp.filter = function _Q_Event_prototype_filter(test, key) {
 	var newEvent = new Q.Event();
 	this.add(function () {
 		if (!test.apply(this, arguments)) return 0;
-		return newEvent.handle.apply(newEvent, arguments);
+		return newEvent.handle.apply(this, arguments);
 	}, key);
 	return newEvent;
 };
@@ -2110,19 +2132,43 @@ Evp.onStop = function () {
  *  An optional callback that gets called when a new event is created.
  *  The "this" object is the Q.Event, and the parameters are the processed parameters
  *  passed to the returned factory function.
+ * @param {Function} [callback]
+ *  An optional callback that gets called when a new event is created.
+ *  The "this" object is the Q.Event, and the parameters are the processed parameters
+ *  passed to the returned factory function. The callback should return the
+ *  event to be added to the collection (could just return this).
+ * @param {Function} [removeOnEmpty=false]
+ *  Pass true here to remove events from the factory after their last handler is removed.
+ *  They might be created again by the factory.
  * @return {Function}
  *  Returns a function that can take one or more index fields and return a Q.Event
  *  that was either already stored under those index fields or newly created.
  */
-Q.Event.factory = function (collection, defaults, callback) {
+Q.Event.factory = function (collection, defaults, callback, removeOnEmpty) {
 	if (!collection) {
 		collection = {};
 	}
 	defaults = defaults || [];
+	function _remove() {
+		var delimiter = "\t";
+		var args = this.indexes.split(delimiter);
+		var l = args.length, i, objs = [collection];
+		for (i=0; i<l; ++i) {
+			objs.push(objs[i][ args[i] ]);
+		}
+		for (i=l-1; i>=0; --i) {
+			var arg = args[i];
+			delete objs[i][arg];
+			if (!Q.isEmpty(objs[i])) {
+				break;
+			}
+		}
+	}
 	var _Q_Event_factory = function _Q_Event_factory_function() {
 		var args = Array.prototype.slice.call(arguments, 0);
 		var len = defaults.length;
-		var f = (typeof(defaults[len-1]) === 'function') ? defaults[defaults.length-1] : null;
+		var f = (typeof(defaults[len-1]) === 'function')
+			? defaults[defaults.length-1] : null;
 		if (f) --len;
 		for (var i=args.length; i<len; ++i) {
 			args[i] = defaults[i];
@@ -2134,10 +2180,15 @@ Q.Event.factory = function (collection, defaults, callback) {
 		if (e) {
 			return e;
 		}
-		e = Q.setObject(name, new Q.Event(), collection, delimiter);
+		var e = new Q.Event();
 		if (callback) {
 			callback.apply(e, args);
 		}
+		Q.setObject(name, e, collection, delimiter);
+		if (removeOnEmpty) {
+			e.onEmpty().set(_remove);
+		}
+		e.indexes = name;
 		return e;
 	}
 	_Q_Event_factory.collection = collection;
@@ -2217,11 +2268,30 @@ Q.onReady = new Q.Event();
  * @event onJQuery
  */
 Q.onJQuery = new Q.Event();
+var _layoutElements = [];
+var _layoutEvents = [];
 /**
- * This event occurs every time the layout needs to be updated
+ * Call this function to get an event which occurs every time
+ * Q.layout() is called on the given element or its parent.
+ * @param {Element} [element=document.documentElement] 
  * @event onLayout
  */
-Q.onLayout = new Q.Event(function () {
+Q.onLayout = function (element) {
+	element = element || document.documentElement;
+	if (Q.typeOf(element) === 'Q.Tool') {
+		element = element.element;
+	}
+	for (var i=0, l=_layoutElements.length; i<l; ++i) {
+		if (_layoutElements[i] === element) {
+			return _layoutEvents[i];
+		}
+	}
+	var event = new Q.Event();
+	var l = _layoutElements.push(element);
+	_layoutEvents[l-1] = event;
+	return event;
+}
+Q.onLayout().set(function () {
 	_detectOrientation.apply(this, arguments);
 	Q.Masks.update();
 }, 'Q');
@@ -2377,7 +2447,7 @@ Pp.fill = function _Q_pipe_fill(field, ignore) {
 		this.ignore[this.i] = true;
 	} else if (typeof ignore === 'string') {
 		this.ignore[ignore] = true;
-	} else if (Q.typeOf(ignore) === 'array') {
+	} else if (Q.isArrayLike(ignore)) {
 		for (var i=0; i<ignore.length; ++i) {
 			this.ignore[ignore[i]] = true;
 		}
@@ -2649,6 +2719,7 @@ Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotN
  *  your getter does "batching", and waits a tiny bit before sending the batch request,
  *  to see if any more will be requested. In this case, the execute function
  *  is supposed to execute the batched request without waiting any more.
+ *  If the original function returns false, the caching is canceled for that call.
  * @param options {Object}
  *  An optional hash of possible options, which include:
  *  "throttle" => a String id to throttle on, or an Object that supports the throttle interface:
@@ -2663,8 +2734,8 @@ Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotN
 Q.getter = function _Q_getter(original, options) {
 
 	function wrapper() {
-		var i, key, that = this, arguments2 = Array.prototype.slice.call(arguments);
-		var callbacks = [];
+		var i, key, that = this, callbacks = [], _dontCache = false;
+		var arguments2 = Array.prototype.slice.call(arguments);
 
 		// separate fields and callbacks
 		key = Q.Cache.key(arguments2, callbacks);
@@ -2713,24 +2784,20 @@ Q.getter = function _Q_getter(original, options) {
 		// replace the callbacks with smarter functions
 		var args = [];
 		for (i=0, cbi=0; i<arguments2.length; i++) {
-
 			// we only care about functions
 			if (typeof arguments2[i] !== 'function') {
 				args.push(arguments2[i]); // regular argument
 				continue;
 			}
-
 			args.push((function(cb, cbpos) {
 				// make a function specifically to call the
 				// callbacks in position pos, and then decrement
 				// the throttle
 				return function _Q_getter_callback() {
-
 					// save the results in the cache
-					if (wrapper.cache) {
+					if (wrapper.cache && !_dontCache) {
 						wrapper.cache.set(key, cbpos, this, arguments);
 					}
-
 					// process waiting callbacks
 					var wk = _waiting[key];
 					if (wk) for (i = 0; i < wk.length; i++) {
@@ -2738,7 +2805,6 @@ Q.getter = function _Q_getter(original, options) {
 						wk[i].callbacks[cbpos].apply(this, arguments);
 					}
 					delete _waiting[key]; 
-
 					// tell throttle to execute the next function, if any
 					if (wrapper.throttle && wrapper.throttle.throttleNext) {
 						wrapper.throttle.throttleNext(this);
@@ -2750,7 +2816,9 @@ Q.getter = function _Q_getter(original, options) {
 
 		if (!wrapper.throttle) {
 			// no throttling, just run the function
-			original.apply(that, args);
+			if (false === original.apply(that, args)) {
+				_dontCache = true;
+			}
 			ret.result = Q.getter.REQUESTING;
 			wrapper.onExecuted.handle.call(this, arguments2, ret);
 			return ret;
@@ -2768,7 +2836,9 @@ Q.getter = function _Q_getter(original, options) {
 			wrapper.throttle.throttleTry = function _throttleTry(that, getter, args) {
 				++p.count;
 				if (p.size === null || p.count <= p.size) {
-					getter.apply(that, args);
+					if (false === getter.apply(that, args)) {
+						_dontCache = true;
+					}
 					return true;
 				}
 				// throttle is full, so queue this function
@@ -2960,6 +3030,27 @@ Q.debounce = function (original, milliseconds, defaultValue) {
 };
 
 /**
+ * Wraps a function and causes it to return early if called recursively.
+ * Use sparingly, since most functions should make guarantees about postconditions.
+ * @static
+ * @method preventRecursion
+ * @param {String} name The name of the function, passed explicitly
+ * @param {Function} original The function or method to wrap
+ * @param {Mixed} defaultValue Value to return whenever original function isn't called
+ * @return {Function} The wrapper function
+ */
+Q.preventRecursion = function (name, original, defaultValue) {
+	return function () {
+		var n = '__preventRecursion_'+name;
+		if (this[n]) return defaultValue;
+		this[n] = true;
+		var ret = original.apply(this, arguments);
+		delete this[n];
+		return ret;
+	};
+};
+
+/**
  * Custom exception constructor
  * @class Q.Exception
  * @constructor
@@ -2971,7 +3062,7 @@ Q.Exception = function (message, fields) {
 	this.message = message || "";
 };
 
-Q.Error.prototype = Error;
+Q.Exception.prototype = Error;
 
 /**
  * The root mixin added to all tools.
@@ -2990,14 +3081,17 @@ Q.Tool = function _Q_Tool(element, options) {
 	this.element = element;
 	this.typename = 'Q.Tool';
 
-	if (window.jQuery) {
+	if (root.jQuery) {
 		jQuery(element).data('Q_tool', this);
 	}
 
 	// ID and prefix
 	if (!this.element.id) {
 		var prefix = Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '';
-		this.element.id = (prefix + this.name + '_' + (Q.Tool.nextDefaultId++) + "_tool").toLowerCase();
+		this.element.id = (
+			prefix + this.name + '_' + (Q.Tool.nextDefaultId++) + "_tool"
+		).toLowerCase();
+		Q.Tool.nextDefaultId %= 1000000;
 	}
 	this.prefix = Q.Tool.calculatePrefix(this.element.id);
 	this.id = this.prefix.substr(0, this.prefix.length-1);
@@ -3027,11 +3121,11 @@ Q.Tool = function _Q_Tool(element, options) {
 	options = options || {};
 	this.options = this.options || {};
 	
-	var pids = this.parentIds(),
-		len = pids.length,
-		o = len ? Q.extend({}, Q.Tool.options.levels, options) : options;
+	var pids = this.parentIds();
+	var len = pids.length;
+	var o = len ? Q.extend({}, Q.Tool.options.levels, options) : options;
 	
-	for (i=len-1; i>=0; --i) {
+	for (i = len-1; i >= 0; --i) {
 		var pid = pids[i];
 		if (Q.isEmpty(Q.Tool.active[pid].state)) continue;
 		o = Q.extend(o, Q.Tool.options.levels, Q.Tool.active[pid].state);
@@ -3061,6 +3155,7 @@ Q.Tool = function _Q_Tool(element, options) {
 		Q.extend(this.options, Q.Tool.options.levels, element.options, 'Q.Tool');
 	}
 	
+	// override prototype Q function on the element to associate things with it
 	if (element.Q === Element.prototype.Q) {
 		element.Q = function (toolName) {
 			if (!toolName) {
@@ -3095,7 +3190,7 @@ Q.Tool = function _Q_Tool(element, options) {
 		beforeRemove: new Q.Event(),
 		/**
 		 * Q.Event which occurs when the tool was retained while replacing some HTML
-		 * @event onRetained
+		 * @event onRetain
 		 */
 		onRetain: new Q.Event(),
 		/**
@@ -3146,7 +3241,7 @@ Q.Tool.onConstruct = Q.Event.factory(_constructToolHandlers, ["", _toolEventFact
  * @event onActivate
  * @param nameOrId {String} the name of the tool, such as "Q/inplace", or "id:" followed by tool's id
  */
-Q.Tool.onActivate = Q.Event.factory(_activateToolHandlers, ["", _toolEventFactoryNormalizeKey]);
+Q.Tool.onActivate = Q.Event.factory(_activateToolHandlers, ["", _toolEventFactoryNormalizeKey], null, true);
 
 /**
  * Returns Q.Event which occurs when a tool has been initialized
@@ -3154,7 +3249,7 @@ Q.Tool.onActivate = Q.Event.factory(_activateToolHandlers, ["", _toolEventFactor
  * @event onInit
  * @param nameOrId {String} the name of the tool, such as "Q/inplace", or "id:" followed by tool's id
  */
-Q.Tool.onInit = Q.Event.factory(_initToolHandlers, ["", _toolEventFactoryNormalizeKey]);
+Q.Tool.onInit = Q.Event.factory(_initToolHandlers, ["", _toolEventFactoryNormalizeKey], null, true);
 
 /**
  * Returns Q.Event which occurs when a tool is about to be removed
@@ -3162,7 +3257,7 @@ Q.Tool.onInit = Q.Event.factory(_initToolHandlers, ["", _toolEventFactoryNormali
  * @event beforeRemove
  * @param nameOrId {String} the name of the tool, such as "Q/inplace", or "id:" followed by tool's id
  */
-Q.Tool.beforeRemove = Q.Event.factory(_beforeRemoveToolHandlers, ["", _toolEventFactoryNormalizeKey]);
+Q.Tool.beforeRemove = Q.Event.factory(_beforeRemoveToolHandlers, ["", _toolEventFactoryNormalizeKey], null, true);
 
 /**
  * Traverses elements in a particular container, including the container, and removes + destroys all tools.
@@ -3215,43 +3310,56 @@ Q.Tool.clear = function _Q_Tool_clear(elem, removeCached) {
  * Call this function to define a tool
  * @static
  * @method define
- * @param name {String|Object} The name of the tool, e.g. "Q/foo". Also you can pass an object of name: filename here here.
- * @param ctor {Function} Your tool's constructor. You can also pass a filename here, in which case the other parameters are ignored.
- * @param defaultOptions {Object} An optional hash of default options for the tool
- * @param stateKeys {Array} An optional array of key names to copy from options to state
- * @param methods {Object} An optional hash of method functions to assign to the prototype
+ * @param {String|Object} name The name of the tool, e.g. "Q/foo". Also you can pass an object of name: filename here here.
+ * @param {Function} ctor Your tool's constructor. You can also pass a filename here, in which case the other parameters are ignored.
+ * @param {String|array} [require] Optionally name another tool (or array of tool names) that was supposed to already have been defined. This will cause your tool's constructor to make sure the required tool has been already loaded and activated on the same element.
+ * @param {Object} defaultOptions An optional hash of default options for the tool
+ * @param {Array} stateKeys An optional array of key names to copy from options to state
+ * @param{Object} methods An optional hash of method functions to assign to the prototype
  */
-Q.Tool.define = function (name, ctor, defaultOptions, stateKeys, methods) {
+Q.Tool.define = function (name, /* require, */ ctor, defaultOptions, stateKeys, methods) {
+	var ctors = {};
 	if (typeof name === 'object') {
-		for (var n in name) {
-			Q.Tool.define(n, name[n]);
+		ctors = name;
+	} else {
+		if (typeof arguments[1] !== 'function' && typeof arguments[2] === 'function') {
+			var require = arguments[1];
+			if (typeof require === 'string') {
+				require = [require];
+			}
+			ctor = arguments[2]; ctor.require = require; defaultOptions = arguments[3];
+			stateKeys = arguments[4]; methods = arguments[5];
 		}
-		return;
+		ctors[name] = ctor;
 	}
-	name = Q.normalize(name);
-	if (typeof ctor === 'string') {
-		if (typeof Q.Tool.constructors[name] !== 'function') {
-			_qtdo[name] = _qtdo[name] || {};
-			return Q.Tool.constructors[name] = ctor;
+	for (name in ctors) {
+		ctor = ctors[name];
+		ctor.toolName = name;
+		name = Q.normalize(name);
+		if (typeof ctor === 'string') {
+			if (typeof Q.Tool.constructors[name] !== 'function') {
+				_qtdo[name] = _qtdo[name] || {};
+				Q.Tool.constructors[name] = ctor;
+			}
+			continue;
 		}
-		return ctor;
+		if (typeof stateKeys === 'object') {
+			methods = stateKeys;
+			stateKeys = undefined;
+		}
+		ctor.options = Q.extend(
+			defaultOptions, Q.Tool.options.levels, _qtdo[name]
+		);
+		ctor.stateKeys = stateKeys;
+		if (typeof ctor !== 'function') {
+			throw new Q.Error("Q.Tool.define requires ctor to be a string or a function");
+		}
+		Q.extend(ctor.prototype, 10, methods);
+		Q.Tool.constructors[name] = ctor;
+		Q.Tool.onLoadedConstructor(name).handle(name, ctor);
+		Q.Tool.onLoadedConstructor("").handle(name, ctor);
+		Q.Tool.latestName = name;
 	}
-	if (typeof stateKeys === 'object') {
-		methods = stateKeys;
-		stateKeys = undefined;
-	}
-	ctor.options = Q.extend(
-		defaultOptions, Q.Tool.options.levels, _qtdo[name]
-	);
-	ctor.stateKeys = stateKeys;
-	if (typeof ctor !== 'function') {
-		throw new Q.Error("Q.Tool.define requires ctor to be a string or a function");
-	}
-	Q.extend(ctor.prototype, 10, methods);
-	Q.Tool.constructors[name] = ctor;
-	Q.Tool.onLoadedConstructor(name).handle(name, ctor);
-	Q.Tool.onLoadedConstructor("").handle(name, ctor);
-	Q.Tool.latestName = name;
 	return ctor;
 };
 
@@ -3269,13 +3377,13 @@ Q.Tool.beingActivated = undefined;
 Q.Tool.define.options = function (toolName, setOptions) {
 	var options;
 	toolName = Q.normalize(toolName);
-	if (Q.Tool.constructors[toolName]) {
+	if (typeof Q.Tool.constructors[toolName] === 'functions') {
 		options = Q.Tool.constructors[toolName].options;
 	} else {
 		options = _qtdo[toolName] = _qtdo[toolName] || {};
 	}
 	if (setOptions) {
-		Q.extend(options, setOptions);
+		Q.extend(options, Q.Tool.options.levels, setOptions);
 	}
 	return options;
 };
@@ -3300,9 +3408,10 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 	}
 	name = Q.normalize(name);
 	if (typeof ctor === 'string') {
-		if (typeof window.jQuery.fn.plugin[name] !== 'function') {
+		if (root.jQuery
+		&& typeof jQuery.fn.plugin[name] !== 'function') {
 			_qtjo[name] = _qtjo[name] || {};
-			window.jQuery.fn.plugin[name] = Q.Tool.constructors[name] = ctor;
+			jQuery.fn.plugin[name] = Q.Tool.constructors[name] = ctor;
 		}
 		return ctor;
 	}
@@ -3310,7 +3419,10 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 		methods = stateKeys;
 		stateKeys = undefined;
 	}
-	Q.onJQuery.add(function ($) {
+	Q.ensure(root.jQuery, Q.onJQuery.add, _onJQuery);
+	Q.Tool.latestName = name;
+	function _onJQuery() {
+		var $ = root.jQuery;
 		function jQueryPluginConstructor(options /* or methodName, argument1, argument2, ... */) {
 			if (typeof options === 'string') {
 				var method = options;
@@ -3358,8 +3470,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 				$te.plugin.apply($te, args);
 			};
 		});
-	});
-	Q.Tool.latestName = name;
+	}
 };
 
 /**
@@ -3374,13 +3485,13 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 Q.Tool.jQuery.options = function (pluginName, setOptions) {
 	var options;
 	var pluginName = Q.normalize(pluginName);
-	if (Q.Tool.constructors[name]) {
-		options = window.jQuery.fn[pluginName].options;
+	if (typeof Q.Tool.constructors[name] === 'function') {
+		options = root.jQuery.fn[pluginName].options;
 	} else {
 		options = _qtjo[pluginName] = _qtjo[pluginName] || {};
 	}
 	if (setOptions) {
-		Q.extend(options, setOptions, 10);
+		Q.extend(options, Q.Tool.options.levels, setOptions);
 	}
 	return options;
 };
@@ -3403,7 +3514,10 @@ var Tp = Q.Tool.prototype;
  */
 Tp.stateChanged = function Q_Tool_prototype_stateChanged(names) {
 	if (typeof names === 'string') {
-		names = names.split(',').map(function (str) { return str.trim(); });
+		names = names.split(',');
+		for (var i=0,l=names.length; i<l; ++i) {
+			names[i] = names[i].trim();
+		}
 	}
 	var l = names.length;
 	for (var i=0; i<l; ++i) {
@@ -3425,7 +3539,10 @@ Tp.stateChanged = function Q_Tool_prototype_stateChanged(names) {
 Tp.rendering = function (fields, dontWaitForAnimationFrame, callback, key) {
 	var tool = this;
 	if (typeof fields === 'string') {
-		fields = fields.split(',').map(function (str) { return str.trim(); });
+		fields = fields.split(',');
+		for (var i=0,l=fields.length; i<l; ++i) {
+			fields[i] = fields[i].trim();
+		}
 	}
 	if (!fields.length) return false;
 	if (typeof dontWaitForAnimationFrame === 'function') {
@@ -3459,28 +3576,32 @@ Tp.rendering = function (fields, dontWaitForAnimationFrame, callback, key) {
  * Gets child tools contained in the tool, as determined by their prefixes
  * based on the prefix of the tool.
  * @method children
- * @param {String} append The string to append to the prefix to find the child tools
- * @param {Number} levels Pass 1 here to get only the immediate children, 2 for immediate children and grandchildren, etc.
+ * @param {String} [name=""] Filter children by their tool name, such as "Q/inplace"
+ * @param {Number} [levels] Pass 1 here to get only the immediate children, 2 for immediate children and grandchildren, etc.
  * @return {Object} A hash of {prefix: Tool} pairs
  */
-Tp.children = function Q_Tool_prototype_children(append, levels) {
-	var result = {},
-		prefix2 = Q.normalize(this.prefix + (append || "")),
-		id, ni, i, ids;
+Tp.children = function Q_Tool_prototype_children(name, levels) {
+	var result = {};
+	var prefix = this.prefix;
+	var id, ni, i, ids;
+	name = name && Q.normalize(name);
 	for (id in Q.Tool.active) {
-		ni = Q.normalize(id);
-		if (id.length >= prefix2.length + (append ? 0 : 1)
-		&& ni.substr(0, prefix2.length) == prefix2) {
-			if (levels) {
-				ids = Q.Tool.active[id].parentIds();
-				for (i=0; i<levels; ++i) {
-					if (ids[i] === this.id) {
-						result[id] = Q.Tool.active[id];
-						break;
-					}
-				}
-			} else {
-				result[id] = Q.Tool.active[id];
+		var tool = Q.Tool.active[id];
+		if ((name && tool.name != name)
+		|| id.length <= prefix.length
+		|| id.substr(0, prefix.length) != prefix) {
+			continue;
+		}
+		if (!levels) {
+			result[id] = Q.Tool.active[id];
+			continue;
+		}
+		ids = tool.parentIds();
+		var l = Math.min(levels, ids.length);
+		for (i=0; i<l; ++i) {
+			if (ids[i] === this.id) {
+				result[id] = tool;
+				break;
 			}
 		}
 	}
@@ -3491,8 +3612,8 @@ Tp.children = function Q_Tool_prototype_children(append, levels) {
  * Gets one child tool contained in the tool, which matches the prefix
  * based on the prefix of the tool.
  * @method child
- * @param {String} append The string to append to the prefix to find the child tool
- * @return {Tool|null}
+ * @param {String} append The string to append to the tool prefix to find the child tool
+ * @return {Q.Tool|null}
  */
 Tp.child = function Q_Tool_prototype_child(append) {
 	var prefix2 = Q.normalize(this.prefix + (append || ""));
@@ -3508,10 +3629,9 @@ Tp.child = function Q_Tool_prototype_child(append) {
 };
 
 /**
- * Gets the first child tool contained in the tool, which matches the prefix
- * based on the prefix of the tool.
+ * Gets the ids of the parent, grandparent, etc. tools (in that order) of the given tool
  * @method parentIds
- * @return {Tool|null}
+ * @return {Q.Tool|null}
  */
 Tp.parentIds = function Q_Tool_prototype_parentIds() {
 	var prefix2 = Q.normalize(this.prefix), ids = [], id, ni;
@@ -3529,10 +3649,9 @@ Tp.parentIds = function Q_Tool_prototype_parentIds() {
 };
 
 /**
- * Gets parents tools containing the tool, as determined by their prefixes
- * based on the prefix of the tool.
+ * Gets parent tools, as determined by parentIds()
  * @method parents
- * @return {Object} A hash of {prefix: Tool} pairs
+ * @return {Object} A hash of {prefix: Q.Tool} pairs
  */
 Tp.parents = function Q_Tool_prototype_parents() {
 	var ids = [], i, id;
@@ -3546,10 +3665,9 @@ Tp.parents = function Q_Tool_prototype_parents() {
 };
 
 /**
- * Gets the first child tool contained in the tool, which matches the prefix
- * based on the prefix of the tool.
+ * Returns the immediate parent tool, if any
  * @method parent
- * @return {Tool|null}
+ * @return {Q.Tool|null}
  */
 Tp.parent = function Q_Tool_prototype_parent() {
 	var ids = [];
@@ -3605,7 +3723,7 @@ Tp.remove = function _Q_Tool_prototype_remove(removeCached) {
 	if (p) {
 		for (i=p.length-1; i >= 0; --i) {
 			var off = p[i][0];
-			window.jQuery.fn[off].call(p[i][1], p[i][2], p[i][3]);
+			root.jQuery.fn[off].call(p[i][1], p[i][2], p[i][3]);
 		}
 		Q.Event.jQueryForTool[this.id] = [];
 	}
@@ -3624,10 +3742,10 @@ Tp.remove = function _Q_Tool_prototype_remove(removeCached) {
  *   jQuery object matched by the given selector
  */
 Tp.$ = function _Q_Tool_prototype_$(selector) {
-	if (window.jQuery) {
+	if (root.jQuery) {
 		return selector === undefined
-			? window.jQuery(this.element)
-			: window.jQuery(selector, this.element);
+			? jQuery(this.element)
+			: jQuery(selector, this.element);
 	} else {
 		throw new Q.Error("Tp.$ requires jQuery");
 	}
@@ -3646,23 +3764,29 @@ Tp.getElementsByClassName = function _Q_Tool_prototype_getElementsByClasName(cla
 };
 
 /**
- * Be notified whenever a child tool is activated, repeatedly if it is
- * removed and then activated again.
- * @event onChildActivate
- * @param append text to append to this tool's prefix to form child id
+ * Do something 
+ * @method forEachChild
+ * @param {String} [name=""] The tool name, such as "Q/inplace"
+ * @param {Number} [levels] Optionally pass 1 here to get only the immediate children, 2 for immediate children and grandchildren, etc.
+ * @param {Function} callback The callback to execute event handler
  */
-Tp.onChildActivate = function _Q_Tool_prototype_onChildActivate(append) {
-	return Q.Tool.onActivate('id:'+this.prefix+append);
-};
-
-/**
- * Be notified whenever a child tool is initialized, repeatedly if it is
- * removed and then activated again.
- * @event onChildInit
- * @param append text to append to this tool's prefix to form child id
- */
-Tp.onChildInit = function _Q_Tool_prototype_onChildInit(append) {
-	return Q.Tool.onInit('id:'+this.prefix+append);
+Tp.forEachChild = function _Q_Tool_prototype_forEachChild(name, levels, callback) {
+	if (typeof levels !== 'number') {
+		callback = levels;
+		levels = null;
+	}
+	name = Q.normalize(name);
+	var tool = this;
+	Q.each(tool.children(name, levels), callback);
+	var onActivate = Q.Tool.onActivate(name);
+	var key = onActivate.set(function () {
+		if (this.prefix.substr(0, tool.prefix.length) === tool.prefix) {
+			callback.apply(this, arguments);
+		}
+	});
+	tool.Q.beforeRemove.set(function () {
+		onActivate.remove(key);
+	});
 };
 
 /**
@@ -3670,7 +3794,7 @@ Tp.onChildInit = function _Q_Tool_prototype_onChildInit(append) {
  * @static
  * @method encodeOptions
  * @param {Object} options the options to pass to a tool
- * @return String
+ * @return {String}
  */
 Q.Tool.encodeOptions = function _Q_Tool_stringFromOptions(options) {
 	return JSON.stringify(options).encodeHTML().replaceAll({"&quot;": '"'});
@@ -3708,7 +3832,8 @@ Q.Tool.setUpElement = function _Q_Tool_setUpElement(element, toolType, toolOptio
 		var p1, p2;
 		p1 = prefix || (Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '');
 		do {
-			p2 = (p1 && p1 + '_') + ntt + '_' + (Q.Tool.nextDefaultId++) + '_';
+			p2 = p1 + ntt + '_' + (Q.Tool.nextDefaultId++) + '_';
+			Q.Tool.nextDefaultId %= 1000000;
 		} while (Q.Tool.active[p2]);
 		id = p2 + 'tool';
 	}
@@ -3826,7 +3951,7 @@ Q.Tool.byId = function _Q_Tool_byId(id, name) {
 Q.Tool.calculatePrefix = function _Q_Tool_calculatePrefix(id) {
 	if (id.match(/_tool$/)) {
 		return id.substring(0, id.length-4);
-	} else if (id.substr(-1) === '_') {
+	} else if (id.substr(id.lengh-1) === '_') {
 		return id;
 	} else {
 		return id + "_";
@@ -3843,7 +3968,7 @@ Q.Tool.calculatePrefix = function _Q_Tool_calculatePrefix(id) {
 Q.Tool.calculateId = function _Q_Tool_calculatePrefix(id) {
 	if (id.match(/_tool$/)) {
 		return id.substring(0, id.length-5);
-	} else if (id.substr(-1) === '_') {
+	} else if (id.substr(id.length-1) === '_') {
 		return id.substring(0, id.length-1);
 	} else {
 		return id;
@@ -3905,7 +4030,6 @@ function _loadToolScript(toolElement, callback, shared, parentPipe) {
 				Q.Tool.onMissingConstructor.handle(_qtc, toolName);
 				toolFunc = _qtc[toolName];
 				if (typeof toolFunc !== 'function') {
-					console.warn("Q.Tool.loadScript: Missing tool constructor for " + toolName);
 					toolFunc = function () { console.log("Missing tool constructor for " + toolName); }; 
 				}
 			}
@@ -3916,7 +4040,6 @@ function _loadToolScript(toolElement, callback, shared, parentPipe) {
 			Q.Tool.onMissingConstructor.handle(_qtc, toolName);
 			toolFunc = _qtc[toolName];
 			if (typeof toolFunc !== 'function' && typeof toolFunc !== 'string') {
-				console.warn("Q.Tool.loadScript: Missing tool constructor for " + toolName);
 				toolFunc = function () {
 					console.log("Missing tool constructor for " + toolName);
 				}; 
@@ -4172,7 +4295,6 @@ var Cp = Q.Cache.prototype;
 
 /**
  * Accesses the cache and sets an entry in it
- * @static
  * @method set
  * @param {String} key  the key to save the entry under, or an array of arguments
  * @param {Options} options  supports the following options:
@@ -4220,7 +4342,6 @@ Cp.set = function _Q_Cache_prototype_set(key, cbpos, subject, params, options) {
 };
 /**
  * Accesses the cache and gets an entry from it
- * @static
  * @method get
  * @param {String} key  the key to search for
  * @param {Object} options  supports the following options:
@@ -4310,7 +4431,6 @@ Cp.clear = function _Q_Cache_prototype_clear() {
 };
 /**
  * Cycles through all the entries in the cache
- * @static
  * @method each
  * @param {Array} args  An array consisting of some or all the arguments that form the key
  * @param {Function} callback  Is passed two parameters: key, value, with this = the cache
@@ -4355,8 +4475,6 @@ Cp.each = function _Q_Cache_prototype_each(args, callback) {
 };
 /**
  * Removes all the entries in the cache matching the args
- *
- * @static
  * @method removeEach
  * @param {Array} args  An array consisting of some or all the arguments that form the key
  */
@@ -4401,9 +4519,8 @@ Q.Page = function (uriString) {
 /**
  * Pushes a url onto the history stack via pushState with a fallback to hashChange,
  * to be handled later by either the Q_popStateHandler or the Q_hashChangeHandler.
- * @class Q.Page
  * @static
- * @method
+ * @method push
  * @param {String} url The url to push
  */
 Q.Page.push = function (url) {
@@ -4439,7 +4556,7 @@ Q.Page.beingLoaded = false;
 Q.Page.beingActivated = false;
 
 /**
- * Occurs after the page loads
+ * Occurs when the page has begun to load
  * @event onLoad
  * @param uriString {String} The full URI string, or "Module/action"
  */
@@ -4457,12 +4574,6 @@ Q.Page.onActivate = Q.Event.factory(null, [""]);
  */
 Q.Page.onUnload = Q.Event.factory(null, [""]);
 /**
- * Occurs before the page loads
- * @event beforeLoad
- * @param uriString {String} The full URI string, or "Module/action"
- */
-Q.Page.beforeLoad = Q.Event.factory(null, [""]);
-/**
  * Occurs before the page unloads
  * @event beforeUnload
  * @param uriString {String} The full URI string, or "Module/action"
@@ -4477,14 +4588,14 @@ Q.Page.beforeUnload = Q.Event.factory(null, [""]);
  * Use this function to set handlers for when the page is loaded or unloaded.
  * @static
  * @method page
- * @param page {String} "$Module/$action" or a more specific URI string, or "" to handle all pages
- * @param handler {Function} A function to run after the page loaded.
+ * @param {String} page "$Module/$action" or a more specific URI string, or "" to handle all pages
+ * @param {Function} handler A function to run after the page loaded.
  *  If the page is already currently loaded (i.e. it is the latest loaded page)
  *  then the handler is run right away.
  *  The handler can optionally returns another function, which will be run when the page is unloaded.
  *  After a page is unloaded, all the "unloading" handlers added in this way are removed, so that
  *  the next time the "loading" handlers run, they don't create duplicate "unloading" handlers.
- * @param key {String} Use this to identify the entity setting the handler, e.g. "Users/authorize".
+ * @param {String} key Use this to identify the entity setting the handler, e.g. "Users/authorize".
  *  If the key is undefined, it will be automatically set to "Q". To force no key, pass null here.
  *  Since "loading" handlers are not automatically removed, they can accumulate if the key was null.
  *  For example, if an AJAX call would execute Javascript such as Q.page(uri, handler, null),
@@ -4494,7 +4605,7 @@ Q.page = function _Q_page(page, handler, key) {
 	if (key === undefined) {
 		key = 'Q';
 	}
-	if (Q.isArray(page)) {
+	if (Q.isArrayLike(page)) {
 		for (var i = 0, l = page.length; i<l; ++i) {
 			Q.page(page[i], handler, key);
 		}
@@ -4540,18 +4651,19 @@ Q.init = function _Q_init(options) {
 	Q.handle(Q.beforeInit);
 	Q.handle(Q.onInit); // Call all the onInit handlers
 
-	Q.addEventListener(window, 'unload', Q.onUnload.handle);
-	Q.addEventListener(window, 'online', Q.onOnline.handle);
-	Q.addEventListener(window, 'offline', Q.onOffline.handle);
-	Q.addEventListener(window, Q.Pointer.focusout, _onPointerBlurHandler);
+	Q.addEventListener(root, 'unload', Q.onUnload.handle);
+	Q.addEventListener(root, 'online', Q.onOnline.handle);
+	Q.addEventListener(root, 'offline', Q.onOffline.handle);
+	Q.addEventListener(root, Q.Pointer.focusout, _onPointerBlurHandler);
 
 	var checks = ["ready"];
-	if (window.cordova && Q.typeOf(window.cordova).substr(0, 4) !== 'HTML') {
+	if (Q.info.isCordova
+	&& root.cordova && Q.typeOf(cordova).substr(0, 4) !== 'HTML') {
 		checks.push("device");
 	}
 	var p = Q.pipe(checks, 1, function _Q_init_pipe_callback() {
 		if (!Q.info) Q.info = {};
-		Q.info.isCordova = !!window.device && window.device.cordova;
+		Q.info.isCordova = !!root.device && device.cordova;
 		if (options && options.isLocalFile) {
 			Q.info.isLocalFile = true;
 			Q.handle.options.loadUsingAjax = true;
@@ -4566,11 +4678,7 @@ Q.init = function _Q_init(options) {
 		}
 
 		function _getJSON() {
-			if (window.JSON) {
-				_ready();
-			} else {
-				Q.addScript(Q.init.jsonLibraryUrl, _ready);
-			}
+			Q.ensure(root.JSON, Q.libraries.json, _ready);
 		}
 
 		if (options && options.isLocalFile) {
@@ -4596,7 +4704,7 @@ Q.init = function _Q_init(options) {
 		}
 		function _Q_init_deviceready_handler() {
 			if (!Q.info) Q.info = {};
-			if ((Q.info.isCordova = !!window.device && window.device.cordova)) {
+			if ((Q.info.isCordova = !!root.device && device.cordova)) {
 				// avoid opening external urls in app window
 				Q.addEventListener(document, "click", function (e) {
 					var t = e.target, s;
@@ -4604,14 +4712,14 @@ Q.init = function _Q_init(options) {
 						if (t && t.nodeName === "A" && t.href && !t.outerHTML.match(/\Whref=[',"]#[',"]\W/) && t.href.match(/^https?:\/\//)) {
 							e.preventDefault();
 							s = (t.target === "_blank") ? "_system" : "_blank";
-							window.open(t.href, s, "location=no");
+							root.open(t.href, s, "location=no");
 						}
 					} while ((t = t.parentNode));
 				});
 			}
 			p.fill("device")();
 		}
-		if (window.device) {
+		if (root.device) {
 			_Q_init_deviceready_handler();
 		} else {
 			Q.addEventListener(document, 'deviceready', _Q_init_deviceready_handler, false);
@@ -4619,10 +4727,10 @@ Q.init = function _Q_init(options) {
 	}
 
 	// Bind document ready event
-	if (window.jQuery) {
+	if (root.jQuery) {
 		Q.jQueryPluginPlugin();
-		Q.onJQuery.handle(window.jQuery, [window.jQuery]);
-		window.jQuery(document).ready(_domReady);
+		Q.onJQuery.handle(jQuery, [jQuery]);
+		jQuery(document).ready(_domReady);
 	} else {
 		var _timer = setInterval(function(){
 			if(/loaded|complete/.test(document.readyState)) {
@@ -4634,7 +4742,6 @@ Q.init = function _Q_init(options) {
 	
 	_waitForDeviceReady();
 };
-Q.init.jsonLibraryUrl = "http://cdnjs.cloudflare.com/ajax/libs/json3/3.2.4/json3.min.js";
 
 /**
  * This is called when the DOM is ready
@@ -4660,27 +4767,27 @@ Q.ready = function _Q_ready() {
 		// Try to add the plugin thing again
 		Q.jQueryPluginPlugin();
 		
-		Q.onDOM.handle.call(window, window.jQuery);
+		Q.onDOM.handle.call(root, root.jQuery);
 
 		var body = document.getElementsByTagName('body')[0];
 		Q.activate(body, undefined, function _onReadyActivate() {
 			// Hash changes -- will work only in browsers that support it natively
 			// see http://caniuse.com/hashchange
-			Q.addEventListener(window, 'hashchange', Q.onHashChange.handle);
+			Q.addEventListener(root, 'hashchange', Q.onHashChange.handle);
 			
 			// History changes -- will work only in browsers that support it natively
 			// see http://caniuse.com/history
-			Q.addEventListener(window, 'popstate', Q.onPopState.handle);
+			Q.addEventListener(root, 'popstate', Q.onPopState.handle);
 
 			// To support tool layouting, trigger 'layout' event
 			// on browser resize and orientation change
-			Q.addEventListener(window, 'resize', Q.onLayout.handle);
-			Q.addEventListener(window, 'orientationchange', Q.onLayout.handle);
-			Q.addEventListener(window, 'scroll', Q.onScroll.handle);
+			Q.addEventListener(root, 'resize', Q.layout);
+			Q.addEventListener(root, 'orientationchange', Q.layout);
+			Q.addEventListener(root, 'scroll', Q.onScroll.handle);
 			_setLayoutInterval();
 
 			// Call the functions meant to be called after ready() is done
-			Q.onReady.handle.call(window, window.jQuery);
+			Q.onReady.handle.call(root, root.jQuery);
 
 			if (Q.info.isCordova && navigator.splashscreen) {
 				navigator.splashscreen.hide();
@@ -4791,9 +4898,9 @@ Q.removeElement = function _Q_removeElement(element, removeTools) {
 	if (removeTools) {
 		Q.Tool.clear(element);
 	}
-	if (window.jQuery) {
+	if (root.jQuery) {
 		// give jQuery a chance to do its own cleanup
-		return window.jQuery(element).remove();
+		return jQuery(element).remove();
 	}
 	if (!element.parentNode) return false;
 	element.parentNode.removeChild(element);
@@ -4803,6 +4910,12 @@ Q.removeElement = function _Q_removeElement(element, removeTools) {
 		}
 	} catch (e) {
 		// Old IE doesn't like this
+	}
+	for (var i=0, l=_layoutElements.length; i<l; ++i) {
+		if (_layoutElements[i] === element) {
+			_layoutElements.splice(i, 1);
+			_layoutEvents.splice(i, 1);
+		}
 	}
 };
 
@@ -4848,11 +4961,17 @@ Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandl
 		eventName = params.eventName;
 	}
 
-	if (Q.typeOf(eventName) === 'array') {
+	if (Q.isArrayLike(eventName)) {
 		for (var i=0, l=eventName.length; i<l; ++i) {
 			Q.addEventListener(element, eventName[i], eventHandler, useCapture);
 		}
 		return;
+	}
+	if (element === root
+	&& detected.name === 'explorer'
+	&& detected.mainVersion <= 8
+	&& ['mousedown','mouseup','click','dblclick'].indexOf(eventName) >= 0) {
+		element = document;
 	}
 	if (element.addEventListener) {
 		element.addEventListener(eventName, handler, useCapture || false);
@@ -4886,11 +5005,17 @@ Q.removeEventListener = function _Q_addEventListener(element, eventName, eventHa
 			eventName = split;
 		}
 	}
-	if (Q.typeOf(eventName) === 'array') {
+	if (Q.isArrayLike(eventName)) {
 		for (var i=0, l=eventName.length; i<l; ++i) {
 			Q.removeEventListener(element, eventName[i], eventHandler);
 		}
 		return;
+	}
+	if (element === root
+	&& detected.name === 'explorer'
+	&& detected.mainVersion <= 8
+	&& ['mousedown','mouseup','click','dblclick'].indexOf(eventName) >= 0) {
+		element = document;
 	}
 	if (element.removeEventListener) {
 		element.removeEventListener(eventName, handler, false);
@@ -4902,7 +5027,8 @@ Q.removeEventListener = function _Q_addEventListener(element, eventName, eventHa
 };
 
 /**
- * Triggers a method or Q.Event on all the tools inside a particular element
+ * Triggers a method or Q.Event on all the tools inside a particular element,
+ * traversing in a depth-first manner.
  * @static
  * @method trigger
  * @param {String} eventName  Required, the name of the method or Q.Event to trigger
@@ -4913,22 +5039,25 @@ Q.removeEventListener = function _Q_addEventListener(element, eventName, eventHa
 Q.trigger = function _Q_trigger(eventName, element, args) {
 	var parts = eventName.split('.');
 	Q.find(element || document.body, true, function _Q_trigger_found(toolElement) {
-		var obj = Q.Tool.from(toolElement);
-		if (obj) {
-			var len = parts.length, i;
-			for (i=0; i < len; ++i) {
-				obj = obj [ parts[i] ];
-			}
-		}
-		if (obj) {
-			Q.handle(obj, toolElement, args);
-		}
+		_Q_trigger_recursive(Q.Tool.from(toolElement), eventName, args);
+		return false;
 	}, null);
 };
 
-Q.layout = function _Q_layout(element) {
-	Q.trigger('Q.onLayout', element || document.body, [element]);
-	Q.onLayout.handle.call(element);
+/**
+ * Call this function to trigger layout changes,
+ * or assign it as an event listener to some events.
+ */
+Q.layout = function _Q_layout(elementOrEvent) {
+	var element = Q.instanceOf(elementOrEvent, Element) ? elementOrEvent : null;
+	Q.each(_layoutElements, function (i, e) {
+		if (element && !element.isOrContains(e)) {
+			return;
+		}
+		var event = _layoutEvents[i];;
+		event.handle.call(event, e, elementOrEvent);
+	});
+	Q.trigger('Q.layout', elementOrEvent);
 };
 
 Q.clientId = function () {
@@ -5013,30 +5142,31 @@ Q.load = function _Q_load(plugins, callback, options) {
  *  'cacheBust': Number of milliseconds before a new cachebuster is appended
  */
 Q.url = function _Q_url(what, fields, options) {
+	var what2 = what || '';
 	if (fields) {
 		for (var k in fields) {
-			what += '?'+encodeURIComponent(k)+'='+encodeURIComponent(fields[k]);
+			what2 += '?'+encodeURIComponent(k)+'='+encodeURIComponent(fields[k]);
 		}
 	}
 	if (options && options.cacheBust) {
-		what += "?Q.cacheBust="+Math.floor(Date.now()/options.cacheBust);
+		what2 += "?Q.cacheBust="+Math.floor(Date.now()/options.cacheBust);
 	}
-	var parts = what.split('?');
+	var parts = what2.split('?');
 	if (parts.length > 2) {
-		what = parts.slice(0, 2).join('?') + '&' + parts.slice(2).join('&');
+		what2 = parts.slice(0, 2).join('?') + '&' + parts.slice(2).join('&');
 	}
 	var result = '';
 	var baseUrl = (options && options.baseUrl) || Q.info.proxyBaseUrl || Q.info.baseUrl;
 	if (!what) {
-		result = baseUrl;
-	} else if (what.isUrl()) {
-		result = what;
+		result = baseUrl + (what === '' ? '/' : '');
+	} else if (what2.isUrl()) {
+		result = what2;
 	} else {
-		result = baseUrl + ((what.substr(0, 1) == '/') ? '' : '/') + what;
+		result = baseUrl + ((what2.substr(0, 1) == '/') ? '' : '/') + what2;
 	}
 	if (Q.url.options.beforeResult) {
 		var params = {
-			what: what,
+			what: what2,
 			fields: fields,
 			result: result
 		};
@@ -5342,10 +5472,10 @@ Q.request = function (url, slotNames, callback, options) {
 			
 			function xhr(url, slotNames, onSuccess, onCancel, options) {					
 				var xmlhttp;
-				if (window.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
+				if (root.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
 					xmlhttp = new XMLHttpRequest();
 				} else { // code for IE6, IE5
-					xmlhttp = new window.ActiveXObject("Microsoft.XMLHTTP");
+					xmlhttp = new root.ActiveXObject("Microsoft.XMLHTTP");
 				}
 				xmlhttp.onreadystatechange = function() {
 					if (xmlhttp.readyState == 4) {
@@ -5451,7 +5581,7 @@ Q.firstErrorMessage = function _Q_firstErrorMessage(data /*, data2, ... */) {
 			error = d.errors[0];
 		} else if (d.error) {
 			error = d.error;
-		} else if (Q.typeOf(d) === 'array') {
+		} else if (Q.isArrayLike(d)) {
 			error = d[0];
 		} else {
 			error = d;
@@ -5706,13 +5836,15 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 
 	function stateChangeInIE() { // function to watch scripts load in IE
 		// Execute as many scripts in order as we can
-		var script, pendingScripts = Q.addScript.pendingScripts;
-		while (pendingScripts[0]
-		&& (pendingScripts[0].readyState == 'loaded' || pendingScripts[0].readyState == 'complete')) {
-			script = pendingScripts.shift();
+		var script;
+		while (_pendingIEScripts[0]
+		&& (_pendingIEScripts[0].readyState == 'loaded' 
+			|| _pendingIEScripts[0].readyState == 'complete'
+		)) {
+			script = _pendingIEScripts.shift();
 			script.onreadystatechange = null; // avoid future loading events from this script (eg, if src changes)
 			container.appendChild(script);
-			onload2(null, script, script.getAttribute('src'));
+			onload2(null, script, script.src);
 		}
 	}
 	
@@ -5755,8 +5887,8 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 
 	function _onload() {
 		Q.addScript.loaded[src] = true;
-		if (window.jQuery && !Q.onJQuery.occurred) {
-			Q.onJQuery.handle(window.jQuery, [window.jQuery]);
+		if (root.jQuery && !Q.onJQuery.occurred) {
+			Q.onJQuery.handle(jQuery, [jQuery]);
 		}
 		Q.jQueryPluginPlugin();
 		onload();
@@ -5767,7 +5899,7 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 		onload = function () {};
 	}
 	
-	if (Q.typeOf(src) === 'array') {
+	if (Q.isArrayLike(src)) {
 		var srcs = [];
 		Q.each(src, function (i, src) {
 			if (!src) return;
@@ -5802,6 +5934,14 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 	
 	if (!o || !o.duplicate) {
 		var scripts = document.getElementsByTagName('script');
+		var ieStyle = _pendingIEScripts.length;
+		if (ieStyle) {
+			var arr = [].concat(_pendingIEScripts);
+			for (i=0; i<scripts.length; ++i) {
+				arr.push(scripts[i]);
+			}
+			scripts = arr;
+		}
 		for (i=0; i<scripts.length; ++i) {
 			script = scripts[i];
 			if (script.getAttribute('src') !== src) {
@@ -5817,7 +5957,7 @@ Q.addScript = function _Q_addScript(src, onload, options) {
     				break;
 				}
 			}
-			if (outside) {
+			if (outside && !ieStyle) {
 				container.appendChild(script);
 			}
 			// the script already exists in the document
@@ -5885,12 +6025,9 @@ Q.addScript = function _Q_addScript(src, onload, options) {
 		container.appendChild(script);
 	} else if (firstScript.readyState) { // IE<10
 		// create a script and add it to our todo pile
-		if (!Q.addScript.pendingScripts) {
-			Q.addScript.pendingScripts = [];
-		}
-		Q.addScript.pendingScripts.push(script);
+		_pendingIEScripts.push(script);
 		script.onreadystatechange = stateChangeInIE; // listen for state changes
-		script.setAttribute('src', src); // setting src after onreadystatechange listener is necessary for cached scripts
+		script.src = src; // setting src after onreadystatechange listener is necessary for cached scripts
 	} else { // fall back to defer
 		script.setAttribute('defer', 'defer');
 		script.setAttribute('src', src);
@@ -5903,6 +6040,7 @@ Q.addScript.onLoadCallbacks = {};
 Q.addScript.onErrorCallbacks = {};
 Q.addScript.added = {};
 Q.addScript.loaded = {};
+var _pendingIEScripts = [];
 
 Q.addScript.options = {
 	duplicate: false,
@@ -5941,7 +6079,7 @@ Q.addStylesheet = function _Q_addStylesheet(href, media, onload, options) {
 	if (!onload) {
 		onload = function _onload() { };
 	}
-	if (Q.typeOf(href) === 'array') {
+	if (Q.isArrayLike(href)) {
 		var ret = [];
 		var len = href.length;
 		for (i=0; i<len; ++i) {
@@ -6057,7 +6195,7 @@ Q.findStylesheet = function (href) {
  *   "expires": number of milliseconds until expiration. Defaults to session cookie.
  *   "domain": the domain to set cookie
  *   "path": path to set cookie. Defaults to location.pathname
- * @return String
+ * @return {String|null}
  *   If only name was passed, returns the stored value of the cookie, or null.
  */
 Q.cookie = function _Q_cookie(name, value, options) {
@@ -6133,9 +6271,9 @@ Q.find = function _Q_find(elem, filter, callbackBefore, callbackAfter, options, 
 		filter = 'q_tool';
 	}
 	// Arrays are accepted
-	if (Q.typeOf(elem) === 'array'
-	|| (typeof HTMLCollection !== 'undefined' && (elem instanceof window.HTMLCollection))
-	|| (window.jQuery && (elem instanceof jQuery))) {
+	if ((Q.isArrayLike(elem) && !Q.instanceOf(elem, Element))
+	|| (typeof HTMLCollection !== 'undefined' && (elem instanceof root.HTMLCollection))
+	|| (root.jQuery && (elem instanceof jQuery))) {
 
 		Q.each(elem, function _Q_find_array(i) {
 			if (false === Q.find(
@@ -6236,7 +6374,7 @@ Q.activate = function _Q_activate(elem, options, callback) {
 		elem = tool.element;
 	}
 	
-	Q.beforeActivate.handle.call(window, elem); // things to do before things are activated
+	Q.beforeActivate.handle.call(root, elem); // things to do before things are activated
 	
 	var shared = {
 		tool: null,
@@ -6256,7 +6394,6 @@ Q.activate = function _Q_activate(elem, options, callback) {
 	
 	function _activated() {
 		var tool = shared.firstTool || shared.tool;
-		Q.trigger('Q.onLayout', elem, []);
 		if (callback) {
 			Q.handle(callback, tool, [elem, options, shared.tools]);
 		}
@@ -6273,7 +6410,7 @@ Q.activate = function _Q_activate(elem, options, callback) {
  *  Tools found in the existing DOM which have data-Q-retain attribute
  *  are actually retained unless the tool replacing them has a data-Q-replace attribute.
  *  You can update the tool by implementing a handler for
- *  tool.Q.onRetain, which receives the old Q.Tool object and the new options.
+ *  tool.Q.onRetain, which receives the old Q.Tool object, the new options and incoming element.
  *  After the event is handled, the tool's state will be extended with these new options.
  * @param {Element|String} source
  *  An HTML string or a Element which is not part of the DOM
@@ -6309,10 +6446,12 @@ Q.replace = function _Q_replace(container, source, options) {
 		});
 	}
 	
-	var retainedToolsArray = [];
-	var newOptionsArray = [];
-	Q.find(source, null, function (incomingElement) {
-		var element = document.getElementById(incomingElement.id);
+	var retainedTools = {};
+	var newOptions = {};
+	var incomingElements = {};
+	Q.find(source.childNodes, null, function (incomingElement) {
+		var id = incomingElement.id;
+		var element = id && document.getElementById(id);
 		if (element && element.getAttribute('data-Q-retain') !== null
 		&& !incomingElement.getAttribute('data-Q-replace') !== null) {
 			// If a tool exists with this exact id and has "data-Q-retain",
@@ -6320,20 +6459,20 @@ Q.replace = function _Q_replace(container, source, options) {
 			// the new tool HTML has data-Q-replace.
 			// This way tools can avoid doing expensive operations each time
 			// they are replaced and reactivated.
+			incomingElements[incomingElement.id] = incomingElement;
 			incomingElement.parentNode.replaceChild(element, incomingElement);
 			for (var name in element.Q.tools) {
 				var tool = Q.Tool.from(element, name);
 				var attrName = 'data-' + Q.normalize(tool.name, '-');
 				var newOptionsString = incomingElement.getAttribute(attrName);
-				var newOptions = JSON.parse(newOptionsString);
 				element.setAttribute(attrName, newOptionsString);
-				retainedToolsArray.push(tool);
-				newOptionsArray.push(newOptions);
+				retainedTools[id] = tool;
+				newOptions[id] = JSON.parse(newOptionsString);
 			}
 		}
 	});
 	
-	Q.beforeReplace.handle(container, source, options, newOptionsArray);
+	Q.beforeReplace.handle(container, source, options, newOptions, retainedTools);
 	
 	Q.Tool.clear(container); // Remove all the tools remaining in the container, with their events etc.
 	var c; while (c = container.lastChild) {
@@ -6346,9 +6485,9 @@ Q.replace = function _Q_replace(container, source, options) {
 		container.appendChild(c);
 	}
 	
-	for (var i=0, l=retainedToolsArray.length; i<l; ++i) {
-		var tool = retainedToolsArray[i];
-		var newOptions = newOptionsArray[i];
+	for (var id in retainedTools) {
+		var tool = retainedTools[id];
+		var newOpt = newOptions[id];
 		// The tool's constructor not will be called again with the new options.
 		// Instead, implement Q.onRetain, from the tool we decided to retain.
 		// The Q.Tool object still contains all its old properties, options, state.
@@ -6356,7 +6495,7 @@ Q.replace = function _Q_replace(container, source, options) {
 		// attached jQuery data and events, and more.
 		// However, the element's data-TOOL-NAME attribute now contains
 		// the new options.
-		Q.handle(tool.Q.onRetain, tool, [newOptions]);
+		Q.handle(tool.Q.onRetain, tool, [newOptions, incomingElements[id]]);
 		Q.extend(tool.state, 10, newOptions);
 	}
 	
@@ -6542,8 +6681,8 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 					}
 				}
 				// Invoke prefixfree again if it was loaded
-				if (window.StyleFix) {
-					window.StyleFix.process();
+				if (root.StyleFix) {
+					root.StyleFix.process();
 				}
 
 				Q.handle(onActivate, this, [domElements]);
@@ -6552,11 +6691,9 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 			function afterStyles() {
 			
 				if (!o.ignorePage && Q.info && Q.info.uri) {
-					Q.Page.beforeLoad(moduleSlashAction).occurred = false;
 					Q.Page.onLoad(moduleSlashAction).occurred = false;
 					Q.Page.onActivate(moduleSlashAction).occurred = false;
 					if (Q.info.uriString !== Q.moduleSlashAction) {
-						Q.Page.beforeLoad(Q.info.uriString).occurred = false;
 						Q.Page.onLoad(Q.info.uriString).occurred = false;
 						Q.Page.onActivate(Q.info.uriString).occurred = false;
 					}
@@ -6565,7 +6702,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				if (response.scriptData) {
 					Q.each(response.scriptData, function _Q_loadUrl_scriptData_each(slot, data) {
 						Q.each(data, function _Q_loadUrl_scriptData_assign(k, v) {
-							Q.extendObject(k, v);
+							Q.setObject(k, v);
 						});
 					});
 				}
@@ -6617,7 +6754,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				var p = Q.Event.jQueryForPage;
 				for (i=p.length-1; i >= 0; --i) {
 					var off = p[i][0];
-					window.jQuery.fn[off].call(p[i][1], p[i][2], p[i][3]);
+					root.jQuery.fn[off].call(p[i][1], p[i][2], p[i][3]);
 				}
 				Q.Event.jQueryForPage = [];
 			}
@@ -6685,7 +6822,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				var stylesheets = [];
 				for (var j in response.stylesheets[slotName]) {
 					var stylesheet = response.stylesheets[slotName][j];
-					if (window.StyleFix && (stylesheet.href in processStylesheets.slots)) {
+					if (root.StyleFix && (stylesheet.href in processStylesheets.slots)) {
 						continue; // if prefixfree is loaded, we will not even try to load these processed stylesheets
 					}
 					var elem = Q.addStylesheet(stylesheet.href, stylesheet.media, null, {returnAll: false});
@@ -6823,7 +6960,7 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 	if (!callables) {
 		return 0;
 	}
-	if (!context) context = window;
+	if (!context) context = root;
 	if (!args) args = [];
 	var i=0, count=0, k, result;
 	if (callables === location) callables = location.href;
@@ -6881,7 +7018,7 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 			}
 			var sameDomain = callables.sameDomain(Q.info.baseUrl);
 			if (callables[0] === '#') {
-				window.location.hash = callables;
+				root.location.hash = callables;
 			} else if (o.loadUsingAjax && sameDomain
 			&& (!o.target || o.target === true || o.target === '_self')) {
 				if (callables.search(Q.info.baseUrl) === 0) {
@@ -6896,7 +7033,7 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 				} else if (o.externalLoader) {
 					o.externalLoader.apply(this, arguments);
 				} else {
-					window.location = callables;
+					root.location = callables;
 				}
 			} else {
 				if (Q.typeOf(o.fields) === 'object') {
@@ -6918,13 +7055,13 @@ Q.handle = function _Q_handle(callables, /* callback, */ context, args, options)
 						callables+= '/';
 					}
 					if (!o.target || o.target === true || o.target === '_self') {
-						if (window.location.href == callables) {
-							window.location.reload(true);
+						if (root.location.href == callables) {
+							root.location.reload(true);
 						} else {
-							window.location = callables;
+							root.location = callables;
 						}
 					} else {
-						window.open(callables, o.target);
+						root.open(callables, o.target);
 					}
 				}
 			}
@@ -6985,7 +7122,7 @@ Q.buildQueryString = Q.serializeFields;
 function Q_hashChangeHandler() {
 	var url = location.hash.queryField('url'), result = null;
 	if (url === undefined) {
-		url = window.location.href.split('#')[0].substr(Q.info.baseUrl.length + 1);
+		url = root.location.href.split('#')[0].substr(Q.info.baseUrl.length + 1);
 	}
 	if (Q_hashChangeHandler.ignore) {
 		Q_hashChangeHandler.ignore = false;
@@ -6998,7 +7135,7 @@ function Q_hashChangeHandler() {
 }
 
 function Q_popStateHandler() {
-	var url = window.location.href.split('#')[0], result = null;
+	var url = root.location.href.split('#')[0], result = null;
 	if (Q.info.url === url) {
 		return; // we are already at this url
 	}
@@ -7033,7 +7170,7 @@ var _constructors = {};
  * @private
  * @static
  * @method _activateTools
- * @param {ToolElement} toolElement
+ * @param {HTMLElement} toolElement
  *  A tool's generated container div.
  * @param {Object} options
  *  Options that should be passed onto the tool
@@ -7073,6 +7210,12 @@ function _activateTools(toolElement, options, shared) {
 					_constructToolHandlers[normalizedName].handle.call(this, this.options);
 					_constructToolHandlers["id:"+normalizedId] &&
 					_constructToolHandlers["id:"+normalizedId].handle.call(this, this.options);
+					Q.each(toolFunc.require, function (i, n) {
+						if (!Q.Tool.from(element, n)) {
+							throw new Q.Exception("Q.Tool.define: " + toolFunc.toolName
+							+ " requires " + n + " to have been activated on the same element.");
+						}
+					});
 					toolFunc.call(this, this.options);
 					var collection = this.Q.onStateChanged.collection;
 					for (var name in this.state) {
@@ -7080,6 +7223,7 @@ function _activateTools(toolElement, options, shared) {
 							collection[name].handle.call(this, name);
 						}
 					}
+					if (normalizedName === 'q_inplace') 
 					_activateToolHandlers[""] &&
 					_activateToolHandlers[""].handle.call(this, this.options);
 					_activateToolHandlers[normalizedName] &&
@@ -7091,7 +7235,6 @@ function _activateTools(toolElement, options, shared) {
 					debugger; // pause here if debugging
 					console.warn(e);
 					Q.Tool.beingActivated = prevTool;
-					throw e;
 				}
 				this.activated = true;
 			};
@@ -7124,7 +7267,7 @@ function _activateTools(toolElement, options, shared) {
 				// be initialized without waiting for any child tools.
 				// tool.element.Q.supportsChildren = true
 				// set by tool.supportsChildren(true)
-				Q.activate(toolElement);
+				Q.activate(toolElement, options);
 			}
 			
 			if (uniqueToolId) {
@@ -7147,7 +7290,7 @@ _activateTools.alreadyActivated = {};
  * @private
  * @static
  * @method _initTools
- * @param {ToolElement} toolElement
+ * @param {HTMLElement} toolElement
  *  A tool's generated container div
  */
 function _initTools(toolElement) {
@@ -7161,7 +7304,7 @@ function _initTools(toolElement) {
 			normalizedId = Q.normalize(tool.id);
 			if (!tool.initialized) {
 				tool.initialized = true;
-				Q.handle(tool.Q && tool.Q.onInit, tool, tool.options);
+				Q.handle(tool.Q && tool.Q.onInit, tool, [tool.options]);
 				_initToolHandlers[""] &&
 				_initToolHandlers[""].handle.call(tool, tool.options);
 				_initToolHandlers[normalizedName] &&
@@ -7394,7 +7537,7 @@ Q.Template.render = function _Q_Template_render(name, fields, partials, callback
 	if (!callback) {
 		throw new Q.Error("Q.Template.render: callback is missing");
 	}
-	var isArray = (Q.typeOf(name) === 'array');
+	var isArray = Q.isArrayLike(name);
 	if (isArray || Q.isPlainObject(name)) {
 		var names = name;
 		var p = Q.pipe(isArray ? names : Object.keys(names), callback);
@@ -7404,48 +7547,17 @@ Q.Template.render = function _Q_Template_render(name, fields, partials, callback
 			);
 		});
 	}
-	Q.ensure(window.Handlebars, 
+	Q.ensure(root.Handlebars, 
 		Q.url('plugins/Q/js/handlebars-v1.3.0.min.js'),
 		function () {
-			
-			var Handlebars = window.Handlebars;
-			if (!Handlebars.helpers.call) {
-				Handlebars.registerHelper('call', function(path) {
-					if (!path) {
-						return "{{call missing method name}}";
-					}
-					var parts = path.split('.');
-					var p0 = parts[0];
-					var p1 = parts[1];
-					if (this[p0] && typeof this[p0][p1] === 'function') {
-						var args = Array.prototype.slice.call(
-							arguments, 1, arguments.length-1
-						);
-						return this[p0][p1].apply(this[p0], args);
-					}
-					return "{{call "+path+" not found}}";
-				});
-			}
-			if (!Handlebars.helpers.tool) {
-				Handlebars.registerHelper('tool', function (name, id, options) {
-					if (!name) {
-						return "{{tool missing name}}";
-					}
-					if (typeof id === 'object') {
-						options = id;
-						id = undefined;
-					}
-					var o = Q.extend({}, options && options.hash, this[name]);
-					return Q.Tool.setUpElementHTML('div', name, o, id);
-				});
-			}
-			
+			_addHandlebarsHelpers();
 			// load the template and partials
 			var p = Q.pipe(['template', 'partials'], function (params) {
 				if (params.template[0]) {
 					return callback(params.template[0]);
 				}
-				callback(null, Handlebars.compile(params.template[1])(fields, {partials: params.partials[0]}));
+				var compiled = Handlebars.compile(params.template[1]);
+				callback(null, compiled(fields, {partials: params.partials[0]}));
 			});
 			Q.Template.load(name, p.fill('template'), options);
 			// pipe for partials
@@ -7518,11 +7630,11 @@ function _connectSocketNS(ns, url, callback, force) {
 	// load socket.io script and connect socket
 	function _connectNS(ns, url, callback) {
 		// connect to (ns, url)
-		if (!window.io) return;
+		if (!root.io) return;
 		var qs = _qsockets[ns][url];
 		if (!qs || !qs.socket) {
 			_qsockets[ns][url] = qs = new Q.Socket({
-				socket: window.io.connect(url+ns, force ? {
+				socket: root.io.connect(url+ns, force ? {
 					'force new connection': true
 				} : {}),
 				url: url,
@@ -7570,7 +7682,7 @@ function _connectSocketNS(ns, url, callback, force) {
 		ns = '/' + ns;
 	}
 	
-	if (window.io && window.io.Socket) {
+	if (root.io && root.io.Socket) {
 		_connectNS(ns, url, callback);
 	} else {
 		Q.addScript(url+'/socket.io/socket.io.js', function () {
@@ -7674,7 +7786,7 @@ Q.Socket.destroyAll = function _Q_Socket_destroyAll() {
 		}
 		_ioCleanup = [];
 		_qsockets = {};
-		window.io = undefined;
+		root.io = undefined;
 	}, 1000);
 };
 
@@ -7822,14 +7934,16 @@ Ap.rewind = function _Q_Animation_prototype_rewind() {
  * Render the current frame of the animation
  * @method render
  */
-Ap.render = function _Q_Animation_prototype_rewind() {
+Ap.render = function _Q_Animation_prototype_render() {
 	var anim = this;
 	var ms = Q.milliseconds();
 	requestAnimationFrame(function () {
 		var _milliseconds = anim.milliseconds || 0;
-		anim.milliseconds += Q.milliseconds() - ms;
+		var qm = Q.milliseconds();
+		anim.elapsed = qm - anim.started;
+		anim.milliseconds += qm - ms;
 		anim.sinceLastFrame = anim.milliseconds - _milliseconds;
-		var x = anim.position = anim.milliseconds / anim.duration;
+		var x = anim.position = anim.elapsed / anim.duration;
 		if (x >= 1) {
 			Q.handle(anim.callback, anim, [1, anim.ease(1), anim.params]);
 			anim.onRender.stop();
@@ -7852,6 +7966,9 @@ Ap.render = function _Q_Animation_prototype_rewind() {
  */
 Ap.play = function _Q_Animation_instance_play() {
 	Q.Animation.playing[this.id] = this;
+	if (!this.playing) {
+		this.started = Q.milliseconds();
+	}
 	this.playing = true;
 	this.render();
 	return this;
@@ -7957,7 +8074,7 @@ Q.Animation.playing = {};
 var _Q_Animation_index = 0;
 
 Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
-	var $ = window.jQuery;
+	var $ = root.jQuery;
 	if (!$ || $.fn.plugin) {
 		return;
 	}
@@ -8023,7 +8140,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 			for (pluginName in results) {
 				results[pluginName] = $.fn[pluginName];
 			}
-			Q.handle(callback, window, [results]);
+			Q.handle(callback, root, [results]);
 		}, options);
 		return false;
 	};
@@ -8034,7 +8151,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	 */
 	$.fn.state = function _jQuery_fn_state(pluginName) {
 		var key = Q.normalize(pluginName) + ' state';
-		return jQuery(this).data(key);
+		return $(this).data(key);
 	};
 	/**
 	 * Calls Q.activate on all the elements in the jQuery
@@ -8050,8 +8167,8 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	 *  activated as "this".
 	 */
 	$.fn.activate = function _jQuery_fn_activate(options, callback) {
-		jQuery(this).each(function _jQuery_fn_activate_each(index, element) {
-			if (!jQuery(element).closest('html').length) {
+		$(this).each(function _jQuery_fn_activate_each(index, element) {
+			if (!$(element).closest('html').length) {
 				console.warn(new Q.Error("jQuery.fn.activate: element to activate must be in the DOM"));
 			}
 			Q.activate(element, options, callback);
@@ -8074,7 +8191,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 			var af1, af2;
 			af1 = af2 = args[f];
 			var namespace = '';
-			if (Q.typeOf(args[0]) === 'array') {
+			if (Q.isArrayLike(args[0])) {
 				namespace = args[0][1] || '';
 				if (namespace && namespace[0] !== '.') {
 					namespace = '.' + namespace;
@@ -8121,7 +8238,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 		$.fn[off] = function () {
 			var args = Array.prototype.slice.call(arguments, 0);
 			var namespace = '';
-			if (Q.typeOf(arguments[0]) === 'array') {
+			if (Q.isArrayLike(arguments[0])) {
 				namespace = args[0][1] || '';
 				if (namespace && namespace[0] !== '.') {
 					namespace = '.' + namespace;
@@ -8184,12 +8301,9 @@ Q.Browser = {
 			|| "an unknown version").toString();
 		var dotIndex = version.indexOf('.');
 		var mainVersion = version.substring(0, dotIndex != -1 ? dotIndex : version.length);
-		
 		var OSdata = this.searchData(this.dataOS);
 		var OS = OSdata.identity || "an unknown OS";
-		
 		var engine = '', ua = navigator.userAgent.toLowerCase();
-
 		if (ua.indexOf('webkit') != -1) {
 			engine = 'webkit';
 		} else if (ua.indexOf('gecko') != -1) {
@@ -8197,22 +8311,28 @@ Q.Browser = {
 		} else if (ua.indexOf('presto') != -1) {
 			engine = 'presto';
 		}
-		
+		var isCordova = /(.*)QCordova(.*)/.test(navigator.userAgent);
 		var isWebView = /(.*)QWebView(.*)/.test(navigator.userAgent)
-			|| (/(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i).test(navigator.userAgent);
-		
+			|| (/(iPhone|iPod|iPad).*AppleWebKit(?!.*Version)/i).test(navigator.userAgent);
+		var isStandalone = navigator.standalone
+			|| (root.external && external.msIsSiteMode && external.msIsSiteMode())
+			|| false;
+		if (OS === 'Android') {
+			isStandalone = screen.height-document.documentElement.clientHeight<40
+			             || screen.width-document.documentElement.clientHeight<40;
+		}
+		if (/(.*)QWebView(.*)/.test(navigator.userAgent)) {
+			isStandalone = false;
+		}
 		var name = browser.toLowerCase();
 		var prefix;
-		
 		switch (engine) {
 			case 'webkit': prefix = '-webkit-'; break;
 			case 'gecko': prefix = '-moz-'; break;
 			case 'presto': prefix = '-o-'; break;
 			default: prefix = '';
 		}
-		
 		prefix = (name === 'explorer') ? '-ms-' : prefix;
-		
 		return {
 			name: name,
 			mainVersion: mainVersion,
@@ -8220,7 +8340,9 @@ Q.Browser = {
 			OS: OS.toLowerCase(),
 			engine: engine,
 			device: OSdata.device,
-			isWebView: isWebView
+			isWebView: isWebView,
+			isStandalone: isStandalone,
+			isCordova: isCordova
 		};
 	},
 	
@@ -8268,7 +8390,7 @@ Q.Browser = {
 			versionSearch : "Version"
 		},
 		{
-			prop : window.opera,
+			prop : root.opera,
 			identity : "Opera",
 			versionSearch : "Version"
 		},
@@ -8390,7 +8512,7 @@ Q.Browser = {
 };
 
 var detected = Q.Browser.detect();
-var isTouchscreen = ('ontouchstart' in window || !!window.navigator.msMaxTouchPoints);
+var isTouchscreen = ('ontouchstart' in root || !!root.navigator.msMaxTouchPoints);
 var isTablet = navigator.userAgent.match(new RegExp('tablet|ipad', 'i'))
 	|| (isTouchscreen && !navigator.userAgent.match(new RegExp('mobi', 'i')));
 /**
@@ -8401,6 +8523,7 @@ Q.info = {
 	isTouchscreen: isTouchscreen, // works on ie10
 	isTablet: isTablet,
 	isWebView: detected.isWebView,
+	isStandalone: detected.isStandalone,
 	platform: detected.OS,
 	browser: detected,
 	isIE: function (minVersion, maxVersion) {
@@ -8419,6 +8542,7 @@ Q.info = {
 Q.info.isMobile = Q.info.isTouchscreen && !Q.info.isTablet;
 Q.info.formFactor = Q.info.isMobile ? 'mobile' : (Q.info.isTablet ? 'tablet' : 'desktop');
 var de = document.documentElement;
+de.addClass('Q_js');
 de.addClass(Q.info.isTouchscreen  ? 'Q_touchscreen' : 'Q_notTouchscreen');
 de.addClass(Q.info.isMobile ? 'Q_mobile' : 'Q_notMobile');
 de.addClass(Q.info.isAndroid() ? 'Q_android' : 'Q_notAndroid');
@@ -8435,19 +8559,22 @@ function _touchScrollingHandler(event) {
 		var hiddenWidth = p.scrollWidth - Math.min(
 			p.offsetWidth, Q.Pointer.windowWidth()
 		);
-		var hiddenHeight = p.scrollHeight - Math.min(
+		var q = (p.tagName === 'HTML')
+			? document.getElementsByTagName('body')[0]
+			: p;
+		var hiddenHeight = q.scrollHeight - Math.min(
 			p.offsetHeight, Q.Pointer.windowHeight()
 		);
 		var s = (['hidden', 'visible'].indexOf(overflow) < 0);
 		if ((s || p.tagName === 'HTML')
-		&& hiddenHeight > 0) {
+		&& hiddenHeight > 0
+		&& Q.Pointer.movement) {
 			if (_touchScrollingHandler.options.direction != 'horizontal'
 			&& (Q.Pointer.movement.positions.length == 1)
 			&& (pos = Q.Pointer.movement.positions[0])) {
-				var sy = Q.Pointer.getY(event)
-					+ Q.Pointer.scrollTop();
-				if ((sy > pos.y && p.scrollTop == 0)
-				|| (sy < pos.y && p.scrollTop >= hiddenHeight)) {
+				var sy = Q.Pointer.getY(event) - Q.Pointer.scrollTop();
+				if ((sy > pos.y && q.scrollTop == 0)
+				|| (sy < pos.y && q.scrollTop >= hiddenHeight)) {
 					continue;
 				}
 			}
@@ -8459,10 +8586,9 @@ function _touchScrollingHandler(event) {
 			if (_touchScrollingHandler.options.direction != 'vertical'
 			&& (Q.Pointer.movement.positions.length == 1)
 			&& (pos = Q.Pointer.movement.positions[0])) {
-				var sx = Q.Pointer.getX(event)
-					+ Q.Pointer.scrollLeft();
-				if ((sx > pos.x && p.scrollLeft == 0)
-				|| (sx < pos.x && p.scrollLeft >= hiddenWidth)) {
+				var sx = Q.Pointer.getX(event) - Q.Pointer.scrollLeft();
+				if ((sx > pos.x && q.scrollLeft == 0)
+				|| (sx < pos.x && q.scrollLeft >= hiddenWidth)) {
 					continue;
 				}
 			}
@@ -8480,18 +8606,19 @@ _touchScrollingHandler.options = {
 };
 
 function _touchBlurHandler(event) {
-	var b = _touchBlurHandler.options.blur;
-	if (!b) return;
+	var o = _touchBlurHandler.options.blur;
+	if (!o.blur) return;
 	var target = Q.Pointer.target(event);
 	var ae = document.activeElement;
 	if (ae && (typeof ae.blur === 'function')
 	&& (ae !== target)) {
-		if (b.indexOf(target.tagName.toUpperCase()) >= 0) {
+		if (o.blur.indexOf(target.tagName.toUpperCase()) >= 0
+		|| (o.blurContentEditable && target.getAttribute('contenteditable'))) {
 			var f = function () {
 				target.focus();
-				Q.removeEventListener(window, 'click', f);
+				Q.removeEventListener(root, 'click', f);
 			};
-			Q.addEventListener(window, 'click', f);
+			Q.addEventListener(root, 'click', f);
 		} else {
 			ae.blur();
 		}
@@ -8499,7 +8626,8 @@ function _touchBlurHandler(event) {
 }
 
 _touchBlurHandler.options = {
-	blur: ['INPUT', 'TEXTAREA', 'SELECT']
+	blur: ['INPUT', 'TEXTAREA', 'SELECT'],
+	blurContentEditable: true
 };
 
 function _detectOrientation(e) {
@@ -8535,7 +8663,7 @@ function _setLayoutInterval(e) {
 		var w2 = Q.Pointer.windowWidth();
 		var h2 = Q.Pointer.windowHeight();
 		if (w !== w2 || h !== h2) {
-			Q.onLayout.handle();
+			Q.layout();
 		}
 		w = w2;
 		h = h2;
@@ -8631,6 +8759,40 @@ Q.Pointer = {
 		};
 	},
 	/**
+	 * Like click event but works on touchscreens even if the viewport moves 
+	 * during click (such as when the on-screen keyboard disappears).
+	 * Respects Q.Pointer.canceledClick
+	 * @static
+	 * @method touchclick
+	 */
+	touchclick: function _Q_touchclick (params) {
+		if (!Q.info.isTouchscreen) {
+			return Q.Pointer.click(params);
+		}
+		params.eventName = Q.Pointer.start;
+		return function _Q_touchclick_on_wrapper (e) {
+			var _relevantClick = true;
+			var t = this, a = arguments;
+			function _clickHandler(e) {
+				Q.removeEventListener(root, 'click', _clickHandler);
+				if (Q.Pointer.canceledClick) {
+					return Q.Pointer.preventDefault(e);
+				}
+				if (_relevantClick) {
+					params.original.apply(t, a);
+				}
+			}
+			function _touchendHandler(e) {
+				Q.removeEventListener(this, 'touchend', _touchendHandler);
+				setTimeout(function () {
+					_relevantClick = false;
+				}, Q.Pointer.touchclick.duration);
+			}
+			Q.addEventListener(root, 'click', _clickHandler);
+			Q.addEventListener(this, 'touchend', _touchendHandler);
+		};
+	},
+	/**
 	 * Normalized mouse wheel event that works with various browsers
 	 * @static
 	 * @method click
@@ -8678,7 +8840,7 @@ Q.Pointer = {
 	 * @return {Number}
 	 */
 	scrollLeft: function () {
-		return window.pageXOffset || document.documentElement.scrollLeft || (document.body && document.body.scrollLeft);
+		return root.pageXOffset || document.documentElement.scrollLeft || (document.body && document.body.scrollLeft);
 	},
 	/**
 	 * Returns the document's scroll top in pixels, consistently across browsers
@@ -8687,7 +8849,7 @@ Q.Pointer = {
 	 * @return {Number}
 	 */
 	scrollTop: function () {
-		return window.pageYOffset || document.documentElement.scrollTop || (document.body && document.body.scrollTop);
+		return root.pageYOffset || document.documentElement.scrollTop || (document.body && document.body.scrollTop);
 	},
 	/**
 	 * Returns the window's inner width, in pixels, consistently across browsers
@@ -8696,7 +8858,7 @@ Q.Pointer = {
 	 * @return {Number}
 	 */
 	windowWidth: function () {
-		return window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+		return root.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
 	},
 	/**
 	 * Returns the window's inner height, in pixels, consistently across browsers
@@ -8705,7 +8867,7 @@ Q.Pointer = {
 	 * @return {Number}
 	 */
 	windowHeight: function () {
-		return window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+		return root.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 	},
 	/**
 	 * Returns the x coordinate of an event relative to the document
@@ -8813,146 +8975,180 @@ Q.Pointer = {
 	 * Places a hint to click or tap on the screen
 	 * @static
 	 * @method hint 
-	 * @param {Element|Object|Array} elementsOrPoints Indicates where to display the hint. A point should contain properties "x" and "y". Can also be an array of elements or points.
+	 * @param {Element|Object|String|Array} targets Indicates where to display the hint. A point should contain properties "x" and "y". Can also be a String selector referring to one or more elements after the show.delay, or an array of points, elements, or string css selectors to use with document.querySelector.
 	 * @param {Object} [options] possible options, which can include:
-	 * @param {String} [options.src] the url of the image
+	 * @param {String} [options.src] the url of the hint pointer image
 	 * @param {Point} [options.hotspot={x:0.5,y:0.3}] "x" and "y" represent the location of the hotspot within the image, using fractions between 0 and 1
 	 * @param {String} [options.width="200px"]
 	 * @param {String} [options.height="200px"]
 	 * @param {Integer} [options.zIndex=99999]
+	 * @param {Boolean} [option.dontStopBeforeShown=false] Don't let Q.Pointer.stopHints stop this hint before it's shown.
 	 * @param {Boolean} [options.dontRemove=false] Pass true to keep current hints displayed
-	 * @param {Integer} [options.show.delay=500]
-	 * @param {Integer} [options.show.duration=500]
-	 * @param {Integer} [options.show.initialScale=2]
+	 * @param {String} [options.audio.src] Can be used to play an audio file.
+	 * @param {String} [options.audio.from=0] Number of seconds inside the audio to start playing the audio from. Make sure audio is longer than this.
+	 * @param {String} [options.audio.until] Number of seconds inside the audio to play the audio until. Make sure audio is longer than this.
+	 * @param {String} [options.audio.removeAfterPlaying] Whether to remove the audio object after playing
+	 * @param {Integer} [options.show.delay=500] How long to wait after the function call (or after audio file has loaded and starts playing, if one was specified) before showing the hint animation
+	 * @param {Integer} [options.show.initialScale=10] The initial scale of the hint pointer image in the show animation
+	 * @param {Integer} [options.show.duration=500] The duration of the hint show animation
 	 * @param {Function} [options.show.ease=Q.Animation.ease.smooth]
-	 * @param {Integer} [options.hide.delay=500]
-	 * @param {Integer} [options.hide.duration=500]
+	 * @param {Integer} [options.hide.duration=500] The duration of the hint hide animation
 	 * @param {Function} [options.hide.ease=Q.Animation.ease.smooth]
 	 */
-	hint: function (elementsOrPoints, options) {
-		var img, i, l;
+	hint: function (targets, options) {
 		options = options || {};
-		if (Q.isArray(elementsOrPoints)) {
-			for (i=0; i<elementsOrPoints.length; ++i) {
-				Q.Pointer.hint(
-					elementsOrPoints[i],
-					Q.extend({}, options, {
-						dontRemove: i ? true : options.dontRemove
-					})
-				);
-			}
-			return;
-		}
-		var elementOrPoint = elementsOrPoints;
-		var o = Q.extend({}, Q.Pointer.hint.options, options);
+		var img1, i, l;
+		var qphi = Q.Pointer.hint.imgs;
+		var imageEvent = options.imageEvent || new Q.Event();
+		var audioEvent = options.audioEvent || new Q.Event();
+		var hintEvent = imageEvent.and(audioEvent);
+		var o = Q.extend({}, Q.Pointer.hint.options, 10, options);
 		var body = document.getElementsByTagName('body')[0];
-		var imgs = Q.Pointer.hint.imgs;
-		if (!options.dontRemove) {
-			for (i=0, l=imgs.length; i < l; ++i) {
-				img = imgs[i];
+		if (!options.dontRemove && !options.waitForEvents) {
+			for (i=0, l=qphi.length; i<l; ++i) {
+				img = qphi[i];
 				if (img.parentNode) {
 					img.parentNode.removeChild(img);
 				}
 			}
-			imgs = Q.Pointer.hint.imgs = [];
+			qphi = Q.Pointer.hint.imgs = [];
 		}
-		img = Q.Pointer.hint.img = document.createElement('img');
-		img.setAttribute('src', Q.url(o.src));
-		img.style.position = 'absolute';
-		img.style.width = o.width;
-		img.style.height = o.height;
-		img.style.display = 'block';
-		img.style.pointerEvents = 'none';
-		img.setAttribute('class', 'Q_hint');
-		imgs.push(img);
-		body.appendChild(img);
-		if (img.complete) {
-			_update();
-		} else {
-			img.onload = _update;
-		}
-		Q.Pointer.stopHints.prevent = true;
-		Q.removeEventListener(window, Q.Pointer.start, Q.Pointer.stopHints);
-		Q.removeEventListener(document, 'scroll', Q.Pointer.stopHints);
-		setTimeout(function () {
+		img1 = document.createElement('img');
+		img1.setAttribute('src', Q.url(o.src));
+		img1.style.position = 'absolute';
+		img1.style.width = o.width;
+		img1.style.height = o.height;
+		img1.style.display = 'block';
+		img1.style.pointerEvents = 'none';
+		img1.setAttribute('class', 'Q_hint');
+		img1.style.opacity = 0;
+		img1.hide = o.hide;
+		img1.dontStopBeforeShown = o.dontStopBeforeShown;
+		qphi.push(img1);
+		body.appendChild(img1);
+		hintEvent.add(Q.once(function _hintReady() {
+			img1.timeout = setTimeout(function () {
+				var i, l;
+				var imgs = [img1];
+				if (typeof targets === 'string') {
+					targets = document.querySelectorAll(targets);
+				}
+				if (Q.isArrayLike(targets)) {
+					img1.target = targets[0];
+					for (i=1, l=targets.length; i<l; ++i) {
+						var img2 = img1.cloneNode(false);
+						img2.hide = img1.hide;
+						img2.dontStopBeforeShown = img1.dontStopBeforeShown;
+						img2.target = targets[i];
+						img2.timeout = false;
+						imgs.push(img2);
+						Q.Pointer.hint.imgs.push(img2);
+						body.appendChild(img2);
+					}
+				} else {
+					img1.target = targets;
+				}
+				Q.each(imgs, function (i, img) {
+					if (typeof img.target === 'string') {
+						img.target = document.querySelector(target);
+					}
+					img1.timeout = false;
+					var point;
+					var target = img.target;
+					if (Q.instanceOf(target, Element)) {
+						if (!target.isVisible()) {
+							if (img.parentNode) {
+								img.parentNode.removeChild(img);
+							}
+							return; // perhaps it disappeared
+						}
+						var offset = Q.Pointer.offset(target);
+						point = {
+							x: offset.left + target.offsetWidth / 2,
+							y: offset.top + target.offsetHeight / 2
+						};
+					} else {
+						point = target;
+					}
+					img.style.display = 'block';
+					img.style.left = point.x - img.offsetWidth * o.hotspot.x + 'px';
+					img.style.top = point.y - img.offsetHeight * o.hotspot.y + 'px';
+					img.style.zIndex = o.zIndex;
+					var width = parseInt(img.style.width);
+					var height = parseInt(img.style.height);
+					Q.Animation.play(function (x, y) {
+						img.style.opacity = y;
+						if (o.show.initialScale !== 1) {
+							var z = 1 + (o.show.initialScale - 1) * (1 - y);
+							var w = width * z;
+							var h = height * z;
+							img.style.width = w + 'px';
+							img.style.height = h + 'px';
+							img.style.left = point.x - w * o.hotspot.x + 'px';
+							img.style.top = point.y - h * o.hotspot.y + 'px';
+						}
+					}, o.show.duration, o.show.ease);
+				});
+			}, o.show.delay);
+		}));
+		if (!Q.Pointer.hint.addedListeners) {
 			Q.addEventListener(window, Q.Pointer.start, Q.Pointer.stopHints);
 			Q.addEventListener(document, 'scroll', Q.Pointer.stopHints);
-			Q.Pointer.stopHints.prevent = false;
-		}, o.hide.delay);
-		function _update() {
-			var point;
-			img.style.display = 'block';
-			if (elementOrPoint instanceof Element) {
-				if (!elementOrPoint.isVisible()) {
-					return console.warn("Q.Pointer.hint: element is not visible");
-				}
-				var offset = Q.Pointer.offset(elementOrPoint);
-				point = {
-					x: offset.left + elementOrPoint.offsetWidth / 2,
-					y: offset.top + elementOrPoint.offsetHeight / 2
-				};
-			} else {
-				point = elementOrPoint;
-			}
-			img.style.left = point.x - img.offsetWidth * o.hotspot.x + 'px';
-			img.style.top = point.y - img.offsetHeight * o.hotspot.y + 'px';
-			img.style.zIndex = o.zIndex;
-			img.style.opacity = 0;
-			if (Q.Pointer.stopHints.animation) {
-				Q.Pointer.stopHints.animation.pause();
-				img.style.opacity = 0;
-			}
-			Q.Pointer.hint.elementOrPoint = elementOrPoint;
-			Q.Pointer.hint.timeout = setTimeout(function () {
-				var width = parseInt(img.style.width);
-				var height = parseInt(img.style.height);
-				Q.Animation.play(function (x, y) {
-					img.style.opacity = y;
-					if (o.show.initialScale !== 1) {
-						var z = 1 + (o.show.initialScale - 1) * (1 - y);
-						var w = width * z;
-						var h = height * z;
-						img.style.width = w + 'px';
-						img.style.height = h + 'px';
-						img.style.left = point.x - w * o.hotspot.x + 'px';
-						img.style.top = point.y - h * o.hotspot.y + 'px';
-					}
-				}, o.show.duration, o.show.ease);
-			}, o.show.delay);
+			Q.Pointer.hint.addedListeners = true;
+		}
+		if (options.waitForEvents) {
+			return;
+		}
+		if (img1.complete) {
+			imageEvent.handle();
+		} else {
+			img1.onload = imageEvent.handle;
+		}
+		var a = options.audio || {};
+		if (a.src) {
+			Q.audio(a.src, function () {
+				img1.audio = this;
+				this.play(a.from || 0, a.until, a.removeAfterPlaying);
+				audioEvent.handle();
+			});
+		} else if (!options.waitForEvents) {
+			audioEvent.handle();
 		}
 	},
 	/**
 	 * Stops any hints that are currently being displayed
 	 * @static
-	 * @method hint 
+	 * @method stopHints
+	 * @param {HTMLElement} [container] If provided, only hints for elements in this container are stopped.
 	 */
-	stopHints: function () {
+	stopHints: function (container) {
 		var imgs = Q.Pointer.hint.imgs;
-		if (!imgs || Q.Pointer.stopHints.prevent) return;
-		var a = Q.Pointer.stopHints.animation = Q.Animation.play(function (x, y) {
-			var img, i, l;
-			for (i=0, l=imgs.length; i<l; ++i) {
-				img = imgs[i];
+		var imgs2 = [];
+		Q.each(imgs, function (i, img) {
+			var outside = (
+				Q.instanceOf(container, Element)
+				&& !container.isOrContains(img.target)
+			);
+			if ((img.timeout !== false && img.dontStopBeforeShown)
+			|| outside) {
+				imgs2.push(img);
+				return;
+			}
+			if (img.audio) {
+				img.audio.pause();
+			}
+			clearTimeout(img.timeout);
+			img.timeout = null;
+			Q.Animation.play(function (x, y) {
 				img.style.opacity = 1-y;
-			}
-		}, Q.Pointer.hint.options.hide.duration);
-		a.onComplete.set(function () {
-			var img, i, l;
-			for (i=0, l=imgs.length; i<l; ++i) {
-				img = imgs[i];
-				if (Q.Pointer.stopHints.prevent) {
-					img.style.opacity = 1;
-				} else {
-					if (img.parentNode) {
-						img.parentNode.removeChild(img);
-					}
+			}, img.hide.duration, img.hide.ease)
+			.onComplete.set(function () {
+				if (img.parentNode) {
+					img.parentNode.removeChild(img);
 				}
-			}
-			Q.Pointer.hint.imgs = [];
+			});
 		});
-		Q.Pointer.hint.elementOrPoint = null;
-		clearTimeout(Q.Pointer.hint.timeout);
-		Q.Pointer.hint.timeout = null;
+		Q.Pointer.hint.imgs = imgs2;
 	},
 	/**
 	 * Consistently prevents the default behavior of an event across browsers
@@ -8999,20 +9195,23 @@ Q.Pointer = {
 		);
 	},
 	/**
-	 * Call this function to prevent touch scrolling
+	 * Call this function to prevent the rubber band effect on iOS devices,
+	 * making the app feel more native there.
 	 * @param {Object} [options] possible options, which can include:
 	 * @param {String} [options.direction='both'] can be 'vertical', 'horizontal', or 'both'
-	 * @method preventTouchScrolling
+	 * @method preventRubberBand
 	 */
-	preventTouchScrolling: function (options) {
-		Q.extend(_touchScrollingHandler.options, options);
-		Q.addEventListener(window, 'touchmove', _touchScrollingHandler);
+	preventRubberBand: function (options) {
+		if (Q.info.platform === 'ios') {
+			Q.extend(_touchScrollingHandler.options, options);
+			Q.addEventListener(window, 'touchmove', _touchScrollingHandler);
+		}
 	},
 	/**
-	 * Can restore touch scrolling after preventTouchScrolling() was called
-	 * @method restoreTouchScrolling
+	 * Can restore touch scrolling after preventRubberBand() was called
+	 * @method restoreRubberBand
 	 */
-	restoreTouchScrolling: function () {
+	restoreRubberBand: function () {
 		Q.removeEventListener(window, 'touchmove', _touchScrollingHandler);
 	},
 	/**
@@ -9049,7 +9248,7 @@ Q.Pointer = {
 Q.Pointer.which.LEFT = 1;
 Q.Pointer.which.MIDDLE = 2;
 Q.Pointer.which.RIGHT = 3;
-
+Q.Pointer.touchclick.duration = 400;
 Q.Pointer.hint.options = {
 	src: 'plugins/Q/img/hints/tap.gif',
 	hotspot:  {x: 0.5, y: 0.3},
@@ -9068,7 +9267,6 @@ Q.Pointer.hint.options = {
 		ease: Q.Animation.ease.linear
 	}
 };
-
 Q.Pointer.hint.imgs = [];
 
 function _Q_restoreScrolling() {
@@ -9446,12 +9644,12 @@ Q.confirm = function(message, callback, options) {
 	dialog.find('button:first').on(Q.Pointer.end, function() {
 		buttonClicked = true;
 		Q.Dialogs.pop();
-		Q.handle(callback, window, [true]);
+		Q.handle(callback, root, [true]);
 	});
 	dialog.find('button:last').on(Q.Pointer.end, function() {
 		buttonClicked = true;
 		Q.Dialogs.pop();
-		Q.handle(callback, window, [false]);
+		Q.handle(callback, root, [false]);
 	});
 	return dialog;
 };
@@ -9486,23 +9684,25 @@ Q.prompt = function(message, callback, options) {
 	var buttonClicked = false;
 	var dialog = Q.Dialogs.push(Q.extend({
 		'title': o.title,
-		'content': $('<div class="Q_messagebox" />').append(
+		'content': $('<div class="Q_messagebox Q_big_prompt" />').append(
 			$('<p />').html(o.message),
 			$('<input type="text" />').attr('placeholder', o.placeholder),
-			$('<button class="Q_messagebox_done" />').html(o.ok)
+			$('<button class="Q_messagebox_done Q_button" />').html(o.ok)
 		),
 		'onActivate': function(dialog) {
 			var field = dialog.find('input');
-			var fieldWidth = field.parent().width() - parseInt(field.css('padding-left')) - parseInt(field.css('padding-right'))
+			var fieldWidth = field.parent().width()
 						   - field.next().outerWidth(true) - 5;
-			field.css({ 'width': fieldWidth + 'px' })
-				.plugin('Q/placeholders')
-				.plugin('Q/clickfocus')
-				.on('keydown', function (event) {
-					if ((event.keyCode || event.which) === 13) {
-						_done();
-					}
-				});
+			field.css({ 
+				width: fieldWidth + 'px',
+				boxSizing: 'border-box'
+			}).plugin('Q/placeholders')
+			.plugin('Q/clickfocus')
+			.on('keydown', function (event) {
+				if ((event.keyCode || event.which) === 13) {
+					_done();
+				}
+			});
 		},
 		'onClose': {'Q.prompt': function() {
 			if (!buttonClicked) Q.handle(callback, this, [null]);
@@ -9521,51 +9721,86 @@ Q.prompt = function(message, callback, options) {
 };
 
 /**
- * Q.Audio objects facilitate audio functionality on various browsers
+ * Q.Audio objects facilitate audio functionality on various browsers.
+ * Please do not create them directly, but use the Q.audio function.
  * @class Q.Audio
  * @constructor
  * @param {String} url the url of the audio to load
  */
 Q.Audio = function (url) {
-	if (this === window) {
+	if (this === root) {
 		throw new Q.Error("Please call Q.Audio with the keyword new");
 	}
+	var t = this;
+	this.src = url = Q.url(url);
 	var container = document.getElementById('Q-audio-container');
 	if (!container) {
 		container = document.createElement('div');
 		container.setAttribute('id', 'Q-audio-container');
+		container.style.display = 'none';
 		document.body.appendChild(container);
 	}
-	container.style.display = 'none';
 	this.container = container;
 	var audio = this.audio = document.createElement('audio');
-	audio.setAttribute('src', Q.url(url));
+	audio.setAttribute('src', url);
 	audio.setAttribute('preload', 'auto');
+	function _handler(e) {
+		var event = (e.type === 'canplay' ? Aup.onCanPlay : (
+			(e.type === 'canplaythrough' ? Aup.onCanPlayThrough : Aup.onEnded)
+		));
+		event.handle.call(t, [e]);
+	}
 	Q.addEventListener(audio, {
-		'playthrough': this.onCanPlayThrough.handle,
-		'ended': this.onEnded.handle
+		'canplay': _handler,
+		'canplaythrough': _handler,
+		'ended': _handler
 	});
-	container.appendChild(audio); // loads the file
+	container.appendChild(audio); // some browsers load the file immediately
+	audio.load(); // others need this
+	Q.Audio.collection[url] = this;
 };
+Q.Audio.collection = {};
 
 var Aup = Q.Audio.prototype;
+Aup.onCanPlay = new Q.Event();
 Aup.onCanPlayThrough = new Q.Event();
 Aup.onEnded = new Q.Event();
+
 /**
  * @method play
  * Plays the audio as soon as it is available
+ * @param {Number} [from] The time, in seconds, from which to start.
+ * @param {Number} [until] The time, in seconds, until which to play.
+ * @param {Boolean} [removeAfterPlaying]
  */
-Aup.play = function (removeAfterPlaying) {
+Aup.play = function (from, until, removeAfterPlaying) {
 	var t = this;
+	var a = t.audio;
+	from = from || 0;
+	if (from > until) {
+		throw new Q.Error("Audio.prototype.play: from can't be greater than until");
+	}
+	if (!a.readyState) {
+		return false;
+	}
 	if (removeAfterPlaying) {
 		t.onEnded.set(function () {
+			delete Q.Audio.collection[t.src];
 			container.removeChild(t.audio);
 			t.onEnded.remove('Q.Audio');
 		}, 'Q.Audio');
 	}
 	t.playing = true;
 	t.paused = false;
-	t.audio.play();
+	if (a.currentTime != from) {
+		a.currentTime = from;
+	}
+	if (until) {
+		setTimeout(function Q_Audio_play_pause() {
+			a.pause();
+		}, (until-from)*1000);
+	}
+	a.play();
 	return t;
 };
 
@@ -9582,6 +9817,41 @@ Aup.pause = function () {
 	}
 	return t;
 };
+
+/**
+ * @method pause
+ * Pauses the audio if it is playing
+ */
+Q.Audio.pauseAll = function () {
+	for (var url in Q.Audio.collection) {
+		Q.Audio.collection[url].pause();
+	}
+};
+
+/**
+ * @class Q
+ */
+
+/**
+ * Loads an audio file and calls the callback when it's ready to play
+ * @static
+ * @method audio
+ * @param {String} url 
+ * @param {Function} handler A function to run after the audio is ready to play
+ * @param {Object} [options={}] Can be one of the following options
+ * @param {Boolean} [options.canPlayThrough=true] Whether to wait until the audio can play all the way through before calling the handler.
+ */
+Q.audio = Q.getter(function _Q_audio(url, handler, options) {
+	url = Q.url(url);
+	var audio = Q.Audio.collection[url]
+		? Q.Audio.collection[url]
+		: new Q.Audio(url);
+	if (options && options.canPlayThrough === false) {
+		audio.onCanPlay.add(handler);
+	} else {
+		audio.onCanPlayThrough.add(handler);
+	}
+});
 
 /**
  * Methods for temporarily covering up certain parts of the screen with masks
@@ -9714,17 +9984,17 @@ Q.Masks = {
 };
 
 Q.Masks.options = {
-	'Q.screen.mask': { className: 'Q_screen_mask', fadeIn: 500 },
+	'Q.screen.mask': { className: 'Q_screen_mask', fadeIn: 100 },
 	'Q.request.load.mask': { className: 'Q_load_data_mask', fadeIn: 200 },
 	'Q.request.cancel.mask': { className: 'Q_cancel_mask', fadeIn: 200 }
 };
 
 Q.addEventListener(window, Q.Pointer.start, _Q_PointerStartHandler);
 
-if (!window.console) {
+if (!root.console) {
 	// for browsers like IE8 and below
 	function noop() {}
-	window.console = {
+	root.console = {
 		debug: noop,
 		dir: noop,
 		error: noop,
@@ -9781,7 +10051,7 @@ Q.onInit.add(function () {
 	}, 'Q.Socket');
 	
 	//jQuery Tools tooltip and validator plugins configuration
-	var tooltipConf = Q.getObject("jQuery.tools.tooltip.conf", window);
+	var tooltipConf = Q.getObject("jQuery.tools.tooltip.conf", root);
 	if (tooltipConf) {
 		tooltipConf.tipClass = 'Q_tooltip';
 		tooltipConf.effect = 'fade';
@@ -9789,7 +10059,7 @@ Q.onInit.add(function () {
 		tooltipConf.position = 'bottom center';
 		tooltipConf.offset = [0, 0];
 	}
-	var validatorConf = Q.getObject("jQuery.tools.validator.conf", window);
+	var validatorConf = Q.getObject("jQuery.tools.validator.conf", root);
 	if (validatorConf) {
 		validatorConf.errorClass = 'Q_errors';
 		validatorConf.messageClass = 'Q_error_message';
@@ -9859,6 +10129,66 @@ Q.onJQuery.add(function ($) {
 		
 }, 'Q');
 
+function _addHandlebarsHelpers() {
+	var Handlebars = root.Handlebars;
+	if (!Handlebars.helpers.call) {
+		Handlebars.registerHelper('call', function(path) {
+			if (!path) {
+				return "{{call missing method name}}";
+			}
+			var parts = path.split('.');
+			var p0 = parts[0];
+			var p1 = parts[1];
+			if (this[p0] && typeof this[p0][p1] === 'function') {
+				var args = Array.prototype.slice.call(
+					arguments, 1, arguments.length-1
+				);
+				return this[p0][p1].apply(this[p0], args);
+			}
+			return "{{call "+path+" not found}}";
+		});
+	}
+	if (!Handlebars.helpers.tool) {
+		Handlebars.registerHelper('tool', function (name, id, options) {
+			if (!name) {
+				return "{{tool missing name}}";
+			}
+			if (typeof id === 'object') {
+				options = id;
+				id = undefined;
+			}
+			var ba = Q.Tool.beingActivated;
+			var prefix = (ba ? ba.prefix : '')
+				+ name.split('/').join('_');
+			if (id) {
+				id = prefix + '_' + id;
+			}
+			var o = {};
+			var hash = (options && options.hash);
+			if (hash) {
+				for (var k in hash) {
+					Q.setObject(k, hash[k], o, '-');
+				}
+			}
+			Q.extend(o, this[name], this['id:'+id]);
+			return Q.Tool.setUpElementHTML('div', name, o, id, prefix);
+		});
+	}
+}
+
+function _Q_trigger_recursive(tool, eventName, args) {
+	if (!tool) {
+		return false;
+	}
+	var obj = Q.getObject(eventName, tool);
+	if (obj) {
+		Q.handle(obj, tool, args);
+	}
+	Q.each(tool.children('', 1), function () {
+		_Q_trigger_recursive(this, eventName, args);
+	});
+}
+
 function _Q_loadUrl_fillSlots (res, url, options) {
 	var elements = {}, name, elem, pos;
 	var osc = options.slotContainer;
@@ -9872,7 +10202,7 @@ function _Q_loadUrl_fillSlots (res, url, options) {
 		// already been "cached"
 
 		if (name.toUpperCase() === 'TITLE') {
-			window.document.title = res.slots[name];
+			document.title = res.slots[name];
 		} else if (elem = options.slotContainer(name, res)) { 
 			try {
 				Q.replace(elem, res.slots[name], options);
@@ -9937,7 +10267,7 @@ Q.onReady.set(function _Q_masks() {
 	Q.request.options.onShowCancel.set(function(callback, o) {
 		if (o.quiet) return;
 		var mask = Q.Masks.mask('Q.request.cancel.mask').element;
-		var button = mask.children('.Q_load_cancel_button');
+		var button = mask.querySelectorAll('.Q_load_cancel_button');
 		if (!button.length) {
 			button = document.createElement('button');
 			button.setAttribute('class', 'Q_load_cancel_button');
@@ -9953,8 +10283,8 @@ Q.onReady.set(function _Q_masks() {
 		Q.Masks.hide('Q.request.load.mask');
 		Q.Masks.hide('Q.request.cancel.mask');
 	}, 'Q.request.load.mask');
-	Q.onLayout.handle();
-}, 'Q.Maskss');
+	Q.layout();
+}, 'Q.Masks');
 
 if (typeof module !== 'undefined' && typeof process !== 'undefined') {
 	// Assume we are in a Node.js environment, e.g. running tests
@@ -9974,11 +10304,11 @@ if (typeof module !== 'undefined' && typeof process !== 'undefined') {
 		if (extend) {
 			Q.extend(oldQ, Q);
 		}
-		window.Q = oldQ;
+		root.Q = oldQ;
 		return Q;
 	};
-	var oldQ = window.Q;
-	window.Q = Q;
+	var oldQ = root.Q;
+	root.Q = Q;
 }
 
-})(window);
+})();

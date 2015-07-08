@@ -49,7 +49,7 @@ class Handlebars_Helpers
      * @param array|bool $defaults add defaults helper
      *          (if, unless, each,with, bindAttr)
      *
-     * @throws InvalidArgumentException when $helpers is not an array
+     * @throws {$1} when $helpers is not an array
      * (or traversable) or helper is not a callable
      */
     public function __construct($helpers = null, $defaults = true)
@@ -73,7 +73,7 @@ class Handlebars_Helpers
     /**
      * Add default helpers (if unless each with bindAttr)
      *
-     * @return void
+     * @return {void}
      */
     protected function addDefaultHelpers()
     {
@@ -92,8 +92,8 @@ class Handlebars_Helpers
      * @param string $name   helper name
      * @param mixed  $helper a callable or Handlebars_Helper implementation as a helper
      *
-     * @throws InvalidArgumentException if $helper is not a callable
-     * @return void
+     * @throws {$1} if $helper is not a callable
+     * @return {void}
      */
     public function add($name, $helper)
     {
@@ -113,7 +113,7 @@ class Handlebars_Helpers
      *
      * @param Handlebars_Helpers $helpers A collection which helpers should be added.
      *
-     * @return void
+     * @return {void}
      */
     public function addHelpers(Handlebars_Helpers $helpers)
     {
@@ -129,8 +129,8 @@ class Handlebars_Helpers
      * @param array                $args     The arguments passed the the helper
      * @param string               $source   The source
      *
-     * @throws InvalidArgumentException
-     * @return mixed The helper return value
+     * @throws {$1}
+     * @return {mixed} The helper return value
      */
     public function call($name, Handlebars_Template $template, Handlebars_Context $context, $args, $source)
     {
@@ -152,7 +152,7 @@ class Handlebars_Helpers
      *
      * @param string $name helper name
      *
-     * @return boolean
+     * @return {boolean}
      */
     public function has($name)
     {
@@ -164,8 +164,8 @@ class Handlebars_Helpers
      *
      * @param string $name helper name
      *
-     * @throws InvalidArgumentException if $name is not available
-     * @return callable helper function
+     * @throws {$1} if $name is not available
+     * @return {callable} helper function
      */
     public function __get($name)
     {
@@ -181,7 +181,7 @@ class Handlebars_Helpers
      *
      * @param string $name helper name
      *
-     * @return boolean
+     * @return {boolean}
      * @see Handlebras_Helpers::has
      */
     public function __isset($name)
@@ -195,7 +195,7 @@ class Handlebars_Helpers
      * @param string   $name   helper name
      * @param callable $helper a function as a helper
      *
-     * @return void
+     * @return {void}
      */
     public function __set($name, $helper)
     {
@@ -207,7 +207,7 @@ class Handlebars_Helpers
      *
      * @param string $name helper name to remove
      *
-     * @return void
+     * @return {void}
      */
     public function __unset($name)
     {
@@ -219,8 +219,8 @@ class Handlebars_Helpers
      *
      * @param string $name helper name
      *
-     * @throws InvalidArgumentException if the requested helper is not present.
-     * @return void
+     * @throws {$1} if the requested helper is not present.
+     * @return {void}
      */
     public function remove($name)
     {
@@ -236,7 +236,7 @@ class Handlebars_Helpers
      *
      * Removes all helpers from this collection
      *
-     * @return void
+     * @return {void}
      */
     public function clear()
     {
@@ -246,7 +246,7 @@ class Handlebars_Helpers
     /**
      * Check whether the helper collection is empty.
      *
-     * @return boolean True if the collection is empty
+     * @return {boolean} True if the collection is empty
      */
     public function isEmpty()
     {
@@ -256,7 +256,7 @@ class Handlebars_Helpers
     /**
      * Returns all helpers from the collection.
      *
-     * @return array Associative array of helpers which keys are helpers names
+     * @return {array} Associative array of helpers whose keys are helpers names
      * and the values are the helpers.
      */
     public function getAll()

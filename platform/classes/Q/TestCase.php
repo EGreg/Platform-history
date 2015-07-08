@@ -12,7 +12,7 @@ class Q_TestCase
 	/**
 	 * Runs the tests
 	 * @method run
-	 * @return array $results Returns array of results. A result consists of 
+	 * @return {array} $results Returns array of results. A result consists of 
 	 */
 	function run()
 	{

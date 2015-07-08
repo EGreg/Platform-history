@@ -22,6 +22,17 @@ function Streams_0_8_1_Streams_mysql()
 	$stream->type = 'Streams/community';
 	$stream->title = "$app Community";
 	$stream->save();
+	
+	// symlink the labels folder
+	$cwd = getcwd();
+	chdir(USERS_PLUGIN_FILES_DIR.DS.'Users'.DS.'icons');
+	if (!file_exists('Streams')) {
+		symlink(
+			STREAMS_PLUGIN_FILES_DIR.DS.'Streams'.DS.'icons'.DS.'labels'.DS.'Streams',
+			'Streams'
+		);
+	}
+	chdir($cwd);
 }
 
 Streams_0_8_1_Streams_mysql();

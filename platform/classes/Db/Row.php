@@ -1536,16 +1536,16 @@ class Db_Row implements Iterator
 	 *  If this is left null, and this Db_Row was retrieved, then the db rows corresponding
 	 *  to the primary key are deleted.
 	 *  But if it wasn't retrieved, then the modified fields are used as the search criteria.
-	 * @param {boolean} [$use_index=null] If true, the primary key is used in searching for rows to delete. 
+	 * @param {boolean} [$useIndex=null] If true, the primary key is used in searching for rows to delete. 
 	 *  An exception is thrown when some fields of the primary key are not specified
 	 * @return {integer} Returns number of rows deleted
 	 */
-	function remove ($search_criteria = null, $use_index = false)
+	function remove ($search_criteria = null, $useIndex = false)
 	{
 		$class_name = get_class($this);
 
 		// Check if we have specified all the primary key fields,
-		if ($use_index) {
+		if ($useIndex) {
 			$primaryKey = $this->getPrimaryKey();
 			$primaryKeyValue = $this->calculatePKValue();
 			if (!is_array($primaryKeyValue)) {
@@ -1583,14 +1583,14 @@ class Db_Row implements Iterator
 			$row = $this;
 			if (false === Q::event(
 				"Db/Row/$class_name/remove",
-				compact('row', 'search_criteria', 'use_index'), 'before'
+				compact('row', 'search_criteria', 'useIndex'), 'before'
 			)) {
 				return false;
 			}
 		}
 		$callback = array($this, "beforeRemove");
 		if (is_callable($callback)) {
-			$continue_deleting = call_user_func($callback, $search_criteria, $use_index);
+			$continue_deleting = call_user_func($callback, $search_criteria, $useIndex);
 			if (! is_bool($continue_deleting)) {
 				throw new Exception(
 					get_class($this)."::beforeRemove() must return a boolean - whether to delete or not!", 
@@ -1762,6 +1762,9 @@ class Db_Row implements Iterator
 			// the primary key should, it is only through tinkering.
 			// We'll let it pass, since the person was most likely
 			// trying to do something clever.
+			if (!$this->getPrimaryKey()) {
+				throw new Exception("Db_Row cannot update an existing row using without a primary key");
+			}
 			$where = $this->getPkValue();
 			if (!$where) {
 				throw new Exception("The primary key is not specified for $table");
@@ -1889,7 +1892,7 @@ class Db_Row implements Iterator
 	 * @method retrieve
 	 * @param {string} [$fields='*'] The fields to retrieve and set in the Db_Row.
 	 *  This gets used if we make a query to the database.
-	 * @param {boolean} [$use_index=false] If true, the primary key is used in searching. 
+	 * @param {boolean} [$useIndex=false] If true, the primary key is used in searching. 
 	 *  An exception is thrown when some fields of the primary key are not specified
 	 * @param {array|boolean} [$modifyQuery=false] If an array, the following keys are options for modifying the query:
 	 * 
@@ -1917,16 +1920,20 @@ class Db_Row implements Iterator
 	 */
 	function retrieve (
 		$fields = '*', 
-		$use_index = false, 
+		$useIndex = false, 
 		$modifyQuery = false,
 		$options = array())
 	{
+		if (is_array($useIndex)) {
+			$options = $useIndex;
+			$useIndex = $modifyQuery = null;
+		}
 		if (!isset($fields)) $fields = '*';
-		if (!isset($use_index)) $use_index = false;
+		if (!isset($useIndex)) $useIndex = false;
 		$search_criteria = null;
 		$class_name = get_class($this);
 		// Check if we have specified all the primary key fields.
-		if ($use_index === true) {
+		if ($useIndex === true) {
 			$primaryKey = $this->getPrimaryKey();
 			$primaryKeyValue = $this->calculatePKValue();
 			if (!is_array($primaryKeyValue)) {
@@ -1984,7 +1991,7 @@ class Db_Row implements Iterator
 				
 			// Gather all the arguments together for retrieve_resume() method
 			$resume_args = array(
-				$fields, $use_index,
+				$fields, $useIndex,
 				$modifyQuery, $options
 			);
 			$resume_args[] = compact(
@@ -2028,7 +2035,7 @@ class Db_Row implements Iterator
 
 	function retrieve_resume (
 		$fields = '*', 
-		$use_index = false, 
+		$useIndex = false, 
 		$modifyQuery = false,
 		$options = array(),
 		$preserved_vars = array(),

@@ -38,7 +38,7 @@ class Handlebars_Loader_StringLoader implements Handlebars_Loader
      *
      * @param string $name Handlebars Handlebars_Template source
      *
-     * @return Handlebars_String Handlebars Handlebars_Template source
+     * @return {Handlebars_String} Handlebars Handlebars_Template source
      */
     public function load($name)
     {

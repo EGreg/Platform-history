@@ -131,12 +131,19 @@ function _Q_actions(options) {
 			'line-height': ch+'px'
 		});
 		if (state.clickable) {
-			$('.Q_actions_action', container).plugin('Q/clickable', {}, function () {
-				if (state.horizontal) {
-					$('.Q_clickable_container', container).css({'display': 'inline-block', 'zoom': 1});
-				}
-			}).width(0);
+			var $action = $('.Q_actions_action', container);
+			if (!$action.state('Q/clickable')) {
+				$action.plugin('Q/clickable', {}, function () {
+					if (state.horizontal) {
+						$('.Q_clickable_container', container).css({
+							'display': 'inline-block',
+							'zoom': 1
+						});
+					}
+				}).width(0);
+			}
 		}
+		
 		_position($this, state.position, container);
 		interval = setInterval(function () {
 			_position($this, state.position, container);
@@ -175,6 +182,10 @@ function _Q_actions(options) {
 
 
 function _position($this, position, container) {
+	if (!$this.is(':visible')) {
+		return container.hide();
+	}
+	container.show();
 	var cw = container.width(), ch = container.height(), left, top;
 	switch (position[0]) {
 		case 'b':

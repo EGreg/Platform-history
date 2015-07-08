@@ -11,39 +11,31 @@
  * @class Q inplace
  * @constructor
  * @param {Object} [options] This is an object of parameters for this function
- *  @param {String} [options.method] The HTTP verb to use.
- *  @default 'put'
- *  @param {String} [options.type] The type of the input field. Can be "textarea" or "text"
- *  @default 'textarea'
- *  @param {Boolean} [options.editOnClick] Whether to enter editing mode when clicking on the text.
- *  @default true
- *  @param {Boolean} [options.selectOnEdit] Whether to select everything in the input field when entering edit mode.
- *  @default true
- *  @param {Number} [options.maxWidth] The maximum width that the field can grow to
- *  @default null
- *  @param {Number} [options.minWidth] The minimum width that the field can shrink to
- *  @default 100
+ *  @param {String} [options.method='put'] The HTTP verb to use.
+ *  @param {String} [options.type='textarea'] The type of the input field. Can be "textarea" or "text"
+ *  @param {Boolean=true} [options.editOnClick] Whether to enter editing mode when clicking on the text.
+ *  @param {Boolean} [options.selectOnEdit=true] Whether to select everything in the input field when entering edit mode.
+ *  @param {Boolean=true} [options.showEditButtons=false] Set to true to force showing the edit buttons on touchscreens
+ *  @param {Number} [options.maxWidth=null] The maximum width that the field can grow to
+ *  @param {Number} [options.minWidth=100] The minimum width that the field can shrink to
  *  @param {String} [options.staticHtml] The static HTML to start out with
- *  @param {String} [options.placeholder] Text to show in the staticHtml or input field when the editor is empty
- *  @default null
+ *  @param {String} [options.placeholder=null] Text to show in the staticHtml or input field when the editor is empty
  *  @param {Object} [options.template]  Can be used to override info for the tool's view template.
- *    @param {String} [options.template.dir]
- *    @default 'plugins/Q/views'
- *    @param {String} [options.template.name]
- *    @default 'Q/inplace/tool'
+ *    @param {String} [options.template.dir='plugins/Q/views']
+ *    @param {String} [options.template.name='Q/inplace/tool']
  *  @param {Q.Event} [options.onSave] This event triggers after save
- *  @default Q.Event()
  *  @param {Q.Event} [options.onCancel] This event triggers after canceling
- *  @default Q.Event()
  */
 Q.Tool.define("Q/inplace", function (options) {
-	var tool = this, 
-		state = tool.state,
-		$te = $(tool.element), 
-		container = $('.Q_inplace_tool_container', $te);
+	var tool = this;
+	var state = tool.state;
+	var $te = $(tool.element);
+	var container = tool.$('.Q_inplace_tool_container');
 	if (container.length) {
 		return _Q_inplace_tool_constructor.call(tool, this.element, options);
 	}
+	
+	Q.addStylesheet('plugins/Q/css/inplace.css');
 	
 	// if activated with JS should have following options:
 	//	- action: required. the form action to save tool value
@@ -98,9 +90,11 @@ Q.Tool.define("Q/inplace", function (options) {
 	type: 'textarea',
 	editOnClick: true,
 	selectOnEdit: true,
+	showEditButtons: false,
 	maxWidth: null,
 	minWidth: 100,
 	placeholder: 'Type something...',
+	cancelPrompt: "Would you like to save your changes?",
 	template: {
 		dir: 'plugins/Q/views',
 		name: 'Q/inplace/tool'
@@ -159,25 +153,38 @@ function _Q_inplace_tool_constructor(element, options) {
 	var noCancel = false;
 	var $te = $(tool.element);
 
-	var container_span = $('.Q_inplace_tool_container', $te);
-	var static_span = $('.Q_inplace_tool_static', $te);
+	var container_span = tool.$('.Q_inplace_tool_container');
+	var static_span = tool.$('.Q_inplace_tool_static');
 	if (!static_span.length) {
-		static_span = $('.Q_inplace_tool_blockstatic', $te);
+		static_span = tool.$('.Q_inplace_tool_blockstatic');
 	}
-	$('.Q_inplace_tool_editbuttons', $te).css({ 
+	tool.$('.Q_inplace_tool_editbuttons').css({ 
 		'margin-top': static_span.outerHeight() + 'px',
 		'line-height': '1px'
 	});
-	var edit_button = $('button.Q_inplace_tool_edit', $te);
-	var save_button = $('button.Q_inplace_tool_save', $te);
-	var cancel_button = $('button.Q_inplace_tool_cancel', $te);
-	var fieldinput = $(':input[type!=hidden]', $te).not('button').eq(0)
+	var edit_button = tool.$('button.Q_inplace_tool_edit');
+	var save_button = tool.$('button.Q_inplace_tool_save');
+	var cancel_button = tool.$('button.Q_inplace_tool_cancel');
+	var fieldinput = tool.$(':input[type!=hidden]').not('button').eq(0)
 		.addClass('Q_inplace_tool_fieldinput');
-	var undermessage = $('.Q_inplace_tool_undermessage', $te);
+	var undermessage = tool.$('.Q_inplace_tool_undermessage');
 	var throbber_img = $('<img />')
 		.attr('src', Q.url('plugins/Q/img/throbbers/bars16.gif'));
 	if (container_span.hasClass('Q_nocancel')) {
 		noCancel = true;
+	}
+	previousValue = fieldinput.val();
+	var maxWidth = state.maxWidth || null;
+	if (!maxWidth) {
+		$te.parents().each(function () {
+			var $this = $(this);
+			var display = $this.css('display');
+			if (display === 'block' || display === 'table-cell'
+			|| (display === 'inline-block' && this.style.width)) {
+				maxWidth = this;
+				return false;
+			}
+		});
 	}
 	setTimeout(function () {
 		fieldinput.css({
@@ -187,7 +194,7 @@ function _Q_inplace_tool_constructor(element, options) {
 			letterSpacing: static_span.css('letterSpacing')
 		});
 		fieldinput.plugin('Q/autogrow', {
-			maxWidth: state.maxWidth || $te.parent().innerWidth(),
+			maxWidth: state.maxWidth || maxWidth,
 			minWidth: state.minWidth || 0
 		});
 		if (!fieldinput.data('inplace')) {
@@ -197,8 +204,12 @@ function _Q_inplace_tool_constructor(element, options) {
 			fieldinput.data('inplace').widthWasAdjusted = true;
 			fieldinput.data('inplace').heightWasAdjusted = true;
 		}
+		if (fieldinput.is('textarea') && !fieldinput.val()) {
+			var height = static_span.outerHeight() + 'px';
+			fieldinput.add(fieldinput.parent()).css('min-height', height);
+		}
 	}, 0); // hopefully it will be inserted into the DOM by then
-	function onClick() {
+	function onClick(event) {
 		container_span.addClass('Q_editing');
 		container_span.addClass('Q_discouragePointerEvents');
 		if (state.bringToFront) {
@@ -212,8 +223,12 @@ function _Q_inplace_tool_constructor(element, options) {
 				});
 		}
 		fieldinput.plugin('Q/autogrow', {
-			maxWidth: state.maxWidth || $te.parent().innerWidth(),
-			minWidth: state.minWidth || 0
+			maxWidth: state.maxWidth || maxWidth,
+			minWidth: state.minWidth || 0,
+			onResize: {"Q/inplace": function () {
+				var margin = this.outerHeight() + parseInt(this.css('margin-top'));
+				tool.$('.Q_inplace_tool_editbuttons').css('margin-top', margin+'px');
+			}}
 		}).plugin('Q/placeholders');
 		var field_width = static_span.outerWidth();
 		var field_height = static_span.outerHeight();
@@ -256,6 +271,11 @@ function _Q_inplace_tool_constructor(element, options) {
 			}
 		} else {
 			selStart = fieldinput.val().length;
+			if (fieldinput.attr('type') == 'text') {
+				var v = fieldinput.val();
+				fieldinput.val('');
+				fieldinput.val(v); // put cursor at the end
+			}
 		}
 		if (fieldinput.is('textarea')) {
 			_setSelRange(
@@ -264,10 +284,10 @@ function _Q_inplace_tool_constructor(element, options) {
 				fieldinput.val().length
 			);
 		}
-		$('.Q_inplace_tool_buttons', $te).css({
+		tool.$('.Q_inplace_tool_buttons').css({
 			width: container_span.outerWidth() + 'px'
 		});
-		return false;
+		event.preventDefault();
 	};
 	function onSave () {
 		var form = $('.Q_inplace_tool_form', $te);
@@ -369,9 +389,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		_restoreZ();
 		if (!dontAsk && fieldinput.val() != previousValue) {
 			dialogMode = true;
-			var continueEditing = confirm(
-				"Would you like to save your changes?"
-			);
+			var continueEditing = confirm(state.cancelPrompt);
 			dialogMode = false;
 			if (continueEditing) {
 				onSave();
@@ -388,10 +406,14 @@ function _Q_inplace_tool_constructor(element, options) {
 		Q.handle(state.onCancel, tool);
 	};
 	function onBlur() {
+		if (noCancel && fieldinput.val() !== previousValue) {
+			return onSave();
+		}
 		setTimeout(function () {
 			if (focusedOn
 			 || dialogMode
-			 || !container_span.hasClass('Q_editing')) {
+			 || !container_span.hasClass('Q_editing')
+			) {
 				return;
 			}
 			onCancel();
@@ -408,7 +430,7 @@ function _Q_inplace_tool_constructor(element, options) {
 	}
 	function _editButtons() {
 		if (Q.info.isTouchscreen) {
-			if (!state.editOnClick) {
+			if (!state.editOnClick || state.showEditButtons) {
 				$('.Q_inplace_tool_editbuttons', $te).css({ 
 					'margin-top': static_span.outerHeight() + 'px',
 					'line-height': '1px',
@@ -439,11 +461,7 @@ function _Q_inplace_tool_constructor(element, options) {
 	container_span.mouseout(function() {
 		container_span.removeClass('Q_hover');
 	});
-	container_span.on([Q.Pointer.end, '.Q_inplace'], function (event) {
-		if (Q.Pointer.canceledClick) {
-			// could have been canceled by Q/sortable for instance
-			return;
-		}
+	container_span.on([Q.Pointer.fastclick, '.Q_inplace'], function (event) {
 		if ((state.editOnClick && event.target === static_span[0])
 		|| $(event.target).is('button')) {
 			Q.Pointer.cancelClick(event);
@@ -455,10 +473,14 @@ function _Q_inplace_tool_constructor(element, options) {
 		Q.Pointer.cancelClick(event);
 	});
 	if (this.state.editOnClick) {
-		static_span.click(onClick); // happens despite canceled click
+		// happens despite canceled click
+		static_span.on([Q.Pointer.fastclick, '.Q_inplace'], onClick);
 	}
-	edit_button.click(onClick); // happens despite canceled click
-	cancel_button.click(function() { onCancel(true); return false; });
+	edit_button.on(Q.Pointer.start, onClick); // happens despite canceled click
+	cancel_button.on(Q.Pointer.start, function() {
+		onCancel(true); 
+		return false;
+	});
 	cancel_button.on('focus '+Q.Pointer.start, function() { setTimeout(function() {
 		focusedOn = 'cancel_button'; }, 50);
 	});
@@ -468,10 +490,9 @@ function _Q_inplace_tool_constructor(element, options) {
 		focusedOn = 'save_button'; }, 50);
 	});
 	save_button.blur(function() { focusedOn = null; setTimeout(onBlur, 100); });
-	fieldinput.keyup(_updateSaveButton);
+	fieldinput.on('keyup input', _updateSaveButton);
 	fieldinput.focus(function() { focusedOn = 'fieldinput'; });
 	fieldinput.blur(function() { focusedOn = null; setTimeout(onBlur, 100); });
-	fieldinput.change(function() { fieldinput.attr(fieldinput.val().length.toString() + 'em;') });
 	fieldinput.keydown(function(event) {
 		if (!focusedOn) {
 			return false;

@@ -90,7 +90,7 @@ class Services_Twilio_Capability
      *
      * @param $ttl the expiration time of the token (in seconds). Default
      *        value is 3600 (1hr)
-     * @return the newly generated token that is valid for $ttl seconds
+     * @return {the} newly generated token that is valid for $ttl seconds
      */
     public function generateToken($ttl = 3600)
     {
@@ -155,7 +155,7 @@ class ScopeURI
      * Parse a scope URI into a ScopeURI object
      *
      * @param string    $uri  The scope URI
-     * @return ScopeURI The parsed scope uri
+     * @return {ScopeURI} The parsed scope uri
      */
     public static function parse($uri)
     {
@@ -199,7 +199,7 @@ class JWT
      * @param string|null $key    The secret key
      * @param bool        $verify Don't skip verification process
      *
-     * @return object The JWT's payload as a PHP object
+     * @return {object} The JWT's payload as a PHP object
      */
     public static function decode($jwt, $key = null, $verify = true)
     {
@@ -233,7 +233,7 @@ class JWT
       * @param string       $key     The secret key
       * @param string       $algo    The signing algorithm
       *
-      * @return string A JWT
+      * @return {string} A JWT
       */
     public static function encode($payload, $key, $algo = 'HS256')
     {
@@ -255,7 +255,7 @@ class JWT
      * @param string $key    The secret key
      * @param string $method The signing algorithm
      *
-     * @return string An encrypted message
+     * @return {string} An encrypted message
      */
     public static function sign($msg, $key, $method = 'HS256')
     {
@@ -273,7 +273,7 @@ class JWT
     /**
      * @param string $input JSON string
      *
-     * @return object Object representation of JSON string
+     * @return {object} Object representation of JSON string
      */
     public static function jsonDecode($input)
     {
@@ -290,7 +290,7 @@ class JWT
     /**
      * @param object|array $input A PHP object or array
      *
-     * @return string JSON representation of the PHP object or array
+     * @return {string} JSON representation of the PHP object or array
      */
     public static function jsonEncode($input)
     {
@@ -307,7 +307,7 @@ class JWT
     /**
      * @param string $input A base64 encoded string
      *
-     * @return string A decoded string
+     * @return {string} A decoded string
      */
     public static function urlsafeB64Decode($input)
     {
@@ -319,7 +319,7 @@ class JWT
     /**
      * @param string $input Anything really
      *
-     * @return string The base64 encode of what you passed in
+     * @return {string} The base64 encode of what you passed in
      */
     public static function urlsafeB64Encode($input)
     {
@@ -329,7 +329,7 @@ class JWT
     /**
      * @param int $errno An error number from json_last_error()
      *
-     * @return void
+     * @return {void}
      */
     private static function handleJsonError($errno)
     {

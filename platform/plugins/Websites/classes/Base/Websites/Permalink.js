@@ -23,26 +23,26 @@ var Row = Q.require('Db/Row');
  * an associative array of `{column: value}` pairs
  */
 function Base (fields) {
-	
+	Base.constructors.apply(this, arguments);
 }
 
 Q.mixin(Base, Row);
 
 /**
  * @property uri
- * @type string
+ * @type String
  */
 /**
  * @property url
- * @type string
+ * @type String
  */
 /**
  * @property insertedTime
- * @type string
+ * @type String|Db.Expression
  */
 /**
  * @property updatedTime
- * @type string|Db.Expression
+ * @type String|Db.Expression
  */
 
 /**
@@ -58,8 +58,8 @@ Base.db = function () {
 /**
  * Retrieve the table name to use in SQL statements
  * @method table
- * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
- * @return {string|Db.Expression} The table name as string optionally without database name if no table sharding was started
+ * @param {boolean} [withoutDbName=false] Indicates wheather table name should contain the database name
+ * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
 Base.table = function (withoutDbName) {
@@ -90,8 +90,8 @@ Base.connectionName = function() {
 /**
  * Create SELECT query to the class table
  * @method SELECT
- * @param fields {object|string} The field values to use in WHERE clauseas as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {object|string} fields The field values to use in WHERE clauseas as an associative array of `{column: value}` pairs
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.SELECT = function(fields, alias) {
@@ -103,7 +103,7 @@ Base.SELECT = function(fields, alias) {
 /**
  * Create UPDATE query to the class table. Use Db.Query.Mysql.set() method to define SET clause
  * @method UPDATE
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.UPDATE = function(alias) {
@@ -115,8 +115,8 @@ Base.UPDATE = function(alias) {
 /**
  * Create DELETE query to the class table
  * @method DELETE
- * @param [table_using=null] {object} If set, adds a USING clause with this table
- * @param [alias=null] {string} Table alias
+ * @param {object}[table_using=null] If set, adds a USING clause with this table
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.DELETE = function(table_using, alias) {
@@ -129,7 +129,7 @@ Base.DELETE = function(table_using, alias) {
  * Create INSERT query to the class table
  * @method INSERT
  * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.INSERT = function(fields, alias) {
@@ -151,7 +151,7 @@ Base.prototype.className = "Websites_Permalink";
  * Create INSERT query to the class table
  * @method INSERT
  * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.prototype.setUp = function() {
@@ -162,7 +162,7 @@ Base.prototype.setUp = function() {
  * Create INSERT query to the class table
  * @method INSERT
  * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.prototype.db = function () {
@@ -172,8 +172,8 @@ Base.prototype.db = function () {
 /**
  * Retrieve the table name to use in SQL statements
  * @method table
- * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
- * @return {string|Db.Expression} The table name as string optionally without database name if no table sharding was started
+ * @param {boolean} [withoutDbName=false] Indicates wheather table name should contain the database name
+ * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
 Base.prototype.table = function () {
@@ -222,6 +222,15 @@ Base.prototype.beforeSet_uri = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the uri field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_uri = function () {
+
+		return 255;
+};
+
 /**
  * Method is called before setting the field and verifies if value is string of length within acceptable limit.
  * Optionally accept numeric value which is converted to string
@@ -239,25 +248,45 @@ Base.prototype.beforeSet_url = function (value) {
 		return value;
 };
 
+	/**
+	 * Returns the maximum string length that can be assigned to the url field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_url = function () {
+
+		return 255;
+};
+
+/**
+ * Method is called before setting the field
+ * @method beforeSet_insertedTime
+ * @param {String} value
+ * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
+ */
+Base.prototype.beforeSet_insertedTime = function (value) {
+		if (!value) return value;
+		if (value instanceof Db.Expression) return value;
+		value = (value instanceof Date) ? Base.db().toDateTime(value) : value;
+		return value;
+};
+
 /**
  * Method is called before setting the field
  * @method beforeSet_updatedTime
- * @param {string} value
+ * @param {String} value
  * @return {Date|Db.Expression} If 'value' is not Db.Expression the current date is returned
  */
 Base.prototype.beforeSet_updatedTime = function (value) {
-       if (!value) return value;
+		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
-		value = (value instanceof Date) ? Websites.db().toDateTime(value) : value;
+		value = (value instanceof Date) ? Base.db().toDateTime(value) : value;
 		return value;
 };
 
 Base.prototype.beforeSave = function (value) {
 
-	if (!this._retrieved && !value['insertedTime'])
-		value['insertedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
 	// convention: we'll have updatedTime = insertedTime if just created.
-	value['updatedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
+	this['updatedTime'] = value['updatedTime'] = new Db.Expression('CURRENT_TIMESTAMP');
 	return value;
 };
 

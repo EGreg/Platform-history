@@ -28,36 +28,18 @@
  *  @param {Q.Event} [options.onOpen] Event that happens after a column is opened.
  *  @param {Q.Event} [options.afterDelay] Event that happens after a column is opened, after a delay intended to wait out various animations.
  *  @param {Q.Event} [options.onClose] Event that happens after a column is closed.
- * @return Q.Tool
+ * @return {Q.Tool}
  */
 Q.Tool.define("Q/columns", function(options) {
 	var tool = this;
 	var state = tool.state;
 	options = options || {};
 
-	state.max = 0;
-	state.columns = [];
-	state.data = [];
 	//state.triggers = [];
+	
+	Q.addStylesheet('plugins/Q/css/columns.css');
 
-	state.container = tool.$('.Q_columns_container')[0];
-	if (!state.container) {
-		state.container = document.createElement('div')
-			.addClass('Q_columns_container Q_clearfix');
-		tool.element.appendChild(this.state.container);
-	} else {
-		tool.$('.Q_columns_column').each(function (index) {
-			state.columns.push(this);
-			$(this).data(dataKey_index, index)
-				.data(dataKey_scrollTop, Q.Pointer.scrollTop());
-			++state.max;
-			tool.open({
-				title: undefined,
-				column: undefined,
-				animation: {duration: 0}
-			}, index, null, true);
-		});
-	}
+	prepareColumns(tool);
 
 	var selector = '.Q_close';
 	if (Q.info.isMobile && state.back.triggerFromTitle) {
@@ -78,7 +60,7 @@ Q.Tool.define("Q/columns", function(options) {
 	}, 100));
 	
 	tool.refresh();
-	Q.onLayout.set(function () {
+	Q.onLayout(tool).set(function () {
 		tool.refresh();
 	}, tool);
 },
@@ -113,7 +95,9 @@ Q.Tool.define("Q/columns", function(options) {
 	hideBackgroundColumns: Q.info.isMobile && Q.info.isAndroid(1000),
 	beforeOpen: new Q.Event(),
 	beforeClose: new Q.Event(),
-	onOpen: new Q.Event(),
+	onOpen: new Q.Event(function () {
+		Q.Pointer.stopHints();
+	}, 'Q/columns'),
 	onClose: new Q.Event(),
 	afterDelay: new Q.Event()
 },
@@ -152,6 +136,8 @@ Q.Tool.define("Q/columns", function(options) {
 	 *  including events such as "onOpen" and "onClose". Additional options include:
 	 *  @param {String} [options.columnClass] to add a class to the column
 	 *  @param {Object} [options.data] to add data on the column element with jQuery
+	 *  @param {Object} [options.template] template to render for the "content" slot
+	 *  @param {Object} [options.url] a url to request the slots "title" and "content" from
 	 * @param {Number} index The index of the column to open
 	 * @param {Function} callback Called when the column is opened
 	 */
@@ -235,6 +221,7 @@ Q.Tool.define("Q/columns", function(options) {
 			}
 		}
 		state.$currentColumn = $div;
+		state.currentIndex = index;
 		if (o.back.hide) {
 			$close.hide();
 		}
@@ -249,46 +236,12 @@ Q.Tool.define("Q/columns", function(options) {
 			$div.attr('data-name', options.name)
 				.addClass('Q_column_'+n);
 		}
-
-		var p = Q.pipe();
-		var waitFor = ['animation'];
-		
-		if (options.url) {
-			waitFor.push('activated');
-			var url = options.url;
-			var params = Q.extend({
-				slotNames: ["title", "column"], 
-				slotContainer: {
-					title: titleSlot,
-					column: columnSlot
-				},
-				quiet: true,
-				ignoreHistory: true,
-				ignorePage: true,
-				onError: {"Q/columns": function () {
-					$mask.remove();
-				}}
-			}, options);
-			params.handler = function _handler(response) {
-				var elementsToActivate = {};
-				if ('title' in response.slots) {
-					$(titleSlot).html(response.slots.title);
-					elementsToActivate['title'] = titleSlot;
-				}
-				columnSlot.innerHTML = response.slots.column;
-				elementsToActivate['column'] = columnSlot;
-				return elementsToActivate;
-			};
-			params.onActivate = p.fill('activated');
-			// this.state.triggers[index] = options.trigger || null;
-			Q.loadUrl(url, params);
-		}
 		
 		if (o.template) {
 			Q.Template.render(o.template, function (err, html) {
-				var element = $('<div />').html(html);
-				o.title = $('.title_slot', element).html();
-				o.column = $('.column_slot', element).html();
+				var $element = $('<div />').html(html);
+				o.title = $element.find('.title_slot').html();
+				o.column = $element.find('.column_slot').html();
 				_open();
 			});
 		} else {
@@ -297,15 +250,48 @@ Q.Tool.define("Q/columns", function(options) {
 		return this;
 		
 		function _open() {
+			var p = Q.pipe();
+			var waitFor = ['animation'];
+			if (options.url) {
+				waitFor.push('activated');
+				var url = options.url;
+				var params = Q.extend({
+					slotNames: ["title", "column"], 
+					slotContainer: {
+						title: titleSlot,
+						column: columnSlot
+					},
+					quiet: true,
+					ignoreHistory: true,
+					ignorePage: true,
+					onError: {"Q/columns": function () {
+						$mask.remove();
+					}}
+				}, options);
+				params.handler = function _handler(response) {
+					var elementsToActivate = {};
+					if ('title' in response.slots) {
+						$(titleSlot).html(response.slots.title);
+						elementsToActivate['title'] = titleSlot;
+					}
+					columnSlot.innerHTML = response.slots.column;
+					elementsToActivate['column'] = columnSlot;
+					return elementsToActivate;
+				};
+				params.onActivate = p.fill('activated');
+				// this.state.triggers[index] = options.trigger || null;
+				Q.loadUrl(url, params);
+			}
+			
 			var $te = $(tool.element);
 			if (o.title != undefined) {
 				$(titleSlot).empty().append(
-					o.title instanceof Element ? $(o.title) : o.title
+					Q.instanceOf(o.title, Element) ? $(o.title) : o.title
 				).activate(p.fill('activated1'));
 			}
 			if (o.column != undefined) {
 				$(columnSlot).empty().append(
-					o.column instanceof Element ? $(o.column) : o.column
+					Q.instanceOf(o.column, Element) ? $(o.column) : o.column
 				);
 			}
 			waitFor.push('activated1', 'activated2');
@@ -351,7 +337,8 @@ Q.Tool.define("Q/columns", function(options) {
 				show.width = $div.width();
 				show.height = $div.height();
 				for (var k in hide) {
-					if (hide[k].toString().substr(-1) === '%') {
+					var str = hide[k].toString();
+					if (str.substr(str.length-1) === '%') {
 						hide[k] = show.height * parseInt(hide[k]) / 100;
 					}
 				}
@@ -376,7 +363,11 @@ Q.Tool.define("Q/columns", function(options) {
 				if (Q.info.isMobile) {
 					$div.add($ct).css('width', '100%');
 				} else {
-					$sc.width(tool.$('.Q_columns_column').length * tool.$('.Q_columns_column').outerWidth(true));
+					var width = 0;
+					tool.$('.Q_columns_column').each(function () {
+						width += $(this).outerWidth(true);
+					});
+					$sc.width(width);
 
 					var $toScroll = ($te.css('overflow') === 'visible')
 						? $te.parents()
@@ -402,7 +393,9 @@ Q.Tool.define("Q/columns", function(options) {
 				.addClass('Q_columns_opening')
 				.css(o.animation.css.hide)
 				.animate(show, duration, function() {
-					afterAnimation($cs, $sc, $ct);
+					setTimeout(function () {
+						afterAnimation($cs, $sc, $ct);
+					}, 0);
 				});
 			}
 
@@ -419,7 +412,7 @@ Q.Tool.define("Q/columns", function(options) {
 						$cs.height(heightToBottom);
 						$div.css('height', 'auto');
 					}
-					Q.layout();
+					Q.layout($cs[0]);
 					if (o.hideBackgroundColumns) {
 						$div.prev().hide();
 					}
@@ -525,6 +518,7 @@ Q.Tool.define("Q/columns", function(options) {
 			$('.Q_columns_title', $div).css('position', 'absolute');
 		}
 		state.$currentColumn = $prev;
+		state.currentIndex = $prev.attr('data-index');
 		state.columns[index] = null;
 		presentColumn(tool);
 	
@@ -534,16 +528,23 @@ Q.Tool.define("Q/columns", function(options) {
 			--state.max;
 		}
 		
-		$div.animate($div.data(dataKey_hide), duration, function () {
-			Q.removeElement(div, true); // remove it correctly
+		if (duration) {
+			$div.animate($div.data(dataKey_hide), duration, _close);
+		} else {
+			$div.hide();
+			_close();
+		}
 		
+		function _close() {
+			Q.removeElement(div, true); // remove it correctly
+
 			var data = tool.data(index);
 			var $sc = $(state.container);
 			$sc.width($sc.width() - w);
 			presentColumn(tool);
 			Q.handle(callback, tool, [index, div]);
 			state.onClose.handle.call(tool, index, div, data);
-		});
+		}
 		return this;
 	},
 
@@ -597,6 +598,16 @@ Q.Tool.define("Q/columns", function(options) {
 			$(window).scrollTop( $(window).scrollTop()-overshoot );
 		}
 		return this;
+	},
+	Q: {
+		onRetain: function(newOptions, incomingElement) {
+			Q.replace(this.element, incomingElement);
+			var tool = this;
+			setTimeout(function () {
+				prepareColumns(tool);
+				tool.refresh();
+			}, 0);
+		}
 	}
 }
 );
@@ -624,6 +635,31 @@ function presentColumn(tool) {
 		} else {
 			$cs.css('min-height', heightToBottom);
 		}
+	}
+}
+
+function prepareColumns(tool) {
+	var state = tool.state;
+	state.max = 0;
+	state.data = [];
+	state.container = tool.$('.Q_columns_container')[0];
+	if (!state.container) {
+		state.container = document.createElement('div')
+			.addClass('Q_columns_container Q_clearfix');
+		tool.element.appendChild(this.state.container);
+	} else {
+		state.columns = [];
+		tool.$('.Q_columns_column').each(function (index) {
+			state.columns.push(this);
+			$(this).data(dataKey_index, index)
+				.data(dataKey_scrollTop, Q.Pointer.scrollTop());
+			++state.max;
+			tool.open({
+				title: undefined,
+				column: undefined,
+				animation: {duration: 0}
+			}, index, null, true);
+		});
 	}
 }
 

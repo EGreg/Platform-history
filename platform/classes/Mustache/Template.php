@@ -43,7 +43,7 @@ abstract class Mustache_Template
      *
      * @param mixed $context Array or object rendering context (default: array())
      *
-     * @return string Rendered template
+     * @return {string} Rendered template
      */
     public function __invoke($context = array())
     {
@@ -55,7 +55,7 @@ abstract class Mustache_Template
      *
      * @param mixed $context Array or object rendering context (default: array())
      *
-     * @return string Rendered template
+     * @return {string} Rendered template
      */
     public function render($context = array())
     {
@@ -71,7 +71,7 @@ abstract class Mustache_Template
      * @param string           $indent  (default: '')
      * @param bool             $escape  (default: false)
      *
-     * @return string Rendered template
+     * @return {string} Rendered template
      */
     abstract public function renderInternal(Mustache_Context $context, $indent = '', $escape = false);
 
@@ -102,7 +102,7 @@ abstract class Mustache_Template
      *
      * @param mixed $value
      *
-     * @return boolean True if the value is 'iterable'
+     * @return {boolean} True if the value is 'iterable'
      */
     protected function isIterable($value)
     {
@@ -129,7 +129,7 @@ abstract class Mustache_Template
      *
      * @param mixed $context Optional first context frame (default: null)
      *
-     * @return Mustache_Context
+     * @return {Mustache_Context}
      */
     protected function prepareContextStack($context = null)
     {

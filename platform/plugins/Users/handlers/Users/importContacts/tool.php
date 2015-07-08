@@ -5,7 +5,7 @@
  * @param $options
  *   An associative array of parameters, which can include:
  *   "provider" => Required. The provider from which we are importing.
- * @return string
+ * @return {string}
  */
 function Users_importContacts_tool($options)
 {

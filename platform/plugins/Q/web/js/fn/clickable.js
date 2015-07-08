@@ -6,7 +6,7 @@
  */
 
 /**
- * Makes an element clickable, creating cool "popping" effect when you press it,
+ * Makes an element clickable, creating a cool "popping" effect when you press it,
  * which especially looks nice on touchscreens.
  * I originally came up with this effect at Intermagix.
  * @class Q clickable
@@ -91,11 +91,20 @@ function _Q_clickable(o) {
 	if (p.length && p[0].tagName.toUpperCase() === 'TD') {
 		p.css('position', 'relative');
 	}
+	var originalTime = Date.now();
+	var timing = state.timing;
 	
 	setTimeout(function _clickify() {
 		if (!$this.is(':visible')) {
-			if (state.waitingDelay) {
-				setTimeout(_clickify, state.waitingDelay);
+			if (!$this.closest('body').length) {
+				return;
+			}
+			if (timing.waitingPeriod
+			&& Date.now() - originalTime >= timing.waitingPeriod) {
+				return;
+			}
+			if (timing.waitingInterval) {
+				setTimeout(_clickify, timing.waitingInterval);
 			}
 			return;
 		}
@@ -175,9 +184,9 @@ function _Q_clickable(o) {
 		$this.appendTo(stretcher).css({
 			position: 'absolute',
 			left: '0px',
-			top: '0px',
-			width: csw,
-			height: csh
+			top: '0px'
+			// width: csw,
+			// height: csh
 		});
 		var zindex;
 		var anim = null;
@@ -256,8 +265,10 @@ function _Q_clickable(o) {
 				anim && anim.pause();
 				scale(1);
 			}, 'Q/clickable');
-			$(window).on([Q.Pointer.end, '.Q_clickable'], onRelease);
-			$(window).on('release.Q_clickable', onRelease);
+			var _released = false;
+			$(window).add(triggers)
+				.on([Q.Pointer.end, '.Q_clickable'], onRelease)
+				.on('release.Q_clickable', onRelease);
 			if (state.preventDefault) {
 				evt.preventDefault();
 			}
@@ -265,6 +276,11 @@ function _Q_clickable(o) {
 				evt.stopPropagation();
 			}
 			function onRelease (evt) {
+				if (_released) return;
+				_released = true;
+				setTimeout(function () { 
+					_released = false;
+				}, 0);
 				container.parents().each(function () {
 					$(this).removeData(
 						['Q/clickable scrollTop', 'Q/clickable transform']
@@ -318,8 +334,9 @@ function _Q_clickable(o) {
 					triggers[0].restoreSelections(true);
 				}
 			
-				$(window).off([Q.Pointer.end, '.Q_clickable']);
-				$(window).off('release.Q_clickable');
+				$(window).add(triggers)
+					.off([Q.Pointer.end, '.Q_clickable'])
+					.off('release.Q_clickable');
 				Q.handle($this.state('Q/clickable').onRelease, $this, [evt, overElement, triggers]);
 			};
 			function scale(factor) {
@@ -350,7 +367,34 @@ function _Q_clickable(o) {
 				evt.stopPropagation();
 			}
 		});
-	}, state.slightDelay);
+		
+		if (timing.renderingInterval) {
+			setTimeout(function _update() {
+				if (Date.now() - originalTime >= timing.renderingPeriod) {
+					return;
+				}
+				var cs = $this[0].computedStyle();
+				var csw2 = cs.width; // the object can change, so get the values now
+				var csh2 = cs.height;
+				if (csw2 != csw || csh2 != csh) {
+					if (!$this.is(':visible')) {
+						return;
+					}
+					container.css({
+						'width': $this.outerWidth(true),
+						'height': $this.outerHeight(true)
+					});
+					stretcher.css({
+						'width': container.width()+0.5+'px',
+						'height': container.height()+0.5+'px'
+					});
+				}
+				csw = csw2;
+				csh = csh2;
+				setTimeout(_update, timing.renderingInterval);
+			}, timing.renderingInterval);
+		}
+	}, timing.renderingDelay);
 	return this;
 },
 
@@ -381,8 +425,13 @@ function _Q_clickable(o) {
 		x: 0.5,
 		y: 0.5
 	},
-	slightDelay: 10,
-	waitingDelay: 100,
+	timing: {
+		renderingPeriod: 1000,
+		renderingInterval: 100,
+		waitingPeriod: 0,
+		waitingInterval: 100,
+		renderingDelay: 0
+	},
 	selectable: false,
 	allowCallout: false,
 	cancelDistance: 15,

@@ -9,7 +9,7 @@ $prefix = Q_Html::getIdPrefix();
 	<tr>
 		<td class="Q_field_title">
 			<label for="<?php echo $prefix ?>firstName">First Name</label>
-			<?php if ($show_access): ?> 
+			<?php if ($showAccess): ?> 
 				<?php echo Q::tool('Streams/access', array(
 					'readLevel' => Streams::my('Streams/user/firstName', 'readLevel'),
 					'streamName' => 'Streams/user/firstName',
@@ -28,7 +28,7 @@ $prefix = Q_Html::getIdPrefix();
 	<tr>
 		<td class="Q_field_title">
 			<label for="<?php echo $prefix ?>lastName">Last Name</label>
-			<?php if ($show_access) : ?> 
+			<?php if ($showAccess) : ?> 
 				<?php echo Q::tool('Streams/access', array(
 					'readLevel' => Streams::my('Streams/user/lastName', 'readLevel'),
 					'streamName' => 'Streams/user/lastName',
@@ -46,8 +46,8 @@ $prefix = Q_Html::getIdPrefix();
 	</tr>
 	<tr>
 		<td class="Q_field_title">
-			<label for="<?php echo $prefix ?>gender">gender</label>
-			<?php if ($show_access): ?> 
+			<label for="<?php echo $prefix ?>gender">Gender</label>
+			<?php if ($showAccess): ?> 
 				<?php echo Q::tool('Streams/access', array(
 					'readLevel' => Streams::my('Streams/user/gender', 'readLevel'),
 					'streamName' => 'Streams/user/gender',
@@ -70,7 +70,7 @@ $prefix = Q_Html::getIdPrefix();
 	<tr>
 		<td class="Q_field_title">
 			<label for="<?php echo $prefix ?>birthday">Birthday</label>
-			<?php if ($show_access): ?>
+			<?php if ($showAccess): ?>
 				<?php echo Q::tool('Streams/access', array(
 					'readLevel' => Streams::my('Streams/user/birthday', 'readLevel'),
 					'streamName' => 'Streams/user/birthday',
