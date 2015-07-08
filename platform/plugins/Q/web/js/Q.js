@@ -3312,42 +3312,54 @@ Q.Tool.clear = function _Q_Tool_clear(elem, removeCached) {
  * @method define
  * @param {String|Object} name The name of the tool, e.g. "Q/foo". Also you can pass an object of name: filename here here.
  * @param {Function} ctor Your tool's constructor. You can also pass a filename here, in which case the other parameters are ignored.
- * @param {Function} ctor Your tool's constructor. You can also pass a filename here, in which case the other parameters are ignored.
+ * @param {String|array} [require] Optionally name another tool (or array of tool names) that was supposed to already have been defined. This will cause your tool's constructor to make sure the required tool has been already loaded and activated on the same element.
  * @param {Object} defaultOptions An optional hash of default options for the tool
  * @param {Array} stateKeys An optional array of key names to copy from options to state
- * @param{Object}  methods An optional hash of method functions to assign to the prototype
+ * @param{Object} methods An optional hash of method functions to assign to the prototype
  */
-Q.Tool.define = function (name, ctor, /* require, */ defaultOptions, stateKeys, methods) {
+Q.Tool.define = function (name, /* require, */ ctor, defaultOptions, stateKeys, methods) {
+	var ctors = {};
 	if (typeof name === 'object') {
-		for (var n in name) {
-			Q.Tool.define(n, name[n]);
+		ctors = name;
+	} else {
+		if (typeof arguments[1] !== 'function') {
+			var require = arguments[1];
+			if (typeof require === 'string') {
+				require = [require];
+			}
+			ctor = arguments[2]; ctor.require = require; defaultOptions = arguments[3];
+			stateKeys = arguments[4]; methods = arguments[5];
 		}
-		return;
+		ctors[name] = ctor;
 	}
-	name = Q.normalize(name);
-	if (typeof ctor === 'string') {
-		if (typeof Q.Tool.constructors[name] !== 'function') {
-			_qtdo[name] = _qtdo[name] || {};
-			return Q.Tool.constructors[name] = ctor;
+	for (name in ctors) {
+		ctor = ctors[name];
+		ctor.toolName = name;
+		name = Q.normalize(name);
+		if (typeof ctor === 'string') {
+			if (typeof Q.Tool.constructors[name] !== 'function') {
+				_qtdo[name] = _qtdo[name] || {};
+				Q.Tool.constructors[name] = ctor;
+			}
+			continue;
 		}
-		return ctor;
+		if (typeof stateKeys === 'object') {
+			methods = stateKeys;
+			stateKeys = undefined;
+		}
+		ctor.options = Q.extend(
+			defaultOptions, Q.Tool.options.levels, _qtdo[name]
+		);
+		ctor.stateKeys = stateKeys;
+		if (typeof ctor !== 'function') {
+			throw new Q.Error("Q.Tool.define requires ctor to be a string or a function");
+		}
+		Q.extend(ctor.prototype, 10, methods);
+		Q.Tool.constructors[name] = ctor;
+		Q.Tool.onLoadedConstructor(name).handle(name, ctor);
+		Q.Tool.onLoadedConstructor("").handle(name, ctor);
+		Q.Tool.latestName = name;
 	}
-	if (typeof stateKeys === 'object') {
-		methods = stateKeys;
-		stateKeys = undefined;
-	}
-	ctor.options = Q.extend(
-		defaultOptions, Q.Tool.options.levels, _qtdo[name]
-	);
-	ctor.stateKeys = stateKeys;
-	if (typeof ctor !== 'function') {
-		throw new Q.Error("Q.Tool.define requires ctor to be a string or a function");
-	}
-	Q.extend(ctor.prototype, 10, methods);
-	Q.Tool.constructors[name] = ctor;
-	Q.Tool.onLoadedConstructor(name).handle(name, ctor);
-	Q.Tool.onLoadedConstructor("").handle(name, ctor);
-	Q.Tool.latestName = name;
 	return ctor;
 };
 
@@ -7198,6 +7210,12 @@ function _activateTools(toolElement, options, shared) {
 					_constructToolHandlers[normalizedName].handle.call(this, this.options);
 					_constructToolHandlers["id:"+normalizedId] &&
 					_constructToolHandlers["id:"+normalizedId].handle.call(this, this.options);
+					Q.each(toolFunc.require, function (i, n) {
+						if (!Q.Tool.from(element, n)) {
+							throw new Q.Exception("Q.Tool.define: " + toolFunc.toolName
+							+ " requires " + n + " to have been activated on the same element.");
+						}
+					});
 					toolFunc.call(this, this.options);
 					var collection = this.Q.onStateChanged.collection;
 					for (var name in this.state) {
