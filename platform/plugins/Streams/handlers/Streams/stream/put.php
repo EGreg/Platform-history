@@ -12,7 +12,7 @@
  * @param {string} [$params.streamName] Alternatively, the name of the stream
  * @param {array} [$params.attributes] Array of attributeName => value to set in stream.
  * @param {array} [$params.icon] Optional array of icon data (see Q_Image::save params)
- * @return void
+ * @return {}
  */
 
 function Streams_stream_put($params) {

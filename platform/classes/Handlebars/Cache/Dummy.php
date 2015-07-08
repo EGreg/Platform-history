@@ -37,7 +37,7 @@ class Handlebars_Cache_Dummy implements Handlebars_Cache
      *
      * @param string $name Handlebars_Cache id
      *
-     * @return mixed data on hit, boolean false on cache not found
+     * @return {mixed} data on hit, boolean false on cache not found
      */
     public function get($name)
     {
@@ -53,7 +53,7 @@ class Handlebars_Cache_Dummy implements Handlebars_Cache
      * @param string $name  cache id
      * @param mixed  $value data to store
      *
-     * @return void
+     * @return {void}
      */
     public function set($name, $value)
     {
@@ -65,7 +65,7 @@ class Handlebars_Cache_Dummy implements Handlebars_Cache
      *
      * @param string $name Handlebars_Cache id
      *
-     * @return void
+     * @return {void}
      */
     public function remove($name)
     {

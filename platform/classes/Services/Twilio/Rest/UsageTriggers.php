@@ -13,7 +13,7 @@ class Services_Twilio_Rest_UsageTriggers extends Services_Twilio_ListResource {
      * @param string $value Fire the trigger when usage crosses this value.
      * @param string $url The URL to request when the trigger fires.
      * @param array $params Optional parameters for this trigger. A full list of parameters can be found in the `Usage Trigger documentation <http://www.twilio.com/docs/api/rest/usage-triggers#list-post-optional-parameters>`_.
-     * @return Services_Twilio_Rest_UsageTrigger The created trigger
+     * @return {Services_Twilio_Rest_UsageTrigger} The created trigger
      */
     function create($category, $value, $url, array $params = array()) {
         return parent::_create(array(

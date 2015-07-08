@@ -77,7 +77,7 @@ class Handlebars_Template
     /**
      * Get current tree
      *
-     * @return array
+     * @return {array}
      */
     public function getTree()
     {
@@ -87,7 +87,7 @@ class Handlebars_Template
     /**
      * Get current source
      *
-     * @return string
+     * @return {string}
      */
     public function getSource()
     {
@@ -97,7 +97,7 @@ class Handlebars_Template
     /**
      * Get current engine associated with this object
      *
-     * @return Handlebars
+     * @return {Handlebars_Engine}
      */
     public function getEngine()
     {
@@ -109,7 +109,7 @@ class Handlebars_Template
      *
      * @param string $token token to set as stop token or false to remove
      *
-     * @return void
+     * @return {void}
      */
 
     public function setStopToken($token)
@@ -122,7 +122,7 @@ class Handlebars_Template
     /**
      * get current stop token
      *
-     * @return string|bool
+     * @return {string|bool}
      */
 
     public function getStopToken()
@@ -135,7 +135,7 @@ class Handlebars_Template
     /**
      * Get the current token's tree
      *
-     * @return array
+     * @return {array}
      */
     public function getCurrentTokenTree()
     {
@@ -149,8 +149,8 @@ class Handlebars_Template
      *
      * @param mixed $context current context
      *
-     * @throws RuntimeException
-     * @return string
+     * @throws {$1}
+     * @return {string}
      */
     public function render($context)
     {
@@ -210,7 +210,7 @@ class Handlebars_Template
      * @param array $current current token
      * @param mixed $context current context
      *
-     * @return string
+     * @return {string}
      */
     private function _renderInternal($current, $context)
     {
@@ -264,7 +264,7 @@ class Handlebars_Template
     /**
      * Discard top tree
      *
-     * @return string
+     * @return {string}
      */
     public function discard()
     {
@@ -295,7 +295,7 @@ class Handlebars_Template
     /**
      * Rewind top tree index to the first element
      *
-     * @return void
+     * @return {void}
      */
     public function rewind()
     {
@@ -310,7 +310,7 @@ class Handlebars_Template
      * @param Handlebars_Context $context current context
      * @param array   $current section node data
      *
-     * @return mixed|string
+     * @return {mixed|string}
      */
     private function _handlebarsStyleSection(Handlebars_Context $context, $current)
     {
@@ -407,8 +407,8 @@ class Handlebars_Template
      * @param Handlebars_Context $context current context
      * @param array   $current section node data
      *
-     * @throws RuntimeException
-     * @return mixed|string
+     * @throws {$1}
+     * @return {mixed|string}
      */
     private function _mustacheStyleSection(Handlebars_Context $context, $current)
     {
@@ -464,8 +464,8 @@ class Handlebars_Template
      * @param Handlebars_Context $context current context
      * @param array   $current section node data
      *
-     * @throws RuntimeException
-     * @return string the result
+     * @throws {$1}
+     * @return {string} the result
      */
     private function _section(Handlebars_Context $context, $current)
     {
@@ -488,7 +488,7 @@ class Handlebars_Template
      * @param Handlebars_Context $context current context
      * @param array   $current section node data
      *
-     * @return string the result
+     * @return {string} the result
      */
     private function _inverted(Handlebars_Context $context, $current)
     {
@@ -508,7 +508,7 @@ class Handlebars_Template
      * @param Handlebars_Context $context current context
      * @param array   $current section node data
      *
-     * @return string the result
+     * @return {string} the result
      */
     private function _partial(Handlebars_Context $context, $current)
     {
@@ -527,7 +527,7 @@ class Handlebars_Template
      *
      * @param array $current current token
      *
-     * @return boolean
+     * @return {boolean}
      */
     private function _isSection($current)
     {
@@ -548,7 +548,7 @@ class Handlebars_Template
      * @param array   $current section node data
      * @param boolean $escaped escape result or not
      *
-     * @return string the string to be replaced with the tag
+     * @return {string} the string to be replaced with the tag
      */
     private function _get(Handlebars_Context $context, $current, $escaped)
     {
@@ -566,7 +566,7 @@ class Handlebars_Template
      * @param array   $current section node data
      * @param boolean $escaped escape result or not
      *
-     * @return string the result
+     * @return {string} the result
      */
     private function _getSection(Handlebars_Context $context, $current, $escaped)
     {
@@ -595,7 +595,7 @@ class Handlebars_Template
      * @param array   $current section node data
      * @param boolean $escaped escape result or not
      *
-     * @return string the result
+     * @return {string} the result
      */
     private function _getVariable(Handlebars_Context $context, $current, $escaped)
     {
@@ -621,7 +621,7 @@ class Handlebars_Template
      *
      * @param string $string Argument Handlebars_String as passed to a helper
      *
-     * @return array the argument list as an array
+     * @return {string} the argument list as an array
      */
     public function parseNamedArguments($string)
     {
@@ -640,8 +640,8 @@ class Handlebars_Template
      *
      * @param string $string Argument Handlebars_String as passed to a helper
      *
-     * @throws RuntimeException
-     * @return array the argument list as an array
+     * @throws {$1}
+     * @return {array} the argument list as an array
      */
     public function parseArguments($string)
     {

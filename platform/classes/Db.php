@@ -372,7 +372,7 @@ abstract class Db
 	 * Returns connection details for a connection
 	 * @method getConnection
 	 * @static
-	 * @param $name {string}
+	 * @param {string} $name
 	 * @return {array|null}
 	 */
 	static function getConnection ($name)

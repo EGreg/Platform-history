@@ -10,7 +10,7 @@
  *   "uid" => Optional. The uid of the user on the provider whose photos are shown.
  *   "prompt" => Prompt that appears if the tool is shown but user hasn't granted sufficient permissions yet
  *   "oneLine" => Defaults to false. If true, all the images are shown in a large horizontally scrolling line.
- * @return string
+ * @return {void}
  */
 function Streams_photoSelector_tool($options)
 {

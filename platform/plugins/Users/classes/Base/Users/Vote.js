@@ -66,7 +66,7 @@ Base.db = function () {
 /**
  * Retrieve the table name to use in SQL statements
  * @method table
- * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
+ * @param {boolean} [withoutDbName=false] Indicates wheather table name should contain the database name
  * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
@@ -98,8 +98,8 @@ Base.connectionName = function() {
 /**
  * Create SELECT query to the class table
  * @method SELECT
- * @param fields {object|string} The field values to use in WHERE clauseas as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {object|string} fields The field values to use in WHERE clauseas as an associative array of `{column: value}` pairs
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.SELECT = function(fields, alias) {
@@ -111,7 +111,7 @@ Base.SELECT = function(fields, alias) {
 /**
  * Create UPDATE query to the class table. Use Db.Query.Mysql.set() method to define SET clause
  * @method UPDATE
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.UPDATE = function(alias) {
@@ -123,8 +123,8 @@ Base.UPDATE = function(alias) {
 /**
  * Create DELETE query to the class table
  * @method DELETE
- * @param [table_using=null] {object} If set, adds a USING clause with this table
- * @param [alias=null] {string} Table alias
+ * @param {object}[table_using=null] If set, adds a USING clause with this table
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.DELETE = function(table_using, alias) {
@@ -137,7 +137,7 @@ Base.DELETE = function(table_using, alias) {
  * Create INSERT query to the class table
  * @method INSERT
  * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.INSERT = function(fields, alias) {
@@ -159,7 +159,7 @@ Base.prototype.className = "Users_Vote";
  * Create INSERT query to the class table
  * @method INSERT
  * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.prototype.setUp = function() {
@@ -170,7 +170,7 @@ Base.prototype.setUp = function() {
  * Create INSERT query to the class table
  * @method INSERT
  * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.prototype.db = function () {
@@ -180,7 +180,7 @@ Base.prototype.db = function () {
 /**
  * Retrieve the table name to use in SQL statements
  * @method table
- * @param [withoutDbName=false] {boolean} Indicates wheather table name should contain the database name
+ * @param {boolean} [withoutDbName=false] Indicates wheather table name should contain the database name
  * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */

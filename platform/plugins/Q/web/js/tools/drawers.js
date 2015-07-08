@@ -9,7 +9,7 @@
  * @class Q drawers
  * @constructor
  * @param {Object}   [options] Override various options for this tool
- * @return Q.Tool
+ * @return {Q.Tool}
  */
 Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 	var tool = this;

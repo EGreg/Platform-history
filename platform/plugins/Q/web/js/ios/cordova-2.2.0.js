@@ -198,7 +198,7 @@ var cordova = {
     /**
      * Retrieve original event handlers that were replaced by Cordova
      *
-     * @return object
+     * @return {object}
      */
     getOriginalHandlers: function() {
         return {'document': {'addEventListener': m_document_addEventListener, 'removeEventListener': m_document_removeEventListener},
@@ -1582,7 +1582,7 @@ Contact.prototype.remove = function(successCB, errorCB) {
 /**
 * Creates a deep copy of this Contact.
 * With the contact ID set to null.
-* @return copy of this Contact
+* @return {copy} of this Contact
 */
 Contact.prototype.clone = function() {
     var clonedContact = utils.clone(this);
@@ -2185,7 +2185,7 @@ Entry.prototype.toURL = function() {
  * Returns a URI that can be used to identify this entry.
  *
  * @param {DOMString} mimeType for a FileEntry, the mime type to be used to interpret the file, when loaded through this URI.
- * @return uri
+ * @return {uri}
  */
 Entry.prototype.toURI = function(mimeType) {
     console.log("DEPRECATED: Update your code to use 'toURL'");
@@ -3666,7 +3666,7 @@ var accelerometer = {
      * @param {Function} successCallback    The function to call each time the acceleration data is available
      * @param {Function} errorCallback      The function to call when there is an error getting the acceleration data. (OPTIONAL)
      * @param {AccelerationOptions} options The options for getting the accelerometer data such as timeout. (OPTIONAL)
-     * @return String                       The watch id that must be passed to #clearWatch to stop watching.
+     * @return {String}                       The watch id that must be passed to #clearWatch to stop watching.
      */
     watchAcceleration: function(successCallback, errorCallback, options) {
         // Default interval (10 sec)
@@ -4187,7 +4187,7 @@ var contacts = {
      * @param successCB success callback
      * @param errorCB error callback
      * @param {ContactFindOptions} options that can be applied to contact searching
-     * @return array of Contacts matching search criteria
+     * @return {array} of Contacts matching search criteria
      */
     find:function(fields, successCB, errorCB, options) {
         if (!successCB) {
@@ -4456,7 +4456,7 @@ var geolocation = {
      * @param {Function} successCallback    The function to call each time the location data is available
      * @param {Function} errorCallback      The function to call when there is an error getting the location data. (OPTIONAL)
      * @param {PositionOptions} options     The options for getting the location data such as frequency. (OPTIONAL)
-     * @return String                       The watch id that must be passed to #clearWatch to stop watching.
+     * @return {String}                       The watch id that must be passed to #clearWatch to stop watching.
      */
     watchPosition:function(successCallback, errorCallback, options) {
         if (arguments.length === 0) {
@@ -4537,7 +4537,7 @@ var globalization = {
 * @param {Function} successCB
 * @param {Function} errorCB
 *
-* @return Object.value {String}: The language identifier
+* @return {Object.value} {String}: The language identifier
 *
 * @error GlobalizationError.UNKNOWN_ERROR
 *
@@ -4570,7 +4570,7 @@ getPreferredLanguage:function(successCB, failureCB) {
 * @param {Function} successCB
 * @param {Function} errorCB
 *
-* @return Object.value {String}: The locale identifier
+* @return {Object.value} {String}: The locale identifier
 *
 * @error GlobalizationError.UNKNOWN_ERROR
 *
@@ -4609,7 +4609,7 @@ getLocaleName:function(successCB, failureCB) {
 *            formatLength {String}: 'short', 'medium', 'long', or 'full'
 *            selector {String}: 'date', 'time', or 'date and time'
 *
-* @return Object.value {String}: The localized date string
+* @return {Object.value} {String}: The localized date string
 *
 * @error GlobalizationError.FORMATTING_ERROR
 *
@@ -4763,7 +4763,7 @@ getDatePattern:function(successCB, failureCB, options) {
 *            type {String}: 'narrow' or 'wide'
 *            item {String}: 'months', or 'days'
 *
-* @return Object.value {Array{String}}: The array of names starting from either
+* @return {Object.value} {Array{String}}: The array of names starting from either
 *                                        the first month in the year or the
 *                                        first day of the week.
 * @error GlobalizationError.UNKNOWN_ERROR
@@ -4799,7 +4799,7 @@ getDateNames:function(successCB, failureCB, options) {
 * @param {Function} successCB
 * @param {Function} errorCB
 *
-* @return Object.dst {Boolean}: The value "true" indicates that daylight savings time is
+* @return {Object.dst} {Boolean}: The value "true" indicates that daylight savings time is
 *                                in effect for the given date and "false" indicate that it is not.
 *
 * @error GlobalizationError.UNKNOWN_ERROR
@@ -4843,7 +4843,7 @@ isDayLightSavingsTime:function(date, successCB, failureCB) {
 * @param {Function} successCB
 * @param {Function} errorCB
 *
-* @return Object.value {Number}: The number of the first day of the week.
+* @return {Object.value} {Number}: The number of the first day of the week.
 *
 * @error GlobalizationError.UNKNOWN_ERROR
 *
@@ -4882,7 +4882,7 @@ getFirstDayOfWeek:function(successCB, failureCB) {
 * @param {Object} options {optional}
 *            type {String}: 'decimal', "percent", or 'currency'
 *
-* @return Object.value {String}: The formatted number string.
+* @return {Object.value} {String}: The formatted number string.
 *
 * @error GlobalizationError.FORMATTING_ERROR
 *
@@ -4927,7 +4927,7 @@ numberToString:function(number, successCB, failureCB, options) {
 * @param {Object} options {optional}
 *            type {String}: 'decimal', "percent", or 'currency'
 *
-* @return Object.value {Number}: The parsed number.
+* @return {Object.value} {Number}: The parsed number.
 *
 * @error GlobalizationError.PARSING_ERROR
 *

@@ -31,7 +31,7 @@ abstract class Services_Twilio_ListResource
      * Gets a resource from this list.
      *
      * @param string $sid The resource SID
-     * @return Services_Twilio_InstanceResource The resource
+     * @return {Services_Twilio_InstanceResource} The resource
      */
     public function get($sid)
     {
@@ -47,7 +47,7 @@ abstract class Services_Twilio_ListResource
      * Construct an InstanceResource with the specified params.
      *
      * @param array params usually a JSON HTTP response from the API
-     * @return Services_Twilio_InstanceResource An instance with properties 
+     * @return {Services_Twilio_InstanceResource} An instance with properties 
      *      initialized to the values in the params array.
      */
     public function getObjectFromJson($params, $idParam = "sid")
@@ -64,7 +64,7 @@ abstract class Services_Twilio_ListResource
      * Deletes a resource from this list.
      *
      * @param string $sid The resource SID
-     * @return null
+     * @return {null}
      */
     public function delete($sid, array $params = array())
     {
@@ -77,7 +77,7 @@ abstract class Services_Twilio_ListResource
      *
      * @param array $params The parameters with which to create the resource
      *
-     * @return Services_Twilio_InstanceResource The created resource
+     * @return {Services_Twilio_InstanceResource} The created resource
      */
     protected function _create(array $params)
     {
@@ -100,7 +100,7 @@ abstract class Services_Twilio_ListResource
      * @param string $deep_paging_uri if provided, the $page and $size 
      *      parameters will be ignored and this URI will be requested directly.
      *
-     * @return Services_Twilio_Page A page
+     * @return {Services_Twilio_Page} A page
      */
     public function getPage(
         $page = 0, $size = 50, array $filters = array(), 
@@ -135,7 +135,7 @@ abstract class Services_Twilio_ListResource
      *
      * If the total is not set or an Exception was thrown, returns 0
      *
-     * @return integer
+     * @return {integer}
      *
      */
     public function count() {
@@ -164,7 +164,7 @@ abstract class Services_Twilio_ListResource
      * or
      *   array('StartTime<' => '2011-07-05 08:00:00')
      *
-     * @return Services_Twilio_AutoPagingIterator An iterator
+     * @return {Services_Twilio_AutoPagingIterator} An iterator
      */
     public function getIterator(
         $page = 0, $size = 50, array $filters = array()

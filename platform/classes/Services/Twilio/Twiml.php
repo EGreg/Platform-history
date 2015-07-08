@@ -71,7 +71,7 @@ class Services_Twilio_Twiml
      *   - (noun string, attributes array)
      *   - (attributes array)
      *
-     * @return SimpleXmlElement A SimpleXmlElement
+     * @return {SimpleXmlElement} A SimpleXmlElement
      */
     public function __call($verb, array $args)
     {
@@ -121,7 +121,7 @@ class Services_Twilio_Twiml
     /**
      * Returns the object as XML.
      *
-     * @return string The response as an XML string
+     * @return {string} The response as an XML string
      */
     public function __toString()
     {

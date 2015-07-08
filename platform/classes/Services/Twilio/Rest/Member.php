@@ -11,7 +11,7 @@ class Services_Twilio_Rest_Member
      *      dequeueing them
      * @param string $method The HTTP method to use when fetching the Twiml 
      *      URL. Defaults to POST.
-     * @return Services_Twilio_Rest_Member The dequeued member
+     * @return {Services_Twilio_Rest_Member} The dequeued member
      */
     public function dequeue($url, $method = 'POST') {
         return self::update(array(

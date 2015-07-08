@@ -155,8 +155,8 @@ Q.typeOf = function (value) {
  * Makes a shallow copy of an object
  * If it encounters a "copy" method in each of the properties, calls that too.
  * @method Q.copy
- * @param {object} x
- * @return Object
+ * @param {Object} x
+ * @return {Object}
  *  Returns the shallow copy
  */
 Q.copy = function(x) {
@@ -183,7 +183,7 @@ Q.copy = function(x) {
  *  An array of arguments to pass to them 
  * @param post
  *  An object containing fields to post if callables is a URL
- * @return Number
+ * @return {number}
  *  The number of handlers executed
  */
 Q.handle = function(callables, context, args, post) {

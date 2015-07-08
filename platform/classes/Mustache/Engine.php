@@ -128,7 +128,7 @@ class Mustache_Engine
      * @param string $template
      * @param mixed  $data
      *
-     * @return string Rendered template
+     * @return {string} Rendered template
      */
     public function render($template, $data)
     {
@@ -138,7 +138,7 @@ class Mustache_Engine
     /**
      * Get the current Mustache escape callback.
      *
-     * @return mixed Callable or null
+     * @return {mixed} Callable or null
      */
     public function getEscape()
     {
@@ -148,7 +148,7 @@ class Mustache_Engine
     /**
      * Get the current Mustache character set.
      *
-     * @return string
+     * @return {string}
      */
     public function getCharset()
     {
@@ -171,7 +171,7 @@ class Mustache_Engine
      * If no Loader instance has been explicitly specified, this method will instantiate and return
      * a StringLoader instance.
      *
-     * @return Mustache_Loader
+     * @return {Mustache_Loader}
      */
     public function getLoader()
     {
@@ -198,7 +198,7 @@ class Mustache_Engine
      * If no Loader instance has been explicitly specified, this method will instantiate and return
      * an ArrayLoader instance.
      *
-     * @return Mustache_Loader
+     * @return {Mustache_Loader}
      */
     public function getPartialsLoader()
     {
@@ -212,7 +212,7 @@ class Mustache_Engine
     /**
      * Set partials for the current partials Loader instance.
      *
-     * @throws RuntimeException If the current Loader instance is immutable
+     * @throws {$1} If the current Loader instance is immutable
      *
      * @param array $partials (default: array())
      */
@@ -233,7 +233,7 @@ class Mustache_Engine
      * any other valid Mustache context value. They will be prepended to the context stack, so they will be available in
      * any template loaded by this Mustache instance.
      *
-     * @throws InvalidArgumentException if $helpers is not an array or Traversable
+     * @throws {$1} if $helpers is not an array or Traversable
      *
      * @param array|Traversable $helpers
      */
@@ -255,7 +255,7 @@ class Mustache_Engine
      *
      * @see Mustache_Engine::setHelpers
      *
-     * @return Mustache_HelperCollection
+     * @return {Mustache_HelperCollection}
      */
     public function getHelpers()
     {
@@ -286,7 +286,7 @@ class Mustache_Engine
      *
      * @param string $name
      *
-     * @return mixed Helper
+     * @return {mixed} Helper
      */
     public function getHelper($name)
     {
@@ -300,7 +300,7 @@ class Mustache_Engine
      *
      * @param string $name
      *
-     * @return boolean True if the helper is present
+     * @return {boolean} True if the helper is present
      */
     public function hasHelper($name)
     {
@@ -334,7 +334,7 @@ class Mustache_Engine
      *
      * If no Tokenizer instance has been explicitly specified, this method will instantiate and return a new one.
      *
-     * @return Mustache_Tokenizer
+     * @return {Mustache_Tokenizer}
      */
     public function getTokenizer()
     {
@@ -360,7 +360,7 @@ class Mustache_Engine
      *
      * If no Parser instance has been explicitly specified, this method will instantiate and return a new one.
      *
-     * @return Mustache_Parser
+     * @return {Mustache_Parser}
      */
     public function getParser()
     {
@@ -386,7 +386,7 @@ class Mustache_Engine
      *
      * If no Compiler instance has been explicitly specified, this method will instantiate and return a new one.
      *
-     * @return Mustache_Compiler
+     * @return {Mustache_Compiler}
      */
     public function getCompiler()
     {
@@ -402,7 +402,7 @@ class Mustache_Engine
      *
      * @param string $source
      *
-     * @return string Mustache Template class name
+     * @return {string} Mustache Template class name
      */
     public function getTemplateClassName($source)
     {
@@ -420,7 +420,7 @@ class Mustache_Engine
      *
      * @param string $name
      *
-     * @return Mustache_Template
+     * @return {Mustache_Template}
      */
     public function loadTemplate($name)
     {
@@ -435,7 +435,7 @@ class Mustache_Engine
      *
      * @param string $name
      *
-     * @return Mustache_Template
+     * @return {Mustache_Template}
      */
     public function loadPartial($name)
     {
@@ -455,7 +455,7 @@ class Mustache_Engine
      * @param string $source
      * @param string $delims (default: null)
      *
-     * @return Mustache_Template
+     * @return {Mustache_Template}
      */
     public function loadLambda($source, $delims = null)
     {
@@ -475,7 +475,7 @@ class Mustache_Engine
      *
      * @param string $source
      *
-     * @return Mustache_Template
+     * @return {Mustache_Template}
      */
     private function loadSource($source)
     {
@@ -507,7 +507,7 @@ class Mustache_Engine
      *
      * @param string $source
      *
-     * @return array Tokens
+     * @return {array} Tokens
      */
     private function tokenize($source)
     {
@@ -521,7 +521,7 @@ class Mustache_Engine
      *
      * @param string $source
      *
-     * @return array Token tree
+     * @return {array} Token tree
      */
     private function parse($source)
     {
@@ -535,7 +535,7 @@ class Mustache_Engine
      *
      * @param string $source
      *
-     * @return string generated Mustache template class code
+     * @return {string} generated Mustache template class code
      */
     private function compile($source)
     {
@@ -550,7 +550,7 @@ class Mustache_Engine
      *
      * @param string $source
      *
-     * @return string Mustache Template class cache filename
+     * @return {string} Mustache Template class cache filename
      */
     private function getCacheFilename($source)
     {
@@ -562,7 +562,7 @@ class Mustache_Engine
     /**
      * Helper method to dump a generated Mustache Template subclass to the file cache.
      *
-     * @throws RuntimeException if unable to write to $fileName.
+     * @throws {$1} if unable to write to $fileName.
      *
      * @param string $fileName
      * @param string $source

@@ -103,9 +103,9 @@ abstract class Base_Streams_Total extends Db_Row
 	 * Create SELECT query to the class table
 	 * @method select
 	 * @static
-	 * @param $fields {array} The field values to use in WHERE clauseas as 
+	 * @param {array} $fields The field values to use in WHERE clauseas as 
 	 * an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function select($fields, $alias = null)
@@ -120,7 +120,7 @@ abstract class Base_Streams_Total extends Db_Row
 	 * Create UPDATE query to the class table
 	 * @method update
 	 * @static
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function update($alias = null)
@@ -135,8 +135,8 @@ abstract class Base_Streams_Total extends Db_Row
 	 * Create DELETE query to the class table
 	 * @method delete
 	 * @static
-	 * @param [$table_using=null] {object} If set, adds a USING clause with this table
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$table_using=null] If set, adds a USING clause with this table
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function delete($table_using = null, $alias = null)
@@ -151,8 +151,8 @@ abstract class Base_Streams_Total extends Db_Row
 	 * Create INSERT query to the class table
 	 * @method insert
 	 * @static
-	 * @param [$fields=array()] {object} The fields as an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$fields=array()] The fields as an associative array of `column => value` pairs
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function insert($fields = array(), $alias = null)

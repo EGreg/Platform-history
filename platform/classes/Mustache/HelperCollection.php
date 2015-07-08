@@ -21,7 +21,7 @@ class Mustache_HelperCollection
      *
      * Optionally accepts an array (or Traversable) of `$name => $helper` pairs.
      *
-     * @throws InvalidArgumentException if the $helpers argument isn't an array or Traversable
+     * @throws {$1} if the $helpers argument isn't an array or Traversable
      *
      * @param array|Traversable $helpers (default: null)
      */
@@ -69,7 +69,7 @@ class Mustache_HelperCollection
      *
      * @param string $name
      *
-     * @return mixed Helper
+     * @return {mixed} Helper
      */
     public function __get($name)
     {
@@ -81,7 +81,7 @@ class Mustache_HelperCollection
      *
      * @param string $name
      *
-     * @return mixed Helper
+     * @return {mixed} Helper
      */
     public function get($name)
     {
@@ -99,7 +99,7 @@ class Mustache_HelperCollection
      *
      * @param string $name
      *
-     * @return boolean True if helper is present
+     * @return {boolean} True if helper is present
      */
     public function __isset($name)
     {
@@ -111,7 +111,7 @@ class Mustache_HelperCollection
      *
      * @param string $name
      *
-     * @return boolean True if helper is present
+     * @return {boolean} True if helper is present
      */
     public function has($name)
     {
@@ -133,7 +133,7 @@ class Mustache_HelperCollection
     /**
      * Check whether a given helper is present in the collection.
      *
-     * @throws InvalidArgumentException if the requested helper is not present.
+     * @throws {$1} if the requested helper is not present.
      *
      * @param string $name
      */
@@ -159,7 +159,7 @@ class Mustache_HelperCollection
     /**
      * Check whether the helper collection is empty.
      *
-     * @return boolean True if the collection is empty
+     * @return {boolean} True if the collection is empty
      */
     public function isEmpty()
     {

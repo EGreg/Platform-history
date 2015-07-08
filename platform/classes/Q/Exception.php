@@ -47,7 +47,7 @@ class Q_Exception extends Exception
 	 * Construct a Q_Exception object from an Exception.
 	 * @method $exception
 	 * @param $exception
-	 * @return Q_Exception
+	 * @return {Q_Exception}
 	 */
 	static function fromException($exception)
 	{

@@ -23,7 +23,7 @@ function Socket (server, options) {
  * Start http server if needed and start listening to socket
  * @method listen
  * @param {object} [options={}] Can include 'host', 'port' and 'ns' fields
- * @return server {Socket}
+ * @return {socket.io}
  */
 Socket.listen = function (options) {
 	options = options || {};

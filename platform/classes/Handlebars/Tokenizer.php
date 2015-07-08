@@ -117,7 +117,7 @@ class Handlebars_Tokenizer
      *
      * @internal string $delimiters Optional, pass opening and closing delimiters
      *
-     * @return array Set of Mustache tokens
+     * @return {array} Set of Mustache tokens
      */
     public function scan($text/*, $delimiters = null*/)
     {
@@ -267,7 +267,7 @@ class Handlebars_Tokenizer
     /**
      * Handlebars_Helper function to reset tokenizer internal state.
      *
-     * @return void
+     * @return {void}
      */
     protected function reset()
     {
@@ -289,7 +289,7 @@ class Handlebars_Tokenizer
     /**
      * Flush the current buffer to a token.
      *
-     * @return void
+     * @return {void}
      */
     protected function flushBuffer()
     {
@@ -305,7 +305,7 @@ class Handlebars_Tokenizer
     /**
      * Test whether the current line is entirely made up of whitespace.
      *
-     * @return boolean True if the current line is all whitespace
+     * @return {boolean} True if the current line is all whitespace
      */
     protected function lineIsWhitespace()
     {
@@ -331,7 +331,7 @@ class Handlebars_Tokenizer
      *
      * @param bool $noNewLine Suppress the newline? (default: false)
      *
-     * @return void
+     * @return {void}
      */
     protected function filterLine($noNewLine = false)
     {
@@ -364,7 +364,7 @@ class Handlebars_Tokenizer
      * @param string $text  Mustache template source
      * @param int    $index Current tokenizer index
      *
-     * @return int New index value
+     * @return {int} New index value
      */
     protected function changeDelimiters($text, $index)
     {
@@ -389,7 +389,7 @@ class Handlebars_Tokenizer
      * @param string $text  Handlebars template source
      * @param int    $index Current tokenizer index
      *
-     * @return boolean True if this is a closing section tag
+     * @return {boolean} True if this is a closing section tag
      */
     protected function tagChange($tag, $text, $index)
     {

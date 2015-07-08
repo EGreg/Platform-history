@@ -16,7 +16,7 @@ abstract class Services_Twilio_InstanceResource
      * @param mixed $params An array of updates, or a property name
      * @param mixed $value  A value with which to update the resource
      *
-     * @return null
+     * @return {null}
      */
     public function update($params, $value = null)
     {
@@ -33,7 +33,7 @@ abstract class Services_Twilio_InstanceResource
      *
      * @param stdClass $params An object containing all of the parameters of 
      *      this instance
-     * @return null Purely side effecting
+     * @return {null} Purely side effecting
      */
     public function updateAttributes($params) {
         unset($params->uri);
@@ -52,7 +52,7 @@ abstract class Services_Twilio_InstanceResource
      *
      * @param string $key The property name
      *
-     * @return mixed Could be anything.
+     * @return {mixed} Could be anything.
      */
     public function __get($key)
     {

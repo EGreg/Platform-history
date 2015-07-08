@@ -29,8 +29,8 @@ Q.Error = Error;
 /**
  * Returns the type of a value
  * @method typeOf
- * @param value {mixed} The value to test type
- * @return {string} String description of the type
+ * @param {mixed} value The value to test type
+ * @return {String} String description of the type
  */
 Q.typeOf = function _Q_typeOf(value) {
 	var s = typeof value, x, l;
@@ -65,7 +65,7 @@ Q.typeOf = function _Q_typeOf(value) {
 /**
  * Tests if the value is an integer
  * @method isInteger
- * @param value {mixed} The value to test
+ * @param {mixed} value The value to test
  * @return {boolean} Whether it is an integer
  */
 Q.isInteger = function _Q_isInteger(value) {
@@ -75,9 +75,9 @@ Q.isInteger = function _Q_isInteger(value) {
 /**
  * Walks the tree from the parent, and returns whether the path was defined
  * @method isSet
- * @param {object} parent
- * @param {array} keys
- * @param delimiter {string} Optional
+ * @param {Object} parent
+ * @param {Array} keys
+ * @param {String} delimiter Optional
  * @return {boolean}
  */
 Q.isSet = function _Q_isSet(parent, keys, delimiter) {
@@ -121,10 +121,10 @@ function _getProp (/*Array*/parts, /*Boolean*/create, /*Object*/context){
  *
  * @static
  * @method setObject
- * @param name {String|Array} Path to a property, in the form "A.B.C" or ["A", "B", "C"]
- * @param value {anything} value or object to place at location given by name
- * @param [context=window] {Object} Optional. Object to use as root of path.
- * @param [delimiter='.'] {String} The delimiter to use in the name
+ * @param {String|Array} name Path to a property, in the form "A.B.C" or ["A", "B", "C"]
+ * @param {mixed} value value or object to place at location given by name
+ * @param {Object} [context=window] Optional. Object to use as root of path.
+ * @param {String} [delimiter='.'] The delimiter to use in the name
  * @return {Object|undefined} Returns the passed value if setting is successful or `undefined` if not.
  */
 Q.setObject = function _Q_setObject(name, value, context, delimiter) {
@@ -153,10 +153,10 @@ Q.setObject = function _Q_setObject(name, value, context, delimiter) {
  *
  * @static
  * @method getObject
- * @param name {String|Array} Path to a property, in the form "A.B.C" or ["A", "B", "C"]
- * @param [context=window] {Object} Optional. Object to use as root of path. Null may be passed.
- * @param [delimiter='.'] {String} The delimiter to use in the name
- * @param [create=undefined] {mixed} Pass a value here to set with Q.setObject if nothing was there
+ * @param {String|Array} name Path to a property, in the form "A.B.C" or ["A", "B", "C"]
+ * @param {Object} [context=window] Optional. Object to use as root of path. Null may be passed.
+ * @param {String} [delimiter='.'] The delimiter to use in the name
+ * @param {mixed} [create=undefined] Pass a value here to set with Q.setObject if nothing was there
  * @return {Object|undefined} Returns the originally stored value, or `undefined` if nothing is there
  */
 Q.getObject = function _Q_getObject(name, context, delimiter, create) {
@@ -185,9 +185,9 @@ Q.getObject = function _Q_getObject(name, context, delimiter, create) {
  *     // otherwise, show the latest results on the client
  *     });
  * @method latest
- * @param key {String|Q.Tool}
+ * @param {String|Q.Tool} key
  *  Requests under the same key share the same incrementing ordinal
- * @param ordinal {Number|Boolean}
+ * @param {Number|Boolean} ordinal
  *  Pass an ordinal that you obtained from a previous call to the function
  *  Pass true here to get the latest ordinal that has been passed so far
  *  to the method under this key, corresponding to the latest results seen.
@@ -220,8 +220,8 @@ Q.latest.max = 10000;
 /**
  * Makes an object into an event emitter.
  * @method makeEventEmitter
- * @param what {object} Can be an object or a function
- * @param [isConstructor=false] {boolean} Whether the object is a constructor function. In this case,
+ * @param {Object} what Can be an object or a function
+ * @param {boolean} [isConstructor=false] Whether the object is a constructor function. In this case,
  *  it is not the function that is made an emitter, but the
  *  objects which the function constructs.
  */
@@ -236,8 +236,8 @@ Q.makeEventEmitter = function _Q_makeEventEmitter(what, isConstructor) {
 /**
  * Creates a derived object which you can extend, inheriting from an existing object
  * @method objectWithPrototype
- * @param original {object} The object to use as the prototype
- * @return {object} The derived object
+ * @param {Object} original The object to use as the prototype
+ * @return {Object} The derived object
  */
 Q.objectWithPrototype = function _Q_objectWithPrototype(original) {
 	if (!original) {
@@ -251,8 +251,8 @@ Q.objectWithPrototype = function _Q_objectWithPrototype(original) {
 /**
  * Clones the Base constructor and mixes in the Constructor function
  * @method inherit
- * @param Base {Function} the base function, such as Q.Tool
- * @param Constructor {Function} the constructor function to change
+ * @param {Function} Base the base function, such as Q.Tool
+ * @param {Function} Constructor the constructor function to change
  * @return {Function} The resulting function to be used as a constructor
  */
 Q.inherit = function _Q_inherit(Base, Constructor) {
@@ -309,9 +309,9 @@ Q.Pipe = function _Q_Pipe(requires, maxTimes, callback) {
 /**
  * Adds a callback to the pipe
  * @method add
- * @param field {String}
+ * @param {String} field
  *  Pass the name of a field to wait for, until it is filled, before calling the callback.
- * @param callback {Function}
+ * @param {Function} callback
  *  This function is called as soon as the field is filled, i.e. when the callback
  *  produced by pipe.fill(field) is finally called by someone.
  *  The "this" and arguments from that call are also passed to the callback.
@@ -328,13 +328,13 @@ Q.Pipe.prototype.on = function _Q_pipe_on(field, callback) {
 /**
  * Adds a callback to the pipe with more flexibility
  * @method add
- * @param requires {Array}
+ * @param {Array} requires
  *  Optional. Pass an array of required field names here.
  *  Alternatively, pass an array of objects, which should be followed by
  *  the name of a Q.Event to wait for.
- * @param maxTimes {Number}
+ * @param {Number} maxTimes
  *  Optional. The maximum number of times the callback should be called.
- * @param callback {Function}
+ * @param {Function} callback
  *  Once all required fields are filled, this function is called every time something is piped.
  *  It is passed four arguments: (params, subjects, field, requires)
  *  If you return false from this function, it will no longer be called for future pipe runs.
@@ -395,9 +395,9 @@ Q.Pipe.prototype.add = function _Q_pipe_add(requires, maxTimes, callback) {
 /**
  * Makes a function that fills a particular field in the pipe and can be used as a callback
  * @method fill
- * @param field {String}
+ * @param {String} field
  *   For error callbacks, you can use field="error" or field="users.error" for example.
- * @param ignore
+ * @param {boolean|String|Array} ignore
  *   Optional. If true, then ignores the current field in subsequent pipe runs.
  *   Or pass the name (string) or names (array) of the field(s) to ignore in subsequent pipe runs.
  * @return {Function} Returns a callback you can pass to other functions.
@@ -425,7 +425,7 @@ Q.Pipe.prototype.fill = function _Q_pipe_fill(field, ignore) {
 /**
  * Runs the pipe
  * @method run
- * @param field {String} optionally indicate name of the field that was just filled
+ * @param {String} field optionally indicate name of the field that was just filled
  * @return {Number} the number of pipe callbacks that wound up running
  */
 Q.Pipe.prototype.run = function _Q_pipe_run(field) {
@@ -477,7 +477,7 @@ Q.Pipe.prototype.run = function _Q_pipe_run(field) {
  * This function helps create "batch functions", which can be used in getter functions
  * and other places to accomplish things in batches.
  * @method batcher
- * @param batch {Function}
+ * @param {Function} batch
  *  This is the function you must write to implement the actual batching functionality.
  *  It is passed the arguments, subjects and callbacks that were collected by Q.batcher
  *  from the individual calls that triggered your batch function to be run.
@@ -490,7 +490,7 @@ Q.Pipe.prototype.run = function _Q_pipe_run(field) {
  *  Typically you would serialize the array of arguments e.g. into JSON when sending 
  *  the request down to the server, and the server should also return an array of results
  *  that is in the same order.
- * @param options {Object}
+ * @param {Object} options
  *  An optional hash of possible options, which can include:
  *  "max": Defaults to 10. When the number of individual calls in the queue reaches this,
  *         the batch function is run.
@@ -585,21 +585,21 @@ Q.batcher.options = {
  *  Call method .forget with the same arguments as original getter to clear cache record
  *  and update it on next call to getter (if it happen)
  *  @method getter
- * @param original Function
+ * @param {Function} original
  *  The original getter function to be wrapped
  *  Can also be an array of [getter, execute] which you can use if
  *  your getter does "batching", and waits a tiny bit before sending the batch request,
  *  to see if any more will be requested. In this case, the execute function
  *  is supposed to execute the batched request without waiting any more.
  *  If the original function returns false, the caching is canceled for that call.
- * @param options Object
+ * @param {Object} options
  *  An optional hash of possible options, which include:
  *  "throttle" => a String id to throttle on, or an Object that supports the throttle interface:
  *	"throttle.throttleTry" => function(subject, getter, args) - applies or throttles getter with subject, args
  *	"throttle.throttleNext" => function (subject) - applies next getter with subject
  *	"throttleSize" => defaults to 100. Integer representing the size of the throttle, if it is enabled
  *	"cache" => pass false here to prevent caching, or an object which supports the Q.Cache interface
- * @return Function
+ * @return {Function}
  *  The wrapper function, which returns an object with a property called "result"
  *  which could be one of Q.getter.CACHED, Q.getter.WAITING, Q.getter.REQUESTING or Q.getter.THROTTLING
  */
@@ -933,9 +933,9 @@ Q.Cache = function  _Q_Cache(options) {
 /**
  * Generates the key under which things will be stored in a cache
  * @method key
- * @param args {Array} the arguments from which to generate the key
- * @param functions {Array} optional array to which all the functions found in the arguments will be pushed
- * @return String
+ * @param {Array} args the arguments from which to generate the key
+ * @param {Array} functions optional array to which all the functions found in the arguments will be pushed
+ * @return {String}
  */
 Q.Cache.key = function _Cache_key(args, functions) {
 	var i, keys = [];
@@ -1025,7 +1025,7 @@ Q.Cache.prototype.get = function _Q_Cache_prototype_get(key, options) {
 /**
  * Accesses the cache and removes an entry from it.
  * @method remove
- * @param key {String} the key of the entry to remove
+ * @param {String} key the key of the entry to remove
  * @return {Boolean} whether there was an existing entry under that key
  */
 Q.Cache.prototype.remove = function _Q_Cache_prototype_remove(key) {
@@ -1049,7 +1049,7 @@ Q.Cache.prototype.remove = function _Q_Cache_prototype_remove(key) {
 /**
  * Clears Cache data and sets it to {}
  * @method clear
- * @param  {string} key
+ * @param {String} key
  */
 Q.Cache.prototype.clear = function _Q_Cache_prototype_clear(key) {
 	this.data = {};
@@ -1057,8 +1057,8 @@ Q.Cache.prototype.clear = function _Q_Cache_prototype_clear(key) {
 /**
  * Cycles through all the entries in the cache
  * @method each
- * @param args {Array} An array consisting of some or all the arguments that form the key
- * @param callback {Function} Is passed two parameters: key, value, with this = the cache
+ * @param {Array} args An array consisting of some or all the arguments that form the key
+ * @param {Function} callback Is passed two parameters: key, value, with this = the cache
  */
 Q.Cache.prototype.each = function _Q_Cache_prototype_clear(args, callback) {
 	var cache = this;
@@ -1082,7 +1082,7 @@ Q.Cache.prototype.each = function _Q_Cache_prototype_clear(args, callback) {
 };
 /**
  * @method local
- * @param  {string} name
+ * @param {String} name
  * @return {mixed}
  */
 Q.Cache.local = function _Q_Cache_local(name) {
@@ -1100,9 +1100,9 @@ Q.Cache.local.caches = {};
  * Used for handling callbacks, whether they come as functions,
  * strings referring to functions (if evaluated), arrays or hashes.
  * @method handle
- * @param callables {callable} The callables to call
- * @param context {object} The context in which to call them
- * @param args {array} An array of arguments to pass to them
+ * @param {callable} callables The callables to call
+ * @param {Object} context The context in which to call them
+ * @param {Array} args An array of arguments to pass to them
  * @return {number} The number of handlers executed
  */
 Q.handle = function _Q_handle(callables, context, args) {
@@ -1397,8 +1397,7 @@ Q.diff = function _Q_diff(container1, container2 /*, ... comparator */) {
  * Tests whether a variable contains a falsy value,
  * or an empty object or array.
  * @method isEmpty
- * @param o
- *  The object to test.
+ * @param {mixed} o The object to test.
  */
 Q.isEmpty = function _Q_isEmpty(o) {
 	if (!o) {
@@ -1425,10 +1424,8 @@ Q.isEmpty = function _Q_isEmpty(o) {
  * Tests if the value is an integer
  * @static
  * @method isInteger
- * @param value {mixed}
- *  The value to test
- * @return {boolean}
- *	Whether it is an integer
+ * @param {mixed} value The value to test
+ * @return {boolean} Whether it is an integer
  */
 Q.isInteger = function _Q_isInteger(value) {
 	return value > 0 ? Math.floor(value) === value : Math.ceil(value) === value;
@@ -1438,10 +1435,8 @@ Q.isInteger = function _Q_isInteger(value) {
  * Tests if the value is an array
  * @static
  * @method isArray
- * @param value {mixed}
- *  The value to test
- * @return {boolean}
- *	Whether it is an array
+ * @param {mixed} value The value to test
+ * @return {boolean} Whether it is an array
  */
 Q.isArrayLike = function _Q_isArrayLike(value) {
 	return (Q.typeOf(value) === 'array');
@@ -1451,8 +1446,7 @@ Q.isArrayLike = function _Q_isArrayLike(value) {
  * Determines whether something is a plain object created within Javascript,
  * or something else, like a DOMElement or Number
  * @method isPlainObject
- * @return Boolean
- *  Returns true only for a non-null plain object
+ * @return {boolean} Returns true only for a non-null plain object
  */
 Q.isPlainObject = function (x) {
 	if (x === null || typeof x !== 'object') {
@@ -1470,8 +1464,7 @@ Q.isPlainObject = function (x) {
  * @method copy
  * @param {array} fields
  *  Optional array of fields to copy. Otherwise copy all that we can.
- * @return Object
- *  Returns the shallow copy where some properties may have deepened the copy
+ * @return {Object} Returns the shallow copy where some properties may have deepened the copy
  */
 Q.copy = function _Q_copy(x, fields) {
 	if (Q.typeOf(x) === 'array') {
@@ -1518,19 +1511,18 @@ Q.copy = function _Q_copy(x, fields) {
  *   the array is replaced by the value of that property.)
  *  You can also extend recursively, see the levels parameter.
  * @method extend
- * @param target {Object}
+ * @param {Object} target
  *  This is the first object. It winds up being modified, and also returned
  *  as the return value of the function.
- * @param levels {Number}
+ * @param {Number} levels
  *  Optional. Precede any Object with an integer to indicate that we should 
  *  also copy that many additional levels inside the object.
- * @param deep {Boolean|Number}
+ * @param {Boolean|Number} deep
  *  Optional. Precede any Object with a boolean true to indicate that we should
  *  also copy the properties it inherits through its prototype chain.
- * @param anotherObject {Object}
+ * @param {Object} anotherObject
  *  Put as many objects here as you want, and they will extend the original one.
- * @return
- *  The extended object.
+ * @return {Object} The extended object.
  */
 Q.extend = function _Q_extend(target /* [[deep,] [levels,] anotherObject], ... */ ) {
 	var length = arguments.length;
@@ -1599,13 +1591,14 @@ Q.extend = function _Q_extend(target /* [[deep,] [levels,] anotherObject], ... *
 /**
  * Mixes in one or more classes. Useful for inheritance and multiple inheritance.
  * @method mixin
- * @param A Function
+ * @static
+ * @param {Function} A
  *  The constructor corresponding to the "class" we are mixing functionality into
  *  This function will get the following members set:
  *  __mixins: an array of [B, C, ...]
  *  constructors(subject, params): a method to call the constructor of all mixin classes, in order. Pass "this" as the first argument.
  *  staticProperty(property): a method for getting a property name
- * @param B Function
+ * @param {Function} B
  *  One or more constructors representing "classes" to mix functionality from
  *  They will be tried in the order they are provided, meaning methods from earlier ones
  *  override methods from later ones.
@@ -1655,48 +1648,12 @@ Q.mixin = function _Q_mixin(A, B) {
 };
 
 /**
- * Use this function to create "Classes", i.e. functions that construct objects
- * @method Class
- * @param construct {Function}
- *  The constructor function to call when the object's mixins have been constructed
- * @param Base1 {Function}
- *  One or more constructors (e.g. other Classes) that will be mixed in as base classes
- * @param properties {Object}
- *  Here you can pass properties to add to the prototype of the class constructor
- * @param classProperties {Object}
- *  Here you can pass properties to add to the class constructor
- * @return {Function} a constructor for the class
- */
-Q.Class = function _Q_Class(construct /* [, Base1, ...] [, properties, [classProperties]] */) {
-	var i, j, l = arguments.length;
-	for (i=1, j=1; i<l; ++i) {
-		if (typeof arguments[i] !== 'function') break;
-		j = i;
-	};
-	var constructors = Array.prototype.slice.call(arguments, 1, j+1);
-	constructors.unshift(Q_ClassConstructor);
-	
-	function Q_ClassConstructor() {
-		Q_ClassConstructor.constructors.apply(this, arguments);
-		construct && construct.apply(this, arguments);
-	}
-	
-	if (typeof arguments[++j] === 'object') {
-		Q.extend(Q_ClassConstructor.prototype, arguments[j]);
-		if (typeof arguments[++j] === 'object') {
-			Q.extend(Q_ClassConstructor, arguments[j]);
-		}
-	}
-	
-	Q.mixin.apply(Q_ClassConstructor, constructors);
-	return Q_ClassConstructor;
-};
-
-/**
+ * Copies a subset of the fields in an object
  * @method take
- * @param source {object} An Object from which to take things
- * @param fields {array|object} An array of fields to take or an object of fieldname: default pairs
- * @return {object} a new Object
+ * @static
+ * @param {Object} source An Object from which to take things
+ * @param {Array|Object} An array of fields to take or an object of fieldname: default pairs
+ * @return {Object} a new Object
  */
 Q.take = function _Q_take(source, fields) {
 	var result = {};
@@ -1718,9 +1675,10 @@ Q.take = function _Q_take(source, fields) {
 /**
  * Returns whether an object contains a property directly
  * @method has
- * @param obj Object
- * @param key String
- * @return Boolean
+ * @static
+ * @param {Object} obj
+ * @param {String} key
+ * @return {boolean}
  */
 Q.has = function _Q_has(obj, key) {
 	return Object.prototype.hasOwnProperty.call(obj, key);
@@ -1729,7 +1687,8 @@ Q.has = function _Q_has(obj, key) {
 /**
  * Shuffles an array
  * @method shuffle
- * @param arr {array} The array taht gets passed here is shuffled in place
+ * @static
+ * @param {Array} arr The array taht gets passed here is shuffled in place
  */
 Q.shuffle = function _Q_shuffle( arr ) {
 	var i = arr.length;
@@ -1746,7 +1705,8 @@ Q.shuffle = function _Q_shuffle( arr ) {
 /**
  * Returns microtime like PHP
  * @method microtime
- * @param getAsFloat {Boolean}
+ * @static
+ * @param {Boolean} getAsFloat
  * @return {String}
  */
 Q.microtime = function _Q_microtime(getAsFloat) {
@@ -1760,6 +1720,7 @@ Q.microtime = function _Q_microtime(getAsFloat) {
  * Returns the number of milliseconds since the
  * first call to this function (i.e. since script started).
  * @method milliseconds
+ * @static
  * @param {Boolean} sinceEpoch
  *  Defaults to false. If true, just returns the number of milliseconds in the UNIX timestamp.
  * @return {float}
@@ -1775,7 +1736,7 @@ Q.milliseconds.start = Date.now();
 /**
  * Default exception handler for Q
  * @method exceptionHandler
- * @param exception {exception}
+ * @param {Exception} exception
  **/
 Q.exceptionHandler = function _Q_exceptionHandler(exception) {
 	debugger; // pause here if debugging
@@ -1791,9 +1752,8 @@ process.on('uncaughtException', Q.exceptionHandler);
 /**
  * Search for directory and passes to callback if found. Passes an error if not directory
  * @method dir
- * @param start {string} Directory path
- * @param [callback=null] {function} Callback functions with arguments "error", "result" where result
- *	is an object `{dirs: [...], files: [...]}`
+ * @param {String} start Directory path
+ * @param {Function} [callback=null] Callback functions with arguments "error", "result" where result is an object `{dirs: [...], files: [...]}`
  */
 Q.dir = function _Q_dir(start, callback) {
 	// Use lstat to resolve symlink if we are passed a symlink
@@ -1870,31 +1830,31 @@ function bit_rol(a,b){return(a<<b)|(a>>>(32-b));}
 /**
  * Calculates MD5 hash
  * @method md5
- * @param a {string}
- * @return {string} The calculated hash
+ * @param {String} a
+ * @return {String} The calculated hash
  */
 Q.md5 = function _Q_md5(a){return rstr2hex(rstr_md5(str2rstr_utf8(a)));};
 /**
  * Calculates b64_MD5 hash
  * @method b64_md5
- * @param a {string}
- * @return {string} The calculated hash
+ * @param {String} a
+ * @return {String} The calculated hash
  */
 Q.md5_b64 = function _Q_md5_b64(a){return rstr2b64(rstr_md5(str2rstr_utf8(a)));};
 /**
  * Calculates MD5_HMAC hash
  * @method md5_hmac
- * @param a {string}
- * @param b {string}
- * @return {string} The calculated hash
+ * @param {String} a
+ * @param {String} b
+ * @return {String} The calculated hash
  */
 Q.md5_hmac = function _Q_md5_hmac(a,b){return rstr2hex(rstr_hmac_md5(str2rstr_utf8(a),str2rstr_utf8(b)));};
 /**
  * Calculates MD5_HMAC_b64 hash
  * @method md5_hmac_b64
- * @param a {string}
- * @param b {string}
- * @return {string} The calculated hash
+ * @param {String} a
+ * @param {String} b
+ * @return {String} The calculated hash
  */
 Q.md5_hmac_b64 = function _Q_md5_hmac_b64(a,b){return rstr2b64(rstr_hmac_md5(str2rstr_utf8(a),str2rstr_utf8(b)));};
 
@@ -1902,15 +1862,14 @@ Q.md5_hmac_b64 = function _Q_md5_hmac_b64(a,b){return rstr2b64(rstr_hmac_md5(str
  * Normalizes text by converting it to lower case, and
  * replacing all non-accepted characters with underscores.
  * @method normalize
- * @param text {String}
- *  The text to normalize
- * @param replacement {String}
+ * @param {String} text The text to normalize
+ * @param {String} replacement
  *  Defaults to '_'. A string to replace one or more unacceptable characters.
  *  You can also change this default using the config Db/normalize/replacement
- * @param characters {String}
+ * @param {String} characters
  *  Defaults to '/[^A-Za-z0-9]+/'. A regexp characters that are not acceptable.
  *  You can also change this default using the config Db/normalize/characters
- * @param numChars {Number}
+ * @param {Number} numChars
  *  The maximum length of a normalized string. Default is 200.
  * @return {String} the normalized string
  */
@@ -1932,7 +1891,7 @@ Q.normalize = function _Q_normalize(text, replacement, characters, numChars) {
 /*
  * A collection of HTTP servers started with Q.listen
  * @property servers
- * @type object
+ * @type Object
  * @default {}
  */
 Q.servers = {};
@@ -1941,8 +1900,9 @@ Q.servers = {};
  * Starts internal server to listen for messages from PHP processes and other things.
  * Uses the Q/node/port and Q/node/host config fields.
  * Make sure to protect the communication using a firewall.
+ * @static
  * @method listen
- * @param {object} [options={}] Options can include:
+ * @param {Object} [options={}] Options can include:
  *
  * * "port": the port to listen on<br/>
  * * "host": the hostname to listen for<br/>
@@ -1950,7 +1910,7 @@ Q.servers = {};
  *	Each member is a name of a class (e.g. "Q.Socket", "Q.Dispatcher" and "Db")
  *	which has the listen(options) method.
  * * "https": https options. Not supported for now.
- * @param [callback=null] {function} callback is fired when server is actually listening.
+ * @param {Function} [callback=null] callback is fired when server is actually listening.
  *	callback receives server address as argument
  * @throws {Q.Exception} if config field Q/nodeInternal/port or Q/nodeInternal/host are missing
  */
@@ -2049,10 +2009,8 @@ Q.listen = function _Q_listen(options, callback) {
 			/**
 			 * Http request
 			 * @event request
-			 * @param req {http.Request}
-			 *	The request object
-			 * @param res {http.Response}
-			 *	The response object
+			 * @param {http.Request} req The request object
+			 * @param {http.Response} res The response object
 			 */
 			Q.emit('request', req, res);
 			next();
@@ -2254,8 +2212,7 @@ Q.init = function _Q_init(app, notListen) {
 				/**
 				 * Qbix platform initialized
 				 * @event init
-				 * @param Q {Q}
-				 *	Initialized Qbix instance
+				 * @param {Q} Q Initialized Qbix instance
 				 */
 				Q.emit('init', Q);
 			});
@@ -2267,11 +2224,11 @@ Q.init = function _Q_init(app, notListen) {
  * Check if a file exists in the include path
  * And if it does, return the absolute path.
  * @method realPath
- * @param filename {string} Name of the file to look for
- * @param [ignoreCache=false] {boolean} If true, then this function ignores
+ * @param {String} filename Name of the file to look for
+ * @param {boolean} [ignoreCache=false] If true, then this function ignores
  *  the cached value, if any, and always attempts to search
  *  for the file. It will cache the new value.
- * @return {string|false} The absolute path if file exists, false if it does not
+ * @return {String|false} The absolute path if file exists, false if it does not
  */
 Q.realPath = function _Q_realPath(filename, ignoreCache) {
   if (!ignoreCache && (filename in realPath_results)) {
@@ -2294,10 +2251,10 @@ var realPath_results = {};
 /**
  * Require node module
  * @method require
- * @param  {string} what
+ * @param {String} what
  * @return {mixed}
  */
-Q.require = function _Q_require(what) {
+Q.require function _Q_require(what) {
 	var realPath = Q.realPath(what);
 	if (!realPath) throw new Error("Q.require: file '"+what+"' not found");
 	return require(realPath);
@@ -2307,11 +2264,11 @@ var logStream = {};
 /**
  * Writes a string to application log. If run outside Qbix application writes to console.
  * @method log
- * @param message {mixed} The data to write to log file. If data is string it is written to log, if it has other type
+ * @param {mixed} message The data to write to log file. If data is string it is written to log, if it has other type
  *	it is converted to string using util.format with depth defined by Q/var_dump_max_levels config key
- * @param [name='Q/app'] {string} If set log file will be named name+'_node.log', otherwise 'Q/app' config value + '_node.log'
- * @param [timestamp=true] {boolean} Whether to prepend the current timestamp
- * @param [callback=null] {function} The callback to call after log file is written
+ * @param {String} [name='Q/app'] If set log file will be named name+'_node.log', otherwise 'Q/app' config value + '_node.log'
+ * @param {boolean} [timestamp=true] Whether to prepend the current timestamp
+ * @param {Function} [callback=null] The callback to call after log file is written
  * @return {boolean} false if failed to parse arguments
  */
 
@@ -2430,9 +2387,9 @@ String.prototype.hashCode = function() {
 /**
  * Returns date/time string formatted the same way as PHP date function does
  * @method date
- * @param format {string} The format string
- * @param timestamp {number} The date to format
- * @return {string}
+ * @param {String} format The format string
+ * @param {number} timestamp The date to format
+ * @return {String}
  */
 Q.date = function (format, timestamp) {
 	// http://kevin.vanzonneveld.net
@@ -2640,7 +2597,7 @@ var timeHandles = {};
 /**
  * Start time counter
  * @method time
- * @param handle {string} A handle to refer to time counter. Shall be namespaced to avoid overlap with
+ * @param {String} handle A handle to refer to time counter. Shall be namespaced to avoid overlap with
  *	other possible counters - Q/PROCESS/NAME
  */
 Q.time = function _Q_time(handle) {
@@ -2652,8 +2609,8 @@ Q.time = function _Q_time(handle) {
  * Time is formatted string <code>"XX days XX hours XX minutes XX seconds"</code>
  * If time is less than a second returns <code>"XXX milliseconds"</code>
  * @method timeEnd
- * @param handle {string} The handle started with Q.time(). If not started returns null
- * @return {string|null}
+ * @param {String} handle The handle started with Q.time(). If not started returns null
+ * @return {String|null}
  */
 Q.timeEnd = function _Q_timeEnd(handle) {
 	if (!timeHandles[handle]) {
@@ -2712,7 +2669,7 @@ Q.firstErrorMessage = function _Q_firstErrorMessage(data /*, data2, ... */) {
  * @param {Object} fields
  *  Optional fields to append to the querystring.
  *  NOTE: only handles scalar values in the object.
- * @param Object options
+ * @param {Object} options
  *  A hash of options, including:
  *  'baseUrl': A string to replace the default base url
  *  'cacheBust': Number of milliseconds before a new cachebuster is appended
@@ -2834,8 +2791,8 @@ String.prototype.replaceAll = function _String_prototype_replaceAll(pairs) {
 /**
  * Gets a param from a string, which is usually the location.search or location.hash
  * @method queryField
- * @param name {String} The name of the field
- * @param value {String} Optional, provide a value to set in the querystring, or null to delete any fields that match name as a RegExp
+ * @param {String} name The name of the field
+ * @param {String} value Optional, provide a value to set in the querystring, or null to delete any fields that match name as a RegExp
  * @return {String} the value of the field in the source, or if value was not undefined, the resulting querystring
  */
 String.prototype.queryField = function Q_queryField(name, value) {

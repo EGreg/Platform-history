@@ -214,7 +214,7 @@ class Q_Utils
 	 *
 	 * @see http://tools.ietf.org/html/rfc4122#section-4.4
 	 * @see http://en.wikipedia.org/wiki/UUID
-	 * @return string A UUID, made up of 32 hex digits and 4 hyphens.
+	 * @return {string} A UUID, made up of 32 hex digits and 4 hyphens.
 	 */
 	static function uuid() {
 		

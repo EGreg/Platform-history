@@ -89,7 +89,7 @@ abstract class Services_Twilio_Resource {
      * incoming_phone_numbers => IncomingPhoneNumbers
      *
      * @param string $word The word to camelize
-     * @return string
+     * @return {string}
      */
     public static function camelize($word) {
         return preg_replace_callback(
@@ -108,7 +108,7 @@ abstract class Services_Twilio_Resource {
      * Get the value of a property on this resource.
      * 
      * @param string $key The property name
-     * @return mixed Could be anything.
+     * @return {mixed} Could be anything.
      */
     public function __get($key) {
         if ($subresource = $this->getSubresources($key)) {

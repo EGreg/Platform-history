@@ -7,7 +7,7 @@
  * @param {String} [$_REQUEST.title] Required. The title of the interest.
  * @param {String} [$_REQUEST.publisherId] Optional. Defaults to the app name.
  * @param {String} [$_REQUEST.subscribe] Optional. Defauls to false. Whether to subscribe rather than just join the interest stream.
- * @return void
+ * @return {void}
  */
 function Streams_interest_post()
 {

@@ -393,6 +393,7 @@ Ap.indexOf = function _Array_prototype_indexOf(searchElement /*, fromIndex */ ) 
 /**
  * Returns total number of milliseconds since the UNIX epoch
  * @method now
+ * @static
  * @return {Number}
  */
 
@@ -1198,8 +1199,8 @@ Q.isPlainObject = function (x) {
 
 /**
  * Convenience method for testing instanceof, even in IE
- * @method instanceOf
  * @static
+ * @method instanceOf
  * @param {mixed} testing
  * @param {Function} Constructor
  */
@@ -1261,6 +1262,7 @@ Q.copy = function _Q_copy(x, fields) {
  *  (If an array is being extended by an object with a "replace" property,
  *   the array is replaced by the value of that property.)
  *  You can also extend recursively, see the levels parameter.
+ * @static
  * @method extend
  * @param target {Object}
  *  This is the first object. It winds up being modified, and also returned
@@ -1377,6 +1379,7 @@ Q.has = function _Q_has(obj, key) {
 };
 
 /**
+ * Copies a subset of the fields in an object
  * @static
  * @method take
  * @param {Object} source
@@ -3307,13 +3310,14 @@ Q.Tool.clear = function _Q_Tool_clear(elem, removeCached) {
  * Call this function to define a tool
  * @static
  * @method define
- * @param name {String|Object} The name of the tool, e.g. "Q/foo". Also you can pass an object of name: filename here here.
- * @param ctor {Function} Your tool's constructor. You can also pass a filename here, in which case the other parameters are ignored.
- * @param defaultOptions {Object} An optional hash of default options for the tool
- * @param stateKeys {Array} An optional array of key names to copy from options to state
- * @param methods {Object} An optional hash of method functions to assign to the prototype
+ * @param {String|Object} name The name of the tool, e.g. "Q/foo". Also you can pass an object of name: filename here here.
+ * @param {Function} ctor Your tool's constructor. You can also pass a filename here, in which case the other parameters are ignored.
+ * @param {Function} ctor Your tool's constructor. You can also pass a filename here, in which case the other parameters are ignored.
+ * @param {Object} defaultOptions An optional hash of default options for the tool
+ * @param {Array} stateKeys An optional array of key names to copy from options to state
+ * @param{Object}  methods An optional hash of method functions to assign to the prototype
  */
-Q.Tool.define = function (name, ctor, defaultOptions, stateKeys, methods) {
+Q.Tool.define = function (name, ctor, /* require, */ defaultOptions, stateKeys, methods) {
 	if (typeof name === 'object') {
 		for (var n in name) {
 			Q.Tool.define(n, name[n]);
@@ -3778,7 +3782,7 @@ Tp.forEachChild = function _Q_Tool_prototype_forEachChild(name, levels, callback
  * @static
  * @method encodeOptions
  * @param {Object} options the options to pass to a tool
- * @return String
+ * @return {String}
  */
 Q.Tool.encodeOptions = function _Q_Tool_stringFromOptions(options) {
 	return JSON.stringify(options).encodeHTML().replaceAll({"&quot;": '"'});
@@ -4279,7 +4283,6 @@ var Cp = Q.Cache.prototype;
 
 /**
  * Accesses the cache and sets an entry in it
- * @static
  * @method set
  * @param {String} key  the key to save the entry under, or an array of arguments
  * @param {Options} options  supports the following options:
@@ -4327,7 +4330,6 @@ Cp.set = function _Q_Cache_prototype_set(key, cbpos, subject, params, options) {
 };
 /**
  * Accesses the cache and gets an entry from it
- * @static
  * @method get
  * @param {String} key  the key to search for
  * @param {Object} options  supports the following options:
@@ -4417,7 +4419,6 @@ Cp.clear = function _Q_Cache_prototype_clear() {
 };
 /**
  * Cycles through all the entries in the cache
- * @static
  * @method each
  * @param {Array} args  An array consisting of some or all the arguments that form the key
  * @param {Function} callback  Is passed two parameters: key, value, with this = the cache
@@ -4462,8 +4463,6 @@ Cp.each = function _Q_Cache_prototype_each(args, callback) {
 };
 /**
  * Removes all the entries in the cache matching the args
- *
- * @static
  * @method removeEach
  * @param {Array} args  An array consisting of some or all the arguments that form the key
  */
@@ -4508,9 +4507,8 @@ Q.Page = function (uriString) {
 /**
  * Pushes a url onto the history stack via pushState with a fallback to hashChange,
  * to be handled later by either the Q_popStateHandler or the Q_hashChangeHandler.
- * @class Q.Page
  * @static
- * @method
+ * @method push
  * @param {String} url The url to push
  */
 Q.Page.push = function (url) {
@@ -6185,7 +6183,7 @@ Q.findStylesheet = function (href) {
  *   "expires": number of milliseconds until expiration. Defaults to session cookie.
  *   "domain": the domain to set cookie
  *   "path": path to set cookie. Defaults to location.pathname
- * @return String
+ * @return {String|null}
  *   If only name was passed, returns the stored value of the cookie, or null.
  */
 Q.cookie = function _Q_cookie(name, value, options) {

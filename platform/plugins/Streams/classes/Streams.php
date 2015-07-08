@@ -476,7 +476,7 @@ abstract class Streams extends Base_Streams
 	 *  An array of streams, obtained for example by Streams::fetch
 	 * @param {boolean} $recalculate=false
 	 *  Pass true here to force recalculating access to streams for which access was already calculated
-	 * @return integer
+	 * @return {integer}
 	 *  The number of streams that were recalculated
 	 */
 	static function calculateAccess(
@@ -1736,7 +1736,7 @@ abstract class Streams extends Base_Streams
 	 *  An array of options that can include:
 	 *  "skipAccess" => Defaults to false. If true, skips the access checks and just relates the stream to the category
 	 *  "adjustWeights" => Defaults to false. If true, also decrements all following relations' weights by one.
-	 * @return boolean
+	 * @return {boolean}
 	 *  Whether the relation was removed
 	 */
 	static function unrelate(
@@ -2046,7 +2046,7 @@ abstract class Streams extends Base_Streams
 	 * @param {array} $options=array()
 	 *  An array of options that can include:
 	 *  "skipAccess" => Defaults to false. If true, skips the access checks and just updates the weight on the relation
-	 * @return array|boolean
+	 * @return {array|boolean}
 	 *  Returns false if the operation was canceled by a hook
 	 *  Otherwise returns array with key "to" and value of type Streams_Message
 	 */

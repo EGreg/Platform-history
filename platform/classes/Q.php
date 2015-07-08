@@ -320,7 +320,7 @@ class Q
 	 *  The filename to include
 	 * @param {array} $params=array()
 	 *  Optional. Extracts this array before including the file.
-	 * @param boolean $once=false
+	 * @param {boolean} $once=false
 	 *  Optional. Whether to use include_once instead of include.
 	 * @param {boolean} $get_vars=false
 	 *  Optional. If true, returns the result of get_defined_vars() at the end.

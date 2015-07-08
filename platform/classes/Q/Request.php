@@ -476,7 +476,7 @@ class Q_Request
 	 * If provided, the method will return true only if the browser is IE and the major version is greater or equal than $min_version.
 	 * @param {number} [$max_version=0] optional maximum version of IE to check (major number like 7, 8, 9 etc).
 	 * If provided, the method will return true only if the browser is IE and the major version is less or equale than $max_version.
-	 * @return boolean
+	 * @return {boolean}
 	 */
 	static function isIE($min_version = 0, $max_version = 10)
 	{
@@ -556,7 +556,7 @@ class Q_Request
 	 * Returns the form factor based on the user agent
 	 * @method formFactor
 	 * @static
-	 * @return string can be either 'mobile', 'tablet' or 'desktop'
+	 * @return {string} can be either 'mobile', 'tablet', or 'desktop'
 	 */
 	static function formFactor()
 	{

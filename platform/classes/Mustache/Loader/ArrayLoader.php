@@ -45,7 +45,7 @@ class Mustache_Loader_ArrayLoader implements Mustache_Loader, Mustache_Loader_Mu
      *
      * @param string $name
      *
-     * @return string Mustache Template source
+     * @return {string} Mustache Template source
      */
     public function load($name)
     {

@@ -41,7 +41,7 @@ class Mustache_Context
     /**
      * Pop the last Context frame from the stack.
      *
-     * @return mixed Last Context frame (object or array)
+     * @return {mixed} Last Context frame (object or array)
      */
     public function pop()
     {
@@ -51,7 +51,7 @@ class Mustache_Context
     /**
      * Get the last Context frame.
      *
-     * @return mixed Last Context frame (object or array)
+     * @return {mixed} Last Context frame (object or array)
      */
     public function last()
     {
@@ -71,7 +71,7 @@ class Mustache_Context
      *
      * @param string $id Variable name
      *
-     * @return mixed Variable value, or '' if not found
+     * @return {mixed} Variable value, or '' if not found
      */
     public function find($id)
     {
@@ -101,7 +101,7 @@ class Mustache_Context
      *
      * @param string $id Dotted variable selector
      *
-     * @return mixed Variable value, or '' if not found
+     * @return {mixed} Variable value, or '' if not found
      */
     public function findDot($id)
     {
@@ -128,7 +128,7 @@ class Mustache_Context
      * @param string $id    Variable name
      * @param array  $stack Context stack
      *
-     * @return mixed Variable value, or '' if not found
+     * @return {mixed} Variable value, or '' if not found
      */
     private function findVariableInStack($id, array $stack)
     {

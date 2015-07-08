@@ -18,11 +18,11 @@
  * @param [$_REQUEST.]
  * @param [$_REQUEST.]
  *
- * @throws Exception
- * @throws Q_Exception
- * @throws Q_Exception_MissingRow
- * @throws Q_Exception_Recursion
- * @throws Users_Exception_NotLoggedIn *
+ * @throws {$1}
+ * @throws {$1}
+ * @throws {$1}
+ * @throws {$1}
+ * @throws {$1} *
  */
 function Places_geolocation_post()
 {

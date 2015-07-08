@@ -28,7 +28,7 @@
  *  @param {Q.Event} [options.onOpen] Event that happens after a column is opened.
  *  @param {Q.Event} [options.afterDelay] Event that happens after a column is opened, after a delay intended to wait out various animations.
  *  @param {Q.Event} [options.onClose] Event that happens after a column is closed.
- * @return Q.Tool
+ * @return {Q.Tool}
  */
 Q.Tool.define("Q/columns", function(options) {
 	var tool = this;

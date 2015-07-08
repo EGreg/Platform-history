@@ -219,7 +219,7 @@ function whenReady(fn, scope){
  * Returns an instance of easyXDM from the parent window with
  * respect to the namespace.
  * @method getParentObject
- * @return An instance of easyXDM (in the parent window)
+ * @return {An} instance of easyXDM (in the parent window)
  */
 function getParentObject(){
     var obj = parent;
@@ -236,7 +236,7 @@ function getParentObject(){
  * of the easyXDM variable to whatever code used it before.
  * @method noConflict
  * @param {String} ns A string representation of an object that will hold an instance of easyXDM.
- * @return An instance of easyXDM
+ * @return {An} instance of easyXDM
  */
 function noConflict(ns){
 
@@ -255,7 +255,7 @@ function noConflict(ns){
  * Get the domain name from a url.
  * @method getDomainName
  * @param {String} url The url to extract the domain from.
- * @return The domain part of the url.
+ * @return {The} domain part of the url.
  * @type {String}
  */
 function getDomainName(url){
@@ -266,7 +266,7 @@ function getDomainName(url){
  * Get the port for a given URL, or "" if none
  * @method getPort
  * @param {String} url The url to extract the port from.
- * @return The port part of the url.
+ * @return {The} port part of the url.
  * @type {String}
  */
 function getPort(url){
@@ -847,7 +847,7 @@ apply(easyXDM, {
      * of the easyXDM variable to whatever code used it before.
      * @method noConflict
      * @param {String} ns A string representation of an object that will hold an instance of easyXDM.
-     * @return An instance of easyXDM
+     * @return {An} instance of easyXDM
      */
     noConflict: noConflict
 });

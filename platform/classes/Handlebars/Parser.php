@@ -42,7 +42,7 @@ class Handlebars_Parser
      *
      * @param array $tokens Set of
      *
-     * @return array Token parse tree
+     * @return {array} Token parse tree
      */
     public function parse(array $tokens = array())
     {
@@ -57,9 +57,9 @@ class Handlebars_Parser
      *
      * @param ArrayIterator $tokens Stream of tokens
      *
-     * @throws RuntimeException when nesting errors or mismatched section tags
+     * @throws {$1} when nesting errors or mismatched section tags
      * are encountered.
-     * @return array Token parse tree
+     * @return {array} Token parse tree
      *
      */
     private function _buildTree(ArrayIterator $tokens)

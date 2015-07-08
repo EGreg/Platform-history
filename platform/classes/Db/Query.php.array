@@ -11,13 +11,13 @@ interface iDb_Query
 	/**
 	 * Constructor
 	 *
-	 * @param iDb $db
+	 * @param {iDb} $db
 	 *  The database connection
-	 * @param int $type
+	 * @param {int} $type
 	 *  The type of the query. See class constants beginning with TYPE_ .
-	 * @param array $clauses
+	 * @param {array} $clauses
 	 *  The clauses to add to the query right away
-	 * @param array $parameters
+	 * @param {array} $parameters
 	 *  The parameters to add to the query right away (to be bound when executing)
 	 */
 	//function __construct (
@@ -41,11 +41,11 @@ interface iDb_Query
 
 	/**
 	 * Gets the SQL that would be executed with the execute() method.
-	 * @param callable $callback
+	 * @param {callable} $callback
 	 *  If not set, this function returns the generated SQL string.
 	 *  If it is set, this function calls $callback, passing it the SQL
 	 *  string, and then returns $this, for chainable interface.
-	 * @return string | Db_Query
+	 * @return {string | Db_Query}
 	 *  Depends on whether $callback is set or not.
 	 */
 	function getSQL ($callback = null);
@@ -59,7 +59,7 @@ interface iDb_Query
 	 *  The replacements array is used to replace strings in the SQL
 	 *  before using it. Watch out, because it may replace more than you want!
 	 *
-	 * @param array $replacements
+	 * @param {array} $replacements
 	 *  This must be an array.
 	 */
 	function replace(array $replacements = array());
@@ -74,13 +74,13 @@ interface iDb_Query
 	 *  ->bind(array('moo' => $moo))
 	 *  ->execute();
 	 * 
-	 * @param array $parameters
+	 * @param {array} $parameters
 	 *  An associative array of parameters. The query should contain :name,
 	 *  where :name is a placeholder for the parameter under the key "name".
 	 *  The parameters will be properly escaped.
 	 *  You can also have the query contain question marks (the binding is
 	 *  done using PDO), but then the order of the parameters matters.
-	 * @return iDb_Query 
+	 * @return {iDb_Query} 
 	 *  The resulting object implementing iDb_Query
 	 *  You can use it to chain the calls together.
 	 */
@@ -89,7 +89,7 @@ interface iDb_Query
 	/**
 	 * Executes a query against the database and returns the result set.
 	 * 
-	 * @param $prepare_statement
+	 * @param {boolean} $prepare_statement
 	 *  Defaults to false. If true, a PDO statement will be prepared
 	 *  from the query before it is executed. It is also saved for
 	 *  future invocations to use.
@@ -97,7 +97,7 @@ interface iDb_Query
 	 *  different parameters. Basically you would use ->bind(...) between 
 	 *  invocations of ->execute().
 	 *
-	 * @return Db_Result
+	 * @return {Db_Result}
 	 *  The Db_Result object containing the PDO statement that resulted
 	 *  from the query.
 	 */
@@ -130,18 +130,18 @@ interface iDb_Query
 	/**
 	 * Creates a query to select fields from one or more tables.
 	 *
-	 * @param string|array $fields 
+	 * @param {string|array} $fields 
 	 *  The fields as strings, or array of alias=>field
-	 * @param string|array $tables
+	 * @param {string|array} $tables
 	 *  The tables as strings, or array of alias=>table
-	 * @param bool $reuse
+	 * @param {bool} $reuse
 	 *  If $tables is an array, and select() has
 	 *  already been called with the exact table name and alias
 	 *  as one of the tables in that array, then
 	 *  this table is not appended to the tables list if
 	 *  $reuse is true. Otherwise it is. $reuse is true by default.
 	 *  This is really just for using in your hooks.
-	 * @return Db_Query 
+	 * @return {Db_Query} 
 	 *  The resulting Db_Query object
 	 */
 	function select ($fields, $tables = '', $reuse = true);
@@ -149,13 +149,13 @@ interface iDb_Query
 	/**
 	 * Joins another table to use in the query
 	 *
-	 * @param string $table
+	 * @param {string} $table
 	 *  The name of the table. May also be "name AS alias".
-	 * @param Db_Expression|array|string $condition
+	 * @param {Db_Expression|array|string} $condition
 	 *  The condition to join on. Thus, JOIN table ON ($condition)
 	 * @param string $join_type
 	 *  The string to prepend to JOIN, such as 'INNER', 'LEFT OUTER', etc.
-	 * @return Db_Query 
+	 * @return {Db_Query} 
 	 *  The resulting Db_Query object
 	 */
 	function join ($table, $condition, $join_type = 'INNER');
@@ -163,11 +163,11 @@ interface iDb_Query
 	/**
 	 * Adds a WHERE clause to a query
 	 *
-	 * @param Db_Expression|array $criteria
+	 * @param {Db_Expression|array $criteria}
 	 *  An associative array of expression => value pairs. 
 	 *  The values are automatically escaped using PDO placeholders.
 	 *  Or, this could be a Db_Expression object.
-	 * @return Db_Query 
+	 * @return {Db_Query} 
 	 *  The resulting Db_Query object
 	 */
 	function where ($criteria);
@@ -176,9 +176,9 @@ interface iDb_Query
 	 * Adds to the WHERE clause, like this:   ... AND (x OR y OR z),
 	 * where x, y and z are the arguments to this function.
 	 *
-	 * @param Db_Expression|string $criteria
-	 * @param Db_Expression|string $or_criteria
-	 * @return Db_Query
+	 * @param {Db_Expression|string $criteria}
+	 * @param {Db_Expression|string $or_criteria}
+	 * @return {Db_Query}
 	 *  The resulting object implementing iDb_Query
 	 *  You can use it to chain the calls together.
 	 */
@@ -188,9 +188,9 @@ interface iDb_Query
 	 * Adds to the WHERE clause, like this:   ... OR (x AND y AND z),
 	 * where x, y and z are the arguments to this function.
 	 *
-	 * @param Db_Expression|string $criteria
-	 * @param Db_Expression|string $and_criteria
-	 * @return Db_Query
+	 * @param {Db_Expression|string} $criteria
+	 * @param {Db_Expression|string} $and_criteria
+	 * @return {Db_Query}
 	 *  The resulting object implementing iDb_Query
 	 *  You can use it to chain the calls together.
 	 */
@@ -199,8 +199,8 @@ interface iDb_Query
 	/**
 	 * Adds a GROUP BY clause to a query
 	 *
-	 * @param Db_Expression|string $expression
-	 * @return Db_Query 
+	 * @param {Db_Expression|string $expression}
+	 * @return {Db_Query} 
 	 *  The resulting Db_Query object
 	 */
 	function groupBy ($expression);
@@ -208,11 +208,11 @@ interface iDb_Query
 	/**
 	 * Adds a HAVING clause to a query
 	 *
-	 * @param Db_Expression|array $criteria
+	 * @param {Db_Expression|array $criteria}
 	 *  An associative array of expression => value pairs.
 	 *  The values are automatically escaped using PDO placeholders.
 	 *  Or, this could be a Db_Expression object.
-	 * @return Db_Query
+	 * @return {Db_Query}
 	 *  The resulting object implementing iDb_Query
 	 *  You can use it to chain the calls together.
 	 */
@@ -226,7 +226,7 @@ interface iDb_Query
 	 *  A string or Db_Expression with the expression to order the results by.
 	 * @param bool $ascending
 	 *  If false, sorts results as ascending, otherwise descending.
-	 * @return Db_Query 
+	 * @return {Db_Query} 
 	 *  The resulting Db_Query object
 	 */
 	function orderBy ($expression, $ascending = true);
@@ -238,7 +238,7 @@ interface iDb_Query
 	 *  A non-negative integer showing how many rows to return
 	 * @param int $offset
 	 *  Optional. A non-negative integer showing what row to start the result set with.
-	 * @return Db_Query 
+	 * @return {Db_Query} 
 	 *  The resulting Db_Query object
 	 */
 	function limit ($limit, $offset = null);
@@ -247,10 +247,10 @@ interface iDb_Query
 	/**
 	 * Adds a SET clause to an UPDATE statement
 	 *
-	 * @param array $updates
+	 * @param {array} $updates
 	 *  An associative array of column => value pairs. 
 	 *  The values are automatically escaped using PDO placeholders.
-	 * @return Db_Query 
+	 * @return {Db_Query} 
 	 *  The resulting Db_Query object
 	 */
 	function set (array $updates);
@@ -267,7 +267,7 @@ interface iDb_Query
 	 * See http://us2.php.net/manual/en/pdostatement.fetchall.php
 	 * for documentation.
 	 * 
-	 * @return array
+	 * @return {array}
 	 */
 	function fetchAll(
 		$fetch_style = PDO::FETCH_BOTH, 
@@ -283,12 +283,12 @@ interface iDb_Query
 	 * Otherwise, the query is executed and fetchDbRows()
 	 * is called on the result.
 	 * 
-	 * @param string $class_name
+	 * @param {string} $class_name
 	 *  The name of the class to instantiate and fill objects from.
 	 *  Must extend Db_Row.
 	 * @param string $fields_prefix
 	 *  This is the prefix, if any, to strip out when fetching the rows.
-	 * @return array
+	 * @return {array}
 	 */
 	function fetchDbRows(
 		$class_name = 'Db_Row', 
@@ -301,7 +301,7 @@ interface iDb_Query
 	 * @param array $updates
 	 *  An associative array of column => value pairs. 
 	 *  The values are automatically escaped using PDO placeholders.
-	 * @return Db_Query
+	 * @return {Db_Query}
 	 */
 	function onDuplicateKeyUpdate ($updates);
 
@@ -343,7 +343,7 @@ abstract class Db_Query extends Db_Expression
 	
 	/**
 	 * Analyzes the query's criteria and decides where to execute the query
-	 * @return array
+	 * @return {array}
 	 *  Returns an array of $shardName => $query pairs, where $shardName
 	 *  can be the name of a shard, or "*" to have the query run on all the shards.
 	 */

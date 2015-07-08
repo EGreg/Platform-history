@@ -66,7 +66,7 @@ class Services_Twilio extends Services_Twilio_Resource
     /**
      * Get the api version used by the rest client
      *
-     * @return string the API version in use
+     * @return {string} the API version in use
      */
     public function getVersion() {
         return $this->version;
@@ -75,7 +75,7 @@ class Services_Twilio extends Services_Twilio_Resource
     /**
      * Get the retry attempt limit used by the rest client
      *
-     * @return int the number of retry attempts
+     * @return {int} the number of retry attempts
      */
     public function getRetryAttempts() {
         return $this->retryAttempts;
@@ -93,7 +93,7 @@ class Services_Twilio extends Services_Twilio_Resource
      * @param array $params Query parameters to use with the request
      * @param boolean $full_uri Whether the $path contains the full uri
      *
-     * @return string the URI that should be requested by the library
+     * @return {string} the URI that should be requested by the library
      */
     public static function getRequestUri($path, $params, $full_uri = false) {
         $json_path = $full_uri ? $path : "$path.json";
@@ -112,7 +112,7 @@ class Services_Twilio extends Services_Twilio_Resource
      * @param string $uri           The URI to request
      * @param int    $retriesLeft   Number of times to retry
      *
-     * @return object The object representation of the resource
+     * @return {object} The object representation of the resource
      */
     protected function _makeIdempotentRequest($callable, $uri, $retriesLeft) {
         $response = call_user_func_array($callable, array($uri));
@@ -132,7 +132,7 @@ class Services_Twilio extends Services_Twilio_Resource
      * @param boolean  $full_uri Whether the full URI has been passed as an 
      *      argument
      *
-     * @return object The object representation of the resource
+     * @return {object} The object representation of the resource
      */
     public function retrieveData($path, array $params = array(), 
         $full_uri = false
@@ -148,7 +148,7 @@ class Services_Twilio extends Services_Twilio_Resource
      * @param string $path   Path to the resource
      * @param array  $params Query string parameters
      *
-     * @return object The object representation of the resource
+     * @return {object} The object representation of the resource
      */
     public function deleteData($path, array $params = array())
     {
@@ -163,7 +163,7 @@ class Services_Twilio extends Services_Twilio_Resource
      * @param string $path   Path to the resource
      * @param array  $params Query string parameters
      *
-     * @return object The object representation of the resource
+     * @return {object} The object representation of the resource
      */
     public function createData($path, array $params = array())
     {
@@ -180,8 +180,8 @@ class Services_Twilio extends Services_Twilio_Resource
      *
      * @param array $response 3-tuple containing status, headers, and body
      *
-     * @return object PHP object decoded from JSON
-     * @throws Services_Twilio_RestException (Response in 300-500 class)
+     * @return {object} PHP object decoded from JSON
+     * @throws {$1} (Response in 300-500 class)
      */
     private function _processResponse($response)
     {

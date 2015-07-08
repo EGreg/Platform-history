@@ -13,7 +13,7 @@
  *  @param {String} [$options.value=''] The initial value of the text input
  *  @param {String} [$options.placeholder] Any placeholder text
  *  @param {array} [$options.placeholders={}] Options for Q/placeholders, or null to omit it
- * @return Q.Tool
+ * @return {string}
  */
 function Q_filter_tool($options)
 {

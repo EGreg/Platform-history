@@ -14,7 +14,7 @@
  *  @param {Object} [options.placeholders={}] Options for Q/placeholders, or null to omit it
  *  @param {String} [options.results=''] HTML to display in the results initially. If setting them later, remember to call stateChanged('results')
  *  @param {Q.Event} [options.onFilter] This event handler is meant to fetch and update results by editing the contents of the element pointed to by the second argument. The first argument is the content of the text input.
- * @return Q.Tool
+ * @return {Q.Tool}
  */
 Q.Tool.define('Q/filter', function (options) {
 	var tool = this;

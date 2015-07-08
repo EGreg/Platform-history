@@ -225,7 +225,7 @@ function whenReady(fn, scope){
  * Returns an instance of easyXDM from the parent window with
  * respect to the namespace.
  * @method getParentObject
- * @return An instance of easyXDM (in the parent window)
+ * @return {An} instance of easyXDM (in the parent window)
  */
 function getParentObject(){
     var obj = parent;
@@ -248,7 +248,7 @@ function getParentObject(){
  * of the easyXDM variable to whatever code used it before.
  * @method noConflict
  * @param {String} ns A string representation of an object that will hold an instance of easyXDM.
- * @return An instance of easyXDM
+ * @return {An} instance of easyXDM
  */
 function noConflict(ns){
     if (typeof ns != "string" || !ns) {
@@ -271,7 +271,7 @@ function noConflict(ns){
  * Get the domain name from a url.
  * @method getDomainName
  * @param {String} url The url to extract the domain from.
- * @return The domain part of the url.
+ * @return {The} domain part of the url.
  * @type {String}
  */
 function getDomainName(url){
@@ -285,7 +285,7 @@ function getDomainName(url){
  * Get the port for a given URL, or "" if none
  * @method getPort
  * @param {String} url The url to extract the port from.
- * @return The port part of the url.
+ * @return {The} port part of the url.
  * @type {String}
  */
 function getPort(url){
@@ -491,7 +491,7 @@ function testForNamePropertyBug(){
  * <li> {DOMElement} container Its parent element (Optional).</li>
  * <li> {function} onLoad A method that should be called with the frames contentWindow as argument when the frame is fully loaded. (Optional)</li>
  * </ul>
- * @return The frames DOMElement
+ * @return {The} frames DOMElement
  * @type DOMElement
  */
 function createFrame(config){
@@ -893,7 +893,7 @@ apply(easyXDM, {
      * @method noConflict
      * @param {String} ns
      * A string representation of an object that will hold an instance of easyXDM.
-     * @return An instance of easyXDM
+     * @return {An} instance of easyXDM
      */
     noConflict: noConflict
 });

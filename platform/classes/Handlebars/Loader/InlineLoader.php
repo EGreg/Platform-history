@@ -87,7 +87,7 @@ class Handlebars_Loader_InlineLoader implements Handlebars_Loader
      *
      * @param string $name template name
      *
-     * @return string Handlebars Handlebars_Template source
+     * @return {string} Handlebars Handlebars_Template source
      */
     public function load($name)
     {
@@ -103,7 +103,7 @@ class Handlebars_Loader_InlineLoader implements Handlebars_Loader
     /**
      * Parse and load templates from the end of a source file.
      *
-     * @return void
+     * @return {void}
      */
     protected function loadTemplates()
     {

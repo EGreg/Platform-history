@@ -1357,7 +1357,7 @@ class Streams_Stream extends Base_Streams_Stream
 	/**
 	 * Inherits access from any streams specified in the inheritAccess field.
 	 * @method inheritAccess
-	 * @return boolean
+	 * @return {boolean}
 	 *  Returns whether the access potentially changed.
 	 */
 	function inheritAccess()

@@ -40,7 +40,7 @@ class Handlebars_Engine
      *
      * @param array $options see __construct's options parameter
      *
-     * @return Handlebars
+     * @return {Handlebars}
      */
     public static function factory($options = array())
     {
@@ -114,7 +114,7 @@ class Handlebars_Engine
      *
      * @param array $options array of options to set
      *
-     * @throws InvalidArgumentException
+     * @throws {$1}
      */
     public function __construct(array $options = array())
     {
@@ -171,7 +171,7 @@ class Handlebars_Engine
      * @param string $template template name
      * @param mixed  $data     data to use as context
      *
-     * @return string Rendered template
+     * @return {string} Rendered template
      * @see Handlebars_Engine::loadTemplate
      * @see Handlebars_Template::render
      */
@@ -185,7 +185,7 @@ class Handlebars_Engine
      *
      * @param Handlebars_Helpers $helpers handlebars helper
      *
-     * @return void
+     * @return {void} Handlebars_helpers
      */
     public function setHelpers(Handlebars_Helpers $helpers)
     {
@@ -195,7 +195,7 @@ class Handlebars_Engine
     /**
      * Get helpers, or create new one if ther is no helper
      *
-     * @return Handlebars_Helpers
+     * @return {void}
      */
     public function getHelpers()
     {
@@ -212,7 +212,7 @@ class Handlebars_Engine
      * @param string $name   helper name
      * @param mixed  $helper helper callable
      *
-     * @return void
+     * @return {callable} Handlebars_Helper
      */
     public function addHelper($name, $helper)
     {
@@ -224,7 +224,7 @@ class Handlebars_Engine
      *
      * @param string $name helper name
      *
-     * @return callable Handlebars_Helper
+     * @return {boolean} True if helper is present
      */
     public function getHelper($name)
     {
@@ -236,7 +236,7 @@ class Handlebars_Engine
      *
      * @param string $name helper name
      *
-     * @return boolean True if the helper is present
+     * @return {void}
      */
     public function hasHelper($name)
     {
@@ -248,7 +248,7 @@ class Handlebars_Engine
      *
      * @param string $name helper name
      *
-     * @return void
+     * @return {void}
      */
     public function removeHelper($name)
     {
@@ -260,7 +260,7 @@ class Handlebars_Engine
      *
      * @param Handlebars_Loader $loader handlebars loader
      *
-     * @return void
+     * @return {void}
      */
     public function setLoader(Handlebars_Loader $loader)
     {
@@ -270,7 +270,7 @@ class Handlebars_Engine
     /**
      * get current loader
      *
-     * @return Handlebars_Loader
+     * @return {Handlebars_Loader}
      */
     public function getLoader()
     {
@@ -286,7 +286,7 @@ class Handlebars_Engine
      *
      * @param Handlebars_Loader $loader handlebars loader
      *
-     * @return void
+     * @return {void}
      */
     public function setPartialsLoader(Handlebars_Loader $loader)
     {
@@ -296,7 +296,7 @@ class Handlebars_Engine
     /**
      * get current partials loader
      *
-     * @return Handlebars_Loader
+     * @return {Handlebars_loader}
      */
     public function getPartialsLoader()
     {
@@ -312,7 +312,7 @@ class Handlebars_Engine
      *
      * @param Handlebars_Cache $cache handlebars cache
      *
-     * @return void
+     * @return {void}
      */
     public function setCache(Handlebars_Cache $cache)
     {
@@ -322,7 +322,7 @@ class Handlebars_Engine
     /**
      * Get cache
      *
-     * @return Handlebars_Cache
+     * @return {Handlebars_Cache}
      */
     public function getCache()
     {
@@ -336,7 +336,7 @@ class Handlebars_Engine
     /**
      * Get current escape function
      *
-     * @return callable
+     * @return {callable}
      */
     public function getEscape()
     {
@@ -348,8 +348,8 @@ class Handlebars_Engine
      *
      * @param callable $escape function
      *
-     * @throws InvalidArgumentException
-     * @return void
+     * @throws {$1}
+     * @return {void}
      */
     public function setEscape($escape)
     {
@@ -364,7 +364,7 @@ class Handlebars_Engine
     /**
      * Get current escape function
      *
-     * @return array
+     * @return {array}
      */
     public function getEscapeArgs()
     {
@@ -376,7 +376,7 @@ class Handlebars_Engine
      *
      * @param array $escapeArgs arguments to pass as extra arg to function
      *
-     * @return void
+     * @return {void}
      */
     public function setEscapeArgs($escapeArgs)
     {
@@ -392,7 +392,7 @@ class Handlebars_Engine
      *
      * @param Handlebars_Tokenizer $tokenizer tokenizer
      *
-     * @return void
+     * @return {void}
      */
     public function setTokenizer(Handlebars_Tokenizer $tokenizer)
     {
@@ -405,7 +405,7 @@ class Handlebars_Engine
      * If no Handlebars_Tokenizer instance has been explicitly specified, this method will
      * instantiate and return a new one.
      *
-     * @return Handlebars_Tokenizer
+     * @return {Handlebars_Tokenizer}
      */
     public function getTokenizer()
     {
@@ -421,7 +421,7 @@ class Handlebars_Engine
      *
      * @param Handlebars_Parser $parser parser object
      *
-     * @return void
+     * @return {void}
      */
     public function setParser(Handlebars_Parser $parser)
     {
@@ -434,7 +434,7 @@ class Handlebars_Engine
      * If no Handlebars_Parser instance has been explicitly specified, this method will
      * instantiate and return a new one.
      *
-     * @return Handlebars_Parser
+     * @return {Handlebars_Parser}
      */
     public function getParser()
     {
@@ -450,7 +450,7 @@ class Handlebars_Engine
      *
      * @param string $class the class name
      *
-     * @return void
+     * @return {void}
      */
     public function setTemplateClass($class)
     {
@@ -468,7 +468,7 @@ class Handlebars_Engine
      *
      * @param string $name template name
      *
-     * @return Handlebars_Template
+     * @return {Handlebars_Template}
      */
     public function loadTemplate($name)
     {
@@ -483,7 +483,7 @@ class Handlebars_Engine
      *
      * @param string $name partial name
      *
-     * @return Handlebars_Template
+     * @return {Handlebars_Template}
      */
     public function loadPartial($name)
     {
@@ -502,7 +502,7 @@ class Handlebars_Engine
      * @param string $alias   Partial alias
      * @param string $content The real value
      *
-     * @return void
+     * @return {void}
      */
     public function registerPartial($alias, $content)
     {
@@ -514,7 +514,7 @@ class Handlebars_Engine
      *
      * @param string $alias Partial alias
      *
-     * @return void
+     * @return {void}
      */
     public function unRegisterPartial($alias)
     {
@@ -528,7 +528,7 @@ class Handlebars_Engine
      *
      * @param string $source string to load
      *
-     * @return Handlebars_Template
+     * @return {Handlebars_Template}
      */
     public function loadString($source)
     {
@@ -542,7 +542,7 @@ class Handlebars_Engine
      *
      * @param string $source handlebars source code
      *
-     * @return array handlebars parsed data into array
+     * @return {array} Handlebarsparsed data into array
      */
     private function _tokenize($source)
     {

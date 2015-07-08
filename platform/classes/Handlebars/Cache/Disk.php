@@ -42,8 +42,8 @@ class Handlebars_Cache_Disk implements Handlebars_Cache
      * @param string $prefix optional file prefix, defaults to empty string
      * @param string $suffix optional file extension, defaults to empty string
      *
-     * @throws RuntimeException
-     * @throws InvalidArgumentException
+     * @throws {$1}
+     * @throws {$1}
      */
     public function __construct($path, $prefix = '', $suffix = '')
     {
@@ -69,7 +69,7 @@ class Handlebars_Cache_Disk implements Handlebars_Cache
      *
      * @param string $name Name of the cache item
      *
-     * @return string full disk path of cached item
+     * @return {string} full disk path of cached item
      */
     private function _getPath($name)
     {
@@ -82,7 +82,7 @@ class Handlebars_Cache_Disk implements Handlebars_Cache
      *
      * @param string $name Handlebars_Cache id
      *
-     * @return mixed data on hit, boolean false on cache not found
+     * @return {mixed} data on hit, boolean false on cache not found
      */
     public function get($name)
     {
@@ -98,7 +98,7 @@ class Handlebars_Cache_Disk implements Handlebars_Cache
      * @param string $name  cache id
      * @param mixed  $value data to store
      *
-     * @return void
+     * @return {mixed} data on hit, boolean false on cache not found
      */
     public function set($name, $value)
     {
@@ -112,7 +112,7 @@ class Handlebars_Cache_Disk implements Handlebars_Cache
      *
      * @param string $name Handlebars_Cache id
      *
-     * @return void
+     * @return {void}
      */
     public function remove($name)
     {

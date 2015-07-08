@@ -1004,7 +1004,7 @@ class Q_Html
 	 * @method id
 	 * @static
 	 * @param string $id Any string
-	 * @return string
+	 * @return {string}
 	 */
 	static function id($id)
 	{

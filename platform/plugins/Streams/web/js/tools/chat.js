@@ -558,7 +558,7 @@ Q.Tool.define('Streams/chat', function(options) {
 	/*
 	* find by options [first, last] or/and param
 	* or only by param
-	* @return data attribute or null 
+	* @return {String|null} data attribute or null
 	*/
 	findMessageData: function(action, byParam){
 		var message = this.findMessage(action, byParam);

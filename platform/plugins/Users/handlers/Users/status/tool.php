@@ -14,7 +14,7 @@
  *   "onLogout" => Optional. Function, string function name or Q.Event. Called when user successfully logged out.
  *   "onMenuSelect" => Optional. Function, string function name or Q.Event.
  *                     Called when user selected some item from user selected some item from user menu except 'Log out'.
- * @return string
+ * @return {string}
  */
 function Users_status_tool($options)
 {

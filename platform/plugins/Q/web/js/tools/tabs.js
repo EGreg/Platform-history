@@ -24,7 +24,7 @@
  *  @param {Function} [options.beforeScripts] Name of the function to execute after tab is loaded but before its javascript is executed.
  *  @param {Function} [options.onCurrent] Event after a tab has been selected. Note that this is in the view layer, so your handlers would trigger recursion if they call Q.layout().
  *  @param {Function} [options.onActivate] Event after a tab has been activated. Note that this is in the view layer, so your handlers would trigger recursion if they call Q.layout().
- * @return Q.Tool
+ * @return {Q.Tool}
  */
 Q.Tool.define("Q/tabs", function(options) {
 
