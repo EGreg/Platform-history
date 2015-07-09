@@ -607,7 +607,7 @@ Q.getter = function _Q_getter(original, options) {
 
 
 	function wrapper() {
-		var i, key, that = this, callbacks = [], _dontCache = false;
+		var i, key, that = this, callbacks = [];
 		var arguments2 = Array.prototype.slice.call(arguments);
 
 		// separate fields and callbacks
@@ -620,7 +620,7 @@ Q.getter = function _Q_getter(original, options) {
 			callbacks.push(noop);
 		}
 		
-		var ret = {};
+		var ret = { dontCache: false };
 		wrapper.emit('called', this, arguments2, ret);
 
 		var cached, cbpos, cbi;
@@ -671,7 +671,7 @@ Q.getter = function _Q_getter(original, options) {
 				return function _Q_getter_callback() {
 
 					// save the results in the cache
-					if (wrapper.cache && !_dontCache) {
+					if (wrapper.cache && !ret.dontCache) {
 						wrapper.cache.set(key, cbpos, this, arguments);
 					}
 
@@ -695,7 +695,7 @@ Q.getter = function _Q_getter(original, options) {
 		if (!wrapper.throttle) {
 			// no throttling, just run the function
 			if (false === original.apply(that, args)) {
-				_dontCache = true;
+				ret.dontCache = true;
 			}
 			ret.result = Q.getter.REQUESTING;
 			wrapper.emit('executed', this, arguments2, ret);
@@ -711,11 +711,11 @@ Q.getter = function _Q_getter(original, options) {
 				queue: [],
 				args: []
 			};
-			wrapper.throttle.throttleTry = function _throttleTry(that, getter, args) {
+			wrapper.throttle.throttleTry = function _throttleTry(that, getter, args, ret) {
 				++p.count;
 				if (p.size === null || p.count <= p.size) {
 					if (false === getter.apply(that, args)) {
-						_dontCache = true;
+						ret.dontCache = true;
 					}
 					return true;
 				}
@@ -743,7 +743,7 @@ Q.getter = function _Q_getter(original, options) {
 		}
 
 		// execute the throttle
-		ret.result = wrapper.throttle.throttleTry(this, original, args)
+		ret.result = wrapper.throttle.throttleTry(this, original, args, ret)
 			? Q.getter.REQUESTING
 			: Q.getter.THROTTLING;
 		wrapper.emit('executed', this, arguments2, ret);

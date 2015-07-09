@@ -209,7 +209,7 @@ function _Q_inplace_tool_constructor(element, options) {
 			fieldinput.add(fieldinput.parent()).css('min-height', height);
 		}
 	}, 0); // hopefully it will be inserted into the DOM by then
-	function onClick(event) {
+	this.handleClick = function(event) {
 		container_span.addClass('Q_editing');
 		container_span.addClass('Q_discouragePointerEvents');
 		if (state.bringToFront) {
@@ -287,7 +287,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		tool.$('.Q_inplace_tool_buttons').css({
 			width: container_span.outerWidth() + 'px'
 		});
-		event.preventDefault();
+		event && event.preventDefault && event.preventDefault();
 	};
 	function onSave () {
 		var form = $('.Q_inplace_tool_form', $te);
@@ -474,9 +474,9 @@ function _Q_inplace_tool_constructor(element, options) {
 	});
 	if (this.state.editOnClick) {
 		// happens despite canceled click
-		static_span.on([Q.Pointer.fastclick, '.Q_inplace'], onClick);
+		static_span.on([Q.Pointer.fastclick, '.Q_inplace'], this.handleClick);
 	}
-	edit_button.on(Q.Pointer.start, onClick); // happens despite canceled click
+	edit_button.on(Q.Pointer.start, this.handleClick); // happens despite canceled click
 	cancel_button.on(Q.Pointer.start, function() {
 		onCancel(true); 
 		return false;
@@ -493,16 +493,27 @@ function _Q_inplace_tool_constructor(element, options) {
 	fieldinput.on('keyup input', _updateSaveButton);
 	fieldinput.focus(function() { focusedOn = 'fieldinput'; });
 	fieldinput.blur(function() { focusedOn = null; setTimeout(onBlur, 100); });
-	fieldinput.keydown(function(event) {
+	fieldinput.keydown(function _Q_inplace_keydown(e) {
 		if (!focusedOn) {
 			return false;
 		}
-		if (event.keyCode == 13) {
+		var kc = (window.event) ? event.which : e.keyCode;
+		var sk = (window.event) ? event.shiftKey : e.shiftKey;
+		if (kc == 13) {
 			if (! fieldinput.is('textarea')) {
 				onSave(); return false;
 			}
-		} else if (event.keyCode == 27) {
+		} else if (kc == 27) {
 			onCancel(); return false;
+		} else if (kc == 9) {
+			var tags = 'input,textarea,select,.Q_inplace_tool';
+			var $elements = $(tags).not('.Q_inplace_tool :input');
+			var $input = $elements.eq($elements.index(tool.element) + (sk ? -1 : 1));
+			if (!$input.hasClass('Q_inplace_tool')) {
+				$input.plugin('Q/clickfocus');
+			} else {
+				Q.Tool.from($input[0], 'Q/inplace').handleClick();
+			}
 		}
 	});
 	fieldinput.closest('form').submit(function () {
