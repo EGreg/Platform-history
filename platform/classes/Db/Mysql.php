@@ -1760,7 +1760,8 @@ EOT;
 					$properties[]="string|Db_Expression $field_name";
 					$js_properties[] = "$field_name String|Db.Expression";
 					$functions["beforeSet_$field_name"][] = <<<EOT
-		{$null_check}{$dbe_check}\$date = date_parse(\$value);
+		{$null_check}{$dbe_check}\$value = date("Y-m-d h:i:s", strtotime(\$value));
+		\$date = date_parse(\$value);
 		if (!empty(\$date['errors'])) {
 			throw new Exception("Date \$value in incorrect format being assigned to ".\$this->getTable().".$field_name");
 		}

@@ -1946,7 +1946,7 @@ abstract class Streams extends Base_Streams
 			? $options['limit']
 			: $max_limit;
 		if ($limit > $max_limit) {
-			throw new Q_Exception("limit is too large, must be <= $max_limit");
+			throw new Q_Exception("Streams::related limit is too large, must be <= $max_limit");
 		}
 
 		$min = isset($options['min']) ? $options['min'] : null;

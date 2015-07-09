@@ -100,8 +100,8 @@ class Users_Contact extends Base_Users_Contact
 	 * @param {string} $userId
 	 * @param {string|Db_Range|Db_Expression} $label
 	 * @param {array} [$options=array()] Query options including:
-	 * 		@param 'limit' {integer}
-	 * 		@param 'offset' {integer}
+	 * @param {integer} [$options.limit=false]
+	 * @param {integer} [$options.offset]
 	 * @return {array}
 	 */
 	static function fetch($userId, $label = null /* string|Db_Range */, $options = array())
