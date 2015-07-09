@@ -64,8 +64,7 @@ Q.Tool.define("Q/inplace", function (options) {
 			staticHtml: staticHtml
 				|| '<span class="Q_placeholder">'
 					+state.placeholder.encodeHTML()
-					+'</div>'
-				|| '',
+					+'</div>',
 			method: o.method || 'put',
 			action: o.action,
 			field: o.field,
@@ -79,6 +78,9 @@ Q.Tool.define("Q/inplace", function (options) {
 		function (err, html) {
 			if (!html) return;
 			$te.html(html);
+			if (staticHtml) {
+				tool.$('.Q_inplace_tool_static').attr('title', state.placeholder);
+			}
 			return _Q_inplace_tool_constructor.call(tool, this.element, options);
 		}, 
 		o.template
@@ -369,10 +371,13 @@ function _Q_inplace_tool_constructor(element, options) {
 			}
 		}
 		_restoreZ();
-		static_span.html(newval
-			|| '<span class="Q_placeholder">'+state.placeholder.encodeHTML()+'</div>'
-			|| ''
-		);
+		if (newval) {
+			static_span.html(newval).attr('title', state.placeholder);
+		} else {
+			static_span.html('<span class="Q_placeholder">'
+				+state.placeholder.encodeHTML()+'</span>'
+			);
+		}
 		undermessage.empty().css('display', 'none').addClass('Q_error');
 		tool.restoreActions();
 		container_span.removeClass('Q_editing')

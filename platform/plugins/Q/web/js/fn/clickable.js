@@ -164,12 +164,12 @@ function _Q_clickable(o) {
 				$this.css(toSet);
 			});
 		}
-		var stretcher = $('<div />').css({
+		var stretcher = $('<div class="Q_clickable_stretcher" />').css({
 			'position': 'absolute',
 			'left': '0px',
 			'top': '0px',
-			'width': container.width()+0.5+'px',
-			'height': container.height()+0.5+'px',
+			'width': container.width()+'px',
+			'height': container.height()+'px',
 			'overflow': 'visible',
 			'padding': '0px',
 			'margin': '0px'
@@ -385,8 +385,8 @@ function _Q_clickable(o) {
 						'height': $this.outerHeight(true)
 					});
 					stretcher.css({
-						'width': container.width()+0.5+'px',
-						'height': container.height()+0.5+'px'
+						'width': container.width()+'px',
+						'height': container.height()+'px'
 					});
 				}
 				csw = csw2;

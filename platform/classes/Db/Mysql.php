@@ -1091,8 +1091,10 @@ class Db_Mysql implements iDb
 			$table_name = $row[0];
 			$table_name_base = substr($table_name, $prefix_len);
 			$table_name_prefix = substr($table_name, 0, $prefix_len);
-			if (empty($table_name_base) or $table_name_prefix != $prefix or stristr($table_name, '_Q_') !== false)
+			if (empty($table_name_base) or $table_name_prefix != $prefix
+			or stristr($table_name, '_Q_') !== false) {
 				continue; // no class generated
+			}
 			
 			$class_name_base = null;
 			$js_base_class_string = '';
@@ -1106,8 +1108,9 @@ class Db_Mysql implements iDb
 				$table_comment
 			); // sets the $class_name variable
 			$class_name = ucfirst($classname_prefix) . $class_name_base;
-			if (empty($class_name))
+			if (empty($class_name)) {
 				continue; // no class generated
+			}
 	
 			$class_name_parts = explode('_', $class_name);
 			$class_filename = $directory.DS.implode(DS, $class_name_parts).'.php';
