@@ -1281,7 +1281,9 @@ function criteria_internal (query, criteria) {
 		criteria_list = [];
 		for (expr in criteria) {
 			value = criteria[expr];
-			if (value && value.typename === "Db.Expression") {
+			if (value == null) {
+				criteria_list.push( "ISNULL(" + expr + ")");
+			} else if (value && value.typename === "Db.Expression") {
 				Q.extend(query.parameters, value.parameters);
 				if (/\W/.test(expr.substr(-1))) {
 					criteria_list.push( "" + expr + "(" + value + ")" );

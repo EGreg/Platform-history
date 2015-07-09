@@ -785,7 +785,7 @@ abstract class Streams extends Base_Streams
 		}
 
 		// extend with any config defaults for this stream type
-		$fieldNames = Streams::getExtendFieldNames($types);
+		$fieldNames = Streams::getExtendFieldNames($type);
 		$defaults = Q_Config::get('Streams', 'types', $type, 'defaults', array());
 		foreach ($fieldNames as $f) {
 			if (isset($fields[$f])) {

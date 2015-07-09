@@ -5302,6 +5302,7 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 
 /**
  * The easiest way to make direct web service requests in Q
+ * @see Q.request
  * @static
  * @method req
  * @param {String} uri
@@ -5310,7 +5311,9 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
  *  If a string, expects a comma-separated list of slot names
  *  If an array, converts it to a comma-separated list
  * @param {Function} callback
- *  The JSON will be passed to this callback function
+ *  The err and parsed content will be passed to this callback function,
+ *  (unless parse is false, in which case the raw content is passed as a String),
+ *  followed by a Boolean indicating whether a redirect was performed.
  * @param {Object} options
  *  A hash of options, to be passed to Q.request
  */

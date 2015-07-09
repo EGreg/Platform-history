@@ -803,7 +803,9 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 				foreach ($tables as $alias => $table) {
 					if ($table instanceof Db_Expression) {
 						$table_string = is_int($alias) ? "($table)" : "($table) $as $alias";
-						$this->parameters = array_merge($this->parameters, $table->parameters);
+						$this->parameters = array_merge(
+							$this->parameters, $table->parameters
+						);
 					} else {
 						$table_string = is_int($alias) ? "$table" : "$table $as $alias";
 					}
@@ -815,7 +817,9 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 				$tables = implode(', ', $tables_list);
 			} else if ($tables instanceof Db_Expression) {
 				if (isset($tables->parameters)) {
-					$this->parameters = array_merge($this->parameters, $tables->parameters);
+					$this->parameters = array_merge(
+						$this->parameters, $tables->parameters
+					);
 				}
 				$tables = $tables->expression;
 			}
@@ -864,7 +868,8 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 					if (is_array($value->parameters)) {
 						$this->parameters = array_merge(
 							$this->parameters,
-							$value->parameters);
+							$value->parameters
+						);
 					}
 				} else {
 					$condition_list[] = preg_match('/\W/', substr($expr, - 1))
@@ -876,7 +881,9 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 			$condition = implode(' AND ', $condition_list);
 		} else if ($condition instanceof Db_Expression) {
 			if (is_array($condition->parameters)) {
-				$this->parameters = array_merge($this->parameters, $condition->parameters);
+				$this->parameters = array_merge(
+					$this->parameters, $condition->parameters
+				);
 			}
 			$condition = (string) $condition;
 		}
@@ -1096,8 +1103,8 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		if ($expression instanceof Db_Expression) {
 			if (is_array($expression->parameters)) {
 				$this->parameters = array_merge(
-					$this->parameters,
-					$expression->parameters);
+					$this->parameters, $expression->parameters
+				);
 			}
 			$expression = (string) $expression;
 		}
@@ -1171,7 +1178,9 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 
 		if ($expression instanceof Db_Expression) {
 			if (is_array($expression->parameters)) {
-				$this->parameters = array_merge($this->parameters, $expression->parameters);
+				$this->parameters = array_merge(
+					$this->parameters, $expression->parameters
+				);
 			}
 		}
 		$expression = (string) $expression;
@@ -1557,11 +1566,12 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		if (is_array($criteria)) {
 			$criteria_list = array();
 			foreach ($criteria as $expr => $value) {
-				if ($value instanceof Db_Expression) {
+				if ($value === null) {
+					$criteria_list[] = "ISNULL($expr)";
+				} else if ($value instanceof Db_Expression) {
 					if (is_array($value->parameters)) {
 						$this->parameters = array_merge(
-							$this->parameters,
-							$value->parameters
+							$this->parameters, $value->parameters
 						);
 					}
 					$criteria_list[] = preg_match('/\W/', substr($expr, -1))
