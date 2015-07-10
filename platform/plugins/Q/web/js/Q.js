@@ -3377,7 +3377,7 @@ Q.Tool.beingActivated = undefined;
 Q.Tool.define.options = function (toolName, setOptions) {
 	var options;
 	toolName = Q.normalize(toolName);
-	if (typeof Q.Tool.constructors[toolName] === 'functions') {
+	if (typeof Q.Tool.constructors[toolName] === 'function') {
 		options = Q.Tool.constructors[toolName].options;
 	} else {
 		options = _qtdo[toolName] = _qtdo[toolName] || {};
