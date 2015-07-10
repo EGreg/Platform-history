@@ -777,8 +777,7 @@ abstract class Streams extends Base_Streams
 			$p = new Q_Tree();
 			$p->load(STREAMS_PLUGIN_CONFIG_DIR.DS.'streams.json');
 			$p->load(APP_CONFIG_DIR.DS.'streams.json');
-			$info = $p->get($fields['name'], array());
-			if (!empty($info)) {
+			if ($info = $p->get($fields['name'], array())) {
 				foreach (Base_Streams_Stream::fieldNames() as $f) {
 					if (isset($info[$f])) {
 						$stream->$f = $info[$f];
@@ -792,6 +791,7 @@ abstract class Streams extends Base_Streams
 
 		// extend with any config defaults for this stream type
 		$fieldNames = Streams::getExtendFieldNames($type);
+		$fieldNames[] = 'name';
 		$defaults = Q_Config::get('Streams', 'types', $type, 'defaults', array());
 		foreach ($fieldNames as $f) {
 			if (isset($fields[$f])) {
@@ -801,7 +801,7 @@ abstract class Streams extends Base_Streams
 			}
 		}
 		
-		// handle settinfg of attributes
+		// handle setting of attributes
 		if (isset($fields['attributes']) and is_array($fields['attributes'])) {
 			$stream->setAttribute($fields['attributes']);
 			unset($fields['attributes']);
