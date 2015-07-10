@@ -39,6 +39,31 @@ abstract class Users extends Base_Users
 	static $facebooks = array();
 
 	/**
+	 * @param string [$publisherId] The id of the publisher relative to whom to calculate the role. Defaults to the app name.
+	 * @param {array|Db_Expression} [$filter=null] You can pass something here to filter the results
+	 * @return array
+	 * @throws Users_Exception_NotLoggedIn
+	 */
+	static function roles($publisherId = null, $filter = null)
+	{
+		if (empty($publisherId)) {
+			$publisherId = Q_Config::expect('Q', 'app');
+		}
+		$user = Users::loggedInUser();
+		if (!$user) {
+			return array();
+		}
+		$contacts = Users_Contact::fetch($publisherId, $filter);
+		$roles = array();
+		foreach ($contacts as $c) {
+			if ($c->contactUserId === $user->id) {
+				$roles[$c->label] = true;
+			}
+		}
+		return $roles;
+	}
+
+	/**
 	 * @method oAuth
 	 * @static
 	 * @param {string} $provider Currently only supports the value "facebook".

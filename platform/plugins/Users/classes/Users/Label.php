@@ -76,7 +76,7 @@ class Users_Label extends Base_Users_Label
 	 * Fetch an array of labels. By default, returns all the labels.
 	 * @method fetch
 	 * @param {string} [$userId=null] The id of the user whose contact labels should be fetched
-	 * @param {string} [$prefix=''] An optional prefix such as "Users/" to get only a particular subset of labels.
+	 * @param {string|Db_Expression} [$filter=''] Pass a string prefix such as "Users/", or some db expression, to get only a particular subset of labels.
 	 * @param {boolean} [$checkContacts=false] Whether to also look in the Users_Contact table and only return labels that have at least one contact.
 	 * @return {array} An array of array(label => title) pairs
 	 */
@@ -88,7 +88,9 @@ class Users_Label extends Base_Users_Label
 		}
 		$criteria = array('userId' => $userId);
 		if ($prefix) {
-			$criteria['label'] = new Db_Range($prefix, true, false, null);
+			$criteria['label'] = is_string($prefix)
+				? new Db_Range($prefix, true, false, null)
+				: $prefix;
 		}
 		if ($checkContacts) {
 			$contact_array = Users_Contact::select('*')

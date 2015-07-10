@@ -543,16 +543,18 @@ Streams.create = function (fields, /* tool, */ callback, related) {
 		var cb = related;
 		related = arguments[3];
 		callback = function (err, stream, extra) {
-			var state = tool.state;
-			var r = state.related;
-			Streams.related.cache.each([r.publisherId, r.streamName],
-			function (key) {
-				Streams.related.cache.remove(key);
-			});
-			state.related.weight = Q.getObject(['related', 'weight'], extra);
-			state.publisherId = this.fields.publisherId;
-			state.streamName = this.fields.name;
-			tool.stream = this;
+			if (!err) {
+				var state = tool.state;
+				var r = state.related;
+				Streams.related.cache.each([r.publisherId, r.streamName],
+				function (key) {
+					Streams.related.cache.remove(key);
+				});
+				state.related.weight = Q.getObject(['related', 'weight'], extra);
+				state.publisherId = this.fields.publisherId;
+				state.streamName = this.fields.name;
+				tool.stream = this;
+			}
 			cb && cb.apply(this, arguments);
 		};
 	}

@@ -104,7 +104,7 @@ class Users_Contact extends Base_Users_Contact
 	 * @param {integer} [$options.offset]
 	 * @return {array}
 	 */
-	static function fetch($userId, $label = null /* string|Db_Range */, $options = array())
+	static function fetch($userId, $label = null, /* string|Db_Range, */ $options = array())
 	{
 		$limit = isset($options['limit']) ? $options['limit'] : false;
 		$offset = isset($options['offset']) ? $options['offset'] : 0;
