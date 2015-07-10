@@ -542,7 +542,7 @@ abstract class Streams extends Base_Streams
 			}
 
 			$names[] = $s->name;
-			$names[] = $s->type."/";
+			$names[] = $s->type."*";
 			$streams3[] = $s;
 		}
 		
@@ -577,7 +577,10 @@ abstract class Streams extends Base_Streams
 						continue;
 					}
 					foreach ($streams3 as $stream) {
-						if ($stream->name !== $access->streamName) {
+						$tail = substr($access->streamName, -1);
+						$head = substr($access->streamName, 0, -1);
+						if ($stream->name !== $access->streamName
+						and ($tail !== '*' or $head !== $stream->type)) {
 							continue;
 						}
 						$readLevel = $stream->get('readLevel', 0);
@@ -603,7 +606,10 @@ abstract class Streams extends Base_Streams
 		// Override with per-user access data
 		foreach ($accesses as $access) {
 			foreach ($streams3 as $stream) {
-				if ($stream->name !== $access->streamName) {
+				$tail = substr($access->streamName, -1);
+				$head = substr($access->streamName, 0, -1);
+				if ($stream->name !== $access->streamName
+				and ($tail !== '*' or $head !== $stream->type)) {
 					continue;
 				}
 				if ($access->ofUserId === $asUserId) {
@@ -1964,14 +1970,14 @@ abstract class Streams extends Base_Streams
 		if (isset($options['where'])) {
 			$query = $query->where($options['where']);
 		}
-		if (0 and empty($options['includeTemplates'])) {
+		$FT = $isCategory ? 'from' : 'to';
+		if (empty($options['includeTemplates'])) {
 			$col = $FT.'StreamName';
 			$query = $query->where(new Db_Expression(
 				"SUBSTRING($col, -1, 1) != '/'"
 			));
 		}
 
-		$FT = $isCategory ? 'from' : 'to';
 		$relations = $query->fetchDbRows(null, '', $FT.'StreamName');
 		if (empty($options['includeTemplates'])) {
 			foreach ($relations as $k => $v) {
