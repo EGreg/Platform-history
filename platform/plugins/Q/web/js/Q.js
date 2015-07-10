@@ -5663,7 +5663,6 @@ Q.jsonRequest = Q.request;
 
 /**
  * Serialize an object of fields into a shallow object of key/value pairs
- * @private
  * @static
  * @method serializeFields
  * @param {Object} fields

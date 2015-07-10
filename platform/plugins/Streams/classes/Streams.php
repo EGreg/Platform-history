@@ -772,15 +772,15 @@ abstract class Streams extends Base_Streams
 			$p->load(STREAMS_PLUGIN_CONFIG_DIR.DS.'streams.json');
 			$p->load(APP_CONFIG_DIR.DS.'streams.json');
 			$info = $p->get($fields['name'], array());
-			if (empty($info['type'])) {
-				throw new Q_Exception_RequiredField(array('field' => 'type'));
-			}
-			foreach (Base_Streams_Stream::fieldNames() as $f) {
-				if (isset($info[$f])) {
-					$stream->$f = $info[$f];
+			if (!empty($info)) {
+				foreach (Base_Streams_Stream::fieldNames() as $f) {
+					if (isset($info[$f])) {
+						$stream->$f = $info[$f];
+					}
 				}
 			}
-		} else {
+		}
+		if (!isset($stream->type)) {
 			$stream->type = $type;
 		}
 
@@ -795,7 +795,7 @@ abstract class Streams extends Base_Streams
 			}
 		}
 		
-		// handle setting of attributes
+		// handle settinfg of attributes
 		if (isset($fields['attributes']) and is_array($fields['attributes'])) {
 			$stream->setAttribute($fields['attributes']);
 			unset($fields['attributes']);

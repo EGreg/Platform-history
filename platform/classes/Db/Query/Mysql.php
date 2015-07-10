@@ -1324,7 +1324,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	 * @return {array}
 	 */
 	function fetchAll(
-		$fetch_style = PDO::FETCH_BOTH,
+		$fetch_style = PDO::FETCH_ASSOC,
 		$fetch_argument = null,
 		array $ctor_args = array())
 	{

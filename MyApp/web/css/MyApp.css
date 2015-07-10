@@ -171,7 +171,7 @@ input.email,
 input.tel,
 input.password,
 input.number,
-textarea { margin-top: 0.5em; margin-bottom: 0.5em; border-radius: 3px; -moz-border-radius:3px; -webkit-border-radius:3px; padding: 4px; }
+textarea { border-radius: 3px; -moz-border-radius:3px; -webkit-border-radius:3px; padding: 4px; }
 input[type=checkbox],
 input[type=radio] { margin-right: 5px; }
 html .Q_inplace_tool_fieldinput { padding: 0px; }
