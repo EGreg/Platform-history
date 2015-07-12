@@ -513,6 +513,8 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		unset($this->replacements['{$dbname}']);
 		unset($this->replacements['{$prefix}']);
 
+		$this->startedTime = Q::milliseconds(true);
+
 		if ($prepare_statement) {
 			// Prepare the query into a SQL statement
 			// this takes two round-trips to the database
@@ -562,6 +564,8 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 					throw new Db_Exception_Blocked(compact('shard_name', 'connection'));
 				}
 			}
+			
+			$query->startedTime = Q::milliseconds(true);
 
 			$pdo = $query->reallyConnect($shard_name);
 			$nt = & self::$nestedTransactions[$connection][$shard_name];
@@ -684,14 +688,16 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 						), Q_Config::get('Db', 'internal', 'sharding', 'logServer', null));
 					}
 				}
-				/**
-				 * @event Db/query/execute {after}
-				 * @param {Db_Query_Mysql} 'query'
-				 * @param {string} 'sql'
-				 */
-				Q::event('Db/query/execute', compact('query', 'queries', 'sql'), 'after');
+				$query->endedTime = Q::milliseconds(true);
 			}
 		}
+		$this->endedTime = Q::milliseconds(true);
+		/**
+		 * @event Db/query/execute {after}
+		 * @param {Db_Query_Mysql} 'query'
+		 * @param {string} 'sql'
+		 */
+		Q::event('Db/query/execute', compact('query', 'queries', 'sql'), 'after');
 
 		return new Db_Result($stmts, $this);
 	}
@@ -1738,6 +1744,9 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	 * @type integer
 	 */
 	public $nestedTransactionCount = null;
+	
+	public $startedTime = null;
+	public $endedTime = null;
 
 	protected static $nestedTransactions = array();
 }

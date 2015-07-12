@@ -28,7 +28,8 @@ function log_shard_query($params)
 		and $query->nestedTransactionCount == 1) {
 			Q::log($begin);
 		}
-		Q::log("\nQuery $connection on shard \"$shard\":\n$params[sql]\n");
+		$duration = ceil($query->endedTime - $query->startedTime);
+		Q::log("\nQuery $connection on shard \"$shard\":\n$params[sql]\n(duration: $duration ms)");
 		if ($commit = $query->getClause('COMMIT')
 		and $query->nestedTransactionCount == 0) {
 			Q::log($commit);

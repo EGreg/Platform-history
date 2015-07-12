@@ -3121,6 +3121,7 @@ Q.Tool = function _Q_Tool(element, options) {
 	options = options || {};
 	this.options = this.options || {};
 	
+	var normalizedName = Q.normalize(this.name);
 	var pids = this.parentIds();
 	var len = pids.length;
 	var o = len ? Q.extend({}, Q.Tool.options.levels, options) : options;
@@ -3151,8 +3152,9 @@ Q.Tool = function _Q_Tool(element, options) {
 	}
 
 	// get options from options property on element
-	if (element.options) {
-		Q.extend(this.options, Q.Tool.options.levels, element.options, 'Q.Tool');
+	var eo = element.options;
+	if (eo && eo[normalizedName]) {
+		Q.extend(this.options, Q.Tool.options.levels, eo[normalizedName], 'Q.Tool');
 	}
 	
 	// override prototype Q function on the element to associate things with it
@@ -3165,7 +3167,6 @@ Q.Tool = function _Q_Tool(element, options) {
 		};
 	}
 	
-	var normalizedName = Q.normalize(this.name);
 	if (!element.Q.tools) element.Q.tools = {};
 	element.Q.tools[normalizedName] = this;
 	element.Q.tool = this;
@@ -3510,7 +3511,7 @@ var Tp = Q.Tool.prototype;
  * to attach handlers to be run when the state changes.
  * @method stateChanged
  * @param {String|Array} names Name(s) of properties that may have changed,
- *  either asn array or comma-separated string.
+ *  either an array or comma-separated string.
  */
 Tp.stateChanged = function Q_Tool_prototype_stateChanged(names) {
 	if (typeof names === 'string') {
@@ -3533,7 +3534,7 @@ Tp.stateChanged = function Q_Tool_prototype_stateChanged(names) {
  * @method rendering
  * @param {Array|String} fields The names of fields to watch for, either as an array or comma-separated string. When stateChanged is called, if one of the fields named here really changed, the callback will be called.
  * @param {Boolean} [dontWaitForAnimationFrame=false] Pass true here if you don't want to wait for the next animation frame to do rendering (for example, if you are using a library like FastDOM to manage DOM thrashing)
- * @param {Function} callback The callback, which receives (changed, previous [, timestamp]). By default, Qbix defers the execution of your rendering handler until the next animation frame. If several calls to tool.stateChanged</span> occurred in the meantime, Qbix aggregates all the changes and reports them to the rendering handler. If a field in the state was changed several times in the meantime, those intermediate values aren't given to the rendering handler, since the assumption is that the view depends on the state without any side effects. However, if the field was changed, even if it later went back to its original value, it will show up in the list of changed fields.
+ * @param {Function} callback The callback, which receives (changed, previous, timestamp). By default, Qbix defers the execution of your rendering handler until the next animation frame. If several calls to tool.stateChanged</span> occurred in the meantime, Qbix aggregates all the changes and reports them to the rendering handler. If a field in the state was changed several times in the meantime, those intermediate values aren't given to the rendering handler, since the assumption is that the view depends on the state without any side effects. However, if the field was changed, even if it later went back to its original value, it will show up in the list of changed fields.
  * @param {String} [key=""] Optional key used when attaching event handlers to tool.Q.onStateChanged events.
  */
 Tp.rendering = function (fields, dontWaitForAnimationFrame, callback, key) {
@@ -3807,7 +3808,7 @@ Q.Tool.encodeOptions = function _Q_Tool_encodeOptions(options) {
  * @method setUpElement
  * @param {String|Element} element
  *  The tag of the element, such as "div", or a reference to an existing Element
- * @param {String} toolType
+ * @param {String} toolName
  *  The type of the tool, such as "Q/tabs"
  * @param {Object} [toolOptions]
  *  The options for the tool
@@ -3818,7 +3819,7 @@ Q.Tool.encodeOptions = function _Q_Tool_encodeOptions(options) {
  * @return {HTMLElement}
  *  Returns an element you can append to things
  */
-Q.Tool.setUpElement = function _Q_Tool_setUpElement(element, toolType, toolOptions, id, prefix) {
+Q.Tool.setUpElement = function _Q_Tool_setUpElement(element, toolName, toolOptions, id, prefix) {
 	if (typeof toolOptions === 'string') {
 		id = toolOptions;
 		toolOptions = undefined;
@@ -3826,20 +3827,26 @@ Q.Tool.setUpElement = function _Q_Tool_setUpElement(element, toolType, toolOptio
 	if (typeof element === 'string') {
 		element = document.createElement(element);
 	}
-	var ntt = toolType.replace(/\//g, '_');
-	element.addClass('Q_tool '+ntt+'_tool');
-	if (!id && !element.getAttribute(id)) {
-		var p1, p2;
-		p1 = prefix || (Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '');
-		do {
-			p2 = p1 + ntt + '_' + (Q.Tool.nextDefaultId++) + '_';
-			Q.Tool.nextDefaultId %= 1000000;
-		} while (Q.Tool.active[p2]);
-		id = p2 + 'tool';
-	}
-	element.setAttribute('id', id);
-	if (toolOptions) {
-		element.options = toolOptions;
+	if (typeof toolName === 'string') toolName = [toolName];
+	if (Q.isPlainObject(toolOptions)) toolOptions = [toolOptions];
+	for (var i=0, l=toolName.length; i<l; ++i) {
+		var tn = toolName[i];
+		var ntt = tn.replace(/\//g, '_');
+		element.addClass('Q_tool '+ntt+'_tool');
+		if (!id && !element.getAttribute(id)) {
+			var p1, p2;
+			p1 = prefix || (Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '');
+			do {
+				p2 = p1 + ntt + '_' + (Q.Tool.nextDefaultId++) + '_';
+				Q.Tool.nextDefaultId %= 1000000;
+			} while (Q.Tool.active[p2]);
+			id = p2 + 'tool';
+		}
+		element.setAttribute('id', id);
+		if (toolOptions && toolOptions[i]) {
+			element.options = element.options || {};
+			element.options[Q.normalize(tn)] = toolOptions[i];
+		}
 	}
 	return element;
 };
@@ -3850,7 +3857,7 @@ Q.Tool.setUpElement = function _Q_Tool_setUpElement(element, toolType, toolOptio
  * @method setUpElementHTML
  * @param {String|Element} element
  *  The tag of the element, such as "div", or a reference to an existing Element
- * @param {String} toolType
+ * @param {String} toolName
  *  The type of the tool, such as "Q/tabs"
  * @param {Object} toolOptions
  *  The options for the tool
@@ -3861,9 +3868,9 @@ Q.Tool.setUpElement = function _Q_Tool_setUpElement(element, toolType, toolOptio
  * @return {String}
  *  Returns HTML that you can include in templates, etc.
  */
-Q.Tool.setUpElementHTML = function _Q_Tool_setUpElementHTML(element, toolType, toolOptions, id, prefix) {
-	var e = Q.Tool.setUpElement(element, toolType, null, id, prefix);
-	var ntt = toolType.replace(/\//g, '_');
+Q.Tool.setUpElementHTML = function _Q_Tool_setUpElementHTML(element, toolName, toolOptions, id, prefix) {
+	var e = Q.Tool.setUpElement(element, toolName, null, id, prefix);
+	var ntt = toolName.replace(/\//g, '_');
 	if (toolOptions) {
 		e.setAttribute('data-'+ntt.replace(/_/g, '-'), JSON.stringify(toolOptions));
 	}
@@ -3877,7 +3884,7 @@ Q.Tool.setUpElementHTML = function _Q_Tool_setUpElementHTML(element, toolType, t
  * @method setUpElement
  * @param {String|Element} element
  *  The tag of the element, such as "div", or a reference to an existing Element
- * @param {String} toolType
+ * @param {String} toolName
  *  The type of the tool, such as "Q/tabs"
  * @param {Object} toolOptions
  *  The options for the tool
@@ -3886,8 +3893,8 @@ Q.Tool.setUpElementHTML = function _Q_Tool_setUpElementHTML(element, toolType, t
  * @return {HTMLElement}
  *  Returns an element you can append to things
  */
-Tp.setUpElement = function (element, toolType, toolOptions, id) {
-	return Q.Tool.setUpElement(element, toolType, toolOptions, id, this.prefix);
+Tp.setUpElement = function (element, toolName, toolOptions, id) {
+	return Q.Tool.setUpElement(element, toolName, toolOptions, id, this.prefix);
 };
 
 /**
@@ -3897,7 +3904,7 @@ Tp.setUpElement = function (element, toolType, toolOptions, id) {
  * @method setUpElementHTML
  * @param {String|Element} element
  *  The tag of the element, such as "div", or a reference to an existing Element
- * @param {String} toolType
+ * @param {String} toolName
  *  The type of the tool, such as "Q/tabs"
  * @param {Object} toolOptions
  *  The options for the tool
@@ -3906,8 +3913,8 @@ Tp.setUpElement = function (element, toolType, toolOptions, id) {
  * @return {String}
  *  Returns HTML that you can include in templates, etc.
  */
-Tp.setUpElementHTML = function (element, toolType, toolOptions, id) {
-	return Q.Tool.setUpElementHTML(element, toolType, toolOptions, id, this.prefix);
+Tp.setUpElementHTML = function (element, toolName, toolOptions, id) {
+	return Q.Tool.setUpElementHTML(element, toolName, toolOptions, id, this.prefix);
 };
 
 /**
@@ -7222,12 +7229,6 @@ function _activateTools(toolElement, options, shared) {
 						args.push(req);
 					});
 					toolFunc.apply(this, args);
-					var collection = this.Q.onStateChanged.collection;
-					for (var name in this.state) {
-						if (collection[name]) {
-							collection[name].handle.call(this, name);
-						}
-					}
 					if (normalizedName === 'q_inplace') 
 					_activateToolHandlers[""] &&
 					_activateToolHandlers[""].handle.call(this, this.options);

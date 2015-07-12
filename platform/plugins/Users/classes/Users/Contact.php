@@ -112,7 +112,7 @@ class Users_Contact extends Base_Users_Contact
 		$criteria = compact('userId');
 		
 		if ($label) {
-			if (substr($label, -1) === '/') {
+			if (is_string($label) and substr($label, -1) === '/') {
 				$label = new Db_Range($label, true, false, true);
 			}
 			$criteria['label'] = $label;

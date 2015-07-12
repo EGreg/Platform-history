@@ -21,7 +21,7 @@
  *   @param {Boolean} [options.editable] Set to false to avoid showing even authorized users an interface to replace the image or text
  *   @param {Boolean} [options.creatable]  Optional pairs of {streamType: toolOptions} to render Streams/preview tools create new related streams.
  *   The params typically include at least a "title" field which you can fill with values such as "New" or "New ..."
- *   @param {Function} [options.toolType] Function that takes (streamType, options) and returns the name of the tool to render (and then activate) for that stream. That tool must implement the "Streams/preview" interface, including having an onUpdate event.
+ *   @param {Function} [options.toolName] Function that takes (streamType, options) and returns the name of the tool to render (and then activate) for that stream. That tool should reqire the "Streams/preview" tool, and work with it as documented in "Streams/preview".
  *   @param {Boolean} [options.realtime=false] Whether to refresh every time a relation is added, removed or updated by anyone
  *   @param {Object} [options.sortable] Options for "Q/sortable" jQuery plugin. Pass false here to disable sorting interface. If streamName is not a String, this interface is not shown.
  *   @param {Function} [options.tabs] Function for interacting with any parent "Q/tabs" tool. Format is function (previewTool, tabsTool) { return urlOrTabKey; }
@@ -65,7 +65,7 @@ function _Streams_related_tool (options)
 	tabs: function (previewTool, tabsTool) {
 		return Q.Streams.key(previewTool.state.publisherId, previewTool.state.streamName);
 	},
-	toolType: function (streamType) {
+	toolName: function (streamType) {
 		return streamType+'/preview';
 	},
 	onUpdate: new Q.Event(
@@ -94,7 +94,8 @@ function _Streams_related_tool (options)
 			}
 			Q.activate(element, function () {
 				var rc = tool.state.refreshCount;
-				var beforeCreate = element.Q.tool.state.beforeCreate;
+				var preview = Q.Tool.from(element, 'Streams/preview');
+				var beforeCreate = preview.state.beforeCreate;
 				if (!beforeCreate) {
 					return console.warn(element.Q.tool.name + " missing beforeCreate event");
 				}
@@ -108,7 +109,7 @@ function _Streams_related_tool (options)
 					element.setAttribute('class', element.getAttribute('class').replace(
 						'Streams_related_composer', 'Streams_related_stream'
 					));
-					element.Q.tool.state.onUpdate.remove(tool);
+					preview.state.beforeCreate.remove(tool);
 				}, tool);
 			});
 		}
@@ -275,7 +276,7 @@ function _Streams_related_tool (options)
 
 	/**
 	 * You don't normally have to call this method, since it's called automatically.
-	 * Sets up an element for the stream with the tag and toolType provided to the
+	 * Sets up an element for the stream with the tag and toolName provided to the
 	 * Streams/related tool. Also populates "publisherId", "streamName" and "related" 
 	 * options for the tool.
 	 * @method elementForStream
@@ -300,8 +301,8 @@ function _Streams_related_tool (options)
 			},
 			editable: state.editable
 		}, options);
-		var toolType = state.toolType(streamType, o);
-		var e = this.setUpElement(state.tag || 'div', toolType, o);
+		var toolName = ['Streams/preview', state.toolName(streamType, o)];
+		var e = Q.Tool.setUpElement(state.tag || 'div', toolName, [o, {}]);
 		e.style.visibility = 'visible';
  		return e;
 	},
@@ -330,7 +331,7 @@ function _Streams_related_tool (options)
 			tool.$('.Streams_related_composer').addClass('Q_tabs_tab')
 			Q.each(elements, function (i) {
 				var element = elements[i];
-				var preview = Q.Tool.from(element, 'Q/preview');
+				var preview = Q.Tool.from(element, 'Streams/preview');
 				var value = state.tabs.call(tool, preview, tabs);
 				var attr = value.isUrl() ? 'href' : 'data-name';
 				elements[i].addClass("Q_tabs_tab")
