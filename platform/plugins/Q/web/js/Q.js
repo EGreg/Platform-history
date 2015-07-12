@@ -330,22 +330,22 @@ Sp.sameDomain = function _String_prototype_sameDomain (url2, options) {
  * @method bind
  * @param {Function} method A reference to the function to call
  * @param {Object} obj The object to bind as the context for the function call
- * @param {Object} options If supplied, binds these options and pushes them as the last argument to the function call.
+ * @param {Mixed} [arg1] Optionally add arguments to be prepended to the called arguments
  */
 var Fp = Function.prototype;
 if (!Fp.bind)
-Fp.bind = function _Function_prototype_bind(obj, options) {
+Fp.bind = function _Function_prototype_bind(obj /*, arg1, arg2, ... */) {
 	var method = this;
+	obj = obj || root;
 	if (!obj) obj = root;
-	if (!options) {
+	if (arguments.length <= 1) {
 		return function _Q_bind_result() {
 			return method.apply(obj, arguments);
 		};
 	}
+	var args = Array.prototype.slice.call(arguments, 1);
 	return function _Q_bind_result_withOptions() {
-		var args = Array.prototype.slice.call(arguments);
-		if (options) args.push(options);
-		return method.apply(obj, args);
+		return method.apply(obj, args.concat(Array.prototype.slice.call(arguments)));
 	};
 };
 
@@ -7212,13 +7212,16 @@ function _activateTools(toolElement, options, shared) {
 					_constructToolHandlers[normalizedName].handle.call(this, this.options);
 					_constructToolHandlers["id:"+normalizedId] &&
 					_constructToolHandlers["id:"+normalizedId].handle.call(this, this.options);
+					var args = [this.options];
 					Q.each(toolFunc.require, function (i, n) {
-						if (!Q.Tool.from(element, n)) {
+						var req = Q.Tool.from(element, n);
+						if (!req) {
 							throw new Q.Exception("Q.Tool.define: " + toolFunc.toolName
 							+ " requires " + n + " to have been activated on the same element.");
 						}
+						args.push(req);
 					});
-					toolFunc.call(this, this.options);
+					toolFunc.apply(this, args);
 					var collection = this.Q.onStateChanged.collection;
 					for (var name in this.state) {
 						if (collection[name]) {

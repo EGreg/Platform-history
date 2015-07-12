@@ -56,7 +56,7 @@ function _Streams_related_tool (options)
 	publisherId: Q.info.app,
 	isCategory: true,
 	realtime: false,
-	editable: {},
+	editable: true,
 	creatable: {},
 	sortable: {
 		draggable: '.Streams_related_stream',
@@ -94,23 +94,22 @@ function _Streams_related_tool (options)
 			}
 			Q.activate(element, function () {
 				var rc = tool.state.refreshCount;
-				var onUpdate = element.Q.tool.state.onUpdate;
-				if (!onUpdate) {
-					console.warn(element.Q.tool.name + " missing onUpdate event");
-				} else {
-					onUpdate.set(function () {
-						// workaround for now
-						if (tool.state.refreshCount > rc) {
-							return;
-						}
-						addComposer(streamType, params, null, element);
-						tool.integrateWithTabs([element]);
-						element.setAttribute('class', element.getAttribute('class').replace(
-							'Streams_related_composer', 'Streams_related_stream'
-						));
-						element.Q.tool.state.onUpdate.remove(tool);
-					}, tool);
+				var beforeCreate = element.Q.tool.state.beforeCreate;
+				if (!beforeCreate) {
+					return console.warn(element.Q.tool.name + " missing beforeCreate event");
 				}
+				beforeCreate.set(function () {
+					// workaround for now
+					if (tool.state.refreshCount > rc) {
+						return;
+					}
+					addComposer(streamType, params, null, element);
+					tool.integrateWithTabs([element]);
+					element.setAttribute('class', element.getAttribute('class').replace(
+						'Streams_related_composer', 'Streams_related_stream'
+					));
+					element.Q.tool.state.onUpdate.remove(tool);
+				}, tool);
 			});
 		}
 		
@@ -320,7 +319,7 @@ function _Streams_related_tool (options)
 		if (typeof state.tabs === 'string') {
 			state.tabs = Q.getObject(state.tabs);
 			if (typeof state.tabs !== 'function') {
-				throw new Q.Error("Q/tabs tool: state.tabs does not refer to a function");
+				throw new Q.Error("Q/related tool: state.tabs does not refer to a function");
 			}
 		}
 		parents = tool.parents();
@@ -331,14 +330,15 @@ function _Streams_related_tool (options)
 			tool.$('.Streams_related_composer').addClass('Q_tabs_tab')
 			Q.each(elements, function (i) {
 				var element = elements[i];
-				var value = state.tabs.call(tool, Q.Tool.from(elements[i]), tabs);
+				var preview = Q.Tool.from(element, 'Q/preview');
+				var value = state.tabs.call(tool, preview, tabs);
 				var attr = value.isUrl() ? 'href' : 'data-name';
 				elements[i].addClass("Q_tabs_tab")
 					.setAttribute(attr, value);
 				if (!tabs.$tabs.is(element)) {
 					tabs.$tabs = tabs.$tabs.add(element);
 				}
-				var onLoad = Q.Tool.from(element).state.onLoad;
+				var onLoad = preview.state.onLoad;
 				if (onLoad) {
 					onLoad.set(function () {
 						var tab = tabs.state.tab;
