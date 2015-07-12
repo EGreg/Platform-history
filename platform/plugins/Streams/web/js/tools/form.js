@@ -33,7 +33,7 @@ Q.Tool.define("Streams/form", function (options) {
 		var $parent = $this.parent();
 		var name = null;
 		var value = null;
-		var $inputs = $input;
+		var $inputs = $this;
 		if ($parent.attr('data-type') === 'date') {
 			var notReady = false;
 			var y, m, d;
