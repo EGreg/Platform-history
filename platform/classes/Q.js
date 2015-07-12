@@ -2254,7 +2254,7 @@ var realPath_results = {};
  * @param {String} what
  * @return {mixed}
  */
-Q.require function _Q_require(what) {
+Q.require = function _Q_require(what) {
 	var realPath = Q.realPath(what);
 	if (!realPath) throw new Error("Q.require: file '"+what+"' not found");
 	return require(realPath);
