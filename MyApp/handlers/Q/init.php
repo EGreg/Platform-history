@@ -23,13 +23,16 @@ function Q_init()
 function log_shard_query($params)
 {
 	foreach ($params['queries'] as $shard => $query) {
+		if ($query->className === 'Users_Session') {
+			continue;
+		}
 		$connection = $query->db->connectionName();
 		if ($begin = $query->getClause('BEGIN')
 		and $query->nestedTransactionCount == 1) {
 			Q::log($begin);
 		}
 		$duration = ceil($query->endedTime - $query->startedTime);
-		Q::log("\nQuery $connection on shard \"$shard\":\n$params[sql]\n(duration: $duration ms)");
+		Q::log("Query $connection on shard \"$shard\":\n$params[sql]\n(duration: $duration ms)\n\n");
 		if ($commit = $query->getClause('COMMIT')
 		and $query->nestedTransactionCount == 0) {
 			Q::log($commit);
