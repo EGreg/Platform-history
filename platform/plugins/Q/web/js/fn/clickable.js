@@ -109,8 +109,15 @@ function _Q_clickable(o) {
 			return;
 		}
 		var cs = $this[0].computedStyle();
-		var csw = Math.ceil(parseFloat(cs.width+cs.paddingLeft+cs.paddingRight));
-		var csh = Math.ceil(parseFloat(cs.height+cs.paddingTop+cs.paddingBottom));
+		var csw = Math.ceil(parseFloat(cs.width)
+			+parseFloat(cs.paddingLeft)
+			+parseFloat(cs.paddingRight)
+		);
+		var csh = Math.ceil(
+			parseFloat(cs.height)
+			+parseFloat(cs.paddingTop)
+			+parseFloat(cs.paddingBottom)
+		);
 		// $this.css('height', $this.height()+'px');
 		var container = $('<span class="Q_clickable_container" />').css({
 			'display': (display === 'inline' || display === 'inline-block') ? 'inline-block' : display,
@@ -369,13 +376,21 @@ function _Q_clickable(o) {
 		});
 		
 		if (timing.renderingInterval) {
+			var csw2, csh2;
 			setTimeout(function _update() {
 				if (Date.now() - originalTime >= timing.renderingPeriod) {
 					return;
 				}
 				var cs = $this[0].computedStyle();
-				var csw = Math.ceil(parseFloat(cs.width+cs.paddingLeft+cs.paddingRight));
-				var csh = Math.ceil(parseFloat(cs.height+cs.paddingTop+cs.paddingBottom));
+				var csw = Math.ceil(parseFloat(cs.width)
+					+parseFloat(cs.paddingLeft)
+					+parseFloat(cs.paddingRight)
+				);
+				var csh = Math.ceil(
+					parseFloat(cs.height)
+					+parseFloat(cs.paddingTop)
+					+parseFloat(cs.paddingBottom)
+				);
 				if (csw2 != csw || csh2 != csh) {
 					if (!$this.is(':visible')) {
 						return;
