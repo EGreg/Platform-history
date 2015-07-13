@@ -108,16 +108,9 @@ function _Q_clickable(o) {
 			}
 			return;
 		}
-		var cs = $this[0].computedStyle();
-		var csw = Math.ceil(parseFloat(cs.width)
-			+parseFloat(cs.paddingLeft)
-			+parseFloat(cs.paddingRight)
-		);
-		var csh = Math.ceil(
-			parseFloat(cs.height)
-			+parseFloat(cs.paddingTop)
-			+parseFloat(cs.paddingBottom)
-		);
+		var rect = $this[0].getBoundingClientRect();
+		var csw = Math.ceil(rect.width);
+		var csh = Math.ceil(rect.height);
 		// $this.css('height', $this.height()+'px');
 		var container = $('<span class="Q_clickable_container" />').css({
 			'display': (display === 'inline' || display === 'inline-block') ? 'inline-block' : display,
@@ -381,16 +374,9 @@ function _Q_clickable(o) {
 				if (Date.now() - originalTime >= timing.renderingPeriod) {
 					return;
 				}
-				var cs = $this[0].computedStyle();
-				var csw = Math.ceil(parseFloat(cs.width)
-					+parseFloat(cs.paddingLeft)
-					+parseFloat(cs.paddingRight)
-				);
-				var csh = Math.ceil(
-					parseFloat(cs.height)
-					+parseFloat(cs.paddingTop)
-					+parseFloat(cs.paddingBottom)
-				);
+				var rect = $this[0].getBoundingClientRect();
+				var csw = Math.ceil(rect.width);
+				var csh = Math.ceil(rect.height);
 				if (csw2 != csw || csh2 != csh) {
 					if (!$this.is(':visible')) {
 						return;
