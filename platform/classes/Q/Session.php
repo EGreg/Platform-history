@@ -268,7 +268,7 @@ class Q_Session
 					$class = self::$session_db_row_class;
 					$row = new $class();
 					$row->$id_field = $id;
-					if ($row->retrieve()) {
+					if ($row->retrieve(null, null, array('lock' => 'FOR UPDATE'))) {
 						self::$session_db_row = $row;
 					} else {
 						// Start a new session with our own id
@@ -599,7 +599,7 @@ class Q_Session
 				)) {
 					return false;
 				}
-				$row->save();
+				$row->save(false, true);
 				$result = true;
 			} else {
 				$duration_name = self::durationName();

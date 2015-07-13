@@ -1820,7 +1820,7 @@ abstract class Users extends Base_Users
 		session_write_close(); // close current session
 		$us = new Users_Session();
 		$us->id = $id;
-		$us->retrieve();
+		$us->retrieve(null, null, array('lock' => 'FOR UPDATE'));
 		$us2 = new Users_Session();
 		if ($us->wasRetrieved()) {
 			$us2->copyFromRow($us, null, false, true);
@@ -1833,7 +1833,7 @@ abstract class Users extends Base_Users
 		}
 		$us2->id = Q_Session::generateId();
 		$us2->duration = $seconds;
-		$us2->save();
+		$us2->save(false, true);
 		$new_id = $us2->id;
 		session_start(); // reopen current session
 		Q::event("Users/copyToNewSession", array(
