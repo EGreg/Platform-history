@@ -140,13 +140,13 @@ class Db_Row implements Iterator
 	 */
 	function __construct ($fields = array(), $doInit = true)
 	{
-		if (!empty($fields)) {
-			foreach ($fields as $k =>  $v) {
-				$this->$k = $v;
-			}
-		}
 		if ($doInit) {
 			$this->init();
+		}
+		if (!empty($fields)) {
+			foreach ($fields as $k => $v) {
+				$this->$k = $v;
+			}
 		}
 	}
 
