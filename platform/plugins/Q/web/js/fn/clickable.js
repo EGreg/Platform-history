@@ -109,8 +109,8 @@ function _Q_clickable(o) {
 			return;
 		}
 		var cs = $this[0].computedStyle();
-		var csw = cs.width; // the object can change, so get the values now
-		var csh = cs.height;
+		var csw = Math.ceil(parseFloat(cs.width+cs.paddingLeft+cs.paddingRight));
+		var csh = Math.ceil(parseFloat(cs.height+cs.paddingTop+cs.paddingBottom));
 		// $this.css('height', $this.height()+'px');
 		var container = $('<span class="Q_clickable_container" />').css({
 			'display': (display === 'inline' || display === 'inline-block') ? 'inline-block' : display,
@@ -124,8 +124,8 @@ function _Q_clickable(o) {
 			'float': $this.css('float'),
 			// 'z-index': $this.css('z-index') + 1, //10000,
 			'overflow': 'hidden',
-			'width': $this.outerWidth(true),
-			'height': $this.outerHeight(true),
+			'width': csw,
+			'height': csh,
 			'text-align': 'left',
 			'overflow': 'visible',
 			'line-height': $this.css('line-height'),
@@ -374,15 +374,15 @@ function _Q_clickable(o) {
 					return;
 				}
 				var cs = $this[0].computedStyle();
-				var csw2 = cs.width; // the object can change, so get the values now
-				var csh2 = cs.height;
+				var csw = Math.ceil(parseFloat(cs.width+cs.paddingLeft+cs.paddingRight));
+				var csh = Math.ceil(parseFloat(cs.height+cs.paddingTop+cs.paddingBottom));
 				if (csw2 != csw || csh2 != csh) {
 					if (!$this.is(':visible')) {
 						return;
 					}
 					container.css({
-						'width': $this.outerWidth(true),
-						'height': $this.outerHeight(true)
+						'width': csw,
+						'height': csh
 					});
 					stretcher.css({
 						'width': container.width()+'px',
