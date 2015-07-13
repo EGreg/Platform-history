@@ -337,6 +337,10 @@ class Q_Valid
 		}
 		if (is_string($criteria)) {
 			$criteria = func_get_args();
+			if (end($criteria) === true) {
+				$throwIfViolated = true;
+				array_pop($criteria);
+			}
 		}
 		$methods = array('url'=>1, 'domain'=>1, 'email'=>1, 'date'=>1, 'phone'=>1);
 		$result = array();

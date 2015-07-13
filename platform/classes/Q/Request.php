@@ -756,7 +756,6 @@ class Q_Request
 		foreach ($exceptions as $e) {
 			Q_Response::addError($e);
 		}
-		
 	}
 	
 	/**
