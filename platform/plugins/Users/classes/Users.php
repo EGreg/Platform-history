@@ -39,12 +39,15 @@ abstract class Users extends Base_Users
 	static $facebooks = array();
 
 	/**
-	 * @param string [$publisherId] The id of the publisher relative to whom to calculate the role. Defaults to the app name.
-	 * @param {array|Db_Expression} [$filter=null] You can pass something here to filter the results
-	 * @return array
+	 * @param string [$publisherId] The id of the publisher relative to whom to calculate the roles. Defaults to the app name.
+	 * @param {array|Db_Expression} [$filter=null] 
+	 *  You can pass additional criteria here for the label field
+	 *  in the `Users_Contact::select`
+	 * @param {array} {$options} Any additional options to pass to the query, such as "ignoreCache"
+	 * @return array An associative array of $roleName => $contactRow pairs
 	 * @throws Users_Exception_NotLoggedIn
 	 */
-	static function roles($publisherId = null, $filter = null)
+	static function roles($publisherId = null, $filter = null, $options = array())
 	{
 		if (empty($publisherId)) {
 			$publisherId = Q_Config::expect('Q', 'app');
@@ -53,14 +56,12 @@ abstract class Users extends Base_Users
 		if (!$user) {
 			return array();
 		}
-		$contacts = Users_Contact::fetch($publisherId, $filter);
-		$roles = array();
-		foreach ($contacts as $c) {
-			if ($c->contactUserId === $user->id) {
-				$roles[$c->label] = true;
-			}
-		}
-		return $roles;
+		$contacts = Users_Contact::select('*')
+			->where(array('contactUserId' => $user->id))
+			->andWhere($filter ? array('label' => $filter) : null)
+			->options($options)
+			->fetchDbRows(null, null, 'label');
+		return $contacts;
 	}
 
 	/**
