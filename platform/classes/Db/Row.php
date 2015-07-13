@@ -129,16 +129,22 @@ class Db_Row implements Iterator
 	 * </ul>
 	 * @class Db_Row
 	 * @constructor
-	 * @param {Db_Result} $result The result that produced this row through fetchDbRows 
-	 * @param {boolean} [$doInit=true] Whether to initialize the row. The reason this is here
-	 *  is that passing object arguments to the constructor by using
-	 *  PDOStatement::setFetchMode() causes a memory leak.
+	 * @param {array} [$fields=array()] Here you can provide any fields to set on the row
+	 *  right away.
+	 * @param {boolean} [$doInit=true] Whether to initialize the row.
+	 *  The reason this is here is that passing object arguments to the constructor 
+	 *  by using PDOStatement::setFetchMode() causes a memory leak.
 	 *  This is only set to false by Db_Result::fetchDbRows(),
 	 *  which subsequently calls init() by itself.
 	 *  As a user of this class, don't override this default value.
 	 */
-	function __construct ($doInit = true)
+	function __construct ($fields = array(), $doInit = true)
 	{
+		if (!empty($fields)) {
+			foreach ($fields as $k =>  $v) {
+				$this->$k = $v;
+			}
+		}
 		if ($doInit) {
 			$this->init();
 		}
@@ -2247,10 +2253,12 @@ class Db_Row implements Iterator
 	 * @method __set_state
 	 * @param {array} $array
 	 */
-	public static function __set_state(array $array) {
+	public static function __set_state(array $array)
+	{
 		$result = new Db_Row();
-		foreach($array as $k => $v)
+		foreach($array as $k => $v) {
 			$result->$k = $v;
+		}
 		return $result;
 	}
 

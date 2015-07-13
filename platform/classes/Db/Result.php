@@ -163,7 +163,7 @@ class Db_Result
 		$rows = array();
 		$arrs = $this->fetchAll(PDO::FETCH_ASSOC);
 		foreach ($arrs as $arr) {
-			$row = new $class_name(false);
+			$row = new $class_name(array(), false);
 			$row->copyFrom($arr, $fields_prefix, true, false);
 			$row->init($this);
 			if ($by_field and isset($row->$by_field)) {
