@@ -1009,6 +1009,25 @@ class Q
 		}
 		return false;
 	}
+	
+	/**
+	 * If an array is not associative, then makes an associative array
+	 * with the keys taken from the values of the regular array
+	 * @param {array} $array
+	 * @param {array} [$value=true] The value to assign to each item in the generated array
+	 * @return {array}
+	 */
+	static function makeAssociative($array, $value = true)
+	{
+		if (Q::isAssociative($array)) {
+			return $array;
+		}
+		$result = array();
+		foreach ($array as $item) {
+			$result[$item] = $value;
+		}
+		return $result;
+	}
 
 	/**
 	 * Append a message to the main log

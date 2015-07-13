@@ -9,7 +9,7 @@
  * @class Q_Valid
  */
 class Q_Valid
-{
+{	
 	/**
 	 * Says whether the first parameter is an absolute URL or not.
 	 * @method url
@@ -89,25 +89,6 @@ class Q_Valid
 					return true;
 			return false;
 		}
-	}
-	
-	/**
-	 * @method assoc
-	 * @static
-	 * @param {array} $array
-	 * @return {boolean}
-	 */
-	static function assoc($array)
-	{
-	    if ( is_array($array) && ! empty($array) ) {
-	        for ( $iterator = count($array) - 1; $iterator; $iterator-- ) {
-	            if ( ! array_key_exists($iterator, $array) ) { 
-					return true; 
-				}
-	        }
-	        return ! array_key_exists(0, $array);
-	    }
-	    return false;
 	}
 	
 	/**
@@ -337,20 +318,29 @@ class Q_Valid
 	}
 	
 	/**
-	 * Calls Q_Response::addError() for each required field that is missing in the $_REQUEST.
-	 * @method requireFields
+	 * Convenience method to apply certain criteria to an array.
+	 * and generate errors otherwise.
+	 * @param {array} $criteria Array of ($fieldName => $methodName) naming methods
+	 *    of Q_Valid. If $methodName is true, then the field is simply checked for
+	 *    being set (even if it is empty).
+	 * @param {array} [$source=$_REQUEST] Where to look for the fields
+	 * @param {boolean} [$throwIfViolated=false] Whether to throw an exception
+	 *    on the first violation, or add them to a list.
+	 * @method require
 	 * @static
-	 * @param {array|string} $fieldnames You can pass as many field names here as you want.
-	 * @return {array} Returns an array of field names that was found missing.
-	 * @throws {Q_Exception_RequiredField}
+	 * @return {array} The resulting list of exceptions
 	 */
-	static function requireFields($fieldnames)
+	static function requireFields($criteria, $source = null, $throwIfViolated = false)
 	{
-		if (is_string($fieldnames)) {
-			$fieldnames = func_get_args();
+		if (!isset($source)) {
+			$source = $_REQUEST;
 		}
+		if (is_string($criteria)) {
+			$criteria = func_get_args();
+		}
+		$methods = array('url'=>1, 'domain'=>1, 'email'=>1, 'date'=>1, 'phone'=>1);
 		$result = array();
-		foreach ($fieldnames as $fieldname) {
+		foreach ($criteria as $fieldname) {
 			$missing = false;
 			$field = '';
 			if (is_array($fieldname)) {
@@ -374,8 +364,11 @@ class Q_Valid
 				$field = $fieldname;
 			}
 			if ($missing) {
-				Q_Response::addError(new Q_Exception_RequiredField(compact('field')));
-				$result[] = $fieldname;
+				$exception = new Q_Exception_RequiredField(compact('field'), $field);
+				if ($throwIfViolated) {
+					throw $exception;
+				}
+				$result[] = $exception;
 			}
 		}
 		return $result;

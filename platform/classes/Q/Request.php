@@ -721,6 +721,8 @@ class Q_Request
 	}
 	
 	/**
+	 * Used by the system to find out the last timestamp a cache was generated,
+	 * so it can be used instead of the actual files.
 	 * @method cacheTimestamp
 	 * @static
 	 * @return {boolean}
@@ -734,6 +736,27 @@ class Q_Request
 			return $_COOKIE['Q_ct'];
 		}
 		return null;
+	}
+	
+	/**
+	 * Convenience method to apply certain criteria to an array.
+	 * and call Q_Response::addError for each one.
+	 * @see Q_Valid::requireFields
+	 * @param {array} $criteria Array of ($fieldName => $methodName) naming methods
+	 *    of Q_Valid. If $methodName is true, then the field is simply checked for
+	 *    being set (even if it is empty).
+	 * @method require
+	 * @static
+	 * @return {array} The resulting list of exceptions
+	 */
+	static function requireFields($criteria)
+	{
+		$args = func_get_args();
+		$exceptions = call_user_func_array(array('Q_Valid', 'requireFields'), $args);
+		foreach ($exceptions as $e) {
+			Q_Response::addError($e);
+		}
+		
 	}
 	
 	/**
