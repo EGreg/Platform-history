@@ -1269,10 +1269,9 @@ class Db_Row implements Iterator
 	 * @param {string} $key2 Optional. The name of the second key in the configuration path.
 	 *  You can actually pass as many keys as you need,
 	 *  delving deeper and deeper into the configuration structure.
-	 *  All but the second-to-last parameter are interpreted as keys.
-	 * @param {mixed} $default The last parameter should not be omitted,
-	 *  and contains the default value to return in case
-	 *  the requested field was not indicated.
+	 *  All but the last parameter are interpreted as keys.
+	 * @param {mixed} $default Unless only one key is passed, the last parameter
+	 *  is the default value to return in case the requested field was not found.
 	 */
 	function get(
 	 $key1,

@@ -2644,10 +2644,10 @@ Q.batcher.options = {
  * @param {String} tail The rest of the url of the webservice built to support batch requests.
  * @param {String} slotName The name of the slot to request. Defaults to "batch".
  * @param {String} fieldName The name of the data field. Defaults to "batch".
- * @param {Object} options Any additional options to pass to Q.req, as well as:<br>
- *  "max": Passed as option to Q.batcher<br>
- *  "ms": Passed as option to Q.batcher<br>
- *  "preprocess": Optional function calculating a data structure to JSON stringify into the data field
+ * @param {Object} [options={}] Any additional options to pass to Q.req, as well as:
+ * @param {Number} [options.max] Passed as option to Q.batcher
+ * @param {Number} [options.ms] Passed as option to Q.batcher
+ * @param {Function} [options.preprocess] Optional function calculating a data structure to JSON stringify into the data field
  * @return {Function} A function with any number of non-function arguments followed by
  *  one function which is treated as a callback and passed (errors, content)
  *  where content is whatever is returned in the slots.
