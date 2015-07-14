@@ -1609,8 +1609,8 @@ EOT;
 				case 'mediumint':
 				case 'bigint':
 					$isNumberLike = true;
-					$properties[]="integer $field_name";
-					$js_properties[] = "$field_name integer";
+					$properties[]="{integer} $field_name";
+					$js_properties[] = "{integer} $field_name";
 					$functions["maxSize_$field_name"]['comment'] = <<<EOT
 	$dc
 	 * Returns the maximum integer that can be assigned to the $field_name field
@@ -1624,6 +1624,7 @@ EOT;
 					$functions["beforeSet_$field_name"][] = <<<EOT
 		{$null_check}{$dbe_check}if (!is_numeric(\$value) or floor(\$value) != \$value)
 			throw new Exception('Non-integer value being assigned to '.\$this->getTable().".$field_name");
+		\$value = intval(\$value);
 		if (\$value < $type_range_min or \$value > $type_range_max)
 			throw new Exception("Out-of-range value '\$value' being assigned to ".\$this->getTable().".$field_name");
 EOT;
@@ -1665,8 +1666,8 @@ EOT;
 					break;
 
 				case 'enum':
-					$properties[]="mixed $field_name";
-					$js_properties[] = "$field_name String";
+					$properties[]="{string} $field_name";
+					$js_properties[] = "{String} $field_name";
 					$functions["beforeSet_$field_name"][] = <<<EOT
 		{$null_check}{$dbe_check}if (!in_array(\$value, array($type_display_range)))
 			throw new Exception("Out-of-range value '\$value' being assigned to ".\$this->getTable().".$field_name");
@@ -1702,8 +1703,8 @@ EOT;
 				case 'mediumtext':
 				case 'longtext':
 					$isTextLike = true;
-					$properties[]="string $field_name";
-					$js_properties[] = "$field_name String";
+					$properties[]="{string} $field_name";
+					$js_properties[] = "{String }$field_name";
 					$functions["maxSize_$field_name"]['comment'] = <<<EOT
 	$dc
 	 * Returns the maximum string length that can be assigned to the $field_name field
@@ -1760,8 +1761,8 @@ EOT;
 				
 				case 'date':
 					$isTimeLike = true;
-					$properties[]="string|Db_Expression $field_name";
-					$js_properties[] = "$field_name String|Db.Expression";
+					$properties[]="{string|Db_Expression} $field_name";
+					$js_properties[] = "{String|Db.Expression} $field_name";
 					$functions["beforeSet_$field_name"][] = <<<EOT
 		{$null_check}{$dbe_check}\$value = date("Y-m-d h:i:s", strtotime(\$value));
 		\$date = date_parse(\$value);
@@ -1797,8 +1798,8 @@ EOT;
 				case 'datetime':
 				case 'timestamp':
 					$isTimeLike = true;
-					$properties[]="string|Db_Expression $field_name";
-					$js_properties[] = "$field_name String|Db.Expression";
+					$properties[]="{string|Db_Expression} $field_name";
+					$js_properties[] = "{String|Db.Expression} $field_name";
 					$possibleMagicFields = array('insertedTime', 'updatedTime', 'created_time', 'updated_time');
 					$possibleMagicInsertFields = array('insertedTime', 'created_time');
 					if (in_array($field_name, $possibleMagicFields)) {
@@ -1840,10 +1841,18 @@ $dc
 EOT;
 					break;
 
+				case 'numeric':
 				case 'decimal':
+				case 'float':
+				case 'double':
 					$isNumberLike = true;
-					$properties[]="float $field_name";
-					$js_properties[] = "$field_name number";
+					$properties[]="{float} $field_name";
+					$js_properties[] = "{number} $field_name";
+					$functions["beforeSet_$field_name"][] = <<<EOT
+		{$null_check}{$dbe_check}if (!is_numeric(\$value))
+			throw new Exception('Non-numeric value being assigned to '.\$this->getTable().".$field_name");
+		\$value = floatval(\$value);
+EOT;
 					$js_functions["beforeSet_$field_name"][] = <<<EOT
 		{$js_null_check}{$js_dbe_check}value = Number(value);
 		if (isNaN(value))
@@ -1861,8 +1870,8 @@ EOT;
 					break;
 
 				default:
-					$properties[]="mixed $field_name";
-					$js_properties[] = "$field_name mixed";
+					$properties[]="{mixed} $field_name";
+					$js_properties[] = "{mixed} $field_name";
 					break;
 			}
 			if (! empty($functions["beforeSet_$field_name"])) {

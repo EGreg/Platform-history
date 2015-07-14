@@ -14,43 +14,43 @@
  * @class Base_Streams_RelatedTo
  * @extends Db_Row
  *
- * @property string $toPublisherId
- * @property string $toStreamName
- * @property string $type
- * @property string $fromPublisherId
- * @property string $fromStreamName
- * @property float $weight
- * @property string|Db_Expression $insertedTime
+ * @property {string} $toPublisherId
+ * @property {string} $toStreamName
+ * @property {string} $type
+ * @property {string} $fromPublisherId
+ * @property {string} $fromStreamName
+ * @property {float} $weight
+ * @property {string|Db_Expression} $insertedTime
  */
 abstract class Base_Streams_RelatedTo extends Db_Row
 {
 	/**
 	 * @property $toPublisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $toStreamName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $type
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $fromPublisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $fromStreamName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $weight
-	 * @type float
+	 * @type {float}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -351,6 +351,17 @@ abstract class Base_Streams_RelatedTo extends Db_Row
 	{
 
 		return 255;			
+	}
+
+	function beforeSet_weight($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('weight', $value);
+		}
+		if (!is_numeric($value))
+			throw new Exception('Non-numeric value being assigned to '.$this->getTable().".weight");
+		$value = floatval($value);
+		return array('weight', $value);			
 	}
 
 	/**

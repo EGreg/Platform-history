@@ -14,48 +14,48 @@
  * @class Base_Streams_Notification
  * @extends Db_Row
  *
- * @property string $userId
- * @property string|Db_Expression $insertedTime
- * @property string $publisherId
- * @property string $streamName
- * @property string $type
- * @property string|Db_Expression $viewedTime
- * @property string|Db_Expression $readTime
- * @property string $comment
+ * @property {string} $userId
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string} $publisherId
+ * @property {string} $streamName
+ * @property {string} $type
+ * @property {string|Db_Expression} $viewedTime
+ * @property {string|Db_Expression} $readTime
+ * @property {string} $comment
  */
 abstract class Base_Streams_Notification extends Db_Row
 {
 	/**
 	 * @property $userId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $publisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $streamName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $type
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $viewedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $readTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $comment
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * The setUp() method is called the first time

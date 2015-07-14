@@ -45,9 +45,9 @@ if (!isset($argv[1]) or $argv[1] != '--all')
 
 foreach($connections as $c) {
 	if ($c === '*') continue;
-	echo "\nMaking models for ".(in_array($c, $plugins) ? "plugin" : "connection")." $c\n";
-	
-	$path = (in_array($c, $plugins) ? Q_DIR.DS.'plugins'.DS.$c : APP_DIR).DS.'classes';
+	$isPlugin = in_array($c, $plugins);
+	echo "\nMaking models for ".($isPlugin ? "plugin" : "connection")." $c\n";
+	$path = ($isPlugin ? Q_DIR.DS.'plugins'.DS.$c : APP_DIR).DS.'classes';
 	if ($filenames = Db::connect($c)->generateModels($path)) {
 		echo "Files saved:\n\t".implode("\n\t", $filenames);
 	}

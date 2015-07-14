@@ -29,20 +29,20 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property userId
- * @type String
+ * @property {String
+ * @type }userId
  */
 /**
- * @property label
- * @type String
+ * @property {String
+ * @type }label
  */
 /**
- * @property icon
- * @type String
+ * @property {String
+ * @type }icon
  */
 /**
- * @property title
- * @type String
+ * @property {String
+ * @type }title
  */
 
 /**

@@ -14,58 +14,58 @@
  * @class Base_Streams_Participant
  * @extends Db_Row
  *
- * @property string $publisherId
- * @property string $streamName
- * @property string $userId
- * @property string $streamType
- * @property string|Db_Expression $insertedTime
- * @property string|Db_Expression $updatedTime
- * @property mixed $state
- * @property mixed $subscribed
- * @property mixed $posted
- * @property string $extra
+ * @property {string} $publisherId
+ * @property {string} $streamName
+ * @property {string} $userId
+ * @property {string} $streamType
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string|Db_Expression} $updatedTime
+ * @property {string} $state
+ * @property {string} $subscribed
+ * @property {string} $posted
+ * @property {string} $extra
  */
 abstract class Base_Streams_Participant extends Db_Row
 {
 	/**
 	 * @property $publisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $streamName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $userId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $streamType
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $state
-	 * @type mixed
+	 * @type {string}
 	 */
 	/**
 	 * @property $subscribed
-	 * @type mixed
+	 * @type {string}
 	 */
 	/**
 	 * @property $posted
-	 * @type mixed
+	 * @type {string}
 	 */
 	/**
 	 * @property $extra
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * The setUp() method is called the first time

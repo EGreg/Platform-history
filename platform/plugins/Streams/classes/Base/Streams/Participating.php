@@ -14,48 +14,48 @@
  * @class Base_Streams_Participating
  * @extends Db_Row
  *
- * @property string $userId
- * @property string $publisherId
- * @property string $streamName
- * @property mixed $state
- * @property integer $fresh
- * @property string $extra
- * @property string|Db_Expression $insertedTime
- * @property string|Db_Expression $updatedTime
+ * @property {string} $userId
+ * @property {string} $publisherId
+ * @property {string} $streamName
+ * @property {string} $state
+ * @property {integer} $fresh
+ * @property {string} $extra
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string|Db_Expression} $updatedTime
  */
 abstract class Base_Streams_Participating extends Db_Row
 {
 	/**
 	 * @property $userId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $publisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $streamName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $state
-	 * @type mixed
+	 * @type {string}
 	 */
 	/**
 	 * @property $fresh
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * @property $extra
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -327,6 +327,7 @@ abstract class Base_Streams_Participating extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".fresh");
+		$value = intval($value);
 		if ($value < 0 or $value > 4294967295)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".fresh");
 		return array('fresh', $value);			

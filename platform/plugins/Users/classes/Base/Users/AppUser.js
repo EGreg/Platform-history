@@ -29,44 +29,44 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property userId
- * @type String
+ * @property {String
+ * @type }userId
  */
 /**
- * @property provider
- * @type String
+ * @property {String}
+ * @type provider
  */
 /**
- * @property appId
- * @type String
+ * @property {String
+ * @type }appId
  */
 /**
- * @property insertedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type insertedTime
  */
 /**
- * @property updatedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type updatedTime
  */
 /**
- * @property access_token
- * @type String
+ * @property {String
+ * @type }access_token
  */
 /**
- * @property session_secret
- * @type String
+ * @property {String
+ * @type }session_secret
  */
 /**
- * @property session_expires
- * @type String
+ * @property {String
+ * @type }session_expires
  */
 /**
- * @property state
- * @type String
+ * @property {String}
+ * @type state
  */
 /**
- * @property provider_uid
- * @type String
+ * @property {String
+ * @type }provider_uid
  */
 
 /**

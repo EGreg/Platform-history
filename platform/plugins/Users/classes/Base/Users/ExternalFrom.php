@@ -14,33 +14,33 @@
  * @class Base_Users_ExternalFrom
  * @extends Db_Row
  *
- * @property string $publisherId
- * @property string $userId
- * @property string $xid
- * @property string|Db_Expression $insertedTime
- * @property string $nickname
+ * @property {string} $publisherId
+ * @property {string} $userId
+ * @property {string} $xid
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string} $nickname
  */
 abstract class Base_Users_ExternalFrom extends Db_Row
 {
 	/**
 	 * @property $publisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $userId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $xid
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $nickname
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * The setUp() method is called the first time

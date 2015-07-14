@@ -14,33 +14,33 @@
  * @class Base_Users_Contact
  * @extends Db_Row
  *
- * @property string $userId
- * @property string $label
- * @property string $contactUserId
- * @property string $nickname
- * @property string|Db_Expression $insertedTime
+ * @property {string} $userId
+ * @property {string} $label
+ * @property {string} $contactUserId
+ * @property {string} $nickname
+ * @property {string|Db_Expression} $insertedTime
  */
 abstract class Base_Users_Contact extends Db_Row
 {
 	/**
 	 * @property $userId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $label
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $contactUserId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $nickname
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * The setUp() method is called the first time

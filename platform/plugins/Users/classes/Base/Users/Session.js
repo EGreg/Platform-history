@@ -29,32 +29,32 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property id
- * @type String
+ * @property {String
+ * @type }id
  */
 /**
- * @property content
- * @type String
+ * @property {String
+ * @type }content
  */
 /**
- * @property php
- * @type String
+ * @property {String
+ * @type }php
  */
 /**
- * @property deviceId
- * @type String
+ * @property {String
+ * @type }deviceId
  */
 /**
- * @property timeout
- * @type integer
+ * @property {integer}
+ * @type timeout
  */
 /**
- * @property duration
- * @type integer
+ * @property {integer}
+ * @type duration
  */
 /**
- * @property updatedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type updatedTime
  */
 
 /**

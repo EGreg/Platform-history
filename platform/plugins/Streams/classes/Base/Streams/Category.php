@@ -14,33 +14,33 @@
  * @class Base_Streams_Category
  * @extends Db_Row
  *
- * @property string $publisherId
- * @property string $streamName
- * @property string|Db_Expression $insertedTime
- * @property string|Db_Expression $updatedTime
- * @property string $relatedTo
+ * @property {string} $publisherId
+ * @property {string} $streamName
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string|Db_Expression} $updatedTime
+ * @property {string} $relatedTo
  */
 abstract class Base_Streams_Category extends Db_Row
 {
 	/**
 	 * @property $publisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $streamName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $relatedTo
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * The setUp() method is called the first time

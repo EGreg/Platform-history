@@ -29,20 +29,20 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property publisherId
- * @type String
+ * @property {String
+ * @type }publisherId
  */
 /**
- * @property streamName
- * @type String
+ * @property {String
+ * @type }streamName
  */
 /**
- * @property messageType
- * @type String
+ * @property {String
+ * @type }messageType
  */
 /**
- * @property messageCount
- * @type integer
+ * @property {integer}
+ * @type messageCount
  */
 
 /**

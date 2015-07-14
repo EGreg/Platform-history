@@ -14,43 +14,43 @@
  * @class Base_Users_Session
  * @extends Db_Row
  *
- * @property string $id
- * @property string $content
- * @property string $php
- * @property string $deviceId
- * @property integer $timeout
- * @property integer $duration
- * @property string|Db_Expression $updatedTime
+ * @property {string} $id
+ * @property {string} $content
+ * @property {string} $php
+ * @property {string} $deviceId
+ * @property {integer} $timeout
+ * @property {integer} $duration
+ * @property {string|Db_Expression} $updatedTime
  */
 abstract class Base_Users_Session extends Db_Row
 {
 	/**
 	 * @property $id
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $content
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $php
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $deviceId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $timeout
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * @property $duration
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -333,6 +333,7 @@ abstract class Base_Users_Session extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".timeout");
+		$value = intval($value);
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".timeout");
 		return array('timeout', $value);			
@@ -362,6 +363,7 @@ abstract class Base_Users_Session extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".duration");
+		$value = intval($value);
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".duration");
 		return array('duration', $value);			

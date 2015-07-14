@@ -164,7 +164,7 @@ class Db_Result
 		$arrs = $this->fetchAll(PDO::FETCH_ASSOC);
 		foreach ($arrs as $arr) {
 			$row = new $class_name(array(), false);
-			$row->copyFrom($arr, $fields_prefix, true, false);
+			$row->copyFrom($arr, $fields_prefix, false, false);
 			$row->init($this);
 			if ($by_field and isset($row->$by_field)) {
 				$rows[$row->$by_field] = $row;

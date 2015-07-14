@@ -14,53 +14,58 @@
  * @class Base_Streams_Sent
  * @extends Db_Row
  *
- * @property string $publisherId
- * @property string $streamName
- * @property string|Db_Expression $insertedTime
- * @property string|Db_Expression $sentTime
- * @property string $byUserId
- * @property string $comment
- * @property string $instructions
- * @property string $chatPublisherId
- * @property string $chatStreamName
+ * @property {string} $publisherId
+ * @property {string} $streamName
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string|Db_Expression} $sentTime
+ * @property {string} $byUserId
+ * @property {string} $comment
+ * @property {string} $instructions
+ * @property {string} $chatPublisherId
+ * @property {string} $chatStreamName
+ * @property {integer} $reOrdinal
  */
 abstract class Base_Streams_Sent extends Db_Row
 {
 	/**
 	 * @property $publisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $streamName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $sentTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $byUserId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $comment
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $instructions
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $chatPublisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $chatStreamName
-	 * @type string
+	 * @type {string}
+	 */
+	/**
+	 * @property $reOrdinal
+	 * @type {integer}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -474,6 +479,39 @@ abstract class Base_Streams_Sent extends Db_Row
 	}
 
 	/**
+	 * Method is called before setting the field and verifies if integer value falls within allowed limits
+	 * @method beforeSet_reOrdinal
+	 * @param {integer} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value is not integer or does not fit in allowed range
+	 */
+	function beforeSet_reOrdinal($value)
+	{
+		if (!isset($value)) {
+			return array('reOrdinal', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('reOrdinal', $value);
+		}
+		if (!is_numeric($value) or floor($value) != $value)
+			throw new Exception('Non-integer value being assigned to '.$this->getTable().".reOrdinal");
+		$value = intval($value);
+		if ($value < -2147483648 or $value > 2147483647)
+			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".reOrdinal");
+		return array('reOrdinal', $value);			
+	}
+
+	/**
+	 * Returns the maximum integer that can be assigned to the reOrdinal field
+	 * @return {integer}
+	 */
+	function maxSize_reOrdinal()
+	{
+
+		return 2147483647;			
+	}
+
+	/**
 	 * Retrieves field names for class table
 	 * @method fieldNames
 	 * @static
@@ -483,7 +521,7 @@ abstract class Base_Streams_Sent extends Db_Row
 	 */
 	static function fieldNames($table_alias = null, $field_alias_prefix = null)
 	{
-		$field_names = array('publisherId', 'streamName', 'insertedTime', 'sentTime', 'byUserId', 'comment', 'instructions', 'chatPublisherId', 'chatStreamName');
+		$field_names = array('publisherId', 'streamName', 'insertedTime', 'sentTime', 'byUserId', 'comment', 'instructions', 'chatPublisherId', 'chatStreamName', 'reOrdinal');
 		$result = $field_names;
 		if (!empty($table_alias)) {
 			$temp = array();

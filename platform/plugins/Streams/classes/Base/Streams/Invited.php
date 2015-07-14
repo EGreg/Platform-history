@@ -14,38 +14,38 @@
  * @class Base_Streams_Invited
  * @extends Db_Row
  *
- * @property string $userId
- * @property string $token
- * @property mixed $state
- * @property string|Db_Expression $insertedTime
- * @property string|Db_Expression $updatedTime
- * @property string|Db_Expression $expireTime
+ * @property {string} $userId
+ * @property {string} $token
+ * @property {string} $state
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string|Db_Expression} $updatedTime
+ * @property {string|Db_Expression} $expireTime
  */
 abstract class Base_Streams_Invited extends Db_Row
 {
 	/**
 	 * @property $userId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $token
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $state
-	 * @type mixed
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $expireTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * The setUp() method is called the first time

@@ -14,53 +14,53 @@
  * @class Base_Streams_Rule
  * @extends Db_Row
  *
- * @property string $ofUserId
- * @property string $publisherId
- * @property string $streamName
- * @property integer $ordinal
- * @property string|Db_Expression $insertedTime
- * @property string|Db_Expression $readyTime
- * @property string $filter
- * @property string $deliver
- * @property float $relevance
+ * @property {string} $ofUserId
+ * @property {string} $publisherId
+ * @property {string} $streamName
+ * @property {integer} $ordinal
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string|Db_Expression} $readyTime
+ * @property {string} $filter
+ * @property {string} $deliver
+ * @property {float} $relevance
  */
 abstract class Base_Streams_Rule extends Db_Row
 {
 	/**
 	 * @property $ofUserId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $publisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $streamName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $ordinal
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $readyTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $filter
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $deliver
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $relevance
-	 * @type float
+	 * @type {float}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -316,6 +316,7 @@ abstract class Base_Streams_Rule extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".ordinal");
+		$value = intval($value);
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".ordinal");
 		return array('ordinal', $value);			
@@ -438,6 +439,17 @@ abstract class Base_Streams_Rule extends Db_Row
 	{
 
 		return 255;			
+	}
+
+	function beforeSet_relevance($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('relevance', $value);
+		}
+		if (!is_numeric($value))
+			throw new Exception('Non-numeric value being assigned to '.$this->getTable().".relevance");
+		$value = floatval($value);
+		return array('relevance', $value);			
 	}
 
 	/**

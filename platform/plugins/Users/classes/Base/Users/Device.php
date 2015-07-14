@@ -14,48 +14,48 @@
  * @class Base_Users_Device
  * @extends Db_Row
  *
- * @property string $userId
- * @property string $deviceId
- * @property mixed $platform
- * @property string $version
- * @property string $sessionId
- * @property mixed $formFactor
- * @property string|Db_Expression $insertedTime
- * @property string|Db_Expression $updatedTime
+ * @property {string} $userId
+ * @property {string} $deviceId
+ * @property {string} $platform
+ * @property {string} $version
+ * @property {string} $sessionId
+ * @property {string} $formFactor
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string|Db_Expression} $updatedTime
  */
 abstract class Base_Users_Device extends Db_Row
 {
 	/**
 	 * @property $userId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $deviceId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $platform
-	 * @type mixed
+	 * @type {string}
 	 */
 	/**
 	 * @property $version
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $sessionId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $formFactor
-	 * @type mixed
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * The setUp() method is called the first time

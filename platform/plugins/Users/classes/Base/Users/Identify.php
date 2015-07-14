@@ -14,33 +14,33 @@
  * @class Base_Users_Identify
  * @extends Db_Row
  *
- * @property string $identifier
- * @property string|Db_Expression $insertedTime
- * @property string|Db_Expression $updatedTime
- * @property mixed $state
- * @property string $userId
+ * @property {string} $identifier
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string|Db_Expression} $updatedTime
+ * @property {string} $state
+ * @property {string} $userId
  */
 abstract class Base_Users_Identify extends Db_Row
 {
 	/**
 	 * @property $identifier
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $state
-	 * @type mixed
+	 * @type {string}
 	 */
 	/**
 	 * @property $userId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * The setUp() method is called the first time

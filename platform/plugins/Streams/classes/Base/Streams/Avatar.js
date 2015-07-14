@@ -29,32 +29,32 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property toUserId
- * @type String
+ * @property {String
+ * @type }toUserId
  */
 /**
- * @property publisherId
- * @type String
+ * @property {String
+ * @type }publisherId
  */
 /**
- * @property updatedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type updatedTime
  */
 /**
- * @property username
- * @type String
+ * @property {String
+ * @type }username
  */
 /**
- * @property firstName
- * @type String
+ * @property {String
+ * @type }firstName
  */
 /**
- * @property lastName
- * @type String
+ * @property {String
+ * @type }lastName
  */
 /**
- * @property icon
- * @type String
+ * @property {String
+ * @type }icon
  */
 
 /**

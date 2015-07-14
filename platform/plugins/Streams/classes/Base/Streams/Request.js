@@ -29,32 +29,32 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property publisherId
- * @type String
+ * @property {String
+ * @type }publisherId
  */
 /**
- * @property streamName
- * @type String
+ * @property {String
+ * @type }streamName
  */
 /**
- * @property byUserId
- * @type String
+ * @property {String
+ * @type }byUserId
  */
 /**
- * @property insertedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type insertedTime
  */
 /**
- * @property readLevel
- * @type integer
+ * @property {integer}
+ * @type readLevel
  */
 /**
- * @property writeLevel
- * @type integer
+ * @property {integer}
+ * @type writeLevel
  */
 /**
- * @property adminLevel
- * @type integer
+ * @property {integer}
+ * @type adminLevel
  */
 
 /**

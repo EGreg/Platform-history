@@ -14,28 +14,28 @@
  * @class Base_Users_Link
  * @extends Db_Row
  *
- * @property string $identifier
- * @property string $userId
- * @property string $extraInfo
- * @property string|Db_Expression $insertedTime
+ * @property {string} $identifier
+ * @property {string} $userId
+ * @property {string} $extraInfo
+ * @property {string|Db_Expression} $insertedTime
  */
 abstract class Base_Users_Link extends Db_Row
 {
 	/**
 	 * @property $identifier
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $userId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $extraInfo
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * The setUp() method is called the first time

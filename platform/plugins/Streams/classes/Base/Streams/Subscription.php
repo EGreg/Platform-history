@@ -14,48 +14,48 @@
  * @class Base_Streams_Subscription
  * @extends Db_Row
  *
- * @property string $publisherId
- * @property string $streamName
- * @property string $ofUserId
- * @property string|Db_Expression $insertedTime
- * @property string|Db_Expression $updatedTime
- * @property string|Db_Expression $untilTime
- * @property string $filter
- * @property integer $duration
+ * @property {string} $publisherId
+ * @property {string} $streamName
+ * @property {string} $ofUserId
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string|Db_Expression} $updatedTime
+ * @property {string|Db_Expression} $untilTime
+ * @property {string} $filter
+ * @property {integer} $duration
  */
 abstract class Base_Streams_Subscription extends Db_Row
 {
 	/**
 	 * @property $publisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $streamName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $ofUserId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $untilTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $filter
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $duration
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -415,6 +415,7 @@ abstract class Base_Streams_Subscription extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".duration");
+		$value = intval($value);
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".duration");
 		return array('duration', $value);			

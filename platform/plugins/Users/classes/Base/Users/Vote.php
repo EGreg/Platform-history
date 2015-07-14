@@ -14,38 +14,38 @@
  * @class Base_Users_Vote
  * @extends Db_Row
  *
- * @property string $userId
- * @property string $forType
- * @property string $forId
- * @property float $value
- * @property float $weight
- * @property string|Db_Expression $updatedTime
+ * @property {string} $userId
+ * @property {string} $forType
+ * @property {string} $forId
+ * @property {float} $value
+ * @property {float} $weight
+ * @property {string|Db_Expression} $updatedTime
  */
 abstract class Base_Users_Vote extends Db_Row
 {
 	/**
 	 * @property $userId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $forType
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $forId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $value
-	 * @type float
+	 * @type {float}
 	 */
 	/**
 	 * @property $weight
-	 * @type float
+	 * @type {float}
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -284,6 +284,28 @@ abstract class Base_Users_Vote extends Db_Row
 	{
 
 		return 255;			
+	}
+
+	function beforeSet_value($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('value', $value);
+		}
+		if (!is_numeric($value))
+			throw new Exception('Non-numeric value being assigned to '.$this->getTable().".value");
+		$value = floatval($value);
+		return array('value', $value);			
+	}
+
+	function beforeSet_weight($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('weight', $value);
+		}
+		if (!is_numeric($value))
+			throw new Exception('Non-numeric value being assigned to '.$this->getTable().".weight");
+		$value = floatval($value);
+		return array('weight', $value);			
 	}
 
 	/**

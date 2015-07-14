@@ -14,88 +14,88 @@
  * @class Base_Streams_Stream
  * @extends Db_Row
  *
- * @property string $publisherId
- * @property string $name
- * @property string|Db_Expression $insertedTime
- * @property string|Db_Expression $updatedTime
- * @property string $type
- * @property string $title
- * @property string $icon
- * @property string $content
- * @property string $attributes
- * @property integer $readLevel
- * @property integer $writeLevel
- * @property integer $adminLevel
- * @property string $inheritAccess
- * @property integer $messageCount
- * @property integer $participantCount
- * @property string|Db_Expression $closedTime
+ * @property {string} $publisherId
+ * @property {string} $name
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string|Db_Expression} $updatedTime
+ * @property {string} $type
+ * @property {string} $title
+ * @property {string} $icon
+ * @property {string} $content
+ * @property {string} $attributes
+ * @property {integer} $readLevel
+ * @property {integer} $writeLevel
+ * @property {integer} $adminLevel
+ * @property {string} $inheritAccess
+ * @property {integer} $messageCount
+ * @property {integer} $participantCount
+ * @property {string|Db_Expression} $closedTime
  */
 abstract class Base_Streams_Stream extends Db_Row
 {
 	/**
 	 * @property $publisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $name
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $type
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $title
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $icon
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $content
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $attributes
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $readLevel
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * @property $writeLevel
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * @property $adminLevel
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * @property $inheritAccess
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $messageCount
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * @property $participantCount
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * @property $closedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -521,6 +521,7 @@ abstract class Base_Streams_Stream extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".readLevel");
+		$value = intval($value);
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".readLevel");
 		return array('readLevel', $value);			
@@ -550,6 +551,7 @@ abstract class Base_Streams_Stream extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".writeLevel");
+		$value = intval($value);
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".writeLevel");
 		return array('writeLevel', $value);			
@@ -579,6 +581,7 @@ abstract class Base_Streams_Stream extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".adminLevel");
+		$value = intval($value);
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".adminLevel");
 		return array('adminLevel', $value);			
@@ -641,6 +644,7 @@ abstract class Base_Streams_Stream extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".messageCount");
+		$value = intval($value);
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".messageCount");
 		return array('messageCount', $value);			
@@ -670,6 +674,7 @@ abstract class Base_Streams_Stream extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".participantCount");
+		$value = intval($value);
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".participantCount");
 		return array('participantCount', $value);			

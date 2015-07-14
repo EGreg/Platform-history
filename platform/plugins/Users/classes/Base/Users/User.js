@@ -29,80 +29,80 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property id
- * @type String
+ * @property {String
+ * @type }id
  */
 /**
- * @property insertedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type insertedTime
  */
 /**
- * @property updatedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type updatedTime
  */
 /**
- * @property sessionId
- * @type String
+ * @property {String
+ * @type }sessionId
  */
 /**
- * @property sessionCount
- * @type integer
+ * @property {integer}
+ * @type sessionCount
  */
 /**
- * @property fb_uid
- * @type integer
+ * @property {integer}
+ * @type fb_uid
  */
 /**
- * @property tw_uid
- * @type integer
+ * @property {integer}
+ * @type tw_uid
  */
 /**
- * @property g_uid
- * @type String
+ * @property {String
+ * @type }g_uid
  */
 /**
- * @property y_uid
- * @type String
+ * @property {String
+ * @type }y_uid
  */
 /**
- * @property passphraseHash
- * @type String
+ * @property {String
+ * @type }passphraseHash
  */
 /**
- * @property emailAddress
- * @type String
+ * @property {String
+ * @type }emailAddress
  */
 /**
- * @property mobileNumber
- * @type String
+ * @property {String
+ * @type }mobileNumber
  */
 /**
- * @property emailAddressPending
- * @type String
+ * @property {String
+ * @type }emailAddressPending
  */
 /**
- * @property mobileNumberPending
- * @type String
+ * @property {String
+ * @type }mobileNumberPending
  */
 /**
- * @property signedUpWith
- * @type String
+ * @property {String}
+ * @type signedUpWith
  */
 /**
- * @property username
- * @type String
+ * @property {String
+ * @type }username
  */
 /**
- * @property icon
- * @type String
+ * @property {String
+ * @type }icon
  */
 /**
- * @property url
- * @type String
+ * @property {String
+ * @type }url
  */
 /**
- * @property pincodeHash
- * @type String
+ * @property {String
+ * @type }pincodeHash
  */
 
 /**
@@ -580,7 +580,6 @@ Base.prototype.maxSize_mobileNumber = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_emailAddressPending = function (value) {
-		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".emailAddressPending");
@@ -607,7 +606,6 @@ Base.prototype.maxSize_emailAddressPending = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_mobileNumberPending = function (value) {
-		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".mobileNumberPending");

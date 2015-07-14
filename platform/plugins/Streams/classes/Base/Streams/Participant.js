@@ -29,44 +29,44 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property publisherId
- * @type String
+ * @property {String
+ * @type }publisherId
  */
 /**
- * @property streamName
- * @type String
+ * @property {String
+ * @type }streamName
  */
 /**
- * @property userId
- * @type String
+ * @property {String
+ * @type }userId
  */
 /**
- * @property streamType
- * @type String
+ * @property {String
+ * @type }streamType
  */
 /**
- * @property insertedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type insertedTime
  */
 /**
- * @property updatedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type updatedTime
  */
 /**
- * @property state
- * @type String
+ * @property {String}
+ * @type state
  */
 /**
- * @property subscribed
- * @type String
+ * @property {String}
+ * @type subscribed
  */
 /**
- * @property posted
- * @type String
+ * @property {String}
+ * @type posted
  */
 /**
- * @property extra
- * @type String
+ * @property {String
+ * @type }extra
  */
 
 /**

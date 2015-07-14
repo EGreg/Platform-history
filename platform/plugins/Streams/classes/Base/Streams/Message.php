@@ -14,63 +14,63 @@
  * @class Base_Streams_Message
  * @extends Db_Row
  *
- * @property string $publisherId
- * @property string $streamName
- * @property string|Db_Expression $insertedTime
- * @property string|Db_Expression $sentTime
- * @property string $byUserId
- * @property string $byClientId
- * @property string $type
- * @property string $content
- * @property string $instructions
- * @property float $weight
- * @property integer $ordinal
+ * @property {string} $publisherId
+ * @property {string} $streamName
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string|Db_Expression} $sentTime
+ * @property {string} $byUserId
+ * @property {string} $byClientId
+ * @property {string} $type
+ * @property {string} $content
+ * @property {string} $instructions
+ * @property {float} $weight
+ * @property {integer} $ordinal
  */
 abstract class Base_Streams_Message extends Db_Row
 {
 	/**
 	 * @property $publisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $streamName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $sentTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $byUserId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $byClientId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $type
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $content
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $instructions
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $weight
-	 * @type float
+	 * @type {float}
 	 */
 	/**
 	 * @property $ordinal
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -480,6 +480,17 @@ abstract class Base_Streams_Message extends Db_Row
 		return 4092;			
 	}
 
+	function beforeSet_weight($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('weight', $value);
+		}
+		if (!is_numeric($value))
+			throw new Exception('Non-numeric value being assigned to '.$this->getTable().".weight");
+		$value = floatval($value);
+		return array('weight', $value);			
+	}
+
 	/**
 	 * Method is called before setting the field and verifies if integer value falls within allowed limits
 	 * @method beforeSet_ordinal
@@ -494,6 +505,7 @@ abstract class Base_Streams_Message extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".ordinal");
+		$value = intval($value);
 		if ($value < 0 or $value > 4294967295)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".ordinal");
 		return array('ordinal', $value);			

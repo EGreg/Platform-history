@@ -14,28 +14,28 @@
  * @class Base_Users_Label
  * @extends Db_Row
  *
- * @property string $userId
- * @property string $label
- * @property string $icon
- * @property string $title
+ * @property {string} $userId
+ * @property {string} $label
+ * @property {string} $icon
+ * @property {string} $title
  */
 abstract class Base_Users_Label extends Db_Row
 {
 	/**
 	 * @property $userId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $label
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $icon
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $title
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * The setUp() method is called the first time

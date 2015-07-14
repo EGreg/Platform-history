@@ -14,58 +14,58 @@
  * @class Base_Users_AppUser
  * @extends Db_Row
  *
- * @property string $userId
- * @property mixed $provider
- * @property string $appId
- * @property string|Db_Expression $insertedTime
- * @property string|Db_Expression $updatedTime
- * @property string $access_token
- * @property string $session_secret
- * @property string $session_expires
- * @property mixed $state
- * @property string $provider_uid
+ * @property {string} $userId
+ * @property {string} $provider
+ * @property {string} $appId
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string|Db_Expression} $updatedTime
+ * @property {string} $access_token
+ * @property {string} $session_secret
+ * @property {string} $session_expires
+ * @property {string} $state
+ * @property {string} $provider_uid
  */
 abstract class Base_Users_AppUser extends Db_Row
 {
 	/**
 	 * @property $userId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $provider
-	 * @type mixed
+	 * @type {string}
 	 */
 	/**
 	 * @property $appId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $access_token
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $session_secret
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $session_expires
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $state
-	 * @type mixed
+	 * @type {string}
 	 */
 	/**
 	 * @property $provider_uid
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * The setUp() method is called the first time

@@ -14,38 +14,38 @@
  * @class Base_Streams_RelatedFrom
  * @extends Db_Row
  *
- * @property string $fromPublisherId
- * @property string $fromStreamName
- * @property string $type
- * @property string $toPublisherId
- * @property string $toStreamName
- * @property string|Db_Expression $insertedTime
+ * @property {string} $fromPublisherId
+ * @property {string} $fromStreamName
+ * @property {string} $type
+ * @property {string} $toPublisherId
+ * @property {string} $toStreamName
+ * @property {string|Db_Expression} $insertedTime
  */
 abstract class Base_Streams_RelatedFrom extends Db_Row
 {
 	/**
 	 * @property $fromPublisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $fromStreamName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $type
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $toPublisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $toStreamName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * The setUp() method is called the first time

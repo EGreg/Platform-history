@@ -2616,7 +2616,7 @@ abstract class Streams extends Base_Streams
 			foreach ($classes as $k => $v) {
 				foreach ($v as $f) {
 					if (isset($rows[$name]->$f)) {
-						$stream->fields[$f] = $rows[$name]->$f;
+						$stream->$f = $rows[$name]->$f;
 					}
 				}
 			}

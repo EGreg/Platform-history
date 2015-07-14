@@ -15,57 +15,99 @@ var Db = Q.require('Db');
  * @class Awards
  * @static
  */
-module.exports = function () {
-	
-	/**
-	 * The list of model classes
-	 * @property tableClasses
-	 * @type array
-	 */
-	this.tableClasses = [
-		"Awards_Badge",
-		"Awards_Earned",
-		"Awards_Leader"
-	];
-	
-	/**
-	 * This method uses Db.connect() to establish a connection to database using information stored in the configuration.
-	 * If the connection to Db object has already been made, it returns this Db object.
-	 * @method db
-	 * @return {Db} The database connection
-	 */
-	this.db = function () {
-		return Db.connect('Awards');
-	};
-	
-	/**
-	 * The connection name for the class
-	 * @method connectionName
-	 * @return {string} The name of the connection
-	 */
-	this.connectionName = function() {
-		return 'Awards';
-	};
-
-	/**
-	 * Link to Awards.Badge model
-	 * @property Badge
-	 * @type Awards.Badge
-	 */
-	this.Badge = Q.require('Awards/Badge');
-	/**
-	 * Link to Awards.Earned model
-	 * @property Earned
-	 * @type Awards.Earned
-	 */
-	this.Earned = Q.require('Awards/Earned');
-	/**
-	 * Link to Awards.Leader model
-	 * @property Leader
-	 * @type Awards.Leader
-	 */
-	this.Leader = Q.require('Awards/Leader');
-	
+function Base () {
 	return this;
-	
+}
+ 
+module.exports = Base;
+
+/**
+ * The list of model classes
+ * @property tableClasses
+ * @type array
+ */
+Base.tableClasses = [
+	"Awards_Autocomplete",
+	"Awards_Domain",
+	"Awards_HostnameSession",
+	"Awards_Publisher",
+	"Awards_Session",
+	"Awards_Share",
+	"Awards_Visit",
+	"Awards_Zipcode"
+];
+
+/**
+ * This method calls Db.connect() using information stored in the configuration.
+ * If this has already been called, then the same db object is returned.
+ * @method db
+ * @return {Db} The database connection
+ */
+Base.db = function () {
+	return Db.connect('Awards');
 };
+
+/**
+ * The connection name for the class
+ * @method connectionName
+ * @return {string} The name of the connection
+ */
+Base.connectionName = function() {
+	return 'Awards';
+};
+
+/**
+ * Link to Awards.Autocomplete model
+ * @property Autocomplete
+ * @type Awards.Autocomplete
+ */
+Base.Autocomplete = Q.require('Awards/Autocomplete');
+
+/**
+ * Link to Awards.Domain model
+ * @property Domain
+ * @type Awards.Domain
+ */
+Base.Domain = Q.require('Awards/Domain');
+
+/**
+ * Link to Awards.HostnameSession model
+ * @property HostnameSession
+ * @type Awards.HostnameSession
+ */
+Base.HostnameSession = Q.require('Awards/HostnameSession');
+
+/**
+ * Link to Awards.Publisher model
+ * @property Publisher
+ * @type Awards.Publisher
+ */
+Base.Publisher = Q.require('Awards/Publisher');
+
+/**
+ * Link to Awards.Session model
+ * @property Session
+ * @type Awards.Session
+ */
+Base.Session = Q.require('Awards/Session');
+
+/**
+ * Link to Awards.Share model
+ * @property Share
+ * @type Awards.Share
+ */
+Base.Share = Q.require('Awards/Share');
+
+/**
+ * Link to Awards.Visit model
+ * @property Visit
+ * @type Awards.Visit
+ */
+Base.Visit = Q.require('Awards/Visit');
+
+/**
+ * Link to Awards.Zipcode model
+ * @property Zipcode
+ * @type Awards.Zipcode
+ */
+Base.Zipcode = Q.require('Awards/Zipcode');

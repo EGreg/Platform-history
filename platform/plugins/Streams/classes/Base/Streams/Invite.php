@@ -14,73 +14,73 @@
  * @class Base_Streams_Invite
  * @extends Db_Row
  *
- * @property string $token
- * @property string $userId
- * @property string $publisherId
- * @property string $streamName
- * @property string $invitingUserId
- * @property string $displayName
- * @property string $appUrl
- * @property integer $readLevel
- * @property integer $writeLevel
- * @property integer $adminLevel
- * @property mixed $state
- * @property string|Db_Expression $insertedTime
- * @property string|Db_Expression $expireTime
+ * @property {string} $token
+ * @property {string} $userId
+ * @property {string} $publisherId
+ * @property {string} $streamName
+ * @property {string} $invitingUserId
+ * @property {string} $displayName
+ * @property {string} $appUrl
+ * @property {integer} $readLevel
+ * @property {integer} $writeLevel
+ * @property {integer} $adminLevel
+ * @property {string} $state
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string|Db_Expression} $expireTime
  */
 abstract class Base_Streams_Invite extends Db_Row
 {
 	/**
 	 * @property $token
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $userId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $publisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $streamName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $invitingUserId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $displayName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $appUrl
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $readLevel
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * @property $writeLevel
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * @property $adminLevel
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * @property $state
-	 * @type mixed
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $expireTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -456,6 +456,7 @@ abstract class Base_Streams_Invite extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".readLevel");
+		$value = intval($value);
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".readLevel");
 		return array('readLevel', $value);			
@@ -488,6 +489,7 @@ abstract class Base_Streams_Invite extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".writeLevel");
+		$value = intval($value);
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".writeLevel");
 		return array('writeLevel', $value);			
@@ -520,6 +522,7 @@ abstract class Base_Streams_Invite extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".adminLevel");
+		$value = intval($value);
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".adminLevel");
 		return array('adminLevel', $value);			

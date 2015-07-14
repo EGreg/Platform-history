@@ -14,48 +14,48 @@
  * @class Base_Places_Autocomplete
  * @extends Db_Row
  *
- * @property string $query
- * @property string $types
- * @property mixed $latitude
- * @property mixed $longitude
- * @property mixed $miles
- * @property string|Db_Expression $insertedTime
- * @property string|Db_Expression $updatedTime
- * @property string $results
+ * @property {string} $query
+ * @property {string} $types
+ * @property {float} $latitude
+ * @property {float} $longitude
+ * @property {float} $miles
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string|Db_Expression} $updatedTime
+ * @property {string} $results
  */
 abstract class Base_Places_Autocomplete extends Db_Row
 {
 	/**
 	 * @property $query
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $types
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $latitude
-	 * @type mixed
+	 * @type {float}
 	 */
 	/**
 	 * @property $longitude
-	 * @type mixed
+	 * @type {float}
 	 */
 	/**
 	 * @property $miles
-	 * @type mixed
+	 * @type {float}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $results
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -266,6 +266,39 @@ abstract class Base_Places_Autocomplete extends Db_Row
 	{
 
 		return 255;			
+	}
+
+	function beforeSet_latitude($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('latitude', $value);
+		}
+		if (!is_numeric($value))
+			throw new Exception('Non-numeric value being assigned to '.$this->getTable().".latitude");
+		$value = floatval($value);
+		return array('latitude', $value);			
+	}
+
+	function beforeSet_longitude($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('longitude', $value);
+		}
+		if (!is_numeric($value))
+			throw new Exception('Non-numeric value being assigned to '.$this->getTable().".longitude");
+		$value = floatval($value);
+		return array('longitude', $value);			
+	}
+
+	function beforeSet_miles($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('miles', $value);
+		}
+		if (!is_numeric($value))
+			throw new Exception('Non-numeric value being assigned to '.$this->getTable().".miles");
+		$value = floatval($value);
+		return array('miles', $value);			
 	}
 
 	/**

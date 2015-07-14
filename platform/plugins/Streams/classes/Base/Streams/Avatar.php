@@ -14,43 +14,43 @@
  * @class Base_Streams_Avatar
  * @extends Db_Row
  *
- * @property string $toUserId
- * @property string $publisherId
- * @property string|Db_Expression $updatedTime
- * @property string $username
- * @property string $firstName
- * @property string $lastName
- * @property string $icon
+ * @property {string} $toUserId
+ * @property {string} $publisherId
+ * @property {string|Db_Expression} $updatedTime
+ * @property {string} $username
+ * @property {string} $firstName
+ * @property {string} $lastName
+ * @property {string} $icon
  */
 abstract class Base_Streams_Avatar extends Db_Row
 {
 	/**
 	 * @property $toUserId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $publisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $username
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $firstName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $lastName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $icon
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * The setUp() method is called the first time

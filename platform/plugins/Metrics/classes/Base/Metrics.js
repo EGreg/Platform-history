@@ -20,24 +20,26 @@ function Base () {
 }
  
 module.exports = Base;
-	
+
 /**
  * The list of model classes
  * @property tableClasses
  * @type array
  */
 Base.tableClasses = [
+	"Metrics_Autocomplete",
 	"Metrics_Domain",
 	"Metrics_HostnameSession",
 	"Metrics_Publisher",
 	"Metrics_Session",
 	"Metrics_Share",
-	"Metrics_Visit"
+	"Metrics_Visit",
+	"Metrics_Zipcode"
 ];
 
 /**
- * This method uses Db.connect() to establish a connection to database using information stored in the configuration.
- * If the connection to Db object has already been made, it returns this Db object.
+ * This method calls Db.connect() using information stored in the configuration.
+ * If this has already been called, then the same db object is returned.
  * @method db
  * @return {Db} The database connection
  */
@@ -55,38 +57,57 @@ Base.connectionName = function() {
 };
 
 /**
+ * Link to Metrics.Autocomplete model
+ * @property Autocomplete
+ * @type Metrics.Autocomplete
+ */
+Base.Autocomplete = Q.require('Metrics/Autocomplete');
+
+/**
  * Link to Metrics.Domain model
  * @property Domain
  * @type Metrics.Domain
  */
 Base.Domain = Q.require('Metrics/Domain');
+
 /**
  * Link to Metrics.HostnameSession model
  * @property HostnameSession
  * @type Metrics.HostnameSession
  */
 Base.HostnameSession = Q.require('Metrics/HostnameSession');
+
 /**
  * Link to Metrics.Publisher model
  * @property Publisher
  * @type Metrics.Publisher
  */
 Base.Publisher = Q.require('Metrics/Publisher');
+
 /**
  * Link to Metrics.Session model
  * @property Session
  * @type Metrics.Session
  */
 Base.Session = Q.require('Metrics/Session');
+
 /**
  * Link to Metrics.Share model
  * @property Share
  * @type Metrics.Share
  */
 Base.Share = Q.require('Metrics/Share');
+
 /**
  * Link to Metrics.Visit model
  * @property Visit
  * @type Metrics.Visit
  */
 Base.Visit = Q.require('Metrics/Visit');
+
+/**
+ * Link to Metrics.Zipcode model
+ * @property Zipcode
+ * @type Metrics.Zipcode
+ */
+Base.Zipcode = Q.require('Metrics/Zipcode');

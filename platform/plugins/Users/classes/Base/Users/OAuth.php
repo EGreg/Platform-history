@@ -14,48 +14,48 @@
  * @class Base_Users_OAuth
  * @extends Db_Row
  *
- * @property string $client_id
- * @property string $userId
- * @property string $state
- * @property string $scope
- * @property string $redirect_uri
- * @property string $access_token
- * @property string|Db_Expression $insertedTime
- * @property integer $token_expires_seconds
+ * @property {string} $client_id
+ * @property {string} $userId
+ * @property {string} $state
+ * @property {string} $scope
+ * @property {string} $redirect_uri
+ * @property {string} $access_token
+ * @property {string|Db_Expression} $insertedTime
+ * @property {integer} $token_expires_seconds
  */
 abstract class Base_Users_OAuth extends Db_Row
 {
 	/**
 	 * @property $client_id
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $userId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $state
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $scope
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $redirect_uri
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $access_token
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $token_expires_seconds
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -426,6 +426,7 @@ abstract class Base_Users_OAuth extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".token_expires_seconds");
+		$value = intval($value);
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".token_expires_seconds");
 		return array('token_expires_seconds', $value);			

@@ -29,68 +29,68 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property publisherId
- * @type String
+ * @property {String
+ * @type }publisherId
  */
 /**
- * @property name
- * @type String
+ * @property {String
+ * @type }name
  */
 /**
- * @property insertedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type insertedTime
  */
 /**
- * @property updatedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type updatedTime
  */
 /**
- * @property type
- * @type String
+ * @property {String
+ * @type }type
  */
 /**
- * @property title
- * @type String
+ * @property {String
+ * @type }title
  */
 /**
- * @property icon
- * @type String
+ * @property {String
+ * @type }icon
  */
 /**
- * @property content
- * @type String
+ * @property {String
+ * @type }content
  */
 /**
- * @property attributes
- * @type String
+ * @property {String
+ * @type }attributes
  */
 /**
- * @property readLevel
- * @type integer
+ * @property {integer}
+ * @type readLevel
  */
 /**
- * @property writeLevel
- * @type integer
+ * @property {integer}
+ * @type writeLevel
  */
 /**
- * @property adminLevel
- * @type integer
+ * @property {integer}
+ * @type adminLevel
  */
 /**
- * @property inheritAccess
- * @type String
+ * @property {String
+ * @type }inheritAccess
  */
 /**
- * @property messageCount
- * @type integer
+ * @property {integer}
+ * @type messageCount
  */
 /**
- * @property participantCount
- * @type integer
+ * @property {integer}
+ * @type participantCount
  */
 /**
- * @property closedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type closedTime
  */
 
 /**

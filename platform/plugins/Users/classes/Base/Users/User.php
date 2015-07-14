@@ -14,103 +14,103 @@
  * @class Base_Users_User
  * @extends Db_Row
  *
- * @property string $id
- * @property string|Db_Expression $insertedTime
- * @property string|Db_Expression $updatedTime
- * @property string $sessionId
- * @property integer $sessionCount
- * @property integer $fb_uid
- * @property integer $tw_uid
- * @property string $g_uid
- * @property string $y_uid
- * @property string $passphraseHash
- * @property string $emailAddress
- * @property string $mobileNumber
- * @property string $emailAddressPending
- * @property string $mobileNumberPending
- * @property mixed $signedUpWith
- * @property string $username
- * @property string $icon
- * @property string $url
- * @property string $pincodeHash
+ * @property {string} $id
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string|Db_Expression} $updatedTime
+ * @property {string} $sessionId
+ * @property {integer} $sessionCount
+ * @property {integer} $fb_uid
+ * @property {integer} $tw_uid
+ * @property {string} $g_uid
+ * @property {string} $y_uid
+ * @property {string} $passphraseHash
+ * @property {string} $emailAddress
+ * @property {string} $mobileNumber
+ * @property {string} $emailAddressPending
+ * @property {string} $mobileNumberPending
+ * @property {string} $signedUpWith
+ * @property {string} $username
+ * @property {string} $icon
+ * @property {string} $url
+ * @property {string} $pincodeHash
  */
 abstract class Base_Users_User extends Db_Row
 {
 	/**
 	 * @property $id
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $sessionId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $sessionCount
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * @property $fb_uid
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * @property $tw_uid
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * @property $g_uid
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $y_uid
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $passphraseHash
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $emailAddress
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $mobileNumber
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $emailAddressPending
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $mobileNumberPending
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $signedUpWith
-	 * @type mixed
+	 * @type {string}
 	 */
 	/**
 	 * @property $username
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $icon
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $url
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $pincodeHash
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -385,6 +385,7 @@ abstract class Base_Users_User extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".sessionCount");
+		$value = intval($value);
 		if ($value < -2147483648 or $value > 2147483647)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".sessionCount");
 		return array('sessionCount', $value);			
@@ -414,6 +415,7 @@ abstract class Base_Users_User extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".fb_uid");
+		$value = intval($value);
 		if ($value < -9.2233720368548E+18 or $value > 9223372036854775807)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".fb_uid");
 		return array('fb_uid', $value);			
@@ -443,6 +445,7 @@ abstract class Base_Users_User extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".tw_uid");
+		$value = intval($value);
 		if ($value < -9.2233720368548E+18 or $value > 9223372036854775807)
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".tw_uid");
 		return array('tw_uid', $value);			
@@ -633,9 +636,6 @@ abstract class Base_Users_User extends Db_Row
 	 */
 	function beforeSet_emailAddressPending($value)
 	{
-		if (!isset($value)) {
-			return array('emailAddressPending', $value);
-		}
 		if ($value instanceof Db_Expression) {
 			return array('emailAddressPending', $value);
 		}
@@ -666,9 +666,6 @@ abstract class Base_Users_User extends Db_Row
 	 */
 	function beforeSet_mobileNumberPending($value)
 	{
-		if (!isset($value)) {
-			return array('mobileNumberPending', $value);
-		}
 		if ($value instanceof Db_Expression) {
 			return array('mobileNumberPending', $value);
 		}

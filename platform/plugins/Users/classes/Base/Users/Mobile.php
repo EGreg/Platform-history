@@ -14,63 +14,63 @@
  * @class Base_Users_Mobile
  * @extends Db_Row
  *
- * @property string $number
- * @property string|Db_Expression $insertedTime
- * @property string|Db_Expression $updatedTime
- * @property string $userId
- * @property string $extension
- * @property mixed $carrier
- * @property mixed $state
- * @property mixed $capabilities
- * @property string $activationCode
- * @property string|Db_Expression $activationCodeExpires
- * @property string $authCode
+ * @property {string} $number
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string|Db_Expression} $updatedTime
+ * @property {string} $userId
+ * @property {string} $extension
+ * @property {string} $carrier
+ * @property {string} $state
+ * @property {string} $capabilities
+ * @property {string} $activationCode
+ * @property {string|Db_Expression} $activationCodeExpires
+ * @property {string} $authCode
  */
 abstract class Base_Users_Mobile extends Db_Row
 {
 	/**
 	 * @property $number
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $userId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $extension
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $carrier
-	 * @type mixed
+	 * @type {string}
 	 */
 	/**
 	 * @property $state
-	 * @type mixed
+	 * @type {string}
 	 */
 	/**
 	 * @property $capabilities
-	 * @type mixed
+	 * @type {string}
 	 */
 	/**
 	 * @property $activationCode
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $activationCodeExpires
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $authCode
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * The setUp() method is called the first time

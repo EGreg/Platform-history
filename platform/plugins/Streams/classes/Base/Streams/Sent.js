@@ -29,40 +29,44 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property publisherId
- * @type String
+ * @property {String
+ * @type }publisherId
  */
 /**
- * @property streamName
- * @type String
+ * @property {String
+ * @type }streamName
  */
 /**
- * @property insertedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type insertedTime
  */
 /**
- * @property sentTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type sentTime
  */
 /**
- * @property byUserId
- * @type String
+ * @property {String
+ * @type }byUserId
  */
 /**
- * @property comment
- * @type String
+ * @property {String
+ * @type }comment
  */
 /**
- * @property instructions
- * @type String
+ * @property {String
+ * @type }instructions
  */
 /**
- * @property chatPublisherId
- * @type String
+ * @property {String
+ * @type }chatPublisherId
  */
 /**
- * @property chatStreamName
- * @type String
+ * @property {String
+ * @type }chatStreamName
+ */
+/**
+ * @property {integer}
+ * @type reOrdinal
  */
 
 /**
@@ -226,7 +230,8 @@ Base.prototype.fieldNames = function () {
 		"comment",
 		"instructions",
 		"chatPublisherId",
-		"chatStreamName"
+		"chatStreamName",
+		"reOrdinal"
 	];
 };
 
@@ -437,6 +442,33 @@ Base.prototype.beforeSet_chatStreamName = function (value) {
 Base.prototype.maxSize_chatStreamName = function () {
 
 		return 255;
+};
+
+/**
+ * Method is called before setting the field and verifies if integer value falls within allowed limits
+ * @method beforeSet_reOrdinal
+ * @param {integer} value
+ * @return {integer} The value
+ * @throws {Error} An exception is thrown if 'value' is not integer or does not fit in allowed range
+ */
+Base.prototype.beforeSet_reOrdinal = function (value) {
+		if (!value) return value;
+		if (value instanceof Db.Expression) return value;
+		value = Number(value);
+		if (isNaN(value) || Math.floor(value) != value) 
+			throw new Error('Non-integer value being assigned to '+this.table()+".reOrdinal");
+		if (value < -2147483648 || value > 2147483647)
+			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".reOrdinal");
+		return value;
+};
+
+	/**
+	 * Returns the maximum integer that can be assigned to the reOrdinal field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_reOrdinal = function () {
+
+		return 2147483647;
 };
 
 module.exports = Base;

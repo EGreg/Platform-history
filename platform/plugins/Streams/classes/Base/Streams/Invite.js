@@ -29,56 +29,56 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property token
- * @type String
+ * @property {String
+ * @type }token
  */
 /**
- * @property userId
- * @type String
+ * @property {String
+ * @type }userId
  */
 /**
- * @property publisherId
- * @type String
+ * @property {String
+ * @type }publisherId
  */
 /**
- * @property streamName
- * @type String
+ * @property {String
+ * @type }streamName
  */
 /**
- * @property invitingUserId
- * @type String
+ * @property {String
+ * @type }invitingUserId
  */
 /**
- * @property displayName
- * @type String
+ * @property {String
+ * @type }displayName
  */
 /**
- * @property appUrl
- * @type String
+ * @property {String
+ * @type }appUrl
  */
 /**
- * @property readLevel
- * @type integer
+ * @property {integer}
+ * @type readLevel
  */
 /**
- * @property writeLevel
- * @type integer
+ * @property {integer}
+ * @type writeLevel
  */
 /**
- * @property adminLevel
- * @type integer
+ * @property {integer}
+ * @type adminLevel
  */
 /**
- * @property state
- * @type String
+ * @property {String}
+ * @type state
  */
 /**
- * @property insertedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type insertedTime
  */
 /**
- * @property expireTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type expireTime
  */
 
 /**
