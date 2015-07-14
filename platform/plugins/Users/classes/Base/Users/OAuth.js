@@ -409,7 +409,7 @@ Base.prototype.beforeSet_token_expires_seconds = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".token_expires_seconds");
 		if (value < -2147483648 || value > 2147483647)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".token_expires_seconds");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".token_expires_seconds");
 		return value;
 };
 

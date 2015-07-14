@@ -491,7 +491,7 @@ Base.prototype.beforeSet_accuracy = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".accuracy");
 		if (value < -2147483648 || value > 2147483647)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".accuracy");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".accuracy");
 		return value;
 };
 

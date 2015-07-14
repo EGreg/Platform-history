@@ -288,7 +288,7 @@ Base.prototype.maxSize_deviceId = function () {
 Base.prototype.beforeSet_platform = function (value) {
 		if (value instanceof Db.Expression) return value;
 		if (['ios','android'].indexOf(value) < 0)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".platform");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".platform");
 		return value;
 };
 
@@ -356,7 +356,7 @@ Base.prototype.beforeSet_formFactor = function (value) {
 		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (['mobile','tablet'].indexOf(value) < 0)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".formFactor");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".formFactor");
 		return value;
 };
 

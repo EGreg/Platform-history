@@ -389,7 +389,7 @@ Base.prototype.beforeSet_share_count = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".share_count");
 		if (value < 0 || value > 4294967295)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".share_count");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".share_count");
 		return value;
 };
 

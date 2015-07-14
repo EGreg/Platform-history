@@ -223,8 +223,10 @@ abstract class Base_Metrics_Domain extends Db_Row
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".publisherId");
 		$value = intval($value);
-		if ($value < 0 or $value > 1.844674407371E+19)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".publisherId");
+		if ($value < 0 or $value > 1.844674407371E+19) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".publisherId");
+		}
 		return array('publisherId', $value);			
 	}
 

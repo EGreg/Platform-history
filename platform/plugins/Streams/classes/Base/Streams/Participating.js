@@ -315,7 +315,7 @@ Base.prototype.maxSize_streamName = function () {
 Base.prototype.beforeSet_state = function (value) {
 		if (value instanceof Db.Expression) return value;
 		if (['invited','participating','left'].indexOf(value) < 0)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".state");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".state");
 		return value;
 };
 
@@ -332,7 +332,7 @@ Base.prototype.beforeSet_fresh = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".fresh");
 		if (value < 0 || value > 4294967295)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".fresh");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".fresh");
 		return value;
 };
 

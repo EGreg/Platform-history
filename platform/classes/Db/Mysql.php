@@ -1625,8 +1625,10 @@ EOT;
 		{$null_check}{$dbe_check}if (!is_numeric(\$value) or floor(\$value) != \$value)
 			throw new Exception('Non-integer value being assigned to '.\$this->getTable().".$field_name");
 		\$value = intval(\$value);
-		if (\$value < $type_range_min or \$value > $type_range_max)
-			throw new Exception("Out-of-range value '\$value' being assigned to ".\$this->getTable().".$field_name");
+		if (\$value < $type_range_min or \$value > $type_range_max) {
+			\$json = json_encode(\$value);
+			throw new Exception("Out-of-range value \$json being assigned to ".\$this->getTable().".$field_name");
+		}
 EOT;
 					$functions["beforeSet_$field_name"]['comment'] = <<<EOT
 	$dc
@@ -1652,7 +1654,7 @@ EOT;
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".$field_name");
 		if (value < $type_range_min || value > $type_range_max)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".$field_name");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".$field_name");
 EOT;
 					$js_functions["beforeSet_$field_name"]['comment'] = <<<EOT
 $dc
@@ -1683,7 +1685,7 @@ EOT;
 EOT;
 					$js_functions["beforeSet_$field_name"][] = <<<EOT
 		{$js_null_check}{$js_dbe_check}if ([$type_display_range].indexOf(value) < 0)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".$field_name");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".$field_name");
 EOT;
 					$js_functions["beforeSet_$field_name"]['comment'] = <<<EOT
 $dc
@@ -1767,7 +1769,8 @@ EOT;
 		{$null_check}{$dbe_check}\$value = date("Y-m-d h:i:s", strtotime(\$value));
 		\$date = date_parse(\$value);
 		if (!empty(\$date['errors'])) {
-			throw new Exception("Date \$value in incorrect format being assigned to ".\$this->getTable().".$field_name");
+			\$json = json_encode(\$value);
+			throw new Exception("Date \$json in incorrect format being assigned to ".\$this->getTable().".$field_name");
 		}
 		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as \$v) {
 			\$\$v = \$date[\$v];
@@ -1812,12 +1815,13 @@ EOT;
 					$functions["beforeSet_$field_name"][] = <<<EOT
 		{$null_check}{$dbe_check}\$date = date_parse(\$value);
 		if (!empty(\$date['errors'])) {
-			throw new Exception("DateTime \$value in incorrect format being assigned to ".\$this->getTable().".$field_name");
+			\$json = json_encode(\$value);
+			throw new Exception("DateTime \$json in incorrect format being assigned to ".\$this->getTable().".$field_name");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as \$v) {
-			\$\$v = \$date[\$v];
-		}
-		\$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", \$year, \$month, \$day, \$hour, \$minute, \$second);
+		\$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			\$date['year'], \$date['month'], \$date['day'], 
+			\$date['hour'], \$date['minute'], \$date['second']
+		);
 EOT;
 					$functions["beforeSet_$field_name"]['comment'] = <<<EOT
 	$dc

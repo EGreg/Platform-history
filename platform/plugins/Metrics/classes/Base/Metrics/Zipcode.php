@@ -495,8 +495,10 @@ abstract class Base_Metrics_Zipcode extends Db_Row
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".accuracy");
 		$value = intval($value);
-		if ($value < -2147483648 or $value > 2147483647)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".accuracy");
+		if ($value < -2147483648 or $value > 2147483647) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".accuracy");
+		}
 		return array('accuracy', $value);			
 	}
 

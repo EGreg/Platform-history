@@ -324,7 +324,7 @@ Base.prototype.beforeSet_ordinal = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".ordinal");
 		if (value < -2147483648 || value > 2147483647)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".ordinal");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".ordinal");
 		return value;
 };
 

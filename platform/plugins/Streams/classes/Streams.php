@@ -2614,11 +2614,11 @@ abstract class Streams extends Base_Streams
 			}
 		}
 		foreach ($retrieved as $name => $stream) {
+			if (empty($rows[$name])) continue;
 			foreach ($classes as $k => $v) {
 				foreach ($v as $f) {
-					if (isset($rows[$name]->$f)) {
-						$stream->$f = $rows[$name]->$f;
-					}
+					if (!isset($rows[$name])) continue;
+					$stream->$f = $rows[$name]->$f;
 				}
 			}
 		}

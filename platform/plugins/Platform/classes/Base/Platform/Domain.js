@@ -239,7 +239,7 @@ Base.prototype.beforeSet_publisherId = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".publisherId");
 		if (value < 0 || value > 1.844674407371E+19)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".publisherId");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".publisherId");
 		return value;
 };
 
@@ -262,7 +262,7 @@ Base.prototype.maxSize_publisherId = function () {
 Base.prototype.beforeSet_status = function (value) {
 		if (value instanceof Db.Expression) return value;
 		if (['pending','verified'].indexOf(value) < 0)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".status");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".status");
 		return value;
 };
 

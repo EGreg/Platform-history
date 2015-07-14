@@ -291,8 +291,10 @@ abstract class Base_Streams_Total extends Db_Row
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".messageCount");
 		$value = intval($value);
-		if ($value < -9.2233720368548E+18 or $value > 9223372036854775807)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".messageCount");
+		if ($value < -9.2233720368548E+18 or $value > 9223372036854775807) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".messageCount");
+		}
 		return array('messageCount', $value);			
 	}
 

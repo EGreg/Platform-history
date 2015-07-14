@@ -371,7 +371,7 @@ Base.prototype.beforeSet_sessionCount = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".sessionCount");
 		if (value < -2147483648 || value > 2147483647)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".sessionCount");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".sessionCount");
 		return value;
 };
 
@@ -397,7 +397,7 @@ Base.prototype.beforeSet_fb_uid = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".fb_uid");
 		if (value < -9.2233720368548E+18 || value > 9223372036854775807)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".fb_uid");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".fb_uid");
 		return value;
 };
 
@@ -423,7 +423,7 @@ Base.prototype.beforeSet_tw_uid = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".tw_uid");
 		if (value < -9.2233720368548E+18 || value > 9223372036854775807)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".tw_uid");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".tw_uid");
 		return value;
 };
 
@@ -633,7 +633,7 @@ Base.prototype.maxSize_mobileNumberPending = function () {
 Base.prototype.beforeSet_signedUpWith = function (value) {
 		if (value instanceof Db.Expression) return value;
 		if (['none','email','mobile','facebook','twitter','remote'].indexOf(value) < 0)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".signedUpWith");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".signedUpWith");
 		return value;
 };
 

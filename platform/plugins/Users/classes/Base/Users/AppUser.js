@@ -273,7 +273,7 @@ Base.prototype.maxSize_userId = function () {
 Base.prototype.beforeSet_provider = function (value) {
 		if (value instanceof Db.Expression) return value;
 		if (['native','facebook','twitter','google','yahoo'].indexOf(value) < 0)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".provider");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".provider");
 		return value;
 };
 
@@ -419,7 +419,7 @@ Base.prototype.maxSize_session_expires = function () {
 Base.prototype.beforeSet_state = function (value) {
 		if (value instanceof Db.Expression) return value;
 		if (['visited','added','removed'].indexOf(value) < 0)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".state");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".state");
 		return value;
 };
 

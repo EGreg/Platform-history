@@ -305,7 +305,7 @@ Base.prototype.beforeSet_insertedTime = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".insertedTime");
 		if (value < -9.2233720368548E+18 || value > 9223372036854775807)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".insertedTime");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".insertedTime");
 		return value;
 };
 
@@ -331,7 +331,7 @@ Base.prototype.beforeSet_shared_time = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".shared_time");
 		if (value < -9.2233720368548E+18 || value > 9223372036854775807)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".shared_time");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".shared_time");
 		return value;
 };
 
@@ -461,7 +461,7 @@ Base.prototype.beforeSet_publisherId = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".publisherId");
 		if (value < 0 || value > 1.844674407371E+19)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".publisherId");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".publisherId");
 		return value;
 };
 
@@ -487,7 +487,7 @@ Base.prototype.beforeSet_visit_count = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".visit_count");
 		if (value < 0 || value > 4294967295)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".visit_count");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".visit_count");
 		return value;
 };
 
@@ -513,7 +513,7 @@ Base.prototype.beforeSet_session_count = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".session_count");
 		if (value < 0 || value > 4294967295)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".session_count");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".session_count");
 		return value;
 };
 

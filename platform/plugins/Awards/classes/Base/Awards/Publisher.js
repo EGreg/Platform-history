@@ -228,7 +228,7 @@ Base.prototype.beforeSet_id = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".id");
 		if (value < 0 || value > 1.844674407371E+19)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".id");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".id");
 		return value;
 };
 
@@ -254,7 +254,7 @@ Base.prototype.beforeSet_insertedTime = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".insertedTime");
 		if (value < -9.2233720368548E+18 || value > 9223372036854775807)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".insertedTime");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".insertedTime");
 		return value;
 };
 
@@ -358,7 +358,7 @@ Base.prototype.beforeSet_min_wait = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".min_wait");
 		if (value < -2147483648 || value > 2147483647)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".min_wait");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".min_wait");
 		return value;
 };
 

@@ -393,8 +393,10 @@ abstract class Base_Platform_Visit extends Db_Row
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".share_count");
 		$value = intval($value);
-		if ($value < 0 or $value > 4294967295)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".share_count");
+		if ($value < 0 or $value > 4294967295) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".share_count");
+		}
 		return array('share_count', $value);			
 	}
 

@@ -293,8 +293,10 @@ abstract class Base_Awards_Share extends Db_Row
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".insertedTime");
 		$value = intval($value);
-		if ($value < -9.2233720368548E+18 or $value > 9223372036854775807)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".insertedTime");
+		if ($value < -9.2233720368548E+18 or $value > 9223372036854775807) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".insertedTime");
+		}
 		return array('insertedTime', $value);			
 	}
 
@@ -323,8 +325,10 @@ abstract class Base_Awards_Share extends Db_Row
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".shared_time");
 		$value = intval($value);
-		if ($value < -9.2233720368548E+18 or $value > 9223372036854775807)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".shared_time");
+		if ($value < -9.2233720368548E+18 or $value > 9223372036854775807) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".shared_time");
+		}
 		return array('shared_time', $value);			
 	}
 
@@ -473,8 +477,10 @@ abstract class Base_Awards_Share extends Db_Row
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".publisherId");
 		$value = intval($value);
-		if ($value < 0 or $value > 1.844674407371E+19)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".publisherId");
+		if ($value < 0 or $value > 1.844674407371E+19) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".publisherId");
+		}
 		return array('publisherId', $value);			
 	}
 
@@ -503,8 +509,10 @@ abstract class Base_Awards_Share extends Db_Row
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".visit_count");
 		$value = intval($value);
-		if ($value < 0 or $value > 4294967295)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".visit_count");
+		if ($value < 0 or $value > 4294967295) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".visit_count");
+		}
 		return array('visit_count', $value);			
 	}
 
@@ -533,8 +541,10 @@ abstract class Base_Awards_Share extends Db_Row
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".session_count");
 		$value = intval($value);
-		if ($value < 0 or $value > 4294967295)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".session_count");
+		if ($value < 0 or $value > 4294967295) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".session_count");
+		}
 		return array('session_count', $value);			
 	}
 

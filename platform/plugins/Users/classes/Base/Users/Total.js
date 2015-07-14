@@ -281,7 +281,7 @@ Base.prototype.beforeSet_voteCount = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".voteCount");
 		if (value < -9.2233720368548E+18 || value > 9223372036854775807)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".voteCount");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".voteCount");
 		return value;
 };
 

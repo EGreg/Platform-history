@@ -353,7 +353,7 @@ Base.prototype.maxSize_extension = function () {
 Base.prototype.beforeSet_carrier = function (value) {
 		if (value instanceof Db.Expression) return value;
 		if (['unverified','att','cingular','sprint','tmobile','verizon'].indexOf(value) < 0)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".carrier");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".carrier");
 		return value;
 };
 
@@ -367,7 +367,7 @@ Base.prototype.beforeSet_carrier = function (value) {
 Base.prototype.beforeSet_state = function (value) {
 		if (value instanceof Db.Expression) return value;
 		if (['unverified','active','suspended','unsubscribed'].indexOf(value) < 0)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".state");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".state");
 		return value;
 };
 
@@ -381,7 +381,7 @@ Base.prototype.beforeSet_state = function (value) {
 Base.prototype.beforeSet_capabilities = function (value) {
 		if (value instanceof Db.Expression) return value;
 		if (['unverified','sms','wap','internet','sms_and_wap','sms_and_internet'].indexOf(value) < 0)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".capabilities");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".capabilities");
 		return value;
 };
 
