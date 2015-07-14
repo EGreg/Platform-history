@@ -29,8 +29,8 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property {String
- * @type }identifier
+ * @property {String}
+ * @type identifier
  */
 /**
  * @property {String|Db.Expression}
@@ -45,8 +45,8 @@ Q.mixin(Base, Row);
  * @type state
  */
 /**
- * @property {String
- * @type }userId
+ * @property {String}
+ * @type userId
  */
 
 /**

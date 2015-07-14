@@ -29,12 +29,12 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property {String
- * @type }publisherId
+ * @property {String}
+ * @type publisherId
  */
 /**
- * @property {String
- * @type }name
+ * @property {String}
+ * @type name
  */
 /**
  * @property {String|Db.Expression}
@@ -45,24 +45,24 @@ Q.mixin(Base, Row);
  * @type updatedTime
  */
 /**
- * @property {String
- * @type }type
+ * @property {String}
+ * @type type
  */
 /**
- * @property {String
- * @type }title
+ * @property {String}
+ * @type title
  */
 /**
- * @property {String
- * @type }icon
+ * @property {String}
+ * @type icon
  */
 /**
- * @property {String
- * @type }content
+ * @property {String}
+ * @type content
  */
 /**
- * @property {String
- * @type }attributes
+ * @property {String}
+ * @type attributes
  */
 /**
  * @property {integer}
@@ -77,8 +77,8 @@ Q.mixin(Base, Row);
  * @type adminLevel
  */
 /**
- * @property {String
- * @type }inheritAccess
+ * @property {String}
+ * @type inheritAccess
  */
 /**
  * @property {integer}

@@ -29,12 +29,12 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property {String
- * @type }query
+ * @property {String}
+ * @type query
  */
 /**
- * @property {String
- * @type }types
+ * @property {String}
+ * @type types
  */
 /**
  * @property {number}
@@ -57,8 +57,8 @@ Q.mixin(Base, Row);
  * @type updatedTime
  */
 /**
- * @property {String
- * @type }results
+ * @property {String}
+ * @type results
  */
 
 /**

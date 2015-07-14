@@ -29,8 +29,8 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property {String
- * @type }number
+ * @property {String}
+ * @type number
  */
 /**
  * @property {String|Db.Expression}
@@ -41,12 +41,12 @@ Q.mixin(Base, Row);
  * @type updatedTime
  */
 /**
- * @property {String
- * @type }userId
+ * @property {String}
+ * @type userId
  */
 /**
- * @property {String
- * @type }extension
+ * @property {String}
+ * @type extension
  */
 /**
  * @property {String}
@@ -61,16 +61,16 @@ Q.mixin(Base, Row);
  * @type capabilities
  */
 /**
- * @property {String
- * @type }activationCode
+ * @property {String}
+ * @type activationCode
  */
 /**
  * @property {String|Db.Expression}
  * @type activationCodeExpires
  */
 /**
- * @property {String
- * @type }authCode
+ * @property {String}
+ * @type authCode
  */
 
 /**

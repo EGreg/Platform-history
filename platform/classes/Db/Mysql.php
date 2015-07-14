@@ -1704,7 +1704,7 @@ EOT;
 				case 'longtext':
 					$isTextLike = true;
 					$properties[]="{string} $field_name";
-					$js_properties[] = "{String }$field_name";
+					$js_properties[] = "{String} $field_name";
 					$functions["maxSize_$field_name"]['comment'] = <<<EOT
 	$dc
 	 * Returns the maximum string length that can be assigned to the $field_name field

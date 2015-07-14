@@ -29,24 +29,24 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property {String
- * @type }userId
+ * @property {String}
+ * @type userId
  */
 /**
- * @property {String
- * @type }deviceId
+ * @property {String}
+ * @type deviceId
  */
 /**
  * @property {String}
  * @type platform
  */
 /**
- * @property {String
- * @type }version
+ * @property {String}
+ * @type version
  */
 /**
- * @property {String
- * @type }sessionId
+ * @property {String}
+ * @type sessionId
  */
 /**
  * @property {String}

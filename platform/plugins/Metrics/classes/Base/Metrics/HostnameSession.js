@@ -29,12 +29,12 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property {String
- * @type }hostname
+ * @property {String}
+ * @type hostname
  */
 /**
- * @property {String
- * @type }sessionId
+ * @property {String}
+ * @type sessionId
  */
 
 /**

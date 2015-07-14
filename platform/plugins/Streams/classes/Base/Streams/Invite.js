@@ -29,32 +29,32 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property {String
- * @type }token
+ * @property {String}
+ * @type token
  */
 /**
- * @property {String
- * @type }userId
+ * @property {String}
+ * @type userId
  */
 /**
- * @property {String
- * @type }publisherId
+ * @property {String}
+ * @type publisherId
  */
 /**
- * @property {String
- * @type }streamName
+ * @property {String}
+ * @type streamName
  */
 /**
- * @property {String
- * @type }invitingUserId
+ * @property {String}
+ * @type invitingUserId
  */
 /**
- * @property {String
- * @type }displayName
+ * @property {String}
+ * @type displayName
  */
 /**
- * @property {String
- * @type }appUrl
+ * @property {String}
+ * @type appUrl
  */
 /**
  * @property {integer}

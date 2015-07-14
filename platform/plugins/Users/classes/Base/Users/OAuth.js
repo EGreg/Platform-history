@@ -29,28 +29,28 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property {String
- * @type }client_id
+ * @property {String}
+ * @type client_id
  */
 /**
- * @property {String
- * @type }userId
+ * @property {String}
+ * @type userId
  */
 /**
- * @property {String
- * @type }state
+ * @property {String}
+ * @type state
  */
 /**
- * @property {String
- * @type }scope
+ * @property {String}
+ * @type scope
  */
 /**
- * @property {String
- * @type }redirect_uri
+ * @property {String}
+ * @type redirect_uri
  */
 /**
- * @property {String
- * @type }access_token
+ * @property {String}
+ * @type access_token
  */
 /**
  * @property {String|Db.Expression}

@@ -29,36 +29,36 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property {String
- * @type }countryCode
+ * @property {String}
+ * @type countryCode
  */
 /**
- * @property {String
- * @type }zipcode
+ * @property {String}
+ * @type zipcode
  */
 /**
- * @property {String
- * @type }placeName
+ * @property {String}
+ * @type placeName
  */
 /**
- * @property {String
- * @type }stateName
+ * @property {String}
+ * @type stateName
  */
 /**
- * @property {String
- * @type }state
+ * @property {String}
+ * @type state
  */
 /**
- * @property {String
- * @type }regionName
+ * @property {String}
+ * @type regionName
  */
 /**
- * @property {String
- * @type }region
+ * @property {String}
+ * @type region
  */
 /**
- * @property {String
- * @type }community
+ * @property {String}
+ * @type community
  */
 /**
  * @property {number}

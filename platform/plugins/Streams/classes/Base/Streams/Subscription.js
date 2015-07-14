@@ -29,16 +29,16 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property {String
- * @type }publisherId
+ * @property {String}
+ * @type publisherId
  */
 /**
- * @property {String
- * @type }streamName
+ * @property {String}
+ * @type streamName
  */
 /**
- * @property {String
- * @type }ofUserId
+ * @property {String}
+ * @type ofUserId
  */
 /**
  * @property {String|Db.Expression}
@@ -53,8 +53,8 @@ Q.mixin(Base, Row);
  * @type untilTime
  */
 /**
- * @property {String
- * @type }filter
+ * @property {String}
+ * @type filter
  */
 /**
  * @property {integer}

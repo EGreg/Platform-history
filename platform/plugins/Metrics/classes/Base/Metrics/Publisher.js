@@ -37,16 +37,16 @@ Q.mixin(Base, Row);
  * @type insertedTime
  */
 /**
- * @property {String
- * @type }name
+ * @property {String}
+ * @type name
  */
 /**
- * @property {String
- * @type }secret
+ * @property {String}
+ * @type secret
  */
 /**
- * @property {String
- * @type }session_name
+ * @property {String}
+ * @type session_name
  */
 /**
  * @property {integer}

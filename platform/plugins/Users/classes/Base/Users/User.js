@@ -29,8 +29,8 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property {String
- * @type }id
+ * @property {String}
+ * @type id
  */
 /**
  * @property {String|Db.Expression}
@@ -41,8 +41,8 @@ Q.mixin(Base, Row);
  * @type updatedTime
  */
 /**
- * @property {String
- * @type }sessionId
+ * @property {String}
+ * @type sessionId
  */
 /**
  * @property {integer}
@@ -57,52 +57,52 @@ Q.mixin(Base, Row);
  * @type tw_uid
  */
 /**
- * @property {String
- * @type }g_uid
+ * @property {String}
+ * @type g_uid
  */
 /**
- * @property {String
- * @type }y_uid
+ * @property {String}
+ * @type y_uid
  */
 /**
- * @property {String
- * @type }passphraseHash
+ * @property {String}
+ * @type passphraseHash
  */
 /**
- * @property {String
- * @type }emailAddress
+ * @property {String}
+ * @type emailAddress
  */
 /**
- * @property {String
- * @type }mobileNumber
+ * @property {String}
+ * @type mobileNumber
  */
 /**
- * @property {String
- * @type }emailAddressPending
+ * @property {String}
+ * @type emailAddressPending
  */
 /**
- * @property {String
- * @type }mobileNumberPending
+ * @property {String}
+ * @type mobileNumberPending
  */
 /**
  * @property {String}
  * @type signedUpWith
  */
 /**
- * @property {String
- * @type }username
+ * @property {String}
+ * @type username
  */
 /**
- * @property {String
- * @type }icon
+ * @property {String}
+ * @type icon
  */
 /**
- * @property {String
- * @type }url
+ * @property {String}
+ * @type url
  */
 /**
- * @property {String
- * @type }pincodeHash
+ * @property {String}
+ * @type pincodeHash
  */
 
 /**

@@ -29,8 +29,8 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property {String
- * @type }id
+ * @property {String}
+ * @type id
  */
 /**
  * @property {integer}

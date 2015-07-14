@@ -29,16 +29,16 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property {String
- * @type }userId
+ * @property {String}
+ * @type userId
  */
 /**
- * @property {String
- * @type }forType
+ * @property {String}
+ * @type forType
  */
 /**
- * @property {String
- * @type }forId
+ * @property {String}
+ * @type forId
  */
 /**
  * @property {number}
