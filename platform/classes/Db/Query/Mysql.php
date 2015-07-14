@@ -1333,7 +1333,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	 * If this exact query has already been executed and
 	 * fetchAll() has been called on the Db_Query, and
 	 * the return value was cached by the Db_Query class, then
-	 * that cached value is returned.
+	 * that cached value is returned, unless $this->ignoreCache is true.
 	 * Otherwise, the query is executed and fetchAll()
 	 * is called on the result.
 	 *
@@ -1377,9 +1377,8 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	 * If this exact query has already been executed and
 	 * fetchAll() has been called on the Db_Query, and
 	 * the return value was cached by the Db_Query class, then
-	 * that cached value is returned.
-	 * Otherwise, the query is executed and fetchAll()
-	 * is called on the result.
+	 * that cached value is returned, unless $this->ignoreCache is true.
+	 * Otherwise, the query is executed and fetchAll() is called on the result.
 	 * @param {string} [$fields_prefix=''] This is the prefix, if any, to strip out when fetching the rows.
 	 * @param {string} [$by_field=null] A field name to index the array by.
 	 *  If the field's value is NULL in a given row, that row is just appended
@@ -1419,8 +1418,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	 * fetchAll() has been called on the Db_Query, and
 	 * the return value was cached by the Db_Query class, then
 	 * that cached value is returned.
-	 * Otherwise, the query is executed and fetchDbRows()
-	 * is called on the result.
+	 * Otherwise, the query is executed and fetchDbRows() is called on the result.
 	 * @method fetchDbRows
 	 * @param {string} [$class_name=null]  The name of the class to instantiate and fill objects from.
 	 * Must extend Db_Row. Defaults to $this->className

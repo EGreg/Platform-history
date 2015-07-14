@@ -77,6 +77,14 @@ var MyApp = (function (Q, $) {
 	});
 	Q.Pointer.startBlurringOnTouch();
 	
+	// set some options
+	if (Q.info.isTouchscreen) {
+		Q.Tool.jQuery.options("Q/clickable", {
+			press: { size: 1.5 },
+			release: { size: 3 }
+		});
+	}
+	
 	return MyApp;
 	
 })(Q, jQuery);
