@@ -372,12 +372,13 @@ function _Q_inplace_tool_constructor(element, options) {
 		}
 		_restoreZ();
 		if (newval) {
-			static_span.html(newval).attr('title', state.placeholder);
+			static_span.html(newval);
 		} else {
 			static_span.html('<span class="Q_placeholder">'
 				+state.placeholder.encodeHTML()+'</span>'
 			);
 		}
+		static_span.attr('title', state.placeholder);
 		undermessage.empty().css('display', 'none').addClass('Q_error');
 		tool.restoreActions();
 		container_span.removeClass('Q_editing')
