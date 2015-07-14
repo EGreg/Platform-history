@@ -145,12 +145,12 @@ function _Q_clickable(o) {
 				.attr('src', Q.url(o.shadow.src));
 			shadow.css('display', 'none').appendTo(container).load(function () {
 				var $this = $(this);
-				var width = container.width() * o.shadow.stretch;
-				var height = Math.min($this.height() * width / $this.width(), container.height()/2);
+				var width = csw * o.shadow.stretch;
+				var height = Math.min($this.height() * width / $this.width(), csh/2);
 				var toSet = {
 					'position': 'absolute',
-					'left': (container.width() - width)/2+'px',
-					'top': container.height() - height * (1-o.shadow.dip)+'px',
+					'left': (csw - width)/2+'px',
+					'top': csh - height * (1-o.shadow.dip)+'px',
 					'width': width+'px',
 					'height': height+'px',
 					'opacity': o.shadow.opacity,
@@ -168,15 +168,15 @@ function _Q_clickable(o) {
 			'position': 'absolute',
 			'left': '0px',
 			'top': '0px',
-			'width': container.width()+'px',
-			'height': container.height()+'px',
+			'width': csw+'px',
+			'height': csh+'px',
 			'overflow': 'visible',
 			'padding': '0px',
 			'margin': '0px'
 		}).appendTo(container);
 		var triggers = stretcher;
-		var width = container.width();
-		var height = container.height();
+		var width = csw;
+		var height = csh;
 		var left = parseInt(container.css('left'));
 		var top = parseInt(container.css('top'));
 		var tw = $this.outerWidth();
@@ -386,8 +386,8 @@ function _Q_clickable(o) {
 						'height': csh
 					});
 					stretcher.css({
-						'width': container.width()+'px',
-						'height': container.height()+'px'
+						'width': csw+'px',
+						'height': csh+'px'
 					});
 				}
 				csw = csw2;
