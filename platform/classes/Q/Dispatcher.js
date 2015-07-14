@@ -127,7 +127,7 @@ function Dispatcher (server, options) {
 				if (errors.length) {
 					result.errors = errors;
 				}
-				result.timestamp = Q.microtime(true);
+				result.timestamp = Date.now();
 				res.contentType('application/json');
 				var content = req.query.callback
 					? req.query.callback + "(" + JSON.stringify(result) + ")"

@@ -39,7 +39,7 @@
  *   The fields passed to the template include "alt", "titleTag" and "titleClass"
  *     @param {Object} [options.templates.create]
  *       @param {String} [options.templates.create.name]
- *       @default 'Streams/image/preview/create'
+ *       @default 'Streams/preview/create'
  *       @param {Object} [options.templates.create.fields]
  *         @param {String} [options.templates.create.fields.alt]
  *         @param {String} [options.templates.create.fields.titleClass]
@@ -49,11 +49,11 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 	var tool = this;
 	var state = tool.state;
 	if (!state.publisherId) {
-		throw new Q.Error("Streams/image/preview tool: missing options.publisherId");
+		throw new Q.Error("Streams/preview tool: missing options.publisherId");
 	}
 	var si = state.imagepicker;
 	if (!si || !si.showSize) {
-		throw new Q.Error("Streams/image/preview tool: missing options.imagepicker.showSize");
+		throw new Q.Error("Streams/preview tool: missing options.imagepicker.showSize");
 	}
 	if (!si.saveSizeName) {
 		si.saveSizeName = {};

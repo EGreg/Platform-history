@@ -1703,18 +1703,23 @@ Q.shuffle = function _Q_shuffle( arr ) {
 };
 
 /**
- * Returns microtime like PHP
- * @method microtime
- * @static
- * @param {Boolean} getAsFloat
- * @return {String}
+ * Returns the number of milliseconds since the first call to this function
+ * i.e. since this script was parsed.
+ * @method milliseconds
+ * @param {Boolean} sinceEpoch
+ *  Defaults to false. If true, just returns the number of milliseconds in the UNIX timestamp.
+ * @return {number}
+ *  The number of milliseconds, with fractional part
  */
-Q.microtime = function _Q_microtime(getAsFloat) {
-	var now = Date.now() / 1000;
-	if (getAsFloat) return now;
-	var s = parseInt(now, 10);
-	return (Math.round((now - s) * 1000) / 1000) + ' ' + s;
+Q.milliseconds = function _Q_microtime(sinceEpoch) {
+	var now = Date.now();
+	if (sinceEpoch) {
+		return now;
+	}
+	Q.microtime.started = Q.microtime.started || now;
+	return now - Q.microtime.started;
 };
+Q.milliseconds();
 
 /**
  * Returns the number of milliseconds since the
