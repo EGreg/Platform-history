@@ -1716,8 +1716,8 @@ Q.milliseconds = function _Q_microtime(sinceEpoch) {
 	if (sinceEpoch) {
 		return now;
 	}
-	Q.microtime.started = Q.microtime.started || now;
-	return now - Q.microtime.started;
+	Q.milliseconds.started = Q.milliseconds.started || now;
+	return now - Q.milliseconds.started;
 };
 Q.milliseconds();
 

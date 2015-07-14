@@ -771,8 +771,8 @@ Q.milliseconds = function _Q_microtime(sinceEpoch) {
 	if (sinceEpoch) {
 		return now;
 	}
-	Q.microtime.started = Q.microtime.started || now;
-	return now - Q.microtime.started;
+	Q.milliseconds.started = Q.milliseconds.started || now;
+	return now - Q.milliseconds.started;
 };
 Q.milliseconds();
 
@@ -5245,7 +5245,7 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 			? options.idPrefixes 
 			: (options.idPrefixes && options.idPrefixes.join(',')))
 		: '';
-	var timestamp = Q.microtime(true);
+	var timestamp = Date.now();
 	if (typeof what == 'string') {
 		var what2 = what;
 		if (Q.info && Q.info.baseUrl === what2) {
