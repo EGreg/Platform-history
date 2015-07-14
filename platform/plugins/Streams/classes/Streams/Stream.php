@@ -1590,13 +1590,13 @@ class Streams_Stream extends Base_Streams_Stream
 				'type',
 				'title',
 				'icon',
-				'messageCount',
-				'participantCount',
 				'insertedTime',
 				'updatedTime'
 			);
 			if (isset($this->type)) {
-				$fields = array_merge($default, Q_Config::get('Streams', 'types', $this->type, 'see', array()));
+				$fields = array_merge($default, Q_Config::get(
+					'Streams', 'types', $this->type, 'see', array()
+				));
 			}
 			foreach ($fields as $field) {
 				$result[$field] = ($field === 'icon')

@@ -36,8 +36,8 @@ class Q_Tree
 	 *  You can actually pass as many keys as you need,
 	 *  delving deeper and deeper into the configuration structure.
 	 *  All but the last parameter are interpreted as keys.
-	 * @param {mixed} $default Unless only one key is passed, the last parameter
-	 *  is the default value to return in case the requested field was not found.
+	 * @param {mixed} $default The last parameter is the default value to return
+	 *  in case the requested field was not found.
 	 * @return {mixed}
 	 * @throws {Q_Exception_NotArray}
 	 */
