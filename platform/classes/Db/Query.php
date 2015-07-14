@@ -241,10 +241,13 @@ interface iDb_Query
 	 * 
 	 * See [PDO documentation](http://us2.php.net/manual/en/pdostatement.fetchall.php)
 	 * @method fetchAll
+	 * @param {enum} $fetch_style=PDO::FETCH_ASSOC
+	 * @param {enum} $column_index=null
+	 * @param {array} $ctor_args=null
 	 * @return {array}
 	 */
 	function fetchAll(
-		$fetch_style = PDO::FETCH_BOTH, 
+		$fetch_style = PDO::FETCH_ASSOC, 
 		$column_index = null,
 		array $ctor_args = array());
 		
