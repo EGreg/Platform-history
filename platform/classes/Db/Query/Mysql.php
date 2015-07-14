@@ -1339,7 +1339,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	 *
 	 * See [PDO documentation](http://us2.php.net/manual/en/pdostatement.fetchall.php)
 	 * @method fetchAll
-	 * @param {enum} $fetch_style=PDO::FETCH_ASSOC
+	 * @param {enum} $fetch_style=PDO::FETCH_BOTH
 	 * @param {enum} $column_index=null
 	 * @param {array} $ctor_args=null
 	 * @return {array}
