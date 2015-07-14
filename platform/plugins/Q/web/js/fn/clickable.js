@@ -75,22 +75,6 @@ function _Q_clickable(o) {
 			$(this).trigger('release')
 		}, o.press.duration);
 	});
-	state.oldStyle = $this.attr('style');
-    if (!o.selectable) {
-		$this[0].preventSelections(true);
-	}
-	var $triggers;
-	if (o.triggers) {
-		$triggers = (typeof o.triggers === 'function')
-			? $(o.triggers.call($this, o))
-			: $(o.triggers);
-	}
-	var position = $this.css('position');
-	var display = $this.css('display');
-	var p = $this.parent();
-	if (p.length && p[0].tagName.toUpperCase() === 'TD') {
-		p.css('position', 'relative');
-	}
 	var originalTime = Date.now();
 	var timing = state.timing;
 	
@@ -107,6 +91,22 @@ function _Q_clickable(o) {
 				setTimeout(_clickify, timing.waitingInterval);
 			}
 			return;
+		}
+		state.oldStyle = $this.attr('style');
+		var display = $this.css('display');
+		var position = $this.css('position');
+		var p = $this.parent();
+		if (p.length && p[0].tagName.toUpperCase() === 'TD') {
+			p.css('position', 'relative');
+		}
+	    if (!o.selectable) {
+			$this[0].preventSelections(true);
+		}
+		var $triggers;
+		if (o.triggers) {
+			$triggers = (typeof o.triggers === 'function')
+				? $(o.triggers.call($this, o))
+				: $(o.triggers);
 		}
 		var rect = $this[0].getBoundingClientRect();
 		var csw = Math.ceil(rect.width);

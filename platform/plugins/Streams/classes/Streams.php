@@ -287,10 +287,11 @@ abstract class Streams extends Base_Streams
 	 *  make up the primary key of the stream table.
 	 * @param {array} $options=array()
 	 *  Optional. Defaults to array().
-	 *  Provide additional stream selection options like 'limit', 'offset', 'orderBy', 'where' etc.
-	 *  See Query/Mysql::options().
-	 *  @param {boolean} [$options.refetch] => Ignore cache of previous calls to fetch, and save a new cache if necessary.
-	 *  See Query/Mysql::options().
+	 *  Provide additional query options like 'limit', 'offset', 'orderBy', 'where' etc.
+	 *  @see Db_Query_Mysql::options().
+	 *  @param {boolean} [$options.refetch] => Ignore cache of previous calls to fetch, 
+	 *   and save a new cache if necessary.
+	 *  @see Db_Query_Mysql::options().
 	 * @return {array}
 	 *  Returns an array of Streams_Stream objects with access info calculated
 	 *  specifically for $asUserId .

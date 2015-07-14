@@ -447,9 +447,11 @@ Streams.get = function _Streams_get(publisherId, streamName, callback, extra) {
 			return callback && callback.call(this, msg, params);
 		}
 		if (Q.isEmpty(data.stream)) {
-			return console.warn(
-				"Stream " + publisherId + " " + streamName + " is not available"
-			);
+			var msg = "Stream " + publisherId + " " + streamName + " is not available";
+			var err = msg;
+			var params = [err, data, null];
+			Streams.onError.handle(msg, params);
+			return callback && callback.call(null, err, null, extra);
 		}
 		Streams.construct(
 			data.stream,
