@@ -234,7 +234,7 @@ button.basic16 { background-color: #eee; color: black; }
 .Q_big_prompt .Q_button { font-size: 18px; } 
 .Q_big_prompt .Q_button,
 .Q_notTouchscreen .Q_big_prompt .Q_button,
-.Q_notTouchscreen .Q_big_prompt .Q_button:active { padding: 5px 1em; box-sizing: content-box; }
+.Q_notTouchscreen .Q_big_prompt .Q_button:active { padding: 5px 1em; box-sizing: content-box; display: inline-block; }
 .Q_big_prompt .Q_button span { display: inline-block; line-height: 1em; margin-top: -2px; }
 .Q_big_prompt input[type=text],
 .Q_big_prompt input[type=email],

@@ -343,3 +343,10 @@
 #Users_setIdentifier_step1 * {
 	box-sizing: border-box;
 }
+
+#Users_login_dialog input,
+#Users_setIdentifier_dialog input {
+	margin: 5px 0px 5px 0px;
+}
+
+#Users_login_dialog #Users_agree { margin-right: 5px; }
