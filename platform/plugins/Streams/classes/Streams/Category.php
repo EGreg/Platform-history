@@ -31,7 +31,7 @@ class Streams_Category extends Base_Streams_Category
 	 *  The publisher of the stream
 	 * @param {string} $streamName
 	 *  The name of the stream which is presumably related to/from other streams
-	 * @return {array}
+	 * @return {array|null}
 	 *  Returns the array(weight => array($publisherId, $streamName, $title, $icon))
 	 */
 	static function getRelatedTo($publisherId, $streamName, $relationType)
