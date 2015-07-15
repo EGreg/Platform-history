@@ -132,8 +132,7 @@ class Users_Email extends Base_Users_Email
 			}
 
 			$mail = new Zend_Mail();
-			$from_name = reset($from);
-			$mail->setFrom(next($from), $from_name);
+			$mail->setFrom(reset($from), next($from));
 			if (isset($options['name'])) {
 				$mail->addTo($emailAddress, $options['name']);
 			} else {
