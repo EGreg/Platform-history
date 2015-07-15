@@ -8176,7 +8176,8 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	$.fn.activate = function _jQuery_fn_activate(options, callback) {
 		$(this).each(function _jQuery_fn_activate_each(index, element) {
 			if (!$(element).closest('html').length) {
-				console.warn(new Q.Error("jQuery.fn.activate: element to activate must be in the DOM"));
+				console.log("Q.activate: element " + element.id + " is not in the DOM");
+				return false; // avoid doing work if it's not in the DOM
 			}
 			Q.activate(element, options, callback);
 		});

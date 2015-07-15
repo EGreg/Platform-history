@@ -353,6 +353,11 @@ function _Streams_related_tool (options)
 			tabs.refresh();
 			break;
 		}
+	},
+	Q: {
+		beforeRemove: function () {
+			this.state.onUpdate.remove("Streams/related");
+		}
 	}
 }
 
