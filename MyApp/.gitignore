@@ -3,8 +3,7 @@
 .hg/
 .idea/
 local/*
-files/*
-!files/MyApp/uploads/.dir
+files/MyApp/uploads/*/*
 !files/MyApp/uploads/Users/.dir
 !files/MyApp/uploads/Streams/.dir
 web/plugins/*

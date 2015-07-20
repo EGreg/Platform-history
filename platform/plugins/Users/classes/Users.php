@@ -1859,6 +1859,22 @@ abstract class Users extends Base_Users
 		);
 		return Q::interpolate($terms_label, array('link' => $terms_link));
 	}
+	
+	/**
+	 * Get the url of a user's icon
+	 * @param {string} [$icon] The contents of a user row's icon field
+	 * @param {string} [$basename=""] The last part after the slash, such as "50.png"
+	 * @return {string} The stream's icon url
+	 */
+	static function iconUrl($icon, $basename = null)
+	{
+		if (empty($icon)) return null;
+		$url = Q_Valid::url($icon) ? $icon : "plugins/Users/img/icons/{$icon}";
+		if ($basename) {
+			$url .= "/$basename";
+		}
+		return Q_Html::themedUrl($url);
+	}
 
 	/**
 	 * @property $fql_results

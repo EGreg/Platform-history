@@ -187,7 +187,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 							var parts = stream.iconUrl(40).split('/');
 							var iconUrl = parts.slice(0, parts.length-1).join('/')
 								.substr(Q.info.baseUrl.length+1);
-							if (parts[0] === 'plugins' && parts[1] === 'Users') {
+							if (parts[1] === 'Users') {
 								// uploading a user icon
 								path = 'uploads/Users';
 								subpath = state.publisherId + '/icon';
@@ -196,6 +196,7 @@ Q.Tool.define("Streams/image/preview", function(options) {
 								subpath = state.publisherId + '/'
 									+ state.streamName + '/icon';
 							}
+							subpath += '/'+Math.floor(Date.now()/1000);
 							callback({ path: path, subpath: subpath });
 						});
 					},

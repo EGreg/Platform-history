@@ -63,7 +63,7 @@ function Users_avatar_tool($options)
 			$attributes['cacheBust'] = $options['cacheBust'];
 		}
 		$result .= Q_Html::img(
-			"plugins/Users/img/icons/{$avatar->icon}/$icon.png", 
+			Users::iconUrl($avatar->icon, "$icon.png"),
 			'user icon', $attributes
 		);
 	}

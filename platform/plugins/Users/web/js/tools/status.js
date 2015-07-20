@@ -106,8 +106,7 @@ Q.Tool.define("Users/status", function(options) {
 			if (user.fb_uid && user.fb_uid.length > 1) {
 				iconUrl = 'http://graph.facebook.com/' + user.fb_uid + '/picture';
 			} else {
-				iconUrl = Q.url('/plugins/Users/img/icons/' + user.icon +
-					'/40.png?' + Date.now() / 1000);
+				iconUrl = Users.iconUrl(user.icon, '40.png');
 			}
 			Users.userStatus.button.addClass('Q_logged_in').removeClass('Q_dialog_trigger');
 			var username = user.displayName || user.username || 'User';

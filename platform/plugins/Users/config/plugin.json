@@ -30,7 +30,7 @@
 			"e/:emailAddress": { "module": "Users", "action": "activate" },
 			"m/:mobileNumber": { "module": "Users", "action": "activate" },
 			"plugins/Users/:action": {"module": "Users"},
-			"plugins/Users/img/icons/:folder/:size.png": {"mobile": "Users", "action": "missingIcon"}
+			"uploads/Users/:userId/icon/:timestamp/:size.png": {"mobile": "Users", "action": "missingIcon"}
 		},
 		"session": {
 			"db": {
@@ -58,8 +58,7 @@
 		"paths": {
 			"icons": "files/Users/icons",
 			"uploads": {
-				"files/Users/icons/user-$userId": true,
-				"files/$app/uploads/user-$userId": true
+				"files/$app/uploads/Users/$userId": true
 			}
 		},
 		"node": {
@@ -137,7 +136,7 @@
 			"default": "Someone"
 		},
 		"icon": {
-			"sizes": ["40", "50", "80", "200", "200x"],
+			"sizes": ["40", "50", "80", "x200", "200x"],
 			"defaultSize": "40"
 		},
 		"vote": {

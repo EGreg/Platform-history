@@ -266,19 +266,24 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 					// add imagepicker
 					var ipo = Q.extend({}, si, {
 						preprocess: function (callback) {
-							Q.Streams.get(state.publisherId, state.streamName,
-							function (err) {
+							Q.Streams.get(state.publisherId, state.streamName, function (err) {
+								var subpath;
 								if (err) {
 									return console.warn(err);
 								}
+								tool.stream = stream;
 								var parts = stream.iconUrl(40).split('/');
 								var iconUrl = parts.slice(0, parts.length-1).join('/')
 									.substr(Q.info.baseUrl.length+1);
-								var prefix = 'plugins/Users/img/icons'
-								var path = (iconUrl.substr(0, prefix.length) === prefix)
-									? prefix
-									: 'uploads/streams';
-								var subpath = iconUrl.substr(path.length+1);
+								if (parts[1] === 'Users') {
+									// uploading a user icon
+									path = 'uploads/Users';
+									subpath = state.publisherId + '/icon';
+								} else { // uploading a regular stream icon
+									path = 'uploads/Streams';
+									subpath = state.publisherId + '/'
+										+ state.streamName + '/icon';
+								}
 								callback({ path: path, subpath: subpath });
 							});
 						},

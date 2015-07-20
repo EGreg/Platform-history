@@ -34,10 +34,10 @@ function Streams_after_Q_objects () {
 	$params = array(
 		'displayName' => null,
 		'action' => 'Streams/basic',
-		'icon' => Q_Html::themedUrl("plugins/Users/img/icons/{$user->icon}"),
+		'icon' => $user->iconUrl(),
 		'token' => $invite->token,
 		'user' => array(
-			'icon' => Q_Html::themedUrl("plugins/Users/img/icons/{$invitingUser->icon}"),
+			'icon' => $invitingUser->iconUrl(),
 			'displayName' => $invitingUser->displayName(array('fullAccess' => true))
 		),
 		'stream' => $stream->exportArray(),

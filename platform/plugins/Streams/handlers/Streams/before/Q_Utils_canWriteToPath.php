@@ -20,13 +20,19 @@ function Streams_before_Q_Utils_canWriteToPath($params, &$result)
 		if (substr($sp, -1) === '/') {
 			$sp = substr($sp, 0, strlen($sp)-1);
 		}
-		$prefix = "files/$app/uploads/streams/";
+		$prefix = "files/$app/uploads/Streams/";
 		$len = strlen($prefix);
 		if (substr($sp, 0, $len) === $prefix) {
 			$parts = explode('/', substr($sp, $len));
-			if (count($parts) >= 3) {
+			$c = count($parts);
+			if ($c >= 3) {
 				$publisherId = $parts[0];
-				$name = implode('/', array_slice($parts, 1));
+				$l = 0;
+				for ($i=$c-1; $i>=1; --$i) {
+					$l = $i;
+					if ($parts[$i] === 'icon') break;
+				}
+				$name = implode('/', array_slice($parts, 1, $l-1));
 				if ($stream = Streams::fetchOne($userId, $publisherId, $name)) {
 					$result = $stream->testWriteLevel('edit');
 					Streams::$cache['canWriteToStream'] = $stream;

@@ -39,7 +39,7 @@
 		},
 		"paths": {
 			"uploads": {
-				"files/$app/uploads/streams/": true
+				"files/$app/uploads/Streams": true
 			}
 		}
 	},
