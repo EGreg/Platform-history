@@ -268,7 +268,8 @@ abstract class Base_Metrics_Publisher extends Db_Row
 	 */
 	function beforeSet_name($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('name', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -298,7 +299,8 @@ abstract class Base_Metrics_Publisher extends Db_Row
 	 */
 	function beforeSet_secret($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('secret', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -328,7 +330,8 @@ abstract class Base_Metrics_Publisher extends Db_Row
 	 */
 	function beforeSet_session_name($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('session_name', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

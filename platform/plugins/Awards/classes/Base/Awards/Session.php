@@ -183,7 +183,8 @@ abstract class Base_Awards_Session extends Db_Row
 	 */
 	function beforeSet_id($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('id', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

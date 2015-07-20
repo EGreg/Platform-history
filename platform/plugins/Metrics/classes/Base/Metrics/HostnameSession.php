@@ -185,7 +185,8 @@ abstract class Base_Metrics_HostnameSession extends Db_Row
 	 */
 	function beforeSet_hostname($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('hostname', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -215,7 +216,8 @@ abstract class Base_Metrics_HostnameSession extends Db_Row
 	 */
 	function beforeSet_sessionId($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('sessionId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

@@ -210,7 +210,8 @@ abstract class Base_Streams_Avatar extends Db_Row
 	 */
 	function beforeSet_toUserId($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('toUserId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -240,7 +241,8 @@ abstract class Base_Streams_Avatar extends Db_Row
 	 */
 	function beforeSet_publisherId($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('publisherId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -297,7 +299,8 @@ abstract class Base_Streams_Avatar extends Db_Row
 	 */
 	function beforeSet_username($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('username', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -327,7 +330,8 @@ abstract class Base_Streams_Avatar extends Db_Row
 	 */
 	function beforeSet_firstName($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('firstName', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -357,7 +361,8 @@ abstract class Base_Streams_Avatar extends Db_Row
 	 */
 	function beforeSet_lastName($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('lastName', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -387,7 +392,8 @@ abstract class Base_Streams_Avatar extends Db_Row
 	 */
 	function beforeSet_icon($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('icon', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

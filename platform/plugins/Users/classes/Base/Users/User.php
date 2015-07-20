@@ -269,7 +269,8 @@ abstract class Base_Users_User extends Db_Row
 	 */
 	function beforeSet_id($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('id', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -644,7 +645,8 @@ abstract class Base_Users_User extends Db_Row
 	 */
 	function beforeSet_emailAddressPending($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('emailAddressPending', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -674,7 +676,8 @@ abstract class Base_Users_User extends Db_Row
 	 */
 	function beforeSet_mobileNumberPending($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('mobileNumberPending', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -721,7 +724,8 @@ abstract class Base_Users_User extends Db_Row
 	 */
 	function beforeSet_username($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('username', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -751,7 +755,8 @@ abstract class Base_Users_User extends Db_Row
 	 */
 	function beforeSet_icon($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('icon', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

@@ -228,7 +228,8 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_countryCode($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('countryCode', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -258,7 +259,8 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_zipcode($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('zipcode', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -288,7 +290,8 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_placeName($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('placeName', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -318,7 +321,8 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_stateName($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('stateName', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -348,7 +352,8 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_state($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('state', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -378,7 +383,8 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_regionName($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('regionName', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -408,7 +414,8 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_region($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('region', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -438,7 +445,8 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_community($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('community', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

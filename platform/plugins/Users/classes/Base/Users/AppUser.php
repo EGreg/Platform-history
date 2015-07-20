@@ -226,7 +226,8 @@ abstract class Base_Users_AppUser extends Db_Row
 	 */
 	function beforeSet_userId($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('userId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -273,7 +274,8 @@ abstract class Base_Users_AppUser extends Db_Row
 	 */
 	function beforeSet_appId($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('appId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -470,7 +472,8 @@ abstract class Base_Users_AppUser extends Db_Row
 	 */
 	function beforeSet_provider_uid($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('provider_uid', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

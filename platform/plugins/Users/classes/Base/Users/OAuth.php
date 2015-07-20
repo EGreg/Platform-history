@@ -216,7 +216,8 @@ abstract class Base_Users_OAuth extends Db_Row
 	 */
 	function beforeSet_client_id($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('client_id', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -246,7 +247,8 @@ abstract class Base_Users_OAuth extends Db_Row
 	 */
 	function beforeSet_userId($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('userId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -276,7 +278,8 @@ abstract class Base_Users_OAuth extends Db_Row
 	 */
 	function beforeSet_state($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('state', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -306,7 +309,8 @@ abstract class Base_Users_OAuth extends Db_Row
 	 */
 	function beforeSet_scope($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('scope', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -336,7 +340,8 @@ abstract class Base_Users_OAuth extends Db_Row
 	 */
 	function beforeSet_redirect_uri($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('redirect_uri', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -366,7 +371,8 @@ abstract class Base_Users_OAuth extends Db_Row
 	 */
 	function beforeSet_access_token($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('access_token', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

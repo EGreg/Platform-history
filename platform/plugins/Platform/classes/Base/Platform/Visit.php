@@ -208,7 +208,8 @@ abstract class Base_Platform_Visit extends Db_Row
 	 */
 	function beforeSet_id($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('id', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -238,7 +239,8 @@ abstract class Base_Platform_Visit extends Db_Row
 	 */
 	function beforeSet_sessionId($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('sessionId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -268,7 +270,8 @@ abstract class Base_Platform_Visit extends Db_Row
 	 */
 	function beforeSet_insertedTime($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('insertedTime', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -298,7 +301,8 @@ abstract class Base_Platform_Visit extends Db_Row
 	 */
 	function beforeSet_url($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('url', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -328,7 +332,8 @@ abstract class Base_Platform_Visit extends Db_Row
 	 */
 	function beforeSet_hostname($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('hostname', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -358,7 +363,8 @@ abstract class Base_Platform_Visit extends Db_Row
 	 */
 	function beforeSet_from_share_id($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('from_share_id', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

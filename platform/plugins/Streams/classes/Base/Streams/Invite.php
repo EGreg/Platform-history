@@ -239,7 +239,8 @@ abstract class Base_Streams_Invite extends Db_Row
 	 */
 	function beforeSet_token($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('token', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -269,7 +270,8 @@ abstract class Base_Streams_Invite extends Db_Row
 	 */
 	function beforeSet_userId($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('userId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -299,7 +301,8 @@ abstract class Base_Streams_Invite extends Db_Row
 	 */
 	function beforeSet_publisherId($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('publisherId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -329,7 +332,8 @@ abstract class Base_Streams_Invite extends Db_Row
 	 */
 	function beforeSet_streamName($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('streamName', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -359,7 +363,8 @@ abstract class Base_Streams_Invite extends Db_Row
 	 */
 	function beforeSet_invitingUserId($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('invitingUserId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -389,7 +394,8 @@ abstract class Base_Streams_Invite extends Db_Row
 	 */
 	function beforeSet_displayName($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('displayName', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -419,7 +425,8 @@ abstract class Base_Streams_Invite extends Db_Row
 	 */
 	function beforeSet_appUrl($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('appUrl', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

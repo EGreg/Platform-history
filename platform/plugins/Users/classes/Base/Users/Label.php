@@ -195,7 +195,8 @@ abstract class Base_Users_Label extends Db_Row
 	 */
 	function beforeSet_userId($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('userId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -225,7 +226,8 @@ abstract class Base_Users_Label extends Db_Row
 	 */
 	function beforeSet_label($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('label', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -255,7 +257,8 @@ abstract class Base_Users_Label extends Db_Row
 	 */
 	function beforeSet_icon($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('icon', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -285,7 +288,8 @@ abstract class Base_Users_Label extends Db_Row
 	 */
 	function beforeSet_title($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('title', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

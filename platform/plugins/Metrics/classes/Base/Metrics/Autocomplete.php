@@ -218,7 +218,8 @@ abstract class Base_Metrics_Autocomplete extends Db_Row
 	 */
 	function beforeSet_query($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('query', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -248,7 +249,8 @@ abstract class Base_Metrics_Autocomplete extends Db_Row
 	 */
 	function beforeSet_types($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('types', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -362,7 +364,8 @@ abstract class Base_Metrics_Autocomplete extends Db_Row
 	 */
 	function beforeSet_results($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('results', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

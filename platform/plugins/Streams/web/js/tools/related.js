@@ -95,11 +95,7 @@ function _Streams_related_tool (options)
 			Q.activate(element, function () {
 				var rc = tool.state.refreshCount;
 				var preview = Q.Tool.from(element, 'Streams/preview');
-				var beforeCreate = preview.state.beforeCreate;
-				if (!beforeCreate) {
-					return console.warn(element.Q.tool.name + " missing beforeCreate event");
-				}
-				beforeCreate.set(function () {
+				preview.state.beforeCreate.set(function () {
 					// workaround for now
 					if (tool.state.refreshCount > rc) {
 						return;
@@ -328,27 +324,30 @@ function _Streams_related_tool (options)
 		for (id in parents) {
 			tabs = Q.Tool.from(parents[id].element, "Q/tabs");
 			if (!tabs) continue;
-			tool.$('.Streams_related_composer').addClass('Q_tabs_tab')
+			tool.$('.Streams_related_composer').addClass('Q_tabs_tab');
 			Q.each(elements, function (i) {
 				var element = elements[i];
 				var preview = Q.Tool.from(element, 'Streams/preview');
-				var value = state.tabs.call(tool, preview, tabs);
-				var attr = value.isUrl() ? 'href' : 'data-name';
-				elements[i].addClass("Q_tabs_tab")
-					.setAttribute(attr, value);
-				if (!tabs.$tabs.is(element)) {
-					tabs.$tabs = tabs.$tabs.add(element);
-				}
-				var onLoad = preview.state.onLoad;
-				if (onLoad) {
-					onLoad.set(function () {
-						var tab = tabs.state.tab;
-						var $tab = $(tab);
-						if (tab === element) {
-							tabs.refresh();
-						}
-					});
-				}
+				var key = preview.state.onRefresh.add(function () {
+					var value = state.tabs.call(tool, preview, tabs);
+					var attr = value.isUrl() ? 'href' : 'data-name';
+					elements[i].addClass("Q_tabs_tab")
+						.setAttribute(attr, value);
+					if (!tabs.$tabs.is(element)) {
+						tabs.$tabs = tabs.$tabs.add(element);
+					}
+					var onLoad = preview.state.onLoad;
+					if (onLoad) {
+						onLoad.set(function () {
+							var tab = tabs.state.tab;
+							var $tab = $(tab);
+							if (tab === element) {
+								tabs.refresh();
+							}
+						});
+					}
+					preview.state.onRefresh.remove(key);
+				});
 			});
 			tabs.refresh();
 			break;

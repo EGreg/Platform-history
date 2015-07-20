@@ -228,7 +228,8 @@ abstract class Base_Platform_Share extends Db_Row
 	 */
 	function beforeSet_share_id($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('share_id', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -258,7 +259,8 @@ abstract class Base_Platform_Share extends Db_Row
 	 */
 	function beforeSet_visit_id($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('visit_id', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -352,7 +354,8 @@ abstract class Base_Platform_Share extends Db_Row
 	 */
 	function beforeSet_url($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('url', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -382,7 +385,8 @@ abstract class Base_Platform_Share extends Db_Row
 	 */
 	function beforeSet_tag1($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('tag1', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -412,7 +416,8 @@ abstract class Base_Platform_Share extends Db_Row
 	 */
 	function beforeSet_tag2($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('tag2', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -442,7 +447,8 @@ abstract class Base_Platform_Share extends Db_Row
 	 */
 	function beforeSet_tag3($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('tag3', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

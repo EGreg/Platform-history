@@ -70,13 +70,6 @@ function Streams_stream_post($params) {
 	
 	// Process any icon that was posted
 	if (is_array($icon)) {
-		$app = Q_Config::expect('Q', 'app');
-		if ($icon['path'] !== "files/$app/uploads/streams") {
-			throw new Q_Exception_WrongValue(array(
-				'field' => "icon.path",
-				'range' => "files/$app/uploads/streams"
-			));
-		}
 		$icon['subpath'] = "streams/{$stream->publisherId}/{$stream->name}";
 		Q_Response::setSlot('icon', Q::event("Q/image/post", $icon));
 	}

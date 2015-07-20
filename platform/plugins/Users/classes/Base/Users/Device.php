@@ -215,7 +215,8 @@ abstract class Base_Users_Device extends Db_Row
 	 */
 	function beforeSet_userId($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('userId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -245,7 +246,8 @@ abstract class Base_Users_Device extends Db_Row
 	 */
 	function beforeSet_deviceId($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('deviceId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -325,7 +327,8 @@ abstract class Base_Users_Device extends Db_Row
 	 */
 	function beforeSet_sessionId($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('sessionId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

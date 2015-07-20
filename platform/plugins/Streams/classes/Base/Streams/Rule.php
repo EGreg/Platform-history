@@ -222,7 +222,8 @@ abstract class Base_Streams_Rule extends Db_Row
 	 */
 	function beforeSet_ofUserId($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('ofUserId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -252,7 +253,8 @@ abstract class Base_Streams_Rule extends Db_Row
 	 */
 	function beforeSet_publisherId($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('publisherId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -282,7 +284,8 @@ abstract class Base_Streams_Rule extends Db_Row
 	 */
 	function beforeSet_streamName($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('streamName', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -395,7 +398,8 @@ abstract class Base_Streams_Rule extends Db_Row
 	 */
 	function beforeSet_filter($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('filter', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -425,7 +429,8 @@ abstract class Base_Streams_Rule extends Db_Row
 	 */
 	function beforeSet_deliver($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('deliver', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

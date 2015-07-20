@@ -223,7 +223,8 @@ abstract class Base_Streams_Sent extends Db_Row
 	 */
 	function beforeSet_publisherId($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('publisherId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -253,7 +254,8 @@ abstract class Base_Streams_Sent extends Db_Row
 	 */
 	function beforeSet_streamName($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('streamName', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -334,7 +336,8 @@ abstract class Base_Streams_Sent extends Db_Row
 	 */
 	function beforeSet_byUserId($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('byUserId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -364,7 +367,8 @@ abstract class Base_Streams_Sent extends Db_Row
 	 */
 	function beforeSet_comment($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('comment', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -427,7 +431,8 @@ abstract class Base_Streams_Sent extends Db_Row
 	 */
 	function beforeSet_chatPublisherId($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('chatPublisherId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

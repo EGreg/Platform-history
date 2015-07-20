@@ -159,6 +159,7 @@ class Db_Mysql implements iDb
 				'modifications' => $modifications
 			), 'after');
 		}
+		$this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 		return $this->pdo;
 	}
 	
@@ -1595,6 +1596,7 @@ EOT;
 			}
 			
 			$null_check = $field_null ? "if (!isset(\$value)) {\n\t\t\treturn array('$field_name', \$value);\n\t\t}\n\t\t" : '';
+			$null_fix = $field_null ? '' : "if (!isset(\$value)) {\n\t\t\t\$value='';}";
 			$dbe_check = "if (\$value instanceof Db_Expression) {\n\t\t\treturn array('$field_name', \$value);\n\t\t}\n\t\t";
 			$js_null_check = $field_null ? "if (!value) return value;\n\t\t" : '';
 			$js_dbe_check = "if (value instanceof Db.Expression) return value;\n\t\t";
@@ -1718,7 +1720,7 @@ EOT;
 		return $type_display_range;
 EOT;
 					$functions["beforeSet_$field_name"][] = <<<EOT
-		{$null_check}{$dbe_check}if (!is_string(\$value) and !is_numeric(\$value))
+		{$null_check}{$null_fix}{$dbe_check}if (!is_string(\$value) and !is_numeric(\$value))
 			throw new Exception('Must pass a string to '.\$this->getTable().".$field_name");
 		if (strlen(\$value) > $type_display_range)
 			throw new Exception('Exceedingly long value being assigned to '.\$this->getTable().".$field_name");
