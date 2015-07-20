@@ -196,7 +196,9 @@ abstract class Base_Users_Link extends Db_Row
 	function beforeSet_identifier($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('identifier', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -227,7 +229,9 @@ abstract class Base_Users_Link extends Db_Row
 	function beforeSet_userId($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('userId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -258,7 +262,9 @@ abstract class Base_Users_Link extends Db_Row
 	function beforeSet_extraInfo($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('extraInfo', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

@@ -215,7 +215,9 @@ abstract class Base_Users_Email extends Db_Row
 	function beforeSet_address($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('address', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -297,7 +299,9 @@ abstract class Base_Users_Email extends Db_Row
 	function beforeSet_userId($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('userId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -345,7 +349,9 @@ abstract class Base_Users_Email extends Db_Row
 	function beforeSet_activationCode($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('activationCode', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -400,7 +406,9 @@ abstract class Base_Users_Email extends Db_Row
 	function beforeSet_authCode($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('authCode', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

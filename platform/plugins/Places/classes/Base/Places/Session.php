@@ -184,7 +184,9 @@ abstract class Base_Places_Session extends Db_Row
 	function beforeSet_id($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('id', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

@@ -1596,7 +1596,7 @@ EOT;
 			}
 			
 			$null_check = $field_null ? "if (!isset(\$value)) {\n\t\t\treturn array('$field_name', \$value);\n\t\t}\n\t\t" : '';
-			$null_fix = $field_null ? '' : "if (!isset(\$value)) {\n\t\t\t\$value='';}";
+			$null_fix = $field_null ? '' : "if (!isset(\$value)) {\n\t\t\t\$value='';\n\t\t}\n\t\t";
 			$dbe_check = "if (\$value instanceof Db_Expression) {\n\t\t\treturn array('$field_name', \$value);\n\t\t}\n\t\t";
 			$js_null_check = $field_null ? "if (!value) return value;\n\t\t" : '';
 			$js_dbe_check = "if (value instanceof Db.Expression) return value;\n\t\t";

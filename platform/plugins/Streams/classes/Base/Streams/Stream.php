@@ -256,7 +256,9 @@ abstract class Base_Streams_Stream extends Db_Row
 	function beforeSet_publisherId($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('publisherId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -287,7 +289,9 @@ abstract class Base_Streams_Stream extends Db_Row
 	function beforeSet_name($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('name', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -369,7 +373,9 @@ abstract class Base_Streams_Stream extends Db_Row
 	function beforeSet_type($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('type', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -400,7 +406,9 @@ abstract class Base_Streams_Stream extends Db_Row
 	function beforeSet_title($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('title', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -431,7 +439,9 @@ abstract class Base_Streams_Stream extends Db_Row
 	function beforeSet_icon($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('icon', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -462,7 +472,9 @@ abstract class Base_Streams_Stream extends Db_Row
 	function beforeSet_content($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('content', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

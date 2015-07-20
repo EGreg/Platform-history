@@ -217,7 +217,9 @@ abstract class Base_Users_OAuth extends Db_Row
 	function beforeSet_client_id($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('client_id', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -248,7 +250,9 @@ abstract class Base_Users_OAuth extends Db_Row
 	function beforeSet_userId($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('userId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -279,7 +283,9 @@ abstract class Base_Users_OAuth extends Db_Row
 	function beforeSet_state($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('state', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -310,7 +316,9 @@ abstract class Base_Users_OAuth extends Db_Row
 	function beforeSet_scope($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('scope', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -341,7 +349,9 @@ abstract class Base_Users_OAuth extends Db_Row
 	function beforeSet_redirect_uri($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('redirect_uri', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -372,7 +382,9 @@ abstract class Base_Users_OAuth extends Db_Row
 	function beforeSet_access_token($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('access_token', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

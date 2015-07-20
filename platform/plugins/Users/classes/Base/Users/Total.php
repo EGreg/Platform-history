@@ -206,7 +206,9 @@ abstract class Base_Users_Total extends Db_Row
 	function beforeSet_forType($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('forType', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -237,7 +239,9 @@ abstract class Base_Users_Total extends Db_Row
 	function beforeSet_forId($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('forId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

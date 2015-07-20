@@ -210,7 +210,9 @@ abstract class Base_Users_Session extends Db_Row
 	function beforeSet_id($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('id', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -241,7 +243,9 @@ abstract class Base_Users_Session extends Db_Row
 	function beforeSet_content($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('content', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -272,7 +276,9 @@ abstract class Base_Users_Session extends Db_Row
 	function beforeSet_php($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('php', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -303,7 +309,9 @@ abstract class Base_Users_Session extends Db_Row
 	function beforeSet_deviceId($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('deviceId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

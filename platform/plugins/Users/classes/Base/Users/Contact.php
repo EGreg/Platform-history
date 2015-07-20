@@ -202,7 +202,9 @@ abstract class Base_Users_Contact extends Db_Row
 	function beforeSet_userId($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('userId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -233,7 +235,9 @@ abstract class Base_Users_Contact extends Db_Row
 	function beforeSet_label($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('label', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -264,7 +268,9 @@ abstract class Base_Users_Contact extends Db_Row
 	function beforeSet_contactUserId($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('contactUserId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -295,7 +301,9 @@ abstract class Base_Users_Contact extends Db_Row
 	function beforeSet_nickname($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('nickname', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

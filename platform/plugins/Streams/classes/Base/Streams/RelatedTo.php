@@ -214,7 +214,9 @@ abstract class Base_Streams_RelatedTo extends Db_Row
 	function beforeSet_toPublisherId($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('toPublisherId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -245,7 +247,9 @@ abstract class Base_Streams_RelatedTo extends Db_Row
 	function beforeSet_toStreamName($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('toStreamName', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -276,7 +280,9 @@ abstract class Base_Streams_RelatedTo extends Db_Row
 	function beforeSet_type($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('type', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -307,7 +313,9 @@ abstract class Base_Streams_RelatedTo extends Db_Row
 	function beforeSet_fromPublisherId($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('fromPublisherId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -338,7 +346,9 @@ abstract class Base_Streams_RelatedTo extends Db_Row
 	function beforeSet_fromStreamName($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('fromStreamName', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

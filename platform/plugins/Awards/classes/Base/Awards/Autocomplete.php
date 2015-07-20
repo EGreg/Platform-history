@@ -219,7 +219,9 @@ abstract class Base_Awards_Autocomplete extends Db_Row
 	function beforeSet_query($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('query', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -250,7 +252,9 @@ abstract class Base_Awards_Autocomplete extends Db_Row
 	function beforeSet_types($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('types', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -365,7 +369,9 @@ abstract class Base_Awards_Autocomplete extends Db_Row
 	function beforeSet_results($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('results', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

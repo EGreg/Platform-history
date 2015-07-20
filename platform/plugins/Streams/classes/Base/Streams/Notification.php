@@ -216,7 +216,9 @@ abstract class Base_Streams_Notification extends Db_Row
 	function beforeSet_userId($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('userId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -271,7 +273,9 @@ abstract class Base_Streams_Notification extends Db_Row
 	function beforeSet_publisherId($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('publisherId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -302,7 +306,9 @@ abstract class Base_Streams_Notification extends Db_Row
 	function beforeSet_streamName($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('streamName', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
