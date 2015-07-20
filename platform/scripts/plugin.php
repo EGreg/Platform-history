@@ -131,20 +131,14 @@ $options['sql'] = $sql_array;
 //echo $PLUGIN_NAME.PHP_EOL;
 //print_r($options);
 
-try {
-	echo 'Q Platform plugin installer'.PHP_EOL;
-	if($PLUGIN_NAME=='--all') {
-		if(!$all = Q_Config::get('Q', 'plugins', null))
-			die('No plugins were installed');
+echo 'Q Platform plugin installer'.PHP_EOL;
+if($PLUGIN_NAME=='--all') {
+	if(!$all = Q_Config::get('Q', 'plugins', null))
+		die('No plugins were installed');
 
-		foreach($all as $pl) {
-			Q_Plugin::installPlugin($pl, $options);
-		}
-	} else {
-		Q_Plugin::installPlugin($PLUGIN_NAME, $options);
+	foreach($all as $pl) {
+		Q_Plugin::installPlugin($pl, $options);
 	}
-}
-catch (Exception $e)
-{
-	die('[ERROR] ' . $e->getMessage() . PHP_EOL . (isset($trace) ? $e->getTraceAsString() . PHP_EOL : ''));
+} else {
+	Q_Plugin::installPlugin($PLUGIN_NAME, $options);
 }

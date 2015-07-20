@@ -520,15 +520,21 @@ Streams.listen = function (options) {
 				}
 				break;
 			case 'Streams/Stream/invite':
-				var userIds, invitingUserId, username, appUrl, label,
+				var userIds, invitingUserId, username, appUrl, parts, rest, label,
 				    readLevel, writeLevel, adminLevel, displayName, expiry, logKey;
 				try {
 					userIds = JSON.parse(parsed.userIds);
 					invitingUserId = parsed.invitingUserId;
 					username = parsed.username;
 					appUrl = parsed.appUrl;
-					label = parsed.label ? Q.normalize(parsed.label, '_', /[^A-Za-z0-9\/]+/) : null;
-					title = parsed.label ? parsed.label: null;
+					if (parsed.label) {
+						parts = parsed.label.split('/');
+						rest = parts.slice(1).join('/');
+						label = parts[0] + '/' + Q.normalize(rest);
+						title = rest[0].toUpperCase() + rest.substr(1);
+					} else {
+						label = null;
+					}
 					readLevel = parsed.readLevel && JSON.parse(parsed.readLevel) || null;
 					writeLevel = parsed.writeLevel && JSON.parse(parsed.writeLevel) || null;
 					adminLevel = parsed.adminLevel && JSON.parse(parsed.adminLevel) || null;
@@ -556,12 +562,11 @@ Streams.listen = function (options) {
 				// Create a new label, if necessary
 				if (label) {
 				    new Users.Label({
-				        userId: userId,
-				        label: label,
-				        title: title
+				        userId: stream.fields.publisherId,
+				        label: label
 				    }).retrieve(function (err, labels) {
 				        if (!labels.length) {
-				            this.fields.title = label[0].toUpperCase() + label.substr(1);
+				            this.fields.title = title;
 				            this.save(persist);
 				        } else {
 				            persist();
@@ -661,7 +666,7 @@ Streams.listen = function (options) {
 						    // Add the users to a label, if any
             				if (label) {
             				    new Users.Contact({
-            				        userId: invitingUserId,
+            				        userId: stream.fields.publisherId,
                                     label: label,
                                     contactUserId: userId
             				    }).save(true);

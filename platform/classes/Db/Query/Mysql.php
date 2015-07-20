@@ -1048,10 +1048,6 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 			default:
 				throw new Exception("The WHERE clause does not belong in this context.", -1);
 		}
-
-		if (empty($this->clauses['WHERE'])) {
-			throw new Exception("Don't call orWhere() when you haven't called where() yet", -1);
-		}
 		
 		if (!isset($criteria)) {
 			return $this;

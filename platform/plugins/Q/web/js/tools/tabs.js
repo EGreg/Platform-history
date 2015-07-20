@@ -176,7 +176,10 @@ Q.Tool.define("Q/tabs", function(options) {
 		var state = tool.state;
 		if (typeof tab === 'string') {
 			name = tab;
-			tab = null;
+			var slashed = (name + '')
+			    .replace(/[\\"']/g, '\\$&')
+				.replace(/\u0000/g, '\\0');
+			tab = tool.$('[data-name="'+slashed+'"]')[0];
 		}
 		if (!$(tool.element).closest('body').length) {
 			// the replaced html probably included the tool's own element,
@@ -206,7 +209,7 @@ Q.Tool.define("Q/tabs", function(options) {
 	},
 	
 	/**
-	 * Called by indicateCurrentTab. You can override this function to provide your
+	 * Called by indicateCurrent. You can override this function to provide your
 	 * own mechanisms for indicating the current tab and returning it.
 	 * @method getCurrentTab
 	 * @param {String} [tab] a possible tab the caller requested to indicate as current

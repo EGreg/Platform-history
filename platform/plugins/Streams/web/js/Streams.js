@@ -181,9 +181,8 @@ Streams.iconUrl = function(icon, size) {
 		size = '40';
 	}
 	size = (String(size).indexOf('.') >= 0) ? size : size+'.png';
-	return icon.isUrl()
-		? icon + '/' + size
-		: Q.url('plugins/Streams/img/icons/'+icon+'/'+size);
+	var src = icon + '/' + size;
+	return icon.isUrl() ? src : Q.url('plugins/Streams/img/icons/'+src);
 };
 
 var _socket = null,

@@ -1040,6 +1040,20 @@ class Streams_Stream extends Base_Streams_Stream
 	static function invite($publisherId, $streamName, $who, $options = array())
 	{
 		$user = Users::loggedInUser(true);
+		
+		$label = isset($options['label']) ? $options['label'] : null;
+		if ($label) {
+			$parts = explode('/', $label);
+			$app = Q_Config::expect('Q', 'app');
+			$plugins = Q_Config::expect('Q', 'plugins');
+			$allowed = array_merge(array($app), $plugins);
+			if (false === in_array($parts[0], $allowed)) {
+				throw new Q_Exception_WrongValue(array(
+					'field' => 'label',
+					'range' => 'label with app or plugin name as the prefix'
+				));
+			}
+		}
 
 		// Fetch the stream as the logged-in user
 		$stream = Streams::fetch($user->id, $publisherId, $streamName);
@@ -1153,7 +1167,7 @@ class Streams_Stream extends Base_Streams_Stream
 			"userIds" => Q::json_encode($userIds),
 			"stream" => Q::json_encode($stream->toArray()),
 			"appUrl" => $appUrl,
-			"label" => isset($options['label']) ? $options['label'] : null, 
+			"label" => $label, 
 			"readLevel" => $readLevel,
 			"writeLevel" => $writeLevel,
 			"adminLevel" => $adminLevel,

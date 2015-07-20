@@ -175,5 +175,15 @@
 		"type": "Streams/category",
 		"title": "Quotes",
 		"icon": ""
+	},
+	"Streams/contacts": {
+		"type": "Streams/access",
+		"title": "Contacts",
+		"icon": ""
+	},
+	"Streams/labels": {
+		"type": "Streams/access",
+		"title": "Labels",
+		"icon": ""
 	}
 }

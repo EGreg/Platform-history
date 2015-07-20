@@ -277,7 +277,7 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 								var prefix = 'plugins/Users/img/icons'
 								var path = (iconUrl.substr(0, prefix.length) === prefix)
 									? prefix
-									: 'plugins/Streams';
+									: 'uploads/streams';
 								var subpath = iconUrl.substr(path.length+1);
 								callback({ path: path, subpath: subpath });
 							});

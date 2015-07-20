@@ -6,5 +6,7 @@ syntax: regexp
 ^\.idea/
 ^local/
 ^files/(?!.dir|MyApp).+
-^files/MyApp/uploads/(?!.dir).+
+^files/MyApp/uploads/(?!.dir|Users|Streams).+
+^files/MyApp/uploads/Users/(?!.dir).+
+^files/MyApp/uploads/Streams/(?!.dir).+
 ^web/plugins

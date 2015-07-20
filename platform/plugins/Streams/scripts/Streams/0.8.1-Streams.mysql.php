@@ -2,6 +2,8 @@
 
 function Streams_0_8_1_Streams_mysql()
 {	
+	$app = Q_Config::expect('Q', 'app');
+	
 	// template for community stream
 	$stream = new Streams_Stream();
 	$stream->publisherId = '';
@@ -15,7 +17,6 @@ function Streams_0_8_1_Streams_mysql()
 	$stream->save();
 	
 	// app community stream, for announcements
-	$app = Q_Config::expect('Q', 'app');
 	$stream = new Streams_Stream();
 	$stream->publisherId = $app;
 	$stream->name = 'Streams/community/main';

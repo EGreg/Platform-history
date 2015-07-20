@@ -161,28 +161,23 @@ class Q_Plugin
 				echo "Running SQL scripts for $type $name on $conn_name ($dbms)".PHP_EOL;
 			}
 
-			//echo "Begin transaction".PHP_EOL;
-			//$pdo->beginTransaction();
+			// echo "Begin transaction".PHP_EOL;
+			$pdo->beginTransaction();
 
 			// Process script files
 			foreach ($scripts as $script) {
 
-				if (substr($script, -4) === '.php') {
-					echo "Processing PHP file: $script \n";
-					try {
-						Q::includeFile($scriptsdir.DS.$script);
-					} catch (Exception $e) {
-						Q::exceptionHandler($e);
-						die($e->getMessage()."\n"."(Fix the error, then run the installer again.)\n");
-					}
-					continue;
-				}
-
-				echo "Processing SQL file: $script ";
-				$sqltext = file_get_contents($scriptsdir.DS.$script);
-				$sqltext = str_replace('{$prefix}', $prefix, $sqltext);
-
 				try {
+					if (substr($script, -4) === '.php') {
+						echo "Processing PHP file: $script \n";
+						Q::includeFile($scriptsdir.DS.$script);
+						continue;
+					}
+
+					echo "Processing SQL file: $script ";
+					$sqltext = file_get_contents($scriptsdir.DS.$script);
+					$sqltext = str_replace('{$prefix}', $prefix, $sqltext);
+
 					$queries = $db->scriptToQueries($sqltext);
 					// Process each query
 					foreach ($queries as $q) {
@@ -208,8 +203,8 @@ class Q_Plugin
 						$err = $e;
 					}
 					echo PHP_EOL;
-					//echo "Rollback".PHP_EOL;
-					//$pdo->rollBack();
+					echo "Rollback".PHP_EOL;
+					$pdo->rollBack();
 					throw $err;
 				}
 			}
@@ -220,14 +215,14 @@ class Q_Plugin
 						->execute();
 			} catch (Exception $e) {
 				if ($pdo->errorCode() != '00000') {
-					//echo "Rollback".PHP_EOL;
-					//$pdo->rollBack();
+					echo "Rollback".PHP_EOL;
+					$pdo->rollBack();
 					$err = $pdo->errorInfo();
 					throw new Exception("$err[2]");
 				}
 			}
-			//echo "Commit transaction".PHP_EOL;
-			//$pdo->commit();
+			// echo "Commit transaction".PHP_EOL;
+			$pdo->commit();
 			echo '+ ' . ucfirst($type) . " '$name' schema on '$conn_name'$shard_text (v. $current_version -> $version) installed".PHP_EOL;
 		}
 	}

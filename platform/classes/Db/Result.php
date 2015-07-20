@@ -146,7 +146,8 @@ class Db_Result
 		if (empty($fields_prefix)) {
 			$fields_prefix = '';
 		}
-		if (empty($class_name) && isset($this->query)) {
+		if (empty($class_name) && isset($this->query)
+		and !$this->query->getClause('JOIN')) {
 			$class_name = $this->query->className;
 		}
 		if (empty($class_name)) {
@@ -197,7 +198,8 @@ class Db_Result
 		if (empty($fields_prefix)) {
 			$fields_prefix = '';
 		}
-		if (empty($class_name) && isset($this->query)) {
+		if (empty($class_name) and isset($this->query)
+		and !$this->query->getClause('JOIN')) {
 			$class_name = $this->query->className;
 		}
 		if (empty($class_name)) {
