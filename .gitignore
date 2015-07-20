@@ -20,6 +20,7 @@ platform/plugins/Streams/files/Streams/icons/*
 platform/node_modules
 MyApp/local/*
 MyApp/files/*
+!MyApp/files/MyApp/uploads
 MyApp/web/plugins/*
 SmartApp/local/*
 SmartApp/files/*

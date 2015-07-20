@@ -4,5 +4,6 @@
 .idea/
 local/*
 files/*
+!files/MyApp/uploads
 web/plugins/*
 !*.dir
