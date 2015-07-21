@@ -82,19 +82,8 @@ function Streams_stream_put($params) {
 	// Process any icon that was posted
 	$icon = Q::ifset($fieldNames, 'icon', null);
 	if (is_array($icon)) {
-		$app = Q_Config::expect('Q', 'app');
-		if ($icon['path'] !== "files/$app/uploads/streams") {
-			throw new Q_Exception_WrongValue(array(
-				'field' => "icon.path",
-				'range' => "files/$app/uploads/streams"
-			));
-		}
 		unset($fieldNames['icon']);
-		$icon['subpath'] = "streams/{$stream->publisherId}/{$stream->name}";
-		$timeLimit = Q_Config::get('Q', 'uploads', 'limits', 'image', 'time', 5*60*60);
-		set_time_limit($timeLimit); // 5 min
-		$saved = Q_Image::save($icon);
-		Q_Response::setSlot('icon', $saved);
+		Q_Response::setSlot('icon', Q::event("Q/image/post", $icon));
 	}
 	
 	if (!empty($fieldNames)) {

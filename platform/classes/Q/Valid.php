@@ -318,37 +318,34 @@ class Q_Valid
 	}
 	
 	/**
-	 * Convenience method to apply certain criteria to an array.
+	 * Convenience method to require certain fields to be present in an array,
 	 * and generate errors otherwise.
-	 * @param {array} $criteria Array of ($fieldName => $methodName) naming methods
-	 *    of Q_Valid. If $methodName is true, then the field is simply checked for
-	 *    being set (even if it is empty).
+	 * @param {array} $fields Array of strings or arrays naming fields that are required
 	 * @param {array} [$source=$_REQUEST] Where to look for the fields
-	 * @param {boolean} [$throwIfViolated=false] Whether to throw an exception
+	 * @param {boolean} [$throwIfMissing=false] Whether to throw an exception
 	 *    on the first violation, or add them to a list.
 	 * @method require
 	 * @static
 	 * @return {array} The resulting list of exceptions
 	 */
-	static function requireFields($criteria, $source = null, $throwIfViolated = false)
+	static function requireFields($fields, $source = null, $throwIfMissing = false)
 	{
 		if (!isset($source)) {
 			$source = $_REQUEST;
 		}
-		if (is_string($criteria)) {
-			$criteria = func_get_args();
-			if (end($criteria) === true) {
-				$throwIfViolated = true;
-				array_pop($criteria);
+		if (is_string($fields)) {
+			$fields = func_get_args();
+			if (end($fields) === true) {
+				$throwIfMissing = true;
+				array_pop($fields);
 			}
 		}
-		$methods = array('url'=>1, 'domain'=>1, 'email'=>1, 'date'=>1, 'phone'=>1);
 		$result = array();
-		foreach ($criteria as $fieldname) {
+		foreach ($fields as $fieldname) {
 			$missing = false;
 			$field = '';
 			if (is_array($fieldname)) {
-				$t = $_REQUEST;
+				$t = $source;
 				foreach ($fieldname as $f) {
 					if (!isset($t[$f])) {
 						$missing = true;
@@ -362,14 +359,14 @@ class Q_Valid
 					}
 				}
 			} else {
-				if (!isset($_REQUEST[$fieldname])) {
+				if (!isset($source[$fieldname])) {
 					$missing = true;
 				}
 				$field = $fieldname;
 			}
 			if ($missing) {
 				$exception = new Q_Exception_RequiredField(compact('field'), $field);
-				if ($throwIfViolated) {
+				if ($throwIfMissing) {
 					throw $exception;
 				}
 				$result[] = $exception;

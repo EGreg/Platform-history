@@ -266,7 +266,26 @@ class Users_User extends Base_Users_User
 	 */
 	function addContact($label, $contactUserId, $nickname = '')
 	{
-		Users_Contact::addContact($this->id, $label, $contactId, $nickname);
+		Users_Contact::addContact($this->id, $label, $contactUserId, $nickname);
+	}
+	
+	/**
+	 * @method addContact
+	 * @param {string} $contactUserId
+	 *  The id of the user who is the contact
+	 * @param {string|array} $label
+	 *  The label of the contact. This can be a string or an array of strings, in which case
+	 *  multiple contact rows are saved.
+	 * @param {string} [$nickname='']
+	 *  Optional nickname to assign to the contact
+	 *  @optional
+	 * @throws {Q_Exception_RequiredField}
+	 *	if $label is missing
+	 * @return {array} Array of contacts that are saved
+	 */
+	function removeContact($label, $contactUserId)
+	{
+		Users_Contact::removeContact($this->id, $label, $contactUserId);
 	}
 	
 	/**
@@ -690,15 +709,6 @@ class Users_User extends Base_Users_User
 			$this->icon = Users::importIcon($this, $icon);
 		}
 		return true;
-	}
-	
-	/**
-	 * Obtain the path of the user icon
-	 * @return {string}
-	 */
-	function iconPath()
-	{
-		return "plugins/Users/img/icons/".$this->icon;
 	}
 	
 	/**

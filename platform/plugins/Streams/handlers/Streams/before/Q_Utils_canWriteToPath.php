@@ -5,8 +5,8 @@ function Streams_before_Q_Utils_canWriteToPath($params, &$result)
 	extract($params);
 	/**
 	 * @var $path
-	 * @var $throw_if_not_writeable
-	 * @var $mkdir_if_missing
+	 * @var $throwIfNotWritable
+	 * @var $mkdirIfMissing
 	 */
 	
 	// Assume that Users/before/Q/Utils/canWriteToPath already executed
@@ -40,7 +40,7 @@ function Streams_before_Q_Utils_canWriteToPath($params, &$result)
 			}
 		}
 	}
-	if (!$result and $throw_if_not_writeable) {
+	if (!$result and $throwIfNotWritable) {
 		throw new Q_Exception_CantWriteToPath();
 	}
 }

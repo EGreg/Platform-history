@@ -1163,6 +1163,7 @@ $class_extras
 	 * Implements the __set_state method, so it can work with
 	 * with var_export and be re-imported successfully.
 	 * @method __set_state
+	 * @static
 	 * @param {array} \$array
 	 * @return {{$class_name}} Class instance
 	 */

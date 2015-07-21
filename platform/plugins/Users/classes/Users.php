@@ -44,8 +44,8 @@ abstract class Users extends Base_Users
 	 *  You can pass additional criteria here for the label field
 	 *  in the `Users_Contact::select`
 	 * @param {array} {$options} Any additional options to pass to the query, such as "ignoreCache"
-	 * @return array An associative array of $roleName => $contactRow pairs
-	 * @throws Users_Exception_NotLoggedIn
+	 * @return {array} An associative array of $roleName => $contactRow pairs
+	 * @throws {Users_Exception_NotLoggedIn}
 	 */
 	static function roles($publisherId = null, $filter = null, $options = array())
 	{
@@ -1868,12 +1868,82 @@ abstract class Users extends Base_Users
 	 */
 	static function iconUrl($icon, $basename = null)
 	{
-		if (empty($icon)) return null;
-		$url = Q_Valid::url($icon) ? $icon : "plugins/Users/img/icons/{$icon}";
+		if (empty($icon)) {
+			return null;
+		}
+		$url = Q_Valid::url($icon) ? $icon : "plugins/Users/img/icons/$icon";
 		if ($basename) {
 			$url .= "/$basename";
 		}
 		return Q_Html::themedUrl($url);
+	}
+	
+	/**
+	 * Checks whether one user can manage contacts of another user
+	 * @static
+	 * @param {string} $asUserId The user who would be doing the managing
+	 * @param {string} $userId The user whose contacts they are
+	 * @param {string} $label The label of the contacts that will be managed
+	 * @return {boolean} Whether a contact with this label is allowed to be managed
+	 * @throws {Users_Exception_NotAuthorized}
+	 */
+	static function canManageContacts(
+		$asUserId, 
+		$userId, 
+		$label, 
+		$throwIfNotAuthorized = false
+	) {
+		if (isset($throwIfNotAuthorized)) {
+			$result = Q::event(
+				"Users/canManageContacts",
+				compact('asUserId', 'userId', 'label', 'throwIfNotAuthorized'),
+				'before'
+			);
+			if (isset($result)) {
+				return $result;
+			}
+		}
+		if ($asUserId === $userId and substr($label, 0, 6) === 'Users/') {
+			return true;
+		}
+		if ($throwIfNotAuthorized) {
+			throw new Users_Exception_NotAuthorized();
+		}
+		return false;
+	}
+	
+	/**
+	 * Checks whether one user can manage contact labels of another user
+	 * @static
+	 * @param {string} $asUserId The user who would be doing the managing
+	 * @param {string} $userId The user whose contact labels they are
+	 * @param {string} $label The label that will be managed
+	 * @return {boolean} Whether this label is allowed to be managed
+	 * @throws {Users_Exception_NotAuthorized}
+	 */
+	static function canManageLabels(
+		$asUserId, 
+		$userId, 
+		$label, 
+		$throwIfNotAuthorized = false
+	) {
+		if (isset($throwIfNotAuthorized)) {
+			$result = Q::event(
+				"Users/canManageLabels",
+				compact('asUserId', 'userId', 'label', 'throwIfNotAuthorized'),
+				'before'
+			);
+			if (isset($result)) {
+				return $result;
+			}
+		}
+		if ($asUserId === $userId and substr($label, 0, 6) === 'Users/') {
+			return true;
+		}
+		if ($throwIfNotAuthorized) {
+			throw new Users_Exception_NotAuthorized();
+		}
+		return false;
 	}
 
 	/**
