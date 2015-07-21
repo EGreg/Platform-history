@@ -289,9 +289,15 @@ Q.Tool.define("Q/tabs", function(options) {
 		var w = $te.width(), w2 = 0, w3 = 0, index = -10;
 		var $o = $('.Q_tabs_overflow', $te);
 		tool.indicateCurrent();
-		if (!parseInt($te[0].style.width)) {
+		var te = tool.element;
+		if (!parseInt(te.style.width)) {
+			var rect1 = te.getBoundingClientRect();
 			$te.siblings(':visible').each(function () {
 				var $t = $(this);
+				var rect2 = this.getBoundingClientRect();
+				if (rect1.top > rect2.bottom || rect1.bottom < rect2.top) {
+					return;
+				}
 				if ($t.css('float') != 'none') {
 					w -= $t.outerWidth(true);
 				}
