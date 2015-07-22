@@ -177,7 +177,7 @@ Streams.iconUrl = function(icon, size) {
 		console.warn("Streams.iconUrl: icon is empty");
 		return '';
 	}
-	if (!size) {
+	if (!size || size === true) {
 		size = '40';
 	}
 	size = (String(size).indexOf('.') >= 0) ? size : size+'.png';
