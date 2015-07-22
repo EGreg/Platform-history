@@ -716,7 +716,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 			}
 			throw new Q_Exception_DbQuery(array(
 				'sql' => $sql,
-				'message' => $exception->getMessage()
+				'message' => $exception->getMessage() . "[query was: $sql]"
 			));
 		}
 		/**
