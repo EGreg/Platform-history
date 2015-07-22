@@ -627,18 +627,12 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 						}
 					}
 				}
-			} catch (Exception $e) {
+			} catch (Exception $exception) {
 				if ($nt) {
 					$pdo->rollBack();
 					$nt = 0;
 				}
-				if (!class_exists('Q_Exception_DbQuery')) {
-					throw $e;
-				}
-				throw new Q_Exception_DbQuery(array(
-					'sql' => $sql,
-					'message' => $e->getMessage()
-				));
+				break;
 			}
 			$this->nestedTransactionCount = $nt;
 			if (class_exists('Q') && isset($sql)) {
@@ -705,10 +699,31 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 			}
 		}
 		$this->endedTime = Q::milliseconds(true);
+		if (!empty($exception)) {
+			/**
+			 * @event Db/query/exception {after}
+			 * @param {Db_Query_Mysql} query
+			 * @param {array} queries
+			 * @param {string} sql
+			 * @param {Exception} exception
+			 */
+			Q::event('Db/query/exception', 
+				compact('query', 'queries', 'sql', 'exception'),
+				'after'
+			);
+			if (!class_exists('Q_Exception_DbQuery')) {
+				throw $exception;
+			}
+			throw new Q_Exception_DbQuery(array(
+				'sql' => $sql,
+				'message' => $exception->getMessage()
+			));
+		}
 		/**
 		 * @event Db/query/execute {after}
-		 * @param {Db_Query_Mysql} 'query'
-		 * @param {string} 'sql'
+		 * @param {Db_Query_Mysql} query
+		 * @param {array} queries
+		 * @param {string} sql
 		 */
 		Q::event('Db/query/execute', compact('query', 'queries', 'sql'), 'after');
 
@@ -752,6 +767,9 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		if (!empty($this->clauses["BEGIN"])) {
 			throw new Exception("You can't use BEGIN and ROLLBACK in the same query.", -1);
 		}
+		if (!empty($this->clauses["COMMIT"])) {
+			throw new Exception("You can't use COMMIT and ROLLBACK in the same query.", -1);
+		}
 		$this->clauses["ROLLBACK"] = "ROLLBACK";
 		if ($criteria) {
 			$this->criteria = $criteria;
@@ -771,6 +789,9 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	{
 		if (!empty($this->clauses["BEGIN"])) {
 			throw new Exception("You can't use BEGIN and COMMIT in the same query.", -1);
+		}
+		if (!empty($this->clauses["ROLLBACK"])) {
+			throw new Exception("You can't use COMMIT and ROLLBACK in the same query.", -1);
 		}
 		$this->clauses["COMMIT"] = "COMMIT";
 		return $this;

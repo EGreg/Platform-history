@@ -6,6 +6,7 @@ function Q_init()
 		// logging database queries
 		Q::log("\n-----");
 		Q_Config::set('Q', 'handlersAfterEvent', 'Db/query/execute', 'log_shard_query');
+		Q_Config::set('Q', 'handlersAfterEvent', 'Db/query/exception', 'log_shard_query');
 	}
 	
 	if (!empty($_SERVER['HTTP_HOST'])) {
@@ -13,7 +14,7 @@ function Q_init()
 		Q_Session::setNonce();
 	}
 	
-	if (Q_Config::get('First', 'testing', false)) {
+	if (Q_Config::get('MyApp', 'testing', false)) {
 		// sometimes the APC can cause files to appear missing
 		// if they were created after it tried to load them once
 		apc_clear_cache('user');
@@ -37,7 +38,9 @@ function log_shard_query($params)
 		and $query->nestedTransactionCount == 0) {
 			Q::log($commit);
 		}
-		if ($rollback = $query->getClause('ROLLBACK')) {
+		if (!empty($params['exception'])) {
+			Q::log("ROLLBACK (due to exception)");
+		} else if ($rollback = $query->getClause('ROLLBACK')) {
 			Q::log($rollback);
 		}
 	}

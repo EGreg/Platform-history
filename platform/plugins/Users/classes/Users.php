@@ -1893,23 +1893,22 @@ abstract class Users extends Base_Users
 		$label, 
 		$throwIfNotAuthorized = false
 	) {
-		if (isset($throwIfNotAuthorized)) {
-			$result = Q::event(
-				"Users/canManageContacts",
-				compact('asUserId', 'userId', 'label', 'throwIfNotAuthorized'),
-				'before'
-			);
-			if (isset($result)) {
-				return $result;
-			}
+		$authorized = false;
+		$result = Q::event(
+			"Users/canManageContacts",
+			compact('asUserId', 'userId', 'label', 'throwIfNotAuthorized'),
+			'before'
+		);
+		if ($result) {
+			$authorized = $result;
 		}
 		if ($asUserId === $userId and substr($label, 0, 6) === 'Users/') {
-			return true;
+			$authorized = true;
 		}
-		if ($throwIfNotAuthorized) {
+		if (!$authorized and $throwIfNotAuthorized) {
 			throw new Users_Exception_NotAuthorized();
 		}
-		return false;
+		return $authorized;
 	}
 	
 	/**
@@ -1927,23 +1926,22 @@ abstract class Users extends Base_Users
 		$label, 
 		$throwIfNotAuthorized = false
 	) {
-		if (isset($throwIfNotAuthorized)) {
-			$result = Q::event(
-				"Users/canManageLabels",
-				compact('asUserId', 'userId', 'label', 'throwIfNotAuthorized'),
-				'before'
-			);
-			if (isset($result)) {
-				return $result;
-			}
+		$authorized = false;
+		$result = Q::event(
+			"Users/canManageLabels",
+			compact('asUserId', 'userId', 'label', 'throwIfNotAuthorized'),
+			'before'
+		);
+		if ($result) {
+			$authorized = $result;
 		}
 		if ($asUserId === $userId and substr($label, 0, 6) === 'Users/') {
 			return true;
 		}
-		if ($throwIfNotAuthorized) {
+		if (!$authorized and $throwIfNotAuthorized) {
 			throw new Users_Exception_NotAuthorized();
 		}
-		return false;
+		return $authorized;
 	}
 
 	/**

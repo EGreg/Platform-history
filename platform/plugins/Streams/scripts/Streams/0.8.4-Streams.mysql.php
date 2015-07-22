@@ -10,6 +10,7 @@ function Streams_0_8_4_Streams_mysql()
 	$stream->name = 'Streams/contacts';
 	$stream->type = 'Streams/access';
 	$stream->title = "Contacts";
+	$stream->setAttribute('prefixes', array("Users/", "$app/"));
 	$stream->save();
 	
 	// access stream for managing app roles
@@ -18,6 +19,7 @@ function Streams_0_8_4_Streams_mysql()
 	$stream->name = 'Streams/labels';
 	$stream->type = 'Streams/access';
 	$stream->title = "Labels";
+	$stream->setAttribute('prefixes', array("Users/", "$app/"));
 	$stream->save();
 	
 	// access for managing app contacts

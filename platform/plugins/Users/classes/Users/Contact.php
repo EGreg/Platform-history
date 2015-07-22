@@ -55,6 +55,9 @@ class Users_Contact extends Base_Users_Contact
 			$contact->userId = $userId;
 			$contact->contactUserId = $contactUserId;
 			$contact->label = $l;
+			if ($nickname) {
+				$contact->nickname = $nickname;
+			}
 			$contact->save(true);
 			$contacts[] = $contact;
 		}
