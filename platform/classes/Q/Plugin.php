@@ -81,10 +81,11 @@ class Q_Plugin
 		if (isset($dbconf['shards']))
 			$shards = array_merge($shards, $dbconf['shards']);
 
+		$index = 0;
 		foreach ($shards as $shard => $data) {
 
 			$shard_text = ($shard === '' ? "" : " shard '$shard'");
-			$tempname = $conn_name . '_' . time();
+			$tempname = $conn_name . ' installing' . ($shard ? "on shard: $shard" : '');
 			$shard_data = array_merge($dbconf, $data);
 			Db::setConnection($tempname, $shard_data);
 
@@ -103,10 +104,12 @@ class Q_Plugin
 			$db->rawQuery("CREATE TABLE IF NOT EXISTS `{$prefix}Q_{$type}` (
 				`{$type}` VARCHAR(255) NOT NULL,
 				`version` VARCHAR( 255 ) NOT NULL,
-				PRIMARY KEY (`{$type}`)) ENGINE = InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;")->execute();
+				PRIMARY KEY (`{$type}`)) ENGINE = InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;")
+				->execute();
 
 			$res = $db->select('version', "{$prefix}Q_{$type}")
 						->where(array($type => $name))
+						->begin()
 						->fetchAll(PDO::FETCH_ASSOC);
 
 			// If we have version in the db then this is upgrade
@@ -114,7 +117,7 @@ class Q_Plugin
 				$current_version = $res[0]['version'];
 				echo ucfirst($type)." '$name' schema on '$conn_name'$shard_text (v. $current_version) is already installed" . PHP_EOL;
 				if (Q::compare_version($current_version, $version) < 0)
-					echo "Upgrading '$name' on '$conn_name'$shard_text schema to version: $version" . PHP_EOL;
+					echo "Updating '$name' on '$conn_name'$shard_text schema to version: $version" . PHP_EOL;
 				else continue;
 			} else {
 				// Otherwise considering that plugin has version '0' to override it for getSqlScripts()
@@ -161,13 +164,9 @@ class Q_Plugin
 				echo "Running SQL scripts for $type $name on $conn_name ($dbms)".PHP_EOL;
 			}
 
-			// echo "Begin transaction".PHP_EOL;
-			$pdo->beginTransaction();
-
 			// Process script files
-			foreach ($scripts as $script) {
-
-				try {
+			try {
+				foreach ($scripts as $script) {
 					if (substr($script, -4) === '.php') {
 						echo "Processing PHP file: $script \n";
 						Q::includeFile($scriptsdir.DS.$script);
@@ -194,35 +193,38 @@ class Q_Plugin
 						$current_version = $newver;
 					}
 					echo PHP_EOL;
-				} catch (Exception $e) {
-					if ($pdo->errorCode() != '00000') {
-						$err = $pdo->errorInfo();
-						$err = new Exception("$err[2]");
-					} else {
-						// error was thrown by scriptToQueries
-						$err = $e;
-					}
-					echo PHP_EOL;
-					echo "Rollback".PHP_EOL;
-					$pdo->rollBack();
-					throw $err;
 				}
-			}
-			try {
-				if (Q::compare_version($version, $current_version) > 0)
-					$db->insert("{$prefix}Q_{$type}", array($type=>$name, 'version'=>$version))
-						->onDuplicateKeyUpdate(array('version'=>$version))
-						->execute();
 			} catch (Exception $e) {
 				if ($pdo->errorCode() != '00000') {
-					echo "Rollback".PHP_EOL;
-					$pdo->rollBack();
 					$err = $pdo->errorInfo();
+					$err = new Exception("$err[2]");
+				} else {
+					// error was thrown by scriptToQueries
+					$err = $e;
+				}
+				echo PHP_EOL;
+				echo "Rollback".PHP_EOL;
+				// NOTE: transactions will be committed by MySQL after any DDL statement
+				// which will prevent any rollbacks even if an error occurs.
+				$db->rawQuery()->rollBack();
+				throw $err;
+			}
+			try {
+				// echo "Commit transaction".PHP_EOL;
+				if (Q::compare_version($version, $current_version) > 0) {
+					$db->insert("{$prefix}Q_{$type}", array($type=>$name, 'version'=>$version))
+						->onDuplicateKeyUpdate(array('version'=>$version))
+						->commit()
+						->execute();
+				}
+			} catch (Exception $e) {
+				if ($pdo->errorCode() != '00000') {
+					$err = $pdo->errorInfo();
+					echo "Rollback".PHP_EOL;
+					$db->rawQuery()->rollBack();
 					throw new Exception("$err[2]");
 				}
 			}
-			// echo "Commit transaction".PHP_EOL;
-			$pdo->commit();
 			echo '+ ' . ucfirst($type) . " '$name' schema on '$conn_name'$shard_text (v. $current_version -> $version) installed".PHP_EOL;
 		}
 	}
@@ -499,7 +501,7 @@ EOT;
 			//We have this plugin installed
 			echo "Plugin '$plugin_name' (version: $version_installed) is already installed" . PHP_EOL;
 			if (Q::compare_version($version_installed, $plugin_version) < 0)
-				echo "Upgrading '$plugin_name' to version: $plugin_version" . PHP_EOL;
+				echo "Updating '$plugin_name' to version: $plugin_version" . PHP_EOL;
 		}
 		
 		// Check and fix permissions

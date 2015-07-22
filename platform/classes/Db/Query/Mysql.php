@@ -568,10 +568,12 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 			$query->startedTime = Q::milliseconds(true);
 
 			$pdo = $query->reallyConnect($shard_name);
-			$nt = & self::$nestedTransactions[$connection][$shard_name];
+			$connInfo = Db::getConnection($connection);
+			$dsn = $connInfo['dsn'];
+			$nt = & self::$nestedTransactions[$dsn];
 			if (!isset($nt)) {
-				self::$nestedTransactions[$connection][$shard_name] = 0;
-				$nt = & self::$nestedTransactions[$connection][$shard_name];
+				self::$nestedTransactions[$dsn] = 0;
+				$nt = & self::$nestedTransactions[$dsn];
 			}
 
 			$sql = $query->getSQL();
