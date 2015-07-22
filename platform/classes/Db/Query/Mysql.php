@@ -487,14 +487,14 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	/**
 	 * Executes a query against the database and returns the result set.
 	 * @method excecute
-	 * @param {boolean} [$prepare_statement=false] If true, a PDO statement will be prepared
+	 * @param {boolean} [$prepareStatement=false] If true, a PDO statement will be prepared
 	 * from the query before it is executed. It is also saved for future invocations to use.
 	 * Do this only if the statement will be executed many times with
 	 * different parameters. Basically you would use ->bind(...) between
 	 * invocations of ->execute().
 	 * @return {Db_Result} The Db_Result object containing the PDO statement that resulted from the query.
 	 */
-	function execute ($prepare_statement = false)
+	function execute ($prepareStatement = false)
 	{
 		if (class_exists('Q')) {
 			/**
@@ -515,22 +515,24 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 
 		$this->startedTime = Q::milliseconds(true);
 
-		if ($prepare_statement) {
+		if ($prepareStatement) {
 			// Prepare the query into a SQL statement
 			// this takes two round-trips to the database
 
 			// Preparing the statement if it wasn't yet set
 			if (!isset($this->statement)) {
-				$q = $this->build();
-				$pdo = $this->reallyConnect();
-				$this->statement = $pdo->prepare($q);
-				if ($this->statement === false) {
-					if (!isset($sql))
-						$sql = $this->getSQL();
-					if (class_exists('Q_Exception_DbQuery')) {
-						throw new Exception("query could not be prepared");
+				if ($q = $this->build()) {
+					$pdo = $this->reallyConnect();
+					$this->statement = $pdo->prepare($q);
+					if ($this->statement === false) {
+						if (!isset($sql)) {
+							$sql = $this->getSQL();
+						}
+						if (class_exists('Q_Exception_DbQuery')) {
+							throw new Exception("query could not be prepared");
+						}
+						throw new Exception("query could not be prepared [query was: $sql ]", - 1);
 					}
-					throw new Exception("query could not be prepared [query was: $sql ]", - 1);
 				}
 			}
 
@@ -589,7 +591,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 				}
 
 				if ($query->type !== Db_Query::TYPE_ROLLBACK) {
-					if ($prepare_statement) {
+					if ($prepareStatement) {
 						// Execute the statement
 						try {
 							$query->statement->execute();
@@ -603,19 +605,25 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 					} else {
 						// Obtain the full SQL code ourselves
 						// and send to the database, without preparing it there.
-						$stmt = $pdo->query($sql);
+						if ($sql) {
+							$stmt = $pdo->query($sql);
+						} else {
+							$stmt = true;
+						}
 					}
 
 					$stmts[] = $stmt;
 					if (!empty($query->clauses["COMMIT"]) && $nt) {
 						// we commit only if no error occurred - warnings are permitted
-						if ($stmt && in_array(substr($stmt->errorCode(), 0, 2), array('00', '01'))) {
-							if (--$nt == 0) {
-								$pdo->commit();
-							}
-						} else {
+						if (!$stmt or ($stmt !== true and !in_array(
+							substr($stmt->errorCode(), 0, 2), 
+							array('00', '01')
+						))) {
 							$err = $pdo->errorInfo();
 							throw new Exception($err[0], $err[1]);
+						}
+						if (--$nt == 0) {
+							$pdo->commit();
 						}
 					}
 				}
@@ -654,11 +662,14 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 					}
 					if ($table !== $upcoming['dbTable']) break;
 					// node will determine new shard(s) names using
-					// new sharding config which is available within aplit process
-					$timestamp = $pdo->query("SELECT CURRENT_TIMESTAMP")->fetchAll(PDO::FETCH_COLUMN, 0);
-					if ($timestamp === false || !isset($timestamp[0]))
+					// new sharding config which is available within split process
+					$timestamp = $pdo->query("SELECT CURRENT_TIMESTAMP")
+						->fetchAll(PDO::FETCH_COLUMN, 0);
+					if ($timestamp === false || !isset($timestamp[0])) {
 						$timestamp = date("Y-m-d H:i:s"); // backup solution
-					else $timestamp = $timestamp[0];
+					} else {
+						$timestamp = $timestamp[0];
+					}
 					$sql_template = str_replace('CURRENT_TIMESTAMP', "'$timestamp'", $sql_template);
 
 					$transaction =

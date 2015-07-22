@@ -509,12 +509,13 @@ class Db_Mysql implements iDb
 	/**
 	 * Creates a query from raw SQL
 	 * @method rawQuery
-	 * @param {string} $sql May contain more than one SQL statement
+	 * @param {string|null} $sql May contain one or more SQL statements.
+	 *  Pass null here for an empty query that you can add other clauses to, e.g. ->commit().
 	 * @param {array} [$bind=array()] An array of parameters to bind to the query, using
 	 * the Db_Query_Mysql->bind method.
 	 * @return {Db_Query_Mysql}
 	 */
-	function rawQuery ($sql, $bind = array())
+	function rawQuery ($sql = null, $bind = array())
 	{
 		$clauses = array('RAW' => $sql);
 		$query = new Db_Query_Mysql($this, Db_Query::TYPE_RAW, $clauses);

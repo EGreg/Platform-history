@@ -78,14 +78,15 @@ class Q_Plugin
 		}
 
 		$shards = array('' => $dbconf);
-		if (isset($dbconf['shards']))
+		if (isset($dbconf['shards'])) {
 			$shards = array_merge($shards, $dbconf['shards']);
+		}
 
 		$index = 0;
 		foreach ($shards as $shard => $data) {
 
 			$shard_text = ($shard === '' ? "" : " shard '$shard'");
-			$tempname = $conn_name . ' installing' . ($shard ? "on shard: $shard" : '');
+			$tempname = $conn_name . '(installing)';
 			$shard_data = array_merge($dbconf, $data);
 			Db::setConnection($tempname, $shard_data);
 
@@ -118,7 +119,10 @@ class Q_Plugin
 				echo ucfirst($type)." '$name' schema on '$conn_name'$shard_text (v. $current_version) is already installed" . PHP_EOL;
 				if (Q::compare_version($current_version, $version) < 0)
 					echo "Updating '$name' on '$conn_name'$shard_text schema to version: $version" . PHP_EOL;
-				else continue;
+				else {
+					$db->rawQuery()->commit()->execute();
+					continue;
+				}
 			} else {
 				// Otherwise considering that plugin has version '0' to override it for getSqlScripts()
 				$current_version = 0;
@@ -206,7 +210,7 @@ class Q_Plugin
 				echo "Rollback".PHP_EOL;
 				// NOTE: transactions will be committed by MySQL after any DDL statement
 				// which will prevent any rollbacks even if an error occurs.
-				$db->rawQuery()->rollBack();
+				$db->rawQuery('')->rollBack();
 				throw $err;
 			}
 			try {
