@@ -520,7 +520,7 @@ Streams.listen = function (options) {
 				}
 				break;
 			case 'Streams/Stream/invite':
-				var userIds, invitingUserId, username, appUrl, parts, rest, label,
+				var userIds, invitingUserId, username, appUrl, parts, rest, label, myLabel,
 				    readLevel, writeLevel, adminLevel, displayName, expiry, logKey;
 				try {
 					userIds = JSON.parse(parsed.userIds);
@@ -534,6 +534,14 @@ Streams.listen = function (options) {
 						title = rest[0].toUpperCase() + rest.substr(1);
 					} else {
 						label = null;
+					}
+					if (parsed.myLabel) {
+						parts = parsed.myLabel.split('/');
+						rest = parts.slice(1).join('/');
+						myLabel = parts[0] + '/' + Q.normalize(rest);
+						title = rest[0].toUpperCase() + rest.substr(1);
+					} else {
+						myLabel = null;
 					}
 					readLevel = parsed.readLevel && JSON.parse(parsed.readLevel) || null;
 					writeLevel = parsed.writeLevel && JSON.parse(parsed.writeLevel) || null;
@@ -559,21 +567,35 @@ Streams.listen = function (options) {
 				    break;
 				}
 				
-				// Create a new label, if necessary
+				// Create some new labels, if necessary
+				var keys = ['label', 'myLabel'];
+				var p = Q.pipe(keys, function (params, subjects) {
+					if (params.label[1].length) {
+						return persist();
+					}
+					for (var i=0, l=keys.length; i<l; ++i) {
+						var label = subjects[keys];
+						if (label instanceof Users.Label) {
+							label.fields.title = title;
+							label.save(persist);
+						}
+					}
+				});
 				if (label) {
-				    new Users.Label({
-				        userId: stream.fields.publisherId,
-				        label: label
-				    }).retrieve(function (err, labels) {
-				        if (!labels.length) {
-				            this.fields.title = title;
-				            this.save(persist);
-				        } else {
-				            persist();
-				        }
-				    });
+					new Users.Label({
+						userId: stream.fields.publisherId,
+						label: label
+					}).retrieve(p.fill('label'));
 				} else {
-					persist();
+					p.fill('label')();
+				}
+				if (myLabel) {
+				    new Users.Label({
+				        userId: invitingUserId,
+				        label: myLabel
+				    }).retrieve(p.fill('myLabel'));
+				} else {
+					p.fill('myLabel')();
 				}
 				
 				return;
@@ -668,6 +690,13 @@ Streams.listen = function (options) {
             				    new Users.Contact({
             				        userId: stream.fields.publisherId,
                                     label: label,
+                                    contactUserId: userId
+            				    }).save(true);
+            				}
+            				if (myLabel) {
+            				    new Users.Contact({
+            				        userId: invitingUserId,
+                                    label: myLabel,
                                     contactUserId: userId
             				    }).save(true);
             				}

@@ -731,13 +731,12 @@ class Users_User extends Base_Users_User
 	 */
 	static function labelsToIds ($asUserId, $labels)
 	{
-
-		if (empty($labels)) return array();
-
+		if (empty($labels)) {
+			return array();
+		}
 		if (!is_array($labels)) {
 			$labels = array_map('trim', explode(',', $labels));
 		}
-
 		$userIds = array();
 		foreach ($labels as $label) {
 			$userIds = array_merge($userIds, Users_Contact::select('contactUserId')

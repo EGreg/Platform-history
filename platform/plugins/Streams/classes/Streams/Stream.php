@@ -1026,34 +1026,20 @@ class Streams_Stream extends Base_Streams_Stream
 	 *  'fb_uid' => fb user id or array of fb user ids
 	 *  'label' => label or an array of labels, or tab-delimited string
 	 *  'identifier' => identifier or an array of identifiers, or tab-delimited string
-	 * @param {mixed} $options
-	 *  Array that can contain the following keys:
-	 *	'label' => the contact label to add to the invited users
-	 *  'readLevel' => the read level to grant those who are invited
-	 *  'writeLevel' => the write level to grant those who are invited
-	 *  'adminLevel' => the admin level to grant those who are invited
-	 *	'displayName' => the name of inviting user
-	 *  'appUrl' => Can be used to override the URL to which the invited user will be redirected and receive "Q.Streams.token" in the querystring.
+	 * @param {array} [$options=array()]
+	 *  @param [$options.label] label or an array of labels for adding publisher's contacts
+	 *  @param [$options.myLabel] label or an array of labels for adding logged-in user's contacts
+	 *  @param [$options.readLevel] => the read level to grant those who are invited
+	 *  @param [$options.writeLevel] => the write level to grant those who are invited
+	 *  @param [$options.adminLevel] => the admin level to grant those who are invited
+	 *	@param [$options.displayName] => the name of inviting user
+	 *  @param [$options.appUrl] => Can be used to override the URL to which the invited user will be redirected and receive "Q.Streams.token" in the querystring.
 	 * @see Users::addLink()
 	 * @return {array} returns array("success", "invited", "alreadyParticipating")
 	 */
 	static function invite($publisherId, $streamName, $who, $options = array())
 	{
 		$user = Users::loggedInUser(true);
-		
-		$label = isset($options['label']) ? $options['label'] : null;
-		if ($label) {
-			$parts = explode('/', $label);
-			$app = Q_Config::expect('Q', 'app');
-			$plugins = Q_Config::expect('Q', 'plugins');
-			$allowed = array_merge(array($app), $plugins);
-			if (false === in_array($parts[0], $allowed)) {
-				throw new Q_Exception_WrongValue(array(
-					'field' => 'label',
-					'range' => 'label with app or plugin name as the prefix'
-				));
-			}
-		}
 
 		// Fetch the stream as the logged-in user
 		$stream = Streams::fetch($user->id, $publisherId, $streamName);
@@ -1075,14 +1061,14 @@ class Streams_Stream extends Base_Streams_Stream
 			? Users_User::verifyUserIds($who['userId'], true)
 			: array();
 		// merge labels if any
-		if (isset($who['labels'])) {
-			$labels = $who['labels'];
-			if (is_string($labels)) {
-				$labels = array_map('trim', explode("\t", $labels)) ;
+		if (isset($who['label'])) {
+			$label = $who['label'];
+			if (is_string($label)) {
+				$label = array_map('trim', explode("\t", $labels)) ;
 			}
 			$raw_userIds = array_merge(
 				$raw_userIds, 
-				Users_User::labelsToIds($user->id, $labels)
+				Users_User::labelsToIds($user->id, $label)
 			);
 		}
 		// merge identifiers if any
@@ -1167,7 +1153,8 @@ class Streams_Stream extends Base_Streams_Stream
 			"userIds" => Q::json_encode($userIds),
 			"stream" => Q::json_encode($stream->toArray()),
 			"appUrl" => $appUrl,
-			"label" => $label, 
+			"label" => Q::ifset($options, 'label', null), 
+			"myLabel" => Q::ifset($options, 'myLabel', null), 
 			"readLevel" => $readLevel,
 			"writeLevel" => $writeLevel,
 			"adminLevel" => $adminLevel,
