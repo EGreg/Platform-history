@@ -577,9 +577,10 @@ Streams.listen = function (options) {
 						var label = subjects[keys];
 						if (label instanceof Users.Label) {
 							label.fields.title = title;
-							label.save(persist);
+							label.save();
 						}
 					}
+					persist();
 				});
 				if (label) {
 					new Users.Label({

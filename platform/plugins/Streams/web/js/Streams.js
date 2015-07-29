@@ -3085,6 +3085,16 @@ function updateStream(stream, fields, onlyChangedFields) {
 			stream,
 			[fields, k]
 		);
+		Q.handle(
+			Q.getObject([publisherId, '', k], _streamFieldChangedHandlers),
+			stream,
+			[fields, k]
+		);
+		Q.handle(
+			Q.getObject(['', streamName, k], _streamFieldChangedHandlers),
+			stream,
+			[fields, k]
+		);
 		updated[k] = fields[k];
 	}
 	if (!onlyChangedFields || !Q.isEmpty(updated)) {
@@ -3095,6 +3105,11 @@ function updateStream(stream, fields, onlyChangedFields) {
 		);
 		Q.handle(
 			Q.getObject([publisherId, '', ''], _streamFieldChangedHandlers),
+			stream,
+			[fields, updated]
+		);
+		Q.handle(
+			Q.getObject(['', streamName, ''], _streamFieldChangedHandlers),
 			stream,
 			[fields, updated]
 		);
@@ -3194,6 +3209,16 @@ function _onResultHandler(subject, params, args, ret, original) {
 		Q.each(subject.relatedStreams, 'retain', [key]);
 	}
 }
+
+Stream.onFieldChanged('', 'Streams/user/icon', 'icon')
+.set(function (fields, field) {
+	// Reload User and Avatar from the server
+	var publisherId = this.fields.publisherId;
+	Users.get.forget(publisherId);
+	Users.get(publisherId);
+	Streams.Avatar.get.forget(publisherId);
+	Streams.Avatar.get(publisherId);
+}, 'Streams');
 
 Q.Tool.onMissingConstructor.set(function (constructors, normalized) {
 	var str = "_preview";

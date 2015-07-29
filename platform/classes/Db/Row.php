@@ -57,6 +57,7 @@ class Db_Row implements Iterator
 	 *     $modified_values is an associative array of modified fields and their values.
 	 *     Return the fields that should still be saved after beforeSave returns.
 	 *     To cancel saving into the database, return null or an empty array.
+	 *     If you've already run the query to save this row, return the query.
 	 *     Typically, you would use this function to save into a cache, and call
 	 *     calculatePKValue() to generate the key for the cache.
 	 *  </li>
@@ -1730,6 +1731,9 @@ class Db_Row implements Iterator
 		}
 		if (! isset($modifiedFields) or $modifiedFields === false) {
 			return false;
+		}
+		if ($modifiedFields instanceof Db_Query) {
+			return $modifiedFields;
 		}
 		if (! is_array($modifiedFields)) {
 			throw new Exception(

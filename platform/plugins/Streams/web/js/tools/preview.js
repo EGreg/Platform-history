@@ -77,16 +77,16 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 	related: null,
 	editable: true,
 	creatable: {
-		title: "New Item",
+		title: null,
 		clickable: true,
 		addIconSize: 50,
-		streamType: "Streams/text/small"
+		streamType: null
 	},
 	throbber: "plugins/Q/img/throbbers/loading.gif",
 	
 	imagepicker: {
 		showSize: "50",
-		fullSize: "50"
+		fullSize: "200x"
 	},
 	sizes: null,
 	overrideShowSize: {},
@@ -142,7 +142,7 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 			}
 			var fields = Q.extend({
 				publisherId: state.publisherId,
-				type: state.creatable.streamType
+				type: state.creatable.streamType || "Streams/text/small"
 			}, overrides);
 			state.beforeCreate.handle.call(tool);
 			tool.loading();
@@ -159,7 +159,7 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 				tool.stream = this;
 				tool.stream.refresh(function () {
 					state.onCreate.handle.call(tool, tool.stream);
-					state.onRefresh.handle.call(tool, tool.stream);
+					state.onRefresh.handle.call(tool, tool.stream, state.onLoad.handle);
 					tool.preview();
 				}, {messages: true});
 			}, state.related);
@@ -178,8 +178,8 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 		var f = state.template && state.template.fields;
 		var fields = Q.extend({}, state.templates.create.fields, f, {
 			src: Q.url('plugins/Streams/img/actions/add.png'),
-			alt: state.creatable.title,
-			title: state.creatable.title
+			alt: state.creatable.title || "New Item",
+			title: state.creatable.title || "New Item"
 		});
 		tool.element.addClass('Streams_preview_create');
 		Q.Template.render(
@@ -232,7 +232,7 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 			}
 			// trigger the refresh when it's ready
 			tool.stream = this;
-			state.onRefresh.handle.call(tool, this);
+			state.onRefresh.handle.call(tool, this, state.onLoad.handle);
 			setTimeout(function () {
 				tool.actions();
 			}, 0);
@@ -243,52 +243,84 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 			tool.stateChanged('stream.'+field);
 		}, tool);
 	},
-	icon: function _icon (element, onLoad) {
+	/**
+	 * @method icon
+	 * @param {HTMLElement} element
+	 * @param {Function} onLoad 
+	 * @param {Object} [options]
+	 * @param {String} [options.defaultIcon='default']
+	 * @param {String} [options.cacheBust=null]
+	 */
+	icon: function _icon (element, onLoad, options) {
 		var tool = this;
 		var state = tool.state;
+		options = options || {};
 		Q.Streams.get(state.publisherId, state.streamName, function () {
 			tool.stream = this;
 			// icon and imagepicker
 			var oss = state.overrideShowSize;
+			var fields = this.fields;
 			var si = state.imagepicker;
-			var sfi = this.fields.icon;
-			var file = (oss && oss[this.fields.icon])
-				|| si.saveSizeName[si.showSize]
+			var sfi = options.icon || fields.icon;
+			var size = si.saveSizeName[si.showSize];
+			var attributes = fields.attributes && JSON.parse(fields.attributes);
+			if (attributes.sizes
+			&& attributes.sizes.indexOf(state.imagepicker.showSize) < 0) {
+				for (var i=0; i<attributes.sizes.length; ++i) {
+					size = attributes.sizes[i];
+					var parts1 = attributes.sizes[i].toString().split('x');
+					var parts2 = si.showSize.toString().split('x');
+					if (parts1.length === 1) parts1[1] = parts1[0];
+					if (parts2.length === 2) parts2[1] = parts2[0];
+					if (parseInt(parts1[0]||0) >= parseInt(parts2[0]||0)
+					 && parseInt(parts1[1]||0) >= parseInt(parts2[1]||0)) {
+						break;
+					}
+				}
+			}
+			var file = (oss && (oss[sfi] || oss['']))
+				|| size
 				|| Q.first(si.saveSizeName, {nonEmptyKey: true});
 			var full = si.saveSizeName[si.fullSize] || file;
-			var icon = (sfi && sfi !== 'default') ? sfi : "default";
+			var size = si.saveSizeName[si.showSize];
+			var attributes = this.fields.attributes && JSON.parse(this.fields.attributes);
+			var defaultIcon = (options.defaultIcon) || 'default';
+			var icon = (sfi && sfi !== 'default') ? sfi : defaultIcon;
+			element.src = Q.url(
+				Q.Streams.iconUrl(icon, file), null, 
+				{cacheBust: options.cacheBust && state.cacheBustOnUpdate}
+			);
+			element.setAttribute('data-fullsize', Q.url(
+				Q.Streams.iconUrl(icon, full), null, 
+				{cacheBust: options.cacheBust && state.cacheBustOnUpdate}
+			));
 			// check if we should add the imagepicker
 			var se = state.editable;
-			if (element && se && se.indexOf('icon') < 0
+			if (element && se && (se === true || se.indexOf('icon') >= 0)
 			&& this.testWriteLevel('suggest')) {
 				$(element).off('load.Streams-preview')
 				.on('load.Streams-preview', function () {
 					// add imagepicker
 					var ipo = Q.extend({}, si, {
 						preprocess: function (callback) {
-							Q.Streams.get(state.publisherId, state.streamName, function (err) {
-								var subpath;
-								if (err) {
-									return console.warn(err);
-								}
-								tool.stream = stream;
-								var parts = stream.iconUrl(40).split('/');
-								var iconUrl = parts.slice(0, parts.length-1).join('/')
-									.substr(Q.info.baseUrl.length+1);
-								if (parts[1] === 'Users') {
-									// uploading a user icon
-									path = 'uploads/Users';
-									subpath = state.publisherId + '/icon';
-								} else { // uploading a regular stream icon
-									path = 'uploads/Streams';
-									subpath = state.publisherId + '/'
-										+ state.streamName + '/icon';
-								}
-								callback({ path: path, subpath: subpath });
-							});
+							var subpath;
+							var parts = tool.stream.iconUrl(40).split('/');
+							var iconUrl = parts.slice(0, parts.length-1).join('/')
+								.substr(Q.info.baseUrl.length+1);
+							if (parts[1] === 'Users') {
+								// uploading a user icon
+								path = 'uploads/Users';
+								subpath = state.publisherId + '/icon';
+							} else { // uploading a regular stream icon
+								path = 'uploads/Streams';
+								subpath = state.publisherId + '/'
+									+ state.streamName + '/icon';
+							}
+							subpath += '/'+Math.floor(Date.now()/1000);
+							callback({ path: path, subpath: subpath });
 						},
 						onSuccess: {'Streams/preview': function (data, key) {
-							stream.refresh(null, {messages: true});
+							tool.stream.refresh(null, {messages: true, changed: {icon: true}});
 							return false;
 						}}
 					});
@@ -297,18 +329,14 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 					});
 				});
 			}
-			element.src = Q.url(
-				Q.Streams.iconUrl(icon, file), null, 
-				{cacheBust: state.cacheBustOnUpdate}
-			);
-			var parts = state.imagepicker.showSize.split('x');
-			if (parts[0]) {
-				element.width = parts[0] + 'px';
-			}
-			if (parts[1]) {
-				element.height = parts[1] + 'px';
-			}
 		});
+		Q.Streams.Stream.onFieldChanged(state.publisherId, state.streamName, 'icon')
+		.set(function (fields) {
+			tool.icon(element, onLoad, Q.extend({}, options, {
+				cacheBust: true,
+				icon: fields.icon
+			}));
+		}, this);
 		return this;
 	},
 	actions: function _actions () {
@@ -323,7 +351,12 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 		// add some actions
 		var ao = Q.extend({}, state.actions, {
 			actions: {
-				'delete': tool.remove.bind(tool)
+				'delete': function () {
+					tool.stream.remove(function (err) {
+						if (err) return;
+						tool.state.onRemove.handle.call(tool);
+					});
+				}
 			}
 		});
 		tool.$().plugin('Q/actions', ao);

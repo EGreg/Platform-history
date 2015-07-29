@@ -54,17 +54,11 @@ Q.Tool.define("Users/avatar", function(options) {
 	}
 	Streams.Stream.onFieldChanged(state.userId, 'Streams/user/icon', 'icon')
 	.set(function (fields, field) {
-		Users.get.forget(state.userId);
-		Streams.Avatar.get.forget(state.userId);
-		var p = Q.pipe(['user', 'avatar'], function (params, subjects) {
-			tool.$('.Users_avatar_icon').attr('src', 
-				Q.url(subjects.avatar.iconUrl(state.icon), null, {
-					cacheBust: state.cacheBustOnUpdate
-				})
-			);
-		});
-		Users.get(state.userId, p.fill('user'));
-		Streams.Avatar.get(state.userId, p.fill('avatar'));
+		tool.$('.Users_avatar_icon').attr('src', 
+			Q.url(Streams.iconUrl(fields.icon), null, {
+				cacheBust: state.cacheBustOnUpdate
+			})
+		);
 	}, this);
 	if (!state.editable || state.editable.indexOf('name') < 0) {
 		Streams.Stream.onFieldChanged(state.userId, 'Streams/user/firstName', 'content')

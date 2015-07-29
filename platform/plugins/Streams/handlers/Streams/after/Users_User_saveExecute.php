@@ -61,6 +61,7 @@ function Streams_after_Users_User_saveExecute($params)
 			$stream->adminLevel = $p->get($name, 'adminLevel', Streams_Stream::$DEFAULTS['adminLevel']);
 			if ($name === "Streams/user/icon") {
 				$sizes = Q_Config::expect('Users', 'icon', 'sizes');
+				sort($sizes);
 				$stream->setAttribute('sizes', $sizes);
 				$stream->icon = $user->iconUrl();
 			}
@@ -128,7 +129,9 @@ function Streams_after_Users_User_saveExecute($params)
 		foreach ($modifiedFields as $field => $value) {
 			$name = Q_Config::get('Streams', 'onUpdate', 'Users_User', $field, null);
 			if (!$name) continue;
-			$stream = Streams::fetchOne($user->id, $user->id, $name);
+			$stream = isset(Streams::$beingSaved[$field])
+				? Streams::$beingSaved[$field]
+				: Streams::fetchOne($user->id, $user->id, $name);
 			if (!$stream) { // it should probably already be in the db
 				continue;
 			}
@@ -138,10 +141,15 @@ function Streams_after_Users_User_saveExecute($params)
 			);
 			if ($name === "Streams/user/icon") {
                 $sizes = Q_Config::expect('Users', 'icon', 'sizes');
+				sort($sizes);
+				$attributes = $stream->attributes;
                 $stream->setAttribute('sizes', $sizes);
+				if ($stream->attributes !== $attributes) {
+					$changes['attributes'] = $stream->attributes;
+				}
 				$stream->icon = $changes['icon'] = $user->iconUrl();
 			}
-			$stream->save();
+			Streams::$beingSavedQuery = $stream->save();
 			$stream->post($user->id, array(
 				'type' => 'Streams/edited',
 				'content' => '',

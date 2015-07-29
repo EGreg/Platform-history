@@ -17,16 +17,22 @@ function Streams_after_Q_image_save($params)
 		return;
 	}
 	$stream->icon = Q_Request::baseUrl().'/'.$data[''];
-	$sizes = array_keys($save);
+	$sizes = array();
+	foreach ($save as $k => $v) {
+		$sizes[] = "$k";
+	}
+	sort($sizes);
 	$stream->setAttribute('sizes', $sizes);
 	$stream->save();
-	$toSave = array('changes' => array(
-		'icon' => $stream->icon, 
-		'attributes' => $stream->attributes
-	));
-	$stream->post($user->id, array(
-		'type' => 'Streams/edited',
-		'content' => '',
-		'instructions' => $toSave
-	));
+	if (empty(Streams::$beingSavedQuery)) {
+		$toSave = array('changes' => array(
+			'icon' => $stream->icon,
+			'attributes' => $stream->attributes
+		));
+		$stream->post($user->id, array(
+			'type' => 'Streams/edited',
+			'content' => '',
+			'instructions' => $toSave
+		));
+	}
 }

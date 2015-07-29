@@ -384,6 +384,7 @@ abstract class Users extends Base_Users
 
 						// Download and save facebook icon for the user
 						$sizes = Q_Config::expect('Users', 'icon', 'sizes');
+						sort($sizes);
 						$icon = array();
 						foreach ($sizes as $size) {
 							$icon["$size.png"] = "http://graph.facebook.com/$fb_uid/picture?width=$size&height=$size";
@@ -905,6 +906,7 @@ abstract class Users extends Base_Users
 					break;
 				}
 				$sizes = Q_Config::expect('Users', 'icon', 'sizes');
+				sort($sizes);
 				$icon = array();
 				foreach ($sizes as $size) {
 					$icon["$size.png"] = "http://graph.facebook.com/$uid/picture?width=$size&height=$size";
@@ -916,6 +918,7 @@ abstract class Users extends Base_Users
 			if (is_string($icon)) {
 				// assume it's from gravatar
 				$sizes = Q_Config::expect('Users', 'icon', 'sizes');
+				sort($sizes);
 				$iconString = $icon;
 				$icon = array();
 				foreach ($sizes as $size) {
@@ -925,6 +928,7 @@ abstract class Users extends Base_Users
 				// locally generated icons
 				$hash = md5(strtolower(trim($identifier)));
 				$sizes = Q_Config::expect('Users', 'icon', 'sizes');
+				sort($sizes);
 				$icon = array();
 				foreach ($sizes as $size) {
 					$icon["$size.png"] = array('hash' => $hash, 'size' => $size);

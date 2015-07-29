@@ -2654,5 +2654,6 @@ abstract class Streams extends Base_Streams
 	 * @type string
 	 */
 	static $requestedName_override = null;
-
+	static $beingSaved = null;
+	static $beingSavedQuery = null;
 };

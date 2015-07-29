@@ -213,7 +213,8 @@ class Streams_Stream extends Base_Streams_Stream
 		if (!$this->retrieved) {
 			// Generate a unique name for the stream
 			if (!isset($modifiedFields['name'])) {
-				$this->name = $modifiedFields['name'] = Streams::db()->uniqueId(Streams_Stream::table(), 'name',
+				$this->name = $modifiedFields['name'] = Streams::db()->uniqueId(
+					Streams_Stream::table(), 'name',
 					array('publisherId' => $this->publisherId),
 					array('prefix' => $this->type.'/Q')
 				);
@@ -294,13 +295,57 @@ class Streams_Stream extends Base_Streams_Stream
 		)) {
 			return false;
 		}
-
+		
 		foreach ($this->fields as $name => $value) {
 			if (!empty($this->fieldsModified[$name])) {
 				$modifiedFields[$name] = $value;
 			}
 		}
 		$this->beforeSaveExtended($modifiedFields);
+		
+		// Assume that the stream's name is not being changed
+		$fields = array(
+			'Streams/user/firstName' => false,
+			'Streams/user/lastName' => false,
+			'Streams/user/username' => 'username',
+			'Streams/user/icon' => 'icon'
+		);
+		if (!isset($fields[$this->name])) {
+			return $result;
+		}
+		$field = ($this->name === 'Streams/user/icon')
+			? 'icon'
+			: 'content';
+		if (empty($this->fieldsModified[$field])
+		and empty($this->fieldsModified['readLevel'])) {
+			return $result;
+		}
+		
+		if ($publicField = $fields[$this->name]
+		and !Q::eventStack('Db/Row/Users_User/saveExecute')) {
+			Streams::$beingSaved[$publicField] = $this;
+			try {
+				$user = Users_User::fetch($this->publisherId, true);
+				$user->$publicField = $modifiedFields[$field];
+				$user->save();
+			} catch (Exception $e) {
+				Streams::$beingSaved[$publicField] = array();
+				throw $e;
+			}
+			Streams::$beingSaved[$publicField] = array();
+			return Streams::$beingSavedQuery;
+		}
+
+		if ($this->retrieved and !$publicField
+		and !empty($this->fieldsModified['readLevel'])) {
+			// Update all avatars corresponding to access rows for this stream
+			$taintedAccess = Streams_Access::select('*')
+				->where(array( // not primary key
+					'publisherId' => $this->publisherId,
+					'streamName' => $this->name
+				))->fetchDbRows();
+			Streams::updateAvatars($this->publisherId, $taintedAccess, $this, true);
+		}
 
 		return parent::beforeSave($modifiedFields);
 	}
@@ -359,41 +404,6 @@ class Streams_Stream extends Base_Streams_Stream
 		 */
 		$params = array('stream' => $this);
 		Q::event("Streams/Stream/save/{$this->type}", $params, 'after');
-
-		// Assume that the stream's name is not being changed
-		$fields = array(
-			'Streams/user/firstName' => false,
-			'Streams/user/lastName' => false,
-			'Streams/user/username' => 'username',
-			'Streams/user/icon' => 'icon'
-		);
-		if (!isset($fields[$this->name])) {
-			return $result;
-		}
-		$field = ($this->name === 'Streams/user/icon')
-			? 'icon'
-			: 'content';
-		if (empty($this->fieldsModified[$field])
-		and empty($this->fieldsModified['readLevel'])) {
-			return $result;
-		}
-		
-		if ($publicField = $fields[$this->name]
-		and !Q::eventStack('Db/Row/Users_User/saveExecute')) {
-			$user = Users_User::fetch($this->publisherId, true);
-			$user->$publicField = $modifiedFields[$field];
-			$user->save();
-		}
-
-		if ($this->retrieved and !$publicField) {
-			// Update all avatars corresponding to access rows for this stream
-			$taintedAccess = Streams_Access::select('*')
-				->where(array(
-					'publisherId' => $this->publisherId,
-					'streamName' => $this->name
-				))->fetchDbRows();
-			Streams::updateAvatars($this->publisherId, $taintedAccess, $this, true);
-		}
 		
 		return $result;
 	}

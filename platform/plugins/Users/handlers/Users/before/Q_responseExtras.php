@@ -46,6 +46,7 @@ function Users_before_Q_responseExtras()
 		Q::ifset($_SESSION, 'Users', 'hinted', array())
 	);
 	if ($sizes = Q_Config::expect('Users', 'icon', 'sizes')) {
+		sort($sizes);
 		Q_Response::setScriptData('Q.plugins.Users.icon.sizes', $sizes);
 	}
 	$defaultSize = Q_Config::get('Users', 'icon', 'defaultSize', 40);

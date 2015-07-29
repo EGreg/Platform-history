@@ -14,22 +14,18 @@
  *   @param {Object} [options.inplace] Any options to pass to the Q/inplace tool -- see its options.
  *   @uses Q inplace
  *   @param {Object} [options.templates] Under the keys "views", "edit" and "create" you can override options for Q.Template.render .
- *   The fields passed to the template include "alt", "titleTag" and "titleClass"
  *     @param {Object} [options.templates.view]
- *       @param {String} [options.templates.view.name]
- *       @default 'Streams/image/preview/view'
+ *       @param {String} [options.templates.view.name='Streams/image/preview/view']
  *       @param {Object} [options.templates.view.fields]
  *         @param {String} [options.templates.view.fields.alt]
  *         @param {String} [options.templates.view.fields.titleClass]
  *         @param {String} [options.templates.view.fields.titleTag]
  *     @param {Object} [options.templates.edit]
- *       @param {String} [options.templates.edit.name]
- *       @default 'Streams/image/preview/edit'
+ *       @param {String} [options.templates.edit.name='Streams/image/preview/edit']
  *       @param {Object} [options.templates.edit.fields]
  *         @param {String} [options.templates.edit.fields.alt]
  *         @param {String} [options.templates.edit.fields.titleClass]
  *         @param {String} [options.templates.edit.fields.titleTag]
-	
  */
 Q.Tool.define("Streams/default/preview", "Streams/preview",
 function _Streams_default_preview(options, preview) {
@@ -52,13 +48,13 @@ function _Streams_default_preview(options, preview) {
 },
 
 {
-	refresh: function (stream) {
+	refresh: function (stream, onLoad) {
 		var tool = this;
 		var state = tool.state;
 		var ps = tool.preview.state;
 		// set up a pipe to know when the icon has loaded
 		var p = Q.pipe(['inplace', 'icon'], function () {
-			tool.preview.state.onLoad.handle.apply(tool);
+			Q.handle(onLoad, tool);
 		});
 		// set up the inplace options
 		var inplace = null;
@@ -69,8 +65,8 @@ function _Streams_default_preview(options, preview) {
 				field: 'title',
 				inplaceType: 'text'
 			}, state.inplace);
-			var se = state.editable;
-			if (!se || se.indexOf('title') < 0) {
+			var se = ps.editable;
+			if (!se || (se !== true && se.indexOf('title') < 0)) {
 				inplaceOptions.editable = false;
 			}
 			inplace = tool.setUpElementHTML('div', 'Streams/inplace', inplaceOptions);
@@ -81,7 +77,7 @@ function _Streams_default_preview(options, preview) {
 			alt: stream.fields.title,
 			inplace: inplace
 		});
-		var tpl = (state.editable !== false || stream.testWriteLevel('suggest'))
+		var tpl = (ps.editable !== false || stream.testWriteLevel('suggest'))
 			? 'edit' 
 			: 'view';
 		Q.Template.render(
