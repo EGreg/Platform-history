@@ -1215,15 +1215,17 @@ Q.instanceOf = function (testing, Constructor) {
 
 /**
  * Makes a shallow copy of an object. But, if any property is an object with a "copy" method,
- * it recursively calls that method to copy the property.
+ * or levels > 0, it recursively calls that method to copy the property.
  * @static
  * @method copy
  * @param {Array} fields
  *  Optional array of fields to copy. Otherwise copy all that we can.
+ * @param levels {Number}
+ *  Optional. Copy this many additional levels inside x if it is a plain object.
  * @return {Object}
  *  Returns the shallow copy where some properties may have deepened the copy
  */
-Q.copy = function _Q_copy(x, fields) {
+Q.copy = function _Q_copy(x, fields, levels) {
 	if (Q.typeOf(x) === 'array') {
 		return Array.prototype.slice.call(x, 0);
 	}
@@ -1252,6 +1254,8 @@ Q.copy = function _Q_copy(x, fields) {
 			}
 			if (x[k] && typeof(x[k].copy) === 'function') {
 				result[k] = x[k].copy();
+			} else if (levels) {
+				result[k] = Q.copy(x[k], null, levels-1);
 			} else {
 				result[k] = x[k];
 			}
@@ -1285,7 +1289,7 @@ Q.copy = function _Q_copy(x, fields) {
  * @return
  *  The extended object.
  */
-Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespace] */ ) {
+Q.extend = function _Q_extend(target /* [[deep,] [levels,] anotherObject], ... [, namespace] */ ) {
 	var length = arguments.length;
 	var namespace = undefined;
 	if (typeof arguments[length-1] === 'string') {
@@ -1358,7 +1362,7 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 						? Q.copy(argk.replace)
 						: Q.extend(target[k], deep, levels-1, argk);
 				} else {
-					target[k] = Q.copy(argk);
+					target[k] = Q.copy(argk, null, levels);
 				}
 				if (target[k] === undefined) {
 					delete target[k];
