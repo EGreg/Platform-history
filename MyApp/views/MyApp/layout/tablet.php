@@ -43,7 +43,7 @@
 		<div id="notices_slot">
 <!-- - - - - - - - - - - - - - begin notices slot- - - - - - - - - - - - - - - - -->
 <?php echo $notices ?> 
-<!-- - - - - - - - - - - - - - end dashboard_slot- - - - - - - - - - - - - - - - -->
+<!-- - - - - - - - - - - - - - end notices slot- - - - - - - - - - - - - - - - - -->
 		</div>
 		<div id="content_slot">
 <!-- - - - - - - - - - - - - - begin content slot- - - - - - - - - - - - - - - - -->
