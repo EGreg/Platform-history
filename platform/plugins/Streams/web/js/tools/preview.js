@@ -160,7 +160,7 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 				tool.stream.refresh(function Streams_preview_afterCreateRefresh(r) {
 					state.onCreate.handle.call(tool, tool.stream);
 					tool.preview();
-				}, {messages: true, unlessSocket: true});
+				}, {messages: true});
 			}, state.related);
 		}
 		var tool = this;

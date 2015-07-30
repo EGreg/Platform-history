@@ -1066,7 +1066,7 @@ Stream.release = function _Stream_release (publisherId, streamName) {
  * If your app server script is running, then calling this manually is largely unnecessary because messages arrive via push using socket.io .
  * @static
  * @method refresh
- * @param {Function} callback This is called when the stream has been refreshed, or if Streams has determined it won't send a refresh request, it will get null as the first parameter.
+ * @param {Function} callback This is called when the stream has been refreshed.
  * @param {Object} [options] A hash of options, including:
  *   @param {Boolean} [options.messages] If set to true, then besides just reloading the fields, attempt to catch up on the latest messages
  *   @param {Number} [options.max] The maximum number of messages to wait and hope they will arrive via sockets. Any more and we just request them again.
@@ -1075,14 +1075,13 @@ Stream.release = function _Stream_release (publisherId, streamName) {
  *   @param {Object} [options.changed] An Object of {fieldName: true} pairs naming fields to trigger change events for, even if their values stayed the same
  *   @param {Boolean} [options.evenIfNotRetained] If the stream wasn't retained (for example because it was missing last time), then refresh anyway
  *   @param {Object} [options.extra] Any extra parameters to pass to the callback
- * @return {boolean} whether the refresh is occurring, or whether it has been canceled
+ * @return {boolean} Whether callback will be called, or false if the refresh has been canceled
  */
 Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, options) {
 	var notRetained = !_retainedByStream[Streams.key(publisherId, streamName)];
 	if (!Q.isOnline()
 	|| (notRetained && !(options && options.evenIfNotRetained))) {
 		Streams.get.cache.removeEach([publisherId, streamName]);
-		callback && callback(null, false);
 		return false;
 	}
 	var result = false;
@@ -1099,28 +1098,27 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 	if (result === false) {
 		if (socket && options && options.unlessSocket) {
    			// We didn't even try to wait for messages
-   			callback && callback(null, false);
-		} else {
-			// We sent a request to get the latest messages.
-			// But we will also force-get the stream, to trigger any handlers
-			// set for a streams refresh event.
-			Streams.get.force(publisherId, streamName, function (err, stream) {
-				if (!err) {
-					var ps = Streams.key(publisherId, streamName);
-					var changed = (options && options.changed) || {};
-					updateStream(_retainedStreams[ps], this.fields, changed);
-					_retainedStreams[ps] = this;
-				}
-				if (callback) {
-					var params = [err, stream];
-					if (options && options.extra) {
-						params.concat(extra);
-					}
-					callback && callback.apply(this, params);
-				}
-			});
-			result = true;
+   			return false;
 		}
+		// We sent a request to get the latest messages.
+		// But we will also force-get the stream, to trigger any handlers
+		// set for a streams refresh event.
+		Streams.get.force(publisherId, streamName, function (err, stream) {
+			if (!err) {
+				var ps = Streams.key(publisherId, streamName);
+				var changed = (options && options.changed) || {};
+				updateStream(_retainedStreams[ps], this.fields, changed);
+				_retainedStreams[ps] = this;
+			}
+			if (callback) {
+				var params = [err, stream];
+				if (options && options.extra) {
+					params.concat(extra);
+				}
+				callback && callback.apply(this, params);
+			}
+		});
+		result = true;
 	}
 	_retain = undefined;
 	return true;
@@ -2524,11 +2522,10 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 	var latest = Message.latestOrdinal(publisherId, streamName, true);
 	if (!latest && (!options || !options.evenIfNotRetained)) {
 		// There is no cache for this stream, so we won't wait for previous messages.
-		Q.handle(callback, this, [null]);
 		return false;
 	}
 	if (ordinal >= 0 && ordinal <= latest) {
-		Q.handle(callback, this, [null]); // The cached stream already got this message
+		// The cached stream already got this message
 		return true;
 	}
 	var o = Q.extend({}, Message.wait.options, options);
@@ -2554,7 +2551,7 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 		});
 		waiting[ord] = [event, handlerKey];
 	});
-	return new Q.Pipe(ordinals, function () {
+	return Q.pipe(ordinals, function () {
 		// they all arrived
 		if (!alreadyCalled) {
 			Q.handle(callback, this, [ordinals]);
