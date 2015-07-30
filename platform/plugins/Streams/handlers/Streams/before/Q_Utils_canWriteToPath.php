@@ -33,7 +33,7 @@ function Streams_before_Q_Utils_canWriteToPath($params, &$result)
 					if ($parts[$i] === 'icon') break;
 				}
 				$name = implode('/', array_slice($parts, 1, $l-1));
-				if ($stream = Streams::fetchOne($userId, $publisherId, $name)) {
+				if ($name and $stream = Streams::fetchOne($userId, $publisherId, $name)) {
 					$result = $stream->testWriteLevel('edit');
 					Streams::$cache['canWriteToStream'] = $stream;
 				}

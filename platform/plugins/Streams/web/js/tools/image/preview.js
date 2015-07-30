@@ -41,11 +41,15 @@ Q.Tool.define("Streams/image/preview", "Streams/preview", function(options, prev
 	this.preview = preview;
 	var state = this.state;
 	var ps = preview.state;
-	ps.actions.position = 'tr';
+	if (ps.actions) {
+		ps.actions.position = 'tr';
+	}
 	ps.templates.create.name = 'Streams/image/preview/create';
 	ps.templates.create.showTitle = (state.showTitle !== false);
-	ps.creatable.streamType = ps.creatable.streamType || 'Streams/image';
-	ps.creatable.title = ps.creatable.title || 'New Image';
+	if (ps.creatable) {
+		ps.creatable.streamType = ps.creatable.streamType || 'Streams/image';
+		ps.creatable.title = ps.creatable.title || 'New Image';
+	}
 	ps.onRefresh.add(this.refresh.bind(this));
 },
 

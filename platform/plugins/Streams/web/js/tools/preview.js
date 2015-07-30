@@ -147,7 +147,7 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 			state.beforeCreate.handle.call(tool);
 			tool.loading();
 			Q.Streams.retainWith(tool)
-			.create(fields, tool, function (err, stream, extra) {
+			.create(fields, tool, function Streams_preview_afterCreate(err, stream, extra) {
 				if (err) {
 					state.onError.handle.call(tool, err);
 					return err;
@@ -157,11 +157,10 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 				state.publisherId = this.fields.publisherId;
 				state.streamName = this.fields.name;
 				tool.stream = this;
-				tool.stream.refresh(function () {
+				tool.stream.refresh(function Streams_preview_afterCreateRefresh(r) {
 					state.onCreate.handle.call(tool, tool.stream);
-					state.onRefresh.handle.call(tool, tool.stream, state.onLoad.handle);
 					tool.preview();
-				}, {messages: true});
+				}, {messages: true, unlessSocket: true});
 			}, state.related);
 		}
 		var tool = this;
@@ -238,9 +237,13 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 			}, 0);
 		});
 		Q.Streams.Stream.onFieldChanged(state.publisherId, state.streamName)
-		.set(function (field) {
+		.set(function (fields, updated) {
 			tool.stream = this;
-			tool.stateChanged('stream.'+field);
+			setTimeout(function () {
+				for (var i=0, l=fields.length; i<l; ++i) {
+					tool.stateChanged('stream.fields.'+field[i]);
+				}
+			});
 		}, tool);
 	},
 	/**
@@ -263,7 +266,8 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 			var si = state.imagepicker;
 			var sfi = options.icon || fields.icon;
 			var size = si.saveSizeName[si.showSize];
-			var attributes = fields.attributes && JSON.parse(fields.attributes);
+			var attributes = options.attributes || fields.attributes;
+			attributes = attributes && JSON.parse(attributes);
 			if (attributes.sizes
 			&& attributes.sizes.indexOf(state.imagepicker.showSize) < 0) {
 				for (var i=0; i<attributes.sizes.length; ++i) {
@@ -333,6 +337,7 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 		Q.Streams.Stream.onFieldChanged(state.publisherId, state.streamName, 'icon')
 		.set(function (fields) {
 			tool.icon(element, onLoad, Q.extend({}, options, {
+				attributes: fields.attributes,
 				cacheBust: true,
 				icon: fields.icon
 			}));

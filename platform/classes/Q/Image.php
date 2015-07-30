@@ -178,8 +178,8 @@ class Q_Image
 		if ($lastChar !== DS and $lastChar !== '/') {
 			$writePath .= DS;
 		}
-		$ifNotWritable = empty($params['skipAccess']) ? true : null;
-		Q_Utils::canWriteToPath($writePath, $ifNotWritable, true);
+		$throwIfNotWritable = empty($params['skipAccess']) ? true : null;
+		Q_Utils::canWriteToPath($writePath, $throwIfNotWritable, true);
 	
 		// check if exif is available
 		if (self::isJPEG($imageData)) {

@@ -70,6 +70,9 @@ function Streams_stream_post($params = array())
 	
 	// Process any icon that was posted
 	if (is_array($icon)) {
+		if (empty($icon['subpath'])) {
+			$icon['subpath'] = "Streams/$publisherId/{$stream->name}/icon/".time();
+		}
 		Q_Response::setSlot('icon', Q::event("Q/image/post", $icon));
 	}
 	

@@ -1063,8 +1063,7 @@ Stream.release = function _Stream_release (publisherId, streamName) {
 
 /**
  * Refreshes a stream, to show the latest content and possibly process the latest messages posted to the stream.
- * If your app uses socket.io, then calling this manually is largely unnecessary because messages arrive via push.
- * 
+ * If your app server script is running, then calling this manually is largely unnecessary because messages arrive via push using socket.io .
  * @static
  * @method refresh
  * @param {Function} callback This is called when the stream has been refreshed, or if Streams has determined it won't send a refresh request, it will get null as the first parameter.
@@ -1087,37 +1086,41 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 		return false;
 	}
 	var result = false;
-	// If the stream was retained, fetch latest messages,
-	// and replay their being "posted" to trigger the right events
 	if (options && options.messages) {
-		result = !!Message.wait(publisherId, streamName, -1, callback, options);
+		// If the stream was retained, fetch latest messages,
+		// and replay their being "posted" to trigger the right events
+		result = Message.wait(publisherId, streamName, -1, callback, options);
 	}
 	var node = Q.nodeUrl({
 		publisherId: publisherId,
 		streamName: streamName
 	});
 	var socket = Q.Socket.get('Streams', node);
-	if (!result && !(socket && options && options.unlessSocket)) {
-		// there was no cache, and we didn't wait for previous messages
-		// just get the stream, and any listeners will be triggered
-		Streams.get.force(publisherId, streamName, function (err, stream) {
-			if (!err) {
-				var ps = Streams.key(publisherId, streamName);
-				var changed = (options && options.changed) || {};
-				updateStream(_retainedStreams[ps], this.fields, changed);
-				_retainedStreams[ps] = this;
-			}
-			if (callback) {
-				var params = [err, stream];
-				if (options && options.extra) {
-					params.concat(extra);
+	if (result === false) {
+		if (socket && options && options.unlessSocket) {
+   			// We didn't even try to wait for messages
+   			callback && callback(null, false);
+		} else {
+			// We sent a request to get the latest messages.
+			// But we will also force-get the stream, to trigger any handlers
+			// set for a streams refresh event.
+			Streams.get.force(publisherId, streamName, function (err, stream) {
+				if (!err) {
+					var ps = Streams.key(publisherId, streamName);
+					var changed = (options && options.changed) || {};
+					updateStream(_retainedStreams[ps], this.fields, changed);
+					_retainedStreams[ps] = this;
 				}
-				callback && callback.apply(this, params);
-			}
-		});
-		result = true;
-	} else {
-		callback && callback(null, false);
+				if (callback) {
+					var params = [err, stream];
+					if (options && options.extra) {
+						params.concat(extra);
+					}
+					callback && callback.apply(this, params);
+				}
+			});
+			result = true;
+		}
 	}
 	_retain = undefined;
 	return true;
@@ -2506,9 +2509,9 @@ Message.latestOrdinal = function _Message_latestOrdinal (publisherId, streamName
  * @param {Number} ordinal The ordinal of the message to wait for, or -1 to load latest messages
  * @param {Function} callback Receives ([arrayOfOrdinals]) as parameters
  * @param {Object} [options] A hash of options which can include:
- *   @param {Number} [options.max] The maximum number of messages to wait and hope they will arrive via sockets. Any more and we just request them again.
- *   @param {Number} [options.timeout] The maximum amount of time to wait and hope the messages will arrive via sockets. After this we just request them again.
- *   @param {Number} [options.unlessSocket] Whether to avoid doing any requests when a socket is attached
+ *   @param {Number} [options.max=5] The maximum number of messages to wait and hope they will arrive via sockets. Any more and we just request them again.
+ *   @param {Number} [options.timeout=1000] The maximum amount of time to wait and hope the messages will arrive via sockets. After this we just request them again.
+ *   @param {Number} [options.unlessSocket=true] Whether to avoid doing any requests when a socket is attached
  *   @param {Boolean} [options.evenIfNotRetained] Set this to true to fetch all messages posted to the stream, in the event that it wasn't cached or retained.
  * @return {Boolean|Number|Q.Pipe}
  *   Returns false if no attempt was made because stream wasn't cached,
@@ -2599,7 +2602,7 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 					w[0].remove(w[1]);
 				});
 				if (!alreadyCalled) {
-					Q.handle(callback, this, [null, Object.keys(messages)]);
+					Q.handle(callback, this, [Object.keys(messages)]);
 				}
 				alreadyCalled = true;
 			}
@@ -2608,7 +2611,7 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 };
 Message.wait.options = {
 	max: 5, // maximum number of messages we'll actually wait for, if there's a socket
-	timeout: 1000 // maximum number of milliseconds we'll actually wait for, if there's a socket
+	timeout: 1000, // maximum number of milliseconds we'll actually wait for, if there's a socket
 };
 
 var _messageShouldRefreshStream = {};

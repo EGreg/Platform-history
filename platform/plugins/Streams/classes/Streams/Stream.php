@@ -303,6 +303,8 @@ class Streams_Stream extends Base_Streams_Stream
 		}
 		$this->beforeSaveExtended($modifiedFields);
 		
+		$result = parent::beforeSave($modifiedFields);
+		
 		// Assume that the stream's name is not being changed
 		$fields = array(
 			'Streams/user/firstName' => false,
@@ -316,8 +318,8 @@ class Streams_Stream extends Base_Streams_Stream
 		$field = ($this->name === 'Streams/user/icon')
 			? 'icon'
 			: 'content';
-		if (empty($this->fieldsModified[$field])
-		and empty($this->fieldsModified['readLevel'])) {
+		if (!empty($this->fieldsModified[$field])
+		or empty($this->fieldsModified['readLevel'])) {
 			return $result;
 		}
 		
@@ -347,7 +349,7 @@ class Streams_Stream extends Base_Streams_Stream
 			Streams::updateAvatars($this->publisherId, $taintedAccess, $this, true);
 		}
 
-		return parent::beforeSave($modifiedFields);
+		return $result;
 	}
 
 	function afterFetch($result)

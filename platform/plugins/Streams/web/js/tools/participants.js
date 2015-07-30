@@ -117,7 +117,7 @@ function _Streams_participants(options) {
 		function (err, stream, extra) {
 			var fem = Q.firstErrorMessage(err);
 			if (fem) {
-				return console.warn("Streams/preview: " + fem);
+				return console.warn("Streams/participants: " + fem);
 			}
 			if (!$(tool.element).closest('body').length) {
 				return;
