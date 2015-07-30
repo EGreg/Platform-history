@@ -119,7 +119,7 @@ Q.Tool.define("Streams/html", function (options) {
 			}
 			_blurred = true;
 			state.editing = false;
-            if (0 && state.startingContent === content) return;
+            if (state.startingContent === content) return;
             state.startingContent = null;
             if (!state.stream) return;
             state.stream.pendingFields[state.field] = content;
