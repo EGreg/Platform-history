@@ -102,8 +102,8 @@ Q.Tool.define("Streams/html", function (options) {
 				.on('editable.afterRemoveImage', function (e, editor, $img) {
 					var src = $img.attr('src');
 					var parts = src.split('/');
-					var publisherId = parts.slice(-5, -4).join('/');
-					var streamName = parts.slice(-4, -1).join('/');
+					var publisherId = parts.slice(-7, -6).join('/');
+					var streamName = parts.slice(-6, -3).join('/');
 					Q.Streams.Stream.remove(publisherId, streamName);
 				});
             });
