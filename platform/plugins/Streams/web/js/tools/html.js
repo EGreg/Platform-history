@@ -35,14 +35,14 @@ Q.Tool.define("Streams/html", function (options) {
 			if (Q.firstErrorMessage(err)) return false;
 			state.stream = this;
 			tool.element.innerHTML = this.fields[state.field] || state.placeholder;
-			Q.loadNonce(_proceed);
+			_proceed();
 		});
 	} else if (state.placeholder) {
 		if (!state.stream) {
 			throw new Q.Error("Streams/html tool: missing streamName and stream is not set");
 		}
 		tool.element.innerHTML = state.placeholder;
-		Q.loadNonce(_proceed);
+		_proceed();
 	}
 
 	function _proceed() {
@@ -52,17 +52,8 @@ Q.Tool.define("Streams/html", function (options) {
 		if (state.editor === 'auto') {
 			state.editor = 'froala';
 			if (Q.info.isTouchscreen) {
-				sf.inlineMode = false;
+				state.froala.inlineMode = false;
 			}
-		}
-		if (state.editor === 'froala') {
-			Q.extend(state.froala.imageUploadParams, {
-				'publisherId': state.publisherId,
-				'Q.Streams.related.publisherId': state.publisherId,
-				'Q.Streams.related.streamName': state.streamName,
-				'Q.Streams.related.type': 'images',
-				'Q.nonce': Q.nonce
-			});
 		}
 		switch (state.editor && state.editor.toLowerCase()) {
 		case 'basic':
@@ -114,10 +105,12 @@ Q.Tool.define("Streams/html", function (options) {
 				: $(tool.element).editable('getHTML');
 			if (state.editorObject) {
 				editor.focusManager.blur();
+			} else {
+				$('.froala-editor.f-inline').hide();
 			}
 			_blurred = true;
 			state.editing = false;
-            if (0 && state.startingContent === content) return;
+            if (state.startingContent === content) return;
             state.startingContent = null;
             if (!state.stream) return;
             state.stream.pendingFields[state.field] = content;
@@ -213,7 +206,6 @@ Q.Tool.define("Streams/html", function (options) {
 	ckeditor: {},
 	froala: {
 		alwaysVisible: true,
-		pastImage: true,
 		buttons: [
 			"bold", "italic", "underline", "strikeThrough", "sep",
 			"fontFamily", "fontSize", "color", "formatBlock", "blockStyle", "sep",
@@ -222,24 +214,8 @@ Q.Tool.define("Streams/html", function (options) {
 			"insertImage", "insertVideo", "undo", "redo", "sep",
 			"insertHorizontalRule", "table"
 		],
-		fontList: {
-			"Arial,Helvetica": "Arial",
-			"Impact,Charcoal": "Impact",
-			"Tahoma,Geneva": "Tahoma",
-			"Courier,Courier New": "Courier"
-		},
-		imageUploadURL: Q.action('Streams/froala'),
-		pastedImagesUploadURL: Q.action('Streams/froala'),
-		pastedImagesUploadRequestType: 'POST',
-		imageUploadParam: 'icon',
-		imageUploadParams: {
-			'type': 'Streams/image',
-			'Q.ajax': 'json'
-		},
-		imageButtons: [
-			"floatImageLeft","floatImageNone","floatImageRight",
-			"linkImage","replaceImage","removeImage"
-		]
+		fontList: ["Arial, Helvetica", "Impact, Charcoal", "Tahoma, Geneva"],
+		imageButtons: ["floatImageLeft","floatImageNone","floatImageRight","linkImage","replaceImage","removeImage"]
 	},
 	streamName: "",
 	placeholder: "Enter content here",

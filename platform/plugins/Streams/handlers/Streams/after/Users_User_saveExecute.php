@@ -150,11 +150,13 @@ function Streams_after_Users_User_saveExecute($params)
 				$stream->icon = $changes['icon'] = $user->iconUrl();
 			}
 			Streams::$beingSavedQuery = $stream->save();
-			$stream->post($user->id, array(
-				'type' => 'Streams/edited',
-				'content' => '',
-				'instructions' => compact('changes')
-			), true);
+			if ($changes) {
+				$stream->post($user->id, array(
+					'type' => 'Streams/edited',
+					'content' => '',
+					'instructions' => compact('changes')
+				), true);
+			}
 		}
 	}
 }
