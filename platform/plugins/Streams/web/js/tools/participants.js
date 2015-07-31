@@ -231,8 +231,9 @@ function _Streams_participants(options) {
 				tool.$pc.width(w - pm);
 			}
 			if (state.showControls) {
-				var $c = tool.$controls;	
-				var overflowed = (state.avatarsWidth > $te.width());
+				var $c = tool.$controls;
+				var $tew = $te.width();
+				var overflowed = (state.avatarsWidth > $tew && $tew > 0);
 				if (overflowed) {
 					if (!state.overflowed) {
 						$te.addClass('Q_overflowed');
