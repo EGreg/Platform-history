@@ -85,6 +85,7 @@ Utils.validate = function (req, res, next) {
 	if (signature === Q.Utils.signature(data, secret)) {
 		next();
 	} else {
+		util.log(data, secret);
 		util.log("Request validation failed");
 		res.send(JSON.stringify({errors: "Invalid signature"}), 403); // forbidden
 	}

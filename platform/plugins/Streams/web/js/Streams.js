@@ -2541,24 +2541,26 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 	// ok, wait a little while
 	var t = setTimeout(_tryLoading, o.timeout);
 	var ordinals = [];
+	var p = new Q.Pipe();
 	Q.each(latest+1, ordinal, 1, function (ord) {
 		ordinals.push(ord);
 		var event = Streams.Stream.onMessage(publisherId, streamName, ord);
-		handlerKey = event.set(function () {
+		handlerKey = event.add(function () {
 			p.fill(ord)();
 			event.remove(handlerKey);
 			handlerKey = null;
 		});
 		waiting[ord] = [event, handlerKey];
 	});
-	return Q.pipe(ordinals, function () {
-		// they all arrived
+	p.add(ordinals, 1, function () {
 		if (!alreadyCalled) {
 			Q.handle(callback, this, [ordinals]);
 		}
 		alreadyCalled = true;
 		return true;
-	});	
+	}).run();
+	return p;
+	
 	function _tryLoading() {
 		// forget waiting, we'll request them again
 		
@@ -3489,7 +3491,11 @@ Q.onInit.add(function _Streams_onInit() {
 		// Wait until the previous message has been posted, then process this one.
 		// Will return immediately if previous message is already cached
 		// (e.g. from a post or retrieving a stream, or because there was no cache yet)
-		Message.wait(msg.publisherId, msg.streamName, msg.ordinal-1, function () {
+		var ret = Message.wait(msg.publisherId, msg.streamName, msg.ordinal-1, _message);
+		if (typeof ret === 'boolean') {
+			_message();
+		}
+		function _message() {
 			var ptn = msg.publisherId+"\t"+msg.streamName;
 			if (Message.latest[ptn] >= parseInt(msg.ordinal)) {
 				return; // it was already processed
@@ -3686,7 +3692,7 @@ Q.onInit.add(function _Streams_onInit() {
 					Streams.related.cache.removeEach([msg.publisherId, msg.streamName]);
 				}
 			});
-		});
+		}
 	}, 'Streams');
 	
 	function _preloadedStreams(elem) {

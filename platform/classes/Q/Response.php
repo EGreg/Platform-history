@@ -1347,16 +1347,16 @@ class Q_Response
 	 * @param {string} $uri The URL or internal URI to redirect to
 	 * @param {array} $options An array of options that can include:
 	 *  "loop" => Defaults to false. If true, sets the redirect header even if the current URL is the same.
-	 *  "no_proxy" => Defaults to false. If true, doesn't use the proxy mapping to determine URL
+	 *  "noProxy" => Defaults to false. If true, doesn't use the proxy mapping to determine URL
 	 *  "permanently" => If true, sets response code as 304 instead of 302
-	 * @param {boolean} [$no_proxy=false]
+	 * @param {boolean} [$noProxy=false]
 	 * @return {boolean}
  	 *  Return whether the redirect header was set.
 	 */
 	static function redirect($uri, $options = array())
 	{
 		extract($options);
-		$url = Q_Uri::url($uri, null, !empty($no_proxy));
+		$url = Q_Uri::url($uri, null, !empty($noProxy));
 		if ($url === Q_Uri::unreachableUri()) {
 			throw new Q_Exception_BadValue(array(
 				'internal' => 'uri',
@@ -1377,7 +1377,7 @@ class Q_Response
 		 */
 		$result = Q::event(
 			'Q/redirect',
-			compact('uri', 'url', 'loop', 'permanently', 'no_proxy', 'level'),
+			compact('uri', 'url', 'loop', 'permanently', 'noProxy', 'level'),
 			'before'
 		);
 		if (isset($result)) {
