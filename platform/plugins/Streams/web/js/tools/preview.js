@@ -101,7 +101,7 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 	onCreate: new Q.Event(),
 	onRefresh: new Q.Event(),
 	onLoad: new Q.Event(),
-	onRemove: new Q.Event(function (wasRemoved) {
+	onClose: new Q.Event(function (wasRemoved) {
 		if (wasRemoved) {
 			this.$().hide(300, function () {
 				$(this).remove();
@@ -383,9 +383,9 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 			};
 		} else {
 			actions[action] = function () {
-				tool.stream.remove(function (err) {
+				tool.stream.close(function (err) {
 					if (err) return;
-					tool.state.onRemove.handle.call(tool, !tool.stream.isRequired);
+					tool.state.onClose.handle.call(tool, !tool.stream.isRequired);
 				});
 			};
 		}
@@ -393,15 +393,15 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 		tool.$().plugin('Q/actions', ao);
 		return this;
 	},
-	remove: function _remove() {
+	close: function _close() {
 		var tool = this;
 		var state = tool.state;
-		tool.stream.remove(function (err) {
+		tool.stream.close(function (err) {
 			if (err) {
 				alert(err);
 				return;
 			}
-			state.onRemove.handle.call(tool);
+			state.onClose.handle.call(tool);
 		});
 	},
 	Q: {

@@ -104,7 +104,7 @@ Q.Tool.define("Streams/html", function (options) {
 					var parts = src.split('/');
 					var publisherId = parts.slice(-7, -6).join('/');
 					var streamName = parts.slice(-6, -3).join('/');
-					Q.Streams.Stream.remove(publisherId, streamName);
+					Q.Streams.Stream.close(publisherId, streamName);
 				});
             });
 		}

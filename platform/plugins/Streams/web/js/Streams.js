@@ -1261,13 +1261,13 @@ Sp.save = function _Stream_prototype_save (callback, options) {
 };
 
 /**
- * Remove a stream on the server
+ * Closes a stream in the database, and marks it for removal unless it is required.
  * 
  * @method remove
  * @param {Function} callback
  */
-Sp.remove = function _Stream_prototype_remove (callback) {
-	return Stream.remove(this.fields.publisherId, this.fields.name, callback);
+Sp.close = function _Stream_prototype_remove (callback) {
+	return Stream.close(this.fields.publisherId, this.fields.name, callback);
 };
 
 /**
@@ -2039,7 +2039,7 @@ Stream.leave.onError = new Q.Event();
  * @param {String} streamName
  * @param {Function} callback Receives (err, result) as parameters
  */
-Stream.remove = function _Stream_remove (publisherId, streamName, callback) {
+Stream.close = function _Stream_remove (publisherId, streamName, callback) {
 	var slotName = "result,stream";
 	var fields = {"publisherId": publisherId, "name": streamName};
 	var baseUrl = Q.baseUrl({
@@ -2051,7 +2051,7 @@ Stream.remove = function _Stream_remove (publisherId, streamName, callback) {
 		if (msg) {
 			var args = [err, data];
 			Streams.onError.handle.call(this, msg, args);
-			Stream.remove.onError.handle.call(this, msg, args);
+			Stream.close.onError.handle.call(this, msg, args);
 			return callback && callback.call(this, msg, args);
 		}
 		var stream = data.slots.stream;
@@ -2065,7 +2065,7 @@ Stream.remove = function _Stream_remove (publisherId, streamName, callback) {
 		callback && callback.call(this, err, data.slots.result || null);
 	}, { method: 'delete', fields: fields, baseUrl: baseUrl });
 };
-Stream.remove.onError = new Q.Event();
+Stream.close.onError = new Q.Event();
 
 /**
  * @class Streams
@@ -3108,14 +3108,17 @@ Streams.setupRegisterForm = function _Streams_setupRegisterForm(identifier, json
 };
 
 function updateAvatarCache(stream) {
-	var avatarFields = {
+	var avatarStreamNames = {
 		'Streams/user/firstName': true,
 		'Streams/user/lastName': true,
 		'Streams/user/username': true,
 		'Streams/user/icon': true
 	};
-	if (avatarFields[stream.fields.name]) {
-		Avatar.get.cache.remove([stream.fields.publisherId]);
+	var sf = stream.fields;
+	if (avatarStreamNames[sf.name]) {
+		// Reload User and Avatar from the server
+		Users.get.force(sf.publisherId);
+		Avatar.get.force(sf.publisherId);
 	}
 }
 
@@ -3267,16 +3270,6 @@ function _onResultHandler(subject, params, args, ret, original) {
 		Q.each(subject.relatedStreams, 'retain', [key]);
 	}
 }
-
-Stream.onFieldChanged('', 'Streams/user/icon', 'icon')
-.set(function (fields, field) {
-	// Reload User and Avatar from the server
-	var publisherId = this.fields.publisherId;
-	Users.get.forget(publisherId);
-	Users.get(publisherId);
-	Streams.Avatar.get.forget(publisherId);
-	Streams.Avatar.get(publisherId);
-}, 'Streams');
 
 Q.Tool.onMissingConstructor.set(function (constructors, normalized) {
 	var str = "_preview";
@@ -3678,9 +3671,13 @@ Q.onInit.add(function _Streams_onInit() {
 					break;
 				case 'Streams/closed':
 					updateStream(stream, fields, null);
-					Streams.Stream.onClosed(
-						stream.fields.publisherId, stream.fields.name
-					).handle(stream, fields);
+					var sf = stream.fields;
+					var Qh = Q.handle;
+					var Qgo = Q.getObject;
+					Qh(Qgo([sf.publisherId, sf.name], _streamClosedHandlers), stream, [fields]);
+					Qh(Qgo([sf.publisherId, ''], _streamClosedHandlers), stream, [fields]);
+					Qh(Qgo(['', sf.name], _streamClosedHandlers), stream, [fields]);
+					Qh(Qgo(['', ''], _streamClosedHandlers), stream, [fields]);
 					break;
 				default:
 					break;
