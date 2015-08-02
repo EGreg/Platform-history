@@ -374,3 +374,9 @@ button.basic32 { height: 40px; border: solid 1px transparent; cursor: pointer; f
 
 .basic16_cancel { background-position: 0 -522px; }
 .basic32_cancel { background-position: 0 -1044px; }
+.basic16_remove { background-position: 0 -482px; }
+.basic32_remove { background-position: 0 -964px; }
+.basic16_close { background-position: 0 -322px; }
+.basic32_close { background-position: 0 -644px; }
+.basic16_open { background-position: 0 -342px; }
+.basic32_open { background-position: 0 -684px; }

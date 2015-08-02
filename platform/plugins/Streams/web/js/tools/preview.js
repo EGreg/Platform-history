@@ -101,11 +101,14 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 	onCreate: new Q.Event(),
 	onRefresh: new Q.Event(),
 	onLoad: new Q.Event(),
-	onRemove: new Q.Event(function () {
-		this.$().hide(300, function () {
-			$(this).remove();
-		});
+	onRemove: new Q.Event(function (wasRemoved) {
+		if (wasRemoved) {
+			this.$().hide(300, function () {
+				$(this).remove();
+			});
+		}
 	}, 'Streams/preview'),
+	onReopen: new Q.Event(),
 	onError: new Q.Event(function (err) {
 		var fem = Q.firstErrorMessage(err);
 		var position = this.$().css('position');
@@ -229,6 +232,9 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 				var fem = Q.firstErrorMessage(err);
 				return console.warn("Streams/preview: " + fem);
 			}
+			if (this.fields.closedTime) {
+				$(tool.element).addClass('Streams_closed');
+			}
 			// trigger the refresh when it's ready
 			tool.stream = this;
 			state.onRefresh.handle.call(tool, this, state.onLoad.handle);
@@ -244,6 +250,16 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 					tool.stateChanged('stream.fields.'+field[i]);
 				}
 			});
+			var $te = $(tool.element);
+			if (fields.closedTime === null) {
+				$te.removeClass('Streams_closed');
+			} else if (fields.closedTime) {
+				$te.addClass('Streams_closed');
+			}
+			setTimeout(function () {
+				// run this after the stream was updated
+				tool.actions();
+			}, 0);
 		}, tool);
 	},
 	/**
@@ -354,16 +370,26 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 			return false;
 		}
 		// add some actions
-		var ao = Q.extend({}, state.actions, {
-			actions: {
-				'delete': function () {
-					tool.stream.remove(function (err) {
-						if (err) return;
-						tool.state.onRemove.handle.call(tool);
-					});
-				}
-			}
-		});
+		var actions = {};
+		var action = tool.stream.isRequired
+			? (tool.stream.fields.closedTime ? 'open' : 'close')
+			: 'remove';
+		if (action === 'open') {
+			actions[action] = function () {
+				tool.stream.reopen(function (err) {
+					if (err) return;
+					tool.state.onReopen.handle.call(tool);
+				});
+			};
+		} else {
+			actions[action] = function () {
+				tool.stream.remove(function (err) {
+					if (err) return;
+					tool.state.onRemove.handle.call(tool, !tool.stream.isRequired);
+				});
+			};
+		}
+		var ao = Q.extend({}, state.actions, { actions: actions });
 		tool.$().plugin('Q/actions', ao);
 		return this;
 	},

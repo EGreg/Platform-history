@@ -46,6 +46,12 @@
 		}
 	},
 	"Streams": {
+		"requiredUserStreams": {
+			"Streams/user/firstName": true,
+			"Streams/user/lastName": true,
+			"Streams/user/username": true,
+			"Streams/user/icon": true
+		},
 		"types": {
 			"Streams/access": {},
 			"Streams/text": {"create": true, "edit": true},

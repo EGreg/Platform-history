@@ -1,4 +1,6 @@
 (function (Q, $, window, undefined) {
+	
+var Users = Q.Users;
 
 /**
  * Users Tools
@@ -13,7 +15,7 @@
  * @param {Object} [options] this object contains function parameters
  *   @param {String} [options.userId] The id of the user object. Can be '' for a blank-looking avatar.
  *   @required
- *   @param {String} [options.icon=Users.icon.defaultSize] Size of the icon to render before the display name. Or 0 for no icon.
+ *   @param {String} [options.icon=Q.Users.icon.defaultSize] Size of the icon to render before the display name. Or 0 for no icon.
  *   @param {Object} [options.templates] Object for avatar template parameters
  *     @param {Object} [options.templates.icon]
  *       @param {String} [options.templates.icon.dir]

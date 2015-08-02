@@ -1350,6 +1350,16 @@ class Streams_Stream extends Base_Streams_Stream
 	}
 	
 	/**
+	 * Returns whether the stream is required for the user, and thus shouldn't be deleted,
+	 * even if it has been marked closed.
+	 * @return {Boolean}
+	 */
+	function isRequired()
+	{
+		return $this->get('isRequired', false);
+	}
+	
+	/**
 	 * Calculate admin level to correspond to Streams::$ADMIN_LEVEL
 	 * Primarily used by apps which invite a user to a stream
 	 * and giving them a slightly lower admin level.
@@ -1631,6 +1641,7 @@ class Streams_Stream extends Base_Streams_Stream
 			'writeLevel' => $this->get('writeLevel', $this->writeLevel),
 			'adminLevel' => $this->get('adminLevel', $this->adminLevel)
 		);
+		$result['isRequired'] = $this->isRequired();
 		return $result;
 	}
 

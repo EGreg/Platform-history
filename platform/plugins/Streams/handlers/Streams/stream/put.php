@@ -25,6 +25,10 @@ function Streams_stream_put($params) {
 	}
 	$name = Streams::requestedName(true);
 	$fields = array_merge($_REQUEST, $params);
+	$closedTime = Q::ifset($fields, 'closedTime', null);
+	if (in_array($closedTime, array(false, 'false', 'null'))) {
+		$fields['closedTime'] = null;
+	}
 
 	// do not set stream name
 	$stream = Streams::fetchOne($user->id, $publisherId, $name);	
@@ -59,7 +63,7 @@ function Streams_stream_put($params) {
 		}
 	}
 	
-	$restricted = array('readLevel', 'writeLevel', 'adminLevel');
+	$restricted = array('readLevel', 'writeLevel', 'adminLevel', 'closedTime');
 	$owned = $stream->testAdminLevel('own');
 	foreach ($restricted as $r) {
 		if (isset($fields[$r]) and !$owned) {
@@ -88,14 +92,14 @@ function Streams_stream_put($params) {
 	
 	if (!empty($fieldNames)) {
 		foreach ($fieldNames as $f) {
-			if (isset($fields[$f])) {
+			if (array_key_exists($f, $fields)) {
 				$stream->$f = $fields[$f];
 			}
 		}
 
 		$instructions = array('changes' => array());
 		foreach ($fieldNames as $f) {
-			if (!isset($stream->$f)) continue;
+			if (!isset($stream->$f) and !isset($original[$f])) continue;
 			$v = $stream->$f;
 			if (isset($original[$f])
 			and json_encode($original[$f]) === json_encode($v)) {

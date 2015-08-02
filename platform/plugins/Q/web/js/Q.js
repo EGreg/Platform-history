@@ -794,7 +794,7 @@ Q.milliseconds = function (sinceEpoch) {
 Q.milliseconds.start = Date.now();
 
 /**
- * Creates a derived object which you can extend, inheriting from an existing object
+ * Creates a copied object which you can extend, using existing object as prototype
  * @static
  * @method objectWithPrototype
  * @param {Derived} original
@@ -804,9 +804,9 @@ Q.objectWithPrototype = function _Q_objectWithPrototype(original) {
 	if (!original) {
 		return {};
 	}
-	function Derived() {}
-	Derived.prototype = original;
-	return new Derived();
+	function Copied() {}
+	Copied.prototype = original;
+	return new Copied();
 };
 
 /**

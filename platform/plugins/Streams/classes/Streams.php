@@ -523,6 +523,9 @@ abstract class Streams extends Base_Streams
 			$s->set('asUserId', $asUserId);
 			if ($asUserId and $asUserId == $publisherId) {
 				// The publisher should have full access to every one of their streams.
+				// Streams which are "required", though, won't be deleted by the system.
+				$required = Q_Config::get('Streams', 'requiredUserStreams', $s->name, false);
+				$s->set('isRequired', $required);
 				$s->set('readLevel', Streams::$READ_LEVEL['max']);
 				$s->set('writeLevel', Streams::$WRITE_LEVEL['max']);
 				$s->set('adminLevel', Streams::$ADMIN_LEVEL['max']);
@@ -547,7 +550,9 @@ abstract class Streams extends Base_Streams
 			$streams3[] = $s;
 		}
 		
-		if (empty($names)) return count($streams2);
+		if (empty($names)) {
+			return count($streams2);
+		}
 
 		// Get the per-label access data
 		// Avoid making a join to allow more flexibility for sharding
@@ -2241,16 +2246,19 @@ abstract class Streams extends Base_Streams
 
 		$result = false;
 		try {
-			$stream->closedTime = new Db_Expression("CURRENT_TIMESTAMP");
+			$db = $stream->db();
+			$stream->closedTime = $closedTime = 
+				$db->toDateTime($db->getCurrentTimestamp());
 			if ($stream->save()) {
 				$stream->post($asUserId, array(
 					'type' => 'Streams/closed',
-					'content' => ''
+					'content' => '',
+					'instructions' => compact('closedTime')
 				), true);
 				$result = true;
 			}
 		} catch (Exception$e) {
-	
+			throw $e;
 		}
 		return $result;
 	}
@@ -2586,7 +2594,8 @@ abstract class Streams extends Base_Streams
 		$classes = Streams::getExtendClasses($type);
 		$fieldNames = array(
 			'title', 'icon', 'content', 'attributes', 
-			'readLevel', 'writeLevel', 'adminLevel'
+			'readLevel', 'writeLevel', 'adminLevel',
+			'closedTime'
 		);
 		foreach ($classes as $k => $v) {
 			foreach ($v as $f) {

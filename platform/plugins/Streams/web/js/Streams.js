@@ -192,6 +192,7 @@ var _socket = null,
 	_streamMessageHandlers = {},
 	_streamFieldChangedHandlers = {},
 	_streamUpdatedHandlers = {},
+	_streamClosedHandlers = {},
 	_streamRelatedFromHandlers = {},
 	_streamRelatedToHandlers = {},
 	_streamUnrelatedFromHandlers = {},
@@ -647,7 +648,9 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 			// Default constructor. Copy any additional fields.
 			if (!fields) return;
 			for (var k in fields) {
-				if ((k in this.fields) || k === 'access') continue;
+				if ((k in this.fields)
+				|| k === 'access'
+				|| k === 'isRequired') continue;
 				this.fields[k] = Q.copy(fields[k]);
 			}
 		};
@@ -1000,7 +1003,8 @@ var Stream = Streams.Stream = function (fields) {
 		'adminLevel',
 		'inheritAccess',
 		'closedTime',
-		'access'
+		'access',
+		'isRequired'
 	]);
 	this.typename = 'Q.Streams.Stream';
 	prepareStream(this, fields);
@@ -1223,8 +1227,10 @@ Sp.clear = function _Stream_prototype_clear (attributeName) {
  * 
  * @method save
  * @param {Function} callback
+ * @param {Object} [options] A hash of options, including:
+ *   @param {Array} [options.changed] An array of {fieldName: true} pairs naming fields to trigger change events for, even if their values stayed the same
  */
-Sp.save = function _Stream_prototype_save (callback) {
+Sp.save = function _Stream_prototype_save (callback, options) {
 	var that = this;
 	var slotName = "stream";
 	this.pendingFields.publisherId = this.fields.publisherId;
@@ -1242,7 +1248,15 @@ Sp.save = function _Stream_prototype_save (callback) {
 			return callback && callback.call(this, msg, args);
 		}
 		// the rest will occur in the handler for the stream.onUpdated event coming from the socket
-		callback && callback.call(that, null, data.slots.stream || null);
+		var stream = data.slots.stream || null;
+		callback && callback.call(that, null, stream);
+		if (stream) {
+			// process the Streams/closed message, if stream was retained
+			Streams.Stream.refresh(stream.publisherId, stream.name, null, {
+				messages: true,
+				unlessSocket: true
+			});
+		}
 	}, { method: 'put', fields: this.pendingFields, baseUrl: baseUrl });
 };
 
@@ -1254,6 +1268,18 @@ Sp.save = function _Stream_prototype_save (callback) {
  */
 Sp.remove = function _Stream_prototype_remove (callback) {
 	return Stream.remove(this.fields.publisherId, this.fields.name, callback);
+};
+
+/**
+ * Reopens a stream in the database that was previously closed, but not yet removed.
+ * 
+ * @static
+ * @method reopen
+ * @param {Function} callback Receives (err, result) as parameters
+ */
+Sp.reopen = function _Stream_remove (callback) {
+	this.pendingFields.closedTime = false;
+	this.save(callback);
 };
 
 /**
@@ -1837,8 +1863,26 @@ Stream.onFieldChanged = Q.Event.factory(_streamFieldChangedHandlers, ["", "", ""
 Stream.onUpdated = Q.Event.factory(_streamUpdatedHandlers, ["", "", ""]);
 
 /**
+ * Returns Q.Event which occurs when attributes of the stream officially updated
+ * @event onUpdated
+ * @param publisherId {String} id of publisher which is publishing the stream
+ * @param streamName {String} optional name of stream which the message is posted to
+ * @param attributeName {String} optional name of the attribute to listen for
+ */
+Stream.onUpdated = Q.Event.factory(_streamUpdatedHandlers, ["", "", ""]);
+
+/**
+ * Returns Q.Event which occurs when a stream has been closed
+ * (and perhaps has been marked for removal)
+ * @event onClosed
+ * @param publisherId {String} id of publisher which is publishing this stream
+ * @param streamName {String} optional name of this stream
+ */
+Stream.onClosed = Q.Event.factory(_streamClosedHandlers, ["", ""]);
+
+/**
  * Returns Q.Event which occurs when another stream has been related to this stream
- * @event onRelatedTo
+ * @event onRelatedFrom
  * @param publisherId {String} id of publisher which is publishing this stream
  * @param streamName {String} optional name of this stream
  */
@@ -1987,7 +2031,7 @@ Stream.leave = function _Stream_leave (publisherId, streamName, callback) {
 Stream.leave.onError = new Q.Event();
 
 /**
- * Remove a stream from the database.
+ * Closes a stream in the database, and marks it for removal unless it is required.
  * 
  * @static
  * @method remove
@@ -1996,7 +2040,7 @@ Stream.leave.onError = new Q.Event();
  * @param {Function} callback Receives (err, result) as parameters
  */
 Stream.remove = function _Stream_remove (publisherId, streamName, callback) {
-	var slotName = "result";
+	var slotName = "result,stream";
 	var fields = {"publisherId": publisherId, "name": streamName};
 	var baseUrl = Q.baseUrl({
 		publisherId: publisherId,
@@ -2009,6 +2053,14 @@ Stream.remove = function _Stream_remove (publisherId, streamName, callback) {
 			Streams.onError.handle.call(this, msg, args);
 			Stream.remove.onError.handle.call(this, msg, args);
 			return callback && callback.call(this, msg, args);
+		}
+		var stream = data.slots.stream;
+		if (stream) {
+			// process the Streams/closed message, if stream was retained
+			Streams.Stream.refresh(stream.publisherId, stream.name, null, {
+				messages: true,
+				unlessSocket: true
+			});
 		}
 		callback && callback.call(this, err, data.slots.result || null);
 	}, { method: 'delete', fields: fields, baseUrl: baseUrl });
@@ -3182,6 +3234,10 @@ function prepareStream(stream) {
 		stream.access = Q.copy(stream.fields.access);
 		delete stream.fields.access;
 	}
+	if (stream.fields.isRequired) {
+		stream.isRequired = stream.fields.isRequired;
+		delete stream.fields.isRequired;
+	}
 	try {
 		stream.pendingAttributes = stream.attributes
 		= stream.fields.attributes ? JSON.parse(stream.fields.attributes) : {};
@@ -3620,6 +3676,12 @@ Q.onInit.add(function _Streams_onInit() {
 					updateRelatedCache(fields);
 					_relationHandlers(_streamUpdatedRelateToHandlers, msg, stream, fields);
 					break;
+				case 'Streams/closed':
+					updateStream(stream, fields, null);
+					Streams.Stream.onClosed(
+						stream.fields.publisherId, stream.fields.name
+					).handle(stream, fields);
+					break;
 				default:
 					break;
 				}
@@ -3752,14 +3814,10 @@ function _scheduleUpdate() {
 }
 
 function _refreshUnlessSocket(publisherId, streamName) {
-	var node = Q.nodeUrl({
-		publisherId: publisherId,
-		streamName: streamName
+	Stream.refresh(publisherId, streamName, null, {
+		messages: true,
+		unlessSocket: true
 	});
-	var socket = Q.Socket.get('Streams', node);
-	if (!socket) {
-		Stream.refresh(publisherId, streamName, null, { messages: true });
-	}
 }
 
 Q.Template.set('Streams/followup/mobile/alert', "The invite was sent from our number, which your friends don't yet recognize. Follow up with a quick text to let them know the invitation came from you, asking them to click the link.");

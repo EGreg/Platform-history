@@ -17,7 +17,7 @@ var Streams = Q.Streams;
  * @param {Object} [options] A hash of options, containing:
  *   @param {String} [options.userId] The id of the user object. Can be '' for a blank-looking avatar.
  *   @required
- *   @param {Number} [options.icon=Users.icon.defaultSize] Size of the icon to render before the display name. Or 0 for no icon.
+ *   @param {Number} [options.icon=Q.Users.icon.defaultSize] Size of the icon to render before the display name. Or 0 for no icon.
  *   @param {Boolean} [options.short=false] If true, renders the short version of the display name.
  *   @param {Boolean|Array} [options.editable=false] If true, and userId is the logged-in user's id, the tool presents an interface for the logged-in user to edit their name and icon. This can also be an array containing one or more of 'icon', 'name'.
  *   @param {Boolean} [options.reflectChanges=true] Whether the tool should update its contents on changes
