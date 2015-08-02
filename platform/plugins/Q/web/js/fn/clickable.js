@@ -225,7 +225,7 @@ function _Q_clickable(o) {
 			zindex = $this.css('z-index');
 			container.css('z-index', 1000000);
 			Q.handle(o.onPress, $this, [evt, triggers]);
-			Q.Animation.play(function(x, y) {
+			state.animation = Q.Animation.play(function(x, y) {
 				scale(1 + y * (o.press.size-1));
 				$this.css('opacity', 1 + y * (o.press.opacity-1));
 			}, o.press.duration, o.press.ease);
@@ -262,7 +262,7 @@ function _Q_clickable(o) {
 						return false; // click doesn't have to be canceled
 					}
 				}
-				anim && anim.pause();
+				state.animation && state.animation.pause();
 				scale(1);
 			}, 'Q/clickable');
 			var _released = false;
@@ -298,35 +298,40 @@ function _Q_clickable(o) {
 					&& (jq.closest(triggers).length > 0);
 				var factor = scale.factor;
 				if (overElement) {
-					anim = Q.Animation.play(function(x, y) {
+					state.animation = Q.Animation.play(function(x, y) {
 						scale(factor + y * (o.release.size-factor));
 						$this.css('opacity', o.press.opacity + y * (o.release.opacity-o.press.opacity));
-						if (x === 1) {
-							Q.Animation.play(function(x, y) {
-								scale(o.release.size + y * (1-o.release.size));
-								$this.css('opacity', 1 + y * (1 - o.release.opacity));
-								if (x === 1) {
-									Q.handle(o.afterRelease, $this, [evt, overElement]);
-									$this.trigger('afterRelease', $this, evt, overElement);
-									container.css('z-index', zindex);
-									// $this.unbind('click.Q_clickable');
-									// $this.trigger('click');
-								}
-							}, o.snapback.duration, o.snapback.ease);
-						}
 					}, o.release.duration, o.release.ease);
+					var key = state.animation.onComplete.set(function () {
+						state.animation = Q.Animation.play(function(x, y) {
+							scale(o.release.size + y * (1-o.release.size));
+							$this.css('opacity', 1 + y * (1 - o.release.opacity));
+						}, o.snapback.duration, o.snapback.ease);
+						state.animation.onComplete.set(function () {
+							Q.handle(o.afterRelease, $this, [evt, overElement]);
+							$this.trigger('afterRelease', $this, evt, overElement);
+							container.css('z-index', zindex);
+							// $this.unbind('click.Q_clickable');
+							// $this.trigger('click');
+							state.animation = null;
+						});
+					});
 				} else {
-					anim = Q.Animation.play(function(x, y) {
+					state.animation = Q.Animation.play(function(x, y) {
 						scale(factor + y * (1-factor));
 						$this.css('opacity', o.press.opacity + y * (1-o.press.opacity));
 						// if (x === 1) {
 						// 	$this.off('click.Q_clickable');
 						// }
 					}, o.release.duration, o.release.ease);
+					state.animation.onComplete.set(function () {
+						state.animation = null;
+					});
 					setTimeout(function () {
 						Q.handle(o.afterRelease, $this, [evt, overElement]);
 						$this.trigger('afterRelease', $this, evt, overElement);
 						container.css('z-index', zindex);
+						state.animation = null;
 					}, o.release.duration);
 				}
 			
@@ -371,7 +376,7 @@ function _Q_clickable(o) {
 		if (timing.renderingInterval) {
 			var csw2, csh2;
 			setTimeout(function _update() {
-				if (Date.now() - originalTime >= timing.renderingPeriod) {
+				if (state.animation || Date.now() - originalTime >= timing.renderingPeriod) {
 					return;
 				}
 				var rect = $this[0].getBoundingClientRect();
