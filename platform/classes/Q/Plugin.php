@@ -52,7 +52,8 @@ class Q_Plugin
 	 * @param {string} $options Contain data parsed from command line
 	 * @throws {Exception} If cannot connect to database
 	 */
-	static function installSchema($base_dir, $name, $type, $conn_name, $options) {
+	static function installSchema($base_dir, $name, $type, $conn_name, $options)
+	{
 
 		// is schema installation requested?
 		if (!isset($options['sql']) || empty($options['sql'][$conn_name]) || !$options['sql'][$conn_name]['enabled']) return;

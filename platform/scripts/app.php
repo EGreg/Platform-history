@@ -84,6 +84,7 @@ if (!defined('APP_DIR'))
 
 #Include Q
 try {
+	$Q_Bootstrap_config_plugin_limit = 1;
 	include($Q_filename);
 }
 catch (Exception $e)
@@ -206,6 +207,8 @@ Q_Plugin::checkPermissions(APP_FILES_DIR, array_merge($options, array('deep' => 
 
 foreach ($plugins as $plugin) {
 	Q_Plugin::installPlugin($plugin, $options);
+	++$Q_Bootstrap_config_plugin_limit;
+	Q_Bootstrap::configure(true);
 }
 
 if (!$noapp) {

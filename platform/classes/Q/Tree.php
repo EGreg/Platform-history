@@ -176,7 +176,10 @@ class Q_Tree
 	function load(
 	 $filename)
 	{
-		if (!($filename2 = Q::realPath($filename))) return false;
+		$filename2 = Q::realPath($filename);
+		if (!$filename2) {
+			return false;
+		}
 		
 		$this->filename = $filename2;
 		
