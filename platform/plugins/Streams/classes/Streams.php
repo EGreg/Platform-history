@@ -645,14 +645,15 @@ abstract class Streams extends Base_Streams
 	 * @param {string} $userId The user who would be creating the stream.
 	 * @param {string} $publisherId The id of the user who would be publishing the stream.
 	 * @param {string} $streamType The type of the stream that would be created
-	 * @param {array} $relate The user would also be authorized if the stream would be related to
+	 * @param {array} [$relate=array()]
+	 *  The user would also be authorized if the stream would be related to
 	 *  an existing category stream, in which the user has a writeLevel of at least "relate",
 	 *  and the user that would be publishing this new stream has a template for this stream type
 	 *  that is related to either the category stream or a template matching the category stream.
 	 *  To test for this, pass an array with the following keys:
-	 *   "streamName" => The name of the stream to which the new stream would be related
-	 *   "publisherId" => The id of the user publishing that stream, defaults to $publisherId
-	 *   "type" => The type of relation, defaults to ""
+	 * @param {string} $relate.publisherId The id of the user publishing that stream, defaults to $publisherId
+	 * @param {string} $relate.streamName The name of the stream to which the new stream would be related
+	 * @param {string} $relate.type The type of relation, defaults to ""
 	 * @return {Streams_Stream|boolean} Returns a stream template the user must use,
 	 *  otherwise a boolean true/false to indicate a yes or no regardless of template.
 	 */
@@ -740,7 +741,8 @@ abstract class Streams extends Base_Streams
 	 * @param {string|integer} [$fields.adminLevel=null] You can set the stream's admin access level, see Streams::$ADMIN_LEVEL
 	 * @param {string} [$fields.name=null] Here you can specify an exact name for the stream to be created. Otherwise a unique one is generated automatically.
 	 * @param {boolean} [$fields.skipAccess=false] Skip all access checks when creating and relating the stream.
-	 * @param {array} $relate The user would also be authorized if the stream would be related to
+	 * @param {array} [$relate=array()]
+	 *  The user would also be authorized if the stream would be related to
 	 *  an existing category stream, in which the user has a writeLevel of at least "relate",
 	 *  and the user that would be publishing this new stream has a template for this stream type
 	 *  that is related to either the category stream or a template matching the category stream.
@@ -748,6 +750,7 @@ abstract class Streams extends Base_Streams
 	 * @param {string} $relate.publisherId The id of the user publishing that stream, defaults to $publisherId
 	 * @param {string} $relate.streamName The name of the stream to which the new stream would be related
 	 * @param {string} [$relate.type] The type of relation, defaults to ""
+	 * @param {string} [$relate.weight] To set the weight for the relation
 	 * @return {Streams_Stream|boolean} Returns the stream that was created.
 	 * @throws {Users_Exception_NotAuthorized}
 	 */
@@ -852,7 +855,7 @@ abstract class Streams extends Base_Streams
 	 * @param {string|array} $field='content'
 	 *  Optional. Defaults to "content".
 	 *  Can be an array of fields, in which case the function returns an array.
-	 * @param {boolean} $escape=true
+	 * @param {boolean} [$escape=false]
 	 *  Defaults to false. If true, escapes the values as HTML
 	 * @return {mixed}
 	 *  Returns the value of the field, or an array of values, depending on
@@ -908,8 +911,8 @@ abstract class Streams extends Base_Streams
 	 * @param {string|array} $field='content'
 	 *  Optional. Defaults to "content".
 	 *  Can be an array of fields, in which case the function returns an array.
-	 * @param {boolean} $escape=false
-	 *  Defaults to false. If true, escapes as HTML
+	 * @param {boolean} [$escape=false]
+	 *  If true, escapes as HTML
 	 * @return {mixed}
 	 *  Returns the value of the field, or an array of values, depending on
 	 *  whether $field is an array or a string
@@ -1495,7 +1498,7 @@ abstract class Streams extends Base_Streams
 	 *  The name of the member stream(s)
 	 * @param {array} $options=array()
 	 *  An array of options that can include:
-	 *  "skipAccess" => Defaults to false. If true, skips the access checks and just relates the stream to the category
+	 * @param {boolean} [$options.skipAccess=false] If true, skips the access checks and just relates the stream to the category
 	 * @param {&Streams_RelatedTo} $relatedTo
 	 * @param {&Streams_RelatedFrom} $relatedFrom
 	 */
@@ -1578,8 +1581,8 @@ abstract class Streams extends Base_Streams
 	 *  The name of the member stream
 	 * @param {array} $options=array()
 	 *  An array of options that can include:
-	 *  "skipAccess" => Defaults to false. If true, skips the access checks and just relates the stream to the category
-	 *  "weight" => Pass a numeric value here, or something like "max+1" to make the weight 1 greater than the current MAX(weight)
+	 * @param {boolean} [$options.skipAccess=false] If true, skips the access checks and just relates the stream to the category
+	 * @param {double|string} [$options.weight] Pass a numeric value here, or something like "max+1" to make the weight 1 greater than the current MAX(weight)
 	 * @return {array|boolean}
 	 *  Returns false if the operation was canceled by a hook
 	 *  Returns true if relation was already there
@@ -1746,8 +1749,8 @@ abstract class Streams extends Base_Streams
 	 *  The name of the member stream
 	 * @param {array} $options=array()
 	 *  An array of options that can include:
-	 *  "skipAccess" => Defaults to false. If true, skips the access checks and just relates the stream to the category
-	 *  "adjustWeights" => Defaults to false. If true, also decrements all following relations' weights by one.
+	 * @param {boolean} [$options.skipAccess=false] If true, skips the access checks and just relates the stream to the category
+	 * @param {boolean} [$options.adjustWeights=false] If true, also decrements all following relations' weights by one.
 	 * @return {boolean}
 	 *  Whether the relation was removed
 	 */
@@ -1866,22 +1869,21 @@ abstract class Streams extends Base_Streams
 	 *  If true, returns all the streams this related to this category.
 	 *  If a string, returns all the streams related to this category with names prefixed by this string.
 	 * @param {array} $options=array()
-	 *	'limit' =>  number of records to fetch
-	 *	'offset' =>  offset to start from
-	 *  'min' => the minimum weight (inclusive) to filter by, if any
-	 *  'max' => the maximum weight (inclusive) to filter by, if any
-	 *  'orderBy' => defaults to false, which means order by descending weight. True means by ascending weight.
-	 *  'type' =>  if specified, this filters the type of the relation
-	 *  'prefix' => if specified, this filters by the prefix of the related streams
-	 *	'where' =>  you can also specify any extra conditions here
-	 *  'extra' => An array of any extra info to pass to Streams::fetch when fetching streams
-	 *	'relationsOnly' =>  If true, returns only the relations to/from stream, doesn't fetch the streams.
-	 *		Useful if publisher id of relation objects is not the same as provided by publisherId.
-	 *  'streamsOnly' => If true, returns only the streams related to/from stream, doesn't return the relations.
-	 *	  Useful for shorthand in while( ) statements.
-	 *  'streamFields' => If specified, fetches only the fields listed here for any streams
-	 *  'skipFields' => Optional array of field names. If specified, skips these fields when fetching streams
-	 *  'includeTemplates' => Defaults to false. Pass true here to include template streams (whose name ends in a slash) among the related streams.
+	 * @param {boolean} [$options.orderBy=false] Defaults to false, which means order by decreasing weight. True means order by increasing weight.
+	 * @param {integer} [$options.limit] number of records to fetch
+	 * @param {integer} [$options.offset] offset to start from
+	 * @param {double} [$options.min] the minimum orderBy value (inclusive) to filter by, if any
+	 * @param {double} [$options.max] the maximum orderBy value (inclusive) to filter by, if any
+	 * @param {string|array|Db_Range} [$options.type] if specified, this filters the type of the relation. Can be useful for implementing custom indexes using relations and varying the value of "type".
+	 * @param {string} [$options.prefix] if specified, this filters by the prefix of the related streams
+	 * @param {array} [$options.where] you can also specify any extra conditions here
+	 * @param {array} [$options.extra] An array of any extra info to pass to Streams::fetch when fetching streams
+	 * @param {array} [$options.relationsOnly] If true, returns only the relations to/from stream, doesn't fetch the streams. Useful if publisher id of relation objects is not the same as provided by publisherId.
+	 * @param {array} [$options.streamsOnly] If true, returns only the streams related to/from stream, doesn't return the relations.
+	 * @param {array} [$options] Useful for shorthand in while( ) statements.
+	 * @param {array} [$options.streamFields] If specified, fetches only the fields listed here for any streams
+	 * @param {array} [$options.skipFields] Optional array of field names. If specified, skips these fields when fetching streams
+	 * @param {array} [$options.includeTemplates] Defaults to false. Pass true here to include template streams (whose name ends in a slash) among the related streams.
 	 * @return {array}
 	 *  Returns array($relations, $relatedStreams, $stream).
 	 *  However, if $streamName wasn't a string or ended in "/"
