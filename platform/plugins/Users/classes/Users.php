@@ -985,7 +985,7 @@ abstract class Users extends Base_Users
 	 * Returns a user in the database that corresponds to the contact info, if any.
 	 * @method userFromContactInfo
 	 * @static
-	 * @param {string} $type Could be one of "email", "mobile", "email\_hashed", "mobile\_hashed", "facebook", "twitter" or "token"
+	 * @param {string} $type Could be one of "email", "mobile", "email_hashed", "mobile_hashed", "facebook", "twitter" or "token"
 	 * @param {string} $value The value corresponding to the type. If $type is:
 	 *
 	 * * "email" - this is one of the user's email addresses
@@ -1085,11 +1085,11 @@ abstract class Users extends Base_Users
 	 * Inserts a new user if one doesn't already exist.
 	 *
 	 * **Note:** *if they register and then later add an email, mobile or authenticate with a provider,
-	 * which happens to match a "future" mapping in users\_identify table, ththen this user will not be converted, since they already registered a different user.
+	 * which happens to match a "future" mapping in users_identify table, ththen this user will not be converted, since they already registered a different user.
 	 * Later on, we may have some sort function to merge users together.*
 	 *
 	 * @method futureUser
-	 * @param {string} $type Could be one of "email", "mobile", "email\_hashed", "mobile\_hashed", "facebook" or "twitter"
+	 * @param {string} $type Could be one of "email", "mobile", "email_hashed", "mobile_hashed", "facebook" or "twitter"
 	 * @param {string} $value The value corresponding to the type. If $type is:
 	 *
 	 * * "email" - this is one of the user's email addresses
@@ -1483,7 +1483,7 @@ abstract class Users extends Base_Users
 	 * @static
 	 * @param {Facebook} $facebook Facebook object
 	 * @param {string} [$uid=null] User id
-	 * @param {string} [$fields="uid,first\_name,last\_name,pic\_small,pic\_big,pic\_square,pic,birthday_date,gender,meeting\_sex,religion"]
+	 * @param {string} [$fields="uid,first_name,last_name,pic_small,pic_big,pic_square,pic,birthday_date,gender,meeting_sex,religion"]
 	 * @return {array}
 	 * @throws {Users_Exception_NotLoggedIn} If user is not logged in
 	 */
@@ -1505,7 +1505,7 @@ abstract class Users extends Base_Users
 	 * @static
 	 * @param {Facebook} $facebook Facebook object
 	 * @param {string} [$uid=null] User id
-	 * @param {string} [$fields="aid,name,description,location,size,link,edit\_link,visible,modified\_major,object_id"]
+	 * @param {string} [$fields="aid,name,description,location,size,link,edit_link,visible,modified_major,object_id"]
 	 * @return {array}
 	 * @throws {Users_Exception_NotLoggedIn} If user is not logged in
 	 */
@@ -1525,7 +1525,7 @@ abstract class Users extends Base_Users
 	 * @static
 	 * @param {Facebook} $facebook Facebook object
 	 * @param {string} $aid Author id
-	 * @param {string} [$fields="pid,aid,owner,src\_small,src\_small\_height,src\_small\_width,src\_big,src\_big\_height,src\_big\_width,src,src_height,src\_width,link,caption,object\_id"]
+	 * @param {string} [$fields="pid,aid,owner,src_small,src_small_height,src_small_width,src_big,src_big_height,src_big_width,src,src_height,src_width,link,caption,object_id"]
 	 * @return {array}
 	 */
 	static function facebookPhotos(
