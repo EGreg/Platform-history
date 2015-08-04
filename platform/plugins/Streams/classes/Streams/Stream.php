@@ -1096,7 +1096,7 @@ class Streams_Stream extends Base_Streams_Stream
 				$identifier = array_map('trim', explode("\t", $identifier)) ;
 			}
 			$statuses = array();
-			$identifier_ids = Users_User::idsFromIdentifiers($who['identifier'], $statuses);
+			$identifier_ids = Users_User::idsFromIdentifiers($identifier, $statuses);
 			$raw_userIds = array_merge($raw_userIds, $identifier_ids);
 		}
 		// merge fb uids if any

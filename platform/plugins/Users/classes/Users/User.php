@@ -488,7 +488,7 @@ class Users_User extends Base_Users_User
 	 * @method addMobile
 	 * @param {string} $mobileNumber
 	 *  The mobile number to add.
-	 * @param {string} [$activation_message_view=null]
+	 * @param {string} [$activationMessageView=null]
 	 *  The view to use for the body of the activation message to send.
 	 * @param {array} [$fields=array()]
 	 *  An array of additional fields to pass to the mobile view.
@@ -506,7 +506,7 @@ class Users_User extends Base_Users_User
 	 */
 	function addMobile(
 		$mobileNumber,
-		$activation_message_view = null,
+		$activationMessageView = null,
 		$fields = array(),
 		$options = array())
 	{
@@ -563,8 +563,8 @@ class Users_User extends Base_Users_User
 		$this->mobileNumberPending = $normalized;
 		$this->save();
 		
-		if (!isset($activation_message_view)) {
-			$activation_message_view = Q_Config::get(
+		if (!isset($activationMessageView)) {
+			$activationMessageView = Q_Config::get(
 				'Users', 'transactional', 'activation', 'sms', 'Users/sms/activation.php'
 			);
 		}
@@ -577,7 +577,7 @@ class Users_User extends Base_Users_User
 			'link' => $link
 		));
 		$mobile->sendMessage(
-			$activation_message_view, 
+			$activationMessageView, 
 			$fields2,
 			$options
 		);
@@ -607,15 +607,15 @@ class Users_User extends Base_Users_User
 	{
 		Q_Valid::phone($mobileNumber, $normalized);
 		$mobile = new Users_Mobile();
-		$mobile->number = $mobileNumber;
+		$mobile->number = $normalized;
 		$retrieved = $mobile->retrieve('*', array('ignoreCache' => true));
+		if (empty($mobile->activationCode)) {
+			$mobile->activationCode = '';
+			$mobile->activationCodeExpires = '0000-00-00 00:00:00';
+		}
+		$mobile->authCode = md5(microtime() + mt_rand());
 		if ($verified) {
 			$mobile->userId = $this->id;
-			if (empty($mobile->activationCode)) {
-				$mobile->activationCode = '';
-				$mobile->activationCodeExpires = '0000-00-00 00:00:00';
-			}
-			$mobile->authCode = md5(microtime() + mt_rand());
 		} else {
 			if (!$retrieved) {
 				throw new Q_Exception_MissingRow(array(
@@ -713,13 +713,13 @@ class Users_User extends Base_Users_User
 	
 	/**
 	 * get user id
-	 * @method get_id
+	 * @method _getId
 	 * @static
 	 * @private
 	 * @param {Users_User} $u
 	 * @return {string}
 	 */
-	private static function get_id ($u) { return $u->id; }
+	private static function _getId ($u) { return $u->id; }
 	
 	/**
 	 * Check label or array of labels and return existing users
@@ -781,7 +781,7 @@ class Users_User extends Base_Users_User
 			$users[] = $user = Users::futureUser($type, $ui_identifier, $status);
 			$statuses[$user->id] = $status;
 		}
-		return array_map(array('Users_User', 'get_id'), $users);
+		return array_map(array('Users_User', '_getId'), $users);
 	}
 	
 	/**
@@ -802,7 +802,7 @@ class Users_User extends Base_Users_User
 		foreach ($identifiers as $identifier) {
 			$users[] = Users::futureUser('facebook', $identifier);
 		}
-		return array_map(array('Users_User', 'get_id'), $users);
+		return array_map(array('Users_User', '_getId'), $users);
 	}
 
 	/**
