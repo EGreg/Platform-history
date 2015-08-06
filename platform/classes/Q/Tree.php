@@ -35,15 +35,17 @@ class Q_Tree
 	 * @param {string} $key2 Optional. The name of the second key in the configuration path.
 	 *  You can actually pass as many keys as you need,
 	 *  delving deeper and deeper into the configuration structure.
-	 *  All but the last parameter are interpreted as keys.
-	 * @param {mixed} $default The last parameter is the default value to return
+	 *  If more than one argument is passed, but the last argument are interpreted as keys.
+	 * @param {mixed} $default
+	 *  If only one argument is passed, the default is null
+	 *  Otherwise, the last argument is the default value to return
 	 *  in case the requested field was not found.
 	 * @return {mixed}
 	 * @throws {Q_Exception_NotArray}
 	 */
 	function get(
 	 $key1,
-	 $default)
+	 $default = null)
 	{
 		$args = func_get_args();
 		$args_count = func_num_args();

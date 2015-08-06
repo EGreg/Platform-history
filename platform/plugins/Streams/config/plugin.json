@@ -53,8 +53,21 @@
 			"Streams/user/icon": true
 		},
 		"types": {
-			"Streams/access": {},
-			"Streams/text": {"create": true, "edit": true},
+			"Streams/access": {
+				"description": "Used to determine access to read/write/manage some resource"
+			},
+			"Streams/task": {
+				"description": "Used to receive updates about progress on a certain task",
+				"create": true,
+				"messages": {},
+				"attributes": {
+					"progress": "double"
+				}
+			},
+			"Streams/text": {
+				"create": true, 
+				"edit": true
+			},
 			"Streams/text/small": {"create": true, "edit": true,
 				"messages": {
 					"Streams/chat/message": {
@@ -70,6 +83,7 @@
 			"Streams/date": {"create": true, "edit": true},
 			"Streams/number": {"create": true, "edit": true},
 			"Streams/image": {
+				"description": "A visual image",
 				"create": true,
 				"edit": true,
 				"sizes": ["40", "50", "80", "x200", "200x"],
@@ -78,6 +92,7 @@
 				}
 			},
 			"Streams/images": {
+				"description": "A gallery of images",
 				"create": true,
 				"edit": true,
 				"defaults": {
@@ -85,6 +100,7 @@
 				}
 			},
 			"Streams/category": {
+				"description": "A category to which other things can be related",
 				"create": true,
 				"edit": true,
 				"defaults": {
@@ -94,6 +110,7 @@
 				"see": ["relatedTo"]
 			},
 			"Streams/interest": {
+				"description": "Represents a user's interest in a certain topic",
 				"create": true,
 				"edit": true,
 				"defaults": {
@@ -102,6 +119,7 @@
 				}
 			},
 			"Streams/incoming": {
+				"description": "Destination for messages sent by other users",
 				"create": true,
 				"messages": {
 					"Streams/incoming/message": {"post": true},
@@ -109,28 +127,28 @@
 				}
 			},
 			"Streams/chat": {
+				"description": "A chatroom",
 				"create": true,
 				"messages": {
 					"Streams/chat/message": {
 						"post": true,
-						"title": "Chat message",
-						"subject": "Chat in {{stream.fields.title}}"
+						"title": "Chat message"
 					},
 					"Streams/chat/edit": {
 						"post": true,
-						"title": "Chat message edited",
-						"subject": "Chat in {{stream.fields.title}}"
+						"title": "Chat message edited"
 					},
 					"Streams/chat/remove": {
 						"post": true,
-						"title": "Chat message removed",
 						"subject": "Chat in {{stream.fields.title}}"
 					}
 				}
 			},
 			"Streams/community": {
+				"description": "A common stream to reach an entire community"
 			},
 			"Streams/greeting": {
+				"description": "A greeting with which a user can introduce themselves",
 				"edit": true,
 				"defaults": {
 					"title": "Community Greeting"
@@ -160,8 +178,14 @@
 				"": {
 					"subject": "Message \"{{& message.type}}\" to \"{{& stream.fields.title}}\""
 				},
+				"Streams/changed": {
+					"subject": "Changes in {{stream.fields.title}}"
+				},
 				"Streams/invite": {
 					"subject": "You were invited to {{& stream.fields.title}}"
+				},
+				"Streams/chat/message": {
+					"subject": "Chat in {{stream.fields.title}}"
 				}
 			}
 		},

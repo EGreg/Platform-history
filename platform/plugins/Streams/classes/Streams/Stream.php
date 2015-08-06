@@ -368,7 +368,7 @@ class Streams_Stream extends Base_Streams_Stream
 	}
 	
 	/**
-	 * @method afterSaveExcecute
+	 * @method afterSaveExecute
 	 * @param {Db_Result} $result
 	 * @param {Db_Query} $query
 	 * @return {Db_Result}
@@ -1022,6 +1022,66 @@ class Streams_Stream extends Base_Streams_Stream
 			$skipAccess,
 			array($this)
 		);
+	}
+	
+	/**
+	 * Take actions to reflect the stream has changed: save it and post a message.
+	 * @method post
+	 * @param {string} $asUserId
+	 *  The user to post as. Defaults to the logged-in user.
+	 * @param {string} [$messageType='Streams/changed']
+	 *  The type of the message.
+	 * @param {array} [$fieldNames=null]
+	 *  The names of the fields to check for changes.
+	 *  By default, checks all the standard stream fields.
+	 * @return {array}
+	 *  The array of results - successfully posted messages or false if post failed
+	 */
+	function changed(
+		$asUserId,
+		$messageType='Streams/changed',
+		$fieldNames = null)
+	{
+		if (!isset($asUserId)) {
+			$asUserId = Users::loggedInUser();
+			if (!$asUserId) $asUserId = "";
+		}
+		if ($asUserId instanceof Users_User) {
+			$asUserId = $asUserId->id;
+		}
+		if (!isset($fieldNames)) {
+			$fieldNames = Streams::getExtendFieldNames($this->type);
+		}
+		$coreFields = array(
+			'title', 'icon', 'content', 'attributes', 
+			'readLevel', 'writeLevel', 'adminLevel',
+			'closedTime'
+		);
+		$original = $this->fieldsOriginal;
+		$changes = array();
+		foreach ($fieldNames as $f) {
+			if (!isset($this->$f) and !isset($original[$f])) continue;
+			$v = $this->$f;
+			if (isset($original[$f])
+			and json_encode($original[$f]) === json_encode($v)) {
+				continue;
+			}
+			$changes[$f] = in_array($f, $coreFields)
+				? $v // record the changed value in the instructions
+				: null; // record a change but the value may be too big, etc.
+		}
+		unset($changes['updatedTime']);
+		if (!$changes) {
+			return false; // we found no reason to update the stream in the database
+		}
+		$result = $this->save();
+		$this->post($asUserId, array(
+			'type' => $messageType,
+			'content' => '',
+			'instructions' => compact('changes')
+		), true);
+		return $result;
+		
 	}
 	
 	/**
@@ -1837,6 +1897,19 @@ class Streams_Stream extends Base_Streams_Stream
 	{
 		unset(self::$preloaded["{$this->publisherId}, {$this->name}"]);
 	}
+	
+	/**
+	 * Gets the stream row corresponding to a Db_Row retrieved from
+	 * a table extending the stream.
+	 * @method extendedBy
+	 * @static
+	 * @param {Db_Row} $row a Db_Row retrieved from a table extending the stream.
+	 * @return Streams_Stream|null
+	 */
+	static function extendedBy(Db_Row $row)
+	{
+		return $row->get('Streams_Stream', null);
+	}
 
 	/* * * */
 	/**
@@ -1852,6 +1925,28 @@ class Streams_Stream extends Base_Streams_Stream
 			$result->$k = $v;
 		return $result;
 	}
+	
+	/**
+	 * Gets a row that extends the stream, or a field of the stream.
+	 * Example: $stream->Websites_Article, $stream->title or $stream->article
+	 * @method __get
+	 * @param {string} $name
+	 * @return {mixed}
+	 */
+	function __get ($name)
+	{
+		if (isset($this->rows[$name])) {
+			return $this->rows[$name];
+		}
+		return parent::__get($name);
+	}
+	
+	/**
+	 * Any fetched database rows that extend the stream
+	 * @property $rows
+	 * @type array
+	 */
+	public $rows = array();
 	
 	/**
 	 * @property $preloaded

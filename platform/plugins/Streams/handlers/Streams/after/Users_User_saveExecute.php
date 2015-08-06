@@ -136,27 +136,14 @@ function Streams_after_Users_User_saveExecute($params)
 				continue;
 			}
 			$stream->content = $value;
-			$changes = array(
-				'content' => $value
-			);
 			if ($name === "Streams/user/icon") {
                 $sizes = Q_Config::expect('Users', 'icon', 'sizes');
 				sort($sizes);
 				$attributes = $stream->attributes;
                 $stream->setAttribute('sizes', $sizes);
-				if ($stream->attributes !== $attributes) {
-					$changes['attributes'] = $stream->attributes;
-				}
 				$stream->icon = $changes['icon'] = $user->iconUrl();
 			}
-			Streams::$beingSavedQuery = $stream->save();
-			if ($changes) {
-				$stream->post($user->id, array(
-					'type' => 'Streams/edited',
-					'content' => '',
-					'instructions' => compact('changes')
-				), true);
-			}
+			Streams::$beingSavedQuery = $streams->changed($user->id);
 		}
 	}
 }

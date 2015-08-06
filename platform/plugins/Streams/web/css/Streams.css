@@ -588,3 +588,6 @@
 .Users_avatar_tool .Users_avatar_name>*{ position: relative; }
 
 .Streams_closed { opacity: 0.75; -webkit-transition: opacity 1s; transition: opacity 1s; }
+
+.Streams_task_progress { border: 1px solid #555; }
+.Streams_task_progress_bar { background: 1px solid #555; width: 0; height: 40px; }

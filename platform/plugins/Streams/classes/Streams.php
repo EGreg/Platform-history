@@ -2616,20 +2616,21 @@ abstract class Streams extends Base_Streams
 		foreach ($retrieved as $name => $stream) {
 			$classes = Streams::getExtendClasses($type);
 			foreach ($classes as $k => $v) {
-				$r = call_user_func(array($k, 'select'), '*')
+				$rows[$k] = call_user_func(array($k, 'select'), '*')
 					->where(array(
 						'publisherId' => $publisherId,
 						'streamName' => array_keys($retrieved)
 					))->fetchDbRows(null, '', 'streamName');
-				$rows = array_merge($rows, $r);
 			}
 		}
 		foreach ($retrieved as $name => $stream) {
-			if (empty($rows[$name])) continue;
 			foreach ($classes as $k => $v) {
+				if (empty($rows[$k][$name])) continue;
+				$row = $stream->rows[$k] = $rows[$k][$name];
+				$row->set('Streams_Stream', $stream);
 				foreach ($v as $f) {
-					if (!isset($rows[$name])) continue;
-					$stream->$f = $rows[$name]->$f;
+					if (!isset($rows[$k][$name])) continue;
+					$stream->$f = $rows[$k][$name]->$f;
 				}
 			}
 		}

@@ -38,7 +38,6 @@ function Streams_stream_put($params) {
 			'criteria' => "{publisherId: '$publisherId', name: '$name'}"
 		));
 	}
-	$original = $stream->toArray();
 	
 	// valid stream types should be defined in config by 'Streams/type' array
 	$range = Q_Config::expect('Streams', 'types');
@@ -95,36 +94,8 @@ function Streams_stream_put($params) {
 			if (array_key_exists($f, $fields)) {
 				$stream->$f = $fields[$f];
 			}
-		}
-
-		$instructions = array('changes' => array());
-		foreach ($fieldNames as $f) {
-			if (!isset($stream->$f) and !isset($original[$f])) continue;
-			$v = $stream->$f;
-			if (isset($original[$f])
-			and json_encode($original[$f]) === json_encode($v)) {
-				continue;
-			}
-			$instructions['changes'][$f] = in_array($f, $coreFields)
-				? $v // record the changed value in the instructions
-				: null; // record a change but the value may be too big, etc.
-		}
-		unset($instructions['changes']['updatedTime']);
-	
-		if ($suggest) {
-			$stream->post($user->id, array(
-				'type' => 'Streams/suggest',
-				'content' => '',
-				'instructions' => $instructions
-			), true);
-		} else {
-			$stream->save();
-			$stream->post($user->id, array(
-				'type' => 'Streams/edited',
-				'content' => '',
-				'instructions' => $instructions
-			), true);
-		}
+		}	
+		$stream->changed($user->id,  $suggest ? 'Streams/suggest' : 'Streams/changed');
 	}
 	
 	if (!empty($fields['join'])) {

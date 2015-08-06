@@ -1111,7 +1111,7 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 			if (!err) {
 				var ps = Streams.key(publisherId, streamName);
 				var changed = (options && options.changed) || {};
-				updateStream(_retainedStreams[ps], this.fields, changed);
+				Stream.update(_retainedStreams[ps], this.fields, changed);
 				_retainedStreams[ps] = this;
 			}
 			if (callback) {
@@ -3122,7 +3122,7 @@ function updateAvatarCache(stream) {
 	}
 }
 
-function updateStream(stream, fields, onlyChangedFields) {
+Stream.update = function _Streams_Stream_update(stream, fields, onlyChangedFields) {
 	if (!stream || !fields) {
 		return false;
 	}
@@ -3642,8 +3642,11 @@ Q.onInit.add(function _Streams_onInit() {
 						}
 					}
 					break;
-				case 'Streams/edited':
-					updateStream(stream, fields.changes, null);
+				case 'Streams/changed':
+					Stream.update(stream, fields.changes, null);
+					break;
+				case 'Streams/progress':
+					Stream.update(stream, fields, null);
 					break;
 				case 'Streams/relatedFrom':
 					updateRelatedCache(fields);
@@ -3670,7 +3673,7 @@ Q.onInit.add(function _Streams_onInit() {
 					_relationHandlers(_streamUpdatedRelateToHandlers, msg, stream, fields);
 					break;
 				case 'Streams/closed':
-					updateStream(stream, fields, null);
+					Stream.update(stream, fields, null);
 					var sf = stream.fields;
 					var Qh = Q.handle;
 					var Qgo = Q.getObject;

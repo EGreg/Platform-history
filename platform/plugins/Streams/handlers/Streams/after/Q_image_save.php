@@ -23,16 +23,9 @@ function Streams_after_Q_image_save($params)
 	}
 	sort($sizes);
 	$stream->setAttribute('sizes', $sizes);
-	$stream->save();
 	if (empty(Streams::$beingSavedQuery)) {
-		$toSave = array('changes' => array(
-			'icon' => $stream->icon,
-			'attributes' => $stream->attributes
-		));
-		$stream->post($user->id, array(
-			'type' => 'Streams/edited',
-			'content' => '',
-			'instructions' => $toSave
-		));
+		$stream->changed($user->id);
+	} else {
+		$stream->save();
 	}
 }

@@ -311,10 +311,6 @@ class Streams_Message extends Base_Streams_Message
 		), 'after', false);
 		
 		if ($sendToNode) {
-			$messages = array();
-			foreach ($posted as $publisherId => $arr) {
-
-			}
 			Q_Utils::sendToNode(array(
 				"Q/method" => "Streams/Message/postMessages",
 				"posted" => Q::json_encode($messages2),
@@ -330,23 +326,23 @@ class Streams_Message extends Base_Streams_Message
 		return empty($this->instructions) ? array() : json_decode($this->instructions, true);
 	}
 	
-	function getInstruction($instruction_name)
+	function getInstruction($instructionName)
 	{
 		$instr = $this->getAllInstructions();
-		return isset($instr[$instruction_name]) ? $instr[$instruction_name] : null;
+		return isset($instr[$instructionName]) ? $instr[$instructionName] : null;
 	}
 	
-	function setInstruction($instruction_name, $value)
+	function setInstruction($instructionName, $value)
 	{
 		$instr = $this->getAllInstructions();
-		$instr[$instruction_name] = $value;
+		$instr[$instructionName] = $value;
 		$this->instructions = Q::json_encode($instr);
 	}
 	
-	function clearInstruction($instruction_name)
+	function clearInstruction($instructionName)
 	{
 		$instr = $this->getAllInstructions();
-		unset($instr[$instruction_name]);
+		unset($instr[$instructionName]);
 		$this->instructions = Q::json_encode($instr);
 	}
 	
