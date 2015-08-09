@@ -1219,7 +1219,7 @@ Sp.save = function _Stream_prototype_save (callback, options) {
 	var pf = this.pendingFields; 
 	pf.publisherId = f.publisherId;
 	pf.name = f.name;
-	pf.["Q.clientId"] = Q.clientId();
+	pf["Q.clientId"] = Q.clientId();
 	var baseUrl = Q.baseUrl({
 		publisherId: pf.publisherId,
 		streamName: pf.name
