@@ -527,9 +527,6 @@ var _Streams_batchFunction_preprocess = {
  * @method create
  * @param {Object} fields
  *  Should contain at least the publisherId and type of the stream
- * @param {Q.Tool} [tool]
- *  If this is being called from a tool implementing the Streams/preview protocol,
- *  then pass the tool before the callback, so that it can be updated properly.
  * @param {Function} callback 
  *	if there were errors, first parameter is the error message
  *  otherwise, first parameter is null and second parameter is a Streams.Stream object
@@ -538,28 +535,7 @@ var _Streams_batchFunction_preprocess = {
  *   @param {String} [related.streamName] the name of the related stream
  *   @param {Mixed} [related.type] the type of the relation
  */
-Streams.create = function (fields, /* tool, */ callback, related) {
-	var tool = null;
-	if (Q.typeOf(callback) === 'Q.Tool') {
-		tool = callback;
-		var cb = related;
-		related = arguments[3];
-		callback = function (err, stream, extra) {
-			if (!err) {
-				var state = tool.state;
-				var r = state.related;
-				Streams.related.cache.each([r.publisherId, r.streamName],
-				function (key) {
-					Streams.related.cache.remove(key);
-				});
-				state.related.weight = Q.getObject(['related', 'weight'], extra);
-				state.publisherId = this.fields.publisherId;
-				state.streamName = this.fields.name;
-				tool.stream = this;
-			}
-			cb && cb.apply(this, arguments);
-		};
-	}
+Streams.create = function (fields, callback, related) {
 	var slotNames = ['stream'];
 	if (fields.icon) {
 		slotNames.push('icon');
@@ -583,6 +559,12 @@ Streams.create = function (fields, /* tool, */ callback, related) {
 			Streams.onError.handle.call(this, msg, args);
 			Streams.create.onError.handle.call(this, msg, args);
 			return callback && callback.call(this, msg, args);
+		}
+		if (related) {
+			Streams.related.cache.each([related.publisherId, related.streamName],
+			function (key) {
+				Streams.related.cache.remove(key);
+			});
 		}
 		Streams.construct(data.slots.stream, {}, function Stream_create_construct_handler (err, stream) {
 			var msg = Q.firstErrorMessage(err);
@@ -1233,12 +1215,14 @@ Sp.clear = function _Stream_prototype_clear (attributeName) {
 Sp.save = function _Stream_prototype_save (callback, options) {
 	var that = this;
 	var slotName = "stream";
-	this.pendingFields.publisherId = this.fields.publisherId;
-	this.pendingFields.streamName = this.fields.name;
-	this.pendingFields["Q.clientId"] = Q.clientId();
+	var f = this.fields;
+	var pf = this.pendingFields; 
+	pf.publisherId = f.publisherId;
+	pf.name = f.name;
+	pf.["Q.clientId"] = Q.clientId();
 	var baseUrl = Q.baseUrl({
-		publisherId: this.pendingFields.publisherId,
-		streamName: this.pendingFields.name
+		publisherId: pf.publisherId,
+		streamName: pf.name
 	});
 	Q.req('Streams/stream', [slotName], function (err, data) {
 		var msg = Q.firstErrorMessage(err, data && data.errors);
@@ -1251,13 +1235,13 @@ Sp.save = function _Stream_prototype_save (callback, options) {
 		var stream = data.slots.stream || null;
 		callback && callback.call(that, null, stream);
 		if (stream) {
-			// process the Streams/closed message, if stream was retained
+			// process the Streams/changed message, if stream was retained
 			Streams.Stream.refresh(stream.publisherId, stream.name, null, {
 				messages: true,
 				unlessSocket: true
 			});
 		}
-	}, { method: 'put', fields: this.pendingFields, baseUrl: baseUrl });
+	}, { method: 'put', fields: pf, baseUrl: baseUrl });
 };
 
 /**

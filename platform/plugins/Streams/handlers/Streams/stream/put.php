@@ -94,7 +94,7 @@ function Streams_stream_put($params) {
 			if (array_key_exists($f, $fields)) {
 				$stream->$f = $fields[$f];
 			}
-		}	
+		}
 		$stream->changed($user->id,  $suggest ? 'Streams/suggest' : 'Streams/changed');
 	}
 	

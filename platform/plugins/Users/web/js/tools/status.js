@@ -12,7 +12,7 @@ var Users = Q.Users;
  * @class Users status
  * @constructor
  * @param {Object} [options] this object contains function parameters
- *	 @param {String} [options.icom] Icon for the login button. Defaults to Qbix icon.
+ *	 @param {String} [options.icon] Icon for the login button. Defaults to Qbix icon.
  *	 @optional
  *	 @param {String} [options.label] Text for the login button. Defaults to 'log in'.
  *	 @default 'log in'
