@@ -13,7 +13,7 @@ function Places_geolocation_response_data()
 		$longitude = $_REQUEST['longitude'];
 	} else {
 		$user = Users::loggedInUser(true);
-		$stream = Places::userLocationStream();
+		$stream = Places_Location::userStream();
 		$latitude = $stream->getAttribute('latitude');
 		$longitude = $stream->getAttribute('longitude');
 		$miles = $stream->getAttribute('miles');

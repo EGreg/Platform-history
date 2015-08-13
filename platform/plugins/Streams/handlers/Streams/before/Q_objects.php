@@ -106,8 +106,10 @@ function Streams_before_Q_objects()
 		Users::setLoggedInUser($user);
 	}
 	
-	// accept invite
-	$invite->accept();
+	// accept invite and autosubscribe if first time
+	if ($invite->accept()) {
+		$invite->subscribe();
+	}
 	
 	// retain the invite object for further processing
 	Streams::$followedInvite = $invite;

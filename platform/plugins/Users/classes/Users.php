@@ -1105,7 +1105,10 @@ abstract class Users extends Base_Users
 	static function futureUser($type, $value, &$status = null)
 	{
 		if (!isset(self::$types[$type])) {
-			throw new Q_Exception_WrongType(array('field' => 'type', 'type' => 'one of the supported types'));
+			throw new Q_Exception_WrongType(array(
+				'field' => 'type', 
+				'type' => 'one of the supported types'
+			));
 		}
 
 		$ui = Users::identify($type, $value, null);

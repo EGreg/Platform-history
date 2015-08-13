@@ -27,7 +27,7 @@
 function Places_geolocation_post()
 {
 	$user = Users::loggedInUser(true);
-	$stream = Places::userLocationStream();
+	$stream = Places_Location::userStream();
 	$oldLatitude = $stream->getAttribute('latitude');
 	$oldLongitude = $stream->getAttribute('longitude');
 	$oldMiles = $stream->getAttribute('miles');
@@ -121,19 +121,19 @@ function Places_geolocation_post()
 		if ($shouldUnsubscribe) {
 			// TODO: implement mass unsubscribe
 			foreach ($myInterests as $weight => $info) {
-				Places::unsubscribe(
+				Places_Nearby::unsubscribe(
 					$oldLatitude,
 					$oldLongitude,
 					$oldMiles,
 					$info[0],
 					array(
-						'transform' => array('Places', '_transformInterest'),
+						'transform' => array('Places_Interest', '_transform'),
 						'title' => $info[2],
 						'skipAccess' => true
 					)
 				);
 			}
-			$attributes['unsubscribed'] = Places::unsubscribe(
+			$attributes['unsubscribed'] = Places_Nearby::unsubscribe(
 				$oldLatitude, $oldLongitude, $oldMiles
 			);
 		}
@@ -141,20 +141,20 @@ function Places_geolocation_post()
 		if ($shouldSubscribe) {
 			// TODO: implement mass subscribe
 			foreach ($myInterests as $weight => $info) {
-				Places::subscribe(
+				Places_Nearby::subscribe(
 					$latitude,
 					$longitude,
 					$miles,
 					$info[0],
 					array(
-						'transform' => array('Places', '_transformInterest'),
-						'create' => array('Places', '_createInterest'),
+						'transform' => array('Places_Interest', '_transform'),
+						'create' => array('Places_Interest', '_create'),
 						'title' => $info[2],
 						'skipAccess' => true
 					)
 				);
 			}
-			$attributes['subscribed'] = Places::subscribe(
+			$attributes['subscribed'] = Places_Nearby::subscribe(
 				$latitude, $longitude, $miles
 			);
 		}	
