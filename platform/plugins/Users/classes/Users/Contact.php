@@ -63,9 +63,9 @@ class Users_Contact extends Base_Users_Contact
 		}
 		/**
 		 * @event Users/Contact/addContact {after}
-		 * @param {string} 'contactUserId'
-		 * @param {string} 'label'
-		 * @param {array} 'contacts'
+		 * @param {string} contactUserId
+		 * @param {string} label
+		 * @param {array} contacts
 		 */
 		Q::event('Users/Contact/addContact', 
 			compact('contactUserId', 'label', 'contacts'), 

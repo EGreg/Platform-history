@@ -202,7 +202,7 @@ class Q_Tree
 
 		/**
 		 * @event Q/tree/load {before}
-		 * @param {string} 'filename'
+		 * @param {string} filename
 		 * @return {array}
 		 */
 		$arr = Q::event('Q/tree/load', compact('filename'), 'before');

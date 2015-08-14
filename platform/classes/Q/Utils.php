@@ -560,7 +560,9 @@ class Q_Utils
 			$url = $nodep && $nodeh ? "http://$nodeh:$nodep" : false;
 		}
 
-		if (!$url) throw new Q_Exception("Q_Utils::queryInternal: Node.js root URL is not defined");
+		if (!$url) {
+			throw new Q_Exception("Q_Utils::queryInternal: the nodeInternal config is missing");
+		}
 		
 		if (is_array($url)) {
 			$server = array();
@@ -570,7 +572,10 @@ class Q_Utils
 			$server = "$url/$handler";
 		}
 
-		$result = json_decode(self::post($server, self::sign($data), null, true, null, Q_UTILS_CON_INTERNAL_TIMEOUT, Q_UTILS_CON_INTERNAL_TIMEOUT), true);
+		$result = json_decode(self::post(
+			$server, self::sign($data), null, true, null, 
+			Q_UTILS_CON_INTERNAL_TIMEOUT, Q_UTILS_CON_INTERNAL_TIMEOUT
+		), true);
 
 		// TODO: check signature of returned data
 
@@ -607,7 +612,7 @@ class Q_Utils
 		// The following hook may modify the url
 		/**
 		 * @event Q/Utils/sendToNode {before}
-		 * @param {array} 'data'
+		 * @param {array} data
 		 * @param {string|array} 'url'
 		 */
 		Q::event('Q/Utils/sendToNode', array('data' => $data, 'url' => $url), 'before');

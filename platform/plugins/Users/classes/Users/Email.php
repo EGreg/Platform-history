@@ -47,10 +47,10 @@ class Users_Email extends Base_Users_Email
 	{
 		/**
 		 * @event Users/email/sendMessage {before}
-		 * @param {string} 'subject'
-		 * @param {string} 'view'
-		 * @param {array} 'fields'
-		 * @param {array} 'options'
+		 * @param {string} subject
+		 * @param {string} view
+		 * @param {array} fields
+		 * @param {array} options
 		 * @return {boolean}
 		 */
 		$result = Q::event(
@@ -153,11 +153,11 @@ class Users_Email extends Base_Users_Email
 		
 		/**
 		 * @event Users/email/sendMessage {after}
-		 * @param {string} 'subject'
-		 * @param {string} 'view'
-		 * @param {array} 'fields'
-		 * @param {array} 'options'
-		 * @param {string} 'mail'
+		 * @param {string} subject
+		 * @param {string} view
+		 * @param {array} fields
+		 * @param {array} options
+		 * @param {string} mail
 		 */
 		Q::event(
 			'Users/email/sendMessage', 
@@ -204,8 +204,8 @@ class Users_Email extends Base_Users_Email
 			. ' emailAddress='.urlencode($this->address);
 		/**
 		 * @event Users/resend {before}
-		 * @param {string} 'user'
-		 * @param {string} 'email'
+		 * @param {string} user
+		 * @param {string} email
 		 */
 		Q::event('Users/resend', compact('user', 'email', 'link'), 'before');
 		$this->save();
@@ -225,8 +225,8 @@ class Users_Email extends Base_Users_Email
 		); // may throw exception if badly configured
 		/**
 		 * @event Users/resend {after}
-		 * @param {string} 'user'
-		 * @param {string} 'email'
+		 * @param {string} user
+		 * @param {string} email
 		 */
 		Q::event('Users/resend', compact('user', 'email'), 'after');
 	}

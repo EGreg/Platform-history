@@ -42,9 +42,9 @@ class Users_Mobile extends Base_Users_Mobile
 	{
 		/**
 		 * @event Users/sms/sendMessage {before}
-		 * @param {string} 'view'
-		 * @param {array} 'fields'
-		 * @param {array} 'options'
+		 * @param {string} view
+		 * @param {array} fields
+		 * @param {array} options
 		 * @return {boolean}
 		 */
 		$result = Q::event('Users/sms/sendMessage', compact('view', 'fields', 'options'), 'before');
@@ -154,10 +154,10 @@ class Users_Mobile extends Base_Users_Mobile
 		
 		/**
 		 * @event Users/sms/sendMessage {after}
-		 * @param {string} 'view'
-		 * @param {array} 'fields'
-		 * @param {array} 'options'
-		 * @param {string} 'mail'
+		 * @param {string} view
+		 * @param {array} fields
+		 * @param {array} options
+		 * @param {string} mail
 		 */
 		Q::event(
 			'Users/email/sendMessage', 
@@ -201,8 +201,8 @@ class Users_Mobile extends Base_Users_Mobile
 			. ' mobileNumber='.urlencode($number);
 		/**
 		 * @event Users/resend {before}
-		 * @param {string} 'user'
-		 * @param {string} 'mobile'
+		 * @param {string} user
+		 * @param {string} mobile
 		 */
 		Q::event('Users/resend', compact('user', 'mobile', 'link'), 'before');
 		$this->save();
@@ -220,8 +220,8 @@ class Users_Mobile extends Base_Users_Mobile
 		); // may throw exception if badly configured
 		/**
 		 * @event Users/resend {after}
-		 * @param {string} 'user'
-		 * @param {string} 'mobile'
+		 * @param {string} user
+		 * @param {string} mobile
 		 */
 		Q::event('Users/resend', compact('user', 'mobile'), 'after');
 	}

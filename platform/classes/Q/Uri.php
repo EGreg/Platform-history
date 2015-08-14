@@ -161,10 +161,10 @@ class Q_Uri
 		
 		/**
 		 * @event Q/url {before}
-		 * @param {string|boolean|array|Q_Uri} 'source' This can be a Q_Uri, an array or string representing a uri,
+		 * @param {string|boolean|array|Q_Uri} source This can be a Q_Uri, an array or string representing a uri,
 		 *  an absolute url, or "true". If you pass "true", then the Q_Request::baseUrl(true) is used as input.
-		 * @param {string|null} 'routePattern' If you know which route pattern to use, then specify it here. Otherwise, leave it null.
-		 * @param {boolean} 'noProxy' If set to true, Q_Uri::proxySource($url) is not called before returning the result.
+		 * @param {string|null} routePattern If you know which route pattern to use, then specify it here. Otherwise, leave it null.
+		 * @param {boolean} noProxy If set to true, Q_Uri::proxySource($url) is not called before returning the result.
 		 * @return {string}
 		 */
 		$url = Q::event('Q/url', compact('source', 'routePattern', 'noProxy'), 'before');
@@ -334,7 +334,7 @@ class Q_Uri
 		/**
 		 * Hook for custom logic modifying routing from URLs to internal URIs
 		 * @event Q/uriFromUrl {before}
-		 * @param {string} 'url'
+		 * @param {string} url
 		 * @return {Q_Uri}
 		 */
 		$uri = Q::event('Q/uriFromUrl', compact('url'), 'before');

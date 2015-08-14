@@ -22,7 +22,7 @@ function Streams_invite_post()
 	$publisherId = Streams::requestedPublisherId(true);
 	$streamName = Streams::requestedName(true);
 	
-	Streams::$cache['invited'] = Streams_Stream::invite(
+	Streams::$cache['invited'] = Streams::invite(
 		$publisherId, 
 		$streamName, 
 		$_REQUEST, 

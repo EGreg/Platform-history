@@ -499,7 +499,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		if (class_exists('Q')) {
 			/**
 			 * @event Db/query/execute {before}
-			 * @param {Db_Query_Mysql} 'query'
+			 * @param {Db_Query_Mysql} query
 			 * @return {Db_Result}
 			 */
 			$result = Q::event('Db/query/execute', array('query' => $this), 'before');
@@ -1770,7 +1770,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	{
 		/**
 		 * @event Db/reallyConnect {before}
-		 * @param {Db_Query_Mysql} 'query'
+		 * @param {Db_Query_Mysql} query
 		 * @param {string} 'shard_name'
 		 */
 		Q::event(

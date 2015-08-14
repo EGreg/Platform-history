@@ -142,7 +142,7 @@ class Users_User extends Base_Users_User
 		}
 		/**
 		 * @event Users/validate/username
-		 * @param {&string} 'username'
+		 * @param {&string} username
 		 */
 		Q::event(
 			'Users/validate/username',
@@ -161,7 +161,7 @@ class Users_User extends Base_Users_User
 		parent::beforeSet_emailAddress($emailAddress);
 		/**
 		 * @event Users/validate/emailAddress
-		 * @param {&string} 'emailAddress'
+		 * @param {&string} emailAddress
 		 */
 		Q::event(
 			'Users/validate/emailAddress',
@@ -182,7 +182,7 @@ class Users_User extends Base_Users_User
 	{
 		/**
 		 * @event Users/filter/id
-		 * @param {string} 'id'
+		 * @param {string} id
 		 * @return {boolean}
 		 */
 		return Q::event('Users/filter/id', $params);
@@ -366,8 +366,8 @@ class Users_User extends Base_Users_User
 		$link = 'Users/activate?code='.urlencode($email->activationCode) . ' emailAddress='.urlencode($email->address);
 		/**
 		 * @event Users/addIdentifier {before}
-		 * @param {string} 'user'
-		 * @param {string} 'email'
+		 * @param {string} user
+		 * @param {string} email
 		 */
 		Q::event('Users/addIdentifier', compact('user', 'email', 'link'), 'before');
 		$email->save();
@@ -402,8 +402,8 @@ class Users_User extends Base_Users_User
 		
 		/**
 		 * @event Users/addIdentifier {after}
-		 * @param {string} 'user'
-		 * @param {string} 'email'
+		 * @param {string} user
+		 * @param {string} email
 		 */
 		Q::event('Users/addIdentifier', compact('user', 'email', 'link'), 'after');
 	}
@@ -475,8 +475,8 @@ class Users_User extends Base_Users_User
 		
 		/**
 		 * @event Users/setEmailAddress {after}
-		 * @param {string} 'user'
-		 * @param {string} 'email'
+		 * @param {string} user
+		 * @param {string} email
 		 */
 		Q::event('Users/setEmailAddress', compact('user', 'email'), 'after');
 		return true;
@@ -554,8 +554,8 @@ class Users_User extends Base_Users_User
 			. ' mobileNumber='.urlencode($number);
 		/**
 		 * @event Users/addIdentifier {before}
-		 * @param {string} 'user'
-		 * @param {string} 'mobile'
+		 * @param {string} user
+		 * @param {string} mobile
 		 */
 		Q::event('Users/addIdentifier', compact('user', 'mobile', 'link'), 'before');
 		$mobile->save();
@@ -586,8 +586,8 @@ class Users_User extends Base_Users_User
 		
 		/**
 		 * @event Users/addIdentifier {after}
-		 * @param {string} 'user'
-		 * @param {string} 'mobile'
+		 * @param {string} user
+		 * @param {string} mobile
 		 */
 		Q::event('Users/addIdentifier', compact('user', 'mobile', 'link'), 'after');
 	}
@@ -656,8 +656,8 @@ class Users_User extends Base_Users_User
 		$user = $this;
 		/**
 		 * @event Users/setMobileNumber {after}
-		 * @param {string} 'user'
-		 * @param {string} 'mobile'
+		 * @param {string} user
+		 * @param {string} mobile
 		 */
 		Q::event('Users/setMobileNumber', compact('user', 'mobile'), 'after');
 		return true;
@@ -676,10 +676,12 @@ class Users_User extends Base_Users_User
 		$identifier = null;
 		if ($this->signedUpWith === 'none') {
 			if (!empty($this->emailAddressPending)) {
+				// invite must have been sent to email address
 				$identifier = $this->emailAddressPending;
 				$this->emailAddressPending = '';
 				$this->signedUpWith = 'email';
 			} else if (!empty($this->mobileNumberPending)) {
+				// invite must have been sent to mobile number
 				$identifier = $this->mobileNumberPending;
 				$this->mobileNumberPending = '';
 				$this->signedUpWith = 'mobile';

@@ -1631,9 +1631,9 @@ class Db_Row implements Iterator
 		if (class_exists('Q')) {
 			/**
 			 * @event {before} Db/Row/$class_name/removeExecute
-			 * @param {Db_Row} 'row'
-			 * @param {Db_Query} 'query'
-			 * @param {array} 'search_criteria'
+			 * @param {Db_Row} row
+			 * @param {Db_Query} query
+			 * @param {array} search_criteria
 			 * @return {Db_Query|null}
 			 *	Modified query
 			 */
@@ -1666,10 +1666,10 @@ class Db_Row implements Iterator
 		if (class_exists('Q')) {
 			/**
 			 * @event {after} Db/Row/$class_name/removeExecute
-			 * @param {Db_Row} 'row'
-			 * @param {Db_Query} 'query'
-			 * @param {array} 'search_criteria'
-			 * @param {Db_Result} 'result'
+			 * @param {Db_Row} row
+			 * @param {Db_Query} query
+			 * @param {array} search_criteria
+			 * @param {Db_Result} result
 			 * @return {Db_Result|null}
 			 *	Modified result or NULL if no midifications are necessary
 			 */
@@ -1830,10 +1830,10 @@ class Db_Row implements Iterator
 		if (class_exists('Q')) {
 			/**
 			 * @event {before} Db/Row/$class_name/saveExecute
-			 * @param {Db_Row} 'row'
-			 * @param {Db_Query} 'query'
-			 * @param {array} 'modifiedFields'
-			 * @param {array} 'where'
+			 * @param {Db_Row} row
+			 * @param {Db_Query} query
+			 * @param {array} modifiedFields
+			 * @param {array} where
 			 * @return {Db_Query|null}
 			 *	Modified query or NULL if no midifications are necessary
 			 */
@@ -1890,10 +1890,10 @@ class Db_Row implements Iterator
 		if (class_exists('Q')) {
 			/**
 			 * @event {after} Db/Row/$class_name/saveExecute
-			 * @param {Db_Row} 'row'
-			 * @param {Db_Query} 'query'
-			 * @param {array} 'modifiedFields'
-			 * @param {Db_Result} 'result'
+			 * @param {Db_Row} row
+			 * @param {Db_Query} query
+			 * @param {array} modifiedFields
+			 * @param {Db_Result} result
 			 */
 			Q::event("Db/Row/$this_class/saveExecute", array(
 				'row' => $this,
@@ -2069,10 +2069,10 @@ class Db_Row implements Iterator
 		if (class_exists('Q')) {
 			/**
 			 * @event {before} Db/Row/$class_name/retrieveExecute
-			 * @param {Db_Row} 'row'
-			 * @param {Db_Query} 'query'
-			 * @param {array} 'modifiedFields'
-			 * @param {array} 'options'
+			 * @param {Db_Row} row
+			 * @param {Db_Query} query
+			 * @param {array} modifiedFields
+			 * @param {array} options
 			 * @return {Db_Query|null}
 			 *	Modified query or NULL if no modifications are necessary
 			 */
@@ -2101,10 +2101,10 @@ class Db_Row implements Iterator
 				);
 				/**
 				 * @event {before} Db/Row/$class_name/retrieveExecute
-				 * @param {Db_Row} 'row'
-				 * @param {Db_Query} 'query'
-				 * @param {array} 'search_criteria'
-				 * @param {array} 'options'
+				 * @param {Db_Row} row
+				 * @param {Db_Query} query
+				 * @param {array} search_criteria
+				 * @param {array} options
 				 * @return {Db_Query|null}
 				 *	Modified query or NULL if no modifications are necessary
 				 */

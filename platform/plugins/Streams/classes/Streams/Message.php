@@ -204,9 +204,9 @@ class Streams_Message extends Base_Streams_Message
 				
 				/**
 				 * @event Streams/post/$streamType {before}
-				 * @param {string} 'publisherId'
-				 * @param {Streams_Stream} 'stream'
-				 * @param {string} 'message'
+				 * @param {string} publisherId
+				 * @param {Streams_Stream} stream
+				 * @param {string} message
 				 * @return {false} To cancel further processing
 				 */
 				if (Q::event("Streams/post/{$stream->type}", $params, 'before') === false) {
@@ -216,9 +216,9 @@ class Streams_Message extends Base_Streams_Message
 				
 				/**
 				 * @event Streams/message/$messageType {before}
-				 * @param {string} 'publisherId'
-				 * @param {Streams_Stream} 'stream'
-				 * @param {string} 'message'
+				 * @param {string} publisherId
+				 * @param {Streams_Stream} stream
+				 * @param {string} message
 				 * @return {false} To cancel further processing
 				 */
 				if (Q::event("Streams/message/{$type}", $params, 'before') === false) {
@@ -230,9 +230,9 @@ class Streams_Message extends Base_Streams_Message
 					$p = new Users_Exception_NotAuthorized();
 					/**
 					 * @event Streams/notAuthorized {before}
-					 * @param {string} 'publisherId'
-					 * @param {Streams_Stream} 'stream'
-					 * @param {string} 'message'
+					 * @param {string} publisherId
+					 * @param {Streams_Stream} stream
+					 * @param {string} message
 					 */
 					Q::event("Streams/notAuthorized", $params, 'after');
 					continue;
@@ -283,25 +283,25 @@ class Streams_Message extends Base_Streams_Message
 				
 				/**
 				 * @event Streams/message/$messageType {after}
-				 * @param {string} 'publisherId'
-				 * @param {Streams_Stream} 'stream'
-				 * @param {string} 'message'
+				 * @param {string} publisherId
+				 * @param {Streams_Stream} stream
+				 * @param {string} message
 				 */
 				Q::event("Streams/message/{$message->type}", $params, 'after', false);
 				/**
 				 * @event Streams/post/$streamType {after}
-				 * @param {string} 'publisherId'
-				 * @param {Streams_Stream} 'stream'
-				 * @param {string} 'message'
+				 * @param {string} publisherId
+				 * @param {Streams_Stream} stream
+				 * @param {string} message
 				 */
 				Q::event("Streams/post/{$stream->type}", $params, 'after', false);
 			}
 		}
 		/**
 		 * @event Streams/postMessages {after}
-		 * @param {string} 'publisherId'
-		 * @param {Streams_Stream} 'stream'
-		 * @param {string} 'posted'
+		 * @param {string} publisherId
+		 * @param {Streams_Stream} stream
+		 * @param {string} posted
 		 */
 		Q::event("Streams/postMessages", array(
 			'streams' => $streams,

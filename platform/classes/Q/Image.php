@@ -319,11 +319,11 @@ class Q_Image
 
 		/**
 		 * @event Q/image/save {after}
-		 * @param {string} 'user'
-		 * @param {string} 'path'
-		 * @param {string} 'subpath'
-		 * @param {string} 'writePath'
-		 * @param {string} 'data'
+		 * @param {string} user
+		 * @param {string} path
+		 * @param {string} subpath
+		 * @param {string} writePath
+		 * @param {string} data
 		 */
 		Q::event(
 			'Q/image/save', 

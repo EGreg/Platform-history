@@ -160,11 +160,11 @@ class Q
 		}
 		/**
 		 * @event Q/error
-		 * @param {integer} 'errno'
-		 * @param {string} 'errstr'
-		 * @param {string} 'errfile'
-		 * @param {integer} 'errline'
-		 * @param {array} 'errcontext'
+		 * @param {integer} errno
+		 * @param {string} errstr
+		 * @param {string} errfile
+		 * @param {integer} errline
+		 * @param {array} errcontext
 		 */
 		self::event("Q/error", compact(
 			'type','errno','errstr','errfile','errline','errcontext'
@@ -339,13 +339,13 @@ class Q
 		/**
 		 * Skips includes to prevent recursion
 		 * @event Q/includeFile {before}
-		 * @param {string} 'filename'
+		 * @param {string} filename
 		 *  The filename to include
-		 * @param {array} 'params'
+		 * @param {array} params
 		 *  Optional. Extracts this array before including the file.
-		 * @param {boolean} 'once'
+		 * @param {boolean} once
 		 *  Optional. Whether to use include_once instead of include.
-		 * @param {boolean} 'get_vars'
+		 * @param {boolean} get_vars
 		 *  Optional. Set to true to return result of get_defined_vars()
 		 *  at the end.
 		 * @return {mixed}
@@ -465,15 +465,15 @@ class Q
 
 			/**
 			 * @event Q/autoload {after}
-			 * @param {string} 'className'
-			 * @param {string} 'filename'
+			 * @param {string} className
+			 * @param {string} filename
 			 */
 			self::event('Q/autoload', compact('className', 'filename'), 'after');
 
 		} catch (Exception $exception) {
 			/**
 			 * @event Q/exception
-			 * @param {Exception} 'exception'
+			 * @param {Exception} exception
 			 */
 			self::event('Q/exception', compact('exception'));
 		}
@@ -508,8 +508,8 @@ class Q
 
 		/**
 		 * @event {before} Q/view
-		 * @param {string} 'viewName'
-		 * @param {string} 'params'
+		 * @param {string} viewName
+		 * @param {string} params
 		 * @return {string}
 		 *  Optional. If set, override method return
 		 */
@@ -578,9 +578,9 @@ class Q
 		
 		/**
 		 * @event Q/tool/render {before}
-		 * @param {string} 'info'
+		 * @param {string} info
 		 *  An array of $toolName => $options pairs
-		 * @param {array} 'extra'
+		 * @param {array} extra
 		 *  Options used by Qbix when rendering the tool. Can include:<br/>
 		 *  "id" =>
 		 *    an additional ID to distinguish tools instantiated
@@ -619,7 +619,7 @@ class Q
 				/**
 				 * Renders the 'Missing Tool' content
 				 * @event Q/missingTool
-				 * @param {array} 'name'
+				 * @param {array} name
 				 *  The name of the tool
 				 * @return {string}
 				 *	The rendered content
@@ -643,7 +643,7 @@ class Q
 		// it is important to run the "after" handlers
 		/**
 		 * @event Q/tool/render {after}
-		 * @param {string} 'info'
+		 * @param {string} info
 		 *  An array of $toolName => $options pairs
 		 * @param {array} 'extra'
 		 *  Options used by Qbix when rendering the tool. Can include:<br/>

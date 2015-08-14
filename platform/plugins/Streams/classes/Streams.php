@@ -398,13 +398,13 @@ abstract class Streams extends Base_Streams
 			self::afterFetchExtended($publisherId, $s->type, $retrieved);
 			/**
 			 * @event Streams/fetch/$streamType {after}
-			 * @param {&array} 'streams'
-			 * @param {string} 'asUserId'
-			 * @param {string} 'publisherId'
-			 * @param {string} 'name'
-			 * @param {array} 'criteria'
-			 * @param {string} 'fields'
-			 * @param {array} 'options'
+			 * @param {&array} streams
+			 * @param {string} asUserId
+			 * @param {string} publisherId
+			 * @param {string} name
+			 * @param {array} criteria
+			 * @param {string} fields
+			 * @param {array} options
 			 */
 			Q::event("Streams/fetch/$type", $params, 'after', false, $streams);
 		}
@@ -1642,9 +1642,9 @@ abstract class Streams extends Base_Streams
 		// Now, set up the relation.
 		/**
 		 * @event Streams/relate/$streamType {before}
-		 * @param {string} 'relatedTo'
-		 * @param {string} 'relatedFrom'
-		 * @param {string} 'asUserId'
+		 * @param {string} relatedTo
+		 * @param {string} relatedFrom
+		 * @param {string} asUserId
 		 * @return {false} To cancel further processing
 		 */
 		if (false === Q::event(
@@ -1713,9 +1713,9 @@ abstract class Streams extends Base_Streams
 
 		/**
 		 * @event Streams/relate/$streamType {after}
-		 * @param {string} 'relatedTo'
-		 * @param {string} 'relatedFrom'
-		 * @param {string} 'asUserId'
+		 * @param {string} relatedTo
+		 * @param {string} relatedFrom
+		 * @param {string} asUserId
 		 */
 		Q::event(
 			"Streams/relate/{$stream->type}",
@@ -1786,9 +1786,9 @@ abstract class Streams extends Base_Streams
 		// Now, clean up the relation.
 		/**
 		 * @event Streams/unrelate/$streamType {before}
-		 * @param {string} 'relatedTo'
-		 * @param {string} 'relatedFrom'
-		 * @param {string} 'asUserId'
+		 * @param {string} relatedTo
+		 * @param {string} relatedFrom
+		 * @param {string} asUserId
 		 * @return {false} To cancel further processing
 		 */
 		if (Q::event(
@@ -1841,9 +1841,9 @@ abstract class Streams extends Base_Streams
 
 		/**
 		 * @event Streams/unrelste/$streamType {after}
-		 * @param {string} 'relatedTo'
-		 * @param {string} 'relatedFrom'
-		 * @param {string} 'asUserId'
+		 * @param {string} relatedTo
+		 * @param {string} relatedFrom
+		 * @param {string} asUserId
 		 */
 		Q::event(
 			"Streams/unrelate/{$stream->type}",
@@ -2109,11 +2109,11 @@ abstract class Streams extends Base_Streams
 		
 		/**
 		 * @event Streams/updateRelation/$streamType {before}
-		 * @param {string} 'relatedTo'
-		 * @param {string} 'relatedFrom'
-		 * @param {string} 'asUserId'
-		 * @param {double} 'weight'
-		 * @param {double} 'previousWeight'
+		 * @param {string} relatedTo
+		 * @param {string} relatedFrom
+		 * @param {string} asUserId
+		 * @param {double} weight
+		 * @param {double} previousWeight
 		 */
 		$previousWeight = $relatedTo->weight;
 		$adjustWeightsBy = $weight < $previousWeight ? $adjustWeights : -$adjustWeights;
@@ -2160,11 +2160,11 @@ abstract class Streams extends Base_Streams
 		
 		/**
 		 * @event Streams/updateRelation/$streamType {after}
-		 * @param {string} 'relatedTo'
-		 * @param {string} 'relatedFrom'
-		 * @param {string} 'asUserId'
-		 * @param {double} 'weight'
-		 * @param {double} 'previousWeight'
+		 * @param {string} relatedTo
+		 * @param {string} relatedFrom
+		 * @param {string} asUserId
+		 * @param {double} weight
+		 * @param {double} previousWeight
 		 */
 		Q::event(
 			"Streams/updateRelation/{$stream->type}",
@@ -2173,6 +2173,188 @@ abstract class Streams extends Base_Streams
 		);
 		
 		return $message;
+	}
+	
+	/**
+	 * Invites a user (or a future user) to a stream .
+	 * @method invite
+	 * @static
+	 * @param {string} $publisherId The id of the stream publisher
+	 * @param {string} $streamName The name of the stream the user will be invited to
+	 * @param {array} $who Array that can contain the following keys:
+	 * @param {string|array} [$who.userId] user id or an array of user ids
+	 * @param {string|array} [$who.fb_uid]  fb user id or array of fb user ids
+	 * @param {string|array} [$who.label]  label or an array of labels, or tab-delimited string
+	 * @param {string|array} [$who.identifier]  identifier or an array of identifiers, or tab-delimited string
+	 * @param {integer} [$who.newFutureUsers] the number of new Users_User objects to create via Users::futureUser in order to invite them to this stream. This typically is used in conjunction with passing the "html" option to this function.
+	 * @param {array} [$options=array()]
+	 *  @param {string|array} [$options.label] label or an array of labels for adding publisher's contacts
+	 *  @param {string|array} [$options.myLabel] label or an array of labels for adding logged-in user's contacts
+	 *  @param {integer} [$options.readLevel] => the read level to grant those who are invited
+	 *  @param {integer} [$options.writeLevel] => the write level to grant those who are invited
+	 *  @param {integer} [$options.adminLevel] => the admin level to grant those who are invited
+	 *	@param {string} [$options.displayName] => the display name to use to represent the inviting user
+	 *  @param {string} [$options.appUrl] => Can be used to override the URL to which the invited user will be redirected and receive "Q.Streams.token" in the querystring.
+	 *	@param {array} [$options.html] => an array of ($templatePath, $batchName) such as ("MyApp/foo.handlebars", "foo") for generating html snippets which can then be viewed from and printed via the action Streams/invitations?batchName=$batchName
+	 * @see Users::addLink()
+	 * @return {array} returns array with keys "success", "invited", "statuses", "identifierTypes", "alreadyParticipating"
+	 */
+	static function invite($publisherId, $streamName, $who, $options = array())
+	{
+		$user = Users::loggedInUser(true);
+
+		// Fetch the stream as the logged-in user
+		$stream = Streams::fetch($user->id, $publisherId, $streamName);
+		if (!$stream) {
+			throw new Q_Exception_MissingRow(array(
+				'table' => 'stream',
+				'criteria' => 'with that name'
+			), 'streamName');		
+		}
+		$stream = reset($stream);
+
+		// Do we have enough admin rights to invite others to this stream?
+		if (!$stream->testAdminLevel('invite') || !$stream->testWriteLevel('join')) {
+			throw new Users_Exception_NotAuthorized();
+		}
+		
+		if (isset($options['html'])) {
+			$html = $options['html'];
+			if (!is_array($html) or count($html) < 2) {
+				throw new Q_Exception_WrongType(array(
+					'field' => "options.html",
+					'type' => 'array of 2 strings'
+				));
+			}
+			list($templatePath, $batchName) = $html;
+		}
+
+		// get user ids if any to array, throw if user not found
+		$raw_userIds = isset($who['userId']) 
+			? Users_User::verifyUserIds($who['userId'], true)
+			: array();
+		// merge labels if any
+		if (isset($who['label'])) {
+			$label = $who['label'];
+			if (is_string($label)) {
+				$label = array_map('trim', explode("\t", $labels)) ;
+			}
+			$raw_userIds = array_merge(
+				$raw_userIds, 
+				Users_User::labelsToIds($user->id, $label)
+			);
+		}
+		// merge identifiers if any
+		$identifierType = null;
+		if (isset($who['identifier'])) {
+			$identifier = $who['identifier'];
+			if (is_string($identifier)) {
+				if (Q_Valid::email($who['identifier'])) {
+					$identifierType = 'email';
+				} else if (Q_Valid::phone($who['identifier'])) {
+					$identifierType = 'mobile';
+				}
+				$identifier = array_map('trim', explode("\t", $identifier)) ;
+			}
+			$statuses = array();
+			$identifier_ids = Users_User::idsFromIdentifiers($identifier, $statuses);
+			$raw_userIds = array_merge($raw_userIds, $identifier_ids);
+		}
+		// merge fb uids if any
+		if (isset($who['fb_uid'])) {
+			$fb_uids = $who['fb_uid'];
+			if (is_string($fb_uids)) {
+				$fb_uids = array_map('trim', explode("\t", $fb_uids)) ;
+			}
+			$raw_userIds = array_merge(
+				$raw_userIds, 
+				Users_User::idsFromFacebook($fb_uids)
+			);
+		}
+		if (!empty($who['newFutureUsers'])) {
+			$nfu = $who['newFutureUsers'];
+			for ($i=0; $i<$nfu; ++$i) {
+				$raw_userIds[] = Users::futureUser('none', null);
+			}
+		}
+		// ensure that each userId is included only once
+		// and remove already participating users
+		$raw_userIds = array_unique($raw_userIds);
+		$total = count($raw_userIds);
+
+		$userIds = Streams_Participant::filter($raw_userIds, $stream);
+		$to_invite = count($userIds);
+
+		$appUrl = !empty($options['appUrl'])
+			? $options['appUrl']
+			: Q_Request::baseUrl().'/'.Q_Config::get(
+				"Streams", "types", $stream->type, 
+				"invite", "url", "plugins/Streams/stream"
+			);
+
+		// now check and define levels for invited user
+		$readLevel = isset($options['readLevel']) ? $options['readLevel'] : null;
+		if (isset($readLevel)) {
+			if (!$stream->testReadLevel($readLevel)) {
+				// We can't assign greater read level to other people than we have ourselves!
+				throw new Users_Exception_NotAuthorized();
+			}
+		}
+		$writeLevel = isset($options['writeLevel']) ? $options['writeLevel'] : null;
+		if (isset($writeLevel)) {
+			if (!$stream->testWriteLevel($writeLevel)) {
+				// We can't assign greater write level to other people than we have ourselves!
+				throw new Users_Exception_NotAuthorized();
+			}
+		}
+		$adminLevel = isset($options['adminLevel']) ? $options['adminLevel'] : null;
+		if (isset($adminLevel)) {
+			if (!$stream->testAdminLevel($adminLevel+1)) {
+				// We can't assign an admin level greater, or equal, to our own!
+				// A stream's publisher can assign owners. Owners can assign admins.
+				// Admins can confer powers to invite others, to some people.
+				// Those people can confer the privilege to publish a message re this stream.
+				// But admins can't assign other admins, and even stream owners
+				// can't assign other owners. 
+				throw new Users_Exception_NotAuthorized();
+			}
+		}
+
+		// calculate expiry time
+		$duration = Q_Config::get("Streams", "types", $stream->type, "invite", "duration", false);
+		$expiry = $duration ? strtotime($duration) : null;
+
+		// let node handle the rest, and get the result
+		$params = array(
+			"Q/method" => "Streams/Stream/invite",
+			"invitingUserId" => $user->id,
+			"username" => $user->username,
+			"userIds" => Q::json_encode($userIds),
+			"stream" => Q::json_encode($stream->toArray()),
+			"appUrl" => $appUrl,
+			"label" => Q::ifset($options, 'label', null), 
+			"myLabel" => Q::ifset($options, 'myLabel', null), 
+			"readLevel" => $readLevel,
+			"writeLevel" => $writeLevel,
+			"adminLevel" => $adminLevel,
+			"displayName" => isset($options['displayName'])
+				? $options['displayName']
+				: Streams::displayName($user),
+			"expiry" => $expiry
+		);
+		if ($templatePath) {
+			$params['templatePath'] = $templatePath;
+			$params['batchName'] = $batchName;
+		}
+		$result = Q_Utils::queryInternal('Q/node', $params);
+
+		return array(
+			'success' => $result,
+			'invited' => $userIds,
+			'statuses' => $statuses,
+			'identifierType' => $identifierType,
+			'alreadyParticipating' => $total - $to_invite
+		);
 	}
 	
 	/**
@@ -2380,8 +2562,8 @@ abstract class Streams extends Base_Streams
 						$type = substr($name, 0, -1);
 						/**
 						 * @event Streams/search/$streamType {before}
-						 * @param {string} 'publisherId'
-						 * @param {string} 'name'
+						 * @param {string} publisherId
+						 * @param {string} name
 						 * @return {false} To cancel further processing
 						 */
 						if (Q::event(
@@ -2396,8 +2578,8 @@ abstract class Streams extends Base_Streams
 
 						/**
 						 * @event Streams/search/$streamType {after}
-						 * @param {string} 'publisherId'
-						 * @param {string} 'name'
+						 * @param {string} publisherId
+						 * @param {string} name
 						 */
 						Q::event(
 								"Streams/search/$type",
@@ -2474,9 +2656,9 @@ abstract class Streams extends Base_Streams
 		
 		/**
 		 * @event Users/register {before}
-		 * @param {string} 'username'
-		 * @param {string} 'identifier'
-		 * @param {string} 'icon'
+		 * @param {string} username
+		 * @param {string} identifier
+		 * @param {string} icon
 		 * @return {Users_User}
 		 */
 		$return = Q::event('Streams/register', compact('name', 'fullName', 'identifier', 'icon', 'provider', 'options'), 'before');
@@ -2511,9 +2693,9 @@ abstract class Streams extends Base_Streams
 
 		/**
 		 * @event Users/register {after}
-		 * @param {string} 'username'
-		 * @param {string} 'identifier'
-		 * @param {string} 'icon'
+		 * @param {string} username
+		 * @param {string} identifier
+		 * @param {string} icon
 		 * @param {Users_User} 'user'
 		 * @return {Users_User}
 		 */

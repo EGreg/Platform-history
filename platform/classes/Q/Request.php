@@ -690,7 +690,7 @@ class Q_Request
 	{
 		/**
 		 * @event Q/request/accepts {before}
-		 * @param {string} 'mime_type'
+		 * @param {string} mime_type
 		 * @return {boolean}
 		 */
 		$ret = Q::event('Q/request/accepts', compact('mime_type'), 'before');

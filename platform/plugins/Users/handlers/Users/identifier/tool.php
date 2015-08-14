@@ -61,12 +61,12 @@ function Users_identifier_tool($options)
 		}
 	}
 	
-	$on_success = Q_Request::special('onSuccess', Q_Request::url());
+	$onSuccess = Q_Request::special('onSuccess', Q_Request::url());
 	
 	$form = $static = compact('fields');
 	return Q::tool('Q/panel', compact(
-		'uri', 'on_success', 'form', 'static', 'title',
+		'uri', 'onSuccess', 'form', 'static', 'title',
 		'collapsed', 'toggle', 'complete', 'editing', 'inProcess',
-		'_form_static'
+		'setSlots'
 	));
 }

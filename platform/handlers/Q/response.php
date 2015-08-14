@@ -37,11 +37,11 @@ function Q_response($params)
 	$isAjax = Q_Request::isAjax();
 	if (empty($errors) and empty($exception)) {
 		if (!$isAjax and null !== Q_Request::special('onSuccess', null)) {
-			$on_success = Q_Request::special('onSuccess', null);
+			$onSuccess = Q_Request::special('onSuccess', null);
 			if (Q_Config::get('Q', 'response', 'onSuccessShowFrom', true)) {
-				$on_success = Q_Uri::url($on_success.'?Q.fromSuccess='.Q_Dispatcher::uri());
+				$onSuccess = Q_Uri::url($onSuccess.'?Q.fromSuccess='.Q_Dispatcher::uri());
 			}
-			Q_Response::redirect($on_success);
+			Q_Response::redirect($onSuccess);
 			return;
 		}
 	}

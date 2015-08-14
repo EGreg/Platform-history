@@ -199,7 +199,10 @@
 			},
 			"baseUrl": "i",
 			"participantReason": "Was invited",
-			"limit": 100
+			"limit": 100,
+			"layout": {
+				"default": "Streams/invitations.php"
+			}
 		},
 		"interests": {
 			"allowClientQueries": false
