@@ -1575,6 +1575,17 @@ class Streams_Stream extends Base_Streams_Stream
 		);
 	}
 	
+	/**
+	 * Relate this stream to another stream
+	 * @param {Streams_Stream} $toStream The stream to relate this stream to
+	 * @param {string} $type The type of relation
+	 * @param {string} [$asUserId=null] Override the user id to perform this action as
+	 * @param {array} [$options=array()] Any options to pass to Streams::relate
+	 * @return {array|boolean}
+	 *  Returns false if the operation was canceled by a hook
+	 *  Returns true if relation was already there
+	 *  Otherwise returns array with keys "messageFrom" and "messageTo" and values of type Streams_Message
+	 */
 	function relateTo($toStream, $type, $asUserId = null, $options = array())
 	{
 		return Streams::relate(
@@ -1588,6 +1599,17 @@ class Streams_Stream extends Base_Streams_Stream
 		);
 	}
 	
+	/**
+	 * Relate another stream, published by the same publisher, to this stream
+	 * @param {Streams_Stream} $fromStream The stream to relate to this stream
+	 * @param {string} $type The type of relation
+	 * @param {string} [$asUserId=null] Override the user id to perform this action as
+	 * @param {array} [$options=array()] Any options to pass to Streams::relate
+	 * @return {array|boolean}
+	 *  Returns false if the operation was canceled by a hook
+	 *  Returns true if relation was already there
+	 *  Otherwise returns array with keys "messageFrom" and "messageTo" and values of type Streams_Message
+	 */
 	function relateFrom($fromStream, $type, $asUserId = null, $options = array()) {
 		return Streams::relate(
 			$asUserId,

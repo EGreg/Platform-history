@@ -21,6 +21,9 @@
 	},
 	"Streams": {
 		"types": {
+			"Places/community": {
+				"edit": true
+			},
 			"Places/location": {
 				"create": true,
 				"edit": true,
@@ -43,7 +46,31 @@
 					"title": "Nearby Interest"
 				}
 			},
-			"Places/community": {
+			"Places/location": {
+				"create": true,
+				"edit": true,
+				"messages": {
+					"Places/location/visit": { "post": true },
+					"Places/location/stay": { "post": true }
+				},
+				"defaults": {
+					"title": "Location"
+				}
+			},
+			"Places/area": {
+				"edit": true,
+				"messages": {
+					"Places/location/visit": { "post": true },
+					"Places/location/stay": { "post": true }
+				},
+				"defaults": {
+					"title": "Area"
+				}
+			},
+			"Places/floor": {
+				"edit": true
+			},
+			"Places/column": {
 				"edit": true
 			}
 		}

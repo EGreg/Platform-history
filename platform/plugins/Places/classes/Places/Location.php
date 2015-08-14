@@ -105,4 +105,58 @@ class Places_Location
 		$location->save();
 		return $location;
 	}
+	
+	/**
+	 * Adds a stream to represent an area within a location.
+	 * Also may add streams to represent the floor and column.
+	 * @method addArea
+	 * @static
+	 * @param {Streams_Stream} $location The location stream
+	 * @param {string} $title The title of the area 
+	 * @param {string} [$floor] The number of the floor on which the area is located
+	 * @param {string} [$column] The name of the column on which the area is located
+	 * @param {array} [$options=array()] Any options to pass to Streams::create. Also can include:
+	 * @param {array} [$options.asUserId=null] Override the first parameter to Streams::create
+	 * @return {array} An array of ($area, $floor, $column)
+	 */
+	static function addArea($location, $title, $floor=null, $column=null, $options=array())
+	{
+		$locationName = $location->name;
+		$parts = explode('/', $locationName);
+		$placeId = $parts[2];
+		$asUserId = Q::ifset($options, 'asUserId', null);
+		$publisherId = $location->publisherId;
+		$skipAccess = Q::ifset($options, 'skipAccess', true);
+		$normalized = Q_Utils::normalize($title);
+		$name = "Places/area/$placeId/$normalized";
+		if (!($area = Streams::fetchOne($asUserId, $publisherId, $name))) {
+			$area = Streams::create($asUserId, $publisherId, 'Places/area',
+				compact('name', 'title', 'skipAccess')
+			);
+		}
+		$area->relateTo($location, 'location', $asUserId, $options);
+		if (isset($floor)) {
+			$normalized = Q_Utils::normalize($floor);
+			$name = "Places/floor/$placeId/$normalized";
+			$title = $floor;
+			if (!($floor = Streams::fetchOne($asUserId, $publisherId, $name))) {
+				$floor = Streams::create($asUserId, $publisherId, 'Places/floor',
+					compact('name', 'title', 'skipAccess')
+				);
+			}
+			$area->relateTo($floor, 'floor', $asUserId, $options);
+		}
+		if (isset($column)) {
+			$normalized = Q_Utils::normalize($column);
+			$name = "Places/column/$placeId/$normalized";
+			$title = $column;
+			if (!($column = Streams::fetchOne($asUserId, $publisherId, $name))) {
+				$column = Streams::create($asUserId, $publisherId, 'Places/column',
+					compact('name', 'title', 'skipAccess')
+				);
+			}
+			$area->relateTo($column, 'column', $asUserId, $options);
+		}
+		return array($area, $floor, $column);
+	}
 }
