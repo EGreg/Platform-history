@@ -6,6 +6,7 @@
 	<title><?php echo $title ?></title>
 	<link rel="shortcut icon" href="<?php echo Q_Request::proxyBaseUrl(); ?>/favicon.ico" type="image/x-icon">
 	<link rel="stylesheet" type="text/css" href="<?php echo Q_Html::themedUrl('plugins/Q/css/Q.css'); ?>">
+	link rel="stylesheet" type="text/css" href="<?php echo Q_Html::themedUrl('plugins/Streams/css/Streams.css'); ?>">
 </head>
 <body>
 	<div id="content_slot">

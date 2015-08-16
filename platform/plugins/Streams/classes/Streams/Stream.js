@@ -906,7 +906,7 @@ Streams_Stream.prototype.notify = function(participant, event, uid, message, cal
 									p.fill(JSON.stringify(delivery))(err); 
 								});
 							}
-							var invite = rows[0];
+							var invite = this;
 							new Streams.Stream({
 								publisherId: invite.fields.publisherId,
 								name: invite.fields.streamName
@@ -916,20 +916,16 @@ Streams_Stream.prototype.notify = function(participant, event, uid, message, cal
 										p.fill(JSON.stringify(delivery))(err); 
 									});
 								}
-								stream = rows2[0];
-								message.fields.invite = rows[0].getFields();
-								var instructions;
+								var stream = this;
 								try { 
-									instructions = JSON.parse(message.fields.instructions); 
+									var instructions = JSON.parse(message.fields.instructions); 
 								} catch (e) {}
-								if (instructions.type) {
-									stream.fields.invite = { 
-										url: Q.url(Q.Config.get(
-											['Streams', 'invites', 'baseUrl'], "i"
-										))
-									};
-									stream.fields.invite[instructions.type] = true;
+								var invited = invite.getFields();
+								invited.url = invite.url();
+								if (instructions && instructions.type) {
+									invited[instructions.type] = true;
 								}
+								stream.invited = invited;
 								deliveries.forEach(function(delivery) {
 									message.deliver(stream, delivery, avatar,
 										p.fill(JSON.stringify(delivery))

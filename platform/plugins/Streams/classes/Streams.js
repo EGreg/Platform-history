@@ -688,7 +688,8 @@ Streams.listen = function (options) {
 									var fields = Q.extend({}, parsed, {
 										stream: stream,
 										user: this,
-										invite: invite
+										invite: invite,
+										link: invite.url()
 									});
 									var html = Q.Handlebars.render(parsed.template, fields);
 									var path = Streams.invitationsPath()+'/'+parsed.batchName;
@@ -771,7 +772,8 @@ Streams.listen = function (options) {
 								Q.log(err);
 								return;
 							}
-							var baseUrl = Q.url(Q.Config.get(['Streams', 'invites', 'baseUrl'], "i"));
+							var invitedUrl = Streams.invitedUrl(token);
+							displayName = displayName || "Someone";
 							var msg = {
 								publisherId: invited.fields.publisherId,
 								streamName: invited.fields.name,
@@ -779,11 +781,12 @@ Streams.listen = function (options) {
 								type: 'Streams/invite',
 								sentTime: new Db.Expression("CURRENT_TIMESTAMP"),
 								state: 'posted',
-								content: (displayName || "Someone") + " invited you to "+baseUrl+"/"+token,
+								content: displayName + " invited you to " + invitedUrl,
 								instructions: JSON.stringify({
 									token: token,
 									displayName: displayName,
 									appUrl: appUrl,
+									invitedUrl: invitedUrl,
 									type: stream.fields.type,
 									title: stream.fields.title,
 									content: stream.fields.content
@@ -1258,10 +1261,15 @@ Streams.messageHandler = function(msgType, callback) {
 	_messageHandlers[msgType] = callback;
 };
 
-Streams.invitationsPath = function () {
+Streams.invitedUrl = function _Streams_invitedUrl(token) {
+	return Q.url(Q.Config.get(['Streams', 'invites', 'baseUrl'], "i"))
+		+ "/" + token;
+};
+
+Streams.invitationsPath = function _Streams_invitationsPath() {
 	return Q.app.FILES_DIR + '/' + Q.Config.expect(['Q', 'app'])
 		+ '/uploads/Streams/invitations';
-}
+};
 
 /**
  * @property _messageHandlers

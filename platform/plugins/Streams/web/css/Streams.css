@@ -591,3 +591,6 @@
 
 .Streams_task_progress { border: 1px solid #555; }
 .Streams_task_progress_bar { background: 1px solid #555; width: 0; height: 40px; }
+
+.Streams_invitation { text-align: center; }
+.Streams_explanation { border: 1px solid #aaa; }

@@ -10,7 +10,7 @@
 					) ?>
 				</td>
 				<td>
-					<h2><?php echo $inviting_user_displayName ?> invited you to a chat:</h2>
+					<h2><?php echo $inviting_user_displayName ?> invited you to:</h2>
 					<div class='stream_title'><?php echo $stream->title ?></div>
 				</td>
 			</tr>
