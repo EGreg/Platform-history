@@ -56,7 +56,9 @@ function Streams_interest_post()
 	}
 	$subscribe = !!Q::ifset($_REQUEST, 'subscribe', false);
 	if ($subscribe) {
-		$stream->subscribe();
+		if (!$stream->subscription($user->id)) {
+			$stream->subscribe();
+		}
 	} else {
 		$stream->join();
 	}

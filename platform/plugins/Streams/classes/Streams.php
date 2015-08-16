@@ -2195,7 +2195,7 @@ abstract class Streams extends Base_Streams
 	 *  @param {integer} [$options.adminLevel] => the admin level to grant those who are invited
 	 *	@param {string} [$options.displayName] => the display name to use to represent the inviting user
 	 *  @param {string} [$options.appUrl] => Can be used to override the URL to which the invited user will be redirected and receive "Q.Streams.token" in the querystring.
-	 *	@param {array} [$options.html] => an array of ($templatePath, $batchName) such as ("MyApp/foo.handlebars", "foo") for generating html snippets which can then be viewed from and printed via the action Streams/invitations?batchName=$batchName
+	 *	@param {array} [$options.html] => an array of ($template, $batchName) such as ("MyApp/foo.handlebars", "foo") for generating html snippets which can then be viewed from and printed via the action Streams/invitations?batchName=$batchName
 	 * @see Users::addLink()
 	 * @return {array} returns array with keys "success", "invited", "statuses", "identifierTypes", "alreadyParticipating"
 	 */
@@ -2226,7 +2226,21 @@ abstract class Streams extends Base_Streams
 					'type' => 'array of 2 strings'
 				));
 			}
-			list($templatePath, $batchName) = $html;
+			list($template, $batchName) = $html;
+			// validate these paths
+			$filename = APP_VIEWS_DIR.DS.$template;
+			if (!Q::realPath($filename)) {
+				throw new Q_Exception_MissingFile(compact('filename'));
+			}
+			$ext = $pathinfo = pathinfo($template, PATHINFO_EXTENSION);
+			if ($ext !== 'handlebars') {
+				throw new Q_Exception_WrongValue(array(
+					'field' => 'options.html[0]',
+					'range' => 'a filename with extension .handlebars'
+				));
+			}
+			$path = Streams::invitationsPath().DS.$batchName;
+			Q_Utils::canWriteToPath($path, true, true);
 		}
 
 		// get user ids if any to array, throw if user not found
@@ -2274,7 +2288,7 @@ abstract class Streams extends Base_Streams
 		if (!empty($who['newFutureUsers'])) {
 			$nfu = $who['newFutureUsers'];
 			for ($i=0; $i<$nfu; ++$i) {
-				$raw_userIds[] = Users::futureUser('none', null);
+				$raw_userIds[] = Users::futureUser('none', null)->id;
 			}
 		}
 		// ensure that each userId is included only once
@@ -2342,8 +2356,8 @@ abstract class Streams extends Base_Streams
 				: Streams::displayName($user),
 			"expiry" => $expiry
 		);
-		if ($templatePath) {
-			$params['templatePath'] = $templatePath;
+		if ($template) {
+			$params['template'] = $template;
 			$params['batchName'] = $batchName;
 		}
 		$result = Q_Utils::queryInternal('Q/node', $params);
@@ -2787,6 +2801,13 @@ abstract class Streams extends Base_Streams
 			}
 		}
 		return $fieldNames;
+	}
+	
+	static function invitationsPath()
+	{
+		$app = Q_Config::expect('Q', 'app');
+		$subpath = Q_Config::get('Streams', 'invites', 'subpath', '{{app}}/uploads/Streams/invitations');
+		return APP_FILES_DIR.DS.Q::interpolate($subpath, compact('app'));
 	}
 	
 	protected static function afterFetchExtended($publisherId, $type, $retrieved)

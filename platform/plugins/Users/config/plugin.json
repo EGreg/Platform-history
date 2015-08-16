@@ -58,7 +58,7 @@
 		"paths": {
 			"icons": "files/Users/icons",
 			"uploads": {
-				"files/$app/uploads/Users/$userId": true
+				"files/{{app}}/uploads/Users/{{userId}}": true
 			}
 		},
 		"node": {
@@ -111,15 +111,15 @@
 			"duration": "year",
 			"terms": {
 				"uri": null,
-				"label": "I have read and agree<br>to the $link",
+				"label": "I have read and agree<br>to the {{link}}",
 				"title": "Terms"
 			},
 			"stateMinLength": 10
 		},
 		"register": {
 			"terms": {
-				"uri": "$baseUrl/terms",
-				"label": "I accept the $link",
+				"uri": "{{baseUrl}}/terms",
+				"label": "I accept the {{link}}",
 				"title": "Terms"
 			},
 			"icon": {

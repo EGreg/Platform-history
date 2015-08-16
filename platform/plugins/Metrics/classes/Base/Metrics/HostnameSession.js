@@ -205,6 +205,9 @@ Base.prototype.fieldNames = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_hostname = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".hostname");
@@ -231,6 +234,9 @@ Base.prototype.maxSize_hostname = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_sessionId = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".sessionId");

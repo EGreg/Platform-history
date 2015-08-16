@@ -238,6 +238,9 @@ Base.prototype.fieldNames = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_query = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".query");
@@ -264,6 +267,9 @@ Base.prototype.maxSize_query = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_types = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".types");
@@ -360,6 +366,9 @@ Base.prototype.beforeSet_updatedTime = function (value) {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_results = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".results");

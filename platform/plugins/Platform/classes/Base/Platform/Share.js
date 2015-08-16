@@ -249,6 +249,9 @@ Base.prototype.fieldNames = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_share_id = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".share_id");
@@ -275,6 +278,9 @@ Base.prototype.maxSize_share_id = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_visit_id = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".visit_id");
@@ -353,6 +359,9 @@ Base.prototype.maxSize_shared_time = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_url = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".url");
@@ -379,6 +388,9 @@ Base.prototype.maxSize_url = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_tag1 = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".tag1");
@@ -405,6 +417,9 @@ Base.prototype.maxSize_tag1 = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_tag2 = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".tag2");
@@ -431,6 +446,9 @@ Base.prototype.maxSize_tag2 = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_tag3 = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".tag3");

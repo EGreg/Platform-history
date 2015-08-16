@@ -174,17 +174,17 @@ class Q
 	/**
 	 * Goes through the params and replaces any references
 	 * to their names in the string with their value.
-	 * References are expected to be of the form $varname.
+	 * References are expected to be of the form {{varname}} or $varname.
 	 * However, dollar signs prefixed with backslashes will not be replaced.
-	 * @method expandString
+	 * @method interpolate
 	 * @static
 	 * @param {string} $expression
-	 *  The string to expand.
+	 *  The string containing possible references to interpolate values for.
 	 * @param {array} $params=array()
 	 *  An array of parameters to the expression.
 	 *  Variable names in the expression can refer to them.
-	 * @return {mixed}
-	 *  The result of the expression
+	 * @return {string}
+	 *  The result of the interpolation
 	 */
 	static function interpolate(
 		$expression,
@@ -198,6 +198,7 @@ class Q
 				? substr(Q::json_encode($params[$key]), 0, 100)
 				: (string)$params[$key];
 			$expression = str_replace('$'.$key, $p, $expression);
+			$expression = str_replace('{{'.$key.'}}', $p, $expression);
 		}
 		$expression = str_replace('\\REAL_DOLLAR_SIGN\\', '\\$', $expression);
 		return $expression;
@@ -1390,7 +1391,7 @@ class Q
 	 * @param {string} $pattern='$class::$function&#32;(from&#32;line&#32;$line)'
 	 * @param {integer} $skip=2
 	 */
-	static function backtrace($pattern = '$class::$function (from line $line)', $skip = 2)
+	static function backtrace($pattern = '{{class}}::{{function}} (from line {{line}})', $skip = 2)
 	{
 		$result = array();
 		$i = 0;
@@ -1418,7 +1419,7 @@ class Q
 	 */
 	static function b($separator = ", <br>\n")
 	{
-		return implode($separator, Q::backtrace('$i) $class::$function (from line $line)', 3));
+		return implode($separator, Q::backtrace('{{i}}) {{class}}::{{function}} (from line {{line}})', 3));
 	}
 
 	/**

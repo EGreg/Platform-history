@@ -289,6 +289,9 @@ Base.prototype.fieldNames = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_id = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".id");
@@ -340,6 +343,7 @@ Base.prototype.beforeSet_updatedTime = function (value) {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_sessionId = function (value) {
+		if (!value) return value;
 		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
@@ -446,6 +450,7 @@ Base.prototype.maxSize_tw_uid = function () {
  */
 Base.prototype.beforeSet_g_uid = function (value) {
 		if (!value) return value;
+		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".g_uid");
@@ -472,6 +477,7 @@ Base.prototype.maxSize_g_uid = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_y_uid = function (value) {
+		if (!value) return value;
 		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
@@ -500,6 +506,7 @@ Base.prototype.maxSize_y_uid = function () {
  */
 Base.prototype.beforeSet_passphraseHash = function (value) {
 		if (!value) return value;
+		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".passphraseHash");
@@ -526,6 +533,7 @@ Base.prototype.maxSize_passphraseHash = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_emailAddress = function (value) {
+		if (!value) return value;
 		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
@@ -554,6 +562,7 @@ Base.prototype.maxSize_emailAddress = function () {
  */
 Base.prototype.beforeSet_mobileNumber = function (value) {
 		if (!value) return value;
+		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".mobileNumber");
@@ -580,6 +589,9 @@ Base.prototype.maxSize_mobileNumber = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_emailAddressPending = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".emailAddressPending");
@@ -606,6 +618,9 @@ Base.prototype.maxSize_emailAddressPending = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_mobileNumberPending = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".mobileNumberPending");
@@ -646,6 +661,9 @@ Base.prototype.beforeSet_signedUpWith = function (value) {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_username = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".username");
@@ -672,6 +690,9 @@ Base.prototype.maxSize_username = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_icon = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".icon");
@@ -699,6 +720,7 @@ Base.prototype.maxSize_icon = function () {
  */
 Base.prototype.beforeSet_url = function (value) {
 		if (!value) return value;
+		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".url");
@@ -725,6 +747,7 @@ Base.prototype.maxSize_url = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_pincodeHash = function (value) {
+		if (!value) return value;
 		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")

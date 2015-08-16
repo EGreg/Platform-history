@@ -1268,7 +1268,8 @@ function slice_partitions(partition, j, hashed, adjust) {
 }
 
 function map_shard(a, map) {
-	return map ? map[a.join('.')] : a.join('.');
+	var aj = a.join('.');
+	return map ? map[aj] : aj;
 }
 
 function reverseLengthCompare(a, b) {

@@ -40,7 +40,7 @@ Request.slotNames = function(req, returnDefaults) {
 		if (!returnDefaults) {
 			return null;
 		}
-		var app = Q.Config.expect(['Q', app]);
+		var app = Q.Config.expect(['Q', 'app']);
 		return Q.Config.get(
 			['Q', 'response', 'slotNames'],
 			['content', 'dashboard', 'title', 'notices']

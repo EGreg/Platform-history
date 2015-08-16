@@ -176,7 +176,7 @@ function testLevel (subj, type, values, level, callback) {
 	return false;
 }
 
-function _sortTemplateTypes(templates, field, type, short_name) {
+function _sortTemplateTypes(templates, field, type, shortName) {
 	if (templates.length) {
 		// let's sort templates out
 		// we'll check to find first match:
@@ -185,7 +185,7 @@ function _sortTemplateTypes(templates, field, type, short_name) {
 		//	3. exact stream name and generic publisher
 		//	4. generic stream name and generic publisher
 		var sts = [[], [], [], []], i, t, pos, n, key;
-		var name = short_name ? 'name' : 'streamName';
+		var name = shortName ? 'name' : 'streamName';
 		for (i=0; i<templates.length; i++) {
 			t = templates[i];
 			pos = t.fields[name].length - 1;
@@ -558,7 +558,7 @@ Streams_Stream.prototype.testAdminLevel = function(level, callback) {
 	return testLevel (this, 'adminLevel', 'ADMIN_LEVEL', level, callback);
 };
 
-Streams_Stream.prototype._getUserStream = function (options, callback) {
+Streams_Stream.prototype._fetchAsUser = function (options, callback) {
 	var stream = this;
 	if (!options['userId']) {
 		return callback.call(stream, new Error("No user id provided"));
@@ -568,7 +568,9 @@ Streams_Stream.prototype._getUserStream = function (options, callback) {
 		if (err) return callback.call(stream, err);
 		if (!users.length) return callback.call(stream, new Error("User not found"));
 		var user = users[0];
-		if (user.fields.id === stream.get(['asUserId'], null)) return callback.call(stream, null, stream, user.fields.id, user);
+		if (user.fields.id === stream.get(['asUserId'], null)) {
+			return callback.call(stream, null, stream, user.fields.id, user);
+		}
 		Streams.fetch(user.fields.id, stream.fields.publisherId, stream.fields.name, function(err, streams) {
 			if (err) return callback.call(stream, err);
 			if (!streams[stream.fields.name]) return callback.call(stream, new Error("Stream not found"));
@@ -598,7 +600,7 @@ Streams_Stream.prototype.join = function(options, callback) {
 		callback = options;
 		options = {};
 	}
-	this._getUserStream(options, function(err, stream, userId) {
+	this._fetchAsUser(options, function(err, stream, userId) {
 		if (err) return callback.call(stream, err);
 		if (!stream.testWriteLevel('join')) return callback.call(stream, new Error("User is not authorized"));
 		new Streams.Participant({
@@ -715,7 +717,7 @@ Streams_Stream.prototype.subscribe = function(options, callback) {
 		callback = options;
 		options = {};
 	}
-	this._getUserStream(options, function(err, stream, userId, user) {
+	this._fetchAsUser(options, function(err, stream, userId, user) {
 		if (err) return callback.call(stream, err);
 		stream.join({
 			subscribed: true,
@@ -734,31 +736,41 @@ Streams_Stream.prototype.subscribe = function(options, callback) {
 					streamName: stream.fields.name,
 					ofUserId: userId
 				});
-				_getSubscriptionTemplate('Subscription', stream, userId, function (err, template) {
+				_getSubscriptionTemplate('Subscription', stream, userId,
+				function (err, template) {
 					if (err) return callback.call(stream, err);
-					var filter = template ? JSON.parse(template.fields.filter) : {types: [], notifications: 0};
-					if (options['types']) filter['types'] = options['types'];
-					if (options['notifications']) filter['notifications'] = options['notifications'];
+					var filter = template 
+						? JSON.parse(template.fields.filter)
+						: {types: [], notifications: 0};
+					if (options['types']) {
+						filter['types'] = options['types'];
+					}
+					if (options['notifications']) {
+						filter['notifications'] = options['notifications'];
+					}
 					s.fields.filter = JSON.stringify(filter);
 
 					if (options['untilTime']) {
 						s.fields.untilTime = options['untilTime'];
 					} else {
-						if (template && template.template_type > 0 && template.fields.duration > 0) {
-							s.fields.untilTime = Q.date('c', (new Date().getTime()) + template.fields.duration);
+						if (template && template.template_type > 0
+						&& template.fields.duration > 0) {
+							s.fields.untilTime = Q.date(
+								'c', Date.now() + template.fields.duration
+							);
 						}
 					}
 					s.save(true, function (err) {
 						if (err) return callback.call(stream, err);
 						// Now let's handle rules
-						_getSubscriptionTemplate('Rule', stream, userId, function(err, template) {
+						_getSubscriptionTemplate('Rule', stream, userId,
+						function (err, template) {
 							var deliver;
 							if (err) return callback.call(stream, err);
 							if (!template || template.template_type !== 0) {
 								if (template && template.fields.deliver) {
 									deliver = template.fields.deliver;
 								} else {
-									deliver = [];
 									if (user.fields.mobileNumber) {
 										deliver = {mobile: user.fields.mobileNumber};
 									} else if (user.fields.emailAddress) {
@@ -767,15 +779,23 @@ Streams_Stream.prototype.subscribe = function(options, callback) {
 										deliver = {mobile: user.fields.mobileNumberPending};
 									} else if (user.fields.emailAddressPending) {
 										deliver = {email: user.fields.emailAddressPending};
+									} else {
+										deliver = {'default': true};
 									}
 									deliver = JSON.stringify(deliver);
 								}
+								var filter = template && template.fields.filter
+									? template.fields.filter
+									: '{"types":[],"labels":[]}';
+								var readyTime = options['readyTime']
+									? options['readyTime']
+									: new Db.Expression('CURRENT_TIMESTAMP');
 								new Streams.Rule({
 									ofUserId: userId,
 									publisherId: stream.fields.publisherId,
 									streamName: stream.fields.name,
-									readyTime: options['readyTime'] ? options['readyTime'] : new Db.Expression('CURRENT_TIMESTAMP'),
-									filter: template && template.fields.filter ? template.fields.filter : '{"types":[],"labels":[]}',
+									readyTime: readyTime,
+									filter: filter,
 									deliver: deliver,
 									relevance: 1
 								}).save(function(err) {
@@ -789,7 +809,9 @@ Streams_Stream.prototype.subscribe = function(options, callback) {
 											publisherId: userId,
 											name: 'Streams/participating'
 										}).retrieve(function (err, pstream) {
-											if (err || !pstream.length) return callback.call(stream, err);
+											if (err || !pstream.length) {
+												return callback.call(stream, err);
+											}
 											pstream[0].post({
 												byUserId: userId,
 												type: 'Streams/subscribed',
@@ -879,7 +901,11 @@ Streams_Stream.prototype.notify = function(participant, event, uid, message, cal
 						new Streams.Invite({
 							token: instructions.token
 						}).retrieve(function(err, rows) {
-							if (err || !rows.length) return deliveries.forEach(function(delivery) { p.fill(JSON.stringify(delivery))(err); });
+							if (err || !rows.length) {
+								return deliveries.forEach(function(delivery) {
+									p.fill(JSON.stringify(delivery))(err); 
+								});
+							}
 							var invite = rows[0];
 							new Streams.Stream({
 								publisherId: invite.fields.publisherId,

@@ -5,6 +5,7 @@
  * @main Streams
  */
 var Q = require('Q');
+var fs = require('fs');
 
 /**
  * Static methods for the Streams model
@@ -570,7 +571,7 @@ Streams.listen = function (options) {
 				// Create some new labels, if necessary
 				var keys = ['label', 'myLabel'];
 				var p = Q.pipe(keys, function (params, subjects) {
-					if (params.label[1].length) {
+					if (params.label[1] && params.label[1].length) {
 						return persist();
 					}
 					for (var i=0, l=keys.length; i<l; ++i) {
@@ -669,6 +670,7 @@ Streams.listen = function (options) {
 								Q.log(err);
 								return;
 							}
+							var invite = this;
 							(new Streams.Participant({
 								"publisherId": stream.fields.publisherId,
 								"streamName": stream.fields.name,
@@ -677,6 +679,27 @@ Streams.listen = function (options) {
 								"state": "invited",
 								"reason": ""
 							})).save(true, _participantSaved);
+							
+							// Write some files, if requested
+							// SECURITY: Here we trust the input, which should only be sent internally
+							if (parsed.template) {
+								new Users.User({id: userId})
+								.retrieve(function () {
+									var fields = Q.extend({}, parsed, {
+										stream: stream,
+										user: this,
+										invite: invite
+									});
+									var html = Q.Handlebars.render(parsed.template, fields);
+									var path = Streams.invitationsPath()+'/'+parsed.batchName;
+									var filename = path + '/' + this.fields.id + '.html';
+									fs.writeFile(filename, html, function (err) {
+										if (err) {
+											Q.log(err);
+										}
+									});
+								});
+							}
 						}
 
 						function _participantSaved(err) {
@@ -1234,6 +1257,11 @@ Streams.messageHandler = function(msgType, callback) {
 	}
 	_messageHandlers[msgType] = callback;
 };
+
+Streams.invitationsPath = function () {
+	return Q.app.FILES_DIR + '/' + Q.Config.expect(['Q', 'app'])
+		+ '/uploads/Streams/invitations';
+}
 
 /**
  * @property _messageHandlers

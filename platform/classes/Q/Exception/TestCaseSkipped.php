@@ -13,4 +13,4 @@ class Q_Exception_TestCaseSkipped extends Q_Exception_TestCase
 	 */
 };
 
-Q_Exception::add('Q_Exception_TestCaseSkipped', 'skipped. $message');
+Q_Exception::add('Q_Exception_TestCaseSkipped', 'skipped. {{message}}');

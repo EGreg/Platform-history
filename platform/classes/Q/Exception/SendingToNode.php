@@ -15,4 +15,4 @@ class Q_Exception_SendingToNode extends Q_Exception
 	 */
 };
 
-Q_Exception::add('Q_Exception_SendingToNode', 'Error sending $method message to Node. Please try again later.');
+Q_Exception::add('Q_Exception_SendingToNode', 'Error sending {{method}} message to Node. Please try again later.');

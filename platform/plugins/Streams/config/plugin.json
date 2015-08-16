@@ -41,7 +41,7 @@
 		},
 		"paths": {
 			"uploads": {
-				"files/$app/uploads/Streams": true
+				"files/{{app}}/uploads/Streams": true
 			}
 		}
 	},
@@ -201,7 +201,7 @@
 			"participantReason": "Was invited",
 			"limit": 100,
 			"layout": {
-				"default": "Streams/invitations.php"
+				"default": "Streams/layout/invitations.php"
 			}
 		},
 		"interests": {

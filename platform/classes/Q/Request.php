@@ -747,9 +747,10 @@ class Q_Request
 	 * @param {array} $fields Array of strings or arrays naming fields that are required
 	 * @return {array} The resulting list of exceptions
 	 */
-	static function requireFields($fields)
+	static function requireFields($fields, $throwIfMissing = false)
 	{
 		$args = func_get_args();
+		array_splice($args, 1, 0, array(null));
 		$exceptions = call_user_func_array(array('Q_Valid', 'requireFields'), $args);
 		foreach ($exceptions as $e) {
 			Q_Response::addError($e);

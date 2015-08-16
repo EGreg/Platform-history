@@ -109,8 +109,8 @@ function Streams_before_Q_objects()
 	}
 	
 	// accept invite and autosubscribe if first time
-	if ($invite->accept()) {
-		$invite->subscribe();
+	if ($invite->accept() and !$stream->subscription($user->id)) {
+		$stream->subscribe();
 	}
 	
 	// retain the invite object for further processing

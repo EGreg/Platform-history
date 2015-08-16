@@ -23,6 +23,11 @@ function Streams_before_Q_Utils_canWriteToPath($params, &$result)
 		$prefix = "files/$app/uploads/Streams/";
 		$len = strlen($prefix);
 		if (substr($sp, 0, $len) === $prefix) {
+			$prefix2 = "files/$app/uploads/Streams/invitations";
+			if (substr($sp, 0, strlen($prefix2)) === $prefix2) {
+				$result = true; // any user can write here
+				return;
+			}
 			$parts = explode('/', substr($sp, $len));
 			$c = count($parts);
 			if ($c >= 3) {

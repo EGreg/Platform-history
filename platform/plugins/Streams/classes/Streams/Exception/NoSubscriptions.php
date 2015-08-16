@@ -15,4 +15,4 @@ class Streams_Exception_NoSubscriptions extends Q_Exception
 	 */	
 };
 
-Q_Exception::add('Streams_Exception_NoSubscriptions', 'Stream of type $type does not support subscription');
+Q_Exception::add('Streams_Exception_NoSubscriptions', 'Stream of type {{type}} does not support subscription');

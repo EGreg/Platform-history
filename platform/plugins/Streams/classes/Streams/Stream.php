@@ -129,7 +129,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 *  @param {integer} [$options.adminLevel] => the admin level to grant those who are invited
 	 *	@param {string} [$options.displayName] => the display name to use to represent the inviting user
 	 *  @param {string} [$options.appUrl] => Can be used to override the URL to which the invited user will be redirected and receive "Q.Streams.token" in the querystring.
-	 *	@param {array} [$options.html] => an array of ($templatePath, $batchName) such as ("MyApp/foo.handlebars", "foo") for generating html snippets which can then be viewed from and printed via the action Streams/invitations?batchName=$batchName
+	 *	@param {array} [$options.html] => an array of ($template, $batchName) such as ("MyApp/foo.handlebars", "foo") for generating html snippets which can then be viewed from and printed via the action Streams/invitations?batchName=$batchName
 	 * @see Users::addLink()
 	 * @return {array} returns array with keys "success", "invited", "statuses", "identifierTypes", "alreadyParticipating"
 	 */
@@ -526,7 +526,7 @@ class Streams_Stream extends Base_Streams_Stream
 		}
 	}
 
-	protected function getUserStream ($options, &$userId, &$user = null) {
+	protected function fetchAsUser ($options, &$userId, &$user = null) {
 		if (isset($options['userId'])) {
 			$user = Users_User::fetch($options['userId']);
 			if (!$user) {
@@ -541,16 +541,15 @@ class Streams_Stream extends Base_Streams_Stream
 		$userId = $user->id;
 		if ($userId === $this->get('asUserId', null)) {
 			return $this;
-		} else {
-			$stream = Streams::fetchOne($userId, 
-				$this->publisherId, $this->name, '*', 
-				array('refetch' => true)
-			);
-			if (!$stream) { // this should never happen
-				throw new Q_Exception("Error getting {$this->name} stream published by {$this->publisherId} for user '$userId'");
-			}
-			return $stream;
 		}
+		$stream = Streams::fetchOne($userId, 
+			$this->publisherId, $this->name, '*', 
+			array('refetch' => true)
+		);
+		if (!$stream) { // this should never happen
+			throw new Q_Exception("Error getting {$this->name} stream published by {$this->publisherId} for user '$userId'");
+		}
+		return $stream;
 	}
 	
 	/**
@@ -634,7 +633,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 */
 	function join($options = array(), &$participant = null)
 	{
-		$stream = $this->getUserStream($options, $userId);
+		$stream = $this->fetchAsUser($options, $userId);
 
 		if (empty($options['skipAccess'])
 		and !$stream->testWriteLevel('join')) {
@@ -736,7 +735,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 */
 	function leave($options = array(), &$participant = null)
 	{
-		$stream = $this->getUserStream($options, $userId);
+		$stream = $this->fetchAsUser($options, $userId);
 		
 		if (empty($options['skipAccess'])
 		and !$stream->testWriteLevel('join')) {
@@ -790,13 +789,11 @@ class Streams_Stream extends Base_Streams_Stream
 	/**
 	 * Subscribe to the stream's messages<br/>
 	 *	If options are not given check the subscription templates:
-	 *	<ol>
-	 *		<li>1. exact stream name and exact user id</li>
-	 *		<li>2. generic stream name and exact user id</li>
-	 *		<li>3. exact stream name and generic user</li>
-	 *		<li>4. generic stream name and generic user</li>
-	 *	</ol>
-	 *	default is to subscribe to ALL messages.<br/>
+	 *	1. exact stream name and exact user id
+	 *	2. generic stream name and exact user id
+	 *	3. exact stream name and generic user
+	 *	4. generic stream name and generic user
+	 *	default is to subscribe to ALL messages.
 	 *	If options supplied - skip templates and use options<br/><br/>
 	 * Using subscribe if subscription is already active will modify existing
 	 * subscription - change type(s) or modify notifications
@@ -813,7 +810,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 */
 	function subscribe($options = array())
 	{
-		$stream = $this->getUserStream($options, $userId, $user);
+		$stream = $this->fetchAsUser($options, $userId, $user);
 		
 		if (empty($options['skipAccess'])
 		and !$stream->testReadLevel('messages')) {
@@ -840,7 +837,9 @@ class Streams_Stream extends Base_Streams_Stream
 		$s->retrieve();
 
 		$type = null;
-		if ($template = $stream->getSubscriptionTemplate('Streams_Subscription', $userId, $type)) {
+		if ($template = $stream->getSubscriptionTemplate(
+			'Streams_Subscription', $userId, $type
+		)) {
 			$filter = json_decode($template->filter, true);
 		} else {
 			$filter = array(
@@ -849,7 +848,9 @@ class Streams_Stream extends Base_Streams_Stream
 			);
 		}
 		if (isset($options['types'])) {
-			$filter['types'] = !empty($options['types']) ? $options['types'] : $filter['types'];
+			$filter['types'] = !empty($options['types'])
+				? $options['types']
+				: $filter['types'];
 		}
 		if (isset($options['notifications'])) {
 			$filter['notifications'] =  $options['notifications'];
@@ -880,24 +881,29 @@ class Streams_Stream extends Base_Streams_Stream
 				if (empty($template) and $rule->retrieve()) {
 					$ruleSuccess = false;
 				} else {
-					$rule->readyTime = isset($options['readyTime']) ? $options['readyTime'] : new Db_Expression('CURRENT_TIMESTAMP');
-					$rule->filter = !empty($template->filter) ? $template->filter : '{"types":[],"labels":[]}';
-					$rule->relevance = !empty($template->relevance) ? $template->relevance : 1;
+					$rule->readyTime = isset($options['readyTime'])
+						? $options['readyTime']
+						: new Db_Expression('CURRENT_TIMESTAMP');
+					$rule->filter = !empty($template->filter) 
+						? $template->filter 
+						: '{"types":[],"labels":[]}';
+					$rule->relevance = !empty($template->relevance)
+						? $template->relevance
+						: 1;
 			
 					if (!empty($template->deliver)) {
 						$rule->deliver = $template->deliver;
 					} else {
-						if (isset($user->mobileNumber)) {
+						if ($user->mobileNumber) {
 							$deliver = array('mobile' => $user->mobileNumber);
-						} else if (isset($user->emailAddress)) {
+						} else if ($user->emailAddress) {
 							$deliver = array('email' => $user->emailAddress);
-						} else if (isset($user->mobileNumberPending)) {
+						} else if ($user->mobileNumberPending) {
 							$deliver = array('mobile' => $user->mobileNumberPending);
-						} else if (isset($user->emailAddressPending)) {
+						} else if ($user->emailAddressPending) {
 							$deliver = array('email' => $user->emailAddressPending);
 						} else {
-							$deliver = array();
-							$ruleSuccess = false;
+							$deliver = array('default' => true);
 						}
 						$rule->deliver = Q::json_encode($deliver);
 					}
@@ -906,7 +912,8 @@ class Streams_Stream extends Base_Streams_Stream
 			}
 		}
 
-		// skip error testing for rule save BUT inform node. Node can notify user to check the rules
+		// skip error testing for rule save BUT inform node.
+		// Node can notify user to check the rules
 		Q_Utils::sendToNode(array(
 			"Q/method" => "Streams/Stream/subscribe",
 			"subscription" => Q::json_encode($s->toArray()),
@@ -939,7 +946,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 */
 	function unsubscribe($options = array()) {
 
-		$stream = $this->getUserStream($options, $userId);
+		$stream = $this->fetchAsUser($options, $userId);
 		
 		if (empty($options['skipAccess'])
 		and !$stream->testReadLevel('messages')) {

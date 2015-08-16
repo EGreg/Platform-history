@@ -2782,10 +2782,21 @@ String.prototype.quote = function _String_prototype_quote() {
 	return o + '"';
 };
 
-String.prototype.interpolate = function _String_prototype_interpolate(o) {
+/**
+ * Goes through the params and replaces any references
+ * to their names in the string with their value.
+ * References are expected to be of the form {{varname}}
+ * @method interpolate
+ * @param {Object} params
+ *  A hash of parameters for interpolating in the expression.
+ *  Variable names in the expression can refer to them.
+ * @return {string}
+ *  The result of the interpolation
+ */
+String.prototype.interpolate = function _String_prototype_interpolate(params) {
 	return this.replace(/\{\{([^{}]*)\}\}/g,
 		function (a, b) {
-			var r = o[b];
+			var r = params[b];
 			return typeof r === 'string' || typeof r === 'number' ? r : a;
 		}
 	);

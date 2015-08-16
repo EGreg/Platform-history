@@ -1116,7 +1116,7 @@ abstract class Users extends Base_Users
 	 */
 	static function futureUser($type, $value, &$status = null)
 	{
-		if (!isset(self::$types[$type])) {
+		if (!array_key_exists($type, self::$types)) {
 			throw new Q_Exception_WrongType(array(
 				'field' => 'type', 
 				'type' => 'one of the supported types'

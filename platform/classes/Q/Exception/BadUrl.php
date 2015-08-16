@@ -14,4 +14,4 @@ class Q_Exception_BadUrl extends Q_Exception
 	 */
 };
 
-Q_Exception::add('Q_Exception_BadUrl', 'bad url $url (the base url is $base_url)');
+Q_Exception::add('Q_Exception_BadUrl', 'bad url {{url}} (the base url is {{base_url}})');

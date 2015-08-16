@@ -13,4 +13,4 @@ abstract class Q_Exception_TestCase extends Q_Exception
 	 */
 };
 
-Q_Exception::add('Q_Exception_TestCase', 'test case exception: $message');
+Q_Exception::add('Q_Exception_TestCase', 'test case exception: {{message}}');
