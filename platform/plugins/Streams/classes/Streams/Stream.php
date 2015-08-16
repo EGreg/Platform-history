@@ -133,7 +133,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 * @see Users::addLink()
 	 * @return {array} returns array with keys "success", "invited", "statuses", "identifierTypes", "alreadyParticipating"
 	 */
-	static function invite($who, $options = array())
+	function invite($who, $options = array())
 	{
 		Streams::invite($this->publisherId, $this->name, $who, $options);
 	}
@@ -345,8 +345,9 @@ class Streams_Stream extends Base_Streams_Stream
 		$field = ($this->name === 'Streams/user/icon')
 			? 'icon'
 			: 'content';
-		if (!empty($this->fieldsModified[$field])
-		or empty($this->fieldsModified['readLevel'])) {
+		$wasModified = !empty($this->fieldsModified[$field])
+			or !empty($this->fieldsModified['readLevel']);
+		if (!$wasModified) {
 			return $result;
 		}
 		
@@ -365,8 +366,7 @@ class Streams_Stream extends Base_Streams_Stream
 			return Streams::$beingSavedQuery;
 		}
 
-		if ($this->retrieved and !$publicField
-		and !empty($this->fieldsModified['readLevel'])) {
+		if ($this->retrieved and !$publicField) {
 			// Update all avatars corresponding to access rows for this stream
 			$taintedAccess = Streams_Access::select('*')
 				->where(array( // not primary key
