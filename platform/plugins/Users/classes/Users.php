@@ -708,12 +708,15 @@ abstract class Users extends Base_Users
 	 * This functionality should not be exposed externally.
 	 * @method setLoggedInUser
 	 * @static
-	 * @param {Users_User} $user The user object
+	 * @param {Users_User|string} $user The user object or user id
 	 */
-	static function setLoggedInUser(Users_User $user = null)
+	static function setLoggedInUser($user = null)
 	{
 		if (!$user) {
 			return Users::logout();
+		}
+		if (is_string($user)) {
+			$user = Users_User::fetch($user);
 		}
 		if (isset($_SESSION['Users']['loggedInUser']['id'])) {
 			if ($user->id == $_SESSION['Users']['loggedInUser']['id']) {

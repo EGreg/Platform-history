@@ -2196,15 +2196,22 @@ abstract class Streams extends Base_Streams
 	 *	@param {string} [$options.displayName] => the display name to use to represent the inviting user
 	 *  @param {string} [$options.appUrl] => Can be used to override the URL to which the invited user will be redirected and receive "Q.Streams.token" in the querystring.
 	 *	@param {array} [$options.html] => an array of ($template, $batchName) such as ("MyApp/foo.handlebars", "foo") for generating html snippets which can then be viewed from and printed via the action Streams/invitations?batchName=$batchName
+	 * @param {array} [$options.asUserId=null] Invite as this user id
 	 * @see Users::addLink()
 	 * @return {array} returns array with keys "success", "invited", "statuses", "identifierTypes", "alreadyParticipating"
 	 */
 	static function invite($publisherId, $streamName, $who, $options = array())
 	{
-		$user = Users::loggedInUser(true);
+		if (isset($options['asUserId'])) {
+			$asUserId = $options['asUserId'];
+			$asUser = Users_User::fetch($asUserId);
+		} else {
+			$asUser = Users::loggedInUser(true);
+			$asUserId = $asUser->id;
+		}
 
 		// Fetch the stream as the logged-in user
-		$stream = Streams::fetch($user->id, $publisherId, $streamName);
+		$stream = Streams::fetch($asUserId, $publisherId, $streamName);
 		if (!$stream) {
 			throw new Q_Exception_MissingRow(array(
 				'table' => 'stream',
@@ -2255,7 +2262,7 @@ abstract class Streams extends Base_Streams
 			}
 			$raw_userIds = array_merge(
 				$raw_userIds, 
-				Users_User::labelsToIds($user->id, $label)
+				Users_User::labelsToIds($asUserId, $label)
 			);
 		}
 		// merge identifiers if any
@@ -2341,8 +2348,8 @@ abstract class Streams extends Base_Streams
 		// let node handle the rest, and get the result
 		$params = array(
 			"Q/method" => "Streams/Stream/invite",
-			"invitingUserId" => $user->id,
-			"username" => $user->username,
+			"invitingUserId" => $asUserId,
+			"username" => $asUser->username,
 			"userIds" => Q::json_encode($userIds),
 			"stream" => Q::json_encode($stream->toArray()),
 			"appUrl" => $appUrl,
@@ -2353,7 +2360,7 @@ abstract class Streams extends Base_Streams
 			"adminLevel" => $adminLevel,
 			"displayName" => isset($options['displayName'])
 				? $options['displayName']
-				: Streams::displayName($user),
+				: Streams::displayName($asUser),
 			"expiry" => $expiry
 		);
 		if ($template) {

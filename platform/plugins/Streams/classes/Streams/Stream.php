@@ -135,7 +135,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 */
 	function invite($who, $options = array())
 	{
-		Streams::invite($this->publisherId, $this->name, $who, $options);
+		return Streams::invite($this->publisherId, $this->name, $who, $options);
 	}
 
 	private static function sortTemplateTypes($templates, $user_field, &$type, $name_field = 'streamName') {
@@ -369,7 +369,7 @@ class Streams_Stream extends Base_Streams_Stream
 		if ($this->retrieved and !$publicField) {
 			// Update all avatars corresponding to access rows for this stream
 			$taintedAccess = Streams_Access::select('*')
-				->where(array( // not primary key
+				->where(array(
 					'publisherId' => $this->publisherId,
 					'streamName' => $this->name
 				))->fetchDbRows();
@@ -799,13 +799,13 @@ class Streams_Stream extends Base_Streams_Stream
 	 * subscription - change type(s) or modify notifications
 	 * @method subscribe
 	 * @param $options=array() {array}
-	 *	"types": array of message types, if this is empty then subscribes to all types
-	 *	"notifications": number of notifications, default - 0 meaning all
-	 *	"untilTime": time limit for subscription, default - null meaning forever
-	 *	"readyTime": time from which user is ready to receive notifications again
-	 *  "userId": the user subscribing to the stream. Defaults to the logged in user.
-	 *  "skipRules": if true, do not attempt to create rules
-	 *  "skipAccess": if true, skip access check for whether user can subscribe
+	 * @param {array} [$options.types] array of message types, if this is empty then subscribes to all types
+	 * @param {integer} [$options.notifications]  number of notifications, default - 0 meaning all
+	 * @param {datetime} [$options.untilTime] time limit for subscription, default - null meaning forever
+	 * @param {datetime} [$options.readyTime]  time from which user is ready to receive notifications again
+	 * @param {string} [$options.userId]  the user subscribing to the stream. Defaults to the logged in user.
+	 * @param {boolean} [$options.skipRules]  if true, do not attempt to create rules
+	 * @param {boolean} [$options.skipAccess]  if true, skip access check for whether user can subscribe
 	 * @return {Streams_Subscription|false}
 	 */
 	function subscribe($options = array())
