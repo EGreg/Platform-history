@@ -34,9 +34,6 @@ function Users_avatar_tool($options)
 	if (!empty($options['renderOnClient'])) {
 		return '';
 	}
-	$user = !empty($options['userId'])
-		? Users_User::fetch($options['userId'])
-		: Users::loggedInUser();
 	
 	if (!$user) {
 		return '';

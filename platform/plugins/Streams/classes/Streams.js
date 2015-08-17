@@ -689,7 +689,8 @@ Streams.listen = function (options) {
 										stream: stream,
 										user: this,
 										invite: invite,
-										link: invite.url()
+										link: invite.url(),
+										appRootUrl: Q.Config.expect(['Q', 'web', 'appRootUrl'])
 									});
 									var html = Q.Handlebars.render(parsed.template, fields);
 									var path = Streams.invitationsPath()+'/'+parsed.batchName;

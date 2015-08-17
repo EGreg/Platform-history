@@ -592,5 +592,6 @@
 .Streams_task_progress { border: 1px solid #555; }
 .Streams_task_progress_bar { background: 1px solid #555; width: 0; height: 40px; }
 
-.Streams_invitation { text-align: center; }
-.Streams_explanation { border: 1px solid #aaa; }
+.Streams_invitation { font-size: 20px; text-align: center; padding: 50px; }
+.Streams_callToAction { border: 1px solid #aaa; }
+.Streams_callToAction h2 { font-size: 30px; }

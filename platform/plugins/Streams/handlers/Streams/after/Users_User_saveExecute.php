@@ -143,7 +143,7 @@ function Streams_after_Users_User_saveExecute($params)
                 $stream->setAttribute('sizes', $sizes);
 				$stream->icon = $changes['icon'] = $user->iconUrl();
 			}
-			Streams::$beingSavedQuery = $streams->changed($user->id);
+			Streams::$beingSavedQuery = $stream->changed($user->id);
 		}
 	}
 }

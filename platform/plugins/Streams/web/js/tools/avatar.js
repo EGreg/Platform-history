@@ -52,6 +52,9 @@ Q.Tool.define("Users/avatar", function(options) {
 	if (!state.reflectChanges) {
 		return;
 	}
+	if (state.icon === true) {
+		state.icon = Users.icon.defaultSize;
+	}
 	Streams.Stream.onFieldChanged(state.userId, 'Streams/user/icon', 'icon')
 	.set(function (fields, field) {
 		tool.$('.Users_avatar_icon').attr('src', 
