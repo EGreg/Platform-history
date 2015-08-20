@@ -197,7 +197,9 @@ Streams_Message.post = function (fields, callback)
 		f.publisherId, f.streamName,
 		f.publisherId, f.streamName
 	];
-	Streams.Stream.db().rawQuery(query, values).execute(function (params) {
+	Streams.Stream.db()
+	.rawQuery(query, values)
+	.execute(function (params) {
 		var err = params[""][0];
 		if (err) {
 			return callback && callback(err);

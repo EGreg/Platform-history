@@ -25,7 +25,9 @@ function Users_before_Q_objects()
 					'fileUpload' => true
 				));
 				$cookie_name = 'fbsr_'.$facebook->getAppId();
-				Q_Response::setCookie($cookie_name, $cookie, $expires);
+				if (!empty($_SERVER['HTTP_HOST'])) {
+					Q_Response::setCookie($cookie_name, $cookie, $expires);
+				}
 			} catch (Exception $e) {
 				// do nothing
 			}

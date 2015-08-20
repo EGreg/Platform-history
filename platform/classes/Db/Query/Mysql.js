@@ -125,11 +125,15 @@ var Query_Mysql = function(mysql, type, clauses, parameters, table) {
 				if (pk[0]) {
 					err[k] = pk[0];
 				}
-				for (i=0; i<pk[1].length; ++i) {
-					results.push(pk[1][i]);
+				if (pk[1]) {
+					for (i=0; i<pk[1].length; ++i) {
+						results.push(pk[1][i]);
+					}
 				}
-				for (f in pk[2]) {
-					temp[f] = 1;
+				if (pk[2]) {
+					for (f in pk[2]) {
+						temp[f] = 1;
+					}
 				}
 			}
 			var fields = Object.keys(temp);

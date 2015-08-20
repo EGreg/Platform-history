@@ -299,7 +299,11 @@ class Q_Session
 					self::id($id);
 				}
 			}
-			session_start();
+			if (!empty($_SERVER['HTTP_HOST'])) {
+				session_start();
+			} else if (empty($_SESSION)) {
+				$_SESSION = array();
+			}
 		} catch (Exception $e) {
 			$app = Q_Config::get('Q', 'app', null);
 			$prefix = $app ? "$app/" : '';
@@ -798,7 +802,9 @@ class Q_Session
 		if ($overwrite or !isset($_SESSION['Q']['nonce'])) {
 			$_SESSION['Q']['nonce'] = md5(mt_rand().microtime());
 		}
-		Q_Response::setCookie('Q_nonce', $_SESSION['Q']['nonce']);
+		if (!empty($_SERVER['HTTP_HOST'])) {
+			Q_Response::setCookie('Q_nonce', $_SESSION['Q']['nonce']);
+		}
 		Q_Session::$nonceWasSet = true;
 	}
 	
@@ -810,7 +816,9 @@ class Q_Session
 	{
 		self::start();
 		$_SESSION['Q']['nonce'] = null;
-		Q_Response::setCookie('Q_nonce', null);
+		if (!empty($_SERVER['HTTP_HOST'])) {
+			Q_Response::setCookie('Q_nonce', null);
+		}
 	}
 	
 	static function durationName()
