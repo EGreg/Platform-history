@@ -1791,13 +1791,6 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		);
 		return $this->db->reallyConnect($shard_name);
 	}
-
-	/**
-	 * Count nesting of transactions, indexed by [$connection_name][$shard_name]
-	 * @property $nestedTransactionCount
-	 * @type integer
-	 */
-	public $nestedTransactionCount = null;
 	
 	public $startedTime = null;
 	public $endedTime = null;

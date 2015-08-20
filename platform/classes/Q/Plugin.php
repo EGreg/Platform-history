@@ -166,7 +166,7 @@ class Q_Plugin
 			}
 
 			// echo "Begin transaction".PHP_EOL;
-			$pdo->beginTransaction();
+			$query = $db->rawQuery('')->begin()->execute();
 
 			// Process script files
 			foreach ($scripts as $script) {
@@ -208,7 +208,7 @@ class Q_Plugin
 					}
 					echo PHP_EOL;
 					echo "Rollback".PHP_EOL;
-					$pdo->rollBack();
+					$query = $db->rawQuery('')->rollback()->execute();
 					throw $err;
 				}
 			}
@@ -220,13 +220,13 @@ class Q_Plugin
 			} catch (Exception $e) {
 				if ($pdo->errorCode() != '00000') {
 					echo "Rollback".PHP_EOL;
-					$pdo->rollBack();
+					$query = $db->rawQuery('')->rollback()->execute();
 					$err = $pdo->errorInfo();
 					throw new Exception("$err[2]");
 				}
 			}
 			// echo "Commit transaction".PHP_EOL;
-			$pdo->commit();
+			$query = $db->rawQuery('')->commit()->execute();
 			echo '+ ' . ucfirst($type) . " '$name' schema on '$conn_name'$shard_text (v. $current_version -> $version) installed".PHP_EOL;
 		}
 	}
