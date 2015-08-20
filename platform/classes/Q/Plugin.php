@@ -107,7 +107,7 @@ class Q_Plugin
 				`{$type}` VARCHAR(255) NOT NULL,
 				`version` VARCHAR( 255 ) NOT NULL,
 				PRIMARY KEY (`{$type}`)) ENGINE = InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-			")->execute()->fetchAll();
+			")->execute();
 
 			$res = $db->select('version', "{$prefix}Q_{$type}")
 						->where(array($type => $name))
@@ -186,7 +186,7 @@ class Q_Plugin
 					$queries = $db->scriptToQueries($sqltext);
 					// Process each query
 					foreach ($queries as $q) {
-						$db->rawQuery($q)->execute()->fetchAll();
+						$db->rawQuery($q)->execute();
 						echo ".";
 					}
 
