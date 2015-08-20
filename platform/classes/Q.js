@@ -63,16 +63,6 @@ Q.typeOf = function _Q_typeOf(value) {
 };
 
 /**
- * Tests if the value is an integer
- * @method isInteger
- * @param {mixed} value The value to test
- * @return {boolean} Whether it is an integer
- */
-Q.isInteger = function _Q_isInteger(value) {
-	return (parseFloat(value) == parseInt(value)) && !isNaN(value);
-};
-
-/**
  * Walks the tree from the parent, and returns whether the path was defined
  * @method isSet
  * @param {Object} parent
@@ -1424,11 +1414,18 @@ Q.isEmpty = function _Q_isEmpty(o) {
  * Tests if the value is an integer
  * @static
  * @method isInteger
- * @param {mixed} value The value to test
- * @return {boolean} Whether it is an integer
+ * @param {mixed} value 
+ *  The value to test
+ * @param {boolean} [strictComparison=true]
+ *  Whether to test strictly for a number
+ * @return {boolean}
+ *	Whether it is an integer
  */
-Q.isInteger = function _Q_isInteger(value) {
-	return value > 0 ? Math.floor(value) === value : Math.ceil(value) === value;
+Q.isInteger = function _Q_isInteger(value, strictComparison) {
+	if (strictComparison) {
+		return value > 0 ? Math.floor(value) === value : Math.ceil(value) === value;
+	}
+	return value > 0 ? Math.floor(value) == value : Math.ceil(value) == value;
 };
 
 /**
@@ -1967,7 +1964,7 @@ Q.listen = function _Q_listen(options, callback) {
 	
 	var use = app.use;
 	app.use = function _app_use() {
-		util.log("Adding request handler under " + server.host + ":" + server.port + " :", arguments[0].name);
+		console.log("Adding request handler under " + server.host + ":" + server.port + " :", arguments[0].name);
 		use.apply(this, Array.prototype.slice.call(arguments));
 	};
 	var methods = {
@@ -1996,7 +1993,7 @@ Q.listen = function _Q_listen(options, callback) {
 			} else if (typeof h !== 'string') {
 				h = h.toString();
 			}
-			util.log("Adding " + methods[k] + " handler under "
+			console.log("Adding " + methods[k] + " handler under "
 				+ server.host + ":" + server.port
 				+ w + " :", h);
 			f.apply(this, Array.prototype.slice.call(arguments));
@@ -2006,7 +2003,7 @@ Q.listen = function _Q_listen(options, callback) {
 		// WARNING: the following per-request log may be a bottleneck in high-traffic sites:
 		var a = server.address();
 		if (Q.Config.get('Q', 'node', 'logRequests', true)) {
-			util.log(req.method+" "+req.socket.remoteAddress+ " -> "+a.address+":"+a.port+req.url.split('?', 2)[0] + (req.body['Q/method'] ? ", method: '"+req.body['Q/method']+"'" : ''));
+			console.log(req.method+" "+req.socket.remoteAddress+ " -> "+a.address+":"+a.port+req.url.split('?', 2)[0] + (req.body['Q/method'] ? ", method: '"+req.body['Q/method']+"'" : ''));
 		}
 		req.info = {
 			port: port,
@@ -2029,7 +2026,7 @@ Q.listen = function _Q_listen(options, callback) {
 	});
 	server.listen(port, host, function () {
 		var internalString = (internalHost == host && internalPort == port) ? ' (internal requests)' : '';
-		util.log('Q: listening at ' + host + ':' + port + internalString);
+		console.log('Q: listening at ' + host + ':' + port + internalString);
 		callback && callback(server.address());
 	});
 
@@ -2219,7 +2216,7 @@ Q.init = function _Q_init(app, notListen) {
 		if (err) process.exit(2); // if run as child Q.Bootstrap.configure returns errors in callback
 		Q.Bootstrap.loadPlugins(function () {
 			Q.Bootstrap.loadHandlers(function () {
-				util.log(typeof notListen === "string" ? notListen : 'Q platform initialized!');
+				console.log(typeof notListen === "string" ? notListen : 'Q platform initialized!');
 				/**
 				 * Qbix platform initialized
 				 * @event init
@@ -2313,7 +2310,7 @@ Q.log = function _Q_log(message, name, timestamp, callback) {
 	message = (timestamp ? '['+Q.date('Y-m-d h:i:s')+'] ' : '')+(name ? name : 'Q')+': ' + message + "\n";
 
 	if (!name) {
-		return util.log(message);
+		return console.log(message);
 	}
 	if (typeof logStream[name] === "undefined") {
 		logStream[name] = [];

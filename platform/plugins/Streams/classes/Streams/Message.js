@@ -126,45 +126,88 @@ Mp.get = function _Message_prototype_get (instructionName) {
 };
 
 /**
- * Assigns unique id to 'name' field if not set
- * @method beforeSave
- * @param {array} value
- *	The row beind saved
- * @param {function} callback
+ * Posts a message to the stream.
+ * Currently doesn't perform any access checks, so it is only meant to be called internally.
+ * It is not as robust as the PHP version, which is meant for more general use.
+ * @method post
+ * @static
+ * @param {Object} fields
+ *  The fields of the message. Requires publisherId, streamName and byUserId
+ * @param callback=null {function}
  */
-Streams_Message.prototype.beforeSave = function (value, callback)
+Streams_Message.post = function (fields, callback)
 {
-	value = Base_Streams_Message.prototype.beforeSave.call(this, value);
-	if (!this._retrieved) {
-		var self = this;
-		(new Streams.Stream({
-			publisherId: value['publisherId'],
-			name: value['streamName']
-		})).retrieve('*', true, true)
-		.lock()
-		.resume(function(error, stream) {
-			if (error) callback(error);
-			else if (!stream || !stream.length) {
-				callback(null, null); // no stream - no message!!!
-			} else {
-				stream = stream[0];
-				self.fields.ordinal = ++stream.fields.messageCount;
-				value['ordinal'] = self.fields.ordinal;
-				self.afterSaveExecute = function(query, error, lastId) {
-					this.afterSaveExecute = null;
-					stream.save(false, true, function(error) {
-						if (error) {
-							stream.rollback(function() {
-								query.resume(error);
-							});
-						} else query.resume(null, lastId);
-					});
-					return true;
-				};
-				callback(null, value);
-			}
-		});
+	var required = {publisherId: true, streamName: true, byUserId: true};
+	for (var k in required) {
+		if (!fields[k]) {
+			throw new Q.Exception("Streams.Message.post requires " + k);
+		}
 	}
+	var f = Q.extend({
+		type: 'text/small',
+		content: '',
+		instructions: '',
+		byClientId: '',
+		weight: 1
+	}, fields);
+	f.sentTime = new Db.Expression("CURRENT_TIMESTAMP");
+	var msg = Streams.Message.construct(f);
+	
+	var query = 
+	 " START TRANSACTION;"
+	+"		SELECT messageCount"
+	+"		  FROM streams_stream"
+	+"		  WHERE publisherId = ?"
+	+"		  AND name = ?"
+	+"		  INTO @Streams_messageCount"
+	+"        FOR UPDATE;"
+	+"		INSERT INTO streams_message("
+	+"			publisherId, streamName, byUserId, byClientId, sentTime, "
+	+"			type, content, instructions, weight, ordinal"
+	+"		)"
+	+"		VALUES("
+	+"			?, ?, ?, ?, CURRENT_TIMESTAMP,"
+	+"			?, ?, ?, ?, @Streams_messageCount+1"
+	+"		);"
+	+"		INSERT INTO streams_total("
+	+"			publisherId, streamName, messageType, messageCount"
+	+"		)"
+	+"		VALUES("
+	+"			?, ?, ?, @Streams_messageCount+1"
+	+"		)"
+	+"		ON DUPLICATE KEY UPDATE messageCount = messageCount+1;"
+	+"		UPDATE streams_stream"
+	+"		  SET messageCount = @Streams_messageCount+1"
+	+"		  WHERE publisherId = ?"
+	+"		  AND name = ?;"
+	+"		SELECT * FROM streams_stream"
+	+"		  WHERE publisherId = ?"
+	+"		  AND name = ?;"
+	+"		SELECT * FROM streams_message"
+	+"		  WHERE publisherId = ?"
+	+"		  AND streamName = ?"
+	+"		  AND ordinal = @Streams_messageCount+1;"
+	+" COMMIT;"
+	var values = [
+		f.publisherId, f.streamName,
+		f.publisherId, f.streamName, f.byUserId, f.byClientId,
+		f.type, f.content, f.instructions, f.weight,
+		f.publisherId, f.streamName, f.type,
+		f.publisherId, f.streamName,
+		f.publisherId, f.streamName,
+		f.publisherId, f.streamName
+	];
+	Streams.Stream.db().rawQuery(query, values).execute(function (params) {
+		var err = params[""][0];
+		if (err) {
+			return callback && callback(err);
+		}
+		var results = params[""][1];
+		var stream = Streams.Stream.construct(results[5][0]);
+		var message = Streams.Message.construct(results[6][0]);
+		Streams.Stream.emit('post', stream, f.byUserId, message, stream);
+		callback && callback.call(stream, null, f.byUserId, message);
+	});
 };
 
 /**

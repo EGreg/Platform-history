@@ -14,7 +14,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	 * @param {iDb} $db An instance of a Db adapter
 	 * @param {integer} $type The type of the query. See class constants beginning with TYPE_ .
 	 * @param {array} [$clauses=array()] The clauses to add to the query right away
-	 * @param {array} [$parameters=array()] The parameters to add to the query right away (to be bound when executing)
+	 * @param {array} [$parameters=array()] The parameters to add to the query right away (to be bound when executing). Values corresponding to numeric keys replace question marks, while values corresponding to string keys replace ":key" placeholders, in the SQL.
 	 * @param {array} [$tables=null] The tables operated with query
 	 */
 	function __construct (
@@ -348,12 +348,23 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	}
 
 	/**
-	 * @method reverseLengthCompare
+	 * @method replaceKeysCompare
 	 * @private
 	 * @return {integer}
 	 */
-	private static function reverseLengthCompare($a, $b)
+	private static function replaceKeysCompare($a, $b)
 	{
+		$aIsInteger = (is_numeric($a) and intval($a) == $a);
+		$bIsInteger = (is_numeric($b) and intval($b) == $b);
+		if ($aIsInteger and !$bIsInteger) {
+			return 1;
+		}
+		if ($bIsInteger and !$aIsInteger) {
+			return -1;
+		}
+		if ($aIsInteger and $bIsInteger) {
+			return intval($a) - intval($b);
+		}
 		return strlen($b)-strlen($a);
 	}
 
@@ -374,7 +385,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		}
 		$repres = $this->build();
 		$keys = array_keys($this->parameters);
-		usort($keys, array(__CLASS__, 'reverseLengthCompare'));
+		usort($keys, array(__CLASS__, 'replaceKeysCompare'));
 		foreach ($keys as $key) {
 			$value = $this->parameters[$key];
 			if ($value instanceof Db_Expression) {
@@ -412,20 +423,20 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	/**
 	 * Gets a clause from the query
 	 * @method getClause
-	 * @param {string} $clause_name
-	 * @param {boolean} [$with_after=false]
-	 * @return {mixed} If $with_after is true, returns array($clause, $after) otherwise just returns $clause
+	 * @param {string} $clauseName
+	 * @param {boolean} [$withAfter=false]
+	 * @return {mixed} If $withAfter is true, returns array($clause, $after) otherwise just returns $clause
 	 */
-	function getClause($clause_name, $with_after = false)
+	function getClause($clauseName, $withAfter = false)
 	{
-		$clause = isset($this->clauses[$clause_name])
-			? $this->clauses[$clause_name]
+		$clause = isset($this->clauses[$clauseName])
+			? $this->clauses[$clauseName]
 			: '';
-		if (!$with_after) {
+		if (!$withAfter) {
 			return $clause;
 		}
-		$after = isset($this->after[$clause_name])
-			? $this->after[$clause_name]
+		$after = isset($this->after[$clauseName])
+			? $this->after[$clauseName]
 			: '';
 		return array($clause, $after);
 	}
@@ -668,7 +679,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 
 					$transaction =
 						(!empty($this->clauses['COMMIT']) ? 'COMMIT' :
-						(!empty($this->clauses['BEGIN']) ? 'BEGIN' :
+						(!empty($this->clauses['BEGIN']) ? 'START TRANSACTION' :
 						(!empty($this->clauses['ROLLBACK']) ? 'ROLLBACK' : '')));
 
 					$upcoming_shards = array_keys($query->shard($upcoming['indexes'][$upcoming['table']]));
@@ -731,6 +742,25 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	}
 
 	/**
+	 * Works with SELECT queries to lock the selected rows.
+	 * Use only with MySQL.
+	 * @method lock
+	 * @param {string} [$type='FOR UPDATE'] Defaults to 'FOR UPDATE', but can also be 'LOCK IN SHARE MODE'
+	 * @chainable
+	 */
+	function lock($type = 'FOR UPDATE') {
+		switch (strtoupper($type)) {
+			case 'FOR UPDATE':
+			case 'LOCK IN SHARE MODE':
+				$this->clauses['LOCK'] = "$type";
+				break;
+			default:
+				throw new Exception("Incorrect type for MySQL lock");
+		}
+		return $this;
+	}
+
+	/**
 	 * Begins a transaction right before executing this query.
 	 * The reason this method is part of the query class is because
 	 * you often need the "where" clauses to figure out which database to send it to,
@@ -749,7 +779,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		if ($lock_type) {
 			$this->lock($lock_type);
 		}
-		$this->clauses["BEGIN"] = "BEGIN";
+		$this->clauses["BEGIN"] = "START TRANSACTION";
 		return $this;
 	}
 
@@ -1521,25 +1551,6 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 			$this->clauses['ON DUPLICATE KEY UPDATE'] = $updates;
 		else
 			$this->clauses['ON DUPLICATE KEY UPDATE'] .= ", $updates";
-		return $this;
-	}
-
-	/**
-	 * Works with SELECT queries to lock the selected rows.
-	 * Use only with MySQL.
-	 * @method lock
-	 * @param {string} [$type='FOR UPDATE'] Defaults to 'FOR UPDATE', but can also be 'LOCK IN SHARE MODE'
-	 * @chainable
-	 */
-	function lock($type = 'FOR UPDATE') {
-		switch (strtoupper($type)) {
-			case 'FOR UPDATE':
-			case 'LOCK IN SHARE MODE':
-				$this->clauses['LOCK'] = "$type";
-				break;
-			default:
-				throw new Exception("Incorrect type for MySQL lock");
-		}
 		return $this;
 	}
 

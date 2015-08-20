@@ -13,6 +13,6 @@ var Exception = function (message, fields) {
 	this.fields = fields || {};
 	this.message = message || "";
 };
-Exception.prototype = Error;
+Exception.prototype = Error.prototype;
 
 module.exports = Exception;

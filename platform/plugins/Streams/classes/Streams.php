@@ -282,11 +282,11 @@ abstract class Streams extends Base_Streams
 	 * @param {string|array|Db_Range} $name
 	 *  The name of the stream to fetch. Can end in "/" for template streams.
 	 *  Also it can be an array of stream names, or a custom Db_Range for stream names
-	 * @param {string} $fields='*'
-	 *  Must include "publisherId" and "name" fields, since they
-	 *  make up the primary key of the stream table.
-	 * @param {array} $options=array()
-	 *  Optional. Defaults to array().
+	 * @param {string} [$fields='*']
+	 *  Comma delimited list of fields to retrieve in the stream.
+	 *  Must include at least "publisherId" and "name".
+	 *  since make up the primary key of the stream table.
+	 * @param {array} [$options=array()]
 	 *  Provide additional query options like 'limit', 'offset', 'orderBy', 'where' etc.
 	 *  @see Db_Query_Mysql::options().
 	 *  @param {boolean} [$options.refetch] => Ignore cache of previous calls to fetch, 
@@ -317,6 +317,10 @@ abstract class Streams extends Base_Streams
 		}
 		if (empty($publisherId) or empty($name)) {
 			return array();
+		}
+		if (is_array($fields)) {
+			$options = $fields;
+			$fields = '*';
 		}
 		$allCached = array();
 		if (is_array($name) and empty($options['refetch'])) {
@@ -2267,6 +2271,7 @@ abstract class Streams extends Base_Streams
 		}
 		// merge identifiers if any
 		$identifierType = null;
+		$statuses = null;
 		if (isset($who['identifier'])) {
 			$identifier = $who['identifier'];
 			if (is_string($identifier)) {

@@ -447,7 +447,7 @@ Streams.listen = function (options) {
 				Streams.Stream.emit('visit', stream, uid, ssid);
 				break;
 			case 'Streams/Stream/leave':
-				participant = new Streams.Participant(JSON.parse(parsed.participant));
+				participant = JSON.parse(parsed.participant);
 				participant.fillMagicFields();
 				uid = participant.userId;
 				if (Q.Config.get(['Streams', 'logging'], false)) {
@@ -809,15 +809,12 @@ Streams.listen = function (options) {
 		return next();
 	});
 
-	Streams.Stream.on('post', function (stream, uid, msg, ssid) {
+	Streams.Stream.on('post', function (stream, byUserId, msg, ssid) {
 		if (_messageHandlers[msg.fields.type]) {
 			_messageHandlers[msg.fields.type].call(this, msg);
 		}
-		Streams.Stream.emit('post/'+msg.fields.type, stream, uid, msg);
-		stream.messageParticipants('post', msg.fields.byUserId, msg);
-//		if (stream && !msg.type.match(/^Streams\//)) {// internal messages of Streams plugin
-//			(new Streams.Stream(stream)).incMessages(/* empty callback*/);
-//		}
+		Streams.Stream.emit('post/'+msg.fields.type, stream, byUserId, msg);
+		stream.messageParticipants('post', byUserId, msg);
 	});
 
 	// Start external socket server
@@ -883,11 +880,10 @@ Streams.on('connection', function(client) {
 					new Streams.Stream({
 						publisherId: userId,
 						name: 'Streams/participating'
-					}).post({
-						byUserId: userId,
+					}).post(userId, {
 						type: 'Streams/connected'
 					}, function(err) {
-						if (err) util.error(err);
+						if (err) console.error(err);
 						Q.log('User connected: ' + userId);
 					});
 				}
@@ -914,7 +910,7 @@ Streams.on('connection', function(client) {
 					byUserId: userId,
 					type: 'Streams/disconnected'
 				}, function(err) {
-					if (err) util.error(err);
+					if (err) console.error(err);
 					Q.log('User disconnected: ' + userId);
 				});
 			}, Q.Config.get(["Streams", "socket", "disconnectTimeout"], 1000));
@@ -1134,16 +1130,29 @@ Streams.getParticipants = function(publisherId, streamName, callback) {
  *	The name of the stream, or an array of names, or a Db.Range
  * @param callback=null {function}
  *	Callback receives the error (if any) and stream as parameters
+ * @param {String} [fields='*']
+ *  Comma delimited list of fields to retrieve in the stream.
+ *  Must include at least "publisherId" and "name".
+ *  since make up the primary key of the stream table.
+ * @param {Object} [options={}]
+ *  Provide additional query options like 'limit', 'offset', 'orderBy', 'where' etc.
+ *  @see Db_Query_Mysql::options().
  */
-Streams.fetch = function (asUserId, publisherId, streamName, callback) {
+Streams.fetch = function (asUserId, publisherId, streamName, callback, fields, options) {
 	if (!callback) return;
 	if (!publisherId || !streamName) callback(new Error("Wrong arguments"));
 	if (streamName.charAt(streamName.length-1) === '/') {
 		streamName = new Db.Range(streamName, true, false, streamName.slice(0, -1)+'0');
 	}
-	Streams.Stream.SELECT('*')
+	if (Q.isPlainObject(fields)) {
+		options = fields;
+		fields = '*';
+	}
+	fields = fields || '*';
+	var q = Streams.Stream.SELECT(fields)
 	.where({publisherId: publisherId, name: streamName})
-	.execute(function(err, res) {
+	.options(options);
+	q.execute(function(err, res) {
 		if (err) {
 		    return callback(err);
 		}
@@ -1177,8 +1186,15 @@ Streams.fetch = function (asUserId, publisherId, streamName, callback) {
  *	The name of the stream
  * @param callback=null {function}
  *	Callback receives the error (if any) and stream as parameters
+ * @param {String} [fields='*']
+ *  Comma delimited list of fields to retrieve in the stream.
+ *  Must include at least "publisherId" and "name".
+ *  since make up the primary key of the stream table.
+ * @param {Object} [options={}]
+ *  Provide additional query options like 'limit', 'offset', 'orderBy', 'where' etc.
+ *  @see Db_Query_Mysql::options().
  */
-Streams.fetchOne = function (asUserId, publisherId, streamName, callback) {
+Streams.fetchOne = function (asUserId, publisherId, streamName, callback, fields, options) {
 	if (!callback) return;
 	if (!publisherId || !streamName) callback(new Error("Wrong arguments"));
 	if (streamName.charAt(streamName.length-1) === '/') {
@@ -1186,6 +1202,7 @@ Streams.fetchOne = function (asUserId, publisherId, streamName, callback) {
 	}
 	Streams.Stream.SELECT('*')
 	.where({publisherId: publisherId, name: streamName})
+	.options(options)
 	.limit(1).execute(function(err, res) {
 		if (err) {
 		    return callback(err);
@@ -1194,7 +1211,7 @@ Streams.fetchOne = function (asUserId, publisherId, streamName, callback) {
 		    callback(null, null);
 		}
 		res[0].calculateAccess(asUserId, function () {
-		    callback(null, res[0])
+		    callback.call(res[0], null, res[0]);
 		});
 	});
 };

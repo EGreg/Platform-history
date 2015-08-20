@@ -162,6 +162,7 @@ class Db_Mysql implements iDb
 			), 'after');
 		}
 		$this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+		$this->pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
 		return $this->pdo;
 	}
 	
@@ -825,6 +826,9 @@ class Db_Mysql implements iDb
 			$c2_pos = strpos($script, "--", $cur_pos);
 			$c3_pos = strpos($script, "#", $cur_pos);
 			$ds_pos = stripos($script, "\nDELIMITER ", $cur_pos);
+			if ($cur_pos === 0 and substr($script, 0, 9) === 'DELIMITER') {
+				$ds_pos = 0;
+			}
 
 			$next_pos = false;
 			if ($c_pos !== false) {

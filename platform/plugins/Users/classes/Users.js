@@ -135,11 +135,11 @@ function internalServerHandler(req, res, next) {
             var sid = parsed.sessionId;
             var content = parsed.content ? JSON.parse(parsed.content) : null;
 			if (content !== null) {
-				util.log((Users.sessions[sid] ? "Update" : "New") + " session from PHP: " + sid);
+				console.log((Users.sessions[sid] ? "Update" : "New") + " session from PHP: " + sid);
 				Users.sessions[sid] = content;
 			} else {
 				delete Users.sessions[sid];
-				util.log("Deleted session from PHP: " + sid);
+				console.log("Deleted session from PHP: " + sid);
 			}
 			break;
 		case 'Users/sendMessage':

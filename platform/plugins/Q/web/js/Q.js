@@ -1155,13 +1155,18 @@ Q.isEmpty = function _Q_isEmpty(o) {
  * Tests if the value is an integer
  * @static
  * @method isInteger
- * @param value {mixed}
+ * @param {mixed} value 
  *  The value to test
+ * @param {boolean} [strictComparison=true]
+ *  Whether to test strictly for a number
  * @return {boolean}
  *	Whether it is an integer
  */
-Q.isInteger = function _Q_isInteger(value) {
-	return value > 0 ? Math.floor(value) === value : Math.ceil(value) === value;
+Q.isInteger = function _Q_isInteger(value, strictComparison) {
+	if (strictComparison) {
+		return value > 0 ? Math.floor(value) === value : Math.ceil(value) === value;
+	}
+	return value > 0 ? Math.floor(value) == value : Math.ceil(value) == value;
 };
 
 /**

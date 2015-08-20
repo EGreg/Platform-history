@@ -38,26 +38,25 @@ class Streams_Message extends Base_Streams_Message
 	}
 	
 	/**
-	 * Post message to the stream.
-	 * @method post
+	 * Post a message to stream
+ 	 * @method post
 	 * @static
+	 * @param {string} $asUserId
+	 *  The user to post as
 	 * @param {string} $asUserId
 	 *  The user to post the message as
 	 * @param {string} $publisherId
 	 *  The publisher of the stream
 	 * @param {string|array} $streamName
-	 *  The name of the stream.
-	 *  You can also pass an array of stream names here.
+	 *  The name of the stream. You can also pass an array of stream names here.
 	 * @param {array} $information
-	 *  The fields of the message. Also may include 'streamNames' field which is an array of additional
+	 *  The fields of the message.
 	 *  names of the streams to post message to.
 	 * @param {booleam} $skipAccess=false
 	 *  If true, skips the access checks and just posts the message.
-	 * @return {Streams_Message|array|false}
-	 *  If not successful, returns false
-	 *  If successful, returns the Streams_Message that was posted.
-	 *  If $streamName was an array, then this function returns
-	 *  the array of results, each value being a posted message or false if posting was aborted
+	 * @return {Streams_Message|array}
+	 *  If $streamName was a string, returns the Streams_Message that was posted.
+	 *  If $streamName was an array, returns an array of ($streamName => $message) pairs
 	 */
 	static function post(
 		$asUserId, 
@@ -265,7 +264,7 @@ class Streams_Message extends Base_Streams_Message
 		}
 		
 		// time to update the stream rows and commit the transaction
-		// (on all the shards where the streams and related rows are)
+		// on all the shards where the streams were fetched.
 		Streams_Stream::update()
 			->set(array(
 				'messageCount' => new Db_Expression("messageCount+1")
@@ -275,7 +274,7 @@ class Streams_Message extends Base_Streams_Message
 			))->commit()
 			->execute();
 		
-		// Handle all the events for successfully posting
+		// handle all the events for successfully posting
 		foreach ($posted as $publisherId => $arr) {
 			foreach ($arr as $streamName => $m) {
 				$message = $posted[$publisherId][$streamName];
@@ -344,11 +343,6 @@ class Streams_Message extends Base_Streams_Message
 		$instr = $this->getAllInstructions();
 		unset($instr[$instructionName]);
 		$this->instructions = Q::json_encode($instr);
-	}
-	
-	function beforeSaveExecute($query)
-	{
-		return $query->commit(); // make this query commit
 	}
 	
 	/* * * */

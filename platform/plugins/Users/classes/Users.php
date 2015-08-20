@@ -1177,6 +1177,9 @@ abstract class Users extends Base_Users
 					$ui->userId = $user->id;
 					$ui->save();
 				}
+				$status = $ui->state;
+			} else {
+				$status = 'future';
 			}
 		} else {
 			// Save hashed version
@@ -1188,9 +1191,8 @@ abstract class Users extends Base_Users
 				$ui->userId = $user->id;
 				$ui->save();
 			}
+			$status = $ui->state;
 		}
-
-		$status = $ui->state;
 		return $user;
 	}
 

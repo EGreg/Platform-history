@@ -89,7 +89,7 @@ class Q_Plugin
 			$shard_data = array_merge($dbconf, $data);
 			Db::setConnection($tempname, $shard_data);
 
-			//Try connecting
+			// Try connecting
 			try {
 				$db = Db::connect($tempname);
 				$pdo = $db->reallyConnect($shard);
@@ -99,12 +99,15 @@ class Q_Plugin
 				throw new Exception("Could not connect to DB connection '$conn_name'$shard_text: " . $e->getMessage(), $e->getCode(), $e);
 			}
 
+			$db->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
+
 			// Do we already have $name installed?
 			// Checking SCHEMA plugin version in the DB.
 			$db->rawQuery("CREATE TABLE IF NOT EXISTS `{$prefix}Q_{$type}` (
 				`{$type}` VARCHAR(255) NOT NULL,
 				`version` VARCHAR( 255 ) NOT NULL,
-				PRIMARY KEY (`{$type}`)) ENGINE = InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;")->execute();
+				PRIMARY KEY (`{$type}`)) ENGINE = InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+			")->execute()->fetchAll();
 
 			$res = $db->select('version', "{$prefix}Q_{$type}")
 						->where(array($type => $name))
@@ -178,11 +181,12 @@ class Q_Plugin
 					echo "Processing SQL file: $script ";
 					$sqltext = file_get_contents($scriptsdir.DS.$script);
 					$sqltext = str_replace('{$prefix}', $prefix, $sqltext);
+					$sqltext = str_replace('{$dbname}', $db->dbname, $sqltext);
 
 					$queries = $db->scriptToQueries($sqltext);
 					// Process each query
 					foreach ($queries as $q) {
-						$db->rawQuery($q)->execute();
+						$db->rawQuery($q)->execute()->fetchAll();
 						echo ".";
 					}
 

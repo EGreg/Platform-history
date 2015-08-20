@@ -1,6 +1,6 @@
 <?php
 	
-class Places_Interests
+class Places_Interest
 {
 	/**
 	 * Call this function to relate a stream to category streams for things happening

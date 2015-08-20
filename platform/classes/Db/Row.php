@@ -1557,9 +1557,10 @@ class Db_Row implements Iterator
 	 *  But if it wasn't retrieved, then the modified fields are used as the search criteria.
 	 * @param {boolean} [$useIndex=null] If true, the primary key is used in searching for rows to delete. 
 	 *  An exception is thrown when some fields of the primary key are not specified
+	 * @param {boolean} [$commit=false] If this is TRUE, then the current transaction is committed right after the save.
 	 * @return {integer} Returns number of rows deleted
 	 */
-	function remove ($search_criteria = null, $useIndex = false)
+	function remove ($search_criteria = null, $useIndex = false, $commit = false)
 	{
 		$class_name = get_class($this);
 
@@ -1602,14 +1603,14 @@ class Db_Row implements Iterator
 			$row = $this;
 			if (false === Q::event(
 				"Db/Row/$class_name/remove",
-				compact('row', 'search_criteria', 'useIndex'), 'before'
+				compact('row', 'search_criteria', 'useIndex', 'commit'), 'before'
 			)) {
 				return false;
 			}
 		}
 		$callback = array($this, "beforeRemove");
 		if (is_callable($callback)) {
-			$continue_deleting = call_user_func($callback, $search_criteria, $useIndex);
+			$continue_deleting = call_user_func($callback, $search_criteria, $useIndex, $commit);
 			if (! is_bool($continue_deleting)) {
 				throw new Exception(
 					get_class($this)."::beforeRemove() must return a boolean - whether to delete or not!", 
@@ -1626,6 +1627,9 @@ class Db_Row implements Iterator
 		}
 		$table = $this->getTable();
 		$query = $db->delete($table)->where($search_criteria);
+		if ($commit) {
+			$query->commit();
+		}
 		$query->className = $class_name;
 		
 		if (class_exists('Q')) {
@@ -1920,7 +1924,7 @@ class Db_Row implements Iterator
 	 * 
 	 * * "begin" => this will cause the query to have ->begin() a transaction
 	 *       which locks the row for update. You should call ->save(..., true)
-	 *       to unlock the row, otherwise other database clients trying to access
+	 *       to unlock the row, otherwise other database connections trying to access
 	 *       the row will be blocked.
 	 * * "rollbackIfMissing" => if begin is true, this option determines whether to
 	 *       rollback the transaction if the row we're trying to retrieve is missing.

@@ -251,16 +251,6 @@ Streams_Stream.prototype.decParticipants = function (callback) {
 };
 
 /**
- * Increase messages count for the stream
- * @method incMessages
- * @param callback=null {function}
- *	Callback receives "error" and "result" as arguments
- */
-Streams_Stream.prototype.incMessages = function (callback) {
-	updateField.call(this, 'messageCount', "messageCount + 1", callback);
-};
-
-/**
  * Sends a message to all participants of a stream
  * @method messageParticipants
  * @param event {string}
@@ -277,7 +267,7 @@ Streams_Stream.prototype.messageParticipants = function (event, uid, msg) {
 			var participant = participants[userId];
 			stream.notify(participant, event, uid, msg, function(err) {
 				if (err) {
-					Q.log("Failed to notify user '"+participant.userId+"': "+err.message);
+					Q.log("Failed to notify user '"+participant.fields.userId+"': "+err);
 				}
 			});
 		}
@@ -650,8 +640,7 @@ Streams_Stream.prototype.join = function(options, callback) {
 				stream.incParticipants(/* empty callback*/);
 				
 				var f = sp.fields;
-				stream.post({
-					byUserId: userId,
+				stream.post(userId, {
 					type: type,
 					instructions: JSON.stringify({
 						reason: f.reason,
@@ -664,8 +653,7 @@ Streams_Stream.prototype.join = function(options, callback) {
 						name: 'Streams/participating'
 					}).retrieve(function (err, pstream) {
 						if (err || !pstream.length) return callback.call(stream, err);
-						pstream[0].post({
-							byUserId: userId,
+						pstream[0].post(userId, {
 							type: type+'ed',
 							content: '',
 							instructions: JSON.stringify({
@@ -800,8 +788,7 @@ Streams_Stream.prototype.subscribe = function(options, callback) {
 									relevance: 1
 								}).save(function(err) {
 									if (err) return callback.call(stream, err);
-									stream.post({
-										byUserId: userId,
+									stream.post(userId, {
 										type: 'Streams/subscribe'
 									}, function(err) {
 										if (err) return callback.call(stream, err);
@@ -812,8 +799,7 @@ Streams_Stream.prototype.subscribe = function(options, callback) {
 											if (err || !pstream.length) {
 												return callback.call(stream, err);
 											}
-											pstream[0].post({
-												byUserId: userId,
+											pstream[0].post(userId, {
 												type: 'Streams/subscribed',
 												instructions: JSON.stringify({
 													publisherId: stream.fields.publisherId,
@@ -969,25 +955,28 @@ Streams_Stream.prototype.notify = function(participant, event, uid, message, cal
 /**
  * Posts a message to the stream.
  * @method post
- * Currently doesn't perform any access checks, so it is only meant to be called internally.
- * @param fields {object}
+ * Currently this is not nearly as robust as the PHP method,
+ * and doesn't perform any access checks, so it is only
+ * meant to be called internally.
+ * @param {String} asUserId
+ *  The user to post as
+ * @param fields {Object}
  * @param callback=null {function}
  */
-Streams_Stream.prototype.post = function (f, callback) {
-	if (!f.publisherId) f.publisherId = this.fields.publisherId;
-	if (!f.streamName) f.streamName = this.fields.name;
-	if (!f.type) f.type = 'text/small';
-	if (!f.content) f.content = '';
-	if (!f.instructions) f.instructions = '';
-	if (!f.state) f.state = 'posted';
-	if (!f.weight) f.weight = 1;
-	f.sentTime = new Db.Expression("CURRENT_TIMESTAMP");
-	var msg = Streams.Message.construct(f);
-	var stream = this;
-	msg.save(function (err) {
-		Streams_Stream.emit('post', stream, f.byUserId, msg);
-		callback && callback(err);
-	});
+Streams_Stream.prototype.post = function (asUserId, fields, callback) {
+	if (typeof asUserId !== 'string') {
+		callback = fields;
+		fields = asUserId;
+		asUserId = fields.byUserId;
+		if (!asUserId) {
+			throw new Q.Exception("Streams.Stream.prototype.post needs asUserId");
+		}
+	}
+	Streams.Message.post(Q.extend({
+		publisherId: this.fields.publisherId,
+		streamName: this.fields.name,
+		byUserId: asUserId
+	}, fields), callback);
 };
 
 module.exports = Streams_Stream;
