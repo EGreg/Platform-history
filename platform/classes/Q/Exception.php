@@ -21,12 +21,28 @@ class Q_Exception extends Exception
 	function __construct(
 	  $params = array(),
 	  $inputFields = array(),
-	  $code = null)
+	  $code = null,
+	  $file = null,
+	  $line = null,
+	  $trace = null,
+	  $traceAsString = null)
 	{
 		if (is_string($inputFields)) {
 			$inputFields = array($inputFields);
 		}
 		$this->inputFields = $inputFields;
+		if (isset($file)) {
+			$this->file = $file;
+		}
+		if (isset($line)) {
+			$this->line = $line;
+		}
+		if (isset($trace)) {
+			$this->trace = $trace;
+		}
+		if (isset($traceAsString)) {
+			$this->traceAsString = $traceAsString;
+		}
 		
 		if (is_string($params)) {
 			parent::__construct($params, isset($code) ? $code : 1);
@@ -176,6 +192,9 @@ class Q_Exception extends Exception
 	 */
 	function getTraceEx()
 	{
+		if (isset($this->trace)) {
+			return $this->trace;
+		}
 		return parent::getTrace();
 	}
 	
@@ -187,6 +206,9 @@ class Q_Exception extends Exception
 	 */
 	function getTraceAsStringEx()
 	{
+		if (isset($this->traceAsString)) {
+			return $this->traceAsString;
+		}
 		return parent::getTraceAsString();
 	}
 	
@@ -321,4 +343,17 @@ class Q_Exception extends Exception
 	 * @type array
 	 */
 	protected static $rethrowDestClasses = array();
+	/**
+	 * @property $trace
+	 * @protected
+	 * @type array
+	 */
+	protected $trace = null;
+	/**
+	 * @property $traceAsString
+	 * @protected
+	 * @type string
+	 */
+	protected $traceAsString = null;
+
 }

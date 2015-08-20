@@ -200,9 +200,14 @@ class Q_Plugin
 					}
 					echo PHP_EOL;
 				} catch (Exception $e) {
-					if ($pdo->errorCode() != '00000') {
-						$err = $pdo->errorInfo();
-						$err = new Exception("$err[2]");
+					$errorCode = $pdo->errorCode();
+					if ($errorCode != '00000') {
+						$info = $pdo->errorInfo();
+						$err = new Q_Exception(
+							"$info[2]", array(), $errorCode, 
+							$e->getFile(), $e->getLine(),
+							$e->getTrace(), $e->getTraceAsString()
+						);
 					} else {
 						$err = $e;
 					}
