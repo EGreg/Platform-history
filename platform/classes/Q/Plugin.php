@@ -208,8 +208,11 @@ class Q_Plugin
 					}
 					echo PHP_EOL;
 					echo "Rollback".PHP_EOL;
-					$query = $db->rawQuery('')->rollback()->execute();
-					throw $err;
+					try {
+						$query = $db->rawQuery('')->rollback()->execute();
+					} catch (Exception $e) {
+						throw $err;
+					}
 				}
 			}
 			try {
