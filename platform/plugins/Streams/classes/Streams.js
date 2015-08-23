@@ -694,7 +694,10 @@ Streams.listen = function (options) {
 									});
 									var html = Q.Handlebars.render(parsed.template, fields);
 									var path = Streams.invitationsPath()+'/'+parsed.batchName;
-									var filename = path + '/' + this.fields.id + '.html';
+									var filename = path + '/'
+										+ Q.normalize(stream.fields.publisherId) + '-'
+										+ Q.normalize(stream.fields.name) + '-'
+										+ this.fields.id + '.html';
 									fs.writeFile(filename, html, function (err) {
 										if (err) {
 											Q.log(err);
