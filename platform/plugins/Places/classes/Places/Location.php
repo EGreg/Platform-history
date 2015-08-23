@@ -91,15 +91,17 @@ class Places_Location
 		}
 		$result = $response['result'];
 		$attributes = array(
-			'name' => $result['name'],
+			'title' => $result['name'],
 			'latitude' => $result['geometry']['location']['lat'],
 			'longitude' => $result['geometry']['location']['lng'],
+			'viewport' => $result['geometry']['viewport'],
 			// 'icon' => $result['icon'],
 			'phoneNumber' => Q::ifset($result, 'international_phone_number', null),
 			'phoneFormatted' => Q::ifset($result, 'formatted_phone_number', null),
 			'rating' => Q::ifset($result, 'rating', null),
 			'address' => Q::ifset($result, 'formatted_address', null)
 		);
+		$location->title = $result['name'];
 		$location->setAttribute($attributes);
 		$location->type = 'Places/location';
 		$location->save();
@@ -135,6 +137,11 @@ class Places_Location
 			);
 		}
 		$area->relateTo($location, 'location', $asUserId, $options);
+		$area->setAttribute(array(
+			'locationName' => $locationName,
+			'locationTitle' => $location->title,
+			'locationAddress' => $location->getAttribute('address')
+		));
 		if (isset($floor)) {
 			$normalized = Q_Utils::normalize($floor);
 			$name = "Places/floor/$placeId/$normalized";
