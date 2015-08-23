@@ -339,7 +339,7 @@ class Q_Utils
 
 		$fp = @fsockopen($ip, isset($parts['port']) ? $parts['port'] : 80, $errno, $errstr, $timeout);
 		if (!$fp) {
-			error_log("Couldn't open a socket to " . $url . " (" . $errstr . ")");
+			throw new Q_Exception("Couldn't open a socket to " . $url . " (" . $errstr . ")");
 			return false;
 		}
 		$result = (fwrite($fp, $out) !== false);

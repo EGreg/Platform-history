@@ -5,6 +5,7 @@
  */
 var Q = require('Q');
 var Db = Q.require('Db');
+var Users = Q.require('Users');
 var Streams = Q.require('Streams');
 var Base_Streams_Message = Q.require('Base/Streams/Message');
 
@@ -242,7 +243,7 @@ Streams_Message.prototype.deliver = function(stream, delivery, avatar, callback)
 			)
 		)
 	);
-	Users.get(avatar.fields.toUserId, function (err) {
+	Users.fetch(avatar.fields.toUserId, function (err) {
 		var to = delivery.to
 			? Q.Config.get(['Streams', 'Message', delivery.to], ['email', 'mobile'])
 			: ['email', 'mobile'];
