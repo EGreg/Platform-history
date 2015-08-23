@@ -57,8 +57,10 @@ abstract class Users extends Base_Users
 			return array();
 		}
 		$contacts = Users_Contact::select('*')
-			->where(array('contactUserId' => $user->id))
-			->andWhere($filter ? array('label' => $filter) : null)
+			->where(array(
+				'userId' => $publisherId,
+				'contactUserId' => $user->id
+			))->andWhere($filter ? array('label' => $filter) : null)
 			->options($options)
 			->fetchDbRows(null, null, 'label');
 		return $contacts;
