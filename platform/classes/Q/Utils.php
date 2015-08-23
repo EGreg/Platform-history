@@ -339,7 +339,8 @@ class Q_Utils
 
 		$fp = @fsockopen($ip, isset($parts['port']) ? $parts['port'] : 80, $errno, $errstr, $timeout);
 		if (!$fp) {
-			throw new Q_Exception("Couldn't open a socket to " . $url . " (" . $errstr . ")");
+			$app = Q_Config::expect('Q', 'app');
+			throw new Q_Exception("PHP couldn't open a socket to " . $url . " (" . $errstr . ") Go to scripts/$app and run node $app.js");
 			return false;
 		}
 		$result = (fwrite($fp, $out) !== false);

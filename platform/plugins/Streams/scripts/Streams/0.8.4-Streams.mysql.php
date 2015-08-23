@@ -3,13 +3,22 @@
 function Streams_0_8_4_Streams_mysql()
 {	
 	$app = Q_Config::expect('Q', 'app');
+	$user = Users_User::fetch($app);
 	
-	$user = new Users_User();
-	$user->id = $app;
-	$user->username = $app;
-	$user->url = Q_Config::expect('Q', 'web', 'appRootUrl');
-	$user->signedUpWith = 'none';
-	$user->save(true); // insert avatar rows and other stuff
+	// avatar for the App user
+	$avatar = new Streams_Avatar();
+	$avatar->toUserId = $app;
+	$avatar->publisherId = $app;
+	$avatar->username = $user->username;
+	$avatar->firstName = '';
+	$avatar->lastName = '';
+	$avatar->icon = $user->icon;
+	$avatar->save();
+
+	$avatar2 = new Streams_Avatar();
+	$avatar2->copyFrom($avatar1, null, false, true);
+	$avatar->toUserId = '';
+	$avatar->save();
 	
 	// access stream for managing app roles
 	$stream = new Streams_Stream();
@@ -18,7 +27,7 @@ function Streams_0_8_4_Streams_mysql()
 	$stream->type = 'Streams/access';
 	$stream->title = "Contacts";
 	$stream->setAttribute('prefixes', array("Users/", "$app/"));
-	$stream->save(true);
+	$stream->save();
 	
 	// access stream for managing app roles
 	$stream = new Streams_Stream();
@@ -27,7 +36,7 @@ function Streams_0_8_4_Streams_mysql()
 	$stream->type = 'Streams/access';
 	$stream->title = "Labels";
 	$stream->setAttribute('prefixes', array("Users/", "$app/"));
-	$stream->save(true);
+	$stream->save();
 	
 	// access for managing app contacts
 	$access = new Streams_Access();
@@ -38,7 +47,7 @@ function Streams_0_8_4_Streams_mysql()
 	$access->readLevel = Streams::$READ_LEVEL['messages'];
 	$access->writeLevel = Streams::$WRITE_LEVEL['edit'];
 	$access->adminLevel = Streams::$ADMIN_LEVEL['manage'];
-	$access->save(true);
+	$access->save();
 	
 	// access for managing app roles
 	$access = new Streams_Access();
@@ -49,7 +58,7 @@ function Streams_0_8_4_Streams_mysql()
 	$access->readLevel = Streams::$READ_LEVEL['messages'];
 	$access->writeLevel = Streams::$WRITE_LEVEL['edit'];
 	$access->adminLevel = Streams::$ADMIN_LEVEL['manage'];
-	$access->save(true);
+	$access->save();
 }
 
 Streams_0_8_4_Streams_mysql();
