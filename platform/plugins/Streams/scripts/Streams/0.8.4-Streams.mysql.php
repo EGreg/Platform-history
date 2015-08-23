@@ -16,7 +16,7 @@ function Streams_0_8_4_Streams_mysql()
 	$avatar->save();
 
 	$avatar2 = new Streams_Avatar();
-	$avatar2->copyFrom($avatar1, null, false, true);
+	$avatar2->copyFrom($avatar, null, false, true);
 	$avatar->toUserId = '';
 	$avatar->save();
 	

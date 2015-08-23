@@ -42,7 +42,7 @@ abstract class Users extends Base_Users
 	 * @param string [$publisherId] The id of the publisher relative to whom to calculate the roles. Defaults to the app name.
 	 * @param {array|Db_Expression} [$filter=null] 
 	 *  You can pass additional criteria here for the label field
-	 *  in the `Users_Contact::select`
+	 *  in the `Users_Contact::select`, such as an array or Db_Range
 	 * @param {array} {$options} Any additional options to pass to the query, such as "ignoreCache"
 	 * @return {array} An associative array of $roleName => $contactRow pairs
 	 * @throws {Users_Exception_NotLoggedIn}
