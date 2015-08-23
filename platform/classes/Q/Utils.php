@@ -9,8 +9,8 @@
  * @class Q_Utils
  */
 
-define('Q_UTILS_CON_TIMEOUT', 30);
-define('Q_UTILS_CON_INTERNAL_TIMEOUT', 1);
+define('Q_UTILS_CONNECTION_TIMEOUT', 30);
+define('Q_UTILS_INTERNAL_TIMEOUT', 1);
 
 class Q_Utils
 {
@@ -292,11 +292,16 @@ class Q_Utils
 	 * @param {string} [$user_agent=null] The user-agent string to send. 
 	 *  If null, is replaced by default of "Mozilla/5.0 ..."
 	 *  If false, not sent.
-	 * @param {integer} [$timeout=Q_UTILS_CON_TIMEOUT]
-	 * defaults to Q_UTILS_CON_TIMEOUT
+	 * @param {integer} [$timeout=Q_UTILS_CONNECTION_TIMEOUT]
+	 * @param {boolean} [$throwIfRefused=false] Pass true here to throw an exception whenever Node process is not running or refuses the request
 	 * @return {boolean} Returns whether the post succeeded.
 	 */
-	static function postAsync($uri, $params, $user_agent = null, $timeout = Q_UTILS_CON_TIMEOUT)
+	static function postAsync(
+		$uri,
+		$params,
+		$user_agent = null,
+		$timeout = Q_UTILS_CONNECTION_TIMEOUT,
+		$throwIfRefused = false)
 	{
 		if (!is_array($params)) {
 			throw new Exception("\$params must be an array");
@@ -339,8 +344,10 @@ class Q_Utils
 
 		$fp = @fsockopen($ip, isset($parts['port']) ? $parts['port'] : 80, $errno, $errstr, $timeout);
 		if (!$fp) {
-			$app = Q_Config::expect('Q', 'app');
-			throw new Q_Exception("PHP couldn't open a socket to " . $url . " (" . $errstr . ") Go to scripts/$app and run node $app.js");
+			if ($throwIfRefused) {
+				$app = Q_Config::expect('Q', 'app');
+				throw new Q_Exception("PHP couldn't open a socket to " . $url . " (" . $errstr . ") Go to scripts/$app and run node $app.js");
+			}
 			return false;
 		}
 		$result = (fwrite($fp, $out) !== false);
@@ -529,7 +536,7 @@ class Q_Utils
 			$server = "$url/action.php/$handler";
 		}
 
-		$result = json_decode(self::post($server, self::sign($data)), null, true, null, Q_UTILS_CON_TIMEOUT, Q_UTILS_CON_TIMEOUT, true);
+		$result = json_decode(self::post($server, self::sign($data)), null, true, null, Q_UTILS_CONNECTION_TIMEOUT, Q_UTILS_CONNECTION_TIMEOUT, true);
 		
 		// TODO: check signature of returned data
 
@@ -575,14 +582,14 @@ class Q_Utils
 
 		$result = json_decode(self::post(
 			$server, self::sign($data), null, true, null, 
-			Q_UTILS_CON_INTERNAL_TIMEOUT, Q_UTILS_CON_INTERNAL_TIMEOUT
+			Q_UTILS_INTERNAL_TIMEOUT, Q_UTILS_INTERNAL_TIMEOUT
 		), true);
 
 		// TODO: check signature of returned data
 
 		// delete the above line to throw on error
 		if (isset($result['errors'])) {
-			throw new Q_Exception($errors);
+			throw reset($result['errors']);
 		}
 		return isset($result['data']) ? $result['data'] : null;
 	}
@@ -595,8 +602,9 @@ class Q_Utils
 	 * @param {array} $data Associative array of data of the message to send.
 	 *  It should contain the key "Q/method" so Node can decide what to do with the message.
 	 * @param {string|array} [$url=null] and url to query. Default to 'Q/nodeInternal' config value and path '/Q/node'
+	 * @param {boolean} [$throwIfRefused=false] Pass true here to throw an exception whenever Node process is not running or refuses the request
 	 */
-	static function sendToNode($data, $url = null)
+	static function sendToNode($data, $url = null, $throwIfRefused = false)
 	{
 		if (!is_array($data)) {
 			throw new Q_Exception_WrongType(array('field' => 'data', 'type' => 'array'));
@@ -628,7 +636,10 @@ class Q_Utils
 			$result = false;
 		} else {
 			// Should we switch to sending JSON over TCP?
-			$result = Q_Utils::postAsync($url, self::sign($data), null, Q_UTILS_CON_INTERNAL_TIMEOUT);
+			$result = Q_Utils::postAsync(
+				$url, self::sign($data), null, 
+				Q_UTILS_INTERNAL_TIMEOUT, $throwIfRefused
+			);
 		}
 		return $result;
 //		if (!$result) {
