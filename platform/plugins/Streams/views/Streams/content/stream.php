@@ -1,5 +1,5 @@
 <div id="content">
-	<div class='info_pane'>
+	<div class='Streams_stream_info_pane'>
 		<?php if ($stream->icon): ?>
 			<div class='Streams_stream_icon'>
 				<?php echo Q_Html::img("plugins/Streams/img/icons/{$stream->icon}/80.png"); ?>
@@ -8,18 +8,15 @@
 		<div class='Streams_stream_title'>
 			<?php echo Q_Html::text($stream->title) ?>
 		</div>
-		<div class='Streams_stream_content'>
-			<?php echo Q_Html::text($stream->content) ?>
-		</div>
-		<div class='Streams_participant'>
-			<?php echo Q::tool('Streams/participant')?>
+		<div class='Streams_stream_player'>
+			<?php echo Q::tool('Streams/player', compact('stream')) ?>
 		</div>
 	</div>
-	<div class='main_pane'>
-		<div class='Streams_publish'>
-			<?php echo Q::tool('Streams/publish', compact('stream'))?>
+	<div class='Streams_stream_activity_pane'>
+		<div class='Streams_participants'>
+			<?php echo Q::tool('Streams/participants', compact('stream'))?>
 		</div>
-		<div class='Streams_activity'>
+		<div class='Streams_stream_activity'>
 			<?php echo Q::tool('Streams/activity')?>
 		</div>
 	</div>

@@ -376,7 +376,6 @@ Q.Tool.define({
 	"Streams/photoSelector": "plugins/Streams/js/tools/photoSelector.js",
 	"Streams/userChooser"  : "plugins/Streams/js/tools/userChooser.js",
 	"Streams/participants" : "plugins/Streams/js/tools/participants.js",
-	"Streams/publisher"    : "plugins/Streams/js/tools/publisher.js",
 	"Streams/basic"        : "plugins/Streams/js/tools/basic.js",
 	"Streams/access"       : "plugins/Streams/js/tools/access.js",
 	"Streams/subscription" : "plugins/Streams/js/tools/subscription.js",
@@ -384,6 +383,7 @@ Q.Tool.define({
 	"Streams/related"      : "plugins/Streams/js/tools/related.js",
 	"Streams/inplace"      : "plugins/Streams/js/tools/inplace.js",
 	"Streams/html"         : "plugins/Streams/js/tools/html.js",
+	"Streams/player"       : "plugins/Streams/js/tools/publisher.js",
 	"Streams/preview"  	   : "plugins/Streams/js/tools/preview.js",
 	"Streams/image/preview": "plugins/Streams/js/tools/image/preview.js",
 	"Streams/form"         : "plugins/Streams/js/tools/form.js"

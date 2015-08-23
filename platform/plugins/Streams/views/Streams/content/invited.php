@@ -75,7 +75,7 @@
 	<?php if ($show_chat): ?>
 	<div class='social_pane'>
 		<?php echo Q::tool('Streams/participant', compact('stream')) ?>
-		<?php echo Q::tool('Streams/publish', compact('stream')) ?>
+		<?php echo Q::tool('Streams/player', compact('stream')) ?>
 		<?php echo Q::tool('Streams/activity', compact('stream')) ?>
 	</div>
 	<?php endif;?>
