@@ -94,12 +94,14 @@ Streams_Stream.construct = function Streams_Stream_construct(fields) {
 
 Streams_Stream.define = Streams.define;
 
+Sp = Streams_Stream.prototype;
+
 /**
  * The setUp() method is called the first time
  * an object of this class is constructed.
  * @method setUp
  */
-Streams_Stream.prototype.setUp = function () {
+Sp.setUp = function () {
 	// put any code here
 };
 
@@ -218,8 +220,9 @@ function _sortTemplateTypes(templates, field, type, shortName) {
 	return null;
 }
 
-function _getSubscriptionTemplate(className, stream, userId, callback) {
+Sp.getSubscriptionTemplate = function(className, userId, callback) {
 	// fetch template for subscription's PK - publisher, name & user
+	var stream = this;
 	Streams[className].SELECT('*').where({
 		publisherId: stream.fields.publisherId,
 		streamName: [stream.fields.name, stream.fields.type+'/'],
@@ -236,7 +239,7 @@ function _getSubscriptionTemplate(className, stream, userId, callback) {
  * @param callback=null {function}
  *	Callback receives "error" and "result" as arguments
  */
-Streams_Stream.prototype.incParticipants = function (callback) {
+Sp.incParticipants = function (callback) {
 	updateField.call(this, 'participantCount', "participantCount + 1", callback);
 };
 
@@ -246,7 +249,7 @@ Streams_Stream.prototype.incParticipants = function (callback) {
  * @param callback=null {function}
  *	Callback receives "error" and "result" as arguments
  */
-Streams_Stream.prototype.decParticipants = function (callback) {
+Sp.decParticipants = function (callback) {
 	updateField.call(this, 'participantCount', "participantCount - 1", callback);
 };
 
@@ -257,7 +260,7 @@ Streams_Stream.prototype.decParticipants = function (callback) {
  * @param uid {string} User who initiated the event
  * @param message {string} The message
  */
-Streams_Stream.prototype.messageParticipants = function (event, uid, msg) {
+Sp.messageParticipants = function (event, uid, msg) {
 	var fields = this.fields;
 	var stream = this;
 	Streams.getParticipants(fields.publisherId, fields.name, function (participants) {
@@ -292,7 +295,7 @@ Streams_Stream.prototype.messageParticipants = function (event, uid, msg) {
  * @param callback=null {function}
  *	Callback receives "error" as argument
  */
-Streams_Stream.prototype.calculateAccess = function(asUserId, callback) {
+Sp.calculateAccess = function(asUserId, callback) {
 	if (typeof asUserId === "function") {
 		callback = asUserId;
 		asUserId = null;
@@ -421,7 +424,7 @@ Streams_Stream.prototype.calculateAccess = function(asUserId, callback) {
  * @param callback=null {function}
  *	Callback receives "error" and boolean as arguments - whether the access potentially changed.
  */
-Streams_Stream.prototype.inheritAccess = function (callback) {
+Sp.inheritAccess = function (callback) {
 	if (!callback) return;
 	var subj = this;
 	if (!this.fields.inheritAccess) {
@@ -520,7 +523,7 @@ Streams_Stream.prototype.inheritAccess = function (callback) {
  * @param callback=null {function}
  *	Callback receives "error" and boolean as arguments - whether the access is granted.
  */
-Streams_Stream.prototype.testReadLevel = function(level, callback) {
+Sp.testReadLevel = function(level, callback) {
 	return testLevel (this, 'readLevel', 'READ_LEVEL', level, callback);
 };
 /**
@@ -532,7 +535,7 @@ Streams_Stream.prototype.testReadLevel = function(level, callback) {
  * @param callback=null {function}
  *	Callback receives "error" and boolean as arguments - whether the access is granted.
  */
-Streams_Stream.prototype.testWriteLevel = function(level, callback) {
+Sp.testWriteLevel = function(level, callback) {
 	return testLevel (this, 'writeLevel', 'WRITE_LEVEL', level, callback);
 };
 /**
@@ -544,11 +547,11 @@ Streams_Stream.prototype.testWriteLevel = function(level, callback) {
  * @param callback=null {function}
  *	Callback receives "error" and boolean as arguments - whether the access is granted.
  */
-Streams_Stream.prototype.testAdminLevel = function(level, callback) {
+Sp.testAdminLevel = function(level, callback) {
 	return testLevel (this, 'adminLevel', 'ADMIN_LEVEL', level, callback);
 };
 
-Streams_Stream.prototype._fetchAsUser = function (options, callback) {
+Sp._fetchAsUser = function (options, callback) {
 	var stream = this;
 	if (!options['userId']) {
 		return callback.call(stream, new Error("No user id provided"));
@@ -584,7 +587,7 @@ Streams_Stream.prototype._fetchAsUser = function (options, callback) {
  *  "userId" => The user who is joining the stream.
  * @param callback {function} receives error if any and participant object as arguments
  */
-Streams_Stream.prototype.join = function(options, callback) {
+Sp.join = function(options, callback) {
 	var stream = this;
 	if (typeof options === "function") {
 		callback = options;
@@ -671,7 +674,7 @@ Streams_Stream.prototype.join = function(options, callback) {
 	});
 };
 
-Streams_Stream.prototype.leave = function(options, callback) {
+Sp.leave = function(options, callback) {
 	// TODO: Nazar: Implement to be similar to PHP, and add documentation
 	callback(); // pass err
 };
@@ -691,14 +694,15 @@ Streams_Stream.prototype.leave = function(options, callback) {
  * subscription - change type(s) or modify notifications
  * @method subscribe
  * @param options={} {object}
- *	"types": array of message types, if empty filter pass all types
- *	"notifications": number of notifications, default - 0 meaning all
- *	"untilTime": time limit for subscription, default - null meaning forever
- *	"readyTime": time from which user is ready to receive notifications again
- *  "userId": the user subscribing to the stream.
+ * @param {Array} [options.types] array of message types, if this is empty then subscribes to all types
+ * @param {integer} [options.notifications=0] limit number of notifications, 0 means no limit
+ * @param {datetime} [options.untilTime=null] time limit, if any for subscription
+ * @param {datetime} [options.readyTime] time from which user is ready to receive notifications again
+ * @param {String} [options.userId] the user subscribing to the stream. Defaults to the logged in user.
+ * @param {Object} [options.deliver={"to":"default"}] under "to" key, names the field under Streams/rules/deliver config, which will contain the names of destinations, which can include "email", "mobile", "email+pending", "mobile+pending"
  * @return {Streams_Subscription|false}
  */
-Streams_Stream.prototype.subscribe = function(options, callback) {
+Sp.subscribe = function(options, callback) {
 
 	var stream = this;
 	if (typeof options === "function") {
@@ -724,7 +728,7 @@ Streams_Stream.prototype.subscribe = function(options, callback) {
 					streamName: stream.fields.name,
 					ofUserId: userId
 				});
-				_getSubscriptionTemplate('Subscription', stream, userId,
+				stream.getSubscriptionTemplate('Subscription', userId,
 				function (err, template) {
 					if (err) return callback.call(stream, err);
 					var filter = template 
@@ -751,27 +755,16 @@ Streams_Stream.prototype.subscribe = function(options, callback) {
 					s.save(true, function (err) {
 						if (err) return callback.call(stream, err);
 						// Now let's handle rules
-						_getSubscriptionTemplate('Rule', stream, userId,
+						stream.getSubscriptionTemplate('Rule', userId,
 						function (err, template) {
 							var deliver;
 							if (err) return callback.call(stream, err);
 							if (!template || template.template_type !== 0) {
-								if (template && template.fields.deliver) {
-									deliver = template.fields.deliver;
-								} else {
-									if (user.fields.mobileNumber) {
-										deliver = {mobile: user.fields.mobileNumber};
-									} else if (user.fields.emailAddress) {
-										deliver = {email: user.fields.emailAddress};
-									} else if (user.fields.mobileNumberPending) {
-										deliver = {mobile: user.fields.mobileNumberPending};
-									} else if (user.fields.emailAddressPending) {
-										deliver = {email: user.fields.emailAddressPending};
-									} else {
-										deliver = {'default': true};
-									}
-									deliver = JSON.stringify(deliver);
-								}
+								deliver = (template && template.fields.deliver)
+									? template.fields.deliver
+									: JSON.stringify(
+										options.deliver || {to: 'default'}
+									);
 								var filter = template && template.fields.filter
 									? template.fields.filter
 									: '{"types":[],"labels":[]}';
@@ -821,7 +814,7 @@ Streams_Stream.prototype.subscribe = function(options, callback) {
 	});
 };
 
-Streams_Stream.prototype.unsubscribe = function(options, callback) {
+Sp.unsubscribe = function(options, callback) {
 	// TODO: Nazar: Implement to be similar to PHP, and add documentation
 	callback(); // pass err
 };
@@ -835,7 +828,7 @@ Streams_Stream.prototype.unsubscribe = function(options, callback) {
  * @param message {object} Message on 'post' event or stream on other events
  * @param callback=noop {function}
  */
-Streams_Stream.prototype.notify = function(participant, event, uid, message, callback) {
+Sp.notify = function(participant, event, uid, message, callback) {
 	var userId = participant.fields.userId, stream = this;
 	function _notify(tokens, sessions) {
 		// 1) if session is associated to device and no socket is connected for device
@@ -963,7 +956,7 @@ Streams_Stream.prototype.notify = function(participant, event, uid, message, cal
  * @param fields {Object}
  * @param callback=null {function}
  */
-Streams_Stream.prototype.post = function (asUserId, fields, callback) {
+Sp.post = function (asUserId, fields, callback) {
 	if (typeof asUserId !== 'string') {
 		callback = fields;
 		fields = asUserId;

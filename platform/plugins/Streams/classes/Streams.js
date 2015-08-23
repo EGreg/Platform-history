@@ -1248,7 +1248,10 @@ function getInvitedStream (asUserId, forUserId, callback) {
 				if (err) return callback(err);
 				this.calculateAccess(asUserId, function(err) {
 					if (err) return callback(err);
-					this.subscribe({userId: forUserId}, function (err) {
+					this.subscribe({
+						userId: forUserId, 
+						deliver: {"to": "invited"}
+					}, function (err) {
 						if (err) return callback(err);
 						callback(null, stream);
 					});

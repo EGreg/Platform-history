@@ -231,6 +231,7 @@ Streams_Message.prototype.deliver = function(stream, delivery, avatar, callback)
 		avatar: avatar,
 		config: Q.Config.getAll()
 	};
+	var messageType = this.fields.type;
 	var subject = Q.Config.get(
 		['Streams', 'types', stream.fields.type, 'messages', this.fields.type, 'subject'], 
 		Q.Config.get(
@@ -241,32 +242,51 @@ Streams_Message.prototype.deliver = function(stream, delivery, avatar, callback)
 			)
 		)
 	);
-	var t = delivery.email ? 'email' : (delivery.mobile ? 'mobile' : '');
-	if (!t) {
-		return callback("Streams.Message: delivery has to be email or mobile for now");
-	}
-	var viewPath = Q.Handlebars.template(this.fields.type+'/'+t+'.handlebars')
-		? this.fields.type
-		: 'Streams/message';
-	
-	// Give the app an opportunity to modify the fields or anything else
-	var o = {
-		fields: fields,
-		subject: subject,
-		delivery: delivery,
-		stream: stream,
-		avatar: avatar,
-		callback: callback,
-		viewPath: viewPath+'/'+t+'.handlebars'
-	};
-	Streams_Message.emit('deliver/before', o);
-	
-	var viewPath;
-	if (o.delivery.email) {
-		Q.Utils.sendEmail(o.delivery.email, o.subject, o.viewPath, o.fields, {html: true}, callback);
-	} else if (o.delivery.mobile) {
-		Q.Utils.sendSMS(o.delivery.mobile, o.viewPath, o.fields, {}, callback);
-	}
+	Users.get(avatar.fields.toUserId, function (err) {
+		var to = delivery.to
+			? Q.Config.get(['Streams', 'Message', delivery.to], ['email', 'mobile'])
+			: ['email', 'mobile'];
+		var emailAddress = delivery.email
+			|| (to.indexOf('email') >= 0 && this.fields.emailAddress)
+			|| (to.indexOf('email+pending') >= 0 && this.fields.emailAddressPending);
+		var mobileNumber = delivery.mobile
+			|| (to.indexOf('mobile') >= 0 && this.fields.mobileNumber)
+			|| (to.indexOf('mobile+pending') >= 0 && this.fields.mobileNumberPending);
+		
+		// Give the app an opportunity to modify the fields or anything else
+		var o = {
+			fields: fields,
+			subject: subject,
+			delivery: delivery,
+			stream: stream,
+			avatar: avatar,
+			callback: callback,
+			emailAddress: emailAddress,
+			mobileNumber: mobileNumber
+		};
+		Streams_Message.emit('deliver/before', o);
+		var viewPath;
+		var result = [];
+		if (emailAddress) {
+			viewPath = messageType+'/email.handlebars';
+			if (!Q.Handlebars.template(viewPath)) {
+				viewPath = 'Streams/message/email.handlebars';
+			}
+			Q.Utils.sendEmail(
+				emailAddress, o.subject, viewPath, o.fields, {html: true}, callback
+			);
+			result.push('email');
+		}
+		if (mobileNumber) {
+			viewPath = messageType+'/mobile.handlebars';
+			if (!Q.Handlebars.template(viewPath)) {
+				viewPath = 'Streams/message/mobile.handlebars';
+			}
+			Q.Utils.sendSMS(mobileNumber, viewPath, o.fields, {}, callback);
+			result.push('mobile');
+		}
+		return result;
+	});
 };
 
 module.exports = Streams_Message;

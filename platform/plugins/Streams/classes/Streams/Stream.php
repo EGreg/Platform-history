@@ -800,10 +800,11 @@ class Streams_Stream extends Base_Streams_Stream
 	 * @method subscribe
 	 * @param $options=array() {array}
 	 * @param {array} [$options.types] array of message types, if this is empty then subscribes to all types
-	 * @param {integer} [$options.notifications]  number of notifications, default - 0 meaning all
-	 * @param {datetime} [$options.untilTime] time limit for subscription, default - null meaning forever
-	 * @param {datetime} [$options.readyTime]  time from which user is ready to receive notifications again
-	 * @param {string} [$options.userId]  the user subscribing to the stream. Defaults to the logged in user.
+	 * @param {integer} [$options.notifications=0] limit number of notifications, 0 means no limit
+	 * @param {datetime} [$options.untilTime=null] time limit, if any for subscription
+	 * @param {datetime} [$options.readyTime] time from which user is ready to receive notifications again
+	 * @param {string} [$options.userId] the user subscribing to the stream. Defaults to the logged in user.
+	 * @param {array} [$options.deliver=array('to'=>'default')] under "to" key, named the field under Streams/rules/deliver config, which will contain the names of destinations, which can include "email", "mobile", "email+pending", "mobile+pending"
 	 * @param {boolean} [$options.skipRules]  if true, do not attempt to create rules
 	 * @param {boolean} [$options.skipAccess]  if true, skip access check for whether user can subscribe
 	 * @return {Streams_Subscription|false}
@@ -891,22 +892,11 @@ class Streams_Stream extends Base_Streams_Stream
 						? $template->relevance
 						: 1;
 			
-					if (!empty($template->deliver)) {
-						$rule->deliver = $template->deliver;
-					} else {
-						if ($user->mobileNumber) {
-							$deliver = array('mobile' => $user->mobileNumber);
-						} else if ($user->emailAddress) {
-							$deliver = array('email' => $user->emailAddress);
-						} else if ($user->mobileNumberPending) {
-							$deliver = array('mobile' => $user->mobileNumberPending);
-						} else if ($user->emailAddressPending) {
-							$deliver = array('email' => $user->emailAddressPending);
-						} else {
-							$deliver = array('default' => true);
-						}
-						$rule->deliver = Q::json_encode($deliver);
-					}
+					$rule->deliver = !empty($template->deliver)
+						? $template->deliver
+						: Q::json_encode(Q::ifset($options, 'deliver', 
+							array('to' => 'default')
+						));
 					$ruleSuccess = !empty($deliver) and !!$rule->save();
 				}
 			}

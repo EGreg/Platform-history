@@ -2,6 +2,7 @@
 	
 function Streams_after_Users_setLoggedInUser($params)
 {
+	// if this the first time the user has ever logged in...
 	$user = $params['user'];
 	if ($user->sessionCount != 1) {
 		return;

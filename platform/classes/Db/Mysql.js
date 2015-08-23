@@ -104,7 +104,8 @@ function Db_Mysql(connName, dsn) {
 			info.username,
 			info.password,
 			info.dbname,
-			info.options);
+			info.options
+		);
 		if (!callback) return connection;
 		if (!dbm.connected && Q.Config.get(['Db', 'debug'], false)) {
 			connection._original_query = connection.query;
