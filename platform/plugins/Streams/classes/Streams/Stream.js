@@ -29,11 +29,11 @@ function Streams_Stream (fields) {
 	var p = {};
 	
 	/**
-	 * Sets the value of an extra field
+	 * Sets some extra data
 	 * @method set
-	 * @param key {string}
-	 * @param value {mixed}
-	 *  The value to set for that field.
+	 * @param {String} key
+	 * @param {mixed} value
+	 *  The value to set for that extra data
 	 */
 	this.set = function (key, value) {
 		p[key] = value;
@@ -42,27 +42,79 @@ function Streams_Stream (fields) {
 	/**
 	 * Gets the value of an extra field
 	 * @method get
-	 * @param key {string}
-	 * @param def=null {mixed}
+	 * @param {String} key
+	 * @param {mixed} [def=null]
 	 *  The value to return if the field is not found.
 	 *  Defaults to undefined.
 	 * @return {mixed}
 	 *  The field if it is found, otherwise def or undefined.
 	 */
 	this.get = function (key, def) {
-		if (typeof p[key] !== "undefined") return p[key];
+		if (key in p) return p[key];
 		else return def;
 	};
 	
 	/**
 	 * Clears the value of an extra field
 	 * @method clear
-	 * @param key=null {string}
+	 * @param {String} [key=null]
 	 *  A key to clear. If null, clears all keys.
 	 */
 	this.clear = function (key) {
-		if (typeof key === "undefined") p = {};
+		if (key === undefined) p = {};
 		else delete p[key];
+	};
+	
+	/**
+	 * @method getAllAttributes
+	 * @return {Object} The object of all attributes set in the stream
+	 */
+	this.getAllAttributes = function() {
+		return this.fields.attributes ? {} : JSON.parse(this.fields.attributes);
+	};
+	
+	/**
+	 * @method getAttribute
+	 * @param {String} attributeName The name of the attribute to get
+	 * @param {mixed} def The value to return if the attribute is missing
+	 * @return {mixed} The value of the attribute, or the default value, or null
+	 */
+	this.getAttribute = function(attributeName, def) {
+		var attr = this.getAllAttributes();
+		return (attributeName in attr) ? attr[attributeName] : def;
+	};
+	
+	/**
+	 * @method setAttribute
+	 * @param {string} attributeName The name of the attribute to set,
+	 *  or an array of {attributeName: attributeValue} pairs
+	 * @param {mixed} value The value to set the attribute to
+	 */
+	this.setAttribute = function(attributeName, value) {
+		var attr = this.getAllAttributes();
+		if (Q.isPlainObject(attributeName)) {
+			Q.extend(attr, attributeName);
+		} else {
+			attr[attributeName] = value;
+		}
+		this.fields.attributes = JSON.stringify(attr);
+	};
+	
+	/**
+	 * @method clearAttribute
+	 * @param {String} attributeName The name of the attribute to remove
+	 */
+	this.clearAttribute = function(attributeName) {
+		var attr = this.getAllAttributes();
+		delete attr[attributeName];
+		this.fields.attributes = JSON.stringify(attr);
+	};
+	
+	/**
+	 * @method clearAllAttributes
+	 */
+	this.clearAllAttributes = function() {
+		this.fields.attributes = '{}';
 	};
 }
 

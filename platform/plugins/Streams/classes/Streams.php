@@ -801,6 +801,11 @@ abstract class Streams extends Base_Streams
 		if (!isset($stream->type)) {
 			$stream->type = $type;
 		}
+		
+		// prepare attributes field
+		if (isset($fields['attributes']) and is_array($fields['attributes'])) {
+			$fields['attributes'] = json_encode($fields['attributes']);
+		}
 
 		// extend with any config defaults for this stream type
 		$fieldNames = Streams::getExtendFieldNames($type);
@@ -812,12 +817,6 @@ abstract class Streams extends Base_Streams
 			} else if (array_key_exists($f, $defaults)) {
 				$stream->$f = $defaults[$f];
 			}
-		}
-		
-		// handle setting of attributes
-		if (isset($fields['attributes']) and is_array($fields['attributes'])) {
-			$stream->setAttribute($fields['attributes']);
-			unset($fields['attributes']);
 		}
 	
 		// ready to persist this stream to the database
