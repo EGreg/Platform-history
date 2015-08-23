@@ -132,16 +132,17 @@ class Places_Location
 		$normalized = Q_Utils::normalize($title);
 		$name = "Places/area/$placeId/$normalized";
 		if (!($area = Streams::fetchOne($asUserId, $publisherId, $name))) {
+			$attributes = array(
+				'locationName' => $locationName,
+				'locationTitle' => $location->title,
+				'locationAddress' => $location->getAttribute('address')
+			);
 			$area = Streams::create($asUserId, $publisherId, 'Places/area',
-				compact('name', 'title', 'skipAccess')
+				compact('name', 'title', 'skipAccess', 'attributes')
 			);
 		}
+		$area->save();
 		$area->relateTo($location, 'location', $asUserId, $options);
-		$area->setAttribute(array(
-			'locationName' => $locationName,
-			'locationTitle' => $location->title,
-			'locationAddress' => $location->getAttribute('address')
-		));
 		if (isset($floor)) {
 			$normalized = Q_Utils::normalize($floor);
 			$name = "Places/floor/$placeId/$normalized";
