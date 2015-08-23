@@ -70,7 +70,7 @@ function Streams_Stream (fields) {
 	 * @return {Object} The object of all attributes set in the stream
 	 */
 	this.getAllAttributes = function() {
-		return this.fields.attributes ? {} : JSON.parse(this.fields.attributes);
+		return this.fields.attributes ? JSON.parse(this.fields.attributes) : {};
 	};
 	
 	/**

@@ -65,7 +65,7 @@ handlebars.registerHelper('call', function(path) {
 		);
 		return this[p0][p1].apply(this[p0], args);
 	}
-	return "{{call "+path+" not found}}";
+	return "{{call \""+path+"\" not found}}";
 });
 
 /**
