@@ -150,7 +150,7 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 			state.beforeCreate.handle.call(tool);
 			tool.loading();
 			Q.Streams.retainWith(tool)
-			.create(fields, tool, function Streams_preview_afterCreate(err, stream, extra) {
+			.create(fields, function Streams_preview_afterCreate(err, stream, extra) {
 				if (err) {
 					state.onError.handle.call(tool, err);
 					return err;

@@ -1645,7 +1645,11 @@ Streams.related = function _Streams_related(publisherId, streamName, relationTyp
 			if (options.participants) {
 				extra.participants = data.slots.participants;
 			}
-			Streams.construct(data.slots.stream, extra, _processResults);
+			if (!data.slots.stream) {
+				callback && callback.call(this, "Streams/related missing stream " + streamName + ' published by ' + publisherId);
+			} else {
+				Streams.construct(data.slots.stream, extra, _processResults);
+			}
 		}
 
 		function _processResults(err, stream) {

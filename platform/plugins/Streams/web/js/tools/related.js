@@ -298,7 +298,7 @@ function _Streams_related_tool (options)
 			editable: state.editable
 		}, options);
 		var toolName = ['Streams/preview', state.toolName(streamType, o)];
-		var e = Q.Tool.setUpElement(state.tag || 'div', toolName, [o, {}]);
+		var e = Q.Tool.setUpElement(state.tag || 'div', toolName, [o, {}], null, this.prefix);
 		e.style.visibility = 'visible';
  		return e;
 	},
