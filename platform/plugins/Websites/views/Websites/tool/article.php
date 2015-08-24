@@ -17,7 +17,8 @@
 			'actions' => null
 		),
 		'Streams/image/preview' => array(
-			'showTitle' => true
+			'showTitle' => true,
+			'dontSetSize' => true
 		)
 	), 'article') ?>
 	<?php if ($getintouch and ($canEdit or $article->getintouch)): ?>

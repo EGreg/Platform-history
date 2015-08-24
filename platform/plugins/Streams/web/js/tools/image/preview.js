@@ -55,6 +55,7 @@ Q.Tool.define("Streams/image/preview", "Streams/preview", function(options, prev
 
 {
 	inplace: {},
+	dontSetSize: false,
 	templates: {
 		view: {
 			name: 'Streams/image/preview/view',
@@ -124,11 +125,13 @@ Q.Tool.define("Streams/image/preview", "Streams/preview", function(options, prev
 						child.state.onLoad.add(p.fill('inplace'));
 					}
 					var parts = ps.imagepicker.showSize.split('x');
-					if (parts[0]) {
-						tool.element.style.width = parts[0] + 'px';
-					}
-					if (parts[1]) {
-						tool.element.style.height = parts[1] + 'px';
+					if (!state.dontSetSize) {
+						if (parts[0]) {
+							tool.element.style.width = parts[0] + 'px';
+						}
+						if (parts[1]) {
+							tool.element.style.height = parts[1] + 'px';
+						}
 					}
 				});
 			},

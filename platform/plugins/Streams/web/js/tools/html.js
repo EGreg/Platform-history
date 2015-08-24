@@ -51,8 +51,9 @@ Q.Tool.define("Streams/html", function (options) {
 		}
 		if (state.editor === 'auto') {
 			state.editor = 'froala';
+			state.froala = state.froala || {};
 			if (Q.info.isTouchscreen) {
-				sf.inlineMode = false;
+				state.froala.inlineMode = false;
 			}
 		}
 		if (state.editor === 'froala') {
