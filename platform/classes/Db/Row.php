@@ -909,7 +909,10 @@ class Db_Row implements Iterator
 		$callback = array($this, "beforeSet_$name");
 		if (is_callable($callback))
 			list ($name_internal, $value) = call_user_func($callback, $value);
-		
+
+		if (!isset($this->fields[$name_internal])) {
+			$this->fieldsOriginal[$name_internal] = $value;
+		}
 		$this->fields[$name_internal] = $value;
 		$this->fieldsModified[$name_internal] = true;
 		

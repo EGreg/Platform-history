@@ -361,7 +361,10 @@
 .Streams_preview_create { cursor: pointer; }
 .Streams_preview_add,
 .Streams_preview_icon,
-.Streams_preview_contents { display: inline-block; vertical-align: middle; }
+.Streams_preview_contents { display: inline-block; vertical-align: middle; max-width: 100%; }
+.Streams_preview_contents * { max-width: 100%; }
+.Streams_preview_contents .Q_inplace_tool_static_container { overflow: hidden; text-overflow: ellipsis; }
+.Streams_preview_contents .Q_inplace_tool_static { white-space: nowrap;; }
 .Streams_preview h3 { margin: 0; padding: 0 0 0 10px; line-height: 50px; font-size: 30px; }
 
 .Streams_preview_icon,

@@ -941,12 +941,12 @@ Q.Cache.key = function _Cache_key(args, functions) {
 /**
  * Accesses the cache and sets an entry in it
  * @method set
- * @param {String} key
- * @param {Number} cbpos
- * @param {Object} subject
- * @param {Object} params
- * @param {Object} options supports the following options:
- *  "dontTouch": if true, then doesn't mark item as most recently used. Defaults to false.
+ * @param {String} key  the key to save the entry under, or an array of arguments
+ * @param {Number} cbpos the position of the callback
+ * @param {Object} subject The "this" object for the callback
+ * @param {Array} params The parameters for the callback
+ * @param {Object} options  supports the following options:
+ * @param {boolean} [options.dontTouch=false] if true, then doesn't mark item as most recently used
  * @return {Boolean} whether there was an existing entry under that key
  */
 Q.Cache.prototype.set = function _Q_Cache_prototype_set(key, cbpos, subject, params, options) {

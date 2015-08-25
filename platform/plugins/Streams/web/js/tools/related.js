@@ -299,7 +299,7 @@ function _Streams_related_tool (options)
 		}, options);
 		var f = state.toolName;
 		if (typeof f === 'string') {
-			f = Q.getObject(state.toolName);
+			f = Q.getObject(state.toolName) || f;
 		}
 		var toolName = (typeof f === 'function') ? f(streamType, o) : f;
 		var e = Q.Tool.setUpElement(

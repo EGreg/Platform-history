@@ -1715,12 +1715,12 @@ Q.calculateKey.keys = [];
  * @class Q.Event
  * @namespace Q
  * @constructor
- * @param callable {callable}
+ * @param {callable} callable
  *  Optional. If not provided, the chain of handlers will start out empty.
  *  Any kind of callable which Q.handle can invoke
- * @param key=null {string}
+ * @param {String} [key=null]
  *  Optional key under which to add this, so you can remove it later if needed
- * @param prepend=false {boolean}
+ * @param {boolean} [prepend=false]
  *  If true, then prepends the callable to the chain of handlers
  */
 Q.Event = function _Q_Event(callable, key, prepend) {
@@ -4314,8 +4314,11 @@ var Cp = Q.Cache.prototype;
  * Accesses the cache and sets an entry in it
  * @method set
  * @param {String} key  the key to save the entry under, or an array of arguments
- * @param {Options} options  supports the following options:
- *  "dontTouch": if true, then doesn't mark item as most recently used. Defaults to false.
+ * @param {Number} cbpos the position of the callback
+ * @param {Object} subject The "this" object for the callback
+ * @param {Array} params The parameters for the callback
+ * @param {Object} options  supports the following options:
+ * @param {boolean} [options.dontTouch=false] if true, then doesn't mark item as most recently used
  * @return {Boolean} whether there was an existing entry under that key
  */
 Cp.set = function _Q_Cache_prototype_set(key, cbpos, subject, params, options) {
@@ -4362,7 +4365,7 @@ Cp.set = function _Q_Cache_prototype_set(key, cbpos, subject, params, options) {
  * @method get
  * @param {String} key  the key to search for
  * @param {Object} options  supports the following options:
- *  "dontTouch": if true, then doesn't mark item as most recently used. Defaults to false.
+ * @param {boolean} [options.dontTouch=false] if true, then doesn't mark item as most recently used
  * @return {mixed} whatever is stored there, or else returns undefined
  */
 Cp.get = function _Q_Cache_prototype_get(key, options) {
@@ -5078,15 +5081,18 @@ Q.layout = function _Q_layout(elementOrEvent) {
 };
 
 Q.clientId = function () {
-	if (!Q.clientId.value) {
-		var detected = Q.Browser.detect();
-		Q.clientId.value = (detected.device || "desktop").substr(0, 4)
-			+ "\t" + detected.OS.substr(0, 3)
-			+ "\t" + detected.name.substr(0, 3)
-			+ "\t" + detected.mainVersion + (detected.isWebView ? "n" : "w")
-			+ "\t" + Math.floor(Date.now()/1000).toString(36);
+	var storage = sessionStorage;
+	if (Q.clientId.value = storage.getItem("Q\tclientId")) {
+		return Q.clientId.value;
 	}
-	return Q.clientId.value;
+	var detected = Q.Browser.detect();
+	var ret = Q.clientId.value = (detected.device || "desktop").substr(0, 4)
+		+ "\t" + detected.OS.substr(0, 3)
+		+ "\t" + detected.name.substr(0, 3)
+		+ "\t" + detected.mainVersion + (detected.isWebView ? "n" : "w")
+		+ "\t" + Math.floor(Date.now()/1000).toString(36);
+	storage.setItem("Q\tclientId", ret);
+	return ret;
 };
 
 /**
@@ -5679,15 +5685,15 @@ Q.ajaxErrors = function _Q_ajaxErrors(errors, fields) {
 Q.jsonRequest = Q.request;
 
 /**
- * Serialize an object of fields into a shallow object of key/value pairs
+ * Serialize a plain object, with possible sub-objects, into an http querystring.
  * @static
  * @method serializeFields
  * @param {Object} fields
  *  The object to serialize
  * @param {Array} keys
  *  An optional array of keys into the object, in the order to serialize things
- * @return {Object}
- *  A shallow object of key/value pairs
+ * @return {String}
+ *  A querystring that can be used with HTTP requests
  */
 Q.serializeFields = function _Q_serializeFields(fields, keys) {
 	if (Q.isEmpty(fields)) {

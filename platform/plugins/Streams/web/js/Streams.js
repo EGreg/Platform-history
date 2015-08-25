@@ -350,9 +350,9 @@ Streams.socketSessionId = function (publisherId, streamName) {
  * A convenience method to get the URL of the streams-related action
  * @static
  * @method actionUrl
- * @param {String} publisherId , The id of the publisher
- * @param {String} streamName , The name of the stream
- * @param {String} what , Defaults to 'stream'. Can also be 'message', 'relation', etc.
+ * @param {String} publisherId The id of the publisher
+ * @param {String} streamName The name of the stream
+ * @param {String} [what='stream'] Can be one of 'stream', 'message', 'relation', etc.
  * @return {String} The corresponding URL
  */
 Streams.actionUrl = function(publisherId, streamName, what)
@@ -361,12 +361,17 @@ Streams.actionUrl = function(publisherId, streamName, what)
 		what = 'stream';
 	}
 	switch (what) {
-		case 'stream':
-		case 'message':
-		case 'relation':
-			return Q.action("Streams/"+what+"?publisherId="+encodeURIComponent(publisherId)+"&name="+encodeURIComponent(streamName));
+	case 'stream':
+	case 'message':
+	case 'relation':
+		return Q.action("Streams/"+what, {
+			'publisherId': publisherId,
+			'name': streamName,
+			'Q.clientId': Q.clientId()
+		});
+	default:
+		return null;
 	}
-	return null;
 };
 
 Q.Tool.define({
@@ -1504,10 +1509,8 @@ Sp.accessDialog = function(options) {
  * A convenience method to get the URL of the streams-related action
  * 
  * @method actionUrl
- * @param {String} what
- *	Defaults to 'stream'. Can also be 'message', 'relation', etc.
- * @return {String} 
- *	The corresponding URL
+ * @param {String} [what='stream'] Can be one of 'stream', 'message', 'relation', etc.
+ * @return {String} The corresponding URL
  */
 Sp.actionUrl = function _Stream_prototype_actionUrl (what) {
 	return Streams.actionUrl(this.fields.publisherId, this.fields.name, what);
