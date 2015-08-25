@@ -288,14 +288,15 @@ abstract class Streams extends Base_Streams
 	 *  since make up the primary key of the stream table.
 	 * @param {array} [$options=array()]
 	 *  Provide additional query options like 'limit', 'offset', 'orderBy', 'where' etc.
-	 *  @see Db_Query_Mysql::options().
-	 *  @param {boolean} [$options.refetch] => Ignore cache of previous calls to fetch, 
+	 *  See Db_Query_Mysql::options().
+	 *  @param {boolean} [$options.refetch] Ignore cache of previous calls to fetch, 
 	 *   and save a new cache if necessary.
-	 *  @see Db_Query_Mysql::options().
+	 *  @param {boolean} [$options.dontCache] Do not cache the results of
+	 *   fetching the streams
 	 * @return {array}
 	 *  Returns an array of Streams_Stream objects with access info calculated
-	 *  specifically for $asUserId .
-	 *  Make sure to call the methods testReadLevel(), testWriteLevel() and testAdminLevel()
+	 *  specifically for $asUserId . Make sure to call the methods 
+	 *  testReadLevel(), testWriteLevel() and testAdminLevel()
 	 *  on these streams before using them on the user's behalf.
 	 */
 	static function fetch(
@@ -413,8 +414,10 @@ abstract class Streams extends Base_Streams
 			Q::event("Streams/fetch/$type", $params, 'after', false, $streams);
 		}
 
-		foreach ($streams as $n => $stream) {
-			self::$fetch[$asUserId][$publisherId][$n][$fields] = $stream;
+		if (!empty($option['dontCache'])) {
+			foreach ($streams as $n => $stream) {
+				self::$fetch[$asUserId][$publisherId][$n][$fields] = $stream;
+			}
 		}
 		return $streams;
 	}
@@ -438,13 +441,16 @@ abstract class Streams extends Base_Streams
 	 *  Must include "publisherId" and "name" fields, since they
 	 *  make up the primary key of the stream table.
 	 * @param {array} $options=array()
-	 *  Optional. Defaults to array().
-	 *  Provide additional stream selection options like 'limit', 'offset', 'orderBy', 'where' etc.
-	 *  See Query/Mysql::options().
+	 *  Provide additional query options like 'limit', 'offset', 'orderBy', 'where' etc.
+	 *  See Db_Query_Mysql::options().
+	 *  @param {boolean} [$options.refetch] Ignore cache of previous calls to fetch, 
+	 *   and save a new cache if necessary.
+	 *  @param {boolean} [$options.dontCache] Do not cache the results of
+	 *   fetching the streams
 	 * @return {array|null}
 	 *  Returns an array of Streams_Stream objects with access info calculated
-	 *  specifically for $asUserId .
-	 *  Make sure to call the methods testReadLevel(), testWriteLevel() and testAdminLevel()
+	 *  specifically for $asUserId . Make sure to call the methods 
+	 *  testReadLevel(), testWriteLevel() and testAdminLevel()
 	 *  on these streams before using them on the user's behalf.
 	 */
 	static function fetchOne(

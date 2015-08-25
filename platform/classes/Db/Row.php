@@ -715,7 +715,7 @@ class Db_Row implements Iterator
 			}
 			return false;
 		}
-		return empty($this->fieldsModified[$fieldName]);
+		return !empty($this->fieldsModified[$fieldName]);
 	}
 
 	/**

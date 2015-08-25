@@ -131,7 +131,7 @@ class Places_Location
 		$skipAccess = Q::ifset($options, 'skipAccess', true);
 		$normalized = Q_Utils::normalize($title);
 		$name = "Places/area/$placeId/$normalized";
-		if (!($area = Streams::fetchOne($asUserId, $publisherId, $name))) {
+		if (!($area = Streams::fetchOne($asUserId, $publisherId, $name, $options))) {
 			$attributes = array(
 				'locationName' => $locationName,
 				'locationTitle' => $location->title,
