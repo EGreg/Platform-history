@@ -9,7 +9,7 @@ function Websites_0_8_3_Streams_mysql()
 	$access->publisherId = $app;
 	$access->streamName = 'Streams/community*';
 	$access->ofUserId = '';
-	$access->ofContactLabel = "$app/admins";
+	$access->ofContactLabel = "Websites/admins";
 	$access->readLevel = Streams::$READ_LEVEL['messages'];
 	$access->writeLevel = Streams::$WRITE_LEVEL['edit'];
 	$access->adminLevel = Streams::$ADMIN_LEVEL['manage'];
