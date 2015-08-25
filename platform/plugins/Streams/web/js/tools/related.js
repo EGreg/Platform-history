@@ -297,8 +297,17 @@ function _Streams_related_tool (options)
 			},
 			editable: state.editable
 		}, options);
-		var toolName = ['Streams/preview', state.toolName(streamType, o)];
-		var e = Q.Tool.setUpElement(state.tag || 'div', toolName, [o, {}], null, this.prefix);
+		var f = state.toolName;
+		if (typeof f === 'string') {
+			f = Q.getObject(state.toolName);
+		}
+		var toolName = (typeof f === 'function') ? f(streamType, o) : f;
+		var e = Q.Tool.setUpElement(
+			state.tag || 'div', 
+			['Streams/preview', toolName], 
+			[o, {}], 
+			null, this.prefix
+		);
 		e.style.visibility = 'visible';
  		return e;
 	},

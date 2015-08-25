@@ -63,7 +63,7 @@ function Streams_stream_put($params) {
 	}
 	
 	$restricted = array('readLevel', 'writeLevel', 'adminLevel', 'closedTime');
-	$owned = $stream->testAdminLevel('own');
+	$owned = $stream->testAdminLevel('own'); // owners can reopen streams
 	foreach ($restricted as $r) {
 		if (isset($fields[$r]) and !$owned) {
 			throw new Users_Exception_NotAuthorized();
