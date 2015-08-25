@@ -101,6 +101,10 @@ Q.Tool.define("Q/inplace", function (options) {
 		dir: 'plugins/Q/views',
 		name: 'Q/inplace/tool'
 	},
+	timing: {
+		waitingInterval: 100,
+	},
+	onLoad: new Q.Event(),
 	onSave: new Q.Event(),
 	onCancel: new Q.Event()
 },
@@ -164,6 +168,20 @@ function _Q_inplace_tool_constructor(element, options) {
 		'margin-top': static_span.outerHeight() + 'px',
 		'line-height': '1px'
 	});
+	if (!$te.is(':visible')) {
+		_waitUntilVisible();
+		function _waitUntilVisible() {
+			if (tool.removed) return;
+			if (!$te.is(':visible')) {
+				setTimeout(_waitUntilVisible, state.timing.waitingInterval);
+			} else {
+				tool.$('.Q_inplace_tool_editbuttons').css({ 
+					'margin-top': static_span.outerHeight() + 'px',
+					'line-height': '1px'
+				});
+			}
+		}
+	}
 	var edit_button = tool.$('button.Q_inplace_tool_edit');
 	var save_button = tool.$('button.Q_inplace_tool_save');
 	var cancel_button = tool.$('button.Q_inplace_tool_cancel');
@@ -210,6 +228,7 @@ function _Q_inplace_tool_constructor(element, options) {
 			var height = static_span.outerHeight() + 'px';
 			fieldinput.add(fieldinput.parent()).css('min-height', height);
 		}
+		state.onLoad.handle();
 	}, 0); // hopefully it will be inserted into the DOM by then
 	this.handleClick = function(event) {
 		container_span.addClass('Q_editing');

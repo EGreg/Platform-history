@@ -684,28 +684,27 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 
 					$upcoming_shards = array_keys($query->shard($upcoming['indexes'][$upcoming['table']]));
 
-					Q_Config::get('Db', 'internal', 'sharding', 'logServer', null);
-
+					$logServer = Q_Config::get('Db', 'internal', 'sharding', 'logServer', null);
 					if (!empty($transaction) && $transaction !== 'COMMIT') {
 						Q_Utils::sendToNode(array(
 							'Q/method' => 'Db/Shards/log',
 							'shards' => $upcoming_shards,
 							'sql' => "$transaction;"
-						), $logServer, true);
+						), Q_Config::get('Db', 'internal', 'sharding', 'logServer', null));
 					}
 
 					Q_Utils::sendToNode(array(
 						'Q/method' => 'Db/Shards/log',
 						'shards' => $upcoming_shards,
 						'sql' => trim(str_replace("\n", ' ', $sql_template))
-					), $logServer, true);
+					), Q_Config::get('Db', 'internal', 'sharding', 'logServer', null));
 
 					if (!empty($transaction) && $transaction === 'COMMIT') {
 						Q_Utils::sendToNode(array(
 							'Q/method' => 'Db/Shards/log',
 							'shards' => $upcoming_shards,
 							'sql' => "$transaction;"
-						), Q_Config::get('Db', 'internal', 'sharding', 'logServer', null));
+						), $logServer, true);
 					}
 				}
 				$query->endedTime = Q::milliseconds(true);

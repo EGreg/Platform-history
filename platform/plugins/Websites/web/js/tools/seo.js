@@ -33,7 +33,7 @@ Q.Tool.define("Websites/seo", function () {
 	
 	var templateFields = {};
 	var ipo, i;
-	for (a in state.inplace) {
+	for (var a in state.inplace) {
 		if (!state.inplace[a]) continue;
 		ipo = Q.extend({
 			inplaceType: 'text',

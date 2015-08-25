@@ -181,7 +181,7 @@ var Query_Mysql = function(mysql, type, clauses, parameters, table) {
 					var a = arguments;
 					_queryConnection(query, sql, connection, function (err) {
 						if (!sql) return _doTheCallback();
-						var t = query; a = arguments;
+						var t = query, a = arguments;
 						if (!err && query.clauses['COMMIT']) {
 							connection.query('COMMIT;', _doTheCallback);
 						} else {

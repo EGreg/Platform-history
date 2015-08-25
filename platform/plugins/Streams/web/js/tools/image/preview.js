@@ -50,7 +50,7 @@ Q.Tool.define("Streams/image/preview", "Streams/preview", function(options, prev
 		ps.creatable.streamType = ps.creatable.streamType || 'Streams/image';
 		ps.creatable.title = ps.creatable.title || 'New Image';
 	}
-	ps.onRefresh.add(this.refresh.bind(this));
+	ps.onRefresh.add(this.refresh.bind(this), this);
 },
 
 {

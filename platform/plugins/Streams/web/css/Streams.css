@@ -581,7 +581,10 @@
 
 .Streams_interests_unlisted { font-size: 11px; padding: 5px; }
 
+.Streams_preview_tool, .Q_listing .Streams_preview_tool { overflow: visible; }
 .Streams_image_preview_tool { text-align: center; }
+
+.Streams_related_tool .Q_tabs_overflow .Q_inplace_tool_editbuttons { display: none !important; }
 
 .Streams_interests_filter_input { width: 100%; box-sizing: border-box; }
 

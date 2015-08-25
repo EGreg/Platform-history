@@ -3738,8 +3738,8 @@ Tp.remove = function _Q_Tool_prototype_remove(removeCached) {
 		}
 		Q.Event.jQueryForTool[this.id] = [];
 	}
-
-	return true;
+	
+	return this.removed = true;
 };
 
 /**

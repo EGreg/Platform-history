@@ -44,6 +44,7 @@ Q.Tool.jQuery('Q/actions',
 function _Q_actions(options) {
 	var $this = $(this);
 	var state = $this.state('Q/actions');
+	var cw, ch;
 	if (state.container) {
 		return;
 	}

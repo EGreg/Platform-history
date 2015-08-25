@@ -2545,8 +2545,8 @@ Q.date = function (format, timestamp) {
 			return 0 + ((a - c) !== (b - d));
 		},
 		O: function () { // Difference to GMT in hour format; e.g. +0200
-			var tzo = jsdate.getTimezoneOffset(),
-				a = Math.abs(tzo);
+			var tzo = jsdate.getTimezoneOffset();
+			var a = Math.abs(tzo);
 			return (tzo > 0 ? "-" : "+") + _pad(Math.floor(a / 60) * 100 + a % 60, 4);
 		},
 		P: function () { // Difference to GMT w/colon; e.g. +02:00

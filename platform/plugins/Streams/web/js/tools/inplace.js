@@ -165,7 +165,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 			var inplace = tool.setUpElement('div', 'Q/inplace', ipo);
 			$(tool.element).empty().append(inplace);
 			Q.activate(inplace, function () {
-				Q.handle(state.onLoad, tool);
+				this.state.onLoad.add(state.onLoad.handle.bind(tool));
 			});
 		}
 	}
