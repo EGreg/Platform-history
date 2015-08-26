@@ -80,12 +80,12 @@ function _Streams_related_tool (options)
 			).addClass('Streams_related_composer Q_contextual_inactive');
 			if (oldElement) {
 				$(oldElement).before(element);
-				var $last = $('.Streams_related_composer:last');
+				var $last = tool.$('.Streams_related_composer:last');
 				if ($last.length) {
 					$(oldElement).insertAfter($last);
 				}
 			} else {
-				var $prev = $('.Streams_related_stream:first', $container).prev();
+				var $prev = $container.find('.Streams_related_stream:first').prev();
 				if ($prev.length) {
 					$prev.after(element);
 				} else {
@@ -116,10 +116,10 @@ function _Streams_related_tool (options)
 		var $container = $te;
 		var isTabs = $te.hasClass('Q_tabs_tool');
 		if (isTabs) {
-			$container = $('.Q_tabs_tabs', $te);
+			$container = $te.find('.Q_tabs_tabs');
 		}
-		Q.Tool.remove($('.Streams_related_composer', $container));
-		Q.Tool.remove($('.Streams_related_stream', $container));
+		Q.Tool.remove($container.find('.Streams_related_composer'));
+		Q.Tool.remove($container.find('.Streams_related_stream'));
 		++state.refreshCount;
 		Q.Streams.refresh.beforeRequest.set(function () {
 			result.stream.refresh(null, {messages: true});
