@@ -57,6 +57,7 @@ class Db_Row implements Iterator
 	 *     $modified_values is an associative array of modified fields and their values.
 	 *     Return the fields that should still be saved after beforeSave returns.
 	 *     To cancel saving into the database, return null or an empty array.
+	 *     If you've already run the query to save this row, return the query.
 	 *     Typically, you would use this function to save into a cache, and call
 	 *     calculatePKValue() to generate the key for the cache.
 	 *  </li>
@@ -129,18 +130,24 @@ class Db_Row implements Iterator
 	 * </ul>
 	 * @class Db_Row
 	 * @constructor
-	 * @param {Db_Result} $result The result that produced this row through fetchDbRows 
-	 * @param {boolean} [$doInit=true] Whether to initialize the row. The reason this is here
-	 *  is that passing object arguments to the constructor by using
-	 *  PDOStatement::setFetchMode() causes a memory leak.
+	 * @param {array} [$fields=array()] Here you can provide any fields to set on the row
+	 *  right away.
+	 * @param {boolean} [$doInit=true] Whether to initialize the row.
+	 *  The reason this is here is that passing object arguments to the constructor 
+	 *  by using PDOStatement::setFetchMode() causes a memory leak.
 	 *  This is only set to false by Db_Result::fetchDbRows(),
 	 *  which subsequently calls init() by itself.
 	 *  As a user of this class, don't override this default value.
 	 */
-	function __construct ($doInit = true)
+	function __construct ($fields = array(), $doInit = true)
 	{
 		if ($doInit) {
 			$this->init();
+		}
+		if (!empty($fields)) {
+			foreach ($fields as $k => $v) {
+				$this->$k = $v;
+			}
 		}
 	}
 
@@ -186,6 +193,14 @@ class Db_Row implements Iterator
 	 * @protected
 	 */
 	protected $fieldsModified = array();
+
+	/**
+	 * The values of the fields before they were modified
+	 * @property $fieldsOriginal
+	 * @type array
+	 * @protected
+	 */
+	protected $fieldsOriginal = array();
 	
 	/**
 	 * Used for setting and getting parameters on this Db_Row object
@@ -250,8 +265,8 @@ class Db_Row implements Iterator
 		if (! empty($result)) {
 			$pk = $this->getPrimaryKey();
 			if (is_array($pk)) {
-				foreach ($pk as $field_name) {
-					if (!array_key_exists($field_name, $this->fields)) {
+				foreach ($pk as $fieldName) {
+					if (!array_key_exists($fieldName, $this->fields)) {
 						$get_class = get_class($this);
 						$backtrace = debug_backtrace();
 						$function = $line = $class = null;
@@ -265,12 +280,12 @@ class Db_Row implements Iterator
 							$class = $backtrace[1]['class'];
 						}
 						throw new Exception(
-							"$get_class does not have $field_name field set, "
+							"$get_class does not have $fieldName field set, "
 							. "called in $class::$function (line $line)."
 						);
 					}
-					$this->pkValue[$field_name] = isset($this->fields[$field_name])
-						? $this->fields[$field_name]
+					$this->pkValue[$fieldName] = isset($this->fields[$fieldName])
+						? $this->fields[$fieldName]
 						: null;
 				}
 			}
@@ -282,6 +297,7 @@ class Db_Row implements Iterator
 			foreach ($this->fields as $name => $value) {
 				$this->fieldsModified[$name] = false;
 			}
+			$this->fieldsOriginal = $this->fields;
 		}
 	}
 	
@@ -661,21 +677,22 @@ class Db_Row implements Iterator
 	/**
 	 * Marks a particular field as not modified since retrieval or creation of the object.
 	 * @method notModified
-	 * @param {string} $field_name The name of the field
+	 * @param {string} $fieldName The name of the field
 	 * @return {boolean} Whether the field with that name was modified in the first place.
 	 */
-	function notModified ($field_name)
+	function notModified ($fieldName)
 	{
-		if (empty($this->fieldsModified[$field_name]))
+		if (empty($this->fieldsModified[$fieldName])) {
 			return false;
-		$this->fieldsModified[$field_name] = false;
+		}
+		$this->fieldsModified[$fieldName] = false;
 		return true;
 	}
 
 	/**
 	 * Returns whether a particular field was modified since retrieval or creation of the object.
 	 * @method wasModified
-	 * @param {string} [$field_name=null] The name of the field.
+	 * @param {string} [$fieldName=null] The name of the field.
 	 *  You can also pass false here to mark the whole row unmodified.
 	 * @return {boolean} Whether the field with that name was modified in the first place.
 	 */
@@ -687,17 +704,18 @@ class Db_Row implements Iterator
 					$this->fieldsModified[$name] = false;
 				}
 			}
+			$this->fieldsOriginal = $this->fields;
 			return;
 		}
-		if (! isset($fieldName)) {
-			foreach ($this->fieldsModified as $key => $value)
-				if (! empty($value))
+		if (!isset($fieldName)) {
+			foreach ($this->fieldsModified as $key => $value) {
+				if (! empty($value)) {
 					return true;
+				}
+			}
 			return false;
 		}
-		if (empty($this->fieldsModified[$fieldName]))
-			return false;
-		return true;
+		return !empty($this->fieldsModified[$fieldName]);
 	}
 
 	/**
@@ -854,11 +872,11 @@ class Db_Row implements Iterator
 	{
 		$return = array();
 		$pk = $this->getPrimaryKey();
-		foreach ($pk as $field_name) {
-			if (!array_key_exists($field_name, $this->fields)) {
+		foreach ($pk as $fieldName) {
+			if (!array_key_exists($fieldName, $this->fields)) {
 				return false;
 			}
-			$return[$field_name] = $this->$field_name;
+			$return[$fieldName] = $this->$fieldName;
 		}
 		return $return;
 	}
@@ -891,7 +909,10 @@ class Db_Row implements Iterator
 		$callback = array($this, "beforeSet_$name");
 		if (is_callable($callback))
 			list ($name_internal, $value) = call_user_func($callback, $value);
-		
+
+		if (!isset($this->fields[$name_internal])) {
+			$this->fieldsOriginal[$name_internal] = $value;
+		}
 		$this->fields[$name_internal] = $value;
 		$this->fieldsModified[$name_internal] = true;
 		
@@ -1161,8 +1182,8 @@ class Db_Row implements Iterator
 					continue 2; // do not have conditions for tables that were not joined
 				}
 				$pieces = explode('.', $v, 2);
-				$field_name = end($pieces);
-				$where_fields[$k] = $row->$field_name;
+				$fieldName = end($pieces);
+				$where_fields[$k] = $row->$fieldName;
 			}
 			$query->where($where_fields);
 		}
@@ -1231,8 +1252,10 @@ class Db_Row implements Iterator
 				$row = new $class_name();
 				$row->retrieved = true;
 				$row->copyFrom($row_array, $root_table_fields_prefix);
-				foreach ($row->fieldsModified as $key => $value)
+				foreach ($row->fieldsModified as $key => $value) {
 					$row->fieldsModified[$key] = false;
+				}
+				$row->fieldsOriginal = $row->fields;
 				$pk = array();
 				foreach ($row->getPrimaryKey() as $field) {
 					$pk[$field] = $row->$field;
@@ -1263,10 +1286,9 @@ class Db_Row implements Iterator
 	 * @param {string} $key2 Optional. The name of the second key in the configuration path.
 	 *  You can actually pass as many keys as you need,
 	 *  delving deeper and deeper into the configuration structure.
-	 *  All but the second-to-last parameter are interpreted as keys.
-	 * @param {mixed} $default The last parameter should not be omitted,
-	 *  and contains the default value to return in case
-	 *  the requested field was not indicated.
+	 *  All but the last parameter are interpreted as keys.
+	 * @param {mixed} $default Unless only one key is passed, the last parameter
+	 *  is the default value to return in case the requested field was not found.
 	 */
 	function get(
 	 $key1,
@@ -1446,9 +1468,9 @@ class Db_Row implements Iterator
 		if ($pieces[0] == 'afterSet')
 			return $args[0];
 		if ($pieces[0] == 'beforeGet') {
-			$field_name = $pieces[1];
-			if (array_key_exists($field_name, $this->fields)) {
-				return $this->fields[$field_name];
+			$fieldName = $pieces[1];
+			if (array_key_exists($fieldName, $this->fields)) {
+				return $this->fields[$fieldName];
 			} else {
 				$get_class = get_class($this);
 				$backtrace = debug_backtrace();
@@ -1463,7 +1485,7 @@ class Db_Row implements Iterator
 					$class = $backtrace[4]['class'];
 				}
 				throw new Exception(
-					"$get_class does not have $field_name field set, "
+					"$get_class does not have $fieldName field set, "
 					. "called in $class::$function (line $line)."
 				);
 				return null;
@@ -1538,9 +1560,10 @@ class Db_Row implements Iterator
 	 *  But if it wasn't retrieved, then the modified fields are used as the search criteria.
 	 * @param {boolean} [$useIndex=null] If true, the primary key is used in searching for rows to delete. 
 	 *  An exception is thrown when some fields of the primary key are not specified
+	 * @param {boolean} [$commit=false] If this is TRUE, then the current transaction is committed right after the save.
 	 * @return {integer} Returns number of rows deleted
 	 */
-	function remove ($search_criteria = null, $useIndex = false)
+	function remove ($search_criteria = null, $useIndex = false, $commit = false)
 	{
 		$class_name = get_class($this);
 
@@ -1552,12 +1575,12 @@ class Db_Row implements Iterator
 				throw new Exception("No fields of the primary key were specified for $class_name.");
 			}
 			if (is_array($primaryKey)) {
-				foreach ($primaryKey as $field_name)
-					if (! array_key_exists($field_name, $primaryKeyValue))
-						throw new Exception("Primary key field $field_name was not specified for $class_name.");
-				foreach ($primaryKeyValue as $field_name => $value)
-					if (! in_array($field_name, $primaryKey))
-						throw new Exception("The field $field_name is not part of the primary key for $class_name.");
+				foreach ($primaryKey as $fieldName)
+					if (! array_key_exists($fieldName, $primaryKeyValue))
+						throw new Exception("Primary key field $fieldName was not specified for $class_name.");
+				foreach ($primaryKeyValue as $fieldName => $value)
+					if (! in_array($fieldName, $primaryKey))
+						throw new Exception("The field $fieldName is not part of the primary key for $class_name.");
 			}
 			$search_criteria = $primaryKeyValue;
 		}
@@ -1583,14 +1606,14 @@ class Db_Row implements Iterator
 			$row = $this;
 			if (false === Q::event(
 				"Db/Row/$class_name/remove",
-				compact('row', 'search_criteria', 'useIndex'), 'before'
+				compact('row', 'search_criteria', 'useIndex', 'commit'), 'before'
 			)) {
 				return false;
 			}
 		}
 		$callback = array($this, "beforeRemove");
 		if (is_callable($callback)) {
-			$continue_deleting = call_user_func($callback, $search_criteria, $useIndex);
+			$continue_deleting = call_user_func($callback, $search_criteria, $useIndex, $commit);
 			if (! is_bool($continue_deleting)) {
 				throw new Exception(
 					get_class($this)."::beforeRemove() must return a boolean - whether to delete or not!", 
@@ -1607,14 +1630,17 @@ class Db_Row implements Iterator
 		}
 		$table = $this->getTable();
 		$query = $db->delete($table)->where($search_criteria);
+		if ($commit) {
+			$query->commit();
+		}
 		$query->className = $class_name;
 		
 		if (class_exists('Q')) {
 			/**
 			 * @event {before} Db/Row/$class_name/removeExecute
-			 * @param {Db_Row} 'row'
-			 * @param {Db_Query} 'query'
-			 * @param {array} 'search_criteria'
+			 * @param {Db_Row} row
+			 * @param {Db_Query} query
+			 * @param {array} search_criteria
 			 * @return {Db_Query|null}
 			 *	Modified query
 			 */
@@ -1647,10 +1673,10 @@ class Db_Row implements Iterator
 		if (class_exists('Q')) {
 			/**
 			 * @event {after} Db/Row/$class_name/removeExecute
-			 * @param {Db_Row} 'row'
-			 * @param {Db_Query} 'query'
-			 * @param {array} 'search_criteria'
-			 * @param {Db_Result} 'result'
+			 * @param {Db_Row} row
+			 * @param {Db_Query} query
+			 * @param {array} search_criteria
+			 * @param {Db_Result} result
 			 * @return {Db_Result|null}
 			 *	Modified result or NULL if no midifications are necessary
 			 */
@@ -1726,6 +1752,9 @@ class Db_Row implements Iterator
 		if (! isset($modifiedFields) or $modifiedFields === false) {
 			return false;
 		}
+		if ($modifiedFields instanceof Db_Query) {
+			return $modifiedFields;
+		}
 		if (! is_array($modifiedFields)) {
 			throw new Exception(
 				"$this_class::beforeSave() must return the array of (modified) fields to save!", 
@@ -1786,9 +1815,9 @@ class Db_Row implements Iterator
 				$onDuplicateKeyUpdate_fields = $fieldsToSave;
 				$pk = $this->getPrimaryKey();
 				if (count($pk) === 1) {
-					$field_name = reset($pk);
+					$fieldName = reset($pk);
 					$onDuplicateKeyUpdate_fields = array_merge(
-						array($field_name => new Db_Expression("LAST_INSERT_ID($field_name)")),
+						array($fieldName => new Db_Expression("LAST_INSERT_ID($fieldName)")),
 						$onDuplicateKeyUpdate_fields
 					);
 				}
@@ -1808,10 +1837,10 @@ class Db_Row implements Iterator
 		if (class_exists('Q')) {
 			/**
 			 * @event {before} Db/Row/$class_name/saveExecute
-			 * @param {Db_Row} 'row'
-			 * @param {Db_Query} 'query'
-			 * @param {array} 'modifiedFields'
-			 * @param {array} 'where'
+			 * @param {Db_Row} row
+			 * @param {Db_Query} query
+			 * @param {array} modifiedFields
+			 * @param {array} where
 			 * @return {Db_Query|null}
 			 *	Modified query or NULL if no midifications are necessary
 			 */
@@ -1845,16 +1874,16 @@ class Db_Row implements Iterator
 				$pk = $this->getPrimaryKey();
 				if ($new_id = $db->lastInsertId()) {
 					if (count($pk) == 1) {
-						$field_name = reset($pk);
-						$this->$field_name = $new_id;
+						$fieldName = reset($pk);
+						$this->$fieldName = $new_id;
 					}
 				}
 				
 				// Save however many fields we can into the primary key value.
 				// Next time, this record will be updated.
-				foreach ($pk as $field_name) {
-					if (isset($this->fields[$field_name])) {
-						$this->pkValue[$field_name] = $this->fields[$field_name];
+				foreach ($pk as $fieldName) {
+					if (isset($this->fields[$fieldName])) {
+						$this->pkValue[$fieldName] = $this->fields[$fieldName];
 					}
 				}
 			}
@@ -1868,10 +1897,10 @@ class Db_Row implements Iterator
 		if (class_exists('Q')) {
 			/**
 			 * @event {after} Db/Row/$class_name/saveExecute
-			 * @param {Db_Row} 'row'
-			 * @param {Db_Query} 'query'
-			 * @param {array} 'modifiedFields'
-			 * @param {Db_Result} 'result'
+			 * @param {Db_Row} row
+			 * @param {Db_Query} query
+			 * @param {array} modifiedFields
+			 * @param {Db_Result} result
 			 */
 			Q::event("Db/Row/$this_class/saveExecute", array(
 				'row' => $this,
@@ -1898,7 +1927,7 @@ class Db_Row implements Iterator
 	 * 
 	 * * "begin" => this will cause the query to have ->begin() a transaction
 	 *       which locks the row for update. You should call ->save(..., true)
-	 *       to unlock the row, otherwise other database clients trying to access
+	 *       to unlock the row, otherwise other database connections trying to access
 	 *       the row will be blocked.
 	 * * "rollbackIfMissing" => if begin is true, this option determines whether to
 	 *       rollback the transaction if the row we're trying to retrieve is missing.
@@ -1940,23 +1969,25 @@ class Db_Row implements Iterator
 				throw new Exception("No fields of the primary key were specified for $class_name.");
 			}
 			if (is_array($primaryKey)) {
-				foreach ($primaryKey as $field_name)
-					if (! array_key_exists($field_name, $primaryKeyValue))
+				foreach ($primaryKey as $fieldName)
+					if (! array_key_exists($fieldName, $primaryKeyValue))
 						throw new Exception(
-							"Primary key field $field_name was not specified for $class_name.");
-				foreach ($primaryKeyValue as $field_name => $value)
-					if (! in_array($field_name, $primaryKey))
+							"Primary key field $fieldName was not specified for $class_name.");
+				foreach ($primaryKeyValue as $fieldName => $value)
+					if (! in_array($fieldName, $primaryKey))
 						throw new Exception(
-							"The field $field_name is not part of the primary key for $class_name.");
+							"The field $fieldName is not part of the primary key for $class_name.");
 			}
 			
 			// Use the primary key value as the search criteria
 			$use_search_criteria = $primaryKeyValue;
 		} else {
 			$modifiedFields = array();
-			foreach ($this->fields as $name => $value)
-				if ($this->fieldsModified[$name])
+			foreach ($this->fields as $name => $value) {
+				if ($this->fieldsModified[$name]) {
 					$modifiedFields[$name] = $value;
+				}
+			}
 			
 			// Use the modified fields as the search criteria
 			$use_search_criteria = array();
@@ -2045,10 +2076,10 @@ class Db_Row implements Iterator
 		if (class_exists('Q')) {
 			/**
 			 * @event {before} Db/Row/$class_name/retrieveExecute
-			 * @param {Db_Row} 'row'
-			 * @param {Db_Query} 'query'
-			 * @param {array} 'modifiedFields'
-			 * @param {array} 'options'
+			 * @param {Db_Row} row
+			 * @param {Db_Query} query
+			 * @param {array} modifiedFields
+			 * @param {array} options
 			 * @return {Db_Query|null}
 			 *	Modified query or NULL if no modifications are necessary
 			 */
@@ -2077,10 +2108,10 @@ class Db_Row implements Iterator
 				);
 				/**
 				 * @event {before} Db/Row/$class_name/retrieveExecute
-				 * @param {Db_Row} 'row'
-				 * @param {Db_Query} 'query'
-				 * @param {array} 'search_criteria'
-				 * @param {array} 'options'
+				 * @param {Db_Row} row
+				 * @param {Db_Query} query
+				 * @param {array} search_criteria
+				 * @param {array} options
 				 * @return {Db_Query|null}
 				 *	Modified query or NULL if no modifications are necessary
 				 */
@@ -2135,43 +2166,43 @@ class Db_Row implements Iterator
 	 * @method copyFromRow
 	 * @param {Db_Row} $row The source row. Be careful -- In this case, Db does not check 
 	 *  whether the class of the Db_Row matches. It leaves things up to you.
-	 * @param {string} [$strip_prefix=null] If not empty, only copies the elements with the prefix, stripping it out.
+	 * @param {string} [$stripPrefix=null] If not empty, only copies the elements with the prefix, stripping it out.
 	 *  Useful for assigning parts of Db_Rows that came from joins, to individual table classes.
-	 * @param {boolean} [$mark_modified=null] If set, the "modified" status of all fields is set to this boolean.
-	 * @param {boolean} [$suppress_hooks=false] If true, assigns everything but does not fire the beforeSet and afterSet events.
+	 * @param {boolean} [$markModified=null] If set, the "modified" status of all copied fields is set to this boolean.
+	 * @param {boolean} [$suppressHooks=false] If true, assigns everything but does not fire the beforeSet and afterSet events.
 	 * @return {Db_Row} returns this object, for chaining
 	 */
 	function copyFromRow (
 		Db_Row $row, 
-		$strip_prefix = null, 
-		$suppress_hooks = false,
-		$mark_modified = null)
+		$stripPrefix = null, 
+		$suppressHooks = false,
+		$markModified = null)
 	{
 		$this->retrieved = $row->retrieved;
-		if (!empty($strip_prefix)) {
-			$prefix_len = strlen($strip_prefix);
+		if (!empty($stripPrefix)) {
+			$prefix_len = strlen($stripPrefix);
 			$this->pkValue = isset($row->pkValue)
-				? Db_Utils::take($row->pkValue, array(), $strip_prefix) 
+				? Db_Utils::take($row->pkValue, array(), $stripPrefix) 
 				: array();
 		} else {
 			$this->pkValue = $row->pkValue;
 		}
 		
 		foreach ($row->fields as $key => $value) {
-			if (!empty($strip_prefix)) {
-				if (strncmp($key, $strip_prefix, $prefix_len) != 0)
+			if (!empty($stripPrefix)) {
+				if (strncmp($key, $stripPrefix, $prefix_len) != 0)
 					continue;
 				$stripped_key = substr($key, $prefix_len);
 			} else {
 				$stripped_key = $key;
 			}
-			if ($suppress_hooks) {
+			if ($suppressHooks) {
 				$this->fields[$stripped_key] = $value;
 			} else {
 				$this->$stripped_key = $value;
 			}
-			$this->fieldsModified[$stripped_key] = isset($mark_modified)
-				? $mark_modified
+			$this->fieldsModified[$stripped_key] = isset($markModified)
+				? $markModified
 				: (isset($row->fieldsModified[$key]) ? $row->fieldsModified[$key] : false);
 		}
 		return $this;
@@ -2182,39 +2213,39 @@ class Db_Row implements Iterator
 	 * @method copyFrom
 	 * @param {mixed} $source The source of the parameters. Typically the output of Db_Utils::take, unleashed
 	 *  on $_POST or $_REQUEST or something like that. Just used for convenience.
-	 * @param {string} [$strip_prefix=null] If not empty, only copies the elements with the prefix, stripping it out.
+	 * @param {string} [$stripPrefix=null] If not empty, only copies the elements with the prefix, stripping it out.
 	 *  Useful for assigning values whose names were prefixed with namespaces.
-	 * @param {boolean} [$suppress_hooks=false] If true, assigns everything but does not fire the beforeSet and afterSet events.
-	 * @param {boolean} [$mark_modified=true] Defaults to true. Whether to mark the affected fields as modified or not.
+	 * @param {boolean} [$suppressHooks=false] If true, assigns everything but does not fire the beforeSet and afterSet events.
+	 * @param {boolean} [$markModified=true] Defaults to true. Whether to mark the affected fields as modified or not.
 	 * @return {Db_Row} returns this object, for chaining
 	 */
 	function copyFrom (
 		$source, 
-		$strip_prefix = null, 
-		$suppress_hooks = false, 
-		$mark_modified = true)
+		$stripPrefix = null, 
+		$suppressHooks = false, 
+		$markModified = true)
 	{
 		if ($source instanceof Db_Row)
-			return $this->copyFromRow($source, $strip_prefix, $suppress_hooks, $mark_modified);
+			return $this->copyFromRow($source, $stripPrefix, $suppressHooks, $markModified);
 			
-		if (!empty($strip_prefix)) {
-			$prefix_len = strlen($strip_prefix);
+		if (!empty($stripPrefix)) {
+			$prefix_len = strlen($stripPrefix);
 		}
 		
 		foreach ($source as $key => $value) {
-			if (!empty($strip_prefix)) {
-				if (strncmp($key, $strip_prefix, $prefix_len) != 0)
+			if (!empty($stripPrefix)) {
+				if (strncmp($key, $stripPrefix, $prefix_len) != 0)
 					continue;
 				$stripped_key = substr($key, $prefix_len);
 			} else {
 				$stripped_key = $key;
 			}
-			if ($suppress_hooks) {
+			if ($suppressHooks) {
 				$this->fields[$stripped_key] = $value;
 			} else {
 				$this->$stripped_key = $value;
 			}
-			if ($mark_modified) {
+			if ($markModified) {
 				$this->fieldsModified[$stripped_key] = true;
 			} else {
 				$this->fieldsModified[$stripped_key] = false;
@@ -2247,10 +2278,12 @@ class Db_Row implements Iterator
 	 * @method __set_state
 	 * @param {array} $array
 	 */
-	public static function __set_state(array $array) {
+	public static function __set_state(array $array)
+	{
 		$result = new Db_Row();
-		foreach($array as $k => $v)
+		foreach($array as $k => $v) {
 			$result->$k = $v;
+		}
 		return $result;
 	}
 

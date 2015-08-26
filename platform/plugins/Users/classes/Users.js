@@ -125,6 +125,17 @@ Users.listen = function (options) {
 
 };
 
+/**
+ * Fetches a user from the database
+ * @method listen
+ * @param {object} options={}
+ *  So far no options are implemented.
+ */
+Users.fetch = function (id, callback) {
+	new Users.User({id: id})
+	.retrieve(callback);
+};;
+
 function internalServerHandler(req, res, next) {
 	var parsed = req.body;
     if (!parsed || !parsed['Q/method']) {
@@ -135,11 +146,11 @@ function internalServerHandler(req, res, next) {
             var sid = parsed.sessionId;
             var content = parsed.content ? JSON.parse(parsed.content) : null;
 			if (content !== null) {
-				util.log((Users.sessions[sid] ? "Update" : "New") + " session from PHP: " + sid);
+				console.log((Users.sessions[sid] ? "Update" : "New") + " session from PHP: " + sid);
 				Users.sessions[sid] = content;
 			} else {
 				delete Users.sessions[sid];
-				util.log("Deleted session from PHP: " + sid);
+				console.log("Deleted session from PHP: " + sid);
 			}
 			break;
 		case 'Users/sendMessage':

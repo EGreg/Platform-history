@@ -23,8 +23,8 @@
  *     @param {string} [$params.icon.save=array("x" => "")] array of $size => $basename pairs
  *      where the size is of the format "WxH", and either W or H can be empty.
  */
-function Streams_stream_post($params) {
-	
+function Streams_stream_post($params = array())
+{	
 	$user = Users::loggedInUser(true);
 	$publisherId = Streams::requestedPublisherId();
 	if (empty($publisherId)) {
@@ -70,7 +70,9 @@ function Streams_stream_post($params) {
 	
 	// Process any icon that was posted
 	if (is_array($icon)) {
-		$icon['subpath'] = "streams/{$stream->publisherId}/{$stream->name}";
+		if (empty($icon['subpath'])) {
+			$icon['subpath'] = "Streams/$publisherId/{$stream->name}/icon/".time();
+		}
 		Q_Response::setSlot('icon', Q::event("Q/image/post", $icon));
 	}
 	

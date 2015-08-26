@@ -15,4 +15,4 @@ class Q_Exception_Requirement extends Q_Exception
 	 */
 };
 
-Q_Exception::add('Q_Exception_Requirement', 'Plugin \'$by\' requires plugin \'$plugin\' version $version or compatible.');
+Q_Exception::add('Q_Exception_Requirement', 'Plugin \'{{by}}\' requires plugin \'{{plugin}}\' version {{version}} or compatible.');

@@ -17,6 +17,7 @@ function Streams_before_Q_responseExtras()
 			Q_Response::setScriptData('Q.plugins.Streams.node', array("http://$host:$port"));
 		}
 		if ($sizes = Q_Config::expect('Streams', 'types', 'Streams/image', 'sizes')) {
+			sort($sizes);
 			Q_Response::setScriptData('Q.plugins.Streams.image.sizes', $sizes);
 		}
 		$defaults = array(

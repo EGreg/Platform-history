@@ -29,28 +29,28 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property userId
- * @type String
+ * @property {String}
+ * @type userId
  */
 /**
- * @property token
- * @type String
+ * @property {String}
+ * @type token
  */
 /**
- * @property state
- * @type String
+ * @property {String}
+ * @type state
  */
 /**
- * @property insertedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type insertedTime
  */
 /**
- * @property updatedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type updatedTime
  */
 /**
- * @property expireTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type expireTime
  */
 
 /**
@@ -225,6 +225,9 @@ Base.prototype.fieldNames = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_userId = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".userId");
@@ -251,6 +254,9 @@ Base.prototype.maxSize_userId = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_token = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".token");
@@ -278,7 +284,7 @@ Base.prototype.maxSize_token = function () {
 Base.prototype.beforeSet_state = function (value) {
 		if (value instanceof Db.Expression) return value;
 		if (['pending','accepted','declined','forwarded','expired','claimed'].indexOf(value) < 0)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".state");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".state");
 		return value;
 };
 

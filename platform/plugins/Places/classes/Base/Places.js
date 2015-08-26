@@ -28,6 +28,12 @@ module.exports = Base;
  */
 Base.tableClasses = [
 	"Places_Autocomplete",
+	"Places_Domain",
+	"Places_HostnameSession",
+	"Places_Publisher",
+	"Places_Session",
+	"Places_Share",
+	"Places_Visit",
 	"Places_Zipcode"
 ];
 
@@ -56,6 +62,48 @@ Base.connectionName = function() {
  * @type Places.Autocomplete
  */
 Base.Autocomplete = Q.require('Places/Autocomplete');
+
+/**
+ * Link to Places.Domain model
+ * @property Domain
+ * @type Places.Domain
+ */
+Base.Domain = Q.require('Places/Domain');
+
+/**
+ * Link to Places.HostnameSession model
+ * @property HostnameSession
+ * @type Places.HostnameSession
+ */
+Base.HostnameSession = Q.require('Places/HostnameSession');
+
+/**
+ * Link to Places.Publisher model
+ * @property Publisher
+ * @type Places.Publisher
+ */
+Base.Publisher = Q.require('Places/Publisher');
+
+/**
+ * Link to Places.Session model
+ * @property Session
+ * @type Places.Session
+ */
+Base.Session = Q.require('Places/Session');
+
+/**
+ * Link to Places.Share model
+ * @property Share
+ * @type Places.Share
+ */
+Base.Share = Q.require('Places/Share');
+
+/**
+ * Link to Places.Visit model
+ * @property Visit
+ * @type Places.Visit
+ */
+Base.Visit = Q.require('Places/Visit');
 
 /**
  * Link to Places.Zipcode model

@@ -38,14 +38,14 @@ function Db_Mysql(connName, dsn) {
 	 */
 	dbm.connName = connName;
 	/**
-	 * The client created with mysql.createClient()
-	 * @property client
-	 * @type mysql.Client
+	 * The connection created with mysql.createConnection()
+	 * @property connection
+	 * @type mysql.Connection
 	 * @default null
 	 */
-	dbm.client = null;
+	dbm.connection = null;
 	/**
-	 * Wheather client is connected to database
+	 * Wheather connection is connected to database
 	 * @property connected
 	 * @type boolean
 	 * @default false
@@ -53,27 +53,28 @@ function Db_Mysql(connName, dsn) {
 	dbm.connected = false;
 	
 	/**
-	 * Cache of clients
-	 * @property clients
+	 * Cache of connections
+	 * @property connections
 	 * @type object
 	 * @default {}
 	 * @private
 	 */
-	var clients = {};
+	var connections = {};
 
-	function mysqlClient(host, port, user, password, database, options) {
+	function mysqlConnection(host, port, user, password, database, options) {
 		var key = [host, port, user, password, database].join("\t");
-		if (clients[key]) {
-			return clients[key];
+		if (connections[key]) {
+			return connections[key];
 		}
 		var o = Q.extend({
 			host: host,
 			port: port,
 			user: user,
 			password: password,
-			database: database
+			database: database,
+			multipleStatements: true
 		}, options);
-		return clients[key] = require('mysql').createClient(o);
+		return connections[key] = require('mysql').createConnection(o);
 	}
 
 	/**
@@ -89,27 +90,28 @@ function Db_Mysql(connName, dsn) {
 	};
 
 	/**
-	 * Create mysql.Client and connects to the database table
+	 * Create mysql.Connection and connects to the database table
 	 * @method reallyConnect
-	 * @param {Function} callback The callback is fired after connection is complete. mysql.Client is passed as argument
+	 * @param {Function} callback The callback is fired after connection is complete. mysql.Connection is passed as argument
 	 * @param {String} [shardName=''] The name of the shard to connect
 	 * @param {object} [modifications={}] Additional modifications to table information. If supplied override shard modifications
 	 */
 	dbm.reallyConnect = function(callback, shardName, modifications) {
 		info = this.info(shardName, modifications);
-		var client = mysqlClient(
+		var connection = mysqlConnection(
 			info.host,
 			info.port || 3306,
 			info.username,
 			info.password,
 			info.dbname,
-			info.options);
-		if (!callback) return client;
+			info.options
+		);
+		if (!callback) return connection;
 		if (!dbm.connected && Q.Config.get(['Db', 'debug'], false)) {
-			client._original_query = client.query;
-			client.query = function (sql) {
-				util.log("--> db="+client.database+": ", sql.replace(/\n+/g, " "));
-				return client._original_query.apply(client, arguments);
+			connection._original_query = connection.query;
+			connection.query = function (sql) {
+				console.log("--> db="+connection.database+": ", sql.replace(/\n+/g, " "));
+				return connection._original_query.apply(connection, arguments);
 			};
 		}
 		if (!dbm.connected)
@@ -117,15 +119,15 @@ function Db_Mysql(connName, dsn) {
 			// add an error listener to handle mysql errors,
 			// so the client won't crash
 			dbm.on('error', function(err, mq) {
-				util.log("Db.Mysql error: " + err);
+				console.log("Db.Mysql error: " + err);
 				mq.getSQL(function (repres) {
-					util.log("Query was: " + repres);
+					console.log("Query was: " + repres);
 				});
 			});
-			client.query('SET NAMES UTF8');
+			connection.query('SET NAMES UTF8');
 			dbm.connected = true;
 		}
-		callback(client);
+		callback(connection);
 	};
 	/**
 	 * Retrieves table prefix to use with connection
@@ -149,11 +151,11 @@ function Db_Mysql(connName, dsn) {
 	 * Creates a raw query.
 	 * @method rawQuery
 	 * @param {String} query The query string
-	 * @param {Object} [bind={}] An object of values to bind, if any
+ * @param parameters {Object|Array} The parameters to add to the query right away (to be bound when executing). Values corresponding to numeric keys replace question marks, while values corresponding to string keys replace ":key" placeholders, in the SQL.
 	 * @return {Db.Query.Mysql} The resulting Db.Query object
 	 */
-	dbm.rawQuery = function(query, bind) {
-		return new Db.Query.Mysql(this, Db.Query.TYPE_RAW, {"RAW": query}, bind);
+	dbm.rawQuery = function(query, parameters) {
+		return new Db.Query.Mysql(this, Db.Query.TYPE_RAW, {"RAW": query}, parameters);
 	};
 
 	/**

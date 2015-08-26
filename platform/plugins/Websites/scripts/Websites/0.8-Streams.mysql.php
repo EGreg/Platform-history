@@ -29,7 +29,7 @@ function Websites_0_8_Streams_mysql()
 	
 	$readLevel = Streams::$READ_LEVEL['messages'];
 	$writeLevel = Streams::$WRITE_LEVEL['edit'];
-	$adminLevel = Streams::$ADMIN_LEVEL['own'];
+	$adminLevel = Streams::$ADMIN_LEVEL['manage'];
 	
 	$rows = array();
 	foreach ($streams as $streamName => $stream) {

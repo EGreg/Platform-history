@@ -14,28 +14,28 @@
  * @class Base_Streams_Total
  * @extends Db_Row
  *
- * @property string $publisherId
- * @property string $streamName
- * @property string $messageType
- * @property integer $messageCount
+ * @property {string} $publisherId
+ * @property {string} $streamName
+ * @property {string} $messageType
+ * @property {integer} $messageCount
  */
 abstract class Base_Streams_Total extends Db_Row
 {
 	/**
 	 * @property $publisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $streamName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $messageType
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $messageCount
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -196,6 +196,9 @@ abstract class Base_Streams_Total extends Db_Row
 	 */
 	function beforeSet_publisherId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('publisherId', $value);
 		}
@@ -226,6 +229,9 @@ abstract class Base_Streams_Total extends Db_Row
 	 */
 	function beforeSet_streamName($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('streamName', $value);
 		}
@@ -256,6 +262,9 @@ abstract class Base_Streams_Total extends Db_Row
 	 */
 	function beforeSet_messageType($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('messageType', $value);
 		}
@@ -290,8 +299,11 @@ abstract class Base_Streams_Total extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".messageCount");
-		if ($value < -9.2233720368548E+18 or $value > 9223372036854775807)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".messageCount");
+		$value = intval($value);
+		if ($value < -9.2233720368548E+18 or $value > 9223372036854775807) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".messageCount");
+		}
 		return array('messageCount', $value);			
 	}
 

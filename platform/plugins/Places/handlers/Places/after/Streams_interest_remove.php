@@ -2,15 +2,15 @@
 
 function Places_after_Streams_interest_remove($params)
 {
-	$location = Places::userLocationStream();
+	$location = Places_Location::userStream();
 	if ($location) {
-		Places::unsubscribe(
+		Places_Nearby::unsubscribe(
 			$location->getAttribute('latitude'),
 			$location->getAttribute('longitude'),
 			$location->getAttribute('miles'),
 			$params['publisherId'],
 			array(
-				'transform' => array('Places', '_transformInterest'),
+				'transform' => array('Places_Interest', '_transform'),
 				'title' => $params['title'],
 				'skipAccess' => true
 			)

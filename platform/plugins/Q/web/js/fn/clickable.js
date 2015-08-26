@@ -75,22 +75,6 @@ function _Q_clickable(o) {
 			$(this).trigger('release')
 		}, o.press.duration);
 	});
-	state.oldStyle = $this.attr('style');
-    if (!o.selectable) {
-		$this[0].preventSelections(true);
-	}
-	var $triggers;
-	if (o.triggers) {
-		$triggers = (typeof o.triggers === 'function')
-			? $(o.triggers.call($this, o))
-			: $(o.triggers);
-	}
-	var position = $this.css('position');
-	var display = $this.css('display');
-	var p = $this.parent();
-	if (p.length && p[0].tagName.toUpperCase() === 'TD') {
-		p.css('position', 'relative');
-	}
 	var originalTime = Date.now();
 	var timing = state.timing;
 	
@@ -108,9 +92,25 @@ function _Q_clickable(o) {
 			}
 			return;
 		}
-		var cs = $this[0].computedStyle();
-		var csw = cs.width; // the object can change, so get the values now
-		var csh = cs.height;
+		state.oldStyle = $this.attr('style');
+		var display = $this.css('display');
+		var position = $this.css('position');
+		var p = $this.parent();
+		if (p.length && p[0].tagName.toUpperCase() === 'TD') {
+			p.css('position', 'relative');
+		}
+	    if (!o.selectable) {
+			$this[0].preventSelections(true);
+		}
+		var $triggers;
+		if (o.triggers) {
+			$triggers = (typeof o.triggers === 'function')
+				? $(o.triggers.call($this, o))
+				: $(o.triggers);
+		}
+		var rect = $this[0].getBoundingClientRect();
+		var csw = Math.ceil(rect.width);
+		var csh = Math.ceil(rect.height);
 		// $this.css('height', $this.height()+'px');
 		var container = $('<span class="Q_clickable_container" />').css({
 			'display': (display === 'inline' || display === 'inline-block') ? 'inline-block' : display,
@@ -124,8 +124,8 @@ function _Q_clickable(o) {
 			'float': $this.css('float'),
 			// 'z-index': $this.css('z-index') + 1, //10000,
 			'overflow': 'hidden',
-			'width': $this.outerWidth(true),
-			'height': $this.outerHeight(true),
+			'width': csw,
+			'height': csh,
 			'text-align': 'left',
 			'overflow': 'visible',
 			'line-height': $this.css('line-height'),
@@ -145,12 +145,12 @@ function _Q_clickable(o) {
 				.attr('src', Q.url(o.shadow.src));
 			shadow.css('display', 'none').appendTo(container).load(function () {
 				var $this = $(this);
-				var width = container.width() * o.shadow.stretch;
-				var height = Math.min($this.height() * width / $this.width(), container.height()/2);
+				var width = csw * o.shadow.stretch;
+				var height = Math.min($this.height() * width / $this.width(), csh/2);
 				var toSet = {
 					'position': 'absolute',
-					'left': (container.width() - width)/2+'px',
-					'top': container.height() - height * (1-o.shadow.dip)+'px',
+					'left': (csw - width)/2+'px',
+					'top': csh - height * (1-o.shadow.dip)+'px',
 					'width': width+'px',
 					'height': height+'px',
 					'opacity': o.shadow.opacity,
@@ -164,19 +164,19 @@ function _Q_clickable(o) {
 				$this.css(toSet);
 			});
 		}
-		var stretcher = $('<div />').css({
+		var stretcher = $('<div class="Q_clickable_stretcher" />').css({
 			'position': 'absolute',
 			'left': '0px',
 			'top': '0px',
-			'width': container.width()+0.5+'px',
-			'height': container.height()+0.5+'px',
+			'width': csw+'px',
+			'height': csh+'px',
 			'overflow': 'visible',
 			'padding': '0px',
 			'margin': '0px'
 		}).appendTo(container);
 		var triggers = stretcher;
-		var width = container.width();
-		var height = container.height();
+		var width = csw;
+		var height = csh;
 		var left = parseInt(container.css('left'));
 		var top = parseInt(container.css('top'));
 		var tw = $this.outerWidth();
@@ -225,7 +225,7 @@ function _Q_clickable(o) {
 			zindex = $this.css('z-index');
 			container.css('z-index', 1000000);
 			Q.handle(o.onPress, $this, [evt, triggers]);
-			Q.Animation.play(function(x, y) {
+			state.animation = Q.Animation.play(function(x, y) {
 				scale(1 + y * (o.press.size-1));
 				$this.css('opacity', 1 + y * (o.press.opacity-1));
 			}, o.press.duration, o.press.ease);
@@ -262,7 +262,7 @@ function _Q_clickable(o) {
 						return false; // click doesn't have to be canceled
 					}
 				}
-				anim && anim.pause();
+				state.animation && state.animation.pause();
 				scale(1);
 			}, 'Q/clickable');
 			var _released = false;
@@ -298,35 +298,40 @@ function _Q_clickable(o) {
 					&& (jq.closest(triggers).length > 0);
 				var factor = scale.factor;
 				if (overElement) {
-					anim = Q.Animation.play(function(x, y) {
+					state.animation = Q.Animation.play(function(x, y) {
 						scale(factor + y * (o.release.size-factor));
 						$this.css('opacity', o.press.opacity + y * (o.release.opacity-o.press.opacity));
-						if (x === 1) {
-							Q.Animation.play(function(x, y) {
-								scale(o.release.size + y * (1-o.release.size));
-								$this.css('opacity', 1 + y * (1 - o.release.opacity));
-								if (x === 1) {
-									Q.handle(o.afterRelease, $this, [evt, overElement]);
-									$this.trigger('afterRelease', $this, evt, overElement);
-									container.css('z-index', zindex);
-									// $this.unbind('click.Q_clickable');
-									// $this.trigger('click');
-								}
-							}, o.snapback.duration, o.snapback.ease);
-						}
 					}, o.release.duration, o.release.ease);
+					var key = state.animation.onComplete.set(function () {
+						state.animation = Q.Animation.play(function(x, y) {
+							scale(o.release.size + y * (1-o.release.size));
+							$this.css('opacity', 1 + y * (1 - o.release.opacity));
+						}, o.snapback.duration, o.snapback.ease);
+						state.animation.onComplete.set(function () {
+							Q.handle(o.afterRelease, $this, [evt, overElement]);
+							$this.trigger('afterRelease', $this, evt, overElement);
+							container.css('z-index', zindex);
+							// $this.unbind('click.Q_clickable');
+							// $this.trigger('click');
+							state.animation = null;
+						});
+					});
 				} else {
-					anim = Q.Animation.play(function(x, y) {
+					state.animation = Q.Animation.play(function(x, y) {
 						scale(factor + y * (1-factor));
 						$this.css('opacity', o.press.opacity + y * (1-o.press.opacity));
 						// if (x === 1) {
 						// 	$this.off('click.Q_clickable');
 						// }
 					}, o.release.duration, o.release.ease);
+					state.animation.onComplete.set(function () {
+						state.animation = null;
+					});
 					setTimeout(function () {
 						Q.handle(o.afterRelease, $this, [evt, overElement]);
 						$this.trigger('afterRelease', $this, evt, overElement);
 						container.css('z-index', zindex);
+						state.animation = null;
 					}, o.release.duration);
 				}
 			
@@ -369,24 +374,25 @@ function _Q_clickable(o) {
 		});
 		
 		if (timing.renderingInterval) {
+			var csw2, csh2;
 			setTimeout(function _update() {
-				if (Date.now() - originalTime >= timing.renderingPeriod) {
+				if (state.animation || Date.now() - originalTime >= timing.renderingPeriod) {
 					return;
 				}
-				var cs = $this[0].computedStyle();
-				var csw2 = cs.width; // the object can change, so get the values now
-				var csh2 = cs.height;
+				var rect = $this[0].getBoundingClientRect();
+				var csw = Math.ceil(rect.width);
+				var csh = Math.ceil(rect.height);
 				if (csw2 != csw || csh2 != csh) {
 					if (!$this.is(':visible')) {
 						return;
 					}
 					container.css({
-						'width': $this.outerWidth(true),
-						'height': $this.outerHeight(true)
+						'width': csw,
+						'height': csh
 					});
 					stretcher.css({
-						'width': container.width()+0.5+'px',
-						'height': container.height()+0.5+'px'
+						'width': csw+'px',
+						'height': csh+'px'
 					});
 				}
 				csw = csw2;

@@ -13,4 +13,4 @@ class Q_Exception_InvalidInput extends Q_Exception
 	 */
 };
 
-Q_Exception::add('Q_Exception_InvalidInput', 'invalid input encountered in $source');
+Q_Exception::add('Q_Exception_InvalidInput', 'invalid input encountered in {{source}}');

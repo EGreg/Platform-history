@@ -25,6 +25,10 @@ function Streams_stream_put($params) {
 	}
 	$name = Streams::requestedName(true);
 	$fields = array_merge($_REQUEST, $params);
+	$closedTime = Q::ifset($fields, 'closedTime', null);
+	if (in_array($closedTime, array(false, 'false', 'null'))) {
+		$fields['closedTime'] = null;
+	}
 
 	// do not set stream name
 	$stream = Streams::fetchOne($user->id, $publisherId, $name);	
@@ -34,7 +38,6 @@ function Streams_stream_put($params) {
 			'criteria' => "{publisherId: '$publisherId', name: '$name'}"
 		));
 	}
-	$original = $stream->toArray();
 	
 	// valid stream types should be defined in config by 'Streams/type' array
 	$range = Q_Config::expect('Streams', 'types');
@@ -59,8 +62,8 @@ function Streams_stream_put($params) {
 		}
 	}
 	
-	$restricted = array('readLevel', 'writeLevel', 'adminLevel');
-	$owned = $stream->testAdminLevel('own');
+	$restricted = array('readLevel', 'writeLevel', 'adminLevel', 'closedTime');
+	$owned = $stream->testAdminLevel('own'); // owners can reopen streams
 	foreach ($restricted as $r) {
 		if (isset($fields[$r]) and !$owned) {
 			throw new Users_Exception_NotAuthorized();
@@ -83,48 +86,16 @@ function Streams_stream_put($params) {
 	$icon = Q::ifset($fieldNames, 'icon', null);
 	if (is_array($icon)) {
 		unset($fieldNames['icon']);
-		$icon['subpath'] = "streams/{$stream->publisherId}/{$stream->name}";
-		$timeLimit = Q_Config::get('Q', 'uploads', 'limits', 'image', 'time', 5*60*60);
-		set_time_limit($timeLimit); // 5 min
-		$saved = Q_Image::save($icon);
-		Q_Response::setSlot('icon', $saved);
+		Q_Response::setSlot('icon', Q::event("Q/image/post", $icon));
 	}
 	
 	if (!empty($fieldNames)) {
 		foreach ($fieldNames as $f) {
-			if (isset($fields[$f])) {
+			if (array_key_exists($f, $fields)) {
 				$stream->$f = $fields[$f];
 			}
 		}
-
-		$instructions = array('changes' => array());
-		foreach ($fieldNames as $f) {
-			if (!isset($stream->$f)) continue;
-			$v = $stream->$f;
-			if (isset($original[$f])
-			and json_encode($original[$f]) === json_encode($v)) {
-				continue;
-			}
-			$instructions['changes'][$f] = in_array($f, $coreFields)
-				? $v // record the changed value in the instructions
-				: null; // record a change but the value may be too big, etc.
-		}
-		unset($instructions['changes']['updatedTime']);
-	
-		if ($suggest) {
-			$stream->post($user->id, array(
-				'type' => 'Streams/suggest',
-				'content' => '',
-				'instructions' => $instructions
-			), true);
-		} else {
-			$stream->save();
-			$stream->post($user->id, array(
-				'type' => 'Streams/edited',
-				'content' => '',
-				'instructions' => $instructions
-			), true);
-		}
+		$stream->changed($user->id,  $suggest ? 'Streams/suggest' : 'Streams/changed');
 	}
 	
 	if (!empty($fields['join'])) {

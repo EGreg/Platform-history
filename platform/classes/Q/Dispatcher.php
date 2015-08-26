@@ -149,8 +149,8 @@ class Q_Dispatcher
 			if (is_dir($filename)) {
 				/**
 				 * @event Q/dir
-				 * @param {string} 'filename'
-				 * @param {string} 'routed_uri'
+				 * @param {string} filename
+				 * @param {string} routed_uri
 				 * @return {boolean}
 				 */
 				$served = Q::event("Q/dir", compact('filename', 'routed_uri'));
@@ -158,8 +158,8 @@ class Q_Dispatcher
 			} else {
 				/**
 				 * @event Q/file
-				 * @param {string} 'filename'
-				 * @param {string} 'routed_uri'
+				 * @param {string} filename
+				 * @param {string} routed_uri
 				 * @return {boolean}
 				 */
 				$served = Q::event("Q/file", compact('filename', 'routed_uri'));
@@ -421,17 +421,17 @@ class Q_Dispatcher
 			if (Q::canHandle("$module/errors")) {
 				/**
 				 * @event $module/errors
-				 * @param {Exception} 'exception'
-				 * @param {string} 'module'
-				 * @param {string} 'partial_response'
+				 * @param {Exception} exception
+				 * @param {string} module
+				 * @param {string} partial_response
 				 */
 				Q::event("$module/errors", compact('errors', 'exception', 'partial_response', 'response_started'));
 			} else {
 				/**
 				 * @event Q/errors
-				 * @param {Exception} 'exception'
-				 * @param {string} 'module'
-				 * @param {string} 'partial_response'
+				 * @param {Exception} exception
+				 * @param {string} module
+				 * @param {string} partial_response
 				 */
 				Q::event("Q/errors", compact('errors', 'exception', 'partial_response', 'response_started'));
 			}
@@ -439,7 +439,7 @@ class Q_Dispatcher
 			Q_Exception::rethrow($e, ''); // may be for forwarding
 			/**
 			 * @event Q/exception
-			 * @param {Exception} 'exception'
+			 * @param {Exception} exception
 			 */
 			Q::event('Q/exception', compact('exception')); // the original exception
 		}

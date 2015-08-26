@@ -177,13 +177,12 @@ Streams.iconUrl = function(icon, size) {
 		console.warn("Streams.iconUrl: icon is empty");
 		return '';
 	}
-	if (!size) {
+	if (!size || size === true) {
 		size = '40';
 	}
 	size = (String(size).indexOf('.') >= 0) ? size : size+'.png';
-	return icon.isUrl()
-		? icon + '/' + size
-		: Q.url('plugins/Streams/img/icons/'+icon+'/'+size);
+	var src = icon + '/' + size;
+	return icon.isUrl() ? src : Q.url('plugins/Streams/img/icons/'+src);
 };
 
 var _socket = null,
@@ -193,6 +192,7 @@ var _socket = null,
 	_streamMessageHandlers = {},
 	_streamFieldChangedHandlers = {},
 	_streamUpdatedHandlers = {},
+	_streamClosedHandlers = {},
 	_streamRelatedFromHandlers = {},
 	_streamRelatedToHandlers = {},
 	_streamUnrelatedFromHandlers = {},
@@ -350,9 +350,9 @@ Streams.socketSessionId = function (publisherId, streamName) {
  * A convenience method to get the URL of the streams-related action
  * @static
  * @method actionUrl
- * @param {String} publisherId , The id of the publisher
- * @param {String} streamName , The name of the stream
- * @param {String} what , Defaults to 'stream'. Can also be 'message', 'relation', etc.
+ * @param {String} publisherId The id of the publisher
+ * @param {String} streamName The name of the stream
+ * @param {String} [what='stream'] Can be one of 'stream', 'message', 'relation', etc.
  * @return {String} The corresponding URL
  */
 Streams.actionUrl = function(publisherId, streamName, what)
@@ -361,12 +361,17 @@ Streams.actionUrl = function(publisherId, streamName, what)
 		what = 'stream';
 	}
 	switch (what) {
-		case 'stream':
-		case 'message':
-		case 'relation':
-			return Q.action("Streams/"+what+"?publisherId="+encodeURIComponent(publisherId)+"&name="+encodeURIComponent(streamName));
+	case 'stream':
+	case 'message':
+	case 'relation':
+		return Q.action("Streams/"+what, {
+			'publisherId': publisherId,
+			'name': streamName,
+			'Q.clientId': Q.clientId()
+		});
+	default:
+		return null;
 	}
-	return null;
 };
 
 Q.Tool.define({
@@ -376,7 +381,6 @@ Q.Tool.define({
 	"Streams/photoSelector": "plugins/Streams/js/tools/photoSelector.js",
 	"Streams/userChooser"  : "plugins/Streams/js/tools/userChooser.js",
 	"Streams/participants" : "plugins/Streams/js/tools/participants.js",
-	"Streams/publisher"    : "plugins/Streams/js/tools/publisher.js",
 	"Streams/basic"        : "plugins/Streams/js/tools/basic.js",
 	"Streams/access"       : "plugins/Streams/js/tools/access.js",
 	"Streams/subscription" : "plugins/Streams/js/tools/subscription.js",
@@ -384,6 +388,7 @@ Q.Tool.define({
 	"Streams/related"      : "plugins/Streams/js/tools/related.js",
 	"Streams/inplace"      : "plugins/Streams/js/tools/inplace.js",
 	"Streams/html"         : "plugins/Streams/js/tools/html.js",
+	"Streams/player"       : "plugins/Streams/js/tools/publisher.js",
 	"Streams/preview"  	   : "plugins/Streams/js/tools/preview.js",
 	"Streams/image/preview": "plugins/Streams/js/tools/image/preview.js",
 	"Streams/form"         : "plugins/Streams/js/tools/form.js"
@@ -447,9 +452,11 @@ Streams.get = function _Streams_get(publisherId, streamName, callback, extra) {
 			return callback && callback.call(this, msg, params);
 		}
 		if (Q.isEmpty(data.stream)) {
-			return console.warn(
-				"Stream " + publisherId + " " + streamName + " is not available"
-			);
+			var msg = "Stream " + publisherId + " " + streamName + " is not available";
+			var err = msg;
+			var params = [err, data, null];
+			Streams.onError.handle(msg, params);
+			return callback && callback.call(null, err, null, extra);
 		}
 		Streams.construct(
 			data.stream,
@@ -525,9 +532,6 @@ var _Streams_batchFunction_preprocess = {
  * @method create
  * @param {Object} fields
  *  Should contain at least the publisherId and type of the stream
- * @param {Q.Tool} [tool]
- *  If this is being called from a tool implementing the Streams/preview protocol,
- *  then pass the tool before the callback, so that it can be updated properly.
  * @param {Function} callback 
  *	if there were errors, first parameter is the error message
  *  otherwise, first parameter is null and second parameter is a Streams.Stream object
@@ -536,26 +540,7 @@ var _Streams_batchFunction_preprocess = {
  *   @param {String} [related.streamName] the name of the related stream
  *   @param {Mixed} [related.type] the type of the relation
  */
-Streams.create = function (fields, /* tool, */ callback, related) {
-	var tool = null;
-	if (Q.typeOf(callback) === 'Q.Tool') {
-		tool = callback;
-		var cb = related;
-		related = arguments[3];
-		callback = function (err, stream, extra) {
-			var state = tool.state;
-			var r = state.related;
-			Streams.related.cache.each([r.publisherId, r.streamName],
-			function (key) {
-				Streams.related.cache.remove(key);
-			});
-			state.related.weight = Q.getObject(['related', 'weight'], extra);
-			state.publisherId = this.fields.publisherId;
-			state.streamName = this.fields.name;
-			tool.stream = this;
-			cb && cb.apply(this, arguments);
-		};
-	}
+Streams.create = function (fields, callback, related) {
 	var slotNames = ['stream'];
 	if (fields.icon) {
 		slotNames.push('icon');
@@ -579,6 +564,12 @@ Streams.create = function (fields, /* tool, */ callback, related) {
 			Streams.onError.handle.call(this, msg, args);
 			Streams.create.onError.handle.call(this, msg, args);
 			return callback && callback.call(this, msg, args);
+		}
+		if (related) {
+			Streams.related.cache.each([related.publisherId, related.streamName],
+			function (key) {
+				Streams.related.cache.remove(key);
+			});
 		}
 		Streams.construct(data.slots.stream, {}, function Stream_create_construct_handler (err, stream) {
 			var msg = Q.firstErrorMessage(err);
@@ -644,7 +635,9 @@ Streams.construct = function _Streams_construct(fields, extra, callback) {
 			// Default constructor. Copy any additional fields.
 			if (!fields) return;
 			for (var k in fields) {
-				if ((k in this.fields) || k === 'access') continue;
+				if ((k in this.fields)
+				|| k === 'access'
+				|| k === 'isRequired') continue;
 				this.fields[k] = Q.copy(fields[k]);
 			}
 		};
@@ -997,7 +990,8 @@ var Stream = Streams.Stream = function (fields) {
 		'adminLevel',
 		'inheritAccess',
 		'closedTime',
-		'access'
+		'access',
+		'isRequired'
 	]);
 	this.typename = 'Q.Streams.Stream';
 	prepareStream(this, fields);
@@ -1060,11 +1054,10 @@ Stream.release = function _Stream_release (publisherId, streamName) {
 
 /**
  * Refreshes a stream, to show the latest content and possibly process the latest messages posted to the stream.
- * If your app uses socket.io, then calling this manually is largely unnecessary because messages arrive via push.
- * 
+ * If your app server script is running, then calling this manually is largely unnecessary because messages arrive via push using socket.io .
  * @static
  * @method refresh
- * @param {Function} callback This is called when the stream has been refreshed, or if Streams has determined it won't send a refresh request, it will get null as the first parameter.
+ * @param {Function} callback This is called when the stream has been refreshed.
  * @param {Object} [options] A hash of options, including:
  *   @param {Boolean} [options.messages] If set to true, then besides just reloading the fields, attempt to catch up on the latest messages
  *   @param {Number} [options.max] The maximum number of messages to wait and hope they will arrive via sockets. Any more and we just request them again.
@@ -1073,35 +1066,39 @@ Stream.release = function _Stream_release (publisherId, streamName) {
  *   @param {Object} [options.changed] An Object of {fieldName: true} pairs naming fields to trigger change events for, even if their values stayed the same
  *   @param {Boolean} [options.evenIfNotRetained] If the stream wasn't retained (for example because it was missing last time), then refresh anyway
  *   @param {Object} [options.extra] Any extra parameters to pass to the callback
- * @return {boolean} whether the refresh is occurring, or whether it has been canceled
+ * @return {boolean} Whether callback will be called, or false if the refresh has been canceled
  */
 Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, options) {
 	var notRetained = !_retainedByStream[Streams.key(publisherId, streamName)];
 	if (!Q.isOnline()
 	|| (notRetained && !(options && options.evenIfNotRetained))) {
 		Streams.get.cache.removeEach([publisherId, streamName]);
-		callback && callback(null, false);
 		return false;
 	}
 	var result = false;
-	// If the stream was retained, fetch latest messages,
-	// and replay their being "posted" to trigger the right events
 	if (options && options.messages) {
-		result = !!Message.wait(publisherId, streamName, -1, callback, options);
+		// If the stream was retained, fetch latest messages,
+		// and replay their being "posted" to trigger the right events
+		result = Message.wait(publisherId, streamName, -1, callback, options);
 	}
 	var node = Q.nodeUrl({
 		publisherId: publisherId,
 		streamName: streamName
 	});
 	var socket = Q.Socket.get('Streams', node);
-	if (!result && !(socket && options && options.unlessSocket)) {
-		// there was no cache, and we didn't wait for previous messages
-		// just get the stream, and any listeners will be triggered
+	if (result === false) {
+		if (socket && options && options.unlessSocket) {
+   			// We didn't even try to wait for messages
+   			return false;
+		}
+		// We sent a request to get the latest messages.
+		// But we will also force-get the stream, to trigger any handlers
+		// set for a streams refresh event.
 		Streams.get.force(publisherId, streamName, function (err, stream) {
 			if (!err) {
 				var ps = Streams.key(publisherId, streamName);
 				var changed = (options && options.changed) || {};
-				updateStream(_retainedStreams[ps], this.fields, changed);
+				Stream.update(_retainedStreams[ps], this.fields, changed);
 				_retainedStreams[ps] = this;
 			}
 			if (callback) {
@@ -1113,8 +1110,6 @@ Stream.refresh = function _Stream_refresh (publisherId, streamName, callback, op
 			}
 		});
 		result = true;
-	} else {
-		callback && callback(null, false);
 	}
 	_retain = undefined;
 	return true;
@@ -1219,16 +1214,20 @@ Sp.clear = function _Stream_prototype_clear (attributeName) {
  * 
  * @method save
  * @param {Function} callback
+ * @param {Object} [options] A hash of options, including:
+ *   @param {Array} [options.changed] An array of {fieldName: true} pairs naming fields to trigger change events for, even if their values stayed the same
  */
-Sp.save = function _Stream_prototype_save (callback) {
+Sp.save = function _Stream_prototype_save (callback, options) {
 	var that = this;
 	var slotName = "stream";
-	this.pendingFields.publisherId = this.fields.publisherId;
-	this.pendingFields.streamName = this.fields.name;
-	this.pendingFields["Q.clientId"] = Q.clientId();
+	var f = this.fields;
+	var pf = this.pendingFields; 
+	pf.publisherId = f.publisherId;
+	pf.name = f.name;
+	pf["Q.clientId"] = Q.clientId();
 	var baseUrl = Q.baseUrl({
-		publisherId: this.pendingFields.publisherId,
-		streamName: this.pendingFields.name
+		publisherId: pf.publisherId,
+		streamName: pf.name
 	});
 	Q.req('Streams/stream', [slotName], function (err, data) {
 		var msg = Q.firstErrorMessage(err, data && data.errors);
@@ -1238,18 +1237,38 @@ Sp.save = function _Stream_prototype_save (callback) {
 			return callback && callback.call(this, msg, args);
 		}
 		// the rest will occur in the handler for the stream.onUpdated event coming from the socket
-		callback && callback.call(that, null, data.slots.stream || null);
-	}, { method: 'put', fields: this.pendingFields, baseUrl: baseUrl });
+		var stream = data.slots.stream || null;
+		callback && callback.call(that, null, stream);
+		if (stream) {
+			// process the Streams/changed message, if stream was retained
+			Streams.Stream.refresh(stream.publisherId, stream.name, null, {
+				messages: true,
+				unlessSocket: true
+			});
+		}
+	}, { method: 'put', fields: pf, baseUrl: baseUrl });
 };
 
 /**
- * Remove a stream on the server
+ * Closes a stream in the database, and marks it for removal unless it is required.
  * 
  * @method remove
  * @param {Function} callback
  */
-Sp.remove = function _Stream_prototype_remove (callback) {
-	return Stream.remove(this.fields.publisherId, this.fields.name, callback);
+Sp.close = function _Stream_prototype_remove (callback) {
+	return Stream.close(this.fields.publisherId, this.fields.name, callback);
+};
+
+/**
+ * Reopens a stream in the database that was previously closed, but not yet removed.
+ * 
+ * @static
+ * @method reopen
+ * @param {Function} callback Receives (err, result) as parameters
+ */
+Sp.reopen = function _Stream_remove (callback) {
+	this.pendingFields.closedTime = false;
+	this.save(callback);
 };
 
 /**
@@ -1490,10 +1509,8 @@ Sp.accessDialog = function(options) {
  * A convenience method to get the URL of the streams-related action
  * 
  * @method actionUrl
- * @param {String} what
- *	Defaults to 'stream'. Can also be 'message', 'relation', etc.
- * @return {String} 
- *	The corresponding URL
+ * @param {String} [what='stream'] Can be one of 'stream', 'message', 'relation', etc.
+ * @return {String} The corresponding URL
  */
 Sp.actionUrl = function _Stream_prototype_actionUrl (what) {
 	return Streams.actionUrl(this.fields.publisherId, this.fields.name, what);
@@ -1631,7 +1648,11 @@ Streams.related = function _Streams_related(publisherId, streamName, relationTyp
 			if (options.participants) {
 				extra.participants = data.slots.participants;
 			}
-			Streams.construct(data.slots.stream, extra, _processResults);
+			if (!data.slots.stream) {
+				callback && callback.call(this, "Streams/related missing stream " + streamName + ' published by ' + publisherId);
+			} else {
+				Streams.construct(data.slots.stream, extra, _processResults);
+			}
 		}
 
 		function _processResults(err, stream) {
@@ -1833,8 +1854,26 @@ Stream.onFieldChanged = Q.Event.factory(_streamFieldChangedHandlers, ["", "", ""
 Stream.onUpdated = Q.Event.factory(_streamUpdatedHandlers, ["", "", ""]);
 
 /**
+ * Returns Q.Event which occurs when attributes of the stream officially updated
+ * @event onUpdated
+ * @param publisherId {String} id of publisher which is publishing the stream
+ * @param streamName {String} optional name of stream which the message is posted to
+ * @param attributeName {String} optional name of the attribute to listen for
+ */
+Stream.onUpdated = Q.Event.factory(_streamUpdatedHandlers, ["", "", ""]);
+
+/**
+ * Returns Q.Event which occurs when a stream has been closed
+ * (and perhaps has been marked for removal)
+ * @event onClosed
+ * @param publisherId {String} id of publisher which is publishing this stream
+ * @param streamName {String} optional name of this stream
+ */
+Stream.onClosed = Q.Event.factory(_streamClosedHandlers, ["", ""]);
+
+/**
  * Returns Q.Event which occurs when another stream has been related to this stream
- * @event onRelatedTo
+ * @event onRelatedFrom
  * @param publisherId {String} id of publisher which is publishing this stream
  * @param streamName {String} optional name of this stream
  */
@@ -1983,7 +2022,7 @@ Stream.leave = function _Stream_leave (publisherId, streamName, callback) {
 Stream.leave.onError = new Q.Event();
 
 /**
- * Remove a stream from the database.
+ * Closes a stream in the database, and marks it for removal unless it is required.
  * 
  * @static
  * @method remove
@@ -1991,8 +2030,8 @@ Stream.leave.onError = new Q.Event();
  * @param {String} streamName
  * @param {Function} callback Receives (err, result) as parameters
  */
-Stream.remove = function _Stream_remove (publisherId, streamName, callback) {
-	var slotName = "result";
+Stream.close = function _Stream_remove (publisherId, streamName, callback) {
+	var slotName = "result,stream";
 	var fields = {"publisherId": publisherId, "name": streamName};
 	var baseUrl = Q.baseUrl({
 		publisherId: publisherId,
@@ -2003,13 +2042,21 @@ Stream.remove = function _Stream_remove (publisherId, streamName, callback) {
 		if (msg) {
 			var args = [err, data];
 			Streams.onError.handle.call(this, msg, args);
-			Stream.remove.onError.handle.call(this, msg, args);
+			Stream.close.onError.handle.call(this, msg, args);
 			return callback && callback.call(this, msg, args);
+		}
+		var stream = data.slots.stream;
+		if (stream) {
+			// process the Streams/closed message, if stream was retained
+			Streams.Stream.refresh(stream.publisherId, stream.name, null, {
+				messages: true,
+				unlessSocket: true
+			});
 		}
 		callback && callback.call(this, err, data.slots.result || null);
 	}, { method: 'delete', fields: fields, baseUrl: baseUrl });
 };
-Stream.remove.onError = new Q.Event();
+Stream.close.onError = new Q.Event();
 
 /**
  * @class Streams
@@ -2176,10 +2223,11 @@ Streams.relate = function _Streams_relate (publisherId, streamName, relationType
 		streamName: streamName
 	});
 	Q.req('Streams/related', [slotName], function (err, data) {
+		var msg = Q.firstErrorMessage(err, data && data.errors);
 		var messageFrom = Q.getObject('slots.result.messageFrom', data);
 		var messageTo = Q.getObject('slots.result.messageTo', data);
 		// wait for messages from cached streams -- from, to or both!
-		callback && callback.call(this, err, Q.getObject('slots.result', data) || null);
+		callback && callback.call(this, msg, Q.getObject('slots.result', data) || null);
 	}, { method: 'post', fields: fields, baseUrl: baseUrl });
 	_retain = undefined;
 };
@@ -2503,9 +2551,9 @@ Message.latestOrdinal = function _Message_latestOrdinal (publisherId, streamName
  * @param {Number} ordinal The ordinal of the message to wait for, or -1 to load latest messages
  * @param {Function} callback Receives ([arrayOfOrdinals]) as parameters
  * @param {Object} [options] A hash of options which can include:
- *   @param {Number} [options.max] The maximum number of messages to wait and hope they will arrive via sockets. Any more and we just request them again.
- *   @param {Number} [options.timeout] The maximum amount of time to wait and hope the messages will arrive via sockets. After this we just request them again.
- *   @param {Number} [options.unlessSocket] Whether to avoid doing any requests when a socket is attached
+ *   @param {Number} [options.max=5] The maximum number of messages to wait and hope they will arrive via sockets. Any more and we just request them again.
+ *   @param {Number} [options.timeout=1000] The maximum amount of time to wait and hope the messages will arrive via sockets. After this we just request them again.
+ *   @param {Number} [options.unlessSocket=true] Whether to avoid doing any requests when a socket is attached
  *   @param {Boolean} [options.evenIfNotRetained] Set this to true to fetch all messages posted to the stream, in the event that it wasn't cached or retained.
  * @return {Boolean|Number|Q.Pipe}
  *   Returns false if no attempt was made because stream wasn't cached,
@@ -2518,11 +2566,10 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 	var latest = Message.latestOrdinal(publisherId, streamName, true);
 	if (!latest && (!options || !options.evenIfNotRetained)) {
 		// There is no cache for this stream, so we won't wait for previous messages.
-		Q.handle(callback, this, [null]);
 		return false;
 	}
 	if (ordinal >= 0 && ordinal <= latest) {
-		Q.handle(callback, this, [null]); // The cached stream already got this message
+		// The cached stream already got this message
 		return true;
 	}
 	var o = Q.extend({}, Message.wait.options, options);
@@ -2538,24 +2585,26 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 	// ok, wait a little while
 	var t = setTimeout(_tryLoading, o.timeout);
 	var ordinals = [];
+	var p = new Q.Pipe();
 	Q.each(latest+1, ordinal, 1, function (ord) {
 		ordinals.push(ord);
 		var event = Streams.Stream.onMessage(publisherId, streamName, ord);
-		handlerKey = event.set(function () {
+		handlerKey = event.add(function () {
 			p.fill(ord)();
 			event.remove(handlerKey);
 			handlerKey = null;
 		});
 		waiting[ord] = [event, handlerKey];
 	});
-	return new Q.Pipe(ordinals, function () {
-		// they all arrived
+	p.add(ordinals, 1, function () {
 		if (!alreadyCalled) {
 			Q.handle(callback, this, [ordinals]);
 		}
 		alreadyCalled = true;
 		return true;
-	});	
+	}).run();
+	return p;
+	
 	function _tryLoading() {
 		// forget waiting, we'll request them again
 		
@@ -2596,7 +2645,7 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 					w[0].remove(w[1]);
 				});
 				if (!alreadyCalled) {
-					Q.handle(callback, this, [null, Object.keys(messages)]);
+					Q.handle(callback, this, [Object.keys(messages)]);
 				}
 				alreadyCalled = true;
 			}
@@ -2605,7 +2654,7 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 };
 Message.wait.options = {
 	max: 5, // maximum number of messages we'll actually wait for, if there's a socket
-	timeout: 1000 // maximum number of milliseconds we'll actually wait for, if there's a socket
+	timeout: 1000, // maximum number of milliseconds we'll actually wait for, if there's a socket
 };
 
 var _messageShouldRefreshStream = {};
@@ -3051,18 +3100,21 @@ Streams.setupRegisterForm = function _Streams_setupRegisterForm(identifier, json
 };
 
 function updateAvatarCache(stream) {
-	var avatarFields = {
+	var avatarStreamNames = {
 		'Streams/user/firstName': true,
 		'Streams/user/lastName': true,
 		'Streams/user/username': true,
 		'Streams/user/icon': true
 	};
-	if (avatarFields[stream.fields.name]) {
-		Avatar.get.cache.remove([stream.fields.publisherId]);
+	var sf = stream.fields;
+	if (avatarStreamNames[sf.name]) {
+		// Reload User and Avatar from the server
+		Users.get.force(sf.publisherId);
+		Avatar.get.force(sf.publisherId);
 	}
 }
 
-function updateStream(stream, fields, onlyChangedFields) {
+Stream.update = function _Streams_Stream_update(stream, fields, onlyChangedFields) {
 	if (!stream || !fields) {
 		return false;
 	}
@@ -3082,6 +3134,16 @@ function updateStream(stream, fields, onlyChangedFields) {
 			stream,
 			[fields, k]
 		);
+		Q.handle(
+			Q.getObject([publisherId, '', k], _streamFieldChangedHandlers),
+			stream,
+			[fields, k]
+		);
+		Q.handle(
+			Q.getObject(['', streamName, k], _streamFieldChangedHandlers),
+			stream,
+			[fields, k]
+		);
 		updated[k] = fields[k];
 	}
 	if (!onlyChangedFields || !Q.isEmpty(updated)) {
@@ -3092,6 +3154,11 @@ function updateStream(stream, fields, onlyChangedFields) {
 		);
 		Q.handle(
 			Q.getObject([publisherId, '', ''], _streamFieldChangedHandlers),
+			stream,
+			[fields, updated]
+		);
+		Q.handle(
+			Q.getObject(['', streamName, ''], _streamFieldChangedHandlers),
 			stream,
 			[fields, updated]
 		);
@@ -3162,6 +3229,10 @@ function prepareStream(stream) {
 		stream.access = Q.copy(stream.fields.access);
 		delete stream.fields.access;
 	}
+	if (stream.fields.isRequired) {
+		stream.isRequired = stream.fields.isRequired;
+		delete stream.fields.isRequired;
+	}
 	try {
 		stream.pendingAttributes = stream.attributes
 		= stream.fields.attributes ? JSON.parse(stream.fields.attributes) : {};
@@ -3195,7 +3266,7 @@ function _onResultHandler(subject, params, args, ret, original) {
 Q.Tool.onMissingConstructor.set(function (constructors, normalized) {
 	var str = "_preview";
 	if (normalized.substr(normalized.length-str.length) === str) {
-		constructors[normalized] = "plugins/Streams/js/tools/preview.js";
+		constructors[normalized] = "plugins/Streams/js/tools/default/preview.js";
 	}
 }, 'Streams');
 
@@ -3461,7 +3532,11 @@ Q.onInit.add(function _Streams_onInit() {
 		// Wait until the previous message has been posted, then process this one.
 		// Will return immediately if previous message is already cached
 		// (e.g. from a post or retrieving a stream, or because there was no cache yet)
-		Message.wait(msg.publisherId, msg.streamName, msg.ordinal-1, function () {
+		var ret = Message.wait(msg.publisherId, msg.streamName, msg.ordinal-1, _message);
+		if (typeof ret === 'boolean') {
+			_message();
+		}
+		function _message() {
 			var ptn = msg.publisherId+"\t"+msg.streamName;
 			if (Message.latest[ptn] >= parseInt(msg.ordinal)) {
 				return; // it was already processed
@@ -3559,8 +3634,11 @@ Q.onInit.add(function _Streams_onInit() {
 						}
 					}
 					break;
-				case 'Streams/edited':
-					updateStream(stream, fields.changes, null);
+				case 'Streams/changed':
+					Stream.update(stream, fields.changes, null);
+					break;
+				case 'Streams/progress':
+					Stream.update(stream, fields, null);
 					break;
 				case 'Streams/relatedFrom':
 					updateRelatedCache(fields);
@@ -3585,6 +3663,16 @@ Q.onInit.add(function _Streams_onInit() {
 				case 'Streams/updatedRelateTo':
 					updateRelatedCache(fields);
 					_relationHandlers(_streamUpdatedRelateToHandlers, msg, stream, fields);
+					break;
+				case 'Streams/closed':
+					Stream.update(stream, fields, null);
+					var sf = stream.fields;
+					var Qh = Q.handle;
+					var Qgo = Q.getObject;
+					Qh(Qgo([sf.publisherId, sf.name], _streamClosedHandlers), stream, [fields]);
+					Qh(Qgo([sf.publisherId, ''], _streamClosedHandlers), stream, [fields]);
+					Qh(Qgo(['', sf.name], _streamClosedHandlers), stream, [fields]);
+					Qh(Qgo(['', ''], _streamClosedHandlers), stream, [fields]);
 					break;
 				default:
 					break;
@@ -3658,7 +3746,7 @@ Q.onInit.add(function _Streams_onInit() {
 					Streams.related.cache.removeEach([msg.publisherId, msg.streamName]);
 				}
 			});
-		});
+		}
 	}, 'Streams');
 	
 	function _preloadedStreams(elem) {
@@ -3718,14 +3806,10 @@ function _scheduleUpdate() {
 }
 
 function _refreshUnlessSocket(publisherId, streamName) {
-	var node = Q.nodeUrl({
-		publisherId: publisherId,
-		streamName: streamName
+	Stream.refresh(publisherId, streamName, null, {
+		messages: true,
+		unlessSocket: true
 	});
-	var socket = Q.Socket.get('Streams', node);
-	if (!socket) {
-		Stream.refresh(publisherId, streamName, null, { messages: true });
-	}
 }
 
 Q.Template.set('Streams/followup/mobile/alert', "The invite was sent from our number, which your friends don't yet recognize. Follow up with a quick text to let them know the invitation came from you, asking them to click the link.");

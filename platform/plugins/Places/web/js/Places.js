@@ -25,27 +25,6 @@ var Places = Q.Places = Q.plugins.Places = {
 	},
 	
 	/**
-	 * @method getUserLocationStream
-	 * @static
-	 * Get the user's "Places/user/location" stream
-	 * @param {Function} callback receives (err, stream)
-	 */
-	getUserLocationStream: function (callback) {
-		var userId = Q.getObject('Users.loggedInUser.id', Q);
-		if (!userId) {
-			var err = new Q.Error("Places.userLocationStream: not logged in");
-			return callback(err);
-		}
-		Q.Streams.get(userId, "Places/user/location", function (err) {
-			var msg = Q.firstErrorMessage(err);
-			if (msg) {
-				return callback(err);
-			}
-			callback.call(this, err, this);
-		});
-	},
-	
-	/**
 	 * @method distance
 	 * @static
 	 * Use this to calculate the haversine distance between two sets of lat/long coordinates on the Earth
@@ -74,6 +53,29 @@ var Places = Q.Places = Q.plugins.Places = {
 	}
 
 
+};
+
+Places.Location = {
+	/**
+	 * @method getUserStream
+	 * @static
+	 * Get the user's "Places/user/location" stream
+	 * @param {Function} callback receives (err, stream)
+	 */
+	getUserStream: function (callback) {
+		var userId = Q.getObject('Users.loggedInUser.id', Q);
+		if (!userId) {
+			var err = new Q.Error("Places.Location.getUserStream: not logged in");
+			return callback(err);
+		}
+		Q.Streams.get(userId, "Places/user/location", function (err) {
+			var msg = Q.firstErrorMessage(err);
+			if (msg) {
+				return callback(err);
+			}
+			callback.call(this, err, this);
+		});
+	}
 };
 
 function _deg2rad(angle) {

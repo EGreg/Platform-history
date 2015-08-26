@@ -14,33 +14,33 @@
  * @class Base_Websites_Article
  * @extends Db_Row
  *
- * @property string $publisherId
- * @property string $streamName
- * @property string $userId
- * @property string $article
- * @property string $getintouch
+ * @property {string} $publisherId
+ * @property {string} $streamName
+ * @property {string} $userId
+ * @property {string} $article
+ * @property {string} $getintouch
  */
 abstract class Base_Websites_Article extends Db_Row
 {
 	/**
 	 * @property $publisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $streamName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $userId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $article
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $getintouch
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -200,7 +200,8 @@ abstract class Base_Websites_Article extends Db_Row
 	 */
 	function beforeSet_publisherId($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('publisherId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -230,7 +231,8 @@ abstract class Base_Websites_Article extends Db_Row
 	 */
 	function beforeSet_streamName($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('streamName', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -260,7 +262,8 @@ abstract class Base_Websites_Article extends Db_Row
 	 */
 	function beforeSet_userId($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('userId', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -290,7 +293,8 @@ abstract class Base_Websites_Article extends Db_Row
 	 */
 	function beforeSet_article($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('article', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -320,7 +324,8 @@ abstract class Base_Websites_Article extends Db_Row
 	 */
 	function beforeSet_getintouch($value)
 	{
-		if ($value instanceof Db_Expression) {
+		if (!isset($value)) {
+			$value='';}if ($value instanceof Db_Expression) {
 			return array('getintouch', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))

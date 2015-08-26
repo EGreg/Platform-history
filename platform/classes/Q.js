@@ -63,16 +63,6 @@ Q.typeOf = function _Q_typeOf(value) {
 };
 
 /**
- * Tests if the value is an integer
- * @method isInteger
- * @param {mixed} value The value to test
- * @return {boolean} Whether it is an integer
- */
-Q.isInteger = function _Q_isInteger(value) {
-	return (parseFloat(value) == parseInt(value)) && !isNaN(value);
-};
-
-/**
  * Walks the tree from the parent, and returns whether the path was defined
  * @method isSet
  * @param {Object} parent
@@ -607,7 +597,7 @@ Q.getter = function _Q_getter(original, options) {
 
 
 	function wrapper() {
-		var i, key, that = this, callbacks = [], _dontCache = false;
+		var i, key, that = this, callbacks = [];
 		var arguments2 = Array.prototype.slice.call(arguments);
 
 		// separate fields and callbacks
@@ -620,7 +610,7 @@ Q.getter = function _Q_getter(original, options) {
 			callbacks.push(noop);
 		}
 		
-		var ret = {};
+		var ret = { dontCache: false };
 		wrapper.emit('called', this, arguments2, ret);
 
 		var cached, cbpos, cbi;
@@ -671,7 +661,7 @@ Q.getter = function _Q_getter(original, options) {
 				return function _Q_getter_callback() {
 
 					// save the results in the cache
-					if (wrapper.cache && !_dontCache) {
+					if (wrapper.cache && !ret.dontCache) {
 						wrapper.cache.set(key, cbpos, this, arguments);
 					}
 
@@ -695,7 +685,7 @@ Q.getter = function _Q_getter(original, options) {
 		if (!wrapper.throttle) {
 			// no throttling, just run the function
 			if (false === original.apply(that, args)) {
-				_dontCache = true;
+				ret.dontCache = true;
 			}
 			ret.result = Q.getter.REQUESTING;
 			wrapper.emit('executed', this, arguments2, ret);
@@ -711,11 +701,11 @@ Q.getter = function _Q_getter(original, options) {
 				queue: [],
 				args: []
 			};
-			wrapper.throttle.throttleTry = function _throttleTry(that, getter, args) {
+			wrapper.throttle.throttleTry = function _throttleTry(that, getter, args, ret) {
 				++p.count;
 				if (p.size === null || p.count <= p.size) {
 					if (false === getter.apply(that, args)) {
-						_dontCache = true;
+						ret.dontCache = true;
 					}
 					return true;
 				}
@@ -743,7 +733,7 @@ Q.getter = function _Q_getter(original, options) {
 		}
 
 		// execute the throttle
-		ret.result = wrapper.throttle.throttleTry(this, original, args)
+		ret.result = wrapper.throttle.throttleTry(this, original, args, ret)
 			? Q.getter.REQUESTING
 			: Q.getter.THROTTLING;
 		wrapper.emit('executed', this, arguments2, ret);
@@ -951,12 +941,12 @@ Q.Cache.key = function _Cache_key(args, functions) {
 /**
  * Accesses the cache and sets an entry in it
  * @method set
- * @param {String} key
- * @param {Number} cbpos
- * @param {Object} subject
- * @param {Object} params
- * @param {Object} options supports the following options:
- *  "dontTouch": if true, then doesn't mark item as most recently used. Defaults to false.
+ * @param {String} key  the key to save the entry under, or an array of arguments
+ * @param {Number} cbpos the position of the callback
+ * @param {Object} subject The "this" object for the callback
+ * @param {Array} params The parameters for the callback
+ * @param {Object} options  supports the following options:
+ * @param {boolean} [options.dontTouch=false] if true, then doesn't mark item as most recently used
  * @return {Boolean} whether there was an existing entry under that key
  */
 Q.Cache.prototype.set = function _Q_Cache_prototype_set(key, cbpos, subject, params, options) {
@@ -1424,11 +1414,18 @@ Q.isEmpty = function _Q_isEmpty(o) {
  * Tests if the value is an integer
  * @static
  * @method isInteger
- * @param {mixed} value The value to test
- * @return {boolean} Whether it is an integer
+ * @param {mixed} value 
+ *  The value to test
+ * @param {boolean} [strictComparison=true]
+ *  Whether to test strictly for a number
+ * @return {boolean}
+ *	Whether it is an integer
  */
-Q.isInteger = function _Q_isInteger(value) {
-	return value > 0 ? Math.floor(value) === value : Math.ceil(value) === value;
+Q.isInteger = function _Q_isInteger(value, strictComparison) {
+	if (strictComparison) {
+		return value > 0 ? Math.floor(value) === value : Math.ceil(value) === value;
+	}
+	return value > 0 ? Math.floor(value) == value : Math.ceil(value) == value;
 };
 
 /**
@@ -1460,13 +1457,17 @@ Q.isPlainObject = function (x) {
 
 /**
  * Makes a shallow copy of an object. But, if any property is an object with a "copy" method,
- * it recursively calls that method to copy the property.
+ * or levels > 0, it recursively calls that method to copy the property.
+ * @static
  * @method copy
- * @param {array} fields
+ * @param {Array} fields
  *  Optional array of fields to copy. Otherwise copy all that we can.
- * @return {Object} Returns the shallow copy where some properties may have deepened the copy
+ * @param levels {Number}
+ *  Optional. Copy this many additional levels inside x if it is a plain object.
+ * @return {Object}
+ *  Returns the shallow copy where some properties may have deepened the copy
  */
-Q.copy = function _Q_copy(x, fields) {
+Q.copy = function _Q_copy(x, fields, levels) {
 	if (Q.typeOf(x) === 'array') {
 		return Array.prototype.slice.call(x, 0);
 	}
@@ -1495,6 +1496,8 @@ Q.copy = function _Q_copy(x, fields) {
 			}
 			if (x[k] && typeof(x[k].copy) === 'function') {
 				result[k] = x[k].copy();
+			} else if (levels) {
+				result[k] = Q.copy(x[k], null, levels-1);
 			} else {
 				result[k] = x[k];
 			}
@@ -1575,7 +1578,7 @@ Q.extend = function _Q_extend(target /* [[deep,] [levels,] anotherObject], ... *
 						? Q.copy(argk.replace)
 						: Q.extend(target[k], deep, levels-1, argk);
 				} else {
-					target[k] = Q.copy(argk);
+					target[k] = Q.copy(argk, null, levels-1);
 				}
 				if (target[k] === undefined) {
 					delete target[k];
@@ -1703,18 +1706,23 @@ Q.shuffle = function _Q_shuffle( arr ) {
 };
 
 /**
- * Returns microtime like PHP
- * @method microtime
- * @static
- * @param {Boolean} getAsFloat
- * @return {String}
+ * Returns the number of milliseconds since the first call to this function
+ * i.e. since this script was parsed.
+ * @method milliseconds
+ * @param {Boolean} sinceEpoch
+ *  Defaults to false. If true, just returns the number of milliseconds in the UNIX timestamp.
+ * @return {number}
+ *  The number of milliseconds, with fractional part
  */
-Q.microtime = function _Q_microtime(getAsFloat) {
-	var now = Date.now() / 1000;
-	if (getAsFloat) return now;
-	var s = parseInt(now, 10);
-	return (Math.round((now - s) * 1000) / 1000) + ' ' + s;
+Q.milliseconds = function _Q_microtime(sinceEpoch) {
+	var now = Date.now();
+	if (sinceEpoch) {
+		return now;
+	}
+	Q.milliseconds.started = Q.milliseconds.started || now;
+	return now - Q.milliseconds.started;
 };
+Q.milliseconds();
 
 /**
  * Returns the number of milliseconds since the
@@ -1956,7 +1964,7 @@ Q.listen = function _Q_listen(options, callback) {
 	
 	var use = app.use;
 	app.use = function _app_use() {
-		util.log("Adding request handler under " + server.host + ":" + server.port + " :", arguments[0].name);
+		console.log("Adding request handler under " + server.host + ":" + server.port + " :", arguments[0].name);
 		use.apply(this, Array.prototype.slice.call(arguments));
 	};
 	var methods = {
@@ -1985,7 +1993,7 @@ Q.listen = function _Q_listen(options, callback) {
 			} else if (typeof h !== 'string') {
 				h = h.toString();
 			}
-			util.log("Adding " + methods[k] + " handler under "
+			console.log("Adding " + methods[k] + " handler under "
 				+ server.host + ":" + server.port
 				+ w + " :", h);
 			f.apply(this, Array.prototype.slice.call(arguments));
@@ -1995,7 +2003,7 @@ Q.listen = function _Q_listen(options, callback) {
 		// WARNING: the following per-request log may be a bottleneck in high-traffic sites:
 		var a = server.address();
 		if (Q.Config.get('Q', 'node', 'logRequests', true)) {
-			util.log(req.method+" "+req.socket.remoteAddress+ " -> "+a.address+":"+a.port+req.url.split('?', 2)[0] + (req.body['Q/method'] ? ", method: '"+req.body['Q/method']+"'" : ''));
+			console.log(req.method+" "+req.socket.remoteAddress+ " -> "+a.address+":"+a.port+req.url.split('?', 2)[0] + (req.body['Q/method'] ? ", method: '"+req.body['Q/method']+"'" : ''));
 		}
 		req.info = {
 			port: port,
@@ -2018,7 +2026,7 @@ Q.listen = function _Q_listen(options, callback) {
 	});
 	server.listen(port, host, function () {
 		var internalString = (internalHost == host && internalPort == port) ? ' (internal requests)' : '';
-		util.log('Q: listening at ' + host + ':' + port + internalString);
+		console.log('Q: listening at ' + host + ':' + port + internalString);
 		callback && callback(server.address());
 	});
 
@@ -2208,7 +2216,7 @@ Q.init = function _Q_init(app, notListen) {
 		if (err) process.exit(2); // if run as child Q.Bootstrap.configure returns errors in callback
 		Q.Bootstrap.loadPlugins(function () {
 			Q.Bootstrap.loadHandlers(function () {
-				util.log(typeof notListen === "string" ? notListen : 'Q platform initialized!');
+				console.log(typeof notListen === "string" ? notListen : 'Q platform initialized!');
 				/**
 				 * Qbix platform initialized
 				 * @event init
@@ -2254,7 +2262,7 @@ var realPath_results = {};
  * @param {String} what
  * @return {mixed}
  */
-Q.require function _Q_require(what) {
+Q.require = function _Q_require(what) {
 	var realPath = Q.realPath(what);
 	if (!realPath) throw new Error("Q.require: file '"+what+"' not found");
 	return require(realPath);
@@ -2302,7 +2310,7 @@ Q.log = function _Q_log(message, name, timestamp, callback) {
 	message = (timestamp ? '['+Q.date('Y-m-d h:i:s')+'] ' : '')+(name ? name : 'Q')+': ' + message + "\n";
 
 	if (!name) {
-		return util.log(message);
+		return console.log(message);
 	}
 	if (typeof logStream[name] === "undefined") {
 		logStream[name] = [];
@@ -2537,8 +2545,8 @@ Q.date = function (format, timestamp) {
 			return 0 + ((a - c) !== (b - d));
 		},
 		O: function () { // Difference to GMT in hour format; e.g. +0200
-			var tzo = jsdate.getTimezoneOffset(),
-				a = Math.abs(tzo);
+			var tzo = jsdate.getTimezoneOffset();
+			var a = Math.abs(tzo);
 			return (tzo > 0 ? "-" : "+") + _pad(Math.floor(a / 60) * 100 + a % 60, 4);
 		},
 		P: function () { // Difference to GMT w/colon; e.g. +02:00
@@ -2771,10 +2779,21 @@ String.prototype.quote = function _String_prototype_quote() {
 	return o + '"';
 };
 
-String.prototype.interpolate = function _String_prototype_interpolate(o) {
+/**
+ * Goes through the params and replaces any references
+ * to their names in the string with their value.
+ * References are expected to be of the form {{varname}}
+ * @method interpolate
+ * @param {Object} params
+ *  A hash of parameters for interpolating in the expression.
+ *  Variable names in the expression can refer to them.
+ * @return {string}
+ *  The result of the interpolation
+ */
+String.prototype.interpolate = function _String_prototype_interpolate(params) {
 	return this.replace(/\{\{([^{}]*)\}\}/g,
 		function (a, b) {
-			var r = o[b];
+			var r = params[b];
 			return typeof r === 'string' || typeof r === 'number' ? r : a;
 		}
 	);

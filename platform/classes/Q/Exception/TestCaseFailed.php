@@ -13,4 +13,4 @@ class Q_Exception_TestCaseFailed extends Q_Exception_TestCase
 	 */
 };
 
-Q_Exception::add('Q_Exception_TestCaseFailed', 'failed. $message');
+Q_Exception::add('Q_Exception_TestCaseFailed', 'failed. {{message}}');

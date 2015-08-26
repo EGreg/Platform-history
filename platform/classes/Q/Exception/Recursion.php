@@ -13,4 +13,4 @@ class Q_Exception_Recursion extends Q_Exception
 	 */
 };
 
-Q_Exception::add('Q_Exception_Recursion', 'seems we have runaway recursive calls to $function_name');
+Q_Exception::add('Q_Exception_Recursion', 'seems we have runaway recursive calls to {{function_name}}');

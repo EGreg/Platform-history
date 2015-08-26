@@ -13,6 +13,7 @@
  *   @required
  *   @param {string} [options.streamName] The name of the stream
  *   @required
+ *   @param {string} [options.stream] You can pass this instead of publisherId and streamName
  *   @param {integer} [options.max]
  *    The number, if any, to show in the denominator of the summary
  *   @optional
@@ -34,6 +35,11 @@ function Streams_participants_tool($options)
 	}
  	$publisherId = Q::ifset($options, 'publisherId', null);
  	$streamName = Q::ifset($options, 'streamName', null);
+	if (!empty($options['stream'])) {
+		$stream = $options['stream'];
+		$publisherId = $stream->publisherId;
+		$streamName = $stream->name;
+	}
 	if (!isset($publisherId)) {
 		$publisherId = Streams::requestedPublisherId(true);
 	}

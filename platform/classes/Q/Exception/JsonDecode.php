@@ -13,4 +13,4 @@ class Q_Exception_JsonDecode extends Q_Exception
 	 */
 };
 
-Q_Exception::add('Q_Exception_JsonDecode', 'JSON decode: $message');
+Q_Exception::add('Q_Exception_JsonDecode', 'JSON decode: {{message}}');

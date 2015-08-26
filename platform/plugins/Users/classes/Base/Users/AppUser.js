@@ -29,44 +29,44 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property userId
- * @type String
+ * @property {String}
+ * @type userId
  */
 /**
- * @property provider
- * @type String
+ * @property {String}
+ * @type provider
  */
 /**
- * @property appId
- * @type String
+ * @property {String}
+ * @type appId
  */
 /**
- * @property insertedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type insertedTime
  */
 /**
- * @property updatedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type updatedTime
  */
 /**
- * @property access_token
- * @type String
+ * @property {String}
+ * @type access_token
  */
 /**
- * @property session_secret
- * @type String
+ * @property {String}
+ * @type session_secret
  */
 /**
- * @property session_expires
- * @type String
+ * @property {String}
+ * @type session_expires
  */
 /**
- * @property state
- * @type String
+ * @property {String}
+ * @type state
  */
 /**
- * @property provider_uid
- * @type String
+ * @property {String}
+ * @type provider_uid
  */
 
 /**
@@ -246,6 +246,9 @@ Base.prototype.fieldNames = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_userId = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".userId");
@@ -273,7 +276,7 @@ Base.prototype.maxSize_userId = function () {
 Base.prototype.beforeSet_provider = function (value) {
 		if (value instanceof Db.Expression) return value;
 		if (['native','facebook','twitter','google','yahoo'].indexOf(value) < 0)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".provider");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".provider");
 		return value;
 };
 
@@ -286,6 +289,9 @@ Base.prototype.beforeSet_provider = function (value) {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_appId = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".appId");
@@ -338,6 +344,7 @@ Base.prototype.beforeSet_updatedTime = function (value) {
  */
 Base.prototype.beforeSet_access_token = function (value) {
 		if (!value) return value;
+		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".access_token");
@@ -364,6 +371,7 @@ Base.prototype.maxSize_access_token = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_session_secret = function (value) {
+		if (!value) return value;
 		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
@@ -392,6 +400,7 @@ Base.prototype.maxSize_session_secret = function () {
  */
 Base.prototype.beforeSet_session_expires = function (value) {
 		if (!value) return value;
+		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".session_expires");
@@ -419,7 +428,7 @@ Base.prototype.maxSize_session_expires = function () {
 Base.prototype.beforeSet_state = function (value) {
 		if (value instanceof Db.Expression) return value;
 		if (['visited','added','removed'].indexOf(value) < 0)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".state");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".state");
 		return value;
 };
 
@@ -432,6 +441,9 @@ Base.prototype.beforeSet_state = function (value) {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_provider_uid = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".provider_uid");

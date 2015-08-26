@@ -3605,7 +3605,7 @@ $.fn.infiniteScroll = function(options)
  * @method grammar
  */
 Q.Tool.define('Q/grammar', function(options) {
-	var toolDiv = this.element;
+	var toolDiv = $(this.element);
 	if (!toolDiv.data('constructed'))
 	{
 		var dialog = toolDiv.children('.Q_grammar_dialog');

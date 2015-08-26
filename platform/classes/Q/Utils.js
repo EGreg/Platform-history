@@ -85,7 +85,8 @@ Utils.validate = function (req, res, next) {
 	if (signature === Q.Utils.signature(data, secret)) {
 		next();
 	} else {
-		util.log("Request validation failed");
+		console.log(data, secret);
+		console.log("Request validation failed");
 		res.send(JSON.stringify({errors: "Invalid signature"}), 403); // forbidden
 	}
 };
@@ -699,7 +700,7 @@ function _reset_split() {
 
 function _split_log() {
 	// may be modified to write log to file
-	util.log.apply(this, arguments);
+	console.log.apply(this, arguments);
 }
 
 var _logServer = null;

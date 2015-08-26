@@ -21,7 +21,7 @@
  *   @param {Boolean} [options.editable] Set to false to avoid showing even authorized users an interface to replace the image or text
  *   @param {Boolean} [options.creatable]  Optional pairs of {streamType: toolOptions} to render Streams/preview tools create new related streams.
  *   The params typically include at least a "title" field which you can fill with values such as "New" or "New ..."
- *   @param {Function} [options.toolType] Function that takes (streamType, options) and returns the name of the tool to render (and then activate) for that stream. That tool must implement the "Streams/preview" interface, including having an onUpdate event.
+ *   @param {Function} [options.toolName] Function that takes (streamType, options) and returns the name of the tool to render (and then activate) for that stream. That tool should reqire the "Streams/preview" tool, and work with it as documented in "Streams/preview".
  *   @param {Boolean} [options.realtime=false] Whether to refresh every time a relation is added, removed or updated by anyone
  *   @param {Object} [options.sortable] Options for "Q/sortable" jQuery plugin. Pass false here to disable sorting interface. If streamName is not a String, this interface is not shown.
  *   @param {Function} [options.tabs] Function for interacting with any parent "Q/tabs" tool. Format is function (previewTool, tabsTool) { return urlOrTabKey; }
@@ -56,7 +56,7 @@ function _Streams_related_tool (options)
 	publisherId: Q.info.app,
 	isCategory: true,
 	realtime: false,
-	editable: {},
+	editable: true,
 	creatable: {},
 	sortable: {
 		draggable: '.Streams_related_stream',
@@ -65,7 +65,7 @@ function _Streams_related_tool (options)
 	tabs: function (previewTool, tabsTool) {
 		return Q.Streams.key(previewTool.state.publisherId, previewTool.state.streamName);
 	},
-	toolType: function (streamType) {
+	toolName: function (streamType) {
 		return streamType+'/preview';
 	},
 	onUpdate: new Q.Event(
@@ -80,12 +80,12 @@ function _Streams_related_tool (options)
 			).addClass('Streams_related_composer Q_contextual_inactive');
 			if (oldElement) {
 				$(oldElement).before(element);
-				var $last = $('.Streams_related_composer:last');
+				var $last = tool.$('.Streams_related_composer:last');
 				if ($last.length) {
 					$(oldElement).insertAfter($last);
 				}
 			} else {
-				var $prev = $('.Streams_related_stream:first', $container).prev();
+				var $prev = $container.find('.Streams_related_stream:first').prev();
 				if ($prev.length) {
 					$prev.after(element);
 				} else {
@@ -94,23 +94,19 @@ function _Streams_related_tool (options)
 			}
 			Q.activate(element, function () {
 				var rc = tool.state.refreshCount;
-				var onUpdate = element.Q.tool.state.onUpdate;
-				if (!onUpdate) {
-					console.warn(element.Q.tool.name + " missing onUpdate event");
-				} else {
-					onUpdate.set(function () {
-						// workaround for now
-						if (tool.state.refreshCount > rc) {
-							return;
-						}
-						addComposer(streamType, params, null, element);
-						tool.integrateWithTabs([element]);
-						element.setAttribute('class', element.getAttribute('class').replace(
-							'Streams_related_composer', 'Streams_related_stream'
-						));
-						element.Q.tool.state.onUpdate.remove(tool);
-					}, tool);
-				}
+				var preview = Q.Tool.from(element, 'Streams/preview');
+				preview.state.beforeCreate.set(function () {
+					// workaround for now
+					if (tool.state.refreshCount > rc) {
+						return;
+					}
+					addComposer(streamType, params, null, element);
+					tool.integrateWithTabs([element]);
+					element.setAttribute('class', element.getAttribute('class').replace(
+						'Streams_related_composer', 'Streams_related_stream'
+					));
+					preview.state.beforeCreate.remove(tool);
+				}, tool);
 			});
 		}
 		
@@ -120,10 +116,10 @@ function _Streams_related_tool (options)
 		var $container = $te;
 		var isTabs = $te.hasClass('Q_tabs_tool');
 		if (isTabs) {
-			$container = $('.Q_tabs_tabs', $te);
+			$container = $te.find('.Q_tabs_tabs');
 		}
-		Q.Tool.remove($('.Streams_related_composer', $container));
-		Q.Tool.remove($('.Streams_related_stream', $container));
+		Q.Tool.remove($container.find('.Streams_related_composer'));
+		Q.Tool.remove($container.find('.Streams_related_stream'));
 		++state.refreshCount;
 		Q.Streams.refresh.beforeRequest.set(function () {
 			result.stream.refresh(null, {messages: true});
@@ -276,7 +272,7 @@ function _Streams_related_tool (options)
 
 	/**
 	 * You don't normally have to call this method, since it's called automatically.
-	 * Sets up an element for the stream with the tag and toolType provided to the
+	 * Sets up an element for the stream with the tag and toolName provided to the
 	 * Streams/related tool. Also populates "publisherId", "streamName" and "related" 
 	 * options for the tool.
 	 * @method elementForStream
@@ -301,8 +297,17 @@ function _Streams_related_tool (options)
 			},
 			editable: state.editable
 		}, options);
-		var toolType = state.toolType(streamType, o);
-		var e = this.setUpElement(state.tag || 'div', toolType, o);
+		var f = state.toolName;
+		if (typeof f === 'string') {
+			f = Q.getObject(state.toolName) || f;
+		}
+		var toolName = (typeof f === 'function') ? f(streamType, o) : f;
+		var e = Q.Tool.setUpElement(
+			state.tag || 'div', 
+			['Streams/preview', toolName], 
+			[o, {}], 
+			null, this.prefix
+		);
 		e.style.visibility = 'visible';
  		return e;
 	},
@@ -320,7 +325,7 @@ function _Streams_related_tool (options)
 		if (typeof state.tabs === 'string') {
 			state.tabs = Q.getObject(state.tabs);
 			if (typeof state.tabs !== 'function') {
-				throw new Q.Error("Q/tabs tool: state.tabs does not refer to a function");
+				throw new Q.Error("Q/related tool: state.tabs does not refer to a function");
 			}
 		}
 		parents = tool.parents();
@@ -328,29 +333,38 @@ function _Streams_related_tool (options)
 		for (id in parents) {
 			tabs = Q.Tool.from(parents[id].element, "Q/tabs");
 			if (!tabs) continue;
-			tool.$('.Streams_related_composer').addClass('Q_tabs_tab')
+			tool.$('.Streams_related_composer').addClass('Q_tabs_tab');
 			Q.each(elements, function (i) {
 				var element = elements[i];
-				var value = state.tabs.call(tool, Q.Tool.from(elements[i]), tabs);
-				var attr = value.isUrl() ? 'href' : 'data-name';
-				elements[i].addClass("Q_tabs_tab")
-					.setAttribute(attr, value);
-				if (!tabs.$tabs.is(element)) {
-					tabs.$tabs = tabs.$tabs.add(element);
-				}
-				var onLoad = Q.Tool.from(element).state.onLoad;
-				if (onLoad) {
-					onLoad.set(function () {
-						var tab = tabs.state.tab;
-						var $tab = $(tab);
-						if (tab === element) {
-							tabs.refresh();
-						}
-					});
-				}
+				var preview = Q.Tool.from(element, 'Streams/preview');
+				var key = preview.state.onRefresh.add(function () {
+					var value = state.tabs.call(tool, preview, tabs);
+					var attr = value.isUrl() ? 'href' : 'data-name';
+					elements[i].addClass("Q_tabs_tab")
+						.setAttribute(attr, value);
+					if (!tabs.$tabs.is(element)) {
+						tabs.$tabs = tabs.$tabs.add(element);
+					}
+					var onLoad = preview.state.onLoad;
+					if (onLoad) {
+						onLoad.set(function () {
+							var tab = tabs.state.tab;
+							var $tab = $(tab);
+							if (tab === element) {
+								tabs.refresh();
+							}
+						});
+					}
+					preview.state.onRefresh.remove(key);
+				});
 			});
 			tabs.refresh();
 			break;
+		}
+	},
+	Q: {
+		beforeRemove: function () {
+			this.state.onUpdate.remove("Streams/related");
 		}
 	}
 }

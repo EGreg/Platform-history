@@ -14,38 +14,38 @@
  * @class Base_Streams_RelatedFrom
  * @extends Db_Row
  *
- * @property string $fromPublisherId
- * @property string $fromStreamName
- * @property string $type
- * @property string $toPublisherId
- * @property string $toStreamName
- * @property string|Db_Expression $insertedTime
+ * @property {string} $fromPublisherId
+ * @property {string} $fromStreamName
+ * @property {string} $type
+ * @property {string} $toPublisherId
+ * @property {string} $toStreamName
+ * @property {string|Db_Expression} $insertedTime
  */
 abstract class Base_Streams_RelatedFrom extends Db_Row
 {
 	/**
 	 * @property $fromPublisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $fromStreamName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $type
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $toPublisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $toStreamName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -208,6 +208,9 @@ abstract class Base_Streams_RelatedFrom extends Db_Row
 	 */
 	function beforeSet_fromPublisherId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('fromPublisherId', $value);
 		}
@@ -238,6 +241,9 @@ abstract class Base_Streams_RelatedFrom extends Db_Row
 	 */
 	function beforeSet_fromStreamName($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('fromStreamName', $value);
 		}
@@ -268,6 +274,9 @@ abstract class Base_Streams_RelatedFrom extends Db_Row
 	 */
 	function beforeSet_type($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('type', $value);
 		}
@@ -298,6 +307,9 @@ abstract class Base_Streams_RelatedFrom extends Db_Row
 	 */
 	function beforeSet_toPublisherId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('toPublisherId', $value);
 		}
@@ -328,6 +340,9 @@ abstract class Base_Streams_RelatedFrom extends Db_Row
 	 */
 	function beforeSet_toStreamName($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('toStreamName', $value);
 		}
@@ -362,12 +377,13 @@ abstract class Base_Streams_RelatedFrom extends Db_Row
 		}
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
-			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".insertedTime");
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".insertedTime");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
-			$$v = $date[$v];
-		}
-		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
 		return array('insertedTime', $value);			
 	}
 

@@ -12,13 +12,13 @@ class Db_Mysql implements iDb
 	 * @extends iDb
 	 * @constructor
 	 *
-	 * @param {string} $conn_name The name of the connection out of the connections added with Db::setConnection()
+	 * @param {string} $connectionName The name of the connection out of the connections added with Db::setConnection()
 	 * This is required for actually connecting to the database.
 	 * @param {PDO} [$pdo=null] Existing PDO connection. Only accepts connections to MySQL.
 	 */
-	function __construct ($conn_name, PDO $pdo = null)
+	function __construct ($connectionName, PDO $pdo = null)
 	{
-		$this->conn_name = $conn_name;
+		$this->connectionName = $connectionName;
 		if ($pdo) {
 			// The following statement may throw an exception, which is fine.
 			$driver_name = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
@@ -47,19 +47,19 @@ class Db_Mysql implements iDb
 	
 	/**
 	 * The name of the connection
-	 * @property $conn_name
+	 * @property $connectionName
 	 * @type string
 	 * @protected
 	 */
-	protected $conn_name;
+	protected $connectionName;
 	
 	/**
 	 * The name of the shard currently selected with reallyConnect, if any
-	 * @property $shard_name
+	 * @property $shardName
 	 * @type string
 	 * @protected
 	 */
-	protected $shard_name;
+	protected $shardName;
 
 	/**
 	 * The database name of the shard currently selected with reallyConnect, if any
@@ -78,22 +78,22 @@ class Db_Mysql implements iDb
 	/**
 	 * Actually makes a connection to the database (by creating a PDO instance)
 	 * @method reallyConnect
-	 * @param {array} [$shard_name=null] A shard name that was added using Db::setShard.
+	 * @param {array} [$shardName=null] A shard name that was added using Db::setShard.
 	 * This modifies how we connect to the database.
 	 * @return {PDO} The PDO object for connection
 	 */
-	function reallyConnect($shard_name = null)
+	function reallyConnect($shardName = null)
 	{
-		$conn_name = $this->conn_name;
-		$conn_info = Db::getConnection($conn_name);
-		if (empty($conn_info)) {
-			throw new Exception("database connection \"$conn_name\" wasn't registered with Db.", -1);
+		$connectionName = $this->connectionName;
+		$connectionInfo = Db::getConnection($connectionName);
+		if (empty($connectionInfo)) {
+			throw new Exception("database connection \"$connectionName\" wasn't registered with Db.", -1);
 		}
 		
-		if (empty($shard_name)) {
-			$shard_name = '';
+		if (empty($shardName)) {
+			$shardName = '';
 		}
-		$modifications = Db::getShard($conn_name, $shard_name);
+		$modifications = Db::getShard($connectionName, $shardName);
 		if (!isset($modifications)) {
 			$modifications = array();
 		}
@@ -102,14 +102,14 @@ class Db_Mysql implements iDb
 			 * Occurs before a real connection to the database is made
 			 * @event Db/reallyConnect {before}
 			 * @param {Db_Mysql} db
-			 * @param {string} shard_name
+			 * @param {string} shardName
 			 * @param {array} modifications
 			 * @return {array}
 			 *	Extra modifications
 			 */
 			$more = Q::event('Db/reallyConnect', array(
 				'db' => $this,
-				'shard_name' => $shard_name,
+				'shardName' => $shardName,
 				'modifications' => $modifications
 			), 'before');
 			if ($more) {
@@ -117,13 +117,13 @@ class Db_Mysql implements iDb
 			}
 		}
 		
-		$dsn = isset($modifications['dsn']) ? $modifications['dsn'] : $conn_info['dsn'];
-		$prefix = isset($modifications['prefix']) ? $modifications['prefix'] : $conn_info['prefix'];
-		$username = isset($modifications['username']) ? $modifications['username'] : $conn_info['username'];
-		$password = isset($modifications['password']) ? $modifications['password'] : $conn_info['password'];
+		$dsn = isset($modifications['dsn']) ? $modifications['dsn'] : $connectionInfo['dsn'];
+		$prefix = isset($modifications['prefix']) ? $modifications['prefix'] : $connectionInfo['prefix'];
+		$username = isset($modifications['username']) ? $modifications['username'] : $connectionInfo['username'];
+		$password = isset($modifications['password']) ? $modifications['password'] : $connectionInfo['password'];
 		$driver_options = isset($modifications['driver_options']) 
 			? $modifications['driver_options'] 
-			: isset($conn_info['driver_options']) ? $conn_info['driver_options'] : null;
+			: isset($connectionInfo['driver_options']) ? $connectionInfo['driver_options'] : null;
 
 		// More dsn changes
 		$dsn_fields = array();
@@ -135,13 +135,15 @@ class Db_Mysql implements iDb
 		if ($dsn_fields) {
 			$dsn_array = array_merge(Db::parseDsnString($dsn), $dsn_fields);
 			$dsn = 'mysql:'.http_build_query($dsn_array, '', ';');
-		} else $dsn_array = Db::parseDsnString($dsn);
+		} else {
+			$dsn_array = Db::parseDsnString($dsn);
+		}
 
 		// The connection may have already been made with these parameters,
 		// in which case we will just retrieve the existing connection.
 		$this->pdo = self::pdo($dsn, $username, $password, $driver_options);
 		$this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-		$this->shard_name = $shard_name;
+		$this->shardName = $shardName;
 		$this->dbname = $dsn_array['dbname'];
 		$this->prefix = $prefix;
 
@@ -150,15 +152,17 @@ class Db_Mysql implements iDb
 			 * Occurs when a real connection to the database has been made
 			 * @event Db/reallyConnect {after}
 			 * @param {Db_Mysql} db
-			 * @param {string} shard_name
+			 * @param {string} shardName
 			 * @param {array} modifications
 			 */
 			Q::event('Db/reallyConnect', array(
 				'db' => $this,
-				'shard_name' => $shard_name,
+				'shardName' => $shardName,
 				'modifications' => $modifications
 			), 'after');
 		}
+		$this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+		$this->pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
 		return $this->pdo;
 	}
 	
@@ -169,7 +173,7 @@ class Db_Mysql implements iDb
 	 */
 	function shardName()
 	{
-		return $this->shard_name;
+		return $this->shardName;
 	}
 	
 	/**
@@ -225,7 +229,7 @@ class Db_Mysql implements iDb
 	 */
 	function connectionName ()
 	{
-		return isset($this->conn_name) ?  $this->conn_name : null;
+		return isset($this->connectionName) ?  $this->connectionName : null;
 	}
 	
 	/**
@@ -235,8 +239,8 @@ class Db_Mysql implements iDb
 	 */
 	function connection()
 	{
-		if (isset($this->conn_name)) {
-			return Db::getConnection($this->conn_name);
+		if (isset($this->connectionName)) {
+			return Db::getConnection($this->connectionName);
 		}
 		return null;
 	}
@@ -248,14 +252,14 @@ class Db_Mysql implements iDb
 	 */
 	function dsn()
 	{
-		$conn_info = Db::getConnection($this->conn_name);
-		if (empty($conn_info['dsn'])) {
+		$connectionInfo = Db::getConnection($this->connectionName);
+		if (empty($connectionInfo['dsn'])) {
 			throw new Exception(
 				'No dsn string found for the connection ' 
-				. $this->conn_name
+				. $this->connectionName
 			);
 		}
-		return Db::parseDsnString($conn_info['dsn']);
+		return Db::parseDsnString($connectionInfo['dsn']);
 	}
 	
 	/**
@@ -506,12 +510,13 @@ class Db_Mysql implements iDb
 	/**
 	 * Creates a query from raw SQL
 	 * @method rawQuery
-	 * @param {string} $sql May contain more than one SQL statement
+	 * @param {string|null} $sql May contain one or more SQL statements.
+	 *  Pass null here for an empty query that you can add other clauses to, e.g. ->commit().
 	 * @param {array} [$bind=array()] An array of parameters to bind to the query, using
 	 * the Db_Query_Mysql->bind method.
 	 * @return {Db_Query_Mysql}
 	 */
-	function rawQuery ($sql, $bind = array())
+	function rawQuery ($sql = null, $bind = array())
 	{
 		$clauses = array('RAW' => $sql);
 		$query = new Db_Query_Mysql($this, Db_Query::TYPE_RAW, $clauses);
@@ -821,6 +826,9 @@ class Db_Mysql implements iDb
 			$c2_pos = strpos($script, "--", $cur_pos);
 			$c3_pos = strpos($script, "#", $cur_pos);
 			$ds_pos = stripos($script, "\nDELIMITER ", $cur_pos);
+			if ($cur_pos === 0 and substr($script, 0, 9) === 'DELIMITER') {
+				$ds_pos = 0;
+			}
 
 			$next_pos = false;
 			if ($c_pos !== false) {
@@ -1050,7 +1058,7 @@ class Db_Mysql implements iDb
 	 *  unless they are inside the "Base" subdirectory.
 	 *  If the "Base" subdirectory does not exist, it is created.
 	 * @param {string} [$classname_prefix=null] The prefix to prepend to the Base class names.
-	 *  If not specified, prefix becomes "Conn_Name_",  where conn_name is the name of the connection.
+	 *  If not specified, prefix becomes "connectionName_",  where connectionName is the name of the connection.
 	 * @return {array} $filenames The array of filenames for files that were saved.
 	 * @throws {Exception} If the $connection is not registered, or the $directory
 	 *  does not exist, this function throws an exception.
@@ -1063,14 +1071,14 @@ class Db_Mysql implements iDb
 		if (!file_exists($directory))
 			throw new Exception("directory $directory does not exist.");
 		
-		$conn_name = $this->connectionName();
-		$conn = Db::getConnection($conn_name);
+		$connectionName = $this->connectionName();
+		$conn = Db::getConnection($connectionName);
 		
 		$prefix = empty($conn['prefix']) ? '' : $conn['prefix'];
 		$prefix_len = strlen($prefix);
 		
 		if (!isset($classname_prefix)) {
-			$classname_prefix = isset($conn_name) ? $conn_name . '_' : '';
+			$classname_prefix = isset($connectionName) ? $connectionName . '_' : '';
 		}
 		
 		$rows = $this->rawQuery('SHOW TABLES')->fetchAll();
@@ -1091,8 +1099,10 @@ class Db_Mysql implements iDb
 			$table_name = $row[0];
 			$table_name_base = substr($table_name, $prefix_len);
 			$table_name_prefix = substr($table_name, 0, $prefix_len);
-			if (empty($table_name_base) or $table_name_prefix != $prefix or stristr($table_name, '_Q_') !== false)
+			if (empty($table_name_base) or $table_name_prefix != $prefix
+			or stristr($table_name, '_Q_') !== false) {
 				continue; // no class generated
+			}
 			
 			$class_name_base = null;
 			$js_base_class_string = '';
@@ -1106,8 +1116,9 @@ class Db_Mysql implements iDb
 				$table_comment
 			); // sets the $class_name variable
 			$class_name = ucfirst($classname_prefix) . $class_name_base;
-			if (empty($class_name))
+			if (empty($class_name)) {
 				continue; // no class generated
+			}
 	
 			$class_name_parts = explode('_', $class_name);
 			$class_filename = $directory.DS.implode(DS, $class_name_parts).'.php';
@@ -1124,13 +1135,13 @@ class Db_Mysql implements iDb
 			$class_string = <<<EOT
 <?php
 $dc
- * @module $conn_name
+ * @module $connectionName
  */
 $dc
- * Class representing '$class_name_base' rows in the '$conn_name' database
+ * Class representing '$class_name_base' rows in the '$connectionName' database
  * You can create an object of this class either to
  * access its non-static methods, or to actually
- * represent a $table_name_base row in the $conn_name database.
+ * represent a $table_name_base row in the $connectionName database.
  *
  * @class $class_name
  * @extends Base_$class_name
@@ -1159,6 +1170,7 @@ $class_extras
 	 * Implements the __set_state method, so it can work with
 	 * with var_export and be re-imported successfully.
 	 * @method __set_state
+	 * @static
 	 * @param {array} \$array
 	 * @return {{$class_name}} Class instance
 	 */
@@ -1177,14 +1189,14 @@ $dc
  *
  * This description should be revised and expanded.
  *
- * @module $conn_name
+ * @module $connectionName
  */
 var Q = require('Q');
 var Db = Q.require('Db');
 var $class_name_base = Q.require('$js_base_class_require');
 
 $dc
- * Class representing '$class_name_base' rows in the '$conn_name' database
+ * Class representing '$class_name_base' rows in the '$connectionName' database
 $table_comment * @namespace $class_name_prefix
  * @class $class_name_base
  * @extends Base.$js_class_name
@@ -1243,11 +1255,11 @@ EOT;
 			$js_table_classes_string .= <<<EOT
 
 $dc
- * Link to $conn_name.$class_name_base model
+ * Link to $connectionName.$class_name_base model
  * @property $class_name_base
- * @type $conn_name.$class_name_base
+ * @type $connectionName.$class_name_base
  */
-Base.$class_name_base = Q.require('$conn_name/$class_name_base');
+Base.$class_name_base = Q.require('$connectionName/$class_name_base');
 
 EOT;
 		}
@@ -1259,8 +1271,8 @@ EOT;
 			array("[\n\t", ",\n\t", "\n]"),
 			json_encode($table_classnames)
 		);
-		if (!empty($conn_name)) {
-			$class_name = Db::generateTableClassName($conn_name);
+		if (!empty($connectionName)) {
+			$class_name = Db::generateTableClassName($connectionName);
 			$class_name_parts = explode('_', $class_name);
 			$class_filename = $directory.DS.implode(DS, $class_name_parts).'.php';
 			$base_class_filename = $directory.DS.'Base'.DS.implode(DS, $class_name_parts).'.php';
@@ -1268,11 +1280,17 @@ EOT;
 			$js_base_class_filename = $directory.DS.'Base'.DS.implode(DS, $class_name_parts).'.js';
 			$js_base_class_require = 'Base'.DS.implode(DS, $class_name_parts);
 			// because table name can be {$prefix}_Q_plugin or {$prefix}_Q_app we need to know correct table name
-			$tables = $this->rawQuery("SHOW TABLES LIKE '{$prefix}Q_%'")->execute()->fetchAll(PDO::FETCH_NUM);
+			$tables = $this->rawQuery("SHOW TABLES LIKE '{$prefix}Q_%'")
+				->execute()
+				->fetchAll(PDO::FETCH_NUM);
 			if ($tables) {
 				$tablename = $tables[0][0];
-				$model_comment = $this->rawQuery("SELECT * FROM $tablename")->execute()->fetchAll(PDO::FETCH_NUM);
-				$model_comment = (isset($model_comment[0]) && !empty($model_comment[0][2])) ? " * <br/>{$model_comment[0][2]}\n" : '';
+				$model_comment = $this->rawQuery("SELECT * FROM $tablename")
+					->execute()
+					->fetchAll(PDO::FETCH_NUM);
+				$model_comment = (isset($model_comment[0]) && !empty($model_comment[0][2]))
+					? " * <br/>{$model_comment[0][2]}\n" 
+					: '';
 			} else {
 				$model_comment = '';
 			}
@@ -1283,12 +1301,12 @@ EOT;
 <?php
 
 $dc
- * Autogenerated base class for the $conn_name model.
+ * Autogenerated base class for the $connectionName model.
  * 
  * Don't change this file, since it can be overwritten.
  * Instead, change the $class_name.php file.
  *
- * @module $conn_name
+ * @module $connectionName
  */
 $dc
  * Base class for the $class_name model
@@ -1311,7 +1329,7 @@ abstract class Base_$class_name
 	 */
 	static function db()
 	{
-		return Db::connect('$conn_name');
+		return Db::connect('$connectionName');
 	}
 
 	$dc
@@ -1321,19 +1339,19 @@ abstract class Base_$class_name
 	 */
 	static function connectionName()
 	{
-		return '$conn_name';
+		return '$connectionName';
 	}
 };
 EOT;
 
 			$js_base_class_string = <<<EOT
 $dc
- * Autogenerated base class for the $conn_name model.
+ * Autogenerated base class for the $connectionName model.
  * 
  * Don't change this file, since it can be overwritten.
  * Instead, change the $class_name.js file.
  *
- * @module $conn_name
+ * @module $connectionName
  */
 var Q = require('Q');
 var Db = Q.require('Db');
@@ -1364,7 +1382,7 @@ $dc
  * @return {Db} The database connection
  */
 Base.db = function () {
-	return Db.connect('$conn_name');
+	return Db.connect('$connectionName');
 };
 
 $dc
@@ -1373,7 +1391,7 @@ $dc
  * @return {string} The name of the connection
  */
 Base.connectionName = function() {
-	return '$conn_name';
+	return '$connectionName';
 };
 $js_table_classes_string
 EOT;
@@ -1382,11 +1400,11 @@ EOT;
 <?php
 $dc
  * $class_name_prefix model
-$model_comment * @module $conn_name
- * @main $conn_name
+$model_comment * @module $connectionName
+ * @main $connectionName
  */
 $dc
- * Static methods for the $conn_name models.
+ * Static methods for the $connectionName models.
  * @class $class_name
  * @extends Base_$class_name
  */
@@ -1405,8 +1423,8 @@ EOT;
 		$js_class_string = <<<EOT
 $dc
  * $class_name_prefix model
-$model_comment * @module $conn_name
- * @main $conn_name
+$model_comment * @module $connectionName
+ * @main $connectionName
  */
 var Q = require('Q');
 
@@ -1416,16 +1434,16 @@ $dc
  * @extends Base.$class_name_prefix
  * @static
  */
-function $conn_name() { };
-module.exports = $conn_name;
+function $connectionName() { };
+module.exports = $connectionName;
 
-var Base_$conn_name = Q.require('$js_base_class_require');
-Q.mixin($conn_name, Base_$conn_name);
+var Base_$connectionName = Q.require('$js_base_class_require');
+Q.mixin($connectionName, Base_$connectionName);
 
 /*
  * This is where you would place all the static methods for the models,
  * the ones that don't strongly pertain to a particular row or table.
- * Just assign them as methods of the $conn_name object.
+ * Just assign them as methods of the $connectionName object.
  * If file '$class_name.js.inc' exists, its content is included
  * * * */
 $js_model_extras
@@ -1483,8 +1501,8 @@ EOT;
 		if (empty($directory))
 			throw new Exception('directory parameter is empty', - 3);
 	
-		$conn_name = $this->connectionName();
-		$conn = Db::getConnection($conn_name);
+		$connectionName = $this->connectionName();
+		$conn = Db::getConnection($connectionName);
 		
 		if (!isset($prefix)) {
 			$prefix = empty($conn['prefix']) ? '' : $conn['prefix'];
@@ -1592,8 +1610,10 @@ EOT;
 			}
 			
 			$null_check = $field_null ? "if (!isset(\$value)) {\n\t\t\treturn array('$field_name', \$value);\n\t\t}\n\t\t" : '';
+			$null_fix = $field_null ? '' : "if (!isset(\$value)) {\n\t\t\t\$value='';\n\t\t}\n\t\t";
 			$dbe_check = "if (\$value instanceof Db_Expression) {\n\t\t\treturn array('$field_name', \$value);\n\t\t}\n\t\t";
 			$js_null_check = $field_null ? "if (!value) return value;\n\t\t" : '';
+			$js_null_fix = $field_null ? '' : "if (value == null) {\n\t\t\tvalue='';\n\t\t}\n\t\t";
 			$js_dbe_check = "if (value instanceof Db.Expression) return value;\n\t\t";
 			if (! isset($functions["beforeSet_$field_name"]))
 				$functions["beforeSet_$field_name"] = array();
@@ -1606,8 +1626,8 @@ EOT;
 				case 'mediumint':
 				case 'bigint':
 					$isNumberLike = true;
-					$properties[]="integer $field_name";
-					$js_properties[] = "$field_name integer";
+					$properties[]="{integer} $field_name";
+					$js_properties[] = "{integer} $field_name";
 					$functions["maxSize_$field_name"]['comment'] = <<<EOT
 	$dc
 	 * Returns the maximum integer that can be assigned to the $field_name field
@@ -1621,8 +1641,11 @@ EOT;
 					$functions["beforeSet_$field_name"][] = <<<EOT
 		{$null_check}{$dbe_check}if (!is_numeric(\$value) or floor(\$value) != \$value)
 			throw new Exception('Non-integer value being assigned to '.\$this->getTable().".$field_name");
-		if (\$value < $type_range_min or \$value > $type_range_max)
-			throw new Exception("Out-of-range value '\$value' being assigned to ".\$this->getTable().".$field_name");
+		\$value = intval(\$value);
+		if (\$value < $type_range_min or \$value > $type_range_max) {
+			\$json = json_encode(\$value);
+			throw new Exception("Out-of-range value \$json being assigned to ".\$this->getTable().".$field_name");
+		}
 EOT;
 					$functions["beforeSet_$field_name"]['comment'] = <<<EOT
 	$dc
@@ -1648,7 +1671,7 @@ EOT;
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".$field_name");
 		if (value < $type_range_min || value > $type_range_max)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".$field_name");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".$field_name");
 EOT;
 					$js_functions["beforeSet_$field_name"]['comment'] = <<<EOT
 $dc
@@ -1662,8 +1685,8 @@ EOT;
 					break;
 
 				case 'enum':
-					$properties[]="mixed $field_name";
-					$js_properties[] = "$field_name String";
+					$properties[]="{string} $field_name";
+					$js_properties[] = "{String} $field_name";
 					$functions["beforeSet_$field_name"][] = <<<EOT
 		{$null_check}{$dbe_check}if (!in_array(\$value, array($type_display_range)))
 			throw new Exception("Out-of-range value '\$value' being assigned to ".\$this->getTable().".$field_name");
@@ -1679,7 +1702,7 @@ EOT;
 EOT;
 					$js_functions["beforeSet_$field_name"][] = <<<EOT
 		{$js_null_check}{$js_dbe_check}if ([$type_display_range].indexOf(value) < 0)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".$field_name");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".$field_name");
 EOT;
 					$js_functions["beforeSet_$field_name"]['comment'] = <<<EOT
 $dc
@@ -1699,8 +1722,8 @@ EOT;
 				case 'mediumtext':
 				case 'longtext':
 					$isTextLike = true;
-					$properties[]="string $field_name";
-					$js_properties[] = "$field_name String";
+					$properties[]="{string} $field_name";
+					$js_properties[] = "{String} $field_name";
 					$functions["maxSize_$field_name"]['comment'] = <<<EOT
 	$dc
 	 * Returns the maximum string length that can be assigned to the $field_name field
@@ -1712,7 +1735,7 @@ EOT;
 		return $type_display_range;
 EOT;
 					$functions["beforeSet_$field_name"][] = <<<EOT
-		{$null_check}{$dbe_check}if (!is_string(\$value) and !is_numeric(\$value))
+		{$null_check}{$null_fix}{$dbe_check}if (!is_string(\$value) and !is_numeric(\$value))
 			throw new Exception('Must pass a string to '.\$this->getTable().".$field_name");
 		if (strlen(\$value) > $type_display_range)
 			throw new Exception('Exceedingly long value being assigned to '.\$this->getTable().".$field_name");
@@ -1738,7 +1761,7 @@ EOT;
 		return $type_display_range;
 EOT;
 					$js_functions["beforeSet_$field_name"][] = <<<EOT
-		{$js_null_check}{$js_dbe_check}if (typeof value !== "string" && typeof value !== "number")
+		{$js_null_check}{$js_null_check}{$js_null_fix}{$js_dbe_check}if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".$field_name");
 		if (typeof value === "string" && value.length > $type_display_range)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".$field_name");
@@ -1757,12 +1780,14 @@ EOT;
 				
 				case 'date':
 					$isTimeLike = true;
-					$properties[]="string|Db_Expression $field_name";
-					$js_properties[] = "$field_name String|Db.Expression";
+					$properties[]="{string|Db_Expression} $field_name";
+					$js_properties[] = "{String|Db.Expression} $field_name";
 					$functions["beforeSet_$field_name"][] = <<<EOT
-		{$null_check}{$dbe_check}\$date = date_parse(\$value);
+		{$null_check}{$dbe_check}\$value = date("Y-m-d h:i:s", strtotime(\$value));
+		\$date = date_parse(\$value);
 		if (!empty(\$date['errors'])) {
-			throw new Exception("Date \$value in incorrect format being assigned to ".\$this->getTable().".$field_name");
+			\$json = json_encode(\$value);
+			throw new Exception("Date \$json in incorrect format being assigned to ".\$this->getTable().".$field_name");
 		}
 		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as \$v) {
 			\$\$v = \$date[\$v];
@@ -1793,8 +1818,8 @@ EOT;
 				case 'datetime':
 				case 'timestamp':
 					$isTimeLike = true;
-					$properties[]="string|Db_Expression $field_name";
-					$js_properties[] = "$field_name String|Db.Expression";
+					$properties[]="{string|Db_Expression} $field_name";
+					$js_properties[] = "{String|Db.Expression} $field_name";
 					$possibleMagicFields = array('insertedTime', 'updatedTime', 'created_time', 'updated_time');
 					$possibleMagicInsertFields = array('insertedTime', 'created_time');
 					if (in_array($field_name, $possibleMagicFields)) {
@@ -1807,12 +1832,13 @@ EOT;
 					$functions["beforeSet_$field_name"][] = <<<EOT
 		{$null_check}{$dbe_check}\$date = date_parse(\$value);
 		if (!empty(\$date['errors'])) {
-			throw new Exception("DateTime \$value in incorrect format being assigned to ".\$this->getTable().".$field_name");
+			\$json = json_encode(\$value);
+			throw new Exception("DateTime \$json in incorrect format being assigned to ".\$this->getTable().".$field_name");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as \$v) {
-			\$\$v = \$date[\$v];
-		}
-		\$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", \$year, \$month, \$day, \$hour, \$minute, \$second);
+		\$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			\$date['year'], \$date['month'], \$date['day'], 
+			\$date['hour'], \$date['minute'], \$date['second']
+		);
 EOT;
 					$functions["beforeSet_$field_name"]['comment'] = <<<EOT
 	$dc
@@ -1836,10 +1862,18 @@ $dc
 EOT;
 					break;
 
+				case 'numeric':
 				case 'decimal':
+				case 'float':
+				case 'double':
 					$isNumberLike = true;
-					$properties[]="float $field_name";
-					$js_properties[] = "$field_name number";
+					$properties[]="{float} $field_name";
+					$js_properties[] = "{number} $field_name";
+					$functions["beforeSet_$field_name"][] = <<<EOT
+		{$null_check}{$dbe_check}if (!is_numeric(\$value))
+			throw new Exception('Non-numeric value being assigned to '.\$this->getTable().".$field_name");
+		\$value = floatval(\$value);
+EOT;
 					$js_functions["beforeSet_$field_name"][] = <<<EOT
 		{$js_null_check}{$js_dbe_check}value = Number(value);
 		if (isNaN(value))
@@ -1857,8 +1891,8 @@ EOT;
 					break;
 
 				default:
-					$properties[]="mixed $field_name";
-					$js_properties[] = "$field_name mixed";
+					$properties[]="{mixed} $field_name";
+					$js_properties[] = "{mixed} $field_name";
 					break;
 			}
 			if (! empty($functions["beforeSet_$field_name"])) {
@@ -2089,7 +2123,7 @@ EOT;
 			array("[\n\t\t", ",\n\t\t", "\n\t]"),
 			$pk_json
 		);
-		$conn_name_var = var_export($conn_name, true);
+		$connectionName_var = var_export($connectionName, true);
 		$class_name_var = var_export($class_name, true);
 
 		$class_name_prefix = rtrim(ucfirst($classname_prefix), "._");
@@ -2126,15 +2160,15 @@ EOT;
 
 $dc
  * Autogenerated base class representing $table_name_base rows
- * in the $conn_name database.
+ * in the $connectionName database.
  *
  * Don't change this file, since it can be overwritten.
  * Instead, change the $class_name.php file.
  *
- * @module $conn_name
+ * @module $connectionName
  */
 $dc
- * Base class representing '$class_name_base' rows in the '$conn_name' database
+ * Base class representing '$class_name_base' rows in the '$connectionName' database
  * @class Base_$class_name
  * @extends Db_Row
  *
@@ -2165,7 +2199,7 @@ $field_hints
 	 */
 	static function db()
 	{
-		return Db::connect($conn_name_var);
+		return Db::connect($connectionName_var);
 	}
 
 	$dc
@@ -2178,15 +2212,15 @@ $field_hints
 	 */
 	static function table(\$with_db_name = true)
 	{
-		if (Q_Config::get('Db', 'connections', '$conn_name', 'indexes', '$class_name_base', false)) {
+		if (Q_Config::get('Db', 'connections', '$connectionName', 'indexes', '$class_name_base', false)) {
 			return new Db_Expression((\$with_db_name ? '{\$dbname}.' : '').'{\$prefix}'.'$table_name_base');
 		} else {
-			\$conn = Db::getConnection($conn_name_var);
+			\$conn = Db::getConnection($connectionName_var);
   			\$prefix = empty(\$conn['prefix']) ? '' : \$conn['prefix'];
   			\$table_name = \$prefix . '$table_name_base';
   			if (!\$with_db_name)
   				return \$table_name;
-  			\$db = Db::connect($conn_name_var);
+  			\$db = Db::connect($connectionName_var);
   			return \$db->dbName().'.'.\$table_name;
 		}
 	}
@@ -2198,7 +2232,7 @@ $field_hints
 	 */
 	static function connectionName()
 	{
-		return $conn_name_var;
+		return $connectionName_var;
 	}
 
 	$dc
@@ -2296,21 +2330,21 @@ EOT;
 		$js_code = <<<EOT
 $dc
  * Autogenerated base class representing $table_name_base rows
- * in the $conn_name database.
+ * in the $connectionName database.
  *
  * Don't change this file, since it can be overwritten.
  * Instead, change the $class_name_prefix/$class_name_base.js file.
  *
- * @module $conn_name
+ * @module $connectionName
  */
 
 var Q = require('Q');
 var Db = Q.require('Db');
-var $conn_name = Q.require('$conn_name');
+var $connectionName = Q.require('$connectionName');
 var Row = Q.require('Db/Row');
 
 $dc
- * Base class representing '$class_name_base' rows in the '$conn_name' database
+ * Base class representing '$class_name_base' rows in the '$connectionName' database
  * @namespace Base.$class_name_prefix
  * @class $class_name_base
  * @extends Db.Row
@@ -2333,7 +2367,7 @@ $dc
  * @return {Db} The database connection
  */
 Base.db = function () {
-	return $conn_name.db();
+	return $connectionName.db();
 };
 
 $dc
@@ -2344,10 +2378,10 @@ $dc
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
 Base.table = function (withoutDbName) {
-	if (Q.Config.get(['Db', 'connections', '$conn_name', 'indexes', '$class_name_base'], false)) {
+	if (Q.Config.get(['Db', 'connections', '$connectionName', 'indexes', '$class_name_base'], false)) {
 		return new Db.Expression((withoutDbName ? '' : '{\$dbname}.')+'{\$prefix}$table_name_base');
 	} else {
-		var conn = Db.getConnection('$conn_name');
+		var conn = Db.getConnection('$connectionName');
 		var prefix = conn.prefix || '';
 		var tableName = prefix + '$table_name_base';
 		var dbname = Base.table.dbname;
@@ -2365,7 +2399,7 @@ $dc
  * @return {string} The name of the connection
  */
 Base.connectionName = function() {
-	return '$conn_name';
+	return '$connectionName';
 };
 
 $dc

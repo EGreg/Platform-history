@@ -5,8 +5,8 @@ function Streams_before_Q_Utils_canWriteToPath($params, &$result)
 	extract($params);
 	/**
 	 * @var $path
-	 * @var $throw_if_not_writeable
-	 * @var $mkdir_if_missing
+	 * @var $throwIfNotWritable
+	 * @var $mkdirIfMissing
 	 */
 	
 	// Assume that Users/before/Q/Utils/canWriteToPath already executed
@@ -20,21 +20,32 @@ function Streams_before_Q_Utils_canWriteToPath($params, &$result)
 		if (substr($sp, -1) === '/') {
 			$sp = substr($sp, 0, strlen($sp)-1);
 		}
-		$prefix = "files/$app/uploads/streams/";
+		$prefix = "files/$app/uploads/Streams/";
 		$len = strlen($prefix);
 		if (substr($sp, 0, $len) === $prefix) {
+			$prefix2 = "files/$app/uploads/Streams/invitations";
+			if (substr($sp, 0, strlen($prefix2)) === $prefix2) {
+				$result = true; // any user can write here
+				return;
+			}
 			$parts = explode('/', substr($sp, $len));
-			if (count($parts) >= 3) {
+			$c = count($parts);
+			if ($c >= 3) {
 				$publisherId = $parts[0];
-				$name = implode('/', array_slice($parts, 1));
-				if ($stream = Streams::fetchOne($userId, $publisherId, $name)) {
+				$l = 0;
+				for ($i=$c-1; $i>=1; --$i) {
+					$l = $i;
+					if ($parts[$i] === 'icon') break;
+				}
+				$name = implode('/', array_slice($parts, 1, $l-1));
+				if ($name and $stream = Streams::fetchOne($userId, $publisherId, $name)) {
 					$result = $stream->testWriteLevel('edit');
 					Streams::$cache['canWriteToStream'] = $stream;
 				}
 			}
 		}
 	}
-	if (!$result and $throw_if_not_writeable) {
+	if (!$result and $throwIfNotWritable) {
 		throw new Q_Exception_CantWriteToPath();
 	}
 }

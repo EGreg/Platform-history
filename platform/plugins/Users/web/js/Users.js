@@ -781,7 +781,7 @@ Users.iconUrl = function Users_iconUrl(icon, size) {
 		console.warn("Users.iconUrl: icon is empty");
 		return '';
 	}
-	if (!size) {
+	if (!size || size === true) {
 		size = '40';
 	}
 	size = (String(size).indexOf('.') >= 0) ? size : size+'.png';

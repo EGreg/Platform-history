@@ -617,7 +617,7 @@ Q.Template.set('Q/columns/column',
 );
 
 function presentColumn(tool) {
-	if (!tool.state.$currentColumn) return;
+	if (!tool.state.$currentColumn || !tool.state.$currentColumn.length) return;
 	var $cs = $('.column_slot', tool.state.$currentColumn);
 	if (tool.state.fullscreen) {
 		var $ct = tool.$('.Q_columns_title');

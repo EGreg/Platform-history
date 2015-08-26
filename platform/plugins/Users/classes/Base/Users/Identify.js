@@ -29,24 +29,24 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property identifier
- * @type String
+ * @property {String}
+ * @type identifier
  */
 /**
- * @property insertedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type insertedTime
  */
 /**
- * @property updatedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type updatedTime
  */
 /**
- * @property state
- * @type String
+ * @property {String}
+ * @type state
  */
 /**
- * @property userId
- * @type String
+ * @property {String}
+ * @type userId
  */
 
 /**
@@ -219,6 +219,9 @@ Base.prototype.fieldNames = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_identifier = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".identifier");
@@ -271,7 +274,7 @@ Base.prototype.beforeSet_updatedTime = function (value) {
 Base.prototype.beforeSet_state = function (value) {
 		if (value instanceof Db.Expression) return value;
 		if (['verified','future'].indexOf(value) < 0)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".state");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".state");
 		return value;
 };
 
@@ -284,6 +287,9 @@ Base.prototype.beforeSet_state = function (value) {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_userId = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".userId");

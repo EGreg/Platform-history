@@ -19,9 +19,10 @@ function Websites_before_Streams_Stream_save_Websites_article($params)
 	if (isset($title)) {
 		$stream->title = $title;
 	}
-	$stream->icon = Q_Html::themedUrl($user->iconPath());
+	$stream->icon = $user->iconUrl();
 	$s = Streams::fetchOne($user->id, $user->id, "Streams/user/icon");
 	if (!$s or !$sizes = $s->getAttribute('sizes', null)) {
+		sort($sizes);
 		$sizes = Q_Config::expect('Users', 'icon', 'sizes');
 	}
 	$stream->setAttribute('sizes', $sizes);

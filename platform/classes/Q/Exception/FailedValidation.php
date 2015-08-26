@@ -13,4 +13,4 @@ class Q_Exception_FailedValidation extends Q_Exception
 	 */
 };
 
-Q_Exception::add('Q_Exception_FailedValidation', '$message');
+Q_Exception::add('Q_Exception_FailedValidation', '{{message}}');

@@ -14,63 +14,63 @@
  * @class Base_Places_Zipcode
  * @extends Db_Row
  *
- * @property string $countryCode
- * @property string $zipcode
- * @property string $placeName
- * @property string $stateName
- * @property string $state
- * @property string $regionName
- * @property string $region
- * @property string $community
- * @property mixed $latitude
- * @property mixed $longitude
- * @property integer $accuracy
+ * @property {string} $countryCode
+ * @property {string} $zipcode
+ * @property {string} $placeName
+ * @property {string} $stateName
+ * @property {string} $state
+ * @property {string} $regionName
+ * @property {string} $region
+ * @property {string} $community
+ * @property {float} $latitude
+ * @property {float} $longitude
+ * @property {integer} $accuracy
  */
 abstract class Base_Places_Zipcode extends Db_Row
 {
 	/**
 	 * @property $countryCode
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $zipcode
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $placeName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $stateName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $state
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $regionName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $region
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $community
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $latitude
-	 * @type mixed
+	 * @type {float}
 	 */
 	/**
 	 * @property $longitude
-	 * @type mixed
+	 * @type {float}
 	 */
 	/**
 	 * @property $accuracy
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -228,6 +228,9 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_countryCode($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('countryCode', $value);
 		}
@@ -258,6 +261,9 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_zipcode($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('zipcode', $value);
 		}
@@ -288,6 +294,9 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_placeName($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('placeName', $value);
 		}
@@ -318,6 +327,9 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_stateName($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('stateName', $value);
 		}
@@ -348,6 +360,9 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_state($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('state', $value);
 		}
@@ -378,6 +393,9 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_regionName($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('regionName', $value);
 		}
@@ -408,6 +426,9 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_region($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('region', $value);
 		}
@@ -438,6 +459,9 @@ abstract class Base_Places_Zipcode extends Db_Row
 	 */
 	function beforeSet_community($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('community', $value);
 		}
@@ -458,6 +482,28 @@ abstract class Base_Places_Zipcode extends Db_Row
 		return 100;			
 	}
 
+	function beforeSet_latitude($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('latitude', $value);
+		}
+		if (!is_numeric($value))
+			throw new Exception('Non-numeric value being assigned to '.$this->getTable().".latitude");
+		$value = floatval($value);
+		return array('latitude', $value);			
+	}
+
+	function beforeSet_longitude($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('longitude', $value);
+		}
+		if (!is_numeric($value))
+			throw new Exception('Non-numeric value being assigned to '.$this->getTable().".longitude");
+		$value = floatval($value);
+		return array('longitude', $value);			
+	}
+
 	/**
 	 * Method is called before setting the field and verifies if integer value falls within allowed limits
 	 * @method beforeSet_accuracy
@@ -472,8 +518,11 @@ abstract class Base_Places_Zipcode extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".accuracy");
-		if ($value < -2147483648 or $value > 2147483647)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".accuracy");
+		$value = intval($value);
+		if ($value < -2147483648 or $value > 2147483647) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".accuracy");
+		}
 		return array('accuracy', $value);			
 	}
 
@@ -485,26 +534,6 @@ abstract class Base_Places_Zipcode extends Db_Row
 	{
 
 		return 2147483647;			
-	}
-
-	/**
-	 * Check if mandatory fields are set and updates 'magic fields' with appropriate values
-	 * @method beforeSave
-	 * @param {array} $value The array of fields
-	 * @return {array}
-	 * @throws {Exception} If mandatory field is not set
-	 */
-	function beforeSave($value)
-	{
-		if (!$this->retrieved) {
-			$table = $this->getTable();
-			foreach (array('latitude','longitude') as $name) {
-				if (!isset($value[$name])) {
-					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
-				}
-			}
-		}
-		return $value;			
 	}
 
 	/**

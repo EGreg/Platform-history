@@ -14,63 +14,63 @@
  * @class Base_Streams_Message
  * @extends Db_Row
  *
- * @property string $publisherId
- * @property string $streamName
- * @property string|Db_Expression $insertedTime
- * @property string|Db_Expression $sentTime
- * @property string $byUserId
- * @property string $byClientId
- * @property string $type
- * @property string $content
- * @property string $instructions
- * @property float $weight
- * @property integer $ordinal
+ * @property {string} $publisherId
+ * @property {string} $streamName
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string|Db_Expression} $sentTime
+ * @property {string} $byUserId
+ * @property {string} $byClientId
+ * @property {string} $type
+ * @property {string} $content
+ * @property {string} $instructions
+ * @property {float} $weight
+ * @property {integer} $ordinal
  */
 abstract class Base_Streams_Message extends Db_Row
 {
 	/**
 	 * @property $publisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $streamName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $sentTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $byUserId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $byClientId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $type
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $content
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $instructions
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $weight
-	 * @type float
+	 * @type {float}
 	 */
 	/**
 	 * @property $ordinal
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -231,6 +231,9 @@ abstract class Base_Streams_Message extends Db_Row
 	 */
 	function beforeSet_publisherId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('publisherId', $value);
 		}
@@ -261,6 +264,9 @@ abstract class Base_Streams_Message extends Db_Row
 	 */
 	function beforeSet_streamName($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('streamName', $value);
 		}
@@ -295,12 +301,13 @@ abstract class Base_Streams_Message extends Db_Row
 		}
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
-			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".insertedTime");
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".insertedTime");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
-			$$v = $date[$v];
-		}
-		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
 		return array('insertedTime', $value);			
 	}
 
@@ -321,12 +328,13 @@ abstract class Base_Streams_Message extends Db_Row
 		}
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
-			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".sentTime");
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".sentTime");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
-			$$v = $date[$v];
-		}
-		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
 		return array('sentTime', $value);			
 	}
 
@@ -340,6 +348,9 @@ abstract class Base_Streams_Message extends Db_Row
 	 */
 	function beforeSet_byUserId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('byUserId', $value);
 		}
@@ -370,6 +381,9 @@ abstract class Base_Streams_Message extends Db_Row
 	 */
 	function beforeSet_byClientId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('byClientId', $value);
 		}
@@ -400,6 +414,9 @@ abstract class Base_Streams_Message extends Db_Row
 	 */
 	function beforeSet_type($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('type', $value);
 		}
@@ -430,6 +447,9 @@ abstract class Base_Streams_Message extends Db_Row
 	 */
 	function beforeSet_content($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('content', $value);
 		}
@@ -460,6 +480,9 @@ abstract class Base_Streams_Message extends Db_Row
 	 */
 	function beforeSet_instructions($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('instructions', $value);
 		}
@@ -480,6 +503,17 @@ abstract class Base_Streams_Message extends Db_Row
 		return 4092;			
 	}
 
+	function beforeSet_weight($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('weight', $value);
+		}
+		if (!is_numeric($value))
+			throw new Exception('Non-numeric value being assigned to '.$this->getTable().".weight");
+		$value = floatval($value);
+		return array('weight', $value);			
+	}
+
 	/**
 	 * Method is called before setting the field and verifies if integer value falls within allowed limits
 	 * @method beforeSet_ordinal
@@ -494,8 +528,11 @@ abstract class Base_Streams_Message extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".ordinal");
-		if ($value < 0 or $value > 4294967295)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".ordinal");
+		$value = intval($value);
+		if ($value < 0 or $value > 4294967295) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".ordinal");
+		}
 		return array('ordinal', $value);			
 	}
 

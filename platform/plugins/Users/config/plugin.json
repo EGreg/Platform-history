@@ -2,7 +2,7 @@
 	"Q": {
 		"pluginInfo": {
 			"Users": {
-				"version": "0.8.2",
+				"version": "0.8.3",
 				"compatible": "0.8",
 				"requires": {"Q": "0.8"},
 				"permissions": ["Users/icons"],
@@ -30,7 +30,7 @@
 			"e/:emailAddress": { "module": "Users", "action": "activate" },
 			"m/:mobileNumber": { "module": "Users", "action": "activate" },
 			"plugins/Users/:action": {"module": "Users"},
-			"plugins/Users/img/icons/:folder/:size.png": {"mobile": "Users", "action": "missingIcon"}
+			"uploads/Users/:userId/icon/:timestamp/:size.png": {"mobile": "Users", "action": "missingIcon"}
 		},
 		"session": {
 			"db": {
@@ -58,8 +58,7 @@
 		"paths": {
 			"icons": "files/Users/icons",
 			"uploads": {
-				"files/Users/icons/user-$userId": true,
-				"files/$app/uploads/user-$userId": true
+				"files/{{app}}/uploads/Users/{{userId}}": true
 			}
 		},
 		"node": {
@@ -112,15 +111,15 @@
 			"duration": "year",
 			"terms": {
 				"uri": null,
-				"label": "I have read and agree<br>to the $link",
+				"label": "I have read and agree<br>to the {{link}}",
 				"title": "Terms"
 			},
 			"stateMinLength": 10
 		},
 		"register": {
 			"terms": {
-				"uri": "$baseUrl/terms",
-				"label": "I accept the $link",
+				"uri": "{{baseUrl}}/terms",
+				"label": "I accept the {{link}}",
 				"title": "Terms"
 			},
 			"icon": {
@@ -137,7 +136,7 @@
 			"default": "Someone"
 		},
 		"icon": {
-			"sizes": ["40", "50", "80", "200", "200x"],
+			"sizes": ["40", "50", "80", "x200", "200x"],
 			"defaultSize": "40"
 		},
 		"vote": {

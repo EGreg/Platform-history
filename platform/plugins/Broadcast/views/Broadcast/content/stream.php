@@ -24,8 +24,8 @@
 		</div>
 		<div class='main_pane'>
 			<h2>Broadcast a Message</h2>
-			<div class='Streams_publish'>
-				<?php echo Q::tool('Streams/publish', compact('stream'))?>
+			<div class='Streams_player'>
+				<?php echo Q::tool('Streams/player', compact('stream'))?>
 			</div>
 			<h2>Widget code:</h2>
 			<div>Customize your widget</div>

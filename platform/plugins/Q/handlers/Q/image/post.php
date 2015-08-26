@@ -39,4 +39,5 @@ function Q_image_post($params = null)
 	if (empty($params)) {
 		Q_Response::setSlot('data', $data);
 	}
+	return $data;
 }

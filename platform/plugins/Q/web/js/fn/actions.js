@@ -42,33 +42,40 @@
 Q.Tool.jQuery('Q/actions',
 
 function _Q_actions(options) {
+	var $this = $(this);
+	var state = $this.state('Q/actions');
+	var cw, ch;
+	if (state.container) {
+		return;
+	}
 	var container = $('<div class="Q_actions_container" />').css({
 		'position': 'absolute',
-		'zIndex': options.zIndex
+		'zIndex': state.zIndex
 	});
 	var interval = null;
-	if (options.containerClass) {
-		container.addClass(options.containerClass);
+	if (state.containerClass) {
+		container.addClass(state.containerClass);
 	}
-	var size = options.size;
-	if (options.horizontal) {
+	var size = state.size;
+	if (state.horizontal) {
 		cw = 0;
 		ch = size;
 	} else {
 		cw = size;
 		ch = 0;
 	}
+	state.container = container;
 	var buttons = {};
-	Q.each(options.actions, function (action, callback) {
+	Q.each(state.actions, function (action, callback) {
 		var button = $("<div class='Q_actions_action basic"+size+"' />")
 			.addClass('Q_actions_'+action)
 			.addClass('basic'+size+'_'+action)
 			.attr('action', action)
 			.on(Q.Pointer.fastclick, function () {
-				Q.handle(callback, this, [action, options.context], {
+				Q.handle(callback, this, [action, state.context], {
 					fields: {
 						action: action,
-						context: options.context
+						context: state.context
 					}
 				});
 			}).on(Q.Pointer.start, function () {
@@ -79,43 +86,35 @@ function _Q_actions(options) {
 				});
 			});
 		buttons[action] = button;
-		if (options.reverse) {
+		if (state.reverse) {
 			button.prependTo(container);
 		} else {
 			button.appendTo(container);
 		}
-		if (options.horizontal) {
+		if (state.horizontal) {
 			cw += size/16*17;
 		} else {
 			ch += size/16*17;
 		}
 	});
-	return this.each(function (i) {
-		var $this = $(this);
-		var state = $this.state('Q/actions');
-		if (state.container) {
-			return;
-		}
-		state.container = container;
-		state.buttons = {};
-		Q.each(options.actions, function (action, callback) {
-			state.buttons[action] = buttons[action];
-		});
-		if ($this.css('position') === 'static') {
-			$this.css('position', 'relative');
-		}
-		if (state.alwaysShow) {
-			_show($this, state, container);
-		} else {
-			$this.off('mouseenter.Q_actions mouseleave.Q_actions');
-			$this.on('mouseenter.Q_actions', function () {
-				_show($this, state, container);
-			});
-			$this.on('mouseleave.Q_actions', function () {
-				_hide($this, state, container);
-			});
-		}
+	state.buttons = {};
+	Q.each(state.actions, function (action, callback) {
+		state.buttons[action] = buttons[action];
 	});
+	if ($this.css('position') === 'static') {
+		$this.css('position', 'relative');
+	}
+	if (state.alwaysShow) {
+		_show($this, state, container);
+	} else {
+		$this.off('mouseenter.Q_actions mouseleave.Q_actions');
+		$this.on('mouseenter.Q_actions', function () {
+			_show($this, state, container);
+		});
+		$this.on('mouseleave.Q_actions', function () {
+			_hide($this, state, container);
+		});
+	}
 	
 	function _show($this, state, container) {
 		container.appendTo($this);
@@ -176,6 +175,15 @@ function _Q_actions(options) {
 	onShow: new Q.Event(),
 	beforeHide: new Q.Event(),
 	onClick: new Q.Event()
+},
+
+{
+	remove: function () {
+		var $this = $(this);
+		var state = $this.state('Q/actions');
+		state.container.remove();
+		$this.off('mouseenter.Q_actions mouseleave.Q_actions');
+	}
 }
 
 );

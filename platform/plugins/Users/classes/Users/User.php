@@ -60,13 +60,7 @@ class Users_User extends Base_Users_User
 	 */
 	function iconUrl($basename = null)
 	{
-		if (empty($this->icon)) return null;
-		if (Q_Valid::url($this->icon)) return $this->icon;
-		$url = "plugins/Users/img/icons/{$this->icon}";
-		if ($basename) {
-			$url .= "/$basename";
-		}
-		return Q_Html::themedUrl($url);
+		return Users::iconUrl(isset($this->icon) ? $this->icon : 'default', $basename);
 	}
 
 	/**
@@ -148,7 +142,7 @@ class Users_User extends Base_Users_User
 		}
 		/**
 		 * @event Users/validate/username
-		 * @param {&string} 'username'
+		 * @param {&string} username
 		 */
 		Q::event(
 			'Users/validate/username',
@@ -167,7 +161,7 @@ class Users_User extends Base_Users_User
 		parent::beforeSet_emailAddress($emailAddress);
 		/**
 		 * @event Users/validate/emailAddress
-		 * @param {&string} 'emailAddress'
+		 * @param {&string} emailAddress
 		 */
 		Q::event(
 			'Users/validate/emailAddress',
@@ -188,7 +182,7 @@ class Users_User extends Base_Users_User
 	{
 		/**
 		 * @event Users/filter/id
-		 * @param {string} 'id'
+		 * @param {string} id
 		 * @return {boolean}
 		 */
 		return Q::event('Users/filter/id', $params);
@@ -272,7 +266,26 @@ class Users_User extends Base_Users_User
 	 */
 	function addContact($label, $contactUserId, $nickname = '')
 	{
-		Users_Contact::addContact($this->id, $label, $contactId, $nickname);
+		Users_Contact::addContact($this->id, $label, $contactUserId, $nickname);
+	}
+	
+	/**
+	 * @method addContact
+	 * @param {string} $contactUserId
+	 *  The id of the user who is the contact
+	 * @param {string|array} $label
+	 *  The label of the contact. This can be a string or an array of strings, in which case
+	 *  multiple contact rows are saved.
+	 * @param {string} [$nickname='']
+	 *  Optional nickname to assign to the contact
+	 *  @optional
+	 * @throws {Q_Exception_RequiredField}
+	 *	if $label is missing
+	 * @return {array} Array of contacts that are saved
+	 */
+	function removeContact($label, $contactUserId)
+	{
+		Users_Contact::removeContact($this->id, $label, $contactUserId);
 	}
 	
 	/**
@@ -353,8 +366,8 @@ class Users_User extends Base_Users_User
 		$link = 'Users/activate?code='.urlencode($email->activationCode) . ' emailAddress='.urlencode($email->address);
 		/**
 		 * @event Users/addIdentifier {before}
-		 * @param {string} 'user'
-		 * @param {string} 'email'
+		 * @param {string} user
+		 * @param {string} email
 		 */
 		Q::event('Users/addIdentifier', compact('user', 'email', 'link'), 'before');
 		$email->save();
@@ -389,8 +402,8 @@ class Users_User extends Base_Users_User
 		
 		/**
 		 * @event Users/addIdentifier {after}
-		 * @param {string} 'user'
-		 * @param {string} 'email'
+		 * @param {string} user
+		 * @param {string} email
 		 */
 		Q::event('Users/addIdentifier', compact('user', 'email', 'link'), 'after');
 	}
@@ -462,8 +475,8 @@ class Users_User extends Base_Users_User
 		
 		/**
 		 * @event Users/setEmailAddress {after}
-		 * @param {string} 'user'
-		 * @param {string} 'email'
+		 * @param {string} user
+		 * @param {string} email
 		 */
 		Q::event('Users/setEmailAddress', compact('user', 'email'), 'after');
 		return true;
@@ -475,7 +488,7 @@ class Users_User extends Base_Users_User
 	 * @method addMobile
 	 * @param {string} $mobileNumber
 	 *  The mobile number to add.
-	 * @param {string} [$activation_message_view=null]
+	 * @param {string} [$activationMessageView=null]
 	 *  The view to use for the body of the activation message to send.
 	 * @param {array} [$fields=array()]
 	 *  An array of additional fields to pass to the mobile view.
@@ -493,7 +506,7 @@ class Users_User extends Base_Users_User
 	 */
 	function addMobile(
 		$mobileNumber,
-		$activation_message_view = null,
+		$activationMessageView = null,
 		$fields = array(),
 		$options = array())
 	{
@@ -541,8 +554,8 @@ class Users_User extends Base_Users_User
 			. ' mobileNumber='.urlencode($number);
 		/**
 		 * @event Users/addIdentifier {before}
-		 * @param {string} 'user'
-		 * @param {string} 'mobile'
+		 * @param {string} user
+		 * @param {string} mobile
 		 */
 		Q::event('Users/addIdentifier', compact('user', 'mobile', 'link'), 'before');
 		$mobile->save();
@@ -550,8 +563,8 @@ class Users_User extends Base_Users_User
 		$this->mobileNumberPending = $normalized;
 		$this->save();
 		
-		if (!isset($activation_message_view)) {
-			$activation_message_view = Q_Config::get(
+		if (!isset($activationMessageView)) {
+			$activationMessageView = Q_Config::get(
 				'Users', 'transactional', 'activation', 'sms', 'Users/sms/activation.php'
 			);
 		}
@@ -564,7 +577,7 @@ class Users_User extends Base_Users_User
 			'link' => $link
 		));
 		$mobile->sendMessage(
-			$activation_message_view, 
+			$activationMessageView, 
 			$fields2,
 			$options
 		);
@@ -573,8 +586,8 @@ class Users_User extends Base_Users_User
 		
 		/**
 		 * @event Users/addIdentifier {after}
-		 * @param {string} 'user'
-		 * @param {string} 'mobile'
+		 * @param {string} user
+		 * @param {string} mobile
 		 */
 		Q::event('Users/addIdentifier', compact('user', 'mobile', 'link'), 'after');
 	}
@@ -594,15 +607,15 @@ class Users_User extends Base_Users_User
 	{
 		Q_Valid::phone($mobileNumber, $normalized);
 		$mobile = new Users_Mobile();
-		$mobile->number = $mobileNumber;
+		$mobile->number = $normalized;
 		$retrieved = $mobile->retrieve('*', array('ignoreCache' => true));
+		if (empty($mobile->activationCode)) {
+			$mobile->activationCode = '';
+			$mobile->activationCodeExpires = '0000-00-00 00:00:00';
+		}
+		$mobile->authCode = md5(microtime() + mt_rand());
 		if ($verified) {
 			$mobile->userId = $this->id;
-			if (empty($mobile->activationCode)) {
-				$mobile->activationCode = '';
-				$mobile->activationCodeExpires = '0000-00-00 00:00:00';
-			}
-			$mobile->authCode = md5(microtime() + mt_rand());
 		} else {
 			if (!$retrieved) {
 				throw new Q_Exception_MissingRow(array(
@@ -643,8 +656,8 @@ class Users_User extends Base_Users_User
 		$user = $this;
 		/**
 		 * @event Users/setMobileNumber {after}
-		 * @param {string} 'user'
-		 * @param {string} 'mobile'
+		 * @param {string} user
+		 * @param {string} mobile
 		 */
 		Q::event('Users/setMobileNumber', compact('user', 'mobile'), 'after');
 		return true;
@@ -663,10 +676,12 @@ class Users_User extends Base_Users_User
 		$identifier = null;
 		if ($this->signedUpWith === 'none') {
 			if (!empty($this->emailAddressPending)) {
+				// invite must have been sent to email address
 				$identifier = $this->emailAddressPending;
 				$this->emailAddressPending = '';
 				$this->signedUpWith = 'email';
 			} else if (!empty($this->mobileNumberPending)) {
+				// invite must have been sent to mobile number
 				$identifier = $this->mobileNumberPending;
 				$this->mobileNumberPending = '';
 				$this->signedUpWith = 'mobile';
@@ -699,23 +714,14 @@ class Users_User extends Base_Users_User
 	}
 	
 	/**
-	 * Obtain the path of the user icon
-	 * @return {string}
-	 */
-	function iconPath()
-	{
-		return "plugins/Users/img/icons/".$this->icon;
-	}
-	
-	/**
 	 * get user id
-	 * @method get_id
+	 * @method _getId
 	 * @static
 	 * @private
 	 * @param {Users_User} $u
 	 * @return {string}
 	 */
-	private static function get_id ($u) { return $u->id; }
+	private static function _getId ($u) { return $u->id; }
 	
 	/**
 	 * Check label or array of labels and return existing users
@@ -727,13 +733,12 @@ class Users_User extends Base_Users_User
 	 */
 	static function labelsToIds ($asUserId, $labels)
 	{
-
-		if (empty($labels)) return array();
-
+		if (empty($labels)) {
+			return array();
+		}
 		if (!is_array($labels)) {
 			$labels = array_map('trim', explode(',', $labels));
 		}
-
 		$userIds = array();
 		foreach ($labels as $label) {
 			$userIds = array_merge($userIds, Users_Contact::select('contactUserId')
@@ -778,7 +783,7 @@ class Users_User extends Base_Users_User
 			$users[] = $user = Users::futureUser($type, $ui_identifier, $status);
 			$statuses[$user->id] = $status;
 		}
-		return array_map(array('Users_User', 'get_id'), $users);
+		return array_map(array('Users_User', '_getId'), $users);
 	}
 	
 	/**
@@ -799,7 +804,7 @@ class Users_User extends Base_Users_User
 		foreach ($identifiers as $identifier) {
 			$users[] = Users::futureUser('facebook', $identifier);
 		}
-		return array_map(array('Users_User', 'get_id'), $users);
+		return array_map(array('Users_User', '_getId'), $users);
 	}
 
 	/**

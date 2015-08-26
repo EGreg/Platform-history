@@ -38,26 +38,25 @@ class Streams_Message extends Base_Streams_Message
 	}
 	
 	/**
-	 * Post message to the stream.
-	 * @method post
+	 * Post a message to stream
+ 	 * @method post
 	 * @static
+	 * @param {string} $asUserId
+	 *  The user to post as
 	 * @param {string} $asUserId
 	 *  The user to post the message as
 	 * @param {string} $publisherId
 	 *  The publisher of the stream
 	 * @param {string|array} $streamName
-	 *  The name of the stream.
-	 *  You can also pass an array of stream names here.
+	 *  The name of the stream. You can also pass an array of stream names here.
 	 * @param {array} $information
-	 *  The fields of the message. Also may include 'streamNames' field which is an array of additional
+	 *  The fields of the message.
 	 *  names of the streams to post message to.
 	 * @param {booleam} $skipAccess=false
 	 *  If true, skips the access checks and just posts the message.
-	 * @return {Streams_Message|array|false}
-	 *  If not successful, returns false
-	 *  If successful, returns the Streams_Message that was posted.
-	 *  If $streamName was an array, then this function returns
-	 *  the array of results, each value being a posted message or false if posting was aborted
+	 * @return {Streams_Message|array}
+	 *  If $streamName was a string, returns the Streams_Message that was posted.
+	 *  If $streamName was an array, returns an array of ($streamName => $message) pairs
 	 */
 	static function post(
 		$asUserId, 
@@ -204,9 +203,9 @@ class Streams_Message extends Base_Streams_Message
 				
 				/**
 				 * @event Streams/post/$streamType {before}
-				 * @param {string} 'publisherId'
-				 * @param {Streams_Stream} 'stream'
-				 * @param {string} 'message'
+				 * @param {string} publisherId
+				 * @param {Streams_Stream} stream
+				 * @param {string} message
 				 * @return {false} To cancel further processing
 				 */
 				if (Q::event("Streams/post/{$stream->type}", $params, 'before') === false) {
@@ -216,9 +215,9 @@ class Streams_Message extends Base_Streams_Message
 				
 				/**
 				 * @event Streams/message/$messageType {before}
-				 * @param {string} 'publisherId'
-				 * @param {Streams_Stream} 'stream'
-				 * @param {string} 'message'
+				 * @param {string} publisherId
+				 * @param {Streams_Stream} stream
+				 * @param {string} message
 				 * @return {false} To cancel further processing
 				 */
 				if (Q::event("Streams/message/{$type}", $params, 'before') === false) {
@@ -230,9 +229,9 @@ class Streams_Message extends Base_Streams_Message
 					$p = new Users_Exception_NotAuthorized();
 					/**
 					 * @event Streams/notAuthorized {before}
-					 * @param {string} 'publisherId'
-					 * @param {Streams_Stream} 'stream'
-					 * @param {string} 'message'
+					 * @param {string} publisherId
+					 * @param {Streams_Stream} stream
+					 * @param {string} message
 					 */
 					Q::event("Streams/notAuthorized", $params, 'after');
 					continue;
@@ -265,7 +264,7 @@ class Streams_Message extends Base_Streams_Message
 		}
 		
 		// time to update the stream rows and commit the transaction
-		// (on all the shards where the streams and related rows are)
+		// on all the shards where the streams were fetched.
 		Streams_Stream::update()
 			->set(array(
 				'messageCount' => new Db_Expression("messageCount+1")
@@ -275,7 +274,7 @@ class Streams_Message extends Base_Streams_Message
 			))->commit()
 			->execute();
 		
-		// Handle all the events for successfully posting
+		// handle all the events for successfully posting
 		foreach ($posted as $publisherId => $arr) {
 			foreach ($arr as $streamName => $m) {
 				$message = $posted[$publisherId][$streamName];
@@ -283,25 +282,25 @@ class Streams_Message extends Base_Streams_Message
 				
 				/**
 				 * @event Streams/message/$messageType {after}
-				 * @param {string} 'publisherId'
-				 * @param {Streams_Stream} 'stream'
-				 * @param {string} 'message'
+				 * @param {string} publisherId
+				 * @param {Streams_Stream} stream
+				 * @param {string} message
 				 */
 				Q::event("Streams/message/{$message->type}", $params, 'after', false);
 				/**
 				 * @event Streams/post/$streamType {after}
-				 * @param {string} 'publisherId'
-				 * @param {Streams_Stream} 'stream'
-				 * @param {string} 'message'
+				 * @param {string} publisherId
+				 * @param {Streams_Stream} stream
+				 * @param {string} message
 				 */
 				Q::event("Streams/post/{$stream->type}", $params, 'after', false);
 			}
 		}
 		/**
 		 * @event Streams/postMessages {after}
-		 * @param {string} 'publisherId'
-		 * @param {Streams_Stream} 'stream'
-		 * @param {string} 'posted'
+		 * @param {string} publisherId
+		 * @param {Streams_Stream} stream
+		 * @param {string} posted
 		 */
 		Q::event("Streams/postMessages", array(
 			'streams' => $streams,
@@ -311,10 +310,6 @@ class Streams_Message extends Base_Streams_Message
 		), 'after', false);
 		
 		if ($sendToNode) {
-			$messages = array();
-			foreach ($posted as $publisherId => $arr) {
-
-			}
 			Q_Utils::sendToNode(array(
 				"Q/method" => "Streams/Message/postMessages",
 				"posted" => Q::json_encode($messages2),
@@ -330,29 +325,24 @@ class Streams_Message extends Base_Streams_Message
 		return empty($this->instructions) ? array() : json_decode($this->instructions, true);
 	}
 	
-	function getInstruction($instruction_name)
+	function getInstruction($instructionName)
 	{
 		$instr = $this->getAllInstructions();
-		return isset($instr[$instruction_name]) ? $instr[$instruction_name] : null;
+		return isset($instr[$instructionName]) ? $instr[$instructionName] : null;
 	}
 	
-	function setInstruction($instruction_name, $value)
+	function setInstruction($instructionName, $value)
 	{
 		$instr = $this->getAllInstructions();
-		$instr[$instruction_name] = $value;
+		$instr[$instructionName] = $value;
 		$this->instructions = Q::json_encode($instr);
 	}
 	
-	function clearInstruction($instruction_name)
+	function clearInstruction($instructionName)
 	{
 		$instr = $this->getAllInstructions();
-		unset($instr[$instruction_name]);
+		unset($instr[$instructionName]);
 		$this->instructions = Q::json_encode($instr);
-	}
-	
-	function beforeSaveExecute($query)
-	{
-		return $query->commit(); // make this query commit
 	}
 	
 	/* * * */

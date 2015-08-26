@@ -14,53 +14,53 @@
  * @class Base_Streams_Rule
  * @extends Db_Row
  *
- * @property string $ofUserId
- * @property string $publisherId
- * @property string $streamName
- * @property integer $ordinal
- * @property string|Db_Expression $insertedTime
- * @property string|Db_Expression $readyTime
- * @property string $filter
- * @property string $deliver
- * @property float $relevance
+ * @property {string} $ofUserId
+ * @property {string} $publisherId
+ * @property {string} $streamName
+ * @property {integer} $ordinal
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string|Db_Expression} $readyTime
+ * @property {string} $filter
+ * @property {string} $deliver
+ * @property {float} $relevance
  */
 abstract class Base_Streams_Rule extends Db_Row
 {
 	/**
 	 * @property $ofUserId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $publisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $streamName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $ordinal
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $readyTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $filter
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $deliver
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $relevance
-	 * @type float
+	 * @type {float}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -222,6 +222,9 @@ abstract class Base_Streams_Rule extends Db_Row
 	 */
 	function beforeSet_ofUserId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('ofUserId', $value);
 		}
@@ -252,6 +255,9 @@ abstract class Base_Streams_Rule extends Db_Row
 	 */
 	function beforeSet_publisherId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('publisherId', $value);
 		}
@@ -282,6 +288,9 @@ abstract class Base_Streams_Rule extends Db_Row
 	 */
 	function beforeSet_streamName($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('streamName', $value);
 		}
@@ -316,8 +325,11 @@ abstract class Base_Streams_Rule extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".ordinal");
-		if ($value < -2147483648 or $value > 2147483647)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".ordinal");
+		$value = intval($value);
+		if ($value < -2147483648 or $value > 2147483647) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".ordinal");
+		}
 		return array('ordinal', $value);			
 	}
 
@@ -345,12 +357,13 @@ abstract class Base_Streams_Rule extends Db_Row
 		}
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
-			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".insertedTime");
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".insertedTime");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
-			$$v = $date[$v];
-		}
-		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
 		return array('insertedTime', $value);			
 	}
 
@@ -371,12 +384,13 @@ abstract class Base_Streams_Rule extends Db_Row
 		}
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
-			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".readyTime");
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".readyTime");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
-			$$v = $date[$v];
-		}
-		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
 		return array('readyTime', $value);			
 	}
 
@@ -390,6 +404,9 @@ abstract class Base_Streams_Rule extends Db_Row
 	 */
 	function beforeSet_filter($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('filter', $value);
 		}
@@ -420,6 +437,9 @@ abstract class Base_Streams_Rule extends Db_Row
 	 */
 	function beforeSet_deliver($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('deliver', $value);
 		}
@@ -438,6 +458,17 @@ abstract class Base_Streams_Rule extends Db_Row
 	{
 
 		return 255;			
+	}
+
+	function beforeSet_relevance($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('relevance', $value);
+		}
+		if (!is_numeric($value))
+			throw new Exception('Non-numeric value being assigned to '.$this->getTable().".relevance");
+		$value = floatval($value);
+		return array('relevance', $value);			
 	}
 
 	/**

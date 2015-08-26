@@ -29,80 +29,80 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property id
- * @type String
+ * @property {String}
+ * @type id
  */
 /**
- * @property insertedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type insertedTime
  */
 /**
- * @property updatedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type updatedTime
  */
 /**
- * @property sessionId
- * @type String
+ * @property {String}
+ * @type sessionId
  */
 /**
- * @property sessionCount
- * @type integer
+ * @property {integer}
+ * @type sessionCount
  */
 /**
- * @property fb_uid
- * @type integer
+ * @property {integer}
+ * @type fb_uid
  */
 /**
- * @property tw_uid
- * @type integer
+ * @property {integer}
+ * @type tw_uid
  */
 /**
- * @property g_uid
- * @type String
+ * @property {String}
+ * @type g_uid
  */
 /**
- * @property y_uid
- * @type String
+ * @property {String}
+ * @type y_uid
  */
 /**
- * @property passphraseHash
- * @type String
+ * @property {String}
+ * @type passphraseHash
  */
 /**
- * @property emailAddress
- * @type String
+ * @property {String}
+ * @type emailAddress
  */
 /**
- * @property mobileNumber
- * @type String
+ * @property {String}
+ * @type mobileNumber
  */
 /**
- * @property emailAddressPending
- * @type String
+ * @property {String}
+ * @type emailAddressPending
  */
 /**
- * @property mobileNumberPending
- * @type String
+ * @property {String}
+ * @type mobileNumberPending
  */
 /**
- * @property signedUpWith
- * @type String
+ * @property {String}
+ * @type signedUpWith
  */
 /**
- * @property username
- * @type String
+ * @property {String}
+ * @type username
  */
 /**
- * @property icon
- * @type String
+ * @property {String}
+ * @type icon
  */
 /**
- * @property url
- * @type String
+ * @property {String}
+ * @type url
  */
 /**
- * @property pincodeHash
- * @type String
+ * @property {String}
+ * @type pincodeHash
  */
 
 /**
@@ -289,6 +289,9 @@ Base.prototype.fieldNames = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_id = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".id");
@@ -341,6 +344,7 @@ Base.prototype.beforeSet_updatedTime = function (value) {
  */
 Base.prototype.beforeSet_sessionId = function (value) {
 		if (!value) return value;
+		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".sessionId");
@@ -371,7 +375,7 @@ Base.prototype.beforeSet_sessionCount = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".sessionCount");
 		if (value < -2147483648 || value > 2147483647)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".sessionCount");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".sessionCount");
 		return value;
 };
 
@@ -397,7 +401,7 @@ Base.prototype.beforeSet_fb_uid = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".fb_uid");
 		if (value < -9.2233720368548E+18 || value > 9223372036854775807)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".fb_uid");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".fb_uid");
 		return value;
 };
 
@@ -423,7 +427,7 @@ Base.prototype.beforeSet_tw_uid = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".tw_uid");
 		if (value < -9.2233720368548E+18 || value > 9223372036854775807)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".tw_uid");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".tw_uid");
 		return value;
 };
 
@@ -445,6 +449,7 @@ Base.prototype.maxSize_tw_uid = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_g_uid = function (value) {
+		if (!value) return value;
 		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
@@ -473,6 +478,7 @@ Base.prototype.maxSize_g_uid = function () {
  */
 Base.prototype.beforeSet_y_uid = function (value) {
 		if (!value) return value;
+		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".y_uid");
@@ -499,6 +505,7 @@ Base.prototype.maxSize_y_uid = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_passphraseHash = function (value) {
+		if (!value) return value;
 		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
@@ -527,6 +534,7 @@ Base.prototype.maxSize_passphraseHash = function () {
  */
 Base.prototype.beforeSet_emailAddress = function (value) {
 		if (!value) return value;
+		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".emailAddress");
@@ -554,6 +562,7 @@ Base.prototype.maxSize_emailAddress = function () {
  */
 Base.prototype.beforeSet_mobileNumber = function (value) {
 		if (!value) return value;
+		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".mobileNumber");
@@ -580,7 +589,9 @@ Base.prototype.maxSize_mobileNumber = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_emailAddressPending = function (value) {
-		if (!value) return value;
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".emailAddressPending");
@@ -607,7 +618,9 @@ Base.prototype.maxSize_emailAddressPending = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_mobileNumberPending = function (value) {
-		if (!value) return value;
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".mobileNumberPending");
@@ -635,7 +648,7 @@ Base.prototype.maxSize_mobileNumberPending = function () {
 Base.prototype.beforeSet_signedUpWith = function (value) {
 		if (value instanceof Db.Expression) return value;
 		if (['none','email','mobile','facebook','twitter','remote'].indexOf(value) < 0)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".signedUpWith");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".signedUpWith");
 		return value;
 };
 
@@ -648,6 +661,9 @@ Base.prototype.beforeSet_signedUpWith = function (value) {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_username = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".username");
@@ -674,6 +690,9 @@ Base.prototype.maxSize_username = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_icon = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".icon");
@@ -701,6 +720,7 @@ Base.prototype.maxSize_icon = function () {
  */
 Base.prototype.beforeSet_url = function (value) {
 		if (!value) return value;
+		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".url");
@@ -727,6 +747,7 @@ Base.prototype.maxSize_url = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_pincodeHash = function (value) {
+		if (!value) return value;
 		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")

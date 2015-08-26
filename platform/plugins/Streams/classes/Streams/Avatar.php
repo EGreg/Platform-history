@@ -189,7 +189,7 @@ class Streams_Avatar extends Base_Streams_Avatar
 		}
 
 		if (!empty($options['short'])) {
-			return $fn ? $fn2 : $u2;
+			return $fn ? $fn2 : ($u ? $u2 : $f2);
 		}
 
 		// $u = $u ? "\"$username\"" : '';

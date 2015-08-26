@@ -29,68 +29,68 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property publisherId
- * @type String
+ * @property {String}
+ * @type publisherId
  */
 /**
- * @property name
- * @type String
+ * @property {String}
+ * @type name
  */
 /**
- * @property insertedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type insertedTime
  */
 /**
- * @property updatedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type updatedTime
  */
 /**
- * @property type
- * @type String
+ * @property {String}
+ * @type type
  */
 /**
- * @property title
- * @type String
+ * @property {String}
+ * @type title
  */
 /**
- * @property icon
- * @type String
+ * @property {String}
+ * @type icon
  */
 /**
- * @property content
- * @type String
+ * @property {String}
+ * @type content
  */
 /**
- * @property attributes
- * @type String
+ * @property {String}
+ * @type attributes
  */
 /**
- * @property readLevel
- * @type integer
+ * @property {integer}
+ * @type readLevel
  */
 /**
- * @property writeLevel
- * @type integer
+ * @property {integer}
+ * @type writeLevel
  */
 /**
- * @property adminLevel
- * @type integer
+ * @property {integer}
+ * @type adminLevel
  */
 /**
- * @property inheritAccess
- * @type String
+ * @property {String}
+ * @type inheritAccess
  */
 /**
- * @property messageCount
- * @type integer
+ * @property {integer}
+ * @type messageCount
  */
 /**
- * @property participantCount
- * @type integer
+ * @property {integer}
+ * @type participantCount
  */
 /**
- * @property closedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type closedTime
  */
 
 /**
@@ -275,6 +275,9 @@ Base.prototype.fieldNames = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_publisherId = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".publisherId");
@@ -301,6 +304,9 @@ Base.prototype.maxSize_publisherId = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_name = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".name");
@@ -352,6 +358,9 @@ Base.prototype.beforeSet_updatedTime = function (value) {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_type = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".type");
@@ -378,6 +387,9 @@ Base.prototype.maxSize_type = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_title = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".title");
@@ -404,6 +416,9 @@ Base.prototype.maxSize_title = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_icon = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".icon");
@@ -430,6 +445,9 @@ Base.prototype.maxSize_icon = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_content = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".content");
@@ -456,6 +474,7 @@ Base.prototype.maxSize_content = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_attributes = function (value) {
+		if (!value) return value;
 		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
@@ -487,7 +506,7 @@ Base.prototype.beforeSet_readLevel = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".readLevel");
 		if (value < -2147483648 || value > 2147483647)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".readLevel");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".readLevel");
 		return value;
 };
 
@@ -513,7 +532,7 @@ Base.prototype.beforeSet_writeLevel = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".writeLevel");
 		if (value < -2147483648 || value > 2147483647)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".writeLevel");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".writeLevel");
 		return value;
 };
 
@@ -539,7 +558,7 @@ Base.prototype.beforeSet_adminLevel = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".adminLevel");
 		if (value < -2147483648 || value > 2147483647)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".adminLevel");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".adminLevel");
 		return value;
 };
 
@@ -561,6 +580,7 @@ Base.prototype.maxSize_adminLevel = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_inheritAccess = function (value) {
+		if (!value) return value;
 		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
@@ -592,7 +612,7 @@ Base.prototype.beforeSet_messageCount = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".messageCount");
 		if (value < -2147483648 || value > 2147483647)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".messageCount");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".messageCount");
 		return value;
 };
 
@@ -618,7 +638,7 @@ Base.prototype.beforeSet_participantCount = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".participantCount");
 		if (value < -2147483648 || value > 2147483647)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".participantCount");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".participantCount");
 		return value;
 };
 

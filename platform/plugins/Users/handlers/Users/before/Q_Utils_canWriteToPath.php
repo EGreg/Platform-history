@@ -5,18 +5,18 @@ function Users_before_Q_Utils_canWriteToPath($params, &$result)
 	extract($params);
 	/**
 	 * @var $path
-	 * @var $throw_if_not_writeable
-	 * @var $mkdir_if_missing
+	 * @var $throwIfNotWritable
+	 * @var $mkdirIfMissing
 	 */
 
 	// The Users plugin requires that a user be logged in before uploading a file,
 	// and only in the proper directories.
-	$user = Users::loggedInUser($throw_if_not_writeable);
+	$user = Users::loggedInUser($throwIfNotWritable);
 	if (!$user) {
 		return false;
 	}
 	$app = Q_Config::expect('Q', 'app');
-	$subpaths = Q_Config::get('Users', 'paths', 'uploads', array('files/$app/uploads/user-$userId'));
+	$subpaths = Q_Config::get('Users', 'paths', 'uploads', array('files/{{app}}/uploads/Users/{{userId}}' => true));
 	$paths = array();
 	foreach ($subpaths as $subpath => $can_write) {
 		if (!$can_write) continue;
@@ -43,9 +43,9 @@ function Users_before_Q_Utils_canWriteToPath($params, &$result)
 			$len = strlen($p);
 			if (strncmp($path, $p, $len) === 0) {
 				// we can write to this path
-				if ($mkdir_if_missing and !file_exists($path)) {
-					$mode = is_integer($mkdir_if_missing)
-						? $mkdir_if_missing
+				if ($mkdirIfMissing and !file_exists($path)) {
+					$mode = is_integer($mkdirIfMissing)
+						? $mkdirIfMissing
 						: 0777;
 					if (!@mkdir($path, 0777, true)) {
 						throw new Q_Exception_FilePermissions(array(
@@ -65,7 +65,7 @@ function Users_before_Q_Utils_canWriteToPath($params, &$result)
 			}
 		}
 	}
-	if ($throw_if_not_writeable) {
+	if ($throwIfNotWritable) {
 		throw new Q_Exception_CantWriteToPath();
 	}
 	$result = false;

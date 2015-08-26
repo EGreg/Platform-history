@@ -40,7 +40,9 @@ function Streams_before_Q_objects()
 			$exception = new Q_Exception("This invite has already been " . $invite->state, 'token');
 			break;
 		}
-		$shouldThrow = Q::event('Streams/objects/inviteException', compact('invite', 'exception'), 'before');
+		$shouldThrow = Q::event('Streams/objects/inviteException', 
+			compact('invite', 'exception'), 'before'
+		);
 		if ($shouldThrow === null) {
 			Q_Response::setNotice('Streams/objects', $exception->getMessage(), true);
 		} else if ($shouldThrow === true) {
@@ -106,8 +108,10 @@ function Streams_before_Q_objects()
 		Users::setLoggedInUser($user);
 	}
 	
-	// accept invite
-	$invite->accept();
+	// accept invite and autosubscribe if first time
+	if ($invite->accept() and !$stream->subscription($user->id)) {
+		$stream->subscribe();
+	}
 	
 	// retain the invite object for further processing
 	Streams::$followedInvite = $invite;

@@ -9,7 +9,7 @@
 	"dependencies": {
 		"express": "3.x.x",
 		"socket.io": "1.x.x",
-		"mysql": "0.9.x",
+		"mysql": "2.9.x",
 		"request": "2.x.x",
 		"mustache": "0.7.x",
 		"handlebars": "2.0.x",

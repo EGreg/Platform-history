@@ -55,7 +55,7 @@ function Q_panel_tool($options)
 	$form = null;
 	$editing = false;
 	$complete = false;
-	$_form_static = null;
+	$setSlots = null;
 	extract($options, EXTR_OVERWRITE);
 	
 	$more_class = ($options['complete']) 
@@ -143,7 +143,7 @@ function Q_panel_tool($options)
 	Q_Response::addScript('plugins/Q/js/tools/panel.js');
 	Q_Response::addStylesheet('plugins/Q/css/panel.css');
 	
-	if (isset($_form_static)) {
+	if (isset($setSlots)) {
 		Q_Response::setSlot('form', $form);
 		Q_Response::setSlot('static', $static);
 	}

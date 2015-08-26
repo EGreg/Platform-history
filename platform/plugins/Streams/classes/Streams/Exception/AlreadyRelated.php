@@ -15,4 +15,4 @@ class Streams_Exception_AlreadyRelated extends Q_Exception
 	 */	
 };
 
-Q_Exception::add('Streams_Exception_AlreadyRelated', 'The stream is already $state');
+Q_Exception::add('Streams_Exception_AlreadyRelated', 'The stream is already {{state}}');

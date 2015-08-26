@@ -34,7 +34,7 @@ function Users_Vote (fields) {
 				if (err) {
 					// rollback
 					_cache.beforeRetrieveExecute = function (query) {
-						return query.rollback();
+						return query.rollback().execute();
 					};
 					_cache.retrieve(function () {
 						_cache = null;

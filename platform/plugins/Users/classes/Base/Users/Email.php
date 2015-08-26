@@ -14,48 +14,48 @@
  * @class Base_Users_Email
  * @extends Db_Row
  *
- * @property string $address
- * @property string|Db_Expression $insertedTime
- * @property string|Db_Expression $updatedTime
- * @property string $userId
- * @property mixed $state
- * @property string $activationCode
- * @property string|Db_Expression $activationCodeExpires
- * @property string $authCode
+ * @property {string} $address
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string|Db_Expression} $updatedTime
+ * @property {string} $userId
+ * @property {string} $state
+ * @property {string} $activationCode
+ * @property {string|Db_Expression} $activationCodeExpires
+ * @property {string} $authCode
  */
 abstract class Base_Users_Email extends Db_Row
 {
 	/**
 	 * @property $address
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $userId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $state
-	 * @type mixed
+	 * @type {string}
 	 */
 	/**
 	 * @property $activationCode
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $activationCodeExpires
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $authCode
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -214,6 +214,9 @@ abstract class Base_Users_Email extends Db_Row
 	 */
 	function beforeSet_address($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('address', $value);
 		}
@@ -248,12 +251,13 @@ abstract class Base_Users_Email extends Db_Row
 		}
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
-			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".insertedTime");
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".insertedTime");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
-			$$v = $date[$v];
-		}
-		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
 		return array('insertedTime', $value);			
 	}
 
@@ -274,12 +278,13 @@ abstract class Base_Users_Email extends Db_Row
 		}
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
-			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".updatedTime");
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".updatedTime");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
-			$$v = $date[$v];
-		}
-		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
 		return array('updatedTime', $value);			
 	}
 
@@ -293,6 +298,9 @@ abstract class Base_Users_Email extends Db_Row
 	 */
 	function beforeSet_userId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('userId', $value);
 		}
@@ -340,6 +348,9 @@ abstract class Base_Users_Email extends Db_Row
 	 */
 	function beforeSet_activationCode($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('activationCode', $value);
 		}
@@ -374,12 +385,13 @@ abstract class Base_Users_Email extends Db_Row
 		}
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
-			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".activationCodeExpires");
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".activationCodeExpires");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
-			$$v = $date[$v];
-		}
-		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
 		return array('activationCodeExpires', $value);			
 	}
 
@@ -393,6 +405,9 @@ abstract class Base_Users_Email extends Db_Row
 	 */
 	function beforeSet_authCode($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('authCode', $value);
 		}

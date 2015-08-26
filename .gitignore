@@ -19,7 +19,9 @@ platform/plugins/Streams/files/Streams/icons/*
 !platform/plugins/Streams/files/Streams/icons/default
 platform/node_modules
 MyApp/local/*
-MyApp/files/*
+MyApp/files/MyApp/uploads/*/*
+!MyApp/files/MyApp/uploads/Users/.dir
+!MyApp/files/MyApp/uploads/Streams/.dir
 MyApp/web/plugins/*
 SmartApp/local/*
 SmartApp/files/*

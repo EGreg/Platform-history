@@ -13,16 +13,19 @@
  * Base class representing 'HostnameSession' rows in the 'Metrics' database
  * @class Base_Metrics_HostnameSession
  * @extends Db_Row
+ *
+ * @property {string} $hostname
+ * @property {string} $sessionId
  */
 abstract class Base_Metrics_HostnameSession extends Db_Row
 {
 	/**
-	 * @property $fields['hostname']
-	 * @type string
+	 * @property $hostname
+	 * @type {string}
 	 */
 	/**
-	 * @property $fields['sessionId']
-	 * @type string
+	 * @property $sessionId
+	 * @type {string}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -56,7 +59,7 @@ abstract class Base_Metrics_HostnameSession extends Db_Row
 	 * Retrieve the table name to use in SQL statement
 	 * @method table
 	 * @static
-	 * @param {boolean} [$with_db_name=true] Indicates wheather table name shall contain the database name
+	 * @param {boolean} [$with_db_name=true] Indicates wheather table name should contain the database name
  	 * @return {string|Db_Expression} The table name as string optionally without database name if no table sharding
 	 * was started or Db_Expression class with prefix and database name templates is table was sharded
 	 */
@@ -89,9 +92,9 @@ abstract class Base_Metrics_HostnameSession extends Db_Row
 	 * Create SELECT query to the class table
 	 * @method select
 	 * @static
-	 * @param $fields {array} The field values to use in WHERE clauseas as 
+	 * @param {array} $fields The field values to use in WHERE clauseas as 
 	 * an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function select($fields, $alias = null)
@@ -106,7 +109,7 @@ abstract class Base_Metrics_HostnameSession extends Db_Row
 	 * Create UPDATE query to the class table
 	 * @method update
 	 * @static
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function update($alias = null)
@@ -121,8 +124,8 @@ abstract class Base_Metrics_HostnameSession extends Db_Row
 	 * Create DELETE query to the class table
 	 * @method delete
 	 * @static
-	 * @param [$table_using=null] {object} If set, adds a USING clause with this table
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$table_using=null] If set, adds a USING clause with this table
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function delete($table_using = null, $alias = null)
@@ -137,8 +140,8 @@ abstract class Base_Metrics_HostnameSession extends Db_Row
 	 * Create INSERT query to the class table
 	 * @method insert
 	 * @static
-	 * @param [$fields=array()] {object} The fields as an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$fields=array()] The fields as an associative array of `column => value` pairs
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function insert($fields = array(), $alias = null)
@@ -166,7 +169,10 @@ abstract class Base_Metrics_HostnameSession extends Db_Row
 	 */
 	static function insertManyAndExecute($records = array(), $options = array())
 	{
-		self::db()->insertManyAndExecute(self::table(), $records, $options);
+		self::db()->insertManyAndExecute(
+			self::table(), $records,
+			array_merge($options, array('className' => 'Metrics_HostnameSession'))
+		);
 	}
 	
 	/**
@@ -179,12 +185,27 @@ abstract class Base_Metrics_HostnameSession extends Db_Row
 	 */
 	function beforeSet_hostname($value)
 	{
-		if ($value instanceof Db_Expression) return array('hostname', $value);
+		if (!isset($value)) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
+			return array('hostname', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".hostname");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".hostname");
 		return array('hostname', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the hostname field
+	 * @return {integer}
+	 */
+	function maxSize_hostname()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -197,7 +218,12 @@ abstract class Base_Metrics_HostnameSession extends Db_Row
 	 */
 	function beforeSet_sessionId($value)
 	{
-		if ($value instanceof Db_Expression) return array('sessionId', $value);
+		if (!isset($value)) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
+			return array('sessionId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".sessionId");
 		if (strlen($value) > 255)
@@ -206,17 +232,13 @@ abstract class Base_Metrics_HostnameSession extends Db_Row
 	}
 
 	/**
-	 * Method is called after field is set and used to keep $fieldsModified property up to date
-	 * @method afterSet
-	 * @param {string} $name The field name
-	 * @param {mixed} $value The value of the field
-	 * @return {mixed} Original value
+	 * Returns the maximum string length that can be assigned to the sessionId field
+	 * @return {integer}
 	 */
-	function afterSet($name, $value)
+	function maxSize_sessionId()
 	{
-		if (!in_array($name, $this->fieldNames()))
-			$this->notModified($name);
-		return $value;			
+
+		return 255;			
 	}
 
 	/**

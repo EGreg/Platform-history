@@ -23,8 +23,9 @@ class Users_Contact extends Base_Users_Contact
 		parent::setUp();
 	}
 	/**
-	 * Add contact to label
+	 * Add contact with one or more labels
 	 * @method addContact
+	 * @static
 	 * @param {string} $userId
 	 *  The id of the user whose contact will be added
 	 * @param {string} $contactUserId
@@ -41,36 +42,42 @@ class Users_Contact extends Base_Users_Contact
 	 */
 	static function addContact($userId, $label, $contactUserId, $nickname = '')
 	{
-		if (empty($label)) {
-			throw new Q_Exception_RequiredField(
-				array('field' => 'label')
-			);
+		foreach (array('userId', 'label', 'contactUserId') as $field) {
+			if (empty($$field)) {
+				throw new Q_Exception_RequiredField(compact('field'));
+			}
 		}
 		$labels = is_array($label) ? $label : array($label);
 		$contacts = array();
 		foreach ($labels as $l) {
-			// Insert the contacts one by one, so if an error occurs
-			// we can continue right on inserting the rest.
+			// Insert the contacts one by one
 			$contact = new Users_Contact();
 			$contact->userId = $userId;
 			$contact->contactUserId = $contactUserId;
 			$contact->label = $l;
+			if ($nickname) {
+				$contact->nickname = $nickname;
+			}
 			$contact->save(true);
 			$contacts[] = $contact;
 		}
 		/**
-		 * @event Users/User/addContact {after}
-		 * @param {string} 'contactUserId'
-		 * @param {string} 'label'
-		 * @param {array} 'contacts'
+		 * @event Users/Contact/addContact {after}
+		 * @param {string} contactUserId
+		 * @param {string} label
+		 * @param {array} contacts
 		 */
-		Q::event('Users/Contact/add', compact('contactUserId', 'label', 'contacts'), 'after');
+		Q::event('Users/Contact/addContact', 
+			compact('contactUserId', 'label', 'contacts'), 
+			'after'
+		);
 		return $contacts;
 	}
 
 	/**
 	 * Check if contact belongs to label
 	 * @method checkLabel
+	 * @static
 	 * @param {string} $userId
 	 * @param {string} $label
 	 * @param {string} $contactId
@@ -97,22 +104,26 @@ class Users_Contact extends Base_Users_Contact
 	/**
 	 * Retrieve contacts belonging to label
 	 * @method fetch
+	 * @static
 	 * @param {string} $userId
 	 * @param {string|Db_Range|Db_Expression} $label
 	 * @param {array} [$options=array()] Query options including:
-	 * 		@param 'limit' {integer}
-	 * 		@param 'offset' {integer}
+	 * @param {integer} [$options.limit=false]
+	 * @param {integer} [$options.offset]
 	 * @return {array}
 	 */
-	static function fetch($userId, $label = null /* string|Db_Range */, $options = array())
+	static function fetch($userId, $label = null, /* string|Db_Range, */ $options = array())
 	{
+		if (empty($userId)) {
+			throw new Q_Exception_RequiredField(array('field' => $userId));
+		}
 		$limit = isset($options['limit']) ? $options['limit'] : false;
 		$offset = isset($options['offset']) ? $options['offset'] : 0;
 		
 		$criteria = compact('userId');
 		
 		if ($label) {
-			if (substr($label, -1) === '/') {
+			if (is_string($label) and substr($label, -1) === '/') {
 				$label = new Db_Range($label, true, false, true);
 			}
 			$criteria['label'] = $label;
@@ -128,6 +139,7 @@ class Users_Contact extends Base_Users_Contact
 	/**
 	 * Remove contact from label
 	 * @method removeContact
+	 * @static
 	 * @param {string} $userId
 	 * @param {string} $label
 	 * @param {string} $contactId
@@ -135,6 +147,11 @@ class Users_Contact extends Base_Users_Contact
 	 */
 	static function removeContact($userId, $label, $contactId)
 	{
+		foreach (array('userId', 'label', 'contactUserId') as $field) {
+			if (empty($$field)) {
+				throw new Q_Exception_RequiredField(compact('field'));
+			}
+		}
 		$contact = new Users_Contact();
 		$contact->userId = $userId;
 		$contact->label = $label;

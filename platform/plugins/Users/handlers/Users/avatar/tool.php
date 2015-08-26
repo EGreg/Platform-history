@@ -34,9 +34,6 @@ function Users_avatar_tool($options)
 	if (!empty($options['renderOnClient'])) {
 		return '';
 	}
-	$user = !empty($options['userId'])
-		? Users_User::fetch($options['userId'])
-		: Users::loggedInUser();
 	
 	if (!$user) {
 		return '';
@@ -49,7 +46,7 @@ function Users_avatar_tool($options)
 	$icon = $options['icon'];
 	if ($icon) {
 		if ($icon === true) {
-			$icon = 40;
+			$icon = Q_Config::get('Users', 'icon', 'defaultSize', 40);
 		}
 		$attributes = isset($options['iconAttributes'])
 			? $options['iconAttributes']
@@ -57,7 +54,7 @@ function Users_avatar_tool($options)
 		$attributes['class'] = isset($attributes['class'])
 			? $attributes['class'] . ' Users_avatar_icon'
 			: 'Users_avatar_icon';
-		$result .= Q_Html::img($user->iconPath($icon), 'user icon', $attributes);
+		$result .= Q_Html::img($user->iconUrl($icon), 'user icon', $attributes);
 	}
 	$result .= '<span class="Users_avatar_name">' . $user->username . '</span>';
 	return $result;

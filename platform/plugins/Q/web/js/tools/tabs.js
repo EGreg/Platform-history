@@ -176,7 +176,10 @@ Q.Tool.define("Q/tabs", function(options) {
 		var state = tool.state;
 		if (typeof tab === 'string') {
 			name = tab;
-			tab = null;
+			var slashed = (name + '')
+			    .replace(/[\\"']/g, '\\$&')
+				.replace(/\u0000/g, '\\0');
+			tab = tool.$('[data-name="'+slashed+'"]')[0];
 		}
 		if (!$(tool.element).closest('body').length) {
 			// the replaced html probably included the tool's own element,
@@ -206,7 +209,7 @@ Q.Tool.define("Q/tabs", function(options) {
 	},
 	
 	/**
-	 * Called by indicateCurrentTab. You can override this function to provide your
+	 * Called by indicateCurrent. You can override this function to provide your
 	 * own mechanisms for indicating the current tab and returning it.
 	 * @method getCurrentTab
 	 * @param {String} [tab] a possible tab the caller requested to indicate as current
@@ -286,9 +289,15 @@ Q.Tool.define("Q/tabs", function(options) {
 		var w = $te.width(), w2 = 0, w3 = 0, index = -10;
 		var $o = $('.Q_tabs_overflow', $te);
 		tool.indicateCurrent();
-		if (!parseInt($te[0].style.width)) {
+		var te = tool.element;
+		if (!parseInt(te.style.width)) {
+			var rect1 = te.getBoundingClientRect();
 			$te.siblings(':visible').each(function () {
 				var $t = $(this);
+				var rect2 = this.getBoundingClientRect();
+				if (rect1.top > rect2.bottom || rect1.bottom < rect2.top) {
+					return;
+				}
 				if ($t.css('float') != 'none') {
 					w -= $t.outerWidth(true);
 				}

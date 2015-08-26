@@ -14,33 +14,33 @@
  * @class Base_Users_Contact
  * @extends Db_Row
  *
- * @property string $userId
- * @property string $label
- * @property string $contactUserId
- * @property string $nickname
- * @property string|Db_Expression $insertedTime
+ * @property {string} $userId
+ * @property {string} $label
+ * @property {string} $contactUserId
+ * @property {string} $nickname
+ * @property {string|Db_Expression} $insertedTime
  */
 abstract class Base_Users_Contact extends Db_Row
 {
 	/**
 	 * @property $userId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $label
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $contactUserId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $nickname
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -201,6 +201,9 @@ abstract class Base_Users_Contact extends Db_Row
 	 */
 	function beforeSet_userId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('userId', $value);
 		}
@@ -231,6 +234,9 @@ abstract class Base_Users_Contact extends Db_Row
 	 */
 	function beforeSet_label($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('label', $value);
 		}
@@ -261,6 +267,9 @@ abstract class Base_Users_Contact extends Db_Row
 	 */
 	function beforeSet_contactUserId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('contactUserId', $value);
 		}
@@ -291,6 +300,9 @@ abstract class Base_Users_Contact extends Db_Row
 	 */
 	function beforeSet_nickname($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('nickname', $value);
 		}
@@ -325,12 +337,13 @@ abstract class Base_Users_Contact extends Db_Row
 		}
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
-			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".insertedTime");
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".insertedTime");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
-			$$v = $date[$v];
-		}
-		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
 		return array('insertedTime', $value);			
 	}
 

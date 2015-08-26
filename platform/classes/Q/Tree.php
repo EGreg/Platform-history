@@ -35,24 +35,26 @@ class Q_Tree
 	 * @param {string} $key2 Optional. The name of the second key in the configuration path.
 	 *  You can actually pass as many keys as you need,
 	 *  delving deeper and deeper into the configuration structure.
-	 *  All but the second-to-last parameter are interpreted as keys.
-	 * @param {mixed} $default The last parameter should not be omitted,
-	 *  and contains the default value to return in case
-	 *  the requested configuration field was not indicated.
+	 *  If more than one argument is passed, but the last argument are interpreted as keys.
+	 * @param {mixed} $default
+	 *  If only one argument is passed, the default is null
+	 *  Otherwise, the last argument is the default value to return
+	 *  in case the requested field was not found.
 	 * @return {mixed}
 	 * @throws {Q_Exception_NotArray}
 	 */
 	function get(
 	 $key1,
-	 $default)
+	 $default = null)
 	{
 		$args = func_get_args();
 		$args_count = func_num_args();
-		if ($args_count <= 1)
-			return null;
+		$result = & $this->parameters;
+		if ($args_count <= 1) {
+			return isset($result[$key1]) ? $result[$key1] : null;
+		}
 		$default = $args[$args_count - 1];
 		$key_array = array();
-		$result = & $this->parameters;
 		for ($i = 0; $i < $args_count - 1; ++$i) {
 			$key = $args[$i];
 			if (! is_array($result)) {
@@ -176,7 +178,10 @@ class Q_Tree
 	function load(
 	 $filename)
 	{
-		if (!($filename2 = Q::realPath($filename))) return false;
+		$filename2 = Q::realPath($filename);
+		if (!$filename2) {
+			return false;
+		}
 		
 		$this->filename = $filename2;
 		
@@ -197,7 +202,7 @@ class Q_Tree
 
 		/**
 		 * @event Q/tree/load {before}
-		 * @param {string} 'filename'
+		 * @param {string} filename
 		 * @return {array}
 		 */
 		$arr = Q::event('Q/tree/load', compact('filename'), 'before');

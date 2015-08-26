@@ -13,4 +13,4 @@ class Q_Exception_TestCaseIncomplete extends Q_Exception_TestCase
 	 */
 };
 
-Q_Exception::add('Q_Exception_TestCaseIncomplete', 'incomplete. $message');
+Q_Exception::add('Q_Exception_TestCaseIncomplete', 'incomplete. {{message}}');

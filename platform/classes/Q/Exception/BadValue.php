@@ -14,4 +14,4 @@ class Q_Exception_BadValue extends Q_Exception
 	 */
 };
 
-Q_Exception::add('Q_Exception_BadValue', 'bad value found in $internal: $problem');
+Q_Exception::add('Q_Exception_BadValue', 'bad value found in {{internal}}: {{problem}}');

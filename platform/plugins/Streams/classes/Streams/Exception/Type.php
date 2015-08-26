@@ -17,4 +17,4 @@ class Streams_Exception_Type extends Q_Exception
 	 */	
 };
 
-Q_Exception::add('Streams_Exception_Type', 'Cannot post \'$type\' messages to stream $name');
+Q_Exception::add('Streams_Exception_Type', 'Cannot post \'{{type}}\' messages to stream {{name}}');

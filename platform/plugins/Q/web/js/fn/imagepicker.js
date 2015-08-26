@@ -65,6 +65,7 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 	}
 	$this.before(input);
 	$this.addClass('Q_imagepicker');
+	Q.addStylesheet('plugins/Q/css/imagepicker.css');
 	
 	function _callback (err, res) {
 		var state = $this.state('Q/imagepicker');
@@ -243,7 +244,7 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 							return _revert();
 						}
 						
-						if (state.cropping) {
+						if (state.cropping && !state.saveSizeName.x) {
 		                    var $croppingElement = $('<img />').attr({ src: img.src })
 								.css({'visibility': 'hidden'});
 							var $title = $('<div />')
@@ -366,12 +367,11 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 				data: data
 			};
 			Q.extend(params, override);
-			if (!state.cropping && !state.crop) {
+			if ((!state.cropping && !state.crop)
+			|| state.saveSizeName.x) {
 				_doUpload(override);
 				return;
 			}
-			
-			Q.addStylesheet('plugins/Q/css/imagepicker.css');
 			
 			var img = new Image;
 			img.onload = _onImgLoad;

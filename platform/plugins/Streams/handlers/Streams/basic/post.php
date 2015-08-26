@@ -63,18 +63,10 @@ function Streams_basic_post()
 			$stream->publisherId = $user->id;
 			$stream->name = $name;
 		}
+		$messageType = $stream->wasRetrieved() ? 'Streams/changed' : 'Streams/created';
 		$stream->content = (string)$request[$field];
 		$stream->type = $type;
 		$stream->title = $title;
-		$stream->save();
-		$stream->post($user->id, array(
-			'type' => $stream->wasRetrieved() ? 'Streams/edited' : 'Streams/created',
-			'content' => '',
-			'instructions' => array('changes' => array(
-				'content' => $stream->content,
-				'type' => $stream->type,
-				'title' => $stream->title
-			))
-		), true);
+		$stream->changed($user->id, $messageType);
 	}
 }

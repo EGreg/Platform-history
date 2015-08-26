@@ -117,7 +117,7 @@ function _Streams_participants(options) {
 		function (err, stream, extra) {
 			var fem = Q.firstErrorMessage(err);
 			if (fem) {
-				return console.warn("Streams/preview: " + fem);
+				return console.warn("Streams/participants: " + fem);
 			}
 			if (!$(tool.element).closest('body').length) {
 				return;
@@ -136,6 +136,37 @@ function _Streams_participants(options) {
 					addAvatar(userId);
 				}
 			}, { sort: 'insertedTime', ascending: false });
+			
+			if (state.showBlanks) {
+				Q.each(i, state.maxShow-1, 1, function () {
+					addAvatar('');
+				});
+			}
+			
+			state.count = c;
+			tool.stateChanged('count');
+			
+			tool.adjustInterval = setInterval(adjustInterval, 500);
+			adjustInterval();
+			
+			if (state.max) {
+				tool.$max.text('/' + state.max);
+			}
+			
+			stream.retain(tool);
+			stream.onMessage("Streams/join")
+			.set(function (stream, message, messages) {
+				addAvatar(message.byUserId, true);
+				++tool.state.count;
+				tool.stateChanged('count');
+			}, tool);
+	
+			stream.onMessage("Streams/leave")
+			.set(function (stream, message, messages) {
+				removeAvatar(message.byUserId);
+				--tool.state.count;
+				tool.stateChanged('count');
+			}, tool);
 			
 			var si = state.invite;
 			if (si) {
@@ -182,42 +213,14 @@ function _Streams_participants(options) {
 								}, si.clickable)
 							);
 						}
+						Q.handle(state.onRefresh, tool, []);
 					},
 					state.templates.invite
 				);
 				++i;
+			} else {
+				Q.handle(state.onRefresh, tool, []);
 			}
-			if (state.showBlanks) {
-				Q.each(i, state.maxShow-1, 1, function () {
-					addAvatar('');
-				});
-			}
-			
-			state.count = c;
-			tool.stateChanged('count');
-			Q.handle(state.onRefresh, tool, []);
-			
-			tool.adjustInterval = setInterval(adjustInterval, 500);
-			adjustInterval();
-			
-			if (state.max) {
-				tool.$max.text('/' + state.max);
-			}
-			
-			stream.retain(tool);
-			stream.onMessage("Streams/join")
-			.set(function (stream, message, messages) {
-				addAvatar(message.byUserId, true);
-				++tool.state.count;
-				tool.stateChanged('count');
-			}, tool);
-	
-			stream.onMessage("Streams/leave")
-			.set(function (stream, message, messages) {
-				removeAvatar(message.byUserId);
-				--tool.state.count;
-				tool.stateChanged('count');
-			}, tool);
 			
 		}, {participants: 100});
 		
@@ -228,8 +231,9 @@ function _Streams_participants(options) {
 				tool.$pc.width(w - pm);
 			}
 			if (state.showControls) {
-				var $c = tool.$controls;	
-				var overflowed = (state.avatarsWidth > $te.width());
+				var $c = tool.$controls;
+				var $tew = $te.width();
+				var overflowed = (state.avatarsWidth > $tew && $tew > 0);
 				if (overflowed) {
 					if (!state.overflowed) {
 						$te.addClass('Q_overflowed');

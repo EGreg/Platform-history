@@ -5,7 +5,7 @@
 			<?php echo Q::tool('Users/avatar', array(
 				'userId' => $user->id,
 				'icon' => true
-			)) ?>
+			), 'admin') ?>
 			<?php echo Q_Html::form(Q_Dispatcher::uri(), 'post', array('id' => 'Q_activation_form')) ?>
 				<?php echo Q_Html::formInfo(null) ?>
 				<div class='Q_big_prompt'>
@@ -30,7 +30,7 @@
 				<?php echo Q::tool('Users/avatar', array(
 					'icon' => true,
 					'userId' => $user->id
-				)) ?>
+				), 'admin') ?>
 				<div class='Q_big_prompt'>
 					<p style="max-width: 350px;">
 					<?php if (empty($_REQUEST['p'])): ?>

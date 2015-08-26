@@ -92,12 +92,17 @@ Streams_Subscription.test = function _Subscription_test(userId, publisherId, str
 				function _checkNotifications() {
 					if (notifications) {
 						// get last disconnection time
-						Streams.Message.SELECT('publisherId, streamName, type, sentTime').where({
+						Streams.Message.SELECT('publisherId, streamName, type, sentTime')
+						.where({
 							publisherId: userId,
 							streamName: 'Streams/participating',
 							type: 'Streams/disconnected'
-						}).orderBy('sentTime', false).limit(1).execute(function(err, res) {
-							if (err) return p.fill(o)(err);
+						}).orderBy('sentTime', false)
+						.limit(1)
+						.execute(function(err, res) {
+							if (err) {
+								return p.fill(o)(err);
+							}
 							// NOTE: all Streams/participating for a given stream must be on the same shard
 							var time_online = res.length
 								? res.reduce(function(pv, cv) {
@@ -115,9 +120,14 @@ Streams_Subscription.test = function _Subscription_test(userId, publisherId, str
 							}).execute(function (err, res) {
 								if (err) return p.fill(o)(err);
 								// to support counting in shards
-								if (res.reduce(function(pv, cv) { return pv + Number(cv.count); }, 0) < notifications) {
+								var count = res.reduce(function(pv, cv) { 
+									return pv + Number(cv.count); 
+								}, 0);
+								if (count < notifications) {
 									_checkDelivery();
-								} else p.fill(o)();
+								} else {
+									p.fill(o)();
+								}
 							}, {plain: true});
 						}, { plain: true });
 					} else {

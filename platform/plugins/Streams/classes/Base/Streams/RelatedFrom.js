@@ -29,28 +29,28 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property fromPublisherId
- * @type String
+ * @property {String}
+ * @type fromPublisherId
  */
 /**
- * @property fromStreamName
- * @type String
+ * @property {String}
+ * @type fromStreamName
  */
 /**
- * @property type
- * @type String
+ * @property {String}
+ * @type type
  */
 /**
- * @property toPublisherId
- * @type String
+ * @property {String}
+ * @type toPublisherId
  */
 /**
- * @property toStreamName
- * @type String
+ * @property {String}
+ * @type toStreamName
  */
 /**
- * @property insertedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type insertedTime
  */
 
 /**
@@ -228,6 +228,9 @@ Base.prototype.fieldNames = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_fromPublisherId = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".fromPublisherId");
@@ -254,6 +257,9 @@ Base.prototype.maxSize_fromPublisherId = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_fromStreamName = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".fromStreamName");
@@ -280,6 +286,9 @@ Base.prototype.maxSize_fromStreamName = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_type = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".type");
@@ -306,6 +315,9 @@ Base.prototype.maxSize_type = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_toPublisherId = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".toPublisherId");
@@ -332,6 +344,9 @@ Base.prototype.maxSize_toPublisherId = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_toStreamName = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".toStreamName");

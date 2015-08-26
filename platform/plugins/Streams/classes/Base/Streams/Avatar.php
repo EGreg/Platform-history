@@ -14,43 +14,43 @@
  * @class Base_Streams_Avatar
  * @extends Db_Row
  *
- * @property string $toUserId
- * @property string $publisherId
- * @property string|Db_Expression $updatedTime
- * @property string $username
- * @property string $firstName
- * @property string $lastName
- * @property string $icon
+ * @property {string} $toUserId
+ * @property {string} $publisherId
+ * @property {string|Db_Expression} $updatedTime
+ * @property {string} $username
+ * @property {string} $firstName
+ * @property {string} $lastName
+ * @property {string} $icon
  */
 abstract class Base_Streams_Avatar extends Db_Row
 {
 	/**
 	 * @property $toUserId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $publisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $username
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $firstName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $lastName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $icon
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -210,6 +210,9 @@ abstract class Base_Streams_Avatar extends Db_Row
 	 */
 	function beforeSet_toUserId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('toUserId', $value);
 		}
@@ -240,6 +243,9 @@ abstract class Base_Streams_Avatar extends Db_Row
 	 */
 	function beforeSet_publisherId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('publisherId', $value);
 		}
@@ -277,12 +283,13 @@ abstract class Base_Streams_Avatar extends Db_Row
 		}
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
-			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".updatedTime");
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".updatedTime");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
-			$$v = $date[$v];
-		}
-		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
 		return array('updatedTime', $value);			
 	}
 
@@ -296,6 +303,9 @@ abstract class Base_Streams_Avatar extends Db_Row
 	 */
 	function beforeSet_username($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('username', $value);
 		}
@@ -326,6 +336,9 @@ abstract class Base_Streams_Avatar extends Db_Row
 	 */
 	function beforeSet_firstName($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('firstName', $value);
 		}
@@ -356,6 +369,9 @@ abstract class Base_Streams_Avatar extends Db_Row
 	 */
 	function beforeSet_lastName($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('lastName', $value);
 		}
@@ -386,6 +402,9 @@ abstract class Base_Streams_Avatar extends Db_Row
 	 */
 	function beforeSet_icon($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('icon', $value);
 		}

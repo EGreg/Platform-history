@@ -29,11 +29,15 @@ function Websites_article_tool($params)
 		'emailSubject' => 'Reaching out from your website',
 		'classes' => 'Q_button Q_clickable'
 	), Q::ifset($params, 'getintouch', array()));
-	$edit = $article->testWriteLevel('edit');
+	$canView = $article->testReadLevel('content');
+	$canEdit = $article->testWriteLevel('edit');
 	if ($article->getintouch) {
 		if (is_array($git = json_decode($article->getintouch, true))) {
 			$getintouch = array_merge($getintouch, $git);
 		}
+	}
+	if (!$canView) {
+		throw new Q_Exception_NotAuthorized();
 	}
 	$html = Q::ifset($params, 'html', array());
 	$article->addPreloaded();
@@ -41,6 +45,6 @@ function Websites_article_tool($params)
 	Q_Response::addScript("plugins/Websites/js/Websites.js");
 	Q_Response::setToolOptions($params);
 	return Q::view("Websites/tool/article.php", 
-		compact('article', 'getintouch', 'edit', 'html')
+		compact('article', 'getintouch', 'canEdit', 'canView', 'html')
 	);
 }

@@ -4,9 +4,9 @@
 			Welcome to
 		</div>
 		<div>
-			<?php echo Q_Html::img("plugins/Users/img/icons/{$client->icon}/80.png", 'user icon', array(
-				'class' => 'Users_app_icon'
-			)); ?>
+			<?php echo Q_Html::img($client->iconUrl('80.png'),  'user icon', 
+				array('class' => 'Users_app_icon')
+			); ?>
 			<span class="Users_app_name"><?php echo $client->username ?></span>
 		</div>
 	</div>

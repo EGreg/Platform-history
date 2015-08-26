@@ -32,11 +32,11 @@ Socket.listen = function (options) {
 		host: options.host
 	});
 	if (!server.attached.socket) {
-		util.log("Starting socket server on http://"+server.host+":"+server.port);
+		console.log("Starting socket server on http://"+server.host+":"+server.port);
 		try {
 			server.attached.socket = require('socket.io').listen(server);
 		} catch (e) {
-			util.log("Socket was not attached.", e);
+			console.log("Socket was not attached.", e);
 		}
 	}
 	return server.attached.socket;

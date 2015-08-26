@@ -16,7 +16,10 @@ syntax: regexp
 ^platform/plugins/Streams/files/Streams/media/
 ^platform/node_modules
 ^MyApp/local/.*
-^MyApp/files/.*
+^MyApp/files/(?!.dir|MyApp).+
+^MyApp/files/MyApp/uploads/(?!.dir|Users|Streams).+
+^MyApp/files/MyApp/uploads/Users/(?!.dir).+
+^MyApp/files/MyApp/uploads/Streams/(?!.dir).+
 ^MyApp/web/plugins/.*
 ^SmartApp/local/.*
 ^SmartApp/files/.*

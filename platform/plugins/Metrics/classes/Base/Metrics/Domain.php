@@ -13,20 +13,24 @@
  * Base class representing 'Domain' rows in the 'Metrics' database
  * @class Base_Metrics_Domain
  * @extends Db_Row
+ *
+ * @property {string} $hostname
+ * @property {integer} $publisherId
+ * @property {string} $status
  */
 abstract class Base_Metrics_Domain extends Db_Row
 {
 	/**
-	 * @property $fields['hostname']
-	 * @type string
+	 * @property $hostname
+	 * @type {string}
 	 */
 	/**
-	 * @property $fields['publisherId']
-	 * @type integer
+	 * @property $publisherId
+	 * @type {integer}
 	 */
 	/**
-	 * @property $fields['status']
-	 * @type mixed
+	 * @property $status
+	 * @type {string}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -58,7 +62,7 @@ abstract class Base_Metrics_Domain extends Db_Row
 	 * Retrieve the table name to use in SQL statement
 	 * @method table
 	 * @static
-	 * @param {boolean} [$with_db_name=true] Indicates wheather table name shall contain the database name
+	 * @param {boolean} [$with_db_name=true] Indicates wheather table name should contain the database name
  	 * @return {string|Db_Expression} The table name as string optionally without database name if no table sharding
 	 * was started or Db_Expression class with prefix and database name templates is table was sharded
 	 */
@@ -91,9 +95,9 @@ abstract class Base_Metrics_Domain extends Db_Row
 	 * Create SELECT query to the class table
 	 * @method select
 	 * @static
-	 * @param $fields {array} The field values to use in WHERE clauseas as 
+	 * @param {array} $fields The field values to use in WHERE clauseas as 
 	 * an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function select($fields, $alias = null)
@@ -108,7 +112,7 @@ abstract class Base_Metrics_Domain extends Db_Row
 	 * Create UPDATE query to the class table
 	 * @method update
 	 * @static
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function update($alias = null)
@@ -123,8 +127,8 @@ abstract class Base_Metrics_Domain extends Db_Row
 	 * Create DELETE query to the class table
 	 * @method delete
 	 * @static
-	 * @param [$table_using=null] {object} If set, adds a USING clause with this table
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$table_using=null] If set, adds a USING clause with this table
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function delete($table_using = null, $alias = null)
@@ -139,8 +143,8 @@ abstract class Base_Metrics_Domain extends Db_Row
 	 * Create INSERT query to the class table
 	 * @method insert
 	 * @static
-	 * @param [$fields=array()] {object} The fields as an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$fields=array()] The fields as an associative array of `column => value` pairs
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function insert($fields = array(), $alias = null)
@@ -168,7 +172,10 @@ abstract class Base_Metrics_Domain extends Db_Row
 	 */
 	static function insertManyAndExecute($records = array(), $options = array())
 	{
-		self::db()->insertManyAndExecute(self::table(), $records, $options);
+		self::db()->insertManyAndExecute(
+			self::table(), $records,
+			array_merge($options, array('className' => 'Metrics_Domain'))
+		);
 	}
 	
 	/**
@@ -181,12 +188,27 @@ abstract class Base_Metrics_Domain extends Db_Row
 	 */
 	function beforeSet_hostname($value)
 	{
-		if ($value instanceof Db_Expression) return array('hostname', $value);
+		if (!isset($value)) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
+			return array('hostname', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".hostname");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".hostname");
 		return array('hostname', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the hostname field
+	 * @return {integer}
+	 */
+	function maxSize_hostname()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -198,12 +220,27 @@ abstract class Base_Metrics_Domain extends Db_Row
 	 */
 	function beforeSet_publisherId($value)
 	{
-		if ($value instanceof Db_Expression) return array('publisherId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('publisherId', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".publisherId");
-		if ($value < 0 or $value > 1.844674407371E+19)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".publisherId");
+		$value = intval($value);
+		if ($value < 0 or $value > 1.844674407371E+19) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".publisherId");
+		}
 		return array('publisherId', $value);			
+	}
+
+	/**
+	 * Returns the maximum integer that can be assigned to the publisherId field
+	 * @return {integer}
+	 */
+	function maxSize_publisherId()
+	{
+
+		return 1.844674407371E+19;			
 	}
 
 	/**
@@ -215,44 +252,12 @@ abstract class Base_Metrics_Domain extends Db_Row
 	 */
 	function beforeSet_status($value)
 	{
-		if ($value instanceof Db_Expression) return array('status', $value);
+		if ($value instanceof Db_Expression) {
+			return array('status', $value);
+		}
 		if (!in_array($value, array('pending','verified')))
 			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".status");
 		return array('status', $value);			
-	}
-
-	/**
-	 * Method is called after field is set and used to keep $fieldsModified property up to date
-	 * @method afterSet
-	 * @param {string} $name The field name
-	 * @param {mixed} $value The value of the field
-	 * @return {mixed} Original value
-	 */
-	function afterSet($name, $value)
-	{
-		if (!in_array($name, $this->fieldNames()))
-			$this->notModified($name);
-		return $value;			
-	}
-
-	/**
-	 * Check if mandatory fields are set and updates 'magic fields' with appropriate values
-	 * @method beforeSave
-	 * @param {array} $value The array of fields
-	 * @return {array}
-	 * @throws {Exception} If mandatory field is not set
-	 */
-	function beforeSave($value)
-	{
-		if (!$this->retrieved) {
-			$table = $this->getTable();
-			foreach (array('hostname','publisherId') as $name) {
-				if (!isset($value[$name])) {
-					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
-				}
-			}
-		}
-		return $value;			
 	}
 
 	/**

@@ -330,22 +330,22 @@ Sp.sameDomain = function _String_prototype_sameDomain (url2, options) {
  * @method bind
  * @param {Function} method A reference to the function to call
  * @param {Object} obj The object to bind as the context for the function call
- * @param {Object} options If supplied, binds these options and pushes them as the last argument to the function call.
+ * @param {Mixed} [arg1] Optionally add arguments to be prepended to the called arguments
  */
 var Fp = Function.prototype;
 if (!Fp.bind)
-Fp.bind = function _Function_prototype_bind(obj, options) {
+Fp.bind = function _Function_prototype_bind(obj /*, arg1, arg2, ... */) {
 	var method = this;
+	obj = obj || root;
 	if (!obj) obj = root;
-	if (!options) {
+	if (arguments.length <= 1) {
 		return function _Q_bind_result() {
 			return method.apply(obj, arguments);
 		};
 	}
+	var args = Array.prototype.slice.call(arguments, 1);
 	return function _Q_bind_result_withOptions() {
-		var args = Array.prototype.slice.call(arguments);
-		if (options) args.push(options);
-		return method.apply(obj, args);
+		return method.apply(obj, args.concat(Array.prototype.slice.call(arguments)));
 	};
 };
 
@@ -758,18 +758,23 @@ if (!root.requestAnimationFrame) {
  */
 
 /**
- * Returns microtime like PHP
- * @static
- * @method microtime
- * @param getAsFloat {Boolean}
- * @return {String}
+ * Returns the number of milliseconds since the first call to this function
+ * i.e. since this script was parsed.
+ * @method milliseconds
+ * @param {Boolean} sinceEpoch
+ *  Defaults to false. If true, just returns the number of milliseconds in the UNIX timestamp.
+ * @return {number}
+ *  The number of milliseconds, with fractional part
  */
-Q.microtime = function _Q_microtime(getAsFloat) {
-	var now = Date.now() / 1000;
-	if (getAsFloat) return now;
-	var s = parseInt(now, 10);
-	return (Math.round((now - s) * 1000) / 1000) + ' ' + s;
+Q.milliseconds = function _Q_microtime(sinceEpoch) {
+	var now = Date.now();
+	if (sinceEpoch) {
+		return now;
+	}
+	Q.milliseconds.started = Q.milliseconds.started || now;
+	return now - Q.milliseconds.started;
 };
+Q.milliseconds();
 
 /**
  * Returns the number of milliseconds since the
@@ -789,7 +794,7 @@ Q.milliseconds = function (sinceEpoch) {
 Q.milliseconds.start = Date.now();
 
 /**
- * Creates a derived object which you can extend, inheriting from an existing object
+ * Creates a copied object which you can extend, using existing object as prototype
  * @static
  * @method objectWithPrototype
  * @param {Derived} original
@@ -799,9 +804,9 @@ Q.objectWithPrototype = function _Q_objectWithPrototype(original) {
 	if (!original) {
 		return {};
 	}
-	function Derived() {}
-	Derived.prototype = original;
-	return new Derived();
+	function Copied() {}
+	Copied.prototype = original;
+	return new Copied();
 };
 
 /**
@@ -1150,13 +1155,18 @@ Q.isEmpty = function _Q_isEmpty(o) {
  * Tests if the value is an integer
  * @static
  * @method isInteger
- * @param value {mixed}
+ * @param {mixed} value 
  *  The value to test
+ * @param {boolean} [strictComparison=true]
+ *  Whether to test strictly for a number
  * @return {boolean}
  *	Whether it is an integer
  */
-Q.isInteger = function _Q_isInteger(value) {
-	return value > 0 ? Math.floor(value) === value : Math.ceil(value) === value;
+Q.isInteger = function _Q_isInteger(value, strictComparison) {
+	if (strictComparison) {
+		return value > 0 ? Math.floor(value) === value : Math.ceil(value) === value;
+	}
+	return value > 0 ? Math.floor(value) == value : Math.ceil(value) == value;
 };
 
 /**
@@ -1210,15 +1220,17 @@ Q.instanceOf = function (testing, Constructor) {
 
 /**
  * Makes a shallow copy of an object. But, if any property is an object with a "copy" method,
- * it recursively calls that method to copy the property.
+ * or levels > 0, it recursively calls that method to copy the property.
  * @static
  * @method copy
  * @param {Array} fields
  *  Optional array of fields to copy. Otherwise copy all that we can.
+ * @param levels {Number}
+ *  Optional. Copy this many additional levels inside x if it is a plain object.
  * @return {Object}
  *  Returns the shallow copy where some properties may have deepened the copy
  */
-Q.copy = function _Q_copy(x, fields) {
+Q.copy = function _Q_copy(x, fields, levels) {
 	if (Q.typeOf(x) === 'array') {
 		return Array.prototype.slice.call(x, 0);
 	}
@@ -1247,6 +1259,8 @@ Q.copy = function _Q_copy(x, fields) {
 			}
 			if (x[k] && typeof(x[k].copy) === 'function') {
 				result[k] = x[k].copy();
+			} else if (levels) {
+				result[k] = Q.copy(x[k], null, levels-1);
 			} else {
 				result[k] = x[k];
 			}
@@ -1280,7 +1294,7 @@ Q.copy = function _Q_copy(x, fields) {
  * @return
  *  The extended object.
  */
-Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespace] */ ) {
+Q.extend = function _Q_extend(target /* [[deep,] [levels,] anotherObject], ... [, namespace] */ ) {
 	var length = arguments.length;
 	var namespace = undefined;
 	if (typeof arguments[length-1] === 'string') {
@@ -1353,7 +1367,7 @@ Q.extend = function _Q_extend(target /* [[deep,] anotherObject], ... [, namespac
 						? Q.copy(argk.replace)
 						: Q.extend(target[k], deep, levels-1, argk);
 				} else {
-					target[k] = Q.copy(argk);
+					target[k] = Q.copy(argk, null, levels);
 				}
 				if (target[k] === undefined) {
 					delete target[k];
@@ -1701,12 +1715,12 @@ Q.calculateKey.keys = [];
  * @class Q.Event
  * @namespace Q
  * @constructor
- * @param callable {callable}
+ * @param {callable} callable
  *  Optional. If not provided, the chain of handlers will start out empty.
  *  Any kind of callable which Q.handle can invoke
- * @param key=null {string}
+ * @param {String} [key=null]
  *  Optional key under which to add this, so you can remove it later if needed
- * @param prepend=false {boolean}
+ * @param {boolean} [prepend=false]
  *  If true, then prepends the callable to the chain of handlers
  */
 Q.Event = function _Q_Event(callable, key, prepend) {
@@ -2644,10 +2658,10 @@ Q.batcher.options = {
  * @param {String} tail The rest of the url of the webservice built to support batch requests.
  * @param {String} slotName The name of the slot to request. Defaults to "batch".
  * @param {String} fieldName The name of the data field. Defaults to "batch".
- * @param {Object} options Any additional options to pass to Q.req, as well as:<br>
- *  "max": Passed as option to Q.batcher<br>
- *  "ms": Passed as option to Q.batcher<br>
- *  "preprocess": Optional function calculating a data structure to JSON stringify into the data field
+ * @param {Object} [options={}] Any additional options to pass to Q.req, as well as:
+ * @param {Number} [options.max] Passed as option to Q.batcher
+ * @param {Number} [options.ms] Passed as option to Q.batcher
+ * @param {Function} [options.preprocess] Optional function calculating a data structure to JSON stringify into the data field
  * @return {Function} A function with any number of non-function arguments followed by
  *  one function which is treated as a callback and passed (errors, content)
  *  where content is whatever is returned in the slots.
@@ -2734,7 +2748,7 @@ Q.batcher.factory = function _Q_batcher_factory(collection, baseUrl, tail, slotN
 Q.getter = function _Q_getter(original, options) {
 
 	function wrapper() {
-		var i, key, that = this, callbacks = [], _dontCache = false;
+		var i, key, that = this, callbacks = [];
 		var arguments2 = Array.prototype.slice.call(arguments);
 
 		// separate fields and callbacks
@@ -2747,7 +2761,7 @@ Q.getter = function _Q_getter(original, options) {
 			callbacks.push(noop);
 		}
 		
-		var ret = {};
+		var ret = { dontCache: false };
 		wrapper.onCalled.handle.call(this, arguments2, ret);
 
 		var cached, cbpos, cbi;
@@ -2795,7 +2809,7 @@ Q.getter = function _Q_getter(original, options) {
 				// the throttle
 				return function _Q_getter_callback() {
 					// save the results in the cache
-					if (wrapper.cache && !_dontCache) {
+					if (wrapper.cache && !ret.dontCache) {
 						wrapper.cache.set(key, cbpos, this, arguments);
 					}
 					// process waiting callbacks
@@ -2817,7 +2831,7 @@ Q.getter = function _Q_getter(original, options) {
 		if (!wrapper.throttle) {
 			// no throttling, just run the function
 			if (false === original.apply(that, args)) {
-				_dontCache = true;
+				ret.dontCache = true;
 			}
 			ret.result = Q.getter.REQUESTING;
 			wrapper.onExecuted.handle.call(this, arguments2, ret);
@@ -2833,11 +2847,11 @@ Q.getter = function _Q_getter(original, options) {
 				queue: [],
 				args: []
 			};
-			wrapper.throttle.throttleTry = function _throttleTry(that, getter, args) {
+			wrapper.throttle.throttleTry = function _throttleTry(that, getter, args, ret) {
 				++p.count;
 				if (p.size === null || p.count <= p.size) {
 					if (false === getter.apply(that, args)) {
-						_dontCache = true;
+						ret.dontCache = true;
 					}
 					return true;
 				}
@@ -2865,7 +2879,7 @@ Q.getter = function _Q_getter(original, options) {
 		}
 
 		// execute the throttle
-		ret.result = wrapper.throttle.throttleTry(this, original, args)
+		ret.result = wrapper.throttle.throttleTry(this, original, args, ret)
 			? Q.getter.REQUESTING
 			: Q.getter.THROTTLING;
 		wrapper.onExecuted.handle.call(this, arguments2, ret);
@@ -3121,6 +3135,7 @@ Q.Tool = function _Q_Tool(element, options) {
 	options = options || {};
 	this.options = this.options || {};
 	
+	var normalizedName = Q.normalize(this.name);
 	var pids = this.parentIds();
 	var len = pids.length;
 	var o = len ? Q.extend({}, Q.Tool.options.levels, options) : options;
@@ -3151,8 +3166,9 @@ Q.Tool = function _Q_Tool(element, options) {
 	}
 
 	// get options from options property on element
-	if (element.options) {
-		Q.extend(this.options, Q.Tool.options.levels, element.options, 'Q.Tool');
+	var eo = element.options;
+	if (eo && eo[normalizedName]) {
+		Q.extend(this.options, Q.Tool.options.levels, eo[normalizedName], 'Q.Tool');
 	}
 	
 	// override prototype Q function on the element to associate things with it
@@ -3165,7 +3181,6 @@ Q.Tool = function _Q_Tool(element, options) {
 		};
 	}
 	
-	var normalizedName = Q.normalize(this.name);
 	if (!element.Q.tools) element.Q.tools = {};
 	element.Q.tools[normalizedName] = this;
 	element.Q.tool = this;
@@ -3377,7 +3392,7 @@ Q.Tool.beingActivated = undefined;
 Q.Tool.define.options = function (toolName, setOptions) {
 	var options;
 	toolName = Q.normalize(toolName);
-	if (typeof Q.Tool.constructors[toolName] === 'functions') {
+	if (typeof Q.Tool.constructors[toolName] === 'function') {
 		options = Q.Tool.constructors[toolName].options;
 	} else {
 		options = _qtdo[toolName] = _qtdo[toolName] || {};
@@ -3510,7 +3525,7 @@ var Tp = Q.Tool.prototype;
  * to attach handlers to be run when the state changes.
  * @method stateChanged
  * @param {String|Array} names Name(s) of properties that may have changed,
- *  either asn array or comma-separated string.
+ *  either an array or comma-separated string.
  */
 Tp.stateChanged = function Q_Tool_prototype_stateChanged(names) {
 	if (typeof names === 'string') {
@@ -3532,11 +3547,11 @@ Tp.stateChanged = function Q_Tool_prototype_stateChanged(names) {
  * as a function of the tool's state (with no additional side effects).
  * @method rendering
  * @param {Array|String} fields The names of fields to watch for, either as an array or comma-separated string. When stateChanged is called, if one of the fields named here really changed, the callback will be called.
- * @param {Boolean} [dontWaitForAnimationFrame=false] Pass true here if you don't want to wait for the next animation frame to do rendering (for example, if you are using a library like FastDOM to manage DOM thrashing)
- * @param {Function} callback The callback, which receives (changed, previous [, timestamp]). By default, Qbix defers the execution of your rendering handler until the next animation frame. If several calls to tool.stateChanged</span> occurred in the meantime, Qbix aggregates all the changes and reports them to the rendering handler. If a field in the state was changed several times in the meantime, those intermediate values aren't given to the rendering handler, since the assumption is that the view depends on the state without any side effects. However, if the field was changed, even if it later went back to its original value, it will show up in the list of changed fields.
+ * @param {Function} callback The callback, which receives (changed, previous, timestamp). By default, Qbix defers the execution of your rendering handler until the next animation frame. If several calls to tool.stateChanged</span> occurred in the meantime, Qbix aggregates all the changes and reports them to the rendering handler. If a field in the state was changed several times in the meantime, those intermediate values aren't given to the rendering handler, since the assumption is that the view depends on the state without any side effects. However, if the field was changed, even if it later went back to its original value, it will show up in the list of changed fields.
  * @param {String} [key=""] Optional key used when attaching event handlers to tool.Q.onStateChanged events.
+ * @param {Boolean} [dontWaitForAnimationFrame=false] Pass true here if you really don't want to wait for the next animation frame to do rendering (for example, if you insist on reading the DOM and will use a library like FastDOM to manage DOM thrashing)
  */
-Tp.rendering = function (fields, dontWaitForAnimationFrame, callback, key) {
+Tp.rendering = function (fields, callback, key, dontWaitForAnimationFrame) {
 	var tool = this;
 	if (typeof fields === 'string') {
 		fields = fields.split(',');
@@ -3545,10 +3560,6 @@ Tp.rendering = function (fields, dontWaitForAnimationFrame, callback, key) {
 		}
 	}
 	if (!fields.length) return false;
-	if (typeof dontWaitForAnimationFrame === 'function') {
-		callback = dontWaitForAnimationFrame;
-		dontWaitForAnimationFrame = false;
-	}
 	var event;
 	for (var i=0, l=fields.length; i<l; ++i) {
 		this.Q.onStateChanged(fields[i]).set(_handleChange, key);
@@ -3727,8 +3738,8 @@ Tp.remove = function _Q_Tool_prototype_remove(removeCached) {
 		}
 		Q.Event.jQueryForTool[this.id] = [];
 	}
-
-	return true;
+	
+	return this.removed = true;
 };
 
 /**
@@ -3796,8 +3807,8 @@ Tp.forEachChild = function _Q_Tool_prototype_forEachChild(name, levels, callback
  * @param {Object} options the options to pass to a tool
  * @return {String}
  */
-Q.Tool.encodeOptions = function _Q_Tool_stringFromOptions(options) {
-	return JSON.stringify(options).encodeHTML().replaceAll({"&quot;": '"'});
+Q.Tool.encodeOptions = function _Q_Tool_encodeOptions(options) {
+	var json = JSON.stringify(options).encodeHTML().replaceAll({"&quot;": '"'});
 };
 
 /**
@@ -3807,7 +3818,7 @@ Q.Tool.encodeOptions = function _Q_Tool_stringFromOptions(options) {
  * @method setUpElement
  * @param {String|Element} element
  *  The tag of the element, such as "div", or a reference to an existing Element
- * @param {String} toolType
+ * @param {String} toolName
  *  The type of the tool, such as "Q/tabs"
  * @param {Object} [toolOptions]
  *  The options for the tool
@@ -3818,7 +3829,7 @@ Q.Tool.encodeOptions = function _Q_Tool_stringFromOptions(options) {
  * @return {HTMLElement}
  *  Returns an element you can append to things
  */
-Q.Tool.setUpElement = function _Q_Tool_setUpElement(element, toolType, toolOptions, id, prefix) {
+Q.Tool.setUpElement = function _Q_Tool_setUpElement(element, toolName, toolOptions, id, prefix) {
 	if (typeof toolOptions === 'string') {
 		id = toolOptions;
 		toolOptions = undefined;
@@ -3826,20 +3837,26 @@ Q.Tool.setUpElement = function _Q_Tool_setUpElement(element, toolType, toolOptio
 	if (typeof element === 'string') {
 		element = document.createElement(element);
 	}
-	var ntt = toolType.replace(/\//g, '_');
-	element.addClass('Q_tool '+ntt+'_tool');
-	if (!id && !element.getAttribute(id)) {
-		var p1, p2;
-		p1 = prefix || (Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '');
-		do {
-			p2 = p1 + ntt + '_' + (Q.Tool.nextDefaultId++) + '_';
-			Q.Tool.nextDefaultId %= 1000000;
-		} while (Q.Tool.active[p2]);
-		id = p2 + 'tool';
-	}
-	element.setAttribute('id', id);
-	if (toolOptions) {
-		element.options = toolOptions;
+	if (typeof toolName === 'string') toolName = [toolName];
+	if (Q.isPlainObject(toolOptions)) toolOptions = [toolOptions];
+	for (var i=0, l=toolName.length; i<l; ++i) {
+		var tn = toolName[i];
+		var ntt = tn.replace(/\//g, '_');
+		element.addClass('Q_tool '+ntt+'_tool');
+		if (!id && !element.getAttribute(id)) {
+			var p1, p2;
+			p1 = prefix || (Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '');
+			do {
+				p2 = p1 + ntt + '_' + (Q.Tool.nextDefaultId++) + '_';
+				Q.Tool.nextDefaultId %= 1000000;
+			} while (Q.Tool.active[p2]);
+			id = p2 + 'tool';
+		}
+		element.setAttribute('id', id);
+		if (toolOptions && toolOptions[i]) {
+			element.options = element.options || {};
+			element.options[Q.normalize(tn)] = toolOptions[i];
+		}
 	}
 	return element;
 };
@@ -3850,7 +3867,7 @@ Q.Tool.setUpElement = function _Q_Tool_setUpElement(element, toolType, toolOptio
  * @method setUpElementHTML
  * @param {String|Element} element
  *  The tag of the element, such as "div", or a reference to an existing Element
- * @param {String} toolType
+ * @param {String} toolName
  *  The type of the tool, such as "Q/tabs"
  * @param {Object} toolOptions
  *  The options for the tool
@@ -3861,11 +3878,11 @@ Q.Tool.setUpElement = function _Q_Tool_setUpElement(element, toolType, toolOptio
  * @return {String}
  *  Returns HTML that you can include in templates, etc.
  */
-Q.Tool.setUpElementHTML = function _Q_Tool_setUpElementHTML(element, toolType, toolOptions, id, prefix) {
-	var e = Q.Tool.setUpElement(element, toolType, null, id, prefix);
-	var ntt = toolType.replace(/\//g, '_');
+Q.Tool.setUpElementHTML = function _Q_Tool_setUpElementHTML(element, toolName, toolOptions, id, prefix) {
+	var e = Q.Tool.setUpElement(element, toolName, null, id, prefix);
+	var ntt = toolName.replace(/\//g, '_');
 	if (toolOptions) {
-		e.setAttribute('data-'+ntt.replace(/_/g, '-'), Q.Tool.encodeOptions(toolOptions));
+		e.setAttribute('data-'+ntt.replace(/_/g, '-'), JSON.stringify(toolOptions));
 	}
 	return e.outerHTML;
 };
@@ -3877,7 +3894,7 @@ Q.Tool.setUpElementHTML = function _Q_Tool_setUpElementHTML(element, toolType, t
  * @method setUpElement
  * @param {String|Element} element
  *  The tag of the element, such as "div", or a reference to an existing Element
- * @param {String} toolType
+ * @param {String} toolName
  *  The type of the tool, such as "Q/tabs"
  * @param {Object} toolOptions
  *  The options for the tool
@@ -3886,8 +3903,8 @@ Q.Tool.setUpElementHTML = function _Q_Tool_setUpElementHTML(element, toolType, t
  * @return {HTMLElement}
  *  Returns an element you can append to things
  */
-Tp.setUpElement = function (element, toolType, toolOptions, id) {
-	return Q.Tool.setUpElement(element, toolType, toolOptions, id, this.prefix);
+Tp.setUpElement = function (element, toolName, toolOptions, id) {
+	return Q.Tool.setUpElement(element, toolName, toolOptions, id, this.prefix);
 };
 
 /**
@@ -3897,7 +3914,7 @@ Tp.setUpElement = function (element, toolType, toolOptions, id) {
  * @method setUpElementHTML
  * @param {String|Element} element
  *  The tag of the element, such as "div", or a reference to an existing Element
- * @param {String} toolType
+ * @param {String} toolName
  *  The type of the tool, such as "Q/tabs"
  * @param {Object} toolOptions
  *  The options for the tool
@@ -3906,8 +3923,8 @@ Tp.setUpElement = function (element, toolType, toolOptions, id) {
  * @return {String}
  *  Returns HTML that you can include in templates, etc.
  */
-Tp.setUpElementHTML = function (element, toolType, toolOptions, id) {
-	return Q.Tool.setUpElementHTML(element, toolType, toolOptions, id, this.prefix);
+Tp.setUpElementHTML = function (element, toolName, toolOptions, id) {
+	return Q.Tool.setUpElementHTML(element, toolName, toolOptions, id, this.prefix);
 };
 
 /**
@@ -4297,8 +4314,11 @@ var Cp = Q.Cache.prototype;
  * Accesses the cache and sets an entry in it
  * @method set
  * @param {String} key  the key to save the entry under, or an array of arguments
- * @param {Options} options  supports the following options:
- *  "dontTouch": if true, then doesn't mark item as most recently used. Defaults to false.
+ * @param {Number} cbpos the position of the callback
+ * @param {Object} subject The "this" object for the callback
+ * @param {Array} params The parameters for the callback
+ * @param {Object} options  supports the following options:
+ * @param {boolean} [options.dontTouch=false] if true, then doesn't mark item as most recently used
  * @return {Boolean} whether there was an existing entry under that key
  */
 Cp.set = function _Q_Cache_prototype_set(key, cbpos, subject, params, options) {
@@ -4345,7 +4365,7 @@ Cp.set = function _Q_Cache_prototype_set(key, cbpos, subject, params, options) {
  * @method get
  * @param {String} key  the key to search for
  * @param {Object} options  supports the following options:
- *  "dontTouch": if true, then doesn't mark item as most recently used. Defaults to false.
+ * @param {boolean} [options.dontTouch=false] if true, then doesn't mark item as most recently used
  * @return {mixed} whatever is stored there, or else returns undefined
  */
 Cp.get = function _Q_Cache_prototype_get(key, options) {
@@ -5061,15 +5081,18 @@ Q.layout = function _Q_layout(elementOrEvent) {
 };
 
 Q.clientId = function () {
-	if (!Q.clientId.value) {
-		var detected = Q.Browser.detect();
-		Q.clientId.value = (detected.device || "desktop").substr(0, 4)
-			+ "\t" + detected.OS.substr(0, 3)
-			+ "\t" + detected.name.substr(0, 3)
-			+ "\t" + detected.mainVersion + (detected.isWebView ? "n" : "w")
-			+ "\t" + Math.floor(Date.now()/1000).toString(36);
+	var storage = sessionStorage;
+	if (Q.clientId.value = storage.getItem("Q\tclientId")) {
+		return Q.clientId.value;
 	}
-	return Q.clientId.value;
+	var detected = Q.Browser.detect();
+	var ret = Q.clientId.value = (detected.device || "desktop").substr(0, 4)
+		+ "\t" + detected.OS.substr(0, 3)
+		+ "\t" + detected.name.substr(0, 3)
+		+ "\t" + detected.mainVersion + (detected.isWebView ? "n" : "w")
+		+ "\t" + Math.floor(Date.now()/1000).toString(36);
+	storage.setItem("Q\tclientId", ret);
+	return ret;
 };
 
 /**
@@ -5237,7 +5260,7 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 			? options.idPrefixes 
 			: (options.idPrefixes && options.idPrefixes.join(',')))
 		: '';
-	var timestamp = Q.microtime(true);
+	var timestamp = Date.now();
 	if (typeof what == 'string') {
 		var what2 = what;
 		if (Q.info && Q.info.baseUrl === what2) {
@@ -5302,6 +5325,7 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 
 /**
  * The easiest way to make direct web service requests in Q
+ * @see Q.request
  * @static
  * @method req
  * @param {String} uri
@@ -5310,7 +5334,9 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
  *  If a string, expects a comma-separated list of slot names
  *  If an array, converts it to a comma-separated list
  * @param {Function} callback
- *  The JSON will be passed to this callback function
+ *  The err and parsed content will be passed to this callback function,
+ *  (unless parse is false, in which case the raw content is passed as a String),
+ *  followed by a Boolean indicating whether a redirect was performed.
  * @param {Object} options
  *  A hash of options, to be passed to Q.request
  */
@@ -5659,16 +5685,15 @@ Q.ajaxErrors = function _Q_ajaxErrors(errors, fields) {
 Q.jsonRequest = Q.request;
 
 /**
- * Serialize an object of fields into a shallow object of key/value pairs
- * @private
+ * Serialize a plain object, with possible sub-objects, into an http querystring.
  * @static
  * @method serializeFields
  * @param {Object} fields
  *  The object to serialize
  * @param {Array} keys
  *  An optional array of keys into the object, in the order to serialize things
- * @return {Object}
- *  A shallow object of key/value pairs
+ * @return {String}
+ *  A querystring that can be used with HTTP requests
  */
 Q.serializeFields = function _Q_serializeFields(fields, keys) {
 	if (Q.isEmpty(fields)) {
@@ -7210,19 +7235,16 @@ function _activateTools(toolElement, options, shared) {
 					_constructToolHandlers[normalizedName].handle.call(this, this.options);
 					_constructToolHandlers["id:"+normalizedId] &&
 					_constructToolHandlers["id:"+normalizedId].handle.call(this, this.options);
+					var args = [this.options];
 					Q.each(toolFunc.require, function (i, n) {
-						if (!Q.Tool.from(element, n)) {
+						var req = Q.Tool.from(element, n);
+						if (!req) {
 							throw new Q.Exception("Q.Tool.define: " + toolFunc.toolName
 							+ " requires " + n + " to have been activated on the same element.");
 						}
+						args.push(req);
 					});
-					toolFunc.call(this, this.options);
-					var collection = this.Q.onStateChanged.collection;
-					for (var name in this.state) {
-						if (collection[name]) {
-							collection[name].handle.call(this, name);
-						}
-					}
+					toolFunc.apply(this, args);
 					if (normalizedName === 'q_inplace') 
 					_activateToolHandlers[""] &&
 					_activateToolHandlers[""].handle.call(this, this.options);
@@ -8169,7 +8191,8 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	$.fn.activate = function _jQuery_fn_activate(options, callback) {
 		$(this).each(function _jQuery_fn_activate_each(index, element) {
 			if (!$(element).closest('html').length) {
-				console.warn(new Q.Error("jQuery.fn.activate: element to activate must be in the DOM"));
+				console.log("Q.activate: element " + element.id + " is not in the DOM");
+				return false; // avoid doing work if it's not in the DOM
 			}
 			Q.activate(element, options, callback);
 		});
@@ -10158,11 +10181,9 @@ function _addHandlebarsHelpers() {
 				id = undefined;
 			}
 			var ba = Q.Tool.beingActivated;
-			var prefix = (ba ? ba.prefix : '')
-				+ name.split('/').join('_');
-			if (id) {
-				id = prefix + '_' + id;
-			}
+			var prefix = (ba ? ba.prefix : '');
+			id = prefix + name.split('/').join('_')
+				+ (id ? '_' + id : '');
 			var o = {};
 			var hash = (options && options.hash);
 			if (hash) {

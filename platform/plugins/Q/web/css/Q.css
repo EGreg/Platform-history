@@ -39,6 +39,7 @@ table { border-spacing:0; border-collapse:collapse; }
 }
 
 /* Common Q classes */
+.Q_pagebreak { page-break-after: always; }
 .Q_collapsed { border-bottom: solid 2px #777 !important; }
 .Q_compact {}
 .Q_editable { color: #225 !important; }
@@ -234,7 +235,7 @@ button.basic16 { background-color: #eee; color: black; }
 .Q_big_prompt .Q_button { font-size: 18px; } 
 .Q_big_prompt .Q_button,
 .Q_notTouchscreen .Q_big_prompt .Q_button,
-.Q_notTouchscreen .Q_big_prompt .Q_button:active { padding: 5px 1em; box-sizing: content-box; }
+.Q_notTouchscreen .Q_big_prompt .Q_button:active { padding: 5px 1em; box-sizing: content-box; display: inline-block; }
 .Q_big_prompt .Q_button span { display: inline-block; line-height: 1em; margin-top: -2px; }
 .Q_big_prompt input[type=text],
 .Q_big_prompt input[type=email],
@@ -268,6 +269,7 @@ button.basic16 { background-color: #eee; color: black; }
 div.Q_placeholder { pointer-events: none; }
 .Q_clickable_container { cursor: pointer !important;  }
 .Q_clickable_container .Q_clickable_shadow { display: none; }
+.Q_clickable_stretcher>* { width: 100% !important; height: 100% !important; box-sizing: border-box !important; }
 .Q_notTouchscreen .Q_clickable_container.Q_hover .Q_clickable_shadow,
 .Q_notTouchscreen .Q_clickable_container:hover .Q_clickable_shadow
  { display: block; max-width: none !important; }
@@ -373,3 +375,9 @@ button.basic32 { height: 40px; border: solid 1px transparent; cursor: pointer; f
 
 .basic16_cancel { background-position: 0 -522px; }
 .basic32_cancel { background-position: 0 -1044px; }
+.basic16_remove { background-position: 0 -482px; }
+.basic32_remove { background-position: 0 -964px; }
+.basic16_close { background-position: 0 -322px; }
+.basic32_close { background-position: 0 -644px; }
+.basic16_open { background-position: 0 -342px; }
+.basic32_open { background-position: 0 -684px; }

@@ -113,6 +113,7 @@ Q.Tool.define('Q/form', function(options) {
 					}
 				}
 			};
+			event.preventDefault();
 			$('button', $te).closest('td').addClass('Q_throb');
 			var result = {};
 			var action = form.attr('action');
@@ -124,14 +125,13 @@ Q.Tool.define('Q/form', function(options) {
 				return false;
 			}
 			var input = $('input[name="Q.method"]', form);
-			method = (input.val() || form.attr('method')).toUpperCase();
+			method = (input.val() || form.attr('method') || 'post').toUpperCase();
 			if (tool.state.ignoreCache
 			&& typeof tool.state.loader.forget === "function") {
 				tool.state.ignoreCache = false;
 				tool.state.loader.forget(action, method, form.serialize(), tool.state.slotsToRequest);
 			}
 			tool.state.loader(action, method, form.serialize(), tool.state.slotsToRequest, onResponse);
-			event.preventDefault();
 		});
 		$('input', form).add('select', form).on('input', function () {
 			if (form.data('validator')) {

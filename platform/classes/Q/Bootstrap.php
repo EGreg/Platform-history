@@ -209,7 +209,14 @@ class Q_Bootstrap
 		if (!in_array('Q', $plugins)) {
 			array_unshift($plugins, 'Q');
 		}
+		global $Q_Bootstrap_config_plugin_limit;
+		$i = 0;
 		foreach ($plugins as $k => $v) {
+			++$i;
+			if (isset($Q_Bootstrap_config_plugin_limit)
+			and $i > $Q_Bootstrap_config_plugin_limit) {
+				continue;
+			}
 			$plugin = is_numeric($k) ? $v : $k;
 			$plugin_path = Q::realPath('plugins'.DS.$v);
 			if (!$plugin_path) {
@@ -240,6 +247,7 @@ class Q_Bootstrap
 				define($PLUGIN.'_PLUGIN_WEB_DIR', $plugin_path.DS.'web');
 			self::$plugins[$plugin] = $plugin_path;
 		}
+		$paths = array_unique($paths);
 		set_include_path(implode(PS, $paths));
 		
 		// Now, we can merge in our app's config

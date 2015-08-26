@@ -160,11 +160,11 @@ class Q
 		}
 		/**
 		 * @event Q/error
-		 * @param {integer} 'errno'
-		 * @param {string} 'errstr'
-		 * @param {string} 'errfile'
-		 * @param {integer} 'errline'
-		 * @param {array} 'errcontext'
+		 * @param {integer} errno
+		 * @param {string} errstr
+		 * @param {string} errfile
+		 * @param {integer} errline
+		 * @param {array} errcontext
 		 */
 		self::event("Q/error", compact(
 			'type','errno','errstr','errfile','errline','errcontext'
@@ -174,17 +174,17 @@ class Q
 	/**
 	 * Goes through the params and replaces any references
 	 * to their names in the string with their value.
-	 * References are expected to be of the form $varname.
+	 * References are expected to be of the form {{varname}} or $varname.
 	 * However, dollar signs prefixed with backslashes will not be replaced.
-	 * @method expandString
+	 * @method interpolate
 	 * @static
 	 * @param {string} $expression
-	 *  The string to expand.
+	 *  The string containing possible references to interpolate values for.
 	 * @param {array} $params=array()
 	 *  An array of parameters to the expression.
 	 *  Variable names in the expression can refer to them.
-	 * @return {mixed}
-	 *  The result of the expression
+	 * @return {string}
+	 *  The result of the interpolation
 	 */
 	static function interpolate(
 		$expression,
@@ -198,6 +198,7 @@ class Q
 				? substr(Q::json_encode($params[$key]), 0, 100)
 				: (string)$params[$key];
 			$expression = str_replace('$'.$key, $p, $expression);
+			$expression = str_replace('{{'.$key.'}}', $p, $expression);
 		}
 		$expression = str_replace('\\REAL_DOLLAR_SIGN\\', '\\$', $expression);
 		return $expression;
@@ -339,13 +340,13 @@ class Q
 		/**
 		 * Skips includes to prevent recursion
 		 * @event Q/includeFile {before}
-		 * @param {string} 'filename'
+		 * @param {string} filename
 		 *  The filename to include
-		 * @param {array} 'params'
+		 * @param {array} params
 		 *  Optional. Extracts this array before including the file.
-		 * @param {boolean} 'once'
+		 * @param {boolean} once
 		 *  Optional. Whether to use include_once instead of include.
-		 * @param {boolean} 'get_vars'
+		 * @param {boolean} get_vars
 		 *  Optional. Set to true to return result of get_defined_vars()
 		 *  at the end.
 		 * @return {mixed}
@@ -465,15 +466,15 @@ class Q
 
 			/**
 			 * @event Q/autoload {after}
-			 * @param {string} 'className'
-			 * @param {string} 'filename'
+			 * @param {string} className
+			 * @param {string} filename
 			 */
 			self::event('Q/autoload', compact('className', 'filename'), 'after');
 
 		} catch (Exception $exception) {
 			/**
 			 * @event Q/exception
-			 * @param {Exception} 'exception'
+			 * @param {Exception} exception
 			 */
 			self::event('Q/exception', compact('exception'));
 		}
@@ -508,8 +509,8 @@ class Q
 
 		/**
 		 * @event {before} Q/view
-		 * @param {string} 'viewName'
-		 * @param {string} 'params'
+		 * @param {string} viewName
+		 * @param {string} params
 		 * @return {string}
 		 *  Optional. If set, override method return
 		 */
@@ -578,9 +579,9 @@ class Q
 		
 		/**
 		 * @event Q/tool/render {before}
-		 * @param {string} 'info'
+		 * @param {string} info
 		 *  An array of $toolName => $options pairs
-		 * @param {array} 'extra'
+		 * @param {array} extra
 		 *  Options used by Qbix when rendering the tool. Can include:<br/>
 		 *  "id" =>
 		 *    an additional ID to distinguish tools instantiated
@@ -619,7 +620,7 @@ class Q
 				/**
 				 * Renders the 'Missing Tool' content
 				 * @event Q/missingTool
-				 * @param {array} 'name'
+				 * @param {array} name
 				 *  The name of the tool
 				 * @return {string}
 				 *	The rendered content
@@ -643,7 +644,7 @@ class Q
 		// it is important to run the "after" handlers
 		/**
 		 * @event Q/tool/render {after}
-		 * @param {string} 'info'
+		 * @param {string} info
 		 *  An array of $toolName => $options pairs
 		 * @param {array} 'extra'
 		 *  Options used by Qbix when rendering the tool. Can include:<br/>
@@ -1009,6 +1010,25 @@ class Q
 		}
 		return false;
 	}
+	
+	/**
+	 * If an array is not associative, then makes an associative array
+	 * with the keys taken from the values of the regular array
+	 * @param {array} $array
+	 * @param {array} [$value=true] The value to assign to each item in the generated array
+	 * @return {array}
+	 */
+	static function makeAssociative($array, $value = true)
+	{
+		if (Q::isAssociative($array)) {
+			return $array;
+		}
+		$result = array();
+		foreach ($array as $item) {
+			$result[$item] = $value;
+		}
+		return $result;
+	}
 
 	/**
 	 * Append a message to the main log
@@ -1371,7 +1391,7 @@ class Q
 	 * @param {string} $pattern='$class::$function&#32;(from&#32;line&#32;$line)'
 	 * @param {integer} $skip=2
 	 */
-	static function backtrace($pattern = '$class::$function (from line $line)', $skip = 2)
+	static function backtrace($pattern = '{{class}}::{{function}} (from line {{line}})', $skip = 2)
 	{
 		$result = array();
 		$i = 0;
@@ -1399,7 +1419,7 @@ class Q
 	 */
 	static function b($separator = ", <br>\n")
 	{
-		return implode($separator, Q::backtrace('$i) $class::$function (from line $line)', 3));
+		return implode($separator, Q::backtrace('{{i}}) {{class}}::{{function}} (from line {{line}})', 3));
 	}
 
 	/**

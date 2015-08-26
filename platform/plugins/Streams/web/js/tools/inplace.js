@@ -50,9 +50,9 @@ Q.Tool.define("Streams/inplace", function (options) {
 			Q.Streams.get(state.publisherId, state.streamName, function () {
 				state.stream = this;
 			});
-			var $e, html = content.encodeHTML()
+			var $e, html = String(content).encodeHTML()
 				|| '<span class="Q_placeholder">'
-					+ tool.child('Q/inplace').state.placeholder.encodeHTML()
+					+ String(tool.child('Q/inplace').state.placeholder).encodeHTML()
 					+ '</div>'
 				|| '';
 			switch (state.inplaceType) {
@@ -131,11 +131,11 @@ Q.Tool.define("Streams/inplace", function (options) {
 			switch (state.inplaceType) {
 				case 'text':
 					ipo.fieldInput = $('<input />').attr('name', field).val(value);
-					ipo.staticHtml = value.encodeHTML();
+					ipo.staticHtml = String(value).encodeHTML();
 					break;
 				case 'textarea':
 					ipo.fieldInput = $('<textarea rows="5" cols="80" />').attr('name', field).text(value);
-					ipo.staticHtml = value.encodeHTML().replaceAll({
+					ipo.staticHtml = String(value).encodeHTML().replaceAll({
 						'&lt;br&gt;': "<br>",
 						'&lt;br /&gt;': "<br>",
 						'&nbsp;': ' '
@@ -165,7 +165,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 			var inplace = tool.setUpElement('div', 'Q/inplace', ipo);
 			$(tool.element).empty().append(inplace);
 			Q.activate(inplace, function () {
-				Q.handle(state.onLoad, tool);
+				this.state.onLoad.add(state.onLoad.handle.bind(tool));
 			});
 		}
 	}

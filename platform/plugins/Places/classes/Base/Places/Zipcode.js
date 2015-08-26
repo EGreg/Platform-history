@@ -29,48 +29,48 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property countryCode
- * @type String
+ * @property {String}
+ * @type countryCode
  */
 /**
- * @property zipcode
- * @type String
+ * @property {String}
+ * @type zipcode
  */
 /**
- * @property placeName
- * @type String
+ * @property {String}
+ * @type placeName
  */
 /**
- * @property stateName
- * @type String
+ * @property {String}
+ * @type stateName
  */
 /**
- * @property state
- * @type String
+ * @property {String}
+ * @type state
  */
 /**
- * @property regionName
- * @type String
+ * @property {String}
+ * @type regionName
  */
 /**
- * @property region
- * @type String
+ * @property {String}
+ * @type region
  */
 /**
- * @property community
- * @type String
+ * @property {String}
+ * @type community
  */
 /**
- * @property latitude
- * @type mixed
+ * @property {number}
+ * @type latitude
  */
 /**
- * @property longitude
- * @type mixed
+ * @property {number}
+ * @type longitude
  */
 /**
- * @property accuracy
- * @type integer
+ * @property {integer}
+ * @type accuracy
  */
 
 /**
@@ -249,6 +249,9 @@ Base.prototype.fieldNames = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_countryCode = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".countryCode");
@@ -275,6 +278,9 @@ Base.prototype.maxSize_countryCode = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_zipcode = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".zipcode");
@@ -301,6 +307,9 @@ Base.prototype.maxSize_zipcode = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_placeName = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".placeName");
@@ -327,6 +336,9 @@ Base.prototype.maxSize_placeName = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_stateName = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".stateName");
@@ -353,6 +365,9 @@ Base.prototype.maxSize_stateName = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_state = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".state");
@@ -379,6 +394,9 @@ Base.prototype.maxSize_state = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_regionName = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".regionName");
@@ -405,6 +423,9 @@ Base.prototype.maxSize_regionName = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_region = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".region");
@@ -431,6 +452,9 @@ Base.prototype.maxSize_region = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_community = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".community");
@@ -449,6 +473,36 @@ Base.prototype.maxSize_community = function () {
 };
 
 /**
+ * Method is called before setting the field to verify if value is a number
+ * @method beforeSet_latitude
+ * @param {integer} value
+ * @return {integer} The value
+ * @throws {Error} If 'value' is not number
+ */
+Base.prototype.beforeSet_latitude = function (value) {
+		if (value instanceof Db.Expression) return value;
+		value = Number(value);
+		if (isNaN(value))
+			throw new Error('Non-number value being assigned to '+this.table()+".latitude");
+		return value;
+};
+
+/**
+ * Method is called before setting the field to verify if value is a number
+ * @method beforeSet_longitude
+ * @param {integer} value
+ * @return {integer} The value
+ * @throws {Error} If 'value' is not number
+ */
+Base.prototype.beforeSet_longitude = function (value) {
+		if (value instanceof Db.Expression) return value;
+		value = Number(value);
+		if (isNaN(value))
+			throw new Error('Non-number value being assigned to '+this.table()+".longitude");
+		return value;
+};
+
+/**
  * Method is called before setting the field and verifies if integer value falls within allowed limits
  * @method beforeSet_accuracy
  * @param {integer} value
@@ -461,7 +515,7 @@ Base.prototype.beforeSet_accuracy = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".accuracy");
 		if (value < -2147483648 || value > 2147483647)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".accuracy");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".accuracy");
 		return value;
 };
 
@@ -472,26 +526,6 @@ Base.prototype.beforeSet_accuracy = function (value) {
 Base.prototype.maxSize_accuracy = function () {
 
 		return 2147483647;
-};
-
-/**
- * Check if mandatory fields are set and updates 'magic fields' with appropriate values
- * @method beforeSave
- * @param {array} value The array of fields
- * @return {array}
- * @throws {Error} If mandatory field is not set
- */
-Base.prototype.beforeSave = function (value) {
-	var fields = ['latitude','longitude'], i;
-	if (!this._retrieved) {
-		var table = this.table();
-		for (i=0; i<fields.length; i++) {
-			if (typeof this.fields[fields[i]] === "undefined") {
-				throw new Error("the field "+table+"."+fields[i]+" needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
-			}
-		}
-	}
-	return value;
 };
 
 module.exports = Base;

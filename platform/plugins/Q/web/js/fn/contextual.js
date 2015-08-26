@@ -87,6 +87,7 @@ Q.Tool.jQuery('Q/contextual', function _Q_contextual() {
 	remove: function () {
 		var $this = $(this);
 		var state = $this.state('Q/contextual');
+		if (!state) return;
 		var cid = state.id;
 		if (cid !== undefined) {
 			var removed = Q.Contextual.remove(cid);

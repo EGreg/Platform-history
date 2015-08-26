@@ -14,4 +14,4 @@ class Users_Exception_AlreadyVerified extends Q_Exception
 	 */
 };
 
-Q_Exception::add('Users_Exception_AlreadyVerified', 'Another user has verified this $key');
+Q_Exception::add('Users_Exception_AlreadyVerified', 'Another user has verified this {{key}}');

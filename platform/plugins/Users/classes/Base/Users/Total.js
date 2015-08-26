@@ -29,28 +29,28 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property forType
- * @type String
+ * @property {String}
+ * @type forType
  */
 /**
- * @property forId
- * @type String
+ * @property {String}
+ * @type forId
  */
 /**
- * @property voteCount
- * @type integer
+ * @property {integer}
+ * @type voteCount
  */
 /**
- * @property weightTotal
- * @type number
+ * @property {number}
+ * @type weightTotal
  */
 /**
- * @property value
- * @type number
+ * @property {number}
+ * @type value
  */
 /**
- * @property updatedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type updatedTime
  */
 
 /**
@@ -225,6 +225,9 @@ Base.prototype.fieldNames = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_forType = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".forType");
@@ -251,6 +254,9 @@ Base.prototype.maxSize_forType = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_forId = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".forId");
@@ -281,7 +287,7 @@ Base.prototype.beforeSet_voteCount = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".voteCount");
 		if (value < -9.2233720368548E+18 || value > 9223372036854775807)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".voteCount");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".voteCount");
 		return value;
 };
 

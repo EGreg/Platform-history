@@ -14,48 +14,48 @@
  * @class Base_Places_Autocomplete
  * @extends Db_Row
  *
- * @property string $query
- * @property string $types
- * @property mixed $latitude
- * @property mixed $longitude
- * @property mixed $miles
- * @property string|Db_Expression $insertedTime
- * @property string|Db_Expression $updatedTime
- * @property string $results
+ * @property {string} $query
+ * @property {string} $types
+ * @property {float} $latitude
+ * @property {float} $longitude
+ * @property {float} $miles
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string|Db_Expression} $updatedTime
+ * @property {string} $results
  */
 abstract class Base_Places_Autocomplete extends Db_Row
 {
 	/**
 	 * @property $query
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $types
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $latitude
-	 * @type mixed
+	 * @type {float}
 	 */
 	/**
 	 * @property $longitude
-	 * @type mixed
+	 * @type {float}
 	 */
 	/**
 	 * @property $miles
-	 * @type mixed
+	 * @type {float}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $results
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -218,6 +218,9 @@ abstract class Base_Places_Autocomplete extends Db_Row
 	 */
 	function beforeSet_query($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('query', $value);
 		}
@@ -248,6 +251,9 @@ abstract class Base_Places_Autocomplete extends Db_Row
 	 */
 	function beforeSet_types($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('types', $value);
 		}
@@ -268,6 +274,39 @@ abstract class Base_Places_Autocomplete extends Db_Row
 		return 255;			
 	}
 
+	function beforeSet_latitude($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('latitude', $value);
+		}
+		if (!is_numeric($value))
+			throw new Exception('Non-numeric value being assigned to '.$this->getTable().".latitude");
+		$value = floatval($value);
+		return array('latitude', $value);			
+	}
+
+	function beforeSet_longitude($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('longitude', $value);
+		}
+		if (!is_numeric($value))
+			throw new Exception('Non-numeric value being assigned to '.$this->getTable().".longitude");
+		$value = floatval($value);
+		return array('longitude', $value);			
+	}
+
+	function beforeSet_miles($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('miles', $value);
+		}
+		if (!is_numeric($value))
+			throw new Exception('Non-numeric value being assigned to '.$this->getTable().".miles");
+		$value = floatval($value);
+		return array('miles', $value);			
+	}
+
 	/**
 	 * Method is called before setting the field and normalize the DateTime string
 	 * @method beforeSet_insertedTime
@@ -282,12 +321,13 @@ abstract class Base_Places_Autocomplete extends Db_Row
 		}
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
-			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".insertedTime");
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".insertedTime");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
-			$$v = $date[$v];
-		}
-		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
 		return array('insertedTime', $value);			
 	}
 
@@ -308,12 +348,13 @@ abstract class Base_Places_Autocomplete extends Db_Row
 		}
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
-			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".updatedTime");
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".updatedTime");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
-			$$v = $date[$v];
-		}
-		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
 		return array('updatedTime', $value);			
 	}
 
@@ -327,6 +368,9 @@ abstract class Base_Places_Autocomplete extends Db_Row
 	 */
 	function beforeSet_results($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('results', $value);
 		}

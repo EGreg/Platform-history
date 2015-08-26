@@ -1283,7 +1283,7 @@ class Q_Html
 	{
 		/**
 		 * @event Q/themedUrlAndFilename {before}
-		 * @param {string} 'file_path'
+		 * @param {string} file_path
 		 * @return {array}
 		 */
 		$result = Q::event('Q/themedUrlAndFilename', compact('file_path'), 'before');

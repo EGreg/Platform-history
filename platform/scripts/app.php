@@ -84,6 +84,7 @@ if (!defined('APP_DIR'))
 
 #Include Q
 try {
+	$Q_Bootstrap_config_plugin_limit = 1;
 	include($Q_filename);
 }
 catch (Exception $e)
@@ -187,43 +188,39 @@ for ($i = ($FROM_APP ? 1 : 2); $i < $count; ++$i) {
 
 $options['sql'] = $sql_array;
 
-try {
+echo 'Q Platform app installer'.PHP_EOL;
 
-	echo 'Q Platform app installer'.PHP_EOL;
-
-	if ($auto_plugins) {
-		$plugins = Q_Config::get('Q', 'plugins', array());
-		if (!in_array("Q", $plugins)) array_unshift($plugins, "Q");
-		foreach ($plugins as $plugin) {
-			$cons = Q_Config::get('Q', 'pluginInfo', $plugin, 'connections', array());
-			foreach ($cons as $con) {
-				if (empty($options['sql'][$con])) {
-					$options['sql'][$con] = array('enabled' => true);
-				}
+if ($auto_plugins) {
+	$plugins = Q_Config::get('Q', 'plugins', array());
+	if (!in_array("Q", $plugins)) array_unshift($plugins, "Q");
+	foreach ($plugins as $plugin) {
+		$cons = Q_Config::get('Q', 'pluginInfo', $plugin, 'connections', array());
+		foreach ($cons as $con) {
+			if (empty($options['sql'][$con])) {
+				$options['sql'][$con] = array('enabled' => true);
 			}
 		}
 	}
+}
 
-	Q_Plugin::checkPermissions(APP_FILES_DIR, array_merge($options, array('deep' => true)));
-	
-	foreach ($plugins as $plugin) {
-		Q_Plugin::installPlugin($plugin, $options);
+Q_Plugin::checkPermissions(APP_FILES_DIR, array_merge($options, array('deep' => true)));
+
+foreach ($plugins as $plugin) {
+	Q_Plugin::installPlugin($plugin, $options);
+	++$Q_Bootstrap_config_plugin_limit;
+	Q_Bootstrap::configure(true);
+}
+
+if (!$noapp) {
+	// if application is installed/updated, it's schema is always installed/updated
+	$cons = Q_Config::get('Q', 'appInfo', 'connections', array());
+	foreach ($cons as $con)
+		if (empty($options['sql'][$con]))
+			$options['sql'][$con] = array('enabled' => true);
+
+	Q_Plugin::installApp($options);
+	if (empty($noInit) && file_exists($LOCAL_DIR.DS.'scripts'.DS.'init.php')) {
+		echo 'Running initialization script'.PHP_EOL;
+		include($LOCAL_DIR.DS.'scripts'.DS.'init.php');
 	}
-
-	if (!$noapp) {
-		// if application is installed/updated, it's schema is always installed/updated
-		$cons = Q_Config::get('Q', 'appInfo', 'connections', array());
-		foreach ($cons as $con)
-			if (empty($options['sql'][$con]))
-				$options['sql'][$con] = array('enabled' => true);
-
-		Q_Plugin::installApp($options);
-		if (empty($noInit) && file_exists($LOCAL_DIR.DS.'scripts'.DS.'init.php')) {
-			echo 'Running initialization script'.PHP_EOL;
-			include($LOCAL_DIR.DS.'scripts'.DS.'init.php');
-		}
-	}
-
-} catch (Exception $e) {
-	die('[ERROR] '.$e->getMessage().PHP_EOL.(isset($trace) ? $e->getTraceAsString().PHP_EOL : ''));
 }

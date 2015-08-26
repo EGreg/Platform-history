@@ -14,4 +14,4 @@ class Q_Exception_ToolAlreadyRendered extends Q_Exception
 	 */
 };
 
-Q_Exception::add('Q_Exception_ToolAlreadyRendered', 'tool named "$state" with id "$id" already rendered');
+Q_Exception::add('Q_Exception_ToolAlreadyRendered', 'tool named "{{state}}" with id "{{id}}" already rendered');

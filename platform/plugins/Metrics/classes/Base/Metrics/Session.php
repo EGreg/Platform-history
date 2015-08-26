@@ -13,16 +13,19 @@
  * Base class representing 'Session' rows in the 'Metrics' database
  * @class Base_Metrics_Session
  * @extends Db_Row
+ *
+ * @property {string} $id
+ * @property {integer} $insertedTime
  */
 abstract class Base_Metrics_Session extends Db_Row
 {
 	/**
-	 * @property $fields['id']
-	 * @type string
+	 * @property $id
+	 * @type {string}
 	 */
 	/**
-	 * @property $fields['insertedTime']
-	 * @type integer
+	 * @property $insertedTime
+	 * @type {integer}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -54,7 +57,7 @@ abstract class Base_Metrics_Session extends Db_Row
 	 * Retrieve the table name to use in SQL statement
 	 * @method table
 	 * @static
-	 * @param {boolean} [$with_db_name=true] Indicates wheather table name shall contain the database name
+	 * @param {boolean} [$with_db_name=true] Indicates wheather table name should contain the database name
  	 * @return {string|Db_Expression} The table name as string optionally without database name if no table sharding
 	 * was started or Db_Expression class with prefix and database name templates is table was sharded
 	 */
@@ -87,9 +90,9 @@ abstract class Base_Metrics_Session extends Db_Row
 	 * Create SELECT query to the class table
 	 * @method select
 	 * @static
-	 * @param $fields {array} The field values to use in WHERE clauseas as 
+	 * @param {array} $fields The field values to use in WHERE clauseas as 
 	 * an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function select($fields, $alias = null)
@@ -104,7 +107,7 @@ abstract class Base_Metrics_Session extends Db_Row
 	 * Create UPDATE query to the class table
 	 * @method update
 	 * @static
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function update($alias = null)
@@ -119,8 +122,8 @@ abstract class Base_Metrics_Session extends Db_Row
 	 * Create DELETE query to the class table
 	 * @method delete
 	 * @static
-	 * @param [$table_using=null] {object} If set, adds a USING clause with this table
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$table_using=null] If set, adds a USING clause with this table
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function delete($table_using = null, $alias = null)
@@ -135,8 +138,8 @@ abstract class Base_Metrics_Session extends Db_Row
 	 * Create INSERT query to the class table
 	 * @method insert
 	 * @static
-	 * @param [$fields=array()] {object} The fields as an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$fields=array()] The fields as an associative array of `column => value` pairs
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function insert($fields = array(), $alias = null)
@@ -164,7 +167,10 @@ abstract class Base_Metrics_Session extends Db_Row
 	 */
 	static function insertManyAndExecute($records = array(), $options = array())
 	{
-		self::db()->insertManyAndExecute(self::table(), $records, $options);
+		self::db()->insertManyAndExecute(
+			self::table(), $records,
+			array_merge($options, array('className' => 'Metrics_Session'))
+		);
 	}
 	
 	/**
@@ -177,12 +183,27 @@ abstract class Base_Metrics_Session extends Db_Row
 	 */
 	function beforeSet_id($value)
 	{
-		if ($value instanceof Db_Expression) return array('id', $value);
+		if (!isset($value)) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
+			return array('id', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".id");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".id");
 		return array('id', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the id field
+	 * @return {integer}
+	 */
+	function maxSize_id()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -194,46 +215,27 @@ abstract class Base_Metrics_Session extends Db_Row
 	 */
 	function beforeSet_insertedTime($value)
 	{
-		if ($value instanceof Db_Expression) return array('insertedTime', $value);
+		if ($value instanceof Db_Expression) {
+			return array('insertedTime', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".insertedTime");
-		if ($value < -9.2233720368548E+18 or $value > 9223372036854775807)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".insertedTime");
+		$value = intval($value);
+		if ($value < -9.2233720368548E+18 or $value > 9223372036854775807) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".insertedTime");
+		}
 		return array('insertedTime', $value);			
 	}
 
 	/**
-	 * Method is called after field is set and used to keep $fieldsModified property up to date
-	 * @method afterSet
-	 * @param {string} $name The field name
-	 * @param {mixed} $value The value of the field
-	 * @return {mixed} Original value
+	 * Returns the maximum integer that can be assigned to the insertedTime field
+	 * @return {integer}
 	 */
-	function afterSet($name, $value)
+	function maxSize_insertedTime()
 	{
-		if (!in_array($name, $this->fieldNames()))
-			$this->notModified($name);
-		return $value;			
-	}
 
-	/**
-	 * Check if mandatory fields are set and updates 'magic fields' with appropriate values
-	 * @method beforeSave
-	 * @param {array} $value The array of fields
-	 * @return {array}
-	 * @throws {Exception} If mandatory field is not set
-	 */
-	function beforeSave($value)
-	{
-		if (!$this->retrieved) {
-			$table = $this->getTable();
-			foreach (array('id','insertedTime') as $name) {
-				if (!isset($value[$name])) {
-					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
-				}
-			}
-		}
-		return $value;			
+		return 9223372036854775807;			
 	}
 
 	/**

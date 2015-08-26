@@ -40,11 +40,13 @@ function Streams_interest_post()
 			$data = null;
 		}
 		if (!empty($data)) {
+			$sizes = Q_Config::expect('Streams', 'icons', 'sizes');
+			sort($sizes);
 			$params = array(
 				'data' => $data,
 				'path' => "plugins/Streams/img/icons",
 				'subpath' => $name,
-				'save' => Q_Config::expect('Streams', 'icons', 'sizes'),
+				'save' => $sizes,
 				'skipAccess' => true
 			);
 			Q_Image::save($params);
@@ -54,7 +56,9 @@ function Streams_interest_post()
 	}
 	$subscribe = !!Q::ifset($_REQUEST, 'subscribe', false);
 	if ($subscribe) {
-		$stream->subscribe();
+		if (!$stream->subscription($user->id)) {
+			$stream->subscribe();
+		}
 	} else {
 		$stream->join();
 	}

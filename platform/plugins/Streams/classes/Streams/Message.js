@@ -5,6 +5,7 @@
  */
 var Q = require('Q');
 var Db = Q.require('Db');
+var Users = Q.require('Users');
 var Streams = Q.require('Streams');
 var Base_Streams_Message = Q.require('Base/Streams/Message');
 
@@ -126,45 +127,90 @@ Mp.get = function _Message_prototype_get (instructionName) {
 };
 
 /**
- * Assigns unique id to 'name' field if not set
- * @method beforeSave
- * @param {array} value
- *	The row beind saved
- * @param {function} callback
+ * Posts a message to the stream.
+ * Currently doesn't perform any access checks, so it is only meant to be called internally.
+ * It is not as robust as the PHP version, which is meant for more general use.
+ * @method post
+ * @static
+ * @param {Object} fields
+ *  The fields of the message. Requires publisherId, streamName and byUserId
+ * @param callback=null {function}
  */
-Streams_Message.prototype.beforeSave = function (value, callback)
+Streams_Message.post = function (fields, callback)
 {
-	value = Base_Streams_Message.prototype.beforeSave.call(this, value);
-	if (!this._retrieved) {
-		var self = this;
-		(new Streams.Stream({
-			publisherId: value['publisherId'],
-			name: value['streamName']
-		})).retrieve('*', true, true)
-		.lock()
-		.resume(function(error, stream) {
-			if (error) callback(error);
-			else if (!stream || !stream.length) {
-				callback(null, null); // no stream - no message!!!
-			} else {
-				stream = stream[0];
-				self.fields.ordinal = ++stream.fields.messageCount;
-				value['ordinal'] = self.fields.ordinal;
-				self.afterSaveExecute = function(query, error, lastId) {
-					this.afterSaveExecute = null;
-					stream.save(false, true, function(error) {
-						if (error) {
-							stream.rollback(function() {
-								query.resume(error);
-							});
-						} else query.resume(null, lastId);
-					});
-					return true;
-				};
-				callback(null, value);
-			}
-		});
+	var required = {publisherId: true, streamName: true, byUserId: true};
+	for (var k in required) {
+		if (!fields[k]) {
+			throw new Q.Exception("Streams.Message.post requires " + k);
+		}
 	}
+	var f = Q.extend({
+		type: 'text/small',
+		content: '',
+		instructions: '',
+		byClientId: '',
+		weight: 1
+	}, fields);
+	f.sentTime = new Db.Expression("CURRENT_TIMESTAMP");
+	var msg = Streams.Message.construct(f);
+	
+	var query = 
+	 " START TRANSACTION;"
+	+"		SELECT messageCount"
+	+"		  FROM streams_stream"
+	+"		  WHERE publisherId = ?"
+	+"		  AND name = ?"
+	+"		  INTO @Streams_messageCount"
+	+"        FOR UPDATE;"
+	+"		INSERT INTO streams_message("
+	+"			publisherId, streamName, byUserId, byClientId, sentTime, "
+	+"			type, content, instructions, weight, ordinal"
+	+"		)"
+	+"		VALUES("
+	+"			?, ?, ?, ?, CURRENT_TIMESTAMP,"
+	+"			?, ?, ?, ?, @Streams_messageCount+1"
+	+"		);"
+	+"		INSERT INTO streams_total("
+	+"			publisherId, streamName, messageType, messageCount"
+	+"		)"
+	+"		VALUES("
+	+"			?, ?, ?, @Streams_messageCount+1"
+	+"		)"
+	+"		ON DUPLICATE KEY UPDATE messageCount = messageCount+1;"
+	+"		UPDATE streams_stream"
+	+"		  SET messageCount = @Streams_messageCount+1"
+	+"		  WHERE publisherId = ?"
+	+"		  AND name = ?;"
+	+"		SELECT * FROM streams_stream"
+	+"		  WHERE publisherId = ?"
+	+"		  AND name = ?;"
+	+"		SELECT * FROM streams_message"
+	+"		  WHERE publisherId = ?"
+	+"		  AND streamName = ?"
+	+"		  AND ordinal = @Streams_messageCount+1;"
+	+" COMMIT;"
+	var values = [
+		f.publisherId, f.streamName,
+		f.publisherId, f.streamName, f.byUserId, f.byClientId,
+		f.type, f.content, f.instructions, f.weight,
+		f.publisherId, f.streamName, f.type,
+		f.publisherId, f.streamName,
+		f.publisherId, f.streamName,
+		f.publisherId, f.streamName
+	];
+	Streams.Stream.db()
+	.rawQuery(query, values)
+	.execute(function (params) {
+		var err = params[""][0];
+		if (err) {
+			return callback && callback(err);
+		}
+		var results = params[""][1];
+		var stream = Streams.Stream.construct(results[5][0]);
+		var message = Streams.Message.construct(results[6][0]);
+		Streams.Stream.emit('post', stream, f.byUserId, message, stream);
+		callback && callback.call(stream, null, f.byUserId, message);
+	});
 };
 
 /**
@@ -186,6 +232,7 @@ Streams_Message.prototype.deliver = function(stream, delivery, avatar, callback)
 		avatar: avatar,
 		config: Q.Config.getAll()
 	};
+	var messageType = this.fields.type;
 	var subject = Q.Config.get(
 		['Streams', 'types', stream.fields.type, 'messages', this.fields.type, 'subject'], 
 		Q.Config.get(
@@ -196,32 +243,51 @@ Streams_Message.prototype.deliver = function(stream, delivery, avatar, callback)
 			)
 		)
 	);
-	var t = delivery.email ? 'email' : (delivery.mobile ? 'mobile' : '');
-	if (!t) {
-		return callback("Streams.Message: delivery has to be email or mobile for now");
-	}
-	var viewPath = Q.Handlebars.template(this.fields.type+'/'+t+'.handlebars')
-		? this.fields.type
-		: 'Streams/message';
-	
-	// Give the app an opportunity to modify the fields or anything else
-	var o = {
-		fields: fields,
-		subject: subject,
-		delivery: delivery,
-		stream: stream,
-		avatar: avatar,
-		callback: callback,
-		viewPath: viewPath+'/'+t+'.handlebars'
-	};
-	Streams_Message.emit('deliver/before', o);
-	
-	var viewPath;
-	if (o.delivery.email) {
-		Q.Utils.sendEmail(o.delivery.email, o.subject, o.viewPath, o.fields, {html: true}, callback);
-	} else if (o.delivery.mobile) {
-		Q.Utils.sendSMS(o.delivery.mobile, o.viewPath, o.fields, {}, callback);
-	}
+	Users.fetch(avatar.fields.toUserId, function (err) {
+		var to = delivery.to
+			? Q.Config.get(['Streams', 'Message', delivery.to], ['email', 'mobile'])
+			: ['email', 'mobile'];
+		var emailAddress = delivery.email
+			|| (to.indexOf('email') >= 0 && this.fields.emailAddress)
+			|| (to.indexOf('email+pending') >= 0 && this.fields.emailAddressPending);
+		var mobileNumber = delivery.mobile
+			|| (to.indexOf('mobile') >= 0 && this.fields.mobileNumber)
+			|| (to.indexOf('mobile+pending') >= 0 && this.fields.mobileNumberPending);
+		
+		// Give the app an opportunity to modify the fields or anything else
+		var o = {
+			fields: fields,
+			subject: subject,
+			delivery: delivery,
+			stream: stream,
+			avatar: avatar,
+			callback: callback,
+			emailAddress: emailAddress,
+			mobileNumber: mobileNumber
+		};
+		Streams_Message.emit('deliver/before', o);
+		var viewPath;
+		var result = [];
+		if (emailAddress) {
+			viewPath = messageType+'/email.handlebars';
+			if (!Q.Handlebars.template(viewPath)) {
+				viewPath = 'Streams/message/email.handlebars';
+			}
+			Q.Utils.sendEmail(
+				emailAddress, o.subject, viewPath, o.fields, {html: true}, callback
+			);
+			result.push('email');
+		}
+		if (mobileNumber) {
+			viewPath = messageType+'/mobile.handlebars';
+			if (!Q.Handlebars.template(viewPath)) {
+				viewPath = 'Streams/message/mobile.handlebars';
+			}
+			Q.Utils.sendSMS(mobileNumber, viewPath, o.fields, {}, callback);
+			result.push('mobile');
+		}
+		return result;
+	});
 };
 
 module.exports = Streams_Message;

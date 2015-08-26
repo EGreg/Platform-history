@@ -20,14 +20,19 @@ abstract class Base_Awards
 	 * @type array
 	 */
 	static $table_classnames = array (
-  0 => 'Awards_Badge',
-  1 => 'Awards_Earned',
-  2 => 'Awards_Leader',
+  0 => 'Awards_Autocomplete',
+  1 => 'Awards_Domain',
+  2 => 'Awards_HostnameSession',
+  3 => 'Awards_Publisher',
+  4 => 'Awards_Session',
+  5 => 'Awards_Share',
+  6 => 'Awards_Visit',
+  7 => 'Awards_Zipcode',
 );
 
 	/**
-	 * This method uses Db::connect() to establish a connection to database using information stored in the configuration.
-	 * If the connection to Db object has already been made, it returns this Db object.
+     * This method calls Db.connect() using information stored in the configuration.
+     * If this has already been called, then the same db object is returned.
 	 * @method db
 	 * @return {iDb} The database object
 	 */

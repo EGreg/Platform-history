@@ -14,43 +14,48 @@
  * @class Base_Streams_RelatedTo
  * @extends Db_Row
  *
- * @property string $toPublisherId
- * @property string $toStreamName
- * @property string $type
- * @property string $fromPublisherId
- * @property string $fromStreamName
- * @property float $weight
- * @property string|Db_Expression $insertedTime
+ * @property {string} $toPublisherId
+ * @property {string} $toStreamName
+ * @property {string} $type
+ * @property {string} $fromPublisherId
+ * @property {string} $fromStreamName
+ * @property {float} $weight
+ * @property {string} $customIndex
+ * @property {string|Db_Expression} $insertedTime
  */
 abstract class Base_Streams_RelatedTo extends Db_Row
 {
 	/**
 	 * @property $toPublisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $toStreamName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $type
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $fromPublisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $fromStreamName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $weight
-	 * @type float
+	 * @type {float}
+	 */
+	/**
+	 * @property $customIndex
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -213,6 +218,9 @@ abstract class Base_Streams_RelatedTo extends Db_Row
 	 */
 	function beforeSet_toPublisherId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('toPublisherId', $value);
 		}
@@ -243,6 +251,9 @@ abstract class Base_Streams_RelatedTo extends Db_Row
 	 */
 	function beforeSet_toStreamName($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('toStreamName', $value);
 		}
@@ -273,6 +284,9 @@ abstract class Base_Streams_RelatedTo extends Db_Row
 	 */
 	function beforeSet_type($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('type', $value);
 		}
@@ -303,6 +317,9 @@ abstract class Base_Streams_RelatedTo extends Db_Row
 	 */
 	function beforeSet_fromPublisherId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('fromPublisherId', $value);
 		}
@@ -333,6 +350,9 @@ abstract class Base_Streams_RelatedTo extends Db_Row
 	 */
 	function beforeSet_fromStreamName($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('fromStreamName', $value);
 		}
@@ -353,6 +373,50 @@ abstract class Base_Streams_RelatedTo extends Db_Row
 		return 255;			
 	}
 
+	function beforeSet_weight($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('weight', $value);
+		}
+		if (!is_numeric($value))
+			throw new Exception('Non-numeric value being assigned to '.$this->getTable().".weight");
+		$value = floatval($value);
+		return array('weight', $value);			
+	}
+
+	/**
+	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
+	 * Optionally accept numeric value which is converted to string
+	 * @method beforeSet_customIndex
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value is not string or is exceedingly long
+	 */
+	function beforeSet_customIndex($value)
+	{
+		if (!isset($value)) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
+			return array('customIndex', $value);
+		}
+		if (!is_string($value) and !is_numeric($value))
+			throw new Exception('Must pass a string to '.$this->getTable().".customIndex");
+		if (strlen($value) > 1023)
+			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".customIndex");
+		return array('customIndex', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the customIndex field
+	 * @return {integer}
+	 */
+	function maxSize_customIndex()
+	{
+
+		return 1023;			
+	}
+
 	/**
 	 * Method is called before setting the field and normalize the DateTime string
 	 * @method beforeSet_insertedTime
@@ -367,12 +431,13 @@ abstract class Base_Streams_RelatedTo extends Db_Row
 		}
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
-			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".insertedTime");
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".insertedTime");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
-			$$v = $date[$v];
-		}
-		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
 		return array('insertedTime', $value);			
 	}
 
@@ -406,7 +471,7 @@ abstract class Base_Streams_RelatedTo extends Db_Row
 	 */
 	static function fieldNames($table_alias = null, $field_alias_prefix = null)
 	{
-		$field_names = array('toPublisherId', 'toStreamName', 'type', 'fromPublisherId', 'fromStreamName', 'weight', 'insertedTime');
+		$field_names = array('toPublisherId', 'toStreamName', 'type', 'fromPublisherId', 'fromStreamName', 'weight', 'customIndex', 'insertedTime');
 		$result = $field_names;
 		if (!empty($table_alias)) {
 			$temp = array();

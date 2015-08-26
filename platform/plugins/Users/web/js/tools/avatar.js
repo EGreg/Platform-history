@@ -1,4 +1,6 @@
 (function (Q, $, window, undefined) {
+	
+var Users = Q.Users;
 
 /**
  * Users Tools
@@ -13,8 +15,7 @@
  * @param {Object} [options] this object contains function parameters
  *   @param {String} [options.userId] The id of the user object. Can be '' for a blank-looking avatar.
  *   @required
- *   @param {String} [options.icon] icon for avatar
- *   @default '40'
+ *   @param {String} [options.icon=Q.Users.icon.defaultSize] Size of the icon to render before the display name. Or 0 for no icon.
  *   @param {Object} [options.templates] Object for avatar template parameters
  *     @param {Object} [options.templates.icon]
  *       @param {String} [options.templates.icon.dir]
@@ -43,7 +44,7 @@ Q.Tool.define("Users/avatar", function(options) {
 		return; // empty
 	}
 	if (state.icon === true) {
-		state.icon = 50;
+		state.icon = Users.icon.defaultSize;
 	}
 	
 	var p = new Q.Pipe(['icon', 'contents'], function (params) {
@@ -89,7 +90,7 @@ Q.Tool.define("Users/avatar", function(options) {
 
 {
 	user: null,
-	icon: '40',
+	icon: Users.icon.defaultSize,
 	templates: {
 		icon: {
 			dir: 'plugins/Users/views',

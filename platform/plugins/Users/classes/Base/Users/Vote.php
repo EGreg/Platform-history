@@ -14,38 +14,38 @@
  * @class Base_Users_Vote
  * @extends Db_Row
  *
- * @property string $userId
- * @property string $forType
- * @property string $forId
- * @property float $value
- * @property float $weight
- * @property string|Db_Expression $updatedTime
+ * @property {string} $userId
+ * @property {string} $forType
+ * @property {string} $forId
+ * @property {float} $value
+ * @property {float} $weight
+ * @property {string|Db_Expression} $updatedTime
  */
 abstract class Base_Users_Vote extends Db_Row
 {
 	/**
 	 * @property $userId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $forType
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $forId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $value
-	 * @type float
+	 * @type {float}
 	 */
 	/**
 	 * @property $weight
-	 * @type float
+	 * @type {float}
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -206,6 +206,9 @@ abstract class Base_Users_Vote extends Db_Row
 	 */
 	function beforeSet_userId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('userId', $value);
 		}
@@ -236,6 +239,9 @@ abstract class Base_Users_Vote extends Db_Row
 	 */
 	function beforeSet_forType($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('forType', $value);
 		}
@@ -266,6 +272,9 @@ abstract class Base_Users_Vote extends Db_Row
 	 */
 	function beforeSet_forId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('forId', $value);
 		}
@@ -286,6 +295,28 @@ abstract class Base_Users_Vote extends Db_Row
 		return 255;			
 	}
 
+	function beforeSet_value($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('value', $value);
+		}
+		if (!is_numeric($value))
+			throw new Exception('Non-numeric value being assigned to '.$this->getTable().".value");
+		$value = floatval($value);
+		return array('value', $value);			
+	}
+
+	function beforeSet_weight($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('weight', $value);
+		}
+		if (!is_numeric($value))
+			throw new Exception('Non-numeric value being assigned to '.$this->getTable().".weight");
+		$value = floatval($value);
+		return array('weight', $value);			
+	}
+
 	/**
 	 * Method is called before setting the field and normalize the DateTime string
 	 * @method beforeSet_updatedTime
@@ -303,12 +334,13 @@ abstract class Base_Users_Vote extends Db_Row
 		}
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
-			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".updatedTime");
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".updatedTime");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
-			$$v = $date[$v];
-		}
-		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
 		return array('updatedTime', $value);			
 	}
 

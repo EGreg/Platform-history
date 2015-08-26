@@ -14,48 +14,48 @@
  * @class Base_Streams_Subscription
  * @extends Db_Row
  *
- * @property string $publisherId
- * @property string $streamName
- * @property string $ofUserId
- * @property string|Db_Expression $insertedTime
- * @property string|Db_Expression $updatedTime
- * @property string|Db_Expression $untilTime
- * @property string $filter
- * @property integer $duration
+ * @property {string} $publisherId
+ * @property {string} $streamName
+ * @property {string} $ofUserId
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string|Db_Expression} $updatedTime
+ * @property {string|Db_Expression} $untilTime
+ * @property {string} $filter
+ * @property {integer} $duration
  */
 abstract class Base_Streams_Subscription extends Db_Row
 {
 	/**
 	 * @property $publisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $streamName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $ofUserId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $untilTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $filter
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $duration
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -216,6 +216,9 @@ abstract class Base_Streams_Subscription extends Db_Row
 	 */
 	function beforeSet_publisherId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('publisherId', $value);
 		}
@@ -246,6 +249,9 @@ abstract class Base_Streams_Subscription extends Db_Row
 	 */
 	function beforeSet_streamName($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('streamName', $value);
 		}
@@ -276,6 +282,9 @@ abstract class Base_Streams_Subscription extends Db_Row
 	 */
 	function beforeSet_ofUserId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('ofUserId', $value);
 		}
@@ -310,12 +319,13 @@ abstract class Base_Streams_Subscription extends Db_Row
 		}
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
-			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".insertedTime");
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".insertedTime");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
-			$$v = $date[$v];
-		}
-		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
 		return array('insertedTime', $value);			
 	}
 
@@ -336,12 +346,13 @@ abstract class Base_Streams_Subscription extends Db_Row
 		}
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
-			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".updatedTime");
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".updatedTime");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
-			$$v = $date[$v];
-		}
-		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
 		return array('updatedTime', $value);			
 	}
 
@@ -362,12 +373,13 @@ abstract class Base_Streams_Subscription extends Db_Row
 		}
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
-			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".untilTime");
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".untilTime");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
-			$$v = $date[$v];
-		}
-		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
 		return array('untilTime', $value);			
 	}
 
@@ -381,6 +393,9 @@ abstract class Base_Streams_Subscription extends Db_Row
 	 */
 	function beforeSet_filter($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('filter', $value);
 		}
@@ -415,8 +430,11 @@ abstract class Base_Streams_Subscription extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".duration");
-		if ($value < -2147483648 or $value > 2147483647)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".duration");
+		$value = intval($value);
+		if ($value < -2147483648 or $value > 2147483647) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".duration");
+		}
 		return array('duration', $value);			
 	}
 

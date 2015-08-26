@@ -14,88 +14,88 @@
  * @class Base_Streams_Stream
  * @extends Db_Row
  *
- * @property string $publisherId
- * @property string $name
- * @property string|Db_Expression $insertedTime
- * @property string|Db_Expression $updatedTime
- * @property string $type
- * @property string $title
- * @property string $icon
- * @property string $content
- * @property string $attributes
- * @property integer $readLevel
- * @property integer $writeLevel
- * @property integer $adminLevel
- * @property string $inheritAccess
- * @property integer $messageCount
- * @property integer $participantCount
- * @property string|Db_Expression $closedTime
+ * @property {string} $publisherId
+ * @property {string} $name
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string|Db_Expression} $updatedTime
+ * @property {string} $type
+ * @property {string} $title
+ * @property {string} $icon
+ * @property {string} $content
+ * @property {string} $attributes
+ * @property {integer} $readLevel
+ * @property {integer} $writeLevel
+ * @property {integer} $adminLevel
+ * @property {string} $inheritAccess
+ * @property {integer} $messageCount
+ * @property {integer} $participantCount
+ * @property {string|Db_Expression} $closedTime
  */
 abstract class Base_Streams_Stream extends Db_Row
 {
 	/**
 	 * @property $publisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $name
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $type
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $title
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $icon
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $content
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $attributes
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $readLevel
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * @property $writeLevel
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * @property $adminLevel
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * @property $inheritAccess
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $messageCount
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * @property $participantCount
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * @property $closedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -255,6 +255,9 @@ abstract class Base_Streams_Stream extends Db_Row
 	 */
 	function beforeSet_publisherId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('publisherId', $value);
 		}
@@ -285,6 +288,9 @@ abstract class Base_Streams_Stream extends Db_Row
 	 */
 	function beforeSet_name($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('name', $value);
 		}
@@ -319,12 +325,13 @@ abstract class Base_Streams_Stream extends Db_Row
 		}
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
-			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".insertedTime");
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".insertedTime");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
-			$$v = $date[$v];
-		}
-		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
 		return array('insertedTime', $value);			
 	}
 
@@ -345,12 +352,13 @@ abstract class Base_Streams_Stream extends Db_Row
 		}
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
-			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".updatedTime");
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".updatedTime");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
-			$$v = $date[$v];
-		}
-		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
 		return array('updatedTime', $value);			
 	}
 
@@ -364,6 +372,9 @@ abstract class Base_Streams_Stream extends Db_Row
 	 */
 	function beforeSet_type($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('type', $value);
 		}
@@ -394,6 +405,9 @@ abstract class Base_Streams_Stream extends Db_Row
 	 */
 	function beforeSet_title($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('title', $value);
 		}
@@ -424,6 +438,9 @@ abstract class Base_Streams_Stream extends Db_Row
 	 */
 	function beforeSet_icon($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('icon', $value);
 		}
@@ -454,6 +471,9 @@ abstract class Base_Streams_Stream extends Db_Row
 	 */
 	function beforeSet_content($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('content', $value);
 		}
@@ -521,8 +541,11 @@ abstract class Base_Streams_Stream extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".readLevel");
-		if ($value < -2147483648 or $value > 2147483647)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".readLevel");
+		$value = intval($value);
+		if ($value < -2147483648 or $value > 2147483647) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".readLevel");
+		}
 		return array('readLevel', $value);			
 	}
 
@@ -550,8 +573,11 @@ abstract class Base_Streams_Stream extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".writeLevel");
-		if ($value < -2147483648 or $value > 2147483647)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".writeLevel");
+		$value = intval($value);
+		if ($value < -2147483648 or $value > 2147483647) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".writeLevel");
+		}
 		return array('writeLevel', $value);			
 	}
 
@@ -579,8 +605,11 @@ abstract class Base_Streams_Stream extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".adminLevel");
-		if ($value < -2147483648 or $value > 2147483647)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".adminLevel");
+		$value = intval($value);
+		if ($value < -2147483648 or $value > 2147483647) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".adminLevel");
+		}
 		return array('adminLevel', $value);			
 	}
 
@@ -641,8 +670,11 @@ abstract class Base_Streams_Stream extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".messageCount");
-		if ($value < -2147483648 or $value > 2147483647)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".messageCount");
+		$value = intval($value);
+		if ($value < -2147483648 or $value > 2147483647) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".messageCount");
+		}
 		return array('messageCount', $value);			
 	}
 
@@ -670,8 +702,11 @@ abstract class Base_Streams_Stream extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".participantCount");
-		if ($value < -2147483648 or $value > 2147483647)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".participantCount");
+		$value = intval($value);
+		if ($value < -2147483648 or $value > 2147483647) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".participantCount");
+		}
 		return array('participantCount', $value);			
 	}
 
@@ -702,12 +737,13 @@ abstract class Base_Streams_Stream extends Db_Row
 		}
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
-			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".closedTime");
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".closedTime");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
-			$$v = $date[$v];
-		}
-		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
 		return array('closedTime', $value);			
 	}
 

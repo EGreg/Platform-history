@@ -52,7 +52,8 @@ class Q_Plugin
 	 * @param {string} $options Contain data parsed from command line
 	 * @throws {Exception} If cannot connect to database
 	 */
-	static function installSchema($base_dir, $name, $type, $conn_name, $options) {
+	static function installSchema($base_dir, $name, $type, $conn_name, $options)
+	{
 
 		// is schema installation requested?
 		if (!isset($options['sql']) || empty($options['sql'][$conn_name]) || !$options['sql'][$conn_name]['enabled']) return;
@@ -88,7 +89,7 @@ class Q_Plugin
 			$shard_data = array_merge($dbconf, $data);
 			Db::setConnection($tempname, $shard_data);
 
-			//Try connecting
+			// Try connecting
 			try {
 				$db = Db::connect($tempname);
 				$pdo = $db->reallyConnect($shard);
@@ -98,12 +99,15 @@ class Q_Plugin
 				throw new Exception("Could not connect to DB connection '$conn_name'$shard_text: " . $e->getMessage(), $e->getCode(), $e);
 			}
 
+			$db->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
+
 			// Do we already have $name installed?
 			// Checking SCHEMA plugin version in the DB.
 			$db->rawQuery("CREATE TABLE IF NOT EXISTS `{$prefix}Q_{$type}` (
 				`{$type}` VARCHAR(255) NOT NULL,
 				`version` VARCHAR( 255 ) NOT NULL,
-				PRIMARY KEY (`{$type}`)) ENGINE = InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;")->execute();
+				PRIMARY KEY (`{$type}`)) ENGINE = InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+			")->execute();
 
 			$res = $db->select('version', "{$prefix}Q_{$type}")
 						->where(array($type => $name))
@@ -161,28 +165,24 @@ class Q_Plugin
 				echo "Running SQL scripts for $type $name on $conn_name ($dbms)".PHP_EOL;
 			}
 
-			//echo "Begin transaction".PHP_EOL;
-			//$pdo->beginTransaction();
+			// echo "Begin transaction".PHP_EOL;
+			// $query = $db->rawQuery('')->begin()->execute();
 
 			// Process script files
 			foreach ($scripts as $script) {
 
-				if (substr($script, -4) === '.php') {
-					echo "Processing PHP file: $script \n";
-					try {
-						Q::includeFile($scriptsdir.DS.$script);
-					} catch (Exception $e) {
-						Q::exceptionHandler($e);
-						die($e->getMessage()."\n"."(Fix the error, then run the installer again.)\n");
-					}
-					continue;
-				}
-
-				echo "Processing SQL file: $script ";
-				$sqltext = file_get_contents($scriptsdir.DS.$script);
-				$sqltext = str_replace('{$prefix}', $prefix, $sqltext);
-
 				try {
+					if (substr($script, -4) === '.php') {
+						echo "Processing PHP file: $script \n";
+						Q::includeFile($scriptsdir.DS.$script);
+						continue;
+					}
+
+					echo "Processing SQL file: $script ";
+					$sqltext = file_get_contents($scriptsdir.DS.$script);
+					$sqltext = str_replace('{$prefix}', $prefix, $sqltext);
+					$sqltext = str_replace('{$dbname}', $db->dbname, $sqltext);
+
 					$queries = $db->scriptToQueries($sqltext);
 					// Process each query
 					foreach ($queries as $q) {
@@ -200,17 +200,25 @@ class Q_Plugin
 					}
 					echo PHP_EOL;
 				} catch (Exception $e) {
-					if ($pdo->errorCode() != '00000') {
-						$err = $pdo->errorInfo();
-						$err = new Exception("$err[2]");
+					$errorCode = $pdo->errorCode();
+					if ($errorCode != '00000') {
+						$info = $pdo->errorInfo();
+						$err = new Q_Exception(
+							"$info[2]", array(), $errorCode, 
+							$e->getFile(), $e->getLine(),
+							$e->getTrace(), $e->getTraceAsString()
+						);
 					} else {
-						// error was thrown by scriptToQueries
 						$err = $e;
 					}
-					echo PHP_EOL;
-					//echo "Rollback".PHP_EOL;
-					//$pdo->rollBack();
 					throw $err;
+					// echo PHP_EOL;
+					// echo "Rollback".PHP_EOL;
+					// try {
+					// 	$query = $db->rawQuery('')->rollback()->execute();
+					// } catch (Exception $e) {
+					// 	throw $err;
+					// }
 				}
 			}
 			try {
@@ -220,14 +228,14 @@ class Q_Plugin
 						->execute();
 			} catch (Exception $e) {
 				if ($pdo->errorCode() != '00000') {
-					//echo "Rollback".PHP_EOL;
-					//$pdo->rollBack();
-					$err = $pdo->errorInfo();
+					// echo "Rollback".PHP_EOL;
+					// $query = $db->rawQuery('')->rollback()->execute();
+					// $err = $pdo->errorInfo();
 					throw new Exception("$err[2]");
 				}
 			}
-			//echo "Commit transaction".PHP_EOL;
-			//$pdo->commit();
+			// echo "Commit transaction".PHP_EOL;
+			// $query = $db->rawQuery('')->commit()->execute();
 			echo '+ ' . ucfirst($type) . " '$name' schema on '$conn_name'$shard_text (v. $current_version -> $version) installed".PHP_EOL;
 		}
 	}

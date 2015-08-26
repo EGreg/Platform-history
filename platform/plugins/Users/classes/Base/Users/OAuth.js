@@ -29,36 +29,36 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property client_id
- * @type String
+ * @property {String}
+ * @type client_id
  */
 /**
- * @property userId
- * @type String
+ * @property {String}
+ * @type userId
  */
 /**
- * @property state
- * @type String
+ * @property {String}
+ * @type state
  */
 /**
- * @property scope
- * @type String
+ * @property {String}
+ * @type scope
  */
 /**
- * @property redirect_uri
- * @type String
+ * @property {String}
+ * @type redirect_uri
  */
 /**
- * @property access_token
- * @type String
+ * @property {String}
+ * @type access_token
  */
 /**
- * @property insertedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type insertedTime
  */
 /**
- * @property token_expires_seconds
- * @type integer
+ * @property {integer}
+ * @type token_expires_seconds
  */
 
 /**
@@ -236,6 +236,9 @@ Base.prototype.fieldNames = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_client_id = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".client_id");
@@ -262,6 +265,9 @@ Base.prototype.maxSize_client_id = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_userId = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".userId");
@@ -288,6 +294,9 @@ Base.prototype.maxSize_userId = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_state = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".state");
@@ -314,6 +323,9 @@ Base.prototype.maxSize_state = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_scope = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".scope");
@@ -340,6 +352,9 @@ Base.prototype.maxSize_scope = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_redirect_uri = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".redirect_uri");
@@ -366,6 +381,9 @@ Base.prototype.maxSize_redirect_uri = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_access_token = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".access_token");
@@ -409,7 +427,7 @@ Base.prototype.beforeSet_token_expires_seconds = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".token_expires_seconds");
 		if (value < -2147483648 || value > 2147483647)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".token_expires_seconds");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".token_expires_seconds");
 		return value;
 };
 

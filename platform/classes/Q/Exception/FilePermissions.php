@@ -15,4 +15,4 @@ class Q_Exception_FilePermissions extends Q_Exception
 	 */
 };
 
-Q_Exception::add('Q_Exception_FilePermissions', 'Not enough permissions to $action $filename.$recommendation');
+Q_Exception::add('Q_Exception_FilePermissions', 'Not enough permissions to {{action}} {{filename}}.{{recommendation}}');

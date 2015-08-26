@@ -33,10 +33,11 @@ Q.Tool.define("Streams/form", function (options) {
 		var $parent = $this.parent();
 		var name = null;
 		var value = null;
+		var $inputs = $this;
 		if ($parent.attr('data-type') === 'date') {
 			var notReady = false;
 			var y, m, d;
-			$parent.find('select').each(function () {
+			$inputs = $parent.find('select').each(function () {
 				var $this = $(this);
 				switch ($this.attr('name').split('_').pop()) {
 					case 'year': y = $this.val(); break;
@@ -62,8 +63,9 @@ Q.Tool.define("Streams/form", function (options) {
 		var fields = {};
 		fields[name] = value;
 		fields.inputs = $hidden.val();
+		$inputs.addClass('Q_uploading');
 		Q.req('Streams/form', 'streams', function () {
-			debugger;
+			$inputs.removeClass('Q_uploading');
 		}, {method: 'post', fields: fields});
 	});
 

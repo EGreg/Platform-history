@@ -5,6 +5,7 @@
  */
 var Q = require('Q');
 var Db = Q.require('Db');
+var Streams = Q.require('Streams');
 
 /**
  * Class representing 'Invite' rows in the 'Streams' database
@@ -29,6 +30,10 @@ function Streams_Invite (fields) {
 
 	/* * * */
 }
+
+Streams_Invite.prototype.url = function _Streams_Invite_prototype_getUrl() {
+	return Streams.invitedUrl(this.fields.token);
+};
 
 Q.mixin(Streams_Invite, Q.require('Base/Streams/Invite'));
 

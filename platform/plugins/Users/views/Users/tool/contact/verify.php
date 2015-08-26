@@ -1,6 +1,6 @@
 <?php echo Q_Html::div('tool', 'Users_contact_tool necessary panel'); ?> 
 	<?php echo Q_Html::form($tool_action_url, 'post', array('class' => 'askEmail')) ?> 
-		<?php echo Q_Html::formInfo($on_success, null, $snf) ?> 
+		<?php echo Q_Html::formInfo($onSuccess, null, $snf) ?> 
 		<h3 class='feedback'>
 			We emailed your activation link to
 			<span class='email'><?php echo $email->address ?></span>.

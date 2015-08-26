@@ -29,36 +29,36 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property publisherId
- * @type String
+ * @property {String}
+ * @type publisherId
  */
 /**
- * @property streamName
- * @type String
+ * @property {String}
+ * @type streamName
  */
 /**
- * @property ofUserId
- * @type String
+ * @property {String}
+ * @type ofUserId
  */
 /**
- * @property insertedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type insertedTime
  */
 /**
- * @property updatedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type updatedTime
  */
 /**
- * @property untilTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type untilTime
  */
 /**
- * @property filter
- * @type String
+ * @property {String}
+ * @type filter
  */
 /**
- * @property duration
- * @type integer
+ * @property {integer}
+ * @type duration
  */
 
 /**
@@ -236,6 +236,9 @@ Base.prototype.fieldNames = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_publisherId = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".publisherId");
@@ -262,6 +265,9 @@ Base.prototype.maxSize_publisherId = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_streamName = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".streamName");
@@ -288,6 +294,9 @@ Base.prototype.maxSize_streamName = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_ofUserId = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".ofUserId");
@@ -352,6 +361,9 @@ Base.prototype.beforeSet_untilTime = function (value) {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_filter = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".filter");
@@ -382,7 +394,7 @@ Base.prototype.beforeSet_duration = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".duration");
 		if (value < -2147483648 || value > 2147483647)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".duration");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".duration");
 		return value;
 };
 

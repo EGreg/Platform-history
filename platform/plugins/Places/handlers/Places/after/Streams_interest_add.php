@@ -2,16 +2,16 @@
 
 function Places_after_Streams_interest_add($params)
 {
-	$location = Places::userLocationStream();
+	$location = Places_Location::userStream();
 	if ($params['subscribe'] and $location) {
-		Places::subscribe(
+		Places_Nearby::subscribe(
 			$location->getAttribute('latitude'),
 			$location->getAttribute('longitude'),
 			$location->getAttribute('miles'),
 			$params['publisherId'],
 			array(
-				'transform' => array('Places', '_transformInterest'),
-				'create' => array('Places', '_createInterest'),
+				'transform' => array('Places_Interest', '_transform'),
+				'create' => array('Places_Interest', '_create'),
 				'title' => $params['title'],
 				'skipAccess' => true
 			)

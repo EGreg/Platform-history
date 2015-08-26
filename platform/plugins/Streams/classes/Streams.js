@@ -5,6 +5,7 @@
  * @main Streams
  */
 var Q = require('Q');
+var fs = require('fs');
 
 /**
  * Static methods for the Streams model
@@ -446,7 +447,7 @@ Streams.listen = function (options) {
 				Streams.Stream.emit('visit', stream, uid, ssid);
 				break;
 			case 'Streams/Stream/leave':
-				participant = new Streams.Participant(JSON.parse(parsed.participant));
+				participant = JSON.parse(parsed.participant);
 				participant.fillMagicFields();
 				uid = participant.userId;
 				if (Q.Config.get(['Streams', 'logging'], false)) {
@@ -520,15 +521,29 @@ Streams.listen = function (options) {
 				}
 				break;
 			case 'Streams/Stream/invite':
-				var userIds, invitingUserId, username, appUrl, label,
+				var userIds, invitingUserId, username, appUrl, parts, rest, label, myLabel,
 				    readLevel, writeLevel, adminLevel, displayName, expiry, logKey;
 				try {
 					userIds = JSON.parse(parsed.userIds);
 					invitingUserId = parsed.invitingUserId;
 					username = parsed.username;
 					appUrl = parsed.appUrl;
-					label = parsed.label ? Q.normalize(parsed.label, '_', /[^A-Za-z0-9\/]+/) : null;
-					title = parsed.label ? parsed.label: null;
+					if (parsed.label) {
+						parts = parsed.label.split('/');
+						rest = parts.slice(1).join('/');
+						label = parts[0] + '/' + Q.normalize(rest);
+						title = rest[0].toUpperCase() + rest.substr(1);
+					} else {
+						label = null;
+					}
+					if (parsed.myLabel) {
+						parts = parsed.myLabel.split('/');
+						rest = parts.slice(1).join('/');
+						myLabel = parts[0] + '/' + Q.normalize(rest);
+						title = rest[0].toUpperCase() + rest.substr(1);
+					} else {
+						myLabel = null;
+					}
 					readLevel = parsed.readLevel && JSON.parse(parsed.readLevel) || null;
 					writeLevel = parsed.writeLevel && JSON.parse(parsed.writeLevel) || null;
 					adminLevel = parsed.adminLevel && JSON.parse(parsed.adminLevel) || null;
@@ -553,22 +568,36 @@ Streams.listen = function (options) {
 				    break;
 				}
 				
-				// Create a new label, if necessary
-				if (label) {
-				    new Users.Label({
-				        userId: userId,
-				        label: label,
-				        title: title
-				    }).retrieve(function (err, labels) {
-				        if (!labels.length) {
-				            this.fields.title = label[0].toUpperCase() + label.substr(1);
-				            this.save(persist);
-				        } else {
-				            persist();
-				        }
-				    });
-				} else {
+				// Create some new labels, if necessary
+				var keys = ['label', 'myLabel'];
+				var p = Q.pipe(keys, function (params, subjects) {
+					if (params.label[1] && params.label[1].length) {
+						return persist();
+					}
+					for (var i=0, l=keys.length; i<l; ++i) {
+						var label = subjects[keys];
+						if (label instanceof Users.Label) {
+							label.fields.title = title;
+							label.save();
+						}
+					}
 					persist();
+				});
+				if (label) {
+					new Users.Label({
+						userId: stream.fields.publisherId,
+						label: label
+					}).retrieve(p.fill('label'));
+				} else {
+					p.fill('label')();
+				}
+				if (myLabel) {
+				    new Users.Label({
+				        userId: invitingUserId,
+				        label: myLabel
+				    }).retrieve(p.fill('myLabel'));
+				} else {
+					p.fill('myLabel')();
 				}
 				
 				return;
@@ -641,6 +670,7 @@ Streams.listen = function (options) {
 								Q.log(err);
 								return;
 							}
+							var invite = this;
 							(new Streams.Participant({
 								"publisherId": stream.fields.publisherId,
 								"streamName": stream.fields.name,
@@ -649,6 +679,32 @@ Streams.listen = function (options) {
 								"state": "invited",
 								"reason": ""
 							})).save(true, _participantSaved);
+							
+							// Write some files, if requested
+							// SECURITY: Here we trust the input, which should only be sent internally
+							if (parsed.template) {
+								new Users.User({id: userId})
+								.retrieve(function () {
+									var fields = Q.extend({}, parsed, {
+										stream: stream,
+										user: this,
+										invite: invite,
+										link: invite.url(),
+										appRootUrl: Q.Config.expect(['Q', 'web', 'appRootUrl'])
+									});
+									var html = Q.Handlebars.render(parsed.template, fields);
+									var path = Streams.invitationsPath()+'/'+parsed.batchName;
+									var filename = path + '/'
+										+ Q.normalize(stream.fields.publisherId) + '-'
+										+ Q.normalize(stream.fields.name) + '-'
+										+ this.fields.id + '.html';
+									fs.writeFile(filename, html, function (err) {
+										if (err) {
+											Q.log(err);
+										}
+									});
+								});
+							}
 						}
 
 						function _participantSaved(err) {
@@ -661,8 +717,15 @@ Streams.listen = function (options) {
 						    // Add the users to a label, if any
             				if (label) {
             				    new Users.Contact({
-            				        userId: invitingUserId,
+            				        userId: stream.fields.publisherId,
                                     label: label,
+                                    contactUserId: userId
+            				    }).save(true);
+            				}
+            				if (myLabel) {
+            				    new Users.Contact({
+            				        userId: invitingUserId,
+                                    label: myLabel,
                                     contactUserId: userId
             				    }).save(true);
             				}
@@ -713,7 +776,8 @@ Streams.listen = function (options) {
 								Q.log(err);
 								return;
 							}
-							var baseUrl = Q.url(Q.Config.get(['Streams', 'invites', 'baseUrl'], "i"));
+							var invitedUrl = Streams.invitedUrl(token);
+							displayName = displayName || "Someone";
 							var msg = {
 								publisherId: invited.fields.publisherId,
 								streamName: invited.fields.name,
@@ -721,11 +785,12 @@ Streams.listen = function (options) {
 								type: 'Streams/invite',
 								sentTime: new Db.Expression("CURRENT_TIMESTAMP"),
 								state: 'posted',
-								content: (displayName || "Someone") + " invited you to "+baseUrl+"/"+token,
+								content: displayName + " invited you to " + invitedUrl,
 								instructions: JSON.stringify({
 									token: token,
 									displayName: displayName,
 									appUrl: appUrl,
+									invitedUrl: invitedUrl,
 									type: stream.fields.type,
 									title: stream.fields.title,
 									content: stream.fields.content
@@ -747,15 +812,12 @@ Streams.listen = function (options) {
 		return next();
 	});
 
-	Streams.Stream.on('post', function (stream, uid, msg, ssid) {
+	Streams.Stream.on('post', function (stream, byUserId, msg, ssid) {
 		if (_messageHandlers[msg.fields.type]) {
 			_messageHandlers[msg.fields.type].call(this, msg);
 		}
-		Streams.Stream.emit('post/'+msg.fields.type, stream, uid, msg);
-		stream.messageParticipants('post', msg.fields.byUserId, msg);
-//		if (stream && !msg.type.match(/^Streams\//)) {// internal messages of Streams plugin
-//			(new Streams.Stream(stream)).incMessages(/* empty callback*/);
-//		}
+		Streams.Stream.emit('post/'+msg.fields.type, stream, byUserId, msg);
+		stream.messageParticipants('post', byUserId, msg);
 	});
 
 	// Start external socket server
@@ -821,11 +883,10 @@ Streams.on('connection', function(client) {
 					new Streams.Stream({
 						publisherId: userId,
 						name: 'Streams/participating'
-					}).post({
-						byUserId: userId,
+					}).post(userId, {
 						type: 'Streams/connected'
 					}, function(err) {
-						if (err) util.error(err);
+						if (err) console.error(err);
 						Q.log('User connected: ' + userId);
 					});
 				}
@@ -852,7 +913,7 @@ Streams.on('connection', function(client) {
 					byUserId: userId,
 					type: 'Streams/disconnected'
 				}, function(err) {
-					if (err) util.error(err);
+					if (err) console.error(err);
 					Q.log('User disconnected: ' + userId);
 				});
 			}, Q.Config.get(["Streams", "socket", "disconnectTimeout"], 1000));
@@ -1072,16 +1133,29 @@ Streams.getParticipants = function(publisherId, streamName, callback) {
  *	The name of the stream, or an array of names, or a Db.Range
  * @param callback=null {function}
  *	Callback receives the error (if any) and stream as parameters
+ * @param {String} [fields='*']
+ *  Comma delimited list of fields to retrieve in the stream.
+ *  Must include at least "publisherId" and "name".
+ *  since make up the primary key of the stream table.
+ * @param {Object} [options={}]
+ *  Provide additional query options like 'limit', 'offset', 'orderBy', 'where' etc.
+ *  @see Db_Query_Mysql::options().
  */
-Streams.fetch = function (asUserId, publisherId, streamName, callback) {
+Streams.fetch = function (asUserId, publisherId, streamName, callback, fields, options) {
 	if (!callback) return;
 	if (!publisherId || !streamName) callback(new Error("Wrong arguments"));
 	if (streamName.charAt(streamName.length-1) === '/') {
 		streamName = new Db.Range(streamName, true, false, streamName.slice(0, -1)+'0');
 	}
-	Streams.Stream.SELECT('*')
+	if (Q.isPlainObject(fields)) {
+		options = fields;
+		fields = '*';
+	}
+	fields = fields || '*';
+	var q = Streams.Stream.SELECT(fields)
 	.where({publisherId: publisherId, name: streamName})
-	.execute(function(err, res) {
+	.options(options);
+	q.execute(function(err, res) {
 		if (err) {
 		    return callback(err);
 		}
@@ -1115,8 +1189,15 @@ Streams.fetch = function (asUserId, publisherId, streamName, callback) {
  *	The name of the stream
  * @param callback=null {function}
  *	Callback receives the error (if any) and stream as parameters
+ * @param {String} [fields='*']
+ *  Comma delimited list of fields to retrieve in the stream.
+ *  Must include at least "publisherId" and "name".
+ *  since make up the primary key of the stream table.
+ * @param {Object} [options={}]
+ *  Provide additional query options like 'limit', 'offset', 'orderBy', 'where' etc.
+ *  @see Db_Query_Mysql::options().
  */
-Streams.fetchOne = function (asUserId, publisherId, streamName, callback) {
+Streams.fetchOne = function (asUserId, publisherId, streamName, callback, fields, options) {
 	if (!callback) return;
 	if (!publisherId || !streamName) callback(new Error("Wrong arguments"));
 	if (streamName.charAt(streamName.length-1) === '/') {
@@ -1124,6 +1205,7 @@ Streams.fetchOne = function (asUserId, publisherId, streamName, callback) {
 	}
 	Streams.Stream.SELECT('*')
 	.where({publisherId: publisherId, name: streamName})
+	.options(options)
 	.limit(1).execute(function(err, res) {
 		if (err) {
 		    return callback(err);
@@ -1132,7 +1214,7 @@ Streams.fetchOne = function (asUserId, publisherId, streamName, callback) {
 		    callback(null, null);
 		}
 		res[0].calculateAccess(asUserId, function () {
-		    callback(null, res[0])
+		    callback.call(res[0], null, res[0]);
 		});
 	});
 };
@@ -1169,7 +1251,10 @@ function getInvitedStream (asUserId, forUserId, callback) {
 				if (err) return callback(err);
 				this.calculateAccess(asUserId, function(err) {
 					if (err) return callback(err);
-					this.subscribe({userId: forUserId}, function (err) {
+					this.subscribe({
+						userId: forUserId, 
+						deliver: {"to": "invited"}
+					}, function (err) {
 						if (err) return callback(err);
 						callback(null, stream);
 					});
@@ -1198,6 +1283,16 @@ Streams.messageHandler = function(msgType, callback) {
 		throw new Q.Exception("Streams: callback passed to messageHandler is not a function");
 	}
 	_messageHandlers[msgType] = callback;
+};
+
+Streams.invitedUrl = function _Streams_invitedUrl(token) {
+	return Q.url(Q.Config.get(['Streams', 'invites', 'baseUrl'], "i"))
+		+ "/" + token;
+};
+
+Streams.invitationsPath = function _Streams_invitationsPath() {
+	return Q.app.FILES_DIR + '/' + Q.Config.expect(['Q', 'app'])
+		+ '/uploads/Streams/invitations';
 };
 
 /**

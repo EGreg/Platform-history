@@ -13,52 +13,64 @@
  * Base class representing 'Share' rows in the 'Metrics' database
  * @class Base_Metrics_Share
  * @extends Db_Row
+ *
+ * @property {string} $share_id
+ * @property {string} $visit_id
+ * @property {integer} $insertedTime
+ * @property {integer} $shared_time
+ * @property {string} $url
+ * @property {string} $tag1
+ * @property {string} $tag2
+ * @property {string} $tag3
+ * @property {integer} $publisherId
+ * @property {integer} $visit_count
+ * @property {integer} $session_count
  */
 abstract class Base_Metrics_Share extends Db_Row
 {
 	/**
-	 * @property $fields['share_id']
-	 * @type string
+	 * @property $share_id
+	 * @type {string}
 	 */
 	/**
-	 * @property $fields['visit_id']
-	 * @type string
+	 * @property $visit_id
+	 * @type {string}
 	 */
 	/**
-	 * @property $fields['insertedTime']
-	 * @type integer
+	 * @property $insertedTime
+	 * @type {integer}
 	 */
 	/**
-	 * @property $fields['shared_time']
-	 * @type integer
+	 * @property $shared_time
+	 * @type {integer}
 	 */
 	/**
-	 * @property $fields['url']
-	 * @type string
+	 * @property $url
+	 * @type {string}
 	 */
 	/**
-	 * @property $fields['tag1']
-	 * @type string
+	 * @property $tag1
+	 * @type {string}
 	 */
 	/**
-	 * @property $fields['tag2']
-	 * @type string
+	 * @property $tag2
+	 * @type {string}
 	 */
 	/**
-	 * @property $fields['tag3']
-	 * @type string
+	 * @property $tag3
+	 * @type {string}
 	 */
 	/**
-	 * @property $fields['publisherId']
-	 * @type integer
+	 * @property $publisherId
+	 * @type {integer}
 	 */
 	/**
-	 * @property $fields['visit_count']
-	 * @type integer
+	 * @property $visit_count
+	 * @type {integer}
 	 */
 	/**
-	 * @property $fields['session_count']
-	 * @type integer
+	 * @property $session_count
+	 * @type {integer}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -90,7 +102,7 @@ abstract class Base_Metrics_Share extends Db_Row
 	 * Retrieve the table name to use in SQL statement
 	 * @method table
 	 * @static
-	 * @param {boolean} [$with_db_name=true] Indicates wheather table name shall contain the database name
+	 * @param {boolean} [$with_db_name=true] Indicates wheather table name should contain the database name
  	 * @return {string|Db_Expression} The table name as string optionally without database name if no table sharding
 	 * was started or Db_Expression class with prefix and database name templates is table was sharded
 	 */
@@ -123,9 +135,9 @@ abstract class Base_Metrics_Share extends Db_Row
 	 * Create SELECT query to the class table
 	 * @method select
 	 * @static
-	 * @param $fields {array} The field values to use in WHERE clauseas as 
+	 * @param {array} $fields The field values to use in WHERE clauseas as 
 	 * an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function select($fields, $alias = null)
@@ -140,7 +152,7 @@ abstract class Base_Metrics_Share extends Db_Row
 	 * Create UPDATE query to the class table
 	 * @method update
 	 * @static
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function update($alias = null)
@@ -155,8 +167,8 @@ abstract class Base_Metrics_Share extends Db_Row
 	 * Create DELETE query to the class table
 	 * @method delete
 	 * @static
-	 * @param [$table_using=null] {object} If set, adds a USING clause with this table
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$table_using=null] If set, adds a USING clause with this table
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function delete($table_using = null, $alias = null)
@@ -171,8 +183,8 @@ abstract class Base_Metrics_Share extends Db_Row
 	 * Create INSERT query to the class table
 	 * @method insert
 	 * @static
-	 * @param [$fields=array()] {object} The fields as an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$fields=array()] The fields as an associative array of `column => value` pairs
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function insert($fields = array(), $alias = null)
@@ -200,7 +212,10 @@ abstract class Base_Metrics_Share extends Db_Row
 	 */
 	static function insertManyAndExecute($records = array(), $options = array())
 	{
-		self::db()->insertManyAndExecute(self::table(), $records, $options);
+		self::db()->insertManyAndExecute(
+			self::table(), $records,
+			array_merge($options, array('className' => 'Metrics_Share'))
+		);
 	}
 	
 	/**
@@ -213,12 +228,27 @@ abstract class Base_Metrics_Share extends Db_Row
 	 */
 	function beforeSet_share_id($value)
 	{
-		if ($value instanceof Db_Expression) return array('share_id', $value);
+		if (!isset($value)) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
+			return array('share_id', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".share_id");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".share_id");
 		return array('share_id', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the share_id field
+	 * @return {integer}
+	 */
+	function maxSize_share_id()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -231,12 +261,27 @@ abstract class Base_Metrics_Share extends Db_Row
 	 */
 	function beforeSet_visit_id($value)
 	{
-		if ($value instanceof Db_Expression) return array('visit_id', $value);
+		if (!isset($value)) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
+			return array('visit_id', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".visit_id");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".visit_id");
 		return array('visit_id', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the visit_id field
+	 * @return {integer}
+	 */
+	function maxSize_visit_id()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -248,12 +293,27 @@ abstract class Base_Metrics_Share extends Db_Row
 	 */
 	function beforeSet_insertedTime($value)
 	{
-		if ($value instanceof Db_Expression) return array('insertedTime', $value);
+		if ($value instanceof Db_Expression) {
+			return array('insertedTime', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".insertedTime");
-		if ($value < -9.2233720368548E+18 or $value > 9223372036854775807)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".insertedTime");
+		$value = intval($value);
+		if ($value < -9.2233720368548E+18 or $value > 9223372036854775807) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".insertedTime");
+		}
 		return array('insertedTime', $value);			
+	}
+
+	/**
+	 * Returns the maximum integer that can be assigned to the insertedTime field
+	 * @return {integer}
+	 */
+	function maxSize_insertedTime()
+	{
+
+		return 9223372036854775807;			
 	}
 
 	/**
@@ -265,12 +325,27 @@ abstract class Base_Metrics_Share extends Db_Row
 	 */
 	function beforeSet_shared_time($value)
 	{
-		if ($value instanceof Db_Expression) return array('shared_time', $value);
+		if ($value instanceof Db_Expression) {
+			return array('shared_time', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".shared_time");
-		if ($value < -9.2233720368548E+18 or $value > 9223372036854775807)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".shared_time");
+		$value = intval($value);
+		if ($value < -9.2233720368548E+18 or $value > 9223372036854775807) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".shared_time");
+		}
 		return array('shared_time', $value);			
+	}
+
+	/**
+	 * Returns the maximum integer that can be assigned to the shared_time field
+	 * @return {integer}
+	 */
+	function maxSize_shared_time()
+	{
+
+		return 9223372036854775807;			
 	}
 
 	/**
@@ -283,12 +358,27 @@ abstract class Base_Metrics_Share extends Db_Row
 	 */
 	function beforeSet_url($value)
 	{
-		if ($value instanceof Db_Expression) return array('url', $value);
+		if (!isset($value)) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
+			return array('url', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".url");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".url");
 		return array('url', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the url field
+	 * @return {integer}
+	 */
+	function maxSize_url()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -301,12 +391,27 @@ abstract class Base_Metrics_Share extends Db_Row
 	 */
 	function beforeSet_tag1($value)
 	{
-		if ($value instanceof Db_Expression) return array('tag1', $value);
+		if (!isset($value)) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
+			return array('tag1', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".tag1");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".tag1");
 		return array('tag1', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the tag1 field
+	 * @return {integer}
+	 */
+	function maxSize_tag1()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -319,12 +424,27 @@ abstract class Base_Metrics_Share extends Db_Row
 	 */
 	function beforeSet_tag2($value)
 	{
-		if ($value instanceof Db_Expression) return array('tag2', $value);
+		if (!isset($value)) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
+			return array('tag2', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".tag2");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".tag2");
 		return array('tag2', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the tag2 field
+	 * @return {integer}
+	 */
+	function maxSize_tag2()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -337,12 +457,27 @@ abstract class Base_Metrics_Share extends Db_Row
 	 */
 	function beforeSet_tag3($value)
 	{
-		if ($value instanceof Db_Expression) return array('tag3', $value);
+		if (!isset($value)) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
+			return array('tag3', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".tag3");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".tag3");
 		return array('tag3', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the tag3 field
+	 * @return {integer}
+	 */
+	function maxSize_tag3()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -354,12 +489,27 @@ abstract class Base_Metrics_Share extends Db_Row
 	 */
 	function beforeSet_publisherId($value)
 	{
-		if ($value instanceof Db_Expression) return array('publisherId', $value);
+		if ($value instanceof Db_Expression) {
+			return array('publisherId', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".publisherId");
-		if ($value < 0 or $value > 1.844674407371E+19)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".publisherId");
+		$value = intval($value);
+		if ($value < 0 or $value > 1.844674407371E+19) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".publisherId");
+		}
 		return array('publisherId', $value);			
+	}
+
+	/**
+	 * Returns the maximum integer that can be assigned to the publisherId field
+	 * @return {integer}
+	 */
+	function maxSize_publisherId()
+	{
+
+		return 1.844674407371E+19;			
 	}
 
 	/**
@@ -371,12 +521,27 @@ abstract class Base_Metrics_Share extends Db_Row
 	 */
 	function beforeSet_visit_count($value)
 	{
-		if ($value instanceof Db_Expression) return array('visit_count', $value);
+		if ($value instanceof Db_Expression) {
+			return array('visit_count', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".visit_count");
-		if ($value < 0 or $value > 4294967295)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".visit_count");
+		$value = intval($value);
+		if ($value < 0 or $value > 4294967295) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".visit_count");
+		}
 		return array('visit_count', $value);			
+	}
+
+	/**
+	 * Returns the maximum integer that can be assigned to the visit_count field
+	 * @return {integer}
+	 */
+	function maxSize_visit_count()
+	{
+
+		return 4294967295;			
 	}
 
 	/**
@@ -388,46 +553,27 @@ abstract class Base_Metrics_Share extends Db_Row
 	 */
 	function beforeSet_session_count($value)
 	{
-		if ($value instanceof Db_Expression) return array('session_count', $value);
+		if ($value instanceof Db_Expression) {
+			return array('session_count', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".session_count");
-		if ($value < 0 or $value > 4294967295)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".session_count");
+		$value = intval($value);
+		if ($value < 0 or $value > 4294967295) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".session_count");
+		}
 		return array('session_count', $value);			
 	}
 
 	/**
-	 * Method is called after field is set and used to keep $fieldsModified property up to date
-	 * @method afterSet
-	 * @param {string} $name The field name
-	 * @param {mixed} $value The value of the field
-	 * @return {mixed} Original value
+	 * Returns the maximum integer that can be assigned to the session_count field
+	 * @return {integer}
 	 */
-	function afterSet($name, $value)
+	function maxSize_session_count()
 	{
-		if (!in_array($name, $this->fieldNames()))
-			$this->notModified($name);
-		return $value;			
-	}
 
-	/**
-	 * Check if mandatory fields are set and updates 'magic fields' with appropriate values
-	 * @method beforeSave
-	 * @param {array} $value The array of fields
-	 * @return {array}
-	 * @throws {Exception} If mandatory field is not set
-	 */
-	function beforeSave($value)
-	{
-		if (!$this->retrieved) {
-			$table = $this->getTable();
-			foreach (array('share_id','visit_id','insertedTime','shared_time','url','tag1','tag2','tag3','publisherId') as $name) {
-				if (!isset($value[$name])) {
-					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
-				}
-			}
-		}
-		return $value;			
+		return 4294967295;			
 	}
 
 	/**

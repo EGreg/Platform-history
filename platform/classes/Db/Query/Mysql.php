@@ -14,7 +14,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	 * @param {iDb} $db An instance of a Db adapter
 	 * @param {integer} $type The type of the query. See class constants beginning with TYPE_ .
 	 * @param {array} [$clauses=array()] The clauses to add to the query right away
-	 * @param {array} [$parameters=array()] The parameters to add to the query right away (to be bound when executing)
+	 * @param {array} [$parameters=array()] The parameters to add to the query right away (to be bound when executing). Values corresponding to numeric keys replace question marks, while values corresponding to string keys replace ":key" placeholders, in the SQL.
 	 * @param {array} [$tables=null] The tables operated with query
 	 */
 	function __construct (
@@ -348,12 +348,23 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	}
 
 	/**
-	 * @method reverseLengthCompare
+	 * @method replaceKeysCompare
 	 * @private
 	 * @return {integer}
 	 */
-	private static function reverseLengthCompare($a, $b)
+	private static function replaceKeysCompare($a, $b)
 	{
+		$aIsInteger = (is_numeric($a) and intval($a) == $a);
+		$bIsInteger = (is_numeric($b) and intval($b) == $b);
+		if ($aIsInteger and !$bIsInteger) {
+			return 1;
+		}
+		if ($bIsInteger and !$aIsInteger) {
+			return -1;
+		}
+		if ($aIsInteger and $bIsInteger) {
+			return intval($a) - intval($b);
+		}
 		return strlen($b)-strlen($a);
 	}
 
@@ -374,7 +385,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		}
 		$repres = $this->build();
 		$keys = array_keys($this->parameters);
-		usort($keys, array(__CLASS__, 'reverseLengthCompare'));
+		usort($keys, array(__CLASS__, 'replaceKeysCompare'));
 		foreach ($keys as $key) {
 			$value = $this->parameters[$key];
 			if ($value instanceof Db_Expression) {
@@ -412,20 +423,20 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	/**
 	 * Gets a clause from the query
 	 * @method getClause
-	 * @param {string} $clause_name
-	 * @param {boolean} [$with_after=false]
-	 * @return {mixed} If $with_after is true, returns array($clause, $after) otherwise just returns $clause
+	 * @param {string} $clauseName
+	 * @param {boolean} [$withAfter=false]
+	 * @return {mixed} If $withAfter is true, returns array($clause, $after) otherwise just returns $clause
 	 */
-	function getClause($clause_name, $with_after = false)
+	function getClause($clauseName, $withAfter = false)
 	{
-		$clause = isset($this->clauses[$clause_name])
-			? $this->clauses[$clause_name]
+		$clause = isset($this->clauses[$clauseName])
+			? $this->clauses[$clauseName]
 			: '';
-		if (!$with_after) {
+		if (!$withAfter) {
 			return $clause;
 		}
-		$after = isset($this->after[$clause_name])
-			? $this->after[$clause_name]
+		$after = isset($this->after[$clauseName])
+			? $this->after[$clauseName]
 			: '';
 		return array($clause, $after);
 	}
@@ -487,19 +498,19 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	/**
 	 * Executes a query against the database and returns the result set.
 	 * @method excecute
-	 * @param {boolean} [$prepare_statement=false] If true, a PDO statement will be prepared
+	 * @param {boolean} [$prepareStatement=false] If true, a PDO statement will be prepared
 	 * from the query before it is executed. It is also saved for future invocations to use.
 	 * Do this only if the statement will be executed many times with
 	 * different parameters. Basically you would use ->bind(...) between
 	 * invocations of ->execute().
 	 * @return {Db_Result} The Db_Result object containing the PDO statement that resulted from the query.
 	 */
-	function execute ($prepare_statement = false)
+	function execute ($prepareStatement = false)
 	{
 		if (class_exists('Q')) {
 			/**
 			 * @event Db/query/execute {before}
-			 * @param {Db_Query_Mysql} 'query'
+			 * @param {Db_Query_Mysql} query
 			 * @return {Db_Result}
 			 */
 			$result = Q::event('Db/query/execute', array('query' => $this), 'before');
@@ -513,22 +524,26 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		unset($this->replacements['{$dbname}']);
 		unset($this->replacements['{$prefix}']);
 
-		if ($prepare_statement) {
+		$this->startedTime = Q::milliseconds(true);
+
+		if ($prepareStatement) {
 			// Prepare the query into a SQL statement
 			// this takes two round-trips to the database
 
 			// Preparing the statement if it wasn't yet set
 			if (!isset($this->statement)) {
-				$q = $this->build();
-				$pdo = $this->reallyConnect();
-				$this->statement = $pdo->prepare($q);
-				if ($this->statement === false) {
-					if (!isset($sql))
-						$sql = $this->getSQL();
-					if (class_exists('Q_Exception_DbQuery')) {
-						throw new Exception("query could not be prepared");
+				if ($q = $this->build()) {
+					$pdo = $this->reallyConnect();
+					$this->statement = $pdo->prepare($q);
+					if ($this->statement === false) {
+						if (!isset($sql)) {
+							$sql = $this->getSQL();
+						}
+						if (class_exists('Q_Exception_DbQuery')) {
+							throw new Exception("query could not be prepared");
+						}
+						throw new Exception("query could not be prepared [query was: $sql ]", - 1);
 					}
-					throw new Exception("query could not be prepared [query was: $sql ]", - 1);
 				}
 			}
 
@@ -562,12 +577,16 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 					throw new Db_Exception_Blocked(compact('shard_name', 'connection'));
 				}
 			}
+			
+			$query->startedTime = Q::milliseconds(true);
 
 			$pdo = $query->reallyConnect($shard_name);
-			$nt = & self::$nestedTransactions[$connection][$shard_name];
+			$connInfo = Db::getConnection($connection);
+			$dsn = $connInfo['dsn'];
+			$nt = & self::$nestedTransactions[$dsn];
 			if (!isset($nt)) {
-				self::$nestedTransactions[$connection][$shard_name] = 0;
-				$nt = & self::$nestedTransactions[$connection][$shard_name];
+				self::$nestedTransactions[$dsn] = 0;
+				$nt = & self::$nestedTransactions[$dsn];
 			}
 
 			$sql = $query->getSQL();
@@ -583,7 +602,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 				}
 
 				if ($query->type !== Db_Query::TYPE_ROLLBACK) {
-					if ($prepare_statement) {
+					if ($prepareStatement) {
 						// Execute the statement
 						try {
 							$query->statement->execute();
@@ -597,34 +616,34 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 					} else {
 						// Obtain the full SQL code ourselves
 						// and send to the database, without preparing it there.
-						$stmt = $pdo->query($sql);
+						if ($sql) {
+							$stmt = $pdo->query($sql);
+						} else {
+							$stmt = true;
+						}
 					}
 
 					$stmts[] = $stmt;
 					if (!empty($query->clauses["COMMIT"]) && $nt) {
 						// we commit only if no error occurred - warnings are permitted
-						if ($stmt && in_array(substr($stmt->errorCode(), 0, 2), array('00', '01'))) {
-							if (--$nt == 0) {
-								$pdo->commit();
-							}
-						} else {
+						if (!$stmt or ($stmt !== true and !in_array(
+							substr($stmt->errorCode(), 0, 2), 
+							array('00', '01')
+						))) {
 							$err = $pdo->errorInfo();
 							throw new Exception($err[0], $err[1]);
 						}
+						if (--$nt == 0) {
+							$pdo->commit();
+						}
 					}
 				}
-			} catch (Exception $e) {
+			} catch (Exception $exception) {
 				if ($nt) {
 					$pdo->rollBack();
 					$nt = 0;
 				}
-				if (!class_exists('Q_Exception_DbQuery')) {
-					throw $e;
-				}
-				throw new Q_Exception_DbQuery(array(
-					'sql' => $sql,
-					'message' => $e->getMessage()
-				));
+				break;
 			}
 			$this->nestedTransactionCount = $nt;
 			if (class_exists('Q') && isset($sql)) {
@@ -648,20 +667,24 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 					}
 					if ($table !== $upcoming['dbTable']) break;
 					// node will determine new shard(s) names using
-					// new sharding config which is available within aplit process
-					$timestamp = $pdo->query("SELECT CURRENT_TIMESTAMP")->fetchAll(PDO::FETCH_COLUMN, 0);
-					if ($timestamp === false || !isset($timestamp[0]))
+					// new sharding config which is available within split process
+					$timestamp = $pdo->query("SELECT CURRENT_TIMESTAMP")
+						->fetchAll(PDO::FETCH_COLUMN, 0);
+					if ($timestamp === false || !isset($timestamp[0])) {
 						$timestamp = date("Y-m-d H:i:s"); // backup solution
-					else $timestamp = $timestamp[0];
+					} else {
+						$timestamp = $timestamp[0];
+					}
 					$sql_template = str_replace('CURRENT_TIMESTAMP', "'$timestamp'", $sql_template);
 
 					$transaction =
 						(!empty($this->clauses['COMMIT']) ? 'COMMIT' :
-						(!empty($this->clauses['BEGIN']) ? 'BEGIN' :
+						(!empty($this->clauses['BEGIN']) ? 'START TRANSACTION' :
 						(!empty($this->clauses['ROLLBACK']) ? 'ROLLBACK' : '')));
 
 					$upcoming_shards = array_keys($query->shard($upcoming['indexes'][$upcoming['table']]));
 
+					$logServer = Q_Config::get('Db', 'internal', 'sharding', 'logServer', null);
 					if (!empty($transaction) && $transaction !== 'COMMIT') {
 						Q_Utils::sendToNode(array(
 							'Q/method' => 'Db/Shards/log',
@@ -681,19 +704,61 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 							'Q/method' => 'Db/Shards/log',
 							'shards' => $upcoming_shards,
 							'sql' => "$transaction;"
-						), Q_Config::get('Db', 'internal', 'sharding', 'logServer', null));
+						), $logServer, true);
 					}
 				}
-				/**
-				 * @event Db/query/execute {after}
-				 * @param {Db_Query_Mysql} 'query'
-				 * @param {string} 'sql'
-				 */
-				Q::event('Db/query/execute', compact('query', 'queries', 'sql'), 'after');
+				$query->endedTime = Q::milliseconds(true);
 			}
 		}
+		$this->endedTime = Q::milliseconds(true);
+		if (!empty($exception)) {
+			/**
+			 * @event Db/query/exception {after}
+			 * @param {Db_Query_Mysql} query
+			 * @param {array} queries
+			 * @param {string} sql
+			 * @param {Exception} exception
+			 */
+			Q::event('Db/query/exception', 
+				compact('query', 'queries', 'sql', 'exception'),
+				'after'
+			);
+			if (!class_exists('Q_Exception_DbQuery')) {
+				throw $exception;
+			}
+			throw new Q_Exception_DbQuery(array(
+				'sql' => $sql,
+				'message' => $exception->getMessage() . "[query was: $sql]"
+			));
+		}
+		/**
+		 * @event Db/query/execute {after}
+		 * @param {Db_Query_Mysql} query
+		 * @param {array} queries
+		 * @param {string} sql
+		 */
+		Q::event('Db/query/execute', compact('query', 'queries', 'sql'), 'after');
 
 		return new Db_Result($stmts, $this);
+	}
+
+	/**
+	 * Works with SELECT queries to lock the selected rows.
+	 * Use only with MySQL.
+	 * @method lock
+	 * @param {string} [$type='FOR UPDATE'] Defaults to 'FOR UPDATE', but can also be 'LOCK IN SHARE MODE'
+	 * @chainable
+	 */
+	function lock($type = 'FOR UPDATE') {
+		switch (strtoupper($type)) {
+			case 'FOR UPDATE':
+			case 'LOCK IN SHARE MODE':
+				$this->clauses['LOCK'] = "$type";
+				break;
+			default:
+				throw new Exception("Incorrect type for MySQL lock");
+		}
+		return $this;
 	}
 
 	/**
@@ -715,7 +780,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		if ($lock_type) {
 			$this->lock($lock_type);
 		}
-		$this->clauses["BEGIN"] = "BEGIN";
+		$this->clauses["BEGIN"] = "START TRANSACTION";
 		return $this;
 	}
 
@@ -732,6 +797,9 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	{
 		if (!empty($this->clauses["BEGIN"])) {
 			throw new Exception("You can't use BEGIN and ROLLBACK in the same query.", -1);
+		}
+		if (!empty($this->clauses["COMMIT"])) {
+			throw new Exception("You can't use COMMIT and ROLLBACK in the same query.", -1);
 		}
 		$this->clauses["ROLLBACK"] = "ROLLBACK";
 		if ($criteria) {
@@ -752,6 +820,9 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	{
 		if (!empty($this->clauses["BEGIN"])) {
 			throw new Exception("You can't use BEGIN and COMMIT in the same query.", -1);
+		}
+		if (!empty($this->clauses["ROLLBACK"])) {
+			throw new Exception("You can't use COMMIT and ROLLBACK in the same query.", -1);
 		}
 		$this->clauses["COMMIT"] = "COMMIT";
 		return $this;
@@ -803,7 +874,9 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 				foreach ($tables as $alias => $table) {
 					if ($table instanceof Db_Expression) {
 						$table_string = is_int($alias) ? "($table)" : "($table) $as $alias";
-						$this->parameters = array_merge($this->parameters, $table->parameters);
+						$this->parameters = array_merge(
+							$this->parameters, $table->parameters
+						);
 					} else {
 						$table_string = is_int($alias) ? "$table" : "$table $as $alias";
 					}
@@ -815,7 +888,9 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 				$tables = implode(', ', $tables_list);
 			} else if ($tables instanceof Db_Expression) {
 				if (isset($tables->parameters)) {
-					$this->parameters = array_merge($this->parameters, $tables->parameters);
+					$this->parameters = array_merge(
+						$this->parameters, $tables->parameters
+					);
 				}
 				$tables = $tables->expression;
 			}
@@ -864,7 +939,8 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 					if (is_array($value->parameters)) {
 						$this->parameters = array_merge(
 							$this->parameters,
-							$value->parameters);
+							$value->parameters
+						);
 					}
 				} else {
 					$condition_list[] = preg_match('/\W/', substr($expr, - 1))
@@ -876,7 +952,9 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 			$condition = implode(' AND ', $condition_list);
 		} else if ($condition instanceof Db_Expression) {
 			if (is_array($condition->parameters)) {
-				$this->parameters = array_merge($this->parameters, $condition->parameters);
+				$this->parameters = array_merge(
+					$this->parameters, $condition->parameters
+				);
 			}
 			$condition = (string) $condition;
 		}
@@ -915,6 +993,10 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 				break;
 			default:
 				throw new Exception("The WHERE clause does not belong in this context.", -1);
+		}
+		
+		if (!isset($criteria)) {
+			return $this;
 		}
 
 		// and now, for sharding
@@ -963,6 +1045,10 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 				break;
 			default:
 				throw new Exception("The WHERE clause does not belong in this context.", -1);
+		}
+		
+		if (!isset($criteria)) {
+			return $this;
 		}
 
 		if (empty($this->clauses['WHERE'])) {
@@ -1027,9 +1113,9 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 			default:
 				throw new Exception("The WHERE clause does not belong in this context.", -1);
 		}
-
-		if (empty($this->clauses['WHERE'])) {
-			throw new Exception("Don't call orWhere() when you haven't called where() yet", -1);
+		
+		if (!isset($criteria)) {
+			return $this;
 		}
 
 		$args = func_get_args();
@@ -1096,8 +1182,8 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		if ($expression instanceof Db_Expression) {
 			if (is_array($expression->parameters)) {
 				$this->parameters = array_merge(
-					$this->parameters,
-					$expression->parameters);
+					$this->parameters, $expression->parameters
+				);
 			}
 			$expression = (string) $expression;
 		}
@@ -1171,7 +1257,9 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 
 		if ($expression instanceof Db_Expression) {
 			if (is_array($expression->parameters)) {
-				$this->parameters = array_merge($this->parameters, $expression->parameters);
+				$this->parameters = array_merge(
+					$this->parameters, $expression->parameters
+				);
 			}
 		}
 		$expression = (string) $expression;
@@ -1306,12 +1394,15 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	 * If this exact query has already been executed and
 	 * fetchAll() has been called on the Db_Query, and
 	 * the return value was cached by the Db_Query class, then
-	 * that cached value is returned.
+	 * that cached value is returned, unless $this->ignoreCache is true.
 	 * Otherwise, the query is executed and fetchAll()
 	 * is called on the result.
 	 *
 	 * See [PDO documentation](http://us2.php.net/manual/en/pdostatement.fetchall.php)
 	 * @method fetchAll
+	 * @param {enum} $fetch_style=PDO::FETCH_BOTH
+	 * @param {enum} $column_index=null
+	 * @param {array} $ctor_args=null
 	 * @return {array}
 	 */
 	function fetchAll(
@@ -1347,9 +1438,8 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	 * If this exact query has already been executed and
 	 * fetchAll() has been called on the Db_Query, and
 	 * the return value was cached by the Db_Query class, then
-	 * that cached value is returned.
-	 * Otherwise, the query is executed and fetchAll()
-	 * is called on the result.
+	 * that cached value is returned, unless $this->ignoreCache is true.
+	 * Otherwise, the query is executed and fetchAll() is called on the result.
 	 * @param {string} [$fields_prefix=''] This is the prefix, if any, to strip out when fetching the rows.
 	 * @param {string} [$by_field=null] A field name to index the array by.
 	 *  If the field's value is NULL in a given row, that row is just appended
@@ -1389,8 +1479,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	 * fetchAll() has been called on the Db_Query, and
 	 * the return value was cached by the Db_Query class, then
 	 * that cached value is returned.
-	 * Otherwise, the query is executed and fetchDbRows()
-	 * is called on the result.
+	 * Otherwise, the query is executed and fetchDbRows() is called on the result.
 	 * @method fetchDbRows
 	 * @param {string} [$class_name=null]  The name of the class to instantiate and fill objects from.
 	 * Must extend Db_Row. Defaults to $this->className
@@ -1467,25 +1556,6 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	}
 
 	/**
-	 * Works with SELECT queries to lock the selected rows.
-	 * Use only with MySQL.
-	 * @method lock
-	 * @param {string} [$type='FOR UPDATE'] Defaults to 'FOR UPDATE', but can also be 'LOCK IN SHARE MODE'
-	 * @chainable
-	 */
-	function lock($type = 'FOR UPDATE') {
-		switch (strtoupper($type)) {
-			case 'FOR UPDATE':
-			case 'LOCK IN SHARE MODE':
-				$this->clauses['LOCK'] = "$type";
-				break;
-			default:
-				throw new Exception("Incorrect type for MySQL lock");
-		}
-		return $this;
-	}
-
-	/**
 	 * Sets context
 	 * @method setContext
 	 * @param {callable} $callback
@@ -1557,11 +1627,12 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		if (is_array($criteria)) {
 			$criteria_list = array();
 			foreach ($criteria as $expr => $value) {
-				if ($value instanceof Db_Expression) {
+				if ($value === null) {
+					$criteria_list[] = "ISNULL($expr)";
+				} else if ($value instanceof Db_Expression) {
 					if (is_array($value->parameters)) {
 						$this->parameters = array_merge(
-							$this->parameters,
-							$value->parameters
+							$this->parameters, $value->parameters
 						);
 					}
 					$criteria_list[] = preg_match('/\W/', substr($expr, -1))
@@ -1711,7 +1782,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	{
 		/**
 		 * @event Db/reallyConnect {before}
-		 * @param {Db_Query_Mysql} 'query'
+		 * @param {Db_Query_Mysql} query
 		 * @param {string} 'shard_name'
 		 */
 		Q::event(
@@ -1721,13 +1792,9 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 		);
 		return $this->db->reallyConnect($shard_name);
 	}
-
-	/**
-	 * Count nesting of transactions, indexed by [$connection_name][$shard_name]
-	 * @property $nestedTransactionCount
-	 * @type integer
-	 */
-	public $nestedTransactionCount = null;
+	
+	public $startedTime = null;
+	public $endedTime = null;
 
 	protected static $nestedTransactions = array();
 }

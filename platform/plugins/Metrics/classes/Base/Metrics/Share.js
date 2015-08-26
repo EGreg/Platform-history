@@ -11,6 +11,8 @@
 var Q = require('Q');
 var Db = Q.require('Db');
 var Metrics = Q.require('Metrics');
+var Row = Q.require('Db/Row');
+
 /**
  * Base class representing 'Share' rows in the 'Metrics' database
  * @namespace Base.Metrics
@@ -21,64 +23,59 @@ var Metrics = Q.require('Metrics');
  * an associative array of `{column: value}` pairs
  */
 function Base (fields) {
-	/**
-	 * The name of the class
-	 * @property className
-	 * @type string
-	 */
-	this.className = "Metrics_Share";
+	Base.constructors.apply(this, arguments);
 }
 
-Q.mixin(Base, Q.require('Db/Row'));
+Q.mixin(Base, Row);
 
 /**
- * @property fields.share_id
- * @type string
+ * @property {String}
+ * @type share_id
  */
 /**
- * @property fields.visit_id
- * @type string
+ * @property {String}
+ * @type visit_id
  */
 /**
- * @property fields.insertedTime
- * @type integer
+ * @property {integer}
+ * @type insertedTime
  */
 /**
- * @property fields.shared_time
- * @type integer
+ * @property {integer}
+ * @type shared_time
  */
 /**
- * @property fields.url
- * @type string
+ * @property {String}
+ * @type url
  */
 /**
- * @property fields.tag1
- * @type string
+ * @property {String}
+ * @type tag1
  */
 /**
- * @property fields.tag2
- * @type string
+ * @property {String}
+ * @type tag2
  */
 /**
- * @property fields.tag3
- * @type string
+ * @property {String}
+ * @type tag3
  */
 /**
- * @property fields.publisherId
- * @type integer
+ * @property {integer}
+ * @type publisherId
  */
 /**
- * @property fields.visit_count
- * @type integer
+ * @property {integer}
+ * @type visit_count
  */
 /**
- * @property fields.session_count
- * @type integer
+ * @property {integer}
+ * @type session_count
  */
 
 /**
- * This method uses Db to establish a connection with the information stored in the configuration.
- * If the this Db object has already been made, it returns this Db object.
+ * This method calls Db.connect() using information stored in the configuration.
+ * If this has already been called, then the same db object is returned.
  * @method db
  * @return {Db} The database connection
  */
@@ -87,10 +84,10 @@ Base.db = function () {
 };
 
 /**
- * Retrieve the table name to use in SQL statement
+ * Retrieve the table name to use in SQL statements
  * @method table
- * @param [withoutDbName=false] {boolean} Indicates wheather table name shall contain the database name
- * @return {string|Db.Expression} The table name as string optionally without database name if no table sharding was started
+ * @param {boolean} [withoutDbName=false] Indicates wheather table name should contain the database name
+ * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
  * or Db.Expression object with prefix and database name templates is table was sharded
  */
 Base.table = function (withoutDbName) {
@@ -121,8 +118,8 @@ Base.connectionName = function() {
 /**
  * Create SELECT query to the class table
  * @method SELECT
- * @param fields {object|string} The field values to use in WHERE clauseas as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {object|string} fields The field values to use in WHERE clauseas as an associative array of `{column: value}` pairs
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.SELECT = function(fields, alias) {
@@ -134,7 +131,7 @@ Base.SELECT = function(fields, alias) {
 /**
  * Create UPDATE query to the class table. Use Db.Query.Mysql.set() method to define SET clause
  * @method UPDATE
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.UPDATE = function(alias) {
@@ -146,8 +143,8 @@ Base.UPDATE = function(alias) {
 /**
  * Create DELETE query to the class table
  * @method DELETE
- * @param [table_using=null] {object} If set, adds a USING clause with this table
- * @param [alias=null] {string} Table alias
+ * @param {object}[table_using=null] If set, adds a USING clause with this table
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.DELETE = function(table_using, alias) {
@@ -160,7 +157,7 @@ Base.DELETE = function(table_using, alias) {
  * Create INSERT query to the class table
  * @method INSERT
  * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
- * @param [alias=null] {string} Table alias
+ * @param {string} [alias=null] Table alias
  * @return {Db.Query.Mysql} The generated query
  */
 Base.INSERT = function(fields, alias) {
@@ -169,15 +166,44 @@ Base.INSERT = function(fields, alias) {
 	return q;
 };
 
+/**
+ * The name of the class
+ * @property className
+ * @type string
+ */
+Base.prototype.className = "Metrics_Share";
+
 // Instance methods
+
+/**
+ * Create INSERT query to the class table
+ * @method INSERT
+ * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
+ * @param {string} [alias=null] Table alias
+ * @return {Db.Query.Mysql} The generated query
+ */
 Base.prototype.setUp = function() {
 	// does nothing for now
 };
 
+/**
+ * Create INSERT query to the class table
+ * @method INSERT
+ * @param {object} [fields={}] The fields as an associative array of `{column: value}` pairs
+ * @param {string} [alias=null] Table alias
+ * @return {Db.Query.Mysql} The generated query
+ */
 Base.prototype.db = function () {
 	return Base.db();
 };
 
+/**
+ * Retrieve the table name to use in SQL statements
+ * @method table
+ * @param {boolean} [withoutDbName=false] Indicates wheather table name should contain the database name
+ * @return {String|Db.Expression} The table name as string optionally without database name if no table sharding was started
+ * or Db.Expression object with prefix and database name templates is table was sharded
+ */
 Base.prototype.table = function () {
 	return Base.table();
 };
@@ -223,12 +249,24 @@ Base.prototype.fieldNames = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_share_id = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".share_id");
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".share_id");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the share_id field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_share_id = function () {
+
+		return 255;
 };
 
 /**
@@ -240,12 +278,24 @@ Base.prototype.beforeSet_share_id = function (value) {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_visit_id = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".visit_id");
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".visit_id");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the visit_id field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_visit_id = function () {
+
+		return 255;
 };
 
 /**
@@ -258,11 +308,20 @@ Base.prototype.beforeSet_visit_id = function (value) {
 Base.prototype.beforeSet_insertedTime = function (value) {
 		if (value instanceof Db.Expression) return value;
 		value = Number(value);
-		if (isNaN(value) || Math.floor(value) != value)
+		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".insertedTime");
 		if (value < -9.2233720368548E+18 || value > 9223372036854775807)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".insertedTime");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".insertedTime");
 		return value;
+};
+
+	/**
+	 * Returns the maximum integer that can be assigned to the insertedTime field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_insertedTime = function () {
+
+		return 9223372036854775807;
 };
 
 /**
@@ -275,11 +334,20 @@ Base.prototype.beforeSet_insertedTime = function (value) {
 Base.prototype.beforeSet_shared_time = function (value) {
 		if (value instanceof Db.Expression) return value;
 		value = Number(value);
-		if (isNaN(value) || Math.floor(value) != value)
+		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".shared_time");
 		if (value < -9.2233720368548E+18 || value > 9223372036854775807)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".shared_time");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".shared_time");
 		return value;
+};
+
+	/**
+	 * Returns the maximum integer that can be assigned to the shared_time field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_shared_time = function () {
+
+		return 9223372036854775807;
 };
 
 /**
@@ -291,12 +359,24 @@ Base.prototype.beforeSet_shared_time = function (value) {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_url = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".url");
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".url");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the url field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_url = function () {
+
+		return 255;
 };
 
 /**
@@ -308,12 +388,24 @@ Base.prototype.beforeSet_url = function (value) {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_tag1 = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".tag1");
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".tag1");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the tag1 field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_tag1 = function () {
+
+		return 255;
 };
 
 /**
@@ -325,12 +417,24 @@ Base.prototype.beforeSet_tag1 = function (value) {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_tag2 = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".tag2");
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".tag2");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the tag2 field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_tag2 = function () {
+
+		return 255;
 };
 
 /**
@@ -342,12 +446,24 @@ Base.prototype.beforeSet_tag2 = function (value) {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_tag3 = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".tag3");
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".tag3");
 		return value;
+};
+
+	/**
+	 * Returns the maximum string length that can be assigned to the tag3 field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_tag3 = function () {
+
+		return 255;
 };
 
 /**
@@ -360,11 +476,20 @@ Base.prototype.beforeSet_tag3 = function (value) {
 Base.prototype.beforeSet_publisherId = function (value) {
 		if (value instanceof Db.Expression) return value;
 		value = Number(value);
-		if (isNaN(value) || Math.floor(value) != value)
+		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".publisherId");
 		if (value < 0 || value > 1.844674407371E+19)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".publisherId");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".publisherId");
 		return value;
+};
+
+	/**
+	 * Returns the maximum integer that can be assigned to the publisherId field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_publisherId = function () {
+
+		return 1.844674407371E+19;
 };
 
 /**
@@ -377,11 +502,20 @@ Base.prototype.beforeSet_publisherId = function (value) {
 Base.prototype.beforeSet_visit_count = function (value) {
 		if (value instanceof Db.Expression) return value;
 		value = Number(value);
-		if (isNaN(value) || Math.floor(value) != value)
+		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".visit_count");
 		if (value < 0 || value > 4294967295)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".visit_count");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".visit_count");
 		return value;
+};
+
+	/**
+	 * Returns the maximum integer that can be assigned to the visit_count field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_visit_count = function () {
+
+		return 4294967295;
 };
 
 /**
@@ -394,31 +528,20 @@ Base.prototype.beforeSet_visit_count = function (value) {
 Base.prototype.beforeSet_session_count = function (value) {
 		if (value instanceof Db.Expression) return value;
 		value = Number(value);
-		if (isNaN(value) || Math.floor(value) != value)
+		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".session_count");
 		if (value < 0 || value > 4294967295)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".session_count");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".session_count");
 		return value;
 };
 
-/**
- * Check if mandatory fields are set and updates 'magic fields' with appropriate values
- * @method beforeSave
- * @param {array} value The array of fields
- * @return {array}
- * @throws {Error} If mandatory field is not set
- */
-Base.prototype.beforeSave = function (value) {
-	var fields = ['share_id','visit_id','insertedTime','shared_time','url','tag1','tag2','tag3','publisherId'], i;
-	if (!this._retrieved) {
-		var table = this.table();
-		for (i=0; i<fields.length; i++) {
-			if (typeof this.fields[fields[i]] === "undefined") {
-				throw new Error("the field "+table+"."+fields[i]+" needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
-			}
-		}
-	}
-	return value;
+	/**
+	 * Returns the maximum integer that can be assigned to the session_count field
+	 * @return {integer}
+	 */
+Base.prototype.maxSize_session_count = function () {
+
+		return 4294967295;
 };
 
 module.exports = Base;

@@ -159,11 +159,8 @@ function Row(fields, retrieved /* false */) {
 	
 	/**
 	 * Saves the row in the database.
-	 *
-	 * If the row was retrieved from the database, issues an UPDATE.
-	 * If the row was created from scratch, then issue an INSERT.
-	 * If object has methods beforeSave, beforeSaveExecute or afterSaveExecute they are triggered in
-	 * appropriate time.
+	 * If object has methods beforeRetrieve, beforeRetrieveExecute or afterRetrieveExecute,
+	 * they may be triggered during this operation.
 	 * @method save
 	 * @param {boolean} [onDuplicateKeyUpdate=false] If MySQL is being used, you can set this to TRUE
 	 *  to add an ON DUPLICATE KEY UPDATE clause to the INSERT statement
@@ -171,8 +168,7 @@ function Row(fields, retrieved /* false */) {
 	 *  Use this only if you started a transaction before.
 	 * @param {function} [callback=null] This function is called when the queries have all completed.
 	 *  It is passed the one optional argument:
-	 *  errors: an Object. If there were any errors, it will be passed error object as returned from query.execute
-	 *  If successful, it will be passed nothing.
+	 *  errors: an Object. If there were any errors, it will be passed error object as returned from query.execute. If successful, it will be passed nothing.
 	 */
 	this.save = function (onDuplicateKeyUpdate /* = false */, commit /* = false */, callback) {
 
@@ -188,9 +184,9 @@ function Row(fields, retrieved /* false */) {
 		} else if (typeof callback !== 'function') {
 			callback = function (err) {
 				if (typeof err !== "undefined") {
-					util.log("Db.Row: ERROR while saving " + self.className);
-					util.log(err);
-					util.log("Primary key: ", calculatePKValue());
+					console.log("Db.Row: ERROR while saving " + self.className);
+					console.log(err);
+					console.log("Primary key: ", calculatePKValue());
 				}
 			};
 		}
@@ -304,27 +300,45 @@ function Row(fields, retrieved /* false */) {
 	};
 	
 	/**
-	 * Retrieves the row in the database. Object state does not change.
-	 * If object has methods beforeRetrieve, beforeRetrieveExecute or afterRetrieveExecute they are triggered in
-	 * appropriate time.
+	 * Saves the row in the database.
+	 * If object has methods beforeRetrieve, beforeRetrieveExecute or afterRetrieveExecute,
+	 * they may be triggered during this operation.
 	 * @method retrieve
 	 * @param {String} [fields='*'] The fields to retrieve and set in the Db_Row.
 	 *  This gets used if we make a query to the database.
-	 * @param {boolean} [use_index=false] If true, the primary key is used in searching.
-	 *  An exception is thrown when some fields of the primary key are not specified
-	 * @param {boolean} [modifyQuery=false] If true, returns a Db.Query object that can be modified, rather than
-	 *  the result. You can call more methods, like limit, offset, where, orderBy,
-	 *  and so forth, on that Db.Query. After you have modified it sufficiently,
-	 *  get the ultimate result of this function, by calling the resume() method on
-	 *  the Db.Query object (via the chainable interface).
-	 * @param {function} [callback=null] This function is called when all queries have completed
-	 *  It is passed the arguments:
-	 *
-	 * * errors: an Object. If there were any errors, it will be passed error object as returned from query.execute
-	 *  If there were no errors, it will be passed null
-	 * * result: an array of rows retrieved. If error occured it will be passed nothing
-	 */
-	this.retrieve = function (fields /* '*' */, use_index /* false */, modifyQuery /* false */, callback) {
+	 * @param {boolean} [useIndex=false] If true, the primary key is used in searching, 
+	 *  and an exception is thrown when any fields of the primary key are not specified
+	 * @param {array|boolean} [modifyQuery=false] If an array, the following keys are options for modifying the query. Any other keys will be sent to query.options(modifyQuery);
+	 *   You can call more methods, like limit, offset, where, orderBy,
+	 *   and so forth, on that Db_Query. After you have modified it sufficiently,
+	 *   get the ultimate result of this function, by calling the resume() method on 
+	 *   the Db_Query object (via the chainable interface).
+	 * 
+	 *   You can also pass true in place of the modifyQuery field to achieve
+	 *   the same effect as {"query": true}
+	 * @param {boolean|string} [modifyQuery.begin] this will cause the query 
+	 *   to have .begin() a transaction which locks the row for update. 
+	 *   You should call .save(..., true) to unlock the row, otherwise other 
+	 *   database connections trying to access the row will be blocked.
+	 * @param {boolean|boolean} [modifyQuery.rollbackIfMissing]
+	 *   If begin is true, this option determines whether to
+	 *   rollback the transaction if the row we're trying to retrieve is missing.
+	 *   Defaults to false.
+	 * @param {boolean|boolean} [modifyQuery.ignoreCache]
+	 *   If true, then call ignoreCache on the query
+	 * @param {boolean|boolean} [modifyQuery.caching]
+	 *   If provided, then call caching() on the query, passing this value
+	 * @param {boolean|boolean} [modifyQuery.query]
+	 *   If true, it will return a Db_Query that can be modified, rather than the result. 
+	 * @param {array} [options=array()] Array of options to pass to beforeRetrieve and afterFetch functions.
+	 * @param {function} [callback=null] This function is called when all queries have completed.
+	 *  The "this" object would be this row, now hydrated with values from the database.
+	 *  It is passed the following arguments:
+	 *  1) errors: an Object. If there were any errors they will be passed along as
+	 *     documented in query.execute. If there were no errors, this will be null.
+	 *  2) result: an array of rows retrieved. If error occured it will be passed nothing
+ 	 */
+	this.retrieve = function (fields /* '*' */, useIndex /* false */, modifyQuery /* false */, callback) {
 
 		var _continue = true;
 		var rowClass = Q.require( this.className.split('_').join('/') );
@@ -332,11 +346,11 @@ function Row(fields, retrieved /* false */) {
 		if (typeof fields === 'function') {
 			callback = fields;
 			fields = '*';
-			use_index = false;
+			useIndex = false;
 			modifyQuery = false;
-		} else if (typeof use_index === 'function') {
-			callback = use_index;
-			use_index = false;
+		} else if (typeof useIndex === 'function') {
+			callback = useIndex;
+			useIndex = false;
 			modifyQuery = false;
 		} else if (typeof modifyQuery === 'function') {
 			callback = modifyQuery;
@@ -350,7 +364,7 @@ function Row(fields, retrieved /* false */) {
 		var primaryKeyValue = calculatePKValue();
 		var search_criteria = {};
 		
-		if (use_index === true) {
+		if (useIndex === true) {
 			if (!primaryKeyValue)
 				throw new Error("Fields of the primary key were not specified for " + this.className + ".");
 			// Use the primary key value as the search criteria
@@ -460,7 +474,7 @@ function Row(fields, retrieved /* false */) {
 				if (_continue && query) {
 					_execute.apply(query);
 				} else {
-					util.log(self.className + ': query is empty!');
+					console.log(self.className + ': query is empty!');
 				}
 			}
 			// Modify the query if necessary
@@ -474,24 +488,24 @@ function Row(fields, retrieved /* false */) {
 	};
 
 	/**
-	 * Deletes the rows in the database.
-	 * If object has methods beforeRemove, beforeRemoveExecute or afterRemoveExecute they are triggered in
-	 * appropriate time.
+	 * Deletes the row from the database.
+	 * If object has methods beforeRetrieve, beforeRetrieveExecute or afterRetrieveExecute,
+	 * they may be triggered during this operation.
 	 * @method remove
 	 * @param {String|Object} [search_criteria=null] You can provide custom search criteria here, such as `&#123;"tag.name LIKE ": this.name&#125;`
 	 *  If this is left null, and this Db_Row was retrieved, then the db rows corresponding
 	 *  to the primary key are deleted.
 	 *  But if it wasn't retrieved, then the modified fields are used as the search criteria.
-	 * @param {boolean} [use_index=false] If true, the primary key is used in searching for rows to delete.
+	 * @param {boolean} [useIndex=false] If true, the primary key is used in searching for rows to delete.
 	 *  An exception is thrown when some fields of the primary key are not specified
 	 * @param {function} [callback=null] This function is called when all queries have completed.
-	 *  It is passed the arguments:
-	 *
-	 * * errors: an Object. If there were any errors, it will be passed error object as returned from query.execute
-	 *    otherwise passed null.
-	 * * count: an Integer the number of rows deleted. If there were any errors, it will be passed nothing
-	 */
-	this.remove = function (search_criteria /* null */, use_index /* false */, callback) {
+	 *  The "this" object would be this row, now hydrated with values from the database.
+	 *  It is passed the following arguments:
+	 *  1) errors: an Object. If there were any errors they will be passed along as
+	 *     documented in query.execute. If there were no errors, this will be null.
+	 *  2) count: an Integer the number of rows deleted. If there were any errors, it will be passed nothing
+ 	 */
+	this.remove = function (search_criteria /* null */, useIndex /* false */, callback) {
 
 		var _continue = true;
 		var rowClass = Q.require( this.className.split('_').join('/') );
@@ -499,15 +513,15 @@ function Row(fields, retrieved /* false */) {
 		if (typeof search_criteria === 'function') {
 			callback = search_criteria;
 			search_criteria = null;
-			use_index = false;
-		} else if (typeof use_index === 'function') {
-			callback = use_index;
-			use_index = false;
+			useIndex = false;
+		} else if (typeof useIndex === 'function') {
+			callback = useIndex;
+			useIndex = false;
 		} else if (typeof callback !== 'function') {
 			callback = function (res, err) {
 				if (typeof err !== "undefined") {
-					util.log("ERROR while removing " + self.className + "!");
-					util.log("Primary key: ", primaryKeyValue);
+					console.log("ERROR while removing " + self.className + "!");
+					console.log("Primary key: ", primaryKeyValue);
 				}
 			};
 		}
@@ -517,7 +531,7 @@ function Row(fields, retrieved /* false */) {
 
 		var primaryKeyValue = calculatePKValue();
 		// Check if we have specified all the primary key fields,
-		if (use_index) {
+		if (useIndex) {
 			if (!primaryKeyValue)
 				throw new Error("Fields of the primary key were not specified for " + this.className + ".");
 			search_criteria = primaryKeyValue;
@@ -614,11 +628,11 @@ function Row(fields, retrieved /* false */) {
 	/**
 	 * Rolls back the transaction
 	 * @method rollback
-	 * @param {function} [callback=null] This function is called when rollback have completed.
-	 *  It is passed the arguments:
-	 *
-	 * * errors: an Object. If there were any errors, it will be passed error object as returned from query.execute
-	 *    otherwise passed null.
+	 * @param {function} [callback=null] This function is called when all queries have completed.
+	 *  The "this" object would be this row, now hydrated with values from the database.
+	 *  It is passed the following argument:
+	 *  errors: an Object. If there were any errors they will be passed along as
+	 *     documented in query.execute. If there were no errors, this will be null.
 	 */
 	this.rollback = function (callback) {
 		var rowClass = Q.require( this.className.split('_').join('/') );

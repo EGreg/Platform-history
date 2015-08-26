@@ -10,7 +10,7 @@
 					) ?>
 				</td>
 				<td>
-					<h2><?php echo $inviting_user_displayName ?> invited you to a chat:</h2>
+					<h2><?php echo $inviting_user_displayName ?> invited you to:</h2>
 					<div class='stream_title'><?php echo $stream->title ?></div>
 				</td>
 			</tr>
@@ -75,7 +75,7 @@
 	<?php if ($show_chat): ?>
 	<div class='social_pane'>
 		<?php echo Q::tool('Streams/participant', compact('stream')) ?>
-		<?php echo Q::tool('Streams/publish', compact('stream')) ?>
+		<?php echo Q::tool('Streams/player', compact('stream')) ?>
 		<?php echo Q::tool('Streams/activity', compact('stream')) ?>
 	</div>
 	<?php endif;?>

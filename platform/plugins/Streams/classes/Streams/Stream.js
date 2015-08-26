@@ -29,11 +29,11 @@ function Streams_Stream (fields) {
 	var p = {};
 	
 	/**
-	 * Sets the value of an extra field
+	 * Sets some extra data
 	 * @method set
-	 * @param key {string}
-	 * @param value {mixed}
-	 *  The value to set for that field.
+	 * @param {String} key
+	 * @param {mixed} value
+	 *  The value to set for that extra data
 	 */
 	this.set = function (key, value) {
 		p[key] = value;
@@ -42,27 +42,79 @@ function Streams_Stream (fields) {
 	/**
 	 * Gets the value of an extra field
 	 * @method get
-	 * @param key {string}
-	 * @param def=null {mixed}
+	 * @param {String} key
+	 * @param {mixed} [def=null]
 	 *  The value to return if the field is not found.
 	 *  Defaults to undefined.
 	 * @return {mixed}
 	 *  The field if it is found, otherwise def or undefined.
 	 */
 	this.get = function (key, def) {
-		if (typeof p[key] !== "undefined") return p[key];
+		if (key in p) return p[key];
 		else return def;
 	};
 	
 	/**
 	 * Clears the value of an extra field
 	 * @method clear
-	 * @param key=null {string}
+	 * @param {String} [key=null]
 	 *  A key to clear. If null, clears all keys.
 	 */
 	this.clear = function (key) {
-		if (typeof key === "undefined") p = {};
+		if (key === undefined) p = {};
 		else delete p[key];
+	};
+	
+	/**
+	 * @method getAllAttributes
+	 * @return {Object} The object of all attributes set in the stream
+	 */
+	this.getAllAttributes = function() {
+		return this.fields.attributes ? JSON.parse(this.fields.attributes) : {};
+	};
+	
+	/**
+	 * @method getAttribute
+	 * @param {String} attributeName The name of the attribute to get
+	 * @param {mixed} def The value to return if the attribute is missing
+	 * @return {mixed} The value of the attribute, or the default value, or null
+	 */
+	this.getAttribute = function(attributeName, def) {
+		var attr = this.getAllAttributes();
+		return (attributeName in attr) ? attr[attributeName] : def;
+	};
+	
+	/**
+	 * @method setAttribute
+	 * @param {string} attributeName The name of the attribute to set,
+	 *  or an array of {attributeName: attributeValue} pairs
+	 * @param {mixed} value The value to set the attribute to
+	 */
+	this.setAttribute = function(attributeName, value) {
+		var attr = this.getAllAttributes();
+		if (Q.isPlainObject(attributeName)) {
+			Q.extend(attr, attributeName);
+		} else {
+			attr[attributeName] = value;
+		}
+		this.fields.attributes = JSON.stringify(attr);
+	};
+	
+	/**
+	 * @method clearAttribute
+	 * @param {String} attributeName The name of the attribute to remove
+	 */
+	this.clearAttribute = function(attributeName) {
+		var attr = this.getAllAttributes();
+		delete attr[attributeName];
+		this.fields.attributes = JSON.stringify(attr);
+	};
+	
+	/**
+	 * @method clearAllAttributes
+	 */
+	this.clearAllAttributes = function() {
+		this.fields.attributes = '{}';
 	};
 }
 
@@ -94,12 +146,14 @@ Streams_Stream.construct = function Streams_Stream_construct(fields) {
 
 Streams_Stream.define = Streams.define;
 
+Sp = Streams_Stream.prototype;
+
 /**
  * The setUp() method is called the first time
  * an object of this class is constructed.
  * @method setUp
  */
-Streams_Stream.prototype.setUp = function () {
+Sp.setUp = function () {
 	// put any code here
 };
 
@@ -176,7 +230,7 @@ function testLevel (subj, type, values, level, callback) {
 	return false;
 }
 
-function _sortTemplateTypes(templates, field, type, short_name) {
+function _sortTemplateTypes(templates, field, type, shortName) {
 	if (templates.length) {
 		// let's sort templates out
 		// we'll check to find first match:
@@ -185,7 +239,7 @@ function _sortTemplateTypes(templates, field, type, short_name) {
 		//	3. exact stream name and generic publisher
 		//	4. generic stream name and generic publisher
 		var sts = [[], [], [], []], i, t, pos, n, key;
-		var name = short_name ? 'name' : 'streamName';
+		var name = shortName ? 'name' : 'streamName';
 		for (i=0; i<templates.length; i++) {
 			t = templates[i];
 			pos = t.fields[name].length - 1;
@@ -218,8 +272,9 @@ function _sortTemplateTypes(templates, field, type, short_name) {
 	return null;
 }
 
-function _getSubscriptionTemplate(className, stream, userId, callback) {
+Sp.getSubscriptionTemplate = function(className, userId, callback) {
 	// fetch template for subscription's PK - publisher, name & user
+	var stream = this;
 	Streams[className].SELECT('*').where({
 		publisherId: stream.fields.publisherId,
 		streamName: [stream.fields.name, stream.fields.type+'/'],
@@ -236,7 +291,7 @@ function _getSubscriptionTemplate(className, stream, userId, callback) {
  * @param callback=null {function}
  *	Callback receives "error" and "result" as arguments
  */
-Streams_Stream.prototype.incParticipants = function (callback) {
+Sp.incParticipants = function (callback) {
 	updateField.call(this, 'participantCount', "participantCount + 1", callback);
 };
 
@@ -246,18 +301,8 @@ Streams_Stream.prototype.incParticipants = function (callback) {
  * @param callback=null {function}
  *	Callback receives "error" and "result" as arguments
  */
-Streams_Stream.prototype.decParticipants = function (callback) {
+Sp.decParticipants = function (callback) {
 	updateField.call(this, 'participantCount', "participantCount - 1", callback);
-};
-
-/**
- * Increase messages count for the stream
- * @method incMessages
- * @param callback=null {function}
- *	Callback receives "error" and "result" as arguments
- */
-Streams_Stream.prototype.incMessages = function (callback) {
-	updateField.call(this, 'messageCount', "messageCount + 1", callback);
 };
 
 /**
@@ -267,7 +312,7 @@ Streams_Stream.prototype.incMessages = function (callback) {
  * @param uid {string} User who initiated the event
  * @param message {string} The message
  */
-Streams_Stream.prototype.messageParticipants = function (event, uid, msg) {
+Sp.messageParticipants = function (event, uid, msg) {
 	var fields = this.fields;
 	var stream = this;
 	Streams.getParticipants(fields.publisherId, fields.name, function (participants) {
@@ -277,7 +322,7 @@ Streams_Stream.prototype.messageParticipants = function (event, uid, msg) {
 			var participant = participants[userId];
 			stream.notify(participant, event, uid, msg, function(err) {
 				if (err) {
-					Q.log("Failed to notify user '"+participant.userId+"': "+err.message);
+					Q.log("Failed to notify user '"+participant.fields.userId+"': "+err);
 				}
 			});
 		}
@@ -302,7 +347,7 @@ Streams_Stream.prototype.messageParticipants = function (event, uid, msg) {
  * @param callback=null {function}
  *	Callback receives "error" as argument
  */
-Streams_Stream.prototype.calculateAccess = function(asUserId, callback) {
+Sp.calculateAccess = function(asUserId, callback) {
 	if (typeof asUserId === "function") {
 		callback = asUserId;
 		asUserId = null;
@@ -431,7 +476,7 @@ Streams_Stream.prototype.calculateAccess = function(asUserId, callback) {
  * @param callback=null {function}
  *	Callback receives "error" and boolean as arguments - whether the access potentially changed.
  */
-Streams_Stream.prototype.inheritAccess = function (callback) {
+Sp.inheritAccess = function (callback) {
 	if (!callback) return;
 	var subj = this;
 	if (!this.fields.inheritAccess) {
@@ -530,7 +575,7 @@ Streams_Stream.prototype.inheritAccess = function (callback) {
  * @param callback=null {function}
  *	Callback receives "error" and boolean as arguments - whether the access is granted.
  */
-Streams_Stream.prototype.testReadLevel = function(level, callback) {
+Sp.testReadLevel = function(level, callback) {
 	return testLevel (this, 'readLevel', 'READ_LEVEL', level, callback);
 };
 /**
@@ -542,7 +587,7 @@ Streams_Stream.prototype.testReadLevel = function(level, callback) {
  * @param callback=null {function}
  *	Callback receives "error" and boolean as arguments - whether the access is granted.
  */
-Streams_Stream.prototype.testWriteLevel = function(level, callback) {
+Sp.testWriteLevel = function(level, callback) {
 	return testLevel (this, 'writeLevel', 'WRITE_LEVEL', level, callback);
 };
 /**
@@ -554,11 +599,11 @@ Streams_Stream.prototype.testWriteLevel = function(level, callback) {
  * @param callback=null {function}
  *	Callback receives "error" and boolean as arguments - whether the access is granted.
  */
-Streams_Stream.prototype.testAdminLevel = function(level, callback) {
+Sp.testAdminLevel = function(level, callback) {
 	return testLevel (this, 'adminLevel', 'ADMIN_LEVEL', level, callback);
 };
 
-Streams_Stream.prototype._getUserStream = function (options, callback) {
+Sp._fetchAsUser = function (options, callback) {
 	var stream = this;
 	if (!options['userId']) {
 		return callback.call(stream, new Error("No user id provided"));
@@ -568,7 +613,9 @@ Streams_Stream.prototype._getUserStream = function (options, callback) {
 		if (err) return callback.call(stream, err);
 		if (!users.length) return callback.call(stream, new Error("User not found"));
 		var user = users[0];
-		if (user.fields.id === stream.get(['asUserId'], null)) return callback.call(stream, null, stream, user.fields.id, user);
+		if (user.fields.id === stream.get(['asUserId'], null)) {
+			return callback.call(stream, null, stream, user.fields.id, user);
+		}
 		Streams.fetch(user.fields.id, stream.fields.publisherId, stream.fields.name, function(err, streams) {
 			if (err) return callback.call(stream, err);
 			if (!streams[stream.fields.name]) return callback.call(stream, new Error("Stream not found"));
@@ -592,13 +639,13 @@ Streams_Stream.prototype._getUserStream = function (options, callback) {
  *  "userId" => The user who is joining the stream.
  * @param callback {function} receives error if any and participant object as arguments
  */
-Streams_Stream.prototype.join = function(options, callback) {
+Sp.join = function(options, callback) {
 	var stream = this;
 	if (typeof options === "function") {
 		callback = options;
 		options = {};
 	}
-	this._getUserStream(options, function(err, stream, userId) {
+	this._fetchAsUser(options, function(err, stream, userId) {
 		if (err) return callback.call(stream, err);
 		if (!stream.testWriteLevel('join')) return callback.call(stream, new Error("User is not authorized"));
 		new Streams.Participant({
@@ -648,8 +695,7 @@ Streams_Stream.prototype.join = function(options, callback) {
 				stream.incParticipants(/* empty callback*/);
 				
 				var f = sp.fields;
-				stream.post({
-					byUserId: userId,
+				stream.post(userId, {
 					type: type,
 					instructions: JSON.stringify({
 						reason: f.reason,
@@ -662,8 +708,7 @@ Streams_Stream.prototype.join = function(options, callback) {
 						name: 'Streams/participating'
 					}).retrieve(function (err, pstream) {
 						if (err || !pstream.length) return callback.call(stream, err);
-						pstream[0].post({
-							byUserId: userId,
+						pstream[0].post(userId, {
 							type: type+'ed',
 							content: '',
 							instructions: JSON.stringify({
@@ -681,7 +726,7 @@ Streams_Stream.prototype.join = function(options, callback) {
 	});
 };
 
-Streams_Stream.prototype.leave = function(options, callback) {
+Sp.leave = function(options, callback) {
 	// TODO: Nazar: Implement to be similar to PHP, and add documentation
 	callback(); // pass err
 };
@@ -701,21 +746,22 @@ Streams_Stream.prototype.leave = function(options, callback) {
  * subscription - change type(s) or modify notifications
  * @method subscribe
  * @param options={} {object}
- *	"types": array of message types, if empty filter pass all types
- *	"notifications": number of notifications, default - 0 meaning all
- *	"untilTime": time limit for subscription, default - null meaning forever
- *	"readyTime": time from which user is ready to receive notifications again
- *  "userId": the user subscribing to the stream.
+ * @param {Array} [options.types] array of message types, if this is empty then subscribes to all types
+ * @param {integer} [options.notifications=0] limit number of notifications, 0 means no limit
+ * @param {datetime} [options.untilTime=null] time limit, if any for subscription
+ * @param {datetime} [options.readyTime] time from which user is ready to receive notifications again
+ * @param {String} [options.userId] the user subscribing to the stream. Defaults to the logged in user.
+ * @param {Object} [options.deliver={"to":"default"}] under "to" key, names the field under Streams/rules/deliver config, which will contain the names of destinations, which can include "email", "mobile", "email+pending", "mobile+pending"
  * @return {Streams_Subscription|false}
  */
-Streams_Stream.prototype.subscribe = function(options, callback) {
+Sp.subscribe = function(options, callback) {
 
 	var stream = this;
 	if (typeof options === "function") {
 		callback = options;
 		options = {};
 	}
-	this._getUserStream(options, function(err, stream, userId, user) {
+	this._fetchAsUser(options, function(err, stream, userId, user) {
 		if (err) return callback.call(stream, err);
 		stream.join({
 			subscribed: true,
@@ -734,54 +780,60 @@ Streams_Stream.prototype.subscribe = function(options, callback) {
 					streamName: stream.fields.name,
 					ofUserId: userId
 				});
-				_getSubscriptionTemplate('Subscription', stream, userId, function (err, template) {
+				stream.getSubscriptionTemplate('Subscription', userId,
+				function (err, template) {
 					if (err) return callback.call(stream, err);
-					var filter = template ? JSON.parse(template.fields.filter) : {types: [], notifications: 0};
-					if (options['types']) filter['types'] = options['types'];
-					if (options['notifications']) filter['notifications'] = options['notifications'];
+					var filter = template 
+						? JSON.parse(template.fields.filter)
+						: {types: [], notifications: 0};
+					if (options['types']) {
+						filter['types'] = options['types'];
+					}
+					if (options['notifications']) {
+						filter['notifications'] = options['notifications'];
+					}
 					s.fields.filter = JSON.stringify(filter);
 
 					if (options['untilTime']) {
 						s.fields.untilTime = options['untilTime'];
 					} else {
-						if (template && template.template_type > 0 && template.fields.duration > 0) {
-							s.fields.untilTime = Q.date('c', (new Date().getTime()) + template.fields.duration);
+						if (template && template.template_type > 0
+						&& template.fields.duration > 0) {
+							s.fields.untilTime = Q.date(
+								'c', Date.now() + template.fields.duration
+							);
 						}
 					}
 					s.save(true, function (err) {
 						if (err) return callback.call(stream, err);
 						// Now let's handle rules
-						_getSubscriptionTemplate('Rule', stream, userId, function(err, template) {
+						stream.getSubscriptionTemplate('Rule', userId,
+						function (err, template) {
 							var deliver;
 							if (err) return callback.call(stream, err);
 							if (!template || template.template_type !== 0) {
-								if (template && template.fields.deliver) {
-									deliver = template.fields.deliver;
-								} else {
-									deliver = [];
-									if (user.fields.mobileNumber) {
-										deliver = {mobile: user.fields.mobileNumber};
-									} else if (user.fields.emailAddress) {
-										deliver = {email: user.fields.emailAddress};
-									} else if (user.fields.mobileNumberPending) {
-										deliver = {mobile: user.fields.mobileNumberPending};
-									} else if (user.fields.emailAddressPending) {
-										deliver = {email: user.fields.emailAddressPending};
-									}
-									deliver = JSON.stringify(deliver);
-								}
+								deliver = (template && template.fields.deliver)
+									? template.fields.deliver
+									: JSON.stringify(
+										options.deliver || {to: 'default'}
+									);
+								var filter = template && template.fields.filter
+									? template.fields.filter
+									: '{"types":[],"labels":[]}';
+								var readyTime = options['readyTime']
+									? options['readyTime']
+									: new Db.Expression('CURRENT_TIMESTAMP');
 								new Streams.Rule({
 									ofUserId: userId,
 									publisherId: stream.fields.publisherId,
 									streamName: stream.fields.name,
-									readyTime: options['readyTime'] ? options['readyTime'] : new Db.Expression('CURRENT_TIMESTAMP'),
-									filter: template && template.fields.filter ? template.fields.filter : '{"types":[],"labels":[]}',
+									readyTime: readyTime,
+									filter: filter,
 									deliver: deliver,
 									relevance: 1
 								}).save(function(err) {
 									if (err) return callback.call(stream, err);
-									stream.post({
-										byUserId: userId,
+									stream.post(userId, {
 										type: 'Streams/subscribe'
 									}, function(err) {
 										if (err) return callback.call(stream, err);
@@ -789,9 +841,10 @@ Streams_Stream.prototype.subscribe = function(options, callback) {
 											publisherId: userId,
 											name: 'Streams/participating'
 										}).retrieve(function (err, pstream) {
-											if (err || !pstream.length) return callback.call(stream, err);
-											pstream[0].post({
-												byUserId: userId,
+											if (err || !pstream.length) {
+												return callback.call(stream, err);
+											}
+											pstream[0].post(userId, {
 												type: 'Streams/subscribed',
 												instructions: JSON.stringify({
 													publisherId: stream.fields.publisherId,
@@ -813,7 +866,7 @@ Streams_Stream.prototype.subscribe = function(options, callback) {
 	});
 };
 
-Streams_Stream.prototype.unsubscribe = function(options, callback) {
+Sp.unsubscribe = function(options, callback) {
 	// TODO: Nazar: Implement to be similar to PHP, and add documentation
 	callback(); // pass err
 };
@@ -827,7 +880,7 @@ Streams_Stream.prototype.unsubscribe = function(options, callback) {
  * @param message {object} Message on 'post' event or stream on other events
  * @param callback=noop {function}
  */
-Streams_Stream.prototype.notify = function(participant, event, uid, message, callback) {
+Sp.notify = function(participant, event, uid, message, callback) {
 	var userId = participant.fields.userId, stream = this;
 	function _notify(tokens, sessions) {
 		// 1) if session is associated to device and no socket is connected for device
@@ -879,8 +932,12 @@ Streams_Stream.prototype.notify = function(participant, event, uid, message, cal
 						new Streams.Invite({
 							token: instructions.token
 						}).retrieve(function(err, rows) {
-							if (err || !rows.length) return deliveries.forEach(function(delivery) { p.fill(JSON.stringify(delivery))(err); });
-							var invite = rows[0];
+							if (err || !rows.length) {
+								return deliveries.forEach(function(delivery) {
+									p.fill(JSON.stringify(delivery))(err); 
+								});
+							}
+							var invite = this;
 							new Streams.Stream({
 								publisherId: invite.fields.publisherId,
 								name: invite.fields.streamName
@@ -890,20 +947,16 @@ Streams_Stream.prototype.notify = function(participant, event, uid, message, cal
 										p.fill(JSON.stringify(delivery))(err); 
 									});
 								}
-								stream = rows2[0];
-								message.fields.invite = rows[0].getFields();
-								var instructions;
+								var stream = this;
 								try { 
-									instructions = JSON.parse(message.fields.instructions); 
+									var instructions = JSON.parse(message.fields.instructions); 
 								} catch (e) {}
-								if (instructions.type) {
-									stream.fields.invite = { 
-										url: Q.url(Q.Config.get(
-											['Streams', 'invites', 'baseUrl'], "i"
-										))
-									};
-									stream.fields.invite[instructions.type] = true;
+								var invited = invite.getFields();
+								invited.url = invite.url();
+								if (instructions && instructions.type) {
+									invited[instructions.type] = true;
 								}
+								stream.invited = invited;
 								deliveries.forEach(function(delivery) {
 									message.deliver(stream, delivery, avatar,
 										p.fill(JSON.stringify(delivery))
@@ -947,25 +1000,28 @@ Streams_Stream.prototype.notify = function(participant, event, uid, message, cal
 /**
  * Posts a message to the stream.
  * @method post
- * Currently doesn't perform any access checks, so it is only meant to be called internally.
- * @param fields {object}
+ * Currently this is not nearly as robust as the PHP method,
+ * and doesn't perform any access checks, so it is only
+ * meant to be called internally.
+ * @param {String} asUserId
+ *  The user to post as
+ * @param fields {Object}
  * @param callback=null {function}
  */
-Streams_Stream.prototype.post = function (f, callback) {
-	if (!f.publisherId) f.publisherId = this.fields.publisherId;
-	if (!f.streamName) f.streamName = this.fields.name;
-	if (!f.type) f.type = 'text/small';
-	if (!f.content) f.content = '';
-	if (!f.instructions) f.instructions = '';
-	if (!f.state) f.state = 'posted';
-	if (!f.weight) f.weight = 1;
-	f.sentTime = new Db.Expression("CURRENT_TIMESTAMP");
-	var msg = Streams.Message.construct(f);
-	var stream = this;
-	msg.save(function (err) {
-		Streams_Stream.emit('post', stream, f.byUserId, msg);
-		callback && callback(err);
-	});
+Sp.post = function (asUserId, fields, callback) {
+	if (typeof asUserId !== 'string') {
+		callback = fields;
+		fields = asUserId;
+		asUserId = fields.byUserId;
+		if (!asUserId) {
+			throw new Q.Exception("Streams.Stream.prototype.post needs asUserId");
+		}
+	}
+	Streams.Message.post(Q.extend({
+		publisherId: this.fields.publisherId,
+		streamName: this.fields.name,
+		byUserId: asUserId
+	}, fields), callback);
 };
 
 module.exports = Streams_Stream;

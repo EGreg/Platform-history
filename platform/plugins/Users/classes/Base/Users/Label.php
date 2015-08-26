@@ -14,28 +14,28 @@
  * @class Base_Users_Label
  * @extends Db_Row
  *
- * @property string $userId
- * @property string $label
- * @property string $icon
- * @property string $title
+ * @property {string} $userId
+ * @property {string} $label
+ * @property {string} $icon
+ * @property {string} $title
  */
 abstract class Base_Users_Label extends Db_Row
 {
 	/**
 	 * @property $userId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $label
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $icon
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $title
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -195,6 +195,9 @@ abstract class Base_Users_Label extends Db_Row
 	 */
 	function beforeSet_userId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('userId', $value);
 		}
@@ -225,6 +228,9 @@ abstract class Base_Users_Label extends Db_Row
 	 */
 	function beforeSet_label($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('label', $value);
 		}
@@ -255,6 +261,9 @@ abstract class Base_Users_Label extends Db_Row
 	 */
 	function beforeSet_icon($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('icon', $value);
 		}
@@ -285,6 +294,9 @@ abstract class Base_Users_Label extends Db_Row
 	 */
 	function beforeSet_title($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('title', $value);
 		}

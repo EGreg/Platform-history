@@ -29,36 +29,36 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property userId
- * @type String
+ * @property {String}
+ * @type userId
  */
 /**
- * @property deviceId
- * @type String
+ * @property {String}
+ * @type deviceId
  */
 /**
- * @property platform
- * @type String
+ * @property {String}
+ * @type platform
  */
 /**
- * @property version
- * @type String
+ * @property {String}
+ * @type version
  */
 /**
- * @property sessionId
- * @type String
+ * @property {String}
+ * @type sessionId
  */
 /**
- * @property formFactor
- * @type String
+ * @property {String}
+ * @type formFactor
  */
 /**
- * @property insertedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type insertedTime
  */
 /**
- * @property updatedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type updatedTime
  */
 
 /**
@@ -235,6 +235,9 @@ Base.prototype.fieldNames = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_userId = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".userId");
@@ -261,6 +264,9 @@ Base.prototype.maxSize_userId = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_deviceId = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".deviceId");
@@ -288,7 +294,7 @@ Base.prototype.maxSize_deviceId = function () {
 Base.prototype.beforeSet_platform = function (value) {
 		if (value instanceof Db.Expression) return value;
 		if (['ios','android'].indexOf(value) < 0)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".platform");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".platform");
 		return value;
 };
 
@@ -301,6 +307,7 @@ Base.prototype.beforeSet_platform = function (value) {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_version = function (value) {
+		if (!value) return value;
 		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
@@ -328,6 +335,9 @@ Base.prototype.maxSize_version = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_sessionId = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".sessionId");
@@ -356,7 +366,7 @@ Base.prototype.beforeSet_formFactor = function (value) {
 		if (!value) return value;
 		if (value instanceof Db.Expression) return value;
 		if (['mobile','tablet'].indexOf(value) < 0)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".formFactor");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".formFactor");
 		return value;
 };
 

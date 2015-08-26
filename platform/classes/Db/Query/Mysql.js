@@ -16,12 +16,12 @@ var _HASH_LEN = 7;
  * @namespace Db.Query
  * @constructor
  * @param mysql Db.Mysql
- * @param type {number} One of the TYPE_* constants in Db.Query
- * @param query {string|object} A sql query (for raw queries) or an associative array of clauses
- * @param bind {array} An array of values to bind, if any
- * @param table {string} The table operated with query
+ * @param type {Number} One of the TYPE_* constants in Db.Query
+ * @param query {String|Object} A sql query (for raw queries) or an associative array of clauses
+ * @param parameters {Object|Array} The parameters to add to the query right away (to be bound when executing). Values corresponding to numeric keys replace question marks, while values corresponding to string keys replace ":key" placeholders, in the SQL.
+ * @param table {String} The table operated with query
  */
-var Query_Mysql = function(mysql, type, clauses, bind, table) {
+var Query_Mysql = function(mysql, type, clauses, parameters, table) {
 	Db.Query.apply(this, arguments);
 	var mq = this;
 
@@ -39,10 +39,19 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 	mq.table = table;
 
 	// and now, for sharding
-	if (mq.type === Db.Query.TYPE_INSERT) {
-		if (typeof bind === 'object') {
-			this.criteria = Q.copy(bind);
+	mq.parameters = {};
+	if (parameters) {
+		for (var k in parameters) {
+			var p = parameters[k];
+			if (p instanceof Db.Expression) {
+				Q.extend(mq.parameters, p.parameters);
+			} else {
+				mq.parameters[k] = p;
+			}
 		}
+	}
+	if (typeof parameters === 'object') {
+		this.criteria = Q.copy(this.parameters);
 	}
 
 	/**
@@ -109,20 +118,25 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 				return;
 			}
 			
-			var err={}, results=[], fields=[], results2=[], rowClass;
+			var err={}, results=[], results2=[], rowClass;
 			var i, pk, f;
 			for (k in params) {
 				pk = params[k];
 				if (pk[0]) {
 					err[k] = pk[0];
 				}
-				for (i=0; i<pk[1].length; ++i) {
-					results.push(pk[1][i]);
+				if (pk[1]) {
+					for (i=0; i<pk[1].length; ++i) {
+						results.push(pk[1][i]);
+					}
 				}
-				for (f in pk[2])
-					temp[f] = 1;
+				if (pk[2]) {
+					for (f in pk[2]) {
+						temp[f] = 1;
+					}
+				}
 			}
-			fields = Object.keys(temp);
+			var fields = Object.keys(temp);
 			if (self.className) {
 				rowClass = Q.require( self.className.split('_').join('/') );
 				for (i=0; i<results.length; ++i) {
@@ -161,15 +175,15 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 			_queryShard(queries[shardName], shardName, p.fill(shardName));
 		}
 		function _queryShard (query, shardName, cb) {
-			query.getSQL(function (sql, client) {
-				Db.emit('execute', query, sql, client);
+			query.getSQL(function (sql, connection) {
+				Db.emit('execute', query, sql, connection);
 				function _doTheQuery () {
 					var a = arguments;
-					_queryClient(sql, client, function (err) {
+					_queryConnection(query, sql, connection, function (err) {
 						if (!sql) return _doTheCallback();
-						var t = query; a = arguments;
+						var t = query, a = arguments;
 						if (!err && query.clauses['COMMIT']) {
-							client.query('COMMIT;', _doTheCallback);
+							connection.query('COMMIT;', _doTheCallback);
 						} else {
 							_doTheCallback();
 						}
@@ -193,7 +207,7 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 											if (table !== upcoming.dbTable) break;
 											// send query to log
 											var sql_template = query.getSQL();
-											client.query("SELECT CURRENT_TIMESTAMP", function (err, res) {
+											connection.query("SELECT CURRENT_TIMESTAMP", function (err, res) {
 												var date;
 												if (err) {
 													date = new Date(); // backup solution
@@ -204,7 +218,7 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 
 												var transaction =
 													(query.clauses['COMMIT'] ? 'COMMIT' :
-													(query.clauses['BEGIN'] ? 'BEGIN' :
+													(query.clauses['BEGIN'] ? 'START TRANSACTION' :
 													(query.clauses['ROLLBACK'] ? 'ROLLBACK' : null)));
 
 												if (transaction && transaction !== "COMMIT") {
@@ -238,22 +252,22 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 					});
 				}
 				if (query.clauses['BEGIN']) {
-					client.query('START TRANSACTION;', _doTheQuery);
+					connection.query('START TRANSACTION;', _doTheQuery);
 				} else if (query.clauses['ROLLBACK']) {
-					client.query('ROLLBACK;', _doTheQuery);
+					connection.query('ROLLBACK;', _doTheQuery);
 				} else {
 					_doTheQuery();
 				}
 			}, shardName);
 		}
-		function _queryClient (sql, client, cb) {
+		function _queryConnection (query, sql, connection, cb) {
 			if (!sql) return cb(null);
-			Db.emit('query', sql, client);
-			client.query(sql, [], function(err, rows, fields) {
+			Db.emit('query', query, sql, connection);
+			connection.query(sql, function(err, rows, fields) {
 				if (err) {
 					mq.db.emit('error', err, mq);
 				}
-				cb(err, rows, fields, sql, client);
+				cb(err, rows, fields, sql, connection);
 			});
 		}
 	};
@@ -738,14 +752,25 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 	};
 	
 	/**
-	 * Begins transaction when query is executed.
-	 * Use only with MySQL.
+	 * Begins a transaction right before executing this query.
+	 * The reason this method is part of the query class is because
+	 * you often need the "where" clauses to figure out which database to send it to,
+	 * if sharding is being used.
 	 * @method begin
-	 * @return {Db.Query.Mysql} The resulting Db.Query object
+	 * @param {string} [lockType='FOR UPDATE'] Defaults to 'FOR UPDATE',
+	 *   but can also be 'LOCK IN SHARE MODE', 
+	 *   or set it to null to avoid adding a "LOCK" clause
 	 * @chainable
 	 */
-	mq.begin = function() {
-		this.clauses['BEGIN'] = true;
+	mq.begin = function(lockType)
+	{
+		if (lockType === undefined || lockType === true) {
+			lockType = 'FOR UPDATE';
+		}
+		if (lockType) {
+			this.lock(lockType);
+		}
+		this.clauses['BEGIN'] = 'START TRANSACTION';
 		return this;
 	};
 
@@ -757,7 +782,7 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 	 * @chainable
 	 */
 	mq.commit = function() {
-		this.clauses['COMMIT'] = true;
+		this.clauses['COMMIT'] = 'COMMIT';
 		return this;
 	};
 
@@ -770,7 +795,7 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 	 * @chainable
 	 */
 	mq.rollback = function(criteria) {
-		this.clauses['ROLLBACK'] = true;
+		this.clauses['ROLLBACK'] = 'ROLLBACK';
 		// and now, for sharding
 		if (typeof criteria === 'object') {
 			this.criteria = Q.copy(criteria);
@@ -825,7 +850,7 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 					value = [value];
 				}
 				var method = this[key];
-				method(value);
+				method.apply(this, value);
 			}
 		}
 		return this;
@@ -1001,9 +1026,9 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 	};
 	
 	/**
-	 * Create mysql.Client and connects to the database table
+	 * Create mysql.Connection and connects to the database table
 	 * @method reallyConnect
-	 * @param callback {function} The callback is fired after connection is complete. mysql.Client is passed as argument
+	 * @param callback {function} The callback is fired after connection is complete. mysql.Connection is passed as argument
 	 * @param [shardName=''] {string} The name of the shard to connect
 	 * @param {object} modifications={} Additional modifications to table information. If supplied override shard modifications
 	 */
@@ -1133,39 +1158,39 @@ var Query_Mysql = function(mysql, type, clauses, bind, table) {
 	 *	If "callback" is not defined returns string representation of the query
 	 */
 	mq.getSQL = function (callback, shardName) {
-		var query = this;
-		delete query.replacements['{\\$prefix}'];
-		delete query.replacements['{\\$dbname}'];
-		var repres = this.build();
-		var keys = Object.keys(this.parameters);
-		keys.sort(reverseLengthCompare);
-		function makeSQL(client) {
+		var mq = this;
+		delete mq.replacements['{\\$prefix}'];
+		delete mq.replacements['{\\$dbname}'];
+		var repres = mq.build();
+		var keys = Object.keys(mq.parameters);
+		keys.sort(replaceKeysCompare);
+		function makeSQL(connection) {
 			var k, key, value, value2;
 			for (k in keys) {
 				key = keys[k];
-				value = query.parameters[key];
+				value = mq.parameters[key];
 				if (value === null || value === undefined) {
 					value2 = "NULL";
 				} else if (value && value.typename === "Db.Expression") {
 					value2 = value;
 				} else if (value instanceof Date) {
-					value2 = '"'+query.db.toDateTime(value.getTime())+'"';
+					value2 = '"'+mq.db.toDateTime(value.getTime())+'"';
 				} else {
-					value2 = client.escape(value);
+					value2 = connection.escape(value);
 				}
-				if (isNaN(key)) {
-					repres = repres.replace(":"+key, value2);
-				} else {
+				if (Q.isInteger(key)) {
 					repres = repres.replace('?', value2);
+				} else {
+					repres = repres.replace(":"+key, value2);
 				}
 			}
 			if (callback)
-				Q.extend(query.replacements, {'{\\$prefix}': query.db.prefix(), '{\\$dbname}': query.db.dbname()});
-			for (k in query.replacements) {
-				repres = repres.replace(new RegExp(k, 'g'), query.replacements[k]);
+				Q.extend(mq.replacements, {'{\\$prefix}': mq.db.prefix(), '{\\$dbname}': mq.db.dbname()});
+			for (k in mq.replacements) {
+				repres = repres.replace(new RegExp(k, 'g'), mq.replacements[k]);
 			}
 			if (callback) {
-				callback.call(query, repres, client);
+				callback.call(mq, repres, connection);
 			}
 		}
 		if (callback) {
@@ -1268,10 +1293,22 @@ function slice_partitions(partition, j, hashed, adjust) {
 }
 
 function map_shard(a, map) {
-	return map ? map[a.join('.')] : a.join('.');
+	var aj = a.join('.');
+	return map ? map[aj] : aj;
 }
 
-function reverseLengthCompare(a, b) {
+function replaceKeysCompare(a, b) {
+	var aIsInteger = Q.isInteger(a);
+	var bIsInteger = Q.isInteger(b);
+	if (aIsInteger && !bIsInteger) {
+		return -1;
+	}
+	if (bIsInteger && !aIsInteger) {
+		return 1;
+	}
+	if (aIsInteger && bIsInteger) {
+		return parseInt(a) - parseInt(b);
+	}
 	return b.length-a.length;
 }
 
@@ -1281,7 +1318,9 @@ function criteria_internal (query, criteria) {
 		criteria_list = [];
 		for (expr in criteria) {
 			value = criteria[expr];
-			if (value && value.typename === "Db.Expression") {
+			if (value == null) {
+				criteria_list.push( "ISNULL(" + expr + ")");
+			} else if (value && value.typename === "Db.Expression") {
 				Q.extend(query.parameters, value.parameters);
 				if (/\W/.test(expr.substr(-1))) {
 					criteria_list.push( "" + expr + "(" + value + ")" );

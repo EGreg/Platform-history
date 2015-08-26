@@ -12,7 +12,7 @@ function Users_account_tool($options)
 	$collapsed = false;
 	$toggle = false;
 	$omit = array();
-	$_form_static = null;
+	$setSlots = null;
 	extract($options, EXTR_OVERWRITE);
 	$default_fields = array(
 		'username' => array('type' => 'text', 'label' => 'Choose Username'),
@@ -84,12 +84,12 @@ function Users_account_tool($options)
 		unset($fields[$v]);
 	}
 	
-	$on_success = Q_Request::special('onSuccess', Q_Request::url());
+	$onSuccess = Q_Request::special('onSuccess', Q_Request::url());
 	
 	$form = $static = compact('fields');
 	return Q::tool('Q/panel', compact(
-		'uri', 'title', 'form', 'static', 'on_success',
+		'uri', 'title', 'form', 'static', 'onSuccess',
 		'complete', 'collapsed', 'toggle', 'editing', 'inProcess',
-		'static', '_form_static'
+		'static', 'setSlots'
 	));
 }

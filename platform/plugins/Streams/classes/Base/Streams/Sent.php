@@ -14,53 +14,58 @@
  * @class Base_Streams_Sent
  * @extends Db_Row
  *
- * @property string $publisherId
- * @property string $streamName
- * @property string|Db_Expression $insertedTime
- * @property string|Db_Expression $sentTime
- * @property string $byUserId
- * @property string $comment
- * @property string $instructions
- * @property string $chatPublisherId
- * @property string $chatStreamName
+ * @property {string} $publisherId
+ * @property {string} $streamName
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string|Db_Expression} $sentTime
+ * @property {string} $byUserId
+ * @property {string} $comment
+ * @property {string} $instructions
+ * @property {string} $chatPublisherId
+ * @property {string} $chatStreamName
+ * @property {integer} $reOrdinal
  */
 abstract class Base_Streams_Sent extends Db_Row
 {
 	/**
 	 * @property $publisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $streamName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $sentTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $byUserId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $comment
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $instructions
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $chatPublisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $chatStreamName
-	 * @type string
+	 * @type {string}
+	 */
+	/**
+	 * @property $reOrdinal
+	 * @type {integer}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -218,6 +223,9 @@ abstract class Base_Streams_Sent extends Db_Row
 	 */
 	function beforeSet_publisherId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('publisherId', $value);
 		}
@@ -248,6 +256,9 @@ abstract class Base_Streams_Sent extends Db_Row
 	 */
 	function beforeSet_streamName($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('streamName', $value);
 		}
@@ -282,12 +293,13 @@ abstract class Base_Streams_Sent extends Db_Row
 		}
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
-			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".insertedTime");
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".insertedTime");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
-			$$v = $date[$v];
-		}
-		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
 		return array('insertedTime', $value);			
 	}
 
@@ -308,12 +320,13 @@ abstract class Base_Streams_Sent extends Db_Row
 		}
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
-			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".sentTime");
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".sentTime");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
-			$$v = $date[$v];
-		}
-		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
 		return array('sentTime', $value);			
 	}
 
@@ -327,6 +340,9 @@ abstract class Base_Streams_Sent extends Db_Row
 	 */
 	function beforeSet_byUserId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('byUserId', $value);
 		}
@@ -357,6 +373,9 @@ abstract class Base_Streams_Sent extends Db_Row
 	 */
 	function beforeSet_comment($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('comment', $value);
 		}
@@ -420,6 +439,9 @@ abstract class Base_Streams_Sent extends Db_Row
 	 */
 	function beforeSet_chatPublisherId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('chatPublisherId', $value);
 		}
@@ -474,6 +496,41 @@ abstract class Base_Streams_Sent extends Db_Row
 	}
 
 	/**
+	 * Method is called before setting the field and verifies if integer value falls within allowed limits
+	 * @method beforeSet_reOrdinal
+	 * @param {integer} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value is not integer or does not fit in allowed range
+	 */
+	function beforeSet_reOrdinal($value)
+	{
+		if (!isset($value)) {
+			return array('reOrdinal', $value);
+		}
+		if ($value instanceof Db_Expression) {
+			return array('reOrdinal', $value);
+		}
+		if (!is_numeric($value) or floor($value) != $value)
+			throw new Exception('Non-integer value being assigned to '.$this->getTable().".reOrdinal");
+		$value = intval($value);
+		if ($value < -2147483648 or $value > 2147483647) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".reOrdinal");
+		}
+		return array('reOrdinal', $value);			
+	}
+
+	/**
+	 * Returns the maximum integer that can be assigned to the reOrdinal field
+	 * @return {integer}
+	 */
+	function maxSize_reOrdinal()
+	{
+
+		return 2147483647;			
+	}
+
+	/**
 	 * Retrieves field names for class table
 	 * @method fieldNames
 	 * @static
@@ -483,7 +540,7 @@ abstract class Base_Streams_Sent extends Db_Row
 	 */
 	static function fieldNames($table_alias = null, $field_alias_prefix = null)
 	{
-		$field_names = array('publisherId', 'streamName', 'insertedTime', 'sentTime', 'byUserId', 'comment', 'instructions', 'chatPublisherId', 'chatStreamName');
+		$field_names = array('publisherId', 'streamName', 'insertedTime', 'sentTime', 'byUserId', 'comment', 'instructions', 'chatPublisherId', 'chatStreamName', 'reOrdinal');
 		$result = $field_names;
 		if (!empty($table_alias)) {
 			$temp = array();

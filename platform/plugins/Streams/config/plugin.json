@@ -2,7 +2,7 @@
 	"Q": {
 		"pluginInfo": {
 			"Streams": {
-				"version": "0.8.3",
+				"version": "0.8.6",
 				"compatible": "0.8",
 				"requires": {"Users": "0.8"},
 				"permissions": ["Streams/icons"],
@@ -13,6 +13,8 @@
 			"Q/objects": ["Streams/before/Q_objects"],
 			"Q/responseExtras": ["Streams/before/Q_responseExtras"],
 			"Q/Utils/canWriteToPath": ["Streams/before/Q_Utils_canWriteToPath"],
+			"Users/canManageContacts": ["Streams/before/Users_canManageContacts"],
+			"Users/canManageLabels": ["Streams/before/Users_canManageLabels"],
 			"Db/Row/Users_Contact/saveExecute": ["Streams/before/Users_Contact_saveExecute"],
 			"Db/Row/Users_Contact/removeExecute": ["Streams/before/Users_Contact_removeExecute"],
 			"Users/User/displayName": ["Streams/before/Users_User_displayName"]
@@ -39,13 +41,33 @@
 		},
 		"paths": {
 			"uploads": {
-				"files/$app/uploads/streams/": true
+				"files/{{app}}/uploads/Streams": true
 			}
 		}
 	},
 	"Streams": {
+		"requiredUserStreams": {
+			"Streams/user/firstName": true,
+			"Streams/user/lastName": true,
+			"Streams/user/username": true,
+			"Streams/user/icon": true
+		},
 		"types": {
-			"Streams/text": {"create": true, "edit": true},
+			"Streams/access": {
+				"description": "Used to determine access to read/write/manage some resource"
+			},
+			"Streams/task": {
+				"description": "Used to receive updates about progress on a certain task",
+				"create": true,
+				"messages": {},
+				"attributes": {
+					"progress": "double"
+				}
+			},
+			"Streams/text": {
+				"create": true, 
+				"edit": true
+			},
 			"Streams/text/small": {"create": true, "edit": true,
 				"messages": {
 					"Streams/chat/message": {
@@ -61,14 +83,16 @@
 			"Streams/date": {"create": true, "edit": true},
 			"Streams/number": {"create": true, "edit": true},
 			"Streams/image": {
+				"description": "A visual image",
 				"create": true,
 				"edit": true,
-				"sizes": ["40", "50", "80", "x200", "200x", "x"],
+				"sizes": ["40", "50", "80", "x200", "200x"],
 				"defaults": {
 					"title": "Untitled Image"
 				}
 			},
 			"Streams/images": {
+				"description": "A gallery of images",
 				"create": true,
 				"edit": true,
 				"defaults": {
@@ -76,6 +100,7 @@
 				}
 			},
 			"Streams/category": {
+				"description": "A category to which other things can be related",
 				"create": true,
 				"edit": true,
 				"defaults": {
@@ -85,6 +110,7 @@
 				"see": ["relatedTo"]
 			},
 			"Streams/interest": {
+				"description": "Represents a user's interest in a certain topic",
 				"create": true,
 				"edit": true,
 				"defaults": {
@@ -93,6 +119,7 @@
 				}
 			},
 			"Streams/incoming": {
+				"description": "Destination for messages sent by other users",
 				"create": true,
 				"messages": {
 					"Streams/incoming/message": {"post": true},
@@ -100,28 +127,28 @@
 				}
 			},
 			"Streams/chat": {
+				"description": "A chatroom",
 				"create": true,
 				"messages": {
 					"Streams/chat/message": {
 						"post": true,
-						"title": "Chat message",
-						"subject": "Chat in {{stream.fields.title}}"
+						"title": "Chat message"
 					},
 					"Streams/chat/edit": {
 						"post": true,
-						"title": "Chat message edited",
-						"subject": "Chat in {{stream.fields.title}}"
+						"title": "Chat message edited"
 					},
 					"Streams/chat/remove": {
 						"post": true,
-						"title": "Chat message removed",
 						"subject": "Chat in {{stream.fields.title}}"
 					}
 				}
 			},
 			"Streams/community": {
+				"description": "A common stream to reach an entire community"
 			},
 			"Streams/greeting": {
+				"description": "A greeting with which a user can introduce themselves",
 				"edit": true,
 				"defaults": {
 					"title": "Community Greeting"
@@ -151,8 +178,14 @@
 				"": {
 					"subject": "Message \"{{& message.type}}\" to \"{{& stream.fields.title}}\""
 				},
+				"Streams/changed": {
+					"subject": "Changes in {{stream.fields.title}}"
+				},
 				"Streams/invite": {
 					"subject": "You were invited to {{& stream.fields.title}}"
+				},
+				"Streams/chat/message": {
+					"subject": "Chat in {{stream.fields.title}}"
 				}
 			}
 		},
@@ -166,7 +199,10 @@
 			},
 			"baseUrl": "i",
 			"participantReason": "Was invited",
-			"limit": 100
+			"limit": 100,
+			"layout": {
+				"default": "Streams/layout/invitations.php"
+			}
 		},
 		"interests": {
 			"allowClientQueries": false
@@ -209,7 +245,9 @@
 				"Streams/user/lastName",
 				"Streams/user/emailAddress",
 				"Streams/user/mobileNumber",
-				"Streams/user/interests"
+				"Streams/user/interests",
+				"Streams/contacts",
+				"Streams/labels"
 			]
 		},
 		"onUpdate": {
@@ -230,6 +268,12 @@
 			},
 			"defaultSize": "40",
 			"defaultCacheBust": "1000"
+		},
+		"rules": {
+			"deliver": {
+				"default": ["email", "mobile"],
+				"invited": ["email+pending", "mobile+pending"]
+			}
 		}
 	}
 }

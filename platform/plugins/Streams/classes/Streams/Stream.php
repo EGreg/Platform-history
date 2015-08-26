@@ -110,6 +110,33 @@ class Streams_Stream extends Base_Streams_Stream
 	 * @protected
 	 */
 	protected $publishedByFetcher = false;
+	
+	/**
+	 * Invites a user (or a future user) to this stream
+	 * @method invite
+	 * @static
+	 * @param {array} $who Array that can contain the following keys:
+	 * @param {string|array} [$who.userId] user id or an array of user ids
+	 * @param {string|array} [$who.fb_uid]  fb user id or array of fb user ids
+	 * @param {string|array} [$who.label]  label or an array of labels, or tab-delimited string
+	 * @param {string|array} [$who.identifier]  identifier or an array of identifiers, or tab-delimited string
+	 * @param {integer} [$who.newFutureUsers] the number of new Users_User objects to create via Users::futureUser in order to invite them to this stream. This typically is used in conjunction with passing the "html" option to this function.
+	 * @param {array} [$options=array()]
+	 *  @param {string|array} [$options.label] label or an array of labels for adding publisher's contacts
+	 *  @param {string|array} [$options.myLabel] label or an array of labels for adding logged-in user's contacts
+	 *  @param {integer} [$options.readLevel] => the read level to grant those who are invited
+	 *  @param {integer} [$options.writeLevel] => the write level to grant those who are invited
+	 *  @param {integer} [$options.adminLevel] => the admin level to grant those who are invited
+	 *	@param {string} [$options.displayName] => the display name to use to represent the inviting user
+	 *  @param {string} [$options.appUrl] => Can be used to override the URL to which the invited user will be redirected and receive "Q.Streams.token" in the querystring.
+	 *	@param {array} [$options.html] => an array of ($template, $batchName) such as ("MyApp/foo.handlebars", "foo") for generating html snippets which can then be viewed from and printed via the action Streams/invitations?batchName=$batchName
+	 * @see Users::addLink()
+	 * @return {array} returns array with keys "success", "invited", "statuses", "identifierTypes", "alreadyParticipating"
+	 */
+	function invite($who, $options = array())
+	{
+		return Streams::invite($this->publisherId, $this->name, $who, $options);
+	}
 
 	private static function sortTemplateTypes($templates, $user_field, &$type, $name_field = 'streamName') {
 		$returnAll = ($type === true);
@@ -213,7 +240,8 @@ class Streams_Stream extends Base_Streams_Stream
 		if (!$this->retrieved) {
 			// Generate a unique name for the stream
 			if (!isset($modifiedFields['name'])) {
-				$this->name = $modifiedFields['name'] = Streams::db()->uniqueId(Streams_Stream::table(), 'name',
+				$this->name = $modifiedFields['name'] = Streams::db()->uniqueId(
+					Streams_Stream::table(), 'name',
 					array('publisherId' => $this->publisherId),
 					array('prefix' => $this->type.'/Q')
 				);
@@ -285,7 +313,7 @@ class Streams_Stream extends Base_Streams_Stream
 
 		/**
 		 * @event Streams/Stream/save/$streamType {before}
-		 * @param {Streams_Stream} 'stream'
+		 * @param {Streams_Stream} stream
 		 * @return {false} To cancel further processing
 		 */
 		$params = array('stream' => $this, 'modifiedFields' => $modifiedFields);
@@ -294,22 +322,68 @@ class Streams_Stream extends Base_Streams_Stream
 		)) {
 			return false;
 		}
-
+		
 		foreach ($this->fields as $name => $value) {
 			if (!empty($this->fieldsModified[$name])) {
 				$modifiedFields[$name] = $value;
 			}
 		}
 		$this->beforeSaveExtended($modifiedFields);
+		
+		$result = parent::beforeSave($modifiedFields);
+		
+		// Assume that the stream's name is not being changed
+		$fields = array(
+			'Streams/user/firstName' => false,
+			'Streams/user/lastName' => false,
+			'Streams/user/username' => 'username',
+			'Streams/user/icon' => 'icon'
+		);
+		if (!isset($fields[$this->name])) {
+			return $result;
+		}
+		$field = ($this->name === 'Streams/user/icon')
+			? 'icon'
+			: 'content';
+		$wasModified = !empty($this->fieldsModified[$field])
+			or !empty($this->fieldsModified['readLevel']);
+		if (!$wasModified) {
+			return $result;
+		}
+		
+		if ($publicField = $fields[$this->name]
+		and !Q::eventStack('Db/Row/Users_User/saveExecute')) {
+			Streams::$beingSaved[$publicField] = $this;
+			try {
+				$user = Users_User::fetch($this->publisherId, true);
+				$user->$publicField = $modifiedFields[$field];
+				$user->save();
+			} catch (Exception $e) {
+				Streams::$beingSaved[$publicField] = array();
+				throw $e;
+			}
+			Streams::$beingSaved[$publicField] = array();
+			return Streams::$beingSavedQuery;
+		}
 
-		return parent::beforeSave($modifiedFields);
+		if ($this->retrieved and !$publicField) {
+			// Update all avatars corresponding to access rows for this stream
+			$taintedAccess = Streams_Access::select('*')
+				->where(array(
+					'publisherId' => $this->publisherId,
+					'streamName' => $this->name
+				))->fetchDbRows();
+			Streams::updateAvatars($this->publisherId, $taintedAccess, $this, true);
+		}
+
+		return $result;
 	}
 
 	function afterFetch($result)
 	{		
 		/**
 		 * @event Streams/Stream/retrieve/$streamType {before}
-		 * @param {Streams_Stream} 'stream'
+		 * @param {Streams_Stream} stream
 		 * @return {false} To cancel further processing
 		 */
 		$params = array('stream' => $this, 'result' => $result);
@@ -321,7 +395,7 @@ class Streams_Stream extends Base_Streams_Stream
 	}
 	
 	/**
-	 * @method afterSaveExcecute
+	 * @method afterSaveExecute
 	 * @param {Db_Result} $result
 	 * @param {Db_Query} $query
 	 * @return {Db_Result}
@@ -345,8 +419,8 @@ class Streams_Stream extends Base_Streams_Stream
 
 			/**
 			 * @event Streams/create/$streamType {after}
-			 * @param {Streams_Stream} 'stream'
-			 * @param {string} 'asUserId'
+			 * @param {Streams_Stream} stream
+			 * @param {string} asUserId
 			 */
 			Q::event("Streams/create/{$stream->type}",
 				compact('stream', 'asUserId'), 'after', false, $stream);
@@ -354,46 +428,11 @@ class Streams_Stream extends Base_Streams_Stream
 
 		/**
 		 * @event Streams/Stream/save/$streamType {after}
-		 * @param {Streams_Stream} 'stream'
+		 * @param {Streams_Stream} stream
 		 * @param {string} 'asUserId'
 		 */
 		$params = array('stream' => $this);
 		Q::event("Streams/Stream/save/{$this->type}", $params, 'after');
-
-		// Assume that the stream's name is not being changed
-		$fields = array(
-			'Streams/user/firstName' => false,
-			'Streams/user/lastName' => false,
-			'Streams/user/username' => 'username',
-			'Streams/user/icon' => 'icon'
-		);
-		if (!isset($fields[$this->name])) {
-			return $result;
-		}
-		$field = ($this->name === 'Streams/user/icon')
-			? 'icon'
-			: 'content';
-		if (empty($this->fieldsModified[$field])
-		and empty($this->fieldsModified['readLevel'])) {
-			return $result;
-		}
-		
-		if ($publicField = $fields[$this->name]
-		and !Q::eventStack('Db/Row/Users_User/saveExecute')) {
-			$user = Users_User::fetch($this->publisherId, true);
-			$user->$publicField = $modifiedFields[$field];
-			$user->save();
-		}
-
-		if ($this->retrieved and !$publicField) {
-			// Update all avatars corresponding to access rows for this stream
-			$taintedAccess = Streams_Access::select('*')
-				->where(array(
-					'publisherId' => $this->publisherId,
-					'streamName' => $this->name
-				))->fetchDbRows();
-			Streams::updateAvatars($this->publisherId, $taintedAccess, $this, true);
-		}
 		
 		return $result;
 	}
@@ -402,8 +441,8 @@ class Streams_Stream extends Base_Streams_Stream
 	{
 		/**
 		 * @event Streams/remove/$streamType {before}
-		 * @param {Streams_Stream} 'stream'
-		 * @param {string} 'asUserId'
+		 * @param {Streams_Stream} stream
+		 * @param {string} asUserId
 		 * @return {false} To cancel further processing
 		 */
 		if (Q::event("Streams/remove/{$this->type}", compact('stream'), 'before') === false) {
@@ -430,8 +469,8 @@ class Streams_Stream extends Base_Streams_Stream
 
 		/**
 		 * @event Streams/remove/$streamType {after}
-		 * @param {Streams_Stream} 'stream'
-		 * @param {string} 'asUserId'
+		 * @param {Streams_Stream} stream
+		 * @param {string} asUserId
 		 */
 		Q::event("Streams/remove/{$stream->type}", compact('stream', 'result'), 'after');
 
@@ -487,7 +526,7 @@ class Streams_Stream extends Base_Streams_Stream
 		}
 	}
 
-	protected function getUserStream ($options, &$userId, &$user = null) {
+	protected function fetchAsUser ($options, &$userId, &$user = null) {
 		if (isset($options['userId'])) {
 			$user = Users_User::fetch($options['userId']);
 			if (!$user) {
@@ -502,16 +541,15 @@ class Streams_Stream extends Base_Streams_Stream
 		$userId = $user->id;
 		if ($userId === $this->get('asUserId', null)) {
 			return $this;
-		} else {
-			$stream = Streams::fetchOne($userId, 
-				$this->publisherId, $this->name, '*', 
-				array('refetch' => true)
-			);
-			if (!$stream) { // this should never happen
-				throw new Q_Exception("Error getting {$this->name} stream published by {$this->publisherId} for user '$userId'");
-			}
-			return $stream;
 		}
+		$stream = Streams::fetchOne($userId, 
+			$this->publisherId, $this->name, '*', 
+			array('refetch' => true)
+		);
+		if (!$stream) { // this should never happen
+			throw new Q_Exception("Error getting {$this->name} stream published by {$this->publisherId} for user '$userId'");
+		}
+		return $stream;
 	}
 	
 	/**
@@ -595,7 +633,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 */
 	function join($options = array(), &$participant = null)
 	{
-		$stream = $this->getUserStream($options, $userId);
+		$stream = $this->fetchAsUser($options, $userId);
 
 		if (empty($options['skipAccess'])
 		and !$stream->testWriteLevel('join')) {
@@ -697,7 +735,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 */
 	function leave($options = array(), &$participant = null)
 	{
-		$stream = $this->getUserStream($options, $userId);
+		$stream = $this->fetchAsUser($options, $userId);
 		
 		if (empty($options['skipAccess'])
 		and !$stream->testWriteLevel('join')) {
@@ -751,30 +789,29 @@ class Streams_Stream extends Base_Streams_Stream
 	/**
 	 * Subscribe to the stream's messages<br/>
 	 *	If options are not given check the subscription templates:
-	 *	<ol>
-	 *		<li>1. exact stream name and exact user id</li>
-	 *		<li>2. generic stream name and exact user id</li>
-	 *		<li>3. exact stream name and generic user</li>
-	 *		<li>4. generic stream name and generic user</li>
-	 *	</ol>
-	 *	default is to subscribe to ALL messages.<br/>
+	 *	1. exact stream name and exact user id
+	 *	2. generic stream name and exact user id
+	 *	3. exact stream name and generic user
+	 *	4. generic stream name and generic user
+	 *	default is to subscribe to ALL messages.
 	 *	If options supplied - skip templates and use options<br/><br/>
 	 * Using subscribe if subscription is already active will modify existing
 	 * subscription - change type(s) or modify notifications
 	 * @method subscribe
 	 * @param $options=array() {array}
-	 *	"types": array of message types, if this is empty then subscribes to all types
-	 *	"notifications": number of notifications, default - 0 meaning all
-	 *	"untilTime": time limit for subscription, default - null meaning forever
-	 *	"readyTime": time from which user is ready to receive notifications again
-	 *  "userId": the user subscribing to the stream. Defaults to the logged in user.
-	 *  "skipRules": if true, do not attempt to create rules
-	 *  "skipAccess": if true, skip access check for whether user can subscribe
+	 * @param {array} [$options.types] array of message types, if this is empty then subscribes to all types
+	 * @param {integer} [$options.notifications=0] limit number of notifications, 0 means no limit
+	 * @param {datetime} [$options.untilTime=null] time limit, if any for subscription
+	 * @param {datetime} [$options.readyTime] time from which user is ready to receive notifications again
+	 * @param {string} [$options.userId] the user subscribing to the stream. Defaults to the logged in user.
+	 * @param {array} [$options.deliver=array('to'=>'default')] under "to" key, named the field under Streams/rules/deliver config, which will contain the names of destinations, which can include "email", "mobile", "email+pending", "mobile+pending"
+	 * @param {boolean} [$options.skipRules]  if true, do not attempt to create rules
+	 * @param {boolean} [$options.skipAccess]  if true, skip access check for whether user can subscribe
 	 * @return {Streams_Subscription|false}
 	 */
 	function subscribe($options = array())
 	{
-		$stream = $this->getUserStream($options, $userId, $user);
+		$stream = $this->fetchAsUser($options, $userId, $user);
 		
 		if (empty($options['skipAccess'])
 		and !$stream->testReadLevel('messages')) {
@@ -801,7 +838,9 @@ class Streams_Stream extends Base_Streams_Stream
 		$s->retrieve();
 
 		$type = null;
-		if ($template = $stream->getSubscriptionTemplate('Streams_Subscription', $userId, $type)) {
+		if ($template = $stream->getSubscriptionTemplate(
+			'Streams_Subscription', $userId, $type
+		)) {
 			$filter = json_decode($template->filter, true);
 		} else {
 			$filter = array(
@@ -810,7 +849,9 @@ class Streams_Stream extends Base_Streams_Stream
 			);
 		}
 		if (isset($options['types'])) {
-			$filter['types'] = !empty($options['types']) ? $options['types'] : $filter['types'];
+			$filter['types'] = !empty($options['types'])
+				? $options['types']
+				: $filter['types'];
 		}
 		if (isset($options['notifications'])) {
 			$filter['notifications'] =  $options['notifications'];
@@ -841,33 +882,28 @@ class Streams_Stream extends Base_Streams_Stream
 				if (empty($template) and $rule->retrieve()) {
 					$ruleSuccess = false;
 				} else {
-					$rule->readyTime = isset($options['readyTime']) ? $options['readyTime'] : new Db_Expression('CURRENT_TIMESTAMP');
-					$rule->filter = !empty($template->filter) ? $template->filter : '{"types":[],"labels":[]}';
-					$rule->relevance = !empty($template->relevance) ? $template->relevance : 1;
+					$rule->readyTime = isset($options['readyTime'])
+						? $options['readyTime']
+						: new Db_Expression('CURRENT_TIMESTAMP');
+					$rule->filter = !empty($template->filter) 
+						? $template->filter 
+						: '{"types":[],"labels":[]}';
+					$rule->relevance = !empty($template->relevance)
+						? $template->relevance
+						: 1;
 			
-					if (!empty($template->deliver)) {
-						$rule->deliver = $template->deliver;
-					} else {
-						if (isset($user->mobileNumber)) {
-							$deliver = array('mobile' => $user->mobileNumber);
-						} else if (isset($user->emailAddress)) {
-							$deliver = array('email' => $user->emailAddress);
-						} else if (isset($user->mobileNumberPending)) {
-							$deliver = array('mobile' => $user->mobileNumberPending);
-						} else if (isset($user->emailAddressPending)) {
-							$deliver = array('email' => $user->emailAddressPending);
-						} else {
-							$deliver = array();
-							$ruleSuccess = false;
-						}
-						$rule->deliver = Q::json_encode($deliver);
-					}
+					$rule->deliver = !empty($template->deliver)
+						? $template->deliver
+						: Q::json_encode(Q::ifset($options, 'deliver', 
+							array('to' => 'default')
+						));
 					$ruleSuccess = !empty($deliver) and !!$rule->save();
 				}
 			}
 		}
 
-		// skip error testing for rule save BUT inform node. Node can notify user to check the rules
+		// skip error testing for rule save BUT inform node.
+		// Node can notify user to check the rules
 		Q_Utils::sendToNode(array(
 			"Q/method" => "Streams/Stream/subscribe",
 			"subscription" => Q::json_encode($s->toArray()),
@@ -900,7 +936,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 */
 	function unsubscribe($options = array()) {
 
-		$stream = $this->getUserStream($options, $userId);
+		$stream = $this->fetchAsUser($options, $userId);
 		
 		if (empty($options['skipAccess'])
 		and !$stream->testReadLevel('messages')) {
@@ -1013,163 +1049,63 @@ class Streams_Stream extends Base_Streams_Stream
 	}
 	
 	/**
-	 * Invites a user (or a future user) to a stream .
-	 * @method invite
-	 * @static
-	 * @param {string} $publisherId
-	 *  The id of the stream publisher
-	 * @param {string} $streamName
-	 *  The name of the stream the user will be invited to
-	 * @param {array} $who
-	 *  Array that can contain the following keys:
-	 *  'userId' => user id or an array of user ids
-	 *  'fb_uid' => fb user id or array of fb user ids
-	 *  'label' => label or an array of labels, or tab-delimited string
-	 *  'identifier' => identifier or an array of identifiers, or tab-delimited string
-	 * @param {mixed} $options
-	 *  Array that can contain the following keys:
-	 *	'label' => the contact label to add to the invited users
-	 *  'readLevel' => the read level to grant those who are invited
-	 *  'writeLevel' => the write level to grant those who are invited
-	 *  'adminLevel' => the admin level to grant those who are invited
-	 *	'displayName' => the name of inviting user
-	 *  'appUrl' => Can be used to override the URL to which the invited user will be redirected and receive "Q.Streams.token" in the querystring.
-	 * @see Users::addLink()
-	 * @return {array} returns array("success", "invited", "alreadyParticipating")
+	 * Take actions to reflect the stream has changed: save it and post a message.
+	 * @method post
+	 * @param {string} $asUserId
+	 *  The user to post as. Defaults to the logged-in user.
+	 * @param {string} [$messageType='Streams/changed']
+	 *  The type of the message.
+	 * @param {array} [$fieldNames=null]
+	 *  The names of the fields to check for changes.
+	 *  By default, checks all the standard stream fields.
+	 * @return {array}
+	 *  The array of results - successfully posted messages or false if post failed
 	 */
-	static function invite($publisherId, $streamName, $who, $options = array())
+	function changed(
+		$asUserId,
+		$messageType='Streams/changed',
+		$fieldNames = null)
 	{
-		$user = Users::loggedInUser(true);
-
-		// Fetch the stream as the logged-in user
-		$stream = Streams::fetch($user->id, $publisherId, $streamName);
-		if (!$stream) {
-			throw new Q_Exception_MissingRow(array(
-				'table' => 'stream',
-				'criteria' => 'with that name'
-			), 'streamName');		
+		if (!isset($asUserId)) {
+			$asUserId = Users::loggedInUser();
+			if (!$asUserId) $asUserId = "";
 		}
-		$stream = reset($stream);
-
-		// Do we have enough admin rights to invite others to this stream?
-		if (!$stream->testAdminLevel('invite') || !$stream->testWriteLevel('join')) {
-			throw new Users_Exception_NotAuthorized();
+		if ($asUserId instanceof Users_User) {
+			$asUserId = $asUserId->id;
 		}
-
-		// get user ids if any to array, throw if user not found
-		$raw_userIds = isset($who['userId']) 
-			? Users_User::verifyUserIds($who['userId'], true)
-			: array();
-		// merge labels if any
-		if (isset($who['labels'])) {
-			$labels = $who['labels'];
-			if (is_string($labels)) {
-				$labels = array_map('trim', explode("\t", $labels)) ;
-			}
-			$raw_userIds = array_merge(
-				$raw_userIds, 
-				Users_User::labelsToIds($user->id, $labels)
-			);
+		if (!isset($fieldNames)) {
+			$fieldNames = Streams::getExtendFieldNames($this->type);
 		}
-		// merge identifiers if any
-		$identifierType = null;
-		if (isset($who['identifier'])) {
-			$identifier = $who['identifier'];
-			if (is_string($identifier)) {
-				if (Q_Valid::email($who['identifier'])) {
-					$identifierType = 'email';
-				} else if (Q_Valid::phone($who['identifier'])) {
-					$identifierType = 'mobile';
-				}
-				$identifier = array_map('trim', explode("\t", $identifier)) ;
-			}
-			$statuses = array();
-			$identifier_ids = Users_User::idsFromIdentifiers($who['identifier'], $statuses);
-			$raw_userIds = array_merge($raw_userIds, $identifier_ids);
-		}
-		// merge fb uids if any
-		if (isset($who['fb_uid'])) {
-			$fb_uids = $who['fb_uid'];
-			if (is_string($fb_uids)) {
-				$fb_uids = array_map('trim', explode("\t", $fb_uids)) ;
-			}
-			$raw_userIds = array_merge(
-				$raw_userIds, 
-				Users_User::idsFromFacebook($fb_uids)
-			);
-		}
-		// ensure that each userId is included only once
-		// and remove already participating users
-		$raw_userIds = array_unique($raw_userIds);
-		$total = count($raw_userIds);
-
-		$userIds = Streams_Participant::filter($raw_userIds, $stream);
-		$to_invite = count($userIds);
-
-		$appUrl = !empty($options['appUrl'])
-			? $options['appUrl']
-			: Q_Request::baseUrl().'/'.Q_Config::get(
-				"Streams", "types", $stream->type, 
-				"invite", "url", "plugins/Streams/stream"
-			);
-
-		// now check and define levels for invited user
-		$readLevel = isset($options['readLevel']) ? $options['readLevel'] : null;
-		if (isset($readLevel)) {
-			if (!$stream->testReadLevel($readLevel)) {
-				// We can't assign greater read level to other people than we have ourselves!
-				throw new Users_Exception_NotAuthorized();
-			}
-		}
-		$writeLevel = isset($options['writeLevel']) ? $options['writeLevel'] : null;
-		if (isset($writeLevel)) {
-			if (!$stream->testWriteLevel($writeLevel)) {
-				// We can't assign greater write level to other people than we have ourselves!
-				throw new Users_Exception_NotAuthorized();
-			}
-		}
-		$adminLevel = isset($options['adminLevel']) ? $options['adminLevel'] : null;
-		if (isset($adminLevel)) {
-			if (!$stream->testAdminLevel($adminLevel+1)) {
-				// We can't assign an admin level greater, or equal, to our own!
-				// A stream's publisher can assign owners. Owners can assign admins.
-				// Admins can confer powers to invite others, to some people.
-				// Those people can confer the privilege to publish a message re this stream.
-				// But admins can't assign other admins, and even stream owners
-				// can't assign other owners. 
-				throw new Users_Exception_NotAuthorized();
-			}
-		}
-
-		// calculate expiry time
-		$duration = Q_Config::get("Streams", "types", $stream->type, "invite", "duration", false);
-		$expiry = $duration ? strtotime($duration) : null;
-
-		// let node handle the rest, and get the result
-		$result = Q_Utils::queryInternal('Q/node', array(
-			"Q/method" => "Streams/Stream/invite",
-			"invitingUserId" => $user->id,
-			"username" => $user->username,
-			"userIds" => Q::json_encode($userIds),
-			"stream" => Q::json_encode($stream->toArray()),
-			"appUrl" => $appUrl,
-			"label" => isset($options['label']) ? $options['label'] : null, 
-			"readLevel" => $readLevel,
-			"writeLevel" => $writeLevel,
-			"adminLevel" => $adminLevel,
-			"displayName" => isset($options['displayName'])
-				? $options['displayName']
-				: Streams::displayName($user),
-			"expiry" => $expiry
-		));
-
-		return array(
-			'success' => $result,
-			'invited' => $userIds,
-			'statuses' => $statuses,
-			'identifierType' => $identifierType,
-			'alreadyParticipating' => $total - $to_invite
+		$coreFields = array(
+			'title', 'icon', 'content', 'attributes', 
+			'readLevel', 'writeLevel', 'adminLevel',
+			'closedTime'
 		);
+		$original = $this->fieldsOriginal;
+		$changes = array();
+		foreach ($fieldNames as $f) {
+			if (!isset($this->$f) and !isset($original[$f])) continue;
+			$v = $this->$f;
+			if (isset($original[$f])
+			and json_encode($original[$f]) === json_encode($v)) {
+				continue;
+			}
+			$changes[$f] = in_array($f, $coreFields)
+				? $v // record the changed value in the instructions
+				: null; // record a change but the value may be too big, etc.
+		}
+		unset($changes['updatedTime']);
+		if (!$changes) {
+			return false; // we found no reason to update the stream in the database
+		}
+		$result = $this->save();
+		$this->post($asUserId, array(
+			'type' => $messageType,
+			'content' => '',
+			'instructions' => compact('changes')
+		), true);
+		return $result;
+		
 	}
 	
 	/**
@@ -1337,6 +1273,16 @@ class Streams_Stream extends Base_Streams_Stream
 	}
 	
 	/**
+	 * Returns whether the stream is required for the user, and thus shouldn't be deleted,
+	 * even if it has been marked closed.
+	 * @return {Boolean}
+	 */
+	function isRequired()
+	{
+		return $this->get('isRequired', false);
+	}
+	
+	/**
 	 * Calculate admin level to correspond to Streams::$ADMIN_LEVEL
 	 * Primarily used by apps which invite a user to a stream
 	 * and giving them a slightly lower admin level.
@@ -1492,6 +1438,17 @@ class Streams_Stream extends Base_Streams_Stream
 		);
 	}
 	
+	/**
+	 * Relate this stream to another stream
+	 * @param {Streams_Stream} $toStream The stream to relate this stream to
+	 * @param {string} $type The type of relation
+	 * @param {string} [$asUserId=null] Override the user id to perform this action as
+	 * @param {array} [$options=array()] Any options to pass to Streams::relate
+	 * @return {array|boolean}
+	 *  Returns false if the operation was canceled by a hook
+	 *  Returns true if relation was already there
+	 *  Otherwise returns array with keys "messageFrom" and "messageTo" and values of type Streams_Message
+	 */
 	function relateTo($toStream, $type, $asUserId = null, $options = array())
 	{
 		return Streams::relate(
@@ -1505,6 +1462,17 @@ class Streams_Stream extends Base_Streams_Stream
 		);
 	}
 	
+	/**
+	 * Relate another stream, published by the same publisher, to this stream
+	 * @param {Streams_Stream} $fromStream The stream to relate to this stream
+	 * @param {string} $type The type of relation
+	 * @param {string} [$asUserId=null] Override the user id to perform this action as
+	 * @param {array} [$options=array()] Any options to pass to Streams::relate
+	 * @return {array|boolean}
+	 *  Returns false if the operation was canceled by a hook
+	 *  Returns true if relation was already there
+	 *  Otherwise returns array with keys "messageFrom" and "messageTo" and values of type Streams_Message
+	 */
 	function relateFrom($fromStream, $type, $asUserId = null, $options = array()) {
 		return Streams::relate(
 			$asUserId,
@@ -1590,13 +1558,13 @@ class Streams_Stream extends Base_Streams_Stream
 				'type',
 				'title',
 				'icon',
-				'messageCount',
-				'participantCount',
 				'insertedTime',
 				'updatedTime'
 			);
 			if (isset($this->type)) {
-				$fields = array_merge($default, Q_Config::get('Streams', 'types', $this->type, 'see', array()));
+				$fields = array_merge($default, Q_Config::get(
+					'Streams', 'types', $this->type, 'see', array()
+				));
 			}
 			foreach ($fields as $field) {
 				$result[$field] = ($field === 'icon')
@@ -1618,6 +1586,7 @@ class Streams_Stream extends Base_Streams_Stream
 			'writeLevel' => $this->get('writeLevel', $this->writeLevel),
 			'adminLevel' => $this->get('adminLevel', $this->adminLevel)
 		);
+		$result['isRequired'] = $this->isRequired();
 		return $result;
 	}
 
@@ -1813,6 +1782,19 @@ class Streams_Stream extends Base_Streams_Stream
 	{
 		unset(self::$preloaded["{$this->publisherId}, {$this->name}"]);
 	}
+	
+	/**
+	 * Gets the stream row corresponding to a Db_Row retrieved from
+	 * a table extending the stream.
+	 * @method extendedBy
+	 * @static
+	 * @param {Db_Row} $row a Db_Row retrieved from a table extending the stream.
+	 * @return Streams_Stream|null
+	 */
+	static function extendedBy(Db_Row $row)
+	{
+		return $row->get('Streams_Stream', null);
+	}
 
 	/* * * */
 	/**
@@ -1828,6 +1810,28 @@ class Streams_Stream extends Base_Streams_Stream
 			$result->$k = $v;
 		return $result;
 	}
+	
+	/**
+	 * Gets a row that extends the stream, or a field of the stream.
+	 * Example: $stream->Websites_Article, $stream->title or $stream->article
+	 * @method __get
+	 * @param {string} $name
+	 * @return {mixed}
+	 */
+	function __get ($name)
+	{
+		if (isset($this->rows[$name])) {
+			return $this->rows[$name];
+		}
+		return parent::__get($name);
+	}
+	
+	/**
+	 * Any fetched database rows that extend the stream
+	 * @property $rows
+	 * @type array
+	 */
+	public $rows = array();
 	
 	/**
 	 * @property $preloaded

@@ -8,6 +8,14 @@ function Websites_before_Streams_Stream_save_Websites_seo($params)
 	$uri = $stream->getAttribute('uri', null);
 	if (!$uri) return;
 	
+	$url = $stream->getAttribute('url', null);
+	if (preg_match('/\s/', $url)) {
+		throw new Q_Exception_WrongValue(array(
+			'field' => 'url',
+			'range' => "no whitespace"
+		));
+	}
+	
 	$wp = new Websites_Permalink();
 	$wp->uri = $uri;
 	$wp->retrieve('*', array('ignoreCache' => true));

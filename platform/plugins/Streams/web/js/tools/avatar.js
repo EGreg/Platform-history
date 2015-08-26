@@ -17,7 +17,7 @@ var Streams = Q.Streams;
  * @param {Object} [options] A hash of options, containing:
  *   @param {String} [options.userId] The id of the user object. Can be '' for a blank-looking avatar.
  *   @required
- *   @param {Number} [options.icon=true] Size of the icon to render before the display name.
+ *   @param {Number} [options.icon=Q.Users.icon.defaultSize] Size of the icon to render before the display name. Or 0 for no icon.
  *   @param {Boolean} [options.short=false] If true, renders the short version of the display name.
  *   @param {Boolean|Array} [options.editable=false] If true, and userId is the logged-in user's id, the tool presents an interface for the logged-in user to edit their name and icon. This can also be an array containing one or more of 'icon', 'name'.
  *   @param {Boolean} [options.reflectChanges=true] Whether the tool should update its contents on changes
@@ -52,19 +52,16 @@ Q.Tool.define("Users/avatar", function(options) {
 	if (!state.reflectChanges) {
 		return;
 	}
+	if (state.icon === true) {
+		state.icon = Users.icon.defaultSize;
+	}
 	Streams.Stream.onFieldChanged(state.userId, 'Streams/user/icon', 'icon')
 	.set(function (fields, field) {
-		Users.get.forget(state.userId);
-		Streams.Avatar.get.forget(state.userId);
-		var p = Q.pipe(['user', 'avatar'], function (params, subjects) {
-			tool.$('.Users_avatar_icon').attr('src', 
-				Q.url(subjects.avatar.iconUrl(state.icon), null, {
-					cacheBust: state.cacheBustOnUpdate
-				})
-			);
-		});
-		Users.get(state.userId, p.fill('user'));
-		Streams.Avatar.get(state.userId, p.fill('avatar'));
+		tool.$('.Users_avatar_icon').attr('src', 
+			Q.url(Streams.iconUrl(fields.icon), null, {
+				cacheBust: state.cacheBustOnUpdate
+			})
+		);
 	}, this);
 	if (!state.editable || state.editable.indexOf('name') < 0) {
 		Streams.Stream.onFieldChanged(state.userId, 'Streams/user/firstName', 'content')
@@ -81,7 +78,7 @@ Q.Tool.define("Users/avatar", function(options) {
 
 {
 	userId: null,
-	icon: false,
+	icon: Users.icon.defaultSize,
 	"short": false,
 	reflectChanges: true,
 	templates: {
@@ -128,7 +125,7 @@ Q.Tool.define("Users/avatar", function(options) {
 			return; // empty
 		}
 		if (state.icon === true) {
-			state.icon = 40;
+			state.icon = Users.icon.defaultSize;
 		}
 	
 		var p = new Q.Pipe(['icon', 'contents'], function (params) {
@@ -230,10 +227,11 @@ Q.Tool.define("Users/avatar", function(options) {
 						var o = Q.extend({
 							saveSizeName: saveSizeName,
 							showSize: state.icon || $img.width(),
-							path: 'plugins/Users/img/icons',
+							path: 'uploads/Users',
 							preprocess: function (callback) {
 								callback({
-									subpath: 'user-'+state.userId+'/'+Math.floor(Date.now()/1000)
+									subpath: state.userId+'/icon/'
+										+Math.floor(Date.now()/1000)
 								});
 							},
 							onSuccess: {"Users/avatar": function () {

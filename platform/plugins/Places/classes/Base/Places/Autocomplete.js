@@ -29,36 +29,36 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property query
- * @type String
+ * @property {String}
+ * @type query
  */
 /**
- * @property types
- * @type String
+ * @property {String}
+ * @type types
  */
 /**
- * @property latitude
- * @type mixed
+ * @property {number}
+ * @type latitude
  */
 /**
- * @property longitude
- * @type mixed
+ * @property {number}
+ * @type longitude
  */
 /**
- * @property miles
- * @type mixed
+ * @property {number}
+ * @type miles
  */
 /**
- * @property insertedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type insertedTime
  */
 /**
- * @property updatedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type updatedTime
  */
 /**
- * @property results
- * @type String
+ * @property {String}
+ * @type results
  */
 
 /**
@@ -238,6 +238,9 @@ Base.prototype.fieldNames = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_query = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".query");
@@ -264,6 +267,9 @@ Base.prototype.maxSize_query = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_types = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".types");
@@ -279,6 +285,51 @@ Base.prototype.beforeSet_types = function (value) {
 Base.prototype.maxSize_types = function () {
 
 		return 255;
+};
+
+/**
+ * Method is called before setting the field to verify if value is a number
+ * @method beforeSet_latitude
+ * @param {integer} value
+ * @return {integer} The value
+ * @throws {Error} If 'value' is not number
+ */
+Base.prototype.beforeSet_latitude = function (value) {
+		if (value instanceof Db.Expression) return value;
+		value = Number(value);
+		if (isNaN(value))
+			throw new Error('Non-number value being assigned to '+this.table()+".latitude");
+		return value;
+};
+
+/**
+ * Method is called before setting the field to verify if value is a number
+ * @method beforeSet_longitude
+ * @param {integer} value
+ * @return {integer} The value
+ * @throws {Error} If 'value' is not number
+ */
+Base.prototype.beforeSet_longitude = function (value) {
+		if (value instanceof Db.Expression) return value;
+		value = Number(value);
+		if (isNaN(value))
+			throw new Error('Non-number value being assigned to '+this.table()+".longitude");
+		return value;
+};
+
+/**
+ * Method is called before setting the field to verify if value is a number
+ * @method beforeSet_miles
+ * @param {integer} value
+ * @return {integer} The value
+ * @throws {Error} If 'value' is not number
+ */
+Base.prototype.beforeSet_miles = function (value) {
+		if (value instanceof Db.Expression) return value;
+		value = Number(value);
+		if (isNaN(value))
+			throw new Error('Non-number value being assigned to '+this.table()+".miles");
+		return value;
 };
 
 /**
@@ -315,6 +366,9 @@ Base.prototype.beforeSet_updatedTime = function (value) {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_results = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".results");

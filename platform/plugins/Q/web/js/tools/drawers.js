@@ -61,9 +61,11 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 	if (Q.info.isMobile) {
 		state.$drawers.eq(0).on(Q.Pointer.focusin, tool, function () {
 			state.$drawers.eq(1).hide();
+			state.$trigger.hide();
 		});
 		state.$drawers.eq(0).on(Q.Pointer.focusout, tool, function () {
 			state.$drawers.eq(1).show();
+			state.$trigger.show();
 		});
 	}
 

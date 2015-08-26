@@ -119,6 +119,7 @@ h2 { margin: 0; }
 /* Dashboard tabs */
 #dashboard .Q_tabs_tabs { border: 0; width: 80%; margin: auto; text-align: left; }
 #dashboard .Q_tabs_tab { cursor: pointer; width: auto; border: 0 !important; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; background-color: #f8f8f8; background: none; line-height: 30px !important; text-align: left; max-width: 100%; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+#dashboard .Q_tabs_tab.Streams_preview_tool { padding-left: 10px; }
 #dashboard .Q_tabs_compact .Q_tabs_tab { background: #222; }
 #dashboard .Q_tabs_vertical .Q_tabs_tab { background: transparent; }
 #dashboard .Q_tabs_tab:first-child { border-top: 0 solid #e5e5e5; border-left: 0; }
@@ -171,7 +172,7 @@ input.email,
 input.tel,
 input.password,
 input.number,
-textarea { margin-top: 0.5em; margin-bottom: 0.5em; border-radius: 3px; -moz-border-radius:3px; -webkit-border-radius:3px; padding: 4px; }
+textarea { border-radius: 3px; -moz-border-radius:3px; -webkit-border-radius:3px; padding: 4px; }
 input[type=checkbox],
 input[type=radio] { margin-right: 5px; }
 html .Q_inplace_tool_fieldinput { padding: 0px; }

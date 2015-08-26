@@ -20,17 +20,19 @@ abstract class Base_Metrics
 	 * @type array
 	 */
 	static $table_classnames = array (
-  0 => 'Metrics_Domain',
-  1 => 'Metrics_HostnameSession',
-  2 => 'Metrics_Publisher',
-  3 => 'Metrics_Session',
-  4 => 'Metrics_Share',
-  5 => 'Metrics_Visit',
+  0 => 'Metrics_Autocomplete',
+  1 => 'Metrics_Domain',
+  2 => 'Metrics_HostnameSession',
+  3 => 'Metrics_Publisher',
+  4 => 'Metrics_Session',
+  5 => 'Metrics_Share',
+  6 => 'Metrics_Visit',
+  7 => 'Metrics_Zipcode',
 );
 
 	/**
-	 * This method uses Db::connect() to establish a connection to database using information stored in the configuration.
-	 * If the connection to Db object has already been made, it returns this Db object.
+     * This method calls Db.connect() using information stored in the configuration.
+     * If this has already been called, then the same db object is returned.
 	 * @method db
 	 * @return {iDb} The database object
 	 */

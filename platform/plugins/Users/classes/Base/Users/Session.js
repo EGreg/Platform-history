@@ -29,32 +29,32 @@ function Base (fields) {
 Q.mixin(Base, Row);
 
 /**
- * @property id
- * @type String
+ * @property {String}
+ * @type id
  */
 /**
- * @property content
- * @type String
+ * @property {String}
+ * @type content
  */
 /**
- * @property php
- * @type String
+ * @property {String}
+ * @type php
  */
 /**
- * @property deviceId
- * @type String
+ * @property {String}
+ * @type deviceId
  */
 /**
- * @property timeout
- * @type integer
+ * @property {integer}
+ * @type timeout
  */
 /**
- * @property duration
- * @type integer
+ * @property {integer}
+ * @type duration
  */
 /**
- * @property updatedTime
- * @type String|Db.Expression
+ * @property {String|Db.Expression}
+ * @type updatedTime
  */
 
 /**
@@ -229,6 +229,9 @@ Base.prototype.fieldNames = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_id = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".id");
@@ -255,6 +258,9 @@ Base.prototype.maxSize_id = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_content = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".content");
@@ -281,6 +287,9 @@ Base.prototype.maxSize_content = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_php = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".php");
@@ -307,6 +316,9 @@ Base.prototype.maxSize_php = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_deviceId = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".deviceId");
@@ -337,7 +349,7 @@ Base.prototype.beforeSet_timeout = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".timeout");
 		if (value < -2147483648 || value > 2147483647)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".timeout");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".timeout");
 		return value;
 };
 
@@ -363,7 +375,7 @@ Base.prototype.beforeSet_duration = function (value) {
 		if (isNaN(value) || Math.floor(value) != value) 
 			throw new Error('Non-integer value being assigned to '+this.table()+".duration");
 		if (value < -2147483648 || value > 2147483647)
-			throw new Error("Out-of-range value '"+value+"' being assigned to "+this.table()+".duration");
+			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".duration");
 		return value;
 };
 

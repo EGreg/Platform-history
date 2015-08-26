@@ -63,7 +63,7 @@ function Users_avatar_tool($options)
 			$attributes['cacheBust'] = $options['cacheBust'];
 		}
 		$result .= Q_Html::img(
-			"plugins/Users/img/icons/{$avatar->icon}/$icon.png", 
+			Users::iconUrl($avatar->icon, "$icon.png"),
 			'user icon', $attributes
 		);
 	}
@@ -71,6 +71,8 @@ function Users_avatar_tool($options)
 	$o['html'] = true;
 	if (!empty($options['show'])) {
 		$o['show'] = $options['show'];
+	} else if ($options['editable'] === true) {
+		$o['show'] = 'fl';
 	}
 	$displayName = $avatar->displayName($o, 'Someone');
 	$result .= "<span class='Users_avatar_name'>$displayName</span>";

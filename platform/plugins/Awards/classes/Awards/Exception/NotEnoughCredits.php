@@ -13,4 +13,4 @@ class Awards_Exception_NotEnoughCredits extends Q_Exception
 	 */
 };
 
-Q_Exception::add('Awards_Exception_NotEnoughCredits', 'not enough credits: need $missing more');
+Q_Exception::add('Awards_Exception_NotEnoughCredits', 'not enough credits: need {{missing}} more');

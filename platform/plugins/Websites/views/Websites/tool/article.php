@@ -1,24 +1,30 @@
 <div class="Websites_side_column">
-	<?php echo Q::tool('Streams/image/preview', array(
-		'publisherId' => $article->publisherId,
-		'streamName' => $article->name,
-		'creatable' => array(
-			'clickable' => false
+	<?php echo Q::tool(array(
+		'Streams/preview' => array(
+			'publisherId' => $article->publisherId,
+			'streamName' => $article->name,
+			'creatable' => array(
+				'clickable' => false
+			),
+			'imagepicker' => array(
+				'showSize' => '200x',
+				'saveSizeName' => array(
+					'40' => '40',
+					'50' => '50',
+					'200x' => '200x'
+				)
+			),
+			'actions' => null
 		),
-		'imagepicker' => array(
-			'showSize' => '200x',
-			'saveSizeName' => array(
-				'40' => '40',
-				'50' => '50',
-				'200x' => '200x'
-			)
-		),
-		'actions' => null
+		'Streams/image/preview' => array(
+			'showTitle' => true,
+			'dontSetSize' => true
+		)
 	), 'article') ?>
-	<?php if ($getintouch and ($edit or $article->getintouch)): ?>
+	<?php if ($getintouch and ($canEdit or $article->getintouch)): ?>
 		<?php echo Q::tool('Users/getintouch', $getintouch) ?>
 	<?php endif; ?>
-	<?php if ($edit): ?>
+	<?php if ($canEdit): ?>
 		<?php echo Q_Html::form(Q_Request::baseUrl('action.php').'/Websites/article', 'put',
 			array('class' => 'Websites_getintouch')
 		) ?>

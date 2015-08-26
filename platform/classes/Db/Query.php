@@ -235,12 +235,14 @@ interface iDb_Query
 	 * If this exact query has already been executed and
 	 * fetchAll() has been called on the Db_Result, and
 	 * the return value was cached by the Db_Result, then
-	 * that cached value is returned.
-	 * Otherwise, the query is executed and fetchAll()
-	 * is called on the result.
+	 * that cached value is returned, unless $this->ignoreCache is true.
+	 * Otherwise, the query is executed and fetchAll() is called on the result.
 	 * 
 	 * See [PDO documentation](http://us2.php.net/manual/en/pdostatement.fetchall.php)
 	 * @method fetchAll
+	 * @param {enum} $fetch_style=PDO::FETCH_BOTH
+	 * @param {enum} $column_index=null
+	 * @param {array} $ctor_args=null
 	 * @return {array}
 	 */
 	function fetchAll(
@@ -253,9 +255,8 @@ interface iDb_Query
 	 * If this exact query has already been executed and
 	 * fetchAll() has been called on the Db_Result, and
 	 * the return value was cached by the Db_Result, then
-	 * that cached value is returned.
-	 * Otherwise, the query is executed and fetchDbRows()
-	 * is called on the result.
+	 * that cached value is returned, unless $this->ignoreCache is true.
+	 * Otherwise, the query is executed and fetchDbRows() is called on the result.
 	 * @method fetchDbRows
 	 * @param {string} [$class_name='Db_Row'] The name of the class to instantiate and fill objects from.
 	 *  Must extend Db_Row.

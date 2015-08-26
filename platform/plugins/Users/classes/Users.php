@@ -39,6 +39,34 @@ abstract class Users extends Base_Users
 	static $facebooks = array();
 
 	/**
+	 * @param string [$publisherId] The id of the publisher relative to whom to calculate the roles. Defaults to the app name.
+	 * @param {array|Db_Expression} [$filter=null] 
+	 *  You can pass additional criteria here for the label field
+	 *  in the `Users_Contact::select`, such as an array or Db_Range
+	 * @param {array} {$options} Any additional options to pass to the query, such as "ignoreCache"
+	 * @return {array} An associative array of $roleName => $contactRow pairs
+	 * @throws {Users_Exception_NotLoggedIn}
+	 */
+	static function roles($publisherId = null, $filter = null, $options = array())
+	{
+		if (empty($publisherId)) {
+			$publisherId = Q_Config::expect('Q', 'app');
+		}
+		$user = Users::loggedInUser();
+		if (!$user) {
+			return array();
+		}
+		$contacts = Users_Contact::select('*')
+			->where(array(
+				'userId' => $publisherId,
+				'contactUserId' => $user->id
+			))->andWhere($filter ? array('label' => $filter) : null)
+			->options($options)
+			->fetchDbRows(null, null, 'label');
+		return $contacts;
+	}
+
+	/**
 	 * @method oAuth
 	 * @static
 	 * @param {string} $provider Currently only supports the value "facebook".
@@ -161,8 +189,8 @@ abstract class Users extends Base_Users
 		$return = null;
 		/**
 		 * @event Users/authenticate {before}
-		 * @param {string} 'provider'
-		 * @param {string} 'appId'
+		 * @param {string} provider
+		 * @param {string} appId
 		 * @return {Users_User}
 		 */
 		$return = Q::event('Users/authenticate', compact('provider', 'appId'), 'before');
@@ -274,8 +302,8 @@ abstract class Users extends Base_Users
 						$user->signedUpWith = 'facebook'; // should have been "none" before this
 						/**
 						 * @event Users/adoptFutureUser {before}
-						 * @param {Users_User} 'user'
-						 * @param {string} 'during'
+						 * @param {Users_User} user
+						 * @param {string} during
 						 * @return {Users_User}
 						 */
 						$ret = Q::event('Users/adoptFutureUser', compact('user', 'during'), 'before');
@@ -288,9 +316,9 @@ abstract class Users extends Base_Users
 						$ui->save();
 						/**
 						 * @event Users/adoptFutureUser {after}
-						 * @param {Users_User} 'user'
-						 * @param {array} 'links'
-						 * @param {string} 'during'
+						 * @param {Users_User} user
+						 * @param {array} links
+						 * @param {string} during
 						 * @return {Users_User}
 						 */
 						Q::event('Users/adoptFutureUser', compact('user', 'links', 'during'), 'after');
@@ -334,8 +362,8 @@ abstract class Users extends Base_Users
 					$user->fb_uid = $fb_uid;
 					/**
 					 * @event Users/insertUser {before}
-					 * @param {Users_User} 'user'
-					 * @param {string} 'during'
+					 * @param {Users_User} user
+					 * @param {string} during
 					 * @return {Users_User}
 					 */
 					$ret = Q::event('Users/insertUser', compact('user', 'during'), 'before');
@@ -358,6 +386,7 @@ abstract class Users extends Base_Users
 
 						// Download and save facebook icon for the user
 						$sizes = Q_Config::expect('Users', 'icon', 'sizes');
+						sort($sizes);
 						$icon = array();
 						foreach ($sizes as $size) {
 							$icon["$size.png"] = "http://graph.facebook.com/$fb_uid/picture?width=$size&height=$size";
@@ -399,14 +428,14 @@ abstract class Users extends Base_Users
 		if ($retrieved) {
 			/**
 			 * @event Users/updateUser {after}
-			 * @param {Users_User} 'user'
-			 * @param {string} 'during'
+			 * @param {Users_User} user
+			 * @param {string} during
 			 */
 			Q::event('Users/updateUser', compact('user', 'during'), 'after');
 		} else {
 			/**
 			 * @event Users/insertUser {after}
-			 * @param {string} 'during'
+			 * @param {string} during
 			 * @param {Users_User} 'user'
 			 */
 			Q::event('Users/insertUser', compact('user', 'during'), 'after');
@@ -435,14 +464,14 @@ abstract class Users extends Base_Users
 				 or $access_token != $app_user->access_token) {
 					/**
 					 * @event Users/authenticate/updateAppUser {before}
-					 * @param {Users_User} 'user'
+					 * @param {Users_User} user
 					 */
 					Q::event('Users/authenticate/updateAppUser', compact('user', 'app_user'), 'before');
 					$app_user->access_token = $access_token;
 					$app_user->save(); // update access_token in app_user
 					/**
 					 * @event Users/authenticate/updateAppUser {after}
-					 * @param {Users_User} 'user'
+					 * @param {Users_User} user
 					 */
 					Q::event('Users/authenticate/updateAppUser', compact('user', 'app_user'), 'after');
 				}
@@ -458,14 +487,14 @@ abstract class Users extends Base_Users
 					 or $app_user->access_token != $access_token) {
 						/**
 						 * @event Users/authenticate/updateAppUser {before}
-						 * @param {Users_User} 'user'
+						 * @param {Users_User} user
 						 */
 						Q::event('Users/authenticate/updateAppUser', compact('user', 'app_user'), 'before');
 						$app_user->access_token = $access_token;
 						$app_user->save(); // update access_token in app_user
 						/**
 						 * @event Users/authenticate/updateAppUser {after}
-						 * @param {Users_User} 'user'
+						 * @param {Users_User} user
 						 */
 						Q::event('Users/authenticate/updateAppUser', compact('user', 'app_user'), 'after');
 					}
@@ -477,7 +506,7 @@ abstract class Users extends Base_Users
 					$app_user->provider_uid = $user->fb_uid;
 					/**
 					 * @event Users/insertAppUser {before}
-					 * @param {Users_User} 'user'
+					 * @param {Users_User} user
 					 * @param {string} 'during'
 					 */
 					Q::event('Users/insertAppUser', compact('user', 'during'), 'before');
@@ -489,7 +518,7 @@ abstract class Users extends Base_Users
 					$app_user->save(true);
 					/**
 					 * @event Users/authenticate/insertAppUser {after}
-					 * @param {Users_User} 'user'
+					 * @param {Users_User} user
 					 */
 					Q::event('Users/authenticate/insertAppUser', compact('user'), 'after');
 					$authenticated = 'authorized';
@@ -503,8 +532,8 @@ abstract class Users extends Base_Users
 
 		/**
 		 * @event Users/authenticate {after}
-		 * @param {string} 'provider'
-		 * @param {string} 'appId'
+		 * @param {string} provider
+		 * @param {string} appId
 		 */
 		Q::event('Users/authenticate', compact('provider', 'appId'), 'after');
 
@@ -533,8 +562,8 @@ abstract class Users extends Base_Users
 		$return = null;
 		/**
 		 * @event Users/login {before}
-		 * @param {string} 'identifier'
-		 * @param {string} 'passphrase'
+		 * @param {string} identifier
+		 * @param {string} passphrase
 		 * @return {Users_User}
 		 */
 		$return = Q::event('Users/login', compact('identifier', 'passphrase'), 'before');
@@ -580,8 +609,8 @@ abstract class Users extends Base_Users
 
 		/**
 		 * @event Users/login {after}
-		 * @param {string} 'identifier'
-		 * @param {string} 'passphrase'
+		 * @param {string} identifier
+		 * @param {string} passphrase
 		 * @param {Users_User} 'user'
 		 */
 		Q::event('Users/login', compact(
@@ -609,7 +638,7 @@ abstract class Users extends Base_Users
 		// Hooks shouldn't be able to cancel the logout.
 		/**
 		 * @event Users/logout {before}
-		 * @param {Users_User} 'user'
+		 * @param {Users_User} user
 		 */
 		Q::event('Users/logout', compact('user'), 'before');
 
@@ -681,12 +710,15 @@ abstract class Users extends Base_Users
 	 * This functionality should not be exposed externally.
 	 * @method setLoggedInUser
 	 * @static
-	 * @param {Users_User} $user The user object
+	 * @param {Users_User|string} $user The user object or user id
 	 */
-	static function setLoggedInUser(Users_User $user = null)
+	static function setLoggedInUser($user = null)
 	{
 		if (!$user) {
 			return Users::logout();
+		}
+		if (is_string($user)) {
+			$user = Users_User::fetch($user);
 		}
 		if (isset($_SESSION['Users']['loggedInUser']['id'])) {
 			if ($user->id == $_SESSION['Users']['loggedInUser']['id']) {
@@ -713,14 +745,14 @@ abstract class Users extends Base_Users
 		if (Q_Config::get('Users', 'setLoggedInUser', 'updateSessionKey', true)) {
 			/**
 			 * @event Users/setLoggedInUser/updateSessionKey {before}
-			 * @param {Users_User} 'user'
+			 * @param {Users_User} user
 			 */
 			Q::event('Users/setLoggedInUser/updateSessionKey', compact('user'), 'before');
 			$user->sessionId = $sessionId;
 			$user->save(); // update sessionId in user
 			/**
 			 * @event Users/setLoggedInUser/updateSessionKey {after}
-			 * @param {Users_User} 'user'
+			 * @param {Users_User} user
 			 */
 			Q::event('Users/setLoggedInUser/updateSessionKey', compact('user'), 'after');
 		}
@@ -738,14 +770,14 @@ abstract class Users extends Base_Users
 
 		/**
 		 * @event Users/setLoggedInUser {after}
-		 * @param {Users_User} 'user'
+		 * @param {Users_User} user
 		 */
 		Q::event('Users/setLoggedInUser', compact('user'), 'after');
 		self::$loggedOut = false;
 	}
 
 	/**
-	 * Registers a user
+	 * Registers a user in the system.
 	 * @method register
 	 * @static
 	 * @param {string} $username The name of the user
@@ -760,7 +792,12 @@ abstract class Users extends Base_Users
 	 * @throws {Users_Exception_AlreadyVerified} If user was already verified
 	 * @throws {Users_Exception_UsernameExists} If username exists
 	 */
-	static function register($username, $identifier, $icon = array(), $provider = null, $options = array())
+	static function register(
+		$username, 
+		$identifier, 
+		$icon = array(), 
+		$provider = null, 
+		$options = array())
 	{
 		if (is_array($provider)) {
 			$options = $provider;
@@ -769,10 +806,10 @@ abstract class Users extends Base_Users
 
 		/**
 		 * @event Users/register {before}
-		 * @param {string} 'username'
-		 * @param {string} 'identifier'
-		 * @param {string} 'icon'
-		 * @param {string} 'provider'
+		 * @param {string} username
+		 * @param {string} identifier
+		 * @param {string} icon
+		 * @param {string} provider
 		 * @return {Users_User}
 		 */
 		$return = Q::event('Users/register', compact('username', 'identifier', 'icon', 'provider', 'options'), 'before');
@@ -819,8 +856,8 @@ abstract class Users extends Base_Users
 					// Adopt this provider user
 					/**
 					 * @event Users/adoptFutureUser {before}
-					 * @param {Users_User} 'user'
-					 * @param {string} 'during'
+					 * @param {Users_User} user
+					 * @param {string} during
 					 * @return {Users_User}
 					 */
 					$ret = Q::event('Users/adoptFutureUser', compact('user', 'during'), 'before');
@@ -858,16 +895,16 @@ abstract class Users extends Base_Users
 		}
 		/**
 		 * @event Users/insertUser {before}
-		 * @param {string} 'during'
-		 * @param {Users_User} 'user'
+		 * @param {string} during
+		 * @param {Users_User} user
 		 */
 		Q::event('Users/insertUser', compact('user', 'during'), 'before');
 		$user->save(); // sets the user's id
 
 		/**
 		 * @event Users/insertUser {after}
-		 * @param {string} 'during'
-		 * @param {Users_User} 'user'
+		 * @param {string} during
+		 * @param {Users_User} user
 		 */
 		Q::event('Users/insertUser', compact('user', 'during'), 'after');
 
@@ -879,6 +916,7 @@ abstract class Users extends Base_Users
 					break;
 				}
 				$sizes = Q_Config::expect('Users', 'icon', 'sizes');
+				sort($sizes);
 				$icon = array();
 				foreach ($sizes as $size) {
 					$icon["$size.png"] = "http://graph.facebook.com/$uid/picture?width=$size&height=$size";
@@ -890,6 +928,7 @@ abstract class Users extends Base_Users
 			if (is_string($icon)) {
 				// assume it's from gravatar
 				$sizes = Q_Config::expect('Users', 'icon', 'sizes');
+				sort($sizes);
 				$iconString = $icon;
 				$icon = array();
 				foreach ($sizes as $size) {
@@ -899,6 +938,7 @@ abstract class Users extends Base_Users
 				// locally generated icons
 				$hash = md5(strtolower(trim($identifier)));
 				$sizes = Q_Config::expect('Users', 'icon', 'sizes');
+				sort($sizes);
 				$icon = array();
 				foreach ($sizes as $size) {
 					$icon["$size.png"] = array('hash' => $hash, 'size' => $size);
@@ -937,11 +977,11 @@ abstract class Users extends Base_Users
 
 		/**
 		 * @event Users/register {after}
-		 * @param {string} 'username'
-		 * @param {string} 'identifier'
-		 * @param {string} 'icon'
-		 * @param {Users_User} 'user'
-		 * @param {string} 'provider'
+		 * @param {string} username
+		 * @param {string} identifier
+		 * @param {string} icon
+		 * @param {Users_User} user
+		 * @param {string} provider
 		 * @return {Users_User}
 		 */
 		$return = Q::event('Users/register', compact(
@@ -955,7 +995,7 @@ abstract class Users extends Base_Users
 	 * Returns a user in the database that corresponds to the contact info, if any.
 	 * @method userFromContactInfo
 	 * @static
-	 * @param {string} $type Could be one of "email", "mobile", "email\_hashed", "mobile\_hashed", "facebook", "twitter" or "token"
+	 * @param {string} $type Could be one of "email", "mobile", "email_hashed", "mobile_hashed", "facebook", "twitter" or "token"
 	 * @param {string} $value The value corresponding to the type. If $type is:
 	 *
 	 * * "email" - this is one of the user's email addresses
@@ -1054,18 +1094,25 @@ abstract class Users extends Base_Users
 	 * once they authenticate or follow an invite.
 	 * Inserts a new user if one doesn't already exist.
 	 *
-	 * **Note:** *if they register and then later add an email, mobile or authenticate with a provider,
-	 * which happens to match a "future" mapping in users\_identify table, ththen this user will not be converted, since they already registered a different user.
-	 * Later on, we may have some sort function to merge users together.*
-	 *
 	 * @method futureUser
-	 * @param {string} $type Could be one of "email", "mobile", "email\_hashed", "mobile\_hashed", "facebook" or "twitter"
+	 * @param {string} $type Could be one of "email", "mobile", "email_hashed", "mobile_hashed", "facebook", "twitter" or "none".
 	 * @param {string} $value The value corresponding to the type. If $type is:
 	 *
 	 * * "email" - this is one of the user's email addresses
 	 * * "mobile" - this is one of the user's mobile numbers
+	 * * "email_hashed" - this is the email, already hashed with Q_Utils::hash()
+	 * * "mobile_hashed" - this is the email, already hashed with Q_Utils::hash()
 	 * * "facebook" - this is the user's id on facebook
-	 * * "twitter": - this is the user's id on twitter
+	 * * "twitter" - this is the user's id on twitter
+	 * * "none" - the type is ignored, no "identify" rows are inserted into the db, etc.
+	 * 
+	 * With every type except "none", the user will be 
+	 *
+	 * NOTE: If the person we are representing here comes and registers the regular way,
+	 * and then later adds an email, mobile, or authenticates with a provider,
+	 * which happens to match the "future" mapping we inserted in users_identify table, 
+	 * then this futureUser will not be converted, since they already registered
+	 * a different user. Later on, we may have some sort function to merge users together. 
 	 *
 	 * @param {&string} [$status=null] The status of the user - 'verified' or 'future'
 	 * @return {Users_User}
@@ -1074,59 +1121,67 @@ abstract class Users extends Base_Users
 	 */
 	static function futureUser($type, $value, &$status = null)
 	{
-		if (!isset(self::$types[$type])) {
-			throw new Q_Exception_WrongType(array('field' => 'type', 'type' => 'one of the supported types'));
+		if (!array_key_exists($type, self::$types)) {
+			throw new Q_Exception_WrongType(array(
+				'field' => 'type', 
+				'type' => 'one of the supported types'
+			));
 		}
 
-		$ui = Users::identify($type, $value, null);
-		if ($ui && !empty($ui->userId)) {
-			$user = new Users_User();
-			$user->id = $ui->userId;
-			if ($user->retrieve()) {
-				$status = $ui->state;
-				return $user;
-			} else {
-				$userId = $ui->userId;
-				throw new Q_Exception_MissingRow(array(
-					'table' => 'user',
-					'criteria' => 'that id'
-				), 'userId');
+		if ($type !== 'none') {
+			$ui = Users::identify($type, $value, null);
+			if ($ui && !empty($ui->userId)) {
+				$user = new Users_User();
+				$user->id = $ui->userId;
+				if ($user->retrieve()) {
+					$status = $ui->state;
+					return $user;
+				} else {
+					$userId = $ui->userId;
+					throw new Q_Exception_MissingRow(array(
+						'table' => 'user',
+						'criteria' => 'that id'
+					), 'userId');
+				}
 			}
 		}
 
-		$field = self::$types[$type];
-
 		// Make a user row to represent a "future" user and give them an empty username
 		$user = new Users_User();
-		$user->$field = $value;
-		$user->signedUpWith = 'none'; // this marks it as a future user for now
-		if (!$user->retrieve()) {
-			$user->username = "";
-			$user->icon = 'future';
-			$during = 'future';
-			/**
-			 * @event Users/insertUser {before}
-			 * @param {string} 'during'
-			 * @param {Users_User} 'user'
-			 */
-			Q::event('Users/insertUser', compact('user', 'during'), 'before');
-			$user->save(); // sets the user's id
-			/**
-			 * @event Users/insertUser {after}
-			 * @param {string} 'during'
-			 * @param {Users_User} 'user'
-			 */
-			Q::event('Users/insertUser', compact('user', 'during'), 'after');
+		if ($field = self::$types[$type]) {
+			$user->$field = $value;
 		}
+		$user->signedUpWith = 'none'; // this marks it as a future user for now
+		$user->username = "";
+		$user->icon = 'future';
+		$during = 'future';
+		/**
+		 * @event Users/insertUser {before}
+		 * @param {string} during
+		 * @param {Users_User} 'user'
+		 */
+		Q::event('Users/insertUser', compact('user', 'during'), 'before');
+		$user->save(); // sets the user's id
+		/**
+		 * @event Users/insertUser {after}
+		 * @param {string} during
+		 * @param {Users_User} user
+		 */
+		Q::event('Users/insertUser', compact('user', 'during'), 'after');
 
 		if ($type != 'email' and $type != 'mobile') {
-			// Save an identifier => user pair for this future user
-			$ui = new Users_Identify();
-			$ui->identifier = "$type:$value";
-			$ui->state = 'future';
-			if (!$ui->retrieve()) {
-				$ui->userId = $user->id;
-				$ui->save();
+			if ($type !== 'none') {
+				// Save an identifier => user pair for this future user
+				$ui = new Users_Identify();
+				$ui->identifier = "$type:$value";
+				$ui->state = 'future';
+				if (!$ui->retrieve()) {
+					$ui->userId = $user->id;
+					$ui->save();
+				}
+				$status = $ui->state;
+			} else {
+				$status = 'future';
 			}
 		} else {
 			// Save hashed version
@@ -1138,9 +1193,8 @@ abstract class Users extends Base_Users
 				$ui->userId = $user->id;
 				$ui->save();
 			}
+			$status = $ui->state;
 		}
-
-		$status = $ui->state;
 		return $user;
 	}
 
@@ -1415,8 +1469,8 @@ abstract class Users extends Base_Users
 	{
 		/**
 		 * @event Users/fql {before}
-		 * @param {Facebook} 'facebook'
-		 * @param {string} 'fql_query'
+		 * @param {Facebook} facebook
+		 * @param {string} fql_query
 		 * @return {array|null}
 		 */
 		$ret = Q::event('Users/fql', compact('facebook', 'fql_query'), 'before');
@@ -1440,9 +1494,9 @@ abstract class Users extends Base_Users
 		}
 		/**
 		 * @event Users/fql {after}
-		 * @param {Facebook} 'facebook'
-		 * @param {string} 'fql_query'
-		 * @param {array} 'results'
+		 * @param {Facebook} facebook
+		 * @param {string} fql_query
+		 * @param {array} results
 		 */
 		Q::event('Users/fql', compact('facebook', 'fql_query', 'results'), 'after');
 		return $results;
@@ -1453,7 +1507,7 @@ abstract class Users extends Base_Users
 	 * @static
 	 * @param {Facebook} $facebook Facebook object
 	 * @param {string} [$uid=null] User id
-	 * @param {string} [$fields="uid,first\_name,last\_name,pic\_small,pic\_big,pic\_square,pic,birthday_date,gender,meeting\_sex,religion"]
+	 * @param {string} [$fields="uid,first_name,last_name,pic_small,pic_big,pic_square,pic,birthday_date,gender,meeting_sex,religion"]
 	 * @return {array}
 	 * @throws {Users_Exception_NotLoggedIn} If user is not logged in
 	 */
@@ -1475,7 +1529,7 @@ abstract class Users extends Base_Users
 	 * @static
 	 * @param {Facebook} $facebook Facebook object
 	 * @param {string} [$uid=null] User id
-	 * @param {string} [$fields="aid,name,description,location,size,link,edit\_link,visible,modified\_major,object_id"]
+	 * @param {string} [$fields="aid,name,description,location,size,link,edit_link,visible,modified_major,object_id"]
 	 * @return {array}
 	 * @throws {Users_Exception_NotLoggedIn} If user is not logged in
 	 */
@@ -1495,7 +1549,7 @@ abstract class Users extends Base_Users
 	 * @static
 	 * @param {Facebook} $facebook Facebook object
 	 * @param {string} $aid Author id
-	 * @param {string} [$fields="pid,aid,owner,src\_small,src\_small\_height,src\_small\_width,src\_big,src\_big\_height,src\_big\_width,src,src_height,src\_width,link,caption,object\_id"]
+	 * @param {string} [$fields="pid,aid,owner,src_small,src_small_height,src_small_width,src_big,src_big_height,src_big_width,src,src_height,src_width,link,caption,object_id"]
 	 * @return {array}
 	 */
 	static function facebookPhotos(
@@ -1727,7 +1781,7 @@ abstract class Users extends Base_Users
 		}
 		/**
 		 * @event Users/saveContactsFromLinks {after}
-		 * @param {array} 'contacts'
+		 * @param {array} contacts
 		 */
 		Q::event('Users/saveContactsFromLinks', compact('contacts'), 'after');
 
@@ -1794,7 +1848,7 @@ abstract class Users extends Base_Users
 		session_write_close(); // close current session
 		$us = new Users_Session();
 		$us->id = $id;
-		$us->retrieve();
+		$us->retrieve(null, null, array('lock' => 'FOR UPDATE'));
 		$us2 = new Users_Session();
 		if ($us->wasRetrieved()) {
 			$us2->copyFromRow($us, null, false, true);
@@ -1807,7 +1861,7 @@ abstract class Users extends Base_Users
 		}
 		$us2->id = Q_Session::generateId();
 		$us2->duration = $seconds;
-		$us2->save();
+		$us2->save(false, true);
 		$new_id = $us2->id;
 		session_start(); // reopen current session
 		Q::event("Users/copyToNewSession", array(
@@ -1832,6 +1886,90 @@ abstract class Users extends Base_Users
 			$terms_title
 		);
 		return Q::interpolate($terms_label, array('link' => $terms_link));
+	}
+	
+	/**
+	 * Get the url of a user's icon
+	 * @param {string} [$icon] The contents of a user row's icon field
+	 * @param {string} [$basename=""] The last part after the slash, such as "50.png"
+	 * @return {string} The stream's icon url
+	 */
+	static function iconUrl($icon, $basename = null)
+	{
+		if (empty($icon)) {
+			return null;
+		}
+		$url = Q_Valid::url($icon) ? $icon : "plugins/Users/img/icons/$icon";
+		if ($basename) {
+			$url .= "/$basename";
+		}
+		return Q_Html::themedUrl($url);
+	}
+	
+	/**
+	 * Checks whether one user can manage contacts of another user
+	 * @static
+	 * @param {string} $asUserId The user who would be doing the managing
+	 * @param {string} $userId The user whose contacts they are
+	 * @param {string} $label The label of the contacts that will be managed
+	 * @return {boolean} Whether a contact with this label is allowed to be managed
+	 * @throws {Users_Exception_NotAuthorized}
+	 */
+	static function canManageContacts(
+		$asUserId, 
+		$userId, 
+		$label, 
+		$throwIfNotAuthorized = false
+	) {
+		$authorized = false;
+		$result = Q::event(
+			"Users/canManageContacts",
+			compact('asUserId', 'userId', 'label', 'throwIfNotAuthorized'),
+			'before'
+		);
+		if ($result) {
+			$authorized = $result;
+		}
+		if ($asUserId === $userId and substr($label, 0, 6) === 'Users/') {
+			$authorized = true;
+		}
+		if (!$authorized and $throwIfNotAuthorized) {
+			throw new Users_Exception_NotAuthorized();
+		}
+		return $authorized;
+	}
+	
+	/**
+	 * Checks whether one user can manage contact labels of another user
+	 * @static
+	 * @param {string} $asUserId The user who would be doing the managing
+	 * @param {string} $userId The user whose contact labels they are
+	 * @param {string} $label The label that will be managed
+	 * @return {boolean} Whether this label is allowed to be managed
+	 * @throws {Users_Exception_NotAuthorized}
+	 */
+	static function canManageLabels(
+		$asUserId, 
+		$userId, 
+		$label, 
+		$throwIfNotAuthorized = false
+	) {
+		$authorized = false;
+		$result = Q::event(
+			"Users/canManageLabels",
+			compact('asUserId', 'userId', 'label', 'throwIfNotAuthorized'),
+			'before'
+		);
+		if ($result) {
+			$authorized = $result;
+		}
+		if ($asUserId === $userId and substr($label, 0, 6) === 'Users/') {
+			return true;
+		}
+		if (!$authorized and $throwIfNotAuthorized) {
+			throw new Users_Exception_NotAuthorized();
+		}
+		return $authorized;
 	}
 
 	/**
@@ -1885,6 +2023,9 @@ abstract class Users extends Base_Users
 	 * @default 'tw_uid'
 	 */
 	protected static $types = array(
+		'none' => null,
+		'email_hashed' => null,
+		'mobile_hashed' => null,
 		'email' => 'emailAddressPending',
 		'mobile' => 'mobileNumberPending',
 		'facebook' => 'fb_uid',

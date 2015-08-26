@@ -14,48 +14,48 @@
  * @class Base_Streams_Participating
  * @extends Db_Row
  *
- * @property string $userId
- * @property string $publisherId
- * @property string $streamName
- * @property mixed $state
- * @property integer $fresh
- * @property string $extra
- * @property string|Db_Expression $insertedTime
- * @property string|Db_Expression $updatedTime
+ * @property {string} $userId
+ * @property {string} $publisherId
+ * @property {string} $streamName
+ * @property {string} $state
+ * @property {integer} $fresh
+ * @property {string} $extra
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string|Db_Expression} $updatedTime
  */
 abstract class Base_Streams_Participating extends Db_Row
 {
 	/**
 	 * @property $userId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $publisherId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $streamName
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $state
-	 * @type mixed
+	 * @type {string}
 	 */
 	/**
 	 * @property $fresh
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * @property $extra
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $updatedTime
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -216,6 +216,9 @@ abstract class Base_Streams_Participating extends Db_Row
 	 */
 	function beforeSet_userId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('userId', $value);
 		}
@@ -246,6 +249,9 @@ abstract class Base_Streams_Participating extends Db_Row
 	 */
 	function beforeSet_publisherId($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('publisherId', $value);
 		}
@@ -276,6 +282,9 @@ abstract class Base_Streams_Participating extends Db_Row
 	 */
 	function beforeSet_streamName($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('streamName', $value);
 		}
@@ -327,8 +336,11 @@ abstract class Base_Streams_Participating extends Db_Row
 		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".fresh");
-		if ($value < 0 or $value > 4294967295)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".fresh");
+		$value = intval($value);
+		if ($value < 0 or $value > 4294967295) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".fresh");
+		}
 		return array('fresh', $value);			
 	}
 
@@ -352,6 +364,9 @@ abstract class Base_Streams_Participating extends Db_Row
 	 */
 	function beforeSet_extra($value)
 	{
+		if (!isset($value)) {
+			$value='';
+		}
 		if ($value instanceof Db_Expression) {
 			return array('extra', $value);
 		}
@@ -386,12 +401,13 @@ abstract class Base_Streams_Participating extends Db_Row
 		}
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
-			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".insertedTime");
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".insertedTime");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
-			$$v = $date[$v];
-		}
-		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
 		return array('insertedTime', $value);			
 	}
 
@@ -409,12 +425,13 @@ abstract class Base_Streams_Participating extends Db_Row
 		}
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
-			throw new Exception("DateTime $value in incorrect format being assigned to ".$this->getTable().".updatedTime");
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".updatedTime");
 		}
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
-			$$v = $date[$v];
-		}
-		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", $year, $month, $day, $hour, $minute, $second);
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
 		return array('updatedTime', $value);			
 	}
 

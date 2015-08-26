@@ -14,4 +14,4 @@ class Users_Exception_EmailMessage extends Q_Exception
 	 */
 };
 
-Q_Exception::add('Users_Exception_EmailMessage', 'Sending email failed: $error');
+Q_Exception::add('Users_Exception_EmailMessage', 'Sending email failed: {{error}}');

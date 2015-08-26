@@ -72,7 +72,7 @@ class Q_Response
 				if (!Q::canHandle("Q/response/$slotName")) {
 					/**
 					 * @event Q/response/$default_slotName
-					 * @param {string} 'slotName'
+					 * @param {string} slotName
 					 * @return {string}
 					 */
 					$result = Q::event(
@@ -119,7 +119,7 @@ class Q_Response
 		}
 		/**
 		 * @event Q/response/$default_slotName
-		 * @param {string} 'slotName'
+		 * @param {string} slotName
 		 * @return {string}
 		 */
 		return Q::event(
@@ -793,8 +793,8 @@ class Q_Response
 	{
 		/**
 		 * @event Q/response/addScript {before}
-		 * @param {string} 'src'
-		 * @param {string} 'type'
+		 * @param {string} src
+		 * @param {string} type
 		 * @return {array}
 		 */
 		$modify = Q::event('Q/response/addScript', compact('src', 'type'), 'before');
@@ -1102,9 +1102,9 @@ class Q_Response
 	{
 		/**
 		 * @event Q/response/addStylesheet {before}
-		 * @param {string} 'href'
-		 * @param {string} 'media'
-		 * @param {string} 'type'
+		 * @param {string} href
+		 * @param {string} media
+		 * @param {string} type
 		 * @return {array}
 		 */
 		$modify = Q::event('Q/response/addStylesheet', compact('href', 'media', 'type'), 'before');
@@ -1347,16 +1347,16 @@ class Q_Response
 	 * @param {string} $uri The URL or internal URI to redirect to
 	 * @param {array} $options An array of options that can include:
 	 *  "loop" => Defaults to false. If true, sets the redirect header even if the current URL is the same.
-	 *  "no_proxy" => Defaults to false. If true, doesn't use the proxy mapping to determine URL
+	 *  "noProxy" => Defaults to false. If true, doesn't use the proxy mapping to determine URL
 	 *  "permanently" => If true, sets response code as 304 instead of 302
-	 * @param {boolean} [$no_proxy=false]
+	 * @param {boolean} [$noProxy=false]
 	 * @return {boolean}
  	 *  Return whether the redirect header was set.
 	 */
 	static function redirect($uri, $options = array())
 	{
 		extract($options);
-		$url = Q_Uri::url($uri, null, !empty($no_proxy));
+		$url = Q_Uri::url($uri, null, !empty($noProxy));
 		if ($url === Q_Uri::unreachableUri()) {
 			throw new Q_Exception_BadValue(array(
 				'internal' => 'uri',
@@ -1369,15 +1369,15 @@ class Q_Response
 		}
 		/**
 		 * @event Q/response {before}
-		 * @param {string} 'permanently'
-		 * @param {string} 'uri'
-		 * @param {string} 'url'
-		 * @param {string} 'loop'
+		 * @param {string} permanently
+		 * @param {string} uri
+		 * @param {string} url
+		 * @param {string} loop
 		 * @return {boolean}
 		 */
 		$result = Q::event(
 			'Q/redirect',
-			compact('uri', 'url', 'loop', 'permanently', 'no_proxy', 'level'),
+			compact('uri', 'url', 'loop', 'permanently', 'noProxy', 'level'),
 			'before'
 		);
 		if (isset($result)) {
