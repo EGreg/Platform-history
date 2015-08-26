@@ -2223,10 +2223,11 @@ Streams.relate = function _Streams_relate (publisherId, streamName, relationType
 		streamName: streamName
 	});
 	Q.req('Streams/related', [slotName], function (err, data) {
+		var msg = Q.firstErrorMessage(err, data && data.errors);
 		var messageFrom = Q.getObject('slots.result.messageFrom', data);
 		var messageTo = Q.getObject('slots.result.messageTo', data);
 		// wait for messages from cached streams -- from, to or both!
-		callback && callback.call(this, err, Q.getObject('slots.result', data) || null);
+		callback && callback.call(this, msg, Q.getObject('slots.result', data) || null);
 	}, { method: 'post', fields: fields, baseUrl: baseUrl });
 	_retain = undefined;
 };

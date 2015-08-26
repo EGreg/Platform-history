@@ -27,8 +27,8 @@
  *         @param {String} [options.templates.edit.fields.titleClass]
  *         @param {String} [options.templates.edit.fields.titleTag]
  */
-Q.Tool.define("Websites/announcement/preview", "Streams/preview",
-function _Websites_announcement_preview(options, preview) {
+Q.Tool.define("Streams/default/preview", "Streams/preview",
+function _Streams_default_preview(options, preview) {
 	this.preview = preview;
 	preview.state.onRefresh.add(this.refresh.bind(this));
 },
@@ -37,11 +37,11 @@ function _Websites_announcement_preview(options, preview) {
 	inplace: {},
 	templates: {
 		view: {
-			name: 'Websites/announcement/preview/view',
+			name: 'Streams/default/preview/view',
 			fields: { alt: 'icon', titleClass: '', titleTag: 'h2' }
 		},
 		edit: {
-			name: 'Websites/announcement/preview/edit',
+			name: 'Streams/default/preview/edit',
 			fields: { alt: 'icon', titleClass: '', titleTag: 'h2' }
 		}
 	}
@@ -81,7 +81,7 @@ function _Websites_announcement_preview(options, preview) {
 			? 'edit' 
 			: 'view';
 		Q.Template.render(
-			'Websites/announcement/preview/'+tpl,
+			'Streams/default/preview/'+tpl,
 			fields,
 			function (err, html) {
 				if (err) return;
@@ -102,7 +102,7 @@ function _Websites_announcement_preview(options, preview) {
 
 );
 
-Q.Template.set('Websites/announcement/preview/edit',
+Q.Template.set('Streams/default/preview/edit',
 	'<div class="Streams_preview_container Q_clearfix">'
 	+ '<img alt="{{alt}}" class="Streams_preview_icon">'
 	+ '<div class="Streams_preview_contents {{titleClass}}">'
@@ -110,7 +110,7 @@ Q.Template.set('Websites/announcement/preview/edit',
 	+ '</div></div>'
 );
 
-Q.Template.set('Websites/announcement/preview/create',
+Q.Template.set('Streams/default/preview/create',
 	'<div class="Streams_preview_container Q_clearfix">'
 	+ '<img alt="{{alt}}" class="Streams_preview_add">'
 	+ '<div class="Streams_preview_contents {{titleClass}}">'
