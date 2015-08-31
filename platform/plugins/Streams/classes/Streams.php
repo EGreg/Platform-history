@@ -2819,11 +2819,16 @@ abstract class Streams extends Base_Streams
 		return $fieldNames;
 	}
 	
-	static function invitationsPath()
+	static function invitationsPath($invitingUserId)
 	{
 		$app = Q_Config::expect('Q', 'app');
-		$subpath = Q_Config::get('Streams', 'invites', 'subpath', '{{app}}/uploads/Streams/invitations');
-		return APP_FILES_DIR.DS.Q::interpolate($subpath, compact('app'));
+		$subpath = Q_Config::get(
+			'Streams', 'invites', 'subpath',
+			'{{app}}/uploads/Streams/invitations'
+		);
+		return APP_FILES_DIR
+			.DS.Q::interpolate($subpath, compact('app'))
+			.DS.$invitingUserId;
 	}
 	
 	protected static function afterFetchExtended($publisherId, $type, $retrieved)

@@ -1292,8 +1292,13 @@ Streams.invitedUrl = function _Streams_invitedUrl(token) {
 };
 
 Streams.invitationsPath = function _Streams_invitationsPath(userId) {
-	return Q.app.FILES_DIR + '/' + Q.Config.expect(['Q', 'app'])
-		+ '/uploads/Streams/invitations/'+userId;
+	var subpath = Q.Config.get(
+		'Streams', 'invites', 'subpath',
+		'{{app}}/uploads/Streams/invitations'
+	);
+	return Q.app.FILES_DIR + '/' + subpath.interpolate({
+		app: Q.Config.expect(['Q', 'app'])
+	}) + '/' + userId;
 };
 
 /**

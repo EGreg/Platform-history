@@ -202,7 +202,8 @@
 			"limit": 100,
 			"layout": {
 				"default": "Streams/layout/invitations.php"
-			}
+			},
+			"subpath": "{{app}}/uploads/Streams/invitations"
 		},
 		"interests": {
 			"allowClientQueries": false
