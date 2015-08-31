@@ -4,7 +4,7 @@ function Websites_0_8_3_Streams_mysql()
 {
 	$app = Q_Config::expect('Q', 'app');
 	
-	// access for managing app contacts
+	// access for managing communities
 	$access = new Streams_Access();
 	$access->publisherId = $app;
 	$access->streamName = 'Streams/community*';
