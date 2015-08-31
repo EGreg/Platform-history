@@ -1887,10 +1887,9 @@ abstract class Streams extends Base_Streams
 	 * @param {string} [$options.prefix] if specified, this filters by the prefix of the related streams
 	 * @param {array} [$options.where] you can also specify any extra conditions here
 	 * @param {array} [$options.extra] An array of any extra info to pass to Streams::fetch when fetching streams
-	 * @param {array} [$options.relationsOnly] If true, returns only the relations to/from stream, doesn't fetch the streams. Useful if publisher id of relation objects is not the same as provided by publisherId.
-	 * @param {array} [$options.streamsOnly] If true, returns only the streams related to/from stream, doesn't return the relations.
-	 * @param {array} [$options] Useful for shorthand in while( ) statements.
-	 * @param {array} [$options.streamFields] If specified, fetches only the fields listed here for any streams
+	 * @param {array} [$options.relationsOnly] If true, returns only the relations to/from stream, doesn't fetch the other data. Useful if publisher id of relation objects is not the same as provided by publisherId.
+	 * @param {array} [$options.streamsOnly] If true, returns only the streams related to/from stream, doesn't return the other data.
+	 * @param {array} [$options.streamFields] If specified, fetches only the fields listed here for any streams.
 	 * @param {array} [$options.skipFields] Optional array of field names. If specified, skips these fields when fetching streams
 	 * @param {array} [$options.includeTemplates] Defaults to false. Pass true here to include template streams (whose name ends in a slash) among the related streams.
 	 * @return {array}
