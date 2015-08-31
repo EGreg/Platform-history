@@ -322,7 +322,7 @@ Q.Pipe.prototype.on = function _Q_pipe_on(field, callback) {
  *  Optional. Pass an array of required field names here.
  *  Alternatively, pass an array of objects, which should be followed by
  *  the name of a Q.Event to wait for.
- * @param {Number} maxTimes
+ * @param {number} maxTimes
  *  Optional. The maximum number of times the callback should be called.
  * @param {Function} callback
  *  Once all required fields are filled, this function is called every time something is piped.
@@ -416,7 +416,7 @@ Q.Pipe.prototype.fill = function _Q_pipe_fill(field, ignore) {
  * Runs the pipe
  * @method run
  * @param {String} field optionally indicate name of the field that was just filled
- * @return {Number} the number of pipe callbacks that wound up running
+ * @return {number} the number of pipe callbacks that wound up running
  */
 Q.Pipe.prototype.run = function _Q_pipe_run(field) {
 	var cb, ret, callbacks = this.callbacks, params = Q.copy(this.params), count = 0;
@@ -823,7 +823,7 @@ Q.once = function (original, defaultValue) {
  * @static
  * @method throttle
  * @param {Function} original The function to wrap
- * @param {Number} milliseconds The number of milliseconds
+ * @param {number} milliseconds The number of milliseconds
  * @param {Mixed} defaultValue Value to return whenever original function isn't called
  * @return {Function} The wrapper function
  */
@@ -843,7 +843,7 @@ Q.throttle = function (original, milliseconds, defaultValue) {
  * @static
  * @method queue
  * @param {Function} original The function to wrap
- * @param {Number} milliseconds The number of milliseconds, defaults to 0
+ * @param {number} milliseconds The number of milliseconds, defaults to 0
  * @return {Function} The wrapper function
  */
 Q.queue = function (original, milliseconds) {
@@ -883,7 +883,7 @@ Q.queue = function (original, milliseconds) {
  * @static
  * @method debounce
  * @param {Function} original The function to wrap
- * @param {Number} milliseconds The number of milliseconds
+ * @param {number} milliseconds The number of milliseconds
  * @param {Mixed} defaultValue Value to return whenever original function isn't called
  * @return {Function} The wrapper function
  */
@@ -942,7 +942,7 @@ Q.Cache.key = function _Cache_key(args, functions) {
  * Accesses the cache and sets an entry in it
  * @method set
  * @param {String} key  the key to save the entry under, or an array of arguments
- * @param {Number} cbpos the position of the callback
+ * @param {number} cbpos the position of the callback
  * @param {Object} subject The "this" object for the callback
  * @param {Array} params The parameters for the callback
  * @param {Object} options  supports the following options:
@@ -1462,7 +1462,7 @@ Q.isPlainObject = function (x) {
  * @method copy
  * @param {Array} fields
  *  Optional array of fields to copy. Otherwise copy all that we can.
- * @param levels {Number}
+ * @param levels {number}
  *  Optional. Copy this many additional levels inside x if it is a plain object.
  * @return {Object}
  *  Returns the shallow copy where some properties may have deepened the copy
@@ -1517,7 +1517,7 @@ Q.copy = function _Q_copy(x, fields, levels) {
  * @param {Object} target
  *  This is the first object. It winds up being modified, and also returned
  *  as the return value of the function.
- * @param {Number} levels
+ * @param {number} levels
  *  Optional. Precede any Object with an integer to indicate that we should 
  *  also copy that many additional levels inside the object.
  * @param {Boolean|Number} deep
@@ -1877,7 +1877,7 @@ Q.md5_hmac_b64 = function _Q_md5_hmac_b64(a,b){return rstr2b64(rstr_hmac_md5(str
  * @param {String} characters
  *  Defaults to '/[^A-Za-z0-9]+/'. A regexp characters that are not acceptable.
  *  You can also change this default using the config Db/normalize/characters
- * @param {Number} numChars
+ * @param {number} numChars
  *  The maximum length of a normalized string. Default is 200.
  * @return {String} the normalized string
  */

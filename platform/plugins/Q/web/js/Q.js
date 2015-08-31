@@ -8110,6 +8110,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	 * @param {Function} callback
 	 */
 	$.fn.plugin = function _jQuery_fn_plugin(pluginName, options, callback) {
+		if (!$(this).length) return this;
 		var args;
 		switch (Q.typeOf(options)) {
 			case 'array': // passing a bunch of parameters to a plugin

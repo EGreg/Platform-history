@@ -8,8 +8,9 @@ $count = count($argv);
 #Usage strings
 $usage = "Usage: php {$argv[0]} " . ($FROM_APP ? '' : '<app_root> '). '[--all] [-su options [-su options] ... ]';
 
-if(!$FROM_APP)
+if(!$FROM_APP) {
 	$usage.=PHP_EOL.PHP_EOL.'<app_root> must be a path to the application root directory';
+}
 
 $usage = <<<EOT
 $usage
@@ -84,6 +85,7 @@ if (!defined('APP_DIR'))
 
 #Include Q
 try {
+	$Q_installing = true;
 	$Q_Bootstrap_config_plugin_limit = 1;
 	include($Q_filename);
 }

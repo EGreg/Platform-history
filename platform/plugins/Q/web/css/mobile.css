@@ -34,7 +34,7 @@ html, body
 
 .Q_portrait #column0_slot, .Q_portrait #column1_slot, .Q_portrait #column2_slot
 {
-	width: 320px;
+	width: 100%;
 	margin: 0;
 }
 

@@ -54,7 +54,6 @@ class Q_Plugin
 	 */
 	static function installSchema($base_dir, $name, $type, $conn_name, $options)
 	{
-
 		// is schema installation requested?
 		if (!isset($options['sql']) || empty($options['sql'][$conn_name]) || !$options['sql'][$conn_name]['enabled']) return;
 
