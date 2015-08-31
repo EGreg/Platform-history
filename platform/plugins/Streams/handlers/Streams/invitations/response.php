@@ -13,7 +13,8 @@
  */
 function Streams_invitations_response()
 {
-	Q_Request::requireFields(array('batch'), true);
+	Q_Request::requireFields(array('invitingUserId', 'batch'), true);
+	$invitingUserId = $_REQUEST['invitingUserId'];
 	$batch = $_REQUEST['batch'];
 	$title = Q::ifset($_REQUEST, 'layout', 'title');
 	$layoutKey = Q::ifset($_REQUEST, 'layout', 'default');
@@ -21,7 +22,7 @@ function Streams_invitations_response()
 	$offset = Q::ifset($_REQUEST, 'offset', 0);
 	$layout = Q_Config::expect('Streams', 'invites', 'layout', $layoutKey);
 	$app = Q_Config::expect('Q', 'app');
-	$pattern = Streams::invitationsPath() . DS . $batch . DS . "*.html";
+	$pattern = Streams::invitationsPath($invitingUserId) . DS . $batch . DS . "*.html";
 	$filenames = glob($pattern);
 	$parts = array();
 	foreach ($filenames as $f) {

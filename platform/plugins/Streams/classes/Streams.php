@@ -2254,7 +2254,7 @@ abstract class Streams extends Base_Streams
 					'range' => 'a filename with extension .handlebars'
 				));
 			}
-			$path = Streams::invitationsPath().DS.$batchName;
+			$path = Streams::invitationsPath($asUserId).DS.$batchName;
 			Q_Utils::canWriteToPath($path, true, true);
 		}
 
