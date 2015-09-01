@@ -897,7 +897,7 @@ class Streams_Stream extends Base_Streams_Stream
 						: Q::json_encode(Q::ifset($options, 'deliver', 
 							array('to' => 'default')
 						));
-					$ruleSuccess = !empty($deliver) and !!$rule->save();
+					$ruleSuccess = !!$rule->save();
 				}
 			}
 		}
