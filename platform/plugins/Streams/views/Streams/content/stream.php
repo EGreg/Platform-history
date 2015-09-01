@@ -2,7 +2,7 @@
 	<div class='Streams_stream_info_pane'>
 		<?php if ($stream->icon): ?>
 			<div class='Streams_stream_icon'>
-				<?php echo Q_Html::img("plugins/Streams/img/icons/{$stream->icon}/80.png"); ?>
+				<?php echo Q_Html::img($stream->iconUrl('80.png')); ?>
 			</div>
 		<?php endif; ?>
 		<div class='Streams_stream_title'>

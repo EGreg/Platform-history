@@ -54,7 +54,7 @@ function Websites_0_8_Streams_mysql()
 		extract($s);
 		$rows[] = compact(
 			'publisherId', 'name', 'type', 'title', 'icon', 'content', 'attributes',
-			'readLevel', 'writeLevel', 'adminLevel', 'inheritAccess', 'participantCount'
+			'readLevel', 'writeLevel', 'adminLevel', 'inheritAccess'
 		);
 	}
 	
@@ -70,10 +70,18 @@ function Websites_0_8_Streams_mysql()
 	
 	Streams_RelatedTo::insert(array(
 		'toPublisherId' => $publisherId,
-		'toStreamName' => 'Streams/articles',
+		'toStreamName' => 'Streams/category/',
 		'type' => 'articles',
 		'fromPublisherId' => $publisherId,
-		'fromStreamName' => 'Streams/article'
+		'fromStreamName' => 'Websites/article/'
+	))->execute();
+	
+	Streams_RelatedTo::insert(array(
+		'toPublisherId' => $publisherId,
+		'toStreamName' => 'Streams/category/',
+		'type' => 'announcements',
+		'fromPublisherId' => $publisherId,
+		'fromStreamName' => 'Websites/article/'
 	))->execute();
 }
 

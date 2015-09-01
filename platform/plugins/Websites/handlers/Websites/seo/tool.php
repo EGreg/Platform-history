@@ -10,13 +10,13 @@
  * Tool for admins to edit the url, title, keywords, description of the current page
  * @class Websites seo
  * @constructor
- * @param {Object} [options] Options for the tool
- * @param {String} [options.skipIfNotAuthorized=true] Whether to skip rendering the contents of the tool if the logged-in user is not authorized to edit the SEO information for this page.
+ * @param {Object} [$options] Options for the tool
+ * @param {String} [$options.skipIfNotAuthorized=true] Whether to skip rendering the contents of the tool if the logged-in user is not authorized to edit the SEO information for this page.
  */
 function Websites_seo_tool($options)
 {
-	$hideIfNotAuthorized = Q::ifset($options, 'skipIfNotAuthorized', true);
-	if ($hideIfNotAuthorized) {
+	$skipIfNotAuthorized = Q::ifset($options, 'skipIfNotAuthorized', true);
+	if ($skipIfNotAuthorized) {
 		$websitesUserId = Q_Config::expect("Websites", "user", "id");
 		$sha1 = sha1(Q_Dispatcher::uri());
 		$seoStreamName = "Websites/seo/$sha1";
@@ -30,6 +30,7 @@ function Websites_seo_tool($options)
 			$options['skip'] = true;
 		}
 	}
+	unset($options['skipIfNotAuthorized']);
 	
 	Q_Response::addStylesheet('plugins/Websites/css/Websites.css');
 	Q_Response::addScript("plugins/Websites/js/Websites.js");

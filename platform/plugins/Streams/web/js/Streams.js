@@ -388,10 +388,11 @@ Q.Tool.define({
 	"Streams/related"      : "plugins/Streams/js/tools/related.js",
 	"Streams/inplace"      : "plugins/Streams/js/tools/inplace.js",
 	"Streams/html"         : "plugins/Streams/js/tools/html.js",
-	"Streams/player"       : "plugins/Streams/js/tools/publisher.js",
+	"Streams/player"       : "plugins/Streams/js/tools/player.js",
 	"Streams/preview"  	   : "plugins/Streams/js/tools/preview.js",
 	"Streams/image/preview": "plugins/Streams/js/tools/image/preview.js",
-	"Streams/form"         : "plugins/Streams/js/tools/form.js"
+	"Streams/form"         : "plugins/Streams/js/tools/form.js",
+	"Streams/activity"     : "plugins/Streams/js/tools/activity.js"
 });
 
 /**

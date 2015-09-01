@@ -603,6 +603,6 @@
 .Streams_callToAction h2 { font-size: 30px; }
 
 .Streams_stream_icon { float: left; width: 80px; }
-.Streams_stream_title { float: left; line-height: 80px; font-size: 40px;  }
+.Streams_stream_title { line-height: 80px; font-size: 40px;  }
 .Streams_stream_player { clear: both; }
 .Streams_stream_activity_pane { border-top: 1px solid #aaa; }

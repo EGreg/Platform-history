@@ -12,7 +12,7 @@ function Websites_before_Streams_Stream_save_Websites_seo($params)
 	if (preg_match('/\s/', $url)) {
 		throw new Q_Exception_WrongValue(array(
 			'field' => 'url',
-			'range' => "no whitespace"
+			'range' => "no spaces"
 		));
 	}
 	

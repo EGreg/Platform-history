@@ -944,6 +944,8 @@ abstract class Streams extends Base_Streams
 	 * @static
 	 * @param {boolean} $throwIfMissing=false
 	 *  Optional. If true, throws an exception if the publisher id cannot be deduced
+	 * @param {array|string} [$uri=Q_Dispatcher::uri()]
+	 *  An array or string representing a uri to use instead of the Q_Dispatcher::uri()
 	 * @return {integer}
 	 *  The id of the publisher user
 	 * @throws {Users_Exception_NoSuchUser}
@@ -951,12 +953,14 @@ abstract class Streams extends Base_Streams
 	 * @throws {Q_Exception_RequiredField}
 	 *  If the username can't be deduced, this is thrown
 	 */
-	static function requestedPublisherId($throwIfMissing = false)
+	static function requestedPublisherId($throwIfMissing = false, $uri = null)
 	{
 		if (isset(self::$requestedPublisherId_override)) {
 			return self::$requestedPublisherId_override;
 		}
-		$uri = Q_Dispatcher::uri();
+		if (!isset($uri)) {
+			$uri = Q_Dispatcher::uri();
+		}
 		if (isset($_REQUEST['publisherId'])) {
 			return $_REQUEST['publisherId'];
 		} else if (isset($uri->publisherId)) {
@@ -990,34 +994,35 @@ abstract class Streams extends Base_Streams
 	 * @static
 	 * @param {boolean} $throwIfMissing=false
 	 *  Optional. If true, throws an exception if the stream name cannot be deduced
-	 * @param {string} $return_as
+	 * @param {string} $returnAs
 	 *  Defaults to "string". Can also be "array" or "original"
+	 * @param {array|string} [$uri=Q_Dispatcher::uri()]
+	 *  An array or string representing a uri to use instead of the Q_Dispatcher::uri()
 	 * @return {string}
 	 *  The name of the stream
 	 * @throws {Q_Exception_RequiredField}
 	 *  If the name can't be deduced, this is thrown
 	 */
-	static function requestedName($throwIfMissing = false, $return_as = 'string')
+	static function requestedName($throwIfMissing = false, $returnAs = 'string', $uri = null)
 	{
 		if (isset(self::$requestedName_override)) {
 			return self::$requestedName_override;
 		}
-		$uri = Q_Dispatcher::uri();
+		if (!isset($uri)) {
+			$uri = Q_Dispatcher::uri();
+		}
 		if (isset($_REQUEST['streamName'])) {
 			$result = $_REQUEST['streamName'];
 		} else if (isset($_REQUEST['name'])) {
 			$result = $_REQUEST['name'];
 		} else if (isset($uri->name)) {
-			if (is_array($uri->name)) {
-				$result = implode('/', $uri->name);
-			}
-			$result = $uri->name;
+			$result = is_array($uri->name) ? implode('/', $uri->name) : $uri->name;
 		}
 		if (isset($result)) {
-			if ($return_as === 'string' and is_array($result)) {
+			if ($returnAs === 'string' and is_array($result)) {
 				$result = implode('/', $result);
 			}
-			if ($return_as === 'array' and is_string($result)) {
+			if ($returnAs === 'array' and is_string($result)) {
 				$result = explode('/', $result);
 			}
 			if (is_array($result)) {
@@ -2839,10 +2844,12 @@ abstract class Streams extends Base_Streams
 		$rows = array();
 		$streamNamesByType = array();
 		foreach ($streams as $stream) {
+			if (!$stream) continue;
 			$streamNamesByType[$stream->type][] = $stream->name;
 		}
 		$classes = array();
 		foreach ($streams as $stream) {
+			if (!$stream) continue;
 			$type = $stream->type;
 			if (!isset($classes[$type])) {
 				$classes[$type] = Streams::getExtendClasses($type);
@@ -2856,6 +2863,7 @@ abstract class Streams extends Base_Streams
 			}
 		}
 		foreach ($streams as $stream) {
+			if (!$stream) continue;
 			$streamName = $stream->name;
 			foreach ($classes[$stream->type] as $className => $fieldNames) {
 				if (empty($rows[$className][$streamName])) continue;

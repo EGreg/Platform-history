@@ -106,7 +106,8 @@
 				"create": true,
 				"edit": true,
 				"defaults": {
-					"title": "Untitled Category"
+					"title": "Untitled Category",
+					"icon": "Streams/category"
 				},
 				"fields": ["relatedTo"],
 				"see": ["relatedTo"]

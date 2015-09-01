@@ -48,12 +48,12 @@ Q.Tool.define("Users/avatar", function(options) {
 	var tool = this, state = this.state;
 	Streams.Stream.retain(state.userId, 'Streams/user/firstName', tool);
 	Streams.Stream.retain(state.userId, 'Streams/user/lastName', tool);
+	if (state.icon === true) {
+		state.icon = Users.icon.defaultSize;
+	}
 	this.refresh();
 	if (!state.reflectChanges) {
 		return;
-	}
-	if (state.icon === true) {
-		state.icon = Users.icon.defaultSize;
 	}
 	Streams.Stream.onFieldChanged(state.userId, 'Streams/user/icon', 'icon')
 	.set(function (fields, field) {

@@ -15,11 +15,17 @@
  *   @param {String} [$options.html=array()] Any additional for the Streams/html editor
  *   @param {String} [$options.getintouch=array()] Additional options for the Users/getintouch tool, in case it's rendered
  */
-function Websites_article_tool($params)
+function Websites_article_tool($options)
 {
-	$publisherId = $params['publisherId'];
-	$streamName = $params['streamName'];
+	$publisherId = $options['publisherId'];
+	$streamName = $options['streamName'];
 	$article = Streams::fetchOne(null, $publisherId, $streamName);
+	if (!$article) {
+		throw new Q_Exception_MissingRow(array(
+			'table' => 'article', 
+			'criteria' => $streamName
+		));
+	}
 	$getintouch = array_merge(array(
 		'user' => $article->userId,
 		'email' => true,
@@ -28,7 +34,7 @@ function Websites_article_tool($params)
 		'between' => "",
 		'emailSubject' => 'Reaching out from your website',
 		'classes' => 'Q_button Q_clickable'
-	), Q::ifset($params, 'getintouch', array()));
+	), Q::ifset($options, 'getintouch', array()));
 	$canView = $article->testReadLevel('content');
 	$canEdit = $article->testWriteLevel('edit');
 	if ($article->getintouch) {
@@ -39,11 +45,11 @@ function Websites_article_tool($params)
 	if (!$canView) {
 		throw new Q_Exception_NotAuthorized();
 	}
-	$html = Q::ifset($params, 'html', array());
+	$html = Q::ifset($options, 'html', array());
 	$article->addPreloaded();
 	Q_Response::addStylesheet('plugins/Websites/css/Websites.css');
 	Q_Response::addScript("plugins/Websites/js/Websites.js");
-	Q_Response::setToolOptions($params);
+	Q_Response::setToolOptions($options);
 	return Q::view("Websites/tool/article.php", 
 		compact('article', 'getintouch', 'canEdit', 'canView', 'html')
 	);

@@ -29,6 +29,26 @@ class Websites_Permalink extends Base_Websites_Permalink
 	 * Add any Websites_Permalink methods here, whether public or not
 	 * If file 'Permalink.php.inc' exists, its content is included
 	 * * * */
+	function beforeSave($modifiedFields)
+	{
+		$stream = null;
+		$uri = Q_uri::from($this->uri);
+		if ($uri->module === 'Streams' and $uri->action === 'stream') {
+			$publisherId = Streams::requestedPublisherId(false, $uri);
+			$streamName = Streams::requestedName(false, 'original', $uri);
+			$stream = Streams::fetchOne(null, $publisherId, $streamName);
+		}
+		Q::event('Websites/permalink', array(
+			'permalink' => $this,
+			'modifiedFields' => $modifiedFields,
+			'stream' => &$stream
+		), 'before');
+		if ($stream and ($stream instanceof Streams_Stream)) {
+			$stream->setAttribute("Websites/url", $this->url);
+			$stream->changed();
+		}
+		return parent::beforeSave($modifiedFields);
+	}
 
 	/* * * */
 	/**
