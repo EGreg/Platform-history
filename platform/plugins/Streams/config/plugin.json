@@ -27,7 +27,9 @@
 			"Db/Row/Users_Contact/removeExecute": ["Streams/after/Users_Contact_removeExecute"],
 			"Users/saveContactsFromLinks": ["Streams/after/Users_saveContactsFromLinks"],
 			"Users/setLoggedInUser": ["Streams/after/Users_setLoggedInUser"],
-			"Streams/post/Streams/category": ["Streams/after/Streams_post_Streams_category"]
+			"Streams/message/Streams/relatedTo": ["Streams/after/Streams_message_Streams_relatedTo"],
+			"Streams/message/Streams/unrelatedTo": ["Streams/after/Streams_message_Streams_unrelatedTo"],
+			"Streams/message/Streams/updateRelateTo": ["Streams/after/Streams_message_Streams_updateRelateTo"]
 		},
 		"routes": {
 			"plugins/Streams/:action": {"module": "Streams"},
@@ -190,7 +192,8 @@
 			}
 		},
 		"categories": {
-			"relationTypesToAccelerate": ["Streams/interest"]
+			"relationTypesToAccelerate": ["Streams/interest"],
+			"streamTypesToAccelerate": ["Streams/category"]
 		},
 		"invites": {
 			"tokens": {
