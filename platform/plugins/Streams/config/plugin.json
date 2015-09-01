@@ -191,9 +191,9 @@
 				}
 			}
 		},
-		"categories": {
-			"relationTypesToAccelerate": ["Streams/interest"],
-			"streamTypesToAccelerate": ["Streams/category"]
+		"categorize": {
+			"relationTypes": ["Streams/interest"],
+			"streamTypes": ["Streams/category"]
 		},
 		"invites": {
 			"tokens": {
