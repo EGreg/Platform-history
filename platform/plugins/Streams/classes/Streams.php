@@ -372,6 +372,8 @@ abstract class Streams extends Base_Streams
 			}
 		}
 		$types = array_keys($types);
+		
+		self::afterFetchExtended($publisherId, $streams);
 
 		foreach ($types as $type) {
 			$cached = array();
@@ -400,7 +402,6 @@ abstract class Streams extends Base_Streams
 				'options' => $options,
 				'type' => $type
 			);
-			self::afterFetchExtended($publisherId, $s->type, $retrieved);
 			/**
 			 * @event Streams/fetch/$streamType {after}
 			 * @param {&array} streams
@@ -703,7 +704,7 @@ abstract class Streams extends Base_Streams
 				}
 			}
 		}
-		if (!$authorized and $retrieved and $relate['streamName']) {
+		if (!$authorized and $retrieved and !empty($relate['streamName'])) {
 			// Check if user is perhaps authorized to create a related stream
 			$to_stream = Streams::fetchOne(
 				$userId, $relate['publisherId'], $relate['streamName']
@@ -2831,30 +2832,38 @@ abstract class Streams extends Base_Streams
 			.DS.$invitingUserId;
 	}
 	
-	protected static function afterFetchExtended($publisherId, $type, $retrieved)
+	protected static function afterFetchExtended($publisherId, $streams)
 	{
-		// all streams are the same type
-		if (!$retrieved) return;
+		if (!$streams) return;
 		$classes = array();
 		$rows = array();
-		foreach ($retrieved as $name => $stream) {
-			$classes = Streams::getExtendClasses($type);
-			foreach ($classes as $k => $v) {
-				$rows[$k] = call_user_func(array($k, 'select'), '*')
-					->where(array(
-						'publisherId' => $publisherId,
-						'streamName' => array_keys($retrieved)
-					))->fetchDbRows(null, '', 'streamName');
+		$streamNamesByType = array();
+		foreach ($streams as $stream) {
+			$streamNamesByType[$stream->type][] = $stream->name;
+		}
+		$classes = array();
+		foreach ($streams as $stream) {
+			$type = $stream->type;
+			if (!isset($classes[$type])) {
+				$classes[$type] = Streams::getExtendClasses($type);
+				foreach ($classes[$type] as $className => $fieldNames) {
+					$rows[$className] = call_user_func(array($className, 'select'), '*')
+						->where(array(
+							'publisherId' => $publisherId,
+							'streamName' => $streamNamesByType[$type]
+						))->fetchDbRows(null, '', 'streamName');
+				}
 			}
 		}
-		foreach ($retrieved as $name => $stream) {
-			foreach ($classes as $k => $v) {
-				if (empty($rows[$k][$name])) continue;
-				$row = $stream->rows[$k] = $rows[$k][$name];
+		foreach ($streams as $stream) {
+			$streamName = $stream->name;
+			foreach ($classes[$stream->type] as $className => $fieldNames) {
+				if (empty($rows[$className][$streamName])) continue;
+				$row = $stream->rows[$className] = $rows[$className][$streamName];
 				$row->set('Streams_Stream', $stream);
-				foreach ($v as $f) {
-					if (!isset($rows[$k][$name])) continue;
-					$stream->$f = $rows[$k][$name]->$f;
+				foreach ($fieldNames as $f) {
+					if (!isset($rows[$className][$streamName])) continue;
+					$stream->$f = $rows[$className][$streamName]->$f;
 				}
 			}
 		}
