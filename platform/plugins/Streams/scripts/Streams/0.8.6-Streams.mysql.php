@@ -31,10 +31,10 @@ function Streams_0_8_6_Streams_mysql()
 	
 	// template to help app admins create subcategories for things
 	Streams_RelatedTo::insert(array(
-		'toPublisherId' => $publisherId,
+		'toPublisherId' => $app,
 		'toStreamName' => 'Streams/category/',
 		'type' => 'subcategories',
-		'fromPublisherId' => $publisherId,
+		'fromPublisherId' => $app,
 		'fromStreamName' => 'Streams/category/'
 	))->execute();
 }

@@ -31,6 +31,9 @@ function Q_image_post($params = null)
 			unlink($tmp);
 		}
 	} else {
+		if (empty($p['data'])) {
+			throw new Q_Exception_RequiredField(array('field' => 'data'), 'data');
+		}
 		$p['data'] = base64_decode(chunk_split(substr($p['data'], strpos($p['data'], ',')+1)));
 	}
 	$timeLimit = Q_Config::get('Q', 'uploads', 'limits', 'image', 'time', 5*60*60);
