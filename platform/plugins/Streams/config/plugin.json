@@ -23,6 +23,7 @@
 			"Q/objects": ["Streams/after/Q_objects"],
 			"Q/responseExtras": ["Streams/after/Q_responseExtras"],
 			"Q/image/save": ["Streams/after/Q_image_save"],
+			"Q/file/save": ["Streams/after/Q_file_save"],
 			"Db/Row/Users_User/saveExecute": ["Streams/after/Users_User_saveExecute"],
 			"Db/Row/Users_Contact/removeExecute": ["Streams/after/Users_Contact_removeExecute"],
 			"Users/saveContactsFromLinks": ["Streams/after/Users_saveContactsFromLinks"],

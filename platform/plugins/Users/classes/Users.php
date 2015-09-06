@@ -908,6 +908,9 @@ abstract class Users extends Base_Users
 		 */
 		Q::event('Users/insertUser', compact('user', 'during'), 'after');
 
+		$sizes = Q_Config::expect('Users', 'icon', 'sizes');
+		sort($sizes);
+
 		if (empty($icon)) {
 			switch ($provider) {
 			case 'facebook':
@@ -915,8 +918,6 @@ abstract class Users extends Base_Users
 				if (empty($uid)) {
 					break;
 				}
-				$sizes = Q_Config::expect('Users', 'icon', 'sizes');
-				sort($sizes);
 				$icon = array();
 				foreach ($sizes as $size) {
 					$icon["$size.png"] = "http://graph.facebook.com/$uid/picture?width=$size&height=$size";
@@ -927,8 +928,6 @@ abstract class Users extends Base_Users
 			// Import the user's icon and save it
 			if (is_string($icon)) {
 				// assume it's from gravatar
-				$sizes = Q_Config::expect('Users', 'icon', 'sizes');
-				sort($sizes);
 				$iconString = $icon;
 				$icon = array();
 				foreach ($sizes as $size) {
@@ -937,8 +936,6 @@ abstract class Users extends Base_Users
 			} else {
 				// locally generated icons
 				$hash = md5(strtolower(trim($identifier)));
-				$sizes = Q_Config::expect('Users', 'icon', 'sizes');
-				sort($sizes);
 				$icon = array();
 				foreach ($sizes as $size) {
 					$icon["$size.png"] = array('hash' => $hash, 'size' => $size);

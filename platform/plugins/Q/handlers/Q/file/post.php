@@ -5,17 +5,14 @@
  */
 
 /**
- * Used by HTTP clients to upload a new image to the server
- * @class Q/image
+ * Used by HTTP clients to upload a new file to the server
+ * @class Q/file
  * @method post
  * @param {array} [$params] Parameters that can come from the request
- *   @param {string} [$params.icon.data]  Required if $_FILES is empty. Base64-encoded  data URI - see RFC 2397
+ *   @param {string} [$params.icon.data]  Required if $_FILES is empty. Base64-encoded image data URI - see RFC 2397
  *   @param {string} [$params.icon.path="uploads"] parent path under web dir (see subpath)
+ * @param {string} [$params.basename] required name of the file, after the subpath
  *   @param {string} [$params.icon.subpath=""] subpath that should follow the path, to save the image under
- *   @param {string} [$params.icon.merge=""] path under web dir for an optional image to use as a background
- *   @param {string} [$params.icon.crop] array with keys "x", "y", "w", "h" to crop the original image
- *   @param {string} [$params.icon.save=array("x" => "")] array of $size => $basename pairs
- *    where the size is of the format "WxH", and either W or H can be empty.
  */
 function Q_file_post($params = null)
 {
@@ -35,9 +32,9 @@ function Q_file_post($params = null)
 		}
 		$p['data'] = base64_decode(chunk_split(substr($p['data'], strpos($p['data'], ',')+1)));
 	}
-	$timeLimit = Q_Config::get('Q', 'uploads', 'limits', 'image', 'time', 5*60*60);
+	$timeLimit = Q_Config::get('Q', 'uploads', 'limits', 'file', 'time', 5*60*60);
 	set_time_limit($timeLimit); // default is 5 min
-	$data = Q_Image::save($p);
+	$data = Q_File::save($p);
 	if (empty($params)) {
 		Q_Response::setSlot('data', $data);
 	}

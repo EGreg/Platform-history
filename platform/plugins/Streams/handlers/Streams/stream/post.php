@@ -57,6 +57,13 @@ function Streams_stream_post($params = array())
 		unset($req['icon']);
 	}
 	
+	// Hold on to any file that was posted
+	$file = null;
+	if (!empty($req['file']) and is_array($req['file'])) {
+		$file = $req['file'];
+		unset($req['file']);
+	}
+	
 	// Check if client can set the name of this stream
 	if (!empty($req['name'])) {
 		if ($user->id !== $publisherId
@@ -74,6 +81,19 @@ function Streams_stream_post($params = array())
 			$icon['subpath'] = "Streams/$publisherId/{$stream->name}/icon/".time();
 		}
 		Q_Response::setSlot('icon', Q::event("Q/image/post", $icon));
+	}
+	
+	// Process any file that was posted
+	if (is_array($file)) {
+		if (empty($file['subpath'])) {
+			$file['subpath'] = "Streams/$publisherId/{$stream->name}/file/".time();
+		}
+		Q_Response::setSlot('icon', Q::event("Q/image/post", $icon));
+	}
+	$file = Q::ifset($fieldNames, 'file', null);
+	if (is_array($file)) {
+		unset($fieldNames['file']);
+		Q_Response::setSlot('file', Q::event("Q/file/post", $icon));
 	}
 	
 	if (empty($req['dontSubscribe'])) {

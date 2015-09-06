@@ -4,166 +4,28 @@
  * @module Q
  */
 
-define("Q_AVATAR_SIZE",		 80);
-define("Q_WAVATAR_BACKGROUNDS", 4);
-define("Q_WAVATAR_FACES",	   11);
-define("Q_WAVATAR_BROWS",	   8);
-define("Q_WAVATAR_EYES",		13);
-define("Q_WAVATAR_PUPILS",	  11);
-define("Q_WAVATAR_MOUTHS",	  19);
-define("Q_MAVATAR_LEGS",		5);
-define("Q_MAVATAR_HAIR",		5);
-define("Q_MAVATAR_ARMS",		5);
-define("Q_MAVATAR_BODY",		15);
-define("Q_MAVATAR_EYES",		15);
-define("Q_MAVATAR_MOUNTH",	  10);
-define('Q_SPRITE_Z',			128);
-
 /**
- * Q Image class
- * @class Q_Image
+ * Q File class
+ * @class Q_File
  */
-class Q_Image
-{
-
+class Q_File
+{	
 	/**
-	 * Returns png avatar image. Can check gravatar.com for avatar
-	 * @method avatar
-	 * @static
-	 * @param $hash {string} The md5 hash to build avatar
-	 * @param [$size=Q_AVATAR_SIZE] {integer} Avatar size in pixels
-	 * @param [$type='wavatar'] {string} Type of avatar - one of 'wavatar', 'monster', 'imageid'
-	 * @param [$gravatar=false] {boolean}
-	 * @return {GDImageLink}
-     * @throws {Q_Exception} If GD is not supported
-     * @throws {Q_Exception_WrongValue} If avatar type is not supported
-	 */
-	static function avatar($hash, $size = Q_AVATAR_SIZE, $type = 'wavatar', $gravatar = false) {
-		if ($gravatar) {
-			$avatar = @file_get_contents("http://www.gravatar.com/avatar/$hash?r=g&d=$type&s=$size");
-		}
-		if (isset($avatar) && $avatar !== false) {
-			return $avatar;
-		}
-        if (empty($size)) $size = Q_AVATAR_SIZE;
-        if (empty($type)) $type = 'wavatar';
-        if (!function_exists('imagecreatetruecolor')) {
-            throw new Q_Exception("PHP GD support not installed!");
-        }
-        switch ($type) {
-            case 'wavatar':
-                return self::buildWAvatar($hash, $size);
-                break;
-            case 'monster':
-                return self::buildMAvatar($hash, $size);
-                break;
-            case 'imageid':
-                return self::buildIAvatar($hash, $size);
-                break;
-            default:
-                throw new Q_Exception_WrongValue(array(
-                    'field' => 'type', 
-                    'range' => "one of: 'wavatar', 'monster', 'imageid'")
-                );
-				break;
-        }
-	}
-	
-	/**
-	 * Download an image from pixabay
-	 * @param {string} $keywords Specify some string to search images on pixabay
-	 * @param {array} [$options=array()] Any additional options for pixabay api as per its documentation
-	 * @param {boolean} [$returnFirstImage=false] If true, downloads and returns the first image as data
-	 * @return {string} JSON according to pixabay api documentation
-	 */
-	static function pixabay($keywords, $options = array(), $returnFirstImage = false)
-	{
-		$info = Q_Config::get('Q', 'images', 'pixabay', null);
-		if (!$info['username']) {
-			throw new Q_Exception_MissingConfig(array('fieldpath' => 'Q/images/pixabay/username'));
-		}
-		if (!$info['key']) {
-			throw new Q_Exception_MissingConfig(array('fieldpath' => 'Q/images/pixabay/key'));
-		}
-		$username = $info['username'];
-		$key = $info['key'];
-		$defaults = array();
-		$options = array_merge($defaults, $options);
-		$optionString = http_build_query($options, '', '&');
-		$keywords = urlencode(strtolower($keywords));
-		$url = "http://pixabay.com/api/?username=$username&key=$key&q=$keywords&$optionString";
-		$json = @file_get_contents($url);
-		$data = Q::json_decode($json, true);
-		if (!$returnFirstImage) {
-			return $data;
-		}
-		if (empty($data['hits'][0]['webformatURL'])) {
-			return null;
-		}
-		$webformatUrl = $data['hits'][0]['webformatURL'];
-		$data = @file_get_contents($webformatUrl);
-		return $data;
-	}
-
-	/**
-	 * Saves an avatar image, in a certain size. Can check gravatar.com for avatar
-	 * @method put
-	 * @static
-	 * @param $filename {string} The name of image file
-	 * @param $hash {string} The md5 hash to build avatar
-	 * @param [$size=Q_AVATAR_SIZE] {integer} Avatar size in pixels
-	 * @param [$type='wavatar'] {string} Type of avatar - one of 'wavatar', 'monster', 'imageid'
-	 * @param [$gravatar=false] {boolean}
-	 * @return {GDImageLink}
-     * @throws {Q_Exception} If GD is not supported
-     * @throws {Q_Exception_WrongValue} If avatar type is not supported
-	 */
-	static function put($filename, $hash, $size = Q_AVATAR_SIZE, $type = 'wavatar', $gravatar = false) {
-		$result = self::avatar($hash, $size, $type, $gravatar);
-		if ($gravatar) {
-			file_put_contents($filename, $result);
-		} else {
-			imagepng($result, $filename);
-		}
-	}
-	
-	/**
-	 * Saves an image, usually sent by the client, in one or more sizes.
+	 * Saves a file, usually sent by the client
 	 * @method save
 	 * @static
 	 * @param {array} $params 
-	 * @param {string} [$params.data] the image data
+	 * @param {string} [$params.data] the file data
 	 * @param {string} [$params.path="uploads"] parent path under web dir (see subpath)
 	 * @param {string} [$params.subpath=""] subpath that should follow the path, to save the image under
-	 * @param {string} [$params.merge=""] path under web dir for an optional image to use as a background
-	 * @param {string} [$params.crop] array with keys "x", "y", "w", "h" to crop the original image
-	 * @param {string} [$params.save=array("x" => "")] array of $size => $basename pairs
-	 *  where the size is of the format "WxH", and either W or H can be empty.
+	 * @param {string} [$params.basename] required name of the file, after the subpath
 	 * @param {string} [$params.skipAccess=false] if true, skips the check for authorization to write files there
-	 * @return {array} an array of ($size => $fullImagePath) pairs
+	 * @return {array} Returns array containing ($basename => $tailUrl) pair
 	 */
 	static function save($params)
 	{
-		if (empty($params['data'])) {
-			throw new Q_Exception("Image data is missing");
-		}
-		$imageData = $params['data'];
-		$image = imagecreatefromstring($imageData);
-		if (!$image) {
-			throw new Q_Exception("Image type not supported");
-		}
-		// image dimensions
-		$maxW = Q_Config::get('Q', 'uploads', 'limits', 'image', 'width', 5000);
-		$maxH = Q_Config::get('Q', 'uploads', 'limits', 'image', 'height', 5000);
-		$iw = imagesx($image);
-		$ih = imagesy($image);
-		if ($maxW and $iw > $maxW) {
-			throw new Q_Exception("Uploaded image width exceeds $maxW");
-		}
-		if ($maxH and $iw > $maxH) {
-			throw new Q_Exception("Uploaded image width exceeds $maxH");
-		}
-	
+		Q::requireFields($params, array('data', 'basename'), true);
+		
 		// check whether we can write to this path, and create dirs if needed
 		$path = isset($params['path']) ? $params['path'] : 'uploads';
 		$subpath = isset($params['subpath']) ? $params['subpath'] : '';
@@ -173,164 +35,33 @@ class Q_Image
 				'filename' => APP_WEB_DIR.DS.$path
 			));
 		}
-		$writePath = $realPath.($subpath ? DS.$subpath : '');
+		$basename = $params['basename'];
+		$writePath = $realPath.($subpath ? DS.$subpath : '').DS.$basename;
 		$lastChar = substr($writePath, -1);
 		if ($lastChar !== DS and $lastChar !== '/') {
 			$writePath .= DS;
 		}
 		$throwIfNotWritable = empty($params['skipAccess']) ? true : null;
 		Q_Utils::canWriteToPath($writePath, $throwIfNotWritable, true);
-	
-		// check if exif is available
-		if (self::isJPEG($imageData)) {
-			$exif = exif_read_data("data://image/jpeg;base64," . base64_encode($imageData));
-			// rotate original image if necessary (hopefully it's not too large).
-			if (!empty($exif['Orientation'])) {
-				switch ($exif['Orientation']) {
-					case 3:
-						$image = imagerotate($image, 180, 0);
-						break;
-					case 6:
-						$image = imagerotate($image, -90, 0);
-						break;
-					case 8:
-						$image = imagerotate($image, 90, 0);
-						break;
-				}
-			}
-		}
-		$crop = isset($params['crop']) ? $params['crop'] : array();
-		$save = !empty($params['save']) ? $params['save'] : array('x' => '');
-		// crop parameters - size of source image
-		$isw = isset($crop['w']) ? $crop['w'] : $iw;
-		$ish = isset($crop['h']) ? $crop['h'] : $ih;
-		$isx = isset($crop['x']) ? $crop['x'] : 0;
-		$isy = isset($crop['y']) ? $crop['y'] : 0;
-		// process requested thumbs
-		$data = array();
-		$merge = null;
-		$m = isset($params['merge']) ? $params['merge'] : null;
-		if (isset($m) && strtolower(substr($m, -4)) === '.png') {
-			$mergePath = Q::realPath(APP_WEB_DIR.DS.implode(DS, explode('/', $m)));
-			if ($mergePath) {
-				$merge = imagecreatefrompng($mergePath);
-				$mw = imagesx($merge);
-				$mh = imagesy($merge);
-			}
-		}
-		foreach ($save as $size => $name) {
-			if (empty($name)) {
-				// generate a filename
-				do {
-					$name = Q_Utils::unique(8).'.png';
-				} while (file_exists($writePath.$name));
-			}
-			if (strrpos($name, '.') === false) {
-				$name .= '.png';
-			}
-			list($n, $ext) = explode('.', $name);
-			$sw = $isw;
-			$sh = $ish;
-			$sx = $isx;
-			$sy = $isy;
-			// determine destination image size
-			if (!empty($size)) {
-				$sa = explode('x', $size);
-				if (count($sa) > 1) {
-					if ($sa[0] === '') {
-						if ($sa[1] === '') {
-							$dw = $sw;
-							$dh = $sh;
-						} else {
-							$dh = intval($sa[1]);
-							$dw = $sw * $dh / $sh;
-						}
-					} else {
-						$dw = intval($sa[0]);
-						if ($sa[1] === '') {
-							$dh = $sh * $dw / $sw;
-						} else {
-							$dh = intval($sa[1]);
-						}
-					}
-				} else {
-					$dw = $dh = intval($sa[0]);
-				}
-				// calculate the origin point of source image
-				// we have a cropped image of dimension $sw, $sh and need to make new with dimension $dw, $dh
-				if ($dw/$sw < $dh/$sh) {
-					// source is wider then destination
-					$new = $dw/$dh * $sh;
-					$sx += round(($sw - $new)/2);
-					$sw = round($new);
-				} else {
-					// source is narrower then destination
-					$new = $dh/$dw * $sw;
-					$sy += round(($sh - $new)/2);
-					$sh = round($new);
-				}
-			} else {
-				$size = '';
-				$dw = $sw;
-				$dh = $sh;
-			}
-			// create destination image
-			$maxWidth = Q_Config::get('Q', 'images', 'maxWidth', null);
-			$maxHeight = Q_Config::get('Q', 'images', 'maxHeight', null);
-			if (isset($maxWidth) and $dw > $maxWidth) {
-				throw new Q_Exception("Image width exceeds maximum width of $dw");
-			}
-			if (isset($maxHeight) and $dh > $maxHeight) {
-				throw new Q_Exception("Image height exceeds maximum height of $dh");
-			}
-			$thumb = imagecreatetruecolor($dw, $dh);
-			$res = ($sw === $dw && $sh === $dh)
-				? imagecopy($thumb, $image, 0, 0, $sx, $sy, $sw, $sh)
-				: imagecopyresampled($thumb, $image, 0, 0, $sx, $sy, $dw, $dh, $sw, $sh);
-			if (!$res) {
-				throw new Q_Exception("Failed to save image file of type '$ext'");
-			}
-			if ($merge) {
-				$mergethumb = imagecreatetruecolor($mw, $mh);
-				imagesavealpha($mergethumb, false);
-				imagealphablending($mergethumb, false);
-				if (imagecopyresized($mergethumb, $merge, 0, 0, 0, 0, $dw, $dh, $mw, $mh)) {
-					imagecopy($thumb, $mergethumb, 0, 0, 0, 0, $dw, $dh);
-				}
-			}
-			switch ($ext) {
-				case 'jpeg':
-				case 'jpeg':
-					$func = 'imagejpeg';
-					break;
-				case 'gif':
-					$func = 'imagegif';
-					break;
-				case 'png':
-				default:
-					$func = 'imagepng';
-					break;
-			}
-			if ($res = call_user_func($func, $thumb, $writePath.$name)) {
-				$data[$size] = $subpath ? "$path/$subpath/$name" : "$path/$name";
-			}
-		}
-		$data[''] = $subpath ? "$path/$subpath" : "$path";
+		
+		file_put_contents($writePath, $data);
 
 		/**
-		 * @event Q/image/save {after}
+		 * @event Q/file/save {after}
 		 * @param {string} user
 		 * @param {string} path
 		 * @param {string} subpath
+		 * @param {string} basename
 		 * @param {string} writePath
 		 * @param {string} data
 		 */
 		Q::event(
-			'Q/image/save', 
-			compact('path', 'subpath', 'writePath', 'data', 'save', 'crop'), 
+			'Q/file/save', 
+			compact('path', 'subpath', 'basename', 'writePath', 'data'), 
 			'after'
 		);
-		return $data;
+		$tailUrl = $subpath ? "$path/$subpath" : "$path";
+		return array($basename => $tailUrl);
 	}
 	
 	/**
