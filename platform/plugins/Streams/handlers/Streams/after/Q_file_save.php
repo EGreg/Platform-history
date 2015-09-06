@@ -12,9 +12,11 @@ function Streams_after_Q_file_save($params)
 	if (empty($stream)) {
 		return;
 	}
+	$filesize = filesize($writePath.DS.$basename);
 	$url = $data[$basename];
 	$url = Q_Valid::url($url) ? $url : Q_Request::baseUrl().'/'.$url;
-	$stream->setAttribute('fileUrl', $url);
+	$stream->setAttribute('file.url', $url);
+	$stream->setAttribute('file.size', $filesize);
 	if (empty(Streams::$beingSavedQuery)) {
 		$stream->changed($user->id);
 	} else {
