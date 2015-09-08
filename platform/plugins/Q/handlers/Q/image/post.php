@@ -17,7 +17,7 @@
  *   @param {string} [$params.icon.save=array("x" => "")] array of $size => $basename pairs
  *    where the size is of the format "WxH", and either W or H can be empty.
  */
-function Q_file_post($params = null)
+function Q_image_post($params = null)
 {
 	$p = $params
 		? $params

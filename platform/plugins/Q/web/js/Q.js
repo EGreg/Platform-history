@@ -5158,6 +5158,7 @@ Q.load = function _Q_load(plugins, callback, options) {
  *  Usually the stuff that comes after the base URL
  * @param {Object} fields
  *  Optional fields to append to the querystring.
+ *  Fields containing null and undefined are skipped.
  *  NOTE: only handles scalar values in the object.
  * @param {Object} options
  *  A hash of options, including:
@@ -5168,6 +5169,7 @@ Q.url = function _Q_url(what, fields, options) {
 	var what2 = what || '';
 	if (fields) {
 		for (var k in fields) {
+			if (fields[k] == null) continue;
 			what2 += '?'+encodeURIComponent(k)+'='+encodeURIComponent(fields[k]);
 		}
 	}
