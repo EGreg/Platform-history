@@ -162,7 +162,7 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 				state.publisherId = this.fields.publisherId;
 				state.streamName = this.fields.name;
 				tool.stream = this;
-				tool.stream.refresh(function Streams_preview_afterCreateRefresh(r) {
+				this.refresh(function Streams_preview_afterCreateRefresh(r) {
 					state.onCreate.handle.call(tool, tool.stream);
 					tool.preview();
 				}, {messages: true});

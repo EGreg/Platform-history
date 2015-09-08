@@ -5241,6 +5241,7 @@ Q.action = function _Q_action(uri, fields, options) {
  *  * @param {String} [options.echo] A string to echo back. Used to keep track of responses
  *  * @param {String} [options.method] if set, adds a &Q.method=$method to the querystring
  *  * @param {String|Function} [options.callback] if a string, adds a "&Q.callback="+encodeURIComponent(callback) to the querystring.
+ *  * @param {boolean} [options.iframe] if true, tells the server to render the response as HTML in an iframe, which should call the specified callback
  *  * @param {boolean} [options.loadExtras] if true, asks the server to load the extra scripts, stylesheets, etc. that are loaded on first page load
  *  * @param {Array} [options.idPrefixes] optional array of Q_Html::pushIdPrefix values for each slotName
  *  * @param {number} [options.timestamp] whether to include a timestamp (e.g. as a cache-breaker)
@@ -5269,7 +5270,8 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 			what2 += '/'; // otherwise we will have 301 redirect with trailing slash on most servers
 		}
 		what2 += (what.indexOf('?') < 0) ? '?' : '&';
-		var ajax = options && options.loadExtras ? 'loadExtras' : 'json';
+		var ajax = options && options.iframe ? 'iframe'
+			: (options.loadExtras ? 'loadExtras' : 'json');
 		what2 += encodeURI('Q.ajax='+ajax);
 		if (options && options.timestamp) {
 			what2 += encodeURI('&Q.timestamp=')+encodeURIComponent(timestamp);
@@ -5372,6 +5374,7 @@ Q.req = function _Q_req(uri, slotNames, callback, options) {
  * @param {boolean} [options.post] if set, adds a &Q.method=post to the querystring
  * @param {String} [options.method] if set, adds a &Q.method= that value to the querystring, default "get"
  * @param {Object} [options.fields] optional fields to pass with any method other than "get"
+ * @param {HTMLElement} [options.form] if specified, then the request is made by submitting this form, temporarily extending it with any fields passed in options.fields, and possibly overriding its method with whatever is passed to options.method . The result is rendered in an iframe, and passed to the callback in its second parameter.
  * @param {Array} [options.idPrefixes] optional array of Q_Html::pushIdPrefix values for each slotName
  * @param {boolean} [options.skipNonce] if true, skips loading of the nonce
  * @param {Object} [options.xhr] set to false to avoids XHR. Or set to true, to try to make xhr based on "method" option.
@@ -5481,7 +5484,7 @@ Q.request = function (url, slotNames, callback, options) {
 			Q.handle(o.onLoadEnd, request, [url, slotNames, o]);
 			if (!t.cancelled) {
 				o.onResponse.handle.call(request, data, wasJsonP);
-				Q.handle(_Q_request_callback, request, [null, data, wasJsonP]);
+				_Q_request_callback.call(request, null, data, wasJsonP);
 			}
 		}
 		
@@ -5494,13 +5497,43 @@ Q.request = function (url, slotNames, callback, options) {
 				errors: [{message: msg || "Request was canceled", code: status}]
 			};
 			o.onCancel.handle.call(this, errors, o);
-			Q.handle(_Q_request_callback, this, [errors, errors]);
+			_Q_request_callback.call(this, errors, errors);
+		}
+		
+		var method = o.method || 'GET';
+		var verb = method.toUpperCase();
+		var overrides = {
+			loadExtras: !!o.loadExtras
+		};
+		if (verb !== 'GET') {
+			verb = 'POST'; // browsers don't always support other HTTP verbs;
+			overrides.method = o.method;
+		}
+
+		if (o.form) {
+			var method = options.method || 'GET';
+			if (o.extend !== false) {
+				overrides.iframe = true;
+				url = Q.ajaxExtend(url, slotNames, overrides);
+			}
+			var p = 
+			Q.formPost(url, o.fields, method, {
+				form: o.form,
+				onLoad: function (iframe) {
+					var result = iframe.contentWindow.result();
+					_Q_request_callback.call(request, null, result, true);
+				}
+			});
+			return;
 		}
 
 		if (!o.query && o.xhr !== false
 		&& Q.url(url).search(Q.info.baseUrl) === 0) {
 			
-			function xhr(url, slotNames, onSuccess, onCancel, options) {					
+			function xhr(onSuccess, onCancel) {
+				if (o.extend !== false) {
+					url = Q.ajaxExtend(url, slotNames, overrides);
+				}			
 				var xmlhttp;
 				if (root.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
 					xmlhttp = new XMLHttpRequest();
@@ -5517,27 +5550,15 @@ Q.request = function (url, slotNames, callback, options) {
 						}
 					}
 				};
-				var method = options.method || 'GET';
-				var verb = method.toUpperCase();
-				var overrides = {
-					loadExtras: !!options.loadExtras
-				};
-				if (verb !== 'GET') {
-					verb = 'POST'; // browsers don't always support other HTTP verbs;
-					overrides.method = options.method;
+				if (typeof o.xhr === 'function') {
+					o.xhr.call(xmlhttp, xmlhttp, options);
 				}
-				if (typeof options.xhr === 'function') {
-					options.xhr.call(xmlhttp, xmlhttp, options);
-				}
-				var sync = (options.xhr === 'sync');
-				if (Q.isPlainObject(options.xhr)) {
-					Q.extend(xmlhttp, options.xhr);
+				var sync = (o.xhr === 'sync');
+				if (Q.isPlainObject(o.xhr)) {
+					Q.extend(xmlhttp, o.xhr);
 					sync = sync || xmlhttp.sync;
 				}
-				if (o.extend !== false) {
-					url = Q.ajaxExtend(url, slotNames, overrides);
-				}
-				var content = Q.serializeFields(options.fields);
+				var content = Q.serializeFields(o.fields);
 				request.xmlhttp = xmlhttp;
 				if (verb === 'GET') {
 					xmlhttp.open('GET', url + (content ? '&' + content : ''), !sync);
@@ -5552,7 +5573,7 @@ Q.request = function (url, slotNames, callback, options) {
 			}
 
 			_onStart();
-			return xhr(url, slotNames, _onResponse, _onCancel, o);
+			return xhr(_onResponse, _onCancel);
 		}
 
 		var i = Q.request.callbacks.length;
@@ -5696,10 +5717,12 @@ Q.jsonRequest = Q.request;
  *  The object to serialize
  * @param {Array} keys
  *  An optional array of keys into the object, in the order to serialize things
+ * @param {boolean} returnAsObject
+ *  Pass true here to get an object of {fieldname: value} instead of a string
  * @return {String}
  *  A querystring that can be used with HTTP requests
  */
-Q.serializeFields = function _Q_serializeFields(fields, keys) {
+Q.serializeFields = function _Q_serializeFields(fields, keys, returnAsObject) {
 	if (Q.isEmpty(fields)) {
 		return '';
 	}
@@ -5726,11 +5749,17 @@ Q.serializeFields = function _Q_serializeFields(fields, keys) {
 		}
 	}
 	
+	var result = {};
+	
 	function _add(key, value) {
 		if (value == undefined) return;
 		// If value is a function, invoke it and return its value
 		value = Q.typeOf(value) === "function" ? value() : value;
-		parts.push(encodeURIComponent(key) + "=" + encodeURIComponent(value));
+		if (returnAsObject) {
+			result[key] = value;
+		} else {
+			parts.push(encodeURIComponent(key) + "=" + encodeURIComponent(value));
+		}
 	}
 
 	if (keys) {
@@ -5744,7 +5773,9 @@ Q.serializeFields = function _Q_serializeFields(fields, keys) {
 	}
 
 	// Return the resulting serialization
-	return parts.join("&").replace(/%20/g, "+");
+	return returnAsObject
+		? result
+		: parts.join("&").replace(/%20/g, "+");
 };
 
 /**
@@ -5753,18 +5784,19 @@ Q.serializeFields = function _Q_serializeFields(fields, keys) {
  * Technically we could use AJAX and CORS instead, and then we could have a callback.
  * @static
  * @method formPost
- * @param action {String}
- * @param params {Object}
- * @param method {String}
- * @param options {Object|Boolean}
+ * @param {String|HTMLElement} action The form action. You can also pass an
+ *  HTML form element here, and skip fields and method.
+ * @param {Object} [fields]  The parameters of the form
+ * @param {String} [method] The method with which to submit the form
+ * @param {Object|Boolean} options 
  *  You can pass true here to just submit the form and load the results in a new page in this window.
  *  Or provide an optional object which can contain the following:
  * @param {String} [options.target] the name of a window or iframe to use as the target.
  * @param {HTMLElement} [options.iframe] the iframe to use. If not provided, this is filled to point to a newly created iframe object.
- * @param {Q.Event} [options.onLoad] callback to call when iframe is loaded. Ignored if "target" is specified.
- * @param {HTMLElement} [options.form] the form to use. In this case, the action, params and method are ignored.
+ * @param {Q.Event} [options.onLoad] callback to call when results are loaded in the iframe. Ignored if options.target is specified.
+ * @param {HTMLElement} [options.form] the form to use. In this case, the action, fields and method are ignored.
  */
-Q.formPost = function _Q_formPost(action, params, method, options) {
+Q.formPost = function _Q_formPost(action, fields, method, options) {
 	if (typeof options === 'function') {
 		options = {onLoad: options};
 	} else if (options === true) {
@@ -5772,19 +5804,23 @@ Q.formPost = function _Q_formPost(action, params, method, options) {
 	} else {
 		options = options || {};
 	}
-	options = Q.copy(options);
+	var o = Q.copy(options);
 	if (action && typeof action.action === 'string') {
-		options.form = action;
+		o.form = action;
+		action = action.action;
+		method = form.method;
 	} else {
 		method = method || "post"; // Set method to post by default, if not specified.
 	}
 	var onload;
-	if (options.onLoad) {
-		onload = (options.onLoad.typename === 'Q.Event') ? options.onLoad.handle : options.onLoad;
+	if (o.onLoad) {
+		onload = (o.onLoad.typename === 'Q.Event')
+			? o.onLoad.handle
+			: o.onLoad;
 	}
-	var name = options.target, iframe;
+	var name = o.target, iframeProvided = o.iframe, iframe;
 	if (!name) {
-		iframe = options.iframe;
+		iframe = o.iframe;
 		if (iframe) {
 			name = iframe.getAttribute('name');
 		}
@@ -5792,42 +5828,43 @@ Q.formPost = function _Q_formPost(action, params, method, options) {
 			name = 'Q_formPost_iframe_' + (++Q.formPost.counter % 1000);
 			// we only need 1000 because we remove iframes after they successfully load
 		}
-		if (!options.iframe) {
-			try {
-				iframe = document.createElement('<iframe name="'+name.encodeHTML()+'">');
-			} catch (ex) {
-				iframe = document.createElement('iframe');
-				iframe.width = iframe.height = iframe.marginWidth = iframe.marginHeight = 0;
-			}
+		if (!o.iframe) {
+			iframe = options.iframe = document.createElement('iframe');
+			iframe.width = iframe.height = iframe.marginWidth = iframe.marginHeight = 0;
 		}
 		iframe.setAttribute("name", name);
 		iframe.setAttribute("id", name);
 	}
-	var form = options.form;
-	if (!form) {
+	var form = o.form, oldMethod, oldAction;
+	if (form) {
+		oldMethod = form.method;
+		oldAction = form.action;
+	} else {
 		form = document.createElement('form');
-		form.setAttribute("method", method);
-		form.setAttribute("action", action);
 	}
+	form.setAttribute("method", method);
+	form.setAttribute("action", action);
 
-	for(var key in params) {
-		if(params.hasOwnProperty(key)) {
+	var hiddenFields = [];
+	var fields2 = Q.serializeFields(fields, null, true);
+	for(var key in fields2) {
+		if(fields2.hasOwnProperty(key)) {
 			var hiddenField = document.createElement("input");
 			hiddenField.setAttribute("type", "hidden");
 			hiddenField.setAttribute("name", key);
-			hiddenField.setAttribute("value", params[key]);
-
+			hiddenField.setAttribute("value", fields2[key]);
 			form.appendChild(hiddenField);
+			hiddenFields.push(hiddenField);
 		 }
 	}
 
-	if (iframe && !options.iframe) {
+	if (iframe && !iframeProvided) {
 		document.body.appendChild(iframe);
 	}
-	if (iframe && options.onLoad) {
+	if (iframe) {
 		Q.addEventListener(iframe, 'load', function _Q_formPost_loaded() {
 			Q.handle(onload, this, [iframe]);
-			if (!options.iframe && iframe.parentNode) {
+			if (!iframeProvided && iframe.parentNode) {
 				// iframe has loaded everything, and onload callback completed
 				// time to remove it from the DOM
 				// if someone still needs it, they should have saved a reference to it.
@@ -5836,13 +5873,19 @@ Q.formPost = function _Q_formPost(action, params, method, options) {
 		});
 	}
 
-	if (!options.form) document.body.appendChild(form);
-	if (!options.straight) {
+	if (!o.form) document.body.appendChild(form);
+	if (!o.straight) {
 		form.setAttribute("target", name);
 	}
 	form.submit();
-	if (!options.form) {
+	if (!o.form) {
 		Q.removeElement(form);
+	} else {
+		for (var i=hiddenFields.length-1; i>=0; --i) {
+			Q.removeElement(hiddenFields[i]);
+		}
+		form.action = oldAction;
+		form.method = oldMethod;
 	}
 };
 Q.formPost.counter = 0;
@@ -7539,7 +7582,7 @@ Q.Template.onError = new Q.Event(function (err) {
  * @static
  * @method render
  * @param {String} name The name of template. See Q.Template.load
- * @param {Object} fields Rendering params - to be substituted to template
+ * @param {Object} fields The fields to pass to the template when rendering it
  * @param {Array} [partials] Names of partials to load and use for rendering the template
  * @param {Function} [callback] a callback - receives (error) or (error, html)
  * @param {Object} [options={}] Options.
@@ -9432,6 +9475,14 @@ function _onPointerMoveHandler(evt) { // see http://stackoverflow.com/a/2553717/
 
 }
 
+/**
+ * Removes event listeners that are activated when the pointer has started.
+ * This method is called automatically when the mouse or fingers are released
+ * on the window. However, in the code that stops propagation of the Q.Pointer.end
+ * event (mouseup or touchend), you'd have to call this method manually.
+ * @method ended
+ * @static
+ */
 var _onPointerEndHandler = Q.Pointer.ended = function _onPointerEndHandler() {
 	setTimeout(function () {
 		Q.Pointer.started = null;

@@ -18,15 +18,18 @@ class Q_File
 	 * @param {string} [$params.data] the file data
 	 * @param {string} [$params.path="uploads"] parent path under web dir (see subpath)
 	 * @param {string} [$params.subpath=""] subpath that should follow the path, to save the image under
-	 * @param {string} [$params.basename] required name of the file, after the subpath
+	 * @param {string} [$params.name] override the name of the file, after the subpath
 	 * @param {string} [$params.skipAccess=false] if true, skips the check for authorization to write files there
-	 * @return {array} Returns array containing ($basename => $tailUrl) pair
+	 * @return {array} Returns array containing ($name => $tailUrl) pair
 	 */
 	static function save($params)
 	{
-		Q::requireFields($params, array('data', 'basename'), true);
+		if (empty($params['data'])) {
+			throw new Q_Exception(array('field' => 'file'), 'data');
+		}
 		
 		// check whether we can write to this path, and create dirs if needed
+		$data = $params['data'];
 		$path = isset($params['path']) ? $params['path'] : 'uploads';
 		$subpath = isset($params['subpath']) ? $params['subpath'] : '';
 		$realPath = Q::realPath(APP_WEB_DIR.DS.$path);
@@ -35,33 +38,40 @@ class Q_File
 				'filename' => APP_WEB_DIR.DS.$path
 			));
 		}
-		$basename = $params['basename'];
-		$writePath = $realPath.($subpath ? DS.$subpath : '').DS.$basename;
+		$name = isset($params['name']) ? $params['name'] : 'file';
+		if (!preg_match('/^[\w.-]+$/', $name)) {
+			throw new Q_Exception_WrongValue(array(
+				'field' => 'name',
+				'range' => 'only alphanumeric characters, dashes and dots'
+			));
+		}
+		// TODO: recognize some extensions maybe
+		$writePath = $realPath.($subpath ? DS.$subpath : '');
 		$lastChar = substr($writePath, -1);
 		if ($lastChar !== DS and $lastChar !== '/') {
 			$writePath .= DS;
 		}
 		$throwIfNotWritable = empty($params['skipAccess']) ? true : null;
 		Q_Utils::canWriteToPath($writePath, $throwIfNotWritable, true);
-		
-		file_put_contents($writePath, $data);
+		file_put_contents($writePath.DS.$name, $data);
+
+		$tailUrl = $subpath ? "$path/$subpath/$name" : "$path/$name";
 
 		/**
 		 * @event Q/file/save {after}
 		 * @param {string} user
 		 * @param {string} path
 		 * @param {string} subpath
-		 * @param {string} basename
+		 * @param {string} name
 		 * @param {string} writePath
 		 * @param {string} data
 		 */
 		Q::event(
 			'Q/file/save', 
-			compact('path', 'subpath', 'basename', 'writePath', 'data'), 
+			compact('path', 'subpath', 'name', 'writePath', 'data', 'tailUrl'),
 			'after'
 		);
-		$tailUrl = $subpath ? "$path/$subpath" : "$path";
-		return array($basename => $tailUrl);
+		return array($name => $tailUrl);
 	}
 	
 	/**

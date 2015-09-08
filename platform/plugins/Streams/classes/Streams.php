@@ -324,6 +324,20 @@ abstract class Streams extends Base_Streams
 			$fields = '*';
 		}
 		$allCached = array();
+		if (empty($options['refetch'])) {
+			$arr = is_array($name) ? $name : array($name);
+			$namesToFetch = array();
+			foreach ($name as $n) {
+				if (isset(self::$fetch[$asUserId][$publisherId][$n][$fields])) {
+					$allCached[$n] = self::$fetch[$asUserId][$publisherId][$n][$fields];
+				} else {
+					$namesToFetch[] = $n;
+				}
+			}
+			if (!is_array($name)) {
+				$namesToFetch = $name ? $name[0] : null;
+			}
+		}
 		if (is_array($name) and empty($options['refetch'])) {
 			$namesToFetch = array();
 			foreach ($name as $n) {
@@ -334,7 +348,7 @@ abstract class Streams extends Base_Streams
 				}
 			}
 			$namesToFetch = array_unique($namesToFetch);
-		} else {
+		} else if (empty($options['refetch'])) {
 			$namesToFetch = $name;
 		}
 		$criteria = array(
@@ -850,6 +864,9 @@ abstract class Streams extends Base_Streams
 			);
 			Q_Response::setSlot('messageTo', $result['messageTo']->exportArray());
 		}
+
+		self::$fetch[$asUserId][$publisherId][$stream->name] = array('*' => $stream);
+
 		return $stream;
 	}
 

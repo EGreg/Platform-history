@@ -537,13 +537,20 @@ var _Streams_batchFunction_preprocess = {
  * @param {Function} callback 
  *	if there were errors, first parameter is the error message
  *  otherwise, first parameter is null and second parameter is a Streams.Stream object
- * @param {Object} [related] , Optional information to add a relation from the newly created stream to another one. Can include:
+ * @param {Object} [related] Optional information to add a relation from the newly created stream to another one. Can include:
  *   @param {String} [related.publisherId] the id of whoever is publishing the related stream
  *   @param {String} [related.streamName] the name of the related stream
  *   @param {Mixed} [related.type] the type of the relation
+ * @param {Object} [options] Any extra options involved in creating the stream
+ *   @param {HTMLElement} [options.form] If you want to upload a file or an icon, pass
+ *    a form element here which includes input elements of type "file", named "file" or "icon".
+ *    If they have files selected in them, they will be passed along with the rest of the
+ *    fields.
  */
-Streams.create = function (fields, callback, related) {
+Streams.create = function (fields, callback, related, options) {
 	var slotNames = ['stream'];
+	var options = options || {};
+	fields = Q.copy(fields);
 	if (fields.icon) {
 		slotNames.push('icon');
 	}
@@ -558,6 +565,11 @@ Streams.create = function (fields, callback, related) {
 		streamName: "" // NOTE: the request is routed to wherever the "" stream would have been hosted
 	});
 	fields["Q.clientId"] = Q.clientId();
+	if (options.form) {
+		fields["file"] = {
+			path: 'uploads/Streams'
+		}
+	}
 	var _r = _retain;
 	Q.req('Streams/stream', slotNames, function Stream_create_response_handler(err, data) {
 		var msg = Q.firstErrorMessage(err, data && data.errors);
@@ -594,7 +606,7 @@ Streams.create = function (fields, callback, related) {
 			}
 			return callback && callback.call(stream, null, stream, extra, data.slots);
 		});
-	}, { method: 'post', fields: fields, baseUrl: baseUrl });
+	}, { method: 'post', fields: fields, baseUrl: baseUrl, form: options.form });
 	_retain = undefined;
 };
 Streams.create.onError = new Q.Event();

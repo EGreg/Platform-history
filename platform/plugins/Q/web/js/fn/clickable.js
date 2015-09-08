@@ -240,7 +240,7 @@ function _Q_clickable(o) {
 			});
 			Q.Pointer.onCancelClick.set(function (e, extraInfo) {
 				if (!extraInfo) {
-					return false;
+					return;
 				}
 				var jq = $(document.elementFromPoint(
 					extraInfo.toX, 

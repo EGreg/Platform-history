@@ -482,8 +482,9 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 				});
 			}, "", state.cameraCommands.join(','));
 			e.preventDefault();
-			e.stopPropagation();
 			Q.Pointer.cancelClick(e);
+			e.stopPropagation();
+			Q.Pointer.ended();
 		});
 	} else {
 		// natively support "file" input

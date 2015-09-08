@@ -8,14 +8,28 @@ function Q_exception_native($params)
 	 */
 
 	if ($is_ajax = Q_Request::isAjax()) {
-		// Render a JSON layout for ajax
+		$json = @Q::json_encode(array(
+			'errors' => Q_Exception::toArray(array($exception))
+		));
+		$callback = Q_Request::callback();
 		switch (strtolower($is_ajax)) {
-		case 'json':
+		case 'iframe': // Render an HTML layout for ajax
+			if (!Q_Response::$batch) {
+				header("Content-type: text/html");
+			}
+			echo <<<EOT
+<!doctype html><html lang=en>
+<head><meta charset=utf-8><title>Q Result</title></head>
+<body>
+<script type="text/javascript">
+window.result = function () { return $json };
+</script>
+</body>
+</html>
+EOT;
+			break;
+		case 'json': // Render a JSON layout for ajax
 		default:
-			$json = @Q::json_encode(array(
-				'errors' => Q_Exception::toArray(array($exception))
-			));
-			$callback = Q_Request::callback();
 			header("Content-type: " . ($callback ? "application/javascript" : "application/json"));
 			echo $callback ? "$callback($json)" : $json;
 		}

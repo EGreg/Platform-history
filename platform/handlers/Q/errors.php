@@ -19,18 +19,33 @@ function Q_errors($params) {
 
 	// Simply return the errors, if this was an AJAX request
 	if ($is_ajax = Q_Request::isAjax()) {
+		try {
+			$errors_json = @Q::json_encode($errors_array);
+		} catch (Exception $e) {
+			$errors_array = array_slice($errors_array, 0, 1);
+			unset($errors_array[0]['trace']);
+			$errors_json = @Q::json_encode($errors_array);
+		}
+		$json = "{\"errors\": $errors_json}";
+		$callback = Q_Request::callback();
 		switch (strtolower($is_ajax)) {
+		case 'iframe':
+			if (!Q_Response::$batch) {
+				header("Content-type: text/html");
+			}
+			echo <<<EOT
+<!doctype html><html lang=en>
+<head><meta charset=utf-8><title>Q Result</title></head>
+<body>
+<script type="text/javascript">
+window.result = function () { return $json };
+</script>
+</body>
+</html>
+EOT;
+			break;
 		case 'json':
 		default:
-			try {
-				$errors_json = @Q::json_encode($errors_array);
-			} catch (Exception $e) {
-				$errors_array = array_slice($errors_array, 0, 1);
-				unset($errors_array[0]['trace']);
-				$errors_json = @Q::json_encode($errors_array);
-			}
-			$json = "{\"errors\": $errors_json}";
-			$callback = Q_Request::callback();
 			header("Content-type: " . ($callback ? "application/javascript" : "application/json"));
 			echo $callback ? "$callback($json)" : $json;
 		}

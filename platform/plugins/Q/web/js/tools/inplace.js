@@ -545,6 +545,8 @@ function _Q_inplace_tool_constructor(element, options) {
 		onSave();
 	});
 	fieldinput.click(function (event) {
+		Q.Pointer.cancelClick(event);
+		Q.Pointer.ended();
 		event.stopPropagation();
 	});
 	function _updateSaveButton() {

@@ -43,6 +43,8 @@ function Streams_before_Q_Utils_canWriteToPath($params, &$result)
 				if ($name and $stream = Streams::fetchOne($userId, $publisherId, $name)) {
 					$result = $stream->testWriteLevel('edit');
 					Streams::$cache['canWriteToStream'] = $stream;
+				} else {
+					$result = false;
 				}
 			}
 		}
