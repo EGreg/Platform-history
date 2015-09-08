@@ -73,6 +73,9 @@ function _Streams_related_tool (options)
 		function addComposer(streamType, params, container, oldElement) {
 			// TODO: test whether the user can really create streams of this type
 			// and otherwise do not append this element
+			if (Q.isEmpty(params)) {
+				params = {};
+			}
 			params.streamType = streamType;
 			var element = tool.elementForStream(
 				tool.state.publisherId, "", streamType, null, 
@@ -364,6 +367,7 @@ function _Streams_related_tool (options)
 	},
 	Q: {
 		beforeRemove: function () {
+			$(this.element).plugin('Q/sortable', 'remove');
 			this.state.onUpdate.remove("Streams/related");
 		}
 	}

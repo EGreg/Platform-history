@@ -5,12 +5,10 @@
  */
 
 /**
- * Provides base protocol and behavior for rendering a stream preview.
- * Should be combined with a tool on the same element that will actually
- * manage and render the interface.
- * @class Streams default preview
+ * Renders a preview for a Streams/image stream
+ * @class Streams image preview
  * @constructor
- * @param {Object} [options] this object contains function parameters
+ * @param {Object} [options] any options for the tool
  *   @param {Object} [options.inplace] Any options to pass to the Q/inplace tool -- see its options.
  *   @uses Q inplace
  *   @param {Boolean} [options.showTitle] Whether to display the title of the image stream

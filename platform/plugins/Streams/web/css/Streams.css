@@ -606,3 +606,5 @@
 .Streams_stream_title { line-height: 80px; font-size: 40px;  }
 .Streams_stream_player { clear: both; }
 .Streams_stream_activity_pane { border-top: 1px solid #aaa; }
+
+.Streams_related_composer { display: inline-block; }

@@ -102,6 +102,13 @@
 					"title": "Untitled Gallery"
 				}
 			},
+			"Streams/file": {
+				"description": "An uploaded file",
+				"create": true,
+				"defaults": {
+					"title": "Untitled File"
+				}
+			},
 			"Streams/category": {
 				"description": "A category to which other things can be related",
 				"create": true,

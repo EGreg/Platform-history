@@ -63,14 +63,16 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 		});
 	}
 	tool.element.addClass('Streams_preview');
-	// default functionality for composer
-	if (state.streamName) {
-		tool.loading();
-		tool.preview();
-	} else {
-		tool.composer();
-	}
-	// actual stream previews should be rendered by the derived tool's constructor
+	// let the extending tool's constructor run,
+	// it may change this tool's state or methods
+	setTimeout(function () {
+		if (state.streamName) {
+			tool.loading();
+			tool.preview();
+		} else {
+			tool.composer();
+		}
+	}, 0);
 },
 
 {
@@ -178,11 +180,11 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 		var tool = this;
 		var state = tool.state;
 		var f = state.template && state.template.fields;
-		var fields = Q.extend({}, state.templates.create.fields, f, {
-			src: Q.url('plugins/Streams/img/actions/add.png'),
-			alt: state.creatable.title || "New Item",
-			title: state.creatable.title || "New Item"
-		});
+		var fields = Q.extend({
+			alt: "New Item",
+			title: "New Item",
+			src: Q.url('plugins/Streams/img/actions/add.png')
+		}, state.templates.create.fields, f, state.creatable);
 		tool.element.addClass('Streams_preview_create');
 		Q.Template.render(
 			'Streams/preview/create',

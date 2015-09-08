@@ -71,19 +71,24 @@ function _Q_actions(options) {
 			.addClass('Q_actions_'+action)
 			.addClass('basic'+size+'_'+action)
 			.attr('action', action)
-			.on(Q.Pointer.fastclick, function () {
+			.on(Q.Pointer.fastclick, function (event) {
 				Q.handle(callback, this, [action, state.context], {
 					fields: {
 						action: action,
 						context: state.context
 					}
 				});
+				Q.Pointer.cancelClick(event);
+				event.stopPropagation();
 			}).on(Q.Pointer.start, function () {
 				$(this).addClass('Q_discouragePointerEvents');
 				$(window).on([Q.Pointer.end, '.Q_actions'], function () {
 					$(this).removeClass('Q_discouragePointerEvents');
 					$(window).off([Q.Pointer.end, '.Q_actions']);
 				});
+			}).click(function (event) {
+				Q.Pointer.cancelClick(event);
+				event.stopPropagation();
 			});
 		buttons[action] = button;
 		if (state.reverse) {
