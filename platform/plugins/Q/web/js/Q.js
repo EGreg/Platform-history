@@ -43,6 +43,7 @@ Q.text = {
 	Q: {
 		"request": {
 			"error": "Error {{status}} during request",
+			"canceled": 'Request canceled',
 			"500": "Internal server error",
 			"404": "Not found: {{url}}",
 			"0": "Request interrupted"
@@ -641,6 +642,7 @@ Elp.hasClass = function (className) {
 /**
  * Remove a CSS class from the element
  * @method removeClass
+ * @chainable
  * @param {String} className
  * @return {Element} returns this, for chaining
  */
@@ -657,6 +659,7 @@ Elp.removeClass = function (className) {
 /**
  * Restore ability to select text in an element 
  * @method addClass
+ * @chainable
  * @param {String} className
  * @return {Element} returns this, for chaining
  */
@@ -5255,6 +5258,7 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 		}
 		return '';
 	}
+	options = options || {};
 	var slotNames2 = (typeof slotNames === 'string')
 		? slotNames 
 		: Q.extend([], slotNames).join(',');
@@ -5270,10 +5274,10 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 			what2 += '/'; // otherwise we will have 301 redirect with trailing slash on most servers
 		}
 		what2 += (what.indexOf('?') < 0) ? '?' : '&';
-		var ajax = options && options.iframe ? 'iframe'
+		var ajax = options.iframe ? 'iframe'
 			: (options.loadExtras ? 'loadExtras' : 'json');
 		what2 += encodeURI('Q.ajax='+ajax);
-		if (options && options.timestamp) {
+		if (options.timestamp) {
 			what2 += encodeURI('&Q.timestamp=')+encodeURIComponent(timestamp);
 		}
 		if (slotNames2 != null) {
@@ -5303,7 +5307,7 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
 			what2[k] =  what[k];
 		}
 		what2.Q = { "ajax": "json" };
-		if (options && options.timestamp) {
+		if (options.timestamp) {
 			what2.Q.timestamp = timestamp;
 		}
 		if (slotNames) {
@@ -5489,7 +5493,8 @@ Q.request = function (url, slotNames, callback, options) {
 		}
 		
 		function _onCancel (status, msg) {
-			msg = (msg || Q.text.Q.request[status] || Q.text.Q.request.error)
+			var defaultError = status ? Q.text.Q.request.error : Q.text.Q.request.canceled;
+			msg = (msg || Q.text.Q.request[status] || defaultError)
 				.interpolate({'status': status, 'url': url})
 			t.cancelled = true;
 			_onResponse();
@@ -5598,7 +5603,7 @@ Q.request = function (url, slotNames, callback, options) {
 		} else {
 			url2 = (o.extend === false) ? url : Q.ajaxExtend(url, slotNames, o);
 		}
-		if (options && options.fields) {
+		if (options.fields) {
 			delim = (url.indexOf('?') < 0) ? '?' : '&';
 			url2 += delim + Q.serializeFields(options.fields);
 		}
@@ -6272,15 +6277,16 @@ Q.findStylesheet = function (href) {
  */
 Q.cookie = function _Q_cookie(name, value, options) {
 	var parts;
+	options = options || {};
 	if (typeof value != 'undefined') {
 		var path, domain = '';
 		parts = Q.info.baseUrl.split('://');
-		if (options && ('path' in options)) {
+		if ('path' in options) {
 			path = ';path='+options.path;
 		} else {
 			path = ';path=/' + parts[1].split('/').slice(1).join('/');
 		}
-		if (options && ('domain' in options)) {
+		if ('domain' in options) {
 			domain = ';domain='+options.domain;
 		} else {
 			domain = ';domain=.' + parts[1].split('/').slice(0, 1);
@@ -6290,7 +6296,7 @@ Q.cookie = function _Q_cookie(name, value, options) {
 			return null;
 		}
 		var expires = '';
-		if (options && options.expires) {
+		if (options.expires) {
 			expires = new Date();
 			expires.setTime((new Date()).getTime() + options.expires);
 			expires = ';expires='+expires.toGMTString();
@@ -7502,7 +7508,8 @@ Q.Template.load = Q.getter(function _Q_Template_load(name, callback, options) {
 		options = callback;
 		callback = undefined;
 	}
-	if (options && options.name) {
+	options = options || {};
+	if (options.name) {
 		name = options.name;
 	}
 	if (!name) {
@@ -9997,6 +10004,7 @@ Q.Masks = {
 	 */
 	show: function(key, options)
 	{
+		key = Q.calculateKey(key);
 		var mask = Q.Masks.mask(key, options);
 		if (!mask.counter) {
 			var me = mask.element;
@@ -10044,9 +10052,15 @@ Q.Masks = {
 	 * @static
 	 * @method update
 	 */
-	update: function()
+	update: function(key)
 	{
-		for (var k in Q.Masks.collection) {
+		var collection = {};
+		if (key) {
+			collection[key] = true;
+		} else {
+			collection = Q.Masks.collection;
+		}
+		for (var k in collection) {
 			var mask = Q.Masks.collection[k];
 			if (!mask.counter) continue;
 			var html = document.documentElement;
@@ -10054,8 +10068,8 @@ Q.Masks = {
 			var ms = mask.element.style;
 			ms.left = rect.left + 'px';
 			ms.top = rect.top + 'px';
-			var width = Math.max(rect.right - rect.left, Q.Pointer.windowWidth());
-			var height = Math.max(rect.bottom - rect.top, Q.Pointer.windowHeight());
+			var width = Math.min(rect.right - rect.left, Q.Pointer.windowWidth());
+			var height = Math.min(rect.bottom - rect.top, Q.Pointer.windowHeight());
 			ms.width = width + 'px';
 			ms.height = ms['line-height'] = height + 'px';
 		}

@@ -38,6 +38,15 @@ table { border-spacing:0; border-collapse:collapse; }
 	to { opacity: 0.25; }
 }
 
+@keyframes Q_removing {
+	from { opacity: 0.5; }
+	to { opacity: 0.25; }
+}
+@-webkit-keyframes Q_removing {
+	from { opacity: 0.5; }
+	to { opacity: 0.25; }
+}
+
 /* Common Q classes */
 .Q_pagebreak { page-break-after: always; }
 .Q_collapsed { border-bottom: solid 2px #777 !important; }
@@ -75,6 +84,12 @@ table { border-spacing:0; border-collapse:collapse; }
 	opacity: 0.5;
 	animation: Q_uploading 1s ease-in-out infinite alternate;
 	-webkit-animation: Q_uploading 1s ease-in-out infinite alternate;
+}
+.Q_removing {
+	opacity: 0.5;
+	background: white;
+	animation: Q_removing 1s ease-in-out infinite alternate;
+	-webkit-animation: Q_removing 1s ease-in-out infinite alternate;
 }
 
 .Q_clear{ clear: both; }

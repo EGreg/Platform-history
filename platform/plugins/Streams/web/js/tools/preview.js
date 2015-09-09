@@ -104,6 +104,8 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 	onRefresh: new Q.Event(),
 	onLoad: new Q.Event(),
 	onClose: new Q.Event(function (wasRemoved) {
+		this.element.removeClass('Q_working');
+		Q.Masks.hide(this);
 		if (wasRemoved) {
 			this.$().hide(300, function () {
 				$(this).remove();
@@ -387,6 +389,10 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 			};
 		} else {
 			actions[action] = function () {
+				tool.element.addClass('Q_working');
+				Q.Masks.show(tool, {
+					shouldCover: tool.element, className: 'Q_removing'
+				});
 				tool.stream.close(function (err) {
 					if (err) return;
 					tool.state.onClose.handle.call(tool, !tool.stream.isRequired);

@@ -327,7 +327,7 @@ abstract class Streams extends Base_Streams
 		if (empty($options['refetch'])) {
 			$arr = is_array($name) ? $name : array($name);
 			$namesToFetch = array();
-			foreach ($name as $n) {
+			foreach ($arr as $n) {
 				if (isset(self::$fetch[$asUserId][$publisherId][$n][$fields])) {
 					$allCached[$n] = self::$fetch[$asUserId][$publisherId][$n][$fields];
 				} else {
@@ -335,20 +335,9 @@ abstract class Streams extends Base_Streams
 				}
 			}
 			if (!is_array($name)) {
-				$namesToFetch = $name ? $name[0] : null;
+				$namesToFetch = $namesToFetch ? $namesToFetch[0] : null;
 			}
-		}
-		if (is_array($name) and empty($options['refetch'])) {
-			$namesToFetch = array();
-			foreach ($name as $n) {
-				if (isset(self::$fetch[$asUserId][$publisherId][$n][$fields])) {
-					$allCached[$n] = self::$fetch[$asUserId][$publisherId][$n][$fields];
-				} else {
-					$namesToFetch[] = $n;
-				}
-			}
-			$namesToFetch = array_unique($namesToFetch);
-		} else if (empty($options['refetch'])) {
+		} else {
 			$namesToFetch = $name;
 		}
 		$criteria = array(

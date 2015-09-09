@@ -342,7 +342,10 @@ function _Q_clickable(o) {
 				$(window).add(triggers)
 					.off([Q.Pointer.end, '.Q_clickable'])
 					.off('release.Q_clickable');
-				Q.handle($this.state('Q/clickable').onRelease, $this, [evt, overElement, triggers]);
+				var ts = $this.state('Q/clickable');
+				if (ts) { // it may have been removed already
+					Q.handle(ts.onRelease, $this, [evt, overElement, triggers]);
+				}
 			};
 			function scale(factor) {
 				scale.factor = factor;

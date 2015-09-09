@@ -148,8 +148,8 @@ function _Streams_related_tool (options)
 							// TODO: replace with animation?
 							tool.refresh();
 						});
-						var s = Q.Tool.from(data.target).state;
-						var i = Q.Tool.from($item[0]).state;
+						var s = Q.Tool.from(data.target, 'Streams/preview').state;
+						var i = Q.Tool.from($item[0], 'Streams/preview').state;
 						var r = i.related;
 						setTimeout(
 							p.fill('timeout'),
@@ -350,12 +350,9 @@ function _Streams_related_tool (options)
 					}
 					var onLoad = preview.state.onLoad;
 					if (onLoad) {
-						onLoad.set(function () {
-							var tab = tabs.state.tab;
-							var $tab = $(tab);
-							if (tab === element) {
-								tabs.refresh();
-							}
+						onLoad.add(function () {
+							// all the related tabs have loaded, process them
+							tabs.refresh();
 						});
 					}
 					preview.state.onRefresh.remove(key);

@@ -477,7 +477,7 @@ class Streams_Stream extends Base_Streams_Stream
 		$modified = array();
 		foreach ($classes as $k => $v) {
 			foreach ($v as $f) {
-				if ($this->fieldsModified[$f]) {
+				if (!empty($this->fieldsModified[$f])) {
 					$modified[$k] = true;
 					break;
 				}
