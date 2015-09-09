@@ -311,7 +311,6 @@ function _Streams_related_tool (options)
 			[o, {}], 
 			null, this.prefix
 		);
-		e.style.visibility = 'visible';
  		return e;
 	},
 
