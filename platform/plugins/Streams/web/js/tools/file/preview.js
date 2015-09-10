@@ -9,6 +9,7 @@
  * @class Streams file preview
  * @constructor
  * @param {Object} [options] this object contains function parameters
+ * @param {String} [windowName='file'] the name of the window in which to open files. Leave it blank to open in the current window.
  *   @param {Object} [options.inplace] Any options to pass to the Q/inplace tool -- see its options.
  *   @uses Q inplace
  *   @param {Object} [options.templates] Under the keys "views", "edit" and "create" you can override options for Q.Template.render .
@@ -52,6 +53,7 @@ function _Streams_file_preview(options, preview) {
 
 {
 	inplace: {},
+	windowName: 'file',
 	templates: {
 		view: {
 			name: 'Streams/file/preview/view',
@@ -120,8 +122,11 @@ function _Streams_file_preview(options, preview) {
 				});
 				$(tool.element).on(Q.Pointer.click, function () {
 					var url = stream.get('file.url');
-					if (url) {
-						window.open(url, 'file');
+					if (!url) return;
+					if (state.windowName) {
+						window.open(url, state.windowName);
+					} else {
+						window.location = url;
 					}
 				});
 			},

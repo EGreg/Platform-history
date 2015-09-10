@@ -9404,7 +9404,7 @@ function _onPointerMoveHandler(evt) { // see http://stackoverflow.com/a/2553717/
 	clearTimeout(_pointerMoveTimeout);
 	var screenX = Q.Pointer.getX(evt) - Q.Pointer.scrollLeft();
 	var screenY = Q.Pointer.getY(evt) - Q.Pointer.scrollTop();
-	if (!screenX || !screenY) {
+	if (!screenX || !screenY || Q.Pointer.canceledClick) {
 		return;
 	}
 	var ccd = Q.Pointer.options.cancelClickDistance;
@@ -10038,10 +10038,10 @@ Q.Masks = {
 				Q.Animation.play(function (x, y) {
 					me.style.opacity = (1-y) * opacity;
 				}, mask.fadeOut).onComplete.set(function () {
-					me.style.display = 'none';
+					Q.removeElement(me);
 				});
 			} else {
-				me.style.display = 'none';
+				Q.removeElement(me);
 			}
 		}
 	},
@@ -10065,8 +10065,8 @@ Q.Masks = {
 			var html = document.documentElement;
 			var rect = mask.rect = (mask.shouldCover || html).getBoundingClientRect();
 			var ms = mask.element.style;
-			ms.left = rect.left + 'px';
-			ms.top = rect.top + 'px';
+			ms.left = rect.left + Q.Pointer.scrollLeft() + 'px';
+			ms.top = rect.top + Q.Pointer.scrollTop() + 'px';
 			var width = Math.min(rect.right - rect.left, Q.Pointer.windowWidth());
 			var height = Math.min(rect.bottom - rect.top, Q.Pointer.windowHeight());
 			ms.width = width + 'px';
