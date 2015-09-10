@@ -239,7 +239,7 @@ function _Q_clickable(o) {
 				$t.data('Q/clickable transform', $t.css('transform'));
 			});
 			Q.Pointer.onCancelClick.set(function (e, extraInfo) {
-				if (!extraInfo) {
+				if (!extraInfo || !extraInfo.comingFromPointerMovement) {
 					return;
 				}
 				var jq = $(document.elementFromPoint(

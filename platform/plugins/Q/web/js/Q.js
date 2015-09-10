@@ -9416,7 +9416,8 @@ function _onPointerMoveHandler(evt) { // see http://stackoverflow.com/a/2553717/
 			fromX: _pos.x,
 			fromY: _pos.y,
 			toX: screenX,
-			toY: screenY
+			toY: screenY,
+			comingFromPointerMovement: true
 		})) {
 			_pos = false;
 		}
