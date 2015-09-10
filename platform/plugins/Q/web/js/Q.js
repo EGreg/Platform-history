@@ -5521,7 +5521,6 @@ Q.request = function (url, slotNames, callback, options) {
 				overrides.iframe = true;
 				url = Q.ajaxExtend(url, slotNames, overrides);
 			}
-			var p = 
 			Q.formPost(url, o.fields, method, {
 				form: o.form,
 				onLoad: function (iframe) {
@@ -7531,7 +7530,7 @@ Q.Template.load = Q.getter(function _Q_Template_load(name, callback, options) {
 		script = scripts[i];
 		var type = script.getAttribute('type');
 		if (script && script.id && script.innerHTML
-		&& type.substr(0, 5) === 'text/'
+		&& type && type.substr(0, 5) === 'text/'
 		&& o.types[type.substr(5)]) {
 			tpl[Q.normalize(script.id)] = script.innerHTML.trim();
 			trash.unshift(script);

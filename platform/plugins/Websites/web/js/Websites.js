@@ -70,7 +70,9 @@ Q.page('', function () {
 		.set(function (attributes, k) {
 			var tail = attributes[k];
 			if (tail && location !== Q.url(tail)) {
-				Q.handle(Q.url(tail));
+				Q.Streams.refresh(function () {
+					Q.handle(Q.url(tail));
+				});
 			}
 		}, "Websites");
 	}

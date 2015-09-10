@@ -91,10 +91,11 @@ function _Streams_default_preview(options, preview) {
 					// load the icon
 					var jq = tool.$('img.Streams_preview_icon');
 					tool.preview.icon(jq[0], p.fill('icon'));
-					if (tpl === 'view') {
+					var inplace = tool.child('Streams_inplace');
+					if (!inplace) {
 						return p.fill('inplace').apply(this, arguments);
 					}
-					tool.child('Streams_inplace').state.onLoad.add(function () {
+					inplace.state.onLoad.add(function () {
 						p.fill('inplace').apply(this, arguments);
 					});
 				});

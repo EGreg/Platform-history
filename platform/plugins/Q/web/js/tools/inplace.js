@@ -169,7 +169,6 @@ function _Q_inplace_tool_constructor(element, options) {
 		'line-height': '1px'
 	});
 	if (!$te.is(':visible')) {
-		_waitUntilVisible();
 		function _waitUntilVisible() {
 			if (tool.removed) return;
 			if (!$te.is(':visible')) {
@@ -181,6 +180,7 @@ function _Q_inplace_tool_constructor(element, options) {
 				});
 			}
 		}
+		_waitUntilVisible();
 	}
 	var edit_button = tool.$('button.Q_inplace_tool_edit');
 	var save_button = tool.$('button.Q_inplace_tool_save');

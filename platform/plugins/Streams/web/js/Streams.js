@@ -811,7 +811,7 @@ Streams.getParticipating = function(callback) {
  * @return {boolean} whether the refresh occurred
  */
 Streams.refresh = function (callback, options) {
-	if (!Q.isOnline() || Streams.refresh.options.preventAutomatic) {
+	if (!Q.isOnline()) {
 		Q.handle(callback, this, [false]);
 		return false;
 	}
@@ -3812,7 +3812,9 @@ function _scheduleUpdate() {
 			// The timer was delayed for too long. Something might have changed.
 			// Streams.refresh.options.minSeconds should prevent the update
 			// from happening too frequently
-			Streams.refresh();
+			if (!Streams.refresh.options.preventAutomatic) {
+				Streams.refresh();
+			}
 		}
 		_scheduleUpdate.lastTime = now;
 		setTimeout(_scheduleUpdate, ms);
