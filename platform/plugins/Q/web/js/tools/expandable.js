@@ -107,11 +107,18 @@ Q.Tool.define('Q/expandable', function (options) {
 		var $element = o.scrollToElement ? $(o.scrollToElement) : $h2;
 		var t1 = $element.offset().top - offset.top;
 		var h1 = $element.height();
+		var isBody = $scrollable && $scrollable[0].tagName.toUpperCase() === 'BODY';
+		if (isBody) {
+			t1 -= Q.Pointer.scrollTop();
+		}
 		Q.Animation.play(function (x, y) {
 			if (!o.scrollContainer) return;
 			if ($scrollable) {
 				var t = $element.offset().top - offset.top;
-				var scrollTop = $scrollable.scrollTop() + t - t1 * (1-y) - h1/2;
+				if (isBody) {
+					t -= Q.Pointer.scrollTop();
+				}
+				var scrollTop = $scrollable.scrollTop() + t - t1 * (1-y) - h1/2 * y;
 				$scrollable.scrollTop(scrollTop);
 			}
 			$expandable.css('overflow', 'visible');
