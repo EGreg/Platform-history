@@ -5493,6 +5493,7 @@ Q.request = function (url, slotNames, callback, options) {
 		}
 		
 		function _onCancel (status, msg) {
+			status = Q.isInteger(status) ? status : null;
 			var defaultError = status ? Q.text.Q.request.error : Q.text.Q.request.canceled;
 			msg = (msg || Q.text.Q.request[status] || defaultError)
 				.interpolate({'status': status, 'url': url})
