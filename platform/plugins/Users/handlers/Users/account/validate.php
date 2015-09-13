@@ -34,7 +34,8 @@ function Users_account_validate()
 			);
 		}
     }
-    if (isset($username)) {
+	global $Q_installing;
+    if (isset($username) and isset($Q_installing)) {
         try {
 			Q::event('Users/validate/username', compact('username'));
         } catch (Exception $e) {

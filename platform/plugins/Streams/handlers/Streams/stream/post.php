@@ -15,16 +15,21 @@
  *   @param {string} [$params.related.streamName] Optionally indicate the name of a stream to relate the newly crated stream to. This is often necessary in order to obtain permissions to create the stream.
  *   @param {bool} [$params.dontSubscribe=false] Pass 1 or true here in order to skip auto-subscribing to the newly created stream.
  *   @param {array} [$params.icon] This is used to upload a custom icon for the stream which will then be saved in different sizes. See fields for Q/image/post method
- *     @param {string} [$params.icon.data]  Required for icon. Base64-encoded image data URI - see RFC 2397
+ *     @param {string} [$params.icon.data]  Required if $_FILES is empty. Base64-encoded  data URI - see RFC 2397
  *     @param {string} [$params.icon.path="uploads"] parent path under web dir (see subpath)
  *     @param {string} [$params.icon.subpath=""] subpath that should follow the path, to save the image under
  *     @param {string} [$params.icon.merge=""] path under web dir for an optional image to use as a background
  *     @param {string} [$params.icon.crop] array with keys "x", "y", "w", "h" to crop the original image
  *     @param {string} [$params.icon.save=array("x" => "")] array of $size => $basename pairs
  *      where the size is of the format "WxH", and either W or H can be empty.
+ *   @param {array} [$params.file] This is used to upload a custom icon for the stream which will then be saved in different sizes. See fields for Q/image/post method
+ *     @param {string} [$params.file.data]  Required if $_FILES is empty. Base64-encoded  data URI - see RFC 2397
+ *     @param {string} [$params.file.path="uploads"] parent path under web dir (see subpath)
+ *     @param {string} [$params.file.subpath=""] subpath that should follow the path, to save the file under
+ *     @param {string} [$params.file.name] override name of the file, after the subpath
  */
 function Streams_stream_post($params = array())
-{	
+{
 	$user = Users::loggedInUser(true);
 	$publisherId = Streams::requestedPublisherId();
 	if (empty($publisherId)) {
@@ -57,6 +62,13 @@ function Streams_stream_post($params = array())
 		unset($req['icon']);
 	}
 	
+	// Hold on to any file that was posted
+	$file = null;
+	if (!empty($req['file']) and is_array($req['file'])) {
+		$file = $req['file'];
+		unset($req['file']);
+	}
+	
 	// Check if client can set the name of this stream
 	if (!empty($req['name'])) {
 		if ($user->id !== $publisherId
@@ -69,21 +81,47 @@ function Streams_stream_post($params = array())
 	$stream = Streams::create($user->id, $publisherId, $type, $req, $relate);
 	
 	// Process any icon that was posted
+	if ($icon === true) {
+		$icon = array();
+	}
 	if (is_array($icon)) {
+		if (empty($icon['path'])) {
+			$icon['path'] = 'uploads/Streams';
+		}
 		if (empty($icon['subpath'])) {
-			$icon['subpath'] = "Streams/$publisherId/{$stream->name}/icon/".time();
+			$icon['subpath'] = "$publisherId/{$stream->name}/icon/".time();
 		}
 		Q_Response::setSlot('icon', Q::event("Q/image/post", $icon));
 	}
 	
+	// Process any file that was posted
+	if ($file === true) {
+		$file = array();
+	}
+	if ($file) {
+		if (empty($file['path'])) {
+			$file['path'] = 'uploads/Streams';
+		}
+		if (empty($file['subpath'])) {
+			$file['subpath'] = "$publisherId/{$stream->name}/file/".time();
+		}
+		Q_Response::setSlot('file', Q::event("Q/file/post", $file));
+	}
+	$file = Q::ifset($fieldNames, 'file', null);
+	if (is_array($file)) {
+		unset($fieldNames['file']);
+		Q_Response::setSlot('file', Q::event("Q/file/post", $icon));
+	}
+
+	// Re-fetch the stream object from the Streams::fetch cache,
+	// since it might have been retrieved and modified to be different
+	// from what is currently in $stream.
+	// This also calculates the access levels on the stream.
+	$stream = Streams::fetchOne($user->id, $publisherId, $stream->name);
+	
 	if (empty($req['dontSubscribe'])) {
 		// autosubscribe to streams you yourself create, using templates
 		$stream->subscribe();
-	}
-	
-	// we have to set the access levels on the stream
-	if ($publisherId != $user->id) {
-		$stream = Streams::fetchOne($user->id, $publisherId, $stream->name);
 	}
 
 	Streams::$cache['stream'] = $stream;

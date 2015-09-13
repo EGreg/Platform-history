@@ -693,7 +693,8 @@ Streams.listen = function (options) {
 										appRootUrl: Q.Config.expect(['Q', 'web', 'appRootUrl'])
 									});
 									var html = Q.Handlebars.render(parsed.template, fields);
-									var path = Streams.invitationsPath()+'/'+parsed.batchName;
+									var path = Streams.invitationsPath(invitingUserId)
+										+'/'+parsed.batchName;
 									var filename = path + '/'
 										+ Q.normalize(stream.fields.publisherId) + '-'
 										+ Q.normalize(stream.fields.name) + '-'
@@ -1290,9 +1291,14 @@ Streams.invitedUrl = function _Streams_invitedUrl(token) {
 		+ "/" + token;
 };
 
-Streams.invitationsPath = function _Streams_invitationsPath() {
-	return Q.app.FILES_DIR + '/' + Q.Config.expect(['Q', 'app'])
-		+ '/uploads/Streams/invitations';
+Streams.invitationsPath = function _Streams_invitationsPath(userId) {
+	var subpath = Q.Config.get(
+		'Streams', 'invites', 'subpath',
+		'{{app}}/uploads/Streams/invitations'
+	);
+	return Q.app.FILES_DIR + '/' + subpath.interpolate({
+		app: Q.Config.expect(['Q', 'app'])
+	}) + '/' + userId;
 };
 
 /**

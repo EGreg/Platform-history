@@ -1670,12 +1670,12 @@ Q.Layout = {
 					Q.Layout.flipColumns.fn[columnName] = function(o) {
 						if (Q.Layout.flipColumns.current != columnName) {
 							Q.Layout.flipColumns.current = columnName;
-							if (!Q.Layout.wasHashChange) {
-								updateHash(columnName);
-							}
 							Q.handle(o.onFlipBegin);
 							columnsFlip.plugin('Q/flip', {
 								onFinish: {'Q_columns_flip_handler': function () {
+									if (!Q.Layout.wasHashChange) {
+										updateHash(columnName);
+									}
 									Q.handle(o.onFlipFinish);
 									Q.handle(o.onBackButtonSet);
 									Q.Layout.adjustScrolling();
@@ -2033,8 +2033,7 @@ Q.Dashboard = {
 					);
 				});
 				if (elements.length) {
-					$(this).plugin('Q/contextual', 'remove')
-					.plugin('Q/contextual', {
+					$(this).plugin('Q/contextual', {
 						'className': 'Q_dashboard_listing_contextual',
 						'defaultHandler': Q.Layout.listingHandler,
 						'elements': elements
@@ -2422,6 +2421,12 @@ Q.Contextual = {
 	remove: function(cid)
 	{
 		var col = Q.Contextual.collection;
+		for (var i=cid+1, l=col.length; i<l; ++i) {
+			var state = col[i].trigger.state('Q/contextual');
+			if (state && state.id) {
+				--state.id;
+			}
+		}
 		var current = col.splice(cid, 1)[0];
 		current.trigger.unbind('mouseenter.Q_contextual');
 		return current;

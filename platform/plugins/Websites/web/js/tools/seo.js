@@ -27,7 +27,6 @@ Q.Tool.define("Websites/seo", function () {
 		return;
 	}
 	
-	
 	var publisherId = Websites.userId;
 	var streamName = Websites.seoStreamName;
 	

@@ -324,16 +324,19 @@ abstract class Streams extends Base_Streams
 			$fields = '*';
 		}
 		$allCached = array();
-		if (is_array($name) and empty($options['refetch'])) {
+		if (empty($options['refetch'])) {
+			$arr = is_array($name) ? $name : array($name);
 			$namesToFetch = array();
-			foreach ($name as $n) {
+			foreach ($arr as $n) {
 				if (isset(self::$fetch[$asUserId][$publisherId][$n][$fields])) {
 					$allCached[$n] = self::$fetch[$asUserId][$publisherId][$n][$fields];
 				} else {
 					$namesToFetch[] = $n;
 				}
 			}
-			$namesToFetch = array_unique($namesToFetch);
+			if (!is_array($name)) {
+				$namesToFetch = $namesToFetch ? $namesToFetch[0] : null;
+			}
 		} else {
 			$namesToFetch = $name;
 		}
@@ -372,6 +375,8 @@ abstract class Streams extends Base_Streams
 			}
 		}
 		$types = array_keys($types);
+		
+		self::afterFetchExtended($publisherId, $streams);
 
 		foreach ($types as $type) {
 			$cached = array();
@@ -400,7 +405,6 @@ abstract class Streams extends Base_Streams
 				'options' => $options,
 				'type' => $type
 			);
-			self::afterFetchExtended($publisherId, $s->type, $retrieved);
 			/**
 			 * @event Streams/fetch/$streamType {after}
 			 * @param {&array} streams
@@ -703,7 +707,7 @@ abstract class Streams extends Base_Streams
 				}
 			}
 		}
-		if (!$authorized and $retrieved and $relate['streamName']) {
+		if (!$authorized and $retrieved and !empty($relate['streamName'])) {
 			// Check if user is perhaps authorized to create a related stream
 			$to_stream = Streams::fetchOne(
 				$userId, $relate['publisherId'], $relate['streamName']
@@ -849,6 +853,9 @@ abstract class Streams extends Base_Streams
 			);
 			Q_Response::setSlot('messageTo', $result['messageTo']->exportArray());
 		}
+
+		self::$fetch[$asUserId][$publisherId][$stream->name] = array('*' => $stream);
+
 		return $stream;
 	}
 
@@ -943,6 +950,8 @@ abstract class Streams extends Base_Streams
 	 * @static
 	 * @param {boolean} $throwIfMissing=false
 	 *  Optional. If true, throws an exception if the publisher id cannot be deduced
+	 * @param {array|string} [$uri=Q_Dispatcher::uri()]
+	 *  An array or string representing a uri to use instead of the Q_Dispatcher::uri()
 	 * @return {integer}
 	 *  The id of the publisher user
 	 * @throws {Users_Exception_NoSuchUser}
@@ -950,12 +959,14 @@ abstract class Streams extends Base_Streams
 	 * @throws {Q_Exception_RequiredField}
 	 *  If the username can't be deduced, this is thrown
 	 */
-	static function requestedPublisherId($throwIfMissing = false)
+	static function requestedPublisherId($throwIfMissing = false, $uri = null)
 	{
 		if (isset(self::$requestedPublisherId_override)) {
 			return self::$requestedPublisherId_override;
 		}
-		$uri = Q_Dispatcher::uri();
+		if (!isset($uri)) {
+			$uri = Q_Dispatcher::uri();
+		}
 		if (isset($_REQUEST['publisherId'])) {
 			return $_REQUEST['publisherId'];
 		} else if (isset($uri->publisherId)) {
@@ -989,34 +1000,35 @@ abstract class Streams extends Base_Streams
 	 * @static
 	 * @param {boolean} $throwIfMissing=false
 	 *  Optional. If true, throws an exception if the stream name cannot be deduced
-	 * @param {string} $return_as
+	 * @param {string} $returnAs
 	 *  Defaults to "string". Can also be "array" or "original"
+	 * @param {array|string} [$uri=Q_Dispatcher::uri()]
+	 *  An array or string representing a uri to use instead of the Q_Dispatcher::uri()
 	 * @return {string}
 	 *  The name of the stream
 	 * @throws {Q_Exception_RequiredField}
 	 *  If the name can't be deduced, this is thrown
 	 */
-	static function requestedName($throwIfMissing = false, $return_as = 'string')
+	static function requestedName($throwIfMissing = false, $returnAs = 'string', $uri = null)
 	{
 		if (isset(self::$requestedName_override)) {
 			return self::$requestedName_override;
 		}
-		$uri = Q_Dispatcher::uri();
+		if (!isset($uri)) {
+			$uri = Q_Dispatcher::uri();
+		}
 		if (isset($_REQUEST['streamName'])) {
 			$result = $_REQUEST['streamName'];
 		} else if (isset($_REQUEST['name'])) {
 			$result = $_REQUEST['name'];
 		} else if (isset($uri->name)) {
-			if (is_array($uri->name)) {
-				$result = implode('/', $uri->name);
-			}
-			$result = $uri->name;
+			$result = is_array($uri->name) ? implode('/', $uri->name) : $uri->name;
 		}
 		if (isset($result)) {
-			if ($return_as === 'string' and is_array($result)) {
+			if ($returnAs === 'string' and is_array($result)) {
 				$result = implode('/', $result);
 			}
-			if ($return_as === 'array' and is_string($result)) {
+			if ($returnAs === 'array' and is_string($result)) {
 				$result = explode('/', $result);
 			}
 			if (is_array($result)) {
@@ -1887,10 +1899,9 @@ abstract class Streams extends Base_Streams
 	 * @param {string} [$options.prefix] if specified, this filters by the prefix of the related streams
 	 * @param {array} [$options.where] you can also specify any extra conditions here
 	 * @param {array} [$options.extra] An array of any extra info to pass to Streams::fetch when fetching streams
-	 * @param {array} [$options.relationsOnly] If true, returns only the relations to/from stream, doesn't fetch the streams. Useful if publisher id of relation objects is not the same as provided by publisherId.
-	 * @param {array} [$options.streamsOnly] If true, returns only the streams related to/from stream, doesn't return the relations.
-	 * @param {array} [$options] Useful for shorthand in while( ) statements.
-	 * @param {array} [$options.streamFields] If specified, fetches only the fields listed here for any streams
+	 * @param {array} [$options.relationsOnly] If true, returns only the relations to/from stream, doesn't fetch the other data. Useful if publisher id of relation objects is not the same as provided by publisherId.
+	 * @param {array} [$options.streamsOnly] If true, returns only the streams related to/from stream, doesn't return the other data.
+	 * @param {array} [$options.streamFields] If specified, fetches only the fields listed here for any streams.
 	 * @param {array} [$options.skipFields] Optional array of field names. If specified, skips these fields when fetching streams
 	 * @param {array} [$options.includeTemplates] Defaults to false. Pass true here to include template streams (whose name ends in a slash) among the related streams.
 	 * @return {array}
@@ -2255,7 +2266,7 @@ abstract class Streams extends Base_Streams
 					'range' => 'a filename with extension .handlebars'
 				));
 			}
-			$path = Streams::invitationsPath().DS.$batchName;
+			$path = Streams::invitationsPath($asUserId).DS.$batchName;
 			Q_Utils::canWriteToPath($path, true, true);
 		}
 
@@ -2820,37 +2831,53 @@ abstract class Streams extends Base_Streams
 		return $fieldNames;
 	}
 	
-	static function invitationsPath()
+	static function invitationsPath($invitingUserId)
 	{
 		$app = Q_Config::expect('Q', 'app');
-		$subpath = Q_Config::get('Streams', 'invites', 'subpath', '{{app}}/uploads/Streams/invitations');
-		return APP_FILES_DIR.DS.Q::interpolate($subpath, compact('app'));
+		$subpath = Q_Config::get(
+			'Streams', 'invites', 'subpath',
+			'{{app}}/uploads/Streams/invitations'
+		);
+		return APP_FILES_DIR
+			.DS.Q::interpolate($subpath, compact('app'))
+			.DS.$invitingUserId;
 	}
 	
-	protected static function afterFetchExtended($publisherId, $type, $retrieved)
+	protected static function afterFetchExtended($publisherId, $streams)
 	{
-		// all streams are the same type
-		if (!$retrieved) return;
+		if (!$streams) return;
 		$classes = array();
 		$rows = array();
-		foreach ($retrieved as $name => $stream) {
-			$classes = Streams::getExtendClasses($type);
-			foreach ($classes as $k => $v) {
-				$rows[$k] = call_user_func(array($k, 'select'), '*')
-					->where(array(
-						'publisherId' => $publisherId,
-						'streamName' => array_keys($retrieved)
-					))->fetchDbRows(null, '', 'streamName');
+		$streamNamesByType = array();
+		foreach ($streams as $stream) {
+			if (!$stream) continue;
+			$streamNamesByType[$stream->type][] = $stream->name;
+		}
+		$classes = array();
+		foreach ($streams as $stream) {
+			if (!$stream) continue;
+			$type = $stream->type;
+			if (!isset($classes[$type])) {
+				$classes[$type] = Streams::getExtendClasses($type);
+				foreach ($classes[$type] as $className => $fieldNames) {
+					$rows[$className] = call_user_func(array($className, 'select'), '*')
+						->where(array(
+							'publisherId' => $publisherId,
+							'streamName' => $streamNamesByType[$type]
+						))->fetchDbRows(null, '', 'streamName');
+				}
 			}
 		}
-		foreach ($retrieved as $name => $stream) {
-			foreach ($classes as $k => $v) {
-				if (empty($rows[$k][$name])) continue;
-				$row = $stream->rows[$k] = $rows[$k][$name];
+		foreach ($streams as $stream) {
+			if (!$stream) continue;
+			$streamName = $stream->name;
+			foreach ($classes[$stream->type] as $className => $fieldNames) {
+				if (empty($rows[$className][$streamName])) continue;
+				$row = $stream->rows[$className] = $rows[$className][$streamName];
 				$row->set('Streams_Stream', $stream);
-				foreach ($v as $f) {
-					if (!isset($rows[$k][$name])) continue;
-					$stream->$f = $rows[$k][$name]->$f;
+				foreach ($fieldNames as $f) {
+					if (!isset($rows[$className][$streamName])) continue;
+					$stream->$f = $rows[$className][$streamName]->$f;
 				}
 			}
 		}

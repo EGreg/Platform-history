@@ -129,41 +129,53 @@ class Places_Location
 		$asUserId = Q::ifset($options, 'asUserId', null);
 		$publisherId = $location->publisherId;
 		$skipAccess = Q::ifset($options, 'skipAccess', true);
-		$normalized = Q_Utils::normalize($title);
-		$name = "Places/area/$placeId/$normalized";
-		if (!($area = Streams::fetchOne($asUserId, $publisherId, $name, $options))) {
+		$floorName = isset($floor)
+			? "Places/floor/$placeId/".Q_Utils::normalize($floor)
+			: null;
+		$columnName = isset($column)
+			? "Places/column/$placeId/".Q_Utils::normalize($column)
+			: null;
+		$name = "Places/area/$placeId/".Q_Utils::normalize($title);
+		$area = Streams::fetchOne($asUserId, $publisherId, $name, $options);
+		if (!$area) {
 			$attributes = array(
 				'locationName' => $locationName,
 				'locationTitle' => $location->title,
-				'locationAddress' => $location->getAttribute('address')
+				'locationAddress' => $location->getAttribute('address'),
+				'floorName' => $floorName,
+				'columnName' => $columnName
 			);
 			$area = Streams::create($asUserId, $publisherId, 'Places/area',
 				compact('name', 'title', 'skipAccess', 'attributes')
 			);
-		}
-		$area->save();
-		$area->relateTo($location, 'location', $asUserId, $options);
-		if (isset($floor)) {
-			$normalized = Q_Utils::normalize($floor);
-			$name = "Places/floor/$placeId/$normalized";
-			$title = $floor;
-			if (!($floor = Streams::fetchOne($asUserId, $publisherId, $name))) {
-				$floor = Streams::create($asUserId, $publisherId, 'Places/floor',
-					compact('name', 'title', 'skipAccess')
-				);
+			$area->relateTo($location, 'location', $asUserId, $options);
+			if ($floorName) {
+				$name = $floorName;
+				$title = $floor;
+				if (!($floor = Streams::fetchOne($asUserId, $publisherId, $name))) {
+					$floor = Streams::create($asUserId, $publisherId, 'Places/floor',
+						compact('name', 'title', 'skipAccess')
+					);
+				}
+				$area->relateTo($floor, 'floor', $asUserId, $options);
 			}
-			$area->relateTo($floor, 'floor', $asUserId, $options);
-		}
-		if (isset($column)) {
-			$normalized = Q_Utils::normalize($column);
-			$name = "Places/column/$placeId/$normalized";
-			$title = $column;
-			if (!($column = Streams::fetchOne($asUserId, $publisherId, $name))) {
-				$column = Streams::create($asUserId, $publisherId, 'Places/column',
-					compact('name', 'title', 'skipAccess')
-				);
+			if ($columnName) {
+				$name = $columnName;
+				$title = $column;
+				if (!($column = Streams::fetchOne($asUserId, $publisherId, $name))) {
+					$column = Streams::create($asUserId, $publisherId, 'Places/column',
+						compact('name', 'title', 'skipAccess')
+					);
+				}
+				$area->relateTo($column, 'column', $asUserId, $options);
 			}
-			$area->relateTo($column, 'column', $asUserId, $options);
+		} else {
+			$column = $columnName
+				? Streams::fetchOne($asUserId, $publisherId, $columnName)
+				: null;
+			$floor = $floorName
+				? Streams::fetchOne($asUserId, $publisherId, $floorName)
+				: null;
 		}
 		return array($area, $floor, $column);
 	}

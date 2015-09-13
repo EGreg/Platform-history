@@ -2,15 +2,17 @@
 
 /**
  * Override this to validate the username in your own way.
- * Note that some auto-generated usernames may look like _Alphanumeric_Alphanumeric
  */
 function Users_validate_username($params)
 {
 	// override this to change the rules for validating the username
-	
 	extract($params);
 	if (empty($username)) {
 		return;
+	}
+	if ($first = mb_substr($username, 0, 1, "UTF-8")
+	and mb_strtolower($first, "UTF-8") != $chr) {
+		return; // first letter is uppercase, this represents an organization
 	}
 	if (strlen($username) < 4) {
 		throw new Q_Exception("usernames are at least 4 characters long", array('username'));

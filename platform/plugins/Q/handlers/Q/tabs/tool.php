@@ -109,7 +109,7 @@ function Q_tabs_tool($options)
 	));
 	Q_Response::addScript('plugins/Q/js/tools/tabs.js');
 	Q_Response::addStylesheet('plugins/Q/css/tabs.css');
-	$classes = empty($vertical) ? '' : ' Q_tabs_vertical';
+	$classes = empty($vertical) ? ' Q_tabs_horizontal' : ' Q_tabs_vertical';
 	if (!empty($compact)) {
 		$classes .= " Q_tabs_compact";
 	}

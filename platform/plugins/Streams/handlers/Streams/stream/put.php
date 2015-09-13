@@ -89,6 +89,13 @@ function Streams_stream_put($params) {
 		Q_Response::setSlot('icon', Q::event("Q/image/post", $icon));
 	}
 	
+	// Process any file that was posted
+	$file = Q::ifset($fieldNames, 'file', null);
+	if (is_array($file)) {
+		unset($fieldNames['file']);
+		Q_Response::setSlot('file', Q::event("Q/file/post", $icon));
+	}
+	
 	if (!empty($fieldNames)) {
 		foreach ($fieldNames as $f) {
 			if (array_key_exists($f, $fields)) {

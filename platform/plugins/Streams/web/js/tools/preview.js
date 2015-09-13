@@ -33,8 +33,12 @@
  *   @param {Object} [options.overrideShowSize]  A hash of {icon: size} pairs to override imagepicker.showSize when the icon is a certain string. The empty string matches all icons.
  *   @param {String} [options.throbber="plugins/Q/img/throbbers/loading.gif"] The url of an image to use as an activity indicator when the image is loading
  *   @param {Number} [options.cacheBust=null] Number of milliseconds to use for combating the re-use of cached images when they are first loaded.
- *   @param {Q.Event} [options.beforeCreate] An event that occurs right before a creatable preview issue request to create a new stream
+ *   @param {Q.Event} [options.beforeCreate] An event that occurs right before a composer requests to create a new stream
  *   @param {Q.Event} [options.onCreate] An event that occurs after a new stream is created by a creatable preview
+ *   @param {Q.Event} [options.onComposer] An event that occurs after a composer is rendered
+ *   @param {Q.Event} [options.onRefresh] An event that occurs after a stream preview is rendered for an existing stream
+ *   @param {Q.Event} [options.onLoad] An event that occurs after the refresh calls its callback, which should happen when everything has fully rendered
+ *   @param {Q.Event} [options.onClose] An event that occurs after a stream with a preview has been closed
  *   @param {Object} [options.templates] Under the keys "views", "edit" and "create" you can override options for Q.Template.render .
  *   The fields passed to the template include "alt", "titleTag" and "titleClass"
  *     @param {Object} [options.templates.create]
@@ -63,14 +67,16 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 		});
 	}
 	tool.element.addClass('Streams_preview');
-	// default functionality for composer
-	if (state.streamName) {
-		tool.loading();
-		tool.preview();
-	} else {
-		tool.composer();
-	}
-	// actual stream previews should be rendered by the derived tool's constructor
+	// let the extending tool's constructor run,
+	// it may change this tool's state or methods
+	setTimeout(function () {
+		if (state.streamName) {
+			tool.loading();
+			tool.preview();
+		} else {
+			tool.composer();
+		}
+	}, 0);
 },
 
 {
@@ -80,7 +86,8 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 		title: null,
 		clickable: true,
 		addIconSize: 50,
-		streamType: null
+		streamType: null,
+		options: {}
 	},
 	throbber: "plugins/Q/img/throbbers/loading.gif",
 	
@@ -99,9 +106,12 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 	
 	beforeCreate: new Q.Event(),
 	onCreate: new Q.Event(),
+	onComposer: new Q.Event(),
 	onRefresh: new Q.Event(),
 	onLoad: new Q.Event(),
 	onClose: new Q.Event(function (wasRemoved) {
+		this.element.removeClass('Q_working');
+		Q.Masks.hide(this);
 		if (wasRemoved) {
 			this.$().hide(300, function () {
 				$(this).remove();
@@ -111,22 +121,24 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 	onReopen: new Q.Event(),
 	onError: new Q.Event(function (err) {
 		var fem = Q.firstErrorMessage(err);
-		var position = this.$().css('position');
-		this.$().css({
-			'pointer-events': 'none',
+		var $te = $(this.element);
+		var position = $te.css('position');
+		var $div = $("<div class='Streams_preview_error' />")
+		.text(err).animate({opacity: 0.5}, 300);
+		$te.css({
+			'cursor': 'grabbing',
 			'position': (position === 'static' ? 'relative' : position),
 			'overflow': 'hidden'
-		})
-		.append($("<div />").css({
-			'opacity': '0.8',
-			'font-size': '12px',
-			'background': 'red',
-			'position': 'absolute',
-			'top': '0px',
-			'left': '0px',
-			'line-height': '12px',
-			'opacity': 0
-		}).text(err).animate({opacity: 0.5}, 3000));
+		}).append($div)
+		.click(function () {
+			$te.slideUp(300);
+		}).plugin('Q/actions', {
+			actions: {
+				remove: function () {
+					$te.slideUp(300);
+				}
+			}
+		});
 	}, 'Streams/preview'),
 	
 	templates: {
@@ -138,7 +150,7 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 },
 
 {
-	create: function (evt) {
+	create: function (event) {
 		function _proceed(overrides) {
 			if (overrides != undefined && !Q.isPlainObject(overrides)) {
 				return;
@@ -160,16 +172,16 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 				state.publisherId = this.fields.publisherId;
 				state.streamName = this.fields.name;
 				tool.stream = this;
-				tool.stream.refresh(function Streams_preview_afterCreateRefresh(r) {
+				this.refresh(function Streams_preview_afterCreateRefresh(r) {
 					state.onCreate.handle.call(tool, tool.stream);
 					tool.preview();
 				}, {messages: true});
-			}, state.related);
+			}, state.related, state.creatable.options);
 		}
 		var tool = this;
 		var state = tool.state;
 		if (state.creatable && state.creatable.preprocess) {
-			Q.handle(state.creatable.preprocess, this, [_proceed, tool, evt]);
+			Q.handle(state.creatable.preprocess, this, [_proceed, tool, event]);
 		} else {
 			_proceed();
 		}
@@ -178,11 +190,12 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 		var tool = this;
 		var state = tool.state;
 		var f = state.template && state.template.fields;
-		var fields = Q.extend({}, state.templates.create.fields, f, {
+		var fields = Q.extend({
+			alt: "New Item",
+			title: "New Item",
 			src: Q.url('plugins/Streams/img/actions/add.png'),
-			alt: state.creatable.title || "New Item",
-			title: state.creatable.title || "New Item"
-		});
+			prefix: tool.prefix
+		}, state.templates.create.fields, f, state.creatable);
 		tool.element.addClass('Streams_preview_create');
 		Q.Template.render(
 			'Streams/preview/create',
@@ -207,6 +220,7 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 					container.plugin('Q/clickable', clo);
 				}
 				container.on(Q.Pointer.click, tool, tool.create.bind(tool));
+				Q.handle(state.onComposer, tool);
 			},
 			state.templates.create
 		);
@@ -283,7 +297,7 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 			var sfi = options.icon || fields.icon;
 			var size = si.saveSizeName[si.showSize];
 			var attributes = options.attributes || fields.attributes;
-			attributes = attributes && JSON.parse(attributes);
+			attributes = (attributes && JSON.parse(attributes)) || {};
 			if (attributes.sizes
 			&& attributes.sizes.indexOf(state.imagepicker.showSize) < 0) {
 				for (var i=0; i<attributes.sizes.length; ++i) {
@@ -303,7 +317,6 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 				|| Q.first(si.saveSizeName, {nonEmptyKey: true});
 			var full = si.saveSizeName[si.fullSize] || file;
 			var size = si.saveSizeName[si.showSize];
-			var attributes = this.fields.attributes && JSON.parse(this.fields.attributes);
 			var defaultIcon = (options.defaultIcon) || 'default';
 			var icon = (sfi && sfi !== 'default') ? sfi : defaultIcon;
 			element.src = Q.url(
@@ -385,6 +398,10 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 			};
 		} else {
 			actions[action] = function () {
+				tool.element.addClass('Q_working');
+				Q.Masks.show(tool, {
+					shouldCover: tool.element, className: 'Q_removing'
+				});
 				tool.stream.close(function (err) {
 					if (err) return;
 					tool.state.onClose.handle.call(tool, !tool.stream.isRequired);

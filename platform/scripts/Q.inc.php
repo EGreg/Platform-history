@@ -7,8 +7,9 @@
 //
 // Include Q
 //
-if (!defined('Q_DIR'))
+if (!defined('Q_DIR')) {
 	define('Q_DIR', dirname(dirname(__FILE__)));
+}
 
 try {
 	include_once(realpath(Q_DIR.'/Q.php'));

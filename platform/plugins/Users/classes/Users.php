@@ -908,6 +908,9 @@ abstract class Users extends Base_Users
 		 */
 		Q::event('Users/insertUser', compact('user', 'during'), 'after');
 
+		$sizes = Q_Config::expect('Users', 'icon', 'sizes');
+		sort($sizes);
+
 		if (empty($icon)) {
 			switch ($provider) {
 			case 'facebook':
@@ -915,8 +918,6 @@ abstract class Users extends Base_Users
 				if (empty($uid)) {
 					break;
 				}
-				$sizes = Q_Config::expect('Users', 'icon', 'sizes');
-				sort($sizes);
 				$icon = array();
 				foreach ($sizes as $size) {
 					$icon["$size.png"] = "http://graph.facebook.com/$uid/picture?width=$size&height=$size";
@@ -927,8 +928,6 @@ abstract class Users extends Base_Users
 			// Import the user's icon and save it
 			if (is_string($icon)) {
 				// assume it's from gravatar
-				$sizes = Q_Config::expect('Users', 'icon', 'sizes');
-				sort($sizes);
 				$iconString = $icon;
 				$icon = array();
 				foreach ($sizes as $size) {
@@ -937,8 +936,6 @@ abstract class Users extends Base_Users
 			} else {
 				// locally generated icons
 				$hash = md5(strtolower(trim($identifier)));
-				$sizes = Q_Config::expect('Users', 'icon', 'sizes');
-				sort($sizes);
 				$icon = array();
 				foreach ($sizes as $size) {
 					$icon["$size.png"] = array('hash' => $hash, 'size' => $size);
@@ -1221,34 +1218,27 @@ abstract class Users extends Base_Users
 	 * @static
 	 * @param {array} $user The user for whom the icon should be downloaded
 	 * @param {array} [$urls=array()] Array of urls
-	 * @param {string} [$folder=null] Defaults to "user-id-".$user->id
-	 * @return {boolean}
+	 * @param {string} [$directory=null] Defaults to APP/files/APP/uploads/Users/USERID/icon/imported
+	 * @return {string} the path to the icon directory
 	 */
-	static function importIcon($user, $urls = array(), $folder = null)
+	static function importIcon($user, $urls = array(), $directory = null)
 	{
-		if (empty($folder)) {
-			$folder = 'user-'.$user->id.DS.'imported';
+		if (empty($directory)) {
+			$app = Q_Config::expect('Q', 'app');
+			$directory = APP_FILES_DIR.DS.$app.DS.'uploads'.DS.'Users'
+				.DS.$user->id.DS.'icon'.DS.'imported';
 		}
 		if (empty($urls)) {
-			return $folder;
+			return $directory;
 		}
-		$dir = Q_Config::get('Users', 'paths', 'icons', 'files/Users/icons');
-		$realpath = Q::realPath($dir);
-		$dir2 = $dir3 = $realpath.DS.$folder;
-		if (!file_exists($dir2)) {
-			mkdir($dir2, 0777, true);
-			do {
-				chmod($dir3, 0777);
-				$dir3 = dirname($dir3);
-			} while ($dir3 and $dir3 != $realpath and $dir3.DS != $realpath);
-		}
+		Q_Utils::canWriteToPath($directory, true, true);
 		$type = Q_Config::get('Users', 'login', 'iconType', 'wavatar');
 		$largestSize = 0;
 		$largestUrl = null;
 		$largestImage = null;
 		foreach ($urls as $basename => $url) {
 			if (!is_string($url)) continue;
-			$filename = $dir2.DS.$basename;
+			$filename = $directory.DS.$basename;
 			$info = pathinfo($filename);
 			$size = $info['filename'];
 			if ((string)(int)$size !== $size) continue;
@@ -1262,7 +1252,7 @@ abstract class Users extends Base_Users
 		}
 		foreach ($urls as $basename => $url) {
 			if (is_string($url)) {
-				$filename = $dir2.DS.$basename;
+				$filename = $directory.DS.$basename;
 				$info = pathinfo($filename);
 				$size = $info['filename'];
 				$success = false;
@@ -1305,10 +1295,10 @@ abstract class Users extends Base_Users
 						$func = 'imagegif';
 						break;
 				}
-				call_user_func($func, $image, $dir2.DS.$info['filename'].'.png');
+				call_user_func($func, $image, $directory.DS.$info['filename'].'.png');
 			} else {
 				Q_Image::put(
-					$dir2.DS.$basename,
+					$directory.DS.$basename,
 					$url['hash'],
 					$url['size'],
 					$type,
@@ -1316,7 +1306,7 @@ abstract class Users extends Base_Users
 				);
 			}
 		}
-		return $folder;
+		return $directory;
 	}
 
 	/**

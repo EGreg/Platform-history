@@ -73,13 +73,14 @@ function _Streams_default_preview(options, preview) {
 		}
 		// render a template
 		var f = state.template && state.template.fields;
-		var fields = Q.extend({}, state.templates.edit.fields, f, {
+		var editable = stream.testWriteLevel('suggest');
+		var mode = editable ? 'edit' : 'view';
+		var fields = Q.extend({}, state.templates[mode].fields, f, {
 			alt: stream.fields.title,
+			title: stream.fields.title,
 			inplace: inplace
 		});
-		var tpl = (ps.editable !== false || stream.testWriteLevel('suggest'))
-			? 'edit' 
-			: 'view';
+		var tpl = (ps.editable !== false && editable) ? 'edit' : 'view';
 		Q.Template.render(
 			'Streams/default/preview/'+tpl,
 			fields,
@@ -90,7 +91,11 @@ function _Streams_default_preview(options, preview) {
 					// load the icon
 					var jq = tool.$('img.Streams_preview_icon');
 					tool.preview.icon(jq[0], p.fill('icon'));
-					tool.child('Streams_inplace').state.onLoad.add(function () {
+					var inplace = tool.child('Streams_inplace');
+					if (!inplace) {
+						return p.fill('inplace').apply(this, arguments);
+					}
+					inplace.state.onLoad.add(function () {
 						p.fill('inplace').apply(this, arguments);
 					});
 				});
@@ -102,19 +107,19 @@ function _Streams_default_preview(options, preview) {
 
 );
 
+Q.Template.set('Streams/default/preview/view',
+	'<div class="Streams_preview_container Q_clearfix">'
+	+ '<img alt="{{alt}}" class="Streams_preview_icon">'
+	+ '<div class="Streams_preview_contents {{titleClass}}">'
+	+ '<{{titleTag}} class="Streams_preview_title">{{title}}</{{titleTag}}>'
+	+ '</div></div>'
+);
+
 Q.Template.set('Streams/default/preview/edit',
 	'<div class="Streams_preview_container Q_clearfix">'
 	+ '<img alt="{{alt}}" class="Streams_preview_icon">'
 	+ '<div class="Streams_preview_contents {{titleClass}}">'
 	+ '<{{titleTag}} class="Streams_preview_title">{{& inplace}}</{{titleTag}}>'
-	+ '</div></div>'
-);
-
-Q.Template.set('Streams/default/preview/create',
-	'<div class="Streams_preview_container Q_clearfix">'
-	+ '<img alt="{{alt}}" class="Streams_preview_add">'
-	+ '<div class="Streams_preview_contents {{titleClass}}">'
-	+ '<{{titleTag}} class="Streams_preview_title">{{title}}</{{titleTag}}>'
 	+ '</div></div>'
 );
 

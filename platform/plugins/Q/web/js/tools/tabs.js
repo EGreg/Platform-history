@@ -54,15 +54,13 @@ Q.Tool.define("Q/tabs", function(options) {
 	});
 	
 	tool.$tabs = $('.Q_tabs_tab', tool.element).css('visibility', 'hidden');
-	function _showTabs() {
+	state.onRefresh.set(function () {
 		tool.$tabs.css('visibility', 'visible');
-	}
-	
+	}, 'Q/tabs');
 	Q.onLayout(tool).set(function () {
-		tool.refresh(_showTabs);
+		tool.refresh();
 	}, tool);
-	
-	tool.refresh(_showTabs);
+	tool.refresh();
 	state.onActivate.handle.call(tool, state.tab, tool.getName(state.tab));
 	
 },
@@ -79,6 +77,7 @@ Q.Tool.define("Q/tabs", function(options) {
 	beforeSwitch: new Q.Event(),
 	onActivate: new Q.Event(),
 	onCurrent: new Q.Event(),
+	onRefresh: new Q.Event(),
 	onContextual: new Q.Event(),
 	tabName: null, // set by indicateCurrent
 	tab: null // set by indicateCurrent
@@ -315,7 +314,8 @@ Q.Tool.define("Q/tabs", function(options) {
 		}
 		var $tabs = tool.$tabs = $('.Q_tabs_tab', $te);
 		var $overflow, $lastVisibleTab;
-		if (tool.state.vertical) {
+		if (state.vertical) {
+			Q.handle(state.onRefresh, this)
 			return callback && callback.call(this);
 		}
 		if (state.compact) {
@@ -363,6 +363,7 @@ Q.Tool.define("Q/tabs", function(options) {
 		}
 		if (!$overflow) {
 			tool.$overflow = null;
+			Q.handle(state.onRefresh, this);
 			return callback && callback.call(tool);
 		}
 		tool.overflowIndex = index;
@@ -379,6 +380,7 @@ Q.Tool.define("Q/tabs", function(options) {
 				},
 				className: "Q_tabs_contextual",
 				onConstruct: function ($contextual) {
+					Q.handle(state.onRefresh, this);
 					callback && callback.call(tool);
 				},
 				onShow: function () {

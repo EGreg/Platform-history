@@ -39,6 +39,7 @@ function Streams_participants_tool($options)
 		$stream = $options['stream'];
 		$publisherId = $stream->publisherId;
 		$streamName = $stream->name;
+		unset($options['stream']);
 	}
 	if (!isset($publisherId)) {
 		$publisherId = Streams::requestedPublisherId(true);
@@ -46,12 +47,16 @@ function Streams_participants_tool($options)
 	if (!isset($streamName)) {
 		$streamName = Streams::requestedName(true);
 	}
+	$options['publisherId'] = $publisherId;
+	$options['streamName'] = $streamName;
 	$max = Q_Config::get(
 		'Streams', 'participants', 'max', 
 		Q::ifset($options, 'max', 10)
 	);
 	
-	$stream = Streams::fetchOne(null, $publisherId, $streamName);
+	if (!$stream) {
+		$stream = Streams::fetchOne(null, $publisherId, $streamName);
+	}
 	if (empty($stream)) {
 		throw new Q_Exception_MissingRow(array(
 			'table' => 'Stream', 

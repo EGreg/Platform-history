@@ -363,12 +363,16 @@
 .Streams_preview_icon,
 .Streams_preview_contents { display: inline-block; vertical-align: middle; max-width: 100%; }
 .Streams_preview_contents * { max-width: 100%; }
-.Streams_preview_contents .Q_inplace_tool_static_container { overflow: hidden; text-overflow: ellipsis; }
-.Streams_preview_contents .Q_inplace_tool_static { white-space: nowrap;; }
+.Streams_preview_contents .Q_inplace_tool_static,
+.Streams_preview_contents .Q_inplace_tool_static_container
+.Streams_preview_contents>.Streams_preview_title { 
+	overflow: hidden; text-overflow: ellipsis; white-space: nowrap; 
+}
 .Streams_preview h3 { margin: 0; padding: 0 0 0 10px; line-height: 50px; font-size: 30px; }
 
 .Streams_preview_icon,
 .Streams_preview_add { width: 50px; }
+.Q_inplace_tool_static_container { vertical-align: middle; }
 
 /* Streams access tool */
 .Streams_access_tool_dialog_container { width: 450px; }
@@ -586,6 +590,8 @@
 
 .Streams_preview_tool, .Q_listing .Streams_preview_tool { overflow: visible; }
 .Streams_image_preview_tool { text-align: center; }
+.Streams_preview_tool .Streams_preview_icon,
+.Streams_preview_tool .Streams_preview_add { margin-right: 10px; }
 
 .Streams_related_tool .Q_tabs_overflow .Q_inplace_tool_editbuttons { display: none !important; }
 
@@ -603,6 +609,35 @@
 .Streams_callToAction h2 { font-size: 30px; }
 
 .Streams_stream_icon { float: left; width: 80px; }
-.Streams_stream_title { float: left; line-height: 80px; font-size: 40px;  }
+.Streams_stream_title { line-height: 80px; font-size: 40px;  }
 .Streams_stream_player { clear: both; }
 .Streams_stream_activity_pane { border-top: 1px solid #aaa; }
+
+.Streams_related_composer { display: inline-block; margin-right: 10px; }
+.Streams_file_preview_tool label { cursor: pointer; }
+.Streams_file_form,
+.Streams_file_form input { 
+	top: 0; left: 0; width: 100%; height: 100%;
+	position: absolute; opacity: 0;
+	cursor: pointer;
+}
+
+.Streams_preview_error {
+	opacity: 0.8;
+	font-size: 12px;
+	font-weight: bold;
+	background: red;
+	color: black;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	margin-left: -25%;
+	margin-top: -10px;
+	width: 50%;
+	height: 20px;
+	line-height: 20px;
+	text-align: center;
+	cursor: pointer
+}
+
+.Streams_file_preview_tool.Streams_related_stream { position: relative; cursor: pointer; }

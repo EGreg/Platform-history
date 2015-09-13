@@ -13,21 +13,24 @@
 			"Q/objects": ["Streams/before/Q_objects"],
 			"Q/responseExtras": ["Streams/before/Q_responseExtras"],
 			"Q/Utils/canWriteToPath": ["Streams/before/Q_Utils_canWriteToPath"],
-			"Users/canManageContacts": ["Streams/before/Users_canManageContacts"],
-			"Users/canManageLabels": ["Streams/before/Users_canManageLabels"],
 			"Db/Row/Users_Contact/saveExecute": ["Streams/before/Users_Contact_saveExecute"],
 			"Db/Row/Users_Contact/removeExecute": ["Streams/before/Users_Contact_removeExecute"],
+			"Users/canManageContacts": ["Streams/before/Users_canManageContacts"],
+			"Users/canManageLabels": ["Streams/before/Users_canManageLabels"],
 			"Users/User/displayName": ["Streams/before/Users_User_displayName"]
 		},
 		"handlersAfterEvent": {
 			"Q/objects": ["Streams/after/Q_objects"],
 			"Q/responseExtras": ["Streams/after/Q_responseExtras"],
 			"Q/image/save": ["Streams/after/Q_image_save"],
+			"Q/file/save": ["Streams/after/Q_file_save"],
 			"Db/Row/Users_User/saveExecute": ["Streams/after/Users_User_saveExecute"],
 			"Db/Row/Users_Contact/removeExecute": ["Streams/after/Users_Contact_removeExecute"],
 			"Users/saveContactsFromLinks": ["Streams/after/Users_saveContactsFromLinks"],
 			"Users/setLoggedInUser": ["Streams/after/Users_setLoggedInUser"],
-			"Streams/post/Streams/category": ["Streams/after/Streams_post_Streams_category"]
+			"Streams/message/Streams/relatedTo": ["Streams/after/Streams_message_Streams_relatedTo"],
+			"Streams/message/Streams/unrelatedTo": ["Streams/after/Streams_message_Streams_unrelatedTo"],
+			"Streams/message/Streams/updateRelateTo": ["Streams/after/Streams_message_Streams_updateRelateTo"]
 		},
 		"routes": {
 			"plugins/Streams/:action": {"module": "Streams"},
@@ -99,12 +102,22 @@
 					"title": "Untitled Gallery"
 				}
 			},
+			"Streams/file": {
+				"description": "An uploaded file",
+				"create": true,
+				"edit": true,
+				"defaults": {
+					"icon": "files/_blank",
+					"title": "Untitled File"
+				}
+			},
 			"Streams/category": {
 				"description": "A category to which other things can be related",
 				"create": true,
 				"edit": true,
 				"defaults": {
-					"title": "Untitled Category"
+					"title": "Untitled Category",
+					"icon": "Streams/category"
 				},
 				"fields": ["relatedTo"],
 				"see": ["relatedTo"]
@@ -189,8 +202,9 @@
 				}
 			}
 		},
-		"categories": {
-			"relationTypesToAccelerate": ["Streams/interest"]
+		"categorize": {
+			"relationTypes": ["Streams/interest"],
+			"streamTypes": ["Streams/category"]
 		},
 		"invites": {
 			"tokens": {
@@ -202,7 +216,8 @@
 			"limit": 100,
 			"layout": {
 				"default": "Streams/layout/invitations.php"
-			}
+			},
+			"subpath": "{{app}}/uploads/Streams/invitations"
 		},
 		"interests": {
 			"allowClientQueries": false

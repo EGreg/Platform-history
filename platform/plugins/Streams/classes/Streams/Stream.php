@@ -203,27 +203,7 @@ class Streams_Stream extends Base_Streams_Stream
 	}
 
 	/**
-	 * Make necessary preparations to create new stream.
-	 * <ol>
-	 * 	<li>assign unique for publisher stream name if not set before</li>
-	 * 	<li>make sure that user is not setting 'private' fields. These fields are defined by config value
-	 *		at 'Streams/types/THE_TYPE/private'</li>
-	 * 	<li>check if stream template exists and fill all fields not set by user to that template fields.
-	 * 		Also 'private' fields are reset to those from template</li>
-	 * 	<li>if stream template does not exist simply reset all 'private' fields to their config defaults
-	 *		defined at 'Streams/types/THE_TYPE/default' or Streams_Stream::$DEFAULTS</li>
-	 * 	<li>look up acess template for this stream and copy it with stream's publisher and name
-	 *		to relate to this particular stream</li>
-	 * </ol>
-	 * <b>NOTE:</b> Stream template shall contain publisherId as generic - 0 or exact publisher Id and
-	 *		name as generic - THE_TYPE/ or exact stream name. Access template is defined the same way and shall
-	 *		contain additionally exact user Id or label. All access templates are processed, more specific have priority:
-	 * <ol>
-	 *	<li>exact stream name and exact publisher id - this is record for existing row</li>
-	 *	<li>generic stream name and exact publisher id</li>
-	 *	<li>exact stream name and generic publisher</li>
-	 *	<li>generic stream name and generic publisher</li>
-	 * </ol>
+	 * Does necessary preparations for saving a stream in the database.
 	 * @method beforeSave
 	 * @param {array} $modifiedFields
 	 *	The array of fields
@@ -497,7 +477,7 @@ class Streams_Stream extends Base_Streams_Stream
 		$modified = array();
 		foreach ($classes as $k => $v) {
 			foreach ($v as $f) {
-				if ($this->fieldsModified[$f]) {
+				if (!empty($this->fieldsModified[$f])) {
 					$modified[$k] = true;
 					break;
 				}
@@ -897,7 +877,7 @@ class Streams_Stream extends Base_Streams_Stream
 						: Q::json_encode(Q::ifset($options, 'deliver', 
 							array('to' => 'default')
 						));
-					$ruleSuccess = !empty($deliver) and !!$rule->save();
+					$ruleSuccess = !!$rule->save();
 				}
 			}
 		}

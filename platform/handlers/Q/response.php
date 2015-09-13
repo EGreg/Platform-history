@@ -139,11 +139,26 @@ function Q_response($params)
 			$to_encode['echo'] = $echo;
 		}
 
+		$json = Q::json_encode(Q::cutoff($to_encode));
+		$callback = Q_Request::callback();
 		switch (strtolower($isAjax)) {
+		case 'iframe':
+			if (!Q_Response::$batch) {
+				header("Content-type: text/html");
+			}
+			echo <<<EOT
+<!doctype html><html lang=en>
+<head><meta charset=utf-8><title>Q Result</title></head>
+<body>
+<script type="text/javascript">
+window.result = function () { return $json };
+</script>
+</body>
+</html>
+EOT;
+			break;
 		case 'json':
 		default:
-			$json = Q::json_encode(Q::cutoff($to_encode));
-			$callback = Q_Request::callback();
 			if (!Q_Response::$batch) {
 				header("Content-type: " . ($callback ? "application/javascript" : "application/json"));
 			}

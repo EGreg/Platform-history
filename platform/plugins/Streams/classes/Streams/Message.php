@@ -145,6 +145,7 @@ class Streams_Message extends Base_Streams_Message
 		$messages2 = array();
 		$totals2 = array();
 		$clientId = Q_Request::special('clientId', '');
+		$sendToNode = true;
 		foreach ($messages as $publisherId => $arr) {
 			$streamNames = array_keys($messages[$publisherId]);
 			$streams[$publisherId] = $fetched = Streams::fetch(
@@ -191,7 +192,6 @@ class Streams_Message extends Base_Streams_Message
 				$message->ordinal = $stream->messageCount + 1; // thanks to transaction
 				
 				// Set up some parameters for the event hooks
-				$sendToNode = true;
 				$eventParams[$publisherId][$streamName] = array(
 					'publisherId' => $publisherId,
 					'message' => $message,

@@ -38,7 +38,7 @@ h2 { margin: 0; }
     background: #aaa; /* for non-css3 browsers */
     background: -webkit-gradient(linear, left top, left bottom, from(#aaa), to(#111)); /* for webkit browsers */
     background: -moz-linear-gradient(top,  #aaaaaa,  #111111); /* for firefox 3.6+ */
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#444444', endColorstr='#111111'); /* for IE */
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#aaaaaa', endColorstr='#111111'); /* for IE */
 }
 #dashboard_slot * { color: white; font-size: 24px; font-family: Arial, sans-serif; }
 #dashboard_slot input,
@@ -120,13 +120,15 @@ h2 { margin: 0; }
 #dashboard .Q_tabs_tabs { border: 0; width: 80%; margin: auto; text-align: left; }
 #dashboard .Q_tabs_tab { cursor: pointer; width: auto; border: 0 !important; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; background-color: #f8f8f8; background: none; line-height: 30px !important; text-align: left; max-width: 100%; overflow: hidden; text-overflow: ellipsis; text-align: center; }
 #dashboard .Q_tabs_tab.Streams_preview_tool { padding-left: 10px; }
-#dashboard .Q_tabs_compact .Q_tabs_tab { background: #222; }
+#dashboard .Q_tabs_compact.Q_tabs_horizontal { margin: 0; }
+#dashboard .Q_tabs_compact.Q_tabs_horizontal .Q_tabs_tab { padding: 5px 10px; background: #222; color: white; }
+#dashboard .Q_tabs_compact.Q_tabs_horizontal .Q_tabs_tab * { color: white; }
 #dashboard .Q_tabs_vertical .Q_tabs_tab { background: transparent; }
 #dashboard .Q_tabs_tab:first-child { border-top: 0 solid #e5e5e5; border-left: 0; }
 #dashboard .Q_tabs_tab,
 #dashboard .Q_tabs_tab>* { cursor: pointer; }
 #dashboard .Q_tabs_tab { text-decoration: none; color: white; }
-.Q_notTouchscreen #dashboard .Q_tabs_tab:hover { text-decoration: underline;}
+.Q_notTouchscreen #dashboard .Q_tabs_tab:hover { background: rgba(100, 100, 100, 0.1); }
 #dashboard .Q_tabs_tab img { margin-right: 10px; width: 24px; }
 #dashboard .Q_tabs_tab span { display: inline; text-align: left; }
 #dashboard .Q_tabs_tab.Q_current { background-image: url(../plugins/Q/img/bg/stucco.png) !important; color: black !important; }

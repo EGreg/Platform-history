@@ -24,12 +24,12 @@ function Websites_0_8_Streams_mysql()
 		"Websites/title" => array('type' => "Streams/text/small", "title" => "Website title", "icon" => "default", "content" => "Website Title"),
 		"Websites/menu" => array('type' => "Streams/category", "title" => "Website Menu", "icon" => "default", "content" => ""),
 		"Websites/articles" => array('type' => "Streams/category", "title" => "Articles", "icon" => "default", "content" => "Articles"),
-		"Websites/images" => array('type' => "Streams/category", "title" => "Articles", "icon" => "default", "content" => "Articles"),
+		"Websites/images" => array('type' => "Streams/category", "title" => "Images", "icon" => "default", "content" => "Articles"),
 	);
 	
 	$readLevel = Streams::$READ_LEVEL['messages'];
 	$writeLevel = Streams::$WRITE_LEVEL['edit'];
-	$adminLevel = Streams::$ADMIN_LEVEL['manage'];
+	$adminLevel = Streams::$ADMIN_LEVEL['own'];
 	
 	$rows = array();
 	foreach ($streams as $streamName => $stream) {
@@ -54,7 +54,7 @@ function Websites_0_8_Streams_mysql()
 		extract($s);
 		$rows[] = compact(
 			'publisherId', 'name', 'type', 'title', 'icon', 'content', 'attributes',
-			'readLevel', 'writeLevel', 'adminLevel', 'inheritAccess', 'participantCount'
+			'readLevel', 'writeLevel', 'adminLevel', 'inheritAccess'
 		);
 	}
 	
@@ -70,10 +70,18 @@ function Websites_0_8_Streams_mysql()
 	
 	Streams_RelatedTo::insert(array(
 		'toPublisherId' => $publisherId,
-		'toStreamName' => 'Streams/articles',
+		'toStreamName' => 'Streams/category/',
 		'type' => 'articles',
 		'fromPublisherId' => $publisherId,
-		'fromStreamName' => 'Streams/article'
+		'fromStreamName' => 'Websites/article/'
+	))->execute();
+	
+	Streams_RelatedTo::insert(array(
+		'toPublisherId' => $publisherId,
+		'toStreamName' => 'Streams/category/',
+		'type' => 'announcements',
+		'fromPublisherId' => $publisherId,
+		'fromStreamName' => 'Websites/article/'
 	))->execute();
 }
 

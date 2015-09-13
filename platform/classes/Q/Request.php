@@ -365,7 +365,7 @@ class Q_Request
 		if (isset($result)) {
 			return $result;
 		}
-		$result = !!Q_Request::special('ajax', false);
+		$result = Q_Request::special('ajax', false);
 		return $result;
 	}
 	

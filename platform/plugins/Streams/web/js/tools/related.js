@@ -73,6 +73,9 @@ function _Streams_related_tool (options)
 		function addComposer(streamType, params, container, oldElement) {
 			// TODO: test whether the user can really create streams of this type
 			// and otherwise do not append this element
+			if (Q.isEmpty(params)) {
+				params = {};
+			}
 			params.streamType = streamType;
 			var element = tool.elementForStream(
 				tool.state.publisherId, "", streamType, null, 
@@ -145,8 +148,8 @@ function _Streams_related_tool (options)
 							// TODO: replace with animation?
 							tool.refresh();
 						});
-						var s = Q.Tool.from(data.target).state;
-						var i = Q.Tool.from($item[0]).state;
+						var s = Q.Tool.from(data.target, 'Streams/preview').state;
+						var i = Q.Tool.from($item[0], 'Streams/preview').state;
 						var r = i.related;
 						setTimeout(
 							p.fill('timeout'),
@@ -308,7 +311,6 @@ function _Streams_related_tool (options)
 			[o, {}], 
 			null, this.prefix
 		);
-		e.style.visibility = 'visible';
  		return e;
 	},
 
@@ -347,12 +349,9 @@ function _Streams_related_tool (options)
 					}
 					var onLoad = preview.state.onLoad;
 					if (onLoad) {
-						onLoad.set(function () {
-							var tab = tabs.state.tab;
-							var $tab = $(tab);
-							if (tab === element) {
-								tabs.refresh();
-							}
+						onLoad.add(function () {
+							// all the related tabs have loaded, process them
+							tabs.refresh();
 						});
 					}
 					preview.state.onRefresh.remove(key);
@@ -364,6 +363,7 @@ function _Streams_related_tool (options)
 	},
 	Q: {
 		beforeRemove: function () {
+			$(this.element).plugin('Q/sortable', 'remove');
 			this.state.onUpdate.remove("Streams/related");
 		}
 	}

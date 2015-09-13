@@ -40,17 +40,10 @@ function Streams_batch_response_batch()
 		if (empty($streams[$publisherId])) {
 			$streams[$publisherId] = array();
 		}
-		if ($fetched = Streams::fetch(
-			$userId,
-			$publisherId,
-			$names,
-			'*'
-		)) {
-			$streams[$publisherId] = array_merge(
-				$streams[$publisherId],
-				$fetched
-			);
-		}
+		$streams[$publisherId] = array_merge(
+			$streams[$publisherId],
+			Streams::fetch($userId, $publisherId, $names, '*')
+		);
 	}
 	
 	// Now, build the result

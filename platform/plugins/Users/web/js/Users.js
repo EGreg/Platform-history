@@ -23,6 +23,7 @@ Q.text.Users = {
 	login: {
 		title: 'Welcome',
 		directions: 'Create an account, or log in.',
+		directionsNoRegister: 'Log in if you have an account.',
 		explanation: null,
 		goButton: "Go",
 		passphrase: 'Enter your pass phrase:',
@@ -1313,8 +1314,11 @@ function login_setupDialog(usingProviders, scope, dialogContainer, identifierTyp
 		submitClosestForm.apply($a, arguments);
 	});
 
+	var directions = Q.plugins.Users.login.serverOptions.noRegister
+		? Q.text.Users.login.directionsNoRegister
+		: Q.text.Users.login.directions;
 	step1_form.html(
-		$('<label for="Users_login_identifier" />').html(Q.text.Users.login.directions)
+		$('<label for="Users_login_identifier" />').html(directions)
 	).append('<br />').append(
 		identifierInput
 	).append(

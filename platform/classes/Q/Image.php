@@ -106,7 +106,7 @@ class Q_Image
 	}
 
 	/**
-	 * Returns png avatar image. Can check gravatar.com for avatar
+	 * Saves an avatar image, in a certain size. Can check gravatar.com for avatar
 	 * @method put
 	 * @static
 	 * @param $filename {string} The name of image file

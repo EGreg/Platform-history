@@ -23,9 +23,9 @@ function Streams_before_Q_Utils_canWriteToPath($params, &$result)
 		$prefix = "files/$app/uploads/Streams/";
 		$len = strlen($prefix);
 		if (substr($sp, 0, $len) === $prefix) {
-			$prefix2 = "files/$app/uploads/Streams/invitations";
-			if (substr($sp, 0, strlen($prefix2)) === $prefix2) {
-				$result = true; // any user can write here
+			$prefix2 = "files/$app/uploads/Streams/invitations/$userId/";
+			if ($userId and substr($sp, 0, strlen($prefix2)) === $prefix2) {
+				$result = true; // user can write any invitations here
 				return;
 			}
 			$parts = explode('/', substr($sp, $len));
@@ -35,12 +35,16 @@ function Streams_before_Q_Utils_canWriteToPath($params, &$result)
 				$l = 0;
 				for ($i=$c-1; $i>=1; --$i) {
 					$l = $i;
-					if ($parts[$i] === 'icon') break;
+					if (in_array($parts[$i], array('icon', 'file'))) {
+						break;
+					}
 				}
 				$name = implode('/', array_slice($parts, 1, $l-1));
 				if ($name and $stream = Streams::fetchOne($userId, $publisherId, $name)) {
 					$result = $stream->testWriteLevel('edit');
 					Streams::$cache['canWriteToStream'] = $stream;
+				} else {
+					$result = false;
 				}
 			}
 		}

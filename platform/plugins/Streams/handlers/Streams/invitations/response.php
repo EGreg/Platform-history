@@ -4,6 +4,7 @@
  * Displays an HTML document that can be printed, ideally with line breaks.
  * Uses a particular view for the layout.
  * @param {array} $_REQUEST
+ * @param {string} $_REQUEST.invitingUserId Required. The id of the user that generated the invitations with a call to Streams::invite.
  * @param {string} $_REQUEST.batch Required. The name of the batch under which invitations were saved during a call to Streams::invite.
  * @param {string} [$_REQUEST.limit=100] The maximum number of invitations to show on the page
  * @param {string} [$_REQUEST.offset=0] Used for paging
@@ -13,15 +14,16 @@
  */
 function Streams_invitations_response()
 {
-	Q_Request::requireFields(array('batch'), true);
+	Q_Request::requireFields(array('batch', 'invitingUserId'), true);
+	$invitingUserId = $_REQUEST['invitingUserId'];
 	$batch = $_REQUEST['batch'];
 	$title = Q::ifset($_REQUEST, 'layout', 'title');
 	$layoutKey = Q::ifset($_REQUEST, 'layout', 'default');
-	$limit = Q::ifset($_REQUEST, 'limit', 100);
+	$limit = min(1000, Q::ifset($_REQUEST, 'limit', 100));
 	$offset = Q::ifset($_REQUEST, 'offset', 0);
 	$layout = Q_Config::expect('Streams', 'invites', 'layout', $layoutKey);
 	$app = Q_Config::expect('Q', 'app');
-	$pattern = Streams::invitationsPath() . DS . $batch . DS . "*.html";
+	$pattern = Streams::invitationsPath($invitingUserId) . DS . $batch . DS . "*.html";
 	$filenames = glob($pattern);
 	$parts = array();
 	foreach ($filenames as $f) {

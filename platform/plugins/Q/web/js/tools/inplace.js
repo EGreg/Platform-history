@@ -169,7 +169,6 @@ function _Q_inplace_tool_constructor(element, options) {
 		'line-height': '1px'
 	});
 	if (!$te.is(':visible')) {
-		_waitUntilVisible();
 		function _waitUntilVisible() {
 			if (tool.removed) return;
 			if (!$te.is(':visible')) {
@@ -181,6 +180,7 @@ function _Q_inplace_tool_constructor(element, options) {
 				});
 			}
 		}
+		_waitUntilVisible();
 	}
 	var edit_button = tool.$('button.Q_inplace_tool_edit');
 	var save_button = tool.$('button.Q_inplace_tool_save');
@@ -429,6 +429,7 @@ function _Q_inplace_tool_constructor(element, options) {
 			.removeClass('Q_discouragePointerEvents');;
 		_hideEditButtons();
 		Q.handle(state.onCancel, tool);
+		Q.Pointer.cancelClick();
 	};
 	function onBlur() {
 		if (noCancel && fieldinput.val() !== previousValue) {
@@ -529,7 +530,8 @@ function _Q_inplace_tool_constructor(element, options) {
 				onSave(); return false;
 			}
 		} else if (kc == 27) {
-			onCancel(); return false;
+			onCancel();
+			return false;
 		} else if (kc == 9) {
 			var tags = 'input,textarea,select,.Q_inplace_tool';
 			var $elements = $(tags).not('.Q_inplace_tool :input');
@@ -545,6 +547,8 @@ function _Q_inplace_tool_constructor(element, options) {
 		onSave();
 	});
 	fieldinput.click(function (event) {
+		Q.Pointer.cancelClick(event);
+		Q.Pointer.ended();
 		event.stopPropagation();
 	});
 	function _updateSaveButton() {
