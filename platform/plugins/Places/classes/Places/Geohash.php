@@ -127,7 +127,7 @@ class Places_Geohash
 	 * @param {string} $dir could be "top", "right", "bottom", "left"
 	 * @return {string}
      */
-    static public function adjacent($hash, $dir){
+    static function adjacent($hash, $dir){
         /***
             eq('xne', Places_Geohash::adjacent('xn7', 'top'));
             eq('xnk', Places_Geohash::adjacent('xn7', 'right'));

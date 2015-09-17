@@ -10,14 +10,19 @@
 class Q_Config
 {
 	/**
-	 * Loads all the configuration files matching $pattern
+	 * Loads a configuration file
 	 * @method load
 	 * @static
 	 * @param {string} $filename The filename of the file to load.
+	 * @param {boolean} $ignoreCache=false
+	 *  Defaults to false. If true, then this function ignores
+	 *  the cached value, if any, and attempts to search
+	 *  for the file. It will cache the new value.
 	 * @return {boolean} Returns true if saved, otherwise false.
 	 */
 	static function load(
-	 $filename)
+	 $filename,
+	 $ignoreCache = false)
 	{
 		$args = func_get_args();
 		if (!isset(self::$tree)) {

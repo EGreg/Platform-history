@@ -88,6 +88,24 @@ class Places_Nearby
 		return $result;
 	}
 	
+    /**
+     * Get a range for looking things up by geohash.
+	 * This would be more efficient in terms of lookup than the system of
+	 * Places_Nearby::forPublishers and Places_Nearby::forSubscribers
+	 * because it doesn't require multiple streams to function as rows
+	 * of a "join table", one stream per mile range.
+	 * However, the selection area gets more and more distorted at the poles,
+	 * and may return more results than desired.
+	 * @param {double} $latitude The latitude of the coordinates to search around
+	 * @param {double} $longitude The longitude of the coordinates to search around
+	 * @param {array} $miles The radius of miles to look around.
+	 * @return {Db_Range}
+     */
+	static function geohashRange($latitude, $longitude, $miles)
+	{
+		// TODO: implement
+	}
+	
 	/**
 	 * Call this function to subscribe to streams on which messages are posted
 	 * related to things happening the given number of $miles around the given location.

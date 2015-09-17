@@ -497,7 +497,7 @@ EOT;
 		$plugin_version = $plugin_conf['version'];
 
 		if (file_exists($app_plugins_file)) {
-			Q_Config::load($app_plugins_file);
+			Q_Config::load($app_plugins_file, true);
 		}
 		//  Do we already have this plugin installed for this app?
 		// Check requirements for plugin (will throw exceptions if they aren't met)

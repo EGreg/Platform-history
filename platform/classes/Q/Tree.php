@@ -169,16 +169,21 @@ class Q_Tree
 	}
 	
 	/**
-	 * Loads the configuration file
+	 * Loads data from JSON found in a file
 	 * @method load
 	 * @param {string} $filename The filename of the file to load.
+	 * @param {boolean} $ignoreCache=false
+	 *  Defaults to false. If true, then this function ignores
+	 *  the cached value, if any, and attempts to search
+	 *  for the file. It will cache the new value.
 	 * @return {boolean} Returns true if loaded, otherwise false.
 	 * @throws {Q_Exception_InvalidInput}
 	 */
 	function load(
-	 $filename)
+	 $filename,
+	 $ignoreCache = false)
 	{
-		$filename2 = Q::realPath($filename);
+		$filename2 = Q::realPath($filename, $ignoreCache);
 		if (!$filename2) {
 			return false;
 		}
@@ -275,6 +280,7 @@ class Q_Tree
 				? Q::json_encode($toSave, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
 				: '{}',
 			LOCK_EX);
+		clearstatcache(true, $filename2);
 
 		umask($mask);
 

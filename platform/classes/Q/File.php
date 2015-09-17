@@ -40,10 +40,8 @@ class Q_File
 		}
 		$name = isset($params['name']) ? $params['name'] : 'file';
 		if (!preg_match('/^[\w.-]+$/', $name)) {
-			throw new Q_Exception_WrongValue(array(
-				'field' => 'name',
-				'range' => 'only alphanumeric characters, dashes and dots'
-			));
+			$info = pathinfo($name);
+			$name = Q_Utils::normalize($info['filename']) . '.' . $info['extension'];
 		}
 		// TODO: recognize some extensions maybe
 		$writePath = $realPath.($subpath ? DS.$subpath : '');
