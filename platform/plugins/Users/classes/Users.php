@@ -392,7 +392,7 @@ abstract class Users extends Base_Users
 							$icon["$size.png"] = "http://graph.facebook.com/$fb_uid/picture?width=$size&height=$size";
 						}
 						if (!Q_Config::get('Users', 'register', 'icon', 'leaveDefault', false)) {
-							$user->icon = self::importIcon($user, $icon);
+							self::importIcon($user, $icon);
 							$user->save();
 						}
 					}
@@ -943,7 +943,7 @@ abstract class Users extends Base_Users
 			}
 		}
 		if (!Q_Config::get('Users', 'register', 'icon', 'leaveDefault', false)) {
-			$user->icon = self::importIcon($user, $icon);
+			self::importIcon($user, $icon);
 			$user->save();
 		}
 
@@ -1214,6 +1214,7 @@ abstract class Users extends Base_Users
 	}
 
 	/**
+	 * Imports an icon and sets $user->icon to the url.
 	 * @method importIcon
 	 * @static
 	 * @param {array} $user The user for whom the icon should be downloaded
@@ -1231,7 +1232,10 @@ abstract class Users extends Base_Users
 		if (empty($urls)) {
 			return $directory;
 		}
-		Q_Utils::canWriteToPath($directory, true, true);
+		$head = APP_FILES_DIR.DS.$app.DS.'uploads';
+		$tail = str_replace(DS, '/', substr($directory, strlen($head)));
+		$iconUrl = Q_Request::baseUrl().'/uploads'.$tail;
+		Q_Utils::canWriteToPath($directory, false, true);
 		$type = Q_Config::get('Users', 'login', 'iconType', 'wavatar');
 		$largestSize = 0;
 		$largestUrl = null;
@@ -1306,6 +1310,7 @@ abstract class Users extends Base_Users
 				);
 			}
 		}
+		$user->icon = $iconUrl;
 		return $directory;
 	}
 
