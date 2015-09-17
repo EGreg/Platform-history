@@ -8,7 +8,11 @@ function Websites_before_Streams_Stream_save_Websites_article($params)
 
 	$user = new Users_User();
 	if (empty($stream->userId) and empty($modifiedFields['userId'])) {
-		throw new Q_Exception_RequiredField(array('field' => 'userId'));
+		if ($liu = Users::loggedInUser()) {
+			$stream->userId = $liu->id;
+		} else {
+			throw new Q_Exception_RequiredField(array('field' => 'userId'));
+		}
 	}
 	$user->id = $stream->userId;
 	if (!$user->retrieve()) {
