@@ -259,7 +259,7 @@ class Q
 	 *  Name of the file to look for
 	 * @param {boolean} $ignoreCache=false
 	 *  Defaults to false. If true, then this function ignores
-	 *  the cached value, if any, and always attempts to search
+	 *  the cached value, if any, and attempts to search
 	 *  for the file. It will cache the new value.
 	 * @return {string|false}
 	 *  The absolute path if file exists, false if it does not
