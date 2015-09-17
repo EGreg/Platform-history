@@ -37,7 +37,9 @@ function Users_user_response_data($params)
 	// Get Gravatar info
 	// WARNING: INTERNET_REQUEST
 	$hash = md5(strtolower(trim($identifier)));
-	$icon = Q_Request::baseUrl()."/action.php/Q/image?hash=$hash&size=80&type=".Q_Config::get('Users', 'login', 'iconType', 'wavatar');
+	$thumbnailUrl = Q_Request::baseUrl()
+		."/action.php/Users/thumbnail?hash=$hash&size=80&type="
+		.Q_Config::get('Users', 'login', 'iconType', 'wavatar');
 	$json = @file_get_contents("http://www.gravatar.com/$hash.json");
 	$result = json_decode($json, true);
 	if ($result) {
@@ -58,7 +60,7 @@ function Users_user_response_data($params)
 			"requestHash" => "357a20e8c56e69d6f9734d23ef9517e8",
 			"profileUrl" => "http://gravatar.com/test",
 			"preferredUsername" => ucfirst($email_parts[0]),
-			"thumbnailUrl" => $icon,
+			"thumbnailUrl" => $thumbnailUrl,
 			"photos" => array(),
 			"displayName" => "",
 			"urls" => array(),

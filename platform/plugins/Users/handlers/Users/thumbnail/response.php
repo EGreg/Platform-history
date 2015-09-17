@@ -1,6 +1,6 @@
 <?php
 
-function Q_image_response () {
+function Users_thumbnail_response () {
 	$slots = Q_Response::slots(true);
 	if (isset($slots['data'])) {
 		return;
