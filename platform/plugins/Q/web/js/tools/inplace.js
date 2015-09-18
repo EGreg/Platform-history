@@ -211,7 +211,8 @@ function _Q_inplace_tool_constructor(element, options) {
 			fontSize: static_span.css('fontSize'),
 			fontFamily: static_span.css('fontFamily'),
 			fontWeight: static_span.css('fontWeight'),
-			letterSpacing: static_span.css('letterSpacing')
+			letterSpacing: static_span.css('letterSpacing'),
+			textAlign: static_span.css('textAlign')
 		});
 		fieldinput.plugin('Q/autogrow', {
 			maxWidth: state.maxWidth || maxWidth,
