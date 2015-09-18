@@ -12,6 +12,7 @@
  *  @param {String} [options.title] Required. The title for the expandable.
  *  @param {String} [options.content] Required. The content.
  *  @param {Number} [options.count] A number, if any, to display when collapsed.
+ *  @param {Number} [options.spaceAbove] How many pixels of space to leave above at the end of the scrolling animation
  *  @param {Boolean} [options.autoCollapseSiblings] Whether, when expanding an expandable, its siblings should be automatically collapsed.
  *  @param {Boolean} [options.scrollContainer] Closest parent element that could scroll
  * @return {Q.Tool}
@@ -23,6 +24,12 @@ Q.Tool.define('Q/expandable', function (options) {
 	
 	Q.addStylesheet('plugins/Q/css/expandable.css');
 	
+	var $h2 = $('h2', $te);
+	if (state.expanded = $h2.next().is(':visible')) {
+		$h2.addClass('Q_selected');
+	}
+	
+	
 	if (!$te.children().length) {
 		// set it up with javascript
 		var count = options.count || '';
@@ -30,7 +37,8 @@ Q.Tool.define('Q/expandable', function (options) {
 			+"<span class='Q_expandable_count'>"+count+"</span>"
 			+options.title
 			+"</h2>";
-		var div = "<div class='Q_expandable_content'>"+options.content+"</div>";
+		var div = "<div class='Q_expandable_content'>"
+			+options.content+"</div>";
 		this.element.innerHTML = h2 + div;
 	}
 	
@@ -64,6 +72,7 @@ Q.Tool.define('Q/expandable', function (options) {
 	});
 }, {
 	count: 0,
+	spaceAbove: null,
 	expanded: false,
 	autoCollapseSiblings: true,
 	scrollContainer: true,
@@ -78,6 +87,7 @@ Q.Tool.define('Q/expandable', function (options) {
 	 *  @param {Boolean} [options.autoCollapseSiblings] Whether, when expanding an expandable,
 	 *  @param {Boolean} [options.scrollContainer] Closest parent element that could scroll
 	 *  @param {Boolean} [options.scrollToElement] Can be used to specify another element to scroll to when expanding. Defaults to the title element of the expandable.
+ *  @param {Number} [options.spaceAbove] How many pixels of space to leave above at the end of the scrolling animation
 	 * @param {Function} [callback] the function to call once the expanding has completed
 	 */
 	expand: function (options, callback) {
@@ -106,8 +116,11 @@ Q.Tool.define('Q/expandable', function (options) {
 			: {left: 0, top: 0};
 		var $element = o.scrollToElement ? $(o.scrollToElement) : $h2;
 		var t1 = $element.offset().top - offset.top;
-		var h1 = $element.height();
-		var isBody = $scrollable && $scrollable[0].tagName.toUpperCase() === 'BODY';
+		var spaceAbove = (state.spaceAbove == null)
+			? $element.height() / 2
+			: state.spaceAbove;
+		var isBody = $scrollable &&
+			$scrollable[0].tagName.toUpperCase() === 'BODY';
 		if (isBody) {
 			t1 -= Q.Pointer.scrollTop();
 		}
@@ -118,7 +131,7 @@ Q.Tool.define('Q/expandable', function (options) {
 				if (isBody) {
 					t -= Q.Pointer.scrollTop();
 				}
-				var scrollTop = $scrollable.scrollTop() + t - t1 * (1-y) - h1/2 * y;
+				var scrollTop = $scrollable.scrollTop() + t - t1 * (1-y) - spaceAbove * y;
 				$scrollable.scrollTop(scrollTop);
 			}
 			$expandable.css('overflow', 'visible');
