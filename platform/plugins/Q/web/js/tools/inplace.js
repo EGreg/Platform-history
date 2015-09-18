@@ -158,6 +158,7 @@ function _Q_inplace_tool_constructor(element, options) {
 	var previousValue = null;
 	var noCancel = false;
 	var $te = $(tool.element);
+	var changedMaxWidth, changedMaxHeight;
 
 	var container_span = tool.$('.Q_inplace_tool_container');
 	var static_span = tool.$('.Q_inplace_tool_static');
@@ -234,6 +235,15 @@ function _Q_inplace_tool_constructor(element, options) {
 	this.handleClick = function(event) {
 		var field_width = static_span.outerWidth();
 		var field_height = static_span.outerHeight();
+		changedMaxWidth = changedMaxHeight = false;
+		if (container_span.css('max-width') === 'none') {
+			container_span.css('max-width', container_span.width());
+			changedMaxWidth = true;
+		}
+		if (container_span.css('max-height') === 'none') {
+			container_span.css('max-height', container_span.height());
+			changedMaxHeight = true;
+		}
 		container_span.addClass('Q_editing');
 		container_span.addClass('Q_discouragePointerEvents');
 		if (state.bringToFront) {
@@ -441,13 +451,19 @@ function _Q_inplace_tool_constructor(element, options) {
 			 || dialogMode
 			 || !container_span.hasClass('Q_editing')
 			) {
-				return;
+				return _restoreZ();
 			}
 			onCancel();
 		}, 100);
 	};
 	function _restoreZ()
 	{
+		if (changedMaxWidth) {
+			container_span.css('max-width', 'none');
+		}
+		if (changedMaxHeight) {
+			container_span.css('max-height', 'none');
+		}
 		if (!state.bringToFront) return;
 		var $bringToFront = $(state.bringToFront);
 		$bringToFront.css('zIndex', $bringToFront.data(_stateKey_zIndex))
