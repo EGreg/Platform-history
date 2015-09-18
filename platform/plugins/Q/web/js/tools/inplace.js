@@ -231,6 +231,8 @@ function _Q_inplace_tool_constructor(element, options) {
 		state.onLoad.handle();
 	}, 0); // hopefully it will be inserted into the DOM by then
 	this.handleClick = function(event) {
+		var field_width = static_span.outerWidth();
+		var field_height = static_span.outerHeight();
 		container_span.addClass('Q_editing');
 		container_span.addClass('Q_discouragePointerEvents');
 		if (state.bringToFront) {
@@ -251,8 +253,6 @@ function _Q_inplace_tool_constructor(element, options) {
 				tool.$('.Q_inplace_tool_editbuttons').css('margin-top', margin+'px');
 			}}
 		}).plugin('Q/placeholders');
-		var field_width = static_span.outerWidth();
-		var field_height = static_span.outerHeight();
 		if (fieldinput.is('select')) {
 			field_width += 40;
 		} else if (fieldinput.is('input[type=text]')) {
