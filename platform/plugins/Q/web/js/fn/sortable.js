@@ -104,7 +104,7 @@ Q.Tool.jQuery('Q/sortable', function _Q_sortable(options) {
 		moveHandler.yStart = my = Q.Pointer.getY(event);
 		var element = this;
 		var sl = [], st = [];
-		$(document).data(dataLifted, $(this))
+		$body.data(dataLifted, $(this))
 			.on([Q.Pointer.move, 'Q_sortable'], moveHandler)
 			.on([Q.Pointer.end, 'Q_sortable'], dropHandler)
 			.on([Q.Pointer.cancel, 'Q_sortable'], dropHandler);
@@ -258,8 +258,8 @@ Q.Tool.jQuery('Q/sortable', function _Q_sortable(options) {
 		if (tScroll) clearTimeout(tScroll);
 		if (iScroll) clearInterval(iScroll);
 		
-		var $item = $(document).data(dataLifted);
-		$(document).removeData(dataLifted).off('.Q_sortable');
+		var $item = $body.data(dataLifted);
+		$body.removeData(dataLifted).off('.Q_sortable');
 		if (!$item) return;
 		
 		$item.off(Q.Pointer.move, moveHandler).off('.Q_sortable');
@@ -327,16 +327,17 @@ Q.Tool.jQuery('Q/sortable', function _Q_sortable(options) {
 	}
 
 	function moveHandler(event) {
-		var $item = $(document).data(dataLifted), x, y;
+		var $item = $body.data(dataLifted), x, y;
 		if (!$item) {
 			return;
 		}
-		if (Q.Pointer.touchCount(event) !== 1) {
+		if (!Q.Pointer.started
+		|| Q.Pointer.touchCount(event) !== 1) {
 			complete(true);
 			return;
 		}
-		mx = x = Q.Pointer.getX(event),
-			my = y = Q.Pointer.getY(event);
+		mx = x = Q.Pointer.getX(event);
+		my = y = Q.Pointer.getY(event);
 		if (!Q.info.isTouchscreen && !lifted) {
 			if ((moveHandler.xStart !== undefined && Math.abs(moveHandler.xStart - x) > state.lift.threshhold)
 				|| (moveHandler.yStart !== undefined && Math.abs(moveHandler.yStart - y) > state.lift.threshhold)) {
@@ -657,14 +658,14 @@ Q.Tool.jQuery('Q/sortable', function _Q_sortable(options) {
 {
 	remove: function () {
 		// TODO: implement cleanup
-		var $item = $(document).data(dataLifted);
+		var $item = $body.data(dataLifted);
 		var data;
 		if ($item) {
 			if ((data = $item.data('Q/sortable')) && data.$dragged) {
 				data.$dragged.remove();
 			}
 		}
-		$(document).removeData(dataLifted).off('.Q_sortable');
+		$body.removeData(dataLifted).off('.Q_sortable');
 		this.removeData('Q/sortable');
 		this.off('.Q_sortable');
 		var s = this.state('Q/sortable');
@@ -676,6 +677,7 @@ Q.Tool.jQuery('Q/sortable', function _Q_sortable(options) {
 
 );
 
+var $body = $('body');
 var dataLifted = 'Q/sortable dragging';
 
 })(Q, jQuery, window, document);
