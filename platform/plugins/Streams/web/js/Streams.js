@@ -312,6 +312,9 @@ function _connectSockets(refresh) {
 			}));
 		});
 	});
+	Streams.retainWith('Streams').get(
+		Users.loggedInUser.id, 'Streams/participating'
+	);
 	if (refresh) {
 		Streams.refresh();
 	}
@@ -604,7 +607,13 @@ Streams.create = function (fields, callback, related, options) {
 					weight: m.get('weight')
 				};
 			}
-			return callback && callback.call(stream, null, stream, extra, data.slots);
+			callback && callback.call(stream, null, stream, extra, data.slots);
+			// process various messages posted to Streams/participating
+			Stream.refresh(
+				Users.loggedInUserId(), 'Streams/participating', null,
+				{ messages: true, unlessSocket: true }
+			);
+			return;
 		});
 	}, { method: 'post', fields: fields, baseUrl: baseUrl, form: options.form });
 	_retain = undefined;
@@ -779,13 +788,15 @@ Streams.displayName = function(options) {
 };
 
 /**
- * Returns streams for current user
+ * Returns streams that the current user is participating in
  * @static
+ * @param {Function} callback
  * @method getParticipating
  */
 Streams.getParticipating = function(callback) {
 	if(!callback) return;
-	Q.req('Streams/participating', 'participating', function (err, data) {
+	Q.req('Streams/participating', 'participating',
+	function (err, data) {
 		callback && callback(err, data && data.slots && data.slots.participating);
 	});
 	_retain = undefined;
@@ -1255,7 +1266,7 @@ Sp.save = function _Stream_prototype_save (callback, options) {
 		callback && callback.call(that, null, stream);
 		if (stream) {
 			// process the Streams/changed message, if stream was retained
-			Streams.Stream.refresh(stream.publisherId, stream.name, null, {
+			Stream.refresh(stream.publisherId, stream.name, null, {
 				messages: true,
 				unlessSocket: true
 			});
@@ -1561,7 +1572,7 @@ Sp.invite = function (fields, callback) {
  * @return {boolean} whether the refresh occurred
  */
 Sp.refresh = function _Stream_prototype_refresh (callback, options) {
-	return Streams.Stream.refresh(this.fields.publisherId, this.fields.name, callback, options);
+	return Stream.refresh(this.fields.publisherId, this.fields.name, callback, options);
 };
 
 /**
@@ -2062,10 +2073,14 @@ Stream.close = function _Stream_remove (publisherId, streamName, callback) {
 		var stream = data.slots.stream;
 		if (stream) {
 			// process the Streams/closed message, if stream was retained
-			Streams.Stream.refresh(stream.publisherId, stream.name, null, {
+			Stream.refresh(stream.publisherId, stream.name, null, {
 				messages: true,
 				unlessSocket: true
 			});
+			Stream.refresh(
+				Users.loggedInUserId(), 'Streams/participating', null,
+				{ messages: true, unlessSocket: true }
+			);
 		}
 		callback && callback.call(this, err, data.slots.result || null);
 	}, { method: 'delete', fields: fields, baseUrl: baseUrl });
@@ -2602,7 +2617,7 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 	var p = new Q.Pipe();
 	Q.each(latest+1, ordinal, 1, function (ord) {
 		ordinals.push(ord);
-		var event = Streams.Stream.onMessage(publisherId, streamName, ord);
+		var event = Stream.onMessage(publisherId, streamName, ord);
 		handlerKey = event.add(function () {
 			p.fill(ord)();
 			event.remove(handlerKey);

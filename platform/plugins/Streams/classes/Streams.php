@@ -830,6 +830,23 @@ abstract class Streams extends Base_Streams
 		}
 	
 		// ready to persist this stream to the database
+		if ($relate['streamName']) {
+			$rs = Streams::fetchOne(
+				$asUserId,
+				$relate['publisherId'],
+				$relate['streamName']
+			);
+			if ($rs and $rs->inheritAccess) {
+				// inherit from the same stream $rs does
+				$inherit = $rs->inheritAccess;
+			} else {
+				// inherit from $rs
+				$json = Q::json_encode(array(array(
+					$relate['publisherId'], $relate['streamName']
+				)));
+			}
+			$stream->inheritAccess = $json;
+		}
 		$stream->save();
 		$stream->post($asUserId, array(
 			'type' => 'Streams/created',

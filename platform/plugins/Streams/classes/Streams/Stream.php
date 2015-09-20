@@ -1292,7 +1292,7 @@ class Streams_Stream extends Base_Streams_Stream
 			return false;
 		}
 		$names = json_decode($this->inheritAccess, true);
-		if (!$names) {
+		if (!$names or !is_array($names)) {
 			return false;
 		}
 		$public_source = Streams::$ACCESS_SOURCES['public'];
@@ -1301,6 +1301,9 @@ class Streams_Stream extends Base_Streams_Stream
 		$inherited_public_source = Streams::$ACCESS_SOURCES['inherited_public'];
 		$inherited_contact_source = Streams::$ACCESS_SOURCES['inherited_contact'];
 		$inherited_direct_source = Streams::$ACCESS_SOURCES['inherited_direct'];
+		$direct_sources = array(
+			$inherited_direct_source, $direct_source
+		);
 		
 		$readLevel = $this->get('readLevel', 0);
 		$writeLevel = $this->get('writeLevel', 0);
@@ -1311,55 +1314,56 @@ class Streams_Stream extends Base_Streams_Stream
 		
 		// Inheritance only goes one "generation" here.
 		// To implement several "generations" of inheritance, you can do things like:
-		// 'inheritAccess' => '["grandparent_streamName", "parent_stream_same"]'
+		// 'inheritAccess' => '[["publisherId","grandparentStreamName"], ["publisherId","parentStreamName"]]'
 		foreach ($names as $name) {
-			if (is_array($name)) {
-				$publisherId = reset($name);
-				$name = next($name);
-			} else {
-				$publisherId = $this->publisherId;
+			if (!is_array($name)) {
+				continue;
 			}
-			$streams = Streams::fetch(
+			$publisherId = reset($name);
+			$name = next($name);
+			$stream = Streams::fetchOne(
 				$this->get('asUserId', ''),
 				$publisherId,
 				$name,
 				'*'
 			);
-			foreach (array($streams) as $stream) {
-				$s_readLevel = $stream->get('readLevel', 0);
-				$s_writeLevel = $stream->get('writeLevel', 0);
-				$s_adminLevel = $stream->get('adminLevel', 0);
-				$s_readLevel_source = $stream->get('readLevel_source', $public_source);
-				$s_writeLevel_source = $stream->get('writeLevel_source', $public_source);
-				$s_adminLevel_source = $stream->get('adminLevel_source', $public_source);
+			$s_readLevel = $stream->get('readLevel', 0);
+			$s_writeLevel = $stream->get('writeLevel', 0);
+			$s_adminLevel = $stream->get('adminLevel', 0);
+			$s_readLevel_source = $stream->get('readLevel_source', $public_source);
+			$s_writeLevel_source = $stream->get('writeLevel_source', $public_source);
+			$s_adminLevel_source = $stream->get('adminLevel_source', $public_source);
 
-				// Inherit read, write and admin levels
-				// But once we inherit a level with direct_source or inherited_direct_source,
-				// we don't override it anymore.
-				if ($readLevel_source !== $inherited_direct_source) {
-					$readLevel = ($s_readLevel_source === $direct_source)
-						? $s_readLevel
-						: max($readLevel, $s_readLevel);
-					$readLevel_source = ($s_readLevel_source > $inherited_public_source)
-						? $s_readLevel_source
-						: $s_readLevel_source + $inherited_public_source;
-				}
-				if ($writeLevel_source !== $inherited_direct_source) {
-					$writeLevel = ($s_writeLevel_source === $direct_source)
-						? $s_writeLevel
-						: max($writeLevel, $s_writeLevel);
-					$writeLevel_source = ($s_writeLevel_source > $inherited_public_source)
-						? $s_writeLevel_source
-						: $s_writeLevel_source + $inherited_public_source;
-				}
-				if ($adminLevel_source !== $inherited_direct_source) {
-					$adminLevel = ($s_adminLevel_source === $direct_source)
-						? $s_adminLevel
-						: max($adminLevel, $s_adminLevel);
-					$adminLevel_source = ($s_adminLevel_source > $inherited_public_source)
-						? $s_adminLevel_source
-						: $s_adminLevel_source + $inherited_public_source;
-				}
+			// Inherit read, write and admin levels
+			// But once we obtain a level via a
+			// direct_source or inherited_direct_source,
+			// we don't override it anymore.
+			if (!in_array($readLevel_source, $direct_sources)) {
+				$readLevel = ($s_readLevel_source === $direct_source)
+					? $s_readLevel
+					: max($readLevel, $s_readLevel);
+				$readLevel_source = 
+					($s_readLevel_source > $inherited_public_source)
+					? $s_readLevel_source
+					: $s_readLevel_source + $inherited_public_source;
+			}
+			if (!in_array($writeLevel_source, $direct_sources)) {
+				$writeLevel = ($s_writeLevel_source === $direct_source)
+					? $s_writeLevel
+					: max($writeLevel, $s_writeLevel);
+				$writeLevel_source = 
+					($s_writeLevel_source > $inherited_public_source)
+					? $s_writeLevel_source
+					: $s_writeLevel_source + $inherited_public_source;
+			}
+			if (!in_array($adminLevel_source, $direct_sources)) {
+				$adminLevel = ($s_adminLevel_source === $direct_source)
+					? $s_adminLevel
+					: max($adminLevel, $s_adminLevel);
+				$adminLevel_source = 
+					($s_adminLevel_source > $inherited_public_source)
+					? $s_adminLevel_source
+					: $s_adminLevel_source + $inherited_public_source;
 			}
 		}
 		
