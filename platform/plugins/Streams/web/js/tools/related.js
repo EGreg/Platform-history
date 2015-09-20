@@ -222,7 +222,8 @@ function _Streams_related_tool (options)
 				return;
 			}
 			var result = this;
-			var entering = exiting = updating = null;
+			var entering, exiting, updating;
+			entering = exiting = updating = null;
 			function comparator(s1, s2, i, j) {
 				return s1 && s2 && s1.fields && s2.fields
 					&& s1.fields.publisherId === s2.fields.publisherId

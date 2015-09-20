@@ -88,18 +88,18 @@ Q.Tool.jQuery('Q/sortable', function _Q_sortable(options) {
 		_setStyles(this);
 		$('body')[0].preventSelections(true);
 		this.preventSelections(true);
-		function leaveHandler() {
-			complete(true);
+		function leaveHandler(event) {
+			if (event.target === document) {
+				complete(true);
+			}
 		}
 		$(document).on('keydown.Q_sortable', function (e) {
 			if (lifted && e.keyCode == 27) { // escape key
 				complete(true, true);
 				return false;
 			}
-		});
-		$(document)
-			.on([Q.Pointer.cancel, 'Q_sortable'], leaveHandler)
-			.on([Q.Pointer.leave, 'Q_sortable'], leaveHandler);
+		}).on([Q.Pointer.cancel, 'Q_sortable'], leaveHandler)
+		.on([Q.Pointer.leave, 'Q_sortable'], leaveHandler);
 		moveHandler.xStart = mx = Q.Pointer.getX(event);
 		moveHandler.yStart = my = Q.Pointer.getY(event);
 		var element = this;
@@ -124,7 +124,7 @@ Q.Tool.jQuery('Q/sortable', function _Q_sortable(options) {
 				}
 				++i;
 			});
-			if (cancel || !pressed || !(element === efp || $.contains(element, efp))) {
+			if (cancel || !pressed || !(element.contains(efp))) {
 				return;
 			}
 			lift.call(element, event);
@@ -462,9 +462,8 @@ Q.Tool.jQuery('Q/sortable', function _Q_sortable(options) {
 			? $this.children(state.droppable)
 			: $(state.droppable, $this);
 		$jq.each(function () {
-			var $t = $(this);
-			if ($t.is(element) || $.contains(this, element)) {
-				$target = $t;
+			if (this.contains(element)) {
+				$target = $(this);
 				return false;
 			}
 		});

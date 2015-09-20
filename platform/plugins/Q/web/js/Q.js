@@ -437,7 +437,7 @@ Elp.Q = function (toolName) {
 };
 
 /**
- * Check whether this element contains the given element
+ * Check whether this element is the given element or contains it
  * @method contains
  * @param {Element} child
  * @return {boolean}
@@ -445,7 +445,7 @@ Elp.Q = function (toolName) {
 if (!Elp.contains)
 Elp.contains = function (child) {
 	if (!child) return false;
-	var node = child.parentNode;
+	var node = child;
 	while (node) {
 		if (node == this) {
 			return true;
@@ -453,17 +453,6 @@ Elp.contains = function (child) {
 		node = node.parentNode;
 	}
 	return false;
-};
-
-/**
- * Check whether this element is the given element or contains it
- * @method isOrContains
- * @param {Element} child
- * @return {boolean}
- */
-Elp.isOrContains = function (child) {
-	if (!child) return false;
-	return this === child || this.contains(child);
 };
 
 /**
@@ -4956,8 +4945,11 @@ Q.removeElement = function _Q_removeElement(element, removeTools) {
  *  A function to call when the event fires
  * @param {boolean} useCapture
  *  Whether to use the capture instead of bubble phase. Ignored in IE8 and below.
+ * @param {boolean} hookPreventDefault
+ *  Whether to override Event.prototype.hookStopPropagation in order to capture the event when a descendant of the element tries to prevent
  */
-Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandler, useCapture) {
+Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandler, useCapture, hookStopPropagation) {
+	useCapture = useCapture || false;
 	if (Q.isPlainObject(eventName)) {
 		for (var k in eventName) {
 			Q.addEventListener(element, k, eventName[k], eventHandler);
@@ -4997,7 +4989,7 @@ Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandl
 		element = document;
 	}
 	if (element.addEventListener) {
-		element.addEventListener(eventName, handler, useCapture || false);
+		element.addEventListener(eventName, handler, useCapture);
 	} else if (element.attachEvent) {
 		element.attachEvent('on'+eventName, handler);
 	} else {
@@ -5008,7 +5000,41 @@ Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandl
 			eventHandler.apply(this, arguments);
 		}; // best we can do
 	}
+	
+	if (hookStopPropagation) {
+		var args = [element, eventName, eventHandler, useCapture];
+		var hooks = Q.addEventListener.hooks;
+		for (var i=0, l=hooks.length; i<l; ++i) {
+			var hook = hooks[i];
+			if (hook[0] === element
+			&& hook[1] === eventName
+			&& hook[2] === eventHandler
+			&& hook[3] === useCapture) {
+				hooks.splice(i, 1);
+				break;
+			}
+		}
+		hooks.push(args);
+	}
 };
+Q.addEventListener.hooks = [];
+function _Q_Event_stopPropagation() {
+	var event = this;
+	Q.each(Q.addEventListener.hooks, function () {
+		var element = this[0];
+		var matches = element === root
+		|| element === document
+		|| (element instanceof HTMLElement
+			&& element !== this.target
+		    && element.contains(this.target));
+		if (matches && this[1] === event.type) {
+			this[2].apply(element, [this]);
+		}
+	});
+	Event.prototype.preventDefault.previous.apply(this, arguments);
+}
+_Q_Event_stopPropagation.previous = Event.prototype.preventDefault;
+Event.prototype.preventDefault = _Q_Event_stopPropagation;
 
 /**
  * Remove an event listener from an element
@@ -5017,8 +5043,10 @@ Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandl
  * @param {HTMLElement} element
  * @param {String} eventName
  * @param {Function} eventHandler
+ * @param {boolean} useCapture
  */
-Q.removeEventListener = function _Q_addEventListener(element, eventName, eventHandler) {
+Q.removeEventListener = function _Q_removeEventListener(element, eventName, eventHandler, useCapture) {
+	useCapture = useCapture || false;
 	var handler = (eventHandler.typename === "Q.Event"
 		? eventHandler.eventListener
 		: eventHandler);
@@ -5047,6 +5075,17 @@ Q.removeEventListener = function _Q_addEventListener(element, eventName, eventHa
 	} else {
 		element["on"+eventName] = null; // best we can do
 	}
+	var hooks = Q.addEventListener.hooks;
+	for (var i=hooks.length-1; i>=0; --i) {
+		var hook = hooks[i];
+		if (hook[0] === element
+		&& hook[1] === eventName
+		&& hook[2] === eventHandler
+		&& hook[3] === useCapture) {
+			hooks.splice(i, 1);
+			break;
+		}
+	}
 };
 
 /**
@@ -5074,7 +5113,7 @@ Q.trigger = function _Q_trigger(eventName, element, args) {
 Q.layout = function _Q_layout(elementOrEvent) {
 	var element = Q.instanceOf(elementOrEvent, Element) ? elementOrEvent : null;
 	Q.each(_layoutElements, function (i, e) {
-		if (element && !element.isOrContains(e)) {
+		if (element && !element.contains(e)) {
 			return;
 		}
 		var event = _layoutEvents[i];;
@@ -8212,7 +8251,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 			}
 		});
 		Q.addScript(srcs, function _jQuery_plugin_script_loaded() {
-			for (pluginName in results) {
+			for (var pluginName in results) {
 				results[pluginName] = $.fn[pluginName];
 			}
 			Q.handle(callback, root, [results]);
@@ -8827,8 +8866,8 @@ Q.Pointer = {
 		return function _Q_fastclick_on_wrapper (e) {
 			var elem = Q.Pointer.elementFromPoint(Q.Pointer.getX(e), Q.Pointer.getY(e));
 			if (Q.Pointer.canceledClick
-			|| !this.isOrContains(Q.Pointer.started)
-			|| !this.isOrContains(elem)) {
+			|| !this.contains(Q.Pointer.started)
+			|| !this.contains(elem)) {
 				return Q.Pointer.preventDefault(e);
 			}
 			return params.original.apply(this, arguments);
@@ -9203,7 +9242,7 @@ Q.Pointer = {
 		Q.each(imgs, function (i, img) {
 			var outside = (
 				Q.instanceOf(container, Element)
-				&& !container.isOrContains(img.target)
+				&& !container.contains(img.target)
 			);
 			if ((img.timeout !== false && img.dontStopBeforeShown)
 			|| outside) {
@@ -9380,9 +9419,9 @@ var _pos, _dist, _last, _lastTimestamp, _lastVelocity;
 function _Q_PointerStartHandler(e) {
 	Q.Pointer.started = Q.Pointer.target(e);
 	Q.Pointer.canceledClick = false;
-	Q.addEventListener(window, Q.Pointer.move, _onPointerMoveHandler);
-	Q.addEventListener(window, Q.Pointer.end, _onPointerEndHandler);
-	Q.addEventListener(window, Q.Pointer.cancel, _onPointerEndHandler);
+	Q.addEventListener(window, Q.Pointer.move, _onPointerMoveHandler, false, true);
+	Q.addEventListener(window, Q.Pointer.end, _onPointerEndHandler, false, true);
+	Q.addEventListener(window, Q.Pointer.cancel, _onPointerEndHandler, false, true);
 	var screenX = Q.Pointer.getX(e) - Q.Pointer.scrollLeft();
 	var screenY = Q.Pointer.getY(e) - Q.Pointer.scrollTop();
 	_pos = { // first movement
