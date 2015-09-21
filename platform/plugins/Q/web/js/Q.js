@@ -408,6 +408,8 @@ Date.fromDateTime = function _Date_fromDateTime(dateTimeString) {
 	return new Date(dateTimeString.replace(/-/g,"/"));
 };
 
+function _returnFalse() { return false; }
+
 if (root.Element) { // only IE7 and lower, which we don't support, wouldn't have this
 
 if(!document.getElementsByClassName) {
@@ -530,8 +532,6 @@ Elp.swap = function(element) {
 	parent1.insertBefore(element, next1);
 	parent2.insertBefore(this, next2);
 };
-
-function _returnFalse() { return false; }
 
 /**
  * Prevent ability to select text in an element
@@ -5552,6 +5552,48 @@ Q.request = function (url, slotNames, callback, options) {
 			_Q_request_callback.call(this, errors, errors);
 		}
 		
+		function xhr(onSuccess, onCancel) {
+			if (o.extend !== false) {
+				url = Q.ajaxExtend(url, slotNames, overrides);
+			}			
+			var xmlhttp;
+			if (root.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
+				xmlhttp = new XMLHttpRequest();
+			} else { // code for IE6, IE5
+				xmlhttp = new root.ActiveXObject("Microsoft.XMLHTTP");
+			}
+			xmlhttp.onreadystatechange = function() {
+				if (xmlhttp.readyState == 4) {
+					if (xmlhttp.status == 200) {
+						onSuccess.call(xmlhttp, xmlhttp.responseText);
+					} else {
+						console.log("Q.request xhr: " + xmlhttp.status + ' ' + xmlhttp.responseText.substr(1000));
+						onCancel.call(xmlhttp, xmlhttp.status);
+					}
+				}
+			};
+			if (typeof o.xhr === 'function') {
+				o.xhr.call(xmlhttp, xmlhttp, options);
+			}
+			var sync = (o.xhr === 'sync');
+			if (Q.isPlainObject(o.xhr)) {
+				Q.extend(xmlhttp, o.xhr);
+				sync = sync || xmlhttp.sync;
+			}
+			var content = Q.serializeFields(o.fields);
+			request.xmlhttp = xmlhttp;
+			if (verb === 'GET') {
+				xmlhttp.open('GET', url + (content ? '&' + content : ''), !sync);
+				xmlhttp.send();
+			} else {
+				xmlhttp.open(verb, url, !sync);
+				xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+				//xmlhttp.setRequestHeader("Content-length", content.length);
+				//xmlhttp.setRequestHeader("Connection", "close");
+				xmlhttp.send(content);
+			}
+		}
+		
 		var method = o.method || 'GET';
 		var verb = method.toUpperCase();
 		var overrides = {
@@ -5580,49 +5622,6 @@ Q.request = function (url, slotNames, callback, options) {
 
 		if (!o.query && o.xhr !== false
 		&& Q.url(url).search(Q.info.baseUrl) === 0) {
-			
-			function xhr(onSuccess, onCancel) {
-				if (o.extend !== false) {
-					url = Q.ajaxExtend(url, slotNames, overrides);
-				}			
-				var xmlhttp;
-				if (root.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
-					xmlhttp = new XMLHttpRequest();
-				} else { // code for IE6, IE5
-					xmlhttp = new root.ActiveXObject("Microsoft.XMLHTTP");
-				}
-				xmlhttp.onreadystatechange = function() {
-					if (xmlhttp.readyState == 4) {
-						if (xmlhttp.status == 200) {
-							onSuccess.call(xmlhttp, xmlhttp.responseText);
-						} else {
-							console.log("Q.request xhr: " + xmlhttp.status + ' ' + xmlhttp.responseText.substr(1000));
-							onCancel.call(xmlhttp, xmlhttp.status);
-						}
-					}
-				};
-				if (typeof o.xhr === 'function') {
-					o.xhr.call(xmlhttp, xmlhttp, options);
-				}
-				var sync = (o.xhr === 'sync');
-				if (Q.isPlainObject(o.xhr)) {
-					Q.extend(xmlhttp, o.xhr);
-					sync = sync || xmlhttp.sync;
-				}
-				var content = Q.serializeFields(o.fields);
-				request.xmlhttp = xmlhttp;
-				if (verb === 'GET') {
-					xmlhttp.open('GET', url + (content ? '&' + content : ''), !sync);
-					xmlhttp.send();
-				} else {
-					xmlhttp.open(verb, url, !sync);
-					xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-					//xmlhttp.setRequestHeader("Content-length", content.length);
-					//xmlhttp.setRequestHeader("Connection", "close");
-					xmlhttp.send(content);
-				}
-			}
-
 			_onStart();
 			return xhr(_onResponse, _onCancel);
 		}
@@ -7760,23 +7759,9 @@ function _connectSocketNS(ns, url, callback, force) {
 				url: url,
 				ns: ns
 			});
-			function _Q_Socket_register(socket) {
-				Q.each(_socketRegister, function (i, item) {
-					if (item[0] !== ns) return;
-					var name = item[1];
-					_ioOn(socket, name, Q.Socket.onEvent(ns, url, name).handle); // may overwrite again, but it's ok
-					_ioOn(socket, name, Q.Socket.onEvent(ns, '', name).handle);
-				});
-			}
 			Q.Socket.onConnect(ns, url).add(_Q_Socket_register, 'Q');
 			// remember actual socket - for disconnecting
 			var socket = qs.socket;
-			function _connected() {
-				this.emit('session', Q.cookie(Q.info.sessionName || 'sessionId'));
-				Q.Socket.onConnect(ns).handle(socket);
-				Q.Socket.onConnect(ns, url).handle(socket);
-				console.log('Socket connected to '+url);
-			}
 			_ioOn(socket, 'connect', _connected);
 			/*
 			_ioOn(socket, 'reconnect', function () {
@@ -7796,6 +7781,22 @@ function _connectSocketNS(ns, url, callback, force) {
 			});
 		}
 		callback && callback(_qsockets[ns][url]);
+		
+		function _Q_Socket_register(socket) {
+			Q.each(_socketRegister, function (i, item) {
+				if (item[0] !== ns) return;
+				var name = item[1];
+				_ioOn(socket, name, Q.Socket.onEvent(ns, url, name).handle); // may overwrite again, but it's ok
+				_ioOn(socket, name, Q.Socket.onEvent(ns, '', name).handle);
+			});
+		}
+		
+		function _connected() {
+			this.emit('session', Q.cookie(Q.info.sessionName || 'sessionId'));
+			Q.Socket.onConnect(ns).handle(socket);
+			Q.Socket.onConnect(ns, url).handle(socket);
+			console.log('Socket connected to '+url);
+		}
 	}
 	
 	if (ns[0] !== '/') {
@@ -9119,7 +9120,7 @@ Q.Pointer = {
 	 */
 	hint: function (targets, options) {
 		options = options || {};
-		var img1, i, l;
+		var img, img1, i, l;
 		var qphi = Q.Pointer.hint.imgs;
 		var imageEvent = options.imageEvent || new Q.Event();
 		var audioEvent = options.audioEvent || new Q.Event();
@@ -10142,9 +10143,9 @@ Q.Masks.options = {
 
 Q.addEventListener(window, Q.Pointer.start, _Q_PointerStartHandler);
 
+function noop() {}
 if (!root.console) {
 	// for browsers like IE8 and below
-	function noop() {}
 	root.console = {
 		debug: noop,
 		dir: noop,

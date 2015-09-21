@@ -382,33 +382,6 @@ Users.prompt = function(provider, uid, authCallback, cancelCallback, options) {
 		var dialogSlot = $('<div class="dialog_slot Q_dialog_content">');
 		dialogSlot.append(content_div);
 		Users.prompt.overlay.append(titleSlot).append(dialogSlot).appendTo($(o.dialogContainer));
-
-		function _usingInformation(uid, explanation) {
-			return $("<table />").append(
-				$("<tr />").append(
-					$("<td class='Users_profile_pic' />").html(
-						"<fb:profile-pic uid='" + uid + "' linked='false' size='square' class='fb_profile_pic'></fb:profile-pic>"
-					)
-				).append(
-					$("<td class='Users_explanation_name' />").append(
-						$("<div class='Users_explanation' />").html(explanation)
-					).append(
-						"<fb:name uid='" + uid + "' useyou='false' linked='false' size='square' class='fb_name'>user id "+uid+"</fb:name>"
-					)
-				)
-			);
-		}
-
-		function _authenticateActions(caption) {
-			return $("<div class='Users_actions Q_big_prompt' />").append(
-				$('<button type="submit" class="Q_button Q_main_button" />').html(caption)
-				.click(function () {
-					tookAction = true;
-					Users.prompt.overlay.data('Q/overlay').close();
-					authCallback();
-				})
-			);
-		}
 	}
 	Q.Dialogs.push({
 		dialog: Users.prompt.overlay, 
@@ -426,6 +399,33 @@ Users.prompt = function(provider, uid, authCallback, cancelCallback, options) {
 			tookAction = false;
 		}
 	});
+	
+	function _usingInformation(uid, explanation) {
+		return $("<table />").append(
+			$("<tr />").append(
+				$("<td class='Users_profile_pic' />").html(
+					"<fb:profile-pic uid='" + uid + "' linked='false' size='square' class='fb_profile_pic'></fb:profile-pic>"
+				)
+			).append(
+				$("<td class='Users_explanation_name' />").append(
+					$("<div class='Users_explanation' />").html(explanation)
+				).append(
+					"<fb:name uid='" + uid + "' useyou='false' linked='false' size='square' class='fb_name'>user id "+uid+"</fb:name>"
+				)
+			)
+		);
+	}
+
+	function _authenticateActions(caption) {
+		return $("<div class='Users_actions Q_big_prompt' />").append(
+			$('<button type="submit" class="Q_button Q_main_button" />').html(caption)
+			.click(function () {
+				tookAction = true;
+				Users.prompt.overlay.data('Q/overlay').close();
+				authCallback();
+			})
+		);
+	}
 };
 
 
@@ -1245,11 +1245,6 @@ function login_callback(response) {
 			});
 		}
 		Q.activate($('#Users_login_step2').get(0));
-		function _centerIt() {
-			var $d = $('#Users_login_passphrase_div');
-			var $f = $('#Users_login_passphrase_forgot');
-			$f.css('bottom', ($d.outerHeight(true) - $f.outerHeight(true)) / 2 + 'px');
-		}
 	}
 	$('#Users_login_step1').animate({"opacity": 0.5}, 'fast');
 	$('#Users_login_step1 .Q_button').attr('disabled', 'disabled');
@@ -1263,6 +1258,11 @@ function login_callback(response) {
 	}
 	if (priv.linkToken) {
 		$('#Users_login_step1').hide();
+	}
+	function _centerIt() {
+		var $d = $('#Users_login_passphrase_div');
+		var $f = $('#Users_login_passphrase_forgot');
+		$f.css('bottom', ($d.outerHeight(true) - $f.outerHeight(true)) / 2 + 'px');
 	}
 }
 
