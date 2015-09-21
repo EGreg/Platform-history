@@ -5033,7 +5033,12 @@ function _Q_Event_stopPropagation() {
 			this[2].apply(element, [this]);
 		}
 	});
-	Event.prototype.stopPropagation.previous.apply(this, arguments);
+	var p = _Q_Event_stopPropagation.previous;
+	if (p) {
+		p.apply(event, arguments);
+	} else {
+		event.cancelBubble = false;
+	}
 }
 _Q_Event_stopPropagation.previous = Event.prototype.stopPropagation;
 Event.prototype.stopPropagation = _Q_Event_stopPropagation;
