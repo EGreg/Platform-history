@@ -5,9 +5,8 @@
  * @main Q
  */
 "use strict";
-(function (undefined) {
-
 /* jshint -W014 */
+(function (undefined) {
 
 var root = this;
 

@@ -1,9 +1,11 @@
+"use strict";
+/* jshint -W014 */
+
 /**
  * Contains core Qbix functionality.
  * @module Q
  * @main Q
  */
-"use strict";
 var express = require('express');
 var http = require('http');
 var util = require('util');

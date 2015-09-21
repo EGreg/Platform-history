@@ -5,6 +5,7 @@
  * @class Users
  */
 "use strict";
+/* jshint -W014 */
 (function(Q, $) {
 
 var Users = Q.Users = Q.plugins.Users = {

@@ -1,3 +1,4 @@
+"use strict";
 /*jshint node:true */
 /**
  * Users plugin
@@ -158,30 +159,6 @@ function internalServerHandler(req, res, next) {
 			 * Required: view, emailAddress or mobile number
 			 * Optional: delay, subject, fields, options
 			 */
-			function _send() {
-				var options = Q.extend({isSource: true}, parsed.options);
-				if (parsed.emailAddress) {
-					Q.Utils.sendEmail(
-						parsed.emailAddress,
-						parsed.subject,
-						parsed.body,
-						{},
-						options,
-						_callback
-					);					
-				} else if (parsed.mobileNumber) {
-					Q.Utils.sendSMS(
-						parsed.mobileNumber,
-						parsed.body,
-						{},
-						options,
-						_callback
-					);
-				}
-				function _callback() {
-					// Message sent successfully
-				}
-			}
 			if (parsed.delay) {
 				setTimeout(_send, parsed.delay);
 			} else {
