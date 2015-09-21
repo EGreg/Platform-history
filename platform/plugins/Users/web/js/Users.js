@@ -4,7 +4,7 @@
  * @module Users
  * @class Users
  */
-
+"use strict";
 (function(Q, $) {
 
 var Users = Q.Users = Q.plugins.Users = {
@@ -912,7 +912,7 @@ function login_callback(response) {
 	var json = response.slots.data;
 	var step2_form;
 	var autologin = false;
-	setupRegisterForm = Users.login.options.setupRegisterForm || defaultSetupRegisterForm;
+	var setupRegisterForm = Users.login.options.setupRegisterForm || defaultSetupRegisterForm;
 	if (form.data('used') === 'facebook') {
 		// logged in with FB
 		autologin = true;
@@ -1498,7 +1498,7 @@ function login_setupDialog(usingProviders, scope, dialogContainer, identifierTyp
 			$('#Users_login_step1 *').removeAttr('disabled');
 		}
 		priv.registerInfo = null;
-		$nextAll = $('#Users_login_step1').nextAll();
+		var $nextAll = $('#Users_login_step1').nextAll();
 		if ($nextAll.is(':visible')) {
 			$nextAll.slideUp('fast').each(function() {
 				var v = $('form', $(this)).data('validator');

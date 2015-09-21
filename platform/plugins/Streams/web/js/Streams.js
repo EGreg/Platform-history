@@ -4,7 +4,7 @@
  * @module Streams
  * @class Streams
  */
-
+"use strict";
 (function(Q, $) {
 
 var Users = Q.Users;
