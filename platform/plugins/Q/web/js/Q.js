@@ -4,11 +4,12 @@
  * @module Q
  * @main Q
  */
-(function () {
+"use strict";
+(function (undefined) {
 
 /* jshint -W014 */
 
-root = this;
+var root = this;
 
 // private properties
 var _isReady = false;
@@ -3341,7 +3342,6 @@ Q.Tool.define = function (name, /* require, */ ctor, defaultOptions, stateKeys, 
 	}
 	for (name in ctors) {
 		ctor = ctors[name];
-		ctor.toolName = name;
 		name = Q.normalize(name);
 		if (typeof ctor === 'string') {
 			if (typeof Q.Tool.constructors[name] !== 'function') {
@@ -3350,6 +3350,7 @@ Q.Tool.define = function (name, /* require, */ ctor, defaultOptions, stateKeys, 
 			}
 			continue;
 		}
+		ctor.toolName = name;
 		if (typeof stateKeys === 'object') {
 			methods = stateKeys;
 			stateKeys = undefined;
@@ -3422,6 +3423,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 		}
 		return ctor;
 	}
+	ctor.toolName = name;
 	if (typeof stateKeys === 'object') {
 		methods = stateKeys;
 		stateKeys = undefined;
@@ -10454,4 +10456,4 @@ if (typeof module !== 'undefined' && typeof process !== 'undefined') {
 	root.Q = Q;
 }
 
-})();
+}).call(this);
