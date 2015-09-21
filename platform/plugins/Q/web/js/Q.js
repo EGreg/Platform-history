@@ -866,6 +866,16 @@ Q.typeOf = function _Q_typeOf(value) {
  * @throws {Q.Error} If container is not array, object or string
  */
 Q.each = function _Q_each(container, callback, options) {
+	function _byFields(a, b) { 
+		return container[a][s] > container[b][s] ? 1
+			: (container[a][s] < container[b][s] ? -1 : 0); 
+	}
+	function _byKeysNumeric(a, b) { 
+		return Number(a) - Number(b); 
+	}
+	function _byFieldsNumeric(a, b) { 
+		return Number(container[a][s]) - Number(container[b][s]); 
+	}
 	var i, k, c, length, r, t, args;
 	if (typeof callback === 'string' && Q.isArrayLike(arguments[2])) {
 		args = arguments[2];
@@ -913,16 +923,6 @@ Q.each = function _Q_each(container, callback, options) {
 				var s = options.sort;
 				var t = typeof(s);
 				var _byKeys = undefined;
-				function _byFields(a, b) { 
-					return container[a][s] > container[b][s] ? 1
-						: (container[a][s] < container[b][s] ? -1 : 0); 
-				}
-				function _byKeysNumeric(a, b) { 
-					return Number(a) - Number(b); 
-				}
-				function _byFieldsNumeric(a, b) { 
-					return Number(container[a][s]) - Number(container[b][s]); 
-				}
 				var compare = (t === 'function') ? s : (t === 'string'
 					? (options.numeric ? _byFieldsNumeric : _byFields)
 					: (options.numeric ? _byKeysNumeric : _byKeys));
@@ -5033,10 +5033,10 @@ function _Q_Event_stopPropagation() {
 			this[2].apply(element, [this]);
 		}
 	});
-	Event.prototype.preventDefault.previous.apply(this, arguments);
+	Event.prototype.stopPropagation.previous.apply(this, arguments);
 }
-_Q_Event_stopPropagation.previous = Event.prototype.preventDefault;
-Event.prototype.preventDefault = _Q_Event_stopPropagation;
+_Q_Event_stopPropagation.previous = Event.prototype.stopPropagation;
+Event.prototype.stopPropagation = _Q_Event_stopPropagation;
 
 /**
  * Remove an event listener from an element

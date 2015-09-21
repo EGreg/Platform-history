@@ -3,6 +3,7 @@
  * @module Q
  * @main Q
  */
+"use strict";
 var express = require('express');
 var http = require('http');
 var util = require('util');
@@ -1150,6 +1151,16 @@ Q.handle = function _Q_handle(callables, context, args) {
  * @throws {Q.Exception} If container is not array, object or string
  */
 Q.each = function _Q_each(container, callback, options) {
+	function _byFields(a, b) { 
+		return container[a][s] > container[b][s] ? 1
+			: (container[a][s] < container[b][s] ? -1 : 0); 
+	}
+	function _byKeysNumeric(a, b) { 
+		return Number(a) - Number(b); 
+	}
+	function _byFieldsNumeric(a, b) { 
+		return Number(container[a][s]) - Number(container[b][s]); 
+	}
 	var i, k, c, length, r, t, args;
 	if (typeof callback === 'string' && Q.isArrayLike(arguments[2])) {
 		args = arguments[2];
@@ -1190,16 +1201,6 @@ Q.each = function _Q_each(container, callback, options) {
 				var s = options.sort;
 				var t = typeof(s);
 				var _byKeys = undefined;
-				function _byFields(a, b) { 
-					return container[a][s] > container[b][s] ? 1
-						: (container[a][s] < container[b][s] ? -1 : 0); 
-				}
-				function _byKeysNumeric(a, b) { 
-					return Number(a) - Number(b); 
-				}
-				function _byFieldsNumeric(a, b) { 
-					return Number(container[a][s]) - Number(container[b][s]); 
-				}
 				var compare = (t === 'function') ? s : (t === 'string'
 					? (options.numeric ? _byFieldsNumeric : _byFields)
 					: (options.numeric ? _byKeysNumeric : _byKeys));
@@ -2135,6 +2136,7 @@ Q.init = function _Q_init(app, notListen) {
 		 */
 		VIEWS_DIR: 'views'
 	};
+	var k;
 	for (k in dirs) {
 		Q[k] = Q_dir  + '/' + dirs[k];
 	}
