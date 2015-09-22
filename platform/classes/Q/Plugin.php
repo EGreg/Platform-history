@@ -627,7 +627,10 @@ EOT;
 			}
 		}
 
-		if(!@symlink($target, $link)) {
+		if($is_win) exec('mklink /j "' . $link . '" "' . $target . '"');
+		else @symlink($target, $link);
+		
+		if(!file_exists($link)) {
 			echo Q_Utils::colored(
 				"[WARN] Symlink '$link' (target: '$target') was not created".PHP_EOL, 
 				'red', 'yellow'
