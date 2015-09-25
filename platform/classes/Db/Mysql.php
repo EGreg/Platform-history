@@ -1657,10 +1657,10 @@ EOT;
 	 */
 EOT;
 					$js_functions["maxSize_$field_name"]['comment'] = <<<EOT
-	$dc
-	 * Returns the maximum integer that can be assigned to the $field_name field
-	 * @return {integer}
-	 */
+$dc
+ * Returns the maximum integer that can be assigned to the $field_name field
+ * @return {integer}
+ */
 EOT;
 					$js_functions["maxSize_$field_name"]['args'] = '';
 					$js_functions["maxSize_$field_name"]['return_statement'] = <<<EOT

@@ -76,8 +76,8 @@ DROP TABLE IF EXISTS `{$prefix}external_from`;
 
 CREATE TABLE `{$prefix}external_from` (
   `publisherId` varchar(31) COLLATE utf8_unicode_ci NOT NULL,
+  `xid` varchar(31) COLLATE utf8_unicode_ci NOT NULL COMMENT 'The external user id',
   `userId` varchar(31) COLLATE utf8_unicode_ci NOT NULL,
-  `xid` varchar(31) COLLATE utf8_unicode_ci NOT NULL,
   `insertedTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `nickname` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
   PRIMARY KEY (`publisherId`,`xid`)
@@ -91,7 +91,7 @@ DROP TABLE IF EXISTS `{$prefix}external_to`;
 CREATE TABLE `{$prefix}external_to` (
   `publisherId` varchar(31) COLLATE utf8_unicode_ci NOT NULL,
   `userId` varchar(31) COLLATE utf8_unicode_ci NOT NULL,
-  `xid` varchar(31) COLLATE utf8_unicode_ci NOT NULL,
+  `xid` varchar(31) COLLATE utf8_unicode_ci NOT NULL COMMENT 'The external user id',
   `insertedTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`publisherId`,`userId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='stores external ids for users';

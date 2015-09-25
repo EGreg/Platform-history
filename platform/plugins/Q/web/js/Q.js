@@ -3174,6 +3174,8 @@ Q.Tool = function _Q_Tool(element, options) {
 	}
 	
 	if (!element.Q.tools) element.Q.tools = {};
+	if (!element.Q.toolNames) element.Q.toolNames = [];
+	element.Q.toolNames.push(normalizedName);
 	element.Q.tools[normalizedName] = this;
 	element.Q.tool = this;
 	Q.Tool.active[this.id] = this;
@@ -3282,10 +3284,11 @@ Q.Tool.remove = function _Q_Tool_remove(elem, removeCached) {
 		if (!tool) return false;
 		elem = tool.element;
 	}
-	Q.find(elem, true, null, function _Q_Tool_remove_found(toolElement) {
-		for (var name in toolElement.Q.tools) {
+	Q.find(elem, true, null,
+	function _Q_Tool_remove_found(toolElement) {
+		Q.each(toolElement.Q.toolNames, function (i, name) {
 			toolElement.Q.tools[name].remove(removeCached);
-		}
+		}, {ascending: false});
 	});
 };
 
@@ -3305,11 +3308,11 @@ Q.Tool.clear = function _Q_Tool_clear(elem, removeCached) {
 		if (!tool) return false;
 		elem = tool.element;
 	}
-	Q.find(elem.children || elem.childNodes, true, null, function _Q_Tool_remove_found(toolElement) {
-		var tool = Q.Tool.from(toolElement);
-		if (tool) {
-			tool.remove(removeCached);
-		}
+	Q.find(elem.children || elem.childNodes, true, null,
+	function _Q_Tool_remove_found(toolElement) {
+		Q.each(toolElement.Q.toolNames, function (i, name) {
+			toolElement.Q.tools[name].remove(removeCached);
+		}, {ascending: false});
 	});
 };
 

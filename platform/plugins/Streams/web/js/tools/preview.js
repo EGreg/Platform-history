@@ -323,7 +323,7 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 				Q.Streams.iconUrl(icon, file), null, 
 				{cacheBust: options.cacheBust && state.cacheBustOnUpdate}
 			);
-			element.setAttribute('data-fullsize', Q.url(
+			element.setAttribute('data-fullsrc', Q.url(
 				Q.Streams.iconUrl(icon, full), null, 
 				{cacheBust: options.cacheBust && state.cacheBustOnUpdate}
 			));
