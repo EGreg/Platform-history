@@ -3286,9 +3286,10 @@ Q.Tool.remove = function _Q_Tool_remove(elem, removeCached) {
 	}
 	Q.find(elem, true, null,
 	function _Q_Tool_remove_found(toolElement) {
-		Q.each(toolElement.Q.toolNames, function (i, name) {
-			toolElement.Q.tools[name].remove(removeCached);
-		}, {ascending: false});
+		var tn = toolElement.Q.toolNames;
+		for (var i=tn.length-1; i>=0; --i) {
+			toolElement.Q.tools[tn[i]].remove(removeCached);
+		}
 	});
 };
 
@@ -3310,9 +3311,10 @@ Q.Tool.clear = function _Q_Tool_clear(elem, removeCached) {
 	}
 	Q.find(elem.children || elem.childNodes, true, null,
 	function _Q_Tool_remove_found(toolElement) {
-		Q.each(toolElement.Q.toolNames, function (i, name) {
-			toolElement.Q.tools[name].remove(removeCached);
-		}, {ascending: false});
+		var tn = toolElement.Q.toolNames;
+		for (var i=tn.length-1; i>=0; --i) {
+			toolElement.Q.tools[tn[i]].remove(removeCached);
+		}
 	});
 };
 

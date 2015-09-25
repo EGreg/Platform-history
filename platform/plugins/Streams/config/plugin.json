@@ -91,7 +91,8 @@
 				"edit": true,
 				"sizes": ["40", "50", "80", "x200", "200x"],
 				"defaults": {
-					"title": "Untitled Image"
+					"title": "Untitled Image",
+					"icon": "Streams/image"
 				}
 			},
 			"Streams/images": {

@@ -16,7 +16,7 @@ function Websites_0_8_Streams_mysql()
 	
 	$streams = array(
 		"Streams/images/" => array('type' => "Streams/template", "title" => "", "icon" => "default", "content" => "", "deletable" => true),
-		"Streams/image/" => array('type' => "Streams/template", "title" => "", "icon" => "default", "content" => "", "deletable" => true),
+		"Streams/image/" => array('type' => "Streams/template", "title" => "", "icon" => "Streams/image", "content" => "", "deletable" => true),
 		"Streams/file/" => array('type' => "Streams/template", "title" => "", "icon" => "files/_blank", "content" => "", "deletable" => true),
 		"Websites/article/" => array('type' => "Streams/template", "title" => "", "icon" => "default", "content" => "", "deletable" => true),
 		"Websites/seo/" => array('type' => "Streams/template", "title" => "Website SEO", "icon" => Q_Html::themedUrl("plugins/Websites/img/seo"), "content" => "", "deletable" => true),

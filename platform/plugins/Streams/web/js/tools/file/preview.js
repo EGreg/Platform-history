@@ -156,6 +156,7 @@ function _Streams_file_preview(options, preview) {
 
 function _formatSize(bytes)
 {
+	if (isNaN(bytes)) return '';
 	if (bytes >= Math.pow(2, 30)) {
 		return Math.ceil(bytes / Math.pow(2, 30)) + ' GB';
 	} else if (bytes >= Math.pow(2, 20)) {

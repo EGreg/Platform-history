@@ -205,8 +205,8 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 				tool.element.innerHTML = html;
 				tool.element.removeClass('Streams_preview_create');
 				var parts = state.imagepicker.showSize.split('x');
-				var w = parts[0] || state.creatable.addIconSize;
-				var h = parts[0] || state.creatable.addIconSize;
+				var w = parts[0] || parts[1] || state.creatable.addIconSize;
+				var h = parts[0] || parts[1] || state.creatable.addIconSize;
 				w = h = Math.min(w, h);
 				if (w && h) {
 					tool.$('.Streams_preview_add').width(w).height(h);
