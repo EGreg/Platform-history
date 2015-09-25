@@ -3142,8 +3142,8 @@ Q.Tool = function _Q_Tool(element, options) {
 	for (i = 0, l = classes.length; i < l; i++) {
 		var className = classes[i];
 		var cn = Q.normalize(className.substr(0, className.length-5));
-		if ((partial = o['.' + className])
-		&& (className.substr(-5) !== '_tool' || cn === this.name)) {
+		partial = o['.' + className];
+		if (partial && (className.substr(-5) !== '_tool' || cn === this.name)) {
 			Q.extend(this.options, Q.Tool.options.levels, partial, 'Q.Tool');
 		}
 	}
