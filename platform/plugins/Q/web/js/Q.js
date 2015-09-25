@@ -3095,7 +3095,7 @@ Q.Tool = function _Q_Tool(element, options) {
 	if (!this.element.id) {
 		var prefix = Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '';
 		this.element.id = (
-			prefix + this.name + '_' + (Q.Tool.nextDefaultId++) + "_tool"
+			prefix + this.name + '-' + (Q.Tool.nextDefaultId++) + "_tool"
 		).toLowerCase();
 		Q.Tool.nextDefaultId %= 1000000;
 	}
@@ -3141,7 +3141,9 @@ Q.Tool = function _Q_Tool(element, options) {
 	// .Q_something
 	for (i = 0, l = classes.length; i < l; i++) {
 		var className = classes[i];
-		if ((partial = o['.' + className])) {
+		var cn = Q.normalize(className.substr(0, className.length-5));
+		if ((partial = o['.' + className])
+		&& (className.substr(-5) !== '_tool' || cn === this.name)) {
 			Q.extend(this.options, Q.Tool.options.levels, partial, 'Q.Tool');
 		}
 	}
@@ -3150,9 +3152,9 @@ Q.Tool = function _Q_Tool(element, options) {
 		Q.extend(this.options, Q.Tool.options.levels, partial, 'Q.Tool');
 	}
 	// #parent_child_tool, #child_tool
-	var _idcomps = this.element.id.split('_');
+	var _idcomps = this.element.id.split('__');
 	for (i = 0; i < _idcomps.length-1; ++i) {
-		if ((partial = o['#' + _idcomps.slice(i).join('_')])) {
+		if ((partial = o['#' + _idcomps.slice(i).join('__')])) {
 			Q.extend(this.options, Q.Tool.options.levels, partial, 'Q.Tool');
 		}
 	}
@@ -3845,7 +3847,7 @@ Q.Tool.setUpElement = function _Q_Tool_setUpElement(element, toolName, toolOptio
 			var p1, p2;
 			p1 = prefix || (Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '');
 			do {
-				p2 = p1 + ntt + '_' + (Q.Tool.nextDefaultId++) + '_';
+				p2 = p1 + ntt + '-' + (Q.Tool.nextDefaultId++) + '_';
 				Q.Tool.nextDefaultId %= 1000000;
 			} while (Q.Tool.active[p2]);
 			id = p2 + 'tool';
@@ -10315,8 +10317,8 @@ function _addHandlebarsHelpers() {
 			}
 			var ba = Q.Tool.beingActivated;
 			var prefix = (ba ? ba.prefix : '');
-			id = prefix + name.split('/').join('_')
-				+ (id ? '_' + id : '');
+			id = prefix + name.split('/').join('-')
+				+ (id ? '-' + id : '');
 			var o = {};
 			var hash = (options && options.hash);
 			if (hash) {
