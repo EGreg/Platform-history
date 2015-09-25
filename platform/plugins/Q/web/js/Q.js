@@ -3152,9 +3152,9 @@ Q.Tool = function _Q_Tool(element, options) {
 		Q.extend(this.options, Q.Tool.options.levels, partial, 'Q.Tool');
 	}
 	// #parent_child_tool, #child_tool
-	var _idcomps = this.element.id.split('__');
+	var _idcomps = this.element.id.split('_');
 	for (i = 0; i < _idcomps.length-1; ++i) {
-		if ((partial = o['#' + _idcomps.slice(i).join('__')])) {
+		if ((partial = o['#' + _idcomps.slice(i).join('_')])) {
 			Q.extend(this.options, Q.Tool.options.levels, partial, 'Q.Tool');
 		}
 	}
