@@ -28,6 +28,7 @@ if ($count < 2)
 $LOCAL_DIR = APP_DIR;
 
 $desired = $argv[1];
+$is_win = (substr(strtolower(PHP_OS), 0, 3) === 'win');
 
 do {
 	$go_again = false;
@@ -73,7 +74,12 @@ if (is_dir($uploads_dir)) {
 	if (file_exists('uploads')) {
 		unlink('uploads');
 	}
-	symlink('..'.DS.'files'.DS.$desired.DS.'uploads', 'uploads');
+
+	$target = '..'.DS.'files'.DS.$desired.DS.'uploads';
+	$link = 'uploads';
+	if($is_win) exec('mklink /j "' . $link . '" "' . $target . '"');
+	else symlink($target, $link);
+
 	chdir($cwd);
 }
 
