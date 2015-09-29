@@ -159,7 +159,7 @@ function _Q_overlay(o) {
 	{
 		var $close = $('<a class="Q_close" />');
 		$this.append($close);
-		close.on(Q.Pointer.click, $this.data('Q/overlay').close);
+		$close.on(Q.Pointer.click, $this.data('Q/overlay').close);
 	}
 },
 

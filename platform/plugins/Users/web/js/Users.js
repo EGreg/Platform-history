@@ -664,7 +664,8 @@ Users.logout = function(options) {
 				alert(e);
 			}
 		}
-		if (Q.plugins.Users.facebookApps[Q.info.app]
+		Users.roles = {};
+		if (Users.facebookApps[Q.info.app]
 		&& (o.using.indexOf('facebook') >= 0)) {
 			Q.cookie('fbs_' + Q.plugins.Users.facebookApps[Q.info.app].appId, null, {path: '/'});
 			Q.cookie('fbsr_' + Q.plugins.Users.facebookApps[Q.info.app].appId, null, {path: '/'});
@@ -1005,6 +1006,7 @@ function login_callback(response) {
 				return;
 			}
 			// success!
+			Users.roles = response.slots.data.roles || {};
 			switch ($this.data('form-type')) {
 				case 'resend': 
 					$('button', $this).html('Sent').attr('disabled', 'disabled');

@@ -7,4 +7,5 @@ function Users_after_Q_responseExtras() {
 			Db::exportArray($preloaded, array('asAvatar' => true))
 		);
 	}
+	Q_Response::setScriptData('Q.plugins.Users.roles', Users::roles());
 }
