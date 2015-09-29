@@ -466,15 +466,13 @@ options were the options used in the call to Users.login, result is one of "regi
 and 'used' is "native", or the name of the provider used, such as "facebook".
  *  @param {Function} [options.onCancel] event that occurs when login or authentication "using" a provider was canceled.
  *  @param {Function} [options.onResult] event that occurs before either onSuccess, onCancel, or onRequireComplete
- *  @param {String} [options.successUrl] If the default onSuccess implementation is used, the browser is redirected here
- *  @default Q.uris[Q.info.app+'/home']
+ *  @param {String} [options.successUrl] If the default onSuccess implementation is used, the browser is redirected here. Defaults to Q.uris[Q.info.app+'/home']
  *  @param  {String} [options.accountStatusUrl] if passed, this URL is hit to determine if the account is complete
  *  @param {Function} [options.onRequireComplete] function to call if the user logged in but account is incomplete.
  *  It is passed the user information as well as the response from hitting accountStatusUrl
  *  @param {String} [options.using] can be "native", "facebook" or "native,facebook"
  *  @param {Boolean} [options.tryQuietly] if true, this is same as Users.authenticate, with provider = "using" option
- *  @param {String} [options.scope] permissions to request from the authentication provider
- *  @default "email,publish_stream"
+ *  @param {String} [options.scope="email,publish_stream"] permissions to request from the authentication provider
  *  @param {String} [options.identifierType] the type of the identifier, which could be "mobile" or "email" or "email,mobile"
  */
 Users.login = function(options) {
@@ -490,6 +488,14 @@ Users.login = function(options) {
 	if (typeof o.using === 'string') {
 		o.using = o.using.split(',');
 	}
+	
+	if (!o.using.indexOf('native') >= 0) {
+		_doLogin();
+	} else {
+		$.fn.plugin.load('Q/dialog', _doLogin);
+	}
+	
+	return false;
 	
 	function _doLogin() {
 	
@@ -571,14 +577,6 @@ Users.login = function(options) {
 		delete priv.login_connected; // if we connect, it will be filled
 
 	}
-	
-	if (!o.using.indexOf('native') >= 0) {
-		_doLogin();
-	} else {
-		$.fn.plugin.load('Q/dialog', _doLogin);
-	}
-	
-	return false;
 
 	function _onConnect(user) {
 		if (user) {
@@ -664,6 +662,7 @@ Users.logout = function(options) {
 				alert(e);
 			}
 		}
+		Users.sessionId = Q.cookie(Q.sessionName()); // null
 		Users.roles = {};
 		if (Users.facebookApps[Q.info.app]
 		&& (o.using.indexOf('facebook') >= 0)) {
@@ -671,7 +670,7 @@ Users.logout = function(options) {
 			Q.cookie('fbsr_' + Q.plugins.Users.facebookApps[Q.info.app].appId, null, {path: '/'});
 			if ((o.using[0] === 'native' || o.using[1] === 'native')) {
 				Users.loggedInUser = null;
-				Q.nonce = Q.cookie('Q_nonce');
+				Q.nonce = Q.cookie('Q_nonce'); // null
 			}
 			Users.initFacebook(function logoutCallback () {
 				FB_getLoginStatus(function (response) {
@@ -992,20 +991,19 @@ function login_callback(response) {
 			$('#Users_form_passphrase').attr('value', '');
 			
 			$('input', $this).css('background-image', 'none');
-			if (err) {
-				var msg = Q.firstErrorMessage(err);
-				return;
-			}
 			if (err || response.errors) {
 				// there were errors
 				if (response.errors) {
-					$this.data('validator').invalidate(Q.ajaxErrors(response.errors, [first_input.attr('name')]));
+					$this.data('validator').invalidate(
+						Q.ajaxErrors(response.errors, [first_input.attr('name')]
+					));
 				}
 				$('#Users_login_identifier').blur();
 				first_input.plugin('Q/clickfocus');
 				return;
 			}
 			// success!
+			Users.sessionId = Q.cookie(Q.sessionName());
 			Users.roles = response.slots.data.roles || {};
 			switch ($this.data('form-type')) {
 				case 'resend': 
@@ -1911,5 +1909,31 @@ Users.onLoginLost = new Q.Event(function () {
 });
 Users.onConnected = new Q.Event();
 Users.onConnectionLost = new Q.Event();
+
+Q.loadUrl.options.onResponse.add(function (data) {
+	var sessionId = Q.cookie(Q.sessionName());
+	if (sessionId !== Users.sessionId
+	&& !this.url.startsWith(Q.action("Users/login"))
+	&& !this.url.startsWith(Q.action("Users/logout"))) {
+		Q.req("Users/login", 'data', function (err, response) {
+			Q.nonce = Q.cookie('Q_nonce');
+			var msg = Q.firstErrorMessage(err, response && response.errors);
+			if (msg) {
+				return Users.onError.handle(msg, err);
+			}
+			var user = response.slots.data.user;
+			if (!user && Users.loggedInUser) {
+				Users.loggedInUser = null;
+				Users.roles = {};
+				Users.onLogout.handle();
+			} else if (user && user.id !== Users.loggedInUserId()) {
+				Users.loggedInUser = new Users.User(user);
+				Users.roles = response.slots.data.roles || {};
+				Users.onLogin.handle(user);
+			}
+		});
+	}
+	Users.sessionId = sessionId;
+}, 'Users');
 
 })(Q, jQuery);

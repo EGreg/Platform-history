@@ -2,7 +2,8 @@
 
 function Users_login_response_data()
 {
-	$user = $roles = null;
+	$user = null;
+	$roles = array();
 	if ($row = Users::loggedInUser()) {
 		$user = $row->exportArray();
 		$user['displayName'] = Streams::displayName($row);

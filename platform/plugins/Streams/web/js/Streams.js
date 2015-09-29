@@ -3789,7 +3789,7 @@ Q.onInit.add(function _Streams_onInit() {
 	}
 		
 	Q.beforeActivate.add(_preloadedStreams, 'Streams');
-	Q.loadUrl.options.onLoad.add(_preloadedStreams, 'Streams');
+	Q.loadUrl.options.onResponse.add(_preloadedStreams, 'Streams');
 	
 	Users.onLogin.set(_clearCaches, 'Streams');
 	Users.onLogout.set(_clearCaches, 'Streams');

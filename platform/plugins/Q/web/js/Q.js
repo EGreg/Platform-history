@@ -320,6 +320,10 @@ Sp.sameDomain = function _String_prototype_sameDomain (url2, options) {
 		: same;
 };
 
+Sp.startsWith = function _String_prototype_startsWith(prefix) {
+	return this.substr(0, prefix.length) === prefix;
+};
+
 /**
  * @class Function
  * @description Q extended methods for Functions
@@ -6369,6 +6373,10 @@ Q.cookie = function _Q_cookie(name, value, options) {
 	return null;
 };
 
+Q.sessionName = function () {
+	return Q.info.sessionName || 'sessionId';
+};
+
 /**
  * Finds all elements that contain a class matching the filter,
  * and calls the callback for each of them.
@@ -7798,7 +7806,7 @@ function _connectSocketNS(ns, url, callback, force) {
 		}
 		
 		function _connected() {
-			this.emit('session', Q.cookie(Q.info.sessionName || 'sessionId'));
+			this.emit('session', Q.cookie(Q.sessionName()));
 			Q.Socket.onConnect(ns).handle(socket);
 			Q.Socket.onConnect(ns, url).handle(socket);
 			console.log('Socket connected to '+url);
@@ -10380,7 +10388,7 @@ function _Q_loadUrl_fillSlots (res, url, options) {
 Q.loadUrl.options = {
 	quiet: false,
 	onError: new Q.Event(),
-	onLoad: new Q.Event(),
+	onResponse: new Q.Event(),
 	onLoadStart: new Q.Event(Q.loadUrl.saveScroll, 'Q'),
 	onLoadEnd: new Q.Event(),
 	onActivate: new Q.Event(),
