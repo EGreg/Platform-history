@@ -204,13 +204,7 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 				if (err) return;
 				tool.element.innerHTML = html;
 				tool.element.removeClass('Streams_preview_create');
-				var parts = state.imagepicker.showSize.split('x');
-				var w = parts[0] || parts[1] || state.creatable.addIconSize;
-				var h = parts[0] || parts[1] || state.creatable.addIconSize;
-				w = h = Math.min(w, h);
-				if (w && h) {
-					tool.$('.Streams_preview_add').width(w).height(h);
-				}
+				_setWidthHeight(tool, tool.$('.Streams_preview_add'));
 				var container = tool.$('.Streams_preview_container');
 				container.css('display', 'inline-block');
 				if (state.creatable.clickable) {
@@ -228,12 +222,14 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 	loading: function _loading() {
 		var tool = this;
 		var state = tool.state;
-		var img = document.createElement('img');
-		img.setAttribute('alt', 'loading');
-		img.setAttribute('src', Q.url(state.throbber));
-		img.setAttribute('class', 'Streams_preview_loading');
-		tool.element.innerHTML = '';
-		tool.element.appendChild(img);
+		var $img = $('<img />').attr({
+			'alt': 'loading',
+			'src': Q.url(state.throbber),
+			'class': 'Streams_preview_loading'
+		});
+		Q.Tool.clear(tool.element);
+		$(tool.element).empty().append($img);
+		_setWidthHeight(tool, $img);
 	},
 	preview: function _preview() {
 		var tool = this;
@@ -442,5 +438,16 @@ Q.Template.set('Streams/preview/create',
 	+ '<{{titleTag}} class="Streams_preview_title">{{title}}</{{titleTag}}>'
 	+ '</div></div>'
 );
+
+function _setWidthHeight(tool, $img) {
+	var state = tool.state;
+	var parts = state.imagepicker.showSize.split('x');
+	var w = parts[0] || parts[1] || state.creatable.addIconSize;
+	var h = parts[0] || parts[1] || state.creatable.addIconSize;
+	w = h = Math.min(w, h);
+	if (w && h) {
+		$img.width(w).height(h);
+	}
+}
 
 })(Q, jQuery, window);
