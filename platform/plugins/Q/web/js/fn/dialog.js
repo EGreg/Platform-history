@@ -157,8 +157,8 @@ function _Q_overlay(o) {
 
 	if (!o.noClose)
 	{
-		var close = $('<a class="Q_close" />');
-		$this.prepend(close);
+		var $close = $('<a class="Q_close" />');
+		$this.append($close);
 		close.on(Q.Pointer.click, $this.data('Q/overlay').close);
 	}
 },
@@ -311,8 +311,8 @@ Q.Tool.jQuery('Q/dialog', function _Q_dialog (o) {
 			'width': window.innerWidth + 'px',
 			'height': window.innerHeight + 'px'
 		});
-		var close = $('<a class="Q_close" />');
-		$this.prepend(close);
+		var $close = $('<a class="Q_close" />');
+		$this.append($close);
 		$this.hide();
 
 		var dialogData = {
@@ -357,7 +357,7 @@ Q.Tool.jQuery('Q/dialog', function _Q_dialog (o) {
 			}
 		};
 
-		close.on(Q.Pointer.click, dialogData.close);
+		$close.on(Q.Pointer.click, dialogData.close);
 
 		$(document).on('keydown', function(e) {
 			if (e.which == 27) {

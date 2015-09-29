@@ -164,13 +164,17 @@ html[xmlns] .Q_clearfix { display: block; }
 .Q_fullscreen_dialog .Q_close
 {
 	display: block;
-	position: absolute;
+	position: fixed;
 	top: 2px;
 	right: 2px;
 	height: 35px;
 	width: 35px;
 	background-image: url(../img/ui/close_big.png);
 	cursor: pointer;
+}
+.Q_fullscreen_dialog .title_slot {
+	position: fixed;
+	width: 100%;
 }
 .Q_overlay .Q_close {
 	background-image:url(../img/close.png);
