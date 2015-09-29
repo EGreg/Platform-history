@@ -44,7 +44,8 @@ do {
 		if ($pi['filename'] === CONFIGURE_ORIGINAL_APP_NAME) {
 			$pi['filename'] = $desired;
 		}
-		$filename2 = $pi['dirname'] . '/' . $pi['filename']
+		// fixed / to DIRECTORY_SEPARATOR
+		$filename2 = $pi['dirname'] . DIRECTORY_SEPARATOR . $pi['filename']
 			. (empty($pi['extension']) ? '' : '.' . $pi['extension']);
 		if ($filename != $filename2) {
 			rename($filename, $filename2);
