@@ -221,6 +221,8 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 	}
 	options = options || {};
 	var fields = {};
+	
+	Users.authenticate.occurring = true;
 
 	// make sure facebook is initialized
 	Users.initFacebook(function() {
@@ -257,6 +259,7 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 					// custom prompt
 					options.prompt('facebook', fb_uid, _doAuthenticate, _doCancel);
 				} else {
+					Users.authenticate.occurring = false;
 					throw new Q.Error("Users.authenticate: options.prompt is the wrong type");
 				}
 			} else if (Q.plugins.Users.facebookApps[Q.info.app]) {
@@ -272,6 +275,7 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 				Users.connected.facebook = true;
 				Users.onConnected.handle.call(Users, provider, user, options);
 				Q.handle(onSuccess, this, [user, options]);
+				Users.authenticate.occurring = false;
 			}
 			
 			function _doCancel(ignoreUid) {
@@ -289,6 +293,7 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 				delete Users.connected.facebook;
 				Users.onConnectionLost.handle.call(Users, provider, options);
 				Q.handle(onCancel, Users, [options]);
+				Users.authenticate.occurring = false;
 			}
 
 			function _doAuthenticate() {
@@ -489,6 +494,8 @@ Users.login = function(options) {
 		o.using = o.using.split(',');
 	}
 	
+	Users.login.occurring = true;
+	
 	if (!o.using.indexOf('native') >= 0) {
 		_doLogin();
 	} else {
@@ -598,6 +605,7 @@ Users.login = function(options) {
 				return;
 			}
 
+			Users.login.occurring = false;
 			if (!o.onRequireComplete 
 			|| response2.slots.accountStatus === 'complete') {
 				_onComplete(user);
@@ -621,6 +629,7 @@ Users.login = function(options) {
 		if (false !== Q.handle(o.onResult, this, [scope, o])) {
 			Q.handle(o.onCancel, this, [scope, o]);
 		}
+		Users.login.occurring = false;
 	}
 	
 	// login complete - run onSuccess handler
@@ -630,7 +639,8 @@ Users.login = function(options) {
 		var ret = Q.handle(o.onResult, this, [user, o, priv.result, pn]);
 		if (false !== ret) {
 			Q.handle(o.onSuccess, this, [user, o, priv.result, pn]);	
-		}	
+		}
+		Users.login.occurring = false;
 	}
 };
 
@@ -652,6 +662,8 @@ Users.logout = function(options) {
 	if (typeof o.using === 'string') {
 		o.using = o.using.split(',');
 	}
+	
+	Users.logout.occurring = true;
 
 	function callback(response) {
 		if (response && response.slots && response.slots.script) {
@@ -662,6 +674,7 @@ Users.logout = function(options) {
 				alert(e);
 			}
 		}
+		Users.logout.occurring = false;
 		Users.sessionId = Q.cookie(Q.sessionName()); // null
 		Users.roles = {};
 		if (Users.facebookApps[Q.info.app]
@@ -1810,6 +1823,8 @@ Q.onInit.add(function () {
 		Users.initFacebook();
 	}
 	
+	Users.sessionId = Q.cookie(Q.sessionName());
+	
 	Q.Users.login.options = Q.extend({
 		onCancel: new Q.Event(),
 		onSuccess: new Q.Event(function (user, options) {
@@ -1877,9 +1892,36 @@ Q.beforeActivate.add(function (elem) {
 	Users.preloaded = null;
 }, 'Users');
 
-Q.request.options.onProcessed.set(function (err, data) {
-	if (!data || !data.errors) return;
-	var i, l = data.errors.length, lost = false;
+Q.request.options.onProcessed.set(function (err, response) {
+	var sessionId = Q.cookie(Q.sessionName());
+	if (sessionId !== Users.sessionId
+	&& !Users.login.occurring
+	&& !Users.authenticate.occurring
+	&& !Users.logout.occurring) {
+		Q.nonce = Q.cookie('Q_nonce');
+		Q.req("Users/login", 'data', function (err, res) {
+			Q.nonce = Q.cookie('Q_nonce');
+			var msg = Q.firstErrorMessage(err, res && res.errors);
+			if (msg) {
+				return Users.onError.handle(msg, err);
+			}
+			var user = res.slots.data.user;
+			if (!user && Users.loggedInUser) {
+				Users.loggedInUser = null;
+				Users.roles = {};
+				Users.onLogout.handle();
+			} else if (user && user.id !== Users.loggedInUserId()) {
+				Users.loggedInUser = new Users.User(user);
+				Users.roles = res.slots.data.roles || {};
+				Users.onLogin.handle(user);
+			}
+		});
+	}
+	Users.sessionId = sessionId;
+	if (!response || !response.errors) {
+		return;
+	}
+	var i, l = response.errors.length, lost = false;
 	for (i=0; i<l; ++i) {
 		switch (data.errors[i].classname) {
 		case 'Users_Exception_NotLoggedIn':
@@ -1893,6 +1935,7 @@ Q.request.options.onProcessed.set(function (err, data) {
 	if (lost) {
 		Q.Users.onLoginLost.handle(data);
 		Q.Users.loggedInUser = null;
+		Q.Users.roles = {};
 	}
 }, 'Users');
 
@@ -1909,31 +1952,5 @@ Users.onLoginLost = new Q.Event(function () {
 });
 Users.onConnected = new Q.Event();
 Users.onConnectionLost = new Q.Event();
-
-Q.loadUrl.options.onResponse.add(function (data) {
-	var sessionId = Q.cookie(Q.sessionName());
-	if (sessionId !== Users.sessionId
-	&& !this.url.startsWith(Q.action("Users/login"))
-	&& !this.url.startsWith(Q.action("Users/logout"))) {
-		Q.req("Users/login", 'data', function (err, response) {
-			Q.nonce = Q.cookie('Q_nonce');
-			var msg = Q.firstErrorMessage(err, response && response.errors);
-			if (msg) {
-				return Users.onError.handle(msg, err);
-			}
-			var user = response.slots.data.user;
-			if (!user && Users.loggedInUser) {
-				Users.loggedInUser = null;
-				Users.roles = {};
-				Users.onLogout.handle();
-			} else if (user && user.id !== Users.loggedInUserId()) {
-				Users.loggedInUser = new Users.User(user);
-				Users.roles = response.slots.data.roles || {};
-				Users.onLogin.handle(user);
-			}
-		});
-	}
-	Users.sessionId = sessionId;
-}, 'Users');
 
 })(Q, jQuery);

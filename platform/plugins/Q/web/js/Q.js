@@ -5493,7 +5493,7 @@ Q.request = function (url, slotNames, callback, options) {
 		function _Q_request_callback(err, content, wasJsonP) {
 			if (err) {
 				callback(err);
-				Q.handle(o.onProcessed, Q, [err]);
+				Q.handle(o.onProcessed, this, [err]);
 				return;
 			}
 			var data = content;
@@ -5508,7 +5508,7 @@ Q.request = function (url, slotNames, callback, options) {
 					console.warn('Q.request(' + url + ',['+slotNames+']):' + e);
 					err = {"errors": [e]};
 					callback(e, content);
-					Q.handle(o.onProcessed, Q, [e, content]);
+					Q.handle(o.onProcessed, this, [e, content]);
 				}
 			}
 			var redirected = false;
@@ -5517,7 +5517,7 @@ Q.request = function (url, slotNames, callback, options) {
 				redirected = true;
 			}
 			callback && callback.call(this, err, data, redirected);
-			Q.handle(o.onProcessed, Q, [err, data, redirected]);
+			Q.handle(o.onProcessed, this, [err, data, redirected]);
 		};
 
 		function _onStart () {
