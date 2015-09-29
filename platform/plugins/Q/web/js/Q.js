@@ -10093,10 +10093,10 @@ Q.Masks = {
 				Q.Animation.play(function (x, y) {
 					me.style.opacity = (1-y) * opacity;
 				}, mask.fadeOut).onComplete.set(function () {
-					Q.removeElement(me);
+					me.style.display='none';
 				});
 			} else {
-				Q.removeElement(me);
+				me.style.display='none';
 			}
 		}
 	},
