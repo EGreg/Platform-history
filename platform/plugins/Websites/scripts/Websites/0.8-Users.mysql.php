@@ -12,10 +12,12 @@ function Websites_0_8_Users_mysql()
 	$cwd = getcwd();
 	chdir(USERS_PLUGIN_FILES_DIR.DS.'Users'.DS.'icons');
 	if (!file_exists('Websites')) {
-		symlink(
-			WEBSITES_PLUGIN_FILES_DIR.DS.'Websites'.DS.'icons'.DS.'labels'.DS.'Websites',
-			'Websites'
-		);
+		$is_win = (substr(strtolower(PHP_OS), 0, 3) === 'win');
+		$target = WEBSITES_PLUGIN_FILES_DIR.DS.'Websites'.DS.'icons'.DS.'labels'.DS.'Websites';
+		$link = 'Websites';
+
+		if($is_win) exec('mklink /j "' . $link . '" "' . $target . '"');
+		else symlink($target, $link);
 	}
 	chdir($cwd);
 }
