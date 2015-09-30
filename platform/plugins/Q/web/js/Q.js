@@ -727,7 +727,7 @@ if (!Elp.getElementsByClassName) {
 })();
 
 if (!root.requestAnimationFrame) {
-	requestAnimationFrame =
+	root.requestAnimationFrame =
 		root.webkitRequestAnimationFrame || 
 		root.mozRequestAnimationFrame    || 
 		root.oRequestAnimationFrame      || 
@@ -737,7 +737,7 @@ if (!root.requestAnimationFrame) {
 				callback(Q.milliseconds());
 			}, 1000 / Q.Animation.fps);
 		};
-	cancelAnimationFrame =
+	root.cancelAnimationFrame =
 		root.webkitCancelAnimationFrame || 
 		root.mozCancelAnimationFrame    || 
 		root.oCancelAnimationFrame      || 
