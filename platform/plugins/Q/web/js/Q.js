@@ -10325,16 +10325,15 @@ function _addHandlebarsHelpers() {
 			}
 			var ba = Q.Tool.beingActivated;
 			var prefix = (ba ? ba.prefix : '');
-			id = prefix + name.split('/').join('-')
-				+ (id ? '-' + id : '');
 			var o = {};
 			var hash = (options && options.hash);
 			if (hash) {
 				for (var k in hash) {
-					Q.setObject(k, hash[k], o, '-');
+					Q.setObject(k, hash[k], o, '_');
 				}
 			}
 			Q.extend(o, this[name], this['id:'+id]);
+			id = prefix + name.split('/').join('_') + (id ? '-' + id : '');
 			return Q.Tool.setUpElementHTML('div', name, o, id, prefix);
 		});
 	}
