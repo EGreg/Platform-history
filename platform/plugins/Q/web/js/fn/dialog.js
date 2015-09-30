@@ -326,6 +326,7 @@ Q.Tool.jQuery('Q/dialog', function _Q_dialog (o) {
 						hiddenChildren[i].hide();
 					}
 					$this.show();
+					ods.css('padding-top', ots.outerHeight());
 					
 					if (o.url) {
 						_loadUrl.call($this, o, function() {
