@@ -151,7 +151,7 @@ class Places_Location
 			$area->relateTo($location, 'location', $asUserId, $options);
 			if ($floorName) {
 				$name = $floorName;
-				$title = $floor;
+				$title = $location->title." floor $floor";
 				if (!($floor = Streams::fetchOne($asUserId, $publisherId, $name))) {
 					$floor = Streams::create($asUserId, $publisherId, 'Places/floor',
 						compact('name', 'title', 'skipAccess')
@@ -161,7 +161,7 @@ class Places_Location
 			}
 			if ($columnName) {
 				$name = $columnName;
-				$title = $column;
+				$title = $location->title." column $column";
 				if (!($column = Streams::fetchOne($asUserId, $publisherId, $name))) {
 					$column = Streams::create($asUserId, $publisherId, 'Places/column',
 						compact('name', 'title', 'skipAccess')
