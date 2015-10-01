@@ -398,7 +398,7 @@ Streams.listen = function (options) {
 		if (!parsed || !parsed['Q/method']) {
 			return next();
 		}
-		var participant, stream, msg, posted, token, k;
+		var participant, stream, msg, posted, streams, token, title, k;
 		var ssid = parsed["Q.clientId"];
 		var stream = parsed.stream
 			&& Streams.Stream.construct(JSON.parse(parsed.stream));
@@ -507,6 +507,7 @@ Streams.listen = function (options) {
 				break;
 			case 'Streams/Message/postMessages':
 				posted = JSON.parse(parsed.posted);
+				streams = parsed.streams && Streams.Stream.construct(JSON.parse(parsed.streams));
 				for (k in posted) {
 					msg = Streams.Message.construct(posted[k]);
 					msg.fillMagicFields();
@@ -518,6 +519,7 @@ Streams.listen = function (options) {
 							+ '"}'
 						);
 					}
+					stream = parsed.streams[k][msg.fields.streamName];
 					Streams.Stream.emit('post', stream, msg.fields.byUserId, msg, ssid);
 				}
 				break;

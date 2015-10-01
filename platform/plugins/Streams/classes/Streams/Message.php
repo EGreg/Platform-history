@@ -313,7 +313,7 @@ class Streams_Message extends Base_Streams_Message
 			Q_Utils::sendToNode(array(
 				"Q/method" => "Streams/Message/postMessages",
 				"posted" => Q::json_encode($messages2),
-				"stream" => Q::json_encode($stream->toArray())
+				"streams" => Q::json_encode($streams)
 			));
 		}
 		
