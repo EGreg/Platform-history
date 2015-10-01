@@ -7,7 +7,7 @@ function Websites_0_8_Users_mysql()
 		throw new Q_Exception('Websites: Please fill in the config field "Websites"/"user"/"id"');
 	}
 	
-	Users_Label::addLabel('Websites/admins', $userId, 'Website Admins', 'Website/admins');
+	Users_Label::addLabel('Websites/admins', $userId, 'Website Admins', 'labels/Websites/admins');
 	
 	$cwd = getcwd();
 	chdir(USERS_PLUGIN_FILES_DIR.DS.'Users'.DS.'icons');
