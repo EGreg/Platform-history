@@ -604,9 +604,13 @@
 .Streams_task_progress { border: 1px solid #555; }
 .Streams_task_progress_bar { background: 1px solid #555; width: 0; height: 40px; }
 
-.Streams_invitation { font-size: 20px; text-align: center; padding: 50px; }
-.Streams_callToAction { border: 1px solid #aaa; }
+.Streams_invitation { font-size: 20px; text-align: center; padding: 50px; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: rgba(0,0,0,0); -webkit-tap-highlight-color: transparent; }
+.Streams_invitation ul,
+.Streams_invitation ol { text-align: left; }
+.Streams_invitation li { margin-bottom: 15px; }
+.Streams_callToAction { padding: 10px; border: 1px solid #aaa; text-align: center; }
 .Streams_callToAction h2 { font-size: 30px; }
+.Streams_explanation { text-align: left; }
 
 .Streams_stream_icon { float: left; width: 80px; }
 .Streams_stream_title { line-height: 80px; font-size: 40px;  }
