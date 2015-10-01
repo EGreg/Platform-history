@@ -2392,7 +2392,8 @@ Pp.on = function _Q_pipe_on(field, callback) {
 Pp.add = function _Q_pipe_add(requires, maxTimes, callback) {
 	var r = null, n = null, e = null, r2, events, keys;
 	for (var i=0; i<arguments.length; i++) {
-		if (typeof arguments[i] === 'function') {
+		var ai = arguments[i];
+		if (typeof ai === 'function') {
 			if (e) {
 				r2 = [];
 				events = [];
@@ -2406,18 +2407,18 @@ Pp.add = function _Q_pipe_add(requires, maxTimes, callback) {
 						events.push(event);
 					}
 				});
-				arguments[i].pipeEvents = events;
-				arguments[i].pipeKeys = keys;
+				ai.pipeEvents = events;
+				ai.pipeKeys = keys;
 				r = r2;
 			}
-			arguments[i].pipeRequires = r;
-			arguments[i].pipeRemaining = n;
+			ai.pipeRequires = r;
+			ai.pipeRemaining = n;
 			r = n = e = null;
-			this.callbacks.push(arguments[i]);
+			this.callbacks.push(ai);
 		} else {
-			switch (Q.typeOf(arguments[i])) {
+			switch (Q.typeOf(ai)) {
 			case 'array':
-				r = arguments[i];
+				r = ai;
 				if (r.length
 				&& typeof r[0] !== 'string'
 				&& typeof r[0] !== 'number') {
@@ -2425,11 +2426,11 @@ Pp.add = function _Q_pipe_add(requires, maxTimes, callback) {
 				}
 				break;
 			case 'object':
-				r = arguments[i];
+				r = ai;
 				e = arguments[++i];
 				break;
 			case 'number':
-				n = arguments[i];
+				n = ai;
 				break;
 			default:
 				break;
