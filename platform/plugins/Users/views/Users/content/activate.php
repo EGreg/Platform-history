@@ -36,10 +36,7 @@
 					<?php if (empty($_REQUEST['p'])): ?>
 						Choose a <strong>pass phrase</strong> to log in with.<br>
 						A simple phrase consisting of a few words that
-						you will easily remember.<br>
-						Or you can create a password with some
-						combination of alphanumeric digits
-						and special characters.
+						you will easily remember.
 					<?php else: ?>
 						Choose a good <strong>pass phrase</strong> to protect your account.
 						See the suggestions for some ideas.
