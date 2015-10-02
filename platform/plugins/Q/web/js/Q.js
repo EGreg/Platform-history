@@ -9622,13 +9622,13 @@ Q.Dialogs = {
 	 *    of containing element instead.
 	 *  @param {boolean} [options.noClose=false] if true, overlay close button will not appear and overlay won't be closed by pressing 'Esc' key.
 	 *  @param {boolean} [options.closeOnEsc=true] indicates whether to close overlay on 'Esc' key press. Has sense only if 'noClose' is false.
-	 *  @param {boolean} [options.destroyOnClose] Defaults to false if "dialog" is provided, and true otherwise. If true, dialog DOM element will be removed from the document on close.
+	 *  @param {boolean} [options.removeOnClose] Defaults to false if "dialog" is provided, and true otherwise. If true, dialog DOM element will be removed from the document on close.
 	 *  @param {Q.Event} [options.beforeLoad]  Q.Event or function which is called before dialog is loaded.
 	 *  @param {Q.Event} [options.onActivate] Q.Event or function which is called when dialog is activated (all inner tools, if any, are activated and dialog is fully loaded and shown).
 	 *  @param {Q.Event} [options.beforeClose] Optional. Q.Event or function which is called when dialog closing initiated but it's still visible and exists in DOM.
 	 *  @param {Q.Event} [options.onClose] Optional. Q.Event or function which is 
 	 *   called when dialog is closed and hidden and probably 
-	 *   removed from DOM (if 'destroyOnClose' is 'true').
+	 *   removed from DOM (if 'removeOnClose' is 'true').
 	 * @return {Object} jQuery object resresenting DOM element of the dialog that was just pushed.
 	 */
 	push: function(options) {
@@ -9650,8 +9650,8 @@ Q.Dialogs = {
 			);
 			if (o.className) $dialog.addClass(o.className);
 			if (o.apply) $dialog.addClass('Q_overlay_apply');
-			if (o.destroyOnClose !== false) {
-				o.destroyOnClose = true;
+			if (o.removeOnClose !== false) {
+				o.removeOnClose = true;
 			}
 		}
 		$dialog.hide();
@@ -9727,7 +9727,7 @@ Q.Dialogs.push.options = {
 	'beforeClose': new Q.Event(),
 	'onClose': null,
 	'closeOnEsc': true,
-	'destroyOnClose': false,
+	'removeOnClose': null,
 	'hidePrevious': true
 };
 
