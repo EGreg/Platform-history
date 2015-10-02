@@ -295,16 +295,13 @@ Q.Tool.jQuery('Q/dialog', function _Q_dialog (o) {
 	} else {
 		Q.handle(o.beforeLoad, $this, [$this]);
 		var hiddenChildren = [];
-		if (Q.info.platform == 'android')
-		{
-			$(document.body).children().each(function() {
-				var child = $(this);
-				if (child[0] != $this[0] && child.css('display') != 'none' && this.className.indexOf('mask') == -1) {
-					child.hide();
-					hiddenChildren.push(child);
-				}
-			});
-		}
+		$(document.body).children().each(function() {
+			var child = $(this);
+			if (child[0] != $this[0] && child.css('display') != 'none' && this.className.indexOf('mask') == -1) {
+				child.hide();
+				hiddenChildren.push(child);
+			}
+		});
 		$(document.body).prepend($this);
 		$this.addClass('Q_fullscreen_dialog');
 		$this.css({
