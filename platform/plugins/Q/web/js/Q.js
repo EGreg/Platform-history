@@ -3319,6 +3319,9 @@ Q.Tool.clear = function _Q_Tool_clear(elem, removeCached) {
 	Q.find(elem.children || elem.childNodes, true, null,
 	function _Q_Tool_remove_found(toolElement) {
 		var tn = toolElement.Q.toolNames;
+		if (!tn) { // this edge case happens very rarely, usually if a slot element
+			return; // being replaced is inside another slot element being replaced
+		}
 		for (var i=tn.length-1; i>=0; --i) {
 			toolElement.Q.tools[tn[i]].remove(removeCached);
 		}
@@ -6909,7 +6912,21 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 
 						var slot = e.getAttribute('data-slot');
 						if (slot && slotNames.indexOf(slot) >= 0) {
-							Q.removeElement(e);
+							var found = false;
+							if (response.stylesheets && response.stylesheets[slot]) {
+								var stylesheets = response.stylesheets[slot];
+								for (var i=0, l=stylesheets.length; i<l; ++i) {
+									var stylesheet = stylesheets[i];
+									if (stylesheet.href === e.href
+									&& (!stylesheet.media || stylesheet.media === e.media)) {
+										found = true;
+										break;
+									}
+								}
+							}
+							if (!found) {
+								Q.removeElement(e);
+							}
 						}
 
 						// now let's deal with style tags inserted by prefixfree
