@@ -1923,7 +1923,7 @@ Q.request.options.onProcessed.set(function (err, response) {
 	}
 	var i, l = response.errors.length, lost = false;
 	for (i=0; i<l; ++i) {
-		switch (data.errors[i].classname) {
+		switch (response.errors[i].classname) {
 		case 'Users_Exception_NotLoggedIn':
 		case 'Q_Exception_NonceExpired':
 			lost = true;

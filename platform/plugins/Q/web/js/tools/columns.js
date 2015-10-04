@@ -181,6 +181,7 @@ Q.Tool.define("Q/columns", function(options) {
 			$title = $('<div class="Q_columns_title"></div>')
 				.append($ts);
 			columnSlot = document.createElement('div').addClass('column_slot');
+			state.container = tool.$('.Q_columns_container')[0];
 			$div.append($title, columnSlot)
 				.data(dataKey_index, index)
 				.data(dataKey_scrollTop, Q.Pointer.scrollTop())
