@@ -1326,6 +1326,8 @@ function login_setupDialog(usingProviders, scope, dialogContainer, identifierTyp
 		$('<span id="Users_login_go_span">'  + Q.text.Users.login.goButton + '</span>')
 	).on(Q.Pointer.touchclick, function () {
 		submitClosestForm.apply($a, arguments);
+	}).on(Q.Pointer.click, function () {
+		return false; // prevent automatic submit on click
 	});
 
 	var directions = Q.plugins.Users.login.serverOptions.noRegister
