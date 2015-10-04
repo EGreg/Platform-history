@@ -345,10 +345,10 @@ Base.prototype.beforeSet_fresh = function (value) {
 		return value;
 };
 
-	/**
-	 * Returns the maximum integer that can be assigned to the fresh field
-	 * @return {integer}
-	 */
+/**
+ * Returns the maximum integer that can be assigned to the fresh field
+ * @return {integer}
+ */
 Base.prototype.maxSize_fresh = function () {
 
 		return 4294967295;

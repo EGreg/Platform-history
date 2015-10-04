@@ -315,10 +315,10 @@ Base.prototype.beforeSet_insertedTime = function (value) {
 		return value;
 };
 
-	/**
-	 * Returns the maximum integer that can be assigned to the insertedTime field
-	 * @return {integer}
-	 */
+/**
+ * Returns the maximum integer that can be assigned to the insertedTime field
+ * @return {integer}
+ */
 Base.prototype.maxSize_insertedTime = function () {
 
 		return 9223372036854775807;
@@ -341,10 +341,10 @@ Base.prototype.beforeSet_shared_time = function (value) {
 		return value;
 };
 
-	/**
-	 * Returns the maximum integer that can be assigned to the shared_time field
-	 * @return {integer}
-	 */
+/**
+ * Returns the maximum integer that can be assigned to the shared_time field
+ * @return {integer}
+ */
 Base.prototype.maxSize_shared_time = function () {
 
 		return 9223372036854775807;
@@ -483,10 +483,10 @@ Base.prototype.beforeSet_publisherId = function (value) {
 		return value;
 };
 
-	/**
-	 * Returns the maximum integer that can be assigned to the publisherId field
-	 * @return {integer}
-	 */
+/**
+ * Returns the maximum integer that can be assigned to the publisherId field
+ * @return {integer}
+ */
 Base.prototype.maxSize_publisherId = function () {
 
 		return 1.844674407371E+19;
@@ -509,10 +509,10 @@ Base.prototype.beforeSet_visit_count = function (value) {
 		return value;
 };
 
-	/**
-	 * Returns the maximum integer that can be assigned to the visit_count field
-	 * @return {integer}
-	 */
+/**
+ * Returns the maximum integer that can be assigned to the visit_count field
+ * @return {integer}
+ */
 Base.prototype.maxSize_visit_count = function () {
 
 		return 4294967295;
@@ -535,10 +535,10 @@ Base.prototype.beforeSet_session_count = function (value) {
 		return value;
 };
 
-	/**
-	 * Returns the maximum integer that can be assigned to the session_count field
-	 * @return {integer}
-	 */
+/**
+ * Returns the maximum integer that can be assigned to the session_count field
+ * @return {integer}
+ */
 Base.prototype.maxSize_session_count = function () {
 
 		return 4294967295;

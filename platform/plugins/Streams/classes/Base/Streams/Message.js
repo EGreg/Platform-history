@@ -496,16 +496,16 @@ Base.prototype.beforeSet_ordinal = function (value) {
 		if (value instanceof Db.Expression) return value;
 		value = Number(value);
 		if (isNaN(value) || Math.floor(value) != value) 
-			throw new Error('Non-integer value being assigned to '+this.table()+".ordinal ");
+			throw new Error('Non-integer value being assigned to '+this.table()+".ordinal");
 		if (value < 0 || value > 4294967295)
 			throw new Error("Out-of-range value "+JSON.stringify(value)+" being assigned to "+this.table()+".ordinal");
 		return value;
 };
 
-	/**
-	 * Returns the maximum integer that can be assigned to the ordinal field
-	 * @return {integer}
-	 */
+/**
+ * Returns the maximum integer that can be assigned to the ordinal field
+ * @return {integer}
+ */
 Base.prototype.maxSize_ordinal = function () {
 
 		return 4294967295;

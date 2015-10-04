@@ -424,10 +424,10 @@ Base.prototype.beforeSet_readLevel = function (value) {
 		return value;
 };
 
-	/**
-	 * Returns the maximum integer that can be assigned to the readLevel field
-	 * @return {integer}
-	 */
+/**
+ * Returns the maximum integer that can be assigned to the readLevel field
+ * @return {integer}
+ */
 Base.prototype.maxSize_readLevel = function () {
 
 		return 2147483647;
@@ -450,10 +450,10 @@ Base.prototype.beforeSet_writeLevel = function (value) {
 		return value;
 };
 
-	/**
-	 * Returns the maximum integer that can be assigned to the writeLevel field
-	 * @return {integer}
-	 */
+/**
+ * Returns the maximum integer that can be assigned to the writeLevel field
+ * @return {integer}
+ */
 Base.prototype.maxSize_writeLevel = function () {
 
 		return 2147483647;
@@ -476,10 +476,10 @@ Base.prototype.beforeSet_adminLevel = function (value) {
 		return value;
 };
 
-	/**
-	 * Returns the maximum integer that can be assigned to the adminLevel field
-	 * @return {integer}
-	 */
+/**
+ * Returns the maximum integer that can be assigned to the adminLevel field
+ * @return {integer}
+ */
 Base.prototype.maxSize_adminLevel = function () {
 
 		return 2147483647;

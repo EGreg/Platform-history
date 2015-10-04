@@ -2972,29 +2972,33 @@ var Interests = Streams.Interests = {
 			fields.communityId = communityId;
 		}
 		Q.req('Streams/interest', 'interests', function (err, response) {
-			Q.handle(callback, this, arguments);
-		}, { fields: fields });
-	},
-	forMe: function (communityId, callback) {
-		if (!Q.isEmpty(Interests.my)) {
-			return callback(null, Interests.my);
-		}
-		var userId = Q.getObject('Q.plugins.Users.loggedInUser.id');
-		Interests.forUser(userId, communityId, function (err, response) {
 			var msg;
 			var r = response && response.errors;
 			if (msg = Q.firstErrorMessage(err, r)) {
-				return callback(msg);
+				return callback && callback(msg);
 			}
+			var results = {};
 			var relatedTo = response.slots.interests;
-			Interests.my = {};
 			for (var w in relatedTo) {
 				var info = relatedTo[w];
 				var title = info[2];
 				var normalized = Q.normalize(title);
-				Interests.my[normalized] = title;
+				results[normalized] = title;
 			}
-			callback(null, Interests.my);
+			callback && callback.call(this, null, results);
+		}, { fields: fields });
+	},
+	forMe: function (communityId, callback) {
+		if (!Q.isEmpty(Interests.my)) {
+			return callback && callback(null, Interests.my);
+		}
+		var userId = Users.loggedInUserId();
+		Interests.forUser(userId, communityId, function (err, results) {
+			if (err) {
+				return callback(err);
+			}
+			Interests.my = results;
+			callback(null, results);
 		});
 	},
 	all: {},

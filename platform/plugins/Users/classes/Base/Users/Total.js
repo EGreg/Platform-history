@@ -291,10 +291,10 @@ Base.prototype.beforeSet_voteCount = function (value) {
 		return value;
 };
 
-	/**
-	 * Returns the maximum integer that can be assigned to the voteCount field
-	 * @return {integer}
-	 */
+/**
+ * Returns the maximum integer that can be assigned to the voteCount field
+ * @return {integer}
+ */
 Base.prototype.maxSize_voteCount = function () {
 
 		return 9223372036854775807;

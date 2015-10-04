@@ -479,10 +479,10 @@ Base.prototype.beforeSet_reOrdinal = function (value) {
 		return value;
 };
 
-	/**
-	 * Returns the maximum integer that can be assigned to the reOrdinal field
-	 * @return {integer}
-	 */
+/**
+ * Returns the maximum integer that can be assigned to the reOrdinal field
+ * @return {integer}
+ */
 Base.prototype.maxSize_reOrdinal = function () {
 
 		return 2147483647;
