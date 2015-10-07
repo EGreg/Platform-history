@@ -1542,6 +1542,7 @@ Q.extend = function _Q_extend(target /* [[deep,] [levels,] anotherObject], ... *
 		return {};
 	}
 	var deep = false, levels = 0, arg;
+	var type = Q.typeOf(target);
 	for (var i=1; i<length; ++i) {
 		arg = arguments[i];
 		if (!arg) {

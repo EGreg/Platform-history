@@ -626,7 +626,7 @@ class Q
 				 *	The rendered content
 				 */
 				$params = $e->params();
-				if ($params['filename'] === "handlers/$toolHandler.php") {
+				if ($params['filename'] === str_replace('/', DS, "handlers/$toolHandler.php")) {
 					$result .= self::event('Q/missingTool', compact('name', 'options'));
 				} else {
 					$exception = $e;
