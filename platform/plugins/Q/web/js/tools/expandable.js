@@ -116,8 +116,13 @@ Q.Tool.define('Q/expandable', function (options) {
 			: {left: 0, top: 0};
 		var $element = o.scrollToElement ? $(o.scrollToElement) : $h2;
 		var t1 = $element.offset().top - offset.top;
+		var defaultSpaceAbove = $element.height() / 2;
+		var $cs = $expandable.closest('.Q_columns_column').find('.title_slot');
+		if ($cs.length) {
+			defaultSpaceAbove += $cs.outerHeight();
+		}
 		var spaceAbove = (state.spaceAbove == null)
-			? $element.height() / 2
+			? defaultSpaceAbove
 			: state.spaceAbove;
 		var isBody = $scrollable &&
 			$scrollable[0].tagName.toUpperCase() === 'BODY';

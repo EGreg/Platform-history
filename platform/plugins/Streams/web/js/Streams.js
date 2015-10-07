@@ -3064,11 +3064,10 @@ Streams.setupRegisterForm = function _Streams_setupRegisterForm(identifier, json
 		"type": "submit",
 		"class": "Q_button Q_main_button Streams_login_start "
 	}).html(Q.text.Users.login.registerButton)
-	.on(Q.Pointer.touchclick, function () {
+	.on(Q.Pointer.touchclick, function (e) {
 		Users.submitClosestForm.apply(this, arguments);
-		return false;
-	}).on(Q.Pointer.click, function () {
-		return false; // prevent automatic submit on click
+	}).on(Q.Pointer.click, function (e) {
+		e.preventDefault(); // prevent automatic submit on click
 	});
 
 	register_form.append(table)
