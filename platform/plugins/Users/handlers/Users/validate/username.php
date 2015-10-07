@@ -11,7 +11,7 @@ function Users_validate_username($params)
 		return;
 	}
 	if ($first = mb_substr($username, 0, 1, "UTF-8")
-	and mb_strtolower($first, "UTF-8") != $chr) {
+	and mb_strtolower($first, "UTF-8") != $first) {
 		return; // first letter is uppercase, this represents an organization
 	}
 	if (strlen($username) < 4) {

@@ -139,7 +139,7 @@ abstract class Places extends Base_Places
 	 * @param {double} $long_1
 	 * @param {double} $lat_2
 	 * @param {double} $long_2
-	 * @return {double} The result of applying the haversine formula
+	 * @return {double} The result, in miles, of applying the haversine formula
 	 */
 	static function distance($lat_1,$long_1,$lat_2,$long_2)
 	{
