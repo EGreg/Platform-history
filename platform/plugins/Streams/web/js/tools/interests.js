@@ -80,15 +80,14 @@ Q.Tool.define("Streams/interests", function (options) {
 			var interests = anotherUser ? params.anotherUser[0] : params.my[0];
 			for (normalized in interests) {
 				$jq = $('#Streams_interest_title_' + normalized)
-				.addClass('Streams_interests_anotherUser')
-				.closest('.Q_expandable_tool');
-				if (normalized in Interests.my) {
-					$jq.addClass('Q_selected');
-				}
+				.addClass('Streams_interests_anotherUser');
 				if ($jq.length) {
-					expandable = $jq[0].Q('Q/expandable');
-					expandable.state.count++;
-					expandable.stateChanged(['count']);
+					if (normalized in Interests.my) {
+						$jq.addClass('Q_selected');
+						expandable = $jq.closest('.Q_expandable_tool')[0].Q('Q/expandable');
+						expandable.state.count++;
+						expandable.stateChanged(['count']);
+					}
 				} else {
 					otherInterests[normalized] = interests[normalized];
 				}
@@ -118,15 +117,14 @@ Q.Tool.define("Streams/interests", function (options) {
 					if (anotherUser) {
 						$span.addClass('Streams_interests_anotherUser');
 					}
-					if (normalized in Interests.my) {
-						$span.addClass('Q_selected');
-					}
 					var $span2 = $('<span class="Streams_interest_sep">, </span>');
 					$content.append($span, $span2);
-					
-					expandable = $expandable[0].Q('Q/expandable');
-					expandable.state.count++;
-					expandable.stateChanged(['count']);
+					if (normalized in Interests.my) {
+						$span.addClass('Q_selected');
+						expandable = $expandable[0].Q('Q/expandable');
+						expandable.state.count++;
+						expandable.stateChanged(['count']);
+					}
 					Q.setObject([title, id], true, allInterests);
 				}
 				$content.children().last().remove(); // the last separator
