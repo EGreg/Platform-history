@@ -2328,13 +2328,12 @@ Q.log = function _Q_log(message, name, timestamp, callback) {
 				callback && callback(err);
 			} else {
 				fs.stat(filename, function (err, stats) {
-					if (err && err.code !=='ENOENT') {
+					if (err && err.code !== 'ENOENT') {
 						console.error("Could not stat '"+filename+"', Error:", err.message);
 						callback && callback(err);
 						return;
-					} else if (err && err.code ==='ENOENT') {
+					} else if (err && err.code === 'ENOENT') {
 						logStream[name].unshift(message);
-						data = "# begin log for '"+name+"' on "+Q.date('Y-m-d h:i:s')+"\n";
 					} else if (!stats.isFile()) {
 						console.error("'"+filename+"' exists but is not a file");
 						callback && callback(new Error("'"+filename+"' exists but is not a file"));
@@ -2827,7 +2826,7 @@ String.prototype.queryField = function Q_queryField(name, value) {
 		l = prefixes[i].length;
 		p = this.substring(0, l);
 		if (p == prefixes[i]) {
-			previx = p;
+			prefix = p;
 			what = this.substring(l);
 			break;
 		}
