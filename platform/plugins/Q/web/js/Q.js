@@ -10148,8 +10148,12 @@ Q.Masks = {
 			var ms = mask.element.style;
 			ms.left = rect.left + Q.Pointer.scrollLeft() + 'px';
 			ms.top = rect.top + Q.Pointer.scrollTop() + 'px';
-			var width = Math.min(rect.right - rect.left, Q.Pointer.windowWidth());
-			var height = Math.min(rect.bottom - rect.top, Q.Pointer.windowHeight());
+			var width = rect.right - rect.left;
+			var height = rect.bottom - rect.top;
+			if (!mask.shouldCover) {
+				width = Math.max(width, Q.Pointer.windowWidth());
+				height = Math.max(width, Q.Pointer.windowHeight());
+			}
 			ms.width = width + 'px';
 			ms.height = ms['line-height'] = height + 'px';
 		}
