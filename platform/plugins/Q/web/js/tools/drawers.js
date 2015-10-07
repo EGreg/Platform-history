@@ -387,7 +387,9 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 					state.$trigger.css({
 						left: left + 'px',
 						top: top + 'px',
-						position: state.fullscreen ? 'fixed' : 'absolute'
+						position: state.fullscreen && state.currentIndex == 0
+							? 'fixed'
+							: 'absolute'
 					});
 				} else {
 					state.$trigger.hide();
