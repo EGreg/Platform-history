@@ -37,6 +37,7 @@ function Streams_form_tool($options)
 	);
 	$sections = array();
 	$hidden = array();
+	$contents = '';
 	foreach ($fields as $id => $field) {
 		if (Q::isAssociative($field)) {
 			$r = Q::take($field, $defaults);
@@ -75,13 +76,21 @@ function Streams_form_tool($options)
 		$tag = Q_Html::smartTag(
 			$r['type'], $r['attributes'], $value, $r['options'], $r['params']
 		);
-		$sections[] = "<span data-publisherId='$r[publisherId]' data-streamName='$r[streamName]' data-field='$r[field]' data-type='$r[type]'>$tag</span>";
+		$class1 = 'publisherId_'.Q_Utils::normalize($r['publisherId']);
+		$class2 = 'streamName_'.Q_Utils::normalize($r['streamName']);
+		$contents .= "<span class='Q_before $class1 $class2'></span>"
+		. Q_Html::tag('span', array(
+			'data-publisherId' => $r['publisherId'],
+			'data-streamName' => $r['streamName'],
+			'data-field' => $r['field'],
+			'data-type' => $r['type'],
+			'class' => "$class1 $class2"
+		), $tag);
 		$hidden[$id] = array(!!$stream, $r['publisherId'], $r['streamName'], $r['field']);
 	}
-	$sections[] = Q_Html::hidden(array(
+	$contents .= Q_Html::hidden(array(
 		'inputs' => Q::json_encode($hidden)
 	));
-	$contents = implode('', $sections);
 	return Q_Html::form('Streams/form', 'post', array(), $contents);
 	//
 	// $fields = array('onSubmit', 'onResponse', 'onSuccess', 'slotsToRequest', 'loader', 'contentElements');
