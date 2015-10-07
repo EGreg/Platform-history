@@ -117,9 +117,9 @@ Q.Tool.define('Q/expandable', function (options) {
 		var $element = o.scrollToElement ? $(o.scrollToElement) : $h2;
 		var t1 = $element.offset().top - offset.top;
 		var defaultSpaceAbove = $element.height() / 2;
-		var $cs = $expandable.closest('.Q_columns_column').find('.title_slot');
-		if ($cs.length) {
-			defaultSpaceAbove += $cs.outerHeight();
+		var $ts = $expandable.closest('.Q_columns_column').find('.Q_columns_title');
+		if ($ts.length && $ts.css('position') === 'fixed') {
+			defaultSpaceAbove += $ts.outerHeight();
 		}
 		var spaceAbove = (state.spaceAbove == null)
 			? defaultSpaceAbove
