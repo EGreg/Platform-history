@@ -98,6 +98,7 @@ Q.Tool.define("Streams/interests", function (options) {
 				}
 			}
 			if (!Q.isEmpty(otherInterests)) {
+				var $content = $expandable.find('.Q_expandable_content');
 				for (normalized in otherInterests ) {
 					var interestTitle = otherInterests[normalized];
 					var parts = interestTitle.split(': ');
@@ -107,7 +108,6 @@ Q.Tool.define("Streams/interests", function (options) {
 					if (!$expandable.length) {
 						continue;
 					}
-					var $content = $expandable.find('.Q_expandable_content');
 					var $other = $expandable.find('.Streams_interests_other');
 					if (!$other.length) {
 						$other = $('<h3 class="Streams_interests_other">Other</h3>')
