@@ -98,13 +98,13 @@ Q.Tool.define("Streams/interests", function (options) {
 				}
 			}
 			if (!Q.isEmpty(otherInterests)) {
-				var $content = $expandable.find('.Q_expandable_content');
 				for (normalized in otherInterests ) {
 					var interestTitle = otherInterests[normalized];
 					var parts = interestTitle.split(': ');
 					var category = parts[0];
 					var title = parts[1];
 					var $expandable = $('#Q_expandable_'+Q.normalize(category));
+					var $content = $expandable.find('.Q_expandable_content');
 					if (!$expandable.length) {
 						continue;
 					}
@@ -132,7 +132,9 @@ Q.Tool.define("Streams/interests", function (options) {
 					}
 					Q.setObject([title, id], true, allInterests);
 				}
-				$content.children().last().remove(); // the last separator
+				$('.Q_expandable_content .Streams_interests_other').each(function () {
+					$(this).nextAll('.Streams_interest_sep').last().remove(); // the last separator	
+				});
 			}
 			if (anotherUser) {
 				$te.find('.Q_expandable_tool').each(function () {
