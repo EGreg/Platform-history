@@ -1935,7 +1935,7 @@ Q.request.options.onProcessed.set(function (err, response) {
 		}
 	}
 	if (lost) {
-		Q.Users.onLoginLost.handle(data);
+		Q.Users.onLoginLost.handle();
 		Q.Users.loggedInUser = null;
 		Q.Users.roles = {};
 	}
