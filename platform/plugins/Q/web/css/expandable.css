@@ -10,7 +10,7 @@
 }
 
 .Q_expandable_tool h2.Q_hover,
-.Q_expandable_tool h2.Q_selected {
+.Q_expandable_tool h2.Q_expanded {
 	background: rgba(180, 200, 220, 0.7);	
 }
 
@@ -27,7 +27,7 @@
 	vertical-align: middle;
 }
 
-.Q_tool h2.Q_selected .Q_expandable_count {
+.Q_tool h2.Q_expanded .Q_expandable_count {
 	display: none;
 }
 

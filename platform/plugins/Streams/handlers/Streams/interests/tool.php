@@ -3,5 +3,6 @@
 function Streams_interests_tool($options)
 {
 	Q_Response::setToolOptions($options);
-	return Q::view('Streams/tool/interests.php');
+	$filter = Q::ifset($options, 'filter', true);
+	return Q::view('Streams/tool/interests.php', compact('filter'));
 }

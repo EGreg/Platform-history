@@ -5,9 +5,7 @@
  * "Streams/user/interests" stream
  *
  * @param {array} $_REQUEST 
- *   @param {string} [$_REQUEST.userId] userId
- *   @optional
- *   @default the logged-in user's id
+ *   @param {string} [$_REQUEST.userId=loggedInUserId] userId
  * @return {void}
  */
 function Streams_interest_response_interests()

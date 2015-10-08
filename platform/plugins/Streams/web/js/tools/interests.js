@@ -16,6 +16,7 @@ var Interests = Streams.Interests;
  * @param {Object} [options] This is an object of parameters for this function
  *  @param {String} [options.communityId=Q.info.app] The id of the user representing the community publishing the interests
  *  @param {String} [options.userId=Users.loggedInUserId()] The id of the user whose interests are to be displayed, defaults to the logged-in user
+ *  @param {String} [options.expandable={}] Any options to pass to the expandable tools
  *  @param {String} [options.cachebust=1000*60*60*24] How often to reload the list of major community interests
  */
 Q.Tool.define("Streams/interests", function (options) {
@@ -26,7 +27,7 @@ Q.Tool.define("Streams/interests", function (options) {
 	var lastVal, lastImage;
 	var revealingNewInterest = false;
 	var $te = $(tool.element);
-	var anotherUser = state.userId && state.userId !== Users.loggedInUserId();
+	var anotherUser = state.userId;
 	
 	if (anotherUser) {
 		$te.addClass('Streams_interests_anotherUser');
@@ -58,11 +59,15 @@ Q.Tool.define("Streams/interests", function (options) {
 			content = _listInterests(category, interests);
 			count += Object.keys(interests).length;
 		}
-		var $expandable = $(Q.Tool.setUpElement('div', 'Q/expandable', {
+		var expandableOptions = Q.extend({
 			title: img+"<span>"+category+"</span>",
 			content: content,
             count: ''
-		}, 'Q_expandable_' + Q.normalize(category)));
+		}, state.expandable);
+		var $expandable = $(Q.Tool.setUpElement(
+			'div', 'Q/expandable', expandableOptions, 
+			'Q_expandable_' + Q.normalize(category))
+		);
 		$expandable.appendTo(tool.element).activate(p.fill(category));
 	}
 
@@ -128,22 +133,22 @@ Q.Tool.define("Streams/interests", function (options) {
 					Q.setObject([title, id], true, allInterests);
 				}
 				$content.children().last().remove(); // the last separator
-				if (anotherUser) {
-					$te.find('.Q_expandable_tool').each(function () {
-						var $this = $(this);
-						if (!$this.find('.Streams_interests_anotherUser').length) {
-							$(this).addClass('Streams_interests_anotherUserNone');
-						}
-					});
-					$te.find('h3').each(function () {
-						var $this = $(this);
-						if (!$this.nextUntil('h3')
-						.filter('.Streams_interests_anotherUser').length) {
-							$(this).addClass('Streams_interests_anotherUserNone');
-						}
-					});
-					tool.$('.Streams_interest_sep').html(' ');
-				}
+			}
+			if (anotherUser) {
+				$te.find('.Q_expandable_tool').each(function () {
+					var $this = $(this);
+					if (!$this.find('.Streams_interests_anotherUser').length) {
+						$(this).addClass('Streams_interests_anotherUserNone');
+					}
+				});
+				$te.find('h3').each(function () {
+					var $this = $(this);
+					if (!$this.nextUntil('h3')
+					.filter('.Streams_interests_anotherUser').length) {
+						$(this).addClass('Streams_interests_anotherUserNone');
+					}
+				});
+				tool.$('.Streams_interest_sep').html(' ');
 			}
 		});
 		
@@ -366,6 +371,7 @@ Q.Tool.define("Streams/interests", function (options) {
 
 {
 	communityId: null,
+	expandable: {},
 	cacheBust: 1000*60*60*24
 }
 

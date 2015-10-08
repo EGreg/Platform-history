@@ -110,10 +110,7 @@ table { border-spacing:0; border-collapse:collapse; }
 	overflow: auto;
 	-webkit-overflow-scrolling: touch;
 	z-index: 0; /* http://stackoverflow.com/a/16408745/467460 */
-}
-
-.Q_overflow * {
-	-webkit-transform: translateZ(0); /* http://cantina.co/thought_leadership/ios-5-native-scrolling-grins-and-gothcas/ */
+	-webkit-transform: translateZ(0);
 }
 
 .Q_mask { display: none; position: absolute; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; }
