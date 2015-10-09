@@ -83,11 +83,12 @@ Q.Tool.define("Streams/interests", function (options) {
 			var otherInterests = {};
 			var normalized, expandable;
 			var interests = anotherUser ? params.anotherUser[0] : params.my[0];
+			var myInterests = params.my[0];
 			for (normalized in interests) {
 				$jq = $('#Streams_interest_title_' + normalized)
 				.addClass('Streams_interests_anotherUser');
 				if ($jq.length) {
-					if (normalized in Interests.my) {
+					if (normalized in myInterests) {
 						$jq.addClass('Q_selected');
 						expandable = $jq.closest('.Q_expandable_tool')[0].Q('Q/expandable');
 						expandable.state.count++;
@@ -124,7 +125,7 @@ Q.Tool.define("Streams/interests", function (options) {
 					}
 					var $span2 = $('<span class="Streams_interest_sep">, </span>');
 					$content.append($span, $span2);
-					if (normalized in Interests.my) {
+					if (normalized in myInterests) {
 						$span.addClass('Q_selected');
 						expandable = $expandable[0].Q('Q/expandable');
 						expandable.state.count++;
@@ -163,6 +164,9 @@ Q.Tool.define("Streams/interests", function (options) {
 			.addClass('Streams_new_interest_title');
 		var $select = $('<select class="Streams_new_interest_categories" />')
 			.on('change', function () {
+				if (!Users.loggedInUser) {
+					return;
+				}
 				var $this = $(this);
 				var category = $this.val();
 				var interestTitle = category + ': ' + $unlistedTitle.text();
@@ -205,6 +209,9 @@ Q.Tool.define("Streams/interests", function (options) {
 		
 		$(tool.element)
 		.on(Q.Pointer.fastclick, 'span.Streams_interest_title', function () {
+			if (!Users.loggedInUser) {
+				return;
+			};
 			// TODO: ignore spurious clicks that might happen
 			// when something is expanding
 			var $this = $(this);
@@ -354,12 +361,16 @@ Q.Tool.define("Streams/interests", function (options) {
 		});
 	});
 	
-	Interests.forMe(state.communityId, function (err, interests) {
-		if (err) {
-			return alert(Q.firstErrorMessage(err));
-		} 
-		p.fill('my')(interests);
-	});
+	if (Users.loggedInUser) {
+		Interests.forMe(state.communityId, function (err, interests) {
+			if (err) {
+				return alert(Q.firstErrorMessage(err));
+			} 
+			p.fill('my')(interests);
+		});
+	} else {
+		p.fill('my')({});
+	}
 	
 	if (anotherUser) {
 		Interests.forUser(state.userId, state.communityId, function (err, interests) {
