@@ -528,8 +528,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 					if (index !== columnIndex
 					&& state.$pinnedElement
 					&& state.behind[state.currentIndex]) {
-						state.$pinnedElement
-						.add(state.$trigger).hide();
+						state.$pinnedElement.add(state.$trigger).hide();
 					}
 				}, tool);
 				columns.state.onClose.set(function () {
@@ -537,8 +536,7 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 					if (index === columnIndex
 					&& state.$pinnedElement
 					&& state.behind[state.currentIndex]) {
-						state.$pinnedElement
-						.add(state.$trigger).show();
+						state.$drawers.add(state.$trigger).show();
 					}
 				}, tool);
 				return false;
