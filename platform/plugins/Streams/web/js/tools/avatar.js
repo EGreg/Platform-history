@@ -213,7 +213,7 @@ Q.Tool.define("Users/avatar", function(options) {
 					Q.activate(e);
 				});
 			}
-			if (state.editable.indexOf('icon') >= 0) {
+			if (state.editable.indexOf('icon') >= 0 && Users.loggedInUser) {
 				var $img = tool.$('.Users_avatar_icon').addClass('Streams_editable');
 				var saveSizeName = {};
 				Q.each(Users.icon.sizes, function (k, v) {

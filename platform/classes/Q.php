@@ -417,6 +417,7 @@ class Q
 			$filename = self::event('Q/autoload', compact('className'), 'before');
 
 			if (!isset($filename)) {
+//				$className_parts = explode('\\', $className);
 				$className_parts = explode('_', $className);
 				$filename = 'classes'.DS.implode(DS, $className_parts).'.php';
 			}

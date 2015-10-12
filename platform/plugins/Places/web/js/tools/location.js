@@ -6,7 +6,7 @@
  */
 
 /**
- * Inplace text editor tool to edit the content or attribute of a stream
+ * Allows the logged-in user to indicate their location
  * @class Places location
  * @constructor
  * @param {Object} [options] used to pass options
