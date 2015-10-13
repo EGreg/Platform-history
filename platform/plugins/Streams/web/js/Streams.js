@@ -396,6 +396,8 @@ Q.Tool.define({
 	"Streams/preview"  	   : "plugins/Streams/js/tools/preview.js",
 	"Streams/image/preview": "plugins/Streams/js/tools/image/preview.js",
 	"Streams/file/preview" : "plugins/Streams/js/tools/file/preview.js",
+	"Streams/category/preview" : "plugins/Streams/js/tools/category/preview.js",
+	"Streams/category/player" : "plugins/Streams/js/tools/category/player.js",
 	"Streams/form"         : "plugins/Streams/js/tools/form.js",
 	"Streams/activity"     : "plugins/Streams/js/tools/activity.js"
 });
