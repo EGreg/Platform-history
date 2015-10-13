@@ -189,7 +189,7 @@ class Q_Bootstrap
 
 			$interval = $app_tree->get('Q', 'configServer', 'interval', 60); // reload each minute by default
 			$app_tree->clear(null);
-			$timestamp = Q_Cache::get("Q_Config\tupdate_time");
+			$timestamp = Q_Cache::get("Q_Config\tupdateTime");
 			if (!isset($timestamp) || (time() - $timestamp > $interval)) $force_reload = true;
 		}
 

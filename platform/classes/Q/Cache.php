@@ -142,7 +142,7 @@ class Q_Cache
 	static function shutdownFunction()
 	{
 		if (self::$changed and self::$apc) {
-			self::set("Q_Config\tupdate_time", time());
+			self::set("Q_Config\tupdateTime", time());
 			apc_store(self::$namespace, self::$store);
 		}
 	}
