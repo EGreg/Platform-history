@@ -2340,9 +2340,13 @@ Q.log = function _Q_log(message, name, timestamp, callback) {
 						return;
 					}
 					var log = logStream[name];
-					logStream[name] = fs.createWriteStream(filename, {flags: 'a', encoding: 'utf-8'});
-					logStream[name].write(message);
-					while (log.length) logStream[name].write(log.shift());
+					var stream = logStream[name] = fs.createWriteStream(
+						filename, {flags: 'a', encoding: 'utf-8'}
+					);
+					stream.write(message);
+					while (log.length) {
+						stream.write(log.shift());
+					}
 				});
 			}
 		});
