@@ -512,6 +512,7 @@ Streams.listen = function (options) {
 				for (k in posted) {
 					msg = Streams.Message.construct(posted[k]);
 					msg.fillMagicFields();
+					stream = Streams.Stream.construct(streams[msg.fields.publisherId][msg.fields.streamName]);
 					if (Q.Config.get(['Streams', 'logging'], false)) {
 						Q.log('Streams.listen: Streams/Message/post {'
 							+ '"publisherId": "' + stream.fields.publisherId
@@ -520,7 +521,6 @@ Streams.listen = function (options) {
 							+ '"}'
 						);
 					}
-					stream = Streams.Stream.construct(streams[msg.fields.publisherId][msg.fields.streamName]);
 					Streams.Stream.emit('post', stream, msg.fields.byUserId, msg, ssid);
 				}
 				break;
@@ -971,6 +971,7 @@ Streams.isDeviceOnline = function(userId, sessionId) {
  *  The data accompanying the event
  * @param {object} excludeSessionIds={}
  *	Optional object whose keys are session ids of clients to skip when emitting event
+ * @return {boolean} Whether any socket clients were connected at all
  */
 Streams.emitToUser = function(userId, event, data, excludeSessionIds) {
 	var clients = Streams.clients[userId];

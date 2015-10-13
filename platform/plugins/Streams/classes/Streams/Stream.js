@@ -945,51 +945,51 @@ Sp.notify = function(participant, event, uid, message, callback) {
 					});
 				});
 				// actually notify according to the deliveriy rules
-				Streams.Avatar.fetch(userId, message.fields.byUserId, function (err, avatar) {
-					if (message.fields.type === "Streams/invite") {
-						var instructions = JSON.parse(message.fields.instructions);
-						new Streams.Invite({
-							token: instructions.token
-						}).retrieve(function(err, rows) {
-							if (err || !rows.length) {
-								return deliveries.forEach(function(delivery) {
-									p.fill(JSON.stringify(delivery))(err); 
-								});
-							}
-							var invite = this;
-							new Streams.Stream({
-								publisherId: invite.fields.publisherId,
-								name: invite.fields.streamName
-							}).retrieve(function(err, rows2) {
-								if (err || !rows2.length) {
-									return deliveries.forEach(function(delivery) {
-										p.fill(JSON.stringify(delivery))(err); 
-									});
-								}
-								var stream = this;
-								try { 
-									var instructions = JSON.parse(message.fields.instructions); 
-								} catch (e) {}
-								var invited = invite.getFields();
-								invited.url = invite.url();
-								if (instructions && instructions.type) {
-									invited[instructions.type] = true;
-								}
-								stream.invited = invited;
-								deliveries.forEach(function(delivery) {
-									message.deliver(stream, delivery, avatar,
-										p.fill(JSON.stringify(delivery))
-									);
-								});
-							});
-						});
-					} else {
-						deliveries.forEach(function(delivery) {
-							message.deliver(stream, delivery, avatar,
+				var byUserId = message.fields.byUserId;
+				Streams.Avatar.fetch(userId, byUserId, function (err, avatar) {
+					if (message.fields.type !== "Streams/invite") {
+						return deliveries.forEach(function(delivery) {
+							message.deliver(stream, userId, delivery, avatar,
 								p.fill(JSON.stringify(delivery))
 							);
 						});
 					}
+					var instructions = JSON.parse(message.fields.instructions);
+					new Streams.Invite({
+						token: instructions.token
+					}).retrieve(function(err, rows) {
+						if (err || !rows.length) {
+							return deliveries.forEach(function(delivery) {
+								p.fill(JSON.stringify(delivery))(err); 
+							});
+						}
+						var invite = this;
+						new Streams.Stream({
+							publisherId: invite.fields.publisherId,
+							name: invite.fields.streamName
+						}).retrieve(function(err, rows2) {
+							if (err || !rows2.length) {
+								return deliveries.forEach(function(delivery) {
+									p.fill(JSON.stringify(delivery))(err); 
+								});
+							}
+							var stream = this;
+							try { 
+								var instructions = JSON.parse(message.fields.instructions); 
+							} catch (e) {}
+							var invited = invite.getFields();
+							invited.url = invite.url();
+							if (instructions && instructions.type) {
+								invited[instructions.type] = true;
+							}
+							stream.invited = invited;
+							deliveries.forEach(function(delivery) {
+								message.deliver(stream, userId, delivery, avatar,
+									p.fill(JSON.stringify(delivery))
+								);
+							});
+						});
+					});
 				});
 			});
 		} else {

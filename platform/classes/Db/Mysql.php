@@ -300,7 +300,7 @@ class Db_Mysql implements iDb
 	 * @return {Db_Query_Mysql} The resulting Db_Query_Mysql object
 	 */
 	function insert ($table_into, array $fields = array())
-	{	
+	{
 		if (empty($table_into))
 			throw new Exception("table not specified in call to 'insert'.");
 		
