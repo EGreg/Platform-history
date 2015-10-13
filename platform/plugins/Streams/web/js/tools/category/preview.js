@@ -112,16 +112,19 @@ function _Streams_category_preview(options, preview) {
 						}
 						Q.Dialogs.push(Q.extend(state.dialog, {
 							title: stream.fields.title,
-							content: Q.Tool.setUpElementHTML(
+							content: Q.Tool.setUpElement(
 								'div',
 								'Streams/category/player',
-								Q.extend(state.subcategory, {
-									related: relatedState
-								}, {
-									publisherId: stream.fields.publisherId,
-									streamName: stream.fields.name
-								})
-							)
+								Q.extend(
+									{related: relatedState}, 
+									state.subcategory, 
+									{
+										publisherId: stream.fields.publisherId,
+										streamName: stream.fields.name
+									}
+								)
+							),
+							className: 'Streams_category_dialog'
 						}));
 					});
 				});
