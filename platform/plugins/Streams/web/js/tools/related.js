@@ -104,7 +104,9 @@ function _Streams_related_tool (options)
 					if (tool.state.refreshCount > rc) {
 						return;
 					}
-					$(this.element).addClass('Streams_related_loading');
+					$(this.element)
+						.addClass('Streams_related_loading')
+						.removeClass('Streams_related_composer');
 					addComposer(streamType, params, null, element);
 					tool.integrateWithTabs([element]);
 					ps.beforeCreate.remove(tool);
