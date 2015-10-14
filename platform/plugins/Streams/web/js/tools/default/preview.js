@@ -98,6 +98,8 @@ function _Streams_default_preview(options, preview) {
 					inplace.state.onLoad.add(function () {
 						p.fill('inplace').apply(this, arguments);
 					});
+					var $pc = tool.$('.Streams_preview_contents');
+					$pc.width(0).width($pc[0].remainingWidth());
 				});
 			},
 			state.templates[tpl]

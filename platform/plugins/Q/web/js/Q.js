@@ -701,6 +701,27 @@ Elp.isVisible = function () {
 	return this.offsetWidth > 0 || this.offsetHeight > 0;
 };
 
+/**
+ * Gets the width remaining after subtracting all the siblings on the same line
+ * @method remainingWidth
+ * @return {number}
+ */
+Elp.remainingWidth = function () {
+	var element = this;
+	var rect1 = this.getBoundingClientRect();
+	var w = this.parentNode.getBoundingClientRect().width;
+	Q.each(this.parentNode.children, function () {
+		if (this === element || !this.isVisible()) return;
+		var style = this.computedStyle();
+		var rect2 = this.getBoundingClientRect();
+		if (rect1.top > rect2.bottom || rect1.bottom < rect2.top) {
+			return;
+		}
+		w -= rect2.width + parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+	});	
+	return w;
+};
+
 if (!Elp.getElementsByClassName) {
 	Elp.getElementsByClassName = document.getElementsByClassName;
 }
@@ -6743,6 +6764,12 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 		loadTemplates();
 		var newScripts;
 		
+		if (!o.ignoreDialogs) {
+			while (Q.Dialogs.dialogs.length) {
+				Q.Dialogs.pop();
+			}
+		}
+		
 		if (o.ignorePage) {
 			newScripts = [];
 			afterScripts();
@@ -9600,7 +9627,8 @@ Q.Dialogs = {
 		topMargin: '10%', // in percentage	
 		bottomMargin: '10%' // or in absolute pixel values
 	},
-	dialogs: [], // internal dialogs collection
+	
+	dialogs: [], // stack of dialogs that is currently being shown
 	
 	/**
 	 * Shows the dialog and pushes it on top of internal dialog stack.
@@ -9646,7 +9674,7 @@ Q.Dialogs = {
 	 *  @param {Q.Event} [options.onClose] Optional. Q.Event or function which is 
 	 *   called when dialog is closed and hidden and probably 
 	 *   removed from DOM (if 'removeOnClose' is 'true').
-	 * @return {Object} jQuery object resresenting DOM element of the dialog that was just pushed.
+	 * @return {Object} jQuery object representing DOM element of the dialog that was just pushed.
 	 */
 	push: function(options) {
 		var maskDefault = true;
@@ -9703,7 +9731,7 @@ Q.Dialogs = {
 	 * @static
      * @method pop
 	 * @param {boolean} dontTriggerClose is for internal use only
-	 * @return {Object}  jQuery object resresenting DOM element of the dialog that was just popped.
+	 * @return {Object}  jQuery object representing DOM element of the dialog that was just popped.
 	 */
 	pop: function(dontTriggerClose) {
 		if (dontTriggerClose === undefined) {

@@ -70,6 +70,9 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 	// let the extending tool's constructor run,
 	// it may change this tool's state or methods
 	setTimeout(function () {
+		if (!$(tool.element).closest('html').length) {
+			return; // tool was removed
+		}
 		if (state.streamName) {
 			tool.loading();
 			tool.preview();

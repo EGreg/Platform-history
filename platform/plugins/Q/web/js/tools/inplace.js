@@ -518,6 +518,8 @@ function _Q_inplace_tool_constructor(element, options) {
 	if (this.state.editOnClick) {
 		// happens despite canceled click
 		static_span.on([Q.Pointer.fastclick, '.Q_inplace'], this.handleClick);
+	} else {
+		$te.addClass('Q_inplace_noEditOnClick');
 	}
 	edit_button.on(Q.Pointer.start, this.handleClick); // happens despite canceled click
 	cancel_button.on(Q.Pointer.start, function() {
@@ -563,9 +565,12 @@ function _Q_inplace_tool_constructor(element, options) {
 	fieldinput.closest('form').submit(function () {
 		onSave();
 	});
-	fieldinput.click(function (event) {
+	fieldinput.on(Q.Pointer.end, function (event) {
 		Q.Pointer.cancelClick(event);
 		Q.Pointer.ended();
+		event.stopPropagation();
+	});
+	fieldinput.click(function (event) {
 		event.stopPropagation();
 	});
 	function _updateSaveButton() {

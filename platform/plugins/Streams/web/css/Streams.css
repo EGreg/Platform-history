@@ -649,3 +649,7 @@
 .Streams_interests_tool.Streams_interests_anotherUser .Streams_interest_title { display: none; }
 .Streams_interests_tool.Streams_interests_anotherUser .Streams_interest_title.Streams_interests_anotherUser { display: inline; }
 .Streams_interests_anotherUserNone { display: none; }
+
+.Streams_category_preview_tool,
+.Streams_category_preview_tool .Q_inplace_noEditOnClick,
+.Streams_category_preview_tool .Q_inplace_noEditOnClick .Q_inplace_tool_static { cursor: pointer; }

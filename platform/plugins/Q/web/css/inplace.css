@@ -5,8 +5,8 @@
 .Q_inplace_tool .Q_inplace_tool_editbuttons button { display: inline; color: black !important; }
 .Q_inplace_tool .Q_inplace_tool_static { display: inline-block; border: solid 1px transparent; cursor: default; }
 .Q_inplace_tool .Q_inplace_tool_blockstatic { display: block; border: solid 1px transparent; cursor: default; }
-.Q_inplace_tool .Q_hover .Q_inplace_tool_static,
-.Q_inplace_tool .Q_hover .Q_inplace_tool_blockstatic { 
+.Q_inplace_tool:not(.Q_inplace_noEditOnClick) .Q_hover .Q_inplace_tool_static,
+.Q_inplace_tool:not(.Q_inplace_noEditOnClick) .Q_hover .Q_inplace_tool_blockstatic { 
 	background: white;
 	color: black;
 	border-top: 1px solid #aaa;

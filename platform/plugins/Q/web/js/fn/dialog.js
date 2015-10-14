@@ -563,9 +563,9 @@ function _handlePosAndScroll(o)
 			else
 			{
 				// correcting x-pos
-				if (parseInt($this.css('left')) != ((window.innerWidth - $this.outerWidth()) / 2))
+				if (parseInt($this.css('left')) != Math.ceil((window.innerWidth - $this.outerWidth()) / 2))
 				{
-					$this.css({ 'left': ((window.innerWidth - $this.outerWidth()) / 2) + 'px' });
+					$this.css({ 'left': Math.ceil((window.innerWidth - $this.outerWidth()) / 2) + 'px' });
 					if (iScrollBar)
 					{
 						iScrollBar.css({ 'left': (contentsWrapper.offset().left + contentsWrapper.width() - iScrollBar.width()) + 'px' });
