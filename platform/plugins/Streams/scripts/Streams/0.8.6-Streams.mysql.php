@@ -27,7 +27,7 @@ function Streams_0_8_6_Streams_mysql()
 		'readLevel' => Streams::$READ_LEVEL['messages'], 
 		'writeLevel' => Streams::$WRITE_LEVEL['relate'], 
 		'adminLevel' => Streams::$ADMIN_LEVEL['invite']
-	));
+	))->execute();
 	
 	// template to help app admins create subcategories for things
 	Streams_RelatedTo::insert(array(
