@@ -284,6 +284,8 @@ class Q_Image
 				throw new Q_Exception("Image height exceeds maximum height of $dh");
 			}
 			$thumb = imagecreatetruecolor($dw, $dh);
+			imagesavealpha($thumb, true);
+			imagealphablending($thumb, false);
 			$res = ($sw === $dw && $sh === $dh)
 				? imagecopy($thumb, $image, 0, 0, $sx, $sy, $sw, $sh)
 				: imagecopyresampled($thumb, $image, 0, 0, $sx, $sy, $dw, $dh, $sw, $sh);
