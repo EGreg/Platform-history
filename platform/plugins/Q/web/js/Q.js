@@ -704,10 +704,13 @@ Elp.isVisible = function () {
 /**
  * Gets the width remaining after subtracting all the siblings on the same line
  * @method remainingWidth
- * @return {number}
+ * @return {number|null} Returns the remaining width, or null if element has no parent
  */
 Elp.remainingWidth = function () {
 	var element = this;
+	if (!this.parentNode) {
+		return null;
+	}
 	var rect1 = this.getBoundingClientRect();
 	var w = this.parentNode.getBoundingClientRect().width;
 	Q.each(this.parentNode.children, function () {
@@ -9795,7 +9798,8 @@ Q.alert = function(message, options) {
 	if (options.title === undefined) options.title = 'Alert';
 	var dialog = Q.Dialogs.push(Q.extend({
 		'title': options.title,
-		'content': '<div class="Q_messagebox"><p>' + message + '</p></div>',
+		'content': '<div class="Q_messagebox Q_big_prompt"><p>' + message + '</p></div>',
+		'className': 'Q_alert',
 		'onClose': options.onClose || undefined,
 		'fullscreen': false,
 		'hidePrevious': false
@@ -9827,11 +9831,12 @@ Q.confirm = function(message, callback, options) {
 	var buttonClicked = false;
 	var dialog = Q.Dialogs.push(Q.extend({
 		'title': o.title,
-		'content': $('<div class="Q_messagebox" />').append(
+		'content': $('<div class="Q_messagebox Q_big_prompt" />').append(
 			$('<p />').html(message),
 			$('<button />').html(o.ok),
 			$('<button />').html(o.cancel)
 		),
+		'className': 'Q_confirm',
 		'noClose': o.noClose,
 		'onClose': {'Q.confirm': function() {
 			if (!buttonClicked) Q.handle(callback, this, [null]);
@@ -9888,6 +9893,7 @@ Q.prompt = function(message, callback, options) {
 			$('<input type="text" />').attr('placeholder', o.placeholder),
 			$('<button class="Q_messagebox_done Q_button" />').html(o.ok)
 		),
+		'className': 'Q_prompt',
 		'onActivate': function(dialog) {
 			var field = dialog.find('input');
 			var fieldWidth = field.parent().width()

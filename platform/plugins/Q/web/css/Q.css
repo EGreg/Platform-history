@@ -296,6 +296,10 @@ div.Q_placeholder { pointer-events: none; }
 
 #dialogs_slot { display: none; }
 
+.Q_notMobile .Q_overlay.Q_alert,
+.Q_notMobile .Q_overlay.Q_confirm,
+.Q_notMobile .Q_overlay.Q_prompt { width: 350px; }
+
 /* more Q styles, and Q/actions */
 
 .basic16 { background: url('../img/icons/basic16.png'); background-repeat: no-repeat; background-attachment: scroll; height: 16px; padding-left: 17px; text-align: left; font-size: 12px !important; box-sizing: border-box; }
