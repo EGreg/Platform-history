@@ -350,3 +350,6 @@
 }
 
 #Users_login_dialog #Users_agree { margin-right: 5px; }
+
+.Q_notMobile .Q_overlay.Users_login_dialog,
+.Q_notMobile .Q_overlay.Users_setIdentifier_dialog { width: 350px; }

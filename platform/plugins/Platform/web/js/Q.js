@@ -13,7 +13,7 @@ function Q(callback) {
 	});
 }
 
-Q.baseUrl = "http://platform.qbix.com";
+Q.baseUrl = "http://gmba.local/Groups"; // "http://platform.qbix.com";
 
 /**
  * @method Q.verify
@@ -45,71 +45,116 @@ Q.verify = function (data, signature) {
 };
 
 /**
-* @property Q.Users
-*/
-Q.Users = {
-	/**
-	 * Shows a login dialog
-     * @method login
-	 * @param callback
-	 *  Parameters:
-	 *  1: Error, if any
-	 * @param options
-	 */
-	login: function (callback, options) {
-		priv.loadEasyXDM(function () {
-			// show the login dialog
-			// requesting "title" and "dialog" slot from Users/login
-			// with our cool security feature
-			// iframe should say how to resize!!
-		});
-	},
-	
-	/**
-	 * Get the logged in user, if any
-     * @method getUser
-	 * @param callback {Function}
-	 *  Parameters:
-	 *  1. Error, if any
-	 *  2. The Q.Users.User object of logged-in user, or null if user is not logged in
-	 */
-	getUser: function (callback) {
-		priv.loadEasyXDM(function () {
-			// get the logged in user
-		});
-	},
-	
-	/**
-	 * Parses QML
-     * @method parse
-	 * @param DOMNode element
-	 * @param callback Function
-	 *  Parameters:
-	 *  1: Error, if any
-	 *  2: Transformed html, with iframes in place of QML elements
-	 * @param options
-	 *  Optional object with possible keys:
-	 */
-	parse: function (element, callback, options) {
-		
-	},
-	
-	/**
-	 * Event is triggered when a new user is detected, or during logout
-	 * Parameters:
-	 *  1: Q.Users.User object. This could be null if user logged out.
-     *  @event onUserChange
-	 */
-	onUserChange: new Q.Event()
+ * Returns the computed style of an element
+ * @method computedStyle
+ * @param {Element} [element] The element whose style to compute
+ * @param {String} [name] If provided, the value of a property is returned instead of the whole style object.
+ * @return {Object|String}
+ */
+Q.computedStyle = function(element, name) {
+	var computedStyle = window.getComputedStyle
+		? getComputedStyle(element, null)
+		: element.currentStyle;
+	return name
+		? (computedStyle ? computedStyle[name] : null)
+		: computedStyle;
 };
 
-Q.Users.User = function (xid) {
-	this.xid = xid;
+var _iframeCount = 0;
+
+function _isArrayLike(element) {
+	return element.length && (!element.length || ((element.length-1) in element))
 };
-Q.Users.User.prototype.typename = "Q.Users.User";
 
-Q.Streams = {
+/**
+ * Parses Qbix HTML
+ * @method parse
+ * @static
+ * @param {HTMLElement} element
+ * @param {Function} callback
+ *  Parameters:
+ *  1: Error, if any
+ *  2: The iframe element containing HTML hosted on the homeAppUrl domain
+ * @param options
+ *  Optional object with possible keys:
+ *  "stylesheet": Path to a CSS file to add
+ */
+Q.parse = function (element, callback, options) {
+	if (_isArrayLike(element)) {
+		var l = element.length;
+		var remaining = l;
+		for (var i=0; i<l; ++i) {
+			Q.parse(element[i], function (err, iframe) {
+				if (err) {
+					remaining = 0;
+					return callback(err);
+				}
+				if (--remaining === 0) {
+					callback(null, iframe);
+				}
+			}, options);
+		}
+		return;
+	}
+	var url = Q.Users.homeAppUrl + '/Platform/iframe';
+	var cs = Q.computedStyle(element);
+	var iframe = document.createElement('iframe');
+	iframe.src = '';
+	iframe.style.width = cs.width;
+	iframe.style.height = cs.height;
+	var id = 'Q_iframe_' + (++_iframeCount);
+	iframe.setAttribute('id', id);
+	iframe.setAttribute('name', id);
+	var form = document.createElement('form');
+	form.style.display = 'none';
+	form.setAttribute('target', id);
+	form.setAttribute('action', url);
+	form.setAttribute('method', 'post');
+	var input = document.createElement('input');
+	input.setAttribute('type', 'hidden');
+	input.setAttribute('name', 'html');
+	input.setAttribute('value', element.innerHTML);
+	element.innerHTML = '';
+	form.appendChild(input);
+	if (options && options.stylesheet) {
+		var input2 = document.createElement('input');
+		input2.setAttribute('type', 'hidden');
+		input2.setAttribute('name', 'stylesheet');
+		input2.setAttribute('value', options.stylesheet);
+		form.appendChild(input2);
+	}
+	element.appendChild(iframe);
+	element.appendChild(form);
+	iframe.onload = function () {
+		form.parentNode.removeChild(form);
+		callback && callback(null, iframe);
+	};
+	form.submit();
 
+
+	// priv.loadEasyXDM(function () {
+	// 	var url = Q.Users.homeAppUrl + '/Platform/iframe';
+	// 	var socket = new easyXDM.Socket({
+	// 	    remote: url,
+	// 		props: {style: {border: "0"} },
+	// 		container: element,
+	// 	    onMessage: function(message, origin){
+	// 			console.log(message, origin);
+	// 	        alert("Received '" + message + "' from '" + origin + "'");
+	// 	    },
+	// 	    onReady: function() {
+	// 			debugger;
+	// 	        socket.postMessage({
+	// 				method: "Q.Users.login",
+	// 	        	appUrl: Q.baseUrl
+	// 	        });
+	// 	    }
+	// 	});
+	// 	// show the login dialog
+	// 	// requesting "title" and "dialog" slot from Users/login
+	// 	// with our cool security feature
+	// 	// iframe should say how to resize!!
+	// });
 };
 
 /**
@@ -289,6 +334,8 @@ Q.Event = function (callable, key) {
 	};
 };
 
+var Evp = Q.Event.prototype;
+
 /**
  * Adds a callable to a handler, or set an existing one
  * @method set
@@ -300,11 +347,11 @@ Q.Event = function (callable, key) {
  * @param prepend Boolean
  *  If true, then prepends the handler to the chain
  */
-Q.Event.prototype.set = function (callable, key, prepend) {
+Evp.set = function (callable, key, prepend) {
 	if (key === undefined || key === null) {
-		var i = this.keys.length, key = 'unique_' + i;
+		var i = this.keys.length, key = 'AUTOKEY_' + i;
 		while (this[key]) {
-			key = 'unique_' + (++i);
+			key = 'AUTOKEY_' + (++i);
 		}
 	}
 	this.handlers[key] = callable;
@@ -317,12 +364,36 @@ Q.Event.prototype.set = function (callable, key, prepend) {
 };
 
 /**
+ * Like the "set" method, adds a handler to an event, or overwrites an existing one.
+ * But in addition, immediately handles the handler if the event has already occurred at least once, or is currently occuring,
+ * passing it the same subject and arguments as were passed to the event the last time it occurred.
+ * @method add
+ * @param {mixed} handler Any kind of callable which Q.handle can invoke
+ * @param {String|Boolean|Q.Tool} Optional key to associate with the handler.
+ *  Used to replace handlers previously added under the same key.
+ *  Also used for removing handlers with .remove(key).
+ *  If the key is not provided, a unique one is computed.
+ *  Pass a Q.Tool object here to associate the handler to the tool,
+ *  and it will be automatically removed when the tool is removed.
+ * @param {boolean} prepend If true, then prepends the handler to the chain
+ * @return {String} The key under which the handler was set
+ */
+Evp.add = function _Q_Event_prototype_add(handler, key, prepend) {
+	var event = this;
+	var ret = this.set(handler, key, prepend);
+	if (this.occurred || this.occurring) {
+		Q.handle(handler, this.lastContext, this.lastArgs);
+	}
+	return ret;
+};
+
+/**
  * Removes a callable
  * @method remove
  * @param key String
  *  The key of the callable to remove
  */
-Q.Event.prototype.remove = function (key) {
+Evp.remove = function (key) {
 	delete this.handlers[key];
 	for (var i=0; i<this.keys.length; ++i) {
 		if (this.keys[i] === key) {
@@ -338,7 +409,7 @@ Q.Event.prototype.remove = function (key) {
  * @method copy
  * @return {Q.Event} copy of Event handler
  */
-Q.Event.prototype.copy = function () {
+Evp.copy = function () {
 	var result = new Q.Event();
 	for (var i=0; i<this.keys.length; ++i) {
 		result.handlers[this.keys[i]] = this.handlers[this.keys[i]];
@@ -504,7 +575,7 @@ var priv = {
      * @param {Function} callback
 	 */
 	loadEasyXDM: function(callback) {
-		Q.addScript(Q.baseUrl+"/plugins/Platform/easyXDM/easyXDM.min.js", function () {
+		Q.addScript(Q.baseUrl+"/plugins/Platform/easyXDM/easyXDM.js", function () {
 			var err = null;
 			callback(err);
 		});
@@ -603,6 +674,77 @@ var priv = {
 	}
 	
 	// stuff to fill iframes etc.
+};
+
+/**
+* @property Q.Users
+*/
+Q.Users = {
+	
+	homeAppUrl: "http://gmba.local/Trump",
+	
+	/**
+	 * Shows a login dialog
+     * @method login
+	 * @param callback
+	 *  Parameters:
+	 *  1: Error, if any
+	 * @param options
+	 */
+	login: function (callback, options) {
+		priv.loadEasyXDM(function () {
+			var url = Q.Users.homeAppUrl + '/Platform/api'
+				+ '?discover=user+contacts';
+			var socket = new easyXDM.Socket({
+			    remote: url,
+			    onMessage: function(message, origin){
+					console.log(message, origin);
+			        alert("Received '" + message + "' from '" + origin + "'");
+			    },
+			    onReady: function() {
+			        socket.postMessage({
+						method: "Q.Users.login",
+			        	appUrl: Q.baseUrl
+			        });
+			    }
+			});
+			// show the login dialog
+			// requesting "title" and "dialog" slot from Users/login
+			// with our cool security feature
+			// iframe should say how to resize!!
+		});
+	},
+	
+	/**
+	 * Get the logged in user, if any
+     * @method getUser
+	 * @param callback {Function}
+	 *  Parameters:
+	 *  1. Error, if any
+	 *  2. The Q.Users.User object of logged-in user, or null if user is not logged in
+	 */
+	getUser: function (callback) {
+		priv.loadEasyXDM(function () {
+			// get the logged in user
+		});
+	},
+	
+	/**
+	 * Event is triggered when a new user is detected, or during logout
+	 * Parameters:
+	 *  1: Q.Users.User object. This could be null if user logged out.
+     *  @event onUserChange
+	 */
+	onUserChange: new Q.Event()
+};
+
+Q.Users.User = function (xid) {
+	this.xid = xid;
+};
+Q.Users.User.prototype.typename = "Q.Users.User";
+
+Q.Streams = {
+
 };
 
 

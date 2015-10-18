@@ -4,7 +4,9 @@
 			"Users/computePassphraseHash": ["Platform/before/Users_computePassphraseHash"]
 		},
 		"routes": {
-			"plugins/Platform/:action": {"module": "Platform"}
+			"plugins/Platform/:action": {"module": "Platform"},
+			"Platform/api": {"module": "Platform", "action": "api"},
+			"Platform/iframe": {"module": "Platform", "action": "iframe"}
 		},
 		"pluginInfo": {
 			"Platform": {

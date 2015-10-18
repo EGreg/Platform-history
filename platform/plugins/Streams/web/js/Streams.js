@@ -772,7 +772,7 @@ Streams.subscriptionDialog = function(publisherId, streamName, callback) {
 };
 
 /**
- * Show a dialog to manage "subscription" related stuff in a stream.
+ * Show a dialog to manage "access" related stuff in a stream.
  * @static
  * @method accessDialog
  * @param publisherId {String} id of publisher which is publishing the stream
@@ -3443,6 +3443,7 @@ Q.onInit.add(function _Streams_onInit() {
 				var interval;
 				Q.Dialogs.push({
 					dialog: dialog,
+					className: 'Streams_completeInvited_dialog',
 					mask: true,
 					noClose: true,
 					closeOnEsc: false, 

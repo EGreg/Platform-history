@@ -464,7 +464,7 @@ Elp.contains = function (child) {
 /**
  * Returns the computed style of an element
  * @method computedStyle
- * @param {Element} name Optional. If provided, the value of a property is returned instead of the whole style object.
+ * @param {String} name Optional. If provided, the value of a property is returned instead of the whole style object.
  * @return {Object|String}
  */
 Elp.computedStyle = function(name) {
