@@ -38,7 +38,8 @@ Q.Tool.define("Users/avatar", function(options) {
 	if (this.element.childNodes.length) {
 		return;
 	}
-	var tool = this, state = this.state;
+	var tool = this;
+	var state = this.state;
 	if (state.userId === undefined) {
 		console.warn("Users/avatar: no userId provided");
 		return; // empty
@@ -50,6 +51,10 @@ Q.Tool.define("Users/avatar", function(options) {
 	var p = new Q.Pipe(['icon', 'contents'], function (params) {
 		tool.element.innerHTML = params.icon[0] + params.contents[0];
 	});
+	
+	if (state.me) {
+		state.userId = Users.loggedInUserId();
+	}
 	
 	if (state.userId === '') {
 		var fields = Q.extend({}, state.templates.contents.fields, {

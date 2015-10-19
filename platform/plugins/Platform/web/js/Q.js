@@ -7,13 +7,15 @@
  * @param {Function} callback , This callback function fires after Q object creation
  */
 
-function Q(callback) {
-	priv.init(function () {
-		callback(Q);
-	});
+if (!window.Q) {
+	Q = function (callback) {
+		priv.init(function () {
+			callback(Q);
+		});
+	}
 }
 
-Q.baseUrl = "http://gmba.local/Groups"; // "http://platform.qbix.com";
+Q.baseUrl = "http://gmba.local/Trump"; // "http://platform.qbix.com";
 
 /**
  * @method Q.verify
@@ -98,68 +100,21 @@ Q.parse = function (element, callback, options) {
 	}
 	var url = Q.Users.homeAppUrl + '/Platform/iframe';
 	var cs = Q.computedStyle(element);
-	var iframe = document.createElement('iframe');
-	iframe.src = '';
+	var params = {
+		html: element.innerHTML
+	};
+	if (options && options.stylesheet) {
+		params.stylesheet = options.stylesheet;
+	}
+	var iframe = priv.formPost(url, params, 'post', null, element);
 	iframe.style.width = cs.width;
 	iframe.style.height = cs.height;
-	var id = 'Q_iframe_' + (++_iframeCount);
-	iframe.setAttribute('id', id);
-	iframe.setAttribute('name', id);
-	var form = document.createElement('form');
-	form.style.display = 'none';
-	form.setAttribute('target', id);
-	form.setAttribute('action', url);
-	form.setAttribute('method', 'post');
-	var input = document.createElement('input');
-	input.setAttribute('type', 'hidden');
-	input.setAttribute('name', 'html');
-	input.setAttribute('value', element.innerHTML);
-	element.innerHTML = '';
-	form.appendChild(input);
-	if (options && options.stylesheet) {
-		var input2 = document.createElement('input');
-		input2.setAttribute('type', 'hidden');
-		input2.setAttribute('name', 'stylesheet');
-		input2.setAttribute('value', options.stylesheet);
-		form.appendChild(input2);
-	}
-	element.appendChild(iframe);
-	element.appendChild(form);
-	iframe.onload = function () {
-		form.parentNode.removeChild(form);
-		callback && callback(null, iframe);
-	};
-	form.submit();
-
-
-	// priv.loadEasyXDM(function () {
-	// 	var url = Q.Users.homeAppUrl + '/Platform/iframe';
-	// 	var socket = new easyXDM.Socket({
-	// 	    remote: url,
-	// 		props: {style: {border: "0"} },
-	// 		container: element,
-	// 	    onMessage: function(message, origin){
-	// 			console.log(message, origin);
-	// 	        alert("Received '" + message + "' from '" + origin + "'");
-	// 	    },
-	// 	    onReady: function() {
-	// 			debugger;
-	// 	        socket.postMessage({
-	// 				method: "Q.Users.login",
-	// 	        	appUrl: Q.baseUrl
-	// 	        });
-	// 	    }
-	// 	});
-	// 	// show the login dialog
-	// 	// requesting "title" and "dialog" slot from Users/login
-	// 	// with our cool security feature
-	// 	// iframe should say how to resize!!
-	// });
+	iframe.style.display = 'block';
+	iframe.setAttribute('class', 'Q_iframe');
 };
 
 /**
  * Initializes the Q 
- * Loads the easyXDM from our servers
  * @method Q.init
  */
 Q.init = function () {
@@ -194,26 +149,6 @@ Q.typeOf = function (value) {
 		}
 	}
 	return s;
-};
-
-/**
- * Makes a shallow copy of an object
- * If it encounters a "copy" method in each of the properties, calls that too.
- * @method Q.copy
- * @param {Object} x
- * @return {Object}
- *  Returns the shallow copy
- */
-Q.copy = function(x) {
-	var result = {}, k;
-	for (k in x) {
-		if (x[k] && typeof(x[k].copy) === 'function') {
-			result[k] = x[k].copy();
-		} else {
-			result[k] = x[k];
-		}
-	}
-	return result;
 };
 
 /**
@@ -568,18 +503,6 @@ var priv = {
 		var height = Math.height(window.height, bounds.height);
 		return {width: width, height: height};
 	},
-	
-	/**
-	 * Loads some kind of plugin and returns its interface
-     * @method loadEasyXDM
-     * @param {Function} callback
-	 */
-	loadEasyXDM: function(callback) {
-		Q.addScript(Q.baseUrl+"/plugins/Platform/easyXDM/easyXDM.js", function () {
-			var err = null;
-			callback(err);
-		});
-	},
 
     /**
      * Form Post
@@ -587,16 +510,19 @@ var priv = {
      * @param {String} action , URL action for making form post
      * @param {Object} params Object with key:value pair
      * @param {String} method HTTP method
-     * @param {DOMElement} iframe (Optional)
+     * @param {HTMLElement} [iframe] pass null here to create a new iframe
+     * @param {HTMLElement} [element] the element to append the iframe to
+	 * @param {Function} [callback] this gets called after the post response returns
      */
-
-	formPost: function (action, params, method, iframe) {
+	formPost: function (action, params, method, iframe, element, callback) {
+		element = element || document.body;
 	    method = method || "post"; // Set method to post by default, if not specified.
 	    var form = document.createElement("form");
 		if (!iframe) {
 			iframe = document.createElement("iframe");
 		}
-		var name = 'iframe_'+Math.floor(Math.random() * 1000000);
+		var name = 'Q_iframe_' + (_iframeCount++ % 100000);
+		iframe.setAttribute("id", name);
 		iframe.setAttribute("name", name);
 		iframe.style.display = 'none';
 	    form.setAttribute("method", method);
@@ -609,18 +535,19 @@ var priv = {
 	            hiddenField.setAttribute("type", "hidden");
 	            hiddenField.setAttribute("name", key);
 	            hiddenField.setAttribute("value", params[key]);
-
 	            form.appendChild(hiddenField);
 	         }
 	    }
 
-		document.body.appendChild(iframe);
-	    document.body.appendChild(form);
+		element.appendChild(iframe);
+	    element.appendChild(form);
 	    form.submit();
-		document.body.removeChild(form);
-
-		// Unfortunately, this method leaves junk iframes at the end of the document.
-		// We should clean them up after the response comes back, with easyXDM.
+		element.removeChild(form);
+		
+		iframe.onload = function () {
+			callback && callback(null, iframe);
+		};
+		return iframe;
 	},
 
     /**
@@ -681,7 +608,8 @@ var priv = {
 */
 Q.Users = {
 	
-	homeAppUrl: "http://gmba.local/Trump",
+	homeAppUrl: "http://gmba.local/Groups",
+	homeOrigin: "http://gmba.local",
 	
 	/**
 	 * Shows a login dialog
@@ -692,27 +620,25 @@ Q.Users = {
 	 * @param options
 	 */
 	login: function (callback, options) {
-		priv.loadEasyXDM(function () {
-			var url = Q.Users.homeAppUrl + '/Platform/api'
-				+ '?discover=user+contacts';
-			var socket = new easyXDM.Socket({
-			    remote: url,
-			    onMessage: function(message, origin){
-					console.log(message, origin);
-			        alert("Received '" + message + "' from '" + origin + "'");
-			    },
-			    onReady: function() {
-			        socket.postMessage({
-						method: "Q.Users.login",
-			        	appUrl: Q.baseUrl
-			        });
-			    }
-			});
-			// show the login dialog
-			// requesting "title" and "dialog" slot from Users/login
-			// with our cool security feature
-			// iframe should say how to resize!!
+		var url = Q.Users.homeAppUrl + '/Platform/api';
+		
+		priv.formPost(url, {
+			discover: ['user','contacts']
+		}, 'post', null, null, function (err, iframe) {
+			iframe.contentWindow.postMessage({
+				method: "Q.Users.login",
+	        	appUrl: Q.baseUrl
+	        }, Q.Users.homeOrigin);
 		});
+		window.addEventListener("message", receiveMessage, false);
+		function receiveMessage(event) {
+			console.log(event.data, event.origin);
+		  // ...
+		}
+		// show the login dialog
+		// requesting "title" and "dialog" slot from Users/login
+		// with our cool security feature
+		// iframe should say how to resize!!
 	},
 	
 	/**

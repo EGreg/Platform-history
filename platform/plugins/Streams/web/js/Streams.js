@@ -3367,6 +3367,7 @@ Q.onInit.add(function _Streams_onInit() {
 	}, "Streams");
 	Users.onLogout.set(function () {
 		Interests.my = {}; // clear the interests
+		Streams.invite.dialog = null;  // clear invite dialog info
 		Q.Socket.destroyAll();
 	}, "Streams");
 	if (Users.loggedInUser) {

@@ -45,11 +45,15 @@ var Streams = Q.Streams;
  *   @param {Q.Event} [options.onImagepicker]  An event that occurs when the imagepicker is activated
  */
 Q.Tool.define("Users/avatar", function(options) {
-	var tool = this, state = this.state;
+	var tool = this;
+	var state = this.state;
 	Streams.Stream.retain(state.userId, 'Streams/user/firstName', tool);
 	Streams.Stream.retain(state.userId, 'Streams/user/lastName', tool);
 	if (state.icon === true) {
 		state.icon = Users.icon.defaultSize;
+	}
+	if (state.me) {
+		state.userId = Users.loggedInUserId();
 	}
 	this.refresh();
 	if (!state.reflectChanges) {
@@ -110,7 +114,8 @@ Q.Tool.define("Users/avatar", function(options) {
 	 */
 	refresh: function () {
 		
-		var tool = this, state = this.state;
+		var tool = this;
+		var state = this.state;
 		if (tool.element.childNodes.length) {
 			return _present();
 		}
