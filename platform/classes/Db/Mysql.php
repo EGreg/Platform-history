@@ -300,7 +300,7 @@ class Db_Mysql implements iDb
 	 * @return {Db_Query_Mysql} The resulting Db_Query_Mysql object
 	 */
 	function insert ($table_into, array $fields = array())
-	{	
+	{
 		if (empty($table_into))
 			throw new Exception("table not specified in call to 'insert'.");
 		
@@ -1657,10 +1657,10 @@ EOT;
 	 */
 EOT;
 					$js_functions["maxSize_$field_name"]['comment'] = <<<EOT
-	$dc
-	 * Returns the maximum integer that can be assigned to the $field_name field
-	 * @return {integer}
-	 */
+$dc
+ * Returns the maximum integer that can be assigned to the $field_name field
+ * @return {integer}
+ */
 EOT;
 					$js_functions["maxSize_$field_name"]['args'] = '';
 					$js_functions["maxSize_$field_name"]['return_statement'] = <<<EOT

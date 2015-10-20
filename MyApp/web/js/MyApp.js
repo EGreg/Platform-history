@@ -63,10 +63,10 @@ var MyApp = (function (Q, $) {
 	});
 	
 	// example stream
-	Q.Streams.define("MyApp/cool", "js/streams/MyApp/cool.js");
+	Q.Streams.define("MyApp/cool", "js/streams/cool.js");
 	
 	// example tool
-	Q.Tool.define("MyApp/cool", "js/tools/MyApp/cool.js");
+	Q.Tool.define("MyApp/cool", "js/tools/cool.js");
 
 	// tell Q.handle to load pages using AJAX - much smoother
 	Q.handle.options.loadUsingAjax = true;

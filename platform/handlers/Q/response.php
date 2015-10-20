@@ -115,6 +115,7 @@ function Q_response($params)
 				}
 			} else if (Q_Request::isLoadExtras()) {
 				$to_encode['slots'] = Q_Response::slots(true);
+				// add stylesheets, stylesinline, scripts, scriptlines, scriptdata, templates
 				foreach (array_merge(array(''), $slotNames) as $slotName) {
 					$temp = Q_Response::stylesheetsArray($slotName);
 					if ($temp) $to_encode['stylesheets'][$slotName] = $temp;
@@ -131,6 +132,15 @@ function Q_response($params)
 				}
 			} else {
 				$to_encode['slots'] = Q_Response::slots(true);
+				// add stylesinline, scriptlines, scriptdata, templates
+				foreach (array_merge(array(''), $slotNames) as $slotName) {
+					$temp = Q_Response::stylesInline($slotName);
+					if ($temp) $to_encode['stylesInline'][$slotName] = $temp;
+					$temp = Q_Response::scriptData($slotName);
+					if ($temp) $to_encode['scriptData'][$slotName] = $temp;
+					$temp = Q_Response::scriptLines($slotName, true, "\n", false);
+					if ($temp) $to_encode['scriptLines'][$slotName] = $temp;
+				}
 			}
 		}
 		$to_encode['timestamp'] = microtime(true);

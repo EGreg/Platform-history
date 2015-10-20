@@ -290,17 +290,7 @@ Q.Tool.define("Q/tabs", function(options) {
 		tool.indicateCurrent();
 		var te = tool.element;
 		if (!parseInt(te.style.width)) {
-			var rect1 = te.getBoundingClientRect();
-			$te.siblings(':visible').each(function () {
-				var $t = $(this);
-				var rect2 = this.getBoundingClientRect();
-				if (rect1.top > rect2.bottom || rect1.bottom < rect2.top) {
-					return;
-				}
-				if ($t.css('float') != 'none') {
-					w -= $t.outerWidth(true);
-				}
-			});
+			w = te.remainingWidth();
 		}
 		if ($o.length) {
 			var cs = $o.state('Q/contextual');

@@ -119,6 +119,8 @@ function _Streams_file_preview(options, preview) {
 					inplace.state.onLoad.add(function () {
 						p.fill('inplace').apply(this, arguments);
 					});
+					var $pc = tool.$('.Streams_preview_contents');
+					$pc.width(0).width($pc[0].remainingWidth());
 				});
 				$(tool.element).on(Q.Pointer.click, function () {
 					var url = stream.get('file.url');
@@ -156,6 +158,7 @@ function _Streams_file_preview(options, preview) {
 
 function _formatSize(bytes)
 {
+	if (isNaN(bytes)) return '';
 	if (bytes >= Math.pow(2, 30)) {
 		return Math.ceil(bytes / Math.pow(2, 30)) + ' GB';
 	} else if (bytes >= Math.pow(2, 20)) {

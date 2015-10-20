@@ -35,8 +35,8 @@
 					<p style="max-width: 350px;">
 					<?php if (empty($_REQUEST['p'])): ?>
 						Choose a <strong>pass phrase</strong> to log in with.<br>
-						Better to have a unique phrase you'll remember,
-						rather than a single word with weird characters.
+						A simple phrase consisting of a few words that
+						you will easily remember.
 					<?php else: ?>
 						Choose a good <strong>pass phrase</strong> to protect your account.
 						See the suggestions for some ideas.

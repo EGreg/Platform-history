@@ -353,10 +353,10 @@ Base.prototype.beforeSet_timeout = function (value) {
 		return value;
 };
 
-	/**
-	 * Returns the maximum integer that can be assigned to the timeout field
-	 * @return {integer}
-	 */
+/**
+ * Returns the maximum integer that can be assigned to the timeout field
+ * @return {integer}
+ */
 Base.prototype.maxSize_timeout = function () {
 
 		return 2147483647;
@@ -379,10 +379,10 @@ Base.prototype.beforeSet_duration = function (value) {
 		return value;
 };
 
-	/**
-	 * Returns the maximum integer that can be assigned to the duration field
-	 * @return {integer}
-	 */
+/**
+ * Returns the maximum integer that can be assigned to the duration field
+ * @return {integer}
+ */
 Base.prototype.maxSize_duration = function () {
 
 		return 2147483647;

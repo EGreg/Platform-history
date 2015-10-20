@@ -307,7 +307,7 @@ class Q_Config
 		if (!file_exists($filename)) {
 			$dir = dirname(str_replace('/', DS, $filename));
 			if (!is_dir($dir)) {
-				$mask = umask(Q_Config::get('Q', 'internal','umask' , 0000));
+				$mask = umask(Q_Config::get('Q', 'internal', 'umask', 0000));
 				if (!mkdir($dir, 0777, true)) return false;
 				umask($mask);
 			} elseif (!is_writable($dir)) return false;

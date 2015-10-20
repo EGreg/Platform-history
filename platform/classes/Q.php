@@ -417,6 +417,7 @@ class Q
 			$filename = self::event('Q/autoload', compact('className'), 'before');
 
 			if (!isset($filename)) {
+//				$className_parts = explode('\\', $className);
 				$className_parts = explode('_', $className);
 				$filename = 'classes'.DS.implode(DS, $className_parts).'.php';
 			}
@@ -626,7 +627,7 @@ class Q
 				 *	The rendered content
 				 */
 				$params = $e->params();
-				if ($params['filename'] === "handlers/$toolHandler.php") {
+				if ($params['filename'] === str_replace('/', DS, "handlers/$toolHandler.php")) {
 					$result .= self::event('Q/missingTool', compact('name', 'options'));
 				} else {
 					$exception = $e;

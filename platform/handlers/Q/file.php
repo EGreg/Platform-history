@@ -2,7 +2,7 @@
 
 function Q_file($params)
 {
-	$filename = Q_Request::filename();
+	$filename = Q::ifset($params, 'filename', Q_Request::filename());
 	$parts = explode('.', $filename);
 	$ext = end($parts);
 	$intercept = true;

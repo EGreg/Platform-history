@@ -4,7 +4,8 @@
  * @module Users
  * @class Users
  */
-
+"use strict";
+/* jshint -W014 */
 (function(Q, $) {
 
 var Users = Q.Users = Q.plugins.Users = {
@@ -220,6 +221,8 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 	}
 	options = options || {};
 	var fields = {};
+	
+	Users.authenticate.occurring = true;
 
 	// make sure facebook is initialized
 	Users.initFacebook(function() {
@@ -256,6 +259,7 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 					// custom prompt
 					options.prompt('facebook', fb_uid, _doAuthenticate, _doCancel);
 				} else {
+					Users.authenticate.occurring = false;
 					throw new Q.Error("Users.authenticate: options.prompt is the wrong type");
 				}
 			} else if (Q.plugins.Users.facebookApps[Q.info.app]) {
@@ -271,6 +275,7 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 				Users.connected.facebook = true;
 				Users.onConnected.handle.call(Users, provider, user, options);
 				Q.handle(onSuccess, this, [user, options]);
+				Users.authenticate.occurring = false;
 			}
 			
 			function _doCancel(ignoreUid) {
@@ -288,6 +293,7 @@ Users.authenticate = function(provider, onSuccess, onCancel, options) {
 				delete Users.connected.facebook;
 				Users.onConnectionLost.handle.call(Users, provider, options);
 				Q.handle(onCancel, Users, [options]);
+				Users.authenticate.occurring = false;
 			}
 
 			function _doAuthenticate() {
@@ -382,33 +388,6 @@ Users.prompt = function(provider, uid, authCallback, cancelCallback, options) {
 		var dialogSlot = $('<div class="dialog_slot Q_dialog_content">');
 		dialogSlot.append(content_div);
 		Users.prompt.overlay.append(titleSlot).append(dialogSlot).appendTo($(o.dialogContainer));
-
-		function _usingInformation(uid, explanation) {
-			return $("<table />").append(
-				$("<tr />").append(
-					$("<td class='Users_profile_pic' />").html(
-						"<fb:profile-pic uid='" + uid + "' linked='false' size='square' class='fb_profile_pic'></fb:profile-pic>"
-					)
-				).append(
-					$("<td class='Users_explanation_name' />").append(
-						$("<div class='Users_explanation' />").html(explanation)
-					).append(
-						"<fb:name uid='" + uid + "' useyou='false' linked='false' size='square' class='fb_name'>user id "+uid+"</fb:name>"
-					)
-				)
-			);
-		}
-
-		function _authenticateActions(caption) {
-			return $("<div class='Users_actions Q_big_prompt' />").append(
-				$('<button type="submit" class="Q_button Q_main_button" />').html(caption)
-				.click(function () {
-					tookAction = true;
-					Users.prompt.overlay.data('Q/overlay').close();
-					authCallback();
-				})
-			);
-		}
 	}
 	Q.Dialogs.push({
 		dialog: Users.prompt.overlay, 
@@ -426,6 +405,33 @@ Users.prompt = function(provider, uid, authCallback, cancelCallback, options) {
 			tookAction = false;
 		}
 	});
+	
+	function _usingInformation(uid, explanation) {
+		return $("<table />").append(
+			$("<tr />").append(
+				$("<td class='Users_profile_pic' />").html(
+					"<fb:profile-pic uid='" + uid + "' linked='false' size='square' class='fb_profile_pic'></fb:profile-pic>"
+				)
+			).append(
+				$("<td class='Users_explanation_name' />").append(
+					$("<div class='Users_explanation' />").html(explanation)
+				).append(
+					"<fb:name uid='" + uid + "' useyou='false' linked='false' size='square' class='fb_name'>user id "+uid+"</fb:name>"
+				)
+			)
+		);
+	}
+
+	function _authenticateActions(caption) {
+		return $("<div class='Users_actions Q_big_prompt' />").append(
+			$('<button type="submit" class="Q_button Q_main_button" />').html(caption)
+			.click(function () {
+				tookAction = true;
+				Users.prompt.overlay.data('Q/overlay').close();
+				authCallback();
+			})
+		);
+	}
 };
 
 
@@ -465,15 +471,13 @@ options were the options used in the call to Users.login, result is one of "regi
 and 'used' is "native", or the name of the provider used, such as "facebook".
  *  @param {Function} [options.onCancel] event that occurs when login or authentication "using" a provider was canceled.
  *  @param {Function} [options.onResult] event that occurs before either onSuccess, onCancel, or onRequireComplete
- *  @param {String} [options.successUrl] If the default onSuccess implementation is used, the browser is redirected here
- *  @default Q.uris[Q.info.app+'/home']
+ *  @param {String} [options.successUrl] If the default onSuccess implementation is used, the browser is redirected here. Defaults to Q.uris[Q.info.app+'/home']
  *  @param  {String} [options.accountStatusUrl] if passed, this URL is hit to determine if the account is complete
  *  @param {Function} [options.onRequireComplete] function to call if the user logged in but account is incomplete.
  *  It is passed the user information as well as the response from hitting accountStatusUrl
  *  @param {String} [options.using] can be "native", "facebook" or "native,facebook"
  *  @param {Boolean} [options.tryQuietly] if true, this is same as Users.authenticate, with provider = "using" option
- *  @param {String} [options.scope] permissions to request from the authentication provider
- *  @default "email,publish_stream"
+ *  @param {String} [options.scope="email,publish_stream"] permissions to request from the authentication provider
  *  @param {String} [options.identifierType] the type of the identifier, which could be "mobile" or "email" or "email,mobile"
  */
 Users.login = function(options) {
@@ -489,6 +493,16 @@ Users.login = function(options) {
 	if (typeof o.using === 'string') {
 		o.using = o.using.split(',');
 	}
+	
+	Users.login.occurring = true;
+	
+	if (!o.using.indexOf('native') >= 0) {
+		_doLogin();
+	} else {
+		$.fn.plugin.load('Q/dialog', _doLogin);
+	}
+	
+	return false;
 	
 	function _doLogin() {
 	
@@ -570,14 +584,6 @@ Users.login = function(options) {
 		delete priv.login_connected; // if we connect, it will be filled
 
 	}
-	
-	if (!o.using.indexOf('native') >= 0) {
-		_doLogin();
-	} else {
-		$.fn.plugin.load('Q/dialog', _doLogin);
-	}
-	
-	return false;
 
 	function _onConnect(user) {
 		if (user) {
@@ -599,6 +605,7 @@ Users.login = function(options) {
 				return;
 			}
 
+			Users.login.occurring = false;
 			if (!o.onRequireComplete 
 			|| response2.slots.accountStatus === 'complete') {
 				_onComplete(user);
@@ -622,6 +629,7 @@ Users.login = function(options) {
 		if (false !== Q.handle(o.onResult, this, [scope, o])) {
 			Q.handle(o.onCancel, this, [scope, o]);
 		}
+		Users.login.occurring = false;
 	}
 	
 	// login complete - run onSuccess handler
@@ -631,7 +639,8 @@ Users.login = function(options) {
 		var ret = Q.handle(o.onResult, this, [user, o, priv.result, pn]);
 		if (false !== ret) {
 			Q.handle(o.onSuccess, this, [user, o, priv.result, pn]);	
-		}	
+		}
+		Users.login.occurring = false;
 	}
 };
 
@@ -653,6 +662,8 @@ Users.logout = function(options) {
 	if (typeof o.using === 'string') {
 		o.using = o.using.split(',');
 	}
+	
+	Users.logout.occurring = true;
 
 	function callback(response) {
 		if (response && response.slots && response.slots.script) {
@@ -663,13 +674,16 @@ Users.logout = function(options) {
 				alert(e);
 			}
 		}
-		if (Q.plugins.Users.facebookApps[Q.info.app]
+		Users.logout.occurring = false;
+		Users.sessionId = Q.cookie(Q.sessionName()); // null
+		Users.roles = {};
+		if (Users.facebookApps[Q.info.app]
 		&& (o.using.indexOf('facebook') >= 0)) {
 			Q.cookie('fbs_' + Q.plugins.Users.facebookApps[Q.info.app].appId, null, {path: '/'});
 			Q.cookie('fbsr_' + Q.plugins.Users.facebookApps[Q.info.app].appId, null, {path: '/'});
 			if ((o.using[0] === 'native' || o.using[1] === 'native')) {
 				Users.loggedInUser = null;
-				Q.nonce = Q.cookie('Q_nonce');
+				Q.nonce = Q.cookie('Q_nonce'); // null
 			}
 			Users.initFacebook(function logoutCallback () {
 				FB_getLoginStatus(function (response) {
@@ -912,7 +926,7 @@ function login_callback(response) {
 	var json = response.slots.data;
 	var step2_form;
 	var autologin = false;
-	setupRegisterForm = Users.login.options.setupRegisterForm || defaultSetupRegisterForm;
+	var setupRegisterForm = Users.login.options.setupRegisterForm || defaultSetupRegisterForm;
 	if (form.data('used') === 'facebook') {
 		// logged in with FB
 		autologin = true;
@@ -990,20 +1004,20 @@ function login_callback(response) {
 			$('#Users_form_passphrase').attr('value', '');
 			
 			$('input', $this).css('background-image', 'none');
-			if (err) {
-				var msg = Q.firstErrorMessage(err);
-				return;
-			}
 			if (err || response.errors) {
 				// there were errors
 				if (response.errors) {
-					$this.data('validator').invalidate(Q.ajaxErrors(response.errors, [first_input.attr('name')]));
+					$this.data('validator').invalidate(
+						Q.ajaxErrors(response.errors, [first_input.attr('name')]
+					));
 				}
 				$('#Users_login_identifier').blur();
 				first_input.plugin('Q/clickfocus');
 				return;
 			}
 			// success!
+			Users.sessionId = Q.cookie(Q.sessionName());
+			Users.roles = response.slots.data.roles || {};
 			switch ($this.data('form-type')) {
 				case 'resend': 
 					$('button', $this).html('Sent').attr('disabled', 'disabled');
@@ -1245,11 +1259,6 @@ function login_callback(response) {
 			});
 		}
 		Q.activate($('#Users_login_step2').get(0));
-		function _centerIt() {
-			var $d = $('#Users_login_passphrase_div');
-			var $f = $('#Users_login_passphrase_forgot');
-			$f.css('bottom', ($d.outerHeight(true) - $f.outerHeight(true)) / 2 + 'px');
-		}
 	}
 	$('#Users_login_step1').animate({"opacity": 0.5}, 'fast');
 	$('#Users_login_step1 .Q_button').attr('disabled', 'disabled');
@@ -1263,6 +1272,11 @@ function login_callback(response) {
 	}
 	if (priv.linkToken) {
 		$('#Users_login_step1').hide();
+	}
+	function _centerIt() {
+		var $d = $('#Users_login_passphrase_div');
+		var $f = $('#Users_login_passphrase_forgot');
+		$f.css('bottom', ($d.outerHeight(true) - $f.outerHeight(true)) / 2 + 'px');
 	}
 }
 
@@ -1312,6 +1326,8 @@ function login_setupDialog(usingProviders, scope, dialogContainer, identifierTyp
 		$('<span id="Users_login_go_span">'  + Q.text.Users.login.goButton + '</span>')
 	).on(Q.Pointer.touchclick, function () {
 		submitClosestForm.apply($a, arguments);
+	}).on(Q.Pointer.click, function (e) {
+		e.preventDefault(); // prevent automatic submit on click
 	});
 
 	var directions = Q.plugins.Users.login.serverOptions.noRegister
@@ -1498,7 +1514,7 @@ function login_setupDialog(usingProviders, scope, dialogContainer, identifierTyp
 			$('#Users_login_step1 *').removeAttr('disabled');
 		}
 		priv.registerInfo = null;
-		$nextAll = $('#Users_login_step1').nextAll();
+		var $nextAll = $('#Users_login_step1').nextAll();
 		if ($nextAll.is(':visible')) {
 			$nextAll.slideUp('fast').each(function() {
 				var v = $('form', $(this)).data('validator');
@@ -1809,6 +1825,8 @@ Q.onInit.add(function () {
 		Users.initFacebook();
 	}
 	
+	Users.sessionId = Q.cookie(Q.sessionName());
+	
 	Q.Users.login.options = Q.extend({
 		onCancel: new Q.Event(),
 		onSuccess: new Q.Event(function (user, options) {
@@ -1876,11 +1894,38 @@ Q.beforeActivate.add(function (elem) {
 	Users.preloaded = null;
 }, 'Users');
 
-Q.request.options.onProcessed.set(function (err, data) {
-	if (!data || !data.errors) return;
-	var i, l = data.errors.length, lost = false;
+Q.request.options.onProcessed.set(function (err, response) {
+	var sessionId = Q.cookie(Q.sessionName());
+	if (sessionId !== Users.sessionId
+	&& !Users.login.occurring
+	&& !Users.authenticate.occurring
+	&& !Users.logout.occurring) {
+		Q.nonce = Q.cookie('Q_nonce');
+		Q.req("Users/login", 'data', function (err, res) {
+			Q.nonce = Q.cookie('Q_nonce');
+			var msg = Q.firstErrorMessage(err, res && res.errors);
+			if (msg) {
+				return Users.onError.handle(msg, err);
+			}
+			var user = res.slots.data.user;
+			if (!user && Users.loggedInUser) {
+				Users.loggedInUser = null;
+				Users.roles = {};
+				Users.onLogout.handle();
+			} else if (user && user.id !== Users.loggedInUserId()) {
+				Users.loggedInUser = new Users.User(user);
+				Users.roles = res.slots.data.roles || {};
+				Users.onLogin.handle(user);
+			}
+		});
+	}
+	Users.sessionId = sessionId;
+	if (!response || !response.errors) {
+		return;
+	}
+	var i, l = response.errors.length, lost = false;
 	for (i=0; i<l; ++i) {
-		switch (data.errors[i].classname) {
+		switch (response.errors[i].classname) {
 		case 'Users_Exception_NotLoggedIn':
 		case 'Q_Exception_NonceExpired':
 			lost = true;
@@ -1890,19 +1935,19 @@ Q.request.options.onProcessed.set(function (err, data) {
 		}
 	}
 	if (lost) {
-		Q.Users.onLoginLost.handle(data);
+		Q.Users.onLoginLost.handle();
 		Q.Users.loggedInUser = null;
+		Q.Users.roles = {};
 	}
 }, 'Users');
 
 Users.onInitFacebook = new Q.Event();
+var ddc = document.documentElement.className;
 Users.onLogin = new Q.Event(function () {
-	document.documentElement.className.replace(' Users_loggedOut', '');
-	document.documentElement.className += ' Users_loggedIn';
+	ddc = ddc.replace(' Users_loggedOut', '') + ' Users_loggedIn';
 }, 'Users');
 Users.onLogout = new Q.Event(function () {
-	document.documentElement.className.replace(' Users_loggedIn', '');
-	document.documentElement.className += ' Users_loggedOut';
+	ddc = ddc.replace(' Users_loggedIn', '') + ' Users_loggedOut';
 });
 Users.onLoginLost = new Q.Event(function () {
 	console.warn("Call to server was made which normally requires user login.");

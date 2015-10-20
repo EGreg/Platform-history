@@ -7,7 +7,8 @@ function Streams_user_response_data($params)
 
 	$icon = Q_Config::get('Users', 'register', 'icon', 'leaveDefault', false)
 		? $url = "plugins/Users/img/icons/default/80.png"
-		: Q_Request::baseUrl()."/action.php/Q/image?hash=$hash&size=80&type="
+		: Q_Request::baseUrl()
+			."/action.php/Users/thumbnail?hash=$hash&size=80&type="
 			.Q_Config::get('Users', 'login', 'iconType', 'wavatar');
 
 	// check our db
@@ -36,7 +37,8 @@ function Streams_user_response_data($params)
 		$exists = $mobile->retrieve();
 	}
 	
-	if (empty($exists) and Q_Config::get('Users', 'login', 'noRegister', false)) {
+	if (empty($exists) and
+	Q_Config::get('Users', 'login', 'noRegister', false)) {
 		$nicetype = ($type === 'email') ? 'email address' : 'mobile number';
 		throw new Q_Exception("This $nicetype was not registered", array('identifier'));
 	}

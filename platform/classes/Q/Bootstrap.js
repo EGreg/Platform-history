@@ -47,9 +47,11 @@ var _reloadConfig;
  * 	passes them to callback
  */
 Bootstrap.configure = function (callback, reload) {
-	if (reload) clearTimeout(_reloadConfig); // if called manually clear the loop
+	if (reload) {
+		clearTimeout(_reloadConfig); // if called manually clear the loop
+	}
 	var Config = new Q.Tree();
-	Q.pluginInfo = {};
+	var pluginInfo = {};
 	var p = new Q.Pipe(['Q_config', 'app_merged'], function (params) {
 		for (var k in params) {
 			if (params[k][0]) {
@@ -60,6 +62,43 @@ Bootstrap.configure = function (callback, reload) {
 			}
 		}
 		var app_merged = params.app_merged[1];
+		if (app_merged.Q.plugins && app_merged.Q.plugins.length) {
+			var plugins = [];
+			for (var i in app_merged.Q.plugins) {
+				plugins.push(app_merged.Q.plugins[i]);
+			}
+			if (app_merged.Q.plugins.indexOf('Q') < 0) {
+				app_merged.Q.plugins.unshift('Q');
+			}
+			var filenames = [];
+			for (i in app_merged.Q.plugins) {
+				var plugin = app_merged.Q.plugins[i];
+				var tree = new Q.Tree();
+				filenames.push(Q.PLUGINS_DIR+'/'+plugin+'/config/plugin.json');
+				var dirs = {
+					CLASSES_DIR: 'classes',
+					CONFIG_DIR: 'config',
+					FILES_DIR: 'files',
+					HANDLERS_DIR: 'handlers',
+					SCRIPTS_DIR: 'scripts',
+					TESTS_DIR: 'tests',
+					VIEWS_DIR: 'views'
+				};
+				pluginInfo[plugin] = {};
+				for (k in dirs) {
+					pluginInfo[plugin][k] = Q.PLUGINS_DIR+'/'+plugin+'/'+dirs[k];
+				}
+				Bootstrap.setIncludePath(Q.PLUGINS_DIR+'/'+plugin+'/classes');
+			}
+			Q.pluginInfo = pluginInfo;
+			// load and merge all the plugin config files
+			Config.load(filenames, function (err) {
+				// finally, merge the app_merged config on top
+				_merge_app_config(err);
+			});
+		} else {
+			_merge_app_config();
+		}
 		function _startConfigLoop() {
 			var timeout = Q.Config.get(['Q', 'internal', 'configServer', 'inteval'], 60)*1000;
 			if (timeout)
@@ -104,77 +143,43 @@ Bootstrap.configure = function (callback, reload) {
 		}
 		function _merge_app_config (err) {
 			if (err) {
-				if (reload) callback && callback(err);
-				else throw err;
-			} else {
-				Config.merge(app_merged);
-				if (reload) {
-					try {
-						_loadConfigExtras(function () {
-							Q.Config.clear(); // clear the config
-							Q.Config.set(Config.getAll());
-							_startConfigLoop();
-							/**
-							 * Config tree hs been reloaded
-							 * @event Config/reload
-							 * @param error {Error}
-							 *	The error object if any
-							 */
-							Q.emit('Config/reload', null);
-							callback && callback();
-						});
-					} catch (err) {
-						callback && callback(err);
-					}
-				}
-				else {
-					// start config server listener before loading other files
-					Q.Config.set(Config.getAll());
-					Q.Config.listen(function() {
-						_loadConfigExtras(function() {
-							Q.Config.clear(); // clear the config to make merge faster
-							Q.Config.set(Config.getAll());
-							_startConfigLoop();
-							callback && callback();
-						});
+				if (reload) return callback && callback(err);
+				throw err;
+			}
+			Config.merge(app_merged);
+			if (reload) {
+				try {
+					_loadConfigExtras(function () {
+						Q.Config.clear(); // clear the config
+						Q.Config.set(Config.getAll());
+						_startConfigLoop();
+						/**
+						 * Config tree hs been reloaded
+						 * @event Config/reload
+						 * @param error {Error}
+						 *	The error object if any
+						 */
+						Q.emit('Config/reload', null);
+						callback && callback();
 					});
+				} catch (err) {
+					callback && callback(err);
 				}
+			}
+			else {
+				// start config server listener before loading other files
+				Q.Config.clear();
+				Q.Config.set(Config.getAll());
+				Q.Config.listen(function() {
+					_loadConfigExtras(function() {
+						Q.Config.clear(); // clear the config to make merge faster
+						Q.Config.set(Config.getAll());
+						_startConfigLoop();
+						callback && callback();
+					});
+				});
 			}
 		}
-		if (app_merged.Q.plugins && app_merged.Q.plugins.length) {
-			var plugins = [];
-			for (var i in app_merged.Q.plugins) {
-				plugins.push(app_merged.Q.plugins[i]);
-			}
-			if (app_merged.Q.plugins.indexOf('Q') < 0) {
-				app_merged.Q.plugins.unshift('Q');
-			}
-			var filenames = [];
-			for (i in app_merged.Q.plugins) {
-				var plugin = app_merged.Q.plugins[i];
-				var tree = new Q.Tree();
-				filenames.push(Q.PLUGINS_DIR+'/'+plugin+'/config/plugin.json');
-				var dirs = {
-					CLASSES_DIR: 'classes',
-					CONFIG_DIR: 'config',
-					FILES_DIR: 'files',
-					HANDLERS_DIR: 'handlers',
-					SCRIPTS_DIR: 'scripts',
-					TESTS_DIR: 'tests',
-					VIEWS_DIR: 'views'
-				};
-				Q.pluginInfo[plugin] = {};
-				for (k in dirs) {
-					Q.pluginInfo[plugin][k] = Q.PLUGINS_DIR+'/'+plugin+'/'+dirs[k];
-				}
-				Bootstrap.setIncludePath(Q.PLUGINS_DIR+'/'+plugin+'/classes');
-			}
-			// load and merge all the plugin config files
-			Config.load(filenames, function (err) {
-				// finally, merge the app_merged config on top
-				_merge_app_config(err);
-			});
-		} else _merge_app_config();
 	});
 	Config.load(Q.CONFIG_DIR+'/Q.json', p.fill('Q_config'));
 	var app_merged = new Q.Tree();

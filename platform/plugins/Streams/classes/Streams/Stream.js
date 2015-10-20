@@ -506,7 +506,15 @@ Sp.inheritAccess = function (callback) {
 	var inherited_public_source = Streams.ACCESS_SOURCES['inherited_public'];
 	var inherited_contact_source = Streams.ACCESS_SOURCES['inherited_contact'];
 	var inherited_direct_source = Streams.ACCESS_SOURCES['inherited_direct'];
-
+	var direct_sources = [inherited_direct_source, direct_source];
+	
+	var readLevel = this.get('readLevel', 0);
+	var readLevel_source = this.get('readLevel_source', public_source);
+	var writeLevel = this.get('writeLevel', 0);
+	var writeLevel_source = this.get('writeLevel_source', public_source);
+	var adminLevel = this.get('adminLevel', 0);
+	var adminLevel_source = this.get('adminLevel_source', public_source);
+	
 	var p = new Q.Pipe(names, function (params) {
 		var i, errors = params[0];
 		for (i=0; i<errors.length; i++) {
@@ -515,55 +523,66 @@ Sp.inheritAccess = function (callback) {
 				return;
 			}
 		}
+		subj.set('readLevel', readLevel);
+		subj.set('writeLevel', writeLevel);
+		subj.set('adminLevel', adminLevel);
+		subj.set('readLevel_source', readLevel_source);
+		subj.set('writeLevel_source', writeLevel_source);
+		subj.set('adminLevel_source', adminLevel_source);
 		callback.call(subj, null, true); // something could change...
 	});
 	
-	// Inheritance only goes one level here
-	for (var i in names) {
-		(function (name) {
-			Streams.fetch(this.get('asUserId', ''), this.fields.publisherId, name, function (err, stream) {
-				if (err) {
-					callback.call(this, err);
-				} else {
-					// Inherit read, write and admin levels
-					// But once we inherit a level with direct_source or inherited_direct_source,
-					// we don't override it anymore.
-					var readLevel = this.get('readLevel', 0);
-					var readLevel_source = this.get('readLevel_source', public_source);
-					var s_readLevel = stream.get('readLevel', 0);
-					var s_readLevel_source = stream.get('readLevel_source', public_source);
-					if (readLevel_source !== inherited_direct_source) {
-						readLevel = (s_readLevel_source === direct_source) ? s_readLevel : Math.max(readLevel, s_readLevel);
-						readLevel_source = (s_readLevel_source > inherited_public_source) ? s_readLevel_source : s_readLevel_source + inherited_public_source;
-					}
-					var writeLevel = this.get('writeLevel', 0);
-					var writeLevel_source = this.get('writeLevel_source', public_source);
-					var s_writeLevel = stream.get('writeLevel', 0);
-					var s_writeLevel_source = stream.get('writeLevel_source', public_source);
-					if (writeLevel_source !== inherited_direct_source) {
-						writeLevel = (s_writeLevel_source === direct_source) ? s_writeLevel : Math.max(writeLevel, s_writeLevel);
-						writeLevel_source = (s_writeLevel_source > inherited_public_source) ? s_writeLevel_source : s_writeLevel_source + inherited_public_source;
-					}
-					var adminLevel = this.get('adminLevel', 0);
-					var adminLevel_source = this.get('adminLevel_source', public_source);
-					var s_adminLevel = stream.get('adminLevel', 0);
-					var s_adminLevel_source = stream.get('adminLevel_source', public_source);
-					if (adminLevel_source !== inherited_direct_source) {
-						adminLevel = (s_adminLevel_source === direct_source) ? s_adminLevel : Math.max(adminLevel, s_adminLevel);
-						adminLevel_source = (s_adminLevel_source > inherited_public_source) ? s_adminLevel_source : s_adminLevel_source + inherited_public_source;
-					}
-					this.set('readLevel', readLevel);
-					this.set('writeLevel', writeLevel);
-					this.set('adminLevel', adminLevel);
-					this.set('readLevel_source', readLevel_source);
-					this.set('writeLevel_source', writeLevel_source);
-					this.set('adminLevel_source', adminLevel_source);
-
-					p.fill(name)(null, true);
-				}
-			});
-		})(names[i]);
-	}
+	// Inheritance only goes one "generation" here.
+	// To implement several "generations" of inheritance, you can do things like:
+	// 'inheritAccess': '["grandparentStreamName", "parentStreamName"]'
+	Q.each(names, function (i, name) {
+		var asUserId = subj.get('asUserId', '');
+		var publisherId;
+		if (typeof names === 'array') {
+			publisherId = name[0];
+			name = name[1];
+		} else {
+			publisherId = subj.fields.publisherId;
+		}
+		Streams.fetchOne(asUserId, publisherId, name, 
+		function (err, stream) {
+			if (err) {
+				return callback.call(this, err);
+			}
+			// Inherit read, write and admin levels
+			// But once we obtain a level via a
+			// direct_source or inherited_direct_source,
+			// we don't override it anymore.
+			var s_readLevel = stream.get('readLevel', 0);
+			var s_readLevel_source = stream.get('readLevel_source', public_source);
+			if (direct_sources.indexOf(readLevel_source) < 0) {
+				readLevel = (s_readLevel_source === direct_source) ? s_readLevel : Math.max(readLevel, s_readLevel);
+				readLevel_source = 
+				(s_readLevel_source > inherited_public_source) 
+				? s_readLevel_source 
+				: s_readLevel_source + inherited_public_source;
+			}
+			var s_writeLevel = stream.get('writeLevel', 0);
+			var s_writeLevel_source = stream.get('writeLevel_source', public_source);
+			if (direct_sources.indexOf(writeLevel_source) < 0) {
+				writeLevel = (s_writeLevel_source === direct_source) ? s_writeLevel : Math.max(writeLevel, s_writeLevel);
+				writeLevel_source = 
+				(s_writeLevel_source > inherited_public_source) 
+				? s_writeLevel_source 
+				: s_writeLevel_source + inherited_public_source;
+			}
+			var s_adminLevel = stream.get('adminLevel', 0);
+			var s_adminLevel_source = stream.get('adminLevel_source', public_source);
+			if (direct_sources.indexOf(adminLevel_source) < 0) {
+				adminLevel = (s_adminLevel_source === direct_source) ? s_adminLevel : Math.max(adminLevel, s_adminLevel);
+				adminLevel_source = 
+				(s_adminLevel_source > inherited_public_source) 
+				? s_adminLevel_source 
+				: s_adminLevel_source + inherited_public_source;
+			}
+			p.fill(name)(null, true);
+		});
+	});
 };
 
 /**
@@ -926,51 +945,51 @@ Sp.notify = function(participant, event, uid, message, callback) {
 					});
 				});
 				// actually notify according to the deliveriy rules
-				Streams.Avatar.fetch(userId, message.fields.byUserId, function (err, avatar) {
-					if (message.fields.type === "Streams/invite") {
-						var instructions = JSON.parse(message.fields.instructions);
-						new Streams.Invite({
-							token: instructions.token
-						}).retrieve(function(err, rows) {
-							if (err || !rows.length) {
-								return deliveries.forEach(function(delivery) {
-									p.fill(JSON.stringify(delivery))(err); 
-								});
-							}
-							var invite = this;
-							new Streams.Stream({
-								publisherId: invite.fields.publisherId,
-								name: invite.fields.streamName
-							}).retrieve(function(err, rows2) {
-								if (err || !rows2.length) {
-									return deliveries.forEach(function(delivery) {
-										p.fill(JSON.stringify(delivery))(err); 
-									});
-								}
-								var stream = this;
-								try { 
-									var instructions = JSON.parse(message.fields.instructions); 
-								} catch (e) {}
-								var invited = invite.getFields();
-								invited.url = invite.url();
-								if (instructions && instructions.type) {
-									invited[instructions.type] = true;
-								}
-								stream.invited = invited;
-								deliveries.forEach(function(delivery) {
-									message.deliver(stream, delivery, avatar,
-										p.fill(JSON.stringify(delivery))
-									);
-								});
-							});
-						});
-					} else {
-						deliveries.forEach(function(delivery) {
-							message.deliver(stream, delivery, avatar,
+				var byUserId = message.fields.byUserId;
+				Streams.Avatar.fetch(userId, byUserId, function (err, avatar) {
+					if (message.fields.type !== "Streams/invite") {
+						return deliveries.forEach(function(delivery) {
+							message.deliver(stream, userId, delivery, avatar,
 								p.fill(JSON.stringify(delivery))
 							);
 						});
 					}
+					var instructions = JSON.parse(message.fields.instructions);
+					new Streams.Invite({
+						token: instructions.token
+					}).retrieve(function(err, rows) {
+						if (err || !rows.length) {
+							return deliveries.forEach(function(delivery) {
+								p.fill(JSON.stringify(delivery))(err); 
+							});
+						}
+						var invite = this;
+						new Streams.Stream({
+							publisherId: invite.fields.publisherId,
+							name: invite.fields.streamName
+						}).retrieve(function(err, rows2) {
+							if (err || !rows2.length) {
+								return deliveries.forEach(function(delivery) {
+									p.fill(JSON.stringify(delivery))(err); 
+								});
+							}
+							var stream = this;
+							try { 
+								var instructions = JSON.parse(message.fields.instructions); 
+							} catch (e) {}
+							var invited = invite.getFields();
+							invited.url = invite.url();
+							if (instructions && instructions.type) {
+								invited[instructions.type] = true;
+							}
+							stream.invited = invited;
+							deliveries.forEach(function(delivery) {
+								message.deliver(stream, userId, delivery, avatar,
+									p.fill(JSON.stringify(delivery))
+								);
+							});
+						});
+					});
 				});
 			});
 		} else {

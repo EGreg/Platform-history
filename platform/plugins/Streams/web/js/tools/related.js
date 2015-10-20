@@ -19,7 +19,7 @@
  *   @param {Boolean} [options.isCategory=true] Whether to show the streams related TO this stream, or the ones it is related to.
  *   @param {Object} [options.relationOptions] Can include options like 'limit', 'offset', 'ascending', 'min', 'max' and 'prefix'
  *   @param {Boolean} [options.editable] Set to false to avoid showing even authorized users an interface to replace the image or text
- *   @param {Boolean} [options.creatable]  Optional pairs of {streamType: toolOptions} to render Streams/preview tools create new related streams.
+ *   @param {Object} [options.creatable]  Optional pairs of {streamType: toolOptions} to render Streams/preview tools create new related streams.
  *   The params typically include at least a "title" field which you can fill with values such as "New" or "New ..."
  *   @param {Function} [options.toolName] Function that takes (streamType, options) and returns the name of the tool to render (and then activate) for that stream. That tool should reqire the "Streams/preview" tool, and work with it as documented in "Streams/preview".
  *   @param {Boolean} [options.realtime=false] Whether to refresh every time a relation is added, removed or updated by anyone
@@ -70,10 +70,10 @@ function _Streams_related_tool (options)
 	},
 	onUpdate: new Q.Event(
 	function _Streams_related_onUpdate(result, entering, exiting, updating) {
-		function addComposer(streamType, params, container, oldElement) {
+		function addComposer(streamType, params, creatable, oldElement) {
 			// TODO: test whether the user can really create streams of this type
 			// and otherwise do not append this element
-			if (Q.isEmpty(params)) {
+			if (params && !Q.isPlainObject(params)) {
 				params = {};
 			}
 			params.streamType = streamType;
@@ -98,17 +98,25 @@ function _Streams_related_tool (options)
 			Q.activate(element, function () {
 				var rc = tool.state.refreshCount;
 				var preview = Q.Tool.from(element, 'Streams/preview');
+				var ps = preview.state;
 				preview.state.beforeCreate.set(function () {
 					// workaround for now
 					if (tool.state.refreshCount > rc) {
 						return;
 					}
+					$(this.element)
+						.addClass('Streams_related_loading')
+						.removeClass('Streams_related_composer');
 					addComposer(streamType, params, null, element);
 					tool.integrateWithTabs([element]);
-					element.setAttribute('class', element.getAttribute('class').replace(
-						'Streams_related_composer', 'Streams_related_stream'
-					));
-					preview.state.beforeCreate.remove(tool);
+					ps.beforeCreate.remove(tool);
+				}, tool);
+				preview.state.onCreate.set(function () {
+					$(this.element)
+						.removeClass('Streams_related_loading')
+						.removeClass('Streams_related_composer')
+						.addClass('Streams_related_stream');
+					ps.onCreate.remove(tool);
 				}, tool);
 			});
 		}
@@ -222,7 +230,8 @@ function _Streams_related_tool (options)
 				return;
 			}
 			var result = this;
-			var entering = exiting = updating = null;
+			var entering, exiting, updating;
+			entering = exiting = updating = null;
 			function comparator(s1, s2, i, j) {
 				return s1 && s2 && s1.fields && s2.fields
 					&& s1.fields.publisherId === s2.fields.publisherId

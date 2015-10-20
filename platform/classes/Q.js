@@ -1,3 +1,6 @@
+"use strict";
+/* jshint -W014 */
+
 /**
  * Contains core Qbix functionality.
  * @module Q
@@ -333,7 +336,8 @@ Q.Pipe.prototype.on = function _Q_pipe_on(field, callback) {
 Q.Pipe.prototype.add = function _Q_pipe_add(requires, maxTimes, callback) {
 	var r = null, n = null, e = null, r2, events, keys;
 	for (var i=0; i<arguments.length; i++) {
-		if (typeof arguments[i] === 'function') {
+		var ai = arguments[i];
+		if (typeof ai === 'function') {
 			if (e) {
 				r2 = [];
 				events = [];
@@ -347,18 +351,18 @@ Q.Pipe.prototype.add = function _Q_pipe_add(requires, maxTimes, callback) {
 						events.push(event);
 					}
 				});
-				arguments[i].pipeEvents = events;
-				arguments[i].pipeKeys = keys;
+				ai.pipeEvents = events;
+				ai.pipeKeys = keys;
 				r = r2;
 			}
-			arguments[i].pipeRequires = r;
-			arguments[i].pipeRemaining = n;
+			ai.pipeRequires = r;
+			ai.pipeRemaining = n;
 			r = n = e = null;
-			this.callbacks.push(arguments[i]);
+			this.callbacks.push(ai);
 		} else {
-			switch (Q.typeOf(arguments[i])) {
+			switch (Q.typeOf(ai)) {
 			case 'array':
-				r = arguments[i];
+				r = ai;
 				if (r.length
 				&& typeof r[0] !== 'string'
 				&& typeof r[0] !== 'number') {
@@ -366,11 +370,11 @@ Q.Pipe.prototype.add = function _Q_pipe_add(requires, maxTimes, callback) {
 				}
 				break;
 			case 'object':
-				r = arguments[i];
+				r = ai;
 				e = arguments[++i];
 				break;
 			case 'number':
-				n = arguments[i];
+				n = ai;
 				break;
 			}
 			if (e !== null && typeof e !== 'string') {
@@ -1150,6 +1154,16 @@ Q.handle = function _Q_handle(callables, context, args) {
  * @throws {Q.Exception} If container is not array, object or string
  */
 Q.each = function _Q_each(container, callback, options) {
+	function _byFields(a, b) { 
+		return container[a][s] > container[b][s] ? 1
+			: (container[a][s] < container[b][s] ? -1 : 0); 
+	}
+	function _byKeysNumeric(a, b) { 
+		return Number(a) - Number(b); 
+	}
+	function _byFieldsNumeric(a, b) { 
+		return Number(container[a][s]) - Number(container[b][s]); 
+	}
 	var i, k, c, length, r, t, args;
 	if (typeof callback === 'string' && Q.isArrayLike(arguments[2])) {
 		args = arguments[2];
@@ -1190,16 +1204,6 @@ Q.each = function _Q_each(container, callback, options) {
 				var s = options.sort;
 				var t = typeof(s);
 				var _byKeys = undefined;
-				function _byFields(a, b) { 
-					return container[a][s] > container[b][s] ? 1
-						: (container[a][s] < container[b][s] ? -1 : 0); 
-				}
-				function _byKeysNumeric(a, b) { 
-					return Number(a) - Number(b); 
-				}
-				function _byFieldsNumeric(a, b) { 
-					return Number(container[a][s]) - Number(container[b][s]); 
-				}
 				var compare = (t === 'function') ? s : (t === 'string'
 					? (options.numeric ? _byFieldsNumeric : _byFields)
 					: (options.numeric ? _byKeysNumeric : _byKeys));
@@ -1538,6 +1542,7 @@ Q.extend = function _Q_extend(target /* [[deep,] [levels,] anotherObject], ... *
 		return {};
 	}
 	var deep = false, levels = 0, arg;
+	var type = Q.typeOf(target);
 	for (var i=1; i<length; ++i) {
 		arg = arguments[i];
 		if (!arg) {
@@ -2135,6 +2140,7 @@ Q.init = function _Q_init(app, notListen) {
 		 */
 		VIEWS_DIR: 'views'
 	};
+	var k;
 	for (k in dirs) {
 		Q[k] = Q_dir  + '/' + dirs[k];
 	}
@@ -2322,22 +2328,25 @@ Q.log = function _Q_log(message, name, timestamp, callback) {
 				callback && callback(err);
 			} else {
 				fs.stat(filename, function (err, stats) {
-					if (err && err.code !=='ENOENT') {
+					if (err && err.code !== 'ENOENT') {
 						console.error("Could not stat '"+filename+"', Error:", err.message);
 						callback && callback(err);
 						return;
-					} else if (err && err.code ==='ENOENT') {
+					} else if (err && err.code === 'ENOENT') {
 						logStream[name].unshift(message);
-						data = "# begin log for '"+name+"' on "+Q.date('Y-m-d h:i:s')+"\n";
 					} else if (!stats.isFile()) {
 						console.error("'"+filename+"' exists but is not a file");
 						callback && callback(new Error("'"+filename+"' exists but is not a file"));
 						return;
 					}
 					var log = logStream[name];
-					logStream[name] = fs.createWriteStream(filename, {flags: 'a', encoding: 'utf-8'});
-					logStream[name].write(message);
-					while (log.length) logStream[name].write(log.shift());
+					var stream = logStream[name] = fs.createWriteStream(
+						filename, {flags: 'a', encoding: 'utf-8'}
+					);
+					stream.write(message);
+					while (log.length) {
+						stream.write(log.shift());
+					}
 				});
 			}
 		});
@@ -2821,7 +2830,7 @@ String.prototype.queryField = function Q_queryField(name, value) {
 		l = prefixes[i].length;
 		p = this.substring(0, l);
 		if (p == prefixes[i]) {
-			previx = p;
+			prefix = p;
 			what = this.substring(l);
 			break;
 		}

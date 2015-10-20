@@ -18,7 +18,7 @@ function Q_before_Q_tool_render($params, &$result)
 	foreach ($info as $name => $options) {
 		$tool_id = implode('_', explode('/', $name));
 		if (!empty($extra_id)) {
-			$tool_id .= ('_'.$extra_id);
+			$tool_id .= ('-'.$extra_id);
 		}
 		$tool_id = $cur_prefix . $tool_id;
 		$tool_ids[$name] = $tool_id;

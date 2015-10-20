@@ -411,10 +411,10 @@ Base.prototype.beforeSet_share_count = function (value) {
 		return value;
 };
 
-	/**
-	 * Returns the maximum integer that can be assigned to the share_count field
-	 * @return {integer}
-	 */
+/**
+ * Returns the maximum integer that can be assigned to the share_count field
+ * @return {integer}
+ */
 Base.prototype.maxSize_share_count = function () {
 
 		return 4294967295;

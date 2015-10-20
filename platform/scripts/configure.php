@@ -28,6 +28,7 @@ if ($count < 2)
 $LOCAL_DIR = APP_DIR;
 
 $desired = $argv[1];
+$is_win = (substr(strtolower(PHP_OS), 0, 3) === 'win');
 
 do {
 	$go_again = false;
@@ -44,7 +45,8 @@ do {
 		if ($pi['filename'] === CONFIGURE_ORIGINAL_APP_NAME) {
 			$pi['filename'] = $desired;
 		}
-		$filename2 = $pi['dirname'] . '/' . $pi['filename']
+		// fixed / to DIRECTORY_SEPARATOR
+		$filename2 = $pi['dirname'] . DIRECTORY_SEPARATOR . $pi['filename']
 			. (empty($pi['extension']) ? '' : '.' . $pi['extension']);
 		if ($filename != $filename2) {
 			rename($filename, $filename2);
@@ -72,7 +74,12 @@ if (is_dir($uploads_dir)) {
 	if (file_exists('uploads')) {
 		unlink('uploads');
 	}
-	symlink('..'.DS.'files'.DS.$desired.DS.'uploads', 'uploads');
+
+	$target = '..'.DS.'files'.DS.$desired.DS.'uploads';
+	$link = 'uploads';
+	if($is_win) exec('mklink /j "' . $link . '" "' . $target . '"');
+	else symlink($target, $link);
+
 	chdir($cwd);
 }
 

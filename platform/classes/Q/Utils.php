@@ -775,7 +775,7 @@ class Q_Utils
 					if ($mkdirIfMissing and !file_exists($path)) {
 						$mask = is_string($mkdirIfMissing)
 							? umask($mkdirIfMissing)
-							: umask();
+							: umask(0000);
 						if (!@mkdir($path, 0777, true)) {
 							throw new Q_Exception_FilePermissions(array(
 								'action' => 'create',

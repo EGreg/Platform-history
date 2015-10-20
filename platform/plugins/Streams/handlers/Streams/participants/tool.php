@@ -54,7 +54,7 @@ function Streams_participants_tool($options)
 		Q::ifset($options, 'max', 10)
 	);
 	
-	if (!$stream) {
+	if (empty($stream)) {
 		$stream = Streams::fetchOne(null, $publisherId, $streamName);
 	}
 	if (empty($stream)) {

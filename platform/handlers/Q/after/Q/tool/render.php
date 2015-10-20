@@ -57,7 +57,7 @@ function Q_after_Q_tool_render($params, &$result)
 	$ajax = Q_Request::isAjax();
 	$result = "<$tag id='{$id_prefix}tool' "
 		. "class='Q_tool $classes'$data_options$data_retain$data_replace$attributes>"
-		. "$result</div>";
+		. "$result</$tag>";
 	if (!Q_Request::isAjax()) {
 		$result = "<!--\nbegin tool$names\n-->$result<!--\nend tool$names \n-->";
 	}

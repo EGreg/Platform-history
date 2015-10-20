@@ -127,7 +127,7 @@ class Streams_Access extends Base_Streams_Access
 			$table = $this->getTable();
 			if (empty($value['ofUserId']) && empty($value['ofContactLabel'])
 			or !empty($value['ofUserId']) && !empty($value['ofContactLabel'])) {
-				throw new Exception("only one of fields 'ofUserId' and 'ofContactLabel' can be set in table $table.");
+				throw new Exception("exactly one of fields 'ofUserId' and 'ofContactLabel' can be set in table $table.");
 			}
 		}
 		foreach (array('ofUserId', 'ofContactLabel') as $f) {

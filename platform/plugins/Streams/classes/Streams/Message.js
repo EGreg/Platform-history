@@ -219,11 +219,13 @@ Streams_Message.post = function (fields, callback)
  * 'email.handlebars' or 'mobile.handlebars' depending on delivery
  * @method deliver
  * @param {Streams.Stream} stream
- * @param {object} delivery can contain "email" or "mobile" for now
+ * @param {function} toUserId the id of the user to whom to deliver
+ * @param {Object} delivery can contain "email" or "mobile" for now
+ * @param {Streams.Avatar} the avatar for getting the displayName
  * @param {function} callback
  *	Callback reports errors and response from mail delivery system
  */
-Streams_Message.prototype.deliver = function(stream, delivery, avatar, callback) {
+Streams_Message.prototype.deliver = function(stream, toUserId, delivery, avatar, callback) {
 	var fields = {
 		app: Q.app,
 		stream: stream,
@@ -243,9 +245,9 @@ Streams_Message.prototype.deliver = function(stream, delivery, avatar, callback)
 			)
 		)
 	);
-	Users.fetch(avatar.fields.toUserId, function (err) {
+	Users.fetch(toUserId, function (err) {
 		var to = delivery.to
-			? Q.Config.get(['Streams', 'Message', delivery.to], ['email', 'mobile'])
+			? Q.Config.get(['Streams', 'rules', 'deliver', delivery.to], ['email', 'mobile'])
 			: ['email', 'mobile'];
 		var emailAddress = delivery.email
 			|| (to.indexOf('email') >= 0 && this.fields.emailAddress)

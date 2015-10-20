@@ -29,10 +29,11 @@ Q.Tool.define('Q/filter', function (options) {
 		.attr({
 			name: state.name,
 			value: state.value,
-			'class': 'Q_filter_input'
+			'class': 'Q_filter_input',
+			placeholder: state.placeholder
 		}).appendTo(this.element);
 		if (state.placeholders) {
-			tool.$input.plugin('Q/placeholders', state.placeholders || {});
+			tool.$input.plugin('Q/placeholders', state.placeholders);
 		}
 		tool.$results = $('<div class="Q_filter_results" />')
 			.appendTo(this.element);

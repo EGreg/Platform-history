@@ -379,10 +379,10 @@ Base.prototype.beforeSet_sessionCount = function (value) {
 		return value;
 };
 
-	/**
-	 * Returns the maximum integer that can be assigned to the sessionCount field
-	 * @return {integer}
-	 */
+/**
+ * Returns the maximum integer that can be assigned to the sessionCount field
+ * @return {integer}
+ */
 Base.prototype.maxSize_sessionCount = function () {
 
 		return 2147483647;
@@ -405,10 +405,10 @@ Base.prototype.beforeSet_fb_uid = function (value) {
 		return value;
 };
 
-	/**
-	 * Returns the maximum integer that can be assigned to the fb_uid field
-	 * @return {integer}
-	 */
+/**
+ * Returns the maximum integer that can be assigned to the fb_uid field
+ * @return {integer}
+ */
 Base.prototype.maxSize_fb_uid = function () {
 
 		return 9223372036854775807;
@@ -431,10 +431,10 @@ Base.prototype.beforeSet_tw_uid = function (value) {
 		return value;
 };
 
-	/**
-	 * Returns the maximum integer that can be assigned to the tw_uid field
-	 * @return {integer}
-	 */
+/**
+ * Returns the maximum integer that can be assigned to the tw_uid field
+ * @return {integer}
+ */
 Base.prototype.maxSize_tw_uid = function () {
 
 		return 9223372036854775807;

@@ -4,7 +4,8 @@
  * @module Streams
  * @class Streams
  */
-
+"use strict";
+/* jshint -W014 */
 (function(Q, $) {
 
 var Users = Q.Users;
@@ -312,6 +313,9 @@ function _connectSockets(refresh) {
 			}));
 		});
 	});
+	Streams.retainWith('Streams').get(
+		Users.loggedInUser.id, 'Streams/participating'
+	);
 	if (refresh) {
 		Streams.refresh();
 	}
@@ -392,6 +396,8 @@ Q.Tool.define({
 	"Streams/preview"  	   : "plugins/Streams/js/tools/preview.js",
 	"Streams/image/preview": "plugins/Streams/js/tools/image/preview.js",
 	"Streams/file/preview" : "plugins/Streams/js/tools/file/preview.js",
+	"Streams/category/preview" : "plugins/Streams/js/tools/category/preview.js",
+	"Streams/category/player" : "plugins/Streams/js/tools/category/player.js",
 	"Streams/form"         : "plugins/Streams/js/tools/form.js",
 	"Streams/activity"     : "plugins/Streams/js/tools/activity.js"
 });
@@ -604,7 +610,13 @@ Streams.create = function (fields, callback, related, options) {
 					weight: m.get('weight')
 				};
 			}
-			return callback && callback.call(stream, null, stream, extra, data.slots);
+			callback && callback.call(stream, null, stream, extra, data.slots);
+			// process various messages posted to Streams/participating
+			Stream.refresh(
+				Users.loggedInUserId(), 'Streams/participating', null,
+				{ messages: true, unlessSocket: true }
+			);
+			return;
 		});
 	}, { method: 'post', fields: fields, baseUrl: baseUrl, form: options.form });
 	_retain = undefined;
@@ -760,7 +772,7 @@ Streams.subscriptionDialog = function(publisherId, streamName, callback) {
 };
 
 /**
- * Show a dialog to manage "subscription" related stuff in a stream.
+ * Show a dialog to manage "access" related stuff in a stream.
  * @static
  * @method accessDialog
  * @param publisherId {String} id of publisher which is publishing the stream
@@ -779,13 +791,15 @@ Streams.displayName = function(options) {
 };
 
 /**
- * Returns streams for current user
+ * Returns streams that the current user is participating in
  * @static
+ * @param {Function} callback
  * @method getParticipating
  */
 Streams.getParticipating = function(callback) {
 	if(!callback) return;
-	Q.req('Streams/participating', 'participating', function (err, data) {
+	Q.req('Streams/participating', 'participating',
+	function (err, data) {
 		callback && callback(err, data && data.slots && data.slots.participating);
 	});
 	_retain = undefined;
@@ -1255,7 +1269,7 @@ Sp.save = function _Stream_prototype_save (callback, options) {
 		callback && callback.call(that, null, stream);
 		if (stream) {
 			// process the Streams/changed message, if stream was retained
-			Streams.Stream.refresh(stream.publisherId, stream.name, null, {
+			Stream.refresh(stream.publisherId, stream.name, null, {
 				messages: true,
 				unlessSocket: true
 			});
@@ -1561,7 +1575,7 @@ Sp.invite = function (fields, callback) {
  * @return {boolean} whether the refresh occurred
  */
 Sp.refresh = function _Stream_prototype_refresh (callback, options) {
-	return Streams.Stream.refresh(this.fields.publisherId, this.fields.name, callback, options);
+	return Stream.refresh(this.fields.publisherId, this.fields.name, callback, options);
 };
 
 /**
@@ -2062,10 +2076,14 @@ Stream.close = function _Stream_remove (publisherId, streamName, callback) {
 		var stream = data.slots.stream;
 		if (stream) {
 			// process the Streams/closed message, if stream was retained
-			Streams.Stream.refresh(stream.publisherId, stream.name, null, {
+			Stream.refresh(stream.publisherId, stream.name, null, {
 				messages: true,
 				unlessSocket: true
 			});
+			Stream.refresh(
+				Users.loggedInUserId(), 'Streams/participating', null,
+				{ messages: true, unlessSocket: true }
+			);
 		}
 		callback && callback.call(this, err, data.slots.result || null);
 	}, { method: 'delete', fields: fields, baseUrl: baseUrl });
@@ -2602,7 +2620,7 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 	var p = new Q.Pipe();
 	Q.each(latest+1, ordinal, 1, function (ord) {
 		ordinals.push(ord);
-		var event = Streams.Stream.onMessage(publisherId, streamName, ord);
+		var event = Stream.onMessage(publisherId, streamName, ord);
 		handlerKey = event.add(function () {
 			p.fill(ord)();
 			event.remove(handlerKey);
@@ -2956,29 +2974,33 @@ var Interests = Streams.Interests = {
 			fields.communityId = communityId;
 		}
 		Q.req('Streams/interest', 'interests', function (err, response) {
-			Q.handle(callback, this, arguments);
-		}, { fields: fields });
-	},
-	forMe: function (communityId, callback) {
-		if (!Q.isEmpty(Interests.my)) {
-			return callback(null, Interests.my);
-		}
-		var userId = Q.getObject('Q.plugins.Users.loggedInUser.id');
-		Interests.forUser(userId, communityId, function (err, response) {
 			var msg;
 			var r = response && response.errors;
 			if (msg = Q.firstErrorMessage(err, r)) {
-				return callback(msg);
+				return callback && callback(msg);
 			}
+			var results = {};
 			var relatedTo = response.slots.interests;
-			Interests.my = {};
 			for (var w in relatedTo) {
 				var info = relatedTo[w];
 				var title = info[2];
 				var normalized = Q.normalize(title);
-				Interests.my[normalized] = title;
+				results[normalized] = title;
 			}
-			callback(null, Interests.my);
+			callback && callback.call(this, null, results);
+		}, { fields: fields });
+	},
+	forMe: function (communityId, callback) {
+		if (!Q.isEmpty(Interests.my)) {
+			return callback && callback(null, Interests.my);
+		}
+		var userId = Users.loggedInUserId();
+		Interests.forUser(userId, communityId, function (err, results) {
+			if (err) {
+				return callback(err);
+			}
+			Interests.my = results;
+			callback(null, results);
 		});
 	},
 	all: {},
@@ -3044,9 +3066,10 @@ Streams.setupRegisterForm = function _Streams_setupRegisterForm(identifier, json
 		"type": "submit",
 		"class": "Q_button Q_main_button Streams_login_start "
 	}).html(Q.text.Users.login.registerButton)
-	.on(Q.Pointer.start, function () {
+	.on(Q.Pointer.touchclick, function (e) {
 		Users.submitClosestForm.apply(this, arguments);
-		return false;
+	}).on(Q.Pointer.click, function (e) {
+		e.preventDefault(); // prevent automatic submit on click
 	});
 
 	register_form.append(table)
@@ -3344,6 +3367,7 @@ Q.onInit.add(function _Streams_onInit() {
 	}, "Streams");
 	Users.onLogout.set(function () {
 		Interests.my = {}; // clear the interests
+		Streams.invite.dialog = null;  // clear invite dialog info
 		Q.Socket.destroyAll();
 	}, "Streams");
 	if (Users.loggedInUser) {
@@ -3420,6 +3444,7 @@ Q.onInit.add(function _Streams_onInit() {
 				var interval;
 				Q.Dialogs.push({
 					dialog: dialog,
+					className: 'Streams_completeInvited_dialog',
 					mask: true,
 					noClose: true,
 					closeOnEsc: false, 
@@ -3773,7 +3798,7 @@ Q.onInit.add(function _Streams_onInit() {
 	}
 		
 	Q.beforeActivate.add(_preloadedStreams, 'Streams');
-	Q.loadUrl.options.onLoad.add(_preloadedStreams, 'Streams');
+	Q.loadUrl.options.onResponse.add(_preloadedStreams, 'Streams');
 	
 	Users.onLogin.set(_clearCaches, 'Streams');
 	Users.onLogout.set(_clearCaches, 'Streams');

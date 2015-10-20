@@ -47,13 +47,15 @@ function Users_before_Q_Utils_canWriteToPath($params, &$result)
 					$mode = is_integer($mkdirIfMissing)
 						? $mkdirIfMissing
 						: 0777;
-					if (!@mkdir($path, 0777, true)) {
+					$mask = umask(Q_Config::get('Q', 'internal', 'umask', 0000));
+					if (!@mkdir($path, $mode, true)) {
 						throw new Q_Exception_FilePermissions(array(
 							'action' => 'create',
 							'filename' => $path,
 							'recommendation' => ' Please set your files directory to be writable.'
 						));
 					}
+					umask($mask);
 					$dir3 = $path;
 					do {
 						chmod($dir3, $mode);

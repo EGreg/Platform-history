@@ -313,7 +313,9 @@ class Q_Plugin
 	static function checkPermissions($files_dir, $options) {
 		// Check and fix permissions
 		if(!file_exists($files_dir)) {
+			$mask = umask(Q_Config::get('Q', 'internal', 'umask', 0000));
 			mkdir($files_dir, $options['dirmode']);
+			umask($mask);
 		}
 
 		// if group is supplied, convert name to gid
@@ -606,8 +608,11 @@ EOT;
 	private static function symlink($target, $link)
 	{
 		// Make sure destination directory exists
-		if(!file_exists(dirname($link)))
+		if(!file_exists(dirname($link))) {
+			$mask = umask(Q_Config::get('Q', 'internal', 'umask', 0000));
 			mkdir(dirname($link), 0777, true);
+			umask($mask);
+		}
 
 		$is_win = (substr(strtolower(PHP_OS), 0, 3) === 'win');
 
@@ -627,7 +632,10 @@ EOT;
 			}
 		}
 
-		if(!@symlink($target, $link)) {
+		if($is_win) exec('mklink /j "' . $link . '" "' . $target . '"');
+		else @symlink($target, $link);
+		
+		if(!file_exists($link)) {
 			echo Q_Utils::colored(
 				"[WARN] Symlink '$link' (target: '$target') was not created".PHP_EOL, 
 				'red', 'yellow'

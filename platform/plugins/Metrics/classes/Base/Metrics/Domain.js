@@ -246,10 +246,10 @@ Base.prototype.beforeSet_publisherId = function (value) {
 		return value;
 };
 
-	/**
-	 * Returns the maximum integer that can be assigned to the publisherId field
-	 * @return {integer}
-	 */
+/**
+ * Returns the maximum integer that can be assigned to the publisherId field
+ * @return {integer}
+ */
 Base.prototype.maxSize_publisherId = function () {
 
 		return 1.844674407371E+19;

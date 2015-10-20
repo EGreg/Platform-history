@@ -2,12 +2,12 @@
 
 include("Q.inc.php");
 $ms = ceil(Q::milliseconds());
-
+$htmlAttributes = Q_Response::htmlAttributes();
 echo <<<EOT
 
 
 	<!DOCTYPE html>
-	<html lang="en" xmlns:og="http://ogp.me/ns#" xmlns:fb="http://www.facebook.com/2008/fbml" class='Q_notTouchscreen Q_notMobile Q_notIE Q_notIE8OrBelow'>
+	<html $htmlAttributes>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 		<title>Fast loading page</title>

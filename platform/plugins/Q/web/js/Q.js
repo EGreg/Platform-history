@@ -4,11 +4,11 @@
  * @module Q
  * @main Q
  */
-(function () {
-
+"use strict";
 /* jshint -W014 */
+(function (undefined) {
 
-root = this;
+var root = this;
 
 // private properties
 var _isReady = false;
@@ -320,6 +320,10 @@ Sp.sameDomain = function _String_prototype_sameDomain (url2, options) {
 		: same;
 };
 
+Sp.startsWith = function _String_prototype_startsWith(prefix) {
+	return this.substr(0, prefix.length) === prefix;
+};
+
 /**
  * @class Function
  * @description Q extended methods for Functions
@@ -407,6 +411,8 @@ Date.fromDateTime = function _Date_fromDateTime(dateTimeString) {
 	return new Date(dateTimeString.replace(/-/g,"/"));
 };
 
+function _returnFalse() { return false; }
+
 if (root.Element) { // only IE7 and lower, which we don't support, wouldn't have this
 
 if(!document.getElementsByClassName) {
@@ -437,7 +443,7 @@ Elp.Q = function (toolName) {
 };
 
 /**
- * Check whether this element contains the given element
+ * Check whether this element is the given element or contains it
  * @method contains
  * @param {Element} child
  * @return {boolean}
@@ -445,7 +451,7 @@ Elp.Q = function (toolName) {
 if (!Elp.contains)
 Elp.contains = function (child) {
 	if (!child) return false;
-	var node = child.parentNode;
+	var node = child;
 	while (node) {
 		if (node == this) {
 			return true;
@@ -456,20 +462,9 @@ Elp.contains = function (child) {
 };
 
 /**
- * Check whether this element is the given element or contains it
- * @method isOrContains
- * @param {Element} child
- * @return {boolean}
- */
-Elp.isOrContains = function (child) {
-	if (!child) return false;
-	return this === child || this.contains(child);
-};
-
-/**
  * Returns the computed style of an element
  * @method computedStyle
- * @param {Element} name Optional. If provided, the value of a property is returned instead of the whole style object.
+ * @param {String} name Optional. If provided, the value of a property is returned instead of the whole style object.
  * @return {Object|String}
  */
 Elp.computedStyle = function(name) {
@@ -540,8 +535,6 @@ Elp.swap = function(element) {
 	parent1.insertBefore(element, next1);
 	parent2.insertBefore(this, next2);
 };
-
-function _returnFalse() { return false; }
 
 /**
  * Prevent ability to select text in an element
@@ -708,6 +701,30 @@ Elp.isVisible = function () {
 	return this.offsetWidth > 0 || this.offsetHeight > 0;
 };
 
+/**
+ * Gets the width remaining after subtracting all the siblings on the same line
+ * @method remainingWidth
+ * @return {number|null} Returns the remaining width, or null if element has no parent
+ */
+Elp.remainingWidth = function () {
+	var element = this;
+	if (!this.parentNode) {
+		return null;
+	}
+	var rect1 = this.getBoundingClientRect();
+	var w = this.parentNode.getBoundingClientRect().width;
+	Q.each(this.parentNode.children, function () {
+		if (this === element || !this.isVisible()) return;
+		var style = this.computedStyle();
+		var rect2 = this.getBoundingClientRect();
+		if (rect1.top > rect2.bottom || rect1.bottom < rect2.top) {
+			return;
+		}
+		w -= rect2.width + parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+	});	
+	return w;
+};
+
 if (!Elp.getElementsByClassName) {
 	Elp.getElementsByClassName = document.getElementsByClassName;
 }
@@ -734,7 +751,7 @@ if (!Elp.getElementsByClassName) {
 })();
 
 if (!root.requestAnimationFrame) {
-	requestAnimationFrame =
+	root.requestAnimationFrame =
 		root.webkitRequestAnimationFrame || 
 		root.mozRequestAnimationFrame    || 
 		root.oRequestAnimationFrame      || 
@@ -744,7 +761,7 @@ if (!root.requestAnimationFrame) {
 				callback(Q.milliseconds());
 			}, 1000 / Q.Animation.fps);
 		};
-	cancelAnimationFrame =
+	root.cancelAnimationFrame =
 		root.webkitCancelAnimationFrame || 
 		root.mozCancelAnimationFrame    || 
 		root.oCancelAnimationFrame      || 
@@ -876,6 +893,16 @@ Q.typeOf = function _Q_typeOf(value) {
  * @throws {Q.Error} If container is not array, object or string
  */
 Q.each = function _Q_each(container, callback, options) {
+	function _byFields(a, b) { 
+		return container[a][s] > container[b][s] ? 1
+			: (container[a][s] < container[b][s] ? -1 : 0); 
+	}
+	function _byKeysNumeric(a, b) { 
+		return Number(a) - Number(b); 
+	}
+	function _byFieldsNumeric(a, b) { 
+		return Number(container[a][s]) - Number(container[b][s]); 
+	}
 	var i, k, c, length, r, t, args;
 	if (typeof callback === 'string' && Q.isArrayLike(arguments[2])) {
 		args = arguments[2];
@@ -923,16 +950,6 @@ Q.each = function _Q_each(container, callback, options) {
 				var s = options.sort;
 				var t = typeof(s);
 				var _byKeys = undefined;
-				function _byFields(a, b) { 
-					return container[a][s] > container[b][s] ? 1
-						: (container[a][s] < container[b][s] ? -1 : 0); 
-				}
-				function _byKeysNumeric(a, b) { 
-					return Number(a) - Number(b); 
-				}
-				function _byFieldsNumeric(a, b) { 
-					return Number(container[a][s]) - Number(container[b][s]); 
-				}
 				var compare = (t === 'function') ? s : (t === 'string'
 					? (options.numeric ? _byFieldsNumeric : _byFields)
 					: (options.numeric ? _byKeysNumeric : _byKeys));
@@ -2399,7 +2416,8 @@ Pp.on = function _Q_pipe_on(field, callback) {
 Pp.add = function _Q_pipe_add(requires, maxTimes, callback) {
 	var r = null, n = null, e = null, r2, events, keys;
 	for (var i=0; i<arguments.length; i++) {
-		if (typeof arguments[i] === 'function') {
+		var ai = arguments[i];
+		if (typeof ai === 'function') {
 			if (e) {
 				r2 = [];
 				events = [];
@@ -2413,18 +2431,18 @@ Pp.add = function _Q_pipe_add(requires, maxTimes, callback) {
 						events.push(event);
 					}
 				});
-				arguments[i].pipeEvents = events;
-				arguments[i].pipeKeys = keys;
+				ai.pipeEvents = events;
+				ai.pipeKeys = keys;
 				r = r2;
 			}
-			arguments[i].pipeRequires = r;
-			arguments[i].pipeRemaining = n;
+			ai.pipeRequires = r;
+			ai.pipeRemaining = n;
 			r = n = e = null;
-			this.callbacks.push(arguments[i]);
+			this.callbacks.push(ai);
 		} else {
-			switch (Q.typeOf(arguments[i])) {
+			switch (Q.typeOf(ai)) {
 			case 'array':
-				r = arguments[i];
+				r = ai;
 				if (r.length
 				&& typeof r[0] !== 'string'
 				&& typeof r[0] !== 'number') {
@@ -2432,11 +2450,11 @@ Pp.add = function _Q_pipe_add(requires, maxTimes, callback) {
 				}
 				break;
 			case 'object':
-				r = arguments[i];
+				r = ai;
 				e = arguments[++i];
 				break;
 			case 'number':
-				n = arguments[i];
+				n = ai;
 				break;
 			default:
 				break;
@@ -3106,7 +3124,7 @@ Q.Tool = function _Q_Tool(element, options) {
 	if (!this.element.id) {
 		var prefix = Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '';
 		this.element.id = (
-			prefix + this.name + '_' + (Q.Tool.nextDefaultId++) + "_tool"
+			prefix + this.name + '-' + (Q.Tool.nextDefaultId++) + "_tool"
 		).toLowerCase();
 		Q.Tool.nextDefaultId %= 1000000;
 	}
@@ -3152,7 +3170,9 @@ Q.Tool = function _Q_Tool(element, options) {
 	// .Q_something
 	for (i = 0, l = classes.length; i < l; i++) {
 		var className = classes[i];
-		if ((partial = o['.' + className])) {
+		var cn = Q.normalize(className.substr(0, className.length-5));
+		partial = o['.' + className];
+		if (partial && (className.substr(-5) !== '_tool' || cn === this.name)) {
 			Q.extend(this.options, Q.Tool.options.levels, partial, 'Q.Tool');
 		}
 	}
@@ -3185,6 +3205,8 @@ Q.Tool = function _Q_Tool(element, options) {
 	}
 	
 	if (!element.Q.tools) element.Q.tools = {};
+	if (!element.Q.toolNames) element.Q.toolNames = [];
+	element.Q.toolNames.push(normalizedName);
 	element.Q.tools[normalizedName] = this;
 	element.Q.tool = this;
 	Q.Tool.active[this.id] = this;
@@ -3293,9 +3315,11 @@ Q.Tool.remove = function _Q_Tool_remove(elem, removeCached) {
 		if (!tool) return false;
 		elem = tool.element;
 	}
-	Q.find(elem, true, null, function _Q_Tool_remove_found(toolElement) {
-		for (var name in toolElement.Q.tools) {
-			toolElement.Q.tools[name].remove(removeCached);
+	Q.find(elem, true, null,
+	function _Q_Tool_remove_found(toolElement) {
+		var tn = toolElement.Q.toolNames;
+		for (var i=tn.length-1; i>=0; --i) {
+			toolElement.Q.tools[tn[i]].remove(removeCached);
 		}
 	});
 };
@@ -3316,10 +3340,14 @@ Q.Tool.clear = function _Q_Tool_clear(elem, removeCached) {
 		if (!tool) return false;
 		elem = tool.element;
 	}
-	Q.find(elem.children || elem.childNodes, true, null, function _Q_Tool_remove_found(toolElement) {
-		var tool = Q.Tool.from(toolElement);
-		if (tool) {
-			tool.remove(removeCached);
+	Q.find(elem.children || elem.childNodes, true, null,
+	function _Q_Tool_remove_found(toolElement) {
+		var tn = toolElement.Q.toolNames;
+		if (!tn) { // this edge case happens very rarely, usually if a slot element
+			return; // being replaced is inside another slot element being replaced
+		}
+		for (var i=tn.length-1; i>=0; --i) {
+			toolElement.Q.tools[tn[i]].remove(removeCached);
 		}
 	});
 };
@@ -3352,7 +3380,6 @@ Q.Tool.define = function (name, /* require, */ ctor, defaultOptions, stateKeys, 
 	}
 	for (name in ctors) {
 		ctor = ctors[name];
-		ctor.toolName = name;
 		name = Q.normalize(name);
 		if (typeof ctor === 'string') {
 			if (typeof Q.Tool.constructors[name] !== 'function') {
@@ -3361,6 +3388,7 @@ Q.Tool.define = function (name, /* require, */ ctor, defaultOptions, stateKeys, 
 			}
 			continue;
 		}
+		ctor.toolName = name;
 		if (typeof stateKeys === 'object') {
 			methods = stateKeys;
 			stateKeys = undefined;
@@ -3433,6 +3461,7 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 		}
 		return ctor;
 	}
+	ctor.toolName = name;
 	if (typeof stateKeys === 'object') {
 		methods = stateKeys;
 		stateKeys = undefined;
@@ -3850,7 +3879,7 @@ Q.Tool.setUpElement = function _Q_Tool_setUpElement(element, toolName, toolOptio
 			var p1, p2;
 			p1 = prefix || (Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '');
 			do {
-				p2 = p1 + ntt + '_' + (Q.Tool.nextDefaultId++) + '_';
+				p2 = p1 + ntt + '-' + (Q.Tool.nextDefaultId++) + '_';
 				Q.Tool.nextDefaultId %= 1000000;
 			} while (Q.Tool.active[p2]);
 			id = p2 + 'tool';
@@ -4956,8 +4985,11 @@ Q.removeElement = function _Q_removeElement(element, removeTools) {
  *  A function to call when the event fires
  * @param {boolean} useCapture
  *  Whether to use the capture instead of bubble phase. Ignored in IE8 and below.
+ * @param {boolean} hookPreventDefault
+ *  Whether to override Event.prototype.hookStopPropagation in order to capture the event when a descendant of the element tries to prevent
  */
-Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandler, useCapture) {
+Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandler, useCapture, hookStopPropagation) {
+	useCapture = useCapture || false;
 	if (Q.isPlainObject(eventName)) {
 		for (var k in eventName) {
 			Q.addEventListener(element, k, eventName[k], eventHandler);
@@ -4997,7 +5029,7 @@ Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandl
 		element = document;
 	}
 	if (element.addEventListener) {
-		element.addEventListener(eventName, handler, useCapture || false);
+		element.addEventListener(eventName, handler, useCapture);
 	} else if (element.attachEvent) {
 		element.attachEvent('on'+eventName, handler);
 	} else {
@@ -5008,7 +5040,46 @@ Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandl
 			eventHandler.apply(this, arguments);
 		}; // best we can do
 	}
+	
+	if (hookStopPropagation) {
+		var args = [element, eventName, eventHandler, useCapture];
+		var hooks = Q.addEventListener.hooks;
+		for (var i=0, l=hooks.length; i<l; ++i) {
+			var hook = hooks[i];
+			if (hook[0] === element
+			&& hook[1] === eventName
+			&& hook[2] === eventHandler
+			&& hook[3] === useCapture) {
+				hooks.splice(i, 1);
+				break;
+			}
+		}
+		hooks.push(args);
+	}
 };
+Q.addEventListener.hooks = [];
+function _Q_Event_stopPropagation() {
+	var event = this;
+	Q.each(Q.addEventListener.hooks, function () {
+		var element = this[0];
+		var matches = element === root
+		|| element === document
+		|| (element instanceof HTMLElement
+			&& element !== this.target
+		    && element.contains(this.target));
+		if (matches && this[1] === event.type) {
+			this[2].apply(element, [this]);
+		}
+	});
+	var p = _Q_Event_stopPropagation.previous;
+	if (p) {
+		p.apply(event, arguments);
+	} else {
+		event.cancelBubble = false;
+	}
+}
+_Q_Event_stopPropagation.previous = Event.prototype.stopPropagation;
+Event.prototype.stopPropagation = _Q_Event_stopPropagation;
 
 /**
  * Remove an event listener from an element
@@ -5017,8 +5088,10 @@ Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandl
  * @param {HTMLElement} element
  * @param {String} eventName
  * @param {Function} eventHandler
+ * @param {boolean} useCapture
  */
-Q.removeEventListener = function _Q_addEventListener(element, eventName, eventHandler) {
+Q.removeEventListener = function _Q_removeEventListener(element, eventName, eventHandler, useCapture) {
+	useCapture = useCapture || false;
 	var handler = (eventHandler.typename === "Q.Event"
 		? eventHandler.eventListener
 		: eventHandler);
@@ -5047,6 +5120,17 @@ Q.removeEventListener = function _Q_addEventListener(element, eventName, eventHa
 	} else {
 		element["on"+eventName] = null; // best we can do
 	}
+	var hooks = Q.addEventListener.hooks;
+	for (var i=hooks.length-1; i>=0; --i) {
+		var hook = hooks[i];
+		if (hook[0] === element
+		&& hook[1] === eventName
+		&& hook[2] === eventHandler
+		&& hook[3] === useCapture) {
+			hooks.splice(i, 1);
+			break;
+		}
+	}
 };
 
 /**
@@ -5074,7 +5158,7 @@ Q.trigger = function _Q_trigger(eventName, element, args) {
 Q.layout = function _Q_layout(elementOrEvent) {
 	var element = Q.instanceOf(elementOrEvent, Element) ? elementOrEvent : null;
 	Q.each(_layoutElements, function (i, e) {
-		if (element && !element.isOrContains(e)) {
+		if (element && !element.contains(e)) {
 			return;
 		}
 		var event = _layoutEvents[i];;
@@ -5437,7 +5521,7 @@ Q.request = function (url, slotNames, callback, options) {
 		function _Q_request_callback(err, content, wasJsonP) {
 			if (err) {
 				callback(err);
-				Q.handle(o.onProcessed, Q, [err]);
+				Q.handle(o.onProcessed, this, [err]);
 				return;
 			}
 			var data = content;
@@ -5452,7 +5536,7 @@ Q.request = function (url, slotNames, callback, options) {
 					console.warn('Q.request(' + url + ',['+slotNames+']):' + e);
 					err = {"errors": [e]};
 					callback(e, content);
-					Q.handle(o.onProcessed, Q, [e, content]);
+					Q.handle(o.onProcessed, this, [e, content]);
 				}
 			}
 			var redirected = false;
@@ -5461,7 +5545,7 @@ Q.request = function (url, slotNames, callback, options) {
 				redirected = true;
 			}
 			callback && callback.call(this, err, data, redirected);
-			Q.handle(o.onProcessed, Q, [err, data, redirected]);
+			Q.handle(o.onProcessed, this, [err, data, redirected]);
 		};
 
 		function _onStart () {
@@ -5506,6 +5590,48 @@ Q.request = function (url, slotNames, callback, options) {
 			_Q_request_callback.call(this, errors, errors);
 		}
 		
+		function xhr(onSuccess, onCancel) {
+			if (o.extend !== false) {
+				url = Q.ajaxExtend(url, slotNames, overrides);
+			}			
+			var xmlhttp;
+			if (root.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
+				xmlhttp = new XMLHttpRequest();
+			} else { // code for IE6, IE5
+				xmlhttp = new root.ActiveXObject("Microsoft.XMLHTTP");
+			}
+			xmlhttp.onreadystatechange = function() {
+				if (xmlhttp.readyState == 4) {
+					if (xmlhttp.status == 200) {
+						onSuccess.call(xmlhttp, xmlhttp.responseText);
+					} else {
+						console.log("Q.request xhr: " + xmlhttp.status + ' ' + xmlhttp.responseText.substr(1000));
+						onCancel.call(xmlhttp, xmlhttp.status);
+					}
+				}
+			};
+			if (typeof o.xhr === 'function') {
+				o.xhr.call(xmlhttp, xmlhttp, options);
+			}
+			var sync = (o.xhr === 'sync');
+			if (Q.isPlainObject(o.xhr)) {
+				Q.extend(xmlhttp, o.xhr);
+				sync = sync || xmlhttp.sync;
+			}
+			var content = Q.serializeFields(o.fields);
+			request.xmlhttp = xmlhttp;
+			if (verb === 'GET') {
+				xmlhttp.open('GET', url + (content ? '&' + content : ''), !sync);
+				xmlhttp.send();
+			} else {
+				xmlhttp.open(verb, url, !sync);
+				xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+				//xmlhttp.setRequestHeader("Content-length", content.length);
+				//xmlhttp.setRequestHeader("Connection", "close");
+				xmlhttp.send(content);
+			}
+		}
+		
 		var method = o.method || 'GET';
 		var verb = method.toUpperCase();
 		var overrides = {
@@ -5534,49 +5660,6 @@ Q.request = function (url, slotNames, callback, options) {
 
 		if (!o.query && o.xhr !== false
 		&& Q.url(url).search(Q.info.baseUrl) === 0) {
-			
-			function xhr(onSuccess, onCancel) {
-				if (o.extend !== false) {
-					url = Q.ajaxExtend(url, slotNames, overrides);
-				}			
-				var xmlhttp;
-				if (root.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
-					xmlhttp = new XMLHttpRequest();
-				} else { // code for IE6, IE5
-					xmlhttp = new root.ActiveXObject("Microsoft.XMLHTTP");
-				}
-				xmlhttp.onreadystatechange = function() {
-					if (xmlhttp.readyState == 4) {
-						if (xmlhttp.status == 200) {
-							onSuccess.call(xmlhttp, xmlhttp.responseText);
-						} else {
-							console.log("Q.request xhr: " + xmlhttp.status + ' ' + xmlhttp.responseText.substr(1000));
-							onCancel.call(xmlhttp, xmlhttp.status);
-						}
-					}
-				};
-				if (typeof o.xhr === 'function') {
-					o.xhr.call(xmlhttp, xmlhttp, options);
-				}
-				var sync = (o.xhr === 'sync');
-				if (Q.isPlainObject(o.xhr)) {
-					Q.extend(xmlhttp, o.xhr);
-					sync = sync || xmlhttp.sync;
-				}
-				var content = Q.serializeFields(o.fields);
-				request.xmlhttp = xmlhttp;
-				if (verb === 'GET') {
-					xmlhttp.open('GET', url + (content ? '&' + content : ''), !sync);
-					xmlhttp.send();
-				} else {
-					xmlhttp.open(verb, url, !sync);
-					xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-					//xmlhttp.setRequestHeader("Content-length", content.length);
-					//xmlhttp.setRequestHeader("Connection", "close");
-					xmlhttp.send(content);
-				}
-			}
-
 			_onStart();
 			return xhr(_onResponse, _onCancel);
 		}
@@ -6318,6 +6401,10 @@ Q.cookie = function _Q_cookie(name, value, options) {
 	return null;
 };
 
+Q.sessionName = function () {
+	return Q.info.sessionName || 'sessionId';
+};
+
 /**
  * Finds all elements that contain a class matching the filter,
  * and calls the callback for each of them.
@@ -6680,6 +6767,12 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 		loadTemplates();
 		var newScripts;
 		
+		if (!o.ignoreDialogs) {
+			while (Q.Dialogs.dialogs.length) {
+				Q.Dialogs.pop();
+			}
+		}
+		
 		if (o.ignorePage) {
 			newScripts = [];
 			afterScripts();
@@ -6849,7 +6942,21 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 
 						var slot = e.getAttribute('data-slot');
 						if (slot && slotNames.indexOf(slot) >= 0) {
-							Q.removeElement(e);
+							var found = false;
+							if (response.stylesheets && response.stylesheets[slot]) {
+								var stylesheets = response.stylesheets[slot];
+								for (var i=0, l=stylesheets.length; i<l; ++i) {
+									var stylesheet = stylesheets[i];
+									if (stylesheet.href === e.href
+									&& (!stylesheet.media || stylesheet.media === e.media)) {
+										found = true;
+										break;
+									}
+								}
+							}
+							if (!found) {
+								Q.removeElement(e);
+							}
 						}
 
 						// now let's deal with style tags inserted by prefixfree
@@ -7714,23 +7821,9 @@ function _connectSocketNS(ns, url, callback, force) {
 				url: url,
 				ns: ns
 			});
-			function _Q_Socket_register(socket) {
-				Q.each(_socketRegister, function (i, item) {
-					if (item[0] !== ns) return;
-					var name = item[1];
-					_ioOn(socket, name, Q.Socket.onEvent(ns, url, name).handle); // may overwrite again, but it's ok
-					_ioOn(socket, name, Q.Socket.onEvent(ns, '', name).handle);
-				});
-			}
 			Q.Socket.onConnect(ns, url).add(_Q_Socket_register, 'Q');
 			// remember actual socket - for disconnecting
 			var socket = qs.socket;
-			function _connected() {
-				this.emit('session', Q.cookie(Q.info.sessionName || 'sessionId'));
-				Q.Socket.onConnect(ns).handle(socket);
-				Q.Socket.onConnect(ns, url).handle(socket);
-				console.log('Socket connected to '+url);
-			}
 			_ioOn(socket, 'connect', _connected);
 			/*
 			_ioOn(socket, 'reconnect', function () {
@@ -7750,6 +7843,22 @@ function _connectSocketNS(ns, url, callback, force) {
 			});
 		}
 		callback && callback(_qsockets[ns][url]);
+		
+		function _Q_Socket_register(socket) {
+			Q.each(_socketRegister, function (i, item) {
+				if (item[0] !== ns) return;
+				var name = item[1];
+				_ioOn(socket, name, Q.Socket.onEvent(ns, url, name).handle); // may overwrite again, but it's ok
+				_ioOn(socket, name, Q.Socket.onEvent(ns, '', name).handle);
+			});
+		}
+		
+		function _connected() {
+			this.emit('session', Q.cookie(Q.sessionName()));
+			Q.Socket.onConnect(ns).handle(socket);
+			Q.Socket.onConnect(ns, url).handle(socket);
+			console.log('Socket connected to '+url);
+		}
 	}
 	
 	if (ns[0] !== '/') {
@@ -8212,7 +8321,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 			}
 		});
 		Q.addScript(srcs, function _jQuery_plugin_script_loaded() {
-			for (pluginName in results) {
+			for (var pluginName in results) {
 				results[pluginName] = $.fn[pluginName];
 			}
 			Q.handle(callback, root, [results]);
@@ -8827,8 +8936,8 @@ Q.Pointer = {
 		return function _Q_fastclick_on_wrapper (e) {
 			var elem = Q.Pointer.elementFromPoint(Q.Pointer.getX(e), Q.Pointer.getY(e));
 			if (Q.Pointer.canceledClick
-			|| !this.isOrContains(Q.Pointer.started)
-			|| !this.isOrContains(elem)) {
+			|| !this.contains(Q.Pointer.started)
+			|| !this.contains(elem)) {
 				return Q.Pointer.preventDefault(e);
 			}
 			return params.original.apply(this, arguments);
@@ -9073,7 +9182,7 @@ Q.Pointer = {
 	 */
 	hint: function (targets, options) {
 		options = options || {};
-		var img1, i, l;
+		var img, img1, i, l;
 		var qphi = Q.Pointer.hint.imgs;
 		var imageEvent = options.imageEvent || new Q.Event();
 		var audioEvent = options.audioEvent || new Q.Event();
@@ -9203,7 +9312,7 @@ Q.Pointer = {
 		Q.each(imgs, function (i, img) {
 			var outside = (
 				Q.instanceOf(container, Element)
-				&& !container.isOrContains(img.target)
+				&& !container.contains(img.target)
 			);
 			if ((img.timeout !== false && img.dontStopBeforeShown)
 			|| outside) {
@@ -9380,9 +9489,9 @@ var _pos, _dist, _last, _lastTimestamp, _lastVelocity;
 function _Q_PointerStartHandler(e) {
 	Q.Pointer.started = Q.Pointer.target(e);
 	Q.Pointer.canceledClick = false;
-	Q.addEventListener(window, Q.Pointer.move, _onPointerMoveHandler);
-	Q.addEventListener(window, Q.Pointer.end, _onPointerEndHandler);
-	Q.addEventListener(window, Q.Pointer.cancel, _onPointerEndHandler);
+	Q.addEventListener(window, Q.Pointer.move, _onPointerMoveHandler, false, true);
+	Q.addEventListener(window, Q.Pointer.end, _onPointerEndHandler, false, true);
+	Q.addEventListener(window, Q.Pointer.cancel, _onPointerEndHandler, false, true);
 	var screenX = Q.Pointer.getX(e) - Q.Pointer.scrollLeft();
 	var screenY = Q.Pointer.getY(e) - Q.Pointer.scrollTop();
 	_pos = { // first movement
@@ -9521,7 +9630,8 @@ Q.Dialogs = {
 		topMargin: '10%', // in percentage	
 		bottomMargin: '10%' // or in absolute pixel values
 	},
-	dialogs: [], // internal dialogs collection
+	
+	dialogs: [], // stack of dialogs that is currently being shown
 	
 	/**
 	 * Shows the dialog and pushes it on top of internal dialog stack.
@@ -9560,14 +9670,14 @@ Q.Dialogs = {
 	 *    of containing element instead.
 	 *  @param {boolean} [options.noClose=false] if true, overlay close button will not appear and overlay won't be closed by pressing 'Esc' key.
 	 *  @param {boolean} [options.closeOnEsc=true] indicates whether to close overlay on 'Esc' key press. Has sense only if 'noClose' is false.
-	 *  @param {boolean} [options.destroyOnClose] Defaults to false if "dialog" is provided, and true otherwise. If true, dialog DOM element will be removed from the document on close.
+	 *  @param {boolean} [options.removeOnClose] Defaults to false if "dialog" is provided, and true otherwise. If true, dialog DOM element will be removed from the document on close.
 	 *  @param {Q.Event} [options.beforeLoad]  Q.Event or function which is called before dialog is loaded.
 	 *  @param {Q.Event} [options.onActivate] Q.Event or function which is called when dialog is activated (all inner tools, if any, are activated and dialog is fully loaded and shown).
 	 *  @param {Q.Event} [options.beforeClose] Optional. Q.Event or function which is called when dialog closing initiated but it's still visible and exists in DOM.
 	 *  @param {Q.Event} [options.onClose] Optional. Q.Event or function which is 
 	 *   called when dialog is closed and hidden and probably 
-	 *   removed from DOM (if 'destroyOnClose' is 'true').
-	 * @return {Object} jQuery object resresenting DOM element of the dialog that was just pushed.
+	 *   removed from DOM (if 'removeOnClose' is 'true').
+	 * @return {Object} jQuery object representing DOM element of the dialog that was just pushed.
 	 */
 	push: function(options) {
 		var maskDefault = true;
@@ -9588,8 +9698,8 @@ Q.Dialogs = {
 			);
 			if (o.className) $dialog.addClass(o.className);
 			if (o.apply) $dialog.addClass('Q_overlay_apply');
-			if (o.destroyOnClose !== false) {
-				o.destroyOnClose = true;
+			if (o.removeOnClose !== false) {
+				o.removeOnClose = true;
 			}
 		}
 		$dialog.hide();
@@ -9624,7 +9734,7 @@ Q.Dialogs = {
 	 * @static
      * @method pop
 	 * @param {boolean} dontTriggerClose is for internal use only
-	 * @return {Object}  jQuery object resresenting DOM element of the dialog that was just popped.
+	 * @return {Object}  jQuery object representing DOM element of the dialog that was just popped.
 	 */
 	pop: function(dontTriggerClose) {
 		if (dontTriggerClose === undefined) {
@@ -9665,7 +9775,7 @@ Q.Dialogs.push.options = {
 	'beforeClose': new Q.Event(),
 	'onClose': null,
 	'closeOnEsc': true,
-	'destroyOnClose': false,
+	'removeOnClose': null,
 	'hidePrevious': true
 };
 
@@ -9688,7 +9798,8 @@ Q.alert = function(message, options) {
 	if (options.title === undefined) options.title = 'Alert';
 	var dialog = Q.Dialogs.push(Q.extend({
 		'title': options.title,
-		'content': '<div class="Q_messagebox"><p>' + message + '</p></div>',
+		'content': '<div class="Q_messagebox Q_big_prompt"><p>' + message + '</p></div>',
+		'className': 'Q_alert',
 		'onClose': options.onClose || undefined,
 		'fullscreen': false,
 		'hidePrevious': false
@@ -9720,11 +9831,12 @@ Q.confirm = function(message, callback, options) {
 	var buttonClicked = false;
 	var dialog = Q.Dialogs.push(Q.extend({
 		'title': o.title,
-		'content': $('<div class="Q_messagebox" />').append(
+		'content': $('<div class="Q_messagebox Q_big_prompt" />').append(
 			$('<p />').html(message),
 			$('<button />').html(o.ok),
 			$('<button />').html(o.cancel)
 		),
+		'className': 'Q_confirm',
 		'noClose': o.noClose,
 		'onClose': {'Q.confirm': function() {
 			if (!buttonClicked) Q.handle(callback, this, [null]);
@@ -9781,6 +9893,7 @@ Q.prompt = function(message, callback, options) {
 			$('<input type="text" />').attr('placeholder', o.placeholder),
 			$('<button class="Q_messagebox_done Q_button" />').html(o.ok)
 		),
+		'className': 'Q_prompt',
 		'onActivate': function(dialog) {
 			var field = dialog.find('input');
 			var fieldWidth = field.parent().width()
@@ -10040,10 +10153,10 @@ Q.Masks = {
 				Q.Animation.play(function (x, y) {
 					me.style.opacity = (1-y) * opacity;
 				}, mask.fadeOut).onComplete.set(function () {
-					Q.removeElement(me);
+					me.style.display='none';
 				});
 			} else {
-				Q.removeElement(me);
+				me.style.display='none';
 			}
 		}
 	},
@@ -10069,8 +10182,12 @@ Q.Masks = {
 			var ms = mask.element.style;
 			ms.left = rect.left + Q.Pointer.scrollLeft() + 'px';
 			ms.top = rect.top + Q.Pointer.scrollTop() + 'px';
-			var width = Math.min(rect.right - rect.left, Q.Pointer.windowWidth());
-			var height = Math.min(rect.bottom - rect.top, Q.Pointer.windowHeight());
+			var width = rect.right - rect.left;
+			var height = rect.bottom - rect.top;
+			if (!mask.shouldCover) {
+				width = Math.max(width, Q.Pointer.windowWidth());
+				height = Math.max(width, Q.Pointer.windowHeight());
+			}
 			ms.width = width + 'px';
 			ms.height = ms['line-height'] = height + 'px';
 		}
@@ -10096,9 +10213,9 @@ Q.Masks.options = {
 
 Q.addEventListener(window, Q.Pointer.start, _Q_PointerStartHandler);
 
+function noop() {}
 if (!root.console) {
 	// for browsers like IE8 and below
-	function noop() {}
 	root.console = {
 		debug: noop,
 		dir: noop,
@@ -10264,16 +10381,15 @@ function _addHandlebarsHelpers() {
 			}
 			var ba = Q.Tool.beingActivated;
 			var prefix = (ba ? ba.prefix : '');
-			id = prefix + name.split('/').join('_')
-				+ (id ? '_' + id : '');
 			var o = {};
 			var hash = (options && options.hash);
 			if (hash) {
 				for (var k in hash) {
-					Q.setObject(k, hash[k], o, '-');
+					Q.setObject(k, hash[k], o, '_');
 				}
 			}
 			Q.extend(o, this[name], this['id:'+id]);
+			id = prefix + name.split('/').join('_') + (id ? '-' + id : '');
 			return Q.Tool.setUpElementHTML('div', name, o, id, prefix);
 		});
 	}
@@ -10327,7 +10443,7 @@ function _Q_loadUrl_fillSlots (res, url, options) {
 Q.loadUrl.options = {
 	quiet: false,
 	onError: new Q.Event(),
-	onLoad: new Q.Event(),
+	onResponse: new Q.Event(),
 	onLoadStart: new Q.Event(Q.loadUrl.saveScroll, 'Q'),
 	onLoadEnd: new Q.Event(),
 	onActivate: new Q.Event(),
@@ -10415,4 +10531,4 @@ if (typeof module !== 'undefined' && typeof process !== 'undefined') {
 	root.Q = Q;
 }
 
-})();
+}).call(this);

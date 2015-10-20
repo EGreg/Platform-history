@@ -431,10 +431,10 @@ Base.prototype.beforeSet_token_expires_seconds = function (value) {
 		return value;
 };
 
-	/**
-	 * Returns the maximum integer that can be assigned to the token_expires_seconds field
-	 * @return {integer}
-	 */
+/**
+ * Returns the maximum integer that can be assigned to the token_expires_seconds field
+ * @return {integer}
+ */
 Base.prototype.maxSize_token_expires_seconds = function () {
 
 		return 2147483647;

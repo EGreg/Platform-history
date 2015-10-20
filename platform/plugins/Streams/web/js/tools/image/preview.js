@@ -36,9 +36,10 @@
  *         @param {String} [options.templates.create.fields.titleTag]
  */
 Q.Tool.define("Streams/image/preview", "Streams/preview", function(options, preview) {
-	this.preview = preview;
-	var state = this.state;
+	var tool = this;
+	var state = tool.state;
 	var ps = preview.state;
+	tool.preview = preview;
 	if (ps.actions) {
 		ps.actions.position = 'tr';
 	}
@@ -48,7 +49,11 @@ Q.Tool.define("Streams/image/preview", "Streams/preview", function(options, prev
 		ps.creatable.streamType = ps.creatable.streamType || 'Streams/image';
 		ps.creatable.title = ps.creatable.title || 'New Image';
 	}
-	ps.onRefresh.add(this.refresh.bind(this), this);
+	ps.onRefresh.add(tool.refresh.bind(tool), tool);
+	ps.onComposer.add(function () {
+		var src = Q.url('plugins/Streams/img/actions/add.png');
+		this.$('img.Streams_preview_add').attr('src', src);
+	}, tool);
 },
 
 {
@@ -116,8 +121,8 @@ Q.Tool.define("Streams/image/preview", "Streams/preview", function(options, prev
 				tool.element.innerHTML = html;
 				Q.activate(tool, function () {
 					// load the icon
-					var jq = tool.$('img.Streams_image_preview_icon');
-					tool.preview.icon(jq[0], p.fill('icon'));
+					var $jq = tool.$('img.Streams_image_preview_icon');
+					tool.preview.icon($jq[0], p.fill('icon'));
 					var child = tool.child('Streams_inplace');
 					if (child) {
 						child.state.onLoad.add(p.fill('inplace'));
@@ -162,11 +167,9 @@ Q.Template.set('Streams/image/preview/edit',
 
 Q.Template.set('Streams/image/preview/create',
 	'<div class="Streams_preview_container Q_clearfix">'
-	+ '<img alt="{{alt}}" class="Streams_image_preview_icon">'
+	+ '<img alt="{{alt}}" class="Streams_preview_add">'
 	+ '<div class="Streams_image_preview_title {{titleClass}}">'
-	+ '{{#if showTitle}}'
-	+ '<{{titleTag}} class="Streams_preview_title">{{& inplace}}</{{titleTag}}>'
-	+ '{{/if}}'
+	+ '<{{titleTag}} class="Streams_preview_title">{{title}}</{{titleTag}}>'
 	+ '</div></div>'
 );
 

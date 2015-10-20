@@ -12,6 +12,8 @@
  *  @param {String} [options.title] Required. The title for the expandable.
  *  @param {String} [options.content] Required. The content.
  *  @param {Number} [options.count] A number, if any, to display when collapsed.
+ *  @param {Number} [options.spaceAbove] How many pixels of space to leave above at the end of the scrolling animation
+ *  @param {Boolean} [options.expanded] Whether it should start out expanded
  *  @param {Boolean} [options.autoCollapseSiblings] Whether, when expanding an expandable, its siblings should be automatically collapsed.
  *  @param {Boolean} [options.scrollContainer] Closest parent element that could scroll
  * @return {Q.Tool}
@@ -30,15 +32,23 @@ Q.Tool.define('Q/expandable', function (options) {
 			+"<span class='Q_expandable_count'>"+count+"</span>"
 			+options.title
 			+"</h2>";
-		var div = "<div class='Q_expandable_content'>"+options.content+"</div>";
+		var div = "<div class='Q_expandable_content'>"
+			+options.content+"</div>";
 		this.element.innerHTML = h2 + div;
+	}
+	
+	var $h2 = $('h2', $te);
+	if (state.expanded == null) {
+		state.expanded = $h2.next().is(':visible');
+	} else if (state.expanded) {
+		$h2.addClass('Q_expanded').next().css('display', 'block');
 	}
 	
 	this.element.preventSelections(true);
 	var $h2 = $('h2', $te)
 	.on(Q.Pointer.fastclick, function () {
 		var $h2 = $('h2', $te);
-		if ($h2.hasClass('Q_selected')) {
+		if ($h2.hasClass('Q_expanded')) {
 			tool.collapse();
 		} else {
 			tool.expand();
@@ -64,7 +74,8 @@ Q.Tool.define('Q/expandable', function (options) {
 	});
 }, {
 	count: 0,
-	expanded: false,
+	spaceAbove: null,
+	expanded: null,
 	autoCollapseSiblings: true,
 	scrollContainer: true,
 	duration: 300,
@@ -78,6 +89,7 @@ Q.Tool.define('Q/expandable', function (options) {
 	 *  @param {Boolean} [options.autoCollapseSiblings] Whether, when expanding an expandable,
 	 *  @param {Boolean} [options.scrollContainer] Closest parent element that could scroll
 	 *  @param {Boolean} [options.scrollToElement] Can be used to specify another element to scroll to when expanding. Defaults to the title element of the expandable.
+ *  @param {Number} [options.spaceAbove] How many pixels of space to leave above at the end of the scrolling animation
 	 * @param {Function} [callback] the function to call once the expanding has completed
 	 */
 	expand: function (options, callback) {
@@ -92,13 +104,13 @@ Q.Tool.define('Q/expandable', function (options) {
 		var $parent = $te.parent();
 		if (o.autoCollapseSiblings) {
 			$('.Q_expandable_tool h2', $parent).not(this)
-			.removeClass('Q_selected')
+			.removeClass('Q_expanded')
 			.next().slideUp(state.duration).each(function () {
 				var t = this.parentNode.Q("Q/expandable");
 				Q.handle(t.state.beforeCollapse, t, [tool]);
 			});
 		}
-		var $expandable = $h2.addClass('Q_selected')
+		var $expandable = $h2.addClass('Q_expanded')
 		.next().slideDown(state.duration);
 		var $scrollable = this.scrollable();
 		var offset = $scrollable
@@ -106,8 +118,16 @@ Q.Tool.define('Q/expandable', function (options) {
 			: {left: 0, top: 0};
 		var $element = o.scrollToElement ? $(o.scrollToElement) : $h2;
 		var t1 = $element.offset().top - offset.top;
-		var h1 = $element.height();
-		var isBody = $scrollable && $scrollable[0].tagName.toUpperCase() === 'BODY';
+		var defaultSpaceAbove = $element.height() / 2;
+		var $ts = $expandable.closest('.Q_columns_column').find('.Q_columns_title');
+		if ($ts.length && $ts.css('position') === 'fixed') {
+			defaultSpaceAbove += $ts.outerHeight();
+		}
+		var spaceAbove = (state.spaceAbove == null)
+			? defaultSpaceAbove
+			: state.spaceAbove;
+		var isBody = $scrollable &&
+			$scrollable[0].tagName.toUpperCase() === 'BODY';
 		if (isBody) {
 			t1 -= Q.Pointer.scrollTop();
 		}
@@ -118,7 +138,7 @@ Q.Tool.define('Q/expandable', function (options) {
 				if (isBody) {
 					t -= Q.Pointer.scrollTop();
 				}
-				var scrollTop = $scrollable.scrollTop() + t - t1 * (1-y) - h1/2 * y;
+				var scrollTop = $scrollable.scrollTop() + t - t1 * (1-y) - spaceAbove * y;
 				$scrollable.scrollTop(scrollTop);
 			}
 			$expandable.css('overflow', 'visible');
@@ -133,7 +153,7 @@ Q.Tool.define('Q/expandable', function (options) {
 		var tool = this;
 		var state = this.state;
 		var $h2 = $('h2', this.element);
-		$h2.removeClass('Q_selected')
+		$h2.removeClass('Q_expanded')
 		.next().slideUp(state.duration).each(function () {
 			var t = this.parentNode.Q("Q/expandable");
 			Q.handle(t.state.beforeCollapse, t, [tool]);

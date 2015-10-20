@@ -1,5 +1,6 @@
 (function (window, Q, $, undefined) {
 
+var Users = Q.Users;
 var Streams = Q.Streams;
 var Interests = Streams.Interests;
 
@@ -14,6 +15,8 @@ var Interests = Streams.Interests;
  * @constructor
  * @param {Object} [options] This is an object of parameters for this function
  *  @param {String} [options.communityId=Q.info.app] The id of the user representing the community publishing the interests
+ *  @param {String} [options.userId=Users.loggedInUserId()] The id of the user whose interests are to be displayed, defaults to the logged-in user
+ *  @param {String} [options.expandable={}] Any options to pass to the expandable tools
  *  @param {String} [options.cachebust=1000*60*60*24] How often to reload the list of major community interests
  */
 Q.Tool.define("Streams/interests", function (options) {
@@ -24,6 +27,11 @@ Q.Tool.define("Streams/interests", function (options) {
 	var lastVal, lastImage;
 	var revealingNewInterest = false;
 	var $te = $(tool.element);
+	var anotherUser = state.userId;
+	
+	if (anotherUser) {
+		$te.addClass('Streams_interests_anotherUser');
+	}
 	
 	if (!$te.children().length) {
 		$te.html(
@@ -51,34 +59,43 @@ Q.Tool.define("Streams/interests", function (options) {
 			content = _listInterests(category, interests);
 			count += Object.keys(interests).length;
 		}
-		var $expandable = $(Q.Tool.setUpElement('div', 'Q/expandable', {
+		var expandableOptions = Q.extend({
 			title: img+"<span>"+category+"</span>",
 			content: content,
             count: ''
-		}, 'Q_expandable_' + Q.normalize(category)));
+		}, state.expandable);
+		var $expandable = $(Q.Tool.setUpElement(
+			'div', 'Q/expandable', expandableOptions, 
+			'Q_expandable_' + Q.normalize(category))
+		);
 		$expandable.appendTo(tool.element).activate(p.fill(category));
 	}
 
 	var src = 'action.php/Streams/interests';
 	var criteria = { communityId: state.communityId };
 	Q.addScript(Q.url(src, criteria, { cacheBust: state.cacheBust }),
-	function () {	
+	function () {
 		var categories = Object.keys(Interests.all[state.communityId]);
-		p.add(categories.concat(['my']), 1, function () {
-			$('.Streams_interest_title').removeClass('Q_selected');
+		var waitFor = categories.concat(anotherUser ? ['my', 'anotherUser'] : ['my']);
+		p.add(waitFor, 1, function (params, subjects) {
+			tool.$('.Streams_interest_title').removeClass('Q_selected');
 			var $jq;
 			var otherInterests = {};
-			var normalized;
-			for (normalized in Interests.my) {
+			var normalized, expandable;
+			var interests = anotherUser ? params.anotherUser[0] : params.my[0];
+			var myInterests = params.my[0];
+			for (normalized in interests) {
 				$jq = $('#Streams_interest_title_' + normalized)
-				.addClass('Q_selected')
-				.closest('.Q_expandable_tool');
+				.addClass('Streams_interests_anotherUser');
 				if ($jq.length) {
-					var tool = $jq[0].Q('Q/expandable');
-					tool.state.count++;
-					tool.stateChanged(['count']);
+					if (normalized in myInterests) {
+						$jq.addClass('Q_selected');
+						expandable = $jq.closest('.Q_expandable_tool')[0].Q('Q/expandable');
+						expandable.state.count++;
+						expandable.stateChanged(['count']);
+					}
 				} else {
-					otherInterests[normalized] = Interests.my[normalized];
+					otherInterests[normalized] = interests[normalized];
 				}
 			}
 			if (!Q.isEmpty(otherInterests)) {
@@ -88,10 +105,10 @@ Q.Tool.define("Streams/interests", function (options) {
 					var category = parts[0];
 					var title = parts[1];
 					var $expandable = $('#Q_expandable_'+Q.normalize(category));
+					var $content = $expandable.find('.Q_expandable_content');
 					if (!$expandable.length) {
 						continue;
 					}
-					var $content = $expandable.find('.Q_expandable_content');
 					var $other = $expandable.find('.Streams_interests_other');
 					if (!$other.length) {
 						$other = $('<h3 class="Streams_interests_other">Other</h3>')
@@ -101,17 +118,40 @@ Q.Tool.define("Streams/interests", function (options) {
 					var $span = $('<span />', {
 						'id': id,
 						'data-category': category,
-						'class': 'Streams_interest_title Q_selected'
+						'class': 'Streams_interest_title'
 					}).text(title)
+					if (anotherUser) {
+						$span.addClass('Streams_interests_anotherUser');
+					}
 					var $span2 = $('<span class="Streams_interest_sep">, </span>');
 					$content.append($span, $span2);
-					
-					var tool = $expandable[0].Q('Q/expandable');
-					tool.state.count++;
-					tool.stateChanged(['count']);
+					if (normalized in myInterests) {
+						$span.addClass('Q_selected');
+						expandable = $expandable[0].Q('Q/expandable');
+						expandable.state.count++;
+						expandable.stateChanged(['count']);
+					}
 					Q.setObject([title, id], true, allInterests);
 				}
-				$content.children().last().remove(); // the last separator
+				$('.Q_expandable_content .Streams_interests_other').each(function () {
+					$(this).nextAll('.Streams_interest_sep').last().remove(); // the last separator	
+				});
+			}
+			if (anotherUser) {
+				$te.find('.Q_expandable_tool').each(function () {
+					var $this = $(this);
+					if (!$this.find('.Streams_interests_anotherUser').length) {
+						$(this).addClass('Streams_interests_anotherUserNone');
+					}
+				});
+				$te.find('h3').each(function () {
+					var $this = $(this);
+					if (!$this.nextUntil('h3')
+					.filter('.Streams_interests_anotherUser').length) {
+						$(this).addClass('Streams_interests_anotherUserNone');
+					}
+				});
+				tool.$('.Streams_interest_sep').html(' ');
 			}
 		});
 		
@@ -124,6 +164,9 @@ Q.Tool.define("Streams/interests", function (options) {
 			.addClass('Streams_new_interest_title');
 		var $select = $('<select class="Streams_new_interest_categories" />')
 			.on('change', function () {
+				if (!Users.loggedInUser) {
+					return;
+				}
 				var $this = $(this);
 				var category = $this.val();
 				var interestTitle = category + ': ' + $unlistedTitle.text();
@@ -166,6 +209,9 @@ Q.Tool.define("Streams/interests", function (options) {
 		
 		$(tool.element)
 		.on(Q.Pointer.fastclick, 'span.Streams_interest_title', function () {
+			if (!Users.loggedInUser) {
+				return;
+			};
 			// TODO: ignore spurious clicks that might happen
 			// when something is expanding
 			var $this = $(this);
@@ -220,7 +266,7 @@ Q.Tool.define("Streams/interests", function (options) {
 			+ ' paste.Streams'
 			+ ' filter'
 			+ ' Q_refresh';
-		$('.Streams_interests_filter_input')
+		tool.$('.Streams_interests_filter_input')
 		.on(possibleEvents, Q.debounce(function (evt) {
 			var $this = $(this);
 			if (evt.keyCode === 27) {
@@ -236,9 +282,9 @@ Q.Tool.define("Streams/interests", function (options) {
 				lastImage = image;
 			}
 			if (val) {
-				$('.Q_expandable_tool').hide();
-				$('.Q_expandable_tool h3').hide();
-				$('.Streams_interest_sep').html(' ');
+				tool.$('.Q_expandable_tool').hide();
+				tool.$('.Q_expandable_tool h3').hide();
+				tool.$('.Streams_interest_sep').html(' ');
 				Q.each(allInterests, function (interest, ids) {
 					for (var id in ids) {
 						var $span = $('#'+id);
@@ -291,13 +337,13 @@ Q.Tool.define("Streams/interests", function (options) {
 				}
 			} else if (lastVal) {
 				if (!revealingNewInterest) {
-					$('.Q_expandable_tool').show().each(function () {
+					tool.$('.Q_expandable_tool').show().each(function () {
 						this.Q("Q/expandable").collapse();
 					});
 				}
-				$('.Q_expandable_tool h3').show();
-				$('.Streams_interest_sep').html(', ');
-				$('.Q_expandable_content span').show();
+				tool.$('.Q_expandable_tool h3').show();
+				tool.$('.Streams_interest_sep').html(', ');
+				tool.$('.Q_expandable_content span').show();
 				$unlisted.hide();
 			}
 		
@@ -315,16 +361,30 @@ Q.Tool.define("Streams/interests", function (options) {
 		});
 	});
 	
-	Interests.forMe(state.communityId, function (err, interests) {
-		if (err) {
-			return alert(Q.firstErrorMessage(err));
-		} 
-		p.fill('my')();
-	});
+	if (Users.loggedInUser) {
+		Interests.forMe(state.communityId, function (err, interests) {
+			if (err) {
+				return alert(Q.firstErrorMessage(err));
+			} 
+			p.fill('my')(interests);
+		});
+	} else {
+		p.fill('my')({});
+	}
+	
+	if (anotherUser) {
+		Interests.forUser(state.userId, state.communityId, function (err, interests) {
+			if (err) {
+				return alert(Q.firstErrorMessage(err));
+			}
+			p.fill('anotherUser')(interests);
+		});
+	}
 },
 
 {
 	communityId: null,
+	expandable: {},
 	cacheBust: 1000*60*60*24
 }
 

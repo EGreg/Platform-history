@@ -157,9 +157,9 @@ function _Q_overlay(o) {
 
 	if (!o.noClose)
 	{
-		var close = $('<a class="Q_close" />');
-		$this.prepend(close);
-		close.on(Q.Pointer.click, $this.data('Q/overlay').close);
+		var $close = $('<a class="Q_close" />');
+		$this.append($close);
+		$close.on(Q.Pointer.click, $this.data('Q/overlay').close);
 	}
 },
 
@@ -295,24 +295,21 @@ Q.Tool.jQuery('Q/dialog', function _Q_dialog (o) {
 	} else {
 		Q.handle(o.beforeLoad, $this, [$this]);
 		var hiddenChildren = [];
-		if (Q.info.platform == 'android')
-		{
-			$(document.body).children().each(function() {
-				var child = $(this);
-				if (child[0] != $this[0] && child.css('display') != 'none' && this.className.indexOf('mask') == -1) {
-					child.hide();
-					hiddenChildren.push(child);
-				}
-			});
-		}
+		$(document.body).children().each(function() {
+			var child = $(this);
+			if (child[0] != $this[0] && child.css('display') != 'none' && this.className.indexOf('mask') == -1) {
+				child.hide();
+				hiddenChildren.push(child);
+			}
+		});
 		$(document.body).prepend($this);
 		$this.addClass('Q_fullscreen_dialog');
 		$this.css({
 			'width': window.innerWidth + 'px',
 			'height': window.innerHeight + 'px'
 		});
-		var close = $('<a class="Q_close" />');
-		$this.prepend(close);
+		var $close = $('<a class="Q_close" />');
+		$this.append($close);
 		$this.hide();
 
 		var dialogData = {
@@ -326,6 +323,7 @@ Q.Tool.jQuery('Q/dialog', function _Q_dialog (o) {
 						hiddenChildren[i].hide();
 					}
 					$this.show();
+					ods.css('padding-top', ots.outerHeight());
 					
 					if (o.url) {
 						_loadUrl.call($this, o, function() {
@@ -357,7 +355,7 @@ Q.Tool.jQuery('Q/dialog', function _Q_dialog (o) {
 			}
 		};
 
-		close.on(Q.Pointer.click, dialogData.close);
+		$close.on(Q.Pointer.click, dialogData.close);
 
 		$(document).on('keydown', function(e) {
 			if (e.which == 27) {
@@ -565,9 +563,9 @@ function _handlePosAndScroll(o)
 			else
 			{
 				// correcting x-pos
-				if (parseInt($this.css('left')) != ((window.innerWidth - $this.outerWidth()) / 2))
+				if (parseInt($this.css('left')) != Math.ceil((window.innerWidth - $this.outerWidth()) / 2))
 				{
-					$this.css({ 'left': ((window.innerWidth - $this.outerWidth()) / 2) + 'px' });
+					$this.css({ 'left': Math.ceil((window.innerWidth - $this.outerWidth()) / 2) + 'px' });
 					if (iScrollBar)
 					{
 						iScrollBar.css({ 'left': (contentsWrapper.offset().left + contentsWrapper.width() - iScrollBar.width()) + 'px' });

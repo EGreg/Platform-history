@@ -565,13 +565,13 @@
 	font-size: 17px;
 	white-space: nowrap;
 	padding: 0 3px 0 3px;
-	margin: 0 -3px 0 -3px;
+	margin: 0 -2px 0 -2px;
     font-weight: 300;
 }
 
 .Streams_interest_title {
 	cursor: pointer;
-	border: 1px solid #777;
+	border: 1px dotted #ccc;
     border-radius: 5px;
 }
 
@@ -581,7 +581,7 @@
 
 .Streams_interest_title.Q_selected {
 	padding: 0 3px 0 3px;
-	margin: 0 -3px 0 -3px;
+	margin: 0 -2px 0 -2px;
     border-radius: 5px;
     font-weight: 300;
 }
@@ -589,11 +589,11 @@
 .Streams_interests_unlisted { font-size: 11px; padding: 5px; }
 
 .Streams_preview_tool, .Q_listing .Streams_preview_tool { overflow: visible; }
-.Streams_image_preview_tool { text-align: center; }
+.Streams_image_preview_tool { text-align: center; display: inline-block; }
 .Streams_preview_tool .Streams_preview_icon,
 .Streams_preview_tool .Streams_preview_add { margin-right: 10px; }
 
-.Streams_related_tool .Q_tabs_overflow .Q_inplace_tool_editbuttons { display: none !important; }
+.Streams_related_tool .Q_tabs_overflow .Q_inplace_tool_editbuttons { display: none !important; list-style-type: none; padding: 0; }
 
 .Streams_interests_filter_input { width: 100%; box-sizing: border-box; }
 
@@ -604,9 +604,13 @@
 .Streams_task_progress { border: 1px solid #555; }
 .Streams_task_progress_bar { background: 1px solid #555; width: 0; height: 40px; }
 
-.Streams_invitation { font-size: 20px; text-align: center; padding: 50px; }
-.Streams_callToAction { border: 1px solid #aaa; }
+.Streams_invitation { font-size: 20px; text-align: center; padding: 50px; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: rgba(0,0,0,0); -webkit-tap-highlight-color: transparent; }
+.Streams_invitation ul,
+.Streams_invitation ol { text-align: left; }
+.Streams_invitation li { margin-bottom: 15px; }
+.Streams_callToAction { padding: 10px; border: 1px solid #aaa; text-align: center; }
 .Streams_callToAction h2 { font-size: 30px; }
+.Streams_explanation { text-align: left; }
 
 .Streams_stream_icon { float: left; width: 80px; }
 .Streams_stream_title { line-height: 80px; font-size: 40px;  }
@@ -641,3 +645,16 @@
 }
 
 .Streams_file_preview_tool.Streams_related_stream { position: relative; cursor: pointer; }
+.Q_touchscreen .Streams_preview_file_size { padding-left: 75px; }
+
+.Streams_interests_tool.Streams_interests_anotherUser .Streams_interest_title { display: none; }
+.Streams_interests_tool.Streams_interests_anotherUser .Streams_interest_title.Streams_interests_anotherUser { display: inline; }
+.Streams_interests_anotherUserNone { display: none; }
+
+.Streams_category_preview_tool,
+.Streams_category_preview_tool .Q_inplace_noEditOnClick,
+.Streams_category_preview_tool .Q_inplace_noEditOnClick .Q_inplace_tool_static { cursor: pointer; }
+
+.Q_notMobile .Q_overlay.Streams_completeInvited_dialog,
+.Q_notMobile .Q_overlay.Streams_access_tool_dialog,
+.Q_notMobile .Q_overlay.Streams_subscription_tool_dialog { width: 500px; }

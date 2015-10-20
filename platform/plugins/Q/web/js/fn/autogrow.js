@@ -126,6 +126,8 @@ function _Q_autogrow(o) {
 				top: -9999,
 				left: -9999,
 				width: 'auto',
+				'max-width': 'none',
+				'max-height': 'none',
 				fontSize: input.css('fontSize'),
 				fontFamily: input.css('fontFamily'),
 				fontWeight: input.css('fontWeight'),
@@ -142,9 +144,14 @@ function _Q_autogrow(o) {
 			testSubject.hide();
 			var newWidth = Math.max(testerWidth + o.comfortZone, minWidth);
 			var currentWidth = input.outerWidth(true);
-			var maxWidth = Q.instanceOf(o.maxWidth, Element)
-				? $(o.maxWidth).innerWidth()
+			var maxWidth = (typeof o.maxWidth === 'string')
+				? $t.closest(o.maxWidth)[0]
 				: o.maxWidth;
+			if (maxWidth) {
+				maxWidth = Q.instanceOf(maxWidth, Element)
+					? $(maxWidth).innerWidth()
+					: maxWidth;
+			}
 			var isValidWidthChange = ((
 				(newWidth < currentWidth && newWidth >= minWidth)
 				|| (newWidth > minWidth)

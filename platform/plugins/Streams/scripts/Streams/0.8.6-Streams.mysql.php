@@ -4,10 +4,21 @@ function Streams_0_8_6_Streams_mysql()
 {
 	$app = Q_Config::expect('Q', 'app');
 	
-	// access for managing app contacts
+	// access for managing communities
 	$access = new Streams_Access();
 	$access->publisherId = $app;
 	$access->streamName = 'Streams/community*';
+	$access->ofUserId = '';
+	$access->ofContactLabel = "$app/admins";
+	$access->readLevel = Streams::$READ_LEVEL['messages'];
+	$access->writeLevel = Streams::$WRITE_LEVEL['edit'];
+	$access->adminLevel = Streams::$ADMIN_LEVEL['manage'];
+	$access->save();
+	
+	// access for managing categories
+	$access = new Streams_Access();
+	$access->publisherId = $app;
+	$access->streamName = 'Streams/category/';
 	$access->ofUserId = '';
 	$access->ofContactLabel = "$app/admins";
 	$access->readLevel = Streams::$READ_LEVEL['messages'];
@@ -27,7 +38,7 @@ function Streams_0_8_6_Streams_mysql()
 		'readLevel' => Streams::$READ_LEVEL['messages'], 
 		'writeLevel' => Streams::$WRITE_LEVEL['relate'], 
 		'adminLevel' => Streams::$ADMIN_LEVEL['invite']
-	));
+	))->execute();
 	
 	// template to help app admins create subcategories for things
 	Streams_RelatedTo::insert(array(

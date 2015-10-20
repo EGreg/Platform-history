@@ -405,11 +405,12 @@ Q.Layout = {
 	 * @type Object
 	 * @default { 'column1': true, 'column2': false }
 	 * @example
-		Q.Layout.iScrollBlocks = { 'column1': true, 'column2': true };
+		Q.Layout.iScrollBlocks = { 'column0': true, 'column1': true, 'column2': true };
+		Q.Layout.iScrollBlocks.column0 = false;
 		Q.Layout.iScrollBlocks.column1 = false;
 		Q.Layout.iScrollBlocks.column2 = true;
 	 */
-	iScrollBlocks: { 'column1': true, 'column2': true },
+	iScrollBlocks: { 'column0': true, 'column1': true, 'column2': true },
 	
 	/**
 	 * Configuration property determining that layout blocks to which 'Q/scrollbarsAutoHide' plugin applied will have preserved
@@ -1364,7 +1365,9 @@ Q.Layout = {
 	adjustScrolling: function()
 	{
 		var dashboard = $('#dashboard_slot');
-		var column1Slot = $('#column1_slot'), column2Slot = $('#column2_slot');
+		var column0Slot = $('#column0_slot');
+		var column1Slot = $('#column1_slot');
+		var column2Slot = $('#column2_slot');
 		var topStub = $('#main > .Q_top_stub');
 		if (Q.info.platform == 'android') // TODO (DT): android-specific scrolling adjustments, if any.
 		{
@@ -1372,6 +1375,45 @@ Q.Layout = {
 		}
 		else if (Q.info.isTouchscreen) // iOS scrolling
 		{
+			if (Q.Layout.iScrollBlocks.column0 && column0Slot.length > 0 && column0Slot.children().length)
+			{
+				if (column0Slot.children('.Q_column0_contents').outerHeight() > column0Slot.height())
+				{
+					if (column0Slot.data('Q/iScroll'))
+					{
+						column0Slot.plugin('Q/iScroll');
+					}
+					var column0Scrollbar = column0Slot.children('div:last:not(.Q_column0_contents)');
+					if (column0Scrollbar.length != 0)
+					{
+						column0Scrollbar.detach();
+						$(document.body).append(column0Scrollbar);
+						column0Slot.data('Q_iscroll_scrollbar', column0Scrollbar);
+					}
+					else
+					{
+						column0Scrollbar = column0Slot.data('Q_iscroll_scrollbar');
+					}
+					if (column0Scrollbar)
+					{
+						column0Scrollbar.css({
+							'top': (topStub.height() + (Q.Layout.orientation == 'portrait' ? dashboard.height() : 0)) + 'px',
+							'left': (column0Slot.offset().left + column0Slot.width() - column0Scrollbar.outerWidth()) + 'px',
+							'right': '',
+							'height': column0Slot.outerHeight() + 'px'
+						});
+						column0Slot.plugin('Q/iScroll', 'refresh');
+					}
+				}
+				else
+				{
+					column0Slot.plugin('Q/iScroll', 'remove');
+				}
+			}
+			else
+			{
+				column0Slot.plugin('Q/iScroll', 'remove');
+			}
 			if (Q.Layout.iScrollBlocks.column1 && column1Slot.length > 0 && column1Slot.children().length > 0)
 			{
 				if (column1Slot.children('.Q_column1_contents').outerHeight() > column1Slot.height())
@@ -1870,6 +1912,23 @@ Q.Content = {
 			if (Q.info.isTouchscreen)
 				container.plugin('Q/iScroll', 'remove');
 			container.html('<div class="Q_column1_contents">' + contents + '</div>');
+			if (Q.info.isTouchscreen)
+				container.plugin('Q/iScroll');
+			return container[0];
+		},
+		
+		/**
+		 * Sets 'column0' slot.
+         * @method set.column1
+		 * @param {String} contents  New content for 'column1' slot.
+         * @required
+		 */
+		column0: function(contents)
+		{
+			var container = $('#column0_slot');
+			if (Q.info.isTouchscreen)
+				container.plugin('Q/iScroll', 'remove');
+			container.html('<div class="Q_column0_contents">' + contents + '</div>');
 			if (Q.info.isTouchscreen)
 				container.plugin('Q/iScroll');
 			return container[0];

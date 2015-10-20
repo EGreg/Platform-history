@@ -2,11 +2,12 @@
 
 function Users_login_response_data()
 {
-	$user = Users::loggedInUser();
-	if (!$user) {
-		return array('user' => null);
+	$user = null;
+	$roles = array();
+	if ($row = Users::loggedInUser()) {
+		$user = $row->exportArray();
+		$user['displayName'] = Streams::displayName($row);
+		$roles = Users::roles();
 	}
-	$u = $user->exportArray();
-	$u['displayName'] = Streams::displayName($user);
-	return array('user' => $u);
+	return compact('user', 'roles');
 }

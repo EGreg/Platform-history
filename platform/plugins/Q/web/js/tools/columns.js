@@ -181,6 +181,7 @@ Q.Tool.define("Q/columns", function(options) {
 			$title = $('<div class="Q_columns_title"></div>')
 				.append($ts);
 			columnSlot = document.createElement('div').addClass('column_slot');
+			state.container = tool.$('.Q_columns_container')[0];
 			$div.append($title, columnSlot)
 				.data(dataKey_index, index)
 				.data(dataKey_scrollTop, Q.Pointer.scrollTop())
@@ -287,7 +288,7 @@ Q.Tool.define("Q/columns", function(options) {
 			if (o.title != undefined) {
 				$(titleSlot).empty().append(
 					Q.instanceOf(o.title, Element) ? $(o.title) : o.title
-				).activate(p.fill('activated1'));
+				);
 			}
 			if (o.column != undefined) {
 				$(columnSlot).empty().append(
@@ -345,6 +346,10 @@ Q.Tool.define("Q/columns", function(options) {
 				$div.hide()
 				.css('position', 'relative');
 			}
+			var lastShow = $div.data(dataKey_lastShow);
+			if (lastShow) {
+				show = lastShow;
+			}
 			$div.data(dataKey_hide, hide);
 			
 			state.locked = true;
@@ -379,6 +384,8 @@ Q.Tool.define("Q/columns", function(options) {
 					});
 				}
 				
+				$div.data(dataKey_lastShow, show)
+					.data(dataKey_opening, true);
 				oldMinHeight = $div.css('min-height');
 				$div.css('min-height', 0);
 				
@@ -392,8 +399,10 @@ Q.Tool.define("Q/columns", function(options) {
 				$div.show()
 				.addClass('Q_columns_opening')
 				.css(o.animation.css.hide)
+				.stop()
 				.animate(show, duration, function() {
 					setTimeout(function () {
+						$div.data(dataKey_opening, false);
 						afterAnimation($cs, $sc, $ct);
 					}, 0);
 				});
@@ -650,15 +659,19 @@ function prepareColumns(tool) {
 	} else {
 		state.columns = [];
 		tool.$('.Q_columns_column').each(function (index) {
+			var $this = $(this);
 			state.columns.push(this);
-			$(this).data(dataKey_index, index)
+			$this.data(dataKey_index, index)
 				.data(dataKey_scrollTop, Q.Pointer.scrollTop());
 			++state.max;
-			tool.open({
-				title: undefined,
-				column: undefined,
-				animation: {duration: 0}
-			}, index, null, true);
+			if (!$this.hasClass('Q_columns_opened')
+			 && !$this.hasClass('Q_columns_opening')) {
+				tool.open({
+					title: undefined,
+					column: undefined,
+					animation: {duration: 0}
+				}, index, null, true);
+			}
 		});
 	}
 }
@@ -666,5 +679,7 @@ function prepareColumns(tool) {
 var dataKey_index = 'index';
 var dataKey_scrollTop = 'scrollTop';
 var dataKey_hide = 'hide';
+var dataKey_lastShow = 'lastShow';
+var dataKey_opening = 'opening';
 
 })(Q, jQuery);

@@ -1,11 +1,12 @@
 .Q_inplace_tool, .Q_inplace_tool_container { display: inline-block; position: relative; width: 100%; }
+
 .Q_inplace_textarea .Q_placeholders_container { overflow: hidden; }
 .Q_inplace_tool .Q_inplace_tool_editbuttons { display: none; position: absolute; left: 0; z-index: 9901; }
 .Q_inplace_tool .Q_inplace_tool_editbuttons button { display: inline; color: black !important; }
 .Q_inplace_tool .Q_inplace_tool_static { display: inline-block; border: solid 1px transparent; cursor: default; }
 .Q_inplace_tool .Q_inplace_tool_blockstatic { display: block; border: solid 1px transparent; cursor: default; }
-.Q_inplace_tool .Q_hover .Q_inplace_tool_static,
-.Q_inplace_tool .Q_hover .Q_inplace_tool_blockstatic { 
+.Q_inplace_tool:not(.Q_inplace_noEditOnClick) .Q_hover .Q_inplace_tool_static,
+.Q_inplace_tool:not(.Q_inplace_noEditOnClick) .Q_hover .Q_inplace_tool_blockstatic { 
 	background: white;
 	color: black;
 	border-top: 1px solid #aaa;
@@ -30,5 +31,13 @@
 .Q_inplace_tool .Q_inplace_tool_buttons button { background-color: #EEE; display: inline; color: black !important; }
 .Q_inplace_tool .Q_nocancel button.Q_inplace_tool_cancel { display: none; }
 
-* html .Q_inplace_tool .Q_inplace_tool_editbuttons { top: -17px; }
-* html .Q_inplace_tool .Q_inplace_tool_buttons { top: -17px; }
+* html .Q_inplace_tool .Q_inplace_tool_editbuttons,
+* html .Q_inplace_tool .Q_inplace_tool_buttons
+ { top: -17px; }
+.Q_inplace_tool_editbuttons,
+.Q_inplace_tool_buttons,
+.Q_inplace_tool_editbuttons *,
+.Q_inplace_tool_buttons *,
+.Q_inplace_tool input,
+.Q_inplace_tool textarea
+ { max-width: none; }

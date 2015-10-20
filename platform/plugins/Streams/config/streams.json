@@ -10,7 +10,7 @@
 	"Streams/user/icon": {
 		"type": "Streams/image",
 		"title": "Icon",
-		"icon": "",
+		"icon": "Streams/image",
 		"name_fb": "pic"
 	},
 	"Streams/user/username": {

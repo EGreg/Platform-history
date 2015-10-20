@@ -174,7 +174,7 @@ input.email,
 input.tel,
 input.password,
 input.number,
-textarea { border-radius: 3px; -moz-border-radius:3px; -webkit-border-radius:3px; padding: 4px; }
+textarea { border-radius: 3px; -moz-border-radius:3px; -webkit-border-radius:3px; padding: 0px 4px 0px 4px; }
 input[type=checkbox],
 input[type=radio] { margin-right: 5px; }
 html .Q_inplace_tool_fieldinput { padding: 0px; }
@@ -189,7 +189,7 @@ html .Q_inplace_tool_fieldinput { padding: 0px; }
 }
 .Q_mobile .Q_overlay { width: 90%; }
 
-.Users_avatar_name { text-indent: 5px; }
+.Users_avatar_icon { margin-right: 5px; }
 
 
 

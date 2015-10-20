@@ -158,6 +158,7 @@ function _Q_inplace_tool_constructor(element, options) {
 	var previousValue = null;
 	var noCancel = false;
 	var $te = $(tool.element);
+	var changedMaxWidth, changedMaxHeight;
 
 	var container_span = tool.$('.Q_inplace_tool_container');
 	var static_span = tool.$('.Q_inplace_tool_static');
@@ -211,7 +212,8 @@ function _Q_inplace_tool_constructor(element, options) {
 			fontSize: static_span.css('fontSize'),
 			fontFamily: static_span.css('fontFamily'),
 			fontWeight: static_span.css('fontWeight'),
-			letterSpacing: static_span.css('letterSpacing')
+			letterSpacing: static_span.css('letterSpacing'),
+			textAlign: static_span.css('textAlign')
 		});
 		fieldinput.plugin('Q/autogrow', {
 			maxWidth: state.maxWidth || maxWidth,
@@ -231,6 +233,17 @@ function _Q_inplace_tool_constructor(element, options) {
 		state.onLoad.handle();
 	}, 0); // hopefully it will be inserted into the DOM by then
 	this.handleClick = function(event) {
+		var field_width = static_span.outerWidth();
+		var field_height = static_span.outerHeight();
+		changedMaxWidth = changedMaxHeight = false;
+		if (container_span.css('max-width') === 'none') {
+			container_span.css('max-width', container_span.width());
+			changedMaxWidth = true;
+		}
+		if (container_span.css('max-height') === 'none') {
+			container_span.css('max-height', container_span.height());
+			changedMaxHeight = true;
+		}
 		container_span.addClass('Q_editing');
 		container_span.addClass('Q_discouragePointerEvents');
 		if (state.bringToFront) {
@@ -251,8 +264,6 @@ function _Q_inplace_tool_constructor(element, options) {
 				tool.$('.Q_inplace_tool_editbuttons').css('margin-top', margin+'px');
 			}}
 		}).plugin('Q/placeholders');
-		var field_width = static_span.outerWidth();
-		var field_height = static_span.outerHeight();
 		if (fieldinput.is('select')) {
 			field_width += 40;
 		} else if (fieldinput.is('input[type=text]')) {
@@ -440,13 +451,19 @@ function _Q_inplace_tool_constructor(element, options) {
 			 || dialogMode
 			 || !container_span.hasClass('Q_editing')
 			) {
-				return;
+				return _restoreZ();
 			}
 			onCancel();
 		}, 100);
 	};
 	function _restoreZ()
 	{
+		if (changedMaxWidth) {
+			container_span.css('max-width', 'none');
+		}
+		if (changedMaxHeight) {
+			container_span.css('max-height', 'none');
+		}
 		if (!state.bringToFront) return;
 		var $bringToFront = $(state.bringToFront);
 		$bringToFront.css('zIndex', $bringToFront.data(_stateKey_zIndex))
@@ -501,6 +518,8 @@ function _Q_inplace_tool_constructor(element, options) {
 	if (this.state.editOnClick) {
 		// happens despite canceled click
 		static_span.on([Q.Pointer.fastclick, '.Q_inplace'], this.handleClick);
+	} else {
+		$te.addClass('Q_inplace_noEditOnClick');
 	}
 	edit_button.on(Q.Pointer.start, this.handleClick); // happens despite canceled click
 	cancel_button.on(Q.Pointer.start, function() {
@@ -546,9 +565,12 @@ function _Q_inplace_tool_constructor(element, options) {
 	fieldinput.closest('form').submit(function () {
 		onSave();
 	});
-	fieldinput.click(function (event) {
+	fieldinput.on(Q.Pointer.end, function (event) {
 		Q.Pointer.cancelClick(event);
 		Q.Pointer.ended();
+		event.stopPropagation();
+	});
+	fieldinput.click(function (event) {
 		event.stopPropagation();
 	});
 	function _updateSaveButton() {
