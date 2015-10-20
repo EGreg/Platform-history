@@ -1381,10 +1381,6 @@ Q.Layout = {
 				{
 					if (column0Slot.data('Q/iScroll'))
 					{
-						column0Slot.plugin('Q/iScroll', 'refresh');
-					}
-					else
-					{
 						column0Slot.plugin('Q/iScroll');
 					}
 					var column0Scrollbar = column0Slot.children('div:last:not(.Q_column0_contents)');
