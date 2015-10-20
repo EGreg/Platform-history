@@ -220,7 +220,7 @@ class Streams_Message extends Base_Streams_Message
 				 * @param {string} message
 				 * @return {false} To cancel further processing
 				 */
-				if (Q::event("Streams/message/{$type}", $params, 'before') === false) {
+				if (Q::event("Streams/message/$type", $params, 'before') === false) {
 					$results[$stream->name] = false;
 					continue;
 				}
