@@ -56,31 +56,28 @@ do {
 	}
 } while($go_again);
 
-$it = new RecursiveDirectoryIterator(APP_DIR);
-foreach(new RecursiveIteratorIterator($it) as $filename) {
-	if (is_dir($filename) or is_link($filename)) continue;
-	$file = file_get_contents($filename);
-	file_put_contents($filename, preg_replace(
-		"/".CONFIGURE_ORIGINAL_APP_NAME."/",
-		$desired,
-		$file
-	));
+if ($desired !== CONFIGURE_ORIGINAL_APP_NAME) {
+	$it = new RecursiveDirectoryIterator(APP_DIR);
+	foreach(new RecursiveIteratorIterator($it) as $filename) {
+		if (is_dir($filename) or is_link($filename)) continue;
+		$file = file_get_contents($filename);
+		file_put_contents($filename, preg_replace(
+			"/".CONFIGURE_ORIGINAL_APP_NAME."/",
+			$desired,
+			$file
+		));
+	}
 }
 
 $uploads_dir = APP_FILES_DIR.DS.$desired.DS.'uploads';
 if (is_dir($uploads_dir)) {
-	$cwd = getcwd();
-	chdir(APP_WEB_DIR);
-	if (file_exists('uploads')) {
-		unlink('uploads');
+	if (file_exists(APP_WEB_DIR.DS.'uploads')) {
+		unlink(APP_WEB_DIR.DS.'uploads');
 	}
-
-	$target = '..'.DS.'files'.DS.$desired.DS.'uploads';
-	$link = 'uploads';
-	if($is_win) exec('mklink /j "' . $link . '" "' . $target . '"');
-	else symlink($target, $link);
-
-	chdir($cwd);
+	Q_Utils::symlink(
+		'..'.DS.'files'.DS.$desired.DS.'uploads',
+		APP_WEB_DIR.DS.'uploads'
+	);
 }
 
 echo "Application configured. The next steps are:

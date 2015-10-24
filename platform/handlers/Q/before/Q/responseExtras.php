@@ -14,6 +14,9 @@ function Q_before_Q_responseExtras()
 	$url = Q_Request::url(true);
 	$base_url = Q_Request::baseUrl();
 	$ajax = Q_Request::isAjax();
+	if (!$uri) {
+		return;
+	}
 	$info = array(
 		'url' => $url,
 		'uriString' => (string)$uri,
