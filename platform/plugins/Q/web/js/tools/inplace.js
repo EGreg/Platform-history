@@ -11,6 +11,7 @@
  * @class Q inplace
  * @constructor
  * @param {Object} [options] This is an object of parameters for this function
+ *  @param {String} options.action Required url of the action to issue the request to on save.
  *  @param {String} [options.method='put'] The HTTP verb to use.
  *  @param {String} [options.type='textarea'] The type of the input field. Can be "textarea" or "text"
  *  @param {Boolean=true} [options.editOnClick] Whether to enter editing mode when clicking on the text.
@@ -78,7 +79,7 @@ Q.Tool.define("Q/inplace", function (options) {
 		function (err, html) {
 			if (!html) return;
 			$te.html(html);
-			if (staticHtml) {
+			if (staticHtml && state.editOnClick) {
 				tool.$('.Q_inplace_tool_static').attr('title', state.placeholder);
 			}
 			return _Q_inplace_tool_constructor.call(tool, this.element, options);

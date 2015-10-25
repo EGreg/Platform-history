@@ -522,6 +522,9 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 			 }
 		});
 	}
+	$this.on([Q.Pointer.fastclick, '.Q_imagepicker'], function (e) {
+		e.stopPropagation();
+	});
 	
    function detectVerticalSquash(img) {
        var iw = img.naturalWidth, ih = img.naturalHeight;
