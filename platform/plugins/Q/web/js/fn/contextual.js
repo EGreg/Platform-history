@@ -12,11 +12,9 @@
  * @constructor
  * @param {Object} [options] options an object that can include:
  * @param {Array} [options.elements] elements is an array of LI elements to add
- * @param {String} [options.className] className is a CSS class name for additional styling. Optional
- * @default ''
+ * @param {String} [options.className=''] className is a CSS class name for additional styling. Optional
  * @param {Q.Event|function|String} [options.defaultHandler=null] defaultHandler is a Q.Event, or function which is called when a specific handler for selected item is not defined.
  *   So you can use just one handler for whole contextual or provide separate handlers for each item.
- * @default null
  * @param {Object} [options.size=null] size is an object with values for override default contextual size.
  * @param {Number} [options.size.width] width
  * @param {Number} [options.size.height] height

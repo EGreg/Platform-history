@@ -193,8 +193,8 @@ function _initScroller(o) {
 
     function _eventHandler(e)
     {
-        var clientX = e.originalEvent.touches ? e.originalEvent.touches[0].clientX : e.clientX;
-        var clientY = e.originalEvent.touches ? e.originalEvent.touches[0].clientY : e.clientY;
+        var clientX = Q.Pointer.getX(e)
+        var clientY = Q.Pointer.getY(e);
 
         var col = p.collection, container = null, wrapper, info = null, options = null;
         for (var i = 0; i < col.length; i++)

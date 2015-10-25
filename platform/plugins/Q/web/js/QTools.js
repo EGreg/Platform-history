@@ -2945,10 +2945,14 @@ Q.Contextual = {
 			listingWrapper.css({ 'overflow': 'auto' });
 			if (info.inBottomHalf)
 			{
-				listingWrapper.scrollTop(1000);
-				setTimeout(function()
-				{
-					listingWrapper.scrollTop(1000);
+				listingWrapper.scrollTop(10000);
+				setTimeout(function() {
+					listingWrapper.scrollTop(10000);
+				}, 0);
+			} else {
+				listingWrapper.scrollTop(0);
+				setTimeout(function() {
+					listingWrapper.scrollTop(0);
 				}, 0);
 			}
 		}
@@ -3023,10 +3027,12 @@ Q.Contextual = {
 		contextual.hide();
 		contextual.css({ 'visibility': 'visible' });
 		
-		if (info.inBottomHalf)
+		if (info.inBottomHalf) {
 			contextual.append('<div class="Q_contextual_bottom_arrow" />');
-		else
+		} else {
 			contextual.prepend('<div class="Q_contextual_top_arrow" />');
+		}
+		listingWrapper.find('.Q_listing').css('transform', 'none');
 		var arrow = contextual.find('.Q_contextual_bottom_arrow, .Q_contextual_top_arrow');
 		info.arrowHeight = contextual.find('.Q_contextual_top_arrow, .Q_contextual_bottom_arrow').height();
 		

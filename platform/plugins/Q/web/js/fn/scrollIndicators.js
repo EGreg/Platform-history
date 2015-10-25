@@ -58,7 +58,7 @@
                 if (o.type == 'iScroll')
                     container = $this;
                 else if (o.type == 'scroller' || o.type == 'touchscroll')
-                    container = o.scroller;
+					container = $(o.scroller);
                 else if (o.type == 'native')
                     container = $this;
 
