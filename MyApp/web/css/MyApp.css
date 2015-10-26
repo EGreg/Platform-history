@@ -100,7 +100,7 @@ h2 { margin: 0; }
 #dashboard td { vertical-align: middle; }
 #dashboard table { width: 100%; padding: 0; margin: 0; }
 #dashboard .Q_dashboard_logo { padding: 0; }
-#dashboard .Q_dashboard_logo a { padding: 5px; border-radius: 5px; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; }
+#dashboard .Q_dashboard_logo a { padding: 5px; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; }
 #dashboard .Q_dashboard_logo img { height: 40px; }
 #dashboard .Q_dashboard_search { padding: 8px 10px 8px 10px; font-weight: bold; text-align: left; }
 #dashboard .Q_dashboard_search input {
