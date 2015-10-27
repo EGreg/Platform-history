@@ -514,9 +514,9 @@ function _handlePosAndScroll(o)
 				bottomMargin = Math.round(parseInt(Q.Dialogs.options.bottomMargin) / 100 * parentHeight);
 			
 			var cs = $this[0].computedStyle();
-			var outerWidth = parseInt(cs.width)
-				+ parseInt(cs.paddingLeft)
-				+ parseInt(cs.paddingRight);
+			var outerWidth = Math.ceil(parseFloat(cs.width)
+				+ parseFloat(cs.paddingLeft)
+				+ parseFloat(cs.paddingRight));
 			var winInnerWidth = window.innerWidth;
 			var winInnerHeight = window.innerHeight;
 			if (Q.info.isMobile)
