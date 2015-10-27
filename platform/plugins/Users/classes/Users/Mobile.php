@@ -97,7 +97,6 @@ class Users_Mobile extends Base_Users_Mobile
 			$token = Q_Config::get('Users', 'mobile', 'twilio', 'token', null);
 
 			if ($sid and $token) {
-
 					$client = new Services_Twilio($sid, $token);
 					$message = $client->account->sms_messages->create(
 						$from, // From a valid Twilio number
