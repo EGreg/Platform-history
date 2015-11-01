@@ -5802,7 +5802,8 @@ Q.jsonRequest = Q.request;
  * @static
  * @method serializeFields
  * @param {Object} fields
- *  The object to serialize
+ *  The object to serialize into a querystring that can be sent to PHP or something.
+ *  The algorithm will recursively walk the object, and skip undefined values.
  * @param {Array} keys
  *  An optional array of keys into the object, in the order to serialize things
  * @param {boolean} returnAsObject
