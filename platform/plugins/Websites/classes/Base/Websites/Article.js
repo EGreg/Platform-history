@@ -229,6 +229,7 @@ Base.prototype.beforeSet_publisherId = function (value) {
 };
 
 	/**
+	 * @method maxSize_publisherId
 	 * Returns the maximum string length that can be assigned to the publisherId field
 	 * @return {integer}
 	 */
@@ -255,6 +256,7 @@ Base.prototype.beforeSet_streamName = function (value) {
 };
 
 	/**
+	 * @method maxSize_streamName
 	 * Returns the maximum string length that can be assigned to the streamName field
 	 * @return {integer}
 	 */
@@ -281,6 +283,7 @@ Base.prototype.beforeSet_userId = function (value) {
 };
 
 	/**
+	 * @method maxSize_userId
 	 * Returns the maximum string length that can be assigned to the userId field
 	 * @return {integer}
 	 */
@@ -307,6 +310,7 @@ Base.prototype.beforeSet_article = function (value) {
 };
 
 	/**
+	 * @method maxSize_article
 	 * Returns the maximum string length that can be assigned to the article field
 	 * @return {integer}
 	 */
@@ -333,6 +337,7 @@ Base.prototype.beforeSet_getintouch = function (value) {
 };
 
 	/**
+	 * @method maxSize_getintouch
 	 * Returns the maximum string length that can be assigned to the getintouch field
 	 * @return {integer}
 	 */

@@ -537,6 +537,7 @@ abstract class Base_Streams_Message extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_ordinal
 	 * Returns the maximum integer that can be assigned to the ordinal field
 	 * @return {integer}
 	 */

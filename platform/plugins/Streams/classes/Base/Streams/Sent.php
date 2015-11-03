@@ -521,6 +521,7 @@ abstract class Base_Streams_Sent extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_reOrdinal
 	 * Returns the maximum integer that can be assigned to the reOrdinal field
 	 * @return {integer}
 	 */

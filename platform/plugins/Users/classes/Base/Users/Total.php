@@ -284,6 +284,7 @@ abstract class Base_Users_Total extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_voteCount
 	 * Returns the maximum integer that can be assigned to the voteCount field
 	 * @return {integer}
 	 */

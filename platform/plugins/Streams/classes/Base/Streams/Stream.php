@@ -550,6 +550,7 @@ abstract class Base_Streams_Stream extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_readLevel
 	 * Returns the maximum integer that can be assigned to the readLevel field
 	 * @return {integer}
 	 */
@@ -582,6 +583,7 @@ abstract class Base_Streams_Stream extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_writeLevel
 	 * Returns the maximum integer that can be assigned to the writeLevel field
 	 * @return {integer}
 	 */
@@ -614,6 +616,7 @@ abstract class Base_Streams_Stream extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_adminLevel
 	 * Returns the maximum integer that can be assigned to the adminLevel field
 	 * @return {integer}
 	 */
@@ -679,6 +682,7 @@ abstract class Base_Streams_Stream extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_messageCount
 	 * Returns the maximum integer that can be assigned to the messageCount field
 	 * @return {integer}
 	 */
@@ -711,6 +715,7 @@ abstract class Base_Streams_Stream extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_participantCount
 	 * Returns the maximum integer that can be assigned to the participantCount field
 	 * @return {integer}
 	 */

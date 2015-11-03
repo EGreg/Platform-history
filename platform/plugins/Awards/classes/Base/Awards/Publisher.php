@@ -217,6 +217,7 @@ abstract class Base_Awards_Publisher extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_id
 	 * Returns the maximum integer that can be assigned to the id field
 	 * @return {integer}
 	 */
@@ -249,6 +250,7 @@ abstract class Base_Awards_Publisher extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_insertedTime
 	 * Returns the maximum integer that can be assigned to the insertedTime field
 	 * @return {integer}
 	 */
@@ -380,6 +382,7 @@ abstract class Base_Awards_Publisher extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_min_wait
 	 * Returns the maximum integer that can be assigned to the min_wait field
 	 * @return {integer}
 	 */
