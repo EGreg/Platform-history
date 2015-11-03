@@ -14,6 +14,13 @@
  *   @param {String} options.publisherId The publisher's user id.
  *   @required
  *   @param {String} [options.streamName] If empty, and "creatable" is true, then this can be used to add new related streams.
+ *   @param {Function} [options.preprocess] This function receives 
+ *   (a callback, this tool, the event if any that triggered it). 
+ *   This is your chance to do any processing before the request to create the stream is sent.
+ *   The function must call the callback. If it passes false as the first parameter,
+ *   it stops the process from continuing. However, if you want to go ahead and continue
+ *   to call Q.Streams.create, you can pass here any extra fields for the stream, such
+ *   as "title", "content", "attributes" (as JSON string), etc.
  *   @param {Object} [options.related] , Optional information to add a relation from the newly created stream to another one. Can include:
  *   @param {String} [options.related.publisherId] the id of whoever is publishing the related stream
  *   @param {String} [options.related.streamName] the name of the related stream
