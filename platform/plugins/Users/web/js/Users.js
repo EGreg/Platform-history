@@ -1942,12 +1942,12 @@ Q.request.options.onProcessed.set(function (err, response) {
 }, 'Users');
 
 Users.onInitFacebook = new Q.Event();
-var ddc = document.documentElement.className;
+var ddc = document.documentElement;
 Users.onLogin = new Q.Event(function () {
-	ddc = ddc.replace(' Users_loggedOut', '') + ' Users_loggedIn';
+	ddc.className = ddc.className.replace(' Users_loggedOut', '') + ' Users_loggedIn';
 }, 'Users');
 Users.onLogout = new Q.Event(function () {
-	ddc = ddc.replace(' Users_loggedIn', '') + ' Users_loggedOut';
+	ddc.className = ddc.className.replace(' Users_loggedIn', '') + ' Users_loggedOut';
 });
 Users.onLoginLost = new Q.Event(function () {
 	console.warn("Call to server was made which normally requires user login.");

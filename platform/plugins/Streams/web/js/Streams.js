@@ -3099,6 +3099,11 @@ Streams.setupRegisterForm = function _Streams_setupRegisterForm(identifier, json
 				$('#Users_agree').attr('checked', 'checked');
 			}
 		}
+	}).on('keydown', function (e) {
+		if ((e.keyCode || e.which) === 13) {
+			$(this).submit();
+			e.preventDefault();
+		}
 	});
 	if (priv.activation) {
 		register_form.append($('<input type="hidden" name="activation" />').val(priv.activation));
