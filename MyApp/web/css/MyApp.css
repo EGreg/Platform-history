@@ -90,7 +90,7 @@ h2 { margin: 0; }
 }
 
 /* Dashboard contents */
-#dashboard>* { margin: 0 auto; padding: 0; line-height: 30px; text-align: center; }
+#dashboard>* { margin: 5px auto 5px auto; padding: 0; line-height: 30px; text-align: center; }
 #dashboard>h1 { float: left; padding: 5px; width: auto; }
 #dashboard>h2 { float: left; }
 #dashboard_user { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; float: right; padding: 5px; }
@@ -135,7 +135,7 @@ h2 { margin: 0; }
 #dashboard .Q_tabs_tab.Q_current { background-image: url(../plugins/Q/img/bg/stucco.png) !important; color: black !important; }
 #dashboard .Q_tabs_tab.Q_current * { color: black; }
 #dashboard .Q_tabs_tab { padding: 5px; margin: 0px; }
-.Q_mobile #dashboard .Q_tabs_tool { max-width: 80%; overflow: hidden; padding: 5px; }
+.Q_mobile #dashboard .Q_tabs_tool { max-width: 80%; overflow: hidden; }
 
 /* inputs */
 
@@ -203,8 +203,8 @@ html.Q_notMobile { height: 100%; }
 .Q_notMobile #dashboard>h1,
 .Q_notMobile #dashboard>h2 { float: none; }
 .Q_notMobile #notices_slot { position: fixed; left: 0; top: 0; width: 100%; }
-.Q_notMobile #dashboard_slot { position: fixed; left: 5%; width: 20%; height: 90%; top: 5%; }
-.Q_notMobile #page { position: absolute; padding: 0; top: 50px; left: 25%; width: 70%; height: 90%; top: 5%; }
+.Q_notMobile #dashboard_slot { position: fixed; left: 15%; width: 20%; height: 80%; top: 10%; }
+.Q_notMobile #page { position: absolute; padding: 0; top: 50px; left: 35%; width: 50%; height: 80%; top: 10%; }
 .Q_notMobile #content_slot { min-height: 100%; padding: 0; }
 .Q_notMobile #content { padding: 20px; }
 .Q_notMobile #Users_avatar_tool { width: 100%; background: #222; background: rgba(255,255,255,.05); }
