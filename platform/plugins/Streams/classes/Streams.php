@@ -2890,12 +2890,16 @@ abstract class Streams extends Base_Streams
 			$streamName = $stream->name;
 			foreach ($classes[$stream->type] as $className => $fieldNames) {
 				if (empty($rows[$className][$streamName])) continue;
-				$row = $stream->rows[$className] = $rows[$className][$streamName];
-				$row->set('Streams_Stream', $stream);
 				foreach ($fieldNames as $f) {
 					if (!isset($rows[$className][$streamName])) continue;
 					$stream->$f = $rows[$className][$streamName]->$f;
 				}
+				// The following is commented out because you should use
+				// Extending_Class::staticMethod($stream, ...)
+				// and Streams_Stream->beforeSaveExtended re-fetches the row.
+				// $row = $stream->rows[$className] = $rows[$className][$streamName];
+				// $row->set('Streams_Stream', $stream);
+				// $stream->set($className, $row);
 			}
 		}
 	}

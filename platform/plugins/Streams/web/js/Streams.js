@@ -1823,7 +1823,7 @@ Sp.relateTo = function _Stream_prototype_relateTo (type, toPublisherId, toStream
  * @param callback {Function} callback to call with the results
  *  First parameter is the error, the second one is an object of Streams.RelatedTo objects you can iterate over with Q.each
  */
-Sp.relate = function _Stream_prototype_relate (type, fromPublisherId, fromStreamName, callback) {
+Sp.relate = Sp.relateFrom = function _Stream_prototype_relate (type, fromPublisherId, fromStreamName, callback) {
 	return Streams.relate(this.fields.publisherId, this.fields.name, type, fromPublisherId, fromStreamName, callback);
 };
 
@@ -1849,7 +1849,7 @@ Sp.unrelateTo = function _Stream_prototype_unrelateTo (toPublisherId, toStreamNa
  * @param callback {Function} callback to call with the results
  *  First parameter is the error, the second one is an object of Streams.RelatedTo objects you can iterate over with Q.each
  */
-Sp.unrelateFrom = function _Stream_prototype_unrelateFrom (fromPublisherId, fromStreamName, callback) {
+Sp.unrelate = Sp.unrelateFrom = function _Stream_prototype_unrelateFrom (fromPublisherId, fromStreamName, callback) {
 	return Streams.unrelate(fromPublisherId, fromStreamName, type, this.fields.publisherId, this.fields.name, callback);
 };
 
