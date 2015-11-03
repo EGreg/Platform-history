@@ -220,7 +220,7 @@ Base.prototype.beforeSet_uri = function (value) {
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".uri");
 		return value;
-};
+}; 
 
 	/**
 	 * @method maxSize_uri

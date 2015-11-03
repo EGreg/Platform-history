@@ -149,6 +149,7 @@ function _Streams_file_preview(options, preview) {
 			var $this = $(this);
 			var form = $this.closest('form').get(0);
 			tool.preview.state.creatable.options.form = form;
+			tool.preview.state.creatable.options.resultFunction = 'result';
 			tool.preview.create(event);
 			form.reset();
 		});

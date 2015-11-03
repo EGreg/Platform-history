@@ -5462,7 +5462,11 @@ Q.req = function _Q_req(uri, slotNames, callback, options) {
  * @param {boolean} [options.post] if set, adds a &Q.method=post to the querystring
  * @param {String} [options.method] if set, adds a &Q.method= that value to the querystring, default "get"
  * @param {Object} [options.fields] optional fields to pass with any method other than "get"
- * @param {HTMLElement} [options.form] if specified, then the request is made by submitting this form, temporarily extending it with any fields passed in options.fields, and possibly overriding its method with whatever is passed to options.method . The result is rendered in an iframe, and passed to the callback in its second parameter.
+ * @param {HTMLElement} [options.form] if specified, then the request is made by submitting this form, temporarily extending it with any fields passed in options.fields, and possibly overriding its method with whatever is passed to options.method .
+ * @param {String} [options.resultFunction=null] The path to the function to handle inside the
+ *  contentWindow of the resulting iframe, e.g. "Foo.result". 
+ *  Your document is supposed to define this function if it wants to return results to the
+ *  callback's second parameter, otherwise it will be undefined
  * @param {Array} [options.idPrefixes] optional array of Q_Html::pushIdPrefix values for each slotName
  * @param {boolean} [options.skipNonce] if true, skips loading of the nonce
  * @param {Object} [options.xhr] set to false to avoids XHR. Or set to true, to try to make xhr based on "method" option.
@@ -5651,7 +5655,10 @@ Q.request = function (url, slotNames, callback, options) {
 			Q.formPost(url, o.fields, method, {
 				form: o.form,
 				onLoad: function (iframe) {
-					var result = iframe.contentWindow.result();
+					var resultFunction = o.resultFunction
+						? Q.getObject(o.resultFunction, iframe.contentWindow)
+						: null;
+					var result = resultFunction ? resultFunction() : undefined;
 					_Q_request_callback.call(request, null, result, true);
 				}
 			});

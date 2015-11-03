@@ -25,6 +25,7 @@
  *     @param {String} [options.creatable.title="New Image"] Optional title for the case when streamName = "", i.e. the image composer
  *     @param {Boolean} [options.creatable.clickable=true] Whether the image composer image is clickable
  *     @param {Number} [options.creatable.addIconSize=100] The size in pixels of the square add icon
+ *     @param {Number} [options.creatable.options={}] Any options to pass to Q.Streams.create
  *   @param {Object} [options.imagepicker] Any options to pass to the Q/imagepicker jquery plugin -- see its options.
  *   @uses Q imagepicker
  *   @param {Object} [options.actions] Any options to pass to the Q/actions jquery plugin -- see its options.
