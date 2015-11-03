@@ -90,7 +90,7 @@ h2 { margin: 0; }
 }
 
 /* Dashboard contents */
-#dashboard>* { margin: 5px auto 5px auto; padding: 0; line-height: 30px; text-align: center; }
+#dashboard>* { margin: 0; padding: 0; line-height: 30px; text-align: center; }
 #dashboard>h1 { float: left; padding: 5px; width: auto; }
 #dashboard>h2 { float: left; }
 #dashboard_user { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; float: right; padding: 5px; }
@@ -135,7 +135,7 @@ h2 { margin: 0; }
 #dashboard .Q_tabs_tab.Q_current { background-image: url(../plugins/Q/img/bg/stucco.png) !important; color: black !important; }
 #dashboard .Q_tabs_tab.Q_current * { color: black; }
 #dashboard .Q_tabs_tab { padding: 5px; margin: 0px; }
-.Q_mobile #dashboard .Q_tabs_tool { max-width: 80%; overflow: hidden; }
+.Q_mobile #dashboard .Q_tabs_tool { max-width: 80%; overflow: hidden; padding: 5px; }
 
 /* inputs */
 
