@@ -10195,7 +10195,17 @@ Q.Masks = {
 			if (!mask.shouldCover) {
 				width = Math.max(width, Q.Pointer.windowWidth());
 				height = Math.max(width, Q.Pointer.windowHeight());
+				var scrollLeft = Q.Pointer.scrollLeft();
+				var scrollTop = Q.Pointer.scrollTop();
+				var body = document.getElementsByTagName('body')[0];
+				Q.each(body.children || body.childNodes, function () {
+					var rect = this.getBoundingClientRect();
+					if (!rect) return;
+					width = Math.max(width, scrollLeft + rect.right);
+					height = Math.max(height, scrollTop + rect.bottom);
+				});
 			}
+
 			ms.width = width + 'px';
 			ms.height = ms['line-height'] = height + 'px';
 		}
