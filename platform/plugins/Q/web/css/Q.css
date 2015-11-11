@@ -238,7 +238,7 @@ button:focus:disabled,
 .Q_button:focus:disabled { cursor: default; background: -moz-linear-gradient(top,  #AAA,  #888); }
 button.basic16 { background-color: #eee; color: black; }
 .Q_notTouchscreen button.basic16:active { background-color: #ccc; color: black; }
-.Q_button { padding: 0.4em 1em 0.4em 1em; box-sizing: content-box; }
+.Q_button { padding: 0.4em 1em 0.4em 1em; box-sizing: border-box; }
 
 /* tooltips */
 

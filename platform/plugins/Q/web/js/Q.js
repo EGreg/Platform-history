@@ -141,7 +141,7 @@ Sp.toCapitalized = function _String_prototype_toCapitalized() {
  * @return {boolean}
  */
 Sp.isUrl = function _String_prototype_isUrl () {
-	return this.match(/^[A-Za-z]*:\/\//);
+	return !!this.match(/^([A-Za-z]*:|)\/\//);
 };
 
 /**
