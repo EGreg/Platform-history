@@ -998,6 +998,192 @@ Streams.invite.options = {
 };
 
 /**
+ * Get streams related to a given stream.
+ * @static
+ * @method related
+ * @param publisherId {string}
+ *  Publisher's user id
+ * @param name {string}
+ *	Name of the stream to/from which the others are related
+ * @param relationType {String} the type of the relation
+ * @param isCategory {boolean} defaults to false. If true, then gets streams related TO this stream.
+ * @param {Object} [options] optional object that can include:
+ *   @param {Number} [options.limit] the maximum number of results to return
+ *   @param {Number} [options.offset] the page offset that goes with the limit
+ *   @param {Boolean} [options.ascending] whether to sort by ascending weight.
+ *   @default false
+ *   @param {Number} [options.min] the minimum weight (inclusive) to filter by, if any
+ *   @param {Number} [options.max] the maximum weight (inclusive) to filter by, if any
+ *   @param {String} [options.prefix] optional prefix to filter the streams by
+ *   @param {Boolean} [options.stream] pass true here to fetch the latest version of the stream (ignores cache)
+ *   @param {Mixed} [options.participants]  optional. Pass a limit here to fetch that many participants (ignores cache). Only honored if streamName is a string.
+ *   @param {Boolean} [options.messages]
+ *   @param {String} [options.messageType] optional String specifying the type of messages to fetch. Only honored if streamName is a string.
+ *   @param {Object} [options."$Module/$fieldname"] any other fields you would like can be added, to be passed to your hooks on the back end
+ * @param callback {function}
+ *	if there were errors, first parameter is an array of errors
+ *  otherwise, first parameter is null and the "this" object is the data containing "stream", "relations" and "streams"
+ */
+Streams.related = function _Streams_related(publisherId, streamName, relationType, isCategory, options, callback) {
+	if (typeof publisherId !== 'string'
+	|| typeof relationType !== 'string') {
+		throw new Q.Error("Streams.related is expecting publisherId, relationType as strings");
+	}
+	if (!publisherId || !streamName) {
+		throw new Q.Error("Streams.related is expecting publisherId and streamName to be non-empty");
+	}
+	if (typeof isCategory !== 'boolean') {
+		callback = options;
+		options = isCategory;
+		isCategory = undefined;
+	}
+	if (Q.typeOf(options) === 'function') {
+		callback = options;
+		options = {};
+	}
+	options = options || {};
+	var near = isCategory ? 'to' : 'from',
+		far = isCategory ? 'from' : 'to',
+		farPublisherId = far+'PublisherId',
+		farStreamName = far+'StreamName',
+		slotNames = ['relations', 'relatedStreams'],
+		fields = {"publisherId": publisherId, "streamName": streamName};
+	if (options.messages) {
+		slotNames.push('messages');
+	}
+	if (options.participants) {
+		slotNames.push('participants');
+	}
+	if (relationType) {
+		fields.type = relationType;
+	}
+	Q.extend(fields, options);
+	fields.omitRedundantInfo = true;
+	if (isCategory !== undefined) {
+		fields.isCategory = isCategory;
+	}
+
+	var cached = Streams.get.cache.get([publisherId, streamName]);
+	if (!cached || options.stream) {
+		if (typeof streamName === 'string'
+		&& streamName[streamName.length-1] !== '/') {
+			slotNames.push('stream');
+		} else {
+			slotNames.push('streams');
+		}
+	}
+
+	var baseUrl = Q.baseUrl({
+		publisherId: publisherId,
+		streamName: streamName
+	});
+	Q.req('Streams/related', slotNames, function (err, data) {
+		var msg = Q.firstErrorMessage(err, data && data.errors);
+		if (msg) {
+			var args = [err, data];
+			Streams.onError.handle.call(this, msg, args);
+			Streams.related.onError.handle.call(this, msg, args);
+			return callback && callback.call(this, msg, args);
+		}
+		if (cached && cached.subject) {
+			_processResults(null, cached.subject);
+		} else {
+			var extra = {};
+			if (options.messages) {
+				extra.messages = data.slots.messages;
+			}
+			if (options.participants) {
+				extra.participants = data.slots.participants;
+			}
+			if (!data.slots.stream) {
+				callback && callback.call(this, "Streams/related missing stream " + streamName + ' published by ' + publisherId);
+			} else {
+				Streams.construct(data.slots.stream, extra, _processResults);
+			}
+		}
+
+		function _processResults(err, stream) {
+			var msg = Q.firstErrorMessage(err);
+			if (msg) {
+				var args = [err, stream];
+				return callback && callback.call(this, msg, args);
+			}
+			
+			// Construct related streams from data that has been returned
+			var p = new Q.Pipe(), keys = [], keys2 = {}, streams = {};
+			Q.each(data.slots.relatedStreams, function (k, fields) {
+				if (!Q.isPlainObject(fields)) return;
+				var key = Streams.key(fields.publisherId, fields.name);
+				keys.push(key);
+				keys2[key] = true;
+				Streams.construct(fields, {}, function () {
+					streams[key] = this;
+					p.fill(key)();
+				});
+			});
+			
+			// Now process all the relations
+			Q.each(data.slots.relations, function (j, relation) {
+				relation[near] = stream;
+				var key = Streams.key(relation[farPublisherId], relation[farStreamName]);
+				if (!keys2[key] && relation[farPublisherId] != publisherId) {
+					// Fetch all the related streams from other publishers
+					keys.push(key);
+					Streams.get(relation[farPublisherId], relation[farStreamName], function (err, data) {
+						var msg = Q.firstErrorMessage(err, data && data.errors);
+						if (msg) {
+							p.fill(key)(msg);
+							return;
+						}
+						relation[far] = this;
+						streams[key] = this;
+						p.fill(key)();
+						return;
+					});
+				} else {
+					relation[far] = streams[key];
+				}
+			});
+			
+			// Finish setting up the pipe
+			if (keys.length) {
+				p.add(keys, _callback);
+				p.run();
+			} else {
+				_callback();
+			}
+			function _callback(params) {
+				// all the streams have been constructed
+				for (var k in params) {
+					if (params[k]) {
+						if (params[k][0] === undefined) {
+							delete params[k];
+						} else {
+							params[k] = params[k][0];
+						}
+					}
+				}
+				callback && callback.call({
+					relatedStreams: streams, 
+					relations: data.slots.relations, 
+					stream: stream, 
+					errors: params
+				}, null);
+			}
+		}
+	}, { fields: fields, baseUrl: baseUrl });
+	_retain = undefined;
+	var socket = Q.Socket.get('Streams', Q.nodeUrl({
+		publisherId: publisherId,
+		streamName: streamName
+	}));
+	if (!socket) {
+		return false; // do not cache relations to/from this stream
+	}
+};
+Streams.related.onError = new Q.Event();
+
+/**
  * @class Streams.Stream
  */
 
@@ -1588,192 +1774,6 @@ Sp.invite = function (fields, callback) {
 Sp.refresh = function _Stream_prototype_refresh (callback, options) {
 	return Stream.refresh(this.fields.publisherId, this.fields.name, callback, options);
 };
-
-/**
- * Get streams related to a particular stream.
- * @static
- * @method related
- * @param publisherId {string}
- *  Publisher's user id
- * @param name {string}
- *	Name of the stream to/from which the others are related
- * @param relationType {String} the type of the relation
- * @param isCategory {boolean} defaults to false. If true, then gets streams related TO this stream.
- * @param {Object} [options] optional object that can include:
- *   @param {Number} [options.limit] the maximum number of results to return
- *   @param {Number} [options.offset] the page offset that goes with the limit
- *   @param {Boolean} [options.ascending] whether to sort by ascending weight.
- *   @default false
- *   @param {Number} [options.min] the minimum weight (inclusive) to filter by, if any
- *   @param {Number} [options.max] the maximum weight (inclusive) to filter by, if any
- *   @param {String} [options.prefix] optional prefix to filter the streams by
- *   @param {Boolean} [options.stream] pass true here to fetch the latest version of the stream (ignores cache)
- *   @param {Mixed} [options.participants]  optional. Pass a limit here to fetch that many participants (ignores cache). Only honored if streamName is a string.
- *   @param {Boolean} [options.messages]
- *   @param {String} [options.messageType] optional String specifying the type of messages to fetch. Only honored if streamName is a string.
- *   @param {Object} [options."$Module/$fieldname"] any other fields you would like can be added, to be passed to your hooks on the back end
- * @param callback {function}
- *	if there were errors, first parameter is an array of errors
- *  otherwise, first parameter is null and the "this" object is the data containing "stream", "relations" and "streams"
- */
-Streams.related = function _Streams_related(publisherId, streamName, relationType, isCategory, options, callback) {
-	if (typeof publisherId !== 'string'
-	|| typeof relationType !== 'string') {
-		throw new Q.Error("Streams.related is expecting publisherId, relationType as strings");
-	}
-	if (!publisherId || !streamName) {
-		throw new Q.Error("Streams.related is expecting publisherId and streamName to be non-empty");
-	}
-	if (typeof isCategory !== 'boolean') {
-		callback = options;
-		options = isCategory;
-		isCategory = undefined;
-	}
-	if (Q.typeOf(options) === 'function') {
-		callback = options;
-		options = {};
-	}
-	options = options || {};
-	var near = isCategory ? 'to' : 'from',
-		far = isCategory ? 'from' : 'to',
-		farPublisherId = far+'PublisherId',
-		farStreamName = far+'StreamName',
-		slotNames = ['relations', 'relatedStreams'],
-		fields = {"publisherId": publisherId, "streamName": streamName};
-	if (options.messages) {
-		slotNames.push('messages');
-	}
-	if (options.participants) {
-		slotNames.push('participants');
-	}
-	if (relationType) {
-		fields.type = relationType;
-	}
-	Q.extend(fields, options);
-	fields.omitRedundantInfo = true;
-	if (isCategory !== undefined) {
-		fields.isCategory = isCategory;
-	}
-
-	var cached = Streams.get.cache.get([publisherId, streamName]);
-	if (!cached || options.stream) {
-		if (typeof streamName === 'string'
-		&& streamName[streamName.length-1] !== '/') {
-			slotNames.push('stream');
-		} else {
-			slotNames.push('streams');
-		}
-	}
-
-	var baseUrl = Q.baseUrl({
-		publisherId: publisherId,
-		streamName: streamName
-	});
-	Q.req('Streams/related', slotNames, function (err, data) {
-		var msg = Q.firstErrorMessage(err, data && data.errors);
-		if (msg) {
-			var args = [err, data];
-			Streams.onError.handle.call(this, msg, args);
-			Streams.related.onError.handle.call(this, msg, args);
-			return callback && callback.call(this, msg, args);
-		}
-		if (cached && cached.subject) {
-			_processResults(null, cached.subject);
-		} else {
-			var extra = {};
-			if (options.messages) {
-				extra.messages = data.slots.messages;
-			}
-			if (options.participants) {
-				extra.participants = data.slots.participants;
-			}
-			if (!data.slots.stream) {
-				callback && callback.call(this, "Streams/related missing stream " + streamName + ' published by ' + publisherId);
-			} else {
-				Streams.construct(data.slots.stream, extra, _processResults);
-			}
-		}
-
-		function _processResults(err, stream) {
-			var msg = Q.firstErrorMessage(err);
-			if (msg) {
-				var args = [err, stream];
-				return callback && callback.call(this, msg, args);
-			}
-			
-			// Construct related streams from data that has been returned
-			var p = new Q.Pipe(), keys = [], keys2 = {}, streams = {};
-			Q.each(data.slots.relatedStreams, function (k, fields) {
-				if (!Q.isPlainObject(fields)) return;
-				var key = Streams.key(fields.publisherId, fields.name);
-				keys.push(key);
-				keys2[key] = true;
-				Streams.construct(fields, {}, function () {
-					streams[key] = this;
-					p.fill(key)();
-				});
-			});
-			
-			// Now process all the relations
-			Q.each(data.slots.relations, function (j, relation) {
-				relation[near] = stream;
-				var key = Streams.key(relation[farPublisherId], relation[farStreamName]);
-				if (!keys2[key] && relation[farPublisherId] != publisherId) {
-					// Fetch all the related streams from other publishers
-					keys.push(key);
-					Streams.get(relation[farPublisherId], relation[farStreamName], function (err, data) {
-						var msg = Q.firstErrorMessage(err, data && data.errors);
-						if (msg) {
-							p.fill(key)(msg);
-							return;
-						}
-						relation[far] = this;
-						streams[key] = this;
-						p.fill(key)();
-						return;
-					});
-				} else {
-					relation[far] = streams[key];
-				}
-			});
-			
-			// Finish setting up the pipe
-			if (keys.length) {
-				p.add(keys, _callback);
-				p.run();
-			} else {
-				_callback();
-			}
-			function _callback(params) {
-				// all the streams have been constructed
-				for (var k in params) {
-					if (params[k]) {
-						if (params[k][0] === undefined) {
-							delete params[k];
-						} else {
-							params[k] = params[k][0];
-						}
-					}
-				}
-				callback && callback.call({
-					relatedStreams: streams, 
-					relations: data.slots.relations, 
-					stream: stream, 
-					errors: params
-				}, null);
-			}
-		}
-	}, { fields: fields, baseUrl: baseUrl });
-	_retain = undefined;
-	var socket = Q.Socket.get('Streams', Q.nodeUrl({
-		publisherId: publisherId,
-		streamName: streamName
-	}));
-	if (!socket) {
-		return false; // do not cache relations to/from this stream
-	}
-};
-Streams.related.onError = new Q.Event();
 
 /**
  * Returns all the streams this stream is related to
