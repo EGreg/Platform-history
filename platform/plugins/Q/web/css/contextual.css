@@ -1,6 +1,7 @@
 .Q_listing, .Q_listing li { margin: 0; padding: 0; }
 .Q_listing { list-style: none; }
 .Q_listing li {
+	font-size: 18px;
 	padding: 0 10px;
 	line-height: 40px;
 	text-align: left;
