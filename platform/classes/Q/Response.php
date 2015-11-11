@@ -1278,8 +1278,10 @@ class Q_Response
 		$mobile = Q_Request::isMobile() ? 'Q_mobile' : 'Q_notMobile';
 		$ie = Q_Request::isIE() ? 'Q_ie' : 'Q_notIE';
 		$ie8 = Q_Request::isIE(0, 8) ? 'Q_ie8OrBelow' : 'Q_notIE8OrBelow';
+		$uri = Q_Dispatcher::uri();
+		$classes = "{$uri->module} {$uri->module}_{$uri->action}";
 		$result = 'lang="en" prefix="og: http://ogp.me/ns# object: http://ogp.me/ns/object#" '
-			. "class='$touchscreen $mobile $ie $ie8'";
+			. "class='$touchscreen $mobile $ie $ie8 $classes'";
 		return $result;
 	}
 
