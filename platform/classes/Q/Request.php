@@ -525,18 +525,16 @@ class Q_Request
 		if (preg_match('/(.*)QWebView(.*)/', $useragent)
 		or preg_match('/(.*)QCordova(.*)/', $useragent)
 		or preg_match('/(iPhone|iPod|iPad).*AppleWebKit(?!.*Version)/i', $useragent)) {
-			$result = true;
-		} else {
-			$result = false;
+			return true;
 		}
-		return $result;
+		return false;
 	}
 	
 	/**
 	 * Detects whether the request is coming from a WebView enabled with Cordova
 	 * @method isCordova
 	 * @static
-	 * @return {boolean}
+	 * @return {string|boolean} The version of the cordova, or false if not cordova.
 	 */
 	static function isCordova()
 	{
@@ -548,8 +546,11 @@ class Q_Request
 			return null;
 		}
 		$useragent = $_SERVER['HTTP_USER_AGENT'];
-		$result = preg_match('/(.*)QCordova(.*)/', $useragent) ? true : false;
-		return $result;
+		$version = Q_Request::special('cordova', null);
+		if ($version or preg_match('/(.*)QCordova(.*)/', $useragent)) {
+			return $version ? $version : "?";
+		}
+		return false;
 	}
 	
 	/**
