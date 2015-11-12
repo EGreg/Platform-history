@@ -8740,6 +8740,15 @@ de.addClass(Q.info.isTouchscreen  ? 'Q_touchscreen' : 'Q_notTouchscreen');
 de.addClass(Q.info.isMobile ? 'Q_mobile' : 'Q_notMobile');
 de.addClass(Q.info.isAndroid() ? 'Q_android' : 'Q_notAndroid');
 
+Q.Page.onLoad('').set(function () {
+	de.addClass(Q.info.uri.module + '_' + Q.info.uri.action)
+		.addClass(Q.info.uri.module);
+}, 'Q');
+Q.Page.beforeUnload('').set(function () {
+	de.removeClass(Q.info.uri.module + '_' + Q.info.uri.action)
+		.removeClass(Q.info.uri.module);
+}, 'Q');
+
 function _touchScrollingHandler(event) {
     var p = event.target;
 	var pos;
