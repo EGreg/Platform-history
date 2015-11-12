@@ -25,7 +25,7 @@ var MyApp = (function (Q, $) {
 		return function () {
 			// unloading;
 		};
-	});
+	}, 'MyApp');
 	
 	Q.page('', function () { // all pages
 		
@@ -60,7 +60,7 @@ var MyApp = (function (Q, $) {
 			}
 		}).css('cursor', 'pointer');
 		
-	});
+	}, 'MyApp');
 	
 	// example stream
 	Q.Streams.define("MyApp/cool", "js/streams/cool.js");
