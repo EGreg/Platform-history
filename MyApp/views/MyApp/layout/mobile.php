@@ -40,6 +40,7 @@
 	<?php echo Q_Response::styles(true, "\n\t") ?> 
 </head>
 <body>
+	<div id="status_background"></div>
 	<div id="dashboard_slot">
 <!-- - - - - - - - - - - - - begin dashboard slot- - - - - - - - - - - - - - - - -->
 <?php echo $dashboard ?> 
