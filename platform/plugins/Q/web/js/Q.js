@@ -10412,7 +10412,7 @@ function _addHandlebarsHelpers() {
 			var hash = (options && options.hash);
 			if (hash) {
 				for (var k in hash) {
-					Q.setObject(k, hash[k], o, '_');
+					Q.setObject(k, hash[k], o, '-');
 				}
 			}
 			Q.extend(o, this[name], this['id:'+id]);
