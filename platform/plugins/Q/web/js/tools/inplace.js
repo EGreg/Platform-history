@@ -247,6 +247,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		}
 		container_span.addClass('Q_editing');
 		container_span.addClass('Q_discouragePointerEvents');
+		_beganEditing(container_span);
 		if (state.bringToFront) {
 			var $bringToFront = $(state.bringToFront);
 			var pos = $bringToFront.css('position');
@@ -415,6 +416,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		container_span.removeClass('Q_editing')
 			.removeClass('Q_nocancel')
 			.removeClass('Q_discouragePointerEvents');
+		_finishedEditing(container_span);
 		_hideEditButtons();
 		noCancel = false;
 		Q.handle(state.onSave, tool, [response.slots.Q_inplace]);
@@ -438,7 +440,8 @@ function _Q_inplace_tool_constructor(element, options) {
 		focusedOn = null;
 		tool.restoreActions();
 		container_span.removeClass('Q_editing')
-			.removeClass('Q_discouragePointerEvents');;
+			.removeClass('Q_discouragePointerEvents');
+		_finishedEditing(container_span);
 		_hideEditButtons();
 		Q.handle(state.onCancel, tool);
 		Q.Pointer.cancelClick();
@@ -582,7 +585,25 @@ function _Q_inplace_tool_constructor(element, options) {
 	}
 }
 
+function _beganEditing(container_span) {
+	container_span.parents().each(function () {
+		var $this = $(this);
+		$this.data(_stateKey_editing, $this.hasClass('Q_editing'))
+			.addClass('Q_editing');
+	});
+}
+
+function _finishedEditing(container_span) {
+	container_span.parents().each(function () {
+		var $this = $(this);
+		if (!$this.data(_stateKey_editing)) {
+			$this.removeClass('Q_editing');
+		}
+	});
+}
+
 var _stateKey_zIndex = 'Q/inplace zIndex';
 var _stateKey_position = 'Q/inplace position';
+var _stateKey_editing = 'Q/inplace Q_editing';
 
 })(Q, jQuery, window, document);

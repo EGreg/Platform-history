@@ -658,3 +658,5 @@
 .Q_notMobile .Q_overlay.Streams_completeInvited_dialog,
 .Q_notMobile .Q_overlay.Streams_access_tool_dialog,
 .Q_notMobile .Q_overlay.Streams_subscription_tool_dialog { width: 500px; }
+
+.Streams_inplace_tool.Q_editing { z-index: 99999; }
