@@ -110,6 +110,10 @@ Q.Tool.define('Q/filter', function (options) {
 	fullscreen: Q.info.isMobile,
 	onFilter: new Q.Event()
 }, {
+	/**
+	 * Show the filtered results
+	 * @method begin
+	 */
 	begin: function () {
 		var tool = this;
 		tool.canceledBlur = true;
@@ -175,6 +179,10 @@ Q.Tool.define('Q/filter', function (options) {
 				: $container.offset().top - $te.offset().top + topH
 		}).show();
 	},
+	/**
+	 * Hide the filtered results
+	 * @method end
+	 */
 	end: function () {
 		var tool = this;
 		var state = tool.state;
