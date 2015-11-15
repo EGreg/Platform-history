@@ -54,15 +54,15 @@
 .Q_contextual .Q_listing .Q_permanently_selected,
 .Q_selectable_listing .Q_permanently_selected
 {
-    background: #eee;
-	background: -moz-linear-gradient(top,  #eee 0%, #ccc 100%);
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#eee), color-stop(100%,#ccc));
-	background: -webkit-linear-gradient(top,  #eee 0%,#ccc 100%);
-	background: -o-linear-gradient(top,  #eee 0%,#ccc 100%);
-	background: -ms-linear-gradient(top,  #eee 0%,#ccc 100%);
-	background: linear-gradient(top,  #eee 0%,#ccc 100%);
+    background: #aaa;
+	background: -moz-linear-gradient(top,  #aaa 0%, #eee 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#aaa), color-stop(100%,#eee));
+	background: -webkit-linear-gradient(top,  #aaa 0%,#eee 100%);
+	background: -o-linear-gradient(top,  #aaa 0%,#eee 100%);
+	background: -ms-linear-gradient(top,  #aaa 0%,#eee 100%);
+	background: linear-gradient(top,  #aaa 0%,#eee 100%);
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eaf5ff', endColorstr='#98bede',GradientType=0 );
-	border-top: solid 1px #ccc;
+	border-top: solid 1px #eee;
 }
 
 .Q_contextual .Q_listing * {
@@ -72,13 +72,13 @@
 .Q_contextual .Q_listing .Q_current,
 .Q_selectable_listing .Q_current
 {
-	background: #ccc;
-	background: -moz-linear-gradient(top,  #aaa 0%, #ccc 100%);
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#aaa), color-stop(100%,#ccc));
-	background: -webkit-linear-gradient(top,  #aaa 0%,#ccc 100%);
-	background: -o-linear-gradient(top,  #aaa 0%,#ccc 100%);
-	background: -ms-linear-gradient(top,  #aaa 0%,#ccc 100%);
-	background: linear-gradient(top,  #aaa 0%,#ccc 100%);
+	background: #eee;
+	background: -moz-linear-gradient(top,  #aaa 0%, #eee 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#aaa), color-stop(100%,#eee));
+	background: -webkit-linear-gradient(top,  #aaa 0%,#eee 100%);
+	background: -o-linear-gradient(top,  #aaa 0%,#eee 100%);
+	background: -ms-linear-gradient(top,  #aaa 0%,#eee 100%);
+	background: linear-gradient(top,  #aaa 0%,#eee 100%);
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eaf5ff', endColorstr='#98bede',GradientType=0 );
 }
 
