@@ -864,7 +864,7 @@ Streams.refresh.beforeRequest = new Q.Event();
 
 /**
  * When a stream is retained, it is refreshed when Streams.refresh() or
- * Streams.refresh() are called. You can release it with stream.release().
+ * stream.refresh() are called. You can release it with stream.release().
  * Call this function in a chain before calling Streams.get, Streams.related, etc.
  * in order to set the key for retaining the streams those functions obtain.
  * @static
@@ -1230,7 +1230,7 @@ Stream.define = Streams.define;
 /**
  * Call this function to retain a particular stream.
  * When a stream is retained, it is refreshed when Streams.refresh() or
- * Streams.refresh() are called. You can release it with stream.release().
+ * stream.refresh() are called. You can release it with stream.release().
  * 
  * @static
  * @method retain
@@ -1347,7 +1347,7 @@ var Sp = Stream.prototype;
 
 /**
  * When a stream is retained, it is refreshed when Streams.refresh() or
- * Streams.refresh() are called. You can release it with stream.release().
+ * stream.refresh() are called. You can release it with stream.release().
  * Call this function in a chain before calling stream.related, etc.
  * in order to set the key for retaining the streams those functions obtain.
  * 
@@ -1579,8 +1579,17 @@ Sp.onFieldChanged = function _Stream_prototype_onFieldChanged (field) {
 };
 
 /**
- * Event factory for listening to this stream being related to other streams
+ * Event factory for listening for changed stream fields based on name.
  * 
+ * @event onClosed
+ */
+Sp.onClosed = function _Stream_prototype_onClosed () {
+	return Stream.onClosed(this.fields.publisherId, this.fields.name, field);
+};
+
+/**
+ * Event factory for listening to this stream being related to other streams
+ *
  * @event onRelatedFrom
  */
 Sp.onRelatedFrom = function _Stream_prototype_onRelatedFrom () {
@@ -1868,6 +1877,7 @@ Sp.unrelate = Sp.unrelateFrom = function _Stream_prototype_unrelateFrom (fromPub
  * Returns Q.Event which occurs on a message post event coming from socket.io
  * Generic callbacks can be assigend by setting messageType to ""
  * @event onMessage
+ * @static
  * @param publisherId {String} id of publisher which is publishing the stream
  * @param streamName {String} name of stream which the message is posted to
  * @param messageType {String} type of the message, or its ordinal
@@ -1877,6 +1887,7 @@ Stream.onMessage = Q.Event.factory(_streamMessageHandlers, ["", "", ""]);
 /**
  * Returns Q.Event which occurs when fields of the stream officially changed
  * @event onFieldChanged
+ * @static
  * @param publisherId {String} id of publisher which is publishing the stream
  * @param streamName {String} optional name of stream which the message is posted to
  * @param fieldName {String} optional name of the field to listen for
@@ -1886,6 +1897,7 @@ Stream.onFieldChanged = Q.Event.factory(_streamFieldChangedHandlers, ["", "", ""
 /**
  * Returns Q.Event which occurs when attributes of the stream officially updated
  * @event onUpdated
+ * @static
  * @param publisherId {String} id of publisher which is publishing the stream
  * @param streamName {String} optional name of stream which the message is posted to
  * @param attributeName {String} optional name of the attribute to listen for
@@ -1895,6 +1907,7 @@ Stream.onUpdated = Q.Event.factory(_streamUpdatedHandlers, ["", "", ""]);
 /**
  * Returns Q.Event which occurs when attributes of the stream officially updated
  * @event onUpdated
+ * @static
  * @param publisherId {String} id of publisher which is publishing the stream
  * @param streamName {String} optional name of stream which the message is posted to
  * @param attributeName {String} optional name of the attribute to listen for
@@ -1905,6 +1918,7 @@ Stream.onUpdated = Q.Event.factory(_streamUpdatedHandlers, ["", "", ""]);
  * Returns Q.Event which occurs when a stream has been closed
  * (and perhaps has been marked for removal)
  * @event onClosed
+ * @static
  * @param publisherId {String} id of publisher which is publishing this stream
  * @param streamName {String} optional name of this stream
  */
@@ -1913,6 +1927,7 @@ Stream.onClosed = Q.Event.factory(_streamClosedHandlers, ["", ""]);
 /**
  * Returns Q.Event which occurs when another stream has been related to this stream
  * @event onRelatedFrom
+ * @static
  * @param publisherId {String} id of publisher which is publishing this stream
  * @param streamName {String} optional name of this stream
  */
@@ -1921,6 +1936,7 @@ Stream.onRelatedTo = Q.Event.factory(_streamRelatedToHandlers, ["", ""]);
 /**
  * Returns Q.Event which occurs when this stream was related to a category stream
  * @event onRelatedFrom
+ * @static
  * @param publisherId {String} id of publisher which is publishing this stream
  * @param streamName {String} optional name of this stream
  */
@@ -1929,6 +1945,7 @@ Stream.onRelatedFrom = Q.Event.factory(_streamRelatedFromHandlers, ["", ""]);
 /**
  * Returns Q.Event which occurs when another stream has been unrelated to this stream
  * @event onUnrelatedTo
+ * @static
  * @param publisherId {String} id of publisher which is publishing this stream
  * @param streamName {String} optional name of this stream
  */
@@ -1937,6 +1954,7 @@ Stream.onUnrelatedTo = Q.Event.factory(_streamUnrelatedToHandlers, ["", ""]);
 /**
  * Returns Q.Event which occurs when this stream was unrelated to a category stream
  * @event onUnrelatedFrom
+ * @static
  * @param publisherId {String} id of publisher which is publishing this stream
  * @param streamName {String} optional name of this stream
  */
@@ -1945,6 +1963,7 @@ Stream.onUnrelatedFrom = Q.Event.factory(_streamUnrelatedFromHandlers, ["", ""])
 /**
  * Returns Q.Event which occurs when another stream has been related to this stream
  * @event onUpdatedRelateTo
+ * @static
  * @param publisherId {String} id of publisher which is publishing this stream
  * @param streamName {String} optional name of this stream
  */
@@ -1953,6 +1972,7 @@ Stream.onUpdatedRelateTo = Q.Event.factory(_streamUpdatedRelateToHandlers, ["", 
 /**
  * Returns Q.Event which occurs when this stream was related to a category stream
  * @event onUpdatedRelateFrom
+ * @static
  * @param publisherId {String} id of publisher which is publishing this stream
  * @param streamName {String} optional name of this stream
  */
