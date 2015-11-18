@@ -26,7 +26,7 @@ Q.Tool.jQuery('Q/textfill',
 		
 		if (options.refreshOnLayout) {
 			$this.state('Q/textfill').layoutEventKey
-			= Q.onLayout(this).set(function () {
+			= Q.onLayout(this[0]).set(function () {
 				$this.plugin('Q/textfill', 'refresh');
 			});
 		}
@@ -75,7 +75,7 @@ Q.Tool.jQuery('Q/textfill',
         },
 		
 		remove: function () {
-			Q.onLayout(this).remove(this.state('Q/textfill').layoutEventKey);
+			Q.onLayout(this[0]).remove(this.state('Q/textfill').layoutEventKey);
 		}
     }
 
