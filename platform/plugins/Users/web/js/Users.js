@@ -907,7 +907,7 @@ Users.setIdentifier = function(options) {
 /*
  * Private functions
  */
-function login_callback(response) {
+function login_callback(err, response) {
 	var identifier_input = $('#Users_login_identifier');
 	var form = $('#Users_login_step1_form');
 	identifier_input.css('background-image', 'none');
@@ -1358,10 +1358,8 @@ function login_setupDialog(usingProviders, scope, dialogContainer, identifierTyp
 			'background-size': 'auto ' + h + 'px'
 		}).trigger('Q_refresh');
 		var url = Q.action(Users.login.options.userQueryUri) + '?' + $(this).serialize();
-		$.ajax({
-			url: Q.ajaxExtend(url, 'data'),
-			success: login_callback,
-			async: !Q.info.isTouchscreen
+		Q.request(url, ['data'], login_callback, {
+			xhr: Q.info.isTouchscreen ? 'sync' : {}
 		});
 		event.preventDefault();
 		return;

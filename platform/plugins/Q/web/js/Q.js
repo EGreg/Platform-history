@@ -674,10 +674,10 @@ Elp.addClass = function (className) {
 
 /**
  * Get the text content of an element (as opposed to its inner HTML)
- * @method text
+ * @method innerText
  * @return {String}
  */
-Elp.text = function() {
+Elp.innerText = function() {
 	return this.textContent || this.innerText;
 };
 
@@ -5064,7 +5064,7 @@ function _Q_Event_stopPropagation() {
 		var element = this[0];
 		var matches = element === root
 		|| element === document
-		|| (element instanceof HTMLElement
+		|| (element instanceof Element
 			&& element !== this.target
 		    && element.contains(this.target));
 		if (matches && this[1] === event.type) {
@@ -5320,7 +5320,7 @@ Q.action = function _Q_action(uri, fields, options) {
  *  If a string, then treats it as a URL and
  *  appends ajax fields to the end of the querystring.
  *  If an object, then adds properties to it.
- * @param {String} slotNames
+ * @param {String|Object|Array} slotNames
  *  If a string, expects a comma-separated list of slot names
  *  If an object or array, converts it to a comma-separated list
  * @param {Object} options
@@ -5450,9 +5450,9 @@ Q.req = function _Q_req(uri, slotNames, callback, options) {
  *  Optional object of fields to pass
  * @param {String} url
  *  The URL you pass will normally be automatically extended through Q.ajaxExtend
- * @param {String|Object} slotNames
+ * @param {String|Array} slotNames
  *  If a string, expects a comma-separated list of slot names
- *  If an object, converts it to a comma-separated list
+ *  If an array, converts it to a comma-separated list
  * @param {Function} callback
  *  The err and parsed content will be passed to this callback function,
  *  (unless parse is false, in which case the raw content is passed as a String),
@@ -5794,9 +5794,9 @@ Q.ajaxErrors = function _Q_ajaxErrors(errors, fields) {
  *  Optional object of fields to pass
  * @param {String} url
  *  The URL you pass will normally be automatically extended through Q.ajaxExtend
- * @param {String|Object} slotNames
+ * @param {String|Array} slotNames
  *  If a string, expects a comma-separated list of slot names
- *  If an object, converts it to a comma-separated list
+ *  If an array, converts it to a comma-separated list
  * @param {Function} callback
  *  The JSON will be passed to this callback function
  * @param {Object} options
@@ -5808,9 +5808,10 @@ Q.jsonRequest = Q.request;
  * Serialize a plain object, with possible sub-objects, into an http querystring.
  * @static
  * @method serializeFields
- * @param {Object} fields
+ * @param {Object|String|HTMLElement} fields
  *  The object to serialize into a querystring that can be sent to PHP or something.
  *  The algorithm will recursively walk the object, and skip undefined values.
+ *  You can also pass a form element here. If you pass a string, it will simply be returned.
  * @param {Array} keys
  *  An optional array of keys into the object, in the order to serialize things
  * @param {boolean} returnAsObject
@@ -5821,6 +5822,23 @@ Q.jsonRequest = Q.request;
 Q.serializeFields = function _Q_serializeFields(fields, keys, returnAsObject) {
 	if (Q.isEmpty(fields)) {
 		return '';
+	}
+	if (typeof fields === 'string') {
+		return fields;
+	}
+	if (fields instanceof Element) {
+		if (fields.tagName.toUpperCase() !== 'FORM') {
+			throw new Q.Error("Q.serializeFields: element must be a FORM");
+		}
+		var result = '';
+		Q.each(fields.querySelectorAll('input, textarea, select'), function () {
+			var value = (this.tagName.toUpperCase() === 'SELECT')
+				? this.options[this.selectedIndex].text
+				: this.value;
+			result += (result ? '&' : '') + this.getAttribute('name')
+				+ '=' + encodeURIComponent(value);
+		});
+		return result;
 	}
 	var parts = [];
 	function _params(prefix, obj) {
@@ -6698,7 +6716,7 @@ var _latestLoadUrlObjects = {};
  * @param {boolean} [options.loadExtras=false] if true, asks the server to load the extra scripts, stylesheets, etc. that are loaded on first page load
  * @param {Number|boolean} [options.timeout=1500] milliseconds to wait for response, before showing cancel button and triggering onTimeout event, if any, passed to the options
  * @param {boolean} [options.quiet=false] if true, allows visual indications that the request is going to take place.
- * @param {Array} [options.slotNames] an array of slot names to request and process (default is all slots in Q.info.slotNames)
+ * @param {String|Array} [options.slotNames] an array of slot names to request and process (default is all slots in Q.info.slotNames)
  * @param {Array} [options.idPrefixes] optional array of values to pass to PHP method Q_Html::pushIdPrefix for each slotName
  * @param {Object} [options.retainSlots] an object of {slotName: whetherToRetain} pairs, retained slots aren't requested
  * @param {boolean} [options.slotContainer] optional function taking (slotName, response) and returning the element, if any, to fill for that slot

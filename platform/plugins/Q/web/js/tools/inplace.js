@@ -350,38 +350,32 @@ function _Q_inplace_tool_constructor(element, options) {
 			used_placeholder = true;
 		}
 
-		$.ajax({
-			url: Q.ajaxExtend(url, 'Q_inplace', {'method': method}),
-			type: 'POST',
-			data: form.serialize(),
-			dataType: 'json',
-			error: function(xhr, status, except) {
-				onSaveErrors('ajax status: ' + status + '... try again');
-			},
-			success: function(response) {
-				if (typeof response !== 'object') {
-					onSaveErrors("returned data is not an object");
-					return;
-				}
-				if (response.errors && response.errors.length) {
-					onSaveErrors(response.errors[0].message);
-					return;
-				}
-
-				function afterLoad(alreadyLoaded) {
-					if (('scriptLines' in response) && ('Q_inplace' in response.scriptLines)) {
-						eval(response.scriptLines.Q_inplace);
-					}
-				}
-
-				if(response.scripts && response.scripts.Q_inplace && response.scripts.Q_inplace.length) {
-					Q.addScript(response.scripts.Q_inplace, afterLoad);
-				} else {
-					afterLoad();
-				}
-
-				onSaveSuccess(response);
+		Q.request(url, ['Q_inplace'], function (err, response) {
+			if (typeof response !== 'object') {
+				onSaveErrors("returned data is not an object");
+				return;
 			}
+			if (response.errors && response.errors.length) {
+				onSaveErrors(response.errors[0].message);
+				return;
+			}
+
+			function afterLoad(alreadyLoaded) {
+				if (('scriptLines' in response) && ('Q_inplace' in response.scriptLines)) {
+					eval(response.scriptLines.Q_inplace);
+				}
+			}
+
+			if(response.scripts && response.scripts.Q_inplace && response.scripts.Q_inplace.length) {
+				Q.addScript(response.scripts.Q_inplace, afterLoad);
+			} else {
+				afterLoad();
+			}
+
+			onSaveSuccess(response);
+		}, {
+			method: method,
+			fields: Q.serializeFields(form[0])
 		});
 
 		if (used_placeholder) {
