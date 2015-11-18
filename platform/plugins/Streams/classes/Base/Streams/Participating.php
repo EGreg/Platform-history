@@ -345,6 +345,7 @@ abstract class Base_Streams_Participating extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_fresh
 	 * Returns the maximum integer that can be assigned to the fresh field
 	 * @return {integer}
 	 */

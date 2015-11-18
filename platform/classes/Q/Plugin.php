@@ -526,7 +526,7 @@ EOT;
 
 		// Symbolic links
 		echo 'Creating symbolic links'.PHP_EOL;
-		self::symlink($plugin_dir.DS.'web', $app_web_plugins_dir.DS.$plugin_name);
+		Q_Utils::symlink($plugin_dir.DS.'web', $app_web_plugins_dir.DS.$plugin_name);
 
 		//  Checking if schema update is requested and updating database version
 		$connections = Q_Config::get('Q', 'pluginInfo', $plugin_name, 'connections', array());
@@ -595,52 +595,5 @@ EOT;
 
 		// Return the password
 		return $password;
-	}
-
-	/**
-	 * Create a symlink
-	 * @method symlink
-	 * @static
-	 * @private
-	 * @param {string} $target
-	 * @param {string} $link
-	 */
-	private static function symlink($target, $link)
-	{
-		// Make sure destination directory exists
-		if(!file_exists(dirname($link))) {
-			$mask = umask(Q_Config::get('Q', 'internal', 'umask', 0000));
-			mkdir(dirname($link), 0777, true);
-			umask($mask);
-		}
-
-		$is_win = (substr(strtolower(PHP_OS), 0, 3) === 'win');
-
-		if(is_dir($link) && !$is_win && !is_link($link)) {
-			echo Q_Utils::colored(
-				"[WARN] Symlink '$link' (target: '$target') was not created".PHP_EOL, 
-				'red', 'yellow'
-			);
-			return;
-		}
-
-		if (file_exists($target)) {
-			if ($is_win && is_dir($link)) {
-				rmdir($link);
-			} else if (is_link($link)) {
-				unlink($link);
-			}
-		}
-
-		if($is_win) exec('mklink /j "' . $link . '" "' . $target . '"');
-		else @symlink($target, $link);
-		
-		if(!file_exists($link)) {
-			echo Q_Utils::colored(
-				"[WARN] Symlink '$link' (target: '$target') was not created".PHP_EOL, 
-				'red', 'yellow'
-			);
-			return;
-		}
 	}
 }

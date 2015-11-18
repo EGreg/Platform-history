@@ -527,6 +527,7 @@ abstract class Base_Awards_Zipcode extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_accuracy
 	 * Returns the maximum integer that can be assigned to the accuracy field
 	 * @return {integer}
 	 */

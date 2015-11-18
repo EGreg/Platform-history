@@ -837,7 +837,7 @@ class Q_Utils
 		}
 		return $colored_string .  $text . "\033[0m";
 	}
-		
+	
 	static function cp ($src, $dest)
 	{
 		if (is_file($src)) {
@@ -858,6 +858,52 @@ class Q_Utils
 			}
 		}
 		return true;
+	}
+	
+	/**
+	 * Create a symlink
+	 * @method symlink
+	 * @static
+	 * @param {string} $target
+	 * @param {string} $link
+	 * @throws Q_Exception if link could not be created
+	 */
+	static function symlink($target, $link)
+	{
+		// Make sure destination directory exists
+		if(!file_exists(dirname($link))) {
+			$mask = umask(Q_Config::get('Q', 'internal', 'umask', 0000));
+			mkdir(dirname($link), 0777, true);
+			umask($mask);
+		}
+
+		$is_win = (substr(strtolower(PHP_OS), 0, 3) === 'win');
+
+		if(is_dir($link) && !$is_win && !is_link($link)) {
+			echo Q_Utils::colored(
+				"[WARN] Symlink '$link' (target: '$target') was not created".PHP_EOL, 
+				'red', 'yellow'
+			);
+			return;
+		}
+
+		if (file_exists($target)) {
+			if ($is_win && is_dir($link)) {
+				rmdir($link);
+			} else if (is_link($link)) {
+				unlink($link);
+			}
+		}
+
+		if($is_win) {
+			exec('mklink /j "' . $link . '" "' . $target . '"');
+		} else {
+			@symlink($target, $link);
+		}
+		
+		if(!file_exists($link)) {
+			throw new Q_Exception("Link $link to target $target' was not created");
+		}
 	}
 	
 	protected static $urand;

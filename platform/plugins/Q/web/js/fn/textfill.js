@@ -12,15 +12,24 @@
  * @param {Object} [options] options object that contains function parameters
  *   @param {Number} [options.maxFontPixels] Maximum size of text font,
  *   set this if your text container is large and you don't want to have extra large text on page
- *   @param {Number} [options.maxLines] Maximum number of lines,
+ *   @param {Number} [options.maxLines=null] Maximum number of lines,
  *   set this if you'd like to have a maximum number of lines.
- *   @default null
+ *   @param {boolean} [options.refreshOnLayout=true] Whether to refresh the textfill on any layout change that affects its container
+ *   @param {boolean} [options.fillPadding=false] Whether to have the text extend into the padding as well
  */
 Q.Tool.jQuery('Q/textfill',
 
     function _Q_textfill(options) {
 
-        return $(this).plugin("Q/textfill", 'refresh', options);
+		var $this = $(this);
+		$this.plugin('Q/textfill', 'refresh', options);
+		
+		if (options.refreshOnLayout) {
+			$this.state('Q/textfill').layoutEventKey
+			= Q.onLayout(this).set(function () {
+				$this.plugin('Q/textfill', 'refresh');
+			});
+		}
 
     },
 
@@ -43,8 +52,9 @@ Q.Tool.jQuery('Q/textfill',
 				return false;
 			}
             var fontSize = o.maxFontPixels || (ourElement.height() + 10);
-            var maxHeight = $(this).innerHeight();
-            var maxWidth = $(this).innerWidth();
+			var $this = $(this);
+            var maxHeight = o.fillPadding ? $this.innerHeight() : $this.height();
+            var maxWidth = o.fillPadding ? $this.innerWidth() : $this.width();
             var textHeight;
             var textWidth;
 			var lines;
@@ -62,7 +72,11 @@ Q.Tool.jQuery('Q/textfill',
 				)
 			);
             return this;
-        }
+        },
+		
+		remove: function () {
+			Q.onLayout.remove(this.state('Q/textfill').layoutEventKey);
+		}
     }
 
 );

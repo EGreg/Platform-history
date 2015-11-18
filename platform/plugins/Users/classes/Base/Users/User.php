@@ -399,6 +399,7 @@ abstract class Base_Users_User extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_sessionCount
 	 * Returns the maximum integer that can be assigned to the sessionCount field
 	 * @return {integer}
 	 */
@@ -431,6 +432,7 @@ abstract class Base_Users_User extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_fb_uid
 	 * Returns the maximum integer that can be assigned to the fb_uid field
 	 * @return {integer}
 	 */
@@ -463,6 +465,7 @@ abstract class Base_Users_User extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_tw_uid
 	 * Returns the maximum integer that can be assigned to the tw_uid field
 	 * @return {integer}
 	 */

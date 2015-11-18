@@ -1630,6 +1630,7 @@ EOT;
 					$js_properties[] = "{integer} $field_name";
 					$functions["maxSize_$field_name"]['comment'] = <<<EOT
 	$dc
+	 * @method maxSize_$field_name
 	 * Returns the maximum integer that can be assigned to the $field_name field
 	 * @return {integer}
 	 */

@@ -13,54 +13,32 @@
  * @constructor
  * @param {Object} [options] options for function configuration
  * @param {Object} [options.shadow] shadow effect configuration
- * @param {String} [options.shadow.src] src , path to image for shadow
- * @default "plugins/Q/img/shadow3d.png"
- * @param {Number} [options.shadow.stretch] stretch
- * @default 1.5
- * @param {Number} [options.shadow.dip] dip
- * @default 0.25
- * @param {Number} [options.shadow.opacity] opacity
- * @default 0.5
+ * @param {String} [options.shadow.src="plugins/Q/img/shadow3d.png"] src , path to image
+ * @param {Number} [options.shadow.stretch=1.5] stretch
+ * @param {Number} [options.shadow.dip=0.25] dip
+ * @param {Number} [options.shadow.opacity=0.5] opacity
  * @param {Object} [options.press] press
- * @param {Number} [options.press.duration] duration
- * @default 100
- * @param {Number} [options.press.size] size
- * @default 0.85
- * @param {Number} [options.press.opacity] opacity
- * @default 1
- * @param {Q.Animation.ease} [option.press.ease] ease
- * @default Q.Animation.ease.linear
+ * @param {Number} [options.press.duration=100] duration
+ * @param {Number} [options.press.size=0.85] size
+ * @param {Number} [options.press.opacity=1] opacity
+ * @param {Q.Animation.ease} [option.press.ease=Q.Animation.ease.linear] ease
  * @param {Object} [options.release] release
- * @param {Number} [options.release.duration] duration
- * @default 75
- * @param {Number} [options.release.size] size
- * @default 1.3
- * @param {Number} [options.release.opacity] opacity
- * @default 0.5
- * @param {Q.Animation.ease} [options.release.ease] ease
- * @default Q.Animation.ease.smooth
+ * @param {Number} [options.release.duration=75] duration
+ * @param {Number} [options.release.size=1.3] size
+ * @param {Number} [options.release.opacity=0.5] opacity
+ * @param {Q.Animation.ease} [options.release.ease=Q.Animation.ease.smooth] ease
  * @param {Object} [options.snapback] snapback
- * @param {Number} [options.snapback.duration] duration
- * @default 75
- * @param {Q.Animation.ease} [options.snapback.ease]
- * @default Q.Animation.ease.smooth
+ * @param {Number} [options.snapback.duration=75] duration
+ * @param {Q.Animation.ease} [options.snapback.ease=Q.Animation.ease.smooth]
  * @param {Object} [options.center] center
- * @param {Number} [options.center.x] x
- * @default 0.5
- * @param {Number} [options.center.y] y
- * @default 0.5
- * @param {Boolean} [options.selectable]
- * @default false
- * @param {Boolean} [options.triggers] A jquery selector or jquery of additional elements to trigger the clickable
- * @default null
+ * @param {Number} [options.center.x=0.5] x
+ * @param {Number} [options.center.y=0.5] y
+ * @param {Boolean} [options.selectable=false]
+ * @param {Boolean} [options.triggers=null] A jquery selector or jquery of additional elements to trigger the clickable
  * @param {Q.Event} [options.onPress] onPress occurs after the user begins a click or tap.
- * @default new Q.Event()
  * @param {Q.Event} [options.onRelease] onRelease occurs after the user ends the click or tap. This event receives parameters (evt, overElement)
- * @default new Q.Event()
  * @param {Q.Event} [options.afterRelease] afterRelease occurs after the user ends the click or tap and the release animation completed. This event receives parameters (evt, overElement)
- * @default new Q.Event()
- * @param {Number} [options.cancelDistance] cancelDistance
- * @default 15
+ * @param {Number} [options.cancelDistance=15] cancelDistance
  *
  */
 Q.Tool.jQuery('Q/clickable',

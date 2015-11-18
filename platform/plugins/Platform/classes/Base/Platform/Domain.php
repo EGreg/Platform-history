@@ -234,6 +234,7 @@ abstract class Base_Platform_Domain extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_publisherId
 	 * Returns the maximum integer that can be assigned to the publisherId field
 	 * @return {integer}
 	 */

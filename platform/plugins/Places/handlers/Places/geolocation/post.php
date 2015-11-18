@@ -15,14 +15,9 @@
  * @param [$_REQUEST.heading]
  * @param [$_REQUEST.speed]
  * @param [$_REQUEST.timezone]
- * @param [$_REQUEST.]
- * @param [$_REQUEST.]
- *
- * @throws {$1}
- * @throws {$1}
- * @throws {$1}
- * @throws {$1}
- * @throws {$1} *
+ * @param [$_REQUEST.placeName] optional
+ * @param [$_REQUEST.state] optional
+ * @param [$_REQUEST.country] optional
  */
 function Places_geolocation_post()
 {
@@ -41,7 +36,10 @@ function Places_geolocation_post()
 		'speed',
 		'miles',
 		'zipcode',
-		'timezone'
+		'timezone',
+		'placeName',
+		'state',
+		'country'
 	);
 	$attributes = Q::take($_REQUEST, $fields);
 	if (isset($attributes['latitude'])
@@ -51,14 +49,14 @@ function Places_geolocation_post()
 			array('latitude', 'longitude')
 		);
 	}
-	if (!empty($attributes['zipcode'])
-	and !isset($attributes['latitude'])) {
+	if (!empty($attributes['zipcode']) and !isset($attributes['latitude'])) {
 		$z = new Places_Zipcode();
 		$z->countryCode = 'US';
 		$z->zipcode = $attributes['zipcode'];
 		if ($z->retrieve()) {
 			$attributes['latitude'] = $z->latitude;
 			$attributes['longitude'] = $z->longitude;
+			$attributes['country'] = $z->countryCode;
 		} else {
 			throw new Q_Exception_MissingRow(array(
 				'table' => 'zipcode',
@@ -72,18 +70,19 @@ function Places_geolocation_post()
 			Q_Config::expect('Places', 'nearby', 'defaultMiles')
 		)
 	);
-	if (empty($attributes['zipcode'])
-	and isset($attributes['latitude'])) {
+	if (empty($attributes['zipcode']) and isset($attributes['latitude'])) {
 		$zipcodes = Places_Zipcode::nearby(
 			$attributes['latitude'],
 			$attributes['longitude'],
 			$attributes['miles'],
 			1
 		);
-		$zipcode = $zipcodes ? reset($zipcodes) : null;
-		$attributes['zipcode'] = $zipcode->zipcode;
-		$attributes['placeName'] = $zipcode->placeName;
-		$attributes['state'] = $zipcode->state;
+		if ($zipcode = $zipcodes ? reset($zipcodes) : null) {
+			$attributes['zipcode'] = $zipcode->zipcode;
+			$attributes['placeName'] = $zipcode->placeName;
+			$attributes['state'] = $zipcode->state;
+			$attributes['country'] = $zipcode->countryCode;
+		}
 	}
 	$stream->setAttribute($attributes);
 	$stream->save();

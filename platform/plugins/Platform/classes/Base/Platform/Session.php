@@ -229,6 +229,7 @@ abstract class Base_Platform_Session extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_insertedTime
 	 * Returns the maximum integer that can be assigned to the insertedTime field
 	 * @return {integer}
 	 */

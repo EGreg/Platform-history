@@ -27,8 +27,10 @@ class Q_Valid
 		if (!is_string($url))
 			return false;
 		$url_parts = parse_url($url);
-		if (empty($url_parts['scheme']))
+		if (empty($url_parts['scheme'])
+		and substr($url, 0, 2) !== '//') {
 			return false;
+		}
 		if ($check_domain) {
 			if (! self::domain($url_parts['host']))
 				return false;

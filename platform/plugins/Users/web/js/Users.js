@@ -907,7 +907,7 @@ Users.setIdentifier = function(options) {
 /*
  * Private functions
  */
-function login_callback(response) {
+function login_callback(err, response) {
 	var identifier_input = $('#Users_login_identifier');
 	var form = $('#Users_login_step1_form');
 	identifier_input.css('background-image', 'none');
@@ -1358,10 +1358,8 @@ function login_setupDialog(usingProviders, scope, dialogContainer, identifierTyp
 			'background-size': 'auto ' + h + 'px'
 		}).trigger('Q_refresh');
 		var url = Q.action(Users.login.options.userQueryUri) + '?' + $(this).serialize();
-		$.ajax({
-			url: Q.ajaxExtend(url, 'data'),
-			success: login_callback,
-			async: !Q.info.isTouchscreen
+		Q.request(url, ['data'], login_callback, {
+			xhr: Q.info.isTouchscreen ? 'sync' : {}
 		});
 		event.preventDefault();
 		return;
@@ -1742,9 +1740,6 @@ Users.facebookDialog = function(options)
 		'buttons': {}
 	}, options);
 	
-	if (!Q.isPlainObject(o.buttons)) {
-		return alert("Please provide a plain object for Users.facebookDialog buttons");
-	}
 	if (o.shadow) {
 		var shadow = $('<div class="Users_facebookDialog_shadow" />');
 		$('body').append(shadow);
@@ -1942,12 +1937,12 @@ Q.request.options.onProcessed.set(function (err, response) {
 }, 'Users');
 
 Users.onInitFacebook = new Q.Event();
-var ddc = document.documentElement.className;
+var ddc = document.documentElement;
 Users.onLogin = new Q.Event(function () {
-	ddc = ddc.replace(' Users_loggedOut', '') + ' Users_loggedIn';
+	ddc.className = ddc.className.replace(' Users_loggedOut', '') + ' Users_loggedIn';
 }, 'Users');
 Users.onLogout = new Q.Event(function () {
-	ddc = ddc.replace(' Users_loggedIn', '') + ' Users_loggedOut';
+	ddc.className = ddc.className.replace(' Users_loggedIn', '') + ' Users_loggedOut';
 });
 Users.onLoginLost = new Q.Event(function () {
 	console.warn("Call to server was made which normally requires user login.");

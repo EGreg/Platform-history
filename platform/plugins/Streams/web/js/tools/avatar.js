@@ -15,8 +15,7 @@ var Streams = Q.Streams;
  * @constructor
  * @param {String} prefix Prefix of the tool to be constructed.
  * @param {Object} [options] A hash of options, containing:
- *   @param {String} [options.userId] The id of the user object. Can be '' for a blank-looking avatar.
- *   @required
+ *   @param {String} options.userId The id of the user object. Can be '' for a blank-looking avatar.
  *   @param {Number} [options.icon=Q.Users.icon.defaultSize] Size of the icon to render before the display name. Or 0 for no icon.
  *   @param {Boolean} [options.short=false] If true, renders the short version of the display name.
  *   @param {Boolean|Array} [options.editable=false] If true, and userId is the logged-in user's id, the tool presents an interface for the logged-in user to edit their name and icon. This can also be an array containing one or more of 'icon', 'name'.
@@ -24,21 +23,15 @@ var Streams = Q.Streams;
  *   @param {Number} [options.cacheBust=null] Number of milliseconds to use for combating the re-use of cached images when they are first loaded.
  *   @param {Object} [options.templates]
  *     @param {Object} [options.templates.icon]
- *       @param {String} [options.templates.icon.dir]
- *       @default 'plugins/Users/views'
- *       @param {String} [options.templates.icon.name]
- *       @default 'Users/avatar/icon'
+ *       @param {String} [options.templates.icon.dir='plugins/Users/views']
+ *       @param {String} [options.templates.icon.name='Users/avatar/icon']
  *       @param {Object} [options.templates.icon.fields]
- *         @param {String} [options.templates.icon.fields.alt]
- *         @default "user icon"
+ *         @param {String} [options.templates.icon.fields.alt="user icon"]
  *     @param {Object} [options.templates.contents]
- *       @param {String} [options.templates.contents.dir]
- *       @default 'plugins/Users/views'
- *       @param {String} [options.templates.contents.name]
- *       @default 'Users/avatar/contents'
+ *       @param {String} [options.templates.contents.dir='plugins/Users/views']
+ *       @param {String} [options.templates.contents.name='Users/avatar/contents']
  *       @param {Object} [options.templates.contents.fields]
- *         @param {String} [options.templates.contents.fields.tag]
- *         @default "span"
+ *         @param {String} [options.templates.contents.fields.tag="span"]
  * @param {Object} [options.inplaces] Additional fields to pass to the child Streams/inplace tools, if any
  *   @param {Q.Event} [options.onRefresh]  An event that occurs when the avatar is refreshed
  *   @param {Q.Event} [options.onUpdate]  An event that occurs when the icon is updated via this tool

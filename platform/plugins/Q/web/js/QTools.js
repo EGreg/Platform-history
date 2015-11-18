@@ -607,7 +607,7 @@ Q.Layout = {
 			{
 				if (Q.info.platform == 'ios')
 				{
-					$(document.body).bind('touchmove', function(e)
+					$(document.body).on('touchmove', function(e)
 					{
 						e.preventDefault();
 					});
@@ -641,14 +641,14 @@ Q.Layout = {
 				
 				if (Q.info.platform == 'android')
 				{
-					$(document.body).bind('touchstart', function(e)
+					$(document.body).on('touchstart', function(e)
 					{
 						Q.Layout.processAndroidFixedBlocks(e);
 					});
 				}
 				else
 				{
-					$(document.body).bind('touchstart', function(e)
+					$(document.body).on('touchstart', function(e)
 					{
 						if (!Q.Layout.focusEventOccured && !Q.Layout.keyboardVisible && Q.Layout.addressBarVisible)
 						{
@@ -925,9 +925,12 @@ Q.Layout = {
 		
 		$('.Q_dashboard_expandable ul.Q_listing').plugin('Q/listing', 'remove');
 		
-		var column1Slot = $('#column1_slot'), column2Slot = $('#column2_slot');
+		var column0Slot = $('#column0_slot');
+		var column1Slot = $('#column1_slot');
+		var column2Slot = $('#column2_slot');
 		if (Q.info.isTouchscreen && Q.info.platform != 'android')
 		{
+			column0Slot.plugin('Q/iScroll', 'remove');
 			column1Slot.plugin('Q/iScroll', 'remove');
 			column2Slot.plugin('Q/iScroll', 'remove');
 		}
@@ -1380,6 +1383,10 @@ Q.Layout = {
 				if (column0Slot.children('.Q_column0_contents').outerHeight() > column0Slot.height())
 				{
 					if (column0Slot.data('Q/iScroll'))
+					{
+						column0Slot.plugin('Q/iScroll', 'refresh');
+					}
+					else
 					{
 						column0Slot.plugin('Q/iScroll');
 					}
@@ -2601,7 +2608,7 @@ Q.Contextual = {
 					}
 				}
 			};
-			$(document.body).bind(Q.Pointer.start, Q.Contextual.showHandler);
+			$(document.body).on(Q.Pointer.start, Q.Contextual.showHandler);
 		}
 		
 		// if 'triggerOnHover' is on then we should create separate handler for latest added contextual
@@ -2672,7 +2679,7 @@ Q.Contextual = {
 					return false;
 				}
 			};
-			$(document.body).bind(Q.Pointer.start, Q.Contextual.startEventHandler);
+			$(document.body).on(Q.Pointer.start, Q.Contextual.startEventHandler);
 			
 			Q.Contextual.moveEventHandler = function(e)
 			{
@@ -2753,7 +2760,7 @@ Q.Contextual = {
 					}
 				}
 			};
-			$(document.body).bind(Q.Pointer.move, Q.Contextual.moveEventHandler);
+			$(document.body).on(Q.Pointer.move, Q.Contextual.moveEventHandler);
 			
 			Q.Contextual.endEventHandler = function(e)
 			{
@@ -2839,7 +2846,7 @@ Q.Contextual = {
 					}
 				}
 			};
-			$(document.body).bind(Q.Pointer.end, Q.Contextual.endEventHandler);
+			$(document.body).on(Q.Pointer.end, Q.Contextual.endEventHandler);
 			
 			Q.Contextual.itemSelectHandler = function(element)
 			{
@@ -2938,10 +2945,14 @@ Q.Contextual = {
 			listingWrapper.css({ 'overflow': 'auto' });
 			if (info.inBottomHalf)
 			{
-				listingWrapper.scrollTop(1000);
-				setTimeout(function()
-				{
-					listingWrapper.scrollTop(1000);
+				listingWrapper.scrollTop(10000);
+				setTimeout(function() {
+					listingWrapper.scrollTop(10000);
+				}, 0);
+			} else {
+				listingWrapper.scrollTop(0);
+				setTimeout(function() {
+					listingWrapper.scrollTop(0);
 				}, 0);
 			}
 		}
@@ -3016,10 +3027,12 @@ Q.Contextual = {
 		contextual.hide();
 		contextual.css({ 'visibility': 'visible' });
 		
-		if (info.inBottomHalf)
+		if (info.inBottomHalf) {
 			contextual.append('<div class="Q_contextual_bottom_arrow" />');
-		else
+		} else {
 			contextual.prepend('<div class="Q_contextual_top_arrow" />');
+		}
+		listingWrapper.find('.Q_listing').css('transform', 'none');
 		var arrow = contextual.find('.Q_contextual_bottom_arrow, .Q_contextual_top_arrow');
 		info.arrowHeight = contextual.find('.Q_contextual_top_arrow, .Q_contextual_bottom_arrow').height();
 		

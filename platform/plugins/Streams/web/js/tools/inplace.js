@@ -10,8 +10,7 @@
  * @class Streams inplace
  * @constructor
  * @param {Object} [options] used to pass options
- *   @param {String} [options.inplaceType] The type of the fieldInput. Can be "textarea" or "text"
- *   @required
+ *   @param {String} options.inplaceType Required. The type of the fieldInput. Can be "textarea", "text" or "select"
  *   @param {Array} [options.convert] The characters to convert to HTML. Pass an array containing zero or more of "\n", " "
  *   @param {String} [options.publisherId] Required if stream option is empty. The publisher's user id.
  *   @param {String} [options.streamName] Required if stream option is empty. The stream's name.
@@ -82,8 +81,11 @@ Q.Tool.define("Streams/inplace", function (options) {
 					$e = tool.$('.Q_inplace_tool_blockstatic');
 					if ($e.html !== toSet) $e.html(toSet);
 					break;
+				case 'select':
+					if ($e.val() !== content) $e.val(content);
+					break;
 				default:
-					throw new Q.Error("Streams/inplace tool: inplaceType must be 'textarea' or 'text'");
+					throw new Q.Error("Streams/inplace tool: inplaceType must be 'textarea', 'text' or 'select'");
 			}
 			var margin = $e.outerHeight() + parseInt($e.css('margin-top'));
 			tool.$('.Q_inplace_tool_editbuttons').css('margin-top', margin+'px');
@@ -130,19 +132,26 @@ Q.Tool.define("Streams/inplace", function (options) {
 			var value = (state.attribute ? stream.get(state.attribute) : stream.fields[field]) || "";
 			switch (state.inplaceType) {
 				case 'text':
-					ipo.fieldInput = $('<input />').attr('name', field).val(value);
 					ipo.staticHtml = String(value).encodeHTML();
 					break;
 				case 'textarea':
-					ipo.fieldInput = $('<textarea rows="5" cols="80" />').attr('name', field).text(value);
 					ipo.staticHtml = String(value).encodeHTML().replaceAll({
 						'&lt;br&gt;': "<br>",
 						'&lt;br /&gt;': "<br>",
 						'&nbsp;': ' '
 					});
 					break;
+				case 'select':
+					if (!ipo.options) {
+						throw new Q.Error("Streams/inplace tool: inplace.options must be provided");
+					}
+					if (!(value in ipo.options)) {
+						throw new Q.Error("Streams/inplace tool: inplace.options must contain value: " + value);
+					}
+					ipo.staticHtml = String(ipo.options[value]).encodeHTML();
+					break;
 				default:
-					throw new Q.Error("Streams/inplace tool: inplaceType must be 'textarea' or 'text'");
+					throw new Q.Error("Streams/inplace tool: inplaceType must be 'textarea', 'text' or 'select'");
 			}
 
 			if (state.editable === false || !stream.testWriteLevel('suggest')) {

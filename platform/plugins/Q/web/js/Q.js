@@ -141,7 +141,7 @@ Sp.toCapitalized = function _String_prototype_toCapitalized() {
  * @return {boolean}
  */
 Sp.isUrl = function _String_prototype_isUrl () {
-	return this.match(/^[A-Za-z]*:\/\//);
+	return !!this.match(/^([A-Za-z]*:|)\/\//);
 };
 
 /**
@@ -674,10 +674,10 @@ Elp.addClass = function (className) {
 
 /**
  * Get the text content of an element (as opposed to its inner HTML)
- * @method text
+ * @method innerText
  * @return {String}
  */
-Elp.text = function() {
+Elp.innerText = function() {
 	return this.textContent || this.innerText;
 };
 
@@ -3875,16 +3875,19 @@ Q.Tool.setUpElement = function _Q_Tool_setUpElement(element, toolName, toolOptio
 		var tn = toolName[i];
 		var ntt = tn.replace(/\//g, '_');
 		element.addClass('Q_tool '+ntt+'_tool');
-		if (!id && !element.getAttribute(id)) {
-			var p1, p2;
-			p1 = prefix || (Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '');
-			do {
-				p2 = p1 + ntt + '-' + (Q.Tool.nextDefaultId++) + '_';
-				Q.Tool.nextDefaultId %= 1000000;
-			} while (Q.Tool.active[p2]);
-			id = p2 + 'tool';
+		if (!element.getAttribute('id')) {
+			if (!id) {
+				var p1, p2;
+				p1 = prefix || (Q.Tool.beingActivated 
+					? Q.Tool.beingActivated.prefix : '');
+				do {
+					p2 = p1 + ntt + '-' + (Q.Tool.nextDefaultId++) + '_';
+					Q.Tool.nextDefaultId %= 1000000;
+				} while (Q.Tool.active[p2]);
+				id = p2 + 'tool';
+			}
+			element.setAttribute('id', id);
 		}
-		element.setAttribute('id', id);
 		if (toolOptions && toolOptions[i]) {
 			element.options = element.options || {};
 			element.options[Q.normalize(tn)] = toolOptions[i];
@@ -5064,7 +5067,7 @@ function _Q_Event_stopPropagation() {
 		var element = this[0];
 		var matches = element === root
 		|| element === document
-		|| (element instanceof HTMLElement
+		|| (element instanceof Element
 			&& element !== this.target
 		    && element.contains(this.target));
 		if (matches && this[1] === event.type) {
@@ -5320,7 +5323,7 @@ Q.action = function _Q_action(uri, fields, options) {
  *  If a string, then treats it as a URL and
  *  appends ajax fields to the end of the querystring.
  *  If an object, then adds properties to it.
- * @param {String} slotNames
+ * @param {String|Object|Array} slotNames
  *  If a string, expects a comma-separated list of slot names
  *  If an object or array, converts it to a comma-separated list
  * @param {Object} options
@@ -5450,9 +5453,9 @@ Q.req = function _Q_req(uri, slotNames, callback, options) {
  *  Optional object of fields to pass
  * @param {String} url
  *  The URL you pass will normally be automatically extended through Q.ajaxExtend
- * @param {String|Object} slotNames
+ * @param {String|Array} slotNames
  *  If a string, expects a comma-separated list of slot names
- *  If an object, converts it to a comma-separated list
+ *  If an array, converts it to a comma-separated list
  * @param {Function} callback
  *  The err and parsed content will be passed to this callback function,
  *  (unless parse is false, in which case the raw content is passed as a String),
@@ -5462,7 +5465,11 @@ Q.req = function _Q_req(uri, slotNames, callback, options) {
  * @param {boolean} [options.post] if set, adds a &Q.method=post to the querystring
  * @param {String} [options.method] if set, adds a &Q.method= that value to the querystring, default "get"
  * @param {Object} [options.fields] optional fields to pass with any method other than "get"
- * @param {HTMLElement} [options.form] if specified, then the request is made by submitting this form, temporarily extending it with any fields passed in options.fields, and possibly overriding its method with whatever is passed to options.method . The result is rendered in an iframe, and passed to the callback in its second parameter.
+ * @param {HTMLElement} [options.form] if specified, then the request is made by submitting this form, temporarily extending it with any fields passed in options.fields, and possibly overriding its method with whatever is passed to options.method .
+ * @param {String} [options.resultFunction=null] The path to the function to handle inside the
+ *  contentWindow of the resulting iframe, e.g. "Foo.result". 
+ *  Your document is supposed to define this function if it wants to return results to the
+ *  callback's second parameter, otherwise it will be undefined
  * @param {Array} [options.idPrefixes] optional array of Q_Html::pushIdPrefix values for each slotName
  * @param {boolean} [options.skipNonce] if true, skips loading of the nonce
  * @param {Object} [options.xhr] set to false to avoids XHR. Or set to true, to try to make xhr based on "method" option.
@@ -5651,7 +5658,10 @@ Q.request = function (url, slotNames, callback, options) {
 			Q.formPost(url, o.fields, method, {
 				form: o.form,
 				onLoad: function (iframe) {
-					var result = iframe.contentWindow.result();
+					var resultFunction = o.resultFunction
+						? Q.getObject(o.resultFunction, iframe.contentWindow)
+						: null;
+					var result = resultFunction ? resultFunction() : undefined;
 					_Q_request_callback.call(request, null, result, true);
 				}
 			});
@@ -5787,9 +5797,9 @@ Q.ajaxErrors = function _Q_ajaxErrors(errors, fields) {
  *  Optional object of fields to pass
  * @param {String} url
  *  The URL you pass will normally be automatically extended through Q.ajaxExtend
- * @param {String|Object} slotNames
+ * @param {String|Array} slotNames
  *  If a string, expects a comma-separated list of slot names
- *  If an object, converts it to a comma-separated list
+ *  If an array, converts it to a comma-separated list
  * @param {Function} callback
  *  The JSON will be passed to this callback function
  * @param {Object} options
@@ -5801,8 +5811,10 @@ Q.jsonRequest = Q.request;
  * Serialize a plain object, with possible sub-objects, into an http querystring.
  * @static
  * @method serializeFields
- * @param {Object} fields
- *  The object to serialize
+ * @param {Object|String|HTMLElement} fields
+ *  The object to serialize into a querystring that can be sent to PHP or something.
+ *  The algorithm will recursively walk the object, and skip undefined values.
+ *  You can also pass a form element here. If you pass a string, it will simply be returned.
  * @param {Array} keys
  *  An optional array of keys into the object, in the order to serialize things
  * @param {boolean} returnAsObject
@@ -5813,6 +5825,23 @@ Q.jsonRequest = Q.request;
 Q.serializeFields = function _Q_serializeFields(fields, keys, returnAsObject) {
 	if (Q.isEmpty(fields)) {
 		return '';
+	}
+	if (typeof fields === 'string') {
+		return fields;
+	}
+	if (fields instanceof Element) {
+		if (fields.tagName.toUpperCase() !== 'FORM') {
+			throw new Q.Error("Q.serializeFields: element must be a FORM");
+		}
+		var result = '';
+		Q.each(fields.querySelectorAll('input, textarea, select'), function () {
+			var value = (this.tagName.toUpperCase() === 'SELECT')
+				? this.options[this.selectedIndex].text
+				: this.value;
+			result += (result ? '&' : '') + this.getAttribute('name')
+				+ '=' + encodeURIComponent(value);
+		});
+		return result;
 	}
 	var parts = [];
 	function _params(prefix, obj) {
@@ -6690,7 +6719,7 @@ var _latestLoadUrlObjects = {};
  * @param {boolean} [options.loadExtras=false] if true, asks the server to load the extra scripts, stylesheets, etc. that are loaded on first page load
  * @param {Number|boolean} [options.timeout=1500] milliseconds to wait for response, before showing cancel button and triggering onTimeout event, if any, passed to the options
  * @param {boolean} [options.quiet=false] if true, allows visual indications that the request is going to take place.
- * @param {Array} [options.slotNames] an array of slot names to request and process (default is all slots in Q.info.slotNames)
+ * @param {String|Array} [options.slotNames] an array of slot names to request and process (default is all slots in Q.info.slotNames)
  * @param {Array} [options.idPrefixes] optional array of values to pass to PHP method Q_Html::pushIdPrefix for each slotName
  * @param {Object} [options.retainSlots] an object of {slotName: whetherToRetain} pairs, retained slots aren't requested
  * @param {boolean} [options.slotContainer] optional function taking (slotName, response) and returning the element, if any, to fill for that slot
@@ -8271,7 +8300,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	 * @param {Function} callback
 	 */
 	$.fn.plugin = function _jQuery_fn_plugin(pluginName, options, callback) {
-		if (!$(this).length) return this;
+		if (!this.length) return this;
 		var args;
 		switch (Q.typeOf(options)) {
 			case 'array': // passing a bunch of parameters to a plugin
@@ -8338,20 +8367,44 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 		return $(this).data(key);
 	};
 	/**
-	 * Calls Q.activate on all the elements in the jQuery
+	 * Calls Q.Tool.setUpElement on the elements in the jQuery.
+	 * Follow this up with a call to .activate()
+	 * @class jQuery.fn
+	 * @static
+	 * @method tool
+	 * @param {String|Element} element
+	 *  The tag of the element, such as "div", or a reference to an existing Element
+	 * @param {String} toolName
+	 *  The type of the tool, such as "Q/tabs"
+	 * @param {Object} [toolOptions]
+	 *  The options for the tool
+	 * @param {String|Function} [id]
+	 *  Optional id of the tool, such as "Q_tabs_2"
+	 * @param {String} [prefix]
+	 *  Optional prefix to prepend to the tool's id
+	 */
+	$.fn.tool = function _jQuery_fn_tool(toolName, toolOptions, id, prefix) {
+		var args = arguments;
+		return this.each(function () {
+			var id2 = (typeof id === 'function') ? id.apply(this, args) : id;
+			Q.Tool.setUpElement(this, toolName, toolOptions, id2, prefix);
+		});
+	};
+	/**
+	 * Calls Q.activate on all the elements in the jQuery.
 	 * @static
 	 * @method activate
 	 * @param {Object} options
 	 *  Optional options to provide to tools and their children.
 	 * @param {Function|Q.Event} callback
-	 *  This will get called when the content has been completely activated.
-	 *  That is, after all the files, if any, have been loaded and all the
-	 *  constructors have run.
+	 *  This will get called for each element that has been completely activated.
+	 *  That is, after files for each of its tools, if any,
+	 *  have been loaded and all their constructors have run.
 	 *  It receives (elem, options, tools) as arguments, and the last tool to be
 	 *  activated as "this".
 	 */
 	$.fn.activate = function _jQuery_fn_activate(options, callback) {
-		$(this).each(function _jQuery_fn_activate_each(index, element) {
+		return this.each(function _jQuery_fn_activate_each(index, element) {
 			if (!$(element).closest('html').length) {
 				console.log("Q.activate: element " + element.id + " is not in the DOM");
 				return false; // avoid doing work if it's not in the DOM
@@ -8731,6 +8784,15 @@ de.addClass('Q_js');
 de.addClass(Q.info.isTouchscreen  ? 'Q_touchscreen' : 'Q_notTouchscreen');
 de.addClass(Q.info.isMobile ? 'Q_mobile' : 'Q_notMobile');
 de.addClass(Q.info.isAndroid() ? 'Q_android' : 'Q_notAndroid');
+
+Q.Page.onLoad('').set(function () {
+	de.addClass(Q.info.uri.module + '_' + Q.info.uri.action)
+		.addClass(Q.info.uri.module);
+}, 'Q');
+Q.Page.beforeUnload('').set(function () {
+	de.removeClass(Q.info.uri.module + '_' + Q.info.uri.action)
+		.removeClass(Q.info.uri.module);
+}, 'Q');
 
 function _touchScrollingHandler(event) {
     var p = event.target;
@@ -10187,7 +10249,17 @@ Q.Masks = {
 			if (!mask.shouldCover) {
 				width = Math.max(width, Q.Pointer.windowWidth());
 				height = Math.max(width, Q.Pointer.windowHeight());
+				var scrollLeft = Q.Pointer.scrollLeft();
+				var scrollTop = Q.Pointer.scrollTop();
+				var body = document.getElementsByTagName('body')[0];
+				Q.each(body.children || body.childNodes, function () {
+					var rect = this.getBoundingClientRect();
+					if (!rect) return;
+					width = Math.max(width, scrollLeft + rect.right);
+					height = Math.max(height, scrollTop + rect.bottom);
+				});
 			}
+
 			ms.width = width + 'px';
 			ms.height = ms['line-height'] = height + 'px';
 		}
@@ -10385,7 +10457,7 @@ function _addHandlebarsHelpers() {
 			var hash = (options && options.hash);
 			if (hash) {
 				for (var k in hash) {
-					Q.setObject(k, hash[k], o, '_');
+					Q.setObject(k, hash[k], o, '-');
 				}
 			}
 			Q.extend(o, this[name], this['id:'+id]);

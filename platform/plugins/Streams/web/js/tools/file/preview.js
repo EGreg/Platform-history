@@ -8,8 +8,8 @@
  * Renders a preview for a Streams/file stream
  * @class Streams file preview
  * @constructor
- * @param {Object} [options] this object contains function parameters
- * @param {String} [windowName='file'] the name of the window in which to open files. Leave it blank to open in the current window.
+ * @param {Object} [options] options to pass to this tool, besides the ones passed to preview
+ *   @param {String} [options.windowName='file'] the name of the window in which to open files. Leave it blank to open in the current window.
  *   @param {Object} [options.inplace] Any options to pass to the Q/inplace tool -- see its options.
  *   @uses Q inplace
  *   @param {Object} [options.templates] Under the keys "views", "edit" and "create" you can override options for Q.Template.render .
@@ -25,6 +25,7 @@
  *         @param {String} [options.templates.edit.fields.alt]
  *         @param {String} [options.templates.edit.fields.titleClass]
  *         @param {String} [options.templates.edit.fields.titleTag]
+ * @param {Object} [preview] this is the preview tool that's been instantiated
  */
 Q.Tool.define("Streams/file/preview", "Streams/preview",
 function _Streams_file_preview(options, preview) {
@@ -148,6 +149,7 @@ function _Streams_file_preview(options, preview) {
 			var $this = $(this);
 			var form = $this.closest('form').get(0);
 			tool.preview.state.creatable.options.form = form;
+			tool.preview.state.creatable.options.resultFunction = 'result';
 			tool.preview.create(event);
 			form.reset();
 		});

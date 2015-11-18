@@ -140,13 +140,23 @@
 	margin-bottom: 8px;
 }
 
+.Streams_photoSelector_container.Streams_photoSelector_oneLine {
+	white-space: nowrap;
+}
+
 .Streams_photoSelector_container {
-	max-height: 80px;
+	max-height: 100px;
 	overflow: auto;
 }
 
 .Streams_photoSelector_container img {
-	max-height: 80px; cursor: pointer
+	max-height: 80px;
+	cursor: pointer;
+	margin-right: 2px;
+}
+
+.Streams_photoSelector_container img:hover {
+	box-shadow: #222 0 0 2px;
 }
 
 .Streams_photoSelector_tool_title {
@@ -658,3 +668,5 @@
 .Q_notMobile .Q_overlay.Streams_completeInvited_dialog,
 .Q_notMobile .Q_overlay.Streams_access_tool_dialog,
 .Q_notMobile .Q_overlay.Streams_subscription_tool_dialog { width: 500px; }
+
+.Streams_inplace_tool.Q_editing { z-index: 99999; }

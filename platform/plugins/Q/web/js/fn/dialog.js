@@ -513,10 +513,16 @@ function _handlePosAndScroll(o)
 			if (typeof(bottomMargin) == 'string') // percentage
 				bottomMargin = Math.round(parseInt(Q.Dialogs.options.bottomMargin) / 100 * parentHeight);
 			
+			var cs = $this[0].computedStyle();
+			var outerWidth = Math.ceil(parseFloat(cs.width)
+				+ parseFloat(cs.paddingLeft)
+				+ parseFloat(cs.paddingRight));
+			var winInnerWidth = window.innerWidth;
+			var winInnerHeight = window.innerHeight;
 			if (Q.info.isMobile)
 			{
 				// correcting x-pos
-				var left = Math.ceil((window.innerWidth - $this.outerWidth()) / 2);
+				var left = Math.ceil((winInnerWidth - outerWidth) / 2);
 				if (parseInt($this.css('left')) != left)
 				{
 					$this.css({ 'left': left + 'px' });
@@ -530,17 +536,17 @@ function _handlePosAndScroll(o)
 				if (Q.Layout && Q.Layout.keyboardVisible) return;
 				
 				// correcting height
-				if ($this.outerHeight() > window.innerHeight && o.applyIScroll)
+				if ($this.outerHeight() > winInnerHeight && o.applyIScroll)
 				{
 					$this.data('Q_dialog_default_height', $this.outerHeight());
 					$this.css({ 'top': '0' });
-					maxContentsHeight = window.innerHeight - ots.outerHeight()
+					maxContentsHeight = winInnerHeight - ots.outerHeight()
 																- parseInt($this.css('border-top-width')) * 2;
 					applyIScroll(maxContentsHeight);
 				}
 				// in case if screen height got to value where dialog may fit we're removing iScroll and height restriction
 				else if ($this.data('Q_dialog_default_height') !== undefined &&
-				         $this.data('Q_dialog_default_height') <= window.innerHeight)
+				         $this.data('Q_dialog_default_height') <= winInnerHeight)
 				{
 					$this.removeData('Q_dialog_default_height');
 					contentsWrapper.plugin('Q/iScroll', 'remove');
@@ -548,13 +554,13 @@ function _handlePosAndScroll(o)
 					$this.css({ 'top': topMargin + 'px' });
 				}
 				// correcting top position
-				else if ($this.offset().top + $this.outerHeight() > window.scrollY + window.innerHeight)
+				else if ($this.offset().top + $this.outerHeight() > window.scrollY + winInnerHeight)
 				{
 					$this.data('Q_dialog_top_corrected', true);
 					$this.css({ 'top': '0' });
 				}
 				// if case if dialog may fit on screen with topMargin we're setting it
-				else if ((topMargin + $this.outerHeight() < window.scrollY + window.innerHeight) && $this.data('Q_dialog_top_corrected'))
+				else if ((topMargin + $this.outerHeight() < window.scrollY + winInnerHeight) && $this.data('Q_dialog_top_corrected'))
 				{
 					$this.removeData('Q_dialog_top_corrected');
 					$this.css({ 'top': topMargin + 'px' });
@@ -563,9 +569,9 @@ function _handlePosAndScroll(o)
 			else
 			{
 				// correcting x-pos
-				if (parseInt($this.css('left')) != Math.ceil((window.innerWidth - $this.outerWidth()) / 2))
+				if (parseInt($this.css('left')) != Math.ceil((winInnerWidth - outerWidth) / 2))
 				{
-					$this.css({ 'left': Math.ceil((window.innerWidth - $this.outerWidth()) / 2) + 'px' });
+					$this.css({ 'left': Math.ceil((winInnerWidth - outerWidth) / 2) + 'px' });
 					if (iScrollBar)
 					{
 						iScrollBar.css({ 'left': (contentsWrapper.offset().left + contentsWrapper.width() - iScrollBar.width()) + 'px' });
@@ -624,7 +630,7 @@ function _handlePosAndScroll(o)
 				if (Q.Layout.orientation != lastOrientation)
 				{
 					lastOrientation = Q.Layout.orientation;
-					parentHeight = (parent[0] == document.body) ? window.innerHeight : parent.height();
+					parentHeight = (parent[0] == document.body) ? winInnerHeight : parent.height();
 					topMargin = Q.Dialogs.options.topMargin;
 					if (typeof(topMargin) == 'string') // percentage
 						topMargin = Math.round(parseInt(Q.Dialogs.options.topMargin) / 100 * parentHeight);

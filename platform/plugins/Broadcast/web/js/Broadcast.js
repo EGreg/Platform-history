@@ -83,7 +83,7 @@ Q.onActivate.set(function () {
 			});
 		})
 		Q.ensure($.deparam, Q.url('plugins/Broadcast/js/bbq.min.js'), function () {
-			$('#Broadcast_agreement_main').bind('change', function () {
+			$('#Broadcast_agreement_main').on('change', function () {
 				var q = $.deparam.querystring();
 				var $this = $(this);
 				var method = $this.attr('checked') ? 'put' : 'delete';

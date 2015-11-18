@@ -307,6 +307,7 @@ abstract class Base_Awards_Share extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_insertedTime
 	 * Returns the maximum integer that can be assigned to the insertedTime field
 	 * @return {integer}
 	 */
@@ -339,6 +340,7 @@ abstract class Base_Awards_Share extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_shared_time
 	 * Returns the maximum integer that can be assigned to the shared_time field
 	 * @return {integer}
 	 */
@@ -503,6 +505,7 @@ abstract class Base_Awards_Share extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_publisherId
 	 * Returns the maximum integer that can be assigned to the publisherId field
 	 * @return {integer}
 	 */
@@ -535,6 +538,7 @@ abstract class Base_Awards_Share extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_visit_count
 	 * Returns the maximum integer that can be assigned to the visit_count field
 	 * @return {integer}
 	 */
@@ -567,6 +571,7 @@ abstract class Base_Awards_Share extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_session_count
 	 * Returns the maximum integer that can be assigned to the session_count field
 	 * @return {integer}
 	 */

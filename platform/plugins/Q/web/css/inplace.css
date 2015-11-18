@@ -41,3 +41,5 @@
 .Q_inplace_tool input,
 .Q_inplace_tool textarea
  { max-width: none; }
+ 
+.Q_inplace_tool.Q_editing { z-index: 99999; }

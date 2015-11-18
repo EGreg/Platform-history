@@ -86,31 +86,49 @@ Q.Tool.define("Places/location", function (options) {
 		}
 		var timeout = setTimeout(geolocationFailed, state.timeout);
 		var handledFail = false;
-		navigator.geolocation.getCurrentPosition(
-		function (geo) {
-			clearTimeout(timeout);
-			if (handledFail) return;
-			var fields = Q.extend({
-				unsubscribe: true,
-				subscribe: true,
-				miles: $('select[name=miles]').val(),
-				timezone: (new Date()).getTimezoneOffset()
-			}, true, geo.coords);
-			Q.req("Places/geolocation", [], 
-			function (err, data) {
-				Q.Streams.Stream.refresh(
-					publisherId, streamName, null,
-					{ messages: 1, evenIfNotRetained: true}
-				);
-				$this.removeClass('Places_obtaining').hide(500);
-			}, {method: 'post', fields: fields});
-		}, function () {
-			clearTimeout(timeout);
-			if (handledFail) return;
-			geolocationFailed();
-		}, {
-			maximumAge: 300000,
-			timeout: state.timeout
+		Q.Places.loadGoogleMaps(function () {
+			navigator.geolocation.getCurrentPosition(
+			function (geo) {
+				clearTimeout(timeout);
+				if (handledFail) return;
+				var geocoder = new google.maps.Geocoder();
+				geocoder.geocode({'latLng': {
+					lat: geo.coords.latitude,
+					lng: geo.coords.longitude
+				}}, function(results, status) {
+					var country, state, placeName;
+					if (status == google.maps.GeocoderStatus.OK && results[0]) {
+						country = getComponent(results, 'country');
+						state = getComponent(results, 'administrative_area_level_1');
+						placeName = getComponent(results, 'locality')
+							|| getComponent(results, 'sublocality');
+					}
+					var fields = Q.extend({
+						unsubscribe: true,
+						subscribe: true,
+						miles: $('select[name=miles]').val(),
+						timezone: (new Date()).getTimezoneOffset(),
+						placeName: placeName,
+						state: state,
+						country: country
+					}, true, geo.coords);
+					Q.req("Places/geolocation", [], 
+					function (err, data) {
+						Q.Streams.Stream.refresh(
+							publisherId, streamName, null,
+							{ messages: 1, evenIfNotRetained: true}
+						);
+						$this.removeClass('Places_obtaining').hide(500);
+					}, {method: 'post', fields: fields});
+				});
+			}, function () {
+				clearTimeout(timeout);
+				if (handledFail) return;
+				geolocationFailed();
+			}, {
+				maximumAge: 300000,
+				timeout: state.timeout
+			});
 		});
 		
 		function geolocationFailed() {
@@ -127,6 +145,27 @@ Q.Tool.define("Places/location", function (options) {
 					$this.removeClass('Places_obtaining');	
 				}
 			});
+		}
+		
+		function getComponent(results, desiredType) {
+			for (var i = 0; i < results[0].address_components.length; i++) {
+				var shortname = results[0].address_components[i].short_name;
+				var longname = results[0].address_components[i].long_name;
+				var type = results[0].address_components[i].types;
+				if (type.indexOf(desiredType) != -1) {
+					if (!isNullOrWhitespace(shortname)) {
+					    return shortname;
+					}
+					return longname;
+				}
+		    }
+		}
+
+		function isNullOrWhitespace(text) {
+		    if (text == null) {
+		        return true;
+		    }
+		    return text.replace(/\s/gi, '').length < 1;
 		}
 	});
 	
@@ -187,7 +226,7 @@ Q.Tool.define("Places/location", function (options) {
 
 		function _showLocationAndCircle() {
 			var element = tool.$('.Places_location_map')[0];
-	        var map = new google.maps.Map(element, {
+			var map = new google.maps.Map(element, {
 				center: new google.maps.LatLng(latitude, longitude),
 				zoom: 12 - Math.floor(Math.log(miles) / Math.log(2)),
 				mapTypeId: google.maps.MapTypeId.ROADMAP,
@@ -199,7 +238,7 @@ Q.Tool.define("Places/location", function (options) {
 				disableDefaultUI: true,
 				scrollwheel: false,
 				navigationControl: false
-	        });
+			});
 			
 			// Create marker 
 			var marker = new google.maps.Marker({

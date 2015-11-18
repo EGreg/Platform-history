@@ -90,17 +90,18 @@ h2 { margin: 0; }
 }
 
 /* Dashboard contents */
-#dashboard>* { margin: 5px auto 5px auto; padding: 0; line-height: 30px; text-align: center; }
+#dashboard>* { margin: 0; padding: 0; line-height: 30px; text-align: center; }
 #dashboard>h1 { float: left; padding: 5px; width: auto; }
 #dashboard>h2 { float: left; }
 #dashboard_user { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; float: right; padding: 5px; }
 .Q_mobile #dashboard_user { max-width: 40%; }
 .Q_mobile.Users_loggedIn #dashboard_user { margin: 0 5px 0 0; }
+.Q_mobile.Users_loggedOut #dashboard_user { line-height: 40px; }
 #dashboard .Q_contextual * { color: black; }
 #dashboard td { vertical-align: middle; }
 #dashboard table { width: 100%; padding: 0; margin: 0; }
 #dashboard .Q_dashboard_logo { padding: 0; }
-#dashboard .Q_dashboard_logo a { padding: 5px; border-radius: 5px; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; }
+#dashboard .Q_dashboard_logo a { padding: 5px; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; }
 #dashboard .Q_dashboard_logo img { height: 40px; }
 #dashboard .Q_dashboard_search { padding: 8px 10px 8px 10px; font-weight: bold; text-align: left; }
 #dashboard .Q_dashboard_search input {
@@ -134,7 +135,7 @@ h2 { margin: 0; }
 #dashboard .Q_tabs_tab.Q_current { background-image: url(../plugins/Q/img/bg/stucco.png) !important; color: black !important; }
 #dashboard .Q_tabs_tab.Q_current * { color: black; }
 #dashboard .Q_tabs_tab { padding: 5px; margin: 0px; }
-.Q_mobile #dashboard .Q_tabs_tool { max-width: 80%; overflow: hidden; }
+.Q_mobile #dashboard .Q_tabs_tool { max-width: 80%; overflow: hidden; padding: 5px; }
 
 /* inputs */
 
@@ -191,7 +192,11 @@ html .Q_inplace_tool_fieldinput { padding: 0px; }
 
 .Users_avatar_icon { margin-right: 5px; }
 
-
+/* The following lines are for cordova on iOS */
+.Q_cordova.Q_ios #status_background { background: #f2f2f2; height: 20px; }
+.Q_notCordova.Q_ios .status_background { display: none; }
+.Q_cordova.Q_ios.Q_mobile #dashboard_slot { top: 20px; height: 50px; }
+.Q_cordova.Q_ios.Q_mobile #page { top: 70px; }
 
 
 

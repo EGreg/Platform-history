@@ -439,6 +439,7 @@ abstract class Base_Streams_Subscription extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_duration
 	 * Returns the maximum integer that can be assigned to the duration field
 	 * @return {integer}
 	 */

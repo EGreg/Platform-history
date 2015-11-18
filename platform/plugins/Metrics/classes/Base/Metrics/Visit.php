@@ -419,6 +419,7 @@ abstract class Base_Metrics_Visit extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_share_count
 	 * Returns the maximum integer that can be assigned to the share_count field
 	 * @return {integer}
 	 */

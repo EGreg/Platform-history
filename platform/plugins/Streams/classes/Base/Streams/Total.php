@@ -308,6 +308,7 @@ abstract class Base_Streams_Total extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_messageCount
 	 * Returns the maximum integer that can be assigned to the messageCount field
 	 * @return {integer}
 	 */

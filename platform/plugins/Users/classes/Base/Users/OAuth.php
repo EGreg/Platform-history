@@ -454,6 +454,7 @@ abstract class Base_Users_OAuth extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_token_expires_seconds
 	 * Returns the maximum integer that can be assigned to the token_expires_seconds field
 	 * @return {integer}
 	 */

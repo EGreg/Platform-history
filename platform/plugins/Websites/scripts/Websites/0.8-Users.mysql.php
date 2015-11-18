@@ -9,17 +9,12 @@ function Websites_0_8_Users_mysql()
 	
 	Users_Label::addLabel('Websites/admins', $userId, 'Website Admins', 'labels/Websites/admins');
 	
-	$cwd = getcwd();
-	chdir(USERS_PLUGIN_FILES_DIR.DS.'Users'.DS.'icons');
 	if (!file_exists('Websites')) {
-		$is_win = (substr(strtolower(PHP_OS), 0, 3) === 'win');
-		$target = WEBSITES_PLUGIN_FILES_DIR.DS.'Websites'.DS.'icons'.DS.'labels'.DS.'Websites';
-		$link = 'Websites';
-
-		if($is_win) exec('mklink /j "' . $link . '" "' . $target . '"');
-		else symlink($target, $link);
+		Q_Utils::symlink(
+			WEBSITES_PLUGIN_FILES_DIR.DS.'Websites'.DS.'icons'.DS.'labels'.DS.'Websites',
+			USERS_PLUGIN_FILES_DIR.DS.'Users'.DS.'icons'.DS.'Websites'
+		);
 	}
-	chdir($cwd);
 }
 
 Websites_0_8_Users_mysql();

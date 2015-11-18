@@ -1,6 +1,7 @@
 .Q_listing, .Q_listing li { margin: 0; padding: 0; }
 .Q_listing { list-style: none; }
 .Q_listing li {
+	font-size: 18px;
 	padding: 0 10px;
 	line-height: 40px;
 	text-align: left;
@@ -28,7 +29,7 @@
 .Q_listing li:first-child { border-top: none !important; }
 .Q_listing li:last-child { border-bottom: none; }
 .Q_listing li .Q_listing_item_text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.Q_contextual { position: fixed; z-index: 10000; display: none; top: 0; left: 0; width: 250px; padding: 7px; background-color: black; border-radius: 5px 5px 5px 5px; -moz-border-radius: 5px 5px 5px 5px; -webkit-border-radius: 5px 5px 5px 5px; box-shadow: black 0 0 4px; -webkit-box-shadow: black 0 0 4px; -moz-box-shadow: black 0 0 4px; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none; filter: none !important; }
+.Q_contextual { position: fixed; z-index: 10000; transform: translateZ(100em); -webkit-transform: translateZ(100em); display: none; top: 0; left: 0; width: 250px; padding: 7px; background-color: black; border-radius: 5px 5px 5px 5px; -moz-border-radius: 5px 5px 5px 5px; -webkit-border-radius: 5px 5px 5px 5px; box-shadow: black 0 0 4px; -webkit-box-shadow: black 0 0 4px; -moz-box-shadow: black 0 0 4px; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; -o-user-select: none; user-select: none; filter: none !important; }
 
 .Q_contextual_preview
 {
@@ -53,15 +54,15 @@
 .Q_contextual .Q_listing .Q_permanently_selected,
 .Q_selectable_listing .Q_permanently_selected
 {
-    background: #eee;
-	background: -moz-linear-gradient(top,  #eee 0%, #ccc 100%);
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#eee), color-stop(100%,#ccc));
-	background: -webkit-linear-gradient(top,  #eee 0%,#ccc 100%);
-	background: -o-linear-gradient(top,  #eee 0%,#ccc 100%);
-	background: -ms-linear-gradient(top,  #eee 0%,#ccc 100%);
-	background: linear-gradient(top,  #eee 0%,#ccc 100%);
+    background: #aaa;
+	background: -moz-linear-gradient(top,  #aaa 0%, #eee 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#aaa), color-stop(100%,#eee));
+	background: -webkit-linear-gradient(top,  #aaa 0%,#eee 100%);
+	background: -o-linear-gradient(top,  #aaa 0%,#eee 100%);
+	background: -ms-linear-gradient(top,  #aaa 0%,#eee 100%);
+	background: linear-gradient(top,  #aaa 0%,#eee 100%);
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eaf5ff', endColorstr='#98bede',GradientType=0 );
-	border-top: solid 1px #ccc;
+	border-top: solid 1px #eee;
 }
 
 .Q_contextual .Q_listing * {
@@ -71,14 +72,17 @@
 .Q_contextual .Q_listing .Q_current,
 .Q_selectable_listing .Q_current
 {
-	background: #ccc;
-	background: -moz-linear-gradient(top,  #aaa 0%, #ccc 100%);
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#aaa), color-stop(100%,#ccc));
-	background: -webkit-linear-gradient(top,  #aaa 0%,#ccc 100%);
-	background: -o-linear-gradient(top,  #aaa 0%,#ccc 100%);
-	background: -ms-linear-gradient(top,  #aaa 0%,#ccc 100%);
-	background: linear-gradient(top,  #aaa 0%,#ccc 100%);
+	background: #eee;
+	background: -moz-linear-gradient(top,  #aaa 0%, #eee 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#aaa), color-stop(100%,#eee));
+	background: -webkit-linear-gradient(top,  #aaa 0%,#eee 100%);
+	background: -o-linear-gradient(top,  #aaa 0%,#eee 100%);
+	background: -ms-linear-gradient(top,  #aaa 0%,#eee 100%);
+	background: linear-gradient(top,  #aaa 0%,#eee 100%);
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eaf5ff', endColorstr='#98bede',GradientType=0 );
+	border-top: solid 1px #999;
+	border-bottom: solid 1px #ccc;
+	box-sizing: border-box;
 }
 
 .Q_contextual .Q_listing .Q_current *,
@@ -110,7 +114,7 @@
 
 .Q_contextual .Q_contextual_top_arrow
 {
-  margin-top: -23px;
+  margin-top: -22px;
   margin-left: 105px;
   background: url('../img/ui/contextual_top_arrow.png') no-repeat;
 }

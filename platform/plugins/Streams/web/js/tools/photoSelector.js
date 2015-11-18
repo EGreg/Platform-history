@@ -10,20 +10,20 @@
  * @class Streams inplace
  * @constructor
  * @param {Object} [options] this object contains function parameters
- *   @param {Q.Event} [options.onSelect] This callback is called when the user selects a photo.
- *   @required
- *   @param {String} [options.uid] Optional. The uid of the user on the provider whose photos are shown. Defaults to 'me()' which is current logged in user.
- *   @param {String} [options.fetchBy] The tool supports different algoriths for fetching photos
- *   @default 'album'
+ *   @param {Q.Event} [options.onSelect] Triggered when the user selects a photo.
+ *   @param {String} [options.uid='me'] Optional. The uid of the user on the provider whose photos are shown. Facebook only allows 'me' or a page id as a value.
+ *   @param {String} [$options.fetchBy='album'] The tool supports different algoriths for fetching photos. Can be either by 'album' or 'tags'. Maybe more will be added later.
+ *   @param {String} [$options.preprocessAlbums] Optional function to process the albums array before presenting it in the select. Receives a reference to the albums array as the first parameter, and a callback to call when it's done as the second.
+ *   @param {String} [$options.preprocessPhotos] Optional function to process the photos array before presenting it in the select. Receives a reference to the albums array as the first parameter, and a callback to call when it's done as the second.
  *   @param {Q.Event} [options.onLoad] Q.Event, callback or callback string name which is called when bunch of photos has been loaded.
  *   @param {Q.Event} [options.onError] Q.Event, callback or callback string which will be called for each image that is unable to load. Image DOM element will be passed as first argument.
- *   @param {String} [options.provider]  Has to be "facebook" for now. so currently there are two variants: by 'album' and by 'tags'. Maybe more will be added later.
- *   @default 'facebook'
- *   @param {String} [options.prompt]  Has to be "facebook" for now.
+ *   @param {String} [options.provider='facebook]  Has to be "facebook" for now. 
+ *   @param {String} [options.prompt=false]
  *   Specifies type of prompt if user is not logged in or didn't give required permission for the tool.
- *                         Can be either 'button', 'dialog' or null|false. In first case just shows simple button which opens facebook login popup.
- *                         In second case shows Users.facebookDialog prompting user to login.
- *                         In third case will not show any prompt and will just hide the tool.
+ *  Can be either 'button', 'dialog' or null|false.
+ *  In first case just shows simple button which opens facebook login popup.
+ *  In second case shows Users.facebookDialog prompting user to login.
+ *  In third case will not show any prompt and will just hide the tool.
  *   @param {String} [options.promptTitle]  Used only when 'prompt' equals 'dialog' - will be title of the dialog.
  *   @param {String} [options.promptText]  Used either for button caption when 'prompt' equals 'button' or dialog text when 'prompt' equals 'dialog'.
  *   @param {Boolean} [options.oneLine]  If true, all the images are shown in a large horizontally scrolling line.
@@ -33,398 +33,294 @@
  */
 Q.Tool.define("Streams/photoSelector", function _Streams_chat_constructor (o) {
 
-    if (!o.onSelect) {
-        alert("Please provide the onSelect option for the photoSelector");
-        return false;
-    }
-    if (o.provider !== 'facebook') {
-        alert("Only facebook is supported as a provider for now");
-        return false;
-    }
-    o.onSelect = new Q.Event(o.onSelect);
+	var tool = this;
+	var state = tool.state;
+	var $te = $(tool.element);
 
-    var fetchBy = {
+	if (!state.onSelect) {
+		console.warn("Streams/photoSelector: please provide the onSelect option");
+	}
+	if (state.provider !== 'facebook') {
+		console.warn("Only facebook is supported as a provider for now");
+	}
 
-        album: function(aid, $element, callback)
-        {
-            var photos = (o.cache && window.localStorage && localStorage['cached_photos_' + o.uid + '_' + aid]) ?
-			JSON.parse(localStorage['cached_photos_' + o.uid + '_' + aid]) : null;
-            if (photos)
-            {
-                callback($element, photos);
-                Q.handle(o.onLoad, this, [aid, photos]);
-            }
-            else
-            {
-                var fields = 'pid,src_small,caption,object_id';
-                Q.handle(o.beforeAlbum, this, [aid]);
-                FB.api({
-                        method: 'fql.query',
-                        query: 'SELECT ' + fields + ' FROM photo WHERE aid="' + aid + '"'
-                }, function(photos)
-                {
-                    callback($element, photos);
-                    Q.handle(o.onLoad, this, [aid, photos]);
+	var fetchBy = {
+		album: Q.getter(function(albumId, callback) {
+			FB.api('/'+albumId+'/photos', function (response) {
+				_returnedPhotos(response, callback);
+			});
+		}),
+		tags: Q.getter(function(callback) {
+			FB.api('/'+state.uid+'/photos?type=tagged', function (response) {
+				_returnedPhotos(response, callback);
+			});
+		})
+	};
+	
+	function _returnedPhotos(response, callback) {
+		if (!response || response.error) {
+			return;
+		}
+		var photos = response.data;
+		if (state.preprocessPhotos) {
+			state.preprocessPhotos.call(tool, photos, function () {
+				callback.call(tool, photos);
+			});
+		} else {
+			callback.call(tool, photos);
+		}
+	}
 
-                    if (o.cache && window.localStorage)
-			localStorage['cached_photos_' + o.uid + '_' + aid] = JSON.stringify(photos);
-                });
-            }
-        },
+	function fetchAlbums(callback) {
+		FB.api('/'+state.uid+'/albums', function (response) {
+			if (!response || response.error) {
+				return;
+			}
+			var albums = response.data;
+			if (state.preprocessAlbums) {
+				state.preprocessAlbums.call(tool, albums, function () {
+					callback.call(tool, albums);
+				});
+			} else {
+				callback.call(tool, albums);
+			}
+		});
+	}
 
-        tags: function($element, callback)
-        {
-            var photos = (o.cache && window.localStorage && localStorage['cached_photos_' + o.uid]) ?
-			JSON.parse(localStorage['cached_photos_' + o.uid]) : null;
-            if (photos)
-            {
-                callback($element, photos);
-                Q.handle(o.onLoad, this, [photos]);
-            }
-            else
-            {
-                FB.api({
-                    method: 'fql.query',
-                    query: 'SELECT pid, object_id, src_small, caption FROM photo WHERE pid IN (SELECT pid FROM photo_tag WHERE subject = ' + o.uid + ')'
-                }, function(photoRows)
-                {
-                    var photosByPid = {};
-                    var pids = '';
-                    for (var i = 0; i < photoRows.length; i++)
-                    {
-                        photosByPid[photoRows[i]['pid']] = photoRows[i];
-                        photosByPid[photoRows[i]['pid']].tagsCount = 0;
-                        pids += "'" + photoRows[i]['pid'] + "'" + (i < photoRows.length - 1 ? ',' : '');
-                    }
+	function showAlbums(albums) {
+		tool.$albums = $('<select class="Streams_photoSelector_albums" />')
+		.on('change keydown input', Q.debounce(function() {
+			fetchPhotos();
+		}, 50));
+		$te.empty().append(tool.$albums);
+		Q.each(albums, function () {
+			tool.$albums.append(
+				$('<option />', {value: this.id}).html(this.name)
+			);
+		});
+	}
 
-                    FB.api({
-                        method: 'fql.query',
-                        query: 'SELECT pid FROM photo_tag WHERE pid IN (' + pids + ')'
-                    }, function(tagRows)
-                    {
-                        var i;
-                        for (i in tagRows)
-                        {
-                            photosByPid[tagRows[i]['pid']].tagsCount++;
-                        }
+	function fetchPhotos() {
+		switch (state.fetchBy) {
+		case 'album':
+			fetchBy.album(tool.$albums.val(), showPhotos);
+			break;
+		case 'tags':
+			fetchBy.tags(showPhotos);
+			break;
+		default:
+			break;
+		}
+	}
 
-                        var photos = [];
-                        for (i in photosByPid)
-                        {
-                            if (photosByPid[i].tagsCount > 0)
-                            {
-                                photos.push(photosByPid[i]);
-                            }
-                            if (photos.length == 300)
-                                break;
-                        }
+	function showPhotos(photos) {
+		
+		var title = '';
+		switch (state.fetchBy) {
+		case 'tags': 
+			$te.empty();
+			title = 'Select a photo from Facebook';
+			break;
+		case 'albums':
+			title = 'Select an album from Facebook';
+			break;
+		}
+		if (state.fetchBy == 'tags') {
+			$te.empty();
+		}
+		tool.$photosContainer = $te.find('.Streams_photoSelector_container');
+		if (tool.$photosContainer.length) {
+			tool.$photosContainer.empty();
+		} else {
+			tool.$photosContainer = $('<div class="Streams_photoSelector_container" />')
+				.appendTo($te);
+		}
+		
+		if (Q.isEmpty(photos)) {
+			tool.$photosContainer.append('<div class="Streams_photoSelector_noPhotos">No photos found for these criteria.</div>');
+		} else {
+			Q.each(photos, function () {
+				var photo = this;
+				var $img = $('<img />').attr({
+					src: photo.picture
+				}).data('photo', this)
+				.appendTo(tool.$photosContainer)
+				.on(Q.Pointer.fastclick, function () {
+					Q.handle(state.onSelect, tool, [this, photo.images]);
+				});
+			});
+			if (state.oneLine) {
+				tool.$photosContainer.addClass('Streams_photoSelector_oneLine');
+			}
+		}
+		
+	}
+	
+	function _fetch() {
+		switch (state.fetchBy) {
+		case 'album':
+			fetchAlbums(function (albums) {
+				showAlbums(albums);
+				fetchPhotos();
+			});
+			break;
+		case 'tags':
+			fetchPhotos();
+			break;
+		default:
+			break;
+		}
+	}
 
-                        photos.sort(function(a, b)
-                        {
-                            if (a.tagsCount < b.tagsCount)
-                                return 1;
-                            else if (a.tagsCount > b.tagsCount)
-                                return -1;
-                            else
-                                return 0;
-                        });
+	function onSuccessfulLogin($te) {
+		FB.api('/me/permissions', function (response) {
+			var authorized = false;
+			Q.each(response.data, function (i, data) {
+				if (data.permission == 'user_photos' && data.status == 'granted') {
+					authorized = true;
+				}
+			});
+			if (authorized) {
+				_fetch();
+			} else {
+				Q.plugins.Users.facebookDialog({
+					'title': 'Permissions request',
+					'content': 'The application requires access to your photos.',
+					'buttons': [
+						{
+							'label': 'Grant permissions',
+							'handler': function(dialog) {
+								Q.plugins.Users.login({
+									using: 'facebook',
+									scope: 'user_photos',
+									onCancel: function() {
+										dialog.close();
+										$te.empty();
+									},
+									onSuccess: function() {
+										dialog.close();
+										_fetch();
+									}
+								});
+							},
+							'default': true
+						},
+						{
+							'label': 'Cancel',
+							'handler': function(dialog) {
+								$te.empty();
+								dialog.close();
+							}
+						}
+					],
+					'position': null,
+					'shadow': true
+				});
+			}
+		});
+	}
 
-                        callback($element, photos);
-
-                        Q.handle(o.onLoad, this, [photos]);
-
-                        if (o.cache && window.localStorage)
-				localStorage['cached_photos_' + o.uid] = JSON.stringify(photos);
-                    });
-                });
-            }
-        }
-
-    };
-
-    function fetchAlbums($element)
-    {
-        FB.api({
-                method: 'fql.query',
-                query: 'SELECT aid, name, visible, object_id FROM album WHERE owner=' + o.uid
-        }, function(response)
-        {
-            showAlbums($element, response);
-            fetchPhotos($element);
-        });
-    }
-
-    function showAlbums($element, albums)
-    {
-        var select = $('<select class="Streams_photoSelector_albums" />').bind('change keydown input', function()
-        {
-            fetchPhotos($element);
-        });
-        $element.empty().append(select);
-        for (var i in albums)
-        {
-            select.append($('<option />', {value: albums[i].aid}).html(albums[i].name));
-        }
-    }
-
-    function fetchPhotos($element)
-    {
-        switch (o.fetchBy)
-        {
-            case 'album':
-                fetchBy.album($element.find('.Streams_photoSelector_albums').val(), $element, showPhotos);
-                break;
-            case 'tags':
-                fetchBy.tags($element, showPhotos);
-                break;
-            default:
-                break;
-        }
-    }
-
-    function showPhotos($element, photos)
-    {
-        if (o.fetchBy == 'tags')
-            $element.empty();
-        var photosContainer = $element.find('.Streams_photoSelector_container');
-        if (!photosContainer.length)
-        {
-            photosContainer = $('<div class="Streams_photoSelector_container" />');
-            $element.append(photosContainer);
-        }
-
-        photosContainer.empty();
-
-        switch (o.fetchBy)
-        {
-            case 'album':
-                if (!$element.find('.Streams_photoSelector_tool_title').length)
-                    $element.find('.Streams_photoSelector_albums').before('<div class="Streams_photoSelector_tool_title">Select an album:</div>');
+	switch (state.provider) {
+	case 'facebook':
+		$te.find('*').remove();
+		$te.removeClass('Streams_photoSelector_by_album Streams_photoSelector_by_tags')
+			.addClass('Streams_photoSelector_by_' + state.fetchBy);
+		var src = Q.url('/plugins/Q/img/throbbers/loading.gif');
+		$te.append('<div class="Streams_tools_throbber"><img src="'+src+'" alt="" /></div>');
+		Q.plugins.Users.login({
+			tryQuietly: true,
+			using: 'facebook',
+			scope: 'user_photos',
+			onSuccess: function() {
+				onSuccessfulLogin($te);
+			},
+			onCancel: function() {	
+				if (state.prompt == 'dialog') {
+					// we may show the dialog asking user to login
+					Q.plugins.Users.facebookDialog({
+						'title': state.promptTitle,
+						'content': state.promptText,
+						'buttons': [
+							{
+								'label': 'Login',
+								'handler': function(dialog) {
+									Q.plugins.Users.login( {
+										using: 'facebook',
+										onCancel: function() {
+											dialog.close();
+											$te.hide();
+										},
+										onSuccess: function() {
+											dialog.close();
+											onSuccessfulLogin($te);
+										}
+									});
+								},
+								'default': true
+							},
+							{
+								'label': 'Cancel',
+								'handler': function(dialog) {
+									$te.hide();
+									dialog.close();
+								}
+							}
+						],
+						'position': null,
+						'shadow': true
+					});
+				} else if (state.prompt == 'button') {
+					// or a button, clicking on it will cause facebook
+					// login popup to appear
+					var button = $('<button class="Q_main_button">' + state.promptText + '</button>');
+					$te.empty().append(button);
+					button.click(function()
+					{
+						Q.plugins.Users.login(
+						{
+							using: 'facebook',
+							onSuccess: function()
+							{
+								onSuccessfulLogin($te);
+							}
+						});
+					});
+				} else {
+					// or just hide photo selector, and wait for a login
+					$te.hide();
+					Q.plugins.Users.onLogin.set(function() {
+						Q.plugins.Users.onLogin.remove('photo-selector-login');
+						$te.show();
+						onSuccessfulLogin($te);
+					}, 'Streams/photoSelector');
+				}
+			}
+		});
 		break;
-            case 'tags':
-                if (!$element.find('.Streams_photoSelector_tool_title').length)
-                    $element.find('.Streams_photoSelector_container').before('<div class="Streams_photoSelector_tool_title">Select photo from Facebook:</div>');
-		break;
-            default:
-		break;
-        }
-
-        if (photos.length > 0)
-        {
-            var photoData = {};
-            var totalWidth = 0;
-            for (var i in photos)
-            {
-                var img = $('<img />', {
-                    src: photos[i].src_small,
-                    alt: photos[i].caption,
-                    "class": "Streams_photoSelector_photo",
-                    "data-pid": photos[i].pid
-                });
-                img.bind('error', function()
-                {
-                    Q.handle(o.onError, this, [this]);
-                });
-                photosContainer.append(img);
-                totalWidth += parseInt(img.width());
-                if (!isNaN(parseInt(img.css('margin-left')))) {
-                    totalWidth += parseInt(img.css('margin-left'));
-                }
-                if (!isNaN(parseInt(img.css('margin-right')))) {
-                    totalWidth += parseInt(img.css('margin-right'));
-                }
-                photoData[photos[i].pid] = photos[i];
-            }
-            if (o.oneLine)
-            {
-                scrollBarHeight = 50;
-                photosContainer.width(totalWidth);
-                $element.find('.Streams_photoSelector_container').height(photos.height() + scrollBarHeight)
-                         .css({overflow: "hidden", "overflow-x": "auto"});
-            }
-            $('img', photosContainer).click(function()
-            {
-                if (o.onSelect) {
-                    Q.handle(o.onSelect, this, [photoData[$(this).attr('data-pid')]]);
-                }
-                return false;
-            });
-        }
-        else
-        {
-            photosContainer.append('<div class="Streams_photoSelector_no_photos">No photos found for these criteria.</div>');
-        }
-    }
-
-    function onSuccessfulLogin($element)
-    {
-        FB.api('/me/permissions', function (response)
-        {
-            var needFriends = (o.uid != 'me()' && o.uid != Q.plugins.Users.loggedInUser.fb_uid);
-            if ( response.data && response.data.length && response.data[0].user_photos &&
-                     (!needFriends || (needFriends && response.data[0].friends_photos)) )
-            {
-                switch (o.fetchBy)
-                {
-                    case 'album': fetchAlbums($element); break;
-                    case 'tags': fetchPhotos($element); break;
-		    default: break;
-                }
-            }
-            else
-            {
-                Q.plugins.Users.facebookDialog({
-                    'title': 'Permissions request',
-                    'content': 'The application requires access to your ' + (needFriends ? 'your friends photos.' : 'photos.'),
-                    'buttons': [
-                        {
-                            'label': 'Grant permissions',
-                            'handler': function(dialog)
-                            {
-                                Q.plugins.Users.login({
-                                    using: 'facebook',
-                                    scope: needFriends ? 'user_photos,friends_photos' : 'user_photos',
-                                    onCancel: function()
-                                    {
-                                        dialog.close();
-                                        $element.empty();
-                                    },
-                                    onSuccess: function()
-                                    {
-                                        dialog.close();
-                                        switch (o.fetchBy)
-                                        {
-                                            case 'album': fetchAlbums($element); break;
-                                            case 'tags': fetchPhotos($element); break;
-                                            default: break;
-                                        }
-                                    }
-                                });
-                            },
-                            'default': true
-                        },
-                        {
-                            'label': 'Cancel',
-                            'handler': function(dialog)
-                            {
-                                $element.empty();
-                                dialog.close();
-                            }
-                        }
-                    ],
-                    'position': null,
-                    'shadow': true
-                });
-            }
-        });
-    }
-
-        var $element = $(this.element);
-        switch (o.provider)
-        {
-            case 'facebook':
-                $element.find('*').remove();
-                $element.removeClass('Streams_photoSelector_by_album Streams_photoSelector_by_tags')
-                         .addClass('Streams_photoSelector_by_' + o.fetchBy);
-                $element.append('<div class="Streams_tools_throbber"><img src="' + Q.info.proxyBaseUrl +
-                                         '/plugins/Q/img/throbbers/loading.gif" alt="" /></div>');
-                Q.plugins.Users.login({
-                    tryQuietly: true,
-                    using: 'facebook',
-                    scope: 'user_photos',
-                    onSuccess: function()
-                    {
-                        onSuccessfulLogin($element);
-                    },
-                    onCancel: function()
-                    {
-                        // we may show the dialog asking user to login
-                        if (o.prompt == 'dialog')
-                        {
-                            Q.plugins.Users.facebookDialog({
-                                'title': o.promptTitle,
-                                'content': o.promptText,
-                                'buttons': [
-                                    {
-                                        'label': 'Login',
-                                        'handler': function(dialog)
-                                        {
-                                            Q.plugins.Users.login(
-                                            {
-                                                using: 'facebook',
-                                                onCancel: function()
-                                                {
-                                                    dialog.close();
-                                                    $element.hide();
-                                                },
-                                                onSuccess: function()
-                                                {
-                                                    dialog.close();
-                                                    onSuccessfulLogin($element);
-                                                }
-                                            });
-                                        },
-                                        'default': true
-                                    },
-                                    {
-                                        'label': 'Cancel',
-                                        'handler': function(dialog)
-                                        {
-                                            $element.hide();
-                                            dialog.close();
-                                        }
-                                    }
-                                ],
-                                'position': null,
-                                'shadow': true
-                            });
-                        }
-                        // or a button, clicking on it will cause facebook login popup to appear
-                        else if (o.prompt == 'button')
-                        {
-                            var button = $('<button class="Q_main_button">' + o.promptText + '</button>');
-                            $element.empty().append(button);
-                            button.click(function()
-                            {
-                                Q.plugins.Users.login(
-                                {
-                                    using: 'facebook',
-                                    onSuccess: function()
-                                    {
-                                        onSuccessfulLogin($element);
-                                    }
-                                });
-                            });
-                        }
-                        // or just hide photo selector
-                        else
-                        {
-                            $element.hide();
-                            Q.plugins.Users.onLogin.set(function()
-                            {
-                                Q.plugins.Users.onLogin.remove('photo-selector-login');
-                                $element.show();
-                                onSuccessfulLogin($element);
-                            }, 'photo-selector-login');
-                        }
-                    }
-                });
-            break;
-        }
+	}
 },
 
 {
-    onSelect: null,
-    uid: 'me()',
-    fetchBy: 'album',
-    onLoad: new Q.Event(function() {}),
-    onError: new Q.Event(function() {}),
-    provider: 'facebook',
-    prompt: false,
-    promptTitle: 'Login required',
-    promptText: 'Please log into Facebook to to view photos.',
-    oneLine: false,
-    cache: false
+	onSelect: new Q.Event(),
+	preprocessAlbums: function (albums, callback) {
+		Q.each(albums, function (i) {
+			if (this.type === 'profile') {
+				albums.splice(i, 1);
+				albums.unshift(this);
+			}
+		});
+		callback();
+	},
+	uid: 'me',
+	fetchBy: 'album',
+	onLoad: new Q.Event(function() {}),
+	onError: new Q.Event(function() {}),
+	provider: 'facebook',
+	prompt: false,
+	promptTitle: 'Login required',
+	promptText: 'Please log into Facebook to to view photos.',
+	oneLine: false,
+	cache: false
 }
 
 );

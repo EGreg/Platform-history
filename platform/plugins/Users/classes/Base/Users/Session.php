@@ -354,6 +354,7 @@ abstract class Base_Users_Session extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_timeout
 	 * Returns the maximum integer that can be assigned to the timeout field
 	 * @return {integer}
 	 */
@@ -386,6 +387,7 @@ abstract class Base_Users_Session extends Db_Row
 	}
 
 	/**
+	 * @method maxSize_duration
 	 * Returns the maximum integer that can be assigned to the duration field
 	 * @return {integer}
 	 */

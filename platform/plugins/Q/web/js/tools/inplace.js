@@ -11,8 +11,10 @@
  * @class Q inplace
  * @constructor
  * @param {Object} [options] This is an object of parameters for this function
+ *  @param {String} options.action Required url of the action to issue the request to on save.
  *  @param {String} [options.method='put'] The HTTP verb to use.
- *  @param {String} [options.type='textarea'] The type of the input field. Can be "textarea" or "text"
+ *  @param {String} [options.type='textarea'] The type of the input field. Can be "textarea", "text", or "select"
+ *  @param {String} [options.options={}] If the type is "select", then this would be an object of {value: optionTitle} pairs
  *  @param {Boolean=true} [options.editOnClick] Whether to enter editing mode when clicking on the text.
  *  @param {Boolean} [options.selectOnEdit=true] Whether to select everything in the input field when entering edit mode.
  *  @param {Boolean=true} [options.showEditButtons=false] Set to true to force showing the edit buttons on touchscreens
@@ -21,8 +23,8 @@
  *  @param {String} [options.staticHtml] The static HTML to start out with
  *  @param {String} [options.placeholder=null] Text to show in the staticHtml or input field when the editor is empty
  *  @param {Object} [options.template]  Can be used to override info for the tool's view template.
- *    @param {String} [options.template.dir='plugins/Q/views']
- *    @param {String} [options.template.name='Q/inplace/tool']
+ *	@param {String} [options.template.dir='plugins/Q/views']
+ *	@param {String} [options.template.name='Q/inplace/tool']
  *  @param {Q.Event} [options.onSave] This event triggers after save
  *  @param {Q.Event} [options.onCancel] This event triggers after canceling
  */
@@ -68,7 +70,10 @@ Q.Tool.define("Q/inplace", function (options) {
 			method: o.method || 'put',
 			action: o.action,
 			field: o.field,
-			textarea: (o.type === 'textarea'),
+			isText: (o.type === 'text'),
+			isTextarea: (o.type === 'textarea'),
+			isSelect: (o.type === 'select'),
+			options: o.options,
 			placeholder: state.placeholder,
 			text: function (field) {
 				return staticHtml.decodeHTML();
@@ -78,7 +83,7 @@ Q.Tool.define("Q/inplace", function (options) {
 		function (err, html) {
 			if (!html) return;
 			$te.html(html);
-			if (staticHtml) {
+			if (staticHtml && state.editOnClick) {
 				tool.$('.Q_inplace_tool_static').attr('title', state.placeholder);
 			}
 			return _Q_inplace_tool_constructor.call(tool, this.element, options);
@@ -246,6 +251,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		}
 		container_span.addClass('Q_editing');
 		container_span.addClass('Q_discouragePointerEvents');
+		_beganEditing(container_span);
 		if (state.bringToFront) {
 			var $bringToFront = $(state.bringToFront);
 			var pos = $bringToFront.css('position');
@@ -344,38 +350,32 @@ function _Q_inplace_tool_constructor(element, options) {
 			used_placeholder = true;
 		}
 
-		$.ajax({
-			url: Q.ajaxExtend(url, 'Q_inplace', {'method': method}),
-			type: 'POST',
-			data: form.serialize(),
-			dataType: 'json',
-			error: function(xhr, status, except) {
-				onSaveErrors('ajax status: ' + status + '... try again');
-			},
-			success: function(response) {
-				if (typeof response !== 'object') {
-					onSaveErrors("returned data is not an object");
-					return;
-				}
-				if (response.errors && response.errors.length) {
-					onSaveErrors(response.errors[0].message);
-					return;
-				}
-
-				function afterLoad(alreadyLoaded) {
-					if (('scriptLines' in response) && ('Q_inplace' in response.scriptLines)) {
-						eval(response.scriptLines.Q_inplace);
-					}
-				}
-
-				if(response.scripts && response.scripts.Q_inplace && response.scripts.Q_inplace.length) {
-					Q.addScript(response.scripts.Q_inplace, afterLoad);
-				} else {
-					afterLoad();
-				}
-
-				onSaveSuccess(response);
+		Q.request(url, ['Q_inplace'], function (err, response) {
+			if (typeof response !== 'object') {
+				onSaveErrors("returned data is not an object");
+				return;
 			}
+			if (response.errors && response.errors.length) {
+				onSaveErrors(response.errors[0].message);
+				return;
+			}
+
+			function afterLoad(alreadyLoaded) {
+				if (('scriptLines' in response) && ('Q_inplace' in response.scriptLines)) {
+					eval(response.scriptLines.Q_inplace);
+				}
+			}
+
+			if(response.scripts && response.scripts.Q_inplace && response.scripts.Q_inplace.length) {
+				Q.addScript(response.scripts.Q_inplace, afterLoad);
+			} else {
+				afterLoad();
+			}
+
+			onSaveSuccess(response);
+		}, {
+			method: method,
+			fields: Q.serializeFields(form[0])
 		});
 
 		if (used_placeholder) {
@@ -414,6 +414,7 @@ function _Q_inplace_tool_constructor(element, options) {
 		container_span.removeClass('Q_editing')
 			.removeClass('Q_nocancel')
 			.removeClass('Q_discouragePointerEvents');
+		_finishedEditing(container_span);
 		_hideEditButtons();
 		noCancel = false;
 		Q.handle(state.onSave, tool, [response.slots.Q_inplace]);
@@ -437,7 +438,8 @@ function _Q_inplace_tool_constructor(element, options) {
 		focusedOn = null;
 		tool.restoreActions();
 		container_span.removeClass('Q_editing')
-			.removeClass('Q_discouragePointerEvents');;
+			.removeClass('Q_discouragePointerEvents');
+		_finishedEditing(container_span);
 		_hideEditButtons();
 		Q.handle(state.onCancel, tool);
 		Q.Pointer.cancelClick();
@@ -581,7 +583,53 @@ function _Q_inplace_tool_constructor(element, options) {
 	}
 }
 
+function _beganEditing(container_span) {
+	container_span.parents().each(function () {
+		var $this = $(this);
+		$this.data(_stateKey_editing, $this.hasClass('Q_editing'))
+			.addClass('Q_editing');
+	});
+}
+
+function _finishedEditing(container_span) {
+	container_span.parents().each(function () {
+		var $this = $(this);
+		if (!$this.data(_stateKey_editing)) {
+			$this.removeClass('Q_editing');
+		}
+	});
+}
+
 var _stateKey_zIndex = 'Q/inplace zIndex';
 var _stateKey_position = 'Q/inplace position';
+var _stateKey_editing = 'Q/inplace Q_editing';
+
+Q.Template.set('Q/inplace/tool', 
+"<div class='Q_inplace_tool_container {{classes}}' style='position: relative;'>"
++	"<div class='Q_inplace_tool_editbuttons'>"
++		"<button class='Q_inplace_tool_edit basic16 basic16_edit'>Edit</button>"
++	"</div>"
++	"<form class='Q_inplace_tool_form' method='{{method}}' action='{{action}}'>"
++		"{{#if isTextarea}}"
++			"textarea name='{{field}}' placeholder='{{placeholder}}' rows='5' cols='80'>{{text}}</textarea>"
++		"{{/if}}"
++		"{{#if isText}}"
++			"<input name='{{field}}' placeholder='{{placeholder}}' value='{{text}}' type='{{type}}' >"
++		"{{/if}}"
++		"{{#if isSelect}}"
++			"<select name='{{field}}'>"
++			"{{#each options}}"
++				"<option value='{{@key}}'>{{this}}</option>"
++			"{{/each}}"
++			"</select>"
++		"{{/if}}"
++		"<div class='Q_inplace_tool_buttons'>"
++			"<button class='Q_inplace_tool_cancel basic16 basic16_cancel'>Cancel</button>"
++			"<button class='Q_inplace_tool_save basic16 basic16_save'>Save</button>"
++		"</div>"
++	"</form>"
++	"<div class='Q_inplace_tool_static_container {{staticClass}}'>{{& staticHtml}}</div>"
++"</div>"
+);
 
 })(Q, jQuery, window, document);
