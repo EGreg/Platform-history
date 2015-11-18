@@ -1742,9 +1742,6 @@ Users.facebookDialog = function(options)
 		'buttons': {}
 	}, options);
 	
-	if (!Q.isPlainObject(o.buttons)) {
-		return alert("Please provide a plain object for Users.facebookDialog buttons");
-	}
 	if (o.shadow) {
 		var shadow = $('<div class="Users_facebookDialog_shadow" />');
 		$('body').append(shadow);
