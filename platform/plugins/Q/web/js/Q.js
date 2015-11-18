@@ -8300,7 +8300,7 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	 * @param {Function} callback
 	 */
 	$.fn.plugin = function _jQuery_fn_plugin(pluginName, options, callback) {
-		if (!$(this).length) return this;
+		if (!this.length) return this;
 		var args;
 		switch (Q.typeOf(options)) {
 			case 'array': // passing a bunch of parameters to a plugin
@@ -8365,6 +8365,30 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 	$.fn.state = function _jQuery_fn_state(pluginName) {
 		var key = Q.normalize(pluginName) + ' state';
 		return $(this).data(key);
+	};
+	/**
+	 * Calls Q.Tool.setUpElement on the elements in the jQuery.
+	 * Follow this up with a call to .activate()
+	 * @class jQuery.fn
+	 * @static
+	 * @method tool
+	 * @param {String|Element} element
+	 *  The tag of the element, such as "div", or a reference to an existing Element
+	 * @param {String} toolName
+	 *  The type of the tool, such as "Q/tabs"
+	 * @param {Object} [toolOptions]
+	 *  The options for the tool
+	 * @param {String|Function} [id]
+	 *  Optional id of the tool, such as "Q_tabs_2"
+	 * @param {String} [prefix]
+	 *  Optional prefix to prepend to the tool's id
+	 */
+	$.fn.tool = function _jQuery_fn_tool(toolName, toolOptions, id, prefix) {
+		var args = arguments;
+		return this.each(function () {
+			var id2 = (typeof id === 'function') ? id.apply(this, args) : id;
+			Q.Tool.setUpElement(this, toolName, toolOptions, id2, prefix);
+		});
 	};
 	/**
 	 * Calls Q.activate on all the elements in the jQuery
