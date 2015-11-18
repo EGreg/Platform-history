@@ -72,7 +72,7 @@ Q.Tool.define("Streams/photoSelector", function _Streams_chat_constructor (o) {
 	}
 
 	function fetchAlbums(callback) {
-		FB.api('/'+state.uid+'/albums', function (response) {
+		FB.api('/'+state.uid+'/albums?fields=id,name,type,created_time', function (response) {
 			if (!response || response.error) {
 				return;
 			}
