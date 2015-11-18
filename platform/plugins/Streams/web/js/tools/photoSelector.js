@@ -143,7 +143,7 @@ Q.Tool.define("Streams/photoSelector", function _Streams_chat_constructor (o) {
 				var photo = this;
 				var $img = $('<img />').attr({
 					src: photo.picture
-				}).data('images', this.images)
+				}).data('photo', this)
 				.appendTo(tool.$photosContainer)
 				.on(Q.Pointer.fastclick, function () {
 					Q.handle(state.onSelect, tool, [this, photo.images]);
