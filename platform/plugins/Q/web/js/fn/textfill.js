@@ -75,7 +75,7 @@ Q.Tool.jQuery('Q/textfill',
         },
 		
 		remove: function () {
-			Q.onLayout.remove(this.state('Q/textfill').layoutEventKey);
+			Q.onLayout(this).remove(this.state('Q/textfill').layoutEventKey);
 		}
     }
 
