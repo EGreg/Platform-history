@@ -3509,8 +3509,9 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 				$(this.element).plugin(name, 'remove', this);
 			}, 'Q');
 		});
+		ToolConstructor.prototype.$ = {};
 		Q.each(methods, function (method) {
-			ToolConstructor.prototype[method] = function _Q_Tool_jQuery_method() {
+			ToolConstructor.prototype.$[method] = function _Q_Tool_jQuery_method() {
 				var args = Array.prototype.slice.call(arguments, 0);
 				args.unshift(name, method);
 				var $te = $(this.element);
