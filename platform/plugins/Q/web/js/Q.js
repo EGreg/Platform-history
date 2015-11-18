@@ -8391,20 +8391,20 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 		});
 	};
 	/**
-	 * Calls Q.activate on all the elements in the jQuery
+	 * Calls Q.activate on all the elements in the jQuery.
 	 * @static
 	 * @method activate
 	 * @param {Object} options
 	 *  Optional options to provide to tools and their children.
 	 * @param {Function|Q.Event} callback
-	 *  This will get called when the content has been completely activated.
-	 *  That is, after all the files, if any, have been loaded and all the
-	 *  constructors have run.
+	 *  This will get called for each element that has been completely activated.
+	 *  That is, after files for each of its tools, if any,
+	 *  have been loaded and all their constructors have run.
 	 *  It receives (elem, options, tools) as arguments, and the last tool to be
 	 *  activated as "this".
 	 */
 	$.fn.activate = function _jQuery_fn_activate(options, callback) {
-		$(this).each(function _jQuery_fn_activate_each(index, element) {
+		return this.each(function _jQuery_fn_activate_each(index, element) {
 			if (!$(element).closest('html').length) {
 				console.log("Q.activate: element " + element.id + " is not in the DOM");
 				return false; // avoid doing work if it's not in the DOM
