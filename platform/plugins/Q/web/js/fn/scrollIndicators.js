@@ -419,7 +419,7 @@
                             }
                         }
                     }
-                    $(window).bind('scroll', updateNative);
+                    $(window).on('scroll', updateNative);
                     updateNative();
                     $this.data('Q_scroll_indicator_update', updateNative);
                 }

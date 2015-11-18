@@ -187,7 +187,7 @@ function _initScroller(o) {
     {
         // WARNING: the way Dima coded this, only the first o.onScroll is ever fired
         // since after that, p.inited becomes true and this never happens:
-        $(document.body).bind(Q.Pointer.move, _eventHandler);
+        $(document.body).on(Q.Pointer.move, _eventHandler);
         p.inited = true;
     }
 

@@ -607,7 +607,7 @@ Q.Layout = {
 			{
 				if (Q.info.platform == 'ios')
 				{
-					$(document.body).bind('touchmove', function(e)
+					$(document.body).on('touchmove', function(e)
 					{
 						e.preventDefault();
 					});
@@ -641,14 +641,14 @@ Q.Layout = {
 				
 				if (Q.info.platform == 'android')
 				{
-					$(document.body).bind('touchstart', function(e)
+					$(document.body).on('touchstart', function(e)
 					{
 						Q.Layout.processAndroidFixedBlocks(e);
 					});
 				}
 				else
 				{
-					$(document.body).bind('touchstart', function(e)
+					$(document.body).on('touchstart', function(e)
 					{
 						if (!Q.Layout.focusEventOccured && !Q.Layout.keyboardVisible && Q.Layout.addressBarVisible)
 						{
@@ -2608,7 +2608,7 @@ Q.Contextual = {
 					}
 				}
 			};
-			$(document.body).bind(Q.Pointer.start, Q.Contextual.showHandler);
+			$(document.body).on(Q.Pointer.start, Q.Contextual.showHandler);
 		}
 		
 		// if 'triggerOnHover' is on then we should create separate handler for latest added contextual
@@ -2679,7 +2679,7 @@ Q.Contextual = {
 					return false;
 				}
 			};
-			$(document.body).bind(Q.Pointer.start, Q.Contextual.startEventHandler);
+			$(document.body).on(Q.Pointer.start, Q.Contextual.startEventHandler);
 			
 			Q.Contextual.moveEventHandler = function(e)
 			{
@@ -2760,7 +2760,7 @@ Q.Contextual = {
 					}
 				}
 			};
-			$(document.body).bind(Q.Pointer.move, Q.Contextual.moveEventHandler);
+			$(document.body).on(Q.Pointer.move, Q.Contextual.moveEventHandler);
 			
 			Q.Contextual.endEventHandler = function(e)
 			{
@@ -2846,7 +2846,7 @@ Q.Contextual = {
 					}
 				}
 			};
-			$(document.body).bind(Q.Pointer.end, Q.Contextual.endEventHandler);
+			$(document.body).on(Q.Pointer.end, Q.Contextual.endEventHandler);
 			
 			Q.Contextual.itemSelectHandler = function(element)
 			{
