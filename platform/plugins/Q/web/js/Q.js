@@ -3875,16 +3875,19 @@ Q.Tool.setUpElement = function _Q_Tool_setUpElement(element, toolName, toolOptio
 		var tn = toolName[i];
 		var ntt = tn.replace(/\//g, '_');
 		element.addClass('Q_tool '+ntt+'_tool');
-		if (!id && !element.getAttribute(id)) {
-			var p1, p2;
-			p1 = prefix || (Q.Tool.beingActivated ? Q.Tool.beingActivated.prefix : '');
-			do {
-				p2 = p1 + ntt + '-' + (Q.Tool.nextDefaultId++) + '_';
-				Q.Tool.nextDefaultId %= 1000000;
-			} while (Q.Tool.active[p2]);
-			id = p2 + 'tool';
+		if (!element.getAttribute('id')) {
+			if (!id) {
+				var p1, p2;
+				p1 = prefix || (Q.Tool.beingActivated 
+					? Q.Tool.beingActivated.prefix : '');
+				do {
+					p2 = p1 + ntt + '-' + (Q.Tool.nextDefaultId++) + '_';
+					Q.Tool.nextDefaultId %= 1000000;
+				} while (Q.Tool.active[p2]);
+				id = p2 + 'tool';
+			}
+			element.setAttribute('id', id);
 		}
-		element.setAttribute('id', id);
 		if (toolOptions && toolOptions[i]) {
 			element.options = element.options || {};
 			element.options[Q.normalize(tn)] = toolOptions[i];
