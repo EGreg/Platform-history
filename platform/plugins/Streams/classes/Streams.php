@@ -451,8 +451,8 @@ abstract class Streams extends Base_Streams
 	 *   and save a new cache if necessary.
 	 *  @param {boolean} [$options.dontCache] Do not cache the results of
 	 *   fetching the streams
-	 * @return {array|null}
-	 *  Returns an array of Streams_Stream objects with access info calculated
+	 * @return {Streams_Stream|null}
+	 *  Returns a Streams_Stream object with access info calculated
 	 *  specifically for $asUserId . Make sure to call the methods 
 	 *  testReadLevel(), testWriteLevel() and testAdminLevel()
 	 *  on these streams before using them on the user's behalf.
@@ -773,7 +773,8 @@ abstract class Streams extends Base_Streams
 		$publisherId, 
 		$type, 
 		$fields = array(), 
-		$relate = null)
+		$relate = null,
+		&$result = null)
 	{
 		$skipAccess = Q::ifset($fields, 'skipAccess', false);
 		if (!isset($asUserId)) {
@@ -868,7 +869,6 @@ abstract class Streams extends Base_Streams
 					'skipAccess' => $skipAccess
 				)
 			);
-			Q_Response::setSlot('messageTo', $result['messageTo']->exportArray());
 		}
 
 		self::$fetch[$asUserId][$publisherId][$stream->name] = array('*' => $stream);
@@ -2532,129 +2532,6 @@ abstract class Streams extends Base_Streams
 		$result = $invited->save(true);
 		//Streams::calculateAccess($asUserId, $forUserId, array('Streams/invited' => $invited), false);
 		return $result ? $invited : null;
-	}
-
-	/**
-	 * Method is used to verify access rights and fetch stream specific data
-	 * @method get
-	 * @static
-	 *
-	 * @param {string} $asUserId
-	 *  The user who is attempting to fetch streams
-	 * @param {string|array} $publisherId
-	 *  Optional. The publisher of the stream to fetch
-	 * @param {string|array} $streamName
-	 *  Optional. The name of the stream to fetch. May be generic name if last char is '/'
-	 *   if array is provided fetches streams for each array member
-	 * @param {array} $options=array()
-	 *   Array of parameters including:<br/>
-	 *	"search" => Experimental, Optional. A search term to look in 'title' and 'content'.
-	 *	  If provided, $streamName shall be not empty and contain generic name (type) of the
-	 *	  streams to search. Streams/search/$type 'before' and 'after' hooks are called to
-	 *	  adjust search result<br/>
-	 *
-	 *   Following options work only if $publisherId and $streamName are strings and 'Stream' table is not
-	 *	 sharded:<br/>
-	 *
-	 *	"limit" => Optional. The number of streams to fetch<br/>
-	 *	"offset" => Optional. The offset to start from<br/>
-	 *	"orderBy" => Optional. The name(s) of the field(s) to order result<br/>
-	 * @param {boolean} $single=false
-	 * @return {array}
-	 *  Array of resulting stream indexed by name
-	 */
-
-	static function get(
-		$asUserId,
-		$publisherId,
-		$streamName,
-		$options = array(),
-		$single = false) // return array by default
-	{
-		$publishers = is_array($publisherId) ? $publisherId : array($publisherId);
-		$names = is_array($streamName) ? $streamName : array($streamName);
-		// set up extra query options
-		$modifiers = array();
-		// use of these options is useless if fetching in many tries
-		if (is_string($publisherId) && is_string($streamName))
-			foreach (array('limit', 'offset', 'orderBy') as $option)
-				if (isset($options[$option])) $modifiers[$option] = $options[$option];
-
-		$streams = array();
-		if (!isset($options['search'])) {
-			// simply fetch requested streams
-			foreach ($publishers as $publisherId) {
-				foreach($names as $name) {
-					$bulk = Streams::fetch($asUserId, $publisherId, $name, '*', $modifiers);
-					foreach ($bulk as $key => $s) {
-						if (!$s->testReadLevel('see')) {
-							unset($bulk[$key]);
-						} else {
-							if (!$s->testReadLevel('content')) {
-							foreach(array_diff(array_keys($s->fields), // even if stream is extended with non-standard fields they'll be removed
-									array(	// the array of fields allowed to see
-										'publisherId',
-										'insertedTime',
-										'updatedTime',
-										'name',
-										'type',
-										'title',
-										'icon',
-										'messageCount',
-										'participantCount')) as $field)
-								unset($s->$field);
-							}
-						}
-					}
-					$streams = array_merge($streams, $bulk);
-				}
-			}
-		} else {
-			// try to search according to search term
-			$search = $options['search'];
-			// WARNING: we should use a separate solution for searches!!
-			$modifiers['orWhere'] = "title LIKE %$search% OR content LIKE %$search%";
-			foreach ($publishers as $publisherId) {
-				foreach ($names as $name) {
-					// we skip silently before/after hooks if $name is not generic
-					if (substr($name, -1) === '/') {
-						$type = substr($name, 0, -1);
-						/**
-						 * @event Streams/search/$streamType {before}
-						 * @param {string} publisherId
-						 * @param {string} name
-						 * @return {false} To cancel further processing
-						 */
-						if (Q::event(
-								"Streams/search/$type",
-								compact('publisherId', 'name'),
-								'before',
-								false,
-								$modifiers
-							) === false) continue;
-
-						$result = Streams::fetch($asUserId, $publisherId, $name, '*', $modifiers);
-
-						/**
-						 * @event Streams/search/$streamType {after}
-						 * @param {string} publisherId
-						 * @param {string} name
-						 */
-						Q::event(
-								"Streams/search/$type",
-								compact('publisherId', 'name', 'modifiers'),
-								'after',
-								false,
-								$result
-							);
-
-						array_merge($streams, $result);
-					}
-				}
-			}
-		}
-
-		return $single ? reset($streams) : $streams;
 	}
 
 	/**

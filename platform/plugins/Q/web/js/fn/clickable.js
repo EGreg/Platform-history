@@ -96,7 +96,7 @@ function _Q_clickable(o) {
 			'position': position === 'static' ? 'relative' : position,
 			'left': position === 'static' ? 0 : $this.position().left,
 			'top': position === 'static' ? 0 : $this.position().top,
-			'margin': '0px',
+			'margin': $this.css('margin'),
 			'padding': '0px',
 			'border': '0px solid transparent',
 			'float': $this.css('float'),

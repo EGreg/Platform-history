@@ -3504,7 +3504,9 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 		$.fn[name] = jQueryPluginConstructor;
 		var ToolConstructor = Q.Tool.define(name,
 		function _Q_Tool_jQuery_constructor(options) {
-			$(this.element).plugin(name, options, this);
+			var $te = $(this.element);
+			$te.plugin(name, options, this);
+			this.state = $te.state(name);
 			this.Q.beforeRemove.set(function () {
 				$(this.element).plugin(name, 'remove', this);
 			}, 'Q');
@@ -8342,17 +8344,17 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 		}
 		var results = {};
 		Q.each(pluginNames, function _jQuery_plugin_loaded(i, pluginName) {
-			pluginName = Q.normalize(pluginName);
-			results[pluginName] = true;
-			if ($.fn[pluginName]) return;
-			var src = ($.fn.plugin[pluginName] || 'plugins/jQuery/'+pluginName+'.js');
+			var pn = Q.normalize(pluginName);
+			results[pn] = pluginName;
+			if ($.fn[pn]) return;
+			var src = ($.fn.plugin[pn] || 'plugins/jQuery/'+pn+'.js');
 			if (typeof src === 'string') {
 				srcs.push(src);
 			}
 		});
 		Q.addScript(srcs, function _jQuery_plugin_script_loaded() {
-			for (var pluginName in results) {
-				results[pluginName] = $.fn[pluginName];
+			for (var pn in results) {
+				results[pn] = $.fn[pn] || $.fn[ results[pn] ];
 			}
 			Q.handle(callback, root, [results]);
 		}, options);
@@ -10389,6 +10391,7 @@ Q.onJQuery.add(function ($) {
 		"Q/flip": "plugins/Q/js/fn/flip.js",
 		"Q/gallery": "plugins/Q/js/fn/gallery.js",
 		"Q/zoomer": "plugins/Q/js/fn/zoomer.js",
+		"Q/fisheye": "plugins/Q/js/fn/fisheye.js",
 		"Q/listing": "plugins/Q/js/fn/listing.js",
 		"Q/hautoscroll": "plugins/Q/js/fn/hautoscroll.js",
 		"Q/imagepicker": "plugins/Q/js/fn/imagepicker.js",

@@ -293,7 +293,6 @@ div.Q_placeholder { pointer-events: none; }
 .Q_notTouchscreen .Q_clickable_container:hover .Q_clickable_shadow
  { display: block; max-width: none !important; }
 
-
 #dialogs_slot { display: none; }
 
 .Q_notMobile .Q_overlay.Q_alert,

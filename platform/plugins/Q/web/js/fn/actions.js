@@ -9,35 +9,21 @@
  * jQuery plugin that adds action icons that appear over elements and allow the user to perform some action, and display correctly on both desktop and mobile.
  * @class Q actions
  * @constructor
- * @param {Object} [options] , object for an options
- * @param {Array} [options.actions] actions an array of name:function pairs
- * @default {}
- * @param {String} [options.containerClass] containerClass any class names to add to the actions container
- * @default ''
- * @param {Number} [options.zIndex] zIndex z-index from style
- * @default null
- * @param {String} [options.position] position one of 't', 'm', 'b' followed by one of 'l', 'c', 'r'
- * @default 'mr'
- * @param {Number} [options.size] size number for css class basic , example 32 for basic32 class
- * @default 32
- * @param {Boolean} [options.alwaysShow] alwaysShow
- * @default Q.info.isTouchscreen
- * @param {Boolean} [options.horizontal] horizontal if true, show actions horizontally
- * @default true
- * @param {Boolean} [options.reverse] reverse if true, show in reverse order
- * @default false
- * @param {Boolean} [options.clickable] clickable use clickable plugin
- * @default true
- * @param {Object} [options.context] context any context to pass to the actions
- * @default {}
- * @param {Number} [options.repositionMs] repositionMs how many milliseconds between repositioning
- * @default 200
+ * @param {Object} [options] possible options
+ * @param {Array} [options.actions={}] actions an array of name:function pairs
+ * @param {String} [options.containerClass=''] containerClass any class names to add to the actions container
+ * @param {Number} [options.zIndex=null] zIndex z-index from style
+ * @param {String} [options.position='mr'] position one of 't', 'm', 'b' followed by one of 'l', 'c', 'r'
+ * @param {Number} [options.size=32] size number for css class basic , example 32 for basic32 class
+ * @param {Boolean} [options.alwaysShow=Q.info.isTouchscreen] alwaysShow
+ * @param {Boolean} [options.horizontal=true] horizontal if true, show actions horizontally
+ * @param {Boolean} [options.reverse=false] reverse if true, show in reverse order
+ * @param {Boolean} [options.clickable=true] clickable use clickable plugin
+ * @param {Object} [options.context={}] context any context to pass to the actions
+ * @param {Number} [options.repositionMs=200] repositionMs how many milliseconds between repositioning
  * @param {Q.Event} [options.onShow] onShow , event that triggering after action show
- * @default new Q.Event()
  * @param [Q.Event] [options.beforeHide] beforeHide , event that triggering before action close
- * @default new Q.Event()
  * @param [Q.Event] [options.onClick] onClick , event that triggering on action click
- * @default new Q.Event()
 */
 Q.Tool.jQuery('Q/actions',
 
