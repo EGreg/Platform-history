@@ -122,6 +122,10 @@ function _Streams_file_preview(options, preview) {
 					});
 					var $pc = tool.$('.Streams_preview_contents');
 					$pc.width(0).width($pc[0].remainingWidth());
+					Q.onLayout(tool.element).set(function () {
+						var $pc = tool.$('.Streams_preview_contents');
+						$pc.width($pc[0].remainingWidth());	
+					}, tool);
 				});
 				$(tool.element).on(Q.Pointer.click, function () {
 					var url = stream.get('file.url');

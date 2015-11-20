@@ -2323,12 +2323,21 @@ Q.onLayout = function (element) {
 	var event = new Q.Event();
 	var l = _layoutElements.push(element);
 	_layoutEvents[l-1] = event;
+	event.onEmpty().set(function () {
+		for (var i=0, l=_layoutElements.length; i<l; ++i) {
+			if (_layoutElements[i] === element) {
+				_layoutElements.splice(i, 1);
+				break;
+			}
+		}
+	}, 'Q');
 	return event;
 }
 Q.onLayout().set(function () {
 	_detectOrientation.apply(this, arguments);
 	Q.Masks.update();
 }, 'Q');
+
 /**
  * This event is convenient for doing stuff when the window scrolls
  * @event onLayout
@@ -3760,18 +3769,20 @@ Tp.remove = function _Q_Tool_prototype_remove(removeCached) {
 
 	// remove all the tool's events automatically
 	var tool = this;
-	while (Q.Event.forTool[this.id] && Q.Event.forTool[this.id].length) {
+	var key = Q.calculateKey(this);
+	var arr = Q.Event.forTool[key];
+	while (arr && arr.length) {
 		// keep removing the first element of the array until it is empty
-		Q.Event.forTool[this.id][0].remove(tool);
+		arr[0].remove(tool);
 	}
 	
-	var p = Q.Event.jQueryForTool[this.id];
+	var p = Q.Event.jQueryForTool[key];
 	if (p) {
 		for (i=p.length-1; i >= 0; --i) {
 			var off = p[i][0];
 			root.jQuery.fn[off].call(p[i][1], p[i][2], p[i][3]);
 		}
-		Q.Event.jQueryForTool[this.id] = [];
+		Q.Event.jQueryForTool[key] = [];
 	}
 	
 	return this.removed = true;
