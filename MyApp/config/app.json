@@ -60,7 +60,7 @@
 					"plugins/Q/js/Q.js": "all.js",
 					"plugins/Users/js/Users.js": "all.js",
 					"plugins/Streams/js/Streams.js": "all.js",
-					"js/First.js": "all.js"
+					"js/MyApp.js": "all.js"
 				}
 			}
 		}

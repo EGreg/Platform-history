@@ -2720,7 +2720,7 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 };
 Message.wait.options = {
 	max: 5, // maximum number of messages we'll actually wait for, if there's a socket
-	timeout: 1000, // maximum number of milliseconds we'll actually wait for, if there's a socket
+	timeout: 1000 // maximum number of milliseconds we'll actually wait for, if there's a socket
 };
 
 var _messageShouldRefreshStream = {};
