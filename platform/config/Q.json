@@ -92,7 +92,7 @@
 			"defaults": {
 				"filters": {
 					"css": {
-						"handler": "Q/filters/reducisaurus"
+						"handler": "Q/filters/cssminifier"
 					},
 					"js": {
 						"handler": "Q/filters/googleClosureCompiler",
