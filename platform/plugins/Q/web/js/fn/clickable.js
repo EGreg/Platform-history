@@ -213,6 +213,7 @@ function _Q_clickable(o) {
 			var pos = null;
 			container.parents().each(function () {
 				var $t = $(this);
+				$t.data('Q/clickable scrollLeft', $t.scrollLeft());
 				$t.data('Q/clickable scrollTop', $t.scrollTop());
 				$t.data('Q/clickable transform', $t.css('transform'));
 			});
@@ -227,7 +228,8 @@ function _Q_clickable(o) {
 				var scrolled = false;
 				container.parents().each(function () {
 					var $t = $(this);
-					if ($t.data('Q/clickable scrollTop') != $t.scrollTop()
+					if ($t.data('Q/clickable scrollLeft') != $t.scrollLeft()
+					|| $t.data('Q/clickable scrollTop') != $t.scrollTop()
 					|| $t.data('Q/clickable transform') != $t.css('transform')) {
 						// there was some scrolling of parent elements
 						scrolled = true;
@@ -261,7 +263,9 @@ function _Q_clickable(o) {
 				}, 0);
 				container.parents().each(function () {
 					$(this).removeData(
-						['Q/clickable scrollTop', 'Q/clickable transform']
+						['Q/clickable scrollTop',
+						 'Q/clickable scrollTop', 
+						 'Q/clickable transform']
 					);
 				});
 				var jq;
