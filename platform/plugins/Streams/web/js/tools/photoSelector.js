@@ -7,7 +7,7 @@
 
 /**
  * Interface for selecting facebook photos from user albums
- * @class Streams inplace
+ * @class Streams photoSelector
  * @constructor
  * @param {Object} [options] this object contains function parameters
  *   @param {Q.Event} [options.onSelect] Triggered when the user selects a photo.
@@ -148,7 +148,7 @@ Q.Tool.define("Streams/photoSelector", function _Streams_photoSelector_construct
 				}).data('photo', this)
 				.appendTo(tool.$photosContainer)
 				.on(Q.Pointer.fastclick, function () {
-					Q.handle(state.onSelect, tool, [this, photo.images]);
+					Q.handle(state.onSelect, tool, [this, photo, photo.images]);
 				});
 			});
 			if (state.oneLine) {
