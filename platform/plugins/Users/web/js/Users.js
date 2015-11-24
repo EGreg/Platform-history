@@ -124,9 +124,8 @@ Users.initFacebook = function(callback, options) {
 				cookie: true,
 				oauth: true,
 				xfbml: true,
-				frictionlessRequests: Users.initFacebook.options.frictionlessRequests,
 				channelUrl: Q.action('Users/facebookChannel')
-			}, options));
+			}, Users.initFacebook.options, options));
 			Users.onInitFacebook.handle(Users, window.FB, [Q.info.app]);
 		}
 		Users.initFacebook.completed[Q.info.app] = true;

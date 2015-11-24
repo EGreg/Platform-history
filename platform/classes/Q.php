@@ -417,9 +417,12 @@ class Q
 			$filename = self::event('Q/autoload', compact('className'), 'before');
 
 			if (!isset($filename)) {
-//				$className_parts = explode('\\', $className);
-				$className_parts = explode('_', $className);
-				$filename = 'classes'.DS.implode(DS, $className_parts).'.php';
+				$parts = array();
+				$className_parts = explode('\\', $className);
+				foreach ($className_parts as $part) {
+					$parts = array_merge($parts, explode('_', $part));
+				}
+				$filename = 'classes'.DS.implode(DS, $parts).'.php';
 			}
 
 			// Workaround for Zend Framework, because it has require_once
