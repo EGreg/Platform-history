@@ -392,7 +392,7 @@ abstract class Users extends Base_Users
 							$parts = explode('x', $size);
 							$width = Q::ifset($parts, 0, $parts[1]);
 							$height = Q::ifset($parts, 1, $parts[0]);
-							$icon["$size.png"] = "http://graph.facebook.com/$fb_uid/picture?width=$size&height=$size";
+							$icon["$size.png"] = "http://graph.facebook.com/$fb_uid/picture?width=$width&height=$height";
 						}
 						if (!Q_Config::get('Users', 'register', 'icon', 'leaveDefault', false)) {
 							self::importIcon($user, $icon);
