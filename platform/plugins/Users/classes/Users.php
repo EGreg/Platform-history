@@ -389,9 +389,9 @@ abstract class Users extends Base_Users
 						sort($sizes);
 						$icon = array();
 						foreach ($sizes as $size) {
-							$parts = explode('x', $size);
-							$width = Q::ifset($parts, 0, $parts[1]);
-							$height = Q::ifset($parts, 1, $parts[0]);
+							list($width, $height) = explode('x', $size);
+							$width = $width ? $width : $height;
+							$height = $height ? $height : $width;
 							$icon["$size.png"] = "http://graph.facebook.com/$fb_uid/picture?width=$width&height=$height";
 						}
 						if (!Q_Config::get('Users', 'register', 'icon', 'leaveDefault', false)) {
@@ -1283,6 +1283,7 @@ abstract class Users extends Base_Users
 					$ch = curl_init();
 					curl_setopt($ch, CURLOPT_URL, $url);
 					curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+					curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 					$data = curl_exec($ch);
 					curl_close($ch);
 					$image = imagecreatefromstring($data);
