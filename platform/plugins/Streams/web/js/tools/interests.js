@@ -49,16 +49,11 @@ Q.Tool.define("Streams/interests", function (options) {
 		var img = "<img src='"+url+"'>";
 		var content = '';
 		var count = 0;
-		if (Q.isPlainObject(Q.first(interests))) {
-			Q.each(interests, function (subcategory, interests) {
-				var h3 = "<h3>"+subcategory+"</h3>";
-				content += h3 + _listInterests(category, interests);
-				count += Object.keys(interests).length;
-			});
-		} else {
-			content = _listInterests(category, interests);
+		Q.each(interests, function (subcategory, interests) {
+			var h3 = subcategory ? "<h3>"+subcategory+"</h3>" : '';
+			content += h3 + _listInterests(category, interests);
 			count += Object.keys(interests).length;
-		}
+		});
 		var expandableOptions = Q.extend({
 			title: img+"<span>"+category+"</span>",
 			content: content,
