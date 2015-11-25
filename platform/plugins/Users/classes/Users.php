@@ -389,7 +389,9 @@ abstract class Users extends Base_Users
 						sort($sizes);
 						$icon = array();
 						foreach ($sizes as $size) {
-							list($width, $height) = explode('x', $size);
+							$parts = explode('x', $size);
+							$width = Q::ifset($parts, 0, '');
+							$height = Q::ifset($parts, 1, '');
 							$width = $width ? $width : $height;
 							$height = $height ? $height : $width;
 							$icon["$size.png"] = "http://graph.facebook.com/$fb_uid/picture?width=$width&height=$height";
