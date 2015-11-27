@@ -2382,6 +2382,26 @@ abstract class Streams extends Base_Streams
 		// calculate expiry time
 		$duration = Q_Config::get("Streams", "types", $stream->type, "invite", "duration", false);
 		$expiry = $duration ? strtotime($duration) : null;
+		
+		if ($label = Q::ifset($options, 'label', null)) {
+			Users_Label::addLabel($label, $publisherId);
+		}
+		if ($myLabel = Q::ifset($options, 'myLabel', null)) {
+			Users_Label::addLabel($label, $asUserId);
+		}
+		
+		foreach ($raw_userIds as $userId) {
+			Users_Contact::addContact($asUserId, "Streams/invited", $userId);
+			Users_Contact::addContact($asUserId, "Streams/invited/{$stream->type}", $userId);
+			Users_Contact::addContact($userId, "Streams/invitedMe", $asUserId);
+			Users_Contact::addContact($asUserId, "Streams/invitedMe/{$stream->type}", $asUserId);
+			if ($label) {
+				Users_Contact::addContact($publisherId, $label, $userId);
+			}
+			if ($myLabel) {
+				Users_Contact::addContact($publisherId, $label, $userId);
+			}
+		}
 
 		// let node handle the rest, and get the result
 		$params = array(
@@ -2391,8 +2411,8 @@ abstract class Streams extends Base_Streams
 			"userIds" => Q::json_encode($userIds),
 			"stream" => Q::json_encode($stream->toArray()),
 			"appUrl" => $appUrl,
-			"label" => Q::ifset($options, 'label', null), 
-			"myLabel" => Q::ifset($options, 'myLabel', null), 
+			"label" => $label, 
+			"myLabel" => $myLabel, 
 			"readLevel" => $readLevel,
 			"writeLevel" => $writeLevel,
 			"adminLevel" => $adminLevel,
