@@ -161,7 +161,7 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 },
 
 {
-	create: function (event) {
+	create: function (event, callback) {
 		function _proceed(overrides) {
 			if (overrides != undefined && !Q.isPlainObject(overrides)) {
 				return;
@@ -176,6 +176,7 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 			.create(fields, function Streams_preview_afterCreate(err, stream, extra) {
 				if (err) {
 					state.onError.handle.call(tool, err);
+					Q.handle(callback, tool, [err]);
 					return err;
 				}
 				var r = state.related;
@@ -185,6 +186,7 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 				tool.stream = this;
 				this.refresh(function Streams_preview_afterCreateRefresh(r) {
 					state.onCreate.handle.call(tool, tool.stream);
+					Q.handle(callback, tool, [tool.stream]);
 					tool.preview();
 				}, {messages: true});
 			}, state.related, state.creatable.options);
