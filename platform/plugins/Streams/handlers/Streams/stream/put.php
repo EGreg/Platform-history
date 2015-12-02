@@ -38,7 +38,6 @@ function Streams_stream_put($params) {
 			'criteria' => "{publisherId: '$publisherId', name: '$name'}"
 		));
 	}
-
 	
 	// valid stream types should be defined in config by 'Streams/type' array
 	$range = Q_Config::expect('Streams', 'types');
@@ -63,7 +62,7 @@ function Streams_stream_put($params) {
 		}
 	}
 	
-	$restricted = array('readLevel', 'writeLevel', 'adminLevel', 'closedTime');
+	$restricted = array('readLevel', 'writeLevel', 'adminLevel', 'inheritAccess', 'closedTime');
 	$owned = $stream->testAdminLevel('own'); // owners can reopen streams
 	foreach ($restricted as $r) {
 		if (isset($req[$r]) and !$owned) {
