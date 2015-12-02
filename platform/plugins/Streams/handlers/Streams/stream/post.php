@@ -35,9 +35,8 @@ function Streams_stream_post($params = array())
 	if (empty($publisherId)) {
 		$publisherId = $_REQUEST['publisherId'] = $user->id;
 	}
-	$type = Streams::requestedType(true);
 	$req = array_merge($_REQUEST, $params);
-
+	$type = Streams::requestedType(true);
     $types = Q_Config::expect('Streams', 'types');
     if (!array_key_exists($type, $types)) {
         throw new Q_Exception("This app doesn't support streams of type $type", 'type');
@@ -78,7 +77,18 @@ function Streams_stream_post($params = array())
 	}
 	
 	// Create the stream
-	$stream = Streams::create($user->id, $publisherId, $type, $req, $relate, $result);
+	$allowedFields = array_merge(
+		array('publisherId', 'type', 'related', 'dontSubscribe', 'icon', 'file'),
+		Streams::getExtendFieldNames($type)
+	);
+	if ($userId === $publisherId) {
+		$allowedFields = array_merge(
+			$allowedFields, 
+			array('readLevel', 'writeLevel', 'adminLevel')
+		);
+	}
+	$fields = Q::take($req, $allowedFields);
+	$stream = Streams::create($user->id, $publisherId, $type, $fields, $relate, $result);
 	Q_Response::setSlot('messageTo', $result['messageTo']->exportArray());
 	
 	// Process any icon that was posted
