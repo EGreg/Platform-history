@@ -135,7 +135,10 @@ class Places_Location
 		$columnName = isset($column)
 			? "Places/column/$placeId/".Q_Utils::normalize($column)
 			: null;
-		$name = "Places/area/$placeId/".Q_Utils::normalize($title);
+		$areaName = Q_Utils::normalize(
+			$floor && $column ? $floor.$column : $title
+		);
+		$name = "Places/area/$placeId/$areaName";
 		$area = Streams::fetchOne($asUserId, $publisherId, $name, $options);
 		if (!$area) {
 			$attributes = array(
