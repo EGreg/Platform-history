@@ -1917,11 +1917,15 @@ abstract class Users extends Base_Users
 	 * @throws {Users_Exception_NotAuthorized}
 	 */
 	static function canManageContacts(
-		$asUserId, 
+		&$asUserId, 
 		$userId, 
 		$label, 
 		$throwIfNotAuthorized = false
 	) {
+		if (!isset($asUserId)) {
+			$user = Users::loggedInUser();
+			$asUserId = $user ? $user->id : '';
+		}
 		$authorized = false;
 		$result = Q::event(
 			"Users/canManageContacts",

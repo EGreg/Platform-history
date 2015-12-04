@@ -8,6 +8,7 @@ function Streams_before_Users_canManageContacts($params, &$result)
 	$throwIfNotAuthorized = $params['throwIfNotAuthorized'];
 	if ($asUserId === $userId and substr($label, 0, 6) === 'Users/') {
 		$result = true;
+		return;
 	}
 	$stream = Streams::fetchOne($asUserId, $userId, 'Streams/contacts');
 	if ($stream and $stream->testWriteLevel('edit')) {

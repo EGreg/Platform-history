@@ -1004,7 +1004,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 * @method post
 	 * @param {string} $asUserId
 	 *  The user to post as
-	 * @param {array} $information
+	 * @param {array} $message
 	 *  The fields of the message. Also may include 'streamNames' field which is an array of additional
 	 *  names of the streams to post message to.
 	 * @param {booleam} $skipAccess=false
@@ -1015,14 +1015,14 @@ class Streams_Stream extends Base_Streams_Stream
 	 */
 	function post(
 		$asUserId,
-		$information,
+		$message,
 		$skipAccess=false)
 	{
 		return Streams_Message::post(
 			$asUserId,
 			$this->publisherId,
 			$this->name,
-			$information,
+			$message,
 			$skipAccess,
 			array($this)
 		);

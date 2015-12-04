@@ -270,22 +270,18 @@ class Users_User extends Base_Users_User
 	}
 	
 	/**
-	 * @method addContact
+	 * @method removeContact
+	 * @param {string|array} $label
+	 *  The label of the contact. 
 	 * @param {string} $contactUserId
 	 *  The id of the user who is the contact
-	 * @param {string|array} $label
-	 *  The label of the contact. This can be a string or an array of strings, in which case
-	 *  multiple contact rows are saved.
-	 * @param {string} [$nickname='']
-	 *  Optional nickname to assign to the contact
-	 *  @optional
-	 * @throws {Q_Exception_RequiredField}
-	 *	if $label is missing
-	 * @return {array} Array of contacts that are saved
+	 * @param {string} [$asUserId=null]
+	 *  The id of the user who is the contact
+	 * @return {Db_Mysql}
 	 */
-	function removeContact($label, $contactUserId)
+	function removeContact($label, $contactUserId, $asUserId = null)
 	{
-		Users_Contact::removeContact($this->id, $label, $contactUserId);
+		Users_Contact::removeContact($this->id, $label, $contactUserId, $asUserId);
 	}
 	
 	/**

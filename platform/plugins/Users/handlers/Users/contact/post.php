@@ -16,24 +16,8 @@ function Users_contact_post($params = array())
 	$userId = Q::ifset($req, 'userId', $loggedInUserId);
 	$contactUserId = $req['contactUserId'];
 	$nickname = Q::ifset($req, 'nickname', null);
-	$l = $req['label'];
-	
-	if ($userId !== $loggedInUserId) {
-		Users_User::fetch($userId, true);
-	}
-	Users_User::fetch($contactUserId, true);
-	Users::canManageContacts($loggedInUserId, $userId, $l, true);
-	
-	$label = new Users_Label();
-	$label->userId = $userId;
-	$label->label = $l;
-	if (!$label->retrieve()) {
-		throw new Q_Exception_MissingRow(array(
-			'table' => 'Users_Label',
-			'criteria' => json_encode($label->fields)
-		));
-	}
-	
-	$contacts = Users_Contact::addContact($userId, $l, $contactUserId, $nickname);
+	$contacts = Users_Contact::addContact(
+		$userId, $req['label'], $contactUserId, $nickname
+	);
 	Q_Response::setSlot('contacts', Db::exportArray($contacts));
 }

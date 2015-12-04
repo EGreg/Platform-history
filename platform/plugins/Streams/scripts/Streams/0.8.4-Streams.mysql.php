@@ -24,7 +24,7 @@ function Streams_0_8_4_Streams_mysql()
 	$stream = new Streams_Stream();
 	$stream->publisherId = $app;
 	$stream->name = 'Streams/contacts';
-	$stream->type = 'Streams/access';
+	$stream->type = 'Streams/resource';
 	$stream->title = "Contacts";
 	$stream->setAttribute('prefixes', array("Users/", "$app/"));
 	$stream->save();
@@ -33,7 +33,7 @@ function Streams_0_8_4_Streams_mysql()
 	$stream = new Streams_Stream();
 	$stream->publisherId = $app;
 	$stream->name = 'Streams/labels';
-	$stream->type = 'Streams/access';
+	$stream->type = 'Streams/resource';
 	$stream->title = "Labels";
 	$stream->setAttribute('prefixes', array("Users/", "$app/"));
 	$stream->save();

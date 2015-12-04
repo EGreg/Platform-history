@@ -22,6 +22,7 @@ class Users_Contact extends Base_Users_Contact
 	{
 		parent::setUp();
 	}
+	
 	/**
 	 * Add contact with one or more labels
 	 * @method addContact
@@ -35,26 +36,39 @@ class Users_Contact extends Base_Users_Contact
 	 *  multiple contact rows are saved.
 	 * @param {string} [$nickname='']
 	 *  Optional nickname to assign to the contact
-	 *  @optional
+	 * @param {string} [$asUserId=null]
+	 *  The user to do this operation as. Defaults to the logged-in user.
 	 * @throws {Q_Exception_RequiredField}
 	 *	if $label is missing
 	 * @return {array} Array of contacts that are saved
 	 */
-	static function addContact($userId, $label, $contactUserId, $nickname = '')
+	static function addContact($userId, $label, $contactUserId, $nickname = '', $asUserId = null)
 	{
 		foreach (array('userId', 'label', 'contactUserId') as $field) {
 			if (empty($$field)) {
-				throw new Q_Exception_RequiredField(compact('field'));
+				throw new Q_Exception_RequiredField($field);
 			}
 		}
+		Users::canManageContacts($asUserId, $userId, $label, true);
+		Users_User::fetch($userId, true);
+		Users_User::fetch($contactUserId, true);
 		$labels = is_array($label) ? $label : array($label);
+		// Insert the contacts one by one
 		$contacts = array();
 		foreach ($labels as $l) {
-			// Insert the contacts one by one
+			$label = new Users_Label();
+			$label->userId = $userId;
+			$label->label = $l;
+			if (!$label->retrieve()) {
+				throw new Q_Exception_MissingRow(array(
+					'table' => 'Users_Label',
+					'criteria' => json_encode($label->fields)
+				));
+			}
 			$contact = new Users_Contact();
 			$contact->userId = $userId;
-			$contact->contactUserId = $contactUserId;
 			$contact->label = $l;
+			$contact->contactUserId = $contactUserId;
 			if ($nickname) {
 				$contact->nickname = $nickname;
 			}
@@ -73,32 +87,68 @@ class Users_Contact extends Base_Users_Contact
 		);
 		return $contacts;
 	}
-
+	
 	/**
-	 * Check if contact belongs to label
-	 * @method checkLabel
+	 * Update a particular contact with a given userId, label, contactId.
+	 * @method updateContact
 	 * @static
 	 * @param {string} $userId
 	 * @param {string} $label
 	 * @param {string} $contactId
-	 * @return {boolean}
+	 * @param {array} $updates should be an array with only one key: "nickname"
+	 * @param {string} $asUserId
+	 * @throws {Users_Exception_NotAuthorized}
+	 * @return {Db_Query_Mysql}
 	 */
-	static function checkLabel($userId, $label, $contactId)
+	static function updateContact($userId, $label, $contactId, $updates, $asUserId = null)
 	{
-		if (!$userId or !$contactId) {
-			return null;
+		foreach (array('userId', 'label', 'contactUserId', 'updates') as $field) {
+			if (empty($$field)) {
+				throw new Q_Exception_RequiredField(compact($field));
+			}
 		}
-		if ($userId instanceof Users_User) {
-			$userId = $userId->id;
+		Users::canManageContacts($asUserId, $userId, $label, true);
+		$contact = new Users_Contact();
+		$contact->userId = $userId;
+		$contact->label = $label;
+		$contact->contactUserId = $contactUserId;
+		if (!$contact->retrieve()) {
+			throw new Q_Exception_MissingRow(array(
+				'table' => 'Users_Contact',
+				'criteria' => json_encode($contact->fields)
+			));
 		}
-		if ($contactId instanceof Users_User) {
-			$contactId = $contactId->id;
+		if ($nickname) {
+			$contact->nickname = $nickname;
 		}
+		$contact->save();
+		return $contact;
+	}
+	
+	/**
+	 * Remove contact from label
+	 * @method removeContact
+	 * @static
+	 * @param {string} $userId
+	 * @param {string} $label
+	 * @param {string} $contactId
+	 * @param {string} $asUserId
+	 * @throws {Users_Exception_NotAuthorized}
+	 * @return {Db_Query_Mysql}
+	 */
+	static function removeContact($userId, $label, $contactId, $asUserId = null)
+	{
+		foreach (array('userId', 'label', 'contactUserId') as $field) {
+			if (empty($$field)) {
+				throw new Q_Exception_RequiredField(compact($field));
+			}
+		}
+		Users::canManageContacts($asUserId, $userId, $label, $contactId, true);
 		$contact = new Users_Contact();
 		$contact->userId = $userId;
 		$contact->label = $label;
 		$contact->contactUserId = $contactId;
-		return !!$contact->retrieve();
+		return $contact->remove();
 	}
 
 	/**
@@ -135,28 +185,32 @@ class Users_Contact extends Base_Users_Contact
 		}
 		return $query->fetchDbRows();
 	}
-
+	
 	/**
-	 * Remove contact from label
-	 * @method removeContact
+	 * Check if a contact with this label exists
+	 * @method checkLabel
 	 * @static
 	 * @param {string} $userId
 	 * @param {string} $label
 	 * @param {string} $contactId
-	 * @return {boolean}
+	 * @return {Db_Row|false}
 	 */
-	static function removeContact($userId, $label, $contactId)
+	static function checkLabel($userId, $label, $contactId)
 	{
-		foreach (array('userId', 'label', 'contactUserId') as $field) {
-			if (empty($$field)) {
-				throw new Q_Exception_RequiredField(compact('field'));
-			}
+		if (!$userId or !$contactId) {
+			return null;
+		}
+		if ($userId instanceof Users_User) {
+			$userId = $userId->id;
+		}
+		if ($contactId instanceof Users_User) {
+			$contactId = $contactId->id;
 		}
 		$contact = new Users_Contact();
 		$contact->userId = $userId;
 		$contact->label = $label;
 		$contact->contactUserId = $contactId;
-		return !!$contact->remove();
+		return $contact->retrieve();
 	}
 
 	/* * * */

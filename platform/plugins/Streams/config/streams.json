@@ -177,12 +177,12 @@
 		"icon": ""
 	},
 	"Streams/contacts": {
-		"type": "Streams/access",
+		"type": "Streams/resource",
 		"title": "Contacts",
 		"icon": ""
 	},
 	"Streams/labels": {
-		"type": "Streams/access",
+		"type": "Streams/resource",
 		"title": "Labels",
 		"icon": ""
 	}

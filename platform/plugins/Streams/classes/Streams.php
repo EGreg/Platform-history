@@ -2729,14 +2729,15 @@ abstract class Streams extends Base_Streams
 		return $result[$type] = $classes;
 	}
 	
-	static function getExtendFieldNames($type)
+	static function getExtendFieldNames($type, $asOwner = true)
 	{
 		$classes = Streams::getExtendClasses($type);
-		$fieldNames = array(
-			'title', 'icon', 'content', 'attributes', 
-			'readLevel', 'writeLevel', 'adminLevel',
-			'closedTime'
-		);
+		$fieldNames = array('title', 'icon', 'content', 'attributes');
+		if ($asOwner) {
+			$fieldNames = array_merge($fieldNames, array(
+				'readLevel', 'writeLevel', 'adminLevel', 'closedTime'
+			));
+		}
 		foreach ($classes as $k => $v) {
 			foreach ($v as $f) {
 				$fieldNames[] = $f;
