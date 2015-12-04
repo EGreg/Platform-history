@@ -3692,7 +3692,9 @@ Tp.parentIds = function Q_Tool_prototype_parentIds() {
 	var prefix2 = Q.normalize(this.prefix), ids = [], id, ni;
 	for (id in Q.Tool.active) {
 		ni = Q.normalize(id);
-		if (ni.length < prefix2.length-1 && ni === prefix2.substr(0, ni.length)) {
+		if (ni.length < prefix2.length-1
+		&& ni === prefix2.substr(0, ni.length)
+		&& prefix2[ni.length] === '_') {
 			ids.push(id);
 		}
 	}
