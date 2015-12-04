@@ -101,7 +101,7 @@ class Awards_Credits
 	 */
 	static function earn($amount, $reason = 'Awards/purchased')
 	{
-		if (!is_int($amount or $amount <= 0)) {
+		if (!is_int($amount) or $amount <= 0) {
 			throw new Q_Exception_WrongType(array(
 				'field' => 'amount',
 				'type' => 'integer'
