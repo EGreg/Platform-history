@@ -195,7 +195,6 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 	 */
 	pick: function (src, callback) {
 		
-		debugger;
 		var $this = this;
 		var state = $this.state('Q/imagepicker');
 		_upload.call(this, src);

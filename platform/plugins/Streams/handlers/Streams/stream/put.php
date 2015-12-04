@@ -23,6 +23,7 @@ function Streams_stream_put($params) {
 	if (empty($publisherId)) {
 		$publisherId = $_REQUEST['publisherId'] = $user->id;
 	}
+	$name = Streams::requestedName(true);
 	$req = array_merge($_REQUEST, $params);
 	
 	$closedTime = Q::ifset($req, 'closedTime', null);
