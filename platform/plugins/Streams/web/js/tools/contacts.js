@@ -34,7 +34,7 @@ Q.Tool.define("Streams/contacts", function(options) {
 },
 
 {
-	onSelect: new Q.Event();
+	onSelect: new Q.Event()
 },
 
 {

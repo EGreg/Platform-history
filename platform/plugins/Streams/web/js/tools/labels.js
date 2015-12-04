@@ -38,7 +38,7 @@ Q.Tool.define("Streams/labels", function(options) {
 },
 
 {
-	onSelect: new Q.Event();
+	onSelect: new Q.Event()
 },
 
 {

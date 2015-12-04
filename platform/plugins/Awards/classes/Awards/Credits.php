@@ -47,7 +47,7 @@ class Awards_Credits
 			$stream->content = '';
 			$stream->setAttribute('amount', Q_Config::get(
 				'Awards', 'credits', 'amounts', 'Users/insertUser', self::DEFAULT_AMOUNT
-			););
+			));
 			$stream->save();
 		}
 		return $stream;
