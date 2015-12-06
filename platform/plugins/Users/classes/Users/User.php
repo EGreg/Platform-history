@@ -260,13 +260,32 @@ class Users_User extends Base_Users_User
 	 * @param {string} [$nickname='']
 	 *  Optional nickname to assign to the contact
 	 *  @optional
+	 * @param {string} [$asUserId=null] The user to do this operation as.
+	 *   Defaults to the logged-in user. Pass false to skip access checks.
 	 * @throws {Q_Exception_RequiredField}
 	 *	if $label is missing
 	 * @return {array} Array of contacts that are saved
 	 */
-	function addContact($label, $contactUserId, $nickname = '')
+	function addContact($label, $contactUserId, $nickname = '', $asUserId = null)
 	{
-		Users_Contact::addContact($this->id, $label, $contactUserId, $nickname);
+		Users_Contact::addContact($this->id, $label, $contactUserId, $nickname, $asUserId);
+	}
+	
+	/**
+	 * Update a particular contact with a given userId, label, contactId.
+	 * @method updateContact
+	 * @static
+	 * @param {string} $label
+	 * @param {string} $contactId
+	 * @param {array} $updates should be an array with only one key: "nickname"
+	 * @param {string} [$asUserId=null] The user to do this operation as.
+	 *   Defaults to the logged-in user. Pass false to skip access checks.
+	 * @throws {Users_Exception_NotAuthorized}
+	 * @return {Db_Query_Mysql}
+	 */
+	static function updateContact($label, $contactId, $updates, $asUserId = null)
+	{
+		Users_Contact::addContact($this->id, $label, $contactUserId, $nickname, $asUserId);
 	}
 	
 	/**

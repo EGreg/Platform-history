@@ -7,7 +7,7 @@ function Streams_after_Users_Label_saveExecute($params)
 	$label = $params['row'];
 	$updates = Q::take($params, array('nickname'));
 	$updates['userId'] = $label->userId;
-	return Streams_Message::post(null, $user->id, "Streams/contacts", array(
+	return Streams_Message::post(null, $label->userId, "Streams/contacts", array(
 		'type' => 'Streams/contacts/update',
 		'instructions' => compact('updates')
 	), true);

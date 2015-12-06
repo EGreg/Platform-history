@@ -16,7 +16,7 @@ function Streams_after_Users_User_saveExecute($params)
 	$firstName = Q::ifset(Streams::$cache, 'register', 'first', '');
 	$lastName = Q::ifset(Streams::$cache, 'register', 'last', '');
 	$query = $params['query'];
-	if ($query->type === Db_Query::TYPE_INSERT) {
+	if ($params['inserted']) {
 		
 		// create some standard streams for them
 		$onInsert = Q_Config::get('Streams', 'onInsert', 'Users_User', array());
@@ -69,7 +69,10 @@ function Streams_after_Users_User_saveExecute($params)
 				$stream->content = $values[$name];
 			}
 			$stream->save(); // this also inserts avatars
-			$stream->join(array('userId' => $user->id));
+			$stream->join(array(
+				'userId' => $user->id, 
+				'skipAccess' => true
+			));
 		}
 		
 		// Save a greeting stream, to be edited

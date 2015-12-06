@@ -507,6 +507,9 @@ class Streams_Stream extends Base_Streams_Stream
 	}
 
 	protected function fetchAsUser ($options, &$userId, &$user = null) {
+		if (!empty($options['skipAccess'])) {
+			return $this;
+		}
 		if (isset($options['userId'])) {
 			$user = Users_User::fetch($options['userId']);
 			if (!$user) {

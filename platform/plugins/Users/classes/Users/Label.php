@@ -30,8 +30,8 @@ class Users_Label extends Base_Users_Label
 	 * @param {string} [$userId=null] user current user if not provided
 	 * @param {string} [$title=''] specify the title, otherwise a default one is generated
 	 * @param {string} [$icon='default']
-	 * @param {string} [$asUserId=null]
-	 *  The user to do this operation as. Defaults to the logged-in user.
+	 * @param {string} [$asUserId=null] The user to do this operation as.
+	 *   Defaults to the logged-in user. Pass false to skip access checks.
 	 * @return {Users_Label}
 	 */
 	static function addLabel(
@@ -41,6 +41,12 @@ class Users_Label extends Base_Users_Label
 		$icon = 'default',
 		$asUserId = null)
 	{
+		if (!isset($title)) {
+			$title = '';
+		}
+		if (!isset($icon)) {
+			$icon = 'default';
+		}
 		Users::canManageLabels($asUserId, $userId, $label, true);
 		if (!isset($userId)) {
 			$user = Users::loggedInUser(true);
@@ -67,8 +73,8 @@ class Users_Label extends Base_Users_Label
 	 * @param {string} $userId
 	 * @param {string} $label
 	 * @param {array} $updates Can contain one or more of "title", "icon"
-	 * @param {string} [$asUserId=null]
-	 *  The user to do this operation as. Defaults to the logged-in user.
+	 * @param {string} [$asUserId=null] The user to do this operation as.
+	 *   Defaults to the logged-in user. Pass false to skip access checks.
 	 * @throws {Users_Exception_NotAuthorized}
 	 * @return {Db_Query_Mysql}
 	 */
@@ -104,8 +110,8 @@ class Users_Label extends Base_Users_Label
 	 * @param {string} $label
 	 * @param {string|null} [$userId=null]
 	 *  The user whose label is to be removed
-	 * @param {string|null} [$asUserId=null]
-	 *  The user to do this operation as. Defaults to the logged-in user.
+	 * @param {string} [$asUserId=null] The user to do this operation as.
+	 *   Defaults to the logged-in user. Pass false to skip access checks.
 	 * @return {Db_Query_MySql}
 	 */
 	static function removeLabel($label, $userId = null, $asUserId = null)
@@ -166,7 +172,7 @@ class Users_Label extends Base_Users_Label
 		return $labels;
 	}
 	
-	function _icon($l, $icon, $userId)
+	static function _icon($l, $icon, $userId)
 	{
 		if (!is_array($icon)) {
 			if ($icon) {

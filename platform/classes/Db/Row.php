@@ -1847,6 +1847,7 @@ class Db_Row implements Iterator
 			$temp = Q::event("Db/Row/$this_class/saveExecute", array(
 				'row' => $this,
 				'query' => $query,
+				'inserted' => ($query->type === Db_Query::TYPE_INSERT),
 				'modifiedFields' => $fieldsToSave,
 				'where' => $where
 			), 'before');

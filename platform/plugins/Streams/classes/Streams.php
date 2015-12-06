@@ -2384,22 +2384,22 @@ abstract class Streams extends Base_Streams
 		$expiry = $duration ? strtotime($duration) : null;
 		
 		if ($label = Q::ifset($options, 'label', null)) {
-			Users_Label::addLabel($label, $publisherId);
+			Users_Label::addLabel($label, $publisherId, null, null, false);
 		}
 		if ($myLabel = Q::ifset($options, 'myLabel', null)) {
-			Users_Label::addLabel($label, $asUserId);
+			Users_Label::addLabel($label, $asUserId, null, null, false);
 		}
 		
 		foreach ($raw_userIds as $userId) {
-			Users_Contact::addContact($asUserId, "Streams/invited", $userId);
-			Users_Contact::addContact($asUserId, "Streams/invited/{$stream->type}", $userId);
-			Users_Contact::addContact($userId, "Streams/invitedMe", $asUserId);
-			Users_Contact::addContact($asUserId, "Streams/invitedMe/{$stream->type}", $asUserId);
+			Users_Contact::addContact($asUserId, "Streams/invited", $userId, null, false);
+			Users_Contact::addContact($asUserId, "Streams/invited/{$stream->type}", $userId, null, false);
+			Users_Contact::addContact($userId, "Streams/invitedMe", $asUserId, null, false);
+			Users_Contact::addContact($userId, "Streams/invitedMe/{$stream->type}", $asUserId, null, false);
 			if ($label) {
-				Users_Contact::addContact($publisherId, $label, $userId);
+				Users_Contact::addContact($publisherId, $label, $userId, null, false);
 			}
 			if ($myLabel) {
-				Users_Contact::addContact($publisherId, $label, $userId);
+				Users_Contact::addContact($publisherId, $label, $userId, null, false);
 			}
 		}
 

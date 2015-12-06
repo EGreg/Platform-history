@@ -36,8 +36,8 @@ class Users_Contact extends Base_Users_Contact
 	 *  multiple contact rows are saved.
 	 * @param {string} [$nickname='']
 	 *  Optional nickname to assign to the contact
-	 * @param {string} [$asUserId=null]
-	 *  The user to do this operation as. Defaults to the logged-in user.
+	 * @param {string} [$asUserId=null] The user to do this operation as.
+	 *   Defaults to the logged-in user. Pass false to skip access checks.
 	 * @throws {Q_Exception_RequiredField}
 	 *	if $label is missing
 	 * @return {array} Array of contacts that are saved
@@ -56,20 +56,11 @@ class Users_Contact extends Base_Users_Contact
 		// Insert the contacts one by one
 		$contacts = array();
 		foreach ($labels as $l) {
-			$label = new Users_Label();
-			$label->userId = $userId;
-			$label->label = $l;
-			if (!$label->retrieve()) {
-				throw new Q_Exception_MissingRow(array(
-					'table' => 'Users_Label',
-					'criteria' => json_encode($label->fields)
-				));
-			}
 			$contact = new Users_Contact();
 			$contact->userId = $userId;
 			$contact->label = $l;
 			$contact->contactUserId = $contactUserId;
-			if ($nickname) {
+			if (isset($nickname)) {
 				$contact->nickname = $nickname;
 			}
 			$contact->save(true);
@@ -96,7 +87,8 @@ class Users_Contact extends Base_Users_Contact
 	 * @param {string} $label
 	 * @param {string} $contactId
 	 * @param {array} $updates should be an array with only one key: "nickname"
-	 * @param {string} $asUserId
+	 * @param {string} [$asUserId=null] The user to do this operation as.
+	 *   Defaults to the logged-in user. Pass false to skip access checks.
 	 * @throws {Users_Exception_NotAuthorized}
 	 * @return {Db_Query_Mysql}
 	 */
@@ -115,10 +107,10 @@ class Users_Contact extends Base_Users_Contact
 		if (!$contact->retrieve()) {
 			throw new Q_Exception_MissingRow(array(
 				'table' => 'Users_Contact',
-				'criteria' => json_encode($contact->fields)
+				'criteria' => Q::json_encode($contact->fields)
 			));
 		}
-		if ($nickname) {
+		if (isset($nickname)) {
 			$contact->nickname = $nickname;
 		}
 		$contact->save();
@@ -132,7 +124,8 @@ class Users_Contact extends Base_Users_Contact
 	 * @param {string} $userId
 	 * @param {string} $label
 	 * @param {string} $contactId
-	 * @param {string} $asUserId
+	 * @param {string} [$asUserId=null] The user to do this operation as.
+	 *   Defaults to the logged-in user. Pass false to skip access checks.
 	 * @throws {Users_Exception_NotAuthorized}
 	 * @return {Db_Query_Mysql}
 	 */

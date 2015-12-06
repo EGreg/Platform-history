@@ -1922,6 +1922,9 @@ abstract class Users extends Base_Users
 		$label, 
 		$throwIfNotAuthorized = false
 	) {
+		if ($asUserId === false) {
+			return true;
+		}
 		if (!isset($asUserId)) {
 			$user = Users::loggedInUser();
 			$asUserId = $user ? $user->id : '';
@@ -1959,6 +1962,9 @@ abstract class Users extends Base_Users
 		$label, 
 		$throwIfNotAuthorized = false
 	) {
+		if ($asUserId === false) {
+			return true;
+		}
 		$authorized = false;
 		$result = Q::event(
 			"Users/canManageLabels",
