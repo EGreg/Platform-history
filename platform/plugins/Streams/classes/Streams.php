@@ -1947,7 +1947,7 @@ abstract class Streams extends Base_Streams
 		$streams = array();
 		foreach($rows as $n => $row) {
 			if (!$row) continue;
-			if (!$row->testReadLevel('see')) {
+			if (!$row->testReadLevel('content')) {
 				throw new Users_Exception_NotAuthorized();
 			}
 			$streams[$n] = $row;

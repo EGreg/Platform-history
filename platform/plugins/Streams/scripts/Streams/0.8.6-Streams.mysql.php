@@ -22,16 +22,16 @@ function Streams_0_8_6_Streams_mysql()
 	$access->ofUserId = '';
 	$access->ofContactLabel = "$app/admins";
 	$access->readLevel = Streams::$READ_LEVEL['messages'];
-	$access->writeLevel = Streams::$WRITE_LEVEL['edit'];
+	$access->writeLevel = Streams::$WRITE_LEVEL['close'];
 	$access->adminLevel = Streams::$ADMIN_LEVEL['manage'];
 	$access->save();
 	
-	// template to help app admins relate things to Streams/category streams
+	// template to help users relate things to Streams/category streams
 	Streams_Stream::insert(array(
-		'publisherId' => $app, 
+		'publisherId' => '', 
 		'name' => 'Streams/category/',
 		'type' => 'Streams/template', 
-		'title' => '',
+		'title' => 'Untitled Category',
 		'icon' => 'Streams/category',
 		'content' => '',
 		'attributes' => null,
@@ -40,12 +40,12 @@ function Streams_0_8_6_Streams_mysql()
 		'adminLevel' => Streams::$ADMIN_LEVEL['invite']
 	))->execute();
 	
-	// template to help app admins create subcategories for things
+	// template to help users create subcategories for things
 	Streams_RelatedTo::insert(array(
-		'toPublisherId' => $app,
+		'toPublisherId' => '',
 		'toStreamName' => 'Streams/category/',
 		'type' => 'subcategories',
-		'fromPublisherId' => $app,
+		'fromPublisherId' => '',
 		'fromStreamName' => 'Streams/category/'
 	))->execute();
 }

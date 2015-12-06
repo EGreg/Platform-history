@@ -9,7 +9,6 @@ function Websites_0_8_Streams_mysql()
 	
 	// $now = Streams::db()->toDateTime(Streams::db()->getCurrentTimestamp());
 	
-	$publisherId = $userId;
 	$ofUserId = '';
 	$ofContactLabel = 'Websites/admins';
 	$grantedByUserId = null;
@@ -34,6 +33,7 @@ function Websites_0_8_Streams_mysql()
 	
 	$rows = array();
 	foreach ($streams as $streamName => $stream) {
+		$publisherId = (substr($streamName, -1) == '/' ? '' : $userId);
 		$writeLevel = (!empty($stream['deletable'])) ? 40 : 30;
 		$rows[] = compact(
 			'publisherId', 'streamName', 'ofUserId', 'ofContactLabel', 
@@ -53,6 +53,10 @@ function Websites_0_8_Streams_mysql()
 	$rows = array();
 	foreach ($streams as $name => $s) {
 		extract($s);
+		if (substr($name, 0, 9) != 'Websites/') {
+			continue; // this tempate was already added by Streams install script
+		}
+		$publisherId = (substr($name, -1) == '/' ? '' : $userId);
 		$rows[] = compact(
 			'publisherId', 'name', 'type', 'title', 'icon', 'content', 'attributes',
 			'readLevel', 'writeLevel', 'adminLevel', 'inheritAccess'
@@ -62,26 +66,26 @@ function Websites_0_8_Streams_mysql()
 	Streams_Stream::insertManyAndExecute($rows);
 	
 	Streams_RelatedTo::insert(array(
-		'toPublisherId' => $publisherId,
+		'toPublisherId' => '',
 		'toStreamName' => 'Streams/images/',
 		'type' => 'images',
-		'fromPublisherId' => $publisherId,
+		'fromPublisherId' => '',
 		'fromStreamName' => 'Streams/image/'
 	))->execute();
 	
 	Streams_RelatedTo::insert(array(
-		'toPublisherId' => $publisherId,
+		'toPublisherId' => '',
 		'toStreamName' => 'Streams/category/',
 		'type' => 'articles',
-		'fromPublisherId' => $publisherId,
+		'fromPublisherId' => '',
 		'fromStreamName' => 'Websites/article/'
 	))->execute();
 	
 	Streams_RelatedTo::insert(array(
-		'toPublisherId' => $publisherId,
+		'toPublisherId' => '',
 		'toStreamName' => 'Streams/category/',
 		'type' => 'announcements',
-		'fromPublisherId' => $publisherId,
+		'fromPublisherId' => '',
 		'fromStreamName' => 'Websites/article/'
 	))->execute();
 }

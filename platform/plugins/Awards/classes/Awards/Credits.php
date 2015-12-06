@@ -38,17 +38,16 @@ class Awards_Credits
 		$streamName = 'Awards/user/credits';
 		$stream = Streams::fetchOne($asUserId, $userId, $streamName);
 		if (!$stream) {
-			$stream = new Streams_Stream();
-			$stream->publisherId = $userId;
-			$stream->name = 'Awards/user/credits';
-			$stream->type = 'Awards/credits';
-			$stream->icon = 'plugins/Awards/img/credits.png';
-			$stream->title = 'Credits';
-			$stream->content = '';
-			$stream->setAttribute('amount', Q_Config::get(
+			$amount = Q_Config::get(
 				'Awards', 'credits', 'amounts', 'Users/insertUser', self::DEFAULT_AMOUNT
+			);
+			$stream = Streams::create($userId, $userId, 'Awards/credits', array(
+				'name' => 'Awards/user/credits',
+				'title' => "Credits",
+				'icon' => 'plugins/Awards/img/credits.png',
+				'content' => '',
+				'attributes' => Q::json_encode(compact('amount'))
 			));
-			$stream->save();
 		}
 		return $stream;
 	}

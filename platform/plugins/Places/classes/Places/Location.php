@@ -20,12 +20,10 @@ class Places_Location
 		$streamName = "Places/user/location";
 		$stream = Streams::fetchOne($user->id, $user->id, $streamName);
 		if (!$stream) {
-			$stream = new Streams_Stream();
-			$stream->publisherId = $user->id;
-			$stream->name = $streamName;
-			$stream->type = "Places/location";
-			$stream->title = "User location";
-			$stream->save();
+			$stream = Streams::create($user->id, $user->id, 'Places/location', array(
+				'name' => $streamName,
+				'title' => "User Location",
+			));
 			$stream->join();
 		}
 		return $stream;
