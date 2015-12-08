@@ -20,7 +20,7 @@ function Q_before_Q_autoload ($params, &$filename)
 		if (isset($added_paths[$new_path])) {
 			break;
 		}
-		$abs_filename = self::realPath($filename);
+		$abs_filename = Q::realPath($filename);
 		$new_path_parts = array();
 		$prev_part = null;
 		foreach (explode(DS, $abs_filename) as $part) {
