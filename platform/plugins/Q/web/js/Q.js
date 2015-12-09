@@ -4006,7 +4006,7 @@ Q.Tool.from = function _Q_Tool_from(toolElement, toolName) {
  */
 Q.Tool.byId = function _Q_Tool_byId(id, name) {
 	var tool = Q.Tool.active[id];
-	return (tool && name ? tool.element.Q(name) : tool) || null;
+	return (tool && name && tool.name !== name ? tool.element.Q(name) : tool) || null;
 };
 
 /**
