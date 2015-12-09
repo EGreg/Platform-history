@@ -8548,7 +8548,7 @@ Q.Browser = {
 	 */
 	detect: function() {
 		var data = this.searchData(this.dataBrowser);
-		var browser = data.identity || "An unknown browser";
+		var browser = (data && data.identity) || "An unknown browser";
 		
 		var version = (this.searchVersion(navigator.userAgent)
 			|| this.searchVersion(navigator.appVersion)
@@ -8556,7 +8556,7 @@ Q.Browser = {
 		var dotIndex = version.indexOf('.');
 		var mainVersion = version.substring(0, dotIndex != -1 ? dotIndex : version.length);
 		var OSdata = this.searchData(this.dataOS);
-		var OS = OSdata.identity || "an unknown OS";
+		var OS = (OSdata && OSdata.identity) || "an unknown OS";
 		var engine = '', ua = navigator.userAgent.toLowerCase();
 		if (ua.indexOf('webkit') != -1) {
 			engine = 'webkit';
@@ -8713,6 +8713,11 @@ Q.Browser = {
 		},
 		{
 			string : navigator.platform,
+			subString : "BlackBerry",
+			identity : "BlackBerry"
+		},
+		{
+			string : navigator.platform,
 			subString : "Win",
 			identity : "Windows"
 		},
@@ -8725,7 +8730,12 @@ Q.Browser = {
 			string : navigator.platform,
 			subString : "Linux",
 			identity : "Linux"
-		}
+		},
+		{
+			string : navigator.platform,
+			subString : "BSD",
+			identity : "FreeBSD"
+		},
 	],
 	
 	getScrollbarWidth: function() {
