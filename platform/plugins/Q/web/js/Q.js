@@ -1718,7 +1718,7 @@ Q.calculateKey = function _Q_Event_calculateKey(key, container, start) {
 		key = Q.Tool.beingActivated; // by default, use the current tool as the key, if any
 	}
 	if (Q.typeOf(key) === 'Q.Tool')	{
-		key = "TOOL: " + key.id + "(" + key.name + ")";
+		key = "TOOL: " + key.id + " (" + key.name + ")";
 	} else if (container && key == undefined) { // key is undefined or null
 		var i = (start === undefined) ? 1 : start;
 		key = 'AUTOKEY_' + i;
