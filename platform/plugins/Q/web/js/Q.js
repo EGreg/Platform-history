@@ -10197,7 +10197,7 @@ Q.Masks = {
 	show: function(key, options)
 	{
 		if (Q.typeOf(key) === 'Q.Tool')	{
-			key.set(function () {
+			key.Q.beforeRemove.set(function () {
 				Q.Masks.hide(key);
 			}, key);
 		}
