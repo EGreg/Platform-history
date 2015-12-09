@@ -8601,13 +8601,13 @@ Q.Browser = {
 	},
 	
 	searchData: function(data) {
-		for (var i = 0; i < data.length; i++)
-		{
+		for (var i=0, l=data.length; i<l; i++) {
 			var dataString = data[i].string;
 			this.versionSearchString = data[i].versionSearch || data[i].identity;
 			if (dataString) {
-				if (navigator.userAgent.indexOf(data[i].subString) != -1)
+				if (navigator.userAgent.indexOf(data[i].subString) != -1) {
 					return data[i];
+				}
 			}
 		}
 	},
@@ -10196,6 +10196,11 @@ Q.Masks = {
 	 */
 	show: function(key, options)
 	{
+		if (Q.typeOf(key) === 'Q.Tool')	{
+			key.set(function () {
+				Q.Masks.hide(key);
+			}, key);
+		}
 		key = Q.calculateKey(key);
 		var mask = Q.Masks.mask(key, options);
 		if (!mask.counter) {
