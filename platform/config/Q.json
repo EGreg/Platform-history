@@ -90,7 +90,7 @@
 			}
 		},
 		"environments": {
-			"defaults": {
+			"*": {
 				"filters": {
 					"css": {
 						"handler": "Q/filters/cssminifier"

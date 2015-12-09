@@ -441,9 +441,10 @@ abstract class Streams extends Base_Streams
 	 * @param {string|array|Db_Range} $name
 	 *  The name of the stream to fetch. Can end in "/" for template streams.
 	 *  Also it can be an array of stream names, or a custom Db_Range for stream names
-	 * @param {string} $fields='*'
+	 * @param {string|boolean} $fields='*'
 	 *  Must include "publisherId" and "name" fields, since they
 	 *  make up the primary key of the stream table.
+	 *  Pass true here to throw an exception if the stream is missing.
 	 * @param {array} $options=array()
 	 *  Provide additional query options like 'limit', 'offset', 'orderBy', 'where' etc.
 	 *  See Db_Query_Mysql::options().
@@ -460,13 +461,19 @@ abstract class Streams extends Base_Streams
 	static function fetchOne(
 		$asUserId,
 		$publisherId,
-		$name = 'Streams/user/',
+		$name,
 		$fields = '*',
 		$options = array())
 	{
 		$options['limit'] = 1;
 		$streams = Streams::fetch($asUserId, $publisherId, $name, $fields, $options);
 		if (empty($streams)) {
+			if ($name === true) {
+				throw new Q_Exception_MissingRow(array(
+					'table' => 'Stream', 
+					'criteria' => Q::json_encode(compact('publisherId', 'streamName'))
+				));
+			}
 			return null;
 		}
 		return reset($streams);
@@ -821,7 +828,9 @@ abstract class Streams extends Base_Streams
 		// extend with any config defaults for this stream type
 		$fieldNames = Streams::getExtendFieldNames($type);
 		$fieldNames[] = 'name';
-		$defaults = Q_Config::get('Streams', 'types', $type, 'defaults', array());
+		$defaults = Streams_Stream::getConfigField(
+			$stream->type, 'defaults', Streams_Stream::$DEFAULTS
+		);
 		foreach ($fieldNames as $f) {
 			if (isset($fields[$f])) {
 				$stream->$f = $fields[$f];
@@ -839,14 +848,14 @@ abstract class Streams extends Base_Streams
 			);
 			if ($rs and $rs->inheritAccess) {
 				// inherit from the same stream $rs does
-				$inherit = $rs->inheritAccess;
+				$inheritAccess = $rs->inheritAccess;
 			} else {
 				// inherit from $rs
-				$json = Q::json_encode(array(array(
+				$inheritAccess = Q::json_encode(array(array(
 					$relate['publisherId'], $relate['streamName']
 				)));
 			}
-			$stream->inheritAccess = $json;
+			$stream->inheritAccess = $inheritAccess;
 		}
 		$stream->save();
 		$stream->post($asUserId, array(

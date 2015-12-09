@@ -238,10 +238,10 @@ Streams_Message.prototype.deliver = function(stream, toUserId, delivery, avatar,
 	var subject = Q.Config.get(
 		['Streams', 'types', stream.fields.type, 'messages', this.fields.type, 'subject'], 
 		Q.Config.get(
-			['Streams', 'defaults', 'messages', this.fields.type, 'subject'],
+			['Streams', 'types', '*', 'messages', this.fields.type, 'subject'],
 			Q.Config.get(
-				['Streams', 'defaults', 'messages', '', 'subject'],
-				'Please set config "Streams"/"defaults"/"messages"/""/"subject"'
+				['Streams', 'types', '*', 'messages', '', 'subject'],
+				'Please set config "Streams"/"types"/"*"/"messages"/""/"subject"'
 			)
 		)
 	);

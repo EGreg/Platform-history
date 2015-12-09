@@ -59,6 +59,52 @@
 			"Streams/user/icon": true
 		},
 		"types": {
+			"*": {
+				"private": [
+					"insertedTime",
+					"updatedTime",
+					"messageCount",
+					"participantCount"
+				],
+				"invite": {
+					"dialog": {
+						"title": "You've been invited",
+						"user": {
+							"text": "has invited you to"
+						},
+						"related": {
+						},
+						"button": "Get Started"
+					}
+				},
+				"getMessagesLimit": 100,
+				"messages": {
+					"": {
+						"subject": "Message \"{{& message.type}}\" to \"{{& stream.fields.title}}\""
+					},
+					"Streams/changed": {
+						"subject": "Changes in {{stream.fields.title}}"
+					},
+					"Streams/invite": {
+						"subject": "You were invited to {{& stream.fields.title}}"
+					},
+					"Streams/chat/message": {
+						"subject": "Chat in {{stream.fields.title}}"
+					}
+				},
+				"defaults": {
+					"type": "Streams/text",
+					"title": "Untitled",
+					"icon": "default",
+					"content": "",
+					"attributes": "",
+					"readLevel": 40,
+					"writeLevel": 10,
+					"adminLevel": 20,
+					"messageCount": 0,
+					"participantCount": 0
+				}
+			},
 			"Streams/resource": {
 				"description": "Used to manage access to a resource and post messages about updates"
 			},
@@ -169,40 +215,6 @@
 				"edit": true,
 				"defaults": {
 					"title": "Community Greeting"
-				}
-			}
-		},
-		"defaults": {
-			"private": [
-				"insertedTime",
-				"updatedTime",
-				"messageCount",
-				"participantCount"
-			],
-			"invite": {
-				"dialog": {
-					"title": "You've been invited",
-					"user": {
-						"text": "has invited you to"
-					},
-					"related": {
-					},
-					"button": "Get Started"
-				}
-			},
-			"getMessagesLimit": 100,
-			"messages": {
-				"": {
-					"subject": "Message \"{{& message.type}}\" to \"{{& stream.fields.title}}\""
-				},
-				"Streams/changed": {
-					"subject": "Changes in {{stream.fields.title}}"
-				},
-				"Streams/invite": {
-					"subject": "You were invited to {{& stream.fields.title}}"
-				},
-				"Streams/chat/message": {
-					"subject": "Chat in {{stream.fields.title}}"
 				}
 			}
 		},

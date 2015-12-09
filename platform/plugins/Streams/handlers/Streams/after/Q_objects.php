@@ -19,10 +19,6 @@ function Streams_after_Q_objects () {
 	}
 
 	// Prepare the complete invite dialog
-	$defaults = Q_Config::get("Streams", "types", $stream->type, "invite", "dialog",
-		Q_Config::get("Streams", "defaults", "invite", "dialog", array())
-	);
-
 	$invitingUser = Users_User::fetch($invite->invitingUserId);
 	list($relations, $related) = Streams::related(
 		$user->id,
@@ -45,6 +41,8 @@ function Streams_after_Q_objects () {
 		'related' => Db::exportArray($related)
 	);
 
+	$config = Streams_Stream::getConfigField($stream->type, 'invite', array());
+	$defaults = Q::ifset($config, 'dialog', array());
 	$tree = new Q_Tree($defaults);
 	if ($tree->merge($params)) {
 		$dialogData = $tree->getAll();
