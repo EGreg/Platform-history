@@ -466,9 +466,14 @@ abstract class Streams extends Base_Streams
 		$options = array())
 	{
 		$options['limit'] = 1;
+		$throwIfMissing = false;
+		if ($fields === true) {
+			$throwIfMissing = true;
+			$fields = '*';
+		}
 		$streams = Streams::fetch($asUserId, $publisherId, $name, $fields, $options);
 		if (empty($streams)) {
-			if ($name === true) {
+			if ($throwIfMissing) {
 				throw new Q_Exception_MissingRow(array(
 					'table' => 'Stream', 
 					'criteria' => Q::json_encode(compact('publisherId', 'streamName'))

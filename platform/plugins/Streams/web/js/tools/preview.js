@@ -363,7 +363,8 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 						},
 						onSuccess: {'Streams/preview': function (data, key, file) {
 							tool.stream.refresh(null, {
-								messages: true, changed: {icon: true}
+								messages: true,
+								changed: {icon: true}
 							});
 							return false;
 						}}
