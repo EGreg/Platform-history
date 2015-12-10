@@ -11,7 +11,9 @@
  * @param {Object} [options] any options for the tool
  *   @param {Object} [options.inplace] Any options to pass to the Q/inplace tool -- see its options.
  *   @uses Q inplace
- *   @param {Boolean} [options.showTitle] Whether to display the title of the image stream
+ *   @param {Boolean} [options.showTitle=false] Whether to display the title of the image stream
+ *   @param {Boolean} [options.updateTitle=false] Whether to update the title to reflect the file name
+ *   of an image
  *   @param {Object} [options.templates] Under the keys "views", "edit" and "create" you can override options for Q.Template.render .
  *     @param {Object} [options.templates.view]
  *       @param {String} [options.templates.view.name='Streams/image/preview/view']
@@ -59,6 +61,8 @@ Q.Tool.define("Streams/image/preview", "Streams/preview", function(options, prev
 {
 	inplace: {},
 	dontSetSize: false,
+	showTitle: false,
+	updateTitle: false,
 	templates: {
 		view: {
 			name: 'Streams/image/preview/view',

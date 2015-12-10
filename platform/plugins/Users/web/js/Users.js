@@ -1262,7 +1262,7 @@ function login_callback(err, response) {
 	$('#Users_login_step1').animate({"opacity": 0.5}, 'fast');
 	$('#Users_login_step1 .Q_button').attr('disabled', 'disabled');
 	if (!autologin) {
-		step2_form.validator().submit(onFormSubmit);
+		step2_form.validator().submit(Q.throttle(onFormSubmit, 300));
 		$('input', step2_form).add('select', step2_form).on('input', function () {
 			if (step2_form.data('validator')) {
 				step2_form.data('validator').reset($(this));

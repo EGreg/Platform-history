@@ -79,7 +79,8 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 			return _doUpload(null, null);
 		}
 		var reader = new FileReader();
-		reader.onload = function() {
+		reader.onload = function(file) {
+			$this.state('Q/imagepicker').file = file;
 			$this.plugin('Q/imagepicker', 'pick', this.result);
 		};
 		reader.onerror = function () { 
@@ -211,7 +212,9 @@ Q.Tool.jQuery('Q/imagepicker', function _Q_imagepicker(o) {
 				// by default set src equal to first element of the response
 				key = Q.firstKey(res.slots.data, {nonEmpty: true});
 			}
-			var c = Q.handle([state.onSuccess, state.onFinish], $this, [res.slots.data, key]);
+			var c = Q.handle([state.onSuccess, state.onFinish], $this, 
+				[res.slots.data, key, state.file || null]
+			);
 			if (c !== false && key) {
 				$this.attr('src', 
 					Q.url(res.slots.data[key], null, {cacheBust: state.cacheBust})

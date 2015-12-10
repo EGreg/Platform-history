@@ -29,7 +29,7 @@
  *   @param {Boolean|Array} [options.editable=true] Set to false to avoid showing even authorized users an interface to replace the image or text. Or set to an array naming only certain fields, which the rendering method would hopefully recognize.
  *   @param {Boolean} [options.removable=true] Set to false to avoid showing even authorized users an option to remove (or close) this stream
  *   @param {Object} [options.creatable] Optional fields you can override in case if streamName = "", 
- *     @param {String} [options.creatable.title="New Image"] Optional title for the case when streamName = "", i.e. the image composer
+ *     @param {String} [options.creatable.title="New Item"] Optional title for the case when streamName = "", i.e. the composer
  *     @param {Boolean} [options.creatable.clickable=true] Whether the image composer image is clickable
  *     @param {Number} [options.creatable.addIconSize=100] The size in pixels of the square add icon
  *     @param {Number} [options.creatable.options={}] Any options to pass to Q.Streams.create
@@ -361,8 +361,10 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 							subpath += '/'+Math.floor(Date.now()/1000);
 							callback({ path: path, subpath: subpath });
 						},
-						onSuccess: {'Streams/preview': function (data, key) {
-							tool.stream.refresh(null, {messages: true, changed: {icon: true}});
+						onSuccess: {'Streams/preview': function (data, key, file) {
+							tool.stream.refresh(null, {
+								messages: true, changed: {icon: true}
+							});
 							return false;
 						}}
 					});

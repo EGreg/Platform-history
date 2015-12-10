@@ -9365,8 +9365,8 @@ Q.Pointer = {
 			}, o.show.delay);
 		}));
 		if (!Q.Pointer.hint.addedListeners) {
-			Q.addEventListener(window, Q.Pointer.start, Q.Pointer.stopHints);
-			Q.addEventListener(document, 'scroll', Q.Pointer.stopHints);
+			Q.addEventListener(window, Q.Pointer.start, Q.Pointer.stopHints, false, true);
+			Q.addEventListener(document, 'scroll', Q.Pointer.stopHints, false, true);
 			Q.Pointer.hint.addedListeners = true;
 		}
 		if (options.waitForEvents) {
@@ -9477,7 +9477,7 @@ Q.Pointer = {
 	preventRubberBand: function (options) {
 		if (Q.info.platform === 'ios') {
 			Q.extend(_touchScrollingHandler.options, options);
-			Q.addEventListener(window, 'touchmove', _touchScrollingHandler);
+			Q.addEventListener(window, 'touchmove', _touchScrollingHandler, false, true);
 		}
 	},
 	/**
@@ -9485,21 +9485,21 @@ Q.Pointer = {
 	 * @method restoreRubberBand
 	 */
 	restoreRubberBand: function () {
-		Q.removeEventListener(window, 'touchmove', _touchScrollingHandler);
+		Q.removeEventListener(window, 'touchmove', _touchScrollingHandler, false, true);
 	},
 	/**
 	 * Call this function to begin blurring active elements when touching outside them
 	 * @method startBlurringOnTouch
 	 */
 	startBlurringOnTouch: function (options) {
-		Q.addEventListener(window, 'touchstart', _touchBlurHandler);
+		Q.addEventListener(window, 'touchstart', _touchBlurHandler, false, true);
 	},
 	/**
 	 * Call this function to begin blurring active elements when touching outside them
 	 * @method startBlurringOnTouch
 	 */
 	stopBlurringOnTouch: function (options) {
-		Q.removeEventListener(window, 'touchstart', _touchBlurHandler);
+		Q.removeEventListener(window, 'touchstart', _touchBlurHandler, false, true);
 	},
 	/**
 	 * This event occurs when a click has been canceled, for one of several possible reasons.
@@ -10314,7 +10314,7 @@ Q.Masks.options = {
 	'Q.request.cancel.mask': { className: 'Q_cancel_mask', fadeIn: 200 }
 };
 
-Q.addEventListener(window, Q.Pointer.start, _Q_PointerStartHandler);
+Q.addEventListener(window, Q.Pointer.start, _Q_PointerStartHandler, false, true);
 
 function noop() {}
 if (!root.console) {
