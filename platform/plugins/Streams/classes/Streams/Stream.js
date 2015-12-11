@@ -322,7 +322,8 @@ Sp.messageParticipants = function (event, uid, msg) {
 			var participant = participants[userId];
 			stream.notify(participant, event, uid, msg, function(err) {
 				if (err) {
-					Q.log("Failed to notify user '"+participant.fields.userId+"': "+err);
+					Q.log("Failed to notify user '"+participant.fields.userId+"': ");
+					Q.log(err);
 				}
 			});
 		}

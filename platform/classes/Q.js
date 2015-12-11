@@ -2280,6 +2280,7 @@ Q.require = function _Q_require(what) {
 };
 
 var logStream = {};
+
 /**
  * Writes a string to application log. If run outside Qbix application writes to console.
  * @method log
@@ -2290,7 +2291,6 @@ var logStream = {};
  * @param {Function} [callback=null] The callback to call after log file is written
  * @return {boolean} false if failed to parse arguments
  */
-
 Q.log = function _Q_log(message, name, timestamp, callback) {
 	if (typeof timestamp === "undefined") timestamp = true;
 	if (typeof name === "function") {
