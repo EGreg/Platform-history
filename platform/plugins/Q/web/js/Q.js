@@ -5087,7 +5087,7 @@ function _Q_Event_stopPropagation() {
 			&& element !== this.target
 		    && element.contains(this.target));
 		if (matches && this[1] === event.type) {
-			this[2].apply(element, [this]);
+			this[2].apply(element, [event]);
 		}
 	});
 	var p = _Q_Event_stopPropagation.previous;

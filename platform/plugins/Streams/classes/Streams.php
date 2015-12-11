@@ -476,7 +476,7 @@ abstract class Streams extends Base_Streams
 			if ($throwIfMissing) {
 				throw new Q_Exception_MissingRow(array(
 					'table' => 'Stream', 
-					'criteria' => Q::json_encode(compact('publisherId', 'streamName'))
+					'criteria' => Q::json_encode(compact('publisherId', 'name'))
 				));
 			}
 			return null;
