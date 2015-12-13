@@ -7029,7 +7029,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				var e = document.getElementById(parts[1]);
 				if (e) {
 					location.hash = parts[1];
-					history.back();
+					// history.back();
 					// todo: modify history successfully somehow
 					// history.replaceState({}, null, url + '#' + parts[1]);
 				}
