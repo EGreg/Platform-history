@@ -2749,7 +2749,7 @@ abstract class Streams extends Base_Streams
 		$fieldNames = array('title', 'icon', 'content', 'attributes');
 		if ($asOwner) {
 			$fieldNames = array_merge($fieldNames, array(
-				'readLevel', 'writeLevel', 'adminLevel', 'closedTime'
+				'readLevel', 'writeLevel', 'adminLevel', 'inheritAccess', 'closedTime'
 			));
 		}
 		foreach ($classes as $k => $v) {

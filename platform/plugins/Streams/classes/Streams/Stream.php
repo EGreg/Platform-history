@@ -1052,11 +1052,11 @@ class Streams_Stream extends Base_Streams_Stream
 			$asUserId = $asUserId->id;
 		}
 		if (!isset($fieldNames)) {
-			$fieldNames = Streams::getExtendFieldNames($this->type);
+			$fieldNames = Streams::getExtendFieldNames($this->type, true);
 		}
 		$coreFields = array(
 			'title', 'icon', 'content', 'attributes', 
-			'readLevel', 'writeLevel', 'adminLevel',
+			'readLevel', 'writeLevel', 'adminLevel', 'inheritAccess',
 			'closedTime'
 		);
 		$original = $this->fieldsOriginal;
