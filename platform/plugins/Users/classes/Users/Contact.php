@@ -85,14 +85,14 @@ class Users_Contact extends Base_Users_Contact
 	 * @static
 	 * @param {string} $userId
 	 * @param {string} $label
-	 * @param {string} $contactId
+	 * @param {string} $contactUserId
 	 * @param {array} $updates should be an array with only one key: "nickname"
 	 * @param {string} [$asUserId=null] The user to do this operation as.
 	 *   Defaults to the logged-in user. Pass false to skip access checks.
 	 * @throws {Users_Exception_NotAuthorized}
 	 * @return {Db_Query_Mysql}
 	 */
-	static function updateContact($userId, $label, $contactId, $updates, $asUserId = null)
+	static function updateContact($userId, $label, $contactUserId, $updates, $asUserId = null)
 	{
 		foreach (array('userId', 'label', 'contactUserId', 'updates') as $field) {
 			if (empty($$field)) {
@@ -110,8 +110,8 @@ class Users_Contact extends Base_Users_Contact
 				'criteria' => Q::json_encode($contact->fields)
 			));
 		}
-		if (isset($nickname)) {
-			$contact->nickname = $nickname;
+		if (isset($updates['nickname'])) {
+			$contact->nickname = $updates['nickname'];
 		}
 		$contact->save();
 		return $contact;

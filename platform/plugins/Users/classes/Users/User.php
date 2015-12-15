@@ -276,16 +276,16 @@ class Users_User extends Base_Users_User
 	 * @method updateContact
 	 * @static
 	 * @param {string} $label
-	 * @param {string} $contactId
+	 * @param {string} $contactUserId
 	 * @param {array} $updates should be an array with only one key: "nickname"
 	 * @param {string} [$asUserId=null] The user to do this operation as.
 	 *   Defaults to the logged-in user. Pass false to skip access checks.
 	 * @throws {Users_Exception_NotAuthorized}
 	 * @return {Db_Query_Mysql}
 	 */
-	static function updateContact($label, $contactId, $updates, $asUserId = null)
+	function updateContact($label, $contactUserId, $updates, $asUserId = null)
 	{
-		Users_Contact::addContact($this->id, $label, $contactUserId, $nickname, $asUserId);
+		Users_Contact::updateContact($this->id, $label, $contactUserId, $updates, $asUserId);
 	}
 	
 	/**

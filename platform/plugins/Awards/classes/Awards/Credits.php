@@ -32,7 +32,7 @@ class Awards_Credits
 				return null;
 			}
 		} else {
-			$user = Users::fetch($userId, true);
+			$user = Users_User::fetch($userId, true);
 		}
 		$userId = $user->id;
 		$streamName = 'Awards/user/credits';
