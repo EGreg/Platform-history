@@ -85,13 +85,12 @@ class Q_Image
 		if (!$info['key']) {
 			throw new Q_Exception_MissingConfig(array('fieldpath' => 'Q/images/pixabay/key'));
 		}
-		$username = $info['username'];
 		$key = $info['key'];
 		$defaults = array();
 		$options = array_merge($defaults, $options);
 		$optionString = http_build_query($options, '', '&');
 		$keywords = urlencode(strtolower($keywords));
-		$url = "http://pixabay.com/api/?username=$username&key=$key&q=$keywords&$optionString";
+		$url = "https://pixabay.com/api/?key=$key&q=$keywords&$optionString";
 		$json = @file_get_contents($url);
 		$data = Q::json_decode($json, true);
 		if (!$returnFirstImage) {
