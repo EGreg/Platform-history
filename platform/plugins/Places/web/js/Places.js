@@ -25,6 +25,25 @@ var Places = Q.Places = Q.plugins.Places = {
 	},
 	
 	/**
+	 * @method loadCountries
+	 * @static
+	 * Use this to load country data into Q.Places.countries and Q.Places.countriesByCode
+	 * @param {Function} callback Once the callback is called, 
+	 *   Q.Places.countries and Q.Places.countries is accessible
+	 */
+	loadCountries: function (callback) {
+		Q.addScript('plugins/Places/js/lib/countries.js', function () {
+			var pc = Places.countries;
+			var cbc = Places.countriesByCode = {};
+			for (var i=0, l = Places.countries.length; i < l; ++i) {
+				var pci = pc[i];
+				cbc[ pci[1] ] = pci;
+			}
+			callback();
+		});
+	},
+	
+	/**
 	 * @method distance
 	 * @static
 	 * Use this to calculate the haversine distance between two sets of lat/long coordinates on the Earth
@@ -103,7 +122,9 @@ Q.text.Places = {
 };
 
 Q.Tool.define({
-	"Places/location": "plugins/Places/js/tools/location.js"
+	"Places/location": "plugins/Places/js/tools/location.js",
+	"Places/globe": "plugins/Places/js/tools/globe.js",
+	"Places/countries": "plugins/Places/js/tools/countries.js"
 });
 
 })(Q, jQuery, window);
