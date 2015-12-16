@@ -48,3 +48,5 @@
 }
 
 .Places_location_update { text-align: center; }
+
+.Places_globe_tool canvas { cursor: pointer; }

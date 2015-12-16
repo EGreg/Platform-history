@@ -10492,7 +10492,7 @@ function _addHandlebarsHelpers() {
 					Q.setObject(k, hash[k], o, '-');
 				}
 			}
-			Q.extend(o, this[name], this['id:'+id]);
+			Q.extend(o, this && this[name], this && this['id:'+id]);
 			id = prefix + name.split('/').join('_') + (id ? '-' + id : '');
 			return Q.Tool.setUpElementHTML('div', name, o, id, prefix);
 		});
