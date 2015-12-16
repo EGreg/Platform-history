@@ -566,6 +566,9 @@ Streams.create = function (fields, callback, related, options) {
 		slotNames.push('icon');
 	}
 	if (related) {
+		if (!related.publisherId || !related.streamName) {
+			throw new Q.Error("Streams.create related needs publisherId and streamName");
+		}
 		fields['Q.Streams.related.publisherId'] = related.publisherId || related.publisherId;
 		fields['Q.Streams.related.streamName'] = related.streamName || related.streamName || related.name;
 		fields['Q.Streams.related.type'] = related.type;
@@ -1439,8 +1442,8 @@ Sp.clear = function _Stream_prototype_clear (attributeName) {
  * 
  * @method save
  * @param {Function} callback
- * @param {Object} [options] A hash of options, including:
- *   @param {Array} [options.changed] An array of {fieldName: true} pairs naming fields to trigger change events for, even if their values stayed the same
+ * @param {Object} [options] A hash of options for the subsequent refresh.
+ *   See Q.Streams.Stream.refresh
  */
 Sp.save = function _Stream_prototype_save (callback, options) {
 	var that = this;
@@ -1461,15 +1464,17 @@ Sp.save = function _Stream_prototype_save (callback, options) {
 			Streams.onError.handle.call(this, msg, args);
 			return callback && callback.call(this, msg, args);
 		}
-		// the rest will occur in the handler for the stream.onUpdated event coming from the socket
+		// the rest will occur in the handler for the stream.onUpdated event
+		// coming from the socket
 		var stream = data.slots.stream || null;
-		callback && callback.call(that, null, stream);
 		if (stream) {
 			// process the Streams/changed message, if stream was retained
-			Stream.refresh(stream.publisherId, stream.name, null, {
+			Stream.refresh(stream.publisherId, stream.name, callback, Q.extend({
 				messages: true,
 				unlessSocket: true
-			});
+			}, options));
+		} else {
+			callback && callback.call(that, null, stream);
 		}
 	}, { method: 'put', fields: pf, baseUrl: baseUrl });
 };
@@ -2717,7 +2722,7 @@ Message.wait = function _Message_wait (publisherId, streamName, ordinal, callbac
 };
 Message.wait.options = {
 	max: 5, // maximum number of messages we'll actually wait for, if there's a socket
-	timeout: 1000, // maximum number of milliseconds we'll actually wait for, if there's a socket
+	timeout: 1000 // maximum number of milliseconds we'll actually wait for, if there's a socket
 };
 
 var _messageShouldRefreshStream = {};
@@ -3110,16 +3115,18 @@ Streams.setupRegisterForm = function _Streams_setupRegisterForm(identifier, json
 	.append(
 		$('<div class="Streams_login_get_started">&nbsp;</div>')
 		.append($b)
-	).submit(function () {
-		$(this).removeData('cancelSubmit');
+	).submit(Q.throttle(function (e) {
+		e.preventDefault();
 		if (!$('#Users_agree').attr('checked')) {
+			$(this).data('cancelSubmit', true);
 			if (!confirm(Q.text.Users.login.confirmTerms)) {
 				$(this).data('cancelSubmit', true);
 			} else {
+				$(this).data('cancelSubmit', false);
 				$('#Users_agree').attr('checked', 'checked');
 			}
 		}
-	}).on('keydown', function (e) {
+	}, 300)).on('keydown', function (e) {
 		if ((e.keyCode || e.which) === 13) {
 			$(this).submit();
 			e.preventDefault();

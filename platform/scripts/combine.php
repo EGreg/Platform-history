@@ -57,19 +57,19 @@ function Q_scripts_combine()
 {
 	$environment = Q_Config::get('Q', 'environment', false);
 	if (!$environment) {
-		return "Config field Q/environment is empty";
+		return "Config field 'Q'/'environment' is empty";
 	}
 	$files = Q_Config::get('Q', 'environments', $environment, 'files', 
-		Q_Config::get('Q', 'environments', 'defaults', 'files', false)
+		Q_Config::get('Q', 'environments', '*', 'files', false)
 	);
 	if (empty($files)) {
-		return "Config field Q/environments/$environment/files is empty";
+		return "Config field 'Q'/'environments'/'$environment'/files is empty";
 	}
 	$filters = Q_Config::get('Q', 'environments', $environment, 'filters', 
-		Q_Config::get('Q', 'environments', 'defaults', 'filters', false)
+		Q_Config::get('Q', 'environments', '*', 'filters', false)
 	);
 	if (empty($filters)) {
-		return "Config field Q/environments/$environment/filters is empty";
+		return "Config field 'Q'/'environments'/'$environment'/filters is empty";
 	}
 	$combined = array();
 	foreach ($files as $src => $dest) {

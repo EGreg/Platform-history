@@ -2018,7 +2018,12 @@ Q.listen = function _Q_listen(options, callback) {
 		if (headers = Q.Config.get(['Q', 'node', 'headers'], false)) {
 			res.header(headers);
 		}
-		Q.Utils.validate(req, res, function () {
+		if (internalHost == host && internalPort == port) {
+			Q.Utils.validate(req, res, _requested);
+		} else {
+			_requested();
+		}
+		function _requested () {
 			/**
 			 * Http request
 			 * @event request
@@ -2027,7 +2032,7 @@ Q.listen = function _Q_listen(options, callback) {
 			 */
 			Q.emit('request', req, res);
 			next();
-		});
+		}
 	});
 	server.listen(port, host, function () {
 		var internalString = (internalHost == host && internalPort == port) ? ' (internal requests)' : '';
@@ -2275,6 +2280,7 @@ Q.require = function _Q_require(what) {
 };
 
 var logStream = {};
+
 /**
  * Writes a string to application log. If run outside Qbix application writes to console.
  * @method log
@@ -2285,7 +2291,6 @@ var logStream = {};
  * @param {Function} [callback=null] The callback to call after log file is written
  * @return {boolean} false if failed to parse arguments
  */
-
 Q.log = function _Q_log(message, name, timestamp, callback) {
 	if (typeof timestamp === "undefined") timestamp = true;
 	if (typeof name === "function") {

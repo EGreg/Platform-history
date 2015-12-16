@@ -9,16 +9,15 @@ function Websites_0_8_Streams_mysql()
 	
 	// $now = Streams::db()->toDateTime(Streams::db()->getCurrentTimestamp());
 	
-	$publisherId = $userId;
 	$ofUserId = '';
 	$ofContactLabel = 'Websites/admins';
 	$grantedByUserId = null;
 	
 	$streams = array(
-		"Streams/images/" => array('type' => "Streams/template", "title" => "", "icon" => "default", "content" => "", "deletable" => true),
-		"Streams/image/" => array('type' => "Streams/template", "title" => "", "icon" => "Streams/image", "content" => "", "deletable" => true),
-		"Streams/file/" => array('type' => "Streams/template", "title" => "", "icon" => "files/_blank", "content" => "", "deletable" => true),
-		"Websites/article/" => array('type' => "Streams/template", "title" => "", "icon" => "default", "content" => "", "deletable" => true),
+		"Streams/images/" => array('type' => "Streams/template", "title" => "Images", "icon" => "default", "content" => "", "deletable" => true),
+		"Streams/image/" => array('type' => "Streams/template", "title" => "Untitled Image", "icon" => "Streams/image", "content" => "", "deletable" => true),
+		"Streams/file/" => array('type' => "Streams/template", "title" => "Untitled File", "icon" => "files/_blank", "content" => "", "deletable" => true),
+		"Websites/article/" => array('type' => "Streams/template", "title" => "Untitled Article", "icon" => "default", "content" => "", "deletable" => true),
 		"Websites/seo/" => array('type' => "Streams/template", "title" => "Website SEO", "icon" => Q_Html::themedUrl("plugins/Websites/img/seo"), "content" => "", "deletable" => true),
 		"Websites/header" => array('type' => "Streams/image/icon", "title" => "Header image", "icon" => Q_Html::themedUrl("plugins/Websites/img/header"), "content" => ""),
 		"Websites/slogan" => array('type' => "Streams/text/small", "title" => "Website slogan", "icon" => "default", "content" => "The coolest website"),
@@ -34,6 +33,7 @@ function Websites_0_8_Streams_mysql()
 	
 	$rows = array();
 	foreach ($streams as $streamName => $stream) {
+		$publisherId = (substr($streamName, -1) == '/' ? '' : $userId);
 		$writeLevel = (!empty($stream['deletable'])) ? 40 : 30;
 		$rows[] = compact(
 			'publisherId', 'streamName', 'ofUserId', 'ofContactLabel', 
@@ -53,6 +53,10 @@ function Websites_0_8_Streams_mysql()
 	$rows = array();
 	foreach ($streams as $name => $s) {
 		extract($s);
+		if (substr($name, 0, 9) != 'Websites/') {
+			continue; // this tempate was already added by Streams install script
+		}
+		$publisherId = (substr($name, -1) == '/' ? '' : $userId);
 		$rows[] = compact(
 			'publisherId', 'name', 'type', 'title', 'icon', 'content', 'attributes',
 			'readLevel', 'writeLevel', 'adminLevel', 'inheritAccess'
@@ -62,26 +66,26 @@ function Websites_0_8_Streams_mysql()
 	Streams_Stream::insertManyAndExecute($rows);
 	
 	Streams_RelatedTo::insert(array(
-		'toPublisherId' => $publisherId,
+		'toPublisherId' => '',
 		'toStreamName' => 'Streams/images/',
 		'type' => 'images',
-		'fromPublisherId' => $publisherId,
+		'fromPublisherId' => '',
 		'fromStreamName' => 'Streams/image/'
 	))->execute();
 	
 	Streams_RelatedTo::insert(array(
-		'toPublisherId' => $publisherId,
+		'toPublisherId' => '',
 		'toStreamName' => 'Streams/category/',
 		'type' => 'articles',
-		'fromPublisherId' => $publisherId,
+		'fromPublisherId' => '',
 		'fromStreamName' => 'Websites/article/'
 	))->execute();
 	
 	Streams_RelatedTo::insert(array(
-		'toPublisherId' => $publisherId,
+		'toPublisherId' => '',
 		'toStreamName' => 'Streams/category/',
 		'type' => 'announcements',
-		'fromPublisherId' => $publisherId,
+		'fromPublisherId' => '',
 		'fromStreamName' => 'Websites/article/'
 	))->execute();
 }

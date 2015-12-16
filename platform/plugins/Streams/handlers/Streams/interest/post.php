@@ -27,7 +27,7 @@ function Streams_interest_post()
 		$stream->type = 'Streams/interest';
 		$stream->title = $title;
 		$parts = explode(': ', $title, 2);
-		$keywords = $parts[1];
+		$keywords = implode(' ', $parts);
 		try {
 			$data = Q_Image::pixabay($keywords, array(
 				'orientation' => 'horizontal',

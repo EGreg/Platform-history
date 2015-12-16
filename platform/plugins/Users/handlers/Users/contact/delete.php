@@ -16,11 +16,5 @@ function Users_contact_delete($params = array())
 	$label = $req['label'];
 	$contactUserId = $req['contactUserId'];
 	
-	Users::canManageContacts($loggedInUserId, $userId, $label, true);
-	
-	$contact = new Users_Contact();
-	$contact->userId = $userId;
-	$contact->label = $label;
-	$contact->contactUserId = $contactUserId;
-	return $contact->remove();
+	return !!Users_Contact::removeContact($userId, $label, $contactUserId);
 }

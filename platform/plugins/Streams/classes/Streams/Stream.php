@@ -227,10 +227,7 @@ class Streams_Stream extends Base_Streams_Stream
 				);
 			}
 			// we don't want user to update private fields but will set initial values to them
-			$privateFieldNames = array_merge(
-				Q_Config::get('Streams', 'types', $this->type, 'private', array()),
-				Q_Config::expect('Streams', 'defaults', 'private')
-			);
+			$privateFieldNames = self::getConfigField($this->type, 'private', array());
 			// magic fields are handled by parent method
 			$magicFieldNames = array('insertedTime', 'updatedTime');
 			$privateFieldNames = array_diff($privateFieldNames, $magicFieldNames);
@@ -253,12 +250,11 @@ class Streams_Stream extends Base_Streams_Stream
 			} else {
 				// otherwise (no template) set all private fields to defaults
 				foreach ($privateFieldNames as $field) {
-					$this->$field = $modifiedFields[$field] = Q_Config::get(
-						'Streams', 'types', $this->type, 'defaults', $field,
-						isset(Streams_Stream::$DEFAULTS[$field]) 
-							? Streams_Stream::$DEFAULTS[$field] 
-							: null
+					$defaults = self::getConfigField(
+						$this->type, 'defaults', Streams_Stream::$DEFAULTS
 					);
+					$this->$field = $modifiedFields[$field]
+						= Q::ifset($defaults, $field, null);
 				}
 			}
 
@@ -266,12 +262,11 @@ class Streams_Stream extends Base_Streams_Stream
 			foreach (array_diff($fieldNames, $magicFieldNames) as $field) {
 				if (!array_key_exists($field, $this->fields)
 				and !array_key_exists($field, $modifiedFields)) {
-					$this->$field = $modifiedFields[$field] = Q_Config::get(
-						'Streams', 'types', $this->type, 'defaults', $field,
-						isset(Streams_Stream::$DEFAULTS[$field])
-							? Streams_Stream::$DEFAULTS[$field] 
-							: null
+					$defaults = self::getConfigField(
+						$this->type, 'defaults', Streams_Stream::$DEFAULTS
 					);
+					$this->$field = $modifiedFields[$field]
+						= Q::ifset($defaults, $field, null);
 				}
 			}
 
@@ -507,6 +502,9 @@ class Streams_Stream extends Base_Streams_Stream
 	}
 
 	protected function fetchAsUser ($options, &$userId, &$user = null) {
+		if (!empty($options['skipAccess'])) {
+			return $this;
+		}
 		if (isset($options['userId'])) {
 			$user = Users_User::fetch($options['userId']);
 			if (!$user) {
@@ -1004,7 +1002,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 * @method post
 	 * @param {string} $asUserId
 	 *  The user to post as
-	 * @param {array} $information
+	 * @param {array} $message
 	 *  The fields of the message. Also may include 'streamNames' field which is an array of additional
 	 *  names of the streams to post message to.
 	 * @param {booleam} $skipAccess=false
@@ -1015,14 +1013,14 @@ class Streams_Stream extends Base_Streams_Stream
 	 */
 	function post(
 		$asUserId,
-		$information,
+		$message,
 		$skipAccess=false)
 	{
 		return Streams_Message::post(
 			$asUserId,
 			$this->publisherId,
 			$this->name,
-			$information,
+			$message,
 			$skipAccess,
 			array($this)
 		);
@@ -1054,11 +1052,11 @@ class Streams_Stream extends Base_Streams_Stream
 			$asUserId = $asUserId->id;
 		}
 		if (!isset($fieldNames)) {
-			$fieldNames = Streams::getExtendFieldNames($this->type);
+			$fieldNames = Streams::getExtendFieldNames($this->type, true);
 		}
 		$coreFields = array(
 			'title', 'icon', 'content', 'attributes', 
-			'readLevel', 'writeLevel', 'adminLevel',
+			'readLevel', 'writeLevel', 'adminLevel', 'inheritAccess',
 			'closedTime'
 		);
 		$original = $this->fieldsOriginal;
@@ -1649,9 +1647,7 @@ class Streams_Stream extends Base_Streams_Stream
 			$options['max'] = $max + $options['max'] + 1;
 		}
 		if (empty($options['limit'])) {
-			$options['limit'] = Q_Config::get(
-				'Streams', 'defaults', 'getMessagesLimit', 1000
-			);
+			$options['limit'] = self::getConfigField($this->type, 'getMessagesLimit', 100);
 		}
 		
 		if ($options['min'] > $options['max']) {
@@ -1765,6 +1761,28 @@ class Streams_Stream extends Base_Streams_Stream
 	function removePreloaded()
 	{
 		unset(self::$preloaded["{$this->publisherId}, {$this->name}"]);
+	}
+	
+	/**
+	 * Gets a value from the config corresponding to this stream type and a field name,
+	 * using defaults from "Streams"/"types"/"*" and merging the value under
+	 * "Streams"/"types"/$stream->type, if any.
+	 * @method getConfigField
+	 * @static
+	 * @param {string} $type The type of the stream
+	 * @param {string} $field The name of the field
+	 * @param {mixed} $default The value to return if the config field isn't specified
+	 * @param {boolean} [$merge=true] if arrays are found in both places, merge them
+	 * @return mixed
+	 */
+	static function getConfigField($type, $field, $default, $merge = true)
+	{
+		$bottom = Q_Config::get('Streams', 'types', '*', $field, $default);
+		$top = Q_Config::get('Streams', 'types', $type, $field, null);
+		if ($merge and is_array($bottom) and is_array($top)) {
+			return array_merge($bottom, $top);
+		}
+		return isset($top) ? $top : $bottom;
 	}
 	
 	/**

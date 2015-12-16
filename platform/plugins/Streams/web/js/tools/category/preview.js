@@ -105,6 +105,10 @@ function _Streams_category_preview(options, preview) {
 					});
 					var $pc = tool.$('.Streams_preview_contents');
 					$pc.width(0).width($pc[0].remainingWidth());
+					Q.onLayout(tool.element).set(function () {
+						var $pc = tool.$('.Streams_preview_contents');
+						$pc.width($pc[0].remainingWidth());	
+					}, tool);
 					
 					$(tool.element).on(Q.Pointer.fastclick, tool, function () {
 						var parent = tool.parent();

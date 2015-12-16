@@ -20,11 +20,5 @@ function Users_label_delete($params = array())
 			throw new Q_Exception_RequiredField(array('field' => 'label'));
 		}
 	}
-	
-	Users::canManageLabels($loggedInUserId, $userId, $l, true);
-	
-	$label = new Users_Label();
-	$label->userId = Users::loggedInUser(true)->id;
-	$label->label = $l;
-	$label->remove();
+	return !!Users_Label::removeLabel($l, $userId);
 }

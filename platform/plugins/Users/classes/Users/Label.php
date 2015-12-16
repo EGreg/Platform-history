@@ -30,13 +30,24 @@ class Users_Label extends Base_Users_Label
 	 * @param {string} [$userId=null] user current user if not provided
 	 * @param {string} [$title=''] specify the title, otherwise a default one is generated
 	 * @param {string} [$icon='default']
+	 * @param {string} [$asUserId=null] The user to do this operation as.
+	 *   Defaults to the logged-in user. Pass false to skip access checks.
+	 * @return {Users_Label}
 	 */
 	static function addLabel(
 		$label, 
 		$userId = null, 
 		$title = '', 
-		$icon = 'default')
+		$icon = 'default',
+		$asUserId = null)
 	{
+		if (!isset($title)) {
+			$title = '';
+		}
+		if (!isset($icon)) {
+			$icon = 'default';
+		}
+		Users::canManageLabels($asUserId, $userId, $label, true);
 		if (!isset($userId)) {
 			$user = Users::loggedInUser(true);
 			$userId = $user->id;
@@ -46,11 +57,51 @@ class Users_Label extends Base_Users_Label
 			$title = ucfirst(end($parts));
 		}
 		$l = new Users_Label();
+		self::_icon($l, $icon, $userId);
 		$l->label = $label;
 		$l->userId = $userId;
 		$l->title = $title;
 		$l->icon = $icon;
-		return $l->save(true); 
+		$l->save(true); 
+		return $l;
+	}
+	
+	/**
+	 * Update labels
+	 * @method updateLabel
+	 * @static
+	 * @param {string} $userId
+	 * @param {string} $label
+	 * @param {array} $updates Can contain one or more of "title", "icon"
+	 * @param {string} [$asUserId=null] The user to do this operation as.
+	 *   Defaults to the logged-in user. Pass false to skip access checks.
+	 * @throws {Users_Exception_NotAuthorized}
+	 * @return {Db_Query_Mysql}
+	 */
+	static function updateLabel($userId, $label, $updates, $asUserId = null)
+	{
+		foreach (array('userId', 'label', 'updates') as $field) {
+			if (empty($$field)) {
+				throw new Q_Exception_RequiredField(compact($field));
+			}
+		}
+		Users::canManageLabels($asUserId, $userId, $label, true);
+		$l = new Users_Label();
+		$l->userId = $userId;
+		$l->label = $label;
+		if (!$l->retrieve()) {
+			throw new Q_Exception_MissingRow(array(
+				'table' => 'Label',
+				'criteria' => json_encode($l->fields)
+			));
+		}
+		if (isset($updates['title'])) {
+			$l->title = $title;
+		}
+		$icon = Q::ifset($updates, 'icon', null);
+		self::_icon($l, $icon, $userId);
+		$l->save();
+		return $l;
 	}
 
 	/**
@@ -58,22 +109,22 @@ class Users_Label extends Base_Users_Label
 	 * @method removeLabel
 	 * @param {string} $label
 	 * @param {string|null} [$userId=null]
-	 * @return {boolean}
+	 *  The user whose label is to be removed
+	 * @param {string} [$asUserId=null] The user to do this operation as.
+	 *   Defaults to the logged-in user. Pass false to skip access checks.
+	 * @return {Db_Query_MySql}
 	 */
-	static function removeLabel($label, $userId = null)
+	static function removeLabel($label, $userId = null, $asUserId = null)
 	{
 		if (!isset($userId)) {
 			$user = Users::loggedInUser(true);
 			$userId = $user->id;
 		}
-		Users_Contact::delete()->where(array(
-			'label' => $label,
-			'userId' => $userId
-		))->execute();
-		$l = new Users_Label();
-		$l->label = $label;
-		$l->userId = $userId;
-		return $l->remove(); 
+		Users::canManageLabels($asUserId, $userId, $label, true);
+		$label = new Users_Label();
+		$label->userId = $userId;
+		$label->label = $label;
+		$label->remove();
 	}
 	
 	/**
@@ -119,6 +170,22 @@ class Users_Label extends Base_Users_Label
 			}
 		}
 		return $labels;
+	}
+	
+	static function _icon($l, $icon, $userId)
+	{
+		if (!is_array($icon)) {
+			if ($icon) {
+				$l->icon = $icon;
+			}
+			return;
+		}
+		// Process any icon data
+		$icon['path'] = 'uploads/Users';
+		$icon['subpath'] = "$userId/label/$label/icon";
+		$data = Q::event("Q/image/post", $icon);
+		Q_Response::setSlot('icon', $data);
+		$l->icon = Q_Request::baseUrl().'/'.$data[''];
 	}
 
 	/* * * */

@@ -13,7 +13,10 @@ function Streams_message_response_messages()
 	$publisherId = Streams::requestedPublisherId(true);
 	$streamName = Streams::requestedName(true);
 	$type = Streams::requestedMessageType();
-	$maxLimit = Q_Config::get('Streams', 'defaults', 'getMessagesLimit', 100);
+	$stream = Q::ifset(Streams::$cache, 'stream', 
+		Streams::fetchOne(null, $publisherId, $streamName, true)
+	);
+	$maxLimit = Streams_Stream::getConfigField($type, 'getMessagesLimit', 100);
 	$limit = min($maxLimit, Q::ifset($_REQUEST, 'limit', $maxLimit));
 	if (isset($_REQUEST['ordinal'])) {
 		$min = $_REQUEST['ordinal'];
@@ -25,18 +28,6 @@ function Streams_message_response_messages()
 	$max = isset($_REQUEST['max']) ? $_REQUEST['max'] : -1;
 	if (isset($_REQUEST['ascending'])) {
 		$ascending = $_REQUEST['ascending'];
-	}
-
-	$user = Users::loggedInUser();
-	$userId = $user ? $user->id : "";
-	$stream = isset(Streams::$cache['stream'])
-		? Streams::$cache['stream']
-		: Streams::fetchOne($userId, $publisherId, $streamName);
-	if (!$stream) {
-		throw new Q_Exception_MissingRow(array(
-			'table' => 'Stream', 
-			'criteria' => "{publisherId: '$publisherId', name: '$streamName'}"
-		));
 	}
 
 	if (!$stream->testReadLevel('messages')) {

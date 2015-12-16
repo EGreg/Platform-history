@@ -162,6 +162,7 @@ function _Q_viewport(options) {
 			Q.Pointer.cancelClick(); // on even the slightest move
 			Q.handle(state.onMove, $this, [state.selection, state.scale]);
 			Q.handle(state.onUpdate, $this, [state.selection, state.scale]);
+			e.preventDefault();
 		}
 		
 		function _endHandler (e) {

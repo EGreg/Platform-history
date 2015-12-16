@@ -11,7 +11,9 @@
  * @param {Object} [options] any options for the tool
  *   @param {Object} [options.inplace] Any options to pass to the Q/inplace tool -- see its options.
  *   @uses Q inplace
- *   @param {Boolean} [options.showTitle] Whether to display the title of the image stream
+ *   @param {Boolean} [options.showTitle=true] Whether to display the title of the image stream
+ *   @param {Boolean} [options.updateTitle=false] Whether to update the title to reflect the file name
+ *   of an image
  *   @param {Object} [options.templates] Under the keys "views", "edit" and "create" you can override options for Q.Template.render .
  *     @param {Object} [options.templates.view]
  *       @param {String} [options.templates.view.name='Streams/image/preview/view']
@@ -59,6 +61,8 @@ Q.Tool.define("Streams/image/preview", "Streams/preview", function(options, prev
 {
 	inplace: {},
 	dontSetSize: false,
+	showTitle: true,
+	updateTitle: false,
 	templates: {
 		view: {
 			name: 'Streams/image/preview/view',
@@ -80,8 +84,8 @@ Q.Tool.define("Streams/image/preview", "Streams/preview", function(options, prev
 		var tool = this;
 		var state = tool.state;
 		var ps = tool.preview.state;
-		var fields = stream.fields;
-		var attributes = fields.attributes && JSON.parse(fields.attributes);
+		var sf = stream.fields;
+		var attributes = sf.attributes && JSON.parse(sf.attributes);
 
 		// set up a pipe to know when the icon has loaded
 		var p = Q.pipe(['inplace', 'icon'], function () {
@@ -105,8 +109,8 @@ Q.Tool.define("Streams/image/preview", "Streams/preview", function(options, prev
 		// render a template
 		var f = state.template && state.template.fields;
 		var fields = Q.extend({}, state.templates.edit.fields, f, {
-			alt: fields.title,
-			title: fields.title,
+			alt: sf.title,
+			title: sf.title,
 			inplace: inplace,
 			showTitle: state.showTitle !== false
 		});
@@ -121,6 +125,16 @@ Q.Tool.define("Streams/image/preview", "Streams/preview", function(options, prev
 				tool.element.innerHTML = html;
 				Q.activate(tool, function () {
 					// load the icon
+					ps.imagepicker.onSuccess = {
+						"Streams/image/preview": function (data, key, file) {
+							if (!file || !file.name) return;
+							ps.stream.fields.title = file.name;
+							ps.stream.save(null, {
+								messages: true,
+								changed: { icon: true }
+							});
+						}
+					};
 					var $jq = tool.$('img.Streams_image_preview_icon');
 					tool.preview.icon($jq[0], p.fill('icon'));
 					var child = tool.child('Streams_inplace');
@@ -129,11 +143,12 @@ Q.Tool.define("Streams/image/preview", "Streams/preview", function(options, prev
 					}
 					var parts = ps.imagepicker.showSize.split('x');
 					if (!state.dontSetSize) {
+						var $img = tool.$('.Streams_image_preview_icon');
 						if (parts[0]) {
-							tool.element.style.width = parts[0] + 'px';
+							$img.width(parts[0]);
 						}
 						if (parts[1]) {
-							tool.element.style.height = parts[1] + 'px';
+							$img.height(parts[1]);
 						}
 					}
 				});

@@ -260,32 +260,47 @@ class Users_User extends Base_Users_User
 	 * @param {string} [$nickname='']
 	 *  Optional nickname to assign to the contact
 	 *  @optional
+	 * @param {string} [$asUserId=null] The user to do this operation as.
+	 *   Defaults to the logged-in user. Pass false to skip access checks.
 	 * @throws {Q_Exception_RequiredField}
 	 *	if $label is missing
 	 * @return {array} Array of contacts that are saved
 	 */
-	function addContact($label, $contactUserId, $nickname = '')
+	function addContact($label, $contactUserId, $nickname = '', $asUserId = null)
 	{
-		Users_Contact::addContact($this->id, $label, $contactUserId, $nickname);
+		Users_Contact::addContact($this->id, $label, $contactUserId, $nickname, $asUserId);
 	}
 	
 	/**
-	 * @method addContact
+	 * Update a particular contact with a given userId, label, contactId.
+	 * @method updateContact
+	 * @static
+	 * @param {string} $label
+	 * @param {string} $contactUserId
+	 * @param {array} $updates should be an array with only one key: "nickname"
+	 * @param {string} [$asUserId=null] The user to do this operation as.
+	 *   Defaults to the logged-in user. Pass false to skip access checks.
+	 * @throws {Users_Exception_NotAuthorized}
+	 * @return {Db_Query_Mysql}
+	 */
+	function updateContact($label, $contactUserId, $updates, $asUserId = null)
+	{
+		Users_Contact::updateContact($this->id, $label, $contactUserId, $updates, $asUserId);
+	}
+	
+	/**
+	 * @method removeContact
+	 * @param {string|array} $label
+	 *  The label of the contact. 
 	 * @param {string} $contactUserId
 	 *  The id of the user who is the contact
-	 * @param {string|array} $label
-	 *  The label of the contact. This can be a string or an array of strings, in which case
-	 *  multiple contact rows are saved.
-	 * @param {string} [$nickname='']
-	 *  Optional nickname to assign to the contact
-	 *  @optional
-	 * @throws {Q_Exception_RequiredField}
-	 *	if $label is missing
-	 * @return {array} Array of contacts that are saved
+	 * @param {string} [$asUserId=null]
+	 *  The id of the user who is the contact
+	 * @return {Db_Mysql}
 	 */
-	function removeContact($label, $contactUserId)
+	function removeContact($label, $contactUserId, $asUserId = null)
 	{
-		Users_Contact::removeContact($this->id, $label, $contactUserId);
+		Users_Contact::removeContact($this->id, $label, $contactUserId, $asUserId);
 	}
 	
 	/**

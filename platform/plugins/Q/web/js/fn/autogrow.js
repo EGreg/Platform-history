@@ -16,7 +16,7 @@
  * @default 0
  * @param {Number} [options.comfortZone] How many pixels of padding to allocate for typing ahead
  * @default 10
- * @param [Q.Event] [options.onResize] Triggered during a resize, its "this" object is the jQuery selector of the plugin. If used with a text input, the first parameter is the new width.
+ * @param [Q.Event] [options.onResize] Triggered during a size change, its "this" object is the jQuery selector of the plugin. If used with a text input, the first parameter is the new width.
  * @default new Q.Event()
  */
 

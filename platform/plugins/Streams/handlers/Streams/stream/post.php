@@ -11,8 +11,8 @@
  * @param {array} [$params] Parameters that can come from the request
  *   @param {string} $params.publisherId  Required. The id of the user to publish the stream.
  *   @param {string} $params.type Required. The type of the stream.
- *   @param {string} [$params.related.publisherId] Optionally indicate the publisher of the stream to relate the newly created to. Used together with the related.streamName option.
- *   @param {string} [$params.related.streamName] Optionally indicate the name of a stream to relate the newly crated stream to. This is often necessary in order to obtain permissions to create the stream.
+ *   @param {string} [$params.Q_Streams_related_publisherId] Optionally indicate the publisher of the stream to relate the newly created to. Used together with the related.streamName option.
+ *   @param {string} [$params.Q_Streams_related_streamName] Optionally indicate the name of a stream to relate the newly crated stream to. This is often necessary in order to obtain permissions to create the stream.
  *   @param {bool} [$params.dontSubscribe=false] Pass 1 or true here in order to skip auto-subscribing to the newly created stream.
  *   @param {array} [$params.icon] This is used to upload a custom icon for the stream which will then be saved in different sizes. See fields for Q/image/post method
  *     @param {string} [$params.icon.data]  Required if $_FILES is empty. Base64-encoded  data URI - see RFC 2397
@@ -35,9 +35,8 @@ function Streams_stream_post($params = array())
 	if (empty($publisherId)) {
 		$publisherId = $_REQUEST['publisherId'] = $user->id;
 	}
-	$type = Streams::requestedType(true);
 	$req = array_merge($_REQUEST, $params);
-
+	$type = Streams::requestedType(true);
     $types = Q_Config::expect('Streams', 'types');
     if (!array_key_exists($type, $types)) {
         throw new Q_Exception("This app doesn't support streams of type $type", 'type');
@@ -78,7 +77,13 @@ function Streams_stream_post($params = array())
 	}
 	
 	// Create the stream
-	$stream = Streams::create($user->id, $publisherId, $type, $req, $relate);
+	$allowedFields = array_merge(
+		array('publisherId', 'type', 'icon', 'file'),
+		Streams::getExtendFieldNames($type, ($userId === $publisherId))
+	);
+	$fields = Q::take($req, $allowedFields);
+	$stream = Streams::create($user->id, $publisherId, $type, $fields, $relate, $result);
+	Q_Response::setSlot('messageTo', $result['messageTo']->exportArray());
 	
 	// Process any icon that was posted
 	if ($icon === true) {

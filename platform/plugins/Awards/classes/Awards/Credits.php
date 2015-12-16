@@ -9,25 +9,46 @@
  */
 class Awards_Credits
 {
+	const DEFAULT_AMOUNT = 20;
+	
 	/**
-	 * Create award stream for logged-in user
-	 * @method createStream
-	 * @static
-	 * @param {Users_User} $user The user for which stream is created
-	 * @return {Streams_Stream}
+	 * Get the logged-in user's credits stream
+	 * @method userStream
+	 * @param {string} [$userId=null]
+	 *   The id of the user for which the stream is obtained. Defaults to logged-in user.
+	 * @param {string} [$asUserId=null]
+	 *   The id of the user who is trying to obtain it. Defaults to logged-in user.
+	 * @param {boolean} [$throwIfNotLoggedIn=false]
+	 *   Whether to throw a Users_Exception_NotLoggedIn if no user is logged in.
+	 * @return {Streams_Stream|null}
+	 * @throws {Users_Exception_NotLoggedIn} If user is not logged in and
+	 *   $throwIfNotLoggedIn is true
 	 */
-	static function createStream($user)
+	static function userStream($userId = null, $asUserId = null, $throwIfNotLoggedIn = false)
 	{
-		$stream = new Streams_Stream();
-		$stream->publisherId = $user->id;
-		$stream->name = 'Awards/credits';
-		$stream->type = 'Awards/credits';
-		$stream->icon = 'plugins/Awards/img/credits.png';
-		$app = Q_Config::expect('Q', 'app');
-		$stream->title = 'Credits';
-		$stream->content = '';
-		$stream->setAttribute('amount', Q_Config::get('Awards', 'credits', 'amounts', 'Users/insertUser', 20));
-		$stream->save();
+		if (!isset($userId)) {
+			$user = Users::loggedInUser($throwIfNotLoggedIn);
+			if (!$user) {
+				return null;
+			}
+		} else {
+			$user = Users_User::fetch($userId, true);
+		}
+		$userId = $user->id;
+		$streamName = 'Awards/user/credits';
+		$stream = Streams::fetchOne($asUserId, $userId, $streamName);
+		if (!$stream) {
+			$amount = Q_Config::get(
+				'Awards', 'credits', 'amounts', 'Users/insertUser', self::DEFAULT_AMOUNT
+			);
+			$stream = Streams::create($userId, $userId, 'Awards/credits', array(
+				'name' => 'Awards/user/credits',
+				'title' => "Credits",
+				'icon' => 'plugins/Awards/img/credits.png',
+				'content' => '',
+				'attributes' => Q::json_encode(compact('amount'))
+			));
+		}
 		return $stream;
 	}
 	
@@ -36,17 +57,11 @@ class Awards_Credits
 	 * @method amount
 	 * @static
 	 * @return {string} The amount of credits
+	 * @throws {Users_Exception_NotLoggedIn} If user is not logged in
 	 */
 	static function amount()
 	{
-		$user = Users::loggedInUser(true);
-		$stream = new Streams_Stream();
-		$stream->publisherId = $user->id;
-		$stream->name = 'Awards/credits';
-		if (!$stream->retrieve()) {
-			$stream = self::createStream($user);
-		}
-		return $stream->getAttribute('amount');
+		return self::userStream(null, null, true)->getAttribute('amount');
 	}
 	
 	/**
@@ -55,9 +70,10 @@ class Awards_Credits
 	 * @static
 	 * @param {integer} $amount The amount of credits to spend.
 	 * @param {array} $more An array supplying more info, including
- 	 *  "reason" => Identifies the reason for spending, if any
- 	 *  "for_publisherId" => The publisher of the stream representing the purchase
-	 *  "for_streamName" => The name of the stream representing the purchase
+	 * @param {string} [$more.reason] Identifies the reason for spending, if any
+	 * @param {string} [$more.publisherId] The publisher of the stream representing the purchase
+	 * @param {string} [$more.streamName] The name of the stream representing the purchase
+	 * @throws {Users_Exception_NotLoggedIn} If user is not logged in
 	 */
 	static function spend($amount, $more = array())
 	{
@@ -67,16 +83,12 @@ class Awards_Credits
 				'type' => 'positive integer'
 			));
 		}
-		$user = Users::loggedInUser(true);
-		$stream = new Streams_Stream();
-		$stream->publisherId = $user->id;
-		$stream->name = 'Awards/credits';
-		if (!$stream->retrieve()) {
-			$stream = self::createStream($user);
-		}
+		$stream = self::userStream(null, null, true);
 		$existing_amount = $stream->getAttribute('amount');
 		if ($existing_amount < $amount) {
-			throw new Awards_Exception_NotEnoughCredits(array('missing' => $amount -$existing_amount));
+			throw new Awards_Exception_NotEnoughCredits(array(
+				'missing' => $amount - $existing_amount
+			));
 		}
 		$stream->setAttribute('amount', $stream->getAttribute('amount') - $amount);
 		$stream->save();
@@ -85,7 +97,7 @@ class Awards_Credits
 			array('app' => Q_Config::expect('Q', 'app')),
 			$more
 		));
-		Streams_Message::post($user->id, $user->id, array(
+		$stream->post($user->id, array(
 			'type' => 'Awards/credits/spent',
 			'content' => $amount,
 			'instructions' => $instructions_json
@@ -101,25 +113,19 @@ class Awards_Credits
 	 */
 	static function earn($amount, $reason = 'Awards/purchased')
 	{
-		if (!is_int($amount or $amount <= 0)) {
+		if (!is_int($amount) or $amount <= 0) {
 			throw new Q_Exception_WrongType(array(
 				'field' => 'amount',
 				'type' => 'integer'
 			));
 		}
-		$user = Users::loggedInUser(true);
-		$stream = new Streams_Stream();
-		$stream->publisherId = $user->id;
-		$stream->name = 'Awards/credits';
-		if (!$stream->retrieve()) {
-			$stream = self::createStream($user);
-		}
+		$stream = self::userStream(null, null, true);
 		$stream->setAttribute('amount', $stream->getAttribute('amount') + $amount);
 		$stream->save();
 		
 		// Post that this user earned $amount credits by $reason
 		$app = Q_Config::expect('Q', 'app');
-		Streams_Message::post($user->id, $user->id, array(
+		$stream->post($user->id, array(
 			'type' => 'Awards/credits/earned',
 			'content' => $amount,
 			'instructions' => Q::json_encode(compact('app', 'reason'))
@@ -143,43 +149,33 @@ class Awards_Credits
 				'type' => 'integer'
 			));
 		}
-		$user = Users::loggedInUser(true);
-		$from_stream = new Streams_Stream();
-		$from_stream->publisherId = $user->id;
-		$from_stream->name = 'Awards/credits';
-		if (!$from_stream->retrieve()) {
-			$from_stream = self::createStream($user);
-		}
-		$existing_amount = $from_stream->getAttribute('amount');
-		if ($existing_amount < $amount) {
-			throw new Awards_Exception_NotEnoughCredits(array('missing' => $amount - $existing_amount));
-		}
-		$to_user = Users_User::fetch($toUserId, true);
-		$to_stream = new Streams_Stream();
-		$to_stream->publisherId = $toUserId;
-		$to_stream->name = 'Awards/credits';
-		if (!$to_stream->retrieve()) {
-			$to_stream = self::createStream($to_user);
-		}
-		$to_stream->setAttribute('amount', $to_stream->getAttribute('amount') - $amount);
-		$to_stream->save();
-		
-		// NOTE: we are not doing transactions here mainly because of sharding.
-		// If if we reached this point without exceptions, that means everything worked.
-		// But if the following statement fails, then someone will get free credits.
-		$from_stream->setAttribute('amount', $from_stream->getAttribute('amount') - $amount);
-		$from_stream->save();
-		
 		$instructions_json = Q::json_encode(array_merge(
 			array('app' => Q_Config::expect('Q', 'app')),
 			$more
 		));
-		Streams_Message::post($user->id, $userId, array(
+		$from_stream = self::userStream(null, null, true);
+		$existing_amount = $from_stream->getAttribute('amount');
+		if ($existing_amount < $amount) {
+			throw new Awards_Exception_NotEnoughCredits(array(
+				'missing' => $amount - $existing_amount
+			));
+		}
+		
+		$from_stream->setAttribute('amount', $from_stream->getAttribute('amount') - $amount);
+		$from_stream->save();
+		$from_stream->post($user->id, array(
 			'type' => 'Awards/credits/sent',
 			'content' => $amount,
 			'instructions' => $instructions_json
 		));
-		Streams_Message::post($user->id, $toUserId, array(
+		
+		// TODO: add journaling system
+		// Because if the following fails, then someone will lose credits
+		// without the other person getting them. For now we will rely on the user complaining.
+		$to_stream = self::userStream($toUserId, $toUserId, true);
+		$to_stream->setAttribute('amount', $to_stream->getAttribute('amount') + $amount);
+		$to_stream->save();
+		$to_stream->post($user->id, array(
 			'type' => 'Awards/credits/received',
 			'content' => $amount,
 			'instructions' => $instructions_json

@@ -20,7 +20,6 @@
  * @property {string} $fromPublisherId
  * @property {string} $fromStreamName
  * @property {float} $weight
- * @property {string} $customIndex
  * @property {string|Db_Expression} $insertedTime
  */
 abstract class Base_Streams_RelatedTo extends Db_Row
@@ -48,10 +47,6 @@ abstract class Base_Streams_RelatedTo extends Db_Row
 	/**
 	 * @property $weight
 	 * @type {float}
-	 */
-	/**
-	 * @property $customIndex
-	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
@@ -385,39 +380,6 @@ abstract class Base_Streams_RelatedTo extends Db_Row
 	}
 
 	/**
-	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
-	 * Optionally accept numeric value which is converted to string
-	 * @method beforeSet_customIndex
-	 * @param {string} $value
-	 * @return {array} An array of field name and value
-	 * @throws {Exception} An exception is thrown if $value is not string or is exceedingly long
-	 */
-	function beforeSet_customIndex($value)
-	{
-		if (!isset($value)) {
-			$value='';
-		}
-		if ($value instanceof Db_Expression) {
-			return array('customIndex', $value);
-		}
-		if (!is_string($value) and !is_numeric($value))
-			throw new Exception('Must pass a string to '.$this->getTable().".customIndex");
-		if (strlen($value) > 1023)
-			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".customIndex");
-		return array('customIndex', $value);			
-	}
-
-	/**
-	 * Returns the maximum string length that can be assigned to the customIndex field
-	 * @return {integer}
-	 */
-	function maxSize_customIndex()
-	{
-
-		return 1023;			
-	}
-
-	/**
 	 * Method is called before setting the field and normalize the DateTime string
 	 * @method beforeSet_insertedTime
 	 * @param {string} $value
@@ -471,7 +433,7 @@ abstract class Base_Streams_RelatedTo extends Db_Row
 	 */
 	static function fieldNames($table_alias = null, $field_alias_prefix = null)
 	{
-		$field_names = array('toPublisherId', 'toStreamName', 'type', 'fromPublisherId', 'fromStreamName', 'weight', 'customIndex', 'insertedTime');
+		$field_names = array('toPublisherId', 'toStreamName', 'type', 'fromPublisherId', 'fromStreamName', 'weight', 'insertedTime');
 		$result = $field_names;
 		if (!empty($table_alias)) {
 			$temp = array();

@@ -8,6 +8,7 @@ function Streams_before_Users_canManageLabels($params, &$result)
 	$throwIfNotAuthorized = $params['throwIfNotAuthorized'];
 	if ($asUserId === $userId and substr($label, 0, 6) === 'Users/') {
 		$result = true;
+		return;
 	}
 	$stream = Streams::fetchOne($asUserId, $userId, 'Streams/labels');
 	if ($stream and $stream->testWriteLevel('edit')) {

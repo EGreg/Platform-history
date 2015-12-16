@@ -7,4 +7,8 @@ function Streams_after_Users_Contact_removeExecute($params)
 	foreach ($contacts as $contact) {
 		Streams::updateAvatar($contact->contactUserId, $contact->userId);
 	}
+	Streams_Message::post(null, $contact->userId, 'Streams/contacts', array(
+		'type' => 'Streams/contacts/removed',
+		'instructions' => array('contacts' => Db::exportArray($contacts))
+	), true);
 }

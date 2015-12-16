@@ -49,7 +49,7 @@ class Streams_Message extends Base_Streams_Message
 	 *  The publisher of the stream
 	 * @param {string|array} $streamName
 	 *  The name of the stream. You can also pass an array of stream names here.
-	 * @param {array} $information
+	 * @param {array} $message
 	 *  The fields of the message.
 	 *  names of the streams to post message to.
 	 * @param {booleam} $skipAccess=false
@@ -62,7 +62,7 @@ class Streams_Message extends Base_Streams_Message
 		$asUserId, 
 		$publisherId,
 		$streamName,
-		$information,
+		$message,
 		$skipAccess=false)
 	{
 		$messages = array($publisherId => array());
@@ -74,7 +74,7 @@ class Streams_Message extends Base_Streams_Message
 			));
 		}
 		foreach ($streamNames as $sn) {
-			$messages[$publisherId][$sn] = $information;
+			$messages[$publisherId][$sn] = $message;
 		}
 		list($posted, $streams) = self::postMessages($asUserId, $messages, $skipAccess);
 		if (is_string($streamName)) {

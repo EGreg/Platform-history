@@ -17,12 +17,16 @@ function Streams_invitations_response()
 	Q_Request::requireFields(array('batch', 'invitingUserId'), true);
 	$invitingUserId = $_REQUEST['invitingUserId'];
 	$batch = $_REQUEST['batch'];
+	$user = Users::loggedInUser(true);
+	$stream = Streams::fetchOne(null, $invitingUserId, 'Streams/invitations', true);
+	if (!$stream->testReadLevel('content')) {
+		throw new Users_Exception_NotAuthorized();
+	}
 	$title = Q::ifset($_REQUEST, 'layout', 'title');
 	$layoutKey = Q::ifset($_REQUEST, 'layout', 'default');
 	$limit = min(1000, Q::ifset($_REQUEST, 'limit', 100));
 	$offset = Q::ifset($_REQUEST, 'offset', 0);
 	$layout = Q_Config::expect('Streams', 'invites', 'layout', $layoutKey);
-	$app = Q_Config::expect('Q', 'app');
 	$pattern = Streams::invitationsPath($invitingUserId) . DS . $batch . DS . "*.html";
 	$filenames = glob($pattern);
 	$parts = array();

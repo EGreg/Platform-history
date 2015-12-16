@@ -532,22 +532,6 @@ Streams.listen = function (options) {
 					invitingUserId = parsed.invitingUserId;
 					username = parsed.username;
 					appUrl = parsed.appUrl;
-					if (parsed.label) {
-						parts = parsed.label.split('/');
-						rest = parts.slice(1).join('/');
-						label = parts[0] + '/' + Q.normalize(rest);
-						title = rest[0].toUpperCase() + rest.substr(1);
-					} else {
-						label = null;
-					}
-					if (parsed.myLabel) {
-						parts = parsed.myLabel.split('/');
-						rest = parts.slice(1).join('/');
-						myLabel = parts[0] + '/' + Q.normalize(rest);
-						title = rest[0].toUpperCase() + rest.substr(1);
-					} else {
-						myLabel = null;
-					}
 					readLevel = parsed.readLevel && JSON.parse(parsed.readLevel) || null;
 					writeLevel = parsed.writeLevel && JSON.parse(parsed.writeLevel) || null;
 					adminLevel = parsed.adminLevel && JSON.parse(parsed.adminLevel) || null;
@@ -572,37 +556,7 @@ Streams.listen = function (options) {
 				    break;
 				}
 				
-				// Create some new labels, if necessary
-				var keys = ['label', 'myLabel'];
-				var p = Q.pipe(keys, function (params, subjects) {
-					if (params.label[1] && params.label[1].length) {
-						return persist();
-					}
-					for (var i=0, l=keys.length; i<l; ++i) {
-						var label = subjects[keys];
-						if (label instanceof Users.Label) {
-							label.fields.title = title;
-							label.save();
-						}
-					}
-					persist();
-				});
-				if (label) {
-					new Users.Label({
-						userId: stream.fields.publisherId,
-						label: label
-					}).retrieve(p.fill('label'));
-				} else {
-					p.fill('label')();
-				}
-				if (myLabel) {
-				    new Users.Label({
-				        userId: invitingUserId,
-				        label: myLabel
-				    }).retrieve(p.fill('myLabel'));
-				} else {
-					p.fill('myLabel')();
-				}
+				persist();
 				
 				return;
 			default:
@@ -723,53 +677,7 @@ Streams.listen = function (options) {
 						return;
 					}
 
-				    // Add the users to a label, if any
-    				if (label) {
-    				    new Users.Contact({
-    				        userId: stream.fields.publisherId,
-                            label: label,
-                            contactUserId: userId
-    				    }).save(true);
-    				}
-    				if (myLabel) {
-    				    new Users.Contact({
-    				        userId: invitingUserId,
-                            label: myLabel,
-                            contactUserId: userId
-    				    }).save(true);
-    				}
-					
-				    // Add contacts.
-					// TODO: Implement hooks similar to PHP to update
-					// users_avatar table when contacts change.
-				    // NOTE: In the future, we will have to send a distributed message to the new user's node.
-					
-    				(new Users.Contact({
-				        userId: invitingUserId,
-                        label: "Streams/invited/"+stream.fields.type,
-                        contactUserId: userId
-				    })).save(true);
-					
-    				(new Users.Contact({
-				        userId: invitingUserId,
-                        label: "Streams/invited",
-                        contactUserId: userId
-				    })).save(true);
-					     				
-    				(new Users.Contact({
-				        userId: userId,
-                        label: "Streams/invitedMe/"+stream.fields.type,
-                        contactUserId: invitingUserId
-				    })).save(true);
-					
-    				(new Users.Contact({
-				        userId: userId,
-                        label: "Streams/invitedMe",
-                        contactUserId: invitingUserId
-				    })).save(true);
-
-					// Everything is saved, now post message and process it
-					// Need user's Streams/invited stream to post message
+					// Now post a message to Streams/invited stream
 					getInvitedStream(invitingUserId, userId, _stream);
 				}
 

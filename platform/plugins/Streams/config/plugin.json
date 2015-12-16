@@ -2,7 +2,7 @@
 	"Q": {
 		"pluginInfo": {
 			"Streams": {
-				"version": "0.8.6",
+				"version": "0.8.8",
 				"compatible": "0.8",
 				"requires": {"Users": "0.8"},
 				"permissions": ["Streams/icons"],
@@ -25,7 +25,10 @@
 			"Q/image/save": ["Streams/after/Q_image_save"],
 			"Q/file/save": ["Streams/after/Q_file_save"],
 			"Db/Row/Users_User/saveExecute": ["Streams/after/Users_User_saveExecute"],
+			"Db/Row/Users_Contact/saveExecute": ["Streams/after/Users_Contact_saveExecute"],
+			"Db/Row/Users_Label/saveExecute": ["Streams/after/Users_Label_saveExecute"],
 			"Db/Row/Users_Contact/removeExecute": ["Streams/after/Users_Contact_removeExecute"],
+			"Db/Row/Users_Label/removeExecute": ["Streams/after/Users_Label_removeExecute"],
 			"Users/saveContactsFromLinks": ["Streams/after/Users_saveContactsFromLinks"],
 			"Users/setLoggedInUser": ["Streams/after/Users_setLoggedInUser"],
 			"Streams/message/Streams/relatedTo": ["Streams/after/Streams_message_Streams_relatedTo"],
@@ -56,8 +59,54 @@
 			"Streams/user/icon": true
 		},
 		"types": {
-			"Streams/access": {
-				"description": "Used to determine access to read/write/manage some resource"
+			"*": {
+				"private": [
+					"insertedTime",
+					"updatedTime",
+					"messageCount",
+					"participantCount"
+				],
+				"invite": {
+					"dialog": {
+						"title": "You've been invited",
+						"user": {
+							"text": "has invited you to"
+						},
+						"related": {
+						},
+						"button": "Get Started"
+					}
+				},
+				"getMessagesLimit": 100,
+				"messages": {
+					"": {
+						"subject": "Message \"{{& message.type}}\" to \"{{& stream.fields.title}}\""
+					},
+					"Streams/changed": {
+						"subject": "Changes in {{stream.fields.title}}"
+					},
+					"Streams/invite": {
+						"subject": "You were invited to {{& stream.fields.title}}"
+					},
+					"Streams/chat/message": {
+						"subject": "Chat in {{stream.fields.title}}"
+					}
+				},
+				"defaults": {
+					"type": "Streams/text",
+					"title": "Untitled",
+					"icon": "default",
+					"content": "",
+					"attributes": "",
+					"readLevel": 40,
+					"writeLevel": 10,
+					"adminLevel": 20,
+					"messageCount": 0,
+					"participantCount": 0
+				}
+			},
+			"Streams/resource": {
+				"description": "Used to manage access to a resource and post messages about updates"
 			},
 			"Streams/task": {
 				"description": "Used to receive updates about progress on a certain task",
@@ -166,40 +215,6 @@
 				"edit": true,
 				"defaults": {
 					"title": "Community Greeting"
-				}
-			}
-		},
-		"defaults": {
-			"private": [
-				"insertedTime",
-				"updatedTime",
-				"messageCount",
-				"participantCount"
-			],
-			"invite": {
-				"dialog": {
-					"title": "You've been invited",
-					"user": {
-						"text": "has invited you to"
-					},
-					"related": {
-					},
-					"button": "Get Started"
-				}
-			},
-			"getMessagesLimit": 100,
-			"messages": {
-				"": {
-					"subject": "Message \"{{& message.type}}\" to \"{{& stream.fields.title}}\""
-				},
-				"Streams/changed": {
-					"subject": "Changes in {{stream.fields.title}}"
-				},
-				"Streams/invite": {
-					"subject": "You were invited to {{& stream.fields.title}}"
-				},
-				"Streams/chat/message": {
-					"subject": "Chat in {{stream.fields.title}}"
 				}
 			}
 		},

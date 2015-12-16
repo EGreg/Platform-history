@@ -17,28 +17,6 @@ function Users_label_put($params = array())
 	$l = $req['label'];
 	$icon = Q::ifset($req, 'icon', null);
 	$title = Q::ifset($req, 'title', null);
-	
-	Users::canManageLabels($loggedInUserId, $userId, $l, true);
-	
-	$label = new Users_Label();
-	$label->userId = $userId;
-	$label->label = $l;
-	if (!$label->retrieve()) {
-		throw new Q_Exception_MissingRow(array(
-			'table' => 'Label',
-			'criteria' => json_encode($label->fields)
-		));
-	}
-	if (isset($title)) {
-		$label->title = $title;
-	}
-	if (is_array($icon)) { // Process any icon data
-		$icon['path'] = 'uploads/Users';
-		$icon['subpath'] = "$userId/label/$label/icon";
-		$data = Q::event("Q/image/post", $icon);
-		Q_Response::setSlot('icon', $data);
-		$label->icon = Q_Request::baseUrl().'/'.$data[''];
-	}
-	$label->save();
+	$label = Users_Label::updateLabel($userId, $l, compact('icon', 'title'));
 	Q_Response::setSlot('label', $label->exportArray());
 }

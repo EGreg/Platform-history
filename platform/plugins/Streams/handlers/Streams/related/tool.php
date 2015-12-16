@@ -31,5 +31,10 @@
  */
 function Streams_related_tool($options)
 {
+	if (!empty($options['stream'])) {
+		$stream = $options['stream'];
+		$options['publisherId'] = $stream->publisherId;
+		$options['streamName'] = $stream->name;
+	}
 	Q_Response::setToolOptions($options);
 }

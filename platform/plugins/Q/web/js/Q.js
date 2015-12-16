@@ -1718,7 +1718,7 @@ Q.calculateKey = function _Q_Event_calculateKey(key, container, start) {
 		key = Q.Tool.beingActivated; // by default, use the current tool as the key, if any
 	}
 	if (Q.typeOf(key) === 'Q.Tool')	{
-		key = "TOOL: " + key.id;
+		key = "TOOL: " + key.id + " (" + key.name + ")";
 	} else if (container && key == undefined) { // key is undefined or null
 		var i = (start === undefined) ? 1 : start;
 		key = 'AUTOKEY_' + i;
@@ -2323,12 +2323,21 @@ Q.onLayout = function (element) {
 	var event = new Q.Event();
 	var l = _layoutElements.push(element);
 	_layoutEvents[l-1] = event;
+	event.onEmpty().set(function () {
+		for (var i=0, l=_layoutElements.length; i<l; ++i) {
+			if (_layoutElements[i] === element) {
+				_layoutElements.splice(i, 1);
+				break;
+			}
+		}
+	}, 'Q');
 	return event;
 }
 Q.onLayout().set(function () {
 	_detectOrientation.apply(this, arguments);
 	Q.Masks.update();
 }, 'Q');
+
 /**
  * This event is convenient for doing stuff when the window scrolls
  * @event onLayout
@@ -3504,7 +3513,9 @@ Q.Tool.jQuery = function(name, ctor, defaultOptions, stateKeys, methods) {
 		$.fn[name] = jQueryPluginConstructor;
 		var ToolConstructor = Q.Tool.define(name,
 		function _Q_Tool_jQuery_constructor(options) {
-			$(this.element).plugin(name, options, this);
+			var $te = $(this.element);
+			$te.plugin(name, options, this);
+			this.state = $te.state(name);
 			this.Q.beforeRemove.set(function () {
 				$(this.element).plugin(name, 'remove', this);
 			}, 'Q');
@@ -3681,7 +3692,9 @@ Tp.parentIds = function Q_Tool_prototype_parentIds() {
 	var prefix2 = Q.normalize(this.prefix), ids = [], id, ni;
 	for (id in Q.Tool.active) {
 		ni = Q.normalize(id);
-		if (ni.length < prefix2.length-1 && ni === prefix2.substr(0, ni.length)) {
+		if (ni.length < prefix2.length-1
+		&& ni === prefix2.substr(0, ni.length)
+		&& prefix2[ni.length] === '_') {
 			ids.push(id);
 		}
 	}
@@ -3758,18 +3771,20 @@ Tp.remove = function _Q_Tool_prototype_remove(removeCached) {
 
 	// remove all the tool's events automatically
 	var tool = this;
-	while (Q.Event.forTool[this.id] && Q.Event.forTool[this.id].length) {
+	var key = Q.calculateKey(this);
+	var arr = Q.Event.forTool[key];
+	while (arr && arr.length) {
 		// keep removing the first element of the array until it is empty
-		Q.Event.forTool[this.id][0].remove(tool);
+		arr[0].remove(tool);
 	}
 	
-	var p = Q.Event.jQueryForTool[this.id];
+	var p = Q.Event.jQueryForTool[key];
 	if (p) {
 		for (i=p.length-1; i >= 0; --i) {
 			var off = p[i][0];
 			root.jQuery.fn[off].call(p[i][1], p[i][2], p[i][3]);
 		}
-		Q.Event.jQueryForTool[this.id] = [];
+		Q.Event.jQueryForTool[key] = [];
 	}
 	
 	return this.removed = true;
@@ -3991,7 +4006,7 @@ Q.Tool.from = function _Q_Tool_from(toolElement, toolName) {
  */
 Q.Tool.byId = function _Q_Tool_byId(id, name) {
 	var tool = Q.Tool.active[id];
-	return (tool && name ? tool.element.Q(name) : tool) || null;
+	return (tool && name && tool.name !== name ? tool.element.Q(name) : tool) || null;
 };
 
 /**
@@ -5072,7 +5087,7 @@ function _Q_Event_stopPropagation() {
 			&& element !== this.target
 		    && element.contains(this.target));
 		if (matches && this[1] === event.type) {
-			this[2].apply(element, [this]);
+			this[2].apply(element, [event]);
 		}
 	});
 	var p = _Q_Event_stopPropagation.previous;
@@ -7014,7 +7029,7 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				var e = document.getElementById(parts[1]);
 				if (e) {
 					location.hash = parts[1];
-					history.back();
+					// history.back();
 					// todo: modify history successfully somehow
 					// history.replaceState({}, null, url + '#' + parts[1]);
 				}
@@ -8342,17 +8357,17 @@ Q.jQueryPluginPlugin = function _Q_jQueryPluginPlugin() {
 		}
 		var results = {};
 		Q.each(pluginNames, function _jQuery_plugin_loaded(i, pluginName) {
-			pluginName = Q.normalize(pluginName);
-			results[pluginName] = true;
-			if ($.fn[pluginName]) return;
-			var src = ($.fn.plugin[pluginName] || 'plugins/jQuery/'+pluginName+'.js');
+			var pn = Q.normalize(pluginName);
+			results[pn] = pluginName;
+			if ($.fn[pn]) return;
+			var src = ($.fn.plugin[pn] || 'plugins/jQuery/'+pn+'.js');
 			if (typeof src === 'string') {
 				srcs.push(src);
 			}
 		});
 		Q.addScript(srcs, function _jQuery_plugin_script_loaded() {
-			for (var pluginName in results) {
-				results[pluginName] = $.fn[pluginName];
+			for (var pn in results) {
+				results[pn] = $.fn[pn] || $.fn[ results[pn] ];
 			}
 			Q.handle(callback, root, [results]);
 		}, options);
@@ -8533,7 +8548,7 @@ Q.Browser = {
 	 */
 	detect: function() {
 		var data = this.searchData(this.dataBrowser);
-		var browser = data.identity || "An unknown browser";
+		var browser = (data && data.identity) || "An unknown browser";
 		
 		var version = (this.searchVersion(navigator.userAgent)
 			|| this.searchVersion(navigator.appVersion)
@@ -8541,7 +8556,7 @@ Q.Browser = {
 		var dotIndex = version.indexOf('.');
 		var mainVersion = version.substring(0, dotIndex != -1 ? dotIndex : version.length);
 		var OSdata = this.searchData(this.dataOS);
-		var OS = OSdata.identity || "an unknown OS";
+		var OS = (OSdata && OSdata.identity) || "an unknown OS";
 		var engine = '', ua = navigator.userAgent.toLowerCase();
 		if (ua.indexOf('webkit') != -1) {
 			engine = 'webkit';
@@ -8586,13 +8601,13 @@ Q.Browser = {
 	},
 	
 	searchData: function(data) {
-		for (var i = 0; i < data.length; i++)
-		{
+		for (var i=0, l=data.length; i<l; i++) {
 			var dataString = data[i].string;
 			this.versionSearchString = data[i].versionSearch || data[i].identity;
 			if (dataString) {
-				if (navigator.userAgent.indexOf(data[i].subString) != -1)
+				if (navigator.userAgent.indexOf(data[i].subString) != -1) {
 					return data[i];
+				}
 			}
 		}
 	},
@@ -8698,6 +8713,11 @@ Q.Browser = {
 		},
 		{
 			string : navigator.platform,
+			subString : "BlackBerry",
+			identity : "BlackBerry"
+		},
+		{
+			string : navigator.platform,
 			subString : "Win",
 			identity : "Windows"
 		},
@@ -8710,7 +8730,12 @@ Q.Browser = {
 			string : navigator.platform,
 			subString : "Linux",
 			identity : "Linux"
-		}
+		},
+		{
+			string : navigator.platform,
+			subString : "BSD",
+			identity : "FreeBSD"
+		},
 	],
 	
 	getScrollbarWidth: function() {
@@ -9340,8 +9365,8 @@ Q.Pointer = {
 			}, o.show.delay);
 		}));
 		if (!Q.Pointer.hint.addedListeners) {
-			Q.addEventListener(window, Q.Pointer.start, Q.Pointer.stopHints);
-			Q.addEventListener(document, 'scroll', Q.Pointer.stopHints);
+			Q.addEventListener(window, Q.Pointer.start, Q.Pointer.stopHints, false, true);
+			Q.addEventListener(document, 'scroll', Q.Pointer.stopHints, false, true);
 			Q.Pointer.hint.addedListeners = true;
 		}
 		if (options.waitForEvents) {
@@ -9452,7 +9477,7 @@ Q.Pointer = {
 	preventRubberBand: function (options) {
 		if (Q.info.platform === 'ios') {
 			Q.extend(_touchScrollingHandler.options, options);
-			Q.addEventListener(window, 'touchmove', _touchScrollingHandler);
+			Q.addEventListener(window, 'touchmove', _touchScrollingHandler, false, true);
 		}
 	},
 	/**
@@ -9460,21 +9485,21 @@ Q.Pointer = {
 	 * @method restoreRubberBand
 	 */
 	restoreRubberBand: function () {
-		Q.removeEventListener(window, 'touchmove', _touchScrollingHandler);
+		Q.removeEventListener(window, 'touchmove', _touchScrollingHandler, false, true);
 	},
 	/**
 	 * Call this function to begin blurring active elements when touching outside them
 	 * @method startBlurringOnTouch
 	 */
 	startBlurringOnTouch: function (options) {
-		Q.addEventListener(window, 'touchstart', _touchBlurHandler);
+		Q.addEventListener(window, 'touchstart', _touchBlurHandler, false, true);
 	},
 	/**
 	 * Call this function to begin blurring active elements when touching outside them
 	 * @method startBlurringOnTouch
 	 */
 	stopBlurringOnTouch: function (options) {
-		Q.removeEventListener(window, 'touchstart', _touchBlurHandler);
+		Q.removeEventListener(window, 'touchstart', _touchBlurHandler, false, true);
 	},
 	/**
 	 * This event occurs when a click has been canceled, for one of several possible reasons.
@@ -10181,6 +10206,11 @@ Q.Masks = {
 	 */
 	show: function(key, options)
 	{
+		if (Q.typeOf(key) === 'Q.Tool')	{
+			key.Q.beforeRemove.set(function () {
+				Q.Masks.hide(key);
+			}, key);
+		}
 		key = Q.calculateKey(key);
 		var mask = Q.Masks.mask(key, options);
 		if (!mask.counter) {
@@ -10284,7 +10314,7 @@ Q.Masks.options = {
 	'Q.request.cancel.mask': { className: 'Q_cancel_mask', fadeIn: 200 }
 };
 
-Q.addEventListener(window, Q.Pointer.start, _Q_PointerStartHandler);
+Q.addEventListener(window, Q.Pointer.start, _Q_PointerStartHandler, false, true);
 
 function noop() {}
 if (!root.console) {
@@ -10389,6 +10419,7 @@ Q.onJQuery.add(function ($) {
 		"Q/flip": "plugins/Q/js/fn/flip.js",
 		"Q/gallery": "plugins/Q/js/fn/gallery.js",
 		"Q/zoomer": "plugins/Q/js/fn/zoomer.js",
+		"Q/fisheye": "plugins/Q/js/fn/fisheye.js",
 		"Q/listing": "plugins/Q/js/fn/listing.js",
 		"Q/hautoscroll": "plugins/Q/js/fn/hautoscroll.js",
 		"Q/imagepicker": "plugins/Q/js/fn/imagepicker.js",

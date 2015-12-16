@@ -18,21 +18,15 @@ var Users = Q.Users;
  *   @param {String} [options.icon=Q.Users.icon.defaultSize] Size of the icon to render before the display name. Or 0 for no icon.
  *   @param {Object} [options.templates] Object for avatar template parameters
  *     @param {Object} [options.templates.icon]
- *       @param {String} [options.templates.icon.dir]
- *       @default 'plugins/Users/views'
- *       @param {String} [options.templates.icon.name]
- *       @default 'Users/avatar/icon'
+ *       @param {String} [options.templates.icon.dir='plugins/Users/views']
+ *       @param {String} [options.templates.icon.name='Users/avatar/icon']
  *       @param {Object} [options.templates.icon.fields]
- *         @param {String} [options.templates.icon.fields.alt]
- *         @default "user icon"
+ *         @param {String} [options.templates.icon.fields.alt="user icon"]
  *     @param {Object} [options.templates.contents]
- *       @param {String} [options.templates.contents.dir]
- *       @default 'plugins/Users/views'
- *       @param {String} [options.templates.contents.name]
- *       @default 'Users/avatar/contents'
+ *       @param {String} [options.templates.contents.dir='plugins/Users/views']
+ *       @param {String} [options.templates.contents.name='Users/avatar/contents']
  *       @param {Object} [options.templates.contents.fields]
- *         @param {String} [options.templates.contents.fields.tag]
- *         @default "span"
+ *         @param {String} [options.templates.contents.fields.tag="span"]
  */
 Q.Tool.define("Users/avatar", function(options) {
 	if (this.element.childNodes.length) {

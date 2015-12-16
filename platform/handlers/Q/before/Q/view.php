@@ -1,6 +1,7 @@
 <?php
 
-function Q_before_Q_view ($params, &$result) {
+function Q_before_Q_view ($params, &$result)
+{
 	extract($params);
 	if (strtolower(substr($viewName, -9)) === '.mustache') {
 		$result = Q_Mustache::render($viewName, $params);

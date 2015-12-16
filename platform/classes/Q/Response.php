@@ -474,9 +474,10 @@ class Q_Response
 	 * @static
 	 * @param {string} [$slotName=null] If provided, returns only the metas set while filling this slot.
 	 * @param {string} [$between=''] Optional text to insert between the &lt;meta&gt; tags or blocks of text.
+	 * @param {string} [$alsoAsProperty='og'] Also output this meta tag as a meta "property", see ogp.me
 	 * @return {string}
 	 */
-	static function metas($slotName = null, $between = "\n")
+	static function metas($slotName = null, $between = "\n", $alsoAsProperty='og')
 	{
 		$metas = self::metasArray($slotName);
 		if (!is_array($metas)) {
@@ -491,6 +492,17 @@ class Q_Response
 					'content' => $content, 
 					'data-slot' => $sn
 				));	
+			}
+		}
+		if ($alsoAsProperty === 'og') {
+			foreach ($metas as $sn => $m) {
+				foreach ($m as $name => $content) {
+					$tags[] = Q_Html::tag('meta', array(
+						'property' => "og:$name", 
+						'content' => $content, 
+						'data-slot' => $sn
+					));	
+				}
 			}
 		}
 		return implode($between, $tags);

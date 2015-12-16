@@ -17,12 +17,11 @@ function Streams_0_8_1_Streams_mysql()
 	$stream->save();
 	
 	// app community stream, for announcements
-	$stream = new Streams_Stream();
-	$stream->publisherId = $app;
-	$stream->name = 'Streams/community/main';
-	$stream->type = 'Streams/community';
-	$stream->title = "$app Community";
-	$stream->save();
+	Streams::create($app, $app, 'Streams/community', array(
+		'skipAccess' => true,
+		'name' => 'Streams/community/main',
+		'title' => "$app Community"
+	));
 	
 	// symlink the labels folder
 	if (!file_exists('Streams')) {

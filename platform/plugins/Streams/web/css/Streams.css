@@ -150,7 +150,7 @@
 }
 
 .Streams_photoSelector_container img {
-	max-height: 80px;
+	height: 80px;
 	cursor: pointer;
 	margin-right: 2px;
 }

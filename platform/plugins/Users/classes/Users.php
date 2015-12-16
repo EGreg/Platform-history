@@ -389,7 +389,12 @@ abstract class Users extends Base_Users
 						sort($sizes);
 						$icon = array();
 						foreach ($sizes as $size) {
-							$icon["$size.png"] = "http://graph.facebook.com/$fb_uid/picture?width=$size&height=$size";
+							$parts = explode('x', $size);
+							$width = Q::ifset($parts, 0, '');
+							$height = Q::ifset($parts, 1, '');
+							$width = $width ? $width : $height;
+							$height = $height ? $height : $width;
+							$icon["$size.png"] = "http://graph.facebook.com/$fb_uid/picture?width=$width&height=$height";
 						}
 						if (!Q_Config::get('Users', 'register', 'icon', 'leaveDefault', false)) {
 							self::importIcon($user, $icon);
@@ -1280,6 +1285,7 @@ abstract class Users extends Base_Users
 					$ch = curl_init();
 					curl_setopt($ch, CURLOPT_URL, $url);
 					curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+					curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 					$data = curl_exec($ch);
 					curl_close($ch);
 					$image = imagecreatefromstring($data);
@@ -1911,11 +1917,18 @@ abstract class Users extends Base_Users
 	 * @throws {Users_Exception_NotAuthorized}
 	 */
 	static function canManageContacts(
-		$asUserId, 
+		&$asUserId, 
 		$userId, 
 		$label, 
 		$throwIfNotAuthorized = false
 	) {
+		if ($asUserId === false) {
+			return true;
+		}
+		if (!isset($asUserId)) {
+			$user = Users::loggedInUser();
+			$asUserId = $user ? $user->id : '';
+		}
 		$authorized = false;
 		$result = Q::event(
 			"Users/canManageContacts",
@@ -1949,6 +1962,9 @@ abstract class Users extends Base_Users
 		$label, 
 		$throwIfNotAuthorized = false
 	) {
+		if ($asUserId === false) {
+			return true;
+		}
 		$authorized = false;
 		$result = Q::event(
 			"Users/canManageLabels",

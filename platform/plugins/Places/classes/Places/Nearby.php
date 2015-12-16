@@ -336,21 +336,19 @@ class Places_Nearby
 			return $stream;
 		}
 		$zipcode = $zipcodes ? reset($zipcodes) : null;
-		$stream = new Streams_Stream();
-		$stream->publisherId = $publisherId;
-		$stream->name = $streamName;
-		$stream->type = "Places/nearby";
-		$stream->title = $zipcode
-			? "Nearby ($latitude, $longitude): {$zipcode->placeName}, zipcode {$zipcode->zipcode}"
-			: "Nearby ($latitude, $longitude)";
-		$stream->setAttribute('latitude', $latitude);
-		$stream->setAttribute('longitude', $longitude);
+		$attributes = compact('latitude', 'longitude');
 		if ($zipcode) {
-			$stream->setAttribute('zipcode', $zipcode->zipcode);
-			$stream->setAttribute('placeName', $zipcode->placeName);
-			$stream->setAttribute('state', $zipcode->state);
+			foreach (array('zipcode', 'placeName', 'state') as $attr) {
+				$attributes[$attr] = $zipcode->$attr;
+			}
 		}
-		$stream->save();
+		$stream = Streams::create($publisherId, $publisherId, 'Places/nearby', array(
+			'name' => $streamName,
+			'title' => $zipcode
+				? "Nearby ($latitude, $longitude): {$zipcode->placeName}, zipcode {$zipcode->zipcode}"
+				: "Nearby ($latitude, $longitude)",
+			'attributes' => Q::json_encode($attributes)
+		));
 		return $stream;
 	}
 	

@@ -17,22 +17,6 @@ function Users_contact_put($params = array())
 	$label = $req['label'];
 	$contactUserId = $req['contactUserId'];
 	$nickname = Q::ifset($req, 'nickname', null);
-	
-	Users::canManageContacts($loggedInUserId, $userId, $label, true);
-	
-	$contact = new Users_Contact();
-	$contact->userId = $userId;
-	$contact->label = $label;
-	$contact->contactUserId = $contactUserId;
-	if (!$contact->retrieve()) {
-		throw new Q_Exception_MissingRow(array(
-			'table' => 'Users_Contact',
-			'criteria' => json_encode($contact->fields)
-		));
-	}
-	if ($nickname) {
-		$contact->nickname = $nickname;
-	}
-	$contact->save();
+	$contact = Users_Contact::updateContact($userId, $label, $contactUserId, compact('nickname'));
 	Q_Response::setSlot('contact', $contact->exportArray());
 }

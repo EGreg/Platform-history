@@ -24,10 +24,11 @@ function Streams_stream_put($params) {
 		$publisherId = $_REQUEST['publisherId'] = $user->id;
 	}
 	$name = Streams::requestedName(true);
-	$fields = array_merge($_REQUEST, $params);
-	$closedTime = Q::ifset($fields, 'closedTime', null);
+	$req = array_merge($_REQUEST, $params);
+	
+	$closedTime = Q::ifset($req, 'closedTime', null);
 	if (in_array($closedTime, array(false, 'false', 'null'))) {
-		$fields['closedTime'] = null;
+		$req['closedTime'] = null;
 	}
 
 	// do not set stream name
@@ -62,21 +63,21 @@ function Streams_stream_put($params) {
 		}
 	}
 	
-	$restricted = array('readLevel', 'writeLevel', 'adminLevel', 'closedTime');
+	$restricted = array('readLevel', 'writeLevel', 'adminLevel', 'inheritAccess', 'closedTime');
 	$owned = $stream->testAdminLevel('own'); // owners can reopen streams
 	foreach ($restricted as $r) {
-		if (isset($fields[$r]) and !$owned) {
+		if (isset($req[$r]) and !$owned) {
 			throw new Users_Exception_NotAuthorized();
 		}
 	}
 	
 	// handle setting of attributes
-	if (isset($fields['attributes'])
-	and is_array($fields['attributes'])) {
-		foreach ($fields['attributes'] as $k => $v) {
+	if (isset($req['attributes'])
+	and is_array($req['attributes'])) {
+		foreach ($req['attributes'] as $k => $v) {
 			$stream->setAttribute($k, $v);
 		}
-		unset($fields['attributes']);
+		unset($req['attributes']);
 	}
 	
 	// Get all the extended field names for this stream type
@@ -98,14 +99,14 @@ function Streams_stream_put($params) {
 	
 	if (!empty($fieldNames)) {
 		foreach ($fieldNames as $f) {
-			if (array_key_exists($f, $fields)) {
-				$stream->$f = $fields[$f];
+			if (array_key_exists($f, $req)) {
+				$stream->$f = $req[$f];
 			}
 		}
 		$stream->changed($user->id,  $suggest ? 'Streams/suggest' : 'Streams/changed');
 	}
 	
-	if (!empty($fields['join'])) {
+	if (!empty($req['join'])) {
 		$stream->join();
 	}
 	Streams::$cache['stream'] = $stream;

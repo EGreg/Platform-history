@@ -21,7 +21,7 @@
 
 .Q_inplace_tool .Q_inplace_tool_form { display: none; }
 .Q_inplace_tool .Q_inplace_tool_invisible { display: none; }
-.Q_inplace_tool .Q_editing .Q_inplace_tool_form { display: inline; margin: 0; }
+.Q_inplace_tool .Q_editing .Q_inplace_tool_form { display: inline-block; margin: 0; }
 .Q_inplace_tool .Q_editing .Q_inplace_tool_form * { margin: 0; }
 .Q_inplace_tool .Q_editing .Q_inplace_tool_static { display: none; }
 .Q_inplace_tool .Q_editing .Q_inplace_tool_blockstatic { display: none; }

@@ -7,10 +7,12 @@
 
 /**
  * Interface for selecting facebook photos from user albums
- * @class Streams inplace
+ * @class Streams photoSelector
  * @constructor
  * @param {Object} [options] this object contains function parameters
  *   @param {Q.Event} [options.onSelect] Triggered when the user selects a photo.
+ *   @param {Q.Event} [options.beforePhotos] Triggered when photos are about to be rendered.
+ *   @param {Q.Event} [options.onPhotos] Triggered when photos have been rendered.
  *   @param {String} [options.uid='me'] Optional. The uid of the user on the provider whose photos are shown. Facebook only allows 'me' or a page id as a value.
  *   @param {String} [$options.fetchBy='album'] The tool supports different algoriths for fetching photos. Can be either by 'album' or 'tags'. Maybe more will be added later.
  *   @param {String} [$options.preprocessAlbums] Optional function to process the albums array before presenting it in the select. Receives a reference to the albums array as the first parameter, and a callback to call when it's done as the second.
@@ -31,7 +33,7 @@
  *   @param {Boolean} [options.cache]  If true, photos will be cached using localStorage (if available).
  *   @default false
  */
-Q.Tool.define("Streams/photoSelector", function _Streams_chat_constructor (o) {
+Q.Tool.define("Streams/photoSelector", function _Streams_photoSelector_constructor (o) {
 
 	var tool = this;
 	var state = tool.state;
@@ -43,15 +45,19 @@ Q.Tool.define("Streams/photoSelector", function _Streams_chat_constructor (o) {
 	if (state.provider !== 'facebook') {
 		console.warn("Only facebook is supported as a provider for now");
 	}
+	
+	var fields = 'id,album,created_time,from,icon,images,link,name,name_tags,updated_time,width,event,place,picture';
 
 	var fetchBy = {
 		album: Q.getter(function(albumId, callback) {
-			FB.api('/'+albumId+'/photos', function (response) {
+			FB.api('/'+albumId+'/photos?limit=100&fields='+fields,
+			function (response) {
 				_returnedPhotos(response, callback);
 			});
 		}),
 		tags: Q.getter(function(callback) {
-			FB.api('/'+state.uid+'/photos?type=tagged', function (response) {
+			FB.api('/'+state.uid+'/photos?limit=100&type=tagged&fields='+fields,
+			function (response) {
 				_returnedPhotos(response, callback);
 			});
 		})
@@ -95,7 +101,9 @@ Q.Tool.define("Streams/photoSelector", function _Streams_chat_constructor (o) {
 		$te.empty().append(tool.$albums);
 		Q.each(albums, function () {
 			tool.$albums.append(
-				$('<option />', {value: this.id}).html(this.name)
+				$('<option />', {value: this.id})
+				.text(this.name)
+				.data('album', this)
 			);
 		});
 	}
@@ -115,16 +123,10 @@ Q.Tool.define("Streams/photoSelector", function _Streams_chat_constructor (o) {
 
 	function showPhotos(photos) {
 		
-		var title = '';
-		switch (state.fetchBy) {
-		case 'tags': 
-			$te.empty();
-			title = 'Select a photo from Facebook';
-			break;
-		case 'albums':
-			title = 'Select an album from Facebook';
-			break;
-		}
+		var album = tool.$albums
+			? tool.$albums.find(':selected').data('album')
+			: null;
+		Q.handle(state.beforePhotos, this, [album]);
 		if (state.fetchBy == 'tags') {
 			$te.empty();
 		}
@@ -146,13 +148,15 @@ Q.Tool.define("Streams/photoSelector", function _Streams_chat_constructor (o) {
 				}).data('photo', this)
 				.appendTo(tool.$photosContainer)
 				.on(Q.Pointer.fastclick, function () {
-					Q.handle(state.onSelect, tool, [this, photo.images]);
+					Q.handle(state.onSelect, tool, [this, photo, photo.images]);
 				});
 			});
 			if (state.oneLine) {
 				tool.$photosContainer.addClass('Streams_photoSelector_oneLine');
 			}
 		}
+		
+		Q.handle(state.onPhotos, this, [album]);
 		
 	}
 	
@@ -302,6 +306,8 @@ Q.Tool.define("Streams/photoSelector", function _Streams_chat_constructor (o) {
 
 {
 	onSelect: new Q.Event(),
+	beforePhotos: new Q.Event(),
+	onPhotos: new Q.Event(),
 	preprocessAlbums: function (albums, callback) {
 		Q.each(albums, function (i) {
 			if (this.type === 'profile') {
