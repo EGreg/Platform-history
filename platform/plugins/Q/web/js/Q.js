@@ -7654,7 +7654,7 @@ Q.Template.remove = function (name) {
 Q.Template.compile = function _Q_Template_compile (content) {
 	var r = Q.Template.compile.results;
 	if (!r[content]) {
-		r[content] = Handlebars.compile(params.template[1]);
+		r[content] = Handlebars.compile(content);
 	}
 	return r[content];
 };
