@@ -309,6 +309,7 @@ class Q_Session
 			$prefix = $app ? "$app/" : '';
 			if (empty($_SERVER['HTTP_HOST'])) {
 				echo "Warning: Ignoring Q_Session::start() called before running {$prefix}scripts/Q/install.php --all".PHP_EOL;
+				echo $e->getTraceAsString() . PHP_EOL;
 			} else {
 				if (is_callable('apc_clear_cache')) {
 					apc_clear_cache('user');
