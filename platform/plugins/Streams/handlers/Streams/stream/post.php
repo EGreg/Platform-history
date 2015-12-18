@@ -79,7 +79,7 @@ function Streams_stream_post($params = array())
 	// Create the stream
 	$allowedFields = array_merge(
 		array('publisherId', 'type', 'icon', 'file'),
-		Streams::getExtendFieldNames($type, ($userId === $publisherId))
+		Streams::getExtendFieldNames($type, ($user->id === $publisherId))
 	);
 	$fields = Q::take($req, $allowedFields);
 	$stream = Streams::create($user->id, $publisherId, $type, $fields, $relate, $result);
