@@ -19,9 +19,11 @@ function Q_before_Q_responseExtras()
 	}
 	$info = array(
 		'url' => $url,
-		'uriString' => (string)$uri,
-		'uri' => $uri->toArray(),
+		'uriString' => (string)$uri
 	);
+	if ($uri) {
+		$info['uri'] = $uri->toArray();
+	}
 	if (!$ajax) {
 		$info = array_merge(
 			array('app' => Q_Config::expect('Q', 'app')),
