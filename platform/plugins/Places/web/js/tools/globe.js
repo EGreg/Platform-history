@@ -21,7 +21,6 @@ var Places = Q.Places;
  * @param {Q.Event} [options.onSelect] this event occurs when the user has selected a country or a place on the globe. It is passed (latitude, longitude, countryCode)
  * @param {Q.Event} [options.beforeRotate] this event occurs right before the globe is about to rotate to some location
  */
-
 Q.Tool.define("Places/globe", function _Places_location(options) {
 	var tool = this;
 	var state = tool.state;
@@ -161,54 +160,49 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 	 */
 	rotateToCountry: function Places_globe_rotateToCountry (countryCode, duration) {
 		var tool = this;
-		var countryName = Places.countriesByCode[countryCode][0];
-		var lookup = Q.Places.countryLookupByCode[countryCode];
-		var tj = tool.globe.plugins.topojson;
-		if (tj) {
-			var countries = tj.world.objects.countries;
-			var features = topojson.feature(tj.world, countries).features;
-			var feature = null;
-			Q.each(features, function () {
-				if (this.id == lookup) {
-					feature = this;
-				}
-			});
+		var feature = _getFeature(tool.globe, countryCode);
+		if (!feature) {
+			return;
 		}
-		if (feature) {
-			var c = tool.$canvas[0].getContext("2d");
-			var p = d3.geo.centroid(feature);
-			var projection = tool.globe.projection;
-			var path = d3.geo.path().projection(projection).context(c);
-			var tj = tool.globe.plugins.topojson;
-			var land = topojson.feature(tj.world, tj.world.objects.land);
-			var borders = topojson.mesh(
-				tj.world, tj.world.objects.countries,
-				function(a, b) { return a !== b; }
-			);
-			tool.rotateTo(p[1], p[0], duration, function () {
-				var colors = tool.state.colors;
-				// c.clearRect(0, 0, tool.$canvas.width(), tool.$canvas.height());
-				// c.fillStyle = colors.oceans, c.lineWidth = 2, c.beginPath(), path({type: "Sphere"}), c.fill();
-				// c.fillStyle = colors.land, c.beginPath(), path(land), c.fill();
-				c.fillStyle = colors.highlight, c.beginPath(), path(feature), c.fill();
-				// c.strokeStyle = colors.borders, c.lineWidth = .5, c.beginPath(), path(borders), c.stroke();
-			});
-		}
+		var c = tool.$canvas[0].getContext("2d");
+		var projection = tool.globe.projection;
+		var path = d3.geo.path().projection(projection).context(c);
+		// var tj = tool.globe.plugins.topojson;
+		// var land = topojson.feature(tj.world, tj.world.objects.land);
+		// var borders = topojson.mesh(
+		// 	tj.world, tj.world.objects.countries,
+		// 	function(a, b) { return a !== b; }
+		// );
+		var p = d3.geo.centroid(feature);
+		tool.rotateTo(p[1], p[0], duration, function () {
+			c.fillStyle = tool.state.colors.highlight;
+			c.beginPath();
+			path(feature);
+			c.fill();
+		});
 	},
 	
 	/**
 	 * Highlight a country on the globe
 	 * @param {String} countryCode described in ISO-3166-1 alpha-2 code
+	 * @param {String} [color=state.colors.highlight] the color to highlight the country
 	 */
-	highlight: function Places_globe_highlight (countryCode) {
+	highlight: function Places_globe_highlight (countryCode, color) {
 		var tool = this;
-		var countryName = Places.countriesByCode[countryCode][0];
-		// look up the geo-coordinates for the country code using the Google Maps API
-		geocoder.geocode({'address': countryName}, function(results, status) {
-			if (status === google.maps.GeocoderStatus.OK && results[0]) {
-				var loc = results[0].geometry.location;
-				tool.rotateTo(loc.lat(), loc.lng())
-			}
+		var feature = _getFeature(tool.globe, countryCode);
+		if (!feature) {
+			return;
+		}
+		var c = tool.$canvas[0].getContext("2d");
+		var projection = tool.globe.projection;
+		var path = d3.geo.path().projection(projection).context(c);
+		color = color || tool.state.colors.highlight;
+		tool.globe.onDraw(function () {
+			var c = tool.$canvas[0].getContext("2d");
+			c.fillStyle = color;
+			c.beginPath();
+			path(feature);
+			c.fill();
 		});
 	},
 	
@@ -285,5 +279,23 @@ function _lakes(options) {
 		});
 	};
 };
+
+// Gets the country's feature, if any
+function _getFeature(planet, countryCode) {
+	var countryName, lookup, tj, countries, features, feature;
+	countryName = Places.countriesByCode[countryCode][0];
+	lookup = Places.countryLookupByCode[countryCode];
+	if (tj = planet.plugins.topojson) {
+		countries = tj.world.objects.countries;
+		features = topojson.feature(tj.world, countries).features;
+		feature = null;
+		Q.each(features, function () {
+			if (this.id == lookup) {
+				feature = this;
+			}
+		});
+	}
+	return feature;
+}
 
 })(Q, jQuery, window, document);
