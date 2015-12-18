@@ -13,6 +13,9 @@ var Places = Q.Places;
  * @constructor
  * @param {Object} [options] used to pass options
  * @param {String} [options.countryCode='US'] the initial country to rotate to and highlight
+ * @param {Array} [options.highlight={US:true}] pairs of {countryCode: color},
+ *   if color is true then state.colors.highlight is used.
+ *   This is modified by the default handler for beforeRotateToCountry added by this tool.
  * @param {Number} [options.radius] The radius of the globe, defauls to fill the canvas.
  * @param {Object} [options.colors] colors for the planet
  * @param {String} [options.colors.oceans='#2a357d'] the color of the ocean
@@ -20,6 +23,7 @@ var Places = Q.Places;
  * @param {String} [options.colors.borders='#008000'] the color of the borders
  * @param {Q.Event} [options.onSelect] this event occurs when the user has selected a country or a place on the globe. It is passed (latitude, longitude, countryCode)
  * @param {Q.Event} [options.beforeRotate] this event occurs right before the globe is about to rotate to some location
+ * @param {Q.Event} [options.beforeRotateToCountry] this event occurs right before the globe is about to rotate to some country
  */
 Q.Tool.define("Places/globe", function _Places_location(options) {
 	var tool = this;
@@ -70,6 +74,11 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 			fill: state.colors.oceans
 		}));
 		
+		// Load our custom `lakes` plugin to highlight countries
+		globe.loadPlugin(_highlight({
+			tool: tool
+		}));
+		
 		// The zoom and drag plugins enable
 		// manipulating the globe with the mouse.
 		globe.loadPlugin(planetaryjs.plugins.zoom({
@@ -114,7 +123,13 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 		borders: '#008000',
 		highlight: '#ff0000'
 	},
-	radius: null
+	highlight: {'US':true},
+	radius: null,
+	beforeRotate: new Q.Event(),
+	beforeRotateToCountry: new Q.Event(function (countryCode) {
+		var h = this.state.highlight = {};
+		h[countryCode] = true;
+	}, "Place/globe")
 },
 
 { // methods go here
@@ -125,8 +140,13 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 		var $te = $(tool.element);
 		Places.loadGoogleMaps(function () {
 			tool.geocoder = new google.maps.Geocoder;
-			tool.rotateToCountry(state.countryCode);
 			tool.globe.draw(tool.$canvas[0]);
+			var waitForTopoJsonLoad = setInterval(function () {
+				if (tool.globe.plugins.topojson) {
+					tool.rotateToCountry(state.countryCode);
+					clearInterval(waitForTopoJsonLoad);
+				}
+			}, 50);
 		});
 	},
 	
@@ -174,32 +194,9 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 		// 	function(a, b) { return a !== b; }
 		// );
 		var p = d3.geo.centroid(feature);
-		tool.rotateTo(p[1], p[0], duration, function () {
+		Q.handle(tool.state.beforeRotateToCountry, tool, [countryCode, p[1], p[0], duration]);
+		var transition = tool.rotateTo(p[1], p[0], duration, function () {
 			c.fillStyle = tool.state.colors.highlight;
-			c.beginPath();
-			path(feature);
-			c.fill();
-		});
-	},
-	
-	/**
-	 * Highlight a country on the globe
-	 * @param {String} countryCode described in ISO-3166-1 alpha-2 code
-	 * @param {String} [color=state.colors.highlight] the color to highlight the country
-	 */
-	highlight: function Places_globe_highlight (countryCode, color) {
-		var tool = this;
-		var feature = _getFeature(tool.globe, countryCode);
-		if (!feature) {
-			return;
-		}
-		var c = tool.$canvas[0].getContext("2d");
-		var projection = tool.globe.projection;
-		var path = d3.geo.path().projection(projection).context(c);
-		color = color || tool.state.colors.highlight;
-		tool.globe.onDraw(function () {
-			var c = tool.$canvas[0].getContext("2d");
-			c.fillStyle = color;
 			c.beginPath();
 			path(feature);
 			c.fill();
@@ -258,7 +255,6 @@ function _getComponent(result, desiredType, typeName) {
 function _lakes(options) {
 	options = options || {};
 	var lakes = null;
-
 	return function(planet) {
 		planet.onInit(function() {
 			/**
@@ -280,10 +276,42 @@ function _lakes(options) {
 	};
 };
 
+// This plugin highlights countries
+function _highlight(options) {
+	options = options || {};
+	var tool = options.tool;
+	return function(planet) {
+		planet.onDraw(function() {
+			planet.withSavedContext(function(context) {
+				Q.each(tool.state.highlight, function (countryCode) {
+					var feature = _getFeature(tool.globe, countryCode);
+					if (!feature) {
+						return;
+					}
+					var c = tool.$canvas[0].getContext("2d");
+					var projection = tool.globe.projection;
+					var path = d3.geo.path().projection(projection).context(c);
+					var color = tool.state.highlight[countryCode];
+					color = typeof color === 'string' ? color : tool.state.colors.highlight;
+					var c = tool.$canvas[0].getContext("2d");
+					c.fillStyle = color;
+					c.beginPath();
+					path(feature);
+					c.fill();
+				});
+			});
+		});
+	};
+};
+
 // Gets the country's feature, if any
 function _getFeature(planet, countryCode) {
 	var countryName, lookup, tj, countries, features, feature;
-	countryName = Places.countriesByCode[countryCode][0];
+	var parts = Places.countriesByCode[countryCode];
+	if (!parts) {
+		return parts;
+	}
+	countryName = parts[0];
 	lookup = Places.countryLookupByCode[countryCode];
 	if (tj = planet.plugins.topojson) {
 		countries = tj.world.objects.countries;
