@@ -79,9 +79,6 @@ class Q_Image
 	static function pixabay($keywords, $options = array(), $returnFirstImage = false)
 	{
 		$info = Q_Config::get('Q', 'images', 'pixabay', null);
-		if (!$info['username']) {
-			throw new Q_Exception_MissingConfig(array('fieldpath' => 'Q/images/pixabay/username'));
-		}
 		if (!$info['key']) {
 			throw new Q_Exception_MissingConfig(array('fieldpath' => 'Q/images/pixabay/key'));
 		}
