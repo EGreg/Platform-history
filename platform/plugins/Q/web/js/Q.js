@@ -7327,9 +7327,9 @@ Q.parseQueryString = function Q_parseQueryString(queryString, keys) {
 	}
 	var result = {};
 	Q.each(queryString.split('&'), function (i, clause) {
-		var parts = clause.split('='),
-			key = decodeURIComponent(parts[0]),
-			value = decodeURIComponent(parts[1]);
+		var parts = clause.split('=');
+		var key = decodeURIComponent(parts[0]);
+		var value = (parts[1] == null) ? null : decodeURIComponent(parts[1]);
 		if (!key) return;
 		if (keys) keys.push(key);
 		result[key] = value;
