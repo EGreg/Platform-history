@@ -197,6 +197,12 @@ class Q_Image
 		}
 		$crop = isset($params['crop']) ? $params['crop'] : array();
 		$save = !empty($params['save']) ? $params['save'] : array('x' => '');
+		if (!Q::isAssociative($save)) {
+			throw new Q_Exception_WrongType(array(
+				'field' => 'save',
+				'type' => 'associative array'
+			));
+		}
 		// crop parameters - size of source image
 		$isw = isset($crop['w']) ? $crop['w'] : $iw;
 		$ish = isset($crop['h']) ? $crop['h'] : $ih;
