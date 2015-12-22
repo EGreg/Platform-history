@@ -14,28 +14,28 @@
  * @class Base_Awards_Leader
  * @extends Db_Row
  *
- * @property string $app
- * @property string|Db_Expression $day
- * @property string $userId
- * @property integer $points
+ * @property {string} $app
+ * @property {string|Db_Expression} $day
+ * @property {string} $userId
+ * @property {integer} $points
  */
 abstract class Base_Awards_Leader extends Db_Row
 {
 	/**
 	 * @property $app
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $day
-	 * @type string|Db_Expression
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $userId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $points
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -70,7 +70,7 @@ abstract class Base_Awards_Leader extends Db_Row
 	 * Retrieve the table name to use in SQL statement
 	 * @method table
 	 * @static
-	 * @param {boolean} [$with_db_name=true] Indicates wheather table name shall contain the database name
+	 * @param {boolean} [$with_db_name=true] Indicates wheather table name should contain the database name
  	 * @return {string|Db_Expression} The table name as string optionally without database name if no table sharding
 	 * was started or Db_Expression class with prefix and database name templates is table was sharded
 	 */
@@ -103,9 +103,9 @@ abstract class Base_Awards_Leader extends Db_Row
 	 * Create SELECT query to the class table
 	 * @method select
 	 * @static
-	 * @param $fields {array} The field values to use in WHERE clauseas as 
+	 * @param {array} $fields The field values to use in WHERE clauseas as 
 	 * an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function select($fields, $alias = null)
@@ -120,7 +120,7 @@ abstract class Base_Awards_Leader extends Db_Row
 	 * Create UPDATE query to the class table
 	 * @method update
 	 * @static
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function update($alias = null)
@@ -135,8 +135,8 @@ abstract class Base_Awards_Leader extends Db_Row
 	 * Create DELETE query to the class table
 	 * @method delete
 	 * @static
-	 * @param [$table_using=null] {object} If set, adds a USING clause with this table
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$table_using=null] If set, adds a USING clause with this table
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function delete($table_using = null, $alias = null)
@@ -151,8 +151,8 @@ abstract class Base_Awards_Leader extends Db_Row
 	 * Create INSERT query to the class table
 	 * @method insert
 	 * @static
-	 * @param [$fields=array()] {object} The fields as an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$fields=array()] The fields as an associative array of `column => value` pairs
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function insert($fields = array(), $alias = null)
@@ -180,7 +180,10 @@ abstract class Base_Awards_Leader extends Db_Row
 	 */
 	static function insertManyAndExecute($records = array(), $options = array())
 	{
-		self::db()->insertManyAndExecute(self::table(), $records, $options);
+		self::db()->insertManyAndExecute(
+			self::table(), $records,
+			array_merge($options, array('className' => 'Awards_Leader'))
+		);
 	}
 	
 	/**
@@ -193,12 +196,27 @@ abstract class Base_Awards_Leader extends Db_Row
 	 */
 	function beforeSet_app($value)
 	{
-		if ($value instanceof Db_Expression) return array('app', $value);
+		if (!isset($value)) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
+			return array('app', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".app");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".app");
 		return array('app', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the app field
+	 * @return {integer}
+	 */
+	function maxSize_app()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -210,12 +228,18 @@ abstract class Base_Awards_Leader extends Db_Row
 	 */
 	function beforeSet_day($value)
 	{
-		if ($value instanceof Db_Expression) return array('day', $value);
+		if ($value instanceof Db_Expression) {
+			return array('day', $value);
+		}
+		$value = date("Y-m-d h:i:s", strtotime($value));
 		$date = date_parse($value);
-		if (!empty($date['errors']))
-			throw new Exception("Date $value in incorrect format being assigned to ".$this->getTable().".day");
-		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v)
+		if (!empty($date['errors'])) {
+			$json = json_encode($value);
+			throw new Exception("Date $json in incorrect format being assigned to ".$this->getTable().".day");
+		}
+		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
 			$$v = $date[$v];
+		}
 		$value = sprintf("%04d-%02d-%02d", $year, $month, $day);
 		return array('day', $value);			
 	}
@@ -230,12 +254,27 @@ abstract class Base_Awards_Leader extends Db_Row
 	 */
 	function beforeSet_userId($value)
 	{
-		if ($value instanceof Db_Expression) return array('userId', $value);
+		if (!isset($value)) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
+			return array('userId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".userId");
 		if (strlen($value) > 31)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".userId");
 		return array('userId', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the userId field
+	 * @return {integer}
+	 */
+	function maxSize_userId()
+	{
+
+		return 31;			
 	}
 
 	/**
@@ -247,26 +286,28 @@ abstract class Base_Awards_Leader extends Db_Row
 	 */
 	function beforeSet_points($value)
 	{
-		if ($value instanceof Db_Expression) return array('points', $value);
+		if ($value instanceof Db_Expression) {
+			return array('points', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".points");
-		if ($value < -32768 or $value > 32767)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".points");
+		$value = intval($value);
+		if ($value < -32768 or $value > 32767) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".points");
+		}
 		return array('points', $value);			
 	}
 
 	/**
-	 * Method is called after field is set and used to keep $fieldsModified property up to date
-	 * @method afterSet
-	 * @param {string} $name The field name
-	 * @param {mixed} $value The value of the field
-	 * @return {mixed} Original value
+	 * @method maxSize_points
+	 * Returns the maximum integer that can be assigned to the points field
+	 * @return {integer}
 	 */
-	function afterSet($name, $value)
+	function maxSize_points()
 	{
-		if (!in_array($name, $this->fieldNames()))
-			$this->notModified($name);
-		return $value;			
+
+		return 32767;			
 	}
 
 	/**

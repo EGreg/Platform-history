@@ -9,12 +9,21 @@
 		},
 		"pluginInfo": {
 			"Awards": {
-				"version": "0.8",
-				"compatible": "0.8",
+				"version": "0.3",
+				"compatible": "0.3",
 				"requires": {"Q": "0.8", "Streams": "0.8.2"},
 				"connections": ["Awards"]
 			}
 		}
+	},
+	"Streams": {
+		"types": {
+			"Awards/plan": {
+				"description": "Subscription plan",
+				"create": true, 
+				"edit": true
+			}
+		}	
 	},
 	"Awards": {
 		"credits": {
