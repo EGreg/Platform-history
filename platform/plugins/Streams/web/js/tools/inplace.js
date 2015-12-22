@@ -82,6 +82,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 					if ($e.html !== toSet) $e.html(toSet);
 					break;
 				case 'select':
+					$e = tool.$('select');
 					if ($e.val() !== content) $e.val(content);
 					break;
 				default:
@@ -94,6 +95,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 		var field;
 		if (state.attribute) {
 			field = 'attributes['+encodeURIComponent(state.attribute)+']';
+			_setContent(stream.attributes[state.attribute]);
 			stream.onUpdated(state.attribute).set(function (attributes, k) {
 				if (attributes[k] !== null) {
 					_setContent(attributes[k]);
@@ -105,6 +107,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 			}, tool);
 		} else {
 			field = state.field || 'content';
+			_setContent(stream.fields[state.field]);
 			stream.onFieldChanged(field).set(function (fields, k) {
 				if (fields[k] !== null) {
 					_setContent(fields[k]);
