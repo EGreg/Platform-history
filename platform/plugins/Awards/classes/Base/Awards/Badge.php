@@ -14,38 +14,38 @@
  * @class Base_Awards_Badge
  * @extends Db_Row
  *
- * @property string $app
- * @property string $name
- * @property mixed $title
- * @property string $pic_small
- * @property string $pic_big
- * @property integer $points
+ * @property {string} $app
+ * @property {string} $name
+ * @property {string} $title
+ * @property {string} $pic_small
+ * @property {string} $pic_big
+ * @property {integer} $points
  */
 abstract class Base_Awards_Badge extends Db_Row
 {
 	/**
 	 * @property $app
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $name
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $title
-	 * @type mixed
+	 * @type {string}
 	 */
 	/**
 	 * @property $pic_small
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $pic_big
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $points
-	 * @type integer
+	 * @type {integer}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -79,7 +79,7 @@ abstract class Base_Awards_Badge extends Db_Row
 	 * Retrieve the table name to use in SQL statement
 	 * @method table
 	 * @static
-	 * @param {boolean} [$with_db_name=true] Indicates wheather table name shall contain the database name
+	 * @param {boolean} [$with_db_name=true] Indicates wheather table name should contain the database name
  	 * @return {string|Db_Expression} The table name as string optionally without database name if no table sharding
 	 * was started or Db_Expression class with prefix and database name templates is table was sharded
 	 */
@@ -112,9 +112,9 @@ abstract class Base_Awards_Badge extends Db_Row
 	 * Create SELECT query to the class table
 	 * @method select
 	 * @static
-	 * @param $fields {array} The field values to use in WHERE clauseas as 
+	 * @param {array} $fields The field values to use in WHERE clauseas as 
 	 * an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function select($fields, $alias = null)
@@ -129,7 +129,7 @@ abstract class Base_Awards_Badge extends Db_Row
 	 * Create UPDATE query to the class table
 	 * @method update
 	 * @static
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function update($alias = null)
@@ -144,8 +144,8 @@ abstract class Base_Awards_Badge extends Db_Row
 	 * Create DELETE query to the class table
 	 * @method delete
 	 * @static
-	 * @param [$table_using=null] {object} If set, adds a USING clause with this table
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$table_using=null] If set, adds a USING clause with this table
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function delete($table_using = null, $alias = null)
@@ -160,8 +160,8 @@ abstract class Base_Awards_Badge extends Db_Row
 	 * Create INSERT query to the class table
 	 * @method insert
 	 * @static
-	 * @param [$fields=array()] {object} The fields as an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$fields=array()] The fields as an associative array of `column => value` pairs
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function insert($fields = array(), $alias = null)
@@ -189,7 +189,10 @@ abstract class Base_Awards_Badge extends Db_Row
 	 */
 	static function insertManyAndExecute($records = array(), $options = array())
 	{
-		self::db()->insertManyAndExecute(self::table(), $records, $options);
+		self::db()->insertManyAndExecute(
+			self::table(), $records,
+			array_merge($options, array('className' => 'Awards_Badge'))
+		);
 	}
 	
 	/**
@@ -202,12 +205,27 @@ abstract class Base_Awards_Badge extends Db_Row
 	 */
 	function beforeSet_app($value)
 	{
-		if ($value instanceof Db_Expression) return array('app', $value);
+		if (!isset($value)) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
+			return array('app', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".app");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".app");
 		return array('app', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the app field
+	 * @return {integer}
+	 */
+	function maxSize_app()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -220,12 +238,60 @@ abstract class Base_Awards_Badge extends Db_Row
 	 */
 	function beforeSet_name($value)
 	{
-		if ($value instanceof Db_Expression) return array('name', $value);
+		if (!isset($value)) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
+			return array('name', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".name");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".name");
 		return array('name', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the name field
+	 * @return {integer}
+	 */
+	function maxSize_name()
+	{
+
+		return 255;			
+	}
+
+	/**
+	 * Method is called before setting the field and verifies if value is string of length within acceptable limit.
+	 * Optionally accept numeric value which is converted to string
+	 * @method beforeSet_title
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value is not string or is exceedingly long
+	 */
+	function beforeSet_title($value)
+	{
+		if (!isset($value)) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
+			return array('title', $value);
+		}
+		if (!is_string($value) and !is_numeric($value))
+			throw new Exception('Must pass a string to '.$this->getTable().".title");
+		if (strlen($value) > 65535)
+			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".title");
+		return array('title', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the title field
+	 * @return {integer}
+	 */
+	function maxSize_title()
+	{
+
+		return 65535;			
 	}
 
 	/**
@@ -238,12 +304,27 @@ abstract class Base_Awards_Badge extends Db_Row
 	 */
 	function beforeSet_pic_small($value)
 	{
-		if ($value instanceof Db_Expression) return array('pic_small', $value);
+		if (!isset($value)) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
+			return array('pic_small', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".pic_small");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".pic_small");
 		return array('pic_small', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the pic_small field
+	 * @return {integer}
+	 */
+	function maxSize_pic_small()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -256,12 +337,27 @@ abstract class Base_Awards_Badge extends Db_Row
 	 */
 	function beforeSet_pic_big($value)
 	{
-		if ($value instanceof Db_Expression) return array('pic_big', $value);
+		if (!isset($value)) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
+			return array('pic_big', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".pic_big");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".pic_big");
 		return array('pic_big', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the pic_big field
+	 * @return {integer}
+	 */
+	function maxSize_pic_big()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -273,26 +369,28 @@ abstract class Base_Awards_Badge extends Db_Row
 	 */
 	function beforeSet_points($value)
 	{
-		if ($value instanceof Db_Expression) return array('points', $value);
+		if ($value instanceof Db_Expression) {
+			return array('points', $value);
+		}
 		if (!is_numeric($value) or floor($value) != $value)
 			throw new Exception('Non-integer value being assigned to '.$this->getTable().".points");
-		if ($value < -32768 or $value > 32767)
-			throw new Exception("Out-of-range value '$value' being assigned to ".$this->getTable().".points");
+		$value = intval($value);
+		if ($value < -32768 or $value > 32767) {
+			$json = json_encode($value);
+			throw new Exception("Out-of-range value $json being assigned to ".$this->getTable().".points");
+		}
 		return array('points', $value);			
 	}
 
 	/**
-	 * Method is called after field is set and used to keep $fieldsModified property up to date
-	 * @method afterSet
-	 * @param {string} $name The field name
-	 * @param {mixed} $value The value of the field
-	 * @return {mixed} Original value
+	 * @method maxSize_points
+	 * Returns the maximum integer that can be assigned to the points field
+	 * @return {integer}
 	 */
-	function afterSet($name, $value)
+	function maxSize_points()
 	{
-		if (!in_array($name, $this->fieldNames()))
-			$this->notModified($name);
-		return $value;			
+
+		return 32767;			
 	}
 
 	/**
@@ -306,7 +404,7 @@ abstract class Base_Awards_Badge extends Db_Row
 	{
 		if (!$this->retrieved) {
 			$table = $this->getTable();
-			foreach (array('app','name','title','pic_small','pic_big') as $name) {
+			foreach (array('app','name') as $name) {
 				if (!isset($value[$name])) {
 					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
 				}

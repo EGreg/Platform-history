@@ -7327,9 +7327,9 @@ Q.parseQueryString = function Q_parseQueryString(queryString, keys) {
 	}
 	var result = {};
 	Q.each(queryString.split('&'), function (i, clause) {
-		var parts = clause.split('='),
-			key = decodeURIComponent(parts[0]),
-			value = decodeURIComponent(parts[1]);
+		var parts = clause.split('=');
+		var key = decodeURIComponent(parts[0]);
+		var value = (parts[1] == null) ? null : decodeURIComponent(parts[1]);
 		if (!key) return;
 		if (keys) keys.push(key);
 		result[key] = value;
@@ -7611,8 +7611,8 @@ Q.Template.collection = {};
 
 
 /**
- * Sets the content of a template in the document's collection.
- * This is usually called by Q.loadUrl when the server sends over some templates,
+ * Sets the text of a template in this document's collection, and compiles it.
+ * This is e.g. called by Q.loadUrl when the server sends over some templates,
  * so they won't have to be requested later.
  * @static
  * @method set
@@ -7622,7 +7622,9 @@ Q.Template.collection = {};
  */
 Q.Template.set = function (name, content, type) {
 	type = type || 'handlebars';
+	Q.Template.remove(name);
 	Q.Template.collection[Q.normalize(name)] = content;
+	Q.Template.compile(content);
 };
 
 /**
@@ -7634,13 +7636,29 @@ Q.Template.set = function (name, content, type) {
 Q.Template.remove = function (name) {
 	if (typeof name === 'string') {
 		delete Q.Template.collection[Q.normalize(name)];
-		Q.Template.load.cache.removeEach(name);
+		Q.Template.load.cache.removeEach([name]);
 		return;
 	}
 	Q.each(name, function (i, name) {
 		Q.Template.remove(name);
 	});
 };
+
+/**
+ * This is used to compile a template once Handlebars is loaded
+ * @static
+ * @method compile
+ * @param {String} content The content of the template
+ * @return {Function} a function that can be called to render the template
+ */
+Q.Template.compile = function _Q_Template_compile (content) {
+	var r = Q.Template.compile.results;
+	if (!r[content]) {
+		r[content] = Handlebars.compile(content);
+	}
+	return r[content];
+};
+Q.Template.compile.results = {};
 
 /**
  * Load template from server and store to cache
@@ -7671,7 +7689,6 @@ Q.Template.load = Q.getter(function _Q_Template_load(name, callback, options) {
 	// defaults to handlebars templates
 	var o = Q.extend({}, Q.Template.load.options, options);
 	var tpl = Q.Template.collection;
-
 	
 	// Now attempt to load the template.
 	// First, search the DOM for templates loaded inside script tag with type "text/theType",
@@ -7782,7 +7799,7 @@ Q.Template.render = function _Q_Template_render(name, fields, partials, callback
 				if (params.template[0]) {
 					return callback(params.template[0]);
 				}
-				var compiled = Handlebars.compile(params.template[1]);
+				var compiled = Q.Template.compile(params.template[1]);
 				callback(null, compiled(fields, {partials: params.partials[0]}));
 			});
 			Q.Template.load(name, p.fill('template'), options);
@@ -9255,7 +9272,7 @@ Q.Pointer = {
 	 * @param {String} [options.width="200px"]
 	 * @param {String} [options.height="200px"]
 	 * @param {Integer} [options.zIndex=99999]
-	 * @param {boolean} [option.dontStopBeforeShown=false] Don't let Q.Pointer.stopHints stop this hint before it's shown.
+	 * @param {Boolean} [option.dontStopBeforeShown=false] Don't let Q.Pointer.stopHints stop this hint before it's shown.
 	 * @param {boolean} [options.dontRemove=false] Pass true to keep current hints displayed
 	 * @param {String} [options.audio.src] Can be used to play an audio file.
 	 * @param {String} [options.audio.from=0] Number of seconds inside the audio to start playing the audio from. Make sure audio is longer than this.

@@ -503,6 +503,8 @@ abstract class Streams extends Base_Streams
 	 *  An array of streams, obtained for example by Streams::fetch
 	 * @param {boolean} $recalculate=false
 	 *  Pass true here to force recalculating access to streams for which access was already calculated
+	 * @param {string} [$actualPublisherId]
+	 *  For internal use only. Used by Streams::isAuthorizedToCreate function.
 	 * @return {integer}
 	 *  The number of streams that were recalculated
 	 */
@@ -510,7 +512,8 @@ abstract class Streams extends Base_Streams
 		$asUserId,
 		$publisherId,
 		$streams,
-		$recalculate = false)
+		$recalculate = false,
+		$actualPublisherId = null)
 	{
 		if (!isset($asUserId)) {
 			$asUserId = Users::loggedInUser();
@@ -521,6 +524,9 @@ abstract class Streams extends Base_Streams
 		}
 		if ($publisherId instanceof Users_User) {
 			$publisherId = $publisherId->id;
+		}
+		if (!isset($actualPublisherId)) {
+			$actualPublisherId = $publisherId;
 		}
 		if ($recalculate) {
 			$streams2 = $streams;
@@ -547,7 +553,7 @@ abstract class Streams extends Base_Streams
 				continue;
 			}
 			$s->set('asUserId', $asUserId);
-			if ($asUserId and $asUserId == $publisherId) {
+			if ($asUserId and $asUserId == $actualPublisherId) {
 				// The publisher should have full access to every one of their streams.
 				// Streams which are "required", though, won't be deleted by the system.
 				$required = Q_Config::get('Streams', 'requiredUserStreams', $s->name, false);
@@ -599,7 +605,7 @@ abstract class Streams extends Base_Streams
 			$labels = array_unique($labels);
 			$contacts = Users_Contact::select('*')
 				->where(array(
-					'userId' => $publisherId,
+					'userId' => $actualPublisherId,
 					'label' => $labels,
 					'contactUserId' => $asUserId
 				))->fetchDbRows();
@@ -713,7 +719,7 @@ abstract class Streams extends Base_Streams
 				$retrieved = $template->retrieve();
 			}
 			if ($retrieved) {
-				$template->calculateAccess($userId);
+				$template->calculateAccess($userId, false, $publisherId);
 				if ($template->testAdminLevel('own')) {
 					$authorized = $template;
 				}
@@ -845,7 +851,7 @@ abstract class Streams extends Base_Streams
 		}
 	
 		// ready to persist this stream to the database
-		if ($relate['streamName']) {
+		if (!empty($relate['streamName'])) {
 			$rs = Streams::fetchOne(
 				$asUserId,
 				$relate['publisherId'],

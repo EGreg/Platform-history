@@ -2401,7 +2401,6 @@ var Message = Streams.Message = function Streams_Message(fields) {
 
 Message.construct = function Streams_Message_construct(fields) {
 	if (Q.isEmpty(fields)) {
-		Q.handle(callback, this, ["Streams.Stream constructor: empty fields object"]);
 		return false;
 	}
 	var type = Q.normalize(fields.type);

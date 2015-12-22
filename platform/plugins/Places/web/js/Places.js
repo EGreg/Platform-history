@@ -110,7 +110,7 @@ Q.beforeInit.set(function () {
 }, 'Places');
 
 Places.loadGoogleMaps.waitingCallbacks = [];
-Places.loadGoogleMaps.loaded = function () {
+Places.loadGoogleMaps.loaded = function _PLaces_loadGoogleMaps_loaded () {
 	Q.handle(Places.loadGoogleMaps.waitingCallbacks);
 };
 

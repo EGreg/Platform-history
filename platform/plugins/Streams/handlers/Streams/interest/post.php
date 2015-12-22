@@ -21,11 +21,10 @@ function Streams_interest_post()
 	$name = 'Streams/interest/' . Q_Utils::normalize($title);
 	$stream = Streams::fetchOne(null, $publisherId, $name);
 	if (!$stream) {
-		$stream = new Streams_Stream();
-		$stream->publisherId = $publisherId;
-		$stream->name = $name;
-		$stream->type = 'Streams/interest';
-		$stream->title = $title;
+		$stream = Streams::create($publisherId, $publisherId, 'Streams/interest', array(
+			'name' => $name,
+			'title' => $title
+		));
 		$parts = explode(': ', $title, 2);
 		$keywords = implode(' ', $parts);
 		try {
@@ -41,7 +40,7 @@ function Streams_interest_post()
 		}
 		if (!empty($data)) {
 			$sizes = Q_Config::expect('Streams', 'icons', 'sizes');
-			sort($sizes);
+			ksort($sizes);
 			$params = array(
 				'data' => $data,
 				'path' => "plugins/Streams/img/icons",

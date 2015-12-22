@@ -172,6 +172,19 @@ class Q
 	}
 
 	/**
+	 * Test whether $text is prefixed by $prefix
+	 * @method testPrefix
+	 * @static
+	 * @param {string} $text The string to check
+	 * @param {string} $prefix
+	 * @return {boolean}
+	 */
+	static function testPrefix($text, $prefix)
+	{
+		return substr($text, 0, strlen($prefix)) === $prefix;
+	}
+
+	/**
 	 * Goes through the params and replaces any references
 	 * to their names in the string with their value.
 	 * References are expected to be of the form {{varname}} or $varname.

@@ -21,13 +21,7 @@ abstract class Base_Places
 	 */
 	static $table_classnames = array (
   0 => 'Places_Autocomplete',
-  1 => 'Places_Domain',
-  2 => 'Places_HostnameSession',
-  3 => 'Places_Publisher',
-  4 => 'Places_Session',
-  5 => 'Places_Share',
-  6 => 'Places_Visit',
-  7 => 'Places_Zipcode',
+  1 => 'Places_Zipcode',
 );
 
 	/**

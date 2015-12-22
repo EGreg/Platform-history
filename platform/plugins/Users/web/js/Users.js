@@ -1681,21 +1681,23 @@ Users.vote = function (forType, forId, value) {
  * @method hint 
  * @param {String} key A key to ensure the hint appears only the first time for each user. Check Users.hinted to see if this has happened.
  * @param {Element|Object|Array} elementsOrPoints Indicates where to display the hint. A point should contain properties "x" and "y". Can also be an array of elements or points.
- * @param {Object} [options] possible options, which can include:
- * @param {String} [options.src] the url of the image
- * @param {Point} [options.hotspot={x:0.5,y:0.4}] "x" and "y" represent the location of the hotspot within the image, using fractions between 0 and 1
- * @param {String} [options.width="200px"]
- * @param {String} [options.height="200px"]
- * @param {Number} [options.zIndex=99999]
- * @param {Boolean} [options.dontRemove=false] Pass true to keep current hints displayed
- * @param {Integer} [options.show.delay=500]
- * @param {Integer} [options.show.duration=500]
- * @param {Integer} [options.show.initialScale=2]
- * @param {Function} [options.show.ease=Q.Animation.ease.smooth]
- * @param {Integer} [options.hide.delay=500]
- * @param {Integer} [options.hide.duration=500]
- * @param {Function} [options.hide.ease=Q.Animation.ease.smooth]
- * @return {Boolean} Returns true if the hint with will be shown, or false if a hint with this key was already shown before.
+	 * @param {String} [options.src] the url of the hint pointer image
+	 * @param {Point} [options.hotspot={x:0.5,y:0.3}] "x" and "y" represent the location of the hotspot within the image, using fractions between 0 and 1
+	 * @param {String} [options.width="200px"]
+	 * @param {String} [options.height="200px"]
+	 * @param {Integer} [options.zIndex=99999]
+	 * @param {boolean} [option.dontStopBeforeShown=false] Don't let Q.Pointer.stopHints stop this hint before it's shown.
+	 * @param {Boolean} [options.dontRemove=false] Pass true to keep current hints displayed
+	 * @param {String} [options.audio.src] Can be used to play an audio file.
+	 * @param {String} [options.audio.from=0] Number of seconds inside the audio to start playing the audio from. Make sure audio is longer than this.
+	 * @param {String} [options.audio.until] Number of seconds inside the audio to play the audio until. Make sure audio is longer than this.
+	 * @param {String} [options.audio.removeAfterPlaying] Whether to remove the audio object after playing
+	 * @param {Integer} [options.show.delay=500] How long to wait after the function call (or after audio file has loaded and starts playing, if one was specified) before showing the hint animation
+	 * @param {Integer} [options.show.initialScale=10] The initial scale of the hint pointer image in the show animation
+	 * @param {Integer} [options.show.duration=500] The duration of the hint show animation
+	 * @param {Function} [options.show.ease=Q.Animation.ease.smooth]
+	 * @param {Integer} [options.hide.duration=500] The duration of the hint hide animation
+	 * @param {Function} [options.hide.ease=Q.Animation.ease.smooth]
  */
 Users.hint = function (key, elementOrPoint, options) {
 	if (!elementOrPoint || !Users.loggedInUser || Users.hinted.indexOf(key) >= 0) {

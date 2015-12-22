@@ -1591,11 +1591,12 @@ class Streams_Stream extends Base_Streams_Stream
 	 *  If this is '', only returns the streams anybody can see.
 	 *  If this is null, the logged-in user's id is used, or '' if no one is logged in
 	 * @param {boolean} $recalculate=false Pass true here to force recalculating even if access was already calculated
+	 * @param {string} [$actualPublisherId] for internal use only
 	 * @chainable
 	 */
-	function calculateAccess($asUserId = null, $recalculate = false)
+	function calculateAccess($asUserId = null, $recalculate = false, $actualPublisherId = null)
 	{
-		Streams::calculateAccess($asUserId, $this->publisherId, array($this), $recalculate);
+		Streams::calculateAccess($asUserId, $this->publisherId, array($this), $recalculate, $actualPublisherId);
 		return $this;
 	}
 	

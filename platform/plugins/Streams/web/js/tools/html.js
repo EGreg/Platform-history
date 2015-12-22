@@ -102,6 +102,9 @@ Q.Tool.define("Streams/html", function (options) {
                 $(tool.element).editable(state.froala)
 				.on('editable.afterRemoveImage', function (e, editor, $img) {
 					var src = $img.attr('src');
+					if (src.substr(0, 5) === 'data:') {
+						return;
+					}
 					var parts = src.split('/');
 					var publisherId = parts.slice(-7, -6).join('/');
 					var streamName = parts.slice(-6, -3).join('/');
@@ -234,7 +237,7 @@ Q.Tool.define("Streams/html", function (options) {
 		imageUploadURL: Q.action('Streams/froala'),
 		pastedImagesUploadURL: Q.action('Streams/froala'),
 		pastedImagesUploadRequestType: 'POST',
-		imageUploadParam: 'icon',
+		imageUploadParam: 'image',
 		imageUploadParams: {
 			'type': 'Streams/image',
 			'Q.ajax': 'json'
