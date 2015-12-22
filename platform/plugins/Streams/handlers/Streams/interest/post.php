@@ -40,14 +40,7 @@ function Streams_interest_post()
 		}
 		if (!empty($data)) {
 			$sizes = Q_Config::expect('Streams', 'icons', 'sizes');
-			sort($sizes);
-			if (!Q::isAssociative($sizes)) {
-				$temp = $sizes;
-				$sizes = array();
-				foreach ($temp as $size) {
-					$sizes[$size] = "$size.png";
-				}
-			}
+			ksort($sizes);
 			$params = array(
 				'data' => $data,
 				'path' => "plugins/Streams/img/icons",
