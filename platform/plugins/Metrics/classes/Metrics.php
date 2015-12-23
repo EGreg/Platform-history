@@ -441,11 +441,11 @@ abstract class Metrics extends Base_Metrics
 	 */
 	static function uniqueId($table, $field)
 	{
-		$chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890';
+		$chars = 'abcdefghijklmnopqrstuvwxyz';
 		$count = strlen($chars);
 		do {
 			$id = '';
-			for ($i=0; $i<7; ++$i) {
+			for ($i=0; $i<8; ++$i) {
 				$id .= $chars[mt_rand(0, $count-1)];
 			}
 			$rows = self::dbSelect($table, array($field => $id));
