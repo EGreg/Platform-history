@@ -92,9 +92,8 @@ Q.Tool.define("Streams/inplace", function (options) {
 			});
 		};
 
-		var field;
 		if (state.attribute) {
-			field = 'attributes['+encodeURIComponent(state.attribute)+']';
+			state.field = 'attributes['+encodeURIComponent(state.attribute)+']';
 			stream.onUpdated(state.attribute).set(function (attributes, k) {
 				if (attributes[k] !== null) {
 					_setContent(attributes[k]);
@@ -105,8 +104,8 @@ Q.Tool.define("Streams/inplace", function (options) {
 				}
 			}, tool);
 		} else {
-			field = state.field || 'content';
-			stream.onFieldChanged(field).set(function (fields, k) {
+			state.field = state.field || 'content';
+			stream.onFieldChanged(state.field).set(function (fields, k) {
 				if (fields[k] !== null) {
 					_setContent(fields[k]);
 				} else {
