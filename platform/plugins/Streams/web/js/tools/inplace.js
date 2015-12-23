@@ -121,7 +121,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 			var ipo = Q.extend(state.inplace, {
 				action: stream.actionUrl(),
 				method: 'put',
-				field: field,
+				field: state.field,
 				type: state.inplaceType,
 				onSave: { 'Streams/inplace': function () {
 					state.stream.refresh(function () {
@@ -129,7 +129,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 					}, {messages: true});
 				}}
 			});
-			var value = (state.attribute ? stream.get(state.attribute) : stream.fields[field]) || "";
+			var value = (state.attribute ? stream.get(state.attribute) : stream.fields[state.field]) || "";
 			switch (state.inplaceType) {
 				case 'text':
 					ipo.staticHtml = String(value).encodeHTML();
