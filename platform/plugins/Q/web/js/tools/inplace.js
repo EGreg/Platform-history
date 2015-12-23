@@ -75,14 +75,15 @@ Q.Tool.define("Q/inplace", function (options) {
 			isSelect: (o.type === 'select'),
 			options: o.options,
 			placeholder: state.placeholder,
-			text: function (field) {
-				return staticHtml.decodeHTML();
-			},
+			text: staticHtml.decodeHTML(),
 			type: o.type || 'text'
 		},
 		function (err, html) {
 			if (!html) return;
 			$te.html(html);
+			if (o.type === 'select') {
+				tool.$('select').val(staticHtml.decodeHTML());
+			}
 			if (staticHtml && state.editOnClick) {
 				tool.$('.Q_inplace_tool_static').attr('title', state.placeholder);
 			}
@@ -110,6 +111,7 @@ Q.Tool.define("Q/inplace", function (options) {
 		waitingInterval: 100,
 	},
 	onLoad: new Q.Event(),
+	beforeSave: new Q.Event(),
 	onSave: new Q.Event(),
 	onCancel: new Q.Event()
 },
