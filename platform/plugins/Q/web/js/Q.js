@@ -9037,7 +9037,7 @@ Q.Pointer = {
 	 * @method fastclick
 	 */
 	fastclick: function _Q_fastclick (params) {
-		params.eventName = Q.Pointer.end;
+		params.eventName = Q.info.isTouchscreen ? 'touchend' || 'click';
 		return function _Q_fastclick_on_wrapper (e) {
 			var elem = Q.Pointer.elementFromPoint(Q.Pointer.getX(e), Q.Pointer.getY(e));
 			if (Q.Pointer.canceledClick
