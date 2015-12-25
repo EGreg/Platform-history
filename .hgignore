@@ -14,6 +14,7 @@ syntax: regexp
 ^platform/plugins/Users/files/Users/icons/(?!default|future)
 ^platform/plugins/Streams/files/Streams/icons/(?!default)
 ^platform/plugins/Streams/files/Streams/media/
+^platform/plugins/Awards/classes/Composer/vendor
 ^platform/node_modules
 ^MyApp/local/.*
 ^MyApp/files/(?!.dir|MyApp).+
