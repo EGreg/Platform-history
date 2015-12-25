@@ -3823,11 +3823,11 @@ Tp.getElementsByClassName = function _Q_Tool_prototype_getElementsByClasName(cla
 };
 
 /**
- * Do something 
+ * Do something for every and future child tool that is activated inside this element
  * @method forEachChild
- * @param {String} [name=""] The tool name, such as "Q/inplace"
+ * @param {String} [name=""] The name of the child tool, such as "Q/inplace"
  * @param {number} [levels] Optionally pass 1 here to get only the immediate children, 2 for immediate children and grandchildren, etc.
- * @param {Function} callback The callback to execute event handler
+ * @param {Function} callback The callback to execute at the right time
  */
 Tp.forEachChild = function _Q_Tool_prototype_forEachChild(name, levels, callback) {
 	if (typeof levels !== 'number') {
@@ -3840,7 +3840,7 @@ Tp.forEachChild = function _Q_Tool_prototype_forEachChild(name, levels, callback
 	var onActivate = Q.Tool.onActivate(name);
 	var key = onActivate.set(function () {
 		if (this.prefix.substr(0, tool.prefix.length) === tool.prefix) {
-			callback.apply(this, arguments);
+			Q.handle(callback, this, arguments);
 		}
 	});
 	tool.Q.beforeRemove.set(function () {
