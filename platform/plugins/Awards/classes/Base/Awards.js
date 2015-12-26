@@ -27,9 +27,7 @@ module.exports = Base;
  * @type array
  */
 Base.tableClasses = [
-	"Awards_Charge",
-	"Awards_Customer",
-	"Awards_Subscription"
+	
 ];
 
 /**
@@ -50,24 +48,3 @@ Base.db = function () {
 Base.connectionName = function() {
 	return 'Awards';
 };
-
-/**
- * Link to Awards.Charge model
- * @property Charge
- * @type Awards.Charge
- */
-Base.Charge = Q.require('Awards/Charge');
-
-/**
- * Link to Awards.Customer model
- * @property Customer
- * @type Awards.Customer
- */
-Base.Customer = Q.require('Awards/Customer');
-
-/**
- * Link to Awards.Subscription model
- * @property Subscription
- * @type Awards.Subscription
- */
-Base.Subscription = Q.require('Awards/Subscription');

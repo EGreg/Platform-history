@@ -20,9 +20,6 @@ abstract class Base_Awards
 	 * @type array
 	 */
 	static $table_classnames = array (
-  0 => 'Awards_Charge',
-  1 => 'Awards_Customer',
-  2 => 'Awards_Subscription',
 );
 
 	/**
