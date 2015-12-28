@@ -1237,8 +1237,6 @@ abstract class Users extends Base_Users
 		if (empty($urls)) {
 			return $directory;
 		}
-		$head = APP_FILES_DIR.DS.$app.DS.'uploads';
-		$tail = str_replace(DS, '/', substr($directory, strlen($head)));
 		Q_Utils::canWriteToPath($directory, false, true);
 		$type = Q_Config::get('Users', 'login', 'iconType', 'wavatar');
 		$largestSize = 0;
@@ -1315,6 +1313,8 @@ abstract class Users extends Base_Users
 				);
 			}
 		}
+		$head = APP_FILES_DIR.DS.$app.DS.'uploads';
+		$tail = str_replace(DS, '/', substr($directory, strlen($head)));
 		$user->icon = '{{baseUrl}}/uploads'.$tail;
 		return $directory;
 	}
