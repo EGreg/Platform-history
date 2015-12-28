@@ -799,9 +799,10 @@ Users.iconUrl = function Users_iconUrl(icon, size) {
 		size = '40';
 	}
 	size = (String(size).indexOf('.') >= 0) ? size : size+'.png';
-	return icon.isUrl()
-		? icon + '/' + size
-		: Q.url('plugins/Users/img/icons/'+icon+'/'+size);
+	var src = (icon + '/' + size).interpolate({
+		"{{baseUrl}}": Q.info.baseUrl
+	});
+	return src.isUrl() ? src : Q.url('plugins/Users/img/icons/'+src);
 };
 
 function _constructUser (fields) {

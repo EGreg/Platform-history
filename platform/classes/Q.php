@@ -1036,6 +1036,10 @@ class Q
 		$timestamp = true,
 		$options = array())
 	{
+		if (is_array($timestamp)) {
+			$options = $timestamp;
+			$timestamp = true;
+		}
 		if (is_array($key)) {
 			$options = $key;
 			$key = null;
