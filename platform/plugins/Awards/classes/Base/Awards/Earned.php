@@ -14,33 +14,33 @@
  * @class Base_Awards_Earned
  * @extends Db_Row
  *
- * @property string $userId
- * @property string $app
- * @property string $badge_name
- * @property string $insertedTime
- * @property string $associated_id
+ * @property {string} $userId
+ * @property {string} $app
+ * @property {string} $badge_name
+ * @property {string|Db_Expression} $insertedTime
+ * @property {string} $associated_id
  */
 abstract class Base_Awards_Earned extends Db_Row
 {
 	/**
 	 * @property $userId
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $app
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $badge_name
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * @property $insertedTime
-	 * @type string
+	 * @type {string|Db_Expression}
 	 */
 	/**
 	 * @property $associated_id
-	 * @type string
+	 * @type {string}
 	 */
 	/**
 	 * The setUp() method is called the first time
@@ -72,7 +72,7 @@ abstract class Base_Awards_Earned extends Db_Row
 	 * Retrieve the table name to use in SQL statement
 	 * @method table
 	 * @static
-	 * @param {boolean} [$with_db_name=true] Indicates wheather table name shall contain the database name
+	 * @param {boolean} [$with_db_name=true] Indicates wheather table name should contain the database name
  	 * @return {string|Db_Expression} The table name as string optionally without database name if no table sharding
 	 * was started or Db_Expression class with prefix and database name templates is table was sharded
 	 */
@@ -105,9 +105,9 @@ abstract class Base_Awards_Earned extends Db_Row
 	 * Create SELECT query to the class table
 	 * @method select
 	 * @static
-	 * @param $fields {array} The field values to use in WHERE clauseas as 
+	 * @param {array} $fields The field values to use in WHERE clauseas as 
 	 * an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function select($fields, $alias = null)
@@ -122,7 +122,7 @@ abstract class Base_Awards_Earned extends Db_Row
 	 * Create UPDATE query to the class table
 	 * @method update
 	 * @static
-	 * @param [$alias=null] {string} Table alias
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function update($alias = null)
@@ -137,8 +137,8 @@ abstract class Base_Awards_Earned extends Db_Row
 	 * Create DELETE query to the class table
 	 * @method delete
 	 * @static
-	 * @param [$table_using=null] {object} If set, adds a USING clause with this table
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$table_using=null] If set, adds a USING clause with this table
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function delete($table_using = null, $alias = null)
@@ -153,8 +153,8 @@ abstract class Base_Awards_Earned extends Db_Row
 	 * Create INSERT query to the class table
 	 * @method insert
 	 * @static
-	 * @param [$fields=array()] {object} The fields as an associative array of `column => value` pairs
-	 * @param [$alias=null] {string} Table alias
+	 * @param {object} [$fields=array()] The fields as an associative array of `column => value` pairs
+	 * @param {string} [$alias=null] Table alias
 	 * @return {Db_Query_Mysql} The generated query
 	 */
 	static function insert($fields = array(), $alias = null)
@@ -182,7 +182,10 @@ abstract class Base_Awards_Earned extends Db_Row
 	 */
 	static function insertManyAndExecute($records = array(), $options = array())
 	{
-		self::db()->insertManyAndExecute(self::table(), $records, $options);
+		self::db()->insertManyAndExecute(
+			self::table(), $records,
+			array_merge($options, array('className' => 'Awards_Earned'))
+		);
 	}
 	
 	/**
@@ -195,12 +198,27 @@ abstract class Base_Awards_Earned extends Db_Row
 	 */
 	function beforeSet_userId($value)
 	{
-		if ($value instanceof Db_Expression) return array('userId', $value);
+		if (!isset($value)) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
+			return array('userId', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".userId");
 		if (strlen($value) > 31)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".userId");
 		return array('userId', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the userId field
+	 * @return {integer}
+	 */
+	function maxSize_userId()
+	{
+
+		return 31;			
 	}
 
 	/**
@@ -213,12 +231,27 @@ abstract class Base_Awards_Earned extends Db_Row
 	 */
 	function beforeSet_app($value)
 	{
-		if ($value instanceof Db_Expression) return array('app', $value);
+		if (!isset($value)) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
+			return array('app', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".app");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".app");
 		return array('app', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the app field
+	 * @return {integer}
+	 */
+	function maxSize_app()
+	{
+
+		return 255;			
 	}
 
 	/**
@@ -231,12 +264,51 @@ abstract class Base_Awards_Earned extends Db_Row
 	 */
 	function beforeSet_badge_name($value)
 	{
-		if ($value instanceof Db_Expression) return array('badge_name', $value);
+		if (!isset($value)) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
+			return array('badge_name', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".badge_name");
 		if (strlen($value) > 255)
 			throw new Exception('Exceedingly long value being assigned to '.$this->getTable().".badge_name");
 		return array('badge_name', $value);			
+	}
+
+	/**
+	 * Returns the maximum string length that can be assigned to the badge_name field
+	 * @return {integer}
+	 */
+	function maxSize_badge_name()
+	{
+
+		return 255;			
+	}
+
+	/**
+	 * Method is called before setting the field and normalize the DateTime string
+	 * @method beforeSet_insertedTime
+	 * @param {string} $value
+	 * @return {array} An array of field name and value
+	 * @throws {Exception} An exception is thrown if $value does not represent valid DateTime
+	 */
+	function beforeSet_insertedTime($value)
+	{
+		if ($value instanceof Db_Expression) {
+			return array('insertedTime', $value);
+		}
+		$date = date_parse($value);
+		if (!empty($date['errors'])) {
+			$json = json_encode($value);
+			throw new Exception("DateTime $json in incorrect format being assigned to ".$this->getTable().".insertedTime");
+		}
+		$value = sprintf("%04d-%02d-%02d %02d:%02d:%02d", 
+			$date['year'], $date['month'], $date['day'], 
+			$date['hour'], $date['minute'], $date['second']
+		);
+		return array('insertedTime', $value);			
 	}
 
 	/**
@@ -249,7 +321,12 @@ abstract class Base_Awards_Earned extends Db_Row
 	 */
 	function beforeSet_associated_id($value)
 	{
-		if ($value instanceof Db_Expression) return array('associated_id', $value);
+		if (!isset($value)) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
+			return array('associated_id', $value);
+		}
 		if (!is_string($value) and !is_numeric($value))
 			throw new Exception('Must pass a string to '.$this->getTable().".associated_id");
 		if (strlen($value) > 255)
@@ -258,40 +335,13 @@ abstract class Base_Awards_Earned extends Db_Row
 	}
 
 	/**
-	 * Method is called after field is set and used to keep $fieldsModified property up to date
-	 * @method afterSet
-	 * @param {string} $name The field name
-	 * @param {mixed} $value The value of the field
-	 * @return {mixed} Original value
+	 * Returns the maximum string length that can be assigned to the associated_id field
+	 * @return {integer}
 	 */
-	function afterSet($name, $value)
+	function maxSize_associated_id()
 	{
-		if (!in_array($name, $this->fieldNames()))
-			$this->notModified($name);
-		return $value;			
-	}
 
-	/**
-	 * Check if mandatory fields are set and updates 'magic fields' with appropriate values
-	 * @method beforeSave
-	 * @param {array} $value The array of fields
-	 * @return {array}
-	 * @throws {Exception} If mandatory field is not set
-	 */
-	function beforeSave($value)
-	{
-		if (!$this->retrieved) {
-			$table = $this->getTable();
-			foreach (array('userId','app','badge_name','associated_id') as $name) {
-				if (!isset($value[$name])) {
-					throw new Exception("the field $table.$name needs a value, because it is NOT NULL, not auto_increment, and lacks a default value.");
-				}
-			}
-		}
-		if (!$this->retrieved and !isset($value['insertedTime']))
-			$value['insertedTime'] = new Db_Expression('CURRENT_TIMESTAMP');
-
-		return $value;			
+		return 255;			
 	}
 
 	/**

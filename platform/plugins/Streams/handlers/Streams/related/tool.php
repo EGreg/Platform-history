@@ -21,7 +21,7 @@
  *   @param {boolean} [$options.editable] Set to false to avoid showing even authorized users an interface to replace the image or text
  *   @param {array} [$options.creatable]  Optional pairs of {streamType: toolOptions}  to render Streams/preview tools create new related streams.
  *   The params typically include at least a "title" field which you can fill with values such as "New" or "New ..."
- *   @param {string} [$options.toolType] Name of a function that takes streamType and returns the tag to render (and then activate) for that stream
+ *   @param {Function} [options.toolName] Optionally name a function that takes (streamType, options) and returns the name of the tool to render (and then activate) for that stream. That tool should reqire the "Streams/preview" tool, and work with it as documented in "Streams/preview".
  *   @param {boolean} [$options.realtime=false] Whether to refresh every time a relation is added, removed or updated by anyone
  *   @param {array} [$options.sortable] Options for "Q/sortable" jQuery plugin. Pass false here to disable sorting interface. If streamName is not a String, this interface is not shown.
  *   @param {string} [$options.tabs] Name of a cuntion for interacting with any parent "Q/tabs" tool. Format is function (previewTool, tabsTool) { return urlOrTabKey; }

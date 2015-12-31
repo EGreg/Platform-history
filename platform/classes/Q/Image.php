@@ -79,9 +79,6 @@ class Q_Image
 	static function pixabay($keywords, $options = array(), $returnFirstImage = false)
 	{
 		$info = Q_Config::get('Q', 'images', 'pixabay', null);
-		if (!$info['username']) {
-			throw new Q_Exception_MissingConfig(array('fieldpath' => 'Q/images/pixabay/username'));
-		}
 		if (!$info['key']) {
 			throw new Q_Exception_MissingConfig(array('fieldpath' => 'Q/images/pixabay/key'));
 		}
@@ -200,6 +197,12 @@ class Q_Image
 		}
 		$crop = isset($params['crop']) ? $params['crop'] : array();
 		$save = !empty($params['save']) ? $params['save'] : array('x' => '');
+		if (!Q::isAssociative($save)) {
+			throw new Q_Exception_WrongType(array(
+				'field' => 'save',
+				'type' => 'associative array'
+			));
+		}
 		// crop parameters - size of source image
 		$isw = isset($crop['w']) ? $crop['w'] : $iw;
 		$ish = isset($crop['h']) ? $crop['h'] : $ih;

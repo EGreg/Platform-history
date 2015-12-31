@@ -851,7 +851,7 @@ abstract class Streams extends Base_Streams
 		}
 	
 		// ready to persist this stream to the database
-		if ($relate['streamName']) {
+		if (!empty($relate['streamName'])) {
 			$rs = Streams::fetchOne(
 				$asUserId,
 				$relate['publisherId'],

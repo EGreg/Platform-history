@@ -3823,11 +3823,11 @@ Tp.getElementsByClassName = function _Q_Tool_prototype_getElementsByClasName(cla
 };
 
 /**
- * Do something 
+ * Do something for every and future child tool that is activated inside this element
  * @method forEachChild
- * @param {String} [name=""] The tool name, such as "Q/inplace"
+ * @param {String} [name=""] The name of the child tool, such as "Q/inplace"
  * @param {number} [levels] Optionally pass 1 here to get only the immediate children, 2 for immediate children and grandchildren, etc.
- * @param {Function} callback The callback to execute event handler
+ * @param {Function} callback The callback to execute at the right time
  */
 Tp.forEachChild = function _Q_Tool_prototype_forEachChild(name, levels, callback) {
 	if (typeof levels !== 'number') {
@@ -3840,7 +3840,7 @@ Tp.forEachChild = function _Q_Tool_prototype_forEachChild(name, levels, callback
 	var onActivate = Q.Tool.onActivate(name);
 	var key = onActivate.set(function () {
 		if (this.prefix.substr(0, tool.prefix.length) === tool.prefix) {
-			callback.apply(this, arguments);
+			Q.handle(callback, this, arguments);
 		}
 	});
 	tool.Q.beforeRemove.set(function () {
@@ -7327,9 +7327,9 @@ Q.parseQueryString = function Q_parseQueryString(queryString, keys) {
 	}
 	var result = {};
 	Q.each(queryString.split('&'), function (i, clause) {
-		var parts = clause.split('='),
-			key = decodeURIComponent(parts[0]),
-			value = decodeURIComponent(parts[1]);
+		var parts = clause.split('=');
+		var key = decodeURIComponent(parts[0]);
+		var value = (parts[1] == null) ? null : decodeURIComponent(parts[1]);
 		if (!key) return;
 		if (keys) keys.push(key);
 		result[key] = value;
@@ -9037,7 +9037,7 @@ Q.Pointer = {
 	 * @method fastclick
 	 */
 	fastclick: function _Q_fastclick (params) {
-		params.eventName = Q.Pointer.end;
+		params.eventName = Q.info.isTouchscreen ? 'touchend' : 'click';
 		return function _Q_fastclick_on_wrapper (e) {
 			var elem = Q.Pointer.elementFromPoint(Q.Pointer.getX(e), Q.Pointer.getY(e));
 			if (Q.Pointer.canceledClick
@@ -9272,7 +9272,7 @@ Q.Pointer = {
 	 * @param {String} [options.width="200px"]
 	 * @param {String} [options.height="200px"]
 	 * @param {Integer} [options.zIndex=99999]
-	 * @param {boolean} [option.dontStopBeforeShown=false] Don't let Q.Pointer.stopHints stop this hint before it's shown.
+	 * @param {Boolean} [option.dontStopBeforeShown=false] Don't let Q.Pointer.stopHints stop this hint before it's shown.
 	 * @param {boolean} [options.dontRemove=false] Pass true to keep current hints displayed
 	 * @param {String} [options.audio.src] Can be used to play an audio file.
 	 * @param {String} [options.audio.from=0] Number of seconds inside the audio to start playing the audio from. Make sure audio is longer than this.

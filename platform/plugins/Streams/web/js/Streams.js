@@ -182,8 +182,10 @@ Streams.iconUrl = function(icon, size) {
 		size = '40';
 	}
 	size = (String(size).indexOf('.') >= 0) ? size : size+'.png';
-	var src = icon + '/' + size;
-	return icon.isUrl() ? src : Q.url('plugins/Streams/img/icons/'+src);
+	var src = (icon + '/' + size).interpolate({
+		"{{baseUrl}}": Q.info.baseUrl
+	});
+	return src.isUrl() ? src : Q.url('plugins/Streams/img/icons/'+src);
 };
 
 var _socket = null,
@@ -2401,7 +2403,6 @@ var Message = Streams.Message = function Streams_Message(fields) {
 
 Message.construct = function Streams_Message_construct(fields) {
 	if (Q.isEmpty(fields)) {
-		Q.handle(callback, this, ["Streams.Stream constructor: empty fields object"]);
 		return false;
 	}
 	var type = Q.normalize(fields.type);

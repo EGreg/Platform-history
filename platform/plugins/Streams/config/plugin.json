@@ -106,10 +106,10 @@
 				}
 			},
 			"Streams/resource": {
-				"description": "Used to manage access to a resource and post messages about updates"
+				"description": "for managing access to a resource and posting messages about updates"
 			},
 			"Streams/task": {
-				"description": "Used to receive updates about progress on a certain task",
+				"description": "for receiving updates about progress on a certain task",
 				"create": true,
 				"messages": {},
 				"attributes": {
@@ -135,7 +135,7 @@
 			"Streams/date": {"create": true, "edit": true},
 			"Streams/number": {"create": true, "edit": true},
 			"Streams/image": {
-				"description": "A visual image",
+				"description": "visual image",
 				"create": true,
 				"edit": true,
 				"sizes": ["40", "50", "80", "x200", "200x"],
@@ -145,7 +145,7 @@
 				}
 			},
 			"Streams/images": {
-				"description": "A gallery of images",
+				"description": "gallery of images",
 				"create": true,
 				"edit": true,
 				"defaults": {
@@ -153,7 +153,7 @@
 				}
 			},
 			"Streams/file": {
-				"description": "An uploaded file",
+				"description": "uploaded file",
 				"create": true,
 				"edit": true,
 				"defaults": {
@@ -162,7 +162,7 @@
 				}
 			},
 			"Streams/category": {
-				"description": "A category to which other things can be related",
+				"description": "category to which other things can be related",
 				"create": true,
 				"edit": true,
 				"defaults": {
@@ -173,7 +173,7 @@
 				"see": ["relatedTo"]
 			},
 			"Streams/interest": {
-				"description": "Represents a user's interest in a certain topic",
+				"description": "represents a user's interest in a certain topic",
 				"create": true,
 				"edit": true,
 				"defaults": {
@@ -182,7 +182,7 @@
 				}
 			},
 			"Streams/incoming": {
-				"description": "Destination for messages sent by other users",
+				"description": "destination for messages sent by other users",
 				"create": true,
 				"messages": {
 					"Streams/incoming/message": {"post": true},
@@ -190,7 +190,7 @@
 				}
 			},
 			"Streams/chat": {
-				"description": "A chatroom",
+				"description": "chatroom",
 				"create": true,
 				"messages": {
 					"Streams/chat/message": {
@@ -208,10 +208,10 @@
 				}
 			},
 			"Streams/community": {
-				"description": "A common stream to reach an entire community"
+				"description": "common stream to reach an entire community"
 			},
 			"Streams/greeting": {
-				"description": "A greeting with which a user can introduce themselves",
+				"description": "greeting with which a user can introduce themselves",
 				"edit": true,
 				"defaults": {
 					"title": "Community Greeting"

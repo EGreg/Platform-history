@@ -115,7 +115,7 @@ class Streams_Invite extends Base_Streams_Invite
 					'token',
 					array(
 						'length' => Q_Config::get('Streams', 'invites', 'tokens', 'length', 16),
-						'characters' => Q_Config::get('Streams', 'invites', 'tokens', 'characters', 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz')
+						'characters' => Q_Config::get('Streams', 'invites', 'tokens', 'characters', 'abcdefghijklmnopqrstuvwxyz')
 					)
 				);
 			}

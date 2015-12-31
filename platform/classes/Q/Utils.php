@@ -102,18 +102,18 @@ class Q_Utils
 	 * Generates random letter sequence
 	 * @method unique
 	 * @static
-	 * @param {integer} [$len=7]
-	 * @param {string} [$source='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789'] Defaults to latin letters both cases and numbers
+	 * @param {integer} [$len=8]
+	 * @param {string} [$characters='abcdefghijklmnopqrstuvwxyz'] All the characters from which to construct possible ids
 	 * @return {string}
 	 */
 	static function unique(
-		$len = 7, 
-		$source = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789')
+		$len = 8, 
+		$characters = 'abcdefghijklmnopqrstuvwxyz')
 	{
-		$source_len = strlen($source);
+		$characters_len = strlen($characters);
 		$result = str_repeat(' ', $len);
 		for ($i=0; $i<$len; ++$i) {
-			$result[$i] = $source[mt_rand(0, $source_len-1)];
+			$result[$i] = $characters[mt_rand(0, $characters_len-1)];
 		}
 		return $result;
 	}

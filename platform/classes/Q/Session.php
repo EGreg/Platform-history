@@ -309,6 +309,15 @@ class Q_Session
 			$prefix = $app ? "$app/" : '';
 			if (empty($_SERVER['HTTP_HOST'])) {
 				echo "Warning: Ignoring Q_Session::start() called before running {$prefix}scripts/Q/install.php --all".PHP_EOL;
+				$message = $e->getMessage();
+				$file = $e->getFile();
+				$line = $e->getLine();
+				if (is_callable(array($e, 'getTraceAsStringEx'))) {
+					$trace_string = $e->getTraceAsStringEx();
+				} else {
+					$trace_string = $e->getTraceAsString();
+				}
+				echo "$message\n(in $file line $line)\n$trace_string".PHP_EOL;
 			} else {
 				if (is_callable('apc_clear_cache')) {
 					apc_clear_cache('user');
