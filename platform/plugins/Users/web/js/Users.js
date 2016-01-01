@@ -14,6 +14,9 @@ var Users = Q.Users = Q.plugins.Users = {
 	connected: {} // check this to see if you are connected to a provider
 };
 
+var dc = Q.extend.dontCopy;
+dc["Q.Users.User"] = true;
+
 /**
  * Text messages used in dialogs
  * @property Q.text.Users

@@ -1387,7 +1387,9 @@ Q.extend = function _Q_extend(target /* [[deep,] [levels,] anotherObject], ... [
 						? Q.copy(argk.replace)
 						: Q.extend(target[k], deep, levels-1, argk);
 				} else {
-					target[k] = Q.copy(argk, null, levels);
+					target[k] = Q.extend.dontCopy[Q.typeOf(argk)]
+						? argk
+						: Q.copy(argk, null, levels);
 				}
 				if (target[k] === undefined) {
 					delete target[k];
@@ -1399,6 +1401,8 @@ Q.extend = function _Q_extend(target /* [[deep,] [levels,] anotherObject], ... [
 	}
 	return target;
 };
+
+Q.extend.dontCopy = { "Q.Tool": true };
 
 /**
  * Returns whether an object contains a property directly
@@ -3990,7 +3994,9 @@ Tp.setUpElementHTML = function (element, toolName, toolOptions, id) {
  *   the tool corresponding to the given element, otherwise null
  */
 Q.Tool.from = function _Q_Tool_from(toolElement, toolName) {
-	if (typeof toolElement === 'string') {
+	if (Q.isArrayLike(toolElement)) {
+		toolElement = toolElement[0];
+	} if (typeof toolElement === 'string') {
 		toolElement = document.getElementById(toolElement);
 	}
 	return toolElement.Q ? toolElement.Q(toolName) : null;
