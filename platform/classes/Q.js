@@ -1583,7 +1583,9 @@ Q.extend = function _Q_extend(target /* [[deep,] [levels,] anotherObject], ... *
 						? Q.copy(argk.replace)
 						: Q.extend(target[k], deep, levels-1, argk);
 				} else {
-					target[k] = Q.copy(argk, null, levels-1);
+					target[k] = Q.extend.dontCopy[Q.typeOf(argk)]
+						? argk
+						: Q.copy(argk, null, levels-1);
 				}
 				if (target[k] === undefined) {
 					delete target[k];
@@ -1595,6 +1597,8 @@ Q.extend = function _Q_extend(target /* [[deep,] [levels,] anotherObject], ... *
 	}
 	return target;
 };
+
+Q.extend.dontCopy = { "Q.Tool": true };
 
 /**
  * Mixes in one or more classes. Useful for inheritance and multiple inheritance.
