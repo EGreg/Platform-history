@@ -14,6 +14,7 @@ var Places = Q.Places;
  * @param {Object} [options] used to pass options
  * @param {String} [options.countryCode='US'] the initial country to select in the list
  * @param {Array} [options.firstCountryCodes='US','GB'] array of country codes to place first in the list
+ * @param {Q.Tool} [options.globe] a reference to a "Places/globe" tool to synchronize
  */
 
 Q.Tool.define("Places/countries", function _Places_countries(options) {
@@ -39,19 +40,62 @@ Q.Tool.define("Places/countries", function _Places_countries(options) {
 			);
 		});
 		$select.appendTo(tool.element);
-		$select.val(state.countryCode);
 		tool.$select = $select;
+		$select.on('change', tool, function () {
+			if (state.globe) {
+				state.globe.rotateToCountry($select.val());
+			}
+		});
+		$select.val(state.countryCode);
+		$select.trigger('change');
 	});
+	
+	tool.Q.onStateChanged('countryCode').set(function () {
+		var globe = this.state.globe;
+		var countryCode = this.state.countryCode;
+		this.$select.val(countryCode);
+		if (globe) {
+			globe.rotateToCountry(countryCode);
+		}
+	}, "Places/countries");
+	
+	if (state.globe) {
+		this.globe(state.globe);
+	}
 },
 
 { // default options here
 	countryCode: 'US',
-	firstCountryCodes: ['US','GB']
+	firstCountryCodes: ['US','GB'],
+	globe: null
 },
 
 { // methods go here
 	
-
+	/**
+	 * @setCountry
+	 * @param {String} countryCode
+	 */
+	setCountry: Q.preventRecursion('Places/countries', function (countryCode) {
+		this.state.countryCode = countryCode;
+		this.stateChanged('countryCode');
+	}),
+	
+	/**
+	 * @method globe
+	 * @param {Q.Tool|false} globeTool A reference to a "Places/globe" tool, or false to unlink
+	 */
+	globe: function (globeTool) {
+		if (!globeTool) {
+			this.state.globe = null;
+			return;
+		}
+		this.state.globe = globeTool;
+		var tool = this;
+		globeTool.state.beforeRotateToCountry.set(function (countryCode) {
+			tool.setCountry(countryCode);
+		}, true);
+	}
 	
 });
 

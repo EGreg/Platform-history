@@ -17,6 +17,12 @@ var Streams = Q.Streams = Q.plugins.Streams = {
 
 };
 
+var dc = Q.extend.dontCopy;
+dc["Q.Streams.Stream"] = true;
+dc["Q.Streams.Message"] = true;
+dc["Q.Streams.Participant"] = true;
+dc["Q.Streams.Avatar"] = true;
+
 Q.text.Streams = {
 
 	access: {

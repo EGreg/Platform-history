@@ -17,6 +17,7 @@ var Places = Q.Places;
  *   if color is true then state.colors.highlight is used.
  *   This is modified by the default handler for beforeRotateToCountry added by this tool.
  * @param {Number} [options.radius] The radius of the globe, defauls to fill the canvas.
+ * @param {Number} [options.durations] The duration of rotation animation (it all rhymes baby)
  * @param {Object} [options.colors] colors for the planet
  * @param {String} [options.colors.oceans='#2a357d'] the color of the ocean
  * @param {String} [options.colors.land='#389631'] the color of the land
@@ -125,6 +126,7 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 	},
 	highlight: {'US':true},
 	radius: null,
+	duration: 1000, 
 	beforeRotate: new Q.Event(),
 	beforeRotateToCountry: new Q.Event(function (countryCode) {
 		var h = this.state.highlight = {};
@@ -154,11 +156,11 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 	 * Rotate the globe to center around a location
 	 * @param {Number} latitude
 	 * @param {Number} longitude
-	 * @param {Number} duration number of milliseconds for the animation to take
+	 * @param {Number} [duration=state.duration] number of milliseconds for the animation to take
 	 */
 	rotateTo: function Places_globe_rotateTo (latitude, longitude, duration, callback) {
 		var tool = this;
-		duration = duration || 1000;
+		duration = duration || this.state.duration;
 		Q.handle(tool.state.beforeRotate, tool, [latitude, longitude, duration]);
 		d3.transition()
 			.duration(duration)
@@ -177,12 +179,13 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 	 * Rotate the globe to center around a country
 	 * @param {String} countryCode which is described in ISO-3166-1 alpha-2 code
 	 * @param {Number} duration number of milliseconds for the animation to take
+	 * @return {Boolean} whether the country was found on the globe, and the rotation started
 	 */
 	rotateToCountry: function Places_globe_rotateToCountry (countryCode, duration) {
 		var tool = this;
 		var feature = _getFeature(tool.globe, countryCode);
 		if (!feature) {
-			return;
+			return false;
 		}
 		var c = tool.$canvas[0].getContext("2d");
 		var projection = tool.globe.projection;
@@ -201,6 +204,7 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 			path(feature);
 			c.fill();
 		});
+		return true;
 	},
 	
 	/**
