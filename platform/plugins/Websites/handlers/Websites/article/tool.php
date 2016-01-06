@@ -43,7 +43,7 @@ function Websites_article_tool($options)
 		}
 	}
 	if (!$canView) {
-		throw new Q_Exception_NotAuthorized();
+		throw new Users_Exception_NotAuthorized();
 	}
 	$html = Q::ifset($options, 'html', array());
 	$article->addPreloaded();
