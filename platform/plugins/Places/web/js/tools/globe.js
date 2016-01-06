@@ -22,6 +22,10 @@ var Places = Q.Places;
  * @param {String} [options.colors.oceans='#2a357d'] the color of the ocean
  * @param {String} [options.colors.land='#389631'] the color of the land
  * @param {String} [options.colors.borders='#008000'] the color of the borders
+ * @param {Object} [options.pings] default options for any pings added with addPing
+ * @param {Object} [options.pings.duration=2000] default duration of any ping animation
+ * @param {Object} [options.pings.size=10] default size of any ping animation
+ * @param {Object} [options.pings.color='white'] default color of any ping animation
  * @param {Q.Event} [options.onSelect] this event occurs when the user has selected a country or a place on the globe. It is passed (latitude, longitude, countryCode)
  * @param {Q.Event} [options.beforeRotate] this event occurs right before the globe is about to rotate to some location
  * @param {Q.Event} [options.beforeRotateToCountry] this event occurs right before the globe is about to rotate to some country
@@ -92,17 +96,7 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 			[state.radius, state.radius]
 		).rotate([0, -10, 0]);
 		
-		// Every few hundred milliseconds, we'll draw another random ping.
-		var colors = ['red', 'yellow', 'white', 'orange', 'green', 'cyan', 'pink'];
-
-		// The `pings` plugin draws animated pings on the globe.
 		globe.loadPlugin(planetaryjs.plugins.pings());
-		setInterval(function() {
-			var lat = Math.random() * 170 - 85;
-			var lng = Math.random() * 360 - 180;
-			var color = colors[Math.floor(Math.random() * colors.length)];
-			globe.plugins.pings.add(lng, lat, { color: color, ttl: 2000, angle: Math.random() * 10 });
-		}, 500);
 		
 		tool.refresh();
 	});
@@ -126,7 +120,12 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 	},
 	highlight: {'US':true},
 	radius: null,
-	duration: 1000, 
+	duration: 1000,
+	pings: {
+		duration: 2000,
+		size: 10,
+		color: 'white'
+	},
 	beforeRotate: new Q.Event(),
 	beforeRotateToCountry: new Q.Event(function (countryCode) {
 		var h = this.state.highlight = {};
@@ -222,6 +221,24 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 			latitude: coordinates[1],
 			longitude: coordinates[0]
 		}
+	},
+	
+	/**
+	 * Adds a ping to start animating immediately
+	 * @param {Number} latitude The latitude of the center of the ping
+	 * @param {Number} longitude The longitude of the center of the ping
+	 * @param {Number} [duration=state.pings.duration] Number of milliseconds for the ping growing animation
+	 * @param {Number} [size=state.pings.size] Maximum angle, in degrees, for the ping circle to grow to
+	 * @param {Number} [size=state.pings.color] Color of the ping circle
+	 */
+	addPing: function (latitude, longitude, duration, size, color) {
+		var state = this.state;
+		var globe = this.globe;
+		globe.plugins.pings.add(longitude, latitude, { 
+			color: color || state.pings.color, 
+			ttl: duration || state.pings.duration, 
+			angle: size || state.pings.size
+		});
 	}
 	
 });

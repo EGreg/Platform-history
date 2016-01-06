@@ -1898,7 +1898,7 @@ abstract class Streams extends Base_Streams
 		}
 
 		/**
-		 * @event Streams/unrelste/$streamType {after}
+		 * @event Streams/unrelate/$streamType {after}
 		 * @param {string} relatedTo
 		 * @param {string} relatedFrom
 		 * @param {string} asUserId
