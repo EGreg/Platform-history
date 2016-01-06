@@ -48,7 +48,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 		function _setContent(content) {
 			Q.Streams.get(state.publisherId, state.streamName, function () {
 				state.stream = this;
-				var $e, html = String(content).encodeHTML()
+				var $e, html = String(content || '').encodeHTML()
 					|| '<span class="Q_placeholder">'
 						+ String(tool.child('Q/inplace').state.placeholder).encodeHTML()
 						+ '</div>'
