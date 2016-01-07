@@ -37,8 +37,8 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 	
 	var p = Q.pipe(['scripts', 'countries'], function _proceed() {
 		tool.$canvas = $('<canvas />').attr({
-			width: $te.width(),
-			height: $te.height()
+			width: $te.outerWidth(),
+			height: $te.outerHeight()
 		}).appendTo($te)
 		.on(Q.Pointer.fastclick, tool, function(event) {
 			var ll = tool.getCoordinates(event);
@@ -135,7 +135,7 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 
 { // methods go here
 	
-	refresh: function Places_globe_refresh () {
+	refresh: function _Places_globe_refresh () {
 		var tool = this;
 		var state = tool.state;
 		var $te = $(tool.element);
@@ -243,14 +243,6 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 	
 });
 
-/**
- * Check argument for NULL value or change all the spaces to empty symbol
- * @param text
- * @returns {boolean}
- */
-function _isNullOrWhitespace(text) {
-	return text == null ? true : text.replace(/\s/gi, '').length < 1;
-}
 /**
  * Looking for a desired type in the results and getting component using typeName
  * @param {Object} results
