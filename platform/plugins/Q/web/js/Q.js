@@ -5266,8 +5266,9 @@ Q.load = function _Q_load(plugins, callback, options) {
  * Obtain a URL
  * @static
  * @method url
- * @param {Object} what
- *  Usually the stuff that comes after the base URL
+ * @param {Object|String|null} what
+ *  Usually the stuff that comes after the base URL.
+ *  If you don't provide this, then it just returns the Q.info.baseUrl
  * @param {Object} fields
  *  Optional fields to append to the querystring.
  *  Fields containing null and undefined are skipped.

@@ -12,18 +12,30 @@ var Places = Q.Places;
  * @class Places countries
  * @constructor
  * @param {Object} [options] used to pass options
+ * @param {String} [options.flags="plugins/Places/img/squareflags"] the path for the flags, or set to false to omit the flag
  * @param {String} [options.countryCode='US'] the initial country to select in the list
  * @param {Array} [options.firstCountryCodes='US','GB'] array of country codes to place first in the list
  * @param {Q.Tool} [options.globe] a reference to a "Places/globe" tool to synchronize
+ * @param {Q.Event} [options.onChange=new Q.Event()] Occurs when the value has changed
  */
-
 Q.Tool.define("Places/countries", function _Places_countries(options) {
 	var tool = this;
 	var state = tool.state;
 	var $te = $(tool.element);
 	
+	state.countryCode = state.countryCode.toUpperCase();
+	
+	var position = $te.css('position');
+	$te.css('position', position === 'static' ? 'relative' : position);
+	
 	Places.loadCountries(function () {
-		var $select = $('<select />');
+		if (state.flags) {
+			tool.$flag = $('<img class="Places_countries_flag" />').attr({
+				src: Q.url(state.flags+'/'+state.countryCode+'.png')
+			}).appendTo(tool.element);
+			$te.addClass('Places_countries_flags');
+		}
+		var $select = $('<select class="Places_countries_select" />');
 		var codes = {};
 		Q.each(state.firstCountryCodes, function (i, countryCode) {
 			$select.append(
@@ -42,8 +54,15 @@ Q.Tool.define("Places/countries", function _Places_countries(options) {
 		$select.appendTo(tool.element);
 		tool.$select = $select;
 		$select.on('change', tool, function () {
+			var countryCode = $select.val();
 			if (state.globe) {
-				state.globe.rotateToCountry($select.val());
+				state.globe.rotateToCountry(countryCode);
+			}
+			Q.handle(state.onChange, tool, [countryCode]);
+			if (tool.$flag) {
+				tool.$flag.attr({
+					src: Q.url(state.flags+'/'+countryCode+'.png')
+				});
 			}
 		});
 		$select.val(state.countryCode);
@@ -54,6 +73,7 @@ Q.Tool.define("Places/countries", function _Places_countries(options) {
 		var globe = this.state.globe;
 		var countryCode = this.state.countryCode;
 		this.$select.val(countryCode);
+		this.$select.trigger('change');
 		if (globe) {
 			globe.rotateToCountry(countryCode);
 		}
@@ -65,9 +85,11 @@ Q.Tool.define("Places/countries", function _Places_countries(options) {
 },
 
 { // default options here
+	flags: "plugins/Places/img/squareflags",
 	countryCode: 'US',
 	firstCountryCodes: ['US','GB'],
-	globe: null
+	globe: null,
+	onChange: new Q.Event()
 },
 
 { // methods go here
