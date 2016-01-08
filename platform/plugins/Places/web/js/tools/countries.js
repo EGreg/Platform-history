@@ -55,6 +55,7 @@ Q.Tool.define("Places/countries", function _Places_countries(options) {
 		var globe = this.state.globe;
 		var countryCode = this.state.countryCode;
 		this.$select.val(countryCode);
+		this.$select.trigger('change');
 		if (globe) {
 			globe.rotateToCountry(countryCode);
 		}
