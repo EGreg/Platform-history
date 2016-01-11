@@ -16,6 +16,7 @@ var Places = Q.Places;
  * @param {String} [options.countryCode='US'] the initial country to select in the list
  * @param {Array} [options.firstCountryCodes='US','GB'] array of country codes to place first in the list
  * @param {Q.Tool} [options.globe] a reference to a "Places/globe" tool to synchronize
+ * @param {Q.Event} [options.onReady] this event occurs when the countries selector is ready
  * @param {Q.Event} [options.onChange=new Q.Event()] Occurs when the value has changed
  */
 Q.Tool.define("Places/countries", function _Places_countries(options) {
@@ -47,9 +48,11 @@ Q.Tool.define("Places/countries", function _Places_countries(options) {
 		});
 		Q.each(Places.countries, function (i, item) {
 			if (codes[item[1]]) return;
-			$select.append(
-				$('<option />').attr('value', item[1]).text(item[0])
-			);
+			var option = $('<option />')
+				.attr('value', item[1])
+				.text(item[0])[0];
+			tool.options[ item[1] ]
+			$select.append(option);
 		});
 		$select.appendTo(tool.element);
 		tool.$select = $select;
@@ -67,6 +70,7 @@ Q.Tool.define("Places/countries", function _Places_countries(options) {
 		});
 		$select.val(state.countryCode);
 		$select.trigger('change');
+		Q.handle(state.onReady, tool);
 	});
 	
 	tool.Q.onStateChanged('countryCode').set(function () {
@@ -89,7 +93,8 @@ Q.Tool.define("Places/countries", function _Places_countries(options) {
 	countryCode: 'US',
 	firstCountryCodes: ['US','GB'],
 	globe: null,
-	onChange: new Q.Event()
+	onChange: new Q.Event(),
+	onReady: new Q.Event()
 },
 
 { // methods go here
@@ -117,6 +122,20 @@ Q.Tool.define("Places/countries", function _Places_countries(options) {
 		globeTool.state.beforeRotateToCountry.set(function (countryCode) {
 			tool.setCountry(countryCode);
 		}, true);
+	},
+	
+	/**
+	 * @method filter which countries are shown
+	 * @param {Array} countries An array of country codes to show from the whole set
+	 */
+	filter: function (countries) {
+		var tool = this;
+		this.state.onReady.add(function () {
+			tool.$select.find('option').hide();
+			Q.each(countries, function (i, countryCode) {
+				tool.$select.find('option[value='+countryCode+']').show();
+			});
+		}, tool);
 	}
 	
 });

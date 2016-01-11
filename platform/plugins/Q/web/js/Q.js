@@ -3165,7 +3165,7 @@ Q.Tool = function _Q_Tool(element, options) {
 	}
 
 	// options cascade -- process option keys that start with '.' or '#'
-	var partial, i, l;
+	var partial, i, k, l;
 	options = options || {};
 	this.options = this.options || {};
 	
@@ -3192,6 +3192,11 @@ Q.Tool = function _Q_Tool(element, options) {
 	// #Q_parent_child_tool
 	if ((partial = o['#' + this.element.id])) {
 		Q.extend(this.options, Q.Tool.options.levels, partial, 'Q.Tool');
+		for (k in o) {
+			if (k.startsWith('#' + this.prefix)) {
+				this.options[k] = o[k];
+			}
+		}
 	}
 	// #parent_child_tool, #child_tool
 	var _idcomps = this.element.id.split('_');
@@ -7430,7 +7435,16 @@ function _activateTools(toolElement, options, shared) {
 				this.activated = false;
 				this.initialized = false;
 				try {
-					this.options = Q.extend({}, Q.Tool.options.levels, toolFunc.options, Q.Tool.options.levels, options);
+					this.options = Q.extend({}, Q.Tool.options.levels, toolFunc.options);
+					if (options) {
+						var o2 = {}, k;
+						for (k in options) {
+							if (k[0] !== '#') {
+								o2[k] = options[k];
+							}
+						}
+						Q.extend(this.options, Q.Tool.options.levels, o2);
+					}
 					this.name = toolName;
 					Q.Tool.call(this, element, options);
 					this.state = Q.copy(this.options, toolFunc.stateKeys);
@@ -10432,7 +10446,8 @@ Q.onJQuery.add(function ($) {
 		"Q/columns": "plugins/Q/js/tools/columns.js",
 		"Q/drawers": "plugins/Q/js/tools/drawers.js",
 		"Q/expandable": "plugins/Q/js/tools/expandable.js",
-		"Q/filter": "plugins/Q/js/tools/filter.js"
+		"Q/filter": "plugins/Q/js/tools/filter.js",
+		"Q/rating": "plugins/Q/js/tools/rating.js"
 	});
 	
 	Q.Tool.jQuery({
@@ -10516,8 +10531,14 @@ function _addHandlebarsHelpers() {
 					Q.setObject(k, hash[k], o, '-');
 				}
 			}
-			Q.extend(o, this && this[name], this && this['id:'+id]);
-			id = prefix + name.split('/').join('_') + (id ? '-' + id : '');
+			if (this && this[name]) {
+				Q.extend(o, this[name]);
+			}
+			if (id && this && this['id:'+id]) {
+				Q.extend(o, this['id:'+id]);
+			}
+			var useId = (typeof id === 'string' || typeof id === 'number') && id !== '';
+			id = prefix + name.split('/').join('_') + (useId ? '-'+id : '');
 			return Q.Tool.setUpElementHTML('div', name, o, id, prefix);
 		});
 	}

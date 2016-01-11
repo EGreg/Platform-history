@@ -16,7 +16,7 @@ var Places = Q.Places;
  * @param {Array} [options.highlight={US:true}] pairs of {countryCode: color},
  *   if color is true then state.colors.highlight is used.
  *   This is modified by the default handler for beforeRotateToCountry added by this tool.
- * @param {Number} [options.radius] The radius of the globe, defauls to fill the canvas.
+ * @param {Number} [options.radius=0.9] The radius of the globe, as a fraction of Math.min(canvas.width, canvas.height) / 2.
  * @param {Number} [options.durations] The duration of rotation animation (it all rhymes baby)
  * @param {Object} [options.colors] colors for the planet
  * @param {String} [options.colors.oceans='#2a357d'] the color of the ocean
@@ -26,6 +26,12 @@ var Places = Q.Places;
  * @param {Object} [options.pings.duration=2000] default duration of any ping animation
  * @param {Object} [options.pings.size=10] default size of any ping animation
  * @param {Object} [options.pings.color='white'] default color of any ping animation
+ * @param {Object} [options.shadow] shadow effect configuration
+ * @param {String} [options.shadow.src="plugins/Q/img/shadow3d.png"] src , path to image
+ * @param {Number} [options.shadow.stretch=1.5] stretch
+ * @param {Number} [options.shadow.dip=0.25] dip
+ * @param {Number} [options.shadow.opacity=0.5] opacity
+ * @param {Q.Event} [options.onReady] this event occurs when the globe is ready
  * @param {Q.Event} [options.onSelect] this event occurs when the user has selected a country or a place on the globe. It is passed (latitude, longitude, countryCode)
  * @param {Q.Event} [options.beforeRotate] this event occurs right before the globe is about to rotate to some location
  * @param {Q.Event} [options.beforeRotateToCountry] this event occurs right before the globe is about to rotate to some country
@@ -57,10 +63,14 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 		});
 		
 		if (!state.radius) {
-			state.radius = Math.min(tool.$canvas.width(), tool.$canvas.height()) / 2;
+			state.radius = 0.9;
 		}
 		
 		var globe = tool.globe = planetaryjs.planet();
+		
+		globe.onInit(function () {
+			Q.handle(state.onReady, tool);
+		});
 		
 		// The `earth` plugin draws the oceans and the land; it's actually
 		// a combination of several separate built-in plugins.
@@ -86,17 +96,55 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 		
 		// The zoom and drag plugins enable
 		// manipulating the globe with the mouse.
+		var half = Math.min(tool.$canvas.width(), tool.$canvas.height()) / 2;
+		var radius = half * state.radius;
 		globe.loadPlugin(planetaryjs.plugins.zoom({
-			scaleExtent: [state.radius, 20 * state.radius]
+			scaleExtent: [radius, 20 * state.radius]
 		}));
 		globe.loadPlugin(planetaryjs.plugins.drag({}));
 		
 		// Set up the globe's initial scale, offset, and rotation.
-		globe.projection.scale(state.radius).translate(
-			[state.radius, state.radius]
-		).rotate([0, -10, 0]);
+		globe.projection
+			.scale(radius)
+			.translate([half, half])
+			.rotate([0, -10, 0]);
 		
 		globe.loadPlugin(planetaryjs.plugins.pings());
+		
+		if (state.shadow && state.shadow.src) {
+			var shadow = $('<img />').addClass('Q_globe_shadow')
+				.attr('src', Q.url(state.shadow.src));
+			shadow.css('display', 'none').prependTo($te).load(function () {
+				var $this = $(this);
+				var w = h = radius * 2;
+				var width = w * state.shadow.stretch;
+				var height = Math.min($this.height() * width / $this.width(), h/2);
+				var toSet = {
+					'position': 'absolute',
+					'left': ($te.outerWidth() - width)/2+'px',
+					'top': $te.outerHeight() - height * (1-state.shadow.dip)+'px',
+					'width': width+'px',
+					'height': height+'px',
+					'opacity': state.shadow.opacity,
+					'display': '',
+					'padding': '0px',
+					'background': 'none',
+					'border': '0px',
+					'outline': '0px',
+					'z-index': 1
+				};
+				var i, l, props = Object.keys(toSet);
+				$this.css(toSet);
+			});
+			var $placeholder = $('<div class="Places_globe_placeholder" />').css({
+				width: tool.$canvas.outerWidth(),
+				height: tool.$canvas.outerHeight()
+			}).insertAfter(tool.$canvas);
+			tool.$canvas.css({
+				'position': 'absolute',
+				'z-index': 2
+			});
+		}
 		
 		tool.refresh();
 	});
@@ -126,6 +174,14 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 		size: 10,
 		color: 'white'
 	},
+	shadow: {
+		src: "plugins/Q/img/shadow3d.png",
+		stretch: 1.2,
+		dip: 0.25,
+		opacity: 0.5
+	},
+	onReady: new Q.Event(),
+	onRefresh: new Q.Event(),
 	beforeRotate: new Q.Event(),
 	beforeRotateToCountry: new Q.Event(function (countryCode) {
 		var h = this.state.highlight = {};
@@ -142,13 +198,29 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 		Places.loadGoogleMaps(function () {
 			tool.geocoder = new google.maps.Geocoder;
 			tool.globe.draw(tool.$canvas[0]);
-			var waitForTopoJsonLoad = setInterval(function () {
-				if (tool.globe.plugins.topojson) {
-					tool.rotateToCountry(state.countryCode);
-					clearInterval(waitForTopoJsonLoad);
-				}
-			}, 50);
+			var waitForTopoJsonLoad = setInterval(_a, 50);
+			function _a() {
+				if (!Q.getObject('globe.plugins.topojson.world', tool)) return;
+				tool.rotateToCountry(state.countryCode);
+				clearInterval(waitForTopoJsonLoad);
+				Q.handle(state.onRefresh, tool);
+			}
+			_a();
 		});
+	},
+	
+	/**
+	 * Obtain the coordinates of a country's cener
+	 * @param {String} countryCode
+	 * @return {Object|null} An object with properties "latitude" and "longitude"
+	 */
+	countryCenter: function Places_globe_countryCenter (countryCode) {
+		var feature = _getFeature(tool.globe, countryCode);
+		if (!feature) {
+			return false;
+		}
+		var p = d3.geo.centroid(feature);
+		return { latitude: p[0], longitude: p[1] };
 	},
 	
 	/**
@@ -166,6 +238,10 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 			.tween('rotate', function() {
 				var projection = tool.globe.projection;
 				var r = d3.interpolate(projection.rotate(), [-longitude, -latitude]);
+				tool.center = {
+					latitude: latitude,
+					longitude: longitude
+				};
 				return function(t) {
 					projection.rotate(r(t));
 					callback && callback.apply(this, arguments);
@@ -234,6 +310,7 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 	addPing: function (latitude, longitude, duration, size, color) {
 		var state = this.state;
 		var globe = this.globe;
+		if (!globe.plugins.pings) return;
 		globe.plugins.pings.add(longitude, latitude, { 
 			color: color || state.pings.color, 
 			ttl: duration || state.pings.duration, 
@@ -327,6 +404,9 @@ function _getFeature(planet, countryCode) {
 	countryName = parts[0];
 	lookup = Places.countryLookupByCode[countryCode];
 	if (tj = planet.plugins.topojson) {
+		if (!tj.world) {
+			return null;
+		}
 		countries = tj.world.objects.countries;
 		features = topojson.feature(tj.world, countries).features;
 		feature = null;
