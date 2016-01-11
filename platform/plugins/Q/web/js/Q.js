@@ -25,7 +25,8 @@ function Q () {
 // external libraries, which you can override
 Q.libraries = {
 	json: "http://cdnjs.cloudflare.com/ajax/libs/json3/3.2.4/json3.min.js",
-	promise: 'plugins/Q/js/Promise.js'
+	promise: 'plugins/Q/js/Promise.js',
+	handlebars: 'plugins/Q/js/handlebars-v1.3.0.min.js'
 };
 
 /**
@@ -7645,7 +7646,9 @@ Q.Template.set = function (name, content, type) {
 	type = type || 'handlebars';
 	Q.Template.remove(name);
 	Q.Template.collection[Q.normalize(name)] = content;
-	Q.Template.compile(content);
+	Q.ensure(root.Handlebars,  Q.url(Q.libraries.handlebars), function () {
+		Q.Template.compile(content);
+	});
 };
 
 /**
@@ -7811,9 +7814,7 @@ Q.Template.render = function _Q_Template_render(name, fields, partials, callback
 			);
 		});
 	}
-	Q.ensure(root.Handlebars, 
-		Q.url('plugins/Q/js/handlebars-v1.3.0.min.js'),
-		function () {
+	Q.ensure(root.Handlebars,  Q.url(Q.libraries.handlebars), function () {
 			_addHandlebarsHelpers();
 			// load the template and partials
 			var p = Q.pipe(['template', 'partials'], function (params) {
