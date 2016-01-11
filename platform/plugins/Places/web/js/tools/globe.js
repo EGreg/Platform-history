@@ -26,6 +26,11 @@ var Places = Q.Places;
  * @param {Object} [options.pings.duration=2000] default duration of any ping animation
  * @param {Object} [options.pings.size=10] default size of any ping animation
  * @param {Object} [options.pings.color='white'] default color of any ping animation
+ * @param {Object} [options.shadow] shadow effect configuration
+ * @param {String} [options.shadow.src="plugins/Q/img/shadow3d.png"] src , path to image
+ * @param {Number} [options.shadow.stretch=1.5] stretch
+ * @param {Number} [options.shadow.dip=0.25] dip
+ * @param {Number} [options.shadow.opacity=0.5] opacity
  * @param {Q.Event} [options.onReady] this event occurs when the globe is ready
  * @param {Q.Event} [options.onSelect] this event occurs when the user has selected a country or a place on the globe. It is passed (latitude, longitude, countryCode)
  * @param {Q.Event} [options.beforeRotate] this event occurs right before the globe is about to rotate to some location
@@ -106,6 +111,41 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 		
 		globe.loadPlugin(planetaryjs.plugins.pings());
 		
+		if (state.shadow && state.shadow.src) {
+			var shadow = $('<img />').addClass('Q_globe_shadow')
+				.attr('src', Q.url(state.shadow.src));
+			shadow.css('display', 'none').prependTo($te).load(function () {
+				var $this = $(this);
+				var w = h = radius * 2;
+				var width = w * state.shadow.stretch;
+				var height = Math.min($this.height() * width / $this.width(), h/2);
+				var toSet = {
+					'position': 'absolute',
+					'left': ($te.outerWidth() - width)/2+'px',
+					'top': $te.outerHeight() - height * (1-state.shadow.dip)+'px',
+					'width': width+'px',
+					'height': height+'px',
+					'opacity': state.shadow.opacity,
+					'display': '',
+					'padding': '0px',
+					'background': 'none',
+					'border': '0px',
+					'outline': '0px',
+					'z-index': 1
+				};
+				var i, l, props = Object.keys(toSet);
+				$this.css(toSet);
+			});
+			var $placeholder = $('<div class="Places_globe_placeholder" />').css({
+				width: tool.$canvas.outerWidth(),
+				height: tool.$canvas.outerHeight()
+			}).insertAfter(tool.$canvas);
+			tool.$canvas.css({
+				'position': 'absolute',
+				'z-index': 2
+			});
+		}
+		
 		tool.refresh();
 	});
 	
@@ -133,6 +173,12 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 		duration: 2000,
 		size: 10,
 		color: 'white'
+	},
+	shadow: {
+		src: "plugins/Q/img/shadow3d.png",
+		stretch: 1.2,
+		dip: 0.25,
+		opacity: 0.5
 	},
 	onReady: new Q.Event(),
 	onRefresh: new Q.Event(),
