@@ -19,7 +19,11 @@
 	 */
 
 	Q.Tool.jQuery('Q/timestamp', function (o) {
-		var time = parseInt(o.time) || Date.now() / 1000;
+		var timestamp = !isNaN(o.time) && parseInt(o.time);
+		var date = (typeof o.time === 'string')
+			? new Date(timestamp ? timestamp : o.time)
+			: new Date();
+		var time = date.getTime() / 1000;
 
 		var $this = $(this);
 		var state = $this.state('Q/timestamp');

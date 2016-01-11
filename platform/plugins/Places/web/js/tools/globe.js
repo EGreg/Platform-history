@@ -112,7 +112,7 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 		globe.loadPlugin(planetaryjs.plugins.pings());
 		
 		if (state.shadow && state.shadow.src) {
-			var shadow = $('<img />').addClass('Q_globe_shadow')
+			var shadow = $('<img />').addClass('Places_globe_shadow')
 				.attr('src', Q.url(state.shadow.src));
 			shadow.css('display', 'none').prependTo($te).load(function () {
 				var $this = $(this);
@@ -186,7 +186,8 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 	beforeRotateToCountry: new Q.Event(function (countryCode) {
 		var h = this.state.highlight = {};
 		h[countryCode] = true;
-	}, "Place/globe")
+	}, "Place/globe"),
+	onRotateEnded: new Q.Event()
 },
 
 { // methods go here
@@ -229,7 +230,8 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 	 * @param {Number} longitude
 	 * @param {Number} [duration=state.duration] number of milliseconds for the animation to take
 	 */
-	rotateTo: function Places_globe_rotateTo (latitude, longitude, duration, callback) {
+	rotateTo: Q.preventRecursion('Places/globe rotateTo', 
+	function Places_globe_rotateTo (latitude, longitude, duration, callback) {
 		var tool = this;
 		duration = duration || this.state.duration;
 		Q.handle(tool.state.beforeRotate, tool, [latitude, longitude, duration]);
@@ -248,7 +250,7 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 				};
 			})
 			.transition();
-	},
+	}),
 		
 	/**
 	 * Rotate the globe to center around a country
@@ -256,7 +258,8 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 	 * @param {Number} duration number of milliseconds for the animation to take
 	 * @return {Boolean} whether the country was found on the globe, and the rotation started
 	 */
-	rotateToCountry: function Places_globe_rotateToCountry (countryCode, duration) {
+	rotateToCountry: Q.preventRecursion('Q/globe rotateToCountry', 
+	function Places_globe_rotateToCountry (countryCode, duration) {
 		var tool = this;
 		var feature = _getFeature(tool.globe, countryCode);
 		if (!feature) {
@@ -280,7 +283,7 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 			c.fill();
 		});
 		return true;
-	},
+	}),
 	
 	/**
 	 * Obtain latitude and longitude from a pointer event
