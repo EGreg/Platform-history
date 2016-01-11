@@ -173,13 +173,13 @@ class Q
 
 	/**
 	 * Test whether $text is prefixed by $prefix
-	 * @method testPrefix
+	 * @method startsWith
 	 * @static
 	 * @param {string} $text The string to check
 	 * @param {string} $prefix
 	 * @return {boolean}
 	 */
-	static function testPrefix($text, $prefix)
+	static function startsWith($text, $prefix)
 	{
 		return substr($text, 0, strlen($prefix)) === $prefix;
 	}
