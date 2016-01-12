@@ -81,14 +81,18 @@ class Q_Handlebars {
 			return "{{tool missing name}}";
 		}
 		$name = $args[0];
-		$id = (count($args) > 1 && is_string($args[1])) ? $args[1] : null;
+		if (count($args) > 1 && (is_string($args[1]) || is_numeric($args[1]))) {
+			$id = $args[1];
+		}
 		$options = Q::ifset($args, 'hash', array());
 		$fields = $context->fields();
-		$o = array_merge(
-			$options, 
-			Q::ifset($fields, $name, array()),
-			Q::ifset($fields, "id:$id", array())
-		);
+		$o = $options;
+		if (isset($fields[$name])) {
+			$o = array_merge($o, $options);
+		}
+		if ($id && isset($fields["id:$id"])) {
+			$o = array_merge($o, $options);
+		}
 		return Q::tool($name, $o, compact('id'));
 	}
 

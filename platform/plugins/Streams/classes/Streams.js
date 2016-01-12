@@ -588,7 +588,7 @@ Streams.listen = function (options) {
 							length: Q.Config.get(['Streams', 'invites', 'tokens', 'length'], 16),
 							characters: Q.Config.get(
 							    ['Streams', 'invites', 'tokens', 'characters'],
-							    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+							    'abcdefghijklmnopqrstuvwxyz'
 							)
 						}
 					);

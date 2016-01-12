@@ -1415,11 +1415,12 @@ class Q_Response
 	 * Used to get/set output that the Q/response handler should consult.
 	 * @method output
 	 * @static
-	 * @param {string} [$new_output=null] Pass a string here to return as output, instead of the usual layout.
+	 * @param {string} [$new_output=null] Pass a string here to return as output,
+	 *  instead of the usual layout.
 	 *  Or, pass true here to indicate that we have already returned the output,
 	 *  and to skip rendering a layout.
-	 * @param {boolean} [$override=false] If an output string is already set, doesn't override it
-	 *  unless you pass true here.
+	 * @param {boolean} [$override=false] If an output string is already set, 
+	 *  calling this method wouldn't override it unless you pass true here.
 	 * @return {string} Returns the output that was set, if any
 	 */
 	static function output($new_output = null, $override = false)

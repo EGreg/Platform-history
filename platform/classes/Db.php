@@ -287,14 +287,14 @@ interface iDb
 	 *  You can indicate conditions here to limit the search for
 	 *  an existing value. The result is an id that is unique within
 	 *  a certain partition.
-	 * @param {array} $options=array()
-	 *  Optional array used to override default options:<br/>
-	 *  "length" => Defaults to 7. The length of the ID to generate, after the prefix.<br/>
-	 *  "characters" => A string of characters from which to construct the ID.<br/>
-	 *  "prefix" => The prefix to prepend to the unique id. Defaults to ''.<br/>
-	 *  "filter" => The name of a function that will take the generated string and
+	 * @param {array} [$options=array()] Optional array used to override default options:
+	 * @param {integer} [$options.length=8] The length of the ID to generate, after the prefix.
+	 * @param {string} [$options.characters='abcdefghijklmnopqrstuvwxyz']  All the characters from which to construct the id
+	 * @param {string} [$options.prefix=''] The prefix to prepend to the unique id.
+	 * @param {callable} [$options.filter]
+	 *     The name of a function that will take the generated string and
 	 *     check it. The filter function can modify the string by returning another string,
-	 *     or simply reject the string by returning false, in which another string will be generated.
+	 *     or simply reject the string by returning false, in which another string will be
 	 */
 	function uniqueId(
 		$table, 

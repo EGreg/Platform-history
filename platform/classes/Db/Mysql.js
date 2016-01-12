@@ -258,24 +258,25 @@ function Db_Mysql(connName, dsn) {
 	 *  You should probably have an index starting with this field.
 	 * @param {Function} callback When an acceptable unique ID is generated, this function is called with the ID
 	 *  as the first parameter.
-	 * @param {object} [where={}] You can indicate conditions here to limit the search for
+	 * @param {Object} [where={}] You can indicate conditions here to limit the search for
 	 *  an existing value. The result is an id that is unique within
 	 *  a certain partition.
-	 * @param {object} [options={}] Optional hash used to override default options:
-	 *
-	 * * "length": Defaults to 7. The length of the ID to generate, after the prefix.
-	 * * "characters": A string of characters from which to construct the ID.
-	 * * "prefix": The prefix to prepend to the unique id. Defaults to ''.
-	 * * "filter": A function that will take the generated string and check it.
+	 * @param {Object} [options={}] Optional hash used to override default options:
+	 * @param {Number} [options.length=8] The length of the ID to generate, after the prefix.
+	 * @param {String} [options.characters='abcdefghijklmnopqrstuvwxyz']  All the characters from which to construct the id
+	 * @param {String} [options.prefix=''] The prefix to prepend to the unique id.
+	 * @param {Function} [options.filter]
+	 *     A function that will take the generated string and check it.
 	 *     The filter function can modify the string by returning another string,
-	 *     or simply reject the string by returning false, in which another string will be generated.
-	 * * "onError": A callback to call if an error occurs
+	 *     or simply reject the string by returning false, in which case
+	 *     another string will be generated.
+	 * @param {Function|Q.Event} [options.onError] Triggered if an error occurs
 	 */
 	dbm.uniqueId = function(table, field, callback, where, options) {
 		where = where || {};
 		options = options || {};
-		var length = options.length || 7;
-		var characters = options.characters || 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890';
+		var length = options.length || 8;
+		var characters = options.characters || 'abcdefghijklmnopqrstuvwxyz';
 		var prefix = options.prefix || '';
 		var count = characters.length;
 		var that = this;

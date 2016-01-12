@@ -16,11 +16,22 @@ var Places = Q.Places;
  * @param {Array} [options.highlight={US:true}] pairs of {countryCode: color},
  *   if color is true then state.colors.highlight is used.
  *   This is modified by the default handler for beforeRotateToCountry added by this tool.
- * @param {Number} [options.radius] The radius of the globe, defauls to fill the canvas.
+ * @param {Number} [options.radius=0.9] The radius of the globe, as a fraction of Math.min(canvas.width, canvas.height) / 2.
+ * @param {Number} [options.durations] The duration of rotation animation (it all rhymes baby)
  * @param {Object} [options.colors] colors for the planet
  * @param {String} [options.colors.oceans='#2a357d'] the color of the ocean
  * @param {String} [options.colors.land='#389631'] the color of the land
  * @param {String} [options.colors.borders='#008000'] the color of the borders
+ * @param {Object} [options.pings] default options for any pings added with addPing
+ * @param {Object} [options.pings.duration=2000] default duration of any ping animation
+ * @param {Object} [options.pings.size=10] default size of any ping animation
+ * @param {Object} [options.pings.color='white'] default color of any ping animation
+ * @param {Object} [options.shadow] shadow effect configuration
+ * @param {String} [options.shadow.src="plugins/Q/img/shadow3d.png"] src , path to image
+ * @param {Number} [options.shadow.stretch=1.5] stretch
+ * @param {Number} [options.shadow.dip=0.25] dip
+ * @param {Number} [options.shadow.opacity=0.5] opacity
+ * @param {Q.Event} [options.onReady] this event occurs when the globe is ready
  * @param {Q.Event} [options.onSelect] this event occurs when the user has selected a country or a place on the globe. It is passed (latitude, longitude, countryCode)
  * @param {Q.Event} [options.beforeRotate] this event occurs right before the globe is about to rotate to some location
  * @param {Q.Event} [options.beforeRotateToCountry] this event occurs right before the globe is about to rotate to some country
@@ -32,8 +43,8 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 	
 	var p = Q.pipe(['scripts', 'countries'], function _proceed() {
 		tool.$canvas = $('<canvas />').attr({
-			width: $te.width(),
-			height: $te.height()
+			width: $te.outerWidth(),
+			height: $te.outerHeight()
 		}).appendTo($te)
 		.on(Q.Pointer.fastclick, tool, function(event) {
 			var ll = tool.getCoordinates(event);
@@ -52,10 +63,14 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 		});
 		
 		if (!state.radius) {
-			state.radius = Math.min(tool.$canvas.width(), tool.$canvas.height()) / 2;
+			state.radius = 0.9;
 		}
 		
 		var globe = tool.globe = planetaryjs.planet();
+		
+		globe.onInit(function () {
+			Q.handle(state.onReady, tool);
+		});
 		
 		// The `earth` plugin draws the oceans and the land; it's actually
 		// a combination of several separate built-in plugins.
@@ -81,27 +96,58 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 		
 		// The zoom and drag plugins enable
 		// manipulating the globe with the mouse.
+		var half = Math.min(tool.$canvas.width(), tool.$canvas.height()) / 2;
+		var radius = half * state.radius;
 		globe.loadPlugin(planetaryjs.plugins.zoom({
-			scaleExtent: [state.radius, 20 * state.radius]
+			scaleExtent: [radius, 20 * state.radius]
 		}));
 		globe.loadPlugin(planetaryjs.plugins.drag({}));
 		
 		// Set up the globe's initial scale, offset, and rotation.
-		globe.projection.scale(state.radius).translate(
-			[state.radius, state.radius]
-		).rotate([0, -10, 0]);
+		globe.projection
+			.scale(radius)
+			.translate([half, half])
+			.rotate([0, -10, 0]);
 		
-		// Every few hundred milliseconds, we'll draw another random ping.
-		var colors = ['red', 'yellow', 'white', 'orange', 'green', 'cyan', 'pink'];
-
-		// The `pings` plugin draws animated pings on the globe.
 		globe.loadPlugin(planetaryjs.plugins.pings());
-		setInterval(function() {
-			var lat = Math.random() * 170 - 85;
-			var lng = Math.random() * 360 - 180;
-			var color = colors[Math.floor(Math.random() * colors.length)];
-			globe.plugins.pings.add(lng, lat, { color: color, ttl: 2000, angle: Math.random() * 10 });
-		}, 500);
+		
+		if (state.shadow && state.shadow.src) {
+			var shadow = $('<img />').addClass('Places_globe_shadow')
+				.attr('src', Q.url(state.shadow.src));
+			shadow.css('display', 'none').prependTo($te).load(function () {
+				var $this = $(this);
+				var w = h = radius * 2;
+				var width = w * state.shadow.stretch;
+				var height = Math.min($this.height() * width / $this.width(), h/2);
+				var toSet = {
+					'position': 'absolute',
+					'left': ($te.outerWidth() - width)/2+'px',
+					'top': $te.outerHeight() - height * (1-state.shadow.dip)+'px',
+					'width': width+'px',
+					'height': height+'px',
+					'opacity': state.shadow.opacity,
+					'display': '',
+					'padding': '0px',
+					'background': 'none',
+					'border': '0px',
+					'outline': '0px',
+					'z-index': 1
+				};
+				var i, l, props = Object.keys(toSet);
+				$this.css(toSet);
+			});
+			var $placeholder = $('<div class="Places_globe_placeholder" />').css({
+				width: tool.$canvas.outerWidth(),
+				height: tool.$canvas.outerHeight()
+			}).insertAfter(tool.$canvas);
+			tool.$canvas.css({
+				'position': 'absolute',
+				'z-index': 2
+			});
+			if ($te.css('position') === 'static') {
+				$te.css('position', 'relative');
+			}
+		}
 		
 		tool.refresh();
 	});
@@ -125,64 +171,102 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 	},
 	highlight: {'US':true},
 	radius: null,
+	duration: 1000,
+	pings: {
+		duration: 2000,
+		size: 10,
+		color: 'white'
+	},
+	shadow: {
+		src: "plugins/Q/img/shadow3d.png",
+		stretch: 1.2,
+		dip: 0.25,
+		opacity: 0.5
+	},
+	onReady: new Q.Event(),
+	onRefresh: new Q.Event(),
 	beforeRotate: new Q.Event(),
 	beforeRotateToCountry: new Q.Event(function (countryCode) {
 		var h = this.state.highlight = {};
 		h[countryCode] = true;
-	}, "Place/globe")
+	}, "Place/globe"),
+	onRotateEnded: new Q.Event()
 },
 
 { // methods go here
 	
-	refresh: function Places_globe_refresh () {
+	refresh: function _Places_globe_refresh () {
 		var tool = this;
 		var state = tool.state;
 		var $te = $(tool.element);
 		Places.loadGoogleMaps(function () {
 			tool.geocoder = new google.maps.Geocoder;
 			tool.globe.draw(tool.$canvas[0]);
-			var waitForTopoJsonLoad = setInterval(function () {
-				if (tool.globe.plugins.topojson) {
-					tool.rotateToCountry(state.countryCode);
-					clearInterval(waitForTopoJsonLoad);
-				}
-			}, 50);
+			var waitForTopoJsonLoad = setInterval(_a, 50);
+			function _a() {
+				if (!Q.getObject('globe.plugins.topojson.world', tool)) return;
+				tool.rotateToCountry(state.countryCode);
+				clearInterval(waitForTopoJsonLoad);
+				Q.handle(state.onRefresh, tool);
+			}
+			_a();
 		});
+	},
+	
+	/**
+	 * Obtain the coordinates of a country's cener
+	 * @param {String} countryCode
+	 * @return {Object|null} An object with properties "latitude" and "longitude"
+	 */
+	countryCenter: function Places_globe_countryCenter (countryCode) {
+		var feature = _getFeature(tool.globe, countryCode);
+		if (!feature) {
+			return false;
+		}
+		var p = d3.geo.centroid(feature);
+		return { latitude: p[0], longitude: p[1] };
 	},
 	
 	/**
 	 * Rotate the globe to center around a location
 	 * @param {Number} latitude
 	 * @param {Number} longitude
-	 * @param {Number} duration number of milliseconds for the animation to take
+	 * @param {Number} [duration=state.duration] number of milliseconds for the animation to take
 	 */
-	rotateTo: function Places_globe_rotateTo (latitude, longitude, duration, callback) {
+	rotateTo: Q.preventRecursion('Places/globe rotateTo', 
+	function Places_globe_rotateTo (latitude, longitude, duration, callback) {
 		var tool = this;
-		duration = duration || 1000;
+		duration = duration || this.state.duration;
 		Q.handle(tool.state.beforeRotate, tool, [latitude, longitude, duration]);
 		d3.transition()
 			.duration(duration)
 			.tween('rotate', function() {
 				var projection = tool.globe.projection;
 				var r = d3.interpolate(projection.rotate(), [-longitude, -latitude]);
+				tool.center = {
+					latitude: latitude,
+					longitude: longitude
+				};
 				return function(t) {
 					projection.rotate(r(t));
 					callback && callback.apply(this, arguments);
 				};
 			})
 			.transition();
-	},
+	}),
 		
 	/**
 	 * Rotate the globe to center around a country
 	 * @param {String} countryCode which is described in ISO-3166-1 alpha-2 code
 	 * @param {Number} duration number of milliseconds for the animation to take
+	 * @return {Boolean} whether the country was found on the globe, and the rotation started
 	 */
-	rotateToCountry: function Places_globe_rotateToCountry (countryCode, duration) {
+	rotateToCountry: Q.preventRecursion('Q/globe rotateToCountry', 
+	function Places_globe_rotateToCountry (countryCode, duration) {
 		var tool = this;
 		var feature = _getFeature(tool.globe, countryCode);
 		if (!feature) {
-			return;
+			return false;
 		}
 		var c = tool.$canvas[0].getContext("2d");
 		var projection = tool.globe.projection;
@@ -201,7 +285,8 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 			path(feature);
 			c.fill();
 		});
-	},
+		return true;
+	}),
 	
 	/**
 	 * Obtain latitude and longitude from a pointer event
@@ -218,18 +303,29 @@ Q.Tool.define("Places/globe", function _Places_location(options) {
 			latitude: coordinates[1],
 			longitude: coordinates[0]
 		}
+	},
+	
+	/**
+	 * Adds a ping to start animating immediately
+	 * @param {Number} latitude The latitude of the center of the ping
+	 * @param {Number} longitude The longitude of the center of the ping
+	 * @param {Number} [duration=state.pings.duration] Number of milliseconds for the ping growing animation
+	 * @param {Number} [size=state.pings.size] Maximum angle, in degrees, for the ping circle to grow to
+	 * @param {Number} [size=state.pings.color] Color of the ping circle
+	 */
+	addPing: function (latitude, longitude, duration, size, color) {
+		var state = this.state;
+		var globe = this.globe;
+		if (!globe.plugins.pings) return;
+		globe.plugins.pings.add(longitude, latitude, { 
+			color: color || state.pings.color, 
+			ttl: duration || state.pings.duration, 
+			angle: size || state.pings.size
+		});
 	}
 	
 });
 
-/**
- * Check argument for NULL value or change all the spaces to empty symbol
- * @param text
- * @returns {boolean}
- */
-function _isNullOrWhitespace(text) {
-	return text == null ? true : text.replace(/\s/gi, '').length < 1;
-}
 /**
  * Looking for a desired type in the results and getting component using typeName
  * @param {Object} results
@@ -314,6 +410,9 @@ function _getFeature(planet, countryCode) {
 	countryName = parts[0];
 	lookup = Places.countryLookupByCode[countryCode];
 	if (tj = planet.plugins.topojson) {
+		if (!tj.world) {
+			return null;
+		}
 		countries = tj.world.objects.countries;
 		features = topojson.feature(tj.world, countries).features;
 		feature = null;

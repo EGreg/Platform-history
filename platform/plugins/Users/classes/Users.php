@@ -1237,9 +1237,6 @@ abstract class Users extends Base_Users
 		if (empty($urls)) {
 			return $directory;
 		}
-		$head = APP_FILES_DIR.DS.$app.DS.'uploads';
-		$tail = str_replace(DS, '/', substr($directory, strlen($head)));
-		$iconUrl = Q_Request::baseUrl().'/uploads'.$tail;
 		Q_Utils::canWriteToPath($directory, false, true);
 		$type = Q_Config::get('Users', 'login', 'iconType', 'wavatar');
 		$largestSize = 0;
@@ -1316,7 +1313,9 @@ abstract class Users extends Base_Users
 				);
 			}
 		}
-		$user->icon = $iconUrl;
+		$head = APP_FILES_DIR.DS.$app.DS.'uploads';
+		$tail = str_replace(DS, '/', substr($directory, strlen($head)));
+		$user->icon = '{{baseUrl}}/uploads'.$tail;
 		return $directory;
 	}
 
@@ -1900,7 +1899,8 @@ abstract class Users extends Base_Users
 		if (empty($icon)) {
 			return null;
 		}
-		$url = Q_Valid::url($icon) ? $icon : "plugins/Users/img/icons/$icon";
+		$url = Q::interpolate($icon, array('baseUrl' => Q_Request::baseUrl()));
+		$url = Q_Valid::url($url) ? $url : "/plugins/Users/img/icons/$url";
 		if ($basename) {
 			$url .= "/$basename";
 		}

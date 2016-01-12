@@ -48,52 +48,52 @@ Q.Tool.define("Streams/inplace", function (options) {
 		function _setContent(content) {
 			Q.Streams.get(state.publisherId, state.streamName, function () {
 				state.stream = this;
-			});
-			var $e, html = String(content).encodeHTML()
-				|| '<span class="Q_placeholder">'
-					+ String(tool.child('Q/inplace').state.placeholder).encodeHTML()
-					+ '</div>'
-				|| '';
-			switch (state.inplaceType) {
-				case 'text':
-					$e = tool.$('input[type!=hidden]');
-					if ($e.val() !== content) $e.val(content);
-					$e = tool.$('.Q_inplace_tool_static');
-					if ($e.html() !== html) $e.html(html);
-					break;
-				case 'textarea':
-					var convert = {};
-					if (content) {
-						var replacements = {
-							"\n": '<br>',
-						 	' ': '&nbsp;'
-						};
-						if (state.convert) {
-							for (var i=0, l=state.convert.length; i<l; ++i) {
-								var c = state.convert[i];
-								convert[c] = replacements[c];
+				var $e, html = String(content || '').encodeHTML()
+					|| '<span class="Q_placeholder">'
+						+ String(tool.child('Q/inplace').state.placeholder).encodeHTML()
+						+ '</div>'
+					|| '';
+				switch (state.inplaceType) {
+					case 'text':
+						$e = tool.$('input[type!=hidden]');
+						if ($e.val() !== content) $e.val(content);
+						$e = tool.$('.Q_inplace_tool_static');
+						if ($e.html() !== html) $e.html(html);
+						break;
+					case 'textarea':
+						var convert = {};
+						if (content) {
+							var replacements = {
+								"\n": '<br>',
+							 	' ': '&nbsp;'
+							};
+							if (state.convert) {
+								for (var i=0, l=state.convert.length; i<l; ++i) {
+									var c = state.convert[i];
+									convert[c] = replacements[c];
+								}
 							}
 						}
-					}
-					var toSet = html.replaceAll(convert);
-					$e = tool.$('textarea');
-					if ($e.val() !== content) $e.val(content);
-					$e = tool.$('.Q_inplace_tool_blockstatic');
-					if ($e.html !== toSet) $e.html(toSet);
-					break;
-				case 'select':
-					if ($e.val() !== content) $e.val(content);
-					break;
-				default:
-					throw new Q.Error("Streams/inplace tool: inplaceType must be 'textarea', 'text' or 'select'");
-			}
-			var margin = $e.outerHeight() + parseInt($e.css('margin-top'));
-			tool.$('.Q_inplace_tool_editbuttons').css('margin-top', margin+'px');
+						var toSet = html.replaceAll(convert);
+						$e = tool.$('textarea');
+						if ($e.val() !== content) $e.val(content);
+						$e = tool.$('.Q_inplace_tool_blockstatic');
+						if ($e.html !== toSet) $e.html(toSet);
+						break;
+					case 'select':
+						$e = tool.$('select');
+						if ($e.val() !== content) $e.val(content);
+						break;
+					default:
+						throw new Q.Error("Streams/inplace tool: inplaceType must be 'textarea', 'text' or 'select'");
+				}
+				var margin = $e.outerHeight() + parseInt($e.css('margin-top'));
+				tool.$('.Q_inplace_tool_editbuttons').css('margin-top', margin+'px');
+			});
 		};
 
-		var field;
 		if (state.attribute) {
-			field = 'attributes['+encodeURIComponent(state.attribute)+']';
+			state.field = 'attributes['+encodeURIComponent(state.attribute)+']';
 			stream.onUpdated(state.attribute).set(function (attributes, k) {
 				if (attributes[k] !== null) {
 					_setContent(attributes[k]);
@@ -104,8 +104,8 @@ Q.Tool.define("Streams/inplace", function (options) {
 				}
 			}, tool);
 		} else {
-			field = state.field || 'content';
-			stream.onFieldChanged(field).set(function (fields, k) {
+			state.field = state.field || 'content';
+			stream.onFieldChanged(state.field).set(function (fields, k) {
 				if (fields[k] !== null) {
 					_setContent(fields[k]);
 				} else {
@@ -121,7 +121,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 			var ipo = Q.extend(state.inplace, {
 				action: stream.actionUrl(),
 				method: 'put',
-				field: field,
+				field: state.field,
 				type: state.inplaceType,
 				onSave: { 'Streams/inplace': function () {
 					state.stream.refresh(function () {
@@ -129,7 +129,7 @@ Q.Tool.define("Streams/inplace", function (options) {
 					}, {messages: true});
 				}}
 			});
-			var value = (state.attribute ? stream.get(state.attribute) : stream.fields[field]) || "";
+			var value = (state.attribute ? stream.get(state.attribute) : stream.fields[state.field]) || "";
 			switch (state.inplaceType) {
 				case 'text':
 					ipo.staticHtml = String(value).encodeHTML();
@@ -175,6 +175,11 @@ Q.Tool.define("Streams/inplace", function (options) {
 			$(tool.element).empty().append(inplace);
 			Q.activate(inplace, function () {
 				this.state.onLoad.add(state.onLoad.handle.bind(tool));
+				if (state.attribute) {
+					_setContent(stream.attributes[state.attribute]);
+				} else {
+					_setContent(stream.fields[state.field]);
+				}
 			});
 		}
 	}

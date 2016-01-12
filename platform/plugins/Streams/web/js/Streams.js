@@ -17,6 +17,12 @@ var Streams = Q.Streams = Q.plugins.Streams = {
 
 };
 
+var dc = Q.extend.dontCopy;
+dc["Q.Streams.Stream"] = true;
+dc["Q.Streams.Message"] = true;
+dc["Q.Streams.Participant"] = true;
+dc["Q.Streams.Avatar"] = true;
+
 Q.text.Streams = {
 
 	access: {
@@ -182,8 +188,10 @@ Streams.iconUrl = function(icon, size) {
 		size = '40';
 	}
 	size = (String(size).indexOf('.') >= 0) ? size : size+'.png';
-	var src = icon + '/' + size;
-	return icon.isUrl() ? src : Q.url('plugins/Streams/img/icons/'+src);
+	var src = (icon + '/' + size).interpolate({
+		"{{baseUrl}}": Q.info.baseUrl
+	});
+	return src.isUrl() ? src : Q.url('plugins/Streams/img/icons/'+src);
 };
 
 var _socket = null,

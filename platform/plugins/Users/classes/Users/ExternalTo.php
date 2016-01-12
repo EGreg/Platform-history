@@ -33,10 +33,7 @@ class Users_ExternalTo extends Base_Users_ExternalTo
 		if (!$this->retrieved) {
 			if (!isset($updatedFields['xid'])) {
 				$this->xid = $updatedFields['xid'] = 
-				self::db()->uniqueId(self::table(), 'xid', null, array(
-					'characters' => '0123456789abcdefghijklmnopqrstuvwxyz',
-					'length' => 7
-				));
+				self::db()->uniqueId(self::table(), 'xid', null);
 			}
 		}
 		return parent::beforeSave($updatedFields);

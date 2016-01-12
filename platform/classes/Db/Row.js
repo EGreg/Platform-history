@@ -736,5 +736,8 @@ Row.prototype.fillMagicFields = function () {
 };
 
 Row.prototype.className = "Db_Row";
+Row.prototype.typename = 'Db.Row';
+
+Q.extend.dontCopy['Db.Row'] = true;
 
 module.exports = Row;

@@ -25,7 +25,8 @@ function Q () {
 // external libraries, which you can override
 Q.libraries = {
 	json: "http://cdnjs.cloudflare.com/ajax/libs/json3/3.2.4/json3.min.js",
-	promise: 'plugins/Q/js/Promise.js'
+	promise: 'plugins/Q/js/Promise.js',
+	handlebars: 'plugins/Q/js/handlebars-v1.3.0.min.js'
 };
 
 /**
@@ -1387,7 +1388,9 @@ Q.extend = function _Q_extend(target /* [[deep,] [levels,] anotherObject], ... [
 						? Q.copy(argk.replace)
 						: Q.extend(target[k], deep, levels-1, argk);
 				} else {
-					target[k] = Q.copy(argk, null, levels);
+					target[k] = Q.extend.dontCopy[Q.typeOf(argk)]
+						? argk
+						: Q.copy(argk, null, levels);
 				}
 				if (target[k] === undefined) {
 					delete target[k];
@@ -1399,6 +1402,8 @@ Q.extend = function _Q_extend(target /* [[deep,] [levels,] anotherObject], ... [
 	}
 	return target;
 };
+
+Q.extend.dontCopy = { "Q.Tool": true };
 
 /**
  * Returns whether an object contains a property directly
@@ -3161,7 +3166,7 @@ Q.Tool = function _Q_Tool(element, options) {
 	}
 
 	// options cascade -- process option keys that start with '.' or '#'
-	var partial, i, l;
+	var partial, i, k, l;
 	options = options || {};
 	this.options = this.options || {};
 	
@@ -3188,6 +3193,11 @@ Q.Tool = function _Q_Tool(element, options) {
 	// #Q_parent_child_tool
 	if ((partial = o['#' + this.element.id])) {
 		Q.extend(this.options, Q.Tool.options.levels, partial, 'Q.Tool');
+		for (k in o) {
+			if (k.startsWith('#' + this.prefix)) {
+				this.options[k] = o[k];
+			}
+		}
 	}
 	// #parent_child_tool, #child_tool
 	var _idcomps = this.element.id.split('_');
@@ -3823,11 +3833,11 @@ Tp.getElementsByClassName = function _Q_Tool_prototype_getElementsByClasName(cla
 };
 
 /**
- * Do something 
+ * Do something for every and future child tool that is activated inside this element
  * @method forEachChild
- * @param {String} [name=""] The tool name, such as "Q/inplace"
+ * @param {String} [name=""] The name of the child tool, such as "Q/inplace"
  * @param {number} [levels] Optionally pass 1 here to get only the immediate children, 2 for immediate children and grandchildren, etc.
- * @param {Function} callback The callback to execute event handler
+ * @param {Function} callback The callback to execute at the right time
  */
 Tp.forEachChild = function _Q_Tool_prototype_forEachChild(name, levels, callback) {
 	if (typeof levels !== 'number') {
@@ -3840,7 +3850,7 @@ Tp.forEachChild = function _Q_Tool_prototype_forEachChild(name, levels, callback
 	var onActivate = Q.Tool.onActivate(name);
 	var key = onActivate.set(function () {
 		if (this.prefix.substr(0, tool.prefix.length) === tool.prefix) {
-			callback.apply(this, arguments);
+			Q.handle(callback, this, arguments);
 		}
 	});
 	tool.Q.beforeRemove.set(function () {
@@ -3990,7 +4000,9 @@ Tp.setUpElementHTML = function (element, toolName, toolOptions, id) {
  *   the tool corresponding to the given element, otherwise null
  */
 Q.Tool.from = function _Q_Tool_from(toolElement, toolName) {
-	if (typeof toolElement === 'string') {
+	if (Q.isArrayLike(toolElement)) {
+		toolElement = toolElement[0];
+	} if (typeof toolElement === 'string') {
 		toolElement = document.getElementById(toolElement);
 	}
 	return toolElement.Q ? toolElement.Q(toolName) : null;
@@ -4941,6 +4953,20 @@ Q.loadNonce = function _Q_loadNonce(callback, context, args) {
 };
 
 /**
+ * This function is called by Q to make sure that we've loaded the Handlebars library
+ * If you like, you can also call it yourself.
+ * @static
+ * @method loadHandlebars
+ * @param {Function} callback This function is called when the library is loaded
+ */
+Q.loadHandlebars = function _Q_loadHandlebars(callback) {
+	Q.ensure(root.Handlebars, Q.url(Q.libraries.handlebars), function () {
+		_addHandlebarsHelpers();
+		callback();
+	});
+};
+
+/**
  * Call this function to set a notice that is shown when the page is almost about to be unloaded
  * @static
  * @method beforeUnload
@@ -5260,8 +5286,9 @@ Q.load = function _Q_load(plugins, callback, options) {
  * Obtain a URL
  * @static
  * @method url
- * @param {Object} what
- *  Usually the stuff that comes after the base URL
+ * @param {Object|String|null} what
+ *  Usually the stuff that comes after the base URL.
+ *  If you don't provide this, then it just returns the Q.info.baseUrl
  * @param {Object} fields
  *  Optional fields to append to the querystring.
  *  Fields containing null and undefined are skipped.
@@ -7423,7 +7450,16 @@ function _activateTools(toolElement, options, shared) {
 				this.activated = false;
 				this.initialized = false;
 				try {
-					this.options = Q.extend({}, Q.Tool.options.levels, toolFunc.options, Q.Tool.options.levels, options);
+					this.options = Q.extend({}, Q.Tool.options.levels, toolFunc.options);
+					if (options) {
+						var o2 = {}, k;
+						for (k in options) {
+							if (k[0] !== '#') {
+								o2[k] = options[k];
+							}
+						}
+						Q.extend(this.options, Q.Tool.options.levels, o2);
+					}
 					this.name = toolName;
 					Q.Tool.call(this, element, options);
 					this.state = Q.copy(this.options, toolFunc.stateKeys);
@@ -7624,7 +7660,9 @@ Q.Template.set = function (name, content, type) {
 	type = type || 'handlebars';
 	Q.Template.remove(name);
 	Q.Template.collection[Q.normalize(name)] = content;
-	Q.Template.compile(content);
+	Q.loadHandlebars(function () {
+		Q.Template.compile(content);
+	});
 };
 
 /**
@@ -7790,17 +7828,26 @@ Q.Template.render = function _Q_Template_render(name, fields, partials, callback
 			);
 		});
 	}
-	Q.ensure(root.Handlebars, 
-		Q.url('plugins/Q/js/handlebars-v1.3.0.min.js'),
-		function () {
-			_addHandlebarsHelpers();
+	var tba = Q.Tool.beingActivated;
+	var pba = Q.Page.beingActivated;
+	Q.loadHandlebars(function () {
 			// load the template and partials
 			var p = Q.pipe(['template', 'partials'], function (params) {
 				if (params.template[0]) {
 					return callback(params.template[0]);
 				}
-				var compiled = Q.Template.compile(params.template[1]);
-				callback(null, compiled(fields, {partials: params.partials[0]}));
+				var tbaOld = Q.Tool.beingActivated;
+				var pbaOld = Q.Page.beingActivated;
+				Q.Tool.beingActivated = tba;
+				Q.Page.beingActivated = pba;
+				try {
+					var compiled = Q.Template.compile(params.template[1]);
+					callback(null, compiled(fields, {partials: params.partials[0]}));
+				} catch (e) {
+					console.warn(e);
+				}
+				Q.Tool.beingActivated = tbaOld;
+				Q.Page.beingActivated = pbaOld;
 			});
 			Q.Template.load(name, p.fill('template'), options);
 			// pipe for partials
@@ -9037,7 +9084,7 @@ Q.Pointer = {
 	 * @method fastclick
 	 */
 	fastclick: function _Q_fastclick (params) {
-		params.eventName = Q.Pointer.end;
+		params.eventName = Q.info.isTouchscreen ? 'touchend' : 'click';
 		return function _Q_fastclick_on_wrapper (e) {
 			var elem = Q.Pointer.elementFromPoint(Q.Pointer.getX(e), Q.Pointer.getY(e));
 			if (Q.Pointer.canceledClick
@@ -10425,7 +10472,8 @@ Q.onJQuery.add(function ($) {
 		"Q/columns": "plugins/Q/js/tools/columns.js",
 		"Q/drawers": "plugins/Q/js/tools/drawers.js",
 		"Q/expandable": "plugins/Q/js/tools/expandable.js",
-		"Q/filter": "plugins/Q/js/tools/filter.js"
+		"Q/filter": "plugins/Q/js/tools/filter.js",
+		"Q/rating": "plugins/Q/js/tools/rating.js"
 	});
 	
 	Q.Tool.jQuery({
@@ -10509,8 +10557,15 @@ function _addHandlebarsHelpers() {
 					Q.setObject(k, hash[k], o, '-');
 				}
 			}
-			Q.extend(o, this && this[name], this && this['id:'+id]);
-			id = prefix + name.split('/').join('_') + (id ? '-' + id : '');
+			if (this && this[name]) {
+				Q.extend(o, this[name]);
+			}
+			if (id && this && this['id:'+id]) {
+				Q.extend(o, this['id:'+id]);
+			}
+			if (typeof id === 'string' || typeof id === 'number') {
+				id = prefix + name.split('/').join('_') + (id !== '' ? '-'+id : '');
+			}
 			return Q.Tool.setUpElementHTML('div', name, o, id, prefix);
 		});
 	}

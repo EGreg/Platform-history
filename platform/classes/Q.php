@@ -173,13 +173,13 @@ class Q
 
 	/**
 	 * Test whether $text is prefixed by $prefix
-	 * @method testPrefix
+	 * @method startsWith
 	 * @static
 	 * @param {string} $text The string to check
 	 * @param {string} $prefix
 	 * @return {boolean}
 	 */
-	static function testPrefix($text, $prefix)
+	static function startsWith($text, $prefix)
 	{
 		return substr($text, 0, strlen($prefix)) === $prefix;
 	}
@@ -985,15 +985,12 @@ class Q
 	 */
 	static function isAssociative($array)
 	{
-		if (!$array or !is_array($array)) {
-			return false;
-		}
-		foreach ($array as $k => $v) {
-			if (is_string($k)) {
-				return true;
-			}
-		}
-		return false;
+		// Keys of the array
+		$keys = array_keys($array);
+
+		// If the array keys of the keys match the keys, then the array must
+		// not be associative (e.g. the keys array looked like {0:0, 1:1...}).
+		return array_keys($keys) !== $keys;
 	}
 	
 	/**
@@ -1036,6 +1033,10 @@ class Q
 		$timestamp = true,
 		$options = array())
 	{
+		if (is_array($timestamp)) {
+			$options = $timestamp;
+			$timestamp = true;
+		}
 		if (is_array($key)) {
 			$options = $key;
 			$key = null;

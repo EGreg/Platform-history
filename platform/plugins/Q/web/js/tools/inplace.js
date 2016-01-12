@@ -25,6 +25,7 @@
  *  @param {Object} [options.template]  Can be used to override info for the tool's view template.
  *	@param {String} [options.template.dir='plugins/Q/views']
  *	@param {String} [options.template.name='Q/inplace/tool']
+ *  @param {Q.Event} [options.beforeSave] This event triggers before save
  *  @param {Q.Event} [options.onSave] This event triggers after save
  *  @param {Q.Event} [options.onCancel] This event triggers after canceling
  */
@@ -75,14 +76,15 @@ Q.Tool.define("Q/inplace", function (options) {
 			isSelect: (o.type === 'select'),
 			options: o.options,
 			placeholder: state.placeholder,
-			text: function (field) {
-				return staticHtml.decodeHTML();
-			},
+			text: staticHtml.decodeHTML(),
 			type: o.type || 'text'
 		},
 		function (err, html) {
 			if (!html) return;
 			$te.html(html);
+			if (o.type === 'select') {
+				tool.$('select').val(staticHtml.decodeHTML());
+			}
 			if (staticHtml && state.editOnClick) {
 				tool.$('.Q_inplace_tool_static').attr('title', state.placeholder);
 			}
@@ -110,6 +112,7 @@ Q.Tool.define("Q/inplace", function (options) {
 		waitingInterval: 100,
 	},
 	onLoad: new Q.Event(),
+	beforeSave: new Q.Event(),
 	onSave: new Q.Event(),
 	onCancel: new Q.Event()
 },
