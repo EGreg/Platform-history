@@ -81,9 +81,9 @@ class Q_Handlebars {
 			return "{{tool missing name}}";
 		}
 		$name = $args[0];
-		$id = count($args) > 1 && (is_string($args[1]) || is_numeric($args[1])) && $id === ''
-			? $args[1]
-			: null;
+		if (count($args) > 1 && (is_string($args[1]) || is_numeric($args[1]))) {
+			$id = $args[1];
+		}
 		$options = Q::ifset($args, 'hash', array());
 		$fields = $context->fields();
 		$o = $options;

@@ -4953,6 +4953,20 @@ Q.loadNonce = function _Q_loadNonce(callback, context, args) {
 };
 
 /**
+ * This function is called by Q to make sure that we've loaded the Handlebars library
+ * If you like, you can also call it yourself.
+ * @static
+ * @method loadHandlebars
+ * @param {Function} callback This function is called when the library is loaded
+ */
+Q.loadHandlebars = function _Q_loadHandlebars(callback) {
+	Q.ensure(root.Handlebars, Q.url(Q.libraries.handlebars), function () {
+		_addHandlebarsHelpers();
+		callback();
+	});
+};
+
+/**
  * Call this function to set a notice that is shown when the page is almost about to be unloaded
  * @static
  * @method beforeUnload
@@ -7646,7 +7660,7 @@ Q.Template.set = function (name, content, type) {
 	type = type || 'handlebars';
 	Q.Template.remove(name);
 	Q.Template.collection[Q.normalize(name)] = content;
-	Q.ensure(root.Handlebars,  Q.url(Q.libraries.handlebars), function () {
+	Q.loadHandlebars(function () {
 		Q.Template.compile(content);
 	});
 };
@@ -7814,15 +7828,26 @@ Q.Template.render = function _Q_Template_render(name, fields, partials, callback
 			);
 		});
 	}
-	Q.ensure(root.Handlebars,  Q.url(Q.libraries.handlebars), function () {
-			_addHandlebarsHelpers();
+	var tba = Q.Tool.beingActivated;
+	var pba = Q.Page.beingActivated;
+	Q.loadHandlebars(function () {
 			// load the template and partials
 			var p = Q.pipe(['template', 'partials'], function (params) {
 				if (params.template[0]) {
 					return callback(params.template[0]);
 				}
-				var compiled = Q.Template.compile(params.template[1]);
-				callback(null, compiled(fields, {partials: params.partials[0]}));
+				var tbaOld = Q.Tool.beingActivated;
+				var pbaOld = Q.Page.beingActivated;
+				Q.Tool.beingActivated = tba;
+				Q.Page.beingActivated = pba;
+				try {
+					var compiled = Q.Template.compile(params.template[1]);
+					callback(null, compiled(fields, {partials: params.partials[0]}));
+				} catch (e) {
+					console.warn(e);
+				}
+				Q.Tool.beingActivated = tbaOld;
+				Q.Page.beingActivated = pbaOld;
 			});
 			Q.Template.load(name, p.fill('template'), options);
 			// pipe for partials
@@ -10538,8 +10563,9 @@ function _addHandlebarsHelpers() {
 			if (id && this && this['id:'+id]) {
 				Q.extend(o, this['id:'+id]);
 			}
-			var useId = (typeof id === 'string' || typeof id === 'number') && id !== '';
-			id = prefix + name.split('/').join('_') + (useId ? '-'+id : '');
+			if (typeof id === 'string' || typeof id === 'number') {
+				id = prefix + name.split('/').join('_') + (id !== '' ? '-'+id : '');
+			}
 			return Q.Tool.setUpElementHTML('div', name, o, id, prefix);
 		});
 	}
