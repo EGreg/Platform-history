@@ -844,9 +844,10 @@ class Q_Uri
 			return $url;
 		}
 		$urlRelativeToBase = substr($url, strlen(Q_Request::baseUrl()));
-		$fileTimestamp = isset(Q_Uri::$urls[$urlRelativeToBase])
-			? Q_Uri::$urls[$urlRelativeToBase]
-			: null;
+		$parts = explode('/', $urlRelativeToBase);
+		$parts[] = null;
+		$tree = new Q_Tree(Q_Uri::$urls);
+		$fileTimestamp = call_user_func_array(array($tree, 'get'), $parts);
 		if (isset($fileTimestamp)
 		and $fileTimestamp <= $timestamp
 		and self::$cacheBaseUrl) {

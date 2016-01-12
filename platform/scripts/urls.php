@@ -66,6 +66,7 @@ function Q_script_urls($dir, $len = null, &$result = null, $was_link = false) {
 		$result = array();
 		$len = strlen($dir);
 	}
+	$tree = new Q_Tree($result);
 	$filenames = glob($dir.DS.'*');
 	foreach ($filenames as $f) {
 		$u = substr($f, $len);
@@ -73,7 +74,9 @@ function Q_script_urls($dir, $len = null, &$result = null, $was_link = false) {
 			continue;
 		}
 		if (!is_dir($f)) {
-			$result[$u] = filemtime($f);
+			$parts = explode('/', $u);
+			$parts[] = filemtime($f);
+			call_user_func_array(array($tree, 'set'), $parts);
 		}
 		$is_link = is_link($f);
 		// do depth first search, following symlinks one level down
