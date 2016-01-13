@@ -84,14 +84,13 @@ class Q_Handlebars {
 		if (count($args) > 1 && (is_string($args[1]) || is_numeric($args[1]))) {
 			$id = $args[1];
 		}
-		$options = Q::ifset($args, 'hash', array());
+		$o = Q::ifset($args, 'hash', array());
 		$fields = $context->fields();
-		$o = $options;
 		if (isset($fields[$name])) {
-			$o = array_merge($o, $options);
+			$o = array_merge($o, $fields[$name]);
 		}
 		if ($id && isset($fields["id:$id"])) {
-			$o = array_merge($o, $options);
+			$o = array_merge($o, $fields["id:$id"]);
 		}
 		return Q::tool($name, $o, compact('id'));
 	}
