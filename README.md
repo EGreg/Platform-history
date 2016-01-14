@@ -1,7 +1,7 @@
 The Qbix Platform
 ===
 
-###[Platform Portal](http://platform.qbix.com) - tutorials, docs, platform reference, and more.
+###[Platform Portal](http://qbix.com/platform) - tutorials, docs, platform reference, and more.
 
 ===
 
