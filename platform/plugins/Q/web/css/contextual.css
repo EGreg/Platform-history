@@ -46,11 +46,6 @@
 	margin-right: 10px;
 }
 
-.Q_contextual .Q_listing li *
-{
-	pointer-events: none;
-}
-
 .Q_contextual .Q_listing .Q_permanently_selected,
 .Q_selectable_listing .Q_permanently_selected
 {
