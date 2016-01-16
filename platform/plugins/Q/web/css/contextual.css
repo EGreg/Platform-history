@@ -25,7 +25,7 @@
 	white-space: nowrap;
 	overflow: hidden;
 }
-.Q_listing li * { vertical-align: middle; pointer-events: none; font-size: 18px; }
+.Q_listing li * { vertical-align: middle; font-size: 18px; }
 .Q_listing li:first-child { border-top: none !important; }
 .Q_listing li:last-child { border-bottom: none; }
 .Q_listing li .Q_listing_item_text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -44,11 +44,6 @@
 .Q_contextual .Q_listing li img
 {
 	margin-right: 10px;
-}
-
-.Q_contextual .Q_listing li *
-{
-	pointer-events: none;
 }
 
 .Q_contextual .Q_listing .Q_permanently_selected,

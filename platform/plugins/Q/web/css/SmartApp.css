@@ -74,7 +74,6 @@
 .Q_dashboard_item *
 {
   vertical-align: middle;
-  pointer-events: none;
 }
 
 .Q_dashboard_item img
