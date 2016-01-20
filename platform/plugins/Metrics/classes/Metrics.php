@@ -34,7 +34,7 @@ abstract class Metrics extends Base_Metrics
 	 * @static
 	 */
 	static $results = array(
-		'too soon' => 21
+		'too_soon' => 21
 	);
 
 	/**
