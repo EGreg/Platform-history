@@ -44,7 +44,7 @@ function Streams_inplace_tool($options)
 	} else {
 		$field = !empty($options['field']) ? $options['field'] : 'content';
 		$content = $stream->$field;
-		$maxlength = call_user_func(array($stream, "maxSize_$field"));
+		$maxlength = $stream->maxSizeExtended($field);
 	}
 	switch ($options['inplaceType']) {
 		case 'text':

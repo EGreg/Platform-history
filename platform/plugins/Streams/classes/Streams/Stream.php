@@ -427,6 +427,28 @@ class Streams_Stream extends Base_Streams_Stream
 	}
 	
 	/**
+	 * Get the max size of a field in the stream or extended row
+	 * @param {string} $field The name of the field
+	 * @return {integer} The maximum size that a value of that field can take
+	 */
+	function maxSizeExtended($field)
+	{
+		$fieldNames = $this->fieldNames();
+		if (in_array($this->field, $fieldNames)) {
+			return call_user_func(array($this, "maxSize_$field"));
+		}
+		$classes = Streams::getExtendClasses($this->type);
+		foreach ($classes as $k => $v) {
+			foreach ($v as $f) {
+				if ($f === $field) {
+					return call_user_func(array($this->rows[$k], "maxSize_$field"));
+				}
+			}
+		}
+		return null;
+	}
+	
+	/**
 	 * @method afterRemoveExcecute
 	 * @param {Db_Result} $result
 	 * @param {Db_Query} $query
@@ -481,10 +503,14 @@ class Streams_Stream extends Base_Streams_Stream
 		$retrieved = $this->wasRetrieved();
 		$rows = array();
 		foreach ($modified as $k => $v) {
-			$row = new $k;
-			$row->publisherId = $this->publisherId;
-			$row->streamName = $this->name;
+			$row = $this->get($k, null);
+			if (!$row) {
+				$row = new $k;
+				$row->publisherId = $this->publisherId;
+				$row->streamName = $this->name;
+			}
 			if ($retrieved) {
+				// re-fetch the extending row
 				$row->retrieve(null, null, array('ignoreCache' => true));
 			}
 			foreach ($classes[$k] as $f) {
@@ -1787,6 +1813,19 @@ class Streams_Stream extends Base_Streams_Stream
 		return isset($top) ? $top : $bottom;
 	}
 
+	/**
+	 * Gets the stream row corresponding to a Db_Row retrieved from
+	 * a table extending the stream.
+	 * @method extendedBy
+	 * @static
+	 * @param {Db_Row} $row a Db_Row retrieved from a table extending the stream.
+	 * @return Streams_Stream|null
+	 */
+	static function extendedBy(Db_Row $row)
+	{
+		return $row->get('Streams_Stream', null);
+	}
+
 	/* * * */
 	/**
 	 * Implements the __set_state method, so it can work with
@@ -1800,38 +1839,6 @@ class Streams_Stream extends Base_Streams_Stream
 		foreach($array as $k => $v)
 			$result->$k = $v;
 		return $result;
-	}
-	
-	/**
-	 * Gets a row that extends the stream, or a field of the stream.
-	 * Example: $stream->Websites_Article, $stream->title or $stream->article
-	 * @method __get
-	 * @param {string} $name
-	 * @return {mixed}
-	 */
-	function __get($name)
-	{
-		if (isset($this->rows[$name])) {
-			return $this->rows[$name];
-		}
-		return parent::__get($name);
-	}
-	
-	/**
-	 * Gets a row that extends the stream, or a field of the stream.
-	 * Example: $stream->Websites_Article, $stream->title or $stream->article
-	 * @method __get
-	 * @param {string} $name
-	 * @return {mixed}
-	 */
-	function __call($name, $arguments)
-	{
-		foreach ($this->rows as $row) {
-			if (is_callable(array($row, $name))) {
-				return call_user_func_array(array($row, $name), $arguments);
-			}
-		}
-		return parent::__call($name, $arguments);
 	}
 	
 	/**

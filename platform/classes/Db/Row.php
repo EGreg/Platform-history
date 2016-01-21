@@ -917,12 +917,14 @@ class Db_Row implements Iterator
 		$this->fieldsModified[$name_internal] = true;
 		
 		$callback = array($this, "afterSet_$name");
-		if (is_callable($callback))
+		if (is_callable($callback)) {
 			$value = call_user_func($callback, $value);
+		}
 
 		$callback = array($this, "afterSet");
-		if (is_callable($callback))
-			$value = call_user_func($callback, $name, $value);
+		if (is_callable($callback)) {
+			call_user_func($callback, $name, $value);
+		}
 	}
 
 	/**
