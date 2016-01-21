@@ -1786,19 +1786,6 @@ class Streams_Stream extends Base_Streams_Stream
 		}
 		return isset($top) ? $top : $bottom;
 	}
-	
-	/**
-	 * Gets the stream row corresponding to a Db_Row retrieved from
-	 * a table extending the stream.
-	 * @method extendedBy
-	 * @static
-	 * @param {Db_Row} $row a Db_Row retrieved from a table extending the stream.
-	 * @return Streams_Stream|null
-	 */
-	static function extendedBy(Db_Row $row)
-	{
-		return $row->get('Streams_Stream', null);
-	}
 
 	/* * * */
 	/**
@@ -1822,12 +1809,29 @@ class Streams_Stream extends Base_Streams_Stream
 	 * @param {string} $name
 	 * @return {mixed}
 	 */
-	function __get ($name)
+	function __get($name)
 	{
 		if (isset($this->rows[$name])) {
 			return $this->rows[$name];
 		}
 		return parent::__get($name);
+	}
+	
+	/**
+	 * Gets a row that extends the stream, or a field of the stream.
+	 * Example: $stream->Websites_Article, $stream->title or $stream->article
+	 * @method __get
+	 * @param {string} $name
+	 * @return {mixed}
+	 */
+	function __call($name, $arguments)
+	{
+		foreach ($this->rows as $row) {
+			if (is_callable(array($row, $name))) {
+				return call_user_func_array(array($row, $name), $arguments);
+			}
+		}
+		return parent::__call($name, $arguments);
 	}
 	
 	/**
