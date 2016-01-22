@@ -434,7 +434,7 @@ class Streams_Stream extends Base_Streams_Stream
 	function maxSizeExtended($field)
 	{
 		$fieldNames = $this->fieldNames();
-		if (in_array($this->field, $fieldNames)) {
+		if (in_array($field, $fieldNames)) {
 			return call_user_func(array($this, "maxSize_$field"));
 		}
 		$classes = Streams::getExtendClasses($this->type);
