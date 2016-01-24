@@ -3412,11 +3412,13 @@ Q.onInit.add(function _Streams_onInit() {
 	Users.onLogin.set(function (user) {
 		if (user) { // the user changed
 			Interests.my = {};
+			_clearCaches();
 		};
 		_connectSockets.apply(this, arguments);
 	}, "Streams");
 	Users.onLogout.set(function () {
 		Interests.my = {}; // clear the interests
+		_clearCaches();
 		Streams.invite.dialog = null;  // clear invite dialog info
 		Q.Socket.destroyAll();
 	}, "Streams");
@@ -3850,8 +3852,6 @@ Q.onInit.add(function _Streams_onInit() {
 	Q.beforeActivate.add(_preloadedStreams, 'Streams');
 	Q.loadUrl.options.onResponse.add(_preloadedStreams, 'Streams');
 	
-	Users.onLogin.set(_clearCaches, 'Streams');
-	Users.onLogout.set(_clearCaches, 'Streams');
 	Q.addEventListener(window, Streams.refresh.options.duringEvents, Streams.refresh);
 	_scheduleUpdate();
 
@@ -3873,6 +3873,9 @@ function _clearCaches() {
 	Message.get.cache.clear();
 	Participant.get.cache.clear();
 	Avatar.get.cache.clear();
+	_retainedByKey = {};
+	_retainedByStream = {};
+	_retainedStreams = {};
 }
 
 function _scheduleUpdate() {
