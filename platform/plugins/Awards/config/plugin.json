@@ -1,8 +1,10 @@
 {
 	"Q": {
+		"handlersBeforeEvent": {
+			"Q/responseExtras": ["Awards/before/Q_responseExtras"]
+		},
 		"handlersAfterEvent": {
-			"Users/insertUser": ["Awards/after/Users_insertUser"],
-			"Q/responseExtras": ["Awards/after/Q_responseExtras"]
+			"Users/insertUser": ["Awards/after/Users_insertUser"]
 		},
 		"routes": {
 			"plugins/Awards/:action": {"module": "Awards"}

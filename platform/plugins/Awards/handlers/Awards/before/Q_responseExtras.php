@@ -1,6 +1,6 @@
 <?php
 
-function Awards_after_Q_responseExtras() {
+function Awards_before_Q_responseExtras() {
 	Q_Response::addScript('plugins/Awards/js/Awards.js');
 
 	try {
