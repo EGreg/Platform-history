@@ -63,12 +63,12 @@ Q.Error = Error;
  * @description Q extended methods for Objects
  */
 
-/**
- * Returns the prototype of an object, if one can be found
- * @method getPrototypeOf
- * @return {Object}
- */
 if (!Object.getPrototypeOf)
+/**
+* Returns the prototype of an object, if one can be found
+* @method getPrototypeOf
+* @return {Object}
+*/
 Object.getPrototypeOf = function (obj) {
 	if (obj.__proto__) return obj.__proto__;
 	if (obj.constructor && obj.constructor.prototype) {
@@ -77,12 +77,12 @@ Object.getPrototypeOf = function (obj) {
 	return null;
 };
 
-/**
- * Returns an array containing the object's keys, in a cross-browser way
- * @method keys
- * @return {Array}
- */
 if (!Object.keys)
+/**
+* Returns an array containing the object's keys, in a cross-browser way
+* @method keys
+* @return {Array}
+*/
 Object.keys = (function () {
 	var hasOwnProperty = Object.prototype.hasOwnProperty,
 		hasDontEnumBug = !{toString:null}.propertyIsEnumerable("toString"),
@@ -396,14 +396,13 @@ Ap.indexOf = function _Array_prototype_indexOf(searchElement /*, fromIndex */ ) 
  * @description Q methods for Date
  */
 
-/**
- * Returns total number of milliseconds since the UNIX epoch
- * @method now
- * @static
- * @return {number}
- */
-
 if (!Date.now)
+/**
+* Returns total number of milliseconds since the UNIX epoch
+* @method now
+* @static
+* @return {number}
+*/
 Date.now = function _Date_now() {
 	return new Date().getTime();
 };
@@ -429,27 +428,27 @@ var Elp = Element.prototype;
  * @description Q extended methods for DOM Elements
  */
 
-/**
- * Call this on an element to access tools attached to it.
- * The tools are like "view models".
- * this method is overridden by the tool constructor on specific elements
- * @method Q
- * @param {String} toolName
- * @return {Q.Tool|null}
- */
 if (!Elp.Q)
+/**
+* Call this on an element to access tools attached to it.
+* The tools are like "view models".
+* this method is overridden by the tool constructor on specific elements
+* @method Q
+* @param {String} toolName
+* @return {Q.Tool|null}
+*/
 Elp.Q = function (toolName) {
 	// this method is overridden by the tool constructor on specific elements
 	return null;
 };
 
-/**
- * Check whether this element is the given element or contains it
- * @method contains
- * @param {Element} child
- * @return {boolean}
- */
 if (!Elp.contains)
+/**
+* Check whether this element is the given element or contains it
+* @method contains
+* @param {Element} child
+* @return {boolean}
+*/
 Elp.contains = function (child) {
 	if (!child) return false;
 	var node = child;
