@@ -29,11 +29,11 @@ class Users_Contact extends Base_Users_Contact
 	 * @static
 	 * @param {string} $userId
 	 *  The id of the user whose contact will be added
-	 * @param {string} $contactUserId
-	 *  The id of the user who is the contact
 	 * @param {string|array} $label
 	 *  The label of the contact. This can be a string or an array of strings, in which case
 	 *  multiple contact rows are saved.
+	 * @param {string} $contactUserId
+	 *  The id of the user who is the contact
 	 * @param {string} [$nickname='']
 	 *  Optional nickname to assign to the contact
 	 * @param {string} [$asUserId=null] The user to do this operation as.
