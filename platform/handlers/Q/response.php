@@ -56,7 +56,7 @@ function Q_response($params)
 		}
 	}
 
-	if (!$isAjax || Q_Request::isLoadExtras()) {
+	if (!$isAjax or Q_Request::isLoadExtras()) {
 		Q::event('Q/responseExtras', array(), 'before');
 	}
 
@@ -114,6 +114,7 @@ function Q_response($params)
 					// couldn't get internal URI
 				}
 			} else if (Q_Request::isLoadExtras()) {
+				Q::event('Q/responseExtras', array(), 'after');
 				$to_encode['slots'] = Q_Response::slots(true);
 				// add stylesheets, stylesinline, scripts, scriptlines, scriptdata, templates
 				foreach (array_merge(array(''), $slotNames) as $slotName) {
@@ -218,7 +219,7 @@ Q.init();
 		return;
 	}
 	
-	if (!$isAjax or Q_Request::isLoadExtras()) {
+	if (Q_Request::isLoadExtras()) {
 		Q::event('Q/responseExtras', array(), 'after');
 	}
 
