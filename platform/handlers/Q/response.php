@@ -218,10 +218,8 @@ Q.init();
 		}
 		return;
 	}
-	
-	if (Q_Request::isLoadExtras()) {
-		Q::event('Q/responseExtras', array(), 'after');
-	}
+
+	Q::event('Q/responseExtras', array(), 'after');
 
 	$slots = Q_Response::slots(false);
 
