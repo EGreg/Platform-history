@@ -189,7 +189,7 @@ Streams.iconUrl = function(icon, size) {
 	}
 	size = (String(size).indexOf('.') >= 0) ? size : size+'.png';
 	var src = (icon + '/' + size).interpolate({
-		"{{baseUrl}}": Q.info.baseUrl
+		"baseUrl": Q.info.baseUrl
 	});
 	return src.isUrl() ? src : Q.url('plugins/Streams/img/icons/'+src);
 };
