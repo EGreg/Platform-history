@@ -803,7 +803,7 @@ Users.iconUrl = function Users_iconUrl(icon, size) {
 	}
 	size = (String(size).indexOf('.') >= 0) ? size : size+'.png';
 	var src = (icon + '/' + size).interpolate({
-		"{{baseUrl}}": Q.info.baseUrl
+		"baseUrl": Q.info.baseUrl
 	});
 	return src.isUrl() ? src : Q.url('plugins/Users/img/icons/'+src);
 };

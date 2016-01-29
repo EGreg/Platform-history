@@ -528,9 +528,6 @@ class Streams_Stream extends Base_Streams_Stream
 	}
 
 	protected function fetchAsUser ($options, &$userId, &$user = null) {
-		if (!empty($options['skipAccess'])) {
-			return $this;
-		}
 		if (isset($options['userId'])) {
 			$user = Users_User::fetch($options['userId']);
 			if (!$user) {
@@ -543,7 +540,8 @@ class Streams_Stream extends Base_Streams_Stream
 			$user = Users::loggedInUser(true);
 		}
 		$userId = $user->id;
-		if ($userId === $this->get('asUserId', null)) {
+		if (!empty($options['skipAccess'])
+		or $userId === $this->get('asUserId', null)) {
 			return $this;
 		}
 		$stream = Streams::fetchOne($userId, 
@@ -1055,7 +1053,7 @@ class Streams_Stream extends Base_Streams_Stream
 	/**
 	 * Take actions to reflect the stream has changed: save it and post a message.
 	 * @method post
-	 * @param {string} $asUserId
+	 * @param {string} [$asUserId=null]
 	 *  The user to post as. Defaults to the logged-in user.
 	 * @param {string} [$messageType='Streams/changed']
 	 *  The type of the message.
@@ -1066,7 +1064,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 *  The array of results - successfully posted messages or false if post failed
 	 */
 	function changed(
-		$asUserId,
+		$asUserId=null,
 		$messageType='Streams/changed',
 		$fieldNames = null)
 	{
