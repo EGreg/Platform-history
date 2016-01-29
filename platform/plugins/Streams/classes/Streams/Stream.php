@@ -1053,7 +1053,7 @@ class Streams_Stream extends Base_Streams_Stream
 	/**
 	 * Take actions to reflect the stream has changed: save it and post a message.
 	 * @method post
-	 * @param {string} $asUserId
+	 * @param {string} [$asUserId=null]
 	 *  The user to post as. Defaults to the logged-in user.
 	 * @param {string} [$messageType='Streams/changed']
 	 *  The type of the message.
@@ -1064,7 +1064,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 *  The array of results - successfully posted messages or false if post failed
 	 */
 	function changed(
-		$asUserId,
+		$asUserId=null,
 		$messageType='Streams/changed',
 		$fieldNames = null)
 	{
