@@ -43,23 +43,27 @@ abstract class Users extends Base_Users
 	 * @param {array|Db_Expression} [$filter=null] 
 	 *  You can pass additional criteria here for the label field
 	 *  in the `Users_Contact::select`, such as an array or Db_Range
-	 * @param {array} {$options} Any additional options to pass to the query, such as "ignoreCache"
+	 * @param {array} [$options=array()] Any additional options to pass to the query, such as "ignoreCache"
+	 * @param {string} [$userId=null] If not passed, the logged in user is used, if any
 	 * @return {array} An associative array of $roleName => $contactRow pairs
 	 * @throws {Users_Exception_NotLoggedIn}
 	 */
-	static function roles($publisherId = null, $filter = null, $options = array())
+	static function roles($publisherId = null, $filter = null, $options = array(), $userId = null)
 	{
 		if (empty($publisherId)) {
 			$publisherId = Q_Config::expect('Q', 'app');
 		}
-		$user = Users::loggedInUser();
-		if (!$user) {
-			return array();
+		if (!isset($userId)) {
+			$user = Users::loggedInUser();
+			if (!$user) {
+				return array();
+			}
+			$userId = $user->id;
 		}
 		$contacts = Users_Contact::select('*')
 			->where(array(
 				'userId' => $publisherId,
-				'contactUserId' => $user->id
+				'contactUserId' => $userId
 			))->andWhere($filter ? array('label' => $filter) : null)
 			->options($options)
 			->fetchDbRows(null, null, 'label');

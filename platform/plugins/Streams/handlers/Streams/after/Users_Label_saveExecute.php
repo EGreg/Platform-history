@@ -2,13 +2,14 @@
 
 function Streams_after_Users_Label_saveExecute($params)
 {
-	// The nickname was probably modified
+	// The icon or title might have been modified
 	$modifiedFields = $params['modifiedFields'];
 	$label = $params['row'];
-	$updates = Q::take($params, array('nickname'));
+	$updates = Q::take($modifiedFields, array('icon', 'title'));
 	$updates['userId'] = $label->userId;
-	return Streams_Message::post(null, $label->userId, "Streams/contacts", array(
-		'type' => 'Streams/contacts/update',
+	$updates['label'] = $label->label;
+	return Streams_Message::post(null, $label->userId, "Streams/labels", array(
+		'type' => 'Streams/labels/updated',
 		'instructions' => compact('updates')
 	), true);
 }

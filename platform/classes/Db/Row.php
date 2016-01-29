@@ -917,12 +917,14 @@ class Db_Row implements Iterator
 		$this->fieldsModified[$name_internal] = true;
 		
 		$callback = array($this, "afterSet_$name");
-		if (is_callable($callback))
+		if (is_callable($callback)) {
 			$value = call_user_func($callback, $value);
+		}
 
 		$callback = array($this, "afterSet");
-		if (is_callable($callback))
-			$value = call_user_func($callback, $name, $value);
+		if (is_callable($callback)) {
+			call_user_func($callback, $name, $value);
+		}
 	}
 
 	/**
@@ -934,30 +936,29 @@ class Db_Row implements Iterator
 	function __get ($name)
 	{
 		$callback = array($this, "beforeGet_$name");
-		if (is_callable($callback))
+		if (is_callable($callback)) {
 			return call_user_func($callback);
-		
+		}
 		if (array_key_exists($name, $this->fields)) {
 			return $this->fields[$name]; 
-		} else {
-			$get_class = get_class($this);
-			$backtrace = debug_backtrace();
-			$function = $line = $class = null;
-			if (isset($backtrace[1]['function'])) {
-				$function = $backtrace[1]['function'];
-			}
-			if (isset($backtrace[0]['line'])) {
-				$line = $backtrace[0]['line'];
-			}
-			if (isset($backtrace[1]['class'])) {
-				$class = $backtrace[1]['class'];
-			}
-			throw new Exception(
-				"$get_class does not have $name field set, "
-				. "called in $class::$function (line $line)."
-			);
-			return null;
 		}
+		$get_class = get_class($this);
+		$backtrace = debug_backtrace();
+		$function = $line = $class = null;
+		if (isset($backtrace[1]['function'])) {
+			$function = $backtrace[1]['function'];
+		}
+		if (isset($backtrace[0]['line'])) {
+			$line = $backtrace[0]['line'];
+		}
+		if (isset($backtrace[1]['class'])) {
+			$class = $backtrace[1]['class'];
+		}
+		throw new Exception(
+			"$get_class does not have $name field set, "
+			. "called in $class::$function (line $line)."
+		);
+		return null;
 	}
 
 	/**

@@ -20,6 +20,9 @@
 
 	Q.Tool.jQuery('Q/timestamp', function (o) {
 		var timestamp = !isNaN(o.time) && parseInt(o.time);
+		if (timestamp < 10000000000) {
+			timestamp *= 1000;
+		}
 		var date = (typeof o.time === 'string')
 			? new Date(timestamp ? timestamp : o.time)
 			: new Date();

@@ -427,6 +427,28 @@ class Streams_Stream extends Base_Streams_Stream
 	}
 	
 	/**
+	 * Get the max size of a field in the stream or extended row
+	 * @param {string} $field The name of the field
+	 * @return {integer} The maximum size that a value of that field can take
+	 */
+	function maxSizeExtended($field)
+	{
+		$fieldNames = $this->fieldNames();
+		if (in_array($field, $fieldNames)) {
+			return call_user_func(array($this, "maxSize_$field"));
+		}
+		$classes = Streams::getExtendClasses($this->type);
+		foreach ($classes as $k => $v) {
+			foreach ($v as $f) {
+				if ($f === $field) {
+					return call_user_func(array($this->rows[$k], "maxSize_$field"));
+				}
+			}
+		}
+		return null;
+	}
+	
+	/**
 	 * @method afterRemoveExcecute
 	 * @param {Db_Result} $result
 	 * @param {Db_Query} $query
@@ -481,10 +503,14 @@ class Streams_Stream extends Base_Streams_Stream
 		$retrieved = $this->wasRetrieved();
 		$rows = array();
 		foreach ($modified as $k => $v) {
-			$row = new $k;
-			$row->publisherId = $this->publisherId;
-			$row->streamName = $this->name;
+			$row = $this->get($k, null);
+			if (!$row) {
+				$row = new $k;
+				$row->publisherId = $this->publisherId;
+				$row->streamName = $this->name;
+			}
 			if ($retrieved) {
+				// re-fetch the extending row
 				$row->retrieve(null, null, array('ignoreCache' => true));
 			}
 			foreach ($classes[$k] as $f) {
@@ -502,9 +528,6 @@ class Streams_Stream extends Base_Streams_Stream
 	}
 
 	protected function fetchAsUser ($options, &$userId, &$user = null) {
-		if (!empty($options['skipAccess'])) {
-			return $this;
-		}
 		if (isset($options['userId'])) {
 			$user = Users_User::fetch($options['userId']);
 			if (!$user) {
@@ -517,7 +540,8 @@ class Streams_Stream extends Base_Streams_Stream
 			$user = Users::loggedInUser(true);
 		}
 		$userId = $user->id;
-		if ($userId === $this->get('asUserId', null)) {
+		if (!empty($options['skipAccess'])
+		or $userId === $this->get('asUserId', null)) {
 			return $this;
 		}
 		$stream = Streams::fetchOne($userId, 
@@ -1029,7 +1053,7 @@ class Streams_Stream extends Base_Streams_Stream
 	/**
 	 * Take actions to reflect the stream has changed: save it and post a message.
 	 * @method post
-	 * @param {string} $asUserId
+	 * @param {string} [$asUserId=null]
 	 *  The user to post as. Defaults to the logged-in user.
 	 * @param {string} [$messageType='Streams/changed']
 	 *  The type of the message.
@@ -1040,7 +1064,7 @@ class Streams_Stream extends Base_Streams_Stream
 	 *  The array of results - successfully posted messages or false if post failed
 	 */
 	function changed(
-		$asUserId,
+		$asUserId=null,
 		$messageType='Streams/changed',
 		$fieldNames = null)
 	{
@@ -1786,7 +1810,7 @@ class Streams_Stream extends Base_Streams_Stream
 		}
 		return isset($top) ? $top : $bottom;
 	}
-	
+
 	/**
 	 * Gets the stream row corresponding to a Db_Row retrieved from
 	 * a table extending the stream.
@@ -1813,21 +1837,6 @@ class Streams_Stream extends Base_Streams_Stream
 		foreach($array as $k => $v)
 			$result->$k = $v;
 		return $result;
-	}
-	
-	/**
-	 * Gets a row that extends the stream, or a field of the stream.
-	 * Example: $stream->Websites_Article, $stream->title or $stream->article
-	 * @method __get
-	 * @param {string} $name
-	 * @return {mixed}
-	 */
-	function __get ($name)
-	{
-		if (isset($this->rows[$name])) {
-			return $this->rows[$name];
-		}
-		return parent::__get($name);
 	}
 	
 	/**

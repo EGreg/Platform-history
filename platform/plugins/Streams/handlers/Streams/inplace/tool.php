@@ -10,7 +10,7 @@
  * @constructor
  * @param {array} $options Options for the tool
  *  An associative array of parameters, containing:
- * @param {string} $options.inplaceType The type of the fieldInput. Can be "textarea" or "text"
+ * @param {string} [$options.inplaceType='textarea'] The type of the fieldInput. Can be "textarea" or "text"
  * @param {array} [$options.convert] The characters to convert to HTML. Pass an array containing zero or more of "\n", " "
  * @param {Streams_Stream} $options.stream A Streams_Stream object
  * @param {string} [$options.field] Optional, name of an field to change instead of the content of the stream
@@ -23,14 +23,27 @@
  */
 function Streams_inplace_tool($options)
 {
-	$stream = $options['stream'];
-	if (empty($stream)) {
-		throw new Q_Exception_RequiredField(array('field' => 'stream'));
+	if (empty($options['stream'])) {
+		if (empty($options['publisherId']) or empty($options['streamName'])) {
+			throw new Q_Exception_RequiredField(array('field' => 'stream'));
+		}
+		$publisherId = $options['publisherId'];
+		$streamName = $options['streamName'];
+		$stream = Streams::fetchOne(null, $publisherId, $streamName);
+		if (!$stream) {
+			throw new Q_Exception_MissingRow(array(
+				'table' => 'stream',
+				'criteria' => "publisherId=$publisherId, name=$streamName"
+			));
+		}
+	} else {
+		$stream = $options['stream'];
 	}
+	$inplaceType = Q::ifset($options, 'inplaceType', 'textarea');
 	$inplace = array(
 		'action' => $stream->actionUrl(),
 		'method' => 'PUT',
-		'type' => $options['inplaceType']
+		'type' => $inplaceType
 	);
 	if (isset($options['inplace'])) {
 		$inplace = array_merge($options['inplace'], $inplace);
@@ -44,9 +57,9 @@ function Streams_inplace_tool($options)
 	} else {
 		$field = !empty($options['field']) ? $options['field'] : 'content';
 		$content = $stream->$field;
-		$maxlength = call_user_func(array($stream, "maxSize_$field"));
+		$maxlength = $stream->maxSizeExtended($field);
 	}
-	switch ($options['inplaceType']) {
+	switch ($inplaceType) {
 		case 'text':
 			$inplace['fieldInput'] = Q_Html::input($field, $content, array(
 				'placeholder' => Q::ifset($input, 'placeholder', null),

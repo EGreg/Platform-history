@@ -63,12 +63,12 @@ Q.Error = Error;
  * @description Q extended methods for Objects
  */
 
-/**
- * Returns the prototype of an object, if one can be found
- * @method getPrototypeOf
- * @return {Object}
- */
 if (!Object.getPrototypeOf)
+/**
+* Returns the prototype of an object, if one can be found
+* @method getPrototypeOf
+* @return {Object}
+*/
 Object.getPrototypeOf = function (obj) {
 	if (obj.__proto__) return obj.__proto__;
 	if (obj.constructor && obj.constructor.prototype) {
@@ -77,12 +77,12 @@ Object.getPrototypeOf = function (obj) {
 	return null;
 };
 
-/**
- * Returns an array containing the object's keys, in a cross-browser way
- * @method keys
- * @return {Array}
- */
 if (!Object.keys)
+/**
+* Returns an array containing the object's keys, in a cross-browser way
+* @method keys
+* @return {Array}
+*/
 Object.keys = (function () {
 	var hasOwnProperty = Object.prototype.hasOwnProperty,
 		hasDontEnumBug = !{toString:null}.propertyIsEnumerable("toString"),
@@ -396,14 +396,13 @@ Ap.indexOf = function _Array_prototype_indexOf(searchElement /*, fromIndex */ ) 
  * @description Q methods for Date
  */
 
-/**
- * Returns total number of milliseconds since the UNIX epoch
- * @method now
- * @static
- * @return {number}
- */
-
 if (!Date.now)
+/**
+* Returns total number of milliseconds since the UNIX epoch
+* @method now
+* @static
+* @return {number}
+*/
 Date.now = function _Date_now() {
 	return new Date().getTime();
 };
@@ -429,27 +428,27 @@ var Elp = Element.prototype;
  * @description Q extended methods for DOM Elements
  */
 
-/**
- * Call this on an element to access tools attached to it.
- * The tools are like "view models".
- * this method is overridden by the tool constructor on specific elements
- * @method Q
- * @param {String} toolName
- * @return {Q.Tool|null}
- */
 if (!Elp.Q)
+/**
+* Call this on an element to access tools attached to it.
+* The tools are like "view models".
+* this method is overridden by the tool constructor on specific elements
+* @method Q
+* @param {String} toolName
+* @return {Q.Tool|null}
+*/
 Elp.Q = function (toolName) {
 	// this method is overridden by the tool constructor on specific elements
 	return null;
 };
 
-/**
- * Check whether this element is the given element or contains it
- * @method contains
- * @param {Element} child
- * @return {boolean}
- */
 if (!Elp.contains)
+/**
+* Check whether this element is the given element or contains it
+* @method contains
+* @param {Element} child
+* @return {boolean}
+*/
 Elp.contains = function (child) {
 	if (!child) return false;
 	var node = child;
@@ -5469,8 +5468,8 @@ Q.ajaxExtend = function _Q_ajaxExtend(what, slotNames, options) {
  * @param {String} uri
  *  A string of the form "Module/action"
  * @param {String|Array} slotNames
- *  If a string, expects a comma-separated list of slot names
- *  If an array, converts it to a comma-separated list
+ *  If a string, expects a comma-separated list of slot names.
+ *  If an array, converts it to a comma-separated list.
  * @param {Function} callback
  *  The err and parsed content will be passed to this callback function,
  *  (unless parse is false, in which case the raw content is passed as a String),
@@ -5515,7 +5514,7 @@ Q.req = function _Q_req(uri, slotNames, callback, options) {
  *  callback's second parameter, otherwise it will be undefined
  * @param {Array} [options.idPrefixes] optional array of Q_Html::pushIdPrefix values for each slotName
  * @param {boolean} [options.skipNonce] if true, skips loading of the nonce
- * @param {Object} [options.xhr] set to false to avoids XHR. Or set to true, to try to make xhr based on "method" option.
+ * @param {Object} [options.xhr] set to false to avoid XHR. Or set to true, to try to make xhr based on "method" option.
  *	 Or pass an object with properties to merge onto the xhr object, including a special "sync" property to make the call synchronous.
  *	 Or pass a function which will be run before .send() is executed. First parameter is the xhr object, second is the options.
  * @param {Function} [options.preprocess] an optional function that takes the xhr object before the .send() is invoked on it
@@ -5523,7 +5522,7 @@ Q.req = function _Q_req(uri, slotNames, callback, options) {
  * @param {boolean} [options.extend=true] if false, the URL is not extended with Q fields.
  * @param {boolean} [options.query=false] if true simply returns the query url without issuing the request
  * @param {String} [options.callbackName] if set, the URL is not extended with Q fields and the value is used to name the callback field in the request.
- * @param {boolean} [options.duplicate=true] ou can set it to false in order not to fetch the same url again
+ * @param {boolean} [options.duplicate=true] you can set it to false in order not to fetch the same url again
  * @param {boolean} [options.quiet=true] this option is just passed to your onLoadStart/onLoadEnd handlers in case they want to respect it.
  * @param {boolean} [options.timestamp] whether to include a timestamp (e.g. as a cache-breaker)
  * @param {Function} [options.handleRedirects=Q.handle] if set and response data.redirect.url is not empty, automatically call this function.

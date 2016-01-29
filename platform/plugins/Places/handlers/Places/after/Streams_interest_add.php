@@ -3,7 +3,10 @@
 function Places_after_Streams_interest_add($params)
 {
 	$location = Places_Location::userStream();
-	if ($params['subscribe'] and $location) {
+	if ($params['subscribe'] and $location
+	and $location->getAttribute('latitude')
+	and $location->getAttribute('longitude')
+	and $location->getAttribute('miles')) {
 		Places_Nearby::subscribe(
 			$location->getAttribute('latitude'),
 			$location->getAttribute('longitude'),
