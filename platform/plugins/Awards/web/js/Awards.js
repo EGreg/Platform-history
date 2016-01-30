@@ -31,7 +31,7 @@ Q.Awards = Q.plugins.Awards = {};
 				}
 			);
 
-			console.log('button clicked');
+//			console.log('button clicked');
 			return false;
 		});
 
