@@ -37,6 +37,10 @@ Q.Awards = Q.plugins.Awards = {};
 
 	});
 
+	Q.Tool.define({
+		"Awards/pay"           : "plugins/Awards/js/tools/pay.js"
+	});
+
 //	Streams.onMessage('Awards/credits', "").set(function (data) {
 //		Awards.amount = amount;
 //		Awards.onCredits.handle(amount);
