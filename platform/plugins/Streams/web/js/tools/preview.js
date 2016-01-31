@@ -184,11 +184,17 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 				state.publisherId = this.fields.publisherId;
 				state.streamName = this.fields.name;
 				tool.stream = this;
-				this.refresh(function Streams_preview_afterCreateRefresh(r) {
+				var wait = this.refresh(Streams_preview_afterCreateRefresh, {
+					messages: true
+				});
+				if (wait === false) {
+					Streams_preview_afterCreateRefresh();
+				}
+				function Streams_preview_afterCreateRefresh(r) {
 					state.onCreate.handle.call(tool, tool.stream);
 					Q.handle(callback, tool, [tool.stream]);
 					tool.preview();
-				}, {messages: true});
+				}
 			}, state.related, state.creatable.options);
 		}
 		var tool = this;
