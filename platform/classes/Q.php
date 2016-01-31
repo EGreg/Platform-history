@@ -133,7 +133,7 @@ class Q
 		$errline,
 		$errcontext)
 	{
-	    if (!(error_reporting() & $errno)) {
+	    if (!(error_reporting()  & $errno)) {
 	        // This error code is not included in error_reporting
 			// just continue on with execution, if possible.
 			// this situation can also happen when
