@@ -9,7 +9,7 @@ function Streams_after_Users_setLoggedInUser($params)
 	}
 	
 	// subscribe to app announcements
-	$app = Q_Config::expect('Q', 'app');
+	$app = Users::communityId();
 	$stream = Streams::fetchOne($user->id, $app, 'Streams/community/main');
 	if ($stream and !$stream->subscription($user->id)) {
 		$stream->subscribe();

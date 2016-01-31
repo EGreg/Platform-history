@@ -37,6 +37,26 @@ abstract class Users extends Base_Users
 	 * @static
 	 */
 	static $facebooks = array();
+	
+	/**
+	 * Get the id of the main community from the config. Defaults to the app name.
+	 * @return {string} The id of the main community for the installed app.
+	 */
+	static function communityId()
+	{
+		$communityId = Q_Config::get('Users', 'community', 'id', null);
+		return $communityId ? $communityId : Q_Config::expect('Q', 'app');
+	}
+	
+	/**
+	 * Get the name of the main community from the config. Defaults to the app name.
+	 * @return {string} The name of the main community for the installed app.
+	 */
+	static function communityName()
+	{
+		$communityName = Q_Config::get('Users', 'community', 'name', null);
+		return $communityName ? $communityName : Q_Config::expect('Q', 'app');
+	}
 
 	/**
 	 * @param string [$publisherId] The id of the publisher relative to whom to calculate the roles. Defaults to the app name.
@@ -51,7 +71,7 @@ abstract class Users extends Base_Users
 	static function roles($publisherId = null, $filter = null, $options = array(), $userId = null)
 	{
 		if (empty($publisherId)) {
-			$publisherId = Q_Config::expect('Q', 'app');
+			$publisherId = Users::communityId();
 		}
 		if (!isset($userId)) {
 			$user = Users::loggedInUser();

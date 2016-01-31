@@ -17,7 +17,7 @@ function Websites_seo_tool($options)
 {
 	$skipIfNotAuthorized = Q::ifset($options, 'skipIfNotAuthorized', true);
 	if ($skipIfNotAuthorized) {
-		$websitesUserId = Q_Config::expect("Websites", "user", "id");
+		$websitesUserId = Users::communityId();
 		$sha1 = sha1(Q_Dispatcher::uri());
 		$seoStreamName = "Websites/seo/$sha1";
 		$stream = Streams::fetchOne(null, $websitesUserId, $seoStreamName);

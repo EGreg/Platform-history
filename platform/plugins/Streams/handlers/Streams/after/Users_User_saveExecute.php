@@ -76,7 +76,7 @@ function Streams_after_Users_User_saveExecute($params)
 		}
 		
 		// Save a greeting stream, to be edited
-		$communityId = Q_Config::expect('Q', 'app');
+		$communityId = Users::communityId();
 		$stream = new Streams_Stream();
 		$stream->publisherId = $user->id;
 		$stream->name = "Streams/greeting/$communityId";

@@ -168,7 +168,7 @@ class Places_Nearby
 		$nearby = Places_Nearby::forSubscribers($latitude, $longitude, $miles);
 		if (!$nearby) { return array(); }
 		if (!isset($publisherId)) {
-			$publisherId = Q_Config::expect('Q', 'app');
+			$publisherId = Users::communityId();
 		}
 		if ($transform = Q::ifset($options, 'transform', null)) {
 			$create = Q::ifset($options, 'create', null);
@@ -240,7 +240,7 @@ class Places_Nearby
 		$miles = Q::ifset($options, 'miles', null);
 		$nearby = Places_Nearby::forPublishers($latitude, $longitude, $miles);
 		if (!isset($fromPublisherId)) {
-			$fromPublisherId = Q_Config::expect('Q', 'app');
+			$fromPublisherId = Users::communityId();
 		}
 		if ($transform = Q::ifset($options, 'transform', null)) {
 			$create = Q::ifset($options, 'create', null);
@@ -327,7 +327,7 @@ class Places_Nearby
 			$latitude, $longitude, $miles, 1
 		);
 		if (!isset($publisherId)) {
-			$publisherId = Q_Config::expect('Q', 'app');
+			$publisherId = Users::communityId();
 		}
 		if (!isset($streamName)) {
 			$streamName = self::streamName($latitude, $longitude, $miles);

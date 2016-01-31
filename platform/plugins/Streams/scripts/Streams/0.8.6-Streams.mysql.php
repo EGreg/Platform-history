@@ -3,10 +3,11 @@
 function Streams_0_8_6_Streams_mysql()
 {
 	$app = Q_Config::expect('Q', 'app');
+	$communityId = Users::communityId();
 	
 	// access for managing communities
 	$access = new Streams_Access();
-	$access->publisherId = $app;
+	$access->publisherId = $communityId;
 	$access->streamName = 'Streams/community*';
 	$access->ofUserId = '';
 	$access->ofContactLabel = "$app/admins";
@@ -17,7 +18,7 @@ function Streams_0_8_6_Streams_mysql()
 	
 	// access for managing categories
 	$access = new Streams_Access();
-	$access->publisherId = $app;
+	$access->publisherId = $communityId;
 	$access->streamName = 'Streams/category/';
 	$access->ofUserId = '';
 	$access->ofContactLabel = "$app/admins";

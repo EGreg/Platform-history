@@ -15,8 +15,7 @@ function Streams_interest_delete()
 	if (!isset($title)) {
 		throw new Q_Exception_RequiredField(array('field' => 'title'));
 	}
-	$app = Q_Config::expect('Q', 'app');
-	$publisherId = Q::ifset($_REQUEST, 'publisherId', $app);
+	$publisherId = Q::ifset($_REQUEST, 'publisherId', Users::communityId());
 	$name = 'Streams/interest/' . Q_Utils::normalize($title);
 	$stream = Streams::fetchOne(null, $publisherId, $name);
 	if (!$stream) {

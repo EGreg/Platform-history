@@ -3,6 +3,7 @@
 function Streams_0_8_1_Streams_mysql()
 {	
 	$app = Q_Config::expect('Q', 'app');
+	$commmunityId = Users::communityId();
 	
 	// template for community stream
 	$stream = new Streams_Stream();
@@ -17,7 +18,7 @@ function Streams_0_8_1_Streams_mysql()
 	$stream->save();
 	
 	// app community stream, for announcements
-	Streams::create($app, $app, 'Streams/community', array(
+	Streams::create($commmunityId, $commmunityId, 'Streams/community', array(
 		'skipAccess' => true,
 		'name' => 'Streams/community/main',
 		'title' => "$app Community"

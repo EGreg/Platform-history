@@ -3,13 +3,14 @@
 function Streams_0_8_4_Streams_mysql()
 {	
 	$app = Q_Config::expect('Q', 'app');
-	$user = Users_User::fetch($app);
+	$communityId = Users::communityId();
+	$user = Users_User::fetch($communityId);
 	
 	// avatar for the App user
 	$avatar = new Streams_Avatar();
-	$avatar->toUserId = $app;
-	$avatar->publisherId = $app;
-	$avatar->username = $user->username;
+	$avatar->toUserId = $communityId;
+	$avatar->publisherId = $communityId;
+	$avatar->username = $communityId->username;
 	$avatar->firstName = '';
 	$avatar->lastName = '';
 	$avatar->icon = $user->icon;
@@ -22,7 +23,7 @@ function Streams_0_8_4_Streams_mysql()
 	
 	// access stream for managing app roles
 	$stream = new Streams_Stream();
-	$stream->publisherId = $app;
+	$stream->publisherId = Users::communityId();
 	$stream->name = 'Streams/contacts';
 	$stream->type = 'Streams/resource';
 	$stream->title = "Contacts";
@@ -40,7 +41,7 @@ function Streams_0_8_4_Streams_mysql()
 	
 	// access for managing app contacts
 	$access = new Streams_Access();
-	$access->publisherId = $app;
+	$access->publisherId = $communityId;
 	$access->streamName = 'Streams/contacts';
 	$access->ofUserId = '';
 	$access->ofContactLabel = "$app/admins";
@@ -51,7 +52,7 @@ function Streams_0_8_4_Streams_mysql()
 	
 	// access for managing app roles
 	$access = new Streams_Access();
-	$access->publisherId = $app;
+	$access->publisherId = $communityId;
 	$access->streamName = 'Streams/labels';
 	$access->ofUserId = '';
 	$access->ofContactLabel = "$app/admins";

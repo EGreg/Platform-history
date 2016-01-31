@@ -26,6 +26,6 @@ function Websites_before_Q_responseExtras()
 		}
 	}
 	Q_Response::setScriptData('Q.plugins.Websites.seoStreamName', $seoStreamName);
-	Q_Response::setScriptData('Q.plugins.Websites.userId', Q_Config::expect('Websites', 'user', 'id'));
+	Q_Response::setScriptData('Q.plugins.Websites.userId', Users::communityId());
 	Q_Response::setScriptData('Q.plugins.Websites.seoReload', Q_Config::expect('Websites', 'seoReload'));
 }
