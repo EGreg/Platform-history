@@ -1,5 +1,5 @@
 <p>
-	Thanks for using <?php echo $app ?>, <?php echo $user->displayName() ?>.
+	Thanks for visiting <?php echo $communityName ?>, <?php echo $user->displayName() ?>.
 </p>
 
 <p>
@@ -14,7 +14,7 @@
 </p>
 
 <p>
-	See you on <a href="<?php echo Q_Request::baseUrl() ?>"><?php echo $app ?></a>!
+	See you on <a href="<?php echo Q_Request::baseUrl() ?>"><?php echo $communityName ?></a>!
 </p>
 
 <script type="application/ld+json">

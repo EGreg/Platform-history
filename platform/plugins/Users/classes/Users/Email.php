@@ -202,6 +202,7 @@ class Users_Email extends Base_Users_Email
 		$this->authCode = md5(microtime() + mt_rand());
 		$link = 'Users/activate?p=1&code='.urlencode($this->activationCode)
 			. ' emailAddress='.urlencode($this->address);
+		$communityName = Users::communityName();
 		/**
 		 * @event Users/resend {before}
 		 * @param {string} user
@@ -214,6 +215,7 @@ class Users_Email extends Base_Users_Email
 			'user' => $user,
 			'email' => $this,
 			'app' => Q_Config::expect('Q', 'app'),
+			'communityName' => $communityName,
 			'baseUrl' => Q_Request::baseUrl(),
 			'link' => $link,
 		));

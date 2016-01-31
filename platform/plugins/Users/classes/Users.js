@@ -45,6 +45,24 @@ Users.sessions = {};
 Users.clients = {};
 
 /**
+ * Get the id of the main community from the config. Defaults to the app name.
+ * @return {string} The id of the main community for the installed app.
+ */
+Users.communityId = function() {
+	var communityId = Q.Config.get(['Users', 'community', 'id'], null);
+	return communityId ? communityId : Q.Config.expect(['Q', 'app']);
+};
+
+/**
+ * Get the name of the main community from the config. Defaults to the app name.
+ * @return {string} The name of the main community for the installed app.
+ */
+Users.communityName = function() {
+	var communityName = Q.Config.get(['Users', 'community', 'name'], null);
+	return communityName ? communityName : Q.Config.expect(['Q', 'app']);
+};
+
+/**
  * Gets a user (from database if needed) associated with sessionId and passes it to callback.
  * @method userFromSession
  * @param sessionId {string}

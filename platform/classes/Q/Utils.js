@@ -191,7 +191,8 @@ Utils.sendEmail = function (to, subject, view, fields, options, callback) {
 		options = {};
 	}
 
-	fields = fields || {}; options = options || {};
+	fields = fields || {};
+	options = options || {};
 
 	var from = options.from || Q.Config.get(['Users', 'email', 'from'], null);
 	if (!from) {

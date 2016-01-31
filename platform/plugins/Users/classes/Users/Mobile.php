@@ -198,6 +198,7 @@ class Users_Mobile extends Base_Users_Mobile
 		}
 		$link = 'Users/activate?p=1&code='.urlencode($this->activationCode)
 			. ' mobileNumber='.urlencode($number);
+		$communityName = Users::communityName();
 		/**
 		 * @event Users/resend {before}
 		 * @param {string} user
@@ -209,6 +210,7 @@ class Users_Mobile extends Base_Users_Mobile
 			'user' => $user,
 			'mobile' => $this,
 			'app' => Q_Config::expect('Q', 'app'),
+			'communityName' => $communityName,
 			'baseUrl' => Q_Request::baseUrl(),
 			'link' => $link
 		));
@@ -222,7 +224,7 @@ class Users_Mobile extends Base_Users_Mobile
 		 * @param {string} user
 		 * @param {string} mobile
 		 */
-		Q::event('Users/resend', compact('user', 'mobile'), 'after');
+		Q::event('Users/resend', compact('user', 'mobile', 'communityName'), 'after');
 	}
 
 	/* * * */
