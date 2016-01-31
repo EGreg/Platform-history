@@ -4,7 +4,7 @@ function Websites_before_Q_responseExtras()
 {
 	$user = Users::loggedInUser(false, false);
 	$userId = $user ? $user->id : "";
-	$websitesUserId = Q_Config::expect("Websites", "user", "id");
+	$websitesUserId = Users::communityId();
 	$sha1 = sha1(Q_Dispatcher::uri());
 	$seoStreamName = "Websites/seo/$sha1";
 	$streams = Streams::fetch($userId, $websitesUserId, array(
