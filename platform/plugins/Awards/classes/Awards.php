@@ -521,8 +521,6 @@ abstract class Awards extends Base_Awards
 
 	static function authForm($options, $token) {
 
-//		$x_email = Users::loggedInUser()->emailAddress;
-
 		echo (
 			'<form'
 			.' method="POST"'
@@ -532,8 +530,8 @@ abstract class Awards extends Base_Awards
 			.' name="authnetform"'
 			.' >'
 		);
+
 		echo ('<input type="hidden" name="Token" value="' . $token . '">' );
-//		echo ('<div><input name="x_email" value="' . $x_email . '"></div>' );
 		echo ('<input class="Q_button Awards_auth" type="submit" value="payment info form"/>' );
 		echo ('</form>' );
 

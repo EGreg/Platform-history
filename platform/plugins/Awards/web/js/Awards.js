@@ -15,8 +15,24 @@ Q.Awards = Q.plugins.Awards = {};
 
 	Q.page('', function () {
 
-		$('.Awards_pay').on(Q.Pointer.click, function () {
+		$('.Awards_auth').on(Q.Pointer.click, function () {
+			Q.Dialogs.push({
+				title: '',
+				content:
+				'<iframe ' +
+				'name="authnet" ' +
+				'src="" ' +
+				'width="480" ' +
+				'height="640" ' +
+				'frameborder="0" ' +
+				'scrolling="no" ' +
+				'id="authnet" ' +
+				'class="authnet" ' +
+				'></iframe>'
+			});
+		});
 
+		$('.Awards_pay').on(Q.Pointer.click, function () {
 			var fields = '';
 			Q.req(
 				'Awards/pay', // uri - string of the form
@@ -31,8 +47,7 @@ Q.Awards = Q.plugins.Awards = {};
 				}
 			);
 
-//			console.log('button clicked');
-			return false;
+			return true;
 		});
 
 	});

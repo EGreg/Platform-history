@@ -37,25 +37,6 @@
 //                $(tool.element).text(this.fields.title);
             });
 
-//            Q.addStylesheet("css/Wishes.css"); // add any css you need
-
-            document.getElementsByClassName("Awards_auth")[0].onsubmit = function() {
-                Q.Dialogs.push({
-                    title: '',
-                    content:
-                    '<iframe ' +
-                    'name="authnet" ' +
-                    'src="" ' +
-                    'width="480" ' +
-                    'height="640" ' +
-                    'frameborder="0" ' +
-                    'scrolling="no" ' +
-                    'id="authnet" ' +
-                    'class="authnet" ' +
-                    '></iframe>'
-                });
-            };
-
 //            document.getElementById("authnetpay").onsubmit = function() {
 //                console.log(this);
 //                Q.Dialogs.push({
@@ -113,33 +94,6 @@
         + '</form>'
     );
 
-/*
-    Q.Template.set(
-        'Awards/authorize',
-        '<FORM METHOD=POST ACTION="https://test.authorize.net/gateway/transact.dll">'
-        + '<% ret = InsertFP (APIloginid, sequence, amount, txnkey) %>'
-        + '<INPUT TYPE=HIDDEN NAME="x_version" VALUE="3.1">'
-        + '<INPUT TYPE=HIDDEN NAME="x_delim_data" VALUE="TRUE">'
-        + '<INPUT TYPE=HIDDEN NAME="x_login" VALUE="99.........">'
-        + '<INPUT TYPE=HIDDEN NAME="x_tran_key" VALUE="3pF............">'
-        + '<INPUT TYPE=HIDDEN NAME="x_show_form" VALUE="PAYMENT_FORM">'
-        + '<INPUT TYPE=HIDDEN NAME="x_method" VALUE="CC">'
-        + '<INPUT TYPE=HIDDEN NAME="x_type" VALUE="AUTH_CAPTURE">'
-        + '<INPUT TYPE=HIDDEN NAME="x_amount" VALUE="9.95">'
-        + '<INPUT TYPE=HIDDEN NAME="x_relay_response" VALUE="FALSE">'
-        + '<INPUT TYPE=SUBMIT VALUE="Click here for the secure payment form">'
-        + '</FORM>'
-    );
-*/
-
-/*
-    Q.Template.render(
-        'Awards/authorize',
-'',//        fields,
-        function (err, html) {
-//            $(element).html(html);
-        }
-    );
-*/
+    Q.addStylesheet('plugins/Awards/css/Awards.css');
 
 })(window, Q, jQuery);
