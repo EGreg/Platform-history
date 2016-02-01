@@ -532,10 +532,10 @@ abstract class Awards extends Base_Awards
 		);
 
 		echo ('<input type="hidden" name="Token" value="' . $token . '">' );
-		echo ('<input class="Q_button Awards_auth" type="submit" value="payment info form"/>' );
+		echo ('<input class="Q_button Awards_auth" type="submit" value="Payment info"/>' );
 		echo ('</form>' );
 
-		echo ('<button class="Q_button Awards_pay">subscribe for $1.99 a month</button>' );
+		echo ('<button class="Q_button Awards_confirm">Make subscription</button>' );
 
 	}
 
