@@ -220,9 +220,6 @@ Base.prototype.fieldNames = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_publisherId = function (value) {
-		if (value == null) {
-			value='';
-		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".publisherId");
@@ -232,6 +229,7 @@ Base.prototype.beforeSet_publisherId = function (value) {
 };
 
 	/**
+	 * @method maxSize_publisherId
 	 * Returns the maximum string length that can be assigned to the publisherId field
 	 * @return {integer}
 	 */
@@ -249,9 +247,6 @@ Base.prototype.maxSize_publisherId = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_streamName = function (value) {
-		if (value == null) {
-			value='';
-		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".streamName");
@@ -261,6 +256,7 @@ Base.prototype.beforeSet_streamName = function (value) {
 };
 
 	/**
+	 * @method maxSize_streamName
 	 * Returns the maximum string length that can be assigned to the streamName field
 	 * @return {integer}
 	 */
@@ -278,9 +274,6 @@ Base.prototype.maxSize_streamName = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_userId = function (value) {
-		if (value == null) {
-			value='';
-		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".userId");
@@ -290,6 +283,7 @@ Base.prototype.beforeSet_userId = function (value) {
 };
 
 	/**
+	 * @method maxSize_userId
 	 * Returns the maximum string length that can be assigned to the userId field
 	 * @return {integer}
 	 */
@@ -307,9 +301,6 @@ Base.prototype.maxSize_userId = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_article = function (value) {
-		if (value == null) {
-			value='';
-		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".article");
@@ -319,6 +310,7 @@ Base.prototype.beforeSet_article = function (value) {
 };
 
 	/**
+	 * @method maxSize_article
 	 * Returns the maximum string length that can be assigned to the article field
 	 * @return {integer}
 	 */
@@ -336,9 +328,6 @@ Base.prototype.maxSize_article = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_getintouch = function (value) {
-		if (value == null) {
-			value='';
-		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".getintouch");
@@ -348,6 +337,7 @@ Base.prototype.beforeSet_getintouch = function (value) {
 };
 
 	/**
+	 * @method maxSize_getintouch
 	 * Returns the maximum string length that can be assigned to the getintouch field
 	 * @return {integer}
 	 */
