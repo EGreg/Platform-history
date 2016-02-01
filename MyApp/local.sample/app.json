@@ -76,10 +76,5 @@
 			}, */
 			"from": "+1234567890"
 		}
-	},
-	"Websites": {
-		"user": {
-			"id": "MyApp" /* For publishing streams with the Websites plugin */
-		}
 	}
 }

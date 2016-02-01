@@ -2,8 +2,8 @@
 
 function Streams_0_8_7_Streams_mysql()
 {
-	$app = Q_Config::expect('Q', 'app');
-	$user = Users_User::fetch($app, true);
+	$communityId = Users::communityId();
+	$user = Users_User::fetch($communityId, true);
 	
 	$simulated = array(
 		'row' => $user,

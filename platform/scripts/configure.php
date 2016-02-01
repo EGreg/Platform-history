@@ -39,7 +39,7 @@ do {
 				RecursiveDirectoryIterator::SKIP_DOTS
 			),
 			RecursiveIteratorIterator::SELF_FIRST
-		) as $filename
+		) as $filename => $splFileInfo
 	) {
 		$pi = pathinfo($filename);
 		if ($pi['filename'] === CONFIGURE_ORIGINAL_APP_NAME) {
@@ -49,6 +49,9 @@ do {
 		$filename2 = $pi['dirname'] . DIRECTORY_SEPARATOR . $pi['filename']
 			. (empty($pi['extension']) ? '' : '.' . $pi['extension']);
 		if ($filename != $filename2) {
+			if (file_exists($filename2)) {
+				throw new Q_Exception("Cannot overwrite existing path $filename2");
+			}
 			rename($filename, $filename2);
 			$go_again = true;
 			break;
@@ -58,7 +61,7 @@ do {
 
 if ($desired !== CONFIGURE_ORIGINAL_APP_NAME) {
 	$it = new RecursiveDirectoryIterator(APP_DIR);
-	foreach(new RecursiveIteratorIterator($it) as $filename) {
+	foreach(new RecursiveIteratorIterator($it) as $filename => $splFileInfo) {
 		if (is_dir($filename) or is_link($filename)) continue;
 		$file = file_get_contents($filename);
 		file_put_contents($filename, preg_replace(

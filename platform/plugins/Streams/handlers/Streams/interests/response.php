@@ -3,8 +3,7 @@
 function Streams_interests_response()
 {
 	// serve a javascript file and tell client to cache it
-	$app = Q_Config::expect('Q', 'app');
-	$communityId = Q::ifset($_REQUEST, 'communityId', $app);
+	$communityId = Q::ifset($_REQUEST, 'communityId', Users::communityId());
 	$tree = new Q_Tree();
 	$tree->load("files/Streams/interests/$communityId.json");
 	$categories = $tree->getAll();

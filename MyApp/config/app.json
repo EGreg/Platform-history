@@ -66,6 +66,10 @@
 		}
 	},
 	"Users": {
+		"community": {
+			"id": "MyApp",
+			"name": "MyApp"
+		},
 		"transactional": {
 			"activation": {
 				"subject": "Welcome! Please verify your email address.",

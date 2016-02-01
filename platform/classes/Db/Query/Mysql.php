@@ -911,7 +911,7 @@ class Db_Query_Mysql extends Db_Query implements iDb_Query
 	/**
 	 * Joins another table to use in the query
 	 * @method join
-	 * @param {string} $table The name of the table. May also be "name AS alias".
+	 * @param {string} $table The name of the table. May also be "name alias".
 	 * @param {Db_Expression|array|string} $condition The condition to join on. Thus, JOIN table ON ($condition)
 	 * @param {string} [$join_type='INNER'] The string to prepend to JOIN, such as 'INNER' (default), 'LEFT OUTER', etc.
 	 * @return {Db_Query_Mysql} The resulting object implementing iDb_Query

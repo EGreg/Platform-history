@@ -377,6 +377,7 @@ class Users_User extends Base_Users_User
 		);
 		$email->authCode = md5(microtime() + mt_rand());
 		$link = 'Users/activate?code='.urlencode($email->activationCode) . ' emailAddress='.urlencode($email->address);
+		$communityName = Users::communityName();
 		/**
 		 * @event Users/addIdentifier {before}
 		 * @param {string} user
@@ -403,6 +404,7 @@ class Users_User extends Base_Users_User
 			'user' => $this,
 			'email' => $email,
 			'app' => Q_Config::expect('Q', 'app'),
+			'communityName' => $communityName,
 			'baseUrl' => Q_Request::baseUrl(),
 			'link' => $link
 		));
@@ -565,6 +567,7 @@ class Users_User extends Base_Users_User
 		$mobile->authCode = md5(microtime() + mt_rand());
 		$link = 'Users/activate?code='.urlencode($mobile->activationCode)
 			. ' mobileNumber='.urlencode($number);
+		$communityName = Users::communityName();
 		/**
 		 * @event Users/addIdentifier {before}
 		 * @param {string} user
@@ -586,6 +589,7 @@ class Users_User extends Base_Users_User
 			'user' => $this,
 			'mobile' => $mobile,
 			'app' => Q_Config::expect('Q', 'app'),
+			'communityName' => $communityName,
 			'baseUrl' => Q_Request::baseUrl(),
 			'link' => $link
 		));

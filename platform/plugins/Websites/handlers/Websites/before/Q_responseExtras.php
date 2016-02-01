@@ -4,7 +4,7 @@ function Websites_before_Q_responseExtras()
 {
 	$user = Users::loggedInUser(false, false);
 	$userId = $user ? $user->id : "";
-	$websitesUserId = Q_Config::expect("Websites", "user", "id");
+	$websitesUserId = Users::communityId();
 	$sha1 = sha1(Q_Dispatcher::uri());
 	$seoStreamName = "Websites/seo/$sha1";
 	$streams = Streams::fetch($userId, $websitesUserId, array(
@@ -26,6 +26,6 @@ function Websites_before_Q_responseExtras()
 		}
 	}
 	Q_Response::setScriptData('Q.plugins.Websites.seoStreamName', $seoStreamName);
-	Q_Response::setScriptData('Q.plugins.Websites.userId', Q_Config::expect('Websites', 'user', 'id'));
+	Q_Response::setScriptData('Q.plugins.Websites.userId', Users::communityId());
 	Q_Response::setScriptData('Q.plugins.Websites.seoReload', Q_Config::expect('Websites', 'seoReload'));
 }

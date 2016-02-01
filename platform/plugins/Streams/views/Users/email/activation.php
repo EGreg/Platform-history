@@ -1,5 +1,5 @@
 <h1>
-	Thanks for signing up with <?php echo $app ?>,
+	Thanks for signing up with <?php echo $communityName ?>,
 	<?php echo $user->displayName(array('short' => true)) ?>
 </h1>
 

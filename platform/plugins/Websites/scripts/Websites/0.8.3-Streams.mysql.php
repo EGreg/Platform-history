@@ -3,10 +3,11 @@
 function Websites_0_8_3_Streams_mysql()
 {
 	$app = Q_Config::expect('Q', 'app');
+	$communityId = Users::communityId();
 	
 	// access for managing communities
 	$access = new Streams_Access();
-	$access->publisherId = $app;
+	$access->publisherId = $communityId;
 	$access->streamName = 'Streams/community*';
 	$access->ofUserId = '';
 	$access->ofContactLabel = "Websites/admins";

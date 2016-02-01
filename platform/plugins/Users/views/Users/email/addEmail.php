@@ -1,5 +1,5 @@
 <h1>
-	Thanks for adding an email to <?php echo $app ?>,
+	Thanks for adding an email to <?php echo $communityName ?>,
 	<?php echo $user->username ?>
 </h1>
 
