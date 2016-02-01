@@ -7,13 +7,6 @@
  */
 (function (Q, $) {
 
-if (!('Tools' in Q)) {
-	Q.Tools = {};
-}
-if (!('utils' in Q.Tools)) {
-	Q.Tools.utils = {};
-}
-
 Q.onReady.set(function()
 {		
 	// we really need to remove column=<id> from hash on fresh load
