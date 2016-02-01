@@ -539,5 +539,30 @@ abstract class Awards extends Base_Awards
 
 	}
 
+	static function startSubscription($info) {
+
+		$userId = $user = Users::loggedInUser(true)->id;
+
+		$startDate = date("Y-m-d");
+		$endDate = date("Y-m-d", strtotime("-1 day", strtotime("+1 year", strtotime($startDate))));
+
+		$stream = new Streams_Stream();
+		$stream->publisherId = "Patients";
+		$stream->name = "Awards/subscriptions/$userId";
+		$stream->type = "Awards/subscription";
+		$stream->readLevel = 40;
+		$stream->writeLevel = 0;
+		$stream->adminLevel = 0;
+		$stream->setAttribute('startDate', $startDate);
+		$stream->setAttribute('endDate', $endDate);
+		$stream->save(true);
+
+	}
+
+	static function stopSubscription($info) {
+		// call this if we learn that a subscription has stopped, so we mark it as inactive.
+		// the customer could use the credit card info to start a new subscription.
+	}
+
 	/* * * */
 };
