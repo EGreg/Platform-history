@@ -36,13 +36,42 @@ Q.Awards = Q.plugins.Awards = {};
 			Q.Dialogs.push({
 				title: 'Subscription confirmation',
 				content:
+				'<div class="Awards_pay_confirm">' +
+				'<button class="Q_button Awards_pay">Confirm subscription</button></br></br>' +
 				'<input type="checkbox" name="agree" id="Subscription_agree" value="yes">' +
-				'<label for="Subscription_agree">Confirm subscription terms</label>' +
- 				'<button class="Q_button Awards_pay">Confirm subscription</button>'
+				'<label for="Subscription_agree">Confirm subscription terms</label></br>' +
+				'</div>'
+			});
+			$('.Awards_pay').on(Q.Pointer.click, function () {
+
+				if ($('#Subscription_agree:checkbox').is(':checked')) {
+					subscribe();
+				} else {
+					var r = confirm('Confirm subscription terms');
+					if (r == true) {
+						subscribe();
+					}
+				};
 			});
 		});
 
 	});
+
+	function subscribe() {
+		var fields = '';
+		Q.req(
+			'Awards/pay', // uri - string of the form
+			'results', // slotNames
+			// callback
+			function () {
+			},
+			// A hash of options, to be passed to Q.request
+			{
+				method: 'post',
+				fields: fields
+			});
+		Q.Dialogs.pop();
+	};
 
 	Q.Tool.define({
 		"Awards/pay"           : "plugins/Awards/js/tools/pay.js"
