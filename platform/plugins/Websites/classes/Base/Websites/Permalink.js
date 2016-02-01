@@ -214,16 +214,18 @@ Base.prototype.fieldNames = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_uri = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".uri");
 		if (typeof value === "string" && value.length > 255)
 			throw new Error('Exceedingly long value being assigned to '+this.table()+".uri");
 		return value;
-}; 
+};
 
 	/**
-	 * @method maxSize_uri
 	 * Returns the maximum string length that can be assigned to the uri field
 	 * @return {integer}
 	 */
@@ -241,6 +243,9 @@ Base.prototype.maxSize_uri = function () {
  * @throws {Error} An exception is thrown if 'value' is not string or is exceedingly long
  */
 Base.prototype.beforeSet_url = function (value) {
+		if (value == null) {
+			value='';
+		}
 		if (value instanceof Db.Expression) return value;
 		if (typeof value !== "string" && typeof value !== "number")
 			throw new Error('Must pass a string to '+this.table()+".url");
@@ -250,7 +255,6 @@ Base.prototype.beforeSet_url = function (value) {
 };
 
 	/**
-	 * @method maxSize_url
 	 * Returns the maximum string length that can be assigned to the url field
 	 * @return {integer}
 	 */

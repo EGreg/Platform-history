@@ -28,6 +28,7 @@ module.exports = Base;
  */
 Base.tableClasses = [
 	"Awards_Badge",
+	"Awards_Charge",
 	"Awards_Earned",
 	"Awards_Leader"
 ];
@@ -57,6 +58,13 @@ Base.connectionName = function() {
  * @type Awards.Badge
  */
 Base.Badge = Q.require('Awards/Badge');
+
+/**
+ * Link to Awards.Charge model
+ * @property Charge
+ * @type Awards.Charge
+ */
+Base.Charge = Q.require('Awards/Charge');
 
 /**
  * Link to Awards.Earned model

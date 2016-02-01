@@ -21,8 +21,9 @@ abstract class Base_Awards
 	 */
 	static $table_classnames = array (
   0 => 'Awards_Badge',
-  1 => 'Awards_Earned',
-  2 => 'Awards_Leader',
+  1 => 'Awards_Charge',
+  2 => 'Awards_Earned',
+  3 => 'Awards_Leader',
 );
 
 	/**
