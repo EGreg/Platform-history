@@ -25,10 +25,12 @@ function Streams_stream_put($params) {
 	}
 	$name = Streams::requestedName(true);
 	$req = array_merge($_REQUEST, $params);
-	
-	$closedTime = Q::ifset($req, 'closedTime', null);
-	if (in_array($closedTime, array(false, 'false', 'null'))) {
-		$req['closedTime'] = null;
+
+	if (array_key_exists('closedTime', $req)) {
+		$closedTime = $req['closedTime'];
+		if (in_array($closedTime, array(false, 'false', 'null'))) {
+			$req['closedTime'] = null;
+		}
 	}
 
 	// do not set stream name

@@ -910,7 +910,7 @@ class Db_Row implements Iterator
 		if (is_callable($callback))
 			list ($name_internal, $value) = call_user_func($callback, $value);
 
-		if (!isset($this->fields[$name_internal])) {
+		if (!array_key_exists($name_internal, $this->fields)) {
 			$this->fieldsOriginal[$name_internal] = $value;
 		}
 		$this->fields[$name_internal] = $value;
