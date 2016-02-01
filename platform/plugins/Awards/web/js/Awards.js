@@ -32,22 +32,14 @@ Q.Awards = Q.plugins.Awards = {};
 			});
 		});
 
-		$('.Awards_pay').on(Q.Pointer.click, function () {
-			var fields = '';
-			Q.req(
-				'Awards/pay', // uri - string of the form
-				'results', // slotNames
-				// callback
-				function () {
-				},
-				// A hash of options, to be passed to Q.request
-				{
-					method: 'post',
-					fields: fields
-				}
-			);
-
-			return true;
+		$('.Awards_confirm').on(Q.Pointer.click, function () {
+			Q.Dialogs.push({
+				title: 'Subscription confirmation',
+				content:
+				'<input type="checkbox" name="agree" id="Subscription_agree" value="yes">' +
+				'<label for="Subscription_agree">Confirm subscription terms</label>' +
+ 				'<button class="Q_button Awards_pay">Confirm subscription</button>'
+			});
 		});
 
 	});
