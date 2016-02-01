@@ -1109,7 +1109,7 @@ class Streams_Stream extends Base_Streams_Stream
 			'instructions' => compact('changes')
 		), true);
 		return $result;
-		
+
 	}
 	
 	/**
