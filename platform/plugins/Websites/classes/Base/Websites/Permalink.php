@@ -195,7 +195,9 @@ abstract class Base_Websites_Permalink extends Db_Row
 	function beforeSet_uri($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('uri', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
@@ -226,7 +228,9 @@ abstract class Base_Websites_Permalink extends Db_Row
 	function beforeSet_url($value)
 	{
 		if (!isset($value)) {
-			$value='';}if ($value instanceof Db_Expression) {
+			$value='';
+		}
+		if ($value instanceof Db_Expression) {
 			return array('url', $value);
 		}
 		if (!is_string($value) and !is_numeric($value))
