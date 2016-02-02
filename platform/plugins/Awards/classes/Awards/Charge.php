@@ -25,11 +25,6 @@ class Awards_Charge extends Base_Awards_Charge
 		// e.g. $this->hasMany(...) and stuff like that.
 	}
 
-	/* 
-	 * Add any Awards_Charge methods here, whether public or not
-	 * If file 'Charge.php.inc' exists, its content is included
-	 * * * */
-
 	/* * * */
 	/**
 	 * Implements the __set_state method, so it can work with

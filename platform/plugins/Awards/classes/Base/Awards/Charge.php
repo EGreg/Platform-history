@@ -174,6 +174,7 @@ abstract class Base_Awards_Charge extends Db_Row
 		$q->className = 'Awards_Charge';
 		return $q;
 	}
+	
 	/**
 	 * Inserts multiple records into a single table, preparing the statement only once,
 	 * and executes all the queries.

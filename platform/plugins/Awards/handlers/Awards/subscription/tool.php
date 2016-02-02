@@ -1,9 +1,11 @@
 <?php
 
 /*
+TODO: make this into a YUIDoc-style comment to document the tool properly!
+
 common options list to retrieve from user
 
-    $options['service'] => 'authorize.net',   //'stripe',
+    $options['payments'] => 'authorize.net',   //'stripe',
     $options['currency'] => 'usd',
     $options['amount'] => '579',
     $options['subscription'] => $subscription
@@ -54,17 +56,16 @@ common options list to retrieve from user
     }
 */
 
-function Awards_pay_tool($options)
+function Awards_subscription_tool($options)
 {
-    $options = Awards::authPaySetup($options);
-    if ($options['service'] == 'stripe') {
-        Awards::stripeCharge($options);
-    } else if ($options['service'] == 'authorize.net') {
-        $customerProfileId = Awards::authCustomerId($options);
-        $token = Awards::authToken($options, $customerProfileId);
-		$button = Q::ifset($options, 'button', 'Start Subscription');
-		Q::view('Awards/tool/pay.php', compact('button', 'token'));
-    };
-    Awards::topUpAwards($options);
+	if (empty($options['payments'])) {
+		throw new Q_Exception_RequiredField(array('field' => 'payments'));
+	}
+	$payments = ucfirst($options['payments']);
+	$className = "Awards_Payments_$payments";
+	$adapter = new $className($options);
+    $token = $adapter->authToken();
+	$button = Q::ifset($options, 'button', 'Start Subscription');
+	Q::view("Awards/tool/subscription/$payments.php", compact('button', 'token'));
     Q_Response::setToolOptions($options);
 };
