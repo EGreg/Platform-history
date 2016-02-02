@@ -6,9 +6,14 @@
  * Adapter implementing Authorize.net support for Awards_Payments functions
  *
  * @class Awards_Payments_Authnet
- * @implements iAwards_Payments
+ * @implements Awards_Payments
  */
-class Awards_Payments_Authnet implements iAwards_Payments
+
+use net\authorize\api\contract\v1 as AnetAPI;
+use net\authorize\api\controller as AnetController;
+use net\authorize\util\LogFactory as LogFactory;
+
+class Awards_Payments_Authnet implements Awards_Payments
 {
 	/**
 	 * @constructor
@@ -72,7 +77,7 @@ class Awards_Payments_Authnet implements iAwards_Payments
 		$messages = $response->getMessages()->getMessage();
 		$message = reset($messages);
 		
-		if (!isset($response) or $message->getCode() == "E00039")) {
+		if (!isset($response) or ($message->getCode() == "E00039")) {
 			// workaround to get customerProfileId
 			// https://community.developer.authorize.net/t5/Integration-and-Testing/How-to-lookup-customerProfileId-and-paymentProfileId-by/td-p/52501
 			$parts = explode(' ', $message->getText());
@@ -223,7 +228,7 @@ class Awards_Payments_Authnet implements iAwards_Payments
 		$controller = new AnetController\GetHostedProfilePageController($frequest);
 		$fresponse = $controller->executeWithApiResponse($options['server']);
 
-		if (!isset($fresponse) or $fresponse->getMessages()->getResultCode() != "Ok")) {
+		if (!isset($fresponse) or ($fresponse->getMessages()->getResultCode() != "Ok")) {
 			$messages = $response->getMessages()->getMessage();
 			$message = reset($messages);
 			throw new Awards_Exception_InvalidResponse(array(
