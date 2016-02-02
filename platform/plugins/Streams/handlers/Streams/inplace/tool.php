@@ -53,7 +53,7 @@ function Streams_inplace_tool($options)
 	if (!empty($options['attribute'])) {
 		$field = 'attributes['.urlencode($options['attribute']).']';
 		$content = $stream->get($options['attribute'], '');
-		$maxlength = $stream->maxSize_attributes - strlen($stream->maxSize_attributes) - 10;
+		$maxlength = $stream->maxSize_attributes() - strlen($stream->maxSize_attributes()) - 10;
 	} else {
 		$field = !empty($options['field']) ? $options['field'] : 'content';
 		$content = $stream->$field;
