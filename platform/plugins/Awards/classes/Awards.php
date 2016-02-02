@@ -10,6 +10,8 @@
  * @extends Base_Awards
  */
 
+require __DIR__ . '/Composer/vendor/autoload.php';
+
 abstract class Awards extends Base_Awards
 {
 	/**
