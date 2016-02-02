@@ -34,7 +34,7 @@ Q.Tool.define("Awards/subscription", function (options) {
 	});
 	
 	tool.$('.Awards_subscribe').on(Q.Pointer.click, function () {
-		Q.Awards.subscribe(state.planPublisherId, state.planStreamName, function () {
+		Q.Awards.subscribe(state.payments, state.planPublisherId, state.planStreamName, function () {
 			Q.handle(state.onSubscribe, this, arguments);
 		});
 	});
