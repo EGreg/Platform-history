@@ -54,26 +54,17 @@ common options list to retrieve from user
     }
 */
 
-function Awards_pay_tool($options) {
-
-    $options = Awards::awardsPaySetup($options);
-
+function Awards_pay_tool($options)
+{
+    $options = Awards::authPaySetup($options);
     if ($options['service'] == 'stripe') {
-
         Awards::stripeCharge($options);
-
-    } elseif ($options['service'] == 'authorize.net') {
-
+    } else if ($options['service'] == 'authorize.net') {
         $customerProfileId = Awards::authCustomerId($options);
         $token = Awards::authToken($options, $customerProfileId);
-
-        // TODO: move form to separate view???
-        Awards::authForm($options, $token);
-
+		$button = Q::ifset($options, 'button', 'Start Subscription');
+		Q::view('Awards/tool/pay.php', compact('button', 'token'));
     };
-
     Awards::topUpAwards($options);
-
     Q_Response::setToolOptions($options);
-//    return Q::view("Places/tool/location.php", $options);
 };

@@ -2,13 +2,8 @@
 
 function Awards_pay_post($params = array())
 {
-//qbox.local/dent/action.php/Awards/pay?Q.ajax=1&Q.method=POST&Q.slotNames=payment
     $req = array_merge($_REQUEST, $params);
-
-    $payment = Awards::authCharge(
-//        $req['providerId'],
-        $params
-    );
-
+	Awards::startSubscription(); // store the subscription info
+	$payment = Awards::authCharge($params); // make the first charge
     Q_Response::setSlot('payment', $payment);
 }

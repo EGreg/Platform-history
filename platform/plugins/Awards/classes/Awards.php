@@ -16,11 +16,6 @@ use net\authorize\util\LogFactory as LogFactory;
 
 abstract class Awards extends Base_Awards
 {
-	/*
-	 * This is where you would place all the static methods for the models,
-	 * the ones that don't strongly pertain to a particular row or table.
-	 * * * */
-
 	/**
 	 * @method giveAward
 	 * @static
@@ -31,7 +26,9 @@ abstract class Awards extends Base_Awards
 	 */
 	static function giveAward($awardName, $userId, $associated_id='', $duplicate=true)
 	{
-		if(!$duplicate && self::hasAward($awardName, $userId)) return;
+		if (!$duplicate and self::hasAward($awardName, $userId)) {
+			return;
+		}
 		$earnedBadge = new Awards_Earned();
 		$earnedBadge->app = Q_Config::expect('Q', 'app');
 		$earnedBadge->badge_name = $awardName;
@@ -88,7 +85,6 @@ abstract class Awards extends Base_Awards
 	 */
 	static function calculateLeaders($app)
 	{
-
 		$leaders = Awards_Earned::select('ern.app AS app, CURDATE() AS day_calculated, ern.userId AS userId, SUM(bdg.points) AS points', 'ern')
 				->join(Awards_Badge::table().' AS bdg', array('ern.badge_name'=>'bdg.name', 'ern.app'=>'bdg.app'))
 				->where('ern.app="'.$app.'" AND ern.insertedTime>=ADDDATE(CURDATE(), INTERVAL -7 DAY) AND ern.insertedTime<=CURDATE()')
@@ -138,10 +134,8 @@ abstract class Awards extends Base_Awards
 		}
 	}
 
-	static function topUpAwards($options) {
-
-		// todo: Awards_Credits::pay($currency, $amount, $options);
-
+	static function topUpAwards($options)
+	{
 		$balance = Awards_Credits::amount();
 		Awards_Credits::earn((int) $options['amount'], 'Awards/purchased');
 
@@ -151,13 +145,16 @@ abstract class Awards extends Base_Awards
 
 //     todo: subcription for stripe
 
-	static function stripeSubscription($options) {
+	static function stripeSubscription($options)
+	{
 	}
 
-	static function stripeToken($options) {
+	static function stripeToken($options)
+	{
 	}
 
-	static function stripeCharge($options) {
+	static function stripeCharge($options)
+	{
 
 		$sub = $options;
 		$sub['amount'] = (int) $options['amount'] . '00';
@@ -196,40 +193,31 @@ abstract class Awards extends Base_Awards
 		return $charge;
 	}
 
-	static function awardsPaySetup($options)
+	static function authPaySetup($options)
 	{
-
 		require Q_PLUGINS_DIR . '/Awards/classes/Composer/vendor/autoload.php';
-
-//		define("AUTHORIZENET_LOG_FILE", "/var/log/authnet.log");
-//		$logger = LogFactory::getLog(get_class($this));
-
 		$options['authname'] = Q_Config::expect('Awards', 'pay', 'authorize.net', 'name');
 		$options['authkey'] = Q_Config::expect('Awards', 'pay', 'authorize.net', 'transactionKey');
 		$options['server'] = net\authorize\api\constants\ANetEnvironment::SANDBOX;
-
 		return $options;
 	}
 
-	static function authCharge($options) {
-
-		$options = Awards::awardsPaySetup($options) + array(
+	static function authCharge($options)
+	{
+		$options = Awards::authPaySetup($options) + array(
 			'service' => 'authorize.net',
 			'currency' => 'usd',
 			'amount' => '1.99',
 			'subscription' => ''
 		);
-
 		$customerProfileId = Awards::authCustomerId($options);
-
 		$customerPayId = Awards::authCustomerPaymentProfileId($options, $customerProfileId);
-
 		$transaction = Awards::authChargeCustomer($options, $customerProfileId, $customerPayId);
 
 	}
 
-	static function authSubscription($options) {
-
+	static function authSubscription($options)
+	{
 		//    $merchantAuthentication->setSessionToken($refId);
 
 		/*
@@ -297,8 +285,8 @@ abstract class Awards extends Base_Awards
 
 	}
 
-	static function authCustomerPaymentProfileId($options, $customerId) {
-
+	static function authCustomerPaymentProfileId($options, $customerId)
+	{
 		$merchantAuthentication = new AnetAPI\MerchantAuthenticationType();
 		$merchantAuthentication->setName($options['authname']);
 		$merchantAuthentication->setTransactionKey($options['authkey']);
@@ -332,8 +320,8 @@ abstract class Awards extends Base_Awards
 		}
 	}
 
-	static function authChargeCustomer($options, $customerId, $customerPayId) {
-
+	static function authChargeCustomer($options, $customerId, $customerPayId)
+	{
 		// Common setup for API credentials
 		$merchantAuthentication = new AnetAPI\MerchantAuthenticationType();
 		$merchantAuthentication->setName($options['authname']);
@@ -367,12 +355,9 @@ abstract class Awards extends Base_Awards
 //    var_dump($rows);
 
 		$response = $controller->executeWithApiResponse($options['server']);
-		if ($response != null)
-		{
+		if ($response != null) {
 			$tresponse = $response->getTransactionResponse();
-
-			if (($tresponse != null) && ($tresponse->getResponseCode()=="1") )
-			{
+			if (($tresponse != null) && ($tresponse->getResponseCode()=="1") ) {
 
 //            echo " Charge Customer Profile APPROVED  :" . "\n";
 //            echo "AUTH CODE: " . $tresponse->getAuthCode() . "<br>";
@@ -397,31 +382,26 @@ abstract class Awards extends Base_Awards
 				return $results;
 
 			}
-			elseif (($tresponse != null) && ($tresponse->getResponseCode()=="3") )
+			else if (($tresponse != null) && ($tresponse->getResponseCode()=="3") )
 			{
 //				echo "A duplicate transaction has been submitted";
 				return null;
 			}
-			elseif (($tresponse != null) && ($tresponse->getResponseCode()=="4") )
-			{
+			else if (($tresponse != null) && ($tresponse->getResponseCode()=="4") ) {
 //				echo  "ERROR: HELD FOR REVIEW";
 				return null;
-			}
-			else
-			{
+			} else {
 				return null;
 //				return $tresponse->getResponseCode();
 			}
-		}
-		else
-		{
+		} else {
 			echo "no response returned";
 			return false;
 		}
 	}
 
-	static function authCustomerId($options) {
-
+	static function authCustomerId($options)
+	{
 		$sub = $options;
 		$sub['amount'] = (int) $options['amount'];
 
@@ -468,7 +448,8 @@ abstract class Awards extends Base_Awards
 		}
 	}
 
-	static function authToken($options, $customerProfileId) {
+	static function authToken($options, $customerProfileId)
+	{
 
 		$sub = $options;
 		$sub['amount'] = (int) $options['amount'];
@@ -519,28 +500,8 @@ abstract class Awards extends Base_Awards
 		}
 	}
 
-	static function authForm($options, $token) {
-
-		echo (
-			'<form'
-			.' method="POST"'
-			.' action="https://test.authorize.net/profile/manage"'
-			.' target="authnet"'
-			.' id="authnetform"'
-			.' name="authnetform"'
-			.' >'
-		);
-
-		echo ('<input type="hidden" name="Token" value="' . $token . '">' );
-		echo ('<input class="Q_button Awards_auth" type="submit" value="Payment info"/>' );
-		echo ('</form>' );
-
-		echo ('<button class="Q_button Awards_confirm">Make subscription</button>' );
-
-	}
-
-	static function startSubscription($info) {
-
+	static function startSubscription($info)
+	{
 		$userId = $user = Users::loggedInUser(true)->id;
 
 		$startDate = date("Y-m-d");

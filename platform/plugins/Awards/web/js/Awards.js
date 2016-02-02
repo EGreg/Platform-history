@@ -1,19 +1,18 @@
 Q.Awards = Q.plugins.Awards = {
 
 	paymentDialog: function (callback, options) {
-		Q.Dialogs.push(Q.extend({
-			title: '',
-			content:
-			'<iframe ' +
-			'name="authnet" ' +
+		var html = '<iframe ' +
+			'name="Awards_authnet" ' +
 			'src="" ' +
 			'width="480" ' +
 			'height="640" ' +
 			'frameborder="0" ' +
 			'scrolling="no" ' +
-			'id="authnet" ' +
 			'class="authnet" ' +
-			'></iframe>'
+		'></iframe>';
+		Q.Dialogs.push(Q.extend({
+			title: 'Set Payment Information',
+			content: html
 		}, options));
 
 		function subscribe() {
