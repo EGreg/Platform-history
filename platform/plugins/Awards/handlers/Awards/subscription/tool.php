@@ -66,6 +66,6 @@ function Awards_subscription_tool($options)
 	$adapter = new $className($options);
     $token = $adapter->authToken();
 	$button = Q::ifset($options, 'button', 'Start Subscription');
-	Q::view("Awards/tool/subscription/$payments.php", compact('button', 'token'));
-    Q_Response::setToolOptions($options);
+	Q_Response::setToolOptions($options);
+	return Q::view("Awards/tool/subscription/$payments.php", compact('button', 'token'));
 };
