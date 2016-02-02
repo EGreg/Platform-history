@@ -182,16 +182,30 @@ abstract class Awards extends Base_Awards
 		$endDate = date("Y-m-d", strtotime("-1 day", strtotime("+1 year", strtotime($startDate))));
 		$endDate = date('Y-m-d', strtotime($endDate));
 
-		$stream = new Streams_Stream();
-		$stream->publisherId = Users::communityId();
-		$stream->name = "Awards/subscription/$userId/$planStreamName";
-		$stream->type = "Awards/subscription";
-		$stream->readLevel = 40;
-		$stream->writeLevel = 0;
-		$stream->adminLevel = 0;
-		$stream->setAttribute('startDate', $startDate);
-		$stream->setAttribute('endDate', $endDate);
-		$stream->save(true);
+		$subscription = new Streams_Stream();
+		$subscription->publisherId = Users::communityId();
+		$subscription->name = "Awards/subscription/$userId/".$plan->name;
+		$subscription->type = "Awards/subscription";
+		$subscription->readLevel = 40;
+		$subscription->writeLevel = 0;
+		$subscription->adminLevel = 0;
+		$subscription->setAttribute('planPublisherId', $plan->publisherId);
+		$subscription->setAttribute('planStreamName', $plan->name);
+		$subscription->setAttribute('startDate', $startDate);
+		$subscription->setAttribute('endDate', $endDate);
+		$subscription->save(true);
+		
+		/**
+		 * @event Awards/startedSubscription {before}
+		 * @param {Streams_Stream} plan
+		 * @param {Streams_Stream} subscription
+		 * @param {string} startDate
+		 * @param {string} endDate
+		 * @return {Users_User}
+		 */
+		Q::event('Awards/startedSubscription', 'before', compact(
+			'plan', 'subscription', 'startDate', 'endDate'
+		));
 
 		return $stream;
 	}

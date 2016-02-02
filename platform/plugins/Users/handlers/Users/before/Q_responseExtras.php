@@ -41,6 +41,7 @@ function Users_before_Q_responseExtras()
 			Q_Response::setScriptData('Q.plugins.Users.loggedInUser', $u);
 		}
 	}
+	Q_Response::setScriptData('Q.plugins.Users.communityId', Users::communityId());
 	Q_Response::setScriptData(
 		'Q.plugins.Users.hinted',
 		Q::ifset($_SESSION, 'Users', 'hinted', array())
