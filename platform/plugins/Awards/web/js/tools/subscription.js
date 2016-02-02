@@ -6,7 +6,7 @@
 
     /**
      * YUIDoc description goes here
-     * @class Awards pay
+     * @class Awards subscription
      * @constructor
      * @param {Object} [options] Override various options for this tool
      *  @param {String} [options.publisherId] user id of the publisher of the stream
@@ -14,7 +14,7 @@
      *  @param {Q.Event} [options.onMove] Event that fires after a move
      */
 
-    Q.Tool.define("Awards/pay", function (options) {
+    Q.Tool.define("Awards/subscription", function (options) {
             var tool = this;
             var state = tool.state;
             var $te = $(tool.element);

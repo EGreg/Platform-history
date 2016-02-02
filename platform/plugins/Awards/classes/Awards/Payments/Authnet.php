@@ -65,16 +65,18 @@ class Awards_Payments_Authnet implements iAwards_Payments
 
 		$response = $controller->executeWithApiResponse($options['server']);
 
-		if (($response != null) && ($response->getMessages()->getResultCode() == "Ok")) {
+		if ($response != null && $response->getMessages()->getResultCode() == "Ok") {
 			return $response->getCustomerProfileId();
 		}
 		
-		$message = $response->getMessages()->getMessage()[0];
+		$messages = $response->getMessages()->getMessage();
+		$message = reset($messages);
 		
 		if (!isset($response) or $message->getCode() == "E00039")) {
 			// workaround to get customerProfileId
 			// https://community.developer.authorize.net/t5/Integration-and-Testing/How-to-lookup-customerProfileId-and-paymentProfileId-by/td-p/52501
-			return explode(' ', $message->getText())[5];
+			$parts = explode(' ', $message->getText());
+			return $parts[5];
 		}
 		
 		throw new Awards_Exception_InvalidResponse(array(
@@ -101,7 +103,8 @@ class Awards_Payments_Authnet implements iAwards_Payments
 		$controller = new AnetController\GetCustomerProfileController($request);
 		$response = $controller->executeWithApiResponse($options['server']);
 		if (!isset($response) or $response->getMessages()->getResultCode() != "Ok") {
-			$message = $response->getMessages()->getMessage()[0];
+			$messages = $response->getMessages()->getMessage();
+			$message = reset($messages);
 			throw new Awards_Exception_InvalidResponse(array(
 				'response' => $message->getCode() . ' ' . $message->getText()
 			));
@@ -221,7 +224,8 @@ class Awards_Payments_Authnet implements iAwards_Payments
 		$fresponse = $controller->executeWithApiResponse($options['server']);
 
 		if (!isset($fresponse) or $fresponse->getMessages()->getResultCode() != "Ok")) {
-			$message = $fresponse->getMessages()->getMessage()[0];
+			$messages = $response->getMessages()->getMessage();
+			$message = reset($messages);
 			throw new Awards_Exception_InvalidResponse(array(
 				'response' => $message->getCode() . ' ' . $message->getText()
 			));

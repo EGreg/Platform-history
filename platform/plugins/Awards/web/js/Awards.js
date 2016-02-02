@@ -18,7 +18,7 @@ Q.Awards = Q.plugins.Awards = {
 		function subscribe() {
 			var fields = '';
 			Q.req(
-				'Awards/pay', // uri - string of the form
+				'Awards/subscription', // uri - string of the form
 				'payment', // slotNames
 				// callback
 				function () {
@@ -70,7 +70,7 @@ Q.Awards = Q.plugins.Awards = {
 	});
 
 	Q.Tool.define({
-		"Awards/pay"           : "plugins/Awards/js/tools/pay.js"
+		"Awards/subscription"           : "plugins/Awards/js/tools/subscription.js"
 	});
 
 //	Streams.onMessage('Awards/credits', "").set(function (data) {

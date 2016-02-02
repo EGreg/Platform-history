@@ -186,7 +186,7 @@ abstract class Awards extends Base_Awards
 
 		$stream = new Streams_Stream();
 		$stream->publisherId = Users::communityId();
-		$stream->name = "Awards/subscriptions/$userId/$planStreamName";
+		$stream->name = "Awards/subscription/$userId/$planStreamName";
 		$stream->type = "Awards/subscription";
 		$stream->readLevel = 40;
 		$stream->writeLevel = 0;
