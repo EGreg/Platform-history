@@ -157,7 +157,7 @@ abstract class Awards extends Base_Awards
 	 * @throws Awards_Exception_ChargeFailed
 	 * @return {Streams_Stream} A stream of type 'Awards/subscription' representing this subscription
 	 */
-	static function startSubscription($plan, $payments = null, $options = $array())
+	static function startSubscription($plan, $payments = null, $options = array())
 	{
 		$userId = $user = Users::loggedInUser(true)->id;
 		
