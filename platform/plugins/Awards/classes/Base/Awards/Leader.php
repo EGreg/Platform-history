@@ -231,12 +231,13 @@ abstract class Base_Awards_Leader extends Db_Row
 		if ($value instanceof Db_Expression) {
 			return array('day', $value);
 		}
-		$value = date("Y-m-d h:i:s", strtotime($value));
 		$date = date_parse($value);
 		if (!empty($date['errors'])) {
 			$json = json_encode($value);
 			throw new Exception("Date $json in incorrect format being assigned to ".$this->getTable().".day");
 		}
+		$value = date("Y-m-d h:i:s", strtotime($value));
+		$date = date_parse($value);
 		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as $v) {
 			$$v = $date[$v];
 		}
