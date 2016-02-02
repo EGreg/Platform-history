@@ -171,15 +171,15 @@ Q.Tool.define("Streams/inplace", function (options) {
 				return; // leave the html that is currently in the element
 			}
 
-			var inplace = tool.setUpElement('div', 'Q/inplace', ipo);
+			inplace = tool.setUpElement('div', 'Q/inplace', ipo);
 			$(tool.element).empty().append(inplace);
-			Q.activate(inplace, _afterActivate);
+			Q.activate(inplace, _content);
 		} else {
-			_afterActivate();
+			tool.Q.onInit.add(_content, tool);
 		}
 		
-		function _afterActivate() {
-			this.state.onLoad.add(state.onLoad.handle.bind(tool));
+		function _content() {
+			tool.child('Q_inplace').state.onLoad.add(state.onLoad.handle.bind(tool));
 			if (state.attribute) {
 				_setContent(stream.attributes[state.attribute]);
 			} else {
