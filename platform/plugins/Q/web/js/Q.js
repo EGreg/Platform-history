@@ -9828,7 +9828,7 @@ Q.Dialogs = {
 	 *  @param {Q.Event} [options.onClose] Optional. Q.Event or function which is 
 	 *   called when dialog is closed and hidden and probably 
 	 *   removed from DOM (if 'removeOnClose' is 'true').
-	 * @return {HTMLElement} the DOM element of the dialog that was just pushed.
+	 * @return {Object} jQuery object representing DOM element of the dialog that was just pushed.
 	 */
 	push: function(options) {
 		var maskDefault = true;
@@ -9877,7 +9877,7 @@ Q.Dialogs = {
 				topDialog.hide();
 			}
 		}
-		return $dialog[0];
+		return $dialog;
 	},
 	
 	/**
