@@ -22,6 +22,6 @@ function Awards_subscription_tool($options)
 	$subscribeButton = Q::ifset($options, 'subscribeButton', 'Start Subscription');
     Q_Response::setToolOptions($options);
 	return Q::view("Awards/tool/subscription/$payments.php", compact(
-		'token', 'paymentButton', 'subscribeButton'
+		'token', 'paymentButton', 'subscribeButton', 'planStreamName'
 	));
 };
