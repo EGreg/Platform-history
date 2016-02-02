@@ -20,6 +20,6 @@ function Awards_subscription_post($params = array())
 	// the currency will always be assumed to be "USD" for now
 	// and the amount will always be assumed to be in dollars, for now
 	
-	$subscription = Awards::startSubscription($plan, $payment);
+	$subscription = Awards::startSubscription($plan, $req['payments']);
 	Q_Response::setSlot('subscription', $subscription);
 }

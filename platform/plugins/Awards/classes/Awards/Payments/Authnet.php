@@ -24,8 +24,8 @@ class Awards_Payments_Authnet extends Awards_Payments implements iAwards_Payment
 		Q::includeFile(implode(DS, array(
 			Q_PLUGINS_DIR, 'Awards', 'classes', 'Composer', 'vendor', 'autoload.php'
 		)));
-		$options['authname'] = Q_Config::expect('Awards', 'pay', 'authorize.net', 'name');
-		$options['authkey'] = Q_Config::expect('Awards', 'pay', 'authorize.net', 'transactionKey');
+		$options['authname'] = Q_Config::expect('Awards', 'payments', 'authorize.net', 'name');
+		$options['authkey'] = Q_Config::expect('Awards', 'payments', 'authorize.net', 'transactionKey');
 		$options['server'] = net\authorize\api\constants\ANetEnvironment::SANDBOX;
 		$options += array(
 			'service' => 'authorize.net',
