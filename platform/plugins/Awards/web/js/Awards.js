@@ -17,7 +17,8 @@ Q.Awards = Q.plugins.Awards = {
 			'class="authnet" ' +
 		'></iframe>';
 		Q.Dialogs.push(Q.extend({
-			title: 'Set Payment Information'
+			title: 'Set Payment Information',
+			apply: true
 		}, options, {
 			content: html
 		}));

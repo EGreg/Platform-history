@@ -1783,12 +1783,13 @@ EOT;
 					$properties[]="{string|Db_Expression} $field_name";
 					$js_properties[] = "{String|Db.Expression} $field_name";
 					$functions["beforeSet_$field_name"][] = <<<EOT
-		{$null_check}{$dbe_check}\$value = date("Y-m-d h:i:s", strtotime(\$value));
-		\$date = date_parse(\$value);
+		{$null_check}{$dbe_check}\$date = date_parse(\$value);
 		if (!empty(\$date['errors'])) {
 			\$json = json_encode(\$value);
 			throw new Exception("Date \$json in incorrect format being assigned to ".\$this->getTable().".$field_name");
 		}
+		\$value = date("Y-m-d h:i:s", strtotime(\$value));
+		\$date = date_parse(\$value);
 		foreach (array('year', 'month', 'day', 'hour', 'minute', 'second') as \$v) {
 			\$\$v = \$date[\$v];
 		}
