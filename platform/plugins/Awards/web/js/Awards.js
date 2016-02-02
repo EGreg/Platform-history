@@ -1,5 +1,11 @@
 Q.Awards = Q.plugins.Awards = {
 
+	/**
+	 * Show a dialog where the user can set up their payment information
+	 * @method paymentDialog
+	 *  @param {Function} [callback] The function to call, receives (err, paymentSlot)
+	 *  @param {Object} [options] Any additional options to pass to the dialog
+	 */
 	paymentDialog: function (callback, options) {
 		var html = '<iframe ' +
 			'name="Awards_authnet" ' +
@@ -11,47 +17,35 @@ Q.Awards = Q.plugins.Awards = {
 			'class="authnet" ' +
 		'></iframe>';
 		Q.Dialogs.push(Q.extend({
-			title: 'Set Payment Information',
+			title: 'Set Payment Information'
+		}, options, {
 			content: html
-		}, options));
+		}));
+	},
 
-		function subscribe() {
-			var fields = '';
-			Q.req(
-				'Awards/subscription', // uri - string of the form
-				'payment', // slotNames
-				// callback
-				function () {
-				},
-				// A hash of options, to be passed to Q.request
-				{
-					method: 'post',
-					fields: fields
-				});
-			Q.Dialogs.pop();
+	/**
+	 * Subscribe the logged-in user to a particular payment plan
+	 * @method subscribe
+	 *  @param {String} payments can be "authnet" or "stripe"
+	 *  @param {String} planPublisherId the publisher of the subscription plan's stream
+	 *  @param {String} planStreamName the name of the subscription plan's stream
+	 *  @param {Function} [callback] The function to call, receives (err, paymentSlot)
+	 */
+	subscribe: function (payments, planPublisherId, planStreamName, callback) {
+		var fields = {
+			payments: payments,
+			planPublisherId: planPublisherId,
+			planStreamName: planStreamName
 		};
-
-		$('.Awards_confirm').on(Q.Pointer.click, function () {
-			Q.Dialogs.push({
-				title: 'Subscription confirmation',
-				content:
-				'<div class="Awards_pay_confirm">' +
-				'<button class="Q_button Awards_pay">Confirm subscription</button></br></br>' +
-				'<input type="checkbox" name="agree" id="Subscription_agree" value="yes">' +
-				'<label for="Subscription_agree">Confirm subscription terms</label></br>' +
-				'</div>'
-			});
-			$('.Awards_pay').on(Q.Pointer.click, function () {
-
-				if ($('#Subscription_agree:checkbox').is(':checked')) {
-					subscribe();
-				} else {
-					var r = confirm('Confirm subscription terms');
-					if (r == true) {
-						subscribe();
-					}
-				};
-			});
+		Q.req('Awards/subscription', 'payment', function (err, response) {
+			var msg;
+			if (msg = Q.firstErrorMessage(err, response)) {
+				return callback(msg, null);
+			}
+			Q.handle(callback, this, [null, response.slots.payment]);
+		}, {
+			method: 'post',
+			fields: fields
 		});
 	}
 };
