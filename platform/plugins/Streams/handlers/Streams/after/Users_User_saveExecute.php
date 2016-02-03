@@ -76,7 +76,7 @@ function Streams_after_Users_User_saveExecute($params)
 		
 		// Save a greeting stream, to be edited
 		$communityId = Users::communityId();
-		Streams::create($userId, $user->id, "Streams/greeting", array(
+		Streams::create($user->id, $user->id, "Streams/greeting", array(
 			"Streams/greeting/$communityId"
 		));
 	
