@@ -455,9 +455,15 @@ Streams.get = function _Streams_get(publisherId, streamName, callback, extra) {
 			msg = "Streams.get: data.stream is missing";
 		}
 		if (msg) {
-			if (err && err[0] && err[0].classname === "Q_Exception_MissingRow"
-			&& (!extra || !extra.cacheIfMissing)
-			&& Streams.get.forget) {
+			var forget = false;
+			if (err && err[0] && err[0].classname === "Q_Exception_MissingRow") {
+				if (!extra || !extra.cacheIfMissing) {
+					forget = true;
+				}
+			} else {
+				forget = true;
+			}
+			if (forget && Streams.get.forget) {
 				setTimeout(function () {
 					Streams.get.forget.apply(this, args);
 				}, 0);
