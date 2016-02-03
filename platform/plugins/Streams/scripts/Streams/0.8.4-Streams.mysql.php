@@ -10,7 +10,7 @@ function Streams_0_8_4_Streams_mysql()
 	$avatar = new Streams_Avatar();
 	$avatar->toUserId = $communityId;
 	$avatar->publisherId = $communityId;
-	$avatar->username = $communityId->username;
+	$avatar->username = $user->username;
 	$avatar->firstName = '';
 	$avatar->lastName = '';
 	$avatar->icon = $user->icon;

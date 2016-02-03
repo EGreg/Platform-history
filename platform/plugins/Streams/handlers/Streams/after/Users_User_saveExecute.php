@@ -15,7 +15,6 @@ function Streams_after_Users_User_saveExecute($params)
 	}
 	$firstName = Q::ifset(Streams::$cache, 'register', 'first', '');
 	$lastName = Q::ifset(Streams::$cache, 'register', 'last', '');
-	$query = $params['query'];
 	if ($params['inserted']) {
 		
 		// create some standard streams for them
@@ -77,11 +76,9 @@ function Streams_after_Users_User_saveExecute($params)
 		
 		// Save a greeting stream, to be edited
 		$communityId = Users::communityId();
-		$stream = new Streams_Stream();
-		$stream->publisherId = $user->id;
-		$stream->name = "Streams/greeting/$communityId";
-		$stream->type = "Streams/greeting";
-		$stream->save();
+		Streams::create($userId, $user->id, "Streams/greeting", array(
+			"Streams/greeting/$communityId"
+		));
 	
 		// Create some standard labels
 		$label = new Users_Label();
