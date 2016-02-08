@@ -24,8 +24,9 @@ class Users_Label extends Base_Users_Label
 	}
 
 	/**
-	 * Add user to label
+	 * Add a contact label
 	 * @method {boolean} addLabel
+	 * @static
 	 * @param {string} $label
 	 * @param {string} [$userId=null] user current user if not provided
 	 * @param {string} [$title=''] specify the title, otherwise a default one is generated
@@ -47,11 +48,11 @@ class Users_Label extends Base_Users_Label
 		if (!isset($icon)) {
 			$icon = 'default';
 		}
-		Users::canManageLabels($asUserId, $userId, $label, true);
 		if (!isset($userId)) {
 			$user = Users::loggedInUser(true);
 			$userId = $user->id;
 		}
+		Users::canManageLabels($asUserId, $userId, $label, true);
 		if (empty($title)) {
 			$parts = explode("/");
 			$title = ucfirst(end($parts));
@@ -70,20 +71,24 @@ class Users_Label extends Base_Users_Label
 	 * Update labels
 	 * @method updateLabel
 	 * @static
-	 * @param {string} $userId
 	 * @param {string} $label
 	 * @param {array} $updates Can contain one or more of "title", "icon"
+	 * @param {string} [$userId=null] User that owns the label, current user if not provided
 	 * @param {string} [$asUserId=null] The user to do this operation as.
 	 *   Defaults to the logged-in user. Pass false to skip access checks.
 	 * @throws {Users_Exception_NotAuthorized}
 	 * @return {Db_Query_Mysql}
 	 */
-	static function updateLabel($userId, $label, $updates, $asUserId = null)
+	static function updateLabel($label, $updates, $userId = null, $asUserId = null)
 	{
 		foreach (array('userId', 'label', 'updates') as $field) {
 			if (empty($$field)) {
 				throw new Q_Exception_RequiredField(compact($field));
 			}
+		}
+		if (!isset($userId)) {
+			$user = Users::loggedInUser(true);
+			$userId = $user->id;
 		}
 		Users::canManageLabels($asUserId, $userId, $label, true);
 		$l = new Users_Label();
@@ -107,9 +112,10 @@ class Users_Label extends Base_Users_Label
 	/**
 	 * Remove label
 	 * @method removeLabel
+	 * @static
 	 * @param {string} $label
 	 * @param {string|null} [$userId=null]
-	 *  The user whose label is to be removed
+	 *   The user whose label is to be removed
 	 * @param {string} [$asUserId=null] The user to do this operation as.
 	 *   Defaults to the logged-in user. Pass false to skip access checks.
 	 * @return {Db_Query_MySql}

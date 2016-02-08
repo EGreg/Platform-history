@@ -249,6 +249,51 @@ class Users_User extends Base_Users_User
 	}
 	
 	/**
+	 * Add a contact label
+	 * @method {boolean} addLabel
+	 * @param {string} $label
+	 * @param {string} [$title=''] specify the title, otherwise a default one is generated
+	 * @param {string} [$icon='default']
+	 * @param {string} [$asUserId=null] The user to do this operation as.
+	 *   Defaults to the logged-in user. Pass false to skip access checks.
+	 * @return {Users_Label}
+	 */
+	function addLabel($label, $title='', $icon='default', $asUserId = null)
+	{
+		Users_Label::addLabel($label, $this->id, $title, $icon, $asUserId);
+	}
+	
+	/**
+	 * Update labels
+	 * @method updateLabel
+	 * @param {string} $label
+	 * @param {array} $updates Can contain one or more of "title", "icon"
+	 * @param {string} [$asUserId=null] The user to do this operation as.
+	 *   Defaults to the logged-in user. Pass false to skip access checks.
+	 * @throws {Users_Exception_NotAuthorized}
+	 * @return {Db_Query_Mysql}
+	 */
+	function updateLabel($label, $updates, $asUserId = null)
+	{
+		Users_Label::updateLabel($label, $updates, $this->id, $asUserId);
+	}
+	
+	/**
+	 * Remove label
+	 * @method removeLabel
+	 * @param {string} $label
+	 * @param {string|null} [$userId=null]
+	 *  The user whose label is to be removed
+	 * @param {string} [$asUserId=null] The user to do this operation as.
+	 *   Defaults to the logged-in user. Pass false to skip access checks.
+	 * @return {Db_Query_MySql}
+	 */
+	static function removeLabel($label, $userId = null, $asUserId = null)
+	{
+		Users_Label::removeLabel($label, $this->id, $asUserId);
+	}
+	
+	/**
 	 * @method addContact
 	 * @param {string} $contactUserId
 	 *  The id of the user who is the contact
