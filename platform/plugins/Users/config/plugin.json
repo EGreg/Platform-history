@@ -61,10 +61,6 @@
 				"files/{{app}}/uploads/Users/{{userId}}": true
 			}
 		},
-		"node": {
-			"host" : "localhost",
-			"port" : "10500"
-		},
 		"transactional": {
 			"activation": {
 				"subject": "Welcome! Please verify your email address.",
