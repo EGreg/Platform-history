@@ -126,7 +126,7 @@ function _Streams_category_preview(options, preview) {
 						}));
 					});
 					var inplace = tool.child('Streams_inplace');
-					if (inplace) {
+					if (!inplace) {
 						return p.fill('inplace').apply(this, arguments);
 					}
 					inplace.state.onLoad.add(function () {
