@@ -140,6 +140,7 @@ Q.Tool.define("Q/columns", function(options) {
 	 *  @param {Object} [options.url] a url to request the slots "title" and "content" from
 	 * @param {Number} index The index of the column to open
 	 * @param {Function} callback Called when the column is opened
+	 * @return {Boolean} Whether the column will be opened
 	 */
 	open: function (options, index, callback, internal) {
 		var tool = this;
@@ -248,7 +249,7 @@ Q.Tool.define("Q/columns", function(options) {
 		} else {
 			_open();
 		}
-		return this;
+		return true;
 		
 		function _open() {
 			var p = Q.pipe();
@@ -482,7 +483,7 @@ Q.Tool.define("Q/columns", function(options) {
 	 *  optional "max"
 	 * @param {Function} callback Called when the column is opened
 	 * @param {Object} options Can be used to override various tool options
-	 * @return {Boolean} Whether the column to close existed or was already null.
+	 * @return {Boolean} Whether the column was actually closed.
 	 */
 	close: function (index, callback, options) {
 		var tool = this;
@@ -504,7 +505,7 @@ Q.Tool.define("Q/columns", function(options) {
 		}
 		if (p) {
 			p.add(waitFor, callback).run();
-			return;
+			return false;
 		}
 		var o = Q.extend({}, 10, state, 10, options);
 		var div = tool.column(index);
@@ -514,7 +515,9 @@ Q.Tool.define("Q/columns", function(options) {
 		var $div = $(div);
 		var width = $div.outerWidth(true);
 		var shouldContinue = o.beforeClose.handle.call(tool, index, div);
-		if (shouldContinue === false) return;
+		if (shouldContinue === false) {
+			return false;
+		}
 		
 		var w = $div.outerWidth(true);
 		var duration = o.animation.duration;
@@ -549,6 +552,8 @@ Q.Tool.define("Q/columns", function(options) {
 			_close();
 		}
 		
+		return true;
+		
 		function _close() {
 			Q.removeElement(div, true); // remove it correctly
 
@@ -559,7 +564,6 @@ Q.Tool.define("Q/columns", function(options) {
 			Q.handle(callback, tool, [index, div]);
 			state.onClose.handle.call(tool, index, div, data);
 		}
-		return this;
 	},
 
 	column: function (index) {
