@@ -482,6 +482,7 @@ Q.Tool.define("Q/columns", function(options) {
 	 *  optional "max"
 	 * @param {Function} callback Called when the column is opened
 	 * @param {Object} options Can be used to override various tool options
+	 * @return {Boolean} Whether the column to close existed or was already null.
 	 */
 	close: function (index, callback, options) {
 		var tool = this;
@@ -508,7 +509,7 @@ Q.Tool.define("Q/columns", function(options) {
 		var o = Q.extend({}, 10, state, 10, options);
 		var div = tool.column(index);
 		if (!div) {
-			throw new Q.Exception("Column with index " + index + " doesn't exist");
+			return false;
 		}
 		var $div = $(div);
 		var width = $div.outerWidth(true);
@@ -528,7 +529,11 @@ Q.Tool.define("Q/columns", function(options) {
 		}
 		state.$currentColumn = $prev;
 		state.currentIndex = $prev.attr('data-index');
-		state.columns[index] = null;
+		if (index === state.columns.length -1) {
+			state.columns.pop();
+		} else {
+			state.columns[index] = null;
+		}
 		presentColumn(tool);
 	
 		$div.css('min-height', 0);
