@@ -23,7 +23,18 @@
 			"Awards/plan": {
 				"description": "Subscription plan",
 				"create": true, 
-				"edit": true
+				"edit": true,
+				"defaults": {
+					"title": "Subscription plan"
+				}
+			},
+			"Awards/subscription": {
+				"description": "Subscription",
+				"create": false, 
+				"edit": false,
+				"defaults": {
+					"title": "Subscription"
+				}
 			}
 		}	
 	},

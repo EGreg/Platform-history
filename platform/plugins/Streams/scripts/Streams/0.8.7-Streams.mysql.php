@@ -8,7 +8,8 @@ function Streams_0_8_7_Streams_mysql()
 	$simulated = array(
 		'row' => $user,
 		'inserted' => true,
-		'modifiedFields' => $user->fields
+		'modifiedFields' => $user->fields,
+		'query' => null
 	);
 	Q::event('Db/Row/Users_User/saveExecute', $simulated, 'after');
 	
@@ -29,7 +30,7 @@ function Streams_0_8_7_Streams_mysql()
 		'streamName' => "Streams/images/",
 		'ofUserId' => '',
 		'grantedByUserId' => null,
-		'ofContactLabel' => "$app/admins",
+		'ofContactLabel' => "$communityId/admins",
 		'readLevel' => Streams::$READ_LEVEL['messages'], 
 		'writeLevel' => Streams::$WRITE_LEVEL['close'], 
 		'adminLevel' => Streams::$ADMIN_LEVEL['invite']

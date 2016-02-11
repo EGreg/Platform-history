@@ -789,7 +789,7 @@ abstract class Streams extends Base_Streams
 	static function create(
 		$asUserId, 
 		$publisherId, 
-		$type, 
+		$type,
 		$fields = array(), 
 		$relate = null,
 		&$result = null)
@@ -876,12 +876,13 @@ abstract class Streams extends Base_Streams
 		), true);
 		
 		// relate the stream to category stream, if any
-		if ($relate['streamName']) {
+		if (!empty($relate['streamName'])) {
+			$relationType = isset($relate['type']) ? $relate['type'] : '';
 			$result = Streams::relate(
 				$asUserId,
 				$relate['publisherId'], 
-				$relate['streamName'], 
-				$relate['type'], 
+				$relate['streamName'],
+				$relationType,
 				$stream->publisherId, 
 				$stream->name,
 				array(
