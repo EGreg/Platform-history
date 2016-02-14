@@ -23,9 +23,9 @@
 		if (timestamp < 10000000000) {
 			timestamp *= 1000;
 		}
-		var date = (typeof o.time === 'string')
-			? new Date(timestamp ? timestamp : o.time)
-			: new Date();
+		var date = isNaN(o.time)
+			? new Date()
+			: new Date(timestamp ? timestamp : o.time);
 		var time = date.getTime() / 1000;
 
 		var $this = $(this);
