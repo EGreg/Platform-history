@@ -668,6 +668,7 @@ Q.Tool.jQuery('Q/sortable', function _Q_sortable(options) {
 			if ((data = $item.data('Q/sortable')) && data.$dragged) {
 				data.$dragged.remove();
 			}
+			$item.off(Q.Pointer.move, state && state.moveHandler);
 		}
 		$body.removeData(dataLifted).off('.Q_sortable');
 		this.removeData('Q/sortable');
@@ -675,7 +676,6 @@ Q.Tool.jQuery('Q/sortable', function _Q_sortable(options) {
 		if (state) {
 			Q.Pointer.onCancelClick.remove(state.onCancelClickEventKey);
 			if (state.moveHandler) {
-				$item.off(Q.Pointer.move, moveHandler);
 				Q.removeEventListener(body, Q.Pointer.move, state.moveHandler, false);
 				Q.removeEventListener(body, [Q.Pointer.end, Q.Pointer.cancel], state.dropHandler, false);
 			}
