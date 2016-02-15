@@ -105,6 +105,7 @@ Q.Tool.jQuery('Q/sortable', function _Q_sortable(options) {
 		var element = this;
 		var sl = [], st = [];
 		$body.data(dataLifted, $(this));
+		$item.on(Q.Pointer.move, moveHandler);
 		Q.addEventListener(body, [Q.Pointer.end, Q.Pointer.cancel], dropHandler, false, true);
 		Q.addEventListener(body, Q.Pointer.move, moveHandler, false, true);
 		$item.parents().each(function () {
@@ -251,6 +252,11 @@ Q.Tool.jQuery('Q/sortable', function _Q_sortable(options) {
 			Q.Pointer.ended(); // because mouseleave occurs instead on some browsers
 		}
 		body.restoreSelections(true);
+		
+		var $item = $body.data(dataLifted);
+		if ($item) {
+			$item.off(Q.Pointer.move, moveHandler);
+		}
 		Q.removeEventListener(body, Q.Pointer.move, moveHandler, false);
 		Q.removeEventListener(body, [Q.Pointer.end, Q.Pointer.cancel], dropHandler, false);
 
@@ -669,6 +675,7 @@ Q.Tool.jQuery('Q/sortable', function _Q_sortable(options) {
 		if (state) {
 			Q.Pointer.onCancelClick.remove(state.onCancelClickEventKey);
 			if (state.moveHandler) {
+				$item.off(Q.Pointer.move, moveHandler);
 				Q.removeEventListener(body, Q.Pointer.move, state.moveHandler, false);
 				Q.removeEventListener(body, [Q.Pointer.end, Q.Pointer.cancel], state.dropHandler, false);
 			}
