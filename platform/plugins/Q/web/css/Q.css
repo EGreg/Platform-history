@@ -157,7 +157,7 @@ html[xmlns] .Q_clearfix { display: block; }
 .Q_fullscreen_dialog
 {
 	position: relative;
-	z-index: 950; /* must be at least higher than dashboard_slot z-index */
+	z-index: 9000; /* must be at least higher than dashboard_slot z-index */
 	background: url(../img/bg/overlay.png);
 }
 
