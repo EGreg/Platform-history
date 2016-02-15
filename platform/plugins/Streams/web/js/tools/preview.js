@@ -74,12 +74,13 @@ Q.Tool.define("Streams/preview", function _Streams_preview(options) {
 			si.saveSizeName[size] = size;
 		});
 	}
-	tool.element.addClass('Streams_preview');
+	var $te = $(tool.element);
+	$te.addClass('Streams_preview');
 	// let the extending tool's constructor run,
 	// it may change this tool's state or methods
 	setTimeout(function () {
-		if (!$(tool.element).closest('html').length) {
-			return; // tool was removed
+		if (!$te.closest('html').length) {
+			return; // tool is removed
 		}
 		if (state.streamName) {
 			tool.loading();
