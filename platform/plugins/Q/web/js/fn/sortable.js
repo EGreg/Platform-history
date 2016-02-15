@@ -672,6 +672,7 @@ Q.Tool.jQuery('Q/sortable', function _Q_sortable(options) {
 		}
 		$body.removeData(dataLifted).off('.Q_sortable');
 		this.removeData('Q/sortable');
+		this.off('.Q_sortable');
 		var state = this.state('Q/sortable');
 		if (state) {
 			Q.Pointer.onCancelClick.remove(state.onCancelClickEventKey);
