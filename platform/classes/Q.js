@@ -1920,15 +1920,12 @@ Q.servers = {};
  * @static
  * @method listen
  * @param {Object} [options={}] Options can include:
- *
- * * "port": the port to listen on<br/>
- * * "host": the hostname to listen for<br/>
- * * "attach": an array of additional listeners to attach.<br/>
- *	Each member is a name of a class (e.g. "Q.Socket", "Q.Dispatcher" and "Db")
- *	which has the listen(options) method.
- * * "https": https options. Not supported for now.
- * @param {Function} [callback=null] callback is fired when server is actually listening.
- *	callback receives server address as argument
+ * @param {String} [options.port] the port to listen on
+ * @param {String} [options.host] the hostname to listen on
+ * @param {Array} [options.attach] an array of additional listeners to attach. Each member is a name of a class (e.g. "Q.Socket", "Q.Dispatcher" and "Db") which has the listen(options) method.
+ * @param {Object} [options.https] https options. Not supported for now.
+ * @param {Function} [callback=null] fired when the server actually starts listening.
+ *	The callback receives server address as argument
  * @throws {Q.Exception} if config field Q/nodeInternal/port or Q/nodeInternal/host are missing
  */
 Q.listen = function _Q_listen(options, callback) {
