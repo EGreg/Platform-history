@@ -9568,9 +9568,20 @@ Q.Pointer = {
 	 * This event occurs when a click has been canceled, for one of several possible reasons.
 	 * @static
 	 * @event onCancelClick
-	 * @return {number}
 	 */
 	onCancelClick: new Q.Event(),
+	/**
+	 * This event occurs when touching or mouse pressing should have ended
+	 * @static
+	 * @event onEnded
+	 */
+	onEnded: new Q.Event(),
+	/**
+	 * This event occurs when touching or mouse pressing should have started
+	 * @static
+	 * @event onStarted
+	 */
+	onStarted: new Q.Event(),
 	/**
 	 * The distance that a finger or mouse has to move for the click to be canceled
 	 * @static
@@ -9643,6 +9654,7 @@ function _Q_PointerStartHandler(e) {
 	Q.addEventListener(window, Q.Pointer.move, _onPointerMoveHandler, false, true);
 	Q.addEventListener(window, Q.Pointer.end, _onPointerEndHandler, false, true);
 	Q.addEventListener(window, Q.Pointer.cancel, _onPointerEndHandler, false, true);
+	Q.handle(Q.Pointer.onStarted, this, arguments);
 	var screenX = Q.Pointer.getX(e) - Q.Pointer.scrollLeft();
 	var screenY = Q.Pointer.getY(e) - Q.Pointer.scrollTop();
 	_pos = { // first movement
@@ -9759,6 +9771,7 @@ var _onPointerEndHandler = Q.Pointer.ended = function _onPointerEndHandler() {
 	Q.removeEventListener(window, Q.Pointer.move, _onPointerMoveHandler);
 	Q.removeEventListener(window, Q.Pointer.end, _onPointerEndHandler);
 	Q.removeEventListener(window, Q.Pointer.cancel, _onPointerEndHandler);
+	Q.handle(Q.Pointer.onEnded, this, arguments);
 	setTimeout(function () {
 		Q.Pointer.canceledClick = false;
 	}, 100);

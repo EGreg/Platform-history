@@ -6,7 +6,7 @@
  */
 
 /**
- * Makes an element clickable, creating a cool "popping" effect when you press it,
+ * Adds a cool "popping" effect to a clickable element when you press it,
  * which especially looks nice on touchscreens.
  * I originally came up with this effect at Intermagix.
  * @class Q clickable
@@ -246,9 +246,8 @@ function _Q_clickable(o) {
 				scale(1);
 			}, 'Q/clickable');
 			var _released = false;
-			$(window).add(triggers)
-				.on([Q.Pointer.end, '.Q_clickable'], onRelease)
-				.on('release.Q_clickable', onRelease);
+			$(window).add(triggers).on('release.Q_clickable', onRelease);
+			state.onEndedKey = Q.Pointer.onEnded.set(onRelease, state.onEndedKey);
 			if (state.preventDefault) {
 				evt.preventDefault();
 			}
@@ -436,9 +435,10 @@ function _Q_clickable(o) {
 {
 	remove: function () {
 		var container = this.parent().parent();
-		this.attr('style', this.state('Q/clickable').oldStyle || "")
-		.insertAfter(container);
+		var state = this.state('Q/clickable');
+		this.attr('style', state.oldStyle || "").insertAfter(container);
 		this[0].restoreSelections();
+		Q.Pointer.onEnded.remove(state.onEndedKey);
 		container.remove();
 	}
 }
