@@ -5029,8 +5029,8 @@ Q.removeElement = function _Q_removeElement(element, removeTools) {
  *  A function to call when the event fires
  * @param {boolean} useCapture
  *  Whether to use the capture instead of bubble phase. Ignored in IE8 and below.
- * @param {boolean} hookPreventDefault
- *  Whether to override Event.prototype.hookStopPropagation in order to capture the event when a descendant of the element tries to prevent
+ * @param {boolean} hookStopPropagation
+ *  Whether to override Event.prototype.stopPropagation in order to capture the event when a descendant of the element tries to prevent
  */
 Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandler, useCapture, hookStopPropagation) {
 	useCapture = useCapture || false;
@@ -5062,7 +5062,7 @@ Q.addEventListener = function _Q_addEventListener(element, eventName, eventHandl
 
 	if (Q.isArrayLike(eventName)) {
 		for (var i=0, l=eventName.length; i<l; ++i) {
-			Q.addEventListener(element, eventName[i], eventHandler, useCapture);
+			Q.addEventListener(element, eventName[i], eventHandler, useCapture, hookStopPropagation);
 		}
 		return;
 	}
@@ -5109,8 +5109,8 @@ function _Q_Event_stopPropagation() {
 		var matches = element === root
 		|| element === document
 		|| (element instanceof Element
-			&& element !== this.target
-		    && element.contains(this.target));
+			&& element !== event.target
+		    && element.contains(event.target));
 		if (matches && this[1] === event.type) {
 			this[2].apply(element, [event]);
 		}
@@ -5147,7 +5147,7 @@ Q.removeEventListener = function _Q_removeEventListener(element, eventName, even
 	}
 	if (Q.isArrayLike(eventName)) {
 		for (var i=0, l=eventName.length; i<l; ++i) {
-			Q.removeEventListener(element, eventName[i], eventHandler);
+			Q.removeEventListener(element, eventName[i], eventHandler, useCapture);
 		}
 		return;
 	}
