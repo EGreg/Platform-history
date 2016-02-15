@@ -2981,6 +2981,8 @@ Q.Contextual = {
 		
 		contextual.find('.Q_contextual_top_arrow, .Q_contextual_bottom_arrow').remove();
 		
+		contextual.data('Q/contextual trigger', trigger);
+		
 		if (info.size && info.size.width)
 		{
 			var width = info.size.width - parseInt(contextual.css('padding-left')) - parseInt(contextual.css('padding-right'));

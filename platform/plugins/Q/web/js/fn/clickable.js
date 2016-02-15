@@ -6,7 +6,7 @@
  */
 
 /**
- * Makes an element clickable, creating a cool "popping" effect when you press it,
+ * Adds a cool "popping" effect to a clickable element when you press it,
  * which especially looks nice on touchscreens.
  * I originally came up with this effect at Intermagix.
  * @class Q clickable
@@ -36,7 +36,7 @@
  * @param {Boolean} [options.selectable=false]
  * @param {Boolean} [options.triggers=null] A jquery selector or jquery of additional elements to trigger the clickable
  * @param {Q.Event} [options.onPress] onPress occurs after the user begins a click or tap.
- * @param {Q.Event} [options.onRelease] onRelease occurs after the user ends the click or tap. This event receives parameters (evt, overElement)
+ * @param {Q.Event} [options.onRelease] onRelease occurs after the user ends the click or tap. This event receives parameters (event, overElement)
  * @param {Q.Event} [options.afterRelease] afterRelease occurs after the user ends the click or tap and the release animation completed. This event receives parameters (evt, overElement)
  * @param {Number} [options.cancelDistance=15] cancelDistance
  *
@@ -246,9 +246,8 @@ function _Q_clickable(o) {
 				scale(1);
 			}, 'Q/clickable');
 			var _released = false;
-			$(window).add(triggers)
-				.on([Q.Pointer.end, '.Q_clickable'], onRelease)
-				.on('release.Q_clickable', onRelease);
+			$(window).add(triggers).on('release.Q_clickable', onRelease);
+			state.onEndedKey = Q.Pointer.onEnded.set(onRelease, state.onEndedKey);
 			if (state.preventDefault) {
 				evt.preventDefault();
 			}
@@ -269,15 +268,17 @@ function _Q_clickable(o) {
 					);
 				});
 				var jq;
-				if (evt.type === 'release') {
+				if (!evt) {
+					jq = null;
+				} else if (evt.type === 'release') {
 					jq = $this;
 				} else {
-					var x = (evt.pageX !== undefined) ? evt.pageX : evt.originalEvent.changedTouches[0].pageX,
-						y = (evt.pageY !== undefined) ? evt.pageY : evt.originalEvent.changedTouches[0].pageY;
+					var x = (evt.pageX !== undefined) ? evt.pageX : evt.changedTouches[0].pageX,
+						y = (evt.pageY !== undefined) ? evt.pageY : evt.changedTouches[0].pageY;
 					jq = $(Q.Pointer.elementFromPoint(x, y));
 				}
 				var overElement = !Q.Pointer.canceledClick 
-					&& (jq.closest(triggers).length > 0);
+					&& jq && jq.closest(triggers).length > 0;
 				var factor = scale.factor;
 				if (overElement) {
 					state.animation = Q.Animation.play(function(x, y) {
@@ -436,9 +437,10 @@ function _Q_clickable(o) {
 {
 	remove: function () {
 		var container = this.parent().parent();
-		this.attr('style', this.state('Q/clickable').oldStyle || "")
-		.insertAfter(container);
+		var state = this.state('Q/clickable');
+		this.attr('style', state.oldStyle || "").insertAfter(container);
 		this[0].restoreSelections();
+		Q.Pointer.onEnded.remove(state.onEndedKey);
 		container.remove();
 	}
 }

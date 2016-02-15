@@ -1,7 +1,7 @@
 .Q_inplace_tool, .Q_inplace_tool_container { display: inline-block; position: relative; width: 100%; }
 
 .Q_inplace_textarea .Q_placeholders_container { overflow: hidden; }
-.Q_inplace_tool .Q_inplace_tool_editbuttons { display: none; position: absolute; left: 0; z-index: 9901; }
+.Q_inplace_tool .Q_inplace_tool_editbuttons { display: none; position: absolute; left: 0; z-index: 8000; }
 .Q_inplace_tool .Q_inplace_tool_editbuttons button { display: inline; color: black !important; }
 .Q_inplace_tool .Q_inplace_tool_static { display: inline-block; border: solid 1px transparent; cursor: default; }
 .Q_inplace_tool .Q_inplace_tool_blockstatic { display: block; border: solid 1px transparent; cursor: default; }
@@ -27,7 +27,7 @@
 .Q_inplace_tool .Q_editing .Q_inplace_tool_blockstatic { display: none; }
 .Q_inplace_tool .Q_editing .Q_inplace_tool_edit { display: none; }
 .Q_inplace_tool .Q_editing .Q_inplace_tool_invisible { display: block; visibility: hidden; position: absolute; top: -20px; z-index: 1; }
-.Q_inplace_tool .Q_inplace_tool_buttons { position: absolute; left: 0; z-index: 9900; min-width: 200px; line-height: 1px; text-align: left !important; color: black !important; }
+.Q_inplace_tool .Q_inplace_tool_buttons { position: absolute; left: 0; z-index: 8000; min-width: 200px; line-height: 1px; text-align: left !important; color: black !important; }
 .Q_inplace_tool .Q_inplace_tool_buttons button { background-color: #EEE; display: inline; color: black !important; }
 .Q_inplace_tool .Q_nocancel button.Q_inplace_tool_cancel { display: none; }
 

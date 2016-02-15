@@ -104,17 +104,14 @@ Q.Tool.jQuery('Q/sortable', function _Q_sortable(options) {
 		moveHandler.yStart = my = Q.Pointer.getY(event);
 		var element = this;
 		var sl = [], st = [];
-		$body.data(dataLifted, $(this))
-			.on([Q.Pointer.move, 'Q_sortable'], moveHandler)
-			.on([Q.Pointer.end, 'Q_sortable'], dropHandler)
-			.on([Q.Pointer.cancel, 'Q_sortable'], dropHandler);
-		$item.on([Q.Pointer.move, 'Q_sortable'], moveHandler)
-			.on([Q.Pointer.end, 'Q_sortable'], dropHandler)
-			.on([Q.Pointer.cancel, 'Q_sortable'], dropHandler)
-			.parents().each(function () {
-				sl.push(this.scrollLeft);
-				st.push(this.scrollTop);
-			});
+		$body.data(dataLifted, $(this));
+		$item.on(Q.Pointer.move, moveHandler);
+		Q.addEventListener(body, [Q.Pointer.end, Q.Pointer.cancel], dropHandler, false, true);
+		Q.addEventListener(body, Q.Pointer.move, moveHandler, false, true);
+		$item.parents().each(function () {
+			sl.push(this.scrollLeft);
+			st.push(this.scrollTop);
+		});
 		tLift = setTimeout(function () {
 			var efp = Q.Pointer.elementFromPoint(moveHandler.xStart, moveHandler.yStart), i=0, cancel = false;
 			$item.parents().each(function () {
@@ -129,6 +126,8 @@ Q.Tool.jQuery('Q/sortable', function _Q_sortable(options) {
 			}
 			lift.call(element, event);
 		}, Q.info.isTouchscreen ? state.lift.delayTouchscreen : state.lift.delay);
+		state.moveHandler = moveHandler;
+		state.dropHandler = dropHandler;
 	}
 
 	function lift(event) {
@@ -252,17 +251,23 @@ Q.Tool.jQuery('Q/sortable', function _Q_sortable(options) {
 		if (!pointerDidntEnd) {
 			Q.Pointer.ended(); // because mouseleave occurs instead on some browsers
 		}
-		$('body')[0].restoreSelections(true);
+		body.restoreSelections(true);
+		
+		var $item = $body.data(dataLifted);
+		if ($item) {
+			$item.off(Q.Pointer.move, moveHandler);
+		}
+		Q.removeEventListener(body, Q.Pointer.move, moveHandler, false);
+		Q.removeEventListener(body, [Q.Pointer.end, Q.Pointer.cancel], dropHandler, false);
 
 		if (tLift) clearTimeout(tLift);
 		if (tScroll) clearTimeout(tScroll);
 		if (iScroll) clearInterval(iScroll);
 		
 		var $item = $body.data(dataLifted);
-		$body.removeData(dataLifted).off('.Q_sortable');
+		$body.removeData(dataLifted);
 		if (!$item) return;
 		
-		$item.off(Q.Pointer.move, moveHandler).off('.Q_sortable');
 		var data = $item.data('Q/sortable');
 		if (!data) return;
 
@@ -663,13 +668,18 @@ Q.Tool.jQuery('Q/sortable', function _Q_sortable(options) {
 			if ((data = $item.data('Q/sortable')) && data.$dragged) {
 				data.$dragged.remove();
 			}
+			$item.off(Q.Pointer.move, state && state.moveHandler);
 		}
 		$body.removeData(dataLifted).off('.Q_sortable');
 		this.removeData('Q/sortable');
 		this.off('.Q_sortable');
-		var s = this.state('Q/sortable');
-		if (s) {
-			Q.Pointer.onCancelClick.remove(s.onCancelClickEventKey);
+		var state = this.state('Q/sortable');
+		if (state) {
+			Q.Pointer.onCancelClick.remove(state.onCancelClickEventKey);
+			if (state.moveHandler) {
+				Q.removeEventListener(body, Q.Pointer.move, state.moveHandler, false);
+				Q.removeEventListener(body, [Q.Pointer.end, Q.Pointer.cancel], state.dropHandler, false);
+			}
 		}
 	}
 }
@@ -677,6 +687,7 @@ Q.Tool.jQuery('Q/sortable', function _Q_sortable(options) {
 );
 
 var $body = $('body');
+var body = $body[0];
 var dataLifted = 'Q/sortable dragging';
 
 })(Q, jQuery, window, document);

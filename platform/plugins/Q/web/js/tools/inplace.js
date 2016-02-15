@@ -516,7 +516,7 @@ function _Q_inplace_tool_constructor(element, options) {
 			Q.Pointer.ended();
 			event.stopPropagation();
 		}
-	})
+	});
 	edit_button.on(Q.Pointer.start, function (event) {
 		Q.Pointer.cancelClick(event);
 	});
@@ -531,11 +531,14 @@ function _Q_inplace_tool_constructor(element, options) {
 		onCancel(true); 
 		return false;
 	});
+	cancel_button.add(save_button).add(edit_button).on(Q.Pointer.end, function() {
+		return false;
+	});
 	cancel_button.on('focus '+Q.Pointer.start, function() { setTimeout(function() {
 		focusedOn = 'cancel_button'; }, 50);
 	});
 	cancel_button.blur(function() { focusedOn = null; setTimeout(onBlur, 100); });
-	save_button.click(function() { onSave(); return false; });
+	save_button.on(Q.Pointer.fastclick, function() { onSave(); return false; });
 	save_button.on('focus '+Q.Pointer.start, function() { setTimeout(function() {
 		focusedOn = 'save_button'; }, 50);
 	});

@@ -29,6 +29,11 @@ Q.Tool.define("Streams/html", function (options) {
 	if (!tool.state.field) {
 		throw new Q.Error("Streams/html tool: missing options.field");
 	}
+	
+	var f = state.froala;
+	f.toolbarButtonsXS = f.toolbarButtonsXS || f.toolbarButtons;
+	f.toolbarButtonsSM = f.toolbarButtonsSM || f.toolbarButtons;
+	f.toolbarButtonsMD = f.toolbarButtonsMD || f.toolbarButtons;
 
 	if (state.streamName) {
 		Q.Streams.get(state.publisherId, state.streamName, function (err) {
@@ -53,7 +58,8 @@ Q.Tool.define("Streams/html", function (options) {
 			state.editor = 'froala';
 			state.froala = state.froala || {};
 			if (Q.info.isTouchscreen) {
-				state.froala.inlineMode = false;
+				state.froala.toolbarInline = false;
+				state.froala.toolbarSticky = false;
 			}
 		}
 		if (state.editor === 'froala') {
@@ -81,13 +87,19 @@ Q.Tool.define("Streams/html", function (options) {
 		default:
 			var scripts = [
 				"plugins/Q/js/froala/js/froala_editor.min.js",
-				"plugins/Q/js/froala/js/plugins/tables.min.js",
+				"plugins/Q/js/froala/js/plugins/fullscreen.min.js",
+				"plugins/Q/js/froala/js/plugins/code_view.min.js",
+				"plugins/Q/js/froala/js/plugins/align.min.js",
+				"plugins/Q/js/froala/js/plugins/table.min.js",
 				"plugins/Q/js/froala/js/plugins/lists.min.js",
 				"plugins/Q/js/froala/js/plugins/colors.min.js",
 				"plugins/Q/js/froala/js/plugins/font_family.min.js",
 				"plugins/Q/js/froala/js/plugins/font_size.min.js",
-				"plugins/Q/js/froala/js/plugins/block_styles.min.js",
-				"plugins/Q/js/froala/js/plugins/media_manager.min.js",
+				"plugins/Q/js/froala/js/plugins/paragraph_style.min.js",
+				"plugins/Q/js/froala/js/plugins/paragraph_format.min.js",
+				"plugins/Q/js/froala/js/plugins/quote.min.js",
+				"plugins/Q/js/froala/js/plugins/image.min.js",
+				"plugins/Q/js/froala/js/plugins/image_manager.min.js",
 				"plugins/Q/js/froala/js/plugins/video.min.js"
 			];
 			if (Q.info.isIE(0, 8)) {
@@ -97,12 +109,18 @@ Q.Tool.define("Streams/html", function (options) {
 				Q.addStylesheet([
 					"plugins/Q/font-awesome/css/font-awesome.min.css",
 					"plugins/Q/js/froala/css/froala_editor.min.css",
-					"plugins/Q/js/froala/css/froala_style.min.css"
+					"plugins/Q/js/froala/css/froala_style.min.css",
+					"plugins/Q/js/froala/css/plugins/fullscreen.min.css",
+					"plugins/Q/js/froala/css/plugins/colors.min.css",
+					"plugins/Q/js/froala/css/plugins/image.min.css",
+					"plugins/Q/js/froala/css/plugins/table.min.css",
+					"plugins/Q/js/froala/css/plugins/code_view.min.css"
 				]);
-                $(tool.element).editable(state.froala)
-				.on('editable.afterRemoveImage', function (e, editor, $img) {
+                $(tool.element).froalaEditor(state.froala)
+				.on('froalaEditor.image.removed', function (e, editor, $img) {
 					var src = $img.attr('src');
-					if (src.substr(0, 5) === 'data:') {
+					if (src.substr(0, 5) === 'data:'
+					|| src.substr(0, 5) === 'blob:') {
 						return;
 					}
 					var parts = src.split('/');
@@ -115,7 +133,7 @@ Q.Tool.define("Streams/html", function (options) {
 		function _blur() {
             var content = state.editorObject
 				? state.editorObject.getData()
-				: $(tool.element).editable('getHTML');
+				: $(tool.element).froalaEditor('html.get');
 			if (state.editorObject) {
 				editor.focusManager.blur();
 			} else {
@@ -141,7 +159,7 @@ Q.Tool.define("Streams/html", function (options) {
 			_blurred = false;
             var content = state.editorObject
 				? state.editorObject.getData()
-				: $(tool.element).editable('getHTML');
+				: $(tool.element).froalaEditor('html.get');
 			state.editing = true;
             state.startingContent = content;
         }
@@ -168,7 +186,7 @@ Q.Tool.define("Streams/html", function (options) {
 						break;
 					case 'froala':
 					default:
-						$(tool.element).editable('setHTML', html);
+						$(tool.element).froalaEditor('html.set', html);
 						break;
 					}
 				}
@@ -218,31 +236,35 @@ Q.Tool.define("Streams/html", function (options) {
 	editable: true,
 	ckeditor: {},
 	froala: {
-		alwaysVisible: true,
-		pastImage: true,
-		buttons: [
-			"bold", "italic", "underline", "strikeThrough", "sep",
-			"fontFamily", "fontSize", "color", "formatBlock", "blockStyle", "sep",
-			"align", "insertOrderedList", "insertUnorderedList", "sep",
-			"outdent", "indent", "selectAll", "createLink", "sep",
-			"insertImage", "insertVideo", "undo", "redo", "sep",
-			"insertHorizontalRule", "table"
+		toolbarVisibleWithoutSelection: false,
+		toolbarInline: true,
+		imagePaste: true,
+		toolbarButtons: [
+			"bold", "italic", "underline", "strikeThrough", "subscript", "superscript", "|",
+			"fontFamily", "fontSize", "color", "|",
+			"inlineStyle", "paragraphStyle", "paragraphFormat", "|",
+			"align", "formatOL", "formatUL", "|",
+			"outdent", "indent", "quote", "insertHR", "createLink", "|",
+			"insertImage", "insertTable", "|", "html"
 		],
-		fontList: {
+		fontFamily: {
 			"Arial,Helvetica": "Arial",
-			"Impact,Charcoal": "Impact",
-			"Tahoma,Geneva": "Tahoma",
-			"Courier,Courier New": "Courier"
+			"Georgia,seif": "Georgia",
+			"Impact,Charcoal,'HelveticaNeue-CondensedBlack'": "Impact",
+			"Tahoma,Geneva,Verdana,sans-serif": "Tahoma",
+			"'Times New Roman','Times',serif": "Times",
+			"Courier,Courier New": "Courier",
+			"'MarkerFelt-Thin','Comic Sans MS','Comic Sans'": "Playful",
+			"Zapfino,": "Zapfino"
 		},
+		imageUploadMethod: 'POST',
 		imageUploadURL: Q.action('Streams/froala'),
-		pastedImagesUploadURL: Q.action('Streams/froala'),
-		pastedImagesUploadRequestType: 'POST',
 		imageUploadParam: 'image',
 		imageUploadParams: {
 			'type': 'Streams/image',
 			'Q.ajax': 'json'
 		},
-		imageButtons: [
+		imageEditButtons: [
 			"floatImageLeft","floatImageNone","floatImageRight",
 			"linkImage","replaceImage","removeImage"
 		]

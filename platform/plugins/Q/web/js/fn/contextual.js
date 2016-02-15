@@ -95,6 +95,7 @@ Q.Tool.jQuery('Q/contextual', function _Q_contextual() {
 			$this.addClass('Q_selected');
 			state.restoreSelected = false;
 		}
+		state.contextual.removeData('Q/contextual trigger');
 	}
 }
 
