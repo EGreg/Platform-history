@@ -24,6 +24,8 @@
  *  @param {Function} [options.beforeScripts] Name of the function to execute after tab is loaded but before its javascript is executed.
  *  @param {Function} [options.onCurrent] Event after a tab has been selected. Note that this is in the view layer, so your handlers would trigger recursion if they call Q.layout().
  *  @param {Function} [options.onActivate] Event after a tab has been activated. Note that this is in the view layer, so your handlers would trigger recursion if they call Q.layout().
+ *  @param {Function} [options.beforeRefresh] Event before tabs are going to be refreshed
+ *  @param {Function} [options.onRefresh] Event after tabs have been refreshed
  * @return {Q.Tool}
  */
 Q.Tool.define("Q/tabs", function(options) {
@@ -75,6 +77,7 @@ Q.Tool.define("Q/tabs", function(options) {
 	loader: Q.req,
 	onClick: new Q.Event(),
 	beforeSwitch: new Q.Event(),
+	beforeRefresh: new Q.Event(),
 	onActivate: new Q.Event(),
 	onCurrent: new Q.Event(),
 	onRefresh: new Q.Event(),
@@ -287,6 +290,7 @@ Q.Tool.define("Q/tabs", function(options) {
 		var $te = $(tool.element);
 		var w = $te.width(), w2 = 0, w3 = 0, index = -10;
 		var $o = $('.Q_tabs_overflow', $te);
+		Q.handle(state.beforeRefresh, tool, []);
 		tool.indicateCurrent();
 		var te = tool.element;
 		if (!parseInt(te.style.width)) {

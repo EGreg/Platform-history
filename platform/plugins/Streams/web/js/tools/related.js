@@ -81,6 +81,9 @@ function _Streams_related_tool (options)
 				tool.state.publisherId, "", streamType, null, 
 				{ creatable: params }
 			).addClass('Streams_related_composer Q_contextual_inactive');
+			if (tool.tabs) {
+				element.addClass('Q_tabs_tab');
+			}
 			if (oldElement) {
 				$(oldElement).before(element);
 				var $last = tool.$('.Streams_related_composer:last');
@@ -332,7 +335,9 @@ function _Streams_related_tool (options)
 	 *  The elements of the tools representing the related streams
 	 */
 	integrateWithTabs: function (elements) {
-		var id, parents, tabs, i, tool = this, state = tool.state;
+		var id, parents, tabs, i;
+		var tool = this;
+		var state = tool.state;
 		if (typeof state.tabs === 'string') {
 			state.tabs = Q.getObject(state.tabs);
 			if (typeof state.tabs !== 'function') {
@@ -342,9 +347,10 @@ function _Streams_related_tool (options)
 		parents = tool.parents();
 		parents[tool.id] = tool;
 		for (id in parents) {
-			tabs = Q.Tool.from(parents[id].element, "Q/tabs");
+			var tabs = tool.tabs = Q.Tool.from(parents[id].element, "Q/tabs");
 			if (!tabs) continue;
-			tool.$('.Streams_related_composer').addClass('Q_tabs_tab');
+			var $composer = tool.$('.Streams_related_composer');
+			$composer.addClass('Q_tabs_tab');
 			Q.each(elements, function (i) {
 				var element = elements[i];
 				var preview = Q.Tool.from(element, 'Streams/preview');
