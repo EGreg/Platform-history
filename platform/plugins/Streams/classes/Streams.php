@@ -2685,7 +2685,7 @@ abstract class Streams extends Base_Streams
 	
 	/**
 	 * A convenience method to get the URL of the streams-related action
-	 * @method register
+	 * @method actionUrl
 	 * @static
 	 * @param {string} $publisherId
 	 *	The name of the publisher
