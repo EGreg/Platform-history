@@ -32,8 +32,8 @@ Q.Tool.define('Q/expandable', function (options) {
 			+"<span class='Q_expandable_count'>"+count+"</span>"
 			+options.title
 			+"</h2>";
-		var div = "<div class='Q_expandable_content'>"
-			+options.content+"</div>";
+		var div = "<div class='Q_expandable_container'><div class='Q_expandable_content'>"
+			+options.content+"</div></div>";
 		this.element.innerHTML = h2 + div;
 	}
 	
@@ -41,7 +41,9 @@ Q.Tool.define('Q/expandable', function (options) {
 	if (state.expanded == null) {
 		state.expanded = $h2.next().is(':visible');
 	} else if (state.expanded) {
-		$h2.addClass('Q_expanded').next().css('display', 'block');
+		$h2.addClass('Q_expanded')
+		.next().addClass('Q_expanded')
+		.css('display', 'block');
 	}
 	
 	this.element.preventSelections(true);
@@ -105,13 +107,13 @@ Q.Tool.define('Q/expandable', function (options) {
 		if (o.autoCollapseSiblings) {
 			$('.Q_expandable_tool h2', $parent).not(this)
 			.removeClass('Q_expanded')
-			.next().slideUp(state.duration).each(function () {
+			.next().removeClass('Q_expanded')
+			.slideUp(state.duration).each(function () {
 				var t = this.parentNode.Q("Q/expandable");
 				Q.handle(t.state.beforeCollapse, t, [tool]);
 			});
 		}
-		var $expandable = $h2.addClass('Q_expanded')
-		.next().slideDown(state.duration);
+		var $expandable = $h2.next().slideDown(state.duration, 'linear');
 		var $scrollable = this.scrollable();
 		var offset = $scrollable
 			? $scrollable.offset()
@@ -141,10 +143,10 @@ Q.Tool.define('Q/expandable', function (options) {
 				var scrollTop = $scrollable.scrollTop() + t - t1 * (1-y) - spaceAbove * y;
 				$scrollable.scrollTop(scrollTop);
 			}
-			$expandable.css('overflow', 'visible');
 		}, state.duration).onComplete.set(function () {
 			Q.handle(callback, tool, []);
 			Q.handle(state.onExpand, tool, []);
+			$h2.add($expandable).addClass('Q_expanded');
 		});
 		state.expanded = true;
 	},
@@ -154,7 +156,8 @@ Q.Tool.define('Q/expandable', function (options) {
 		var state = this.state;
 		var $h2 = $('h2', this.element);
 		$h2.removeClass('Q_expanded')
-		.next().slideUp(state.duration).each(function () {
+		.next().removeClass('Q_expanded')
+		.slideUp(state.duration).each(function () {
 			var t = this.parentNode.Q("Q/expandable");
 			Q.handle(t.state.beforeCollapse, t, [tool]);
 		});

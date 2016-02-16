@@ -36,7 +36,7 @@ Q.Tool.define("Q/tabs", function(options) {
 	
 	Q.addStylesheet('plugins/Q/css/tabs.css');
 
-	state.defaultTabName = state.defaultTabName || Q.firstKey(options.tabs);
+	state.defaultTabName = state.defaultTabName || null;
 	
 	// catches events that bubble up from any child elements
 	$te.on([Q.Pointer.fastclick, '.Q_tabs'], '.Q_tabs_tab', function () {

@@ -582,6 +582,10 @@
 .Streams_interest_title {
 	cursor: pointer;
 	border: 1px dotted #ccc;
+}
+
+.Q_expanded .Streams_interest_title {
+	/* safari is slow at drawing rounded borders, so wait until animations are done */
     border-radius: 5px;
 }
 

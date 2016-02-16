@@ -1904,7 +1904,7 @@ input[type=radio] { margin-right: 5px; }
 	font-weight: bold;
 }
 
-.Q_expandable_content {
+.Q_expandable_container {
     text-align: left;
     font-weight: 100;
     font-size: 15px;
