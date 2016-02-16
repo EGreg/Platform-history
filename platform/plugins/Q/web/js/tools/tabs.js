@@ -14,8 +14,11 @@
  *  @param {String} [options.field='tab'] Uses this field when urls doesn't contain the tab name.
  *  @param {Boolean} [options.vertical=false] Stack the tabs vertically instead of horizontally
  *  @param {Boolean} [options.compact=false] Display the tabs interface in a compact space with a contextual menu
- *  @param {String} [options.overflow] Override the text that is displayed when the tabs overflow. You can interpolate {{count}}, {{text}} or {{html}} in the string. 
- *  @param {String} [options.overflowGlyph] Override the glyph that appears next to the overflow text. You can interpolate {{count}} here
+ *  @param {Object} [options.overflow]
+ *  @param {String} [options.overflow.content] The html that is displayed when the tabs overflow. You can interpolate {{count}}, {{text}} or {{html}} in the string. 
+ *  @param {String} [options.overflow.glyph] Override the glyph that appears next to the overflow text. You can interpolate {{count}} here
+ *  @param {String} [options.overflow.defaultText] The text to interpolate {{text}} in the content when no tab is selected
+ *  @param {String} [options.overflow.defaultHtml] The text to interpolate {{text}} in the content when no tab is selected
  *  @param {String} [options.selectors] Object of {slotName: selector} pairs, where the values are CSS style selectors indicating the element to update with javascript, and can be a parent of the tabs. Set to null to reload the page.
  *  @param {String} [options.slot] The name of the slot to request when changing tabs with javascript.
  *  @param {Function} [options.loader] Name of a function which takes url, slot, callback. It should call the callback and pass it an object with the response info. Can be used to implement caching, etc. instead of the default HTTP request. This function shall be Q.batcher getter
@@ -71,8 +74,12 @@ Q.Tool.define("Q/tabs", function(options) {
 	field: 'tab',
 	slot: 'content,title',
 	selectors: { content: '#content_slot' },
-	overflow: '<span><span>{{count}} more</span></span>',
-	overflowGlyph: '&#9662;',
+	overflow: {
+		content: '<span><span>{{count}} more</span></span>',
+		glyph: '&#9662;',
+		defaultText: '...',
+		defaultHtml: '...'
+	},
 	loaderOptions: {},
 	loader: Q.req,
 	onClick: new Q.Event(),
@@ -193,13 +200,15 @@ Q.Tool.define("Q/tabs", function(options) {
 			return;
 		}
 		
-		tool.$tabs.each(function (k, t) {
-			var tdn = tool.getName(t);
-			if (state.defaultTabName === tdn) {
-				state.defaultTab = t;
-				return false;
-			}
-		});
+		if (state.defaultTabName != null) {
+			tool.$tabs.each(function (k, t) {
+				var tdn = tool.getName(t);
+				if (state.defaultTabName === tdn) {
+					state.defaultTab = t;
+					return false;
+				}
+			});
+		}
 
 		tab = tool.getCurrentTab.call(tool, tab);
 		
@@ -234,7 +243,7 @@ Q.Tool.define("Q/tabs", function(options) {
 			$tabs.each(function (k, t) {
 				var tdn = tool.getName(t);
 				var tu = tool.getUrl(t);
-				if (tdn === name
+				if ((tdn && tdn === name)
 				|| (!name && tu === url)
 				|| (!name && !state.field && tu === url.split('?')[0])) {
 					tab = t;
@@ -257,7 +266,7 @@ Q.Tool.define("Q/tabs", function(options) {
 	 * @return {String} the name of the tab
 	 */
 	getName: function (tab) {
-		return tab ? tab.getAttribute("data-name") : '';
+		return (tab ? tab.getAttribute("data-name") : '') || '';
 	},
 	
 	/**
@@ -328,13 +337,13 @@ Q.Tool.define("Q/tabs", function(options) {
 		if (index >= 0) {
 			var values = {
 				count: $tabs.length - index - 1,
-				text: $(state.tab).text() || "",
-				html: $(state.tab).html() || ""
+				text: $(state.tab).text() || state.overflow.defaultText,
+				html: $(state.tab).html() || state.overflow.defaultHtml
 			};
 			$lastVisibleTab = $tabs.eq(index);
 			$overflow = $('<li class="Q_tabs_tab Q_tabs_overflow" />')
 			.css('visibility', 'visible')
-			.html(state.overflow.interpolate(values));
+			.html(state.overflow.content.interpolate(values));
 			var oneLess = !!state.compact;
 			if (!oneLess) {
 				$overflow.insertAfter($lastVisibleTab);
@@ -347,11 +356,11 @@ Q.Tool.define("Q/tabs", function(options) {
 				--index;
 				values.count = $tabs.length - index - 1;
 				$overflow.insertBefore($lastVisibleTab)
-				.html(this.state.overflow.interpolate(values));
+				.html(this.state.overflow.content.interpolate(values));
 			}
-			if (state.overflowGlyph) {
+			if (state.overflow.glyph) {
 				$('<span class="Q_tabs_overflowGlyph" />')
-					.html(state.overflowGlyph.interpolate(values))
+					.html(state.overflow.glyph.interpolate(values))
 					.prependTo($overflow);
 			}
 		}

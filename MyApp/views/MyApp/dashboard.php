@@ -23,7 +23,9 @@
 	
 	<?php echo Q::tool('Q/tabs', array(
 		'vertical' => !Q_Request::isMobile(),
-		'overflow' => '{{html}}',
+		'overflow' => array(
+			'content' => '{{html}}'
+		),
 		'compact' => true,
 		'tabs' => array(
 			'welcome' => 'Welcome',
