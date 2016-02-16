@@ -2376,7 +2376,7 @@ Q.beforeReplace = new Q.Event();
  * an array of strings - in this case, these names are considered unfilled the next times through the pipe
  * @class Q.Pipe
  * @constructor
- * @see {Pp.add} for more info on the parameters
+ * @see {Pipe.prototype.add} for more info on the parameters
  */
 Q.Pipe = function _Q_Pipe(requires, maxTimes, callback) {
 	if (this === Q) {
@@ -2425,6 +2425,8 @@ Pp.on = function _Q_pipe_on(field, callback) {
  *  It is passed four arguments: (params, subjects, field, requires)
  *  If you return false from this function, it will no longer be called for future pipe runs.
  *  If you return true from this function, it will delete all the callbacks in the pipe.
+ * @return {Q.Pipe}
+ * @chainable
  */
 Pp.add = function _Q_pipe_add(requires, maxTimes, callback) {
 	var r = null, n = null, e = null, r2, events, keys;
@@ -2473,7 +2475,7 @@ Pp.add = function _Q_pipe_add(requires, maxTimes, callback) {
 				break;
 			}
 			if (e != null && typeof e !== 'string') {
-				throw new Q.Error("Pp.add requires event name after array of objects");
+				throw new Q.Error("Pipe.prototype.add requires event name after array of objects");
 			}
 		}
 	}
@@ -6057,11 +6059,12 @@ Q.formPost.counter = 0;
  * @param {Function} onload
  * @param {Object} options
  *  Optional. A hash of options, including:
- *  'duplicate': if true, adds script even if one with that src was already loaded
- *  'onError': optional function that may be called in newer browsers if the script fails to load. Its this object is the script tag.
- *  'ignoreLoadingErrors': If true, ignores any errors in loading scripts.
- *  'container': An element to which the stylesheet should be appended (unless it already exists in the document)
- *  'returnAll': If true, returns all the script elements instead of just the new ones
+ * @param {Boolean} [options.duplicate] if true, adds script even if one with that src was already loaded
+ * @param {Boolean} [options.onError] optional function that may be called in newer browsers if the script fails to load. Its this object is the script tag.
+ * @param {Boolean} [options.ignoreLoadingErrors] If true, ignores any errors in loading scripts.
+ * @param {Boolean} [options.container] An element to which the stylesheet should be appended (unless it already exists in the document)
+ * @param {Boolean} [options.returnAll] If true, returns all the script elements instead of just the new ones
+ * @return {Array} An array of SCRIPT elements
  */
 Q.addScript = function _Q_addScript(src, onload, options) {
 
@@ -6299,7 +6302,8 @@ Q.findScript = function (src) {
  * @param {Object} options
  *  An optional hash of options, which can include:
  * @param {HTMLElement} [options.container] An element to which the stylesheet should be appended (unless it already exists in the document)
- * @param {boolean} [options.returnAll=false] If true, returns all the link elements instead of just the new ones
+ * @param {Boolean} [options.returnAll=false] If true, returns all the link elements instead of just the new ones
+ * @return {Array} Returns an aray of LINK elements
  */
 Q.addStylesheet = function _Q_addStylesheet(href, media, onload, options) {
 	var i;
@@ -6390,6 +6394,8 @@ Q.addStylesheet = function _Q_addStylesheet(href, media, onload, options) {
 	link.onreadystatechange = onload2; // for IE
 	link.setAttribute('href', href);
 	container.appendChild(link);
+	// By now all widespread browser versions support at least one of the above methods:
+	// https://developer.mozilla.org/en-US/docs/Web/HTML/Element/link#Browser_compatibility
 	return link;
 };
 
@@ -7043,26 +7049,32 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 			}
 			
 			var domElements = handler(response, url, o); // this is where we fill all the slots
-			if (!o.ignorePage) {
+			if (o.ignorePage) {
+				newStylesheets = [];
+				afterStylesheets();
+			} else {
 				_doEvents('on', moduleSlashAction);
-				newStylesheets = loadStylesheets();
-				newStyles = loadStyles();
+				newStylesheets = loadStylesheets(afterStylesheets);
 			}
 			
-			afterStyles(); // Synchronous to allow additional scripts to change the styles before allowing the browser reflow.
+			function afterStylesheets() {
+				var newStyles = loadStyles();
+				
+				afterStyles(); // Synchronous to allow additional scripts to change the styles before allowing the browser reflow.
 			
-			if (!o.ignoreHash && parts[1] && history.pushState) {
-				var e = document.getElementById(parts[1]);
-				if (e) {
-					location.hash = parts[1];
-					// history.back();
-					// todo: modify history successfully somehow
-					// history.replaceState({}, null, url + '#' + parts[1]);
+				if (!o.ignoreHash && parts[1] && history.pushState) {
+					var e = document.getElementById(parts[1]);
+					if (e) {
+						location.hash = parts[1];
+						// history.back();
+						// todo: modify history successfully somehow
+						// history.replaceState({}, null, url + '#' + parts[1]);
+					}
 				}
 			}
 		}
 		
-		function loadStylesheets() {
+		function loadStylesheets(callback) {
 			if (!response.stylesheets) {
 				return null;
 			}
@@ -7072,6 +7084,8 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				keys.splice(keys.indexOf(""), 1);
 				keys.unshift("");
 			}
+			var waitFor = [];
+			var slotPipe = Q.pipe();			
 			Q.each(keys, function (i, slotName) {
 				var stylesheets = [];
 				for (var j in response.stylesheets[slotName]) {
@@ -7079,13 +7093,21 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 					if (root.StyleFix && (stylesheet.href in processStylesheets.slots)) {
 						continue; // if prefixfree is loaded, we will not even try to load these processed stylesheets
 					}
-					var elem = Q.addStylesheet(stylesheet.href, stylesheet.media, null, {returnAll: false});
+					var key = slotName + '\t' + stylesheet.href + '\t' + stylesheet.media;
+					var elem = Q.addStylesheet(
+						stylesheet.href, stylesheet.media,
+						slotPipe.fill(key), { returnAll: false }
+					);
 					if (elem) {
 						stylesheets.push(elem);
 					}
+					waitFor.push(key);
 				}
 				newStylesheets[slotName] = stylesheets;
 			});
+			slotPipe.add(waitFor, function _Q_loadUrl_pipe_slotNames() {
+				callback();
+			}).run();
 			return newStylesheets;
 		}
 		
@@ -7148,8 +7170,9 @@ Q.loadUrl = function _Q_loadUrl(url, options) {
 				keys.unshift("");
 			}
 			Q.each(keys, function (i, slotName) {
-				var elem = Q.addScript(response.scripts[slotName], slotPipe.fill(slotName), {
-					ignoreLoadingErrors: (o.ignoreLoadingErrors !== undefined) ? o.ignoreLoadingErrors : undefined,
+				var elem = Q.addScript(
+					response.scripts[slotName], slotPipe.fill(slotName), {
+					ignoreLoadingErrors: o.ignoreLoadingErrors,
 					returnAll: false
 				});
 				if (elem) {
@@ -10394,7 +10417,7 @@ Q.addEventListener(window, Q.Pointer.start, _Q_PointerStartHandler, false, true)
 
 function noop() {}
 if (!root.console) {
-	// for browsers like IE8 and below
+	// for irregular browsers like IE8 and below
 	root.console = {
 		debug: noop,
 		dir: noop,
