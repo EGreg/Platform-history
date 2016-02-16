@@ -31,7 +31,7 @@ function Streams_html_tool($options)
 		"plugins/Q/js/froala/css/plugins/table.min.css",
 		"plugins/Q/js/froala/css/plugins/code_view.min.css"
 	);
-	foreach ($stylesheets as $stylesheet)) {
+	foreach ($stylesheets as $stylesheet) {
 		Q_Response::addStylesheet($stylesheet);
 	}
 	Q_Response::setToolOptions($options);

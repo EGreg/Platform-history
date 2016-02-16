@@ -10370,28 +10370,34 @@ Q.Masks = {
 			var mask = Q.Masks.collection[k];
 			if (!mask.counter) continue;
 			var html = document.documentElement;
-			var rect = mask.rect = (mask.shouldCover || html).getBoundingClientRect();
+			var scrollLeft = Q.Pointer.scrollLeft();
+			var scrollTop = Q.Pointer.scrollTop();
 			var ms = mask.element.style;
-			ms.left = rect.left + Q.Pointer.scrollLeft() + 'px';
-			ms.top = rect.top + Q.Pointer.scrollTop() + 'px';
-			var width = rect.right - rect.left;
-			var height = rect.bottom - rect.top;
+			var rect = (mask.shouldCover || html).getBoundingClientRect();
+			mask.rect = {
+				'left': rect.left,
+				'right': rect.right,
+				'top': rect.top,
+				'bottom': rect.bottom
+			};
 			if (!mask.shouldCover) {
-				width = Math.max(width, Q.Pointer.windowWidth());
-				height = Math.max(width, Q.Pointer.windowHeight());
-				var scrollLeft = Q.Pointer.scrollLeft();
-				var scrollTop = Q.Pointer.scrollTop();
+				mask.rect.right = Math.max(mask.rect.right, Q.Pointer.windowWidth());
+				mask.rect.bottom = Math.max(mask.rect.bottom, Q.Pointer.windowHeight());
 				var body = document.getElementsByTagName('body')[0];
 				Q.each(body.children || body.childNodes, function () {
+					if (this.hasClass('Q_mask')) return;
 					var rect = this.getBoundingClientRect();
-					if (!rect) return;
-					width = Math.max(width, scrollLeft + rect.right);
-					height = Math.max(height, scrollTop + rect.bottom);
+					if (!rect || rect.right - rect.left == 0) return;
+					mask.rect.left = Math.min(mask.rect.left, rect.left);
+					mask.rect.top = Math.min(mask.rect.top, rect.top);
+					mask.rect.right = Math.max(mask.rect.right, rect.right);
+					mask.rect.bottom = Math.max(mask.rect.bottom, rect.bottom);
 				});
 			}
-
-			ms.width = width + 'px';
-			ms.height = ms['line-height'] = height + 'px';
+			ms.left = scrollLeft + mask.rect.left + 'px';
+			ms.top = scrollTop + mask.rect.top + 'px';
+			ms.width = (mask.rect.right - mask.rect.left) + 'px';
+			ms.height = ms['line-height'] = (mask.rect.bottom - mask.rect.top) + 'px';
 		}
 	},
 	/**
