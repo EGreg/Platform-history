@@ -13,7 +13,7 @@
  *   @param {String} options.field The name of the stream field used to save the html.
  *   @param {String} [options.streamName] If empty, and "creatable" is true, then this can be used to add new related streams.
  *   @param {String} [options.placeholder] The placeholder HTML
- *   @param {Object} [options.editor="auto"]  Can be "ckeditor", "froala", "basic" or "auto".
+ *   @param {String} [options.editor="auto"]  Can be "ckeditor", "froala", "basic" or "auto".
  *   @param {Boolean} [options.editable] Set to false to avoid showing even authorized users an interface to replace the contents
  *   @param {Object} [options.ckeditor]  The config, if any, to pass to ckeditor
  *   @param {Object} [options.froala]  The config, if any, to pass to froala

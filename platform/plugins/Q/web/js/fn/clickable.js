@@ -265,7 +265,7 @@ function _Q_clickable(o) {
 						['Q/clickable scrollTop',
 						 'Q/clickable scrollTop', 
 						 'Q/clickable transform']
-					);
+					); 
 				});
 				var jq;
 				if (!evt) {
