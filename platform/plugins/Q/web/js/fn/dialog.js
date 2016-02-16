@@ -132,10 +132,14 @@ function _Q_overlay(o) {
 			Q.handle($overlay.options.beforeClose, $this, [$this]);
 			if ($overlay.options.fadeInOut)
 			{
-				$this.fadeOut(o.fadeTime, function()
-				{
+				Q.Animation.play(function (x, y) {
+					if (x === 1) {
+						$this.hide();
+					} else {
+						$this.css('opacity', 1-y);
+					}
 					Q.handle($overlay.options.onClose, $this, []);
-				});
+				}, o.fadeTime);
 				if ($overlay.options.mask)
 				{
 					Q.Masks.hide('Q.screen.mask');
