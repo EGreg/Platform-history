@@ -528,15 +528,13 @@ Q.Tool.define("Q/drawers", function _Q_drawers(options) {
 					if (index !== columnIndex
 					&& state.$pinnedElement
 					&& state.behind[state.currentIndex]) {
-						state.$pinnedElement.add(state.$trigger).hide();
+						state.$hiddenElements = state.$pinnedElement.add(state.$trigger).hide();
 					}
 				}, tool);
-				columns.state.onClose.set(function () {
-					var index = this.state.$currentColumn.attr('data-index');
-					if (index === columnIndex
-					&& state.$pinnedElement
-					&& state.behind[state.currentIndex]) {
-						state.$drawers.add(state.$trigger).show();
+				columns.state.beforeClose.set(function (index, indexAfterClose) {
+					if (indexAfterClose === columnIndex && state.$hiddenElements) {
+						state.$hiddenElements.show();
+						state.$hiddenElements = null;
 					}
 				}, tool);
 				return false;
