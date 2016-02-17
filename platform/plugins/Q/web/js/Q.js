@@ -10383,8 +10383,9 @@ Q.Masks = {
 			var mask = Q.Masks.collection[k];
 			if (!mask.counter) continue;
 			var html = document.documentElement;
-			var scrollLeft = Q.Pointer.scrollLeft();
-			var scrollTop = Q.Pointer.scrollTop();
+			var offset = $('body').offset();
+			var scrollLeft = Q.Pointer.scrollLeft() - offset.left;
+			var scrollTop = Q.Pointer.scrollTop() - offset.top;
 			var ms = mask.element.style;
 			var rect = (mask.shouldCover || html).getBoundingClientRect();
 			mask.rect = {

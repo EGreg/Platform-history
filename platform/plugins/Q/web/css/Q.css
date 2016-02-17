@@ -146,16 +146,27 @@ html[xmlns] .Q_clearfix { display: block; }
 .Q_notMobile .Q_overlay { max-width: 60%; }
 .Q_mobile .Q_overlay { max-width: 95%; }
 
-.Q_dialog_title { padding: 10px; box-sizing: content-box; margin:0px; border-bottom: 1px solid #333; font-size: 20px; height: 20px; font-weight: bold; color: white; cursor: default;
+body.Q_preventScroll {
+	position: fixed;
+	overflow: hidden;
+	width: 100%;
+}
+.Q_dialog_title {
+	padding: 10px; box-sizing: content-box; margin:0px; border-bottom: 1px solid #333; font-size: 20px; height: 20px; font-weight: bold; color: white; cursor: default;
 	background: #444; /* for non-css3 browsers */
 	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#444444', endColorstr='#111111'); /* for IE */
 	background: -webkit-gradient(linear, left top, left bottom, from(#444), to(#111)); /* for webkit browsers */
 	background: -moz-linear-gradient(top,  #444,  #111); /* for firefox 3.6+ */
 	overflow: hidden;
 	text-overflow: ellipsis;
+	z-index: 2;
+}
+.Q_dialog_content {
+	overflow: auto;
 }
 .Q_fullscreen_dialog
 {
+	overflow: visible;
 	position: relative;
 	z-index: 9000; /* must be at least higher than dashboard_slot z-index */
 	background: url(../img/bg/overlay.png);
