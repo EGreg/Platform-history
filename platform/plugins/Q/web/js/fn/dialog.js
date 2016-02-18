@@ -91,6 +91,7 @@ function _Q_overlay(o) {
 			}).addClass('Q_preventScroll');
 			if ($overlay.options.fadeInOut)
 			{
+				$this.css('opacity', 0).show();
 				Q.Animation.play(function (x, y) {
 					if (x === 1) {
 						if (!$overlay.options.noClose && $overlay.options.closeOnEsc) {
