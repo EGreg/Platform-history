@@ -7,27 +7,17 @@
  * @method overlay
  * @param {Object} [options] options is an object of parameters
  * @param {Boolean} apply Optional. Set to true if the dialog should show the "apply" style button to close dialog
- * @param {String} [options.left] left is a Horizontal position of the overlay, May have 'center' value to be centered horizontally
- * or have a percentage or absolute (pixels) value of offset from the left border of 'alignParent'.
- * Optional
- * @default  'center'
- * @param {String} [options.top] top is a Vertical position of the overlay. May have 'middel' value to be centered vertically
- * or have a percentage or absolute (pixels) value of offset from the top border of 'alignParent'. Optional
- * @default 'middel'
+ * @param {String} [options.left='center'] left is a Horizontal position of the overlay, May have 'center' value to be centered horizontally or have a percentage or absolute (pixels) value of offset from the left border of 'alignParent'.
+ * @param {String} [options.top='middle'] top is a Vertical position of the overlay. May have 'middle' value to be centered vertically or have a percentage or absolute (pixels) value of offset from the top border of 'alignParent'. Optional
  * @param {DOMElement} [options.alignParent] alignParent Can be DOM element, jQuery object or jQuery selector.
  * If provided overlay will be positioned relatively to that element. If null, overlay will be positioned considering window dimensions. Optional.
- * @param {Boolean} [options.mask] mask If true, mask behind the overlay will be shown, making it modal-like.
- * @default false
- * @param {Boolean} [options.noClose] noClose  If true, overlay close button will not appear and overlay won't be closed by pressing 'Esc' key.
- * @default false
- * @param {Boolean} [options.closeOnEsc] closeOnEsc Indicates whether to close overlay on 'Esc' key press. Has sense only if 'noClose' is false.
- * @default true
- * @param {Boolean} [options.fadeInOut] fadeInOut Indicates whether to use fadeIn() / fadeOut() animations when loading dialog.
+ * @param {Boolean} [options.mask=false] mask If true, mask behind the overlay will be shown, making it modal-like.
+ * @param {Boolean} [options.noClose=false] noClose  If true, overlay close button will not appear and overlay won't be closed by pressing 'Esc' key.
+ * @param {Boolean} [options.closeOnEsc=true] closeOnEsc Indicates whether to close overlay on 'Esc' key press. Has sense only if 'noClose' is false.
+ * @param {Boolean} [options.fadeInOut=true] fadeInOut Indicates whether to use fadeIn() / fadeOut() animations when loading dialog.
  * Note: if set to false, 'onLoad' callback will be called synchronously with dialog load,
  * otherwise it will be called on fadeIn() animation completion.
- * @default true
- * @param {Q.Event} [options.loadUrl] options to override for the call to Q.loadUrl
- * @default {}
+ * @param {Object} [options.loadUrl={}] options to override for the call to Q.loadUrl
  * @param {Q.Event} [options.beforeLoad] beforeLoad Q.Event or function which is called before overlay is loaded (shown). Optional.
  * @param {Q.Event} [options.onLoad] onLoad  Q.Event or function which is called when overlay is loaded (shown). Optiona.
  * @param {Q.Event} [options.beforeClose] beforeClose Q.Event or function which is called when overlay closing initiated and it's still visible. Optional.
@@ -86,6 +76,8 @@ function _Q_overlay(o) {
 			if ($this.css('display') == 'block') {
 				return;
 			}
+			Q.handle($overlay.options.beforeLoad, $this, [$this]);
+			calculatePosition($this);
 			var $body = $('body');
 			$overlay.bodyStyle = {
 				left: $body.css('left'),
@@ -97,18 +89,18 @@ function _Q_overlay(o) {
 				left: -sl + 'px',
 				top: -st + 'px'
 			}).addClass('Q_preventScroll');
-			Q.handle($overlay.options.beforeLoad, $this, [$this]);
-			calculatePosition($this);
 			if ($overlay.options.fadeInOut)
 			{
-				$this.fadeIn(o.fadeTime, function()
-				{
-					if (!$overlay.options.noClose && $overlay.options.closeOnEsc)
-					{
-						$(document).on('keydown', closeThisOverlayOnEsc);
+				Q.Animation.play(function (x, y) {
+					if (x === 1) {
+						if (!$overlay.options.noClose && $overlay.options.closeOnEsc) {
+							$(document).on('keydown', closeThisOverlayOnEsc);
+						}
+						Q.handle($overlay.options.onLoad, $this, [$this]);
+					} else {
+						$this.css('opacity', y);
 					}
-					Q.handle($overlay.options.onLoad, $this, [$this]);
-				});
+				}, o.fadeTime);
 				if ($overlay.options.mask)
 				{
 					Q.Masks.show('Q.screen.mask', { 
@@ -124,8 +116,7 @@ function _Q_overlay(o) {
 				{
 					Q.Masks.show('Q.screen.mask', { 'className': 'Q_screen_mask' });
 				}
-				if (!$overlay.options.noClose && $overlay.options.closeOnEsc)
-				{
+				if (!$overlay.options.noClose && $overlay.options.closeOnEsc) {
 					$(document).on('keydown', closeThisOverlayOnEsc);
 				}
 				Q.handle($overlay.options.onLoad, $this, [$this]);
@@ -136,9 +127,8 @@ function _Q_overlay(o) {
 			var $overlay = $this.data('Q/overlay');
 			$('body').removeClass('Q_preventScroll').css($overlay.bodyStyle);
 			$('html,body').scrollTop($this.data('Q/overlay').documentScrollTop);
-			if (!$overlay.options.noClose)
-			{
-				$(document).unbind('keydown', closeThisOverlayOnEsc);
+			if (!$overlay.options.noClose) {
+				$(document).off('keydown', closeThisOverlayOnEsc);
 			}
 			$this.find('input, select, textarea').trigger('blur');
 			Q.handle($overlay.options.beforeClose, $this, [$this]);
@@ -224,25 +214,15 @@ function _Q_overlay(o) {
  *   @optional
  *   @param {Boolean} [options.alignByParent=false] If true, the dialog will be aligned to the center of not the entire window, but to the center of containing element instead.
  *   @param {Boolean} [options.mask=true] If true, adds a mask to cover the screen behind the dialog.
- *   @param {Boolean} [options.fullscreen]
- *   Only on Android and false on all other platforms. If true, dialog will be shown not as overlay
- *               but instead will be prepended to document.body and all other child elements of the body will be hidden.
- *               Thus dialog will occupy all window space, but still will behave like regular dialog, i.e. it can be closed
- *               by clicking / tapping close icon.
- *   @default true
- *   @param {Boolean} [options.asyncLoad]
- *   For desktop and false for touch devices. If true, dialog will load asynchronously
- *              with fade animation and 'onLoad' will be called when fade animation is completed.
- *              If false, dialog will appear immediately and 'onLoad' will be called at the same time.
- *   @default true
- *   @param {Boolean} [options.noClose]
+ *   @param {Boolean} [options.fullscreen=true]
+ *   Only on Android and false on all other platforms. If true, dialog will be shown not as overlay but instead will be prepended to document.body and all other child elements of the body will be hidden. Thus dialog will occupy all window space, but still will behave like regular dialog, i.e. it can be closed by clicking / tapping close icon.
+ *   @param {Boolean} [options.asyncLoad=true]
+ *   For desktop and false for touch devices. If true, dialog will load asynchronously with fade animation and 'onLoad' will be called when fade animation is completed. If false, dialog will appear immediately and 'onLoad' will be called at the same time.
+ *   @param {Boolean} [options.noClose=false]
  *   If true, overlay close button will not appear and overlay won't be closed by pressing 'Esc' key.
- *   @default false
- *   @param {Boolean} [options.closeOnEsc]
+ *   @param {Boolean} [options.closeOnEsc=true]
  *   Indicates whether to close dialog on 'Esc' key press. Has sense only if 'noClose' is false.
- *   @default true
- *   @param {Boolean} [options.removeOnClose] If true, dialog DOM element will be removed from the document on close.
- *   @default false
+ *   @param {Boolean} [options.removeOnClose=false] If true, dialog DOM element will be removed from the document on close.
  *   @param {Q.Event} [options.beforeLoad]  Q.Event or function which is called before dialog is loaded.
  *   @param {Q.Event} [options.onActivate]  Q.Event or function which is called when dialog is activated (all inner tools, if any, are activated and dialog is fully loaded and shown).
  *   @optional

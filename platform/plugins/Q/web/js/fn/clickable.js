@@ -277,9 +277,11 @@ function _Q_clickable(o) {
 						y = (evt.pageY !== undefined) ? evt.pageY : evt.changedTouches[0].pageY;
 					jq = $(Q.Pointer.elementFromPoint(x, y));
 				}
+				Q.Pointer.onEnded.remove(state.onEndedKey);
 				var overElement = !Q.Pointer.canceledClick 
 					&& jq && jq.closest(triggers).length > 0;
-				var factor = scale.factor;
+				var factor = scale.factor || 1;
+				state.animation && state.animation.pause();
 				if (overElement) {
 					state.animation = Q.Animation.play(function(x, y) {
 						scale(factor + y * (o.release.size-factor));

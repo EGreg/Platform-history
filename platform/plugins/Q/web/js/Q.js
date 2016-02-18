@@ -8270,6 +8270,9 @@ Ap.render = function _Q_Animation_prototype_render() {
 		anim.elapsed = qm - anim.started;
 		anim.milliseconds += qm - ms;
 		anim.sinceLastFrame = anim.milliseconds - _milliseconds;
+		if (!anim.playing) { // it may have been paused by now
+			return;
+		}
 		var x = anim.position = anim.elapsed / anim.duration;
 		if (x >= 1) {
 			Q.handle(anim.callback, anim, [1, anim.ease(1), anim.params]);
@@ -8280,10 +8283,10 @@ Ap.render = function _Q_Animation_prototype_render() {
 		}
 		var y = anim.ease(x);
 		Q.handle(anim.callback, anim, [x, y, anim.params]);
+		anim.onRender.handle.call(anim, x, y, anim.params);
 		if (anim.playing) {
 			anim.render();
 		}
-		anim.onRender.handle.call(anim, x, y, anim.params);
 	});
 };
 
