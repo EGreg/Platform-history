@@ -389,7 +389,8 @@ Users.prompt = function(provider, uid, authCallback, cancelCallback, options) {
 		titleSlot.append($('<h2 class="Users_dialog_title Q_dialog_title" />').html(title));
 		var dialogSlot = $('<div class="dialog_slot Q_dialog_content">');
 		dialogSlot.append(content_div);
-		Users.prompt.overlay.append(titleSlot).append(dialogSlot).appendTo($(o.dialogContainer));
+		Users.prompt.overlay.append(titleSlot).append(dialogSlot)
+		.prependTo(o.dialogContainer);
 	}
 	Q.Dialogs.push({
 		dialog: Users.prompt.overlay, 
@@ -898,7 +899,7 @@ Users.setIdentifier = function(options) {
 	priv.setIdentifier_onCancel = onCancel;
 	
 	$.fn.plugin.load(['Q/dialog', 'Q/placeholders'], function () {
-		setIdentifier_setupDialog(o.identifierType);
+		setIdentifier_setupDialog(o.identifierType, o);
 		var d = setIdentifier_setupDialog.dialog;
 		if (d.css('display') == 'none') {
 			d.data('Q/dialog').load();
@@ -1475,7 +1476,7 @@ function login_setupDialog(usingProviders, scope, dialogContainer, identifierTyp
 	titleSlot.append($('<h2 class="Users_dialog_title Q_dialog_title" />').html(Q.text.Users.login.title));
 	var dialogSlot = $('<div class="dialog_slot Q_dialog_content">');
 	dialogSlot.append(step1_div).append(step2_div);
-	dialog.append(titleSlot).append(dialogSlot).appendTo($(dialogContainer));
+	dialog.append(titleSlot).append(dialogSlot).prependTo(dialogContainer);
 	dialog.plugin('Q/dialog', {
 		alignByParent: true,
 		beforeLoad: function()
@@ -1606,7 +1607,7 @@ function setIdentifier_setupDialog(identifierType, options) {
 		.html(options.title || Q.text.Users.setIdentifier.title)
 	);
 	var dialogSlot = $('<div class="dialog_slot Q_dialog_content">').append(step1_div);
-	dialog.append(titleSlot).append(dialogSlot).appendTo(document.body);
+	dialog.append(titleSlot).append(dialogSlot).prependTo(options.dialogContainer);
 	dialog.plugin('Q/dialog', {
 		alignByParent: true,
 		beforeLoad: function()
@@ -1867,11 +1868,12 @@ Q.onInit.add(function () {
 	Q.Users.setIdentifier.options = Q.extend({
 		onCancel: null,
 		onSuccess: null, // gets passed session
-		identifierType: 'email,mobile'
+		identifierType: 'email,mobile',
+		dialogContainer: 'body'
 	}, Q.Users.setIdentifier.options, Q.Users.setIdentifier.serverOptions);
 	
 	Q.Users.prompt.options = Q.extend({
-		dialogContainer: document.body
+		dialogContainer: 'body'
 	}, Q.Users.prompt.options, Q.Users.prompt.serverOptions);
 }, 'Users');
 

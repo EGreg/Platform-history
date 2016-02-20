@@ -146,6 +146,15 @@ Sp.isUrl = function _String_prototype_isUrl () {
 };
 
 /**
+ * Determins whether the string's contents are an IP address
+ * @method isUrl
+ * @return {boolean}
+ */
+Sp.isIPAddress = function _String_prototype_isIPAddress () {
+	return !!this.match(/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/);
+};
+
+/**
  * Returns a copy of the string with special HTML characters escaped
  * @method encodeHTML
  * @return {String}
@@ -4942,12 +4951,15 @@ Q.loadNonce = function _Q_loadNonce(callback, context, args) {
 		} else {
 			// Cookie wasn't loaded. Perhaps because this is a 3rd party cookie.
 			// IE should have been appeased with a P3P policy from the server.
-			// Otherwise, let's appease Safari-like browsers with Q.formPost.
+			// Otherwise, let's try to appease old Safari-like browsers with Q.formPost.
 			var action = Q.ajaxExtend(Q.action('Q/nonce'), 'data');
 			Q.formPost(action, {"just": "something"}, 'post', function afterFormPost() {
 				// we are hoping this returns after the form post
 				Q.nonce = Q.cookie('Q_nonce');
-				if (!Q.nonce) alert("Our server couldn't set cookies in this browser.");
+				var reason = location.hostname.isIPAddress ? " Saving cookies to IP address is not supported." : "";
+				if (!Q.nonce) {
+					alert("Our server couldn't set cookies in this browser." + reason);
+				}
 			});
 		}
 	}, {"method": "post", "skipNonce": true});
@@ -6449,7 +6461,8 @@ Q.cookie = function _Q_cookie(name, value, options) {
 		if ('domain' in options) {
 			domain = ';domain='+options.domain;
 		} else {
-			domain = ';domain=.' + parts[1].split('/').slice(0, 1);
+			var hostname = parts[1].split('/').shift();
+			domain = ';domain=' + (hostname.isIPAddress() ? '' : '.') + hostname;
 		}
 		if (value === null) {
 			document.cookie = encodeURIComponent(name)+'=;expires=Thu, 01-Jan-1970 00:00:01 GMT'+path+domain;
@@ -8257,6 +8270,9 @@ Ap.render = function _Q_Animation_prototype_render() {
 		anim.elapsed = qm - anim.started;
 		anim.milliseconds += qm - ms;
 		anim.sinceLastFrame = anim.milliseconds - _milliseconds;
+		if (!anim.playing) { // it may have been paused by now
+			return;
+		}
 		var x = anim.position = anim.elapsed / anim.duration;
 		if (x >= 1) {
 			Q.handle(anim.callback, anim, [1, anim.ease(1), anim.params]);
@@ -8267,10 +8283,10 @@ Ap.render = function _Q_Animation_prototype_render() {
 		}
 		var y = anim.ease(x);
 		Q.handle(anim.callback, anim, [x, y, anim.params]);
+		anim.onRender.handle.call(anim, x, y, anim.params);
 		if (anim.playing) {
 			anim.render();
 		}
-		anim.onRender.handle.call(anim, x, y, anim.params);
 	});
 };
 
@@ -10370,8 +10386,9 @@ Q.Masks = {
 			var mask = Q.Masks.collection[k];
 			if (!mask.counter) continue;
 			var html = document.documentElement;
-			var scrollLeft = Q.Pointer.scrollLeft();
-			var scrollTop = Q.Pointer.scrollTop();
+			var offset = $('body').offset();
+			var scrollLeft = Q.Pointer.scrollLeft() - offset.left;
+			var scrollTop = Q.Pointer.scrollTop() - offset.top;
 			var ms = mask.element.style;
 			var rect = (mask.shouldCover || html).getBoundingClientRect();
 			mask.rect = {
