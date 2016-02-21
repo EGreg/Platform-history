@@ -35,9 +35,9 @@ var MyApp = (function (Q, $) {
 		});
 		
 		Q.addScript("plugins/Q/js/QTools.js", function () {
-			var avatar = $('#dashboard .Users_avatar_tool');
-			if (avatar.length) {
-				Q.Contextual.add(avatar, $('#dashboard_user_contextual'));	
+			var $avatar = $('#dashboard .Users_avatar_tool');
+			if ($avatar.length) {
+				Q.Contextual.add($avatar, $('#dashboard_user_contextual'));	
 			}
 		});
 		

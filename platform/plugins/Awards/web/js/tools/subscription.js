@@ -30,7 +30,7 @@ Q.Tool.define("Awards/subscription", function (options) {
 	}
 	
 	tool.$('.Awards_payment').on(Q.Pointer.click, function () {
-		Q.Awards.paymentDialog();
+		Q.Awards.Dialogs.payment();
 	});
 	
 	tool.$('.Awards_subscribe').on(Q.Pointer.click, function () {

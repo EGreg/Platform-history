@@ -1,28 +1,44 @@
+/**
+ * Various front-end functionality dealing with awards, badges, credits, etc.
+ * @class Awards
+ */
+
 Q.Awards = Q.plugins.Awards = {
 
 	/**
-	 * Show a dialog where the user can set up their payment information
-	 * @method paymentDialog
-	 *  @param {Function} [callback] The function to call, receives (err, paymentSlot)
-	 *  @param {Object} [options] Any additional options to pass to the dialog
+	 * Operates with dialogs.
+	 * @class Awards.Dialogs
 	 */
-	paymentDialog: function (callback, options) {
-		var html = '<iframe ' +
-			'name="Awards_authnet" ' +
-			'src="" ' +
-			'width="480" ' +
-			'height="640" ' +
-			'frameborder="0" ' +
-			'scrolling="no" ' +
-			'class="authnet" ' +
-		'></iframe>';
-		Q.Dialogs.push(Q.extend({
-			title: 'Set Payment Information',
-			apply: true
-		}, options, {
-			content: html
-		}));
+	Dialogs: {
+		/**
+		 * Show a dialog where the user can set up their payment information
+		 * @method payment
+		 *  @param {Function} [callback] The function to call, receives (err, paymentSlot)
+		 *  @param {Object} [options] Any additional options to pass to the dialog
+		 */
+		payment: function (callback, options) {
+			var html = '<iframe ' +
+				'name="Awards_authnet" ' +
+				'src="" ' +
+				'width="480" ' +
+				'height="640" ' +
+				'frameborder="0" ' +
+				'scrolling="no" ' +
+				'class="authnet" ' +
+			'></iframe>';
+			Q.Dialogs.push(Q.extend({
+				title: 'Set Payment Information',
+				apply: true
+			}, options, {
+				content: html
+			}));
+		}
 	},
+	
+	/**
+	 * Operates with dialogs.
+	 * @class Awards
+	 */
 
 	/**
 	 * Subscribe the logged-in user to a particular payment plan

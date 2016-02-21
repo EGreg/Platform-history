@@ -785,38 +785,47 @@ function _toolInDialog(toolName, toolParams, callback, classContainer) {
 }
 
 /**
- * Show a dialog to manage "subscription" related stuff in a stream.
- * @static
- * @method subscriptionDialog
- * @param publisherId {String} id of publisher which is publishing the stream
- * @param streamName {String} the stream's name
- * @param callback {Function} The function to call after dialog is activated
+ * Operates with dialogs.
+ * @class Streams.Dialogs
  */
-Streams.subscriptionDialog = function(publisherId, streamName, callback) {
-	_toolInDialog('Streams/subscription', {
-		publisherId: publisherId,
-		streamName : streamName
-	}, callback, 'Streams_subscription_tool_dialog_container');
+
+Streams.Dialogs = {
+
+	/**
+	 * Show a dialog to manage "subscription" related stuff in a stream.
+	 * @static
+	 * @method subscription
+	 * @param publisherId {String} id of publisher which is publishing the stream
+	 * @param streamName {String} the stream's name
+	 * @param callback {Function} The function to call after dialog is activated
+	 */
+	subscription: function(publisherId, streamName, callback) {
+		_toolInDialog('Streams/subscription', {
+			publisherId: publisherId,
+			streamName : streamName
+		}, callback, 'Streams_subscription_tool_dialog_container');
+	},
+
+	/**
+	 * Show a dialog to manage "access" related stuff in a stream.
+	 * @static
+	 * @method access
+	 * @param publisherId {String} id of publisher which is publishing the stream
+	 * @param streamName {String} the stream's name
+	 * @param callback {Function} The function to call after dialog is activated
+	 */
+	access: function(publisherId, streamName, callback) {
+		_toolInDialog('Streams/access', {
+			publisherId: publisherId,
+			streamName: streamName
+		}, callback, 'Streams_access_tool_dialog_container');
+	}
+	
 };
 
 /**
- * Show a dialog to manage "access" related stuff in a stream.
- * @static
- * @method accessDialog
- * @param publisherId {String} id of publisher which is publishing the stream
- * @param streamName {String} the stream's name
- * @param callback {Function} The function to call after dialog is activated
+ * @class Streams
  */
-Streams.accessDialog = function(publisherId, streamName, callback) {
-	_toolInDialog('Streams/access', {
-		publisherId: publisherId,
-		streamName: streamName
-	}, callback, 'Streams_access_tool_dialog_container');
-};
-
-Streams.displayName = function(options) {
-	return options.firstName + ' ' + options.lastName;
-};
 
 /**
  * Returns streams that the current user is participating in
@@ -2833,7 +2842,7 @@ Participant.get.onError = new Q.Event();
  * @param {Array} fields
  */
 var Avatar = Streams.Avatar = function Streams_Avatar (fields) {
-	Q.extend(this, fields);
+	this.fields = Q.extend({}, fields);
 	this.typename = 'Q.Streams.Avatar';
 };
 
@@ -2858,9 +2867,7 @@ Avatar.get = function _Avatar_get (userId, callback) {
 			Avatar.get.onError.handle.call(this, msg, args);
 			return callback && callback.call(this, msg, args);
 		}
-		var avatar = data.avatar
-			? new Avatar(data.avatar)
-			: null;
+		var avatar = data.avatar ? new Avatar(data.avatar) : null;
 		Avatar.get.cache.set(
 			[userId],
 			0, avatar, [err, avatar]
@@ -2888,8 +2895,10 @@ Avatar.get.onError = new Q.Event();
  */
 Avatar.byPrefix = function _Avatar_byPrefix (prefix, callback, options) {
 	var userId = Q.plugins.Users.loggedInUser ? Users.loggedInUser.id : "";
+	// Query avatar as userId would see it, by requesting it from the right server.
+	// If userId is empty, then we query avatars on one of the public servers.
 	var func = Streams.batchFunction(Q.baseUrl({
-		userId: userId // if userId is empty, then we query avatars on one of the public servers
+		userId: userId
 	}), 'avatar');
 	var fields = Q.take(options, ['limit', 'offset', 'public']);
 	Q.extend(fields, {prefix: prefix});
@@ -2919,36 +2928,54 @@ var Ap = Avatar.prototype;
  * 
  * @method displayName
  * @param {Object} [options] A bunch of options which can include:
- *   @param {String} [options.short] Try to show the first name only
- *   @param {String} [options.short] Try to show the first name only
+ *   @param {Boolean} [options.short] Show one part of the name only
+ *   @param {boolean} [options.show] The parts of the name to show. Can have the letters "f", "l", "u" in any order.
+ *   @param {Boolean} [options.html] If true, encloses the first name, last name, username in span tags. If an array, then it will be used as the attributes of the html.
+ *   @param {Boolean} [options.escape] If true, does HTML escaping of the retrieved fields
+ * @param {String} [fallback] What to return if there is no info to get displayName from.
  * @return {String}
  */
 Ap.displayName = function _Avatar_prototype_displayName (options) {
-	var fn = this.firstName;
-	var ln = this.lastName;
-	var u = this.username;
-	var p1 = null, p2 = null;
-	if (options && options['short']) {
-		p1 = fn || u;
-		p2 = null;
-	} else if (fn && ln) {
-		p1 = fn;
-		p2 = ln;
-	} else if (fn && !ln) {
-		p1 = fn;
-		p2 = u || null;
-	} else if (!fn && !ln) {
-		p1 = u;
-		p2 = ln;
+	var fn = this.fields.firstName;
+	var ln = this.fields.lastName;
+	var u = this.fields.username;
+	var fn2, ln2, u2;	
+	if (options && (options.escape || options.html)) {
+		fn = fn.encodeHTML();
+		ln = ln.encodeHTML();
+		u = u.encodeHTML();
+	}
+	if (options && options.html) {
+		fn2 = '<span class="Streams_firstName">'+fn+'</span>';
+		ln2 = '<span class="Streams_lastName">'+ln+'</span>';
+		u2 = '<span class="Streams_username">'+u+'</span>';
+		f2 = '<span class="Streams_username">'+fallback+'</span>';
 	} else {
-		p1 = u || null;
-		p2 = null;
+		fn2 = fn;
+		ln2 = ln;
+		u2 = u;
+		f2 = fallback;
 	}
-	if (options && options['html']) {
-		p1 = p1 && '<span class="Streams_firstName">'+p1.encodeHTML()+'</span>';
-		p2 = p2 && '<span class="Streams_lastName">'+p2.encodeHTML()+'</span>';
+	if (options && options.show) {
+		var show = options.show.split('');
+		var parts = [];
+		for (var i=0, l=show.length; i<l; ++i) {
+			var s = show[i];
+			parts.push(s == 'f' ? fn2 : (s == 'l' ? ln2 : u2));
+		}
+		return parts.join(' ');
 	}
-	return (p1 === null) ? '' : ((p2 === null) ? p1 : p1 + ' ' + p2);
+	if (options && options.short) {
+		return fn ? fn2 : u2;
+	} else if (fn && ln) {
+		return fn + ' ' + ln2;
+	} else if (fn && !ln) {
+		return u ? fn2 + ' ' + u2 : fn2;
+	} else if (!fn && ln) {
+		return u ? u2 + ' ' + ln2 : ln2;
+	} else {
+		return u ? u2 : f2;
+	}
 };
 
 /**
@@ -2958,7 +2985,7 @@ Ap.displayName = function _Avatar_prototype_displayName (options) {
  * @return {String} the url
  */
 Ap.iconUrl = function _Avatar_prototype_iconUrl (size) {
-	return Q.plugins.Users.iconUrl(this.icon, size);
+	return Users.iconUrl(this.fields.icon, size);
 };
 
 /**

@@ -985,6 +985,10 @@ class Q
 	 */
 	static function isAssociative($array)
 	{
+		if (!is_array($array)) {
+			return false;
+		}
+		
 		// Keys of the array
 		$keys = array_keys($array);
 
