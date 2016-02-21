@@ -403,7 +403,7 @@ class Db_Mysql implements iDb
 				$sharded = $query->shard(null, $record);
 				$shard = key($sharded);
 				if (count($sharded) > 1 or $shard === '*') { // should be only one shard
-					throw new Exception("Db_Mysql::insertManyAndExecute query should not hit more than one shard: " . Q::json_encode($record));
+					throw new Exception("Db_Mysql::insertManyAndExecute row should be stored on exactly one shard: " . Q::json_encode($record));
 				}
 			}
 			

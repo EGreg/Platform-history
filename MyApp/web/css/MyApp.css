@@ -18,6 +18,7 @@ h2 { margin: 0; }
 #content_slot {
 	position: relative;
 	padding: 10px;
+	overflow-x: auto;
 	background: #fff;
 	box-shadow: #aaa 0 0 4px;
 	-webkit-box-shadow: #aaa 0 0 4px;
