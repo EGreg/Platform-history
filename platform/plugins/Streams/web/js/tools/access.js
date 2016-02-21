@@ -137,7 +137,7 @@ Q.Tool.define("Streams/access", function(options) {
 				$('<td style="vertical-align: middle;" />')
 				.append(
 					$('<span class="access-tool-username">')
-					.text(avatar.displayName()) + ' ' + actionText + ' ')
+					.text(avatar.displayName() + ' ' + actionText + ' ')
 				).append(clonedSelect).append($('<div class="clear">'))
 			).append(
 				$('<td style="vertical-align: middle;" />').append(newRemoveLink(criteria))

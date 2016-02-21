@@ -93,13 +93,12 @@ function _Q_overlay(o) {
 			{
 				$this.css('opacity', 0).show();
 				Q.Animation.play(function (x, y) {
+					$this.css('opacity', y);
 					if (x === 1) {
 						if (!$overlay.options.noClose && $overlay.options.closeOnEsc) {
 							$(document).on('keydown', closeThisOverlayOnEsc);
 						}
 						Q.handle($overlay.options.onLoad, $this, [$this]);
-					} else {
-						$this.css('opacity', y);
 					}
 				}, o.fadeTime);
 				if ($overlay.options.mask)
