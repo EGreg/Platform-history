@@ -78,6 +78,7 @@
 		},
 		"javascript": {
 			"responseExtras": {
+				"plugins/Q/js/IE.js": true,
 				"plugins/Q/js/jquery-1.11.1.min.js": true,
 				"plugins/Q/js/jquery.tools.min.js": true,
 				"plugins/Q/js/handlebars-v1.3.0.min.js": true,
